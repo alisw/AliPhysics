@@ -343,15 +343,17 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
 
   Double_t cosPAwrtPrimVtxV0 = lcV0bachelor->CosV0PointingAngle();
 
-  Double_t pTbachelor = bachelor->Pt();
-  Double_t pTV0pos = v0positiveTrack->Pt();
-  Double_t pTV0neg = v0negativeTrack->Pt();
+  //Double_t pTbachelor = bachelor->Pt();
+  Double_t pbachelor = bachelor->P();
+  //Double_t pTV0pos = v0positiveTrack->Pt();
+  //Double_t pTV0neg = v0negativeTrack->Pt();
   Double_t phi = lcV0bachelor->Phi();
   Double_t dcaV0 = v0toDaughters->GetDCA();
-  Double_t cTLc = lcV0bachelor->Ct(4122); // wrt PrimVtx
+  //Double_t cTLc = lcV0bachelor->Ct(4122); // wrt PrimVtx
   //Double_t dcaLc = lcV0bachelor->GetDCA();
   Double_t cosPointingAngleLc = lcV0bachelor->CosPointingAngle();
 
+  /*
   Double_t cTV0 = 0.;
   AliAODVertex *vtx0 = (AliAODVertex*)lcV0bachelor->GetPrimaryVtx();
   if (!vtx0) {
@@ -364,6 +366,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
       cTV0 = v0toDaughters->Ct(3122,primVtxPos);
     }
   }
+  */
 
   Double_t invMassV0 = 0.;
   if (fGenLcOption==kCountLambdapi) {
@@ -384,21 +387,28 @@ Bool_t AliCFVertexingHFLctoV0bachelor::GetRecoValuesFromCandidate(Double_t *vect
   vectorReco[0]  = pt;
   vectorReco[1]  = rapidity;
   vectorReco[2]  = phi;
-  vectorReco[3]  = cosPAwrtPrimVtxV0;
-  vectorReco[4]  = onTheFlyStatus;
+  vectorReco[3]  = onTheFlyStatus;
+  vectorReco[4]  = fzPrimVertex;
   vectorReco[5]  = fCentValue;
   vectorReco[6]  = fFake; // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
   vectorReco[7]  = fMultiplicity;
 
   if (fConfiguration==AliCFTaskVertexingHF::kSnail) {
-    vectorReco[8]  = pTbachelor;
-    vectorReco[9]  = pTV0pos;
-    vectorReco[10] = pTV0neg;
-    vectorReco[11] = invMassV0;
-    vectorReco[12] = dcaV0;
-    vectorReco[13] = cTV0*1.E4; // in micron
-    vectorReco[14] = cTLc*1.E4; // in micron
+    //vectorReco[8]  = pTbachelor;
+    vectorReco[8]  = pbachelor;
+    vectorReco[9]  = v0toDaughters->Pt();
+    if (fGenLcOption==kCountLambdapi) {
+      vectorReco[10] = v0toDaughters->Y(3122);
+    } else if (fGenLcOption==kCountK0Sp) {
+      vectorReco[10] = v0toDaughters->Y(310);
+    }
+    vectorReco[11] = v0toDaughters->Phi();
+    vectorReco[12] = invMassV0;
+    vectorReco[13] = dcaV0;
+    vectorReco[14] = cosPAwrtPrimVtxV0;
     vectorReco[15] = cosPointingAngleLc;
+    //vectorReco[16] = cTV0*1.E4; // in micron
+    //vectorReco[17] = cTLc*1.E4; // in micron
   }
 
   bFillRecoValues = kTRUE;
@@ -494,6 +504,11 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
     }
     if (!mcPartDaughter0 || !mcPartDaughter1) {
       AliDebug(2,"Problems in the MC Daughters after swapping V0 and bachelor\n");
+      return checkCD;
+    }
+
+    if (mcPartDaughter1->GetNDaughters()!=1) {
+      AliDebug(2, "The K0/K0bar MC particle doesn't decay in 1 particles, skipping!!");
       return checkCD;
     }
 
@@ -677,7 +692,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::SetLabelArray()
   
   if (fmcPartCandidate->GetNDaughters()!=2) {
     AliDebug(2, Form("The MC particle have %d daughters (not 2), skipping!!",fmcPartCandidate->GetNDaughters()));
-    fmcPartCandidate->Print();
+    //    fmcPartCandidate->Print();
     return checkCD;
   }
 
@@ -899,7 +914,7 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   AliAODMCParticle *mcPartV0DaughterNeg = dynamic_cast<AliAODMCParticle*>(fmcArray->At(fLabelArray[2]));
   AliAODMCParticle *mcPartDaughterV0 = 0x0;
 
-  if(!mcPartV0DaughterPos && !mcPartV0DaughterNeg) return bGenValues;
+  if(!mcPartV0DaughterPos || !mcPartV0DaughterNeg) return bGenValues;
 
   if (TMath::Abs(mcPartDaughterK0->GetPdgCode())==311) {
     Int_t daughterK0 = mcPartDaughterK0->GetDaughter(0);
@@ -929,8 +944,9 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
     return bGenValues;
   }
 
-  Double_t cTLc = Ctau(fmcPartCandidate); // by default wrt Primary Vtx
-  Double_t pTbach = mcPartDaughterBachelor->Pt(); // get the bachelor pT
+  //Double_t cTLc = Ctau(fmcPartCandidate); // by default wrt Primary Vtx
+  //Double_t pTbach = mcPartDaughterBachelor->Pt(); // get the bachelor pT
+  Double_t pbach = mcPartDaughterBachelor->P(); // get the bachelor p
 
   Double_t vtx1[3] = {0,0,0};   // primary vertex		
   Bool_t hasPrimVtx = fmcPartCandidate->XvYvZv(vtx1);  // cm
@@ -990,12 +1006,14 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   charge = 0;
   AliAODRecoDecayHF* decay = new AliAODRecoDecayHF(vtx1,vtx2daughter0,nprongs,charge,px,py,pz,d0);
   Double_t cosPAwrtPrimVtxV0 = decay->CosPointingAngle();
+  /*
   Double_t cTV0 = 0.; //ct
   if (fGenLcOption==kCountK0Sp) {
     cTV0 = decay->Ct(310); // by default wrt Primary Vtx
   } else if (fGenLcOption==kCountLambdapi) {
     cTV0 = decay->Ct(3122); // by default wrt Primary Vtx
   }
+  */
 
   Double_t invMass = 0.; //invMass
   if (fGenLcOption==kCountK0Sp) {
@@ -1011,21 +1029,24 @@ Bool_t AliCFVertexingHFLctoV0bachelor::FillVectorFromMCarray(AliAODMCParticle *m
   vectorMC[0]  = fmcPartCandidate->Pt();
   vectorMC[1]  = fmcPartCandidate->Y() ;
   vectorMC[2]  = fmcPartCandidate->Phi();
-  vectorMC[3]  = cosPAwrtPrimVtxV0;
-  vectorMC[4]  = 0; // dummy value x MC, onTheFlyStatus
+  vectorMC[3]  = 0; // dummy value x MC, onTheFlyStatus
+  vectorMC[4]  = fzMCVertex;
   vectorMC[5]  = fCentValue; // reconstructed centrality
   vectorMC[6]  = 1; // dummy value x MC, fFake
   vectorMC[7]  = fMultiplicity; // reconstructed multiplicity
 
   if (fConfiguration==AliCFTaskVertexingHF::kSnail) {
-    vectorMC[8]  = pTbach;
-    vectorMC[9]  = mcPartV0DaughterPos->Pt();
-    vectorMC[10] = mcPartV0DaughterNeg->Pt();
-    vectorMC[11] = invMass;
-    vectorMC[12] = 0; // dummy value x MC, V0 DCA
-    vectorMC[13] = cTV0*1.E4; // in micron
-    vectorMC[14] = cTLc*1.E4; // in micron
+    //vectorMC[8]  = pTbach;
+    vectorMC[8]  = pbach;
+    vectorMC[9]  = mcPartDaughterV0->Pt();
+    vectorMC[10] = mcPartDaughterV0->Y();
+    vectorMC[11] = mcPartDaughterV0->Phi();
+    vectorMC[12] = invMass;
+    vectorMC[13] = 0; // dummy value x MC, V0 DCA
+    vectorMC[14] = cosPAwrtPrimVtxV0;
     vectorMC[15] = cosPAwrtPrimVtxLc;
+    //vectorMC[16] = cTV0*1.E4; // in micron
+    //vectorMC[17] = cTLc*1.E4; // in micron
   }
 
   bGenValues = kTRUE;

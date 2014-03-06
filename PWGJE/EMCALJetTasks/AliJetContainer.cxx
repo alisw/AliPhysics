@@ -45,6 +45,7 @@ AliJetContainer::AliJetContainer():
   fNLeadingJets(1),
   fJetBitMap(0),
   fJetTrigger(0),
+  fTagStatus(-1),
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
@@ -84,6 +85,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fNLeadingJets(1),
   fJetBitMap(0),
   fJetTrigger(0),
+  fTagStatus(-1),
   fParticleContainer(0),
   fClusterContainer(0),
   fRho(0),
@@ -336,6 +338,9 @@ Bool_t AliJetContainer::AcceptJet(AliEmcalJet *jet) const
    
    if (fFlavourSelection != 0 && !jet->TestFlavourTag(fFlavourSelection))
       return kFALSE;
+
+   if(fTagStatus>-1 && jet->GetTagStatus()!=fTagStatus)
+     return kFALSE;
    
    Double_t jetPhi = jet->Phi();
    Double_t jetEta = jet->Eta();
@@ -511,3 +516,42 @@ void AliJetContainer::SetClassName(const char *clname)
   if (cls.InheritsFrom("AliEmcalJet")) fClassName = clname;
   else AliError(Form("Unable to set class name %s for a AliJetContainer, it must inherits from AliEmcalJet!",clname));
 }
+
+//________________________________________________________________________
+Double_t AliJetContainer::GetFractionSharedPt(AliEmcalJet *jet1) const
+{
+  //
+  // Get fraction of shared pT between matched full and charged jet
+  // Uses charged jet pT as baseline: fraction = \Sum_{const,full jet} pT,const,i / pT,jet,ch
+  // Only works if tracks array of both jets is the same
+  //
+
+  AliEmcalJet *jet2 = jet1->ClosestJet();
+  if(!jet2) return -1;
+
+  Double_t fraction = 0.;
+  Double_t jetPt2 = jet2->Pt();
+ 
+  if(jetPt2>0) {
+    Double_t sumPt = 0.;
+    AliVParticle *vpf = 0x0;
+    Int_t iFound = 0;
+    for(Int_t icc=0; icc<jet2->GetNumberOfTracks(); icc++) {
+      Int_t idx = (Int_t)jet2->TrackAt(icc);
+      iFound = 0;
+      for(Int_t icf=0; icf<jet1->GetNumberOfTracks(); icf++) {
+	if(idx == jet1->TrackAt(icf) && iFound==0 ) {
+	  iFound=1;
+	  vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fParticleContainer->GetArray()));
+	  if(vpf) sumPt += vpf->Pt();
+	  continue;
+	}
+      }
+    }
+    fraction = sumPt/jetPt2;
+  } else 
+    fraction = -1;
+  
+  return fraction;
+}
+

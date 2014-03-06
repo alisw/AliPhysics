@@ -76,7 +76,8 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fEtaCut(0.9),
     fEtaShift(0.0),
     fDoEtaCut(kFALSE),
-    fPtCut(0.0),
+    fPtMinCut(0.0),
+    fPtMaxCut(9999),
     fRadiusCut(1000.0),
     fPsiPairCut(0.45),
     fDeltaPhiCutMin(0.),
@@ -115,9 +116,11 @@ AliDalitzElectronCuts::AliDalitzElectronCuts(const char *name,const char *title)
     fBKGMethod(0),
     fnumberOfRotationEventsForBG(0),
     fDoMassCut(kFALSE),
+    fDoMassMinCut(kFALSE),
     fMassCutLowPt(999.),
     fMassCutHighPt(999.),
     fMassCutPtMin(-100.0),
+    fMassMinCut(-999.),
     fDoWeights(kFALSE),
     fCutString(NULL),
     hCutIndex(NULL),
@@ -168,6 +171,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
 
     // Initialize Cut Histograms for QA (only initialized and filled if function is called)
 
+     TH1::AddDirectory(kFALSE);
+
      TString cutName = "";
     
      if( cutNumber==""){
@@ -186,6 +191,38 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
 	if(name=="")fHistograms->SetName(Form("ElectronCuts_%s",cutName.Data()));
 	else fHistograms->SetName(Form("%s_%s",name.Data(),cutName.Data()));
     }
+    
+    
+    Int_t kDedxSignalbins = 200;
+    
+     const Int_t kDCABins=62;
+    
+     Double_t binsDCADummy[63]={-3.0,-2.7,-2.4,-2.1,-1.8,-1.5,-1.2,-0.9,-0.6,-0.3,-0.25,-0.2,-0.19,-0.18,-0.17,-0.16,-0.15,-0.14,-0.13,-0.12,-0.11,-0.10,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.25,0.3,0.6,0.9,1.2,1.5,1.8,2.1,2.4,2.7,3.0};
+
+     const Int_t kPtBins=110;
+     Double_t binsPtDummy[kPtBins+1];
+     const Int_t kPBins = 109;
+     Double_t binsPDummy[kPBins+1];
+     binsPtDummy[0]=0.0;
+     binsPDummy[0]=0.05;
+     
+        for(Int_t i=1;i<kPtBins+1;i++)
+        {
+                if(binsPtDummy[i-1]+0.05<1.01)
+                        binsPtDummy[i]=binsPtDummy[i-1]+0.05;
+                else
+                        binsPtDummy[i]=binsPtDummy[i-1]+0.1;
+		
+        }
+        for(Int_t i=1; i <kPBins+1;i++){
+		  
+		  if( binsPDummy[i-1]+0.05<1.01)
+		        binsPDummy[i] = binsPDummy[i-1]+0.05;
+		  else
+			binsPDummy[i] = binsPDummy[i-1]+0.1;
+		
+	}
+       
 
 
     hCutIndex=new TH1F(Form("IsElectronSelected %s",cutName.Data()),"IsElectronSelected",10,-0.5,9.5);
@@ -222,29 +259,29 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     if(preCut){
 
 
-       hITSdEdxbefore=new TH2F(Form("Electron_ITS_before %s",cutName.Data()),"ITS dEdx electron before" ,150,0.05,20,400,-10,10);
+       hITSdEdxbefore=new TH2F(Form("Electron_ITS_before %s",cutName.Data()),"ITS dEdx electron before" ,kPBins,binsPDummy,200,-10,10);
        fHistograms->Add(hITSdEdxbefore);
        AxisBeforeITS = hITSdEdxbefore->GetXaxis();
 
-       hTPCdEdxbefore=new TH2F(Form("Electron_dEdx_before %s",cutName.Data()),"dEdx electron before" ,150,0.05,20,400,-10,10);
+       hTPCdEdxbefore=new TH2F(Form("Electron_dEdx_before %s",cutName.Data()),"dEdx electron before" ,kPBins,binsPDummy,200,-10,10);
        fHistograms->Add(hTPCdEdxbefore);
        AxisBeforedEdx = hTPCdEdxbefore->GetXaxis();
 
-       hTPCdEdxSignalbefore=new TH2F(Form("Electron_dEdxSignal_before %s",cutName.Data()),"dEdx electron signal before" ,150,0.05,20.0,800,0.0,200);
+       hTPCdEdxSignalbefore=new TH2F(Form("Electron_dEdxSignal_before %s",cutName.Data()),"dEdx electron signal before" ,kPBins,binsPDummy,kDedxSignalbins,0.0,200);
        fHistograms->Add(hTPCdEdxSignalbefore);
        AxisBeforedEdxSignal = hTPCdEdxSignalbefore->GetXaxis();
 
-       hTOFbefore=new TH2F(Form("Electron_TOF_before %s",cutName.Data()),"TOF electron before" ,150,0.05,20,400,-6,10);
+       hTOFbefore=new TH2F(Form("Electron_TOF_before %s",cutName.Data()),"TOF electron before" ,kPBins,binsPDummy,200,-10,10);
        fHistograms->Add(hTOFbefore);
        AxisBeforeTOF = hTOFbefore->GetXaxis();
        
-       hTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+       hTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
        fHistograms->Add(hTrackDCAxyPtbefore); 	
        
-       hTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
+       hTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
        fHistograms->Add(hTrackDCAzPtbefore); 
        
-       hTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",100,0,1,400,0.,10.);
+       hTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",50,0,1,kPtBins,binsPtDummy);
        fHistograms->Add(hTrackNFindClsPtTPCbefore); 
 	
        
@@ -252,25 +289,25 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     }
 
 
-    hITSdEdxafter=new TH2F(Form("Electron_ITS_after %s",cutName.Data()),"ITS dEdx electron after" ,150,0.05,20,400, -10,10);
+    hITSdEdxafter=new TH2F(Form("Electron_ITS_after %s",cutName.Data()),"ITS dEdx electron after" ,kPBins,binsPDummy,200, -10,10);
     fHistograms->Add(hITSdEdxafter);
 
-    hTPCdEdxafter=new TH2F(Form("Electron_dEdx_after %s",cutName.Data()),"dEdx electron after" ,150,0.05,20,400, -10,10);
+    hTPCdEdxafter=new TH2F(Form("Electron_dEdx_after %s",cutName.Data()),"dEdx electron after" ,kPBins,binsPDummy,200, -10,10);
     fHistograms->Add(hTPCdEdxafter);
 
-    hTPCdEdxSignalafter=new TH2F(Form("Electron_dEdxSignal_after %s",cutName.Data()),"dEdx electron signal after" ,150,0.05,20.0,800,0.0,200);
+    hTPCdEdxSignalafter=new TH2F(Form("Electron_dEdxSignal_after %s",cutName.Data()),"dEdx electron signal after" ,kPBins,binsPDummy,kDedxSignalbins,0.0,200);
     fHistograms->Add(hTPCdEdxSignalafter);
 
-    hTOFafter=new TH2F(Form("Electron_TOF_after %s",cutName.Data()),"TOF electron after" ,150,0.05,20,400,-6,10);
+    hTOFafter=new TH2F(Form("Electron_TOF_after %s",cutName.Data()),"TOF electron after" ,kPBins,binsPDummy,200,-6,10);
     fHistograms->Add(hTOFafter);
       
-    hTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
+    hTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackDCAxyPtafter); 
     
-    hTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
+    hTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackDCAzPtafter); 
     
-    hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
+    hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",50,0,1,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackNFindClsPtTPCafter); 
     
     
@@ -300,7 +337,8 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     }
     delete [] newBins;
 
-        
+    TH1::AddDirectory(kTRUE);        
+
     // Event Cuts and Info
 }
 
@@ -427,7 +465,7 @@ Bool_t AliDalitzElectronCuts::TrackIsSelected(AliESDtrack* lTrack) {
    }
    
    
-   if( lTrack->Pt() < fPtCut ) {
+   if( lTrack->Pt() < fPtMinCut || lTrack->Pt() > fPtMaxCut ) {
      
 	return kFALSE;
 	
@@ -1233,11 +1271,12 @@ Bool_t AliDalitzElectronCuts::SetTPCClusterCut(Int_t clsTPCCut)
 		fMinClsTPCToF= 0.6;
 		fUseCorrectedTPCClsInfo=0;
 		break;
-	case 7:  // 70% of findable clusters
-		fMinClsTPC= 70.;  
-		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
-		fMinClsTPCToF= 0.7;
-		fUseCorrectedTPCClsInfo=0;
+	case 7:  // 60% Changed 2014-02-04 before fMinClsTPC = 0.7 fUseCorrectedTPCClsInfo = 0
+		 // Changed 2014-02-04  before fMinClsTPC = 50.;
+		fMinClsTPCToF = 0.6;
+		fesdTrackCuts->SetMinNCrossedRowsTPC(70);
+		fesdTrackCuts->SetMinNClustersTPC(0);
+		fUseCrossedRows = kTRUE;
 		break;
 	case 8: fMinClsTPC = 0.;  
 		fesdTrackCuts->SetMinNClustersTPC(fMinClsTPC);
@@ -1298,6 +1337,9 @@ Bool_t AliDalitzElectronCuts::SetEtaCut(Int_t etaCut)
 	case 8: fEtaCut = 0.4;
 		fDoEtaCut = kTRUE;
 		break;
+	case 9: fEtaCut = 0.65;
+		fDoEtaCut = kTRUE; 
+		break;
 	default:
 		cout<<"Warning: EtaCut not defined "<<etaCut<<endl;
 		return kFALSE;
@@ -1313,16 +1355,24 @@ Bool_t AliDalitzElectronCuts::SetPtCut(Int_t ptCut)
   
 	switch(ptCut){
 	  
-	case 0: fPtCut = 0.075;		
+	case 0: fPtMinCut = 0.075;
+		fPtMaxCut = 9999;
 		break;
 	case 1:	 // 0.1
-		fPtCut	= 0.1; 	
+		fPtMinCut  = 0.1; 	
+		fPtMaxCut  = 9999;
 		break;
 	case 2:	 // 0.125 GeV
-		fPtCut	= 0.125;		
+		fPtMinCut = 0.125;		
+		fPtMaxCut = 9999;
 		break;
 	case 3: // 0.15 GeV
-		fPtCut	= 0.15;
+		fPtMinCut = 0.15;
+		fPtMaxCut = 9999;
+		break;
+		// 0.5 - 0.7 
+	case 4: fPtMinCut = 0.5;
+		fPtMaxCut = 0.7;
 		break;
 	default:
 		cout<<"Warning: PtCut not defined "<<ptCut<<endl;
@@ -1728,54 +1778,89 @@ Bool_t AliDalitzElectronCuts::SetMassCut(Int_t massCut)
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  =  999.; //GeV/c^2
                         fMassCutHighPt =  999.; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kFALSE;   
+			fDoMassMinCut = kFALSE;
                         break;
     case 1:
                         //fMassCut = 0.135;             //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.135; //GeV/c^2
                         fMassCutHighPt = 0.135; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break; 
     case 2:
                         //fMassCut = 0.100;     //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.100; //GeV/c^2
                         fMassCutHighPt = 0.100; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 3:
-                        //fMassCut = 0.075;     //GeV/c^2
+                        /*fMassCut = 0.075;     //GeV/c^2 Changed from Feb 25
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.075; //GeV/c^2
                         fMassCutHighPt = 0.075; //GeV/c^2
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;*/
+			fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut    = 0.002;
+                        fDoMassCut = kTRUE;
+			fDoMassMinCut = kTRUE;
                         break;
     case 4:
                         //fMassCut = 0.050;     //GeV/c^2
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.050; //GeV/c^2
                         fMassCutHighPt = 0.050; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 5:
                         
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.035; //GeV/c^2
                         fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 6:
                         fMassCutPtMin  = -999.; //GeV
                         fMassCutLowPt  = 0.015; //GeV/c^2
                         fMassCutHighPt = 0.015; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
     case 7:             fMassCutPtMin  = 1.0;   //GeV
                         fMassCutLowPt  = 0.015; //GeV/c^2
                         fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
                         fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
                         break;
+    case 8:             fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.015; //GeV/c^2
+                        fMassCutHighPt = 0.050; //GeV/c^2
+                        fMassMinCut = -999;
+                        fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
+			break;
+    case 9:             fMassCutPtMin  = 1.0;   //GeV
+                        fMassCutLowPt  = 0.025; //GeV/c^2
+                        fMassCutHighPt = 0.035; //GeV/c^2
+                        fMassMinCut = -999;
+                        fDoMassCut = kTRUE;
+			fDoMassMinCut = kFALSE;
+			break;
     default:
                         cout<<"Warning: MassCut not defined "<<massCut<<endl;
                         return kFALSE;

@@ -81,7 +81,7 @@ class AliHelperPID : public TNamed
   void SetfUseExclusiveNSigma(Bool_t nsigEx){fUseExclusiveNSigma=nsigEx;}//fUseExclusiveNSigma
   Bool_t GetfUseExclusiveNSigma(){return   fUseExclusiveNSigma;}//fUseExclusiveNSigma
   //lower pt fot TOF PID
-  Double_t SetPtTOFPID(){return   fPtTOFPID;}
+  Double_t GetPtTOFPID(){return   fPtTOFPID;}
   void SetfPtTOFPID(Double_t pttof){fPtTOFPID=pttof;}
   //set PID Combined
   void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}

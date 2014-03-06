@@ -54,6 +54,7 @@ ClassImp(AliDielectronHF)
 
 AliDielectronHF::AliDielectronHF() :
   TNamed(),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fArrPairType(),
   fPairType(kSeOnlyOS),
   fSignalsMC(0x0),
@@ -78,6 +79,7 @@ AliDielectronHF::AliDielectronHF() :
 //______________________________________________
 AliDielectronHF::AliDielectronHF(const char* name, const char* title) :
   TNamed(name, title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fArrPairType(),
   fPairType(kSeOnlyOS),
   fSignalsMC(0x0),
@@ -105,6 +107,7 @@ AliDielectronHF::~AliDielectronHF()
   //
   // Default Destructor
   //
+  if(fUsedVars) delete fUsedVars;
   fAxes.Delete();
   fRefObj.Delete();
   fArrPairType.Delete();
@@ -143,6 +146,9 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   valType[0]=valTypeX;     valType[1]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
   hist->SetUniqueID(valTypeW); // store weighting variable
+
+  for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+  fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
@@ -189,6 +195,9 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   valType[0]=valTypeX;     valType[1]=valTypeY; valType[2]=valTypeP;
   AliDielectronHistos::StoreVariables(hist, valType);
   hist->SetUniqueID(valTypeW); // store weighting variable
+
+  for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+  fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
@@ -238,6 +247,9 @@ void AliDielectronHF::UserProfile(const char* histClass, UInt_t valTypeP,
   AliDielectronHistos::StoreVariables(hist, valType);
   hist->SetUniqueID(valTypeW); // store weighting variable
 
+  for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+  fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
   // adapt the name and title of the histogram in case they are empty
   AliDielectronHistos::AdaptNameTitle(hist, histClass);
   hist->SetName(Form("HF_%s",hist->GetName()));
@@ -269,6 +281,7 @@ void AliDielectronHF::AddCutVariable(AliDielectronVarManager::ValueTypes type,
   fVarCutType[size]=leg;
   fAxes.Add(binLimits->Clone());
   fBinType[size]=btype;
+  fUsedVars->SetBitNumber(type,kTRUE);
 }
 
 //________________________________________________________________
@@ -290,6 +303,7 @@ void AliDielectronHF::AddCutVariable(AliDielectronVarManager::ValueTypes type,
   fVarCutType[size]=leg;
   fAxes.Add(binLimits);
   fBinType[size]=btype;
+  fUsedVars->SetBitNumber(type,kTRUE);
 }
 
 //________________________________________________________________
@@ -311,6 +325,7 @@ void AliDielectronHF::AddCutVariable(AliDielectronVarManager::ValueTypes type,
   fVarCutType[size]=leg;
   fAxes.Add(binLimits);
   fBinType[size]=btype;
+  fUsedVars->SetBitNumber(type,kTRUE);
 }
 
 //______________________________________________
@@ -336,6 +351,7 @@ void AliDielectronHF::Fill(Int_t label1, Int_t label2, Int_t nSignal)
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kSame && mLabel1!=mLabel2) return;
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent && mLabel1==mLabel2) return;
     
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   // fill the leg variables
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
@@ -373,13 +389,14 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
 
   // get event and pair variables
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(particle,valuesPair);
 
-  // get leg variables
+  // get leg variables (TODO: do not fill for the moment since leg cuts are not opened)
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues]={0};
-  AliDielectronVarManager::Fill(particle->GetFirstDaughter(),valuesLeg1);
+  //AliDielectronVarManager::Fill(particle->GetFirstDaughter(),valuesLeg1);
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues]={0};
-  AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
+  //AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
 
   // fill
 
@@ -596,7 +613,7 @@ void AliDielectronHF::Init()
 Int_t AliDielectronHF::GetNumberOfBins() const
 {
   //
-  // return the number of bins this mixing handler has
+  // return the number of bins this histogram grid has
   //
   Int_t size=1;
   for (Int_t i=0; i<fAxes.GetEntriesFast(); ++i)

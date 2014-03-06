@@ -15,7 +15,6 @@ class TParticle;
 
 #include "AliAnalysisTaskPi0Flow.h"
 
-
 class AliAnalysisTaskPi0FlowMC : public AliAnalysisTaskPi0Flow
 {
 public:
@@ -37,9 +36,12 @@ protected: // member functions:
   AliAnalysisTaskPi0FlowMC& operator=(const AliAnalysisTaskPi0FlowMC&); // not implemented
   
   AliStack* GetMCStack();
+  TClonesArray* GetMCArray();
+  TParticle* GetParticle(Int_t); //Returns particle at given position for both ESD and AOD
 
 protected: // member variables:
-  AliStack* fStack;
+  AliStack* fStack; //Stack for ESD analysis
+  TClonesArray* fMcArray; //mcArray for AOD MC particles 
   
   void FillMCHist();
   

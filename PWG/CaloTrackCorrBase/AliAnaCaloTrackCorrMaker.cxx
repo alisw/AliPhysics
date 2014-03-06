@@ -52,8 +52,8 @@ fAnaDebug(0),                 fCuts(new TList),
 fScaleFactor(-1),
 fFillDataControlHisto(kTRUE),
 // Control histograms
-fhNEvents(0),                 fhNExoticEvents(0),
-fhNEventsNoTriggerFound(0),
+fhNEventsIn(0),               fhNEvents(0),
+fhNExoticEvents(0),           fhNEventsNoTriggerFound(0),
 fhNPileUpEvents(0),           fhNPileUpEventsTriggerBC0(0),
 fhXVertex(0),                 fhYVertex(0),                       fhZVertex(0),
 fhXVertexExotic(0),           fhYVertexExotic(0),                 fhZVertexExotic(0),
@@ -98,6 +98,7 @@ fMakeHisto(maker.fMakeHisto),  fMakeAOD(maker.fMakeAOD),
 fAnaDebug(maker.fAnaDebug),    fCuts(new TList()),
 fScaleFactor(maker.fScaleFactor),
 fFillDataControlHisto(maker.fFillDataControlHisto),
+fhNEventsIn(maker.fhNEventsIn),
 fhNEvents(maker.fhNEvents),
 fhNExoticEvents(maker.fhNExoticEvents),
 fhNEventsNoTriggerFound(maker.fhNEventsNoTriggerFound),
@@ -284,15 +285,17 @@ void AliAnaCaloTrackCorrMaker::FillControlHistograms()
     
     for(Int_t i = 0; i < 19; i++)
     {
-      if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
-      if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
+      if(fReader->IsAccessToTrackTimeOn())
+      {
+        if(fReader->GetTrackEventBC(i))   fhTrackBCEvent   ->Fill(i);
+        if(fReader->GetTrackEventBCcut(i))fhTrackBCEventCut->Fill(i);
+      }
       if(fReader->GetEMCalEventBC(i))   fhEMCalBCEvent   ->Fill(i);
       if(fReader->GetEMCalEventBCcut(i))fhEMCalBCEventCut->Fill(i);
     }
     
     Int_t bc = fReader->GetVertexBC();
-    if(bc!=AliVTrack::kTOFBCNA)fhPrimaryVertexBC->Fill(bc);
-    
+    if(bc!=AliVTrack::kTOFBCNA) fhPrimaryVertexBC->Fill(bc);
     
     // N pile up vertices
     Int_t nVerticesSPD    = -1;
@@ -347,7 +350,7 @@ void AliAnaCaloTrackCorrMaker::FillTriggerControlHistograms()
   if(triggerId < 0)
   {
     //printf("Trigger id %d\n",triggerId);
-    if(triggerId == -2)fhNEventsNoTriggerFound->Fill(0);
+    if(triggerId == -2) fhNEventsNoTriggerFound->Fill(0);
     triggerBCOK = kFALSE;
   }
   
@@ -449,6 +452,10 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
   //GetCaloUtils()->InitEMCALGeometry();
   
   //General event histograms
+
+  fhNEventsIn      = new TH1F("hNEventsIn",   "Number of input events"     , 1 , 0 , 1  ) ;
+  fhNEventsIn->SetYTitle("# events");
+  fOutputContainer->Add(fhNEventsIn);
   
   fhNEvents      = new TH1F("hNEvents",   "Number of analyzed events"     , 1 , 0 , 1  ) ;
   fhNEvents->SetYTitle("# events");
@@ -684,20 +691,22 @@ TList *AliAnaCaloTrackCorrMaker::GetOutputContainer()
     fhNPileUpEventsTriggerBC0->GetXaxis()->SetBinLabel(8 ,"!EMCal && !SPD");
     fOutputContainer->Add(fhNPileUpEventsTriggerBC0);
     
-    
-    fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
-    fhTrackBCEvent->SetYTitle("# events");
-    fhTrackBCEvent->SetXTitle("Bunch crossing");
-    for(Int_t i = 1; i < 20; i++)
-      fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-    fOutputContainer->Add(fhTrackBCEvent);
-    
-    fhTrackBCEventCut      = new TH1F("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
-    fhTrackBCEventCut->SetYTitle("# events");
-    fhTrackBCEventCut->SetXTitle("Bunch crossing");
-    for(Int_t i = 1; i < 20; i++)
-      fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
-    fOutputContainer->Add(fhTrackBCEventCut);
+    if(fReader->IsAccessToTrackTimeOn())
+    {
+      fhTrackBCEvent      = new TH1F("hTrackBCEvent",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+      fhTrackBCEvent->SetYTitle("# events");
+      fhTrackBCEvent->SetXTitle("Bunch crossing");
+      for(Int_t i = 1; i < 20; i++)
+        fhTrackBCEvent->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+      fOutputContainer->Add(fhTrackBCEvent);
+      
+      fhTrackBCEventCut      = new TH1F("hTrackBCEventCut",   "Number of events with at least 1 track in a bunch crossing ", 19 , 0 , 19 ) ;
+      fhTrackBCEventCut->SetYTitle("# events");
+      fhTrackBCEventCut->SetXTitle("Bunch crossing");
+      for(Int_t i = 1; i < 20; i++)
+        fhTrackBCEventCut->GetXaxis()->SetBinLabel(i ,Form("%d",i-10));
+      fOutputContainer->Add(fhTrackBCEventCut);
+    }
     
     fhPrimaryVertexBC      = new TH1F("hPrimaryVertexBC", "Number of primary vertex per bunch crossing ", 41 , -20 , 20  ) ;
     fhPrimaryVertexBC->SetYTitle("# events");
@@ -939,7 +948,11 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
   
   //Fill trigger control histograms, make sure it is only for triggered events and
   // not the MB events used for mixing
-  if(fReader->IsEventTriggerAtSEOn() || isTrigger) FillTriggerControlHistograms();
+  if(fReader->IsEventTriggerAtSEOn() || isTrigger)
+  {
+    fhNEventsIn->Fill(0);
+    FillTriggerControlHistograms();
+  }
   
   if(!ok)
   {
@@ -973,7 +986,7 @@ void AliAnaCaloTrackCorrMaker::ProcessEvent(Int_t iEntry, const char * currentFi
     if(!fReader->IsEventTriggerAtSEOn() && isMBTrigger)
     {
       ana->FillEventMixPool();
-      continue; // pool filled do not try to fill AODs or histograms
+      if(!isTrigger) continue; // pool filled do not try to fill AODs or histograms if trigger is not MB
     }
     
     //Make analysis, create aods in aod branch and in some cases fill histograms

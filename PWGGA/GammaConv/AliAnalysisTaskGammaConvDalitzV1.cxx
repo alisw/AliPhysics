@@ -71,6 +71,7 @@ fV0Reader(NULL),
    fMotherList(NULL),
    fTrueList(NULL),
    fMCList(NULL),
+   fQAFolder(NULL),
    fOutputContainer(0),
    fReaderGammas(NULL),
    fSelectorElectronIndex(0),
@@ -97,12 +98,22 @@ fV0Reader(NULL),
    hESDDalitzPositronAfterEta(NULL),
    hESDDalitzElectronAfterPhi(NULL),
    hESDDalitzPositronAfterPhi(NULL),
+   hESDDalitzElectronAfterNClsITS(NULL),
+   hESDDalitzPositronAfterNClsITS(NULL),
    hESDDalitzElectronAfterNFindClsTPC(NULL),
    hESDDalitzPositronAfterNFindClsTPC(NULL),
+   hESDDalitzElectronAfterNClsTPC(NULL),
+   hESDDalitzPositronAfterNClsTPC(NULL),
    hESDDalitzPosEleAfterDCAxy(NULL),
    hESDDalitzPosEleAfterDCAz(NULL),
-   hESDDalitzPosEleAfterTPCdEdx(NULL),
-   hESDDalitzPosEleAfterTPCdEdxSignal(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsP(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsP(NULL),
+   hESDDalitzElectronAfterTPCdEdxSignalVsP(NULL),
+   hESDDalitzPositronAfterTPCdEdxSignalVsP(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsEta(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsEta(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsPhi(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsPhi(NULL),
    hESDMotherPhi(NULL),
    hESDEposEnegPsiPairDPhi(NULL),
    hESDEposEnegInvMassPt(NULL),
@@ -202,6 +213,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    fMotherList(NULL),
    fTrueList(NULL),
    fMCList(NULL),
+   fQAFolder(NULL),
    fOutputContainer(0),
    fReaderGammas(NULL),
    fSelectorElectronIndex(0),
@@ -228,12 +240,22 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    hESDDalitzPositronAfterEta(NULL),
    hESDDalitzElectronAfterPhi(NULL),
    hESDDalitzPositronAfterPhi(NULL),
+   hESDDalitzElectronAfterNClsITS(NULL),
+   hESDDalitzPositronAfterNClsITS(NULL),
    hESDDalitzElectronAfterNFindClsTPC(NULL),
    hESDDalitzPositronAfterNFindClsTPC(NULL),
+   hESDDalitzElectronAfterNClsTPC(NULL),
+   hESDDalitzPositronAfterNClsTPC(NULL),
    hESDDalitzPosEleAfterDCAxy(NULL),
    hESDDalitzPosEleAfterDCAz(NULL),
-   hESDDalitzPosEleAfterTPCdEdx(NULL),
-   hESDDalitzPosEleAfterTPCdEdxSignal(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsP(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsP(NULL),
+   hESDDalitzElectronAfterTPCdEdxSignalVsP(NULL),
+   hESDDalitzPositronAfterTPCdEdxSignalVsP(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsEta(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsEta(NULL),
+   hESDDalitzElectronAfterTPCdEdxVsPhi(NULL),
+   hESDDalitzPositronAfterTPCdEdxVsPhi(NULL),
    hESDMotherPhi(NULL),
    hESDEposEnegPsiPairDPhi(NULL),
    hESDEposEnegInvMassPt(NULL),
@@ -455,12 +477,13 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    fESDList                        = new TList*[fnCuts];
    fBackList                       = new TList*[fnCuts];
    fMotherList                     = new TList*[fnCuts];
+   //fQAFolder                       = new TList*[fnCuts];
    hNEvents                        = new TH1I*[fnCuts];
    hNGoodESDTracks                 = new TH1I*[fnCuts];
    hEtaShift                       = new TProfile*[fnCuts];
    hESDConvGammaPt                 = new TH1F*[fnCuts];
    hESDConvGammaEta 		   = new TH1F*[fnCuts];
-   hESDConvGammaZR                 = new TH2F*[fnCuts];
+   
    hESDDalitzElectronPt            = new TH1F*[fnCuts];
    hESDDalitzPositronPt            = new TH1F*[fnCuts];
    hESDDalitzElectronPhi	   = new TH1F*[fnCuts];
@@ -468,22 +491,35 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    
    if( fDoMesonQA ) {
      
+   fQAFolder  = new TList*[fnCuts];  
+     
    hESDDalitzElectronAfterPt	   = new TH1F*[fnCuts];
    hESDDalitzPositronAfterPt       = new TH1F*[fnCuts];
    hESDDalitzElectronAfterEta      = new TH1F*[fnCuts];
    hESDDalitzPositronAfterEta      = new TH1F*[fnCuts];
    hESDDalitzElectronAfterPhi      = new TH1F*[fnCuts];
    hESDDalitzPositronAfterPhi      = new TH1F*[fnCuts];
+   hESDDalitzElectronAfterNClsITS  = new TH1F*[fnCuts];
+   hESDDalitzPositronAfterNClsITS  = new TH1F*[fnCuts];
    hESDDalitzElectronAfterNFindClsTPC = new TH2F*[fnCuts];
    hESDDalitzPositronAfterNFindClsTPC = new TH2F*[fnCuts];
+   hESDDalitzElectronAfterNClsTPC     = new TH2F*[fnCuts];
+   hESDDalitzPositronAfterNClsTPC     = new TH2F*[fnCuts];
    hESDDalitzPosEleAfterDCAxy	   = new TH2F*[fnCuts];
    hESDDalitzPosEleAfterDCAz       = new TH2F*[fnCuts];
-   hESDDalitzPosEleAfterTPCdEdx    = new TH2F*[fnCuts];
-   hESDDalitzPosEleAfterTPCdEdxSignal = new TH2F*[fnCuts];
+   hESDDalitzElectronAfterTPCdEdxVsP    = new TH2F*[fnCuts];
+   hESDDalitzPositronAfterTPCdEdxVsP = new TH2F*[fnCuts];
+   hESDDalitzElectronAfterTPCdEdxSignalVsP = new TH2F*[fnCuts];
+   hESDDalitzPositronAfterTPCdEdxSignalVsP = new TH2F*[fnCuts];
+   hESDDalitzElectronAfterTPCdEdxVsEta = new TH2F*[fnCuts];
+   hESDDalitzPositronAfterTPCdEdxVsEta = new TH2F*[fnCuts];
+   hESDDalitzElectronAfterTPCdEdxVsPhi = new TH2F*[fnCuts];
+   hESDDalitzPositronAfterTPCdEdxVsPhi = new TH2F*[fnCuts];
    hESDMotherPhi                   = new TH1F*[fnCuts];
    hESDEposEnegPsiPairDPhi         = new TH2F*[fnCuts];
    hESDEposEnegInvMassPt           = new TH2F*[fnCuts];
    hESDEposEnegLikeSignBackInvMassPt = new TH2F*[fnCuts];
+   hESDConvGammaZR                 = new TH2F*[fnCuts];
    
    }
    
@@ -516,9 +552,8 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       fESDList[iCut] = new TList();
       fESDList[iCut]->SetName(Form("%s_%s_%s ESD histograms",cutstringGamma.Data(),cutstringElectron.Data(),cutstringMeson.Data()));
       fESDList[iCut]->SetOwner(kTRUE);
-
-
-
+      
+     
       hNEvents[iCut] = new TH1I("NEvents","NEvents",9,-0.5,8.5);
       hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
       hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
@@ -546,9 +581,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDConvGammaEta[iCut] = new TH1F("ESD_ConvGamma_Eta","ESD_ConvGamma_Eta",600,-1.5,1.5);
       fESDList[iCut]->Add(hESDConvGammaEta[iCut]);
       
-      hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
-      fESDList[iCut]->Add(hESDConvGammaZR[iCut]);
-
       hESDDalitzElectronPt[iCut] = new TH1F("ESD_DalitzElectron_Pt","ESD_DalitzElectron_Pt",1000,0,25);
       fESDList[iCut]->Add(hESDDalitzElectronPt[iCut]);
 
@@ -565,65 +597,160 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
      
       
       if ( fDoMesonQA ) {
+
+      fQAFolder[iCut] = new TList();
+      fQAFolder[iCut]->SetName(Form("%s_%s_%s QA histograms",cutstringGamma.Data(),cutstringElectron.Data(),cutstringMeson.Data()));
+      fQAFolder[iCut]->SetOwner(kTRUE);
+      	 
+	      
 	
-	 
+      const Int_t kDCABins=62;
+      Double_t binsDCADummy[63]={-3.0,-2.7,-2.4,-2.1,-1.8,-1.5,-1.2,-0.9,-0.6,-0.3,-0.25,-0.2,-0.19,-0.18,-0.17,-0.16,-0.15,-0.14,-0.13,-0.12,-0.11,-0.10,-0.09,-0.08,-0.07,-0.06,-0.05,-0.04,-0.03,-0.02,-0.01,0.0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.25,0.3,0.6,0.9,1.2,1.5,1.8,2.1,2.4,2.7,3.0};
+
+      const Int_t kPtBins=110;
+      Double_t binsPtDummy[kPtBins+1];
+      const Int_t kPBins = 109;
+      Double_t binsPDummy[kPBins+1];
+      binsPtDummy[0]=0.0;
+      binsPDummy[0]=0.05;
+     
+        for(Int_t i=1;i<kPtBins+1;i++)
+        {
+                if(binsPtDummy[i-1]+0.05<1.01)
+                        binsPtDummy[i]=binsPtDummy[i-1]+0.05;
+                else
+                        binsPtDummy[i]=binsPtDummy[i-1]+0.1;
+		
+        }
+        for(Int_t i=1; i<kPBins+1;i++){
+		  
+		  if( binsPDummy[i-1]+0.05<1.01)
+		        binsPDummy[i] = binsPDummy[i-1]+0.05;
+		  else
+			binsPDummy[i] = binsPDummy[i-1]+0.1;
+		
+	}
+        
       
+        
+      hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
+      fQAFolder[iCut]->Add(hESDConvGammaZR[iCut]);
+     
       hESDDalitzElectronAfterPt[iCut] = new TH1F("ESD_DalitzElectron_After_Pt","ESD_DalitzElectron_After_Pt",1000,0,25);
-      fESDList[iCut]->Add(hESDDalitzElectronAfterPt[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterPt[iCut]);
 
       hESDDalitzPositronAfterPt[iCut] = new TH1F("ESD_DalitzPositron_After_Pt","ESD_DalitzPositron_After_Pt",1000,0,25);
-      fESDList[iCut]->Add(hESDDalitzPositronAfterPt[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterPt[iCut]);
         
       hESDDalitzElectronAfterEta[iCut] = new TH1F("ESD_DalitzElectron_After_Eta","ESD_DalitzElectron_After_Eta",600,-1.5,1.5);
-      fESDList[iCut]->Add(hESDDalitzElectronAfterEta[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterEta[iCut]);
       
       hESDDalitzPositronAfterEta[iCut] = new TH1F("ESD_DalitzPositron_After_Eta","ESD_DalitzElectron_After_Eta",600,-1.5,1.5);
-      fESDList[iCut]->Add(hESDDalitzPositronAfterEta[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterEta[iCut]);
       
                   
       hESDDalitzElectronAfterPhi[iCut] = new TH1F("ESD_DalitzElectron_After_Phi","ESD_DalitzElectron_After_Phi",360,0,2*TMath::Pi());
-      fESDList[iCut]->Add(hESDDalitzElectronAfterPhi[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterPhi[iCut]);
 
       hESDDalitzPositronAfterPhi[iCut] = new TH1F("ESD_DalitzPositron_After_Phi","ESD_DalitzPositron_After_Phi",360,0,2*TMath::Pi());
-      fESDList[iCut]->Add(hESDDalitzPositronAfterPhi[iCut]);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterPhi[iCut]);
       
-      hESDDalitzElectronAfterNFindClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NFindClsTPC","ESD_DalitzElectron_After_NFindClsTPC",100,0,1,400,0.,10.);
-      fESDList[iCut]->Add(hESDDalitzElectronAfterNFindClsTPC[iCut]);
+      hESDDalitzElectronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzElectron_After_NClsITS","ESD_DalitzElectron_After_NClsITS",6,0.,6.);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsITS[iCut]);
       
-      hESDDalitzPositronAfterNFindClsTPC[iCut]  = new TH2F("ESD_DalitzPositron_After_NFindClsTPC","ESD_DalitzPositron_After_NFindClsTPC",100,0,1,400,0.,10.);
-      fESDList[iCut]->Add(hESDDalitzPositronAfterNFindClsTPC[iCut]);
+      hESDDalitzPositronAfterNClsITS[iCut]  = new TH1F("ESD_DalitzPositron_After_NClsITS","ESD_DalitzPositron_After_NClsITS",6,0.,6.);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsITS[iCut]);
       
-      hESDDalitzPosEleAfterDCAxy[iCut] = new TH2F("ESD_DalitzPosEle_After_DCAxy","ESD_DalitzPosEle_After_DCAxy",800,-4.0,4.0,400,0.,10.);
-      fESDList[iCut]->Add(hESDDalitzPosEleAfterDCAxy[iCut]);
       
-      hESDDalitzPosEleAfterDCAz[iCut]  = new TH2F("ESD_DalitzPosEle_After_DCAz","ESD_DalitzPosEle_After_DCAz",800,-4.0,4.0,400,0.,10.);
-      fESDList[iCut]->Add(hESDDalitzPosEleAfterDCAz[iCut]);
+      hESDDalitzElectronAfterNFindClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NFindClsTPC","ESD_DalitzElectron_After_NFindClsTPC",50,0,1,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterNFindClsTPC[iCut]);
       
-      hESDDalitzPosEleAfterTPCdEdx[iCut] = new TH2F("ESD_DalitzPosEle_After_TPCdEdx","ESD_DalitzPosEle_After_TPCdEdx",150,0.05,20,400,-10,10);
-      fESDList[iCut]->Add(hESDDalitzPosEleAfterTPCdEdx[iCut]);
+      hESDDalitzPositronAfterNFindClsTPC[iCut]  = new TH2F("ESD_DalitzPositron_After_NFindClsTPC","ESD_DalitzPositron_After_NFindClsTPC",50,0,1,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterNFindClsTPC[iCut]);
       
-      hESDDalitzPosEleAfterTPCdEdxSignal[iCut] =new TH2F("ESD_DalitzPosEle_After_TPCdEdxSignal","ESD_DalitzPosEle_After_TPCdEdxSignal" ,150,0.05,20.0,800,0.0,200);
-      fESDList[iCut]->Add(hESDDalitzPosEleAfterTPCdEdxSignal[iCut]);  
       
+      hESDDalitzElectronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzElectron_After_NClsTPC","ESD_DalitzElectron_After_NClsTPC",200,0,200,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterNClsTPC[iCut]);
+      
+      hESDDalitzPositronAfterNClsTPC[iCut]  = new TH2F("ESD_DalitzPositron_After_NClsTPC","ESD_DalitzPositron_After_NClsTPC",200,0,200,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterNClsTPC[iCut]);
+      
+         
+      
+      hESDDalitzPosEleAfterDCAxy[iCut] = new TH2F("ESD_DalitzPosEle_After_DCAxy","ESD_DalitzPosEle_After_DCAxy",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzPosEleAfterDCAxy[iCut]);
+      
+      hESDDalitzPosEleAfterDCAz[iCut]  = new TH2F("ESD_DalitzPosEle_After_DCAz","ESD_DalitzPosEle_After_DCAz",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
+      fQAFolder[iCut]->Add(hESDDalitzPosEleAfterDCAz[iCut]);
+      
+      hESDDalitzElectronAfterTPCdEdxVsP[iCut] = new TH2F("ESD_DalitzElectron_After_TPCdEdxVsP","ESD_DalitzElectron_After_TPCdEdxVsP_After_TPCdEdx",kPBins,binsPDummy,200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterTPCdEdxVsP[iCut]);
+      
+      hESDDalitzPositronAfterTPCdEdxVsP[iCut] = new TH2F("ESD_DalitzPositron_After_TPCdEdxVsP","ESD_DalitzPositron_After_TPCdEdxVsP",kPBins,binsPDummy,200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterTPCdEdxVsP[iCut]);
+      
+      hESDDalitzElectronAfterTPCdEdxSignalVsP[iCut] =new TH2F("ESD_DalitzElectron_After_TPCdEdxSignalVsP","ESD_DalitzElectron_After_TPCdEdxSignalVsP" ,kPBins,binsPDummy,200,0.0,200);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterTPCdEdxSignalVsP[iCut]);  
+      
+      hESDDalitzPositronAfterTPCdEdxSignalVsP[iCut] =new TH2F("ESD_DalitzPositron_After_TPCdEdxSignalVsP","ESD_DalitzPositron_After_TPCdEdxSignalVsP" ,kPBins,binsPDummy,200,0.0,200);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterTPCdEdxSignalVsP[iCut]); 
+      
+      hESDDalitzElectronAfterTPCdEdxVsEta[iCut] = new TH2F("ESD_DalitzElectron_After_TPCdEdxVsEta","ESD_DalitzElectron_After_TPCdEdxVsEta",140,-1.4,1.4,200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterTPCdEdxVsEta[iCut]);
+      
+      hESDDalitzPositronAfterTPCdEdxVsEta[iCut] = new  TH2F("ESD_DalitzPositron_After_TPCdEdxVsEta","ESD_DalitzPositron_After_TPCdEdxVsEta",140,-1.4,1.4,200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterTPCdEdxVsEta[iCut]);
+      
+      hESDDalitzElectronAfterTPCdEdxVsPhi[iCut] = new TH2F("ESD_DalitzElectron_After_TPCdEdxVsPhi","ESD_DalitzElectron_After_TPCdEdxVsPhi",180,0,2*TMath::Pi(),200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzElectronAfterTPCdEdxVsPhi[iCut]);
+      
+      hESDDalitzPositronAfterTPCdEdxVsPhi[iCut] = new TH2F("ESD_DalitzPositron_After_TPCdEdxVsPhi","ESD_DalitzPositron_After_TPCdEdxVsPhi",180,0,2*TMath::Pi(),200,-10,10);
+      fQAFolder[iCut]->Add(hESDDalitzPositronAfterTPCdEdxVsPhi[iCut]);
+            
       hESDMotherPhi[iCut] = new TH1F("ESD_DalitzMother_Phi","ESD_DalitzMother_Phi",360,0,2*TMath::Pi());
-      fESDList[iCut]->Add(hESDMotherPhi[iCut]);
+      fQAFolder[iCut]->Add(hESDMotherPhi[iCut]);
       
       hESDEposEnegPsiPairDPhi[iCut] = new TH2F("ESD_EposEneg_PsiPair_DPhi","ESD_EposEneg_PsiPair_DPhi", 100, -1.0,1.0,100,-1.0,1.0 );
-      fESDList[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
+      fQAFolder[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
 
       hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
-      fESDList[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
+      fQAFolder[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
       
       hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
-      fESDList[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
+      fQAFolder[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
+      
+      
+      TAxis *AxisAfter = hESDDalitzElectronAfterTPCdEdxVsP[iCut]->GetXaxis(); 
+      Int_t bins = AxisAfter->GetNbins();
+      Double_t from = AxisAfter->GetXmin();
+      Double_t to = AxisAfter->GetXmax();
+      Double_t *newBins = new Double_t[bins+1];
+      newBins[0] = from;
+      Double_t factor = TMath::Power(to/from, 1./bins);
+      for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
+
+      AxisAfter->Set(bins, newBins);
+      AxisAfter = hESDDalitzElectronAfterTPCdEdxSignalVsP[iCut]->GetXaxis(); 
+      AxisAfter->Set(bins, newBins);
+      
+      AxisAfter = hESDDalitzPositronAfterTPCdEdxVsP[iCut]->GetXaxis();
+      AxisAfter->Set(bins, newBins);
+      
+      AxisAfter = hESDDalitzPositronAfterTPCdEdxSignalVsP[iCut]->GetXaxis();
+      AxisAfter->Set(bins,newBins);
+		    
+	           
+
+      delete [] newBins;
+      
+      fCutFolder[iCut]->Add(fQAFolder[iCut]);
+      
+           
       
       }
       
       
-      
-      
-      
-      
+             
      
 
       hESDMotherInvMassPt[iCut] = new TH2F("ESD_DalitzMother_InvMass_Pt","ESD_DalitzMother_InvMass_Pt",800,0,0.8,250,0,25);
@@ -647,29 +774,11 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDMotherBackInvMassPt[iCut] = new TH2F("ESD_DalitzBackground_InvMass_Pt","ESD_DalitzBackground_InvMass_Pt",800,0,0.8,250,0,25);
       fESDList[iCut]->Add(hESDMotherBackInvMassPt[iCut]);
 
-
-      if ( fDoMesonQA ) {
-	
-      TAxis *AxisAfter = hESDDalitzPosEleAfterTPCdEdx[iCut]->GetXaxis(); 
-      Int_t bins = AxisAfter->GetNbins();
-      Double_t from = AxisAfter->GetXmin();
-      Double_t to = AxisAfter->GetXmax();
-      Double_t *newBins = new Double_t[bins+1];
-      newBins[0] = from;
-      Double_t factor = TMath::Power(to/from, 1./bins);
-      for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
-
-      AxisAfter->Set(bins, newBins);
-      AxisAfter = hESDDalitzPosEleAfterTPCdEdxSignal[iCut]->GetXaxis(); 
-      AxisAfter->Set(bins, newBins);
-
-      delete [] newBins;
-      
-      }
-
-            
+           
       
       fCutFolder[iCut]->Add(fESDList[iCut]);
+      
+      
 
    }
 
@@ -847,8 +956,6 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
  
 	 hESDEposEnegTrueJPsiInvMassPt[iCut] = new TH2F("ESD_EposEneg_TrueJPsi_InvMassPt","ESD_EposEneg_TrueJPsi_InvMassPt",5000,0.,5.,100,0.,10.);
 	 fTrueList[iCut]->Add(hESDEposEnegTrueJPsiInvMassPt[iCut]);
-
-
 
 
 
@@ -1209,7 +1316,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessPhotonCandidates()
 	 if(fIsFromMBHeader){
 	      hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 	      hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-	      hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
+	      if( fDoMesonQA ) hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
 	 }
 	 
          if(fMCEvent){
@@ -1251,7 +1358,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessPhotonCandidates()
 	     if(fIsFromMBHeader){
 		hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
 		hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-		hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
+		if( fDoMesonQA )hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
 	     }
 	     
             if(fMCEvent){
@@ -1280,7 +1387,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessPhotonCandidates()
 	  if(fIsFromMBHeader){
 	      hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt()); // Differences to old V0Reader in p_t due to conversion KF->TLorentzVector
 	      hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-	      hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
+	      if(fDoMesonQA)hESDConvGammaZR[fiCut]->Fill(PhotonCandidate->GetConversionZ(),PhotonCandidate->GetConversionRadius());
 	  }
 	 
          if(fMCEvent){
@@ -1371,12 +1478,29 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
   
 
    for(UInt_t i = 0; i < fSelectorElectronIndex.size(); i++){
+     
     AliESDtrack* electronCandidate = fESDEvent->GetTrack(fSelectorElectronIndex[i]);
+    
+    if( fMCEvent ) {
+      
+          Int_t labelelectron = TMath::Abs( electronCandidate->GetLabel() );
+	  Int_t isMCFromMBHeader = -1;
+	  if(((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 0) {
+            isMCFromMBHeader
+            = ((AliConversionCuts*)fCutGammaArray->At(fiCut))->IsParticleFromBGEvent(labelelectron,fMCStack,fInputEvent);
+            if(isMCFromMBHeader == 0 && ((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 3) continue;
+          }    
+    }
+        
     if(! ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelected(electronCandidate) ) continue;
-	lGoodElectronIndexPrev.push_back(   fSelectorElectronIndex[i] );
-	hESDDalitzElectronPt[fiCut]->Fill(electronCandidate->Pt());
-        hESDDalitzElectronPhi[fiCut]->Fill(electronCandidate->Phi());
-	  if( fMCEvent ) {
+    
+    lGoodElectronIndexPrev.push_back(   fSelectorElectronIndex[i] );
+    hESDDalitzElectronPt[fiCut]->Fill(electronCandidate->Pt());
+    hESDDalitzElectronPhi[fiCut]->Fill(electronCandidate->Phi());
+    
+	
+    if( fMCEvent ) {
+	    
 	  Int_t labelelectron = TMath::Abs( electronCandidate->GetLabel() );
 	    if( labelelectron < fMCStack->GetNtrack() ){
 	      TParticle* electron = fMCStack->Particle(labelelectron);
@@ -1398,18 +1522,40 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 		}
 	    }
 	}
+	
+	
    }
 
    for(UInt_t i = 0; i < fSelectorPositronIndex.size(); i++){
 
       AliESDtrack* positronCandidate = fESDEvent->GetTrack( fSelectorPositronIndex[i] );
-      if(! ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelected(positronCandidate) ) continue;
-	lGoodPositronIndexPrev.push_back(   fSelectorPositronIndex[i]  );
-        hESDDalitzPositronPt[fiCut]->Fill( positronCandidate->Pt() );
-	hESDDalitzPositronPhi[fiCut]->Fill( positronCandidate->Phi() );
       
-        if( fMCEvent ) {
+      if( fMCEvent ) {
+	
+	 Int_t labelpositron = TMath::Abs( positronCandidate->GetLabel() );
+	 Int_t isMCFromMBHeader = -1;
+	  
+	  if(((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 0) {
+            isMCFromMBHeader
+            = ((AliConversionCuts*)fCutGammaArray->At(fiCut))->IsParticleFromBGEvent(labelpositron,fMCStack,fInputEvent);
+          if(isMCFromMBHeader == 0 && ((AliConversionCuts*)fCutGammaArray->At(fiCut))->GetSignalRejection() != 3) continue;
+          
+          }  
+      }
+  
+      
+      
+      if(! ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->ElectronIsSelected(positronCandidate) ) continue;
+      
+      lGoodPositronIndexPrev.push_back( fSelectorPositronIndex[i] );
+      hESDDalitzPositronPt[fiCut]->Fill( positronCandidate->Pt() );
+      hESDDalitzPositronPhi[fiCut]->Fill( positronCandidate->Phi() );
+       
+      
+       if( fMCEvent ) {
+	  
 	  Int_t labelpositron = TMath::Abs( positronCandidate->GetLabel() );
+	  
 	  if( labelpositron < fMCStack->GetNtrack() ) {
 	    TParticle* positron = fMCStack->Particle(labelpositron);
             if( positron->GetPdgCode() ==  -11 ){
@@ -1430,7 +1576,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
             }
           }
         }
-    }
+       }
 
 
    vector<Bool_t> lElectronPsiIndex(lGoodElectronIndexPrev.size(), kTRUE);
@@ -1585,7 +1731,10 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 		       MassCutMax = ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->GetMassCutHighPt();
 		     }
 		     
-		     if( vphoton->GetMass() > MassCutMax ) {
+		     Bool_t DoMassMinCut = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->DoMassMinCut();
+		     Double_t MassMinCut = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetMassMinCut();
+		     
+		     if( vphoton->GetMass() > MassCutMax || (  DoMassMinCut && vphoton->GetMass() < MassMinCut )  ) {
 		       
 		       
 		       delete vphoton;
@@ -1682,7 +1831,7 @@ void AliAnalysisTaskGammaConvDalitzV1::ProcessElectronCandidates(){
 		virtualPhoton = 0x0;
 	   
 	  }
-   }   
+      }   
 
    }
 }
@@ -1729,47 +1878,6 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
                   mbin = fBGHandler[fiCut]->GetMultiplicityBinIndex(fGoodGammas->GetEntries());
                }
 	      
-	      AliESDtrack *positronVgamma = 0;
-	      AliESDtrack *electronVgamma = 0;
-	      
-	      Double_t clsToFPos = -1.0;
-	      Double_t clsToFNeg = -1.0;
-	      
-	      Float_t dcaToVertexXYPos = -1.0;
-	      Float_t dcaToVertexZPos  = -1.0;
-	      Float_t dcaToVertexXYNeg = -1.0;
-	      Float_t dcaToVertexZNeg  = -1.0;
-	      
-	      
-	       if ( fDoMesonQA ) {
-	      
-		positronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelPositive() );
-		electronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelNegative() );
-		clsToFPos = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetNFindableClustersTPC(positronVgamma);
-		clsToFNeg = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetNFindableClustersTPC(electronVgamma);
-	      
-		Float_t bPos[2];
-		Float_t bCovPos[3];
-		positronVgamma->GetImpactParameters(bPos,bCovPos);
-		if (bCovPos[0]<=0 || bCovPos[2]<=0) {
-		  AliDebug(1, "Estimated b resolution lower or equal zero!");
-		  bCovPos[0]=0; bCovPos[2]=0;
-		}
-	      
-		Float_t bNeg[2];
-		Float_t bCovNeg[3];
-		positronVgamma->GetImpactParameters(bNeg,bCovNeg);
-		if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
-		  AliDebug(1, "Estimated b resolution lower or equal zero!");
-		  bCovNeg[0]=0; bCovNeg[2]=0;
-		}
-	      
-		dcaToVertexXYPos = bPos[0];
-		dcaToVertexZPos  = bPos[1];
-		dcaToVertexXYNeg = bNeg[0];
-		dcaToVertexZNeg  = bNeg[1];
-	      
-	       }
 	      	      
 	      
               if(  ((AliDalitzElectronCuts*) fCutElectronArray->At(fiCut))->DoMassCut() == kTRUE ) {
@@ -1785,34 +1893,12 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 		 
 		    if ( fDoMesonQA ) {
 		    
-		     hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
+		       hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
 		 
 			if( lGoodVirtualGamma[virtualGammaIndex] == kFALSE ) {
 		 
-			  hESDDalitzElectronAfterPt[fiCut]->Fill(  electronVgamma->Pt()  );
-			  hESDDalitzPositronAfterPt[fiCut]->Fill(  positronVgamma->Pt()  );
+			  FillElectronQAHistos(Vgamma);
 			  
-			  hESDDalitzElectronAfterEta[fiCut]->Fill( electronVgamma->Eta() );
-			  hESDDalitzPositronAfterEta[fiCut]->Fill( positronVgamma->Eta() );
-		 
-			  hESDDalitzElectronAfterPhi[fiCut]->Fill( electronVgamma->Phi() );
-			  hESDDalitzPositronAfterPhi[fiCut]->Fill( positronVgamma->Phi() );
-		      
-			  hESDDalitzElectronAfterNFindClsTPC[fiCut]->Fill(clsToFNeg,electronVgamma->Pt());
-			  hESDDalitzPositronAfterNFindClsTPC[fiCut]->Fill(clsToFPos,positronVgamma->Pt());
-		      
-		      
-			  hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, electronVgamma->Pt() );
-			  hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZNeg,  electronVgamma->Pt() );
-			  hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYPos, positronVgamma->Pt() );
-			  hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZPos,  positronVgamma->Pt() );
-		      
-			  hESDDalitzPosEleAfterTPCdEdx[fiCut]->Fill( positronVgamma->P(),((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(positronVgamma, AliPID::kElectron) );
-			  hESDDalitzPosEleAfterTPCdEdx[fiCut]->Fill( electronVgamma->P(),((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(electronVgamma, AliPID::kElectron) );
-		      
-			  hESDDalitzPosEleAfterTPCdEdxSignal[fiCut]->Fill( positronVgamma->P(), TMath::Abs(positronVgamma->GetTPCsignal()));
-			  hESDDalitzPosEleAfterTPCdEdxSignal[fiCut]->Fill( electronVgamma->P(), TMath::Abs(electronVgamma->GetTPCsignal()));
-		      
 			  lGoodVirtualGamma[virtualGammaIndex] = kTRUE;
 		      }
 		   }
@@ -1829,31 +1915,9 @@ void AliAnalysisTaskGammaConvDalitzV1::CalculatePi0DalitzCandidates(){
 		    hESDMotherPhi[fiCut]->Fill(pi0cand->Phi());
 		 
 		    if( lGoodVirtualGamma[virtualGammaIndex] == kFALSE ) {
+		      
+		      FillElectronQAHistos(Vgamma);
 		 
-		      hESDDalitzElectronAfterPt[fiCut]->Fill(  electronVgamma->Pt()  );
-		      hESDDalitzPositronAfterPt[fiCut]->Fill(  positronVgamma->Pt()  );
-		      
-		      hESDDalitzElectronAfterEta[fiCut]->Fill( electronVgamma->Eta() );
-		      hESDDalitzPositronAfterEta[fiCut]->Fill( positronVgamma->Eta() );
-		 
-		      hESDDalitzElectronAfterPhi[fiCut]->Fill( electronVgamma->Phi() );
-		      hESDDalitzPositronAfterPhi[fiCut]->Fill( positronVgamma->Phi() );
-		      
-		      hESDDalitzElectronAfterNFindClsTPC[fiCut]->Fill(clsToFNeg,electronVgamma->Pt());
-		      hESDDalitzPositronAfterNFindClsTPC[fiCut]->Fill(clsToFPos,positronVgamma->Pt());
-		      
-		      hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, electronVgamma->Pt() );
-		      hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZNeg,  electronVgamma->Pt() );
-		      hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYPos, positronVgamma->Pt() );
-		      hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZPos,  positronVgamma->Pt() );
-		      
-		      hESDDalitzPosEleAfterTPCdEdx[fiCut]->Fill( positronVgamma->P(),((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(positronVgamma, AliPID::kElectron) );
-		      hESDDalitzPosEleAfterTPCdEdx[fiCut]->Fill( electronVgamma->P(),((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(electronVgamma, AliPID::kElectron) );
-		      
-		      hESDDalitzPosEleAfterTPCdEdxSignal[fiCut]->Fill( positronVgamma->P(), TMath::Abs(positronVgamma->GetTPCsignal()));
-		      hESDDalitzPosEleAfterTPCdEdxSignal[fiCut]->Fill( electronVgamma->P(), TMath::Abs(electronVgamma->GetTPCsignal()));
-		      
-		      
 		      lGoodVirtualGamma[virtualGammaIndex] = kTRUE;
 		 
 		    }
@@ -2499,6 +2563,108 @@ Bool_t AliAnalysisTaskGammaConvDalitzV1::IsPi0DalitzDaughter( Int_t label ) cons
        
 }
 
+void AliAnalysisTaskGammaConvDalitzV1::FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const
+{
+  
+
+	      AliESDtrack *positronVgamma = 0;
+	      AliESDtrack *electronVgamma = 0;
+	      
+	      Double_t clsToFPos = -1.0;
+	      Double_t clsToFNeg = -1.0;
+	     
+	      Double_t NumClsITSPos = -1.0;
+	      Double_t NumClsITSNeg = -1.0;
+	      Double_t NumClsTPCPos = -1.0;
+	      Double_t NumClsTPCNeg = -1.0;
+	      	      
+	      Float_t dcaToVertexXYPos = -1.0;
+	      Float_t dcaToVertexZPos  = -1.0;
+	      Float_t dcaToVertexXYNeg = -1.0;
+	      Float_t dcaToVertexZNeg  = -1.0;
+	      
+	      Double_t nSigmaPosTPC = -999.;
+	      Double_t nSigmaNegTPC = -999.;
+	      
+	      positronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelPositive() );
+	      electronVgamma = fESDEvent->GetTrack( Vgamma->GetTrackLabelNegative() );
+	      clsToFPos = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetNFindableClustersTPC(positronVgamma);
+	      clsToFNeg = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetNFindableClustersTPC(electronVgamma);
+	      
+	      nSigmaPosTPC = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(positronVgamma, AliPID::kElectron) ;
+	      nSigmaNegTPC = ((AliDalitzElectronCuts*)fCutElectronArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(electronVgamma, AliPID::kElectron) ;
+	       
+	      
+	      
+	      NumClsITSPos =  positronVgamma->GetNcls(0); //Get number of ITS clusters
+	      NumClsITSNeg =  electronVgamma->GetNcls(0);
+	      NumClsTPCPos =  positronVgamma->GetNcls(1);  //Get number of TPC clusters
+	      NumClsTPCNeg =  electronVgamma->GetNcls(1);
+	      
+	      
+	      Float_t bPos[2];
+	      Float_t bCovPos[3];
+	      positronVgamma->GetImpactParameters(bPos,bCovPos);
+	      
+	      if (bCovPos[0]<=0 || bCovPos[2]<=0) {
+		  AliDebug(1, "Estimated b resolution lower or equal zero!");
+		  bCovPos[0]=0; bCovPos[2]=0;
+	       }
+	      
+	       Float_t bNeg[2];
+	       Float_t bCovNeg[3];
+	       positronVgamma->GetImpactParameters(bNeg,bCovNeg);
+	       
+	       if (bCovNeg[0]<=0 || bCovNeg[2]<=0) {
+		  AliDebug(1, "Estimated b resolution lower or equal zero!");
+		  bCovNeg[0]=0; bCovNeg[2]=0;
+		}
+	      
+	       dcaToVertexXYPos = bPos[0];
+	       dcaToVertexZPos  = bPos[1];
+	       dcaToVertexXYNeg = bNeg[0];
+	       dcaToVertexZNeg  = bNeg[1];
+	      
+	       hESDDalitzElectronAfterPt[fiCut]->Fill(  electronVgamma->Pt()  );
+	       hESDDalitzPositronAfterPt[fiCut]->Fill(  positronVgamma->Pt()  );
+			  
+	       hESDDalitzElectronAfterEta[fiCut]->Fill( electronVgamma->Eta() );
+	       hESDDalitzPositronAfterEta[fiCut]->Fill( positronVgamma->Eta() );
+		 
+	       hESDDalitzElectronAfterPhi[fiCut]->Fill( electronVgamma->Phi() );
+	       hESDDalitzPositronAfterPhi[fiCut]->Fill( positronVgamma->Phi() );
+		      
+	       hESDDalitzElectronAfterNFindClsTPC[fiCut]->Fill(clsToFNeg,electronVgamma->Pt());
+	       hESDDalitzPositronAfterNFindClsTPC[fiCut]->Fill(clsToFPos,positronVgamma->Pt());
+	       
+	       hESDDalitzElectronAfterNClsTPC[fiCut]->Fill( NumClsTPCNeg,electronVgamma->Pt());
+	       hESDDalitzPositronAfterNClsTPC[fiCut]->Fill( NumClsTPCPos,positronVgamma->Pt());
+	       
+	       hESDDalitzElectronAfterNClsITS[fiCut]->Fill( NumClsITSNeg);
+	       hESDDalitzPositronAfterNClsITS[fiCut]->Fill( NumClsITSPos);
+	       
+	       hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYNeg, electronVgamma->Pt() );
+	       hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZNeg,  electronVgamma->Pt() );
+	       hESDDalitzPosEleAfterDCAxy[fiCut]->Fill(  dcaToVertexXYPos, positronVgamma->Pt() );
+	       hESDDalitzPosEleAfterDCAz[fiCut]->Fill(   dcaToVertexZPos,  positronVgamma->Pt() );
+		      
+	       hESDDalitzElectronAfterTPCdEdxVsP[fiCut]->Fill( electronVgamma->P(),nSigmaNegTPC);
+	       hESDDalitzPositronAfterTPCdEdxVsP[fiCut]->Fill( positronVgamma->P(), nSigmaPosTPC);
+	       
+	       hESDDalitzElectronAfterTPCdEdxVsEta[fiCut]->Fill( electronVgamma->Eta(),nSigmaNegTPC);
+               hESDDalitzPositronAfterTPCdEdxVsEta[fiCut]->Fill( positronVgamma->Eta(),nSigmaPosTPC);
+	       
+               hESDDalitzElectronAfterTPCdEdxVsPhi[fiCut]->Fill( electronVgamma->Phi(),nSigmaNegTPC);
+               hESDDalitzPositronAfterTPCdEdxVsPhi[fiCut]->Fill( positronVgamma->Phi(),nSigmaPosTPC);
+	       
+	       		      
+	       hESDDalitzElectronAfterTPCdEdxSignalVsP[fiCut]->Fill( electronVgamma->P(), TMath::Abs(electronVgamma->GetTPCsignal()));
+	       hESDDalitzPositronAfterTPCdEdxSignalVsP[fiCut]->Fill( positronVgamma->P(), TMath::Abs(positronVgamma->GetTPCsignal()));
+		    
+	       
+  
+}
+
 
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const
@@ -2508,7 +2674,7 @@ Double_t AliAnalysisTaskGammaConvDalitzV1::GetPsiPair( const AliESDtrack *trackP
    // direction ?0 to the opening angle ? Pair
    //
    // Ref. Measurement of photons via conversion pairs with the PHENIX experiment at RHIC
-   //      Master Thesis. Thorsten Dahms. 2005
+   //      Mas   ter Thesis. Thorsten Dahms. 2005
    // https://twiki.cern.ch/twiki/pub/ALICE/GammaPhysicsPublications/tdahms_thesis.pdf
    //
    Double_t momPos[3];

@@ -296,6 +296,10 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     TH1D *hRbcShadCentral = (TH1D*)fshad->Get("hDfromBoverDfromc_L0");
     TH1D *hRbcShadMin = (TH1D*)fshad->Get("hDfromBoverDfromc_L0");
     TH1D *hRbcShadMax = (TH1D*)fshad->Get("hDfromBoverDfromc_L1");
+    if(!hRbcShadCentral || !hRbcShadMin || !hRbcShadMax) {
+      cout<< endl <<">> Shadowing input histograms are not ok !! "<<endl<<endl;
+      return;
+    }
     //       nSigmaShad
     //    nSigmaShad
     for(Int_t i=1; i<=nbins; i++) {
@@ -609,8 +613,6 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     Double_t minFdSyst = 0., maxFdSyst = 0.;
     if ( ElossHypo == ElossCentral[ hABbin ] ) {
 
-      cout <<endl<<">>>>>>>>>>> tete >>>>>>>>>>>>>>"<<endl<<endl;
-
       //
       // Data stat uncertainty
       //
@@ -770,9 +772,11 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     //
     // Filling Eloss scenarii information
     //
+    //    trick in case not fine enough Rb hypothesis to cope with the min/max range
+    //    if( RaaCharm>0 && ( (ElossHypo >= MinHypo && ElossHypo <=MaxHypo) || ElossHypo == ElossCentral[ hABbin ] ) && RaaBeauty<=MaxRb ) {
+    //      by default better not use it, to monitor when this happens (could affect results)
     if( RaaCharm>0 && ElossHypo >= MinHypo && ElossHypo <=MaxHypo && RaaBeauty<=MaxRb ) {
 
-      cout <<endl<<">>>>>>>>>>> tetuu >>>>>>>>>>>>>>"<<endl<<endl;
       Double_t Ehigh =  ElossMax[ hABbin ] ;
       Double_t Elow =  ElossMin[ hABbin ] ;
       if ( RaaCharm > Ehigh ) ElossMax[ hABbin ] = RaaCharm ;

@@ -32,7 +32,7 @@ class AliMixedEvent;
 class AliAODMCHeader;
 class AliESDtrackCuts;
 class AliCentrality;
-class AliTriggerAnalysis;
+//class AliTriggerAnalysis;
 class AliEventplane;
 class AliVCluster;
 
@@ -145,8 +145,13 @@ public:
   void             SetTrackTimeCut(Double_t a, Double_t b) { fTrackTimeCutMin = a ;
                                                              fTrackTimeCutMax = b          ; } // ns
   
-  void             SwitchOnUseTrackTimeCut()               { fUseTrackTimeCut = kTRUE      ; }
+  void             SwitchOnUseTrackTimeCut()               { fUseTrackTimeCut = kTRUE      ;  fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffUseTrackTimeCut()              { fUseTrackTimeCut = kFALSE     ; }
+
+  void             SwitchOnAccessTrackTimeCut()            { fAccessTrackTOF  = kTRUE      ; }
+  void             SwitchOffAccessTrackTimeCut()           { fAccessTrackTOF  = kFALSE     ; }
+  Bool_t           IsAccessToTrackTimeOn()           const { return fAccessTrackTOF        ; }
+
   
   Double_t         GetEMCALTimeCutMin()              const { return fEMCALTimeCutMin       ; }
   Double_t         GetEMCALTimeCutMax()              const { return fEMCALTimeCutMax       ; }	
@@ -282,19 +287,25 @@ public:
   TArrayI          GetTriggerPatches(Int_t tmin, Int_t tmax);
   void             MatchTriggerCluster(TArrayI patches);
 
-  Bool_t           IsExoticEvent()                         { return fIsExoticEvent           ; }  
-  Bool_t           IsBadCellTriggerEvent()                 { return fIsBadCellEvent          ; }
-  Bool_t           IsBadMaxCellTriggerEvent()              { return fIsBadMaxCellEvent       ; }
-  Bool_t           IsTriggerMatched()                      { return fIsTriggerMatch          ; }
-  Bool_t           IsTriggerMatchedOpenCuts(Int_t i)       { return fIsTriggerMatchOpenCut[i]; }
+  Bool_t           CheckEventTriggers();
   
-  Int_t            GetTriggerClusterBC()                   { return fTriggerClusterBC        ; }
-  Int_t            GetTriggerClusterIndex()                { return fTriggerClusterIndex     ; }
-  Int_t            GetTriggerClusterId()                   { return fTriggerClusterId        ; }
+  Bool_t           IsExoticEvent()                   const { return fIsExoticEvent           ; }
+  Bool_t           IsBadCellTriggerEvent()           const { return fIsBadCellEvent          ; }
+  Bool_t           IsBadMaxCellTriggerEvent()        const { return fIsBadMaxCellEvent       ; }
+  Bool_t           IsTriggerMatched()                const { return fIsTriggerMatch          ; }
+  Bool_t           IsTriggerMatchedOpenCuts(Int_t i) const { return fIsTriggerMatchOpenCut[i]; }
   
-  Float_t          GetEventTriggerThreshold()              { return fTriggerEventThreshold   ; }
-  void             SetEventTriggerThreshold(Float_t tr)    { fTriggerEventThreshold   = tr   ; }
+  Int_t            GetTriggerClusterBC()             const { return fTriggerClusterBC        ; }
+  Int_t            GetTriggerClusterIndex()          const { return fTriggerClusterIndex     ; }
+  Int_t            GetTriggerClusterId()             const { return fTriggerClusterId        ; }
+  
+  Float_t          GetEventTriggerL0Threshold()      const { return fTriggerL0EventThreshold ; }
+  void             SetEventTriggerL0Threshold(Float_t tr)  { fTriggerL0EventThreshold   = tr ; }
+  Float_t          GetEventTriggerL1Threshold()      const { return fTriggerL1EventThreshold ; }
+  void             SetEventTriggerL1Threshold(Float_t tr)  { fTriggerL1EventThreshold   = tr ; fTriggerL1EventThresholdFix = kTRUE; }
 
+  void             SetEventTriggerL1Bit(Int_t ega, Int_t eje) { fBitEGA   = ega ; fBitEJE = eje; }
+  
   void             SetTriggerPatchTimeWindow(Int_t min, Int_t max) { fTriggerPatchTimeWindow[0] = min ;
                                                                      fTriggerPatchTimeWindow[1] = max ; }
   
@@ -330,10 +341,12 @@ public:
   Bool_t           IsEventEMCALL1Jet()               const { return (fEventTrigEMCALL1Jet1   || fEventTrigEMCALL1Jet2  ) ; }
 	Bool_t           IsEventEMCALL1()                  const { return (IsEventEMCALL1Gamma()   || IsEventEMCALL1Jet()    ) ; }
 	
+  void             SwitchOnEMCALEventRejectionWith2Thresholds()  { fRejectEMCalTriggerEventsWith2Tresholds = kTRUE  ; }
+  void             SwitchOffEMCALEventRejectionWith2Thresholds() { fRejectEMCalTriggerEventsWith2Tresholds = kFALSE ; }
 	
-  void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
-  void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
-  Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; }
+  void             SwitchOnPileUpEventRejection()          { fDoPileUpEventRejection= kTRUE  ; }
+  void             SwitchOffPileUpEventRejection()         { fDoPileUpEventRejection= kFALSE ; }
+  Bool_t           IsPileUpEventRejectionDone()      const { return fDoPileUpEventRejection  ; }
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
   void             SwitchOffV0ANDSelection()               { fDoV0ANDEventSelection = kFALSE ; }
@@ -398,7 +411,7 @@ public:
 
   Int_t            GetVertexBC(const AliVVertex * vtx);
   Int_t            GetVertexBC()                  const    { return fVertexBC              ; }
-  void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; }
+  void             SwitchOnRecalculateVertexBC()           { fRecalculateVertexBC = kTRUE  ; fAccessTrackTOF  = kTRUE ; }
   void             SwitchOffRecalculateVertexBC()          { fRecalculateVertexBC = kFALSE ; }
   
   // Track selection
@@ -628,6 +641,7 @@ public:
   Bool_t           fUseEMCALTimeCut;           // Do time cut selection
   Bool_t           fUseParamTimeCut;           // Use simple or parametrized time cut
   Bool_t           fUseTrackTimeCut;           // Do time cut selection
+  Bool_t           fAccessTrackTOF;            // Access the track TOF, in case of problems when accessing GetTOFBunchCrossing
   Double_t         fEMCALTimeCutMin;           // Remove clusters/cells with time smaller than this value, in ns
   Double_t         fEMCALTimeCutMax;           // Remove clusters/cells with time larger than this value, in ns
   Float_t          fEMCALParamTimeCutMin[4];   // Remove clusters/cells with time smaller than parametrized value, in ns
@@ -724,7 +738,11 @@ public:
   Bool_t           fRemoveBadTriggerEvents;      // Remove triggered events because trigger was exotic, bad, or out of BC
   Bool_t           fTriggerPatchClusterMatch;    // Search for the trigger patch and check if associated cluster was the trigger
   Int_t            fTriggerPatchTimeWindow[2];   // Trigger patch selection window
-  Float_t          fTriggerEventThreshold;       // Threshold to look for triggered events
+  
+  Float_t          fTriggerL0EventThreshold;     // L0 Threshold to look for triggered events, set outside
+  Float_t          fTriggerL1EventThreshold;     // L1 Threshold to look for triggered events, set in data
+  Bool_t           fTriggerL1EventThresholdFix;  // L1 Threshold is fix and set outside
+  
   Int_t            fTriggerClusterBC;            // Event triggered by a cluster in BC -5 0 to 5
   Int_t            fTriggerClusterIndex;         // Index in clusters array of trigger cluster
   Int_t            fTriggerClusterId;            // Id of trigger cluster (cluster->GetID())
@@ -737,12 +755,12 @@ public:
   Bool_t           fRemoveUnMatchedTriggers;     // Analyze events where trigger patch and cluster where found or not
   
   
-  Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
-  Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
+  Bool_t           fDoPileUpEventRejection;      // Select pile-up events by SPD
+  Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0AND
   Bool_t           fDoVertexBCEventSelection;    // Select events with vertex on BC=0 or -100
   Bool_t           fDoRejectNoTrackEvents;       // Reject events with no selected tracks in event
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
-  AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
+  //AliTriggerAnalysis* fTriggerAnalysis;          // Access to trigger selection algorithm for V0AND calculation
   
   Bool_t           fTimeStampEventSelect;        // Select events within a fraction of data taking time
   Float_t          fTimeStampEventFracMin;       // Minimum value of time stamp fraction event
@@ -788,10 +806,12 @@ public:
   TArrayI          fAcceptEventsWithBit;           // Accept events if trigger bit is on
   TArrayI          fRejectEventsWithBit;           // Reject events if trigger bit is on
 
+  Bool_t           fRejectEMCalTriggerEventsWith2Tresholds; // Reject events EG2 also triggered by EG1 or EJ2 also triggered by EJ1
+  
   AliCaloTrackReader(              const AliCaloTrackReader & r) ; // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,65)
+  ClassDef(AliCaloTrackReader,67)
   
 } ;
 

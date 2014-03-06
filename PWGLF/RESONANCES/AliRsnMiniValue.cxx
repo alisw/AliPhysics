@@ -116,6 +116,10 @@ const char *AliRsnMiniValue::TypeName(EType type)
       case kSecondDaughterPt: return "SecondDaughterPt";
       case kFirstDaughterP: return "FirstDaughterP";
       case kSecondDaughterP: return "SecondDaughterP";
+      case kDCAproduct:   return "DaughterDCAproduct";
+      case kFirstDaughterDCA: return "FirstDaughterDCA";
+      case kSecondDaughterDCA: return "SecondDaughterDCA";
+      case kNSisters:     return "NumberOfSisters";
       default:            return "Undefined";
    }
 }
@@ -200,6 +204,14 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       case kSecondDaughterP:
          pair->DaughterPxPyPz(1,fUseMCInfo, p3);
          return TMath::Sqrt(p3[0]*p3[0]+p3[1]*p3[1]+p3[2]*p3[2]);
+      case kDCAproduct:
+         return pair->DCAProduct();
+      case kFirstDaughterDCA:
+         return pair->DaughterDCA(0);
+      case kSecondDaughterDCA:
+         return pair->DaughterDCA(1);
+      case kNSisters:
+         return pair->NSisters();
       default:
          AliError("Invalid value type");
          return 1E20;

@@ -13,7 +13,7 @@
 class AliMuonAccEffSubmitter : public AliMuonGridSubmitter
 {
 public:
-  AliMuonAccEffSubmitter(const char* generator="GenParamCustom");
+  AliMuonAccEffSubmitter(const char* generator="GenParamCustom", Bool_t localOnly=kFALSE);
 
   virtual Bool_t Generate(const char* jdlname) const;
   virtual Bool_t Run(const char* mode);
@@ -33,6 +33,8 @@ public:
   Bool_t Merge(Int_t stage, Bool_t dryRun=kTRUE);
 
   Int_t Submit(Bool_t dryRun=kTRUE);
+  
+  Int_t LocalTest();
   
   TString RunJDLName() const { return "run.jdl"; }
 

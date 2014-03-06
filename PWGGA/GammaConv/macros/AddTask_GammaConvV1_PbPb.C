@@ -1,15 +1,15 @@
 void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set of cuts
-                              Bool_t isMC   = kFALSE, //run MC 
-                              Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
-                              Int_t enableQAPhotonTask = 0, // enable additional QA task
-                              TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Bool_t doWeighting = kFALSE,  //enable Weighting
-                              TString cutnumberAODBranch = "1000000060084000001500000",
-                              TString periodName = "LHC13d2"
-                           ) {
+                                Bool_t isMC   = kFALSE, //run MC
+                                Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
+                                Int_t enableQAPhotonTask = 0, // enable additional QA task
+                                TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
+                                Bool_t doWeighting = kFALSE,  //enable Weighting
+                                TString cutnumberAODBranch = "1000000060084000001500000",
+                                TString periodName = "LHC13d2"
+                                ) {
 
    // ================= Load Librariers =================================
-   gSystem->Load("libCore.so");  
+   gSystem->Load("libCore.so");
    gSystem->Load("libTree.so");
    gSystem->Load("libGeom.so");
    gSystem->Load("libVMC.so");
@@ -19,14 +19,14 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    gSystem->Load("libESD");
    gSystem->Load("libAOD");
    gSystem->Load("libANALYSIS");
-   gSystem->Load("libANALYSISalice");  
+   gSystem->Load("libANALYSISalice");
    gSystem->Load("libPWGGAGammaConv.so");
    gSystem->Load("libCDB.so");
    gSystem->Load("libSTEER.so");
    gSystem->Load("libSTEERBase.so");
    gSystem->Load("libTENDER.so");
    gSystem->Load("libTENDERSupplies.so");
-      
+
    // ================== GetAnalysisManager ===============================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
@@ -36,20 +36,20 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 
    // ================== GetInputEventHandler =============================
    AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
-   
+
    //========= Add PID Reponse to ANALYSIS manager ====
    if(!(AliPIDResponse*)mgr->GetTask("PIDResponseTask")){
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
       AddTaskPIDResponse(isMC);
    }
-   
+
    //=========  Set Cutnumber for V0Reader ================================
-   TString cutnumber = "1000000000084001001500000000"; 
+   TString cutnumber = "1000000000084001001500000000";
    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
    if( !(AliV0ReaderV1*)mgr->GetTask("V0ReaderV1") ){
       AliV0ReaderV1 *fV0ReaderV1 = new AliV0ReaderV1("V0ReaderV1");
-      
+
       fV0ReaderV1->SetUseOwnXYZCalculation(kTRUE);
       fV0ReaderV1->SetCreateAODs(kFALSE);// AOD Output
       fV0ReaderV1->SetUseAODConversionPhoton(kTRUE);
@@ -69,9 +69,9 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
             fCuts->SetFillCutHistograms("",kTRUE);
          }
       }
-      
+
       if(inputHandler->IsA()==AliAODInputHandler::Class()){
-      // AOD mode
+         // AOD mode
          fV0ReaderV1->SetDeltaAODBranchName(Form("GammaConv_%s_gamma",cutnumberAODBranch.Data()));
       }
       fV0ReaderV1->Init();
@@ -100,7 +100,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    if (trainConfig == 1){ // Standard cuts
       cutarray[ 0] = "6010001042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "6120001042092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
-      cutarray[ 2] = "5010001042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
+      cutarray[ 2] = "5080001042092970023220000000"; mesonCutArray[ 2] = "01522045009000"; // 0-10%
       cutarray[ 3] = "5120001042092970023220000000"; mesonCutArray[ 3] = "01522045009000"; // 10-20%
       cutarray[ 4] = "5020001042092970023220000000"; mesonCutArray[ 4] = "01522045009000"; // 0-20%
    } else if (trainConfig == 2) { // Standard cuts
@@ -119,7 +119,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002042092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
       cutarray[ 1] = "5460002042092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "5680002042092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "5480002042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
+      cutarray[ 3] = "5480002042092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40%
       cutarray[ 4] = "5490002042092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 5){ // R-minCut 7.5 cm
       cutarray[ 0] = "6010001049092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
@@ -143,8 +143,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
       cutarray[ 1] = "5460002049092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "5680002049092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "5480002049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "5490002049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%   
+      cutarray[ 3] = "5480002049092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40%
+      cutarray[ 4] = "5490002049092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else if (trainConfig == 9){ // R-minCut 12.5 cm
       cutarray[ 0] = "6010001048092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 0-5%
       cutarray[ 1] = "6120001048092970023220000000"; mesonCutArray[ 1] = "01522045009000"; // 5-10%
@@ -167,8 +167,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002040092970023220000000"; mesonCutArray[ 0] = "01522045009000"; // 20-40%
       cutarray[ 1] = "5460002048092970023220000000"; mesonCutArray[ 1] = "01522065009000"; // 40-60%
       cutarray[ 2] = "5680002048092970023220000000"; mesonCutArray[ 2] = "01522065009000"; // 60-80%
-      cutarray[ 3] = "5480002048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40% 
-      cutarray[ 4] = "5490002048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%      
+      cutarray[ 3] = "5480002048092970023220000000"; mesonCutArray[ 3] = "01522065009000"; // 20-40%
+      cutarray[ 4] = "5490002048092970023220000000"; mesonCutArray[ 4] = "01522065009000"; // 40-90%
    } else  if (trainConfig == 13){ // eta 0.65 (new standard), y = 0.6 (new Standard)
       cutarray[ 0] = "6010001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
       cutarray[ 1] = "6120001032092970023220000000"; mesonCutArray[ 1] = "01523045009000"; // 5-10%
@@ -191,7 +191,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
       cutarray[ 1] = "5460002032092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
       cutarray[ 2] = "5680002032092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40%
       cutarray[ 4] = "5490002032092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
    } else  if (trainConfig == 17){ // eta 0.6, y = 0.6 (new Standard)
       cutarray[ 0] = "6010001012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
@@ -215,7 +215,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002012092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
       cutarray[ 1] = "5460002012092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
       cutarray[ 2] = "5680002012092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-      cutarray[ 3] = "5480002012092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 3] = "5480002012092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40%
       cutarray[ 4] = "5490002012092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
    } else  if (trainConfig == 21){ // eta 0.7, y = 0.6 (new Standard)
       cutarray[ 0] = "6010001072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
@@ -239,7 +239,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002072092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
       cutarray[ 1] = "5460002072092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
       cutarray[ 2] = "5680002072092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-      cutarray[ 3] = "5480002072092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 3] = "5480002072092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40%
       cutarray[ 4] = "5490002072092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
    } else  if (trainConfig == 25){ // eta 0.5, y = 0.6 (new Standard)
       cutarray[ 0] = "6010001052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 0-5%
@@ -263,7 +263,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002052092970023220000000"; mesonCutArray[ 0] = "01523045009000"; // 20-40%
       cutarray[ 1] = "5460002052092970023220000000"; mesonCutArray[ 1] = "01523065009000"; // 40-60%
       cutarray[ 2] = "5680002052092970023220000000"; mesonCutArray[ 2] = "01523065009000"; // 60-80%
-      cutarray[ 3] = "5480002052092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40% 
+      cutarray[ 3] = "5480002052092970023220000000"; mesonCutArray[ 3] = "01523065009000"; // 20-40%
       cutarray[ 4] = "5490002052092970023220000000"; mesonCutArray[ 4] = "01523065009000"; // 40-90%
    } else  if (trainConfig == 29){ // eta 0.65 (new standard), y = 0.6 (new Standard) pt dependent alpha
       cutarray[ 0] = "6010001032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 0-5%
@@ -287,7 +287,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 0] = "5240002032092970023220000000"; mesonCutArray[ 0] = "01523015009000"; // 20-40%
       cutarray[ 1] = "5460002032092970023220000000"; mesonCutArray[ 1] = "01523025009000"; // 40-60%
       cutarray[ 2] = "5680002032092970023220000000"; mesonCutArray[ 2] = "01523025009000"; // 60-80%
-      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523025009000"; // 20-40% 
+      cutarray[ 3] = "5480002032092970023220000000"; mesonCutArray[ 3] = "01523025009000"; // 20-40%
       cutarray[ 4] = "5490002032092970023220000000"; mesonCutArray[ 4] = "01523025009000"; // 40-90%
    } else if (trainConfig == 33){ // Standard cuts, eta 0.9, only to be run on data
       cutarray[ 0] = "6010001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
@@ -300,7 +300,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+      cutarray[ 4] = "5350001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%
    } else if (trainConfig == 35){ // Standard cuts, eta 1.4, only to be run on data
       cutarray[ 0] = "6010001022092970023220000000"; mesonCutArray[ 0] = "01520045009000"; // 0-5%
       cutarray[ 1] = "6120001022092970023220000000"; mesonCutArray[ 1] = "01520045009000"; // 5-10%
@@ -312,7 +312,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001022092970023220000000"; mesonCutArray[ 1] = "01520065009000"; // 40-60%
       cutarray[ 2] = "5680001022092970023220000000"; mesonCutArray[ 2] = "01520065009000"; // 60-80%
       cutarray[ 3] = "5480001022092970023220000000"; mesonCutArray[ 3] = "01520065009000"; // 40-80%
-      cutarray[ 4] = "5350001022092970023220000000"; mesonCutArray[ 4] = "01520065009000"; // 40-90%   
+      cutarray[ 4] = "5350001022092970023220000000"; mesonCutArray[ 4] = "01520065009000"; // 40-90%
    } else if (trainConfig == 37){ // Standard cuts, eta 0.9, only to be run on data : kMB
       cutarray[ 0] = "6014001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6124001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
@@ -324,7 +324,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5464001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5684001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5484001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5354001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+      cutarray[ 4] = "5354001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%
    } else if (trainConfig == 39){ // Standard cuts, eta 0.9, only to be run on data :kCentral
       cutarray[ 0] = "6015001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6125001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
@@ -336,7 +336,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5465001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5685001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5485001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5355001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%   
+      cutarray[ 4] = "5355001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; // 40-90%
    } else if (trainConfig == 41){ // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
       cutarray[ 0] = "6016001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; // 0-5%
       cutarray[ 1] = "6126001002092970023220000000"; mesonCutArray[ 1] = "01525045009000"; // 5-10%
@@ -344,17 +344,17 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 3] = "5126001002092970023220000000"; mesonCutArray[ 3] = "01525045009000"; // 10-20%
       cutarray[ 4] = "5026001002092970023220000000"; mesonCutArray[ 4] = "01525045009000"; // 0-20%
    } else if (trainConfig == 42) { // Standard cuts, eta 0.9, only to be run on data :kSemiCentral
-      cutarray[ 0] = "5236001002092970023220000000"; mesonCutArray[ 0] = "01525065009000"; 
-      cutarray[ 1] = "5346001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
-      cutarray[ 2] = "5456001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
-      cutarray[ 3] = "5566001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
-      cutarray[ 4] = "5676001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+      cutarray[ 0] = "5236001002092970023220000000"; mesonCutArray[ 0] = "01525065009000";
+      cutarray[ 1] = "5346001002092970023220000000"; mesonCutArray[ 1] = "01525065009000";
+      cutarray[ 2] = "5456001002092970023220000000"; mesonCutArray[ 2] = "01525065009000";
+      cutarray[ 3] = "5566001002092970023220000000"; mesonCutArray[ 3] = "01525065009000";
+      cutarray[ 4] = "5676001002092970023220000000"; mesonCutArray[ 4] = "01525065009000";
    } else if (trainConfig == 43){ // Standard cuts, eta 0.9, only to be run on data
-      cutarray[ 0] = "5230001002092970023220000000"; mesonCutArray[ 0] = "01525045009000"; 
-      cutarray[ 1] = "5340001002092970023220000000"; mesonCutArray[ 1] = "01525065009000"; 
-      cutarray[ 2] = "5450001002092970023220000000"; mesonCutArray[ 2] = "01525065009000"; 
-      cutarray[ 3] = "5560001002092970023220000000"; mesonCutArray[ 3] = "01525065009000"; 
-      cutarray[ 4] = "5670001002092970023220000000"; mesonCutArray[ 4] = "01525065009000"; 
+      cutarray[ 0] = "5230001002092970023220000000"; mesonCutArray[ 0] = "01525045009000";
+      cutarray[ 1] = "5340001002092970023220000000"; mesonCutArray[ 1] = "01525065009000";
+      cutarray[ 2] = "5450001002092970023220000000"; mesonCutArray[ 2] = "01525065009000";
+      cutarray[ 3] = "5560001002092970023220000000"; mesonCutArray[ 3] = "01525065009000";
+      cutarray[ 4] = "5670001002092970023220000000"; mesonCutArray[ 4] = "01525065009000";
    } else if ( trainConfig == 44){ // qt elipse cut 0.05
       cutarray[ 0] = "6010001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -366,13 +366,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 46){ // qt elipse cut 0.05
-      cutarray[ 0] = "5230001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+      cutarray[ 0] = "5230001002092970028220000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340001002092970028220000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450001002092970028220000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560001002092970028220000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670001002092970028220000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
    } else if ( trainConfig == 47){ // cos(theta_point) cut 0.85
       cutarray[ 0] = "6010001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -384,13 +384,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 49){ // cos(theta_point) cut 0.85
-      cutarray[ 0] = "5230001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70% 
+      cutarray[ 0] = "5230001002092970023220400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340001002092970023220400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450001002092970023220400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560001002092970023220400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670001002092970023220400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
    } else if ( trainConfig == 50){ // psi pair 2D 0.05
       cutarray[ 0] = "6010001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -402,13 +402,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 52){ // psi pair 2D 0.05
-      cutarray[ 0] = "5230001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%       
+      cutarray[ 0] = "5230001002092970023260000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340001002092970023260000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450001002092970023260000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560001002092970023260000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670001002092970023260000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
    } else if ( trainConfig == 53){ // psi pair 2D 0.1
       cutarray[ 0] = "6010001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -420,13 +420,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 55){ // psi pair 2D 0.1
-      cutarray[ 0] = "5230001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%          
+      cutarray[ 0] = "5230001002092970023250000000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340001002092970023250000000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450001002092970023250000000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560001002092970023250000000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670001002092970023250000000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
    } else if ( trainConfig == 56){ // cleaner cuts
       cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -438,13 +438,13 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 58){ // cleaner cuts
-      cutarray[ 0] = "5230001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%                
+      cutarray[ 0] = "5230001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
    } else if ( trainConfig == 59){ // cleaner cuts
       cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
       cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
@@ -456,13 +456,85 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 1] = "5460002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 40-60%
       cutarray[ 2] = "5680002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 60-80%
       cutarray[ 3] = "5480002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 40-80%
-      cutarray[ 4] = "5350002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%  
+      cutarray[ 4] = "5350002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 30-50%
    } else if ( trainConfig == 61){ // cleaner cuts
-      cutarray[ 0] = "5230002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30% 
-      cutarray[ 1] = "5340002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40% 
-      cutarray[ 2] = "5450002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50% 
-      cutarray[ 3] = "5560002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60% 
-      cutarray[ 4] = "5670002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%                   
+      cutarray[ 0] = "5230002002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 20-30%
+      cutarray[ 1] = "5340002002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 30-40%
+      cutarray[ 2] = "5450002002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 40-50%
+      cutarray[ 3] = "5560002002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 50-60%
+      cutarray[ 4] = "5670002002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 60-70%
+   } else if ( trainConfig == 62){ // Missing Cut Studies
+      cutarray[ 0] = "5020001042092970023210000000"; mesonCutArray[ 0] = "01522045009000"; // PsiPair
+      cutarray[ 1] = "5020001042092970023230000000"; mesonCutArray[ 1] = "01522045009000"; // PsiPair
+      cutarray[ 2] = "5480001042092970023210000000"; mesonCutArray[ 2] = "01522065009000"; // PsiPair
+      cutarray[ 3] = "5480001042092970023230000000"; mesonCutArray[ 3] = "01522065009000"; // PsiPair
+      cutarray[ 4] = "5040001032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // Std
+   } else if ( trainConfig == 63){ // Missing Cut Studies
+      cutarray[ 0] = "5020002042092970023210000000"; mesonCutArray[ 0] = "01522045009000"; // PsiPair
+      cutarray[ 1] = "5020002042092970023230000000"; mesonCutArray[ 1] = "01522045009000"; // PsiPair
+      cutarray[ 2] = "5480002042092970023210000000"; mesonCutArray[ 2] = "01522065009000"; // PsiPair
+      cutarray[ 3] = "5480002042092970023230000000"; mesonCutArray[ 3] = "01522065009000"; // PsiPair
+      cutarray[ 4] = "5040002032092970023220000000"; mesonCutArray[ 4] = "01523045009000"; // Std
+   } else if ( trainConfig == 64){ // Missing Cut Studies
+      cutarray[ 0] = "5480001042092970023820000000"; mesonCutArray[ 0] = "01522065009000"; // Chi2
+      cutarray[ 1] = "5240001042092970023820000000"; mesonCutArray[ 1] = "01522045009000"; // Chi2
+      cutarray[ 2] = "5240001042092970023120000000"; mesonCutArray[ 2] = "01522045009000"; // Chi2
+      cutarray[ 3] = "5240001042082970023220000000"; mesonCutArray[ 3] = "01522045009000"; // cluster
+      cutarray[ 4] = "5240001042062970023220000000"; mesonCutArray[ 4] = "01522045009000"; // cluster
+   } else if ( trainConfig == 65){ // Missing Cut Studies
+      cutarray[ 0] = "5480002042092970023820000000"; mesonCutArray[ 0] = "01522065009000"; // Chi2
+      cutarray[ 1] = "5240002042092970023820000000"; mesonCutArray[ 1] = "01522045009000"; // Chi2
+      cutarray[ 2] = "5240002042092970023120000000"; mesonCutArray[ 2] = "01522045009000"; // Chi2
+      cutarray[ 3] = "5240002042082970023220000000"; mesonCutArray[ 3] = "01522045009000"; // cluster
+      cutarray[ 4] = "5240002042062970023220000000"; mesonCutArray[ 4] = "01522045009000"; // cluster
+   } else if ( trainConfig == 66){ // Missing Cut Studies
+      cutarray[ 0] = "548000104092970023120000000"; mesonCutArray[ 0] = "01522065009000"; // Chi2
+      cutarray[ 1] = "5240001042092970024220000000"; mesonCutArray[ 1] = "01522045009000"; // qT
+      cutarray[ 2] = "5240001042092970022220000000"; mesonCutArray[ 2] = "01522045009000"; // qT
+      cutarray[ 3] = "5240001042492970023220000000"; mesonCutArray[ 3] = "01522045009000"; // min pt
+      cutarray[ 4] = "5240001042192970023220000000"; mesonCutArray[ 4] = "01522045009000"; // min pt
+   } else if ( trainConfig == 67){ // Missing Cut Studies
+      cutarray[ 0] = "5480002042092970023120000000"; mesonCutArray[ 0] = "01522065009000"; // Chi2
+      cutarray[ 1] = "5240002042092970024220000000"; mesonCutArray[ 1] = "01522045009000"; // qT
+      cutarray[ 2] = "5240002042092970022220000000"; mesonCutArray[ 2] = "01522045009000"; // qT
+      cutarray[ 3] = "5240002042492970023220000000"; mesonCutArray[ 3] = "01522045009000"; // min pt
+      cutarray[ 4] = "5240002042192970023220000000"; mesonCutArray[ 4] = "01522045009000"; // min pt
+   } else if ( trainConfig == 68){ // Missing Cut Studies
+      cutarray[ 0] = "5240001042091970023220000000"; mesonCutArray[ 0] = "01522045009000"; // edEdx
+      cutarray[ 1] = "5240001042093970023220000000"; mesonCutArray[ 1] = "01522045009000"; // edEdx
+      cutarray[ 2] = "5240001042096970023220000000"; mesonCutArray[ 2] = "01522045009000"; // edEdx
+      cutarray[ 3] = "5240001042092770023220000000"; mesonCutArray[ 3] = "01522045009000"; // PidEdx
+      cutarray[ 4] = "5240001042092370023220000000"; mesonCutArray[ 4] = "01522045009000"; // PidEdx
+   } else if ( trainConfig == 69){ // Missing Cut Studies
+      cutarray[ 0] = "5240002042091970023220000000"; mesonCutArray[ 0] = "01522045009000"; // edEdx
+      cutarray[ 1] = "5240002042093970023220000000"; mesonCutArray[ 1] = "01522045009000"; // edEdx
+      cutarray[ 2] = "5240002042096970023220000000"; mesonCutArray[ 2] = "01522045009000"; // edEdx
+      cutarray[ 3] = "5240002042092770023220000000"; mesonCutArray[ 3] = "01522045009000"; // PidEdx
+      cutarray[ 4] = "5240002042092370023220000000"; mesonCutArray[ 4] = "01522045009000"; // PidEdx
+   } else if ( trainConfig == 70){ // Missing Cut Studies
+      cutarray[ 0] = "5240001042092970033220000000"; mesonCutArray[ 0] = "01522045009000"; // TOF
+      cutarray[ 1] = "5240001042092970043220000000"; mesonCutArray[ 1] = "01522045009000"; // TOF
+      cutarray[ 2] = "5240001042092970023220000000"; mesonCutArray[ 2] = "01522005009000"; // alpha
+      cutarray[ 3] = "5240001042092970023220000000"; mesonCutArray[ 3] = "01522085009000"; // alpha
+      cutarray[ 4] = "5240001032092970028260400000"; mesonCutArray[ 4] = "01523045009000"; // Std
+   } else if ( trainConfig == 71){ // Missing Cut Studies
+      cutarray[ 0] = "5240002042092970033220000000"; mesonCutArray[ 0] = "01522045009000"; // TOF
+      cutarray[ 1] = "5240002042092970043220000000"; mesonCutArray[ 1] = "01522045009000"; // TOF
+      cutarray[ 2] = "5240002042092970023220000000"; mesonCutArray[ 2] = "01522005009000"; // alpha
+      cutarray[ 3] = "5240002042092970023220000000"; mesonCutArray[ 3] = "01522085009000"; // alpha
+      cutarray[ 4] = "5240002032092970028260400000"; mesonCutArray[ 4] = "01523045009000"; // Std
+   } else if ( trainConfig == 72){ // Missing Cut Studies
+      cutarray[ 0] = "5010001032092970028260400000"; mesonCutArray[ 0] = "01523045009000"; // Std
+      cutarray[ 1] = "5120001032092970028260400000"; mesonCutArray[ 1] = "01523045009000"; // Std
+      cutarray[ 2] = "5020001032092970028260400000"; mesonCutArray[ 2] = "01523045009000"; // Std
+      cutarray[ 3] = "5040001032092970028260400000"; mesonCutArray[ 3] = "01523045009000"; // Std
+      cutarray[ 4] = "5480001032092970028260400000"; mesonCutArray[ 4] = "01523065009000"; // Std
+   } else if ( trainConfig == 73){ // Missing Cut Studies
+      cutarray[ 0] = "5010002032092970028260400000"; mesonCutArray[ 0] = "01523045009000"; // Std
+      cutarray[ 1] = "5120002032092970028260400000"; mesonCutArray[ 1] = "01523045009000"; // Std
+      cutarray[ 2] = "5020002032092970028260400000"; mesonCutArray[ 2] = "01523045009000"; // Std
+      cutarray[ 3] = "5040002032092970028260400000"; mesonCutArray[ 3] = "01523045009000"; // Std
+      cutarray[ 4] = "5480002032092970028260400000"; mesonCutArray[ 4] = "01523065009000"; // Std
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -475,8 +547,8 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
    if (periodName.CompareTo("LHC13d2")==0){
       TObjString *Header1 = new TObjString("pi0_1");
       HeaderList->Add(Header1);
-   //    TObjString *Header3 = new TObjString("eta_2");
-   //    HeaderList->Add(Header3);
+      //    TObjString *Header3 = new TObjString("eta_2");
+      //    HeaderList->Add(Header3);
 
    } else if (periodName.CompareTo("LHC12a17x_fix")==0){
       TObjString *Header1 = new TObjString("PARAM");
@@ -485,7 +557,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       TObjString *Header1 = new TObjString("BOX");
       HeaderList->Add(Header1);
    }
-   
+
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
    MesonCutList->SetOwner(kTRUE);
@@ -493,58 +565,148 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 
    for(Int_t i = 0; i<numberOfCuts; i++){
       analysisCuts[i] = new AliConversionCuts();
-      if (trainConfig == 1 ||trainConfig == 5 || trainConfig == 9 || trainConfig == 13 || trainConfig == 17 || trainConfig == 21 || trainConfig == 25 || trainConfig == 29 ){ //|| trainConfig == 33 || trainConfig == 37 || trainConfig == 41 
+      if (trainConfig == 1 ||trainConfig == 5 || trainConfig == 9 || trainConfig == 13 || trainConfig == 17 || trainConfig == 21 || trainConfig == 25 || trainConfig == 29 ){ //|| trainConfig == 33 || trainConfig == 37 || trainConfig == 41
          if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0005TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M");
          if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0510TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
          if (i == 2 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
          if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
          if (i == 4 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
       } else if (trainConfig == 2 ||trainConfig == 6 || trainConfig == 10 || trainConfig == 14 || trainConfig == 18 || trainConfig == 22 || trainConfig == 26 || trainConfig == 30  ){ //|| trainConfig == 34 || trainConfig == 38 || trainConfig == 42
-        if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-        if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-        if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-        if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-      } else if (trainConfig == 3 ||trainConfig == 7 || trainConfig == 11 || trainConfig == 15 || trainConfig == 19 || trainConfig == 23 || trainConfig == 27 || trainConfig == 31 ){ //|| trainConfig == 35 || trainConfig == 39 || trainConfig == 43 
+         if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 1 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+         if (i == 2 && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+         if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      } else if (trainConfig == 3 ||trainConfig == 7 || trainConfig == 11 || trainConfig == 15 || trainConfig == 19 || trainConfig == 23 || trainConfig == 27 || trainConfig == 31 ){ //|| trainConfig == 35 || trainConfig == 39 || trainConfig == 43
          if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0005TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M");
          if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0510TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M");
          if (i == 2 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
          if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
-          if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-      } else if (trainConfig == 4 ||trainConfig == 8 || trainConfig == 12 || trainConfig == 16 || trainConfig == 20 || trainConfig == 24 || trainConfig == 28 || trainConfig == 32 ){ //|| trainConfig == 36 || trainConfig == 40 || trainConfig == 44 
-        if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
-        if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
-        if (i == 2  && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
-        if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+      } else if (trainConfig == 4 ||trainConfig == 8 || trainConfig == 12 || trainConfig == 16 || trainConfig == 20 || trainConfig == 24 || trainConfig == 28 || trainConfig == 32 ){ //|| trainConfig == 36 || trainConfig == 40 || trainConfig == 44
+         if (i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4060TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4060V0M");
+         if (i == 2  && doWeighting) analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_6080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_6080V0M");
+         if (i == 3 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      } else if (trainConfig == 62){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0040V0M");
+      } else if (trainConfig == 63){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0040V0M");
+      } else if (trainConfig == 64 || trainConfig == 66){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+      } else if (trainConfig == 65 || trainConfig == 67){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+      } else if (trainConfig == 68 || trainConfig == 70){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+      } else if (trainConfig == 69 || trainConfig == 71){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_2040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_2040V0M");
+      } else if (trainConfig == 72){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      } else if (trainConfig == 73){
+         if (i == 0 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0010TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0010V0M");
+         if (i == 1 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_1020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_1020V0M");
+         if (i == 2 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+         if (i == 3 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0040TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0040V0M");
+         if (i == 4 && doWeighting)
+            analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
       }
-      
-      
-//      if (trainConfig == 45 ||trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55  ){
-//          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-//          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-//      }
-//      if (trainConfig == 46 ||trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56  ){
-//          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
-//          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-//      }
-//      if (trainConfig == 57  ){
-//          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-//      }
-//      if (trainConfig == 58){
-//          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
-//      }
+
+
+
+
+      //      if (trainConfig == 45 ||trainConfig == 47 || trainConfig == 49 || trainConfig == 51 || trainConfig == 53 || trainConfig == 55  ){
+      //          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+      //          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      //      }
+      //      if (trainConfig == 46 ||trainConfig == 48 || trainConfig == 50 || trainConfig == 52 || trainConfig == 54 || trainConfig == 56  ){
+      //          if ((i == 0 || i == 1 || i == 2)&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_0020TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_0020V0M");
+      //          if ((i == 3 || i == 4 )&& doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      //      }
+      //      if (trainConfig == 57  ){
+      //          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      //      }
+      //      if (trainConfig == 58){
+      //          if (doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, "Pi0_Hijing_LHC13d2_addSig_PbPb_2760GeV_4080TPC", "", "","Pi0_Fit_Data_PbPb_2760GeV_4080V0M");
+      //      }
       analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
       ConvCutList->Add(analysisCuts[i]);
 
       if (trainConfig == 37 || trainConfig == 38){
          analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kMB, "AliVEvent::kMB" );
       }
-      if (trainConfig == 39 || trainConfig == 40){   
+      if (trainConfig == 39 || trainConfig == 40){
          analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kCentral,"AliVEvent::kCentral" );
-      }   
-      if (trainConfig == 41 || trainConfig == 42){   
+      }
+      if (trainConfig == 41 || trainConfig == 42){
          analysisCuts[i]->SelectSpecialTrigger(AliVEvent::kSemiCentral,"AliVEvent::kSemiCentral" );
-      }   
-      
+      }
+
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
       analysisMesonCuts[i] = new AliConversionMesonCuts();
       analysisMesonCuts[i]->InitializeCutsFromCutString(mesonCutArray[i].Data());

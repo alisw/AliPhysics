@@ -14,16 +14,25 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 			
 			for(Int_t imethod=0;imethod<3;imethod++)
 			{
+				if(!hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))
+					continue;
 				 TH2F *nsig_data = (TH2F*)((TH2F*)hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
 				// nsig_data->RebinX(20);			 
 				// nsig_data->RebinY(4);
 				// nsig_data->Sumw2();
+				if(!nsig_data)
+					continue;
 
+				if(!hman_mc->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))
+					continue;
 				 TH2F *nsig_mc = (TH2F*)((TH2F*)hman_mc->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
 				 //nsig_mc->RebinX(20);			 
 				// nsig_mc->RebinY(4);
 				// nsig_mc->Sumw2();
+				if(!nsig_mc)
+					continue;
 				 
+
 				Int_t ibin=1;
 				Float_t binsize=nsig_mc->GetXaxis()->GetBinWidth(1);
 

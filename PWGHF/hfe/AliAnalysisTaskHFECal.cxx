@@ -193,6 +193,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,CheckDCA(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
   ,HphopTcheck(0)
@@ -212,6 +213,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0) 
+  ,fPhoVertexReco0(0)
+  ,fPhoVertexReco1(0)
+  ,fPhoVertexReco2(0)
+  ,fPhoVertexReco3(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -337,6 +342,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fSameElecPtMC_eta_TPC(0)
   ,CheckNclust(0)
   ,CheckNits(0)
+  ,CheckDCA(0)
   ,Hpi0pTcheck(0)
   ,HETApTcheck(0)
   ,HphopTcheck(0)
@@ -356,6 +362,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0)
+  ,fPhoVertexReco0(0)
+  ,fPhoVertexReco1(0)
+  ,fPhoVertexReco2(0)
+  ,fPhoVertexReco3(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -558,6 +568,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double mcMompT = 0.0;
     //double mcGrandMompT = 0.0;
     double mcWeight = -10.0;
+    double conv_proR = -1.0;
 
     int iHijing = 1;
     int mcLabel = -1;
@@ -576,6 +587,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 	       TParticle* particle = stack->Particle(label);
 	       int mcpid = particle->GetPdgCode();
 	       mcpT = particle->Pt();
+               conv_proR = particle->R();
 	       //printf("MCpid = %d",mcpid);
 	       if(particle->GetFirstMother()>-1)
 	       {
@@ -690,6 +702,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(TMath::Abs(track->Pt()<2.5)) continue;
     
     fTrackPtBefTrkCuts->Fill(track->Pt());		
+
+    if(mcPho)fPhoVertexReco0->Fill(track->Pt(),conv_proR); // check MC vertex
+
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
     
@@ -722,6 +737,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     mom = track->P();
     phi = track->Phi();
     eta = track->Eta();
+    float dca_xy;
+    float dca_z;
+    track->GetImpactParameters(dca_xy,dca_z);
+
     dEdx = track->GetTPCsignal();
     fTPCnSigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(track, AliPID::kElectron) : 1000;
 
@@ -780,7 +799,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 		  double valdedx[16];
 		  valdedx[0] = pt; valdedx[1] = nITS; valdedx[2] = phi; valdedx[3] = eta; valdedx[4] = fTPCnSigma;
 		  valdedx[5] = eop; valdedx[6] = rmatch; valdedx[7] = ncells,  valdedx[8] = nmatch; valdedx[9] = m20; valdedx[10] = mcpT;
-		  //valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = oppstatus; valdedx[14] = nTPCcl;
 		  valdedx[11] = cent; valdedx[12] = dEdx; valdedx[13] = eoporg; valdedx[14] = nTPCcl;
                   valdedx[15] = mcele;
                   fEleInfo->Fill(valdedx);
@@ -809,6 +827,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
    
     CheckNclust->Fill(nTPCcl); 
     CheckNits->Fill(nITS); 
+    CheckDCA->Fill(dca_xy,dca_z); 
+    // check production vertex of photons
+    if(mcPho)fPhoVertexReco1->Fill(pt,conv_proR);
+
 
     fdEdxBef->Fill(mom,fTPCnSigma);
     fTPCnsigma->Fill(mom,fTPCnSigma);
@@ -977,13 +999,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                  }
+               // --- eta
                if(mcOrgEta)
                  {
                   fIncpTMCM20pho_eta->Fill(phoval,mcWeight);    
                   if(fFlagPhotonicElec) fPhoElecPtMCM20_eta->Fill(phoval,mcWeight);
                   if(fFlagConvinatElec) fSameElecPtMCM20_eta->Fill(phoval,mcWeight);
                  }
-               // --- eta
+                // check production vertex
+                fPhoVertexReco2->Fill(pt,conv_proR);
+                if(fFlagPhotonicElec) fPhoVertexReco3->Fill(pt,conv_proR);
               }
            }
         } 
@@ -1057,6 +1082,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fCuts->SetTOFPIDStep(kFALSE);
   fCuts->SetPtRange(2, 50);
   fCuts->SetMaxImpactParam(3.,3.);
+  fCuts->SetProductionVertex(0,50,0,50);
 
   //--------Initialize correction Framework and Cuts
   fCFM = new AliCFManager;
@@ -1360,6 +1386,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   CheckNits = new TH1D("CheckNits","ITS cluster check",8,-0.5,7.5);
   fOutputList->Add(CheckNits);
+
+  CheckDCA = new TH2D("CheckDCA","DCA check",200,-5,5,200,-5,5);
+  fOutputList->Add(CheckDCA);
   /*
   Hpi0pTcheck = new TH2D("Hpi0pTcheck","Pi0 pT from Hijing",100,0,50,3,-0.5,2.5);
   fOutputList->Add(Hpi0pTcheck);
@@ -1450,6 +1479,18 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
   fOutputList->Add(fSamRecoMaxE);
+
+  fPhoVertexReco0 = new TH2D("fPhoVertexReco0","photon production Vertex",40,0,20,250,0,50);
+  fOutputList->Add(fPhoVertexReco0);
+
+  fPhoVertexReco1 = new TH2D("fPhoVertexReco1","photon production Vertex a.f. track cuts",40,0,20,250,0,50);
+  fOutputList->Add(fPhoVertexReco1);
+
+  fPhoVertexReco2 = new TH2D("fPhoVertexReco2","photon production Vertex in ele selection",40,0,20,250,0,50);
+  fOutputList->Add(fPhoVertexReco2);
+
+  fPhoVertexReco3 = new TH2D("fPhoVertexReco3","photon production Vertex mass selection",40,0,20,250,0,50);
+  fOutputList->Add(fPhoVertexReco3);
 
   PostData(1,fOutputList);
 }
@@ -1663,8 +1704,8 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
            if(fFlagULS && ibgevent==0 && jbgevent==0 && (p1==p2) && tageta) fInvmassULSmc3->Fill(ptPrim,mass);
           }
 
-	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (ibgevent==jbgevent)){
-	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ <--- only MC train (55,56) v5-03-68-AN & 69 for check
+	 //if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (ibgevent==jbgevent)){
+	 if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec && (p1==p2)){ //<--- only MC train (55,56) v5-03-68-AN , 69 & v5-05-69-AN
 	       flagPhotonicElec = kTRUE;
 	      }
 	 if(mass<fInvmassCut && fFlagLS && !flagConvinatElec && (ibgevent==jbgevent)){

@@ -298,7 +298,7 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
 
 
    // if we reach this point, all checks were successful
-   AliDebugClass(2, "Good V0 (hallelujah)");
+   AliDebugClass(2, "Good V0");
    return kTRUE;
 }
 
@@ -317,8 +317,6 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE; // if kTRUE, then this V0 is recontructed
    }
 
-
-
    // retrieve pointer to owner event
    AliAODEvent *lAODEvent = fEvent->GetRefAOD();
    Double_t xPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetX();
@@ -330,14 +328,21 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    AliAODTrack *pTrack = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(0));
    AliAODTrack *nTrack = (AliAODTrack *) (v0->GetSecondaryVtx()->GetDaughter(1));
 
-
    // check quality cuts
    UInt_t  filtermapP = 9999;
    UInt_t  filtermapN = 9999;
    filtermapP = pTrack->GetFilterMap();
    filtermapN = nTrack->GetFilterMap();
 
-
+   //-----
+   // next lines commented out by EF - 17/01/2014 
+   // NOTE that the filter bit test on V0 daughters removes a huge amount of V0 candidates, including good ones.
+   //      Likely wrong -> requires a DCA max!
+   //      Removing the test, there's a little gain in efficiency in the
+   //      final search for Sigma* candidates
+   // NOTE that further constrains (e.g. DCA of daughters greater than xxx), 
+   //      necessary to remove background, are already in V0s. (see also below)
+   /*
    if ( !pTrack->TestFilterBit(fAODTestFilterBit)   ) {
       AliDebugClass(2, Form("Positive daughter failed quality cuts filtermapP=%d",filtermapP));
       return kFALSE;
@@ -346,32 +351,27 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       AliDebugClass(2, Form("Negative daughter failed quality cuts filtermapN=%d",filtermapN));
       return kFALSE;
    }
+   */
 
+   //----
+   // next lines are not necessary. Just left there (commented-out) to remind that the requirement on the DCA of V0 daughters
+   //      is already in the V0, so requiring dca>0.050 (with 0.050 cm the default value from the Lambda analysis)
+   //      does not remove V0s candidates
+   /*
+   Double_t dca = v0->DcaPosToPrimVertex() ;
+     AliDebugClass(2, Form("DCA of Lambda positive daughter %f",dca));
+   if(dca<0.050) {
+     AliDebugClass(2, Form("DCA of Lambda positive daughter (%f) less than 0.05",dca));
+      return kFALSE;
+   }
+   dca = v0->DcaNegToPrimVertex();
+   if(dca<0.050) {
+     AliDebugClass(2, Form("DCA of Lambda negative daughter (%f) less than 0.05",dca));
+      return kFALSE;
+   }
+   */
 
-
-   /*AliDebugClass(1, Form("fESDtrackCuts=%p",fESDtrackCuts));
-   if (fESDtrackCuts) { // use fESDtrackCuts to retrieve cuts values
-
-
-      AliDebugClass(2, "Checking quality cuts");
-
-
-
-      const Bool_t  CutAcceptKinkDaughters  = fESDtrackCuts->GetAcceptKinkDaughters(); // 0 = kFalse
-      const Float_t CutMaxChi2PerClusterTPC = fESDtrackCuts->GetMaxChi2PerClusterTPC();
-      const Int_t   CutMinNClusterTPC       = fESDtrackCuts->GetMinNClusterTPC();
-      const Bool_t  CutRequireTPCRefit      = fESDtrackCuts->GetRequireTPCRefit();
-      //AliDebugClass(2, Form("accept kink=%d maxchi2=%f minnclSTPC=%d requireTPCrefit=%d", CutAcceptKinkDaughters,
-      //        CutMaxChi2PerClusterTPC, CutMinNClusterTPC, CutRequireTPCRefit));
-      //AliDebugClass(2, Form("pTrack->TPCNcls=%d", pTrack->GetTPCNcls() ));
-      //AliDebugClass(2, Form("nTrack->TPCNcls=%d", nTrack->GetTPCNcls() ));
-
-
-      if(pTrack->GetTPCNcls() < CutMinNClusterTPC) {AliDebugClass(2, "Positive daughter not MinNclsTPC"); return kFALSE;}
-      if(nTrack->GetTPCNcls() < CutMinNClusterTPC) {AliDebugClass(2, "Negative daughter not MinNclsTPC"); return kFALSE;}
-
-   }*/
-
+   // EF - 17/01/2014 - next check apparently not effective!? Already in V0s?
    // filter like-sign V0
    if ( TMath::Abs( ((pTrack->Charge()) - (nTrack->Charge())) ) < 0.1) {
       AliDebugClass(2, "Failed like-sign V0 check");
@@ -398,10 +398,13 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       AliDebugClass(2, Form("Failed check on DCA to primary vertes dca=%f maxdca=%f",TMath::Abs(v0->DcaV0ToPrimVertex()),fMaxDCAVertex));
       return kFALSE;
    }
+
+   // next cut is effective (should it be in AODV0?)
    if (TMath::Abs( TMath::Cos(v0->OpenAngleV0()) ) < fMinCosPointAngle) {
       AliDebugClass(2, "Failed check on cosine of pointing angle");
       return kFALSE;
    }
+   // next cut is effective (should it be in AODV0?)
    if (TMath::Abs(v0->DcaV0Daughters()) > fMaxDaughtersDCA) {
       AliDebugClass(2, "Failed check on DCA between daughters");
       return kFALSE;
@@ -411,10 +414,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
 
-
-
-
-
+   //-----------------------------------------------------------
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
@@ -422,73 +422,35 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
 
-   // check if TOF is matched
-   // and computes all values used in the PID cut
-   //Bool_t   isTOFpos  = MatchTOF(ptrack);
-   //Bool_t   isTOFneg  = MatchTOF(ntrack);
-   //Double_t pospTPC   = pTrack->GetTPCmomentum();
-   //Double_t negpTPC   = nTrack->GetTPCmomentum();
-   //Double_t posp      = pTrack->P();
-   //Double_t negp      = nTrack->P();
    Double_t posnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID));
    Double_t posnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(pTrack, fPID2));
-   //Double_t posnsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(ptrack, fPID));
    Double_t negnsTPC   = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID));
    Double_t negnsTPC2  = TMath::Abs(pid->NumberOfSigmasTPC(nTrack, fPID2));
-   //Double_t negnsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(ntrack, fPID));
    Double_t maxTPC = 1E20;
    Double_t maxTPC2 = 1E20;
-   //Double_t maxTOF = 1E20;
 
    // applies the cut differently depending on the PID and the momentum
-
    if(fHypothesis==kLambda0) {
-
-
-      //if (isTOFpos) {
-      // TPC: 5sigma cut for all
-      //if (posnsTPC > 5.0) return kFALSE;
-      // TOF: 3sigma
-      // maxTOF = 3.0;
-      //return (posnsTOF <= maxTOF);
-      //} else {
-      // TPC:
-     
-     
-         maxTPC = fPIDCutProton; 
-         maxTPC2 = fPIDCutPion; 
-
-      if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2)) ) {
-         AliDebugClass(2, "Failed check on V0 PID");
-         return kFALSE;
-      }
+     maxTPC = fPIDCutProton; 
+     maxTPC2 = fPIDCutPion;      
+     if (! ((posnsTPC <= maxTPC) && (negnsTPC2 <= maxTPC2)) ) {
+       AliDebugClass(2, "Failed check on V0 PID");
+       return kFALSE;
+     }
    }
-
+   
    if(fHypothesis==kLambda0Bar) {
-
-      //if (isTOFneg) {
-      // TPC: 5sigma cut for all
-      //if (negnsTPC > 5.0) return kFALSE;
-      // TOF: 3sigma
-      // maxTOF = 3.0;
-      //return (negnsTOF <= maxTOF);
-      //} else {
-      // TPC:
-
-      
-         maxTPC = fPIDCutProton;
-         maxTPC2 = fPIDCutPion;
-
-      if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
-         AliDebugClass(2, "Failed check on V0 PID");
-         return kFALSE;
-      }
+     maxTPC = fPIDCutProton;
+     maxTPC2 = fPIDCutPion;
+     if(! ((negnsTPC <= maxTPC) && (posnsTPC2 <= maxTPC2)) ) {
+       AliDebugClass(2, "Failed check on V0 PID");
+       return kFALSE;
+     }
    }
-
-
-
+   
+   //---------------------------------------------------------------
    // if we reach this point, all checks were successful
-   AliDebugClass(1, "Good AOD V0 (hallelujah)");
+   AliDebugClass(1, "Good AOD V0");
    AliDebugClass(1, Form("Mass: %d %f %f %d %d", fHypothesis, fMass, mass, filtermapP, filtermapN));
    return kTRUE;
 

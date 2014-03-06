@@ -2001,15 +2001,15 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
 	// averaging with number of events:
 	// average over number of events in each sub-bin
-	Int_t binStatsVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(binVertexLowEdge + 0.00001);
-	Int_t binStatsVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(binVertexUpEdge - 0.00001);
-	Int_t binStatsPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(binPsiLowEdge + 0.00001);
-	Int_t binStatsPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(binPsiUpEdge - 0.00001);
+	Int_t binStatsVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(binVertexLowEdge + 0.00001) + 0.00001;
+	Int_t binStatsVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(binVertexUpEdge - 0.00001) - 0.00001;
+	Int_t binStatsPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(binPsiLowEdge + 0.00001) + 0.00001;
+	Int_t binStatsPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(binPsiUpEdge - 0.00001) - 0.00001;
 
 	Double_t NEventsSubBin = (Double_t)hVertexCentrality->Integral(binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
 
-	//Printf("Averaging from %d < z < %d and %d < cent < %d ",binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
-	//Printf("Averaging from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",binVertexLowEdge,binVertexUpEdge,binPsiLowEdge,binPsiUpEdge,NEventsSubBin);
+	Printf("Averaging from %d < z < %d and %d < cent < %d ",binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
+	Printf("Averaging from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",binVertexLowEdge,binVertexUpEdge,binPsiLowEdge,binPsiUpEdge,NEventsSubBin);
 	fSame->Scale(NEventsSubBin);
 	
 	// OLD and NEW averaging:
@@ -2049,10 +2049,10 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
     // averaging with number of events:
     // first set to full range and then obtain number of all events 
-    Int_t binStatsAllVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(vertexZMin + 0.00001);
-    Int_t binStatsAllVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(vertexZMax - 0.00001);
-    Int_t binStatsAllPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(psiMin + 0.00001);
-    Int_t binStatsAllPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(psiMax - 0.00001);
+    Int_t binStatsAllVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(vertexZMin + 0.00001) + 0.00001;
+    Int_t binStatsAllVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(vertexZMax - 0.00001) - 0.00001;
+    Int_t binStatsAllPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(psiMin + 0.00001) + 0.00001;
+    Int_t binStatsAllPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(psiMax - 0.00001) - 0.00001;
 
     Double_t NEventsAll = (Double_t)hVertexCentrality->Integral(binStatsAllVertexLowEdge,binStatsAllVertexUpEdge,binStatsAllPsiLowEdge,binStatsAllPsiUpEdge);
     

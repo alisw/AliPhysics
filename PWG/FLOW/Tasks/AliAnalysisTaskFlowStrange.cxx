@@ -517,8 +517,10 @@ void AliAnalysisTaskFlowStrange::AddEventSpy(TString name) {
   tList->SetOwner();
   tH2D = new TH2D("VTXZ","VTXZ;PriVtxZ;SPDVtxZ",60,-25,+25,60,-25,+25); tList->Add( tH2D );
   tH2D = new TH2D("CCCC","CCCC;V0M;TRK",60,-10,110,60,-10,110);         tList->Add( tH2D );
-  tH2D = new TH2D("REFM","REFM;TPC ONLY;HYBRID",100,0,3000,100,0,3000); tList->Add( tH2D );
+  tH2D = new TH2D("HYBTPC","HYBTPC;TPC ONLY;HYBRID",100,0,3000,100,0,3000); tList->Add( tH2D );
+  tH1D = new TH1D("HYBTPCRat","HYBTPCRat;TPC/HYB",120,0.2,2.2); tList->Add( tH1D );
   tH2D = new TH2D("SPDVZE","SPDVZE;SPD Tracklets;Total Multiplicity in VZERO",100,0,3500,100,0,25000); tList->Add( tH2D );
+  tH1D = new TH1D("SPDVZERat","SPDVZERat;TotalMultiplicityVZERO/SPDTracklets",120,2,+12); tList->Add( tH1D );
   if(fReadMC) {
     tH1D = new TH1D("MCEP","MCEP;MCEP",100,-TMath::TwoPi(),TMath::TwoPi()); tList->Add( tH1D );
   }
@@ -528,8 +530,12 @@ void AliAnalysisTaskFlowStrange::AddEventSpy(TString name) {
 void AliAnalysisTaskFlowStrange::FillEventSpy(TString name) {
   ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("VTXZ"))->Fill( fPriVtxZ, fSPDVtxZ );
   ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("CCCC"))->Fill( fV0M, fTRK );
-  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("REFM"))->Fill( fRefMultTPC, fRefMultHyb );
+  ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("HYBTPC"))->Fill( fRefMultTPC, fRefMultHyb );
+  if(fRefMultHyb>0)
+    ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject("HYBTPCRat"))->Fill( double(fRefMultTPC)/double(fRefMultHyb) );
   ((TH2D*)((TList*)fList->FindObject(name.Data()))->FindObject("SPDVZE"))->Fill( fSPDtracklets, fVZETotM );
+  if(fSPDtracklets>0)
+    ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject("SPDVZERat"))->Fill( fVZETotM/fSPDtracklets );
   if(fReadMC) {
     ((TH1D*)((TList*)fList->FindObject(name.Data()))->FindObject("MCEP"))->Fill( fMCEP );
   }
@@ -545,8 +551,8 @@ void AliAnalysisTaskFlowStrange::AddMakeQSpy() {
   fList->Add(tList);
   tH1D = new TH1D("RFPTPC","TPC Refrence Multiplicity;multiplicity",3000,0,3000);     tList->Add( tH1D );
   tH1D = new TH1D("RFPVZE","VZERO Reference Multiplicity;multiplicity",3000,0,30000); tList->Add( tH1D );
-  tH1D = new TH1D("QmTPC","TPC Normalized Q vector;|Q|/M",3000,0,1);   tList->Add( tH1D );
-  tH1D = new TH1D("QmVZE","VZERO Normalized Q vector;|Q|/M",3000,0,1); tList->Add( tH1D );
+  tH1D = new TH1D("QmTPC","TPC Normalized Q vector;|Q|/#sqrt{M}",360,0,7);   tList->Add( tH1D );
+  tH1D = new TH1D("QmVZE","VZERO Normalized Q vector;|Q|/#sqrt{M}",360,0,7); tList->Add( tH1D );
   tH2D = new TH2D("TPCAllPhiEta","TPCall;Phi;Eta",180,0,TMath::TwoPi(),80,-0.9,+0.9); tList->Add( tH2D );
   tH2D = new TH2D("VZEAllPhiEta","VZEall;Phi;Eta",20,0,TMath::TwoPi(),40,-4.0,+6.0);  tList->Add( tH2D );
   tH1D = new TH1D("TPCPSI","TPCPSI;PSI",72,0,TMath::Pi()); tList->Add( tH1D );
@@ -778,15 +784,17 @@ Bool_t AliAnalysisTaskFlowStrange::MinimumRequirementsAA(AliAODEvent *tAOD) {
   if(!fSkipCentralitySelection) if(fThisCent<0||fThisCent>100) return kFALSE;
   // vtx z position compatibility within 5 mm
   if(TMath::Abs(fPriVtxZ-fSPDVtxZ)>0.5) return kFALSE;
-  // specific cuts for 2010h
-  if(fRunNumber>=136851&&fRunNumber<=139517) {
-  //if( tpc>400.0+26.0/15.0*hyb ) return kFALSE;
-  //if( mvze>3000.0+22.0/3.0*ntrklets ) return kFALSE;
-  }
-  // specific cuts for 2011h
-  if(fRunNumber>=166529&&fRunNumber<=170593) {
-  //if( tpc>400.0+26.0/15.0*hyb ) return kFALSE;
-  //if( mvze>3000.0+22.0/3.0*ntrklets ) return kFALSE;
+  if(fExtraEventRejection) {
+    // specific cuts for 2010h (AOD086)
+    if(fRunNumber>=136851&&fRunNumber<=139517) {
+      if(fRefMultTPC>1.118*fRefMultHyb+100) return kFALSE;
+      if(fRefMultTPC<1.118*fRefMultHyb-100) return kFALSE;
+    }
+    // specific cuts for 2011h (AOD145)
+    if(fRunNumber>=166529&&fRunNumber<=170593) {
+      if(fRefMultTPC>1.205*fRefMultHyb+100) return kFALSE;
+      if(fRefMultTPC<1.205*fRefMultHyb-100) return kFALSE;
+    }
   }
   return kTRUE;
 }
@@ -1892,13 +1900,13 @@ void AliAnalysisTaskFlowStrange::MakeQVectors() {
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIA"))->Fill( psivzea );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("VZEPSIC"))->Fill( psivzec );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPVZE"))->Fill( qvze );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZE"))->Fill( vze_qmnor );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmVZE"))->Fill( vze_qmnor*TMath::Sqrt(qvze) );
   //------
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSI"))->Fill( psitpc );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIA"))->Fill( psitpca );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("TPCPSIC"))->Fill( psitpcc );
   ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("RFPTPC"))->Fill( qtpc );
-  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPC"))->Fill( tpc_qmnor );
+  ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("QmTPC"))->Fill( tpc_qmnor*TMath::Sqrt(qtpc) );
   //------
   if(fReadMC) {
     ((TH1D*)((TList*)fList->FindObject("MakeQSpy"))->FindObject("PSIMCDIFFTPC"))->Fill( psitpc-fMCEP );
@@ -3234,16 +3242,25 @@ void AliAnalysisTaskFlowStrange::ComputeTrackVn(TString name) {
     spvzea->SetBinError(i,0);
     spvzec->SetBinContent(i,0);
     spvzec->SetBinError(i,0);
+    double asw = uQa->GetBinEntries(i);
+    double bsw = uQc->GetBinEntries(i);
+    double csw = qaqc->GetBinEntries(i);
+    if(asw<1e-1||bsw<1e-1||csw<1e-1) continue;
+    double asww = pasww->At(i);
+    double bsww = pbsww->At(i);
+    double csww = pcsww->At(i);
+    if(asww<1e-1||bsww<1e-1||csww<1e-1) continue;
+    if((1<asww/asw/asw)||(1<bsww/bsw/bsw)||(1<csww/csw/csw)) continue;
     double a = uQa->GetBinContent(i);
     double b = uQc->GetBinContent(i);
     double c = qaqc->GetBinContent(i);
     double at = qaqt->GetBinContent(i);
     double bt = qcqt->GetBinContent(i);
-    if(TMath::AreEqualAbs(a,0,1e-100)) continue;
-    if(TMath::AreEqualAbs(b,0,1e-100)) continue;
-    if(TMath::AreEqualAbs(c,0,1e-100)) continue;
-    if(TMath::AreEqualAbs(at,0,1e-100)) continue;
-    if(TMath::AreEqualAbs(bt,0,1e-100)) continue;
+    if(TMath::AreEqualAbs(a,0,1e-10)) continue;
+    if(TMath::AreEqualAbs(b,0,1e-10)) continue;
+    if(TMath::AreEqualAbs(c,0,1e-10)) continue;
+    if(TMath::AreEqualAbs(at,0,1e-10)) continue;
+    if(TMath::AreEqualAbs(bt,0,1e-10)) continue;
     // nominal spvzea
     double aa = c*at/bt;
     if(aa<1e-100) continue;
@@ -3263,25 +3280,16 @@ void AliAnalysisTaskFlowStrange::ComputeTrackVn(TString name) {
     vnga = TMath::Sqrt(vnga);
     spvzega->SetBinContent(i,vnga);
     // errors
-    double asw = uQa->GetBinEntries(i);
-    double bsw = uQc->GetBinEntries(i);
-    double csw = qaqc->GetBinEntries(i);
-    if(asw<1e-100||bsw<1e-100||csw<1e-100) continue;
-    double asww = pasww->At(i);
-    double bsww = pbsww->At(i);
-    double csww = pcsww->At(i);
-    if(asww<1e-100||bsww<1e-100||csww<1e-100) continue;
-    if((1<asww/asw/asw)||(1<bsww/bsw/bsw)||(1<csww/csw/csw)) continue;
     double ab = uQauQc->GetBinContent(i);
     double ac = uQaqaqc->GetBinContent(i);
     double bc = uQcqaqc->GetBinContent(i);
     double absw = uQauQc->GetBinEntries(i);
     double acsw = uQaqaqc->GetBinEntries(i);
     double bcsw = uQcqaqc->GetBinEntries(i);
-    if(TMath::AreEqualAbs(1,absw/asw/bsw,1e-100)||TMath::AreEqualAbs(1,bcsw/bsw/csw,1e-100)||TMath::AreEqualAbs(1,acsw/asw/csw,1e-100)) continue;
     double ea = uQa->GetBinError(i)*TMath::Sqrt(asww)/asw/TMath::Sqrt(1-asww/asw/asw);
     double eb = uQc->GetBinError(i)*TMath::Sqrt(bsww)/bsw/TMath::Sqrt(1-bsww/bsw/bsw);
     double ec = qaqc->GetBinError(i)*TMath::Sqrt(csww)/csw/TMath::Sqrt(1-csww/csw/csw);
+    if(TMath::AreEqualAbs(1,absw/asw/bsw,1e-100)||TMath::AreEqualAbs(1,bcsw/bsw/csw,1e-100)||TMath::AreEqualAbs(1,acsw/asw/csw,1e-100)) continue;
     double eab = (ab-a*b)/(1-absw/asw/bsw)*absw/asw/bsw;
     double ebc = (bc-b*c)/(1-bcsw/bsw/csw)*bcsw/bsw/csw;
     double eac = (ac-a*c)/(1-acsw/asw/csw)*acsw/asw/csw;

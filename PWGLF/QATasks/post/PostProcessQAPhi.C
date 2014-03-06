@@ -1,4 +1,4 @@
-void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root",char* name_fout="fig_lf_Phi",char* name_list="RsnHistMini_Phi_PhiNsigma_KTPCnsig30",char* name_hist_base="RsnMini_phi.PhiNsigma_KTPCnsig30"){
+void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root",char* name_fout="QAphi",char* name_list="RsnHistMini_Phi_PhiNsigma_KTPCnsig30",char* name_hist_base="RsnMini_phi.PhiNsigma_KTPCnsig30"){
   //This macro was written by Anders Knospe (anders.knospe@cern.ch).
   //5 November 2013
 
@@ -62,13 +62,13 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   TCanvas* c=new TCanvas("c","",10,10,1500,500);
   c->SetFillColor(0);
 
-  TPad* p1=new TPad("p1","",0.,0.,1./3,1.);
+  TPad* p1=new TPad("p1_0","",0.,0.,1./3,1.);
   p1->SetFillColor(0);
 
-  TPad* p2=new TPad("p2","",1./3,0.,2./3,1.);
+  TPad* p2=new TPad("p2_0","",1./3,0.,2./3,1.);
   p2->SetFillColor(0);
 
-  TPad* p3=new TPad("p3","",2./3,0.,1.,1.);
+  TPad* p3=new TPad("p3_0","",2./3,0.,1.,1.);
   p3->SetFillColor(0);
   p3->SetLogy();
 
@@ -93,7 +93,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   p2->Draw();
   p3->Draw();
 
-  c->SaveAs(Form("%s.eps(",name_fout));
+  c->SaveAs(Form("%s.pdf(",name_fout));
 
   delete p1;
   delete p2;
@@ -148,11 +148,11 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   c=new TCanvas("c","",10,10,1000,500);
   c->SetFillColor(0);
 
-  p1=new TPad("p11","",0.,0.,0.5,1.);
+  p1=new TPad("p1_1","",0.,0.,0.5,1.);
   p1->SetFillColor(0);
   p1->SetRightMargin(0.05);
 
-  p2=new TPad("p21","",0.5,0.,1.,1.);
+  p2=new TPad("p2_1","",0.5,0.,1.,1.);
   p2->SetFillColor(0);
   p2->SetRightMargin(0.05);
 
@@ -185,7 +185,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   p1->Draw();
   p2->Draw();
 
-  c->SaveAs(Form("%s.eps",name_fout));
+  c->SaveAs(Form("%s.pdf",name_fout));
 
   delete p1;
   delete p2;
@@ -362,7 +362,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
 
   //----- plot the fits -----
 
-  c=new TCanvas("c","",10,10,1000,1000);
+  c=new TCanvas("c","",10,10,1000,750);
   c->SetFillColor(0);
 
   p1=new TPad("p1_2","",0,0.5,0.5,1);
@@ -535,7 +535,7 @@ void PostProcessQAPhi(char* system="pp276",char* name_fin="AnalysisResults.root"
   p3->Draw();
   p4->Draw();
 
-  c->SaveAs(Form("%s.eps)",name_fout));
+  c->SaveAs(Form("%s.pdf)",name_fout));
 
   //----- print out results -----
 
@@ -745,4 +745,3 @@ If the width deviates from the expected value, it is possible that the resolutio
 [3]: Analysis Note: A. G. Knospe, "Yield of phi mesons at low pT in Pb-Pb collisions at 2.76 TeV (2010 data)", ALICE-ANA-2012-300, https://aliceinfo.cern.ch/Notes/node/42
  
   -----------------------------------------------*/
-

@@ -363,8 +363,7 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
        hvar19->Draw("histo");
       //Pad 6
       // empty 
-     if      (collidingsystem == 1) c3->SaveAs("fig_lf_Multistrange.pdf)");
-     else if (collidingsystem == 0) c3->SaveAs("fig_lf_Multistrange.pdf");
+     c3->SaveAs("fig_lf_Multistrange.pdf");
 
     
      //DEFINE 4st CANVAS AND DRAW PLOTS
@@ -432,7 +431,8 @@ void PostProcessQAMultistrange(Int_t   icasType        = 0,                     
       else                                                                  pave1->AddText("#color[2]{NOT OK!! Problem.}");
       pave1->Draw();
       cout<<"   "<<refwidth - 0.0003<<"<"<<sigmaGauss<<"<"<<refwidth + 0.0003<<endl;
-    
+      c4->SaveAs("fig_lf_Multistrange.pdf");   
+ 
      //DEFINE 5st CANVAS AND DRAW PLOTS
      if (collidingsystem == 0) {
          TCanvas *c5 = new TCanvas("c5","",1200,270);

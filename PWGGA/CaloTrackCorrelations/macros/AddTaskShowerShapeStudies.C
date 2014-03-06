@@ -344,13 +344,13 @@ AliCaloTrackReader * ConfigureReader()
   
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
+    reader->SwitchOnPileUpEventRejection();   // remove pileup by default
     reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
     reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
+    reader->SwitchOffPileUpRejection();        // remove pileup by default
     reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
     reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex    
   }

@@ -70,7 +70,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
    fBigOutput(kFALSE),
-   fMixPrintRefresh(-1)
+   fMixPrintRefresh(-1),
+   fMaxNDaughters(-1),
+   fCheckP(kFALSE)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -107,7 +109,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
    fBigOutput(kFALSE),
-   fMixPrintRefresh(-1)
+   fMixPrintRefresh(-1),
+   fMaxNDaughters(-1),
+   fCheckP(kFALSE)
 {
 //
 // Default constructor.
@@ -149,7 +153,9 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fESDtrackCuts(copy.fESDtrackCuts),
    fMiniEvent(0x0),
    fBigOutput(copy.fBigOutput),
-   fMixPrintRefresh(copy.fMixPrintRefresh)
+   fMixPrintRefresh(copy.fMixPrintRefresh),
+   fMaxNDaughters(copy.fMaxNDaughters),
+   fCheckP(copy.fCheckP)
 {
 //
 // Copy constructor.
@@ -194,6 +200,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fESDtrackCuts = copy.fESDtrackCuts;
    fBigOutput = copy.fBigOutput;
    fMixPrintRefresh = copy.fMixPrintRefresh;
+   fMaxNDaughters = copy.fMaxNDaughters;
+   fCheckP = copy.fCheckP;
    return (*this);
 }
 
@@ -909,7 +917,8 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          //get mother pdg code
          if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
-         if (part->Particle()->GetNDaughters() < 2) continue;
+         if (part->Particle()->GetNDaughters() < 2) continue; 
+	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
          label1 = part->Particle()->GetDaughter(0);
          label2 = part->Particle()->GetDaughter(1);
          daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
@@ -925,6 +934,9 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (!okMatch) continue;
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+     				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
+     				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
          // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
@@ -959,6 +971,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
          if (part->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
+	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
          label1 = part->GetDaughter(0);
          label2 = part->GetDaughter(1);
          daughter1 = (AliAODMCParticle *)list->At(label1);
@@ -974,7 +987,11 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (!okMatch) continue;
-         // assign momenta to computation object
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+     				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
+     				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue; 
+	 
+	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
          // do computations

@@ -50,6 +50,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   if (remBC) {
     EMCALSupply->SwitchOnClusterBadChannelCheck();
     EMCALSupply->SwitchOnBadCellRemove();
+    EMCALSupply->SwitchOnUpdateCell();
   } else {
     EMCALSupply->SwitchOffClusterBadChannelCheck();
     EMCALSupply->SwitchOffBadCellRemove();
@@ -94,13 +95,17 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   else
     EMCALSupply->SwitchOffCellFiducialRegion();
 
-  if (calibTime)
+  if (calibTime) {
     EMCALSupply->SwitchOnCalibrateTime();
+    EMCALSupply->SwitchOnUpdateCell();
+  }
   else
     EMCALSupply->SwitchOffCalibrateTime();
 
-  if (calibEnergy)
+  if (calibEnergy) {
     EMCALSupply->SwitchOnCalibrateEnergy();
+    EMCALSupply->SwitchOnUpdateCell();
+  }
   else
     EMCALSupply->SwitchOffCalibrateEnergy();
 

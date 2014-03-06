@@ -189,6 +189,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fSameElecPtMC_eta_TPC;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
+ TH2D                   *CheckDCA;  
  THnSparseD             *Hpi0pTcheck; 
  THnSparseD             *HETApTcheck; 
  TH2D                   *HphopTcheck; 
@@ -208,6 +209,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fIncRecoMaxE;
  TH2D                   *fPhoRecoMaxE;
  TH2D                   *fSamRecoMaxE; 
+ TH2D                   *fPhoVertexReco0;
+ TH2D                   *fPhoVertexReco1;
+ TH2D                   *fPhoVertexReco2;
+ TH2D                   *fPhoVertexReco3;
 
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];
