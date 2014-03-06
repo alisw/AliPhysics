@@ -24,6 +24,9 @@ public:
 
 private:
   AliSpectraAODTrackCuts * fTrackCuts; // TrackCuts
+
+  AliESETrkCut(const AliESETrkCut&); // not implemented
+  AliESETrkCut& operator=(const AliESETrkCut&); // not implemented
   
   ClassDef(AliESETrkCut, 1)
 };
@@ -45,6 +48,10 @@ private:
   AliSpectraAODEventCuts * fEventCuts; // EventCuts, static memeber for copying
   AliSpectraAODTrackCuts * fTrackCuts;  // pointer to track cuts, needed 
 
+  AliESEEvtCut(const AliESEEvtCut&); // not implemented
+  AliESEEvtCut& operator=(const AliESEEvtCut&); // not implemented
+
+
   ClassDef(AliESEEvtCut,1)
 };
 
@@ -63,6 +70,8 @@ public:
 private:  
   AliSpectraAODEventCuts* fEventCuts; // EventCuts
 
+  AliAnalysisESESetter(const AliAnalysisESESetter&); // not implemented
+  AliAnalysisESESetter& operator=(const AliAnalysisESESetter&); // not implemented
 
   ClassDef(AliAnalysisESESetter, 1)
 };

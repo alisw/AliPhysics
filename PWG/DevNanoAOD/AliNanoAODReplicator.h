@@ -97,8 +97,6 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   void FilterMC(const AliAODEvent& source);
  
 
-  Double_t fBzkG;     // z componenent of field in kG
-
  private:
   
   AliAnalysisCuts* fTrackCut; // decides which tracks to keep
