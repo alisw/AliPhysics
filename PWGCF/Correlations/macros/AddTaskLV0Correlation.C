@@ -36,7 +36,8 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
 	//Mult Binning for pool	pp 
 	Double_t cent_mult_binlimitsPP[] = {  0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
 		100,110,120,130,140,150,160,170,180,190,
-		200,210,220,230,240,250,260,270,280,290,300};
+		200,210,220,230,240,250,260,270,280,290,
+		300,500,1000,2000};
 	
 	Int_t cent_mult_bin_numbPP = sizeof(cent_mult_binlimitsPP)/sizeof(Double_t) - 1;
 	
