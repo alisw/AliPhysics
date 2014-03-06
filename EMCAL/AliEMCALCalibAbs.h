@@ -80,11 +80,11 @@ public:
 
   // Read and Write txt I/O methods are normally not used, but are useful for 
   // filling the object before it is saved in OCDB 
-  void ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteTextCalibAbsInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadRootCalibAbsInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void ReadTreeCalibAbsInfo(TTree *tree, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
-  void WriteRootCalibAbsInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to 12 SuperModules
+  void ReadTextCalibAbsInfo(Int_t nSM, const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to fgkEMCALModules
+  void WriteTextCalibAbsInfo(const TString &txtFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to fgkEMCALModules
+  void ReadRootCalibAbsInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to fgkEMCALModules
+  void ReadTreeCalibAbsInfo(TTree *tree, Bool_t swapSides=kFALSE); // info file is for nSm=1 to fgkEMCALModules
+  void WriteRootCalibAbsInfo(const TString &rootFileName, Bool_t swapSides=kFALSE); // info file is for nSm=1 to fgkEMCALModules
 
   virtual ~AliEMCALCalibAbs();
 
