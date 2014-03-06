@@ -92,6 +92,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
   fDoClusterize(kTRUE),
   fClusterBadChannelCheck(kTRUE),
   fRejectExoticClusters(kFALSE),
+  fRejectExoticCells(kFALSE),
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kTRUE),
@@ -143,6 +144,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   fDoClusterize(kTRUE),
   fClusterBadChannelCheck(kTRUE),
   fRejectExoticClusters(kFALSE),
+  fRejectExoticCells(kFALSE),
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
   fRecalDistToBadChannels(kTRUE),
@@ -374,7 +376,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	    cellEFrac = 0;
 	  }
 	}
-	
+
+	if(!AcceptCell(cellNumber)) continue;
+
 	AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
 									(Float_t)cellAmplitude, (Float_t)cellTime,
 									AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
@@ -501,6 +505,21 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     }
     break;
   }
+}
+
+//________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterizeFast::AcceptCell(Int_t cellNumber) {
+
+  Bool_t accept = kTRUE;
+  if(fRejectExoticCells) {
+    //Remove exotic cells before making digits
+    fRecoUtils->SwitchOnRejectExoticCell();//switch on and off
+    Int_t bunchCrossNo = InputEvent()->GetBunchCrossNumber();
+    Bool_t isEx = fRecoUtils->IsExoticCell(cellNumber, fCaloCells, bunchCrossNo);
+    accept = !isEx;
+    fRecoUtils->SwitchOffRejectExoticCell();//switch on and off
+  }
+  return accept;
 }
 
 //________________________________________________________________________________________
