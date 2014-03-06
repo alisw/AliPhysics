@@ -50,6 +50,7 @@ public:
   static TClonesArray * ReadFromASCIIFile(const char * fileName, const char * separators = " \t");
   static TTree * ReadFromASCIIFileAsTree(const char * fileName, const char * separators = " \t");
   static void SaveAsASCIIFile(TClonesArray * arr, const char * filename, const char * separator = " ", Int_t colWidth = 7);  
+  static void WriteThermusFile(TClonesArray * arr, const char * filename, Int_t colWidth = 10);
   static TClonesArray * GetEntriesMatchingSelection(TTree * tree, TString selection); 
 
   // Misc helpers
@@ -57,7 +58,7 @@ public:
   Bool_t CheckForDuplicates(TClonesArray * arr) ;
   virtual void Print (Option_t * opt = "") const;
   static Float_t GetError(TString error, Float_t yield) ;
-  static const char * FormatCol(const char * text, Int_t width,  const char * sep) ;
+  static const char * FormatCol(const char * text, Int_t width,  const char * sep =" ") ;
   static Double_t RoundToSignificantFigures(double num, int n) ;  
   Bool_t operator==(const AliParticleYield& rhs);
   Bool_t IsTheSameMeasurement(AliParticleYield &rhs);
