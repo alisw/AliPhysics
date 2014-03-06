@@ -37,7 +37,8 @@ AliZDCHit::AliZDCHit() :
   fEnergy(0.), 
   fPDGCode(0),
   fMotherPDGCode(0),
-  fTrackTOF(0.)
+  fTrackTOF(0.),
+  fTrackEta(0.)
 
 {
   //
@@ -58,7 +59,8 @@ AliZDCHit::AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits) :
   fEnergy(hits[9]), 
   fPDGCode((Int_t) hits[10]),
   fMotherPDGCode((Int_t) hits[11]),
-  fTrackTOF(hits[12])
+  fTrackTOF(hits[12]),
+  fTrackEta(hits[13])
 
 {
   //
@@ -83,7 +85,8 @@ AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
   fEnergy(oldhit.GetEnergy()),
   fPDGCode(oldhit.GetPDGCode()),
   fMotherPDGCode(oldhit.GetMotherPDGCode()),
-  fTrackTOF(oldhit.GetTrackTOF())
+  fTrackTOF(oldhit.GetTrackTOF()),
+  fTrackEta(oldhit.GetTrackEta())
 {
   // Copy constructor
   fX = oldhit.X();
@@ -108,6 +111,7 @@ AliZDCHit &AliZDCHit::operator= (const AliZDCHit &hit)
   fPDGCode = hit.GetPDGCode();
   fMotherPDGCode = hit.GetMotherPDGCode();
   fTrackTOF = hit.GetTrackTOF();
+  fTrackEta = hit.GetTrackEta();
 
   fX = hit.X();
   fY = hit.Y();
@@ -122,10 +126,10 @@ AliZDCHit &AliZDCHit::operator= (const AliZDCHit &hit)
 void AliZDCHit::Print(Option_t *) const 
 {
    // Print method
-   printf("\t AliZDCHit: track %d PDGcode %d TOF %1.1f ns E_prim = %1.2f GeV SFlag = %1.0f\n" 
+   printf("\t AliZDCHit: track %d eta %f PDGcode %d TOF %1.1f ns E_prim = %1.2f GeV \n" 
 	  "\t DETECTOR (%d, %d)  (X, Y)_impact (%f, %f) cm\n"
           "\t PMQLight %1.0f, PMCLight %1.0f,  E_dep %1.2f\n ", 
-          fTrack,fPDGCode,fTrackTOF,fPrimKinEn,fSFlag,
+          fTrack,fTrackEta,fPDGCode,fTrackTOF,fPrimKinEn,
 	  fVolume[0],fVolume[1],fXImpact,fYImpact,
           fLightPMQ,fLightPMC,fEnergy);
 }

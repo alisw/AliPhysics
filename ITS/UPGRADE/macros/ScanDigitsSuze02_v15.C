@@ -71,9 +71,9 @@ Int_t GetSuzeLimits(Int_t DataSizePerWindowInRow, Int_t Version, Int_t& Limit32,
   }
 }
 
-void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnlyModulesWithSignal=0, Bool_t AddQED=0, Int_t nEvents=-1, Int_t NRowsEncodingWindow=4,  Int_t NColsEncodingWindow=5, Int_t SuzeLimitsVersion=99, Bool_t SaveResults=kTRUE){ 
+void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnlyChipsWithSignal=0, Bool_t AddQED=0, Int_t nEvents=-1, Int_t NRowsEncodingWindow=4,  Int_t NColsEncodingWindow=5, Int_t SuzeLimitsVersion=99, Bool_t SaveResults=kTRUE){ 
 //CollectMode - defines which digits are added to SUZE matrix (-1 - Noise, +1 - Signal, 0 - Noise+Signal)
-//ProcessOnlyModulesWithSignal - defines if only modules with signal hits are processed, if 0 all the modules are processed
+//ProcessOnlyChipsWithSignal - defines if only modules with signal hits are processed, if 0 all the modules are processed
  
   Int_t DataSizePerWindowInRow = 8 + NRowsEncodingWindow*NColsEncodingWindow+TMath::Ceil(TMath::Log2(NRowsEncodingWindow));
 
@@ -84,7 +84,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   if(CollectMode==-1) cout<<" taking only noise pixels";
   else if(CollectMode==1) cout<<" taking only signal pixels";
   cout<<endl;    
-  if(ProcessOnlyModulesWithSignal) cout<<"Only modules with signal hits will be processed";
+  if(ProcessOnlyChipsWithSignal) cout<<"Only modules with signal hits will be processed";
   else cout<<"All modules will be processed";
   cout<<endl;
   //Int_t debugOn=0; //DEBUG
@@ -108,7 +108,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   Int_t nWindowsPer32colsMin=nWindowsPer32colsMax;
 
   Char_t logfile_name[100];
-  sprintf(logfile_name,"ScanDigits_v15_log_Cycle_%d_nEvents_%d_EncWindow_%dx%d_SuzeLimitsVersion_%d_Mode_%d-%d_QED_%d.log",Cycle,nEvents,NRowsEncodingWindow,NColsEncodingWindow,SuzeLimitsVersion,CollectMode,ProcessOnlyModulesWithSignal,AddQED);
+  sprintf(logfile_name,"ScanDigits_v15_log_Cycle_%d_nEvents_%d_EncWindow_%dx%d_SuzeLimitsVersion_%d_Mode_%d-%d_QED_%d.log",Cycle,nEvents,NRowsEncodingWindow,NColsEncodingWindow,SuzeLimitsVersion,CollectMode,ProcessOnlyChipsWithSignal,AddQED);
   FILE *logfile = fopen (logfile_name,"w");
 
   gAlice=NULL;
@@ -127,7 +127,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   AliITSUGeomTGeo* gm = new AliITSUGeomTGeo(kTRUE,kTRUE);
   //
   Int_t nLayers = gm->GetNLayers();
-  Int_t nModules = gm->GetNModules();
+  Int_t nChips = gm->GetNChips();
 
   AliLoader *dl = runLoader->GetDetectorLoader("ITS");
 
@@ -148,26 +148,26 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   if(nEvents==-1) nEvents=runLoader->GetNumberOfEvents();
   printf("N Events : %i \n",nEvents);
 
-  //Module sizes
-  Int_t Module_Ncols=1362;
-  Int_t Module_Nrows_small=320;
-  Int_t Module_Nrows_big=640;
+  //Chip sizes
+  Int_t Chip_Ncols=1362;
+  Int_t Chip_Nrows_small=320;
+  Int_t Chip_Nrows_big=640;
   Int_t ColAddress=0;
   Int_t RowAddress=0;
 
   Int_t DataSize=0;
-  //Int_t ModuleSum=0;
+  //Int_t ChipSum=0;
 
-  TH1F* OverflowCodesPerModule = new TH1F("OverflowCodesPerModule","OverflowCodesPerModule",8,0,8);
+  TH1F* OverflowCodesPerChip = new TH1F("OverflowCodesPerChip","OverflowCodesPerChip",8,0,8);
   TH1F* OverflowCodes = new TH1F("OverflowCodes","Overflow codes",8,0,8);
   TH1F* OverflowCodesPerLayer[nLayers];
 
-  TH1F* nDigitsPerEncodingWindowPerModule = new TH1F("nDigitsPerEncodingWindowPerModule","nDigitsPerEncodingWindowPerModule",NRowsEncodingWindow*NColsEncodingWindow,1,NRowsEncodingWindow*NColsEncodingWindow+1);
+  TH1F* nDigitsPerEncodingWindowPerChip = new TH1F("nDigitsPerEncodingWindowPerChip","nDigitsPerEncodingWindowPerChip",NRowsEncodingWindow*NColsEncodingWindow,1,NRowsEncodingWindow*NColsEncodingWindow+1);
   TH1F* nDigitsPerEncodingWindow = new TH1F("nDigitsPerEncodingWindow","nDigitsPerEncodingWindow",NRowsEncodingWindow*NColsEncodingWindow,1,NRowsEncodingWindow*NColsEncodingWindow+1);
   TH1F* nDigitsPerEncodingWindowPerLayer[nLayers];
 
-  Int_t nDigitsLostPerModule=0;
-  Int_t nDigitsEncodedPerModule=0;
+  Int_t nDigitsLostPerChip=0;
+  Int_t nDigitsEncodedPerChip=0;
   Int_t nDigitsLostPerEvent=0;
   Int_t nDigitsPerEvent=0;
   Double_t FractionDigitsLostPerEvent=0;
@@ -175,7 +175,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   Int_t nDigitsLostPerEventPerLayer[nLayers];
   Int_t nDigitsPerEventPerLayer[nLayers];
   Double_t FractionDigitsLostPerEventPerLayer[nLayers];
-  Int_t MaxNWindowsPerLadderPerLayerPerEvent[nLayers];
+  Int_t MaxNWindowsPerStavePerLayerPerEvent[nLayers];
 
   TH1I* NtracksPerEvent_hist = new TH1I("NtracksPerEvent","Ntracks per event",nEvents,0,nEvents);
   TH1I* NdigitsPerEvent_hist = new TH1I("NdigitsPerEvent","Ndigits per event",nEvents,0,nEvents);
@@ -186,27 +186,27 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   TH1D* FractionDigitsLostPerEvent_hist = new TH1D("FractionDigitsLostPerEvent","Fraction of Digits lost per event",nEvents,0,nEvents);
   TH1D* FractionDigitsLostPerEventPerLayer_hist[nLayers];
 
-  TH1I* MaxNWindowsPerLadderPerLayerPerEvent_hist[nLayers];
+  TH1I* MaxNWindowsPerStavePerLayerPerEvent_hist[nLayers];
 
   Int_t nWindows=0;
 
   //complete maps
-  TH2I* nDigitsPerModulePerEvent = new TH2I("nDigitsPerModulePerEvent","nDigits per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2I* nDigitsEncodedPerModulePerEvent = new TH2I("nDigitsEncodedPerModulePerEvent","nDigits encoded per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2I* nDigitsLostPerModulePerEvent = new TH2I("nDigitsLostPerModulePerEvent","nDigits lost per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2F* FractionDigitsLostPerModulePerEvent = new TH2F("FractionDigitsLostPerModulePerEvent","Fraction of digits lost per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2I* nEncodingWindowsPerModulePerEvent = new TH2I("nEncodingWindowsPerModulePerEvent","Encoding windows per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2F* nDigitsPerEncodingWindowPerModulePerEvent = new TH2F("nDigitsPerEncodingWindowPerModulePerEvent","Average digits per encoding window per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
+  TH2I* nDigitsPerChipPerEvent = new TH2I("nDigitsPerChipPerEvent","nDigits per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2I* nDigitsEncodedPerChipPerEvent = new TH2I("nDigitsEncodedPerChipPerEvent","nDigits encoded per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2I* nDigitsLostPerChipPerEvent = new TH2I("nDigitsLostPerChipPerEvent","nDigits lost per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2F* FractionDigitsLostPerChipPerEvent = new TH2F("FractionDigitsLostPerChipPerEvent","Fraction of digits lost per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2I* nEncodingWindowsPerChipPerEvent = new TH2I("nEncodingWindowsPerChipPerEvent","Encoding windows per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2F* nDigitsPerEncodingWindowPerChipPerEvent = new TH2F("nDigitsPerEncodingWindowPerChipPerEvent","Average digits per encoding window per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
 
-  TH2I* nWindowsPerFSBBMinPerModulePerEvent = new TH2I("nWindowsPerFSBBMinPerModulePerEvent","nWindowsPerFSBBMin per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2I* nWindowsPerHalfFSBBMinPerModulePerEvent = new TH2I("nWindowsPerHalfFSBBMinPerModulePerEvent","nWindowsPerHalfFSBBMin per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
-  TH2I* nWindowsPer32colsMinPerModulePerEvent = new TH2I("nWindowsPer32colsMinPerModulePerEvent","nWindowsPer32colsMin per Module per Event",nModules,0,nModules,nEvents,0,nEvents);
+  TH2I* nWindowsPerFSBBMinPerChipPerEvent = new TH2I("nWindowsPerFSBBMinPerChipPerEvent","nWindowsPerFSBBMin per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2I* nWindowsPerHalfFSBBMinPerChipPerEvent = new TH2I("nWindowsPerHalfFSBBMinPerChipPerEvent","nWindowsPerHalfFSBBMin per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
+  TH2I* nWindowsPer32colsMinPerChipPerEvent = new TH2I("nWindowsPer32colsMinPerChipPerEvent","nWindowsPer32colsMin per Chip per Event",nChips,0,nChips,nEvents,0,nEvents);
 
-  TH2F* DataSizePerModulePerEvent = new TH2F("DataSizePerModulePerEvent","DataSizePerModulePerEvent",nModules,0,nModules,nEvents,0,nEvents);
+  TH2F* DataSizePerChipPerEvent = new TH2F("DataSizePerChipPerEvent","DataSizePerChipPerEvent",nChips,0,nChips,nEvents,0,nEvents);
 
-  Int_t current_ladder=-1;
+  Int_t current_stave=-1;
   Int_t current_layer=-1;
-  Double_t NWindowsPerLadder=0;
+  Double_t NWindowsPerStave=0;
 
   for(Int_t i=0; i<nLayers; i++){
     nDigitsLostPerEventPerLayer[i]=0;
@@ -216,8 +216,8 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
     NdigitsPerEventPerLayer_hist[i] = new TH1I(Form("NdigitsPerEventPerLayer_%d",i),Form("Ndigits at layer %d",i),nEvents,0,nEvents);
     FractionDigitsLostPerEventPerLayer_hist[i] = new TH1D(Form("FractionDigitsLostPerEventPerLayer_%d",i),Form("Fraction of digits lost per event at layer %d",i),nEvents,0,nEvents);
 
-    MaxNWindowsPerLadderPerLayerPerEvent[i]=0;
-    MaxNWindowsPerLadderPerLayerPerEvent_hist[i] = new TH1I(Form("MaxNWindowsPerLadderPerLayerPerEvent_%d",i),Form("Max number of windows per ladder per event at layer %d",i),nEvents,0,nEvents);
+    MaxNWindowsPerStavePerLayerPerEvent[i]=0;
+    MaxNWindowsPerStavePerLayerPerEvent_hist[i] = new TH1I(Form("MaxNWindowsPerStavePerLayerPerEvent_%d",i),Form("Max number of windows per stave per event at layer %d",i),nEvents,0,nEvents);
 
     OverflowCodesPerLayer[i] = new TH1F(Form("OverflowCodesPerLayer_%d",i),Form("Overflow codes at layer %d",i),8,0,8);
     nDigitsPerEncodingWindowPerLayer[i] = new TH1F(Form("nDigitsPerEncodingWindowPerLayer_%d",i),Form("nDigitsPerEncodingWindowPerLayer_%d",i),NRowsEncodingWindow*NColsEncodingWindow,1,NRowsEncodingWindow*NColsEncodingWindow+1);
@@ -245,50 +245,50 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
     for(Int_t i=0; i<nLayers; i++){
       nDigitsPerEventPerLayer[i]=0;
       nDigitsLostPerEventPerLayer[i]=0;
-      MaxNWindowsPerLadderPerLayerPerEvent[i]=0;
+      MaxNWindowsPerStavePerLayerPerEvent[i]=0;
     }
-    current_ladder=-1;
+    current_stave=-1;
     current_layer=-1;
-    NWindowsPerLadder=0;
+    NWindowsPerStave=0;
     
     Int_t ndigQED=0;
     
-    for (Int_t imod=0;imod<nModules;imod++) {
-      AliITSUSuze02* Module;
-      nDigitsLostPerModule=0;
-      nDigitsEncodedPerModule=0;
+    for (Int_t imod=0;imod<nChips;imod++) {
+      AliITSUSuze02* Chip;
+      nDigitsLostPerChip=0;
+      nDigitsEncodedPerChip=0;
       digTree->GetEntry(imod); 
       
       if(AddQED){
         digTreeQED->GetEntry(imod);
         ndigQED = digArrQED->GetEntries();
       }
-      //Int_t detType = gm->GetModuleDetTypeID(imod);
+      //Int_t detType = gm->GetChipChipTypeID(imod);
       //AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
-      Int_t lay,lad,det;
+      Int_t lay,sta,det;
       Int_t ndig  = digArr->GetEntries();
       
       Int_t ndig_in_cycle=0; 
       Int_t ndig_signal_in_cycle=0;
       if (ndig<1) continue;
-      gm->GetModuleId(imod, lay,lad,det);
-//       printf("\nModule %3d: (det %2d in ladder %2d of Layer %d) | NDigits: %4d\n",imod,det,lad,lay,ndig);
+      gm->GetChipId(imod, lay,sta,det);
+//       printf("\nChip %3d: (det %2d in stave %2d of Layer %d) | NDigits: %4d\n",imod,det,sta,lay,ndig);
       //    
-      //if(iEvent==7 && lay==2) cout<<"Module #"<<imod<<endl;     //!!!DEBUG   
+      //if(iEvent==7 && lay==2) cout<<"Chip #"<<imod<<endl;     //!!!DEBUG   
       //if(iEvent==7 && lay==2 && imod==363) debugOn=1; //continue;  //!!!DEBUG
       //else debugOn=0; 
       if(lay>=0 && lay <=2){
-        Module = new AliITSUSuze02(Module_Nrows_small,Module_Ncols);
+        Chip = new AliITSUSuze02(Chip_Nrows_small,Chip_Ncols);
       }
       else{
-        Module = new AliITSUSuze02(Module_Nrows_big,Module_Ncols);
+        Chip = new AliITSUSuze02(Chip_Nrows_big,Chip_Ncols);
       }
       
-      Module->SetEncodingWindowSize(NRowsEncodingWindow,NColsEncodingWindow);
-      Module->SetQuotas(nWindowsPer32colsMax,nWindowsPerHalfFSBBMax,nWindowsPerFSBBMax);
+      Chip->SetEncodingWindowSize(NRowsEncodingWindow,NColsEncodingWindow);
+      Chip->SetQuotas(nWindowsPer32colsMax,nWindowsPerHalfFSBBMax,nWindowsPerFSBBMax);
       
-      OverflowCodesPerModule->Reset();
-      nDigitsPerEncodingWindowPerModule->Reset();
+      OverflowCodesPerChip->Reset();
+      nDigitsPerEncodingWindowPerChip->Reset();
 
       nWindows=0;
       for(Int_t idig=0;idig<ndig;idig++) {
@@ -299,7 +299,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
         if(pDig->GetHit(0)!=-1) ndig_signal_in_cycle++;  //counts signal hits in a given RO cycle
         ColAddress=pDig->GetCoord1();
         RowAddress=pDig->GetCoord2();
-        Module->AddDigit(RowAddress,ColAddress);
+        Chip->AddDigit(RowAddress,ColAddress);
       }//diglist  
       
       if(AddQED){
@@ -309,81 +309,81 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
           ndig_in_cycle++; 
           ColAddress=pDig->GetCoord1();
           RowAddress=pDig->GetCoord2();
-          Module->AddDigit(RowAddress,ColAddress);
+          Chip->AddDigit(RowAddress,ColAddress);
         }//diglist
       }
       
       if(ndig_in_cycle<1){  
-        delete Module; 
+        delete Chip; 
         continue; //rejects when no hits in a given cycle
       }
       nDigitsPerEvent+=ndig_in_cycle;
       nDigitsPerEventPerLayer[lay]+=ndig_in_cycle;
-      if(ProcessOnlyModulesWithSignal){       //if ProcessOnlyModulesWithSignal==1
+      if(ProcessOnlyChipsWithSignal){       //if ProcessOnlyChipsWithSignal==1
         if(ndig_signal_in_cycle<1){   
-          delete Module;
+          delete Chip;
           continue;  //rejects when only noise is the present
         }
       }
       
-      Module->Process(OverflowCodesPerModule,nDigitsPerEncodingWindowPerModule);
-      DataSize=Module->GetDataSize();
-      nDigitsEncodedPerModule=Module->GetNDigitsEncoded();
-      nDigitsLostPerModule=Module->GetNDigitsLost();
-      nWindows=Module->GetNEncodedWindows();                           
-      nWindowsPer32colsMin=Module->GetNWindowsPer32colsMin();
-      nWindowsPerHalfFSBBMin=Module->GetNWindowsPerHalfFSBBMin();
-      nWindowsPerFSBBMin=Module->GetNWindowsPerFSBBMin();
+      Chip->Process(OverflowCodesPerChip,nDigitsPerEncodingWindowPerChip);
+      DataSize=Chip->GetDataSize();
+      nDigitsEncodedPerChip=Chip->GetNDigitsEncoded();
+      nDigitsLostPerChip=Chip->GetNDigitsLost();
+      nWindows=Chip->GetNEncodedWindows();                           
+      nWindowsPer32colsMin=Chip->GetNWindowsPer32colsMin();
+      nWindowsPerHalfFSBBMin=Chip->GetNWindowsPerHalfFSBBMin();
+      nWindowsPerFSBBMin=Chip->GetNWindowsPerFSBBMin();
       
-     //DataSize=MakeSuze(Module_matrix,OverflowCodesPerModule,nDigitsEncodedPerModule,nDigitsLostPerModule,nWindows,nWindowsPer32colsMax,nWindowsPerHalfFSBBMax,nWindowsPerFSBBMax,nWindowsPer32colsMin,nWindowsPerHalfFSBBMin,nWindowsPerFSBBMin,nDigitsPerEncodingWindowPerModule);
+     //DataSize=MakeSuze(Chip_matrix,OverflowCodesPerChip,nDigitsEncodedPerChip,nDigitsLostPerChip,nWindows,nWindowsPer32colsMax,nWindowsPerHalfFSBBMax,nWindowsPerFSBBMax,nWindowsPer32colsMin,nWindowsPerHalfFSBBMin,nWindowsPerFSBBMin,nDigitsPerEncodingWindowPerChip);
 //       cout<<"SUZE encoded "<<SuzeReturn<<" digits in "<<nWindows<<" windows"<<endl;
-      OverflowCodes->Add(OverflowCodesPerModule);
-      OverflowCodesPerLayer[lay]->Add(OverflowCodesPerModule);
+      OverflowCodes->Add(OverflowCodesPerChip);
+      OverflowCodesPerLayer[lay]->Add(OverflowCodesPerChip);
 
-      nDigitsPerEncodingWindow->Add(nDigitsPerEncodingWindowPerModule);
-      nDigitsPerEncodingWindowPerLayer[lay]->Add(nDigitsPerEncodingWindowPerModule);
+      nDigitsPerEncodingWindow->Add(nDigitsPerEncodingWindowPerChip);
+      nDigitsPerEncodingWindowPerLayer[lay]->Add(nDigitsPerEncodingWindowPerChip);
 
-//       if(nDigitsLostPerModule){
+//       if(nDigitsLostPerChip){
 //         cout<<"------- Some digits were lost. Check overflow errors"<<endl;
-//         cout<<"Module has "<<ModuleSum<<" digits"<<endl;
+//         cout<<"Chip has "<<ChipSum<<" digits"<<endl;
 //         cout<<"SUZE reported "<<SuzeReturn<<" encoded and "<<nDigitsLost<<" lost digits"<<endl;
-//         cout<<"Module n."<<imod<<" has lost "<<nDigitsLostPerModule<<" digits due to the overflow"<<endl;
+//         cout<<"Chip n."<<imod<<" has lost "<<nDigitsLostPerChip<<" digits due to the overflow"<<endl;
 
 //       }
-      if(nDigitsLostPerModule){
-	      printf("Event #%d mod. #%d (layer %d) has %d digits lost\n",iEvent,imod,lay,nDigitsLostPerModule);
-	      fprintf(logfile,"Event #%d mod. #%d (layer %d) has %d (%f) digits lost\n",iEvent,imod,lay,nDigitsLostPerModule, (Float_t)nDigitsLostPerModule/ndig_in_cycle);
+      if(nDigitsLostPerChip){
+	      printf("Event #%d mod. #%d (layer %d) has %d digits lost\n",iEvent,imod,lay,nDigitsLostPerChip);
+	      fprintf(logfile,"Event #%d mod. #%d (layer %d) has %d (%f) digits lost\n",iEvent,imod,lay,nDigitsLostPerChip, (Float_t)nDigitsLostPerChip/ndig_in_cycle);
       }
-      nDigitsLostPerEvent+=nDigitsLostPerModule;
-      nDigitsLostPerEventPerLayer[lay]+=nDigitsLostPerModule;
-//       cout<<"Lay:"<<lay<<" Lad:"<<lad<<" current_ladder:"<<current_ladder<<" current layer:"<<current_layer<<" Digits:"<<SuzeReturn<<endl;
+      nDigitsLostPerEvent+=nDigitsLostPerChip;
+      nDigitsLostPerEventPerLayer[lay]+=nDigitsLostPerChip;
+//       cout<<"Lay:"<<lay<<" Sta:"<<sta<<" current_stave:"<<current_stave<<" current layer:"<<current_layer<<" Digits:"<<SuzeReturn<<endl;
       if(lay!=current_layer){
         cout<<"Layer #"<<lay<<endl;
       }
-      if(lad!=current_ladder || lay!=current_layer){
-        current_ladder=lad;
+      if(sta!=current_stave || lay!=current_layer){
+        current_stave=sta;
 	      current_layer=lay;
-	      NWindowsPerLadder=0;
+	      NWindowsPerStave=0;
       }
-      NWindowsPerLadder+=nWindows;
-      if(NWindowsPerLadder>MaxNWindowsPerLadderPerLayerPerEvent[current_layer]){
-	      MaxNWindowsPerLadderPerLayerPerEvent[current_layer]=NWindowsPerLadder;
-// 	cout<<"---- MaxNWindowsPerLadderPerLayerPerEvent:"<<MaxNWindowsPerLadderPerLayerPerEvent[current_layer]<<" at layer:"<<current_layer<<endl;
+      NWindowsPerStave+=nWindows;
+      if(NWindowsPerStave>MaxNWindowsPerStavePerLayerPerEvent[current_layer]){
+	      MaxNWindowsPerStavePerLayerPerEvent[current_layer]=NWindowsPerStave;
+// 	cout<<"---- MaxNWindowsPerStavePerLayerPerEvent:"<<MaxNWindowsPerStavePerLayerPerEvent[current_layer]<<" at layer:"<<current_layer<<endl;
       }
-      nDigitsPerModulePerEvent->SetBinContent(imod+1,iEvent+1,ndig_in_cycle);
-      nDigitsEncodedPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nDigitsEncodedPerModule);
-      nDigitsLostPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nDigitsLostPerModule);
-      FractionDigitsLostPerModulePerEvent->SetBinContent(imod+1,iEvent+1,(Double_t)nDigitsLostPerModule/ndig_in_cycle);
-      nEncodingWindowsPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nWindows);
-      nDigitsPerEncodingWindowPerModulePerEvent->SetBinContent(imod+1,iEvent+1,(Double_t)nDigitsEncodedPerModule/nWindows); 
+      nDigitsPerChipPerEvent->SetBinContent(imod+1,iEvent+1,ndig_in_cycle);
+      nDigitsEncodedPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nDigitsEncodedPerChip);
+      nDigitsLostPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nDigitsLostPerChip);
+      FractionDigitsLostPerChipPerEvent->SetBinContent(imod+1,iEvent+1,(Double_t)nDigitsLostPerChip/ndig_in_cycle);
+      nEncodingWindowsPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nWindows);
+      nDigitsPerEncodingWindowPerChipPerEvent->SetBinContent(imod+1,iEvent+1,(Double_t)nDigitsEncodedPerChip/nWindows); 
 
-      nWindowsPerFSBBMinPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPerFSBBMax-nWindowsPerFSBBMin);
-      nWindowsPerHalfFSBBMinPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPerHalfFSBBMax-nWindowsPerHalfFSBBMin);
-      nWindowsPer32colsMinPerModulePerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPer32colsMax-nWindowsPer32colsMin);
+      nWindowsPerFSBBMinPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPerFSBBMax-nWindowsPerFSBBMin);
+      nWindowsPerHalfFSBBMinPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPerHalfFSBBMax-nWindowsPerHalfFSBBMin);
+      nWindowsPer32colsMinPerChipPerEvent->SetBinContent(imod+1,iEvent+1,nWindowsPer32colsMax-nWindowsPer32colsMin);
 
-      DataSizePerModulePerEvent->SetBinContent(imod+1,iEvent+1,DataSize);   
+      DataSizePerChipPerEvent->SetBinContent(imod+1,iEvent+1,DataSize);   
       
-      delete Module;
+      delete Chip;
 //      break;
     }//mod
     NtracksPerEvent_hist->SetBinContent(iEvent+1,NtracksKine);
@@ -407,7 +407,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
       }
     }
     for(Int_t i=0; i<nLayers; i++){
-      MaxNWindowsPerLadderPerLayerPerEvent_hist[i]->SetBinContent(iEvent+1,MaxNWindowsPerLadderPerLayerPerEvent[i]);
+      MaxNWindowsPerStavePerLayerPerEvent_hist[i]->SetBinContent(iEvent+1,MaxNWindowsPerStavePerLayerPerEvent[i]);
     }
 //     break;
   }//event loop
@@ -422,7 +422,7 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
   TFile* ResultsFile;
   Char_t ResultsFileName[100];
   if(SaveResults){
-    sprintf(ResultsFileName,"ScanDigits_v15_results_cycle_%d_EncWindow_%dx%d_SuzeLimitsVersion_%d_mode_%d-%d_QED_%d.root",Cycle,NRowsEncodingWindow,NColsEncodingWindow,SuzeLimitsVersion,CollectMode,ProcessOnlyModulesWithSignal,AddQED);
+    sprintf(ResultsFileName,"ScanDigits_v15_results_cycle_%d_EncWindow_%dx%d_SuzeLimitsVersion_%d_mode_%d-%d_QED_%d.root",Cycle,NRowsEncodingWindow,NColsEncodingWindow,SuzeLimitsVersion,CollectMode,ProcessOnlyChipsWithSignal,AddQED);
     ResultsFile = new TFile(ResultsFileName,"RECREATE");
 
     OverflowCodes->Write();
@@ -439,24 +439,24 @@ void ScanDigitsSuze02_v15(Int_t Cycle=0, Int_t CollectMode=0, Bool_t ProcessOnly
       NdigitsPerEventPerLayer_hist[i]->Write();
       FractionDigitsLostPerEventPerLayer_hist[i]->Write();
 
-      MaxNWindowsPerLadderPerLayerPerEvent_hist[i]->Write();
+      MaxNWindowsPerStavePerLayerPerEvent_hist[i]->Write();
 
       OverflowCodesPerLayer[i]->Write();
       nDigitsPerEncodingWindowPerLayer[i]->Write();
     }
 
-    nDigitsPerModulePerEvent->Write();
-    nDigitsEncodedPerModulePerEvent->Write();
-    nDigitsLostPerModulePerEvent->Write();
-    FractionDigitsLostPerModulePerEvent->Write();
-    nEncodingWindowsPerModulePerEvent->Write();
-    nDigitsPerEncodingWindowPerModulePerEvent->Write();
+    nDigitsPerChipPerEvent->Write();
+    nDigitsEncodedPerChipPerEvent->Write();
+    nDigitsLostPerChipPerEvent->Write();
+    FractionDigitsLostPerChipPerEvent->Write();
+    nEncodingWindowsPerChipPerEvent->Write();
+    nDigitsPerEncodingWindowPerChipPerEvent->Write();
 
-    nWindowsPerFSBBMinPerModulePerEvent->Write();
-    nWindowsPerHalfFSBBMinPerModulePerEvent->Write();
-    nWindowsPer32colsMinPerModulePerEvent->Write();
+    nWindowsPerFSBBMinPerChipPerEvent->Write();
+    nWindowsPerHalfFSBBMinPerChipPerEvent->Write();
+    nWindowsPer32colsMinPerChipPerEvent->Write();
 
-    DataSizePerModulePerEvent->Write();
+    DataSizePerChipPerEvent->Write();
 
     ResultsFile->Close();
   }

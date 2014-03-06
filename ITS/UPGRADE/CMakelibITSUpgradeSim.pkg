@@ -34,7 +34,7 @@ AliITSUv0.cxx
 AliITSUv0Layer.cxx 
 AliITSUv1.cxx 
 AliITSUv1Layer.cxx 
-AliITSUModule.cxx
+AliITSUChip.cxx
 AliITSUSimuParam.cxx
 AliITSUSimulation.cxx
 AliITSUSimulationPix.cxx

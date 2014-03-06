@@ -30,6 +30,7 @@ set ( SRCS
     AliITSURecoParam.cxx
     AliITSUReconstructor.cxx
     AliITSUClusterizer.cxx
+    AliITSUClusterLines.cxx	
     AliITSURecoSens.cxx
     AliITSURecoLayer.cxx
     AliITSURecoDet.cxx

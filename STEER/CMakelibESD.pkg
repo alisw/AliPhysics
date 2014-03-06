@@ -70,7 +70,11 @@ set ( SRCS
     ESD/AliESDCosmicTrack.cxx
     ESD/AliV0vertexer.cxx 
     ESD/AliCascadeVertexer.cxx 
-    ESD/AliESDTOFcluster.cxx
+    ESD/AliESDTOFHit.cxx
+    ESD/AliESDTOFMatch.cxx
+    ESD/AliESDTOFCluster.cxx
+    ESD/AliESDFIT.cxx
+    
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")

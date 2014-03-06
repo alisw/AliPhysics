@@ -67,75 +67,75 @@ AliMpVSegmentation::GetNeighbours(const AliMpPad& pad,
   /// testPositions are the positions (L,T,R,B) relative to pad's center (O)
   /// were we'll try to get a neighbouring pad, by getting a little
   /// bit outside the pad itself.
-  /// Note that it's not symmetric as we assume that pad density
-  /// can always decrease when going from left to right (or from bottom to top)
-  /// <pre>
-  /// L--T--R
-  /// |     |
-  /// L     |
-  /// |  O  R
-  /// L     |
-  /// |     |
-  /// L-B-B-R
-  /// </pre>
+  /// The pad density can only decrease when going from left to right except
+  /// for round slates where it is the opposite.
+  /// The pad density can only decrease when going from bottom to top but
+  /// to be symmetric we also consider the opposite.
   /// The order in which we actually test the positions has some importance,
   /// i.e. when using this information to compute status map later on. Here's
   /// the sequence :
   /// <pre>
-  /// 4-- 5-- 6
+  /// 4- 5- 6-7
   /// |       |
-  /// 3       |
-  /// |   0   7
-  /// 2       |
+  /// 3       8
+  /// |   0   |
+  /// 2       9
   /// |       |
-  /// 1-10- 9-8
+  /// 1-12-11-10
   /// </pre>
 
-  static Double_t shiftx[11] = { 0, -1, -1, -1, -1, 0, 1, 1, 1, 1/3.0, -1/3.0 }; 
-  static Double_t shifty[11] = { 0, -1, -1/3.0, 1/3.0, 1, 1, 1, 0, -1, -1, -1 }; 
+  static const Int_t kNofTestPositions(12);
+  static Double_t shiftx[12] = {-1., -1., -1., -1., -1./3., 1./3., 1., 1., 1., 1., 1./3., -1./3.};
+  static Double_t shifty[12] = {-1., -1./3., 1./3., 1., 1., 1., 1., 1./3., -1./3., -1., -1., -1.};
 
-  static const Int_t kNofTestPositions(11);
   static const Double_t kEpsilon(AliMpConstants::LengthTolerance()*2.0);
-  static Int_t centerIndex(-1);
-  
   
   neighbours.Delete();
   neighbours.SetOwner(kTRUE);
   
   if ( ! pad.IsValid() ) return 0;
-    
+  
+  AliMpPad invalid(AliMpPad::Invalid());
+  AliMpPad *previous = &invalid;
   Int_t n(0);
   
-  AliMpPad previous(AliMpPad::Invalid());
-  
-  for ( Int_t i = 0; i < kNofTestPositions; ++i ) 
+  // consider adding the pad itself
+  if ( includeSelf )
   {
-    if ( i == centerIndex && !includeSelf )
-    {
-      if ( includeVoid ) 
-      {
-        previous = AliMpPad::Invalid();
-        neighbours.Add(new AliMpPad(previous));
-        ++n;
-      }
-      continue;
-    }
+    neighbours.Add(new AliMpPad(pad));
+    ++n;
+  }
+  else if ( includeVoid )
+  {
+    neighbours.Add(new AliMpPad(invalid));
+    ++n;
+  }
+  
+  // add the neighbours (only once)
+  for ( Int_t i = 0; i < kNofTestPositions; ++i )
+  {
     
-    AliMpPad p 
+    AliMpPad p
       = PadByPosition(pad.GetPositionX() + ( pad.GetDimensionX() + kEpsilon )*shiftx[i], 
                       pad.GetPositionY() + ( pad.GetDimensionY() + kEpsilon )*shifty[i],
                       kFALSE);
     
-    if ( ! p.IsValid() && ! includeVoid ) continue;
-    
-    if ( p != previous || ! previous.IsValid() ) 
+    if ( p.IsValid() && p != *previous )
     {
-      previous = p;
-      neighbours.Add(new AliMpPad(p));
+      previous = new AliMpPad(p);
+      neighbours.Add(previous);
       ++n;
     }
+    else if ( includeVoid )
+    {
+      neighbours.Add(new AliMpPad(invalid));
+      ++n;
+    }
+    
   }
+  
   return n;
+  
 }
 
 //

@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -29,15 +29,20 @@
 #include "AliGeomManager.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-// #include "AliESDMuonGlobalTrack.h"
+#include "AliESDMuonGlobalTrack.h"
 #include "AliMFTTrackerMU.h"
 #include "TMath.h"
 #include "AliRun.h"
+#include "AliRunLoader.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
+#include "TArrayF.h"
 #include "AliMFT.h"
 #include "AliMUONTrackExtrap.h"
 #include "AliMUONTrack.h"
 #include "AliMUONESDInterface.h"
 #include "AliMuonForwardTrack.h"
+#include "AliMUONConstants.h"
 
 ClassImp(AliMFTTrackerMU)
 
@@ -52,7 +57,7 @@ AliMFTTrackerMU::AliMFTTrackerMU() :
   fSegmentation(0),
   fNPlanesMFT(0),
   fNPlanesMFTAnalyzed(0),
-  fSigmaClusterCut(0),
+  fSigmaClusterCut(2),
   fScaleSigmaClusterCut(1.),
   fNMaxMissingMFTClusters(0),
   fGlobalTrackingDiverged(kFALSE),
@@ -60,9 +65,11 @@ AliMFTTrackerMU::AliMFTTrackerMU() :
   fMUONTrack(0),
   fCurrentTrack(0),
   fFinalBestCandidate(0),
-  fVertexErrorX(0.015),
-  fVertexErrorY(0.015),
-  fVertexErrorZ(0.010),
+  fXExtrapVertex(0),
+  fYExtrapVertex(0),
+  fZExtrapVertex(0),
+  fXExtrapVertexError(0),
+  fYExtrapVertexError(0),
   fBransonCorrection(kFALSE)
 {
 
@@ -75,12 +82,19 @@ AliMFTTrackerMU::AliMFTTrackerMU() :
   SetNPlanesMFT(fSegmentation->GetNPlanes());
   AliMUONTrackExtrap::SetField();                 // set the magnetic field for track extrapolations
 
+  AliInfo(Form("fMFT = %p, fSegmentation = %p", fMFT, fSegmentation));
+
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    fMFTClusterArray[iPlane]      = 0;
+    fMFTClusterArray[iPlane]      = new TClonesArray("AliMFTCluster");
     fMFTClusterArrayFront[iPlane] = new TClonesArray("AliMFTCluster");
     fMFTClusterArrayBack[iPlane]  = new TClonesArray("AliMFTCluster");
-    fIsPlaneMandatory[iPlane]     = kFALSE;
+    fMFTClusterArray[iPlane]      -> SetOwner(kTRUE);
+    fMFTClusterArrayFront[iPlane] -> SetOwner(kTRUE);
+    fMFTClusterArrayBack[iPlane]  -> SetOwner(kTRUE);
+    fMinResearchRadiusAtPlane[iPlane] = 0.;
   }
+
+  fCandidateTracks = new TClonesArray("AliMuonForwardTrack",50000);
 
 }
 
@@ -91,10 +105,13 @@ AliMFTTrackerMU::~AliMFTTrackerMU() {
   // destructor
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    fMFTClusterArray[iPlane] -> Delete();
     delete fMFTClusterArray[iPlane];
     delete fMFTClusterArrayFront[iPlane];
     delete fMFTClusterArrayBack[iPlane];
   }
+
+  delete fCandidateTracks;
 
 }
 
@@ -106,10 +123,14 @@ Int_t AliMFTTrackerMU::LoadClusters(TTree *cTree) {
   // This function loads the MFT clusters
   //--------------------------------------------------------------------
  
+  for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    AliDebug(1, Form("Setting Address for Branch Plane_%02d", iPlane)); 
+    cTree->SetBranchAddress(Form("Plane_%02d",iPlane), &fMFTClusterArray[iPlane]);
+  }
+ 
   if (!cTree->GetEvent()) return kFALSE;
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
-    AliDebug(1, Form("plane %02d: nClusters = %d\n", iPlane, (fMFT->GetRecPointsList(iPlane))->GetEntries()));
-    fMFTClusterArray[iPlane] = fMFT->GetRecPointsList(iPlane);
+    AliInfo(Form("plane %02d: nClusters = %d\n", iPlane, fMFTClusterArray[iPlane]->GetEntries()));
   }
   SeparateFrontBackClusters();
 
@@ -142,6 +163,9 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
   // The clusters must be already loaded !
   //--------------------------------------------------------------------
 
+  // Tree of AliMuonForwardTrack objects. Created outside the ESD framework for cross-check purposes
+
+  TFile *outputFileMuonGlobalTracks = new TFile("MuonGlobalTracks.root", "update");
   TTree *outputTreeMuonGlobalTracks = new TTree("AliMuonForwardTracks", "Tree of AliMuonForwardTracks");
   TClonesArray *muonForwardTracks = new TClonesArray("AliMuonForwardTrack");
   outputTreeMuonGlobalTracks -> Branch("tracks", &muonForwardTracks);
@@ -149,6 +173,26 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
   //--------------------------------------------------------------------
 
   fESD = event;
+
+  fXExtrapVertex = 0;
+  fYExtrapVertex = 0;
+  fZExtrapVertex = 0;
+  fXExtrapVertexError = AliMFTConstants::fXVertexTolerance;
+  fYExtrapVertexError = AliMFTConstants::fYVertexTolerance;
+
+  // Imposing a fixed primary vertex, in order to keep memory of its position. Taking the primary vertex would imply the risk
+  // of loosing memory of its position when passing from ESD to AOD, due to possible refitting
+  const AliESDVertex* esdVert = fESD->GetVertex(); 
+  if (esdVert->GetNContributors() > 0 || !strcmp(esdVert->GetTitle(),"vertexer: smearMC")) {
+    fXExtrapVertex = esdVert->GetX();
+    fYExtrapVertex = esdVert->GetY();
+    fZExtrapVertex = esdVert->GetZ();
+    fXExtrapVertexError = TMath::Max(AliMFTConstants::fXVertexTolerance, esdVert->GetXRes());
+    fYExtrapVertexError = TMath::Max(AliMFTConstants::fYVertexTolerance, esdVert->GetYRes());
+    AliInfo(Form("Found ESD vertex from %d contributors (%f +/- %f,  %f +/- %f,  %f)", 
+		 esdVert->GetNContributors(),fXExtrapVertex,fXExtrapVertexError,fYExtrapVertex,fYExtrapVertexError,fZExtrapVertex));
+  }
+  else GetVertexFromMC();    
 
   //----------- Read ESD MUON tracks -------------------
 
@@ -161,23 +205,39 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
 
     fNPlanesMFTAnalyzed = 0;
 
-    AliDebug(1, "**************************************************************************************\n");
-    AliDebug(1, Form("***************************   MUON TRACK %3d   ***************************************\n", iTrack));
-    AliDebug(1, "**************************************************************************************\n");
+    AliInfo("****************************************************************************************");
+    AliInfo(Form("***************************   MUON TRACK %3d/%d   ***************************************", iTrack, nTracksMUON));
+    AliInfo("****************************************************************************************");
     
     fCandidateTracks -> Delete();
     
     fNPlanesMFTAnalyzed = 0;
     
     const AliESDMuonTrack *esdTrack = event->GetMuonTrack(iTrack);
-    fMUONTrack = NULL;
+    if (fMUONTrack) delete fMUONTrack;
+    fMUONTrack = new AliMUONTrack();
+
     AliMUONESDInterface::ESDToMUON(*esdTrack, *fMUONTrack, kFALSE);
+
+    if (!fMUONTrack->GetTrackParamAtCluster()->First()) {
+      AliInfo("Skipping track, no parameters available!!!");
+      iTrack++;
+      continue;
+    }
 
     // the track we are going to build, starting from fMUONTrack and adding the MFT clusters
     AliMuonForwardTrack *track = new ((*fCandidateTracks)[0]) AliMuonForwardTrack();
     track -> SetMUONTrack(new AliMUONTrack(*fMUONTrack));
     track -> SetMCLabel(fMUONTrack->GetMCLabel());
     track -> SetMatchTrigger(fMUONTrack->GetMatchTrigger());
+
+    // track parameters linearly extrapolated from the first tracking station to the end of the absorber
+    AliMUONTrackParam trackParamEndOfAbsorber(*((AliMUONTrackParam*)(fMUONTrack->GetTrackParamAtCluster()->First())));
+    AliMUONTrackExtrap::ExtrapToZCov(&trackParamEndOfAbsorber, AliMUONConstants::AbsZEnd());   // absorber extends from -90 to -503 cm
+    Double_t xEndOfAbsorber = trackParamEndOfAbsorber.GetNonBendingCoor();
+    Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
+    Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
+    track -> SetRAtAbsorberEnd(rAbsorber);
 
     //------------------------- NOW THE CYCLE OVER THE MFT PLANES STARTS ---------------------------------------
 
@@ -192,6 +252,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       Int_t nCandidates = fCandidateTracks->GetEntriesFast();
       for (Int_t iCandidate=0; iCandidate<nCandidates; iCandidate++) {
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iCandidate);
+
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
 	// (several new tracks can be created for one old track)
 	if (FindClusterInPlane(iPlane) == kDiverged) {
@@ -211,7 +272,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       fCandidateTracks->Compress();
       
     }      
-    
+
     // -------------------------- END OF THE CYCLE OVER THE MFT PLANES --------------------------------------------
     
     fGlobalTrackingDiverged = kFALSE;
@@ -224,8 +285,8 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
     // If we have several final tracks, we must find the best candidate:
     
     Int_t nFinalTracks = fCandidateTracks->GetEntriesFast();
-    AliDebug(1, Form("nFinalTracks = %d", nFinalTracks));
-    
+    AliInfo(Form("nFinalTracks = %d", nFinalTracks));
+
     Int_t nGoodClustersBestCandidate =  0;
     Int_t idBestCandidate            =  0;
     Double_t bestChi2                = -1.;  // variable defining the best candidate
@@ -256,32 +317,58 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       AliMuonForwardTrack *newTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(idBestCandidate);
       newTrack -> SetNWrongClustersMC(newTrack->GetNMFTClusters() - nGoodClustersBestCandidate);
 
-      //----------------------- Save the information to the AliESDMuonForwardTrack object
+      new ((*muonForwardTracks)[muonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
 
-//       AliESDMuonGlobalTrack *myESDTrack = event->NewMuonGlobalTrack();
-//       myESDTrack -> SetPxPyPz(newTrack->Px(), newTrack->Py(), newTrack->Pz());
-//       myESDTrack -> SetChi2(newTrack->GetGlobalChi2());
-//       myESDTrack -> SetCharge(newTrack->GetCharge());
-//       myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
+      //----------------------- Save the information to the AliESDMuonGlobalTrack object
+
+      newTrack -> EvalKinem(AliMFTConstants::fZEvalKinem);
+
+      AliDebug(2,"Creating a new Muon Global Track");
+      AliESDMuonGlobalTrack *myESDTrack = event->NewMuonGlobalTrack();
+      myESDTrack -> SetPxPyPz(newTrack->Px(), newTrack->Py(), newTrack->Pz());
+      
+      myESDTrack -> SetLabel(newTrack->GetMCLabel());
+      myESDTrack -> SetChi2OverNdf(newTrack->GetChi2OverNdf());
+      myESDTrack -> SetCharge(newTrack->GetCharge());
+      myESDTrack -> SetMatchTrigger(newTrack->GetMatchTrigger());
+      myESDTrack -> SetNMFTClusters(newTrack->GetNMFTClusters());
+      myESDTrack -> SetNWrongMFTClustersMC(newTrack->GetNWrongClustersMC());
+      myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
+      myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(0., AliMFTConstants::fZEvalKinem), newTrack->GetOffsetY(0., AliMFTConstants::fZEvalKinem));
+      myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
+      myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
+      myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
+      myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());
+      myESDTrack -> SetHitsPatternInTrigChTrk(esdTrack->GetHitsPatternInTrigChTrk());
+      myESDTrack -> Connected(esdTrack->IsConnected());
+
+      ULong_t mftClusterPattern = 0;
+      for (Int_t iCluster=0; iCluster<newTrack->GetNMFTClusters(); iCluster++) {
+	AliMFTCluster *localCluster = newTrack->GetMFTCluster(iCluster);
+	mftClusterPattern |= 1 << localCluster->GetPlane();
+	mftClusterPattern |= IsCorrectMatch(localCluster, newTrack->GetMCLabel()) << fNMaxPlanes+localCluster->GetPlane();
+      }
+      myESDTrack -> SetMFTClusterPattern(mftClusterPattern);
       
       //---------------------------------------------------------------------------------
 
-      new ((*muonForwardTracks)[muonForwardTracks->GetEntries()]) AliMuonForwardTrack(*newTrack);
-
     }
 
-    fCandidateTracks->Delete();
     fFinalBestCandidate = NULL;
    
   }
 
+  outputTreeMuonGlobalTracks -> Fill();
+
   Int_t myEventID = 0;
-  TFile *outputFileMuonGlobalTracks = new TFile("MuonGlobalTracks.root", "update");
   while (outputFileMuonGlobalTracks->cd(Form("Event%d",myEventID))) myEventID++;
   outputFileMuonGlobalTracks -> mkdir(Form("Event%d",myEventID));
   outputFileMuonGlobalTracks -> cd(Form("Event%d",myEventID));
   outputTreeMuonGlobalTracks -> Write();
   outputFileMuonGlobalTracks -> Close();
+
+  muonForwardTracks -> Delete();
+  delete muonForwardTracks;
 
   return 0;
 
@@ -311,8 +398,6 @@ void AliMFTTrackerMU::SeparateFrontBackClusters() {
 
 Int_t AliMFTTrackerMU::FindClusterInPlane(Int_t planeId) { 
   
-  AliDebug(2, Form(">>>> executing AliMuonForwardTrackFinder::FindClusterInPlane(%d)\n", planeId));
-
   // !!!!!!!!! coordinates and errors on the interaction vertex should be taken from the event itself (ITS) if available
 
   // propagate track to plane #planeId (both to front and back active sensors)
@@ -326,19 +411,16 @@ Int_t AliMFTTrackerMU::FindClusterInPlane(Int_t planeId) {
     currentParamBack  = (*((AliMUONTrackParam*)(fMUONTrack->GetTrackParamAtCluster()->First())));
     currentParamForResearchFront = currentParamFront;
     currentParamForResearchBack  = currentParamBack;
-    Double_t xExtrap = gRandom->Gaus(0,fVertexErrorX);
-    Double_t yExtrap = gRandom->Gaus(0,fVertexErrorY);
-    Double_t zExtrap = gRandom->Gaus(0,fVertexErrorZ);
     if (fBransonCorrection) {
-      AliMUONTrackExtrap::ExtrapToVertex(&currentParamFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
-      AliMUONTrackExtrap::ExtrapToVertex(&currentParamBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+      AliMUONTrackExtrap::ExtrapToVertex(&currentParamFront, fXExtrapVertex, fYExtrapVertex, fZExtrapVertex, fXExtrapVertexError, fYExtrapVertexError); 
+      AliMUONTrackExtrap::ExtrapToVertex(&currentParamBack,  fXExtrapVertex, fYExtrapVertex, fZExtrapVertex, fXExtrapVertexError, fYExtrapVertexError); 
     }
     else {
-      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamFront, zExtrap);
-      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamBack,  zExtrap);
+      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamFront, fZExtrapVertex);
+      AliMUONTrackExtrap::ExtrapToVertexWithoutBranson(&currentParamBack,  fZExtrapVertex);
     }
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchFront, xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
-    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchBack,  xExtrap, yExtrap, zExtrap, fVertexErrorX, fVertexErrorY); 
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchFront, fXExtrapVertex, fYExtrapVertex, fZExtrapVertex, fXExtrapVertexError, fYExtrapVertexError); 
+    AliMUONTrackExtrap::ExtrapToVertex(&currentParamForResearchBack,  fXExtrapVertex, fYExtrapVertex, fZExtrapVertex, fXExtrapVertexError, fYExtrapVertexError); 
   }
   else {          // MFT planes others than the last one: mult. scattering correction because of the upstream MFT planes is performed
     currentParamFront = (*((AliMUONTrackParam*)(fCurrentTrack->GetTrackParamAtCluster()->First())));
@@ -468,4 +550,51 @@ Double_t AliMFTTrackerMU::TryOneCluster(const AliMUONTrackParam &trackParam, Ali
 }
 
 //=========================================================================================================================================
+
+Bool_t AliMFTTrackerMU::IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC) {
+
+  Bool_t result = kFALSE;
+
+  // check if the cluster belongs to the correct MC track
+
+  for (Int_t iTrack=0; iTrack<cluster->GetNMCTracks(); iTrack++) {
+    if (cluster->GetMCLabel(iTrack)==labelMC) {
+      result = kTRUE;
+      break;
+    }
+  }
+
+  return result;
+
+}
+
+//======================================================================================================================================
+
+void AliMFTTrackerMU::GetVertexFromMC() {
+
+  AliRunLoader *fRunLoader = AliRunLoader::Open("galice.root");
+  if (!fRunLoader) {
+    AliError("no run loader found in file galice.root");
+    return;
+  }
+
+  fRunLoader->CdGAFile();
+  fRunLoader->LoadgAlice();
+  fRunLoader->LoadHeader();
+  fRunLoader->GetEvent(gAlice->GetEvNumber());
+  
+  TArrayF vtx(3);
+  fRunLoader->GetHeader()->GenEventHeader()->PrimaryVertex(vtx);
+
+  fXExtrapVertex = gRandom->Gaus(vtx[0], AliMFTConstants::fPrimaryVertexResX);
+  fYExtrapVertex = gRandom->Gaus(vtx[1], AliMFTConstants::fPrimaryVertexResY);
+  fZExtrapVertex = gRandom->Gaus(vtx[2], AliMFTConstants::fPrimaryVertexResZ);
+  fXExtrapVertexError = AliMFTConstants::fXVertexTolerance;
+  fYExtrapVertexError = AliMFTConstants::fYVertexTolerance;
+  AliInfo(Form("Set ESD vertex from MC (%f +/- %f,  %f +/- %f,  %f)", 
+	       fXExtrapVertex,fXExtrapVertexError,fYExtrapVertex,fYExtrapVertexError,fZExtrapVertex));
+  
+}
+
+//======================================================================================================================================
 

@@ -23,7 +23,7 @@
     targetClass="AliAODPid"                               \
     source="UShort_t fTPCsignalN; Double_t fTPCmomentum; Float_t fTRDmomentum[6]"  \
     version="[-10]"                                       \
-    target="fTPCsignalN, fTPCmomentum, fTRDnSlices, fTRDmomentum"                                          \
+    target="fTPCsignalN, fTPCmomentum, fTRDmomentum"                                          \
     code="{newObj->SetTPCsignalN((UChar_t)onfile.fTPCsignalN); newObj->SetTPCmomentum(onfile.fTPCmomentum); for (Int_t i=0;i<6;++i) newObj->SetTRDmomentum(i,onfile.fTRDmomentum[i]);}" 
 
 #pragma link C++ class AliAODPid+;

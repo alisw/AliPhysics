@@ -14,6 +14,7 @@
 //*--   and : Alexei Pavlinov (WSU) - shashlyk staff
 //*--   and : Gustavo Conesa: Add TRU mapping. TRU parameters still not fixed.
 //*--   and : Magali Estienne : analysis access adaptations
+//*--   and : Adapted for DCAL, M.L. Wang CCNU & Subatech Oct-18-2012
 
 // --- ROOT system ---
 #include <TNamed.h>
@@ -33,6 +34,7 @@ class AliLog;
 class AliEMCALGeometry : public TNamed {
 
 public: 
+  enum fEMCSMType { kEMCAL_Standard = 0, kEMCAL_Half = 1, kEMCAL_3rd = 2, kDCAL_Standard = 3, kDCAL_Ext= 4 }; // possible SM Type
 
   AliEMCALGeometry();
   AliEMCALGeometry(const Text_t* name, const Text_t* title="",
@@ -68,6 +70,8 @@ public:
   virtual Bool_t Impact(const TParticle *particle) const;
   void ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi, Int_t & absId, TVector3 & vimpact) const;
   Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
+  Bool_t IsInDCAL(Double_t x, Double_t y, Double_t z) const;
+  Int_t  IsInEMCALOrDCAL(Double_t x, Double_t y, Double_t z) const;
 
   //////////////////////////////////////
   // Return EMCAL geometrical parameters
@@ -84,7 +88,12 @@ public:
   Float_t  GetEnvelop(Int_t index)            const { return fEMCGeometry->GetEnvelop(index)         ; }  
   Float_t  GetShellThickness(void)            const { return fEMCGeometry->GetShellThickness()       ; }
   Float_t  GetZLength(void)                   const { return fEMCGeometry->GetZLength()              ; } 
+  Float_t  GetDCALInnerEdge(void)             const { return fEMCGeometry->GetDCALInnerEdge()        ; }
+  Float_t  GetDCALPhiMin(void)                const { return fEMCGeometry->GetDCALPhiMin()           ; }
+  Float_t  GetDCALPhiMax(void)                const { return fEMCGeometry->GetDCALPhiMax()           ; }
+  Float_t  GetEMCALPhiMax(void)               const { return fEMCGeometry->GetEMCALPhiMax()          ; }
   Int_t    GetNECLayers(void)                 const { return fEMCGeometry->GetNECLayers()            ; }
+  Float_t  GetDCALInnerExtandedEta(void)      const { return fEMCGeometry->GetDCALInnerExtandedEta() ; }
   Int_t    GetNZ(void)                        const { return fEMCGeometry->GetNZ()                   ; }
   Int_t    GetNEta(void)                      const { return fEMCGeometry->GetNEta()                 ; }
   Int_t    GetNPhi(void)                      const { return fEMCGeometry->GetNPhi()                 ; }
@@ -92,7 +101,7 @@ public:
   Float_t  GetECScintThick(void)              const { return fEMCGeometry->GetECScintThick()         ; }
   Float_t  GetSampling(void)                  const { return fEMCGeometry->GetSampling()             ; } 
   Int_t    GetNumberOfSuperModules(void)      const { return fEMCGeometry->GetNumberOfSuperModules() ; }
-  Float_t  GetPhiGapForSuperModules(void)     const { return fEMCGeometry->GetfPhiGapForSuperModules() ; }
+  Float_t  GetPhiGapForSuperModules(void)     const { return fEMCGeometry->GetPhiGapForSuperModules(); }
   Float_t  GetPhiModuleSize(void)             const { return fEMCGeometry->GetPhiModuleSize()        ; }
   Float_t  GetEtaModuleSize(void)             const { return fEMCGeometry->GetEtaModuleSize()        ; }
   Float_t  GetFrontSteelStrip(void)           const { return fEMCGeometry->GetFrontSteelStrip()      ; }
@@ -100,6 +109,7 @@ public:
   Float_t  GetPassiveScintThick(void)         const { return fEMCGeometry->GetPassiveScintThick()    ; }
   Float_t  GetPhiTileSize(void)               const { return fEMCGeometry->GetPhiTileSize()          ; }
   Float_t  GetEtaTileSize(void)               const { return fEMCGeometry->GetEtaTileSize()          ; }
+  Float_t  GetPhiSuperModule(void)            const { return fEMCGeometry->GetPhiSuperModule()       ; }
   Int_t    GetNPhiSuperModule(void)           const { return fEMCGeometry->GetNPhiSuperModule()      ; }
   Int_t    GetNPHIdiv(void)                   const { return fEMCGeometry->GetNPHIdiv()              ; }
   Int_t    GetNETAdiv(void)                   const { return fEMCGeometry->GetNETAdiv()              ; }
@@ -113,6 +123,7 @@ public:
   Int_t    GetNCellsInSupMod(void)            const { return fEMCGeometry->GetNCellsInSupMod()       ; }
   Int_t    GetNCellsInModule(void)            const { return fEMCGeometry->GetNCellsInModule()       ; }
   Int_t    GetKey110DEG(void)                 const { return fEMCGeometry->GetKey110DEG()            ; }
+  Int_t    GetnSupModInDCAL(void)             const { return fEMCGeometry->GetnSupModInDCAL()        ; }
   Int_t    GetILOSS(void)                     const { return fEMCGeometry->GetILOSS()                ; }
   Int_t    GetIHADR(void)                     const { return fEMCGeometry->GetIHADR()                ; }  
   // --
@@ -121,13 +132,20 @@ public:
   Int_t    GetNTowers(void)                   const { return fEMCGeometry->GetNTowers()              ; }
   //
   Double_t GetPhiCenterOfSM(Int_t nsupmod)    const { return fEMCGeometry->GetPhiCenterOfSM(nsupmod) ; }
+  Double_t GetPhiCenterOfSMSec(Int_t nsupmod) const { return fEMCGeometry->GetPhiCenterOfSMSec(nsupmod) ; }
   Float_t  GetSuperModulesPar(Int_t ipar)     const { return fEMCGeometry->GetSuperModulesPar(ipar)  ; }
   //
+  Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > fEMCGeometry->GetNumberOfSuperModules() ) return -1;
+                                                      return fEMCSMSystem[nSupMod]		     ; }
+  Bool_t   IsDCALSM(Int_t nSupMod) const;
+  Bool_t   IsDCALExtSM(Int_t nSupMod) const;
   Bool_t   GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax)    const 
     { return fEMCGeometry->GetPhiBoundariesOfSM(nSupMod, phiMin, phiMax)   ; }
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const 
     { return fEMCGeometry->GetPhiBoundariesOfSMGap(nPhiSec, phiMin, phiMax); }
   //
+  // especially for SM in extension, where center of SM != center of the SM-section.
+  // Used in AliEMCALv0 to calculate position.
   
   //////////////////////////////////////////////////
   // Obsolete methods to be thrown out when feasible
@@ -201,9 +219,10 @@ public:
   Int_t   GetSuperModuleNumber(Int_t absId)  const;
   Int_t   GetNumberOfModuleInPhiDirection(Int_t nSupMod)  const
   { 
-    if(fKey110DEG == 1 && nSupMod>=10 && !fGeoName.Contains("12SMV1")) return fNPhi/2;
-    else if(fKey110DEG == 1 && nSupMod>=10 && fGeoName.Contains("12SMV1")) return fNPhi/3;
-    else                               return fNPhi;
+    if(     GetSMType(nSupMod) == kEMCAL_Half) return fNPhi/2;
+    else if(GetSMType(nSupMod) == kEMCAL_3rd)  return fNPhi/3;
+    else if(GetSMType(nSupMod) == kDCAL_Ext)   return fNPhi/3;
+    else                                       return fNPhi;
   } 
   // From cell indexes to abs cell id
   void    GetModuleIndexesFromCellIndexesInSModule(Int_t nSupMod, Int_t iphi, Int_t ieta, 
@@ -218,6 +237,7 @@ public:
   Bool_t  RelPosCellInSModule(Int_t absId, Double_t loc[3]) const;
   Bool_t  RelPosCellInSModule(Int_t absId, TVector3 &vloc)  const;
 
+  Int_t  * GetEMCSystem()            const { return fEMCSMSystem          ; }     //EMC System, SM type list
   // Local Coordinates of SM
   TArrayD  GetCentersOfCellsEtaDir() const { return fCentersOfCellsEtaDir ; }     // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
   TArrayD  GetCentersOfCellsXDir()   const { return fCentersOfCellsXDir   ; }     // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
@@ -235,6 +255,7 @@ public:
   Int_t    GetNModulesInTRU()    const { return fEMCGeometry->GetNModulesInTRU()    ; }
   Int_t    GetNModulesInTRUEta() const { return fEMCGeometry->GetNModulesInTRUEta() ; }  
   Int_t    GetNModulesInTRUPhi() const { return fEMCGeometry->GetNModulesInTRUPhi() ; }
+  Int_t    GetNTotalTRU()        const {return  fEMCGeometry->GetNTotalTRU()        ; }
   // *MEFIX OLD TO BE REMOVED*
 
   //
@@ -291,20 +312,23 @@ protected:
   AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
 
   TString  fGeoName;                 // geometry name
+  Int_t    *fEMCSMSystem;	     // geometry structure
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
+  Int_t    fnSupModInDCAL;                 // for calculation abs cell id; 06-nov-12 
   Int_t    fNCellsInSupMod;          // number cell in super module
   Int_t    fNETAdiv;                 // number eta divizion of module
   Int_t    fNPHIdiv;                 // number phi divizion of module
   Int_t    fNCellsInModule;          // number cell in module
   TArrayD  fPhiBoundariesOfSM;       // phi boundaries of SM in rad; size is fNumberOfSuperModules;
-  TArrayD  fPhiCentersOfSM;          // phi of centers of SMl size is fNumberOfSuperModules/2
+  TArrayD  fPhiCentersOfSM;          // phi of centers of SM; size is fNumberOfSuperModules/2
+  TArrayD  fPhiCentersOfSMSec;       // phi of centers of section where SM lies; size is fNumberOfSuperModules/2
   // Local Coordinates of SM
   TArrayD  fPhiCentersOfCells;       // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.)
   TArrayD  fCentersOfCellsEtaDir;    // size fNEta*fNETAdiv (for TRD1 only) (eta or z in SM, in cm)
   TArrayD  fCentersOfCellsPhiDir;    // size fNPhi*fNPHIdiv (for TRD1 only) (phi or y in SM, in cm)
   TArrayD  fEtaCentersOfCells;       // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position; 
   Int_t    fNCells;                  // number of cells in calo
-  Int_t    fNPhi;		                 // Number of Towers in the PHI direction
+  Int_t    fNPhi;                    // Number of Towers in the PHI direction
   TArrayD  fCentersOfCellsXDir;      // size fNEta*fNETAdiv (for TRD1 only) (       x in SM, in cm)
   Float_t  fEnvelop[3];              // the GEANT TUB for the detector 
   Float_t  fArm1EtaMin;              // Minimum pseudorapidity position of EMCAL in Eta
@@ -312,6 +336,11 @@ protected:
   Float_t  fArm1PhiMin;              // Minimum angular position of EMCAL in Phi (degrees)
   Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
   Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
+  Float_t  fDCALPhiMin;              // Minimum angular position of DCAL in Phi (degrees)
+  Float_t  fDCALPhiMax;              // Maximum angular position of DCAL in Phi (degrees)
+  Float_t  fEMCALPhiMax;             // Maximum angular position of EMCAL in Phi (degrees)
+  Float_t  fDCALStandardPhiMax;      // special edge for the case that DCAL contian extension
+  Float_t  fDCALInnerExtandedEta;    // DCAL inner edge in Eta (with some extension)
   TList   *fShishKebabTrd1Modules;   // list of modules
   Float_t  fParSM[3];                // SM sizes as in GEANT (TRD1)
   Float_t  fPhiModuleSize;           // Phi -> X 
@@ -326,7 +355,7 @@ protected:
   Float_t  fZLength;		     // Total length in z direction
   Float_t  fSampling;		     // Sampling factor
 
-  Int_t    fFastOR2DMap[48][64];     // FastOR 2D Map over full EMCal
+  Int_t    fFastOR2DMap[48][124];     // FastOR 2D Map over full EMCal
 	
   TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
   Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager
@@ -338,7 +367,7 @@ private:
   static const Char_t     *fgkDefaultGeometryName; // Default name of geometry
   
   
-  ClassDef(AliEMCALGeometry,16)       // EMCAL geometry class 
+  ClassDef(AliEMCALGeometry,17)       // EMCAL geometry class 
 
 } ;
 

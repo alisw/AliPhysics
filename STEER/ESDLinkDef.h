@@ -25,7 +25,7 @@
   target="fNEntries, fColumn, fRow, fTriggerBits" targetType="Int, Int_t*, Int_t*, Int_t*" code="{fTriggerBits = new Int_t[fNEntries]; for (Int_t i=0; i<fNEntries; ++i) fTriggerBits[i]=onfile.fTriggerBits[fColumn[i]][fRow[i]];}"
 
 #pragma link C++ class  AliESDfriend+;                                                                                                           
-#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="unsigned char fTRDpidQuality"  version="[-49]" target="fTRDntracklets" targetType="unsigned char" code="{newObj->SetTRDntracklets(onfile.fTRDpidQuality);}"
+#pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="UChar_t fTRDpidQuality"  version="[-47]" target="fTRDntracklets" targetType="UChar_t" code="{fTRDntracklets=onfile.fTRDpidQuality;}"
 // see http://root.cern.ch/svn/root/trunk/io/doc/DataModelEvolution.txt
 
 #pragma read sourceClass="AliESDtrack" targetClass="AliESDtrack" source="Int_t fTOFLabel[3]"  version="[-68]" target="fTOFLabel" targetType="Int_t*" code="{fTOFLabel = new Int_t[3];for(Int_t i=0;i < 3;i++) fTOFLabel[i]=onfile.fTOFLabel[i];}"
@@ -152,7 +152,9 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ class  AliV0vertexer+;
 #pragma link C++ class  AliCascadeVertexer+;
 
-#pragma link C++ class  AliESDTOFcluster+;
+#pragma link C++ class  AliESDTOFHit+;
+#pragma link C++ class  AliESDTOFMatch+;
+#pragma link C++ class  AliESDTOFCluster+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);
@@ -162,4 +164,6 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ function operator-(const AliFMDMap&,const AliFMDMap&);
   
 #pragma link C++ class  AliESDMuonGlobalTrack+;  
+
+#pragma link C++ class  AliESDFIT+;  
 #endif

@@ -159,17 +159,22 @@ void AliMFTDigitizer::SDigits2Digits(TClonesArray *pSDigitList, TObjArray *pDigi
     AliMFTDigit *oldDig=NULL;
     pSDigitList[iPlane].Sort();
 
+    Int_t nDetElem = fSegmentation->GetPlane(iPlane)->GetNActiveElements();
+    TClonesArray *digitsPerDetElem[fNMaxDetElemPerPlane] = {0};
+    for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) digitsPerDetElem[iDetElem] = new TClonesArray("AliMFTDigit");
+
     AliDebug(1,"starting loop over sdigits to create digits");
     AliDebug(1, Form("MFT plane #%02d has %d SDigits", iPlane, Int_t(pSDigitList[iPlane].GetEntries())));
 
     for (Int_t iSDig=0; iSDig<pSDigitList[iPlane].GetEntries(); iSDig++) {
 
       newDig = (AliMFTDigit*) (pSDigitList[iPlane].At(iSDig));
+      Int_t localDetElemID = fSegmentation->GetDetElemLocalID(newDig->GetDetElemID());
       Bool_t digitExists = kFALSE;
-      Int_t nDigits = myDigitList[iPlane]->GetEntries();
+      Int_t nDigits = digitsPerDetElem[localDetElemID]->GetEntries();
       
       for (Int_t iDig=0; iDig<nDigits; iDig++) {
-	oldDig = (AliMFTDigit*) (myDigitList[iPlane]->At(iDig));
+	oldDig = (AliMFTDigit*) (digitsPerDetElem[localDetElemID]->At(iDig));
 	if (newDig->GetDetElemID()==oldDig->GetDetElemID() &&
 	    newDig->GetPixelX()==oldDig->GetPixelX() &&
 	    newDig->GetPixelY()==oldDig->GetPixelY() &&
@@ -179,10 +184,21 @@ void AliMFTDigitizer::SDigits2Digits(TClonesArray *pSDigitList, TObjArray *pDigi
 	  break;
 	}
       }
-
-      if (!digitExists) new ((*myDigitList[iPlane])[myDigitList[iPlane]->GetEntries()]) AliMFTDigit(*newDig);
+      
+      if (!digitExists) new ((*digitsPerDetElem[localDetElemID])[digitsPerDetElem[localDetElemID]->GetEntries()]) AliMFTDigit(*newDig);
 
     }
+
+    // Now we merge the digit lists coming from each detection element, to have an ordered final list
+
+    for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) {
+      for (Int_t iSDig=0; iSDig<digitsPerDetElem[iDetElem]->GetEntries(); iSDig++) {
+	newDig = (AliMFTDigit*) (digitsPerDetElem[iDetElem]->At(iSDig));
+	new ((*myDigitList[iPlane])[myDigitList[iPlane]->GetEntries()]) AliMFTDigit(*newDig);
+      }
+    }
+
+    for (Int_t iDetElem=0; iDetElem<nDetElem; iDetElem++) delete digitsPerDetElem[iDetElem];
     
     AliDebug(1, Form("MFT plane #%02d has %d Digits", iPlane, Int_t(myDigitList[iPlane]->GetEntries())));
     

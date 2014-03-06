@@ -1799,7 +1799,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
          if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
             outputArchive = "log_archive.zip:std*@disk=1 ";
             // Add normal output files, extra files + terminate files
-            TString files = GetListOfFiles("outextter");
+            TString files;
+            if (IsMergeAOD()) files = GetListOfFiles("outaodextter");
+            else files = GetListOfFiles("outextter");
             // Do not register files in fRegisterExcludes
             if (!fRegisterExcludes.IsNull()) {
                arr = fRegisterExcludes.Tokenize(" ");
@@ -3703,7 +3705,7 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
          aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
       TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs();
       if (!extraaod.IsNull() && mgr->GetOutputEventHandler()->GetFillExtension()) {
-         aodfiles += ",";
+         if (!aodfiles.IsNull()) aodfiles += ",";
          aodfiles += extraaod;
       }
    }
@@ -3721,11 +3723,11 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       if (!(strcmp(filename, "default"))) continue;
       if (outputfiles.Contains(filename)) continue;
       if (aodfiles.Contains(filename))    continue;
-      if (!outputfiles.IsNull()) outputfiles += ",";
+      if (!outputfiles.IsNull() && strlen(filename)) outputfiles += ",";
       outputfiles += filename;
    }
    if (stype.Contains("out")) {
-      if (!files.IsNull()) files += ",";
+      if (!files.IsNull() && !outputfiles.IsNull()) files += ",";
       files += outputfiles;
       if (stype == "out") return files.Data();
    }   
@@ -3747,7 +3749,7 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       }
       delete fextra;
       if (stype.Contains("ext")) {
-         if (!files.IsNull()) files += ",";
+         if (!files.IsNull() && !sextra.IsNull()) files += ",";
          files += sextra;
       }
    }   
@@ -4636,9 +4638,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      return;" << endl;
       out << "   }" << endl;
       if (IsLocalTest()) {
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
          out << "   printf(\"Testing merging...\\n\");" << endl;
-         out << "   printf(\"===================================\n\");" << endl;
+         out << "   printf(\"===================================\\n\");" << endl;
       }        
       out << "   while((str=(TObjString*)iter->Next())) {" << endl;
       out << "      outputFile = str->GetString();" << endl;
@@ -4667,9 +4669,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   out.close();" << endl;
       out << "   // read the analysis manager from file" << endl;
       if (IsLocalTest()) {
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
          out << "   printf(\"Testing Terminate()...\\n\");" << endl;
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
       } else {   
          out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
       }   
@@ -5062,7 +5064,7 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 
       TString outputFiles = fOutputFiles;
       if (merge && !fTerminateFiles.IsNull()) {
-         outputFiles += ",";
+         if (!outputFiles.IsNull()) outputFiles += ",";
          outputFiles += fTerminateFiles;
       }
       TObjArray *arr = outputFiles.Tokenize(",");

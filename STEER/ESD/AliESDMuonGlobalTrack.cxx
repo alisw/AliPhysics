@@ -37,6 +37,9 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack():
   AliVParticle(),
   fCharge(0),
   fMatchTrigger(0),
+  fNMFTClusters(0),
+  fNWrongMFTClustersMC(-1),
+  fMFTClusterPattern(0),
   fPx(0), 
   fPy(0), 
   fPz(0), 
@@ -44,13 +47,28 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack():
   fP(0), 
   fEta(0), 
   fRapidity(0),
-  fChi2(0),
+  fFirstTrackingPointX(0),
+  fFirstTrackingPointY(0),
+  fFirstTrackingPointZ(0),
+  fXAtVertex(0),
+  fYAtVertex(0),
+  fRAtAbsorberEnd(0),
+  fChi2OverNdf(0),
   fChi2MatchTrigger(0),
   fLabel(-1),
+  fMuonClusterMap(0),
+  fHitsPatternInTrigCh(0),
+  fHitsPatternInTrigChTrk(0),
+  fLoCircuit(0),
+  fIsConnected(kFALSE),
   fESDEvent(0)
 {
 
   //  Default constructor
+
+  fProdVertexXYZ[0]=0;
+  fProdVertexXYZ[1]=0;
+  fProdVertexXYZ[2]=0;
 
 }
 
@@ -60,6 +78,9 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(Double_t px, Double_t py, Double_t 
   AliVParticle(),
   fCharge(0),
   fMatchTrigger(0),
+  fNMFTClusters(0),
+  fNWrongMFTClustersMC(-1),
+  fMFTClusterPattern(0),
   fPx(0), 
   fPy(0), 
   fPz(0), 
@@ -67,15 +88,30 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(Double_t px, Double_t py, Double_t 
   fP(0), 
   fEta(0), 
   fRapidity(0),
-  fChi2(0),
+  fFirstTrackingPointX(0),
+  fFirstTrackingPointY(0),
+  fFirstTrackingPointZ(0),
+  fXAtVertex(0),
+  fYAtVertex(0),
+  fRAtAbsorberEnd(0),
+  fChi2OverNdf(0),
   fChi2MatchTrigger(0),
   fLabel(-1),
+  fMuonClusterMap(0),
+  fHitsPatternInTrigCh(0),
+  fHitsPatternInTrigChTrk(0),
+  fLoCircuit(0),
+  fIsConnected(kFALSE),
   fESDEvent(0)
 {
 
   //  Constructor with kinematics
 
   SetPxPyPz(px, py, pz);
+
+  fProdVertexXYZ[0]=0;
+  fProdVertexXYZ[1]=0;
+  fProdVertexXYZ[2]=0;
 
 }
 
@@ -85,6 +121,9 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(const AliESDMuonGlobalTrack& muonTr
   AliVParticle(muonTrack),
   fCharge(muonTrack.fCharge),
   fMatchTrigger(muonTrack.fMatchTrigger),
+  fNMFTClusters(muonTrack.fNMFTClusters),
+  fNWrongMFTClustersMC(muonTrack.fNWrongMFTClustersMC),
+  fMFTClusterPattern(muonTrack.fMFTClusterPattern),
   fPx(muonTrack.fPx), 
   fPy(muonTrack.fPy), 
   fPz(muonTrack.fPz), 
@@ -92,14 +131,29 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(const AliESDMuonGlobalTrack& muonTr
   fP(muonTrack.fP), 
   fEta(muonTrack.fEta), 
   fRapidity(muonTrack.fRapidity),
-  fChi2(muonTrack.fChi2),
+  fFirstTrackingPointX(muonTrack.fFirstTrackingPointX),
+  fFirstTrackingPointY(muonTrack.fFirstTrackingPointY),
+  fFirstTrackingPointZ(muonTrack.fFirstTrackingPointZ),
+  fXAtVertex(muonTrack.fXAtVertex),
+  fYAtVertex(muonTrack.fYAtVertex),
+  fRAtAbsorberEnd(muonTrack.fRAtAbsorberEnd),
+  fChi2OverNdf(muonTrack.fChi2OverNdf),
   fChi2MatchTrigger(muonTrack.fChi2MatchTrigger),
   fLabel(muonTrack.fLabel),
+  fMuonClusterMap(muonTrack.fMuonClusterMap),
+  fHitsPatternInTrigCh(muonTrack.fHitsPatternInTrigCh),
+  fHitsPatternInTrigChTrk(muonTrack.fHitsPatternInTrigChTrk),
+  fLoCircuit(muonTrack.fLoCircuit),
+  fIsConnected(muonTrack.fIsConnected),
   fESDEvent(muonTrack.fESDEvent)
 {
 
   // Copy constructor
   
+  fProdVertexXYZ[0]=muonTrack.fProdVertexXYZ[0];
+  fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
+  fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
+
 }
 
 //====================================================================================================================================================
@@ -113,19 +167,37 @@ AliESDMuonGlobalTrack& AliESDMuonGlobalTrack::operator=(const AliESDMuonGlobalTr
   // Base class assignement
   AliVParticle::operator=(muonTrack);
 
-  fCharge           = muonTrack.fCharge;
-  fMatchTrigger     = muonTrack.fMatchTrigger;
-  fPx               = muonTrack.fPx; 
-  fPy               = muonTrack.fPy; 
-  fPz               = muonTrack.fPz; 
-  fPt               = muonTrack.fPt; 
-  fP                = muonTrack.fP;
-  fEta              = muonTrack.fEta;
-  fRapidity         = muonTrack.fRapidity;
-  fChi2             = muonTrack.fChi2;
-  fChi2MatchTrigger = muonTrack.fChi2MatchTrigger;
-  fLabel            = muonTrack.fLabel;
-  fESDEvent         = muonTrack.fESDEvent;
+  fCharge                 = muonTrack.fCharge;
+  fMatchTrigger           = muonTrack.fMatchTrigger;
+  fNMFTClusters           = muonTrack.fNMFTClusters;
+  fNWrongMFTClustersMC    = muonTrack.fNWrongMFTClustersMC;
+  fMFTClusterPattern      = muonTrack.fMFTClusterPattern;
+  fPx                     = muonTrack.fPx; 
+  fPy                     = muonTrack.fPy; 
+  fPz                     = muonTrack.fPz; 
+  fPt                     = muonTrack.fPt; 
+  fP                      = muonTrack.fP;
+  fEta                    = muonTrack.fEta;
+  fRapidity               = muonTrack.fRapidity;
+  fFirstTrackingPointX    = muonTrack.fFirstTrackingPointX;
+  fFirstTrackingPointY    = muonTrack.fFirstTrackingPointY;
+  fFirstTrackingPointZ    = muonTrack.fFirstTrackingPointZ;
+  fXAtVertex              = muonTrack.fXAtVertex;
+  fYAtVertex              = muonTrack.fYAtVertex;
+  fRAtAbsorberEnd         = muonTrack.fRAtAbsorberEnd;
+  fChi2OverNdf            = muonTrack.fChi2OverNdf;
+  fChi2MatchTrigger       = muonTrack.fChi2MatchTrigger;
+  fLabel                  = muonTrack.fLabel;
+  fMuonClusterMap         = muonTrack.fMuonClusterMap;
+  fHitsPatternInTrigCh    = muonTrack.fHitsPatternInTrigCh;
+  fHitsPatternInTrigChTrk = muonTrack.fHitsPatternInTrigChTrk;
+  fLoCircuit              = muonTrack.fLoCircuit;
+  fIsConnected            = muonTrack.fIsConnected;
+  fESDEvent               = muonTrack.fESDEvent;
+
+  fProdVertexXYZ[0]=muonTrack.fProdVertexXYZ[0];
+  fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
+  fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
 
   return *this;
 

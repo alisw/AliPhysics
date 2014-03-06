@@ -141,8 +141,10 @@ void AliGenTunedOnPbPb::Generate()
   Float_t psi = gRandom->Rndm()*TMath::Pi();
   fgEventplane = psi;
   Float_t psi3 = gRandom->Rndm()*TMath::Pi()*2/3;
+  Float_t psi4 = gRandom->Rndm()*TMath::Pi()*2/4;
   fgV2->SetParameter(1,psi);
   fgV2->SetParameter(3,psi3);
+  fgV2->SetParameter(4,psi4);
 
   Int_t npart = 0;
 
@@ -212,6 +214,7 @@ void AliGenTunedOnPbPb::Generate()
     header->SetCentrality(centrality);
     header->SetPsi2(psi);
     header->SetPsi3(psi3);
+    header->SetPsi4(psi4);
     gAlice->SetGenEventHeader(header); 
 }
 
@@ -235,7 +238,7 @@ TH1F *AliGenTunedOnPbPb::GetMultVsCentrality(Int_t species){
 //_____________________________________________________________________________
 void AliGenTunedOnPbPb::SetParameters(Float_t centrality){
 
-  if(!fgV2) fgV2 = new TF1("fv2Par","TMath::Max(0.,(1 + 2*[0]*cos(2*(x-[1])) + 2*[0]*[2]*cos(3*(x-[3]))))",-TMath::Pi(),TMath::Pi());
+  if(!fgV2) fgV2 = new TF1("fv2Par","TMath::Max(0.,(1 + 2*[0]*cos(2*(x-[1])) + 2*[0]*[2]*cos(3*(x-[3])) + [0]*[2]*cos(4*(x-[4]))))",-TMath::Pi(),TMath::Pi()); // v4 is approx. 0.5*v3
 
   Float_t fr[9] = {0.,0.,0.,0.,0.,0.,0.,0.,0.};
 

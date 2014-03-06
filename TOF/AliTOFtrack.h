@@ -30,6 +30,7 @@ public:
    AliTOFtrack(const AliTOFtrack& t);
    AliTOFtrack(const AliESDtrack& t);
    AliTOFtrack& operator=(const AliTOFtrack &/*source*/); // ass. op.
+   AliTOFtrack& operator=(const AliESDtrack &/*source*/); // ass. op. with ESD track
 
    Int_t    GetSector() const {
      return Int_t(TVector2::Phi_0_2pi(GetAlpha())/AliTOFGeometry::GetAlpha())%AliTOFGeometry::NSectors();}

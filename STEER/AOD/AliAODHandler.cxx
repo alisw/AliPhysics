@@ -681,7 +681,7 @@ void AliAODHandler::AddBranch(const char* cname, void* addobj, const char* filen
 }
 
 //______________________________________________________________________________
-AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title)
+AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *title, Bool_t tomerge)
 {
   // Add an AOD extension with some branches in a different file.
   
@@ -696,6 +696,7 @@ AliAODExtension *AliAODHandler::AddExtension(const char *filename, const char *t
     ext = new AliAODExtension(fname, title);
     fExtensions->Add(ext);
   }   
+  ext->SetToMerge(tomerge);
   return ext;
 }
 
@@ -708,7 +709,7 @@ AliAODExtension *AliAODHandler::GetExtension(const char *filename) const
 }   
 
 //______________________________________________________________________________
-AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char *filtername)
+AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char *filtername, Bool_t tomerge)
 {
   // Add an AOD extension that can write only AOD events that pass a user filter.
   if (!fFilters) {
@@ -720,6 +721,7 @@ AliAODExtension *AliAODHandler::AddFilteredAOD(const char *filename, const char 
     filter = new AliAODExtension(filename, filtername, kTRUE);
     fFilters->Add(filter);
   }
+  filter->SetToMerge(tomerge);
   return filter;
 }      
 
@@ -751,17 +753,19 @@ const char *AliAODHandler::GetExtraOutputs() const
   // Get extra outputs as a string separated by commas.
   static TString eoutputs;
   eoutputs = "";
-  TObject *obj;
+  AliAODExtension *obj;
   if (fExtensions) {
     TIter next1(fExtensions);
-    while ((obj=next1())) {
+    while ((obj=(AliAODExtension*)next1())) {
+      if (!obj->IsToMerge()) continue;
       if (!eoutputs.IsNull()) eoutputs += ",";
       eoutputs += obj->GetName();
     }
   }
   if (fFilters) {
     TIter next2(fFilters);
-    while ((obj=next2())) {
+    while ((obj=(AliAODExtension*)next2())) {
+      if (!obj->IsToMerge()) continue;
       if (!eoutputs.IsNull()) eoutputs += ",";
       eoutputs += obj->GetName();
     }

@@ -170,7 +170,7 @@ public:
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
   enum {
-    kNDetectors = 17   // number of detectors    + AD
+    kNDetectors = 18   // number of detectors    + AD +FIT //alla
   };
   static Int_t   GetDetIndex(const char * detector);
   static const char** GetDetectorNames() { return fgkDetectorName; }

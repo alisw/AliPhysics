@@ -21,6 +21,7 @@
 #include "TTree.h"
 #include "TMath.h"
 #include "AliMFTConstants.h"
+#include "TStopwatch.h"
 
 //====================================================================================================================================================
 
@@ -37,6 +38,8 @@ public:
   void SetClusterTreeAddress(TTree *treeCluster);
   void CreateClusters();
 
+  void ApplyMisalignment(Bool_t applyMisalignment) { fApplyMisalignment = applyMisalignment; }
+
   void DigitsToClusters(const TObjArray *pDigitList);
 
   void StartEvent();
@@ -45,18 +48,24 @@ private:
  
   static const Int_t fNMaxDigitsPerCluster = AliMFTConstants::fNMaxDigitsPerCluster;
   static const Int_t fNMaxPlanes = AliMFTConstants::fNMaxPlanes;
+  static const Int_t fNMaxDetElemPerPlane = AliMFTConstants::fNMaxDetElemPerPlane;
   static const Double_t fCutForAvailableDigits;
   static const Double_t fCutForAttachingDigits;
+  static const Double_t fMisalignmentMagnitude;
 
-  TClonesArray *fClustersPerPlane[fNMaxPlanes];    // ![fNPlanes] list of clusters [per plane]
+  TClonesArray *fClustersPerPlane[fNMaxPlanes];    //! [fNPlanes] list of clusters [per plane]
 
-  TClonesArray *fDigitsInCluster;
-  AliMFTDigit *fCurrentDigit;
-  AliMFTCluster *fCurrentCluster;
+  TClonesArray *fDigitsInCluster;                  //!
+  AliMFTDigit *fCurrentDigit;                      //!
+  AliMFTCluster *fCurrentCluster;                  //!
 
-  AliMFTSegmentation *fSegmentation;
-
+  AliMFTSegmentation *fSegmentation;               //!
+ 
   Int_t fNPlanes;
+
+  Bool_t fApplyMisalignment;                       // For MC, waiting for OCDB...
+
+  TStopwatch *fStopWatch;                          //!
 
   AliMFTClusterFinder(const AliMFTClusterFinder &source);
   AliMFTClusterFinder& operator=(const AliMFTClusterFinder &source);

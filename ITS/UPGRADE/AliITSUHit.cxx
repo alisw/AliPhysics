@@ -61,7 +61,7 @@ AliITSUHit& AliITSUHit::operator=(const AliITSUHit &h)
 void AliITSUHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
 {
   // Returns the position and time of flight of this hit in the local
-  // coordinates of this module, and in the units of the Monte Carlo.
+  // coordinates of this chip, and in the units of the Monte Carlo.
   //
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
@@ -78,7 +78,7 @@ void AliITSUHit::GetPositionL(Float_t &x,Float_t &y,Float_t &z,Float_t &tof)
 void AliITSUHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof)
 {
   // Returns the initial position and time of flight of this hit 
-  // in the local coordinates of this module, and in the units of the 
+  // in the local coordinates of this chip, and in the units of the 
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
   double g[3]={fx0,fy0,fz0},l[3];  
@@ -90,13 +90,13 @@ void AliITSUHit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,Double_t &tof
 }
 
 //______________________________________________________________________
-void AliITSUHit::GetDetectorID(Int_t &layer,Int_t &ladder,Int_t &det) const
+void AliITSUHit::GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod,Int_t &det) const
 {
-  // Returns the layer ladder and detector number lables for this
-  // ITS module. Note: indices start from 0!
+  // Returns the layer stave and detector number lables for this
+  // ITS chip. Note: indices start from 0!
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
-  gm->GetModuleId(fModule,layer,ladder,det);
+  gm->GetChipId(fModule,layer,stave,sstave,mod,det);
 }  
 
 //______________________________________________________________________
@@ -109,21 +109,39 @@ Int_t AliITSUHit::GetLayer() const
 }  
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetLadder() const
+Int_t AliITSUHit::GetStave() const
 {
-  // Returns the ladder of TS module. Note: indices start from 0!
+  // Returns the stave of TS chip. Note: indices start from 0!
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetLadder(fModule);
+  return gm->GetStave(fModule);
 }  
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetDetector() const
+Int_t AliITSUHit::GetSubStave() const
 {
-  // Returns the detector within the ladder. Note: indices start from 0!
+  // Returns the substave of the chip. Note: indices start from 0!
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetModIdInLadder(fModule);
+  return gm->GetSubStave(fModule);
+}  
+
+//______________________________________________________________________
+Int_t AliITSUHit::GetModule() const
+{
+  // Returns the module of the chip. Note: indices start from 0!
+  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
+  if (!gm) AliFatal("NULL pointer to the geometry!");
+  return gm->GetModule(fModule);
+}  
+
+//______________________________________________________________________
+Int_t AliITSUHit::GetChipInModule() const // former GetDetector
+{
+  // Returns the detector within the module(or stave). Note: indices start from 0!
+  AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
+  if (!gm) AliFatal("NULL pointer to the geometry!");
+  return gm->GetChipIdInModule(fModule);
 }  
 
 //______________________________________________________________________

@@ -30,7 +30,7 @@
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliVTrack.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 #include "AliTPCdEdxInfo.h"
@@ -63,7 +63,7 @@ public:
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();
-  void SetID(Short_t id) { fID =id;}
+  void SetID(Short_t id);
   Int_t GetID() const { return fID;}
   void SetVertexID(Char_t id) { fVertexID=id;}
   Char_t GetVertexID() const { return fVertexID;}
@@ -310,12 +310,17 @@ public:
     return fFriendTrack!=NULL?fFriendTrack->GetTRDtrack():NULL;
   }
 
+  // this are methods for manipulating with TOF clusters/matches
   void    SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster);
   Int_t   *GetTOFclusterArray() const {return fTOFcluster;}
   Int_t   GetNTOFclusters() const {return fNtofClusters;}
+  void    SuppressTOFMatches();
+  void    ReplaceTOFTrackID(int oldID, int newID);
+  void    ReplaceTOFClusterID(int oldID, int newID);
+  void    ReplaceTOFMatchID(int oldID, int newID);
   void    AddTOFcluster(Int_t icl);
-  void    SortTOFcluster();
-  void    ReMapTOFcluster(Int_t ncl,Int_t *mapping);
+  void    SortTOFcluster(); // RS? Not to be used?
+  void    ReMapTOFcluster(Int_t ncl,Int_t *mapping);  // RS? Not to be used?
 
   void    SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Double_t GetTOFsignal() const;

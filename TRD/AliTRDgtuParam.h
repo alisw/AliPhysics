@@ -21,7 +21,6 @@ class AliTRDgtuParam : public TObject {
   virtual ~AliTRDgtuParam();
 
   static AliTRDgtuParam *Instance(); // Singleton
-  static void Terminate();
 
   static Int_t GetNLinks() { return fgkNLinks; }
   static Int_t GetNLayers() { return fgkNLinks/2; }
@@ -150,8 +149,6 @@ class AliTRDgtuParam : public TObject {
   Float_t fMagField;            // magnetic field in T
 
   AliTRDgeometry *fGeo;		//! pointer to the TRD geometry
-
-  static AliTRDgtuParam *fgInstance; // instance pointer
 
  private:
   AliTRDgtuParam();			     // instance only via Instance()

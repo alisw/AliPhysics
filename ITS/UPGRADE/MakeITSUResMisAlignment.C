@@ -1,6 +1,6 @@
 // macro to create 
 Double_t sgXMod=30e-4,sgYMod=30e-4,sgZMod=30e-4,sgThtMod=0.1,sgPsiMod=0.1,sgPhiMod=0.1;
-Double_t sgXLad=30e-4,sgYLad=30e-4,sgZLad=30e-4,sgThtLad=0.1,sgPsiLad=0.1,sgPhiLad=0.1;
+Double_t sgXSta=30e-4,sgYSta=30e-4,sgZSta=30e-4,sgThtSta=0.1,sgPsiSta=0.1,sgPhiSta=0.1;
 Double_t sgXLay=30e-4,sgYLay=30e-4,sgZLay=30e-4,sgThtLay=0.1,sgPsiLay=0.1,sgPhiLay=0.1;
 Double_t sgXITS=100e-4,sgYITS=100e-4,sgZITS=2000e-4,sgThtITS=0.1,sgPsiITS=0.1,sgPhiITS=0.1;
 //
@@ -80,28 +80,28 @@ void MakeITSUResMisAlignment()
     new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),dummyVID,
 					       dx,dy,dz,dtht,dpsi,dphi,kTRUE);
     //
-    for (int ild=0;ild<gm0->GetNLadders(ilr);ild++) {
+    for (int ild=0;ild<gm0->GetNStaves(ilr);ild++) {
       //
-      dx   = sgXLad*gRandom->Gaus();
-      dy   = sgYLad*gRandom->Gaus();	
-      dz   = sgZLad*gRandom->Gaus();
-      dtht = sgThtLad*gRandom->Gaus(); 
-      dpsi = sgPsiLad*gRandom->Gaus(); 
-      dphi = sgPhiLad*gRandom->Gaus(); 	
-      sname = gm0->ComposeSymNameLadder(ilr,ild);
+      dx   = sgXSta*gRandom->Gaus();
+      dy   = sgYSta*gRandom->Gaus();	
+      dz   = sgZSta*gRandom->Gaus();
+      dtht = sgThtSta*gRandom->Gaus(); 
+      dpsi = sgPsiSta*gRandom->Gaus(); 
+      dphi = sgPhiSta*gRandom->Gaus(); 	
+      sname = gm0->ComposeSymNameStave(ilr,ild);
       new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),dummyVID,
 						 dx,dy,dz,dtht,dpsi,dphi,kTRUE);
       //
-      for (int isn=0;isn<gm0->GetNDetectors(ilr);isn++) {
+      for (int isn=0;isn<gm0->GetNChipsPerModule(ilr);isn++) {
 	dx   = sgXMod*gRandom->Gaus();
 	dy   = sgYMod*gRandom->Gaus();	
 	dz   = sgZMod*gRandom->Gaus();
 	dtht = sgThtMod*gRandom->Gaus(); 
 	dpsi = sgPsiMod*gRandom->Gaus(); 
 	dphi = sgPhiMod*gRandom->Gaus(); 	
-	int mid = gm0->GetModuleIndex(ilr,ild,isn);
+	int mid = gm0->GetChipIndex(ilr,ild,isn);
 	sname = gm0->GetSymName(mid);
-	new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),gm0->ModuleVolUID(mid),
+	new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),gm0->ChipVolUID(mid),
 						   dx,dy,dz,dtht,dpsi,dphi,kTRUE);
       }
     }

@@ -52,3 +52,8 @@ G__*.h
 /test/*/*/*.root
 /test/*/*/*.log
 /test/*/*/*.ps
+
+#rpm-creation
+/RPMS
+/alimdc-root
+rpm-tmp.*

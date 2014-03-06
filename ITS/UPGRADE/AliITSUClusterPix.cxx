@@ -59,7 +59,7 @@ const TGeoHMatrix*  AliITSUClusterPix::GetTracking2LocalMatrix() const
 //______________________________________________________________________________
 TGeoHMatrix* AliITSUClusterPix::GetMatrix(Bool_t ) const
 {
-  // get module matrix (sensor!)
+  // get chip matrix (sensor!)
   return (TGeoHMatrix*)fgGeom->GetMatrixSens(GetVolumeId());
 }
 
@@ -92,7 +92,7 @@ Bool_t AliITSUClusterPix::GetGlobalXYZ(Float_t xyz[3]) const
 {
   // Get the global coordinates of the cluster
   // All the needed information is taken only
-  // from TGeo.
+  // from TGeo (single precision).
   if (IsFrameGlo()) {
     xyz[0] = GetX();
     xyz[1] = GetY();
@@ -118,6 +118,37 @@ Bool_t AliITSUClusterPix::GetGlobalXYZ(Float_t xyz[3]) const
   xyz[0] = gxyz[0]; xyz[1] = gxyz[1]; xyz[2] = gxyz[2];
   return kTRUE;
 }
+
+//______________________________________________________________________________
+Bool_t AliITSUClusterPix::GetGlobalXYZ(Double_t xyz[3]) const
+{
+  // Get the global coordinates of the cluster
+  // All the needed information is taken only
+  // from TGeo (double precision).
+  if (IsFrameGlo()) {
+    xyz[0] = GetX();
+    xyz[1] = GetY();
+    xyz[2] = GetZ();
+    return kTRUE;
+  }
+  //
+  Double_t lxyz[3] = {0, 0, 0};
+  if (IsFrameTrk()) {
+    const TGeoHMatrix *mt = GetTracking2LocalMatrix();
+    if (!mt) return kFALSE;
+    Double_t txyz[3] = {GetX(), GetY(), GetZ()};
+    mt->LocalToMaster(txyz,lxyz);
+  }
+  else {
+    lxyz[0] = GetX(); lxyz[1] = GetY(); lxyz[2] = GetZ();
+  }
+  //
+  TGeoHMatrix *ml = GetMatrix();
+  if (!ml) return kFALSE;
+  ml->LocalToMaster(lxyz,xyz);
+  return kTRUE;
+}
+
 
 //______________________________________________________________________________
 Bool_t AliITSUClusterPix::GetGlobalCov(Float_t cov[6]) const

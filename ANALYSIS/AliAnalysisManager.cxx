@@ -301,7 +301,16 @@ void AliAnalysisManager::CreateReadCache()
    if (fAsyncReading) gEnv->SetValue("TFile.AsyncReading",1);
    fTree->SetCacheSize(fCacheSize);
    TTreeCache::SetLearnEntries(1);  //<<< we can take the decision after 1 entry
-   fTree->AddBranchToCache("*",kTRUE);    //<<< add all branches to the cache
+   if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) {
+      TObjArray *arr = fRequestedBranches.Tokenize(",");
+      TIter next(arr);
+      TObject *obj;
+      while ((obj=next()))
+         fTree->AddBranchToCache(obj->GetName(),kTRUE);  //<<< add requested branches to cache
+      delete arr;   
+   } else {
+      fTree->AddBranchToCache("*", kTRUE);  //<<< add all branches to cache
+   }   
    if (fDebug) {
       Info("CreateReadCache","Read cache enabled %lld bytes with async reading=%d",fCacheSize, (Int_t)fAsyncReading);
    }

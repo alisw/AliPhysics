@@ -15,47 +15,48 @@
 #include "AliCDBManager.h"
 
 class AliCDBLocal: public AliCDBStorage {
-	friend class AliCDBLocalFactory;
+  friend class AliCDBLocalFactory;
 
-public:
+  public:
 
-	virtual Bool_t IsReadOnly() const {return kFALSE;};
-	virtual Bool_t HasSubVersion() const {return kTRUE;};
-	virtual Bool_t Contains(const char* path) const;
-	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
-	virtual void SetRetry(Int_t /* nretry */, Int_t /* initsec */);
+  virtual Bool_t IsReadOnly() const {return kFALSE;};
+  virtual Bool_t HasSubVersion() const {return kTRUE;};
+  virtual Bool_t Contains(const char* path) const;
+  virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
+  virtual void SetRetry(Int_t /* nretry */, Int_t /* initsec */);
 
-protected:
+  protected:
 
-	virtual AliCDBEntry*    GetEntry(const AliCDBId& queryId);
-	virtual AliCDBId* 	GetEntryId(const AliCDBId& queryId);
-        virtual TList* 		GetEntries(const AliCDBId& queryId);
-        virtual Bool_t 		PutEntry(AliCDBEntry* entry, const char* mirrors="");
-	virtual TList* 		GetIdListFromFile(const char* fileName);
+  virtual AliCDBEntry*    GetEntry(const AliCDBId& queryId);
+  virtual AliCDBId* 	GetEntryId(const AliCDBId& queryId);
+  virtual TList* 		GetEntries(const AliCDBId& queryId);
+  virtual Bool_t 		PutEntry(AliCDBEntry* entry, const char* mirrors="");
+  virtual TList* 		GetIdListFromFile(const char* fileName);
 
-private:
+  private:
 
-	AliCDBLocal(const AliCDBLocal & source);
-	AliCDBLocal & operator=(const AliCDBLocal & source);
-	AliCDBLocal(const char* baseDir);
-	virtual ~AliCDBLocal();
-	
-	Bool_t FilenameToId(const char* filename, AliCDBRunRange& runRange, 
-			Int_t& version, Int_t& subVersion);
+  AliCDBLocal(const AliCDBLocal & source);
+  AliCDBLocal & operator=(const AliCDBLocal & source);
+  AliCDBLocal(const char* baseDir);
+  virtual ~AliCDBLocal();
 
-	Bool_t PrepareId(AliCDBId& id);
-//	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
-	AliCDBId* GetId(const AliCDBId& query);
+  Bool_t FilenameToId(const char* filename, AliCDBRunRange& runRange, 
+      Int_t& version, Int_t& subVersion);
 
-	virtual void QueryValidFiles();
+  Bool_t PrepareId(AliCDBId& id);
+  //	Bool_t GetId(const AliCDBId& query, AliCDBId& result);
+  AliCDBId* GetId(const AliCDBId& query);
 
-	void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
-	void GetEntriesForLevel1(const char* level0, const char* Level1,
-			const AliCDBId& query, TList* result);
+  virtual void QueryValidFiles();
+  void QueryValidCVMFSFiles(TString& cvmfsOcdbTag);
 
-	TString fBaseDirectory; // path of the DB folder
+  void GetEntriesForLevel0(const char* level0, const AliCDBId& query, TList* result);
+  void GetEntriesForLevel1(const char* level0, const char* Level1,
+      const AliCDBId& query, TList* result);
 
-	ClassDef(AliCDBLocal, 0); // access class to a DataBase in a local storage
+  TString fBaseDirectory; // path of the DB folder
+
+  ClassDef(AliCDBLocal, 0); // access class to a DataBase in a local storage
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -66,15 +67,15 @@ private:
 
 class AliCDBLocalFactory: public AliCDBStorageFactory {
 
-public:
+  public:
 
-	virtual Bool_t Validate(const char* dbString);
-        virtual AliCDBParam* CreateParameter(const char* dbString);
+    virtual Bool_t Validate(const char* dbString);
+    virtual AliCDBParam* CreateParameter(const char* dbString);
 
-protected:
-        virtual AliCDBStorage* Create(const AliCDBParam* param);
+  protected:
+    virtual AliCDBStorage* Create(const AliCDBParam* param);
 
-        ClassDef(AliCDBLocalFactory, 0);
+    ClassDef(AliCDBLocalFactory, 0);
 };
 
 /////////////////////////////////////////////////////////////////////
@@ -84,26 +85,26 @@ protected:
 /////////////////////////////////////////////////////////////////////
 
 class AliCDBLocalParam: public AliCDBParam {
-	
-public:
-	AliCDBLocalParam();
-	AliCDBLocalParam(const char* dbPath);
-	AliCDBLocalParam(const char* dbPath, const char* uri);
-	
-	virtual ~AliCDBLocalParam();
 
-	const TString& GetPath() const {return fDBPath;};
+  public:
+    AliCDBLocalParam();
+    AliCDBLocalParam(const char* dbPath);
+    AliCDBLocalParam(const char* dbPath, const char* uri);
 
-	virtual AliCDBParam* CloneParam() const;
+    virtual ~AliCDBLocalParam();
 
-        virtual ULong_t Hash() const;
-        virtual Bool_t IsEqual(const TObject* obj) const;
+    const TString& GetPath() const {return fDBPath;};
 
-private:
+    virtual AliCDBParam* CloneParam() const;
 
-	TString fDBPath; // path of the DB folder
+    virtual ULong_t Hash() const;
+    virtual Bool_t IsEqual(const TObject* obj) const;
 
-	ClassDef(AliCDBLocalParam, 0);
+  private:
+
+    TString fDBPath; // path of the DB folder
+
+    ClassDef(AliCDBLocalParam, 0);
 };
 
 #endif

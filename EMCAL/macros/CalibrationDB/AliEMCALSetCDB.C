@@ -20,6 +20,7 @@
 
 #include "AliRun.h"
 #include "AliEMCALCalibData.h"
+#include "AliEMCALGeoParams.h"
 #include "AliCDBMetaData.h"
 #include "AliCDBId.h"
 #include "AliCDBEntry.h"
@@ -75,7 +76,7 @@ void SetCC(Int_t flag=0)
   if      (flag == 0) {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
-    lastRun   =  0;
+    lastRun   =  999999999;
     objFormat = "EMCAL initial gain factors and pedestals";
   }
   else if (flag == 1) {
@@ -100,15 +101,16 @@ void SetCC(Int_t flag=0)
   Float_t cc=0, ped;
 
   TRandom rn;
-  Int_t nSMod  = 12;
-  Int_t nCol   = 48;
-  Int_t nRow   = 24;
-  Int_t nRow2  = 12; //Modules 11 and 12 are half modules
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules;
 
-  for(Int_t supermodule=0; supermodule < nSMod; supermodule++) {
+  for(Int_t supermodule=0; supermodule < nSMod; supermodule++)  {
+    Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;
+    Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;
+    if(supermodule /2 == 5)
+      nRow = nRow/2;
+    if(supermodule > 11)//not good solution
+      nCol  = nCol*2/3;
     for(Int_t column=0; column< nCol; column++) {
-      if(supermodule >= 10)
- 	nRow = nRow2;
       for(Int_t row=0; row< nRow; row++) {
         cc  = fADCchannel;
         ped = fADCpedestal;
@@ -177,10 +179,7 @@ void GetCC(Int_t flag=0)
      ->Get("EMCAL/Calib/Data",
 	   gAlice->GetRunNumber())->GetObject());
 
-  static const Int_t nSMod = 12;
-  static const Int_t nCol  = 48;
-  Int_t nRow  = 24;
-  Int_t nRow2 = 12; //Modules 11 and 12 are half modules
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules;
   Int_t nCC   = 0;
 
   TH2F *hPed[nSMod], *hGain[nSMod];
@@ -203,9 +202,13 @@ void GetCC(Int_t flag=0)
 
   cout<<endl;
   for (Int_t supermodule=0; supermodule<nSMod; supermodule++) {
+    Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;
+    Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;
 
-    if(supermodule >= 10)
-      nRow = nRow2;
+    if(supermodule /2 == 5)
+      nRow = nRow/2;
+    if(supermodule > 11)
+      nCol  = nCol*2/3;
 
     TString namePed="hPed";
     namePed+=supermodule;

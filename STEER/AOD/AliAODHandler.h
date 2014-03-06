@@ -78,8 +78,8 @@ class AliAODHandler : public AliVEventHandler {
     void                 AddAODtoTreeUserInfo();
     void                 AddBranch(const char* cname, void* addobj, const char *fname="");
   
-    AliAODExtension*     AddExtension(const char *filename, const char *title="");                 
-    AliAODExtension*     AddFilteredAOD(const char *filename, const char *filtername);
+    AliAODExtension*     AddExtension(const char *filename, const char *title="", Bool_t tomerge=kFALSE);
+    AliAODExtension*     AddFilteredAOD(const char *filename, const char *filtername, Bool_t tomerge=kFALSE);
 //    AliAODExtension*     FindExtensionContainingBranch(const char* bname) const;
     Bool_t               IsStandard()                         const {return fIsStandard;}
     Bool_t               GetFillAOD()                         const {return fFillAOD;} 

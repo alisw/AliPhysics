@@ -22,11 +22,17 @@ class AliDummyHandler : public AliInputEventHandler {
     virtual Bool_t Init(TTree* tree, Option_t* /*opt*/) { fTree = tree; return kTRUE; }
     Option_t            *GetDataType() const { return "MC"; }
 
+    void                 SetEvent(AliVEvent *e)  { fEvent = e; } 
+    AliVEvent           *GetEvent()        const {return fEvent;}
+
+ protected:
+    AliVEvent    *fEvent;         // Pointer to the event
+
  private:
     AliDummyHandler(const AliDummyHandler& handler);             
     AliDummyHandler& operator=(const AliDummyHandler& handler);  
 
-    ClassDef(AliDummyHandler, 1);
+    ClassDef(AliDummyHandler, 3);
 };
 
 #endif

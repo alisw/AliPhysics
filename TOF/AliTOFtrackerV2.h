@@ -18,16 +18,15 @@
 //------------------------------------------------------------------//
 
 #include "AliTracker.h"
-#include "AliESDTOFcluster.h"
+#include "AliTOFcluster.h"
+#include "AliESDTOFCluster.h"
 
 class TClonesArray;
 class TObjArray;
 
 class AliESDEvent;
 class AliESDpid;
-
 class AliTOFRecoParam;
-class AliTOFGeometry;
 
 class AliTOFtrackerV2 : public AliTracker {
 
@@ -42,15 +41,16 @@ class AliTOFtrackerV2 : public AliTracker {
  virtual Int_t RefitInward(AliESDEvent* /*event*/) {return -1;};
  virtual Int_t LoadClusters(TTree * cTree); // Load Clusters
  virtual void  UnloadClusters();// UnLoad Clusters
- virtual AliCluster *GetCluster(Int_t index) const
-   {if (index==-1 || index >= fN) return NULL;
-     return (AliCluster *) (&fClusters[index]);};
  Bool_t GetTrackPoint(Int_t index, AliTrackPoint& p) const;
  Int_t GetNumberOfMatchedTOFtracks() const {return fnmatch;}
- void FillClusterArray(TObjArray* arr) const;
- void Clusterize();
+ virtual AliCluster *GetCluster(Int_t index) const
+ {//Int_t index = fWrittenInPos[indexOr]; // indexOr should refer to the clusters written in ESD
+   if (index==-1 || index >= fN) return NULL;
+   return (AliCluster *) &(fClusters[index]);};
 
 private:
+ void Clusterize();
+ void MergeClusters(Int_t i,Int_t j);
 
  enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
@@ -63,7 +63,6 @@ private:
  Float_t CorrectTimeWalk(Float_t dist,Float_t tof) const; // Time Walk correction
 
  const AliTOFRecoParam* fkRecoParam;    // Pointer to TOF Recon. Pars
- AliTOFGeometry*  fGeom;                // Pointer to TOF geometry
  
  Int_t fN;              // Number of Clusters
  Int_t fNseeds;         // Number of track seeds  
@@ -71,11 +70,19 @@ private:
  Int_t fnunmatch;       // Unmatched tracks
  Int_t fnmatch;         // Total matched tracks
 
- TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
  TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
- AliESDTOFcluster *fClusters; // pointers to the TOF clusters
+ AliTOFcluster    *fClusters[kMaxCluster];     //! pointers to the TOF cluster
+ TClonesArray     *fClustersESD;  //! base line for ESD clusters
+ TClonesArray     *fHitsESD;       //! filter list of TOF hits for ESD
+ Int_t            fWrittenInPos[kMaxCluster]; //! the position where the cluster is already written
+ 
+ AliESDEvent      *fEvent;    //! pointer to the event
 
- ClassDef(AliTOFtrackerV2, 1) // TOF tracker 
+ Int_t fNsteps;                         //! number of propagation steps
+ Double_t *fTimesAr[AliPID::kSPECIESC]; //! array to compute expected times for each propagation step
+ Float_t  *fTrackPos[4];                //! array to compute pos for each propation step
+
+ ClassDef(AliTOFtrackerV2, 2) // TOF tracker 
 };
 
 #endif

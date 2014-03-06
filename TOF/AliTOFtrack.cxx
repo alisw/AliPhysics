@@ -55,6 +55,30 @@ AliTOFtrack::AliTOFtrack(const AliTOFtrack& t) :
   //
 }                                
 
+//____________________________________________________________________________
+AliTOFtrack& AliTOFtrack::operator=(const AliESDtrack& t)
+{
+  // ass. op.
+  SetLabel(t.GetLabel());
+  SetChi2(0.);
+  SetMass(t.GetMassForTracking());
+
+  Set(t.GetX(),t.GetAlpha(),t.GetParameter(),t.GetCovariance());
+
+  if ((t.GetStatus()&AliESDtrack::kTIME) == 0) return *this;
+  StartTimeIntegral();
+  Double_t times[10]; 
+  for(Int_t isp=0;isp<AliPID::kSPECIESC;isp++){
+    times[isp] = t.GetIntegratedTimesOld(isp); // in ps
+  }
+
+  SetIntegratedTimes(times);
+  SetIntegratedLength(t.GetIntegratedLengthOld());
+
+  return *this;
+
+}
+
 //_____________________________________________________________________________
 AliTOFtrack::AliTOFtrack(const AliESDtrack& t) :
   AliKalmanTrack(), 

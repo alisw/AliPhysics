@@ -21,7 +21,8 @@
 #include "AliVTOFcluster.h"
 
 AliVTOFcluster::AliVTOFcluster(const AliVTOFcluster & source) :
-  TObject(source)
+  TObject(source),
+  fEvent(NULL)
 {
   // 
   // copy ctor for AliVTOFcluster object
@@ -35,6 +36,7 @@ AliVTOFcluster & AliVTOFcluster::operator=(const AliVTOFcluster & source)
   //
   if (this != &source) {
     TObject::operator=(source);
+    fEvent = source.fEvent;
   }
   return *this;
 }

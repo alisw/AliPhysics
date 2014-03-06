@@ -14,6 +14,7 @@
 //*--   and : Aleksei Pavlinov (WSU) - shashlyk staff
 //*--   and : Gustavo Conesa: Add TRU mapping. TRU parameters still not fixed.
 //*--   and : Magali Estienne (Subatech): class added for new library for EMCALGeoUtils.par file
+//*--   and : Adapted for DCAL by M.L. Wang CCNU Wuhan & Subatech Oct-23-2009
 
 // --- ROOT system ---
 #include <TMath.h>
@@ -29,6 +30,7 @@ class AliEMCALShishKebabTrd1Module;
 
 class AliEMCALEMCGeometry : public TNamed {
 public:
+  enum fEMCSMType { kEMCAL_Standard = 0, kEMCAL_Half = 1, kEMCAL_3rd = 2, kDCAL_Standard = 3, kDCAL_Ext= 4 }; // possible SM Type
   AliEMCALEMCGeometry(); // default ctor only for internal usage (singleton)
   AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom);
   // ctor only for internal usage (singleton)
@@ -52,31 +54,38 @@ public:
   
   void   Init(const Text_t* mcname="", const Text_t* mctitle=""); // initializes the parameters of EMCAL
   void   CheckAdditionalOptions();        //
-  void   DefineSamplingFraction(const Text_t* mcname="", const Text_t* mctitle="");        
+  void   DefineSamplingFraction(const Text_t* mcname="", const Text_t* mctitle="");
 
   //////////////////////////////////////
   // Return EMCAL geometrical parameters
   //
   
   TString GetGeoName() const {return fGeoName;}
+  Int_t * GetEMCSystem() const {return fEMCSMSystem;}
   const Char_t* GetNameOfEMCALEnvelope() const { const Char_t* env = "XEN1"; return env ;}
   Float_t GetArm1PhiMin() const { return fArm1PhiMin ; }
   Float_t GetArm1PhiMax() const { return fArm1PhiMax ; }
   Float_t GetArm1EtaMin() const { return fArm1EtaMin;}
   Float_t GetArm1EtaMax() const { return fArm1EtaMax;}
-  Float_t GetIPDistance() const { return fIPDistance;}   
-  Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }  
+  Float_t GetIPDistance() const { return fIPDistance;}
+  Float_t GetEnvelop(Int_t index) const { return fEnvelop[index] ; }
   Float_t GetShellThickness() const { return fShellThickness ; }
-  Float_t GetZLength() const { return fZLength ; } 
+  Float_t GetZLength() const { return fZLength ; }
+  Float_t GetDCALInnerEdge() const { return fDCALInnerEdge ; }
+  Float_t GetDCALPhiMin() const { return fDCALPhiMin ; }
+  Float_t GetDCALPhiMax() const { return fDCALPhiMax ; }
+  Float_t GetDCALInnerExtandedEta() const { return fDCALInnerExtandedEta ; }
+  Float_t GetEMCALPhiMax() const { return fEMCALPhiMax ; }
+  Float_t GetDCALStandardPhiMax() const { return fDCALStandardPhiMax ; }
   Int_t   GetNECLayers() const {return fNECLayers ;}
   Int_t   GetNZ() const {return fNZ ;}
   Int_t   GetNEta() const {return fNZ ;}
   Int_t   GetNPhi() const {return fNPhi ;}
   Float_t GetECPbRadThick()const {return fECPbRadThickness;}
   Float_t GetECScintThick() const {return fECScintThick;}
-  Float_t GetSampling() const {return fSampling ; } 
+  Float_t GetSampling() const {return fSampling ; }
   Int_t   GetNumberOfSuperModules() const {return fNumberOfSuperModules;}
-  Float_t GetfPhiGapForSuperModules() const {return fPhiGapForSM;}
+  Float_t GetPhiGapForSuperModules() const {return fPhiGapForSM;}
   Float_t GetPhiModuleSize() const  {return fPhiModuleSize;}
   Float_t GetEtaModuleSize() const  {return fEtaModuleSize;}
   Float_t GetFrontSteelStrip() const {return fFrontSteelStrip;}
@@ -84,6 +93,7 @@ public:
   Float_t GetPassiveScintThick() const {return fPassiveScintThick;}
   Float_t GetPhiTileSize() const {return fPhiTileSize;}
   Float_t GetEtaTileSize() const {return fEtaTileSize;}
+  Float_t GetPhiSuperModule() const {return fPhiSuperModule;}
   Int_t   GetNPhiSuperModule() const {return fNPhiSuperModule;}
   Int_t   GetNPHIdiv() const {return fNPHIdiv ;}
   Int_t   GetNETAdiv() const {return fNETAdiv ;}
@@ -98,6 +108,7 @@ public:
   Int_t   GetNCellsInSupMod() const {return fNCellsInSupMod;}
   Int_t   GetNCellsInModule()  const {return fNCellsInModule; }
   Int_t   GetKey110DEG()      const {return fKey110DEG;}
+  Int_t   GetnSupModInDCAL()      const {return fnSupModInDCAL;}
   Int_t   GetILOSS() const {return fILOSS;}
   Int_t   GetIHADR() const {return fIHADR;}
     // For gamma(Jet) trigger simulations
@@ -105,17 +116,21 @@ public:
   Int_t    GetNTRUEta() const {return fNTRUEta ; }  
   Int_t    GetNTRUPhi() const {return fNTRUPhi ; }
   Int_t    GetNEtaSubOfTRU() const {return fNEtaSubOfTRU;}
+  Int_t    GetNTotalTRU() const {return fNTotalTRU ; }
   Int_t    GetNModulesInTRU() const {return fNModulesInTRUEta*fNModulesInTRUPhi; }
   Int_t    GetNModulesInTRUEta() const {return fNModulesInTRUEta ; }  
   Int_t    GetNModulesInTRUPhi() const {return fNModulesInTRUPhi ; }  
 
   // --
-  Float_t GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/ ((Float_t)fNZ);}
-  Float_t GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/ ((Float_t)fNPhi);}
-  Int_t   GetNTowers() const {return fNPhi * fNZ ;}
+  Float_t  GetDeltaEta() const {return (fArm1EtaMax-fArm1EtaMin)/ ((Float_t)fNZ);}
+  Float_t  GetDeltaPhi() const {return (fArm1PhiMax-fArm1PhiMin)/ ((Float_t)fNPhi);}
+  Int_t    GetNTowers() const {return fNPhi * fNZ ;}
   //
   Double_t GetPhiCenterOfSM(Int_t nsupmod) const;
-  Float_t GetSuperModulesPar(Int_t ipar) const {return fParSM[ipar];}
+  Double_t GetPhiCenterOfSMSec(Int_t nsupmod) const;
+  Float_t  GetSuperModulesPar(Int_t ipar) const {return fParSM[ipar];}
+  Int_t    GetSMType(Int_t nSupMod)           const { if( nSupMod > GetNumberOfSuperModules() ) return -1;
+                                                      return fEMCSMSystem[nSupMod]		     ; }
   //
   Bool_t   GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
@@ -138,7 +153,7 @@ public:
   void SetNPhi(Int_t nphi) { fNPhi= nphi; 
                              printf("SetNPhi: Number of modules in Phi set to %d", fNPhi) ; }
   void SetNTRUEta(Int_t ntru) {fNTRUEta = ntru;
-               printf("SetNTRU: Number of TRUs per SuperModule in Etaset to %d", fNTRUEta) ;}
+               printf("SetNTRU: Number of TRUs per SuperModule in Eta set to %d", fNTRUEta) ;}
   void SetNTRUPhi(Int_t ntru) {fNTRUPhi = ntru;
               printf("SetNTRU: Number of TRUs per SuperModule in Phi set to %d", fNTRUPhi) ;}
   void SetSampling(Float_t samp) { fSampling = samp; 
@@ -174,6 +189,7 @@ private:
   // Member data
 
   TString fGeoName;                     //geometry name
+  Int_t   *fEMCSMSystem;		// geometry structure
 
   TObjArray *fArrayOpts;                //! array of geometry options
   const char *fkAdditionalOpts[6];  //! some additional options for the geometry type and name
@@ -193,6 +209,12 @@ private:
   Float_t fIPDistance;			// Radial Distance of the inner surface of the EMCAL
   Float_t fShellThickness;		// Total thickness in (x,y) direction
   Float_t fZLength;			// Total length in z direction
+  Float_t fDCALInnerEdge;		// Inner edge for DCAL
+  Float_t fDCALPhiMin;	                // Minimum angular position of DCAL in Phi (degrees)
+  Float_t fDCALPhiMax;	                // Maximum angular position of DCAL in Phi (degrees)
+  Float_t fEMCALPhiMax; 		// Maximum angular position of EMCAL in Phi (degrees)
+  Float_t fDCALStandardPhiMax;           // special edge for the case that DCAL contian extension
+  Float_t fDCALInnerExtandedEta;	// DCAL inner edge in Eta (with some extension)
   Int_t   fNZ;				// Number of Towers in the Z direction
   Int_t   fNPhi;			// Number of Towers in the PHI direction
   Float_t fSampling;			// Sampling factor
@@ -207,7 +229,8 @@ private:
   Float_t fPhiTileSize;                  // Size of phi tile
   Float_t fEtaTileSize;                  // Size of eta tile
   Float_t fLongModuleSize;               // Size of long module
-  Int_t   fNPhiSuperModule;              // 6 - number supermodule in phi direction
+  Float_t fPhiSuperModule;               // Phi of normal supermodule (20, in degree)
+  Int_t   fNPhiSuperModule;              // 9 - number supermodule in phi direction
   Int_t   fNPHIdiv;                      // number phi divizion of module
   Int_t   fNETAdiv;                      // number eta divizion of module
   //
@@ -220,14 +243,17 @@ private:
   Int_t   fNModulesInTRUEta;             // Number of modules per TRU in eta 
   Int_t   fNModulesInTRUPhi;             // Number of modules per TRU in phi 
   Int_t   fNEtaSubOfTRU;                 // Number of eta (z) subregiohi
+  Int_t   fNTotalTRU;			 // Total Number of TRU (all SM)
 
   // TRD1 options - 30-sep-04
   Float_t fTrd1Angle;                    // angle in x-z plane (in degree) 
   Float_t f2Trd1Dx2;                     // 2*dx2 for TRD1
   Float_t fPhiGapForSM;                  // Gap betweeen supermodules in phi direction
   Int_t   fKey110DEG;                    // for calculation abs cell id; 19-oct-05 
+  Int_t   fnSupModInDCAL;                      // for calculation abs cell id;
   TArrayD fPhiBoundariesOfSM;            // phi boundaries of SM in rad; size is fNumberOfSuperModules;
-  TArrayD fPhiCentersOfSM;                // phi of centers of SMl size is fNumberOfSuperModules/2
+  TArrayD fPhiCentersOfSM;               // phi of centers of SM; size is fNumberOfSuperModules/2
+  TArrayD fPhiCentersOfSMSec;            // phi of centers of section where SM lies; size is fNumberOfSuperModules/2
   Float_t fEtaMaxOfTRD1;                 // max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
   // Oct 26,2010
   Float_t fTrd1AlFrontThick;		 // Thickness of the Al front plate  
@@ -262,7 +288,7 @@ private:
 
   ///////////////////////////////////////////////////////////
 
-  ClassDef(AliEMCALEMCGeometry, 2) // EMCAL geometry class 
+  ClassDef(AliEMCALEMCGeometry, 3) // EMCAL geometry class 
 };
 
 #endif // AliEMCALEMCGEOMETRY_H

@@ -20,13 +20,13 @@ class AliITSULoader: public AliLoader{
     void           MakeTree(Option_t* opt);
     virtual void   SetupDigits(TObjArray *digPerDet,Int_t n,
                                 const Char_t **digclass); // Sets up digits
-    // Gets the AliITSdigit for a given module and a specific digit in that
-    // module. Array of digits stored in AliITS (must use 
+    // Gets the AliITSdigit for a given chip and a specific digit in that
+    // chip. Array of digits stored in AliITS (must use 
     // SetupDigits(AliITS *its)).
-    // virtual AliITSdigit* GetDigit(AliITS *its,Int_t module,Int_t digit);
-    // Gets the AliITSdigit for a given module and a specific digit in that
-    // module. Array of digits stored in a user defined TObjArray digPerDet
-    virtual AliITSdigit* GetDigit(TObjArray *digPerDet,Int_t module,Int_t digit);
+    // virtual AliITSdigit* GetDigit(AliITS *its,Int_t chip,Int_t digit);
+    // Gets the AliITSdigit for a given chip and a specific digit in that
+    // chip. Array of digits stored in a user defined TObjArray digPerDet
+    virtual AliITSdigit* GetDigit(TObjArray *digPerDet,Int_t chip,Int_t digit);
 
     //Raw Clusters
     AliDataLoader* GetRawClLoader() {return GetDataLoader("Raw Clusters");}

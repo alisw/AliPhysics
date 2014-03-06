@@ -33,22 +33,22 @@ class AliITSUSuze02{
   Int_t GetNDigitsLost() {return fNDigitsLost;}
   Int_t GetNLostWindows() {return fNLostWindows;}    
   
-  Int_t GetDataSize() {return fDataSizePerModule;}  
+  Int_t GetDataSize() {return fDataSizePerChip;}  
   
   Int_t GetNWindowsPer32colsMin() {return fNWindowsPer32colsMin;}
   Int_t GetNWindowsPerHalfFSBBMin() {return fNWindowsPerHalfFSBBMin;}
   Int_t GetNWindowsPerFSBBMin() {return fNWindowsPerFSBBMin;}
   
-  void ResetModule();
+  void ResetChip();
   
   private:         
   static const Int_t kNumberOfFSBB=3; 
   static const Int_t kNumberOfHalfFSBB=2;
   
   //matrix to be processed by Suze02   
-  Int_t fNRowsModule;
-  Int_t fNColsModule;
-  TMatrixF* fModule; 
+  Int_t fNRowsChip;
+  Int_t fNColsChip;
+  TMatrixF* fChip; 
                
   //Suze02 parameters
   Int_t fTestColumnSize;   //Number of rows of the encoding window
@@ -69,7 +69,7 @@ class AliITSUSuze02{
   //TH1F* fOverflowCodes;
   //TH1F* fNDigitsPerEncodingWindowDist;
   
-  Int_t fDataSizePerModule;
+  Int_t fDataSizePerChip;
   
   Int_t fNWindowsPer32colsMin;
   Int_t fNWindowsPerHalfFSBBMin;

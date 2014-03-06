@@ -351,7 +351,8 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
   //Trigger sdigits
   if(!fTriggerData)fTriggerData = new AliEMCALTriggerData();
   fTriggerData->SetMode(1);	
-  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);    
+  const Int_t nTRU = GetGeometry()->GetNTotalTRU();
+  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", nTRU * 96);    
   Int_t bufsize = 32000;
   treeS->Branch("EMTRG", &digitsTrg, bufsize);
   
@@ -499,13 +500,16 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         //Default geometry
         //Complete EMCAL geometry, 12 SM. Year 2012 and on
         
-        if(!geoName.Contains("COMPLETE12SMV1"))
-        {
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ",
-                       geoName.Data(),runNumber));
-        }
-        else 
-        {
+        if(geoName.Contains("COMPLETE12SMV1") && geoName.Contains("DCAL")){
+          if(geoName.Contains("DCAL_DEV")) {
+            return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_DEV","EMCAL",mcname,mctitle) ;
+          } else if(geoName.Contains("DCAL_8SM")) {
+             return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
+          }else
+            return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL","EMCAL",mcname,mctitle) ;
+        } else if(!geoName.Contains("COMPLETE12SMV1")){
+          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ", geoName.Data(),runNumber));
+        } else {
           AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
         }
                 

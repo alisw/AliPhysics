@@ -142,24 +142,30 @@ void AliMFT::CreateMaterials() {
 
   AliInfo("Start MFT materials");
 
-  //---------------------- Materials and Mixtures ----------------------------------------------------------------------------------------------------
+  // data from PDG booklet 2002                 density [gr/cm^3]     rad len [cm]           abs len [cm]    
+  Float_t   aSi = 28.085 ,    zSi   = 14. ,     dSi      =  2.329 ,   radSi   =  21.82/dSi , absSi   = 108.4/dSi  ;    // Silicon
+  Float_t   aCarb = 12.01 ,   zCarb =  6. ,     dCarb    =  2.265 ,   radCarb =  18.8 ,      absCarb = 49.9       ;    // Carbon
+  Float_t   aAlu = 26.98 ,    zAlu  = 13. ,     dAlu     =  2.70  ,   radAlu  =  8.897 ,     absAlu  = 39.70      ;    // Aluminum
 
-  // data from PDG booklet 2002            density [gr/cm^3]    rad len [cm]             abs len [cm]    
-							        		         
-  Float_t   aSi = 28.085 ,  zSi   = 14. ,  dSi   = 2.329 ,      radSi   =  21.82/dSi ,   absSi   = 108.4/dSi  ;         // Silicon
-  Float_t   aCarb = 12.01 , zCarb =  6. ,  dCarb = 2.265 ,      radCarb =  18.8 ,        absCarb = 49.9  ;              // Carbon
-  Float_t   aAlu = 26.98 ,  zAlu  = 13. ,  dAlu  = 2.70  ,      radAlu  =  8.897 ,       absAlu  = 39.70  ;             // Aluminum
+  // Air mixture
+  const Int_t nAir = 4;   
+  Float_t   aAir[nAir] = {12, 14, 16, 36} ,  zAir[nAir] = {6, 7, 8, 18} ,   wAir[nAir]={0.000124, 0.755267, 0.231781, 0.012827} , dAir=0.00120479;   
 
-  const Int_t nAir   = 4;
-  const Int_t nWater = 2;
-  const Int_t nSiO2  = 2;
+  // Water mixture
+  const Int_t nWater = 2;   
+  Float_t   aWater[nWater] = {1.00794, 15.9994} ,  zWater[nWater] = {1, 8} ,   wWater[nWater] = {0.111894, 0.888106} , dWater=1.;   
 
-  Float_t   aAir[nAir]     = {12,14,16,40} ,      zAir[nAir]     = {6,7,8,18} ,   wAir[nAir]     = {0.000124,0.755267,0.231781,0.012827} , dAir=0.00120479; // Air mixture
-  Float_t   aWater[nWater] = {1.00794,15.9994} ,  zWater[nWater] = {1,8} ,        wWater[nWater] = {0.111894,0.888106} ,                   dWater=1.;       // Water mixture
-  Float_t   aSiO2[nSiO2]   = {15.9994,28.0855} ,  zSiO2[nSiO2]   = {8.,14.} ,     wSiO2[nSiO2]   = {0.532565,0.467435} ,                   dSiO2=2.20;      // SiO2 mixture
+  // SiO2 mixture
+  const Int_t nSiO2 = 2; 
+  Float_t   aSiO2[nSiO2] = {15.9994, 28.0855} ,   zSiO2[nSiO2] = {8., 14.} ,   wSiO2[nSiO2] = {0.532565, 0.467435} , dSiO2 = 2.20;  
 
-  //---------------------------------------------------------------------------------------------------------------------------------------------------
-
+  // Inox mixture
+  const Int_t nInox = 9;
+  Float_t   aInox[nInox] = {12.0107, 54.9380, 28.0855, 30.9738, 32.0660, 58.6928, 51.9961, 95.9400, 55.8450} ;   
+  Float_t   zInox[nInox] = { 6,      25,      14,      15,      16,      28,      24,      42,      26     } ;   
+  Float_t   wInox[nInox] = {0.0003,  0.02,    0.01,    0.00045, 0.0003,  0.12,    0.17,    0.025,   0.65395} ;
+  Float_t   dInox = 8.03; 
+  
   Int_t   matId  = 0;                        // tmp material id number
   Int_t   unsens = 0, sens=1;                // sensitive or unsensitive medium
   Int_t   itgfld = 3;			     // type of field intergration 0 no field -1 user in guswim 1 Runge Kutta 2 helix 3 const field along z
@@ -171,38 +177,41 @@ void AliMFT::CreateMaterials() {
   Float_t epsil  =  0.001;                   // tracking precision [cm]   
   Float_t stmin  = -0.001;                   // minimum step due to continuous processes [cm] (negative value: choose it automatically)
 
-  Float_t tmaxfdSi =  0.1;                    // max deflection angle due to magnetic field in one step
-  Float_t stemaxSi =  5.0e-4;                 // maximum step allowed [cm]
-  Float_t deemaxSi =  0.1;                    // maximum fractional energy loss in one step 0<deemax<=1
-  Float_t epsilSi  =  0.5e-4;                 // tracking precision [cm]
+  Float_t tmaxfdSi =  0.1;                   // max deflection angle due to magnetic field in one step
+  Float_t stemaxSi =  5.0e-4;                // maximum step allowed [cm]
+  Float_t deemaxSi =  0.1;                   // maximum fractional energy loss in one step 0<deemax<=1
+  Float_t epsilSi  =  0.5e-4;                // tracking precision [cm]
   Float_t stminSi  = -0.001;                 // minimum step due to continuous processes [cm] (negative value: choose it automatically)
 
   Int_t   isxfld = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();   // from CreateMaterials in STRUCT/AliPIPEv3.cxx
   Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();     // from CreateMaterials in STRUCT/AliPIPEv3.cxx
       
-  AliMixture(++matId,"Air", aAir,  zAir,   dAir,   nAir,   wAir); 
+  AliMixture(++matId,"Air", aAir, zAir, dAir, nAir, wAir); 
   AliMedium(kAir,    "Air", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMaterial(++matId, "Si", aSi,   zSi,  dSi,    radSi,  absSi  );  
+  AliMaterial(++matId, "Si", aSi, zSi, dSi, radSi, absSi);  
   AliMedium(kSi,       "Si", matId, sens, isxfld, sxmgmx, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
 
-  AliMaterial(++matId, "Readout", aSi,   zSi,    dSi,    radSi,  absSi  );  
+  AliMaterial(++matId, "Readout", aSi, zSi, dSi, radSi, absSi);  
   AliMedium(kReadout,  "Readout", matId, unsens, isxfld, sxmgmx, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
 
-  AliMaterial(++matId, "Support", aSi,   zSi,    dSi*fDensitySupportOverSi, radSi/fDensitySupportOverSi, absSi/fDensitySupportOverSi);  
-  AliMedium(kSupport,  "Support", matId, unsens, isxfld,  sxmgmx,    tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
+  AliMaterial(++matId, "Support", aSi, zSi, dSi*fDensitySupportOverSi, radSi/fDensitySupportOverSi, absSi/fDensitySupportOverSi);  
+  AliMedium(kSupport,  "Support", matId, unsens, isxfld, sxmgmx, tmaxfdSi, stemaxSi, deemaxSi, epsilSi, stminSi);
   
-  AliMaterial(++matId, "Carbon",   aCarb,   zCarb,    dCarb,    radCarb,  absCarb );
-  AliMedium(kCarbon,  "Carbon", matId, unsens, isxfld,  sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMaterial(++matId, "Carbon", aCarb, zCarb, dCarb, radCarb, absCarb );
+  AliMedium(kCarbon,   "Carbon", matId, unsens, isxfld,  sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMaterial(++matId, "Alu",   aAlu,   zAlu,    dAlu,    radAlu,  absAlu );
-  AliMedium(kAlu,  "Alu", matId, unsens, isxfld,  sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMaterial(++matId, "Alu", aAlu, zAlu, dAlu, radAlu, absAlu);
+  AliMedium(kAlu,      "Alu", matId, unsens, isxfld,  sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMixture(++matId,"Water", aWater,  zWater,   dWater,   nWater,   wWater);
-  AliMedium(kWater,    "Water", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  AliMixture(++matId, "Water", aWater, zWater, dWater, nWater, wWater);
+  AliMedium(kWater,   "Water", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
   
-  AliMixture(++matId,"SiO2", aSiO2,  zSiO2,   dSiO2,   nSiO2,   wSiO2);
+  AliMixture(++matId, "SiO2", aSiO2, zSiO2, dSiO2, nSiO2, wSiO2);
   AliMedium(kSiO2,    "SiO2", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
+  
+  AliMixture(++matId, "Inox", aInox, zInox, dInox, nInox, wInox);
+  AliMedium(kInox,    "Inox", matId, unsens, itgfld, maxfld, tmaxfd, stemax, deemax, epsil, stmin);
 
   AliInfo("End MFT materials");
           
@@ -263,7 +272,7 @@ void AliMFT::StepManager() {
   detElemNumber.Remove(0,19);
   planeNumber.Remove(2);
   detElemNumber.Remove(3);
-  Int_t detElemID = fSegmentation->GetDetElemID(planeNumber.Atoi(), detElemNumber.Atoi());
+  Int_t detElemID = fSegmentation->GetDetElemGlobalID(planeNumber.Atoi(), detElemNumber.Atoi());
 
   if (gMC->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kMFT);
@@ -300,9 +309,21 @@ void AliMFT::StepManager() {
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
   hit.SetEloss(gMC->Edep());
+  //  hit.SetShunt(GetIshunt());
+//   if (gMC->IsTrackEntering()) {
+//     hit.SetStartPosition(position);
+//     hit.SetStartTime(gMC->TrackTime());
+//     hit.SetStartStatus(status);
+//     return; // don't save entering hit.
+//   } 
 
   // Fill hit structure with this new hit.
   new ((*fHits)[fNhits++]) AliMFTHit(hit);
+
+  // Save old position... for next hit.
+//   hit.SetStartPosition(position);
+//   hit.SetStartTime(gMC->TrackTime());
+//   hit.SetStartStatus(status);
 
   return;
 
@@ -320,91 +341,106 @@ TGeoVolumeAssembly* AliMFT::CreateVol() {
   TGeoMedium *silicon = gGeoManager->GetMedium("MFT_Si");
   TGeoMedium *readout = gGeoManager->GetMedium("MFT_Readout");
   TGeoMedium *support = gGeoManager->GetMedium("MFT_Support");
-  TGeoMedium *carbon  = gGeoManager->GetMedium("MFT_Carbon");
-  TGeoMedium *alu     = gGeoManager->GetMedium("MFT_Alu");
-  TGeoMedium *water   = gGeoManager->GetMedium("MFT_Water");
-  TGeoMedium *si02    = gGeoManager->GetMedium("MFT_SiO2");
+  TGeoMedium *carbon = gGeoManager->GetMedium("MFT_Carbon");
+  TGeoMedium *alu = gGeoManager->GetMedium("MFT_Alu");
+  TGeoMedium *water = gGeoManager->GetMedium("MFT_Water");
+  TGeoMedium *si02 = gGeoManager->GetMedium("MFT_SiO2");
+  TGeoMedium *inox = gGeoManager->GetMedium("MFT_Inox");
 
-  // ---- Cage & Services Description --------------------------------------------------------------------
-
+  // ---- Cage & Services Description --------------------------------------------
   // R. Tieulent - 17/01/2014 - Basic description for ITS/TPC matching studies
+  // -----------------------------------------------------------------------------
 
   TGeoVolumeAssembly *cageNservices = new TGeoVolumeAssembly("MFT_cageNservices");
   
   // cage definition
-  Float_t cage_dz   = 150./2.;
-  Float_t cage_rMin = 50.;
-  Float_t cage_rMax = cage_rMin + 0.188; // 1% of X0 for Carbon
+  Float_t cageDz   = 150./2.;
+  Float_t cageRMax = 49.5;
+  Float_t cageRMin = cageRMax - 0.120; // 0.64% of X0
   
-  TGeoVolume *cage = gGeoManager->MakeTube("MFT_cage", carbon, cage_rMin, cage_rMax, cage_dz);
+  TGeoVolume *cage = gGeoManager->MakeTube("MFT_cage", carbon, cageRMin, cageRMax, cageDz);
+  cage->SetLineColor(kBlue);
+
   cageNservices->AddNode(cage,1,new TGeoTranslation(0., 0., 0. ));
 
   // Services definition
   TGeoVolumeAssembly *services = new TGeoVolumeAssembly("MFT_services");
 
   // Aluminum bus-Bar
-  Float_t busBar_dz = 150.;
-  Float_t busBar_thick = 0.1 ;
-  Float_t busBar_large = 1.;
+  Float_t busBarDz = 150.;
+  Float_t busBarThick = 0.1 ;
+  Float_t busBarWidth = 1.;
   
-  TGeoVolume *aluBusBar = gGeoManager->MakeBox("MFT_busBar", alu, busBar_large/2., busBar_thick/2., busBar_dz/2.);
+  TGeoVolume *aluBusBar = gGeoManager->MakeBox("MFT_busbar", alu, busBarWidth/2., busBarThick/2., busBarDz/2.);
+  aluBusBar->SetLineColor(kYellow);
 
   Int_t nBusBar = 30;
-  Float_t dPhi_busBar = 2.*TMath::Pi() / nBusBar;
-  Float_t dShift = cage_rMin - busBar_thick/2.;
+  Float_t dPhiBusBar = 2.*TMath::Pi() / nBusBar;
+  Float_t dShift = cageRMin - busBarThick;
   
-  TGeoRotation *rot = 0;
+  TGeoRotation *rot;
 
   for (Int_t iBusBar=0; iBusBar<nBusBar; iBusBar++) {
-    Float_t phi = dPhi_busBar*iBusBar;
-    Float_t xp  = dShift*TMath::Cos(phi);
-    Float_t yp  = dShift*TMath::Sin(phi);
+    Float_t phi =  dPhiBusBar*iBusBar;
+    Float_t xp = dShift*TMath::Cos(phi);
+    Float_t yp = dShift*TMath::Sin(phi);
     rot = new TGeoRotation();
-    rot -> RotateZ(phi*TMath::RadToDeg()+90.);
-    services -> AddNode(aluBusBar,iBusBar+1,new TGeoCombiTrans(xp,yp,0,rot));
+    rot->RotateZ(phi*TMath::RadToDeg()+90.);
+    services->AddNode(aluBusBar, iBusBar+1, new TGeoCombiTrans(xp,yp,0,rot));
   }
   
-  // Cooling Water Pipes
-  Float_t cooling_dz = 150.;
-  Float_t cooling_r = 0.3/2. ; // 3mm in diameter
+  // Cooling Services  definition
+  TGeoVolumeAssembly *cooling = new TGeoVolumeAssembly("MFT_cooling");
+  // Cooling Water
+  Float_t coolingDz = 150.;
+  Float_t coolingR  = 0.3 /2. ; // 3mm in diameter
+  Float_t coolingDR = 0.02 ;    // Thickness of the pipe 0.2mm
   
-  TGeoVolume *cooling = gGeoManager->MakeTube("MFT_cooling", water, 0., cooling_r, cooling_dz/2.);
+  TGeoVolume *coolingWater = gGeoManager->MakeTube("MFT_coolingWater", water, 0., coolingR, coolingDz/2.);
+  coolingWater->SetLineColor(kCyan);
+  cooling->AddNode(coolingWater, 1, new TGeoTranslation(0,0,0 ));
+
+  // Cooling Pipes
+  TGeoVolume *coolingPipes = gGeoManager->MakeTube("MFT_coolingPipes", inox, coolingR, coolingR+coolingDR, coolingDz/2.);
+  coolingPipes->SetLineColor(kGray);
+  cooling->AddNode(coolingPipes,1,new TGeoTranslation(0,0,0 ));
   
   Int_t nCooling = 18;
-  dShift = cage_rMin - cooling_r ;
+  dShift = cageRMin - coolingR ;
   Float_t phi0 = 0.02;
   
   for (Int_t iCooling=0; iCooling<nCooling; iCooling++) {
-    Float_t phi;
-    if (iCooling < nCooling/2) phi = dPhi_busBar*(iCooling+3) + phi0;
-    else                       phi = dPhi_busBar*(iCooling+9) + phi0;
+    Float_t phi ;
+    if (iCooling<nCooling/2) phi = dPhiBusBar*(iCooling+3) + phi0;
+    else phi = dPhiBusBar*(iCooling+9) + phi0;
     Float_t xp = dShift*TMath::Cos(phi);
     Float_t yp = dShift*TMath::Sin(phi);
-    services -> AddNode(cooling,iCooling+1,new TGeoTranslation(xp,yp,0 ));
+    services->AddNode(cooling, iCooling+1, new TGeoTranslation(xp,yp,0 ));
   }
   
   // Optical Fibers
-  Float_t fiber_dz = 150.;
-  Float_t fiber_r = 0.0125/2. ; // 0.125mm in diameter
+  Float_t fiberDz = 150.;
+  Float_t fiberRadius = 0.0125 /2. ; // 0.125mm in diameter
   
-  TGeoVolume *fiber = gGeoManager->MakeTube("MFT_fiber", si02, 0., fiber_r, fiber_dz/2.);
-  
+  TGeoVolume *fiber = gGeoManager->MakeTube("MFT_fiber", si02, 0., fiberRadius, fiberDz/2.);
+  fiber->SetLineColor(kCyan);
+
   Int_t nFiber = 340;
-  dShift = cage_rMin - fiber_r - cooling_r;
+  dShift = cageRMin - 2*fiberRadius;
   phi0 = 0.03;
   
   for (Int_t iFiber=0; iFiber<nFiber; iFiber++) {
-    Float_t phi = dPhi_busBar*(Int_t)(iFiber/11+1) - phi0-(iFiber%11)*2.*TMath::ATan(fiber_r/dShift);
+    Float_t phi = dPhiBusBar*(Int_t)(iFiber/11) - phi0-(iFiber%11)*2.*TMath::ATan(fiberRadius/dShift);
     Float_t xp  = dShift*TMath::Cos(phi);
     Float_t yp  = dShift*TMath::Sin(phi);
-    services->AddNode(fiber,iFiber+1,new TGeoTranslation(xp,yp,0 ));
+    services->AddNode(fiber, iFiber+1, new TGeoTranslation(xp,yp,0 ));
   }
 
-  cageNservices->AddNode(services,1,new TGeoTranslation(0., 0., 0. ));
-
+  cageNservices->AddNode(services, 1, new TGeoTranslation(0., 0., 0. ));
+  
   vol->AddNode(cageNservices,1,new TGeoTranslation(0., 0., 0. ));
   
-  // ---------------- Planes description ------------------------------------------------------------------
+  // ------------------- Creating volumes for MFT planes --------------------------------
 
   Double_t origin[3] = {0};
 

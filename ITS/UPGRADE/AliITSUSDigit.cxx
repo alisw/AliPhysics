@@ -25,7 +25,7 @@ using namespace TMath;
 
 //______________________________________________________________________
 AliITSUSDigit::AliITSUSDigit() 
-: fModule(0)
+: fChip(0)
   ,fNTracks(0)
   ,fROCycle(0)
   ,fTsignal(0.0)
@@ -41,8 +41,8 @@ AliITSUSDigit::AliITSUSDigit()
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise,Int_t roCycle) 
-  :fModule(module)
+AliITSUSDigit::AliITSUSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle) 
+  :fChip(chip)
   ,fNTracks(0)
   ,fROCycle(roCycle)
   ,fTsignal(0.0)
@@ -59,8 +59,8 @@ AliITSUSDigit::AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise,Int_t roC
 }
 
 //______________________________________________________________________
-AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Double_t signal,Int_t roCycle)
-  :fModule(module)
+AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle)
+  :fChip(chip)
   ,fNTracks(1)
   ,fROCycle(roCycle)
   ,fTsignal(signal)
@@ -71,7 +71,7 @@ AliITSUSDigit::AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Do
   // Inputs:
   //    Int_t track     The track number which produced this signal
   //    Int_t hit       The hit number which produced this signal
-  //    Int_t module    The module where this signal occurred
+  //    Int_t chip    The chip where this signal occurred
   //    Int_t index     The cell index where this signal occurred
   //    Double_t signal The value of the signal (ionization)
   //    Int_t roCycle   Read-Out cycle
@@ -101,7 +101,7 @@ AliITSUSDigit& AliITSUSDigit::operator=(const AliITSUSDigit &source)
 //______________________________________________________________________
 AliITSUSDigit::AliITSUSDigit(const AliITSUSDigit &source) 
   :TObject(source)
-  ,fModule(source.fModule)
+  ,fChip(source.fChip)
   ,fNTracks(source.fNTracks)
   ,fROCycle(source.fROCycle)
   ,fTsignal(source.fTsignal)
@@ -124,7 +124,7 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
   // Inputs:
   //    Int_t track     The track number which produced this signal
   //    Int_t hit       The hit number which produced this signal
-  //    Int_t module    The module where this signal occurred
+  //    Int_t chip    The chip where this signal occurred
   //    Int_t index     The cell index where this signal occurred
   //    Double_t signal The value of the signal (ionization)
   Int_t    i,j;
@@ -192,7 +192,7 @@ void AliITSUSDigit::AddSignal(Int_t track,Int_t hit,Double_t signal)
 void AliITSUSDigit::Add(const AliITSUSDigit *pl)
 {
   // Adds the contents of pl to this
-  // pl could come from different module and index 
+  // pl could come from different chip and index 
   Double_t sigT = 0.0;
   for(int i=pl->GetNTracks();i--;) {
     double sig = pl->GetSignal(i); 
@@ -241,6 +241,6 @@ void AliITSUSDigit::Print(Option_t*) const
 {
   // print itself
   printf("Mod: %4d Index:%7d Ntr:%2d | TotSignal:%.2e Noise:%.2e ROCycle: %d|",
-	 fModule,GetUniqueID(),fNTracks,fTsignal,fNoise,fROCycle);
+	 fChip,GetUniqueID(),fNTracks,fTsignal,fNoise,fROCycle);
   for (int i=0;i<fNTracks;i++) printf("%d(%.2e) |",fTrack[i],fSignal[i]); printf("\n");
 }
