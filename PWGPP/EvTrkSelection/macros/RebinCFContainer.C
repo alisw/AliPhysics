@@ -181,37 +181,37 @@ void RebinCFContainer(const char *infile="AnalysisResults.root",Int_t rebinVar=0
   //  heff->GetXaxis()->SetRangeUser(0,23.5);
   TFile* fout = NULL;
   if( myEff == 1 ) {
-    fout = new TFile(Form("efficiency_GenAcc_over_LimAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_GenAcc_over_LimAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFLimAccGenAcc");
     h2num->Write("hptLimAcc");
     h2->Write("hptGenAcc");
   }
   else if( myEff == 2 ) {
-    fout = new TFile(Form("efficiency_RecPPR_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_RecPPR_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecPPRGenAcc");
     h2num->Write("hptRecPPR");
     h2->Write("hptGenAcc");
   }
   else if( myEff == 3 ) {
-    fout = new TFile(Form("efficiency_RecPID_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_RecPID_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecPIDGenAcc");
     h2num->Write("hptRecPID");
     h2->Write("hptGenAcc");
   }
   else if( myEff == 4 ) {
-    fout = new TFile(Form("efficiency_Rec_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_Rec_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecGenAcc");
     h2num->Write("hptRec");
     h2->Write("hptGenAcc");
   }
   else if( myEff == 5 ) {
-    fout = new TFile(Form("efficiency_RecAcc_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_RecAcc_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecAccGenAcc");
     h2num->Write("hptRecAcc");
     h2->Write("hptGenAcc");
   }
   else if( myEff == 6 ) {
-    fout = new TFile(Form("efficiency_RecPPRKine_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
+    fout = new TFile(Form("efficiency_STE_RecPPRKine_over_GenAcc_rebinned_%d_%s.root",rebinVar,name),"RECREATE");
     heff->Write("hpteffCFRecPPRKineGenAcc");
     h2num->Write("hptRecPPRKine");
     h2->Write("hptGenAcc");
