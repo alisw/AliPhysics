@@ -31,6 +31,8 @@
 #include <TString.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <TGeoShape.h>
+#include <TGeoBBox.h>
 #include <TDatime.h>
 #include <TMath.h>
 #include <TSystem.h>
@@ -66,6 +68,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build, Bool_t loadSegm)
   ,fNHalfStaves(0)
   ,fNModules(0)
   ,fNChipsPerModule(0)
+  ,fNChipRowsPerModule(0)
   ,fNChipsPerHalfStave(0)
   ,fNChipsPerStave(0)
   ,fNChipsPerLayer(0)
@@ -90,6 +93,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   ,fNHalfStaves(0)
   ,fNModules(0)
   ,fNChipsPerModule(0)
+  ,fNChipRowsPerModule(0)
   ,fNChipsPerHalfStave(0)
   ,fNChipsPerStave(0)
   ,fNChipsPerLayer(0)
@@ -103,6 +107,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   if (fNLayers) {
     fNStaves   = new Int_t[fNLayers];
     fNChipsPerModule = new Int_t[fNLayers];
+    fNChipRowsPerModule = new Int_t[fNLayers];
     fLrChipType  = new Int_t[fNLayers];
     fLastChipIndex   = new Int_t[fNLayers];
     fNChipsPerHalfStave = new Int_t[fNLayers];
@@ -114,6 +119,7 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
       fNHalfStaves[i] = src.fNHalfStaves[i];
       fNModules[i] = src.fNModules[i];
       fNChipsPerModule[i] = src.fNChipsPerModule[i];
+      fNChipRowsPerModule[i] = src.fNChipRowsPerModule[i];
       fNChipsPerHalfStave[i] = src.fNChipsPerHalfStave[i];
       fNChipsPerStave[i] = src.fNChipsPerStave[i];
       fNChipsPerLayer[i] = src.fNChipsPerLayer[i];
@@ -159,6 +165,7 @@ AliITSUGeomTGeo::~AliITSUGeomTGeo()
   delete[] fNModules;
   delete[] fLrChipType;
   delete[] fNChipsPerModule;
+  delete[] fNChipRowsPerModule;
   delete[] fNChipsPerHalfStave;
   delete[] fNChipsPerStave;
   delete[] fNChipsPerLayer;
@@ -179,6 +186,7 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
     delete[] fNModules;
     delete[] fLrChipType;
     delete[] fNChipsPerModule;
+    delete[] fNChipRowsPerModule;
     delete[] fNChipsPerHalfStave;
     delete[] fNChipsPerStave;
     delete[] fNChipsPerLayer;
@@ -221,6 +229,7 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
       fNHalfStaves   = new Int_t[fNLayers];
       fNModules     = new Int_t[fNLayers];
       fNChipsPerModule = new Int_t[fNLayers];
+      fNChipRowsPerModule = new Int_t[fNLayers];
       fNChipsPerHalfStave = new Int_t[fNLayers];
       fNChipsPerStave = new Int_t[fNLayers];
       fNChipsPerLayer = new Int_t[fNLayers];
@@ -231,6 +240,7 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
 	fNHalfStaves[i] = src.fNHalfStaves[i];
 	fNModules[i]   = src.fNModules[i];
 	fNChipsPerModule[i] = src.fNChipsPerModule[i];
+	fNChipRowsPerModule[i] = src.fNChipRowsPerModule[i];
 	fNChipsPerHalfStave[i] = src.fNChipsPerHalfStave[i];
 	fNChipsPerStave[i] = src.fNChipsPerStave[i];
 	fNChipsPerLayer[i] = src.fNChipsPerLayer[i];
@@ -688,18 +698,20 @@ void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
   fNHalfStaves     = new Int_t[fNLayers];
   fNModules        = new Int_t[fNLayers];
   fNChipsPerModule = new Int_t[fNLayers];
+  fNChipRowsPerModule = new Int_t[fNLayers];
   fNChipsPerHalfStave = new Int_t[fNLayers];
   fNChipsPerStave  = new Int_t[fNLayers];
   fNChipsPerLayer  = new Int_t[fNLayers];
   fLrChipType      = new Int_t[fNLayers];
   fLastChipIndex   = new Int_t[fNLayers];
   fNChips = 0;
+  
   for (int i=0;i<fNLayers;i++) {
     fLrChipType[i]      = ExtractLayerChipType(i);
     fNStaves[i]         = ExtractNumberOfStaves(i);
     fNHalfStaves[i]     = ExtractNumberOfHalfStaves(i);
     fNModules[i]        = ExtractNumberOfModules(i);
-    fNChipsPerModule[i] = ExtractNChipsPerModule(i);
+    fNChipsPerModule[i] = ExtractNChipsPerModule(i,fNChipRowsPerModule[i]);
     fNChipsPerHalfStave[i]= fNChipsPerModule[i]*Max(1,fNModules[i]);
     fNChipsPerStave[i]    = fNChipsPerHalfStave[i]*Max(1,fNHalfStaves[i]);
     fNChipsPerLayer[i]    = fNChipsPerStave[i]*fNStaves[i];
@@ -834,10 +846,10 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfModules(Int_t lay) const
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::ExtractNChipsPerModule(Int_t lay)  const
+Int_t AliITSUGeomTGeo::ExtractNChipsPerModule(Int_t lay, int &nrow)  const
 {
   // Determines the number of chips per module on the (sub)stave in the Upgrade Geometry
-  //
+  // Also extract the layout: span of module centers in Z and X
   // Inputs:
   //   lay: layer number from 0
   // MS
@@ -862,11 +874,44 @@ Int_t AliITSUGeomTGeo::ExtractNChipsPerModule(Int_t lay)  const
   //
   // Loop on all stave nodes, count Chip volumes by checking names
   Int_t nNodes = volLd->GetNodes()->GetEntries();
+  //
+  double xmin=1e9,xmax=-1e9, zmin=1e9,zmax=-1e9;
+  double lab[3],loc[3]={0,0,0};
+  double dx=-1,dz=-1;
   for (Int_t j=0; j<nNodes; j++) {
     //    AliInfo(Form("L%d %d of %d %s %s -> %d",lay,j,nNodes,volLd->GetNodes()->At(j)->GetName(),GetITSChipPattern(),numberOfChips));
-    if (strstr(volLd->GetNodes()->At(j)->GetName(),GetITSChipPattern())) numberOfChips++;
+    TGeoNodeMatrix* node = (TGeoNodeMatrix*)volLd->GetNodes()->At(j);
+    if (!strstr(node->GetName(),GetITSChipPattern())) continue;
+    node->LocalToMaster(loc,lab);
+    if (lab[0]>xmax) xmax=lab[0];
+    if (lab[0]<xmin) xmin=lab[0];    
+    if (lab[2]>zmax) zmax=lab[2];
+    if (lab[2]<zmin) zmin=lab[2];    
+    //
+    numberOfChips++;
+    //
+    if (dx<0) {
+      TGeoShape* chShape = node->GetVolume()->GetShape();
+      TGeoBBox* bbox = dynamic_cast<TGeoBBox*>(chShape);
+      if (!bbox) {
+	AliFatal(Form("Chip %s volume is of unprocessed shape %s",node->GetName(),chShape->IsA()->GetName()));
+      }
+      else {
+	dx = 2*bbox->GetDX();
+	dz = 2*bbox->GetDZ();
+      }
+    }
   }
   //
+  double spanX = xmax-xmin;
+  double spanZ = zmax-zmin;  
+  nrow = TMath::Nint(spanX/dx + 1);
+  int ncol = TMath::Nint(spanZ/dz + 1);
+  if (nrow*ncol != numberOfChips) 
+    AliError(Form("Inconsistency between Nchips=%d and Nrow*Ncol=%d*%d->%d\n"
+		  "Extracted chip dimensions (x,z): %.4f %.4f, Module Span: %.4f %.4f",
+		  numberOfChips,nrow,ncol,nrow*ncol,
+		  dx,dz,spanX,spanZ));
   return numberOfChips;
   //
 }
@@ -906,8 +951,10 @@ void AliITSUGeomTGeo::Print(Option_t *) const
   printf("Geometry version %d, NLayers:%d NChips:%d\n",fVersion,fNLayers,fNChips);
   if (fVersion==kITSVNA) return;
   for (int i=0;i<fNLayers;i++) {
-    printf("Lr%2d\tNStav:%2d\tNChips:%2d\tNMod:%d\tNSubSt:%d\tNSt:%3d\tChipType:%3d\tChip#:%4d:%4d\tWrapVol:%d\n",
-	   i,fNStaves[i],fNChipsPerModule[i],fNModules[i],fNHalfStaves[i],fNStaves[i],
+    printf("Lr%2d\tNStav:%2d\tNChips:%2d (%dx%-2d)\tNMod:%d\tNSubSt:%d\tNSt:%3d\tChipType:%3d\tChip#:%4d:%4d\tWrapVol:%d\n",
+	   i,fNStaves[i],fNChipsPerModule[i],fNChipRowsPerModule[i],
+	   fNChipRowsPerModule[i] ? fNChipsPerModule[i]/fNChipRowsPerModule[i] : 0,
+	   fNModules[i],fNHalfStaves[i],fNStaves[i],
 	   fLrChipType[i],GetFirstChipIndex(i),GetLastChipIndex(i),fLr2Wrapper[i]);
   }
 }

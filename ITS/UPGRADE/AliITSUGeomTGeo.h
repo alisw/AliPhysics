@@ -55,6 +55,8 @@ class AliITSUGeomTGeo : public TObject {
   AliITSUGeomTGeo& operator=(const AliITSUGeomTGeo &geom);
   //
   Int_t  GetNChips()                                                    const {return fNChips;}
+  Int_t  GetNChipRowsPerModule(Int_t lay)                               const {return fNChipRowsPerModule[lay];}
+  Int_t  GetNChipColsPerModule(Int_t lay)                               const {return fNChipRowsPerModule[lay] ? fNChipsPerModule[lay]/fNChipRowsPerModule[lay] : -1;}
   Int_t  GetNChipsPerModule(Int_t lay)                                  const {return fNChipsPerModule[lay];}
   Int_t  GetNChipsPerHalfStave(Int_t lay)                               const {return fNChipsPerHalfStave[lay];}
   Int_t  GetNChipsPerStave(Int_t lay)                                   const {return fNChipsPerStave[lay];}
@@ -167,7 +169,7 @@ class AliITSUGeomTGeo : public TObject {
   TGeoHMatrix* ExtractMatrixSens(Int_t index)                     const;
   Bool_t       GetLayer(Int_t index,Int_t &lay,Int_t &index2)     const;
   TGeoPNEntry* GetPNEntry(Int_t index)                            const;
-  Int_t        ExtractNChipsPerModule(Int_t lay)                  const;
+  Int_t        ExtractNChipsPerModule(Int_t lay, Int_t &nrow)     const;
   Int_t        ExtractNumberOfStaves(Int_t lay)                   const;
   Int_t        ExtractNumberOfHalfStaves(Int_t lay)               const;
   Int_t        ExtractNumberOfModules(Int_t lay)                  const;
@@ -185,6 +187,7 @@ class AliITSUGeomTGeo : public TObject {
   Int_t *fNHalfStaves;         //[fNLayers] Array of the number of substaves/stave(layer)
   Int_t *fNModules;            //[fNLayers] Array of the number of modules/substave(layer)
   Int_t *fNChipsPerModule;     //[fNLayers] Array of the number of chips per module (group of chips on the substaves)
+  Int_t *fNChipRowsPerModule;  //[fNLayers] Array of the number of chips rows per module (relevant for OB modules)
   Int_t *fNChipsPerHalfStave;  //[fNLayers] Array of the number of chips per substave
   Int_t *fNChipsPerStave;      //[fNLayers] Array of the number of chips per stave
   Int_t *fNChipsPerLayer;      //[fNLayers] Array of the number of chips per stave
