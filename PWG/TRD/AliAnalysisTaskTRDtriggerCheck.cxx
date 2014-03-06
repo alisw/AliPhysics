@@ -139,15 +139,15 @@ void AliAnalysisTaskTRDtriggerCheck::UserExec(Option_t * /* option */)
   if ((fDebug > 0) && esdEvent)
     printf("event: %s-%06i\n", CurrentFileName(), esdEvent->GetEventNumberInFile());
 
-  printf("event: %s-%06i\n", CurrentFileName(), esdEvent->GetEventNumberInFile());
   if (!InputEvent()->GetFiredTriggerClasses().Contains("WU")) {
-    printf("no TRD, returning\n");
+    if (fDebug > 0)
+      printf("no TRD, returning\n");
     return;
   }
 
   // reproduce hardware decision
   AliTRDTriggerAnalysis trgAnalysis;
-  trgAnalysis.SetVerbosity(1);
+  // trgAnalysis.SetVerbosity(1);
   trgAnalysis.SetRequireInTime(kTRUE);
   trgAnalysis.SetRequireMatchElectron(kFALSE);
   trgAnalysis.CalcTriggers(InputEvent());
@@ -161,11 +161,12 @@ void AliAnalysisTaskTRDtriggerCheck::UserExec(Option_t * /* option */)
   Int_t nTracks = InputEvent()->GetNumberOfTrdTracks();
   for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
     AliVTrdTrack *trk = InputEvent()->GetTrdTrack(iTrack);
-    printf("trk %2i: %02i_%i - pt = %6.2f, PID = %3i, %10s, %10s\n",
-	   iTrack, trk->GetSector(), trk->GetStack(),
-	   trk->Pt(), trk->GetPID(),
-	   trk->GetTrackInTime() ? "in-time" : "not in-time",
-	   trk->GetTrackMatch() ? "matched" : "not matched");
+    if (fDebug > 0)
+      printf("trk %2i: %02i_%i - pt = %6.2f, PID = %3i, %10s, %11s\n",
+	     iTrack, trk->GetSector(), trk->GetStack(),
+	     trk->Pt(), trk->GetPID(),
+	     trk->GetTrackInTime() ? "in-time" : "not in-time",
+	     trk->GetTrackMatch() ? "matched" : "not matched");
   }
 
   const Int_t trgBits[] = { 0, 4, 5, 6, 1, 7 };
@@ -178,10 +179,11 @@ void AliAnalysisTaskTRDtriggerCheck::UserExec(Option_t * /* option */)
     Bool_t trgd  = trgAnalysis.HasTriggered((AliTRDTriggerAnalysis::TRDTrigger_t) iTrg);
     Bool_t fired = trgAnalysis.HasFired((AliTRDTriggerAnalysis::TRDTrigger_t) iTrg);
     Bool_t cond  = trgAnalysis.CheckCondition((AliTRDTriggerAnalysis::TRDTrigger_t) iTrg);
-    printf("trigger %i: %10s %10s %10s\n", iTrg,
-	   trgd ? "triggered" : "",
-	   fired ? "fired" : "",
-	   cond ? "condition" : "");
+    if (fDebug > 0)
+      printf("trigger %i: %10s %10s %10s\n", iTrg,
+	     trgd ? "triggered" : "",
+	     fired ? "fired" : "",
+	     cond ? "condition" : "");
 
     if (trgd && fired && cond)
       FillH2(kHistTrgStat, iTrg, kTriggeredFiredCondition);
