@@ -54,11 +54,13 @@ public:
 
   // Misc helpers
   Bool_t CheckTypeConsistency() const;
-  virtual void Print (Option_t *) const;
+  Bool_t CheckForDuplicates(TClonesArray * arr) ;
+  virtual void Print (Option_t * opt = "") const;
   static Float_t GetError(TString error, Float_t yield) ;
   static const char * FormatCol(const char * text, Int_t width,  const char * sep) ;
   static Double_t RoundToSignificantFigures(double num, int n) ;  
-
+  Bool_t operator==(const AliParticleYield& rhs);
+  Bool_t IsTheSameMeasurement(AliParticleYield &rhs);
 
   // Getters
   TString GetCentr()           const{ return fCentr           ;}
@@ -118,6 +120,8 @@ public:
 
 private:
 
+  Bool_t Compare2Floats(Float_t a, Float_t b) ;
+
   Int_t   fPdgCode;         // PdgCode
   Int_t   fPdgCode2;        // The PdgCode of the second particle, only needed in case of a ratio
   TString fPartName;        // Particle name (redundant, we also have PDG code)
@@ -139,7 +143,7 @@ private:
 
 
   static Int_t fSignificantDigits; // Significant Digits to be used in values and errors
-
+  static Float_t fEpsilon; // Used for float conparisons
 
   ClassDef(AliParticleYield,1)
 };
