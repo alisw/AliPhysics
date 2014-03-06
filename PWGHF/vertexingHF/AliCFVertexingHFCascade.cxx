@@ -422,6 +422,19 @@ Bool_t AliCFVertexingHFCascade::EvaluateIfD0toKpi(AliAODMCParticle* neutralDaugh
     return isHadronic;  
   }
   
+  Double_t sumPxDau=mcPartDaughterD00->Px()+mcPartDaughterD01->Px();
+  Double_t sumPyDau=mcPartDaughterD00->Py()+mcPartDaughterD01->Py();
+  Double_t sumPzDau=mcPartDaughterD00->Pz()+mcPartDaughterD01->Pz();
+  Double_t pxMother=neutralDaugh->Px();
+  Double_t pyMother=neutralDaugh->Py();
+  Double_t pzMother=neutralDaugh->Pz();
+  if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+    AliDebug(2, "Momentum conservation violated, skipping!!");
+    return isHadronic;  
+  }
+
   Double_t pTD0pi = 0;
   Double_t pTD0K = 0;
   
