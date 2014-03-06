@@ -189,15 +189,14 @@ void AliPDG::AddParticlesToPdgDataBase()
   ionCode = 1010010030;
   if(!pdgDB->GetParticle(ionCode)){
     pdgDB->AddParticle("HyperTriton","HyperTriton", 2.99131, kFALSE,
-		       2.5-15, 3, "Ion", ionCode);// FIXME: check width
+		       2.5-15, 3, "Ion", ionCode);
   }
 
   ionCode = -1010010030;
   if(!pdgDB->GetParticle(ionCode)){
     pdgDB->AddParticle("AntiHyperTriton","AntiHyperTriton", 2.99131, kFALSE,
-		       2.5e-15, 3, "Ion", ionCode);// FIXME: check width
+		       2.5e-15, 3, "Ion", ionCode);
   }
-
 
 
 }
