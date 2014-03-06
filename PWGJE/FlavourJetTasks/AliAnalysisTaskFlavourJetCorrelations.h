@@ -82,7 +82,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
 
   //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
-  void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet);
+  void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet, AliAODEvent* aodEvent);
   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR, AliAODEvent* aodEvent);
 
   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
