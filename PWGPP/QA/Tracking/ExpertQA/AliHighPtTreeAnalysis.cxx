@@ -946,6 +946,8 @@ void AliHighPtTreeAnalysis::Make1pTresCovFits(){
   TF1 * fFun = new TF1("fFun","[0]*TMath::Gaus(x,[1],[2])",-0.5,0.5);
   if(!fFun) return;
 
+  if (!h1ptRes_vs_phi_pT_Aside) return;
+  if (!h1ptRes_vs_phi_pT_Cside) return;
   TH3D *h11ptRes = (TH3D*) h1ptRes_vs_phi_pT_Aside->Clone();
   TH3D *h21ptRes = (TH3D*) h1ptRes_vs_phi_pT_Cside->Clone();
   if(!h11ptRes) return;
