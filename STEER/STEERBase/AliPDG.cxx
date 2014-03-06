@@ -184,6 +184,22 @@ void AliPDG::AddParticlesToPdgDataBase()
   pdgDB->AddParticle("Lambda1520","Lambda1520",1.5195,kFALSE,
 		     0.0156,0,"Resonance",3124);
   pdgDB->AddAntiParticle("Lambda1520bar",-3124);
+
+  //Hyper nuclei and exotica
+  ionCode = 1010010030;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("HyperTriton","HyperTriton", 2.99131, kFALSE,
+		       2.5-15, 3, "Ion", ionCode);// FIXME: check width
+  }
+
+  ionCode = -1010010030;
+  if(!pdgDB->GetParticle(ionCode)){
+    pdgDB->AddParticle("AntiHyperTriton","AntiHyperTriton", 2.99131, kFALSE,
+		       2.5e-15, 3, "Ion", ionCode);// FIXME: check width
+  }
+
+
+
 }
 
 
