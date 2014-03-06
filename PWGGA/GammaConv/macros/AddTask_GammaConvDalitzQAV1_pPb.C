@@ -59,7 +59,15 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    }
    
    //=========  Set Cutnumber for V0Reader ================================
-   TString ConvCutnumber = "8000000060084001001500000000";   //Online  V0 finder
+   TString ConvCutnumber="";
+   
+   if(trainConfig == 9 || trainConfig == 10 ){
+   ConvCutnumber = "8000000160084001001500000000";   //Offline  V0 finder 
+   }
+   else {
+   ConvCutnumber = "8000000160084001001500000000";   //Online  V0 finder
+   }
+   
    TString ElecCuts      = "9000540000000200000";            //Electron Cuts
    Bool_t doEtaShift = kFALSE;
 
@@ -214,7 +222,15 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	
 	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310264371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
-} 
+} else if ( trainConfig == 9  ) {
+	
+	ConvCutarray[0] = "8000011102093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+	
+} else if ( trainConfig == 10 ) {
+
+        ConvCutarray[0] = "8000012102093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
+
+}
 
 
 
@@ -246,7 +262,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
             return 0;
       } else {
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 )   ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9  ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
@@ -255,7 +271,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
                analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 	      }
 	    }
-	  } else if ( trainConfig >= 7 && trainConfig <= 8  ){
+	  } else if ( trainConfig == 7 || trainConfig == 8 || trainConfig == 10  ){
 	    
     	    if (doWeighting){
 	      analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");

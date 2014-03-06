@@ -281,7 +281,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
        hTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
        fHistograms->Add(hTrackDCAzPtbefore); 
        
-       hTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",50,0,1,kPtBins,binsPtDummy);
+       hTrackNFindClsPtTPCbefore = new TH2F(Form("hTrack_NFindCls_Pt_TPC_before %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt before",60,0,1.5,kPtBins,binsPtDummy);
        fHistograms->Add(hTrackNFindClsPtTPCbefore); 
 	
        
@@ -307,7 +307,7 @@ void AliDalitzElectronCuts::InitCutHistograms(TString name, Bool_t preCut,TStrin
     hTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",kDCABins,binsDCADummy,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackDCAzPtafter); 
     
-    hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",50,0,1,kPtBins,binsPtDummy);
+    hTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",60,0,1.5,kPtBins,binsPtDummy);
     fHistograms->Add(hTrackNFindClsPtTPCafter); 
     
     
