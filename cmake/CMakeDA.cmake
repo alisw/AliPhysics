@@ -194,16 +194,18 @@ foreach(detector ${ONLINEDETECTORS} )
 	# DAVERSION
 	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
 	# string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion}e)
-	execute_process(COMMAND git log -1 --format=%h 
-	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
+	execute_process(COMMAND git log -1 --format=%h ${DASRC} 
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	  OUTPUT_STRIP_TRAILING_WHITESPACE
 	  OUTPUT_VARIABLE DAVERSION)
 
 	#DAREVISION
 	# execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _darevision OUTPUT_STRIP_TRAILING_WHITESPACE)
         # string(REGEX REPLACE ".*Revision: ([^\n]+)\n.*" "\\1" DAREVISION ${_darevision})
-	execute_process(COMMAND git log -1 --format=%h 
-	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
-	  OUTPUT_VARIABLE DAVERSION)
+	execute_process(COMMAND git log -1 --format=%h ${DASRC}
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	  OUTPUT_STRIP_TRAILING_WHITESPACE
+	  OUTPUT_VARIABLE DAREVISION)
 
 	# DAROOTRELEASE 
 	  execute_process(COMMAND root-config --version OUTPUT_VARIABLE _darootrelease OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -213,8 +215,9 @@ foreach(detector ${ONLINEDETECTORS} )
 	# string(REGEX REPLACE ".*URL: .*/(.+)/${DASRC}.*$" "\\1" DAALIROOTRELEASE ${_daversion})
         # string (REPLACE "-" "." DAALIROOTRELEASE "${DAALIROOTRELEASE}")
 	execute_process(COMMAND git branch
-	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/${DASRC} 
-	  OUTPUT_VARIABLE DAVERSION)
+	  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+	  OUTPUT_STRIP_TRAILING_WHITESPACE
+	  OUTPUT_VARIABLE DAALIROOTRELEASE)
         string (REPLACE "* " "" DAALIROOTRELEASE "${DAALIROOTRELEASE}")
 	
 	  set(DAARCNAME "${DATARGETNAME}")
