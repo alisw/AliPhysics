@@ -3,7 +3,6 @@
 
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
-
 class TH1F;
 class TH2F;
 class TH3F;
