@@ -118,6 +118,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fDphiUnfolding      (kTRUE),
     fDphiDptUnfolding   (kFALSE),
     fExLJDpt            (kTRUE),
+    fSetTreatCorrErrAsUncorrErr(kFALSE),
     fTitleFontSize      (-999.),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
@@ -1662,8 +1663,14 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Double_t lowErr(0.), upErr(0.);
         for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
             // add the in and out of plane errors in quadrature
-            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1);
-            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            if(fSetTreatCorrErrAsUncorrErr) {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            } else {
+                // the in and out of plane correlated errors will be fully correlated, so take the correlation coefficient equal to 1
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) - 2.*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 2.*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            }
             // set the errors 
             ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
             ayh[i] = TMath::Sqrt(upErr)*nominal->GetBinContent(i+1);
@@ -2140,7 +2147,10 @@ void AliJetFlowTools::GetShapeUncertainty(
    TProfile* ratioProfile(new TProfile(Form("SYST_%s_ratioProfile", source.Data()), Form("SYST_%s_ratioProfile", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    TProfile* v2Profile(new TProfile(Form("SYST_%s_v2Profile", source.Data()), Form("SYST_%s_v2Profile", source.Data()),fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    // get an estimate of the number of outputs and find the default set
-   Int_t rows(TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
+
+   Int_t rows = 1;
+   columns = variationsIn->GetSize()-1;
+   (TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
    canvasIn->Divide(columns, rows);
    if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);

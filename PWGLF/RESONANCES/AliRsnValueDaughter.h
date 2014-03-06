@@ -20,6 +20,7 @@ public:
       kPt,         // transverse momentum
       kPtpc,       // total momentum in the TPC inner wall
       kEta,        // pseudo-rapidity
+      kY,          // rapidity
       kMass,       // mass
       kITSsignal,  // ITS signal
       kTPCsignal,  // TPC signal

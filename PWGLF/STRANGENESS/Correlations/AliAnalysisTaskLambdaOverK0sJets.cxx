@@ -1372,20 +1372,20 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     // Distance of closest approach:
     //     --- signal ---
     fK0sDCAPosDaug = 
-      new TH2F("fK0sDCAPosDaug","K^{0}_{S}: dca Pos;dca;p_{T} V0",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fK0sDCAPosDaug","K^{0}_{S}: dca Pos;dca;p_{T} V0",66,0.,3.3,nbins,pMin,pMax);
     fOutputQA->Add(fK0sDCAPosDaug);
 
     fK0sDCANegDaug =  
-      new TH2F("fK0sDCANegDaug","K^{0}_{S}: dca Neg;dca;p_{T} V0",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fK0sDCANegDaug","K^{0}_{S}: dca Neg;dca;p_{T} V0",66,0.,3.3,nbins,pMin,pMax);
     fOutputQA->Add(fK0sDCANegDaug);
     
     //     --- background ---
     fK0sBckgDCAPosDaug = 
-      new TH2F("fK0sBckgDCAPosDaug","K^{0}_{S} Bckg: dca Pos;dca;p_{T} V0",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fK0sBckgDCAPosDaug","K^{0}_{S} Bckg: dca Pos;dca;p_{T} V0",66,0.,3.3,nbins,pMin,pMax);
     fOutputQA->Add(fK0sBckgDCAPosDaug);
 
     fK0sBckgDCANegDaug =  
-      new TH2F("fK0sBckgDCANegDaug","K^{0}_{S} Bckg: dca Neg;dca;p_{T} V0",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fK0sBckgDCANegDaug","K^{0}_{S} Bckg: dca Neg;dca;p_{T} V0",66,0.,3.3,nbins,pMin,pMax);
     fOutputQA->Add(fK0sBckgDCANegDaug);
 
     // Decay vertex reconstruction:
@@ -1529,26 +1529,26 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     // Distance of closest approach
     //     --- signal ---
     fLambdaDCAPosDaug = 
-      new TH2F("fLambdaDCAPosDaug","#Lambda: dca Pos",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fLambdaDCAPosDaug","#Lambda: dca Pos",66,0.,3.3,nbins,pMin,pMax);
     fLambdaDCAPosDaug->GetXaxis()->SetTitle("dca"); 
     fLambdaDCAPosDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fLambdaDCAPosDaug);
 
     fLambdaDCANegDaug =  
-      new TH2F("fLambdaDCANegDaug","#Lambda: dca Neg",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fLambdaDCANegDaug","#Lambda: dca Neg",66,0.,3.3,nbins,pMin,pMax);
     fLambdaDCANegDaug->GetXaxis()->SetTitle("dca"); 
     fLambdaDCANegDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fLambdaDCANegDaug);
     
     //     --- background ---
     fLambdaBckgDCAPosDaug = 
-      new TH2F("fLambdaBckgDCAPosDaug","#Lambda Bckg: dca Pos",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fLambdaBckgDCAPosDaug","#Lambda Bckg: dca Pos",66,0.,3.3,nbins,pMin,pMax);
     fLambdaBckgDCAPosDaug->GetXaxis()->SetTitle("dca"); 
     fLambdaBckgDCAPosDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fLambdaBckgDCAPosDaug);
 
     fLambdaBckgDCANegDaug =  
-      new TH2F("fLambdaBckgDCANegDaug","#Lambda Bckg: dca Neg",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fLambdaBckgDCANegDaug","#Lambda Bckg: dca Neg",66,0.,3.3,nbins,pMin,pMax);
     fLambdaBckgDCANegDaug->GetXaxis()->SetTitle("dca"); 
     fLambdaBckgDCANegDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fLambdaBckgDCANegDaug);
@@ -1695,26 +1695,26 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     // Distance of closest approach
     //     --- signal ---
     fAntiLambdaDCAPosDaug = 
-      new TH2F("fAntiLambdaDCAPosDaug","#bar{#Lambda}: dca Pos",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fAntiLambdaDCAPosDaug","#bar{#Lambda}: dca Pos",66,0.,3.3,nbins,pMin,pMax);
     fAntiLambdaDCAPosDaug->GetXaxis()->SetTitle("dca"); 
     fAntiLambdaDCAPosDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fAntiLambdaDCAPosDaug);
 
     fAntiLambdaDCANegDaug =  
-      new TH2F("fAntiLambdaDCANegDaug","#bar{#Lambda}: dca Neg",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fAntiLambdaDCANegDaug","#bar{#Lambda}: dca Neg",66,0.,3.3,nbins,pMin,pMax);
     fAntiLambdaDCANegDaug->GetXaxis()->SetTitle("dca"); 
     fAntiLambdaDCANegDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fAntiLambdaDCANegDaug);
     
     //     --- background ---
     fAntiLambdaBckgDCAPosDaug = 
-      new TH2F("fAntiLambdaBckgDCAPosDaug","#bar{#Lambda} Bckg: dca Pos",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fAntiLambdaBckgDCAPosDaug","#bar{#Lambda} Bckg: dca Pos",66,0.,3.3,nbins,pMin,pMax);
     fAntiLambdaBckgDCAPosDaug->GetXaxis()->SetTitle("dca"); 
     fAntiLambdaBckgDCAPosDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fAntiLambdaBckgDCAPosDaug);
 
     fAntiLambdaBckgDCANegDaug =  
-      new TH2F("fAntiLambdaBckgDCANegDaug","#bar{#Lambda} Bckg: dca Neg",90,0.,3.3,nbins,pMin,pMax);
+      new TH2F("fAntiLambdaBckgDCANegDaug","#bar{#Lambda} Bckg: dca Neg",66,0.,3.3,nbins,pMin,pMax);
     fAntiLambdaBckgDCANegDaug->GetXaxis()->SetTitle("dca"); 
     fAntiLambdaBckgDCANegDaug->GetYaxis()->SetTitle("p_{T} V0"); 
     fOutputQA->Add(fAntiLambdaBckgDCANegDaug);
@@ -3065,7 +3065,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
       switch(step) {
       case kTriggerCheck: 
 	
-	if (isCandidate2Lambda && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70 )){
+	if (isCandidate2Lambda && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70 ) && !isCandidate2K0s && !isCandidate2LambdaBar ){
 
 	  if(pt>ptTrig) {
 	    fIsV0LP = 1;
@@ -3233,7 +3233,7 @@ void AliAnalysisTaskLambdaOverK0sJets::V0Loop(V0LoopStep_t step, Bool_t isTrigge
       switch(step) {
       case kTriggerCheck: 
 	
-	if (isCandidate2LambdaBar && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) ){
+	if (isCandidate2LambdaBar && (dcaPos>0.1) && (dcaNeg>0.1) && (nClsTPCPos>70) && (nClsTPCNeg>70) &&  !isCandidate2K0s && !isCandidate2Lambda ){
 
 	  if(pt>ptTrig) {
 	    fIsV0LP = 1;
@@ -3727,7 +3727,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
      
       //Transverse distance to vertex
       dx = mcXv-pDaughter0->Xv(); dy = mcYv-pDaughter0->Yv();
-      Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
+      //Float_t lt=TMath::Sqrt(dx*dx + dy*dy);
 
       // K0s
       if (lPdgcodeCurrentPart == kK0Short) {

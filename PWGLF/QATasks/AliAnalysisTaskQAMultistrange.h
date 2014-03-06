@@ -1,10 +1,10 @@
-#ifndef ALIANALYSISTASKCHECKCASCADEPBPB_H
-#define ALIANALYSISTASKCHECKCASCADEPBPB_H
+#ifndef ALIANALYSISTASKQAMULTISTRANGE_H
+#define ALIANALYSISTASKQAMULTISTRANGE_H
 
 /*  See cxx source for full Copyright notice */
 
 //-----------------------------------------------------------------
-//            AliQAProdMultistrange class
+//            AliAnalysisTaskQAMultistrange class
 //              Origin AliAnalysisTaskCheckCascade
 //              This task has four roles :
 //                1. QAing the Cascades from ESD and AOD
@@ -33,11 +33,11 @@ class AliPIDResponse;
 
 #include "AliAnalysisTaskSE.h"
 
-class AliQAProdMultistrange : public AliAnalysisTaskSE {
+class AliAnalysisTaskQAMultistrange : public AliAnalysisTaskSE {
  public:
-  AliQAProdMultistrange();
-  AliQAProdMultistrange(const char *name);
-  virtual ~AliQAProdMultistrange();
+  AliAnalysisTaskQAMultistrange();
+  AliAnalysisTaskQAMultistrange(const char *name);
+  virtual ~AliAnalysisTaskQAMultistrange();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -93,10 +93,11 @@ class AliQAProdMultistrange : public AliAnalysisTaskSE {
 	
 	
 
-  AliQAProdMultistrange(const AliQAProdMultistrange&);            // not implemented
-  AliQAProdMultistrange& operator=(const AliQAProdMultistrange&); // not implemented
+  AliAnalysisTaskQAMultistrange(const AliAnalysisTaskQAMultistrange&);            // not implemented
+  AliAnalysisTaskQAMultistrange& operator=(const AliAnalysisTaskQAMultistrange&); // not implemented
   
-  ClassDef(AliQAProdMultistrange, 7);
+  ClassDef(AliAnalysisTaskQAMultistrange, 7);
 };
 
 #endif
+

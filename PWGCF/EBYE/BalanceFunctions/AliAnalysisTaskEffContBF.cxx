@@ -43,6 +43,8 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fHistCentrality(0),
     fHistNMult(0), 
     fHistVz(0), 
+    fHistNSigmaTPCvsPtbeforePID(0),
+    fHistNSigmaTPCvsPtafterPID(0),  
     fHistContaminationSecondariesPlus(0),
     fHistContaminationSecondariesMinus(0), //
     fHistContaminationPrimariesPlus(0),
@@ -71,6 +73,13 @@ AliAnalysisTaskEffContBF::AliAnalysisTaskEffContBF(const char *name)
     fCentralityEstimator("V0M"), 
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
+    fInjectedSignals(kFALSE),
+    fPIDResponse(0),
+    fElectronRejection(kFALSE),
+    fElectronOnlyRejection(kFALSE),
+    fElectronRejectionNSigma(-1.),
+    fElectronRejectionMinPt(0.),
+    fElectronRejectionMaxPt(1000.),
     fVxMax(3.0), 
     fVyMax(3.0),
     fVzMax(10.), 
@@ -162,6 +171,13 @@ void AliAnalysisTaskEffContBF::UserCreateOutputObjects() {
   //Vz addition+++++++++++++++++++++++++++++
   fHistVz = new TH1F("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm);Entries",100,-20.,20.);
   fQAList->Add(fHistVz);
+
+  //Electron cuts -> PID QA
+  fHistNSigmaTPCvsPtbeforePID = new TH2F ("NSigmaTPCvsPtbefore","NSigmaTPCvsPtbefore",200, 0, 20, 200, -10, 10); 
+  fQAList->Add(fHistNSigmaTPCvsPtbeforePID);
+
+  fHistNSigmaTPCvsPtafterPID = new TH2F ("NSigmaTPCvsPtafter","NSigmaTPCvsPtafter",200, 0, 20, 200, -10, 10); 
+  fQAList->Add(fHistNSigmaTPCvsPtafterPID);
 
   //Contamination for Secondaries 
   fHistContaminationSecondariesPlus = new TH3D("fHistContaminationSecondariesPlus","Secondaries;#eta;p_{T} (GeV/c);#varphi",etaBin,nArrayEta,ptBin,nArrayPt,phiBin,nArrayPhi);
@@ -313,6 +329,12 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
   if (!mcEvent) {
     AliError("ERROR: Could not retrieve MC event");
     return;
+  }
+
+  // PID Response task active?
+  if(fElectronRejection) {
+    fPIDResponse = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
+    if (!fPIDResponse) AliFatal("This Task needs the PID response attached to the inputHandler");
   }
 
   // ==============================================================================================
@@ -569,7 +591,42 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
 		    continue;
 		  
 		  Short_t gCharge = trackAOD->Charge();
-		  Double_t phiRad = trackAOD->Phi();		  
+		  Double_t phiRad = trackAOD->Phi();
+
+		  //===========================PID (so far only for electron rejection)===============================//		    
+		  if(fElectronRejection) {
+		    
+		    // get the electron nsigma
+		    Double_t nSigma = fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kElectron);
+		    fHistNSigmaTPCvsPtbeforePID->Fill(trackAOD->Pt(),nSigma);		    
+		    
+		    // check only for given momentum range
+		    if( trackAOD->Pt() > fElectronRejectionMinPt && trackAOD->Pt() < fElectronRejectionMaxPt ){
+		      
+		      //look only at electron nsigma
+		      if(!fElectronOnlyRejection){
+			
+			//Make the decision based on the n-sigma of electrons
+			if(TMath::Abs(nSigma) < fElectronRejectionNSigma) continue;
+		      }
+		      else{
+			
+			Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kPion));
+			Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kKaon));
+			Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackAOD,(AliPID::EParticleType)AliPID::kProton));
+			
+			//Make the decision based on the n-sigma of electrons exclusively ( = track not in nsigma region for other species)
+			if(TMath::Abs(nSigma) < fElectronRejectionNSigma
+			   && nSigmaPions   > fElectronRejectionNSigma
+			   && nSigmaKaons   > fElectronRejectionNSigma
+			   && nSigmaProtons > fElectronRejectionNSigma ) continue;
+		      }
+		    }
+		    
+		    fHistNSigmaTPCvsPtafterPID->Fill(trackAOD->Pt(),nSigma);		    
+
+		  }
+		  //===========================end of PID (so far only for electron rejection)===============================//		  
 		  
 		  if(TMath::Abs(trackAOD->Eta()) < fMaxEta && trackAOD->Pt() > fMinPt&&trackAOD->Pt() < fMaxPt){ 
 		    level[k]  = 2;

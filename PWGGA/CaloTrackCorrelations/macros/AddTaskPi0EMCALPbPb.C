@@ -181,13 +181,13 @@ AliCaloTrackReader * ConfigureReader(TString kData,TString kInputDataType, TStri
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
   
   if     (kCollisions=="pp"  ) {
-    reader->SwitchOffEventSelection(); 
+    reader->SwitchOffPileUpEventRejection();   // remove pileup by default
     reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
     reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
     reader->SetZvertexCut(50.);                // Open cut
   }
   else if(kCollisions=="PbPb") {
-    reader->SwitchOffEventSelection();         // remove pileup by default
+    reader->SwitchOffPileUpEventRejection();   // remove pileup by default
     reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
     reader->SwitchOffPrimaryVertexSelection(); // and besides primary vertex
     reader->SetZvertexCut(10.);                // Centrality defined in this range.

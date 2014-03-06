@@ -17,6 +17,7 @@ class AliAODEvent;
 class AliAODInputHandler;
 class TH2D;
 
+#include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
@@ -30,6 +31,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fHistCentrality(0), 
     fHistNMult(0), 
     fHistVz(0),
+    fHistNSigmaTPCvsPtbeforePID(0),
+    fHistNSigmaTPCvsPtafterPID(0),  
     fHistContaminationSecondariesPlus(0),
     fHistContaminationSecondariesMinus(0),
     fHistContaminationPrimariesPlus(0),
@@ -59,6 +62,12 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
     fCentralityPercentileMin(0.0), 
     fCentralityPercentileMax(5.0), 
     fInjectedSignals(kFALSE),
+    fPIDResponse(0),
+    fElectronRejection(kFALSE),
+    fElectronOnlyRejection(kFALSE),
+    fElectronRejectionNSigma(-1.),
+    fElectronRejectionMinPt(0.),
+    fElectronRejectionMaxPt(1000.),
     fVxMax(3.0), 
     fVyMax(3.0), 
     fVzMax(10.), 
@@ -110,6 +119,23 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   //Injected signals
   void SetRejectInjectedSignals() {fInjectedSignals = kTRUE;}
 
+  // electron rejection
+  void SetElectronRejection(Double_t gMaxNSigma){
+    fElectronRejection = kTRUE;
+    fElectronRejectionNSigma = gMaxNSigma;
+  }
+  
+  void SetElectronOnlyRejection(Double_t gMaxNSigma){
+    fElectronRejection       = kTRUE;
+    fElectronOnlyRejection   = kTRUE;
+    fElectronRejectionNSigma = gMaxNSigma;
+  }
+  
+  void SetElectronRejectionPt(Double_t minPt,Double_t maxPt){
+    fElectronRejectionMinPt  = minPt;
+    fElectronRejectionMaxPt  = maxPt;
+  }
+  
   //Track cuts
   void SetMinNumberOfTPCClusters(Double_t min) {
     fMinNumberOfTPCClusters = min;}
@@ -147,6 +173,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   TH1F        *fHistCentrality; //!centrality
   TH1F        *fHistNMult; //! nmult  
   TH1F        *fHistVz;//!
+  TH2F        *fHistNSigmaTPCvsPtbeforePID;//TPC nsigma vs pT before PID cuts (QA histogram)
+  TH2F        *fHistNSigmaTPCvsPtafterPID;//TPC nsigma vs pT after PID cuts (QA histogram)
 
   // output histograms
   TH3D        *fHistContaminationSecondariesPlus;//!
@@ -191,6 +219,13 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Float_t fCentralityPercentileMin, fCentralityPercentileMax; //min-max centrality percentile
 
   Bool_t fInjectedSignals;//Flag for using the rejection of injected signals
+
+  AliPIDResponse *fPIDResponse;     //! PID response object
+  Bool_t   fElectronRejection;//flag to use electron rejection
+  Bool_t   fElectronOnlyRejection;//flag to use electron rejection with exclusive electron PID (no other particle in nsigma range)
+  Double_t fElectronRejectionNSigma;//nsigma cut for electron rejection
+  Double_t fElectronRejectionMinPt;//minimum pt for electron rejection (default = 0.)
+  Double_t fElectronRejectionMaxPt;//maximum pt for electron rejection (default = 1000.)
 
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax

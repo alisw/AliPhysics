@@ -17,7 +17,7 @@
 ************************************************************************/
 
 
-DrawV0QAPlots01(Bool_t lAttemptInvMassFit = kTRUE){ 
+PostProcessQAV0(Bool_t lAttemptInvMassFit = kTRUE){
   CustomGStyleSettings();  
 
   //==============================================================

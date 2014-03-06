@@ -69,7 +69,9 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TClonesArray *fPsi2sESDTracks;
   
   TList *fListTrig;
-  TH1D *fHistUpcTriggersPerRun;
+  TH1D *fHistCcup4TriggersPerRun;
+  TH1D *fHistCcup7TriggersPerRun;
+  TH1D *fHistCcup2TriggersPerRun;
   TH1D *fHistZedTriggersPerRun;
   TH1D *fHistCvlnTriggersPerRun;
   TH1D *fHistMBTriggersPerRun;

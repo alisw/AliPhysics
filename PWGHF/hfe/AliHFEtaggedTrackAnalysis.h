@@ -61,6 +61,7 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     void SetPbPb(){ fIsPbPb = kTRUE; }
     void SetPP() { fIsPbPb = kFALSE; }
     void SetpPb() { fIsPbPb = kFALSE; fIspPb=kTRUE; }
+    void SetAOD() { fIsAOD = kTRUE; }
     void SetClean(Bool_t clean) { fClean = clean; };
     void SetMagneticField(Double_t magneticField) { fMagneticField = magneticField; };
     void SetVariablesTRD(Bool_t variablesTRD) { fVariablesTRD = variablesTRD; };
@@ -83,7 +84,8 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     Bool_t               fVariablesTRD;  //  Use phi angle at the first plane of the TRD
     Bool_t               fIsPbPb;        // Analysis Type: PbPb or no PbPb
     Bool_t               fIspPb;        // Analysis Type: pPb or no pPb
-    
+    Bool_t               fIsAOD;        // Analysis Type: AOD
+
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };
 #endif

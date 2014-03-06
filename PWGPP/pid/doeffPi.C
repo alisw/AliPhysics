@@ -20,7 +20,7 @@ TObject* fContPid1;
 TObject* fContPid2;
 const Int_t nBinPid = 14; // pt,eta, ptPip, ptPin, PPip, PPin, TOF3sigmaPip, TOF3sigmaPin, isPhiTrue, nsigmaPip, nsigmaPin
 // 0.985 < mass < 1.045 (60) and 0 < centrality < 100 (10)
-Int_t binPid[nBinPid] = {1/*ptPhi*/,8/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,1/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
+Int_t binPid[nBinPid] = {1/*ptPhi*/,1/*EtaPi*/,20/*pt+*/,20/*pt-*/,5/*P+*/,5/*P-*/,2/*TOFmatch+*/,2/*TOFmatch-*/,2/*istrue*/,4/*Nsigma+*/,4/*Nsigma-*/,1/*DeltaPhi+*/,1/*DeltaPhi-*/,1/*Psi*/};
 Float_t xmin[nBinPid] = {1,-0.8,0.3,0.3,0,0,-0.5,-0.5,-0.5,0,0,-TMath::Pi(),-TMath::Pi(),-TMath::Pi()/2};
 Float_t xmax[nBinPid] = {5,0.8,4.3,4.3,1,1,1.5,1.5,1.5,7.5,7.5,TMath::Pi(),TMath::Pi(),TMath::Pi()/2};
 
@@ -44,13 +44,13 @@ Int_t parplotted = 2;
 
 Bool_t isMC = kFALSE; // don't change this (is set automatically)
 Bool_t selectTrue = kTRUE; // put it to true to remove background (only for MC)
-Bool_t keepTrue = kFALSE; // put it to false to fit only background (only for MC)
+Bool_t keepTrue = kTRUE; // put it to false to fit only background (only for MC)
 
 Bool_t kGoodMatch = kFALSE; // to check good matching
 
 Bool_t kSigma2vs3 = kFALSE; // to check good matching
 
-Bool_t require5sigma = kTRUE; // don't touch this flag
+Bool_t require5sigma = kFALSE; // don't touch this flag
 
 Bool_t bayesVsigma = kFALSE; // only to do checks
 
@@ -408,6 +408,8 @@ TH2F *GetHistoPip(Float_t pt,Float_t ptM,Float_t pMinkp,Float_t pMinkn,Float_t e
   if(kPid3Sigma && pMinkp>0.09) x2[9] = 2.9;
   if(kPid2Sigma && pMinkp>0.09) x2[9] = 1.9;
 
+  printf("max sigma = %f\n",x2[9]);
+
   AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid1;
 
   TH2F *h = tmp->GetQA(0, x, x2);
@@ -472,6 +474,8 @@ TH2F *GetHistoPin(Float_t pt,Float_t ptM,Float_t pMinkn,Float_t pMinkp,Float_t e
   if(kPid3Sigma && pMinkn>0.09) x2[10] = 2.9;
   if(kPid2Sigma && pMinkn>0.09) x2[10] = 1.9;
 
+  printf("max sigma = %f\n",x2[10]);
+
   AliPIDperfContainer *tmp = (AliPIDperfContainer *) fContPid2;
 
   TH2F *h = tmp->GetQA(0, x, x2);
@@ -510,6 +514,8 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
    fall->FixParameter(5,0);
    fall->FixParameter(6,0);
  }
+   fall->FixParameter(6,0);
+
 
  char namenew[100];
  sprintf(namenew,"%s_%i",h->GetName(),Int_t(gRandom->Rndm()*10000));
@@ -559,6 +565,9 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
 
  Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
  Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
+
+ if(signI < 0) signI = 0;
+ if(backI < 1) backI = 1;
 
  Float_t errI = TMath::Sqrt(ftmp->GetParError(0)*ftmp->GetParError(0)/(0.001+ftmp->GetParameter(0))/(0.001+ftmp->GetParameter(0)));
 

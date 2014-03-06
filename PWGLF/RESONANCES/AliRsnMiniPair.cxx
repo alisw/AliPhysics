@@ -11,16 +11,24 @@ void AliRsnMiniPair::Fill
 // Fill this object with data coming
 // from arguments
 //
-
    p1->Set4Vector(fP1[0], m1, kFALSE);
    p2->Set4Vector(fP2[0], m2, kFALSE);
    p1->Set4Vector(fP1[1], m1, kTRUE );
    p2->Set4Vector(fP2[1], m2, kTRUE );
+   
+   fDCA1 = p1->DCA();
+   fDCA2 = p2->DCA();  
 
    fMother = -1;
+   fPmother[0] = -1.0;
+   fPmother[1] = -1.0;
+   fPmother[2] = -1.0;
    if (p1->Mother() == p2->Mother()) {
       fMother = p1->Mother();
       fMotherPDG = p1->MotherPDG();
+      fPmother[0] = p1->PmotherX();
+      fPmother[1] = p1->PmotherY();
+      fPmother[2] = p1->PmotherZ();
    }
 
    Int_t i;
@@ -28,6 +36,9 @@ void AliRsnMiniPair::Fill
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), refMass);
    }
+
+   fNSisters=-1;
+   if (p1->NTotSisters()==p2->NTotSisters()) fNSisters = p1->NTotSisters();
 }
 
 //__________________________________________________________________________________________________
@@ -77,8 +88,8 @@ void AliRsnMiniPair::InvertP(Bool_t first)
 
    Int_t i;
    for (i = 0; i < 2; i++) {
-      if (first) fP1[i].Vect() *= -1.0;
-      else       fP2[i].Vect() *= -1.0;
+      if (first) fP1[i].SetVect(fP1[i].Vect() *= -1.0);
+      else       fP2[i].SetVect(fP2[i].Vect() *= -1.0);
       fSum[i] = fP1[i] + fP2[i];
       fRef[i].SetXYZM(fSum[i].X(), fSum[i].Y(), fSum[i].Z(), fRef[i].M());
    }
@@ -158,6 +169,29 @@ Double_t AliRsnMiniPair::DaughterPt(Int_t daughterId, Bool_t mc)
     return fP1[ID(mc)].Pt();
   else 
     return fP2[ID(mc)].Pt();
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DaughterDCA(Int_t daughterId)
+{   
+  //
+  //returns dca to Primary Vertex of the <id> daughter 
+  //
+
+  if (daughterId==0)
+    return fDCA1;
+  else 
+    return fDCA2;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMiniPair::DCAProduct()
+{
+  //
+  //returns products of the DCA of the 2 daughters
+  //
+  
+    return fDCA1*fDCA2;
 }
 
 //__________________________________________________________________________________________________

@@ -58,69 +58,70 @@
 using std::cout;
 using std::endl;
 ClassImp(AliAnalysisTaskESDNuclExFilter)
-ClassImp(AliAnalysisNonMuonTrackCuts)
+//ClassImp(AliAnalysisNonMuonTrackCuts)
 
 ////////////////////////////////////////////////////////////////////////
 
-AliAnalysisNonMuonTrackCuts::AliAnalysisNonMuonTrackCuts()
-{
-  // default ctor 
-}
+// AliAnalysisNonMuonTrackCuts::AliAnalysisNonMuonTrackCuts()
+// {
+//   // default ctor 
+// }
 
-Bool_t AliAnalysisNonMuonTrackCuts::IsSelected(TObject* obj)
-{
-  // Returns true if the object is a muon track
-  AliAODTrack* track = dynamic_cast<AliAODTrack*>(obj);
+// Bool_t AliAnalysisNonMuonTrackCuts::IsSelected(TObject* obj)
+// {
+//   // Returns true if the object is a muon track
+//   AliAODTrack* track = dynamic_cast<AliAODTrack*>(obj);
 
-  ULong_t  status;
+//   ULong_t  status;
 
-  if(track){
+//   if(track){
     
-    status  = (ULong_t)track->GetStatus();
+//     status  = (ULong_t)track->GetStatus();
 
-    if(track->GetTPCNcls() > 80 &&
-       track->Chi2perNDF() < 5  &&
-       track->IsOn(AliAODTrack::kTPCrefit) &&
-       track->IsOn(AliAODTrack::kTPCin)    &&
-       !track->IsOn(AliAODTrack::kITSpureSA))
-      {
-	return kTRUE;
-      }
-  } 
+//     if(track->GetTPCNcls() > 80 &&
+//        track->Chi2perNDF() < 5  &&
+//        track->IsOn(AliAODTrack::kTPCrefit) &&
+//        track->IsOn(AliAODTrack::kTPCin)    &&
+//        !track->IsOn(AliAODTrack::kITSpureSA))
+//       {
+// 	return kTRUE;
+//       }
+//   } 
   
-  else 
-    return kFALSE;
+//   else 
+//     return kFALSE;
   
 
-}
+// }
 
-AliAnalysisNonPrimaryVertices::AliAnalysisNonPrimaryVertices()
-{
-  // default ctor   
-}
+// AliAnalysisNonPrimaryVertices::AliAnalysisNonPrimaryVertices()
+// {
+//   // default ctor   
+// }
 
-Bool_t AliAnalysisNonPrimaryVertices::IsSelected(TObject* obj)
-{
-  // Returns true if the object is a primary vertex
+// Bool_t AliAnalysisNonPrimaryVertices::IsSelected(TObject* obj)
+// {
+//   // Returns true if the object is a primary vertex
   
-  AliAODVertex* vertex = dynamic_cast<AliAODVertex*>(obj);
-  if (vertex)
-    {
-      if ( vertex->GetType() == AliAODVertex::kPrimary     ||
-	   vertex->GetType() == AliAODVertex::kMainSPD     ||
-	   vertex->GetType() == AliAODVertex::kPileupSPD   ||
-	   vertex->GetType() == AliAODVertex::kPileupTracks||
-	   vertex->GetType() == AliAODVertex::kMainTPC )
-	{
-	  return kTRUE;
-	}
-    }
+//   AliAODVertex* vertex = dynamic_cast<AliAODVertex*>(obj);
+//   if (vertex)
+//     {
+//       if ( vertex->GetType() == AliAODVertex::kPrimary     ||
+// 	   vertex->GetType() == AliAODVertex::kMainSPD     ||
+// 	   vertex->GetType() == AliAODVertex::kPileupSPD   ||
+// 	   vertex->GetType() == AliAODVertex::kPileupTracks||
+// 	   vertex->GetType() == AliAODVertex::kMainTPC )
+// 	{
+// 	  return kTRUE;
+// 	}
+//     }
   
-  //  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti, kMainSPD, kPileupSPD, kPileupTracks,kMainTPC};
+//   //  enum AODVtx_t {kUndef=-1, kPrimary, kKink, kV0, kCascade, kMulti, kMainSPD, kPileupSPD, kPileupTracks,kMainTPC};
 
-  return kFALSE;
+//   return kFALSE;
   
-}
+// }
+//-----------------------------------------------------------------------------------
 
 AliAnalysisTaskESDNuclExFilter::AliAnalysisTaskESDNuclExFilter(Bool_t onlyMuon, Bool_t keepAllEvents, Int_t mcMode, Int_t nsigmaTrk1,Int_t nsigmaTrk2, Int_t partType1,Int_t partType2):
   AliAnalysisTaskSE(),
@@ -134,6 +135,7 @@ AliAnalysisTaskESDNuclExFilter::AliAnalysisTaskESDNuclExFilter(Bool_t onlyMuon, 
   fnSigmaTrk2(nsigmaTrk2),
   fpartType1(partType1),
   fpartType2(partType2),
+  murep(0x0),
   fPIDResponse(0)
 {
   // Default constructor
@@ -151,7 +153,7 @@ AliAnalysisTaskESDNuclExFilter::AliAnalysisTaskESDNuclExFilter(const char* name,
   fnSigmaTrk2(nsigmaTrk2),
   fpartType1(partType1),
   fpartType2(partType2),
-  murep(0),
+  murep(0x0),
   fPIDResponse(0)
 {
   // Constructor
@@ -209,7 +211,7 @@ void AliAnalysisTaskESDNuclExFilter::PrintTask(Option_t *option, Int_t indent) c
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, const char* title)
+void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, const char* title, Bool_t toMerge)
 {
   
   //cout<<"Entro ne ADDFILTETEDAOD"<<endl;
@@ -217,7 +219,7 @@ void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, con
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   if (!aodH) Fatal("UserCreateOutputObjects", "No AOD handler");
   //cout<<"Add Filterd AOD "<<aodH->AddFilteredAOD(aodfilename,title)<<endl;
-  AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title);
+  AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title,toMerge);
   //cout<<"Handle inside add filterAOD: "<<aodH<<endl;
   //cout<<"########### ext: "<<ext<<endl;
   
@@ -235,8 +237,8 @@ void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, con
 
       murep = new AliAODNuclExReplicator("NuclExReplicator",
 					 "remove non interesting tracks",
-					 new AliAnalysisNonMuonTrackCuts,
-					 new AliAnalysisNonPrimaryVertices,
+					 // new AliAnalysisNonMuonTrackCuts,
+					 // new AliAnalysisNonPrimaryVertices,
 					 fMCMode,fnSigmaTrk1,fnSigmaTrk2,fpartType1,fpartType2);
       
       //cout<<"murep: "<<murep<<endl;
@@ -280,7 +282,7 @@ void AliAnalysisTaskESDNuclExFilter::Init()
   //cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Sono in INIT"<<endl;
   // Initialization
   if(fEnableMuonAOD) 
-    AddFilteredAOD("AliAOD.NuclEx.root", "MuonEvents");
+    AddFilteredAOD("AliAOD.NuclEx.root", "NuclexFilteredEvents",kTRUE);
   //cout<<"Fine INIT"<<endl;
   //  if(fEnableDimuonAOD) AddFilteredAOD("AliAOD.Dimuons.root", "DimuonEvents");    
 }
@@ -329,14 +331,7 @@ void AliAnalysisTaskESDNuclExFilter::ConvertESDtoAOD()
   //cout<<"========================> CONVERT ESD TO AOD <============================="<<endl;
 
   
-  AliVEvent *event = InputEvent();
-  //cout<<"VEvent: "<<event<<endl;
   AliAODEvent *lAODevent=(AliAODEvent*)InputEvent();
-  //cout<<"AOD Event: "<<event<<endl;
-  AliAODHeader* header =lAODevent->GetHeader();
-  //cout<<"header :"<<header<<endl;
-  Int_t jTracks =  lAODevent->GetNumberOfTracks();
-  //cout<<"n jtracks :"<<jTracks<<endl;
 
   // Read primary vertex from AOD event 
   // AliAODVertex *primary = *(AODEvent()->GetPrimaryVertex());
@@ -367,10 +362,12 @@ void AliAnalysisTaskESDNuclExFilter::ConvertESDtoAOD()
 
     if ( extNuclEx ) {				
      //   extNuclEx->Init("");
-     extNuclEx->SetEvent(lAODevent);
-     extNuclEx->SelectEvent();
-     extNuclEx->Print();
-     extNuclEx->FinishEvent();
+     
+      extNuclEx->SetEvent(lAODevent);
+      extNuclEx->SelectEvent();
+      // extNuclEx->IsFilteredAOD();
+      // extNuclEx->Print();
+      extNuclEx->FinishEvent();
      
      //cout<<"extMuons? "<<extMuons<<endl;
 

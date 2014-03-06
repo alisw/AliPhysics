@@ -39,12 +39,15 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               GetCrossEnergy(const AliVCluster *cluster, Short_t &idmax);
   Double_t               GetMaxCellEnergy(const AliVCluster *cluster, Short_t &id) const; 
   void                   GetTrIso(TVector3 vec, Float_t &iso, Float_t &phiband, Float_t &core);
+  Double_t               GetTrackMatchedPt(Int_t matchIndex);
   void                   FillClusHists();
   void                   FillMcHists();
+  void                   FillQA();
   Float_t                GetClusSource(const AliVCluster *cluster);
   void                   FollowGamma();
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
+  void                   LoopOnCells();
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -60,6 +63,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
   
+
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -88,6 +92,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Float_t                fHigherPtCone;          // higher pt inside the cone around the candidate
   Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
   TString                fImportGeometryFilePath;  // path fo geometry.root file
+  Double_t               fMaxPtTrack;            //track with highest pt in event
+  Double_t               fMaxEClus;              //cluster with highest energy in event
+  Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
 
   
  private:
@@ -119,6 +126,24 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fAllIsoNoUeEtMcGamma;       //!all iso distribution (without UE subtraction) vs. Et clus for clusters comming from a MC prompt photon
   TH3F        *fMCDirPhotonPtEtaPhiNoClus; //!pt x eta x phi for prompt photons that didn't produce clusters
   THnSparse   *fHnOutput;                  //!Output matrix with 7 dimensions
+
+  //QA histos
+  TList       *fQAList;           //!output list holding QA histos
+  TH1F        *fNTracks;          //!number of tracks from Array->GetEntries()
+  TH1F        *fEmcNCells;        //!number of emcal cells in the event
+  TH1F        *fEmcNClus;         //!# of emcal clusters
+  TH1F        *fEmcNClusCut;      //!# of clusters in an event with at least 1 clus with E > fECut ("triggered event")
+  TH1F        *fNTracksECut;      //!number of tracks from Array->GetEntries() in "triggered event"
+  TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
+  TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
+  TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
+  TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
+  TH2F        *fEmcClusEEtaCut;   //!cluster E spectrum vs. eta in "triggered event"
+  TH2F        *fTrackPtPhi;       //!selected tracks pt vs. phi
+  TH2F        *fTrackPtPhiCut;    //!selected tracks pt vs. phi in "triggered event"
+  TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
+  TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
+
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
   AliAnalysisTaskEMCALIsoPhoton& operator=(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

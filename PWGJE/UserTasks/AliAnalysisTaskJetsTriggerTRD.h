@@ -5,6 +5,7 @@
 #include "AliLog.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliTRDTriggerAnalysis.h"
 
 #define ID(x) x, #x
 
@@ -30,20 +31,40 @@ public:
   void    SetJetPtBinMax(Float_t ptmax) { fJetPtBinMax = ptmax; }
   Float_t GetJetPtBinMax() const { return fJetPtBinMax; }
 
-  void SetJetBranchName(const char* branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
+  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
+
+  Bool_t HasMC() const { return fMCEventHandler != 0; }
+  Bool_t AcceptTrackMC(Int_t track) const;
 
   // histograms
   enum Hist_t {
       kHistStat = 0,
+      kHistXsection,
+      kHistPtHard,
       kHistJetPtMC,
+      kHistJetEtaAvg,
       kHistNoJets,
       kHistTrackGTU,
+      kHistTrackEffGTU,
+      kHistTrackEffMC,
       kHistNPtMin,
       kHistLeadJetPt,
+      kHistLeadJetPtEta,
+      kHistLeadJetPtPhi,
+      kHistLeadJetEtaPhi,
+      kHistLeadJetPtTrackPt,
+      kHistLeadJetPtZ,
+      kHistLeadJetPtXi,
       kHistJetPt,
+      kHistJetPtEta,
+      kHistJetPtPhi,
+      kHistJetEtaPhi,
       kHistJetPtITS,
       kHistJetPt3x3,
+      kHistJetPtTrackPt,
+      kHistJetPtZ,
+      kHistJetPtXi,
       kHistJetPtNoTracks3,
       kHistLast
   };
@@ -72,16 +93,38 @@ public:
     kTrgEMC8WUHJT,
     kTrgEMCEJE,
     kTrgEMCEGA,
+    // analysis-level combinations
+    kTrgInt7_WU,
+    kTrgInt7_WUHJT,
+    kTrgEMCEJE_WU,
+    kTrgEMCEJE_WUHJT,
+    // PbPb
+    kTrgPbPb,
+    kTrgCentral,
+    kTrgSemiCentral,
     //
     kTrgLast
   };	   
 
+  enum TriggerMC_t {
+    kTrgMC3x3Vtx = kTrgLast,
+    kTrgMC3x3TRD,
+    kTrgMC3x3TRDeff,
+    kTrgMC3x3TRDeffmap,
+    kTrgMCLast
+  };
+
 protected:
   UInt_t fTriggerMask;		// internal representation of trigger conditions
+  AliTRDTriggerAnalysis fTrdTrg; //! TRD trigger analysis
 
   Bool_t DetectTriggers();
+  Bool_t DetectMCTriggers();
   void   MarkTrigger(Trigger_t trg) { fTriggerMask |= (1 << trg); }
+  void   MarkTrigger(TriggerMC_t trg) { fTriggerMask |= (1 << trg); }
   Bool_t IsTrigger(Trigger_t trg) const { return (fTriggerMask & (1 << trg)); }
+
+  Float_t GetEfficiencyTRD(Float_t /* pt */, Float_t /* eta */, Float_t /* phi */) { return 0.7; }
 
   // output objects
   TList *fOutputList;		// list of output objects
@@ -90,7 +133,9 @@ protected:
   TH1  *fHist[kHistLast];	//! pointers to histogram
   const char *fShortTaskId;	//! short identifier for the task
 
-  TH1*&  GetHistogram(Hist_t hist, Int_t idx = 0) { return fHist[hist + idx]; }
+  Int_t fNoTriggers; 		// numbers of triggers used in histograms
+
+  TH1*&  GetHistogram(Hist_t hist, const Int_t idx = 0) { return fHist[hist + idx]; }
 
   TH1*   AddHistogram(Hist_t hist, const char *hid, TString title,
                       Int_t xbins, Float_t xmin, Float_t xmax, Int_t binType = 1);
@@ -113,13 +158,18 @@ protected:
   Int_t    fNoJetPtBins;                // number of bins for jet pt
   Float_t  fJetPtBinMax;                // max jet pt (GeV) in histograms
 
-  Float_t  fXsection;			// x-section from PYTHIA
+  Float_t  fAvgXsection;		// x-section from PYTHIA
   Float_t  fAvgTrials;			// ratio of PYTHIA events
 					// over accepted events
   Float_t  fPtHard;			// pt hard
+  Int_t    fNTrials;			// total number of trials
+
+  Float_t  fGlobalEfficiencyGTU; // global efficiency used trigger emulation on MC
 
   static const Int_t fgkStringLength = 100; // max length for the jet branch name
   char fJetBranchName[fgkStringLength];     // jet branch name
+
+  const Int_t fGtuLabel;		// constrain to tracks with given label
 
   // not implemented
   AliAnalysisTaskJetsTriggerTRD(const AliAnalysisTaskJetsTriggerTRD &rhs);

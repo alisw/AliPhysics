@@ -51,12 +51,13 @@ TGraph  *AliDielectronPID::fgFitCorr=0x0;
 Double_t AliDielectronPID::fgCorr=0.0;
 Double_t AliDielectronPID::fgCorrdEdx=1.0;
 TF1     *AliDielectronPID::fgFunEtaCorr=0x0;
-TF1     *AliDielectronPID::fgFunCntrdCorr=0x0;
-TF1     *AliDielectronPID::fgFunWdthCorr=0x0;
+TH1     *AliDielectronPID::fgFunCntrdCorr=0x0;
+TH1     *AliDielectronPID::fgFunWdthCorr=0x0;
 TGraph  *AliDielectronPID::fgdEdxRunCorr=0x0;
 
 AliDielectronPID::AliDielectronPID() :
   AliAnalysisCuts(),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNcuts(0),
   fPIDResponse(0x0)
 {
@@ -86,6 +87,7 @@ AliDielectronPID::AliDielectronPID() :
 //______________________________________________
 AliDielectronPID::AliDielectronPID(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNcuts(0),
   fPIDResponse(0x0)
 {
@@ -118,6 +120,7 @@ AliDielectronPID::~AliDielectronPID()
   //
   // Default Destructor
   //
+  if (fUsedVars) delete fUsedVars;
 }
 
 //______________________________________________
@@ -149,7 +152,9 @@ void AliDielectronPID::AddCut(DetType det, AliPID::EParticleType type, Double_t 
   fmax[fNcuts]=max;
   fExclude[fNcuts]=exclude;
   fRequirePIDbit[fNcuts]=pidBitType;
-  fActiveCuts[fNcuts]=(var==-1 ? AliDielectronVarManager::kP : var);
+  if(var==-1) var=AliDielectronVarManager::kP; // set default
+  fActiveCuts[fNcuts]=var;
+  fUsedVars->SetBitNumber(var,kTRUE);
 
   AliDebug(1,Form("Add PID cut %d: sigma [% .1f,% .1f] \t cut [% .1f,% .f] \t var %d->%s \n",
 		  fNcuts,nSigmaLow,nSigmaUp,min,max,fActiveCuts[fNcuts],AliDielectronVarManager::GetValueName(fActiveCuts[fNcuts])));
@@ -306,6 +311,7 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
   
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(track,values);
 
   Bool_t selected=kFALSE;
@@ -701,7 +707,7 @@ Double_t AliDielectronPID::GetEtaCorr(const AliVTrack *track)
 }
 
 //______________________________________________
-Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
+Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
 {
   //
   // return correction value
@@ -712,11 +718,13 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TF1 *fun)
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::FillVarVParticle(track,values);
 
+  TF1 *fun = (TF1*)hist->GetListOfFunctions()->At(0);
   Int_t dim=fun->GetNdim();
+
   Double_t var[3] = {0.,0.,0.};
-  if(dim>0) var[0] = values[fun->GetHistogram()->GetXaxis()->GetUniqueID()];
-  if(dim>1) var[1] = values[fun->GetHistogram()->GetYaxis()->GetUniqueID()];
-  if(dim>2) var[2] = values[fun->GetHistogram()->GetZaxis()->GetUniqueID()];
+  if(dim>0) var[0] = values[hist->GetXaxis()->GetUniqueID()];
+  if(dim>1) var[1] = values[hist->GetYaxis()->GetUniqueID()];
+  if(dim>2) var[2] = values[hist->GetZaxis()->GetUniqueID()];
   Double_t corr = fun->Eval(var[0],var[1],var[2]);
   //  printf("%d-dim CORR value: %f (track %p) \n",dim,corr,track);
   return corr;

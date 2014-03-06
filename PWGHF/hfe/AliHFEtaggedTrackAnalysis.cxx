@@ -58,6 +58,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis():
   , fVariablesTRD(kFALSE)
   , fIsPbPb(kFALSE)
   , fIspPb(kFALSE)
+  , fIsAOD(kFALSE) 
 {
   //
   // Dummy constructor
@@ -80,6 +81,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const char *name):
   , fVariablesTRD(kFALSE)
   , fIsPbPb(kFALSE)
   , fIspPb(kFALSE)
+  , fIsAOD(kFALSE)
 {
   //
   // Default constructor
@@ -111,6 +113,7 @@ AliHFEtaggedTrackAnalysis::AliHFEtaggedTrackAnalysis(const AliHFEtaggedTrackAnal
   , fVariablesTRD(ref.fVariablesTRD)
   , fIsPbPb(ref.fIsPbPb)
   , fIspPb(ref.fIspPb)
+  , fIsAOD(ref.fIsAOD)
 {
   //
   // Copy constructor
@@ -140,6 +143,7 @@ AliHFEtaggedTrackAnalysis &AliHFEtaggedTrackAnalysis::operator=(const AliHFEtagg
     fVariablesTRD = ref.fVariablesTRD;
     fIsPbPb = ref.fIsPbPb;
     fIspPb = ref.fIspPb;
+    fIsAOD = ref.fIsAOD;
 
     if(ref.fContainer) InitContainer();
    
@@ -277,10 +281,8 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVTrack *track, Int_t abinitioPID
      AliDebug(2, "Use track in the PID");
      // Apply PID
      AliHFEpidObject hfetrack;
-     if(track->IsA() == AliESDtrack::Class())
-      hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
-     else
-      hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
+     if(!fIsAOD) hfetrack.SetAnalysisType(AliHFEpidObject::kESDanalysis);
+     else hfetrack.SetAnalysisType(AliHFEpidObject::kAODanalysis);
      hfetrack.SetRecTrack(track);
      hfetrack.SetAbInitioPID(abinitioPID);
      hfetrack.SetCentrality(fCentralityF);

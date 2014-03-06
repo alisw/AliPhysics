@@ -59,6 +59,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TPCchi2PerCluster",      "#chi^{2}/^{}N_{cls}^{TPC}",                          ""},
   {"TPCclsDiff",             "N_{d#it{E}/d#it{x} points}^{TPC} - N_{cls}^{TPC}",   ""},
   {"TPCclsSegments",         "N_{segments}^{TPC}",                                 ""},
+  {"TPCclsIRO",              "N_{clsIRO}^{TPC}",                                   ""},
+  {"TPCclsORO",              "N_{clsORO}^{TPC}",                                   ""},
   {"TrackStatus",            "TrackStatus",                                        ""},
   {"FilterBit",              "AOD filter bit",                                     ""},
     
@@ -210,8 +212,9 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"TRDpidEffPair",          "#varepsilon^{TRD pair}(PID)",                           ""},
   {"MomAsymDau1",            "#it{p}^{leg1}/#it{p}^{pair}",                        ""},
   {"MomAsymDau2",            "#it{p}^{leg2}/#it{p}^{pair}",                        ""},
-  {"EffPair",                "A#times#varepsilon",                                    ""},
-  {"OneOverEffPair",         "(A#times#varepsilon)^{-1}",                             ""},
+  {"EffPair",                "A#times#varepsilon",                                 ""},
+  {"OneOverEffPair",         "(A#times#varepsilon)^{-1}",                          ""},
+  {"OneOverEffPairSq",       "(A#times#varepsilon)^{-2}",                          ""},
   {"RndmPair",               "P",                                                  ""},
   {"Pairs",                  "pairs/event",                                        ""},
   //
@@ -255,6 +258,7 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"MultV0",                 "multiplicity V0",                                    ""},
   {"EqMultV0A",              "equalized multiplicity V0A",                         ""},
   {"EqMultV0C",              "equalized multiplicity V0C",                         ""},
+  {"EqMultV0",               "equalized multiplicity V0",                          ""},
   {"AdcV0A",                 "AdcV0A",                                             ""},
   {"AdcV0C",                 "AdcV0C",                                             ""},
   {"AdcV0",                  "AdcV0",                                              ""},
@@ -428,6 +432,7 @@ TProfile*       AliDielectronVarManager::fgMultEstimatorAvg[4][9] = {{0x0}};
 TH3D*           AliDielectronVarManager::fgTRDpidEff[10][4] = {{0x0}};
 THnBase*        AliDielectronVarManager::fgLegEffMap           = 0x0;
 THnBase*        AliDielectronVarManager::fgPairEffMap          = 0x0;
+TBits*          AliDielectronVarManager::fgFillMap          = 0x0;
 Double_t        AliDielectronVarManager::fgTRDpidEffCentRanges[10][4] = {{0.0}};
 TString         AliDielectronVarManager::fgVZEROCalibrationFile = "";
 TString         AliDielectronVarManager::fgVZERORecenteringFile = "";

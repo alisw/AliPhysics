@@ -144,8 +144,8 @@ private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
-  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
-  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
+  TH1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TH1 *fPostPIDWdthCorr;    // post pid correction object for widths
   THnBase *fLegEffMap;      // single electron efficiency map
   THnBase *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
@@ -170,7 +170,8 @@ private:
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
                                   //  by the analysis framework
- 
+  TBits *fUsedVars;               // used variables
+
   TObjArray fTracks[4];           //! Selected track candidates
                                   //  0: Event1, positive particles
                                   //  1: Event1, negative particles
@@ -230,7 +231,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,10);
+  ClassDef(AliDielectron,12);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

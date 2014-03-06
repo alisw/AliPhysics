@@ -22,7 +22,7 @@
 // 2: passes vertex cut
 // 3: passes track number cut, tracks for eta < 0.8
 // 4: 3 && 2
-// 5: pass VAND
+// 5: pass V0AND
 // 6: 5 && 2
 // 7: 5 && 3
 // 8: 5 && 3 && 2
@@ -48,7 +48,7 @@
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
 #include "AliAODHeader.h"
-#include "AliTriggerAnalysis.h"
+//#include "AliTriggerAnalysis.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
@@ -67,9 +67,9 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
   fAvgTrials(-1),
   fOutputContainer(0x0),
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
-  fTriggerAnalysis (new AliTriggerAnalysis),
-  fCurrFileName(0),
-  fhNEvents(0),   
+  //fTriggerAnalysis (new AliTriggerAnalysis),
+  fCurrFileName(0), fCheckMCCrossSection(kFALSE),
+  fhNEvents(0),
   fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
   fhCentrality(0), fhEventPlaneAngle(0),
@@ -88,8 +88,8 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fAvgTrials(-1),
     fOutputContainer(0x0),
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
-    fTriggerAnalysis (new AliTriggerAnalysis),
-    fCurrFileName(0),
+    //fTriggerAnalysis (new AliTriggerAnalysis),
+    fCurrFileName(0), fCheckMCCrossSection(kFALSE),
     fhNEvents(0),
     fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0),
@@ -114,7 +114,7 @@ AliAnalysisTaskCounter::~AliAnalysisTaskCounter()
   }
   
   if(fESDtrackCuts)    delete fESDtrackCuts;
-  if(fTriggerAnalysis) delete fTriggerAnalysis;
+  //if(fTriggerAnalysis) delete fTriggerAnalysis;
   
 }
 
@@ -126,14 +126,17 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   
   fOutputContainer = new TList();
   
-  fh1Xsec = new TH1F("hXsec","xsec from pyxsec.root",1,0,1);
-  fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
-  fOutputContainer->Add(fh1Xsec);
+  if(fCheckMCCrossSection)
+  {
+    fh1Xsec = new TH1F("hXsec","xsec from pyxsec.root",1,0,1);
+    fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+    fOutputContainer->Add(fh1Xsec);
+    
+    fh1Trials = new TH1F("hTrials","trials root file",1,0,1);
+    fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+    fOutputContainer->Add(fh1Trials);
+  }
   
-  fh1Trials = new TH1F("hTrials","trials root file",1,0,1);
-  fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
-  fOutputContainer->Add(fh1Trials);
-
   fhZVertex     = new TH1F("hZVertex", " Z vertex distribution"   , 200 , -50 , 50  ) ;
   fhZVertex->SetXTitle("v_{z} (cm)");
   fOutputContainer->Add(fhZVertex);
@@ -167,7 +170,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fOutputContainer->Add(fhEventPlaneAngle) ;
   
   fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
-  fhNEvents->SetXTitle("Selection");
+  //fhNEvents->SetXTitle("Selection");
   fhNEvents->SetYTitle("# events");
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");
   fhNEvents->GetXaxis()->SetBinLabel(2 ,"2  = 1  & ESD");
@@ -190,7 +193,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL 1");
   fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 2");
   fhNEvents->GetXaxis()->SetBinLabel(20,"20 = Reject EMCAL 2");
-  fhNEvents->GetXaxis()->SetBinLabel(21,"20 = 20 & 2");
+  fhNEvents->GetXaxis()->SetBinLabel(21,"21 = 20 & 2");
 
   fOutputContainer->Add(fhNEvents);
 
@@ -290,7 +293,9 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   // V0AND
   //---------------------------------
   
-  if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
+  //if(esdevent) bV0AND = fTriggerAnalysis->IsOfflineTriggerFired(esdevent, AliTriggerAnalysis::kV0AND);
+  AliVVZERO* v0 = fInputEvent->GetVZEROData();
+  bV0AND = ((v0->GetV0ADecision()==1) && (v0->GetV0CDecision()==1));
   
   if(bV0AND)
   {
@@ -408,35 +413,59 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
 //____________________________________________________
 Bool_t AliAnalysisTaskCounter::CheckForPrimaryVertex()
 {
-  //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
-  //It only works for ESDs
+  //Check if the vertex was well reconstructed, copy of conversion group
   
-  AliESDEvent * event = dynamic_cast<AliESDEvent*> (InputEvent());
-  if(!event) return 1;
+  AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (InputEvent());
+  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (InputEvent());
   
-  if(event->GetPrimaryVertexTracks()->GetNContributors() > 0) 
+  if(esdevent)
   {
-    return 1;
-  }
-  
-  if(event->GetPrimaryVertexTracks()->GetNContributors() < 1) 
-  {
-    // SPD vertex
-    if(event->GetPrimaryVertexSPD()->GetNContributors() > 0) 
+    if(esdevent->GetPrimaryVertex()->GetNContributors() > 0)
     {
-      //cout<<"spd vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 1;
-      
+      return kTRUE;
     }
-    if(event->GetPrimaryVertexSPD()->GetNContributors() < 1) 
+    
+    if(esdevent->GetPrimaryVertex()->GetNContributors() < 1)
     {
-      //      cout<<"bad vertex type::"<< fESDEvent->GetPrimaryVertex()->GetName() << endl;
-      return 0;
+      // SPD vertex
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+        
+      }
+      if(esdevent->GetPrimaryVertexSPD()->GetNContributors() < 1)
+      {
+        return kFALSE;
+      }
     }
   }
+  else if(aodevent)
+  {    
+    if (aodevent->GetPrimaryVertex() != NULL)
+    {
+      if(aodevent->GetPrimaryVertex()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+    }
+    
+    if(aodevent->GetPrimaryVertexSPD() != NULL)
+    {
+      if(aodevent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+      {
+        return kTRUE;
+      }
+      else
+      {
+        AliWarning(Form("Number of contributors from bad vertex type:: %s",aodevent->GetPrimaryVertex()->GetName()));
+        return kFALSE;
+      }
+    }
+  }
+  else return kTRUE;
   
-  return 0;
-  //return fInputEvent->GetPrimaryVertex()->GetNContributors()>0;
+  return kFALSE;
+
 }
 
 
@@ -470,6 +499,8 @@ Bool_t AliAnalysisTaskCounter::Notify()
   // and number of trials from pyxsec.root
   //
   
+  if(!fCheckMCCrossSection) return kTRUE;
+
   // Fetch the aod also from the input in,
   // have todo it in notify
   
@@ -520,7 +551,7 @@ Bool_t AliAnalysisTaskCounter::PythiaInfoFromFile(TString file,Float_t & xsec,Fl
   //
   // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   // This is to called in Notify and should provide the path to the AOD/ESD file
-  
+    
   xsec   = 0;
   trials = 1;
   

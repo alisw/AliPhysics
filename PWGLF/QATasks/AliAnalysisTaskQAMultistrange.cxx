@@ -1,6 +1,10 @@
 /**************************************************************************
- *  Authors : Antonin Maire, Boris Hippolyte                              *
- * Contributors are mentioned in the code where appropriate.              *
+ *  Authors : Domenico Colella                                            *
+ *                                                                        *
+ *                                                                        *
+ * Derived from the:                                                      *
+ *  - Original AliAnalysisTaskCheckCascade (A. Maire, G. Hippolyte)       *
+ *  - Adapted to PbPb analysis (M. Nicassio)                              *
  *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
@@ -10,41 +14,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
-//-----------------------------------------------------------------
-//            AliQAProdMultistrange class
-//
-//            Origin AliAnalysisTaskCheckCascade which has four roles :
-//              1. QAing the Cascades from ESD and AOD
-//                 Origin:  AliAnalysisTaskESDCheckV0 by Boris Hippolyte Nov2007, hippolyt@in2p3.fr
-//              2. Prepare the plots which stand as raw material for yield extraction (wi/wo PID)
-//              3. Supply an AliCFContainer meant to define the optimised topological selections
-//              4. Rough azimuthal correlation study (Eta, Phi)
-//              Adapted to Cascade : A.Maire Mar2008, antonin.maire@ires.in2p3.fr
-//              Modified :           A.Maire Mar2010 
-//
-//              Adapted to PbPb analysis: M. Nicassio, maria.nicassio@ba.infn.it
-//               Feb-August2011
-//                - Physics selection moved to the run.C macro
-//                - Centrality selection added (+ setters) 
-//                - setters added (vertex range)
-//                - histo added and histo/container binning changed 
-//                - protection in the destructor for CAF usage          
-//                - AliWarning disabled
-//                - automatic settings for PID
-//               September2011
-//                - proper time histos/container added (V0 and Cascades)
-//               November2011
-//                - re-run V0's and cascade's vertexers (SetCuts instead of SetDefaultCuts!!)
-//               Genuary2012 
-//                - AOD analysis part completed 
-//               March2012
-//                - min number of TPC clusters for track selection as a parameter       
-//               July2012
-//                - cut on min pt for daughter tracks as a parameter (+control histos)
-//               August2012 
-//                - cut on pseudorapidity for daughter tracks as a parameter (+control histos for Xi-)
-//-----------------------------------------------------------------
 
 class TTree;
 class TParticle;
@@ -78,14 +47,14 @@ class AliAODv0;
 #include "AliAODcascade.h"
 #include "AliAODTrack.h"
 
-#include "AliQAProdMultistrange.h"
+#include "AliAnalysisTaskQAMultistrange.h"
 
-ClassImp(AliQAProdMultistrange)
+ClassImp(AliAnalysisTaskQAMultistrange)
 
 
 
 //________________________________________________________________________
-AliQAProdMultistrange::AliQAProdMultistrange() 
+AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange() 
   : AliAnalysisTaskSE(), 
     fAnalysisType               ("ESD"), 
     fESDtrackCuts               (0),
@@ -117,7 +86,7 @@ AliQAProdMultistrange::AliQAProdMultistrange()
 
 
 //________________________________________________________________________
-AliQAProdMultistrange::AliQAProdMultistrange(const char *name) 
+AliAnalysisTaskQAMultistrange::AliAnalysisTaskQAMultistrange(const char *name) 
   : AliAnalysisTaskSE(name),
     fAnalysisType               ("ESD"), 
     fESDtrackCuts               (0),
@@ -148,11 +117,11 @@ AliQAProdMultistrange::AliQAProdMultistrange(const char *name)
   // Output slot #0 writes into a TList container (Cascade)
   DefineOutput(1, AliCFContainer::Class());
 
-  AliLog::SetClassDebugLevel("AliQAProdMultistrange",1); // MN this should (?) enable only AliFatal
+  AliLog::SetClassDebugLevel("AliAnalysisTaskQAMultistrange",1);
 }
 
 
-AliQAProdMultistrange::~AliQAProdMultistrange() {
+AliAnalysisTaskQAMultistrange::~AliAnalysisTaskQAMultistrange() {
   //
   // Destructor
   //
@@ -166,7 +135,7 @@ AliQAProdMultistrange::~AliQAProdMultistrange() {
 
 
 //________________________________________________________________________
-void AliQAProdMultistrange::UserCreateOutputObjects() {
+void AliAnalysisTaskQAMultistrange::UserCreateOutputObjects() {
   // Create histograms
   // Called once
 
@@ -333,7 +302,7 @@ PostData(1, fCFContCascadeCuts);
 
 
 //________________________________________________________________________
-void AliQAProdMultistrange::UserExec(Option_t *) {
+void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
 
   //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   // Main loop (called for each event)
@@ -895,7 +864,8 @@ void AliQAProdMultistrange::UserExec(Option_t *) {
 }
 
 //________________________________________________________________________
-void AliQAProdMultistrange::Terminate(Option_t *) 
+void AliAnalysisTaskQAMultistrange::Terminate(Option_t *) 
 {
 
 }
+

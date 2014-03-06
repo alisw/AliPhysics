@@ -73,6 +73,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fHistMatchedTracksEvspTvsCent(0)
 	,fHistMatchedTracksEvspTvsCentEffCorr(0)
 	,fHistMatchedTracksEvspTvsCentEffTMCorr(0)
+	,fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr(0)
 	,fHistMatchedTracksEvspTvsCentEffTMCorr500MeV(0)
 	,fHistFoundHadronsvsCent(0)
 	,fHistNotFoundHadronsvsCent(0)
@@ -141,6 +142,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fHistMatchedTracksEvspTvsCent;
     delete fHistMatchedTracksEvspTvsCentEffCorr;
     delete fHistMatchedTracksEvspTvsCentEffTMCorr;
+    delete fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr;
     delete fHistMatchedTracksEvspTvsCentEffTMCorr500MeV;
     delete fHistFoundHadronsvsCent;
     delete fHistNotFoundHadronsvsCent;
@@ -213,8 +215,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
 
   //for PID
-  AliESDpid *pID = new AliESDpid();
-  pID->MakePID(event);
+  //AliESDpid *pID = new AliESDpid();
+  //pID->MakePID(event);
   Float_t etPIDProtons = 0.0;
   Float_t etPIDAntiProtons = 0.0;
   Float_t etPiKPMatched = 0.0;
@@ -237,7 +239,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	  }
 	else{
 	  totalPt +=track->Pt();
-	  pID->MakeITSPID(track);
+	  //pID->MakeITSPID(track);
 
 
 	}
@@ -253,8 +255,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     Float_t effHighRawEt = 0;
     Float_t effLowRawEt = 0;
     Float_t uncorrEt = 0;
-    Float_t rawSignal;
-    Float_t effCorrSignal;
+    Float_t rawSignal = 0;
+    Float_t effCorrSignal = 0;
 
     nChargedHadronsMeasured = 0.0;
     nChargedHadronsTotal = 0.0;
@@ -372,6 +374,14 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
 		  //Weighed by the number of tracks we didn't find
 		  fHistMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
+		  if(cent<16 && cent>11){//centralities 60-80% where false track matches are low
+		    for(int cbtest = 0; cbtest<20; cbtest++){//then we calculate the deposit matched to hadrons with different centrality bins' efficiencies
+		      float efftest = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cbtest);
+		      if(TMath::Abs(efftest)<1e-5) efftest = 1.0;
+		      Double_t effCorrEttest = CorrectForReconstructionEfficiency(*cluster,cbtest);
+		      fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEttest,cbtest, (1/efftest-1) );
+		    }
+		  }
 		  cluster->GetPosition(pos);	  
 		  TVector3 p2(pos);
 		  uncorrEt += TMath::Sin(p2.Theta())*cluster->E();
@@ -555,7 +565,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
     fHistCentVsNchVsNclReco->Fill(cent,multiplicity,nCluster);
     fHistPiKPTrackMatchedDepositedVsNch->Fill(etPiKPMatched,multiplicity);
     fHistPiKPTrackMatchedDepositedVsNchNoEff->Fill(etPiKPMatchedNoEff,multiplicity);
-    delete pID;
+    //delete pID;
     return 0;
 }
 
@@ -641,6 +651,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fHistMatchedTracksEvspTvsCent);
     list->Add(fHistMatchedTracksEvspTvsCentEffCorr);
     list->Add(fHistMatchedTracksEvspTvsCentEffTMCorr);
+    list->Add(fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr);
     list->Add(fHistMatchedTracksEvspTvsCentEffTMCorr500MeV);
     list->Add(fHistFoundHadronsvsCent);
     list->Add(fHistNotFoundHadronsvsCent);
@@ -787,6 +798,7 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fHistMatchedTracksEvspTvsCent = new TH3F("fHistMatchedTracksEvspTvsCent", "fHistMatchedTracksEvspTvsCent",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffCorr", "fHistMatchedTracksEvspTvsCentEffCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffTMCorr = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr", "fHistMatchedTracksEvspTvsCentEffTMCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
+    fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr = new TH3F("fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr", "fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr",100, 0, 3,100,0,3,20,-0.5,19.5);
     fHistMatchedTracksEvspTvsCentEffTMCorr500MeV = new TH3F("fHistMatchedTracksEvspTvsCentEffTMCorr500MeV", "fHistMatchedTracksEvspTvsCentEffTMCorr500MeV",100, 0, 3,100,0,3,20,-0.5,19.5);
 
     float max = 200;

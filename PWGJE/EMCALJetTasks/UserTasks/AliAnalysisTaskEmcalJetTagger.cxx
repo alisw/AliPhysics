@@ -28,6 +28,7 @@
 #include "AliMCEvent.h"
 #include "AliAnalysisManager.h"
 #include "AliJetContainer.h"
+#include "AliParticleContainer.h"
 
 #include "AliAODEvent.h"
 #include "AliESDEvent.h"
@@ -43,9 +44,11 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   fJetTaggingMethod(kGeo),
   fContainerBase(0),
   fContainerTag(1),
+  fMinFractionShared(0),
   fMatchingDone(0),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
+  fh2PtJet2VsFraction(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsPtJet2(0),
@@ -57,6 +60,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
 
   fh3PtJet1VsDeltaEtaDeltaPhi  = new TH3F*[fNcentBins];
   fh2PtJet1VsDeltaR            = new TH2F*[fNcentBins];
+  fh2PtJet2VsFraction          = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtAllSel      = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTagged      = new TH2F*[fNcentBins];
   fh2PtJet1VsPtJet2            = new TH2F*[fNcentBins];
@@ -64,6 +68,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger() :
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
     fh2PtJet1VsDeltaR[i]           = 0;
+    fh2PtJet2VsFraction[i]         = 0;
     fh2PtJet1VsLeadPtAllSel[i]     = 0;
     fh2PtJet1VsLeadPtTagged[i]     = 0;
     fh2PtJet1VsPtJet2[i]           = 0;
@@ -80,9 +85,11 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   fJetTaggingMethod(kGeo),
   fContainerBase(0),
   fContainerTag(1),
+  fMinFractionShared(0),
   fMatchingDone(0),
   fh3PtJet1VsDeltaEtaDeltaPhi(0),
   fh2PtJet1VsDeltaR(0),
+  fh2PtJet2VsFraction(0),
   fh2PtJet1VsLeadPtAllSel(0),
   fh2PtJet1VsLeadPtTagged(0),
   fh2PtJet1VsPtJet2(0),
@@ -94,6 +101,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
 
   fh3PtJet1VsDeltaEtaDeltaPhi = new TH3F*[fNcentBins];
   fh2PtJet1VsDeltaR           = new TH2F*[fNcentBins];
+  fh2PtJet2VsFraction         = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtAllSel     = new TH2F*[fNcentBins];
   fh2PtJet1VsLeadPtTagged     = new TH2F*[fNcentBins];
   fh2PtJet1VsPtJet2           = new TH2F*[fNcentBins];
@@ -101,6 +109,7 @@ AliAnalysisTaskEmcalJetTagger::AliAnalysisTaskEmcalJetTagger(const char *name) :
   for (Int_t i = 0; i < fNcentBins; i++) {
     fh3PtJet1VsDeltaEtaDeltaPhi[i] = 0;
     fh2PtJet1VsDeltaR[i]           = 0;
+    fh2PtJet2VsFraction[i]         = 0;
     fh2PtJet1VsLeadPtAllSel[i]     = 0;
     fh2PtJet1VsLeadPtTagged[i]     = 0;
     fh2PtJet1VsPtJet2[i]           = 0;
@@ -129,15 +138,18 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
   const Int_t nBinsDPhi        = 100;
   const Int_t nBinsDEta        = 100;
   const Int_t nBinsDR          = 50;
+  const Int_t nBinsFraction    = 101;
 
-  const Double_t minPt = -50.;
-  const Double_t maxPt = 200.;
-  const Double_t minDPhi = -0.5;
-  const Double_t maxDPhi =  0.5;
-  const Double_t minDEta = -0.5;
-  const Double_t maxDEta =  0.5;
-  const Double_t minDR   =  0.;
-  const Double_t maxDR   =  0.5;
+  const Double_t minPt       = -50.;
+  const Double_t maxPt       = 200.;
+  const Double_t minDPhi     = -0.5;
+  const Double_t maxDPhi     =  0.5;
+  const Double_t minDEta     = -0.5;
+  const Double_t maxDEta     =  0.5;
+  const Double_t minDR       =  0.;
+  const Double_t maxDR       =  0.5;
+  const Double_t minFraction =  -0.005;
+  const Double_t maxFraction =  1.005;
 
   TString histName = "";
   TString histTitle = "";
@@ -152,6 +164,11 @@ void AliAnalysisTaskEmcalJetTagger::UserCreateOutputObjects()
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{#Delta R}",histName.Data());
     fh2PtJet1VsDeltaR[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsDR,minDR,maxDR);
     fOutput->Add(fh2PtJet1VsDeltaR[i]);
+
+    histName = TString::Format("fh2PtJet2VsFraction_%d",i);
+    histTitle = TString::Format("%s;#it{p}_{T,jet2};#it{f}_{shared}",histName.Data());
+    fh2PtJet2VsFraction[i] = new TH2F(histName.Data(),histTitle.Data(),nBinsPt,minPt,maxPt,nBinsFraction,minFraction,maxFraction);
+    fOutput->Add(fh2PtJet2VsFraction[i]);
 
     histName = TString::Format("fh2PtJet1VsLeadPtAllSel_%d",i);
     histTitle = TString::Format("%s;#it{p}_{T,jet1};#it{p}_{T,lead trk}",histName.Data());
@@ -200,8 +217,9 @@ Bool_t AliAnalysisTaskEmcalJetTagger::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
 
-  if(fJetTaggingMethod==kGeo)
-    MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,2);
+  MatchJetsGeo(fContainerBase,fContainerTag,0,0.3,2);
+
+  //  if(fJetTaggingMethod==kFraction)
 
   return kTRUE;
 }
@@ -211,16 +229,17 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
 {
   // Fill histograms.
 
-  for(int i = 0; i < GetNJets(fContainerBase);++i) {
-    AliEmcalJet *jet1 = static_cast<AliEmcalJet*>(GetAcceptJetFromArray(i, fContainerBase));
-    if(!jet1) continue;
-
-    Double_t ptJet1 =  jet1->Pt() - GetRhoVal(fContainerBase)*jet1->Area();
+  AliEmcalJet *jet1 = NULL;
+  AliJetContainer *jetCont = GetJetContainer(fContainerBase);
+  if(!jetCont) return kFALSE;
+  jetCont->ResetCurrentID();
+  while((jet1 = jetCont->GetNextAcceptJet())) {
+    Double_t ptJet1 =  jet1->Pt() - jetCont->GetRhoVal()*jet1->Area();
     fh2PtJet1VsLeadPtAllSel[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
 
     //fill histo with angle between jet axis and constituents
     for(Int_t icc=0; icc<jet1->GetNumberOfTracks(); icc++) {
-      AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(icc, fTracks));
+      AliVParticle *vp = static_cast<AliVParticle*>(jet1->TrackAt(icc, jetCont->GetParticleContainer()->GetArray()));//fTracks));
       if(!vp) continue;
       Double_t dEta = jet1->Eta()-vp->Eta();
       Double_t dPhi = jet1->Phi()-vp->Phi();
@@ -236,11 +255,19 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     if(jet1->GetTagStatus()<1 && fJetTaggingType==kTag)
       continue;
 
-    AliEmcalJet *jet2 = jet1->GetTaggedJet();
+    AliEmcalJet *jet2 = NULL;
+    if(fJetTaggingType==kTag)     jet2 = jet1->GetTaggedJet();
+    if(fJetTaggingType==kClosest) jet2 = jet1->ClosestJet();
     if(!jet2) continue;
-    Double_t ptJet2 =  jet2->Pt() - GetRhoVal(fContainerTag)*jet2->Area();
-    fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
 
+    Double_t ptJet2 =  jet2->Pt() - GetRhoVal(fContainerTag)*jet2->Area();
+    Double_t fraction = jetCont->GetFractionSharedPt(jet1);
+    fh2PtJet2VsFraction[fCentBin]->Fill(ptJet2,fraction);
+
+    if(fraction<fMinFractionShared && fJetTaggingType==kClosest)
+      continue;
+
+    fh2PtJet1VsLeadPtTagged[fCentBin]->Fill(ptJet1,jet1->MaxTrackPt());
     fh2PtJet1VsPtJet2[fCentBin]->Fill(ptJet1,ptJet2);
 
     Double_t dPhi = GetDeltaPhi(jet1->Phi(),jet2->Phi());
@@ -252,9 +279,7 @@ Bool_t AliAnalysisTaskEmcalJetTagger::FillHistograms()
     fh3PtJet1VsDeltaEtaDeltaPhi[fCentBin]->Fill(ptJet1,jet1->Eta()-jet2->Eta(),dPhi);
     fh2PtJet1VsDeltaR[fCentBin]->Fill(ptJet1,GetDeltaR(jet1,jet2));
   }
-
   return kTRUE;
-
 }
 
 //________________________________________________________________________
@@ -275,7 +300,7 @@ void AliAnalysisTaskEmcalJetTagger::ResetTagging(const Int_t c) {
 
 //________________________________________________________________________
 void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
-						 Int_t iDebug, Float_t maxDist, Int_t type) {
+						 Int_t iDebug, Float_t maxDist, Int_t type, Bool_t bReset) {
 
   //
   // Match the full jets to the corresponding charged jets
@@ -290,9 +315,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 
   if(nJets1==0 || nJets2==0) return;
 
-  ResetTagging(c1);
-  ResetTagging(c2);
-
+  if(bReset) {
+    ResetTagging(c1);
+    ResetTagging(c2);
+  }
   fMatchingDone = kFALSE;
 
   TArrayI faMatchIndex1;
@@ -305,9 +331,10 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
 
   static TArrayS iFlag(nJets1*nJets2);
   if(iFlag.GetSize()<(nJets1*nJets2)){
-    iFlag.Set(nJets1*nJets1+1);
+    iFlag.Set(nJets1*nJets2+1);
   }
   iFlag.Reset(0);
+
 
   AliJetContainer *cont2 = GetJetContainer(c2);
 
@@ -418,9 +445,7 @@ void AliAnalysisTaskEmcalJetTagger::MatchJetsGeo(Int_t c1, Int_t c2,
       }
     }
   }
-
   fMatchingDone = kTRUE;
-  
 }
 
 //________________________________________________________________________
@@ -476,7 +501,7 @@ Double_t AliAnalysisTaskEmcalJetTagger::GetFractionSharedPt(const AliEmcalJet *j
  
   if(jetPt2>0) {
 
-    AliDebug(2,Form("%s: nConstituents: %d, ch: %d  chne: %d ne: %d",GetName(),jet1->GetNumberOfConstituents(),jet2->GetNumberOfTracks(),jet1->GetNumberOfTracks(),jet1->GetNumberOfClusters()));
+    AliDebug(2,Form("%s: nConstituents_jet1: %d, nConstituents_jet2: %d, tracks_jet1: %d  tracks_jet2: %d clusters_jet1: %d clusters_jet2: %d",GetName(),jet1->GetNumberOfConstituents(),jet2->GetNumberOfConstituents(),jet1->GetNumberOfTracks(),jet2->GetNumberOfTracks(),jet1->GetNumberOfClusters(),jet2->GetNumberOfClusters()));
     
     Double_t sumPt = 0.;
     AliVParticle *vpf = 0x0;
@@ -488,19 +513,14 @@ Double_t AliAnalysisTaskEmcalJetTagger::GetFractionSharedPt(const AliEmcalJet *j
 	if(idx == jet1->TrackAt(icf) && iFound==0 ) {
 	  iFound=1;
 	  vpf = static_cast<AliVParticle*>(jet1->TrackAt(icf, fTracks));
-	  if(!vpf) continue;
-	  if(vpf->Charge()!=0)
-	    sumPt += vpf->Pt();
+	  if(vpf) sumPt += vpf->Pt();
 	  continue;
 	}
       }
     }
-    
     fraction = sumPt/jetPt2;
-  }
-
+  } else fraction = -1.;
   return fraction;
-
 }
 
 //________________________________________________________________________

@@ -306,9 +306,9 @@ void AliAnalysisTaskSED0Correlations::UserCreateOutputObjects()
   if(fDebug > 1) printf("AnalysisTaskSED0Correlations::UserCreateOutputObjects() \n");
 
   //HFCorrelator creation and definition
-  fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys);
-  fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys);
-  fCorrelatorK0 = new AliHFCorrelator("CorrelatorK0",fCutsTracks,fSys);
+  fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsD0);//fSys=0 use multiplicity, =1 use centrality
+  fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys,fCutsD0);
+  fCorrelatorK0 = new AliHFCorrelator("CorrelatorK0",fCutsTracks,fSys,fCutsD0);
   fCorrelatorTr->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);// set the Delta Phi Interval you want (in this case -0.5Pi to 1.5 Pi)
   fCorrelatorKc->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);
   fCorrelatorK0->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);

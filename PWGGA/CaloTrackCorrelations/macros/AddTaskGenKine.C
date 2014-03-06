@@ -110,11 +110,11 @@ AliCaloTrackReader * ConfigureReader()
   reader->SwitchOffPHOSCells();  
   reader->SwitchOffPHOS();
   
-  reader->SetZvertexCut(10.);                // Open cut
+  reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
-  reader->SwitchOffEventSelection();         // remove pileup by default
-  reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+  reader->SwitchOffPileUpEventRejection();  // remove pileup by default
+  reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
         
   if(kPrint)reader->Print("");
   

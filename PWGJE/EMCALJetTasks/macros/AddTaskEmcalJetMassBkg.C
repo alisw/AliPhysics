@@ -42,6 +42,12 @@ AliAnalysisTaskEmcalJetMassBkg* AddTaskEmcalJetMassBkg(const char * njetsBase,
   AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
   AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
 
+  TString strJetsBase(njetsBase);
+  if(strJetsBase.Contains("JetPythia")) {
+    if(trackCont)   trackCont->SetTrackBitMap(TObject::kBitMask);
+    if(clusterCont) clusterCont->SetClusterBitMap(TObject::kBitMask);
+  }
+
   task->SetJetContainerBase(0);
 
   TString strType(type);
@@ -55,11 +61,8 @@ AliAnalysisTaskEmcalJetMassBkg* AddTaskEmcalJetMassBkg(const char * njetsBase,
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
-
   task->SetCentralityEstimator(CentEst);
-
   task->SelectCollisionCandidates(pSel);
-
   task->SetUseAliAnaUtils(kFALSE);
 
   mgr->AddTask(task);

@@ -1087,12 +1087,10 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       Double_t bCov[3] = {-99., -99., -99.};
 
 
-      AliAODTrack *param = new AliAODTrack(*aodTrack);
-      if (!param->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov)){
-	if(param) delete param;
+      AliAODTrack param(*aodTrack);
+      if (!param.PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov)){
 	continue;
       }
-      if(param) delete param;
 	    
       if ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4))
 	continue;
@@ -1225,12 +1223,10 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       Double_t b[2] = {-99., -99.};
       Double_t bCov[3] = {-99., -99., -99.};
 
-      AliAODTrack *param = new AliAODTrack(*aodTrack);
-      if (!param->PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov)){
-	if(param) delete param;
-	continue;
+      AliAODTrack param(*aodTrack);
+      if (!param.PropagateToDCA(fOutputAOD->GetPrimaryVertex(), fOutputAOD->GetMagneticField(), 100., b, bCov)){
+        continue;
       }
-      if(param) delete param;
 	    
       if (!fFillDCA && ((TMath::Abs(b[0]) > 3.0) || (TMath::Abs(b[1]) > 2.4)))
 	continue;

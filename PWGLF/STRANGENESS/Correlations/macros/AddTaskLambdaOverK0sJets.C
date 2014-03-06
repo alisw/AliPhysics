@@ -16,7 +16,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  rapMaxV0    = 0.7;
   Bool_t   usePID      = kFALSE;
   Float_t  nSigmaPID   = 3.0;
-  Float_t  dcaDaug     = 0.095;  // looser cut
+  Float_t  dcaDaug     = 1.0;
+  Float_t  dca2PrmVtx  = 0.095;  // tighter cut
   Float_t  nclsDaug    = 50;     // looser cut
 
 
@@ -30,19 +31,27 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   
   // Create and configure the task
   AliAnalysisTaskLambdaOverK0sJets *task = new AliAnalysisTaskLambdaOverK0sJets(name.Data());
+  // collision type
   task->SetCollisionType(data);
   task->SetCentrality(minCen,maxCen);
+  // trigger particle
   task->SetTriggerPt(ptMinTrig,ptMaxTrig);
   task->SetTriggerEta(etaMaxTrig);
   task->SetCheckIDTrig(checkIDTrig);
+  // V0 candidates
   task->SetMaxY(rapMaxV0);
-  task->SetMaxDCADaughter(dcaDaug); // Add to perform systematics
+  task->SetMaxDCADaughter(dcaDaug); // Added to perform systematics
+  task->SetDCAToPrimVtx(dca2PrmVtx); // Added to perform systematics
   task->SetNSigmaPID(nSigmaPID);
-  task->SetNClsTPC(nclsDaug);
+  task->SetNClsTPC(nclsDaug);  // Added to perform systematics
+  // PID
   task->SetSeparateInjectedPart(sepInjec);
+  // MC
   task->SetMC(isMC);
   task->SetPID(usePID);
+  // QA
   task->SetQA(doQA);
+  // Add task
   mgr->AddTask(task);
   
   

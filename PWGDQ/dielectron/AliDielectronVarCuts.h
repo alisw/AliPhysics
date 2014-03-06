@@ -22,6 +22,7 @@
 //#############################################################
 
 #include <Rtypes.h>
+#include <TBits.h>
 
 #include <AliAnalysisCuts.h>
 #include "AliDielectronVarManager.h"
@@ -65,6 +66,7 @@ public:
   
  private:
 
+  TBits     *fUsedVars;            // list of used variables
   UShort_t  fActiveCuts[AliDielectronVarManager::kNMaxValues];       // list of activated cuts
   UShort_t  fNActiveCuts;                      // number of acive cuts
   UInt_t    fActiveCutsMask;                   // mask of active cuts
@@ -82,7 +84,7 @@ public:
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
   
-  ClassDef(AliDielectronVarCuts,2)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(AliDielectronVarCuts,3)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 

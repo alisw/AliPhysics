@@ -19,6 +19,7 @@ public:
       kRapidityRange,
       kRapidityRangeMC,
       kMomentumComparison,
+      kDCAproduct,
       kTypes
    };
 

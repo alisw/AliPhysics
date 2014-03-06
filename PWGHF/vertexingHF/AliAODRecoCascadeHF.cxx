@@ -122,7 +122,7 @@ Int_t AliAODRecoCascadeHF::MatchToMC(Int_t pdgabs,Int_t pdgabs2prong,
   // 
 
   Int_t ndg=GetNDaughters();
-  if(!ndg) {
+  if(ndg==0) {
     AliError("No daughters available");
     return -1;
   }

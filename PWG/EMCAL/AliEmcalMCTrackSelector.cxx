@@ -77,7 +77,7 @@ void AliEmcalMCTrackSelector::UserCreateOutputObjects()
     return;
   }  
 
-  if (handler->InheritsFrom("AliESDInputHandler"))
+  if (handler->InheritsFrom("AliESDInputHandler") || handler->InheritsFrom("AliDummyHandler"))
     fEsdMode = kTRUE;
   else
     fEsdMode = kFALSE;

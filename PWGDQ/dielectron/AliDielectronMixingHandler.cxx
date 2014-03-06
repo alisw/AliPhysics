@@ -157,13 +157,13 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   TClonesArray *poolp=static_cast<TClonesArray*>(fArrPools.At(bin));
   if (!poolp){
     AliDebug(10,Form("New pool at %d (%s)\n",bin,dim.Data()));
-    poolp=new(fArrPools[bin]) TClonesArray("AliDielectronEvent",fDepth);
+    poolp=new(fArrPools[bin]) TClonesArray("AliDielectronEvent",1);
   }
   TClonesArray &pool=*poolp;
 
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
   AliDielectronEvent *event=new(pool[pool.GetEntriesFast()]) AliDielectronEvent();
-  if(ev->IsA() == AliAODEvent::Class()) event->SetAOD();
+  if(ev->IsA() == AliAODEvent::Class()) event->SetAOD(TMath::Max(diele->GetTrackArray(0)->GetEntriesFast(),diele->GetTrackArray(1)->GetEntriesFast()));
   else event->SetESD();
 
   event->SetProcessID(fPID);
@@ -182,8 +182,9 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
     diele->fHistos->Fill("Mixing","CompletePools",bin);
   }
   
-  //clear the current pool
+  //clear the current pool and release memory
   pool.Clear("C");
+	pool.ExpandCreate(1);
 }
 
 //______________________________________________
