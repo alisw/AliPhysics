@@ -99,10 +99,12 @@ goCPass0()
   #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
   export PRODUCTION_METADATA="OutputDir=cpass0"
 
-  #runCPassX/C expects the raw chunk to be linked in the run dir
-  #despite it being accessed by the full path
+  if [[ "${inputList}" =~ \.root$ ]]; then
+    infile=${inputList}
+  else
+    infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
+  fi
   chunkName=${infile##*/}
-  ln -s ${infile} ${runpath}/${chunkName}
 
   outputDir=${targetDirectory}/${jobindex}_${chunkName%.*}
   mkdir -p ${outputDir}
@@ -112,16 +114,13 @@ goCPass0()
   runpath=${outputDir}
   [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
-
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
   cd ${runpath}
 
-  if [[ "${inputList}" =~ \.root$ ]]; then
-    infile=${inputList}
-  else
-    infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
-  fi
+  #runCPassX/C expects the raw chunk to be linked in the run dir
+  #despite it being accessed by the full path
+  ln -s ${infile} ${runpath}/${chunkName}
 
   #####MC
   if [[ -n ${generateMC} ]]; then
@@ -246,6 +245,7 @@ goCPass0()
   summarizeLogs >> ${doneFile}
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  return 0
 }
 
 goCPass1()
@@ -290,8 +290,8 @@ goCPass1()
   else
     infile=$(sed -ne "${jobindex}p" ${inputList} | egrep '\s*\w*/\w*')
   fi
-  
   chunkName=${infile##*/}
+
   outputDir=${targetDirectory}/${jobindex}_${chunkName%.*}
   mkdir -p ${outputDir}
   [[ ! -d ${outputDir} ]] && echo "cannot make ${outputDir}" && touch ${doneFile} && return 1
@@ -466,6 +466,7 @@ goCPass1()
   summarizeLogs >> ${doneFile}
   
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  return 0
 }
 
 
@@ -590,6 +591,7 @@ goMergeCPass0()
   summarizeLogs >> ${doneFile}
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  return 0
 }
 
 goMergeCPass1()
@@ -749,6 +751,7 @@ goMergeCPass1()
   summarizeLogs >>  ${doneFile}
       
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  return 0
 }
 
 goMerge()
@@ -766,6 +769,7 @@ goMerge()
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   rm -f ${outputFile}
   aliroot -b -q "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
+  return 0
 }
 
 goSubmitMakeflow()
@@ -800,6 +804,7 @@ goSubmitMakeflow()
   else 
     echo "no makeflow!"
   fi
+  return 0
 }
 
 goGenerateMakeflow()
@@ -921,6 +926,7 @@ goGenerateMakeflow()
   echo " LOCAL ./benchmark.sh MakeSummary ${configFile}"
   echo
 
+  return 0
 }
 
 goPrintValues()
@@ -936,6 +942,7 @@ goPrintValues()
   [[ ${outputFile} =~ "-" ]] && outputFile=""
   shift 2 #remove 2 first arguments from arg list to only pass the input files to awk
   awk -v key=${key} '$0 ~ key" " {print $2}' "$@" | tee ${outputFile}
+  return 0
 }
 
 goCreateQAplots()
@@ -963,6 +970,7 @@ goCreateQAplots()
   ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList=${mergedQAfileList}
 
   cd ${olddir}
+  return 0
 }
 
 goTest()
@@ -972,6 +980,7 @@ goTest()
   exec > >(tee test.log)
   echo "$@"
   echo something
+  return 0
 }
 
 alirootInfo()
@@ -995,6 +1004,7 @@ alirootInfo()
   echo ""
   git diff ${currentBranch}
   popd
+  return 0
 }
 
 setYear()
@@ -1007,6 +1017,7 @@ setYear()
   local path=${2}
   [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
   echo ${path}
+  return 0
 }
 
 guessPeriod()
@@ -1020,6 +1031,7 @@ guessPeriod()
     [[ ${field} =~ ^LHC[0-9][0-9][a-z]$ ]] && period=${field} && break
   done
   echo ${period}
+  return 0
 }
 
 guessYear()
@@ -1033,6 +1045,7 @@ guessYear()
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field} && break
   done
   echo ${year}
+  return 0
 }
 
 guessRunNumber()
@@ -1049,6 +1062,7 @@ guessRunNumber()
     [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000} && break
   done
   echo ${runNumber}
+  return 0
 }
 
 validateLog()
@@ -1151,6 +1165,7 @@ spitOutLocalOCDBaccessConfig()
     echo ${tmp%/*} | \
     awk -v ocdb=${1} '{print "  man->SetSpecificStorage(\""$1"\",\"local://"ocdb"\");"}'
   done
+  return 0
 }
 
 goMakeLocalOCDBaccessConfig()
@@ -1193,6 +1208,7 @@ goMakeLocalOCDBaccessConfig()
     echo "!!!!!!! CPass0 produced no OCDB entries"
     return 1
   fi
+  return 0
 }
 
 goMakeFilteredTrees()
@@ -1258,6 +1274,7 @@ EOF
   [[ -f ${outputDir}/FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
   cd ${commonOutputPath}
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  return 0
 }
 
 submit()
@@ -1307,6 +1324,7 @@ submit()
       ${batchCommand} ${batchFlags} -wd ${commonOutputPath} -b y -v commonOutputPath -N "${JobID}" -t "${startID}-${endID}" -hold_jid "${waitForJOBID}" -e "${commonOutputPath}/logs/" -o "${commonOutputPath}/logs/" "${command}" ${commandArgs}
     fi
   fi
+  return 0
 }
 
 goSubmitBatch()
@@ -1692,20 +1710,19 @@ goSubmitBatch()
   fi
   LASTJOB=${JOBID5wait}
 
-  [[ -z ${runMakeSummary} ]] && runMakeSummary=0
-  if [ ${runMakeSummary} -eq 1 ]; then
-    echo
-    echo "submit make a summary"
-    echo
+  #################################################################################
+  echo
+  echo "submit make a summary"
+  echo
 
-    submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" "MakeSummary ${configFile}"
-    LASTJOB=${JOBID6}
-  fi
+  submit "${JOBID6}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" "MakeSummary ${configFile}"
+  LASTJOB=${JOBID6}
   #################################################################################
   
   #restore stdout
   exec 1>&7 7>&-
   echo "jobs submitted."
+  return 0
 }
 
 goWaitForOutput()
@@ -1732,6 +1749,7 @@ goWaitForOutput()
     sleep 60
   done
   echo "DONE! exiting..."
+  return 0
 }
 
 mergeSysLogs()
@@ -1747,6 +1765,7 @@ mergeSysLogs()
     awk -v run=${runNumber} -v i=${i} 'NR > 1 {print run" "$0} NR==1 && i==0 {print "run/I:"$0}' ${x}
     (( i++ ))
   done < <(ls -1 ${inputFiles}) > ${outputFile}
+  return 0
 }
 
 goMakeMergedSummaryTree()
@@ -1999,7 +2018,7 @@ done
   goMakeMergedSummaryTree
 
   #if set, email the summary
-  [[ -n ${mailSummaryTo} ]] && cat ${log} | mail -s "benchmark ${productionID} done" ${mailSummaryTo}
+  [[ -n ${MAILTO} ]] && cat ${log} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
   return 0
 }
@@ -2103,6 +2122,7 @@ goMakeSummaryTree()
     echo >> ${outfile}
   done
 
+  return 0
 }
 
 parseConfig()
@@ -2127,6 +2147,7 @@ parseConfig()
 
   #export the aliroot function if defined to override normal behaviour
   [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot
+  return 0
 }
 
 aliroot()
@@ -2145,6 +2166,7 @@ aliroot()
     echo running command aliroot ${args}
     command aliroot ${args}
   fi
+  return 0
 }
 
 guessRunData()
@@ -2190,6 +2212,7 @@ guessRunData()
     #ALL OK
     return 0
   fi
+  return 0
 }
 
 main "$@"
