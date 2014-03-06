@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdio.h>
 #include <fstream>
 #include <iomanip>
 #include "AliParticleYield.h"
@@ -332,37 +333,95 @@ void AliParticleYield::SaveAsASCIIFile(TClonesArray * arr, const char * fileName
 
   // The columns should be:
   // PDG   NAME  SYSTEM  SQRTS  VALUE  STAT  SYST  NORM  YMIN  YMAX  STATUS  TYPE  CENTR     ISSUM TAG
-  
+  if(!arr) {
+    Printf("<AliParticleYield::SaveAsASCIIFile> Error: no array provided");
+    return;
+  }
+  if(!fileName) {
+    Printf("<AliParticleYield::SaveAsASCIIFile> Error: no filename provided");
+  }
 
 
   ofstream fileOut(fileName);
   //print header
   fileOut << FormatCol("PDG", colWidth, separator) <<   FormatCol("NAME", colWidth, separator) <<  FormatCol("SYSTEM", colWidth, separator) <<  FormatCol("SQRTS", colWidth, separator) <<  FormatCol("VALUE", colWidth, separator) <<  FormatCol("STAT" , colWidth, separator)<<  FormatCol("SYST", colWidth, separator) <<  FormatCol("NORM", colWidth, separator) <<  FormatCol("YMIN", colWidth, separator) <<  FormatCol("YMAX", colWidth, separator) <<  FormatCol("STATUS", colWidth, separator) <<  FormatCol("TYPE", colWidth, separator) <<  FormatCol("CENTR", colWidth, separator) <<     FormatCol("ISSUM", colWidth, separator) <<  FormatCol("TAG", colWidth, separator) << endl;
   
+
+  // This is used for float numbers in the table.
+  // The "g" options switches between the normal or scientific notation, whathever is more appropriate.
+  // We want to have up to fSignificantDigits digits after the .
+  char format[20];
+  snprintf(format,20,"%%%dg", fSignificantDigits);
+
   TIter iter(arr);
   AliParticleYield * part = 0;
   while ((part = (AliParticleYield*) iter.Next())){    
     fileOut 
-      << FormatCol(Form("%d",part->GetPdgCode())                                                  , colWidth , separator) 
-      << FormatCol(part->GetPartName()                                                            , colWidth , separator) 	    
-      << FormatCol(Form("%d", part->GetCollisionSystem())                                         , colWidth , separator) 
-      << FormatCol(Form("%2.2f", part->GetSqrtS())                                                , colWidth , separator)	    
-      << FormatCol(Form("%3.3f", RoundToSignificantFigures(part->GetYield(),    fSignificantDigits)) , colWidth , separator)
-      << FormatCol(Form("%3.3f", RoundToSignificantFigures(part->GetStatError(),fSignificantDigits)) , colWidth , separator) 
-      << FormatCol(Form("%3.3f", RoundToSignificantFigures(part->GetSystError(),fSignificantDigits)) , colWidth , separator)
-      << FormatCol(Form("%3.3f", RoundToSignificantFigures(part->GetNormError(),fSignificantDigits)) , colWidth , separator)	
-      << FormatCol(Form("%2.2f", part->GetYMin())                                                 , colWidth , separator) 
-      << FormatCol(Form("%2.2f", part->GetYMax())                                                 , colWidth , separator)	    
-      << FormatCol(Form("%d",part->GetStatus()          )                                         , colWidth , separator) 
-      << FormatCol(Form("%d",part->GetMeasurementType() )                                         , colWidth , separator)       
-      << FormatCol(part->GetCentr()                                                               , colWidth , separator) 
-      << FormatCol(Form("%d",part->GetIsSum())                                                    , colWidth , separator) 
-      << FormatCol(part->GetTag()                                                                 , colWidth , separator) 
+      << FormatCol(Form("%d",part->GetPdgCode())                                                    , colWidth , separator) 
+      << FormatCol(part->GetPartName()                                                              , colWidth , separator) 	    
+      << FormatCol(Form("%d", part->GetCollisionSystem())                                           , colWidth , separator) 
+      << FormatCol(Form(format, part->GetSqrtS())                                                   , colWidth , separator)	    
+      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield(),    fSignificantDigits)) , colWidth , separator)
+      << FormatCol(Form(format, RoundToSignificantFigures(part->GetStatError(),fSignificantDigits)) , colWidth , separator) 
+      << FormatCol(Form(format, RoundToSignificantFigures(part->GetSystError(),fSignificantDigits)) , colWidth , separator)
+      << FormatCol(Form(format, RoundToSignificantFigures(part->GetNormError(),fSignificantDigits)) , colWidth , separator)	
+      << FormatCol(Form(format, part->GetYMin())                                                    , colWidth , separator) 
+      << FormatCol(Form(format, part->GetYMax())                                                    , colWidth , separator)	    
+      << FormatCol(Form("%d",part->GetStatus()          )                                           , colWidth , separator) 
+      << FormatCol(Form("%d",part->GetMeasurementType() )                                           , colWidth , separator)       
+      << FormatCol(part->GetCentr()                                                                 , colWidth , separator) 
+      << FormatCol(Form("%d",part->GetIsSum())                                                      , colWidth , separator) 
+      << FormatCol(part->GetTag()                                                                   , colWidth , separator) 
       << endl;
   }
 
 
 }
+
+void AliParticleYield::WriteThermusFile(TClonesArray * arr, const char * filename, Int_t colwidth) {
+  // Writes a txt file which can we used as input in therums fits
+
+  if(!arr) {
+    Printf("<AliParticleYield::WriteThermusFile> Error: no array provided");
+    return;
+  }
+  if(!filename) {
+    Printf("<AliParticleYield::WriteThermusFile> Error: no filename provided");
+  }
+
+  ofstream fileOut(filename);
+
+  TIter iter(arr);
+  AliParticleYield * part = 0;
+  char format[20];
+  // This is used for float numbers in the table.
+  // The "g" options switches between the normal or scientific notation, whathever is more appropriate.
+  // We want to have up to fSignificantDigits digits after the .
+  snprintf(format,20,"%%%dg", fSignificantDigits);
+  
+  //  snprintf(format, 20, "%d.%d%%f", fSignificantDigits, fSignificantDigits);
+  while ((part = (AliParticleYield*) iter.Next())){    
+    
+    if(part->IsTypeRatio()) { 
+      // If it's a ratio we have to write the 2 pdg codes
+      fileOut << FormatCol(Form("%d %d ",part->GetPdgCode(), part->GetPdgCode2())                              , colwidth) 
+	      << FormatCol(part->GetTag()                                                                      , colwidth)
+	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
+	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+	      << endl;
+    }
+    else {
+      fileOut << FormatCol(Form("%d",part->GetPdgCode())                                                       , colwidth) 
+	      << FormatCol(part->GetTag()                                                                      , colwidth)
+	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
+	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+	      << endl;      
+    }
+  
+  }
+  
+}
+
 
 const char * AliParticleYield::FormatCol(const char * text, Int_t width,  const char * sep) {
   
