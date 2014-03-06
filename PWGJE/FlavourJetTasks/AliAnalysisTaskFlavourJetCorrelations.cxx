@@ -356,28 +356,37 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       Double_t candsparse[4]={charm->Eta(), charm->Phi(), charm->Pt(), 0};
       
       if(fCandidateType==kDstartoKpipi) {
-      	 Double_t deltamass= dstar->DeltaInvMass();
-      	 candsparse[3]=deltamass;
+      	 Printf("IsA %s", (dstar->IsA())->GetName());
+      	 if(fUseReco){
+      	    Double_t deltamass= dstar->DeltaInvMass();
+      	    candsparse[3]=deltamass;
+      	 } else candsparse[3] = 0.145; //for generated
       	 hnspDstandalone->Fill(candsparse);
       }
       if(fCandidateType==kD0toKpi){
-      	 AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)charm;
-      	 Int_t isselected=fCuts->IsSelected(dzero,AliRDHFCuts::kAll,aodEvent);
-      	 
-      	 Double_t masses[2];
-      	 Int_t pdgdaughtersD0[2]={211,321};//pi,K 
-      	 Int_t pdgdaughtersD0bar[2]={321,211};//K,pi 
-      	 
-      	 masses[0]=dzero->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0); //D0
-      	 masses[1]=dzero->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0bar); //D0bar
-      	 if(isselected==1 || isselected==3) {
-      	    candsparse[3]=masses[0];
+      	 if(fUseReco){
+      	    AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)charm;
+      	    Int_t isselected=fCuts->IsSelected(dzero,AliRDHFCuts::kAll,aodEvent);
+      	    //not a further selection,just to get the value of isselected for the D0
+      	    Double_t masses[2];
+      	    Int_t pdgdaughtersD0[2]={211,321};//pi,K 
+      	    Int_t pdgdaughtersD0bar[2]={321,211};//K,pi 
+      	    
+      	    masses[0]=dzero->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0); //D0
+      	    masses[1]=dzero->InvMass(fNProngs,(UInt_t*)pdgdaughtersD0bar); //D0bar
+      	    if(isselected==1 || isselected==3) {
+      	       candsparse[3]=masses[0];
+      	       hnspDstandalone->Fill(candsparse);
+      	    }
+      	    if(isselected>=2){
+      	       candsparse[3]=masses[1];
+      	       hnspDstandalone->Fill(candsparse);
+      	       
+      	    }
+      	 } else { //generated
+      	    Int_t pdg=((AliAODMCParticle*)charm)->GetPdgCode();
+      	    candsparse[3]=TDatabasePDG::Instance()->GetParticle(pdg)->Mass();
       	    hnspDstandalone->Fill(candsparse);
-      	 }
-      	 if(isselected>=2){
-      	    candsparse[3]=masses[1];
-      	    hnspDstandalone->Fill(candsparse);
-    	    
       	 }
       }
    }
@@ -466,7 +475,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       	 FlagFlavour(charm, jet);
       	 if (jet->TestFlavourTag(AliEmcalJet::kDStar)) hstat->Fill(4);
       	 
-      	 FillHistogramsRecoJetCorr(charm, jet);
+      	 FillHistogramsRecoJetCorr(charm, jet, aodEvent);
       	 
       }
       //retrieve side band background candidates for Dstar
@@ -743,7 +752,7 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet,  AliAODEvent* aodEvent){
    
    Double_t ptD=candidate->Pt();
    Double_t ptjet=jet->Pt();
@@ -758,7 +767,8 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVPartic
    if(fUseReco){
       if(fCandidateType==kD0toKpi) {
       	 AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)candidate;
-      	 FillHistogramsD0JetCorr(dzero,deltaphi,z,ptD,ptjet,deltaR, AODEvent());
+      	 
+      	 FillHistogramsD0JetCorr(dzero,deltaphi,z,ptD,ptjet,deltaR, aodEvent);
       	 
       }
       
@@ -788,7 +798,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
    TH3F* hPtJetWithD=(TH3F*)fmyOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fmyOutput->FindObject("hsDphiz");
    Double_t point[7]={z,dPhi,ptj,ptD,masses[0],0, deltaR<fJetRadius ? 1 : 0};
-   
+   Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
    if(isselected==1 || isselected==3) {
       
@@ -845,10 +855,9 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    if(fCandidateType==kDstartoKpipi) pdgmass=TDatabasePDG::Instance()->GetParticle(413)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass();
    point[4]=pdgmass;
-
+   hsDphiz->Fill(point,1.);
    if(deltaR<fJetRadius) {
      hPtJetWithD->Fill(ptjet,pdgmass,ptD); // candidates within a jet
-     hsDphiz->Fill(point,1.);
    }
    
 }
