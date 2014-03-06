@@ -17,7 +17,7 @@ class AliNanoAODStorage  {
 
 public:
   AliNanoAODStorage():fNVars(0), fVars(0) {;}
-  ~AliNanoAODStorage() {;};
+  virtual ~AliNanoAODStorage() {;};
 
   AliNanoAODStorage& operator=(const AliNanoAODStorage& sto);
 

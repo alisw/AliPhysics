@@ -82,9 +82,9 @@ ClassImp(AliNanoAODReplicator)
 
 //_____________________________________________________________________________
 AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
-						 const char * varlist,
-						 AliAnalysisCuts* trackCut,
-						 Int_t mcMode
+					   const char * varlist,
+					   AliAnalysisCuts* trackCut,
+					   Int_t mcMode
 					     ) :
   AliAODBranchReplicator(name,title), 
 
@@ -97,6 +97,7 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
   fLabelMap(),
   fParticleSelected(),
   fVarList(varlist),
+  fVarListHeader(""),// FIXME: this should be set to a meaningful value: add an arg to the constructor
   fCustomSetter(0)
 {
   // default ctor
@@ -464,12 +465,6 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       return; // NO GOOD VERTEX, SKIP EVENT 
     }
   }
-  
-  Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
-  xPrimaryVertex=vtx->GetX();
-  yPrimaryVertex=vtx->GetY();
-  zPrimaryVertex=vtx->GetZ();  
-  
   
   
   for(Int_t j=0; j<entries; j++){
