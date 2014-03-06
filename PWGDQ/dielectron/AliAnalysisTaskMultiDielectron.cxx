@@ -44,6 +44,7 @@ ClassImp(AliAnalysisTaskMultiDielectron)
 //_________________________________________________________________________________
 AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
   AliAnalysisTaskSE(),
+	fPairArray(0x0),
   fListDielectron(),
   fListHistos(),
   fListCF(),
@@ -68,6 +69,7 @@ AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron() :
 //_________________________________________________________________________________
 AliAnalysisTaskMultiDielectron::AliAnalysisTaskMultiDielectron(const char *name) :
   AliAnalysisTaskSE(name),
+  fPairArray(0x0),
   fListDielectron(),
   fListHistos(),
   fListCF(),
@@ -110,7 +112,8 @@ AliAnalysisTaskMultiDielectron::~AliAnalysisTaskMultiDielectron()
   //lists need to be owner...
   fListHistos.SetOwner(kFALSE);
   fListCF.SetOwner(kFALSE);
-  
+
+  //  if(fPairArray)       { delete fPairArray;       fPairArray=0; }
   // try to reduce memory issues
   if(fEventStat)       { delete fEventStat;       fEventStat=0; }
   if(fTriggerAnalysis) { delete fTriggerAnalysis; fTriggerAnalysis=0; }
@@ -272,9 +275,22 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   //Process event in all AliDielectron instances
   //   TIter nextDie(&fListDielectron);
   //   AliDielectron *die=0;
+  Bool_t sel=kFALSE;
   Int_t idie=0;
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
-    die->Process(InputEvent());
+    if(die->DoEventProcess()) {
+      sel= die->Process(InputEvent());
+      // input for internal train
+      if(die->DontClearArrays()) {
+	fPairArray = (*(die->GetPairArraysPointer()));
+
+      }
+    }
+    else {
+      // internal train
+      if(sel) die->Process(fPairArray);
+    }
+
     if (die->HasCandidates()){
       Int_t ncandidates=die->GetPairArray(1)->GetEntriesFast();
       if (ncandidates==1) fEventStat->Fill((kNbinsEvent)+2*idie);
@@ -282,7 +298,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
     }
     ++idie;
   }
-  
+
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
   PostData(3,fEventStat);
@@ -295,13 +311,46 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
   // Write debug tree
   //
   TIter nextDie(&fListDielectron);
+  Int_t ic=0;
   AliDielectron *die=0;
+  AliDielectron *die2=0;
+
+  // main loop
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
+    ic++;
+
+    // debug tree
     die->SaveDebugTree();
+
+    // skip internal train tasks in main loop
+    if(!die->DoEventProcess()) continue;
+
+    // mix remaining
     AliDielectronMixingHandler *mix=die->GetMixingHandler();
-//    printf("\n\n\n===============\ncall mix in Terminate: %p (%p)\n=================\n\n",mix,die);
-    if (mix) mix->MixRemaining(die);
+    if (!mix || !mix->GetMixUncomplete()) continue;
+
+    // loop over all pools
+    for (Int_t ipool=0; ipool<mix->GetNumberOfBins(); ++ipool){
+      //      printf("mix remaining %04d/%04d \n",ipool,mix->GetNumberOfBins());
+      mix->MixRemaining(die, ipool);
+      fPairArray = (*(die->GetPairArraysPointer()));
+      if(!fPairArray) continue;
+
+      // loop over internal train task candidates
+      for(Int_t i=ic; i<fListDielectron.GetEntries(); i++) {
+	die2 = static_cast<AliDielectron*>(fListDielectron.At(i));
+	if(die2->DoEventProcess()) continue;
+	// fill internal train output
+	die2->SetPairArraysPointer(fPairArray);
+	//	printf(" --> fill internal train output %s \n",die2->GetName());
+	die2->FillHistogramsFromPairArray(kTRUE);
+      }
+      // printf("\n\n\n===============\ncall mix in Terminate: %p (%p)\n=================\n\n",mix,die);
+
+    }
+
   }
+
   PostData(1, &fListHistos);
   PostData(2, &fListCF);
 }
