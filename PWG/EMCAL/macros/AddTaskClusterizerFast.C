@@ -2,40 +2,16 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   const char* taskname  = "ClusterizerFast",
   const char* cellsName = "",
   const char* clusName  = "",
-  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData,
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Double_t seedE        = 0.1,
   Double_t cellE        = 0.05,
+  Double_t seedE        = 0.1,
   const Float_t timeMin = -1,      //minimum time of physical signal in a cell/digit (s)
   const Float_t timeMax = +1,      //maximum time of physical signal in a cell/digit (s)
   const Float_t timeCut =  1,      //maximum time difference between the digits inside EMC cluster (s)
-  Bool_t calcDistToBC   = kFALSE) {
+  Bool_t remExoticCell  = kTRUE,
+  Bool_t calcDistToBC   = kFALSE,
+  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData) {
 
-  return AddTaskClusterizerFast(taskname,cellsName,clusName,inputCellType,clusterizer,kFALSE,0,calcDistToBC,kFALSE,kFALSE,kFALSE,kFALSE,kFALSE,cellE,seedE,timeMin,timeMax,timeCut);
-
-}
-
-AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
-  const char* taskname  = "ClusterizerFast",
-  const char* cellsName = "",
-  const char* clusName  = "",
-  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData,
-  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Bool_t nonLinearCorr  = kFALSE,                                   //MV: remove
-  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,    //MV: remove
-  Bool_t calcDistToBC   = kFALSE,                                   //MV: keep?
-  Bool_t remBC          = kFALSE,                                   //MV: remove
-  Bool_t remExotic      = kFALSE,                                   //MV: remove but replace with exotic cell removal
-  Bool_t fidRegion      = kFALSE,                                   //MV: keep?
-  Bool_t updateCells    = kFALSE,                                   //MV: remove
-  Bool_t trackMatch     = kFALSE,                                   //MV: remove
-  Double_t cellE        = 0.05,                                    //minimum energy for cells to be clustered
-  Double_t seedE        = 0.1,                                      //minimum energy for seed
-  const Float_t timeMin = -1,      //minimum time of physical signal in a cell/digit (s)
-  const Float_t timeMax = +1,      //maximum time of physical signal in a cell/digit (s)
-  const Float_t timeCut =  1      //maximum time difference between the digits inside EMC cluster (s)
-) 
-{
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskClusterizerFast", "No analysis manager found.");
@@ -57,19 +33,19 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
     recparam->SetNxM(3,3);
 
   AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
-  recoUtils->SetNonLinearityFunction(nonLinFunct);
+  recoUtils->SetNonLinearityFunction(0);
   task->SetEMCALRecoUtils(recoUtils);
 
   task->SetAttachClusters(kTRUE);
   task->SetCaloClustersName(clusName);
   task->SetCaloCellsName(cellsName);
   task->SetInputCellType(inputCellType);
+  Printf("inputCellType: %d",inputCellType);
 
-  task->SetUpdateCells(updateCells);
-  task->SetClusterBadChannelCheck(remBC);
-  task->SetRejectExoticClusters(remExotic);
-  task->SetFiducial(fidRegion);
-  task->SetDoNonLinearity(nonLinearCorr);
+  task->SetClusterize(kTRUE);
+
+  task->SetClusterBadChannelCheck(kTRUE);
+  task->SetRejectExoticCells(remExoticCell);
   task->SetRecalDistToBadChannels(calcDistToBC);
 
   mgr->AddTask(task);
