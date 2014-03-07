@@ -63,7 +63,8 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fVZEROside(0),
   fOutput(0x0),
   fnCentBins(20),
-  fnQvecBins(40)
+  fnQvecBins(40),
+  fnNchBins(200)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -137,10 +138,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   
   //dimensions of THnSparse for the normalization
   const Int_t nvarev=3;
-  //                                             cent             Q vec          Nch
-  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           360.};
-  Double_t xminHistRealEv[nvarev] = {           0.,               0.,             0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,            2000.};
+  //                                             cent             Q vec                Nch
+  Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins};
+  Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,               2000.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
