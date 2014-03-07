@@ -241,6 +241,7 @@ void AliAnalysisTaskMultiDielectron::UserExec(Option_t *)
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
     AliDielectronHistos *h=die->GetHistoManager();
     if (h){
+      AliDielectronVarManager::SetFillMap(h->GetUsedVars());
       if (hasMC && AliDielectronMC::Instance()->ConnectMCEvent() && h->GetHistogramList()->FindObject("MCEvent_noCuts")) {
 	AliDielectronVarManager::SetEvent(AliDielectronMC::Instance()->GetMCEvent());
         h->FillClass("MCEvent_noCuts",AliDielectronVarManager::kNMaxValues,AliDielectronVarManager::GetData());
