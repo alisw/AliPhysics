@@ -81,6 +81,22 @@ using std::endl;
 ClassImp(AliNanoAODReplicator)
 
 //_____________________________________________________________________________
+AliNanoAODReplicator::AliNanoAODReplicator() :
+AliAODBranchReplicator(), 
+  fTrackCut(0), fTracks(0x0), fHeader(0x0), fNTracksVariables(0), // FIXME: Start using cuts, and check if fNTracksVariables is needed
+  fVertices(0x0), 
+  fList(0x0),
+  fMCParticles(0x0),
+  fMCHeader(0x0),
+  fMCMode(0),
+  fLabelMap(),
+  fParticleSelected(),
+  fVarList(""),
+  fVarListHeader(""),
+  fCustomSetter(0){
+  // Default ctor. we need it to avoid instantiating a wrong mapping when reading from file 
+  }
+
 AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title,
 					   const char * varlist,
 					   AliAnalysisCuts* trackCut,
