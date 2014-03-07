@@ -35,7 +35,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fVZEROside(0),
     fOutput(0x0),
     fnCentBins(20),
-    fnQvecBins(40)
+    fnQvecBins(40),
+    fnNchBins(200)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -71,6 +72,7 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
   void SetnCentBins(Int_t val)                             { fnCentBins = val; }
   void SetnQvecBins(Int_t val)                             { fnQvecBins = val; }
+  void SetnNchBins(Int_t val)                             { fnNchBins = val; }
   
  private:
   
@@ -86,10 +88,11 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   TList                          * fOutput;                     // output list
   Int_t                            fnCentBins;                  // number of bins for the centrality axis
   Int_t                            fnQvecBins;                 // number of bins for the q vector axis
+  Int_t                            fnNchBins;                 // number of bins for the Nch axis
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 5);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 6);
 };
 
 #endif
