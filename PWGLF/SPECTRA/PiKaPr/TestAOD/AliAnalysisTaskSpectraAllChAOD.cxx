@@ -58,6 +58,7 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fHelperPID(0x0),
   fIsMC(0),
   fDoDoubleCounting(0),
+  fFillOnlyEvents(0),
   fCharge(0),
   fVZEROside(0),
   fOutput(0x0),
@@ -139,7 +140,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //                                             cent             Q vec          Nch
   Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           360.};
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,             0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,            1800.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,            2000.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
@@ -224,55 +225,57 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
     AliAODTrack* track = fAOD->GetTrack(iTracks);
     if(fCharge != 0 && track->Charge() != fCharge) continue;//if fCharge != 0 only select fCharge 
     if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts)
-    Int_t IDrec=fHelperPID->GetParticleSpecies(track,kTRUE);//id from detector
-    Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
-    Int_t IDgen=kSpUndefined;//set if MC
-    Int_t isph=-999;
-    Int_t iswd=-999;
-    
-    if (arrayMC) {
-      AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
-      if (!partMC) { 
-	AliError("Cannot get MC particle");
-	continue; 
+    if(!fFillOnlyEvents){
+      Int_t IDrec=fHelperPID->GetParticleSpecies(track,kTRUE);//id from detector
+      Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
+      Int_t IDgen=kSpUndefined;//set if MC
+      Int_t isph=-999;
+      Int_t iswd=-999;
+      
+      if (arrayMC) {
+	AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
+	if (!partMC) { 
+	  AliError("Cannot get MC particle");
+	  continue; 
+	}
+	IDgen=fHelperPID->GetParticleSpecies(partMC);
+	isph=partMC->IsPhysicalPrimary();
+	iswd=partMC->IsSecondaryFromWeakDecay();//FIXME not working on old productions
       }
-      IDgen=fHelperPID->GetParticleSpecies(partMC);
-      isph=partMC->IsPhysicalPrimary();
-      iswd=partMC->IsSecondaryFromWeakDecay();//FIXME not working on old productions
-    }
-    
+      
     //pt     cent    Q vec     IDrec     IDgen       isph           iswd      y
-    Double_t varTrk[8];
-    varTrk[0]=track->Pt();
-    varTrk[1]=Cent;
-    varTrk[2]=Qvec;
-    varTrk[3]=(Double_t)IDrec;
-    varTrk[4]=(Double_t)IDgen;
-    varTrk[5]=(Double_t)isph;
-    varTrk[6]=(Double_t)iswd;
-    varTrk[7]=y;
-    ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
-    
-    //for nsigma PID fill double counting of ID
-    if(fHelperPID->GetPIDType()<kBayes && fDoDoubleCounting){//only nsigma
-      Bool_t *HasDC;
-      HasDC=fHelperPID->GetDoubleCounting(track,kTRUE);//get the array with double counting
-      for(Int_t ipart=0;ipart<kNSpecies;ipart++){
-	if(HasDC[ipart]==kTRUE){
-	  varTrk[3]=(Double_t)ipart;
-	  ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+      Double_t varTrk[8];
+      varTrk[0]=track->Pt();
+      varTrk[1]=Cent;
+      varTrk[2]=Qvec;
+      varTrk[3]=(Double_t)IDrec;
+      varTrk[4]=(Double_t)IDgen;
+      varTrk[5]=(Double_t)isph;
+      varTrk[6]=(Double_t)iswd;
+      varTrk[7]=y;
+      ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+      
+      //for nsigma PID fill double counting of ID
+      if(fHelperPID->GetPIDType()<kBayes && fDoDoubleCounting){//only nsigma
+	Bool_t *HasDC;
+	HasDC=fHelperPID->GetDoubleCounting(track,kTRUE);//get the array with double counting
+	for(Int_t ipart=0;ipart<kNSpecies;ipart++){
+	  if(HasDC[ipart]==kTRUE){
+	    varTrk[3]=(Double_t)ipart;
+	    ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+	  }
 	}
       }
-    }
-    
-    //fill all charged (3)
-    varTrk[3]=3.;
-    varTrk[4]=3.;
-    Nch++;
-    ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+      
+      //fill all charged (3)
+      varTrk[3]=3.;
+      varTrk[4]=3.;
+      ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
+    }//end if fFillOnlyEvents
     
     //Printf("a track");
-    
+      
+    Nch++;
   } // end loop on tracks
   
   Double_t varEv[3];
