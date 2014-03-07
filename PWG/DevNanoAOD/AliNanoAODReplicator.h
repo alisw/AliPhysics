@@ -115,8 +115,8 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
   TExMap fLabelMap; //! for MC label remapping (in case of aggressive filtering)
   TExMap fParticleSelected; //! List of selected MC particles
 			
-  const char * fVarList; // list of variables to be filterered
-  const char * fVarListHeader; // list of variables to be filtered (header)
+  TString fVarList; // list of variables to be filterered
+  TString fVarListHeader; // list of variables to be filtered (header)
 
   AliNanoAODCustomSetter * fCustomSetter;  // Setter class for custom variables
 
