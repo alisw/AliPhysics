@@ -89,7 +89,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
   fCaloCellsName(),  
   fCaloClustersName("newCaloClusters"),
   fDoUpdateCells(kFALSE),
-  fDoClusterize(kFALSE),
+  fDoClusterize(kTRUE),
   fClusterBadChannelCheck(kFALSE),
   fRejectExoticClusters(kFALSE),
   fRejectExoticCells(kFALSE),
@@ -141,7 +141,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   fCaloCellsName(),  
   fCaloClustersName("newCaloClusters"),
   fDoUpdateCells(kFALSE),
-  fDoClusterize(kFALSE),
+  fDoClusterize(kTRUE),
   fClusterBadChannelCheck(kFALSE),
   fRejectExoticClusters(kFALSE),
   fRejectExoticCells(kFALSE),
@@ -338,7 +338,6 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   // Fill digits array
 
   fDigitsArr->Clear("C");
-
   switch (fInputCellType) {
 
   case kFEEData :
@@ -516,7 +515,7 @@ Bool_t AliAnalysisTaskEMCALClusterizeFast::AcceptCell(Int_t cellNumber) {
     fRecoUtils->SwitchOnRejectExoticCell();//switch on and off
     Int_t bunchCrossNo = InputEvent()->GetBunchCrossNumber();
     Bool_t isEx = fRecoUtils->IsExoticCell(cellNumber, fCaloCells, bunchCrossNo);
-    accept = !isEx;
+    if(isEx) accept = kFALSE;
     fRecoUtils->SwitchOffRejectExoticCell();//switch on and off
   }
   return accept;
