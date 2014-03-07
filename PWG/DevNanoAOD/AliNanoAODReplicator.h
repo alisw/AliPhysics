@@ -63,12 +63,13 @@ class AliNanoAODReplicator : public AliAODBranchReplicator
 {
  public:
   
-  AliNanoAODReplicator(const char* name="AliNanoAODReplicator", 
-			  const char* title="Branch Replicator for special tracks related branches",
-			  const char * varlist="pt,eta",
-			  AliAnalysisCuts* trackCut=0x0,
-			  Int_t mcMode=0
-			);
+  AliNanoAODReplicator();
+  AliNanoAODReplicator(const char* name,
+		       const char* title,
+		       const char * varlist=0,
+		       AliAnalysisCuts* trackCut=0x0,
+		       Int_t mcMode=0
+		       );
   
   virtual ~AliNanoAODReplicator();
   
