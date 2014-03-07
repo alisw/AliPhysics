@@ -951,7 +951,7 @@ void AliITSUGeomTGeo::Print(Option_t *) const
   printf("Geometry version %d, NLayers:%d NChips:%d\n",fVersion,fNLayers,fNChips);
   if (fVersion==kITSVNA) return;
   for (int i=0;i<fNLayers;i++) {
-    printf("Lr%2d\tNStav:%2d\tNChips:%2d (%dx%-2d)\tNMod:%d\tNSubSt:%d\tNSt:%3d\tChipType:%3d\tChip#:%4d:%4d\tWrapVol:%d\n",
+    printf("Lr%2d\tNStav:%2d\tNChips:%2d (%dx%-2d)\tNMod:%d\tNSubSt:%d\tNSt:%3d\tChipType:%3d\tChip#:%5d:%-5d\tWrapVol:%d\n",
 	   i,fNStaves[i],fNChipsPerModule[i],fNChipRowsPerModule[i],
 	   fNChipRowsPerModule[i] ? fNChipsPerModule[i]/fNChipRowsPerModule[i] : 0,
 	   fNModules[i],fNHalfStaves[i],fNStaves[i],
