@@ -27,6 +27,7 @@ Double_t minptforWD[6]={0.2,100.0,0.3,0.2,100.0,0.3};
 Double_t maxptforWD[6]={1.5,-100.0,2.0,1.5,-100.0,2.0};
 Double_t minRanges[3]={0.3,0.3,0.45};
 Double_t maxRanges[3]={1.5,1.2,2.2};
+Double_t TOFPIDsignalmatching[]={-1.0,-1.0,-1.0};
 Double_t fMaxContaminationPIDMC=0.2;
 
 
@@ -48,7 +49,8 @@ enum {
  knormalizationwithbin0integralsMC=0x200, //in this case reconstructed vertex disitrbution uses z vertex for data, those to options will be use only if knormalizationtoeventspassingPhySel is not set
  kuserangeonfigfile=0x400, // use of config file for dca fit settings
  kskipconcutonspectra=0x800, //do not use conPID<02 cut  useful for syst. studies
- kuseTOFmatchingcorrection=0x1000 // if set tof matching correction is applied.	
+ kuseTOFmatchingcorrection=0x1000, // if set tof matching correction is applied.
+ kuseTOFcorrforPIDsignalmatching=0x2000 // rescale the for spectra by the factor given in config files			
   							
 };	
 
@@ -363,7 +365,11 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 			{
 				CleanHisto(spectra[i],-1,100,contPID[i]);
 				CleanHisto(spectraLeonardo[i],-1,100,contPID[i]);
-			}				
+			}
+			// Apply correction for wrongly simulated TOF signal in MC 
+			if(options&kuseTOFcorrforPIDsignalmatching)
+				TOFPIDsignalmatchingApply(spectra[i],TOFPIDsignalmatching[i%3]);
+							
 	}
 	
 	GFCorrection(spectra,tcutsdata->GetPtTOFMatching(),options);
@@ -377,6 +383,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		etacut=1.6;
 
 	}
+
 	TH1F* allch=GetSumAllCh(spectra,mass,etacut);
 	lout->Add(allch);	
        	if(options&kuseTOFmatchingcorrection)
@@ -1375,7 +1382,7 @@ Bool_t ReadConfigFile(TString configfile)
 	ifstream infile(configfile.Data());
 	if(infile.is_open()==false)
 		return false;
-	TString namesofSetting[35]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons"};	
+	TString namesofSetting[38]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons","TOFPIDsignalmatchPion","TOFPIDsignalmatchKaon","TOFPIDsignalmatchProton"};	
 
 	char buffer[256];
 	while (infile.eof()==false)
@@ -1455,7 +1462,13 @@ Bool_t ReadConfigFile(TString configfile)
 			minRanges[2]=(tmpstring.Remove(0,namesofSetting[33].Length()+1)).Atof();
 		else if (tmpstring.Contains(namesofSetting[34]))
 			maxRanges[2]=(tmpstring.Remove(0,namesofSetting[34].Length()+1)).Atof();		
-	        else
+	        else if (tmpstring.Contains(namesofSetting[35]))
+			TOFPIDsignalmatching[0]=(tmpstring.Remove(0,namesofSetting[35].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[36]))
+			TOFPIDsignalmatching[1]=(tmpstring.Remove(0,namesofSetting[36].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[37]))
+			TOFPIDsignalmatching[2]=(tmpstring.Remove(0,namesofSetting[37].Length()+1)).Atof();	
+		else  
 			continue;
 
 
@@ -1532,4 +1545,18 @@ void TOFMatchingForNch(TH1* h)
 		return;			
 
 
-}	
+}
+void TOFPIDsignalmatchingApply(TH1* h, Float_t factor)
+{
+	if(factor<0.0)
+		return;
+	for(Int_t ibin=1;ibin<h->GetNbinsX();ibin++)
+	{
+		Float_t ptspectra=h->GetBinCenter(ibin);
+		if(ptspectra<tcutsdata->GetPtTOFMatching())
+			continue;
+		h->SetBinContent(ibin,(h->GetBinContent(ibin)*factor));
+
+	}
+
+}			
