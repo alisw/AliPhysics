@@ -30,11 +30,11 @@ class AliPIDResponse;
 
 class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
  public:
-   
-  AliAnalysisTaskV0ForRAA(const char *name="AliAnalysisTaskV0ForRAA");
+
+  AliAnalysisTaskV0ForRAA();   
+  AliAnalysisTaskV0ForRAA(const char *name);
   virtual ~AliAnalysisTaskV0ForRAA();
   
-  virtual void  Init();
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
@@ -492,6 +492,6 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   AliAnalysisTaskV0ForRAA(const AliAnalysisTaskV0ForRAA&);
   AliAnalysisTaskV0ForRAA&operator=(const AliAnalysisTaskV0ForRAA&);
    
-  ClassDef(AliAnalysisTaskV0ForRAA, 0); 
+  ClassDef(AliAnalysisTaskV0ForRAA,1); 
 };
 #endif
