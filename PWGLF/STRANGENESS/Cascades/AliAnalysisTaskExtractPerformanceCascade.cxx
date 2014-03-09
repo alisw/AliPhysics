@@ -146,6 +146,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -400,6 +401,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -714,6 +716,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*27*/		fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
 /*28*/    fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
 /*29*/    fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
+/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
 /*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
 /*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
 /*32*/		fTreeCascade->Branch("fTreeCascVarPosTransMomMC",&fTreeCascVarPosTransMomMC,"fTreeCascVarPosTransMomMC/F");
@@ -2315,10 +2318,19 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 		  continue;
 	  }
 
-   fTreeCascVarPosEta = pTrackXi->Eta();
-   fTreeCascVarNegEta = nTrackXi->Eta();
-   fTreeCascVarBachEta = bachTrackXi->Eta();
-  
+      fTreeCascVarPosEta = pTrackXi->Eta();
+      fTreeCascVarNegEta = nTrackXi->Eta();
+      fTreeCascVarBachEta = bachTrackXi->Eta();
+      
+      Double_t lBMom[3], lNMom[3], lPMom[3];
+      xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+      xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+      xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
+      fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
+      fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
+      
     //------------------------------------------------
     // TPC dEdx information 
     //------------------------------------------------
@@ -2484,8 +2496,8 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
 	  TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
 	  TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
-	  TParticle* mcBach        = lMCstack->Particle( lblBach );	
-	
+	  TParticle* mcBach        = lMCstack->Particle( lblBach );
+      
     fTreeCascVarPosTransMomMC = mcPosV0Dghter->Pt();
     fTreeCascVarNegTransMomMC = mcNegV0Dghter->Pt();
 
@@ -2639,7 +2651,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
   }
 //----------------------------------------
-// Regular MC ASSOCIATION ENDS HERE
+// Swapped MC ASSOCIATION ENDS HERE
 //----------------------------------------
 
 
