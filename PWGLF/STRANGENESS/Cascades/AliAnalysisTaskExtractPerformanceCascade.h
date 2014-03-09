@@ -165,6 +165,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!
   Int_t   fTreeCascVarPIDPositive; //!
+  Float_t fTreeCascVarBachTransMom;   //!
   Float_t fTreeCascVarPosTransMom;   //!
   Float_t fTreeCascVarNegTransMom;   //!
   Float_t fTreeCascVarPosTransMomMC; //!
