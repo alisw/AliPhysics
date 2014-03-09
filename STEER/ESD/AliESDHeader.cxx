@@ -222,7 +222,7 @@ void AliESDHeader::Print(const Option_t *) const
          printf("List of the active trigger inputs: ");
   	 for(Int_t i = 0; i < kNTriggerInputs; i++) {
     	   TNamed *str = (TNamed *)((fTriggerInputsNames).At(i));
-    	   if (str) printf("%s ",str->GetName());
+    	   if (str) printf("%i %s ",i,str->GetName());
          }
          printf("\n");
 }
