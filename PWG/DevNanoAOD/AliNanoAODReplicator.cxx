@@ -448,9 +448,16 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   fTracks->Clear("C");			
   assert(fVertices!=0x0);
   fVertices->Clear("C");
-  fMCHeader->Reset();
-  fMCParticles->Clear("C");
-  
+  if (fMCMode > 0){
+    if(!fMCHeader) {
+      AliFatal(Form("fMCMode = %d, but MC header not found", fMCMode));
+    }
+    fMCHeader->Reset();
+    if(!fMCParticles){
+      AliFatal(Form("fMCMode = %d, but MC particles not found", fMCMode));
+      fMCParticles->Clear("C");
+    }
+  }
   Int_t ntracks(0);
   Int_t input(0);
 
