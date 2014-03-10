@@ -6,7 +6,7 @@ makeTrendingPlots( const char *TrendingFile )
   TFile *f = TFile::Open(TrendingFile);
   if(!f){ std::cout << "ERROR! No Trendingfile given!" <<std::endl; return; }
 
-  TTree *tree = (TTree*) f->Get("TrendingTree");
+  TTree *tree = (TTree*) f->Get("trending");
   if(!tree){ std::cout << "ERROR! No Tree available!" <<std::endl; return; }
 
   //TGraph* MakeGraphSparse(TTree* tree, const char* expr = "Entry", const char* cut = "1", Int_t mstyle = 25, Int_t mcolor = 1, Float_t msize = -1, Float_t offset = 0.0)

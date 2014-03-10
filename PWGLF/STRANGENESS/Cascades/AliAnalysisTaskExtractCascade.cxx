@@ -142,6 +142,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -252,6 +253,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -425,6 +427,10 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*27*/		fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
 /*28*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*29*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+    
+/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
+/*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
+/*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -1090,9 +1096,18 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 		  continue;
 	  }
 
-   fTreeCascVarPosEta = pTrackXi->Eta();
-   fTreeCascVarNegEta = nTrackXi->Eta();
-   fTreeCascVarBachEta = bachTrackXi->Eta();
+      fTreeCascVarPosEta = pTrackXi->Eta();
+      fTreeCascVarNegEta = nTrackXi->Eta();
+      fTreeCascVarBachEta = bachTrackXi->Eta();
+      
+      Double_t lBMom[3], lNMom[3], lPMom[3];
+      xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+      xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+      xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
+      fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
+      fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
   
     //------------------------------------------------
     // TPC dEdx information 

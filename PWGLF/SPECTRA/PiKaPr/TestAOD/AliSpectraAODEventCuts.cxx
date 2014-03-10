@@ -136,7 +136,8 @@ Bool_t AliSpectraAODEventCuts::IsSelected(AliAODEvent * aod,AliSpectraAODTrackCu
 {
   // Returns true if Event Cuts are selected and applied
   fAOD = aod;
-  fTrackCuts = trackcuts;
+  fTrackCuts = trackcuts; // FIXME: if track cuts is 0, do not set (use the pre-set member). Do we need to pass this here at all??
+  // FIXME: all those references by name are slow.
   ((TH1I*)fOutput->FindObject("fHistoCuts"))->Fill(kProcessedEvents);
   Bool_t IsPhysSel = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fSelectBit);
   if(!IsPhysSel)return IsPhysSel;
@@ -201,6 +202,7 @@ Bool_t AliSpectraAODEventCuts::CheckCentralityCut()
 Bool_t AliSpectraAODEventCuts::CheckMultiplicityCut()
 {
   // Check multiplicity cut
+  // FIXME: why this is not tracket in the track stats histos?
   Int_t Ncharged=0;
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
     AliAODTrack* track = fAOD->GetTrack(iTracks);

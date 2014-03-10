@@ -103,6 +103,8 @@ updateQA()
     
     unset -f runLevelQA
     unset -f periodLevelQA
+    unset -f runLevelHighPtTreeQA
+    unset -f periodLevelHighPtTreeQA
     source ${detectorScript}
 
     #################################################################
@@ -118,23 +120,60 @@ updateQA()
       fi
 
       tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
-      arrOfTouchedProductions[${tmpProductionDir}]=1
       tmpRunDir=${tmpProductionDir}/000${runNumber}
       mkdir -p ${tmpRunDir}
       cd ${tmpRunDir}
 
-      #handle the case of a zip archive
-      [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
-      [[ "$qaFile" =~ .*.zip$ ]] && highPtTree="${qaFile}#FilterEvents_Trees.root"
-      
-      echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
-      runLevelQA ${qaFile} &> runLevelQA.log
+      #by default we expect to have everything in the same archive
+      highPtTree=${qaFile}
 
-      #perform some default actions:
-      #if trending.root not created, create a default one
-      if [[ ! -f trending.root ]]; then
-        aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" &>> runLevelQA.log
+      #maybe the input is not an archive, but a file
+      [[ "${qaFile}" =~ "QAresults.root" ]] && highPtTree=""
+      [[ "${qaFile}" =~ "FilterEvents_Trees.root" ]] && qaFile=""
+
+      #it is possible we get the highPt trees from somewhere else
+      #search the list of high pt trees for the proper run number
+      if [[ -n ${inputListHighPtTrees} ]]; then
+        highPtTree=$(egrep -m1 ${runNumber} ${inputListHighPtTrees})
+        echo "loaded the highPtTree ${highPtTree} from external file ${inputListHighPtTrees}"
       fi
+      
+      echo qaFile=$qaFile
+      echo highPtTree=$highPtTree
+
+      #what if we have a zip archive?
+      if [[ "$qaFile" =~ .*.zip$ ]]; then
+        if unzip -l ${qaFile} | egrep "QAresults.root" &>/dev/null; then
+          qaFile="${qaFile}#QAresults.root"
+        else
+          qaFile=""
+        fi
+      fi
+      if [[ "$highPtTree" =~ .*.zip$ ]]; then
+        if unzip -l ${highPtTree} | egrep "FilterEvents_Trees.root" &>/dev/null; then
+          highPtTree="${highPtTree}#FilterEvents_Trees.root"
+        else
+          highPtTree=""
+        fi
+      fi
+     
+      if [[ -n ${qaFile} && $(type -t runLevelQA) =~ "function" ]]; then
+        echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
+        runLevelQA "${qaFile}" &> runLevelQA.log
+        #perform some default actions:
+        #if trending.root not created, create a default one
+        if [[ ! -f trending.root ]]; then
+          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" &>> runLevelQA.log
+        fi
+        arrOfTouchedProductions[${tmpProductionDir}]=1
+      fi
+      #expert QA based on high pt trees
+      if [[ -n ${highPtTree} && $(type -t runLevelHighPtTreeQA) =~ "function" ]]; then
+        echo running ${detector} runLevelHighPtTreeQA for run ${runNumber} from ${highPtTree}
+        runLevelHighPtTreeQA "${highPtTree}" &> runLevelHighPtTreeQA.log
+        arrOfTouchedProductions[${tmpProductionDir}]=1
+      fi
+
       cd ${tmpDetectorRunDir}
     
     done < ${inputList}
@@ -178,14 +217,20 @@ updateQA()
         mv -f ${dir} ${productionDir}
       done
     
-      echo running ${detector} periodLevelQA for production ${period}/${pass}
       rm -f trending.root
       
       #merge trending files if any
       if /bin/ls 000*/trending.root &>/dev/null; then
         hadd trending.root 000*/trending.root &> periodLevelQA.log
-        periodLevelQA trending.root &>> periodLevelQA.log
       fi
+      
+      if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
+        echo running ${detector} periodLevelQA for production ${period}/${pass}
+        periodLevelQA trending.root &>> periodLevelQA.log
+      else 
+        echo "WARNING: not running ${detector} periodLevelQA for production ${period}/${pass}, no trending.root"
+      fi
+
 
       if ! validate ${PWD}; then continue; fi
 
@@ -289,6 +334,7 @@ validateLog()
             'core dumped'
             '\.C.*error:.*\.h: No such file'
             'segmentation'
+            'Interpreter error recovered'
   )
 
   warningConditions=(

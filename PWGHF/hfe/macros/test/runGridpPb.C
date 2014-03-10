@@ -28,7 +28,7 @@ AliAnalysisAlien *CreateGridHandler(){
 
         plugin->SetOutputToRunNo();
         plugin->AddIncludePath("-I. .I$ALIEN_ROOT/api/lib -I$ROOTSYS/lib -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/PWGHF/ -I$ALICE_ROOT/PWGHF/hfe/macros -I$ALICE_ROOT/PWGHF/hfe -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/ANALYSIS/Tender -I$ALICE_ROOT/ANALYSIS/TenderSupplies -I$ALICE_ROOT/PWG/ -I$ALICE_ROOT/PWG/FLOW -I$ALICE_ROOT/PWG/Base -I$ALICE_ROOT/PWG/Tasks");
-        plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libESD.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libPWGflowBase.so libPWGflowTasks.so libPWGHFhfe.so libTENDER.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so");
+        plugin->SetAdditionalLibs("libGui.so  libXMLParser.so libSTEERBase.so libESD.so libAOD.so libCDB.so libANALYSIS.so libANALYSISalice.so libCORRFW.so  libPWGflowBase.so libPWGflowTasks.so libPWGHFhfe.so libTENDER.so libProof.so libRAWDatabase.so libSTEER.so libTOFbase.so libPWGTRD.so");
    
         plugin->SetDefaultOutputs(kFALSE);
         plugin->SetOutputFiles("AnalysisResults.root"); 

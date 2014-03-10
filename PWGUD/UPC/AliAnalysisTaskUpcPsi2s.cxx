@@ -50,6 +50,7 @@
 #include "AliCentrality.h"
 #include "AliKFVertex.h"
 #include "AliExternalTrackParam.h"
+#include "AliTriggerAnalysis.h"
 
 // my headers
 #include "AliAnalysisTaskUpcPsi2s.h"
@@ -64,14 +65,14 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s() 
-  : AliAnalysisTaskSE(),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fJPsiTree(0),fPsi2sTree(0),
+  : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
-    fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
+    fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
@@ -86,14 +87,14 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),fRunTree(kTRUE),fRunHist(kTRUE),fJPsiTree(0),fPsi2sTree(0),
+  : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
     fBCrossNum(0),fNtracklets(0),fNLooseTracks(0),
     fZDCAenergy(0),fZDCCenergy(0),fV0Adecision(0),fV0Cdecision(0),
     fDataFilnam(0),fRecoPass(0),fEvtNum(0),
-    fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),
+    fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
     fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
@@ -119,7 +120,13 @@ void AliAnalysisTaskUpcPsi2s::Init()
 {
   
   for(Int_t i=0; i<ntrg; i++) fTrigger[i] = kFALSE;
-  for(Int_t i=0; i<4; i++) fTOFphi[i] = -666;
+  for(Int_t i=0; i<4; i++) {
+  	fTOFphi[i] = -666;
+	fPIDMuon[i] = -666;
+	fPIDElectron[i] = -666;
+	fPIDPion[i] = -666;
+	fTriggerInputsMC[i] = kFALSE;
+	}
   for(Int_t i=0; i<3; i++){
   	fVtxPos[i] = -666; 
 	fVtxErr[i] = -666;
@@ -155,6 +162,11 @@ AliAnalysisTaskUpcPsi2s::~AliAnalysisTaskUpcPsi2s()
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
 {
+  //PID response
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+
   //input file
   fDataFilnam = new TObjString();
   fDataFilnam->SetString("");
@@ -164,6 +176,7 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiESDTracks = new TClonesArray("AliESDtrack", 1000);
   fPsi2sAODTracks = new TClonesArray("AliAODTrack", 1000);
   fPsi2sESDTracks = new TClonesArray("AliESDtrack", 1000);
+  fGenPart = new TClonesArray("TParticle", 1000);
 
   //output tree with JPsi candidate events
   fJPsiTree = new TTree("fJPsiTree", "fJPsiTree");
@@ -182,6 +195,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fJPsiTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fJPsiTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
   fJPsiTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
+  
+  fJPsiTree ->Branch("fPIDMuon", &fPIDMuon[0], "fPIDMuon[4]/D");
+  fJPsiTree ->Branch("fPIDElectron", &fPIDElectron[0], "fPIDElectron[4]/D");
+  fJPsiTree ->Branch("fPIDPion", &fPIDPion[0], "fPIDPion[4]/D");
   
   fJPsiTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fJPsiTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -203,6 +220,11 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if( fType == 1 ) {
     fJPsiTree ->Branch("fJPsiAODTracks", &fJPsiAODTracks);
   }
+  if(isMC) {
+    fJPsiTree ->Branch("fGenPart", &fGenPart);
+    fJPsiTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[4]/O");
+  }
+
  
  //output tree with Psi2s candidate events
   fPsi2sTree = new TTree("fPsi2sTree", "fPsi2sTree");
@@ -221,6 +243,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fPsi2sTree ->Branch("fTOFtrig1", &fTOFtrig1, "fTOFtrig1/O");
   fPsi2sTree ->Branch("fTOFtrig2", &fTOFtrig2, "fTOFtrig2/O");
   fPsi2sTree ->Branch("fTOFphi", &fTOFphi[0], "fTOFphi[4]/D");
+  
+  fPsi2sTree ->Branch("fPIDMuon", &fPIDMuon[0], "fPIDMuon[4]/D");
+  fPsi2sTree ->Branch("fPIDElectron", &fPIDElectron[0], "fPIDElectron[4]/D");
+  fPsi2sTree ->Branch("fPIDPion", &fPIDPion[0], "fPIDPion[4]/D");
   
   fPsi2sTree ->Branch("fVtxPos", &fVtxPos[0], "fVtxPos[3]/D");
   fPsi2sTree ->Branch("fVtxErr", &fVtxErr[0], "fVtxErr[3]/D");
@@ -242,6 +268,11 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   if( fType == 1 ) {
     fPsi2sTree ->Branch("fPsi2sAODTracks", &fPsi2sAODTracks);
   }
+  if(isMC) {
+    fPsi2sTree ->Branch("fGenPart", &fGenPart);
+    fPsi2sTree ->Branch("fTriggerInputsMC", &fTriggerInputsMC[0], "fTriggerInputsMC[4]/O");
+  }
+
   
   fListTrig = new TList();
   fListTrig ->SetOwner();
@@ -398,7 +429,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP") ) return;
+  if(!isMC && !trigger.Contains("CCUP") ) return;
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
@@ -596,6 +627,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
 
+  if(isMC) RunAODMC(aod);
+
   //input data
   const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
   fDataFilnam->Clear();
@@ -614,7 +647,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(Int_t i=0; i<ntrg; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
   }
-  if( !isTriggered ) return;
+  if(!isMC && !isTriggered ) return;
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -691,7 +724,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 				  
       if(nGoodTracks > 2) break;  
   }//Track loop
-
+  
+  fJPsiAODTracks->Clear("C");
   if(nGoodTracks == 2){
   
    	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
@@ -721,6 +755,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 		new((*fJPsiAODTracks)[i]) AliAODTrack(*trk); 
 		((AliAODTrack*)((*fJPsiAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
 		
+		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+						
 		trk->GetPosition(KFpar);
     		trk->PxPyPz(KFpar+3);
     		trk->GetCovMatrix(KFcov);
@@ -754,7 +792,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   for(UInt_t i=0; i<2; i++)delete KFpart[i];
   delete KFvtx; 
 
-  fJPsiTree ->Fill();
+  if(!isMC) fJPsiTree ->Fill();
   }
   
    nGoodTracks = 0;
@@ -781,7 +819,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       if(nGoodTracks > 4) break;  
   }//Track loop
       
-    
+  fPsi2sAODTracks->Clear("C");  
   if(nGoodTracks == 4){
 
   	  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
@@ -810,6 +848,11 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
 		
 		new((*fPsi2sAODTracks)[i]) AliAODTrack(*trk);
 		((AliAODTrack*)((*fPsi2sAODTracks)[i]))->SetDCA(dca[0],dca[1]);//to get DCAxy trk->DCA(); to get DCAz trk->ZAtDCA();
+		
+		
+		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
 				
 		trk->GetPosition(KFpar);
     		trk->PxPyPz(KFpar+3);
@@ -842,13 +885,45 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
   fKfVtxPos[2]= KFvtx->GetZ();
   for(UInt_t i=0; i<4; i++)delete KFpart[i];
   delete KFvtx; 
-  fPsi2sTree ->Fill();
+  if(!isMC) fPsi2sTree ->Fill();
+  }
+  
+  if(isMC){
+  	fJPsiTree ->Fill();
+	fPsi2sTree ->Fill();
   }
   
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
 
 }//RunAOD
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunAODMC(AliAODEvent *aod)
+{
+
+  fGenPart->Clear("C");
+
+  TClonesArray *arrayMC = (TClonesArray*) aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  if(!arrayMC) return;
+
+  Int_t nmc=0;
+  //loop over mc particles
+  for(Int_t imc=0; imc<arrayMC->GetEntriesFast(); imc++) {
+    AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(imc);
+    if(!mcPart) continue;
+
+    if(mcPart->GetMother() >= 0) continue;
+
+    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
+    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
+    part->SetPdgCode(mcPart->GetPdgCode());
+    part->SetUniqueID(imc);
+  }//loop over mc particles
+
+}//RunAODMC
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunESDtrig()
@@ -913,7 +988,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDhist()
   //Trigger
   TString trigger = esd->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP") ) return;
+  if(!isMC && !trigger.Contains("CCUP") ) return;
   
   fHistNeventsJPsi->Fill(2);
   fHistNeventsPsi2s->Fill(2);
@@ -1094,6 +1169,8 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
+  
+  if(isMC) RunESDMC(esd);
 
   //input data
   const char *filnam = ((TTree*) GetInputData(0))->GetCurrentFile()->GetName();
@@ -1113,7 +1190,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
   for(Int_t i=0; i<ntrg; i++) {
     if( fTrigger[i] ) isTriggered = kTRUE;
   }
-  if( !isTriggered ) return;
+  if(!isMC && !isTriggered ) return;
   
   //trigger inputs
   fL0inputs = esd->GetHeader()->GetL0TriggerInputs();
@@ -1191,6 +1268,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       if(nGoodTracks > 2) break;   
   }//Track loop
 
+  fJPsiESDTracks->Clear("C");
   if(nGoodTracks == 2){
   	  for(Int_t i=0; i<2; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
@@ -1200,6 +1278,10 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
 				
 		new((*fJPsiESDTracks)[i]) AliESDtrack(*trk); 
 		
+		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
+		
 		Double_t pos[3]={0,0,0};
     		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
     		else {
@@ -1207,7 +1289,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
     		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
 		     } 		
   		}
-  fJPsiTree ->Fill();
+  if(!isMC) fJPsiTree ->Fill();
   }
   
   nGoodTracks = 0;
@@ -1230,6 +1312,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       if(nGoodTracks > 4) break;   
   }//Track loop
   
+  fPsi2sESDTracks->Clear("C");
   if(nGoodTracks == 4){
   	  for(Int_t i=0; i<4; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
@@ -1238,6 +1321,10 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       		trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam);// to get trk->GetImpactParameters(DCAxy,DCAz);
 
 		new((*fPsi2sESDTracks)[i]) AliESDtrack(*trk);
+		
+		fPIDMuon[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kMuon);
+		fPIDElectron[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
+		fPIDPion[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);		
 		 
 		Double_t pos[3]={0,0,0};
     		if(!trk->GetXYZAt(378,esd->GetMagneticField(),pos)) fTOFphi[i] = -666;
@@ -1246,13 +1333,56 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
     		     if(fTOFphi[i] < 0) fTOFphi[i]+=(2*TMath::Pi()*TMath::RadToDeg());
 		     } 		
   		}
-  fPsi2sTree ->Fill();
+  if(!isMC) fPsi2sTree ->Fill();
   }
   
+  if(isMC){
+  	fJPsiTree ->Fill();
+	fPsi2sTree ->Fill();
+  }
+ 
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
 
 }//RunESD
+
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunESDMC(AliESDEvent* esd)
+{
+
+  AliTriggerAnalysis *fTrigAna = new AliTriggerAnalysis();
+  fTrigAna->SetAnalyzeMC(isMC);
+  
+  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) > 1) fTriggerInputsMC[0] = kTRUE;
+  if(fTrigAna->SPDFiredChips(esd,1,kFALSE,2) < 2) fTriggerInputsMC[0] = kFALSE;
+
+  fTriggerInputsMC[1] = esd->GetHeader()->IsTriggerInputFired("0OMU");
+  fTriggerInputsMC[2] = esd->GetHeader()->IsTriggerInputFired("0VBA");
+  fTriggerInputsMC[3] = esd->GetHeader()->IsTriggerInputFired("0VBC");
+
+  fGenPart->Clear("C");
+
+  AliMCEvent *mc = MCEvent();
+  if(!mc) return;
+
+  Int_t nmc = 0;
+  //loop over mc particles
+  for(Int_t imc=0; imc<mc->GetNumberOfTracks(); imc++) {
+    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(imc);
+    if(!mcPart) continue;
+
+    if(mcPart->GetMother() >= 0) continue;
+
+    TParticle *part = (TParticle*) fGenPart->ConstructedAt(nmc++);
+    part->SetMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz(), mcPart->E());
+    part->SetPdgCode(mcPart->PdgCode());
+    part->SetUniqueID(imc);
+  }//loop over mc particles
+
+}//RunESDMC
+
+
 
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::Terminate(Option_t *) 

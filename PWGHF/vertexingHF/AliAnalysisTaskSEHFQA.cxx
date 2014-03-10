@@ -818,6 +818,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+      hname="hMultFBit4";
+      TH1F* hMultFBit4=new TH1F(hname.Data(),"Multiplicity (global+tracklet) with filter bit 4;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb05";
       TH1F* hMultC05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb08";
@@ -825,6 +827,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       fOutputTrack->Add(hNtracklets);
       fOutputTrack->Add(hMult);
+      fOutputTrack->Add(hMultFBit4);
       fOutputTrack->Add(hMultC05);
       fOutputTrack->Add(hMultC08);
     }
@@ -1794,6 +1797,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   Int_t ntracks=0;
+  Int_t ntracksFBit4=0;
   Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
@@ -1809,6 +1813,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(!track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0)) continue;
       if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
 	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
+	ntracksFBit4++;
       }
       ULong_t trStatus=track->GetStatus();
       if(trStatus&AliESDtrack::kITSrefit){
@@ -2072,6 +2077,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if (fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrSelTr"))->Fill(isSelTrack);
+      ((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
     }
 
     if(!isSimpleMode){

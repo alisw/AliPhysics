@@ -261,18 +261,19 @@ void AliAnalysisTaskAODFilterBitQA::GetAcceptedTracks(AliVEvent *event, Double_t
 
 
     // AOD track cuts
-    for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
-      fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
-      
-      if(aodTrack->TestFilterBit(1<<iTrackBit)){
-	fHistKinematics[iCharge][iTrackBit]->Fill(vEta,vPhi,vPt);
-	fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
-	fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
-	fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
-      }
-      
-    }//bit loop
+    if(iCharge > -1){
+      for(Int_t iTrackBit = 0; iTrackBit < gBitMax; iTrackBit++){
+	fHistTrackStats->Fill(gCentrality,iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
+	
+	if(aodTrack->TestFilterBit(1<<iTrackBit)){
+	  fHistKinematics[iCharge][iTrackBit]->Fill(vEta,vPhi,vPt);
+	  fHistDCAconstrained[iCharge][iTrackBit]->Fill(vDCAconstrainedxy,vDCAconstrainedz);
+	  fHistDCAglobal[iCharge][iTrackBit]->Fill(vDCAglobalx,vDCAglobaly,vDCAglobalz);
+	  fHistChiClus[iCharge][iTrackBit]->Fill(vChi2,vClus);
+	} 
+      }//bit loop
+    }//charge positive or negative
   }//track loop
-
+  
   return;  
 }
