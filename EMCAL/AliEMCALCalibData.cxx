@@ -57,7 +57,7 @@ TNamed(calibda), fADCchannelRef(calibda.fADCchannelRef)
   SetTitle(calibda.GetName());
   Reset();
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //22
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
@@ -106,7 +106,7 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
   
   fADCchannelRef = calibda.GetADCchannelRef() ;
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //22 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
@@ -154,7 +154,7 @@ void AliEMCALCalibData::Reset()
   
   fADCchannelRef = 0.0162;	
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //22 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
@@ -193,7 +193,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   // Print tables of pedestals and ADC channels widths
   // options are: "gain", "ped", "decal", "time", "all"
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //22 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 

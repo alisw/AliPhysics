@@ -128,7 +128,7 @@ void AliEMCALRawUtils::Digits2Raw()
     return;
   }
   
-  static const Int_t nDDL = 22*2; // 22 SM for DCal hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here  
+  static const Int_t nDDL = 20*2; // 20 SM for EMCal + DCal hardcoded for now. Buffers allocated dynamically, when needed, so just need an upper limit here  
   AliAltroBuffer* buffers[nDDL];
   for (Int_t i=0; i < nDDL; i++)
     buffers[i] = 0;
@@ -284,7 +284,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
   if (!reader) {Error("Raw2Digits", "no raw reader found !");return;}
   AliEMCALTriggerSTURawStream inSTU(reader);
   AliCaloRawStreamV3 in(reader,"EMCAL",fMapping);	
-  reader->Select("EMCAL",0,43); // 43 = AliEMCALGeoParams::fgkLastAltroDDL
+  reader->Select("EMCAL",0,39); // 39 = AliEMCALGeoParams::fgkLastAltroDDL
   fTriggerRawDigitMaker->Reset();	
   fTriggerRawDigitMaker->SetIO(reader, in, inSTU, digitsTRG, trgData);
   fRawAnalyzer->SetIsZeroSuppressed(true); // TMP - should use stream->IsZeroSuppressed(), or altro cfg registers later
