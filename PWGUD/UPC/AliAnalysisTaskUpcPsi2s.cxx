@@ -717,7 +717,9 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       delete trk_clone;
       if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[0]) > 0.2) continue;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      
      
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -812,6 +814,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       delete trk_clone;
       if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
 
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
