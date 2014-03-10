@@ -24,7 +24,8 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
   Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy
   Bool_t recalcClusPos  = kTRUE;   //recalculate cluster position
   Bool_t nonLinearCorr  = kTRUE;   //apply non-linearity
-  Bool_t remExotic      = kTRUE;   //remove exotic cells
+  Bool_t remExoticCell  = kTRUE;   //remove exotic cells
+  Bool_t remExoticClus  = kTRUE;   //remove exotic clusters
   Bool_t fidRegion      = kFALSE;  //apply fiducial cuts
   Bool_t calibEnergy    = kTRUE;   //calibrate energy
   Bool_t calibTime      = kTRUE;   //calibrate timing
@@ -44,6 +45,7 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
 
   TString period(perstr);
   period.ToLower();
+  Printf("Configuring tender for run period: %s",period.Data());
 
   if (period == "lhc11h") {
     trackMatch = kFALSE;
@@ -51,7 +53,10 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
     timeMax =  50e-9;
     timeCut =  1e6;
   }
-  else if (period == "lhc12a15e" || period == "lhc12a15e_fix") {
+  else if (period == "lhc12a15e" || period == "lhc12a15e_fix" || 
+	   period == "lhc12a17a_fix" || period == "lhc12a17b_fix" || period == "lhc12a17c_fix" || period == "lhc12a17d_fix" || 
+	   period == "lhc12a17e_fix" || period == "lhc12a17f_fix" || period == "lhc12a17g_fix" || period == "lhc12a17h_fix" || 
+	   period == "lhc12a17i_fix") {
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
     isMC = kTRUE;
   }
@@ -94,8 +99,9 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
 
   AliAnalysisTaskSE *task = AddTaskEMCALTender(
     distBC, recalibClus, recalcClusPos, nonLinearCorr,
-    remExotic, fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, 
-    reclusterize, seedthresh, cellthresh, clusterizer, trackMatch, updateCellOnly,
+    remExoticCell, remExoticClus, fidRegion, calibEnergy, 
+    calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
+    cellthresh, clusterizer, trackMatch, updateCellOnly,
     timeMin, timeMax, timeCut, pass);
 
   return task;
