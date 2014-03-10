@@ -1797,13 +1797,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   Int_t ntracks=0;
+  Int_t ntracksFBit4=0;
   Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
 
   if(fOnOff[0] || fOnOff[1]){
     //loop on tracks in the event
-    Int_t ntracksFBit4=0;
     for (Int_t k=0;k<ntracks;k++){
       AliAODTrack* track=aod->GetTrack(k);
 
