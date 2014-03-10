@@ -217,7 +217,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserCreateOutputObjects() {
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
+Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
 {
    // user exec
    if (!fInitialized){
@@ -259,7 +259,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       mcArray = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
       if (!mcArray) {
       	 printf("AliAnalysisTaskSEDStarSpectra::UserExec: MC particles not found!\n");
-      	 return;
+      	 return kFALSE;
       }
    }
    
@@ -271,15 +271,15 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    
    if(!trackArr){
       AliInfo(Form("Could not find the track array\n"));
-      return;
+      return kFALSE;
    }
    
     
    fCandidateArray = dynamic_cast<TClonesArray*>(GetInputData(1));
-   if (!fCandidateArray) return;
+   if (!fCandidateArray) return kFALSE;
    if (fCandidateType==1) {
       fSideBandArray = dynamic_cast<TClonesArray*>(GetInputData(2));
-      if (!fSideBandArray) return;
+      if (!fSideBandArray) return kFALSE;
    }
    //Printf("ncandidates found %d",fCandidateArray->GetEntriesFast());
    
@@ -306,12 +306,12 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    
    // fix for temporary bug in ESDfilter 
    // the AODs with null vertex pointer didn't pass the PhysSel
-   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return;
+   if(!aodEvent->GetPrimaryVertex() || TMath::Abs(aodEvent->GetMagneticField())<0.001) return kFALSE;
    
    //Event selection
    Bool_t iseventselected=fCuts->IsEventSelected(aodEvent);
    TString firedTriggerClasses=((AliAODEvent*)aodEvent)->GetFiredTriggerClasses();
-   if(!iseventselected) return;
+   if(!iseventselected) return kFALSE;
    
    hstat->Fill(1);
 
@@ -330,7 +330,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
       	 hptDPerEvNoJet->Fill(cand->Pt());
       
       }
-      return;
+      return kFALSE;
       
    }
    
@@ -499,7 +499,7 @@ void AliAnalysisTaskFlavourJetCorrelations::UserExec(Option_t *)
    hNJetPerEv->Fill(cntjet);
    if(candidates==0) hNJetPerEvNoD->Fill(cntjet);
    PostData(1,fmyOutput);
-   
+   return kTRUE;
 }
 
 //_______________________________________________________________________________
