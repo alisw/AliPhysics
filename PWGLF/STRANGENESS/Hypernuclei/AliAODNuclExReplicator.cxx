@@ -670,12 +670,12 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       AliAODTrack *trk0 = (AliAODTrack*)io2Prong->GetDaughter(0);
       AliAODTrack *trk1 = (AliAODTrack*)io2Prong->GetDaughter(1);
     
-      cout<<"**********************************************"<<endl;
-      cout<<trk0/*->GetID()*/<<" "<<negtrackAOD->GetID()<<endl;
-      cout<<trk1/*->GetID()*/<<" "<<postrackAOD->GetID()<<endl;
-      cout<<"d0 io2Prong: "<<io2Prong->GetProngID(1)<<endl;
-      cout<<"d1 io2Prong: "<<io2Prong->GetProngID(0)<<endl;
-      cout<<"**********************************************"<<endl;
+      // cout<<"**********************************************"<<endl;
+      // cout<<trk0/*->GetID()*/<<" "<<negtrackAOD->GetID()<<endl;
+      // cout<<trk1/*->GetID()*/<<" "<<postrackAOD->GetID()<<endl;
+      // cout<<"d0 io2Prong: "<<io2Prong->GetProngID(1)<<endl;
+      // cout<<"d1 io2Prong: "<<io2Prong->GetProngID(0)<<endl;
+      // cout<<"**********************************************"<<endl;
 
       //      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
       
