@@ -528,7 +528,6 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
     thePDG=421;
     nProng=2;
   }
-  Int_t labDau[4];
   for(Int_t ip=0; ip<totPart; ip++){
     AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
     if(TMath::Abs(part->GetPdgCode())==thePDG){
@@ -540,6 +539,7 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
       fHistCheckOriginSel->Fill(orig);
       Int_t deca=0;
       Bool_t isGoodDecay=kFALSE;
+      Int_t labDau[4]={-1,-1,-1,-1};
       if(fMeson==kDzero){
 	deca=AliVertexingHFUtils::CheckD0Decay(arrayMC,part,labDau);
 	if(part->GetNDaughters()!=2) continue;
@@ -548,8 +548,12 @@ void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
 	deca=AliVertexingHFUtils::CheckDplusDecay(arrayMC,part,labDau);
 	if(deca>0) isGoodDecay=kTRUE;
       }
-      Bool_t isInAcc=CheckAcceptance(arrayMC,nProng,labDau);
       fHistCheckDecChan->Fill(deca);
+      if(labDau[0]==-1){
+	//	printf(Form("Meson %d Label of daughters not filled correctly -- %d\n",fMeson,isGoodDecay));
+	continue; //protection against unfilled array of labels
+      }
+      Bool_t isInAcc=CheckAcceptance(arrayMC,nProng,labDau);
       if(isInAcc) fHistCheckDecChanAcc->Fill(deca);
       if(isGoodDecay){
 	Double_t ptgen=part->Pt();
@@ -589,9 +593,9 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	  if(part){
 	    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
 	    if(pdgCode==321){
-	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
 	      AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-	      fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+	      if(dmes) fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
 	    }else{
 	      fMassVsPtVsYRefl->Fill(mass,pt,rapid);
 	    }
