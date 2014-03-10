@@ -146,6 +146,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -156,6 +157,27 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+   fTreeCascVarEvHasXiMinus(0),
+   fTreeCascVarEvHasXiPlus(0),
+   fTreeCascVarEvHasOmegaMinus(0),
+   fTreeCascVarEvHasOmegaPlus(0),
+   fTreeCascVarEvHasLambda(0),
+   fTreeCascVarEvHasAntiLambda(0),
+
+   fTreeCascVarEvHasLowPtXiMinus(0),
+   fTreeCascVarEvHasLowPtXiPlus(0),
+   fTreeCascVarEvHasLowPtOmegaMinus(0),
+   fTreeCascVarEvHasLowPtOmegaPlus(0),
+   fTreeCascVarEvHasLowPtLambda(0),
+   fTreeCascVarEvHasLowPtAntiLambda(0),
+
+   fTreeCascVarEvHasVeryLowPtXiMinus(0),
+   fTreeCascVarEvHasVeryLowPtXiPlus(0),
+   fTreeCascVarEvHasVeryLowPtOmegaMinus(0),
+   fTreeCascVarEvHasVeryLowPtOmegaPlus(0),
+   fTreeCascVarEvHasVeryLowPtLambda(0),
+   fTreeCascVarEvHasVeryLowPtAntiLambda(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -379,6 +401,7 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -389,6 +412,27 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+   fTreeCascVarEvHasXiMinus(0),
+   fTreeCascVarEvHasXiPlus(0),
+   fTreeCascVarEvHasOmegaMinus(0),
+   fTreeCascVarEvHasOmegaPlus(0),
+   fTreeCascVarEvHasLambda(0),
+   fTreeCascVarEvHasAntiLambda(0),
+
+   fTreeCascVarEvHasLowPtXiMinus(0),
+   fTreeCascVarEvHasLowPtXiPlus(0),
+   fTreeCascVarEvHasLowPtOmegaMinus(0),
+   fTreeCascVarEvHasLowPtOmegaPlus(0),
+   fTreeCascVarEvHasLowPtLambda(0),
+   fTreeCascVarEvHasLowPtAntiLambda(0),
+
+   fTreeCascVarEvHasVeryLowPtXiMinus(0),
+   fTreeCascVarEvHasVeryLowPtXiPlus(0),
+   fTreeCascVarEvHasVeryLowPtOmegaMinus(0),
+   fTreeCascVarEvHasVeryLowPtOmegaPlus(0),
+   fTreeCascVarEvHasVeryLowPtLambda(0),
+   fTreeCascVarEvHasVeryLowPtAntiLambda(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -672,6 +716,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*27*/		fTreeCascade->Branch("fTreeCascVarPIDBachelor",&fTreeCascVarPIDBachelor,"fTreeCascVarPIDBachelor/I");
 /*28*/    fTreeCascade->Branch("fTreeCascVarPIDNegative",&fTreeCascVarPIDNegative,"fTreeCascVarPIDNegative/I");
 /*29*/    fTreeCascade->Branch("fTreeCascVarPIDPositive",&fTreeCascVarPIDPositive,"fTreeCascVarPIDPositive/I");
+/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
 /*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
 /*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
 /*32*/		fTreeCascade->Branch("fTreeCascVarPosTransMomMC",&fTreeCascVarPosTransMomMC,"fTreeCascVarPosTransMomMC/F");
@@ -683,6 +728,27 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*37*/		fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
 /*38*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*39*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiMinus",   &fTreeCascVarEvHasXiMinus,   "fTreeCascVarEvHasXiMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiPlus",    &fTreeCascVarEvHasXiPlus,    "fTreeCascVarEvHasXiPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasOmegaMinus",&fTreeCascVarEvHasOmegaMinus,"fTreeCascVarEvHasOmegaMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasOmegaPlus", &fTreeCascVarEvHasOmegaPlus, "fTreeCascVarEvHasOmegaPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLambda",    &fTreeCascVarEvHasLambda,    "fTreeCascVarEvHasLambda/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasAntiLambda",&fTreeCascVarEvHasAntiLambda,"fTreeCascVarEvHasAntiLambda/O");
+
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtXiMinus",   &fTreeCascVarEvHasLowPtXiMinus,   "fTreeCascVarEvHasLowPtXiMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtXiPlus",    &fTreeCascVarEvHasLowPtXiPlus,    "fTreeCascVarEvHasLowPtXiPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtOmegaMinus",&fTreeCascVarEvHasLowPtOmegaMinus,"fTreeCascVarEvHasLowPtOmegaMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtOmegaPlus", &fTreeCascVarEvHasLowPtOmegaPlus, "fTreeCascVarEvHasLowPtOmegaPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtLambda",    &fTreeCascVarEvHasLowPtLambda,    "fTreeCascVarEvHasLowPtLambda/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasLowPtAntiLambda",&fTreeCascVarEvHasLowPtAntiLambda,"fTreeCascVarEvHasLowPtAntiLambda/O");
+
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtXiMinus",   &fTreeCascVarEvHasVeryLowPtXiMinus,   "fTreeCascVarEvHasVeryLowPtXiMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtXiPlus",    &fTreeCascVarEvHasVeryLowPtXiPlus,    "fTreeCascVarEvHasVeryLowPtXiPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtOmegaMinus",&fTreeCascVarEvHasVeryLowPtOmegaMinus,"fTreeCascVarEvHasVeryLowPtOmegaMinus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtOmegaPlus", &fTreeCascVarEvHasVeryLowPtOmegaPlus, "fTreeCascVarEvHasVeryLowPtOmegaPlus/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtLambda",    &fTreeCascVarEvHasVeryLowPtLambda,    "fTreeCascVarEvHasVeryLowPtLambda/O");
+/*39*/		fTreeCascade->Branch("fTreeCascVarEvHasVeryLowPtAntiLambda",&fTreeCascVarEvHasVeryLowPtAntiLambda,"fTreeCascVarEvHasVeryLowPtAntiLambda/O");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -1681,6 +1747,29 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 // Pre-Physics Selection
 //------------------------------------------------
 
+
+  fTreeCascVarEvHasXiMinus    = kFALSE; 
+  fTreeCascVarEvHasXiPlus     = kFALSE; 
+  fTreeCascVarEvHasOmegaMinus = kFALSE; 
+  fTreeCascVarEvHasOmegaPlus  = kFALSE; 
+  fTreeCascVarEvHasLambda     = kFALSE; 
+  fTreeCascVarEvHasAntiLambda = kFALSE; 
+
+  fTreeCascVarEvHasLowPtXiMinus    = kFALSE; 
+  fTreeCascVarEvHasLowPtXiPlus     = kFALSE; 
+  fTreeCascVarEvHasLowPtOmegaMinus = kFALSE; 
+  fTreeCascVarEvHasLowPtOmegaPlus  = kFALSE; 
+  fTreeCascVarEvHasLowPtLambda     = kFALSE; 
+  fTreeCascVarEvHasLowPtAntiLambda = kFALSE; 
+
+  fTreeCascVarEvHasVeryLowPtXiMinus    = kFALSE; 
+  fTreeCascVarEvHasVeryLowPtXiPlus     = kFALSE; 
+  fTreeCascVarEvHasVeryLowPtOmegaMinus = kFALSE; 
+  fTreeCascVarEvHasVeryLowPtOmegaPlus  = kFALSE; 
+  fTreeCascVarEvHasVeryLowPtLambda     = kFALSE; 
+  fTreeCascVarEvHasVeryLowPtAntiLambda = kFALSE; 
+
+
 //----- Loop on primary Xi, Omega --------------------------------------------------------------
    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < lNbMCPrimary; iCurrentLabelStack++) 
    {// This is the begining of the loop on primaries
@@ -1691,6 +1780,29 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
          Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
          continue;
       }
+
+      //Event Type Acquisition
+      if(lCurrentParticlePrimary->GetPdgCode() == 3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasXiMinus     = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasXiPlus      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasOmegaMinus  = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasOmegaPlus   = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasLambda      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) ) fTreeCascVarEvHasAntiLambda  = kTRUE; }
+
+      if(lCurrentParticlePrimary->GetPdgCode() == 3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtXiMinus     = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtXiPlus      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtOmegaMinus  = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtOmegaPlus   = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtLambda      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<2.0) fTreeCascVarEvHasLowPtAntiLambda  = kTRUE; }
+
+      if(lCurrentParticlePrimary->GetPdgCode() == 3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtXiMinus     = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3312){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtXiPlus      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtOmegaMinus  = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3334){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtOmegaPlus   = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() == 3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtLambda      = kTRUE; }
+      if(lCurrentParticlePrimary->GetPdgCode() ==-3122){ if (TMath::Abs(lCurrentParticlePrimary->Eta())<1.2 && lMCstack->IsPhysicalPrimary(iCurrentLabelStack) && lCurrentParticlePrimary->Pt()<1.2) fTreeCascVarEvHasVeryLowPtAntiLambda  = kTRUE; }
+
       if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 || TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3334 ) { 
          Double_t lRapXiMCPrimary = -100;
          if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) { 
@@ -2206,10 +2318,19 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 		  continue;
 	  }
 
-   fTreeCascVarPosEta = pTrackXi->Eta();
-   fTreeCascVarNegEta = nTrackXi->Eta();
-   fTreeCascVarBachEta = bachTrackXi->Eta();
-  
+      fTreeCascVarPosEta = pTrackXi->Eta();
+      fTreeCascVarNegEta = nTrackXi->Eta();
+      fTreeCascVarBachEta = bachTrackXi->Eta();
+      
+      Double_t lBMom[3], lNMom[3], lPMom[3];
+      xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+      xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+      xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
+      fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
+      fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
+      
     //------------------------------------------------
     // TPC dEdx information 
     //------------------------------------------------
@@ -2375,8 +2496,8 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
 	  TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
 	  TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
-	  TParticle* mcBach        = lMCstack->Particle( lblBach );	
-	
+	  TParticle* mcBach        = lMCstack->Particle( lblBach );
+      
     fTreeCascVarPosTransMomMC = mcPosV0Dghter->Pt();
     fTreeCascVarNegTransMomMC = mcNegV0Dghter->Pt();
 
@@ -2530,7 +2651,7 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 
   }
 //----------------------------------------
-// Regular MC ASSOCIATION ENDS HERE
+// Swapped MC ASSOCIATION ENDS HERE
 //----------------------------------------
 
 

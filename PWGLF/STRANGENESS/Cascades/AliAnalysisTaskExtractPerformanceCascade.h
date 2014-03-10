@@ -165,6 +165,7 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!
   Int_t   fTreeCascVarPIDPositive; //!
+  Float_t fTreeCascVarBachTransMom;   //!
   Float_t fTreeCascVarPosTransMom;   //!
   Float_t fTreeCascVarNegTransMom;   //!
   Float_t fTreeCascVarPosTransMomMC; //!
@@ -175,6 +176,27 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarPosNSigmaProton; //! 
   Float_t fTreeCascVarBachNSigmaPion;  //! 
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
+
+  Bool_t fTreeCascVarEvHasXiMinus;    //!
+  Bool_t fTreeCascVarEvHasXiPlus;     //!
+  Bool_t fTreeCascVarEvHasOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasLambda;     //!
+  Bool_t fTreeCascVarEvHasAntiLambda; //!
+
+  Bool_t fTreeCascVarEvHasLowPtXiMinus;    //!
+  Bool_t fTreeCascVarEvHasLowPtXiPlus;     //!
+  Bool_t fTreeCascVarEvHasLowPtOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasLowPtOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasLowPtLambda;     //!
+  Bool_t fTreeCascVarEvHasLowPtAntiLambda; //!
+
+  Bool_t fTreeCascVarEvHasVeryLowPtXiMinus;    //!
+  Bool_t fTreeCascVarEvHasVeryLowPtXiPlus;     //!
+  Bool_t fTreeCascVarEvHasVeryLowPtOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasVeryLowPtOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasVeryLowPtLambda;     //!
+  Bool_t fTreeCascVarEvHasVeryLowPtAntiLambda; //!
 
 //===========================================================================================
 //   Histograms

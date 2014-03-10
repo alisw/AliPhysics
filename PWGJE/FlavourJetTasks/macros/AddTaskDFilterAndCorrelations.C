@@ -117,6 +117,7 @@ void *AddTaskDFilterAndCorrelations(
 
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
+  cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
   
   // ----- output data -----
   
@@ -132,8 +133,8 @@ void *AddTaskDFilterAndCorrelations(
   
   AliAnalysisDataContainer *coutputFC3 = mgr->CreateContainer(nameContainerFC3, TClonesArray::Class(),AliAnalysisManager::kExchangeContainer, outputfileF.Data()); //
   
-  mgr->ConnectInput(taskFilter,0,mgr->GetCommonInputContainer());
-  mgr->ConnectInput(taskCorr,0,mgr->GetCommonInputContainer());
+  mgr->ConnectInput(taskFilter,0,cinput0);
+  mgr->ConnectInput(taskCorr,0,cinput0);
   
   mgr->ConnectOutput(taskFilter,1,coutputF0);
   mgr->ConnectOutput(taskFilter,2,coutputF1);
