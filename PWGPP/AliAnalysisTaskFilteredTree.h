@@ -60,7 +60,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void ProcessdEdx(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessLaser(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
-  void ProcessCosmics(AliESDEvent *const esdEvent=0); 
+  void ProcessCosmics(AliESDEvent *const esdEvent=0, AliESDfriend* esdFriend=0); 
 
   void SetEventCuts(AliFilteredTreeEventCuts* const cuts)              { fFilteredTreeEventCuts = cuts; }
   void SetAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts)    { fFilteredTreeAcceptanceCuts = cuts; }
