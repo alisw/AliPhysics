@@ -77,6 +77,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
@@ -133,6 +134,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
@@ -197,6 +199,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     Double_t patchADCGeV = patch->GetADCAmpGeVRough();
+    fh3PatchADCEnergyEtaPhiCenterAll->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
     if(patch->IsJetLow() && !patch->IsJetHigh()) { //main patch only fired low threshold trigger
       fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
       fh3PatchADCEnergyEtaPhiCenterJ2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
@@ -432,6 +435,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
+
+  fh3PatchADCEnergyEtaPhiCenterAll = new TH3F("fh3PatchADCEnergyEtaPhiCenterAll","fh3PatchADCEnergyEtaPhiCenterAll;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchADCEnergyEtaPhiCenterAll);
 
   fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3EEtaPhiCell);
