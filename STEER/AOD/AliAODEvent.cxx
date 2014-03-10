@@ -1053,6 +1053,10 @@ AliAODTrdTrack& AliAODEvent::AddTrdTrack(const AliVTrdTrack *track) {
 void AliAODEvent::ConnectTracks() {
 // Connect tracks to this event
   if (fTracksConnected || !fTracks || !fTracks->GetEntriesFast()) return;
+  if(!GetTrack(0)->InheritsFrom("AliAODTrack")) { // FIXME: consider using a dynamic_cast instead of InheritsFrom
+    AliWarning("Not an AliAODTrack, this is not a standard AOD"); 
+    return;
+  }
   AliAODTrack *track;
   TIter next(fTracks);
   while ((track=(AliAODTrack*)next())) track->SetAODEvent(this);
