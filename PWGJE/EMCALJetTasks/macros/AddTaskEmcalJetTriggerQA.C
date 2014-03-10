@@ -59,8 +59,14 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   AliAnalysisTaskRhoBase *rhoTask;
   if(rhoType==1) {
     rhoTask = AttachRhoTask(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus);
-    rhoTask->SetCentralityEstimator(CentEst);  
-    rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
+    if(rhoTask) {
+      rhoTask->SetCentralityEstimator(CentEst);  
+      rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
+    }
+    else {
+      Warning("AddTaskEmcalJetTriggerQA","Asked for rho task but configuration unknown. Continuing configuration without rho task.");
+      rhoType = 0;
+    }
   }
 
   TString wagonName = Form("TriggerQA_%s_%s_TC%s",strJets1.Data(),strJets2.Data(),trigClass.Data());
