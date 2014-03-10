@@ -134,8 +134,8 @@ updateQA()
       #it is possible we get the highPt trees from somewhere else
       #search the list of high pt trees for the proper run number
       if [[ -n ${inputListHighPtTrees} ]]; then
-        echo "loading the highPtTree from external file ${inputListHighPtTrees}"
         highPtTree=$(egrep -m1 ${runNumber} ${inputListHighPtTrees})
+        echo "loaded the highPtTree ${highPtTree} from external file ${inputListHighPtTrees}"
       fi
       
       echo qaFile=$qaFile
