@@ -57,6 +57,9 @@ void *AddTaskDFilterAndCorrelations(
   taskFilter->SetMC(theMCon); //D meson settings
   taskFilter->SetUseReco(reco);
   taskFilter->SetName("AliAnalysisTaskSEDmesonsFilterCJ");
+//  taskFilter->SetCaloTriggerPatchInfoName("EmcalTriggers");
+//  taskFilter->SetTriggerTypeSel(AliAnalysisTaskEmcal::kJ1);
+  
   mgr->AddTask(taskFilter);
   
     // create the task
@@ -71,7 +74,9 @@ void *AddTaskDFilterAndCorrelations(
   taskCorr->SetJetAcceptanceType(cutType);
   taskCorr->SetJetPtCut(jptcut);
   taskCorr->SetPercAreaCut(percjetareacut);
-  
+  taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
+  taskCorr->SetTriggerTypeSel(AliAnalysisTaskEmcal::kJ1);
+
   mgr->AddTask(taskCorr);
 
   if(theMCon) {
