@@ -296,6 +296,9 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     case kNSigma:
       returnvaluePID = IsSelectedPID(d);
       break;
+     case kNSigmaPbPb:
+      returnvaluePID = IsSelectedNSigmaPbPb(d);
+      break;
     case kCombined:
       returnvaluePID = IsSelectedCombinedPID(d);
       break;
@@ -512,6 +515,89 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedPID(AliAODRecoDecayHF* obj) {
 
  return returnvalue;
 }
+
+//--------------------------------------------------------------------------
+
+Int_t AliRDHFCutsLctopKpi::IsSelectedNSigmaPbPb(AliAODRecoDecayHF* obj) {
+
+
+  if(!fUsePID || !obj) return 3;
+  Int_t okLcpKpi=0,okLcpiKp=0;
+  Int_t returnvalue=0;
+  Bool_t isPeriodd=fPidHF->GetOnePad();
+  Bool_t isMC=fPidHF->GetMC();
+  Bool_t ispion0=kTRUE,ispion2=kTRUE;
+  Bool_t isproton0=kFALSE,isproton2=kFALSE;
+  Bool_t iskaon1=kFALSE;
+  if(isPeriodd) {
+    fPidObjprot->SetOnePad(kTRUE);
+    fPidObjpion->SetOnePad(kTRUE);
+  }
+  if(isMC) {
+    fPidObjprot->SetMC(kTRUE);
+    fPidObjpion->SetMC(kTRUE);
+  }
+
+  if(fPidObjprot->GetPidResponse()==0x0){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidObjprot->SetPidResponse(pidResp);
+  }
+  if(fPidObjpion->GetPidResponse()==0x0){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidObjpion->SetPidResponse(pidResp);
+  }
+  if(fPidHF->GetPidResponse()==0x0){
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+    AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
+    fPidHF->SetPidResponse(pidResp);
+  }
+
+  for(Int_t i=0;i<3;i++){
+    AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
+    if(!track) return 0;
+
+    if(i==1) {
+      //kaon
+      Int_t isKaon=fPidHF->MakeRawPid(track,3); 
+      if(isKaon>=1) iskaon1=kTRUE;
+      if(!iskaon1) return 0;
+    }
+
+    else {
+      //pion or proton
+      Int_t isProton=fPidObjprot->MakeRawPid(track,4);
+      Int_t isPion=fPidObjpion->MakeRawPid(track,2);
+
+      if(i==0) {
+	if(isPion<0) ispion0=kFALSE;
+	if(isProton>=1) isproton0=kTRUE;
+      }
+      if(!ispion0 && !isproton0) return 0;
+
+      if(i==2) {
+	if(isPion<0) ispion2=kFALSE;
+	if(isProton>=1) isproton2=kTRUE;
+      }
+    }
+  }
+
+  if(ispion2 && isproton0 && iskaon1) okLcpKpi=1;
+  if(ispion0 && isproton2 && iskaon1) okLcpiKp=1;
+  if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
+  if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
+  if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
+
+  return returnvalue;
+}
+
+
+
+
 //---------------------------------------------------------------------------
 Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
     
@@ -612,16 +698,20 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  esdTrackCuts->SetPtRange(0.3,1.e10);
  AddTrackCuts(esdTrackCuts);
 
- const Int_t nptbins=4;
+ const Int_t nptbins=8;
  const Int_t nvars=13;
  Float_t* ptbins;
  ptbins=new Float_t[nptbins+1];
  
- ptbins[0]=0.;
+ ptbins[0]=1.;
  ptbins[1]=2.;
  ptbins[2]=3.;
  ptbins[3]=4.;
- ptbins[4]=9999.;
+ ptbins[4]=5.;
+ ptbins[5]=6.;
+ ptbins[6]=8.;
+ ptbins[7]=10.;
+ ptbins[8]=20.;
 
  SetGlobalIndex(nvars,nptbins);
  SetPtBins(nptbins+1,ptbins);
@@ -633,12 +723,12 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  }
 
  for(Int_t ipt=0;ipt<nptbins;ipt++){
-  prodcutsval[0][ipt]=0.18;
+  prodcutsval[0][ipt]=0.13;
   prodcutsval[1][ipt]=0.4;
-  prodcutsval[2][ipt]=0.5;
+  prodcutsval[2][ipt]=0.4;
   prodcutsval[3][ipt]=0.;
   prodcutsval[4][ipt]=0.;
-  prodcutsval[5][ipt]=0.01;
+  prodcutsval[5][ipt]=0.;
   prodcutsval[6][ipt]=0.06;
   prodcutsval[7][ipt]=0.005;
   prodcutsval[8][ipt]=0.;
@@ -685,7 +775,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  SetPidprot(pidObjp);
 
  SetUsePID(kTRUE);
-
+ SetOptPileup(kTRUE);
+ 
  PrintAll();
 
  for(Int_t iiv=0;iiv<nvars;iiv++){
@@ -726,16 +817,21 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  esdTrackCuts->SetPtRange(0.49,1.e10);
  AddTrackCuts(esdTrackCuts);
 
- const Int_t nptbins=4;
+ const Int_t nptbins=8;
  const Int_t nvars=13;
  Float_t* ptbins;
  ptbins=new Float_t[nptbins+1];
  
- ptbins[0]=0.;
+ ptbins[0]=1.;
  ptbins[1]=2.;
  ptbins[2]=3.;
  ptbins[3]=4.;
- ptbins[4]=9999.;
+ ptbins[4]=5.;
+ ptbins[5]=6.;
+ ptbins[6]=8.;
+ ptbins[7]=10.;
+ ptbins[8]=99999.;
+
 
  SetGlobalIndex(nvars,nptbins);
  SetPtBins(nptbins+1,ptbins);
@@ -763,39 +859,24 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  }
  SetCuts(nvars,nptbins,prodcutsval);
 
- AliAODPidHF* pidObjK=new AliAODPidHF();
- Double_t sigmasK[5]={3.,1.,1.,3.,2.};
- pidObjK->SetSigma(sigmasK);
- pidObjK->SetAsym(kTRUE);
- pidObjK->SetMatch(1);
- pidObjK->SetTPC(kTRUE);
- pidObjK->SetTOF(kTRUE);
- pidObjK->SetITS(kTRUE);
- Double_t plimK[2]={0.5,0.8};
- pidObjK->SetPLimit(plimK,2);
+ AliAODPidHF* pidObj=new AliAODPidHF();
+ pidObj->SetTPC(kTRUE);
+ pidObj->SetTOF(kTRUE);
+ SetPidHF(pidObj);
+ SetPidpion(pidObj);
+ SetPidprot(pidObj);
 
- SetPidHF(pidObjK);
 
- AliAODPidHF* pidObjpi=new AliAODPidHF();
- pidObjpi->SetTPC(kTRUE);
- Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
- pidObjpi->SetSigma(sigmaspi);
- SetPidpion(pidObjpi);
-
- AliAODPidHF* pidObjp=new AliAODPidHF();
- Double_t sigmasp[5]={3.,1.,1.,3.,2.};
- pidObjp->SetSigma(sigmasp);
- pidObjp->SetAsym(kTRUE);
- pidObjp->SetMatch(1);
- pidObjp->SetTPC(kTRUE);
- pidObjp->SetTOF(kTRUE);
- pidObjp->SetITS(kTRUE);
- Double_t plimp[2]={1.,2.};
- pidObjp->SetPLimit(plimp,2);
-
- SetPidprot(pidObjp);
-
+ // bayesian pid
+ GetPidHF()->SetUseCombined(kTRUE);
+ GetPidHF()->SetUseDefaultPriors(kTRUE);
+ GetPidHF()->SetCombDetectors(AliAODPidHF::kTPCTOF);
+ for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies){
+   SetPIDThreshold(static_cast<AliPID::EParticleType>(ispecies),0);
+ }
+ SetPIDStrategy(AliRDHFCutsLctopKpi::kCombinedpPb);
  SetUsePID(kTRUE);
+
 
  PrintAll();
 
@@ -807,12 +888,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  delete [] ptbins;
  ptbins=NULL;
 
- delete pidObjK;
- pidObjK=NULL;
- delete pidObjpi;
- pidObjpi=NULL;
- delete pidObjp;
- pidObjp=NULL;
+ delete pidObj;
+ pidObj=NULL;
 
  return;
 }
@@ -1203,5 +1280,118 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj) {
   }
   return returnvalue;
 
+}
+//------------------------------------------------------
+void AliRDHFCutsLctopKpi::SetStandardCutsPPb2013() {
+
+ SetName("LctopKpiProdCuts");
+ SetTitle("Production cuts for Lc analysis");
+
+ AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+ esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+ esdTrackCuts->SetRequireTPCRefit(kTRUE);
+ esdTrackCuts->SetMinNClustersTPC(70);
+ esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                          AliESDtrackCuts::kAny);
+ esdTrackCuts->SetRequireITSRefit(kTRUE);
+ esdTrackCuts->SetMinNClustersITS(4);
+ esdTrackCuts->SetMinDCAToVertexXY(0.);
+ esdTrackCuts->SetEtaRange(-0.8,0.8);
+ esdTrackCuts->SetPtRange(0.3,1.e10);
+ AddTrackCuts(esdTrackCuts);
+ 
+ const Int_t nvars=13;
+ const Int_t nptbins=9;
+ Float_t* ptbins;
+ ptbins=new Float_t[nptbins+1];
+ ptbins[0]=0.;
+ ptbins[1]=1.;
+ ptbins[2]=2.;
+ ptbins[3]=3.;
+ ptbins[4]=4.;
+ ptbins[5]=5.;
+ ptbins[6]=6.;
+ ptbins[7]=8.;
+ ptbins[8]=10.;  
+ ptbins[9]=99999.;
+
+ SetGlobalIndex(nvars,nptbins);
+ SetPtBins(nptbins+1,ptbins);
+
+ Float_t** prodcutsval;
+ prodcutsval=new Float_t*[nvars];
+ for(Int_t iv=0;iv<nvars;iv++){
+  prodcutsval[iv]=new Float_t[nptbins];
+ }
+
+ for(Int_t ipt=0;ipt<nptbins;ipt++){
+    prodcutsval[0][ipt]=0.13;
+    prodcutsval[1][ipt]=0.4;
+    prodcutsval[2][ipt]=0.4;
+    prodcutsval[3][ipt]=0.;
+    prodcutsval[4][ipt]=0.;
+    prodcutsval[5][ipt]=0.;
+    prodcutsval[6][ipt]=0.06;
+    prodcutsval[7][ipt]=0.;
+    prodcutsval[8][ipt]=0.;
+    prodcutsval[9][ipt]=0.;
+    prodcutsval[10][ipt]=0.;
+    prodcutsval[11][ipt]=0.05;
+    prodcutsval[12][ipt]=0.4;
+ }
+ SetCuts(nvars,nptbins,prodcutsval);
+
+ AliAODPidHF* pidObjK=new AliAODPidHF();
+ Double_t sigmasK[5]={3.,1.,1.,3.,2.};
+ pidObjK->SetSigma(sigmasK);
+ pidObjK->SetAsym(kTRUE);
+ pidObjK->SetMatch(1);
+ pidObjK->SetTPC(kTRUE);
+ pidObjK->SetTOF(kTRUE);
+ pidObjK->SetITS(kTRUE);
+ Double_t plimK[2]={0.5,0.8};
+ pidObjK->SetPLimit(plimK,2);
+ pidObjK->SetTOFdecide(kTRUE);
+ SetPidHF(pidObjK);
+
+ AliAODPidHF* pidObjpi=new AliAODPidHF();
+ pidObjpi->SetTPC(kTRUE);
+ Double_t sigmaspi[5]={3.,0.,0.,0.,0.};
+ pidObjpi->SetSigma(sigmaspi);
+ pidObjpi->SetTOFdecide(kTRUE);
+ SetPidpion(pidObjpi);
+
+ AliAODPidHF* pidObjp=new AliAODPidHF();
+ Double_t sigmasp[5]={3.,1.,1.,3.,2.};
+ pidObjp->SetSigma(sigmasp);
+ pidObjp->SetAsym(kTRUE);
+ pidObjp->SetMatch(1);
+ pidObjp->SetTPC(kTRUE);
+ pidObjp->SetTOF(kTRUE);
+ pidObjp->SetITS(kTRUE);
+ Double_t plimp[2]={1.,2.};
+ pidObjp->SetPLimit(plimp,2);
+ pidObjp->SetTOFdecide(kTRUE);
+
+ SetUsePID(kTRUE);
+
+ PrintAll();
+
+ for(Int_t iiv=0;iiv<nvars;iiv++){
+  delete [] prodcutsval[iiv];
+ }
+ delete [] prodcutsval;
+ prodcutsval=NULL;
+ delete [] ptbins;
+ ptbins=NULL;
+
+ delete pidObjK;
+ pidObjK=NULL;
+ delete pidObjpi;
+ pidObjpi=NULL;
+ delete pidObjp;
+ pidObjp=NULL;
+
+ return;
 }
 
