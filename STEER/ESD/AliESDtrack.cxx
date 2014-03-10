@@ -2891,7 +2891,7 @@ Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double
   return 0;
 }
 
-Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
+Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) {
   //
   // Numerical code to calculate the length of the track in active region of the TPC
   // ( can be speed up if somebody wants to invest time - analysical version shoult be possible) 
