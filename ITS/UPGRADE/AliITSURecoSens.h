@@ -15,12 +15,15 @@ class AliITSURecoSens : public TObject
 {
  public:
   //
+  enum {kLeft=BIT(1),kRight=BIT(2),kUp=BIT(3),kDown=BIT(4)};
+  //
   AliITSURecoSens(Int_t id);
   AliITSURecoSens(const AliITSURecoSens &source); 
   virtual ~AliITSURecoSens() {}
   AliITSURecoSens& operator=(const AliITSURecoSens &source); 
   //
   Int_t              GetID()                       const {return (int)GetUniqueID();}
+  Int_t              CheckCoverage(const double* impPar) const;
   Double_t           GetXTF()                      const {return fXTF;}
   Double_t           GetPhiTF()                    const {return fPhiTF;}
   Double_t           GetPhiMin()                   const {return fPhiMin;}

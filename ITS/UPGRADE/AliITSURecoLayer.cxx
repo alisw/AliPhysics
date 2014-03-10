@@ -230,6 +230,8 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   //
   AliITSURecoSens* sensN,*sens = GetSensor(sesnID);
   //
+  int res = sens->CheckCoverage(impPar);
+
   // make sure this is best matching sensor
   if (sens->GetZMin()<impPar[2] && sens->GetZMax()>impPar[2] && 
       OKforPhiMin(sens->GetPhiMin(),impPar[0]) && OKforPhiMax(sens->GetPhiMax(),impPar[0]) ) 
