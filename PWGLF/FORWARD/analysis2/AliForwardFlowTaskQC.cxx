@@ -211,11 +211,13 @@ void AliForwardFlowTaskQC::InitVertexBins()
     Int_t vH = Int_t(fVtxAxis->GetBinUpEdge(v));
     if ((fFlowFlags & kFMD)) {
       fBinsForward.Add(new VertexBin(vL, vH, fMaxMoment, "FMD", fFlowFlags, fFMDCut, fEtaGap));
-      if (!(fFlowFlags & k3Cor)) fBinsCentral.Add(new VertexBin(vL, vH, fMaxMoment, "SPD-FMD", fFlowFlags|kNUAcorr|kSPD, fSPDCut, fEtaGap));
+      if (!(fFlowFlags & k3Cor)) 
+	fBinsCentral.Add(new VertexBin(vL, vH, fMaxMoment, "SPD-FMD", fFlowFlags|kNUAcorr|kSPD, fSPDCut, fEtaGap));
     }
     else if ((fFlowFlags & kVZERO)) {
       fBinsForward.Add(new VertexBin(vL, vH, fMaxMoment, "VZERO", fFlowFlags, 0, fEtaGap));
-      if ((fFlowFlags & kEtaGap)) fBinsCentral.Add(new VertexBin(vL, vH, fMaxMoment, "SPD-VZERO", fFlowFlags|kNUAcorr|kSPD, fSPDCut, fEtaGap));
+      if ((fFlowFlags & kEtaGap) && !(fFlowFlags & kTPC)) 
+	fBinsCentral.Add(new VertexBin(vL, vH, fMaxMoment, "SPD-VZERO", fFlowFlags|kNUAcorr|kSPD, fSPDCut, fEtaGap));
     }
   }
 }
@@ -434,7 +436,15 @@ void AliForwardFlowTaskQC::FillVtxBinListEtaGap(const TList& list, TH2D& href,
   Int_t nVtxBins = fVtxAxis->GetNbins();
 
   while ((bin = static_cast<VertexBin*>(list.At(vtx+(nVtxBins*i))))) {
-    if (!bin->FillHists(href, fCent, kFillRef|flags|kReset)) return;
+    if (!(fFlowFlags & kTPC) && !bin->FillHists(href, fCent, kFillRef|flags|kReset)) return;
+    else if ((fFlowFlags & kTPC)) {
+      TObjArray* trList = GetTracks();
+      if (!trList) return;
+      Bool_t useEvent = bin->FillTracks(trList, kFillRef|kReset|flags);
+      // If esd input trList is a new object owned by this task and should be cleaned up
+      if (AliForwardUtil::CheckForAOD() == 2) delete trList;
+      if (!useEvent) return;
+    }
     bin->FillHists(hdiff, fCent, kFillDiff|kReset);
     bin->CumulantsAccumulate(fCent);
     i++;
@@ -865,6 +875,11 @@ Bool_t AliForwardFlowTaskQC::GetVertex(const AliAODForwardMult* aodfm)
 // _____________________________________________________________________
 AliVVZERO* AliForwardFlowTaskQC::GetVZERO() const
 {
+  //
+  //  Get VZERO object from ESD or AOD
+  //
+  //  Return: VZERO data object
+  //
   AliVVZERO* vzero = 0;
   // Get input type
   UShort_t input = AliForwardUtil::CheckForAOD();
@@ -1313,8 +1328,8 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, UShort_t m
   if (nTr == 0) return kFALSE;
   AliVTrack* tr = 0;
   AliAODTrack* aodTr = 0;
-  // Cuts for AOD tracks (have already been applied to ESD tracks)
-  const Double_t pTMin = 0.2, pTMax = 5., etaMin = -0.8, etaMax = 0.8, minNCl = 70;
+  // Cuts for AOD tracks (have already been applied to ESD tracks) - except dEdx
+  const Double_t pTMin = 0.2, pTMax = 5., etaMin = -0.8, etaMax = 0.8, minNCl = 70, tpcdEdx = 10.;
   for (Int_t i = 0; i < nTr; i++) { // track loop
     tr = (AliVTrack*)trList->At(i);
     if (!tr) continue;
@@ -1325,9 +1340,10 @@ Bool_t AliForwardFlowTaskQC::VertexBin::FillTracks(TObjArray* trList, UShort_t m
       if (!aodTr->TestFilterBit(128) || !aodTr->Pt() > pTMax || aodTr->Pt() < pTMin || 
 	aodTr->Eta() > etaMax || aodTr->Eta() < etaMin || aodTr->GetTPCNcls() < minNCl) continue;
     }
+    if (tr->GetTPCsignal() < tpcdEdx) continue;
     // Track accepted
     Double_t eta = tr->Eta();
-    if ((fFlags & kSPD) && TMath::Abs(eta) < fEtaGap) continue;
+    if (((fFlags & kSPD) || (fFlags & kEtaGap)) && TMath::Abs(eta) < fEtaGap) continue;
     Double_t phi = tr->Phi();
     if ((mode & kFillRef)) {
       fCumuRef->Fill(eta, 0.);// mult goes in underflowbin - no visual, but not needed?
@@ -1371,7 +1387,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
   for (Int_t etaBin = 1; etaBin <= fCumuRef->GetNbinsX(); etaBin++) {
     Double_t eta = fCumuRef->GetXaxis()->GetBinCenter(etaBin);
     if (fCumuRef->GetBinContent(etaBin, 0) == 0) continue;
-    if ((fFlags & kTPC) && (fFlags && kSPD)) eta = -eta;
+    if ((fFlags & kTPC) && (fFlags && kSPD) && !(fFlags & kEtaGap)) eta = -eta;
     for (Int_t qBin = 0; qBin <= fCumuRef->GetNbinsY(); qBin++) {
       fCumuNUARef->Fill(eta, cent, Double_t(qBin), fCumuRef->GetBinContent(etaBin, qBin));
     }
@@ -1403,7 +1419,7 @@ void AliForwardFlowTaskQC::VertexBin::CumulantsAccumulate(Double_t cent)
     for (Int_t etaBin = 1; etaBin <= fCumuDiff->GetNbinsX(); etaBin++) {
       Double_t eta = fCumuDiff->GetXaxis()->GetBinCenter(etaBin);
       Double_t refEta = eta;
-      if ((fFlags & kTPC) && (fFlags && kSPD)) refEta = -eta;
+      if ((fFlags & kTPC) && (fFlags && kSPD) && !(fFlags & kEtaGap)) refEta = -eta;
       Int_t refEtaBinA = fCumuRef->GetXaxis()->FindBin(refEta);
       if ((fFlags & kEtaGap)) refEta = -eta;
       Int_t refEtaBinB = fCumuRef->GetXaxis()->FindBin(refEta);
@@ -2287,7 +2303,10 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
 	    sin2nPhiB += fCumuNUARef->GetBinContent(b, cBin, GetBinNumberSin(2*n));
 	    multB += fCumuNUARef->GetBinContent(b, cBin, 0);
 	  }
-	  if (multA == 0 || multB == 0) AliFatal("Empty NUA values for 3Cor!");
+	  if (multA == 0 || multB == 0) {
+	    AliWarning(Form("Empty NUA values for 3Cor! (%s)", cumuRef->GetName()));
+	    continue;
+	  }
 	  cosP1nPhiA /= multA;
 	  sinP1nPhiA /= multA;
 	  cos2nPhiA /= multA;
@@ -2354,8 +2373,8 @@ void AliForwardFlowTaskQC::VertexBin::Calculate3CorFlow(CumuHistos& cumu2h, TH2I
 	  qc2PrimeA -= cosP1nPsi*cosP1nPhiA + sinP1nPsi*sinP1nPhiA;
 	  qc2PrimeB -= cosP1nPsi*cosP1nPhiB + sinP1nPsi*sinP1nPhiB; // Is this OK?
 	  // Extra NUA term from 2n cosines and sines
-	  qc2PrimeA /= (1.-(cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA));
-	  qc2PrimeB /= (1.-(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
+	  if (cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA != 1.) qc2PrimeA /= (1.-(cos2nPsi*cos2nPhiA + sin2nPsi*sin2nPhiA));
+	  if (cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB != 1.) qc2PrimeB /= (1.-(cos2nPsi*cos2nPhiB + sin2nPsi*sin2nPhiB));
 	}
 	if (!TMath::IsNaN(qc2PrimeA) && !TMath::IsNaN(qc2PrimeB) && qc2 != 0) {
 	if (qc2PrimeA*qc2PrimeB >= 0) {
@@ -2800,9 +2819,9 @@ void AliForwardFlowTaskQC::PrintFlowSetup() const
   for (Int_t n  = 2; n <= fMaxMoment; n++) printf("v%d ", n);
   printf("\n");
   TString type = "Standard QC{2} and QC{4} calculations.";
-  if ((fFlowFlags & kTPC)) type.ReplaceAll(".", " with TPC tracks for reference.");
   if ((fFlowFlags & kEtaGap)) type = "QC{2} with a rapidity gap.";
   if ((fFlowFlags & k3Cor))   type = "QC{2} with 3 correlators.";
+  if ((fFlowFlags & kTPC)) type.ReplaceAll(".", " with TPC tracks for reference.");
   Printf("QC calculation type               :\t%s", type.Data());
   Printf("Symmetrize ref. flow wrt. eta = 0 :\t%s", ((fFlowFlags & kSymEta) ? "true" : "false"));
   Printf("Apply NUA correction terms        :\t%s", ((fFlowFlags & kNUAcorr) ? "true" : "false"));
