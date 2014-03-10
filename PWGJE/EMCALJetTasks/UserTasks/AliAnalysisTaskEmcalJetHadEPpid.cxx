@@ -298,7 +298,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
   for(Int_t ipta=0; ipta<7; ++ipta){ 
     for(Int_t ilab=0; ilab<4; ++ilab){
-      sprintf(name, "fHistTrackEtaPhi_%i_%i", ilab,ipta);
+      snprintf(name,200, "fHistTrackEtaPhi_%i_%i", ilab,ipta);
       fHistTrackEtaPhi[ilab][ipta] = new TH2F(name,name,400,-1,1,640,0.0,2.*TMath::Pi());
 ///      fOutput->Add(fHistTrackEtaPhi[ilab][ipta]);
     } // end of lab loop
@@ -307,51 +307,51 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
 
   // jet hadron (binned) correlations in dPHI
   for(Int_t itrackpt=0; itrackpt<9; itrackpt++){
-    sprintf(name,"fHistJetHadbindPhi_%i",itrackpt);
+    snprintf(name,200,"fHistJetHadbindPhi_%i",itrackpt);
     fHistJetHadbindPhi[itrackpt] = new TH1F(name,name,128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
     fOutput->Add(fHistJetHadbindPhi[itrackpt]);
 
-    sprintf(name,"fHistJetHadbindPhiIN_%i",itrackpt);
+    snprintf(name,200,"fHistJetHadbindPhiIN_%i",itrackpt);
     fHistJetHadbindPhiIN[itrackpt] = new TH1F(name,name,128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
     fOutput->Add(fHistJetHadbindPhiIN[itrackpt]);
 
-    sprintf(name,"fHistJetHadbindPhiMID_%i",itrackpt);
+    snprintf(name,200,"fHistJetHadbindPhiMID_%i",itrackpt);
     fHistJetHadbindPhiMID[itrackpt] = new TH1F(name,name,128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
     fOutput->Add(fHistJetHadbindPhiMID[itrackpt]);
 
-    sprintf(name,"fHistJetHadbindPhiOUT_%i",itrackpt);
+    snprintf(name,200,"fHistJetHadbindPhiOUT_%i",itrackpt);
     fHistJetHadbindPhiOUT[itrackpt] = new TH1F(name,name,128,-0.5*TMath::Pi(), 1.5*TMath::Pi());
     fOutput->Add(fHistJetHadbindPhiOUT[itrackpt]);
   } // end of trackpt bin loop
 
   for(Int_t icent = 0; icent<2; ++icent){
-    sprintf(name,"fHistJetPt_%i",icent);
+    snprintf(name,200,"fHistJetPt_%i",icent);
     fHistJetPt[icent] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistJetPt[icent]);
 
-    sprintf(name,"fHistJetPtBias_%i",icent);
+    snprintf(name,200,"fHistJetPtBias_%i",icent);
     fHistJetPtBias[icent] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistJetPtBias[icent]);
 
-    sprintf(name,"fHistJetPtTT_%i",icent);
+    snprintf(name,200,"fHistJetPtTT_%i",icent);
     fHistJetPtTT[icent] = new TH1F(name,name,200,0,200);
     fOutput->Add(fHistJetPtTT[icent]);
 
-    sprintf(name,"fHistAreavsRawPt_%i",icent);
+    snprintf(name,200,"fHistAreavsRawPt_%i",icent);
     fHistAreavsRawPt[icent] = new TH2F(name,name,100,0,1,200,0,200);
     //fOutput->Add(fHistAreavsRawPt[icent]);
 
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){
-        sprintf(name,"fHistJetH_%i_%i_%i",icent,iptjet,ieta);
+        snprintf(name,200,"fHistJetH_%i_%i_%i",icent,iptjet,ieta);
         fHistJetH[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
         fOutput->Add(fHistJetH[icent][iptjet][ieta]);
 
-        sprintf(name,"fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);
+        snprintf(name,200,"fHistJetHBias_%i_%i_%i",icent,iptjet,ieta);
         fHistJetHBias[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
         fOutput->Add(fHistJetHBias[icent][iptjet][ieta]);
 
-        sprintf(name,"fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);
+        snprintf(name,200,"fHistJetHTT_%i_%i_%i",icent,iptjet,ieta);
         fHistJetHTT[icent][iptjet][ieta]=new TH2F(name,name,64,-0.5*TMath::Pi(),1.5*TMath::Pi(),300,0,30);
         fOutput->Add(fHistJetHTT[icent][iptjet][ieta]);
       } // end of eta loop
@@ -520,13 +520,15 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   if(!inputHandler) {
-        AliFatal("Input handler needed");
+        AliError("Input handler needed");
+	return;
   }
 
   // PID response object
   fPIDResponse = inputHandler->GetPIDResponse();
   if (!fPIDResponse) {
         AliError("PIDResponse object was not created");
+	return;
   }
 
   // ****************************************************************************************
@@ -686,6 +688,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   TList *list = InputEvent()->GetList();
   if(!list) {
     AliError(Form("ERROR: list not attached\n"));
+    return kFALSE;
   }
 
   // initialize TClonesArray pointers to jets and tracks
@@ -926,14 +929,16 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         Double_t tracketa=track->Eta();   // eta of track
         Double_t deta=tracketa-jeteta;    // dETA between track and jet
         Int_t ieta=GetEtaBin(deta);       // bin of eta
+	if(ieta<0) continue;
 
         // dPHI between jet and hadron
         Double_t dphijh = RelativePhi(jet->Phi(), track->Phi()); // angle between jet and hadron
 
         // jet pt bins
-        Int_t iptjet=-1;                  // initialize jet pT bin
+        //Int_t iptjet=-1;                  // initialize jet pT bin
 //        iptjet=GetpTjetBin(jetPt);        // bin of jet pT
-        iptjet=GetpTjetBin(jet->Pt());
+        Int_t iptjet=GetpTjetBin(jet->Pt());
+	if(iptjet<0) continue;
         Double_t dR=sqrt(deta*deta+dphijh*dphijh);                   // difference of R between jet and hadron track
 
         // fill some jet-hadron histo's
