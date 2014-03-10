@@ -30,7 +30,7 @@ AliAnalysisTask *AddTaskTrackingUncert() {
   AliAnalysisDataContainer *coutput0 = mgr->CreateContainer("dummyTreeUncert",TTree::Class(),AliAnalysisManager::kExchangeContainer,"defaultTreeUncert");
 
   //define output containers
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackingUncert", TList::Class(),AliAnalysisManager::kOutputContainer,"trackingUncert.root");
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("trackingUncert", TList::Class(),AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
 
   //connect containers
   mgr->ConnectInput  (task, 0, cinput );
