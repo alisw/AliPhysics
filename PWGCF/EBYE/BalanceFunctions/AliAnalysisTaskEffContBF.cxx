@@ -348,8 +348,10 @@ void AliAnalysisTaskEffContBF::UserExec(Option_t *) {
     
     // AOD only
     AliAODMCHeader* header = (AliAODMCHeader*) fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if (!header)
+    if (!header){
       AliFatal("fInjectedSignals set but no MC header found");
+      return;
+    }
     
     headers = header->GetNCocktailHeaders();
     eventHeader = header->GetCocktailHeader(0);
