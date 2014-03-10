@@ -303,10 +303,10 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
   case -1000020030:
     return "#bar{^{3}He}";
   case 1010010030:
-    if(fIsSum) return "^{3}_{#Lambda}He + #bar{^{3}_{#Lambda}He}";
-    return "^{3}_{#Lambda}He";
+    if(fIsSum) return "^{3}_{#Lambda}H + #bar{^{3}_{#Lambda}H}";
+    return "^{3}_{#Lambda}H";
   case -1010010030:
-    return "#bar{^{3}_{#Lambda}He}";    
+    return "#bar{^{3}_{#Lambda}H}";    
   }
   AliWarning("Latex Name not know for this particle");
   return fPartName.Data();

@@ -338,6 +338,19 @@ Bool_t AliCFVertexingHF2Prong::CheckMCChannelDecay() const
 		AliDebug(2, "The D0 MC doesn't come from a Kpi decay, skipping!!");
 		return checkCD;  
 	}
+
+	Double_t sumPxDau=mcPartDaughter0->Px()+mcPartDaughter1->Px();
+	Double_t sumPyDau=mcPartDaughter0->Py()+mcPartDaughter1->Py();
+	Double_t sumPzDau=mcPartDaughter0->Pz()+mcPartDaughter1->Pz();
+	Double_t pxMother=fmcPartCandidate->Px();
+	Double_t pyMother=fmcPartCandidate->Py();
+	Double_t pzMother=fmcPartCandidate->Pz();
+	if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
+	   TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
+	   TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+	  AliDebug(2, "Momentum conservation violated, skipping!!");
+	  return checkCD;  
+	}
 	
 	checkCD = kTRUE;
 	return checkCD;

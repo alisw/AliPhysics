@@ -161,6 +161,16 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   }
   TClonesArray &pool=*poolp;
 
+  // clear the current pool if its size was reached by last event
+  // clear before fill new event into it
+  // NOTE: clear not directly after DoMixing, because you may want to use the ME
+  // in the internal train by other configs/tasks
+  // reset the event pool size to 1 (this keeps the physical memory consumption low)
+  if(pool.GetEntriesFast()==fDepth)  {
+    pool.Clear("C");
+    pool.ExpandCreate(1);
+  }
+
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
   AliDielectronEvent *event=new(pool[pool.GetEntriesFast()]) AliDielectronEvent();
   if(ev->IsA() == AliAODEvent::Class()) event->SetAOD(TMath::Max(diele->GetTrackArray(0)->GetEntriesFast(),diele->GetTrackArray(1)->GetEntriesFast()));
@@ -181,10 +191,7 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
     diele->fHistos->Fill("Mixing","Stats",0);
     diele->fHistos->Fill("Mixing","CompletePools",bin);
   }
-  
-  //clear the current pool and release memory
-  pool.Clear("C");
-	pool.ExpandCreate(1);
+
 }
 
 //______________________________________________
@@ -305,7 +312,7 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
 }
 
 //______________________________________________
-void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
+void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele, Int_t ipool)
 {
   //
   // mix all pools even if they are incomplete
@@ -315,9 +322,8 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
   if (!diele || !diele->PairArray(0) || !fMixIncomplete ) return;
 
   AliDielectronVarManager::SetEvent(0x0);
-  for (Int_t ipool=0; ipool<fArrPools.GetSize(); ++ipool){
     TClonesArray *poolp=static_cast<TClonesArray*>(fArrPools.At(ipool));
-    if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) continue;
+    if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) return;
     //clear the arrays before the final processing"
     AliDebug(10,Form("Incomplete: Bin %d (%d)\n",ipool,poolp->GetEntriesFast()));
     diele->ClearArrays();
@@ -344,7 +350,6 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele)
       AliDielectronVarManager::SetEventData(values);
     }
     
-  }
 }
 
 
