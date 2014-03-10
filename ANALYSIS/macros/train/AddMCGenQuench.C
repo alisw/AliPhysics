@@ -55,14 +55,14 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
     
   //for jet quenching with QPYTHIA
   if (fpythia == 1){
-    genP->SetTune(110); //tune A, standard choice for Q2 showers
+    genP->SetTune(103); //tune DW, standard choice for Q2 showers
     genP->SetQuench(4);
     genP->SetQhat(quench); 
   }
 
   //for pyquen afterburner
   if (fpythia == 2){
-    genP->SetTune(110); //tune A, standard choice for Q2 showers
+    genP->SetTune(103); //tune DW, standard choice for Q2 showers
     genP->SetQuench(2);
   }
 
