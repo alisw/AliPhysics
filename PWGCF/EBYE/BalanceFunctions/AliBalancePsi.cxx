@@ -1971,9 +1971,17 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       if(fMixed && normToTrig && fMixed->Integral()>0){
 	
 	// normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
-	// do it only on away-side (due to two-track cuts)
-	Double_t mixedNorm = fMixed->Integral(fMixed->GetXaxis()->FindBin(0-10e-5),fMixed->GetXaxis()->FindBin(0+10e-5),fMixed->GetNbinsY()/2+1,fMixed->GetNbinsY());
-	mixedNorm /= 0.5 * fMixed->GetNbinsY() *(fMixed->GetXaxis()->FindBin(0.01) - fMixed->GetXaxis()->FindBin(-0.01) + 1);
+	// do it only on away-side (due to two-track cuts): pi +- pi/3.
+
+	Int_t binXmin  = fMixed->GetXaxis()->FindBin(0-10e-5);
+	Int_t binXmax  = fMixed->GetXaxis()->FindBin(0+10e-5);
+	Double_t binsX = (Double_t)(binXmax - binXmin + 1);
+	Int_t binYmin  = fMixed->GetYaxis()->FindBin(2./3.*TMath::Pi());
+	Int_t binYmax  = fMixed->GetYaxis()->FindBin(4./3.*TMath::Pi());
+	Double_t binsY = (Double_t)(binYmax - binYmin + 1);
+	
+	Double_t mixedNorm = fMixed->Integral(binXmin,binXmax,binYmin,binYmax);
+	mixedNorm /= binsX * binsY;
 
 	// finite bin correction
 	Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());

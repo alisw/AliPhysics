@@ -22,7 +22,7 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
   virtual ~AliRsnCutDaughterD0() { }
 
   void           SetNoPID(Bool_t yn = kTRUE)                  {fNoPID = yn;}
-
+  void           SetPtDependentPIDCut(Bool_t yn = kTRUE)      {fPtDepPIDCut = yn;}
   void           SetPID(AliPID::EParticleType type)           {fPID = type;}
    
   void           SetTPCPionPIDCut(Double_t value)             {fPionTPCPIDCut = value;}
@@ -45,8 +45,9 @@ class AliRsnCutDaughterD0 : public AliRsnCut {
   Double_t         fKaonTPCPIDCut;                // TPC nsigmas for kaons
   Double_t         fPionTOFPIDCut;                // TOF nsigmas for pions
   Double_t         fKaonTOFPIDCut;                // TOF nsigmas for kaons
+  Bool_t           fPtDepPIDCut;                  // flag for setting a pt dependent or independent PID cut
 
-  ClassDef(AliRsnCutDaughterD0,1)          // cut definitions for D0
+  ClassDef(AliRsnCutDaughterD0, 2)          // cut definitions for D0
     };
 
 //__________________________________________________________________________________________________

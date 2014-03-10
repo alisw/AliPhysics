@@ -55,14 +55,16 @@ public:
   };
 
   enum Comb_t {
+    // ok
     kNothing = 1,
+    kFiredCondition,
+    kTriggeredFiredCondition,
+    // not ok
     kTriggered,
     kFired,
     kCondition,
     kTriggeredFired,
     kTriggeredCondition,
-    kFiredCondition,
-    kTriggeredFiredCondition,
     kLastComb
   };
 

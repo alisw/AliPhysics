@@ -69,6 +69,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   void GetGlobalPositionAtGlobalRadiiThroughTPC(AliESDtrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
   void SetMagneticFieldSign(int s);
   void SetKaonAnalysis(Bool_t);
+  void SetProtonAnalysis(Bool_t);
   void SetOnlyPrimaries(Bool_t);
 
  protected:
@@ -97,6 +98,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   int            fMagFieldSign;     // Magnetic field sign
   bool           fReadV0;
   Bool_t isKaonAnalysis; // switch for Kaon analysis
+  Bool_t isProtonAnalysis; // switch for Proton analysis
   Bool_t fOnlyPrimaries; // switch to analyze only primaries
 
 #ifdef __ROOT__

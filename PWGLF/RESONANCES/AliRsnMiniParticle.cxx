@@ -70,8 +70,10 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
        AliVVertex *vertex = (AliVVertex*) aodEvent->GetPrimaryVertex();
        Double_t b[2], cov[3]; 
        if (vertex) {
-	 track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov); 
-	 fDCA = b[0];
+	 if ( !((track->GetStatus() & AliESDtrack::kTPCin) == 0) && !((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) && !((track->GetStatus() & AliESDtrack::kITSrefit) == 0) ){
+	   track->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b, cov); 
+	   fDCA = b[0];
+	 }
        }
      }
      // Number of Daughters from MC and Momentum of the Mother
@@ -94,8 +96,10 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	 AliVVertex *vertex = (AliVVertex*) esdEvent->GetPrimaryVertex();
 	 Double_t b[2], cov[3]; 
 	 if (vertex) {
+	   if ( !((track->GetStatus() & AliESDtrack::kTPCin) == 0) && !((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) && !((track->GetStatus() & AliESDtrack::kITSrefit) == 0) ){
 	   track->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b, cov); 
 	   fDCA = b[0];
+	   }
 	 }
        }
        // Number of Daughters from MC and Momentum of the Mother

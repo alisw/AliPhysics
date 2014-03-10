@@ -1,0 +1,4 @@
+This folder and library is supposed to be used only for a large scale testing of a prototype nanoAOD implementation. 
+Please do not use it for any real work until is in "devel" stage.
+
+Michele Floris, March 6, 2014

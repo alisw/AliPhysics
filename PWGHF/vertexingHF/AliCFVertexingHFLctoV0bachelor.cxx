@@ -422,7 +422,11 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
   // check the required decay channel
 
   Bool_t checkCD = kFALSE;
-  
+  Double_t sumPxDau=0.;
+  Double_t sumPyDau=0.;
+  Double_t sumPzDau=0.;
+
+ 
   if (fmcPartCandidate->GetNDaughters()!=2) {
     AliDebug(2, Form("The MC particle doesn't decay in 2 particles, skipping!!"));
     return checkCD;
@@ -460,6 +464,10 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       AliDebug(2,"Problems in the MC Daughters\n");
       return checkCD;
     }
+    // momentum of the bachelor
+    sumPxDau+=mcPartDaughter0->Px();
+    sumPyDau+=mcPartDaughter0->Py();
+    sumPzDau+=mcPartDaughter0->Pz();
 
     if (mcPartDaughter1->GetNDaughters()!=2) {
       AliDebug(2, "The Lambda MC particle doesn't decay in 2 particles, skipping!!");
@@ -488,6 +496,14 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       return checkCD;
     }
 
+    // momentum of the V0 daughters
+    sumPxDau+=mcPartDaughter1D0->Px();
+    sumPyDau+=mcPartDaughter1D0->Py();
+    sumPzDau+=mcPartDaughter1D0->Pz();
+    sumPxDau+=mcPartDaughter1D1->Px();
+    sumPyDau+=mcPartDaughter1D1->Py();
+    sumPzDau+=mcPartDaughter1D1->Pz();
+
   } else if (fGenLcOption==kCountK0Sp) { // Lc -> K0bar + proton AND cc
 
     if (!(TMath::Abs(mcPartDaughter0->GetPdgCode())==311   &&
@@ -506,6 +522,11 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       AliDebug(2,"Problems in the MC Daughters after swapping V0 and bachelor\n");
       return checkCD;
     }
+
+    // momentum of the bachelor
+    sumPxDau+=mcPartDaughter0->Px();
+    sumPyDau+=mcPartDaughter0->Py();
+    sumPzDau+=mcPartDaughter0->Pz();
 
     if (mcPartDaughter1->GetNDaughters()!=1) {
       AliDebug(2, "The K0/K0bar MC particle doesn't decay in 1 particles, skipping!!");
@@ -554,8 +575,26 @@ Bool_t AliCFVertexingHFLctoV0bachelor::CheckMCChannelDecay() const
       return checkCD;
     }
 
+    // momentum of the V0 daughters
+    sumPxDau+=mcPartDaughterD0->Px();
+    sumPyDau+=mcPartDaughterD0->Py();
+    sumPzDau+=mcPartDaughterD0->Pz();
+    sumPxDau+=mcPartDaughterD1->Px();
+    sumPyDau+=mcPartDaughterD1->Py();
+    sumPzDau+=mcPartDaughterD1->Pz();
+
   }
   
+  Double_t pxMother=fmcPartCandidate->Px();
+  Double_t pyMother=fmcPartCandidate->Py();
+  Double_t pzMother=fmcPartCandidate->Pz();
+  if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
+     TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+    AliDebug(2, "Momentum conservation violated, skipping!!");
+    return checkCD;  
+  }
+
   checkCD = kTRUE;
   return checkCD;
   
