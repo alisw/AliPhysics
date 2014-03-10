@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
-				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB){
+				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
+						Bool_t bMultiToSingle=kTRUE){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,8 +49,6 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   if(!gridconf && trainRoot.IsNull())
     configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
 
-  //create task
-  AliAnalysisTaskMultiDielectron *task;
 
   // trigger selection
   ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,
@@ -68,6 +67,27 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   printf("production: %s MC: %d \n",  list.Data(),hasMC);
   printf("triggers:   %s \n",         triggerNames[j]  );
   printf("config:     %s Grid: %d \n",configFile.Data(),gridconf);
+
+  //create task(s)
+  AliAnalysisTaskMultiDielectron *task;
+  if(!bMultiToSingle) {
+    // create one multi task
+    task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB"));
+    task->SetBeamEnergy(1380.);
+    task->SetTriggerMask(triggers);
+    if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
+    if(!hasMC) task->UsePhysicsSelection();
+  }
+
+  // event filter
+  AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("vertex","vertex");
+  if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
+  eventCuts->SetRequireVertex();
+  eventCuts->SetMinVtxContributors(1);
+  if(hasMC) eventCuts->SetVertexZ(-10.,+10.); //for data this is done by in the config
+  eventCuts->SetCentralityRange(0,90.);
+  eventCuts->Print();
+  if(!bMultiToSingle)       task->SetEventFilter(eventCuts);
 
   //load dielectron configuration file (only once)
   TString checkconfig="ConfigJpsi_jb_PbPb";
@@ -91,53 +111,62 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
     TString unitit = Form("%s_%s",triggerNames[j],jpsi->GetName());
 
     // create single tasks instead of one multi task (decreasing size of CF container)
-    task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB_%s",unitit.Data()));
-    task->SetBeamEnergy(1380.);
-    task->SetTriggerMask(triggers);
-    if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
-    if(!hasMC) task->UsePhysicsSelection();
+    if(bMultiToSingle) {
+      task = new AliAnalysisTaskMultiDielectron(Form("MultiDieJB_%s",unitit.Data()));
+      task->SetBeamEnergy(1380.);
+      task->SetTriggerMask(triggers);
+      if(strlen(onlineRejection[j])) task->SetFiredTriggerName(onlineRejection[j],kTRUE);
+      if(!hasMC) task->UsePhysicsSelection();
+    }
 
-    // event filter
-    AliDielectronEventCuts *eventCuts=new AliDielectronEventCuts("vertex","vertex");
-    if(isAOD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
-    eventCuts->SetRequireVertex();
-    eventCuts->SetMinVtxContributors(1);
-    eventCuts->SetVertexZ(-10.,+10.);
-    eventCuts->SetCentralityRange(0,90.);
-    eventCuts->Print();
-    task->SetEventFilter(eventCuts);
-   
     // add dielectron to the task and manager
     task->AddDielectron(jpsi);
-    mgr->AddTask(task);
 
-    //create output sub containers
-    AliAnalysisDataContainer *cOutputHist1 =
-      mgr->CreateContainer(Form("jbook_QA_%s",unitit.Data()),
-			   TList::Class(),
-			   AliAnalysisManager::kOutputContainer,
-			   containerName.Data());
-    
-    AliAnalysisDataContainer *cOutputHist2 =
-      mgr->CreateContainer(Form("jbook_CF_%s",unitit.Data()),
-			   TList::Class(),
-			   AliAnalysisManager::kOutputContainer,
-			   containerName.Data());
-    
-    AliAnalysisDataContainer *cOutputHist3 =
-      mgr->CreateContainer(Form("jbook_EventStat_%s",unitit.Data()),
-			   TH1D::Class(),
-			   AliAnalysisManager::kOutputContainer,
-			   containerName.Data());
+    // multiple output connection
+    if(bMultiToSingle) {
+      task->SetEventFilter(eventCuts);
+      mgr->AddTask(task);
 
-    mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-    //  mgr->ConnectOutput(task, 0, coutput1 );
-    mgr->ConnectOutput(task, 1, cOutputHist1);
-    mgr->ConnectOutput(task, 2, cOutputHist2);
-    mgr->ConnectOutput(task, 3, cOutputHist3);
+      //create output sub containers
+      unitit.Prepend("jbook_QA_");
+      AliAnalysisDataContainer *cOutputHist1 =
+	mgr->CreateContainer(unitit.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
+      unitit.ReplaceAll("_QA_","_CF_");
+      AliAnalysisDataContainer *cOutputHist2 =
+	mgr->CreateContainer(unitit.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,containerName.Data());
+      unitit.ReplaceAll("_CF_","_EventStat_");
+      AliAnalysisDataContainer *cOutputHist3 =
+	mgr->CreateContainer(unitit.Data(), TH1D::Class(), AliAnalysisManager::kOutputContainer,containerName.Data());
+
+      mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+      //  mgr->ConnectOutput(task, 0, coutput1 );
+      mgr->ConnectOutput(task, 1, cOutputHist1);
+      mgr->ConnectOutput(task, 2, cOutputHist2);
+      mgr->ConnectOutput(task, 3, cOutputHist3);
+    }
 
     printf(" %s added\n",jpsi->GetName());
 
+  } //end : loop over configs
+
+  
+  // multiple output connection
+  if(!bMultiToSingle) {
+    mgr->AddTask(task);
+    
+    //create output sub containers
+    AliAnalysisDataContainer *cOutputHist1 =
+      mgr->CreateContainer("jbook_QA", TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
+    AliAnalysisDataContainer *cOutputHist2 =
+      mgr->CreateContainer("jbook_CF", TList::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
+    AliAnalysisDataContainer *cOutputHist3 =
+      mgr->CreateContainer("jbook_EventStat", TH1D::Class(), AliAnalysisManager::kOutputContainer, containerName.Data());
+
+    mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+      //  mgr->ConnectOutput(task, 0, coutput1 );
+    mgr->ConnectOutput(task, 1, cOutputHist1);
+    mgr->ConnectOutput(task, 2, cOutputHist2);
+    mgr->ConnectOutput(task, 3, cOutputHist3);
   }
 
 
