@@ -340,7 +340,8 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
       // loop over internal train task candidates
       for(Int_t i=ic; i<fListDielectron.GetEntries(); i++) {
 	die2 = static_cast<AliDielectron*>(fListDielectron.At(i));
-	if(die2->DoEventProcess()) continue;
+	// abort if tasks following are not internal wagons
+	if(die2->DoEventProcess()) break;
 	// fill internal train output
 	die2->SetPairArraysPointer(fPairArray);
 	//	printf(" --> fill internal train output %s \n",die2->GetName());
