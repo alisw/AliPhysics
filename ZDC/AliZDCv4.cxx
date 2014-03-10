@@ -2459,14 +2459,16 @@ void AliZDCv4::StepManager()
       //
       Int_t imo = part->GetFirstMother();
       if(imo>0){
-    	TParticle * pmot = gAlice->GetMCApp()->Particle(imo);
+    	TParticle *pmot = gAlice->GetMCApp()->Particle(imo);
     	hits[11] = pmot->GetPdgCode();
+        hits[13] = pmot->Eta();
       }
-      else hits[11]=0;
+      else{
+        hits[11] = 0;
+        hits[13] = part->Eta();
+      }
       //
       hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
-      //printf("\t TrackTime = %f\n", hits[12]);
-      hits[13] = part->Eta();
 
       AddHit(curTrackN, vol, hits);
 
