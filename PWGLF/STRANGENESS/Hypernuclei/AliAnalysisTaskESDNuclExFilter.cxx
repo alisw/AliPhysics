@@ -218,60 +218,64 @@ void AliAnalysisTaskESDNuclExFilter::AddFilteredAOD(const char* aodfilename, con
 
   AliAODHandler *aodH = (AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
   if (!aodH) Fatal("UserCreateOutputObjects", "No AOD handler");
-  //cout<<"Add Filterd AOD "<<aodH->AddFilteredAOD(aodfilename,title)<<endl;
-  AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title,toMerge);
-  //cout<<"Handle inside add filterAOD: "<<aodH<<endl;
-  //cout<<"########### ext: "<<ext<<endl;
-  
-  if (!ext) return;
-  
-  //cout<<"ONLY MUON?? "<<fOnlyMuon<<endl;
 
-  if ( fOnlyMuon ) 
-    {    
+  if(aodH){
+
+    //cout<<"Add Filterd AOD "<<aodH->AddFilteredAOD(aodfilename,title)<<endl;
+    AliAODExtension* ext = aodH->AddFilteredAOD(aodfilename,title,toMerge);
+    //cout<<"Handle inside add filterAOD: "<<aodH<<endl;
+    //cout<<"########### ext: "<<ext<<endl;
     
-      //cout<<"Inside fonly muon: "<<endl;
-
-      
-      if(!murep)delete murep;
-
-      murep = new AliAODNuclExReplicator("NuclExReplicator",
-					 "remove non interesting tracks",
-					 // new AliAnalysisNonMuonTrackCuts,
-					 // new AliAnalysisNonPrimaryVertices,
-					 fMCMode,fnSigmaTrk1,fnSigmaTrk2,fpartType1,fpartType2);
-      
-      //cout<<"murep: "<<murep<<endl;
-      
-      ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
-      
-      // ext->FilterBranch("header",murep);    
-      // ext->FilterBranch("tracks",murep);    
-      // ext->FilterBranch("vertices",murep);  
-      // ext->FilterBranch("dimuons",murep); //per test
-      // ext->FilterBranch("AliAODVZERO",murep);
-      // ext->FilterBranch("AliAODTZERO",murep);
-      
-      ext->FilterBranch("header",murep);    
-      ext->FilterBranch("vertices",murep);    
-      ext->FilterBranch("nuclei",murep);  
-      ext->FilterBranch("secvertices",murep); //per test
-      ext->FilterBranch("daughtertracks",murep);
-
-      //cout<<"add filterd aod"<<endl;
-      
-      if ( fMCMode > 0 ) 
-	{
-	  // MC branches will be copied (if present), as they are, but only
-	  // for events with at least one muon. 
-	  // For events w/o muon, mcparticles array will be empty and mcheader will be dummy
-	  // (e.g. strlen(GetGeneratorName())==0)
-	  
-	  ext->FilterBranch("mcparticles",murep);
-	  ext->FilterBranch("mcHeader",murep);
-	}
-    }  
-  
+    if (!ext) return;
+    
+    //cout<<"ONLY MUON?? "<<fOnlyMuon<<endl;
+    
+    if ( fOnlyMuon ) 
+      {    
+	
+	//cout<<"Inside fonly muon: "<<endl;
+	
+	
+	if(!murep)delete murep;
+	
+	murep = new AliAODNuclExReplicator("NuclExReplicator",
+					   "remove non interesting tracks",
+					   // new AliAnalysisNonMuonTrackCuts,
+					   // new AliAnalysisNonPrimaryVertices,
+					   fMCMode,fnSigmaTrk1,fnSigmaTrk2,fpartType1,fpartType2);
+	
+	//cout<<"murep: "<<murep<<endl;
+	
+	ext->DropUnspecifiedBranches(); // all branches not part of a FilterBranch call (below) will be dropped
+	
+	// ext->FilterBranch("header",murep);    
+	// ext->FilterBranch("tracks",murep);    
+	// ext->FilterBranch("vertices",murep);  
+	// ext->FilterBranch("dimuons",murep); //per test
+	// ext->FilterBranch("AliAODVZERO",murep);
+	// ext->FilterBranch("AliAODTZERO",murep);
+	
+	ext->FilterBranch("header",murep);    
+	ext->FilterBranch("vertices",murep);    
+	ext->FilterBranch("nuclei",murep);  
+	ext->FilterBranch("secvertices",murep); //per test
+	ext->FilterBranch("daughtertracks",murep);
+	
+	//cout<<"add filterd aod"<<endl;
+	
+	if ( fMCMode > 0 ) 
+	  {
+	    // MC branches will be copied (if present), as they are, but only
+	    // for events with at least one muon. 
+	    // For events w/o muon, mcparticles array will be empty and mcheader will be dummy
+	    // (e.g. strlen(GetGeneratorName())==0)
+	    
+	    ext->FilterBranch("mcparticles",murep);
+	    ext->FilterBranch("mcHeader",murep);
+	  }
+      }  
+    
+  }
   //cout<<"fine add filterd"<<endl;
 }
 
@@ -362,7 +366,10 @@ void AliAnalysisTaskESDNuclExFilter::ConvertESDtoAOD()
 
     if ( extNuclEx ) {				
      //   extNuclEx->Init("");
-     
+      
+      // extNuclEx->GetAOD()->GetHeader()->ResetEventplanePointer();
+      // extNuclEx->GetTree()->Fill(); // fill header for all events without tracks
+
       extNuclEx->SetEvent(lAODevent);
       extNuclEx->SelectEvent();
       // extNuclEx->IsFilteredAOD();
