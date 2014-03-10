@@ -476,7 +476,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
-  if(binsCent)              delete [] binsCent;
+  delete [] binsCent;
   if(binsdEP)               delete [] binsdEP;
   if(binsEn)                delete [] binsEn;
   if(binsPt)                delete [] binsPt;
@@ -686,7 +686,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   fh3PtLeadJet1VsPatchEnergy->Fill(ptLeadJet1,fMaxPatchEnergy,fTriggerType);
   fh3PtLeadJet2VsPatchEnergy->Fill(ptLeadJet2,fMaxPatchEnergy,fTriggerType);
 
-  if(nJetsArr) delete nJetsArr;
+  delete nJetsArr;
 
   return kTRUE;
 }
