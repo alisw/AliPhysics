@@ -4781,6 +4781,11 @@ void AliReconstruction::RectifyCDBurl(TString& url)
   if (!(sbs=url("\\?OperateDisconnected=[^?]*")).IsNull()) url.ReplaceAll(sbs,"");
   if (!(sbs=url("\\?CacheSize=[^?]*")).IsNull())           url.ReplaceAll(sbs,"");  
   if (!(sbs=url("\\?CleanupInterval=[^?]*")).IsNull())     url.ReplaceAll(sbs,"");  
-  url.ToLower();
+  Bool_t slash=kFALSE,space=kFALSE;
+  while ( (slash=url.EndsWith("/")) || (space=url.EndsWith(" ")) ) {
+    if (slash) url = url.Strip(TString::kTrailing,'/');
+    if (space) url = url.Strip(TString::kTrailing,' ');
+  }
+  //url.ToLower();
   //
 }
