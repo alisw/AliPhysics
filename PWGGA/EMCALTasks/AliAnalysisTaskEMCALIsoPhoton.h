@@ -143,6 +143,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fTrackPtPhiCut;    //!selected tracks pt vs. phi in "triggered event"
   TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
   TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
+  TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented
