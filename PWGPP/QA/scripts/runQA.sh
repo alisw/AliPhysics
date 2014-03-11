@@ -234,7 +234,6 @@ updateQA()
       unset linkedStuff
       declare -a linkedStuff
       for x in ${productionDir}/000*; do [[ -d $x ]] && ln -s $x && linkedStuff+=(${x##*/}); done
-      ls
 
       #merge trending files if any
       if /bin/ls 000*/trending.root &>/dev/null; then
