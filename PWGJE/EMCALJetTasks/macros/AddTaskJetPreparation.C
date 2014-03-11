@@ -18,7 +18,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   makeTrigger        = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE,
   const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kFALSE
+  const Bool_t   doAODTrackProp     = kFALSE,
+  const Bool_t   modifyMatchObjs    = kTRUE
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -100,7 +101,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   // Relate tracks and clusters
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.1,kTRUE,doHistos);
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.1,modifyMatchObjs,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
