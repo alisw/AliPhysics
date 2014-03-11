@@ -1802,7 +1802,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
 
   Int_t ntracks=0;
-  Int_t ntracksFBit4=0;
   Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
   if(aod) ntracks=aod->GetNTracks();
