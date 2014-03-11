@@ -1306,6 +1306,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCOnly=0;
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
+  Int_t ntracksFBit4=0;
 
   AliTRDTriggerAnalysis trdSelection;
   trdSelection.CalcTriggers(aod);
@@ -1335,6 +1336,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	nSelTracksTPCITS++;
 	if(nclsSPD>0) nSelTracksTPCITS1SPD++;      
       }
+    }
+    if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
+      ntracksFBit4++;
     }
   }
 
@@ -1743,6 +1747,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
 	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
 	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
       }
@@ -1813,7 +1818,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(!track->PropagateToDCA(vtx1,aod->GetMagneticField(),99999.,d0z0,covd0z0)) continue;
       if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
 	((TH1F*)fOutputTrack->FindObject("hd0TracksFilterBit4"))->Fill(d0z0[0]);
-	ntracksFBit4++;
       }
       ULong_t trStatus=track->GetStatus();
       if(trStatus&AliESDtrack::kITSrefit){
@@ -2077,7 +2081,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if (fReadMC) ((TH1F*)fOutputTrack->FindObject("hdistrFakeTr"))->Fill(isFakeTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrGoodTr"))->Fill(isGoodTrack);
       ((TH1F*)fOutputTrack->FindObject("hdistrSelTr"))->Fill(isSelTrack);
-      ((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
     }
 
     if(!isSimpleMode){

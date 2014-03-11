@@ -4,7 +4,7 @@ AliEmcalClusTrackMatcherTask* AddTaskEmcalClusTrackMatcher(
   const char *nTracks          = "EmcalTracks",
   const char *nClusters        = "EmcalClusters",
   const Double_t maxDist       = 0.1,
-  const Bool_t modify          = kFALSE, 
+  const Bool_t modify          = kTRUE, 
   const Bool_t createHisto     = kFALSE
 )
 {  
