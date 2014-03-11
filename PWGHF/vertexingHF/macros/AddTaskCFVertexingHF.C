@@ -48,12 +48,12 @@ const Float_t multmin_80_100 = 80;
 const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100; // Only for pPb
 const Float_t multmax_100_400 = 400; // Only for pPb
-Double_t refMult=9.26; // reference multiplicity for LHC10b pass2 data
+
 
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -144,7 +144,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 100
 	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 100
-	const Int_t nbinmult_100_400 = 12; // Only on pPb bins in multiplicity between 100 and 400
+	const Int_t nbinmult_100_400 = 6; // Only on pPb bins in multiplicity between 100 and 400
 	if(isPPbData) nbinmult += nbinmult_100_400;
 
 	//the sensitive variables, their indices
@@ -627,29 +627,56 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	    return 0x0;
 	  }
 	}
-
+	
+	if(isPPbData) { 
+	  task->SetIsPPbData(kTRUE); 
+	}
+   
 	if(estimatorFilename.EqualTo("") ) {
 	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
 	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
 	} else{
-	  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-	  TProfile* multEstimatorAvg[4];                       
+
 	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
 	  if(!fileEstimator)  {
 	    AliFatal("File with multiplicity estimator not found"); 
 	    return;
 	  }
-	  for(Int_t ip=0; ip<4; ip++) {
-	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
-	  }
-	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
-	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-	  task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-	  task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-	  task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
-	  task->SetReferenceMultiplcity(refMult);
-	}
 
+	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
+	  task->SetReferenceMultiplcity(refMult);
+
+	  if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
+            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+            TProfile* multEstimatorAvg[2];
+            for(Int_t ip=0; ip<2; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+	  }
+	  else {
+	    const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};   //else, assume pp (LHC10)
+            TProfile* multEstimatorAvg[4];
+            for(Int_t ip=0; ip<4; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+	  }
+
+	}
+	
 
 	Printf("***************** CONTAINER SETTINGS *****************");	
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());

@@ -59,6 +59,30 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   void SetCentralityEstimator (TString lCentralityEstimator = "V0M" ) { fCentralityEstimator = lCentralityEstimator; }
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
+
+//---------------------------------------------------------------------------------------
+  //Task Configuration: Meant to enable quick re-execution of vertexer if needed
+  void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) { fkRunVertexers = lRunVertexers; }
+//---------------------------------------------------------------------------------------
+//Setters for the V0 Vertexer Parameters
+  void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
+  void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
+  void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0VertexerSels[2] = lParameter; }
+  void SetV0VertexerDCAV0Daughters ( Double_t lParameter ){ fV0VertexerSels[3] = lParameter; }
+  void SetV0VertexerCosinePA       ( Double_t lParameter ){ fV0VertexerSels[4] = lParameter; }
+  void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0VertexerSels[5] = lParameter; }
+  void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0VertexerSels[6] = lParameter; }
+//---------------------------------------------------------------------------------------
+//Setters for the Cascade Vertexer Parameters
+  void SetCascVertexerMaxChisquare         ( Double_t lParameter ){ fCascadeVertexerSels[0] = lParameter; } 
+  void SetCascVertexerMinV0ImpactParameter ( Double_t lParameter ){ fCascadeVertexerSels[1] = lParameter; } 
+  void SetCascVertexerV0MassWindow         ( Double_t lParameter ){ fCascadeVertexerSels[2] = lParameter; } 
+  void SetCascVertexerDCABachToPV          ( Double_t lParameter ){ fCascadeVertexerSels[3] = lParameter; } 
+  void SetCascVertexerDCACascadeDaughters  ( Double_t lParameter ){ fCascadeVertexerSels[4] = lParameter; }
+  void SetCascVertexerCascadeCosinePA      ( Double_t lParameter ){ fCascadeVertexerSels[5] = lParameter; }  
+  void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ){ fCascadeVertexerSels[6] = lParameter; }  
+  void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ){ fCascadeVertexerSels[7] = lParameter; }  
+//---------------------------------------------------------------------------------------
   
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
@@ -66,7 +90,6 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
         // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   TList  *fListHist;  //! List of Cascade histograms
   TTree  *fTreeCascade;              //! Output Tree, Cascades
-  
 
   //Objects that have to be streamed:
   AliPIDResponse *fPIDResponse;     // PID response object
@@ -75,12 +98,15 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
 
   //Objects Controlling Task Behaviour 
   // (have to be streamed too or configuration is lost)
-  
   Bool_t fkIsNuclear;   //if true, replace multiplicity est. by centrality (default FALSE) 
   Bool_t fkSwitchINT7;  //if true, skip FASTOnly (default FALSE)
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
   Double_t fEtaRefMult; //Reference multiplicity eta
+  //Objects Controlling Task Behaviour: has to be streamed! 
+  Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+  Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
 
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
@@ -123,6 +149,7 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!
   Int_t   fTreeCascVarPIDPositive; //!
+  Float_t fTreeCascVarBachTransMom;   //!
   Float_t fTreeCascVarPosTransMom;   //!
   Float_t fTreeCascVarNegTransMom;   //!
   Float_t fTreeCascVarPosTransMomMC; //!

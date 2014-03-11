@@ -132,9 +132,15 @@ EOF
 	#ln -s $qaMacroDir/SetAlienHandler.C
 
 
-	aliroot -b <<EOF &> logTerminate.txt
+	aliroot -b <<EOF &> logTerminateTrack.txt
 ${includeAliroot} ${loadAnalysisLibs}
-.x $qaMacroDir/terminateQA.C("${outTaskName}",$forceTerminate)
+.x $qaMacroDir/terminateQA.C("${outTaskName}",$forceTerminate,0)
+.q
+EOF
+
+aliroot -b <<EOF &> logTerminateTrig.txt
+${includeAliroot} ${loadAnalysisLibs}
+.x $qaMacroDir/terminateQA.C("${outTaskName}",1,1)
 .q
 EOF
 	#rm logTerminate.txt

@@ -15,8 +15,11 @@
 
 #include "TBits.h"
 #include "TRefArray.h"
+#include "TMap.h"
+#include "AliAnalysisManager.h"
 
 #include "AliVCluster.h"
+#include "AliPHOSClusterSelection.h"
 
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Henrik Qvigstad
@@ -26,9 +29,10 @@
 #include "AliPHOSClusterSelectionTask.h"
 ClassImp(AliPHOSClusterSelectionTask);
 
-AliPHOSClusterSelectionTask::AliPHOSClusterSelectionTask(const char* name = "AliPHOSClusterSelectionTask")
-  : AliAnalysisTaskSE(name), 
-    fClusters(0x0)
+AliPHOSClusterSelectionTask::AliPHOSClusterSelectionTask(const char* name)
+  : AliAnalysisTaskSE(name),
+    fClusters(0x0),
+    fSelectionMap(0x0)
 {
   return;
 }
@@ -37,86 +41,120 @@ AliPHOSClusterSelectionTask::~AliPHOSClusterSelectionTask()
 {
   delete fClusters;
 }
-  
+
 void AliPHOSClusterSelectionTask::UserCreateOutputObjects()
 {
-  //TODO: implement
   return;
 }
 
 void AliPHOSClusterSelectionTask::UserExec(Option_t *option)
 {
+  (void)(option); // To make the compiler not give a warning.
+  
   AliVEvent* event = InputEvent();
-  
+  if( ! event )
+    AliError("No Event");
+
+  // initilise fClusters, array of PHOS Clusters
   if( 0x0 == fClusters ) fClusters = new TRefArray;
-  // Get PHOS Clusters
   event->GetPHOSClusters( fClusters );
-  
+
   // Remove Clusters
-  for(int index = 0; index < fClusters->GetEntriesFast(); ++index) {
-    AliVCluster* cluster = (AliVCluster*) fClusters->At(iClu);
-    
+  for(int index = 0; index < fClusters->GetEntriesFast(); ++index) { // TODO: check if array is indexed from 0
+    AliVCluster* cluster = (AliVCluster*) fClusters->At(index); // TODO: check that fClusters is always compressed
+
+
     if( cluster->E() < kMinClusterEnergy // Low Energy Clusters
 	|| cluster->GetDistanceToBadChannel() < kMinBCDistance // to close to Bad Channel
 	|| cluster->GetNCells() < kMinNCells // to few cells
-	|| cluster->GetM02() < kMinM02 
-       ) 
+	|| cluster->GetM02() < kMinM02
+	)
       fClusters->RemoveAt(index);
   }
-  
-  // Compact array after removel of clusters
-  fClusters->Compact();
+
+  // Remove empty slots from array after removal of clusters
+  fClusters->Compress();
+
+  // initialize fSelectionMap
+  if( fSelectionMap )
+    fSelectionMap->Clear();
+  else {
+    fSelectionMap = new TMap;
+    fSelectionMap->SetOwnerValue();
+  }
+
 }
 
 TRefArray* AliPHOSClusterSelectionTask::GetPHOSClusters() const
 {
+  if( ! fClusters )
+    AliError("fCluster not initialized, do not run this function before ::UserExec");
+
   return fClusters;
 }
 
-TBits* AliPHOSClusterSelectionTask::GetPHOSClustersSelected(const AliPHOSClusterSelection* selection)
+TRefArray* AliPHOSClusterSelectionTask::GetPHOSClustersSelected( AliPHOSClusterSelection* selection, bool useMap, bool addMap )
+{
+  // useMap - Use The Resulting Array of previous selection (stored in map
+  // addMap - Add This Selection to the 'map' for use in future calls of this function.
+
+  if( !fClusters  || !fSelectionMap )
+    AliFatal("fCluster not initialized, do not run this function before ::UserExec");
+
+
+  if( useMap ) {
+    // Check if Selection is already done
+    TRefArray* array = dynamic_cast<TRefArray*> ( fSelectionMap->GetValue(selection) );
+    if( array )
+      return array;
+  }
+
+  // if selected clusters not allready determined/in-map, determine and add to map:
+  TRefArray* newArray = new TRefArray( * DeterminePHOSClustersSelected(selection) );
+  if(addMap)
+    fSelectionMap->Add(selection, newArray); // key, value
+
+  return newArray;
+}
+
+TRefArray* AliPHOSClusterSelectionTask::DeterminePHOSClustersSelected(const AliPHOSClusterSelection* selection)
 {
   int nClu = fClusters->GetEntriesFast();
-  
-  static TBits* sBits = 0x0;
-  if( 0x0 == sBits ) sBits = new TBits(nClu);
 
-  if( sBits->GetNbits != nClu ){
-    delete sBits;
-    sBits = new TBits( nClu );
-  }
+  // create/clear array
+  static TRefArray* statRefArr = 0x0;
+  if( statRefArr )
+    statRefArr->Clear();
+  else
+    statRefArr = new TRefArray(nClu);
+  // array should now exist and be empty,
 
-  
-  // Determine selection:
+
+  // fill array with selection:
   for(int iClu = 0; iClu < nClu; ++iClu) {
     AliVCluster* cluster = (AliVCluster*) fClusters->At(iClu);
-    bool sel = selection->IsSelected(cluster);
-    sBits->SetBitNumber(iClu, sel);
-  }
-  
-  return sBits;
-
-
-  // TMap initialization
-  if( 0x0 == fSelectionMap ) {
-    fSelectionMap = new TMap;
-    fSelectionMap->SetOwnerValue(true);
+    if( selection->IsSelected(cluster) )
+      statRefArr->AddLast(cluster); // add at end of array
   }
 
-  // Fetch Selection Bits
-  TObject* value = fSelectionMap->GetValue(selection);
+  return statRefArr;
 }
 
 
-static AliPHOSClusterSelectionTask* AliPHOSClusterSelectionTask::GetTask(const char* name)
+AliPHOSClusterSelectionTask* AliPHOSClusterSelectionTask::GetTask(const char* name)
 {
   // Get AliPHOSClusterSelectionTask from AliAnalysisManager
-  
-  AliAnalysisManager* analysisManager = dynamic_cast<AliAnalysisManager*>(AliAnalysisManager::GetAnalysisManager());
-  AliAnalysisTask* task = analysisManager->GetTask(name);
-  if( !task ) AliWarning( Form("No task with name: %s", name) );
 
-  AliPHOSClusterSelectionTask* stask = dynamic_cast<AliAnalysisTask*>(task);
-  if( !stask) AliWarning( Form("No AliPHOSClusterSelectionTask with name: %s", name) );
-  
-  return stask;
+  AliAnalysisManager* analysisManager = dynamic_cast<AliAnalysisManager*>(AliAnalysisManager::GetAnalysisManager());
+  if( !analysisManager )
+    Printf("ERROR: No AnalysisManager");
+  AliAnalysisTask* task = analysisManager->GetTask(name);
+  if( !task )
+    Printf( Form("ERROR: No task with name: %s", name) );
+
+  AliPHOSClusterSelectionTask* sTask = dynamic_cast<AliPHOSClusterSelectionTask*>(task);
+  if( !sTask)
+    Printf( Form("ERROR:: No AliPHOSClusterSelectionTask with name: %s", name) );
+
+  return sTask;
 }

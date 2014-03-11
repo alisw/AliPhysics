@@ -8,7 +8,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                         AliAnalysisTaskDStarCorrelations::DEffVariable var,
                                                             Int_t trackselect =1, Int_t usedispl =0, Int_t nbins, Float_t DStarSigma, Float_t D0Sigma, Float_t D0SBSigmaLow, Float_t D0SBSigmaHigh, Float_t eta,
                                                                      TString DStarCutsFile, TString TrackCutsFile,
-                                                                     Int_t tasknumber = 0)
+                                                                     TString suffix = "")
 {
 
  
@@ -151,7 +151,6 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     
 
 	
-    
     task->SetNofPhiBins(nbins);
 	task->SetMonteCarlo(theMCon);
 	task->SetUseMixing(mixing);
@@ -169,7 +168,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
     task->SetEfficiencyVariable(var);
     task->SetMaxDStarEta(eta);
     task->SetUseHadronicChannelAtKineLevel(UseHadChannelinMC);
-	
+	//task->SetBkgEstimationMethod(AliAnalysisTaskDStarCorrelations::kDStarSB);
 
 	if(trackselect == 1) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged hadrons \n");
 	else if(trackselect == 2) Info(" AliAnalysisTaskDStarCorrelations","Correlating D* with charged kaons \n");
@@ -180,70 +179,83 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 
   // Create and connect containers for input/output
 	//TString dcavalue = " ";
-	if(!theMCon) TString contname = "Data";
-	if(theMCon) TString contname = "MonteCarlo";
-	TString contname2 = "MC";
-	if(trackselect ==1) TString particle = "Hadron";
-	if(trackselect ==2) TString particle = "Kaon";
-	if(trackselect ==3) TString particle = "KZero";
-	
-	TString cutname = "cuts" ;
+    
+  TString contname1 = "OutputEvent";
+    TString contname2 = "OutputDmeson";
+    TString contname3 = "OutputTracks";
+    TString contname4 = "OutputEventMixing";
+    TString contname5 = "OutputCorrelations";
+    TString contname6 = "OutputMC";
+    TString counter = "NormCounter";
+    TString cutname1 = "Dcuts" ;
 	TString cutname2 = "hadroncuts" ;
+    
+    //if(suffix != ""){
+        contname1 += suffix;
+        contname2 += suffix;
+        contname3 += suffix;
+        contname4 += suffix;
+        contname5 += suffix;
+         contname6 += suffix;
+        counter += suffix;
+        cutname1 += suffix;
+        cutname2 += suffix;
+        
+        
+   // }
+    
+   // else{
+    
+	//if(!theMCon) TString contname = "Data";
+	//if(theMCon) TString contname = "MonteCarlo";
+	//TString contname2 = "MC";
+	//if(trackselect ==1) TString particle = "Hadron";
+	//if(trackselect ==2) TString particle = "Kaon";
+	//if(trackselect ==3) TString particle = "KZero";
+	
+	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString outputfileMC = AliAnalysisManager::GetCommonFileName();
-	TString counter = "NormCounter";
+	//TString outputfileMC = AliAnalysisManager::GetCommonFileName();
+	//TString counter = "NormCounter";
 	outputfile += ":PWGHF_HFCJ_";
-	outputfileMC += ":PWGHF_HFCJ_";
+	//outputfileMC += ":PWGHF_HFCJ_";
 	
 	if(!mixing) {
 		outputfile += "SE";
-		outputfileMC += "SE";
-		contname += "SE";
+		//outputfileMC += "SE";
+		/*contname1 += "SE";
 		contname2 += "SE";
-		cutname += "SE";
-		cutname2 += "SE";
-		counter+= "SE";
+        contname3 += "SE";
+        contname4 += "SE";
+        contname5 += "SE";
+        counter+= "SE";
+        cutname1 += "SE";
+		cutname2 += "SE";*/
+		
 	}
 	if(mixing){
 		outputfile += "ME";
-		outputfileMC += "ME";
-		contname += "ME";
-		contname2 += "ME";
-		cutname += "ME";
-		cutname2 += "ME";
-		counter+= "ME";
+		//outputfileMC += "ME";
+		
 	}
     
 
     
-	outputfile += "Dphi_DStar";
-	outputfileMC += "Dphi_DStar";
+	/*outputfile += "Dphi_DStar";
+	//outputfileMC += "Dphi_DStar";
 	outputfile += particle;
-	outputfileMC += particle;
-	cutname += particle;
-	cutname2 += particle;
-	contname += particle;
-	contname2 += particle;
-	counter+= particle;
-	
+	//outputfileMC += particle;
+	*/
     if(UseEffic){
         outputfile += "_EffY_";
-		outputfileMC += "_EffY_";
-		contname += "_EffY_";
-		contname2 += "_EffY_";
-		cutname += "_EffY_";
-		cutname2 += "_EffY_";
-		counter+= "_EffY_";
+		//outputfileMC += "_EffY_";
+	
     }
     
     if(!UseEffic){
         outputfile += "_EffN_";
-		outputfileMC += "_EffN_";
-		contname += "_EffN_";
-		contname2 += "_EffN_";
-		cutname += "_EffN_";
-		cutname2 += "_EffN_";
-		counter+= "_EffN_";
+		//outputfileMC += "_EffN_";
+		
     }
     
     if(UseDEffic){
@@ -256,44 +268,28 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
         if(var == AliAnalysisTaskDStarCorrelations::kEta) string += "vsPtEta_";
         
         outputfile += string;
-		outputfileMC += string;
-		contname += string;
-		contname2 += string;
-		cutname += string;
-		cutname2 += string;
-		counter+= string;
+		//outputfileMC += string;
+		
     }
     
     if(!UseDEffic){
         outputfile += "DEffN_";
-		outputfileMC += "DEffN_";
-		contname += "DEffN_";
-		contname2 += "DEffN_";
-		cutname += "DEffN_";
-		cutname2 += "DEffN_";
-		counter+= "DEffN_";
+		//outputfileMC += "DEffN_";
+		
     }
 	
     
     outputfile += Form("%d_bins_",nbins);
-	outputfileMC += Form("%d_bins_",nbins);
-	cutname += Form("%d_bins_",nbins);
-	cutname2 += Form("%d_bins_",nbins);
-	contname += Form("%d_bins_",nbins);
-	contname2 += Form("%d_bins_",nbins);
-	counter+= Form("%d_bins_",nbins);
+	//outputfileMC += Form("%d_bins_",nbins);
+
     
 	
-	outputfile += Form("task_%d",tasknumber);
-	outputfileMC += Form("task_%d",tasknumber);
-	cutname += Form("task_%d",tasknumber);
-	cutname2 += Form("task_%d",tasknumber);
-	contname += Form("task_%d",tasknumber);
-	contname2 += Form("task_%d",tasknumber);
-	counter+= Form("task_%d",tasknumber);
+	outputfile += suffix;
+	//outputfileMC += Form("task_%d",tasknumber);
+	
 	
 /*	outputfile += TrackCutObjNamePrefix;
-	outputfileMC += TrackCutObjNamePrefix;
+	//outputfileMC += TrackCutObjNamePrefix;
 	cutname += TrackCutObjNamePrefix;
 	cutname2 += TrackCutObjNamePrefix;
 	contname += TrackCutObjNamePrefix;
@@ -301,12 +297,8 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
 	counter+= TrackCutObjNamePrefix;
 */	
 	outputfile += selectMCproc;
-	outputfileMC += selectMCproc;
-	cutname += selectMCproc;
-	cutname2 += selectMCproc;
-	contname += selectMCproc;
-	contname2 += selectMCproc;
-	counter+= selectMCproc;
+	//outputfileMC += selectMCproc;
+	
 	
 	TString reco = "";
 	
@@ -316,34 +308,26 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
         if(!UseHadChannelinMC) reco = "_MCTruthAllChan";
 	}
 	outputfile += reco;
-	outputfileMC += reco;
-	cutname += reco;
-	cutname2 += reco;
-	contname += reco;
-	contname2 += reco;
-	counter+= reco;
+	//outputfileMC += reco;
+
 	
 	TString nsigma = Form("_%.0f_%.0f%.0f%.0f_sigmas",DStarSigma,D0Sigma,D0SBSigmaLow,D0SBSigmaHigh);
 	
 	//cout << "nsigma string = "<< nsigma << endl;
 	
 	outputfile += nsigma;
-	outputfileMC += nsigma;
-	cutname += nsigma;
-	cutname2 += nsigma;
-	contname += nsigma;
-	contname2 += nsigma;
-	counter+= nsigma;
+	//outputfileMC += nsigma;
+
 	
-	
+	/*
 	cout << contname << endl;
 	cout << contname2 << endl;
 	cout << cutname << endl;
 	cout << cutname2 << endl;
 	cout << counter << endl;
-	cout << outputfile << endl;
+	cout << outputfile << endl;*/
 	//return;
-	
+	//}// end else
   mgr->AddTask(task);
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
@@ -353,13 +337,18 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   // output TH1I for event counting
 	
 	//TLists
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2, TList::Class(),AliAnalysisManager::kOutputContainer,outputfileMC.Data());
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname1, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(contname2, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(contname3, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+     AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(contname4, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+     AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(contname5, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(contname6, TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    // Normalization Counter
+    AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
    // Cut Objects
-  AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(cutname,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts D
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(cutname2,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts tracks
-   // Normalization Counter
-  AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(counter,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(cutname1,AliRDHFCutsDStartoKpipi::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts D
+  AliAnalysisDataContainer *coutput9 = mgr->CreateContainer(cutname2,AliHFAssociatedTrackCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //cuts tracks
+
   
 	
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -368,6 +357,10 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
   mgr->ConnectOutput(task,3,coutput3);
   mgr->ConnectOutput(task,4,coutput4);
   mgr->ConnectOutput(task,5,coutput5);
+     mgr->ConnectOutput(task,6,coutput6);
+    mgr->ConnectOutput(task,7,coutput7);
+    mgr->ConnectOutput(task,8,coutput8);
+    mgr->ConnectOutput(task,9,coutput9);
 
   return task ;
 

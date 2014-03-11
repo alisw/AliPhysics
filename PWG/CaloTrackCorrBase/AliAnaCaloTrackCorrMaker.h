@@ -101,7 +101,8 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   Bool_t   fFillDataControlHisto;//! Fill histograms only interesting with data
   
   // Control histograms
-  TH1F *   fhNEvents;           //! Number of events counter histogram
+  TH1F *   fhNEventsIn;         //! Number of input events counter histogram
+  TH1F *   fhNEvents;           //! Number of acepted events counter histogram
   TH1F *   fhNExoticEvents;     //! Number of events triggered by exotic, counter histogram
   TH1F *   fhNEventsNoTriggerFound; //! number of events where whaetever was done, no trigger is found
   TH1F *   fhNPileUpEvents;     //! N events pasing pile up cut
@@ -120,10 +121,10 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   TH1F *   fhEventPlaneAngle;   //! Histogram with Event plane angle
   TH1F *   fhNMergedFiles;      //! Number of files merged
   TH1F *   fhScaleFactor;       //! Factor to scale histograms
-  TH1F *   fhEMCalBCEvent;      //! N events depending on the existance of a cluster in a given bunch crossing
-  TH1F *   fhEMCalBCEventCut;   //! N events depending on the existance of a cluster above acceptance and E cut in a given bunch crossing
-  TH1F *   fhTrackBCEvent;      //! N events depending on the existance of a track in a given bunch crossing
-  TH1F *   fhTrackBCEventCut;   //! N events depending on the existance of a track above acceptance and pt cut in a given bunch crossing
+  TH1F *   fhEMCalBCEvent;      //! N events depending on the existence of a cluster in a given bunch crossing
+  TH1F *   fhEMCalBCEventCut;   //! N events depending on the existence of a cluster above acceptance and E cut in a given bunch crossing
+  TH1F *   fhTrackBCEvent;      //! N events depending on the existence of a track in a given bunch crossing
+  TH1F *   fhTrackBCEventCut;   //! N events depending on the existence of a track above acceptance and pt cut in a given bunch crossing
   TH1F *   fhPrimaryVertexBC;   //! Primary vertex BC
   TH1F *   fhTimeStampFraction; //! event fraction depending on Time Stamp, only if activated on reader
   TH1F *   fhNPileUpVertSPD;    //! number of pile-up vertices from SPD
@@ -154,7 +155,7 @@ class AliAnaCaloTrackCorrMaker : public TObject {
   
   AliAnaCaloTrackCorrMaker & operator = (const AliAnaCaloTrackCorrMaker & ) ; // cpy assignment
   
-  ClassDef(AliAnaCaloTrackCorrMaker,21)
+  ClassDef(AliAnaCaloTrackCorrMaker,22)
 } ;
  
 

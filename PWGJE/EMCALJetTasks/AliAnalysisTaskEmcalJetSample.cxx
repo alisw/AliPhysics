@@ -193,7 +193,7 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
     }
     
     jet = fJetsCont->GetLeadingJet();
-    fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
+    if(jet) fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
   }
 
   return kTRUE;

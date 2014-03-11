@@ -28,6 +28,7 @@
 set ( SRCS 
 	FlavourJetTasks/AliAnalysisTaskSEDmesonsFilterCJ.cxx
 	FlavourJetTasks/AliAnalysisTaskFlavourJetCorrelations.cxx
+
 )
 
 set ( DHDR  PWGJEFlavourJetTasksLinkDef.h)

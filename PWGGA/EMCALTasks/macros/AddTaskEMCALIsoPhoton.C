@@ -45,10 +45,12 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
   mgr->AddTask(ana);
-  TString containername = "histosEMCALIsoPhoton";
+  TString containername = "histEMCIsoPhoton."+trigbitname;
+  TString containernameQA = "histosQA."+trigbitname;
   if(pathstrsel != "/"){
     TString dirpth = (TSubString)pathstrsel.operator()(1,1);
     containername += dirpth;
+    containernameQA  += dirpth;
   }
   
   // Create ONLY the output containers for the data produced by the task.
@@ -57,9 +59,14 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containername.Data(), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,
 							    Form("%s", AliAnalysisManager::GetCommonFileName()));
+
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(containernameQA.Data(), 
+							    TList::Class(),AliAnalysisManager::kOutputContainer,
+							    Form("%s", AliAnalysisManager::GetCommonFileName()));
   
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (ana, 1, coutput1 );
+  mgr->ConnectOutput (ana, 2, coutput2 );
    
   return ana;
 }

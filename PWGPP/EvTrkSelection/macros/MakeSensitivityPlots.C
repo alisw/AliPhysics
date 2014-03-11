@@ -7,36 +7,53 @@
 #include "TLegend.h"
 #include "TLatex.h"
 
-void MakeSensitivityPlots();
+//loadlibs();
+//gSystem->Load("libANALYSIS");
+//gSystem->Load("libANALYSISalice");
+//#include "AliESDtrackCuts.h"
+
+void MakeSensitivityPlots2();
 //
 TCanvas * GetSensitivityPlot(TString cutname = "Ncl",  
 			     Int_t projectionAxis = 1,
 			     Int_t particleType = 5,
 			     Double_t lowCut = 80.,
 			     Double_t highCut = 1e4, 
-			     TString inFileNameData = "output/LHC10b_data.root", 
-			     TString inFileNameMC = "output/LHC10b_MC.root");
+			     TString inFileNameData = "data_LHC10d.root",
+			     TString inFileNameMC = "mc_LHC10d.root");
 //
 TH1D   * GetAcceptedFraction(TString cutname = "Ncl",  
 			     Int_t projectionAxis = 1,
 			     Int_t particleType = 5,
 			     Double_t lowCut = 80.,
 			     Double_t highCut = 1e4, 
-			     TString inFileName = "output/LHC10b_data.root");
+			     TString inFileName = "data_LHC10d.root");
 //
-void PrintCutGallery(TString inFileNameData = "output/LHC10b_data.root", 
-		     TString inFileNameMC   = "output/LHC10b_MC.root", 
-		     TString outFileName    = "plots/10b.pdf");
+void PrintCutGallery(TString inFileNameData = "data_LHC10d.root",
+		     TString inFileNameMC   = "mc_LHC10d.root",
+		     TString outFileName    = "plots/10d.pdf");
+
+//
+TH1D *GetITSTPCMatchingEff(TString inFileNameData = "data_LHC10d.root",
+                              Int_t particleType = 5,
+                              Int_t projectionAxis = 1);
+
+//
+TH1D *GetITSTPCMatchingHisto(TString inFileNameData = "data_LHC10d.root",
+                             Int_t particleType = 5,
+                             Bool_t isMatched = kTRUE,
+                             Int_t projectionAxis = 1);
+
 
 //______________________________________________________________________________
-void MakeSensitivityPlots() {
+void MakeSensitivityPlots2() {
   //
   // make all the senstivity plots
   //
-  PrintCutGallery("output/LHC10b_data.root", "output/LHC10b_MC.root", "plots/10b.pdf");
-  PrintCutGallery("output/LHC10d_data.root", "output/LHC10d_MC.root", "plots/10d.pdf");
-  PrintCutGallery("output/LHC10e_data.root", "output/LHC10e_MC.root", "plots/10e.pdf");
-  PrintCutGallery("output/LHC10h_data.root", "output/LHC10h_MC.root", "plots/10h.pdf");
+  //PrintCutGallery("output/LHC10b_data.root", "output/LHC10b_MC.root", "plots/10b.pdf");
+  PrintCutGallery("data_LHC10d.root", "mc_LHC10d.root", "plots/10d.pdf");
+  //PrintCutGallery("output/LHC10e_data.root", "output/LHC10e_MC.root", "plots/10e.pdf");
+  //PrintCutGallery("output/LHC10h_data.root", "output/LHC10h_MC.root", "plots/10h.pdf");
 
 }
 
@@ -220,4 +237,73 @@ TH1D * GetAcceptedFraction(TString cutname,
   return hAccepted;
 
   
+}
+
+//______________________________________________________________________________
+TH1D *GetITSTPCMatchingEff(TString inFileNameData,
+                              Int_t particleType,
+                              Int_t projectionAxis){
+    
+    //
+    // make a single plot
+    //
+    TH1D * hMatching = GetITSTPCMatchingHisto(inFileNameData, particleType, kTRUE, projectionAxis);
+    hMatching->SetNameTitle(Form("PID: %d\t proj: %d",particleType,projectionAxis), Form("PID: %d\t proj: %d",particleType,projectionAxis));
+    hMatching->Sumw2();
+    //
+    TH1D *hNoMatching = GetITSTPCMatchingHisto(inFileNameData, particleType, kFALSE, projectionAxis);
+    hNoMatching->SetNameTitle(Form("PID: %d\t proj: %d",particleType,projectionAxis), Form("PID: %d\t proj: %d",particleType,projectionAxis));
+    hNoMatching->Sumw2();
+    //
+    hMatching->Divide(hMatching,hNoMatching,1,1,"B");
+    
+    //TCanvas * canvEff = new TCanvas("canvEff","matching efficiency",600,600);
+    //hMatching->Draw();
+    
+    return hMatching;
+    
+    
+}
+
+
+
+//______________________________________________________________________________
+TH1D *GetITSTPCMatchingHisto(TString inFileNameData,
+                             Int_t particleType,
+                             Bool_t isMatched,
+                             Int_t projectionAxis){
+    
+  //
+  // ITS-TPC matching histograms as a funct. of pT, eta, phi, for each species
+  //    
+  TFile * inFileData = TFile::Open(inFileNameData);
+  TList * l = (TList * ) inFileData->Get("akalweit_TrackingUncert");
+  THnF * histITSTPC = (THnF *) l->FindObject("histTpcItsMatch");
+
+  //
+  // select particleType
+  //
+  histITSTPC->GetAxis(4)->SetRangeUser(particleType, particleType);
+
+  //
+  // extract isMatched = kFALSE or kTRUE
+  //
+  if(isMatched)
+    histITSTPC->GetAxis(0)->SetRangeUser(1,1);
+  else
+    histITSTPC->GetAxis(0)->SetRangeUser(0,0);
+  
+  TH1D * hProj  = histITSTPC->Projection(projectionAxis);
+  hProj->SetDirectory(0);
+  hProj->SetNameTitle(Form("h%d",projectionAxis),Form("h%d",projectionAxis));
+    
+  //
+  delete l;
+  inFileData->Close();
+  //
+    
+    
+  return hProj;
+  
+    
 }

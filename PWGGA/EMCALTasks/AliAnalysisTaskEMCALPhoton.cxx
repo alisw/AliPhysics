@@ -392,8 +392,6 @@ void AliAnalysisTaskEMCALPhoton::UserExec(Option_t *)
   fHeader->fCl1Cent   = cent->GetCentralityPercentileUnchecked("CL1");
   fHeader->fTrCent    = cent->GetCentralityPercentileUnchecked("TRK");
 
-  if(fDebug)
-    printf("AliEMCALgeo file found\n");
   TObjArray *matEMCAL=(TObjArray*)fOADBContainer->GetObject(runnumber,"EmcalMatrices");
   for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
     if(fGeoName=="EMCAL_FIRSTYEARV1" && mod>3)
@@ -621,7 +619,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
   if (!fVCells)
     return;
   Int_t ncells = fVCells->GetNumberOfCells();
-  Int_t mcel = 0;
+  Int_t mcel = 0, maxcelid=-1;
+  Double_t maxcellE = 0, maxcellEta=0, maxcellPhi=0;
   for(Int_t icell = 0; icell<ncells; icell++){
     Int_t absID = TMath::Abs(fVCells->GetCellNumber(icell));
     AliPhotonCellObj *mycell = static_cast<AliPhotonCellObj*>(fMyCells->New(mcel++));
@@ -633,6 +632,12 @@ void AliAnalysisTaskEMCALPhoton::FillMyCells()
     if(!fGeom)
       return;
     /*if(!fIsMC)*/fGeom->EtaPhiFromIndex(absID,eta,phi);
+    if(maxcellE<fVCells->GetCellAmplitude(absID)){
+      maxcellE = fVCells->GetCellAmplitude(absID);
+      maxcellEta = eta;
+      maxcellPhi = phi;
+      maxcelid = absID;
+    }
     Float_t theta = 2*TMath::ATan(TMath::Exp(-eta));
     mycell->fAbsID = absID;
     mycell->fE = fVCells->GetCellAmplitude(absID);
@@ -659,7 +664,8 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
   Int_t nclus = fCaloClusters->GetEntries();
   if(0==nclus)
     printf("CaloClusters has ZERO entries\n");
-  Int_t mcl = 0;
+  Int_t mcl = 0, maxcelid=-1;
+  Double_t maxcellE=0, maxcellEtac=0,maxcellPhic=0;
   for(Int_t ic=0; ic < nclus; ic++){
     AliVCluster *clus = static_cast<AliVCluster*>(fCaloClusters->At(ic));
     if(!clus)
@@ -687,6 +693,12 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
     Short_t  id = -1;
     myclus->fEmax    = GetMaxCellEnergy( clus, id); 
     myclus->fIdmax   = id;
+    if(maxcellE <  myclus->fEmax){
+      maxcellE =  myclus->fEmax;
+      maxcelid = id;
+      maxcellEtac = cpos.Eta();
+      maxcellPhic = cpos.Phi();
+    }
     myclus->fTmax    = fVCells->GetCellTime(id);
     myclus->fEcross  = GetCrossEnergy( clus, id);
     myclus->fDisp    = clus->GetDispersion();
@@ -727,8 +739,10 @@ void AliAnalysisTaskEMCALPhoton::FillMyClusters()
     myclus->fTrEp = clus->E()/track->P();
     myclus->fTrDedx = track->GetTPCsignal();
   }
-  if(this->fDebug)
+  if(this->fDebug){
+    printf(" ---===+++ Max Cell among clusters: id=%d, E=%1.2f, eta-clus=%1.2f, phi-clus=%1.2f\n",maxcelid,maxcellE,maxcellEtac,maxcellPhic);
     printf("::FillMyClusters() returning...\n\n");
+  }
   
 }
 //________________________________________________________________________

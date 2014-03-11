@@ -45,8 +45,8 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	}
 	
 	//=========  Set Cutnumber for V0Reader ================================
-	TString ConvCutnumber = "8000000060084001001500000000";   //Online  V0 finder
-	TString PionCuts      = "00000221";            //Electron Cuts
+	TString ConvCutnumber = "8000000060081001001500000000";   //Online  V0 finder
+	TString PionCuts      = "000000200";            //Electron Cuts
 		
 	Bool_t doEtaShift = kFALSE;
 
@@ -143,9 +143,15 @@ void AddTask_GammaConvEtaPiPlPiMiGamma_pPb(
 	stringShift = "pPb";
 
 	if( trainConfig == 1 ) {
-		ConvCutarray[0] = "8000011002092170008260400000"; PionCutarray[0] = "00000362"; MesonCutarray[0] = "01039035009000"; //standard cut Pi0 PbPb 00-100			
-	} 
-	
+		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000400"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+	} else if( trainConfig == 1 ) {
+		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000403"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+	} else if( trainConfig == 1 ) {
+		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000404"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+	} else if( trainConfig == 1 ) {
+		ConvCutarray[0] = "8000011002091170008260400000"; PionCutarray[0] = "000000405"; MesonCutarray[0] = "01035035000000"; //standard cut Pi0 PbPb 00-100			
+	}
+		
 	TList *ConvCutList  = new TList();
 	TList *MesonCutList = new TList();
 	TList *PionCutList  = new TList();

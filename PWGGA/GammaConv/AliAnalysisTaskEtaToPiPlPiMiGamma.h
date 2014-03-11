@@ -117,6 +117,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		TH2F **fHistoPionDCAz;
 		TH2F **fHistoPionTPCdEdxNSigma;
 		TH2F **fHistoPionTPCdEdx;
+		TH2F **fHistoPionPionInvMassPt;
 		TH2F **fHistoMotherInvMassPt;
 		THnSparseF **fTHnSparseMotherInvMassPtZM;
 		TH2F **fHistoMotherBackInvMassPt;
@@ -145,6 +146,8 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		TH1F **fHistoTruePosPionFromEtaPt;
 		TH1F **fHistoTrueNegPionPt;
 		TH1F **fHistoTrueNegPionFromEtaPt;
+		TH2F **fHistoTruePionPionInvMassPt;
+		TH2F **fHistoTruePionPionFromEtaInvMassPt;
 		// Event properties
 		TH1I **fHistoNEvents;
 		TH1I **fHistoNGoodESDTracks;
@@ -160,7 +163,7 @@ class AliAnalysisTaskEtaToPiPlPiMiGamma: public AliAnalysisTaskSE
 		Bool_t fDoMesonQA;
 		Bool_t fIsFromMBHeader;
 		Bool_t fIsMC;
-
+		Bool_t fIsGammaEtaCand;
 	private:
 		AliAnalysisTaskEtaToPiPlPiMiGamma( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented
 		AliAnalysisTaskEtaToPiPlPiMiGamma& operator=( const AliAnalysisTaskEtaToPiPlPiMiGamma& ); // Not implemented

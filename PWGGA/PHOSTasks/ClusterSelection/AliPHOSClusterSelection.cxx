@@ -38,7 +38,7 @@ AliPHOSClusterSelection::AliPHOSClusterSelection()
   : fMinChargedParticleTrackDistance(-1.), 
     fNotUnfolded(false),
     fMaxDispR2(-1.),
-    fCoreRadius(-1.),
+    fIsCore(false),
     fMaxTOF(-1.)
 {
   // Defaults to the most lenient selection allowable
@@ -54,11 +54,10 @@ Bool_t AliPHOSClusterSelection::IsSelected(AliVCluster* cluster) const
   return IsSelectedCPV(cluster)
     && IsSelectedUnfolded(cluster)
     && IsSelectedDisp(cluster)
-    && IsSelectedDispCore(cluster)
     && IsSelectedTOF(cluster);
 }
 
-Bool_t IsSelectedCPV(AliVCluster* cluster) const
+Bool_t AliPHOSClusterSelection::IsSelectedCPV(AliVCluster* cluster) const
 {
   if( 0 > fMinChargedParticleTrackDistance )//No selection on CPV
     return true; 
@@ -82,11 +81,11 @@ Bool_t IsSelectedCPV(AliVCluster* cluster) const
       TArrayI * itracks = ESDcluster-> GetTracksMatched() ;
       if(itracks->GetSize()>0){
     	Int_t iTr = itracks->At(0);
-    	if(iTr>=0 && iTr<fEvent->GetNumberOfTracks()){
-    	  AliVParticle* track = fEvent->GetTrack(iTr);
+    	if(iTr>=0 && iTr<EventESD->GetNumberOfTracks()){
+    	  AliVParticle* track = EventESD->GetTrack(iTr);
     	  Double_t pt = track->Pt() ;
     	  Short_t charge = track->Charge() ;
-    	  Double_t r=AliPHOSClusterSelection::TestCPV(dx, dz, pt, charge, mf) ;
+    	  Double_t r = AliPHOSClusterSelection::TestCPV(dx, dz, pt, charge, mf);
     	  cpvBit=(r>fMinChargedParticleTrackDistance) ;
     	}
       }
@@ -101,7 +100,7 @@ Bool_t IsSelectedCPV(AliVCluster* cluster) const
 	if ( track ) {
 	  Double_t pt = track->Pt();
 	  Short_t charge = track->Charge();
-	  Double_t r = AliPHOSClusterSelection::TestCPV(dx, dz, pt, charge, mf) ;
+	  Double_t r = AliPHOSClusterSelection::TestCPV(dx, dz, pt, charge, mf);
 	  cpvBit=(r>fMinChargedParticleTrackDistance) ;
 	}
       }
@@ -111,7 +110,7 @@ Bool_t IsSelectedCPV(AliVCluster* cluster) const
 }
 
 
-Bool_t IsSelectedUnfolded(AliVCluster* cluster) const
+Bool_t AliPHOSClusterSelection::IsSelectedUnfolded(AliVCluster* cluster) const
 {
   if(!fNotUnfolded)
     return true;
@@ -121,18 +120,18 @@ Bool_t IsSelectedUnfolded(AliVCluster* cluster) const
   }
 }
 
-Bool_t IsSelectedDisp(AliVCluster* cluster) const
+Bool_t AliPHOSClusterSelection::IsSelectedDisp(AliVCluster* cluster) const
 {
   if(0 > fMaxDispR2)
     return true;
   else{
     Double_t m02 = 0.,m20 = 0.;
-    if(fCoreRadius<0){//No core calculation
+    if(!fIsCore){//No core calculation
       m02 = cluster->GetM02();
       m20 = cluster->GetM20();
       return AliPHOSClusterSelection::TestLambda(cluster->E(),m20,m02) ;
     }
-    else{//TODO: Core calculation for general R 
+    else{//DispCore
       AliVCaloCells* cells = static_cast<AliVCaloCells*> (AliPHOSClusterSelection::GetCurrentEvent()->GetPHOSCells());//Need the cells
       AliPHOSClusterSelection::EvalCoreLambdas(cluster, cells, m02, m20);
       return AliPHOSClusterSelection::TestLambda(cluster->E(),m20,m02);
@@ -141,7 +140,7 @@ Bool_t IsSelectedDisp(AliVCluster* cluster) const
 
 }
 
-Bool_t IsSelectedTOF(AliVCluster* cluster) const
+Bool_t AliPHOSClusterSelection::IsSelectedTOF(AliVCluster* cluster) const
 {
   if(0 > fMaxTOF)
     return true;
@@ -180,12 +179,11 @@ AliPHOSClusterSelection* AliPHOSClusterSelection::SetMaxDispR2(Float_t maxR2)
   return this;
 }
 
-AliPHOSClusterSelection* AliPHOSClusterSelection::SetCoreRadius(Float_t radius)
+AliPHOSClusterSelection* AliPHOSClusterSelection::SetIsCore(Bool_t isCore)
 {
-  // 'radius' sets the core radius used for the dispersion cut evaluation.
-  // If 'radius' is negative, the whole cluster is used.
+  // 'isCore' sets wether core version of Disp is used. -1 gives no core.
   
-  fCoreRadius = radius;
+  fIsCore = isCore;
   return this;
 }
 
@@ -194,70 +192,74 @@ AliPHOSClusterSelection* AliPHOSClusterSelection::SetMaxTOF(Float_t maxTOF)
   // 'maxTOF' sets the maximum allowed time of flight for the cluster.
   // If 'maxTOF' is negative, all clusters are selected and the selection is "disabled".
   
-  fCoreRadius = radius;
+  fMaxTOF = maxTOF;
   return this;
 }
 
 TString AliPHOSClusterSelection::ToString() const
 {
-  // returns a string an quasi-unique string for whatever selection 
+  // returns a string an quasi-unique string for whatever selection
   // parameters the instance contains. The uniqueness of the string
   // is limited by the precision given in the formatting of the string.
   // Take care that the precision is sufficient for your needs.
 
-  return TString::Format("%.1f_%i_%.1f_%.1f_%.1f",
-			 fMinChargedParticleTrackDistance,
-			 fNotUnfolded,
-			 fMaxDispR2,
-			 fCoreRadius,
-			 fMaxTOF
-			 );
+  TString string ="v1";
+  string+=Form("_%.2f", fMinChargedParticleTrackDistance);
+  string+=Form("_%i", fNotUnfolded);
+  string+=Form("_%.2f", fMaxDispR2);
+  string+=Form("_%i", fIsCore);
+  string+=Form("_%.2f", fMaxTOF);
+  return string;
 }
 
 
 Float_t AliPHOSClusterSelection::GetMinChargedParticleTrackDistance(const TString& string)
 {
-  //TObjArray * objarray = string.Tokenize("_");
-  TObjString * objstring = string.Tokenize("_")->At(0);
-  Float_t flt= objstring->GetString()->Atof();
-  delete objstring;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMinChargedParticleTrackDistance);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 Bool_t AliPHOSClusterSelection::GetUnfolded(const TString& string)
 {
-  TObjString * objstring = string.Tokenize("_")->At(1);
-  Bool_t bl = objstring->GetString()->Atoi(); 
-  delete objstring;
-  return bl;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kNotUnfolded);
+  Float_t flt = objString->String().Atoi();
+  delete array;
+  return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxDispR2(const TString& string)
 {
-  TObjString * objstring = string.Tokenize("_")->At(2);
-  Float_t flt = objstring->Atof(); 
-  delete objstring;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxDispR2);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
-Float_t AliPHOSClusterSelection::GetCoreRadius(const TString& string)
+Bool_t AliPHOSClusterSelection::GetIsCore(const TString& string)
 {
-  TObjArray * objstring = string.Tokenize("_")->At(3);
-  Float_t flt = objstring->Atof(); 
-  delete objstring;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kIsCore);
+  Float_t flt = objString->String().Atoi();
+  delete array;
   return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxTOF(const TString& string)
 {
-  TObjArray * objstring = string.Tokenize("_")->At(4);
-  Float_t flt = objstring->Atof(); 
-  delete objstring;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxTOF);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 
-Double_t AliPHOSClusterSelection::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge, Double_t mf){
+Double_t AliPHOSClusterSelection::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge, Double_t mf) const {
   //Parameterization of LHC10h period
   //_true if neutral_
   //Copied from Pi0Flow task
@@ -289,13 +291,14 @@ Double_t AliPHOSClusterSelection::TestCPV(Double_t dx, Double_t dz, Double_t pt,
 }
 
 //____________________________________________________________________________
-void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells * cells,Double_t &m02, Double_t &m20){ 
+void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster  * clu, AliVCaloCells * cells,Double_t &m02, Double_t &m20) const
+{ 
   //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
   //Copied from pi0flowtask
-
-  const Double_t rCut=fCoreRadius;//TODO: This now works only for R=4.5 as the dispersion cut is not tuned for other values  
+  AliVEvent* vevent = AliPHOSClusterSelection::GetCurrentEvent();
+  Int_t runNumber = vevent->GetRunNumber();
   const Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
-// Calculates the center of gravity in the local PHOS-module coordinates
+  // Calculates the center of gravity in the local PHOS-module coordinates
   Float_t wtot = 0;
   const Int_t mulDigit=clu->GetNCells() ;
   Double_t xc[mulDigit] ;
@@ -312,83 +315,84 @@ void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster * clu, AliVCaloCells 
 
     AliOADBContainer geomContainer("phosGeo");//Initialize Geometry
     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     AliPHOSGeometry * fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
-	if( fDebug )
-	  AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+	AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
 	continue;
       }
 
 
-    fPHOSGeo->AbsToRelNumbering(absId, relid) ;
-    fPHOSGeo->RelPosInModule(relid, xi, zi);
-    xc[iDigit]=xi ;
-    zc[iDigit]=zi ;
-    Double_t ei = elist[iDigit]*cells->GetCellAmplitude(absId) ;
-    wi[iDigit]=0. ;
-    if (clu->E()>0 && ei>0) {
-      wi[iDigit] = TMath::Max( 0., logWeight + TMath::Log( ei / clu->E() ) ) ;
-      Double_t w=wi[iDigit];
-      x    += xc[iDigit] * w ;
-      z    += zc[iDigit] * w ;
-      wtot += w ;
+      fPHOSGeo->AbsToRelNumbering(absId, relid) ;
+      fPHOSGeo->RelPosInModule(relid, xi, zi);
+      xc[iDigit]=xi ;
+      zc[iDigit]=zi ;
+      Double_t ei = elist[iDigit]*cells->GetCellAmplitude(absId) ;
+      wi[iDigit]=0. ;
+      if (clu->E()>0 && ei>0) {
+	wi[iDigit] = TMath::Max( 0., logWeight + TMath::Log( ei / clu->E() ) ) ;
+	Double_t w=wi[iDigit];
+	x    += xc[iDigit] * w ;
+	z    += zc[iDigit] * w ;
+	wtot += w ;
+      }
     }
-  }
-  if (wtot>0) {
-    x /= wtot ;
-    z /= wtot ;
-  }
+    if (wtot>0) {
+      x /= wtot ;
+      z /= wtot ;
+    }
      
-  wtot = 0. ;
-  Double_t dxx  = 0.;
-  Double_t dzz  = 0.;
-  Double_t dxz  = 0.;
-  Double_t xCut = 0. ;
-  Double_t zCut = 0. ;
-  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
-    Double_t w=wi[iDigit];
-    if (w>0.) {
-        Double_t xi= xc[iDigit] ;
-        Double_t zi= zc[iDigit] ;
-	if((xi-x)*(xi-x)+(zi-z)*(zi-z) < rCut*rCut){
-          xCut += w * xi ;
-          zCut += w * zi ; 
-          dxx  += w * xi * xi ;
-          dzz  += w * zi * zi ;
-          dxz  += w * xi * zi ; 
+    wtot = 0. ;
+    Double_t dxx  = 0.;
+    Double_t dzz  = 0.;
+    Double_t dxz  = 0.;
+    Double_t xCut = 0. ;
+    Double_t zCut = 0. ;
+    for(Int_t iDigit1=0; iDigit1<mulDigit; iDigit1++) {
+      Double_t w=wi[iDigit1];
+      if (w>0.) {
+        Double_t xi1= xc[iDigit1] ;
+        Double_t zi1= zc[iDigit1] ;
+	if((xi1-x)*(xi1-x)+(zi1-z)*(zi1-z) < 4.5*4.5){
+          xCut += w * xi1 ;
+          zCut += w * zi1 ; 
+          dxx  += w * xi1 * xi1 ;
+          dzz  += w * zi1 * zi1 ;
+          dxz  += w * xi1 * zi1 ; 
           wtot += w ;
 	}
-    }
+      }
     
-  }
-  if (wtot>0) {
-    xCut/= wtot ;
-    zCut/= wtot ;
-    dxx /= wtot ;
-    dzz /= wtot ;
-    dxz /= wtot ;
-    dxx -= xCut * xCut ;
-    dzz -= zCut * zCut ;
-    dxz -= xCut * zCut ;
+    }
+    if (wtot>0) {
+      xCut/= wtot ;
+      zCut/= wtot ;
+      dxx /= wtot ;
+      dzz /= wtot ;
+      dxz /= wtot ;
+      dxx -= xCut * xCut ;
+      dzz -= zCut * zCut ;
+      dxz -= xCut * zCut ;
 
-    m02 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-    m20 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
-  }
-  else {
-    m20=m02=0.;
-  }
+      m02 =  0.5 * (dxx + dzz) + TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+      m20 =  0.5 * (dxx + dzz) - TMath::Sqrt( 0.25 * (dxx - dzz) * (dxx - dzz) + dxz * dxz )  ;
+    }
+    else {
+      m20=m02=0.;
+    }
 
+  }
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskPi0Flow::TestLambda(Double_t pt,Double_t l1,Double_t l2){
+Bool_t AliPHOSClusterSelection::TestLambda(Double_t pt,Double_t l1,Double_t l2) const 
+{
   //Evaluates if lambdas correspond to photon cluster
   //Tuned using pp data 
   //copied from Pi0FlowTask
   Double_t l2Mean, l1Mean, l2Sigma, l1Sigma, c, R2;
-  if(fCoreRadius<0){
+  if(! fIsCore ){
     l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
     l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
     l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
@@ -409,7 +413,7 @@ Bool_t AliAnalysisTaskPi0Flow::TestLambda(Double_t pt,Double_t l1,Double_t l2){
       0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
       0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
   }
-  return (R2<fMaxDispR2*MaxDispR2);//TODO: Check if this should be 2. order
+  return (R2<fMaxDispR2*fMaxDispR2);//TODO: Check if this should be 2. order
 }
 
 
@@ -421,7 +425,7 @@ AliVEvent* AliPHOSClusterSelection::GetCurrentEvent() const
   
   AliAnalysisManager* analysisManager = dynamic_cast<AliAnalysisManager*>(AliAnalysisManager::GetAnalysisManager());
   AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(analysisManager->GetInputEventHandler());
-  AliMultiInputEventHandler *multiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fInputHandler);
+  AliMultiInputEventHandler *multiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(inputHandler);
   if (multiInputHandler)
     inputHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstInputEventHandler());
   

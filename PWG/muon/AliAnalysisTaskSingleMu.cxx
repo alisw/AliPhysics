@@ -194,11 +194,13 @@ void AliAnalysisTaskSingleMu::MyUserCreateOutputObjects()
   AddObjectToCollection(histoDimu, kNobjectTypes);
   
   histoName = "hGeneratedZ";
-  AddObjectToCollection(histoDimu->Clone(histoName.Data()), kNobjectTypes+1);
+  TH2* histoGenZ = static_cast<TH2*>(histoDimu->Clone(histoName.Data()));
+  histoGenZ->SetTitle(histoName.Data());
+  AddObjectToCollection(histoGenZ, kNobjectTypes+1);
   
   
   histoName = "hZmuEtaCorr";
-  histoDimu = new TH2F(histoName.Data(), histoName.Data(), 160, -8., 8., 160,-8., 8.);
+  histoDimu = new TH2F(histoName.Data(), histoName.Data(), 160, -8., 8., 160, -8., 8.);
   histoDimu->SetXTitle("#eta_{#mu-}");
   histoDimu->SetYTitle("#eta_{#mu+}");
   AddObjectToCollection(histoDimu, kNobjectTypes+2);
@@ -222,6 +224,8 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
     TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
     ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, "hIpVtx"))->Fill(ipVz);
   }
+  
+  TF1* beautyMuWgt = static_cast<TF1*>(GetWeight("beautyMu"));
 
   // Bool_t isPileupFromSPD = ( fAODEvent && ! fAODEvent->GetTracklets() ) ? InputEvent()->IsPileupFromSPD(3, 0.8, 3., 2., 5.) : InputEvent()->IsPileupFromSPDInMultBins(); // Avoid break when reading Muon AODs (tracklet info is not present and IsPileupFromSPDInMultBins crashes // UNCOMMENT TO REJECT PILEUP
   // if ( isPileupFromSPD ) return; // UNCOMMENT TO REJECT PILEUP
@@ -235,6 +239,8 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
     
     TObjArray selectedTracks(nTracks);
     TArrayI trackSources(nTracks);
+    TArrayF trackWgt(nTracks);
+    trackWgt.Reset(1.);
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
       track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : MCEvent()->GetTrack(itrack);
       
@@ -249,6 +255,13 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       selectedTracks.AddAt(track,itrack);
       trackSources[itrack] = GetParticleType(track);
       
+      if ( trackSources[itrack] == kBeautyMu && beautyMuWgt ) {
+        AliVParticle* mcTrack = ( kStepReconstructed ) ? MCEvent()->GetTrack(track->GetLabel()) : track;
+        trackWgt[itrack] = beautyMuWgt->Eval(mcTrack->Pt());
+//        Int_t iancestor = fUtilityMuonAncestor->GetAncestor(track,MCEvent());
+//        AliVParticle* motherPart = MCEvent()->GetTrack(iancestor);
+//        trackWgt[itrack] = beautyMuWgt->GetBinContent(beautyMuWgt->GetXaxis()->FindBin(motherPart->Pt()));
+      }
     } // loop on tracks
     
     // Loop on selected tracks
@@ -257,53 +270,52 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       track = static_cast<AliVParticle*>(selectedTracks.At(itrack));
       if ( ! track ) continue;
       
-      if ( istep == kStepGeneratedMC || fCutOnDimu ) {
-        // Check dimuons
-        for ( Int_t jtrack=itrack+1; jtrack<nTracks; jtrack++ ) {
-          AliVParticle* auxTrack = static_cast<AliVParticle*>(selectedTracks.At(jtrack));
-          if ( ! auxTrack ) continue;
-          if ( track->Charge() * auxTrack->Charge() >= 0 ) continue;
+      // Check dimuons
+      for ( Int_t jtrack=itrack+1; jtrack<nTracks; jtrack++ ) {
+        AliVParticle* auxTrack = static_cast<AliVParticle*>(selectedTracks.At(jtrack));
+        if ( ! auxTrack ) continue;
+        if ( track->Charge() * auxTrack->Charge() >= 0 ) continue;
           
-          TLorentzVector dimuPair = AliAnalysisMuonUtility::GetTrackPair(track,auxTrack);
-          Double_t ptMin = TMath::Min(track->Pt(),auxTrack->Pt());
-          Double_t invMass = dimuPair.M();
-          if ( invMass > 60. && invMass < 120. ) {
-            rejectTrack[itrack] = 1;
-            rejectTrack[jtrack] = 1;
-          }
-          if ( istep == kStepReconstructed ) {
+        TLorentzVector dimuPair = AliAnalysisMuonUtility::GetTrackPair(track,auxTrack);
+        Double_t ptMin = TMath::Min(track->Pt(),auxTrack->Pt());
+        Double_t invMass = dimuPair.M();
+        if ( fCutOnDimu && invMass > 60. && invMass < 120. ) {
+          rejectTrack[itrack] = 1;
+          rejectTrack[jtrack] = 1;
+        }
+        Double_t dimuWgt = trackWgt[itrack] * trackWgt[jtrack];
+        if ( istep == kStepReconstructed ) {
+          for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
+            TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
+            if ( ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) || ! fMuonTrackCuts->TrackPtCutMatchTrigClass(auxTrack, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
+            ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hRecoDimu"))->Fill(ptMin,invMass,dimuWgt);
+          } // loop on triggers
+        }
+        else {
+          if ( trackSources[itrack] == kZbosonMu && trackSources[jtrack] == kZbosonMu ) {
+            Bool_t isAccepted = kTRUE;
+            AliVParticle* muDaughter[2] = {0x0, 0x0};
+            for ( Int_t imu=0; imu<2; imu++ ) {
+              AliVParticle* currPart = ( imu == 0 ) ? track : auxTrack;
+              if ( currPart->Charge() < 0. ) muDaughter[0] = currPart;
+              else muDaughter[1] = currPart;
+              if ( currPart->Eta() < -4.5 || currPart->Eta() > -2. ) {
+                isAccepted = kFALSE;
+              }
+            } // loop on muons in the pair
+              
+            Double_t pairRapidity = dimuPair.Rapidity();
+            if ( pairRapidity < -4. || pairRapidity > -2.5 ) isAccepted = kFALSE;
+            //printf("Rapidity Z %g  pair %g\n",track->Y(), pairRapidity);
+              
             for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
               TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
-              if ( ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) || ! fMuonTrackCuts->TrackPtCutMatchTrigClass(auxTrack, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
-              ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hRecoDimu"))->Fill(ptMin,invMass);
-            } // loop on triggers
-          }
-          else {
-            if ( trackSources[itrack] == kZbosonMu && trackSources[jtrack] == kZbosonMu ) {
-              Bool_t isAccepted = kTRUE;
-              AliVParticle* muDaughter[2] = {0x0, 0x0};
-              for ( Int_t imu=0; imu<2; imu++ ) {
-                AliVParticle* currPart = ( imu == 0 ) ? track : auxTrack;
-                if ( currPart->Charge() < 0. ) muDaughter[0] = currPart;
-                else muDaughter[1] = currPart;
-                if ( currPart->Eta() < -4.5 || currPart->Eta() > -2. ) {
-                  isAccepted = kFALSE;
-                }
-              } // loop on muons in the pair
-              
-              Double_t pairRapidity = dimuPair.Rapidity();
-              if ( pairRapidity < -4. || pairRapidity > -2.5 ) isAccepted = kFALSE;
-              //printf("Rapidity Z %g  pair %g\n",track->Y(), pairRapidity);
-              
-              for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
-                TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
-                if ( isAccepted )  ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hGeneratedZ"))->Fill(ptMin,invMass);
-                ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hZmuEtaCorr"))->Fill(muDaughter[0]->Eta(),muDaughter[1]->Eta());
-              } // loop on selected trig
-            } // both muons from Z
-          } // kStepGeneratedMC
-        } // loop on auxiliary tracks
-      } // apply cut on dimu
+              if ( isAccepted ) ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hGeneratedZ"))->Fill(ptMin,invMass,dimuWgt);
+              ((TH2*)GetMergeableObject(physSel, trigClassName, centrality, "hZmuEtaCorr"))->Fill(muDaughter[0]->Eta(),muDaughter[1]->Eta(),dimuWgt);
+            } // loop on selected trig
+          } // both muons from Z
+        } // kStepGeneratedMC
+      } // loop on auxiliary tracks
       if ( rejectTrack[itrack] > 0 ) continue;
       
       Double_t thetaAbsEndDeg = 0;
@@ -326,7 +338,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       for ( Int_t itrig=0; itrig<selectTrigClasses.GetEntries(); ++itrig ) {
         TString trigClassName = ((TObjString*)selectTrigClasses.At(itrig))->GetString();
         if ( istep == kStepReconstructed && ! fMuonTrackCuts->TrackPtCutMatchTrigClass(track, fMuonEventCuts->GetTrigClassPtCutLevel(trigClassName)) ) continue;
-        ((AliCFContainer*)GetMergeableObject(physSel, trigClassName, centrality, "SingleMuContainer"))->Fill(containerInput,istep);
+        ((AliCFContainer*)GetMergeableObject(physSel, trigClassName, centrality, "SingleMuContainer"))->Fill(containerInput,istep,trackWgt[itrack]);
       } // loop on selected trigger classes
     } // loop on tracks
   } // loop on container steps
@@ -574,8 +586,6 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   // Vertex method //
   ///////////////////
   if ( ! furtherOpt.Contains("VERTEX") ) return;
-  Int_t firstMother = ( isMC ) ? 0 : kUnidentified;
-  Int_t lastMother = ( isMC ) ? kNtrackSources - 1 : kUnidentified;
   igroup1++;
   TH1* eventVertex = (TH1*)GetSum(physSel, minBiasTrig, centralityRange, "hIpVtx");
   if ( ! eventVertex ) return;
@@ -659,7 +669,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
         delete auxHisto;
       }
     }
-    SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
+    SetSparseRange(gridSparse, kHvarMotherType, "", firstPtBin, lastSrcBin, "USEBIN");
     Int_t currDraw = 0;
     
     for ( Int_t ibinpt=0; ibinpt<=ptAxis->GetNbins(); ++ibinpt ) {
@@ -729,7 +739,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       fitFunc->DrawCopy("same");
       currDraw++;
     } // loop on pt bins
-    SetSparseRange(gridSparse, kHvarMotherType, "", firstMother+1, lastMother+1, "USEBIN");
+    SetSparseRange(gridSparse, kHvarMotherType, "", firstSrcBin, lastSrcBin, "USEBIN");
     currName = Form("recoPt_%s",fThetaAbsKeys->At(itheta)->GetName());
     can = new TCanvas(currName.Data(),currName.Data(),(igroup1+1)*xshift,igroup2*yshift,600,600);
     TLegend* leg = new TLegend(0.6, 0.6, 0.8, 0.8);

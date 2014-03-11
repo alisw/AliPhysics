@@ -2,20 +2,13 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                
 //
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = kFALSE,
-                                                          const char *suffix="default",
-                                                          TString outputFile = "", 
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
+                                                          Bool_t kSimulation = kFALSE,
+                                                          TString outputFile = "",
                                                           Int_t year = 2012, 
                                                           Bool_t kPrintSettings = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
-
-  if(kSimulation)
-  {
-    printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
-    TString ssuffix = suffix;
-    if(!ssuffix.Contains("default")) return;
-  }
   
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -31,9 +24,18 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
     ::Error("AddTaskPartCorr", "This task requires an input event handler");
     return NULL;
   }
+  
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+  
+  TString ssuffix = suffix;
+  if(kUseKinematics || kSimulation)
+  {
+    kSimulation = kTRUE;
+    printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
+    if(!ssuffix.Contains("default")) return;
+  }
   
   // Configure analysis
   //===========================================================================
@@ -56,7 +58,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
-  if(kUseKinematics)
+  if(kSimulation)
   {
     if(inputDataType == "ESD")
     {
@@ -72,6 +74,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
+  
+  if(!ssuffix.Contains("default"))
+  {
+    reader->SwitchOnTriggerPatchMatching();
+    reader->SwitchOffBadTriggerEventsRemoval();
+    reader->SetTriggerPatchTimeWindow(8,9);
+    //reader->SetEventTriggerL0Threshold(2.);
+  }
   
   if(kPrintSettings) reader->Print("");
   
@@ -94,16 +104,25 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
-  if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-  else               emcalQA->SwitchOffDataMC() ;
+  if(kSimulation)
+  {
+    emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    emcalQA->SwitchOffStudyBadClusters();
+    emcalQA->SwitchOffFillAllCellTimeHisto();
+  }
+  else
+  {
+    emcalQA->SwitchOffDataMC() ;
+    emcalQA->SwitchOnStudyBadClusters();
+    emcalQA->SwitchOnFillAllCellTimeHisto();
+  }
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOnCorrelation();
   emcalQA->SwitchOffFillAllTH3Histogram();
   emcalQA->SwitchOffFillAllPositionHistogram();
   emcalQA->SwitchOffFillAllPositionHistogram2();
-  emcalQA->SwitchOnStudyBadClusters();
-
+  
   //Set Histrograms bins and ranges
   emcalQA->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 200) ;
   emcalQA->GetHistogramRanges()->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
@@ -150,6 +169,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   
   // #### Configure Maker ####
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  if(ssuffix.Contains("default")) maker->SwitchOffDataControlHistograms();
+  else                            maker->SwitchOnDataControlHistograms();
   maker->SetReader(reader);//pointer to reader
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
   maker->AddAnalysis(emcalQA,0);
@@ -184,10 +205,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s:%s",outputFile.Data(),cname.Data()));
   
-  cname = Form("CaloQACuts_%s", suffix);
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
-                                                             AliAnalysisManager::kParamContainer, 
-                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
+//  cname = Form("CaloQACuts_%s", suffix);
+//  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
+//                                                             AliAnalysisManager::kParamContainer, 
+//                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
   
 	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
@@ -195,7 +216,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
+//  mgr->ConnectOutput (task, 2, cout_cuts);
   
   return task;
 }

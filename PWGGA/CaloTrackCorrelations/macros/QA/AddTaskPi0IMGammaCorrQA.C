@@ -223,7 +223,7 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   
   reader->SetZvertexCut(10.);
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
-  reader->SwitchOffEventSelection();        // remove pileup by default
+  reader->SwitchOffPileUpEventRejection();  // remove pileup
   reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   
   reader->SetCentralityBin(minCen,maxCen); // Accept all events, if not select range

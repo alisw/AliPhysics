@@ -131,8 +131,8 @@ cd Barrel
 
 echo "* Running AliRoot to reconstruct barrel of $CHUNKNAME"
 
-echo executing aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
-time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec.log
+echo executing aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")"
+time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")" &> ../rec.log
 exitcode=$?
 echo "Exit code: $exitcode"
 

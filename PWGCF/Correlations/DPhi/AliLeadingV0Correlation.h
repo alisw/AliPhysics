@@ -4,8 +4,8 @@
  *                      sandun.pahula.hewage@cern.ch
  *****************************************************************************************/
 
-#ifndef SANDUNQAH
-#define SANDUNQAH
+#ifndef ALILEADINGV0CORRELATION
+#define ALILEADINGV0CORRELATION
 
 #include "AliAnalysisTask.h"
 #include "TString.h"
@@ -14,6 +14,7 @@
 #include "AliPID.h"
 #include "THnSparse.h"
 #include "TH1.h"
+#include "TH2.h"
 
 class TList;
 class AliAODEvent;
@@ -102,91 +103,95 @@ private:
 	Bool_t IsTrackFromV0(AliAODTrack* track);
 	void FillCorrelationSibling(Double_t MultipOrCent,
 								TObjArray*triggerArray,TObjArray*selectedV0Array,
-								THnSparse*triggerHist,THnSparse*associateHist);
+								TH1F*triggerHist,THnSparse*associateHist);
 	void FillCorrelationMixing(Double_t MultipOrCentMix,Double_t pvxMix,
 							   Double_t poolmax,Double_t poolmin,
 							   TObjArray*triggerArray,TObjArray*selectedV0Array,
-							   THnSparse*triggerHist,THnSparse*associateHist);
-	Bool_t IsFeedDownV0(UInt_t lIdxPosV0,
-				  UInt_t lIdxNegV0,
-				  Double_t lInvMassXiMinus,
-				  Double_t lInvMassXiPlus,
-				  TH1F*HistXiMinus);
+							   TH1F*triggerHist,THnSparse*associateHist);
 	
-	AliAODEvent              * fAODEvent;        //  AOD Event
-	AliEventPoolManager      * fPoolMgr;         //  event pool manager for Event Mixing
-	AliPIDResponse           * fPIDResponse;     //  PID response
-	AliAnalyseLeadingTrackUE * fAnalyseUE;       //  Leading Track Underling Event
+	AliAODEvent              * fAODEvent;			//  AOD Event
+	AliEventPoolManager      * fPoolMgr;			//  event pool manager for Event Mixing
+	AliPIDResponse           * fPIDResponse;		//  PID response
+	AliAnalyseLeadingTrackUE * fAnalyseUE;			//  Leading Track Underling Event
 	
-	Int_t fPoolMaxNEvents;                       // set maximum number of events in the pool
-	Int_t fPoolMinNTracks;                       // set minimum number of tracks in the pool
-	Int_t fMinEventsToMix;                       // set the minimum number of events want to mix
-	Int_t fNzVtxBins;                            // number of z vrtx bins
-	Double_t fZvtxBins[100];                     // [fNzVtxBinsDim]
-	Int_t fNCentBins;                            // number of centrality bins
-	Double_t fCentBins[100];                     // [fNCentBinsDim]
+	Int_t fPoolMaxNEvents;							// set maximum number of events in the pool
+	Int_t fPoolMinNTracks;							// set minimum number of tracks in the pool
+	Int_t fMinEventsToMix;							// set the minimum number of events want to mix
+	Int_t fNzVtxBins;								// number of z vrtx bins
+	Double_t fZvtxBins[100];						// [fNzVtxBinsDim]
+	Int_t fNCentBins;								// number of centrality bins
+	Double_t fCentBins[100];						// [fNCentBinsDim]
 	
-	TString         fcollidingSys;               // "PP" or "PbPb"
-	Double_t        fpvzcut;                     // PVz cut of event
-    Double_t      	fTrackEtaCut;                // Eta cut on particles
-    UInt_t         	fFilterBit;                  // Select tracks from an specific track cut (default 0xFF all track selected)
-	Bool_t          fAnalysisMC;                 // MC or Not
-	Int_t           fCase;                       // Case number
-	Bool_t          fRemoveAutoCorr;             // 1Remove or 0 Not Remove
+	TString         fcollidingSys;					// "PP" or "PbPb"
+	Double_t        fpvzcut;						// PVz cut of event
+    Double_t      	fTrackEtaCut;					// Eta cut on particles
+    UInt_t         	fFilterBit;						// Select tracks from an specific track cut (default 0xFF all track selected)
+	Bool_t          fAnalysisMC;					// MC or Not
+	Int_t           fCase;							// Case number
+	Bool_t          fRemoveAutoCorr;				// 1Remove or 0 Not Remove
 	
-	Double_t        fRapidityCut;                // Rapidity cut V0
-	Double_t        fV0radius;                   // Topological selection for systamatics
-	Double_t        fV0PostoPVz;                 // Topological selection for systamatics
-	Double_t        fV0NegtoPVz;                 // Topological selection for systamatics
-	Double_t        fDCAV0Daughters;             // Topological selection for systamatics
-	Double_t        fCPAK0;                      // Topological selection for systamatics
-	Double_t        fCPALam;                     // Topological selection for systamatics
-	Double_t        fRejectLamK0;                // selection for systamatics
-	Double_t        fRejectK0Lam;                // selection for systamatics
-	Double_t        fSigmaPID;                   // selection for systamatics
-	Double_t        fCutCTK0;                    // selection for systamatics
-	Double_t        fCutCTLa;                    // selection for systamatics
+	Double_t        fRapidityCut;					// Rapidity cut V0
+	Double_t        fV0radius;						// Topological selection for systamatics
+	Double_t        fV0PostoPVz;					// Topological selection for systamatics
+	Double_t        fV0NegtoPVz;					// Topological selection for systamatics
+	Double_t        fDCAV0Daughters;				// Topological selection for systamatics
+	Double_t        fCPAK0;							// Topological selection for systamatics
+	Double_t        fCPALam;						// Topological selection for systamatics
+	Double_t        fRejectLamK0;					// selection for systamatics
+	Double_t        fRejectK0Lam;					// selection for systamatics
+	Double_t        fSigmaPID;						// selection for systamatics
+	Double_t        fCutCTK0;						// selection for systamatics
+	Double_t        fCutCTLa;						// selection for systamatics
 	
-	Double_t        fMassCutK0;                  // selection for systamatics
-	Double_t        fMassCutLa;                  // selection for systamatics
-	Double_t        fTriglow;                  // selection for systamatics
-	Double_t        fTrighigh;// selection for systamatics
+	Double_t        fMassCutK0;						// selection for systamatics
+	Double_t        fMassCutLa;						// selection for systamatics
+	Double_t        fTriglow;						// selection for systamatics
+	Double_t        fTrighigh;						// selection for systamatics
 	
-	Bool_t          fUseChargeHadrons;           // Only pi,k,and proton
-	Double_t        fPtMin;                      // 0.15 
+	Bool_t          fUseChargeHadrons;				// Only pi,k,and proton
+	Double_t        fPtMin;							// 0.15 
 	
 	
-	TList       * fOutputList;                   // Output list
+	TList       * fOutputList;						// Output list
 	
-	TH1F        *fHist_Mult_B4_Trg_Sel;						//! multiplicity distribution
-	TH1F        *fHist_Mult_Af_Trg_Sel;						//! multiplicity distribution
-	TH1F        *fHist_Mult_PVz_Cut;						//! multiplicity distribution
-	TH1F        *fHist_Mult_SPD_PVz;
-	TH1F        *fHist_Mult_SPD_PVz_Pileup;
+	TH1F        *fHist_Mult_B4_Trg_Sel;				//! multiplicity distribution
+	TH1F        *fHist_Mult_Af_Trg_Sel;				//! multiplicity distribution
+	TH1F        *fHist_Mult_PVz_Cut;				//! multiplicity distribution
+	TH1F        *fHist_Mult_SPD_PVz;				//! multiplicity distribution
+	TH1F        *fHist_Mult_SPD_PVz_Pileup;			//! multiplicity distribution
 	
-	TH1F       *fHistPVx;									//! multiplicity distribution
-	TH1F       *fHistPVy;									//! multiplicity distribution
-	TH1F       *fHistPVz;									//! multiplicity distribution
-	TH1F       *fHistPVxAnalysis;
-	TH1F       *fHistPVyAnalysis;
-	TH1F       *fHistPVzAnalysis;
+	TH1F		*fHistPVx;							//! multiplicity distribution
+	TH1F		*fHistPVy;							//! multiplicity distribution
+	TH1F		*fHistPVz;							//! multiplicity distribution
+	TH1F		*fHistPVxAnalysis;					//! multiplicity distribution
+	TH1F		*fHistPVyAnalysis;					//! multiplicity distribution
+	TH1F		*fHistPVzAnalysis;					//! multiplicity distribution
 	
-	THnSparse   *fHistEventViceGen;
-	THnSparse   *fHistEventViceReconst;
-	THnSparse	*fHistMCGenK0;
-	THnSparse	*fHistMCGenLAM;
-	THnSparse	*fHistMCGenALAM;
-	THnSparse	*fHistReconstK0;
-	THnSparse	*fHistReconstLA;
-	THnSparse	*fHistReconstALA;
-	THnSparse	*fHistMCAssoK0;
-	THnSparse	*fHistMCAssoLA;
-	THnSparse	*fHistMCAssoALA;
+	TH2F		*fHistEventViceGen;
+	TH2F		*fHistEventViceReconst;
+	TH2F		*fHistMCGenK0;
+	TH2F		*fHistMCGenLAM;
+	TH2F		*fHistMCGenALAM;
+	TH2F		*fHistReconstK0;
+	TH2F		*fHistReconstLA;
+	TH2F		*fHistReconstALA;
+	TH2F		*fHistMCAssoK0;
+	TH2F		*fHistMCAssoLA;
+	TH2F		*fHistMCAssoALA;
 	
 	THnSparse   *fHistReconstSib;
 	THnSparse   *fHistReconstMix;
-	THnSparse   *fHistTriggerSib;
-	THnSparse   *fHistTriggerMix;
+	THnSparse   *fHistReconstSibGEN;
+	THnSparse   *fHistReconstMixGEN;
+	THnSparse   *fHistReconstSibASO;
+	THnSparse   *fHistReconstMixASO;
+	
+	TH1F        *fHistTriggerSib;
+	TH1F		*fHistTriggerMix;
+	TH1F		*fHistTriggerSibGEN;
+	TH1F		*fHistTriggerMixGEN;
+	TH1F		*fHistTriggerSibASO;
+	TH1F		*fHistTriggerMixASO;
 
 	ClassDef(AliLeadingV0Correlation, 1); 
 };
@@ -197,11 +202,15 @@ public:
     V0Correlationparticle(Float_t eta, 
 							Float_t phi, 
 							Float_t pt, 
-							Short_t candidate):
+							Short_t candidate,
+						    Double_t dcapostoP,
+						    Double_t dcanegtoP):
 	  fEta(eta), 
 	  fPhi(phi), 
 	  fpT(pt), 
-	  fCandidate(candidate)
+	  fCandidate(candidate),
+	  fdcapostoP(dcapostoP),
+	  fdcanegtoP(dcanegtoP)
     {
     }
     virtual ~V0Correlationparticle(){}
@@ -228,6 +237,8 @@ public:
     virtual Int_t    PdgCode()            const { AliFatal("Not implemented"); return 0;}
     virtual const    Double_t *PID()      const { AliFatal("Not implemented"); return 0;}
     virtual Short_t  WhichCandidate()     const { return fCandidate;}
+	virtual Double_t DCAPostoP()     const { return fdcapostoP;}
+	virtual Double_t DCANegtoP()     const { return fdcanegtoP;}
 
 	
 private:
@@ -235,6 +246,8 @@ private:
     Float_t  fPhi;            // Phi
     Float_t  fpT;             // pT
     Short_t  fCandidate;      // 1-K0,2-Lam,3-Alam
+	Double_t fdcapostoP;
+	Double_t fdcanegtoP;
 	
 	
     ClassDef( V0Correlationparticle, 1);

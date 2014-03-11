@@ -20,6 +20,7 @@ class TProfile;
 #include "TFile.h"
 #include "TKey.h"
 #include "AliOADBContainer.h"
+#include "AliVEvent.h"
 
 class AliSpectraAODEventCuts : public TNamed
 {

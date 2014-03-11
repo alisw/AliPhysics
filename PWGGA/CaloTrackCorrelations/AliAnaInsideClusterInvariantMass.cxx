@@ -606,8 +606,8 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   if(nMax==1) nmaxima = nc ;
   
   //Find highest energy Local Maxima Towers
-  Int_t   imax  = -1;
-  Int_t   imax2 = -1;
+  Int_t   imax  = 999;
+  Int_t   imax2 = 999;
   Float_t emax  = -1;
   Float_t emax2 = -1;
   for(Int_t i = 0; i < nmaxima; i++)
@@ -619,13 +619,13 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
       emax = elist[i];
     }
   }
+  
   //Find second highest
   for(Int_t i = 0; i < nmaxima; i++)
   {
     if(i==imax) continue;
     
     //printf("j %d: AbsId %d; E %2.3f\n",i,list[i],elist[i]);
-    
     
     if(elist[i] > emax2)
     {
@@ -645,14 +645,14 @@ void AliAnaInsideClusterInvariantMass::CheckLocalMaximaMCOrigin(AliVCluster* clu
   
   // Check that the highest mc label and the max cluster label are the same
   Int_t mcLabelMax = -1 ;
-  if(imax >=0 )
+  if(imax >=0 && imax < 999)
   {
     mcLabelMax = GetEMCALCells()->GetCellMCLabel(list[imax]);
     GetReader()->RemapMCLabelForAODs(mcLabelMax);
   }
   
   Int_t mcLabelMax2 = -1 ;
-  if(imax >=0 )
+  if(imax2 >=0 && imax2 < 999)
   {
     mcLabelMax2 = GetEMCALCells()->GetCellMCLabel(list[imax2]);
     GetReader()->RemapMCLabelForAODs(mcLabelMax2);

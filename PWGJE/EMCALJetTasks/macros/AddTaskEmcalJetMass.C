@@ -7,7 +7,8 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
 						 const char *CentEst,
 						 Int_t       pSel,
 						 TString     trigClass      = "",
-						 TString     kEmcalTriggers = "") {
+						 TString     kEmcalTriggers = "",
+						 TString     tag            = "") {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -26,7 +27,7 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
       return NULL;
     }
 
-  TString wagonName = Form("JetMass_%s_TC%s",njetsBase,trigClass.Data());
+  TString wagonName = Form("JetMass_%s_TC%s%s",njetsBase,trigClass.Data(),tag.Data());
 
   //Configure jet tagger task
   AliAnalysisTaskEmcalJetMass *task = new AliAnalysisTaskEmcalJetMass(wagonName.Data());
@@ -45,16 +46,12 @@ AliAnalysisTaskEmcalJetMass* AddTaskEmcalJetMass(const char * njetsBase,
     jetContBase->SetRhoName(nrhoBase);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
-    jetContBase->SetZLeadingCut(0.98,0.98);
     jetContBase->SetPercAreaCut(0.6);
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
-
   task->SetCentralityEstimator(CentEst);
-
   task->SelectCollisionCandidates(pSel);
-
   task->SetUseAliAnaUtils(kFALSE);
 
   mgr->AddTask(task);

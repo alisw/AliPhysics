@@ -60,7 +60,8 @@ fOutput(0),
 fCuts(0),
 fMinMass(0.),
 fMaxMass(0.),
-fCandidateArray(0)
+fCandidateArray(0),
+fSideBandArray(0)
 
 {
    //
@@ -86,7 +87,8 @@ fOutput(0),
 fCuts(cuts),
 fMinMass(0.),
 fMaxMass(0.),
-fCandidateArray(0)
+fCandidateArray(0),
+fSideBandArray(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -137,6 +139,8 @@ fCandidateArray(0)
    
    DefineOutput(1, TList::Class());       // histos
    DefineOutput(2, AliRDHFCuts::Class()); // my cuts
+   DefineOutput(3, TClonesArray::Class()); //array of candidates
+   DefineOutput(4, TClonesArray::Class()); //array of SB candidates
 }
 
 //_______________________________________________________________________________
@@ -152,6 +156,7 @@ AliAnalysisTaskSEDmesonsFilterCJ::~AliAnalysisTaskSEDmesonsFilterCJ()
    if (fOutput) { delete fOutput; fOutput = 0; }
    if (fCuts)   { delete fCuts;   fCuts   = 0; }
    if (fCandidateArray)  { delete fCandidateArray;  fCandidateArray  = 0; }
+   delete fSideBandArray;
    
 }
 
@@ -166,17 +171,19 @@ void AliAnalysisTaskSEDmesonsFilterCJ::Init()
    if(fDebug>1) printf("AnalysisTaskSEDmesonsForJetCorrelations::Init() \n");
    
    switch (fCandidateType) {
-   case 0: {
+   case 0: 
+      {
    	 AliRDHFCutsD0toKpi* copyfCutsDzero = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
    	 copyfCutsDzero->SetName("AnalysisCutsDzero");
    	 PostData(2, copyfCutsDzero);  // Post the data
-   } break;
-case 1: {
-      AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-      copyfCutsDstar->SetName("AnalysisCutsDStar");
-      PostData(2, copyfCutsDstar); // Post the cuts
-} break;
-default: return;
+      } break;
+   case 1: 
+      {
+      	 AliRDHFCutsDStartoKpipi* copyfCutsDstar = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
+      	 copyfCutsDstar->SetName("AnalysisCutsDStar");
+      	 PostData(2, copyfCutsDstar); // Post the cuts
+      } break;
+   default: return;
    }
    
    return;
@@ -195,15 +202,27 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserCreateOutputObjects()
    fOutput = new TList(); fOutput->SetOwner();
    DefineHistoForAnalysis(); // define histograms
    
-   fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
-   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
-   
-   if (fCandidateType==kDstartoKpipi){
-      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); //this is for the DStar only!
-      fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   if (fCandidateType==kD0toKpi){
+      fCandidateArray = new TClonesArray("AliAODRecoDecayHF",0);
+      fSideBandArray = new TClonesArray("AliAODRecoDecayHF",0); 
    }
    
+   if (fCandidateType==kDstartoKpipi) {
+      fCandidateArray = new TClonesArray("AliAODRecoCascadeHF",0);
+      fSideBandArray = new TClonesArray("AliAODRecoCascadeHF",0); 
+   }
+   
+   fCandidateArray->SetOwner();
+   fCandidateArray->SetName(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+   
+   //this is used for the DStar side bands and MC!
+   fSideBandArray->SetOwner();
+   fSideBandArray->SetName(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen"));
+  
    PostData(1, fOutput);
+   PostData(3, fCandidateArray);
+   PostData(4, fSideBandArray);
+ 
    return;
 }
 
@@ -213,15 +232,6 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    //
    // user exec
    //
-   
-   // add cadidate branch
-   fCandidateArray->Delete();
-   if (!(InputEvent()->FindListObject(Form("fCandidateArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen")))) InputEvent()->AddObject(fCandidateArray);
-   if (fCandidateType==kDstartoKpipi){
-      fSideBandArray->Delete();
-      if (!(InputEvent()->FindListObject(Form("fSideBandArray%s%s",fCandidateName.Data(),fUseReco ? "rec" : "gen")))) InputEvent()->AddObject(fSideBandArray);
-   }
-   //Printf("Arr names %s, %s",fCandidateArray->GetName(),fSideBandArray->GetName());
    // Load the event
    AliAODEvent *aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
    
@@ -295,6 +305,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    Int_t iSBCand=0;
    Int_t isSelected = 0;
    AliAODRecoDecayHF *charmCand = 0;
+   AliAODRecoCascadeHF *dstar = 0;
    AliAODMCParticle *charmPart = 0;
    Bool_t isMCBkg=kFALSE;
    
@@ -304,15 +315,21 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
    Int_t pdgMeson = 413;
    if (fCandidateType==kD0toKpi) pdgMeson = 421;
    
+   //clear the TClonesArray from the previous event
+   fCandidateArray->Clear();
+   fSideBandArray->Clear();
+   
    for (Int_t icharm=0; icharm<nD; icharm++) {   //loop over D candidates
       charmCand = (AliAODRecoDecayHF*)arrayDStartoD0pi->At(icharm); // D candidates
       if (!charmCand) continue;
       
+      TString smcTruth="S";
+      
+      if (fCandidateType==kDstartoKpipi) dstar = (AliAODRecoCascadeHF*)charmCand;
       
       if (fUseMCInfo) { // Look in MC, try to simulate the z
       	 if (fCandidateType==kDstartoKpipi) {
-      	    AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
-      	    mcLabel = temp->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
+      	    mcLabel = dstar->MatchToMC(413,421,pdgDgDStartoD0pi,pdgDgD0toKpi,mcArray);
       	 }
       	 
       	 if (fCandidateType==kD0toKpi) 
@@ -321,6 +338,9 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 if (mcLabel<=0) isMCBkg=kTRUE;
       	 else hstat->Fill(2);
       	 if (!isMCBkg) charmPart=(AliAODMCParticle*)mcArray->At(mcLabel);
+      	       	 
+      	 if (isMCBkg) smcTruth="B";
+
       }
       
       Double_t ptD = charmCand->Pt();
@@ -338,11 +358,10 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	    AliError(Form("Pt %.3f out of bounds",ptD));
       	    continue;
       	 }
-      	 AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
       	 //if data and Dstar from D0 side band
-      	 if (((temp->InvMassD0()<=(mPDGD0-3.*fSigmaD0[bin])) && (temp->InvMassD0()>(mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/||  ((temp->InvMassD0()>=(mPDGD0+3.*fSigmaD0[bin])) && (temp->InvMassD0()<(mPDGD0+10.*fSigmaD0[bin])))/*right side band*/){	
+      	 if (((dstar->InvMassD0()<=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()>(mPDGD0-10.*fSigmaD0[bin]))) /*left side band*/||  ((dstar->InvMassD0()>=(mPDGD0+3.*fSigmaD0[bin])) && (dstar->InvMassD0()<(mPDGD0+10.*fSigmaD0[bin])))/*right side band*/){	
       	    
-      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*temp);
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
       	    iSBCand++;
       	 }
       }
@@ -354,8 +373,14 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       if(!fUseMCInfo || (fUseMCInfo && !isMCBkg)){
       	 // for data or MC with the requirement fUseReco fill with candidates
       	 if(fUseReco) {
-      	    new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
-      	    //Printf("Filling reco");
+      	    if (fCandidateType==kDstartoKpipi){
+      	       new ((*fCandidateArray)[iCand]) AliAODRecoCascadeHF(*dstar);
+      	       AliInfo(Form("Dstar delta mass = %f",dstar->DeltaInvMass()));
+      	    } else{
+      	       new ((*fCandidateArray)[iCand]) AliAODRecoDecayHF(*charmCand);
+      	       //Printf("Filling reco");
+      	    }      	    
+      	    
       	    hstat->Fill(3);
       	 }
       	 // for MC with requirement particle level fill with AliAODMCParticle
@@ -369,7 +394,12 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       }
       //for MC background fill fSideBandArray (which is instead filled above for DStar in case of data for the side bands candidates)
       else if(fUseReco){
-      	 new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+      	 if (fCandidateType==kDstartoKpipi){
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoCascadeHF(*dstar);
+      	 }
+      	 if (fCandidateType==kD0toKpi){
+      	    new ((*fSideBandArray)[iSBCand]) AliAODRecoDecayHF(*charmCand);
+      	 }
       	 iSBCand++;
       }
       
@@ -378,8 +408,7 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       if (fCandidateType==kDstartoKpipi) { //D*->D0pi->Kpipi
       	 
       	 //softpion from D* decay
-      	 AliAODRecoCascadeHF *temp = (AliAODRecoCascadeHF*)charmCand;
-      	 AliAODTrack *track2 = (AliAODTrack*)temp->GetBachelor();  
+      	 AliAODTrack *track2 = (AliAODTrack*)dstar->GetBachelor();  
       	 
       	 // select D* in the D0 window.
       	 // In the cut object window is loose to allow for side bands
@@ -396,8 +425,8 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 
       	 AliInfo(Form("Pt bin %d and sigma D0 %.4f",bin,fSigmaD0[bin]));
       	 //consider the Dstar candidates only if the mass of the D0 is in 3 sigma wrt the PDG value
-      	 if ((temp->InvMassD0()>=(mPDGD0-3.*fSigmaD0[bin])) && (temp->InvMassD0()<=(mPDGD0+3.*fSigmaD0[bin]))) {	
-      	    masses[0] = temp->DeltaInvMass(); //D*
+      	 if ((dstar->InvMassD0()>=(mPDGD0-3.*fSigmaD0[bin])) && (dstar->InvMassD0()<=(mPDGD0+3.*fSigmaD0[bin]))) {	
+      	    masses[0] = dstar->DeltaInvMass(); //D*
       	    masses[1] = 0.; //dummy for D*
       	    
       	    //D*  delta mass
@@ -405,9 +434,47 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	    
       	    // D* pt and soft pion pt for good candidates  	      	
       	    Double_t mPDGDstar = TDatabasePDG::Instance()->GetParticle(413)->Mass();
-      	    Double_t invmassDelta = temp->DeltaInvMass();
+      	    Double_t invmassDelta = dstar->DeltaInvMass();
       	    if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))<0.0021) hPtPion->Fill(track2->Pt());
       	 }
+      	 
+      	 if (fUseMCInfo){ //fill histograms of kinematics, using MC truth
+      	    //get histos
+      	    TH2F *halphaDD   = (TH2F*)fOutput->FindObject(Form("halphaDD%s",smcTruth.Data()));
+      	    TH2F *halphaDpis = (TH2F*)fOutput->FindObject(Form("halphaDpis%s",smcTruth.Data()));
+      	    TH2F *halphaDpi  = (TH2F*)fOutput->FindObject(Form("halphaDpi%s",smcTruth.Data()));
+      	    TH2F *halphaDK   = (TH2F*)fOutput->FindObject(Form("halphaDK%s",smcTruth.Data()));
+
+      	    TH2F *hdeltaRDD   = (TH2F*)fOutput->FindObject(Form("hdeltaRDD%s",smcTruth.Data()));
+      	    TH2F *hdeltaRDpis = (TH2F*)fOutput->FindObject(Form("hdeltaRDpis%s",smcTruth.Data()));
+      	    TH2F *hdeltaRDpi  = (TH2F*)fOutput->FindObject(Form("hdeltaRDpi%s",smcTruth.Data()));
+      	    TH2F *hdeltaRDK   = (TH2F*)fOutput->FindObject(Form("hdeltaRDK%s",smcTruth.Data()));
+
+      	    Double_t aD  = dstar->Phi(), 
+      	             apis= track2->Phi();
+      	             
+      	    AliAODRecoDecayHF2Prong* D0fromDstar=dstar->Get2Prong();
+      	    Double_t aD0 = D0fromDstar->Phi();
+      	    Int_t isD0= D0fromDstar->Charge()>0 ? kTRUE : kFALSE;
+      	    Double_t aK = isD0 ? D0fromDstar->PhiProng(0) : D0fromDstar->PhiProng(1),
+      	             api= isD0 ? D0fromDstar->PhiProng(1) : D0fromDstar->PhiProng(0);
+      	    Double_t dRDD0  = DeltaR(dstar,D0fromDstar),
+      	             dRDpis = DeltaR(dstar,track2),
+      	             dRDpi  = DeltaR(dstar, isD0 ? (AliVParticle*)D0fromDstar->GetDaughter(1) : (AliVParticle*)D0fromDstar->GetDaughter(0)),
+      	             dRDK   = DeltaR(dstar, isD0 ? (AliVParticle*)D0fromDstar->GetDaughter(0) : (AliVParticle*)D0fromDstar->GetDaughter(1));
+      	    
+      	    halphaDD->  Fill(aD-aD0,ptD);
+      	    halphaDpis->Fill(aD-apis,ptD);
+      	    halphaDpi-> Fill(aD-api,ptD);
+      	    halphaDK->  Fill(aD-aK,ptD);
+      	    
+      	    hdeltaRDD->  Fill(dRDD0,ptD);
+      	    hdeltaRDpis->Fill(dRDpis,ptD);
+      	    hdeltaRDpi-> Fill(dRDpi,ptD);
+      	    hdeltaRDK->  Fill(dRDK,ptD);
+      	    
+      	 }
+
       } //Dstar specific
       
       if (fCandidateType==kD0toKpi) { //D0->Kpi
@@ -420,6 +487,89 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       	 // mass vs pt
       	 if (isSelected==1 || isSelected==3) hInvMassptD->Fill(masses[0],ptD);
       	 if (isSelected>=2) hInvMassptD->Fill(masses[1],ptD);
+      	         	
+      	 if (fUseMCInfo) {  //fill histograms of kinematics, using MC truth
+      	    
+      	    Double_t aD = charmCand->Phi();
+            Double_t adaugh[2]={charmCand->PhiProng(0),charmCand->PhiProng(1)};
+            AliAODTrack* p0=(AliAODTrack*)charmCand->GetDaughter(0); 
+            AliAODTrack* p1=(AliAODTrack*)charmCand->GetDaughter(1);
+            Float_t dR0 = DeltaR(charmCand, p0), dR1 = DeltaR(charmCand, p1);
+       	    Bool_t isD0=kFALSE;
+      	    if(mcLabel==421)  isD0=kTRUE;
+      	    if(mcLabel==-421) isD0=kFALSE;
+      	    
+      	    if(isMCBkg) { //background
+      	       TH2F *halphaDpi  = (TH2F*)fOutput->FindObject(Form("halphaDpi%s",smcTruth.Data()));
+      	       TH2F *halphaDK   = (TH2F*)fOutput->FindObject(Form("halphaDK%s",smcTruth.Data()));
+
+      	       TH2F *hdeltaRDpi  = (TH2F*)fOutput->FindObject(Form("hdeltaRDpi%s",smcTruth.Data()));
+      	       TH2F *hdeltaRDK   = (TH2F*)fOutput->FindObject(Form("hdeltaRDK%s",smcTruth.Data()));
+      	       
+      	       
+      	       if (isSelected==1 || isSelected==3) { // selected as D0
+      	       	  halphaDK->Fill(aD-adaugh[0],ptD);
+      	       	  halphaDpi->Fill(aD-adaugh[1],ptD);
+
+      	       	  hdeltaRDK->Fill(dR0,ptD);
+      	       	  hdeltaRDpi->Fill(dR1,ptD);
+      	       
+      	       }
+      	       if (isSelected>=2) { //selected as D0bar
+      	       	  halphaDpi->Fill(aD-adaugh[0],ptD);
+      	       	  halphaDK->Fill(aD-adaugh[1],ptD);
+
+      	       	  hdeltaRDpi->Fill(dR0,ptD);
+      	       	  hdeltaRDK->Fill(dR1,ptD);
+      	       
+      	       }
+
+      	    }else{ //signal and reflections
+      	       TH2F *halphaDpiS  = (TH2F*)fOutput->FindObject("halphaDpiS");
+      	       TH2F *halphaDKS   = (TH2F*)fOutput->FindObject("halphaDKS");
+      	       TH2F *halphaDpiR  = (TH2F*)fOutput->FindObject("halphaDpiR");
+      	       TH2F *halphaDKR   = (TH2F*)fOutput->FindObject("halphaDKR");
+      	       
+      	       TH2F *hdeltaRDpiS  = (TH2F*)fOutput->FindObject("hdeltaRDpiS");
+      	       TH2F *hdeltaRDKS   = (TH2F*)fOutput->FindObject("hdeltaRDKS");
+      	       TH2F *hdeltaRDpiR  = (TH2F*)fOutput->FindObject("hdeltaRDpiR");
+      	       TH2F *hdeltaRDKR   = (TH2F*)fOutput->FindObject("hdeltaRDKR");
+      	       
+      	       if(isD0) { //D0
+      	       	  halphaDKS->Fill(aD-adaugh[0],ptD);
+      	       	  halphaDpiS->Fill(aD-adaugh[1],ptD);
+
+      	       	  hdeltaRDKS->Fill(dR0,ptD);
+      	       	  hdeltaRDpiS->Fill(dR1,ptD);
+      	       	  if(isSelected>=2){ //selected as D0bar
+      	       	     halphaDpiR->Fill(aD-adaugh[0],ptD);
+      	       	     halphaDKR->Fill(aD-adaugh[1],ptD);
+
+      	       	     hdeltaRDpiR->Fill(dR0,ptD);
+      	       	     hdeltaRDKR->Fill(dR1,ptD);
+      	       	  }
+      	       } else { //D0bar
+      	       	  halphaDKS->Fill(aD-adaugh[1],ptD);
+      	       	  halphaDpiS->Fill(aD-adaugh[0],ptD);
+
+       	       	  hdeltaRDKS->Fill(dR1,ptD);
+      	       	  hdeltaRDpiS->Fill(dR0,ptD);
+
+     	       	  if(isSelected>=2){ //selected as D0bar
+      	       	     halphaDpiR->Fill(aD-adaugh[1],ptD);
+      	       	     halphaDKR->Fill(aD-adaugh[0],ptD);
+
+       	       	     hdeltaRDpiR->Fill(dR1,ptD);
+      	       	     hdeltaRDKR->Fill(dR0,ptD);
+     	       	  }
+      	       }
+      	    
+      	    } //end signal and reflections
+      	    
+      	    
+      	 }// end MC
+
+      	 
       } //D0 specific
       
       charmCand = 0;
@@ -432,7 +582,11 @@ void AliAnalysisTaskSEDmesonsFilterCJ::UserExec(Option_t *){
       hstat->Fill(4,nsbcand);
       hnSBCandEv->Fill(nsbcand);
    }
-   
+   //Printf("N candidates selected %d, counter = %d",fCandidateArray->GetEntries(), iCand);
+   PostData(1, fOutput);
+   PostData(3, fCandidateArray);
+   PostData(4, fSideBandArray);
+  
    return;
 }
 
@@ -542,15 +696,18 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
    
    // Invariant mass related histograms
    const Int_t nbinsmass = 200;
-   TH2F *hInvMass = new TH2F("hInvMassptD", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass, 100, 0., 50.);
+   const Int_t ptbinsD=100;
+   Float_t ptmin=0.,ptmax=50.;
+   TH2F *hInvMass = new TH2F("hInvMassptD", "D invariant mass distribution", nbinsmass, fMinMass, fMaxMass, ptbinsD, ptmin, ptmax);
    hInvMass->SetStats(kTRUE);
    hInvMass->GetXaxis()->SetTitle("mass (GeV/c)");
    hInvMass->GetYaxis()->SetTitle("p_{T} (GeV/c)");
    fOutput->Add(hInvMass);
-   
-   if (fCandidateType==kDstartoKpipi) {
+   if ((fCandidateType==kDstartoKpipi) || fUseMCInfo){
       TH1F* hnSBCandEv=new TH1F("hnSBCandEv", "Number of side bands candidates per event (after cuts);# cand/ev", 100, 0.,100.);
       fOutput->Add(hnSBCandEv);
+   }
+   if (fCandidateType==kDstartoKpipi) {
       
       TH1F* hPtPion = new TH1F("hPtPion", "Primary pions candidates pt", 500, 0., 10.);
       hPtPion->SetStats(kTRUE);
@@ -559,5 +716,105 @@ Bool_t AliAnalysisTaskSEDmesonsFilterCJ::DefineHistoForAnalysis()
       fOutput->Add(hPtPion);
    }
    
+   const Int_t nbinsalpha=200;
+   Float_t minalpha=-TMath::Pi(), maxalpha=TMath::Pi();
+   const Int_t nbinsdeltaR= 200;
+   Float_t mindeltaR = 0., maxdeltaR = 10.;
+   if(fUseMCInfo){
+      if (fCandidateType==kDstartoKpipi){
+      	 TH2F* halphaDDS  =new TH2F("halphaDDS","Angle D^{*}-D^{0} (Signal);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDpisS=new TH2F("halphaDpisS","Angle D^{*}-#pi_{soft} (Signal);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDpiS =new TH2F("halphaDpiS","Angle D^{*}-#pi (Signal);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDKS  =new TH2F("halphaDKS","Angle D^{*}-K (Signal);#varphi (D^{*}) - #varphi (K);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+
+      	 TH2F* halphaDDB  =new TH2F("halphaDDB","Angle D^{*}-D^{0} (Background);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDpisB=new TH2F("halphaDpisB","Angle D^{*}-#pi_{soft} (Background);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDpiB =new TH2F("halphaDpiB","Angle D^{*}-#pi (Background);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDKB  =new TH2F("halphaDKB","Angle D^{*}-K (Background);#varphi (D^{*}) - #varphi (K);p_{T}^{D*}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 
+      	 TH2F* hdeltaRDDS  =new TH2F("hdeltaRDDS","Angle D^{*}-D^{0} (Signal);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDpisS=new TH2F("hdeltaRDpisS","Angle D^{*}-#pi_{soft} (Signal);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDpiS =new TH2F("hdeltaRDpiS","Angle D^{*}-#pi (Signal);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDKS  =new TH2F("hdeltaRDKS","Angle D^{*}-K (Signal);#varphi (D^{*}) - #varphi (K);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+
+      	 TH2F* hdeltaRDDB  =new TH2F("hdeltaRDDB","Angle D^{*}-D^{0} (Background);#varphi (D^{*}) - #varphi (D0);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDpisB=new TH2F("hdeltaRDpisB","Angle D^{*}-#pi_{soft} (Background);#varphi (D^{*}) - #varphi (#pi_{soft});p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDpiB =new TH2F("hdeltaRDpiB","Angle D^{*}-#pi (Background);#varphi (D^{*}) - #varphi (#pi);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDKB  =new TH2F("hdeltaRDKB","Angle D^{*}-K (Background);#varphi (D^{*}) - #varphi (K);p_{T}^{D*}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+
+      	 fOutput->Add(halphaDDS);
+      	 fOutput->Add(halphaDpisS);
+      	 fOutput->Add(halphaDpiS);
+      	 fOutput->Add(halphaDKS);
+      	 fOutput->Add(halphaDDB);
+      	 fOutput->Add(halphaDpisB);
+      	 fOutput->Add(halphaDpiB);
+      	 fOutput->Add(halphaDKB);
+
+      	 fOutput->Add(hdeltaRDDS);
+      	 fOutput->Add(hdeltaRDpisS);
+      	 fOutput->Add(hdeltaRDpiS);
+      	 fOutput->Add(hdeltaRDKS);
+      	 fOutput->Add(hdeltaRDDB);
+      	 fOutput->Add(hdeltaRDpisB);
+      	 fOutput->Add(hdeltaRDpiB);
+      	 fOutput->Add(hdeltaRDKB);
+      }
+      
+      if (fCandidateType==kD0toKpi){
+      	 
+       	 TH2F* halphaDpiS=new TH2F("halphaDpiS","Angle D^{0}-#pi (Signal);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDKS =new TH2F("halphaDKS","Angle D^{0}-K (Signal);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+       	 TH2F* halphaDpiR=new TH2F("halphaDpiR","Angle D^{0}-#pi (Reflections);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDKR =new TH2F("halphaDKR","Angle D^{0}-K (Reflections);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 
+       	 TH2F* halphaDpiB=new TH2F("halphaDpiB","Angle D^{0}-#pi (Background);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 TH2F* halphaDKB =new TH2F("halphaDKB","Angle D^{0}-K (Background);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsalpha, minalpha, maxalpha, ptbinsD, ptmin, ptmax);
+      	 
+
+       	 TH2F* hdeltaRDpiS=new TH2F("hdeltaRDpiS","Angle D^{0}-#pi (Signal);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDKS =new TH2F("hdeltaRDKS","Angle D^{0}-K (Signal);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+       	 TH2F* hdeltaRDpiR=new TH2F("hdeltaRDpiR","Angle D^{0}-#pi (Reflections);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDKR =new TH2F("hdeltaRDKR","Angle D^{0}-K (Reflections);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 
+       	 TH2F* hdeltaRDpiB=new TH2F("hdeltaRDpiB","Angle D^{0}-#pi (Background);#varphi (D^{0}) - #varphi (#pi);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+      	 TH2F* hdeltaRDKB =new TH2F("hdeltaRDKB","Angle D^{0}-K (Background);#varphi (D^{0}) - #varphi (K);p_{T}^{D0}",nbinsdeltaR, mindeltaR, maxdeltaR, ptbinsD, ptmin, ptmax);
+
+      	 fOutput->Add(halphaDpiS);
+      	 fOutput->Add(halphaDKS);
+      	 fOutput->Add(halphaDpiR);
+      	 fOutput->Add(halphaDKR);
+      	 fOutput->Add(halphaDpiB);
+      	 fOutput->Add(halphaDKB);
+
+      	 fOutput->Add(hdeltaRDpiS);
+      	 fOutput->Add(hdeltaRDKS);
+      	 fOutput->Add(hdeltaRDpiR);
+      	 fOutput->Add(hdeltaRDKR);
+      	 fOutput->Add(hdeltaRDpiB);
+      	 fOutput->Add(hdeltaRDKB);
+
+      }
+   
+   }
    return kTRUE; 
+}
+
+//_______________________________________________________________________________
+
+Float_t AliAnalysisTaskSEDmesonsFilterCJ::DeltaR(AliVParticle *p1, AliVParticle *p2) const {
+   //Calculate DeltaR between p1 and p2: DeltaR=sqrt(Delataphi^2+DeltaEta^2)
+   
+   if(!p1 || !p2) return -1;
+   Double_t phi1=p1->Phi(),eta1=p1->Eta();
+   Double_t phi2 = p2->Phi(),eta2 = p2->Eta() ;
+   
+   Double_t dPhi=phi1-phi2;
+   if(dPhi<=-(TMath::Pi())/2) dPhi = dPhi+2*(TMath::Pi());
+   if(dPhi>(3*(TMath::Pi()))/2) dPhi = dPhi-2*(TMath::Pi());
+   
+   Double_t dEta=eta1-eta2;
+   Double_t deltaR=TMath::Sqrt(dEta*dEta + dPhi*dPhi );
+   return deltaR;
+   
 }
