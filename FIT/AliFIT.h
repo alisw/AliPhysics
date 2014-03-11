@@ -10,7 +10,6 @@
  
 #include <AliDetector.h>
 #include <TTree.h>
-#include "AliFIT.h"
 #include "AliFITDigit.h"
 #include "AliFITHits.h"
 class TDirectory;
