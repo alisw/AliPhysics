@@ -421,8 +421,6 @@ parseConfig()
   excludeDetectors="EXAMPLE"
   #logs
   logDirectory=${workingDirectory}/logs
-  #set aliroot
-  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
   #OCDB storage
   #ocdbStorage="raw://"
   #email to
