@@ -100,8 +100,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
 
   // Relate tracks and clusters
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.1,doHistos);
-  emcalClus->SetModifyObjs(kFALSE);
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.1,kTRUE,doHistos);
   emcalClus->SelectCollisionCandidates(pSel);
   if (isEmcalTrain)
     RequestMemory(emcalClus,100*1024);
