@@ -158,6 +158,10 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
 
+   fTreeCascVarkITSRefitBachelor(0),
+   fTreeCascVarkITSRefitNegative(0),
+   fTreeCascVarkITSRefitPositive(0),
+
    fTreeCascVarEvHasXiMinus(0),
    fTreeCascVarEvHasXiPlus(0),
    fTreeCascVarEvHasOmegaMinus(0),
@@ -412,6 +416,10 @@ AliAnalysisTaskExtractPerformanceCascade::AliAnalysisTaskExtractPerformanceCasca
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+   fTreeCascVarkITSRefitBachelor(0),
+   fTreeCascVarkITSRefitNegative(0),
+   fTreeCascVarkITSRefitPositive(0),
 
    fTreeCascVarEvHasXiMinus(0),
    fTreeCascVarEvHasXiPlus(0),
@@ -728,6 +736,10 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
 /*37*/		fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
 /*38*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*39*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
 /*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiMinus",   &fTreeCascVarEvHasXiMinus,   "fTreeCascVarEvHasXiMinus/O");
 /*39*/		fTreeCascade->Branch("fTreeCascVarEvHasXiPlus",    &fTreeCascVarEvHasXiPlus,    "fTreeCascVarEvHasXiPlus/O");
@@ -2351,6 +2363,10 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
 	  lNegTPCClusters   = nTrackXi->GetTPCNcls();
 	  lBachTPCClusters  = bachTrackXi->GetTPCNcls(); 
 
+    fTreeCascVarkITSRefitBachelor = kTRUE; 
+    fTreeCascVarkITSRefitNegative = kTRUE; 
+    fTreeCascVarkITSRefitPositive = kTRUE; 
+
     // 1 - Poor quality related to TPCrefit
 	  ULong_t pStatus    = pTrackXi->GetStatus();
 	  ULong_t nStatus    = nTrackXi->GetStatus();
@@ -2358,6 +2374,12 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
     if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
     if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
     if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+
+    //Extra Debug Information: booleans for ITS refit
+    if ((pStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitPositive = kFALSE; }
+    if ((nStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitNegative = kFALSE; }
+    if ((bachStatus&AliESDtrack::kITSrefit) == 0) { fTreeCascVarkITSRefitBachelor = kFALSE; }
+
 	  // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
     if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); continue; }
 	  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); continue; }

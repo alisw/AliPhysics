@@ -162,6 +162,10 @@ class AliAnalysisTaskExtractCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarBachNSigmaPion;  //! 
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
 
+  Bool_t fTreeCascVarkITSRefitBachelor; //! 
+  Bool_t fTreeCascVarkITSRefitNegative; //! 
+  Bool_t fTreeCascVarkITSRefitPositive; //! 
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================

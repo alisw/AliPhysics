@@ -196,6 +196,8 @@ class AliAODPidHF : public TObject{
   Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const;
 
+  void PrintAll() const;
+
  protected:
 
 
