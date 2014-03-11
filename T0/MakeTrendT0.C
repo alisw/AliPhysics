@@ -5,7 +5,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TObjArray.h"
-#include "/home/alla/alice/AliRoot/AliRoot/STEER/STEERBase/TTreeStream.h"
+#include "TTreeStream.h"
 
 #define NPMTs 24
 

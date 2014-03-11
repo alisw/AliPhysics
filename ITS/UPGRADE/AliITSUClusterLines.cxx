@@ -20,6 +20,8 @@ AliITSUClusterLines::AliITSUClusterLines() : TObject(),
 					     fLabels(),
 					     fV() {
   // Default Constructor
+
+  for(Int_t i=0;i<9;++i) fW[i] = 0.;
 }
 
 //____________________________________________________________________________________________________________

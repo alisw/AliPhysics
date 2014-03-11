@@ -76,7 +76,8 @@ ClassImp(AliFITRawData)
   if (runloader) {
     fEventNumber = runloader->GetEventNumber();
   }
-  
+   for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+
 }
 
 //_____________________________________________________________________________
@@ -94,6 +95,8 @@ AliFITRawData::AliFITRawData(const AliFITRawData &r):TObject(),
   //
   
   ((AliFITRawData &) r).Copy(*this);
+  for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+
   
 }
 
