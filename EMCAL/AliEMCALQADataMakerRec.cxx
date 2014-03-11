@@ -85,8 +85,8 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   fFittingAlgorithm(0),
   fRawAnalyzer(0),
   fRawAnalyzerTRU(0),
-	fGeom(0),
-  fSuperModules(12), // FIXME!!! number of SuperModules; 12 for 2012; update default for later runs 
+  fGeom(0),
+  fSuperModules(20), // number of SuperModules; updated to 20 for EMCal + DCal 
   fFirstPedestalSample(0),
   fLastPedestalSample(3),
   fFirstPedestalSampleTRU(0),
@@ -120,7 +120,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 
-	fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1", "EMCAL");
+  fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1_DCAL_8SM", "EMCAL");
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
 //    fTextSM[sm] = NULL ;
 //  }

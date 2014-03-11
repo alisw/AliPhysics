@@ -44,13 +44,13 @@ class AliITSUv0 : public AliITSU {
   virtual void   AddAlignableVolumes() const;
   virtual void   CreateGeometry();
   virtual void   CreateMaterials();
-  virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nladd,
+  virtual void   DefineLayer(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
 			     Int_t nmod, Double_t lthick=0.,Double_t dthick=0.,UInt_t detType=0);
-  virtual void   DefineLayerTurbo(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nladd,
+  virtual void   DefineLayerTurbo(Int_t nlay,Double_t phi0,Double_t r,Double_t zlen,Int_t nstav,
 				  Int_t nmod,Double_t width,Double_t tilt,
 				  Double_t lthick = 0.,Double_t dthick = 0.,UInt_t detType=0, Int_t buildFlag=0);
   virtual void   GetLayerParameters(Int_t nlay, Double_t &phi0,Double_t &r, Double_t &zlen,
-				    Int_t &nladd, Int_t &nmod,
+				    Int_t &nstav, Int_t &nmod,
 				    Double_t &width, Double_t &tilt,
 				    Double_t &lthick, Double_t &mthick,
 				    UInt_t &dettype) const;
@@ -60,8 +60,8 @@ class AliITSUv0 : public AliITSU {
   virtual Int_t  IsVersion()                 const { return 20;}  // vUpgrade ? do we need this
   virtual void   SetDefaults();
   virtual void   StepManager();
-  virtual void   SetLayerDetTypeID(Int_t lr, UInt_t id);
-  virtual Int_t  GetLayerDetTypeID(Int_t lr);
+  virtual void   SetLayerChipTypeID(Int_t lr, UInt_t id);
+  virtual Int_t  GetLayerChipTypeID(Int_t lr);
   virtual void   SetStaveModel(AliITSUModel_t model) {fStaveModel=model;}
   virtual AliITSUModel_t GetStaveModel() const {return fStaveModel;}
   //
@@ -77,16 +77,16 @@ class AliITSUv0 : public AliITSU {
   Double_t* fWrapRMax;       // max radius of wrapper volume
   Double_t* fWrapZSpan;      // Z span of wrapper volume
   Bool_t   *fLayTurbo;       // True for "turbo" layers
-  Double_t *fLayPhi0;        // Vector of layer's 1st ladder phi in lab
+  Double_t *fLayPhi0;        // Vector of layer's 1st stave phi in lab
   Double_t *fLayRadii;       // Vector of layer radii
   Double_t *fLayZLength;     // Vector of layer length along Z
-  Int_t    *fLaddPerLay;     // Vector of number of ladders per layer
-  Int_t    *fModPerLadd;     // Vector of number of modules per ladder
-  Double_t *fLadThick;       // Vector of ladder thicknesses
-  Double_t *fLadWidth;       // Vector of ladder width (only used for turbo)
-  Double_t *fLadTilt;        // Vector of ladder tilt (only used for turbo)
+  Int_t    *fStavPerLay;     // Vector of number of staves per layer
+  Int_t    *fModPerStav;     // Vector of number of chips per stave
+  Double_t *fStaThick;       // Vector of stave thicknesses
+  Double_t *fStaWidth;       // Vector of stave width (only used for turbo)
+  Double_t *fStaTilt;        // Vector of stave tilt (only used for turbo)
   Double_t *fDetThick;       // Vector of detector thicknesses
-  UInt_t   *fDetTypeID;      // Vector of detector type id
+  UInt_t   *fChipTypeID;      // Vector of detector type id
   Int_t    *fBuildLevel;     // Vector of Material Budget Studies
   //  
   AliITSUv0Layer **fUpGeom; //! Geometry

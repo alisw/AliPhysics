@@ -30,6 +30,7 @@ public:
   virtual Float_t GetLightPMC() const      {return fLightPMC;}
   virtual Float_t GetEnergy() const        {return fEnergy;}
   virtual Float_t GetTrackTOF() const      {return fTrackTOF;}
+  virtual Float_t GetTrackEta() const      {return fTrackEta;}
 
   // Setters 
   virtual void SetVolume(Int_t i, Int_t val) {fVolume[i]=val;} 
@@ -42,6 +43,7 @@ public:
   virtual void SetXImpact(Float_t value)     {fXImpact=value;}
   virtual void SetYImpact(Float_t value)     {fYImpact=value;}
   virtual void SetTrackTOF(Float_t value)    {fTrackTOF=value;}
+  virtual void SetTrackEta(Float_t value)    {fTrackEta=value;}
 
   // Operators
   Int_t operator == (AliZDCHit &quad){
@@ -74,8 +76,9 @@ protected:
   Int_t   fPDGCode;   	  //PDG code of particle in the ZDC
   Int_t   fMotherPDGCode; //PDG code of particle in the ZDC
   Float_t fTrackTOF;  	  //Track time in ns
+  Float_t fTrackEta;  	  //Track eta
 
-  ClassDef(AliZDCHit,4)  // Hits for the Zero Degree Calorimeters
+  ClassDef(AliZDCHit,5)  // Hits for the Zero Degree Calorimeters
 };
  
 #endif

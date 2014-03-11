@@ -17,6 +17,8 @@
 #include "TDatabasePDG.h"
 #include "TArrayI.h"
 #include "TLorentzVector.h"
+#include "AliESDVertex.h"
+#include "TRef.h"
 
 #include "AliVParticle.h"
 
@@ -47,12 +49,36 @@ public:
   void SetPxPyPz(Double_t px, Double_t py, Double_t pz);
 
   // Get and Set methods for global tracking info
-  Double_t GetChi2(void) const {return fChi2;}        // chi2/ndf
-  void     SetChi2(Double_t Chi2) {fChi2 = Chi2;}     // chi2/ndf
-  
+  Double_t GetChi2OverNdf() const { return fChi2OverNdf; }            // chi2/ndf
+  void     SetChi2OverNdf(Double_t chi2) { fChi2OverNdf = chi2; }     // chi2/ndf
+
+  Double_t GetChi2MatchTrigger() const { return fChi2MatchTrigger; }
+  void     SetChi2MatchTrigger(Double_t chi2MatchTrigger) { fChi2MatchTrigger = chi2MatchTrigger; }
+
+  // Get and Set methods for various info copied and pasted from the MUON track
+  UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
+  void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+  UInt_t   GetHitsPatternInTrigChTrk() const {return fHitsPatternInTrigChTrk;}
+  void     SetHitsPatternInTrigChTrk(UInt_t hitsPatternInTrigChTrk) {fHitsPatternInTrigChTrk = hitsPatternInTrigChTrk;}
+  UInt_t   GetMuonClusterMap() const {return fMuonClusterMap;}
+  void     SetMuonClusterMap(UInt_t muonClusterMap) {fMuonClusterMap = muonClusterMap;}
+  Int_t    GetLoCircuit() const { return fLoCircuit; }
+  void     SetLoCircuit(Int_t loCircuit) { fLoCircuit = loCircuit; }
+  Bool_t   IsConnected() const { return fIsConnected; }
+  void     Connected(Bool_t flag) { fIsConnected = flag; }
+
   // Get and Set methods for trigger matching
   void  SetMatchTrigger(Int_t matchTrigger) { fMatchTrigger = matchTrigger; }
   Int_t GetMatchTrigger() { return fMatchTrigger; }
+
+  void SetNMFTClusters(Int_t nMFTClusters) { fNMFTClusters = nMFTClusters; }
+  Short_t GetNMFTClusters() { return fNMFTClusters; }
+
+  void SetNWrongMFTClustersMC(Int_t nWrongMFTClustersMC) { fNWrongMFTClustersMC = nWrongMFTClustersMC; }
+  Short_t GetNWrongMFTClustersMC() { return fNWrongMFTClustersMC; }
+
+  void SetMFTClusterPattern(ULong_t mftClusterPattern) { fMFTClusterPattern = mftClusterPattern; }
+  ULong_t GetMFTClusterPattern() { return fMFTClusterPattern; }
 
   // Kinematics
   Double_t Pt()       const { return fPt;  }
@@ -64,6 +90,15 @@ public:
   Double_t P()        const { return fP;  }
 
   Bool_t   PxPyPz(Double_t p[3]) const { p[0] = Px(); p[1] = Py(); p[2] = Pz(); return kTRUE; }
+
+  void SetFirstTrackingPoint(Double_t x, Double_t y, Double_t z) {fFirstTrackingPointX = x; fFirstTrackingPointY = y; fFirstTrackingPointZ = z; }
+  void GetFirstTrackingPoint(Double_t x[3]) { x[0] = fFirstTrackingPointX; x[1] = fFirstTrackingPointY; x[2] = fFirstTrackingPointZ; }
+
+  void SetXYAtVertex(Double_t x, Double_t y) { fXAtVertex = x; fYAtVertex = y; }
+  void GetXYAtVertex(Double_t x[2]) { x[0] = fXAtVertex; x[1] = fYAtVertex; }
+
+  Double_t GetRAtAbsorberEnd() { return fRAtAbsorberEnd; }
+  void SetRAtAbsorberEnd(Double_t r) { fRAtAbsorberEnd = r; }
 
   // Additional methods to comply with AliVParticle
   Double_t Xv() const {return -999.;} // put reasonable values here
@@ -78,6 +113,9 @@ public:
   Double_t Y() const { return Rapidity(); }
   Short_t  Charge() const { return fCharge; }
 
+  // Return kTRUE if the track contain tracker data
+  Bool_t ContainTrackerData() const {return (fMuonClusterMap>0) ? kTRUE : kFALSE;}
+
   // Dummy
   const Double_t *PID() const { return (Double_t*)0x0; }
   Int_t PdgCode() const { return 0; }
@@ -87,25 +125,45 @@ public:
   // Return the corresponding MC track number
   Int_t GetLabel() const { return fLabel; }
 
+  void SetProdVertexXYZ(Double_t x, Double_t y, Double_t z) { fProdVertexXYZ[0]=x; fProdVertexXYZ[1]=y; fProdVertexXYZ[2]=z; }
+  void GetProdVertexXYZ(Double_t *vertex) { vertex[0]=fProdVertexXYZ[0]; vertex[1]=fProdVertexXYZ[1]; vertex[2]=fProdVertexXYZ[2]; }
+
   AliESDEvent* GetESDEvent() const { return fESDEvent; }
   void         SetESDEvent(AliESDEvent* evt) { fESDEvent = evt; }  
   
 protected:
 
-  Short_t fCharge, fMatchTrigger;
+  Short_t fCharge, fMatchTrigger, fNMFTClusters, fNWrongMFTClustersMC;
+  ULong_t fMFTClusterPattern;  // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)
 
   // kinematics at vertex
   Double_t fPx, fPy, fPz, fPt, fP, fEta, fRapidity;
 
+  // coordinates of the first tracking point
+  Double_t fFirstTrackingPointX, fFirstTrackingPointY, fFirstTrackingPointZ;
+
+  // transverse coordinates at DCA to the primary vertex (offset)
+  Double_t fXAtVertex, fYAtVertex;
+
+  Double_t fRAtAbsorberEnd;
+
   // global tracking info
-  Double_t fChi2;                 //  chi2 in the MUON+MFT track fit
-  Double_t fChi2MatchTrigger;     //  chi2 of trigger/track matching
+  Double_t fChi2OverNdf;            //  chi2/ndf in the MUON+MFT track fit
+  Double_t fChi2MatchTrigger;       //  chi2 of trigger/track matching
 
-  Int_t fLabel;                   //  point to the corresponding MC track
+  Int_t fLabel;                     //  point to the corresponding MC track
 
-  AliESDEvent *fESDEvent;         //! Pointer back to event to which the track belongs
+  UInt_t   fMuonClusterMap;         // Map of clusters in MUON tracking chambers
+  UShort_t fHitsPatternInTrigCh;    // Word containing info on the hits left in trigger chambers
+  UInt_t   fHitsPatternInTrigChTrk; // Trigger hit map from tracker track extrapolation
+  Int_t    fLoCircuit;
+  Bool_t   fIsConnected;
   
-  ClassDef(AliESDMuonGlobalTrack,1) // MUON+MFT ESD track class 
+  Double_t fProdVertexXYZ[3];       // vertex of origin
+
+  AliESDEvent *fESDEvent;           //! Pointer back to event to which the track belongs
+  
+  ClassDef(AliESDMuonGlobalTrack,3) // MUON+MFT ESD track class 
 
 };
 

@@ -30,6 +30,7 @@
 // pitch, yaw angles of each installed SM.
 //
 // J.L. Klay - Cal Poly
+// Adapted for DCAL by M.L. Wang CCNU & Subatech Oct-19-2012
 // 21-May-2010
 //
 
@@ -181,12 +182,26 @@ void AliEMCALSurvey::CreateAliAlignObjParams(TClonesArray &array)
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
   AliAlignObjParams* myobj = 0x0;
 
+  TString SMName;
+  Int_t tmpType = -1;
+  Int_t SMOrder = 0;
+
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
-    TString smodName(TString::Format("EMCAL/FullSupermodule%d", smodnum+1));
-    if(geom->GetKey110DEG() && smodnum >= 10) {
-      smodName = "EMCAL/HalfSupermodule";
-      smodName += (smodnum-10+1);
-    }    
+    if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Standard )      SMName = "FullSupermodule";
+    else if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Half )     SMName = "HalfSupermodule";
+    else if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_3rd )      SMName = "OneThrdSupermodule";
+    else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Standard ) SMName = "DCALSupermodule";
+    else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Ext )      SMName = "DCALExtensionSM";
+    else AliError("Unkown SM Type!!");
+
+    if(geom->GetSMType(smodnum) == tmpType) {
+      SMOrder++;
+    } else {
+      tmpType = geom->GetSMType(smodnum);
+      SMOrder = 1;
+    }
+
+    TString smodName(TString::Format("EMCAL/%s%d", SMName.Data(), SMOrder));
     AliEMCALSuperModuleDelta t(GetSuperModuleTransformation(smodnum));
 
     ///////////////////////////////
@@ -222,12 +237,26 @@ void AliEMCALSurvey::CreateNullObjects(TClonesArray &array, const AliEMCALGeomet
   AliGeomManager::ELayerID iLayer = AliGeomManager::kInvalidLayer;
   UShort_t volid = AliGeomManager::LayerToVolUID(iLayer,iIndex);
 
+  TString SMName;
+  Int_t tmpType = -1;
+  Int_t SMOrder = 0;
+
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
-    TString smodName(TString::Format("EMCAL/FullSupermodule%d", smodnum+1));
-    if(geom->GetKey110DEG() && smodnum >= 10) {
-      smodName = "EMCAL/HalfSupermodule";
-      smodName += (smodnum-10+1);
+    if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Standard )      SMName = "FullSupermodule";
+    else if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Half )     SMName = "HalfSupermodule";
+    else if(geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_3rd )      SMName = "OneThrdSupermodule";
+    else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Standard ) SMName = "DCALSupermodule";
+    else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Ext )      SMName = "DCALExtensionSM";
+    else AliError("Unkown SM Type!!");
+
+    if(geom->GetSMType(smodnum) == tmpType) {
+      SMOrder++;
+    } else {
+      tmpType = geom->GetSMType(smodnum);
+      SMOrder = 1;
     }
+    TString smodName(TString::Format("EMCAL/%s%d", SMName.Data(), SMOrder));
+
     new(array[arrayInd]) AliAlignObjParams(smodName.Data(), volid, 0., 0., 0., 0., 0., 0., true);
     ++arrayInd;
   }
@@ -296,20 +325,26 @@ void AliEMCALSurvey::InitSuperModuleData(const TObjArray *svypts)
   //Center of supermodules
   Float_t pars[] = {geom->GetSuperModulesPar(0),geom->GetSuperModulesPar(1),geom->GetSuperModulesPar(2)};
   Double_t rpos = (geom->GetEnvelop(0) + geom->GetEnvelop(1))/2.;
+  Float_t fInnerEdge = geom->GetDCALInnerEdge();
   Double_t phi=0, phiRad=0, xpos=0, ypos=0, zpos=0;
   
   AliEMCALSuperModuleCoords *idealSM = new AliEMCALSuperModuleCoords[fNSuperModule];
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
     AliEMCALSuperModuleCoords &smc = idealSM[smodnum];
-    phiRad = geom->GetPhiCenterOfSM(smodnum); //comes in radians
+    phiRad = geom->GetPhiCenterOfSMSec(smodnum); //comes in radians
     phi = phiRad*180./TMath::Pi(); //need degrees for AliAlignObjParams
     xpos = rpos * TMath::Cos(phiRad);
     ypos = rpos * TMath::Sin(phiRad);
     zpos = pars[2];
-    if(geom->GetKey110DEG() && smodnum >= 10) {
+    if(  geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Half 
+      || geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_3rd 
+      || geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Ext ) {
       xpos += (pars[1]/2. * TMath::Sin(phiRad));
       ypos -= (pars[1]/2. * TMath::Cos(phiRad));
+    } else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Standard) {
+        zpos = pars[2] + fInnerEdge/2.;
     }
+
     smc.fX1 = xpos;
     smc.fY1 = ypos;
     smc.fPhi = phi; //degrees
@@ -508,6 +543,7 @@ void AliEMCALSurvey::InitSuperModuleData(const Double_t *xReal, const Double_t *
   //Center of supermodules
   Float_t pars[] = {geom->GetSuperModulesPar(0),geom->GetSuperModulesPar(1),geom->GetSuperModulesPar(2)};
   Double_t rpos = (geom->GetEnvelop(0) + geom->GetEnvelop(1))/2.;
+  Float_t fInnerEdge = geom->GetDCALInnerEdge();
   Double_t phi=0, phiRad=0, xpos=0, ypos=0, zpos=0;
 
   zpos = pars[2];
@@ -515,14 +551,20 @@ void AliEMCALSurvey::InitSuperModuleData(const Double_t *xReal, const Double_t *
   AliEMCALSuperModuleCoords *idealSM = new AliEMCALSuperModuleCoords[fNSuperModule];
   for (Int_t smodnum = 0; smodnum < geom->GetNumberOfSuperModules(); ++smodnum) {
     AliEMCALSuperModuleCoords &smc = idealSM[smodnum];
-    phiRad = geom->GetPhiCenterOfSM(smodnum); //comes in radians
+    phiRad = geom->GetPhiCenterOfSMSec(smodnum); //comes in radians
     phi = phiRad*180./TMath::Pi(); //need degrees for AliAlignObjParams
     xpos = rpos * TMath::Cos(phiRad);
     ypos = rpos * TMath::Sin(phiRad);
-    if(geom->GetKey110DEG() && smodnum >= 10) {
+
+    if(  geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_Half
+      || geom->GetSMType(smodnum) == AliEMCALGeometry::kEMCAL_3rd
+      || geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Ext ) {
       xpos += (pars[1]/2. * TMath::Sin(phiRad));
       ypos -= (pars[1]/2. * TMath::Cos(phiRad));
+    } else if( geom->GetSMType(smodnum) == AliEMCALGeometry::kDCAL_Standard) {
+        zpos = pars[2] + fInnerEdge/2.;
     }
+
     smc.fX1 = xpos;
     smc.fY1 = ypos;
 

@@ -18,6 +18,10 @@ class AliTRDarrayADC: public TObject
 {
  public:
 
+  enum {
+    kDataInvalid = 14
+  };
+
   AliTRDarrayADC();
   AliTRDarrayADC(Int_t nrow, Int_t ncol, Int_t ntime);
   AliTRDarrayADC(const AliTRDarrayADC &b);
@@ -50,6 +54,10 @@ class AliTRDarrayADC: public TObject
   inline  Short_t GetData(Int_t nrow, Int_t ncol, Int_t ntime) const;
   inline  void    SetData(Int_t nrow, Int_t ncol, Int_t ntime, Short_t value);
   static  void    CreateLut(); 
+
+  Bool_t  IsValid() { return !TestBit(kDataInvalid); }
+  void    SetDataInvalid() { SetBit(kDataInvalid); }
+  void    SetDataValid() { ResetBit(kDataInvalid); }
 
  protected:
 

@@ -772,8 +772,10 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
     nEvents = fLastEvent - fFirstEvent + 1;
     Int_t ievent  = -1;
 
-    TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    32*96);
-    TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", 32*96);
+    AliEMCALGeometry *geom = dynamic_cast<AliEMCAL*>(rl->GetAliRun()->GetDetector("EMCAL"))->GetGeometry();
+    const Int_t nTRU = geom->GetNTotalTRU();
+    TClonesArray* digitsTMP = new TClonesArray("AliEMCALDigit",    nTRU*96);
+    TClonesArray* digitsTRG = new TClonesArray("AliEMCALRawDigit", nTRU*96);
 
     rl->LoadSDigits("EMCAL");
     for (ievent = fFirstEvent; ievent <= fLastEvent; ievent++) {
@@ -892,7 +894,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
       
       if (AliDebugLevel()) printf("Number of TRG digits: %d\n",digitsTMP->GetEntriesFast());
 		
-      Int_t     nSamples = 32;
+      Int_t     nSamples = geom->GetNTotalTRU(); 
       Int_t *timeSamples = new Int_t[nSamples];
       
       NextDigit = TIter(digitsTMP);

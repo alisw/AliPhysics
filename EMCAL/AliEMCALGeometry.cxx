@@ -44,6 +44,12 @@
 //
 //   EMCAL_COMPLETE12SMV1: contains 12 SM for runs from year 2012 and on
 //
+//   EMCAL_COMPLETE12SMV1_DCAL: contains 12 SM and 6 DCAL SM
+//   
+//   EMCAL_COMPLETE12SMV1_DCAL_8SM: contains 12 SM and 8 DCAL SM including the DCAL extention (2 SM)
+//
+//   EMCAL_COMPLETE12SMV1_DCAL_DEV: contains 12 SM shifted and 10 DCAL SM 
+//
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
 //          Aleksei, but kept for testing purposes
@@ -75,6 +81,7 @@
 //  in AliEMCALGeometry
 //                  
 // -- Author: Magali Estienne (magali.estienne@subatech.in2p3.fr)
+//     and  : Adapted for DCAL, M.L. Wang CCNU & Subatech Oct-18-2012
 //
 //
 // Usage: 
@@ -118,14 +125,15 @@ const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12S
 
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry():
-  fEMCGeometry(0x0),fGeoName(0),
-  fKey110DEG(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
+  fEMCGeometry(0x0),fGeoName(0),fEMCSMSystem(0x0),
+  fKey110DEG(0),fnSupModInDCAL(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
   fNCellsInModule(0),fPhiBoundariesOfSM(0x0),fPhiCentersOfSM(0x0),
-  fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
+  fPhiCentersOfSMSec(0x0),fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
   fCentersOfCellsPhiDir(0x0),fEtaCentersOfCells(0x0),
   fNCells(0),fNPhi(0),fCentersOfCellsXDir(0x0),fArm1EtaMin(0),
   fArm1EtaMax(0),fArm1PhiMin(0),fArm1PhiMax(0),fEtaMaxOfTRD1(0),
-  fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
+  fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),fDCALStandardPhiMax(0),
+  fDCALInnerExtandedEta(0),fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
   fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
   fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
   fZLength(0.),fSampling(0.),fUseExternalMatrices(kFALSE)
@@ -142,20 +150,21 @@ AliEMCALGeometry::AliEMCALGeometry():
     fkSModuleMatrix[i]=0 ;
 
   for (Int_t i = 0; i < 48; i++)
-	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = -1;
+   for (Int_t j = 0; j < 124; j++) fFastOR2DMap[i][j] = -1;
 }  
 
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
   : TNamed(geo),
-    fEMCGeometry(geo.fEMCGeometry),fGeoName(geo.fGeoName),
-    fKey110DEG(geo.fKey110DEG),fNCellsInSupMod(geo.fNCellsInSupMod),fNETAdiv(geo.fNETAdiv),fNPHIdiv(geo.fNPHIdiv),
+    fEMCGeometry(geo.fEMCGeometry),fGeoName(geo.fGeoName),fEMCSMSystem(geo.fEMCSMSystem),
+    fKey110DEG(geo.fKey110DEG),fnSupModInDCAL(geo.fnSupModInDCAL),fNCellsInSupMod(geo.fNCellsInSupMod),fNETAdiv(geo.fNETAdiv),fNPHIdiv(geo.fNPHIdiv),
     fNCellsInModule(geo.fNCellsInModule),fPhiBoundariesOfSM(geo.fPhiBoundariesOfSM),fPhiCentersOfSM(geo.fPhiCentersOfSM),
-    fPhiCentersOfCells(geo.fPhiCentersOfCells),fCentersOfCellsEtaDir(geo.fCentersOfCellsEtaDir),
+    fPhiCentersOfSMSec(geo.fPhiCentersOfSMSec),fPhiCentersOfCells(geo.fPhiCentersOfCells),fCentersOfCellsEtaDir(geo.fCentersOfCellsEtaDir),
     fCentersOfCellsPhiDir(geo.fCentersOfCellsPhiDir),fEtaCentersOfCells(geo.fEtaCentersOfCells),
     fNCells(geo.fNCells),fNPhi(geo.fNPhi),fCentersOfCellsXDir(geo.fCentersOfCellsXDir),fArm1EtaMin(geo.fArm1EtaMin),
     fArm1EtaMax(geo.fArm1EtaMax),fArm1PhiMin(geo.fArm1PhiMin),fArm1PhiMax(geo.fArm1PhiMax),fEtaMaxOfTRD1(geo.fEtaMaxOfTRD1),
-    fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fPhiModuleSize(geo.fPhiModuleSize),
+    fDCALPhiMin(geo.fDCALPhiMin),fDCALPhiMax(geo.fDCALPhiMax),fEMCALPhiMax(geo.fEMCALPhiMax),fDCALStandardPhiMax(geo.fDCALStandardPhiMax),
+    fDCALInnerExtandedEta(geo.fDCALInnerExtandedEta),fShishKebabTrd1Modules(geo.fShishKebabTrd1Modules),fPhiModuleSize(geo.fPhiModuleSize),
     fEtaModuleSize(geo.fEtaModuleSize),fPhiTileSize(geo.fPhiTileSize),fEtaTileSize(geo.fEtaTileSize),fNZ(geo.fNZ),
     fIPDistance(geo.fIPDistance),fLongModuleSize(geo.fLongModuleSize),fShellThickness(geo.fShellThickness),
     fZLength(geo.fZLength),fSampling(geo.fSampling),fUseExternalMatrices(geo.fUseExternalMatrices)
@@ -171,21 +180,22 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
     fkSModuleMatrix[i]=0 ;
   
   for (Int_t i = 0; i < 48; i++)
-	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = geo.fFastOR2DMap[i][j];
+    for (Int_t j = 0; j < 124; j++) fFastOR2DMap[i][j] = geo.fFastOR2DMap[i][j];
 }
 
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
                                    const Text_t* mcname, const Text_t* mctitle) 
   : TNamed(name, title),
-    fEMCGeometry(0x0),fGeoName(0),
-    fKey110DEG(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
+    fEMCGeometry(0x0),fGeoName(0),fEMCSMSystem(0x0),
+    fKey110DEG(0),fnSupModInDCAL(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
     fNCellsInModule(0),fPhiBoundariesOfSM(0x0),fPhiCentersOfSM(0x0),
-    fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
+    fPhiCentersOfSMSec(0x0),fPhiCentersOfCells(0x0),fCentersOfCellsEtaDir(0x0),
     fCentersOfCellsPhiDir(0x0),fEtaCentersOfCells(0x0),
     fNCells(0),fNPhi(0),fCentersOfCellsXDir(0x0),fArm1EtaMin(0),
     fArm1EtaMax(0),fArm1PhiMin(0),fArm1PhiMax(0),fEtaMaxOfTRD1(0),
-    fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
+    fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),fDCALStandardPhiMax(0),
+    fDCALInnerExtandedEta(0),fShishKebabTrd1Modules(0),fPhiModuleSize(0.),
     fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fNZ(0),
     fIPDistance(0.),fLongModuleSize(0.),fShellThickness(0.),
     fZLength(0.),fSampling(0.), fUseExternalMatrices(kFALSE)
@@ -193,9 +203,10 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
   // ctor only for normal usage 
   
   fEMCGeometry = new AliEMCALEMCGeometry(name,title,mcname,mctitle);
-
   fGeoName = fEMCGeometry->GetGeoName();
+  fEMCSMSystem = fEMCGeometry->GetEMCSystem();
   fKey110DEG = fEMCGeometry->GetKey110DEG();
+  fnSupModInDCAL = fEMCGeometry->GetnSupModInDCAL();
   fNCellsInSupMod = fEMCGeometry->GetNCellsInSupMod();
   fNETAdiv = fEMCGeometry->GetNETAdiv();
   fNPHIdiv = fEMCGeometry->GetNPHIdiv();
@@ -204,6 +215,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
   Int_t nSMod = fEMCGeometry->GetNumberOfSuperModules();
   fPhiBoundariesOfSM.Set(nSMod);
   fPhiCentersOfSM.Set(nSMod/2);
+  fPhiCentersOfSMSec.Set(nSMod/2);
   for(Int_t sm=0; sm<nSMod; sm++) {
     i = sm/2;
     fEMCGeometry->GetPhiBoundariesOfSM(sm,fPhiBoundariesOfSM[2*i],fPhiBoundariesOfSM[2*i+1]);
@@ -215,6 +227,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
     fEMCGeometry->GetPhiBoundariesOfSM(sm,phiMin,phiMax);
     i=sm/2;
     fPhiCentersOfSM[i] = fEMCGeometry->GetPhiCenterOfSM(sm);
+    fPhiCentersOfSMSec[i] = fEMCGeometry->GetPhiCenterOfSMSec(sm);
   }
   fNCells = fEMCGeometry->GetNCells();
   fNPhi = fEMCGeometry->GetNPhi();
@@ -228,6 +241,11 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
   fArm1EtaMax = fEMCGeometry->GetArm1EtaMax();
   fArm1PhiMin = fEMCGeometry->GetArm1PhiMin();
   fArm1PhiMax = fEMCGeometry->GetArm1PhiMax();
+  fDCALPhiMin = fEMCGeometry->GetDCALPhiMin();
+  fDCALPhiMax = fEMCGeometry->GetDCALPhiMax();
+  fEMCALPhiMax = fEMCGeometry->GetEMCALPhiMax();
+  fDCALStandardPhiMax = fEMCGeometry->GetDCALStandardPhiMax();
+  fDCALInnerExtandedEta = fEMCGeometry->GetDCALInnerExtandedEta();
   fShellThickness = fEMCGeometry->GetShellThickness();
   fZLength    = fEMCGeometry->GetZLength();
   fSampling   = fEMCGeometry->GetSampling();
@@ -250,7 +268,7 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
   }
 
   for (Int_t ix = 0; ix < 48; ix++)
-	for (Int_t jx = 0; jx < 64; jx++) fFastOR2DMap[ix][jx] = -1;
+	for(Int_t jx = 0; jx < 124; jx++) fFastOR2DMap[ix][jx] = -1;
 
   BuildFastOR2DMap();
 }
@@ -459,25 +477,22 @@ Int_t AliEMCALGeometry::GetAbsCellId(Int_t nSupMod, Int_t nModule, Int_t nIphi, 
   // 0 <= nIphi   < fNPHIdiv
   // 0 <= nIeta   < fNETAdiv
   // 0 <= absid   < fNCells
-  static Int_t id=0; // have to change from 0 to fNCells-1
-  if(fKey110DEG == 1 && nSupMod >= 10 && !fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules halfsupermodules 
-    id  = fNCellsInSupMod*10 + (fNCellsInSupMod/2)*(nSupMod-10);
-  } else if(fKey110DEG == 1 && nSupMod >= 10 && fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules 1/3 supermodules 
-    id  = fNCellsInSupMod*10 + (fNCellsInSupMod/3)*(nSupMod-10);
-  } else {
-    id  = fNCellsInSupMod*nSupMod;
+  Int_t id=0; // have to change from 0 to fNCells-1
+  for( int i = 0 ; i < nSupMod; i++) {
+    if(      GetSMType(i) == kEMCAL_Standard) id += fNCellsInSupMod;
+    else if( GetSMType(i) == kEMCAL_Half)     id += fNCellsInSupMod/2;
+    else if( GetSMType(i) == kEMCAL_3rd)      id += fNCellsInSupMod/3;
+    else if( GetSMType(i) == kDCAL_Standard)  id += 2*fNCellsInSupMod/3;
+    else if( GetSMType(i) == kDCAL_Ext)       id += fNCellsInSupMod/3;
+    else {
+      AliError(Form("Uknown SuperModule Type !!"));
+    }
   }
+  
   id += fNCellsInModule *nModule;
   id += fNPHIdiv *nIphi;
   id += nIeta;
-  if(id<0 || id >= fNCells) {
-//     printf(" wrong numerations !!\n");
-//     printf("    id      %6i(will be force to -1)\n", id);
-//     printf("    fNCells %6i\n", fNCells);
-//     printf("    nSupMod %6i\n", nSupMod);
-//     printf("    nModule  %6i\n", nModule);
-//     printf("    nIphi   %6i\n", nIphi);
-//     printf("    nIeta   %6i\n", nIeta);
+  if( !CheckAbsCellId(id) ) {
     id = -TMath::Abs(id); // if negative something wrong
   }
   return id;
@@ -532,14 +547,14 @@ Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
   if(TMath::Abs(eta) > fEtaMaxOfTRD1) return kFALSE;
 
   phi = TVector2::Phi_0_2pi(phi); // move phi to (0,2pi) boundaries
-  for(i=0; i<6; i++) {
-	
-	//Check if it is not the complete geometry
-	if (i >= fEMCGeometry->GetNumberOfSuperModules()/2) return kFALSE;
-
+  Int_t nphism = fEMCGeometry->GetNumberOfSuperModules()/2;
+  for(i=0; i<nphism; i++) {
     if(phi>=fPhiBoundariesOfSM[2*i] && phi<=fPhiBoundariesOfSM[2*i+1]) {
       nSupMod = 2*i;
       if(eta < 0.0) nSupMod++;
+      if( GetSMType(nSupMod) == kDCAL_Standard) {// Gap between DCAL
+        if(TMath::Abs(eta) < GetNEta()/3*(GetEMCGeometry()->GetTrd1Angle())*TMath::DegToRad()) return kFALSE;
+      }
       AliDebug(1,Form("eta %f phi %f(%5.2f) : nSupMod %i : #bound %i", eta,phi,phi*TMath::RadToDeg(), nSupMod,i));
       return kTRUE;
     }
@@ -551,9 +566,10 @@ Bool_t AliEMCALGeometry::SuperModuleNumberFromEtaPhi(Double_t eta, Double_t phi,
 //________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_t &absId) const
 {
+
   // Nov 17,2006
   // stay here - phi problem as usual 
-  static Int_t nSupMod=-1, i=0, ieta=-1, iphi=-1, etaShift=0, nphi=-1;
+  static Int_t nSupMod=-1, i=0, ieta=-1, iphi=-1, etaShift=0, neta=-1, nphi=-1;
   static Double_t absEta=0.0, d=0.0, dmin=0.0, phiLoc=0;
   absId = nSupMod = - 1;
   if(SuperModuleNumberFromEtaPhi(eta, phi, nSupMod)) {
@@ -561,15 +577,10 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
     phi    = TVector2::Phi_0_2pi(phi);
     phiLoc = phi - fPhiCentersOfSM[nSupMod/2];
     nphi   = fPhiCentersOfCells.GetSize();
-    if(nSupMod>=10 && !fGeoName.Contains("12SMV1")) {
-      phiLoc = phi - 190.*TMath::DegToRad(); // half-size case... the reference for the loc  is still 190 deg..?
-      nphi  /= 2;
-    }
-    if(nSupMod>=10 && fGeoName.Contains("12SMV1")) {
-     // in the one_third case the variable fPhiCentersOfSM behaves like for the full_module.
-      nphi  /= 3;
-    }
-
+    if (     GetSMType(nSupMod) == kEMCAL_Half ) nphi  /= 2;
+    else if( GetSMType(nSupMod) == kEMCAL_3rd )  nphi  /= 3;
+    else if( GetSMType(nSupMod) == kDCAL_Ext )   nphi  /= 3;
+    
     dmin   = TMath::Abs(fPhiCentersOfCells[0]-phiLoc);
     iphi   = 0;
     for(i=1; i<nphi; i++) {
@@ -582,26 +593,32 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
     }
     // odd SM are turned with respect of even SM - reverse indexes
     AliDebug(2,Form(" iphi %i : dmin %f (phi %f, phiLoc %f ) ", iphi, dmin, phi, phiLoc));
+
     // eta index
     absEta   = TMath::Abs(eta);
-    etaShift = iphi*fCentersOfCellsEtaDir.GetSize();
-    dmin     = TMath::Abs(fEtaCentersOfCells[etaShift]-absEta);
+    neta     = fCentersOfCellsEtaDir.GetSize();
+    etaShift = iphi*neta;
     ieta     = 0;
-    for(i=1; i<fCentersOfCellsEtaDir.GetSize(); i++) {
+    if( GetSMType(nSupMod) == kDCAL_Standard) ieta += 16; //jump 16 cells for DCSM
+    dmin     = TMath::Abs(fEtaCentersOfCells[etaShift + ieta]-absEta);
+    for(i= ieta+1 ; i<neta; i++) {
       d = TMath::Abs(fEtaCentersOfCells[i+etaShift] - absEta);
       if(d < dmin) {
         dmin = d;
         ieta = i;
       }
     }
+    if( GetSMType(nSupMod) == kDCAL_Standard) ieta -= 16; //jump 16 cells for DCSM
+
     AliDebug(2,Form(" ieta %i : dmin %f (eta=%f) : nSupMod %i ", ieta, dmin, eta, nSupMod));
      
    //patch for mapping following alice convention  
-   if(nSupMod%2 == 0)		  
-      ieta = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
-   
-    absId = GetAbsCellIdFromCellIndexes(nSupMod, iphi, ieta);
+    if(nSupMod%2 == 0) {// 47 + 16 -ieta for DCSM, 47 - ieta for others, revert the ordering on A side in order to keep convention.
+      ieta = (neta -1)-ieta;
+      if( GetSMType(nSupMod) == kDCAL_Standard) ieta -= 16; //recover cells for DCSM
+    }
 
+    absId = GetAbsCellIdFromCellIndexes(nSupMod, iphi, ieta);
     return kTRUE;
   }
   return kFALSE;
@@ -629,22 +646,25 @@ Bool_t AliEMCALGeometry::GetCellIndex(Int_t absId,Int_t &nSupMod,Int_t &nModule,
   // nIphi   - cell number in phi driection inside module; 0<= nIphi < fNPHIdiv; 
   // nIeta   - cell number in eta driection inside module; 0<= nIeta < fNETAdiv; 
   // 
-  static Int_t tmp=0, sm10=0;
   if(!CheckAbsCellId(absId)) return kFALSE;
 
-  sm10 = fNCellsInSupMod*10;
-  if(fKey110DEG == 1 && absId >= sm10 && !fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules are halfsupermodules 
-    nSupMod = (absId-sm10) / (fNCellsInSupMod/2) + 10;
-    tmp     = (absId-sm10) % (fNCellsInSupMod/2);
-  } else if(fKey110DEG == 1 && absId >= sm10 && fGeoName.Contains("12SMV1")) { // 110 degree case; last two supermodules are 1/3 supermodules 
-    nSupMod = (absId-sm10) / (fNCellsInSupMod/3) + 10;
-    tmp     = (absId-sm10) % (fNCellsInSupMod/3);
-  } else { 
-    nSupMod = absId / fNCellsInSupMod;
-    tmp     = absId % fNCellsInSupMod;
+  static Int_t tmp = absId;
+  Int_t test = absId;
+ 
+  for(nSupMod = -1; test >= 0; ) {
+    nSupMod++;
+    tmp = test;
+    if(      GetSMType(nSupMod) == kEMCAL_Standard) test -= fNCellsInSupMod;
+    else if( GetSMType(nSupMod) == kEMCAL_Half)     test -= fNCellsInSupMod/2;
+    else if( GetSMType(nSupMod) == kEMCAL_3rd)      test -= fNCellsInSupMod/3;
+    else if( GetSMType(nSupMod) == kDCAL_Standard)  test -= 2*fNCellsInSupMod/3;
+    else if( GetSMType(nSupMod) == kDCAL_Ext)       test -= fNCellsInSupMod/3;
+    else {
+      AliError(Form("Uknown SuperModule Type !!"));
+      return kFALSE;
+    }
   }
-
-  nModule  = tmp / fNCellsInModule;
+  nModule = tmp / fNCellsInModule;
   tmp     = tmp % fNCellsInModule;
   nIphi   = tmp / fNPHIdiv;
   nIeta   = tmp % fNPHIdiv;
@@ -672,11 +692,11 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModule(Int_t nSupMod, Int_t nModul
   // ietam - have to change from 0 to fNZ-1
   // iphim - have to change from 0 to nphi-1 (fNPhi-1 or fNPhi/2-1)
   static Int_t nphi=-1;
-
-  if(fKey110DEG == 1 && nSupMod>=10 && !fGeoName.Contains("12SMV1") )      nphi = fNPhi/2; // halfSM
-  else if(fKey110DEG == 1 && nSupMod>=10 && fGeoName.Contains("12SMV1") )  nphi = fNPhi/3; // 1/3 SM
-  else                                                               nphi = fNPhi;   // full SM
-
+  if(      GetSMType(nSupMod) == kEMCAL_Half )  nphi = fNPhi/2; // halfSM
+  else if( GetSMType(nSupMod) == kEMCAL_3rd  )  nphi = fNPhi/3; // 1/3 SM
+  else if( GetSMType(nSupMod) == kDCAL_Ext   )  nphi = fNPhi/3; // 1/3 SM
+  else                                          nphi = fNPhi;   // full SM
+  
   ietam = nModule/nphi;
   iphim = nModule%nphi;
 }
@@ -727,12 +747,8 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
   // Shift index taking into account the difference between standard SM 
   // and SM of half (or one third) size in phi direction
  
-   Int_t workaround; // a small trick to be able to define the const variable kphiIndexShift
-   //if half, two parts, 1/4 wide, should be remove. In case of one_third SM, the two parts to be removed are 1/3 each
-   if(fKey110DEG == 1 && !fGeoName.Contains("12SMV1")) workaround=4; // half SM case
-   else workaround=3; // one third of SM case 
-   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/workaround; 
-   const Int_t kphiRangeSmallSM = fCentersOfCellsPhiDir.GetSize()-2*kphiIndexShift;  
+  const Int_t kNphiIndex = fCentersOfCellsPhiDir.GetSize(); 
+  Double_t  zshift = 0.5*GetDCALInnerEdge();
       
   static Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   if(!CheckAbsCellId(absId)) return kFALSE;
@@ -742,23 +758,29 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t &xr, Double_t
 	
   //Get eta position. Careful with ALICE conventions (increase index decrease eta)	
   Int_t ieta2 = ieta;
-  if(nSupMod%2 == 0)		  
-	  ieta2 = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+  if(nSupMod%2 == 0) {
+    ieta2 = (fCentersOfCellsEtaDir.GetSize()-1)-ieta;// 47-ieta, revert the ordering on A side in order to keep convention.
+  }
+  if( GetSMType(nSupMod) == kDCAL_Standard && nSupMod%2 ) ieta2 += 16; // DCAL revert the ordering on C side ...
   zr = fCentersOfCellsEtaDir.At(ieta2); 
+  if( GetSMType(nSupMod) == kDCAL_Standard ) zr -= zshift; // DCAL shift (SMALLER SM)
   xr = fCentersOfCellsXDir.At(ieta2);
 
   //Get phi position. Careful with ALICE conventions (increase index increase phi)
   Int_t iphi2 = iphi;
-  if(nSupMod<10) { 
-		if(nSupMod%2 != 0) 
-			iphi2 = (fCentersOfCellsPhiDir.GetSize()-1)-iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
-		yr = fCentersOfCellsPhiDir.At(iphi2);
-	  
+  if( GetSMType(nSupMod) == kDCAL_Ext ) {
+  if(nSupMod%2 != 0)   iphi2 = (kNphiIndex/3 -1)-iphi;  // 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
+    yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/3);
+  } else if( GetSMType(nSupMod) == kEMCAL_Half ){
+    if(nSupMod%2 != 0)   iphi2 = (kNphiIndex/2 -1)-iphi;  //11-iphi [1/2SM], revert the ordering on C side in order to keep convention.
+    yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/4);
+  } else if( GetSMType(nSupMod) == kEMCAL_3rd ){
+    if(nSupMod%2 != 0)   iphi2 = (kNphiIndex/3 -1)-iphi;  // 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
+    yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/3);
   } else {
-		if(nSupMod%2 != 0) 
-			iphi2 = (kphiRangeSmallSM-1)-iphi;// 11-iphi [1/2SM] or 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
-		yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
-  }
+    if(nSupMod%2 != 0)   iphi2 = (kNphiIndex   -1)-iphi;// 23-iphi, revert the ordering on C side in order to keep conventi
+    yr = fCentersOfCellsPhiDir.At(iphi2);
+  } 
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
 
   return kTRUE;
@@ -809,13 +831,10 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   
   // Shift index taking into account the difference between standard SM 
   // and SM of half (or one third) size in phi direction
-   
-   Int_t workaround; // a small trick to be able to define the const variable kphiIndexShift
-   //if half, two parts, 1/4 wide, should be remove. In case of one_third SM, the two parts to be removed are 1/3 each
-   if(fKey110DEG == 1 && !fGeoName.Contains("12SMV1")) workaround=4; // half SM case
-   else workaround=3; // one third of SM case 
-   const Int_t kphiIndexShift = fCentersOfCellsPhiDir.GetSize()/workaround; 
-   const Int_t kphiRangeSmallSM = fCentersOfCellsPhiDir.GetSize()-2*kphiIndexShift; 
+  
+  const Int_t kNphiIndex = fCentersOfCellsPhiDir.GetSize();
+  Double_t  zshift = 0.5*GetDCALInnerEdge();
+  Int_t kDCalshift = 8;//wangml DCal cut first 8 modules(16 cells)
    
   static Int_t nSupMod=0, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
   static Int_t iphim=-1, ietam=-1;
@@ -829,27 +848,32 @@ Bool_t AliEMCALGeometry::RelPosCellInSModule(Int_t absId, Double_t distEff, Doub
   
   //Get eta position. Careful with ALICE conventions (increase index decrease eta)	
   if(nSupMod%2 == 0) {             
-    ietam = (fCentersOfCellsEtaDir.GetSize()/2-1)-ietam;// 47-ietam, revert the ordering on A side in order to keep convention.
+    ietam = (fCentersOfCellsEtaDir.GetSize()/2-1)-ietam;// 24-ietam, revert the ordering on A side in order to keep convention.
     if(nIeta == 0) nIeta = 1;
     else	   nIeta = 0;
   }
+  if( GetSMType(nSupMod) == kDCAL_Standard && nSupMod%2) ietam += kDCalshift; // DCAL revert the ordering on C side ....
   mod = GetShishKebabModule(ietam);
   mod ->GetPositionAtCenterCellLine(nIeta, distEff, v); 
   xr = v.Y() - fParSM[0];
   zr = v.X() - fParSM[2];
-  
+  if( GetSMType(nSupMod) == kDCAL_Standard ) zr -= zshift; // DCAL shift (SMALLER SM)
+ 
   //Get phi position. Careful with ALICE conventions (increase index increase phi)
   Int_t iphi2 = iphi;
-  if(nSupMod<10) { 
-    if(nSupMod%2 != 0) 
-      iphi2 = (fCentersOfCellsPhiDir.GetSize()-1)-iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
-    yr = fCentersOfCellsPhiDir.At(iphi2);
-    
-  } else {
-		if(nSupMod%2 != 0) 
-			iphi2 = (kphiRangeSmallSM-1)-iphi;// 11-iphi [1/2SM] or 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
-		yr = fCentersOfCellsPhiDir.At(iphi2 + kphiIndexShift);
-  }
+  if( GetSMType(nSupMod) == kDCAL_Ext ) {
+     if(nSupMod%2 != 0)  iphi2 = (kNphiIndex/3 -1)-iphi;  // 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
+     yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/3);
+   } else if( GetSMType(nSupMod) == kEMCAL_Half ){
+     if(nSupMod%2 != 0)  iphi2 = (kNphiIndex/2 -1)-iphi;  //11-iphi [1/2SM], revert the ordering on C side in order to keep convention.
+     yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/2);
+   } else if( GetSMType(nSupMod) == kEMCAL_3rd ){
+     if(nSupMod%2 != 0)  iphi2 = (kNphiIndex/3 -1)-iphi;  // 7-iphi [1/3SM], revert the ordering on C side in order to keep convention.
+     yr = fCentersOfCellsPhiDir.At(iphi2 + kNphiIndex/3);
+   } else {
+     if(nSupMod%2 != 0)  iphi2 = (kNphiIndex   -1)-iphi;// 23-iphi, revert the ordering on C side in order to keep convention.
+     yr = fCentersOfCellsPhiDir.At(iphi2);
+   }
   
   AliDebug(1,Form("absId %i nSupMod %i iphi %i ieta %i xr %f yr %f zr %f ",absId,nSupMod,iphi,ieta,xr,yr,zr));
   
@@ -1129,32 +1153,47 @@ void AliEMCALGeometry::ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi,
 //_____________________________________________________________________________
 Bool_t AliEMCALGeometry::IsInEMCAL(Double_t x, Double_t y, Double_t z) const 
 {
-  // Checks whether point is inside the EMCal volume, used in AliEMCALv*.cxx
+  // Checks whether point is inside the EMCal volume 
+  if( IsInEMCALOrDCAL(x,y,z) == 1 ) return kTRUE;
+  else return kFALSE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliEMCALGeometry::IsInDCAL(Double_t x, Double_t y, Double_t z) const 
+{
+  // Checks whether point is inside the DCal volume
+  if( IsInEMCALOrDCAL(x,y,z) == 2 ) return kTRUE;
+  else return kFALSE;
+}
+
+//_____________________________________________________________________________
+Int_t AliEMCALGeometry::IsInEMCALOrDCAL(Double_t x, Double_t y, Double_t z) const 
+{
+  // Checks whether point is inside the EMCal volume (included DCal), used in AliEMCALv*.cxx
   //
   // Code uses cylindrical approximation made of inner radius (for speed)
   //
-  // Points behind EMCAl, i.e. R > outer radius, but eta, phi in acceptance 
+  // Points behind EMCAl/DCal, i.e. R > outer radius, but eta, phi in acceptance 
   // are considered to inside
 
   Double_t r=sqrt(x*x+y*y);
 
-  if ( r > fEnvelop[0] ) {
-     Double_t theta;
-     theta  =    TMath::ATan2(r,z);
-     Double_t eta;
-     if(theta == 0) 
-       eta = 9999;
-     else 
-       eta    =   -TMath::Log(TMath::Tan(theta/2.));
-     if (eta < fArm1EtaMin || eta > fArm1EtaMax)
-       return 0;
- 
-     Double_t phi = TMath::ATan2(y,x) * 180./TMath::Pi();
-     if (phi < 0) phi += 360;  // phi should go from 0 to 360 in this case
-     if (phi > fArm1PhiMin && phi < fArm1PhiMax)
-       return 1;
-  }
-  return 0;
+  if ( r <= fEnvelop[0] ) return 0;
+  else {
+    Double_t theta = TMath::ATan2(r,z);
+    Double_t eta;
+    if(theta == 0)  eta = 9999;
+    else            eta = -TMath::Log(TMath::Tan(theta/2.));
+    if (eta < fArm1EtaMin || eta > fArm1EtaMax) return 0;
+
+    Double_t phi = TMath::ATan2(y,x) * 180./TMath::Pi();
+    if (phi < 0) phi += 360;  // phi should go from 0 to 360 in this case
+
+    if (      phi >= fArm1PhiMin         && phi <= fEMCALPhiMax ) return 1;
+    else if ( phi >= fDCALPhiMin         && phi <= fDCALStandardPhiMax && TMath::Abs(eta) > fDCALInnerExtandedEta ) return 2;
+    else if ( phi > fDCALStandardPhiMax  && phi <= fDCALPhiMax  ) return 2;
+    else return 0;
+  } 
 }
 
 //________________________________________________________________________________________________
@@ -1172,7 +1211,7 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromTRU(const Int_t iTRU, const Int_t 
 {
   //Trigger mapping method, get  FastOr Index from TRU
 
-  if (iTRU > 31 || iTRU < 0 || iADC > 95 || iADC < 0) 
+  if (iTRU > GetNTotalTRU()-1 || iTRU < 0 || iADC > 95 || iADC < 0) 
   {
     AliError("TRU out of range!");
     return kFALSE;
@@ -1188,7 +1227,8 @@ Bool_t AliEMCALGeometry::GetTRUFromAbsFastORIndex(const Int_t id, Int_t& iTRU, I
 {
   //Trigger mapping method, get TRU number from FastOr Index
 
-  if (id > 3071 || id < 0)
+  Int_t nModule = GetNTotalTRU()*96;
+  if (id > nModule-1 || id < 0)
   {
     AliError("Id out of range!");
     return kFALSE;
@@ -1261,9 +1301,9 @@ Bool_t AliEMCALGeometry::GetPositionInEMCALFromAbsFastORIndex(const Int_t id, In
 Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInTRU(const Int_t iTRU, const Int_t iEta, const Int_t iPhi, Int_t& id) const
 {
   //Trigger mapping method, get Index if FastOr from Position in TRU
-  if (iTRU < 0 || iTRU > 31 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) 
+  if (iTRU < 0 || iTRU > GetNTotalTRU()-1 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 3) 
   {
-    AliError("Out of range!");	
+    AliError(Form("Out of range! iTRU=%d, iEta=%d, iPhi=%d", iTRU, iEta, iPhi));	
     return kFALSE;
   }
   id =  iPhi  + 4 * iEta + iTRU * 96;
@@ -1275,7 +1315,14 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, con
 {
   //Trigger mapping method, from position in SM Index get FastOR index 
 
-  if (iSM < 0 || iSM > 11 || iEta < 0 || iEta > 23 || iPhi < 0 || iPhi > 11) 
+  Int_t iSMMax  = fEMCGeometry->GetNumberOfSuperModules();
+  Int_t iEtaMax = fEMCGeometry->GetNZ();
+  Int_t iPhiMax = fEMCGeometry->GetNPhi();
+  if( GetSMType(iSM) == kEMCAL_3rd || GetSMType(iSM) == kDCAL_Ext ) iPhiMax /= 3;
+  if( GetSMType(iSM) == kEMCAL_Half )                               iPhiMax /= 2;
+  if( GetSMType(iSM) == kDCAL_Standard )                            iEtaMax = iEtaMax*2/3;
+
+  if (iSM < 0 || iSM >= iSMMax || iEta < 0 || iEta >= iEtaMax || iPhi < 0 || iPhi >= iPhiMax) 
   {
     AliError("Out of range!");
     return kFALSE;
@@ -1284,6 +1331,7 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInSM(const Int_t  iSM, con
   Int_t y = iPhi % 4;	
   Int_t iOff = (iSM % 2) ? 1 : 0;
   Int_t iTRU = 2 * int(iPhi / 4) + 6 * int(iSM / 2) + iOff;
+  if(IsDCALSM(iSM) ) iTRU -=4;
   if (GetAbsFastORIndexFromPositionInTRU(iTRU, x, y, id))
   {
     return kTRUE;
@@ -1296,7 +1344,7 @@ Bool_t AliEMCALGeometry::GetAbsFastORIndexFromPositionInEMCAL(const Int_t iEta, 
 {
   //Trigger mapping method, from position in EMCAL Index get FastOR index 
 
-  if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi > 63 ) 
+  if (iEta < 0 || iEta > 47 || iPhi < 0 || iPhi >= 2*GetNTotalTRU() )//for future DCAL trigge
   {
     AliError(Form("Out of range! eta: %2d phi: %2d", iEta, iPhi));
     return kFALSE;
@@ -1352,13 +1400,13 @@ Bool_t AliEMCALGeometry::GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) con
 {
   //Trigger mapping method, from STU index get TRU index 
 
-  if (id > 31 || id < 0) 
-  {
-    AliError(Form("TRU index out of range: %d",id));
-    return kFALSE;
-  }
-  idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
-  return kTRUE;
+   idx = GetTRUIndexFromSTUIndex(id);
+   if (idx > GetNTotalTRU()-1 || idx < 0)
+   {
+     AliError(Form("TRU index out of range: %d",idx));
+     return kFALSE;
+   }
+   return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1366,11 +1414,17 @@ Int_t AliEMCALGeometry::GetTRUIndexFromSTUIndex(const Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
 
-  if (id > 31 || id < 0) 
+  if (id > GetNTotalTRU()-1 || id < 0) 
   {
     AliError(Form("TRU index out of range: %d",id));
   }
-  Int_t idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+
+  Int_t idx = 0;
+  if(id < 32){
+    idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+  } else if(id >= 32){// DCAL
+    idx = (id > 32+3*fnSupModInDCAL/2-1) ? 2 * (GetNTotalTRU()-1 - id)+32 : 2 * (32+3*fnSupModInDCAL/2-1 - id) + 32+1;
+  }
   return idx;
 }
 
@@ -1379,7 +1433,7 @@ void AliEMCALGeometry::BuildFastOR2DMap()
 {
   // Needed by STU
 
-  for (Int_t i = 0; i < 32; i++)
+  for (Int_t i = 0; i < GetNTotalTRU(); i++)
   {
     for (Int_t j = 0; j < 24; j++)
     {
@@ -1401,18 +1455,14 @@ void AliEMCALGeometry::BuildFastOR2DMap()
 Bool_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const
 {
   //Trigger mapping method, from STU index get TRU index 
-	
-  if (id > 31 || id < 0) 
-  {
-    AliError(Form("TRU index out of range: %d",id));
-    return kFALSE;
-  }
-  if (id == 31) {
-    idx = 31;
-    return kTRUE;
-  }
-  idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
-  return kTRUE;
+
+   idx = GetOnlineIndexFromTRUIndex(id);
+   if (idx > GetNTotalTRU()-1 || idx < 0)
+   {
+     AliError(Form("TRU index out of range: %d",idx));
+     return kFALSE;
+   }
+   return kTRUE;
 }
 
 //________________________________________________________________________________________________
@@ -1420,14 +1470,23 @@ Int_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
 	
-  if (id > 31 || id < 0) 
+  if (id > GetNTotalTRU()-1 || id < 0) 
   {
     AliError(Form("TRU index out of range: %d",id));
   }
   if (id == 31) {
     return 31;
   }
-  Int_t idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
+  if (fGeoName.Contains("DCAL_8SM") && id == 51) {
+    return 51;
+  }
+
+  //jump 4 TRUs for DCAL
+  Int_t tmp=0;
+  if(id > 31) tmp = id+4;
+  else        tmp = id;
+  Int_t idx = ((tmp% 6) < 3) ? 6 * int(tmp/ 6) + 2 * (tmp% 3) : 6 * int(tmp/ 6) + 2 * (2 - (tmp% 3)) + 1;
+  if(id > 31) idx-=4;
   return idx;
 }
 
@@ -1435,33 +1494,37 @@ Int_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id) const
 Bool_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const
 {
   //Trigger mapping method, from STU index get TRU index 
-	
-  if (id > 31 || id < 0) 
-  {
-    AliError(Form("TRU index out of range: %d",id));
-    return kFALSE;
-  }
-  if (id == 31) {
-    idx = 31;
-    return kTRUE;
-  }
-  idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
-  return kTRUE;
+ 
+    idx = GetOnlineIndexFromTRUIndex(id);
+    if (idx > GetNTotalTRU()-1 || idx < 0)
+   {
+     AliError(Form("TRU index out of range: %d",idx));
+     return kFALSE;
+   }
+   return kTRUE;
 }
-
 //________________________________________________________________________________________________
 Int_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id) const
 {
   //Trigger mapping method, from STU index get TRU index 
 	
-  if (id > 31 || id < 0) 
+  if (id > GetNTotalTRU()-1 || id < 0) 
   {
     AliError(Form("TRU index out of range: %d",id));
   }
   if (id == 31) {
     return 31;
   }
-  Int_t idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (2 * int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+  if (fGeoName.Contains("DCAL_8SM") && id == 51) {
+    return 51;
+  }
+
+  //jump 4 TRUs for DCAL
+  Int_t tmp=0;
+  if(id > 31) tmp = id+4;
+  else        tmp = id;
+  Int_t idx = (tmp % 2) ? int((6 - (tmp % 6)) / 2) + 3 * (2 * int(tmp / 6) + 1) : 3 * int(tmp / 6) + int(tmp / 2);
+  if(id > 31) idx-=4;
   return idx;
 }
 
@@ -1534,26 +1597,32 @@ const TGeoHMatrix * AliEMCALGeometry::GetMatrixForSuperModule(Int_t smod) const
   if(gGeoManager){
     const Int_t buffersize = 255;
     char path[buffersize] ;
-    snprintf(path,buffersize,"/ALIC_1/XEN1_1/SMOD_%d",smod+1) ;
-    //TString volpath = "ALIC_1/XEN1_1/SMOD_";
-    //volpath += smod+1;
+    TString SMName;
+    Int_t tmpType = -1;
+    Int_t SMOrder = 0;
+//Get the order for SM
+    for( Int_t i = 0; i < smod+1; i++){
+      if(GetSMType(i) == tmpType) {
+        SMOrder++;
+      } else {
+        tmpType = GetSMType(i);
+        SMOrder = 1;
+      }
+    } 
 
-    if(fKey110DEG && smod >= 10 && !fGeoName.Contains("12SMV1") ){
-      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM10_%d",smod-10+1) ;
-      //volpath = "ALIC_1/XEN1_1/SM10_";
-      //volpath += smod-10+1;
-    }
-    if(fKey110DEG && smod >= 10 && fGeoName.Contains("12SMV1") ){
-      snprintf(path,buffersize,"/ALIC_1/XEN1_1/SM3rd_%d",smod-10+1) ;
-      //volpath = "ALIC_1/XEN1_1/SM10_";
-      //volpath += smod-10+1;
-    }
+    if(GetSMType(smod) == kEMCAL_Standard )      SMName = "SMOD";
+    else if(GetSMType(smod) == kEMCAL_Half )     SMName = "SM10";
+    else if(GetSMType(smod) == kEMCAL_3rd )      SMName = "SM3rd";
+    else if( GetSMType(smod) == kDCAL_Standard ) SMName = "DCSM";
+    else if( GetSMType(smod) == kDCAL_Ext )      SMName = "DCEXT";
+    else AliError("Unkown SM Type!!");
+    snprintf(path,buffersize,"/ALIC_1/XEN1_1/%s_%d", SMName.Data(), SMOrder) ;
+
     if (!gGeoManager->cd(path)){
       AliFatal(Form("Geo manager can not find path %s!\n",path));
     }
     return gGeoManager->GetCurrentMatrix();
   }
-
   return 0 ;
 }
 
@@ -1710,6 +1779,7 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
   }
 }
 
+//__________________________________________________________________________________________________________________
 void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
 {
   // Method to set shift-rotational matrixes from ESDHeader
@@ -1719,4 +1789,18 @@ void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod)
   if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
     if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
   } else AliFatal(Form("Wrong supermodule index -> %d",smod));
+}
+
+//__________________________________________________________________________________________________________________
+Bool_t AliEMCALGeometry::IsDCALSM(Int_t iSupMod) const
+{
+  if( fEMCSMSystem[iSupMod] == kDCAL_Standard || fEMCSMSystem[iSupMod] == kDCAL_Ext ) return kTRUE;
+  return kFALSE;
+}
+
+//__________________________________________________________________________________________________________________
+Bool_t AliEMCALGeometry::IsDCALExtSM(Int_t iSupMod) const
+{
+  if( fEMCSMSystem[iSupMod] == kDCAL_Ext ) return kTRUE;
+  return kFALSE;
 }

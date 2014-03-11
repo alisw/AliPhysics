@@ -36,7 +36,7 @@ AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
 	//
 	// AliEMCALTriggerDCSConfig default constructor
 	//
-	fTRUArr = new TClonesArray("AliEMCALTriggerTRUDCSConfig",32);
+	fTRUArr = new TClonesArray("AliEMCALTriggerTRUDCSConfig",62);
 	fSTUObj = new AliEMCALTriggerSTUDCSConfig();
 }
 

@@ -82,7 +82,7 @@ public:
   
   AliMFTSegmentation* GetSegmentation() const { return fSegmentation; }
 
-  enum EMedia{kAir, kSi, kReadout, kSupport, kCarbon, kAlu, kWater, kSiO2};  // media IDs used in CreateMaterials
+  enum EMedia{kAir, kSi, kReadout, kSupport, kCarbon, kAlu, kWater, kSiO2, kInox};  // media IDs used in CreateMaterials
     
   // Geometry/segmentation creation part
   TGeoVolumeAssembly* CreateVol();

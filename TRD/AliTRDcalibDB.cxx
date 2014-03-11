@@ -1836,7 +1836,8 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
     // if we still don't have a valid TRAPconfig, create a default one
     if (!fTrapConfig) {
       AliWarning("Falling back to default configuration");
-      fTrapConfig = new AliTRDtrapConfig("default", "default TRAP configuration");
+      static AliTRDtrapConfig trapConfigDefault("default", "default TRAP configuration");
+      fTrapConfig = &trapConfigDefault;
       AliTRDtrapConfigHandler cfgHandler(fTrapConfig);
       cfgHandler.Init();
       cfgHandler.LoadConfig();

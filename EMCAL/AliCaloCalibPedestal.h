@@ -171,7 +171,7 @@ class AliCaloCalibPedestal : public TObject {
   
   //The histograms. We use a TObjArray instead of a simple array,because this gives automatic streaming properties for the
   //class. A TClonesArray would be more efficient, but it's a bit more difficult to use and it doesn't matter too much
-  //since we have only around 12 objects (maximum) in the array anyway.
+  //since we have only one object per module in the array anyway.
   TObjArray fPedestalLowGain; // pedestal info for low gain
   TObjArray fPedestalHighGain; // pedestal info for high gain
   TObjArray fPedestalLEDRefLowGain; // pedestal LEDRef info for low gain

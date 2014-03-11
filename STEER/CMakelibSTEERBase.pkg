@@ -92,6 +92,8 @@ set ( SRCS
     STEERBase/AliVTrdTracklet.cxx
     STEERBase/AliGenEventHeaderTunedPbPb.cxx
     STEERBase/AliDummyHandler.cxx
+    STEERBase/AliVTOFHit.cxx
+    STEERBase/AliVTOFMatch.cxx
     STEERBase/AliVTOFcluster.cxx
   )
 

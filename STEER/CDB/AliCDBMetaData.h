@@ -16,56 +16,56 @@
 #include <TMap.h>
 
 class AliCDBMetaData: public TObject {
-	
-public:
-	AliCDBMetaData();
-	AliCDBMetaData(const char *responsible, UInt_t beamPeriod=0, const char* alirootVersion="", const char* comment="");
-	virtual ~AliCDBMetaData();
 
-	void 		SetObjectClassName(const char* name) 
-				{fObjectClassName = name;};
-	const char* 	GetObjectClassName() const 
-				{return fObjectClassName.Data();};
-	
-        void 		SetResponsible(const char* yourName) 
-				{fResponsible = yourName;};
-	const char* 	GetResponsible() const 
-				{return fResponsible.Data();};
+  public:
+    AliCDBMetaData();
+    AliCDBMetaData(const char *responsible, UInt_t beamPeriod=0, const char* alirootVersion="", const char* comment="");
+    virtual ~AliCDBMetaData();
 
-	void 		SetBeamPeriod(UInt_t period) 
-				{fBeamPeriod = period;};
-	UInt_t 		GetBeamPeriod() const 
-				{return fBeamPeriod;};
+    void 		SetObjectClassName(const char* name) 
+    {fObjectClassName = name;};
+    const char* 	GetObjectClassName() const 
+    {return fObjectClassName.Data();};
 
-	void 		SetAliRootVersion(const char* version)
-				{fAliRootVersion = version;};
-	const char* 	GetAliRootVersion() const 
-				{return fAliRootVersion.Data();};
+    void 		SetResponsible(const char* yourName) 
+    {fResponsible = yourName;};
+    const char* 	GetResponsible() const 
+    {return fResponsible.Data();};
 
-	void 		SetComment(const char* comment) 
-				{fComment = comment;};
-	const char* 	GetComment() const 
-				{return fComment.Data();};
-	void		AddDateToComment();
+    void 		SetBeamPeriod(UInt_t period) 
+    {fBeamPeriod = period;};
+    UInt_t 		GetBeamPeriod() const 
+    {return fBeamPeriod;};
 
-	void 		SetProperty(const char* property, TObject* object);
-	TObject* 	GetProperty(const char* property) const;
-	Bool_t 		RemoveProperty(const char* property);
-	
-	void PrintMetaData();
-	
-private:
+    void 		SetAliRootVersion(const char* version)
+    {fAliRootVersion = version;};
+    const char* 	GetAliRootVersion() const 
+    {return fAliRootVersion.Data();};
 
-	TString fObjectClassName; 	// object's class name
-	TString fResponsible; 		// object's responsible person
-	UInt_t  fBeamPeriod;		// beam period
-	TString fAliRootVersion;	// AliRoot version
-	TString fComment;		// extra comments
-	//TList fCalibRuns;		
-	
-	TMap fProperties;		// list of object specific properties
+    void 		SetComment(const char* comment) 
+    {fComment = comment;};
+    const char* 	GetComment() const 
+    {return fComment.Data();};
+    void		AddDateToComment();
 
-	ClassDef(AliCDBMetaData, 1);
+    void 		SetProperty(const char* property, TObject* object);
+    TObject* 	GetProperty(const char* property) const;
+    Bool_t 		RemoveProperty(const char* property);
+
+    void PrintMetaData();
+
+  private:
+
+    TString fObjectClassName; 	// object's class name
+    TString fResponsible; 		// object's responsible person
+    UInt_t  fBeamPeriod;		// beam period
+    TString fAliRootVersion;	// AliRoot version
+    TString fComment;		// extra comments
+    //TList fCalibRuns;		
+
+    TMap fProperties;		// list of object specific properties
+
+    ClassDef(AliCDBMetaData, 1);
 };
 
 #endif

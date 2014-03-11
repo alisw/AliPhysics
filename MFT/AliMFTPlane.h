@@ -88,8 +88,6 @@ private:
 
   // measures in cm
 
-  static const Double_t fRadiusMin;            // minimum radial distance of the MFT sensors. To be carefully coordinated with fActiveSuperposition
-
   static const Double_t fActiveSuperposition;  // superposition between the active elements tasselling the MFT planes, for having a 
                                                // full acceptance coverage even in case of 10 degrees inclined tracks
   static const Double_t fHeightActive;         // height of the active elements

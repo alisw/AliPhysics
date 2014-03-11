@@ -46,33 +46,33 @@ ClassImp(AliDCSGenDB)
 //______________________________________________________________________________________________
 
 AliDCSGenDB::AliDCSGenDB():
-   fFirstRun(0),
-   fLastRun(0),
-   fSpecificStorage(0),
-   fDefaultStorage(0),
-   fSensor(0),
-   fStorLoc(0),
-   fMetaData(0),
-   fConfTree(0)
-//
-//  standard constructor
-//
+  fFirstRun(0),
+  fLastRun(0),
+  fSpecificStorage(0),
+  fDefaultStorage(0),
+  fSensor(0),
+  fStorLoc(0),
+  fMetaData(0),
+  fConfTree(0)
+  //
+  //  standard constructor
+  //
 {}
 
 //______________________________________________________________________________________________
 
 AliDCSGenDB::AliDCSGenDB(const char* defaultStorage, const char* specificStorage):
-   fFirstRun(0),
-   fLastRun(0),
-   fSpecificStorage(specificStorage),
-   fDefaultStorage(defaultStorage),
-   fSensor(0),
-   fStorLoc(0),
-   fMetaData(0),
-   fConfTree(0)
-//
-//  special constructor
-//
+  fFirstRun(0),
+  fLastRun(0),
+  fSpecificStorage(specificStorage),
+  fDefaultStorage(defaultStorage),
+  fSensor(0),
+  fStorLoc(0),
+  fMetaData(0),
+  fConfTree(0)
+  //
+  //  special constructor
+  //
 {}
 
 //______________________________________________________________________________________________
@@ -88,77 +88,77 @@ AliDCSGenDB::AliDCSGenDB(const AliDCSGenDB& org):
   fMetaData(0),
   fConfTree(0)
 {
-//
-//  Copy constructor
-//
+  //
+  //  Copy constructor
+  //
 
- AliError("copy constructor not implemented");
+  AliError("copy constructor not implemented");
 
 }
 
 //______________________________________________________________________________________________
 AliDCSGenDB::~AliDCSGenDB(){
-//
-// destructor
-//
-   delete fSensor;
-   delete fMetaData;
-   delete fConfTree;
+  //
+  // destructor
+  //
+  delete fSensor;
+  delete fMetaData;
+  delete fConfTree;
 }
 
 //______________________________________________________________________________________________
 AliDCSGenDB& AliDCSGenDB::operator= (const AliDCSGenDB& /*org*/ )
 {
- //
- // assignment operator
- //
- AliError("assignment operator not implemented");
- return *this;
+  //
+  // assignment operator
+  //
+  AliError("assignment operator not implemented");
+  return *this;
 
 }
 
 //______________________________________________________________________________________________
 
 void AliDCSGenDB::MakeCalib(const char *list, const char *mapDCS,
-                             const TTimeStamp& startTime,
-			     const TTimeStamp& endTime,
-			     Int_t firstRun, Int_t lastRun, const char *calibDir )
+    const TTimeStamp& startTime,
+    const TTimeStamp& endTime,
+    Int_t firstRun, Int_t lastRun, const char *calibDir )
 {
 
-   // Generate calibration entry from DCS map
-   // Configuration read from ASCII file specified by list
-   
-   TClonesArray *arr = ReadList(list);
-   fSensor = new AliDCSSensorArray(arr);
-   fSensor->SetStartTime(startTime);
-   fSensor->SetEndTime(endTime);
-   TMap* map = SetGraphFile(mapDCS);
-   if (map) {
-     fSensor->MakeSplineFit(map);
-   }
-   delete map;
-   map=0;
-   mapDCS=0;
+  // Generate calibration entry from DCS map
+  // Configuration read from ASCII file specified by list
 
-   SetFirstRun(firstRun);
-   SetLastRun(lastRun);
+  TClonesArray *arr = ReadList(list);
+  fSensor = new AliDCSSensorArray(arr);
+  fSensor->SetStartTime(startTime);
+  fSensor->SetEndTime(endTime);
+  TMap* map = SetGraphFile(mapDCS);
+  if (map) {
+    fSensor->MakeSplineFit(map);
+  }
+  delete map;
+  map=0;
+  mapDCS=0;
 
-   StoreObject(calibDir, fSensor, fMetaData);
+  SetFirstRun(firstRun);
+  SetLastRun(lastRun);
+
+  StoreObject(calibDir, fSensor, fMetaData);
 }
 
 //______________________________________________________________________________________________
 void AliDCSGenDB::MakeConfig(const char *file, Int_t firstRun, Int_t lastRun, const char *confDir )
 {
-   //
-   // Store Configuration file to OCDB
-   //
+  //
+  // Store Configuration file to OCDB
+  //
 
-   TTree *tree = ReadListTree(file);
-   SetConfTree(tree);
-   SetFirstRun(firstRun);
-   SetLastRun(lastRun);
+  TTree *tree = ReadListTree(file);
+  SetConfTree(tree);
+  SetFirstRun(firstRun);
+  SetLastRun(lastRun);
 
-   StoreObject(confDir, fConfTree, fMetaData);
+  StoreObject(confDir, fConfTree, fMetaData);
 }
 
 
@@ -186,23 +186,23 @@ void AliDCSGenDB::StoreObject(const char* cdbPath, TObject* object, AliCDBMetaDa
 
 //______________________________________________________________________________________________
 void AliDCSGenDB::Init(Int_t run, const char *configDir, 
-                                  const char *specificDir,
-				  const char *sensorClass)
+    const char *specificDir,
+    const char *sensorClass)
 {
 
-   fMetaData = CreateMetaObject(sensorClass);
-   AliCDBManager *man = AliCDBManager::Instance();
-   man->SetDefaultStorage(fDefaultStorage);
-   man->SetRun(run);
-   man->SetSpecificStorage(specificDir,fSpecificStorage);
-   AliCDBEntry *config = man->Get(configDir);
-   if (config) fConfTree = (TTree*)config->GetObject();
-   fStorLoc = man->GetStorage(fSpecificStorage);
-   if (!fStorLoc)    return;
+  fMetaData = CreateMetaObject(sensorClass);
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage(fDefaultStorage);
+  man->SetRun(run);
+  man->SetSpecificStorage(specificDir,fSpecificStorage);
+  AliCDBEntry *config = man->Get(configDir);
+  if (config) fConfTree = (TTree*)config->GetObject();
+  fStorLoc = man->GetStorage(fSpecificStorage);
+  if (!fStorLoc)    return;
 
-   /*Bool_t cdbCache = */AliCDBManager::Instance()->GetCacheFlag(); // save cache status
-   AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
-   
+  /*Bool_t cdbCache = */AliCDBManager::Instance()->GetCacheFlag(); // save cache status
+  AliCDBManager::Instance()->SetCacheFlag(kTRUE); // activate CDB cache
+
 
 }
 

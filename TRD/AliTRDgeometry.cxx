@@ -242,7 +242,10 @@ void AliTRDgeometry::CreatePadPlaneArray()
   if (fgPadPlaneArray)
     return;
 
-  fgPadPlaneArray = new TObjArray(fgkNlayer * fgkNstack);  
+  static TObjArray padPlaneArray(fgkNlayer * fgkNstack);
+  padPlaneArray.SetOwner(kTRUE);
+
+  fgPadPlaneArray = &padPlaneArray;
   for (Int_t ilayer = 0; ilayer < fgkNlayer; ilayer++) {
     for (Int_t istack = 0; istack < fgkNstack; istack++) {
       Int_t ipp = GetDetectorSec(ilayer,istack);

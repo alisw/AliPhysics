@@ -45,7 +45,7 @@ protected:
 	AliEMCALTriggerDCSConfigDB*  fDCSConfig;     // DCS config
 	AliEMCALTriggerData*         fTriggerData;   // Trigger data
 	
-	Int_t						 fRawDigitIndex[3072]; // Raw digit indexes
+	Int_t						 fRawDigitIndex[5952]; // Raw digit indexes
 
 private:
 	

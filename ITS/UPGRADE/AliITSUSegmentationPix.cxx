@@ -27,7 +27,7 @@ using namespace TMath;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Segmentation class for pixels                                                                          //
-// Questions to solve: are guardrings needed and do they belong to the sensor or to the module in TGeo    //
+// Questions to solve: are guardrings needed and do they belong to the sensor or to the chip in TGeo    //
 //                     At the moment assume that the local coord syst. is located at bottom left corner   //
 //                     of the ACTIVE matrix. If the guardring to be accounted in the local coords, in     //
 //                     the Z and X conversions one needs to first subtract the  fGuardLft and fGuardBot   //
@@ -70,7 +70,7 @@ AliITSUSegmentationPix::AliITSUSegmentationPix(UInt_t id, int nchips,int ncol,in
   ,fDiodShidtMatZ(0)
 {
   // Default constructor, sizes in cm
-  if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeDetTypeID(id) );
+  if (nchips) SetUniqueID( AliITSUGeomTGeo::ComposeChipTypeID(id) );
   fChipDZ = (fNColPerChip-2)*fPitchZ + fPitchZLftCol + fPitchZRgtCol;;
   fDxActive = fNRow*fPitchX;
   fDzActive = fNChips*fChipDZ;

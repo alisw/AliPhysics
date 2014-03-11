@@ -22,20 +22,20 @@ class AliCDBEntry;
 class AliShuttleInterface : public TObject
 {
   public:
-	enum System { kDAQ = 0, kDCS, kHLT, kDQM };
+    enum System { kDAQ = 0, kDCS, kHLT, kDQM };
     enum { kNDetectors = 21 }; // number of subdetectors in ALICE
 
     virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
-    				Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;
+        Int_t validityStart = 0, Bool_t validityInfinite = kFALSE) = 0;
     virtual Bool_t StoreReferenceData(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData) = 0;
     virtual Bool_t StoreReferenceFile(const char* detector, const char* localFile, const char* gridFileName) = 0;
     virtual Bool_t StoreRunMetadataFile(const char* localFile, const char* gridFileName) = 0;
-    
+
     virtual const char* GetFile(Int_t system, const char* detector, const char* id, const char* source) = 0;
-    
+
     virtual TList* GetFileSources(Int_t system, const char* detector, const char* id = 0) = 0;
     virtual TList* GetFileIDs(Int_t system, const char* detector, const char* source) = 0;
-    
+
     virtual const char* GetRunParameter(const char* lbEntry) = 0;
     virtual UInt_t GetStartTimeDCSQuery() = 0;
     virtual UInt_t GetEndTimeDCSQuery() = 0;
@@ -46,7 +46,7 @@ class AliShuttleInterface : public TObject
     virtual const char* GetTriggerDetectorMask() = 0;
 
     virtual AliCDBEntry* GetFromOCDB(const char* detector, const AliCDBPath& path) = 0;
-    
+
     virtual void Log(const char* detector, const char* message, UInt_t level=3) = 0;
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;

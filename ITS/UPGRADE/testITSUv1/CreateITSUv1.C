@@ -104,7 +104,7 @@ void CreateITSUv1()
   //
   const int kNWrapVol = 3;
   const double wrpRMin[kNWrapVol]  = { 2.1, 15.0, 32.0};
-  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0, 43.0};
+  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0+2.5, 43.0+1.5};
   const double wrpZSpan[kNWrapVol] = {28.0, 96.0, 158.0};
   ITS->SetNWrapVolumes(kNWrapVol); // define wrapper volumes for layers
   for (int iw=0;iw<kNWrapVol;iw++) ITS->DefineWrapVolume(iw,wrpRMin[iw],wrpRMax[iw],wrpZSpan[iw]);
@@ -129,11 +129,11 @@ void CreateITSUv1()
     if (idLr>=kNLrInner) {
       nChipsPerStaveLr *= nChipsPerModule;
       ITS->DefineLayer(idLr, phi0, rLr, nChipsPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, 
-		       thick, seg->Dy(), seg->GetDetTypeID(),kBuildLevel);
+		       thick, seg->Dy(), seg->GetChipTypeID(),kBuildLevel);
       printf("Add Lr%d: R=%6.2f DZ:%6.2f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nChipsPerStaveLr*seg->Dz(),nStaveLr,nModPerStaveLr);
     } else {
       ITS->DefineLayerTurbo(idLr, phi0, rLr, nChipsPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, 
-			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetDetTypeID());
+			  seg->Dx(), turbo, thick, seg->Dy(), seg->GetChipTypeID());
       printf("Add Lr%d: R=%6.2f DZ:%6.2f Turbo:%+6.2f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nChipsPerStaveLr*seg->Dz(),turbo,nStaveLr,nModPerStaveLr);
     }
     //

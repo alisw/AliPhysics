@@ -199,7 +199,7 @@ Bool_t AliEMCALTrigger::IsPatchIsolated(Int_t iPatchType, const TClonesArray * a
   if(!ampmatrixes) return kFALSE;
   
   // Get matrix of TRU or Module with maximum amplitude patch.
-  Int_t itru = mtru + iSM * fGeom->GetNTRU(); //number of tru, min 0 max 3*12=36.
+  Int_t itru = mtru + iSM * fGeom->GetNTRU(); //number of tru, min 0 max 3*22=66.
   TMatrixD * ampmatrix   = 0x0;
   Int_t colborder = 0;
   Int_t rowborder = 0;
@@ -880,7 +880,7 @@ void AliEMCALTrigger::Trigger()
     AliFatal("Did not get geometry from EMCALLoader");
   
   //Define parameters
-  Int_t nSuperModules = fGeom->GetNumberOfSuperModules() ; //12 SM in EMCAL
+  Int_t nSuperModules = fGeom->GetNumberOfSuperModules() ; //12 SM in EMCAL and 6/10 DCAL SMs
   Int_t nTRU       = fGeom->GetNTRU();    // 3 TRU per super module
 
   //Intialize data members each time the trigger is called in event loop

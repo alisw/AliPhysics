@@ -16,18 +16,18 @@ ClassImp(AliITSURecoLayer)
 AliITSURecoLayer::AliITSURecoLayer(const char* name)
   :fActiveID(-1)
   ,fNSensors(0)
-  ,fNSensInLadder(0)
-  ,fNLadders(0)
+  ,fNSensInStave(0)
+  ,fNStaves(0)
   ,fR(0)
   ,fRMax(0)
   ,fRMin(0)
   ,fZMax(0)
   ,fZMin(0)
-  ,fPhiLadMax(0)
-  ,fPhiLadMin(0)
+  ,fPhiStaMax(0)
+  ,fPhiStaMin(0)
   ,fPhiOffs(0)
   ,fSensDZInv(0)
-  ,fDPhiLadInv(0)
+  ,fDPhiStaInv(0)
   ,fMaxStep(0.5)
   ,fSensors(0)
   ,fITSGeom(0)
@@ -41,18 +41,18 @@ AliITSURecoLayer::AliITSURecoLayer(const char* name)
 AliITSURecoLayer::AliITSURecoLayer(const char* name, Int_t activeID, AliITSUGeomTGeo* gm)
   :fActiveID(activeID)
   ,fNSensors(0)
-  ,fNSensInLadder(0)
-  ,fNLadders(0)
+  ,fNSensInStave(0)
+  ,fNStaves(0)
   ,fR(0)
   ,fRMax(0)
   ,fRMin(0)
   ,fZMax(0)
   ,fZMin(0)
-  ,fPhiLadMax(0)
-  ,fPhiLadMin(0)
+  ,fPhiStaMax(0)
+  ,fPhiStaMin(0)
   ,fPhiOffs(0)
   ,fSensDZInv(0)
-  ,fDPhiLadInv(0)
+  ,fDPhiStaInv(0)
   ,fMaxStep(0.5)
   ,fSensors(0)
   ,fITSGeom(gm)
@@ -68,8 +68,8 @@ AliITSURecoLayer::~AliITSURecoLayer()
 {
   // def. d-tor
   delete[] fSensors;
-  delete[] fPhiLadMax;
-  delete[] fPhiLadMin;
+  delete[] fPhiStaMax;
+  delete[] fPhiStaMin;
   if (GetOwnsClusterArray()) delete fClusters;
 }
 
@@ -89,9 +89,9 @@ void AliITSURecoLayer::Build()
   // build internal structures
   const double kSafeR = 0.05; // safety margin for Rmin,Rmax of the layer
   if (fActiveID<0) return;
-  fNLadders = fITSGeom->GetNLadders(fActiveID);
-  fNSensInLadder = fITSGeom->GetNDetectors(fActiveID);
-  fNSensors = fNLadders*fNSensInLadder;
+  fNStaves = fITSGeom->GetNStaves(fActiveID);
+  fNSensInStave = fITSGeom->GetNChipsPerModule(fActiveID);
+  fNSensors = fNStaves*fNSensInStave;
   fSensors = new AliITSURecoSens*[fNSensors];
   const AliITSsegmentation* kSegm = fITSGeom->GetSegmentation(fActiveID);
   //
@@ -102,18 +102,18 @@ void AliITSURecoLayer::Build()
   fRMax=fZMax=-1e9;
   double phiTF,rTF, loc[3]={0,0,0},glo[3];
   fNSensors = 0;
-  fPhiLadMin = new Double_t[fNLadders];
-  fPhiLadMax = new Double_t[fNLadders];
+  fPhiStaMin = new Double_t[fNStaves];
+  fPhiStaMax = new Double_t[fNStaves];
   fSensDZInv = 0;
-  fDPhiLadInv = fNLadders/TwoPi();
+  fDPhiStaInv = fNStaves/TwoPi();
   //
-  for (int ild=0;ild<fNLadders;ild++) {
-    fPhiLadMin[ild] = 1e9;
-    fPhiLadMax[ild] = -1e9;
+  for (int ild=0;ild<fNStaves;ild++) {
+    fPhiStaMin[ild] = 1e9;
+    fPhiStaMax[ild] = -1e9;
     //
-    for (int idt=0;idt<fNSensInLadder;idt++) {
+    for (int idt=0;idt<fNSensInStave;idt++) {
       AliITSURecoSens* sens = new AliITSURecoSens(fNSensors++);
-      fSensors[ild*fNSensInLadder+idt] = sens;
+      fSensors[ild*fNSensInStave+idt] = sens;
       //
       double phiMin=1e9,phiMax=-1e9,zMin=1e9,zMax=-1e9;
       mmod = *fITSGeom->GetMatrixSens(fActiveID,ild,idt);
@@ -151,10 +151,10 @@ void AliITSURecoLayer::Build()
       sens->SetXTF(rTF);
       sens->SetPhiTF(phiTF);
       //
-      if      (fPhiLadMin[ild]>1e8)  fPhiLadMin[ild] = phiMin;
-      else if (!OKforPhiMin(fPhiLadMin[ild],phiMin)) fPhiLadMin[ild] = phiMin;
-      if      (fPhiLadMax[ild]<-1e8) fPhiLadMax[ild] = phiMax;
-      else if (!OKforPhiMax(fPhiLadMax[ild],phiMax)) fPhiLadMax[ild] = phiMax;
+      if      (fPhiStaMin[ild]>1e8)  fPhiStaMin[ild] = phiMin;
+      else if (!OKforPhiMin(fPhiStaMin[ild],phiMin)) fPhiStaMin[ild] = phiMin;
+      if      (fPhiStaMax[ild]<-1e8) fPhiStaMax[ild] = phiMax;
+      else if (!OKforPhiMax(fPhiStaMax[ild],phiMax)) fPhiStaMax[ild] = phiMax;
       if (fZMin>zMin) fZMin = zMin;
       if (fZMax<zMax) fZMax = zMax;
       //
@@ -167,7 +167,7 @@ void AliITSURecoLayer::Build()
   fR = 0.5*(fRMin+fRMax);
   fRMin -= kSafeR;
   fRMax += kSafeR;
-  double dz = fNSensInLadder>0 ? fSensDZInv/(fNSensInLadder-1)/fNLadders : fZMax-fZMin;
+  double dz = fNSensInStave>0 ? fSensDZInv/(fNSensInStave-1)/fNStaves : fZMax-fZMin;
   fSensDZInv = 1./dz;
 
   const int kNBId[3][3] = { 
@@ -177,19 +177,19 @@ void AliITSURecoLayer::Build()
   };
 
   // add neighbours info
-  double zTol = 0.45*dz, phiTol = 0.45*TwoPi()/fNLadders;
-  for (int ild=0;ild<fNLadders;ild++) {
-    for (int idt=0;idt<fNSensInLadder;idt++) {
+  double zTol = 0.45*dz, phiTol = 0.45*TwoPi()/fNStaves;
+  for (int ild=0;ild<fNStaves;ild++) {
+    for (int idt=0;idt<fNSensInStave;idt++) {
       AliITSURecoSens* sens = GetSensor(ild,idt);
       //
       for (int ils=-1;ils<=1;ils++) {
-	int ildN = ild+ils;  // ladders of neighbouring sensors
-	if (ildN<0) ildN = fNLadders-1; else if (ildN==fNLadders) ildN = 0;
+	int ildN = ild+ils;  // staves of neighbouring sensors
+	if (ildN<0) ildN = fNStaves-1; else if (ildN==fNStaves) ildN = 0;
 	for (int ids=-1;ids<=1;ids++) {
 	  int idtN = idt+ids;
-	  if (idtN<0 || idtN==fNSensInLadder || (ids==0&&ils==0)) continue;
+	  if (idtN<0 || idtN==fNSensInStave || (ids==0&&ils==0)) continue;
 	  AliITSURecoSens* sensN = GetSensor(ildN,idtN); // potential neighbor
-	  int neighbID = ildN*fNSensInLadder+idtN;
+	  int neighbID = ildN*fNSensInStave+idtN;
 	  //	  
 	  int zType = 1;  // side
 	  if (sens->GetZMin()-zTol  > sensN->GetZMax()) continue; // too large distance
@@ -217,7 +217,7 @@ void AliITSURecoLayer::Build()
 	} // phi scan
       } // z scan
     } // sensors
-  } // ladders
+  } // staves
   //
 }
 
@@ -231,16 +231,16 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   if (z>fZMax+impPar[3]) return 0; // outside of Z coverage
   z -= fZMin;
   if (z<-impPar[3]) return 0; // outside of Z coverage
-  int sensInLad = int(z*fSensDZInv);
-  if      (sensInLad<0) sensInLad = 0;
-  else if (sensInLad>=fNSensInLadder) sensInLad = fNSensInLadder-1;
+  int sensInSta = int(z*fSensDZInv);
+  if      (sensInSta<0) sensInSta = 0;
+  else if (sensInSta>=fNSensInStave) sensInSta = fNSensInStave-1;
   //
   double phi = impPar[0] - fPhiOffs;
   BringTo02Pi(phi);
-  int ladID = int(phi*fDPhiLadInv);  // ladder id
+  int staID = int(phi*fDPhiStaInv);  // stave id
   int nsens = 0;
   //
-  AliITSURecoSens* sensN,*sens = GetSensor(ladID*fNSensInLadder+sensInLad);
+  AliITSURecoSens* sensN,*sens = GetSensor(staID*fNSensInStave+sensInSta);
   sensors[nsens++] = sens;
   //
   // check neighbours
@@ -294,10 +294,10 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
       }
     }
     if (nFnd>0) {
-      Int_t layS,ladS,sensS;
+      Int_t layS,staS,sensS;
       for (int is=0;is<nFnd;is++) {
-	fITSGeom->GetModuleId(fndSens[is],layS,ladS,sensS);
-	printf("SNMC#%d(%d): %d %d %d | ",is,mcLab,layS,ladS,sensS); GetSensorFromID(fndSens[is])->Print();
+	fITSGeom->GetChipId(fndSens[is],layS,staS,sensS);
+	printf("SNMC#%d(%d): %d %d %d | ",is,mcLab,layS,staS,sensS); GetSensorFromID(fndSens[is])->Print();
       }
     }
   }
@@ -314,16 +314,16 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
     if (nFnd>0) printf("MissedSens!!!\n");
     return 0; // outside of Z coverage
   }
-  int sensInLad = int(z*fSensDZInv);
-  if      (sensInLad<0) sensInLad = 0;
-  else if (sensInLad>=fNSensInLadder) sensInLad = fNSensInLadder-1;
+  int sensInSta = int(z*fSensDZInv);
+  if      (sensInSta<0) sensInSta = 0;
+  else if (sensInSta>=fNSensInStave) sensInSta = fNSensInStave-1;
   //
   double phi = impPar[0] - fPhiOffs;
   BringTo02Pi(phi);
-  int ladID = int(phi*fDPhiLadInv);  // ladder id
+  int staID = int(phi*fDPhiStaInv);  // stave id
   int nsens = 0;
   //
-  AliITSURecoSens* sensN,*sens = GetSensor(ladID*fNSensInLadder+sensInLad);
+  AliITSURecoSens* sensN,*sens = GetSensor(staID*fNSensInStave+sensInSta);
   sensors[nsens++] = sens;
   //
   // check neighbours
@@ -356,11 +356,11 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
   //
   if (mcLab>=0) {
-    Int_t layS,ladS,sensS;
+    Int_t layS,staS,sensS;
     printf("Found %d sensors for phi %.3f : %.3f | Z %.4f %.4f\n", nsens,phiMn,phiMx,zMn,zMx); 
     for (int is=0;is<nsens;is++) {
-      fITSGeom->GetModuleId(sensors[is]->GetID()+fITSGeom->GetFirstModIndex(fActiveID),layS,ladS,sensS);
-      printf("*SNF#%d: %d %d %d | ",is,layS,ladS,sensS); sensors[is]->Print();
+      fITSGeom->GetChipId(sensors[is]->GetID()+fITSGeom->GetFirstModIndex(fActiveID),layS,staS,sensS);
+      printf("*SNF#%d: %d %d %d | ",is,layS,staS,sensS); sensors[is]->Print();
     }
     for (int ism=0;ism<nFnd;ism++) {
       AliITSURecoSens* snMC = GetSensorFromID(fndSens[ism]);
@@ -390,7 +390,7 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
     if (vID<curSensID) {AliFatal("Clusters are not sorted in increasing sensorID");}
     if (vID>curSensID) {
       if (curSens) curSens->ProcessClusters(mode);    // prepare clusters for reconstruction
-      curSens   = GetSensor(vID - fITSGeom->GetFirstModIndex(fActiveID));
+      curSens   = GetSensor(vID - fITSGeom->GetFirstChipIndex(fActiveID));
       curSensID = vID;
       curSens->SetFirstClusterId(icl);
     }
@@ -423,7 +423,7 @@ Int_t  AliITSURecoLayer::Compare(const TObject* obj) const
 AliITSURecoSens* AliITSURecoLayer::GetSensorFromID(Int_t i) const 
 {
   // get sensor from its global id
-  i -= fITSGeom->GetFirstModIndex(fActiveID);
-  if (i<0||i>=fNSensors) AliFatal(Form("Sensor with id=%d is not in layer %d",i+fITSGeom->GetFirstModIndex(fActiveID),fActiveID));
+  i -= fITSGeom->GetFirstChipIndex(fActiveID);
+  if (i<0||i>=fNSensors) AliFatal(Form("Sensor with id=%d is not in layer %d",i+fITSGeom->GetFirstChipIndex(fActiveID),fActiveID));
   return (AliITSURecoSens*)fSensors[i];
 }

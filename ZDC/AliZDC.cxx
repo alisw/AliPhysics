@@ -160,7 +160,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   //
   // 		Add a ZDC hit to the hit list.
   
-  static Float_t trackTime=0., primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
+  static Float_t trackTime=0., trackEta=0., primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
   static Int_t   pcPDGcode, motPDGcode;
 
   AliZDCHit *newquad, *curprimquad;
@@ -186,6 +186,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       pcPDGcode	 = newquad->GetPDGCode();
       motPDGcode = newquad->GetMotherPDGCode();
       trackTime  = newquad->GetTrackTOF();
+      trackEta   = newquad->GetTrackEta();
    }
    else{       
       newquad->SetPrimKinEn(primKinEn);
@@ -195,6 +196,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       newquad->SetPDGCode(pcPDGcode);
       newquad->SetMotherPDGCode(motPDGcode);
       newquad->SetTrackTOF(trackTime);
+      newquad->SetTrackEta(trackEta);
    }
  
   Int_t j;

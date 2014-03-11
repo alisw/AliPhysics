@@ -203,7 +203,7 @@ void AliITSUCalibrationPix::GetBadPixelSingle(Int_t index, UInt_t &row, UInt_t &
 //___________________________________________________________________________
 Int_t  AliITSUCalibrationPix::GetNrBad() const 
 {
-  // Total number of bad pixels (including bad chips) in a given module
+  // Total number of bad pixels (including bad chips) in a given chip
   Int_t bad=0;
   // single pixels:
   bad += fNrBadSingle;
@@ -244,7 +244,7 @@ Int_t  AliITSUCalibrationPix::GetNrBadInColumn(Int_t col) const
 //______________________________________________________________________
 Bool_t AliITSUCalibrationPix::IsBad() const 
 {
-  // Are all chips of this module bad?
+  // Are all chips of this chip bad?
   for (Int_t chip=fNChips; chip--;) if (!IsChipMarkedBad(chip)) return kFALSE;
   return kTRUE;
 }

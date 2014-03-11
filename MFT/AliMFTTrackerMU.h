@@ -20,7 +20,7 @@
 #include "AliGeomManager.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-// #include "AliESDMuonGlobalTrack.h"
+#include "AliESDMuonGlobalTrack.h"
 #include "AliTracker.h"
 #include "AliRun.h"
 #include "AliMFT.h"
@@ -49,10 +49,13 @@ public:
 
   Int_t FindClusterInPlane(Int_t planeId);
 
-  void SetVertexError(Double_t xErr, Double_t yErr, Double_t zErr) { fVertexErrorX=xErr; fVertexErrorY=yErr; fVertexErrorZ=zErr; }
   void SetMinResearchRadiusAtPlane(Int_t plane, Double_t radius) { if (plane>=0 && plane<fNMaxPlanes) fMinResearchRadiusAtPlane[plane] = radius; }
 
   Double_t TryOneCluster(const AliMUONTrackParam &trackParam, AliMFTCluster *cluster);
+
+  Bool_t IsCorrectMatch(AliMFTCluster *cluster, Int_t labelMC);
+
+  void GetVertexFromMC();
 
   /// Dummy implementation
   virtual Int_t PropagateBack(AliESDEvent* /*event*/) {return 0;}
@@ -94,9 +97,11 @@ protected:
   AliMuonForwardTrack *fFinalBestCandidate;     //! best final candidate (if any)
 
   // uncertainty on the x position of the primary vertex (seed for the extrapolation of the MUON tracks)
-  Double_t fVertexErrorX;   
-  Double_t fVertexErrorY;
-  Double_t fVertexErrorZ;
+  Double_t fXExtrapVertex;   
+  Double_t fYExtrapVertex;
+  Double_t fZExtrapVertex;
+  Double_t fXExtrapVertexError;
+  Double_t fYExtrapVertexError;
 
   Bool_t fBransonCorrection;    // if TRUE, Branson Correction is applied when extrapolating the MUON tracks to the vertex region
 
@@ -106,7 +111,7 @@ private:
 
   AliMFTTrackerMU(const AliMFTTrackerMU &tracker);
   AliMFTTrackerMU & operator=(const AliMFTTrackerMU &tracker);
-  ClassDef(AliMFTTrackerMU,1)   //MFT tracker for muon tracks
+  ClassDef(AliMFTTrackerMU,2)   //MFT tracker for muon tracks
 
 };
 

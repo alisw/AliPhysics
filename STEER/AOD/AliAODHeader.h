@@ -53,7 +53,9 @@ class AliAODHeader : public AliVHeader {
 	       const Float_t *vzeroEqFactors,
 	       const Char_t *title="",
 	       Int_t nMuons=0,
-	       Int_t nDimuons=0);
+	       Int_t nDimuons=0,
+	       Int_t nGlobalMuons=0,             // AU
+	       Int_t nGlobalDimuons=0);          // AU
   
   virtual ~AliAODHeader();
   AliAODHeader(const AliAODHeader& evt); 
@@ -88,6 +90,8 @@ class AliAODHeader : public AliVHeader {
   Int_t     GetRefMultiplicityNeg() const { return fRefMultNeg; }
   Int_t     GetNumberOfMuons()      const { return fNMuons; }
   Int_t     GetNumberOfDimuons()    const { return fNDimuons; }
+  Int_t     GetNumberOfGlobalMuons()   const { return fNGlobalMuons; }      // AU
+  Int_t     GetNumberOfGlobalDimuons() const { return fNGlobalDimuons; }    // AU
   Int_t     GetRefMultiplicityComb05() const { return fRefMultComb05; }
   Int_t     GetRefMultiplicityComb08() const { return fRefMultComb08; }
 
@@ -135,6 +139,8 @@ class AliAODHeader : public AliVHeader {
   void SetRefMultiplicityNeg(Int_t refMultNeg) { fRefMultNeg = refMultNeg; }
   void SetNumberOfMuons(Int_t nMuons) { fNMuons = nMuons; }
   void SetNumberOfDimuons(Int_t nDimuons) { fNDimuons = nDimuons; }
+  void SetNumberOfGlobalMuons(Int_t nGlobalMuons) { fNGlobalMuons = nGlobalMuons; }            // AU
+  void SetNumberOfGlobalDimuons(Int_t nGlobalDimuons) { fNGlobalDimuons = nGlobalDimuons; }    // AU
   void SetRefMultiplicityComb05(Int_t refMult)   { fRefMultComb05 = refMult; }
   void SetRefMultiplicityComb08(Int_t refMult)   { fRefMultComb08 = refMult; }  
 
@@ -180,7 +186,7 @@ class AliAODHeader : public AliVHeader {
   TString GetESDFileName() const  {return fESDFileName;}
   void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
-  enum {kNEMCALMatrix = 12};
+  enum {kNEMCALMatrix = 22}; 
   enum {kT0SpreadSize = 4};
 
   void           SetVZEROEqFactors(const Float_t* factors) {
@@ -226,6 +232,8 @@ class AliAODHeader : public AliVHeader {
   Int_t       fRefMultNeg;          // reference multiplicity of negative particles
   Int_t       fNMuons;              // number of muons in the forward spectrometer
   Int_t       fNDimuons;            // number of dimuons in the forward spectrometer
+  Int_t       fNGlobalMuons;        // number of muons in the forward spectrometer + MFT       // AU
+  Int_t       fNGlobalDimuons;      // number of dimuons in the forward spectrometer + MFT     // AU
   UInt_t      fEventType;           // Type of Event
   UInt_t      fOrbitNumber;         // Orbit Number
   UInt_t      fPeriodNumber;        // Period Number
@@ -254,7 +262,7 @@ class AliAODHeader : public AliVHeader {
   Float_t     fT0spread[kT0SpreadSize]; // spread of time distributions: (TOA+T0C/2), T0A, T0C, (T0A-T0C)/2
   TBits   fIRInt2InteractionsMap;  // map of the Int2 events (normally 0TVX) near the event, that's Int2Id-EventId in a -90 to 90 window
   TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId in a -90 to 90 window
-  ClassDef(AliAODHeader, 23);
+  ClassDef(AliAODHeader, 24);
 };
 inline
 void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 

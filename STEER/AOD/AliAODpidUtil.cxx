@@ -55,40 +55,43 @@ Float_t AliAODpidUtil::GetTPCsignalTunedOnData(const AliVTrack *t) const {
     
     AliAODMCHeader *mcHeader = dynamic_cast<AliAODMCHeader*>(track->GetAODEvent()->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     if (mcHeader) {
+        
 	TClonesArray *mcArray = (TClonesArray*)track->GetAODEvent()->GetList()->FindObject(AliAODMCParticle::StdBranchName());
 	
 	Bool_t kGood = kTRUE;
-	
-	Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
-	if(iS==AliPID::ParticleCode(AliPID::kElectron)){
+
+	if ( mcArray->At(TMath::Abs(t->GetLabel())) != NULL ) {  // protects against label-0 tracks e.g. the initial proton for Phythia events
+	  Int_t iS = TMath::Abs(((AliAODMCParticle*)mcArray->At(TMath::Abs(t->GetLabel())))->GetPdgCode());
+	  if(iS==AliPID::ParticleCode(AliPID::kElectron)){
 	    type = AliPID::kElectron;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kMuon)){
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kMuon)){
 	    type = AliPID::kMuon;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kPion)){
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kPion)){
 	    type = AliPID::kPion;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kKaon)){
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kKaon)){
 	    type = AliPID::kKaon;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kProton)){
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kProton)){
 	    type = AliPID::kProton;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kDeuteron)){ // d
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kDeuteron)){ // d
 	    type = AliPID::kDeuteron;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kTriton)){ // t
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kTriton)){ // t
 	    type = AliPID::kTriton;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kHe3)){ // 3He
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kHe3)){ // 3He
 	    type = AliPID::kHe3;
-	}
-	else if(iS==AliPID::ParticleCode(AliPID::kAlpha)){ // 4He
+	  }
+	  else if(iS==AliPID::ParticleCode(AliPID::kAlpha)){ // 4He
 	    type = AliPID::kAlpha;
-	}
+	  }
 	else
 	    kGood = kFALSE;
+	} else kGood = kFALSE;
 
 	if(kGood){
 	    //TODO maybe introduce different dEdxSources?

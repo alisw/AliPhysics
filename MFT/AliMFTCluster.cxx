@@ -82,8 +82,14 @@ AliMFTCluster::AliMFTCluster(const AliMFTCluster& cluster):
 
   // copy constructor
   for (Int_t iTrack=0; iTrack<fNMaxMCTracks; iTrack++) fMCLabel[iTrack] = (cluster.fMCLabel)[iTrack];
-  fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
-  fDigitsInCluster -> SetOwner(kTRUE);
+  if (cluster.fDigitsInCluster) {
+    fDigitsInCluster = new TClonesArray(*(cluster.fDigitsInCluster));
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }
+  else {
+    fDigitsInCluster = new TClonesArray("AliMFTDigit", fNMaxDigitsPerCluster);
+    fDigitsInCluster -> SetOwner(kTRUE);
+  }    
  
 }
 

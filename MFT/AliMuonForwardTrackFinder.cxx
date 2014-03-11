@@ -556,6 +556,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
   Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
   fHistRadiusEndOfAbsorber -> Fill(rAbsorber);
+  track -> SetRAtAbsorberEnd(rAbsorber);
   
   // if the radial distance of the track at the end of the absorber is smaller than a given radius, skip to the next track
   if (rAbsorber < fRAbsorberCut) return 4;
@@ -1183,6 +1184,7 @@ Double_t AliMuonForwardTrackFinder::TryOneCluster(const AliMUONTrackParam &track
 void AliMuonForwardTrackFinder::SeparateFrontBackClusters() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    printf("Separating front/back clusters\n");
     fMFTClusterArrayFront[iPlane]->Delete();
     fMFTClusterArrayBack[iPlane] ->Delete();
     for (Int_t iCluster=0; iCluster<fMFTClusterArray[iPlane]->GetEntries(); iCluster++) {

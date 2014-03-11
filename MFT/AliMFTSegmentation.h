@@ -34,7 +34,8 @@ public:
 
   THnSparseC* GetDetElem(Int_t detElemID) const;
 
-  Int_t GetDetElemID(Int_t plane, Int_t detElem) const { return fNMaxDetElemPerPlane*plane + detElem; }
+  Int_t GetDetElemGlobalID(Int_t plane, Int_t detElem) const { return fNMaxDetElemPerPlane*plane + detElem; }
+  Int_t GetDetElemLocalID(Int_t detElem) const { return detElem%fNMaxDetElemPerPlane; }
     
   Bool_t Hit2PixelID(Double_t xHit, Double_t yHit, Int_t detElemID, Int_t &xPixel, Int_t &yPixel);  
 

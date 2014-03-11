@@ -21,7 +21,7 @@
 #include "AliITSU.h"
 #include "AliITSUDigitPix.h"
 #include "AliITSUHit.h"
-#include "AliITSUModule.h"
+#include "AliITSUChip.h"
 #include "AliITSUSensMap.h"
 #include "AliITSUCalibrationPix.h"
 #include "AliITSUSegmentationPix.h"
@@ -67,7 +67,7 @@ AliITSUSimulationPix::AliITSUSimulationPix()
   ,fROTimeFun(0)
 {
    // Default constructor.
-  SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
+  SetUniqueID(AliITSUGeomTGeo::kChipTypePix);
 }
 
 //______________________________________________________________________
@@ -80,7 +80,7 @@ AliITSUSimulationPix::AliITSUSimulationPix(AliITSUSimuParam* sim,AliITSUSensMap*
   ,fROTimeFun(0)
 {
   // standard constructor
-  SetUniqueID(AliITSUGeomTGeo::kDetTypePix);
+  SetUniqueID(AliITSUGeomTGeo::kChipTypePix);
   Init();
 }
 
@@ -154,12 +154,12 @@ Bool_t AliITSUSimulationPix::SetTanLorAngle(Double_t weightHole)
 }
 
 //_____________________________________________________________________
-void AliITSUSimulationPix::SDigitiseModule()
+void AliITSUSimulationPix::SDigitiseChip()
 {
   //  This function begins the work of creating S-Digits.
     
-  AliDebug(10,Form("In event %d module %d there are %d hits", fEvent, fModule->GetIndex(),fModule->GetNHits()));       
-  if (fModule->GetNHits()) Hits2SDigitsFast();
+  AliDebug(10,Form("In event %d chip %d there are %d hits", fEvent, fChip->GetIndex(),fChip->GetNHits()));       
+  if (fChip->GetNHits()) Hits2SDigitsFast();
   if (!fSensMap->GetEntries()) return;
   WriteSDigits();
   ClearMap();
@@ -181,7 +181,7 @@ void AliITSUSimulationPix::WriteSDigits()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::FinishSDigitiseModule()
+void AliITSUSimulationPix::FinishSDigitiseChip()
 {
    //  This function calls SDigitsToDigits which creates Digits from SDigits
   FrompListToDigits();
@@ -190,7 +190,7 @@ void AliITSUSimulationPix::FinishSDigitiseModule()
 }
 
 //______________________________________________________________________
-void AliITSUSimulationPix::DigitiseModule()
+void AliITSUSimulationPix::DigitiseChip()
 {
   //  This function creates Digits straight from the hits and then adds
   //  electronic noise to the digits before adding them to pList
@@ -198,14 +198,14 @@ void AliITSUSimulationPix::DigitiseModule()
   //
   // pick charge spread function
   Hits2SDigitsFast();
-  FinishSDigitiseModule();
+  FinishSDigitiseChip();
 }
 
 //______________________________________________________________________
 void AliITSUSimulationPix::Hits2SDigits()
 {
   // Does the charge distributions using Gaussian diffusion charge charing.
-  Int_t nhits = fModule->GetNHits();
+  Int_t nhits = fChip->GetNHits();
   if (!nhits) return;
   //
   Int_t h,ix,iz,i;
@@ -218,7 +218,7 @@ void AliITSUSimulationPix::Hits2SDigits()
   //
   for (h=0;h<nhits;h++) {
     //
-    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
+    if (!fChip->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
     st = Sqrt(x1*x1+y1*y1+z1*z1);
     if (st>0.0) {
       st = (Double_t)((Int_t)(st*1e4)); // number of microns
@@ -279,9 +279,9 @@ void AliITSUSimulationPix::Hits2SDigits()
 void AliITSUSimulationPix::Hits2SDigitsFast()
 {
   // Does the charge distributions using Gaussian diffusion charge charing.    // Inputs:
-  //    AliITSUModule *mod  Pointer to this module
+  //    AliITSUChip *mod  Pointer to this chip
   //
-  TObjArray *hits = fModule->GetHits();
+  TObjArray *hits = fChip->GetHits();
   Int_t nhits = hits->GetEntriesFast();
   if (nhits<=0) return;
   //
@@ -295,7 +295,7 @@ void AliITSUSimulationPix::Hits2SDigitsFast()
   //
   for (h=0;h<nhits;h++) {
     //
-    if (!fModule->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
+    if (!fChip->LineSegmentL(h,x0,x1,y0,y1,z0,z1,de,tof,idtrack)) continue;
     //
     st = Sqrt(x1*x1+y1*y1+z1*z1); 
     if (st>0.0) {
@@ -490,13 +490,13 @@ Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
 //______________________________________________________________________
 void AliITSUSimulationPix::RemoveDeadPixels() 
 {
-  // Removes dead pixels on each module (ladder)
+  // Removes dead pixels on each chip (ladder)
   // This should be called before going from sdigits to digits (i.e. from FrompListToDigits)
   
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibDead();
   if (!calObj) return;
   //
-  if (calObj->IsBad()) {ClearMap(); return;} // whole module is masked
+  if (calObj->IsBad()) {ClearMap(); return;} // whole chip is masked
   //
   // prepare the list of r/o cycles seen
   Char_t cyclesSeen[2*kMaxROCycleAccept+1];
@@ -526,12 +526,12 @@ void AliITSUSimulationPix::RemoveDeadPixels()
 //______________________________________________________________________
 void AliITSUSimulationPix::AddNoisyPixels() 
 {
-  // Adds noisy pixels on each module (ladder)
+  // Adds noisy pixels on each chip (ladder)
   // This should be called before going from sdigits to digits (i.e. FrompListToDigits)
   AliITSUCalibrationPix* calObj = (AliITSUCalibrationPix*) GetCalibNoisy();
   if (!calObj) { AliDebug(10,Form("  No Calib Object for Noise!!! ")); return;}
   for (Int_t i=calObj->GetNrBad(); i--;) UpdateMapNoise(calObj->GetBadColAt(i), calObj->GetBadRowAt(i), 
-							10*fSimuParam->GetPixThreshold(fModule->GetIndex()));
+							10*fSimuParam->GetPixThreshold(fChip->GetIndex()));
   //
 }
 
@@ -561,7 +561,7 @@ void AliITSUSimulationPix::FrompListToDigits()
   if (!nsd) return; // nothing to digitize
   //
   UInt_t row,col;
-  Int_t iCycle,modId = fModule->GetIndex();
+  Int_t iCycle,modId = fChip->GetIndex();
   Double_t sig;
   const Int_t    knmaxtrk=AliITSdigit::GetNTracks();
   static AliITSU *aliITS = (AliITSU*)gAlice->GetModule("ITS");
@@ -592,7 +592,7 @@ void AliITSUSimulationPix::FrompListToDigits()
       dig.SetTrack(j,-3);
       dig.SetHit(j,-1);
     }
-    aliITS->AddSimDigit(AliITSUGeomTGeo::kDetTypePix, &dig);
+    aliITS->AddSimDigit(AliITSUGeomTGeo::kChipTypePix, &dig);
   }
   // 
 }
@@ -602,7 +602,7 @@ Int_t AliITSUSimulationPix::AddRandomNoisePixels(Double_t tof)
 {
   // create random noisy sdigits above threshold 
   //
-  int modId = fModule->GetIndex();
+  int modId = fChip->GetIndex();
   int npix = fSeg->GetNPads();
   int ncand = gRandom->Poisson( npix*fSimuParam->GetPixFakeRate() );
   if (ncand<1) return 0;
@@ -633,7 +633,7 @@ void AliITSUSimulationPix::SetCoupling(AliITSUSDigit* old)
   //  The parameters probcol and probrow are the probability of the
   //  signal in one pixel shared in the two adjacent pixels along
   //  the column and row direction, respectively.
-  //  Note pList is goten via GetMap() and module is not need any more.
+  //  Note pList is goten via GetMap() and chip is not need any more.
   //  Otherwise it is identical to that coded by Tiziano Virgili (BSN).
   UInt_t col,row;
   Int_t iCycle;
@@ -674,11 +674,11 @@ void AliITSUSimulationPix::SetCouplingOld(AliITSUSDigit* old)
   // old            existing AliITSUSDigit
   // ntrack         track incex number
   // idhit          hit index number
-  // module         module number
+  // chip         chip number
   //
   UInt_t col,row;
   Int_t cycle;
-  Int_t modId = fModule->GetIndex();
+  Int_t modId = fChip->GetIndex();
   Double_t pulse1,pulse2;
   Double_t couplR=0.0,couplC=0.0;
   //
@@ -746,11 +746,11 @@ void AliITSUSimulationPix::SetResponseParam(AliITSUParamList* resp)
   //___ Set the Rolling Shutter read-out window 
   fReadOutCycleLength = fResponseParam->GetParameter(kReadOutCycleLength);
   //___ Pixel discrimination threshold, and the S/N cut
-  fSimuParam->SetPixThreshold(fResponseParam->GetParameter(kPixNoiseMPV) *fResponseParam->GetParameter(kPixSNDisrcCut) , fResponseParam->GetParameter(kPixSNDisrcCut),-1); //for all modules
+  fSimuParam->SetPixThreshold(fResponseParam->GetParameter(kPixNoiseMPV) *fResponseParam->GetParameter(kPixSNDisrcCut) , fResponseParam->GetParameter(kPixSNDisrcCut),-1); //for all chips
   //___ Minimum number of electrons to add 
   fSimuParam->SetPixMinElToAdd(fResponseParam->GetParameter(kPixMinElToAdd));
   //___ Set the Pixel Noise MPV and Sigma (the noise distribution is Landau not Gauss due to RTN)
-  fSimuParam->SetPixNoise( fResponseParam->GetParameter(kPixNoiseMPV), fResponseParam->GetParameter(kPixNoiseSigma), -1); //for all modules
+  fSimuParam->SetPixNoise( fResponseParam->GetParameter(kPixNoiseMPV), fResponseParam->GetParameter(kPixNoiseSigma), -1); //for all chips
   //___ Pixel fake hit rate
   fSimuParam->SetPixFakeRate( fResponseParam->GetParameter(kPixFakeRate) );
   //___ To apply the noise or not

@@ -19,6 +19,7 @@
 ///*-- Author: Yves Schutz (SUBATECH)
 //           : Aleksei Pavlinov (WSU); Jun 30, 2006 - ALICE numbering scheme
 //           : Add decalibration and time calibration arrays: Jul 21, 2011 (GCB)
+//           : adapted for DCAL by M.L. Wang CCNU & Subatech Oct-18-2012
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // class for EMCAL calibration                                               //
@@ -56,16 +57,19 @@ TNamed(calibda), fADCchannelRef(calibda.fADCchannelRef)
   SetTitle(calibda.GetName());
   Reset();
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows;    //12 - Modules 11 and 12 are half modules
-  // in reality they are 1/3 but leave them as 1/2
 
-  for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
-    
-    if(supermodule >= 10)
-      nRow = nRow2;
+    for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
+    nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+    nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+    // in reality they are 1/3 but leave them as 1/2
+
+    if(supermodule /2 == 5)
+      nRow = nRow/2;
+    if(supermodule > 11  && supermodule < 18)
+      nCol  = nCol*2/3;
     
     for(Int_t column = 0; column<nCol; column++) {
       
@@ -102,16 +106,19 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
   
   fADCchannelRef = calibda.GetADCchannelRef() ;
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
+
+ for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
+   nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+   nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
   // in reality they are 1/3 but leave them as 1/2
 
-  for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
-    
-    if(supermodule >= 10)
-      nRow = nRow2;
+    if(supermodule /2 == 5)
+      nRow = nRow/2;
+    if(supermodule > 11 && supermodule < 18)
+      nCol = nCol*2/3;
     
     for(Int_t column = 0; column<nCol; column++) {
       
@@ -147,15 +154,20 @@ void AliEMCALCalibData::Reset()
   
   fADCchannelRef = 0.0162;	
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
-  // in reality they are 1/3 but leave them as 1/2
 
-  for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-    if(supermodule >= 10)
-      nRow = nRow2;
+   for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
+   nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+   nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+  // in reality they are 1/3 but leave them as 1/2
+    
+    if(supermodule /2 == 5)
+      nRow = nRow/2;
+    if(supermodule > 11 && supermodule < 18)
+      nCol  = nCol*2/3;
+
     for (Int_t column=0; column < nCol; column++){
       
       for (Int_t row = 0; row < nRow; row++){
@@ -181,17 +193,20 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   // Print tables of pedestals and ADC channels widths
   // options are: "gain", "ped", "decal", "time", "all"
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; //12
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  Int_t nRow2 = AliEMCALGeoParams::fgkEMCALRows/2;  //12 - Modules 11 and 12 are half modules
-  // in reality they are 1/3 but leave them as 1/2
-  
+
   if (strstr(option,"ped") || strstr(option,"all")) {
     printf("\n	----	Pedestal values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule >= 10)
-        nRow = nRow2;
+       nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+       nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+        nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+         nCol = nCol*2/3;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
@@ -205,8 +220,14 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"gain") || strstr(option,"all")) {
     printf("\n	----	ADC channel values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule >= 10) 
-        nRow = nRow2;
+        nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+        nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+        nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+        nCol = nCol*2/3;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
@@ -220,8 +241,13 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"adcdecal") || strstr(option,"all")) {
     printf("\n	----	ADC decalibration channel values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule >= 10) 
-        nRow = nRow2;
+      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+        nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+        nCol = nCol*2/3;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
@@ -235,8 +261,13 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"time") || strstr(option,"all")) {
     printf("\n	----	time channel values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule >= 10) 
-        nRow = nRow2;
+      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+        nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+        nCol = nCol*2/3;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
@@ -251,8 +282,13 @@ void  AliEMCALCalibData::Print(Option_t *option) const
   if (strstr(option,"time") || strstr(option,"all")) {
     printf("\n	----	time decalibration channel values	----\n\n");
     for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      if(supermodule >= 10) 
-        nRow = nRow2;
+       nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+       nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+        nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+        nCol = nCol*2/3;
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
