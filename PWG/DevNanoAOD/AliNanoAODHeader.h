@@ -26,6 +26,9 @@ public:
   virtual UChar_t   GetTriggerCluster()     const { AliError("Not implemented");return 0;}
   virtual UInt_t    GetEventType()          const { AliError("Not implemented");return 0;}
   virtual void Print(Option_t* /*option = ""*/) const  {Printf("I'm a special header!");}
+
+  Double_t  GetMagneticField()      const { return GetVar(1); }
+  Double_t  GetCentrality (const char *estimator = "V0M") { return GetVar(0);}
   
   ClassDef(AliNanoAODHeader, 1)
 
