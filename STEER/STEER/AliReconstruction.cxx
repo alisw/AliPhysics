@@ -4760,8 +4760,7 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
       }      
     }
     else {
-      AliInfo("Did not find object used in simulation");
-      ok = kFALSE;      
+      AliInfo("Did not find object used in simulation, assuming not needed and disabling the check");
     }
     if (!ok) AliFatal("Different objects were used in sim and rec");
   }
