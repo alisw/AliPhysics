@@ -32,15 +32,17 @@ AliESDFIT::AliESDFIT() :
   TObject(),
   fFITzVertex(0)
 {
-  for(int i = 0; i<160; i++) {
-    fFITtime[i] = -99999;
-    fFITamplitude[i] = 0;
-  }
   
-  for(int i = 0;i<3;i++) {
+  for(int i=0; i<3; i++) {
     fT0[i] = -99999;
     fT0best[i] = -99999;
   }
+  for(int i=0; i<160; i++) {
+    fFITtime[i] = -99999;
+    fFITamplitude[i] = 0;
+  }
+
+
 }
 //______________________________________________________________________________
 AliESDFIT::AliESDFIT(const AliESDFIT &tzero ) :
@@ -48,18 +50,22 @@ AliESDFIT::AliESDFIT(const AliESDFIT &tzero ) :
   fFITzVertex(tzero.fFITzVertex)
  {
   // copy constuctor
-  for(int i = 0;i<3;i++) {
+  for(int i=0; i<3; i++) {
     fT0[i] = tzero.fT0[i];
     fT0best[i] = tzero.fT0best[i];
   }
-}
+  for(int i=0; i<160; i++) {
+    fFITtime[i] = -99999;
+    fFITamplitude[i] = 0;
+  }
+ }
 //______________________________________________________________________________
 AliESDFIT& AliESDFIT::operator=(const AliESDFIT& tzero){
   // assigmnent operator
   if(this!=&tzero) {
     TObject::operator=(tzero);
       fFITzVertex = tzero.fFITzVertex;
-     for(int i = 0;i<3;i++) {
+     for(int i=0; i<3; i++) {
       fT0[i] = tzero.fT0[i];
       fT0best[i] = tzero.fT0best[i];
     }
@@ -95,7 +101,7 @@ void AliESDFIT::Reset()
   for(int i=0; i<160; i++) {
     fFITtime[i] = fFITamplitude[i] =  0;
   }
-  for(int i = 0;i<3;i++) {
+  for(int i=0; i<3 ;i++) {
     fT0[i] = -9999;
     fT0best[i] = -9999;
   }

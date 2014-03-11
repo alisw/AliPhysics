@@ -44,12 +44,12 @@ ClassImp(AliFITRawReader)
     
 {
   //
-  // create an object to read T0raw digits
-  AliDebug(1,"Start ");
+  // create an object to read FIT raw digits
   
   fRawReader->Reset();
   fRawReader->Select("FIT"); 
-  
+  for ( Int_t k=0; k<500; k++)   fAllData[k] = -1;
+ 
 }
 //_____________________________________________________________________________
 AliFITRawReader::~AliFITRawReader ()

@@ -346,6 +346,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
     fQAWriteExpert[iDet] = kFALSE ; 
   }
   fBeamInt[0][0]=fBeamInt[0][1]=fBeamInt[1][0]=fBeamInt[1][1] = -1;
+
   //
   AddCheckRecoCDBvsSimuCDB("TPC/Calib/RecoParam"); // check for similarity in the sim and rec
   //
@@ -493,7 +494,6 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
     if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
   }
-
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
 
 }
@@ -680,6 +680,7 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
+
   fCheckRecoCDBvsSimuCDB.Delete();
   AliCodeTimer::Instance()->Print();
 }
@@ -843,7 +844,6 @@ void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
   AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
   
 }
-
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
@@ -1808,7 +1808,6 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliSysInfo::AddStamp("LoadLoader");
  
   CheckRecoCDBvsSimuCDB();
-
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
 
   // get trackers
@@ -4678,7 +4677,7 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
   //
   // get reconstruction CDB
   const TMap *cdbMapRec = AliCDBManager::Instance()->GetStorageMap();	 
-  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();	 
+  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();
   //
   // get default path for reconstruction
   pair = (TPair*)cdbMapRec->FindObject("default");
@@ -4720,11 +4719,11 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
     }
     else { // check in default storage list
       TIter nextRec(cdbListRec);
-      while ((stro=(TObjString*)nextRec())) {
-	if (stro->GetString().Contains(cdbent->GetName())) {
-	  idRecD = stro->GetString();
-	  break;
-	}
+      AliCDBId* id=0;
+      while ((id=(AliCDBId*)nextRec())) {
+	idRecD = id->ToString();
+	if (idRecD.Contains(cdbent->GetName())) break;
+	idRecD="";
       }
     }
     //-----------------------------
@@ -4760,8 +4759,7 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
       }      
     }
     else {
-      AliInfo("Did not find object used in simulation");
-      ok = kFALSE;      
+      AliInfo("Did not find object used in simulation, assuming not needed and disabling the check");
     }
     if (!ok) AliFatal("Different objects were used in sim and rec");
   }
