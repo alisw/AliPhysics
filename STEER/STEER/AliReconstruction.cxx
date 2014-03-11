@@ -4678,7 +4678,7 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
   //
   // get reconstruction CDB
   const TMap *cdbMapRec = AliCDBManager::Instance()->GetStorageMap();	 
-  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();	 
+  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();
   //
   // get default path for reconstruction
   pair = (TPair*)cdbMapRec->FindObject("default");
@@ -4720,11 +4720,11 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
     }
     else { // check in default storage list
       TIter nextRec(cdbListRec);
-      while ((stro=(TObjString*)nextRec())) {
-	if (stro->GetString().Contains(cdbent->GetName())) {
-	  idRecD = stro->GetString();
-	  break;
-	}
+      AliCDBId* id=0;
+      while ((id=(AliCDBId*)nextRec())) {
+	idRecD = id->ToString();
+	if (idRecD.Contains(cdbent->GetName())) break;
+	idRecD="";
       }
     }
     //-----------------------------
