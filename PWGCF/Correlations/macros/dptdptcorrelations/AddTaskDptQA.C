@@ -1,3 +1,14 @@
+//
+// Macro designed for use with the AliAnalysisTaskDptDptQA task.
+//
+// Author: Prabhat Pujahari & Claude Pruneau, Wayne State
+// 
+//           system:  0: PbPb                 1: pPb
+//      singlesOnly:  0: full correlations    1: singles only
+//       useWeights:  0: no                   1: yes
+// centralityMethod:  3: track count  4: V0 centrality  7: V0A centrality for pPb
+//        chargeSet:  0: ++    1: +-    2: -+    3: --
+/////////////////////////////////////////////////////////////////////////////////
 
 AliAnalysisTaskDptDptQA *AddTaskDptQA
 (int    system                 = 0,
@@ -6,19 +17,22 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
  int    centralityMethod       = 4,
  int    chargeSet              = 1,
  int    trackFilterBit         = 128,
- int    nClusterMin            = 80, 
+ int    nClusterMin            = 80,
  double etaMin                 = -0.8,
  double etaMax                 = 0.8,
  double dcaZMin                = -3.2,
  double dcaZMax                =  3.2,
  double dcaXYMin               = -2.4,
  double dcaXYMax               =  2.4,
- int nCentrality               =  3,
- char *inputHistogramFileName  = "PbPb276Calibration_2010.root",
- char *OutputFileName          = "DCA_KS"
+ int    nclus                  = 80,
+ double chi2ndf                = 4,
+ int nCentrality               =  2, 
+ Bool_t trigger                = kFALSE,
+ const char* taskname          = "dca3"
  )
   
 {
+    
   // Set Default Configuration of this analysis
   // ==========================================
   int    debugLevel             = 0;
@@ -35,27 +49,26 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
     {
     if (centralityMethod == 4)
       {
-
-	minCentrality[0] = 0.0; maxCentrality[0] = 10.0;
-	minCentrality[1] = 30.0; maxCentrality[1] = 40.;
-	minCentrality[2] = 60.0; maxCentrality[2] = 70.;
 	
+	minCentrality[0] = 0.0; maxCentrality[0] = 10.0; 
+	minCentrality[1] = 30.0; maxCentrality[1] = 40.;
+		
       }
     else
       {
-	//cout << "-F- AddTaskDptDptCorrelations() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
+      cout << "-F- AddTaskDptQA() system:" << system << ". centralityMethod:" << centralityMethod << " Option NOT AVAILABLE. ABORT."
       return 0;
       }
     }
-  else if (system==1) // pp
+  else if (system==1) // pPb
     {
-    if (centralityMethod == 3)
+    if (centralityMethod == 7)
       {
-      nCentrality = 4;
-      minCentrality[0] = 2;   maxCentrality[0] = 100.0;
-      minCentrality[1] = 2;   maxCentrality[1] = 20.;
-      minCentrality[2] = 20.; maxCentrality[2] = 50.;
-      minCentrality[3] = 50.; maxCentrality[3] = 100.;
+	//nCentrality = 4;
+      minCentrality[0] = 0;   maxCentrality[0] = 20.0;
+      minCentrality[1] = 20;   maxCentrality[1] = 40.;
+      minCentrality[2] = 40.; maxCentrality[2] = 60.;
+      minCentrality[3] = 0.; maxCentrality[3] = 100.;
       }
     else
       {
@@ -73,18 +86,8 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
   double zMax                   =  10.;
   double ptMin                  =  0.2;
   double ptMax                  =  2.0;
-  //double etaMin                 = -0.9;
-  //double etaMax                 =  0.9;
-  //double dcaZMin                = -3.0;
-  //double dcaZMax                =  3.0;
-  //double dcaXYMin               = -2.4;
-  //double dcaXYMax               =  2.4;
   double dedxMin                =  0.0;
   double dedxMax                =  20000.0;
-  //int    nClusterMin            =   80;
-  //int    trackFilterBit         =  128;//TPC only
-  //int    trackFilterBit         =  272; //Hybrid
-  
   int    requestedCharge1       =  1; //default
   int    requestedCharge2       = -1; //default
   
@@ -114,7 +117,7 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
   TString baseName;
   TString listName;
   TString taskName;
-  //TString inputHistogramFileName;
+  TString inputHistogramFileName;
   TString outputHistogramFileName;
   
   // Create the task and add subtask.
@@ -133,7 +136,7 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
           case 2: part1Name = "M_"; part2Name = "P_"; requestedCharge1 = -1; requestedCharge2 =  1; sameFilter = 0;   break;
           case 3: part1Name = "M_"; part2Name = "M_"; requestedCharge1 = -1; requestedCharge2 = -1; sameFilter = 1;   break;
         }
-      //part1Name += int(1000*etaMin);
+      //part1Name += int(1000*etaMin);                                                                                        
       part1Name += "eta";
       part1Name += int(1000*etaMax);
       part1Name += "_";
@@ -141,7 +144,13 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
       part1Name += "pt";
       part1Name += int(1000*ptMax);
       part1Name += "_";
-      //part2Name += int(1000*etaMin);
+      part1Name += int(1000*dcaZMin);
+      part1Name += "DCA";
+      part1Name += int(1000*dcaZMax);
+      part1Name += "_";
+
+
+      //part2Name += int(1000*etaMin);                                                                                        
       part2Name += "eta";
       part2Name += int(1000*etaMax);
       part2Name += "_";
@@ -149,65 +158,31 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
       part2Name += "pt";
       part2Name += int(1000*ptMax);
       part2Name += "_";
+      part2Name += int(1000*dcaZMin);
+      part2Name += "DCA";
+      part2Name += int(1000*dcaZMax);
+      part2Name += "_";
+
       eventName =  "";
       eventName += int(10.*minCentrality[iCentrality] );
       eventName += "Vo";
       eventName += int(10.*maxCentrality[iCentrality] );
-      //eventName += "_";
-      //eventName += int(10*zMin ); 
-      //eventName += "Z";
-      //eventName += int(10*zMax ); 
-      //if (rejectPileup)         eventName += pileupRejecSuffix;
-      //if (rejectPairConversion) eventName += pairRejecSuffix;
+      
+
       baseName     =   prefixName;
       baseName     +=  part1Name;
       baseName     +=  part2Name;
       baseName     +=  eventName;
       listName     =   baseName;
       taskName     =   baseName;
-
       
-      //inputHistogramFileName =  "alien:///alice/cern.ch/user/p/prabhat/CalibFiles/PbPbCalib_dca1.root";
-      //inputHistogramFileName =  "/Users/prabhat/dEdX/rootfile/272/before/PbPb276Calibration_2010.root";
-
+      
       outputHistogramFileName = baseName;
       if (singlesOnly) outputHistogramFileName += singlesOnlySuffix;
       outputHistogramFileName += ".root";
       
-      /*cout << "============================================================" << endl;
-    cout << "                   iTask: " << iTask << endl;
-      cout << "               Task Name: " << taskName << endl;
-      cout << "               List Name: " << listName << endl;
-      cout << "  inputHistogramFileName: " << inputHistogramFileName  << endl;
-      cout << " outputHistogramFileName: " << outputHistogramFileName << endl;
-      cout << "                  system: " << system << endl;
-      cout << "             singlesOnly: " << singlesOnly << endl;
-      cout << "           using weights: " << useWeights << endl;
-      cout << "        centralityMethod: " << centralityMethod << endl;
-      cout << "               chargeSet: " << chargeSet    << endl;
-      cout << "              debugLevel: " << debugLevel   << endl;
-      cout << "            rejectPileup: " << rejectPileup << endl;
-      cout << "    rejectPairConversion: " << rejectPairConversion  << endl;
-      cout << "              sameFilter: " << sameFilter  << endl;
-      cout << "                    zMin: " << zMin        << endl;
-      cout << "                    zMax: " << zMax        << endl;
-      cout << "                   ptMin: " << ptMin       << endl;
-      cout << "                   ptMax: " << ptMax       << endl;
-      cout << "                  etaMin: " << etaMin   << endl;
-      cout << "                  etaMax: " << etaMax   << endl;
-      cout << "                 dcaZMin: " << dcaZMin  << endl;
-      cout << "                 dcaZMax: " << dcaZMax  << endl;
-      cout << "                dcaXYMin: " << dcaXYMin << endl;
-      cout << "                dcaXYMax: " << dcaXYMax << endl;
-      cout << "                 dedxMin: " << dedxMin  << endl;
-      cout << "                 dedxMax: " << dedxMax  << endl;
-      cout << "             nClusterMin: " << nClusterMin      << endl;
-      cout << "          trackFilterBit: " << trackFilterBit   << endl;
-      cout << "        requestedCharge1: " << requestedCharge1 << endl;
-      cout << "        requestedCharge2: " << requestedCharge2 << endl;
-    cout << "============================================================" << endl;
-      */
-    TFile  * inputFile  = 0;
+    
+      TFile  * inputFile  = 0;
       TList  * histoList  = 0;
       TH3F   * weight_1   = 0;
       TH3F   * weight_2   = 0;
@@ -217,7 +192,7 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
         inputFile = TFile::Open(inputHistogramFileName,"OLD");
         if (!inputFile)
           {
-	    //cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
+          cout << "Requested file:" << inputHistogramFileName << " was not opened. ABORT." << endl;
           return;
           }
         TString nameHistoBase = "correction_";
@@ -226,18 +201,18 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
         if (requestedCharge1 == 1)
           {
           nameHisto = nameHistoBase + "_p";
-          //cout << "Input Histogram named: " << nameHisto << endl;
+          cout << "Input Histogram named: " << nameHisto << endl;
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         else
           {
           nameHisto = nameHistoBase + "_m";
-          //cout << "Input Histogram named: " << nameHisto << endl;
+          cout << "Input Histogram named: " << nameHisto << endl;
           weight_1 = (TH3F *) inputFile->Get(nameHisto);
           }
         if (!weight_1) 
           {
-	    //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+          cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
           return 0;
           }
         
@@ -247,18 +222,18 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
           if (requestedCharge2 == 1)
             {
             nameHisto = nameHistoBase + "_p";
-            //cout << "Input Histogram named: " << nameHisto << endl;
+            cout << "Input Histogram named: " << nameHisto << endl;
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
             }
           else
             {
             nameHisto = nameHistoBase + "_m";
-            //cout << "Input Histogram named: " << nameHisto << endl;
+            cout << "Input Histogram named: " << nameHisto << endl;
             weight_2 = (TH3F *) inputFile->Get(nameHisto);
             }
           if (!weight_2) 
             {
-	      //cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
+            cout << "Requested histogram 'correction_p/m' was not found. ABORT." << endl;
             return 0;
             }
           }  
@@ -285,10 +260,13 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
       task->SetPtMax2(              ptMax           ); 
       task->SetEtaMin2(             etaMin          ); 
       task->SetEtaMax2(             etaMax          ); 
-      task->SetDcaZMin(             dcaZMin         ); 
-      task->SetDcaZMax(             dcaZMax         ); 
-      task->SetDcaXYMin(            dcaXYMin        ); 
-      task->SetDcaXYMax(            dcaXYMax        ); //checking by prp
+      task->SetDcaZMin( dcaZMin ); 
+      task->SetDcaZMax( dcaZMax ); 
+      task->SetDcaXYMin(dcaXYMin); 
+      task->SetDcaXYMax(dcaXYMax);
+      task->SetTPCNclus(nclus);
+      task->SetChi2PerNDF(chi2ndf);
+
       task->SetDedxMin(             dedxMin         ); 
       task->SetDedxMax(             dedxMax         ); 
       task->SetNClusterMin(         nClusterMin     ); 
@@ -297,24 +275,28 @@ AliAnalysisTaskDptDptQA *AddTaskDptQA
       task->SetRequestedCharge_2(   requestedCharge2); 
       task->SetWeigth_1(            weight_1        );
       task->SetWeigth_2(            weight_2        );
+            
       
+      if(trigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
+      else task->SelectCollisionCandidates(AliVEvent::kMB);
+            
+      cout << "Creating task output container" << endl;
       
-      //cout << "Creating task output container" << endl;
       taskOutputContainer = analysisManager->CreateContainer(listName, 
                                                              TList::Class(),    
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s.root:Histos", OutputFileName));
-      //cout << "Add task to analysis manager and connect it to input and output containers" << endl;
+                                                             Form("%s:%s", AliAnalysisManager::GetCommonFileName(),taskname));
+      cout << "Add task to analysis manager and connect it to input and output containers" << endl;
+           
+
       analysisManager->AddTask(task);
       analysisManager->ConnectInput( task,  0, analysisManager->GetCommonInputContainer());
       analysisManager->ConnectOutput(task,  0, taskOutputContainer );
-      //cout << "Task added ...." << endl;
+      cout << "Task added ...." << endl;
       
       iTask++;
     
     }
-  
-  
   
   return task;
 }
