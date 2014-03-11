@@ -510,6 +510,9 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	Printf("WARNING: Centrality object is 0");
 	centrality = -1;
       }
+      
+      if (centrality == -1 && fAOD && fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"))
+	centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
     }
 
     AliInfo(Form("Centrality is %f", centrality));
@@ -1065,6 +1068,12 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
 	//centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
       else
 	centrality = -1;
+      
+//       fAOD->GetHeader()->Dump();
+//       Printf("%p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
+
+      if (centrality == -1 && fAOD && fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"))
+	centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
 
       if (fAOD)
       {
