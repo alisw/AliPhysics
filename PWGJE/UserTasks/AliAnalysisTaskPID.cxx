@@ -978,7 +978,9 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     
     // Apply detector level track cuts
-    Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+    const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
+                                 ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
+    Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
     if (dEdxTPC <= 0)
       continue;
     
@@ -2142,7 +2144,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t trackCharge = track->Charge();
   
   // TPC signal
-  Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+  const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
+                               ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
+  Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
   
   if (dEdxTPC <= 0) {
     Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,

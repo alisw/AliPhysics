@@ -177,6 +177,10 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarBachNSigmaPion;  //! 
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
 
+  Bool_t fTreeCascVarkITSRefitBachelor; //! 
+  Bool_t fTreeCascVarkITSRefitNegative; //! 
+  Bool_t fTreeCascVarkITSRefitPositive; //! 
+
   Bool_t fTreeCascVarEvHasXiMinus;    //!
   Bool_t fTreeCascVarEvHasXiPlus;     //!
   Bool_t fTreeCascVarEvHasOmegaMinus; //!

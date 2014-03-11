@@ -409,7 +409,7 @@ TList* AliNanoAODReplicator::GetList() const
       fTracks->SetName("tracks"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fTracks);    
 
-      fHeader = new AliNanoAODHeader(3);// TODO: to be customized
+      fHeader = new AliNanoAODHeader(2);// TODO: to be customized
       fHeader->SetName("header"); // TODO: consider the possibility to use a different name to distinguish in AliAODEvent
       fList->Add(fHeader);    
 

@@ -216,7 +216,9 @@ updateQA()
         echo "moving new ${runNumber} to ${productionDir}"
         mv -f ${dir} ${productionDir}
       done
-    
+   
+      #here we are in the updated period dir, all runs there
+      #TODO: maybe cleanup all old output first?
       rm -f trending.root
       
       #merge trending files if any
@@ -224,6 +226,8 @@ updateQA()
         hadd trending.root 000*/trending.root &> periodLevelQA.log
       fi
       
+      #TODO: maybe run this in a tmp dir (with links to run dirs) and only move
+      #the plots after validation
       if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
         echo running ${detector} periodLevelQA for production ${period}/${pass}
         periodLevelQA trending.root &>> periodLevelQA.log

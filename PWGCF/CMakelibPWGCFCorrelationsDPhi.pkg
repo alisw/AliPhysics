@@ -42,6 +42,7 @@ set ( SRCS
     Correlations/DPhi/DiHadronPID/AliHistToolsDiHadronPID.cxx
     Correlations/DPhi/DiHadronPID/AliAnalysisTaskDiHadronPID.cxx 
     Correlations/DPhi/DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
+    Correlations/DPhi/AliAnalysisTaskDptDptQA.cxx
     Correlations/DPhi/FourierDecomposition/AliPool.cxx
     Correlations/DPhi/FourierDecomposition/AliDhcTask.cxx
     Correlations/DPhi/FourierDecomposition/AliMuonEffMC.cxx

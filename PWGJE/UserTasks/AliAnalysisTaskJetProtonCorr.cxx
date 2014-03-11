@@ -105,7 +105,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
 
   fkClassName[kClCentral]      = "cent";
   fkClassName[kClSemiCentral]  = "semi";
-  fkClassName[kClDijet]        = "dijet";
+  // fkClassName[kClDijet]        = "dijet";
 
   fkEvName[kEvSame] = "same";
   fkEvName[kEvMix]  = "mixed";
@@ -166,16 +166,20 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   for (Int_t iBin = 0; iBin < nPsiBins; ++iBin)
     psiBins[iBin] = iBin * TMath::Pi()/nPsiBins;
 
-  for (Int_t iTrg = 0; iTrg < kTrgLast; ++iTrg) {
-    for (Int_t iAss = 0; iAss < kAssLast; ++iAss) {
-      GetPoolMgr((Trg_t) iTrg, (Ass_t) iAss) =
-	new AliEventPoolManager(10, 100,
+  const Int_t poolSize = 10; // unused by current event pool implementation
+  const Int_t trackDepth = 1000; // number of tracks to maintain in mixing buffer
+  const Float_t trackDepthFraction = 0.1;
+  const Int_t targetEvents = 1;
+  // for (Int_t iTrg = 0; iTrg < kTrgLast; ++iTrg) {
+    for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
+      GetPoolMgr((Ass_t) iAss) =
+	new AliEventPoolManager(poolSize, trackDepth,
 				nCentralityBins, centralityBins,
 				nVertexBins, vertexBins);
 				// nPsiBins, psiBins);
-      GetPoolMgr((Trg_t) iTrg, (Ass_t) iAss)->SetTargetValues(100, .1, 1);
+      GetPoolMgr((Ass_t) iAss)->SetTargetValues(trackDepth, trackDepthFraction, targetEvents);
     }
-  }
+  // }
 
   fHistCorr = new AliHistCorr*[kEvLast*kCorrLast*kClLast];
 
@@ -239,7 +243,7 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
                       kClLast, -.5, kClLast-.5);
   hist->GetYaxis()->SetBinLabel(LAB(kClCentral));
   hist->GetYaxis()->SetBinLabel(LAB(kClSemiCentral));
-  hist->GetYaxis()->SetBinLabel(LAB(kClDijet));
+  // hist->GetYaxis()->SetBinLabel(LAB(kClDijet));
   AddHistogram(ID(kHistCentralityCheck), "centrality check;C;counts",
 	       110, -5., 105.);
   hist = AddHistogram(ID(kHistCentralityCheckUsed), "centrality check used;C;event class",
@@ -247,7 +251,7 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
                       kClLast, -.5, kClLast-.5);
   hist->GetYaxis()->SetBinLabel(LAB(kClCentral));
   hist->GetYaxis()->SetBinLabel(LAB(kClSemiCentral));
-  hist->GetYaxis()->SetBinLabel(LAB(kClDijet));
+  // hist->GetYaxis()->SetBinLabel(LAB(kClDijet));
   AddHistogram(ID(kHistCentralityVsMult), "centrality - multiplicity;centrality percentile (%);N_{prim}",
 	       100, 0., 100.,
 	       100, 0., 2500.);
@@ -534,6 +538,10 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   for (Int_t iCorr = 0; iCorr < kCorrLast; ++iCorr) {
     for (Int_t iCl = 0; iCl < kClLast; ++iCl) {
       for (Int_t iEv = 0; iEv < kEvLast; ++iEv) {
+	// we don't need the mixed event histograms for the embedded excess particles
+	if ((iCorr > kCorrRndHadProt) && (iEv == kEvMix))
+	  continue;
+
   	GetHistCorr((CorrType_t) iCorr, (Class_t) iCl, (Ev_t) iEv) =
   	  new AliHistCorr(Form("corr_%s_%s_%s", fkCorrTypeName[iCorr], fkClassName[iCl], fkEvName[iEv]), fOutputList);
       }
@@ -901,35 +909,33 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    Correlate((Trg_t) iTrg, (Ass_t) iAss, (Class_t) iClass, kEvSame, &trgArray[iTrg], &assArray[iAss]);
 
 	    // mixed event
-	    AliEventPool *pool = GetPool((Class_t) iClass, (Trg_t) iTrg, (Ass_t) iAss);
+	    AliEventPool *pool = GetPool((Ass_t) iAss);
 	    if (pool && pool->IsReady()) {
-	      // printf("----- using pool: %i %i %i -----\n", iClass, iTrg, iAss);
-	      Int_t nEvents = pool->GetCurrentNEvents();
+	      AliDebug(1, Form("----- using pool: %i %i %i -----", iClass, iTrg, iAss));
+	      const Int_t nEvents = pool->GetCurrentNEvents();
 	      for (Int_t iEvent = 0; iEvent < nEvents; ++iEvent) {
 		TObjArray *assTracks = pool->GetEvent(iEvent);
 		Correlate((Trg_t) iTrg, (Ass_t) iAss, (Class_t) iClass, kEvMix, &trgArray[iTrg], assTracks, 1./nEvents);
 	      }
 	    }
-	    // if (pool && !pool->IsReady()) {
-	    //   printf("----- pool not ready: %i %i %i -----\n", iClass, iTrg, iAss);
-	    //   pool->PrintInfo();
-	    // }
-	  }
-
-	  // fill event pool for mixing
-	  // >= 0: don't require a trigger in the event
-	  // >= 1: require a trigger in the event
-	  if (trgArray[iTrg].GetEntries() >= 0) {
-	    for (Int_t iAss = 0; iAss < kAssLast; ++iAss) {
-	      AliEventPool *pool = GetPool((Class_t) iClass, (Trg_t) iTrg, (Ass_t) iAss);
-	      if (pool) {
-		pool->UpdatePool(CloneTracks(&assArray[iAss]));
-		// printf("----- updating pool: %i %i %i -----\n", iClass, iTrg, iAss);
-		// pool->PrintInfo();
-	      }
-	    }
 	  }
 	}
+
+	// fill event pool for mixing
+	// >= 0: don't require a trigger in the event
+	// >= 1: require a trigger in the event
+	// if (trgArray[iTrg].GetEntries() >= 0) {
+	for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
+	  AliEventPool *pool = GetPool((Ass_t) iAss);
+	  if (pool) {
+	    pool->UpdatePool(CloneTracks(&assArray[iAss]));
+	    AliDebug(1, Form("----- updating pool: %i -----", iAss));
+	    if (fDebug > 0)
+	      pool->PrintInfo();
+	  }
+	}
+	// }
+
 	// correlate artificial triggers and associates
 	Correlate(kCorrRndJetExcHad,  (Class_t) iClass, kEvSame, &trgArray[kTrgJetRnd], &assArray[kAssHadJetExc]);
 	Correlate(kCorrRndJetExcProt, (Class_t) iClass, kEvSame, &trgArray[kTrgJetRnd], &assArray[kAssProtJetExc]);
@@ -1076,23 +1082,27 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
   if (fAODEvent) {
     fJetArray = dynamic_cast<TClonesArray*> (fAODEvent->FindListObject(fJetBranchName));
     if (!fJetArray) {
-      printf("no jet branch \"%s\" found, in the AODs are:\n", fJetBranchName);
-      if (fDebug > 0)
-	fAODEvent->GetList()->Print();
+      // still try the output event
+      if (AODEvent())
+        fJetArray = dynamic_cast<TClonesArray*> (AODEvent()->FindListObject(fJetBranchName));
+      if (!fJetArray) {
+        printf("no jet branch \"%s\" found, in the AODs are:\n", fJetBranchName);
+        if (fDebug > 0) {
+	  fAODEvent->GetList()->Print();
+          if (AODEvent())
+            AODEvent()->GetList()->Print();
+        }
+      }
     }
   }
 
   // retrieve event pool for the event category
   if (eventGood) {
-    for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
-      for (Int_t iTrg = 0; iTrg < kTrgLast; ++iTrg) {
-	for (Int_t iAss = 0; iAss < kAssLast; ++iAss) {
-	  AliEventPoolManager *mgr = GetPoolMgr((Trg_t) iTrg, (Ass_t) iAss);
-	  GetPool((Class_t) iClass, (Trg_t) iTrg, (Ass_t) iAss) =
-	    // mgr ? mgr->GetEventPool(fCentrality, fZvtx, fEventPlaneAngle) : 0x0;
-	    mgr ? mgr->GetEventPool(fCentrality, fZvtx) : 0x0;
-	}
-      }
+    for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
+      AliEventPoolManager *mgr = GetPoolMgr((Ass_t) iAss);
+      GetPool((Ass_t) iAss) =
+	// mgr ? mgr->GetEventPool(fCentrality, fZvtx, fEventPlaneAngle) : 0x0;
+	mgr ? mgr->GetEventPool(fCentrality, fZvtx) : 0x0;
     }
   }
 
@@ -1263,12 +1273,12 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(AliVParticle *trgPart, AliV
   Float_t pt2 = assPart->Pt();
   Float_t charge2 = assPart->Charge();
 
-  // check ???
-  Float_t bSign = 1.;
   Float_t deta = trgPart->Eta() - assPart->Eta();
 
+  Float_t bSign = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
+
   // optimization
-  if (TMath::Abs(deta) < fCutsTwoTrackEff * 2.5 * 3) {
+  if (TMath::Abs(deta) < fCutsTwoTrackEff) {
     // check first boundaries to see if is worth to loop and find the minimum
     Float_t dphistar1 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
     Float_t dphistar2 = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
@@ -1281,17 +1291,12 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(AliVParticle *trgPart, AliV
 	(TMath::Abs(dphistar2) < kLimit) ||
 	(dphistar1 * dphistar2 < 0)) {
       for (Double_t rad=0.8; rad<2.51; rad+=0.01) {
-	Float_t dphistar = GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, rad, bSign);
-	Float_t dphistarabs = TMath::Abs(dphistar);
-
-	if (dphistarabs < dphistarminabs) {
-	  // dphistarmin = dphistar;
+	Float_t dphistarabs = TMath::Abs(GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, rad, bSign));
+	if (dphistarabs < dphistarminabs)
 	  dphistarminabs = dphistarabs;
-	}
       }
 
-      if ((dphistarminabs < fCutsTwoTrackEff) &&
-	  (TMath::Abs(deta) < fCutsTwoTrackEff))
+      if (dphistarminabs < fCutsTwoTrackEff)
 	return kFALSE;
     }
   }
@@ -1537,21 +1542,27 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
 
   fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta #phi",
 			  100, -2.*TMath::Pi(), 2.*TMath::Pi());
+  fHistCorrPhi->Sumw2();
   fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
 			  100, 0.*TMath::Pi(), 2.*TMath::Pi(),
 			  100, 0.*TMath::Pi(), 2.*TMath::Pi());
+  fHistCorrPhi2->Sumw2();
   fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#phi;#Delta#eta",
 			     100, -1., 2*TMath::Pi()-1.,
 			     100, -2., 2.);
+  fHistCorrEtaPhi->Sumw2();
   fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
 				100, -1., 2*TMath::Pi()-1.,
 				100, -2., 2.);
+  fHistCorrAvgEtaPhi->Sumw2();
   fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
 				100, 0., 2*TMath::Pi(),
 				100, -1., 1.);
+  fHistCorrTrgEtaPhi->Sumw2();
   fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
 				100, 0., 2*TMath::Pi(),
 				100, -1., 1.);
+  fHistCorrAssEtaPhi->Sumw2();
 
   fOutputList->Add(fHistStat);
   fOutputList->Add(fHistCorrPhi);
@@ -1569,6 +1580,8 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::~AliHistCorr()
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliVParticle *assPart, Float_t weight)
 {
+  // fill correlation histograms from trigger particle and associate particle
+
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
@@ -1576,10 +1589,8 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliV
     deltaPhi -= 2. * TMath::Pi();
   else if (deltaPhi < -1.)
     deltaPhi += 2. * TMath::Pi();
-  // printf("trg: pt = %5.2f, phi = %5.2f, eta = %5.2f; ass: pt = %5.2f, phi = %5.2f, eta = %5.2f; deltaphi = %5.2f, deltaeta = %5.2f\n",
-  // 	 trgPart->Pt(), trgPart->Phi(), trgPart->Eta(), assPart->Pt(), assPart->Phi(), assPart->Eta(), deltaPhi, deltaEta);
 
-  fHistCorrPhi->Fill(deltaPhi);
+  fHistCorrPhi->Fill(deltaPhi, weight);
   fHistCorrPhi2->Fill(trgPart->Phi(), assPart->Phi(), weight);
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
   fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
@@ -1587,6 +1598,8 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliV
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight)
 {
+  // fill correlation histograms from trigger direction and associate particle
+
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
@@ -1594,10 +1607,8 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, Al
     deltaPhi -= 2. * TMath::Pi();
   else if (deltaPhi < -1.)
     deltaPhi += 2. * TMath::Pi();
-  // printf("trg: pt = %5.2f, phi = %5.2f, eta = %5.2f; ass: pt = %5.2f, phi = %5.2f, eta = %5.2f; deltaphi = %5.2f, deltaeta = %5.2f\n",
-  // 	 trgPart->Pt(), trgPart->Phi(), trgPart->Eta(), assPart->Pt(), assPart->Phi(), assPart->Eta(), deltaPhi, deltaEta);
 
-  fHistCorrPhi->Fill(deltaPhi);
+  fHistCorrPhi->Fill(deltaPhi, weight);
   Float_t trgPhi = trgPart->Phi();
   if (trgPhi < 0)
     trgPhi += 2. * TMath::Pi();
@@ -1608,6 +1619,8 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, Al
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight)
 {
+  // fill correlation histograms from trigger direction and associate direction
+
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
@@ -1615,10 +1628,8 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TL
     deltaPhi -= 2. * TMath::Pi();
   else if (deltaPhi < -1.)
     deltaPhi += 2. * TMath::Pi();
-  // printf("trg: pt = %5.2f, phi = %5.2f, eta = %5.2f; ass: pt = %5.2f, phi = %5.2f, eta = %5.2f; deltaphi = %5.2f, deltaeta = %5.2f\n",
-  // 	 trgPart->Pt(), trgPart->Phi(), trgPart->Eta(), assPart->Pt(), assPart->Phi(), assPart->Eta(), deltaPhi, deltaEta);
 
-  fHistCorrPhi->Fill(deltaPhi);
+  fHistCorrPhi->Fill(deltaPhi, weight);
   Float_t trgPhi = trgPart->Phi();
   if (trgPhi < 0)
     trgPhi += 2. * TMath::Pi();

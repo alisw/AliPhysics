@@ -992,3 +992,57 @@ void AliAODPidHF::SetUpCombinedPID(){
 }
 
 
+//-----------------------------
+void AliAODPidHF::PrintAll() const {
+  // print the configuration
+  printf("Detectors used for PID: ");
+  if(fITS) printf("ITS ");
+  if(fTPC) printf("TPC ");
+  if(fTRD) printf("TRD ");
+  if(fTOF) printf("TOF ");
+  printf("\n");
+  printf("Minimum TPC PID clusters = %d\n",fMinNClustersTPCPID);
+  printf("Maximum momentum for using TPC PID = %f\n",fPtThresholdTPC);
+  printf("TOF Mismatch probablility cut = %f\n",fCutTOFmismatch);
+  printf("Maximum momentum for combined PID TPC PID = %f\n",fMaxTrackMomForCombinedPID);
+  if(fOldPid){
+    printf("Use OLD PID");
+    printf("  fMC = %d\n",fMC);
+    printf("  fPbPb = %d\n",fPbPb);
+    printf("  fOnePad = %d\n",fOnePad);
+    printf("  fMCLowEn2011 = %d\n",fMCLowEn2011);
+    printf("  fppLowEn2011 = %d\n",fppLowEn2011);
+  }
+  printf("--- Matching algorithm = %d ---\n",fMatch);
+  if(fMatch==1){
+    if(fITS) printf("nSigmaITS = %.2f\n",fnSigma[4]);
+    if(fTOF){
+      printf("nSigmaTOF = %.2f\n",fnSigma[3]);
+      if(fCompat) printf("Compatibility band at nSigmaTOF=%.2f for p>%.2f\n",fnSigmaCompat[1],fPCompatTOF);
+    }
+    if(fTPC){
+      if(fAsym){
+	printf("nSigmaTPC:\n");
+	printf("   pt<%.2f      \t nsigmaTPC= %.2f\n",fPLimit[0],fnSigma[0]);
+	printf("   %.2f<pt<%.2f \t nsigmaTPC= %.2f\n",fPLimit[0],fPLimit[1],fnSigma[1]);
+	printf("   pt>%.2f      \t nsigmaTPC= %.2f\n",fPLimit[1],fnSigma[2]); 
+      }else{
+	printf("nSigmaTPC = %.2f\n",fnSigma[0]);
+      }
+      if(fCompat) printf("Compatibility band at nSigmaTPC=%.2f\n",fnSigmaCompat[0]);
+     }
+  }else if(fMatch==4){
+    printf("Cuts on sqrt(nSigmaTPC^2+nSigmaTOF^2):\n");
+    printf(" Pions:   nSigma = %.2f\n",fMaxnSigmaCombined[0]);
+    printf(" Kaons:   nSigma = %.2f\n",fMaxnSigmaCombined[1]);
+    printf(" Protons: nSigma = %.2f\n",fMaxnSigmaCombined[2]);
+  }else if(fMatch==5){
+    printf("nSigma ranges:\n");
+    printf(" Pions:   %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[0],fMaxnSigmaTPC[0],fMinnSigmaTOF[0],fMaxnSigmaTOF[0]);
+    printf(" Kaons:   %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[1],fMaxnSigmaTPC[1],fMinnSigmaTOF[1],fMaxnSigmaTOF[1]);
+    printf(" Protons: %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[2],fMaxnSigmaTPC[2],fMinnSigmaTOF[2],fMaxnSigmaTOF[2]);
+  }
+}
