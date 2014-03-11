@@ -44,7 +44,8 @@ AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
    fSum(obj.fSum),
    fSumMC(obj.fSumMC),
    fRef(obj.fRef),
-   fRefMC(obj.fRefMC)
+   fRefMC(obj.fRefMC),
+   fDCAproduct(obj.fDCAproduct)
 {
 //
 // Copy constructor.
@@ -72,6 +73,7 @@ AliRsnMother &AliRsnMother::operator=(const AliRsnMother &obj)
    fRefEvent = obj.fRefEvent;
    fDaughter[0] = obj.fDaughter[0];
    fDaughter[1] = obj.fDaughter[1];
+   fDCAproduct = obj.fDCAproduct;
 
    return (*this);
 }
@@ -223,6 +225,48 @@ Double_t AliRsnMother::CosThetaStar(Bool_t first, Bool_t useMC)
    Double_t cosThetaStar = normal.Dot(momentumD) / momentumD.Mag();
 
    return cosThetaStar;
+}
+
+//__________________________________________________________________________________________________
+Double_t AliRsnMother::DCAproduct()
+{
+  //
+  // returns product of DCA of the two daughters
+  //
+  AliRsnEvent *event1 = fDaughter[0]->GetOwnerEvent();
+  AliRsnEvent *event2 = fDaughter[1]->GetOwnerEvent();
+  
+  if(event1 != event2){  
+    AliError("Attempting to build pair with tracks coming from different events");
+    return 0.0;
+  }
+   
+  if (event1->IsAOD()) {
+    AliAODEvent *aodEvent = (AliAODEvent*)event1->GetRefAOD();  
+    if (!aodEvent) return 0.0;
+    AliAODTrack *track1 = (AliAODTrack*)fDaughter[0]->Ref2AODtrack();
+    AliAODTrack *track2 = (AliAODTrack*)fDaughter[1]->Ref2AODtrack();
+    AliVVertex *vertex = aodEvent->GetPrimaryVertex();   
+    if (!vertex || !track1 || track2) return 0.0;
+     
+    Double_t b1[2], cov1[3], b2[2], cov2[3];
+    track1->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b1, cov1);    
+    track2->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b2, cov2);    
+    fDCAproduct = b1[0]*b2[0];  
+  } else {
+    AliESDEvent *esdEvent = (AliESDEvent*)event1->GetRefESD();  
+    if (!esdEvent) return 0.0;
+    AliESDtrack *track1 = (AliESDtrack*)fDaughter[0]->Ref2ESDtrack();
+    AliESDtrack *track2 = (AliESDtrack*)fDaughter[1]->Ref2ESDtrack();
+    const AliVVertex *vertex = esdEvent->GetPrimaryVertex();
+    if (!vertex || !track1 || track2) return 0.0;
+     
+    Double_t b1[2], cov1[3], b2[2], cov2[3];
+    track1->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b1, cov1);    
+    track2->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b2, cov2);    
+    fDCAproduct = b1[0]*b2[0];  
+  }
+  return fDCAproduct;
 }
 
 //__________________________________________________________________________________________________

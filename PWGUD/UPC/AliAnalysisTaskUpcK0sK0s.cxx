@@ -201,7 +201,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
+  if( !trigger.Contains("CCUP") ) return;
   
   fRunNum = aod ->GetRunNumber();
   fHistTriggersPerRun->Fill(fRunNum);
@@ -273,6 +273,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
 
       if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
@@ -317,7 +318,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP4-B") ) return;
+  if( !trigger.Contains("CCUP") ) return;
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -390,6 +391,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
 
       if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;

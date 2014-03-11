@@ -95,7 +95,8 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
   fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1),
   fUseJets(kFALSE), fPtAssoc(0),
-  fUseLCC(kFALSE) {
+  fUseLCC(kFALSE),
+  fSigmaPt(0.1),fSigmaEta(0.5),fSigmaPhi(0.5){
   // Constructor
 
   //======================================================correction
@@ -808,9 +809,9 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	Int_t vCharge_LCC = -vCharge;
 	
 	// Get Kinematics
-	Double_t vPt_LCC  = gRandom->Gaus(vPt,0.1);
-	Double_t vEta_LCC = gRandom->Gaus(vEta,0.5);
-	Double_t vPhi_LCC = gRandom->Gaus(vPhi,0.5);
+	Double_t vPt_LCC  = gRandom->Gaus(vPt,fSigmaPt);
+	Double_t vEta_LCC = gRandom->Gaus(vEta,fSigmaEta);
+	Double_t vPhi_LCC = gRandom->Gaus(vPhi,fSigmaPhi);
 
 	if(fUseDebug) 
 	  Printf("Generated LCC: Charge = %d, eta = %.2f, phi = %.2f, pt = %.2f",vCharge_LCC,vEta_LCC,vPhi_LCC,vPt_LCC);

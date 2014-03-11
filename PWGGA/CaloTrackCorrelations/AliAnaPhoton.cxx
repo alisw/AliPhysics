@@ -767,7 +767,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Floa
           
           if(bc==0)
           {
-            Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
+            Float_t threshold = GetReader()->GetEventTriggerL1Threshold() ;
+            if(GetReader()->IsEventEMCALL0()) threshold = GetReader()->GetEventTriggerL0Threshold() ;
+            
             if(ecluster > threshold)
               fhEtaPhiTriggerEMCALBCClusterOverTh->Fill(etacluster, phicluster);
             else if(ecluster > threshold-1)
@@ -795,7 +797,9 @@ void  AliAnaPhoton::FillEMCALTriggerClusterBCHistograms(Int_t idcalo,       Floa
           fhTimeTriggerEMCALBCUMCluster->Fill(ecluster, tofcluster);
           if(bc==0)
           {
-            Float_t threshold = GetReader()->GetEventTriggerThreshold() ;
+            Float_t threshold = GetReader()->GetEventTriggerL1Threshold() ;
+            if(GetReader()->IsEventEMCALL0()) threshold = GetReader()->GetEventTriggerL0Threshold() ;
+            
             if(ecluster > threshold)
               fhEtaPhiTriggerEMCALBCUMClusterOverTh->Fill(etacluster, phicluster);
             else if(ecluster > threshold-1)

@@ -10,6 +10,7 @@
 // -- definition of output histogram
 //
 
+#include "AliRsnEvent.h"
 #include "AliRsnDaughter.h"
 #include "AliRsnMiniParticle.h"
 
@@ -73,6 +74,7 @@ public:
    Int_t           GetMotherPDG()       const {return fMotherPDG;}
    Double_t        GetMotherMass()      const {return fMotherMass;}
    Bool_t          GetFillHistogramOnlyInRange() { return fCheckHistRange; }
+   Short_t         GetMaxNSisters()           {return fMaxNSisters;}
 
    void            SetOutputType(EOutputType type)    {fOutputType = type;}
    void            SetComputation(EComputation src)   {fComputation = src;}
@@ -83,6 +85,8 @@ public:
    void            SetMotherMass(Double_t mass)       {fMotherMass = mass;}
    void            SetPairCuts(AliRsnCutSet *set)     {fPairCuts = set;}
    void            SetFillHistogramOnlyInRange(Bool_t fillInRangeOnly) { fCheckHistRange = fillInRangeOnly; }
+   void            SetMaxNSisters(Short_t n)          {fMaxNSisters = n;}
+   void            SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
 
    void            AddAxis(Int_t id, Int_t nbins, Double_t min, Double_t max);
    void            AddAxis(Int_t id, Double_t min, Double_t max, Double_t step);
@@ -119,10 +123,11 @@ private:
    TList           *fList;             //! pointer to the TList containing the output
    TArrayI          fSel1;             //! list of selected particles for definition 1
    TArrayI          fSel2;             //! list of selected particles for definition 2
-
+   Short_t          fMaxNSisters;      // maximum number of allowed mother's daughter
+   Bool_t           fCheckP;           // flag to set in order to check the momentum conservation for daughters
    Bool_t           fCheckHistRange;   //  check if values is in histogram range
 
-   ClassDef(AliRsnMiniOutput,2)  // AliRsnMiniOutput class
+   ClassDef(AliRsnMiniOutput, 3)  // AliRsnMiniOutput class
 };
 
 #endif

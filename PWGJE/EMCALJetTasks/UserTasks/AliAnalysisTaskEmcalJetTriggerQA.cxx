@@ -36,8 +36,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetTriggerQA", kTRUE),
   fDebug(kFALSE),
   fTriggerClass(""),
-  fBitJ1((1<<8)),
-  fBitJ2((1<<11)),
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
@@ -49,6 +47,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
+  fh2CentPtJetFull(0),
+  fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -75,8 +75,10 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
-  fh3EClusELeadingCellVsTime(0)
+  fh3EClusELeadingCellVsTime(0),
+  fh3JetReacCent(0)
 {
   // Default constructor.
 
@@ -88,8 +90,6 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   AliAnalysisTaskEmcalJet(name, kTRUE),
   fDebug(kFALSE),
   fTriggerClass(""),
-  fBitJ1((1<<8)),
-  fBitJ2((1<<11)),
   fContainerFull(0),
   fContainerCharged(1),
   fMaxPatchEnergy(0),
@@ -101,6 +101,8 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
   fh3PtEtaPhiTracksProp(0),
+  fh2CentPtJetFull(0),
+  fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
   fh3PtEtaPhiJetCharged(0),
   fh2NJetsPtFull(0),
@@ -127,8 +129,10 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
-  fh3EClusELeadingCellVsTime(0)
+  fh3EClusELeadingCellVsTime(0),
+  fh3JetReacCent(0)
 {
   // Standard constructor.
 
@@ -139,6 +143,11 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
 AliAnalysisTaskEmcalJetTriggerQA::~AliAnalysisTaskEmcalJetTriggerQA()
 {
   // Destructor.
+  if (fOutput) {
+    delete fOutput;  // delete output object list
+    fOutput = 0;
+  }
+
 }
 
 //________________________________________________________________________
@@ -159,7 +168,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
     }
 
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();
-
     if(fTriggerClass.Contains(trigType1.Data()) && fTriggerClass.Contains(trigType2.Data())) { //if events with J1&&J2 are requested
       if(!firedTrigClass.Contains(trigType1.Data()) || !firedTrigClass.Contains(trigType2.Data()) ) //check if both are fired
         return kFALSE;
@@ -171,15 +179,13 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
 	return kFALSE;
     }
   }
-
   fhNEvents->Fill(1.5);
 
   return kTRUE;
-
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEmcalJetTriggerQA::FindTriggerPatch() {
+void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
 
   //Fill trigger patch histos for main trigger
 
@@ -224,6 +230,20 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fHistRhovsCentCharged->GetXaxis()->SetTitle("Centrality (%)");
   fHistRhovsCentCharged->GetYaxis()->SetTitle("#rho_{ch} (GeV/c * rad^{-1})");
   fOutput->Add(fHistRhovsCentCharged);
+    
+  Int_t fgkNCentBins = 21;
+  Float_t kMinCent   = 0.;
+  Float_t kMaxCent   = 105.;
+  Double_t *binsCent = new Double_t[fgkNCentBins+1];
+  for(Int_t i=0; i<=fgkNCentBins; i++) binsCent[i]=(Double_t)kMinCent + (kMaxCent-kMinCent)/fgkNCentBins*(Double_t)i ;
+  binsCent[fgkNCentBins-1] = 100.5;
+  binsCent[fgkNCentBins] = 101.5;
+    
+  Int_t fgkNdEPBins = 18*8;
+  Float_t kMindEP   = 0.;
+  Float_t kMaxdEP   = 1.*TMath::Pi()/2.;
+  Double_t *binsdEP = new Double_t[fgkNdEPBins+1];
+  for(Int_t i=0; i<=fgkNdEPBins; i++) binsdEP[i]=(Double_t)kMindEP + (kMaxdEP-kMindEP)/fgkNdEPBins*(Double_t)i ;
 
   Int_t fgkNPtBins = 200;
   Float_t kMinPt   = -50.;
@@ -320,6 +340,12 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksProp);
 
+  fh2CentPtJetFull = new TH2F("fh2CentPtJetFull","fh2CentPtJetFull;cent;#it{p}_{T}^{jet}",fgkNCentBins,binsCent,fgkNPtBins,binsPt);
+  fOutput->Add(fh2CentPtJetFull);
+
+  fh2CentPtJetCharged = new TH2F("fh2CentPtJetCharged","fh2CentPtJetCharged;cent;#it{p}_{T}^{jet}",fgkNCentBins,binsCent,fgkNPtBins,binsPt);
+  fOutput->Add(fh2CentPtJetCharged);
+
   fh3PtEtaPhiJetFull = new TH3F("fh3PtEtaPhiJetFull","fh3PtEtaPhiJetFull;#it{p}_{T}^{jet};#eta;#varphi",fgkNPtBins,binsPt,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiJetFull);
 
@@ -397,13 +423,18 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
 
+  fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3EEtaPhiCell);
+
   fh2CellEnergyVsTime = new TH2F("fh2CellEnergyVsTime","fh2CellEnergyVsTime;E_{cell};time",fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh2CellEnergyVsTime);
 
   fh3EClusELeadingCellVsTime = new TH3F("fh3EClusELeadingCellVsTime","fh3EClusELeadingCellVsTime;E_{cluster};E_{leading cell};time_{leading cell}",fgkNEnBins,binsEn,fgkNEnBins,binsEn,fgkNTimeBins,binsTime);
   fOutput->Add(fh3EClusELeadingCellVsTime);
-
-
+    
+  fh3JetReacCent = new TH3F("fh3JetReacCent","fh3JetReacCent;E_{Jet};Centrality;dEP",fgkNEnBins,binsEn,fgkNCentBins,binsCent,fgkNdEPBins,binsdEP);
+  fOutput->Add(fh3JetReacCent);
+    
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutput->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutput->At(i));
@@ -429,6 +460,8 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
+  if(binsCent)              delete [] binsCent;
+  if(binsdEP)               delete [] binsdEP;
   if(binsEn)                delete [] binsEn;
   if(binsPt)                delete [] binsPt;
   if(binsPhi)               delete [] binsPhi;
@@ -470,7 +503,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   AliClusterContainer  *clusCont = GetClusterContainer(0);
   if (clusCont) {
     Int_t nclusters = clusCont->GetNClusters();
-    TString arrName = clusCont->GetArrayName();
     for (Int_t ic = 0; ic < nclusters; ic++) {
       AliVCluster *cluster = static_cast<AliVCluster*>(clusCont->GetCluster(ic));
       if (!cluster) {
@@ -493,7 +525,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
-  //cells
+  //Cells
   if(fCaloCells) {
     const Short_t nCells   = fCaloCells->GetNumberOfCells();
 
@@ -501,9 +533,17 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       Short_t cellId = fCaloCells->GetCellNumber(iCell);
       Double_t cellE = fCaloCells->GetCellAmplitude(cellId);
       Double_t cellT = fCaloCells->GetCellTime(cellId);
+      TVector3 pos;
+      fGeom->GetGlobal(cellId, pos);
+      TLorentzVector lv(pos,cellE);
+      Double_t cellEta = lv.Eta();
+      Double_t cellPhi = lv.Phi();
+      if(cellPhi<0.) cellPhi+=TMath::TwoPi();
+      if(cellPhi>TMath::TwoPi()) cellPhi-=TMath::TwoPi();
 
       AliDebug(2,Form("cell energy = %f  time = %f",cellE,cellT*1e9));
       fh2CellEnergyVsTime->Fill(cellE,cellT*1e9);
+      fh3EEtaPhiCell->Fill(cellE,cellEta,cellPhi);
     }
   }
 
@@ -525,12 +565,17 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       AliEmcalJet* jet = GetAcceptJetFromArray(ij,fContainerFull);
       if (!jet)
 	continue; //jet not selected
-      
+
       Double_t jetPt = jet->Pt() - GetRhoVal(fContainerFull)*jet->Area();
       if(jetPt>ptLeadJet1) ptLeadJet1=jetPt;
+
+      Double_t dEPJetFull = RelativeEP(jet->Phi() , fEPV0);
+      fh3JetReacCent->Fill(jet->E(),fCent,dEPJetFull);
+      
+      fh2CentPtJetFull->Fill(fCent,jetPt);
       fh3PtEtaPhiJetFull->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetFull->Fill(jetPt,jet->Eta(),jet->Area());
-      
+
       //count jets above certain pT threshold
       Int_t ptbin = fh2NJetsPtFull->GetYaxis()->FindBin(jetPt);
       for(Int_t iptbin = ptbin; iptbin<=fh2NJetsPtFull->GetNbinsY(); iptbin++)
@@ -538,7 +583,6 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
       
       fh2PtNConstituentsCharged->Fill(jetPt,jet->GetNumberOfTracks());
       fh2PtNConstituents->Fill(jetPt,jet->GetNumberOfConstituents());
-
       fh2PtNEF->Fill(jetPt,jet->NEF());
       fh3NEFEtaPhi->Fill(jet->NEF(),jet->Eta(),jet->Phi());
       fh2NEFNConstituentsCharged->Fill(jet->NEF(),jet->GetNumberOfTracks());
@@ -592,6 +636,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 
       Double_t jetPt = jet->Pt() - GetRhoVal(fContainerCharged)*jet->Area();
       if(jetPt>ptLeadJet2) ptLeadJet2=jetPt;
+      fh2CentPtJetCharged->Fill(fCent,jetPt);
       fh3PtEtaPhiJetCharged->Fill(jetPt,jet->Eta(),jet->Phi());
       fh3PtEtaAreaJetCharged->Fill(jetPt,jet->Eta(),jet->Area());
 
@@ -636,7 +681,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
     return kFALSE;
   
   if(fTriggerPatchInfo) 
-    FindTriggerPatch();
+    FillTriggerPatchHistos();
 
   return kTRUE;  // If return kFALSE FillHistogram() will NOT be executed.
 }
@@ -752,4 +797,29 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetECross(Int_t absID) const {
   ecross = ecell1+ecell2+ecell3+ecell4;
 
   return ecross;
+}
+
+//_________________________________________________________________________
+Float_t AliAnalysisTaskEmcalJetTriggerQA::RelativeEP(Double_t objAng, Double_t EPAng) const
+{
+  // function to calculate angle between object and EP in the 1st quadrant (0,Pi/2)
+  Double_t dphi = EPAng - objAng;
+
+  // ran into trouble with a few dEP<-Pi so trying this...
+  if( dphi<-1*TMath::Pi() )
+    dphi = dphi + 1*TMath::Pi();
+  if( dphi>1*TMath::Pi())
+    dphi = dphi - 1*TMath::Pi();
+
+  if( (dphi>0) && (dphi<1*TMath::Pi()/2) ){
+    // Do nothing! we are in quadrant 1
+  }else if( (dphi>1*TMath::Pi()/2) && (dphi<1*TMath::Pi()) ){
+    dphi = 1*TMath::Pi() - dphi;
+  }else if( (dphi<0) && (dphi>-1*TMath::Pi()/2) ){
+    dphi = fabs(dphi);
+  }else if( (dphi<-1*TMath::Pi()/2) && (dphi>-1*TMath::Pi()) ){
+    dphi = dphi + 1*TMath::Pi();
+  }
+
+  return dphi;   // dphi in [0, Pi/2]
 }

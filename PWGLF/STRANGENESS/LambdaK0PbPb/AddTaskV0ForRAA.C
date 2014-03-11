@@ -1,4 +1,4 @@
-AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t onFly=kTRUE,Bool_t usePID=kFALSE,Double_t etaCut,Bool_t mcEtaCut,const Char_t * addname){
+AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE,Int_t cent=0,Int_t centDet=1,Int_t centRange=0, Bool_t mcMode=kFALSE, Bool_t mcTruthMode=kFALSE,Bool_t usePID=kFALSE,Double_t radCut=0.0,const Char_t * addname=""){
    
   
   
@@ -66,55 +66,28 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
 
    Double_t minPt=0.0;
-   
-   //--- esd track cuts V0 daughters ---//
-   // esd track cuts for pions high pt
-   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts(cutsname);
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinNCrossedRowsTPC(70);
-   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-
-   // esd track cuts for protons high pt
-   TString cutsnameCh = cutsname;
-   cutsnameCh +="_charged";
-   AliESDtrackCuts* esdTrackCutsCharged = new AliESDtrackCuts(cutsnameCh);
-   esdTrackCutsCharged->SetMaxChi2PerClusterTPC(4);
-   esdTrackCutsCharged->SetMinNCrossedRowsTPC(70);
-   esdTrackCutsCharged->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsCharged->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsCharged->SetRequireSigmaToVertex(kFALSE);
-
-   // esd track cuts for all low pt
-   TString cutsnameLowPt  = cutsname;
-   cutsnameLowPt +="_lowpt";
-   AliESDtrackCuts* esdTrackCutsLowPt = new AliESDtrackCuts(cutsnameLowPt);
-   esdTrackCutsLowPt->SetMaxChi2PerClusterTPC(4);
-   esdTrackCutsLowPt->SetMinNCrossedRowsTPC(70);
-   esdTrackCutsLowPt->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsLowPt->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsLowPt->SetRequireSigmaToVertex(kFALSE);
+   task->SetESDTrackCuts(70,4,kTRUE);
+   task->SetESDTrackCutsCharged(70,4,kTRUE);
+   task->SetESDTrackCutsLowPt(70,4,kTRUE);
+  
 
    //Add cuts to task
-   task->SetESDTrackCutsCharged(esdTrackCutsCharged);
-   task->SetESDTrackCuts(esdTrackCuts);
-   task->SetESDTrackCutsLowPt(esdTrackCutsLowPt);
+  
 
    //--- analysis modes ---//
    task->SetAnapp(anaPP);
    task->SetMCMode(mcMode);
    task->SetMCTruthMode(mcTruthMode);
-
+   task->SelectWithSDD(wSDD);
    //---------- cuts -------------//
    //general cuts
-   task->SetUseOnthefly(onFly);
+   task->SetUseOnthefly(kTRUE);
    task->SetUsePID(usePID,3.0,100.0);
    task->SetPrimVertexZCut(10.0,kTRUE);
  
    //rapidity
    task->SetRapidityCutMother(kTRUE,0.5);
-   task->SetDoEtaOfMCDaughtersCut(mcEtaCut,etaCut);
+   task->SetDoEtaOfMCDaughtersCut(kFALSE,0.8);
    
    //TPC cuts
    task->SetCutMoreNclsThanRows(kTRUE);
@@ -126,9 +99,8 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    task->SetCosOfPointingAngleK(0.99,1000.0);
    task->SetCosOfPointingAngleL(0.998,1000.0);
 
-   task->SetCtauCut(5.0,6.0,0.3,2.0);
 
-   task->SetArmenterosCutQt(-1.0,100.0,kTRUE,kFALSE);
+   task->SetArmenterosCutQt(-1.0,6.0,kTRUE,kFALSE);
    
    task->SetDCAV0ToVertexK0(0.4);
    task->SetDCAV0ToVertexL(1.2);
@@ -137,7 +109,7 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Int_t cent=0,Int_t
    task->SetDCADaughtersL(0.35);
    task->SetDCADaughtersAL(0.35);
    
-   task->SetDecayRadiusXYMinMax(5.0,1000.0);
+   task->SetDecayRadiusXYMinMax(radCut,1000.0);
 
    
    //--- centrality ---//

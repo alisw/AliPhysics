@@ -35,14 +35,18 @@
 // user tasks
 #pragma link C++ class AliAnalysisTaskCLQA+;
 #pragma link C++ class AliAnalysisTaskChargedJetsPA;
+#pragma link C++ class AliAnalysisTaskDeltaPtJEmb+;
 #pragma link C++ class AliAnalysisTaskEmcalBadCells+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetBase+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetAna+;
 #pragma link C++ class AliAnalysisTaskEmcalDiJetResponse+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHMEC+;
 #pragma link C++ class AliAnalysisTaskEmcalJetHadCorQA+;
+#pragma link C++ class AliAnalysisTaskEmcalJetHadEPpid+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMass+;
 #pragma link C++ class AliAnalysisTaskEmcalJetMassBkg+;
+#pragma link C++ class AliAnalysisTaskEmcalJetMassResponse+;
+#pragma link C++ class AliAnalysisTaskEmcalJetPatchTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSample+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectra+;
 #pragma link C++ class AliAnalysisTaskEmcalJetSpectraMECpA;

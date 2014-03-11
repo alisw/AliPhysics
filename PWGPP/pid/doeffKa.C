@@ -296,6 +296,9 @@ void doeffKa(Int_t pos,Float_t prob,Float_t etaminkp,Float_t etamaxkp){
 
     b[i][0] = b[i][0]-b2[i][0]*weightS;
 
+    if(b[i][0] < 0.5) b[i][0] = 0.5;
+    if(b2[i][0] < 0.5) b2[i][0] = 0.5;
+
 
     efferr[i] = TMath::Abs(b[i][1]*b[i][1]/b[i][0]/b[i][0] + b2[i][1]*b2[i][1]/b2[i][0]/b2[i][0])*(b2[i][0]+b2[i][1])*(1+weightS*(b2[i][0]-b2[i][1])/b[i][0])/b[i][0];//*(1-eff[i]);//der2*der2*(b[i][1]*b[i][1] - b2[i][1]*b2[i][1]));
     efferr[i] = TMath::Sqrt(efferr[i]);
@@ -574,7 +577,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  Float_t sigma = 0.0044;//TMath::Abs(ftmp->GetParameter(2));
 
  Float_t signI = ftmp2->Integral(mean-10*sigma,mean+10*sigma)/h->GetBinWidth(1);
- if(signI < 1) signI = 1;
+ if(signI < 0.1) signI = 0.1;
 
  Float_t backI = ftmp3->Integral(mean-3*sigma,mean+3*sigma)/h->GetBinWidth(1);
  if(backI < 1) backI = 1;

@@ -494,7 +494,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
  fall->SetParameter(2,2.89748e-03);
  fall->FixParameter(3,350+600/pt);
 
- fall->SetParLimits(0,0.00001,10000);
+ fall->SetParLimits(0,0.00001,10000000);
  fall->SetParLimits(1,1.105,1.125);//1.01898 + 2.4e-04*pt-1e-03,1.01898 + 2.4e-04*pt+1e-03);
  fall->SetParLimits(2,0.0005,0.0015);
  //fall->SetParLimits(3,200,350);
@@ -568,7 +568,7 @@ void fit(TH1D *h,Float_t *a,char *opt,char *opt2,Float_t pt){
 
  errI = TMath::Sqrt(errI);
 
- if(signI < 1) signI = 1;
+ if(signI < 0) signI = 0;
  if(backI < 1) backI = 1;
 
  printf("signal(5 sigma) = %f +/- %f(fit) +/- %f(stat)\n",signI,errI*signI,TMath::Sqrt(signI));

@@ -103,7 +103,6 @@ private:
    Bool_t          fApplyCorrections;
    Bool_t          fMakePlots;
    Bool_t	   fV0s;
-   Bool_t          fZipIn;
    Bool_t	   fMakeFitPerfomancePlots;
    
    Double_t       *fCorrectionAside;
@@ -211,7 +210,7 @@ private:
   TH3D *hptPullTPCInner_vs_phi_pT;
   TH3D *hptResTPCInner_vs_phi_pT;
   
-  ClassDef(AliHighPtTreeAnalysis, 1); // example of analysis
+  ClassDef(AliHighPtTreeAnalysis, 2); // example of analysis
 };
 
 #endif

@@ -94,6 +94,10 @@ class AliVertexingHFUtils : public TObject{
 
   static Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 
+  static Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark=kTRUE);
+  static Int_t CheckD0Decay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckDplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+
  private:
 
   Int_t fK;             // ratio of measured harmonic to event plane harmonic

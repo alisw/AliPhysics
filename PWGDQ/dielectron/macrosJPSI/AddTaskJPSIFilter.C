@@ -21,7 +21,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   //Allow merging of the filtered aods on grid trains
   if(mgr->GetGridHandler()) {
     printf(" SET MERGE FILTERED AODs \n");
-    mgr->GetGridHandler()->SetMergeAOD(kTRUE);
+    //mgr->GetGridHandler()->SetMergeAOD(kTRUE);
   }
 
 
@@ -55,7 +55,8 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  
+  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral+AliVEvent::kEMCEGA+AliVEvent::kEMCEJE);
+  //  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
 
   //   //Add event filter

@@ -16,7 +16,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliAnalysisTaskDStarCorrelations.h 65139 2013-11-25 14:47:45Z fprino $ */
 
 //-----------------------------------------------------------------------
 //          
@@ -58,7 +58,8 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
  public :
   
   enum CollSyst {pp,pA,AA};
-  enum DEffVariable{kNone,kMult,kCentr,kRapidity,kEta};
+    enum DEffVariable{kNone,kMult,kCentr,kRapidity,kEta};
+    enum BkgMethod{kDZeroSB, kDStarSB};
   
   AliAnalysisTaskDStarCorrelations();
   AliAnalysisTaskDStarCorrelations(const Char_t* name,AliRDHFCutsDStartoKpipi* cuts, AliHFAssociatedTrackCuts *AsscCuts, AliAnalysisTaskDStarCorrelations::CollSyst syst,Bool_t mode);
@@ -80,15 +81,33 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
   
   // checker for event mixing
   void EventMixingChecks(AliAODEvent * AOD); 
-  // setters
-  void SetMonteCarlo(Bool_t k) {fmontecarlo = k;}
-  void SetUseMixing (Bool_t j) {fmixing = j;}
-  void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
-  void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
-  void SetCollSys(CollSyst system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
-  void SetEfficiencyVariable(DEffVariable var){fEfficiencyVariable = var;} // set the efficiency variable to use
-  void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
-  void SetUseReconstruction(Bool_t reco){fReco = reco;}
+ 
+    // setters
+    void SetCorrelator(Int_t l) {fselect = l;} // select 1 for hadrons, 2 for Kaons, 3 for Kzeros
+    void SetMonteCarlo(Bool_t k) {fmontecarlo = k;}
+    void SetUseMixing (Bool_t j) {fmixing = j;}
+    void SetUseFullMode (Bool_t j) {fFullmode = j;}
+    void SetCollSys(CollSyst system){fSystem=system;} // select between pp (kFALSE) or PbPb (kTRUE)
+    void SetEfficiencyVariable(DEffVariable var){fEfficiencyVariable = var;} // set the efficiency variable to use
+    void SetBkgEstimationMethod(BkgMethod var){fBkgMethod = var;} // set the efficiency variable to use
+    void SetUseReconstruction(Bool_t reco){fReco = reco;}
+    void SetUseEfficiencyCorrection(Bool_t correction){fUseEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
+    void SetUseDmesonEfficiencyCorrection(Bool_t correction){fUseDmesonEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
+    void SetUseCentrality (Bool_t j) {fUseCentrality = j;} // switch for centrality (kTRUE)/multiplicity(kFALSE)
+    void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
+   
+    
+    void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;} // number of delta phi bins
+    void SetLevelOfDebug(Int_t debug){fDebugLevel=debug;} // set debug level
+    void SetUseDisplacement(Int_t m) {fDisplacement=m;} // select 0 for no displ, 1 for abs displ, 2 for d0/sigma_d0
+  
+    
+    void SetDim(){fDim = 4;
+        fDMesonSigmas = new Float_t[4];} // standard definedt = cannot be changed from outside
+    
+    void SetMaxDStarEta(Double_t eta){fMaxEtaDStar = eta;} // maximum eta D*
+
+  
   void SetDMesonSigmas(Float_t DStarWin, Float_t D0Win, Float_t SBmin, Float_t SBmax){
     fDMesonSigmas[0] = DStarWin;
     fDMesonSigmas[1] = D0Win;
@@ -97,17 +116,14 @@ class AliAnalysisTaskDStarCorrelations : public AliAnalysisTaskSE
     
   }
 
-  void SetUseEfficiencyCorrection(Bool_t correction){fUseEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
-  void SetUseDmesonEfficiencyCorrection(Bool_t correction){fUseDmesonEfficiencyCorrection = correction;} // setter for using the single track efficiency correction
-  void SetUseHadronicChannelAtKineLevel (Bool_t use){fUseHadronicChannelAtKineLevel = use;}
-    
-  void SetDim(){fDim = 4;
-    fDMesonSigmas = new Float_t[4];}
+  
+ 
+  
+
   void SetDeffMapvsPt(TH1D * map){fDeffMapvsPt = map;}
   void SetDeffMapvsPtvsMult(TH2D * map){fDeffMapvsPtvsMult = (TH2D*)map;}
   void SetDeffMapvsPtvsMultvsEta(TH2D * map){fDeffMapvsPtvsEta = map;}
-  void SetNofPhiBins(Int_t nbins){fPhiBins = nbins;}
-    void SetMaxDStarEta(Double_t eta){fMaxEtaDStar = eta;}
+  
   
   
 
@@ -129,6 +145,7 @@ private:
   Bool_t fFullmode;
   CollSyst fSystem; // pp, pPb or PbPb
   DEffVariable  fEfficiencyVariable; // set second variable to study efficiency (mult, centr, y, eta)
+  BkgMethod fBkgMethod; // bkg estimation method (dstar or dzero sidebands)
   Bool_t fReco; // use reconstruction or MC truth
   Bool_t fUseEfficiencyCorrection; // boolean variable to use or not the efficiency correction
   Bool_t fUseDmesonEfficiencyCorrection; // boolean flag for the use of Dmeson efficiency correction
@@ -149,9 +166,13 @@ private:
   
   
   TList *fOutput;                  //! user output data
+    TList *fDmesonOutput; //!output related to d meson
+    TList *fTracksOutput; //!output related to tracks
+    TList *fEMOutput; //! output with EM checks
+    TList *fCorrelationOutput; // ! output with correlation sparses
   TList *fOutputMC;                //! outpu for MC
   AliRDHFCutsDStartoKpipi *fCuts;  // Cuts D*
-  AliHFAssociatedTrackCuts *fCuts2; // cuts for associated
+  AliHFAssociatedTrackCuts *fAssocCuts; // cuts for associated
   AliAnalysisUtils *fUtils;
   AliAODTracklets * fTracklets; // AliAODtracklets
   
@@ -159,7 +180,7 @@ private:
   TH2D * fDeffMapvsPtvsMult; // histo for Deff mappin
   TH2D * fDeffMapvsPtvsEta; // histo for Deff mappin
   
-  ClassDef(AliAnalysisTaskDStarCorrelations,6); // class for D meson correlations
+  ClassDef(AliAnalysisTaskDStarCorrelations,7); // class for D meson correlations
   
 };
 

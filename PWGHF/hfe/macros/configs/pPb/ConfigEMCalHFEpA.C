@@ -204,188 +204,189 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 //_______________________________________________________
 	
 ///_______________________________________________________________________________________________________________
-/// New configurations for random cuts -- November 18th
+/// New configurations for random cuts -- March, 05, 2014 -- Values in the macro "Random_configurations.C"
 	
 	if (configIndex==80){
 		hfecuts->SetMinNClustersTPC(86);
 		hfecuts->SetMinNClustersTPCPID(76);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.057);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.087);
 		task->SetNonHFEangleCut(0.069);
 		task->SetAdditionalCuts(0.152, 91);
 		task->SetdPhidEtaCut(0.019, 0.044);
-		task->SetEoverPCut(0.790, 1.249);
-		Double_t params[0]=-0.19;
+		task->SetEoverPCut(0.798, 1.225);
+		Double_t params[0]=-0.61;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==81){
 		hfecuts->SetMinNClustersTPC(95);
 		hfecuts->SetMinNClustersTPCPID(99);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.018);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.057);
 		task->SetNonHFEangleCut(0.135);
 		task->SetAdditionalCuts(0.351, 61);
 		task->SetdPhidEtaCut(0.012, 0.044);
-		task->SetEoverPCut(0.778, 1.271);
-		Double_t params[0]=-1.16;
+		task->SetEoverPCut(0.792, 1.235);
+		Double_t params[0]=-1.17;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==82){
 		hfecuts->SetMinNClustersTPC(117);
 		hfecuts->SetMinNClustersTPCPID(69);
 		hfecuts->SetMinNClustersITS(2);
-		task->SetNonHFEmassCut(0.015);
+		task->SetNonHFEmassCut(0.054);
 		task->SetNonHFEangleCut(0.062);
 		task->SetAdditionalCuts(0.842, 91);
 		task->SetdPhidEtaCut(0.018, 0.033);
-		task->SetEoverPCut(0.828, 1.225);
-		Double_t params[0]=-1.14;
+		task->SetEoverPCut(0.818, 1.212);
+		Double_t params[0]=-1.15;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==83){
 		hfecuts->SetMinNClustersTPC(98);
 		hfecuts->SetMinNClustersTPCPID(93);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.051);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.083);
 		task->SetNonHFEangleCut(0.051);
 		task->SetAdditionalCuts(0.415, 83);
 		task->SetdPhidEtaCut(0.047, 0.016);
-		task->SetEoverPCut(0.843, 1.250);
-		Double_t params[0]=-0.98;
+		task->SetEoverPCut(0.826, 1.225);
+		Double_t params[0]=-1.06;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==84){
 		hfecuts->SetMinNClustersTPC(99);
 		hfecuts->SetMinNClustersTPCPID(99);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.020);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.058);
 		task->SetNonHFEangleCut(0.145);
 		task->SetAdditionalCuts(0.654, 99);
 		task->SetdPhidEtaCut(0.025, 0.014);
-		task->SetEoverPCut(0.713, 1.256);
-		Double_t params[0]=-1.38;
+		task->SetEoverPCut(0.757, 1.228);
+		Double_t params[0]=-1.29;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==85){
 		hfecuts->SetMinNClustersTPC(85);
 		hfecuts->SetMinNClustersTPCPID(91);
 		hfecuts->SetMinNClustersITS(2);
-		task->SetNonHFEmassCut(0.159);
+		task->SetNonHFEmassCut(0.167);
 		task->SetNonHFEangleCut(0.144);
 		task->SetAdditionalCuts(0.897, 78);
 		task->SetdPhidEtaCut(0.046, 0.043);
-		task->SetEoverPCut(0.738, 1.275);
-		Double_t params[0]=-1.15;
+		task->SetEoverPCut(0.771, 1.238);
+		Double_t params[0]=-1.16;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==86){
 		hfecuts->SetMinNClustersTPC(104);
 		hfecuts->SetMinNClustersTPCPID(75);
 		hfecuts->SetMinNClustersITS(2);
-		task->SetNonHFEmassCut(0.045);
+		task->SetNonHFEmassCut(0.078);
 		task->SetNonHFEangleCut(0.112);
 		task->SetAdditionalCuts(0.036, 93);
 		task->SetdPhidEtaCut(0.019, 0.013);
-		task->SetEoverPCut(0.838, 1.222);
-		Double_t params[0]=-1.29;
+		task->SetEoverPCut(0.824, 1.211);
+		Double_t params[0]=-1.24;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==87){
 		hfecuts->SetMinNClustersTPC(108);
 		hfecuts->SetMinNClustersTPCPID(93);
-		hfecuts->SetMinNClustersITS(3);
-		task->SetNonHFEmassCut(0.109);
+		hfecuts->SetMinNClustersITS(2);
+		task->SetNonHFEmassCut(0.128);
 		task->SetNonHFEangleCut(0.140);
 		task->SetAdditionalCuts(0.814, 89);
 		task->SetdPhidEtaCut(0.041, 0.022);
-		task->SetEoverPCut(0.722, 1.210);
-		Double_t params[0]=-0.76;
+		task->SetEoverPCut(0.762, 1.205);
+		Double_t params[0]=-0.93;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==88){
 		hfecuts->SetMinNClustersTPC(80);
 		hfecuts->SetMinNClustersTPCPID(82);
 		hfecuts->SetMinNClustersITS(2);
-		task->SetNonHFEmassCut(0.027);
+		task->SetNonHFEmassCut(0.064);
 		task->SetNonHFEangleCut(0.102);
 		task->SetAdditionalCuts(0.092, 97);
 		task->SetdPhidEtaCut(0.014, 0.031);
-		task->SetEoverPCut(0.764, 1.231);
-		Double_t params[0]=-1.04;
+		task->SetEoverPCut(0.784, 1.216);
+		Double_t params[0]=-1.10;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==89){
 		hfecuts->SetMinNClustersTPC(100);
 		hfecuts->SetMinNClustersTPCPID(66);
 		hfecuts->SetMinNClustersITS(2);
-		task->SetNonHFEmassCut(0.073);
+		task->SetNonHFEmassCut(0.100);
 		task->SetNonHFEangleCut(0.082);
 		task->SetAdditionalCuts(0.339, 76);
 		task->SetdPhidEtaCut(0.040, 0.011);
-		task->SetEoverPCut(0.815, 1.246);
-		Double_t params[0]=-0.20;
+		task->SetEoverPCut(0.811, 1.223);
+		Double_t params[0]=-0.61;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==90){
 		hfecuts->SetMinNClustersTPC(106);
 		hfecuts->SetMinNClustersTPCPID(90);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.168);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.175);
 		task->SetNonHFEangleCut(0.098);
 		task->SetAdditionalCuts(0.630, 91);
 		task->SetdPhidEtaCut(0.034, 0.026);
-		task->SetEoverPCut(0.739, 1.297);
-		Double_t params[0]=-0.25;
+		task->SetEoverPCut(0.771, 1.249);
+		Double_t params[0]=-0.64;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==91){
 		hfecuts->SetMinNClustersTPC(84);
 		hfecuts->SetMinNClustersTPCPID(80);
-		hfecuts->SetMinNClustersITS(3);
-		task->SetNonHFEmassCut(0.052);
+		hfecuts->SetMinNClustersITS(2);
+		task->SetNonHFEmassCut(0.083);
 		task->SetNonHFEangleCut(0.098);
 		task->SetAdditionalCuts(0.594, 66);
 		task->SetdPhidEtaCut(0.013, 0.043);
-		task->SetEoverPCut(0.810, 1.291);
-		Double_t params[0]=-0.12;
+		task->SetEoverPCut(0.809, 1.246);
+		Double_t params[0]=-0.57;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==92){
 		hfecuts->SetMinNClustersTPC(112);
 		hfecuts->SetMinNClustersTPCPID(80);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.061);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.090);
 		task->SetNonHFEangleCut(0.069);
 		task->SetAdditionalCuts(0.803, 91);
 		task->SetdPhidEtaCut(0.043, 0.031);
-		task->SetEoverPCut(0.803, 1.253);
-		Double_t params[0]=-1.37;
+		task->SetEoverPCut(0.805, 1.227);
+		Double_t params[0]=-1.29;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==93){
 		hfecuts->SetMinNClustersTPC(115);
 		hfecuts->SetMinNClustersTPCPID(82);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.042);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.075);
 		task->SetNonHFEangleCut(0.113);
 		task->SetAdditionalCuts(0.637, 86);
 		task->SetdPhidEtaCut(0.043, 0.032);
-		task->SetEoverPCut(0.719, 1.209);
-		Double_t params[0]=-0.60;
+		task->SetEoverPCut(0.760, 1.204);
+		Double_t params[0]=-0.84;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
 	if (configIndex==94){
 		hfecuts->SetMinNClustersTPC(81);
 		hfecuts->SetMinNClustersTPCPID(63);
-		hfecuts->SetMinNClustersITS(4);
-		task->SetNonHFEmassCut(0.080);
+		hfecuts->SetMinNClustersITS(3);
+		task->SetNonHFEmassCut(0.105);
 		task->SetNonHFEangleCut(0.050);
 		task->SetAdditionalCuts(0.529, 87);
 		task->SetdPhidEtaCut(0.026, 0.047);
-		task->SetEoverPCut(0.774, 1.200);
-		Double_t params[0]=-1.14;
+		task->SetEoverPCut(0.789, 1.200);
+		Double_t params[0]=-1.15;
 		pid->ConfigureTPCdefaultCut(cutmodel,params,3.0);
 	}
+	
 	
 ///_______________________________________________________________________________________________________________
 

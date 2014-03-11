@@ -628,7 +628,7 @@ protected:
    * 
    * @return Bool_t 
    */
-  Bool_t CheckEvent(const AliAODForwardMult* aodfm);
+  virtual Bool_t CheckEvent(const AliAODForwardMult* aodfm);
   /**
    * Check trigger from AODForwardMult object
    * uses aod header if object is null

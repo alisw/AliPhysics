@@ -14,23 +14,32 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 			
 			for(Int_t imethod=0;imethod<3;imethod++)
 			{
+				if(!hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))
+					continue;
 				 TH2F *nsig_data = (TH2F*)((TH2F*)hman_data->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
 				// nsig_data->RebinX(20);			 
 				// nsig_data->RebinY(4);
 				// nsig_data->Sumw2();
+				if(!nsig_data)
+					continue;
 
+				if(!hman_mc->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))
+					continue;
 				 TH2F *nsig_mc = (TH2F*)((TH2F*)hman_mc->GetNSigHistogram(Form("hHistNSig%sPt%s",Particle[ipart].Data(),pidmethods[imethod].Data())))->Clone();
 				 //nsig_mc->RebinX(20);			 
 				// nsig_mc->RebinY(4);
 				// nsig_mc->Sumw2();
+				if(!nsig_mc)
+					continue;
 				 
+
 				Int_t ibin=1;
 				Float_t binsize=nsig_mc->GetXaxis()->GetBinWidth(1);
 
-				TH1F* maxposdata=(TH1F*)nsig_data->ProjectionX(Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1));
+				TH1F* maxposdata=(TH1F*)nsig_data->ProjectionX(Form("%s%sdatamaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1);
 				maxposdata->Reset();
 				maxposdata->SetTitle(";p_{T} (GeV/c);max in (-2,2)");
-				TH1F* maxposmc=(TH1F*)nsig_data->ProjectionX(Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1));
+				TH1F* maxposmc=(TH1F*)nsig_data->ProjectionX(Form("%s%smcmaxpos",Particle[ipart].Data(),pidmethods[imethod].Data()),-1,-1);
 				maxposmc->Reset();
 				maxposmc->SetTitle(";p_{T} (GeV/c);max in (-2,2)");
 
@@ -39,8 +48,8 @@ TString pidmethods[3]={"TPC","TOF","TPCTOF"};
 				 {
 					// TCanvas* c=new TCanvas(Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),Form("canvas%s%s%d",Particle[ipart].Data(),pidmethods[imethod].Data(),ibin),700,500);
 					
-					 TH1F *nsig_data_Proj1=(TH1F*)nsig_data->ProjectionY(Form("%s%sdata[%.2f,%.2f]",Particle[ipart].Data(),pidmethods[imethod].Data(),nsig_data->GetXaxis()->GetBinLowEdge(ibin),nsig_data->GetXaxis()->GetBinUpEdge(ibin)),ibin,ibin));
-					 TH1F *nsig_mc_Proj1=(TH1F*)nsig_mc->ProjectionY(Form("%s%smc[%.2f,%.2f]",Particle[ipart].Data(),pidmethods[imethod].Data(),nsig_mc->GetXaxis()->GetBinLowEdge(ibin),nsig_mc->GetXaxis()->GetBinUpEdge(ibin)),ibin,ibin));
+					 TH1F *nsig_data_Proj1=(TH1F*)nsig_data->ProjectionY(Form("%s%sdata[%.2f,%.2f]",Particle[ipart].Data(),pidmethods[imethod].Data(),nsig_data->GetXaxis()->GetBinLowEdge(ibin),nsig_data->GetXaxis()->GetBinUpEdge(ibin)),ibin,ibin);
+					 TH1F *nsig_mc_Proj1=(TH1F*)nsig_mc->ProjectionY(Form("%s%smc[%.2f,%.2f]",Particle[ipart].Data(),pidmethods[imethod].Data(),nsig_mc->GetXaxis()->GetBinLowEdge(ibin),nsig_mc->GetXaxis()->GetBinUpEdge(ibin)),ibin,ibin);
 					 nsig_data_Proj1->GetXaxis()->SetRangeUser(-3,3);
 					 nsig_data_Proj1->SetLineColor(kRed);
 					 if(nsig_data_Proj1->Integral()<1&&nsig_mc_Proj1->Integral()<1)

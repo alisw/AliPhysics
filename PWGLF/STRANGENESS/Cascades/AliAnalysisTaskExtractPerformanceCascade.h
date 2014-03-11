@@ -61,6 +61,35 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   void SetpAVertexSelection   (Bool_t lpAVertexSelection = kTRUE) {fkpAVertexSelection = lpAVertexSelection;  }
   void SetEtaRefMult ( Double_t lEtaRefMult = 0.5 ) { fEtaRefMult = lEtaRefMult; }
   
+//---------------------------------------------------------------------------------------
+  //Task Configuration: Meant to enable quick re-execution of vertexer if needed
+  void SetRunVertexers ( Bool_t lRunVertexers = kTRUE) { fkRunVertexers = lRunVertexers; }
+//---------------------------------------------------------------------------------------
+//Setters for the V0 Vertexer Parameters
+  void SetV0VertexerMaxChisquare   ( Double_t lParameter ){ fV0VertexerSels[0] = lParameter; }
+  void SetV0VertexerDCAFirstToPV   ( Double_t lParameter ){ fV0VertexerSels[1] = lParameter; }
+  void SetV0VertexerDCASecondtoPV  ( Double_t lParameter ){ fV0VertexerSels[2] = lParameter; }
+  void SetV0VertexerDCAV0Daughters ( Double_t lParameter ){ fV0VertexerSels[3] = lParameter; }
+  void SetV0VertexerCosinePA       ( Double_t lParameter ){ fV0VertexerSels[4] = lParameter; }
+  void SetV0VertexerMinRadius      ( Double_t lParameter ){ fV0VertexerSels[5] = lParameter; }
+  void SetV0VertexerMaxRadius      ( Double_t lParameter ){ fV0VertexerSels[6] = lParameter; }
+//---------------------------------------------------------------------------------------
+//Setters for the Cascade Vertexer Parameters
+  void SetCascVertexerMaxChisquare         ( Double_t lParameter ){ fCascadeVertexerSels[0] = lParameter; } 
+  void SetCascVertexerMinV0ImpactParameter ( Double_t lParameter ){ fCascadeVertexerSels[1] = lParameter; } 
+  void SetCascVertexerV0MassWindow         ( Double_t lParameter ){ fCascadeVertexerSels[2] = lParameter; } 
+  void SetCascVertexerDCABachToPV          ( Double_t lParameter ){ fCascadeVertexerSels[3] = lParameter; } 
+  void SetCascVertexerDCACascadeDaughters  ( Double_t lParameter ){ fCascadeVertexerSels[4] = lParameter; }
+  void SetCascVertexerCascadeCosinePA      ( Double_t lParameter ){ fCascadeVertexerSels[5] = lParameter; }  
+  void SetCascVertexerCascadeMinRadius     ( Double_t lParameter ){ fCascadeVertexerSels[6] = lParameter; }  
+  void SetCascVertexerCascadeMaxRadius     ( Double_t lParameter ){ fCascadeVertexerSels[7] = lParameter; }  
+//---------------------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------------------
+  //Bachelor and Pion Swapping Check
+  void SetCheckSwapping ( Bool_t lCheckSwapping = kTRUE) { fkCheckSwapping = lCheckSwapping; }
+//---------------------------------------------------------------------------------------
+
  private:
         // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
         // your data member object is created on the worker nodes and streaming is not needed.
@@ -82,6 +111,12 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   TString fCentralityEstimator; //Centrality Estimator String value (default V0M)
   Bool_t fkpAVertexSelection; //if true, select vertex with pPb Methods
   Double_t fEtaRefMult; //Reference multiplicity eta
+  //Objects Controlling Task Behaviour: has to be streamed! 
+  Bool_t    fkRunVertexers;           // if true, re-run vertexer with loose cuts. CARE MUST BE TAKEN in PbPb!
+  Double_t  fV0VertexerSels[7];        // Array to store the 7 values for the different selections V0 related
+  Double_t  fCascadeVertexerSels[8];   // Array to store the 8 values for the different selections Casc. related
+  //Meson Swapping Check Switch
+  Bool_t fkCheckSwapping; // if true, will perform association with mesons switched (in ADDITION to reg. association)  
   
 	//Double_t        fV0Sels[7];                     // Array to store the 7 values for the different selections V0 related
 	//Double_t        fCascSels[8];                   // Array to store the 8 values for the different selections Casc. related
@@ -124,10 +159,13 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   
   Int_t   fTreeCascVarMultiplicityMC;         //!
   Float_t fTreeCascVarDistOverTotMom;       //!
+  Int_t   fTreeCascVarIsPhysicalPrimary; //!
   Int_t   fTreeCascVarPID;         //!
+  Int_t   fTreeCascVarPIDSwapped;  //!
   Int_t   fTreeCascVarPIDBachelor; //!  
   Int_t   fTreeCascVarPIDNegative; //!
   Int_t   fTreeCascVarPIDPositive; //!
+  Float_t fTreeCascVarBachTransMom;   //!
   Float_t fTreeCascVarPosTransMom;   //!
   Float_t fTreeCascVarNegTransMom;   //!
   Float_t fTreeCascVarPosTransMomMC; //!
@@ -138,6 +176,27 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   Float_t fTreeCascVarPosNSigmaProton; //! 
   Float_t fTreeCascVarBachNSigmaPion;  //! 
   Float_t fTreeCascVarBachNSigmaKaon;  //! 
+
+  Bool_t fTreeCascVarEvHasXiMinus;    //!
+  Bool_t fTreeCascVarEvHasXiPlus;     //!
+  Bool_t fTreeCascVarEvHasOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasLambda;     //!
+  Bool_t fTreeCascVarEvHasAntiLambda; //!
+
+  Bool_t fTreeCascVarEvHasLowPtXiMinus;    //!
+  Bool_t fTreeCascVarEvHasLowPtXiPlus;     //!
+  Bool_t fTreeCascVarEvHasLowPtOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasLowPtOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasLowPtLambda;     //!
+  Bool_t fTreeCascVarEvHasLowPtAntiLambda; //!
+
+  Bool_t fTreeCascVarEvHasVeryLowPtXiMinus;    //!
+  Bool_t fTreeCascVarEvHasVeryLowPtXiPlus;     //!
+  Bool_t fTreeCascVarEvHasVeryLowPtOmegaMinus; //!
+  Bool_t fTreeCascVarEvHasVeryLowPtOmegaPlus;  //!
+  Bool_t fTreeCascVarEvHasVeryLowPtLambda;     //!
+  Bool_t fTreeCascVarEvHasVeryLowPtAntiLambda; //!
 
 //===========================================================================================
 //   Histograms

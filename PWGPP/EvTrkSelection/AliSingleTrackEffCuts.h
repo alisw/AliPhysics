@@ -24,7 +24,7 @@ class AliSingleTrackEffCuts : public AliAnalysisCuts
 
   virtual ~AliSingleTrackEffCuts();
 
-  virtual Bool_t IsSelected(TList* list) { 
+  Bool_t IsSelected(TList* list) { 
     AliWarning(Form(" Function not implemented, list having %d entries",list->GetEntries())); 
     return kFALSE; 
   } // not implemented

@@ -82,6 +82,11 @@ public:
   
 private:
   
+  /// not implemented on purpose
+  AliAnalysisMuMuEventCutter& operator=(const AliAnalysisMuMuEventCutter& rhs);
+  /// not implemented on purpose
+  AliAnalysisMuMuEventCutter(const AliAnalysisMuMuEventCutter& rhs);
+  
   mutable AliMuonEventCuts* fMuonEventCuts; // common cuts for muon events (from Diego)
   
   ClassDef(AliAnalysisMuMuEventCutter,1) // default event cutters for AliAnalysisTaskMuMu

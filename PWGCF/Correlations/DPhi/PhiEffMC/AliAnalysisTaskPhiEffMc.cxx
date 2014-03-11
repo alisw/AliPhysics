@@ -60,7 +60,9 @@ AliAnalysisTaskPhiEffMc::AliAnalysisTaskPhiEffMc(const char *name) : AliAnalysis
   fOutput(0x0),
   fHelperPID(0x0),
   fTrackCuts(0x0),
-  fEventCuts(0x0)
+  fEventCuts(0x0),
+  fPtCut(0.),
+  fDoPID(kTRUE)
 {
   // Default constructor
   
@@ -146,11 +148,11 @@ void AliAnalysisTaskPhiEffMc::UserCreateOutputObjects()
   const Int_t nPairDim = 7;
   //                             InvMass, pt, y, cent, eta, phi,          pair ID
   Int_t    nPairBins[nPairDim] =   { 100, 50, 20,  10,  20, 30,              3};
-  Double_t nPairMin[nPairDim] =    {0.98,  0, -1,   0,  -1,  0,           -1.5};
-  Double_t nPairMax[nPairDim] =    { 1.1,  5,  1, 100,   1, 2*TMath::Pi(), 1.5};
+  Double_t nPairMin[nPairDim] =    {0.98,  0, -1,   0,  -1,  0,           -0.5};
+  Double_t nPairMax[nPairDim] =    { 1.1,  5,  1, 100,   1, 2*TMath::Pi(), 2.5};
   // pair ID = 0 unlike sign k+k-
   //           1 like sign pos k+k+
-  //          -1 like sign neg k-k-
+  //           2 like sign neg k-k-
 
   // kaon pairs -- Monte Carlo particles -- real phi's
   THnSparseF* hPairMcPhi = new THnSparseF("hPairMcPhi", "hPairMcPhi", nPairDim, nPairBins, nPairMin, nPairMax);
@@ -268,8 +270,8 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	{
 	  AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(iMC);
 
-	  if(partMC->Pt()<0.15) continue;
-	  if(TMath::Abs(partMC->Eta())>0.8) continue;
+	  if(partMC->Pt()<fPtCut) continue;
+	  if(partMC->Eta()>fTrackCuts->GetEtaMax() || partMC->Eta()<fTrackCuts->GetEtaMin() ) continue;
 
 	  // PDG codes: pion(211), kaon(+/-321), proton(2212), phi(333)
 
@@ -278,10 +280,10 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	    {
 	      if(partMC->GetNDaughters()==2)
 		{
-		  if(TMath::Abs(((AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(0)))->GetPdgCode()) == 321 && TMath::Abs(((AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(1)))->GetPdgCode()) == 321)
+		  if(TMath::Abs(((AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(0))))->GetPdgCode()) == 321 && TMath::Abs(((AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(1))))->GetPdgCode()) == 321)
 		    {
-		      AliAODMCParticle *d1 = (AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(0));
-		      AliAODMCParticle *d2 = (AliAODMCParticle*) arrayMC->At(partMC->GetDaughter(1));
+		      AliAODMCParticle *d1 = (AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(0)));
+		      AliAODMCParticle *d2 = (AliAODMCParticle*) arrayMC->At(TMath::Abs(partMC->GetDaughter(1)));
 		      if(d1->Charge() > 0) hKcorr->Fill(partMC->Pt(),d1->Pt(),d2->Pt());
 		      else hKcorr->Fill(partMC->Pt(),d2->Pt(),d1->Pt());
 		      TLorentzVector *d3 = (TLorentzVector*)makePhi(d1,d2);
@@ -291,7 +293,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 			{
 			  Double_t varfill1[7] = {invMass, d3->Pt(), d3->Rapidity(), cent, d3->Eta(), (d3->Phi() > 0 ? d3->Phi() : d3->Phi()+2*TMath::Pi()), 0};
 			  hPairMcPhi->Fill(varfill1);
-			  if(d1->Pt() > 0.15 && d2->Pt() > 0.15 && TMath::Abs(d1->Eta()) < 0.8 && TMath::Abs(d2->Eta()) < 0.8)
+			  if(d1->Pt()>fPtCut && d2->Pt()>fPtCut && d1->Eta()<fTrackCuts->GetEtaMax() && d1->Eta()>fTrackCuts->GetEtaMin() && d2->Eta()<fTrackCuts->GetEtaMax() && d2->Eta()>fTrackCuts->GetEtaMin())
 			    hPairMcPhiCuts->Fill(varfill1);
 			}
 		      delete d3;
@@ -305,12 +307,12 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	  nMc++;
 
 	  Int_t mcID = fHelperPID->GetParticleSpecies(partMC);
-	  if(mcID>3 || mcID < -3) continue;
+	  if(fDoPID && (mcID>3 || mcID < -3)) continue;
 	  // PID ID, pt, y, eta, phi
 	  Double_t varfill2[6] = {(partMC->Charge() > 0 ? mcID+1 : -1*(mcID+1)), partMC->Pt(), partMC->Y(), cent, partMC->Eta(), partMC->Phi()};
 	  hTrackMc->Fill(varfill2);
 
-	  if(mcID == 1)
+	  if(!fDoPID || mcID == 1)
 	    {
 	      if(partMC->Charge() > 0) kaonsPosMc->Add(partMC);
 	      else if(partMC->Charge() < 0) kaonsNegMc->Add(partMC);
@@ -326,21 +328,21 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
   //track loop
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
     AliAODTrack* track = fAOD->GetTrack(iTracks);
-    if (!fTrackCuts->IsSelected(track,kTRUE)) continue; //track selection (rapidity selection NOT in the standard cuts?)
+    if (!fTrackCuts->IsSelected(track,kTRUE)) continue;
     if(track->Charge()==0) continue;
-    if(track->Pt()<0.15) continue;
-    if(TMath::Abs(track->Eta())>0.8) continue;
+    if(track->Pt()<fPtCut) continue;
+    if(track->Eta()>fTrackCuts->GetEtaMax() || track->Eta()<fTrackCuts->GetEtaMin()) continue;
 
     nReco++;
 
     Int_t dataID=fHelperPID->GetParticleSpecies(track,kTRUE);
-    if(dataID>3 || dataID < -3) continue;
+    if(fDoPID && (dataID>3 || dataID < -3)) continue;
 
     // PID ID, pt, y, eta, phi
     Double_t varfill3[6] = {(track->Charge() > 0 ? dataID+1 : -1*(dataID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
     hTrackReco->Fill(varfill3);
 
-    if(dataID==1)
+    if(!fDoPID || dataID==1)
       {
 	if(track->Charge() > 0) kaonsPosData->Add(track);
 	else if(track->Charge() < 0) kaonsNegData->Add(track);
@@ -357,49 +359,58 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	  }
 	
 	Int_t genID = fHelperPID->GetParticleSpecies(tempMC);
-	if(genID>3 || genID < -3) continue;
+	if(fDoPID && (genID != dataID)) continue;
+	if(fDoPID && (genID>3 || genID < -3)) continue;
 
 	// PID ID, pt, y, eta, phi
-	Double_t varfill4[6] = {(tempMC->Charge() > 0 ? genID+1 : -1*(genID+1)), tempMC->Pt(), tempMC->Y(), cent, tempMC->Eta(), tempMC->Phi()};
+	Double_t varfill4[6] = {(track->Charge() > 0 ? genID+1 : -1*(genID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
 	hTrackMatch->Fill(varfill4);
 
 	if(genID==1)
 	  {
-
-	    if(tempMC->GetMother() >= 0)
+	    Int_t motherId = TMath::Abs(tempMC->GetMother());
+	    
+	    AliAODMCParticle* genMother = (AliAODMCParticle*)arrayMC->At(motherId);
+	    if(!genMother) continue;
+	    
+	    if(genMother->GetPdgCode() != 333) continue;
+	    
+	    if(track->Charge() > 0)
 	      {
-		if(((AliAODMCParticle*)arrayMC->At(tempMC->GetMother()))->GetPdgCode() == 333)
+		for(Int_t k = 0; k < kaonsNegGen->GetEntriesFast(); k++)
 		  {
-		    if(tempMC->Charge() > 0)
+		    AliVParticle* tempGenMatch = (AliVParticle*)kaonsNegGen->UncheckedAt(k);
+		    AliAODMCParticle* tempMatchMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(tempGenMatch->GetLabel()));
+		    if(!tempMatchMC) continue;
+		    if(tempMatchMC->GetMother() != motherId) continue;
+		    
+		    TLorentzVector*c = (TLorentzVector*)makePhi(track,tempGenMatch);
+		    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
+		    if(invMass < 1.11)
 		      {
-			for(Int_t k = 0; k < kaonsNegGen->GetEntries(); k++)
-			  {
-			    if(tempMC->GetMother() != ((AliAODMCParticle*)arrayMC->At(((AliVParticle*)kaonsNegGen->UncheckedAt(k))->GetLabel()))->GetMother()) continue;
-			    TLorentzVector*c = (TLorentzVector*)makePhi(track,(AliVParticle*)kaonsNegGen->UncheckedAt(k));
-			    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
-			    if(invMass < 1.11)
-			      {
-				Double_t fillgen[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), 0};
-				hPairMatch->Fill(fillgen);
-			      }
-			    delete c;
-			  } 
+			Double_t fillgen[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), 0};
+			hPairMatch->Fill(fillgen);
 		      }
-		    else if(tempMC->Charge() < 0)
+		    delete c;
+		  } 
+	      }
+	    else if(track->Charge() < 0)
+	      {
+		for(Int_t k = 0; k < kaonsPosGen->GetEntriesFast(); k++)
+		  {
+		    AliVParticle* tempGenMatch = (AliVParticle*)kaonsPosGen->UncheckedAt(k);
+		    AliAODMCParticle* tempMatchMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(tempGenMatch->GetLabel()));
+		    if(!tempMatchMC) continue;
+		    if(tempMatchMC->GetMother() != motherId) continue;
+		    
+		    TLorentzVector*c = (TLorentzVector*)makePhi(track,tempGenMatch);
+		    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
+		    if(invMass < 1.11)
 		      {
-			for(Int_t k = 0; k < kaonsPosGen->GetEntries(); k++)
-			  {
-			    if(tempMC->GetMother() != ((AliAODMCParticle*)arrayMC->At(((AliVParticle*)kaonsPosGen->UncheckedAt(k))->GetLabel()))->GetMother()) continue;
-			    TLorentzVector*c = (TLorentzVector*)makePhi(track,(AliVParticle*)kaonsPosGen->UncheckedAt(k));
-			    Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
-			    if(invMass < 1.11)
-			      {
-				Double_t fillgen2[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), 0};
-				hPairMatch->Fill(fillgen2);
-			      }
-			    delete c;
-			  } 
+			Double_t fillgen2[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), 0};
+			hPairMatch->Fill(fillgen2);
 		      }
+		    delete c;
 		  }
 	      }
 	    
@@ -516,7 +527,7 @@ void AliAnalysisTaskPhiEffMc::LikeSign(TObjArray* kaonsPos, TObjArray* kaonsNeg,
 	  Double_t invMass = (c->M2() > 0 ? sqrt(c->M2()) : 0);
 	  if(invMass < 1.11)
 	    {
-	      Double_t varfill2[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), -1};
+	      Double_t varfill2[7] = {invMass, c->Pt(), c->Rapidity(), cent, c->Eta(), (c->Phi() > 0 ? c->Phi() : c->Phi()+2*TMath::Pi()), 2};
 	      h->Fill(varfill2);
 	    }
 	  delete c;

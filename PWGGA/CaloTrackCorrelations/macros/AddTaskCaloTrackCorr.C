@@ -454,10 +454,10 @@ AliCaloTrackReader * ConfigureReader()
   //reader->SwitchOffTriggerClusterTimeRecal() ;
 
   reader->SetTriggerPatchTimeWindow(8,9); // L0
-  if     (kRunNumber < 146861) reader->SetEventTriggerThreshold(3.);
-  else if(kRunNumber < 154000) reader->SetEventTriggerThreshold(4.);
-  else if(kRunNumber < 165000) reader->SetEventTriggerThreshold(5.5);
-  else                         reader->SetEventTriggerThreshold(8); // CAREFUL!
+  if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+  else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+  else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+
   //redefine for other periods, triggers
 
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
@@ -476,18 +476,18 @@ AliCaloTrackReader * ConfigureReader()
   else
     reader->SwitchOnEventTriggerAtSE();  
   
-  reader->SetZvertexCut(10.);                // Open cut
+  reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
-    reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOnEventPileUpRejection(); // remove pileup by default
+    reader->SwitchOnV0ANDSelection() ;      // and besides v0 AND
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
-    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPileUpEventRejection();// remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;     // and besides v0 AND
   }
     
   if(kCollisions=="PbPb") 

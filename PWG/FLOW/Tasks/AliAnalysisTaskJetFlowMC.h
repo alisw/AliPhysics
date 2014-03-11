@@ -28,7 +28,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         TH2F*   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Int_t c = -1, Bool_t append = kTRUE);
 
         void    UserExec(Option_t *option);
-        void    SetDebugMode(Bool_t d)                          {fDebug = d;}
+        void    SetDebugMode(Bool_t d)                          { fDebug = d;}
         void    SetTracksInName(const char *name)               { fTracksInName     = name; }
         void    SetTracksOutName(const char *name)              { fTracksOutName    = name; }
         // additional setters
@@ -41,6 +41,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void    SetIntegratedV2(TH1* v2)                        { fHistIntV2 = v2; }
         void    SetIntegratedV3(TH1* v3)                        { fHistIntV3 = v3; }
         void    SetTrackSpectrum(TF1* ts)                       { fTrackSpectrum = ts; }
+        void    SetRandomizeEta(Bool_t b)                       { fRandomizeEta = b; }
         void    SetSingleFragmentationJetSpectrum(TF1* js)      { fJetSpectrumSF = js; }
         void    SetNoOfSFJets(Int_t n)                          { fNoOfSFJets = n; }
         // additional methods
@@ -50,6 +51,7 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void    CalculateEventPlane();
         // inlined helper calculations
         Double_t        GetTrackPt()       const                { return fTrackSpectrum->GetRandom();}
+        Double_t        GetTrackEta()       const               { return gRandom->Uniform(-.9, .9); }
         /* inline */    Double_t GetV2(Double_t pt) const { 
             return (fFuncDiffV2[fCenBin]) ? fFuncDiffV2[fCenBin]->Eval(pt) :
             fHistDiffV2[fCenBin]->GetBinContent(fHistDiffV2[fCenBin]->GetXaxis()->FindBin(pt));
@@ -90,11 +92,12 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         TString         fTracksInName;          // name of input track array
         TClonesArray   *fTracksIn;              //!track array in
         TClonesArray   *fTracksOut;             //!track array out
-        Int_t           fCenBin; //! centrality bin
+        Int_t           fCenBin;                //! centrality bin
         TArrayI*        fCentralityClasses;     // centrality classes (max 10) 
         TF1*            fFuncVn;                //! vn function
         TList*          fOutputList;            // output list
         TF1*            fTrackSpectrum;         // track pt spectrum
+        Bool_t          fRandomizeEta;          // randomize eta
         TF1*            fJetSpectrumSF;         // single fragmentation spectrum of jets
         Int_t           fNoOfSFJets;            // number of single fragmentation jets that will be added
         TF1*            fFuncDiffV2[10];        // differential v2 of charged tracks

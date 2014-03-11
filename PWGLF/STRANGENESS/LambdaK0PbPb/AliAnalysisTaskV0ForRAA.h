@@ -11,6 +11,7 @@
 
 class TH1F;
 class TH2F;
+class TH3F;
 
 class Tlist;
 
@@ -29,11 +30,11 @@ class AliPIDResponse;
 
 class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
  public:
-   
-  AliAnalysisTaskV0ForRAA(const char *name="AliAnalysisTaskV0ForRAA");
+
+  AliAnalysisTaskV0ForRAA();   
+  AliAnalysisTaskV0ForRAA(const char *name);
   virtual ~AliAnalysisTaskV0ForRAA();
   
-
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
@@ -41,42 +42,42 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
 
 
   //-- MC truth/reco --//
-  void SetMCMode(Bool_t mcmode)                               {fMCMode = mcmode; if(fMCMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC reco");}
-  void SetMCTruthMode(Bool_t mcmode)                          {fMCTruthMode = mcmode; if(fMCTruthMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC truth");}
-  void SelectInjected(Bool_t injected)                        {fSelectInjected = injected; if(fSelectInjected) Printf("AliAnalysisTaskV0ForRAA::only injected MC particles");}
-  void SelectMBMotherMC(Bool_t mbmother)                      {fSelectMBMotherMC = mbmother;if(mbmother)  Printf("AliAnalysisTaskV0ForRAA::only MB mother MC for sec lambdas selected");}
+  void SetMCMode(Bool_t mcmode)                               {fMCMode            = mcmode;  if(fMCMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC reco");}
+  void SetMCTruthMode(Bool_t mcmode)                          {fMCTruthMode       = mcmode;  if(fMCTruthMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC truth");}
+  void SelectInjected(Bool_t injected)                        {fSelectInjected    = injected;if(fSelectInjected) Printf("AliAnalysisTaskV0ForRAA::only injected MC particles");}
+  void SelectMBMotherMC(Bool_t mbmother)                      {fSelectMBMotherMC  = mbmother;if(mbmother)  Printf("AliAnalysisTaskV0ForRAA::only MB mother MC for sec lambdas selected");}
   void SelectOnlyPosLabelMC(Bool_t poslabel)                  {fCheckNegLabelReco = poslabel;if(poslabel) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth and reco with pos label reco");}
-
-  void SelectOnlyFoundRecoV0MC(Bool_t found)                  {fOnlyFoundRecoV0 = found;if(found) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth with found reco V0");}
+  void SelectOnlyFoundRecoV0MC(Bool_t found)                  {fOnlyFoundRecoV0   = found;   if(found) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth with found reco V0");}
 
 
   //-- Centrality  --//
   // use centrality - if yes, which one
-  void  SetUseCentrality(Int_t cent)                          {fUseCentrality = cent; Printf("AliAnalysisTaskV0ForRAA::centrality selected for detector %i (0=off, 1=VZERO, 2=SPD)",cent);}
+  void  SetUseCentrality(Int_t cent)                          {fUseCentrality      = cent; Printf("AliAnalysisTaskV0ForRAA::centrality selected for detector %i (0=off, 1=VZERO, 2=SPD)",cent);}
   // set range
   void  SetUseCentralityRange(Int_t range)                    {fUseCentralityRange = range;if(fUseCentrality) Printf("AliAnalysisTaskV0::centrality range %i",fUseCentralityRange);}
   // centrality bin to be used
-  void  SetUseCentralityBin(Int_t bin)                        {fUseCentralityBin = bin; if(fUseCentrality) Printf("AliAnalysisTaskV0ForRAA::centrality selected for bin %i",fUseCentralityBin); }
+  void  SetUseCentralityBin(Int_t bin)                        {fUseCentralityBin   = bin; if(fUseCentrality) Printf("AliAnalysisTaskV0ForRAA::centrality selected for bin %i",fUseCentralityBin); }
 
 
   //-- event cuts --//
   void SetPrimVertexZCut(Double_t vtxcut,Bool_t status)       {fVertexZCut = vtxcut;fVtxStatus = status; Printf("AliAnalysisTaskV0ForRAA::SetPrimVertexZCut %3.2f",vtxcut);}
   void SetAnapp(Bool_t anapp)                                 {fAnapp = anapp ;if(fAnapp) Printf("AliAnalysisTaskV0ForRAA::analysing pp!!!");}
+  void SetRejectPileUpSPD(Bool_t rejectPU = kFALSE)           {fRejectPileUpSPD = rejectPU;if(fRejectPileUpSPD) Printf("AliAnalysisTaskV0ForRAA::reject pileup events from SDP in pp");}
   void SelectWithSDD(Bool_t sdd)                              {fSelSDD =sdd; if(sdd) Printf("AliAnalysisTaskV0ForRAA:: only events with SDD selected!");}
-  void SelectWithNoSDD(Bool_t sdd)                              {fSelNoSDD =sdd; if(sdd) Printf("AliAnalysisTaskV0ForRAA:: only events with NO SDD selected!");}
+  void SelectWithNoSDD(Bool_t sdd)                            {fSelNoSDD =sdd; if(sdd) Printf("AliAnalysisTaskV0ForRAA:: only events with NO SDD selected!");}
 
   //-- track cuts --//
-  void SetESDTrackCuts(AliESDtrackCuts *esdcuts =NULL)        {fESDTrackCuts = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set");}
-  void SetESDTrackCutsCharged(AliESDtrackCuts *esdcuts=NULL)  {fESDTrackCutsCharged = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles set");}
-  void SetESDTrackCutsLowPt(AliESDtrackCuts *esdcuts=NULL)    {fESDTrackCutsLowPt = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set");}
+  void SetESDTrackCuts(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)       {fNcr=ncr;fChi2cls=chi2,fTPCrefit=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCutsCharged(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE) {fNcrCh=ncr;fChi2clsCh=chi2,fTPCrefitCh=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles setncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCutsLowPt(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)  {fNcrLpt=ncr;fChi2clsLpt=chi2,fTPCrefitLpt=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
   void SetUseOnthefly(Bool_t useonthefly)                     {fOntheFly = useonthefly; if(!fOntheFly) Printf("AliAnalysisTaskV0ForRAA::offline V0s");}
-  void SetUsePID(Bool_t usepid,Double_t nsigma=100.0,Double_t pcut=100.0) {fUsePID = usepid;fNSigma = nsigma;fPPIDcut = pcut; if(fUsePID) Printf("AliAnalysisTaskV0ForRAA::PID! of %4.2f for p: %4.2f",fNSigma,pcut);}
+  void SetUsePID(Bool_t usepid,Double_t nsigma=100.0,Double_t pcut=100.0,Bool_t pidpion=kFALSE,Double_t nsigma2=100.0) {fUsePID = usepid;fNSigma = nsigma;fPPIDcut = pcut; fUsePIDPion = pidpion;fNSigma2 = nsigma2; if(fUsePID) Printf("AliAnalysisTaskV0ForRAA::proton PID! of %4.2f for p: %4.2f, also pion? %i nsig2=%4.2f",fNSigma,pcut,pidpion,fNSigma2);}
   void SetCutMoreNclsThanRows(Bool_t cut)                     {fMoreNclsThanRows=cut; if(cut) Printf("AliAnalysisTaskV0ForRAA::cut on more ncls than crossed rows");}  
   void SetCutMoreNclsThanFindable(Bool_t cut)                 {fMoreNclsThanFindable=cut; if(cut) Printf("AliAnalysisTaskV0ForRAA::cut on more ncls than ncls findable");}
   void SetCutMoreNclsThanFindableMax(Bool_t cut)              {fMoreNclsThanFindableMax = cut; if(cut) Printf("AliAnalysisTaskV0ForRAA::cut on more ncls than ncls findable max");}
 
-  void SetRatioFoundOverFindable(Double_t cut)                 {fRatioFoundOverFindable = cut; Printf("AliAnalysisTaskV0ForRAA::cut on found over finable clusters %f",cut);}
-  void SetRatioMaxCRowsOverFindable(Double_t cut)              {fRatioMaxCRowsOverFindable = cut;  Printf("AliAnalysisTaskV0ForRAA::cut on max crossed rows over finable clusters %f",cut);}
+  void SetRatioFoundOverFindable(Double_t cut)                {fRatioFoundOverFindable = cut; Printf("AliAnalysisTaskV0ForRAA::cut on found over finable clusters %f",cut);}
+  void SetRatioMaxCRowsOverFindable(Double_t cut)             {fRatioMaxCRowsOverFindable = cut;  Printf("AliAnalysisTaskV0ForRAA::cut on max crossed rows over finable clusters %f",cut);}
 
   void SetLowPtTPCCutAliESDTrackCut(Double_t pt)              {fPtTPCCut=pt;Printf("AliAnalysisTaskV0ForRAA::SetLowPtTPCCutAliESDTrackCut pt=%2.2f",pt);} 
    
@@ -88,17 +89,17 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   if(shiftVal) { fShift=kTRUE; fDeltaInvP = shiftVal; Printf("AliAnalysisTaskV0::WARNING!!!!!!!!!!!!!! pt shift introduced!");}
   }
   */
-  void SetDCAV0ToVertexK0(Double_t dcaTovertex)               {fDCAToVertexK0 = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex K0s %2.3f",dcaTovertex);}
-  void SetDCAV0ToVertexL(Double_t dcaTovertex)                {fDCAToVertexL = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex L/AL %2.3f",dcaTovertex);}
-  void SetDCADaughtersL(Double_t dcaDaughters)                {fDCADaughtersL = dcaDaughters; Printf("AliAnalysisTaskV0:ForRAA:dca daughters L %2.3f",dcaDaughters);}
+  void SetDCAV0ToVertexK0(Double_t dcaTovertex)               {fDCAToVertexK0  = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex K0s %2.3f",dcaTovertex);}
+  void SetDCAV0ToVertexL(Double_t dcaTovertex)                {fDCAToVertexL   = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex L/AL %2.3f",dcaTovertex);}
+  void SetDCADaughtersL(Double_t dcaDaughters)                {fDCADaughtersL  = dcaDaughters; Printf("AliAnalysisTaskV0:ForRAA:dca daughters L %2.3f",dcaDaughters);}
   void SetDCADaughtersAL(Double_t dcaDaughters)               {fDCADaughtersAL = dcaDaughters; Printf("AliAnalysisTaskV0ForRAA::dca daughters AL %2.3f",dcaDaughters);}
   void SetDCADaughtersK0(Double_t dcaDaughters)               {fDCADaughtersK0 = dcaDaughters; Printf("AliAnalysisTaskV0ForRAA::dca daughters K0s %2.3f",dcaDaughters);}
   void SetDCADaughtersLargeToVertex(Double_t dcaDaughtersVtx) {fDCADaughtersToVtxLarge = dcaDaughtersVtx; Printf("AliAnalysisTaskV0ForRAA::dca daughters to vertex large %2.3f",dcaDaughtersVtx);}
   void SetDCADaughtersSmallToVertex(Double_t dcaDaughtersVtx) {fDCADaughtersToVtxSmall = dcaDaughtersVtx; Printf("AliAnalysisTaskV0ForRAA::dca daughters to vertex small %2.3f",dcaDaughtersVtx);}
-  void SetDecayRadiusXYMinMax(Double_t decMin,Double_t decMax){fDecayRadXYMin = decMin;fDecayRadXYMax = decMax; Printf("AliAnalysisTaskV0ForRAA::min xy decay radius %2.3f max %2.3f",decMin,decMax);}
-  void SetCosOfPointingAngleL(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngL=pointAng;fCPAPtCutL = ptMaxCut;Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleL %1.5f and pt max %2.2f",pointAng,ptMaxCut);} 
-  void SetCosOfPointingAngleK(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngK=pointAng;fCPAPtCutK0 = ptMaxCut; Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleK  %1.5f and pt max %2.2f",pointAng,ptMaxCut);}
-  void SetOpeningAngleCut(Double_t opang, Double_t maxpt)     {fOpengAngleDaughters=opang; fOpAngPtCut=maxpt,Printf("AliAnalysisTaskV0::cut on opening angle %1.3f up to pt= %2.2f",opang,maxpt);}
+  void SetDecayRadiusXYMinMax(Double_t decMin,Double_t decMax){fDecayRadXYMin  = decMin;fDecayRadXYMax = decMax; Printf("AliAnalysisTaskV0ForRAA::min xy decay radius %2.3f max %2.3f",decMin,decMax);}
+  void SetCosOfPointingAngleL(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngL = pointAng;fCPAPtCutL = ptMaxCut;Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleL %1.5f and pt max %2.2f",pointAng,ptMaxCut);} 
+  void SetCosOfPointingAngleK(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngK = pointAng;fCPAPtCutK0 = ptMaxCut; Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleK  %1.5f and pt max %2.2f",pointAng,ptMaxCut);}
+  void SetOpeningAngleCut(Double_t opang, Double_t maxpt)     {fOpengAngleDaughters=opang; fOpAngPtCut = maxpt,Printf("AliAnalysisTaskV0::cut on opening angle %1.3f up to pt= %2.2f",opang,maxpt);}
 
   void SetMaxDecayLength(Double_t decLength)                  {fDecayLengthMax = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMaxDecayLength %2.3f",decLength);}
   void SetMinDecayLength(Double_t decLength)                  {fDecayLengthMin = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMinDecayLength %2.3f",decLength);}
@@ -106,51 +107,55 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SetDCAYK0(Double_t dcaYK)                              {fDCAYK = dcaYK; Printf("AliAnalysisTaskV0ForRAA::SetDCAYK0 %2.3f",dcaYK);}
   void SetDCAXLambda(Double_t dcaXL)                          {fDCAXL = dcaXL; Printf("AliAnalysisTaskV0ForRAA::SetDCAXLambda %2.3f",dcaXL);}
   void SetDCAYLambda(Double_t dcaYL)                          {fDCAXL = dcaYL; Printf("AliAnalysisTaskV0ForRAA::SetDCAYLambda %2.3f",dcaYL);}
-  void SetDCAZ(Double_t dcaZ)                                 {fDCAZ = dcaZ; Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
+  void SetDCAZ(Double_t dcaZ)                                 {fDCAZ  = dcaZ;  Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
   void SetChi2CutKf(Bool_t chi2){ fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %i",chi2);}
   //Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
-  void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut=alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
-  void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la,Double_t slope=0.2){fQtCut = ptmax;fQtCutPtLow=ptmin, fArmQtSlope=slope,fArmCutK0=k0s;fArmCutL=la;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. slope: %1.2f.  Is K0s? %i La? %i",ptmin,ptmax,slope,k0s,la);}
-  void SetMinMassDiffLK0s(Double_t diffK,Double_t diffL)                {fExcludeLambdaFromK0s = diffK;fExcludeK0sFromLambda = diffL; Printf("AliAnalysisTaskV0ForRAA::SetMaxMassDifferenceL for K0s %1.3f  K0s for L %1.3f",diffK,diffL);}
+  void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut = alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
+  void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la,Double_t slope=0.2,Double_t qtLinear=0.0){fQtCutPt = ptmax;fQtCutPtLow = ptmin, fArmQtSlope = slope,fArmCutK0 = k0s;fArmCutL = la;fQtCut = qtLinear;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. slope: %1.2f.  Is K0s? %i La? %i, qt linear: %3.2f",ptmin,ptmax,slope,k0s,la,qtLinear);}
+  void SetMinMassDiffLK0s(Double_t diffK,Double_t diffL)      {fExcludeLambdaFromK0s = diffK;fExcludeK0sFromLambda = diffL; Printf("AliAnalysisTaskV0ForRAA::SetMaxMassDifferenceL for K0s %1.3f  K0s for L %1.3f",diffK,diffL);}
 
-  void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0=ptK0; fCtauPtCutL=ptL;
+  void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0 = ptK0; fCtauPtCutL = ptL;
     Printf("AliAnalysisTaskV0ForRAA::SetCtauCut ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
-  void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters =doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
+  void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters = doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
   //  void SetEtaSignCut(Double_t etasign)                        {fEtaSignCut = etasign;Printf("AliAnalysisTaskV0ForRAA::eta cut sign on  daughters %2.2f !",etasign);}
-
+  void SetLowHighMassCut(Double_t lowK=0.25,Double_t highK=0.75,Double_t lowL=1.05,Double_t highL=1.25){fK0sLowMassCut = lowK; fK0sHighMassCut = highK; fLLowMassCut = lowL; fLHighMassCut = highL; Printf("AliAnalysisTaskV0ForRAA::SetLowHighMassCut K0s: low = %1.3f  high = %1.3f  Lambda: low = %1.3f  high = %1.3f",lowK,highK,lowL,highL);}
+  void SetMinMaxNCLSITS(Int_t minP,Int_t maxP,Int_t minN,Int_t maxN,Bool_t switchCase=kFALSE,Double_t radmin=0.0000,Double_t radmax=10000.0){fMinNCLSITSPos = minP; fMaxNCLSITSPos = maxP;fMinNCLSITSNeg = minN; fMaxNCLSITSNeg = maxN;fSwitchCaseITSCls = switchCase;fDecRadCutITSMin=radmin;fDecRadCutITSMax=radmax;Printf("AliAnalysisTaskV0ForRAA::SetMinMaxNCLSITS for V0 daughters minPos %i, maxPos %i, minNeg %i, maxNeg %i switch case %i for 2D decay rad. min: %3.2f  max: %3.2f",minP,maxP,minN,maxN,switchCase,radmin,radmax);}
   
+  void SetTPCTrackCutsMI(Bool_t tlength=kFALSE, Bool_t crows=kFALSE, Bool_t ncls=kFALSE,Double_t lf1=1.0,Double_t lf2=0.85){fCutMITrackLength = tlength; fCutMICrossedR=crows;  fCutMITPCncls=ncls; fCutMITrackLengthLengthF=lf1;fCutMICrossedRLengthF=lf2;Printf("AliAnalysisTaskV0ForRAA::SetTPCTrackCutsMI track length %i  crossed rows %i  ncls %i factor length %1.2f factor ncr %1.2f",fCutMITrackLength, fCutMICrossedR,fCutMITPCncls,lf1,lf2);}
+
+  void SetFillDetHistoAL(Bool_t fillAL = kFALSE)              {fSetFillDetAL = fillAL; if(fillAL) Printf("AliAnalysisTaskV0ForRAA::SetFillDetHistoAL fill detetctor histos with AL instead L");}
+  void SetFillPt(Bool_t fillpt = kFALSE)                      {fSetPtDepHist = fillpt; if(fillpt) Printf("AliAnalysisTaskV0ForRAA::SetFillPt fill pt instead of mass");}
+  void SetMinDistTPCInner(Double_t dist = 1000000.0)          {fDistanceTPCInner = dist; Printf("AliAnalysisTaskV0ForRAA::SetMinDistTPCInner set dist min to %2.2f",dist); }
+
  private:
    
   //----------------------------functions --------------------------------------------//
 
-  void   Process();                                                                                                   // process event
+  void   Process();                  // process event
   void   V0RecoLoop(Int_t id0,Int_t id1,Int_t isSecd,Int_t what,Double_t ptV0MC,Int_t pdgMother,Double_t ptXiMother,Double_t decaylengthMCV0); // loop over reconstructed V0 (data or MC)
-  void   V0MCTruthLoop();                                                                                             // loop over MC truth V0s
-  Int_t  CalculateCentralityBin();                                                                                    // get the centrality bin from multiplicity
-  Bool_t GetMCTruthPartner(AliESDtrack *pos,AliESDtrack *neg,Int_t id0,Int_t id1);                                    // find MC truth partner for reconstructed track
+  void   V0MCTruthLoop();            // loop over MC truth V0s
+  Int_t  CalculateCentralityBin();   // get the centrality bin from multiplicity
+  Bool_t GetMCTruthPartner(AliESDtrack *pos,AliESDtrack *neg,Int_t id0,Int_t id1);// find MC truth partner for reconstructed track
 
 
    
   //----------------------------- objects ----------------------------------------------//
 
   //event
-  AliESDEvent     *fESD;                 // ESD event object
-  AliMCEvent      *fMCev;                // MC event object
+  AliESDEvent     *fESD;                //ESD event object
+  AliMCEvent      *fMCev;               //MC event object
 
   
   //PID and track cuts
-  AliPIDResponse  *fESDpid;              // pid object
-  AliESDtrackCuts *fESDTrackCuts;        // esd track cuts for daughters
-  AliESDtrackCuts *fESDTrackCutsCharged; // esd track cuts for all charged particles
-  AliESDtrackCuts *fESDTrackCutsLowPt;   // esd track cuts for daughters at low pt
+  AliPIDResponse  *fESDpid;             //pid object
+  AliESDtrackCuts *fESDTrackCuts;       //esd track cuts for daughters
+  AliESDtrackCuts *fESDTrackCutsCharged;//esd track cuts for all charged particles
+  AliESDtrackCuts *fESDTrackCutsLowPt;  //esd track cuts for daughters at low pt
 
-  TList           *fOutputContainer;     // output data container
+  TList           *fOutputContainer;    // output data container
    
-
-
   //----------------------------histograms --------------------------------------------//
-
-  //---------------------------event histos --------------------------//
+  //-------------------event histos -------------------//
   TH1F   *fHistITSLayerHits;                        // pp 2.76 TeV analysis: check hist on div. ITS layer
   TH1F   *fHistOneHitWithSDD;                       // pp 2.76 TeV analysis: check hist on at least one ITS layer
   TH1F   *fHistNEvents;                             // count number of events for each event cut
@@ -158,83 +163,105 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPrimVtxZESDTPCVSNContributors;       // count contributors to TPC vertex
   TH2F   *fHistPrimVtxZESDSPDVSNContributors;       // count contributors to SPD vertex
 
-  TH2F   *fHistPrimVtxZESDVSNContributorsMC;        // count contributors to ESD vertex MC
-  TH2F   *fHistPrimVtxZESDTPCVSNContributorsMC;     // count contributors to TPC vertex MC
-  TH2F   *fHistPrimVtxZESDSPDVSNContributorsMC;     // count contributors to SPD vertex MC
-
   TH1F   *fHistPrimVtxZESD;                         // primary ESD vertex position z after cuts and processing
   TH1F   *fHistPrimVtxZESDTPC;                      // primary TPC vertex position z after cuts and processing
   TH1F   *fHistPrimVtxZESDSPD;                      // primary SPD vertex position z after cuts and processing
 
   TH1F   *fHistESDVertexZ;                          // primary TPC vertex position z before cuts
-  TH1F   *fHistMCVertexZ;                           // primary MC vertex position z 
-   
+     
   TH1F   *fHistMuliplicity;                         // number of particles from centrality selection
   TH1F   *fHistMuliplicityRaw;                      // number of particles from centrality selection before processing
   TH1F   *fHistCentBinRaw;                          // events per centralitybin before centrality selection
   TH1F   *fHistCentBin;                             // events per centralitybin
   TH1F   *fHistMultiplicityPrimary;                 // number of charged particles
-   
   TH1F   *fHistNPrim;                               // number of contributors to the prim vertex
 
+  //------------------------ single V0 histos --------------------------//
+   //  TH3F   *fHistPiPiPhiPosVsPtPosVsMass;//xxx
+  // TH3F   *fHistPiPPhiPosVsPtPosVsMass;//xxx
+  TH2F   *fHistPiPiK0sVsLambdaMass;                     // K0s mass vs Lamba mass for all pt for K0s
+  TH2F   *fHistPiPiK0sVsALambdaMass;                    // K0s mass vs ALamba mass for all pt for K0s
+  TH2F   *fHistPiPK0sVsLambdaMass;                      // K0s mass vs Lamba mass for all pt for Lambda
+  TH2F   *fHistPiAPK0sVsALambdaMass;                    // K0s mass vs ALamba mass for all pt for ALambda
+  TH2F   *fHistPiPALambdaVsLambdaMass;                  // ALambda mass vs Lambda for Lambda
+  TH2F   *fHistPiAPLambdaVsALambdaMass;                 // Lambda mass vs ALambda for ALambda
 
-  //------------------------ single V0 histos MC case--------------------------//
-  //K0s
+  //----------------------- K0 ----------------------------------------//
+  TH1F   *fHistPiPiMass;                                // pi+pi- InvMass spectrum
+  TH2F   *fHistPiPiMassVSPt;                            // pi+pi- InvMass spectrum vs pt
+  TH2F   *fHistPiPiMassVSPtMCTruth;                     // pi+pi- InvMass spectrum vs pt MC truth
+  TH2F   *fHistPiPiMassVSY;                             // pi+pi- InvMass spectrum vs rapidity
+  TH2F   *fHistPiPiPtVSY;                               // pi+pi- pt vs rapidity
+
+  // TH2F   *fHistPiPiMassVSAlpha;                        // pi+pi- InvMass spectrum vs armenteros alpha
+  TH2F   *fHistPiPiRadiusXY;                            // pi+pi- opening angle vs mass
+  TH2F   *fHistPiPiCosPointAng;                         // pi+pi- cosine of pointing angle vs pt or dca to vertex
+  TH2F   *fHistPiPiDCADaughterPosToPrimVtxVSMass;       // dca of pos. K0s daughter to prim vtx vs mass
+  TH2F   *fHistPiPiDecayLengthVsPt;                     // pi+pi- decay lenght vs pt
+  TH2F   *fHistPiPiDecayLengthVsMass;                   // pi+pi- decay lenght vs pt
+  TH2F   *fHistPiPiDecayLengthVsCtau;                   // pi+pi- decay lenght vs pt
+  //TH2F   *fHistPiPiMassVSPtK0L;                       // K0L InvMass vs pt distribution
+  TH2F   *fHistPiPiDCADaughters;                        // pi+pi- dca between daughters
+  // TH2F   *fHistPiPiPtDaughters;                         // pi+pi- daughters pt pos vs pt neg 
+  TH2F   *fHistPiPiDCAVSMass;                           // pi+pi- dca to prim vtx vs mass
+  TH2F   *fHistPiPiDCAZPos;                             // dca z component of pos K0s daughter
+  TH2F   *fHistPiPiDCAZNeg;                             // dca z component of neg K0s daughter
+  TH2F   *fHistPiPiTrackLengthPosVsMass;                // track length of pos K0s daughter in TPC
+  TH2F   *fHistPiPiTrackLengthNegVsMass;                // track length of neg K0s daughter in TPC  
+  TH1F   *fHistPiPiMonitorCuts;                         // pi+pi- cut monitor
+  TH1F   *fHistPiPiMonitorMCCuts;                       // pi+pi- cut monitor mc
+  TH2F   *fHistPiPiDecayLengthResolution;               // pi+pi- decay length resolution: mcreco vs mctruth
+  //detectors
+  TH2F   *fHistNclsITSPosK0;                            // number of clusters from ITS of positive K0s daughters
+  TH2F   *fHistNclsITSNegK0;                            // number of clusters from ITS of negative K0s daughters
+  TH2F   *fHistNclsTPCPosK0;                            // number of clusters from TPC of positive K0s daughters
+  TH2F   *fHistNclsTPCNegK0;                            // number of clusters from TPC of negative K0s daughters
+  TH2F   *fHistChi2PerNclsITSPosK0;                     // chi^2 per number of clusters ITS of positive K0s daughters
+  TH2F   *fHistChi2PerNclsITSNegK0;                     // chi^2 per number of clusters ITS of negative K0s daughters  
+  TH2F   *fHistNCRowsTPCPosK0;                          // no of crossed rows for K0s pos daughter
+  TH2F   *fHistNCRowsTPCNegK0;                          // no of crossed rows for K0s neg daughter
+  TH2F   *fHistRatioFoundOverFinableTPCK0Pos;           // ratio of ncls findable over found TPC K0s daughters
+  TH2F   *fHistRatioFoundOverFinableTPCK0Neg;           // ratio of ncls findable over found TPC K0s daughters
+
+  //------------------------- MC only histos ---------------------------------------------------//
+  TH2F   *fHistPrimVtxZESDVSNContributorsMC;        // count contributors to ESD vertex MC
+  TH2F   *fHistPrimVtxZESDTPCVSNContributorsMC;     // count contributors to TPC vertex MC
+  TH2F   *fHistPrimVtxZESDSPDVSNContributorsMC;     // count contributors to SPD vertex MC
+  TH1F   *fHistMCVertexZ;                           // primary MC vertex position z 
   TH1F   *fHistPiPiPDGCode;                         // PDG code of K0 mothers
- 
-  //Lambda
-  TH1F   *fHistPiPPDGCode;                          // PDG code of Lambda mothers 
-  TH2F   *fHistPiPCosPointAngXiVsPt;                // p+pi- cosine of pointing angle of xis vs pt
-  TH2F   *fHistPiPMassVSPtSecXiMCTruth;             // p+pi- InvMass spectrum vs Xi (-,0) pt MC truth
-  TH2F   *fHistPiPMassVSPtSecOmegaMCTruth;          // p+pi- InvMass spectrum vs Omega (-)  pt MC truth
-  
-  //AntiLambda
-  TH1F   *fHistPiAPPDGCode;                         // PDG code of AntiLambda mothers
-  TH2F   *fHistPiAPCosPointAngXiVsPt;               // p-pi+ cosine of pointing angle of xis vs pt
-  TH2F   *fHistPiAPMassVSPtSecXiMCTruth;            // p-pi+ InvMass spectrum vs Xi (+,anti 0) pt MC truth
-  TH2F   *fHistPiAPMassVSPtSecOmegaMCTruth;         // p-pi+ InvMass spectrum vs Omega (+)  pt MC truth
+  TH1F   *fHistPiPPDGCode;                          // PDG code of Lambda mothers
+  TH1F   *fHistPiAPPDGCode;                         // PDG code of Lambda mothers
 
+  TH2F   *fHistPiPCosPointAngXiVsPt;                // cosine of pointing angle of xis vs pt
+  TH2F   *fHistPiAPCosPointAngXiVsPt;               // cosine of pointing angle of xis vs pt
+  TH2F   *fHistPiPMassVSPtSecXiMCTruth;
+  TH2F   *fHistPiPMassVSPtSecOmegaMCTruth;
+  TH2F   *fHistPiAPMassVSPtSecXiMCTruth;
+  TH2F   *fHistPiAPMassVSPtSecOmegaMCTruth;
 
-  //----------------------------- V0 histos --------------------------------------//
-  TH2F   *fHistV0RadiusZ[2];                        // V0 decay radius z filled for K0s and Lambda candidates
-  TH2F   *fHistV0RadiusZVSPt[2];                    // V0 decay radius z vs pt filled for K0s and Lambda candidates
-  TH2F   *fHistV0RadiusXY[2];                       // V0 decay radius x vs y filled for K0s and Lambda candidates
-  TH2F   *fHistV0RadiusXYVSY[2];                    // V0 decay radius xy vs rapidity filled for K0s and Lambda candidates
+  //--------------------------------- histos with secondaries' histo------------------------------//
+  TH2F   *fHistV0RadiusZ[2];                        // V0 decay radius z
+  TH2F   *fHistV0RadiusZVSPt[2];                    // V0 decay radius z vs pt
+  TH2F   *fHistV0RadiusXY[2];                       // V0 decay radius x vs y
+  TH2F   *fHistV0RadiusXYVSY[2];                    // V0 decay radius xy vs rapidity
    
-  TH2F   *fHistArmenteros[2];                       // armenteros podolanski filled for K0s and Lambda candidates
-     
-  //-- K0 --//
-  TH1F   *fHistPiPiMass[1];                         // pi+pi- InvMass spectrum
-  TH2F   *fHistPiPiPtVSY[1];                        // pi+pi- InvMass spectrum vs rapidity
-  TH2F   *fHistPiPiMassVSPt[1];                     // pi+pi- InvMass spectrum vs pt
-  TH2F   *fHistPiPiMassVSPtMCTruth[1];              // pi+pi- InvMass spectrum vs pt MC truth
-  // TH2F   *fHistPiPiMassVSAlpha[1];               // pi+pi- InvMass spectrum vs armenteros alpha
-  TH2F   *fHistPiPiRadiusXY[1];                     // pi+pi- opening angle vs mass
-  TH2F   *fHistPiPiCosPointAng[1];                  // pi+pi- cosine of pointing angle vs pt or dca to vertex
-  TH2F   *fHistPiPiDCADaughterPosToPrimVtxVSMass[1];// dca of pos. K0s daughter to prim vtx vs mass
-  TH2F   *fHistPiPiDecayLengthVsPt[1];              // pi+pi- decay lenght vs pt
-  TH2F   *fHistPiPiDecayLengthVsMass[1];            // pi+pi- decay lenght vs pt
-  TH2F   *fHistPiPiDecayLengthVsCtau[1];            // pi+pi- decay lenght vs pt
-  TH2F   *fHistPiPiDCADaughters[1];                 // pi+pi- dca between daughters
-  //  TH2F   *fHistPiPiPtDaughters[1];              // pi+pi- daughters pt pos vs pt neg 
-  TH2F   *fHistPiPiDCAVSMass[1];                    // pi+pi- dca to prim vtx vs mass
-  TH1F   *fHistPiPiMonitorCuts[1];                  // pi+pi- cut monitor
-  TH1F   *fHistPiPiMonitorMCCuts[1];                // pi+pi- cut monitor mc
-  TH2F   *fHistPiPiDecayLengthResolution[1];        // decay length mc reco vs mc truth K0s
+  TH2F   *fHistArmenteros[2];                       // armenteros
 
-  //-- Lambda --//
+  //------------------------------------- Lambda -------------------------------------------------//
   TH1F   *fHistPiPMass[2];                          // p+pi- InvMass spectrum
-  TH2F   *fHistPiPPtVSY[2];                         // p+pi- InvMass spectrum vs rapidity
   TH2F   *fHistPiPMassVSPt[2];                      // p+pi- InvMass spectrum vs pt
   TH2F   *fHistPiPMassVSPtMCTruth[2];               // p+pi- InvMass spectrum vs pt MC truth
+  TH2F   *fHistPiPMassVSY[2];                       // p+pi- InvMass spectrum vs rapidity
+  TH2F   *fHistPiPPtVSY[2];                         // p+pi- pt vs rapidity
   TH2F   *fHistPiPRadiusXY[2];                      // p+pi- opening angle vs mass
   TH2F   *fHistPiPCosPointAng[2];                   // p+pi- cosine of pointing angle vs pt  or dca to vertex
   TH2F   *fHistPiPDCADaughterPosToPrimVtxVSMass[2]; // dca of pos. Lambda daughter to prim vtx vs mass
+  TH2F   *fHistPiPDCADaughterNegToPrimVtxVSMass[2]; // dca of neg. Lambda daughter to prim vtx vs mass
   TH2F   *fHistPiPDecayLengthVsPt[2];               // p+pi- decay lenght vs pt
   TH2F   *fHistPiPDecayLengthVsMass[2];             // p+pi- decay lenght vs pt
   TH2F   *fHistPiPDecayLengthVsCtau[2];             // p+pi- decay lenght vs pt
   TH2F   *fHistPiPDCADaughters[2];                  // p+pi- dca between daughters
-  //  TH2F   *fHistPiPPtDaughters[2];               // p+pi- daughters pt pos vs pt neg 
+  //TH2F   *fHistPiPPtDaughters[2];                   // p+pi- daughters pt pos vs pt neg 
   TH2F   *fHistPiPDCAVSMass[2];                     // p+pi- dca to prim vtx vs mass
   TH1F   *fHistPiPMonitorCuts[2];                   // p+pi- cut monitor
   TH1F   *fHistPiPMonitorMCCuts[2];                 // p+pi- cut monitor mc
@@ -245,21 +272,27 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPiPXi0PtVSLambdaPt[2] ;              // pt of xi0 vs pt lambda truth(0) reco(1)
   TH2F   *fHistPiPXiMinusPtVSLambdaPt[2];           // pt of ximinus vs pt lambda truth(0) reco(1)
   TH2F   *fHistPiPOmegaPtVSLambdaPt[2];             // pt of omega plus vs pt alambda truth(0) reco(1)
-  TH2F   *fHistPiPDecayLengthResolution[2];         // decay length mc reco vs mc truth lambda
+  TH2F   *fHistPiPDecayLengthResolution[2];         // Lambda decay length resolution MCreco vs MC truth
+  //  TH2F   *fHistPiPDCAZPos[2];                       // dca z component of pos Lambda daughter
+  // TH2F   *fHistPiPDCAZNeg[2];                       // dca z component of neg Lambda daughter
+  TH2F   *fHistPiPTrackLengthPosVsMass[2];          // track length of pos Lambda daughter in TPC
+  TH2F   *fHistPiPTrackLengthNegVsMass[2];          // track length of neg Lambda daughter in TPC
 
-  //-- AntiLambda --//
+  //---------------------------------------- Antilambda --------------------------------------------------------------//
   TH1F   *fHistPiAPMass[2];                         // pi+p- InvMass spectrum
-  TH2F   *fHistPiAPPtVSY[2];                        // pi+p- InvMass spectrum vs rapidity
   TH2F   *fHistPiAPMassVSPt[2];                     // pi+p- InvMass spectrum vs pt
   TH2F   *fHistPiAPMassVSPtMCTruth[2];              // pi+p- InvMass spectrum vs pt MC Truth
+  TH2F   *fHistPiAPMassVSY[2];                      // pi+p- InvMass spectrum vs rapidity
+  TH2F   *fHistPiAPPtVSY[2];                        // pi+p- pt vs rapidity
   TH2F   *fHistPiAPRadiusXY[2];                     // pi+p- opening angle vs mass
   TH2F   *fHistPiAPCosPointAng[2];                  // pi+p- cosine of pointing angle vs pt  or dca to vertex
-  TH2F   *fHistPiAPDCADaughterPosToPrimVtxVSMass[2];// dca of pos. Lambda daughter to prim vtx vs mass
+  TH2F   *fHistPiAPDCADaughterPosToPrimVtxVSMass[2];// dca of pos ALambda daughter to prim vtx vs mass
+  TH2F   *fHistPiAPDCADaughterNegToPrimVtxVSMass[2];// dca of neg ALambda daughter to prim vtx vs mass
   TH2F   *fHistPiAPDecayLengthVsPt[2];              // pi+p- decay lenght vs pt
   TH2F   *fHistPiAPDecayLengthVsMass[2];            // pi+p- decay lenght vs pt
   TH2F   *fHistPiAPDecayLengthVsCtau[2];            // pi+p- decay lenght vs pt
   TH2F   *fHistPiAPDCADaughters[2];                 // pi+p- dca between daughters
-  //  TH2F   *fHistPiAPPtDaughters[2];              // pi+p- daughters pt pos vs pt neg 
+  // TH2F   *fHistPiAPPtDaughters[2];                  // pi+p- daughters pt pos vs pt neg 
   TH2F   *fHistPiAPDCAVSMass[2];                    // pi+p- dca to prim vtx vs mass
   TH1F   *fHistPiAPMonitorCuts[2];                  // pi+p- cut monitor
   TH1F   *fHistPiAPMonitorMCCuts[2];                // pi+p- cut monitor mc
@@ -270,49 +303,37 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   TH2F   *fHistPiAPXi0PtVSLambdaPt[2] ;             // pt of xi0 vs pt alambda truth(0) reco(1)
   TH2F   *fHistPiAPXiMinusPtVSLambdaPt[2];          // pt of ximinus vs pt alambda truth(0) reco(1)
   TH2F   *fHistPiAPOmegaPtVSLambdaPt[2];            // pt of omega plus vs pt alambda truth(0) reco(1)
-  TH2F   *fHistPiAPDecayLengthResolution[2];        // decay length mc reco vs mc truth antilambda
+  TH2F   *fHistPiAPDecayLengthResolution[2];        // ALambda decay length resolution MCreco vs MC truth
+  //  TH2F   *fHistPiAPDCAZPos[2];                      // dca z component of pos ALambda daughter
+  //TH2F   *fHistPiAPDCAZNeg[2];                      // dca z component of neg ALambda daughter
+  TH2F   *fHistPiAPTrackLengthPosVsMass[2];         // track length of pos ALambda daughter in TPC
+  TH2F   *fHistPiAPTrackLengthNegVsMass[2];         // track length of neg ALambda daughter in TPC
 
-  //-- others --//
+
+  //-------------------------------------------------------- others --------------------------------------------------//
   //dEdx
   TH2F   *fHistDedxSecProt[2];                      // dedx from proton cadidates vs pt
   TH2F   *fHistDedxSecAProt[2];                     // dedx from antiproton candidates vs pt
   TH2F   *fHistDedxSecPiMinus[2];                   // dedx from pi minus candidates vs pt
   TH2F   *fHistDedxSecPiPlus[2];                    // dedx from pi plus candidates vs pt
-
   TH2F   *fHistDedxProt[2];                         // dedx from proton cadidates vs pt before pidcut
   TH2F   *fHistDedxAProt[2];                        // dedx from antiproton candidates vs pt before pidcut
   TH2F   *fHistDedxPiMinus[2];                      // dedx from pi minus candidates vs pt before pidcut
   TH2F   *fHistDedxPiPlus[2];                       // dedx from pi plus candidates vs pt before pidcut
    
-  //----------clusters and TPC var.------------//
-  //K0s
-  TH1F   *fHistNclsITSPosK0[1];                     // number of clusters from ITS of positive K0s daughters
-  TH1F   *fHistNclsITSNegK0[1];                     // number of clusters from ITS of negative K0s daughters
-  TH1F   *fHistNclsTPCPosK0[1];                     // number of clusters from TPC of positive K0s daughters
-  TH1F   *fHistNclsTPCNegK0[1];                     // number of clusters from TPC of negative K0s daughters
-  TH1F   *fHistChi2PerNclsITSPosK0[1];              // chi^2 per number of clusters ITS of positive K0s daughters
-  TH1F   *fHistChi2PerNclsITSNegK0[1];              // chi^2 per number of clusters ITS of negative K0s daughters
-  //Lambda
-  TH1F   *fHistNclsITSPosL[2];                      // number of clusters from ITS of positive lambda daughters
-  TH1F   *fHistNclsITSNegL[2];                      // number of clusters from ITS of negative lambda daughters
-  TH1F   *fHistNclsTPCPosL[2];                      // number of clusters from TPC of positive lambda daughters
-  TH1F   *fHistNclsTPCNegL[2];                      // number of clusters from TPC of negative lambda daughters
-  TH1F   *fHistChi2PerNclsITSPosL[2];               // chi^2 per number of clusters ITS of positive lambda daughters
-  TH1F   *fHistChi2PerNclsITSNegL[2];               // chi^2 per number of clusters ITS of negative lambda daughters
-  //general
-  TH2F   *fHistNclsITSPos[2];                       // number of clusters from ITS of positive daughters vs pt dautghter
-  TH2F   *fHistNclsITSNeg[2];                       // number of clusters from ITS of negative daughters vs pt dautghter
-  TH2F   *fHistNclsTPCPos[2];                       // number of clusters from TPC of positive daughters vs number of finabale clutsters
-  TH2F   *fHistNclsTPCNeg[2];                       // number of clusters from TPC of negative daughters vs number of finabale clutsters
-  TH2F   *fHistChi2PerNclsITSPos[2];                // chi^2 per number of clusters ITS of positive daughters vs pt of daughter
-  TH2F   *fHistChi2PerNclsITSNeg[2];                // chi^2 per number of clusters ITS of negative daughters  vs pt of daughter
+  //clusters
   TH2F   *fHistNclsITS[2];                          // number of clusters ITS pos vs neg daughters
   TH2F   *fHistNclsTPC[2];                          // number of clusters TPC  neg daughters vs number of crossed rows
-  TH2F   *fHistNCRowsTPCPos[2];                     // number of crossed rows TPC pos. vs pt of daughter
-  TH2F   *fHistNCRowsTPCNeg[2];                     // number of crossed rows TPC neg. vs pt of daughter
-  TH2F   *fHistRatioFoundOverFinableTPCK0[2];       // ratio of ncls findable over found TPC K0s daughters
-  TH2F   *fHistRatioFoundOverFinableTPCL[2];        // ratio of ncls findable over found TPC L daughters
-  //eta all 
+  TH2F   *fHistNclsITSPosL[2];                      // number of clusters from ITS of positive lambda daughters
+  TH2F   *fHistNclsITSNegL[2];                      // number of clusters from ITS of negative lambda daughters
+  TH2F   *fHistNclsTPCPosL[2];                      // number of clusters from TPC of positive lambda daughters
+  TH2F   *fHistNclsTPCNegL[2];                      // number of clusters from TPC of negative lambda daughters
+  TH2F   *fHistChi2PerNclsITSPosL[2];               // chi^2 per number of clusters ITS of positive lambda daughters
+  TH2F   *fHistChi2PerNclsITSNegL[2];               // chi^2 per number of clusters ITS of negative lambda daughters
+  TH2F   *fHistNCRowsTPCPosL[2];                    // number of crossed rows for Lambda pos daughter
+  TH2F   *fHistNCRowsTPCNegL[2];                    // number of crossed rows for Lambda neg daughter
+  TH2F   *fHistRatioFoundOverFinableTPCLPos[2];     // ratio of ncls findable over found TPC L daughters
+  TH2F   *fHistRatioFoundOverFinableTPCLNeg[2];     // ratio of ncls findable over found TPC L daughters
   TH2F   *fHistPiPiEtaDMC[2];                       // eta of daughters vs pt K0s MC truth raw(0) after cuts(1)
   TH2F   *fHistPiPEtaDMC[2];                        // eta of daughters vs pt lambda MC truth raw(0) after cuts(1)
   TH2F   *fHistPiPiEtaDReco[2];                     // eta of daughters ESD track vs eta AliESDv0 or vs pt K0s raw(0) after cuts(1)
@@ -343,9 +364,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
 
   //pp analysis
   Bool_t    fAnapp;                    // flag for pp analysis
+  Bool_t    fRejectPileUpSPD;          // reject pileup events from SPD 
   Bool_t    fSelSDD;                   // select pp events with SDD (for pp 2.76TeV LHC11a)
   Bool_t    fSelNoSDD;                 // select pp events with no SDD (for pp 2.76TeV LHC11a)
-
   //onthefly
   Bool_t    fOntheFly;                 // true if onfly finder shall be used
 
@@ -353,9 +374,22 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fVertexZCut;               // z vertex cut value
   Bool_t    fVtxStatus;                // vertex cut on/off
 
+  //esdtrackcuts
+  Int_t     fNcr;                      // esd track cuts: number of crossed rows TPC for V0 daughters
+  Double_t  fChi2cls;                  // esd track cuts: chi2 per cluster TPC for V0 daughters
+  Bool_t    fTPCrefit;                 // esd track cuts: tpc refit  for V0 daughters
+  Int_t     fNcrCh;                    // esd track cuts: number of crossed rows TPC for charged
+  Double_t  fChi2clsCh;                // esd track cuts: chi2 per cluster TPC for charged
+  Bool_t    fTPCrefitCh;               // esd track cuts: tpc refit for charged
+  Int_t     fNcrLpt;                   // esd track cuts: number of crossed rows TPC for low pt
+  Double_t  fChi2clsLpt;               // esd track cuts: chi2 per cluster TPC for low pt
+  Bool_t    fTPCrefitLpt;              // esd track cuts: tpc refit for low pt
+
   //PID
-  Bool_t    fUsePID;                   // use pid yes/no
+  Bool_t    fUsePID;                   // use proton pid yes/no
+  Bool_t    fUsePIDPion;               // use pion pid yes/no
   Double_t  fNSigma;                   // set nsigma value
+  Double_t  fNSigma2;                  // set nsigma 2 value
   Double_t  fPPIDcut;                  // set max momentum for pid cut usage 
   Double_t  fPtTPCCut;                 // low pt limit cut for TPC cluster cuts from AliESDtrackCuts
   Bool_t    fMoreNclsThanRows;         // cut on ncls>ncrossed rows yes/no
@@ -364,7 +398,19 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fRatioFoundOverFindable;   // cut on found over findable clusters TPC
   Double_t  fRatioMaxCRowsOverFindable;// cut on crossed rows over finable max
   Double_t  fChi2PerClusterITS;        // cut on chi2 per ITS cluster
-   
+  Double_t  fDistanceTPCInner;         // cut on distance of daughters at TPC entrance
+  Int_t     fMinNCLSITSPos;            // min ncls ITS of pos daugter cut
+  Int_t     fMinNCLSITSNeg;            // min ncls ITS of neg daugter cut
+  Int_t     fMaxNCLSITSPos;            // max ncls ITS of pos daugter cut
+  Int_t     fMaxNCLSITSNeg;            // max ncls ITS of neg daugter cut
+  Bool_t    fSwitchCaseITSCls;         // apply pos and neg ITS cls cluster cut with 
+                                       // or for both daughters for at least one of the daughters shall have ...
+  Bool_t    fCutMITrackLength;         // cut on geom track length in TPC as Marian Ivanov sugg.
+  Bool_t    fCutMICrossedR;            // cut on crossed rows in TPC as Marian Ivanov sugg.
+  Bool_t    fCutMITPCncls;             // cut on ncls in TPC as Marian Ivanov sugg.
+  Double_t  fCutMITrackLengthLengthF;  // cut on track length in TPC as Marian Ivanov sugg. length factor
+  Double_t  fCutMICrossedRLengthF;     // cut on crossed rows in TPC as Marian Ivanov sugg. length factor
+
   //rapidity
   Bool_t    fRapCutV0;                 // use rapidity cut for V0 yes/no
   Double_t  fRap;                      // user defined value for rapidity cut
@@ -378,6 +424,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   //armenteros
   Double_t  fAlfaCut;                  // set alpha armenteros cut value
   Double_t  fQtCut;                    // set ptmax for qt armenteros cut 
+  Double_t  fQtCutPt;                  // set ptmax for  qt armenteros cut
   Double_t  fQtCutPtLow;               // set ptmin for  qt armenteros cut
   Bool_t    fArmCutK0;                 // set armenteros cut on/off for K0s
   Bool_t    fArmCutL;                  // set armenteros cut on/off for Lambda
@@ -413,6 +460,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fDecayLengthMax;           // maximal decay length in x-y-z cut value
   Double_t  fDecayLengthMin;           // minimal decay length in x-y-z cut value
 
+  Double_t  fDecRadCutITSMin;          // radius min for ITS cluster cut
+  Double_t  fDecRadCutITSMax;          // radius max for ITS cluster cut
+
   //ctau
   Double_t  fCtauK0s;                  // multiple of ctau cut value for K0s
   Double_t  fCtauL;                    // multiple of ctau cut value for Lambda
@@ -420,10 +470,18 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fCtauPtCutL;               // pt max for ctau cut usage for Lambda
 
   //KF particle chi cut
-  //   Double_t  fChiCutKf;            // cut value of chi2 of AliKFParticle
-  Bool_t  fChiCutKf;                   // cut value of chi2 of AliKFParticle
+  //   Double_t  fChiCutKf;            //cut value of chi2 of AliKFParticle
+  Bool_t    fChiCutKf;                 //cut value of chi2 of AliKFParticle
 
-  
+  Double_t  fK0sLowMassCut;            //lower cut on K0s mass
+  Double_t  fK0sHighMassCut;           //higher cut on K0s mass
+
+  Double_t  fLLowMassCut;              //lower cut on Lambda mass
+  Double_t  fLHighMassCut;             //higher cut on lambda mass
+
+
+  Bool_t   fSetFillDetAL;              // fill det histo with AL instead of Lambda
+  Bool_t   fSetPtDepHist;              // fill pt instead of mass
   /*
   // option for user defined charge/pt shift
   Bool_t     fShift;// shift yes/no
@@ -434,6 +492,6 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   AliAnalysisTaskV0ForRAA(const AliAnalysisTaskV0ForRAA&);
   AliAnalysisTaskV0ForRAA&operator=(const AliAnalysisTaskV0ForRAA&);
    
-  ClassDef(AliAnalysisTaskV0ForRAA, 0); 
+  ClassDef(AliAnalysisTaskV0ForRAA,1); 
 };
 #endif

@@ -52,6 +52,7 @@ ClassImp(AliDielectronCF)
 
 AliDielectronCF::AliDielectronCF() :
   TNamed("DielectronCF","DielectronCF"),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNSteps(0),
   fNVars(0),
   fVarBinLimits(0x0),
@@ -92,6 +93,7 @@ AliDielectronCF::AliDielectronCF() :
 //________________________________________________________________
 AliDielectronCF::AliDielectronCF(const char* name, const char* title) :
   TNamed(name, title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNSteps(0),
   fNVars(0),
   fVarBinLimits(0x0),
@@ -135,6 +137,7 @@ AliDielectronCF::~AliDielectronCF()
   //
   // Destructor
   //
+  if (fUsedVars) delete fUsedVars;
   if (fValues) delete [] fValues;
   if (fIsMCTruth) delete [] fIsMCTruth;
   if (fVarBinLimits) delete fVarBinLimits;
@@ -209,6 +212,7 @@ void AliDielectronCF::AddVariable(AliDielectronVarManager::ValueTypes type, TVec
     }
     fVarBinLimitsLeg->Add(binLimits);
     fVariablesLeg[fNVarsLeg]  = (UInt_t)type;
+    fUsedVars->SetBitNumber(type,kTRUE);
     ++fNVarsLeg;
   }
 }
@@ -451,6 +455,7 @@ void AliDielectronCF::Fill(UInt_t mask, const AliDielectronPair *particle)
   }
   
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(particle,valuesPair);
 
   for (Int_t iVar=0; iVar<fNVars; ++iVar){
@@ -645,6 +650,7 @@ void AliDielectronCF::FillMC(const TObject *particle)
   if (!fStepForMCtruth) return;
   
   Double_t valuesPair[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(particle,valuesPair);
 
   AliVParticle *d1=0x0;
@@ -700,7 +706,8 @@ void AliDielectronCF::FillMC(Int_t label1, Int_t label2, Int_t nSignal) {
   AliDielectronSignalMC* sigMC = (AliDielectronSignalMC*)fSignalsMC->At(nSignal);
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kSame && mLabel1!=mLabel2) return;
   if(sigMC->GetMothersRelation()==AliDielectronSignalMC::kDifferent && mLabel1==mLabel2) return;
-    
+
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   // fill the leg variables
   if (fNVarsLeg>0){
     Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];

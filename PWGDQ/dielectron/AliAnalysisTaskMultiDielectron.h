@@ -58,6 +58,7 @@ public:
   
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
+  TObjArray *fPairArray;             //! output array
   TList fListDielectron;             // List of dielectron framework instances
   TList fListHistos;                 //! List of histogram manager lists in the framework classes
   TList fListCF;                     //! List with CF Managers
@@ -82,6 +83,6 @@ protected:
   AliAnalysisTaskMultiDielectron(const AliAnalysisTaskMultiDielectron &c);
   AliAnalysisTaskMultiDielectron& operator= (const AliAnalysisTaskMultiDielectron &c);
   
-  ClassDef(AliAnalysisTaskMultiDielectron, 3); //Analysis Task handling multiple instances of AliDielectron
+  ClassDef(AliAnalysisTaskMultiDielectron, 4); //Analysis Task handling multiple instances of AliDielectron
 };
 #endif

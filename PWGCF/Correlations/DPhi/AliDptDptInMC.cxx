@@ -1246,81 +1246,86 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
         }
       _eventAccounting->Fill(3);// count all calls to this function with a valid pointer                                                    
       //======================                 
+      //***********************************            
+      //MC AOD Truth 
       if(fAnalysisType == "MCAOD")
-        { //Data AOD                                                                                                                        
-          fArrayMC = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+        { 
+
+	  fArrayMC = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
           if (!fArrayMC) {
             Printf("Error: MC particles branch not found!\n");
             return;
           }
-
-          AliAODMCHeader *mcHdr=0;
+	  AliAODMCHeader *mcHdr=0;
           mcHdr=(AliAODMCHeader*)fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
           if(!mcHdr) {
             Printf("MC header branch not found!\n");
             return;
           }
 
-	  //cout<<"********MCAOD Events loop for Prabhat *********"<<endl;
-          AliMCEvent* mcEvent = MCEvent();
+	  AliMCEvent* mcEvent = MCEvent();
           _nTracks = mcEvent->GetNumberOfTracks();
           _mult3    = _nTracks;
-	  //loop over tracks starts here                                                                                                    
+          //loop over tracks starts here                                                                                                       
           for (int iTrack=0; iTrack< _nTracks; iTrack++)
             {
-              AliAODMCParticle *t = (AliAODMCParticle*) mcEvent->GetTrack(iTrack);
+              AliAODMCParticle *aodTrack = (AliAODMCParticle*) mcEvent->GetTrack(iTrack);
 
-              if (!t)
+              if (!aodTrack)
                 {
                   AliError(Form("AliTaskDptCorrMC::Exec(Option_t *option) No track ofr iTrack=%d", iTrack));
                   continue;
-		}
+                }
+	  
 
-              //if(!t->IsPhysicalPrimary()) continue;                                                                                      
-              // Remove neutral tracks                                      
-              if(t->Charge() == 0) continue;                                                                                              
-	      //Exclude Weak Decay Resonances                                                                                                          
-	      if(fExcludeResonancesInMC)
-		{
-		  //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;                                             
-		  Int_t gMotherIndex = t->GetMother();
-		  if(gMotherIndex != -1) {
-		    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-		    if(motherTrack) {
-		      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+	      //if(!aodTrack->IsPhysicalPrimary()) continue;
 
-		      if(pdgCodeOfMother == 311  ||
-			 pdgCodeOfMother == -311 ||
-			 pdgCodeOfMother == 310  ||
-			 pdgCodeOfMother == 3122 ||
-			 pdgCodeOfMother == -3122) continue;
-		    }
-		  }
-		}
-
-	      //Exclude electrons with PDG                                                                                                 
-	      if(fExcludeElectronsInMC) {
-		if(TMath::Abs(t->GetPdgCode()) == 11) continue;
-	      }
-
-	      //===================================                                                                                         
-              q      = t->Charge();
+	      q      = aodTrack->Charge();
               charge = int(q);
-              phi    = t->Phi();
-              pt     = t->Pt();
-              px     = t->Px();
-              py     = t->Py();
-              pz     = t->Pz();
-              eta    = t->Eta();
-	      //Particle 1                                                                                                                  
-              if (t->Charge() > 0 && eta > _min_eta_1 && eta < _max_eta_1 && pt > _min_pt_1 && pt < _max_pt_1)
+              phi    = aodTrack->Phi();
+              pt     = aodTrack->Pt();
+              px     = aodTrack->Px();
+              py     = aodTrack->Py();
+              pz     = aodTrack->Pz();
+              eta    = aodTrack->Eta();
+	      // Kinematics cuts from ESD track cuts                                                           
+	      if( pt < 0.2 || pt > 2.0)      continue;
+	      if( eta < -0.8 || eta > 0.8)  continue;
+
+	      _etadis->Fill(eta);
+              _phidis->Fill(phi); 
+	      // Remove neutral tracks                                                                                         
+              if(q == 0) continue;  
+
+	      if(fExcludeResonancesInMC)
                 {
+                  //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;                               
+		  Int_t gMotherIndex = aodTrack->GetMother();
+                  if(gMotherIndex != -1) {
+                    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+                    if(motherTrack) {
+                      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
 
-                  _etadis->Fill(eta);
-                  _phidis->Fill(phi);
+                      if(pdgCodeOfMother == 311  ||
+                         pdgCodeOfMother == -311 ||
+                         pdgCodeOfMother == 310  ||
+                         pdgCodeOfMother == 3122 ||
+                         pdgCodeOfMother == -3122) continue;
+                    }
+                  }
+                }
+	      //Exclude electrons with PDG                                                                                   
+                                                                                                                               
+              if(fExcludeElectronsInMC) {
+                if(TMath::Abs(aodTrack->GetPdgCode()) == 11) continue;
+              }
 
+	      //Particle loop 1st particle
+              if (q > 0)
+                {
+		  
                   iPhi   = int( phi/_width_phi_1);
-
+		  
                   if (iPhi<0 || iPhi>=_nBins_phi_1 )
                     {
                       AliWarning("AliTaskDptCorrMC::analyze() iPhi<0 || iPhi>=_nBins_phi_1");
@@ -1338,7 +1343,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   if (iPt<0  || iPt >=_nBins_pt_1)
                     {
                       AliWarning(Form("AliTaskDptCorrMC::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
-		      continue;
+                      continue;
                     }
                   iEtaPhi = iEta*_nBins_phi_1+iPhi;
                   iZEtaPhiPt = iVertexP1 + iEtaPhi*_nBins_pt_1 + iPt;
@@ -1356,12 +1361,12 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		  if (_singlesOnly)
                     {
 
-                      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                         
-                      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                            
+                      __n1_1_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                            
+                      __n1_1_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                               
 
                     }
 
-		  else
+                  else
                     {
                       corrPt                      = corr*pt;
                       _id_1[k1]                   = iTrack;
@@ -1388,12 +1393,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                     }
                 }
 
-	      if (t->Charge() < 0 && eta > _min_eta_2 && eta < _max_eta_2 && pt > _min_pt_2 && pt < _max_pt_2)
-		
+	      if (q < 0)
                 {
-		  _etadis->Fill(eta);
-                  _phidis->Fill(phi);
-
                   iPhi   = int( phi/_width_phi_2);
 
                   if (iPhi<0 || iPhi>=_nBins_phi_2 )
@@ -1408,8 +1409,9 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                       AliWarning(Form("AliTaskDptCorrMC::analyze(AliceEvent * event) Mismatched iEta: %d", iEta));
                       continue;
                     }
+
 		  iPt     = int((pt -_min_pt_2 )/_width_pt_2 );
-		  if (iPt<0  || iPt >=_nBins_pt_2)
+                  if (iPt<0  || iPt >=_nBins_pt_2)
                     {
                       AliWarning(Form("AliTaskDptCorrMC::analyze(AliceEvent * event) Mismatched iPt: %d",iPt));
                       continue;
@@ -1423,35 +1425,34 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                       continue;
                     }
 
-
 		  if (_correctionWeight_2)
                     corr = _correctionWeight_2[iZEtaPhiPt];
                   else
                     corr = 1;
-                  //dpt = pt - (charge>0) ? _avgPt_vsEtaPhi_2p[iEtaPhi] : _avgPt_vsEtaPhi_2m[iEtaPhi];                                      
+                  //dpt = pt - (charge>0) ? _avgPt_vsEtaPhi_2p[iEtaPhi] : _avgPt_vsEtaPhi_2m[iEtaPhi];                                         
 
                   if (_singlesOnly)
                     {
-                      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                         
-                      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                            
+                      __n1_2_vsPt[iPt]               += corr;          //cout << "step 15" << endl;                                            
+                      __n1_2_vsZEtaPhiPt[iZEtaPhiPt] += corr;       //cout << "step 12" << endl;                                               
                     }
 		  else
                     {
                       corrPt                      = corr*pt;
-                      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;                                             
-                      _charge_2[k2]               = charge;         //cout << "step 2" << endl;                                             
-                      _iEtaPhi_2[k2]              = iEtaPhi;        //cout << "step 3" << endl;                                             
-                      _iPt_2[k2]                  = iPt;            //cout << "step 4" << endl;                                             
-                      _pt_2[k2]                   = pt;             //cout << "step 5" << endl;                                             
-                      _px_2[k2]                   = px;             //cout << "step 6" << endl;                                             
-                      _py_2[k2]                   = py;             //cout << "step 7" << endl;                                             
-                      _pz_2[k2]                   = pz;             //cout << "step 8" << endl;                                             
-                      _correction_2[k2]           = corr;           //cout << "step 9" << endl;                                             
-                      __n1_2                      += corr;          //cout << "step 10" << endl;                                            
-                      __s1pt_2                    += corrPt;        //cout << "step 13" << endl;                                            
+                      _id_2[k2]                   = iTrack;         //cout << "step 1" << endl;                                                
+                      _charge_2[k2]               = charge;         //cout << "step 2" << endl;                                                
+                      _iEtaPhi_2[k2]              = iEtaPhi;        //cout << "step 3" << endl;                                                
+                      _iPt_2[k2]                  = iPt;            //cout << "step 4" << endl;                                                
+                      _pt_2[k2]                   = pt;             //cout << "step 5" << endl;                                                
+                      _px_2[k2]                   = px;             //cout << "step 6" << endl;                                                
+                      _py_2[k2]                   = py;             //cout << "step 7" << endl;                                                
+                      _pz_2[k2]                   = pz;             //cout << "step 8" << endl;                                                
+                      _correction_2[k2]           = corr;           //cout << "step 9" << endl;                                                
+                      __n1_2                      += corr;          //cout << "step 10" << endl;                                               
+                      __s1pt_2                    += corrPt;        //cout << "step 13" << endl;                                               
                       __n1Nw_2                    += 1;
-                      __n1_2_vsEtaPhi[iEtaPhi]    += corr;          //cout << "step 11" << endl;                                            
-                      __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        //cout << "step 14" << endl;                                            
+                      __n1_2_vsEtaPhi[iEtaPhi]    += corr;          //cout << "step 11" << endl;                                               
+                      __s1pt_2_vsEtaPhi[iEtaPhi]  += corrPt;        //cout << "step 14" << endl;                                               
                       __s1ptNw_2                  += pt;
                       ++k2;
                       if (k2>=arraySize)
@@ -1461,35 +1462,27 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                         }
                     }
 
-		  //cout << "done with track" << endl;                                                                                      
-                } //iTrack                                                                                                                  
-            } //data aod loop                                                                                                               
-        } //MC AOD loop ends 
-  
+                  //cout << "done with track" << endl;                                                                                         
+                } //iTrack                                                                                                                     
+            } //data aod loop                                                                                                                  
+	  } //MC AOD loop ends                                                                                                                   
+
+      //***********************************************
+      //MC AOD Reconstructed tracks
       if(fAnalysisType == "MCAODreco")
-
-        //cout<<"Prabhat here is working for MC AOD reconstructed events"<<endl;                                                            
-
 	{
-	  TExMap *trackMap = new TExMap();//Mapping                                                                                           
-	  _nTracks = fAODEvent->GetNumberOfTracks();
+	  
+	  fArrayMC = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	  if (!fArrayMC) {
+	    AliError("No array of MC particles found !!!");
+	  }
+	  
+	  AliMCEvent* mcEvent = MCEvent();
+	  if (!mcEvent) {
+	    AliError("ERROR: Could not retrieve MC event");
+	  }
 
-	  for(Int_t i = 0; i < _nTracks; i++)
-	    {
-	      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
-	      if(!aodTrack) {
-		AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
-		continue;
-	      }
-	      Int_t gID = aodTrack->GetID();
-	      if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                                      
-	    }
-
-	  _mult3    = _nTracks;
-
-	  AliAODTrack* newAodTrack;
-	  //loop over tracks starts here                                                                                                      
-	  for (int iTrack=0; iTrack< _nTracks; iTrack++)
+	  for (int iTrack=0; iTrack< fAODEvent->GetNumberOfTracks(); iTrack++)
 	    {
 
 	      AliAODTrack *t = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(iTrack));
@@ -1502,8 +1495,6 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      bitOK  = t->TestFilterBit(_trackFilterBit);
 	      if (!bitOK) continue;
 
-	      Int_t gID = t->GetID();
-	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
 
 	      q      = t->Charge();
 	      charge = int(q);
@@ -1514,23 +1505,41 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      pz     = t->Pz();
 	      eta    = t->Eta();
 	      
-	      Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
-	      Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
-	      Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
-	      Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
+	      Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
+	      Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
+	      Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
+	      Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
 	      
 	      if(nsigmaelectron  < fNSigmaCut &&
 		 nsigmapion      > fNSigmaCut &&
 		 nsigmakaon      > fNSigmaCut &&
 		 nsigmaproton    > fNSigmaCut ) continue;
 
+	      //Float_t dcaXY = t->DCA();     
+	      //Float_t dcaZ  = t->ZAtDCA();  
+	      
+	      // Kinematics cuts 
+	      if( pt < 0.2 || pt > 2.0)  continue;
+	      if( eta < -0.8 || eta > 0.8)  continue;
+	      
+	      Int_t label = TMath::Abs(t->GetLabel());
+	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
 
-	      //Particle 1                                                                                                                  
-	      if (t->Charge() > 0 && t->Eta() > _min_eta_1 && t->Eta() < _max_eta_1 && t->Pt() > _min_pt_1 && t->Pt() < _max_pt_1)
+	      //W/Wo Secondaries
+	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
+	      
+	      if (AODmcTrack)
 		{
+		  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+		}
+	   
+	      _etadis->Fill(eta);
+	      _phidis->Fill(phi);
 
-		  _etadis->Fill(eta);
-		  _phidis->Fill(phi);
+	      
+	      //Particle 1                                                                                                                  
+	      if (t->Charge() > 0)
+		{
 
 		  iPhi   = int( phi/_width_phi_1);
 
@@ -1601,8 +1610,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		    }
 		}
 
-	      if (t->Charge() < 0 && t->Eta() > _min_eta_2 && t->Eta() < _max_eta_2 && t->Pt() > _min_pt_2 &&
-		  t->Pt() < _max_pt_2)
+	      if (t->Charge() < 0 )
 		{
 		  //===================================                                                                                       
 
@@ -1680,9 +1688,10 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	    } //data aod loop                                                                                                                 
 	} //MC AOD loop ends                                                                                                                  
 
-      //---------------------------------                                                                                                   
+      //************************************************
     } //AOD events             
-  //cout << "Filling histograms now" << endl;                                                                                               
+
+
   _m0->Fill(_mult0);
   _m1->Fill(_mult1);
   _m2->Fill(_mult2);

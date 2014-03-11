@@ -46,6 +46,7 @@ class AliCFContainer;
 
 //#include "TString.h"
 //#include "AliESDtrackCuts.h"
+#include "AliPIDResponse.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliAnalysisTaskQAV0 : public AliAnalysisTaskSE {

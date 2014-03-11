@@ -129,7 +129,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
   fMultiplicityEstimator(kNtrk10),
   fRefMult(9.26),
   fZvtxCorrectedNtrkEstimator(kFALSE),
-  fIsPPData(kFALSE)
+  fIsPPData(kFALSE),
+  fIsPPbData(kFALSE)
 {
   //
   //Default ctor
@@ -186,7 +187,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
   fMultiplicityEstimator(kNtrk10),
   fRefMult(9.26),
   fZvtxCorrectedNtrkEstimator(kFALSE),
-  fIsPPData(kFALSE)
+  fIsPPData(kFALSE),
+  fIsPPbData(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -274,7 +276,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
   fMultiplicityEstimator(c.fMultiplicityEstimator),
   fRefMult(c.fRefMult),
   fZvtxCorrectedNtrkEstimator(c.fZvtxCorrectedNtrkEstimator),
-  fIsPPData(c.fIsPPData)
+  fIsPPData(c.fIsPPData),
+  fIsPPbData(c.fIsPPbData)
 {
   //
   // Copy Constructor
@@ -442,8 +445,18 @@ void AliCFTaskVertexingHF::Init()
 
   fListProfiles = new TList();
   fListProfiles->SetOwner();
-  TString period[4]={"LHC10b","LHC10c","LHC10d","LHC10e"};
-  for(Int_t i=0; i<4; i++){
+  TString period[4];
+  Int_t nProfiles=4;
+  
+  if (fIsPPbData) { //if pPb, use only two estimator histos
+     period[0] = "LHC13b"; period[1] = "LHC13c";
+     nProfiles = 2;
+  } else {        // else assume pp (four histos for LHC10)
+     period[0] = "LHC10b"; period[1] = "LHC10c"; period[2] = "LHC10d"; period[3] = "LHC10e";
+     nProfiles = 4;
+  }
+
+  for(Int_t i=0; i<nProfiles; i++){
     if(fMultEstimatorAvg[i]){
       TProfile* hprof=new TProfile(*fMultEstimatorAvg[i]);
       hprof->SetName(Form("ProfileTrkVsZvtx%s\n",period[i].Data()));
@@ -1153,22 +1166,25 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     } else if (fDecayChannel==22) {
       //nvarToPlot = 16;
       titles = new TString[nvarToPlot];
-      titles[0]="pT_Lc (GeV/c)";
-      titles[1]="rapidity";
-      titles[2]="phi (rad)";
-      titles[3]="cosPAV0";
-      titles[4]="onTheFlyStatusV0";
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="#varphi(#Lambda_{c}) [rad]";
+      titles[3]="onTheFlyStatusV0";
+      titles[4]="z_{vtx} [cm]";
       titles[5]="centrality";
       titles[6]="fake";
       titles[7]="multiplicity";
-      titles[8]="pT_bachelor (GeV/c)";
-      titles[9]="pT_V0pos (GeV/c)";
-      titles[10]="pT_V0neg (GeV/c)";
-      titles[11]="invMassV0 (GeV/c2)";
-      titles[12]="dcaV0 (nSigma)";
-      titles[13]="c#tauV0 (#mum)";
-      titles[14]="c#tau (#mum)";
-      titles[15]="cosPA";
+      //titles[8]="pT(bachelor) [GeV/c]";
+      titles[8]="p(bachelor) [GeV/c]";
+      titles[9]="p_{T}(V0) [GeV/c]";
+      titles[10]="y(V0)";
+      titles[11]="#varphi(V0) [rad]";
+      titles[12]="m_{inv}(#pi^{+}#pi^{+}) [GeV/c^{2}]";
+      titles[13]="dcaV0 (nSigma)";
+      titles[14]="cosine pointing angle (V0)";
+      titles[15]="cosine pointing angle (#Lambda_{c})";
+      //titles[16]="c#tauV0 (#mum)";
+      //titles[17]="c#tau (#mum)";
     } else {
       //nvarToPlot = 12;
       titles = new TString[nvarToPlot];
@@ -1190,11 +1206,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
     //nvarToPlot = 8;
     titles = new TString[nvarToPlot];
     if (fDecayChannel==22) {
-      titles[0]="pT_candidate (GeV/c)";
-      titles[1]="rapidity";
-      titles[2]="phi (rad)";
-      titles[3]="cosPAV0";
-      titles[4]="onTheFlyStatusV0";
+      titles[0]="p_{T}(#Lambda_{c}) [GeV/c]";
+      titles[1]="y(#Lambda_{c})";
+      titles[2]="#varphi(#Lambda_{c}) [rad]";
+      titles[3]="onTheFlyStatusV0";
+      titles[4]="z_{vtx} [cm]";
       titles[5]="centrality";
       titles[6]="fake";
       titles[7]="multiplicity";
@@ -1319,23 +1335,6 @@ void AliCFTaskVertexingHF::UserCreateOutputObjects()
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
   Info("UserCreateOutputObjects","CreateOutputObjects of task %s\n", GetName());
-	
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  AliPIDResponse *localPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-
-  if (fCuts->GetIsUsePID() && fDecayChannel==22) {
-	  
-    fCuts->GetPidHF()->SetPidResponse(localPIDResponse);
-    fCuts->GetPidHF()->SetOldPid(kFALSE);
-    AliRDHFCutsLctoV0* lcv0Cuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
-    if(lcv0Cuts){
-      lcv0Cuts->GetPidV0pos()->SetPidResponse(localPIDResponse);
-      lcv0Cuts->GetPidV0neg()->SetPidResponse(localPIDResponse);
-      lcv0Cuts->GetPidV0pos()->SetOldPid(kFALSE);
-      lcv0Cuts->GetPidV0neg()->SetOldPid(kFALSE);
-    }
-  }
 
   //slot #1
   OpenFile(1);
@@ -1584,12 +1583,20 @@ TProfile* AliCFTaskVertexingHF::GetEstimatorHistogram(const AliVEvent* event){
   //
 
   Int_t runNo  = event->GetRunNumber();
-  Int_t period = -1;   // 0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
-  if(runNo>114930 && runNo<117223) period = 0;
-  if(runNo>119158 && runNo<120830) period = 1;
-  if(runNo>122373 && runNo<126438) period = 2;
-  if(runNo>127711 && runNo<130841) period = 3;
-  if(period<0 || period>3) return 0;
+  Int_t period = -1;   // pp:  0-LHC10b, 1-LHC10c, 2-LHC10d, 3-LHC10e
+                       // pPb: 0-LHC13b, 1-LHC13c
+
+  if (fIsPPbData) {    // setting run numbers for LHC13 if pPb
+      if (runNo>195343 && runNo<195484) period = 0;
+      if (runNo>195528 && runNo<195678) period = 1;
+      if (period<0 || period>1) return 0;
+  } else {             //else assume pp 2010                 
+      if(runNo>114930 && runNo<117223) period = 0;
+      if(runNo>119158 && runNo<120830) period = 1;
+      if(runNo>122373 && runNo<126438) period = 2;
+      if(runNo>127711 && runNo<130841) period = 3;
+      if(period<0 || period>3) return 0;
+  }
 
   return fMultEstimatorAvg[period];
 }
