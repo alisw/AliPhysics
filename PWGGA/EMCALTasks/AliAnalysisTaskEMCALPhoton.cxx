@@ -1022,7 +1022,7 @@ Double_t AliAnalysisTaskEMCALPhoton::GetMcIsolation( Int_t itrack, Double_t radi
     printf("\t\t::GetMcIsolation() starting\n");
     //printf("\t\t   incoming particle: PDG = %d, itrack=%d;\n",mcP->GetPdgCode(),itrack);
   }
-  if (!this->fStack && !this->fAODMCParticles){
+  if (!this->fStack && !this->fAODMCParticles && this->fDebug){
     printf("\t\t\tNo MC stack/array!\n");
     return -1;
   }
