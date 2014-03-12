@@ -62,6 +62,7 @@
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
+#pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
 
 
 #endif
