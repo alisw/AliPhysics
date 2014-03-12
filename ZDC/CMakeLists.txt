@@ -8,3 +8,6 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 file(GLOB PACKAGES CMake*.pkg)
 
 ALICE_BuildModule()
+
+install ( FILES "SpectatorSignal.root" "GlauberMCDist.root" 
+	  DESTINATION ZDC )
