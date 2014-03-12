@@ -126,7 +126,8 @@ AliAnalysisTaskSE("PID efficiency Analysis")
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
-  , fTRDTriggerAnalysis(NULL)
+  , fTRDTriggerAnalysismb(NULL)
+  , fTRDTriggerAnalysistrg(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -197,7 +198,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
-  , fTRDTriggerAnalysis(NULL)
+  , fTRDTriggerAnalysismb(NULL)
+  , fTRDTriggerAnalysistrg(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -232,7 +234,9 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const char * name):
   fPIDqa = new AliHFEpidQAmanager;
   fVarManager = new AliHFEvarManager("hfeVarManager");
   fAnalysisUtils = new AliAnalysisUtils;
-  fTRDTriggerAnalysis = new AliTRDTriggerAnalysis();
+  fTRDTriggerAnalysismb = new AliTRDTriggerAnalysis();
+  fTRDTriggerAnalysistrg = new AliTRDTriggerAnalysis();
+  fTRDTriggerAnalysistrg->SetRequireMatchElectron(kTRUE);
 
   memset(fElecBackgroundFactor, 0, sizeof(Double_t) * kElecBgSpecies * kBgPtBins * kCentBins * kBgLevels);
   memset(fkBackGroundFactorArray, 0, sizeof(TF1 *) * 12);
@@ -278,7 +282,8 @@ AliAnalysisTaskHFE::AliAnalysisTaskHFE(const AliAnalysisTaskHFE &ref):
   , fTriggerAnalysis(NULL)
   , fPID(NULL)
   , fPIDqa(NULL)
-  , fTRDTriggerAnalysis(NULL)
+  , fTRDTriggerAnalysismb(NULL)
+  , fTRDTriggerAnalysistrg(NULL)
   , fPIDpreselect(NULL)
   , fCuts(NULL)
   , fTaggedTrackCuts(NULL)
@@ -356,7 +361,8 @@ void AliAnalysisTaskHFE::Copy(TObject &o) const {
   target.fTriggerAnalysis = fTriggerAnalysis;
   target.fPID = fPID;
   target.fPIDqa = fPIDqa;
-  target.fTRDTriggerAnalysis = fTRDTriggerAnalysis;
+  target.fTRDTriggerAnalysismb = fTRDTriggerAnalysismb;
+  target.fTRDTriggerAnalysistrg = fTRDTriggerAnalysistrg;
   target.fPIDpreselect = fPIDpreselect;
   target.fCuts = fCuts;
   target.fTaggedTrackCuts = fTaggedTrackCuts;
@@ -389,7 +395,8 @@ AliAnalysisTaskHFE::~AliAnalysisTaskHFE(){
   if(fPID) delete fPID;
   if(fPIDpreselect) delete fPIDpreselect;
   if(fVarManager) delete fVarManager;
-  if(fTRDTriggerAnalysis) delete fTRDTriggerAnalysis;
+  if(fTRDTriggerAnalysismb) delete fTRDTriggerAnalysismb;
+  if(fTRDTriggerAnalysistrg) delete fTRDTriggerAnalysistrg;
   if(fCFM) delete fCFM;
   if(fTriggerAnalysis) delete fTriggerAnalysis;
   if(fSignalCuts) delete fSignalCuts;
@@ -452,6 +459,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fQACollection->CreateTH1F("nElectron", "Number of electrons", 100, 0, 100);
   fQACollection->CreateTH2F("radius", "Production Vertex", 100, 0.0, 5.0, 100, 0.0, 5.0);
   fQACollection->CreateTH1F("nTriggerBit", "Histo Trigger Bit", 22, 0, 22);
+  fQACollection->CreateTH2F("TriggerAnalysis","TRD Trigger Analysis",10,0.,10.,10,0.,10.);
   fQACollection->CreateTH1F("Filterbegin", "AOD filter of tracks after all cuts", 21, -1, 20);
   fQACollection->CreateTH1F("Filterend", "AOD filter of tracks after all cuts", 21, -1, 20);
   fQACollection->CreateTH2F("Kinkbefore", "Kink status before filter; p_{T} (GeV/c); kink status", 100, 0., 20., 3, -0.5, 2.5);
@@ -473,7 +481,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
   fPID->SortDetectors();
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) {
+  if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) {
     if(!fBackgroundSubtraction) fBackgroundSubtraction = new AliHFENonPhotonicElectron();
     if(IsAODanalysis()) fBackgroundSubtraction->SetAOD(kTRUE);
     fBackgroundSubtraction->Init();
@@ -556,7 +564,7 @@ void AliAnalysisTaskHFE::UserCreateOutputObjects(){
     fTaggedTrackAnalysis = new AliHFEtaggedTrackAnalysis(Form("taggedTrackAnalysis%s", GetName()));
     fTaggedTrackAnalysis->SetCuts(fTaggedTrackCuts);
     fTaggedTrackAnalysis->SetClean(fCleanTaggedTrack);
-    if(IsAODanalysis()) fTaggedTrackAnalysis->SetAOD(); 
+    if(IsAODanalysis()) fTaggedTrackAnalysis->SetAOD();
     AliHFEvarManager *varManager = fTaggedTrackAnalysis->GetVarManager();
     TObjArray *array = fVarManager->GetVariables();
     Int_t nvars = array->GetEntriesFast();
@@ -677,7 +685,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
     }
     fSignalCuts->SetMCAODInfo(fAODArrayMCInfo);
     // Background subtraction-------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
+    if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->SetAODArrayMCInfo(fAODArrayMCInfo);
     //------------------------------------------------------------------------------------------
   }
 
@@ -710,7 +718,7 @@ void AliAnalysisTaskHFE::UserExec(Option_t *){
   if(fPIDpreselect) fPIDpreselect->SetPIDResponse(pidResponse);
 
   // Background subtraction-------------------------------------------------------------------
-  if(GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->InitRun(fInputEvent,pidResponse);
+  if(GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->InitRun(fInputEvent,pidResponse);
   //------------------------------------------------------------------------------------------
 
   // Event loop
@@ -827,6 +835,37 @@ void AliAnalysisTaskHFE::ProcessMC(){
    // fCFM->CheckEventCuts(AliCFManager::kEvtRecCuts, fESD);
   } else {
     fMCQA->SetMCArray(fAODArrayMCInfo);
+
+    if(!((fIdentifiedAsPileUp) || (TMath::Abs(fVz) > fCuts->GetVertexRange()) || (fCentralityF < 0))){ //kStepMCGeneratedZOutNoPileUpCentralityFine
+      if (HasMCData() && IsQAOn(kMCqa)) {
+        AliDebug(2, "Running MC QA");
+
+        fMCQA->SetCentrality(fCentralityF);
+        fMCQA->SetPercentrality(static_cast<Int_t>(fCentralityPercent));
+
+        if(IsPbPb()) { fMCQA->SetPbPb();}
+        else
+        {
+            if(fisppMultiBin) fMCQA->SetPPMultiBin();
+            else fMCQA->SetPP();
+        }
+        fMCQA->Init();
+
+        //fMCQA->GetMesonKine();
+
+        // loop over all tracks for decayed electrons
+        AliAODMCParticle * mcpart;
+        for (Int_t igen = 0; igen < fAODArrayMCInfo->GetEntriesFast(); igen++){
+          mcpart = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(igen));
+          if(!mcpart) continue;
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kCharm,  AliHFEmcQA::kElectronPDG); // no accept cut
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kBeauty, AliHFEmcQA::kElectronPDG); // no accept cut
+          fMCQA->GetDecayedKine(mcpart, AliHFEmcQA::kOthers, AliHFEmcQA::kElectronPDG); // no accept cut
+        }
+
+      } // end of MC QA loop
+    }
+
     fCFM->SetMCEventInfo(fInputEvent);
   }
   // Run MC loop
@@ -1197,10 +1236,18 @@ void AliAnalysisTaskHFE::ProcessESD(){
     if (GetPlugin(kNonPhotonicElectron)) {
       Int_t indexmother = -1;
       Int_t mcsource = -1;
+      Int_t mcQAsource = -1;
+      Double_t weightNonPhotonicFactor = 1.; 
       if(HasMCData()){
 	mcsource = fBackgroundSubtraction->FindMother(mctrack->GetLabel(),indexmother);
+	if(fBackgroundSubtraction->GetLevelBack()>=0) {
+	  if(fMCQA) {
+	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+	  }
+	}
       }
-      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1, mcsource, indexmother);
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1, mcsource, indexmother,mcQAsource);
     }
     //-----------------------------------------------------------------------------------------------------------------
 
@@ -1511,7 +1558,7 @@ void AliAnalysisTaskHFE::ProcessAOD(){
   //printf("Number of kink mother in the events %d\n",numberofmotherkink);
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
+  if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->FillPoolAssociatedTracks(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   // Loop over tracks
@@ -1617,6 +1664,25 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     }
 
     if(HasMCData()){
+
+      if(fMCQA && signal){
+        fMCQA->SetCentrality(fCentralityF);
+        if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 11)){
+         Double_t weightElecBgV0[kBgLevels] = {0.,0.,0.};
+         for(Int_t iLevel = 0; iLevel < kBgLevels; iLevel++){
+           weightElecBgV0[iLevel] = fMCQA->GetWeightFactor(mctrack, iLevel); // positive:conversion e, negative: nonHFE 
+         }
+         if(weightElecBgV0[0]>0) {
+             fVarManager->FillContainer(fContainer, "conversionElecs", 3, kFALSE, weightElecBgV0[0]);
+             fVarManager->FillContainer(fContainer, "conversionElecs", 4, kTRUE, weightElecBgV0[0]);
+         }
+         else if(weightElecBgV0[0]<0) {
+             fVarManager->FillContainer(fContainer, "mesonElecs", 3, kFALSE, -1*weightElecBgV0[0]);
+             fVarManager->FillContainer(fContainer, "mesonElecs", 4, kTRUE, -1*weightElecBgV0[0]);
+         }
+        }
+      }
+
       Double_t hfeimpactR4all=0., hfeimpactnsigmaR4all=0.;
       Int_t sourceDca =-1;
       if(mctrack && (TMath::Abs(mctrack->GetPdgCode()) == 211)){
@@ -1682,27 +1748,22 @@ void AliAnalysisTaskHFE::ProcessAOD(){
     // we will do PID here as soon as possible
 
     // Background subtraction----------------------------------------------------------------------------------------------
-    if (GetPlugin(kNonPhotonicElectron)) {
+    if (GetPlugin(kNonPhotonicElectron)&&!GetPlugin(kNonPhotonicElectronBeauty)) {
       Int_t indexmother = -1;
-      Int_t mcsource = -1;
+      Int_t mcsource = -1;  
+      Int_t mcQAsource = -1;
+      Double_t weightNonPhotonicFactor = 1.; 
+      //printf("weight %f \n",weightNonPhotonicFactor);
       if(HasMCData() && mctrack){  
         mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
-        if(mcsource == AliHFENonPhotonicElectron::kElectronfromC || mcsource == AliHFENonPhotonicElectron::kElectronfromB){
-          int svalue = 0;
-          if(fSignalCuts){
-            if(fSignalCuts->IsCharmElectron(track)) svalue = 0;
-	        else if(fSignalCuts->IsBeautyElectron(track)) svalue = 1;
-	        else if(fSignalCuts->IsGammaElectron(track)) svalue = 2;
-            else if(fSignalCuts->IsNonHFElectron(track)) svalue = 3;
-            else if(fSignalCuts->IsJpsiElectron(track)) svalue = 4;
-            else if(fSignalCuts->IsB2JpsiElectron(track)) svalue = 5;
-            else if(fSignalCuts->IsKe3Electron(track)) svalue = 6;
-	        else svalue = 7;
-            fQACollection->Fill("HFPuzzle",svalue);
-          }
-        }
+	if(fBackgroundSubtraction->GetLevelBack()>=0) {
+	  if(fMCQA) {
+	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+	  }
+	}
       }
-      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, 1, fCentralityF, -1,mcsource, indexmother);
+	fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
     }
     //---------------------------------------------------------------------------------------------------------------------
 
@@ -1757,12 +1818,37 @@ void AliAnalysisTaskHFE::ProcessAOD(){
               // weightBackGround as special weight
               fVarManager->FillContainer(fContainer, "hadronicBackground", 2, kFALSE, fWeightBackGround);
         }
+
+        fVarManager->FillContainer(fContainer, "recTrackContDEReco", AliHFEcuts::kStepHFEcutsDca, kFALSE);
+        fVarManager->FillContainer(fContainer, "recTrackContDEMC", AliHFEcuts::kStepHFEcutsDca, kTRUE);
+        fVarManager->FillCorrelationMatrix(fContainer->GetCorrelationMatrix("correlationstepafterDE"));
       }
     }
+
+    // Background subtraction----------------------------------------------------------------------------------------------
+    if (!GetPlugin(kNonPhotonicElectron)&&GetPlugin(kNonPhotonicElectronBeauty)) {
+      Int_t indexmother = -1;
+      Int_t mcsource = -1;  
+      Int_t mcQAsource = -1;
+      Double_t weightNonPhotonicFactor = 1.; 
+      //printf("weight %f \n",weightNonPhotonicFactor);
+      if(HasMCData() && mctrack){  
+        mcsource = fBackgroundSubtraction->FindMother(TMath::Abs(track->GetLabel()),indexmother);
+	if(fBackgroundSubtraction->GetLevelBack()>=0) {
+	  if(fMCQA) {
+	    mcQAsource = fMCQA->GetElecSource(mctrack);
+	    weightNonPhotonicFactor = TMath::Abs(fMCQA->GetWeightFactor(mctrack, fBackgroundSubtraction->GetLevelBack())); // positive:conversion e, negative: nonHFE 
+	  }
+	}
+      }
+      fBackgroundSubtraction->LookAtNonHFE(itrack, track, fInputEvent, weightNonPhotonicFactor, fCentralityF, -1,mcsource, indexmother,mcQAsource);
+    }
+    //---------------------------------------------------------------------------------------------------------------------
+
   }
 
   // Background subtraction-------------------------------------------------------------------
-  if (GetPlugin(kNonPhotonicElectron)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
+  if (GetPlugin(kNonPhotonicElectron)||GetPlugin(kNonPhotonicElectronBeauty)) fBackgroundSubtraction->CountPoolAssociated(fInputEvent, fCentralityF);
   //------------------------------------------------------------------------------------------
 
   fQACollection->Fill("nElectronTracksEvent", nElectronCandidates);
@@ -2109,6 +2195,7 @@ void AliAnalysisTaskHFE::SwitchOnPlugin(Int_t plug){
     case kDEstep: SETBIT(fPlugins, plug); break;
     case kTaggedTrackAnalysis: SETBIT(fPlugins, plug); break;
     case kNonPhotonicElectron: SETBIT(fPlugins, plug); break; 
+    case kNonPhotonicElectronBeauty: SETBIT(fPlugins, plug); break; 
     default: AliError("Unknown Plugin");
   };
 }
@@ -2301,12 +2388,16 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 
   //  printf("TRIGGERS %s \n",ev->GetFiredTriggerClasses().Data());
 
+    fTRDTriggerAnalysismb->CalcTriggers(ev);
+
     // mb selection of WU events
     if(fWhichTRDTrigger==1)
     {
-	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+	if((ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT7WU-S-NOPF-ALL"))||(ev->IsTriggerClassFired("CINT8WU-S-NOPF-ALL")))
 	{
 	    DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
         else return kFALSE;
@@ -2328,6 +2419,7 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 	else
 	{
 	    DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
     }
@@ -2349,6 +2441,7 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
 	else
 	{
 	    DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
     }
@@ -2357,33 +2450,41 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTriggerESD(AliESDEvent *ev) {
     {
 //	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HSE"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 10))); // bug in IsTriggerInputFired; reported in savannah
 
-	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-	{
-	    Int_t trginput=0;
-	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 10);  // HSE
-	    if(trginput==1024)
+//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+//	{
+//	    Int_t trginput=0;
+//	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 10);  // HSE
+	    //	    if(trginput==1024)
+//	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHSE))
+//	    if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHSE))
+	    if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHSE))
 	    {
 		DrawTRDTrigger(ev);
+		DrawTRDTriggerAnalysis(ev);
 		return kTRUE;
 	    } else return kFALSE;
-	} else return kFALSE;
-    }
+    }// else return kFALSE;
+//    }
     if(fWhichTRDTrigger==5)
     {
 //	printf("trigger %i %i \n", ev->GetHeader()->IsTriggerInputFired("1HQU"),(ev->GetHeader()->GetL1TriggerInputs() & (1 << 12))); // bug in IsTriggerInputFired; reported in savannah
-	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
-	{
+//	if(ev->IsTriggerClassFired("CINT7WU-B-NOPF-ALL"))
+//	{
 
-	    Int_t trginput=0;
-	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 12);  //HQU
+//	    Int_t trginput=0;
+//	    trginput=ev->GetHeader()->GetL1TriggerInputs() & (1 << 12);  //HQU
 	    //        printf("triggerinput %i \n",trginput);
-	    if(trginput==4096)
+	    //	    if(trginput==4096)
+//	    if(fTRDTriggerAnalysismb->CheckCondition(AliTRDTriggerAnalysis::kHQU))
+//          if(fTRDTriggerAnalysismb->HasFired(AliTRDTriggerAnalysis::kHQU))
+          if(fTRDTriggerAnalysismb->HasTriggered(AliTRDTriggerAnalysis::kHQU))
 	    {
 		DrawTRDTrigger(ev);
+		DrawTRDTriggerAnalysis(ev);
 		return kTRUE;
 	    } else return kFALSE;
-	} else return kFALSE;
-    }
+    } //else return kFALSE;
+//    }
    
 
     return trdtrgevent;
@@ -2397,18 +2498,19 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
 // Check TRD trigger; pPb settings
 //
 
-    fTRDTriggerAnalysis->CalcTriggers(ev);
+    fTRDTriggerAnalysistrg->CalcTriggers(ev);
 
     // HSE cleanup
     if(fWhichTRDTrigger==6)
     {
-	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))
+	if(!fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE))
 	{
 	    return kFALSE;
 	}
 	else
 	{
-	 //   DrawTRDTrigger(ev);
+	    //   DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
     }
@@ -2419,13 +2521,14 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
     if(fWhichTRDTrigger==7)
     {
 
-	if(!fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU))
+	if(!fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU))
 	{
 	    return kFALSE;
 	}
 	else
 	{
-       //     DrawTRDTrigger(ev);
+	    //     DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
     }
@@ -2433,9 +2536,10 @@ Bool_t AliAnalysisTaskHFE::CheckTRDTrigger(AliVEvent *ev) {
     // HSE or HQU cleanup
     if(fWhichTRDTrigger==8)
     {
-	if((fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHSE))||(fTRDTriggerAnalysis->IsFired(AliTRDTriggerAnalysis::kHQU)))
+	if((fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHSE))||(fTRDTriggerAnalysistrg->HasTriggeredConfirmed(AliTRDTriggerAnalysis::kHQU)))
 	{
-	//    DrawTRDTrigger(ev);
+	    //    DrawTRDTrigger(ev);
+	    DrawTRDTriggerAnalysis(ev);
 	    return kTRUE;
 	}
 	else
@@ -2561,6 +2665,22 @@ void AliAnalysisTaskHFE::DrawTRDTrigger(AliESDEvent *ev) {
     }
     if(ntriggerbit==0) fQACollection->Fill("nTriggerBit",1);
 
+}
+
+
+//___________________________________________________
+void AliAnalysisTaskHFE::DrawTRDTriggerAnalysis(AliVEvent *ev) {
+
+    fTRDTriggerAnalysistrg->CalcTriggers(ev);
+    for(Int_t itrg=0;itrg<AliTRDTriggerAnalysis::kHlast;itrg++)
+    {
+        Int_t trdtrgstatus=0;
+	if(fTRDTriggerAnalysistrg->CheckCondition((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=1;
+	if(fTRDTriggerAnalysistrg->HasFired((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=2;
+	if(fTRDTriggerAnalysistrg->HasTriggered((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=3;
+	if(fTRDTriggerAnalysistrg->HasTriggeredConfirmed((AliTRDTriggerAnalysis::TRDTrigger_t) itrg))trdtrgstatus=4;
+        fQACollection->Fill("TriggerAnalysis",(Float_t)itrg,(Float_t)trdtrgstatus);
+    }
 }
 
 //___________________________________________________

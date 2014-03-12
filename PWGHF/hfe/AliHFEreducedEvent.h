@@ -45,12 +45,17 @@ class AliHFEreducedEvent : public TObject{
   Float_t GetVXSPD() const { return fVX[1]; }
   Float_t GetVYSPD() const { return fVY[1]; }
   Float_t GetVZSPD() const { return fVZ[1]; }
+  Double_t GetVXMC() const { return fVMC[0]; }
+  Double_t GetVYMC() const { return fVMC[1]; }
+  Double_t GetVZMC() const { return fVMC[2]; }
   Int_t GetNContribVertex() const { return fNContrib[0]; }
   Int_t GetNContribVertexSPD() const { return fNContrib[1]; }
   Bool_t HasPrimaryVertex() const { return fNContrib[0] > 0; }
   Bool_t HasPrimaryVertexSPD() const { return fNContrib[1] > 0; }
   Float_t GetVertexZResolution() const { return fVertexResolution[0]; };
   Float_t GetVertexZResolutionSPD() const { return fVertexResolution[1]; };
+  Float_t GetVertexDispersion()  const { return fVertexDispersion[0]; };
+  Float_t GetVertexDispersionSPD()  const { return fVertexDispersion[1]; };
   Int_t GetRunNumber() const { return fRunNumber; }
   Double_t GetCentrality() const { return fCentrality[0]; }
   Double_t GetCentralityV0M() const { return fCentrality[0]; }
@@ -84,7 +89,13 @@ class AliHFEreducedEvent : public TObject{
   void SetVXSPD(Float_t vx) { fVX[1] = vx; }
   void SetVYSPD(Float_t vy) { fVY[1] = vy; }
   void SetVZSPD(Float_t vz) { fVZ[1] = vz; }
+  void SetVMC(Double_t vx, Double_t vy, Double_t vz){
+      fVMC[0] = vx;
+      fVMC[1] = vy;
+      fVMC[2] = vz;
+  }
   void SetRunNumber(Int_t runnumber) { fRunNumber = runnumber; }
+  void SetPileupFlag() { fPileupFlag = kTRUE; }
   inline void SetCentrality(
         Float_t centV0M, 
         Float_t centV0A, 
@@ -101,6 +112,8 @@ class AliHFEreducedEvent : public TObject{
   void SetNContribVertexSPD(Int_t ncontrib) { fNContrib[1] = ncontrib; }
   void SetVertexResolution(Float_t res) { fVertexResolution[0] = res; }
   void SetVertexResolutionSPD(Float_t res) { fVertexResolution[1] = res; }
+  void SetVertexDispersion(Float_t dis) { fVertexDispersion[0] = dis; }
+  void SetVertexDispersionSPD(Float_t dis) { fVertexDispersion[1] = dis; }
   
   Bool_t IsMBTrigger() const { return TESTBIT(fTrigger, kMB); }
   Bool_t IsSemiCentralTrigger() const { return TESTBIT(fTrigger, kSemiCentral); }
@@ -109,7 +122,8 @@ class AliHFEreducedEvent : public TObject{
   Bool_t IsTRDSETrigger() const { return TESTBIT(fTrigger, kTRDSE); }
   Bool_t IsTRDDQTrigger() const { return TESTBIT(fTrigger, kTRDDQ); }
   Bool_t IsINTTrigger() const { return TESTBIT(fTrigger, kINTTRG); }
-
+  Bool_t HasPileupFlag() const { return fPileupFlag; }
+  
   void SetMBTrigger() { SETBIT(fTrigger, kMB); }
   void SetSemiCentralTrigger() { SETBIT(fTrigger, kSemiCentral); }
   void SetCentralTrigger() { SETBIT(fTrigger, kCentral); }
@@ -133,7 +147,7 @@ class AliHFEreducedEvent : public TObject{
     kEMCAL = 3,
     kTRDSE = 4,
     kTRDDQ = 5,
-    kINTTRG = 6 
+    kINTTRG = 6
   } Trigger_t;
   enum{
     kCentBuff = 15
@@ -148,13 +162,16 @@ class AliHFEreducedEvent : public TObject{
   Float_t fVX[2];               // Vertex X
   Float_t fVY[2];               // Vertex Y
   Float_t fVZ[2];               // Vertex Z
+  Double_t fVMC[3];              // Position of the MC Vertex
   Int_t    fNContrib[2];        // Number of vertex contributors
   Float_t  fVertexResolution[2];// z-Vertex resolution 
+  Float_t  fVertexDispersion[2];// z-Vertex dispersion
   Float_t  fV0Multiplicity[2];  // V0 multiplicity
   Float_t  fZDCEnergy[4];       // ZDC Energy (n,p)
   Int_t    fSPDMultiplicity;    // SPD tracklet multiplicity
+  Bool_t   fPileupFlag;         // Flag for Pileup event
   
-  ClassDef(AliHFEreducedEvent, 4)
+  ClassDef(AliHFEreducedEvent, 5)
 };
 
 //____________________________________________________________

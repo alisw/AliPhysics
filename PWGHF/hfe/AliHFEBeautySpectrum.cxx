@@ -589,7 +589,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
   
   THnSparseF* sparseIncElec = (THnSparseF *) dataspectrumbeforesubstraction->GetGrid();  
   incElec = (TH1D *) sparseIncElec->Projection(0);
-  CorrectFromTheWidth(incElec);
+  AliHFEtools::NormaliseBinWidth(incElec);
 
   TH1D* htemp;
   Int_t* bins=new Int_t[2];
@@ -608,7 +608,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
     // draw raw hadron bg spectra     
     THnSparseF* sparseHbg = (THnSparseF *) hbgContainer->GetGrid();
     hadron = (TH1D *) sparseHbg->Projection(0);
-    CorrectFromTheWidth(hadron);
+    AliHFEtools::NormaliseBinWidth(hadron);
   }
 
   if(fIPanaCharmBgSubtract){
@@ -618,7 +618,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
     spectrumSubtracted->Add(charmbgContainer,-1.0);
     THnSparseF *sparseCharmElec = (THnSparseF *) charmbgContainer->GetGrid();  
     charm = (TH1D *) sparseCharmElec->Projection(0);
-    CorrectFromTheWidth(charm); 
+    AliHFEtools::NormaliseBinWidth(charm); 
   }
 
   const Char_t *sourceName[bgPlots]={"Conversion","Dalitz","K0s secondary pion Dalitz","K0s secondary pion conversions","Other secondary pion Dalitz","Other secondary pion Dalitz conversions","Other Dalitz", "Other conversions"};
@@ -634,7 +634,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
           spectrumSubtracted->Add(nonHFEbgContainer,-1.0);
         THnSparseF* sparseNonHFEelecs = (THnSparseF *) nonHFEbgContainer->GetGrid();
         nonHFE[iPlot] = (TH1D *) sparseNonHFEelecs->Projection(0);
-        CorrectFromTheWidth(nonHFE[iPlot]);
+        AliHFEtools::NormaliseBinWidth(nonHFE[iPlot]);
         iPlot++;
       }
       if(!(fNonHFEsyst && (fBeamType == 1)))break;
@@ -687,7 +687,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
 
   THnSparseF* sparseSubtracted = (THnSparseF *) spectrumSubtracted->GetGrid();
   subtracted = (TH1D *) sparseSubtracted->Projection(0);
-  CorrectFromTheWidth(subtracted);
+  AliHFEtools::NormaliseBinWidth(subtracted);
   subtracted->Draw("samep");
   subtracted->SetMarkerStyle(24);
   lRaw->AddEntry(subtracted,"subtracted electron spectrum");
@@ -696,7 +696,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::SubtractBackground(Bool_t setBackground){
   delete[] bins; 
 
   TH1D *measuredTH1background = (TH1D *) backgroundGrid->Project(0);
-  CorrectFromTheWidth(measuredTH1background);
+  AliHFEtools::NormaliseBinWidth(measuredTH1background);
 
   if(setBackground){
     if(fBackground) delete fBackground;
@@ -738,7 +738,10 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
       backgroundContainer = (AliCFContainer*)fNonHFESourceContainer[source][0]->Clone();
       if(source == 0)
         for(Int_t iSource = 1; iSource < kElecBgSources-3; iSource++){
-          backgroundContainer->Add(fNonHFESourceContainer[iSource][0]);   
+          if(iSource == 1)
+            backgroundContainer->Add(fNonHFESourceContainer[iSource][0],1.41);//correction for the eta Dalitz decay branching ratio in PYTHIA
+          else
+            backgroundContainer->Add(fNonHFESourceContainer[iSource][0]);   
         }
     }   
   }
@@ -767,7 +770,7 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetNonHFEBackground(Int_t decay, Int_t sour
   fNonHFEbg = 0x0;
   TH1D *h1 = (TH1D*)backgroundGrid->Project(0);
   TAxis *axis = h1->GetXaxis();
-  CorrectFromTheWidth(h1);
+  AliHFEtools::NormaliseBinWidth(h1);
   if(source == 0){
     fitHagedorn->SetParameter(0, 0.15);
     fitHagedorn->SetParameter(1, 0.09);
@@ -894,23 +897,23 @@ AliCFDataGrid* AliHFEBeautySpectrum::GetCharmBackground(){
   
   if(fBeamType==0)charmbgaftertofpid->Scale(evtnorm);
     
-  CorrectFromTheWidth(charmbgaftertofpid);
+  AliHFEtools::NormaliseBinWidth(charmbgaftertofpid);
   charmbgaftertofpid->SetMarkerStyle(25);
   charmbgaftertofpid->Draw("p");
   charmbgaftertofpid->GetYaxis()->SetTitle("yield normalized by # of data events");
   charmbgaftertofpid->GetXaxis()->SetTitle("p_{T} (GeV/c)");
   gPad->SetLogy();
   
-  CorrectFromTheWidth(charmbgafteripcut);
+  AliHFEtools::NormaliseBinWidth(charmbgafteripcut);
   charmbgafteripcut->SetMarkerStyle(24);
   charmbgafteripcut->Draw("samep");
   
-  CorrectFromTheWidth(charmbgafterweight);
+  AliHFEtools::NormaliseBinWidth(charmbgafterweight);
   charmbgafterweight->SetMarkerStyle(24);
   charmbgafterweight->SetMarkerColor(4);
   charmbgafterweight->Draw("samep");
   
-  CorrectFromTheWidth(charmbgafterfolding);
+  AliHFEtools::NormaliseBinWidth(charmbgafterfolding);
   charmbgafterfolding->SetMarkerStyle(24);
   charmbgafterfolding->SetMarkerColor(2);
   charmbgafterfolding->Draw("samep");
@@ -1021,9 +1024,9 @@ AliCFDataGrid *AliHFEBeautySpectrum::CorrectParametrizedEfficiency(AliCFDataGrid
 
 // QA
   TH1D *afterE = (TH1D *) resultt->Project(0);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   TH1D *beforeE = (TH1D *) dataGrid->Project(0);
-  CorrectFromTheWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(beforeE);
   fQA->AddResultAt(afterE,AliHFEBeautySpectrumQA::kAfterPE);
   fQA->AddResultAt(beforeE,AliHFEBeautySpectrumQA::kBeforePE);
   fQA->AddResultAt(fEfficiencyFunction,AliHFEBeautySpectrumQA::kPEfficiency);
@@ -1103,9 +1106,9 @@ THnSparse *AliHFEBeautySpectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   TH1D* efficiencyDproj = (TH1D *) efficiencyD->Project(0);
   TH1D *afterE = (TH1D *) result->Projection(0);
 
-  CorrectFromTheWidth(residualh);
-  CorrectFromTheWidth(beforeE);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(residualh);
+  AliHFEtools::NormaliseBinWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   fQA->AddResultAt(residualh,AliHFEBeautySpectrumQA::kResidualU);
   fQA->AddResultAt(afterE,AliHFEBeautySpectrumQA::kAfterU);
   fQA->AddResultAt(beforeE,AliHFEBeautySpectrumQA::kBeforeU);
@@ -1166,9 +1169,9 @@ AliCFDataGrid *AliHFEBeautySpectrum::CorrectForEfficiency(AliCFDataGrid* const b
 
   // QA
   TH1D *afterE = (TH1D *) result->Project(0);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   TH1D *beforeE = (TH1D *) dataGrid->Project(0);
-  CorrectFromTheWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(beforeE);
   TH1D* efficiencyDproj = (TH1D *) efficiencyD->Project(0);
   fQA->AddResultAt(afterE,AliHFEBeautySpectrumQA::kAfterMCE);
   fQA->AddResultAt(beforeE,AliHFEBeautySpectrumQA::kBeforeMCE);
@@ -2104,8 +2107,8 @@ void AliHFEBeautySpectrum::CalculateNonHFEsyst(){
   TH1D *hNormAllSystErrUp = (TH1D*)hUpSystScaled->Clone();
   TH1D *hNormAllSystErrLow = (TH1D*)hLowSystScaled->Clone();
   //histograms to be normalized to TGraphErrors
-  CorrectFromTheWidth(hNormAllSystErrUp);
-  CorrectFromTheWidth(hNormAllSystErrLow);
+  AliHFEtools::NormaliseBinWidth(hNormAllSystErrUp);
+  AliHFEtools::NormaliseBinWidth(hNormAllSystErrLow);
 
   TCanvas *cNormOvErrs = new TCanvas("cNormOvErrs","cNormOvErrs");
   cNormOvErrs->cd();
@@ -2152,7 +2155,7 @@ void AliHFEBeautySpectrum::CalculateNonHFEsyst(){
   lRel->AddEntry(hRelErrLow, "lower");
   lRel->Draw("SAME");
 
-  //CorrectFromTheWidth(hBgYield);
+  //AliHFEtools::NormaliseBinWidth(hBgYield);
   //hBgYield->Scale(evtnorm[0]);
  
  
