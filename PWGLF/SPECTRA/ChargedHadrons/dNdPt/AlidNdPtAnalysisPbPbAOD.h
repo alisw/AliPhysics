@@ -43,15 +43,16 @@ class iostream;
 #include "AliGenPythiaEventHeader.h"
 #include "AliExternalTrackParam.h"
 #include "AliESDtrack.h"
+#include "AliEventplane.h"
 
 #include "TSystem.h"
 #include "TROOT.h"
 
 class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
   public :
-    enum CheckQuantity { cqCrossedRows = 0, cqNcluster = 1, cqChi = 2, cqLength = 3 };
+    enum CheckQuantity { cqCrossedRows = 0, cqNcluster = 1, cqChi = 2, cqLength = 3, cqRowsOverFindable = 4 };
     enum KinematicQuantity { kqPt = 0, kqEta = 1, kqPhi = 2 };
-    enum MaxCheckQuantity { cqMax = 4 };
+    enum MaxCheckQuantity { cqMax = 5 };
     enum MaxKinematicQuantity { kqMax = 3 };
     
     AlidNdPtAnalysisPbPbAOD(const char *name = "dNdPtPbPbAOD");
@@ -113,7 +114,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     void SetCutMinRatioCrossedRowsOverFindableClustersTPC(Double_t d) 	{ fCutMinRatioCrossedRowsOverFindableClustersTPC = d; }
     Double_t GetCutMinRatioCrossedRowsOverFindableClustersTPC()			{ return fCutMinRatioCrossedRowsOverFindableClustersTPC; }
     
-    void SetCutLengthInTPCPtDependent()						{ fCutLengthInTPCPtDependent = kTRUE; }
+    void SetCutLengthInTPCPtDependent(Bool_t b)				{ fCutLengthInTPCPtDependent = b; }
     Bool_t DoCutLengthInTPCPtDependent()					{ return fCutLengthInTPCPtDependent; }
     
     void SetPrefactorLengthInTPCPtDependent(Double_t d)		{ fPrefactorLengthInTPCPtDependent = d; }
@@ -172,14 +173,14 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F	    *fPt; // simple pT histogramm
     TH1F	    *fMCPt; // simple pT truth histogramm
     THnSparseF 	*fZvPtEtaCent; //-> Zv:Pt:Eta:Cent
-    THnSparseF 	*fPhiPtEtaCent; //-> Phi:Pt:Eta:Cent
+    THnSparseF 	*fDeltaphiPtEtaCent; //-> Phi:Pt:Eta:Cent
     THnSparseF 	*fPtResptCent; //-> 1/pt:ResolutionPt:Cent
     THnSparseF 	*fMCRecPrimZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCGenZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent
     THnSparseF 	*fMCRecSecZvPtEtaCent; //-> MC Zv:Pt:Eta:Cent, only secondaries
-    THnSparseF 	*fMCRecPrimPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
-    THnSparseF 	*fMCGenPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
-    THnSparseF 	*fMCRecSecPhiPtEtaCent; //-> MC Phi:Pt:Eta:Cent, only secondaries
+    THnSparseF 	*fMCRecPrimDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
+    THnSparseF 	*fMCGenDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent
+    THnSparseF 	*fMCRecSecDeltaphiPtEtaCent; //-> MC Phi:Pt:Eta:Cent, only secondaries
     TH1F	    *fEventStatistics; // contains statistics of number of events after each cut
     TH1F        *fEventStatisticsCentrality; // contains number of events vs centrality, events need to have a track in kinematic range
     TH1F	    *fMCEventStatisticsCentrality; // contains MC number of events vs centrality, events need to have a track in kinematic range
@@ -193,8 +194,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     THnSparseF	*fDCAPtAccepted; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco tracks
     THnSparseF	*fMCDCAPtSecondary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are secondaries (using MC info)
     THnSparseF	*fMCDCAPtPrimary; //control histo: DCAz:DCAxy:pT:eta:phi for all accepted reco track, which are primaries (using MC info)
-    THnF	    *fCrossCheckAll[4]; //control histo: {CrossedRows,Ncluster,Chi} vs pT,eta,phi,Centrality for all tracks
-    THnF	    *fCrossCheckAcc[4]; //control histo: {CrossedRows,Ncluster,Chi} vs pT,eta,phi,Centrality after cuts
+    THnF	    *fCrossCheckAll[5]; //control histo: {CrossedRows,Ncluster,Chi,Length,CrossedRows/Findable} vs pT,eta,phi,Centrality for all tracks
+    THnF	    *fCrossCheckAcc[5]; //control histo: {CrossedRows,Ncluster,Chi,Length,CrossedRows/Findable} vs pT,eta,phi,Centrality after cuts
     TH1F	    *fCutPercClusters; // control histo: number of clusters, where the relative cut has been set e-by-e
     TH1F	    *fCutPercCrossed; // control histo: number of crossed rows, where the relative cut has been set e-by-e
     TH2F	    *fCrossCheckRowsLength; // control histo: number of crossed rows vs length in TPC
@@ -203,7 +204,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F	    *fCrossCheckClusterLengthAcc; // control histo: number of clusters vs length in TPC for all accepted tracks
     TH1F        *fCutSettings; // control histo: cut settings
     
-    
+    TH1F		*fEventplaneDist; // event plane distribution in phi
+    TH1F		*fMCEventplaneDist; // MC event plane distribution in phi
     // global variables
     Bool_t fIsMonteCarlo;
     
@@ -264,7 +266,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,6); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,7); // has to be at least 1, otherwise not streamable...
 };
 
 #endif
