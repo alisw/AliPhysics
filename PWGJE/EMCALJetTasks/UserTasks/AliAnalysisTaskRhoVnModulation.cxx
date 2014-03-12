@@ -301,7 +301,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
 
     // pico track kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
-        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 50, i);
+        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
         fHistPicoTrackMult[i] =        BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
         if(fFillQAHistograms) {
             fHistPicoCat1[i] =             BookTH2F("fHistPicoCat1", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
@@ -1318,13 +1318,16 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                         v2->SetParameter(3, didacticFit->GetParameter(3));        // v2
                         v2->FixParameter(1, 1.);        // constant
                         v2->FixParameter(2, 2.);        // constant
+                        v2->FixParameter(4, didacticFit->GetParameter(4));        // psi2
                         v2->SetLineColor(kGreen);
                         didacticProfile->GetListOfFunctions()->Add(v2);
-                        TF1* v3(new TF1("dfit_kV3", "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))", 0, TMath::TwoPi()));
+                        TF1* v3(new TF1("dfit_kV3", "[0]*([1]+[2]*[3]*TMath::Cos([5]*(x-[4])))", 0, TMath::TwoPi()));
                         v3->SetParameter(0, didacticFit->GetParameter(0));        // normalization
                         v3->SetParameter(3, didacticFit->GetParameter(7));        // v3
                         v3->FixParameter(1, 1.);        // constant
-                        v3->FixParameter(2, 3.);        // constant
+                        v3->FixParameter(2, 2.);        // constant
+                        v3->FixParameter(4, didacticFit->GetParameter(6));        // psi3
+                        v3->FixParameter(5, 3.);        // constant
                         v3->SetLineColor(kYellow);
                         didacticProfile->GetListOfFunctions()->Add(v3);
                     }

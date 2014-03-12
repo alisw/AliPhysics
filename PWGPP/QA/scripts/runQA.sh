@@ -57,19 +57,20 @@ updateQA()
   touch ${logFile}
   [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && return 1
   echo "logFile = $logFile"
-  exec &>${logFile}
 
   #check lock
   lockFile=${logDirectory}/runQA.lock
-  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" && return 1
+  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
-  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && return 1
+  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
   
+  exec &>${logFile}
+
   ################################################################
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
-
-    [[ ! ${detectorScript} =~ .*\.sh ]] && continue
+    unset planB
+    [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
     
@@ -87,7 +88,7 @@ updateQA()
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
-    tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}
+    tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}-${dateString}
     if ! mkdir -p ${tmpDetectorRunDir}; then
       echo "cannot create the temp dir $tmpDetectorRunDir"
       continue
@@ -185,21 +186,23 @@ updateQA()
     echo
 
     #################################################################
-    #(re)do the merging/trending in the final destination
+    #(re)do the merging/trending 
     for tmpProductionDir in ${!arrOfTouchedProductions[@]}; do
+      cd ${tmpProductionDir}
       echo
       echo "running period level stuff in ${tmpProductionDir}"
     
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
+      echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
 
       mkdir -p ${productionDir}
       if [[ ! -d ${productionDir} ]]; then 
         echo "cannot make productionDir $productionDir" && continue
       fi
-      cd ${productionDir}
       
-      #move to final destination
-      for dir in ${tmpProductionDir}/*; do
+      #move runs to final destination
+      for dir in ${tmpProductionDir}/000*; do
+        echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
         if ! guessRunData "${dir}/dummyName"; then
           echo "could not guess run data from ${dir}"
@@ -207,7 +210,9 @@ updateQA()
         fi
 
         #before moving - VALIDATE!!!
-        if ! validate ${dir}; then continue; fi
+        if ! validate ${dir}; then 
+          continue
+        fi
 
         if [[ -d ${oldRunDir} ]]; then
           echo "removing old ${oldRunDir}"
@@ -217,17 +222,25 @@ updateQA()
         mv -f ${dir} ${productionDir}
       done
    
-      #here we are in the updated period dir, all runs there
-      #TODO: maybe cleanup all old output first?
-      rm -f trending.root
-      
+      #go to a temp dir to do the period level stuff
+      tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      echo
+      echo tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      if ! mkdir -p ${tmpPeriodLevelQAdir}; then continue; fi
+      cd ${tmpPeriodLevelQAdir}
+
+      #link the final list of per-run dirs here, just the dirs
+      #to have a clean working directory
+      unset linkedStuff
+      declare -a linkedStuff
+      for x in ${productionDir}/000*; do [[ -d $x ]] && ln -s $x && linkedStuff+=(${x##*/}); done
+
       #merge trending files if any
       if /bin/ls 000*/trending.root &>/dev/null; then
         hadd trending.root 000*/trending.root &> periodLevelQA.log
       fi
       
-      #TODO: maybe run this in a tmp dir (with links to run dirs) and only move
-      #the plots after validation
+      #run the period level trending/QA
       if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
         echo running ${detector} periodLevelQA for production ${period}/${pass}
         periodLevelQA trending.root &>> periodLevelQA.log
@@ -235,10 +248,28 @@ updateQA()
         echo "WARNING: not running ${detector} periodLevelQA for production ${period}/${pass}, no trending.root"
       fi
 
-
       if ! validate ${PWD}; then continue; fi
 
-      cd ${tmpDetectorRunDir}
+      #here we are validated so move the produced QA to the final place
+      #clean up linked stuff first
+      [[ -n ${linkedStuff[@]} ]] && rm ${linkedStuff[@]}
+      #some of the output could be a directory, so handle that
+      #TODO: maybe use rsync?
+      for x in ${tmpPeriodLevelQAdir}/*; do  
+        if [[ -d ${x} ]]; then
+          echo "removing ${productionDir}/${x##*/}"
+          rm -rf ${productionDir}/${x##*/}
+          echo "moving ${x} to ${productionDir}"
+          mv ${x} ${productionDir}
+        fi
+        if [[ -f ${x} ]]; then
+          echo "moving ${x} to ${productionDir}"
+          mv -f ${x} ${productionDir} 
+        fi
+      done
+
+      #remove the temp dir
+      rm -rf ${tmpPeriodLevelQAdir}
     
     done
 
@@ -389,8 +420,6 @@ parseConfig()
   excludeDetectors="EXAMPLE"
   #logs
   logDirectory=${workingDirectory}/logs
-  #set aliroot
-  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
   #OCDB storage
   #ocdbStorage="raw://"
   #email to

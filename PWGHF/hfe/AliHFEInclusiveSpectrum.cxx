@@ -63,7 +63,8 @@ ClassImp(AliHFEInclusiveSpectrum)
 //____________________________________________________________
 AliHFEInclusiveSpectrum::AliHFEInclusiveSpectrum(const char *name):
   AliHFECorrectSpectrumBase(name),
-  fQA(NULL)
+  fQA(NULL),
+  fNoCentralitySelectionMC(kFALSE)
 {
   //
   // Default constructor
@@ -75,7 +76,8 @@ AliHFEInclusiveSpectrum::AliHFEInclusiveSpectrum(const char *name):
 //____________________________________________________________
 AliHFEInclusiveSpectrum::AliHFEInclusiveSpectrum(const AliHFEInclusiveSpectrum &ref):
   AliHFECorrectSpectrumBase(ref),
-  fQA(ref.fQA)
+  fQA(ref.fQA),
+  fNoCentralitySelectionMC(ref.fNoCentralitySelectionMC)
 {
   //
   // Copy constructor
@@ -99,6 +101,7 @@ void AliHFEInclusiveSpectrum::Copy(TObject &o) const {
   //
   AliHFEInclusiveSpectrum &target = dynamic_cast<AliHFEInclusiveSpectrum &>(o);
   target.fQA = fQA;
+  target.fNoCentralitySelectionMC = fNoCentralitySelectionMC;
 
 
 }
@@ -123,20 +126,8 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   //
   //
 
-  Int_t kNdim = 3;
-
-  Int_t dims[kNdim];
-  switch(fNbDimensions){
-  case 1:   dims[0] = 0;
-    break;
-  case 2:   for(Int_t i = 0; i < 2; i++) dims[i] = i;
-    break;
-  case 3:   for(Int_t i = 0; i < 3; i++) dims[i] = i;
-    break;
-  default:
-    AliError("Container with this number of dimensions not foreseen (yet)");
-    return kFALSE;
-  };
+ 
+  Bool_t centralitySelectionData = kTRUE, centralitySelectionMC = !fNoCentralitySelectionMC; 
 
   //
   // Data container: raw spectrum + hadron contamination
@@ -144,8 +135,8 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   AliCFContainer *datacontainer = datahfecontainer->GetCFContainer("recTrackContReco");
   AliCFContainer *contaminationcontainer = datahfecontainer->GetCFContainer("hadronicBackground");
   if((!datacontainer) || (!contaminationcontainer)) return kFALSE;
-  AliCFContainer *datacontainerD = GetSlicedContainer(datacontainer, fNbDimensions, dims, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
-  AliCFContainer *contaminationcontainerD = GetSlicedContainer(contaminationcontainer, fNbDimensions, dims, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
+  AliCFContainer *datacontainerD = GetSlicedContainer(datacontainer, fNbDimensions, fDims, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionData);
+  AliCFContainer *contaminationcontainerD = GetSlicedContainer(contaminationcontainer, fNbDimensions, fDims, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionData);
   if((!datacontainerD) || (!contaminationcontainerD)) return kFALSE;
   SetContainer(datacontainerD,AliHFECorrectSpectrumBase::kDataContainer);
   SetContainer(contaminationcontainerD,AliHFECorrectSpectrumBase::kBackgroundData);
@@ -157,7 +148,7 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   Int_t dimqa = datacontainer->GetNVar();
   Int_t dimsqa[dimqa];
   for(Int_t i = 0; i < dimqa; i++) dimsqa[i] = i;
-  AliCFContainer *datacontainerDQA = GetSlicedContainer(datacontainer, dimqa, dimsqa, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
+  AliCFContainer *datacontainerDQA = GetSlicedContainer(datacontainer, dimqa, dimsqa, -1, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionData);
   fQA->AddResultAt(datacontainerDQA,AliHFEInclusiveSpectrumQA::kDataProjection);
 
   //
@@ -169,8 +160,8 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   mccontainermc = mchfecontainer->MakeMergedCFContainer("summc","summc","MCTrackCont:recTrackContMC");
   if((!mccontaineresd) || (!mccontainermc)) return kFALSE;  
   Int_t source = -1;
-  AliCFContainer *mccontaineresdD = GetSlicedContainer(mccontaineresd, fNbDimensions, dims, source, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
-  AliCFContainer *mccontainermcD = GetSlicedContainer(mccontainermc, fNbDimensions, dims, source, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
+  AliCFContainer *mccontaineresdD = GetSlicedContainer(mccontaineresd, fNbDimensions, fDims, source, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionMC);
+  AliCFContainer *mccontainermcD = GetSlicedContainer(mccontainermc, fNbDimensions, fDims, source, fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionMC);
   if((!mccontaineresdD) || (!mccontainermcD)) return kFALSE;
   SetContainer(mccontainermcD,AliHFECorrectSpectrumBase::kMCContainerMC);
   SetContainer(mccontaineresdD,AliHFECorrectSpectrumBase::kMCContainerESD);
@@ -181,7 +172,7 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   THnSparseF *mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
   if(!mccorrelation) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
   if(!mccorrelation) return kFALSE;
-  THnSparseF *mccorrelationD = GetSlicedCorrelation(mccorrelation, fNbDimensions, dims,fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
+  THnSparseF *mccorrelationD = GetSlicedCorrelation(mccorrelation, fNbDimensions, fDims,fChargeChoosen,fTestCentralityLow,fTestCentralityHigh, centralitySelectionMC);
   if(!mccorrelationD) {
     printf("No correlation\n");
     return kFALSE;
@@ -196,7 +187,7 @@ Bool_t AliHFEInclusiveSpectrum::Init(const AliHFEcontainer *datahfecontainer, co
   if(v0hfecontainer) {
     AliCFContainer *containerV0 = v0hfecontainer->GetCFContainer("taggedTrackContainerReco");
     if(!containerV0) return kFALSE;
-    AliCFContainer *containerV0Electron = GetSlicedContainer(containerV0, fNbDimensions, dims, AliPID::kElectron,fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
+    AliCFContainer *containerV0Electron = GetSlicedContainer(containerV0, fNbDimensions, fDims, AliPID::kElectron,fChargeChoosen,fTestCentralityLow,fTestCentralityHigh);
     if(!containerV0Electron) return kFALSE;
     SetContainer(containerV0Electron,AliHFECorrectSpectrumBase::kDataContainerV0);
   }
@@ -278,23 +269,40 @@ Bool_t AliHFEInclusiveSpectrum::Correct(Bool_t subtractcontamination, Bool_t sub
     dataGridAfterFirstSteps = dataspectrumafterefficiencyparametrizedcorrection;  
   }
     
-  ///////////////
-  // Unfold
-  //////////////
-  THnSparse *correctedspectrum = Unfold(dataGridAfterFirstSteps);
-  if(!correctedspectrum){
-    AliError("No corrected spectrum\n");
-    return kFALSE;
+  TGraphErrors* correctedspectrumD = 0x0;
+  TGraphErrors* alltogetherspectrumD = 0x0;
+  if(fStepMC>fStepTrue) {
+    ///////////////
+    // Unfold
+    //////////////
+    THnSparse *correctedspectrum = Unfold(dataGridAfterFirstSteps);
+    if(!correctedspectrum){
+      AliError("No corrected spectrum\n");
+      return kFALSE;
+    }
+    
+    /////////////////////
+    // Simply correct
+    ////////////////////
+    AliCFDataGrid *alltogetherCorrection = CorrectForEfficiency(dataGridAfterFirstSteps);
+
+    ////////////////////
+    // Normalization
+    ////////////////////
+    correctedspectrumD = Normalize(correctedspectrum);
+    alltogetherspectrumD = Normalize(alltogetherCorrection);
+  }
+  else {
+
+    ////////////////////
+    // Normalization
+    ////////////////////
+    correctedspectrumD = Normalize(dataGridAfterFirstSteps);
+    alltogetherspectrumD = Normalize(dataGridAfterFirstSteps);
   }
   
-  /////////////////////
-  // Simply correct
-  ////////////////////
-  AliCFDataGrid *alltogetherCorrection = CorrectForEfficiency(dataGridAfterFirstSteps);
-
   // QA final results
-  TGraphErrors* correctedspectrumD = Normalize(correctedspectrum);
-  TGraphErrors* alltogetherspectrumD = Normalize(alltogetherCorrection);
+
   fQA->AddResultAt(correctedspectrumD,AliHFEInclusiveSpectrumQA::kFinalResultUnfolded);
   fQA->AddResultAt(alltogetherspectrumD,AliHFEInclusiveSpectrumQA::kFinalResultDirectEfficiency);
   fQA->DrawResult();
@@ -336,12 +344,20 @@ AliCFDataGrid* AliHFEInclusiveSpectrum::SubtractBackground(){
 
   // QA
   TH1D *subtractedspectrum = (TH1D *) spectrumSubtracted->Project(0);
-  CorrectFromTheWidth(subtractedspectrum);
+  AliHFEtools::NormaliseBinWidth(subtractedspectrum);
   TH1D *rawspectrum = (TH1D *) dataspectrumbeforesubstraction->Project(0);
-  CorrectFromTheWidth(rawspectrum);
+  AliHFEtools::NormaliseBinWidth(rawspectrum);
   fQA->AddResultAt(subtractedspectrum,AliHFEInclusiveSpectrumQA::kAfterSC);
   fQA->AddResultAt(rawspectrum,AliHFEInclusiveSpectrumQA::kBeforeSC);
   fQA->DrawSubtractContamination();
+
+  if(fNbDimensions>=2) {
+    fQA->AddResultAt((TObject *) spectrumSubtracted,AliHFEInclusiveSpectrumQA::kAfterSCND);
+    fQA->AddResultAt((TObject *) dataspectrumbeforesubstraction,AliHFEInclusiveSpectrumQA::kBeforeSCND);
+    fQA->AddResultAt((TObject *) backgroundGrid,AliHFEInclusiveSpectrumQA::kHadronContaminationND);
+    fQA->DrawSubtractContaminationND();
+  }
+  
 
   return spectrumSubtracted;
 }
@@ -382,9 +398,9 @@ AliCFDataGrid* AliHFEInclusiveSpectrum::SubtractPhotonicBackground(){
 
   // QA
   TH1D *photonicsubtractedspectrum = (TH1D *) spectrumPhotonicSubtracted->Project(0);
-  CorrectFromTheWidth(photonicsubtractedspectrum);
+  AliHFEtools::NormaliseBinWidth(photonicsubtractedspectrum);
   TH1D *newrawspectrum = (TH1D *) dataSpectrumBeforePhotonicSubstraction->Project(0);
-  CorrectFromTheWidth(newrawspectrum);
+  AliHFEtools::NormaliseBinWidth(newrawspectrum);
   fQA->AddResultAt(photonicsubtractedspectrum,AliHFEInclusiveSpectrumQA::kAfterSPB);
   fQA->AddResultAt(newrawspectrum,AliHFEInclusiveSpectrumQA::kBeforeSPB);
   fQA->DrawSubtractPhotonicBackground();
@@ -454,11 +470,10 @@ AliCFDataGrid *AliHFEInclusiveSpectrum::CorrectParametrizedEfficiency(AliCFDataG
     if(valueEfficiency > 0.0) {
       h->SetBinContent(coord,value/valueEfficiency);
       dataContainerbis->SetBinContent(coord,fStepData,value/valueEfficiency);
+      Double_t error = h->GetBinError(i);
+      h->SetBinError(coord,error/valueEfficiency);
+      dataContainerbis->SetBinError(coord,fStepData,error/valueEfficiency);
     }
-    Double_t error = h->GetBinError(i);
-    h->SetBinError(coord,error/valueEfficiency);
-    dataContainerbis->SetBinError(coord,fStepData,error/valueEfficiency);
-
    
   } 
 
@@ -469,13 +484,20 @@ AliCFDataGrid *AliHFEInclusiveSpectrum::CorrectParametrizedEfficiency(AliCFDataG
 
  // QA
   TH1D *afterE = (TH1D *) resultt->Project(0);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   TH1D *beforeE = (TH1D *) dataGrid->Project(0);
-  CorrectFromTheWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(beforeE);
   fQA->AddResultAt(afterE,AliHFEInclusiveSpectrumQA::kAfterPE);
   fQA->AddResultAt(beforeE,AliHFEInclusiveSpectrumQA::kBeforePE);
   fQA->AddResultAt(fEfficiencyFunction,AliHFEInclusiveSpectrumQA::kPEfficiency);
   fQA->DrawCorrectWithEfficiency(AliHFEInclusiveSpectrumQA::kParametrized);
+
+  if(fNbDimensions>=2) {
+    fQA->AddResultAt((TObject *) resultt,AliHFEInclusiveSpectrumQA::kAfterPEND);
+    fQA->AddResultAt((TObject *) dataGrid,AliHFEInclusiveSpectrumQA::kBeforePEND);
+    fQA->AddResultAt((TObject *) fEfficiencyFunction,AliHFEInclusiveSpectrumQA::kPEfficiencyND);
+    fQA->DrawCorrectWithEfficiencyND(AliHFEInclusiveSpectrumQA::kParametrized);
+  }
   
   return resultt;
 
@@ -517,14 +539,21 @@ AliCFDataGrid *AliHFEInclusiveSpectrum::CorrectV0Efficiency(AliCFDataGrid* const
 
   // QA
   TH1D *afterE = (TH1D *) result->Project(0);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   TH1D *beforeE = (TH1D *) dataGrid->Project(0);
-  CorrectFromTheWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(beforeE);
   TH1D* efficiencyDproj = (TH1D *) efficiencyD->Project(0);
   fQA->AddResultAt(afterE,AliHFEInclusiveSpectrumQA::kAfterV0);
   fQA->AddResultAt(beforeE,AliHFEInclusiveSpectrumQA::kBeforeV0);
   fQA->AddResultAt(efficiencyDproj,AliHFEInclusiveSpectrumQA::kV0Efficiency);
   fQA->DrawCorrectWithEfficiency(AliHFEInclusiveSpectrumQA::kV0);
+
+  if(fNbDimensions>=2) {
+    fQA->AddResultAt((TObject *) result,AliHFEInclusiveSpectrumQA::kAfterV0ND);
+    fQA->AddResultAt((TObject *) dataGrid,AliHFEInclusiveSpectrumQA::kBeforeV0ND);
+    fQA->AddResultAt((TObject *) efficiencyD,AliHFEInclusiveSpectrumQA::kV0EfficiencyND);
+    fQA->DrawCorrectWithEfficiencyND(AliHFEInclusiveSpectrumQA::kV0);
+  }
  
 
   return result;
@@ -587,9 +616,9 @@ THnSparse *AliHFEInclusiveSpectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   TH1D *beforeE = (TH1D *) dataGrid->Project(0);
   TH1D* efficiencyDproj = (TH1D *) efficiencyD->Project(0);
   TH1D *afterE = (TH1D *) result->Projection(0);
-  CorrectFromTheWidth(residualh);
-  CorrectFromTheWidth(beforeE);
-  CorrectFromTheWidth(afterE);
+  AliHFEtools::NormaliseBinWidth(residualh);
+  AliHFEtools::NormaliseBinWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(afterE);
   fQA->AddResultAt(residualh,AliHFEInclusiveSpectrumQA::kResidualU);
   fQA->AddResultAt(afterE,AliHFEInclusiveSpectrumQA::kAfterU);
   fQA->AddResultAt(beforeE,AliHFEInclusiveSpectrumQA::kBeforeU);
@@ -638,14 +667,21 @@ AliCFDataGrid *AliHFEInclusiveSpectrum::CorrectForEfficiency(AliCFDataGrid* cons
 
   // QA
   TH1D *afterE = (TH1D *) result->Project(0);
-  CorrectFromTheWidth(afterE);
-  TH1D *beforeE = (TH1D *) dataGrid->Project(0);
-  CorrectFromTheWidth(beforeE);
+  AliHFEtools::NormaliseBinWidth(afterE);
+  TH1D *beforeE = (TH1D *) dataGrid->Project(0); 
+  AliHFEtools::NormaliseBinWidth(beforeE);
   TH1D* efficiencyDproj = (TH1D *) efficiencyD->Project(0);
   fQA->AddResultAt(afterE,AliHFEInclusiveSpectrumQA::kAfterMCE);
   fQA->AddResultAt(beforeE,AliHFEInclusiveSpectrumQA::kBeforeMCE);
   fQA->AddResultAt(efficiencyDproj,AliHFEInclusiveSpectrumQA::kMCEfficiency);
   fQA->DrawCorrectWithEfficiency(AliHFEInclusiveSpectrumQA::kMC);
+
+  if(fNbDimensions>=2) {
+    fQA->AddResultAt((TObject *) result,AliHFEInclusiveSpectrumQA::kAfterMCEND);
+    fQA->AddResultAt((TObject *) dataGrid,AliHFEInclusiveSpectrumQA::kBeforeMCEND);
+    fQA->AddResultAt((TObject *) efficiencyD,AliHFEInclusiveSpectrumQA::kMCEfficiencyND);
+    fQA->DrawCorrectWithEfficiencyND(AliHFEInclusiveSpectrumQA::kMC);
+  }
 
   return result;
 

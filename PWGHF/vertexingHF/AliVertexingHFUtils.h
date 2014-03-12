@@ -18,6 +18,7 @@
 #include "AliAODTrack.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliAODRecoCascadeHF.h"
 
 class AliAODMCParticle;
 class AliAODMCHeader;
@@ -72,6 +73,7 @@ class AliVertexingHFUtils : public TObject{
   Bool_t IsTrackInjected(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC);
   void GetTrackPrimaryGenerator(AliAODTrack *track,AliAODMCHeader *header,TClonesArray *arrayMC,TString &nameGen);
   Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
+  Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   // Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta; 

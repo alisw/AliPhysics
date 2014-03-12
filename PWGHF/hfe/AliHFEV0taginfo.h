@@ -40,14 +40,15 @@ class AliHFEV0taginfo: public TNamed{
         void Reset(); //resets the fTaggedTracks TList
         void TagV0Tracks(AliVEvent *event); // loops over V0s in event and fills fTaggedTracks with V0 tracks
         AliPID::EParticleType GetV0Info(Int_t trackID); //check for V0 information from track ID 
+        Float_t GetV0ProdR(Int_t trackID); //check for V0 information from track ID 
         void SetIsAODana() { fIsAODana = kTRUE; } // Setter AOD analysis
         void SetIsESDana() { fIsAODana = kFALSE; } // Setter ESD analysis
-        void AddTrack(Int_t TrackID, Int_t pdgCode); //Translates the pdg code to AliPID enum and adds track to tagged list (currently only e, pion and proton tracks)
+        void AddTrack(Int_t TrackID, Int_t pdgCode, Double_t prodR); //Translates the pdg code to AliPID enum and adds track to tagged list (currently only e, pion and proton tracks)
 
         class AliHFEV0tag: public TObject{
             public:
                 AliHFEV0tag();
-                AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo);
+                AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t prodR);
                 AliHFEV0tag(const AliHFEV0tag &ref);
                 AliHFEV0tag &operator=(const AliHFEV0tag &ref);
                 virtual ~AliHFEV0tag();
@@ -59,12 +60,15 @@ class AliHFEV0taginfo: public TNamed{
 
                 //Setter
                 void SetTrack(const Int_t trackID, const AliPID::EParticleType Pinfo); //Set track ID
+                void SetProdR(const Int_t trackID, const Double_t prodR); //Set V0 daughter production vertex radius
                 //Getter
                 Int_t GetTrackID() const { return fTrackID; };
                 AliPID::EParticleType GetPinfo() const { return fPinfo; };
+                Double_t GetProdR() const { return fProdR; };
             private:
                 Int_t fTrackID;
                 AliPID::EParticleType fPinfo;  
+                Double_t fProdR; // V0 daughter production vertex radius in x-y plane
 
                 ClassDef(AliHFEV0taginfo::AliHFEV0tag,1);
         };

@@ -66,7 +66,8 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
     else
       nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
   }
-  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,0,"EmcCaloClusters",0.,kTRUE);
+  remExoticClus  = kTRUE;
+  AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,0,"EmcCaloClusters",0.,kTRUE);
   
   return clusMaker;
 }

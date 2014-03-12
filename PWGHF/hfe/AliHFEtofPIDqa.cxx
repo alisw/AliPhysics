@@ -29,6 +29,7 @@
 //
 //   Markus Fasel <M.Fasel@gsi.de>
 #include <TClass.h>
+#include <TArrayD.h>
 #include <TH2.h>
 #include <THnSparse.h>
 #include <TString.h>
@@ -164,6 +165,14 @@ void AliHFEtofPIDqa::Initialize(){
 
   // 3rd histogram: TPC sigmas to the electron line: (species, p nsigma, step - only filled if apriori PID information available)
   fHistos->CreateTHnSparse("tofMonitorTPC", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
+
+  // 4th histogram: TOF mismatch template
+  AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
+  if(!tofpid) AliDebug(1, "TOF PID not available");
+  if(tofpid && tofpid->IsGenerateTOFmismatch()){
+    AliDebug(1, "Prepare histogram for TOF mismatch tracks");
+    fHistos->CreateTHnSparse("tofMismatch", "TOF signal; species; p [GeV/c]; TOF signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
+  }
 }
 
 //_________________________________________________________
@@ -172,7 +181,7 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   // Fill TPC histograms
   //
   //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
 
   Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
@@ -180,7 +189,6 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
 
   AliDebug(1, Form("Monitoring particle of type %d for step %d", species, step));
   AliHFEpidTOF *tofpid= dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
-  AliHFEpidTRD *trdpid= dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
   
   const AliPIDResponse *pidResponse = tofpid ? tofpid->GetPIDResponse() : NULL;
   Double_t contentSignal[5];
@@ -190,11 +198,18 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[3] = step;
   contentSignal[4] = centrality;
   fHistos->Fill("tofnSigma", contentSignal);
-  //if(species > -1){
-  contentSignal[1] =trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0.;
   contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
-    fHistos->Fill("tofMonitorTPC", contentSignal);
-  //}
+  fHistos->Fill("tofMonitorTPC", contentSignal);
+
+  if(tofpid->IsGenerateTOFmismatch()){
+    AliDebug(1,"Filling TOF mismatch histos");
+    TArrayD nsigmismatch(tofpid->GetNmismatchTracks());
+    tofpid->GenerateTOFmismatch(track->GetRecTrack(),tofpid->GetNmismatchTracks(), nsigmismatch);
+    for(int itrk = 0; itrk < tofpid->GetNmismatchTracks(); itrk++){
+      contentSignal[2] = nsigmismatch[itrk];
+      fHistos->Fill("tofMismatch",contentSignal);
+    }
+  }
 }
 
 //_________________________________________________________

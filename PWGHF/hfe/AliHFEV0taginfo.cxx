@@ -94,7 +94,7 @@ AliHFEV0taginfo::AliHFEV0taginfo(const AliHFEV0taginfo &ref):
     AliHFEV0tag *tmp = NULL;
     for(Int_t ien = 0; ien < ref.fTaggedTracks->GetEntries(); ien++){
         tmp = static_cast<AliHFEV0tag *>(ref.fTaggedTracks->At(ien));
-        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo()));
+        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo(),tmp->GetProdR()));
     }
 }
 
@@ -112,7 +112,7 @@ AliHFEV0taginfo &AliHFEV0taginfo::operator=(const AliHFEV0taginfo &ref){
     AliHFEV0tag *tmp = NULL;
     for(Int_t ien = 0; ien < ref.fTaggedTracks->GetEntries(); ien++){
         tmp = static_cast<AliHFEV0tag *>(ref.fTaggedTracks->At(ien));
-        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo()));
+        fTaggedTracks->Add(new AliHFEV0tag(tmp->GetTrackID(),tmp->GetPinfo(),tmp->GetProdR()));
     }
     fV0finder=ref.fV0finder;
     fAODV0finder=ref.fAODV0finder;
@@ -126,6 +126,7 @@ AliHFEV0taginfo::~AliHFEV0taginfo(){
     //
     delete fTaggedTracks;
     delete fV0finder;
+    delete fAODV0finder;
     AliDebug(6, "DESTRUCTOR");
 }
 
@@ -154,8 +155,8 @@ void AliHFEV0taginfo::TagV0Tracks(AliVEvent *fEvent){
             if(!fV0) continue;
             if(fV0finder->ProcessV0(fV0,pdgP,pdgN)){
                 AliDebug(5,Form("V0 has: pos pdg: %d, neg pdg: %d",pdgP,pdgN));
-                AddTrack(fV0->GetPindex(),pdgP);
-                AddTrack(fV0->GetNindex(),pdgN);
+                AddTrack(fV0->GetPindex(),pdgP,TMath::Sqrt(fV0->Xv()*fV0->Xv()+fV0->Yv()*fV0->Yv()));
+                AddTrack(fV0->GetNindex(),pdgN,TMath::Sqrt(fV0->Xv()*fV0->Xv()+fV0->Yv()*fV0->Yv()));
             }
         }
     } else if(fEvent->IsA() == AliAODEvent::Class()){
@@ -170,8 +171,8 @@ void AliHFEV0taginfo::TagV0Tracks(AliVEvent *fEvent){
             if(!fV0) continue;
             if(fAODV0finder->ProcessV0(fV0,pdgP,pdgN)){
                 AliDebug(5,Form("V0 has: pos pdg: %d, neg pdg: %d",pdgP,pdgN));
-                AddTrack(fV0->GetPosID(),pdgP);
-                AddTrack(fV0->GetNegID(),pdgN);
+                AddTrack(fV0->GetPosID(),pdgP,fV0->RadiusV0());
+                AddTrack(fV0->GetNegID(),pdgN,fV0->RadiusV0());
             }
         }
     }
@@ -179,7 +180,7 @@ void AliHFEV0taginfo::TagV0Tracks(AliVEvent *fEvent){
 
 //________________________________________________________________________________
 //Translates the pdg code to AliPID enum and adds track to tagged list
-void AliHFEV0taginfo::AddTrack(Int_t TrackID, Int_t pdgCode){
+void AliHFEV0taginfo::AddTrack(Int_t TrackID, Int_t pdgCode, Double_t prodR){
 
     if(TrackID<0) return;
     AliPID::EParticleType Pinfo;
@@ -196,7 +197,7 @@ void AliHFEV0taginfo::AddTrack(Int_t TrackID, Int_t pdgCode){
         default:
             return;
     }
-    fTaggedTracks->Add(new AliHFEV0tag(TrackID, Pinfo));
+    fTaggedTracks->Add(new AliHFEV0tag(TrackID, Pinfo, prodR));
     AliDebug(4,Form("Added new Track ID: %d with PID: %d, #entry: %d",TrackID, Pinfo, fTaggedTracks->GetEntries()));
 }
 
@@ -206,13 +207,27 @@ void AliHFEV0taginfo::AddTrack(Int_t TrackID, Int_t pdgCode){
 //returns AliPID::kUnknown if track ID not found
 AliPID::EParticleType AliHFEV0taginfo::GetV0Info(Int_t trackID){
 
-    AliHFEV0tag test(trackID, AliPID::kUnknown);
+    AliHFEV0tag test(trackID, AliPID::kUnknown,0);
     AliHFEV0tag *result = dynamic_cast<AliHFEV0tag *>(fTaggedTracks->FindObject(&test));
     if(!result){ 
         AliDebug(6, Form("Could not find track ID %d", trackID));
         return AliPID::kUnknown;
     }
     return result->GetPinfo();
+}
+
+//________________________________________________________________________________
+//check for V0 daughter production vertex from track ID
+//returns -0.1 if track ID not found
+Float_t AliHFEV0taginfo::GetV0ProdR(Int_t trackID){
+
+    AliHFEV0tag test(trackID, AliPID::kUnknown, 0);
+    AliHFEV0tag *result = dynamic_cast<AliHFEV0tag *>(fTaggedTracks->FindObject(&test));
+    if(!result){
+        AliDebug(6, Form("Could not find track ID %d", trackID));
+        return -0.1;
+    }
+    return result->GetProdR();
 }
 
 //________________________________________________________________________________
@@ -226,15 +241,17 @@ void AliHFEV0taginfo::Reset(){
 AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag():
     TObject(), 
     fTrackID(0),
-    fPinfo(AliPID::kUnknown)
+    fPinfo(AliPID::kUnknown),
+    fProdR(0)
 {
     // default constructor
 }
 //___________________________________________________________________
-AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo):
+AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t fProdR):
     TObject(), 
     fTrackID(TrackID),
-    fPinfo(Pinfo)
+    fPinfo(Pinfo),
+    fProdR(fProdR)
 {
 }
 
@@ -242,7 +259,8 @@ AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(Int_t TrackID, AliPID::EParticleType P
 AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(const AliHFEV0tag &ref):
     TObject(ref),
     fTrackID(ref.fTrackID),
-    fPinfo(ref.fPinfo)
+    fPinfo(ref.fPinfo),
+    fProdR(ref.fProdR)
 {
     // Copy constructor
 }
@@ -255,6 +273,7 @@ AliHFEV0taginfo::AliHFEV0tag &AliHFEV0taginfo::AliHFEV0tag::operator=(const AliH
 
         fTrackID = ref.fTrackID;
         fPinfo = ref.fPinfo;
+        fProdR = ref.fProdR;
     }
     return *this;
 }
@@ -273,6 +292,14 @@ void AliHFEV0taginfo::AliHFEV0tag::SetTrack(const Int_t trackID, const AliPID::E
     fTrackID = trackID;
     fPinfo = Pinfo;
 }
+
+//Set track ID and production verxtex
+//___________________________________________________________________
+void AliHFEV0taginfo::AliHFEV0tag::SetProdR(const Int_t trackID, const Double_t prodR){
+    fTrackID = trackID;
+    fProdR = prodR;
+}
+
 //____________________________________________________________
 Bool_t AliHFEV0taginfo::AliHFEV0tag::IsEqual(const TObject *ref) const {
     //

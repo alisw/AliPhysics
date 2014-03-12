@@ -13,6 +13,10 @@
 #include "AliHFEpidBase.h"
 #endif
 
+#ifndef ROOT_TARRAY
+#include <TArrayD.h>
+#endif
+
 class AliVParticle;
 class AliVTrack;
 class AliPID;
@@ -33,8 +37,12 @@ class AliHFEpidTOF : public AliHFEpidBase{
     void SetTOFnSigma(Float_t nSigma) { fNsigmaTOF = nSigma; };
     void SetTOFnSigmaBand(Float_t lower, Float_t upper);
     void SetTOFnSigmaBandCentrality(Float_t lower, Float_t upper, Int_t centralityBin); 
+    void SetGenerateTOFmismatch(Bool_t gen = kTRUE, Int_t ntrk = 10) { fGenerateTOFmismatch = gen; fNmismatchTracks = ntrk; }
+    Bool_t IsGenerateTOFmismatch() const { return fGenerateTOFmismatch; }
+    Int_t GetNmismatchTracks() const { return fNmismatchTracks; }
     void UseTOFonlyIfAvailable() { fUseOnlyIfAvailable = kTRUE; }
     void SetRejectTOFmismatch() { fRejectMismatch = kTRUE; }
+    void GenerateTOFmismatch(const AliVTrack * const trk, int ntrk, TArrayD &sigmaEl);
 
   protected:
     void Copy(TObject &ref) const;
@@ -49,6 +57,8 @@ class AliHFEpidTOF : public AliHFEpidBase{
     Float_t    fSigmaBordersTOFUpper[12]; // Max.  sigma cut
     Bool_t     fUseOnlyIfAvailable;       // Use TOF obly if available
     Bool_t     fRejectMismatch;           // Reject TOF mismatch
+    Bool_t     fGenerateTOFmismatch;      // Generate TOF mismatch
+    Int_t      fNmismatchTracks;          // Number of mismatch tracks to generate
 
     ClassDef(AliHFEpidTOF, 1)
 };

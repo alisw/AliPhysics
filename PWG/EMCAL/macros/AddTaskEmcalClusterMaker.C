@@ -2,6 +2,7 @@
 
 AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
+  const Bool_t remExClus     = kTRUE,
   const char *nClusters      = 0,
   const char *outClusName    = "EmcCaloClusters",
   const Double_t emin        = 0.3,
@@ -43,6 +44,7 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   ecm->SetOutClusName(outClusName);
   AliEMCALRecoUtils *ru = new AliEMCALRecoUtils;
   ru->SetNonLinearityFunction(nonLinFunct);
+  if(remExClus) ru->SwitchOnRejectExoticCluster();
   ecm->SetRecoUtils(ru);
   AliClusterContainer *clusCont = ecm->AddClusterContainer(nClusters);
   clusCont->SetClusECut(emin);
