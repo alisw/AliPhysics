@@ -497,11 +497,9 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     AliAODTrack *aodtrack =(AliAODTrack*)track;// FIXME DYNAMIC CAST?
     if(!fTrackCut->IsSelected(aodtrack)) continue;
 
-    AliNanoAODTrack * special = new  AliNanoAODTrack (aodtrack, fVarList);
+    AliNanoAODTrack * special = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
     
     if(fCustomSetter) fCustomSetter->SetNanoAODTrack(aodtrack, special);
-    (*fTracks)[ntracks++] = special;
-    //new((*fTracks)[ntrac\ks++])
   }  
   //----------------------------------------------------------
   
@@ -514,15 +512,8 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
       AliAODVertex* tmp = v->CloneWithoutRefs();
       AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
       
-      // to insure the main vertex retains the ncontributors information
-      // (which is otherwise computed dynamically from
-      // references to tracks, which we do not keep in muon aods...)
-      // we set it here
-      
       copiedVertex->SetNContributors(v->GetNContributors()); 
       
-      //  fVertices->Delete();
-      //	  delete copiedVertex;
       delete tmp;
     }
   

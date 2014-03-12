@@ -15,7 +15,7 @@ AliAnalysisTaskCFTree *AddTaskCFTree(
   
   AliAnalysisTaskCFTree* ana = new AliAnalysisTaskCFTree();
   ana->SetMode(analysisMode);
-  ana->SetEventSelectionBit(AliVEvent::kMB);
+  ana->SetEventSelectionBit(selectionBit);
   ana->SetZVertex(zVtxMax);
   ana->SetTrackEtaCut(etaMax);
   ana->SetPtMin(ptMin);
@@ -29,3 +29,4 @@ AliAnalysisTaskCFTree *AddTaskCFTree(
   mgr->ConnectOutput (ana, 1, coutput2);
   return ana;
 }
+

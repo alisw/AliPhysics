@@ -1,9 +1,11 @@
 AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral , 
-						Double_t dNCrossedRowsTPC = 100, 
+						Double_t dNCrossedRowsTPC = 100,
 						Int_t iFilterBit = AliAODTrack::kTrkGlobal,
-						char *contName = "dNdPtPbPbAOD")
+						char *contName = "dNdPtPbPbAOD",
+						Double_t dNClustersTPC = 0,
+						Bool_t bDoCutTPCLength = kTRUE
+											  )
 {
-  Printf("===============BAUM================");
   // Creates, configures and attaches to the train a cascades check task.
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -30,7 +32,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   task->SelectCollisionCandidates(uTriggerMask);
   
   task->SetCutMinNCrossedRowsTPC(dNCrossedRowsTPC);
-  task->SetCutMinNClustersTPC(0);
+  task->SetCutMinNClustersTPC(dNClustersTPC);
+  task->SetCutLengthInTPCPtDependent(bDoCutTPCLength);
   //task->SetCutLengthInTPCPtDependent();
   //task->SetPrefactorLengthInTPCPtDependent(0.85);
 //   task->EnableRelativeCuts();

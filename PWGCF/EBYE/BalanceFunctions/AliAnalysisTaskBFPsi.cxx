@@ -484,7 +484,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t nPsiBins; 
     psibins = fBalance->GetBinning(fBalance->GetBinningString(), "eventPlane", nPsiBins);
 
-    
+  
     // run the event mixing also in bins of event plane (statistics!)
     if(fRunMixingEventPlane){
       if(fEventClass=="Multiplicity"){
@@ -510,7 +510,11 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 	}
       }
     }
-
+    
+    if(centbins) delete [] centbins; 
+    if(multbins) delete [] multbins; 
+    if(vtxbins)  delete [] vtxbins; 
+    
     // check pool manager
     if(!fPoolMgr){
       AliError("Event Mixing required, but Pool Manager not initialized...");
@@ -607,6 +611,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   AliInfo("Finished setting up the Output");
 
   TH1::AddDirectory(oldStatus);
+
 }
 
 

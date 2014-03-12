@@ -53,6 +53,8 @@ class AliHFEInclusiveSpectrum : public AliHFECorrectSpectrumBase{
     THnSparse *Unfold(AliCFDataGrid* const bgsubpectrum = 0x0);
     AliCFDataGrid *CorrectForEfficiency(AliCFDataGrid* const bgsubpectrum = 0x0);
 
+    void SetMCNoCentrality() { fNoCentralitySelectionMC = kTRUE; };
+
     void WriteResults(const char *filename);
    
  private:
@@ -61,6 +63,8 @@ class AliHFEInclusiveSpectrum : public AliHFECorrectSpectrumBase{
     virtual void Copy(TObject &o) const;
  
     AliHFEInclusiveSpectrumQA *fQA; // QA
+
+    Bool_t fNoCentralitySelectionMC;  // Explicitly switch off centrality selection
    
     ClassDef(AliHFEInclusiveSpectrum, 1) 
 };

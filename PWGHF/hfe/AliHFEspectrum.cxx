@@ -1685,7 +1685,10 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   if(fNonHFEsyst){
     backgroundContainer = (AliCFContainer*)fNonHFESourceContainer[0][0][0]->Clone();
     for(Int_t iSource = 1; iSource < kElecBgSources; iSource++){
-      backgroundContainer->Add(fNonHFESourceContainer[iSource][0][0]);
+      if(iSource == 1)
+        backgroundContainer->Add(fNonHFESourceContainer[iSource][0][0],1.41);//correction for the eta Dalitz decay branching ratio in PYTHIA
+      else
+        backgroundContainer->Add(fNonHFESourceContainer[iSource][0][0]);
     } 
   }
   else{    
@@ -2514,13 +2517,16 @@ AliCFContainer *AliHFEspectrum::GetSlicedContainer(AliCFContainer *container, In
     // source
     if(ivar == 4){
       if((source>= 0) && (source<container->GetNBins(ivar))) {
-	      varMin[ivar] = binLimits[source];
-	      varMax[ivar] = binLimits[source];
+              varMin[ivar] = container->GetAxis(4,0)->GetBinLowEdge(container->GetAxis(4,0)->FindBin(binLimits[source]));
+              varMax[ivar] = container->GetAxis(4,0)->GetBinUpEdge(container->GetAxis(4,0)->FindBin(binLimits[source]));
       }     
     }
     // charge
     if(ivar == 3) {
-      if(charge != kAllCharge) varMin[ivar] = varMax[ivar] = charge;
+      if(charge != kAllCharge){
+        varMin[ivar] = container->GetAxis(3,0)->GetBinLowEdge(container->GetAxis(3,0)->FindBin(charge));
+        varMax[ivar] = container->GetAxis(3,0)->GetBinUpEdge(container->GetAxis(3,0)->FindBin(charge));
+      }
     }
     // eta
     if(ivar == 1){
