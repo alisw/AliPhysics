@@ -69,6 +69,8 @@ updateQA()
   ################################################################
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
+    echo
+    echo "##############################################"
     unset planB
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
@@ -96,8 +98,6 @@ updateQA()
     cd ${tmpDetectorRunDir}
 
     tmpPrefix=${tmpDetectorRunDir}/${outputDir}
-    echo
-    echo "##############################################"
     echo "running QA for ${detector}"
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
@@ -114,6 +114,9 @@ updateQA()
     declare -A arrOfTouchedProductions
     while read qaFile; do
       echo
+      
+      #first check if input file exists
+      [[ ! -f ${qaFile%\#*} ]] && echo "file ${qaFile%\#*} not accessible" && continue
 
       if ! guessRunData ${qaFile}; then
         echo "could not guess run data from ${qaFile}"
@@ -129,8 +132,8 @@ updateQA()
       highPtTree=${qaFile}
 
       #maybe the input is not an archive, but a file
-      [[ "${qaFile}" =~ "QAresults.root" ]] && highPtTree=""
-      [[ "${qaFile}" =~ "FilterEvents_Trees.root" ]] && qaFile=""
+      [[ "${qaFile}" =~ QAresults.root$ ]] && highPtTree=""
+      [[ "${qaFile}" =~ FilterEvents_Trees.root$ ]] && qaFile=""
 
       #it is possible we get the highPt trees from somewhere else
       #search the list of high pt trees for the proper run number
@@ -164,9 +167,13 @@ updateQA()
         #perform some default actions:
         #if trending.root not created, create a default one
         if [[ ! -f trending.root ]]; then
-          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" &>> runLevelQA.log
+          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
         fi
-        arrOfTouchedProductions[${tmpProductionDir}]=1
+        if [[ -f trending.root ]]; then
+          arrOfTouchedProductions[${tmpProductionDir}]=1
+        else
+          echo "trending.root not created"
+        fi
       fi
       #expert QA based on high pt trees
       if [[ -n ${highPtTree} && $(type -t runLevelHighPtTreeQA) =~ "function" ]]; then
@@ -222,7 +229,7 @@ updateQA()
         mv -f ${dir} ${productionDir}
       done
    
-      #go to a temp dir to do the period level stuff
+      #go to a temp dir to do the period level stuff in a completely clean dir
       tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
       echo
       echo tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
@@ -282,7 +289,7 @@ updateQA()
     else
       executePlanB
     fi
-  done
+  done #end of detector loop
 
   #remove lock
   rm -f ${lockFile}
