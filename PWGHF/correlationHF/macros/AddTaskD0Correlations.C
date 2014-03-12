@@ -1,4 +1,4 @@
-AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE)
+AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Bool_t mixing=kFALSE, Bool_t recoTrMC=kFALSE, Bool_t recoD0MC = kFALSE,  Bool_t flagsoftpicut = kTRUE, Bool_t MEthresh = kFALSE, TString cutsfilename="D0toKpiCuts.root", TString cutsfilename2="AssocPartCuts_Std.root", TString effD0namec="D0Eff_From_c_wLimAcc_2D.root", TString effD0nameb="D0Eff_From_b_wLimAcc_2D.root", TString effName = "3D_eff_Std.root", TString cutsD0name="D0toKpiCuts", TString cutsTrkname="AssociatedTrkCuts", Double_t etacorr=1.5, Int_t system=0/*0=useMultipl(pp),1=useCentral(PbPb,pA depends)-*/, Int_t flagD0D0bar=0, Float_t minC=0, Float_t maxC=0, TString finDirname="Output", Bool_t flagAOD049=kFALSE, Int_t standardbins=1, Bool_t stdcuts=kFALSE, Bool_t analyszeKaon=kFALSE)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -185,6 +185,7 @@ AliAnalysisTaskSED0Correlations *AddTaskD0Correlations(Bool_t readMC=kFALSE, Boo
   massD0Task->SetEtaForCorrel(etacorr);
   massD0Task->SetSoftPiFlag(flagsoftpicut);
   massD0Task->SetMEAxisThresh(MEthresh);
+  if(analyszeKaon) massD0Task->SetKaonCorrelations(kTRUE);
 
 //*********************
 //correlation settings
