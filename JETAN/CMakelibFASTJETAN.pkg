@@ -27,13 +27,9 @@
 
 set ( SRCS AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliFastJetBkg.cxx AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx AliAnalysisTaskJetBackgroundSubtract.cxx)
 
-set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+# set(FASTJET_ROOT $ENV{FASTJET_ROOT})  # already done in CMakeLists.txt
 
-if(FASTJET_ROOT)
-  set (FASTJET_INC ${FASTJET_ROOT}/include)
-else()
-  set (FASTJET_INC ${ALICE_ROOT}/JETAN/fastjet)
-endif(FASTJET_ROOT)
+set (FASTJET_INC ${FASTJET_ROOT}/include)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
@@ -41,3 +37,4 @@ set ( DHDR  FASTJETANLinkDef.h)
 
 set ( EDEFINE -isystem${FASTJET_INC} )
 set ( EINCLUDE ${FASTJET_INC} ANALYSIS STEER/AOD STEER/STEERBase )
+
