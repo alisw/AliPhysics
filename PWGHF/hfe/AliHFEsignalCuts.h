@@ -32,6 +32,16 @@ class TClonesArray;
 
 class AliHFEsignalCuts : public AliAnalysisCuts{
   public: 
+    enum ESignalSource_t{
+       kEleCharm = 0,
+       kEleBeauty = 1,
+       kEleGamma = 2,
+       kEleNonHFE = 3,
+       kEleJPsi = 4,
+       kEleBtoJPsi = 5,
+       kEleKe3 =6,
+       kOther = 7
+    };
     AliHFEsignalCuts();
     AliHFEsignalCuts(const Char_t *name, const Char_t *title);
     AliHFEsignalCuts(const AliHFEsignalCuts &ref);
@@ -41,17 +51,31 @@ class AliHFEsignalCuts : public AliAnalysisCuts{
     virtual Bool_t IsSelected(TObject *o);
     virtual Bool_t IsSelected(TList * /*l*/) { return kTRUE; };
 
-    Bool_t IsCharmElectron(const TObject * const o) const;
-    Bool_t IsBeautyElectron(const TObject * const o) const;
-    Bool_t IsGammaElectron(const TObject * const o) const;
-    Bool_t IsNonHFElectron(const TObject * const o) const;
-    Bool_t IsJpsiElectron(const TObject * const o) const;
-    Bool_t IsB2JpsiElectron(const TObject * const o) const;
-    Bool_t IsKe3Electron(const TObject * const o) const;
+    ESignalSource_t GetSignalSource(const TObject *const o) const;
+
+    Bool_t IsCharmElectron(const TObject * const o) const { return GetSignalSource(o) == kEleCharm; }
+    Bool_t IsBeautyElectron(const TObject * const o) const { return GetSignalSource(o) == kEleBeauty; }
+    Bool_t IsGammaElectron(const TObject * const o) const { return GetSignalSource(o) == kEleGamma; }
+    Bool_t IsNonHFElectron(const TObject * const o) const { return GetSignalSource(o) == kEleNonHFE; }
+    Bool_t IsJpsiElectron(const TObject * const o) const { return GetSignalSource(o) == kEleJPsi; }
+    Bool_t IsB2JpsiElectron(const TObject * const o) const { return GetSignalSource(o) == kEleBtoJPsi; }
+    Bool_t IsKe3Electron(const TObject * const o) const { return GetSignalSource(o) == kEleKe3; }
+
+    /*********************************************
+     *           Old legacy code                 *
+     *********************************************/
+    Bool_t IsCharmElectronOld(const TObject * const o) const;
+    Bool_t IsBeautyElectronOld(const TObject * const o) const;
+    Bool_t IsGammaElectronOld(const TObject * const o) const;
+    Bool_t IsNonHFElectronOld(const TObject * const o) const;
+    Bool_t IsJpsiElectronOld(const TObject * const o) const;
+    Bool_t IsB2JpsiElectronOld(const TObject * const o) const;
+    Bool_t IsKe3ElectronOld(const TObject * const o) const;
 
     //void SetMCEvent(AliMCEvent *mc) { fMC = mc; }
     void SetMCEvent(AliMCEvent *mc);
     void SetMCAODInfo(TClonesArray *mcarray);
+    const AliHFEmcQA *GetMCQAObject() const { return fMCQA; }
   
   protected:
     Int_t GetMotherPDG(const AliVParticle * const track) const;
