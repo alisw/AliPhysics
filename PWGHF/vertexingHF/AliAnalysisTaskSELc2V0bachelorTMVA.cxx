@@ -741,6 +741,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fOutputKF->Add(fHistoLifeTimeV0fromLcTrue);
 
   fOutputKF->Add(fHistoMassLcSgn);
+  fOutputKF->Add(fHistoMassLcSgnFromAOD);
   fOutputKF->Add(fHistoDecayLengthLcSgn);
   fOutputKF->Add(fHistoLifeTimeLcSgn);
 
@@ -1024,8 +1025,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
       else { // checking if we want to fill the background
 	if (fKeepingOnlyHIJINGBkg){
 	  // we have decided to fill the background only when the candidate has the daugthers that all come from HIJING underlying event!
-	  //Bool_t isCandidateInjected = fUtils->HasCascadeCandidateAnyDaughInjected(part, aodheader, mcArray);
-	  Bool_t isCandidateInjected = CheckInjection(lcK0spr, aodheader, mcArray);
+	  Bool_t isCandidateInjected = fUtils->HasCascadeCandidateAnyDaughInjected(lcK0spr, aodheader, mcArray);
 	  if (!isCandidateInjected){
 	    AliDebug(2, "The candidate is from HIJING (i.e. not injected), keeping it to fill background");
 	    fHistoBackground->Fill(1);
@@ -2218,28 +2218,6 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::FindLcLabel(AliAODRecoCascadeHF* casca
 
   else return -1;
 
-}
-  
-//----------------------------------------------------------------------------
-Bool_t AliAnalysisTaskSELc2V0bachelorTMVA::CheckInjection(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
-
-  // temporary method until the same is in AliVertexingHFUtils
-
-  AliAODTrack* bach = cand->GetBachelor();
-  if(fUtils->IsTrackInjected(bach, header, arrayMC)) {
-    AliDebug(2, "Bachelor is injected, the whole candidate is then injected");
-    return kTRUE;
-  }
-  AliAODv0* v0 = cand->Getv0();
-  Int_t nprongs = v0->GetNProngs();
-  for(Int_t i = 0; i < nprongs; i++){
-    AliAODTrack *daugh = (AliAODTrack*)v0->GetDaughter(i);
-    if(fUtils->IsTrackInjected(daugh,header,arrayMC)) {
-      AliDebug(2, Form("V0 daughter number %d is injected, the whole candidate is then injected", i));
-      return kTRUE;
-    }
-  }
-  return kFALSE;
 }
 
 
