@@ -333,7 +333,8 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
     // loop over all pools
     for (Int_t ipool=0; ipool<mix->GetNumberOfBins(); ++ipool){
       //      printf("mix remaining %04d/%04d \n",ipool,mix->GetNumberOfBins());
-      mix->MixRemaining(die, ipool);
+      if(! mix->MixRemaining(die, ipool) ) { fPairArray=0x0;  continue; }
+
       fPairArray = (*(die->GetPairArraysPointer()));
       if(!fPairArray) continue;
 
