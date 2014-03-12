@@ -228,7 +228,7 @@ void AliDielectron::Init()
 
   if(GetHasMC()) AliDielectronMC::Instance()->SetHasMC(GetHasMC());
    
-  InitPairCandidateArrays();
+  if(die->DoEventProcess()) InitPairCandidateArrays();
    
   if (fCfManagerPair) {
     fCfManagerPair->SetSignalsMC(fSignalsMC);

@@ -41,7 +41,7 @@ AliDielectronEvent::AliDielectronEvent() :
   TNamed(),
   fArrTrackP(),
   fArrTrackN(),
-  fArrVertex("AliAODVertex",1000),
+  fArrVertex("AliAODVertex",10),
   fArrPairs("AliKFParticle",0),
   fNTracksP(0),
   fNTracksN(0),
