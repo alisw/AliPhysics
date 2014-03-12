@@ -39,7 +39,7 @@ endif()
 
 # If CMAKE_INSTALL_PREFIX was not set than we set it to ALICE_INSTALL. 
 # If ALICE_INSTALL was not defined than it will default to source directory
-if(NOT CMAKE_INSTALL_PREFIX)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
 endif()
 
