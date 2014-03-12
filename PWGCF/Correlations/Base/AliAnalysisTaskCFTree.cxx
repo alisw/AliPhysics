@@ -196,8 +196,12 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
       fZvtx = mcEvent->GetPrimaryVertex()->GetZ();
     } else if (mcTracks) {
       AliAODMCHeader* mcHeader = (AliAODMCHeader*) event->FindListObject(AliAODMCHeader::StdBranchName());
-      nProduced = mcTracks->GetEntriesFast();
-      nPrimGen = mcHeader->GetCocktailHeaders() ? mcHeader->GetCocktailHeader(0)->NProduced() : nProduced;
+      if (!mcHeader) { printf("AliAODMCHeader not found\n"); return; }
+      if (mcHeader->GetCocktailHeaders()) {
+        AliGenEventHeader* header0 =  mcHeader->GetCocktailHeader(0);
+        if (!header0) { printf("first header expected but not found\n"); return; }
+        nPrimGen = header0->NProduced();
+      } else  nPrimGen = nProduced;
       fZvtx = mcHeader->GetVtxZ();
     } else return;
     fEventStatistics->Fill("after mc header check",1);
