@@ -1,10 +1,10 @@
-void processContainer(TObject* object, TTreeSRedirector* debugStreamer, TString name, TRegexp filterRegexp=".*");
+void processContainer(TObject* object, TTreeSRedirector* debugStreamer, TString name);
 void loadLibraries();
-void simpleTrending(TString inputFileName, Int_t run, TRegexp filterRegexp=".*", TString trendingFileName="trending.root", TString treeName="trending", TString fileOpenMode="update" );
+void simpleTrending(TString inputFileName, Int_t run, TString filterExpr=".*", TString trendingFileName="trending.root", TString treeName="trending", TString fileOpenMode="update" );
 
 TString treeName;
 
-void simpleTrending(TString inputFileName, Int_t run, TRegexp filterRegexp, TString trendingFileName, TString debugTreeName, TString fileOpenMode )
+void simpleTrending(TString inputFileName, Int_t run, TString filterExpr, TString trendingFileName, TString debugTreeName, TString fileOpenMode )
 {
 
   // Dump the statistical information about all histograms in the file
@@ -32,20 +32,41 @@ void simpleTrending(TString inputFileName, Int_t run, TRegexp filterRegexp, TStr
   
   TList * keyList = inputFile->GetListOfKeys();
   Int_t nkeys=keyList->GetEntries();
-  keyList->Print();
-  
-  TTreeSRedirector *pcstream = new TTreeSRedirector(trendingFileName,fileOpenMode);
-  (*pcstream)<<treeName.Data()<<"run="<<run;
+ 
+  TRegexp filterRegexp=filterExpr.Data();
 
-  //main loop over the top level objects, filtering is done here
+  //check if we have a matching container, only then create the output file
   TList* keyList=inputFile->GetListOfKeys();
   Int_t nkeys=keyList->GetEntries();
+  Bool_t containerExists=kFALSE;
+  for (Int_t i=0; i<nkeys; i++)
+  {
+    TObject* object=keyList->At(i);
+    if (!object) continue;
+    TString name=object->GetName();
+    if (name.Contains(filterRegexp))
+    {
+      containerExists=kTRUE;
+      break;
+    }
+  }
+  if (!containerExists) 
+  {
+    printf("container %s does not exist in %s\n",filterExpr.Data(),inputFileName.Data());
+    return;
+  }
+
+  TTreeSRedirector *pcstream = new TTreeSRedirector(trendingFileName,fileOpenMode);
+  (*pcstream)<<treeName.Data()<<"run="<<run;
+  
+  //main loop over the top level objects, filtering is done here
   for (Int_t i=0; i<nkeys; i++)
   {
     TObject * object = inputFile->Get(keyList->At(i)->GetName());
     if (!object) continue;
     TString name=object->GetName();
-    processContainer(object,pcstream,name,filterRegexp);
+    if (!name.Contains(filterRegexp)) continue;
+    processContainer(object,pcstream,name);
   }
   
   //
@@ -173,7 +194,7 @@ void simpleTrending(TString inputFileName, Int_t run, TRegexp filterRegexp, TStr
 
 }
 
-void processContainer(TObject* inputObject, TTreeSRedirector* pcstream, TString parentname, TRegexp filterRegexp)
+void processContainer(TObject* inputObject, TTreeSRedirector* pcstream, TString parentname)
 {
   //recursively process the contents of an object:
   //might be a TDirectory
@@ -185,7 +206,6 @@ void processContainer(TObject* inputObject, TTreeSRedirector* pcstream, TString 
   TH1* inputHistogram=NULL;
   
   TString inputObjectName=inputObject->GetName();
-  if (!inputObjectName.Contains(filterRegexp)) return;
 
   //TDirectory* inputDir=dynamic_cast<TDirectory*>(inputObject);
   //TSeqCollection* inputCollection=dynamic_cast<TSeqCollection*>(inputObject);
