@@ -2,6 +2,7 @@
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TFile.h>
+#include <TCint.h>
 #include <TChain.h>
 #include <TTree.h>
 #include <TKey.h>
@@ -85,11 +86,11 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedPP", "Jets p_{T} distribution, pp background subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal", "Jets p_{T} distribution, external bgrd. subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
 
 
 
     AddHistogram2D<TProfile2D>("hJetPtSubtractedRhoKTImprovedCMS", "Mean subtracted KT (CMS w/o signal) background from jets", "COLZ", 600, 0, 150, fNumberOfCentralityBins, 0, 100, "Jet p_{T}", "Centrality", "#rho mean");
-    AddHistogram2D<TH2D>("hJetPtSubtractedRhoKTImprovedCMS020", "Mean subtracted KT (CMS w/o signal) background from jets, 0-20", "COLZ", 600, 0, 150, 400,0.,40., "Jet p_{T} (GeV/c)", "#rho (GeV/c)", "dN^{Events}/dp_{T}#rho");
 
     if(fAnalyzeDeprecatedBackgrounds)
     {
@@ -113,7 +114,6 @@ void AliAnalysisTaskChargedJetsPA::Init()
       AddHistogram2D<TH2D>("hJetProfile70GeV", "Jet profile, cone p_{T}/jet p_{T} vs. jet radius, jet p_{T} > 70 GeV", "", 12, 0, 0.6,200, 0., 2., "Cone radius","dN^{Jets}/dR", "Ratio");
     }
     // ######## Jet stuff
-    AddHistogram2D<TH2D>("hJetPtConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., 500, -50., 200, "p_{T} (GeV/c)","jet p_{T} (GeV/c)","dN^{Tracks}/dp_{T}");
     AddHistogram2D<TH2D>("hJetConstituentPt", "Jet constituents p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Tracks}/dp_{T}");
     AddHistogram1D<TH1D>("hJetCountAll", "Number of Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
     AddHistogram1D<TH1D>("hJetCountAccepted", "Number of accepted Jets", "", 200, 0., 200., "N jets","dN^{Events}/dN^{Jets}");
@@ -256,6 +256,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram1D<TH1D>("hCentralityV0M", "Centrality distribution V0M", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
     AddHistogram1D<TH1D>("hCentralityV0A", "Centrality distribution V0A", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
     AddHistogram1D<TH1D>("hCentralityV0C", "Centrality distribution V0C", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
+    AddHistogram1D<TH1D>("hCentralityZNA", "Centrality distribution ZNA", "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
     AddHistogram1D<TH1D>("hCentrality", Form("Centrality distribution %s", fCentralityType.Data()), "", fNumberOfCentralityBins, 0., 100., "Centrality","dN^{Events}");
 
 
@@ -268,7 +269,6 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hTrackPhiEta", "Track angular distribution", "LEGO2", 100, 0., 2*TMath::Pi(),100, -2.5, 2.5, "#phi","#eta","dN^{Tracks}/(d#phi d#eta)");
 
     AddHistogram2D<TH2D>("hTrackPhiPtCut", "Track #phi distribution for different pT cuts", "LEGO2", 360, 0, TMath::TwoPi(), 20, 0, 20, "#phi", "p_{T} lower cut", "dN^{Tracks}/d#phi dp_{T}");
-    AddHistogram2D<TH2D>("hTrackPhiLabel", "Track #phi distribution for different labels", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
     AddHistogram2D<TH2D>("hTrackPhiTrackType", "Track #phi distribution for different track types", "LEGO2", 360, 0, TMath::TwoPi(), 3, 0, 3, "#phi", "Label", "dN^{Tracks}/d#phi");
     AddHistogram2D<TH2D>("hTrackEta", "Track #eta distribution", "COLZ", 180, -fTrackEtaWindow, +fTrackEtaWindow, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Tracks}/d#eta");
     if (fAnalyzeJets)
@@ -358,6 +358,22 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetConePt(Double_t eta, Double_t p
       if(IsTrackInCone(tmpTrack, eta, phi, radius))
         tmpConePt = tmpConePt + tmpTrack->Pt();
   }
+  return tmpConePt;
+}
+
+//________________________________________________________________________
+inline Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedConePt(Double_t eta, Double_t phi, Double_t radius, Double_t background)
+{
+  Double_t tmpConePt = 0.0;
+
+  for (Int_t i = 0; i < fTrackArray->GetEntries(); i++)
+  {
+    AliVTrack* tmpTrack = static_cast<AliVTrack*>(fTrackArray->At(i));
+    if (IsTrackInAcceptance(tmpTrack))
+      if(IsTrackInCone(tmpTrack, eta, phi, radius))
+        tmpConePt = tmpConePt + tmpTrack->Pt();
+  }
+  tmpConePt -= background*radius*radius*TMath::Pi(); // subtract background
   return tmpConePt;
 }
 
@@ -970,6 +986,10 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensityAll(Int_t numberExclude
       continue;
     } 
 
+    tmpSummedArea += backgroundJet->Area();
+    if(backgroundJet->Pt() > 0.150)
+      tmpCoveredArea += backgroundJet->Area();
+
     if (!IsBackgroundJetInAcceptance(backgroundJet))
       continue;
 
@@ -986,10 +1006,6 @@ void AliAnalysisTaskChargedJetsPA::GetKTBackgroundDensityAll(Int_t numberExclude
           break;
         }
     }
-
-    tmpSummedArea += backgroundJet->Area();
-    if(backgroundJet->Pt() > 0.150)
-      tmpCoveredArea += backgroundJet->Area();
 
     Double_t tmpRho = 0.0;
     if(backgroundJet->Area())
@@ -1408,12 +1424,14 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
   Double_t centralityPercentileV0A = 0.0;
   Double_t centralityPercentileV0C = 0.0;
   Double_t centralityPercentileV0M = 0.0;
+  Double_t centralityPercentileZNA = 0.0;
   if (tmpCentrality != NULL)
   {
     centralityPercentile = tmpCentrality->GetCentralityPercentile(fCentralityType.Data());
     centralityPercentileV0A = tmpCentrality->GetCentralityPercentile("V0A");
     centralityPercentileV0C = tmpCentrality->GetCentralityPercentile("V0C");
     centralityPercentileV0M = tmpCentrality->GetCentralityPercentile("V0M");
+    centralityPercentileZNA = tmpCentrality->GetCentralityPercentile("ZNA");
   }
 
   if((centralityPercentile < 0.0) || (centralityPercentile > 100.0))
@@ -1473,6 +1491,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     FillHistogram("hCentralityV0M",centralityPercentileV0M);
     FillHistogram("hCentralityV0A",centralityPercentileV0A);
     FillHistogram("hCentralityV0C",centralityPercentileV0C);
+    FillHistogram("hCentralityZNA",centralityPercentileZNA);
     FillHistogram("hCentrality",centralityPercentile);
 
     Int_t trackCountAcc = 0;
@@ -1497,10 +1516,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hTrackPhi", track->Phi());
         
         if(static_cast<AliPicoTrack*>(track))
-        {
           FillHistogram("hTrackPhiTrackType", track->Phi(), (static_cast<AliPicoTrack*>(track))->GetTrackType());
-          FillHistogram("hTrackPhiLabel", track->Phi(), (static_cast<AliPicoTrack*>(track))->GetLabel());
-        }
+
         for(Int_t j=0;j<20;j++)
           if(track->Pt() > j)
             FillHistogram("hTrackPhiPtCut", track->Phi(), track->Pt());
@@ -1568,10 +1585,9 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         // Jet spectra
         FillHistogram("hJetPt", tmpJet->Pt(), centralityPercentile);
         FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
+        FillHistogram("hJetPtBgrdSubtractedExternal", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal), centralityPercentile);
         FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, backgroundKTImprovedCMS);
-        if(centralityPercentile<=20.0)
-          FillHistogram("hJetPtSubtractedRhoKTImprovedCMS020", tmpJet->Pt(), backgroundKTImprovedCMS);
-        
+
         // pp background
         GetPPBackgroundDensity(backgroundPP, tmpJet);
         FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
@@ -1591,108 +1607,108 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         {
           if(tmpJet->Pt()>=70.0)
           {
-            FillHistogram("hJetProfile70GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile70GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile70GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile70GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=60.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=60.0)
           {
-            FillHistogram("hJetProfile60GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile60GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile60GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile60GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=50.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=50.0)
           {
-            FillHistogram("hJetProfile50GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile50GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile50GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile50GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=40.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=40.0)
           {
-            FillHistogram("hJetProfile40GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile40GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile40GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile40GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=30.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=30.0)
           {
-            FillHistogram("hJetProfile30GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile30GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile30GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile30GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=20.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=20.0)
           {
-            FillHistogram("hJetProfile20GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile20GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile20GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile20GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
-          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS)>=10.0)
+          else if(GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal)>=10.0)
           {
-            FillHistogram("hJetProfile10GeV", 0.05-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.10-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.15-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.20-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.25-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.30-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.35-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.40-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.45-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.50-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.55-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
-            FillHistogram("hJetProfile10GeV", 0.60-0.05/2, (-backgroundKTImprovedCMS+GetConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+            FillHistogram("hJetProfile10GeV", 0.05-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.05, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.10-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.10, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.15-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.15, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.20-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.20, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.25-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.25, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.30-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.30, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.35-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.35, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.40-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.40, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.45-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.45, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.50-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.50, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.55-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.55, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+            FillHistogram("hJetProfile10GeV", 0.60-0.05/2, (GetCorrectedConePt(tmpJet->Eta(), tmpJet->Phi(), 0.60, backgroundKTImprovedCMSExternal))/GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
           }
         }
         FillHistogram("hJetPtVsConstituentCount", tmpJet->Pt(),tmpJet->GetNumberOfTracks());
@@ -1703,7 +1719,6 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
           Double_t highestTrackPt = 0.0;
           for(Int_t j=0; j<tmpJet->GetNumberOfTracks(); j++)
           {
-            FillHistogram("hJetPtConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), tmpJet->Pt());
             FillHistogram("hJetConstituentPt", tmpJet->TrackAt(j, fTrackArray)->Pt(), centralityPercentile);
             // Find the lowest pT of a track in the jet
             if (tmpJet->TrackAt(j, fTrackArray)->Pt() < lowestTrackPt)
