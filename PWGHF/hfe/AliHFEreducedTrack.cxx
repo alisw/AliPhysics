@@ -45,6 +45,7 @@ TObject(),
   fMCMotherPdg(0),
   fMCSignal(kFALSE),
   fMCSource(5),
+  fMCEleSource(0),
   fTrackStatus(8),
   fNclustersITS(0),
   fNclustersTPC(0),
@@ -67,16 +68,20 @@ TObject(),
   fTPCsigmaEl(-1000.),
   fTPCsigmaElCorrected(-1000.),
   fTOFsigmaEl(-1000.),
+  fTOFsigmaDeuteron(-1000.),
   fTOFmismatchProb(0.),
   fITSsigmaEl(-1000.),
   fEoverP(-1.),
   fEMCALsigmaEl(-1000.),
-  fV0PID(kV0undef)
+  fV0PID(kV0undef),
+  fV0ProdR(-0.1),
+  fDCAerr(0.)
 {
   // 
   // Default Constuctor
   //
   memset(fMCProdVtx, 0, sizeof(Double_t)*3);
+  memset(fMCMotherProdVtx, 0, sizeof(Double_t)*3);
   memset(fShowerShape, 0, sizeof(Double_t)*4);
   memset(fDCA, 0, sizeof(Float_t)*2);
   fHFEImpactParam[0] = -999.;
@@ -101,6 +106,7 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fMCMotherPdg(ref.fMCMotherPdg),
   fMCSignal(ref.fMCSignal),
   fMCSource(ref.fMCSource),
+  fMCEleSource(ref.fMCEleSource),
   fTrackStatus(ref.fTrackStatus),
   fNclustersITS(ref.fNclustersITS),
   fNclustersTPC(ref.fNclustersTPC),
@@ -123,16 +129,20 @@ AliHFEreducedTrack::AliHFEreducedTrack(const AliHFEreducedTrack &ref):
   fTPCsigmaEl(ref.fTPCsigmaEl),
   fTPCsigmaElCorrected(ref.fTPCsigmaElCorrected),
   fTOFsigmaEl(ref.fTOFsigmaEl),
+  fTOFsigmaDeuteron(ref.fTOFsigmaDeuteron),
   fTOFmismatchProb(ref.fTOFmismatchProb),
   fITSsigmaEl(ref.fITSsigmaEl),
   fEoverP(ref.fEoverP),
   fEMCALsigmaEl(ref.fEMCALsigmaEl),
-  fV0PID(ref.fV0PID)
+  fV0PID(ref.fV0PID),
+  fV0ProdR(ref.fV0ProdR),
+  fDCAerr(ref.fDCAerr)
 {
   // 
   // Copy Constuctor
   //
   memcpy(fMCProdVtx, ref.fMCProdVtx, sizeof(Double_t) *3);
+  memcpy(fMCMotherProdVtx, ref.fMCMotherProdVtx, sizeof(Double_t) *3);
   memcpy(fShowerShape, ref.fShowerShape, sizeof(Double_t)*4);
   memcpy(fDCA, ref.fDCA, sizeof(Float_t)*2);
   memcpy(fHFEImpactParam, ref.fHFEImpactParam, sizeof(Double_t) * 2);
@@ -160,7 +170,9 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fMCMotherPdg = ref.fMCMotherPdg;
     fMCSignal = ref.fMCSignal;
     fMCSource = ref.fMCSource;
+    fMCEleSource = ref.fMCEleSource;
     memcpy(fMCProdVtx, ref.fMCProdVtx, sizeof(Double_t) *3);
+    memcpy(fMCMotherProdVtx, ref.fMCMotherProdVtx, sizeof(Double_t) *3);
     fTrackStatus =ref.fTrackStatus;
     fNclustersITS = ref.fNclustersITS;
     fNclustersTPC = ref.fNclustersTPC;
@@ -188,6 +200,7 @@ AliHFEreducedTrack &AliHFEreducedTrack::operator=(const AliHFEreducedTrack &ref)
     fEoverP = ref.fEoverP;
     fEMCALsigmaEl = ref.fEMCALsigmaEl;
     fV0PID = ref.fV0PID;
+    fV0ProdR = ref.fV0ProdR;
     memcpy(fShowerShape, ref.fShowerShape, sizeof(Double_t)*4);
     memcpy(fDCA, ref.fDCA, sizeof(Float_t)*2);
     memcpy(fHFEImpactParam, ref.fHFEImpactParam, sizeof(Double_t) * 2);

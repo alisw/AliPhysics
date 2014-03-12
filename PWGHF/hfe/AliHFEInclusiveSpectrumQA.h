@@ -56,7 +56,19 @@ class AliHFEInclusiveSpectrumQA : public TNamed{
     kFinalResultDirectEfficiency = 18,
     kBeforeSPB = 19,
     kAfterSPB = 20,
-    kNResults = 21
+    kBeforeSCND = 21,
+    kAfterSCND = 22,
+    kHadronContaminationND = 23,
+    kBeforeV0ND = 24,
+    kAfterV0ND = 25,
+    kV0EfficiencyND = 26,
+    kBeforePEND = 27,
+    kAfterPEND = 28,
+    kPEfficiencyND = 29,
+    kBeforeMCEND = 30,
+    kAfterMCEND = 31,
+    kMCEfficiencyND = 32,
+    kNResults = 33
   };
 
 
@@ -72,8 +84,10 @@ class AliHFEInclusiveSpectrumQA : public TNamed{
   
   void DrawProjections() const;
   void DrawSubtractContamination() const;
+  void DrawSubtractContaminationND() const;
   void DrawSubtractPhotonicBackground() const;
   void DrawCorrectWithEfficiency(Int_t typeeff) const;
+  void DrawCorrectWithEfficiencyND(Int_t typeeff) const;
   void DrawUnfolding() const;
   void DrawResult();
   
@@ -94,6 +108,7 @@ class AliHFEInclusiveSpectrumQA : public TNamed{
   private:
 
   static const Char_t* fgkNameCanvas[kNTypeEfficiency];     // Name of canvas
+  static const Char_t* fgkNameCanvasND[kNTypeEfficiency];     // Name of canvas
 
     AliHFEInclusiveSpectrumQA(const AliHFEInclusiveSpectrumQA &);
     AliHFEInclusiveSpectrumQA &operator=(const AliHFEInclusiveSpectrumQA &);

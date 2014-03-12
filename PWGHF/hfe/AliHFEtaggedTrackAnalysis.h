@@ -85,7 +85,7 @@ class AliHFEtaggedTrackAnalysis : public TNamed{
     Bool_t               fIsPbPb;        // Analysis Type: PbPb or no PbPb
     Bool_t               fIspPb;        // Analysis Type: pPb or no pPb
     Bool_t               fIsAOD;        // Analysis Type: AOD
-
+    
   ClassDef(AliHFEtaggedTrackAnalysis, 0)
 };
 #endif

@@ -147,7 +147,7 @@ class AliHFEcuts : public TNamed{
     void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
-    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isIPcharge, Bool_t isipsigma, Bool_t isopp);
+    inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma, Bool_t isIPcharge , Bool_t isopp);
     void SetMinRatioTPCclusters(Double_t minRatioTPC) { fMinClusterRatioTPC = minRatioTPC; };
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     void SetTOFsignaldxz(Double_t tofsignaldx, Double_t tofsignaldz){fTOFsignaldx = tofsignaldx; fTOFsignaldz = tofsignaldz;};

@@ -73,7 +73,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
       kPostProcess = 3,
       kDEstep = 4,
       kTaggedTrackAnalysis = 5,
-      kNonPhotonicElectron = 6
+      kNonPhotonicElectron = 6,
+      kNonPhotonicElectronBeauty = 7
     };
     enum CreationProcess_t{
       kSignalCharm = 0,
@@ -182,6 +183,7 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     Bool_t CheckTRDTriggerESD(AliESDEvent *ev);
     Bool_t CheckTRDTrigger(AliVEvent *ev);
     void DrawTRDTrigger(AliESDEvent *ev);
+    void DrawTRDTriggerAnalysis(AliVEvent *ev);
 
   private:
     enum{
@@ -241,7 +243,8 @@ class AliAnalysisTaskHFE : public AliAnalysisTaskSE{
     AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
     AliHFEpid *fPID;                      // PID
     AliHFEpidQAmanager *fPIDqa;           // PID QA
-    AliTRDTriggerAnalysis *fTRDTriggerAnalysis; //! TRD Trigger Analysis
+    AliTRDTriggerAnalysis *fTRDTriggerAnalysismb; //! TRD Trigger Analysis for mb analysis
+    AliTRDTriggerAnalysis *fTRDTriggerAnalysistrg; //! TRD Trigger Analysis for trg sample analysis
     AliHFEpid *fPIDpreselect;             // PID oject for pre-selected tracks (without QA)
     AliHFEcuts *fCuts;                    // Cut Collection
     AliHFEcuts *fTaggedTrackCuts;         // Cut Collection for V0 tagged tracks

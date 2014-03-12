@@ -86,6 +86,8 @@ AliHFECorrectSpectrumBase::AliHFECorrectSpectrumBase(const char *name):
 
   memset(fEtaRange, 0, sizeof(Double_t) * 2);
   memset(fEtaRangeNorm, 0, sizeof(Double_t) * 2);
+  memset(fDims, 0, sizeof(Double_t) * 3);
+  SetNbDimensions(1);
  
 }
 //____________________________________________________________
@@ -147,6 +149,9 @@ void AliHFECorrectSpectrumBase::Copy(TObject &o) const {
   target.fChargeChoosen = fChargeChoosen;
   target.fTestCentralityLow = fTestCentralityLow;
   target.fTestCentralityHigh = fTestCentralityHigh;
+  target.fDims[0] = fDims[0];
+  target.fDims[1] = fDims[1];
+  target.fDims[2] = fDims[2];
   target.fEtaRange[0] = fEtaRange[0];
   target.fEtaRange[1] = fEtaRange[1];
   target.fEtaRangeNorm[0] = fEtaRangeNorm[0];
@@ -172,7 +177,7 @@ TGraphErrors *AliHFECorrectSpectrumBase::Normalize(THnSparse * const spectrum) c
   if(fNEvents > 0) {
 
     TH1D* projection = spectrum->Projection(0);
-    CorrectFromTheWidth(projection);
+    AliHFEtools::NormaliseBinWidth(projection);
     TGraphErrors *graphError = NormalizeTH1(projection);
     return graphError;
   
@@ -191,7 +196,7 @@ TGraphErrors *AliHFECorrectSpectrumBase::Normalize(AliCFDataGrid * const spectru
   if(fNEvents > 0) {
 
     TH1D* projection = (TH1D *) spectrum->Project(0);
-    CorrectFromTheWidth(projection);
+    AliHFEtools::NormaliseBinWidth(projection);
     TGraphErrors *graphError = NormalizeTH1(projection);
 
     return graphError;
@@ -226,7 +231,7 @@ TGraphErrors *AliHFECorrectSpectrumBase::NormalizeTH1(TH1 *input) const {
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       AliDebug(6, Form("p: %f, n: %e\n", p, n));
       dN = input->GetBinError(ibin);
@@ -296,13 +301,16 @@ AliCFContainer *AliHFECorrectSpectrumBase::GetSlicedContainer(AliCFContainer *co
     // source
     if(ivar == 4){
       if((source>= 0) && (source<container->GetNBins(ivar))) {
-	      varMin[ivar] = binLimits[source];
-	      varMax[ivar] = binLimits[source];
+              varMin[ivar] = container->GetAxis(4,0)->GetBinLowEdge(container->GetAxis(4,0)->FindBin(binLimits[source]));
+              varMax[ivar] = container->GetAxis(4,0)->GetBinUpEdge(container->GetAxis(4,0)->FindBin(binLimits[source]));
       }     
     }
     // charge
     if(ivar == 3) {
-      if(charge != kAllCharge) varMin[ivar] = varMax[ivar] = charge;
+      if(charge != kAllCharge){
+        varMin[ivar] = container->GetAxis(3,0)->GetBinLowEdge(container->GetAxis(3,0)->FindBin(charge));
+        varMax[ivar] = container->GetAxis(3,0)->GetBinUpEdge(container->GetAxis(3,0)->FindBin(charge));
+      }
     }
     // eta
     if(ivar == 1){
@@ -482,26 +490,6 @@ THnSparseF *AliHFECorrectSpectrumBase::GetSlicedCorrelation(THnSparseF *correlat
   
 }
 //___________________________________________________________________________
-void AliHFECorrectSpectrumBase::CorrectFromTheWidth(TH1D *h1) const {
-  //
-  // Correct from the width of the bins --> dN/dp_{T} (GeV/c)^{-1}
-  //
-
-  TAxis *axis = h1->GetXaxis();
-  Int_t nbinX = h1->GetNbinsX();
-
-  for(Int_t i = 1; i <= nbinX; i++) {
-
-    Double_t width = axis->GetBinWidth(i);
-    Double_t content = h1->GetBinContent(i);
-    Double_t error = h1->GetBinError(i); 
-    h1->SetBinContent(i,content/width); 
-    h1->SetBinError(i,error/width);
-  }
-
-}
-
-//___________________________________________________________________________
 void AliHFECorrectSpectrumBase::CorrectStatErr(AliCFDataGrid *backgroundGrid) const { 
   //
   // Correct statistical error
@@ -536,4 +524,23 @@ TObject* AliHFECorrectSpectrumBase::GetEfficiency(const AliCFContainer * const c
   AliCFEffGrid* eff = new AliCFEffGrid((const char*)name,"",*c);
   eff->CalculateEfficiency(step,step0);
   return eff;
+}
+//____________________________________________________________________________
+void AliHFECorrectSpectrumBase::SetNbDimensions(Int_t nbDimensions) {
+  //
+  // Set the dimensions
+  //
+  fNbDimensions = nbDimensions;
+  switch(fNbDimensions){
+  case 1:   fDims[0] = 0;
+    break;
+  case 2:   for(Int_t i = 0; i < 2; i++) fDims[i] = i;
+    break;
+  case 3:   for(Int_t i = 0; i < 3; i++) fDims[i] = i;
+    break;
+  default:
+    AliError("Container with this number of dimensions not foreseen (yet)");
+    return ;
+  };
+
 }

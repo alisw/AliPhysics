@@ -6,6 +6,7 @@
  *											*
  *	Permission to use, copy, modify and distribute this software and its		*
  *	documentation strictly for non-commercial purposes is hereby granted		*
+
  *	without fee, provided that the above copyright notice appears in all		*
  *	copies and that both the copyright notice and this permission notice		*
  *	appear in the supporting documentation. The authors make no claims		*
@@ -54,6 +55,7 @@
 #include "AliHFEpid.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEtools.h"
+#include "AliHFEmcQA.h"
 
 #include "AliHFENonPhotonicElectron.h"
 
@@ -64,6 +66,7 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fIsAOD		(kFALSE)
   ,fMCEvent		(NULL)
   ,fAODArrayMCInfo	(NULL)
+  ,fLevelBack(-1)
   ,fHFEBackgroundCuts	(NULL)
   ,fPIDBackground	(0x0)
   ,fPIDBackgroundQA	(0)
@@ -92,6 +95,7 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fUSmatches(NULL)
   ,fLSmatches(NULL)
   ,fHnsigmaITS(NULL)
+  ,fWeightsSource(NULL)
 //  ,fUSignAngle	(NULL)
 //  ,fLSignAngle	(NULL)
 {
@@ -108,6 +112,7 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fIsAOD		(kFALSE)
   ,fMCEvent		(NULL)
   ,fAODArrayMCInfo	(NULL)
+  ,fLevelBack(-1)
   ,fHFEBackgroundCuts	(NULL)
   ,fPIDBackground	(0x0)
   ,fPIDBackgroundQA	(0)
@@ -136,6 +141,9 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron()
   ,fUSmatches(NULL)
   ,fLSmatches(NULL)
   ,fHnsigmaITS(NULL)
+  ,fWeightsSource(NULL)
+  ,fIncElectronRadius(NULL)
+  ,fRecElectronRadius(NULL)
 //  ,fUSignAngle	(NULL)
 //  ,fLSignAngle	(NULL)
 {
@@ -152,6 +160,7 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fIsAOD		(ref.fIsAOD)
   ,fMCEvent		(NULL)
   ,fAODArrayMCInfo	(NULL)
+  ,fLevelBack           (ref.fLevelBack)
   ,fHFEBackgroundCuts	(ref.fHFEBackgroundCuts)
   ,fPIDBackground	(ref.fPIDBackground)
   ,fPIDBackgroundQA	(ref.fPIDBackgroundQA)
@@ -180,6 +189,9 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const AliHFENonPhotonicElec
   ,fUSmatches(ref.fUSmatches)
   ,fLSmatches(ref.fLSmatches)
   ,fHnsigmaITS(ref.fHnsigmaITS)
+  ,fWeightsSource(ref.fWeightsSource)
+  ,fIncElectronRadius(ref.fIncElectronRadius)
+  ,fRecElectronRadius(ref.fRecElectronRadius)
 //  ,fUSignAngle	(ref.fUSignAngle)
 //  ,fLSignAngle	(ref.fLSignAngle)
 {
@@ -247,8 +259,8 @@ void AliHFENonPhotonicElectron::Init()
   Double_t binLimPtDefault[kBinsPtDefault+1] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3., 3.5, 4., 4.5, 5., 5.5, 6., 7., 8., 10., 12., 14., 16., 18., 20.};
   const Int_t kBinsEtaInclusiveDefault = 8;
   Double_t binLimEtaInclusiveDefault[kBinsEtaInclusiveDefault+1] = {-0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8};
-  const Int_t kBinsEtaAssociated = 30;
-  Double_t binLimEtaAssociat[kBinsEtaAssociated+1] = {-1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5};
+  const Int_t kBinsEtaAssociated = 15;
+  Double_t binLimEtaAssociat[kBinsEtaAssociated+1] = {-1.5,-1.3,-1.1,-0.9,-0.7,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.7,0.9,1.1,1.3,1.5};
 
   if(!fPtBinning.GetSize()) fPtBinning.Set(kBinsPtDefault+1, binLimPtDefault);
   if(!fEtaBinning.GetSize()) fEtaBinning.Set(kBinsEtaInclusiveDefault+1, binLimEtaInclusiveDefault);
@@ -271,13 +283,13 @@ void AliHFENonPhotonicElectron::Init()
   Double_t binLimSource[nBinsSource+1];
   for(Int_t i=0; i<=nBinsSource; i++) binLimSource[i]=(Double_t)minSource + (maxSource-minSource)/nBinsSource*(Double_t)i ;
 
-  Int_t nBinsInvMass = 100;
+  Int_t nBinsInvMass = 30;
   Double_t minInvMass = 0.;
-  Double_t maxInvMass = 1.;
+  Double_t maxInvMass = 0.3;
   Double_t binLimInvMass[nBinsInvMass+1];
   for(Int_t i=0; i<=nBinsInvMass; i++) binLimInvMass[i]=(Double_t)minInvMass + (maxInvMass-minInvMass)/nBinsInvMass*(Double_t)i ;
 
-  Int_t nBinsPhi = 180;
+  Int_t nBinsPhi = 8;
   Double_t minPhi = 0.0;
   Double_t maxPhi = TMath::Pi();
   Double_t binLimPhi[nBinsPhi+1];
@@ -287,9 +299,9 @@ void AliHFENonPhotonicElectron::Init()
     AliDebug(2,Form("bin phi is %f for %d",binLimPhi[i],i));
   }
 
-  Int_t nBinsAngle = 180;
+  Int_t nBinsAngle = 72;
   Double_t minAngle = 0.0;
-  Double_t maxAngle = TMath::Pi();
+  Double_t maxAngle = 0.4;
   Double_t binLimAngle[nBinsAngle+1];
   for(Int_t i=0; i<=nBinsAngle; i++)
   {
@@ -366,6 +378,24 @@ void AliHFENonPhotonicElectron::Init()
   fLSmatches->SetBinEdges(1,fPtBinning.GetArray());
   fLSmatches->SetBinEdges(2,binLimMatches);
 
+  // Histograms for radius studies
+  Int_t nBinsradius = 50;
+  Double_t minradius = 0.0;
+  Double_t maxradius = 100.0;
+  Double_t binLimradius[nBinsradius+1];
+  for(Int_t i=0; i<=nBinsradius; i++) binLimradius[i]=(Double_t)minradius + (maxradius-minradius)/nBinsradius*(Double_t)i ;
+  const Int_t nDimIncElectronRadius = 3;  // centrality, pt_inc, radius 
+  const Int_t nBinsIncElectronRadius[nDimIncElectronRadius] = {nBinsC, fPtBinning.GetSize()-1, nBinsradius};
+  fIncElectronRadius = new THnSparseF("fIncElectronRadius", "fIncElectronRadius", nDimIncElectronRadius, nBinsIncElectronRadius);
+  fIncElectronRadius->SetBinEdges(0,binLimC);
+  fIncElectronRadius->SetBinEdges(1,fPtBinning.GetArray());
+  fIncElectronRadius->SetBinEdges(2,binLimradius);
+
+  fRecElectronRadius = new THnSparseF("fRecElectronRadius", "fRecElectronRadius", nDimIncElectronRadius, nBinsIncElectronRadius);
+  fRecElectronRadius->SetBinEdges(0,binLimC);
+  fRecElectronRadius->SetBinEdges(1,fPtBinning.GetArray());
+  fRecElectronRadius->SetBinEdges(2,binLimradius);
+
 /*
   // ee angle Unlike Sign
   const Int_t nDimUSignAngle=3;
@@ -391,6 +421,9 @@ void AliHFENonPhotonicElectron::Init()
   // control histogram for ITS PID
   fHnsigmaITS = new TH2F("fHnsigmaITS", "Number of sigmas in the ITS", 30, 0., 0.3, 1200, -10., 10.);
 
+  // control histogram for weights sources
+  fWeightsSource = new TH2F("fWeightsSource", "Source code for weights", 11, -1.5, 9.5, 29, -1.5, 27.5);
+
   fListOutput->Add(fAssElectron);
   fListOutput->Add(fIncElectron);
   fListOutput->Add(fUSign);
@@ -398,9 +431,44 @@ void AliHFENonPhotonicElectron::Init()
   fListOutput->Add(fUSmatches);
   fListOutput->Add(fLSmatches);
   fListOutput->Add(fHnsigmaITS);
+  fListOutput->Add(fWeightsSource);
+  fListOutput->Add(fIncElectronRadius);
+  fListOutput->Add(fRecElectronRadius);
 //  fListOutput->Add(fUSignAngle);
 //  fListOutput->Add(fLSignAngle);
 
+}
+
+//_____________________________________________________________________________________________
+void AliHFENonPhotonicElectron::SetWithWeights(Int_t levelBack)
+{
+  //
+  // Init the HFE level
+  //
+  if(levelBack >= 0) fLevelBack = levelBack;
+
+}
+
+//_____________________________________________________________________________________________
+void AliHFENonPhotonicElectron::SetMCEvent(AliMCEvent *mcEvent)
+{
+  //
+  // Pass the mcEvent
+  //
+  
+  fMCEvent = mcEvent;
+  
+}
+
+//_____________________________________________________________________________________________
+void AliHFENonPhotonicElectron::SetAODArrayMCInfo(TClonesArray *aodArrayMCInfo)
+{
+  //
+  // Pass the mcEvent info
+  //
+
+  fAODArrayMCInfo = aodArrayMCInfo;
+  
 }
 
 //_____________________________________________________________________________________________
@@ -517,7 +585,7 @@ Int_t AliHFENonPhotonicElectron::CountPoolAssociated(AliVEvent *inputEvent, Int_
 }
 
 //_____________________________________________________________________________________________
-Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight, Int_t binct, Double_t deltaphi, Int_t source, Int_t indexmother)
+Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight, Int_t binct, Double_t deltaphi, Int_t source, Int_t indexmother,Int_t mcQAsource)
 {
   //
   // Look At Non HFE
@@ -542,6 +610,9 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
    *											*
    ***********************************************************************************/
 
+  //printf("weight %f and source %d\n",weight,source);
+
+  
   AliAODEvent *aodeventu = dynamic_cast<AliAODEvent*>(vEvent);
   Int_t taggedphotonic = -1;
 
@@ -555,11 +626,14 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   //Set Fill-Arrays for THnSparse
   Double_t valueIncElectron[4]	= { binct, track1->Pt(), source, track1->Eta()};	//Centrality	Pt	Source	P	
   Double_t valueSign[9]		= { deltaphi, binct, track1->Pt(), -1, source, -1, -1, track1->Eta(), -1};			//DeltaPhi	Centrality	Pt	InvariantMass	Source	Angle	Pt
-  //Double_t valueAngle[3]	= { -1, binct, source};								//Angle		Centrality	Source
+  //Double_t valueAngle[3]	= { -1, binct, source};	
+  Double_t valueradius[3]	= { binct, track1->Pt(), 0.};							//Angle		Centrality	Source
 
   Int_t pdg1 = CheckPdg(TMath::Abs(track1->GetLabel()));
+  Double_t radius = Radius(TMath::Abs(track1->GetLabel()));
   AliKFParticle::SetField(vEvent->GetMagneticField());
   AliKFVertex primV(*(vEvent->GetPrimaryVertex()));
+  valueradius[2] = radius;
 
   AliVTrack *track2(NULL);
   Int_t iTrack2 = 0;
@@ -582,8 +656,13 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
   Bool_t kLSignPhotonic = kFALSE;
 
   //! FILL Inclusive Electron
+  fWeightsSource->Fill(source,mcQAsource);
   fIncElectron->Fill(valueIncElectron,weight);
   fnumberfound++;
+  if(source == kElectronfromconversion) {
+    fIncElectronRadius->Fill(valueradius,weight);
+    //printf("radius %f\n",radius);
+  }
   //printf(Form("Inclusive Pool: TrackNr. %d, fnumberfound %d \n", iTrack1, fnumberfound));
 
   for(Int_t idex = 0; idex < fCounterPoolBackground; idex++){
@@ -666,7 +745,10 @@ Int_t AliHFENonPhotonicElectron::LookAtNonHFE(Int_t iTrack1, AliVTrack *track1, 
     } else {
       if(invmass < 1.0)fUSign->Fill( valueSign, weight);
       // count unlike-sign matched pairs per inclusive based on mass cut
-      if(invmass < 0.14) countsMatchUnlikesign++;
+      if(invmass < 0.14) {
+	countsMatchUnlikesign++;
+	if(source == kElectronfromconversionboth) fRecElectronRadius->Fill(valueradius,weight);
+      }
       AliDebug(1, "Selected Unike sign");
     }
 
@@ -693,7 +775,7 @@ Int_t AliHFENonPhotonicElectron::FindMother(Int_t tr, Int_t &indexmother) const 
   // Find the mother if MC
   //
 
-  if(!fMCEvent && !fAODArrayMCInfo) return 0;
+  if(!fMCEvent && !fAODArrayMCInfo) return -1;
 
   Int_t pdg = CheckPdg(tr);
   if(TMath::Abs(pdg)!= 11)
@@ -741,6 +823,33 @@ Int_t AliHFENonPhotonicElectron::CheckPdg(Int_t tr) const {
   }
 
   return pdgcode;
+}
+
+//________________________________________________________________________________________________
+Double_t AliHFENonPhotonicElectron::Radius(Int_t tr) const {
+
+  //
+  // Return the production vertex radius
+  //
+
+  Double_t radius = 0.;
+  if(tr < 0) return radius;
+
+  AliMCParticle *mctrackesd = NULL; AliAODMCParticle *mctrackaod = NULL;
+  if(fMCEvent){
+    AliVParticle *mctrack = fMCEvent->GetTrack(tr);
+    if(mctrack){
+      if((mctrackesd = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) radius = TMath::Sqrt(mctrackesd->Xv()*mctrackesd->Xv()+mctrackesd->Yv()*mctrackesd->Yv());
+      else if((mctrackaod = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(TMath::Abs(tr))))) radius = TMath::Sqrt(mctrackaod->Xv()*mctrackaod->Xv()+mctrackaod->Yv()*mctrackaod->Yv());
+    }
+  } else if(fAODArrayMCInfo) {
+    if(tr < fAODArrayMCInfo->GetEntriesFast()){
+      mctrackaod = (AliAODMCParticle *) fAODArrayMCInfo->At(tr);
+      if(mctrackaod) return radius = TMath::Sqrt(mctrackaod->Xv()*mctrackaod->Xv()+mctrackaod->Yv()*mctrackaod->Yv());
+    }
+  }
+
+  return radius;
 }
 
 //_______________________________________________________________________________________________
@@ -1070,16 +1179,20 @@ Bool_t AliHFENonPhotonicElectron::FilterCategory2Track(const AliVTrack * const t
   // electron candidates by the ITS
   //
   if(TMath::Abs(track->Pt()) > 0.3) return kFALSE;
+  if(TMath::Abs(track->Pt()) < 0.1) return kFALSE;
   Int_t nclustersITS(0), nclustersOuter(0);
   if(isAOD){
     const AliAODTrack *aodtrack = static_cast<const AliAODTrack *>(track);
     if(!(aodtrack->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA) || aodtrack->TestFilterBit(AliAODTrack::kTrkITSsa))) return kFALSE;
+    if(!aodtrack->IsOn(AliAODTrack::kITSrefit)) return kFALSE;
     nclustersITS = aodtrack->GetITSNcls();
     for(int ily = 2; ily < 5; ily++)
       if(aodtrack->HasPointOnITSLayer(ily)) nclustersOuter++;
   } else {
     const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track);
     if(esdtrack->GetStatus() & AliESDtrack::kITSpureSA) return kFALSE;
+    if(esdtrack->GetStatus() & AliESDtrack::kTPCin) return kFALSE;
+    if(esdtrack->GetStatus() & !AliESDtrack::kITSrefit) return kFALSE;
     nclustersITS = esdtrack->GetITSclusters(NULL);
     for(int ily = 2; ily < 5; ily++)
       if(esdtrack->HasPointOnITSLayer(ily)) nclustersOuter++;
