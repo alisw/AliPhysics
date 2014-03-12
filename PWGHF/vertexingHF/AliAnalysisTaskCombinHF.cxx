@@ -594,7 +594,12 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
 	    if(pdgCode==321){
 	      AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
-	      if(dmes) fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+	      if(dmes){
+		Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,dmes,fGoUpToQuark);
+		if((fPromptFeeddown==kFeeddown && orig==5)|| (fPromptFeeddown==kPrompt && orig==4) || (fPromptFeeddown==kBoth && orig>=4)) {
+		  fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+		}
+	      }
 	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
 	    }else{
 	      fMassVsPtVsYRefl->Fill(mass,pt,rapid);
