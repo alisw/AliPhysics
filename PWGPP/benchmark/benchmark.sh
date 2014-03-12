@@ -14,7 +14,7 @@ main()
       echo "uses a batch system (SGE):"
       echo " ${0} \"submit\" productionID inputList configFile [extraOpts]"
       echo "extraOpts if non-empty override the config file, e.g.:"
-      echo " ${0} submit benchmark.list test1 benchmark.config runNumber=169123 nEvents=10"
+      echo " ${0} submit test1 benchmark.list benchmark.config runNumber=169123 nEvents=10"
     fi
     return
   fi
@@ -967,7 +967,7 @@ goCreateQAplots()
   [[ ! "${PWD}" = "${outputDir}" ]] && echo "cannot make ${outputDir}... exiting" && return 1
 
   echo ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList=${mergedQAfileList}
-  ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList=${mergedQAfileList}
+  ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
 
   cd ${olddir}
   return 0
@@ -1366,8 +1366,7 @@ goSubmitBatch()
     echo "Using Config File: '${configFile}'"
   fi
 
-  # and print the configuration
-  [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
+  [[ ! -f ${alirootEnv} ]] && echo "alirootEnv script ${alirootEnv} not found!..." && return 1
 
   #move the script, config and some other stuff to ${commonOutputPath} first, then use them from there
   self=$(readlink -f "${0}")
@@ -1405,9 +1404,9 @@ goSubmitBatch()
   echo "    productionID:    ${productionID}"
   echo "    batchCommand:    ${batchCommand}"
   echo "    batchFlags:      ${batchFlags}"
-  echo "    alirootSource:   ${alirootSource}"
-  echo "    ALICE_ROOT:      ${ALICE_ROOT}"
-  echo "    ALIROOT_RELEASE: ${ALICE_RELEASE}"
+  echo "    alirootEnv:   ${alirootEnv}"
+  ${alirootEnv} echo '    ALICE_ROOT:      ${ALICE_ROOT}'
+  ${alirootEnv} echo '    ALIROOT_RELEASE: ${ALICE_RELEASE}'
   echo "    inputList:       ${inputList}"
   echo "    configPath:      ${configPath}"
   echo "    commonOutputPath:      ${commonOutputPath}"
@@ -2012,7 +2011,7 @@ done
   goMakeSummaryTree ${commonOutputPath} 0
   goMakeSummaryTree ${commonOutputPath} 1
 
-  goCreateQAplots qa.list ${productionID} QAplots ${configFile} ${extraOpts} &>createQAplots.log
+  goCreateQAplots "qa.list" "${productionID}" "QAplots" "${configFile}" ${extraOpts} filteringList="filtering.list" &>createQAplots.log
 
   #make a merged summary tree out of the QA trending, dcs trees and log summary trees
   goMakeMergedSummaryTree
