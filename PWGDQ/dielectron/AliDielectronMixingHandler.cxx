@@ -364,10 +364,10 @@ void AliDielectronMixingHandler::Init(const AliDielectron *diele)
 
   AliDebug(10,Form("Creating a pool array with size %d \n",size));
 
-  fArrPools.Expand(size);
+  if(diele->DoEventProcess()) fArrPools.Expand(size);
 
   //add statics histogram if we have a histogram manager
-  if (diele && diele->fHistos) {
+  if (diele && diele->fHistos && diele->DoEventProcess()) {
     diele->fHistos->AddClass("Mixing");
     diele->fHistos->UserHistogram("Mixing","Stats","Mixing Statistics;;#called bins",2,0,2);
     TH1* h=diele->fHistos->GetHistogram("Mixing","Stats");
