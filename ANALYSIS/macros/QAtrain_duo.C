@@ -60,19 +60,19 @@ Bool_t doITS          = 1;
 Bool_t doITSsaTracks  = 1; 
 Bool_t doITSalign     = 1;  
 Bool_t doCALO         = 1;
-Bool_t doMUONTrig     = 1;
+Bool_t doMUONTrig     = 0;
 Bool_t doImpParRes    = 1;
-Bool_t doMUON         = 1;
+Bool_t doMUON         = 0;
 Bool_t doTOF          = 1;
 Bool_t doHMPID        = 1;
 Bool_t doT0           = 1;
 Bool_t doZDC          = 1;
 Bool_t doPIDResponse  = 1;
 Bool_t doPIDqa        = 1; //new
-Bool_t doFMD          = 1; // new
+Bool_t doFMD          = 0; // new
 Bool_t doPHOS         = 1; // new
 Bool_t doPHOSTrig     = 1; // new
-Bool_t doEMCAL        = 1;
+Bool_t doEMCAL        = 0;
 Bool_t doFBFqa        = 1; // new - not ported yet to revision
 
                // Debug level
@@ -186,12 +186,8 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
   //
   if (doCDBconnect) {
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
-    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);    
-//    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);
     if (!taskCDB) return;
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(cdb_location);
-//    taskCDB->SetRunNumber(run_number);
   }    
   
   //
