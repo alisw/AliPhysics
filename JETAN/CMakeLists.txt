@@ -5,15 +5,12 @@
 
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
-# file(GLOB PACKAGES CMake*.pkg)
-set(FASTJET_ROOT $ENV{FASTJET_ROOT})
-
-if(NOT FASTJET_ROOT)
+if(NOT FASTJET_FOUND)
   set(PACKAGES CMakelibJETAN.pkg)
-  message("JETAN: Fastjet not found; skipping FASTJETAN")
+  message(STATUS "skipping FASTJETAN")
 else()
   set(PACKAGES CMakelibFASTJETAN.pkg CMakelibJETAN.pkg)
-endif(NOT FASTJET_ROOT)
+endif(NOT FASTJET_FOUND)
 
 
 ALICE_BuildModule()
