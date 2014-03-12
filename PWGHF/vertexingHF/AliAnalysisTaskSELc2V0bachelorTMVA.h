@@ -120,7 +120,6 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   Int_t CallKFVertexing(AliAODRecoCascadeHF *cascade, AliAODv0* v0part, AliAODTrack* bach, TClonesArray *mcArray, 
 			Double_t* V0KF, Double_t* errV0KF, Double_t* LcKF, Double_t* errLcKF,
 			Double_t* distances, Double_t* armPolKF);
-  Bool_t CheckInjection(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
 
   AliAnalysisTaskSELc2V0bachelorTMVA(const AliAnalysisTaskSELc2V0bachelorTMVA &source);
   AliAnalysisTaskSELc2V0bachelorTMVA& operator=(const AliAnalysisTaskSELc2V0bachelorTMVA& source); 
