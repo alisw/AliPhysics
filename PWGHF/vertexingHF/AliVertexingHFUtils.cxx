@@ -539,6 +539,26 @@ Bool_t AliVertexingHFUtils::IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODM
   return kFALSE;
 }
 //____________________________________________________________________________
+Bool_t AliVertexingHFUtils::HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC){
+  // method to check if a cascade candidate comes from the signal event or from the underlying Hijing event
+
+  AliAODTrack* bach = cand->GetBachelor();
+  if(IsTrackInjected(bach, header, arrayMC)) {
+    AliDebug(2, "Bachelor is injected, the whole candidate is then injected");
+    return kTRUE;
+  }
+  AliAODv0* v0 = cand->Getv0();
+  Int_t nprongs = v0->GetNProngs();
+  for(Int_t i = 0; i < nprongs; i++){
+    AliAODTrack *daugh = (AliAODTrack*)v0->GetDaughter(i);
+    if(IsTrackInjected(daugh,header,arrayMC)) {
+      AliDebug(2, Form("V0 daughter number %d is injected, the whole candidate is then injected", i));
+      return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+//____________________________________________________________________________
 Int_t AliVertexingHFUtils::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Bool_t searchUpToQuark){
   // checking whether the mother of the particles come from a charm or a bottom quark
 
