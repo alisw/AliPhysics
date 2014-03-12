@@ -22,7 +22,7 @@ public:
   
   enum DETECTORINDEX_t {
     kNULLDET=-1, kITS, kTPC, kTRD, kTOF, kPHOS, kHMPID, kEMCAL, kMUON, kFMD,
-    kZDC, kPMD, kT0, kVZERO, kACORDE, kHLT, kGLOBAL, kCORR, kNDET, kMFT};
+    kZDC, kPMD, kT0, kVZERO, kACORDE, kAD, kFIT, kMFT, kHLT, kGLOBAL, kCORR, kNDET};
   enum ALITASK_t {
     kNULLTASK=-1, kRAW, kSIM, kREC, kESD, kANA, kNTASK };
   enum QABIT_t {
