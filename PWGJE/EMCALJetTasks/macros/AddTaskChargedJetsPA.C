@@ -18,7 +18,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              useVertexCut            = kTRUE,
   Bool_t              usePileUpCut            = kTRUE,
   Bool_t              isEMCalTrain            = kFALSE,
-  Bool_t              calculateExternalRho    = kFALSE,
+  Bool_t              calculateExternalRho    = kTRUE,
   Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
   Int_t               numberOfCentralityBins  = 20
 )
@@ -66,9 +66,6 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
   AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
 
-//  jetFinderTask->SetRecombSheme(0);
-//  jetFinderTaskKT->SetRecombSheme(0);
-
   if(jetRadius < 0.1)
   {
     jetFinderTask->SetMinJetArea(0.0);
@@ -93,28 +90,18 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   // #### Define extern rho task
   if(calculateExternalRho)
   {
-    TString myRhoName("");
-    if(isMC)
-      myRhoName = Form("RhoR0%2.0f_%s_MC%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
-    else
-      myRhoName = Form("RhoR0%2.0f_%s%s",jetRadius*100,triggerName.Data(), stringPtHard.Data());
+    TString myRhoName("ExternalRhoTask");
 
-    contRhoHistos = manager->CreateContainer(myRhoName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChargedJetsPA", AliAnalysisManager::GetCommonFileName()));
-    AliAnalysisTaskRhoSparse *rhotask = new AliAnalysisTaskRhoSparse(myRhoName.Data(), kTRUE);
-    rhotask->SetAnaType(AliAnalysisTaskEmcal::kTPC);
-    rhotask->SetJetsName(jetFinderTaskKT->GetName());
-    rhotask->SetSigJetsName(jetFinderTask->GetName());
-    rhotask->SetTracksName(usedTracks);
-    rhotask->SetRhoName(myRhoName.Data());
-    rhotask->SetJetAreaCut(0);
-    rhotask->SetJetPtCut(0.150);
-    rhotask->SetJetRadius(jetRadius);
-    rhotask->SetRhoCMS(kTRUE);
-    rhotask->SelectCollisionCandidates(trigger);
-    manager->AddTask(rhotask);
-    manager->ConnectInput(rhotask, 0, manager->GetCommonInputContainer());
-    manager->ConnectOutput(rhotask, 1, contRhoHistos);
+    AliAnalysisTaskRhoSparse* mgrTask = manager->GetTask(myRhoName.Data());
+    if(!mgrTask) // rho task does not yet exist
+    {
+      AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
+      AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
+      jetFinderRhoKT->SetMinJetPt(0);
 
+      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+      AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), jetFinderRho->GetName(), usedTracks, "", myRhoName.Data(), jetRadius,"TPC", 0., 5., 0, 0,0,kFALSE,myRhoName.Data(),kTRUE);
+    }    
   }
 
   // #### Define analysis task
