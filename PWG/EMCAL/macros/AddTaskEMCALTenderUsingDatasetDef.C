@@ -47,9 +47,9 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
 
   if (period == "lhc11h") {
     trackMatch = kFALSE;
-    timeMin = 100e-9;
-    timeMax = 900e-9;
-    timeCut = 900e-9;
+    timeMin = -50e-9;
+    timeMax =  50e-9;
+    timeCut =  1e6;
   }
   else if (period == "lhc12a15e" || period == "lhc12a15e_fix") {
     nonLinFunct = AliEMCALRecoUtils::kPi0MCv3;
