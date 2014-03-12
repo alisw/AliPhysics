@@ -58,7 +58,7 @@ public:
   Int_t FindBin(const Double_t values[], TString *dim=0x0);
   void Fill(const AliVEvent *ev, AliDielectron *diele);
 
-  void MixRemaining(AliDielectron *diele, Int_t ipool);
+  Bool_t MixRemaining(AliDielectron *diele, Int_t ipool);
 
   void Init(const AliDielectron *diele=0x0);
   static void MoveToSameVertex(AliVTrack * const vtrack, const Double_t vFirst[3], const Double_t vMix[3]);

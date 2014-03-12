@@ -312,18 +312,18 @@ void AliDielectronMixingHandler::DoMixing(TClonesArray &pool, AliDielectron *die
 }
 
 //______________________________________________
-void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele, Int_t ipool)
+Bool_t AliDielectronMixingHandler::MixRemaining(AliDielectron *diele, Int_t ipool)
 {
   //
   // mix all pools even if they are incomplete
   //
 
   //Check if there was any processed data and it is requested to mix incomplete bins
-  if (!diele || !diele->PairArray(0) || !fMixIncomplete ) return;
+  if (!diele || !fMixIncomplete ) return 0;
 
   AliDielectronVarManager::SetEvent(0x0);
     TClonesArray *poolp=static_cast<TClonesArray*>(fArrPools.At(ipool));
-    if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) return;
+    if (!poolp || !poolp->GetEntriesFast() || !poolp->At(0)) return 0;
     //clear the arrays before the final processing"
     AliDebug(10,Form("Incomplete: Bin %d (%d)\n",ipool,poolp->GetEntriesFast()));
     diele->ClearArrays();
@@ -346,10 +346,10 @@ void AliDielectronMixingHandler::MixRemaining(AliDielectron *diele, Int_t ipool)
       diele->fHistos->Fill("Mixing","InCompletePools",ipool);
       diele->fHistos->Fill("Mixing","Entries_InCompletePools",poolp->GetEntriesFast());
       
-      //set back global event values
-      AliDielectronVarManager::SetEventData(values);
+      //set back global event values (this would mean set back to zero)
+      //AliDielectronVarManager::SetEventData(values);
     }
-    
+    return 1;
 }
 
 
