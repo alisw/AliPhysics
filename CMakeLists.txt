@@ -36,7 +36,12 @@ endif(NOT ALICE_INSTALL)
 if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "Install dir should be different from build dir")
 endif()
-set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+
+# If CMAKE_INSTALL_PREFIX was not set than we set it to ALICE_INSTALL. 
+# If ALICE_INSTALL was not defined than it will default to source directory
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+endif()
 
 # Environment for SHUTTLE
 set(DIMDIR $ENV{DIMDIR})
