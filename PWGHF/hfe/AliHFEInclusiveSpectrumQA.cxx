@@ -66,10 +66,16 @@ const Char_t *AliHFEInclusiveSpectrumQA::fgkNameCanvas[AliHFEInclusiveSpectrumQA
   "ParametrizedEfficiency"
 };
 
+const Char_t *AliHFEInclusiveSpectrumQA::fgkNameCanvasND[AliHFEInclusiveSpectrumQA::kNTypeEfficiency] = {
+  "V0EfficiencyND",
+  "MCEfficiencyND",
+  "ParametrizedEfficiencyND"
+};
+
 //____________________________________________________________
 AliHFEInclusiveSpectrumQA::AliHFEInclusiveSpectrumQA():
   TNamed(),
-  fPtMax(7.0),
+  fPtMax(10.0),
   fListOfResult(),
   fWriteToFile(kTRUE)
 {
@@ -85,7 +91,7 @@ AliHFEInclusiveSpectrumQA::AliHFEInclusiveSpectrumQA():
 //____________________________________________________________
 AliHFEInclusiveSpectrumQA::AliHFEInclusiveSpectrumQA(const char *name):
   TNamed(name, ""),
-  fPtMax(7.0),
+  fPtMax(10.0),
   fListOfResult(),
   fWriteToFile(kTRUE)
 {
@@ -186,6 +192,9 @@ void AliHFEInclusiveSpectrumQA::DrawProjections() const
     TH2D* projectioneta = (TH2D *) correlation->Projection(eta,eta+((Int_t)(ndimcor/2.)));
     projectioneta->Draw("colz");
   }
+  
+ if(fWriteToFile) canvas->SaveAs("Projections.png");
+  
 
 
 }
@@ -256,6 +265,63 @@ void AliHFEInclusiveSpectrumQA::DrawSubtractContamination() const
   }
   ratiomeasuredcontamination->Draw("P");
   if(fWriteToFile) cbackgroundsubtraction->SaveAs("BackgroundSubtracted.png");
+
+}
+
+//____________________________________________________________
+void AliHFEInclusiveSpectrumQA::DrawSubtractContaminationND() const
+{
+  //
+  // subtract the hadron contamination
+  //
+  //
+  AliCFDataGrid *afterE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kAfterSCND);
+  AliCFDataGrid *beforeE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kBeforeSCND);
+  AliCFDataGrid *contamination = (AliCFDataGrid *) fListOfResult->UncheckedAt(kHadronContaminationND);
+ 
+  if(!afterE || !beforeE || !contamination) return;
+
+  SetStyle();
+
+  TCanvas * cbackgroundsubtractionND = new TCanvas("backgroundsubtractionND","backgroundsubtractionND",1000,700);
+  cbackgroundsubtractionND->Divide(3,1);
+  cbackgroundsubtractionND->cd(1);
+  gPad->SetLogz();
+  gPad->SetTicks();
+  TH2D *measuredTH2Dbeforesubstraction = (TH2D *) beforeE->Project(0,1); 
+  measuredTH2Dbeforesubstraction->SetStats(0);
+  measuredTH2Dbeforesubstraction->SetTitle("Before contamination");
+  measuredTH2Dbeforesubstraction->GetZaxis()->SetTitleOffset(1.5);
+  measuredTH2Dbeforesubstraction->GetZaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  measuredTH2Dbeforesubstraction->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  measuredTH2Dbeforesubstraction->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  measuredTH2Dbeforesubstraction->Draw("lego");
+  cbackgroundsubtractionND->cd(2);
+  gPad->SetLogz();
+  gPad->SetTicks();
+  TH2D *measuredTH2Daftersubstraction = (TH2D *) afterE->Project(0,1); 
+  measuredTH2Daftersubstraction->SetStats(0);
+  measuredTH2Daftersubstraction->SetTitle("After contamination");
+  measuredTH2Daftersubstraction->GetZaxis()->SetTitleOffset(1.5);
+  measuredTH2Daftersubstraction->GetZaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  measuredTH2Daftersubstraction->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  measuredTH2Daftersubstraction->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  measuredTH2Daftersubstraction->Draw("lego");
+  cbackgroundsubtractionND->cd(3);
+  gPad->SetLogz();
+  gPad->SetTicks();
+  TH2D *measuredsubstraction = (TH2D *) contamination->Project(0,1); 
+  measuredsubstraction->SetStats(0);
+  measuredsubstraction->SetTitle("Contamination");
+  measuredsubstraction->GetZaxis()->SetTitleOffset(1.5);
+  measuredsubstraction->GetZaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  measuredsubstraction->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  measuredsubstraction->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  measuredsubstraction->SetMarkerStyle(25);
+  measuredsubstraction->SetMarkerColor(kBlack);
+  measuredsubstraction->SetLineColor(kBlack);
+  measuredsubstraction->Draw("colz");
+  if(fWriteToFile) cbackgroundsubtractionND->SaveAs("BackgroundSubtractedND.png");
 
 }
 
@@ -360,8 +426,8 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
 
  if(!afterE || !beforeE) return;
 
- if((typeeff==kV0 || typeeff==kMC) && !efficiencyDproj) return;
- if(typeeff==kParametrized && !efficiencyparametrized) return;
+ if((typeeff==kV0 || typeeff==kMC) && (!efficiencyDproj)) return;
+ if(typeeff==kParametrized && (!efficiencyparametrized)) return;
 
   SetStyle();
 
@@ -412,13 +478,115 @@ void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiency(Int_t typeeff) const
     }
   }
   if(typeeff==kParametrized) {
-    if(efficiencyparametrized) efficiencyparametrized->Draw();
+    if(efficiencyparametrized) {
+      efficiencyparametrized->GetYaxis()->SetTitleOffset(1.5);
+      efficiencyparametrized->GetYaxis()->SetRangeUser(0.0,1.0);
+      efficiencyparametrized->GetYaxis()->SetTitle("Efficiency");
+      efficiencyparametrized->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+      efficiencyparametrized->GetXaxis()->SetRangeUser(0.0,fPtMax);
+      efficiencyparametrized->Draw();
+    }
   }
   
   if(fWriteToFile) {
     if(typeeff==kV0) cEfficiency->SaveAs("EfficiencyV0.png");
     if(typeeff==kMC) cEfficiency->SaveAs("EfficiencyMC.png");
     if(typeeff==kParametrized) cEfficiency->SaveAs("EfficiencyParametrized.png");
+  }
+
+}
+//____________________________________________________________
+void AliHFEInclusiveSpectrumQA::DrawCorrectWithEfficiencyND(Int_t typeeff) const
+{
+  //
+  // Correct the spectrum for efficiency and unfolding
+  // with both method and compare
+  //
+  
+  AliCFDataGrid *afterE = 0x0;
+  AliCFDataGrid *beforeE = 0x0;
+  AliCFEffGrid *efficiencyND = 0x0;
+  TF1 *efficiencyparametrized = 0x0;
+
+  if(typeeff== kV0) {
+    afterE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kAfterV0ND);
+    beforeE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kBeforeV0ND);
+    efficiencyND = (AliCFEffGrid *) fListOfResult->UncheckedAt(kV0EfficiencyND);
+  }
+  if(typeeff== kMC) {
+    afterE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kAfterMCEND);
+    beforeE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kBeforeMCEND);
+    efficiencyND = (AliCFEffGrid *) fListOfResult->UncheckedAt(kMCEfficiencyND);
+  }
+ if(typeeff== kParametrized) {
+    afterE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kAfterPEND);
+    beforeE = (AliCFDataGrid *) fListOfResult->UncheckedAt(kBeforePEND);
+    efficiencyparametrized = (TF1 *) fListOfResult->UncheckedAt(kPEfficiencyND);
+  }
+
+ if(!afterE || !beforeE) return;
+
+ if((typeeff==kV0 || typeeff==kMC) && (!efficiencyND)) return;
+ if(typeeff==kParametrized && (!efficiencyparametrized)) return;
+
+  SetStyle();
+
+  TCanvas * cEfficiency = new TCanvas(AliHFEInclusiveSpectrumQA::fgkNameCanvasND[typeeff],AliHFEInclusiveSpectrumQA::fgkNameCanvasND[typeeff],1000,700);
+  cEfficiency->Divide(3,1);
+  cEfficiency->cd(1);
+  gPad->SetLogz();
+  gPad->SetTicks();
+  TH2D *b2D = (TH2D *) beforeE->Project(0,1); 
+  b2D->SetStats(0);
+  b2D->SetTitle("Before efficiency correction");
+  b2D->GetZaxis()->SetTitleOffset(1.5);
+  b2D->GetZaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  b2D->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  b2D->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  b2D->Draw("lego");
+  cEfficiency->cd(2);
+  gPad->SetLogz();
+  gPad->SetTicks();
+  TH2D *a2D = (TH2D *) afterE->Project(0,1); 
+  a2D->SetStats(0);
+  a2D->SetTitle("After efficiency correction");
+  a2D->GetZaxis()->SetTitleOffset(1.5);
+  a2D->GetZaxis()->SetTitle("dN/dp_{T} [(GeV/c)^{-1}]");
+  a2D->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+  a2D->GetXaxis()->SetRangeUser(0.0,fPtMax);
+  a2D->Draw("lego");
+  cEfficiency->cd(3);
+  gPad->SetTicks();
+  if((typeeff==kV0 || typeeff==kMC)) {
+    if(efficiencyND) {
+      THnSparseF *gride = (THnSparseF *) efficiencyND->GetGrid();
+      TH2D *e2D = (TH2D *) gride->Projection(1,0); 
+      e2D->SetStats(0);
+      e2D->SetTitle("");
+      e2D->SetStats(0);
+      e2D->GetZaxis()->SetTitleOffset(1.5);
+      e2D->GetZaxis()->SetRangeUser(0.0,1.0);
+      e2D->GetZaxis()->SetTitle("Efficiency");
+      e2D->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+      e2D->GetXaxis()->SetRangeUser(0.0,fPtMax);
+      e2D->Draw("lego");
+    }
+  }
+  if(typeeff==kParametrized) {
+    if(efficiencyparametrized) {
+      efficiencyparametrized->GetYaxis()->SetTitleOffset(1.5);
+      efficiencyparametrized->GetYaxis()->SetRangeUser(0.0,1.0);
+      efficiencyparametrized->GetYaxis()->SetTitle("Efficiency");
+      efficiencyparametrized->GetXaxis()->SetTitle("p^{rec}_{T} [GeV/c]");
+      efficiencyparametrized->GetXaxis()->SetRangeUser(0.0,fPtMax);
+      efficiencyparametrized->Draw();
+    }
+  }
+  
+  if(fWriteToFile) {
+    if(typeeff==kV0) cEfficiency->SaveAs("EfficiencyV0ND.png");
+    if(typeeff==kMC) cEfficiency->SaveAs("EfficiencyMCND.png");
+    if(typeeff==kParametrized) cEfficiency->SaveAs("EfficiencyParametrizedND.png");
   }
 
 }
@@ -520,13 +688,7 @@ void AliHFEInclusiveSpectrumQA::DrawResult()
   TGraphErrors* alltogetherspectrumD = (TGraphErrors *) fListOfResult->UncheckedAt( kFinalResultDirectEfficiency);
   if(!correctedspectrumD || !alltogetherspectrumD) return;
   
-  SetStyle();
-
-  TCanvas * ccorrected = new TCanvas("corrected","corrected",1000,700);
-  ccorrected->Divide(2,1);
-  ccorrected->cd(1);
-  gPad->SetLogy();
-  gPad->SetTicks();
+ 
   correctedspectrumD->SetTitle("");
   correctedspectrumD->GetYaxis()->SetTitleOffset(1.5);
   correctedspectrumD->GetYaxis()->SetRangeUser(0.000001,100.0);
@@ -534,33 +696,47 @@ void AliHFEInclusiveSpectrumQA::DrawResult()
   correctedspectrumD->SetMarkerStyle(26);
   correctedspectrumD->SetMarkerColor(kBlue);
   correctedspectrumD->SetLineColor(kBlue);
-  correctedspectrumD->Draw("AP");
   alltogetherspectrumD->SetTitle("");
   alltogetherspectrumD->GetYaxis()->SetTitleOffset(1.5);
   alltogetherspectrumD->GetYaxis()->SetRangeUser(0.000000001,1.0);
   alltogetherspectrumD->SetMarkerStyle(25);
   alltogetherspectrumD->SetMarkerColor(kBlack);
   alltogetherspectrumD->SetLineColor(kBlack);
-  alltogetherspectrumD->Draw("P");
   TLegend *legcorrected = new TLegend(0.4,0.6,0.89,0.89);
   legcorrected->AddEntry(correctedspectrumD,"Unfolded","p");
   legcorrected->AddEntry(alltogetherspectrumD,"Direct corrected","p");
   legcorrected->SetFillStyle(0);
   legcorrected->SetLineStyle(0);
   legcorrected->SetLineColor(0);
-  legcorrected->Draw("same");
-  ccorrected->cd(2);
-  gPad->SetTicks();
+
+ 
   TH1D* ratiocorrected = DivideSpectra(correctedspectrumD,alltogetherspectrumD);
-  ratiocorrected->SetName("ratiocorrected");
-  ratiocorrected->SetTitle("");
-  ratiocorrected->GetYaxis()->SetTitleOffset(1.5);
-  ratiocorrected->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
-  ratiocorrected->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  ratiocorrected->GetXaxis()->SetRangeUser(0.0,fPtMax);
-  ratiocorrected->GetYaxis()->SetRangeUser(0.4,1.4);
-  ratiocorrected->SetStats(0);
-  ratiocorrected->Draw();
+  if(ratiocorrected) {
+    ratiocorrected->SetName("ratiocorrected");
+    ratiocorrected->SetTitle("");
+    ratiocorrected->GetYaxis()->SetTitleOffset(1.5);
+    ratiocorrected->GetYaxis()->SetTitle("Unfolded/DirectCorrected");
+    ratiocorrected->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    ratiocorrected->GetXaxis()->SetRangeUser(0.0,fPtMax);
+    ratiocorrected->GetYaxis()->SetRangeUser(0.4,1.4);
+    ratiocorrected->SetStats(0);
+  }
+ 
+
+  TCanvas * ccorrected = new TCanvas("corrected","corrected",1000,700);
+  if(ratiocorrected) ccorrected->Divide(2,1);
+  SetStyle();
+  ccorrected->cd(1);
+  gPad->SetLogy();
+  gPad->SetTicks();
+  correctedspectrumD->Draw("AP");
+  alltogetherspectrumD->Draw("P");
+  legcorrected->Draw("same");
+  if(ratiocorrected) {
+    ccorrected->cd(2);
+    gPad->SetTicks();
+    ratiocorrected->Draw();
+  }
   if(fWriteToFile)ccorrected->SaveAs("CorrectedResults.png");
 
 }

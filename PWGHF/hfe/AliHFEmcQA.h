@@ -48,7 +48,7 @@ class AliHFEmcQA: public TObject {
   public: 
     enum heavyType {kCharm=4, kBeauty=5, kOthers=6, kElectronPDG=11};
     enum qType {kQuark, kantiQuark, kHadron, keHadron, kDeHadron, kElectron, kElectron2nd};
-    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21, kGammaB2M=22, kGammaD2M=23};
+    enum SourceType {kDirectCharm=1, kDirectBeauty=2, kBeautyCharm=3, kGamma=4, kPi0=5, kElse=6, kMisID=7, kEta=8, kOmega=9, kPhi=10, kEtaPrime=11, kRho0=12, kGammaPi0=13, kGammaEta=14, kGammaOmega=15, kGammaPhi=16, kGammaEtaPrime=17, kGammaRho0=18, kJpsi=19, kB2Jpsi=20, kKe3=21, kGammaB2M=22, kGammaD2M=23, kGammaEta2Pi0=24, kB2M=25, kD2M=26, kEta2Pi0=27, kScdryM=28};
     enum ProcessType {
       kPairCreationFromq,  kPairCreationFromg,  kFlavourExitation,  kGluonSplitting, kInitialPartonShower, kLightQuarkShower
     };
@@ -81,12 +81,13 @@ class AliHFEmcQA: public TObject {
     void GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed); // get decay electron kinematics for AOD 
     void GetMesonKine(); // get meson and its decay electron pt spectra
     void EndOfEventAna(const Int_t kquark); // run analysis which should be done at the end of the event loop
-    Int_t GetSource(const TParticle * const mcpart); // return source id 
-    Int_t GetElecSource(const AliVParticle * const mctrack);
-    Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
-    Int_t GetElecSource(const AliAODMCParticle * const mcpart);
-    Int_t GetSource(const AliVParticle * const mcpart); // return electron source id for AOD
+    Int_t GetSource(const TParticle * const mcpart) const; // return source id 
+    Int_t GetElecSource(const AliVParticle * const mctrack) const;
+    Int_t GetElecSource(TParticle * const mcpart) const; // return electron source id 
+    Int_t GetElecSource(const AliAODMCParticle * const mcpart) const;
+    Int_t GetSource(const AliVParticle * const mcpart) const; // return electron source id for AOD
     Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
+    Double_t GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel);
     Int_t GetWeightCentralityBin(const Float_t percentile) const; //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
     void EnableDebugStreamer() { fIsDebugStreamerON = kTRUE;};
 
@@ -106,7 +107,7 @@ class AliHFEmcQA: public TObject {
     Bool_t IsPPMultiBin() const { return fIsppMultiBin; };
 
   protected:
-    Int_t GetMother(const AliVParticle * const track);
+    Int_t GetMother(const AliVParticle * const track) const;
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
     void HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // check if the quark is produced from hard scattering
     void ReportStrangeness(Int_t &motherID, Int_t &mothertype, Int_t &motherlabel); // report if the quark production process is unknown
