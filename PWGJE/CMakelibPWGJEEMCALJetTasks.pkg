@@ -76,20 +76,19 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
 )
 
-set ( FASTJET_ROOT $ENV{FASTJET_ROOT} ) # Can be done in CMakeList.txt?
-
 # Add code that needs fastjet or FJWrapper here
-if (FASTJET_ROOT)
-LIST(APPEND SRCS
- EMCALJetTasks/AliFJWrapper.cxx
- EMCALJetTasks/AliEmcalJetTask.cxx
- EMCALJetTasks/AliEmcalJetFinder.cxx
- EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
-)
-endif(FASTJET_ROOT)
+if (FASTJET_FOUND)
+  LIST(APPEND SRCS
+   EMCALJetTasks/AliFJWrapper.cxx
+   EMCALJetTasks/AliEmcalJetTask.cxx
+   EMCALJetTasks/AliEmcalJetFinder.cxx
+   EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
+  )
+  set ( CINTFLAGS ${CINTFLAGS} ${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
 
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
@@ -97,13 +96,11 @@ string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-
-if(FASTJET_ROOT)
-  set (FASTJET_INC ${FASTJET_ROOT}/include)
-  set ( EDEFINE -isystem${FASTJET_INC})
-  set ( EINCLUDE ${FASTJET_INC} PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
+if(FASTJET_FOUND)
+  set ( EDEFINE -isystem${FASTJET_INCLUDE_DIR})
+  set ( EINCLUDE ${FASTJET_INCLUDE_DIR} PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
   set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
 else()
   set ( EINCLUDE PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
-endif(FASTJET_ROOT)
+endif(FASTJET_FOUND)
 
