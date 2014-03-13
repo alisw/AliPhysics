@@ -45,9 +45,6 @@ set ( SRCS
     AliPWG4HighPtQATPConly.cxx 
     AliPWG4HighPtSpectra.cxx 
     AliPWG4HighPtTrackQA.cxx 
-    UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx 
-    UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
-    UserTasks/AliAnalysisTaskJetHBOM.cxx
     UserTasks/AliAnalysisTaskJetShape.cxx
     UserTasks/AliAnalysisTaskJetsTriggerTRD.cxx
     UserTasks/AliAnalysisTaskJetProtonCorr.cxx
@@ -58,25 +55,29 @@ set ( SRCS
     UserTasks/AliIDFFUtils.cxx
     )
 
+# Add code that needs fastjet or FJWrapper here 
+if (FASTJET_FOUND)
+  LIST(APPEND  SRCS
+    UserTasks/AliAnalysisTaskCheckSingleTrackJetRejection.cxx 
+    UserTasks/AliAnalysisTaskJetHadronCorrelation.cxx
+    UserTasks/AliAnalysisTaskJetHBOM.cxx
+  )
+  set ( CINTFLAGS ${CINTFLAGS} ${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
+
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWGJELinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h  )
-
-set(FASTJET_ROOT $ENV{FASTJET_ROOT})
-
-if(FASTJET_ROOT)
-  set (FASTJET_INC ${FASTJET_ROOT}/include)
+if(FASTJET_FOUND)
+  set ( EINCLUDE ${FASTJET_INCLUDE_DIR} ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+  set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h  )
 else()
-  set (FASTJET_INC JETAN/fastjet)
-endif(FASTJET_ROOT)
+  set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+endif(FASTJET_FOUND)
 
-#set ( EDEFINE -isystem${FASTJET_INC})
-set ( EINCLUDE ${FASTJET_INC} ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
-#set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
 
 install (DIRECTORY macros
 	 DESTINATION PWGJE
