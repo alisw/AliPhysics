@@ -35,6 +35,8 @@ public:
   virtual void SetTrackFilter(AliAnalysisFilter* trackF) {fTrackFilter = trackF;}
   void SetWriteMuonAOD(Bool_t enableMuonAOD){fEnableMuonAOD = enableMuonAOD;}
   void SetWriteDimuonAOD(Bool_t enableDimuonAOD){fEnableDimuonAOD = enableDimuonAOD;}
+  void SetWithSPDtracklets(Bool_t withSPDtracklets=kTRUE) { fWithSPDTracklets = withSPDtracklets; }
+  void SetMCMode(Int_t mcMode) { fMCMode=mcMode; }
   
   void PrintTask(Option_t *option="", Int_t indent=0) const;
   
