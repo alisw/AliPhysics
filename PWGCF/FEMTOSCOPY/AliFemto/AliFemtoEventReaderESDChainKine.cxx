@@ -64,6 +64,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fReadV0(0),
   isKaonAnalysis(kFALSE),
   isProtonAnalysis(kFALSE),
+  isPionAnalysis(kFALSE),
   fOnlyPrimaries(kFALSE)
 
 {
@@ -92,6 +93,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fReadV0(0),
   isKaonAnalysis(kFALSE),
   isProtonAnalysis(kFALSE),
+  isPionAnalysis(kFALSE),
   fOnlyPrimaries(kFALSE)
 
 
@@ -114,6 +116,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fReadV0 = aReader.fReadV0;
   isKaonAnalysis = aReader.isKaonAnalysis;
   isProtonAnalysis = aReader.isProtonAnalysis;
+  isPionAnalysis = aReader.isPionAnalysis;
   fOnlyPrimaries = aReader.fOnlyPrimaries;
 
 }
@@ -147,6 +150,7 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
   fReadV0 = aReader.fReadV0;
   isKaonAnalysis = aReader.isKaonAnalysis;
   isProtonAnalysis = aReader.isProtonAnalysis;
+  isPionAnalysis = aReader.isPionAnalysis;
   fOnlyPrimaries = aReader.fOnlyPrimaries;
 
   return *this;
@@ -825,6 +829,9 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
     if (isProtonAnalysis == true && TMath::Abs(trackCopy->GetPDGPid()) != 2212) {
       trackAccept = false;
     }
+    if (isPionAnalysis == true && trackCopy->GetPDGPid() != 211) {
+      trackAccept = false;
+    }
 
     if (tGoodMomentum==true  && trackAccept == true)
     {
@@ -1147,6 +1154,11 @@ void AliFemtoEventReaderESDChainKine::SetKaonAnalysis(Bool_t a)
 void AliFemtoEventReaderESDChainKine::SetProtonAnalysis(Bool_t a)
 {
   isProtonAnalysis = a;
+}
+
+void AliFemtoEventReaderESDChainKine::SetPionAnalysis(Bool_t a)
+{
+  isPionAnalysis = a;
 }
 
 void AliFemtoEventReaderESDChainKine::SetOnlyPrimaries(Bool_t a)
