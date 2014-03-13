@@ -168,7 +168,7 @@ void AliDielectronMixingHandler::Fill(const AliVEvent *ev, AliDielectron *diele)
   // reset the event pool size to 1 (this keeps the physical memory consumption low)
   if(pool.GetEntriesFast()==fDepth)  {
     pool.Clear("C");
-    pool.ExpandCreate(1);
+    //    pool.ExpandCreate(1);
   }
 
   AliDebug(10,Form("new event at %d: %d",bin,pool.GetEntriesFast()));
