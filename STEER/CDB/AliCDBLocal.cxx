@@ -255,12 +255,11 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
 
     while((anIdPtr = dynamic_cast<AliCDBId*> (iter.Next()))){
       if(anIdPtr->GetPath() == query.GetPath()){
-        result = anIdPtr;
+        result = new AliCDBId(*anIdPtr);
         break;
       }
     }
-    if (result)
-      return dynamic_cast<AliCDBId*> (result->Clone());
+    return result;
   }
 
   // otherwise browse in the local filesystem CDB storage
@@ -896,8 +895,8 @@ void AliCDBLocal::QueryValidFiles() {
               }
               if(highestV >= 0){
                 AliCDBPath validPath(level0, level1, level2);
-                AliCDBId validId(validPath, aRunRange, highestV, highestSubV);
-                fValidFileIds.AddLast(validId.Clone());
+                AliCDBId *validId = new AliCDBId(validPath, aRunRange, highestV, highestSubV);
+                fValidFileIds.AddLast(validId);
               }
 
               gSystem->FreeDirectory(dirPtr);
@@ -1014,8 +1013,8 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
     AliCDBRunRange runrg(fRun,fRun);
     if (!aRunRange.Comprises(runrg)) continue; // should never happen (would mean awk script wrong output)
     // aRunRange contains requested run!
-    AliCDBId validId(validPath,aRunRange,aVersion,aSubVersion);
-    fValidFileIds.AddLast(validId.Clone());
+    AliCDBId *validId = new AliCDBId(validPath,aRunRange,aVersion,aSubVersion);
+    fValidFileIds.AddLast(validId);
   }
 
   file->close();
