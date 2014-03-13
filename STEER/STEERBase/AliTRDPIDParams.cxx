@@ -99,6 +99,10 @@ AliTRDPIDParams::AliTRDPIDCentrality *AliTRDPIDParams::FindCentrality(Double_t v
       break;
     }
   }
+  if(!tmp){
+      AliDebug(10,"Using default centrality class");
+      return FindCentrality(-1);
+  }
   return tmp;
 }
 
