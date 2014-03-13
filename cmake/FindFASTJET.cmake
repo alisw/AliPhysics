@@ -14,7 +14,7 @@ endif(NOT FASTJET_ROOT)
 
 if (NOT FASTJET_ROOT)
   execute_process (COMMAND fastjet-config --prefix OUTPUT_VARIABLE FASTJET_ROOT)
-  string (STRIP ${FASTJET_ROOT} FASTJET_ROOT)
+  string (STRIP "${FASTJET_ROOT}" FASTJET_ROOT)
 endif(NOT FASTJET_ROOT)
 
 if (FASTJET_ROOT) 
