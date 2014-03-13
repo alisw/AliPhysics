@@ -85,6 +85,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPVtxZ(0),
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
+  fMCIsoDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
@@ -165,6 +166,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPVtxZ(0),            
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
+  fMCIsoDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
@@ -242,6 +244,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",101,-1.5,99.5,154,-0.77,0.77,130,1.38,3.20);
   fMCDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCDirPhotonPtEtaPhi);
+
+  fMCIsoDirPhotonPtEtaPhi = new TH3F("hMCIsoDirPhotonPtEtaPhi","photon (gq->#gammaq, isolated@MC) p_{T}, #eta, #phi;GeV/c;#eta;#phi",101,-1.5,99.5,154,-0.77,0.77,130,1.38,3.20);
+  fMCIsoDirPhotonPtEtaPhi->Sumw2();
+  fOutputList->Add(fMCIsoDirPhotonPtEtaPhi);
 
   fDecayPhotonPtMC = new TH1F("hDecayPhotonPtMC","decay photon p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
   fDecayPhotonPtMC->Sumw2();
@@ -638,7 +644,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     }
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
-    ptmc = GetClusSource(c);
+    if(mcptsum<2)
+      ptmc = GetClusSource(c);
+    else
+      ptmc = -0.1;
     outputValues[0] = Et;
     outputValues[1] = c->GetM02();
     outputValues[2] = ceiso/*cecore*/-ceisoue;
@@ -899,6 +908,9 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     Int_t pdgMom = mcmom->GetPdgCode();
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+      Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), 0.4);
+      if(ptsum<2)
+	fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fNClusForDirPho==0)
 	fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug){
@@ -1031,18 +1043,15 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
   Int_t nTracks = fStack->GetNtrack();
   Float_t ptsum = 0;
   TString addpartlabels = "";
-  for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
+  for(Int_t iTrack=8;iTrack<nTracks;iTrack++){
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
     if(!mcp)
       continue;  
-    Int_t firstd = mcp->GetFirstDaughter();
-    Int_t lastd = mcp->GetLastDaughter();
-    if((iTrack==6 || iTrack==7) && mcp->GetPdgCode()==22){
-     for(Int_t id=firstd;id<=lastd;id++)
-      addpartlabels += Form("%d,",id);
-     continue;
-    }
-   if(mcp->Rho()>2.5)
+    Int_t status = mcp->GetStatusCode();
+    if(status!=1)
+      continue;
+    Float_t mcvr = TMath::Sqrt(mcp->Vx()*mcp->Vx()+ mcp->Vy()* mcp->Vy() + mcp->Vz()*mcp->Vz());
+   if(mcvr>1)
       continue;
     else {
       if(fDebug)
@@ -1052,19 +1061,14 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     Float_t deta = mcp->Eta() - etaclus;
     if(fDebug)
       printf("      >>>> mcphi = %1.1f, mceta = %1.1f\n>>>> dphi = %1.1f, deta = %1.1f\n", mcp->Phi(), mcp->Eta(),dphi,deta);
-    if(deta>10)
+    if(deta>R || dphi>R)
       continue;
     Float_t dR = TMath::Sqrt(dphi*dphi +  deta*deta);
     if(dR>R)
       continue;
-    if(addpartlabels.Contains(Form("%d",iTrack))){
-      if(fDebug)
-	printf("      >>>> list of particles included (and their daughters) %s\n",addpartlabels.Data());
-      continue;
-    }
     addpartlabels += Form("%d,",iTrack);
-    for(Int_t id=firstd;id<=lastd;id++)
-      addpartlabels += Form("%d,",id);
+    if(mcp->Pt()<0.2)
+      continue;
     ptsum += mcp->Pt();
   }
   return ptsum;
