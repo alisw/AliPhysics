@@ -75,8 +75,6 @@ class AliESDTOFCluster : public AliVTOFcluster {
 
   void Print(const Option_t *opt=0) const;
 
- protected:
-
   AliESDTOFHit*   GetTOFHit(Int_t i) const;
   AliESDTOFMatch* GetTOFMatch(Int_t i) const;
 
