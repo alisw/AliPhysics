@@ -51,12 +51,15 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
   // retrieve analysis manager
   //
   
-  UInt_t trigger = triggerMask.Atoll();
+  UInt_t trigger = 0;
+  
+  
   
   TString eventType = "";
-   if(triggerMask=="AliVEvent::kMB || AliVEvent::kCentral") eventType+="Central";
-   else if(triggerMask=="AliVEvent::kMB || AliVEvent::kSemiCentral") eventType+="SemiCentral";
-   else eventType+="Peripheral";
+   if(triggerMask=="AliVEvent::kMB | AliVEvent::kCentral") {trigger = AliVEvent::kMB | AliVEvent::kCentral; eventType+="Central";}
+   else if(triggerMask=="AliVEvent::kMB | AliVEvent::kSemiCentral") {trigger = AliVEvent::kMB | AliVEvent::kSemiCentral; eventType+="SemiCentral";}
+   else if(triggerMask=="AliVEvent::kINT7") {trigger = AliVEvent::kINT7; eventType+="kINT7";}
+   else if(triggerMask=="AliVEvent::kMB") {trigger = AliVEvent::kMB; eventType+="MinimumBias";}
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
@@ -71,6 +74,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
+   
+   ::Info("AddAnalysisTaskD0", Form("TriggerMask: %i",trigger));
 
    task->SelectCollisionCandidates(trigger);
    task->SetMaxNDaughters(maxSisters);
