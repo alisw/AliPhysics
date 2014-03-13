@@ -96,6 +96,8 @@ AliHFENonPhotonicElectron::AliHFENonPhotonicElectron(const char *name, const Cha
   ,fLSmatches(NULL)
   ,fHnsigmaITS(NULL)
   ,fWeightsSource(NULL)
+  ,fIncElectronRadius(NULL)
+  ,fRecElectronRadius(NULL)
 //  ,fUSignAngle	(NULL)
 //  ,fLSignAngle	(NULL)
 {
