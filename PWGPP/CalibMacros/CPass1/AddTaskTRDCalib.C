@@ -28,8 +28,8 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   if (!grpData) {printf("Failed to get GRP data for run",runNumber); return;}
   Int_t activeDetectors = grpData->GetDetectorMask(); 
   TString detStr = AliDAQ::ListOfTriggeredDetectors(activeDetectors);
-
-
+  TString type = grpData->GetBeamType();
+  
   ////////////////////////////////////////////
   // Number of timebins
   ///////////////////////////////////////////
@@ -50,7 +50,10 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   // Disabling TRD CPAss0 as per https://savannah.cern.ch/bugs/?88813
   //calibTask->SetMaxEvent(-1);
   
-  calibTask->SetMaxNbTracks(999999999);
+  if (strstr(type.Data(),"A-A")) {
+    calibTask->SetMaxNbTracks(1600);
+  }
+  else calibTask->SetMaxNbTracks(999999999);
   calibTask->SetHisto2d(kTRUE);
   calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);
