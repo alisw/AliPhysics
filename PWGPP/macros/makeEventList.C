@@ -16,7 +16,7 @@ void makeEventList(const char* file, Double_t ptMinHighPt = 8., Double_t ptMinV0
     { 
       printf("offlineTrigger: highPt\n");
       c->SetScanField(nEvents);
-      c->Scan("esdTrack.Pt():runNumber:evtNumberInFile:fileName.GetString()",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=.2f:8.d:8.d:130.s");
+      c->Scan("esdTrack.Pt():runNumber:evtNumberInFile:fileName.GetString():gid:evtTimeStamp",Form("esdTrack.Pt()>%lf",ptMinHighPt),"col=.2f:8.d:8.d:130.s:15.lu:12.d");
     }
   }
 
@@ -27,7 +27,7 @@ void makeEventList(const char* file, Double_t ptMinHighPt = 8., Double_t ptMinV0
     { 
       printf("offlineTrigger: V0s\n");
       c->SetScanField(nEvents);
-      c->Scan("v0.Pt():runNumber:evtNumberInFile:fileName.GetString()",Form("v0.Pt()>%lf",ptMinV0s),"col=.2f:8.d:8.d:130.s");
+      c->Scan("v0.Pt():runNumber:evtNumberInFile:fileName.GetString():gid:evtTimeStamp",Form("v0.Pt()>%lf",ptMinV0s),"col=.2f:8.d:8.d:130.s:15.lu:12.d");
     }
   }
 
@@ -38,7 +38,7 @@ void makeEventList(const char* file, Double_t ptMinHighPt = 8., Double_t ptMinV0
     { 
       printf("offlineTrigger: Laser\n");
       c->SetScanField(nEvents);
-      c->Scan("runNumber:runNumber:evtNumberInFile:fileName.GetString()","","col=8.d:8.d:8.d:130.s");
+      c->Scan("runNumber:runNumber:evtNumberInFile:fileName.GetString():gid:evtTimeStamp","","col=8.d:8.d:8.d:130.s:15.lu:12.d");
     }
   }
 
@@ -52,7 +52,7 @@ void makeEventList(const char* file, Double_t ptMinHighPt = 8., Double_t ptMinV0
       TCut cutDCA="abs(0.5*(t0.fD-t1.fD))>5&&abs(0.5*(t0.fD-t1.fD))<80"; //tracks crossing the inner field cage (80cm)
       TCut cutCross="t0.fOp.fP[1]*t1.fOp.fP[1]<0"; //tracks crossing central electrode
       c->SetScanField(nEvents);
-      c->Scan("runNumber:runNumber:evtNumberInFile:fileName.GetString()", ptCut && cutDCA && cutCross,"col=8.d:8.d:8.d:130.s");
+      c->Scan("runNumber:runNumber:evtNumberInFile:fileName.GetString():gid:evtTimeStamp", ptCut && cutDCA && cutCross,"col=8.d:8.d:8.d:130.s:15.lu:12.d");
     }
   }
 }//dumpList
