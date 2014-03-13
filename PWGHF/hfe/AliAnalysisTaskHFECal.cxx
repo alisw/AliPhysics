@@ -709,7 +709,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     //printf("weight = %f\n",mcWeight);
 
     if(TMath::Abs(track->Eta())>0.6) continue;
-    if(TMath::Abs(track->Pt()<2.5)) continue;
+    //if(TMath::Abs(track->Pt()<2.5)) continue;
+    if(TMath::Abs(track->Pt()<0.1)) continue;
     
     int nITS = track->GetNcls(0);
 
@@ -725,46 +726,42 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(itsPixel & BIT(4))cout << "5th layer hit" << endl;
     */
 
-    Bool_t kAnyITS = kFALSE;
-    if((itsPixel & BIT(0)) || (itsPixel & BIT(1)))kAnyITS = kTRUE;
-        
-
     if(mcPho)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
 
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    if(mcPho)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     //RecKink
     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
       if(track->GetKinkIndex(0) != 0) continue;
     } 
-    if(mcPho)fPhoVertexReco_step2->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step2->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // RecPrim
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    if(mcPho)fPhoVertexReco_step3->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step3->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFEcuts: ITS layers cuts
-    //if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    if(!kAnyITS) continue; // select ITS condition without HFE
-    if(mcPho)fPhoVertexReco_step4->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+    if(mcPho && iHijing==0)fPhoVertexReco_step4->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    if(mcPho)fPhoVertexReco_step5->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step5->Fill(track->Pt(),conv_proR); // check MC vertex
 
     int nTPCcl = track->GetTPCNcls();
     //int nTPCclF = track->GetTPCNclsF(); // warnings
     //int nITS = track->GetNcls(0);
    
-    if(mcPho)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR); // check MC vertex
  
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
     pt = track->Pt();
-    if(pt<2.5)continue;
+    //if(pt<2.5)continue;
+    if(pt<0.1)continue;
     
     //Int_t charge = track->Charge();
     fTrkpt->Fill(pt);
@@ -957,28 +954,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      }
     
  
-    //--------
-    /* 
-    double recopT =  SumpT(iTracks,track);
-
-    if(m20>0.0 && m20<0.3)
-      {
-       if(MaxEmatch)fIncMaxE->Fill(cent,pt);
-       if(pt>5.0)
-         {
-          fIncReco->Fill(cent,recopT);
-          if(fFlagPhotonicElec) fPhoReco->Fill(cent,recopT);
-          if(fFlagConvinatElec) fSamReco->Fill(cent,recopT);
-          if(MaxEmatch)
-            {
-             fIncRecoMaxE->Fill(cent,recopT);
-             if(fFlagPhotonicElec) fPhoRecoMaxE->Fill(cent,recopT);
-             if(fFlagConvinatElec) fSamRecoMaxE->Fill(cent,recopT);
-            }
-         }
-     }
-    */
-
     // MC
     // check label for electron candidiates
 
@@ -1118,7 +1093,8 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fCuts->SetCheckITSLayerStatus(kFALSE);
   fCuts->SetVertexRange(10.);
   fCuts->SetTOFPIDStep(kFALSE);
-  fCuts->SetPtRange(2, 50);
+  //fCuts->SetPtRange(2, 50);
+  fCuts->SetPtRange(0.1, 50);
   fCuts->SetMaxImpactParam(3.,3.);
 
   //--------Initialize correction Framework and Cuts
@@ -2367,42 +2343,4 @@ double AliAnalysisTaskHFECal::NsigmaCorrection(double tmpeta, float central)
 
 }
 
-
-double AliAnalysisTaskHFECal::SumpT(Int_t itrack, AliESDtrack* track)
-{
- 
-  fTrackCuts->SetAcceptKinkDaughters(kFALSE);
-  fTrackCuts->SetRequireTPCRefit(kTRUE);
-  fTrackCuts->SetRequireITSRefit(kTRUE);
-  fTrackCuts->SetEtaRange(-0.9,0.9);
-  //fTrackCuts->SetRequireSigmaToVertex(kTRUE);
-  fTrackCuts->SetMaxChi2PerClusterTPC(3.5);
-  fTrackCuts->SetMinNClustersTPC(90);
- 
-  double pTrecp = track->Pt();
-  double phiorg = track->Phi();
-  double etaorg = track->Eta();
-
-  for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
-    AliESDtrack* trackAsso = fESD->GetTrack(jTracks);
-    if (!trackAsso) {
-      printf("ERROR: Could not receive track %d\n", jTracks);
-      continue;
-    }
-    if(itrack==jTracks)continue;
-    double pTAss = trackAsso->Pt();
-    double etaAss = trackAsso->Eta();
-    double phiAss = trackAsso->Phi();
-
-    double delphi = phiorg - phiAss;
-    double deleta = etaorg - etaAss;
-
-    double R = sqrt(pow(deleta,2)+pow(delphi,2));
-    if(pTAss<0.5)continue;
-    if(R<0.4)pTrecp+=pTAss;
-
-    }
- 
-   return pTrecp;
-}
 
