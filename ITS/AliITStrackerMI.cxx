@@ -270,7 +270,7 @@ fITSPid(0) {
   if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
       AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0) {
     Int_t iplane=AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff();
-    if(!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane)==1)
+    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane)!=1)
       AliWarning(Form("Evaluation of Plane Eff for layer %d will be attempted without removing it from tracker",iplane));
     if (iplane<2) {
       fPlaneEff = new AliITSPlaneEffSPD();
