@@ -15,7 +15,7 @@ class AliEMCALGeoParams
 public:
 
   // general geometry info
-  static const int fgkEMCALModules     = 20;   // number of modules, 12 for EMCal + 8 for DCAL
+  static const int fgkEMCALModules     = 22;   // number of modules, 12 for EMCal + 8 for DCAL
   static const int fgkEMCALRows        = 24;   // number of rows per module for EMCAL
   static const int fgkEMCALCols        = 48;   // number of columns per module for EMCAL
 
