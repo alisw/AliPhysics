@@ -34,6 +34,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
                                                      Int_t minTPCCluster,
                                                      Int_t TPCS,
                                                      AliHFEextraCuts::ITSPixel_t pixel,
+						     Int_t TPCClusterforAsso = 80,
+                                                     Bool_t AssoITSref = kTRUE,
                                                      Double_t ptminassocut = 0.25,
                                                      Bool_t PhotonicElectronDCA = kFALSE,
                                                     // Bool_t QaPidSparse = kFALSE,
@@ -99,7 +101,8 @@ AliAnalysisTaskFlowITSTPCTOFQCSP* AddTaskFlowITSTPCTOFQCSP(
     taskHFE->SetOpeningAngleCut(op_angle_cut);
     taskHFE->SetMultCorrelationCut(multCorrcut);
     taskHFE->SetPtMinAssoCut(ptminassocut);
-    
+    taskHFE->SetAssoTPCCluster(TPCClusterforAsso);
+    taskHFE->SetAssoITSRefit(AssoITSref);
     //set RP cuts for flow package analysis
     cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
     if(!cutsRP) {
