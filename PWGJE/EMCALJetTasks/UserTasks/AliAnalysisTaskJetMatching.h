@@ -125,6 +125,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistTargetJetPt;       //! pt of target jets
         TH1F*                   fHistMatchedJetPt;      //! pt of matched jets
         TH2F*                   fHistSourceMatchedJetPt;//! pt or source vs matched jets
+        TH1F*                   fHistDetectorResponseProb;      //! det prob
         TH1F*                   fHistNoConstSourceJet;  //! number of constituents of source jet
         TH1F*                   fHistNoConstTargetJet;  //! number of constituents of target jet
         TH1F*                   fHistNoConstMatchJet;   //! number of constituents of matched jets
@@ -150,7 +151,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetMatching, 4);
+        ClassDef(AliAnalysisTaskJetMatching, 5);
 };
 
 #endif
