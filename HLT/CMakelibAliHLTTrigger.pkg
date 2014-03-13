@@ -71,8 +71,6 @@ set(FASTJETENV $ENV{FASTJET})
 
 if(FASTJETENV)
   set ( EDEFINE -isystem${FASTJETENV}/include/fastjet )
-else()
-  set ( EDEFINE -isystem${ALICE_ROOT}/JETAN/fastjet)
 endif(FASTJETENV)
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
