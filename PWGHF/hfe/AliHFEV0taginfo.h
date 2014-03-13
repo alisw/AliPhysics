@@ -48,7 +48,7 @@ class AliHFEV0taginfo: public TNamed{
         class AliHFEV0tag: public TObject{
             public:
                 AliHFEV0tag();
-                AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t prodR);
+                AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t ProdR);
                 AliHFEV0tag(const AliHFEV0tag &ref);
                 AliHFEV0tag &operator=(const AliHFEV0tag &ref);
                 virtual ~AliHFEV0tag();

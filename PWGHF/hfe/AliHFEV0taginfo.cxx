@@ -247,11 +247,11 @@ AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag():
     // default constructor
 }
 //___________________________________________________________________
-AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t fProdR):
+AliHFEV0taginfo::AliHFEV0tag::AliHFEV0tag(Int_t TrackID, AliPID::EParticleType Pinfo, Double_t ProdR):
     TObject(), 
     fTrackID(TrackID),
     fPinfo(Pinfo),
-    fProdR(fProdR)
+    fProdR(ProdR)
 {
 }
 
