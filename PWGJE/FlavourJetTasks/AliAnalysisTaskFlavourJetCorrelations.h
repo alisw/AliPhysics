@@ -110,7 +110,6 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Int_t  fPDGdaughters[4];       // PDG codes of daughters
   Float_t fSigmaD0[30];          //
   TString fBranchName;           // AOD branch name
-  TList *fmyOutput;                //! user output
   AliRDHFCuts *fCuts;            // Cuts 
 
   Double_t fMinMass;             // mass lower limit histogram
@@ -123,7 +122,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
   TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet CorrelationsExch
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,3); // class for charm-jet CorrelationsExch
 };
 
 #endif
