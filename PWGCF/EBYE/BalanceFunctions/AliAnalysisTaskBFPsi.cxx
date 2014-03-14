@@ -11,6 +11,7 @@
 #include "TArrayF.h"
 #include "TF1.h"
 #include "TRandom.h"
+#include "TROOT.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -695,7 +696,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     return;
   }
   // get the reaction plane
-  if(fEventClass != "Multiplicity") {
+  if(fEventClass != "Multiplicity" && gAnalysisLevel!="AODnano") {
     gReactionPlane = GetEventPlane(eventMain);
     fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
     if(gReactionPlane < 0){
@@ -932,7 +933,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     // Checks the Event cuts
     // Fills Event statistics histograms
-  
+
   Float_t gCentrality = -1.;
   Double_t gMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
@@ -978,6 +979,19 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 
     }//AOD header
   }//AOD
+
+  // calculate centrality always (not only in centrality mode)
+  else if(gAnalysisLevel == "AODnano" ) { //centrality via JF workaround
+    
+    AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+    if(header){
+      gCentrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", header,fCentralityEstimator.Data())) / 100 - 1.0;
+      
+      // QA histogram
+      fHistCentStatsUsed->Fill(0.,gCentrality);
+
+    }//AOD header
+  }//AODnano
   
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
     AliCentrality *centrality = event->GetCentrality();
@@ -1542,6 +1556,89 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
     }//track loop
   }// AOD analysis
+
+  // nano AODs
+  else if(gAnalysisLevel == "AODnano") { // not fully supported yet (PID missing)
+    // Loop over tracks in event
+    
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      // AOD track cuts
+      
+      // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
+      // take only TPC only tracks 
+      //fHistTrackStats->Fill(aodTrack->GetFilterMap());
+      for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
+	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
+      }
+
+      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
+
+
+      // additional check on kPrimary flag
+      if(fCheckPrimaryFlagAOD){
+	if(aodTrack->GetType() != AliAODTrack::kPrimary)
+	  continue;
+      }
+
+     
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = aodTrack->Y();
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+      
+
+      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      
+      
+      // Kinematics cuts from ESD track cuts
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+      
+      // Extra DCA cuts (for systematic studies [!= -1])
+      if( fDCAxyCut != -1 && fDCAzCut != -1){
+	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
+	  continue;  // 2D cut
+	}
+      }
+      
+      // Extra TPC cuts (for systematic studies [!= -1])
+      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+	continue;
+      }
+      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+	continue;
+      }
+      
+      // fill QA histograms
+      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+      fHistDCA->Fill(dcaZ,dcaXY);
+      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+    }//track loop
+  }// AOD nano analysis
+
 
   //==============================================================================================================
   else if(gAnalysisLevel == "MCAOD") {
