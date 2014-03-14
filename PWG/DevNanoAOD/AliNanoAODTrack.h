@@ -81,7 +81,8 @@ public:
   AliNanoAODTrack(const AliNanoAODTrack& trk); 
   AliNanoAODTrack& operator=(const AliNanoAODTrack& trk);
 
-  // Storage helper methods
+
+  virtual void Clear(Option_t * opt) ;
   
   // kinematics
   virtual Double_t OneOverPt() const { return (Pt() != 0.) ? 1./Pt() : -999.; }
@@ -361,7 +362,6 @@ void SetChi2perNDF(Double_t chi2perNDF) { fVars[AliNanoAODTrackMapping::GetInsta
 private :
 
 
-  // Remove everything from here on?
 
   // Momentum & position
   // FIXME: the following was replaced by posx, posy, posz. Check if the names make sense
