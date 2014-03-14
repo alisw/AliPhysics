@@ -93,6 +93,7 @@
 #pragma link C++ class AliTRDPIDParams::AliTRDPIDCentrality+;
 /* #endif */
 #pragma link C++ class AliTRDPIDResponseObject+;
+#pragma link C++ class AliTRDNDFast+;
 #pragma link C++ class AliTRDTKDInterpolator+;
 #pragma link C++ class AliTRDTKDInterpolator::AliTRDTKDNodeInfo+;
 #pragma link C++ class AliITSPidParams+;

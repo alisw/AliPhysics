@@ -137,7 +137,7 @@ private:
   Int_t           fCaloTriggerType[15]; // Calorimeter trigger type
   Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
 	
-  ClassDef(AliESDRun,14)
+  ClassDef(AliESDRun,15)
 };
 
 #endif 

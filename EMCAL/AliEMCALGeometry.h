@@ -312,9 +312,9 @@ protected:
   AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
 
   TString  fGeoName;                 // geometry name
-  Int_t    *fEMCSMSystem;	     // geometry structure
+  Int_t    *fEMCSMSystem;	           // geometry structure
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
-  Int_t    fnSupModInDCAL;                 // for calculation abs cell id; 06-nov-12 
+  Int_t    fnSupModInDCAL;           // for calculation abs cell id; 06-nov-12
   Int_t    fNCellsInSupMod;          // number cell in super module
   Int_t    fNETAdiv;                 // number eta divizion of module
   Int_t    fNPHIdiv;                 // number phi divizion of module
@@ -348,14 +348,14 @@ protected:
   Float_t  fPhiTileSize;             // Size of phi tile
   Float_t  fEtaTileSize;             // Size of eta tile
   Int_t    fNZ;                      // Number of Towers in the Z direction
-  Float_t  fIPDistance;		     // Radial Distance of the inner surface of the EMCAL
+  Float_t  fIPDistance;		           // Radial Distance of the inner surface of the EMCAL
   Float_t  fLongModuleSize;          // Size of long module
   // Geometry Parameters
-  Float_t  fShellThickness;	     // Total thickness in (x,y) direction
-  Float_t  fZLength;		     // Total length in z direction
-  Float_t  fSampling;		     // Sampling factor
+  Float_t  fShellThickness;	         // Total thickness in (x,y) direction
+  Float_t  fZLength;		             // Total length in z direction
+  Float_t  fSampling;		             // Sampling factor
 
-  Int_t    fFastOR2DMap[48][124];     // FastOR 2D Map over full EMCal
+  Int_t    fFastOR2DMap[48][124];    // FastOR 2D Map over full EMCal
 	
   TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
   Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager
