@@ -1627,7 +1627,7 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     
     //printf("fFlagLS = %d\n",fFlagLS);
     //printf("fFlagULS = %d\n",fFlagULS);
-    printf("\n");
+    //printf("\n");
 
     AliKFParticle::SetField(bfield);
     AliKFParticle ge1(*track, fPDGe1);
