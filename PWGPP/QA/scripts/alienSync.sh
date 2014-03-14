@@ -162,10 +162,10 @@ main()
 
     redownloading=""
     if [[ -f ${destination} ]]; then
-      #if we want the soft links and they are not there for existing files, create them
-      if [[ ! -h "$softlinktodestination" && -n $softLinkName ]]; then
-        echo ln -s ${destination} $softlinktodestination
-        ln -s ${destination} $softlinktodestination
+      #soft link the downloaded file (maybe to provide a consistent link to the latest version)
+      if [[ -n $softlinktodestination ]]; then
+        echo ln -sf ${destination} ${softlinktodestination}
+        ln -sf ${destination} ${softlinktodestination}
       fi
       ((localFileCounter++))
       
