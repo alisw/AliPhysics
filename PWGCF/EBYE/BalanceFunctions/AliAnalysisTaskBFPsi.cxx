@@ -160,7 +160,7 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fPtMin(0.3),
   fPtMax(1.5),
   fEtaMin(-0.8),
-  fEtaMax(-0.8),
+  fEtaMax(0.8),
   fPhiMin(0.),
   fPhiMax(360.),
   fDCAxyCut(-1),
@@ -1557,70 +1557,34 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
     }//track loop
   }// AOD analysis
 
+
   // nano AODs
   else if(gAnalysisLevel == "AODnano") { // not fully supported yet (PID missing)
     // Loop over tracks in event
     
     for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
-      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(event->GetTrack(iTracks));
+      AliVTrack* aodTrack = dynamic_cast<AliVTrack *>(event->GetTrack(iTracks));
       if (!aodTrack) {
 	AliError(Form("Could not receive track %d", iTracks));
 	continue;
       }
       
-      // AOD track cuts
-      
-      // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
-      // take only TPC only tracks 
-      //fHistTrackStats->Fill(aodTrack->GetFilterMap());
-      for(Int_t iTrackBit = 0; iTrackBit < 16; iTrackBit++){
-	fHistTrackStats->Fill(iTrackBit,aodTrack->TestFilterBit(1<<iTrackBit));
-      }
-
-      if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
-
-
-      // additional check on kPrimary flag
-      if(fCheckPrimaryFlagAOD){
-	if(aodTrack->GetType() != AliAODTrack::kPrimary)
-	  continue;
-      }
-
+      // AOD track cuts (not needed)
+      //if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
      
       vCharge = aodTrack->Charge();
       vEta    = aodTrack->Eta();
-      vY      = aodTrack->Y();
+      vY      = -999.;
       vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
       vPt     = aodTrack->Pt();
-      
-
-      Float_t dcaXY = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-      Float_t dcaZ  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-      
+           
       
       // Kinematics cuts from ESD track cuts
       if( vPt < fPtMin || vPt > fPtMax)      continue;
       if( vEta < fEtaMin || vEta > fEtaMax)  continue;
       
-      // Extra DCA cuts (for systematic studies [!= -1])
-      if( fDCAxyCut != -1 && fDCAzCut != -1){
-	if(TMath::Sqrt((dcaXY*dcaXY)/(fDCAxyCut*fDCAxyCut)+(dcaZ*dcaZ)/(fDCAzCut*fDCAzCut)) > 1 ){
-	  continue;  // 2D cut
-	}
-      }
-      
-      // Extra TPC cuts (for systematic studies [!= -1])
-      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-	continue;
-      }
-      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-	continue;
-      }
-      
+       
       // fill QA histograms
-      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-      fHistDCA->Fill(dcaZ,dcaXY);
-      fHistChi2->Fill(aodTrack->Chi2perNDF(),gCentrality);
       fHistPt->Fill(vPt,gCentrality);
       fHistEta->Fill(vEta,gCentrality);
       fHistRapidity->Fill(vY,gCentrality);
