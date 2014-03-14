@@ -21,6 +21,11 @@ main()
   ocdbregex='raw://'
   if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
     alien-token-init ${alienUserName}
+    #this is a hack! alien-token init seems not enough
+    #but the gclient_env script messes up the LD_LIBRARY_PATH
+    while read x; do
+      eval ${x};
+    done < <(grep -v "LD_LIBRARY_PATH" /tmp/gclient_env_${UID})
   fi
 
   updateQA $@
