@@ -297,7 +297,7 @@ void  AliNanoAODTrackMapping::LoadInstance() {
 
       if(tree) {
 	tree->GetUserInfo()->Print();
-	fInstance = (AliNanoAODTrackMapping*) tree->GetUserInfo()->FindObject("AliNanoAODTrackMapping");
+	fInstance = new AliNanoAODTrackMapping(*((AliNanoAODTrackMapping*) tree->GetUserInfo()->FindObject("AliNanoAODTrackMapping")));
 	// Otherwise try to get it from the current directory
 	std::cout << " from tree: " << fInstance << std::endl;
 	

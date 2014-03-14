@@ -184,7 +184,8 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
   Double_t OccCorr=0.0;
   if(TotaljetArea>0) OccCorr=TotaljetAreaPhys/TotaljetArea;
  
-  fHistOccCorrvsCent->Fill(fCent, OccCorr);
+  if (fCreateHisto)
+    fHistOccCorrvsCent->Fill(fCent, OccCorr);
 
   if (NjetAcc > 0) {
     //find median value

@@ -138,6 +138,23 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
         Double_t                GetJetRadius() const                            {return GetJetContainer()->GetJetRadius();}
+        /* inline */    AliEmcalJet* GetLeadingJet() {
+            // return pointer to the highest pt jet (before background subtraction) within acceptance
+            // only rudimentary cuts are applied on this level, hence the implementation outside of
+            // the framework
+            Int_t iJets(fJets->GetEntriesFast());
+            Double_t pt(0);
+            AliEmcalJet* leadingJet(0x0);
+            for(Int_t i(0); i < iJets; i++) {
+                AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+                if(!PassesSimpleCuts(jet)) continue;
+                if(jet->Pt() > pt) {
+                   leadingJet = jet;
+                   pt = leadingJet->Pt();
+                }
+            }
+            return leadingJet;
+        }
         void                    ExecMe()                                        {ExecOnce();}
         AliAnalysisTaskRhoVnModulation* ReturnMe()                              {return this;}
         // local cuts
@@ -171,6 +188,10 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         // event and track selection, also used by AliAnalyisTaskJetFlow
         /* inline */    Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0); }
+        /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet) {
+            Float_t minPhi(GetJetContainer()->GetJetPhiMin()), maxPhi(GetJetContainer()->GetJetPhiMax());
+            return (jet && jet->Pt() > 1 && jet->Eta() < .9-GetJetRadius() && jet->Eta() > -.9+GetJetRadius() && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
+        }
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(Int_t year);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
@@ -214,6 +235,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
         AliParticleContainer*   fTracksCont;            //!tracks
         AliJetContainer*        fJetsCont;              //!jets
+        AliEmcalJet*            fLeadingJet;            //! leading jet
         // members
         Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
@@ -359,7 +381,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 22);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 23);
 };
 
 #endif

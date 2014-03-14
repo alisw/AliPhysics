@@ -197,6 +197,10 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP(const char *nam
 ,fCentralityNoPassForFlattening(0)
 ,fInvmassLS1highpt(0)
 ,fInvmassULS1highpt(0)
+,fSparsephipsiULS(0)
+,fSparsephipsiLS(0)
+,fSparseMassULS(0)
+,fSparseMassLS(0)
 {
     //Named constructor
     
@@ -305,6 +309,10 @@ AliAnalysisTaskFlowTPCEMCalQCSP::AliAnalysisTaskFlowTPCEMCalQCSP()
 ,fCentralityNoPassForFlattening(0)
 ,fInvmassLS1highpt(0)
 ,fInvmassULS1highpt(0)
+,fSparsephipsiULS(0)
+,fSparsephipsiLS(0)
+,fSparseMassULS(0)
+,fSparseMassLS(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -737,7 +745,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
         if(!fDCA){
             //----------------------Selection of Photonic Electrons KFParticle-----------------------------
             Bool_t fFlagPhotonicElec = kFALSE;
-            SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+            SelectPhotonicElectron(iTracks,track,fEovP, evPlAngV0, fFlagPhotonicElec);
             if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
             // Semi inclusive electron
             if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
@@ -756,7 +764,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserExec(Option_t*)
     //----------hfe end---------
 }
 //_________________________________________
-void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Double_t fEovP,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec)
 {
     //Identify non-heavy flavour electrons using Invariant mass method KF
     
@@ -823,6 +831,22 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
         if(fFlagLS) fInvmassLS1->Fill(mass);
         if(fFlagULS) fInvmassULS1->Fill(mass);
         
+	if(fFlagULS){
+	Double_t MassSparseULS[3] = {
+		track->Pt(),
+                mass
+		}; 
+ 		fSparseMassULS->Fill(MassSparseULS);  
+	 }
+	if(fFlagLS){
+	Double_t MassSparseLS[3] = {
+		track->Pt(),
+                mass
+		}; 
+ 		fSparseMassLS->Fill(MassSparseLS);  
+	 }	
+	
+	
         if(ptcutonmasshighpt >= 8.){
             if(fFlagLS) fInvmassLS1highpt->Fill(mass);
             if(fFlagULS) fInvmassULS1highpt->Fill(mass);
@@ -833,6 +857,34 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::SelectPhotonicElectron(Int_t itrack,const 
             if(fFlagULS){fULSElecPt->Fill(track->Pt());}
             if(fFlagLS){fLSElecPt->Fill(track->Pt());}
         }
+        
+        
+        
+        Double_t phi = track->Phi();
+	Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
+	if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
+
+
+ if(mass<fInvmassCut){
+ 	if(fFlagULS){
+		Double_t ulsSparse[3] = {
+		track->Pt(),
+                fEovP,
+		DeltaPhi_eEP
+		}; 
+ 		fSparsephipsiULS->Fill(ulsSparse);  
+		}
+	if(fFlagLS){
+		Double_t lsSparse[3] = {
+		track->Pt(),
+                fEovP,
+		DeltaPhi_eEP
+		}; 
+ 		fSparsephipsiLS->Fill(lsSparse);  
+		}
+	}
+        
+        
         
         if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
             flagPhotonicElec = kTRUE;
@@ -1100,6 +1152,37 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::UserCreateOutputObjects()
         fOutputList->Add(fSparseElectronpurity);
     }
     //----------------------------------------------------------------------------
+    
+    
+    Int_t    binsphipsi[3] = { 100,   200,           6};
+    Double_t xminphipsi[3] = { 0.,      0,           0};
+    Double_t xmaxphipsi[3] = { 10.,      2, TMath::Pi()};
+    fSparsephipsiULS = new THnSparseF("fSparsephipsiULS", "pt:eop:DeltaPhiULS", 3, binsphipsi, xminphipsi, xmaxphipsi);
+    fSparsephipsiULS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparsephipsiULS->GetAxis(1)->SetTitle("eop");
+    fSparsephipsiULS->GetAxis(2)->SetTitle("DeltaPhiULS");
+    fOutputList->Add(fSparsephipsiULS);
+ 
+    fSparsephipsiLS = new THnSparseF("fSparsephipsiLS", "pt:eop:DeltaPhiLS", 3, binsphipsi, xminphipsi, xmaxphipsi);
+    fSparsephipsiLS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparsephipsiLS->GetAxis(1)->SetTitle("eop");
+    fSparsephipsiLS->GetAxis(2)->SetTitle("DeltaPhiLS");
+    fOutputList->Add(fSparsephipsiLS);
+    
+    Int_t    binsmass[2] = { 100, 200};
+    Double_t xminmass[2] = { 0.,  0};
+    Double_t xmaxmass[2] = { 10., 1.};
+    fSparseMassULS = new THnSparseF("fSparseMassULS", "pt:mass (GeV/c^{2})", 2, binsmass, xminmass, xmaxmass);
+    fSparseMassULS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparseMassULS->GetAxis(1)->SetTitle("mass");
+    fOutputList->Add(fSparseMassULS);
+ 
+    fSparseMassLS = new THnSparseF("fSparseMassLS", "pt:mass (GeV/c^{2})", 2, binsmass, xminmass, xmaxmass);
+    fSparseMassLS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparseMassLS->GetAxis(1)->SetTitle("mass");
+    fOutputList->Add(fSparseMassLS);
+    
+    
     
     PostData(1,fOutputList);
     // create and post flowevent
