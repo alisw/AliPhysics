@@ -20,7 +20,7 @@ main()
 
   ocdbregex='raw://'
   if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
-    alien-token-init
+    alien-token-init ${alienUserName}
   fi
 
   updateQA $@
