@@ -153,7 +153,7 @@ private:
 
   static AliNanoAODTrackMapping * fInstance; //instance, needed for the singleton implementation
   static TString fMappingString; // the string which this class was initialized with
-  std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CASH THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
+  std::map<TString,int> fMapCstVar;// Map of indexes of custom variables: CACHE THIS TO CONST INTs IN YOUR TASK TO AVOID CONTINUOUS STRING COMPARISONS
   ClassDef(AliNanoAODTrackMapping, 1)
   
 };
