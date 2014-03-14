@@ -59,6 +59,10 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TProfile.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TKey.h>
+#include <TSystem.h>
 // aliroot includes
 #include <AliAnalysisTask.h>
 #include <AliAnalysisManager.h>
@@ -76,13 +80,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetMatching)
 
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching() : AliAnalysisTaskEmcalJet("AliAnalysisTaskJetMatching", kTRUE), 
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // default constructor
     ClearMatchedJetsCache();
 }
 //_____________________________________________________________________________
 AliAnalysisTaskJetMatching::AliAnalysisTaskJetMatching(const char* name) : AliAnalysisTaskEmcalJet(name, kTRUE),
-    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE) {
+    fDebug(0), fSourceJets(0), fSourceJetsName(0), fTargetJets(0), fTargetJetsName(0), fMatchedJets(0), fMatchedJetsName(GetName()), fSourceRho(0), fSourceRhoName(0), fTargetRho(0), fTargetRhoName(0), fUseScaledRho(0), fSourceRadius(0.3), fTargetRadius(0.3), fMatchingScheme(kGeoEtaPhi), fUseEmcalBaseJetCuts(kFALSE), fSourceBKG(kNoSourceBKG), fTargetBKG(kNoTargetBKG), fOutputList(0), fHistUnsortedCorrelation(0), fHistMatchedCorrelation(0), fHistSourceJetPt(0), fHistMatchedSourceJetPt(0), fHistTargetJetPt(0), fHistMatchedJetPt(0), fHistSourceMatchedJetPt(0), fHistDetectorResponseProb(0), fHistNoConstSourceJet(0), fHistNoConstTargetJet(0), fHistNoConstMatchJet(0), fProfFracPtMatched(0), fProfFracPtJets(0), fProfFracNoMatched(0), fProfFracNoJets(0), fHistAnalysisSummary(0), fProfQAMatched(0), fProfQA(0), fNoMatchedJets(200), fMatchEta(.3), fMatchPhi(.3), fMatchR(.08), fDoDetectorResponse(kFALSE), fMatchConstituents(kTRUE), fMinFracRecoveredConstituents(0.5), fMinFracRecoveredConstituentPt(0.5), fGetBijection(kTRUE), fh1Trials(0x0), fh1AvgTrials(0x0), fh1Xsec(0x0), fAvgTrials(0) {
     // constructor
     ClearMatchedJetsCache();
     DefineInput(0, TChain::Class());
@@ -145,7 +149,16 @@ void AliAnalysisTaskJetMatching::UserCreateOutputObjects()
     fHistMatchedJetPt = (fDoDetectorResponse) ? BookTH1F("fHistDetectorLevelJet", "p_{t}^{rec}", 150, -50, 250) : BookTH1F("fHistMatchedJetPt", "p_{t} [GeV/c]", 150, -50, 250);
     fHistSourceMatchedJetPt = (fDoDetectorResponse) ? BookTH2F("fHistDetectorResponse", "particle level jet p_{t}^{gen} [GeV/c]", "detector level jet p_{t}^{rec} [GeV/c]", 300, -50, 250, 300, -50, 250) : BookTH2F("fHistSourceMatchedJetPt", "source jet p_{t} [GeV/c]", "matched jet p_{t} [GeV/c]", 300, -50, 250, 300, -50, 250);
     if(fDoDetectorResponse) {
-        fHistDetectorResponseProb = BookTH1F("fHistDetectorResponseProb", "(p_{t}^{det} - p_{t}^{part})/p_{t}^{part} ", 100, -1.5, 1.);
+        fHistDetectorResponseProb = BookTH2F("fHistDetectorResponseProb", "(p_{t}^{det} - p_{t}^{part})/p_{t}^{part}", "p_{t}^{part}", 100, -1.5, 1., 20, 0, 200);
+        fh1Xsec = new TProfile("fh1Xsec","xsec from pyxsec.root",1,0,1);
+        fh1Xsec->GetXaxis()->SetBinLabel(1,"<#sigma>");
+        fOutputList->Add(fh1Xsec);
+        fh1Trials = new TH1F("fh1Trials","trials root file",1,0,1);
+        fh1Trials->GetXaxis()->SetBinLabel(1,"#sum{ntrials}");
+        fOutputList->Add(fh1Trials);
+        fh1AvgTrials = new TH1F("fh1AvgTrials","avg trials root file",1,0,1);
+        fh1AvgTrials->GetXaxis()->SetBinLabel(1,"#sum{avg ntrials}");
+        fOutputList->Add(fh1AvgTrials);
     }
     fHistNoConstSourceJet = BookTH1F("fHistNoConstSourceJet", "number of constituents source jets", 50, 0, 50);
     fHistNoConstTargetJet = BookTH1F("fHistNoConstTargetJet", "number of constituents target jets", 50, 0, 50);
@@ -202,11 +215,64 @@ TH2F* AliAnalysisTaskJetMatching::BookTH2F(const char* name, const char* x, cons
     return histogram;   
 }
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskJetMatching::Notify()
+{
+    // for each file get the number of trials and pythia cross section
+    // see  $ALICE_ROOT/PWGJE/AliAnalysisTaskJetProperties.cxx
+    //      $ALICE_ROOT/PWG/Tools/AliAnalysisHelperJetTasks.cxx
+    // this function is implenented here temporarily to avoid introducing a dependency
+    // later on this could just be a call to a static helper function
+    if(!fDoDetectorResponse) return kTRUE;
+    Float_t xsection(0), ftrials(1);
+    fAvgTrials = ftrials;
+    TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+    if(tree) {
+        TFile *curfile = tree->GetCurrentFile();
+        if (!curfile) return kFALSE;
+        TString file(curfile->GetName()); 
+        if(file.Contains("root_archive.zip#")) file.Replace(file.Index("#",1,file.Index("root_archive",12,0,TString::kExact),TString::kExact)+1,file.Index(".root",5,TString::kExact)-file.Index("root_archive",12,0,TString::kExact),"");
+        else file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+        TFile *fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec.root"));
+        if(!fxsec) {
+            fxsec = TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root"));
+            if(fxsec) {
+                TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
+                if(key) {
+                      TList *list = dynamic_cast<TList*>(key->ReadObj());
+                      if(list) {
+                          xsection = ((TProfile*)list->FindObject("h1Xsec"))->GetBinContent(1);
+                          ftrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+                      }
+                }
+                fxsec->Close();
+            }
+        } else {
+            TTree *xtree = (TTree*)fxsec->Get("Xsection");
+            if(xtree) {
+                UInt_t _ftrials  = 0;
+                Double_t _xsection  = 0;
+                xtree->SetBranchAddress("xsection",&_xsection);
+                xtree->SetBranchAddress("ntrials",&_ftrials);
+                xtree->GetEntry(0);
+                ftrials = _ftrials;
+                xsection = _xsection;
+            }
+            fxsec->Close();
+        }
+        fh1Xsec->Fill("<#sigma>",xsection);
+        Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+        if(ftrials >= nEntries && nEntries > 0.) fAvgTrials = ftrials/nEntries;
+        fh1Trials->Fill("#sum{ntrials}",ftrials); 
+    }  
+    return kTRUE;
+}
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskJetMatching::Run()
 {
     // execute once for each event
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(!(InputEvent() && fSourceJets && fTargetJets && IsEventSelected())) return kFALSE;
+    if(fh1AvgTrials) fh1AvgTrials->Fill("#sum{avg ntrials}", fAvgTrials);
     // step one: do geometric matching 
     switch (fMatchingScheme) {
         case kGeoEtaPhi : {
@@ -480,7 +546,7 @@ void AliAnalysisTaskJetMatching::FillMatchedJetHistograms()
             if(fDoDetectorResponse) {
                 fProfFracPtJets->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, (fMatchedJetContainer[i][1]->Pt()-targetRho) / (fMatchedJetContainer[i][0]->Pt()-sourceRho));
                 fProfFracNoJets->Fill(fMatchedJetContainer[i][0]->Pt()-sourceRho, (double)fMatchedJetContainer[i][1]->GetNumberOfTracks() / (double)fMatchedJetContainer[i][0]->GetNumberOfTracks());
-                fHistDetectorResponseProb->Fill((fMatchedJetContainer[i][1]->Pt()-fMatchedJetContainer[i][0]->Pt())/fMatchedJetContainer[i][0]->Pt());
+                fHistDetectorResponseProb->Fill((fMatchedJetContainer[i][1]->Pt()-fMatchedJetContainer[i][0]->Pt())/fMatchedJetContainer[i][0]->Pt(), fMatchedJetContainer[i][0]->Pt());
             }
         }
     }
