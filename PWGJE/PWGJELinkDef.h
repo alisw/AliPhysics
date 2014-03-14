@@ -34,9 +34,6 @@
 #pragma link C++ class AliAnalysisTaskJetResponseV2+;
 #pragma link C++ class AliAnalysisTaskPartonDisc+;
 #pragma link C++ class AliAnaChargedJetResponseMaker+;
-#pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
-#pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
-#pragma link C++ class AliAnalysisTaskJetHBOM+;
 #pragma link C++ class AliAnalysisTaskJetShape+;
 #pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeTool+;
 #pragma link C++ class AliAnalysisTaskJetShape::AliAnalysisTaskJetShapeHM+;
@@ -48,4 +45,10 @@
 #pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncQATrackHistos+;
 #pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncQAJetHistos+;
 #pragma link C++ class AliIDFFUtils+;
+
+#ifdef HAVE_FASTJET
+#pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
+#pragma link C++ class AliAnalysisTaskJetHadronCorrelation+;
+#pragma link C++ class AliAnalysisTaskJetHBOM+;
+#endif
 #endif

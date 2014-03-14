@@ -246,10 +246,6 @@ void AliDielectron::Init()
   if(fVZERORecenteringFilename.Contains(".root")) AliDielectronVarManager::SetVZERORecenteringFile(fVZERORecenteringFilename.Data());
   if(fZDCRecenteringFilename.Contains(".root")) AliDielectronVarManager::SetZDCRecenteringFile(fZDCRecenteringFilename.Data());
 
-  if(fLegEffMap)  AliDielectronVarManager::SetLegEffMap(fLegEffMap);
-  if(fPairEffMap) AliDielectronVarManager::SetPairEffMap(fPairEffMap);
-
-
   if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
     fHistoArray->SetSignalsMC(fSignalsMC);
@@ -337,6 +333,10 @@ Bool_t AliDielectron::Process(AliVEvent *ev1, AliVEvent *ev2)
     Int_t bin=fMixing->FindBin(AliDielectronVarManager::GetData());
     AliDielectronVarManager::SetValue(AliDielectronVarManager::kMixingBin,bin);
   }
+
+  // set efficiency maps
+  AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+  AliDielectronVarManager::SetPairEffMap(fPairEffMap);
 
   //in case we have MC load the MC event and process the MC particles
   // why do not apply the event cuts first ????
@@ -1493,6 +1493,9 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
   TString  className,className2;
   Double_t values[AliDielectronVarManager::kNMaxValues]={0.};
+  AliDielectronVarManager::SetFillMap(fUsedVars);
+  AliDielectronVarManager::SetLegEffMap(fLegEffMap);
+  AliDielectronVarManager::SetPairEffMap(fPairEffMap);
 
   //Fill event information
   if(!pairInfoOnly) {
@@ -1536,7 +1539,6 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
       //histogram array for the pair
       if (fHistoArray) fHistoArray->Fill(i,pair);
 
-      AliDielectronVarManager::SetFillMap(fUsedVars);
       //fill pair information
       if (pairClass){
         AliDielectronVarManager::Fill(pair, values);

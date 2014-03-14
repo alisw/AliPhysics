@@ -528,3 +528,9 @@ Bool_t AliNanoAODTrack::GetXYZAt(Double_t x, Double_t b, Double_t *r) const
 
 
 //_______________________________________________________
+
+void  AliNanoAODTrack::Clear(Option_t * /*opt*/) {
+  // empty storage
+  fVars.clear();
+  fNVars = 0;
+}
