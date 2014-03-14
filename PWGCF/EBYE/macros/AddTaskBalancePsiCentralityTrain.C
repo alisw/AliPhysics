@@ -177,7 +177,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
       taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTOFpid);
     }
   }
-  else if(analysisType == "AOD") {
+  else if(analysisType == "AOD" || analysisType == "AODnano") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
