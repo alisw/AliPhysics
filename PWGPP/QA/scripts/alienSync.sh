@@ -19,6 +19,9 @@ main()
   # try to load the config file
   [[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
   source $1
+  
+  #if not set, use the default group
+  [[ -z ${alienSyncFilesGroupOwnership} ]] && alienSyncFilesGroupOwnership=$(id -gn)
 
   # do some accounting
   [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && sg ${alienSyncFilesGroupOwnership} "mkdir -p $logOutputPath"
@@ -59,8 +62,6 @@ main()
   [[ -z $secondsToSuicide ]] && echo "setting default secondsToSuicide of 10 hrs..." && secondsToSuicide=$(( 10*3600 ))
 
   # init alien 
-  echo source $alienInitScript
-  source $alienInitScript ""
   [[ -z $ALIEN_ROOT && -n $ALIEN_DIR ]] && ALIEN_ROOT=$ALIEN_DIR
   #if ! haveAlienToken; then
   #  $ALIEN_ROOT/api/bin/alien-token-destroy
@@ -75,7 +76,7 @@ main()
   #fi
   #ls -ltr /tmp/gclient_env_$UID
   #cat /tmp/gclient_env_$UID
-  #source /tmp/gclient_env_$UID
+  source /tmp/gclient_env_$UID
 
   #set a default timeout for grid access
   [[ -z $copyTimeout ]] && copyTimeout=600
@@ -161,10 +162,10 @@ main()
 
     redownloading=""
     if [[ -f ${destination} ]]; then
-      #if we want the soft links and they are not there for existing files, create them
-      if [[ ! -h "$softlinktodestination" && -n $softLinkName ]]; then
-        echo ln -s ${destination} $softlinktodestination
-        ln -s ${destination} $softlinktodestination
+      #soft link the downloaded file (maybe to provide a consistent link to the latest version)
+      if [[ -n $softlinktodestination ]]; then
+        echo ln -sf ${destination} ${softlinktodestination}
+        ln -sf ${destination} ${softlinktodestination}
       fi
       ((localFileCounter++))
       
@@ -230,7 +231,7 @@ main()
         echo "OK md5 after download"
         downloadOK=1
       else
-        echo "tried to parse this: $md5alien  $tmpdestination"
+        echo "failed verifying md5 $md5alien of $tmpdestination"
       fi
     else
       downloadOK=1
@@ -263,6 +264,7 @@ main()
       [[ -n ${postCommand} ]] && ( cd ${destinationdir}; eval "${postCommand}" )
     else
       echo "download not validated, NOT moving to ${destination}..."
+      echo "removing $tmpdestination"
       rm -f $tmpdestination
       continue
     fi
@@ -445,23 +447,20 @@ haveAlienToken()
 copyFromAlien()
 {
   #copy the file $1 to $2 using a specified method
-  #uses the "timelimit" command to make sure the 
+  #uses the "timeout" command to make sure the 
   #download processes will not hang forever.
   #
-  #("timelimit" prints a default message if it kills the command, 
-  #"timeout" does not, but may be more compatible with more 
-  #systems as it is a part of coreutils)
   [[ -z $copyTimeout ]] && copyTimeout=600
   [[ -z $copyTimeoutHard ]] && copyTimeoutHard=1200
   src=${1//"alien://"/}
   src="alien://${src}"
   dst=$2
   if [[ "$copyMethod" == "tfilecp" ]]; then
-    echo timelimit -t $copyTimeout -T $copyTimeoutHard root -b -q "$copyScript(\"$src\",\"$dst\")"
-    timelimit -t $copyTimeout -T $copyTimeoutHard root -b -q "$copyScript(\"$src\",\"$dst\")"
+    echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+    timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
   else
-    echo timelimit -t $copyTimeout -T $copyTimeoutHard $ALIEN_ROOT/api/bin/alien_cp $src $dst
-    timelimit -t $copyTimeout -T $copyTimeoutHard $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
   fi
 }
 

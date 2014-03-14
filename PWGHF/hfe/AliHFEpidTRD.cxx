@@ -281,10 +281,11 @@ Int_t AliHFEpidTRD::IsSelectedTRDPID(const AliHFEpidObject *track, AliHFEpidQAma
  
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kBeforePID); 
   AliDebug(1,"PID qa done for step before\n");
+  Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
+
 
   if(fCutNTracklets > 0){
     AliDebug(1, Form("Number of tracklets cut applied: %d\n", fCutNTracklets));
-    Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
     if(TestBit(kExactTrackletCut)){
       AliDebug(1, Form("Exact cut applied: %d tracklets found\n", ntracklets));
       if(ntracklets != fCutNTracklets) return 0;
@@ -304,7 +305,11 @@ Int_t AliHFEpidTRD::IsSelectedTRDPID(const AliHFEpidObject *track, AliHFEpidQAma
   AliTRDPIDResponse::ETRDPIDMethod fTRDPIDMethod = AliTRDPIDResponse::kLQ1D;
   if(fTRD2DPID) fTRDPIDMethod = AliTRDPIDResponse::kLQ2D;
 
- if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,fTRDPIDMethod)){
+  // if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,fTRDPIDMethod)){
+  Int_t ntrackletsPID=0;
+  Bool_t iselectron=kFALSE;
+  iselectron=fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),ntrackletsPID,fElectronEfficiency,centrality,fTRDPIDMethod);
+  if((ntrackletsPID==fCutNTracklets) && iselectron){
       AliDebug(2, Form("Electron effi: %f %i %i %f %i\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality,fTRDPIDMethod));
       if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kAfterPID); 
       AliDebug(1,"PID qa done for step after\n");

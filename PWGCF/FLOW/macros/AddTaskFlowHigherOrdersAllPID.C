@@ -3,6 +3,7 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB |
                                    Float_t centrMax=100.,
                                    Float_t etamin=-0.8,
                                    Float_t etamax=0.8,
+                                   Float_t EtaGap=0,
                                    TString fileNameBase="output",
                                    TString uniqueStr="",
                                    Int_t AODfilterBitRP = 768,
@@ -20,6 +21,13 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB |
   Double_t minB = -0.8;//
   Double_t maxB = 0.8;//
 
+  if(EtaGap!=0 && EtaGap<=1){
+      minA = -0.8;
+      maxA = -EtaGap/2;
+      minB = EtaGap/2;
+      maxB = 0.8;
+  }
+   
   // AFTERBURNER
   Bool_t useAfterBurner=kFALSE;
   Double_t v1=0.0;
