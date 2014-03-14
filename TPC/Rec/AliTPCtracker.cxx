@@ -356,6 +356,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     
     if (AliTPCReconstructor::StreamLevel()>2) {
     (*fDebugStreamer)<<"ErrParam"<<
+      "iter="<<fIteration<<
       "Cl.="<<cluster<<
       "T.="<<&param<<
       "dy="<<dy<<
