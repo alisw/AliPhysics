@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -105,7 +105,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -511,7 +511,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     if(!fLocalInit) fLocalInit = InitializeAnalysis();
     // reject the event if expected data is missing
     if(!PassesCuts(InputEvent())) return kFALSE;
-    if(!fCaloClusters && fDebug > 0) printf(" > Warning: couldn't retreive calo clusters! < \n");
+    fLeadingJet = GetLeadingJet();      // store the leading jet
     // set the rho value 
     fLocalRho->SetVal(fRho->GetVal());
     // [0][0] psi2a     [1,0]   psi2c
@@ -686,8 +686,7 @@ void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneTPC(Double_t* tpc)
    if(fTracks) {
        Float_t excludeInEta = -999;
        if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
-           AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-           if(leadingJet) excludeInEta = leadingJet->Eta();
+           if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
        }
        Int_t iTracks(fTracks->GetEntriesFast());
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
@@ -1119,11 +1118,10 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     Double_t excludeInPt  = -999;
     if(iTracks <= 0 || fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
     if(fExcludeLeadingJetsFromFit > 0 ) {
-        AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-        if(leadingJet) {
-            excludeInEta = leadingJet->Eta();
-            excludeInPhi = leadingJet->Phi();
-            excludeInPt = leadingJet->Pt();
+        if(fLeadingJet) {
+            excludeInEta = fLeadingJet->Eta();
+            excludeInPhi = fLeadingJet->Phi();
+            excludeInPt = fLeadingJet->Pt();
         }
     }
     // check the acceptance of the track selection that will be used
@@ -1566,8 +1564,6 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
     // fill delta pt histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t i(0);
-    AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-    if(!leadingJet && fDebug > 0) printf(" > failed to retrieve leading jet ! < \n");
     const Float_t areaRC = fRandomConeRadius*fRandomConeRadius*TMath::Pi();
     // we're retrieved the leading jet, now get a random cone
     for(i = 0; i < fMaxCones; i++) {
@@ -1582,7 +1578,7 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
            fHistDeltaPtDeltaPhi3[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
        }
        // get a random cone excluding leading jet area
-       CalculateRandomCone(pt, eta, phi, leadingJet);
+       CalculateRandomCone(pt, eta, phi, fLeadingJet);
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
