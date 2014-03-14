@@ -122,6 +122,8 @@ public:
   virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
   AliLego* Lego() const {return fLego;}
   virtual  void  FinishRun();
+  //
+  void StoreUsedCDBMaps() const; 
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
