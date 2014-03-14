@@ -46,7 +46,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksToProp(0),
   fh3PtEtaPhiTracksProp(0),
+  fh3PtEtaPhiTracksNoProp(0),
   fh2CentPtJetFull(0),
   fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
@@ -75,6 +77,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
@@ -100,7 +103,9 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
   fh3PtEtaPhiTracksOnEmcal(0),
+  fh3PtEtaPhiTracksToProp(0),
   fh3PtEtaPhiTracksProp(0),
+  fh3PtEtaPhiTracksNoProp(0),
   fh2CentPtJetFull(0),
   fh2CentPtJetCharged(0),
   fh3PtEtaPhiJetFull(0),
@@ -129,6 +134,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fh3PatchADCEnergyEtaPhiCenterJ1(0),
   fh3PatchADCEnergyEtaPhiCenterJ2(0),
   fh3PatchADCEnergyEtaPhiCenterJ1J2(0),
+  fh3PatchADCEnergyEtaPhiCenterAll(0),
   fh3EEtaPhiCell(0),
   fh2CellEnergyVsTime(0),
   fh3EClusELeadingCellVsTime(0),
@@ -193,6 +199,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::FillTriggerPatchHistos() {
   if(patch) {
     fMaxPatchEnergy = patch->GetPatchE();
     Double_t patchADCGeV = patch->GetADCAmpGeVRough();
+    fh3PatchADCEnergyEtaPhiCenterAll->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
     if(patch->IsJetLow() && !patch->IsJetHigh()) { //main patch only fired low threshold trigger
       fh3PatchEnergyEtaPhiCenterJ2->Fill(patch->GetPatchE(),patch->GetEtaGeo(),patch->GetPhiGeo());
       fh3PatchADCEnergyEtaPhiCenterJ2->Fill(patchADCGeV,patch->GetEtaGeo(),patch->GetPhiGeo());
@@ -331,14 +338,20 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
     if(i<=nbin13 && i>nbin12) binsEn[i]=(Double_t)enmin3 + (enmax3-enmin3)/(nbin13-nbin12)*((Double_t)i-(Double_t)nbin12) ;
   }
 
-  fh3PtEtaPhiTracks = new TH3F("fh3PtEtaPhiTracks","fh3PtEtaPhiTracks;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PtEtaPhiTracks = new TH3F("fh3PtEtaPhiTracks","fh3PtEtaPhiTracks;#it{p}_{T}^{track}_{vtx};#eta_{vtx};#varphi_{vtx}",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracks);
 
-  fh3PtEtaPhiTracksOnEmcal = new TH3F("fh3PtEtaPhiTracksOnEmcal","fh3PtEtaPhiTracksOnEmcal;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PtEtaPhiTracksOnEmcal = new TH3F("fh3PtEtaPhiTracksOnEmcal","fh3PtEtaPhiTracksOnEmcal;#it{p}_{T}^{track}_{emc};#eta_{emc};#varphi_{emc}",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksOnEmcal);
 
-  fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track};#eta;#varphi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fh3PtEtaPhiTracksToProp = new TH3F("fh3PtEtaPhiTracksToProp","fh3PtEtaPhiTracksToProp;#it{p}_{T}^{track}_{vtx};#eta_{vtx};#varphi_{vtx}",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksToProp);
+
+  fh3PtEtaPhiTracksProp = new TH3F("fh3PtEtaPhiTracksProp","fh3PtEtaPhiTracksProp;#it{p}_{T}^{track}_{vtx};#eta_{vtx};#varphi_{vtx}",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PtEtaPhiTracksProp);
+
+  fh3PtEtaPhiTracksNoProp = new TH3F("fh3PtEtaPhiTracksNoProp","fh3PtEtaPhiTracksNoProp;#it{p}_{T}^{track}_{vtx};#eta_{vtx};#varphi_{vtx}",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PtEtaPhiTracksNoProp);
 
   fh2CentPtJetFull = new TH2F("fh2CentPtJetFull","fh2CentPtJetFull;cent;#it{p}_{T}^{jet}",fgkNCentBins,binsCent,fgkNPtBins,binsPt);
   fOutput->Add(fh2CentPtJetFull);
@@ -423,6 +436,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
   fh3PatchADCEnergyEtaPhiCenterJ1J2 = new TH3F("fh3PatchADCEnergyEtaPhiCenterJ1J2","fh3PatchADCEnergyEtaPhiCenterJ1J2;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3PatchADCEnergyEtaPhiCenterJ1J2);
 
+  fh3PatchADCEnergyEtaPhiCenterAll = new TH3F("fh3PatchADCEnergyEtaPhiCenterAll","fh3PatchADCEnergyEtaPhiCenterAll;E_{ADC,patch};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
+  fOutput->Add(fh3PatchADCEnergyEtaPhiCenterAll);
+
   fh3EEtaPhiCell = new TH3F("fh3EEtaPhiCell","fh3EEtaPhiCell;E_{clus};#eta;#phi",fgkNEnBins,binsEn,fgkNEtaBins,binsEta,fgkNPhiBins,binsPhi);
   fOutput->Add(fh3EEtaPhiCell);
 
@@ -460,7 +476,7 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 
-  if(binsCent)              delete [] binsCent;
+  delete [] binsCent;
   if(binsdEP)               delete [] binsdEP;
   if(binsEn)                delete [] binsEn;
   if(binsPt)                delete [] binsPt;
@@ -484,16 +500,20 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   //Tracks
   AliParticleContainer *partCont = GetParticleContainer(0);
   if (partCont) {
-    Int_t i = 0;
     AliPicoTrack *track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle(0));
     while(track) {
       Double_t trkphi = track->Phi()*TMath::RadToDeg();
       fh3PtEtaPhiTracks->Fill(track->Pt(),track->Eta(),track->Phi());
-      fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
-      if(track->IsEMCAL()) {
-	i++;
-	if(TMath::Abs(track->Eta())<0.9 && trkphi > 10 && trkphi < 250 )
-	  fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+      //Select tracks which should be propagated
+      if(track->Pt()>=0.350) {
+	if (TMath::Abs(track->Eta())<=0.9 && trkphi > 10 && trkphi < 250) {
+	  fh3PtEtaPhiTracksOnEmcal->Fill(track->GetTrackPtOnEMCal(),track->GetTrackEtaOnEMCal(),track->GetTrackPhiOnEMCal());
+	  fh3PtEtaPhiTracksToProp->Fill(track->Pt(),track->Eta(),track->Phi());
+	  if(track->GetTrackPtOnEMCal()>=0)
+	    fh3PtEtaPhiTracksProp->Fill(track->Pt(),track->Eta(),track->Phi());
+	  else
+	    fh3PtEtaPhiTracksNoProp->Fill(track->Pt(),track->Eta(),track->Phi());
+	}
       }
       track = dynamic_cast<AliPicoTrack*>(partCont->GetNextAcceptParticle());
     }
@@ -666,7 +686,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
   fh3PtLeadJet1VsPatchEnergy->Fill(ptLeadJet1,fMaxPatchEnergy,fTriggerType);
   fh3PtLeadJet2VsPatchEnergy->Fill(ptLeadJet2,fMaxPatchEnergy,fTriggerType);
 
-  if(nJetsArr) delete nJetsArr;
+  delete nJetsArr;
 
   return kTRUE;
 }

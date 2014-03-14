@@ -2699,6 +2699,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
     (char*)__FILE__,__LINE__,nTCutsEfficiency,nRecPartCutsEfficiency);
   
   AliPIDResponse* pidResponse = 0x0;
+  Bool_t tuneOnDataTPC = kFALSE;
   if (fUseJetPIDtask || fUseInclusivePIDtask) {
     if (!inputHandler) {
       AliFatal("Input handler needed");
@@ -2710,6 +2711,10 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       if (!pidResponse) {
         AliFatal("PIDResponse object was not created");
         return;
+      }
+      else {
+        tuneOnDataTPC = pidResponse->IsTunedOnData() &&
+                        ((pidResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
       }
     }
   }
@@ -2784,8 +2789,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           // fill inclusive tracks XXX, they have the same track cuts!
           AliAODTrack * inclusiveaod  = dynamic_cast<AliAODTrack*>(fTracksRecCutsEfficiency->At(it));
           if(inclusiveaod){
-            Double_t dEdxTPC = pidResponse->IsTunedOnData() ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) 
-                                                            : inclusiveaod->GetTPCsignal();
+            Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod) 
+                                             : inclusiveaod->GetTPCsignal();
             
             if (dEdxTPC <= 0)
               continue;
@@ -2860,8 +2865,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
         AliAODTrack * inclusiveaod  = dynamic_cast<AliAODTrack*>(fTracksRecCuts->At(it));
         if(inclusiveaod){
           if(fUseInclusivePIDtask){
-            Double_t dEdxTPC = pidResponse->IsTunedOnData() ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod)
-                                                            : inclusiveaod->GetTPCsignal();
+            Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(inclusiveaod)
+                                             : inclusiveaod->GetTPCsignal();
             
             if (dEdxTPC <= 0)
               continue;
@@ -3186,8 +3191,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
       }
 	  
       if (fUseJetPIDtask) {
-        Double_t dEdxTPC = pidResponse->IsTunedOnData() ? pidResponse->GetTPCsignalTunedOnData(aodtrack)
-                                                        : aodtrack->GetTPCsignal();
+        Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(aodtrack)
+                                         : aodtrack->GetTPCsignal();
         
         if (dEdxTPC <= 0)
           continue;

@@ -1413,7 +1413,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   gHistNN->Sumw2();
   gHistNP->Add(gHistNN,-1);
   gHistPN->Add(gHistNP);
-  gHistPN->Scale(0.5);
+  //gHistPN->Scale(0.5);//not needed anymore, since pT,assoc < pT,trig in all pT bins
   TH2D *gHistBalanceFunction2D = dynamic_cast<TH2D *>(gHistPN->Clone());
   gHistBalanceFunction2D->SetStats(kFALSE);
   gHistBalanceFunction2D->GetXaxis()->SetTitle("#Delta#eta");

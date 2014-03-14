@@ -38,7 +38,7 @@ public:
   void SetParamsTOF();
 
   // task configuration
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength); }
+  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   void SetPtThrPart(Float_t minPt, Float_t maxPt) { fTrgPartPtMin = minPt; fTrgPartPtMax = maxPt; }
@@ -224,7 +224,7 @@ public:
   enum Class_t {
     kClCentral = 0,
     kClSemiCentral,
-    kClDijet,
+    // kClDijet,
     kClLast
   };
 
@@ -282,8 +282,8 @@ public:
   };
 
   AliHistCorr*& GetHistCorr(CorrType_t corr, Class_t cl, Ev_t ev) { return fHistCorr[kEvLast*(kClLast*corr + cl) + ev]; }
-  AliEventPoolManager*& GetPoolMgr(Trg_t trg, Ass_t ass) { return fPoolMgr[kTrgLast * ass + trg]; }
-  AliEventPool*& GetPool(Class_t cls, Trg_t trg, Ass_t ass) { return fPool[kClLast * (kTrgLast * ass + trg) + cls]; }
+  AliEventPoolManager*& GetPoolMgr(Ass_t ass) { return fPoolMgr[ass]; }
+  AliEventPool*& GetPool(Ass_t ass) { return fPool[ass]; }
 
 protected:
   AliMCEvent  *fMCEvent; //!
@@ -307,8 +307,8 @@ protected:
   TObjArray *fPrimTrackArray; //!
   TClonesArray *fJetArray; //!
 
-  AliEventPoolManager *fPoolMgr[kTrgLast * kAssLast]; //!
-  AliEventPool *fPool[kClLast * kTrgLast * kAssLast]; //!
+  AliEventPoolManager *fPoolMgr[kAssProt + 1]; //!
+  AliEventPool *fPool[kAssProt + 1]; //!
 
   AliHistCorr **fHistCorr; //! [kCorrLast*kEvLast*kClLast]; //!
 

@@ -1,4 +1,4 @@
-/**************************************************************************
+/*************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -505,7 +505,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   //-------------------------------------------------------------
 
   //AliAODRecoDecayLF   *rd = 0;
-  AliAODRecoDecayLF2Prong*rd = 0;
+  //  AliAODRecoDecayLF2Prong*rd = 0;
   
 
   if(vtx->GetNContributors()<1) {
@@ -666,8 +666,21 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       //      cout<<"if CPA \npr0: "<<io2Prong->GetProngID(0)<<" pr1: "<<io2Prong->GetProngID(1)<<" pr2"<<io2Prong->GetProngID(2)<<endl;
       // cout<<"pointing angle "<<io2Prong->CosPointingAngle()<<endl;
       
-      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
+      
+      AliAODTrack *trk0 = (AliAODTrack*)io2Prong->GetDaughter(0);
+      AliAODTrack *trk1 = (AliAODTrack*)io2Prong->GetDaughter(1);
+    
+      // cout<<"**********************************************"<<endl;
+      // cout<<trk0/*->GetID()*/<<" "<<negtrackAOD->GetID()<<endl;
+      // cout<<trk1/*->GetID()*/<<" "<<postrackAOD->GetID()<<endl;
+      // cout<<"d0 io2Prong: "<<io2Prong->GetProngID(1)<<endl;
+      // cout<<"d1 io2Prong: "<<io2Prong->GetProngID(0)<<endl;
+      // cout<<"**********************************************"<<endl;
 
+      //      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
+      
+      new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
+      
       //      cout<<"QUELLO CHE SALVo \npr0: "<<rd->GetProngID(0)<<" pr1: "<<rd->GetProngID(1)<<" pr2"<<rd->GetProngID(2)<<endl;
 
       // rd->SetSecondaryVtx(vertexp1n1);

@@ -114,7 +114,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtPhi(0),     
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
-  fTrackPtEtaCut(0)   
+  fTrackPtEtaCut(0),
+  fMaxCellEPhi(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -193,7 +194,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtPhi(0),     
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
-  fTrackPtEtaCut(0)   
+  fTrackPtEtaCut(0),   
+  fMaxCellEPhi(0)
 {
   // Constructor
 
@@ -344,6 +346,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",";p_{T} [GeV/c];#eta",100,-0.25,49.75,18,-0.9,0.9);     
   fTrackPtEtaCut->Sumw2();
   fQAList->Add(fTrackPtEtaCut);
+
+
+  fMaxCellEPhi = new TH2F("fMaxCellEPhi","Most energetic cell in event; GeV;#phi",100,-0.25,49.75,63,0,6.3); 
+  fMaxCellEPhi->Sumw2();
+  fQAList->Add(fMaxCellEPhi);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -1091,8 +1098,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     }
   }
   for(int ic=0;ic<nclus;ic++){
-    AliVCluster *c = (AliVCluster*)fESDClusters->At(ic);
+    AliVCluster *c = dynamic_cast<AliVCluster*>(fESDClusters->At(ic));
+    //AliESDCaloCluster *c = (AliESDCaloCluster*)fESDClusters->At(ic);
     if(!c)
+      continue;
+    if(!c->IsEMCAL())
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
@@ -1142,13 +1152,24 @@ void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
     cells = fAODCells;
   if(!cells)
     return;
+  Double_t maxe = 0;
+  Double_t maxphi = -10;
   Int_t ncells = cells->GetNumberOfCells();
+  Double_t eta,phi;
   for (Int_t i=0; i<ncells; i++) {
     Short_t absid = TMath::Abs(cells->GetCellNumber(i));
     Double_t e = cells->GetCellAmplitude(absid);
     if(e>0.05)
       fNCells50++;
+    else 
+      continue;
+    fGeom->EtaPhiFromIndex(absid,eta,phi);
+    if(maxe<e){
+      maxe = e;
+      maxphi = phi;
+    }
   }
+  fMaxCellEPhi->Fill(maxe,maxphi);
 
 }
 //________________________________________________________________________

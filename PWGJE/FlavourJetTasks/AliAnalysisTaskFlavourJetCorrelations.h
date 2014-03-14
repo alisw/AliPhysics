@@ -50,7 +50,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   virtual ~AliAnalysisTaskFlavourJetCorrelations();
 
   virtual void     UserCreateOutputObjects();
-  virtual void     UserExec(Option_t *option);
+  virtual Bool_t   Run();
   virtual void     Terminate(Option_t *);
   virtual void     Init();
   virtual void     LocalInit() {Init();}

@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskDptDptCorrelations+;
+#pragma link C++ class AliAnalysisTaskDptDptQA+;
 #pragma link C++ class AliDptDptInMC+;
 #pragma link C++ class AliAnalysisTask3PCorrelations+;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;

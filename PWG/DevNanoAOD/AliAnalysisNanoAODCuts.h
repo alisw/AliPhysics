@@ -3,6 +3,7 @@
 
 #include "AliAnalysisCuts.h"
 #include "AliNanoAODCustomSetter.h"
+#include "AliNanoAODCustomSetter.h"
 
 class AliAnalysisNanoAODTrackCuts : public AliAnalysisCuts
 {
@@ -13,9 +14,21 @@ public:
   virtual Bool_t IsSelected(TList*   /* list */ ) { return kTRUE; }
   UInt_t GetBitMask() { return fBitMask; }
   void  SetBitMask (UInt_t var) { fBitMask = var;}
+  Float_t GetMinPt() { return fMinPt; }
+  void  SetMinPt (Float_t var) { fMinPt = var;}
+  Float_t GetMaxEta() { return fMaxEta; }
+  void  SetMaxEta (Float_t var) { fMaxEta = var;}
+
+
+// [11/3/14 09:15:20] Fiete: to make a full test with the CF train: we also need the possibility to copy values of the header: at least vertex and centrality
+// [11/3/14 09:15:29] Fiete: let's put this before i tag
 
 private:
   UInt_t fBitMask; // Only AOD tracks matching this bit mask are accepted
+  Float_t fMinPt; // miminum pt of the tracks
+  Float_t fMaxEta; // MaxEta
+
+
 
   ClassDef(AliAnalysisNanoAODTrackCuts,1); // Select muon spectrometer tracks
 };
@@ -36,6 +49,18 @@ public:
   ClassDef(AliAnalysisNanoAODEventCuts,1); // Select primary vertices
 };
 
+class AliNanoAODSimpleSetter : public AliNanoAODCustomSetter
+{
+public:
+  AliNanoAODSimpleSetter(){;}
+  virtual ~AliNanoAODSimpleSetter(){;}
+
+  virtual void SetNanoAODHeader(const AliAODEvent * event   , AliNanoAODHeader * head  );
+  virtual void SetNanoAODTrack (const AliAODTrack * /*aodTrack*/, AliNanoAODTrack * /*spTrack*/){;}
+
+  ClassDef(AliNanoAODSimpleSetter, 1)
+
+};
 
 
 
