@@ -93,7 +93,7 @@ echo "*! Exit code of recCPass0.C: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
     exit $exitcode
-fi
+fi 
 
 mv syswatch.log syswatch_rec.log
 
