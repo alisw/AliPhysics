@@ -216,9 +216,11 @@ Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *senso
   if (zMx<fZMin) return 0;
   //
   int zCenID = int((impPar[2]-fZMin)*fSensDZInv);
-  double phiCnO = impPar[0] - fPhiOffs;
-  BringTo02Pi(phiCnO); 
-  int rowCenID = Nint(phiCnO*fSensDPhiInv);
+  if      (zCenID<0) zCenID = 0;
+  else if (zCenID>=fNSensorsPerRow) zCenID = fNSensorsPerRow-1;
+  double phiCn = impPar[0] - fPhiOffs;
+  //  BringTo02Pi(phiCn); 
+  int rowCenID = int(phiCn*fSensDPhiInv);
   //
   // due to the misalignments the actual sensorID's might be shifted
   int res = 0;
