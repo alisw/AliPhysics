@@ -70,6 +70,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   void SetMagneticFieldSign(int s);
   void SetKaonAnalysis(Bool_t);
   void SetProtonAnalysis(Bool_t);
+  void SetPionAnalysis(Bool_t);
   void SetOnlyPrimaries(Bool_t);
 
  protected:
@@ -99,6 +100,7 @@ class AliFemtoEventReaderESDChainKine : public AliFemtoEventReader
   bool           fReadV0;
   Bool_t isKaonAnalysis; // switch for Kaon analysis
   Bool_t isProtonAnalysis; // switch for Proton analysis
+  Bool_t isPionAnalysis; // switch for Pion analysis
   Bool_t fOnlyPrimaries; // switch to analyze only primaries
 
 #ifdef __ROOT__

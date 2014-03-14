@@ -149,7 +149,7 @@ Bool_t AliAnalysisTaskFilteredTree::Notify()
     Printf("Processing %d. file: %s", count, chain->GetCurrentFile()->GetName());
   }
 
-  return kTRUE;
+return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -453,6 +453,12 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       Float_t magField    = event->GetMagneticField();
       TObjString triggerClass = event->GetFiredTriggerClasses().Data();
 
+      // Global event id calculation using orbitID, bunchCrossingID and periodID
+      ULong64_t orbitID      = (ULong64_t)event->GetOrbitNumber();
+      ULong64_t bunchCrossID = (ULong64_t)event->GetBunchCrossNumber();
+      ULong64_t periodID     = (ULong64_t)event->GetPeriodNumber();
+      ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+      
       //
       // Dump to the tree 
       // vertex
@@ -483,6 +489,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"CosmicPairs"<<
+        "gid="<<gid<<
         "fileName.="<<&fileName<<         // file name
         "runNumber="<<runNumber<<              //  run number	    
         "evtTimeStamp="<<timeStamp<<            //  time stamp of event
@@ -662,6 +669,13 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
     Int_t runNumber = esdEvent->GetRunNumber();
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
+   
+    // Global event id calculation using orbitID, bunchCrossingID and periodID 
+    ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+    ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+    ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+    ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+    
 
     // high pT tracks
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
@@ -714,6 +728,7 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"highPt"<<
+        "gid="<<gid<<
         "fileName.="<<&fileName<<            
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
@@ -771,6 +786,12 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
     Float_t bz = esdEvent->GetMagneticField();
     TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
+    
+    // Global event id calculation using orbitID, bunchCrossingID and periodID
+    ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+    ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+    ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+    ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
 
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
     {
@@ -785,6 +806,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       if (!friendTrack) {friendTrack=new AliESDfriendTrack(); newFriendTrack=kTRUE;}
       
       (*fTreeSRedirector)<<"Laser"<<
+        "gid="<<gid<<
         "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
@@ -1417,7 +1439,13 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       //AliExternalTrackParam* ptrackInnerC3 = new AliExternalTrackParam(*trackInnerC3);
 
       Int_t ntracks = esdEvent->GetNumberOfTracks();
-
+     
+      // Global event id calculation using orbitID, bunchCrossingID and periodID 
+      ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+      ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+      ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+      ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+            
       // fill histograms
       FillHistograms(track, tpcInnerC, centralityF, (Double_t)chi2(0,0));
 
@@ -1425,6 +1453,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
       {
 
         (*fTreeSRedirector)<<"highPt"<<
+          "gid="<<gid<<
           "fileName.="<<&fileName<<                // name of the chunk file (hopefully full)
           "runNumber="<<runNumber<<                // runNumber
           "evtTimeStamp="<<evtTimeStamp<<          // time stamp of event (in seconds)
@@ -1952,6 +1981,12 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
     Int_t evNr=esdEvent->GetEventNumberInFile();
     Double_t bz = esdEvent->GetMagneticField();
 
+    // Global event id calculation using orbitID, bunchCrossingID and periodID
+    ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+    ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+    ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+    ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID);
+
 
     for (Int_t iv0=0; iv0<nV0s; iv0++){
  
@@ -1990,6 +2025,7 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"V0s"<<
+        "gid="<<gid<<
         "isDownscaled="<<isDownscaled<<
         "triggerClass="<<&triggerClass<<      //  trigger
         "Bz="<<bz<<
@@ -2101,7 +2137,13 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
     Double_t runNumber = esdEvent->GetRunNumber();
     Double_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
-
+   
+    // Global event id calculation using orbitID, bunchCrossingID and periodID 
+    ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
+    ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
+    ULong64_t periodID     = (ULong64_t)esdEvent->GetPeriodNumber();
+    ULong64_t gid          = ((periodID << 36) | (orbitID << 12) | bunchCrossID); 
+    
     // large dEdx
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
     {
@@ -2121,6 +2163,7 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dEdx"<<
+        "gid="<<gid<<
         "fileName.="<<&fileName<<
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<

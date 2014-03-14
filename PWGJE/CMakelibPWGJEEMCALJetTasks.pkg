@@ -26,7 +26,6 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS 
- EMCALJetTasks/AliFJWrapper.cxx
  EMCALJetTasks/AliAnalysisTaskDeltaPt.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJet.cxx
  EMCALJetTasks/AliAnalysisTaskEmcalJetSample.cxx
@@ -38,10 +37,8 @@ set ( SRCS
  EMCALJetTasks/AliAnalysisTaskLocalRho.cxx
  EMCALJetTasks/AliAnalysisTaskScale.cxx
  EMCALJetTasks/AliEmcalJet.cxx
- EMCALJetTasks/AliEmcalJetTask.cxx
  EMCALJetTasks/AliJetConstituentTagCopier.cxx
  EMCALJetTasks/AliJetContainer.cxx
- EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromGenTask.cxx
  EMCALJetTasks/AliJetEmbeddingFromPYTHIATask.cxx
  EMCALJetTasks/AliJetEmbeddingTask.cxx
@@ -51,7 +48,6 @@ set ( SRCS
  EMCALJetTasks/AliJetResponseMaker.cxx
  EMCALJetTasks/AliRhoParameter.cxx
  EMCALJetTasks/AliLocalRhoParameter.cxx
- EMCALJetTasks/AliEmcalJetFinder.cxx
  EMCALJetTasks/AliJetTriggerSelectionTask.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskCLQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskChargedJetsPA.cxx
@@ -72,10 +68,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTagger.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
@@ -83,23 +76,31 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
 )
 
+# Add code that needs fastjet or FJWrapper here
+if (FASTJET_FOUND)
+  LIST(APPEND SRCS
+   EMCALJetTasks/AliFJWrapper.cxx
+   EMCALJetTasks/AliEmcalJetTask.cxx
+   EMCALJetTasks/AliEmcalJetFinder.cxx
+   EMCALJetTasks/AliJetEmbeddingFromAODTask.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
+  )
+  set ( CINTFLAGS ${CINTFLAGS} ${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
+
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( SRCS ${SRCS}  EMCALJetTasks/AliFJWrapper.cxx )
-
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
-
-set ( FASTJET_ROOT $ENV{FASTJET_ROOT} )
-
-if(FASTJET_ROOT)
-  set (FASTJET_INC ${FASTJET_ROOT}/include)
+if(FASTJET_FOUND)
+  set ( EDEFINE -isystem${FASTJET_INCLUDE_DIR})
+  set ( EINCLUDE ${FASTJET_INCLUDE_DIR} PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
+  set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h )
 else()
-  set (FASTJET_INC ${ALICE_ROOT}/JETAN/fastjet)
-endif(FASTJET_ROOT)
+  set ( EINCLUDE PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
+endif(FASTJET_FOUND)
 
-set ( EDEFINE -isystem${FASTJET_INC})
-set ( EINCLUDE ${FASTJET_INC} PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
