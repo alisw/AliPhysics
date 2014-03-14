@@ -44,11 +44,17 @@
 #include <TGeoTrd1.h>
 using namespace TMath;
 
+// General Parameters
 const Int_t    AliITSUv1Layer::fgkNumberOfInnerLayers =   3;
 
 const Double_t AliITSUv1Layer::fgkDefaultSensorThick  = 300*fgkmicron;
 const Double_t AliITSUv1Layer::fgkDefaultStaveThick   =   1*fgkcm;
 
+// Inner Barrel Parameters
+const Int_t    AliITSUv1Layer::fgkIBChipsPerRow       =   9;
+const Int_t    AliITSUv1Layer::fgkIBNChipRows         =   1;
+
+// Outer Barrel Parameters
 const Int_t    AliITSUv1Layer::fgkOBChipsPerRow       =   7;
 const Int_t    AliITSUv1Layer::fgkOBNChipRows         =   2;
 
@@ -461,15 +467,17 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 
   // Now build up the stave
   if (fLayerNumber < fgkNumberOfInnerLayers) {
-    chipVol = CreateChipInnerB(xlenI,ylen,zlen);
-    zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
-    for (Int_t j=0; j<fNChips; j++) {
-      xpos = 0.;
-      ypos = 0.021;  // Remove small overlap - M.S: 21may13
-      zpos = -stave->GetDZ() + j*2*zmod + zmod;
-      staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
-      fHierarchy[kChip]++;
-    }
+    chipVol = CreateStaveInnerB(xlenI,ylen,zlen);
+//     zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+//     for (Int_t j=0; j<fNChips; j++) {
+//       xpos = 0.;
+//       ypos = 0.021;  // Remove small overlap - M.S: 21may13
+//       zpos = -stave->GetDZ() + j*2*zmod + zmod;
+//       staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
+//       fHierarchy[kChip]++;
+//     }
+    staveVol->AddNode(chipVol, 0);
+    fHierarchy[kHalfStave] = 1;
  
   // put mechanical stave structure, only inner barrel up to now
     mechStaveVol = CreateStaveStructInnerB(xlenI,zlen); 
@@ -507,6 +515,102 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 
   // Done, return the stave
   return staveVol;
+}
+
+//________________________________________________________________________
+TGeoVolume* AliITSUv1Layer::CreateStaveInnerB(const Double_t xsta,
+					      const Double_t ysta,
+					      const Double_t zsta,
+					      const TGeoManager *mgr){
+//
+// Create the chip stave for the Inner Barrel
+// (Here we fake the halfstave volume to have the same
+// formal geometry hierarchy as for the Outer Barrel)
+//
+// Input:
+//         xsta, ysta, zsta : X, Y, Z stave lengths
+//         mgr  : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//
+// Created:      06 Mar 2014  Mario Sitta
+//
+
+  // Local variables
+  Double_t xmod, ymod, zmod;
+  char volname[30];
+
+  // First we create the module (i.e. the HIC with 9 chips)
+  TGeoVolume *moduleVol = CreateModuleInnerB(xsta, ysta, zsta);
+
+  // Then we create the fake halfstave and the actual stave
+  xmod = ((TGeoBBox*)(moduleVol->GetShape()))->GetDX();
+  ymod = ((TGeoBBox*)(moduleVol->GetShape()))->GetDY();
+  zmod = ((TGeoBBox*)(moduleVol->GetShape()))->GetDZ();
+
+  TGeoBBox *hstave = new TGeoBBox(xmod, ymod, zmod);
+
+  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSHalfStavePattern(), fLayerNumber);
+  TGeoVolume *hstaveVol  = new TGeoVolume(volname, hstave, medAir);
+
+
+  // Finally build it up
+  hstaveVol->AddNode(moduleVol, 0);
+  fHierarchy[kModule] = 1;
+
+  // Done, return the stave structure
+  return hstaveVol;
+}
+
+//________________________________________________________________________
+TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
+					       Double_t ymod,
+					       Double_t zmod,
+					       const TGeoManager *mgr){
+//
+// Creates the IB Module: (only the chips for the time being)
+//
+// Input:
+//         xmod, ymod, zmod : X, Y, Z stave lengths
+//         mgr  : the GeoManager (used only to get the proper material)
+//
+// Output:
+//
+// Return:
+//         the module as a TGeoVolume
+//
+// Created:      06 Mar 2014  M. Sitta
+//
+
+  Double_t ypos, zpos, zlen;
+  char volname[30];
+
+  // First create the single chip
+  TGeoVolume *chipVol = CreateChipInnerB(xmod, ymod, zmod/fgkIBChipsPerRow);
+
+  // Then create the module and populate it with the chips
+  TGeoBBox *module = new TGeoBBox(xmod, ymod, zmod);
+
+  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
+  TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
+
+  zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+  for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
+    ypos = 0.021;  // Remove small overlap - M.S: 21may13
+    //    zpos = -zmod + j*2*zmod + zmod;
+    zpos = -zmod + j*2*zlen + zlen; //RS
+    modVol->AddNode(chipVol, j, new TGeoTranslation(0, ypos, zpos));
+    fHierarchy[kChip]++;
+  }
+
+  // Done, return the module
+  return modVol;
 }
 
 //________________________________________________________________________
@@ -2426,15 +2530,15 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const Double_t xlen,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xsta,
-					     const Double_t ysta,   
-					     const Double_t zsta,
+TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xchip,
+					     const Double_t ychip,   
+					     const Double_t zchip,
 					     const TGeoManager *mgr){
 //
 // Creates the actual Chip
 //
 // Input:
-//         xsta,zsta : the stave dimensions
+//         xchip,ychip,zchip : the chip dimensions
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -2452,7 +2556,7 @@ TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xsta,
   // First create all needed shapes
 
   // The chip
-  TGeoBBox *chip = new TGeoBBox(xsta,  ysta, zsta/fNChips);
+  TGeoBBox *chip = new TGeoBBox(xchip,  ychip, zchip);
 
   // The sensor
   xlen = chip->GetDX();
@@ -2462,14 +2566,12 @@ TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xsta,
 
 
   // We have all shapes: now create the real volumes
-  //TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSChipPattern(), fLayerNumber);
-  // TGeoVolume *modVol = new TGeoVolume(volname, chip, medAir);
-  TGeoVolume *modVol = new TGeoVolume(volname, chip, medSi);
-  modVol->SetVisibility(kTRUE);
-  modVol->SetLineColor(1);
+  TGeoVolume *chipVol = new TGeoVolume(volname, chip, medSi);
+  chipVol->SetVisibility(kTRUE);
+  chipVol->SetLineColor(1);
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSSensorPattern(), fLayerNumber);
   TGeoVolume *sensVol = new TGeoVolume(volname, sensor, medSi);
@@ -2485,10 +2587,10 @@ TGeoVolume* AliITSUv1Layer::CreateChipInnerB(const Double_t xsta,
   ypos = -chip->GetDY() + sensor->GetDY();
   zpos = 0.;
 
-  modVol->AddNode(sensVol, 1, new TGeoTranslation(xpos, ypos, zpos));
+  chipVol->AddNode(sensVol, 1, new TGeoTranslation(xpos, ypos, zpos));
 
   // Done, return the chip
-  return modVol;
+  return chipVol;
 }
 
 //________________________________________________________________________
@@ -2514,16 +2616,22 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   Double_t xGap  = fgkOBChipXGap;
   Double_t zGap  = fgkOBChipZGap;
 
+  Double_t xmod, ymod, zmod;
   Double_t xlen, ylen, zlen;
   Double_t xpos, ypos, zpos;
   
   // First create all needed shapes
 
-  // The chip
+  // The chip (the same as for IB)
   xlen = (fgkOBHalfStaveWidth/2-xGap/2)/fgkOBNChipRows;
-  ylen = fSensorThick; // TO BE CHECKED
+  ylen = 0.5*fStaveThick; // TO BE CHECKED
   zlen = (fgkOBModuleZLength - (fgkOBChipsPerRow-1)*zGap)/(2*fgkOBChipsPerRow);
-  TGeoBBox *chip = new TGeoBBox("OBChip", xlen, ylen, zlen);
+
+  TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
+
+  xmod = ((TGeoBBox*)chipVol->GetShape())->GetDX();
+  ymod = ((TGeoBBox*)chipVol->GetShape())->GetDY();
+  zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
 
   // The module carbon plate
   xlen = fgkOBHalfStaveWidth/2;
@@ -2544,38 +2652,19 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // The module
   xlen = fgkOBHalfStaveWidth/2;
-  ylen = chip->GetDY() + modPlate->GetDY() + glue->GetDY() +
+  ylen = ymod + modPlate->GetDY() + glue->GetDY() +
          flexAl->GetDY() + flexKap->GetDY();
   zlen = fgkOBModuleZLength/2;
-  TGeoBBox *module = new TGeoBBox(xlen,  ylen, zlen);
+  TGeoBBox *module = new TGeoBBox("OBModule", xlen,  ylen, zlen);
 
 
   // We have all shapes: now create the real volumes
  
-  TGeoMedium *medSi       = mgr->GetMedium("ITS_SI$");
   TGeoMedium *medAir      = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medCarbon   = mgr->GetMedium("ITS_CARBON$");
   TGeoMedium *medGlue     = mgr->GetMedium("ITS_GLUE$");
   TGeoMedium *medAluminum = mgr->GetMedium("ITS_ALUMINUM$");
   TGeoMedium *medKapton   = mgr->GetMedium("ITS_KAPTON(POLYCH2)$");
-
-  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSChipPattern(), fLayerNumber);
-  TGeoVolume *chipVol = new TGeoVolume(volname, chip, medSi);
-  //chipVol->SetVisibility(kTRUE);
-  chipVol->SetLineColor(kYellow);
-  //chipVol->SetLineWidth(1);
-  //chipVol->SetTransparency(30);
-  chipVol->SetFillColor(chipVol->GetLineColor());
-  chipVol->SetFillStyle(4000); // 0% transparent
-
-  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSSensorPattern(), fLayerNumber);
-  TGeoVolume *sensVol = new TGeoVolume(volname, chip, medSi);
-  //sensVol->SetVisibility(kTRUE);
-  sensVol->SetLineColor(kYellow);
-  //sensVol->SetLineWidth(1);
-  //sensVol->SetTransparency(30);
-  sensVol->SetFillColor(sensVol->GetLineColor());
-  sensVol->SetFillStyle(4000); // 0% transparent
 
   TGeoVolume *modPlateVol = new TGeoVolume("CarbonPlateVol",
 					    modPlate, medCarbon);
@@ -2604,26 +2693,23 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   
 
   // Now build up the module
-  chipVol->AddNode(sensVol,1);
-
   ypos = -module->GetDY() + modPlate->GetDY();
   modVol->AddNode(modPlateVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos += (modPlate->GetDY() + glue->GetDY());
   modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
 
-  xpos = -module->GetDX() + chip->GetDX();
-  //xpos = -xGap/2 -chip->GetDX();
-  ypos += (glue->GetDY() + chip->GetDY());
+  xpos = -module->GetDX() + xmod;
+  ypos += (glue->GetDY() + ymod);
   for(Int_t k=0; k<fgkOBChipsPerRow; k++)   //put 7x2 chip into one module
     {
-      zpos = -module->GetDZ() + chip->GetDZ() + k*(2*chip->GetDZ() + zGap);
+      zpos = -module->GetDZ() + zmod + k*(2*zmod + zGap);
       modVol->AddNode(chipVol, 2*k  , new TGeoTranslation( xpos, ypos, zpos));
       modVol->AddNode(chipVol, 2*k+1, new TGeoTranslation(-xpos, ypos, zpos));
       fHierarchy[kChip]+=2;
     }
 
-  ypos += (chip->GetDY() + flexAl->GetDY());
+  ypos += (ymod + flexAl->GetDY());
   modVol->AddNode(flexAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos += (flexAl->GetDY() + flexKap->GetDY());

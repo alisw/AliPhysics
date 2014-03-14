@@ -14,7 +14,7 @@ ClassImp(AliITSURecoLayer)
 
 //______________________________________________________
 AliITSURecoLayer::AliITSURecoLayer(const char* name)
-  :fActiveID(-1)
+ :fActiveID(-1)
   ,fNSensors(0)
   ,fNSensorRows(0)
   ,fNSensorsPerRow(0)
@@ -74,7 +74,7 @@ AliITSURecoLayer::~AliITSURecoLayer()
 void AliITSURecoLayer::Print(Option_t* opt) const			      
 {
   //print 
-  printf("Lr %-15s %d (act:%+d), NSens: %4d in %d rows| MaxStep:%.2f ",
+  printf("Lr %-15s %d (act:%+d), NSens: %4d in %3d rows| MaxStep:%.2f ",
 	 GetName(),GetID(),GetActiveID(),GetNSensors(),GetNSensorRows(),fMaxStep);
   printf("%6.3f<R<%6.3f | %+8.3f<Z<%+8.3f dZ:%6.3f dPhi:%6.3f\n",fRMin,fRMax,fZMin,fZMax,
 	 fSensDZInv>0 ? 1/fSensDZInv : 0, fSensDPhiInv>0 ? 1/fSensDPhiInv : 0);
@@ -206,69 +206,78 @@ void AliITSURecoLayer::Build()
 }
 
 //______________________________________________________
-Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[kNNeighbors])
+Int_t AliITSURecoLayer::FindSensors(const double* impPar, AliITSURecoSens *sensors[kMaxSensMatching])
 {
   // find sensors having intersection with track
   // impPar contains: lab phi of track, dphi, labZ, dz
   //
-  return 0;
-  /*
-  double z = impPar[2];
-  if (z>fZMax+impPar[3]) return 0; // outside of Z coverage
-  z -= fZMin;
-  if (z<-impPar[3]) return 0; // outside of Z coverage
-  int sensInRow = int(z*fSensDZInv);
-  if      (sensInRow<0) sensInRow = 0;
-  else if (sensInRow>=fNSensorsPerRow) sensInRow = fNSensorsPerRow-1;
+  double zMn=impPar[2]-impPar[3], zMx=impPar[2]+impPar[3]; 
+  if (zMn>fZMax) return 0;
+  if (zMx<fZMin) return 0;
   //
-  double phi = impPar[0] - fPhiOffs;
-  BringTo02Pi(phi);
-  int rowID = int(phi*fSensDPhiInv);  // stave id
+  int zCenID = int((impPar[2]-fZMin)*fSensDZInv);
+  double phiCnO = impPar[0] - fPhiOffs;
+  BringTo02Pi(phiCnO); 
+  int rowCenID = Nint(phiCnO*fSensDPhiInv);
   //
-  int sensID = rowID*fNSensorsPerRow + sensInRow; // most probable candidate
-  int nsens = 0;
+  // due to the misalignments the actual sensorID's might be shifted
+  int res = 0;
+  AliITSURecoSens* sensPrev=0, *sens = GetSensor(rowCenID,zCenID);
   //
-  AliITSURecoSens* sensN,*sens = GetSensor(sesnID);
+  //  printf("Guess: Primary Sensor: phiID: %d zID: %d ->",rowCenID,zCenID); sens->Print();
   //
-  int res = sens->CheckCoverage(impPar);
-
-  // make sure this is best matching sensor
-  if (sens->GetZMin()<impPar[2] && sens->GetZMax()>impPar[2] && 
-      OKforPhiMin(sens->GetPhiMin(),impPar[0]) && OKforPhiMax(sens->GetPhiMax(),impPar[0]) ) 
-
-  sensors[nsens++] = sens;
+  while ( (res=sens->CheckCoverage(impPar[0], impPar[2])) ) {
+    if      (res&AliITSURecoSens::kRight) {if (++rowCenID==fNSensorRows) rowCenID=0;} // neighbor on the right (larger phi)
+    else if (res&AliITSURecoSens::kLeft)  {if (--rowCenID<0) rowCenID = fNSensorRows-1;}      // neighbor on the left (smaller phi)
+    if      (res&AliITSURecoSens::kUp)    {if (++zCenID==fNSensorsPerRow) zCenID = fNSensorsPerRow-1;}    // neighbor at larger Z (if any)
+    else if (res&AliITSURecoSens::kDown)  {if (--zCenID<0) zCenID = 0;}               // neighbor at smaller Z (if any)
+    //
+    AliITSURecoSens* sensAlt = GetSensor(rowCenID,zCenID);
+    if (sensAlt==sens || sensAlt==sensPrev) break;  // there is no better neighbor (z edge) or the point falls in dead area
+    //
+    sensPrev = sens;
+    sens = sensAlt;
+  }
+  //  printf("Found: Primary Sensor: phiID: %d zID: %d ->",rowCenID,zCenID); sens->Print();
   //
-  // check neighbours
-  double zMn=impPar[2]-impPar[3], zMx=impPar[2]+impPar[3], phiMn=impPar[0]-impPar[1], phiMx=impPar[0]+impPar[1];
+  int nFnd = 0;
+  sensors[nFnd++] = sens;
+  //
+  double phiMn = impPar[0]-impPar[1], phiMx = impPar[0]+impPar[1];
   BringTo02Pi(phiMn);
   BringTo02Pi(phiMx);
   //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbR)); // neighbor on the right (smaller phi)
-  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax())) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTR)); // neighbor on the top right (smaller phi, larger Z)
-  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbT)); // neighbor on the top (larger Z)
-  if (sensN && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbTL)); // neighbor on the top left (larger Z, larger phi)
-  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMin()<zMx) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbL)); // neighbor on the left (larger phi)
-  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin())) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBL)); // neighbor on the bottom left (smaller Z, larger phi)
-  if (sensN && OKforPhiMax(phiMx,sensN->GetPhiMin()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbB));  // neighbor on the bottom (smaller Z)
-  if (sensN && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
-  //
-  sensN = GetSensor(sens->GetNeighborID(AliITSURecoSens::kNghbBR)); // neighbor on the bottom right (smaller Z, smaller phi)
-  if (sensN && OKforPhiMin(phiMn,sensN->GetPhiMax()) && sensN->GetZMax()>zMn) sensors[nsens++] = sensN;
-  //
-  return nsens;
-  */
+  const int kNNeighb = 8;
+  const int kCheckNeighb[2][kNNeighb] = { // phi and Z neighbours to check
+    { 1, 1, 0,-1,-1,-1, 0, 1},
+    { 0, 1, 1, 1, 0,-1,-1,-1}
+  };
+  //  
+  //  printf("Search: %+.4f %+.4f | %+.4f %+.4f\n",phiMn,phiMx, zMn,zMx);
+  for (int inb=kNNeighb;inb--;) {
+    int idz = kCheckNeighb[1][inb];
+    int iz   = zCenID   + idz;
+    //    printf("#%d  dp:%+d dz:%+d IZ: %d\n",inb, kCheckNeighb[0][inb], kCheckNeighb[1][inb], iz);
+    //
+    if (iz<0 || iz>=fNSensorsPerRow) continue;
+    int idphi = kCheckNeighb[0][inb];
+    int iphi = rowCenID + idphi;
+    if      (iphi<0) iphi += fNSensorRows;
+    else if (iphi>=fNSensorRows) iphi -= fNSensorRows;
+    sens = GetSensor(iphi,iz);
+    //
+    if      (idz>0) {if (zMx<sens->GetZMin()) continue;}
+    else if (idz<0) {if (zMn>sens->GetZMax()) continue;}
+    //
+    // Z range matches
+    if      (idphi>0) {if (!OKforPhiMin(sens->GetPhiMin(),phiMx)) continue;}
+    else if (idphi<0) {if (!OKforPhiMax(sens->GetPhiMax(),phiMn)) continue;}
+    //
+    //    printf("Add %d\n",nFnd);
+    sensors[nFnd++] = sens;
+    if (nFnd==kMaxSensMatching) break;
+  }
+  return nFnd;
 }
 
 //*/

@@ -126,17 +126,17 @@ Int_t AliITSURecoSens::Compare(const TObject* obj)  const
 }
 
 //______________________________________________________________________________
-Int_t AliITSURecoSens::CheckCoverage(const double* impPar) const
+Int_t AliITSURecoSens::CheckCoverage(double phi, double z) const
 {
-  // check if the sensor contains the impact point (phi,dphi,z,dz)
+  // check if the sensor contains the impact point phi, z
   // if not, tell in which direction to move. 
   // kLeft, kRight are for smaller/larger angles, kUp,kDown for larger/smaller Z
   //
   int res = 0;
-  if      (impPar[2]<fZMin) res |= kDown;
-  else if (impPar[2]>fZMax) res |= kUp;
+  if      (z<fZMin) res |= kDown;
+  else if (z>fZMax) res |= kUp;
   //
-  if      (!OKforPhiMin(fPhiMin,impPar[0])) res |= kLeft;
-  else if (!OKforPhiMax(fPhiMax,impPar[0])) res |= kRight;
+  if      (!OKforPhiMin(fPhiMin,phi)) res |= kLeft;
+  else if (!OKforPhiMax(fPhiMax,phi)) res |= kRight;
   return res;
 }

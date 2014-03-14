@@ -23,7 +23,7 @@ class AliITSURecoSens : public TObject
   AliITSURecoSens& operator=(const AliITSURecoSens &source); 
   //
   Int_t              GetID()                       const {return (int)GetUniqueID();}
-  Int_t              CheckCoverage(const double* impPar) const;
+  Int_t              CheckCoverage(double phi, double z) const;
   Double_t           GetXTF()                      const {return fXTF;}
   Double_t           GetPhiTF()                    const {return fPhiTF;}
   Double_t           GetPhiMin()                   const {return fPhiMin;}

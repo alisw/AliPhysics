@@ -507,7 +507,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   fCurrHyp = fWorkHyp;
   fCurrHyp->InitFrom(hypTr);
   //
-  AliITSURecoSens *hitSens[AliITSURecoLayer::kNNeighbors+1];
+  AliITSURecoSens *hitSens[AliITSURecoLayer::kMaxSensMatching];
   //
   int ilaUp = fNLrActive;     // previous active layer really checked (some may be excluded!)
   //

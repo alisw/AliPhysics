@@ -79,10 +79,12 @@ class AliITSUv1Layer : public AliITSv11Geometry {
 
     TGeoVolume* CreateStave(const TGeoManager *mgr=gGeoManager);
     //TGeoVolume* CreateChip(Double_t x, Double_t z, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateModuleInnerB(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateChipInnerB(Double_t x,Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateModuleOuterB(const TGeoManager *mgr=gGeoManager);
 
 
+    TGeoVolume* CreateStaveInnerB(Double_t x, Double_t y, Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveStructInnerB(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelInnerBDummy(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager) const;
     TGeoVolume* CreateStaveModelInnerB0(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
@@ -138,6 +140,8 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     static const Double_t fgkDefaultStaveThick;  // Default stave thickness
 
     // Inner Barrel Parameters
+    static const Int_t    fgkIBChipsPerRow;      // IB chips per row in module
+    static const Int_t    fgkIBNChipRows;        // IB chip rows in module
 
     // Outer Barrel Parameters
     static const Int_t    fgkOBChipsPerRow;      // OB chips per row in module

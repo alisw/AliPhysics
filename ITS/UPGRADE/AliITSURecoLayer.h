@@ -23,7 +23,7 @@ class AliITSURecoLayer : public TNamed
 {
  public:
   //
-  enum {kNghbR,kNghbTR,kNghbT,kNghbTL,kNghbL,kNghbBL,kNghbB,kNghbBR,kNNeighbors}; // neighbors: Top,Left etc
+  enum {kMaxSensMatching=9}; // max number of sensors returned by FindSensors
   //
   enum {kPassive=BIT(14)                 // layer is passive
 	,kOwnsClusterArray=BIT(15)       // owner of cluster array, delete in destructor
@@ -73,7 +73,7 @@ class AliITSURecoLayer : public TNamed
   void               SetClusters(TClonesArray* cl)       {fClusters = cl;}
   //
   //  Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[AliITSURecoSens::kNNeighbors], int mcLab=-1);
-  Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[kNNeighbors]);
+  Int_t              FindSensors(const double* impPar, AliITSURecoSens *sensors[kMaxSensMatching]);
   //
   virtual void       Print(Option_t* option = "")  const;
   virtual Bool_t     IsSortable()                  const {return kTRUE;}
