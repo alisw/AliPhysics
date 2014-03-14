@@ -624,7 +624,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
-    if(fkRecoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1){
+    if(fkReconstructor->IsDebugStreaming()){
       Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
       TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
       AliExternalTrackParam param0(t);
@@ -988,6 +988,26 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Chi2[%f]", chi2));
       continue; 
     }
+     if(fkReconstructor->IsDebugStreaming()){
+      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+      //      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+      AliExternalTrackParam param0(t);
+      AliExternalTrackParam param1(t);
+      param1.Update(p, cov);
+      TVectorD vcov(3,cov);
+      TVectorD vpar(3,p);
+      (*cstreamer) << "FollowBackProlongationInfo"
+		<< "EventNumber="	<< eventNumber
+		<< "chi2="<<chi2
+		<< "iplane="<<ily
+		<< "vcov.="<<&vcov
+	        << "vpar.="<<&vpar
+		<< "tracklet.="      << ptrTracklet
+		<< "param0.="		<< &param0
+		<< "param1.="		<< &param1
+		<< "\n";
+    }
+
     // mark track as entering the FIDUCIAL volume of TRD
     if(kStoreIn){
       t.SetTrackIn();
