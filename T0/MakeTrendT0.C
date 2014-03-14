@@ -1,15 +1,12 @@
-#include "TChain.h"
-#include "TTree.h"
-#include "TH1F.h"
-#include "TF1.h"
-#include "TH2F.h"
-#include "TCanvas.h"
-#include "TObjArray.h"
-#include "TTreeStream.h"
-
 #define NPMTs 24
 
 int MakeTrendT0( char *infile, int run) {
+
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libPWGPP.so");
 
   char *outfile = "trending.root";
  
