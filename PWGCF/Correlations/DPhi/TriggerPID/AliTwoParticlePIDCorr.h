@@ -3,6 +3,7 @@
 
 #include "THn.h" // in cxx file causes .../THn.h:257: error: conflicting declaration ‘typedef class THnT<float> THnF’
 
+
 class TH1F;
 class TH2F;
 class TH3F;
@@ -97,8 +98,13 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void    doAODevent();
     virtual void    doMCAODevent();
     virtual void     Terminate(Option_t *);
-  void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
+  void	   SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
 
+  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1)
+  {
+    ftwoTrackEfficiencyCutDataReco=twoTrackEfficiencyCutDataReco;
+    twoTrackEfficiencyCutValue=twoTrackEfficiencyCutValue1;
+  }
   void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
     void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
     void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
@@ -161,6 +167,11 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
   void Setselectprimarydatareco(Bool_t onlyprimarydatareco) {fonlyprimarydatareco=onlyprimarydatareco;}
   void SetselectprimaryTruth(Bool_t selectprimaryTruth) {fselectprimaryTruth=selectprimaryTruth;}
   void SetCombinedNSigmaCut(Double_t NSigmaPID) {fNSigmaPID=NSigmaPID;}
+  void SetHighPtKaonNSigmaPID(Float_t HighPtKaonSigma,Float_t HighPtKaonNSigmaPID)
+  {
+    fHighPtKaonSigma=HighPtKaonSigma;
+    fHighPtKaonNSigmaPID=HighPtKaonNSigmaPID;
+  }
   void IgnoreoverlappedTracks(Bool_t UseExclusiveNSigma){fUseExclusiveNSigma=UseExclusiveNSigma;}
   void SetRemoveTracksT0Fill( Bool_t RemoveTracksT0Fill){fRemoveTracksT0Fill=RemoveTracksT0Fill;}
   void SetPairSelectCharge(Int_t SelectCharge){fSelectCharge=SelectCharge;}
@@ -286,6 +297,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fhistJetTrigestimate;//!
 
     TH2D* fCentralityCorrelation;  //! centrality vs multiplicity
+    TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
     TH2F *fHistoTPCdEdx;//!
     TH2F *fHistoTOFbeta;//!
@@ -322,7 +334,6 @@ fPtTOFPIDmax=PtTOFPIDmax;
    
     THnSparse *effcorection[6];//!
     // THnF *effmap[6];  
-    //TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
     Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield);
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
@@ -351,7 +362,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
  
      TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
 
-     	   
+     Bool_t ftwoTrackEfficiencyCutDataReco; 	   
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
   AliPIDResponse *fPID; //! PID
@@ -362,6 +373,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
   PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
   Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
+  Float_t fHighPtKaonNSigmaPID;// number of sigma for PID cut for Kaons above fHighPtKaonSigma(-1 default, no cut applied)
+  Float_t fHighPtKaonSigma;//lower pt bound for the fHighPtKaonNSigmaPID to be set >0(i.e. to make it applicable)
   Bool_t fUseExclusiveNSigma;//if true returns the identity only if no double counting(i.e not in the overlap area)
   Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
  Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign

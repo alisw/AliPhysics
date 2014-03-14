@@ -11,6 +11,7 @@
 //PHOS_PbPb
 #pragma link C++ class AliAnalysisTaskPi0Flow+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMC+;
+#pragma link C++ class AliAnalysisTaskPi0FlowMCAOD+;
 #pragma link C++ class AliAnalysisTaskPi0FlowMCHijing+;
 #pragma link C++ class AliPHOSTenderTask+;
 

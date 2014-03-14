@@ -154,6 +154,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
 
+  fTreeCascVarkITSRefitBachelor(0),
+  fTreeCascVarkITSRefitNegative(0),
+  fTreeCascVarkITSRefitPositive(0),
+
 //------------------------------------------------
 // HISTOGRAMS
 // --- Filled on an Event-by-event basis
@@ -264,6 +268,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+   fTreeCascVarkITSRefitBachelor(0),
+   fTreeCascVarkITSRefitNegative(0),
+   fTreeCascVarkITSRefitPositive(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -431,6 +439,10 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
 /*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
 /*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
+
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -1133,9 +1145,20 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  ULong_t pStatus    = pTrackXi->GetStatus();
 	  ULong_t nStatus    = nTrackXi->GetStatus();
 	  ULong_t bachStatus = bachTrackXi->GetStatus();
+
+    fTreeCascVarkITSRefitBachelor = kTRUE; 
+    fTreeCascVarkITSRefitNegative = kTRUE; 
+    fTreeCascVarkITSRefitPositive = kTRUE; 
+
     if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
     if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
     if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+
+    //Extra Debug Information: booleans for ITS refit
+    if ((pStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitPositive = kFALSE; }
+    if ((nStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitNegative = kFALSE; }
+    if ((bachStatus&AliESDtrack::kITSrefit) == 0) { fTreeCascVarkITSRefitBachelor = kFALSE; }
+
 	  // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
     if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); continue; }
 	  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); continue; }

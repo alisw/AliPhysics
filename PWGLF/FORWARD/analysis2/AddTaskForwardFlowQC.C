@@ -23,6 +23,7 @@
  * @param outlierCutFMD Cut to remove events with outliers 
  * @param outlierCutSPD Cut to remove events with outliers 
  * @param etaGap        Size of @f$\eta@f$ gap
+ * @param useTPCForRef  Use TPC tracks for reference flow
  * @param useCent       Whether to use centrality or impact parameter for MC 
  * @param useMCVtx      Whether to use vertex info from MC header
  * @param satVtx        Use satellite interactions 
@@ -101,7 +102,10 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
   task->SetFlowFlags(flags);
   
   // --- Set eta gap value -----------------------------------------
-  if (useEtaGap) task->SetEtaGapValue(etaGap);
+  if (useEtaGap) {
+    if (useTPCForRef) task->SetEtaGapValue(0.4);
+    else              task->SetEtaGapValue(etaGap);
+  }
   else if (useTPCForRef && fwdDet.Contains("FMD")) task->SetEtaGapValue(0.1);
 
   // --- Check which harmonics to calculate --------------------------

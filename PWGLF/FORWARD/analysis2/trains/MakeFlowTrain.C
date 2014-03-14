@@ -126,8 +126,11 @@ protected:
       	if (tpcTr)
 	  gROOT->Macro(Form(args.Data(), "FMD", false, false, true));
       }
-      if (types.Contains("eta-gap") || types.Contains("all"))
+      if (types.Contains("eta-gap") || types.Contains("all")) {
       	gROOT->Macro(Form(args.Data(), "FMD", true, false, false));
+      	if (tpcTr)
+      	  gROOT->Macro(Form(args.Data(), "FMD", true, false, true));
+      }
       if (types.Contains("3cor") || types.Contains("all"))
       	gROOT->Macro(Form(args.Data(), "FMD", false, true, false));
     }
@@ -137,8 +140,11 @@ protected:
       	if (tpcTr)
 	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, true));
       }
-      if (types.Contains("eta-gap") || types.Contains("all"))
+      if (types.Contains("eta-gap") || types.Contains("all")) {
       	gROOT->Macro(Form(args.Data(), "VZERO", true, false, false));
+      	if (tpcTr)
+      	  gROOT->Macro(Form(args.Data(), "VZERO", true, false, true));
+      }
       if (types.Contains("3cor") || types.Contains("all"))
       	gROOT->Macro(Form(args.Data(), "VZERO", false, true, false));
     }
