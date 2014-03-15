@@ -1426,7 +1426,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
                 // for semi-good runs, also try to get the 'small rho' estimate, if it is available
                 AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
                 if(tempRho) {
-                    printf(" > found small rho, will use this as estimate < \n");
+                    if(fDebug > 0) printf(" > found small rho, will use this as estimate < \n");
                     fRho = tempRho;
                 }
             }
