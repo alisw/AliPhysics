@@ -87,17 +87,20 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
     dummy->SetName(Form("%s_matched", cont->GetArrayName().Data()));
     AddObjectToEvent(dummy);
     // get pointer to original collections
-    TString tmp(cont->GetName());
+    TString tmp(cont->GetArrayName());
     TObjArray *arr = tmp.Tokenize("_");
     if (arr) {
       const Int_t aid = arr->GetEntries()-1;
       if (aid>0) {
-	tmp = arr->At(aid)->GetName();
-	TClonesArray *oarr =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(tmp));
-	if (oarr && (i==0))
+	TString tname(arr->At(aid)->GetName());
+	TClonesArray *oarr =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(tname));
+	if (oarr && (i==0)) {
+	  AliInfo(Form("Setting orig tracks to %s", tname.Data()));
 	  fOrigTracks = oarr;
-	else if (oarr && (i==1))
+	} else if (oarr && (i==1)) {
+	  AliInfo(Form("Setting orig clusters to %s", tname.Data()));
 	  fOrigClus = oarr;
+	}
       }
     }
     delete arr;
@@ -259,7 +262,7 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
 	Int_t id = partC->GetMatchedObjId(i);
 	TObject *obj = fOrigTracks->At(id);
 	ac->AddTrackMatched(obj);
-      }
+     }
       continue;
     }
     TArrayI arr(N);
