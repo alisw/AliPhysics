@@ -4691,79 +4691,52 @@ void AliReconstruction::CheckRecoCDBvsSimuCDB()
     //
     AliInfo(Form("#%d Checking %s",i,cdbent->GetName()));
     //
-    // check in the simuCDB special params
-    pair = (TPair*)cdbMapSim->FindObject(cdbent->GetName());
-    TString idSimD = "";
-    TString idSimS = "";
-    if (pair) { // specific path is used
-      idSimS = ((TObjString*)pair->Value())->GetString();
-      RectifyCDBurl(idSimS);
-    }
-    else { // check in default storage list
-      TIter nextSim(cdbListSim);
-      while ((stro=(TObjString*)nextSim())) {
-	if (stro->GetString().Contains(cdbent->GetName())) {
-	  idSimD = stro->GetString();
-	  break;
-	}
+    // find cdbID used for sim
+    TString idSim="",storSim="";
+    TIter nextSim(cdbListSim);
+    while ((stro=(TObjString*)nextSim())) {
+      if (stro->GetString().Contains(cdbent->GetName())) {
+	idSim = stro->GetString();
+	break;
       }
+    }    
+    // find the storage used for sim
+    // check in the simuCDB special paths
+    pair = (TPair*)cdbMapSim->FindObject(cdbent->GetName());
+    if (pair) { // specific path is used
+      storSim = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storSim);
+    }
+    else storSim = defSimStore;  // default storage list is used
+    //
+    if (!idSim.IsNull()) AliInfo(Form("Sim. used %s from %s",idSim.Data(), storSim.Data()));
+    else                 AliInfo("Sim. did not use this object");
+    //
+    // find cdbID used for rec
+    TString idRec="",storRec="";
+    TIter nextRec(cdbListRec);
+    AliCDBId* id=0;
+    while ((id=(AliCDBId*)nextRec())) {
+      idRec = id->ToString();
+      if (idRec.Contains(cdbent->GetName())) break;
+      idRec="";
     }
     //
-    // check in the recoCDB special params
+    // find storage used for the rec
     pair = (TPair*)cdbMapRec->FindObject(cdbent->GetName());
-    TString idRecD = "";
-    TString idRecS = "";
     if (pair) {  // specific path is used
-      idRecS = ((TObjString*)pair->Value())->GetString();
-      RectifyCDBurl(idRecS);
+      storRec = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storRec);
     }
-    else { // check in default storage list
-      TIter nextRec(cdbListRec);
-      AliCDBId* id=0;
-      while ((id=(AliCDBId*)nextRec())) {
-	idRecD = id->ToString();
-	if (idRecD.Contains(cdbent->GetName())) break;
-	idRecD="";
-      }
-    }
-    //-----------------------------
-    Bool_t ok = kTRUE;
-    if (!idSimD.IsNull()) {  // simulation used object from default storage
-      AliInfo(Form("Simulation used default storage %s\nentry %s",defSimStore.Data(),idSimD.Data()));
-      if (!idRecD.IsNull()) { // reco also
-	AliInfo(Form("Reconstruction used default storage %s\nentry %s",defRecStore.Data(),idRecD.Data()));
-	if ( (idSimD!=idRecD) || (defSimStore!=defRecStore) ) ok = kFALSE;
-      }
-      else if (!idRecS.IsNull()) { // reco used specific storage, strict check of version is not possible
-	AliInfo(Form("Reconstruction used specific storage %s",idRecS.Data()));
-	if (defSimStore!=idRecS) ok = kFALSE;
-      }
-      else {
-	AliInfo("Did not find object used in reconstruction");
-	ok = kFALSE;
-      }
-    }
-    else if (!idSimS.IsNull()) { // simulation used object from specific storage
-      AliInfo(Form("Simulation used specific storage %s",idSimS.Data()));
-      if (!idRecS.IsNull()) { // reco also	
-	AliInfo(Form("Reconstruction used specific storage %s",idRecS.Data()));
-	if (idSimS!=idRecS) ok = kFALSE;
-      }
-      else if (!idRecD.IsNull()) {
-	AliInfo(Form("Reconstruction used default storage %s\nentry",idRecD.Data()));
-	if (idSimS!=defRecStore) ok = kFALSE;
-      }
-      else {
-	AliInfo("Did not find object used in reconstruction");
-	ok = kFALSE;
-      }      
-    }
-    else {
-      AliInfo("Did not find object used in simulation, assuming not needed and disabling the check");
-    }
-    if (!ok) AliFatal("Different objects were used in sim and rec");
+    else storRec = defRecStore; // default storage list is used
+    //
+    if (!idRec.IsNull()) AliInfo(Form("Rec. used %s from %s",idRec.Data(), storRec.Data()));
+    else                 AliInfo("Rec. did not use this object");
+    //
+    if (!idSim.IsNull() && !idRec.IsNull() && ((idSim!=idRec) || (storSim!=storRec)) ) 
+      AliFatal("Different objects were used in sim and rec");
   }
-  //
+  
 }
 
 //_________________________________________________________
