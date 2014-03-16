@@ -99,6 +99,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
         void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
         void                    SetNameRho(const char* name)                    {fNameRho = name; }
+        void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
         void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
@@ -261,6 +262,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         const char*             fNameJetClones;         //! collection of tclones array with jets
         const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
         const char*             fNameRho;               //! name of rho
+        TString                 fNameSmallRho;          // name of small rho
         // additional jet cuts (most are inherited)
         Float_t                 fLocalJetMinEta;        // local eta cut for jets
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets

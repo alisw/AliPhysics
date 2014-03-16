@@ -1709,7 +1709,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
-                    relativeErrorOutLow));
+                    relativeErrorOutLow,
+                    1.));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
@@ -3212,7 +3213,7 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
             out = h2->GetBinContent(j);
             eout = h2->GetBinError(j);
             ratio = pre*((in-out)/(in+out));
-            error2 =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
+            error2 =TMath::Power(((r*4.)/(TMath::Pi())), 2.)*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
             if(error2 > 0) error2 = TMath::Sqrt(error2);
             gr->SetPoint(gr->GetN(),binCent,ratio);
             gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
@@ -3227,10 +3228,12 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         TH1* relativeErrorInUp,
         TH1* relativeErrorInLow,
         TH1* relativeErrorOutUp,
-        TH1* relativeErrorOutLow) const
+        TH1* relativeErrorOutLow,
+        Float_t rho) const
 {
     // get v2 with asymmetric systematic error
     // note that this is ONLY the systematic error, no statistical error!
+    // rho is the pearson correlation coefficient
     TGraphErrors* tempV2(GetV2(h1, h2, r, name));
     Double_t* ax = new Double_t[fBinsTrue->GetSize()-1];
     Double_t* ay = new Double_t[fBinsTrue->GetSize()-1];
@@ -3249,8 +3252,8 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         eoutUp = out*relativeErrorOutUp->GetBinContent(1+i);
         eoutLow = out*relativeErrorOutLow->GetBinContent(1+i);
         // get the error squared
-        error2Up =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp);
-        error2Low =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow);
+        error2Up =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
         // set the errors 

@@ -10,7 +10,9 @@ void *AddTaskDFilterAndCorrelations(
   Float_t R = 0.4,
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
-  Double_t percjetareacut = 1.)
+  Double_t percjetareacut = 1.,
+  AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND
+)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -57,9 +59,6 @@ void *AddTaskDFilterAndCorrelations(
   taskFilter->SetMC(theMCon); //D meson settings
   taskFilter->SetUseReco(reco);
   taskFilter->SetName("AliAnalysisTaskSEDmesonsFilterCJ");
-//  taskFilter->SetCaloTriggerPatchInfoName("EmcalTriggers");
-//  taskFilter->SetTriggerTypeSel(AliAnalysisTaskEmcal::kJ1);
-  
   mgr->AddTask(taskFilter);
   
     // create the task
@@ -74,9 +73,11 @@ void *AddTaskDFilterAndCorrelations(
   taskCorr->SetJetAcceptanceType(cutType);
   taskCorr->SetJetPtCut(jptcut);
   taskCorr->SetPercAreaCut(percjetareacut);
-  taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
-  taskCorr->SetTriggerTypeSel(AliAnalysisTaskEmcal::kJ1);
-
+  taskCorr->SetMakeGeneralHistograms(kTRUE);
+  if(theMCon && trType!=AliAnalysisTaskEmcal::kND){
+     taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
+     taskCorr->SetTriggerTypeSel(trType);
+  }
   mgr->AddTask(taskCorr);
 
   if(theMCon) {
