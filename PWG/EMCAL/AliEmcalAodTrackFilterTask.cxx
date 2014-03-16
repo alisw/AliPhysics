@@ -145,6 +145,10 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     }
 
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
+    newt->SetUniqueID(0);
+    newt->ResetBit(TObject::kHasUUID);
+    newt->ResetBit(TObject::kIsReferenced);
+
     Bool_t propthistrack = kFALSE;
     if (fDoPropagation)
       propthistrack = kTRUE;
