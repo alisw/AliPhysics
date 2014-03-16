@@ -1,4 +1,4 @@
-AliAnalysisTaskPi0FlowMC* AddTaskPHOSPi0pPbMCAOD (const char* name = "PHOSPi0pPbMCAOD",
+AliAnalysisTaskPi0FlowMCAOD* AddTaskPHOSPi0pPbMCAOD (const char* name = "PHOSPi0pPbMCAOD",
 					    const char* options = "",
 					       UInt_t offlineTriggerMask = AliVEvent::kINT7,
 					       const char* centrality = "V0M",
