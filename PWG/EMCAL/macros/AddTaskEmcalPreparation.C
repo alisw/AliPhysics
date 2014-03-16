@@ -45,7 +45,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   }
   
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
-  AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, /*remExoticCell,*/ remExoticClus,
+  AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus,
 						 fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh,
 						 cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut,pass);
 
