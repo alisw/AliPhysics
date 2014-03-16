@@ -11,6 +11,7 @@
 #include <TLorentzVector.h>
 
 #include "AliVCluster.h"
+#include "AliAODCaloCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
@@ -26,6 +27,13 @@ ClassImp(AliAnalysisTaskEmcalJetSample)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSample", kTRUE),
+  fHistTracksPt(0),
+  fHistClustersPt(0),
+  fHistLeadingJetPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsPtLeadHad(0),
+  fHistJetsCorrPtArea(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -33,7 +41,15 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 {
   // Default constructor.
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistTracksPt       = new TH1*[fNcentBins];
+  fHistClustersPt     = new TH1*[fNcentBins];
+  fHistLeadingJetPt   = new TH1*[fNcentBins];
+  fHistJetsPhiEta     = new TH2*[fNcentBins];
+  fHistJetsPtArea     = new TH2*[fNcentBins];
+  fHistJetsPtLeadHad  = new TH2*[fNcentBins];
+  fHistJetsCorrPtArea = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
@@ -49,14 +65,28 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fHistTracksPt(0),
+  fHistClustersPt(0),
+  fHistLeadingJetPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsPtLeadHad(0),
+  fHistJetsCorrPtArea(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
   // Standard constructor.
 
+  fHistTracksPt       = new TH1*[fNcentBins];
+  fHistClustersPt     = new TH1*[fNcentBins];
+  fHistLeadingJetPt   = new TH1*[fNcentBins];
+  fHistJetsPhiEta     = new TH2*[fNcentBins];
+  fHistJetsPtArea     = new TH2*[fNcentBins];
+  fHistJetsPtLeadHad  = new TH2*[fNcentBins];
+  fHistJetsCorrPtArea = new TH2*[fNcentBins];
 
-  for (Int_t i = 0; i < 4; i++) {
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
@@ -82,13 +112,20 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fJetsCont         = GetJetContainer(0);
-  fTracksCont       = fJetsCont->GetParticleContainer();
-  fCaloClustersCont = fJetsCont->GetClusterContainer();
+  fJetsCont           = GetJetContainer(0);
+  if(fJetsCont) { //get particles and clusters connected to jets
+    fTracksCont       = fJetsCont->GetParticleContainer();
+    fCaloClustersCont = fJetsCont->GetClusterContainer();
+  } else {        //no jets, just analysis tracks and clusters
+    fTracksCont       = GetParticleContainer(0);
+    fCaloClustersCont = GetClusterContainer(0);
+  }
+  fTracksCont->SetClassName("AliVTrack");
+  fCaloClustersCont->SetClassName("AliAODCaloCluster");
 
   TString histname;
 
-  for (Int_t i = 0; i < 4; i++) {
+  for (Int_t i = 0; i < fNcentBins; i++) {
     if (fParticleCollArray.GetEntriesFast()>0) {
       histname = "fHistTracksPt_";
       histname += i;
@@ -156,23 +193,30 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   // Fill histograms.
 
   if (fTracksCont) {
-    AliVParticle *track = fTracksCont->GetNextAcceptParticle(0); 
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
-      
-      track = fTracksCont->GetNextAcceptParticle(); 
+      Int_t emc1 = track->GetEMCALcluster();
+      Printf("EMCAL cluster %d",emc1);
+      track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
   
   if (fCaloClustersCont) {
-    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    //    AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+    AliAODCaloCluster *cluster = static_cast<AliAODCaloCluster*>(fCaloClustersCont->GetNextAcceptCluster(0));
     while(cluster) {
 
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
       fHistClustersPt[fCentBin]->Fill(nPart.Pt());
       
-      cluster = fCaloClustersCont->GetNextAcceptCluster(); 
+      AliVTrack *mt = NULL;
+      Printf("N matched tracks: %d",cluster->GetNTracksMatched());
+      if(cluster->GetNTracksMatched()>1)
+	mt = static_cast<AliVTrack*>(cluster->GetTrackMatched(0));
+      if(mt) Printf("matched track pt: %f eta: %f phi: %f",mt->Pt(),mt->Eta(),mt->Phi());
+      cluster = static_cast<AliAODCaloCluster*>(fCaloClustersCont->GetNextAcceptCluster());
     }
   }
 
