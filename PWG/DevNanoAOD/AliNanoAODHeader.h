@@ -10,7 +10,7 @@ class AliNanoAODHeader : public AliVHeader, public AliNanoAODStorage
 {
 public:
   using AliVHeader::ClassName;
-  AliNanoAODHeader(){;}
+  AliNanoAODHeader()  {;}
   AliNanoAODHeader(Int_t size){ AllocateInternalStorage(size);}
   virtual ~AliNanoAODHeader(){;}
 
@@ -26,6 +26,9 @@ public:
   virtual UChar_t   GetTriggerCluster()     const { AliError("Not implemented");return 0;}
   virtual UInt_t    GetEventType()          const { AliError("Not implemented");return 0;}
   virtual void Print(Option_t* /*option = ""*/) const  {Printf("I'm a special header!");}
+ 
+  virtual void Clear(Option_t * opt) ;
+
 
   Double_t  GetMagneticField()      const { return GetVar(1); }
   Double_t  GetCentrality (const char *estimator = "V0M") { return GetVar(0);}

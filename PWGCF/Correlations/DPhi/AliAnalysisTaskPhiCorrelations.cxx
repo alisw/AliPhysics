@@ -490,6 +490,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
       
       centrality = collGeometry->ImpactParameter();
     }
+    else if (fCentralityMethod == "nano")
+    {
+      centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
+    }
     else
     {
       AliCentrality *centralityObj = 0;
@@ -510,9 +514,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
 	Printf("WARNING: Centrality object is 0");
 	centrality = -1;
       }
-      
-      if (centrality == -1 && fAOD && fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"))
-	centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
     }
 
     AliInfo(Form("Centrality is %f", centrality));
@@ -1056,6 +1057,13 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       else
 	centrality = -1;
     }
+    else if (fCentralityMethod == "nano")
+    {
+//       fAOD->GetHeader()->Dump();
+//       Printf("%p %p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), dynamic_cast<AliNanoAODHeader*> ((TObject*) (fAOD->GetHeader())), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
+
+      centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
+    }
     else
     {
       if (fAOD)
@@ -1069,12 +1077,6 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       else
 	centrality = -1;
       
-//       fAOD->GetHeader()->Dump();
-//       Printf("%p %d", dynamic_cast<AliNanoAODHeader*> (fAOD->GetHeader()), fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"));
-
-      if (centrality == -1 && fAOD && fAOD->GetHeader()->InheritsFrom("AliNanoAODHeader"))
-	centrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", fAOD->GetHeader(), fCentralityMethod.Data())) / 100 - 1.0;
-
       if (fAOD)
       {
 	// remove outliers
