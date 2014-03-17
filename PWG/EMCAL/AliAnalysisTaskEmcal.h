@@ -68,7 +68,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetIsEmbedded(Bool_t i)                               { fIsEmbedded        = i                              ; }
   void                        SetIsPythia(Bool_t i)                                 { fIsPythia          = i                              ; }
   void                        SetMCLabelShift(Int_t s)                              { fMCLabelShift      = s                              ; }
-  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
@@ -84,6 +83,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetVzRange(Double_t min, Double_t max)                { fMinVz             = min  ; fMaxVz   = max          ; }
 
  protected:
+  void                        SetMakeGeneralHistograms(Bool_t g)                    { fGeneralHistograms = g                              ; }
   Bool_t                      AcceptCluster(AliVCluster *clus, Int_t c = 0)      const;
   Bool_t                      AcceptTrack(AliVParticle *track, Int_t c = 0)      const;
   void                        AddObjectToEvent(TObject *obj);

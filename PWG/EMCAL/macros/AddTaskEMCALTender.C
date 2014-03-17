@@ -5,7 +5,8 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
   Bool_t recalibClus    = kTRUE,   //recalibrate cluster energy
   Bool_t recalcClusPos  = kTRUE,   //recalculate cluster position
   Bool_t nonLinearCorr  = kTRUE,   //apply non-linearity
-  Bool_t remExotic      = kTRUE,   //remove exotic cells
+  Bool_t remExoticCell  = kTRUE,   //remove exotic cells
+  Bool_t remExoticClus  = kTRUE,   //remove exotic clusters
   Bool_t fidRegion      = kFALSE,  //apply fiducial cuts
   Bool_t calibEnergy    = kTRUE,   //calibrate energy
   Bool_t calibTime      = kTRUE,   //calibrate timing
@@ -42,7 +43,7 @@ AliAnalysisTaskSE *AddTaskEMCALTender(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/ConfigEmcalTenderSupply.C");
 
-  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
+  AliEMCALTenderSupply *EMCALSupply = ConfigEmcalTenderSupply(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExoticCell, remExoticClus, 
 							      fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
 							      cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
 
