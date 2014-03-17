@@ -65,12 +65,12 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   }
 
   //----------------------- Track Matching tasks -----------------------------------------------------
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskClusTrackMatching.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskClusTrackMatching(periodstr,pSel,
-								      clusterColName,
-								      trackeff,doAODTrackProp,
-								      modifyMatchObjs,doHistos);
-
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
+								  clusterColName,
+								  trackeff,doAODTrackProp,
+								  0.1,modifyMatchObjs,doHistos);
+  
   //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
   TString inputTracks = "AODFilterTracks";
   if (dType == "ESD") inputTracks = "ESDFilterTracks";
@@ -81,7 +81,7 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
     //----------------------- Produce PicoTracks -----------------------------------------------------
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
     AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
-    pTrackTask->SetTrackEfficiency(trackeff);
+    //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
     pTrackTask->SelectCollisionCandidates(pSel);
   }
 
