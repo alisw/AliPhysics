@@ -118,12 +118,12 @@ Int_t AliITSUHit::GetStave() const
 }  
 
 //______________________________________________________________________
-Int_t AliITSUHit::GetSubStave() const
+Int_t AliITSUHit::GetHalfStave() const
 {
   // Returns the substave of the chip. Note: indices start from 0!
   AliITSUGeomTGeo *gm = ((AliITSU*)gAlice->GetDetector("ITS"))->GetITSGeomTGeo();
   if (!gm) AliFatal("NULL pointer to the geometry!");
-  return gm->GetSubStave(fModule);
+  return gm->GetHalfStave(fModule);
 }  
 
 //______________________________________________________________________
