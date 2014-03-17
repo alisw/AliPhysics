@@ -21,12 +21,12 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
 
  enum EPIDStrategy {
   kNSigma,
-  kNSigmaPbPb,
   kCombined,
   kCombinedSoft,
   kNSigmaStrong,
   kCombinedpPb,
-  kCombinedpPb2
+  kCombinedpPb2,
+  kNSigmaPbPb
  };
  enum ECutsStrategy {
   kStandard,
@@ -123,7 +123,7 @@ private:
   ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
 
-  ClassDef(AliRDHFCutsLctopKpi,8);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,9);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif
