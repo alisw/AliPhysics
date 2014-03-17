@@ -23,6 +23,7 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   void SetIncludeNoITS(Bool_t f)                 { fIncludeNoITS     = f;    }
   void SetTrackCuts(AliESDtrackCuts *cuts)       { fEsdTrackCuts     = cuts; }
   void SetTracksName(const char *name)           { fTracksName       = name; }
+  void SetTrackEfficiency(Double_t eff = 0.95)   { fTrackEfficiency   = eff; }
 
  protected:
   void UserCreateOutputObjects();
@@ -35,6 +36,7 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   Bool_t             fIncludeNoITS;      // includes tracks with failed ITS refit
   Bool_t             fDoPropagation;     // propagate all hybrid tracks to EMCal surface
   Double_t           fDist;              // distance to surface (440cm default)
+  Double_t           fTrackEfficiency;   // track efficiency
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
 
@@ -42,7 +44,7 @@ class AliEmcalEsdTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalEsdTrackFilterTask(const AliEmcalEsdTrackFilterTask&);            // not implemented
   AliEmcalEsdTrackFilterTask &operator=(const AliEmcalEsdTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalEsdTrackFilterTask, 1); // Class to constrain TPC tracks to SPD vertex
+  ClassDef(AliEmcalEsdTrackFilterTask, 2); // Class to constrain TPC tracks to SPD vertex
 };
 
 #endif
