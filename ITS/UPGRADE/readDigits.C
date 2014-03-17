@@ -71,12 +71,12 @@ void readDigits(int nev=-1,int evStart=0)
       digTree->GetEntry(imod);      
       int detType = gm->GetChipChipTypeID(imod);
       AliITSUSegmentationPix* segm = (AliITSUSegmentationPix*)gm->GetSegmentationByID(detType);
-      int lay,sta,det;
+      int lay,sta,ssta,mod,chip;
       int nsdig = sDigArr->GetEntries();
       int ndig  = digArr->GetEntries();
       if (ndig<1) continue;
-      gm->GetChipId(imod, lay,sta,det);
-      printf("\nChip %3d: (det %2d in stave %2d of Layer %d) |NSDigits: %4d NDigits: %4d\n",imod,det,sta,lay,nsdig,ndig);
+      gm->GetChipId(imod, lay,sta,ssta,mod,chip);
+      printf("\nChip %3d: (chip %2d in module:%d/substave:%1d/stave:%2d/Layer:%d) |NSDigits: %4d NDigits: %4d\n",imod,chip,mod,ssta,sta,lay,nsdig,ndig);
       //
       for (int isdig=0;isdig<nsdig;isdig++) {
 	AliITSUSDigit *pSdig = (AliITSUSDigit*)sDigArr->At(isdig);

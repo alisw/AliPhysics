@@ -65,15 +65,16 @@ AliITSUv1::AliITSUv1()
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
   ,fStavPerLay(0)
-  ,fModPerStav(0)
-  ,fStaThick(0)
-  ,fStaWidth(0)
-  ,fStaTilt(0)
+  ,fUnitPerStave(0)
+  ,fStaveThick(0)
+  ,fStaveWidth(0)
+  ,fStaveTilt(0)
   ,fDetThick(0)
   ,fChipTypeID(0)
   ,fBuildLevel(0)
@@ -97,15 +98,16 @@ AliITSUv1::AliITSUv1(const char *title,const Int_t nlay)
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
   ,fStavPerLay(0)
-  ,fModPerStav(0)
-  ,fStaThick(0)
-  ,fStaWidth(0)
-  ,fStaTilt(0)
+  ,fUnitPerStave(0)
+  ,fStaveThick(0)
+  ,fStaveWidth(0)
+  ,fStaveTilt(0)
   ,fDetThick(0)
   ,fChipTypeID(0)
   ,fBuildLevel(0)
@@ -124,34 +126,34 @@ AliITSUv1::AliITSUv1(const char *title,const Int_t nlay)
   for (Int_t j=0; j<fNLayers; j++)
     fLayerName[j].Form("%s%d",AliITSUGeomTGeo::GetITSSensorPattern(),j); // See AliITSUv1Layer
   //
-  fLayTurbo   = new Bool_t[fNLayers];
-  fLayPhi0    = new Double_t[fNLayers];
-  fLayRadii   = new Double_t[fNLayers];
-  fLayZLength = new Double_t[fNLayers];
-  fStavPerLay = new Int_t[fNLayers];
-  fModPerStav = new Int_t[fNLayers];
-  fStaThick   = new Double_t[fNLayers];
-  fStaWidth   = new Double_t[fNLayers];
-  fStaTilt    = new Double_t[fNLayers];
-  fDetThick   = new Double_t[fNLayers];
-  fChipTypeID  = new UInt_t[fNLayers];
-  fBuildLevel = new Int_t[fNLayers];
+  fLayTurbo     = new Bool_t[fNLayers];
+  fLayPhi0      = new Double_t[fNLayers];
+  fLayRadii     = new Double_t[fNLayers];
+  fLayZLength   = new Double_t[fNLayers];
+  fStavPerLay   = new Int_t[fNLayers];
+  fUnitPerStave = new Int_t[fNLayers];
+  fStaveThick   = new Double_t[fNLayers];
+  fStaveWidth   = new Double_t[fNLayers];
+  fStaveTilt    = new Double_t[fNLayers];
+  fDetThick     = new Double_t[fNLayers];
+  fChipTypeID   = new UInt_t[fNLayers];
+  fBuildLevel   = new Int_t[fNLayers];
 
 
   fUpGeom = new AliITSUv1Layer*[fNLayers];
   
   if (fNLayers > 0) { // if not, we'll Fatal-ize in CreateGeometry
     for (Int_t j=0; j<fNLayers; j++) {
-      fLayPhi0[j] = 0;
-      fLayRadii[j] = 0.;
-      fLayZLength[j] = 0.;
-      fStavPerLay[j] = 0;
-      fModPerStav[j] = 0;
-      fStaWidth[j] = 0.;
-      fDetThick[j] = 0.;
-      fChipTypeID[j] = 0;
-      fBuildLevel[j] = 0;
-      fUpGeom[j] = 0;     
+      fLayPhi0[j]      = 0;
+      fLayRadii[j]     = 0.;
+      fLayZLength[j]   = 0.;
+      fStavPerLay[j]   = 0;
+      fUnitPerStave[j] = 0;
+      fStaveWidth[j]   = 0.;
+      fDetThick[j]     = 0.;
+      fChipTypeID[j]   = 0;
+      fBuildLevel[j]   = 0;
+      fUpGeom[j]       = 0;
     }
   }
 }
@@ -170,10 +172,10 @@ AliITSUv1::~AliITSUv1() {
   delete [] fLayRadii;
   delete [] fLayZLength;
   delete [] fStavPerLay;
-  delete [] fModPerStav;
-  delete [] fStaThick;
-  delete [] fStaWidth;
-  delete [] fStaTilt;
+  delete [] fUnitPerStave;
+  delete [] fStaveThick;
+  delete [] fStaveWidth;
+  delete [] fStaveTilt;
   delete [] fDetThick;
   delete [] fChipTypeID;
   delete [] fBuildLevel;
@@ -181,10 +183,12 @@ AliITSUv1::~AliITSUv1() {
   delete [] fWrapRMin;
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
+  delete [] fLay2WrapV;
 }
 
 //______________________________________________________________________
-void AliITSUv1::AddAlignableVolumes() const{
+void AliITSUv1::AddAlignableVolumes() const
+{
   // Creates entries for alignable volumes associating the symbolic volume
   // name with the corresponding volume path.
   // 
@@ -193,53 +197,113 @@ void AliITSUv1::AddAlignableVolumes() const{
   // system
   // For this, this function has to run before the misalignment because we
   // are using the ideal positions in the AliITSgeom object.
-  // Inputs:
-  //   none.
-  // Outputs:
-  //   none.
-  // Return:
-  //   none.
-  /*
   AliInfo("Add ITS alignable volumes");
 
   if (!gGeoManager) { AliFatal("TGeoManager doesn't exist !"); return;  }
-  TString pth;
   //
-  pth = Form("ALIC_1/%s_2",AliITSUGeomTGeo::GetITSVolPattern());
-  // RS: to be checked with MS
-  if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameITS(),pth.Data()) )
-    AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
+  TString path = Form("ALIC_1/%s_2",AliITSUGeomTGeo::GetITSVolPattern());
+  TString sname = AliITSUGeomTGeo::ComposeSymNameITS();
   //
-  int modNum = 0;
+  AliDebug(1,Form("%s <-> %s",sname.Data(),path.Data()));
+  if( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) )
+    AliFatal(Form("Unable to set alignable entry ! %s %s",sname.Data(),path.Data()));    
   //
-  for (int lr=0; lr<fNLayers; lr++) {
+  int lastUID = 0;
+  for (int lr=0; lr<fNLayers; lr++) AddAlignableVolumesLayer(lr,path,lastUID);
+  //
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesLayer(int lr, TString& parent,Int_t &lastUID) const
+{
+  // add alignable volumes for layer and its daughters
+  //
+  TString wrpV = fLay2WrapV[lr]!=-1 ? Form("%s%d_1/",AliITSUGeomTGeo::GetITSWrapVolPattern(),fLay2WrapV[lr]) : "";
+  TString path = Form("%s/%s%s%d_1",parent.Data(),wrpV.Data(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameLayer(lr);
+  AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+  if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+    AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
+  //
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nstaves = lrobj->GetNStavesPerParent();
+  for (int st=0; st<nstaves; st++) AddAlignableVolumesStave(lr,st,path,lastUID);
+  //
+}
+    
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesStave(int lr, int st, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for stave and its daughters
+  //
+  TString path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,st);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameStave(lr,st);
+  AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+  if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+    AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
+  //
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nsstave = lrobj->GetNHalfStavesPerParent();
+  int start = nsstave>0 ? 0:-1;
+  //
+  for (int sst=start; sst<nsstave; sst++) AddAlignableVolumesHalfStave(lr,st,sst,path,lastUID);
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesHalfStave(int lr, int st, int sst, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for halfstave (if any) and its daughters
+  //
+  TString path = parent;
+  if (sst>=0) {
+    path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSHalfStavePattern(),lr,sst);
+    TString sname = AliITSUGeomTGeo::ComposeSymNameHalfStave(lr,st,sst);
+    AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+    if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+      AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
     //
-    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
-    //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
-    gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data());
+  }
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nmodules = lrobj->GetNModulesPerParent();
+  int start = nmodules>0 ? 0:-1;
+  //
+  for (int md=start; md<nmodules; md++) AddAlignableVolumesModule(lr,st,sst,md,path,lastUID);
+}
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesModule(int lr, int st, int sst, int md, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for module (if any) and its daughters
+  //
+  TString path = parent;
+  if (md>=0) {
+    path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr,md);
+    TString sname = AliITSUGeomTGeo::ComposeSymNameModule(lr,st,sst,md);
+    AliDebug(1,Form("Add %s <-> %s", sname.Data(),path.Data()));
+    if ( !gGeoManager->SetAlignableEntry(sname.Data(),path.Data()) ) 
+      AliFatal(Form("Unable to set alignable entry ! %s : %s",sname.Data(),path.Data()));
     //
-    for (int ld=0; ld<fStavPerLay[lr]; ld++) {
-      //
-      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,ld);
-      //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
-      gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data());
-      //
-      for (int md=0; md<fModPerStav[lr]; md++) {
-	//
-	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSChipPattern(),lr,md);
-	//
-	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU chips w/o
-	// conflicts with TPC. For this reason we define the UID of the chip to be simply its ID
-	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++); // here modNum would be chip within the layer
-	int modUID = AliITSUGeomTGeo::ChipVolUID( modNum++ );
-	// 
-	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,md),pthM.Data(),modUID);
-	//
-      }
-    }
   }
   //
-  */
+  const AliITSUv1Layer* lrobj = fUpGeom[lr];
+  int nchips = lrobj->GetNChipsPerParent();
+  //
+  for (int ic=0; ic<nchips; ic++) AddAlignableVolumesChip(lr,st,sst,md,ic,path,lastUID);
+}  
+
+//______________________________________________________________________
+void AliITSUv1::AddAlignableVolumesChip(int lr, int st, int sst, int md, int ch, TString& parent, Int_t &lastUID) const
+{
+  // add alignable volumes for chip
+  //
+  TString path = Form("%s/%s%d_%d",parent.Data(),AliITSUGeomTGeo::GetITSChipPattern(),lr,ch);
+  TString sname = AliITSUGeomTGeo::ComposeSymNameChip(lr,st,sst,md,ch);
+  int modUID = AliITSUGeomTGeo::ChipVolUID( lastUID++ );
+  //
+  AliDebug(1,Form("Add %s <-> %s : ID=%d", sname.Data(),path.Data(),modUID));
+  if ( !gGeoManager->SetAlignableEntry(sname,path.Data(),modUID) )
+    AliFatal(Form("Unable to set alignable entry ! %s : %s | %d",sname.Data(),path.Data(),modUID));
+  //
 }
 
 //______________________________________________________________________
@@ -287,21 +351,21 @@ void AliITSUv1::CreateGeometry() {
   if (fNLayers <= 0) AliFatal(Form("Wrong number of layers (%d)",fNLayers));
   //
   for (Int_t j=0; j<fNLayers; j++) {
-    if (fLayRadii[j] <= 0)                 AliFatal(Form("Wrong layer radius for layer %d (%f)",j,fLayRadii[j]));
-    if (fLayZLength[j] <= 0)               AliFatal(Form("Wrong layer length for layer %d (%f)",j,fLayZLength[j]));
-    if (fStavPerLay[j] <= 0)               AliFatal(Form("Wrong number of staves for layer %d (%d)",j,fStavPerLay[j]));
-    if (fModPerStav[j] <= 0)               AliFatal(Form("Wrong number of chips for layer %d (%d)",j,fModPerStav[j]));
-    if (fStaThick[j] < 0)                  AliFatal(Form("Wrong stave thickness for layer %d (%f)",j,fStaThick[j]));
-    if (fLayTurbo[j] && fStaWidth[j] <= 0) AliFatal(Form("Wrong stave width for layer %d (%f)",j,fStaWidth[j]));
-    if (fDetThick[j] < 0)                  AliFatal(Form("Wrong chip thickness for layer %d (%f)",j,fDetThick[j]));
+    if (fLayRadii[j] <= 0)                   AliFatal(Form("Wrong layer radius for layer %d (%f)",j,fLayRadii[j]));
+    if (fLayZLength[j] <= 0)                 AliFatal(Form("Wrong layer length for layer %d (%f)",j,fLayZLength[j]));
+    if (fStavPerLay[j] <= 0)                 AliFatal(Form("Wrong number of staves for layer %d (%d)",j,fStavPerLay[j]));
+    if (fUnitPerStave[j] <= 0)               AliFatal(Form("Wrong number of chips for layer %d (%d)",j,fUnitPerStave[j]));
+    if (fStaveThick[j] < 0)                  AliFatal(Form("Wrong stave thickness for layer %d (%f)",j,fStaveThick[j]));
+    if (fLayTurbo[j] && fStaveWidth[j] <= 0) AliFatal(Form("Wrong stave width for layer %d (%f)",j,fStaveWidth[j]));
+    if (fDetThick[j] < 0)                    AliFatal(Form("Wrong chip thickness for layer %d (%f)",j,fDetThick[j]));
     //
     if (j > 0) {
-      if (fLayRadii[j]<=fLayRadii[j-1])    AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
-							 j,fLayRadii[j],j-1,fLayRadii[j-1]));
+      if (fLayRadii[j]<=fLayRadii[j-1])      AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
+			   j,fLayRadii[j],j-1,fLayRadii[j-1]));
     } // if (j > 0)
 
-    if (fStaThick[j] == 0) AliInfo(Form("Stave thickness for layer %d not set, using default",j));
-    if (fDetThick[j] == 0) AliInfo(Form("Chip thickness for layer %d not set, using default",j));
+    if (fStaveThick[j] == 0) AliInfo(Form("Stave thickness for layer %d not set, using default",j));
+    if (fDetThick[j]   == 0) AliInfo(Form("Chip thickness for layer %d not set, using default",j));
 
   } // for (Int_t j=0; j<fNLayers; j++)
 
@@ -315,14 +379,17 @@ void AliITSUv1::CreateGeometry() {
     }
   }
   //
+  fLay2WrapV = new Int_t[fNLayers];
+
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
     TGeoVolume* dest = vITSV;
+    fLay2WrapV[j] = -1;
     //
     if (fLayTurbo[j]) {
       fUpGeom[j] = new AliITSUv1Layer(j,kTRUE,kFALSE);
-      fUpGeom[j]->SetStaveWidth(fStaWidth[j]);
-      fUpGeom[j]->SetStaveTilt(fStaTilt[j]);
+      fUpGeom[j]->SetStaveWidth(fStaveWidth[j]);
+      fUpGeom[j]->SetStaveTilt(fStaveTilt[j]);
     }
     else fUpGeom[j] = new AliITSUv1Layer(j,kFALSE);
     //
@@ -330,7 +397,7 @@ void AliITSUv1::CreateGeometry() {
     fUpGeom[j]->SetRadius(fLayRadii[j]);
     fUpGeom[j]->SetZLength(fLayZLength[j]);
     fUpGeom[j]->SetNStaves(fStavPerLay[j]);
-    fUpGeom[j]->SetNChips(fModPerStav[j]);
+    fUpGeom[j]->SetNUnits(fUnitPerStave[j]);
     fUpGeom[j]->SetChipType(fChipTypeID[j]);
     fUpGeom[j]->SetBuildLevel(fBuildLevel[j]);
     if (j < 3)
@@ -339,8 +406,8 @@ void AliITSUv1::CreateGeometry() {
       fUpGeom[j]->SetStaveModel(fStaveModelOB);
     AliDebug(1,Form("fBuildLevel: %d\n",fBuildLevel[j]));
     //
-    if (fStaThick[j] != 0) fUpGeom[j]->SetStaveThick(fStaThick[j]);
-    if (fDetThick[j] != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
+    if (fStaveThick[j] != 0) fUpGeom[j]->SetStaveThick(fStaveThick[j]);
+    if (fDetThick[j]   != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
     //
     for (int iw=0;iw<fNWrapVol;iw++) {
       if (fLayRadii[j]>fWrapRMin[iw] && fLayRadii[j]<fWrapRMax[iw]) {
@@ -348,6 +415,7 @@ void AliITSUv1::CreateGeometry() {
 	if (fLayZLength[j]>=fWrapZSpan[iw]) AliFatal(Form("ZSpan %.3f of wrapper volume %d is less than ZSpan %.3f of layer %d",
 							  fWrapZSpan[iw],iw,fLayZLength[j],j));
 	dest = wrapVols[iw];
+	fLay2WrapV[j] = iw;
 	break;
       }
     }
@@ -487,7 +555,7 @@ void AliITSUv1::CreateMaterials() {
 //______________________________________________________________________
 void AliITSUv1::DefineLayer(const Int_t nlay, const double phi0, const Double_t r,
 			    const Double_t zlen, const Int_t nstav,
-			    const Int_t nmod, const Double_t lthick,
+			    const Int_t nunit, const Double_t lthick,
 			    const Double_t dthick, const UInt_t dettypeID,
 			    const Int_t buildLevel)
 {
@@ -498,9 +566,11 @@ void AliITSUv1::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
   //          r       layer radius
   //          zlen    layer length
   //          nstav   number of staves
-  //          nmod    number of chips per stave
+  //          nunit   IB: number of chips per stave
+  //                  OB: number of modules per half stave
   //          lthick  stave thickness (if omitted, defaults to 0)
   //          dthick  detector thickness (if omitted, defaults to 0)
+  //          dettypeID  ??
   //          buildLevel (if 0, all geometry is build, used for material budget studies)
   // Outputs:
   //   none.
@@ -517,8 +587,8 @@ void AliITSUv1::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
   fStavPerLay[nlay] = nstav;
-  fModPerStav[nlay] = nmod;
-  fStaThick[nlay] = lthick;
+  fUnitPerStave[nlay] = nunit;
+  fStaveThick[nlay] = lthick;
   fDetThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
@@ -527,7 +597,7 @@ void AliITSUv1::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
 
 //______________________________________________________________________
 void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t zlen, Int_t nstav,
-				 Int_t nmod, Double_t width, Double_t tilt,
+				 Int_t nunit, Double_t width, Double_t tilt,
 				 Double_t lthick,Double_t dthick,
 				 UInt_t dettypeID, Int_t buildLevel)
 {
@@ -539,7 +609,8 @@ void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   //          r       layer radius
   //          zlen    layer length
   //          nstav   number of staves
-  //          nmod    number of chips per stave
+  //          nunit   IB: number of chips per stave
+  //                  OB: number of modules per half stave
   //          width   stave width
   //          tilt    layer tilt angle (degrees)
   //          lthick  stave thickness (if omitted, defaults to 0)
@@ -561,10 +632,10 @@ void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
   fStavPerLay[nlay] = nstav;
-  fModPerStav[nlay] = nmod;
-  fStaThick[nlay] = lthick;
-  fStaWidth[nlay] = width;
-  fStaTilt[nlay] = tilt;
+  fUnitPerStave[nlay] = nunit;
+  fStaveThick[nlay] = lthick;
+  fStaveWidth[nlay] = width;
+  fStaveTilt[nlay] = tilt;
   fDetThick[nlay] = dthick;
   fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
@@ -587,7 +658,8 @@ void AliITSUv1::GetLayerParameters(Int_t nlay, Double_t &phi0,
   //          r       layer radius
   //          zlen    layer length
   //          nstav   number of staves
-  //          nmod    number of chips per stave
+  //          nmod    IB: number of chips per stave
+  //                  OB: number of modules per half stave
   //          width   stave width
   //          tilt    stave tilt angle
   //          lthick  stave thickness
@@ -605,10 +677,10 @@ void AliITSUv1::GetLayerParameters(Int_t nlay, Double_t &phi0,
   r      = fLayRadii[nlay];
   zlen   = fLayZLength[nlay];
   nstav  = fStavPerLay[nlay];
-  nmod   = fModPerStav[nlay];
-  width  = fStaWidth[nlay];
-  tilt   = fStaTilt[nlay];
-  lthick = fStaThick[nlay];
+  nmod   = fUnitPerStave[nlay];
+  width  = fStaveWidth[nlay];
+  tilt   = fStaveTilt[nlay];
+  lthick = fStaveThick[nlay];
   dthick = fDetThick[nlay];
   dettype= fChipTypeID[nlay];
 }
@@ -679,6 +751,7 @@ void AliITSUv1::StepManager()
   //   none.
   // Return:
   //   none.
+  //
   if(!(this->IsActive())) return;
   if(!(gMC->TrackCharge())) return;
   //
@@ -690,44 +763,43 @@ void AliITSUv1::StepManager()
   //printf("R: %.1f | Lay: %d  NotSens: %d\n",positionRS.Pt(), lay, notSens);
 	   
   if (notSens) return;
-
-  if(gMC->IsTrackExiting()) {
-    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
-  } // if Outer ITS mother Volume
-
-  static TLorentzVector position, momentum; // Saves on calls to construtors
-  static AliITSUHit hit;// Saves on calls to constructors
-
-  TClonesArray &lhits = *(Hits());
-  Int_t   cpn0, cpn1, mod, status = 0;
-  //
-  // Track status
-  if(gMC->IsTrackInside())      status +=  1;
-  if(gMC->IsTrackEntering())    status +=  2;
-  if(gMC->IsTrackExiting())     status +=  4;
-  if(gMC->IsTrackOut())         status +=  8;
-  if(gMC->IsTrackDisappeared()) status += 16;
-  if(gMC->IsTrackStop())        status += 32;
-  if(gMC->IsTrackAlive())       status += 64;
-
-  //
-  // retrieve the indices with the volume path
   //
   if (lay < 0 || lay >= fNLayers) {
     AliError(Form("Invalid value: lay=%d. Not an ITS sensitive volume",lay));
     return; // not an ITS sensitive volume.
-  } else {
-    copy = 1;
-    gMC->CurrentVolOffID(1,cpn1);
-    gMC->CurrentVolOffID(2,cpn0);
-  } //
-
-  mod = fGeomTGeo->GetChipIndex(lay,cpn0,cpn1);
-  //RS2DEL  fInitGeom.DecodeDetector(mod,lay+1,cpn0,cpn1,copy);
+  } 
   //
+  static TLorentzVector position, momentum; // Saves on calls to construtors
+  static AliITSUHit hit;// Saves on calls to constructors
+  //
+  TClonesArray &lhits = *(Hits());
+  Int_t chipID, status = 0;
+  //
+  // Track status
+  if(gMC->IsTrackInside())      status +=  1;
+  if(gMC->IsTrackEntering())    status +=  2;
+  if(gMC->IsTrackExiting()) {
+    AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
+    status +=  4;
+  } // if Outer ITS mother Volume
+  if(gMC->IsTrackOut())         status +=  8;
+  if(gMC->IsTrackDisappeared()) status += 16;
+  if(gMC->IsTrackStop())        status += 32;
+  if(gMC->IsTrackAlive())       status += 64;
+  //
+  // retrieve the indices with the volume path
+  //
+  gMC->TrackPosition(position);
+  int chip=-1,module=-1,sstave=-1,stave=-1,level=0; // volume copies on different levels
+  gMC->CurrentVolOffID(++level,chip);
+  if (fGeomTGeo->GetNModules(lay)>0)    gMC->CurrentVolOffID(++level,module);
+  if (fGeomTGeo->GetNHalfStaves(lay)>0) gMC->CurrentVolOffID(++level,sstave);
+  gMC->CurrentVolOffID(++level,stave);
+  //
+  chipID = fGeomTGeo->GetChipIndex(lay,stave,sstave,module,chip);
   // Fill hit structure.
   //
-  hit.SetChip(mod);
+  hit.SetChip(chipID);
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
   gMC->TrackPosition(position);
   gMC->TrackMomentum(momentum);

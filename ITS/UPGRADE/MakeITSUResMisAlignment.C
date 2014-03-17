@@ -92,7 +92,7 @@ void MakeITSUResMisAlignment()
       new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),dummyVID,
 						 dx,dy,dz,dtht,dpsi,dphi,kTRUE);
       //
-      for (int isn=0;isn<gm0->GetNChipsPerModule(ilr);isn++) {
+      for (int isn=0;isn<gm0->GetNChipsPerStave(ilr);isn++) {
 	dx   = sgXMod*gRandom->Gaus();
 	dy   = sgYMod*gRandom->Gaus();	
 	dz   = sgZMod*gRandom->Gaus();
@@ -100,7 +100,7 @@ void MakeITSUResMisAlignment()
 	dpsi = sgPsiMod*gRandom->Gaus(); 
 	dphi = sgPhiMod*gRandom->Gaus(); 	
 	int mid = gm0->GetChipIndex(ilr,ild,isn);
-	sname = gm0->GetSymName(mid);
+	sname = gm0->ComposeSymNameChip(ilr,ild,-1,-1,isn);
 	new( (*deltas)[idel++] ) AliAlignObjParams(sname.Data(),gm0->ChipVolUID(mid),
 						   dx,dy,dz,dtht,dpsi,dphi,kTRUE);
       }
