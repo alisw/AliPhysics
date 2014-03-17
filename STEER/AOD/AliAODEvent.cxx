@@ -520,7 +520,7 @@ void AliAODEvent::ClearStd()
     }
     else {
       AliVHeader * head = 0;
-      head = dynamic_cast<AliVHeader*>(fHeader);
+      head = dynamic_cast<AliVHeader*>((TObject*)fHeader);
       if(head) head->Clear();
     }
   }
