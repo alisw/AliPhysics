@@ -18,13 +18,13 @@ ClassImp(AliRsnCutDaughterD0)
 AliRsnCutDaughterD0::AliRsnCutDaughterD0(const char *name, AliPID::EParticleType pid) :
 AliRsnCut(name, AliRsnTarget::kDaughter),
   fNoPID(kFALSE),
-  fPtDepPIDCut(kFALSE),
   fPID(pid),
   fCutQuality(Form("%sQuality", name)),
   fPionTPCPIDCut(3.0),
   fKaonTPCPIDCut(3.0),
   fPionTOFPIDCut(3.0),
-  fKaonTOFPIDCut(3.0)
+  fKaonTOFPIDCut(3.0),
+  fPtDepPIDCut(kFALSE) 
 {
   //
   // Constructor
