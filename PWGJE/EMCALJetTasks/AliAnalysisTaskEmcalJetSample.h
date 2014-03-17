@@ -5,6 +5,7 @@
 
 class TH1;
 class TH2;
+class TH3;
 class AliJetContainer;
 class AliParticleContainer;
 class AliClusterContainer;
@@ -25,6 +26,7 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   void                        ExecOnce();
   Bool_t                      FillHistograms()   ;
   Bool_t                      Run()              ;
+  void                        CheckClusTrackMatching();
 
   // General histograms
   TH1                       **fHistTracksPt;            //!Track pt spectrum
@@ -34,6 +36,8 @@ class AliAnalysisTaskEmcalJetSample : public AliAnalysisTaskEmcalJet {
   TH2                       **fHistJetsPtArea;          //!Jet pt vs. area
   TH2                       **fHistJetsPtLeadHad;       //!Jet pt vs. leading hadron
   TH2                       **fHistJetsCorrPtArea;      //!Jet pt - bkg vs. area
+  TH3                        *fHistPtDEtaDPhiTrackClus; //!track pt, delta eta, delta phi to matched cluster
+  TH3                        *fHistPtDEtaDPhiClusTrack; //!cluster pt, delta eta, delta phi to matched track
 
   AliJetContainer            *fJetsCont;                   //!Jets
   AliParticleContainer       *fTracksCont;                 //!Tracks
