@@ -515,6 +515,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     if(centbins) delete [] centbins; 
     if(multbins) delete [] multbins; 
     if(vtxbins)  delete [] vtxbins; 
+    if(psibins)  delete [] psibins; 
     
     // check pool manager
     if(!fPoolMgr){
