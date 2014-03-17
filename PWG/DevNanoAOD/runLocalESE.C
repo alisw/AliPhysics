@@ -88,14 +88,15 @@ void runLocalESE(
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
   AliAnalysisTaskPIDResponse *taskPID=AddTaskPIDResponse(iMCtruth);
   taskPID->SetUseTPCEtaCorrection(kTRUE); 
-
+  taskPID->SetUserDataRecoPass(2);
   // create task
   cout << "Macro: "<< addTaskString << " " << Form(addTaskString, iMCtruth) << endl;
 
   AliAnalysisTaskNanoAODFilter * task = (AliAnalysisTaskNanoAODFilter*) gROOT->ProcessLine(Form(addTaskString, iMCtruth));
 
   // Set Track event and vertex cuts here!
-  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr,cstBayesTPCPi,cstBayesTPCKa,cstBayesTPCPr,cstBayesTOFPi,cstBayesTOFKa,cstBayesTOFPr");
+  //  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr,cstBayesTPCPi,cstBayesTPCKa,cstBayesTPCPr,cstBayesTOFPi,cstBayesTOFKa,cstBayesTOFPr");
+  task->SetVarList("pt,theta,phi,cstNSigmaTPCPi,cstNSigmaTPCKa,cstNSigmaTPCPr,cstNSigmaTOFPi,cstNSigmaTOFKa,cstNSigmaTOFPr");
   task->SetVarListHead("cstCentr,cstQVec");
   AliESETrkCut * trkCuts = TrkCuts();
   AliESEEvtCut * evtCuts = EvtCuts(iMCtruth);
