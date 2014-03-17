@@ -191,7 +191,8 @@ class AliJetFlowTools {
                 TH1* relativeErrorInUp,
                 TH1* relativeErrorInLow,
                 TH1* relativeErrorOutUp,
-                TH1* relativeErrorOutLow) const;
+                TH1* relativeErrorOutLow,
+                Float_t rho = 0.) const;
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
