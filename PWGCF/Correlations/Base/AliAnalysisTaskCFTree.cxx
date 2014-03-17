@@ -176,34 +176,32 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
     }
   }
   else { // MC analysis
-    AliMCEvent* mcEvent = 0;
-    TClonesArray* mcTracks = 0;
-    Int_t nPrimGen = 0;
-    Int_t nProduced = 0;
-
-    mcEvent = fMcHandler ? fMcHandler->MCEvent() : 0;
-    mcTracks = (TClonesArray*) event->FindListObject(AliAODMCParticle::StdBranchName());
-    
+    AliMCEvent* mcEvent = fMcHandler ? fMcHandler->MCEvent() : 0;
+    TClonesArray* mcTracks = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!mcEvent && !mcTracks) { printf("No mc object found\n"); return; }
     fEventStatistics->Fill("after mc objects check",1);
 
-    if (mcEvent) {
+    Int_t nPrimGen = 0;
+    Int_t nProduced = 0;
+    if (mcEvent) { // ESD
       AliHeader* header = (AliHeader*) mcEvent->Header();
       AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
       AliGenEventHeader* mcHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader ? cocktailHeader->GetHeaders()->First() : header->GenEventHeader());
+      if (!mcHeader) { printf("mc header not found\n"); }
       nProduced = mcEvent->GetNumberOfTracks();
       nPrimGen = mcHeader->NProduced();
       fZvtx = mcEvent->GetPrimaryVertex()->GetZ();
-    } else if (mcTracks) {
+    } else { // AOD
       AliAODMCHeader* mcHeader = (AliAODMCHeader*) event->FindListObject(AliAODMCHeader::StdBranchName());
       if (!mcHeader) { printf("AliAODMCHeader not found\n"); return; }
       if (mcHeader->GetCocktailHeaders()) {
+        nProduced = mcTracks->GetEntriesFast();
         AliGenEventHeader* header0 =  mcHeader->GetCocktailHeader(0);
         if (!header0) { printf("first header expected but not found\n"); return; }
         nPrimGen = header0->NProduced();
       } else  nPrimGen = nProduced;
       fZvtx = mcHeader->GetVtxZ();
-    } else return;
+    }
     fEventStatistics->Fill("after mc header check",1);
 
     if (TMath::Abs(fZvtx)>fZVertexCut) return;
