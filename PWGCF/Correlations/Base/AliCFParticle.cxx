@@ -16,6 +16,6 @@
 // Class to store basic track parameters in the tree
 // evgeny.kryshen@cern.ch
 
-
 #include "AliCFParticle.h"
+
 ClassImp(AliCFParticle)

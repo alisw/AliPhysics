@@ -50,8 +50,10 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fIsUseCrossedRowsCut(kFALSE),
    fTPCminNCrossedRows(0),
    fTPCminCrossedRowsOverFindableCls(0),
+   fIsUseLengthActiveVolumeTPCCut(kFALSE),
    fCutMinLengthActiveVolumeTPC(0),
    fAODTestFilterBit(-1),
    fCheckOnlyFilterBit(kTRUE),
@@ -86,8 +88,10 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
+   fIsUseCrossedRowsCut(copy.fIsUseCrossedRowsCut),
    fTPCminNCrossedRows(copy.fTPCminNCrossedRows),
    fTPCminCrossedRowsOverFindableCls(copy.fTPCminCrossedRowsOverFindableCls),
+   fIsUseLengthActiveVolumeTPCCut(copy.fIsUseLengthActiveVolumeTPCCut),
    fCutMinLengthActiveVolumeTPC(copy.fCutMinLengthActiveVolumeTPC),
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit),
@@ -131,8 +135,10 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fCutMaxChi2TPCConstrainedVsGlobal = copy.fCutMaxChi2TPCConstrainedVsGlobal;
+   fIsUseCrossedRowsCut=copy.fIsUseCrossedRowsCut;
    fTPCminNCrossedRows = copy.fTPCminNCrossedRows;
    fTPCminCrossedRowsOverFindableCls = copy.fTPCminCrossedRowsOverFindableCls;
+   fIsUseLengthActiveVolumeTPCCut=copy.fIsUseLengthActiveVolumeTPCCut;
    fCutMinLengthActiveVolumeTPC = copy.fCutMinLengthActiveVolumeTPC;
    
    fAODTestFilterBit = copy.fAODTestFilterBit;
@@ -170,8 +176,10 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
    fCutMaxChi2TPCConstrainedVsGlobal = 1E20;
+   fIsUseCrossedRowsCut = 0;
    fTPCminNCrossedRows = 0;
    fTPCminCrossedRowsOverFindableCls = 0;
+   fIsUseLengthActiveVolumeTPCCut = 0;
    fCutMinLengthActiveVolumeTPC = 0.0;
  
    if (fESDtrackCuts) {

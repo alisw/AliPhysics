@@ -7,10 +7,13 @@
 #include <TClonesArray.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 #include <TLorentzVector.h>
 
 #include "AliVCluster.h"
+#include "AliAODCaloCluster.h"
+#include "AliESDCaloCluster.h"
 #include "AliVTrack.h"
 #include "AliEmcalJet.h"
 #include "AliRhoParameter.h"
@@ -18,6 +21,7 @@
 #include "AliJetContainer.h"
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
+#include "AliPicoTrack.h"
 
 #include "AliAnalysisTaskEmcalJetSample.h"
 
@@ -26,6 +30,15 @@ ClassImp(AliAnalysisTaskEmcalJetSample)
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskEmcalJetSample", kTRUE),
+  fHistTracksPt(0),
+  fHistClustersPt(0),
+  fHistLeadingJetPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsPtLeadHad(0),
+  fHistJetsCorrPtArea(0),
+  fHistPtDEtaDPhiTrackClus(0),
+  fHistPtDEtaDPhiClusTrack(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
@@ -33,7 +46,15 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 {
   // Default constructor.
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistTracksPt       = new TH1*[fNcentBins];
+  fHistClustersPt     = new TH1*[fNcentBins];
+  fHistLeadingJetPt   = new TH1*[fNcentBins];
+  fHistJetsPhiEta     = new TH2*[fNcentBins];
+  fHistJetsPtArea     = new TH2*[fNcentBins];
+  fHistJetsPtLeadHad  = new TH2*[fNcentBins];
+  fHistJetsCorrPtArea = new TH2*[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
@@ -49,14 +70,30 @@ AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample() :
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetSample::AliAnalysisTaskEmcalJetSample(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
+  fHistTracksPt(0),
+  fHistClustersPt(0),
+  fHistLeadingJetPt(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0),
+  fHistJetsPtLeadHad(0),
+  fHistJetsCorrPtArea(0),
+  fHistPtDEtaDPhiTrackClus(0),
+  fHistPtDEtaDPhiClusTrack(0),
   fJetsCont(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
   // Standard constructor.
 
+  fHistTracksPt       = new TH1*[fNcentBins];
+  fHistClustersPt     = new TH1*[fNcentBins];
+  fHistLeadingJetPt   = new TH1*[fNcentBins];
+  fHistJetsPhiEta     = new TH2*[fNcentBins];
+  fHistJetsPtArea     = new TH2*[fNcentBins];
+  fHistJetsPtLeadHad  = new TH2*[fNcentBins];
+  fHistJetsCorrPtArea = new TH2*[fNcentBins];
 
-  for (Int_t i = 0; i < 4; i++) {
+  for (Int_t i = 0; i < fNcentBins; i++) {
     fHistTracksPt[i] = 0;
     fHistClustersPt[i] = 0;
     fHistLeadingJetPt[i] = 0;
@@ -82,13 +119,20 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
-  fJetsCont         = GetJetContainer(0);
-  fTracksCont       = fJetsCont->GetParticleContainer();
-  fCaloClustersCont = fJetsCont->GetClusterContainer();
+  fJetsCont           = GetJetContainer(0);
+  if(fJetsCont) { //get particles and clusters connected to jets
+    fTracksCont       = fJetsCont->GetParticleContainer();
+    fCaloClustersCont = fJetsCont->GetClusterContainer();
+  } else {        //no jets, just analysis tracks and clusters
+    fTracksCont       = GetParticleContainer(0);
+    fCaloClustersCont = GetClusterContainer(0);
+  }
+  fTracksCont->SetClassName("AliVTrack");
+  fCaloClustersCont->SetClassName("AliAODCaloCluster");
 
   TString histname;
 
-  for (Int_t i = 0; i < 4; i++) {
+  for (Int_t i = 0; i < fNcentBins; i++) {
     if (fParticleCollArray.GetEntriesFast()>0) {
       histname = "fHistTracksPt_";
       histname += i;
@@ -147,6 +191,15 @@ void AliAnalysisTaskEmcalJetSample::UserCreateOutputObjects()
       }
     }
   }
+
+  histname = "fHistPtDEtaDPhiTrackClus";
+  fHistPtDEtaDPhiTrackClus = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{track};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
+  fOutput->Add(fHistPtDEtaDPhiTrackClus);
+
+  histname = "fHistPtDEtaDPhiClusTrack";
+  fHistPtDEtaDPhiClusTrack = new TH3F(histname.Data(),Form("%s;#it{p}_{T}^{clus};#Delta#eta;#Delta#varphi",histname.Data()),100,0.,100.,100,-0.1,0.1,100,-0.1,0.1);
+  fOutput->Add(fHistPtDEtaDPhiClusTrack);
+
   PostData(1, fOutput); // Post data for ALL output slots > 0 here.
 }
 
@@ -156,23 +209,21 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
   // Fill histograms.
 
   if (fTracksCont) {
-    AliVParticle *track = fTracksCont->GetNextAcceptParticle(0); 
+    AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
     while(track) {
       fHistTracksPt[fCentBin]->Fill(track->Pt()); 
-      
-      track = fTracksCont->GetNextAcceptParticle(); 
+      track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
     }
   }
   
   if (fCaloClustersCont) {
     AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
     while(cluster) {
-
       TLorentzVector nPart;
       cluster->GetMomentum(nPart, fVertex);
       fHistClustersPt[fCentBin]->Fill(nPart.Pt());
-      
-      cluster = fCaloClustersCont->GetNextAcceptCluster(); 
+
+      cluster = fCaloClustersCont->GetNextAcceptCluster();
     }
   }
 
@@ -196,7 +247,73 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
     if(jet) fHistLeadingJetPt[fCentBin]->Fill(jet->Pt());
   }
 
+  CheckClusTrackMatching();
+
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcalJetSample::CheckClusTrackMatching()
+{
+  
+  if(!fTracksCont || !fCaloClustersCont)
+    return;
+
+  Double_t deta = 999;
+  Double_t dphi = 999;
+
+  //Get closest cluster to track
+  AliVTrack *track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle(0)); 
+  while(track) {
+    //Get matched cluster
+    Int_t emc1 = track->GetEMCALcluster();
+    if(fCaloClustersCont && emc1>=0) {
+      AliVCluster *clusMatch = fCaloClustersCont->GetCluster(emc1);
+      if(clusMatch) {
+	AliPicoTrack::GetEtaPhiDiff(track, clusMatch, dphi, deta);
+	fHistPtDEtaDPhiTrackClus->Fill(track->Pt(),deta,dphi);
+      }
+    }
+    track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle());
+  }
+  
+  //Get closest track to cluster
+  AliVCluster *cluster = fCaloClustersCont->GetNextAcceptCluster(0); 
+  while(cluster) {
+    TLorentzVector nPart;
+    cluster->GetMomentum(nPart, fVertex);
+    fHistClustersPt[fCentBin]->Fill(nPart.Pt());
+    
+    //Get matched track
+    AliVTrack *mt = NULL;      
+    AliAODCaloCluster *acl = dynamic_cast<AliAODCaloCluster*>(cluster);
+    if(acl) {
+      if(acl->GetNTracksMatched()>1)
+	mt = static_cast<AliVTrack*>(acl->GetTrackMatched(0));
+    }
+    else {
+      AliESDCaloCluster *ecl = dynamic_cast<AliESDCaloCluster*>(cluster);
+      Int_t im = ecl->GetTrackMatchedIndex();
+      if(fTracksCont && im>=0) {
+	mt = static_cast<AliVTrack*>(fTracksCont->GetParticle(im));
+      }
+    }
+    if(mt) {
+      AliPicoTrack::GetEtaPhiDiff(mt, cluster, dphi, deta);
+      fHistPtDEtaDPhiClusTrack->Fill(nPart.Pt(),deta,dphi);
+      
+      /* //debugging
+	 if(mt->IsEMCAL()) {
+	 Int_t emc1 = mt->GetEMCALcluster();
+	 Printf("current id: %d  emc1: %d",fCaloClustersCont->GetCurrentID(),emc1);
+	 AliVCluster *clm = fCaloClustersCont->GetCluster(emc1);
+	 AliPicoTrack::GetEtaPhiDiff(mt, clm, dphi, deta);
+	 Printf("deta: %f dphi: %f",deta,dphi);
+	 }
+      */
+    }
+    cluster = fCaloClustersCont->GetNextAcceptCluster();
+  }
 }
 
 //________________________________________________________________________
