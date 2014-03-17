@@ -259,7 +259,14 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
   TString strRunPeriod = TString(prodType);
   strRunPeriod.ToLower();
 
-  if (strRunPeriod == "lhc10h" ||strRunPeriod == "lhc11h" || strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" || strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || strRunPeriod == "lhc12g" || strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f") {
+  if (strRunPeriod == "lhc10h" ||strRunPeriod == "lhc11h" || 
+      strRunPeriod == "lhc12a" || strRunPeriod == "lhc12b" || strRunPeriod == "lhc12c" || strRunPeriod == "lhc12d" || 
+      strRunPeriod == "lhc12e" || strRunPeriod == "lhc12f" || strRunPeriod == "lhc12g" || strRunPeriod == "lhc12g" || 
+      strRunPeriod == "lhc12h" || strRunPeriod == "lhc12i" ||
+      strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" || 
+      strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || 
+      strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || 
+      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f") {
     filterBit  = 768;
     filterBit1 = 256;
     filterBit2 = 512;
