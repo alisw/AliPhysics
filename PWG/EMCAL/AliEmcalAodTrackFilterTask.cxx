@@ -28,6 +28,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -50,6 +51,7 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -142,6 +144,12 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       if (frac > fCutMaxFrShTPCClus) {
 	continue;
       }
+    }
+
+    if (fTrackEfficiency < 1) {
+      Double_t r = gRandom->Rndm();
+      if (fTrackEfficiency < r)
+        continue;
     }
 
     AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
