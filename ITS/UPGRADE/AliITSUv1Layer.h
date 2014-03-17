@@ -93,13 +93,13 @@ class AliITSUv1Layer : public AliITSv11Geometry {
     TGeoVolume* CreateStaveModelInnerB22(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelInnerB3(Double_t x,Double_t z, const TGeoManager *mgr=gGeoManager);
 
-    TGeoVolume* CreateStaveOuterB(Double_t x, const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateStaveModelOuterBDummy(Double_t x, const TGeoManager *mgr=gGeoManager) const;
-    TGeoVolume* CreateStaveModelOuterB0(Double_t x, const TGeoManager *mgr=gGeoManager) const;
+    TGeoVolume* CreateStaveOuterB(const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateStaveModelOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
+    TGeoVolume* CreateStaveModelOuterB0(const TGeoManager *mgr=gGeoManager);
     TGeoVolume* CreateStaveModelOuterB1(const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateSpaceFrameOuterB(Double_t x, const TGeoManager *mgr=gGeoManager);
-    TGeoVolume* CreateSpaceFrameOuterBDummy(Double_t x, const TGeoManager *mgr=gGeoManager) const;
-    TGeoVolume* CreateSpaceFrameOuterB1(Double_t x, const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateSpaceFrameOuterB(const TGeoManager *mgr=gGeoManager);
+    TGeoVolume* CreateSpaceFrameOuterBDummy(const TGeoManager *mgr=gGeoManager) const;
+    TGeoVolume* CreateSpaceFrameOuterB1(const TGeoManager *mgr=gGeoManager);
 
     TGeoArb8* CreateStaveSide(const char *name,
 			       Double_t dz, Double_t angle, Double_t xSign,

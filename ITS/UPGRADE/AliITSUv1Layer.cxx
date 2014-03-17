@@ -429,10 +429,9 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
 //
 
   char volname[30];
-  Double_t xLenO = 5.79/2;
  
-  Double_t xlenI, ylen, zlen;
-  Double_t xpos, ypos, zpos, zmod;
+  Double_t xlen, ylen, zlen;
+  Double_t xpos, ypos;
   Double_t alpha;
 
 
@@ -440,14 +439,14 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
   alpha = (360./(2*fNStaves))*DegToRad();
 
   // The stave
-  xlenI = fLayRadius*Tan(alpha);
-  if (fIsTurbo) xlenI = 0.5*fStaveWidth;
+  xlen = fLayRadius*Tan(alpha);
+  if (fIsTurbo) xlen = 0.5*fStaveWidth;
   ylen = 0.5*fStaveThick;
   zlen = 0.5*fZLength;
 
   Double_t yplus = 0.46;
   TGeoXtru *stave = new TGeoXtru(2); //z sections
-  Double_t xv[5] = {xlenI,xlenI,0,-xlenI,-xlenI};
+  Double_t xv[5] = {xlen,xlen,0,-xlen,-xlen};
   Double_t yv[5] = {ylen+0.09,-0.15,-yplus-fSensorThick,-0.15,ylen+0.09};    
   stave->DefinePolygon(5,xv,yv);
   stave->DefineSection(0,-zlen,0,0,1.);
@@ -462,49 +461,34 @@ TGeoVolume* AliITSUv1Layer::CreateStave(const TGeoManager * /*mgr*/){
   //  staveVol->SetVisibility(kFALSE);
   staveVol->SetVisibility(kTRUE);
   staveVol->SetLineColor(2);
-  TGeoVolume *chipVol = 0;
   TGeoVolume *mechStaveVol = 0;
 
   // Now build up the stave
   if (fLayerNumber < fgkNumberOfInnerLayers) {
-    chipVol = CreateStaveInnerB(xlenI,ylen,zlen);
-//     zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
-//     for (Int_t j=0; j<fNChips; j++) {
-//       xpos = 0.;
-//       ypos = 0.021;  // Remove small overlap - M.S: 21may13
-//       zpos = -stave->GetDZ() + j*2*zmod + zmod;
-//       staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
-//       fHierarchy[kChip]++;
-//     }
-    staveVol->AddNode(chipVol, 0);
+    TGeoVolume *modVol = CreateStaveInnerB(xlen,ylen,zlen);
+    staveVol->AddNode(modVol, 0);
     fHierarchy[kHalfStave] = 1;
  
-  // put mechanical stave structure, only inner barrel up to now
-    mechStaveVol = CreateStaveStructInnerB(xlenI,zlen); 
+  // Mechanical stave structure
+    mechStaveVol = CreateStaveStructInnerB(xlen,zlen); 
     if (mechStaveVol)
       staveVol->AddNode(mechStaveVol, fNChips, new TGeoCombiTrans(0, -0.15-ylen, 0, new TGeoRotation("",0, 0, 180)));
   }
 
   else{
+    TGeoVolume *hstaveVol = CreateStaveOuterB();
     if (fStaveModel == AliITSUv1::kOBModel0) { // Create simplified stave struct as in v0
-      chipVol = CreateChipInnerB(xlenI,ylen,zlen);
-      zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
-      for (Int_t j=0; j<fNChips; j++) {
-	xpos = 0.;
-	ypos = 0.021;  // Remove small overlap - M.S: 21may13
-	zpos = -stave->GetDZ() + j*2*zmod + zmod;
-	staveVol->AddNode(chipVol, j, new TGeoTranslation(xpos, ypos, zpos));
-	fHierarchy[kModule]++;
-      }
+      staveVol->AddNode(hstaveVol, 0);
+      fHierarchy[kHalfStave] = 1;
     } else { // (if fStaveModel) Create new stave struct as in TDR
-      chipVol = CreateStaveOuterB(xLenO);
-
-      xpos = ((TGeoBBox*)(chipVol->GetShape()))->GetDX()
+      xpos = ((TGeoBBox*)(hstaveVol->GetShape()))->GetDX()
 	   - fgkOBHalfStaveXOverlap/2;
-      staveVol->AddNode(chipVol, 0, new TGeoTranslation(-xpos, 2.5, 0));
-      staveVol->AddNode(chipVol, 1, new TGeoTranslation( xpos, 2.5+fgkOBHalfStaveYTrans, 0));
+      ypos = 2*((TGeoBBox*)(hstaveVol->GetShape()))->GetDY()
+	   + fgkOBSpaceFrameTotHigh/2;
+      staveVol->AddNode(hstaveVol, 0, new TGeoTranslation(-xpos, ypos, 0));
+      staveVol->AddNode(hstaveVol, 1, new TGeoTranslation( xpos, ypos+fgkOBHalfStaveYTrans, 0));
       fHierarchy[kHalfStave] = 2; // RS 
-      mechStaveVol = CreateSpaceFrameOuterB(xLenO); 
+      mechStaveVol = CreateSpaceFrameOuterB();
       if (mechStaveVol)
 	staveVol->AddNode(mechStaveVol, 1,
 			  new TGeoCombiTrans(0, 0, 0,
@@ -528,7 +512,7 @@ TGeoVolume* AliITSUv1Layer::CreateStaveInnerB(const Double_t xsta,
 // formal geometry hierarchy as for the Outer Barrel)
 //
 // Input:
-//         xsta, ysta, zsta : X, Y, Z stave lengths
+//         xsta, ysta, zsta : X, Y, Z stave half lengths
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -575,7 +559,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 // Creates the IB Module: (only the chips for the time being)
 //
 // Input:
-//         xmod, ymod, zmod : X, Y, Z stave lengths
+//         xmod, ymod, zmod : X, Y, Z module half lengths
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -586,11 +570,13 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 // Created:      06 Mar 2014  M. Sitta
 //
 
-  Double_t ypos, zpos, zlen;
+  Double_t zchip;
+  Double_t zpos, zlen;
   char volname[30];
 
   // First create the single chip
-  TGeoVolume *chipVol = CreateChipInnerB(xmod, ymod, zmod/fgkIBChipsPerRow);
+  zchip = zmod/fgkIBChipsPerRow;
+  TGeoVolume *chipVol = CreateChipInnerB(xmod, ymod, zchip);
 
   // Then create the module and populate it with the chips
   TGeoBBox *module = new TGeoBBox(xmod, ymod, zmod);
@@ -602,10 +588,8 @@ TGeoVolume* AliITSUv1Layer::CreateModuleInnerB(Double_t xmod,
 
   zlen = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
   for (Int_t j=0; j<fgkIBChipsPerRow; j++) {
-    ypos = 0.021;  // Remove small overlap - M.S: 21may13
-    //    zpos = -zmod + j*2*zmod + zmod;
-    zpos = -zmod + j*2*zlen + zlen; //RS
-    modVol->AddNode(chipVol, j, new TGeoTranslation(0, ypos, zpos));
+    zpos = -zmod + j*2*zchip + zchip;
+    modVol->AddNode(chipVol, j, new TGeoTranslation(0, 0, zpos));
     fHierarchy[kChip]++;
   }
 
@@ -1918,13 +1902,11 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelInnerB3(const Double_t xsta,
  }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const Double_t xsta,
-					      const TGeoManager *mgr){
+TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const TGeoManager *mgr){
 //
 // Create the chip stave for the Outer Barrel
 //
 // Input:
-//         xsta : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1932,16 +1914,17 @@ TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const Double_t xsta,
 // Return:
 //
 // Created:      20 Dec 2013  Mario Sitta
+// Updated:      12 Mar 2014  Mario Sitta
 //
 
   TGeoVolume *mechStavVol = 0;
 
   switch (fStaveModel) {
     case AliITSUv1::kOBModelDummy:
-      mechStavVol = CreateStaveModelOuterBDummy(xsta,mgr);
+      mechStavVol = CreateStaveModelOuterBDummy(mgr);
       break;
     case AliITSUv1::kOBModel0:
-      mechStavVol = CreateStaveModelOuterB0(xsta,mgr);
+      mechStavVol = CreateStaveModelOuterB0(mgr);
       break;
     case AliITSUv1::kOBModel1:
       mechStavVol = CreateStaveModelOuterB1(mgr);
@@ -1955,13 +1938,11 @@ TGeoVolume* AliITSUv1Layer::CreateStaveOuterB(const Double_t xsta,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterBDummy(const Double_t ,
-							const TGeoManager *) const {
+TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterBDummy(const TGeoManager *) const {
 //
 // Create dummy stave
 //
 // Input:
-//         xsta : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1977,15 +1958,13 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterBDummy(const Double_t ,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB0(const Double_t ,
-						    const TGeoManager *) const {
+TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB0(const TGeoManager *mgr){
 //
 // Creation of the mechanical stave structure for the Outer Barrel as in v0
-// is done directly in CreateStave, so this method does nothing
-// (doing it there is simpler, since all needed dimensions are known)
+// (we fake the module and halfstave volumes to have always
+// the same formal geometry hierarchy)
 //
 // Input:
-//         xsta : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1993,10 +1972,60 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB0(const Double_t ,
 // Return:
 //
 // Created:      20 Dec 2013  Mario Sitta
+// Updated:      12 Mar 2014  Mario Sitta
 //
 
+  // Local variables
+  Double_t xmod, ymod, zmod;
+  Double_t xlen, ylen, zlen;
+  Double_t ypos, zpos;
+  char volname[30];
+  
+  // First create all needed shapes
+
+  // The chip
+  xlen = fgkOBHalfStaveWidth;
+  ylen = 0.5*fStaveThick; // TO BE CHECKED
+  zlen = fgkOBModuleZLength/2;
+
+  TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
+
+  xmod = ((TGeoBBox*)chipVol->GetShape())->GetDX();
+  ymod = ((TGeoBBox*)chipVol->GetShape())->GetDY();
+  zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+
+  TGeoBBox *module = new TGeoBBox(xmod, ymod, zmod);
+
+  zlen = fgkOBModuleZLength*fNModules;
+  TGeoBBox *hstave = new TGeoBBox(xlen, ylen, zlen/2);
+
+
+  // We have all shapes: now create the real volumes
+
+  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
+
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
+  TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
+  modVol->SetVisibility(kTRUE);
+
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSHalfStavePattern(), fLayerNumber);
+  TGeoVolume *hstaveVol  = new TGeoVolume(volname, hstave, medAir);
+
+
+  // Finally build it up
+  modVol->AddNode(chipVol, 0);
+  fHierarchy[kChip]=1;
+
+  for (Int_t j=0; j<fNModules; j++) {
+    ypos = 0.021;  // Remove small overlap - M.S: 21may13
+    zpos = -hstave->GetDZ() + j*2*zmod + zmod;
+    hstaveVol->AddNode(modVol, j, new TGeoTranslation(0, ypos, zpos));
+    fHierarchy[kModule]++;
+  }
+
+
   // Done, return the stave structure
-  return 0;
+  return hstaveVol;
 }
 
 //________________________________________________________________________
@@ -2030,12 +2059,13 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 
   Double_t xlen, ylen;
   Double_t ymod, zmod;
+  Double_t xtru[12], ytru[12];
   Double_t xpos, ypos, ypos1, zpos/*, zpos5cm*/;
   Double_t zlen;
   char volname[30];
 
 
-  zlen = (fNChips*fgkOBModuleZLength + (fNChips-1)*fgkOBModuleGap)/2; //uhm... I need to check this
+  zlen = (fNModules*fgkOBModuleZLength + (fNModules-1)*fgkOBModuleGap)/2;
 
 
   // First create all needed shapes
@@ -2085,11 +2115,28 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   TGeoBBox *flex1_5cm  = new TGeoBBox("Flex1MV_5cm",xHalfSt,yFlex1/2,flexOverlap/2);
   TGeoBBox *flex2_5cm  = new TGeoBBox("Flex2MV_5cm",xHalfSt,yFlex2/2,flexOverlap/2);
 
-  // The half stave container
-  ylen = ymod + busAl->GetDY() + busKap->GetDY() +
-         coldPlate->GetDY() + 2*coolTube->GetRmax() +
-         graphtub->GetRmax() + fleectub->GetRmax();
-  TGeoBBox *halfStave = new TGeoBBox(xHalfSt, ylen, fZLength/2);
+  // The half stave container (an XTru to avoid overlaps between neightbours)
+  xtru[0] = xHalfSt;
+  ytru[0] = 0;
+  xtru[1] = xtru[0];
+  ytru[1] = -2*(ymod + busAl->GetDY() + busKap->GetDY() + coldPlate->GetDY()
+		+ graphlat->GetDY() + fleeclat->GetDY());
+  xtru[2] = fgkOBCoolTubeXDist/2 + fleectub->GetRmax();
+  ytru[2] = ytru[1];
+  xtru[3] = xtru[2];
+  ytru[3] = ytru[2] - (coolTube->GetRmax() + fleectub->GetRmax());
+  xtru[4] = fgkOBCoolTubeXDist/2 - fleectub->GetRmax();
+  ytru[4] = ytru[3];
+  xtru[5] = xtru[4];
+  ytru[5] = ytru[2];
+  for (Int_t i = 0; i<6; i++) {
+    xtru[6+i] = -xtru[5-i];
+    ytru[6+i] =  ytru[5-i];
+  }
+  TGeoXtru *halfStave = new TGeoXtru(2);
+  halfStave->DefinePolygon(12, xtru, ytru);
+  halfStave->DefineSection(0,-fZLength/2);
+  halfStave->DefineSection(1, fZLength/2);
 
 
   // We have all shapes: now create the real volumes
@@ -2195,14 +2242,14 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
   
 
   // Now build up the half stave
-  ypos = halfStave->GetDY() - busKap->GetDY();
+  ypos = - busKap->GetDY();
   halfStaveVol->AddNode(busKapVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos -= (busKap->GetDY() + busAl->GetDY());
   halfStaveVol->AddNode(busAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos -= (busAl->GetDY() + ymod);
-  for (Int_t j=0; j<fNChips; j++) {
+  for (Int_t j=0; j<fNModules; j++) {
     zpos = -zlen + j*(2*zmod + fgkOBModuleGap) + zmod;
     halfStaveVol->AddNode(moduleVol, j, new TGeoTranslation(0, ypos, zpos));
     fHierarchy[kModule]++;
@@ -2288,13 +2335,11 @@ TGeoVolume* AliITSUv1Layer::CreateStaveModelOuterB1(const TGeoManager *mgr){
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB(const Double_t xsta,
-						   const TGeoManager *mgr){
+TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB(const TGeoManager *mgr){
 //
 // Create the space frame for the Outer Barrel
 //
 // Input:
-//         xsta : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -2308,10 +2353,10 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB(const Double_t xsta,
   switch (fStaveModel) {
     case AliITSUv1::kOBModelDummy:
     case AliITSUv1::kOBModel0:
-      mechStavVol = CreateSpaceFrameOuterBDummy(xsta,mgr);
+      mechStavVol = CreateSpaceFrameOuterBDummy(mgr);
       break;
     case AliITSUv1::kOBModel1:
-      mechStavVol = CreateSpaceFrameOuterB1(xsta,mgr);
+      mechStavVol = CreateSpaceFrameOuterB1(mgr);
       break;
     default:
       AliFatal(Form("Unknown stave model %d",fStaveModel));
@@ -2322,13 +2367,11 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB(const Double_t xsta,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterBDummy(const Double_t ,
-							const TGeoManager *) const {
+TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterBDummy(const TGeoManager *) const {
 //
 // Create dummy stave
 //
 // Input:
-//         xsta : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -2342,13 +2385,11 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterBDummy(const Double_t ,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const Double_t xlen,
-						    const TGeoManager *mgr){
+TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
 //
 // Create the space frame for the Outer Barrel (Model 1)
 //
 // Input:
-//         xlen : X length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -2359,6 +2400,7 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const Double_t xlen,
 // Created:      20 Dec 2013  Anastasia Barbano
 // Updated:      15 Jan 2014  Mario Sitta
 // Updated:      18 Feb 2014  Mario Sitta
+// Updated:      12 Mar 2014  Mario Sitta
 //
 
 
@@ -2370,70 +2412,78 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const Double_t xlen,
   // Local parameters
   Double_t sframeWidth        = fgkOBSpaceFrameWidth;
   Double_t sframeHeight       = fgkOBSpaceFrameTotHigh - fgkOBHalfStaveYTrans;
-//  Double_t staveSegBoxDW     = 7.5;
-//  Double_t staveSegBoxDH     = 7.1;
-  Double_t staveBeamRadius   = fgkOBSFrameBeamRadius;
-  Double_t staveLa           = fgkOBSpaceFrameLa;
-  Double_t staveHa           = fgkOBSpaceFrameHa;
-  Double_t staveLb           = fgkOBSpaceFrameLb;
-  Double_t staveHb           = fgkOBSpaceFrameHb;
-  Double_t stavel            = fgkOBSpaceFrameL;
-  Double_t bottomBeamAngle   = fgkOBSFBotBeamAngle;
-//  Double_t dy                 = staveSegBoxDH/2;
+  Double_t staveBeamRadius    = fgkOBSFrameBeamRadius;
+  Double_t staveLa            = fgkOBSpaceFrameLa;
+  Double_t staveHa            = fgkOBSpaceFrameHa;
+  Double_t staveLb            = fgkOBSpaceFrameLb;
+  Double_t staveHb            = fgkOBSpaceFrameHb;
+  Double_t stavel             = fgkOBSpaceFrameL;
+  Double_t bottomBeamAngle    = fgkOBSFBotBeamAngle;
   Double_t triangleHeight     = sframeHeight - staveBeamRadius;
   Double_t halfTheta          = TMath::ATan( 0.5*sframeWidth/triangleHeight );
-  Double_t alpha              = TMath::Pi()*3./4. - halfTheta/2.;
+//  Double_t alpha              = TMath::Pi()*3./4. - halfTheta/2.;
   Double_t beta               = (TMath::Pi() - 2.*halfTheta)/4.;
-//  Double_t dYTranslation      = (sframeHeight/2. -0.5*sframeWidth*TMath::Tan(beta)-staveBeamRadius);
-  Double_t distCenterSideDown =  0.5*sframeWidth/TMath::Cos(beta);
+//  Double_t distCenterSideDown = 0.5*sframeWidth/TMath::Cos(beta);
 
   Double_t zlen;
-  Double_t seglen;    
+  Double_t xpos, ypos, zpos;
+  Double_t seglen;
+  char volname[30];
 
 
   zlen = fNModules*fgkOBModuleZLength + (fNModules-1)*fgkOBModuleGap;
 
-  seglen  = zlen/10;
-
-  if (gGeoManager->GetVolume("mechStaveVolume")) // Should always be so
-    sframeHeight -= ((TGeoBBox*)gGeoManager->GetVolume("mechStaveVolume")->GetShape())->GetDY()*2.;
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSHalfStavePattern(), fLayerNumber);
+  if (gGeoManager->GetVolume(volname)) { // Should always be so
+    sframeHeight -= ((TGeoBBox*)gGeoManager->GetVolume(volname)->GetShape())->GetDY()*2;
+    zlen = ((TGeoBBox*)gGeoManager->GetVolume(volname)->GetShape())->GetDZ()*2;
+  }
+  seglen = zlen/fNModules;
 
 
   // First create all needed shapes and volumes
 
-  TGeoBBox *spaceFrame = new TGeoBBox("CarbonFrame",xlen, 2.2, zlen/2);
+  TGeoBBox *spaceFrame = new TGeoBBox(sframeWidth/2,sframeHeight/2,zlen/2);
   TGeoBBox *segment    = new TGeoBBox(sframeWidth/2,sframeHeight/2,seglen/2);
 
   TGeoVolume *spaceFrameVol = new TGeoVolume("CarbonFrameVolume",
 					     spaceFrame, medAir);
-  spaceFrameVol->SetVisibility(kTRUE);
+  spaceFrameVol->SetVisibility(kFALSE);
 
-  TGeoVolume *segmentVol    = new TGeoVolume("segmentVol",segment,medAir);
+  TGeoVolume *segmentVol    = new TGeoVolume("segmentVol", segment, medAir);
 
   //SpaceFrame
 
   //--- the top V of the Carbon Fiber Stave (segment)
   TGeoArb8 *cfStavTop1 = CreateStaveSide("CFstavTopCornerVol1shape", seglen/2., halfTheta, -1, staveLa, staveHa, stavel);
-  TGeoVolume *cfStavTopVol1 = new TGeoVolume("ITSsddCFstavTopCornerVol1", cfStavTop1,medCarbon);
-  TGeoArb8 *cfStavTop2 = CreateStaveSide( "CFstavTopCornerVol2shape", seglen/2., halfTheta, 1, staveLa, staveHa, stavel);
-  TGeoVolume *cfStavTopVol2 = new TGeoVolume("ITSsddCFstavTopCornerVol2",cfStavTop2,medCarbon );
+  TGeoVolume *cfStavTopVol1 = new TGeoVolume("CFstavTopCornerVol1",
+					     cfStavTop1, medCarbon);
+  cfStavTopVol1->SetLineColor(35);
 
-  //TGeoTranslation *trTop1 = new TGeoTranslation(0, fgkStaveHeight/2-dy, 0);
+  TGeoArb8 *cfStavTop2 = CreateStaveSide("CFstavTopCornerVol2shape", seglen/2., halfTheta,  1, staveLa, staveHa, stavel);
+  TGeoVolume *cfStavTopVol2 = new TGeoVolume("CFstavTopCornerVol2",
+					     cfStavTop2, medCarbon );
+  cfStavTopVol2->SetLineColor(35);
+
   TGeoTranslation *trTop1 = new TGeoTranslation(0, sframeHeight/2, 0);
   
   //--- the 2 side V
-  TGeoArb8 *cfStavSide1 = CreateStaveSide( "CFstavSideCornerVol1shape", seglen/2., beta, -1,staveLb, staveHb, stavel);
-  TGeoVolume *cfStavSideVol1 = new TGeoVolume( "ITSsddCFstavSideCornerVol1", cfStavSide1,medCarbon);
-  TGeoArb8 *cfStavSide2 = CreateStaveSide( "CFstavSideCornerVol2shape", seglen/2., beta, 1, staveLb, staveHb, stavel);
-  TGeoVolume *cfStavSideVol2 = new TGeoVolume( "ITSsddCFstavSideCornerVol2", cfStavSide2,medCarbon );
+  TGeoArb8 *cfStavSide1 = CreateStaveSide("CFstavSideCornerVol1shape", seglen/2., beta, -1, staveLb, staveHb, stavel);
+  TGeoVolume *cfStavSideVol1 = new TGeoVolume("CFstavSideCornerVol1",
+					      cfStavSide1, medCarbon);
+  cfStavSideVol1->SetLineColor(35);
 
-  
-  TGeoCombiTrans *ctSideR = CreateCombiTrans("", distCenterSideDown, 0,alpha*TMath::RadToDeg());
-  //AddTranslationToCombiTrans(ctSideR, 0, -dYTranslation-dy, 0);
-  AddTranslationToCombiTrans(ctSideR, 0, sframeHeight/2-2.85/*2.765250*//*triangleHeight*/, 0);
-  TGeoCombiTrans *ctSideL = CreateCombiTrans("", distCenterSideDown,0,-alpha*TMath::RadToDeg());
-  //AddTranslationToCombiTrans(ctSideL, 0, -dYTranslation-dy, 0);
-  AddTranslationToCombiTrans(ctSideL, 0, sframeHeight/2-2.85/*triangleHeight*/, 0);
+  TGeoArb8 *cfStavSide2 = CreateStaveSide("CFstavSideCornerVol2shape", seglen/2., beta,  1, staveLb, staveHb, stavel);
+  TGeoVolume *cfStavSideVol2 = new TGeoVolume("CFstavSideCornerVol2",
+					      cfStavSide2, medCarbon );
+  cfStavSideVol2->SetLineColor(35);
+
+  xpos = -sframeWidth/2;
+  ypos = -sframeHeight/2 + staveBeamRadius + staveHb*TMath::Sin(beta);
+  TGeoCombiTrans *ctSideR = new TGeoCombiTrans( xpos, ypos, 0,
+				       new TGeoRotation("", 180-2*beta*TMath::RadToDeg(), 0, 0));
+  TGeoCombiTrans *ctSideL = new TGeoCombiTrans(-xpos, ypos, 0,
+				       new TGeoRotation("",-180+2*beta*TMath::RadToDeg(), 0, 0));
 
   segmentVol->AddNode(cfStavTopVol1,1,trTop1);
   segmentVol->AddNode(cfStavTopVol2,1,trTop1);
@@ -2447,85 +2497,115 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const Double_t xlen,
   // Beams on the sides
   Double_t beamPhiPrime = TMath::ASin(1./TMath::Sqrt( (1+TMath::Sin(2*beta)*TMath::Sin(2*beta)/(TanD(fgkOBSFrameBeamSidePhi)*TanD(fgkOBSFrameBeamSidePhi))) ));
   Double_t beamLength = TMath::Sqrt( sframeHeight*sframeHeight/( TMath::Sin(beamPhiPrime)*TMath::Sin(beamPhiPrime))+ sframeWidth*sframeWidth/4.)-staveLa/2-staveLb/2;
-  TGeoTubeSeg *sideBeamS = new TGeoTubeSeg(0, staveBeamRadius,beamLength/2.,0, 180);
-  TGeoVolume *sideBeam = new TGeoVolume("ITSsddCFSideBeamVol", sideBeamS,medCarbon);
+  TGeoTubeSeg *sideBeam = new TGeoTubeSeg(0, staveBeamRadius,
+					  beamLength/2, 0, 180);
+  TGeoVolume *sideBeamVol = new TGeoVolume("CFstavSideBeamVol",
+					   sideBeam, medCarbon);
+  sideBeamVol->SetLineColor(35);
 
-  //Euler rotation : about Z, then new X, then new Z
-  TGeoRotation *beamRot1 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),-beamPhiPrime*TMath::RadToDeg(),-90);
-  TGeoRotation *beamRot2 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(), beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation *beamRot3 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(), beamPhiPrime*TMath::RadToDeg(), -90);
-  TGeoRotation *beamRot4 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),-beamPhiPrime*TMath::RadToDeg(),-90);
+  TGeoRotation *beamRot1 = new TGeoRotation("", /*90-2*beta*/halfTheta*TMath::RadToDeg(),
+				    -beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoRotation *beamRot2 = new TGeoRotation("", 90-2.*beta*TMath::RadToDeg(),
+				     beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoRotation *beamRot3 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
+				     beamPhiPrime*TMath::RadToDeg(), -90);
+  TGeoRotation *beamRot4 = new TGeoRotation("", 90+2.*beta*TMath::RadToDeg(),
+				    -beamPhiPrime*TMath::RadToDeg(), -90);
 
   TGeoCombiTrans *beamTransf[8];
-  beamTransf[0] = new TGeoCombiTrans( 0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-3*seglen/8, beamRot1);
+  xpos = 0.5*triangleHeight*TMath::Tan(halfTheta);
+  ypos = staveBeamRadius/2;
+  zpos = seglen/8;
+  beamTransf[0] = new TGeoCombiTrans( xpos, ypos,-3*zpos, beamRot1);
 
-  beamTransf[1] = new TGeoCombiTrans( 0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-3*seglen/8, beamRot1);
+  beamTransf[1] = new TGeoCombiTrans( xpos, ypos,-3*zpos, beamRot1);
   AddTranslationToCombiTrans(beamTransf[1], 0, 0, seglen/2);
 
-  beamTransf[2] = new TGeoCombiTrans(0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-seglen/8, beamRot2);
+  beamTransf[2] = new TGeoCombiTrans( xpos, ypos,  -zpos, beamRot2);
 
-  beamTransf[3] = new TGeoCombiTrans(0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-seglen/8, beamRot2);
+  beamTransf[3] = new TGeoCombiTrans( xpos, ypos,  -zpos, beamRot2);
   AddTranslationToCombiTrans(beamTransf[3], 0, 0, seglen/2);
 
-  beamTransf[4] = new TGeoCombiTrans(-0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-3*seglen/8, beamRot3);
+  beamTransf[4] = new TGeoCombiTrans(-xpos, ypos,-3*zpos, beamRot3);
 
-  beamTransf[5] = new TGeoCombiTrans(-0.5*triangleHeight*TMath::Tan(halfTheta),staveBeamRadius/2. ,-3*seglen/8, beamRot3);
+  beamTransf[5] = new TGeoCombiTrans(-xpos, ypos,-3*zpos, beamRot3);
   AddTranslationToCombiTrans(beamTransf[5], 0, 0, seglen/2);
 
-  beamTransf[6] = new TGeoCombiTrans(-0.5*triangleHeight* TMath::Tan(halfTheta),staveBeamRadius/2., -seglen/8,beamRot4);
-  beamTransf[7] = new TGeoCombiTrans(-0.5*triangleHeight* TMath::Tan(halfTheta),staveBeamRadius/2.,3*seglen/8,beamRot4);
+  beamTransf[6] = new TGeoCombiTrans(-xpos, ypos,  -zpos, beamRot4);
+  beamTransf[7] = new TGeoCombiTrans(-xpos, ypos, 3*zpos, beamRot4);
 
   //--- Beams of the bottom
-  TGeoTubeSeg *bottomBeam1 = new TGeoTubeSeg(0, staveBeamRadius,sframeWidth/2.-staveLb/3, 0, 180);
-  TGeoVolume *bottomBeam1Vol = new TGeoVolume("ITSsddBottomBeam1Vol", bottomBeam1, medCarbon);
-  TGeoTubeSeg *bottomBeam2 = new TGeoTubeSeg(0, staveBeamRadius,sframeWidth/2.-staveLb/3, 0, 90);
-  TGeoVolume *bottomBeam2Vol = new TGeoVolume("ITSsddBottomBeam2Vol",bottomBeam2, medCarbon);
-  TGeoTubeSeg *bottomBeam3 = new TGeoTubeSeg(0, staveBeamRadius,0.5*sframeWidth/SinD(bottomBeamAngle) - staveLb/3, 0, 180);
-  TGeoVolume *bottomBeam3Vol = new TGeoVolume("ITSsddBottomBeam3Vol", bottomBeam3, medCarbon);
+  TGeoTubeSeg *bottomBeam1 = new TGeoTubeSeg(0, staveBeamRadius,
+					     sframeWidth/2.-staveLb/3, 0, 180);
+  TGeoVolume *bottomBeam1Vol = new TGeoVolume("CFstavBottomBeam1Vol",
+					      bottomBeam1, medCarbon);
+  bottomBeam1Vol->SetLineColor(35);
+
+  TGeoTubeSeg *bottomBeam2 = new TGeoTubeSeg(0, staveBeamRadius,
+					     sframeWidth/2.-staveLb/3, 0, 90);
+  TGeoVolume *bottomBeam2Vol = new TGeoVolume("CFstavBottomBeam2Vol",
+					      bottomBeam2, medCarbon);
+  bottomBeam2Vol->SetLineColor(35);
+
+  TGeoTubeSeg *bottomBeam3 = new TGeoTubeSeg(0, staveBeamRadius,
+			     0.5*sframeWidth/SinD(bottomBeamAngle) - staveLb/3,
+					     0, 180);
+  TGeoVolume *bottomBeam3Vol = new TGeoVolume("CFstavBottomBeam3Vol",
+					      bottomBeam3, medCarbon);
+  bottomBeam3Vol->SetLineColor(35);
+
   TGeoRotation *bottomBeamRot1 = new TGeoRotation("", 90, 90,  90);
   TGeoRotation *bottomBeamRot2 = new TGeoRotation("",-90, 90, -90);
 
-  TGeoCombiTrans *bottomBeamTransf1 = new TGeoCombiTrans("",0,-(sframeHeight/2-staveBeamRadius),0, bottomBeamRot1);
-  TGeoCombiTrans *bottomBeamTransf2 = new TGeoCombiTrans(0,-(sframeHeight/2-staveBeamRadius),-seglen/2, bottomBeamRot1);
-  TGeoCombiTrans *bottomBeamTransf3 = new TGeoCombiTrans(0,-(sframeHeight/2-staveBeamRadius), seglen/2, bottomBeamRot2);
+  TGeoCombiTrans *bottomBeamTransf1 = new TGeoCombiTrans("",0,
+					 -(sframeHeight/2-staveBeamRadius), 0,
+							 bottomBeamRot1);
+  TGeoCombiTrans *bottomBeamTransf2 = new TGeoCombiTrans(0,
+					 -(sframeHeight/2-staveBeamRadius),
+							 -seglen/2,
+							 bottomBeamRot1);
+  TGeoCombiTrans *bottomBeamTransf3 = new TGeoCombiTrans(0,
+					 -(sframeHeight/2-staveBeamRadius),
+							 seglen/2,
+							 bottomBeamRot2);
   // be careful for beams #3: when "reading" from -z to +z and 
   // from the bottom of the stave, it should draw a Lambda, and not a V
-  TGeoRotation *bottomBeamRot4 = new TGeoRotation("", -90, bottomBeamAngle, -90);
-  TGeoRotation *bottomBeamRot5 = new TGeoRotation("" ,-90,-bottomBeamAngle, -90);
-  TGeoCombiTrans *bottomBeamTransf4 = new TGeoCombiTrans(0,-(sframeHeight/2-staveBeamRadius),-seglen/4,bottomBeamRot4);
-  TGeoCombiTrans *bottomBeamTransf5 = new TGeoCombiTrans(0,-(sframeHeight/2-staveBeamRadius),seglen/4, bottomBeamRot5);
+  TGeoRotation *bottomBeamRot4 = new TGeoRotation("",-90, bottomBeamAngle,-90);
+  TGeoRotation *bottomBeamRot5 = new TGeoRotation("",-90,-bottomBeamAngle,-90);
 
-  cfStavTopVol1->SetLineColor(35);
-  cfStavTopVol2->SetLineColor(35);
-  cfStavSideVol1->SetLineColor(35);
-  cfStavSideVol2->SetLineColor(35);
-  sideBeam->SetLineColor(35);
-  bottomBeam1Vol->SetLineColor(35);
-  bottomBeam2Vol->SetLineColor(35);
-  bottomBeam3Vol->SetLineColor(35);
+  TGeoCombiTrans *bottomBeamTransf4 = new TGeoCombiTrans(0,
+					 -(sframeHeight/2-staveBeamRadius),
+							 -seglen/4,
+							 bottomBeamRot4);
+  TGeoCombiTrans *bottomBeamTransf5 = new TGeoCombiTrans(0,
+					 -(sframeHeight/2-staveBeamRadius),
+							 seglen/4,
+							 bottomBeamRot5);
 
 
-  segmentVol->AddNode(sideBeam,1, beamTransf[0]);
-  segmentVol->AddNode(sideBeam,2, beamTransf[1]);
-  segmentVol->AddNode(sideBeam,3, beamTransf[2]);
-  segmentVol->AddNode(sideBeam,4, beamTransf[3]);
-  segmentVol->AddNode(sideBeam,5, beamTransf[4]);
-  segmentVol->AddNode(sideBeam,6, beamTransf[5]);
-  segmentVol->AddNode(sideBeam,7, beamTransf[6]);
-  segmentVol->AddNode(sideBeam,8, beamTransf[7]);
+  segmentVol->AddNode(sideBeamVol,1, beamTransf[0]);
+  segmentVol->AddNode(sideBeamVol,2, beamTransf[1]);
+  segmentVol->AddNode(sideBeamVol,3, beamTransf[2]);
+  segmentVol->AddNode(sideBeamVol,4, beamTransf[3]);
+  segmentVol->AddNode(sideBeamVol,5, beamTransf[4]);
+  segmentVol->AddNode(sideBeamVol,6, beamTransf[5]);
+  segmentVol->AddNode(sideBeamVol,7, beamTransf[6]);
+  segmentVol->AddNode(sideBeamVol,8, beamTransf[7]);
   segmentVol->AddNode(bottomBeam1Vol,1,bottomBeamTransf1);
   segmentVol->AddNode(bottomBeam2Vol,1,bottomBeamTransf2);
   segmentVol->AddNode(bottomBeam2Vol,1,bottomBeamTransf3);
   segmentVol->AddNode(bottomBeam3Vol,1,bottomBeamTransf4);
   segmentVol->AddNode(bottomBeam3Vol,1,bottomBeamTransf5);
 
-  for(Int_t i=0;i<10;i++){
-    spaceFrameVol->AddNode(segmentVol,i,new TGeoTranslation(0,0,seglen*(0.5+i)));
-    spaceFrameVol->AddNode(segmentVol,11+i,new TGeoTranslation(0,0,-seglen*(0.5+i)));
+
+  // Then build up the space frame
+  for(Int_t i=0; i<fNModules; i++){
+    zpos = -spaceFrame->GetDZ() + (1 + 2*i)*segment->GetDZ();
+    spaceFrameVol->AddNode(segmentVol, i, new TGeoTranslation(0, 0, zpos));
   }
 
 
-  // Done, return the stave structur
+  // Done, return the space frame structure
   return spaceFrameVol;
 }
 
@@ -2616,7 +2696,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   Double_t xGap  = fgkOBChipXGap;
   Double_t zGap  = fgkOBChipZGap;
 
-  Double_t xmod, ymod, zmod;
+  Double_t xchip, ychip, zchip;
   Double_t xlen, ylen, zlen;
   Double_t xpos, ypos, zpos;
   
@@ -2629,9 +2709,9 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   TGeoVolume *chipVol = CreateChipInnerB(xlen, ylen, zlen);
 
-  xmod = ((TGeoBBox*)chipVol->GetShape())->GetDX();
-  ymod = ((TGeoBBox*)chipVol->GetShape())->GetDY();
-  zmod = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
+  xchip = ((TGeoBBox*)chipVol->GetShape())->GetDX();
+  ychip = ((TGeoBBox*)chipVol->GetShape())->GetDY();
+  zchip = ((TGeoBBox*)chipVol->GetShape())->GetDZ();
 
   // The module carbon plate
   xlen = fgkOBHalfStaveWidth/2;
@@ -2652,7 +2732,7 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
 
   // The module
   xlen = fgkOBHalfStaveWidth/2;
-  ylen = ymod + modPlate->GetDY() + glue->GetDY() +
+  ylen = ychip + modPlate->GetDY() + glue->GetDY() +
          flexAl->GetDY() + flexKap->GetDY();
   zlen = fgkOBModuleZLength/2;
   TGeoBBox *module = new TGeoBBox("OBModule", xlen,  ylen, zlen);
@@ -2699,17 +2779,17 @@ TGeoVolume* AliITSUv1Layer::CreateModuleOuterB(const TGeoManager *mgr){
   ypos += (modPlate->GetDY() + glue->GetDY());
   modVol->AddNode(glueVol, 1, new TGeoTranslation(0, ypos, 0));
 
-  xpos = -module->GetDX() + xmod;
-  ypos += (glue->GetDY() + ymod);
+  xpos = -module->GetDX() + xchip;
+  ypos += (glue->GetDY() + ychip);
   for(Int_t k=0; k<fgkOBChipsPerRow; k++)   //put 7x2 chip into one module
     {
-      zpos = -module->GetDZ() + zmod + k*(2*zmod + zGap);
+      zpos = -module->GetDZ() + zchip + k*(2*zchip + zGap);
       modVol->AddNode(chipVol, 2*k  , new TGeoTranslation( xpos, ypos, zpos));
       modVol->AddNode(chipVol, 2*k+1, new TGeoTranslation(-xpos, ypos, zpos));
       fHierarchy[kChip]+=2;
     }
 
-  ypos += (ymod + flexAl->GetDY());
+  ypos += (ychip + flexAl->GetDY());
   modVol->AddNode(flexAlVol, 1, new TGeoTranslation(0, ypos, 0));
 
   ypos += (flexAl->GetDY() + flexKap->GetDY());
