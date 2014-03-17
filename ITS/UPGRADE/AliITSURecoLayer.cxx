@@ -398,7 +398,7 @@ void AliITSURecoLayer::ProcessClusters(Int_t mode)
     if (vID<curSensID) {AliFatal("Clusters are not sorted in increasing sensorID");}
     if (vID>curSensID) {
       if (curSens) curSens->ProcessClusters(mode);    // prepare clusters for reconstruction
-      curSens   = GetSensor(vID - fITSGeom->GetFirstChipIndex(fActiveID));
+      curSens   = GetSensorFromID(vID); //GetSensor(vID - fITSGeom->GetFirstChipIndex(fActiveID));
       curSensID = vID;
       curSens->SetFirstClusterId(icl);
     }
