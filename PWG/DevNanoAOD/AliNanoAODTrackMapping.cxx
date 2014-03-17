@@ -50,7 +50,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
 
 { 
   // default ctor
-  std::cout << "Default constructor" << std::endl;
+
 }
 
 AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
