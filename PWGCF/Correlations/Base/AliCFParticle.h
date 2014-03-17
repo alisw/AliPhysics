@@ -10,17 +10,19 @@
 
 #include "AliVParticle.h"
 #include "AliLog.h"
+#include "TArrayF.h"
 
-class AliCFParticle : public AliVParticle {
+class AliCFParticle : public AliVParticle, public TArrayF {
  public:
-  AliCFParticle():AliVParticle(),fPt(0),fEta(0),fPhi(0),fCharge(0),fMask(0)
+  AliCFParticle():AliVParticle(),TArrayF(),fPt(0),fEta(0),fPhi(0),fCharge(0),fMask(0)
   {
   }
-  AliCFParticle(Float_t pt, Float_t eta, Float_t phi, Short_t charge, UInt_t mask)
-  :AliVParticle(),fPt(pt),fEta(eta),fPhi(phi),fCharge(charge),fMask(mask)
+  AliCFParticle(Float_t pt, Float_t eta, Float_t phi, Short_t charge, UInt_t mask,UInt_t nData=0)
+  :AliVParticle(),TArrayF(nData),fPt(pt),fEta(eta),fPhi(phi),fCharge(charge),fMask(mask)
   {
   }
   virtual ~AliCFParticle(){}
+
   virtual Double_t Pt()    const { return fPt;      }
   virtual Double_t Phi()   const { return fPhi;     }
   virtual Double_t Eta()   const { return fEta;     }
@@ -51,14 +53,13 @@ class AliCFParticle : public AliVParticle {
   virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
 
   virtual void SetPhi(Double_t phi) { fPhi = phi; }
-
  protected:
   Float_t fPt;
   Float_t fEta;
   Float_t fPhi;
   Short_t fCharge;
-  UInt_t fMask;     // Filter bit mask
-  ClassDef(AliCFParticle,1);
+  UInt_t  fMask;     // Filter bit mask
+  ClassDef(AliCFParticle,2);
 };
 
 #endif
