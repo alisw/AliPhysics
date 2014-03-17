@@ -416,7 +416,7 @@ void AliITSUv1::CreateGeometry() {
 							  fWrapZSpan[iw],iw,fLayZLength[j],j));
 	dest = wrapVols[iw];
 	fLay2WrapV[j] = iw;
-	break;
+	break; 
       }
     }
     fUpGeom[j]->CreateLayer(dest);
@@ -576,7 +576,10 @@ void AliITSUv1::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
   //   none.
   // Return:
   //   none.
-  
+
+  AliInfo(Form("L# %d Phi:%+.3f R:%+7.3f DZ:%7.2f Nst:%2d Nunit:%2d Lthick:%.4f Dthick:%.4f DetID:%d B:%d",
+	       nlay,phi0,r,zlen,nstav,nunit,lthick,dthick,dettypeID,buildLevel));
+
   if (nlay >= fNLayers || nlay < 0) {
     AliError(Form("Wrong layer number (%d)",nlay));
     return;
@@ -621,6 +624,9 @@ void AliITSUv1::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   //   none.
   // Return:
   //   none.
+
+  AliInfo(Form("L# %d Phi:%+.3f R:%+7.3f DZ:%7.2f Nst:%2d Nunit:%2d W:%7.4f Tilt:%+.3f Lthick:%.4f Dthick:%.4f DetID:%d B:%d",
+	       nlay,phi0,r,zlen,nstav,nunit,width,tilt,lthick,dthick,dettypeID,buildLevel));
 
   if (nlay >= fNLayers || nlay < 0) {
     AliError(Form("Wrong layer number (%d)",nlay));
