@@ -215,7 +215,7 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
   }
   if (fHneg){
     delete fHneg;
-    fHneg = 0;return
+    fHneg = 0;
   }
 }
 
