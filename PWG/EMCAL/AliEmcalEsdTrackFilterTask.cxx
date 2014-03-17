@@ -6,6 +6,7 @@
 
 #include "AliEmcalEsdTrackFilterTask.h"
 #include <TClonesArray.h>
+#include <TRandom3.h>
 #include <TGeoGlobalMagField.h>
 #include <AliAnalysisManager.h>
 #include <AliEMCALRecoUtils.h>
@@ -13,6 +14,7 @@
 #include <AliESDtrackCuts.h>
 #include <AliMagF.h>
 #include <AliTrackerBase.h>
+
 
 ClassImp(AliEmcalEsdTrackFilterTask)
 
@@ -26,6 +28,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fEsdEv(0),
   fTracks(0)
 {
@@ -42,6 +45,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fEsdEv(0),
   fTracks(0)
 {
@@ -124,8 +128,16 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
+
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
+
         if (!fEsdTrackCuts->AcceptTrack(etrack))
           continue;
+
         AliESDtrack *ntrack = AliESDtrackCuts::GetTPCOnlyTrack(fEsdEv,etrack->GetID());
         if (!ntrack)
           continue;
@@ -158,6 +170,11 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
 	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
           continue;
         AliESDtrack *ntrack = new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
@@ -174,6 +191,13 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
       AliESDtrack *etrack = fEsdEv->GetTrack(i);
       if (!etrack) 
 	continue;
+
+      if (fTrackEfficiency < 1) {
+	Double_t r = gRandom->Rndm();
+	if (fTrackEfficiency < r)
+	  continue;
+      }
+
       if (fEsdTrackCuts->AcceptTrack(etrack)) {
         AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 

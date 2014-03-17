@@ -1,11 +1,12 @@
-AliAnalysisTaskSE * AddTaskClusTrackMatching(
-					     const char*    periodstr          = "LHC11h",
-					     const UInt_t   pSel               = AliVEvent::kAny,
-					     const char*    inClus             = "EmcCaloClusters",
-					     const Double_t trackeff           = 1.0,
-					     const Bool_t   doAODTrackProp     = kFALSE,
-					     const Bool_t   modifyMatchObjs    = kTRUE,
-					     const Bool_t   doHistos           = kFALSE
+AliAnalysisTaskSE * AddTaskMatchingChain(
+					 const char*    periodstr          = "LHC11h",
+					 const UInt_t   pSel               = AliVEvent::kAny,
+					 const char*    inClus             = "EmcCaloClusters",
+					 const Double_t trackeff           = 1.0,
+					 const Bool_t   doAODTrackProp     = kFALSE,
+					 const Double_t maxMatchR          = 0.1,
+					 const Bool_t   modifyMatchObjs    = kTRUE,
+					 const Bool_t   doHistos           = kFALSE
 ) {
 
   // Add task macros for EMCal cluster track matching
@@ -43,6 +44,7 @@ AliAnalysisTaskSE * AddTaskClusTrackMatching(
     esdfilter->SetDoPropagation(kTRUE);
     esdfilter->SetDist(edist);
     esdfilter->SelectCollisionCandidates(pSel);
+    esdfilter->SetTrackEfficiency(trackeff);
   } else if (dType == "AOD") {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalAodTrackFilter.C");
     AliEmcalAodTrackFilterTask *aodfilter = AddTaskEmcalAodTrackFilter(inputTracks,"tracks",period);
@@ -51,6 +53,7 @@ AliAnalysisTaskSE * AddTaskClusTrackMatching(
       aodfilter->SetDoPropagation(kTRUE);
     }
     aodfilter->SelectCollisionCandidates(pSel);
+    aodfilter->SetTrackEfficiency(trackeff);
   }
 
   //----------------------- Produce EmcalParticles -----------------------------------------------------
@@ -65,7 +68,7 @@ AliAnalysisTaskSE * AddTaskClusTrackMatching(
 
   //----------------------- Cluster-Track matching -----------------------------------------------------
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,0.1,modifyMatchObjs,kTRUE);
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher(emctracks,emcclusters,maxMatchR,modifyMatchObjs,kTRUE);
   emcalClus->SelectCollisionCandidates(pSel);
 
   Printf("3-- inputTracks: %s emctracks: %s emcclusters: %s",inputTracks.Data(),emctracks.Data(),emcclusters.Data());
