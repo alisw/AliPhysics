@@ -507,7 +507,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   fCurrHyp = fWorkHyp;
   fCurrHyp->InitFrom(hypTr);
   //
-  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
+  AliITSURecoSens *hitSens[AliITSURecoLayer::kMaxSensMatching];
   //
   int ilaUp = fNLrActive;     // previous active layer really checked (some may be excluded!)
   //
@@ -936,6 +936,7 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   //
   fTrImpData[kTrPhiIn] = ATan2(fTrImpData[kTrYIn],fTrImpData[kTrXIn]);
   if (!sc.Rotate(fTrImpData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
+  BringTo02Pi(fTrImpData[kTrPhiIn]);
   double dr  = lrA->GetDR();                              // approximate X dist at the inner radius
   if (!sc.GetXYZAt(sc.GetX()-dr, bz, fTrImpData + kTrXOut)) {
     // special case: track does not reach inner radius, might be tangential
@@ -947,18 +948,14 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   }
   //
   fTrImpData[kTrPhiOut] = ATan2(fTrImpData[kTrYOut],fTrImpData[kTrXOut]);
+  BringTo02Pi(fTrImpData[kTrPhiOut]);
   double sgy = sc.GetSigmaY2() + dr*dr*sc.GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
   double sgz = sc.GetSigmaZ2() + dr*dr*sc.GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
   sgy = Sqrt(sgy)*fCurrTrackCond->GetNSigmaRoadY(ilrA);
   sgz = Sqrt(sgz)*fCurrTrackCond->GetNSigmaRoadZ(ilrA);
-  double dphi0 = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]);
-  double phi0  = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
-  if ( dphi0>(0.5*Pi()) ) {
-    // special case of angles around pi 
-    dphi0 = Abs(phi0);    
-    phi0  += Pi();
-  }
-
+  double phi0  = MeanPhiSmall(fTrImpData[kTrPhiOut],fTrImpData[kTrPhiIn]);
+  double dphi0 = DeltaPhiSmall(fTrImpData[kTrPhiOut],fTrImpData[kTrPhiIn]);
+  //
   fTrImpData[kTrPhi0] = phi0;
   fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrZIn]);
   dphi0 += sgy/lrA->GetR();
