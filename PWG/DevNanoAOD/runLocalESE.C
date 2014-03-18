@@ -31,8 +31,8 @@ AliESETrkCut * TrkCuts() {
 
   AliSpectraAODTrackCuts  * trcuts = new AliSpectraAODTrackCuts("TrackCuts");  
   trcuts->SetDCA(100000);
-  trcuts->SetTrackBits(1);
-  trcuts->SetPt(50);
+  trcuts->SetTrackBits(1024);
+  trcuts->SetPt(15);
   trcuts->SetPtTOFMatching(0.6);   
   trcuts->SetEta(-0.8,0.8);
   trcuts->SetMinTPCcls(70);
