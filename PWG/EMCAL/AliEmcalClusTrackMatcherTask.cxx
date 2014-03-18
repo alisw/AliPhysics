@@ -22,7 +22,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
   AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
-  fMaxDistance(0.06),
+  fMaxDistance(0.1),
   fModifyObjs(kFALSE),
   fOrigTracks(0),
   fOrigClus(0),
@@ -44,7 +44,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name,histo),
-  fMaxDistance(0.06),
+  fMaxDistance(0.1),
   fModifyObjs(kFALSE),
   fOrigTracks(0),
   fOrigClus(0),
