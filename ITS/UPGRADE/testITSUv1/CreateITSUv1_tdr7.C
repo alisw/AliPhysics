@@ -90,8 +90,8 @@ void CreateITSUv1_tdr7()
   ITS->SetStaveModelOB(AliITSUv1::kOBModel1);
   //
   const int kNWrapVol = 3;
-  const double wrpRMin[kNWrapVol]  = { 2.1, 15.0+dltR, 32.0};
-  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0+dltR+2.3, 43.0+1.5};
+  const double wrpRMin[kNWrapVol]  = { 2.1, 15.0+dltR, 32.0+2.0};
+  const double wrpRMax[kNWrapVol]  = { 7.0, 27.0+dltR+2.0, 43.0+1.5};
   const double wrpZSpan[kNWrapVol] = {28.0, 86.0+dltZ, 150.0};
   //
   ITS->SetNWrapVolumes(kNWrapVol); // define wrapper volumes for layers
