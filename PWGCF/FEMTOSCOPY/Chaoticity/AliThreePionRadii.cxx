@@ -561,8 +561,8 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
     fQcut[1]=0.1;//k-k
     fQcut[2]=0.6;//the rest
-    fNormQcutLow[0] = 0.15;//0.15
-    fNormQcutHigh[0] = 0.175;//0.175
+    fNormQcutLow[0] = 1.15;// was 0.15
+    fNormQcutHigh[0] = 1.2;// was 0.175
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -581,8 +581,8 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=0.2;//pi-pi, pi-k, pi-p
     fQcut[1]=0.2;//k-k
     fQcut[2]=1.2;//the rest
-    fNormQcutLow[0] = 0.3;//0.15
-    fNormQcutHigh[0] = 0.35;//0.175
+    fNormQcutLow[0] = 1.15;// was 0.3
+    fNormQcutHigh[0] = 1.2;// was 0.35
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -601,8 +601,8 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=2.0;// 0.4
     fQcut[1]=2.0;
     fQcut[2]=2.0;
-    fNormQcutLow[0] = 1.0;
-    fNormQcutHigh[0] = 1.2;// 1.5
+    fNormQcutLow[0] = 1.15;// was 1.0
+    fNormQcutHigh[0] = 1.2;// was 1.2
     fNormQcutLow[1] = 1.0;
     fNormQcutHigh[1] = 1.2;
     fNormQcutLow[2] = 1.0;
@@ -610,7 +610,7 @@ void AliThreePionRadii::ParInit()
     //
     fQlimitC2 = 2.0;
     fQbinsC2 = 200;
-    fQupperBound = 0.4;// was 0.4
+    fQupperBound = 0.5;// was 0.4
     fQbins = kQbinsPP;
     //
     fDampStart = 0.5;
@@ -714,6 +714,10 @@ void AliThreePionRadii::UserCreateOutputObjects()
   TH1F *fEvents2 = new TH1F("fEvents2","Events vs. fMbin",fMbins,.5,fMbins+.5);
   fOutputList->Add(fEvents2);
   
+  TH1F *fMultDist0 = new TH1F("fMultDist0","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
+  fMultDist0->GetXaxis()->SetTitle("Multiplicity");
+  fOutputList->Add(fMultDist0);
+
   TH1F *fMultDist1 = new TH1F("fMultDist1","Multiplicity Distribution",fMultLimit,-.5,fMultLimit-.5);
   fMultDist1->GetXaxis()->SetTitle("Multiplicity");
   fOutputList->Add(fMultDist1);
@@ -1062,7 +1066,8 @@ void AliThreePionRadii::UserCreateOutputObjects()
 
   
     
-  
+  TH1D *frstar4VectDist = new TH1D("frstar4VectDist","",10000,0,100);
+  fOutputList->Add(frstar4VectDist);
   
   
   TProfile *fQsmearMean = new TProfile("fQsmearMean","",2,0.5,2.5, -0.2,0.2,"");
@@ -1195,6 +1200,8 @@ void AliThreePionRadii::UserExec(Option_t *)
       //cout<<"AOD multiplicity = "<<fAOD->GetNumberOfTracks()<<endl;
     }
     
+    ((TH1F*)fOutputList->FindObject("fMultDist0"))->Fill(fAOD->GetNumberOfTracks());
+
     // Pile-up rejection
     AliAnalysisUtils *AnaUtil=new AliAnalysisUtils();
     if(!fPbPbcase) AnaUtil->SetUseMVPlpSelection(kTRUE);// use Multi-Vertex tool for pp and pPb
@@ -1255,7 +1262,8 @@ void AliThreePionRadii::UserExec(Option_t *)
       status=aodtrack->GetStatus();
                 
       if(!aodtrack->TestFilterBit(BIT(7))) continue;// AOD filterBit cut
-      
+      if(aodtrack->GetTPCNcls() < 70) continue;// TPC nCluster cut
+
       // FilterBit Overlap Check
       if(fFilterBit != 7){
 	Bool_t goodTrackOtherFB = kFALSE;
@@ -1974,6 +1982,7 @@ void AliThreePionRadii::UserExec(Option_t *)
 	    
 	    Charge1[bin1].Charge2[bin2].SC[fillIndex2].MB[fMbin].EDB[fEDbin].TwoPT[en2].fPIDpurityNum->Fill(SCNumber, transK12, qinv12);
 	    
+	   
 	    ///////////////////////
 	    // muon contamination
 	    if(qinv12 < fQcut[0] && ((fEvt)->fTracks[i].fLabel != (fEvt+en2)->fTracks[j].fLabel)){
