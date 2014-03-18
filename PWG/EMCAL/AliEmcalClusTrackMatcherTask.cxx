@@ -255,22 +255,22 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
     clust->SetEmcCpvDistance(matchedId);
     clust->SetTrackDistance(deta, dphi);
-    if (!fOrigTracks) 
-      continue;
     if (ac) {
       for (Int_t i=0; i<N; ++i) {
 	Int_t id = partC->GetMatchedObjId(i);
-	TObject *obj = fOrigTracks->At(id);
+	partT = static_cast<AliEmcalParticle*>(tracks->GetParticle(id));
+	TObject *obj = partT->GetTrack();
 	ac->AddTrackMatched(obj);
-     }
-      continue;
+      }
+    } else {
+      TArrayI arr(N);
+      for (Int_t i=0; i<N; ++i) {
+	Int_t id = partC->GetMatchedObjId(i);
+	partT = static_cast<AliEmcalParticle*>(tracks->GetParticle(id));
+	arr.AddAt(partT->IdInCollection(),i);
+      }
+      ec->AddTracksMatched(arr);
     }
-    TArrayI arr(N);
-    for (Int_t i=0; i<N; ++i) {
-      Int_t id = partC->GetMatchedObjId(i);
-      arr.AddAt(id,i);
-    }
-    ec->AddTracksMatched(arr);
   }
   
   tracks->ResetCurrentID();
@@ -279,7 +279,8 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     track->ResetStatus(AliVTrack::kEMCALmatch);
     if (partT->GetNumberOfMatchedObj() <= 0)
       continue;
-    track->SetEMCALcluster(partT->GetMatchedObjId());
+    partC = static_cast<AliEmcalParticle*>(clusters->GetParticle(partT->GetMatchedObjId()));
+    track->SetEMCALcluster(partC->IdInCollection());
     track->SetStatus(AliVTrack::kEMCALmatch);
   }
 
