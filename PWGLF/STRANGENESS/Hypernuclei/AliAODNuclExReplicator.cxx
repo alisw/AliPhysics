@@ -563,10 +563,13 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
     //---------------------------------------------------------------
      
-    Double_t mom = aodtrack->GetDetPid()->GetTPCmomentum();
+    //    Double_t mom = aodtrack->GetDetPid()->GetTPCmomentum();
+    Double_t mom = aodtrack->P();
     
     if(mom<0.150)continue;
-    
+   
+
+ 
     Double_t nSigmaNegPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodtrack,(AliPID::EParticleType)fpartType1)); 
     //    cout<<"%%% nsigma Pi: "<<nSigmaNegPion<<endl;
     //    Double_t nSigmaNegPion = TMath::Abs((aodtrack->GetTPCsignal() - foPion->Eval(mom))/foPion->Eval(mom))/0.07;
@@ -579,8 +582,8 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     //cout<<"%%% nsigma Nuclei: "<<nSigmaNuclei<<endl;
   
     if(nSigmaNuclei>-fnSigmaTrk2 && aodtrack->GetTPCsignal()<1000 && mom>0.2){ 
-    
-      //Double_t triggerDeDx = 4*AliExternalTrackParam::BetheBlochAleph((mom*2)/(0.938*3),1.0288,31.9806,5.04114e-11,2.13096,2.38541);
+   
+    //Double_t triggerDeDx = 4*AliExternalTrackParam::BetheBlochAleph((mom*2)/(0.938*3),1.0288,31.9806,5.04114e-11,2.13096,2.38541);
       //if(aodtrack->GetTPCsignal() > triggerDeDx && aodtrack->GetTPCsignal()<5000 && mom>0.2 /*&& aodtrack->Charge()==1*/){
       
       Track1[nTrack1++]=j;
@@ -667,8 +670,8 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       // cout<<"pointing angle "<<io2Prong->CosPointingAngle()<<endl;
       
       
-      AliAODTrack *trk0 = (AliAODTrack*)io2Prong->GetDaughter(0);
-      AliAODTrack *trk1 = (AliAODTrack*)io2Prong->GetDaughter(1);
+      // AliAODTrack *trk0 = (AliAODTrack*)io2Prong->GetDaughter(0);
+      // AliAODTrack *trk1 = (AliAODTrack*)io2Prong->GetDaughter(1);
     
       // cout<<"**********************************************"<<endl;
       // cout<<trk0/*->GetID()*/<<" "<<negtrackAOD->GetID()<<endl;
@@ -705,7 +708,7 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   }
   
   //----------------------------------------------------------
-  
+ 
   assert(fVertices!=0x0);
   fVertices->Clear("C");
   TIter nextV(source.GetVertices());
@@ -714,12 +717,12 @@ void AliAODNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   
   while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
     {
-      if (  v->GetType() == AliAODVertex::kPrimary     ||
-	    v->GetType() == AliAODVertex::kMainSPD     ||
-	    v->GetType() == AliAODVertex::kPileupSPD   ||
-	    v->GetType() == AliAODVertex::kPileupTracks||
-	    v->GetType() == AliAODVertex::kMainTPC  ) 
-	{
+       if (  v->GetType() == AliAODVertex::kPrimary     ||
+       	    v->GetType() == AliAODVertex::kMainSPD     ||
+       	    v->GetType() == AliAODVertex::kPileupSPD   ||
+       	    v->GetType() == AliAODVertex::kPileupTracks||
+       	    v->GetType() == AliAODVertex::kMainTPC  ) 
+       	{
 	  AliAODVertex* tmp = v->CloneWithoutRefs();
 	  AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
 	  
