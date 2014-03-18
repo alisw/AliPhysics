@@ -217,6 +217,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fPhoVertexReco_step3;
  TH2D                   *fPhoVertexReco_step4;
  TH2D                   *fPhoVertexReco_step5;
+ TH1D                   *fMatchV0_0;
+ TH1D                   *fMatchV0_1;
+ TH1D                   *fMatchMC_0;
+ TH1D                   *fMatchMC_1;
 
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];
