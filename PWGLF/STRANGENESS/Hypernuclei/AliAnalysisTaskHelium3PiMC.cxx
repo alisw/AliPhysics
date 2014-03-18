@@ -449,23 +449,15 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Float_t vett2[40];
   for(Int_t i=0;i<40;i++) vett2[i]=0;
 
-  Double_t ITSsample[4];
-  for(Int_t i=0;i<4;i++)ITSsample[i]=0;
 
-  Double_t ITSsamplePos[4];
-  for(Int_t i=0;i<4;i++)ITSsamplePos[i]=0;
-
-  Double_t ITSsampleNeg[4];
-  for(Int_t i=0;i<4;i++)ITSsampleNeg[i]=0;
-
-  Double_t  pinTPC=0.,poutTPC=0.,TPCSignal=0.;
+  Double_t  pinTPC=0.,TPCSignal=0.;
   Double_t xPrimaryVertex=0.,yPrimaryVertex=0.,zPrimaryVertex=0.;
 
   ULong_t  status=0;
   ULong_t  statusT=0;
   ULong_t  statusPi=0;
 
-  Bool_t   isTPC=kFALSE,isTOF=kFALSE,isTOFHe3=kFALSE,isTOFPi=kFALSE;
+  Bool_t   isTPC=kFALSE,isTOFHe3=kFALSE,isTOFPi=kFALSE;
 
   Double_t fPos[3]={0.,0.,0.};
   Double_t runNumber=0.;
@@ -477,14 +469,13 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 
   Double_t lEtaCurrentPart =0., lPtCurrentPart = 0.,lThetaCurrentPart = 0., lPhiCurrentPart = 0.;
   Int_t iCurrentMother = 0;
-  Double_t mcPosX = 0.,	mcPosY = 0.,mcPosZ = 0., mcPosR = 0.;
+  Double_t mcPosX = 0.,	mcPosY = 0.,mcPosZ = 0.;
 
-  Double_t lPdgCurrentDaughter0 = 0, lPdgCurrentDaughter1= 0., lPdgCurrentMother=0.,lPdgCurrentDaughter =0;
+  Double_t lPdgCurrentDaughter0 = 0, lPdgCurrentDaughter1= 0., /*lPdgCurrentMother=0.,*/lPdgCurrentDaughter =0;
 
   Double_t PxD0 = 0, PyD0 = 0,PzD0 = 0;
   Double_t PxD1 = 0, PyD1 = 0,PzD1 = 0;
 
-  Int_t lNbMCPrimary        = 0;
   Int_t lNbMCPart           = 0;
   Int_t lPdgcodeCurrentPart = 0;
   //!----------------------------------------------------------------
@@ -515,8 +506,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Info("AliAnalysisTaskHelium3PiMC","Starting UserExec");  
 
   SetDataType("SIM");
-  AliStack *stack=0;
-  
+  AliStack *stack = 0;
   if(fDataType == "SIM") {
     
     // Main loop
@@ -534,8 +524,11 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     if( !stack ) { Printf( "Stack not available"); return; }
   }
   
-
-  AliESDEvent *lESDevent = 0x0;
+  else{
+    Printf( "This Task Works Only on Simulation");
+    return;
+  }
+  AliESDEvent *lESDevent = 0;
 
   //********************************** Connect to the InputEvent ******//
   
@@ -548,11 +541,16 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     }
   }
 
+  else{
+    Printf("This Analysis Works Only for ESD\n");
+    return;
+  }
+
   //*****************//  
   //*   Centrality  *//
   //*****************//
 
-  AliCentrality *centrality = lESDevent->GetCentrality();
+  AliCentrality *centrality = (AliCentrality*)lESDevent->GetCentrality();
  
   Float_t percentile=centrality->GetCentralityPercentile("V0M");
   
@@ -566,7 +564,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   //  Int_t primary = stack->GetNprimary();
   Int_t label =-1;
 
-  lNbMCPrimary = stack->GetNprimary();
   lNbMCPart    = stack->GetNtrack();
       
   fHistMCMultiplicityTracks->Fill(lNbMCPart);     //histo
@@ -646,12 +643,11 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
 	fHistMCPt->Fill(lPtCurrentPart);      
 	fHistMCTheta->Fill(lThetaCurrentPart);
 	
-	if (iCurrentMother == -1){lPdgCurrentMother=0; } else {lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();}
+	//	if (iCurrentMother == -1){lPdgCurrentMother=0; } else {lPdgCurrentMother = stack->Particle(iCurrentMother)->GetPdgCode();}
 	 
 	mcPosX = p0->Vx();
 	mcPosY = p0->Vy();
 	mcPosZ = p0->Vz();
-	mcPosR = TMath::Sqrt(mcPosX*mcPosX+mcPosY*mcPosY);
 
 	isTwoBody=kFALSE;
 	
@@ -880,8 +876,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   Int_t motherPDGNeg=0;
   Int_t motherPDGPos=0;
 
-  Int_t mumpdg=-100;
-  
   //!   SELECTIONS:
   //! - No ITSpureSA
   //! - ITSrefit
@@ -925,7 +919,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     status  = (ULong_t)esdtrack->GetStatus();
     
     isTPC   = (((status) & (AliESDtrack::kTPCin))  != 0);
-    isTOF   = ((((status) & (AliESDtrack::kTOFout)) != 0) && (((status) & (AliESDtrack::kTIME)) != 0));
     
     Bool_t IsTrackAcceptedTPC =  esdtrackCutsTPC->AcceptTrack(esdtrack);
     Bool_t IsTrackAcceptedITS =  esdtrackCutsITS->AcceptTrack(esdtrack);
@@ -953,8 +946,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     AliExternalTrackParam trackIn(*esdtrack->GetInnerParam()); 
     pinTPC = trackIn.GetP(); 
         
-    poutTPC=pinTPC;
-  
     fhBBTPC->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
     
     d=esdtrack->GetD(xPrimaryVertex,yPrimaryVertex,lMagneticField);
@@ -979,12 +970,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     TParticle * part = stack->Particle(label);
     	
     Int_t PDGCode=part->GetPdgCode();
-    Int_t mumid = part->GetFirstMother();
-
-    if(mumid>-1){
-      TParticle *mother=(TParticle*)stack->Particle(mumid);
-      mumpdg = mother->GetPdgCode();
-    }
     
     if(PDGCode==-211)
       fhBBTPCNegativePions->Fill(esdtrack->GetSign()*esdtrack->P(),esdtrack->GetTPCsignal());
@@ -1075,10 +1060,6 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
   impactXY=-999, impactZ=-999;
   impactXYpi=-999, impactZpi=-999;
   
-  // Track 
-  
-  AliESDtrack  *PionTrack = 0x0;
-  AliESDtrack  *HeTrack = 0x0;
   
   // Vettori per il PxPyPz
   
@@ -1107,7 +1088,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
     
     Int_t PionIdx=PionsTPC[k];
     
-    PionTrack=lESDevent->GetTrack(PionIdx);
+    AliESDtrack  *PionTrack=lESDevent->GetTrack(PionIdx);
     
     statusPi = (ULong_t)PionTrack->GetStatus();
     IsPiITSRefit = ((statusPi) & (AliESDtrack::kITSrefit)); 
@@ -1133,7 +1114,7 @@ void AliAnalysisTaskHelium3PiMC::UserExec(Option_t *)
       
       Int_t HeIdx=HeTPC[i];
       
-      HeTrack=lESDevent->GetTrack(HeIdx);
+      AliESDtrack  *HeTrack=lESDevent->GetTrack(HeIdx);
       
       statusT= (ULong_t)HeTrack->GetStatus();
       IsHeITSRefit = ((statusT) & (AliESDtrack::kITSrefit)); 
