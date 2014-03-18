@@ -76,6 +76,7 @@ updateQA()
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
     echo
     echo "##############################################"
+    echo $(date)
     unset planB
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
@@ -119,6 +120,7 @@ updateQA()
     declare -A arrOfTouchedProductions
     while read qaFile; do
       echo
+      echo $(date)
       
       #first check if input file exists
       [[ ! -f ${qaFile%\#*} ]] && echo "file ${qaFile%\#*} not accessible" && continue
@@ -203,6 +205,7 @@ updateQA()
       cd ${tmpProductionDir}
       echo
       echo "running period level stuff in ${tmpProductionDir}"
+      echo $(date)
     
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
       echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
