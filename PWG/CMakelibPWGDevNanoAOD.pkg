@@ -36,6 +36,7 @@ set ( SRCS
     DevNanoAOD/AliNanoAODStorage.cxx
     DevNanoAOD/AliNanoAODTrack.cxx
     DevNanoAOD/AliNanoAODTrackMapping.cxx
+    DevNanoAOD/AliAnalysisTaskSpectraAllChNanoAOD.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
