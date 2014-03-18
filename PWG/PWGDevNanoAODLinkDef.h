@@ -17,7 +17,7 @@
 #pragma link C++ class AliESEEvtCut+;
 #pragma link C++ class AliESETrkCut+;
 #pragma link C++ class AliAnalysisESESetter+;         
-
+#pragma link C++ class AliAnalysisTaskSpectraAllChNanoAOD+;
 
 
 
