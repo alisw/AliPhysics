@@ -1847,7 +1847,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 	    AliDebug(3, "Could not access MC info for second daughter of Lc");
 	  }
 	  else { // we can access safely the K0S mother in the MC
-	    if( daughv01Lc->GetMother() ==  daughv02Lc->GetMother() && daughv01Lc->GetMother()>=0 ){  // This is a true cascade! bachelor and V0 come from the same mother
+	    if( daughv01Lc && daughv02Lc && daughv01Lc->GetMother() ==  daughv02Lc->GetMother() && daughv01Lc->GetMother()>=0 ){  // This is a true cascade! bachelor and V0 come from the same mother
 	      //Printf("Lc: The mother has label %d", daughv01Lc->GetMother());
 	      AliAODMCParticle *motherLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughv01Lc->GetMother()));
 	      Int_t pdgMum = 0, pdgBach = 0, pdgV0 = 0;
