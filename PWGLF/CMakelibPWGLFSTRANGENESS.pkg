@@ -58,6 +58,9 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAODRecoDecayLF2Prong.cxx
   STRANGENESS/Hypernuclei/AliAODNuclExReplicator.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilter.cxx
+  STRANGENESS/Hypernuclei/AliAODMCNuclExReplicator.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
  
 
 )
