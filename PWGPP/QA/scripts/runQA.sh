@@ -108,6 +108,7 @@ updateQA()
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
     
+    #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
     unset -f periodLevelQA
     unset -f runLevelHighPtTreeQA
