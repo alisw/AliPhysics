@@ -981,9 +981,6 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
     
     // Track 
     
-    AliESDtrack  *PionTrack = 0x0;
-    AliESDtrack  *HeTrack = 0x0;
-    
     // Vettors for il PxPyPz
     
     Double_t momPionVett[3];
@@ -1009,7 +1006,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
       
       Int_t PionIdx=PionsTPC[k];
       
-      PionTrack=lESDevent->GetTrack(PionIdx);
+      AliESDtrack  *PionTrack=lESDevent->GetTrack(PionIdx);
       
       statusPi = (ULong_t)PionTrack->GetStatus();
       //      isTOFPi  = ((((statusPi) & (AliESDtrack::kTOFout)) != 0) && (((statusPi) & (AliESDtrack::kTIME)) != 0));
@@ -1026,7 +1023,7 @@ void AliAnalysisTaskHelium3Pi::UserExec(Option_t *)
 	
 	Int_t HeIdx=HeTPC[i];
 	
-	HeTrack=lESDevent->GetTrack(HeIdx);
+	 AliESDtrack  *HeTrack=lESDevent->GetTrack(HeIdx);
 	
 	//	statusT= (ULong_t)HeTrack->GetStatus();
 	//	isTOFHe   = (((statusT & AliESDtrack::kTOFout) != 0) && ((statusT & AliESDtrack::kTIME) != 0));
