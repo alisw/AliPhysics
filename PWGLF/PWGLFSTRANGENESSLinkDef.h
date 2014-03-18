@@ -37,5 +37,7 @@
 #pragma link C++ class AliAODRecoDecayLF2Prong+;
 #pragma link C++ class AliAODNuclExReplicator+;
 #pragma link C++ class AliAnalysisTaskESDNuclExFilter+;
-
+#pragma link C++ class AliAODMCNuclExReplicator+;
+#pragma link C++ class AliAnalysisTaskESDNuclExFilterMC+;
+#pragma link C++ class AliAnalysisTaskReadNuclexAOD+;
 #endif
