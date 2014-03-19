@@ -293,6 +293,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistKolmogorovTestCent;//! KolmogorovTest value, centrality correlation
         TH2F*                   fHistPKolmogorov;       //! p value vs kolmogorov value
         TH2F*                   fHistRhoStatusCent;     //! status of rho as function of centrality
+        TH1F*                   fHistUndeterminedRunQA; //! undetermined run QA
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
         Float_t                 fRandomConeRadius;      // radius of random cone
@@ -383,7 +384,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 23);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 24);
 };
 
 #endif
