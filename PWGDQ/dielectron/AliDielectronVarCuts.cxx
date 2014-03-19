@@ -36,6 +36,7 @@ ClassImp(AliDielectronVarCuts)
 
 AliDielectronVarCuts::AliDielectronVarCuts() :
   AliAnalysisCuts(),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNActiveCuts(0),
   fActiveCutsMask(0),
   fSelectedCutsMask(0),
@@ -56,6 +57,7 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
 //________________________________________________________________________
 AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) :
   AliAnalysisCuts(name,title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fNActiveCuts(0),
   fActiveCutsMask(0),
   fSelectedCutsMask(0),
@@ -79,6 +81,7 @@ AliDielectronVarCuts::~AliDielectronVarCuts()
   //
   // Destructor
   //
+  if (fUsedVars) delete fUsedVars;
 }
 
 //________________________________________________________________________
@@ -103,6 +106,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
 
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
+  AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(track,values);
   
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
@@ -134,6 +138,7 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
   fCutExclude[fNActiveCuts]=excludeRange;
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
+  fUsedVars->SetBitNumber(type,kTRUE);
   ++fNActiveCuts;
 }
 

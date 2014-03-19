@@ -1489,7 +1489,7 @@ void AliJetFlowTools::GetNominalValues(
             fBinsTrue->At(fBinsTrue->GetSize()),
             readMe,
             "nominal_values");
-    v2 = GetV2(nominalIn, nominalOut, .5666666, "nominal v_{2}");
+    v2 = GetV2(nominalIn, nominalOut, .57, "nominal v_{2}");
 
     // close the open files, reclaim ownership of histograms which are necessary outside of the file scope
     ratio->SetDirectory(0);     // disassociate from current gDirectory
@@ -1704,15 +1704,16 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    .57,
                     "v_{2} with correlated uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
-                    relativeErrorOutLow));
+                    relativeErrorOutLow,
+                    1.));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .57, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2000,14 +2001,14 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    .57,
                     "v_{2} with shape uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
                     relativeErrorOutLow));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .57, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2147,7 +2148,10 @@ void AliJetFlowTools::GetShapeUncertainty(
    TProfile* ratioProfile(new TProfile(Form("SYST_%s_ratioProfile", source.Data()), Form("SYST_%s_ratioProfile", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    TProfile* v2Profile(new TProfile(Form("SYST_%s_v2Profile", source.Data()), Form("SYST_%s_v2Profile", source.Data()),fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
    // get an estimate of the number of outputs and find the default set
-   Int_t rows(TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
+
+   Int_t rows = 1;
+   columns = variationsIn->GetSize()-1;
+   (TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
    canvasIn->Divide(columns, rows);
    if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
@@ -2256,6 +2260,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2266,6 +2271,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2381,6 +2387,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2391,6 +2398,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2497,7 +2505,7 @@ void AliJetFlowTools::GetShapeUncertainty(
            }
            canvasV2->cd(j);
            if(i==0) canvasNominalV2->cd(j);
-           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .56, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .57, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
            if(ratioV2) {
                Style(ratioV2);
                for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
@@ -2769,6 +2777,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             } else if(rm && eff) {
                                 Style(rm);
@@ -2777,6 +2786,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             }
                         }
@@ -2855,6 +2865,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2863,6 +2874,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2938,6 +2950,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2946,6 +2959,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -3209,7 +3223,7 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
             out = h2->GetBinContent(j);
             eout = h2->GetBinError(j);
             ratio = pre*((in-out)/(in+out));
-            error2 =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
+            error2 =TMath::Power(((r*4.)/(TMath::Pi())), 2.)*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
             if(error2 > 0) error2 = TMath::Sqrt(error2);
             gr->SetPoint(gr->GetN(),binCent,ratio);
             gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
@@ -3224,10 +3238,12 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         TH1* relativeErrorInUp,
         TH1* relativeErrorInLow,
         TH1* relativeErrorOutUp,
-        TH1* relativeErrorOutLow) const
+        TH1* relativeErrorOutLow,
+        Float_t rho) const
 {
     // get v2 with asymmetric systematic error
     // note that this is ONLY the systematic error, no statistical error!
+    // rho is the pearson correlation coefficient
     TGraphErrors* tempV2(GetV2(h1, h2, r, name));
     Double_t* ax = new Double_t[fBinsTrue->GetSize()-1];
     Double_t* ay = new Double_t[fBinsTrue->GetSize()-1];
@@ -3246,8 +3262,8 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         eoutUp = out*relativeErrorOutUp->GetBinContent(1+i);
         eoutLow = out*relativeErrorOutLow->GetBinContent(1+i);
         // get the error squared
-        error2Up =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp);
-        error2Low =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow);
+        error2Up =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
         // set the errors 

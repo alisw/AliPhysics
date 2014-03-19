@@ -4,7 +4,8 @@ main()
   if [[ -z $1 ]]; then
     echo "Usage: "
     echo "  ${0##*/} option=value [option=value]"
-    echo "  at least one option, either inputList or configFile should be specified,"
+    echo "  at least inputList should be specified, or configFile containing it:"
+    echo "  ${0##*/} inputList=file.list"
     echo "  options override config file (if any), e.g.:"
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
@@ -15,12 +16,16 @@ main()
     return 1
   fi
 
-  [[ -z $ALICE_ROOT ]] && source ${alirootEnv}
   [[ -z $ALICE_ROOT ]] && echo "ALICE_ROOT not defined" && return 1
 
   ocdbregex='raw://'
   if [[ ${ocdbStorage} =~ ${ocdbregex} ]]; then
-    alien-token-init
+    alien-token-init ${alienUserName}
+    #this is a hack! alien-token init seems not enough
+    #but the gclient_env script messes up the LD_LIBRARY_PATH
+    while read x; do
+      eval ${x};
+    done < <(grep -v "LD_LIBRARY_PATH" /tmp/gclient_env_${UID})
   fi
 
   updateQA $@
@@ -32,10 +37,10 @@ updateQA()
   parseConfig $@
 
   #be paranoid and make some full paths
-  inputList=$(readlink -f ${inputList})
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
-  workingDirectory=$(readlink -f ${workingDirectory})
+  inputList=$(get_realpath ${inputList})
   mkdir -p ${workingDirectory}
+  workingDirectory=$(workingDirectory=${workingDirectory%/}; cd ${workingDirectory%/*}; echo "${PWD}/${workingDirectory##*/}")
   if [[ ! -d ${workingDirectory} ]]; then
     echo "working dir $workingDirectory does not exist and cannot be created"
     return 1
@@ -57,36 +62,41 @@ updateQA()
   touch ${logFile}
   [[ ! -f ${logFile} ]] && echo "cannot write logfile $logfile" && return 1
   echo "logFile = $logFile"
-  exec &>${logFile}
 
   #check lock
   lockFile=${logDirectory}/runQA.lock
-  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" && return 1
+  [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
-  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" && return 1
+  [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
   
+  exec &>${logFile}
+
   ################################################################
   #ze detector loop
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
-
-    [[ ! ${detectorScript} =~ .*\.sh ]] && continue
+    echo
+    echo "##############################################"
+    echo $(date)
+    unset planB
+    [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
     detector=${detector##*/}
     
     #skip if excluded
-    skipDetector=0
-    for excluded in ${excludeDetectors}; do
-      if [[ ${detector} =~ ${excluded} ]]; then
-        echo "${detector} is excluded in config, skipping..."
-        skipDetector=1
-        break
-      fi
-    done
-    [[ ${skipDetector} -eq 1 ]] && continue
+    if [[ "${excludeDetectors}" =~ ${detector} ]]; then
+      echo "${detector} is excluded in config, skipping..."
+      continue
+    fi
+
+    #if includeDetectors set, only process thoe detectors specified there
+    if [[ -n ${includeDetectors} && ! "${includeDetectors}" =~ ${detector} ]]; then
+      echo "${detector} not included in includeDetectors, skipping..."
+      continue
+    fi
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
-    tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}
+    tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}-${dateString}
     if ! mkdir -p ${tmpDetectorRunDir}; then
       echo "cannot create the temp dir $tmpDetectorRunDir"
       continue
@@ -94,14 +104,15 @@ updateQA()
     cd ${tmpDetectorRunDir}
 
     tmpPrefix=${tmpDetectorRunDir}/${outputDir}
-    echo
-    echo "##############################################"
     echo "running QA for ${detector}"
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
     
+    #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
     unset -f periodLevelQA
+    unset -f runLevelHighPtTreeQA
+    unset -f periodLevelHighPtTreeQA
     source ${detectorScript}
 
     #################################################################
@@ -110,6 +121,10 @@ updateQA()
     declare -A arrOfTouchedProductions
     while read qaFile; do
       echo
+      echo $(date)
+      
+      #first check if input file exists
+      [[ ! -f ${qaFile%\#*} ]] && echo "file ${qaFile%\#*} not accessible" && continue
 
       if ! guessRunData ${qaFile}; then
         echo "could not guess run data from ${qaFile}"
@@ -117,16 +132,63 @@ updateQA()
       fi
 
       tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
-      arrOfTouchedProductions[${tmpProductionDir}]=1
       tmpRunDir=${tmpProductionDir}/000${runNumber}
       mkdir -p ${tmpRunDir}
       cd ${tmpRunDir}
 
-      #handle the case of a zip archive
-      [[ "$qaFile" =~ .*.zip$ ]] && qaFile="${qaFile}#QAresults.root"
+      #by default we expect to have everything in the same archive
+      highPtTree=${qaFile}
+
+      #maybe the input is not an archive, but a file
+      [[ "${qaFile}" =~ QAresults.root$ ]] && highPtTree=""
+      [[ "${qaFile}" =~ FilterEvents_Trees.root$ ]] && qaFile=""
+
+      #it is possible we get the highPt trees from somewhere else
+      #search the list of high pt trees for the proper run number
+      if [[ -n ${inputListHighPtTrees} ]]; then
+        highPtTree=$(egrep -m1 ${runNumber} ${inputListHighPtTrees})
+        echo "loaded the highPtTree ${highPtTree} from external file ${inputListHighPtTrees}"
+      fi
       
-      echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
-      runLevelQA ${qaFile} &> runLevelQA.log
+      echo qaFile=$qaFile
+      echo highPtTree=$highPtTree
+
+      #what if we have a zip archive?
+      if [[ "$qaFile" =~ .*.zip$ ]]; then
+        if unzip -l ${qaFile} | egrep "QAresults.root" &>/dev/null; then
+          qaFile="${qaFile}#QAresults.root"
+        else
+          qaFile=""
+        fi
+      fi
+      if [[ "$highPtTree" =~ .*.zip$ ]]; then
+        if unzip -l ${highPtTree} | egrep "FilterEvents_Trees.root" &>/dev/null; then
+          highPtTree="${highPtTree}#FilterEvents_Trees.root"
+        else
+          highPtTree=""
+        fi
+      fi
+     
+      if [[ -n ${qaFile} && $(type -t runLevelQA) =~ "function" ]]; then
+        echo running ${detector} runLevelQA for run ${runNumber} from ${qaFile}
+        runLevelQA "${qaFile}" &> runLevelQA.log
+        #perform some default actions:
+        #if trending.root not created, create a default one
+        if [[ ! -f trending.root ]]; then
+          aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
+        fi
+        if [[ -f trending.root ]]; then
+          arrOfTouchedProductions[${tmpProductionDir}]=1
+        else
+          echo "trending.root not created"
+        fi
+      fi
+      #expert QA based on high pt trees
+      if [[ -n ${highPtTree} && $(type -t runLevelHighPtTreeQA) =~ "function" ]]; then
+        echo running ${detector} runLevelHighPtTreeQA for run ${runNumber} from ${highPtTree}
+        runLevelHighPtTreeQA "${highPtTree}" &> runLevelHighPtTreeQA.log
+        arrOfTouchedProductions[${tmpProductionDir}]=1
+      fi
 
       cd ${tmpDetectorRunDir}
     
@@ -139,21 +201,24 @@ updateQA()
     echo
 
     #################################################################
-    #(re)do the merging/trending in the final destination
+    #(re)do the merging/trending 
     for tmpProductionDir in ${!arrOfTouchedProductions[@]}; do
+      cd ${tmpProductionDir}
       echo
       echo "running period level stuff in ${tmpProductionDir}"
+      echo $(date)
     
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
+      echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
 
       mkdir -p ${productionDir}
       if [[ ! -d ${productionDir} ]]; then 
         echo "cannot make productionDir $productionDir" && continue
       fi
-      cd ${productionDir}
       
-      #move to final destination
-      for dir in ${tmpProductionDir}/*; do
+      #move runs to final destination
+      for dir in ${tmpProductionDir}/000*; do
+        echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
         if ! guessRunData "${dir}/dummyName"; then
           echo "could not guess run data from ${dir}"
@@ -161,7 +226,9 @@ updateQA()
         fi
 
         #before moving - VALIDATE!!!
-        if ! validate ${dir}; then continue; fi
+        if ! validate ${dir}; then 
+          continue
+        fi
 
         if [[ -d ${oldRunDir} ]]; then
           echo "removing old ${oldRunDir}"
@@ -170,19 +237,55 @@ updateQA()
         echo "moving new ${runNumber} to ${productionDir}"
         mv -f ${dir} ${productionDir}
       done
-    
-      echo running ${detector} periodLevelQA for production ${period}/${pass}
-      rm -f trending.root
-      
+   
+      #go to a temp dir to do the period level stuff in a completely clean dir
+      tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      echo
+      echo tmpPeriodLevelQAdir="${tmpProductionDir}/periodLevelQA"
+      if ! mkdir -p ${tmpPeriodLevelQAdir}; then continue; fi
+      cd ${tmpPeriodLevelQAdir}
+
+      #link the final list of per-run dirs here, just the dirs
+      #to have a clean working directory
+      unset linkedStuff
+      declare -a linkedStuff
+      for x in ${productionDir}/000*; do [[ -d $x ]] && ln -s $x && linkedStuff+=(${x##*/}); done
+
       #merge trending files if any
       if /bin/ls 000*/trending.root &>/dev/null; then
         hadd trending.root 000*/trending.root &> periodLevelQA.log
+      fi
+      
+      #run the period level trending/QA
+      if [[ -f "trending.root" && $(type -t periodLevelQA) =~ "function" ]]; then
+        echo running ${detector} periodLevelQA for production ${period}/${pass}
         periodLevelQA trending.root &>> periodLevelQA.log
+      else 
+        echo "WARNING: not running ${detector} periodLevelQA for production ${period}/${pass}, no trending.root"
       fi
 
       if ! validate ${PWD}; then continue; fi
 
-      cd ${tmpDetectorRunDir}
+      #here we are validated so move the produced QA to the final place
+      #clean up linked stuff first
+      [[ -n ${linkedStuff[@]} ]] && rm ${linkedStuff[@]}
+      #some of the output could be a directory, so handle that
+      #TODO: maybe use rsync?
+      for x in ${tmpPeriodLevelQAdir}/*; do  
+        if [[ -d ${x} ]]; then
+          echo "removing ${productionDir}/${x##*/}"
+          rm -rf ${productionDir}/${x##*/}
+          echo "moving ${x} to ${productionDir}"
+          mv ${x} ${productionDir}
+        fi
+        if [[ -f ${x} ]]; then
+          echo "moving ${x} to ${productionDir}"
+          mv -f ${x} ${productionDir} 
+        fi
+      done
+
+      #remove the temp dir
+      rm -rf ${tmpPeriodLevelQAdir}
     
     done
 
@@ -195,7 +298,7 @@ updateQA()
     else
       executePlanB
     fi
-  done
+  done #end of detector loop
 
   #remove lock
   rm -f ${lockFile}
@@ -282,6 +385,7 @@ validateLog()
             'core dumped'
             '\.C.*error:.*\.h: No such file'
             'segmentation'
+            'Interpreter error recovered'
   )
 
   warningConditions=(
@@ -332,10 +436,8 @@ parseConfig()
   excludeDetectors="EXAMPLE"
   #logs
   logDirectory=${workingDirectory}/logs
-  #set aliroot
-  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
   #OCDB storage
-  #ocdbStorage="raw://"
+  ocdbStorage="raw://"
   #email to
   #MAILTO="fbellini@cern.ch"
 
@@ -345,7 +447,7 @@ parseConfig()
   for opt in $@; do
     if [[ ${opt} =~ configFile=.* ]]; then
       eval "${opt}"
-      configFile=$(readlink -f ${configFile})
+      [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
       source "${configFile}"
       break
     fi
@@ -414,6 +516,31 @@ substituteDetectorName()
   local dir=$2
   [[ ${dir} =~ \%det ]] && det=${det,,} && echo ${dir/\%det/${det}}
   [[ ${dir} =~ \%DET ]] && det=${det} && echo ${dir/\%DET/${det}}
+}
+
+get_realpath() 
+{
+  if [[ -f "$1" ]]
+  then
+    # file *must* exist
+    if cd "$(echo "${1%/*}")" &>/dev/null
+    then
+      # file *may* not be local
+      # exception is ./file.ext
+      # try 'cd .; cd -;' *works!*
+      local tmppwd="$PWD"
+      cd - &>/dev/null
+    else
+      # file *must* be local
+      local tmppwd="$PWD"
+    fi
+  else
+    # file *cannot* exist
+    return 1 # failure
+  fi
+  # reassemble realpath
+  echo "$tmppwd"/"${1##*/}"
+  return 0 # success
 }
 
 main $@

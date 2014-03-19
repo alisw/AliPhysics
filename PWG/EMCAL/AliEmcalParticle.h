@@ -55,6 +55,7 @@ class AliEmcalParticle: public AliVParticle {
   AliVTrack        *GetTrack()             const { return fTrack                                                    ; }
   Double_t          GetTrackPhiOnEMCal()   const { if (fTrack) return fTrack->GetTrackPhiOnEMCal(); else return -999; }
   Double_t          GetTrackEtaOnEMCal()   const { if (fTrack) return fTrack->GetTrackEtaOnEMCal(); else return -999; }
+  Double_t          GetTrackPtOnEMCal()    const { if (fTrack) return fTrack->GetTrackPtOnEMCal();  else return -999; }
   Int_t             IdInCollection()       const { return fId                                                       ; }
   Bool_t            IsCluster()            const { return (Bool_t) fCluster != 0                                    ; }
   Bool_t            IsEMCAL()              const { if (fCluster) return fCluster->IsEMCAL(); 
@@ -84,6 +85,6 @@ class AliEmcalParticle: public AliVParticle {
   Double_t          fPt;                          //!pt
   TObjArray        *fMatchedPtr;                  //!pointer to array of matched tracks/clusters
 
-  ClassDef(AliEmcalParticle, 1) // Emcal particle class
+  ClassDef(AliEmcalParticle, 2) // Emcal particle class
 };
 #endif

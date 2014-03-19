@@ -18,10 +18,13 @@ class AliRsnMiniParticle;
 class AliRsnMiniPair : public TObject {
 public:
 
-   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNsisters(-1) { }
+   AliRsnMiniPair() : fDCA1(0), fDCA2(0), fMother(-1), fMotherPDG(0), fNSisters(-1) {Int_t i = 3; while (i--) fPmother[i] = 0.0;}
   
    Int_t          &Mother()    {return fMother;}
    Int_t          &MotherPDG() {return fMotherPDG;}
+   Float_t        &PmotherX()  {return fPmother[0];}
+   Float_t        &PmotherY()  {return fPmother[1];}
+   Float_t        &PmotherZ()  {return fPmother[2];} 
    void           Fill(AliRsnMiniParticle *p1, AliRsnMiniParticle *p2, Double_t m1, Double_t m2, Double_t refMass);
    void           FillRef(Double_t mass);
    void           InvertP(Bool_t first);
@@ -48,8 +51,7 @@ public:
    Double_t        DaughterDCA(Int_t daughterId); 
    Double_t        DCAProduct();                                                   
    void            DaughterPxPyPz(Int_t daughterId, Bool_t mc, Double_t *pxpypz); 
-   Short_t         Nsisters()  {return fNsisters;}
-   void            SetNsisters(Short_t value)  {fNsisters=value;}
+   Short_t         NSisters()  {return fNSisters;}
 
  private:
    
@@ -63,9 +65,10 @@ public:
    
    Int_t          fMother;    // label of mothers (when common)
    Int_t          fMotherPDG; // PDG code of mother (when common)
-   Short_t        fNsisters;  // total number of mother's daughters in the MC stack
+   Short_t        fNSisters;  // total number of mother's daughters in the MC stack
+   Float_t        fPmother[3];// MC momentum of the pair corresponding mother
    
-   ClassDef(AliRsnMiniPair,2)
+   ClassDef(AliRsnMiniPair,3)
      };
 
 #endif

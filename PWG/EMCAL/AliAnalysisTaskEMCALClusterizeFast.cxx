@@ -88,13 +88,14 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast() :
   fTrackName(),
   fCaloCellsName(),  
   fCaloClustersName("newCaloClusters"),
-  fDoUpdateCells(kTRUE),
+  fDoUpdateCells(kFALSE),
   fDoClusterize(kTRUE),
-  fClusterBadChannelCheck(kTRUE),
+  fClusterBadChannelCheck(kFALSE),
   fRejectExoticClusters(kFALSE),
+  fRejectExoticCells(kFALSE),
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
-  fRecalDistToBadChannels(kTRUE),
+  fRecalDistToBadChannels(kFALSE),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -139,13 +140,14 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
   fTrackName(),
   fCaloCellsName(),  
   fCaloClustersName("newCaloClusters"),
-  fDoUpdateCells(kTRUE),
+  fDoUpdateCells(kFALSE),
   fDoClusterize(kTRUE),
-  fClusterBadChannelCheck(kTRUE),
+  fClusterBadChannelCheck(kFALSE),
   fRejectExoticClusters(kFALSE),
+  fRejectExoticCells(kFALSE),
   fFiducial(kFALSE),
   fDoNonLinearity(kFALSE),
-  fRecalDistToBadChannels(kTRUE),
+  fRecalDistToBadChannels(kFALSE),
   fCaloCells(0),
   fCaloClusters(0),
   fEsd(0),
@@ -336,7 +338,6 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   // Fill digits array
 
   fDigitsArr->Clear("C");
-
   switch (fInputCellType) {
 
   case kFEEData :
@@ -374,7 +375,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 	    cellEFrac = 0;
 	  }
 	}
-	
+
+	if(!AcceptCell(cellNumber)) continue;
+
 	AliEMCALDigit *digit = new((*fDigitsArr)[idigit]) AliEMCALDigit(cellMCLabel, cellMCLabel, cellNumber,
 									(Float_t)cellAmplitude, (Float_t)cellTime,
 									AliEMCALDigit::kHG,idigit, 0, 0, cellEFrac*cellAmplitude);
@@ -501,6 +504,21 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     }
     break;
   }
+}
+
+//________________________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALClusterizeFast::AcceptCell(Int_t cellNumber) {
+
+  Bool_t accept = kTRUE;
+  if(fRejectExoticCells) {
+    //Remove exotic cells before making digits
+    fRecoUtils->SwitchOnRejectExoticCell();//switch on and off
+    Int_t bunchCrossNo = InputEvent()->GetBunchCrossNumber();
+    Bool_t isEx = fRecoUtils->IsExoticCell(cellNumber, fCaloCells, bunchCrossNo);
+    if(isEx) accept = kFALSE;
+    fRecoUtils->SwitchOffRejectExoticCell();//switch on and off
+  }
+  return accept;
 }
 
 //________________________________________________________________________________________
@@ -840,9 +858,9 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1(fGeom);
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
-   AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom);
-   clusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
-   clusterizer->SetNColDiff(fRecParam->GetNColDiff());
+    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom);
+    clusterizer->SetNRowDiff(fRecParam->GetNRowDiff()); //MV: already done in AliEMCALClusterizer::InitParameters
+    clusterizer->SetNColDiff(fRecParam->GetNColDiff()); //MV: already done in AliEMCALClusterizer::InitParameters
     fClusterizer = clusterizer;
   } 
   else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 

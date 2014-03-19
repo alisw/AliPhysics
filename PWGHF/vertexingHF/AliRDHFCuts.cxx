@@ -1050,6 +1050,7 @@ void AliRDHFCuts::PrintAll() const {
    }
    cout<<endl;
   }
+  if(fPidHF) fPidHF->PrintAll();
   return;
 }
 

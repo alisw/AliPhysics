@@ -15,8 +15,15 @@
 
 #include "TBits.h"
 #include "TObjArray.h"
+#include "TObject.h"
+#include "TMap.h"
 
 #include "AliVCluster.h"
+#include "AliPHOSGeometry.h"
+
+#include "AliPHOSClusterSelection.h"
+#include "AliPHOSEventSelection.h"
+#include "AliPHOSLogbackCluster.h"
 
 // Analysis task to fill histograms with PHOS ESD or AOD clusters and cells
 // Authors : Henrik Qvigstad
@@ -27,7 +34,7 @@
 ClassImp(AliPHOSClusterSelectionLogbackTask);
 
 
-AliPHOSClusterSelectionLogbackTask::AliPHOSClusterSelectionLogbackTask(const char* name = "AliPHOSClusterSelectionLogbackTask")
+AliPHOSClusterSelectionLogbackTask::AliPHOSClusterSelectionLogbackTask(const char* name)
   : AliPHOSClusterSelectionTask(name),
     fMapOfEventLists(0x0)
 {
@@ -37,7 +44,7 @@ AliPHOSClusterSelectionLogbackTask::AliPHOSClusterSelectionLogbackTask(const cha
 
 AliPHOSClusterSelectionLogbackTask::~AliPHOSClusterSelectionLogbackTask()
 {
-  delete fMapOfEventLists
+  delete fMapOfEventLists;
 }
   
 void AliPHOSClusterSelectionLogbackTask::UserCreateOutputObjects()
@@ -48,7 +55,6 @@ void AliPHOSClusterSelectionLogbackTask::UserCreateOutputObjects()
 void AliPHOSClusterSelectionLogbackTask::UserExec(Option_t *option)
 {
   AliPHOSClusterSelectionTask::UserExec(option);
-  AliVEvent* event = InputEvent();
 
   // initialize fMapOfEventLists
   if( !fMapOfEventLists ) {
@@ -85,7 +91,7 @@ TObjArray* AliPHOSClusterSelectionLogbackTask::GetPHOSClustersLogback(const AliP
   TObject* objSelectionMap = eventArray->At(kSelMap);
   TMap* selectionMap = dynamic_cast<TMap*> ( objSelectionMap );
   if( !selectionMap )
-    AliFatal(Form("eventArray should always contain and TMap in index 0", kSelMap));
+    AliFatal(Form("eventArray should always contain and TMap in index %i", kSelMap));
 
   
   // For the given eventSelection and eventBacklog, we should now have 
@@ -101,7 +107,7 @@ TObjArray* AliPHOSClusterSelectionLogbackTask::GetPHOSClustersLogback(const AliP
 }
 
 
-void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* eventSelection, int nEventsToLog)
+void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* eventSelection, UInt_t nEventsToLog)
 {
   if( nEventsToLog < 1) {
     AliError("nEventsToLog needs to be >0, or logging does not make sense");
@@ -111,8 +117,8 @@ void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* e
   // Make a copy of the cluster array
   TObjArray* newCluArray = new TObjArray(fClusters->GetEntriesFast());
   newCluArray->SetOwner();
-  for(int iclu=0; iclu < fClusters.GetSize(); ++iclu) {
-    AliPHOSLogbackCluster* clu = new AliPHOSLogbackCluster(fClusters->At(iclu));
+  for(int iclu=0; iclu < fClusters->GetSize(); ++iclu) {
+    AliPHOSLogbackCluster* clu = new AliPHOSLogbackCluster((AliVCluster*)fClusters->At(iclu));
     newCluArray->Add(clu);
   }
   
@@ -121,7 +127,8 @@ void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* e
   TMap* newMap = new TMap;
   newMap->SetOwnerValue();
   TMapIter* iter = (TMapIter*) fSelectionMap->MakeIterator();
-  while((TObject* key = iter->Next())){ // Loop over Cluster Selections 
+  TObject* key = 0x0;
+  while((key = iter->Next())){ // Loop over Cluster Selections 
     TRefArray* oldSelArray = dynamic_cast<TRefArray*> (fSelectionMap->GetValue(key));
     TObjArray* newSelArray = new TObjArray(oldSelArray->GetEntriesFast());
     newSelArray->SetOwner(false);
@@ -136,7 +143,7 @@ void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* e
 	  // at the same old selection index
 	  if( newSelArray->At(cluInd) )
 	    AliError("should be empty!");
-	  newSelArray->Add(newCluArray->At(cluInd), selInd);
+	  newSelArray->AddAt(newCluArray->At(cluInd), selInd);
 
 	  matched = true;
 	  break;
@@ -166,11 +173,11 @@ void AliPHOSClusterSelectionLogbackTask::LogEvent(const AliPHOSEventSelection* e
     eventList = new TList;
     eventList->SetOwner();
   }
-  eventList->AddFist(eventArray);
+  eventList->AddFirst(eventArray);
   
   
   // remove old events
-  while( cluEventList->At(nEventsToLog) && nEventsToLog )
+  while( eventList->At(nEventsToLog) && nEventsToLog )
     eventList->RemoveLast();
 }
 
@@ -180,7 +187,7 @@ AliPHOSClusterSelectionLogbackTask* GetTask(const char* name)
 {
   AliPHOSClusterSelectionLogbackTask* task = dynamic_cast<AliPHOSClusterSelectionLogbackTask*>( AliPHOSClusterSelectionTask::GetTask(name) );
   if( !task )
-    AliError( Form("No AliPHOSClusterSelectionLogbackTask with name: %s"), name );
+    Printf( Form("No AliPHOSClusterSelectionLogbackTask with name: %s", name) );
 
   return task;
 }

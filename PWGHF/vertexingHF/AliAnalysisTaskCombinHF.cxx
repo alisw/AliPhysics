@@ -24,6 +24,7 @@
 
 #include <TList.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TH3F.h>
 #include <THnSparse.h>
 
@@ -36,6 +37,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODVertex.h"
 #include "AliAODTrack.h"
+#include "AliVertexingHFUtils.h"
 #include "AliAnalysisTaskCombinHF.h"
 
 ClassImp(AliAnalysisTaskCombinHF)
@@ -47,6 +49,14 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fOutput(0x0), 
   fHistNEvents(0x0),
   fHistTrackStatus(0x0),
+  fHistCheckOrigin(0x0),
+  fHistCheckOriginSel(0x0),
+  fHistCheckDecChan(0x0),
+  fHistCheckDecChanAcc(0x0),
+  fPtVsYGen(0x0),
+  fPtVsYGenLimAcc(0x0),
+  fPtVsYGenAcc(0x0),
+  fPtVsYReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -66,6 +76,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fAnalysisCuts(0x0),
   fMinMass(1.750),
   fMaxMass(2.150),
+  fEtaAccCut(0.9),
+  fPtAccCut(0.1),
   fNRotations(9),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -74,6 +86,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fCounter(0x0),
   fMeson(kDzero),
   fReadMC(kFALSE),
+  fPromptFeeddown(kPrompt),
+  fGoUpToQuark(kTRUE),
   fFullAnalysis(0)  
 {
   // default constructor
@@ -85,6 +99,14 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fOutput(0x0), 
   fHistNEvents(0x0),
   fHistTrackStatus(0x0),
+  fHistCheckOrigin(0x0),
+  fHistCheckOriginSel(0x0),
+  fHistCheckDecChan(0x0),
+  fHistCheckDecChanAcc(0x0),
+  fPtVsYGen(0x0),
+  fPtVsYGenLimAcc(0x0),
+  fPtVsYGenAcc(0x0),
+  fPtVsYReco(0x0),
   fMassVsPtVsY(0x0),
   fMassVsPtVsYRot(0x0),
   fMassVsPtVsYLSpp(0x0),
@@ -104,6 +126,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fAnalysisCuts(analysiscuts),
   fMinMass(1.750),
   fMaxMass(2.150),
+  fEtaAccCut(0.9),
+  fPtAccCut(0.1),
   fNRotations(9),
   fMinAngleForRot(5*TMath::Pi()/6),
   fMaxAngleForRot(7*TMath::Pi()/6),
@@ -112,6 +136,8 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fCounter(0x0),
   fMeson(meson),
   fReadMC(kFALSE),
+  fPromptFeeddown(1),
+  fGoUpToQuark(kTRUE),
   fFullAnalysis(0)
 
 {
@@ -130,6 +156,14 @@ AliAnalysisTaskCombinHF::~AliAnalysisTaskCombinHF()
   delete fOutput;
   delete fHistNEvents;
   delete fHistTrackStatus;
+  delete fHistCheckOrigin;
+  delete fHistCheckOriginSel;
+  delete fHistCheckDecChan;
+  delete fHistCheckDecChanAcc;
+  delete fPtVsYGen;
+  delete fPtVsYGenLimAcc;
+  delete fPtVsYGenAcc;
+  delete fPtVsYReco;
   delete fMassVsPtVsY; 
   delete fMassVsPtVsYLSpp;
   delete fMassVsPtVsYLSmm;
@@ -187,6 +221,50 @@ void AliAnalysisTaskCombinHF::UserCreateOutputObjects()
   fHistTrackStatus->Sumw2();
   fHistTrackStatus->SetMinimum(0);
   fOutput->Add(fHistTrackStatus);
+
+  if(fReadMC){
+
+    fHistCheckOrigin=new TH1F("hCheckOrigin","",7,-1.5,5.5);
+    fHistCheckOrigin->Sumw2();
+    fHistCheckOrigin->SetMinimum(0);
+    fOutput->Add(fHistCheckOrigin);
+
+    fHistCheckOriginSel=new TH1F("hCheckOriginSel","",7,-1.5,5.5);
+    fHistCheckOriginSel->Sumw2();
+    fHistCheckOriginSel->SetMinimum(0);
+    fOutput->Add(fHistCheckOriginSel);
+
+    fHistCheckDecChan=new TH1F("hCheckDecChan","",7,-2.5,4.5);
+    fHistCheckDecChan->Sumw2();
+    fHistCheckDecChan->SetMinimum(0);
+    fOutput->Add(fHistCheckDecChan);
+
+    fHistCheckDecChanAcc=new TH1F("hCheckDecChanAcc","",7,-2.5,4.5);
+    fHistCheckDecChanAcc->Sumw2();
+    fHistCheckDecChanAcc->SetMinimum(0);
+    fOutput->Add(fHistCheckDecChanAcc);
+
+    fPtVsYGen= new TH2F("hPtVsYGen","",20,0.,10.,20,-1.,1.);
+    fPtVsYGen->Sumw2();
+    fPtVsYGen->SetMinimum(0);
+    fOutput->Add(fPtVsYGen);
+
+    fPtVsYGenLimAcc= new TH2F("hPtVsYGenLimAcc","",20,0.,10.,20,-1.,1.);
+    fPtVsYGenLimAcc->Sumw2();
+    fPtVsYGenLimAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYGenLimAcc);
+
+    fPtVsYGenAcc= new TH2F("hPtVsYGenAcc","",20,0.,10.,20,-1.,1.);
+    fPtVsYGenAcc->Sumw2();
+    fPtVsYGenAcc->SetMinimum(0);
+    fOutput->Add(fPtVsYGenAcc);
+
+    fPtVsYReco= new TH2F("hPtVsYReco","",20,0.,10.,20,-1.,1.);
+    fPtVsYReco->Sumw2();
+    fPtVsYReco->SetMinimum(0);
+    fOutput->Add(fPtVsYReco);
+  }
+
 
  Int_t nMassBins=fMaxMass*1000.-fMinMass*1000.;
   Double_t maxm=fMinMass+nMassBins*0.001;
@@ -312,6 +390,7 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
       printf("AliAnalysisTaskCombinHF::UserExec: MC header branch not found!\n");
       return;
     }
+    FillGenHistos(arrayMC);
   }
 
 
@@ -440,6 +519,56 @@ void AliAnalysisTaskCombinHF::FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskCombinHF::FillGenHistos(TClonesArray* arrayMC){
+  // Fill histos with generated quantities
+  Int_t totPart=arrayMC->GetEntriesFast();
+  Int_t thePDG=411;
+  Int_t nProng=3;
+  if(fMeson==kDzero){
+    thePDG=421;
+    nProng=2;
+  }
+  for(Int_t ip=0; ip<totPart; ip++){
+    AliAODMCParticle *part = (AliAODMCParticle*)arrayMC->At(ip);
+    if(TMath::Abs(part->GetPdgCode())==thePDG){
+      Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,part,fGoUpToQuark);
+      fHistCheckOrigin->Fill(orig);
+      if(fPromptFeeddown==kFeeddown && orig!=5) continue;
+      else if(fPromptFeeddown==kPrompt && orig!=4) continue;
+      else if(fPromptFeeddown==kBoth && orig<4) continue;
+      fHistCheckOriginSel->Fill(orig);
+      Int_t deca=0;
+      Bool_t isGoodDecay=kFALSE;
+      Int_t labDau[4]={-1,-1,-1,-1};
+      if(fMeson==kDzero){
+	deca=AliVertexingHFUtils::CheckD0Decay(arrayMC,part,labDau);
+	if(part->GetNDaughters()!=2) continue;
+	if(deca==1) isGoodDecay=kTRUE;
+      }else if(fMeson==kDplus){ 
+	deca=AliVertexingHFUtils::CheckDplusDecay(arrayMC,part,labDau);
+	if(deca>0) isGoodDecay=kTRUE;
+      }
+      fHistCheckDecChan->Fill(deca);
+      if(labDau[0]==-1){
+	//	printf(Form("Meson %d Label of daughters not filled correctly -- %d\n",fMeson,isGoodDecay));
+	continue; //protection against unfilled array of labels
+      }
+      Bool_t isInAcc=CheckAcceptance(arrayMC,nProng,labDau);
+      if(isInAcc) fHistCheckDecChanAcc->Fill(deca);
+      if(isGoodDecay){
+	Double_t ptgen=part->Pt();
+	Double_t ygen=part->Y();
+	if(fAnalysisCuts->IsInFiducialAcceptance(ptgen,ygen)){
+	  fPtVsYGen->Fill(ptgen,ygen);
+	  if(TMath::Abs(ygen)<0.5) fPtVsYGenLimAcc->Fill(ptgen,ygen);
+	  if(isInAcc) fPtVsYGenAcc->Fill(ptgen,ygen);
+	}
+      }
+    }
+  }
+}
+
+//________________________________________________________________________
 Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels){
   // Fill histos for candidates with proper charge sign
 
@@ -460,11 +589,21 @@ Bool_t AliAnalysisTaskCombinHF::FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoD
 	for(Int_t iii=0; iii<nProngs; iii++) signPdg[iii]=pdgdau[iii];
 	Int_t labD = tmpRD->MatchToMC(pdgD,arrayMC,nProngs,signPdg);
 	if(labD>=0){
-	  AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(dgLabels[0]));
+	  AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(dgLabels[0])));
 	  if(part){
 	    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
-	    if(pdgCode==321) fMassVsPtVsYSig->Fill(mass,pt,rapid);
-	    else fMassVsPtVsYRefl->Fill(mass,pt,rapid);
+	    if(pdgCode==321){
+	      AliAODMCParticle* dmes =  dynamic_cast<AliAODMCParticle*>(arrayMC->At(labD));
+	      if(dmes){
+		Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,dmes,fGoUpToQuark);
+		if((fPromptFeeddown==kFeeddown && orig==5)|| (fPromptFeeddown==kPrompt && orig==4) || (fPromptFeeddown==kBoth && orig>=4)) {
+		  fPtVsYReco->Fill(dmes->Pt(),dmes->Y());
+		}
+	      }
+	      fMassVsPtVsYSig->Fill(mass,pt,rapid);
+	    }else{
+	      fMassVsPtVsYRefl->Fill(mass,pt,rapid);
+	    }
 	  }
 	}else{
 	  fMassVsPtVsYBkg->Fill(mass,pt,rapid);
@@ -568,6 +707,19 @@ Bool_t AliAnalysisTaskCombinHF::SelectAODTrack(AliAODTrack *track, AliESDtrackCu
   if(!cuts->IsSelected(&esdTrack)) return kFALSE; 
 
   return kTRUE;  
+}
+
+//_________________________________________________________________
+Bool_t AliAnalysisTaskCombinHF::CheckAcceptance(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau){
+  // check if the decay products are in the good eta and pt range
+  for (Int_t iProng = 0; iProng<nProng; iProng++){
+    AliAODMCParticle* mcPartDaughter=dynamic_cast<AliAODMCParticle*>(arrayMC->At(labDau[iProng]));
+    if(!mcPartDaughter) return kFALSE;
+    Double_t eta = mcPartDaughter->Eta();
+    Double_t pt = mcPartDaughter->Pt();
+    if (TMath::Abs(eta) > fEtaAccCut || pt < fPtAccCut) return kFALSE;
+  }
+  return kTRUE;
 }
 
 //_________________________________________________________________

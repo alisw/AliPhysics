@@ -53,11 +53,15 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAnalysisTaskLambdaNAOD.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskHdibaryonLPpi.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskHelium3Pi.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskHelium3PiAOD.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskHelium3PiMC.cxx
   STRANGENESS/Hypernuclei/AliAODRecoDecayLF.cxx
   STRANGENESS/Hypernuclei/AliAODRecoDecayLF2Prong.cxx
   STRANGENESS/Hypernuclei/AliAODNuclExReplicator.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilter.cxx
+  STRANGENESS/Hypernuclei/AliAODMCNuclExReplicator.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
  
 
 )

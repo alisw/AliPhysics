@@ -818,6 +818,8 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+      hname="hMultFBit4";
+      TH1F* hMultFBit4=new TH1F(hname.Data(),"Multiplicity (global+tracklet) with filter bit 4;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb05";
       TH1F* hMultC05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb08";
@@ -825,6 +827,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
       fOutputTrack->Add(hNtracklets);
       fOutputTrack->Add(hMult);
+      fOutputTrack->Add(hMultFBit4);
       fOutputTrack->Add(hMultC05);
       fOutputTrack->Add(hMultC08);
     }
@@ -1303,6 +1306,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCOnly=0;
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
+  Int_t ntracksFBit4=0;
 
   AliTRDTriggerAnalysis trdSelection;
   trdSelection.CalcTriggers(aod);
@@ -1332,6 +1336,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	nSelTracksTPCITS++;
 	if(nclsSPD>0) nSelTracksTPCITS1SPD++;      
       }
+    }
+    if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
+      ntracksFBit4++;
     }
   }
 
@@ -1740,6 +1747,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
 	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
 	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
 	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
       }

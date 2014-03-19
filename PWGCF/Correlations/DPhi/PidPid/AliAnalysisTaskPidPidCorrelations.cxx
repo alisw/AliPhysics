@@ -2719,7 +2719,7 @@ Double_t AliAnalysisTaskPidPidCorrelations::MakeTOFPID(AliAODTrack* track, Doubl
   	Double_t p	= track -> P();
   	Double_t time	= track -> GetTOFsignal() - fPIDResponse -> GetTOFResponse().GetStartTime(p);
   	Double_t timei[5];
-  	track -> GetIntegratedTimes(timei);
+  	track -> GetIntegratedTimes(timei,AliPID::kSPECIES);
   
  	/* loop over particles */
   	for (Int_t iSpecies = 0; iSpecies < AliPID::kSPECIES; iSpecies++)
@@ -2763,7 +2763,7 @@ Double_t AliAnalysisTaskPidPidCorrelations ::GetBeta(AliAODTrack* track)
 	Double_t p	= track -> P();
 	Double_t time	= track -> GetTOFsignal() - fPIDResponse -> GetTOFResponse().GetStartTime(p);
 	Double_t timei[5];
-	track -> GetIntegratedTimes(timei);
+	track -> GetIntegratedTimes(timei,AliPID::kSPECIES);
 	return timei[0]/time;
 }
 

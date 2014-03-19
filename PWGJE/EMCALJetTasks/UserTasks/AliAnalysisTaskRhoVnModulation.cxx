@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -105,7 +105,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fHistRhoStatusCent(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -301,7 +301,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
 
     // pico track kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
-        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 50, i);
+        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
         fHistPicoTrackMult[i] =        BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
         if(fFillQAHistograms) {
             fHistPicoCat1[i] =             BookTH2F("fHistPicoCat1", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
@@ -427,11 +427,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fProfV3Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(3(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
         fOutputList->Add(fProfV3Resolution[i]); 
     }
-    // cdf and pdf of chisquare distribution
-    fHistPvaluePDF = BookTH1F("fHistPvaluePDF", "PDF #chi^{2}", 500, 0, 1);
-    fHistPvalueCDF = BookTH1F("fHistPvalueCDF", "CDF #chi^{2}", 500, 0, 1);
-    fHistRhoStatusCent = BookTH2F("fHistRhoStatusCent", "centrality", "status [-1=lin was better, 0=ok, 1 = failed]", 101, -1, 100, 3, -1.5, 1.5);
-    // vn profile
+   // vn profile
     Float_t temp[fCentralityClasses->GetSize()];
     for(Int_t i(0); i < fCentralityClasses->GetSize(); i++) temp[i] = fCentralityClasses->At(i);
     fProfV2 = new TProfile("fProfV2", "fProfV2", fCentralityClasses->GetSize()-1, temp);
@@ -474,6 +470,21 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     if(fUserSuppliedR3) fOutputList->Add(fUserSuppliedR3);
     // increase readability of output list
     fOutputList->Sort();
+    // cdf and pdf of chisquare distribution
+    fHistPvalueCDF = BookTH1F("fHistPvalueCDF", "CDF #chi^{2}", 50, 0, 1);
+    fHistPvalueCDFCent = BookTH2F("fHistPvalueCDFCent", "centrality", "p-value", 40, 0, 100, 40, 0, 1);
+    fHistChi2Cent = BookTH2F("fHistChi2Cent", "centrality", "#tilde{#chi^{2}}", 100, 0, 100, 100, 0, 5);
+    fHistPChi2 = BookTH2F("fHistPChi2", "p-value", "#tilde{#chi^{2}}", 1000, 0, 1, 100, 0, 5);
+    fHistKolmogorovTest = BookTH1F("fHistKolmogorovTest", "KolmogorovTest", 50, 0, 1);
+    fHistKolmogorovTestCent = BookTH2F("fHistKolmogorovTestCent", "centrality", "Kolmogorov p", 40, 0, 100, 45, 0, 1); 
+    fHistPvalueCDFROOT = BookTH1F("fHistPvalueCDFROOT", "CDF #chi^{2} ROOT", 50, 0, 1);
+    fHistPvalueCDFROOTCent = BookTH2F("fHistPvalueCDFROOTCent", "centrality", "p-value ROOT", 40, 0, 100, 45, 0, 1);
+    fHistChi2ROOTCent = BookTH2F("fHistChi2ROOTCent", "centrality", "#tilde{#chi^{2}}", 40, 0, 100, 45, 0, 5);
+    fHistPChi2Root = BookTH2F("fHistPChi2Root", "p-value", "#tilde{#chi^{2}} ROOT", 1000, 0, 1, 100, 0, 5);
+    fHistPKolmogorov = BookTH2F("fHistPKolmogorov", "p-value", "kolmogorov p",40, 0, 1, 40, 0, 1);
+    fHistRhoStatusCent = BookTH2F("fHistRhoStatusCent", "centrality", "status [-1=lin was better, 0=ok, 1 = failed]", 101, -1, 100, 3, -1.5, 1.5);
+    fHistUndeterminedRunQA = BookTH1F("fHistUndeterminedRunQA", "runnumber", 10, 0, 10);
+ 
     PostData(1, fOutputList);
 
     switch (fRunModeType) {
@@ -501,7 +512,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     if(!fLocalInit) fLocalInit = InitializeAnalysis();
     // reject the event if expected data is missing
     if(!PassesCuts(InputEvent())) return kFALSE;
-    if(!fCaloClusters && fDebug > 0) printf(" > Warning: couldn't retreive calo clusters! < \n");
+    fLeadingJet = GetLeadingJet();      // store the leading jet
     // set the rho value 
     fLocalRho->SetVal(fRho->GetVal());
     // [0][0] psi2a     [1,0]   psi2c
@@ -676,8 +687,7 @@ void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneTPC(Double_t* tpc)
    if(fTracks) {
        Float_t excludeInEta = -999;
        if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
-           AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-           if(leadingJet) excludeInEta = leadingJet->Eta();
+           if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
        }
        Int_t iTracks(fTracks->GetEntriesFast());
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
@@ -1020,6 +1030,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     //      in all cases, a cut can be made on the p-value of the chi-squared value of the fit
     //      and a check can be performed to see if rho has no negative local minimum
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    Int_t freeParams(2);                // free parameters of the fit (for NDF) 
     switch (fFitModulationType) {       // for approaches where no fitting is required
         case kQC2 : {
             fFitModulation->FixParameter(4, psi2); 
@@ -1108,11 +1119,10 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     Double_t excludeInPt  = -999;
     if(iTracks <= 0 || fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
     if(fExcludeLeadingJetsFromFit > 0 ) {
-        AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-        if(leadingJet) {
-            excludeInEta = leadingJet->Eta();
-            excludeInPhi = leadingJet->Phi();
-            excludeInPt = leadingJet->Pt();
+        if(fLeadingJet) {
+            excludeInEta = fLeadingJet->Eta();
+            excludeInPhi = fLeadingJet->Phi();
+            excludeInPt = fLeadingJet->Pt();
         }
     }
     // check the acceptance of the track selection that will be used
@@ -1179,17 +1189,22 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
 
     fFitModulation->SetParameter(0, fLocalRho->GetVal());
     switch (fFitModulationType) {
-        case kNoFit : { fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+        case kNoFit : { 
+            fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+            freeParams = 0;
         } break;
         case kV2 : { 
             fFitModulation->FixParameter(4, psi2); 
+            freeParams = 1;
         } break;
         case kV3 : { 
             fFitModulation->FixParameter(4, psi3); 
+            freeParams = 1;
         } break;
         case kCombined : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
+            freeParams = 2;
         } break;
         case kFourierSeries : {
             // in this approach, an explicit calculation will be made of vn = sqrt(xn^2+yn^2)
@@ -1211,14 +1226,70 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
         } break;
         default : break;
     }
+    if(fRunToyMC) {
+        // toy mc, just here to check procedure, azimuthal profile is filled from hypothesis so p-value distribution should be flat
+        Int_t _bins = _tempSwap.GetXaxis()->GetNbins();
+        TF1* _tempFit = new TF1("temp_fit_kCombined", "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))", 0, TMath::TwoPi());
+        _tempFit->SetParameter(0, fFitModulation->GetParameter(0));       // normalization
+        _tempFit->SetParameter(3, 0.1);      // v2
+        _tempFit->FixParameter(1, 1.);       // constant
+        _tempFit->FixParameter(2, 2.);       // constant
+        _tempFit->FixParameter(5, 3.);       // constant
+        _tempFit->FixParameter(4, fFitModulation->GetParameter(4));
+        _tempFit->FixParameter(6, fFitModulation->GetParameter(6));
+        _tempFit->SetParameter(7, 0.1);      // v3
+        _tempSwap.Reset();                   // rese bin content
+        for(int _binsI = 0; _binsI < _bins*_bins; _binsI++)  _tempSwap.Fill(_tempFit->GetRandom());
+    }
     _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", lowBound, upBound);
     // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
-    Double_t CDF(1.-ChiSquareCDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
+    // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
+    Int_t NDF(_tempSwap.GetXaxis()->GetNbins()-freeParams);
+    if(NDF == 0) return kFALSE;
+    Double_t CDF(1.-ChiSquareCDF(NDF, ChiSquare(_tempSwap, fFitModulation)));
+    Double_t CDFROOT(1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare()));
+    Double_t CDFKolmogorov(KolmogorovTest(_tempSwap, fFitModulation));
+    // fill the values and centrality correlation (redundant but easy on the eyes)
     fHistPvalueCDF->Fill(CDF);
+    fHistPvalueCDFCent->Fill(fCent, CDF);
+    fHistPvalueCDFROOT->Fill(CDFROOT);
+    fHistPvalueCDFROOTCent->Fill(fCent, CDFROOT);
+    fHistKolmogorovTest->Fill(CDFKolmogorov);
+    fHistChi2ROOTCent->Fill(fCent, fFitModulation->GetChisquare()/((float)NDF));
+    fHistChi2Cent->Fill(fCent, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
+    fHistKolmogorovTestCent->Fill(fCent, CDFKolmogorov);
+    fHistPChi2Root->Fill(CDFROOT, fFitModulation->GetChisquare()/((float)NDF));
+    fHistPChi2->Fill(CDF, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
+    fHistPKolmogorov->Fill(CDF, CDFKolmogorov);
+
+    // variable CDF is used for making cuts, so we fill it with the selected p-value
+    switch (fFitGoodnessTest) {
+        case kChi2ROOT : {
+            CDF = CDFROOT; 
+        } break;
+        case kChi2Poisson : break;      // CDF is already CDF
+        case kKolmogorov : {
+            CDF = CDFKolmogorov; 
+        } break;
+        default: break;
+    }
+
     if(fFitControl) {
         // as an additional quality check, see if fitting a control fit has a higher significance
         _tempSwap.Fit(fFitControl, fFitModulationOptions.Data(), "", lowBound, upBound);
-        Double_t CDFControl(1.-ChiSquareCDF(fFitControl->GetNDF(), fFitControl->GetChisquare()));
+        Double_t CDFControl(-1.);
+        switch (fFitGoodnessTest) {
+            case kChi2ROOT : {
+                CDFControl = 1.-ChiSquareCDF(fFitControl->GetNDF(), fFitModulation->GetChisquare());
+            } break;
+            case kChi2Poisson : {
+                CDFControl = 1.-ChiSquareCDF(fFitControl->GetNDF(), ChiSquare(_tempSwap, fFitModulation));
+            } break;
+            case kKolmogorov : {
+                CDFControl = KolmogorovTest(_tempSwap, fFitControl); 
+            } break;
+            default: break;
+        }
         if(CDFControl > CDF) {
             CDF = -1.; // control fit is more significant, so throw out the 'old' fit
             fHistRhoStatusCent->Fill(fCent, -1);
@@ -1246,13 +1317,16 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                         v2->SetParameter(3, didacticFit->GetParameter(3));        // v2
                         v2->FixParameter(1, 1.);        // constant
                         v2->FixParameter(2, 2.);        // constant
+                        v2->FixParameter(4, didacticFit->GetParameter(4));        // psi2
                         v2->SetLineColor(kGreen);
                         didacticProfile->GetListOfFunctions()->Add(v2);
-                        TF1* v3(new TF1("dfit_kV3", "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))", 0, TMath::TwoPi()));
+                        TF1* v3(new TF1("dfit_kV3", "[0]*([1]+[2]*[3]*TMath::Cos([5]*(x-[4])))", 0, TMath::TwoPi()));
                         v3->SetParameter(0, didacticFit->GetParameter(0));        // normalization
                         v3->SetParameter(3, didacticFit->GetParameter(7));        // v3
                         v3->FixParameter(1, 1.);        // constant
-                        v3->FixParameter(2, 3.);        // constant
+                        v3->FixParameter(2, 2.);        // constant
+                        v3->FixParameter(4, didacticFit->GetParameter(6));        // psi3
+                        v3->FixParameter(5, 3.);        // constant
                         v3->SetLineColor(kYellow);
                         didacticProfile->GetListOfFunctions()->Add(v3);
                     }
@@ -1340,16 +1414,33 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     }
     if(fRho->GetVal() <= 0 ) return kFALSE;
     if(fTracks->GetEntries() < 1) return kFALSE;
+    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    // only done if the runnumber changes
     if(fRunNumber != InputEvent()->GetRunNumber()) {
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
         if(fDebug > 0 ) printf("> NEW RUNNNUMBER DETECTED: %i <\n", fRunNumber);
-        // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
         Int_t semiGoodTPCruns[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
         for(Int_t i(0); i < (int)(sizeof(semiGoodTPCruns)/sizeof(semiGoodTPCruns[0])); i++) {
             if(semiGoodTPCruns[i] == fRunNumber) { // run is semi-good
                 if(fDebug > 0) printf(" > SEMI-GOOD TPC DETECTED, adjusting acceptance accordingly ... <\n");
+                flaggedAsSemiGood = kTRUE;
                 AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);
                 AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);
+                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
+                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
+                if(tempRho) {
+                    if(fDebug > 0) printf(" > found small rho, will use this as estimate < \n");
+                    fRho = tempRho;
+                }
+            }
+        }
+        if(!flaggedAsSemiGood) {
+            // in case the run is not a semi-good run, check if it is recognized as a good run
+            Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081};
+            for(Int_t i(0); i < (int)(sizeof(runs)/sizeof(runs[0])); i++) {
+                if(runs[i] == fRunNumber) break; // run is good, break the loop else store the number in a random bin
+                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
             }
         }
     }
@@ -1491,8 +1582,6 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
     // fill delta pt histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t i(0);
-    AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-    if(!leadingJet && fDebug > 0) printf(" > failed to retrieve leading jet ! < \n");
     const Float_t areaRC = fRandomConeRadius*fRandomConeRadius*TMath::Pi();
     // we're retrieved the leading jet, now get a random cone
     for(i = 0; i < fMaxCones; i++) {
@@ -1507,7 +1596,7 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
            fHistDeltaPtDeltaPhi3[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
        }
        // get a random cone excluding leading jet area
-       CalculateRandomCone(pt, eta, phi, leadingJet);
+       CalculateRandomCone(pt, eta, phi, fLeadingJet);
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);

@@ -2,6 +2,7 @@
 
 AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   const UInt_t nonLinFunct   = AliEMCALRecoUtils::kBeamTestCorrected,
+  const Bool_t remExClus     = kTRUE,
   const char *nClusters      = 0,
   const char *outClusName    = "EmcCaloClusters",
   const Double_t emin        = 0.3,
@@ -27,6 +28,11 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   }
 
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+
+  TString nCells = "emcalCells";
+  if (inputDataType == "ESD")
+    nCells = "EMCALCells";
+
   if (nClusters==0) {
     if (inputDataType != "ESD")
       nClusters = "caloClusters";
@@ -41,8 +47,10 @@ AliEmcalClusterMaker* AddTaskEmcalClusterMaker(
   TString name(Form("EmcalClusterMaker_%s_%s", nClusters, outClusName));
   AliEmcalClusterMaker *ecm = new AliEmcalClusterMaker(name, histo);
   ecm->SetOutClusName(outClusName);
+  ecm->SetCaloCellsName(nCells);
   AliEMCALRecoUtils *ru = new AliEMCALRecoUtils;
   ru->SetNonLinearityFunction(nonLinFunct);
+  if(remExClus) ru->SwitchOnRejectExoticCluster();
   ecm->SetRecoUtils(ru);
   AliClusterContainer *clusCont = ecm->AddClusterContainer(nClusters);
   clusCont->SetClusECut(emin);

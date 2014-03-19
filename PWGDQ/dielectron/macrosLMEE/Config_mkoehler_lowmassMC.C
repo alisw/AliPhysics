@@ -21,7 +21,7 @@ const Int_t nDie=arrNames->GetEntriesFast();
        Bool_t kRot = 0;
        Bool_t kEff = 0;
 
-AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1, Bool_t isAOD = kFALSE)
+AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1, Bool_t isAOD = kFALSE, Bool_t hasMC=kTRUE)
 {
   //
   // Setup the instance of AliDielectron
@@ -36,6 +36,10 @@ AliDielectron* Config_mkoehler_lowmassMC(Int_t cutDefinition=1, Bool_t isAOD = k
     new AliDielectron(Form("%s",name.Data()),
                       Form("Track cuts: %s",name.Data()));
   
+  die->SetHasMC(hasMC);
+
+
+
   if(kRot){
     AliDielectronTrackRotator *rot = new AliDielectronTrackRotator;
     rot->SetConeAnglePhi(TMath::Pi());

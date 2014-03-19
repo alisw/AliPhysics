@@ -58,7 +58,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	
   //multiplicity bins
   int runmults[10] = {1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-  int multbins[11] = {0, 50, 100, 200, 600, 800, 500, 600, 700, 800, 900};
+  int multbins[11] = {0, 100, 200, 300, 600, 800, 500, 600, 700, 800, 900};
 
   int runch[2] = {1, 1};
   const char *chrgs[2] = { "pip", "pim" };
@@ -79,8 +79,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   else shqmax = 0.9;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetFilterBit(0);
-  //Reader->SetCentralityPreSelection(500, 950);
+  Reader->SetFilterBit(7);
+  //Reader->SetCentralityPreSelection(0.001, 950);
 
   //AliFemtoEventReaderESDChainKine* Reader=new AliFemtoEventReaderESDChainKine();
   //Reader->SetConstrained(true);
@@ -188,8 +188,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //primary particles: hits in ITS + DCA cut
 	  dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  				 AliESDtrackCuts::kAny);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  //dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
+	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);

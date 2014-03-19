@@ -36,6 +36,11 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *option);
 
   void SetReadMC(Bool_t read){fReadMC=read;}
+  void SelectPromptD(){fPromptFeeddown=kPrompt;}
+  void SelectFeeddownD(){fPromptFeeddown=kFeeddown;}
+  void SelectPromptAndFeeddownD(){fPromptFeeddown=kBoth;}
+  void SetGoUpToQuark(Bool_t opt){fGoUpToQuark=opt;}
+
   void SetTrackCuts(AliESDtrackCuts* cuts){
     if(fTrackCutsAll) delete fTrackCutsAll;
     fTrackCutsAll=new AliESDtrackCuts(*cuts);
@@ -68,8 +73,10 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   Bool_t SelectAODTrack(AliAODTrack *track, AliESDtrackCuts *cuts);
   Bool_t FillHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, TClonesArray *arrayMC, Int_t* dgLabels);
   void FillLSHistos(Int_t pdgD,Int_t nProngs, AliAODRecoDecay* tmpRD, Double_t* px, Double_t* py, Double_t* pz, UInt_t *pdgdau, Int_t charge);
-
+  void FillGenHistos(TClonesArray* arrayMC);
+  Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
+  enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
 
  private:
 
@@ -77,10 +84,17 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   AliAnalysisTaskCombinHF& operator=(const AliAnalysisTaskCombinHF& source); 
 
   TList   *fOutput; //! list send on output slot 0
-  TH1F *fHistNEvents; //!hist. for No. of events
-
-  TH1F *fHistTrackStatus; //!hist. of status of tracks
-  TH3F *fMassVsPtVsY;   //! hist. of Y vs. Pt vs. Mass (all cand)
+  TH1F *fHistNEvents;         //!hist. for No. of events
+  TH1F *fHistTrackStatus;     //!hist. of status of tracks
+  TH1F *fHistCheckOrigin;     //!hist. of origin (c/b) of D meson
+  TH1F *fHistCheckOriginSel;  //!hist. of origin (c/b) of D meson
+  TH1F *fHistCheckDecChan;    //!hist. of decay channel of D meson
+  TH1F *fHistCheckDecChanAcc; //!hist. of decay channel of D meson in acc.
+  TH2F *fPtVsYGen;        //! hist. of Y vs. Pt generated (all D)
+  TH2F *fPtVsYGenLimAcc;  //! hist. of Y vs. Pt generated (|y|<0.5)
+  TH2F *fPtVsYGenAcc;     //! hist. of Y vs. Pt generated (D in acc)
+  TH2F *fPtVsYReco;       //! hist. of Y vs. Pt generated (Reco D)
+  TH3F *fMassVsPtVsY;     //! hist. of Y vs. Pt vs. Mass (all cand)
   TH3F *fMassVsPtVsYRot;   //! hist. of Y vs. Pt vs. Mass (rotations)
   TH3F *fMassVsPtVsYLSpp;  //! hist. of Y vs. Pt vs. Mass (like sign ++)
   TH3F *fMassVsPtVsYLSmm;  //! hist. of Y vs. Pt vs. Mass (like sign --)
@@ -101,6 +115,10 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   Double_t fMinMass; // minimum value of invariant mass
   Double_t fMaxMass; // maximum value of invariant mass
 
+  Double_t fEtaAccCut; // eta limits for acceptance step
+  Double_t fPtAccCut; // pt limits for acceptance step
+
+
   Int_t fNRotations; // number of rotations
   Double_t fMinAngleForRot; // minimum angle for track rotation
   Double_t fMaxAngleForRot; // maximum angle for track rotation
@@ -108,11 +126,14 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   Double_t fMaxAngleForRot3; // maximum angle for track rotation (3rd prong)
 
   AliNormalizationCounter *fCounter;//!Counter for normalization
-  Int_t fMeson;          // mesonSpecies (see enum)
-  Bool_t  fReadMC;                    //  flag for access to MC
-  Int_t fFullAnalysis; // flag to set analysis level (0 is the fastest)
 
-  ClassDef(AliAnalysisTaskCombinHF,1); // D+ task from AOD tracks
+  Int_t fMeson;          // mesonSpecies (see enum)
+  Bool_t  fReadMC;       //  flag for access to MC
+  Int_t fPromptFeeddown; // flag to select prompt (1), feeddown (2) or all (3) 
+  Bool_t fGoUpToQuark;   // flag for definition of c,b origin
+  Int_t fFullAnalysis;   // flag to set analysis level (0 is the fastest)
+
+  ClassDef(AliAnalysisTaskCombinHF,2); // D+ task from AOD tracks
 };
 
 #endif

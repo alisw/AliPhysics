@@ -39,11 +39,13 @@
 #include "AliInputEventHandler.h"
 #include "AliHFEcuts.h"
 #include "AliHFEextraCuts.h"
+#include "AliHFEmcQA.h"
 #include "AliHFEpidTPC.h"
 #include "AliHFEreducedEvent.h"
 #include "AliHFEreducedTrack.h"
 #include "AliHFEreducedMCParticle.h"
 #include "AliHFEsignalCuts.h"
+#include "AliHFEV0taginfo.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliPIDResponse.h"
@@ -69,12 +71,15 @@ AliHFEreducedEventCreatorAOD::AliHFEreducedEventCreatorAOD():
   fExtraCuts(NULL),
   fSignalCuts(NULL),
   fTPCpid(NULL),
+  fV0Tagger(NULL),
   fEventNumber(0),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
   fNbOfTOFSigma(-1.0),
-  fRemoveFirstEvent(kFALSE)
+  fRemoveFirstEvent(kFALSE),
+  fFlagPileupEvents(kFALSE),
+  fSelectSignalOnly(kFALSE)
 {
   //
   // Default constructor
@@ -92,18 +97,22 @@ AliHFEreducedEventCreatorAOD::AliHFEreducedEventCreatorAOD(const char *name):
   fExtraCuts(NULL),
   fSignalCuts(NULL),
   fTPCpid(NULL),
+  fV0Tagger(NULL),
   fEventNumber(0),
   fNclustersTPC(70),
   fNclustersTPCPID(0),
   fNclustersITS(2),
   fNbOfTOFSigma(-1.0),
-  fRemoveFirstEvent(kFALSE)
+  fRemoveFirstEvent(kFALSE),
+  fFlagPileupEvents(kFALSE),
+  fSelectSignalOnly(kFALSE)
 {
   //
   // Default constructor
   //
   fTPCpid = new AliHFEpidTPC("QAtpcPID");
   fAnalysisUtils = new AliAnalysisUtils;
+  fV0Tagger = new AliHFEV0taginfo("Tagger");
   DefineOutput(1, TTree::Class());
 }
 
@@ -113,6 +122,7 @@ AliHFEreducedEventCreatorAOD::~AliHFEreducedEventCreatorAOD(){
   //
     if(fTPCpid) delete fTPCpid;
     if(fAnalysisUtils) delete fAnalysisUtils;
+    if(fV0Tagger) delete fV0Tagger;
     if(fHFEevent) delete fHFEevent;
 }
 
@@ -224,6 +234,11 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   }
   fExtraCuts->SetRecEventInfo(fInputEvent);
 
+  // Tag all v0s in current event
+  if(fV0Tagger){
+    fV0Tagger->Reset();
+    fV0Tagger->TagV0Tracks(fInputEvent);
+  }
  
   // Make Reduced Event 
   //AliHFEreducedEvent hfeevent;
@@ -258,6 +273,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   fHFEevent->SetVZ(vtx[2]);
   fHFEevent->SetNContribVertex(ncontrib);
   fHFEevent->SetVertexResolution(TMath::Sqrt(TMath::Abs(vcov[5])));
+  //fHFEevent->SetVertexDispersion(vertex->GetDispersion());
   // Get Primary Vertex from SPD
   const AliVVertex *vertexSPD = aodE->GetPrimaryVertexSPD();
   if(vertexSPD){
@@ -272,6 +288,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
     vertexSPD->GetCovarianceMatrix(vcov);
     AliDebug(1, Form("Covariance Matrix vcov[5] %f\n",vcov[5]));
     fHFEevent->SetVertexResolutionSPD(TMath::Sqrt(TMath::Abs(vcov[5])));
+    //fHFEevent->SetVertexDispersionSPD(vertex->GetDispersion());
   }
 
   // Get centrality
@@ -305,6 +322,11 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   AliAODTracklets *tls = aodE->GetTracklets();
   if(tls) fHFEevent->SetSPDMultiplicity(tls->GetNumberOfTracklets());
 
+  // Flag Pileup
+  if(fFlagPileupEvents){
+    if(fAnalysisUtils->IsPileUpEvent(fInputEvent)) fHFEevent->SetPileupFlag();
+  }
+
   // Look for kink mother
   AliDebug(1, "Vertices\n");
   Int_t numberofvertices = aodE->GetNumberOfVertices();
@@ -332,14 +354,16 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
   //
   AliAODMCParticle *mctrack(NULL);
   // Monte-Carlo info
-  Int_t source(5);
+  //Int_t source(5);
   if(mcthere){
+    fHFEevent->SetVMC(fAODMCHeader->GetVtxX(),fAODMCHeader->GetVtxY(),fAODMCHeader->GetVtxZ());
     AliDebug(1, "Loop MC tracks\n");
     for(Int_t itrack = 0; itrack < fAODArrayMCInfo->GetEntriesFast(); itrack++) {
       mctrack = (AliAODMCParticle *)(fAODArrayMCInfo->At(itrack));
       if(!mctrack) continue;
+      if(TMath::Abs(mctrack->PdgCode()) != 11) continue;  // in MC truth list store only electrons
+      if(fSelectSignalOnly && !fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) continue;        
       AliHFEreducedMCParticle hfemcpart;
-      if(fTrackCuts->CheckParticleCuts(static_cast<UInt_t>(AliHFEcuts::kStepMCGenerated), mctrack)) continue;        
       hfemcpart.SetSignal();
       // Kinematics
       hfemcpart.SetSignedPt(mctrack->Pt(), mctrack->Charge() > 0.);
@@ -355,18 +379,27 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
       Int_t motherlabel = TMath::Abs(mctrack->GetMother());
       if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
         AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
-        if(mother) hfemcpart.SetMotherPdg(mother->GetPdgCode());
+        if(mother){ 
+          hfemcpart.SetMotherPdg(mother->GetPdgCode());
+          hfemcpart.SetMotherProductionVertex(mother->Xv(),mother->Yv(),mother->Zv());
+        }
       }
       
       // derive source
-      source = 5;
+      /*
+      source = 7;
       if(fSignalCuts->IsCharmElectron(mctrack)) source = 0;
-      else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
-      else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
+	    else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
+	    else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
       else if(fSignalCuts->IsNonHFElectron(mctrack)) source = 3;
-      else if(TMath::Abs(mctrack->GetPdgCode()) == 11) source = 4;
-      else source = 5;
+      else if(fSignalCuts->IsJpsiElectron(mctrack)) source = 4;
+      else if(fSignalCuts->IsB2JpsiElectron(mctrack)) source = 5;
+      else if(fSignalCuts->IsKe3Electron(mctrack)) source = 6;
+      else source = 7;
       hfemcpart.SetSource(source);
+      */
+      hfemcpart.SetSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(mctrack)));
+      hfemcpart.SetElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
 
       fHFEevent->AddMCParticle(&hfemcpart);
     }
@@ -409,6 +442,18 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
     //if((status & AliVTrack::kTOFmismatch) == AliVTrack::kTOFmismatch) hfetrack.SetTOFmismatch();
     if(IsTOFmismatch(track, pid)) hfetrack.SetTOFmismatch(); // New version suggested by Pietro Antonioli
     if(track->IsEMCAL()) hfetrack.SetEMCALpid();
+
+    // fill counts of v0-identified particles
+    AliPID::EParticleType myv0pid = fV0Tagger->GetV0Info(track->GetID());
+    AliHFEreducedTrack::EV0PID_t v0pid = AliHFEreducedTrack::kV0undef;
+    if(myv0pid == AliPID::kElectron) v0pid = AliHFEreducedTrack::kV0electron;
+    else if(myv0pid == AliPID::kPion) v0pid = AliHFEreducedTrack::kV0pion;
+    else if(myv0pid == AliPID::kProton) v0pid = AliHFEreducedTrack::kV0proton;
+    hfetrack.SetV0PID(v0pid);
+
+    Double_t v0prodR = fV0Tagger->GetV0ProdR(track->GetID());
+    hfetrack.SetV0prodR(v0prodR);
+
     // Filter
     for(Int_t k=0; k<20; k++) {
       Int_t u = 1<<k;     
@@ -439,18 +484,27 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
         Int_t motherlabel = TMath::Abs(mctrack->GetMother());
         if(motherlabel >= 0 && motherlabel < fAODArrayMCInfo->GetEntriesFast()){
           AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODArrayMCInfo->At(motherlabel));
-          if(mother) hfetrack.SetMCMotherPdg(mother->GetPdgCode());
+          if(mother){
+            hfetrack.SetMCMotherPdg(mother->GetPdgCode());
+            hfetrack.SetMCMotherProdVtx(mother->Xv(),mother->Yv(),mother->Zv());
+          }
         }
       
         // derive source
-        source = 5;
-        if(fSignalCuts->IsCharmElectron(mctrack)) source = 0;
-        else if(fSignalCuts->IsBeautyElectron(mctrack)) source = 1;
-        else if(fSignalCuts->IsGammaElectron(mctrack)) source = 2;
-        else if(fSignalCuts->IsNonHFElectron(mctrack)) source = 3;
-        else if(TMath::Abs(mctrack->GetPdgCode()) == 11) source = 4;
-        else source = 5;
+        /*
+        source = 7;
+        if(fSignalCuts->IsCharmElectron(track)) source = 0;
+	      else if(fSignalCuts->IsBeautyElectron(track)) source = 1;
+	      else if(fSignalCuts->IsGammaElectron(track)) source = 2;
+        else if(fSignalCuts->IsNonHFElectron(track)) source = 3;
+        else if(fSignalCuts->IsJpsiElectron(track)) source = 4;
+        else if(fSignalCuts->IsB2JpsiElectron(track)) source = 5;
+        else if(fSignalCuts->IsKe3Electron(track)) source = 6;
+        else source = 7;
         hfetrack.SetMCSource(source); 
+        */
+        hfetrack.SetMCSource(static_cast<Int_t>(fSignalCuts->GetSignalSource(track))); 
+        hfetrack.SetMCElectronSource(fSignalCuts->GetMCQAObject()->GetElecSource(mctrack));
       } else {
         AliDebug(2, "Associated MC particle not found\n");
       }
@@ -488,11 +542,12 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
    
     // TRD related quantities (Yvonne)
     hfetrack.SetTRDntrackletsPID(track->GetTRDntrackletsPID());
-    hfetrack.SetTRDnslices(track->GetDetPid()->GetTRDnSlices());
-    hfetrack.SetTRDchi2(track->GetTRDchi2());
     AliAODPid* aodpid= track->GetDetPid();
-    Double_t* arraytrdsignals;
-    arraytrdsignals=aodpid->GetTRDslices();
+    if(aodpid) hfetrack.SetTRDnslices(aodpid->GetTRDnSlices());
+    hfetrack.SetTRDchi2(track->GetTRDchi2());
+
+    Double_t* arraytrdsignals = 0x0;
+    if(aodpid) arraytrdsignals=aodpid->GetTRDslices();
     Int_t nslicetemp=0;
     for(Int_t iplane = 0; iplane < 6; iplane++){
 	    nslicetemp=0;

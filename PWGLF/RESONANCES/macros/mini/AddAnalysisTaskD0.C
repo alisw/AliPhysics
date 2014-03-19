@@ -19,6 +19,8 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
 (
    Bool_t      isMC,
    Bool_t      isPP,
+   Bool_t      ispPb,
+   TString     centrality = "V0M",
    Float_t     cutV = 10.0,
    Int_t       aodFilterBit = 5,  
    Float_t     nsigmaTPCPi = 3.0,
@@ -30,6 +32,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Int_t       NTPCcluster = 70,
    Double_t    minpt = 0.15,
    TString     triggerMask = AliVEvent::kMB,
+   Short_t     maxSisters = 2,
+   Bool_t      checkP = kTRUE,
+   Bool_t      minDCAcutFixed = kFALSE,
+   Bool_t      maxDCAcutFixed = kFALSE,
+   Bool_t      ptdepPIDcut = kFALSE,
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
    Double_t    maxYlab =  0.5,
@@ -46,7 +53,15 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
   // retrieve analysis manager
   //
   
-  UInt_t trigger = triggerMask.Atoll();
+  UInt_t trigger = 0;
+  
+  
+  
+  TString eventType = "";
+   if(triggerMask=="AliVEvent::kMB | AliVEvent::kCentral") {trigger = AliVEvent::kMB | AliVEvent::kCentral; eventType+="Central";}
+   else if(triggerMask=="AliVEvent::kMB | AliVEvent::kSemiCentral") {trigger = AliVEvent::kMB | AliVEvent::kSemiCentral; eventType+="SemiCentral";}
+   else if(triggerMask=="AliVEvent::kINT7") {trigger = AliVEvent::kINT7; eventType+="kINT7";}
+   else if(triggerMask=="AliVEvent::kMB") {trigger = AliVEvent::kMB; eventType+="MinimumBias";}
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
@@ -55,28 +70,35 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    } 
 
    // create the task and configure 
-   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, dcaProduct, minpt);
+   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f_%s", (isPP? "pp" : ispPb? "pPB": "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, dcaProduct, minpt, eventType.Data());
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
      task->SetUseCentralityPatch(aodN==49);
    }
+   
+   ::Info("AddAnalysisTaskD0", Form("TriggerMask: %i",trigger));
 
    task->SelectCollisionCandidates(trigger);
+   task->SetMaxNDaughters(maxSisters);
+   task->SetCheckMomentumConservation(checkP);
+   
+   ::Info("AddAnalysisTaskD0", Form("Maximum numbers of daughters allowed (-1 means cut not applied): %i",maxSisters));
+   ::Info("AddAnalysisTaskD0", Form("Are we checking the momentum conservation?: %s", checkP? "yes" : "no"));
 
 
    if (isPP) 
      task->UseMultiplicity("QUALITY");
    else
-     task->UseCentrality("V0M");   
+     task->UseCentrality(centrality);   
    // set event mixing options
    task->UseContinuousMix();
    //task->UseBinnedMix();
    task->SetNMix(nmix);
    task->SetMaxDiffVz(maxDiffVzMix);
    task->SetMaxDiffMult(maxDiffMultMix);
-   if (!isPP) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
-   ::Info("AddAnalysisTaskD0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : maxDiffAngleMixDeg)));
+   if (!isPP && !ispPb) task->SetMaxDiffAngle(maxDiffAngleMixDeg*TMath::DegToRad()); //set angle diff in rad
+   ::Info("AddAnalysisTaskD0", Form("Event mixing configuration: \n events to mix = %i \n max diff. vtxZ = cm %5.3f \n max diff multi = %5.3f \n max diff EP angle = %5.3f deg", nmix, maxDiffVzMix, maxDiffMultMix, (isPP ? 0.0 : ispPb ? 0.0 : maxDiffAngleMixDeg)));
    
    mgr->AddTask(task);
    
@@ -88,7 +110,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    // - 3rd argument --> minimum required number of contributors
    // - 4th argument --> tells if TPC stand-alone vertexes must be accepted
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
-   if (isPP) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
+   if (isPP || ispPb) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -147,24 +169,23 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    cutsPairY->ShowCuts();
    cutsPairY->PrintSetInfo();
    
-   /*AliRsnCutSet *cutsPairDCAp = new AliRsnCutSet("pairCutsDCAp", AliRsnTarget::kMother);
-   cutsPairDCAp->AddCut(cutDCAproduct);
-   cutsPairDCAp->UseMonitor(kTRUE);
-   cutsPairDCAp->SetCutScheme("setPairD0_DCAp");
-   cutsPairDCAp->ShowCuts();
-   cutsPairDCAp->PrintSetInfo();*/
-  
-   
+   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
+   cutsPair->AddCut(cutY);
+   cutsPair->AddCut(cutDCAproduct);
+   cutsPair->UseMonitor(kTRUE);
+   cutsPair->SetCutScheme(Form("%s&%s", cutY->GetName(), cutDCAproduct->GetName()));
+   cutsPair->ShowCuts();
+   cutsPair->PrintSetInfo();
    
    //
    // -- CONFIG ANALYSIS --------------------------------------------------------------------------
    gROOT->LoadMacro("$ALICE_ROOT/PWGLF/RESONANCES/macros/mini/ConfigD0.C");
 
    if (isMC) {
-       Printf("========================== MC analysis - PID cuts not used");
+       Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, "", cutsPairY)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut,"", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
@@ -172,7 +193,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    Printf("AddAnalysisTaskD0 - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,dcaProduct,minpt), 
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f_%s",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,dcaProduct,minpt,eventType.Data()), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);

@@ -16,11 +16,14 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   }
 	
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  Bool_t isMC;
+  if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
   
   // Create tasks
   AliAnalysisTaskUpcPsi2s *task = new AliAnalysisTaskUpcPsi2s(inputDataType.Data());
   task->SetRunTree(runTree);
   task->SetRunHist(runHist);
+  task->SetIsMC(isMC);
   mgr->AddTask(task);
 
 

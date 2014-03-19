@@ -62,9 +62,11 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH1F  *fhNEvents;                         //! Histo number of events
   TH2F  *fHistRhovsCentFull;                //!rho vs. centrality
   TH2F  *fHistRhovsCentCharged;             //!rho vs. centrality
-  TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks
-  TH3F  *fh3PtEtaPhiTracksOnEmcal;          //! pt,eta,phi of tracks
-  TH3F  *fh3PtEtaPhiTracksProp;             //! pt,eta,phi of tracks
+  TH3F  *fh3PtEtaPhiTracks;                 //! pt,eta,phi of tracks at vertex
+  TH3F  *fh3PtEtaPhiTracksOnEmcal;          //! pt,eta,phi of tracks at Emcal surface
+  TH3F  *fh3PtEtaPhiTracksToProp;           //! pt,eta,phi of tracks at vertex
+  TH3F  *fh3PtEtaPhiTracksProp;             //! pt,eta,phi of tracks at vertex
+  TH3F  *fh3PtEtaPhiTracksNoProp;           //! pt,eta,phi of tracks at vertex
   TH2F  *fh2CentPtJetFull;                  //! cent, pt of full jets
   TH2F  *fh2CentPtJetCharged;               //! cent, pt of charged jets
   TH3F  *fh3PtEtaPhiJetFull;                //! pt,eta,phi of full jets
@@ -93,6 +95,8 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   TH3F  *fh3PatchADCEnergyEtaPhiCenterJ1;   //! patch ADC energy vs eta, phi at center of patch, high threshold
   TH3F  *fh3PatchADCEnergyEtaPhiCenterJ2;   //! patch ADC energy vs eta, phi at center of patch, low threshold
   TH3F  *fh3PatchADCEnergyEtaPhiCenterJ1J2; //! patch ADC energy vs eta, phi at center of patch, low + high threshold
+  TH3F  *fh3PatchADCEnergyEtaPhiCenterAll;  //! patch ADC energy vs eta, phi at center of patch, all trigger patches
+  TH3F  *fh3EEtaPhiCell;                    //! cell E, eta, phi
   TH2F  *fh2CellEnergyVsTime;               //! emcal cell energy vs time
   TH3F  *fh3EClusELeadingCellVsTime;        //! cluster energy vs energy of leading cell in cluster vs time of the leading cell
   TH3F  *fh3JetReacCent;                    //! jet energy vs cent vs dphi(jet,event plane)
@@ -100,6 +104,6 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalJetTriggerQA(const AliAnalysisTaskEmcalJetTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetTriggerQA &operator=(const AliAnalysisTaskEmcalJetTriggerQA&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 10)
+  ClassDef(AliAnalysisTaskEmcalJetTriggerQA, 13)
 };
 #endif

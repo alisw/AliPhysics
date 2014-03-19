@@ -1251,20 +1251,9 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
       if(fAnalysisType == "MCAOD")
         { 
 
-	  fArrayMC = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-          if (!fArrayMC) {
-            Printf("Error: MC particles branch not found!\n");
-            return;
-          }
-	  AliAODMCHeader *mcHdr=0;
-          mcHdr=(AliAODMCHeader*)fAODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-          if(!mcHdr) {
-            Printf("MC header branch not found!\n");
-            return;
-          }
-
 	  AliMCEvent* mcEvent = MCEvent();
-          _nTracks = mcEvent->GetNumberOfTracks();
+
+	  _nTracks = mcEvent->GetNumberOfTracks();
           _mult3    = _nTracks;
           //loop over tracks starts here                                                                                                       
           for (int iTrack=0; iTrack< _nTracks; iTrack++)
@@ -1515,8 +1504,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 		 nsigmakaon      > fNSigmaCut &&
 		 nsigmaproton    > fNSigmaCut ) continue;
 
-	      //Float_t dcaXY = t->DCA();     
-	      //Float_t dcaZ  = t->ZAtDCA();  
+	      Float_t dcaXY = t->DCA();     
+	      Float_t dcaZ  = t->ZAtDCA();  
 	      
 	      // Kinematics cuts 
 	      if( pt < 0.2 || pt > 2.0)  continue;
@@ -1535,7 +1524,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	   
 	      _etadis->Fill(eta);
 	      _phidis->Fill(phi);
-
+	      _dcaz->Fill(dcaZ);
+	      _dcaxy->Fill(dcaXY);
 	      
 	      //Particle 1                                                                                                                  
 	      if (t->Charge() > 0)

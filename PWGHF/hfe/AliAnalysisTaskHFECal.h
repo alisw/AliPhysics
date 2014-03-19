@@ -63,7 +63,6 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
   void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
   void SelectPhotonicElectron2(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
-  double SumpT(Int_t itrack, AliESDtrack *track);
   void FindMother(TParticle* part, int &label, int &pid);
   double GetMCweight(double mcPi0pT);
   double GetMCweightEta(double mcEtapT);
@@ -189,6 +188,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fSameElecPtMC_eta_TPC;	        //! Same inclusive ele pt
  TH1D                   *CheckNclust;  
  TH1D                   *CheckNits;  
+ TH2D                   *CheckDCA;  
  THnSparseD             *Hpi0pTcheck; 
  THnSparseD             *HETApTcheck; 
  TH2D                   *HphopTcheck; 
@@ -208,10 +208,19 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fIncRecoMaxE;
  TH2D                   *fPhoRecoMaxE;
  TH2D                   *fSamRecoMaxE; 
- TH2D                   *fPhoVertexReco0;
- TH2D                   *fPhoVertexReco1;
- TH2D                   *fPhoVertexReco2;
- TH2D                   *fPhoVertexReco3;
+ TH2D                   *fPhoVertexReco_HFE;
+ TH2D                   *fPhoVertexReco_EMCal;
+ TH2D                   *fPhoVertexReco_Invmass;
+ TH2D                   *fPhoVertexReco_step0;
+ TH2D                   *fPhoVertexReco_step1;
+ TH2D                   *fPhoVertexReco_step2;
+ TH2D                   *fPhoVertexReco_step3;
+ TH2D                   *fPhoVertexReco_step4;
+ TH2D                   *fPhoVertexReco_step5;
+ TH1D                   *fMatchV0_0;
+ TH1D                   *fMatchV0_1;
+ TH1D                   *fMatchMC_0;
+ TH1D                   *fMatchMC_1;
 
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];

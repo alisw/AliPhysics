@@ -23,6 +23,7 @@
 
 #include <TNamed.h>
 #include <TVectorDfwd.h>
+#include <TBits.h>
 #include "AliDielectronVarManager.h"
 
 class AliAnalysisCuts;
@@ -76,6 +77,8 @@ public:
   AliCFContainer* GetContainer() const { return fCfContainer; }
   
 private:
+  TBits     *fUsedVars;             // list of used variables
+
   UInt_t          fVariables[AliDielectronVarManager::kNMaxValues]; //configured variables
   UInt_t          fVariablesLeg[AliDielectronVarManager::kNMaxValues]; //configured variables for the legs
   
@@ -119,7 +122,7 @@ private:
   AliDielectronCF(const AliDielectronCF &c);
   AliDielectronCF &operator=(const AliDielectronCF &c);
   
-  ClassDef(AliDielectronCF,4)  //Dielectron Correction Framework handler
+  ClassDef(AliDielectronCF,5)  //Dielectron Correction Framework handler
 };
 
 #endif

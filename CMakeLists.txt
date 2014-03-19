@@ -27,16 +27,24 @@ endif(NOT ALICE_ROOT)
 
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 # Set AliRoot Installation directory 
-if(NOT ALICE_INSTALL)
-  message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You can specify a different location by setting ALICE_INSTALL environment variable")
-  set(ALICE_INSTALL ${ALICE_ROOT})
-else()
-  message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
-endif(NOT ALICE_INSTALL)
-if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "Install dir should be different from build dir")
+# If CMAKE_INSTALL_PREFIX was not set than we set it to ALICE_INSTALL. 
+# If ALICE_INSTALL was not defined than it will default to source directory
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(ALICE_INSTALL)
+	message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
+    else()
+	message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You
+	can specify a different location by passing -DCMAKE_INSTALL_PREFIX or
+	by setting ALICE_INSTALL environment variable")
+	set(ALICE_INSTALL ${ALICE_ROOT})
+	if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
+	    message(FATAL_ERROR "The install directory must differ from the
+	    build directory")
+	endif()
+    endif()
+    set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL} CACHE STRING "Install dir" FORCE)
 endif()
-set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+
 
 # Environment for SHUTTLE
 set(DIMDIR $ENV{DIMDIR})
@@ -90,6 +98,10 @@ find_package(CPack)
 # ZeroMQ
 # ------------------------------
 find_package(ZeroMQ)
+
+# fastjet
+# ------------------------------
+find_package(FASTJET)
 
 #--------------------------------------------------------------------------------#
 # Environment/Compiler Configuration                                             #

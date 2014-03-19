@@ -18,6 +18,7 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
 				Double_t ptAssociatedMin = -1.,
 				Double_t ptAssociatedMax = -1.,
 				Bool_t normToTrig = kTRUE,
+				Double_t normalizationRangePhi = TMath::Pi()/6.,
 				Bool_t kUseVzBinning = kTRUE,
 				Int_t rebinEta = 1,
 				Int_t rebinPhi = 1,
@@ -94,7 +95,8 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
   else 
     draw(list,listShuffled,listMixed,listQA,
 	 gCentralityEstimator,gCentrality,psiMin,psiMax,vertexZMin,vertexZMax,
-	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig,kUseVzBinning,rebinEta,rebinPhi,eventClass);
+	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig, normalizationRangePhi,
+	 kUseVzBinning,rebinEta,rebinPhi,eventClass);
 }
 
 //______________________________________________________//
@@ -276,7 +278,8 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 	  Double_t vertexZMin,Double_t vertexZMax,
 	  Double_t ptTriggerMin, Double_t ptTriggerMax,
 	  Double_t ptAssociatedMin, Double_t ptAssociatedMax,
-	  Bool_t normToTrig, 				
+	  Bool_t normToTrig, 
+	  Double_t normalizationRangePhi,				
 	  Bool_t kUseVzBinning,
 	  Int_t rebinEta, Int_t rebinPhi,TString eventClass) {
   //Draws the correlation functions for every centrality bin
@@ -596,7 +599,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
+    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -810,7 +813,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
-    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
+    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1025,7 +1028,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
-    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
+    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1238,7 +1241,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
-    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,hVertexCentrality);
+    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");

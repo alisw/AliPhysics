@@ -90,10 +90,11 @@ AliAnalysisTaskSE(),
   fSys(0),
   fEtaForCorrel(0),
   fIsRejectSDDClusters(0),
-  fFillGlobal(kTRUE),
+  fFillGlobal(kFALSE),
   fMultEv(0.),
   fSoftPiCut(kTRUE),
-  fMEAxisThresh(kFALSE)
+  fMEAxisThresh(kFALSE),
+  fKaonCorr(kFALSE)   
 {
   // Default constructor
 
@@ -129,10 +130,11 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const char *nam
   fSys(0),
   fEtaForCorrel(0),
   fIsRejectSDDClusters(0),
-  fFillGlobal(kTRUE),
+  fFillGlobal(kFALSE),
   fMultEv(0.),
   fSoftPiCut(kTRUE),
-  fMEAxisThresh(kFALSE)
+  fMEAxisThresh(kFALSE),
+  fKaonCorr(kFALSE)
 {
   // Default constructor
 
@@ -189,7 +191,8 @@ AliAnalysisTaskSED0Correlations::AliAnalysisTaskSED0Correlations(const AliAnalys
   fFillGlobal(source.fFillGlobal),
   fMultEv(source.fMultEv),
   fSoftPiCut(source.fSoftPiCut),
-  fMEAxisThresh(source.fMEAxisThresh)
+  fMEAxisThresh(source.fMEAxisThresh),
+  fKaonCorr(source.fKaonCorr)
 {
   // Copy constructor
 }
@@ -273,6 +276,7 @@ AliAnalysisTaskSED0Correlations& AliAnalysisTaskSED0Correlations::operator=(cons
   fMultEv = orig.fMultEv;
   fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
+  fKaonCorr = orig.fKaonCorr;
 
   return *this; //returns pointer of the class
 }
@@ -754,6 +758,22 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
         if (fCutsD0->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y()) ) {
           nSelectedloose++;
           nSelectedtight++;      
+
+	  //Removal of cases in which D0 decay is not in Kpi!
+	  if(mcPart->GetNDaughters()!=2) continue;
+	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(0)));
+	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughter(1)));
+	  if(!mcDau1 || !mcDau2) continue;
+	  Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
+	  Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
+          if(!((pdg1 == 211 && pdg2 == 321) || (pdg2 == 211 && pdg1 == 321))) continue;
+          if(TMath::Abs(mcDau1->Eta())>0.8||TMath::Abs(mcDau2->Eta())>0.8) continue;
+            //Check momentum conservation (to exclude 4-prong decays with tracks outside y=1.5)
+            Double_t p1[3]  = {mcDau1->Px(),mcDau1->Py(),mcDau1->Pz()};
+            Double_t p2[3]  = {mcDau2->Px(),mcDau2->Py(),mcDau2->Pz()};
+            Double_t pD0[3] = {mcPart->Px(),mcPart->Py(),mcPart->Pz()};
+            if(TMath::Abs( (p1[0]+p2[0]-pD0[0])*(p1[0]+p2[0]-pD0[0]) + (p1[1]+p2[1]-pD0[1])*(p1[1]+p2[1]-pD0[1]) + (p1[2]+p2[2]-pD0[2])*(p1[2]+p2[2]-pD0[2]) )>0.1) continue;
+
           if(fSys==0) fNentries->Fill(6);
           Int_t ptbin=fCutsD0->PtBin(mcPart->Pt());
           if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds  
@@ -1384,29 +1404,29 @@ void AliAnalysisTaskSED0Correlations::CreateCorrelationsObjs() {
     hPtKAll->SetMinimum(0);
     fOutputStudy->Add(hPtKAll);
 
-    if(!fMixing) {
-      //phi distributions
-      TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
-      hPhiDistCAll->SetMinimum(0);
-      fOutputStudy->Add(hPhiDistCAll);
-
-      TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
-      hPhiDistHAll->SetMinimum(0);
-      fOutputStudy->Add(hPhiDistHAll);
-
-      TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
-      hPhiDistKAll->SetMinimum(0);
-      fOutputStudy->Add(hPhiDistKAll);
-
-      TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
-      hPhiDistDAll->SetMinimum(0);
-      fOutputStudy->Add(hPhiDistDAll);
-    }
-
     //K0 Invariant Mass plots
     TH2F *hK0MassInv = new TH2F("hK0MassInv", "K0 invariant mass; Invariant mass (MeV/c^{2}); pT (GeV/c)",200,0.4,0.6,100,0.,10.);
     hK0MassInv->SetMinimum(0);
     fOutputStudy->Add(hK0MassInv);
+  }
+
+  if(!fMixing) {
+    //phi distributions
+    TH1F *hPhiDistCAll = new TH1F("hist_PhiDistr_Charg", "Charged track phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    hPhiDistCAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistCAll);
+
+    TH1F *hPhiDistHAll = new TH1F("hist_PhiDistr_Kcharg", "Hadrons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    hPhiDistHAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistHAll);
+
+    TH1F *hPhiDistKAll = new TH1F("hist_PhiDistr_K0", "Kaons phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    hPhiDistKAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistKAll);
+
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_D0", "D^{0} phi distr. (All); p_{T} (GeV/c)",64,0,6.283);
+    hPhiDistDAll->SetMinimum(0);
+    fOutputStudy->Add(hPhiDistDAll);
   }
 
   //for MC analysis only
@@ -1689,6 +1709,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
     } // end of tracks loop
   } //end of event loop for fCorrelatorTr
 
+ if(fKaonCorr) { //loops for Kcharg and K0
+
   if(fMixing) {
     NofEventsinPool = fCorrelatorKc->GetNofEventsInPool(); 
     if(!execPoolKc) {
@@ -1764,6 +1786,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelations(AliAODRecoDecayHF2Pr
 
     } // end of charged kaons loop
   } //end of event loop for fCorrelatorK0
+
+ } //end of 'if(fKaonCorr)'
 
   Double_t fillSpLeadD0[4] = {lead[0],mD0,lead[1],0.4}; //dummy value for threshold of leading!
   Double_t fillSpLeadD0bar[4] = {lead[0],mD0bar,lead[1],0.4};
@@ -1895,6 +1919,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
     } // end of tracks loop
   } //end of event loop for fCorrelatorTr
 
+ if(fKaonCorr) { //loops for Kcharg and K0
+
   if(fMixing) {
     NofEventsinPool = fCorrelatorKc->GetNofEventsInPool(); 
     if(!execPoolKc) {
@@ -1967,6 +1993,8 @@ void AliAnalysisTaskSED0Correlations::CalculateCorrelationsMCKine(AliAODMCPartic
 
     } // end of charged kaons loop
   } //end of event loop for fCorrelatorK0
+
+ } //end of 'if(fKaonCorr)'
 
   Double_t fillSpLeadMC[4] = {lead[0],mD0,lead[1],0.4}; //mD0 = mD0bar = 1.864
 

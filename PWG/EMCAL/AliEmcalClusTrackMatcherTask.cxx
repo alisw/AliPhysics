@@ -22,7 +22,7 @@ ClassImp(AliEmcalClusTrackMatcherTask)
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() : 
   AliAnalysisTaskEmcal("AliEmcalClusTrackMatcherTask",kFALSE),
-  fMaxDistance(0.06),
+  fMaxDistance(0.1),
   fModifyObjs(kFALSE),
   fOrigTracks(0),
   fOrigClus(0),
@@ -44,7 +44,7 @@ AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask() :
 //________________________________________________________________________
 AliEmcalClusTrackMatcherTask::AliEmcalClusTrackMatcherTask(const char *name, Bool_t histo) : 
   AliAnalysisTaskEmcal(name,histo),
-  fMaxDistance(0.06),
+  fMaxDistance(0.1),
   fModifyObjs(kFALSE),
   fOrigTracks(0),
   fOrigClus(0),
@@ -87,17 +87,20 @@ void AliEmcalClusTrackMatcherTask::ExecOnce()
     dummy->SetName(Form("%s_matched", cont->GetArrayName().Data()));
     AddObjectToEvent(dummy);
     // get pointer to original collections
-    TString tmp(cont->GetName());
+    TString tmp(cont->GetArrayName());
     TObjArray *arr = tmp.Tokenize("_");
     if (arr) {
       const Int_t aid = arr->GetEntries()-1;
       if (aid>0) {
-	tmp = arr->At(aid)->GetName();
-	TClonesArray *oarr =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(tmp));
-	if (oarr && (i==0))
+	TString tname(arr->At(aid)->GetName());
+	TClonesArray *oarr =  dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(tname));
+	if (oarr && (i==0)) {
+	  AliInfo(Form("Setting orig tracks to %s", tname.Data()));
 	  fOrigTracks = oarr;
-	else if (oarr && (i==1))
+	} else if (oarr && (i==1)) {
+	  AliInfo(Form("Setting orig clusters to %s", tname.Data()));
 	  fOrigClus = oarr;
+	}
       }
     }
     delete arr;
@@ -252,22 +255,22 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     AliPicoTrack::GetEtaPhiDiff(track, clust, dphi, deta);
     clust->SetEmcCpvDistance(matchedId);
     clust->SetTrackDistance(deta, dphi);
-    if (!fOrigTracks) 
-      continue;
     if (ac) {
       for (Int_t i=0; i<N; ++i) {
 	Int_t id = partC->GetMatchedObjId(i);
-	TObject *obj = fOrigTracks->At(id);
+	partT = static_cast<AliEmcalParticle*>(tracks->GetParticle(id));
+	TObject *obj = partT->GetTrack();
 	ac->AddTrackMatched(obj);
       }
-      continue;
+    } else {
+      TArrayI arr(N);
+      for (Int_t i=0; i<N; ++i) {
+	Int_t id = partC->GetMatchedObjId(i);
+	partT = static_cast<AliEmcalParticle*>(tracks->GetParticle(id));
+	arr.AddAt(partT->IdInCollection(),i);
+      }
+      ec->AddTracksMatched(arr);
     }
-    TArrayI arr(N);
-    for (Int_t i=0; i<N; ++i) {
-      Int_t id = partC->GetMatchedObjId(i);
-      arr.AddAt(id,i);
-    }
-    ec->AddTracksMatched(arr);
   }
   
   tracks->ResetCurrentID();
@@ -276,7 +279,8 @@ Bool_t AliEmcalClusTrackMatcherTask::Run()
     track->ResetStatus(AliVTrack::kEMCALmatch);
     if (partT->GetNumberOfMatchedObj() <= 0)
       continue;
-    track->SetEMCALcluster(partT->GetMatchedObjId());
+    partC = static_cast<AliEmcalParticle*>(clusters->GetParticle(partT->GetMatchedObjId()));
+    track->SetEMCALcluster(partC->IdInCollection());
     track->SetStatus(AliVTrack::kEMCALmatch);
   }
 

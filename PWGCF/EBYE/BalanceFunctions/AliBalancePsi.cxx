@@ -1894,6 +1894,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 					    Double_t ptAssociatedMax,
 					    AliBalancePsi *bMixed,
 					    Bool_t normToTrig,
+					    Double_t normalizationRangePhi,
 					    TH2D *hVertexCentrality) {
 
   // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
@@ -1936,7 +1937,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
     for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
 
-      cout<<"In the correlation function loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+      //cout<<"In the correlation function loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
 
       // determine the bin edges for this bin
       binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi) + 0.00001;
@@ -1971,9 +1972,16 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       if(fMixed && normToTrig && fMixed->Integral()>0){
 	
 	// normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
-	// do it only on away-side (due to two-track cuts)
-	Double_t mixedNorm = fMixed->Integral(fMixed->GetXaxis()->FindBin(0-10e-5),fMixed->GetXaxis()->FindBin(0+10e-5),fMixed->GetNbinsY()/2+1,fMixed->GetNbinsY());
-	mixedNorm /= 0.5 * fMixed->GetNbinsY() *(fMixed->GetXaxis()->FindBin(0.01) - fMixed->GetXaxis()->FindBin(-0.01) + 1);
+	// do it only on away-side (due to two-track cuts): pi +- pi/6.
+	Int_t binXmin  = fMixed->GetXaxis()->FindBin(0-10e-5);
+	Int_t binXmax  = fMixed->GetXaxis()->FindBin(0+10e-5);
+	Double_t binsX = (Double_t)(binXmax - binXmin + 1);
+	Int_t binYmin  = fMixed->GetYaxis()->FindBin(TMath::Pi() - normalizationRangePhi);
+	Int_t binYmax  = fMixed->GetYaxis()->FindBin(TMath::Pi() + normalizationRangePhi - 0.00001);
+	Double_t binsY = (Double_t)(binYmax - binYmin + 1);
+	
+	Double_t mixedNorm = fMixed->Integral(binXmin,binXmax,binYmin,binYmax);
+	mixedNorm /= binsX * binsY;
 
 	// finite bin correction
 	Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());
@@ -2008,8 +2016,8 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
 	Double_t NEventsSubBin = (Double_t)hVertexCentrality->Integral(binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
 
-	Printf("Averaging from %d < z < %d and %d < cent < %d ",binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
-	Printf("Averaging from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",binVertexLowEdge,binVertexUpEdge,binPsiLowEdge,binPsiUpEdge,NEventsSubBin);
+	//Printf("Averaging from %d < z < %d and %d < cent < %d ",binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
+	//Printf("Averaging from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",binVertexLowEdge,binVertexUpEdge,binPsiLowEdge,binPsiUpEdge,NEventsSubBin);
 	fSame->Scale(NEventsSubBin);
 	
 	// OLD and NEW averaging:

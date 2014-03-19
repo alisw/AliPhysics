@@ -8,16 +8,10 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
 					       TString  AnalysisType="AOD",//AOD/MCAOD
 					       const char* outputFileName = 0,
 					       const char* containerName = "TwoParticlePIDCorr",
+					       const char* QAContainername = "TwoParticlePIDCorr_PIDQA",
 					       const char* folderName = "PWGCF_TwoParticlePIDCorr"
 )
 {
-     TString QAContainername="TwoParticlePIDQA";
-     QAContainername.Append("_");
-     QAContainername.Append(SampleType);
-     QAContainername.Append("_");
-     QAContainername.Append(AnalysisType);
-     QAContainername.Append("_");
-     QAContainername.Append("debojit");
 
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -54,7 +48,7 @@ AliAnalysisTask*  AddAliTwoParticlePIDCorrTask(TString  SampleType="pPb",//pp,pP
   
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(containerName, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
 
-  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(QAContainername.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(QAContainername, TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:%s", outputFileName, folderName));
 
   
   mgr->ConnectInput  (PIDCorr, 0, mgr->GetCommonInputContainer());

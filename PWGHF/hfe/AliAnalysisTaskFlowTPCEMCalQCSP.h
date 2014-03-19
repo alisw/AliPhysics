@@ -51,7 +51,7 @@ public:
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
+    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Double_t eopinc, Double_t evPlAnglV0, Bool_t &fFlagPhotonicElec);
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetpTCuttrack(Double_t ptcut) {fpTCut = ptcut;};
     void                                 SetTrigger(Int_t trig) {fTrigger = trig;};
@@ -173,7 +173,10 @@ private:
     TH1F                 *fCentralityNoPassForFlattening; //! QA histogram of events that do not pass centrality cut for flattening
     TH1F                 *fInvmassLS1highpt; //!LS Invmass for all rec par high pt
     TH1F                 *fInvmassULS1highpt;//!ULS Invmass for all rec par high pt
-    
+    THnSparseF           *fSparsephipsiULS;//!ssss
+    THnSparseF           *fSparsephipsiLS;//!ssss
+    THnSparseF           *fSparseMassULS;//!ssss
+    THnSparseF           *fSparseMassLS;//!ssssss
     
     
     AliAnalysisTaskFlowTPCEMCalQCSP(const AliAnalysisTaskFlowTPCEMCalQCSP&); // not implemented

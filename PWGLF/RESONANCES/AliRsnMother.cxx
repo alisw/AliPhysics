@@ -247,15 +247,26 @@ Double_t AliRsnMother::DCAproduct()
     AliAODTrack *track1 = (AliAODTrack*)fDaughter[0]->Ref2AODtrack();
     AliAODTrack *track2 = (AliAODTrack*)fDaughter[1]->Ref2AODtrack();
     AliVVertex *vertex = aodEvent->GetPrimaryVertex();   
-    if (!vertex || !track1 || track2) return 0.0;
+    if (!vertex || !track1 || !track2) return 0.0;
      
     Double_t b1[2], cov1[3], b2[2], cov2[3];
-    track1->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b1, cov1);    
-    track2->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b2, cov2);    
-    fDCAproduct = b1[0]*b2[0];  
+    if ( track1->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b1, cov1) &&   
+	 track2->PropagateToDCA(vertex, aodEvent->GetMagneticField(), kVeryBig, b2, cov2) )
+      fDCAproduct = b1[0]*b2[0]; 
+    else fDCAproduct = 0.0;
   } else {
-    AliWarning("DCA product not implemented for ESDs"); 
-    fDCAproduct=0.0;
+    AliESDEvent *esdEvent = (AliESDEvent*)event1->GetRefESD();  
+    if (!esdEvent) return 0.0;
+    AliESDtrack *track1 = (AliESDtrack*)fDaughter[0]->Ref2ESDtrack();
+    AliESDtrack *track2 = (AliESDtrack*)fDaughter[1]->Ref2ESDtrack();
+    const AliVVertex *vertex = esdEvent->GetPrimaryVertex();
+    if (!vertex || !track1 || !track2) return 0.0;
+     
+    Double_t b1[2], cov1[3], b2[2], cov2[3];
+    if ( track1->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b1, cov1) &&    
+	 track2->PropagateToDCA(vertex, esdEvent->GetMagneticField(), kVeryBig, b2, cov2) )
+      fDCAproduct = b1[0]*b2[0];  
+    else fDCAproduct = 0.0;  
   }
   return fDCAproduct;
 }
