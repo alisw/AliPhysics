@@ -910,7 +910,7 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     Int_t pdgMom = mcmom->GetPdgCode();
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
-      Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), 0.4);
+      Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
       if(ptsum<2)
 	fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fNClusForDirPho==0)
