@@ -34,7 +34,6 @@ set ( SRCS
     FLOW/Tasks/AliFlowCandidateTrack.cxx 
     FLOW/Tasks/AliFlowTrackCuts.cxx 
     FLOW/Tasks/AliAnalysisTaskScalarProduct.cxx 
-    FLOW/Tasks/AliAnalysisTaskMSP.cxx 
     FLOW/Tasks/AliAnalysisTaskMCEventPlane.cxx 
     FLOW/Tasks/AliAnalysisTaskLYZEventPlane.cxx 
     FLOW/Tasks/AliAnalysisTaskCumulants.cxx 

@@ -27,14 +27,12 @@
 #pragma link C++ class AliFlowCommonHistResults+;
 #pragma link C++ class AliFlowLYZHist1+;
 #pragma link C++ class AliFlowLYZHist2+;
-#pragma link C++ class AliFlowMSPHistograms+;
 
 #pragma link C++ class AliFlowLYZEventPlane+;
 
 #pragma link C++ class AliFlowAnalysis+;
 #pragma link C++ class AliFlowAnalysisWithMCEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithScalarProduct+;
-#pragma link C++ class AliFlowAnalysisWithMSP+;
 #pragma link C++ class AliFlowAnalysisWithLYZEventPlane+;
 #pragma link C++ class AliFlowAnalysisWithLeeYangZeros+;
 #pragma link C++ class AliFlowAnalysisWithCumulants+;
