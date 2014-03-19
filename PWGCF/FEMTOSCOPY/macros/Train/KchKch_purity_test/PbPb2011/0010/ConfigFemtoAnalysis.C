@@ -168,7 +168,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoKTPairCut             *ktpcuts[20*8];
   AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*8];
   AliFemtoQinvCorrFctn          *cqinvkttpc[20*8];
-  AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
+ // AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
+  AliFemtoBPLCMS3DCorrFctn  *cq3dlcmskttpc[20*8];
+ 
   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
@@ -425,7 +427,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	      if (run3d) {
 	//	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
-	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
+
+        //    AliFemtoBPLCMS3DCorrFctn *cq3dallpiptpc = new AliFemtoBPLCMS3DCorrFctn("cq3dallpiptpc",100,-1.5,1.5);
+                                 
+	cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,-0.5,0.5);
+//	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }
