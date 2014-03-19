@@ -42,6 +42,9 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
  fPropagateError(kTRUE),
+ fAnalysisTag(""),
+ fDumpThePoints(kFALSE),
+ fMaxNoEventsPerFile(100),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -198,7 +201,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // e) Calculate multi-particle correlations from Q-vector components; 
  // f) Calculate e-b-e cumulants; 
  // g) Reset Q-vector components;
- // h) Cross-check results with nested loops.
+ // h) Cross-check results with nested loops;
+ // i) Dump the points.
 
  // a) Cross-check internal flags:
  if(fUseInternalFlags){if(!this->CrossCheckInternalFlags(anEvent)){return;}}
@@ -226,6 +230,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
  if(fCrossCheckDiffWithNestedLoops){this->CrossCheckDiffWithNestedLoops(anEvent);}
 
+ // i) Dump the points:
+ if(fDumpThePoints){this->DumpThePoints(anEvent);}
+ 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
@@ -1763,7 +1770,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  // d) Q-cumulants;
  // e) Weights;
  // f) Differential correlations;
- // g) Nested loops.
+ // g) Nested loops;
+ // h) Dump the points.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()";
 
@@ -1861,6 +1869,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  if(fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !fCalculateDiffCos))
  {
   Fatal(sMethodName.Data(),"fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !CalculateDiffCos)"); 
+ }
+
+ // h) Dump the points:
+ if(fDumpThePoints && !fFillMultDistributionsHist)
+ {
+  Fatal(sMethodName.Data(),"if(fDumpThePoints && !fFillMultDistributionsHist)"); 
+ }
+ if(fDumpThePoints && fMaxNoEventsPerFile <= 0)
+ {
+  Fatal(sMethodName.Data(),"if(fDumpThePoints && fMaxNoEventsPerFile <= 0)"); 
  }
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
@@ -2031,21 +2049,21 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
   } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  } // if(fFillMultDistributionsHist)
 
- //  b2) Book TH2D *fMultCorrelationsHist[3]: 
+ //  b2) Book TH2I *fMultCorrelationsHist[3]: 
  if(fFillMultCorrelationsHist)
  {
   // ...
-  fMultCorrelationsHist[0] = new TH2D("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[1],fMinMult[1],fMaxMult[1]);
+  fMultCorrelationsHist[0] = new TH2I("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[1],fMinMult[1],fMaxMult[1]);
   fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
   fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
   fControlHistogramsList->Add(fMultCorrelationsHist[0]);
   // ...
-  fMultCorrelationsHist[1] = new TH2D("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+  fMultCorrelationsHist[1] = new TH2I("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
   fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
   fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
   fControlHistogramsList->Add(fMultCorrelationsHist[1]);
   // ...
-  fMultCorrelationsHist[2] = new TH2D("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",fnBinsMult[1],fMinMult[1],fMaxMult[1],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+  fMultCorrelationsHist[2] = new TH2I("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",fnBinsMult[1],fMinMult[1],fMaxMult[1],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
   fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
   fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
   fControlHistogramsList->Add(fMultCorrelationsHist[2]);
@@ -2102,7 +2120,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
   if(fFillMultDistributionsHist){fMultDistributionsHist[rprm]->Fill(dMult[rprm]);}      
  } 
 
- // c) Fill TH2D *fMultCorrelationsHist[3]:  
+ // c) Fill TH2I *fMultCorrelationsHist[3]:  
  if(fFillMultCorrelationsHist)
  {
   fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI); // RP vs. POI
@@ -2139,7 +2157,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
   fMultDistributionsHist[rprm] = NULL;      
  } 
 
- // c) Initialize TH2D *fMultCorrelationsHist[3]: 
+ // c) Initialize TH2I *fMultCorrelationsHist[3]: 
  for(Int_t r=0;r<3;r++) // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
  {
   fMultCorrelationsHist[r] = NULL; 
@@ -3068,12 +3086,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
   if(!fMultDistributionsHist[rprm] && fFillMultDistributionsHist){Fatal(sMethodName.Data(),"%s",nameMult[rprm].Data());} // TBI 
  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
 
- // f) Get pointers to TH2D *fMultCorrelationsHist[3]: TBI automatize the things here...
- fMultCorrelationsHist[0] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
+ // f) Get pointers to TH2I *fMultCorrelationsHist[3]: TBI automatize the things here...
+ fMultCorrelationsHist[0] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
  if(!fMultCorrelationsHist[0] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. POI)");} // TBI 
- fMultCorrelationsHist[1] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
+ fMultCorrelationsHist[1] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
  if(!fMultCorrelationsHist[1] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. REF)");} // TBI 
- fMultCorrelationsHist[2] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
+ fMultCorrelationsHist[2] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
  if(!fMultCorrelationsHist[2] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (POI vs. REF)");} // TBI 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistograms()
@@ -3669,7 +3687,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
 {
  // Book all base objects. 
 
- fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",5,0,5);
+ fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",8,0,8);
  fInternalFlagsPro->SetLabelSize(0.05);
  fInternalFlagsPro->SetStats(kFALSE);
  fInternalFlagsPro->SetFillColor(kGray);
@@ -3679,6 +3697,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
  fInternalFlagsPro->GetXaxis()->SetBinLabel(3,"fMaxNoRPs"); fInternalFlagsPro->Fill(2.5,fMaxNoRPs); 
  fInternalFlagsPro->GetXaxis()->SetBinLabel(4,"fExactNoRPs"); fInternalFlagsPro->Fill(3.5,fExactNoRPs);  
  fInternalFlagsPro->GetXaxis()->SetBinLabel(5,"fPropagateError"); fInternalFlagsPro->Fill(4.5,fPropagateError);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(6,Form("fAnalysisTag = %s",fAnalysisTag.Data())); 
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(7,"fDumpThePoints"); fInternalFlagsPro->Fill(6.5,fDumpThePoints);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(8,"fMaxNoEventsPerFile"); fInternalFlagsPro->Fill(7.5,fMaxNoEventsPerFile);  
 
  fHistList->Add(fInternalFlagsPro); 
 
@@ -4736,6 +4757,137 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t minMult)
 
 //=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)
+{
+ // Dump the points into the external file. 
+ 
+ // Dumping format: 
+ // Event <eventNo> Multiplicity <multRP> 
+ // phi pt eta
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)";
+
+ // Basic protection:
+ if(!anEvent){Fatal(sMethodName.Data(),"if(!anEvent)");} 
+ if(!fMultDistributionsHist[0]){Fatal(sMethodName.Data(),"if(!fMultDistributionsHist[0])");} 
+ if(fMaxNoEventsPerFile<=0){Fatal(sMethodName.Data(),"if(fMaxNoEventsPerFile<=0)");} 
+
+ // Determine event number and multiplicity:
+ Int_t eventNo = (Int_t) fMultDistributionsHist[0]->GetEntries(); // TBI this is a little bit shaky...
+ Int_t multRP = (Int_t) anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+
+ // Determine external file name:
+ Int_t fileCounter = (Int_t)((eventNo-1)/fMaxNoEventsPerFile);
+ TString filename = Form("%s_%d.dat",fAnalysisTag.Data(),fileCounter);
+
+ // Open external file and dump:
+ ofstream myfile;
+ myfile.open(filename.Data(),ios::app); 
+ myfile << Form("Event %d Multiplicity %d\n",eventNo,multRP);   
+ Int_t nTracks = (Int_t) anEvent->NumberOfTracks();
+ Double_t dPhi = 0., dPt = 0., dEta = 0.;
+ for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ {
+  AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+  if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::DumpThePoints(AliFlowEventSimple *anEvent) !!!!"); continue;}
+  if(pTrack->InRPSelection()) 
+  {
+   dPhi = pTrack->Phi(); 
+   dPt = pTrack->Pt();
+   dEta = pTrack->Eta();
+   myfile<<Form("%f %f %f\n",dPhi,dPt,dEta);
+   //cout<<Form("%f %f %f",dPhi,dPt,dEta)<<endl;
+  }
+ } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ myfile<<"\n";
+ myfile.close();
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)
+
+//=======================================================================================================================
+
+TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+{
+ // Access from external ROOT file the desired histogram with weights. 
+
+ // a) Return value; 
+ // b) Method name; 
+ // c) Basic protection for arguments; 
+ // d) Check if the external ROOT file exists at specified path; 
+ // e) Access the external ROOT file and fetch the desired histogram with weights;
+ // f) Close the external ROOT file. 
+
+ // a) Return value:
+ TH1D *hist = NULL; 
+
+ // b) Method name: 
+ TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)"; 
+
+ // c) Basic protection for arguments:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI"))){Fatal(sMethodName.Data(),"!(TString(type).EqualTo...");}
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){Fatal(sMethodName.Data(),"!(TString(variable).EqualTo...");}
+
+ // d) Check if the external ROOT file exists at specified path:
+ if(gSystem->AccessPathName(filePath,kFileExists))
+ {
+  Fatal(sMethodName.Data(),"if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath);
+ }
+
+ // e) Access the external ROOT file and fetch the desired histogram with weights:
+ TFile *weightsFile = TFile::Open(filePath,"READ");
+ TList *weightsFileLOK = weightsFile->GetListOfKeys(); 
+ if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1) // TBI get rid of the 2nd condition at some point...
+ {
+  //printf("\n => if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1)\n\n"); 
+  Fatal(sMethodName.Data(),"if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1)");
+ } 
+ // Access TDirectoryFile "weightsMPCanalysis":
+ TDirectoryFile *directoryFile = dynamic_cast<TDirectoryFile*>(weightsFile->Get("weightsMPCanalysis"));
+ if(!directoryFile)
+ {
+  //printf("\n => if(!directoryFile)\n\n");   
+  Fatal(sMethodName.Data(),"if(!directoryFile)");
+ } 
+ // Access the specified list:
+ TList *list = dynamic_cast<TList*>(directoryFile->Get(listName));
+ if(!list)
+ {
+  //printf("\n => if(!list)\n\n");   
+  Fatal(sMethodName.Data(),"if(!list)");
+ }
+ // Finally, access the desired histogram:
+ hist = dynamic_cast<TH1D*>(list->FindObject(Form("%s,%s",type,variable)));
+ if(!hist)
+ {
+  //printf("\n => if(!hist)\n\n");   
+  Warning(sMethodName.Data(),"if(!hist)");
+  return NULL;
+ } else { hist->SetDirectory(0); }
+
+ // f) Close the external ROOT file: 
+ weightsFile->Close(); delete weightsFile;
+
+ return hist;
+
+} // TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -38,6 +38,9 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   Int_t GetMaxNoRPs() const {return this->fMaxNoRPs;};
   void SetExactNoRPs(Int_t const exact) {fUseInternalFlags = kTRUE; this->fExactNoRPs = exact;};
   Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
+  void SetAnalysisTag(const char *at) {this->fAnalysisTag = TString(at);};
+  TString GetAnalysisTag() const {return this->fAnalysisTag;};
+  void SetDumpThePoints(Bool_t const dtp, Int_t const max) {this->fDumpThePoints = dtp; this->fMaxNoEventsPerFile = max;};
 
   // Control histograms:
   void SetFillControlHistograms(Bool_t const fch) {this->fFillControlHistograms = fch;};
@@ -63,6 +66,11 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
 
   // Weights:              
   void SetWeightsHist(TH1D* const hist, const char *type, const char *variable); // .cxx
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+  {
+   AliFlowAnalysisWithMultiparticleCorrelations *mpc;
+   return mpc->GetHistogramWithWeights(filePath,listName,type,variable);
+  };
 
   // Correlations:
   void SetCalculateCorrelations(Bool_t const cc) {this->fCalculateCorrelations = cc;};
@@ -144,22 +152,25 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   TList *fHistList; // base list to hold all output object (a.k.a. grandmother of all lists)
 
   // Internal flags:
-  Bool_t fUseInternalFlags; // use internal flags (automatically set if some internal flag is used)
-  Int_t fMinNoRPs; // minimum number of RPs required for the analysis 
-  Int_t fMaxNoRPs; // maximum number of RPs allowed for the analysis 
-  Int_t fExactNoRPs; // exact (randomly shuffled) number of RPs selected for the analysis 
+  Bool_t fUseInternalFlags;  // use internal flags (automatically set if some internal flag is used)
+  Int_t fMinNoRPs;           // minimum number of RPs required for the analysis 
+  Int_t fMaxNoRPs;           // maximum number of RPs allowed for the analysis 
+  Int_t fExactNoRPs;         // exact (randomly shuffled) number of RPs selected for the analysis 
+  TString fAnalysisTag;      // tag internally this analysis
+  Bool_t fDumpThePoints;     // dump the data points into the external file
+  Int_t fMaxNoEventsPerFile; // maximum number of events to be dumped in a single file
 
   // Control histograms:
   Bool_t fFillControlHistograms;     // fill or not control histograms (by default they are filled)
   Bool_t fFillKinematicsHist;        // fill or not fKinematicsHist[2][3]
   Bool_t fFillMultDistributionsHist; // fill or not TH1D *fMultDistributionsHist[3]    
   Bool_t fFillMultCorrelationsHist;  // fill or not TH2D *fMultCorrelationsHist[3] 
-  Int_t fnBins[2][3];                   // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
-  Double_t fMin[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
-  Double_t fMax[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
-  Int_t fnBinsMult[3];                  // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
-  Double_t fMinMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
-  Double_t fMaxMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]  
+  Int_t fnBins[2][3];                // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Double_t fMin[2][3];               // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Double_t fMax[2][3];               // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
+  Int_t fnBinsMult[3];               // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Double_t fMinMult[3];              // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
+  Double_t fMaxMult[3];              // [RP,POI,REF], corresponds to fMultDistributionsHist[3]  
 
   // Q-vectors:
   Bool_t fCalculateQvector;      // to calculate or not to calculate Q-vector components, that's a Boolean...
