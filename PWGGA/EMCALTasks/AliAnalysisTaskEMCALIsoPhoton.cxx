@@ -742,6 +742,8 @@ void AliAnalysisTaskEMCALIsoPhoton::GetCeIso(TVector3 vec, Int_t maxid, Float_t 
     Float_t R = TMath::Sqrt(deta*deta + dphi*dphi);
     if(R<0.007)
       continue;
+    if(maxid==id)
+      continue;
     Double_t matchedpt =  GetTrackMatchedPt(c->GetTrackMatchedIndex());
     Double_t nEt = TMath::Max(Et-matchedpt, 0.0);
     if(nEt<0)
