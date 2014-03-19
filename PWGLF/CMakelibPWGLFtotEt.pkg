@@ -28,10 +28,13 @@
 
 set ( SRCS  
     totEt/AliAnalysisEtCuts.cxx 
+    totEt/AliAnalysisHadEtCorrections.cxx 
     totEt/AliAnalysisEtCommon.cxx 
     totEt/AliAnalysisEtSelector.cxx
     totEt/AliAnalysisEtSelectorPhos.cxx
     totEt/AliAnalysisEtSelectorEmcal.cxx
+    totEt/AliAnalysisEtTrackMatchCorrections.cxx
+    totEt/AliAnalysisEtRecEffCorrection.cxx
     totEt/AliAnalysisEt.cxx 
     totEt/AliAnalysisEtMonteCarlo.cxx 
     totEt/AliAnalysisEtMonteCarloEmcal.cxx 
@@ -39,6 +42,7 @@ set ( SRCS
     totEt/AliAnalysisEtReconstructed.cxx 
     totEt/AliAnalysisEtReconstructedEmcal.cxx 
     totEt/AliAnalysisEtReconstructedPhos.cxx
+    totEt/AliAnalysisTaskTransverseEnergy.cxx
     totEt/AliAnalysisEmEtMonteCarlo.cxx
     totEt/AliAnalysisEmEtReconstructed.cxx
     totEt/AliAnalysisTaskTotEt.cxx 
@@ -46,10 +50,6 @@ set ( SRCS
     totEt/AliAnalysisHadEtMonteCarlo.cxx 
     totEt/AliAnalysisHadEtReconstructed.cxx 
     totEt/AliAnalysisTaskHadEt.cxx 
-    totEt/AliAnalysisHadEtCorrections.cxx 
-    totEt/AliAnalysisTaskTransverseEnergy.cxx
-    totEt/AliAnalysisEtRecEffCorrection.cxx
-    totEt/AliAnalysisEtTrackMatchCorrections.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
