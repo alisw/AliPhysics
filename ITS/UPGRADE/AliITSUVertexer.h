@@ -22,7 +22,7 @@ class AliITSUVertexer : public AliVertexer {
   virtual ~AliITSUVertexer();
 
   // Public methods
-  virtual AliESDVertex* GetAllVertices(Int_t& nVert) const { nVert=fNoVertices; return (AliESDVertex*)&fVertices[0]; };
+  virtual AliESDVertex* GetAllVertices(Int_t& nVert) const { nVert=fNoVertices; return fVertices; };
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *); 
   virtual void PrintStatus() const;
 
@@ -74,7 +74,7 @@ class AliITSUVertexer : public AliVertexer {
   Double_t fZCut;                    // cut on deltatheta for cluster matching among first two layers and the third one
   Bool_t *fUsedClusters[3];          // flag for used clusters in tracklet formation
   Short_t *fUsedLines;               // flag for used lines
-  vector<AliESDVertex> fVertices;    // array of vertices
+  AliESDVertex *fVertices;           // array of vertices
 
   #ifdef MC_CHECK
   // MC truth methods

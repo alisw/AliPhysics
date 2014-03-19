@@ -102,6 +102,8 @@ public:
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Int_t &ntracklets, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  
 
   // Signal delta
   EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
@@ -195,7 +197,8 @@ protected:
   //unbuffered PID calculation
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/, Bool_t /*ratio*/=kFALSE) const {return -9999.;}
-  
+
+  Int_t CalculateTRDResponse(const AliVTrack *track, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const;
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
 

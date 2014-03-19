@@ -127,7 +127,12 @@ public:
   void SetDefaultStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
   void SetCDBSnapshotMode(const char* snapshotFileName);
-
+  void AddCheckRecoCDBvsSimuCDB(const char* cdbpath,const char* comment="");
+  void RemCheckRecoCDBvsSimuCDB(const char* cdbpath);
+  void ResetCheckRecoCDBvsSimuCDB() {fCheckRecoCDBvsSimuCDB.Delete();}
+  void RectifyCDBurl(TString& url);
+  const TObjArray* GetCheckRecoCDBvsSimuCDB() const {return &fCheckRecoCDBvsSimuCDB;}
+  void CheckRecoCDBvsSimuCDB();
   Bool_t MisalignGeometry(const TString& detectors);
 
   void           SetAlignObjArray(TObjArray *array)
@@ -341,6 +346,7 @@ private:
   TString	 fCDBUri;	      //! Uri of the default CDB storage
   TString	 fQARefUri;	    //! Uri of the default QA reference storage
   TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
+  TObjArray      fCheckRecoCDBvsSimuCDB; // Array for CDB items which must be the same in the sim and rec
   Bool_t 	 fInitCDBCalled;               //! flag to check if CDB storages are already initialized
   Bool_t         fCDBSnapshotMode;             //! flag true if we are setting the CDB Manager in snapshot mode
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
@@ -406,7 +412,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 48)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 49)      // class for running the reconstruction
 };
 
 #endif

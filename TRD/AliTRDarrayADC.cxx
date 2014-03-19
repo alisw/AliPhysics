@@ -75,7 +75,7 @@ AliTRDarrayADC::AliTRDarrayADC(Int_t nrow, Int_t ncol, Int_t ntime)
 
 //____________________________________________________________________________________
 AliTRDarrayADC::AliTRDarrayADC(const AliTRDarrayADC &b)
-               :TObject()
+               :TObject(b)
 	       ,fNdet(b.fNdet)
                ,fNrow(b.fNrow)
                ,fNcol(b.fNcol)
@@ -120,6 +120,7 @@ AliTRDarrayADC &AliTRDarrayADC::operator=(const AliTRDarrayADC &b)
     {
       delete [] fADC;
     }
+  TObject::operator=(b);
   fNdet=b.fNdet;
   fNrow=b.fNrow;
   fNcol=b.fNcol;

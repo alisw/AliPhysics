@@ -1643,15 +1643,23 @@ void AliPIDResponse::InitializeHMPIDResponse(){
 }
 
 //______________________________________________________________________________
-Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack,Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
+    // old function for compatibility
+    Int_t ntracklets=0;
+    return IdentifiedAsElectronTRD(vtrack,ntracklets,efficiencyLevel,centrality,PIDmethod);
+}
+
+//______________________________________________________________________________
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Int_t &ntracklets,Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
   //
   // Check whether track is identified as electron under a given electron efficiency hypothesis
     //
+    // ntracklets is the number of tracklets that has been used to calculate the PID signal
 
   Double_t probs[AliPID::kSPECIES];
-  ComputeTRDProbability(vtrack, AliPID::kSPECIES, probs,PIDmethod);
 
-  Int_t ntracklets = vtrack->GetTRDntrackletsPID();
+  ntracklets =CalculateTRDResponse(vtrack,probs,PIDmethod);
+
   // Take mean of the TRD momenta in the given tracklets
   Float_t p = 0, trdmomenta[AliVTrack::kTRDnPlanes];
   Int_t nmomenta = 0;
@@ -2339,8 +2347,31 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   
   return kDetPidOk;
 }
+
+Int_t AliPIDResponse::CalculateTRDResponse(const AliVTrack *track,Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
+{
+    // new function for backward compatibility
+    // returns number of tracklets PID
+
+    UInt_t TRDslicesForPID[2];
+    SetTRDSlices(TRDslicesForPID,PIDmethod);
+
+    Float_t mom[6]={0.};
+    Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
+    Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
+    AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
+    for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
+	mom[ilayer] = track->GetTRDmomentum(ilayer);
+	for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
+	    dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
+	}
+    }
+
+    return fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+
+}
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod/*=AliTRDPIDResponse::kLQ1D*/) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
 {
   //
   // Compute PID probabilities for the TRD
@@ -2352,21 +2383,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const A
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
-  UInt_t TRDslicesForPID[2];
-  SetTRDSlices(TRDslicesForPID,PIDmethod);
-  
-  Float_t mom[6]={0.};
-  Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
-  Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
-  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
-  for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
-    mom[ilayer] = track->GetTRDmomentum(ilayer);
-    for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
-      dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
-    }
-  }
-  
-  fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+  CalculateTRDResponse(track,p,PIDmethod);
+
   return kDetPidOk;
 }
 

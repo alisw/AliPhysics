@@ -190,7 +190,7 @@ void compClusHits(int nev=-1)
 	int modID = cl->GetVolumeId();
 	
 	//------------ check if this is a split cluster
-	int sInL = modID - gm->GetFirstModIndex(ilr);
+	int sInL = modID - gm->GetFirstChipIndex(ilr);
 	if (!cl->TestBit(kSplCheck)) {
 	  cl->SetBit(kSplCheck);
 	  // check if there is no other cluster with same label on this module
@@ -386,12 +386,14 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
   //
   if (npix<1) {
     if (harr->GetEntriesFast()>=id && (h=(TH1*)harr->At(id))) return h;
-    h = new TH1F("npixAll","npixAll",150,0.5,54.5);
+    h = new TH1F("npixAll","npixAll",150,0.5,54.5); 
+    h->SetDirectory(0);
     h->SetLineColor(kRed);
     harr->AddAtAndExpand(h, kNPixAll);
     //
     h = new TH1F("npixSpl","npixSpl",150,0.5,54.5);
     h->SetLineColor(kBlue);
+    h->SetDirectory(0);
     harr->AddAtAndExpand(h, kNPixSPL);
     //
     h = (TH1*)harr->At(id);
@@ -407,17 +409,21 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
   // need to create set of histos
   //
   h = new TH1F(Form("dxy_npix%d",npix),Form("dr_npix%d",npix),nbin,-kdiff,kdiff);
+  h->SetDirectory(0);
   harr->AddAtAndExpand(h, npix*10 + kDR);
   //
   h  = new TH1F(Form("dtxODD_npix%d",npix),Form("dtxODD_npix%d",npix),nbin,-kdiff,kdiff);
+  h->SetDirectory(0);
   h->SetLineColor(kRed);
   harr->AddAtAndExpand(h, npix*10 + kDTXodd);
   h  = new TH1F(Form("dtxEVN_npix%d",npix),Form("dtxEVN_npix%d",npix),nbin,-kdiff,kdiff);
+  h->SetDirectory(0);
   h->SetLineColor(kBlue);
   harr->AddAtAndExpand(h, npix*10 + kDTXeven);
   //
   h  = new TH1F(Form("dtz_npix%d",npix),Form("dtz_npix%d",npix),nbin,-kdiff,kdiff);
   h->SetLineColor(kGreen);
+  h->SetDirectory(0);
   harr->AddAtAndExpand(h, npix*10 + kDTZ);
   //
   //
@@ -426,16 +432,20 @@ TH1* GetHistoClSize(int npix,int id,TObjArray* harr)
   h->SetFillColor(kMagenta);
   h->SetFillStyle(3001);  
   h->SetLineStyle(2);
+  h->SetDirectory(0);
+
   harr->AddAtAndExpand(h, npix*10 + kDTXoddSPL);
   h  = new TH1F(Form("SPL_dtxEVN_npix%d",npix),Form("SPL_dtxEVN_npix%d",npix),nbin,-kdiff,kdiff);
   h->SetLineColor(kCyan);
   h->SetFillColor(kCyan);
   h->SetFillStyle(3006);  
   h->SetLineStyle(2);
+  h->SetDirectory(0);
   harr->AddAtAndExpand(h, npix*10 + kDTXevenSPL);
   //
   h  = new TH1F(Form("SPL_dtz_npix%d",npix),Form("SPLdtz_npix%d",npix),nbin,-kdiff,kdiff);
   harr->AddAtAndExpand(h, npix*10 + kDTZSPL);
+  h->SetDirectory(0);
   //
   h->SetLineColor(kGreen+2);
   h->SetFillColor(kGreen+2);

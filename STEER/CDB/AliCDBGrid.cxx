@@ -388,7 +388,7 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
               query.GetFirstRun(), anIdPtr->GetVersion()));
         return NULL;
       }
-      result = anIdPtr;
+      result = new AliCDBId(*anIdPtr);
     } else { // look for specified version
       if(query.GetVersion() != anIdPtr->GetVersion()) continue;
       if(result && result->GetVersion() == anIdPtr->GetVersion()){
@@ -396,14 +396,12 @@ AliCDBId* AliCDBGrid::GetId(const TObjArray& validFileIds, const AliCDBId& query
               query.GetFirstRun(), anIdPtr->GetVersion()));
         return NULL;
       }
-      result = anIdPtr;
+      result = new AliCDBId(*anIdPtr);
     }
 
   }
 
-  if (!result) return NULL;
-
-  return dynamic_cast<AliCDBId*> (result->Clone());
+  return result;
 }
 
 //_____________________________________________________________________________
@@ -454,12 +452,12 @@ AliCDBId* AliCDBGrid::GetEntryId(const AliCDBId& queryId) {
     AliDebug(2,Form("** fDBFolder = %s, pattern = %s, filter = %s",folderCopy.Data(), pattern.Data(), filter.Data()));
     TGridResult *res = gGrid->Query(folderCopy, pattern, filter, optionQuery.Data());
     if (res) {
-      AliCDBId validFileId;
       for(int i=0; i<res->GetEntries(); i++){
+        AliCDBId *validFileId = new AliCDBId();
         TString filename = res->GetKey(i, "lfn");
         if(filename == "") continue;
-        if(FilenameToId(filename, validFileId))
-          validFileIds.AddLast(validFileId.Clone());
+        if(FilenameToId(filename, *validFileId))
+          validFileIds.AddLast(validFileId);
       }
       delete res;
     }else{
@@ -651,12 +649,12 @@ TList* AliCDBGrid::GetEntries(const AliCDBId& queryId) {
       return 0;
     }
 
-    AliCDBId validFileId;
     for(int i=0; i<res->GetEntries(); i++){
+      AliCDBId *validFileId = new AliCDBId();
       TString filename = res->GetKey(i, "lfn");
       if(filename == "") continue;
-      if(FilenameToId(filename, validFileId))
-        validFileIds.AddLast(validFileId.Clone());
+      if(FilenameToId(filename, *validFileId))
+        validFileIds.AddLast(validFileId);
     }
     delete res;
   }
@@ -1124,7 +1122,7 @@ void AliCDBGrid::QueryValidFiles()
       TString& filename = entry->String();
       if(filename.IsNull()) continue;
       AliDebug(2,Form("Found valid file: %s", filename.Data()));
-      AliCDBId *validFileId = new AliCDBId;
+      AliCDBId *validFileId = new AliCDBId();
       Bool_t result = FilenameToId(filename, *validFileId);
       if(result) {
         fValidFileIds.AddLast(validFileId);

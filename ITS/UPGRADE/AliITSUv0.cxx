@@ -65,6 +65,7 @@ AliITSUv0::AliITSUv0()
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
@@ -96,6 +97,7 @@ AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
@@ -179,6 +181,8 @@ AliITSUv0::~AliITSUv0() {
   delete [] fWrapRMin;
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
+  delete [] fLay2WrapV;
+  //
 }
 
 //______________________________________________________________________
@@ -212,15 +216,20 @@ void AliITSUv0::AddAlignableVolumes() const{
   //
   for (int lr=0; lr<fNLayers; lr++) {
     //
-    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
+    TString wrpV = fLay2WrapV[lr]!=-1 ? Form("%s%d_1/",AliITSUGeomTGeo::GetITSWrapVolPattern(),fLay2WrapV[lr]) : "";
+    pth = Form("ALIC_1/%s_2/%s%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),wrpV.Data(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
-    gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data());
+    if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data()) ) {
+      AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data()));
+    }
     //
     for (int ld=0; ld<fStavPerLay[lr]; ld++) {
       //
       TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,ld);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
-      gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data());
+      if ( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data()) ) {
+	AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data()));
+      }
       //
       for (int md=0; md<fModPerStav[lr]; md++) {
 	//
@@ -231,7 +240,9 @@ void AliITSUv0::AddAlignableVolumes() const{
 	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,chipNum++); // here chipNum would be chip within the layer
 	int modUID = AliITSUGeomTGeo::ChipVolUID( chipNum++ );
 	// 
-	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,-1,-1,md),pthM.Data(),modUID);
+	if ( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,-1,-1,md),pthM.Data(),modUID) ) {
+	  AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,-1,-1,md),pthM.Data()));
+	}
 	//
       }
     }
@@ -312,6 +323,8 @@ void AliITSUv0::CreateGeometry() {
     }
   }
   //
+  fLay2WrapV = new Int_t[fNLayers];
+
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
     TGeoVolume* dest = vITSV;
@@ -342,6 +355,7 @@ void AliITSUv0::CreateGeometry() {
 	if (fLayZLength[j]>=fWrapZSpan[iw]) AliFatal(Form("ZSpan %.3f of wrapper volume %d is less than ZSpan %.3f of layer %d",
 							  fWrapZSpan[iw],iw,fLayZLength[j],j));
 	dest = wrapVols[iw];
+	fLay2WrapV[j] = iw;
 	break;
       }
     }

@@ -285,6 +285,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fCDBUri(),
   fQARefUri(),
   fSpecCDBUri(), 
+  fCheckRecoCDBvsSimuCDB(),
   fInitCDBCalled(kFALSE),
   fCDBSnapshotMode(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
@@ -345,7 +346,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
     fQAWriteExpert[iDet] = kFALSE ; 
   }
   fBeamInt[0][0]=fBeamInt[0][1]=fBeamInt[1][0]=fBeamInt[1][1] = -1;
-
+  //
+  AddCheckRecoCDBvsSimuCDB("TPC/Calib/RecoParam"); // check for similarity in the sim and rec
+  //
   AliPID pid;
 }
 
@@ -419,6 +422,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fCDBUri(rec.fCDBUri),
   fQARefUri(rec.fQARefUri),
   fSpecCDBUri(), 
+  fCheckRecoCDBvsSimuCDB(),
   fInitCDBCalled(rec.fInitCDBCalled),
   fCDBSnapshotMode(rec.fCDBSnapshotMode),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
@@ -484,6 +488,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
 
   for (Int_t i = 0; i < rec.fSpecCDBUri.GetEntriesFast(); i++) {
     if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
+  }
+
+  for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
+    if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
   }
 
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
@@ -601,6 +609,12 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fCDBUri        = "";
   fQARefUri      = rec.fQARefUri;
   fSpecCDBUri.Delete();
+  fCheckRecoCDBvsSimuCDB.Delete();
+  //
+  for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
+    if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
+  }
+  //
   fInitCDBCalled               = rec.fInitCDBCalled;
   fCDBSnapshotMode             = rec.fCDBSnapshotMode;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
@@ -666,7 +680,7 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-
+  fCheckRecoCDBvsSimuCDB.Delete();
   AliCodeTimer::Instance()->Print();
 }
 
@@ -829,6 +843,7 @@ void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
   AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
   
 }
+
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
@@ -869,6 +884,48 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
   if (obj) fSpecCDBUri.Remove(obj);
   fSpecCDBUri.Add(new TNamed(aPath.GetPath().Data(), uri));
 
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::AddCheckRecoCDBvsSimuCDB(const char* cdbpath,const char* comment) 
+{
+  // require the cdb item to be the same in the rec as in the sim
+  // Activate it later within the Run() method
+  TString newent = cdbpath;
+  if (newent.IsNull()) return;
+  TIter nextit(&fCheckRecoCDBvsSimuCDB);
+  TNamed* cdbent=0;
+  while ((cdbent=(TNamed*)nextit())) {
+    TString str = cdbent->GetName();
+    if (str==newent) {
+      AliInfo(Form("%s is already in the list to check",cdbpath));
+      return;
+    }
+  }
+  fCheckRecoCDBvsSimuCDB.AddLast(new TNamed(cdbpath,comment));
+  //
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::RemCheckRecoCDBvsSimuCDB(const char* cdbpath) 
+{
+  // require the cdb item to be the same in the rec as in the sim
+  // Activate it later within the Run() method
+  TString newent = cdbpath;
+  if (newent.IsNull()) return;
+  TIter nextit(&fCheckRecoCDBvsSimuCDB);
+  TNamed* cdbent=0;
+  while ((cdbent=(TNamed*)nextit())) {
+    TString str = cdbent->GetName();
+    if (str==newent) {
+      AliInfo(Form("Removing %s from the list to check",cdbpath));
+      delete fCheckRecoCDBvsSimuCDB.Remove(cdbent);
+      fCheckRecoCDBvsSimuCDB.Compress();
+      return;
+    }
+  }
+  AliInfo(Form("%s is not in the list to check",cdbpath));
+  //
 }
 
 //_____________________________________________________________________________
@@ -1750,6 +1807,8 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   AliSysInfo::AddStamp("LoadLoader");
  
+  CheckRecoCDBvsSimuCDB();
+
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
 
   // get trackers
@@ -4585,4 +4644,120 @@ Bool_t AliReconstruction::HasNextEventAfter(Int_t eventId)
 {
 	 return ( (eventId < fRunLoader->GetNumberOfEvents()) ||
 	   (fRawReader && fRawReader->NextEvent()) );
+}
+
+//_________________________________________________________________
+void AliReconstruction::CheckRecoCDBvsSimuCDB()
+{
+  // if some CDB entries must be the same in the simulation
+  // and reconstruction, check here
+  int nent = fCheckRecoCDBvsSimuCDB.GetEntriesFast();
+  AliInfo(Form("Check %d entries for matching between sim and rec",nent));
+  //
+  // get simulation CDB
+  fRunLoader->CdGAFile();
+  TMap*  cdbMapSim  = (TMap*)gDirectory->Get("cdbMap");
+  TList* cdbListSim = (TList*)gDirectory->Get("cdbList");
+  if (!(cdbMapSim && cdbListSim)) {
+    AliInfo(Form("No CDBMap/List found in %s, nothing to check",fGAliceFileName.Data()));
+    return;
+  }
+  // read the requested objects to make sure they will appear in the reco list
+  for (Int_t i=0;i<nent;i++) {
+    TNamed* cdbent = (TNamed*) fCheckRecoCDBvsSimuCDB[i];
+    if (!cdbent) continue;
+    AliCDBManager::Instance()->Get(cdbent->GetName());
+  }
+  // get default path for simulation
+  TPair* pair;
+  TObjString* stro;
+  pair = (TPair*)cdbMapSim->FindObject("default");
+  if (!pair) {AliFatal("Did not find default storage used for simulations"); return;}
+  TString defSimStore = ((TObjString*)pair->Value())->GetString();
+  RectifyCDBurl(defSimStore);
+  //
+  // get reconstruction CDB
+  const TMap *cdbMapRec = AliCDBManager::Instance()->GetStorageMap();	 
+  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();
+  //
+  // get default path for reconstruction
+  pair = (TPair*)cdbMapRec->FindObject("default");
+  if (!pair) {AliFatal("Did not find default storage used for reconstruction"); return;}
+  TString defRecStore = ((TObjString*)pair->Value())->GetString();
+  RectifyCDBurl(defRecStore);
+  //
+  for (Int_t i=0;i<nent;i++) {
+    TNamed* cdbent = (TNamed*) fCheckRecoCDBvsSimuCDB[i];
+    if (!cdbent) continue;
+    //
+    AliInfo(Form("#%d Checking %s",i,cdbent->GetName()));
+    //
+    // find cdbID used for sim
+    TString idSim="",storSim="";
+    TIter nextSim(cdbListSim);
+    while ((stro=(TObjString*)nextSim())) {
+      if (stro->GetString().Contains(cdbent->GetName())) {
+	idSim = stro->GetString();
+	break;
+      }
+    }    
+    // find the storage used for sim
+    // check in the simuCDB special paths
+    pair = (TPair*)cdbMapSim->FindObject(cdbent->GetName());
+    if (pair) { // specific path is used
+      storSim = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storSim);
+    }
+    else storSim = defSimStore;  // default storage list is used
+    //
+    if (!idSim.IsNull()) AliInfo(Form("Sim. used %s from %s",idSim.Data(), storSim.Data()));
+    else                 AliInfo("Sim. did not use this object");
+    //
+    // find cdbID used for rec
+    TString idRec="",storRec="";
+    TIter nextRec(cdbListRec);
+    AliCDBId* id=0;
+    while ((id=(AliCDBId*)nextRec())) {
+      idRec = id->ToString();
+      if (idRec.Contains(cdbent->GetName())) break;
+      idRec="";
+    }
+    //
+    // find storage used for the rec
+    pair = (TPair*)cdbMapRec->FindObject(cdbent->GetName());
+    if (pair) {  // specific path is used
+      storRec = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storRec);
+    }
+    else storRec = defRecStore; // default storage list is used
+    //
+    if (!idRec.IsNull()) AliInfo(Form("Rec. used %s from %s",idRec.Data(), storRec.Data()));
+    else                 AliInfo("Rec. did not use this object");
+    //
+    if (!idSim.IsNull() && !idRec.IsNull() && ((idSim!=idRec) || (storSim!=storRec)) ) 
+      AliFatal("Different objects were used in sim and rec");
+  }
+  
+}
+
+//_________________________________________________________
+void AliReconstruction::RectifyCDBurl(TString& url)
+{
+  // TBD RS
+  // remove everything but the url
+  TString sbs;
+  if (!(sbs=url("\\?User=[^?]*")).IsNull())                url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?DBFolder=[^?]*")).IsNull())            url.ReplaceAll("?DB","");
+  if (!(sbs=url("\\?SE=[^?]*")).IsNull())                  url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheFolder=[^?]*")).IsNull())         url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?OperateDisconnected=[^?]*")).IsNull()) url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheSize=[^?]*")).IsNull())           url.ReplaceAll(sbs,"");  
+  if (!(sbs=url("\\?CleanupInterval=[^?]*")).IsNull())     url.ReplaceAll(sbs,"");  
+  Bool_t slash=kFALSE,space=kFALSE;
+  while ( (slash=url.EndsWith("/")) || (space=url.EndsWith(" ")) ) {
+    if (slash) url = url.Strip(TString::kTrailing,'/');
+    if (space) url = url.Strip(TString::kTrailing,' ');
+  }
+  //url.ToLower();
+  //
 }

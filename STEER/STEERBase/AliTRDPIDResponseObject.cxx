@@ -200,6 +200,7 @@ Bool_t AliTRDPIDResponseObject::GetThresholdParameters(Int_t ntracklets, Double_
     if(fPIDParams[method]){
 	return fPIDParams[method]->GetThresholdParameters(ntracklets,efficiency,params,centrality);
     }
+    AliError("TRD Threshold Container does not exist");
     return kFALSE;
 }
 

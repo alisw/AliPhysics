@@ -15,7 +15,7 @@ class AliEMCALGeoParams
 public:
 
   // general geometry info
-  static const int fgkEMCALModules     = 22;   // number of modules, adapted for DCAL
+  static const int fgkEMCALModules     = 22;   // number of modules, 12 for EMCal + 8 for DCAL
   static const int fgkEMCALRows        = 24;   // number of rows per module for EMCAL
   static const int fgkEMCALCols        = 48;   // number of columns per module for EMCAL
 
@@ -27,7 +27,7 @@ public:
     { return ( (iSM%2==0) ? iCol/2 : AliEMCALGeoParams::fgkEMCALLEDRefs - 1 - iCol/2 ); }
 
   // also a few readout related variables:
-  static const int fgkLastAltroDDL     = 43;   // 0..23 (i.e. 24) for EMCAL; 24..43 (i.e. 20) allocated for DCAL 
+  static const int fgkLastAltroDDL     = 43;   // 0..23 (i.e. 24) for EMCAL; 24..39 (i.e. 16) allocated for DCAL
   static const int fgkSampleMax        = 1023; // highest possible sample value (10-bit = 0x3ff)
   static const int fgkOverflowCut      = 950;  // saturation starts around here; also exist as private constant in AliEMCALRawUtils, should probably be replaced
   static const int fgkSampleMin        = 0;    // lowest possible sample value 

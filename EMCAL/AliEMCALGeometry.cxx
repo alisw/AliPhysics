@@ -575,7 +575,7 @@ Bool_t AliEMCALGeometry::GetAbsCellIdFromEtaPhi(Double_t eta, Double_t phi, Int_
   if(SuperModuleNumberFromEtaPhi(eta, phi, nSupMod)) {
     // phi index first
     phi    = TVector2::Phi_0_2pi(phi);
-    phiLoc = phi - fPhiCentersOfSM[nSupMod/2];
+    phiLoc = phi - fPhiCentersOfSMSec[nSupMod/2];
     nphi   = fPhiCentersOfCells.GetSize();
     if (     GetSMType(nSupMod) == kEMCAL_Half ) nphi  /= 2;
     else if( GetSMType(nSupMod) == kEMCAL_3rd )  nphi  /= 3;

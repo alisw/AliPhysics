@@ -49,6 +49,7 @@
 #include "AliTRDarrayDictionary.h"
 #include "AliTRDtrackletMCM.h"
 #include "AliTRDmcmSim.h"
+#include "TTreeStream.h"
 
 ClassImp(AliTRDmcmSim)
 
@@ -84,7 +85,8 @@ AliTRDmcmSim::AliTRDmcmSim() :
   fTailAmplLong(NULL),
   fTailAmplShort(NULL),
   fNHits(0),
-  fFitReg(NULL)
+  fFitReg(NULL),
+  fDebugStream(0x0)
 {
   //
   // AliTRDmcmSim default constructor
@@ -1290,6 +1292,14 @@ void AliTRDmcmSim::CalcFitreg()
 
         // The accumulated charge is with the pedestal!!!
         qtotTemp = adcLeft + adcCentral + adcRight;
+	if ((fDebugStream) && (qtotTemp > 130)) {
+	  (*fDebugStream) << "testtree"
+			  << "qtot=" << qtotTemp
+			  << "qleft=" << adcLeft
+			  << "qcent=" << adcCentral
+			  << "qright=" << adcRight
+			  << "\n";
+	}
         if ( (hitQual) &&
              (qtotTemp >= fTrapConfig->GetTrapReg(AliTRDtrapConfig::kTPHT, fDetector, fRobPos, fMcmPos)) &&
              (adcLeft <= adcCentral) &&

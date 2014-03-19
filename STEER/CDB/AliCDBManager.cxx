@@ -503,7 +503,7 @@ AliCDBStorage* AliCDBManager::GetStorage(const AliCDBParam* param) {
         if( aStorage->GetType() == "alien" || aStorage->GetType() == "local" )
           aStorage->QueryCDB(fRun);
       }
-    return aStorage;
+      return aStorage;
     }
   }
 

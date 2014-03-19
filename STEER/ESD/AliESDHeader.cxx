@@ -222,7 +222,7 @@ void AliESDHeader::Print(const Option_t *) const
          printf("List of the active trigger inputs: ");
   	 for(Int_t i = 0; i < kNTriggerInputs; i++) {
     	   TNamed *str = (TNamed *)((fTriggerInputsNames).At(i));
-    	   if (str) printf("%s ",str->GetName());
+    	   if (str) printf("%i %s ",i,str->GetName());
          }
          printf("\n");
 }
@@ -274,21 +274,21 @@ TString AliESDHeader::GetFiredTriggerInputs() const
   TString trginputs;
   for(Int_t i = 0; i < kNTriggerInputs; i++) {
       TNamed *str = (TNamed *)((fTriggerInputsNames.At(i)));
-      if (i < 24 && (fL0TriggerInputs & (1 << i))) {
+      if (i < 24 && (fL0TriggerInputs & (1ul << i))) {
         if (str) {
 	  trginputs += " ";
 	  trginputs += str->GetName();
           trginputs += " ";
         }
       }
-      if (i >= 24 && i < 48 && (fL1TriggerInputs & (1 << (i-24)))) {
+      if (i >= 24 && i < 48 && (fL1TriggerInputs & (1ul << (i-24)))) {
         if (str) {
 	  trginputs += " ";
 	  trginputs += str->GetName();
           trginputs += " ";
         }
       }
-      if (i >= 48 && (fL2TriggerInputs & (1 << (i-48)))) {
+      if (i >= 48 && (fL2TriggerInputs & (1u << (i-48)))) {
         if (str) {
 	  trginputs += " ";
 	  trginputs += str->GetName();
@@ -310,9 +310,9 @@ Bool_t AliESDHeader::IsTriggerInputFired(const char *name) const
   Int_t inputIndex = fTriggerInputsNames.IndexOf(trginput);
   if (inputIndex < 0) return kFALSE;
   
-  if (fL0TriggerInputs & (1 << inputIndex)) return kTRUE;
-  else if (fL1TriggerInputs & (1 << (inputIndex-24))) return kTRUE;
-  else if (fL2TriggerInputs & (1 << (inputIndex-48))) return kTRUE;
+  if (fL0TriggerInputs & (1lu << inputIndex)) return kTRUE;
+  else if (fL1TriggerInputs & (1lu << (inputIndex-24))) return kTRUE;
+  else if (fL2TriggerInputs & (1u << (inputIndex-48))) return kTRUE;
   else return kFALSE;
 }
 //________________________________________________________________________________

@@ -21,13 +21,13 @@ class AliFITReconstructor: public AliReconstructor {
 			       TTree* digitsTree) const;
 
   virtual void Init();
-  virtual  void   Reconstruct(TTree* fdigits, TTree * frecpoints) const {};
-  virtual  void   Reconstruct(AliRawReader*rawReader , TTree* recTree) const {};
+  virtual  void   Reconstruct(TTree* /*fdigits*/, TTree * /*frecpoints*/) const {};
+  virtual  void   Reconstruct(AliRawReader*/*rawReader*/ , TTree* /*recTree*/) const {};
   
-  virtual void     FillESD( AliRawReader*/*rawReader*/,  TTree*clustersTree, AliESDEvent*esd ) const
+  virtual void     FillESD( AliRawReader*/*rawReader*/,  TTree* /*clustersTree*/, AliESDEvent* /*esd*/ ) const
   {}
-  virtual void     FillESD( TTree* digitsTree,  TTree*clustersTree, AliESDEvent*esd ) const;
-
+  virtual void     FillESD( TTree* digitsTree,  TTree* /*clustersTree*/, AliESDEvent* esd ) const;
+ 
  // static const AliFITRecoParam* GetRecoParam()
    // { return dynamic_cast<const AliFITRecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj  TObjArray           fQTC;        // QTC vs #MIPs
  

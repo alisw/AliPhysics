@@ -163,7 +163,7 @@ void Config()
   if (generatorFlag==0) {
     // Fast generator with parametrized pi,kaon,proton distributions
     
-    int  nParticles = 100;//14022;
+    int  nParticles = 1000;//14022;
     AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
     gener->SetMomentumRange(0.1, 10.);
     gener->SetPhiRange(0., 360.);
@@ -268,13 +268,13 @@ void Config()
   Int_t   iMAG   =  0;
   Int_t   iMUON  =  0;
   Int_t   iPHOS  =  0;
-  Int_t   iPIPE  =  0;
+  Int_t   iPIPE  =  1;
   Int_t   iPMD   =  0;
   Int_t   iHMPID =  0;
   Int_t   iSHIL  =  0;
   Int_t   iT0    =  0;
   Int_t   iTOF   =  0;
-  Int_t   iTPC   =  0;
+  Int_t   iTPC   =  1;
   Int_t   iTRD   =  0;
   Int_t   iZDC   =  0;
   Int_t   iEMCAL =  0;

@@ -76,6 +76,7 @@ class AliITSUv0 : public AliITSU {
   Double_t* fWrapRMin;       // min radius of wrapper volume
   Double_t* fWrapRMax;       // max radius of wrapper volume
   Double_t* fWrapZSpan;      // Z span of wrapper volume
+  Int_t*    fLay2WrapV;      // id of wrapper layer to which layer belongs (-1 if not wrapped)
   Bool_t   *fLayTurbo;       // True for "turbo" layers
   Double_t *fLayPhi0;        // Vector of layer's 1st stave phi in lab
   Double_t *fLayRadii;       // Vector of layer radii

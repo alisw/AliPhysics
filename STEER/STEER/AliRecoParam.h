@@ -29,7 +29,7 @@ class AliRecoParam : public TObject
   //
   enum {
     kNSpecies = 5,   // number of event species
-    kNDetectors = 18 // number of detectors (last one is AD) 
+    kNDetectors = 19 // number of detectors from AliReconstruction + 1 for GRP
   };
   enum EventSpecie_t {kDefault = 1,
 		      kLowMult = 2,

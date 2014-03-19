@@ -43,7 +43,7 @@ AliITSUVertexer::AliITSUVertexer(Double_t phicut, Double_t zcut, Double_t paircu
 														  fZCut(zcut),
 														  fUsedClusters(),
 														  fUsedLines(),
-														  fVertices() 
+														  fVertices(NULL) 
 #ifdef MC_CHECK 
 ,fGoodLines(0),fGoodLinesPhi(0),fParticleId(0)
 #endif
@@ -63,7 +63,7 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
   fNoVertices=0;
   FindTracklets();
   if(fNoLines<2) { 
-    fVertices.push_back(AliESDVertex());
+    //fVertices.push_back(AliESDVertex());
     return;// AliESDVertex();
   }
   
@@ -103,7 +103,6 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
 	    fUsedLines[i3]=fNoClusters;
 	    current->GetVertex(p);
 	  }
-	  //cout << "Ballo la ula" << endl;
 	}
 	++fNoClusters;
 	//cout << endl;
@@ -140,6 +139,7 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
     }
   }
 
+  fVertices=new AliESDVertex[fNoClusters];
   for(Int_t i0=fNoClusters-1;i0>=0; --i0) {
     AliITSUClusterLines *clu0 = (AliITSUClusterLines*)fLinesClusters.At(i0);
     Int_t size=clu0->GetSize();
@@ -153,10 +153,9 @@ void AliITSUVertexer::FindVerticesForCurrentEvent() {
     clu0->GetVertex(p0);
     clu0->GetCovMatrix(cov);
     if((p0[0]*p0[0]+p0[1]*p0[1])<1.98*1.98) {
-      fVertices.push_back(AliESDVertex(p0,cov,99999.,size));   
+      fVertices[fNoVertices++]=AliESDVertex(p0,cov,99999.,size);   
     }
   }
-  fNoVertices=fVertices.size();
   
   return;// AliVertexerTracks::TrackletVertexFinder(&fLines,0);
 }
@@ -176,7 +175,8 @@ AliESDVertex* AliITSUVertexer::FindVertexForCurrentEvent(TTree *cluTree)
   SortClusters();
 
   FindVerticesForCurrentEvent();
-  return &fVertices[0];
+  if(fNoVertices<1) return NULL;
+  return new AliESDVertex(fVertices[0]);
 }  
 
 //_____________________________________________________________________________________________
@@ -426,10 +426,11 @@ void AliITSUVertexer::Reset() {
     delete []fUsedLines;
   }
 
+  delete[] fVertices;
+
   fLinesPhi=0;
   fLines.Clear();
   fLinesClusters.Clear();
-  fVertices.clear();
   
   #ifdef MC_CHECK
   fGoodLines=0;

@@ -10,7 +10,6 @@
  
 #include <AliDetector.h>
 #include <TTree.h>
-#include "AliFIT.h"
 #include "AliFITDigit.h"
 #include "AliFITHits.h"
 class TDirectory;
@@ -26,6 +25,7 @@ class AliFIT: public AliDetector {
   // virtual void   CreateMaterials() {};
    void AddDigit(Int_t npmt, 
   		Int_t timeCFD, Int_t timeLED, Int_t timeQT0, Int_t timeQT1, Int_t *labels) ;
+   virtual void AddDigit(Int_t*, Int_t*) {};
  virtual Int_t  IsVersion()const {return 0;}
   virtual void   Init();
   //  virtual void   DefineOpticalProperties() {};
@@ -33,7 +33,7 @@ class AliFIT: public AliDetector {
   virtual void SetHitsAddressBranch(TBranch *b1)
   {b1->SetAddress(&fHits);}
   virtual void   StepManager() {};
-  virtual void   ResetHits();
+  virtual void   ResetHits(); 
   virtual void   ResetDigits();
   virtual void   SetTreeAddress();
   virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;

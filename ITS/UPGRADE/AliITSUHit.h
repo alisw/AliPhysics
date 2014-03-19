@@ -30,7 +30,7 @@ class AliITSUHit : public AliITShit {
 
   virtual Int_t GetLayer() const;
   virtual Int_t GetStave() const;
-  virtual Int_t GetSubStave() const;
+  virtual Int_t GetHalfStave() const;
   virtual Int_t GetModule() const;  
   virtual Int_t GetChipInModule() const;
   virtual void  GetChipID(Int_t &layer,Int_t &stave,Int_t &sstave, Int_t &mod, Int_t &det) const;

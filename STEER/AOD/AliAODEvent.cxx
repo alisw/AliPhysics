@@ -513,8 +513,17 @@ void AliAODEvent::ResetStd(Int_t trkArrSize,
 void AliAODEvent::ClearStd()
 {
   // clears the standard arrays
-  if (fHeader)
-    fHeader        ->Clear();
+  if (fHeader){
+    // FIXME: this if-else patch was introduced by Michele Floris on 17/03/14 to test nano AOD. To be removed.
+    if(fHeader->InheritsFrom("AliAODHeader")){
+      fHeader        ->Clear();
+    }
+    else {
+      AliVHeader * head = 0;
+      head = dynamic_cast<AliVHeader*>((TObject*)fHeader);
+      if(head) head->Clear();
+    }
+  }
   fTracksConnected = kFALSE;
   if (fTracks)
     fTracks        ->Delete();
@@ -1053,6 +1062,10 @@ AliAODTrdTrack& AliAODEvent::AddTrdTrack(const AliVTrdTrack *track) {
 void AliAODEvent::ConnectTracks() {
 // Connect tracks to this event
   if (fTracksConnected || !fTracks || !fTracks->GetEntriesFast()) return;
+  if(!GetTrack(0)->InheritsFrom("AliAODTrack")) { // FIXME: consider using a dynamic_cast instead of InheritsFrom
+    AliWarning("Not an AliAODTrack, this is not a standard AOD"); 
+    return;
+  }
   AliAODTrack *track;
   TIter next(fTracks);
   while ((track=(AliAODTrack*)next())) track->SetAODEvent(this);
