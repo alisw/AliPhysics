@@ -9,16 +9,14 @@ runLevelQA()
 {
   qaFile=$1
 
-  #cp $ALICE_ROOT/TOF/macrosQA/MakeTrendingTOFQA.C .
-  #aliroot -b -q -l "MakeTrendingTOFQA.C(\"$qaFile\",${runNumber})" 
+  cp $ALICE_ROOT/PWGPP/TOF/trending/MakeTrendingTOFQA.C .
+  aliroot -b -q -l "MakeTrendingTOFQA.C(\"$qaFile\",${runNumber})" 
 }
 
 periodLevelQA()
 {
   trendingFile=$1
 
-  #cp $ALICE_ROOT/TOF/macrosQA/DrawTrending.C .
-  #rm trending.root
-  #ls 000*/trending.root > trending.list
-  #aliroot -b -q -l "DrawTrending.C(\"trending.list\")"
+  cp $ALICE_ROOT/PWGPP/TOF/trending/DrawTrendingTOFQA.C .
+  aliroot -b -q -l "DrawTrendingTOFQA.C(\"trending.root\")"
 }

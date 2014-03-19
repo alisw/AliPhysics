@@ -156,9 +156,11 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Int_t    GetBKGMethod(){ return fBKGMethod; }
   Int_t    NumberOfRotationEvents(){return fnumberOfRotationEventsForBG;}
   Bool_t   DoMassCut(){return  fDoMassCut;}
+  Bool_t   DoMassMinCut(){return fDoMassMinCut;}
   Double_t GetMassCutLowPt(){return fMassCutLowPt;}
   Double_t GetMassCutHighPt(){return fMassCutHighPt;}
   Double_t GetPtMinMassCut(){return fMassCutPtMin;}
+  Double_t GetMassMinCut(){return fMassMinCut;}
   Bool_t   DoWeights(){return fDoWeights;}
   
 
@@ -172,7 +174,8 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Double_t fEtaCut; //eta cutç
   Double_t fEtaShift;
   Bool_t   fDoEtaCut;
-  Double_t fPtCut;
+  Double_t fPtMinCut;
+  Double_t fPtMaxCut;
   Double_t fRadiusCut; // radius cut
   Double_t fPsiPairCut;
   Double_t fDeltaPhiCutMin;
@@ -212,9 +215,11 @@ class AliDalitzElectronCuts : public AliAnalysisCuts {
   Int_t    fBKGMethod;
   Int_t    fnumberOfRotationEventsForBG;
   Bool_t   fDoMassCut;
+  Bool_t   fDoMassMinCut;
   Double_t fMassCutLowPt;
   Double_t fMassCutHighPt;
   Double_t fMassCutPtMin;
+  Double_t fMassMinCut;
   Bool_t   fDoWeights;
 
 

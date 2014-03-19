@@ -224,10 +224,15 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
 {
   // 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  if (!man)  AliFatal("Analysis manager needed");
+  if (!man) {
+    AliFatal("Analysis manager needed");
+    return;
+  }
   AliInputEventHandler *inputHandler=dynamic_cast<AliInputEventHandler*>(man->GetInputEventHandler());
-  if (!inputHandler) AliFatal("Input handler needed");
-
+  if (!inputHandler) {
+    AliFatal("Input handler needed");
+    return;
+  }
   //pid response object
   fESDpid=(AliESDpid*)inputHandler->GetPIDResponse();
   if (!fESDpid) AliError("PIDResponse object was not created");

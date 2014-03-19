@@ -111,6 +111,8 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       (0),
 fNSigmaCut            (3.),
+_tpcnclus             ( 50),
+_chi2ndf              (5.),
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -394,6 +396,8 @@ _dedxMax              ( 100000),
 _nClusterMin          ( 80), 
 _trackFilterBit       ( 0),
 fNSigmaCut            ( 3.),
+_tpcnclus             ( 50),
+_chi2ndf              (5.),
 _field    ( 1.),
 _nTracks  ( 0 ),
 _mult0    ( 0 ),
@@ -896,7 +900,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
   name = "m4"; _m4      = createHisto1D(name,name,_nBins_M4, _min_M4, _max_M4, _title_m4, _title_counts);
   name = "m5"; _m5      = createHisto1D(name,name,_nBins_M5, _min_M5, _max_M5, _title_m5, _title_counts);
   name = "m6"; _m6      = createHisto1D(name,name,_nBins_M6, _min_M6, _max_M6, _title_m6, _title_counts);
-  name = "zV"; _vertexZ = createHisto1D(name,name,120, -12, 12, "z-Vertex (cm)", _title_counts);
+  name = "zV"; _vertexZ = createHisto1D(name,name,100, -10, 10, "z-Vertex (cm)", _title_counts);
   
 
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
@@ -948,7 +952,7 @@ void  AliAnalysisTaskDptDptCorrelations::createHistograms()
     name = s2PtNNwName+pair_12_Name + vsM;    _s2PtNNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgSumPtN_12);       
     name = s2NPtNwName+pair_12_Name + vsM;    _s2NPtNw_12_vsM       = createProfile(name,name, _nBins_M4, _min_M4, _max_M4, _title_m4, _title_AvgNSumPt_12);     
     
-    name = "mInv";     _invMass     = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts"); 
+    name = "mInv";     _invMass     = createHisto1F(name,name, 50, 0.41, 0.55, "M_{inv}","counts"); 
     name = "mInvElec"; _invMassElec = createHisto1F(name,name, 500, 0., 1.000, "M_{inv}","counts"); 
     }
   
@@ -1020,7 +1024,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float  ptpt;
   int    iVertex, iVertexP1, iVertexP2;
   int    iZEtaPhiPt;
-  float  massElecSq = 2.5e-7;
+  float  massElecSq = 1.94797849000000016e-02;
   //double b[2];
   //double bCov[3];
   const  AliAODVertex*	vertex;

@@ -51,11 +51,13 @@ void AnalysisTrainCorrJetsLocal (
          // These two settings depend on the dataset and your quotas on the AliEN services
          Int_t          maxFilesPerWorker   = 20,
          Int_t          workerTTL           = 86000,
-	 Int_t          nfiletestmode       = 50
+	 Int_t          nfiletestmode       = 3
          )
 {
 
   // Some pre-settings and constants
+  TStopwatch watch;
+  watch.Start();
 
   enum AlgoType {kKT, kANTIKT};
   enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
@@ -186,6 +188,8 @@ void AnalysisTrainCorrJetsLocal (
     mgr->SetDebugLevel(10);
     mgr->StartAnalysis("local", chain);
   }
+  watch.Stop();
+  watch.Print();
 }
 
 //______________________________________________________________________________
@@ -243,7 +247,8 @@ void LoadLibs()
   //gSystem->Load("libVZERObase");
   //gSystem->Load("libVZEROrec");
   gSystem->Load("libTENDER");
-  //gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libESDfilter");
   gSystem->Load("libPWGEMCAL");
   gSystem->Load("libPWGGAEMCALTasks");
   //gSystem->Load("libPWGCFCorrelationsBase");
@@ -252,11 +257,15 @@ void LoadLibs()
   //load CGAL, Fastjet and SISCone
   //gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
-  gSystem->Load("libCDFConesPlugin");
   gSystem->Load("libSISConePlugin");
-
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
+  gSystem->Load("libCDFConesPlugin");
+  gSystem->Load("libPWGGAEMCALTasks");
+  gSystem->Load("libPWGTools");
+  //gSystem->Load("libPWGCFCorrelationsBase");
+  //gSystem->Load("libPWGCFCorrelationsDPhi");
+
   gSystem->Load("libPWGJEEMCALJetTasks");
   gSystem->Load("libPWGJEFlavourJetTasks");
 
@@ -286,7 +295,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }else tmpName +="_20130412_122423";
   */
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libJETAN.so libfastjet.so libSISConePlugin.so libCDFConesPlugin.so libFASTJETAN.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libJETAN.so libFASTJETAN.so libSISConePlugin.so libCDFConesPlugin.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");

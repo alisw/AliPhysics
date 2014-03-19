@@ -28,7 +28,7 @@ void rec(int dset=0)
   reco.SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
   
   // MUON Tracker Residual Alignment
-  reco.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco.SetSpecificStorage("MUON/Align/Data",VAR_REC_ALIGNDATA);
   
   reco.Run();
 }

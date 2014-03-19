@@ -355,107 +355,107 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
     indexLS=GetLSHistoIndex(i);
 
     hisname.Form("hMassPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hMassPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
 
     hisname.Form("hMassPtLpi%d",i);
-    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpi[index]->Sumw2();
     hisname.Form("hMassPtLpi%dTC",i);
-    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpiTC[index]->Sumw2();
 
     hisname.Form("hMassPtKp%d",i);
-    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKp[index]->Sumw2();
     hisname.Form("hMassPtKp%dTC",i);
-    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKpTC[index]->Sumw2();
     hisname.Form("hMassPtDk%d",i);
-    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDk[index]->Sumw2();
     hisname.Form("hMassPtDk%dTC",i);
-    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDkTC[index]->Sumw2();
 
     hisname.Form("hMassPt3Pr%d",i);
-    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3Pr[index]->Sumw2();
     hisname.Form("hMassPt3Pr%dTC",i);
-    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3PrTC[index]->Sumw2();
    //signal
     index=GetSignalHistoIndex(i);    
     hisname.Form("hSigPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hSigPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
     hisname.Form("hSigPtLpi%d",i);
-    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpi[index]->Sumw2();
     hisname.Form("hSigPtLpi%dTC",i);
-    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpiTC[index]->Sumw2();
 
     hisname.Form("hSigPtKp%d",i);
-    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKp[index]->Sumw2();
     hisname.Form("hSigPtKp%dTC",i);
-    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKpTC[index]->Sumw2();
 
     hisname.Form("hSigPtDk%d",i);
-    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDk[index]->Sumw2();
     hisname.Form("hSigPtDk%dTC",i);
-    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDkTC[index]->Sumw2();
 
     hisname.Form("hSigPt3Pr%d",i);
-    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3Pr[index]->Sumw2();
     hisname.Form("hSigPt3Pr%dTC",i);
-    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3PrTC[index]->Sumw2();
 
     index=GetBackgroundHistoIndex(i); 
     hisname.Form("hBkgPt%d",i);
-    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist[index]->Sumw2();
     hisname.Form("hBkgPt%dTC",i);
-    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistTC[index]->Sumw2();
     hisname.Form("hBkgPtLpi%d",i);
-    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpi[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpi[index]->Sumw2();
     hisname.Form("hBkgPtLpi%dTC",i);
-    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistLpiTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistLpiTC[index]->Sumw2();
 
     hisname.Form("hBkgPtKp%d",i);
-    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKp[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKp[index]->Sumw2();
     hisname.Form("hBkgPtKp%dTC",i);
-    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistKpTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistKpTC[index]->Sumw2();
 
     hisname.Form("hBkgPtDk%d",i);
-    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDk[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDk[index]->Sumw2();
     hisname.Form("hBkgPtDk%dTC",i);
-    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHistDkTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHistDkTC[index]->Sumw2();
 
     hisname.Form("hBkgPt3Pr%d",i);
-    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3Pr[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3Pr[index]->Sumw2();
     hisname.Form("hBkgPt3Pr%dTC",i);
-    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+    fMassHist3PrTC[index]=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
     fMassHist3PrTC[index]->Sumw2();
   }
   
@@ -481,67 +481,67 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   fhChi2->Sumw2();
   fOutput->Add(fhChi2);
 
-  fhMassPtGreater3=new TH1F("fhMassPtGreater3","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3=new TH1F("fhMassPtGreater3","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3->Sumw2();
   fOutput->Add(fhMassPtGreater3);
-  fhMassPtGreater3TC=new TH1F("fhMassPtGreater3TC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3TC=new TH1F("fhMassPtGreater3TC","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3TC->Sumw2();
   fOutput->Add(fhMassPtGreater3TC);
-  fhMassPtGreater3Kp=new TH1F("fhMassPtGreater3Kp","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3Kp=new TH1F("fhMassPtGreater3Kp","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3Kp->Sumw2();
   fOutput->Add(fhMassPtGreater3Kp);
-  fhMassPtGreater3KpTC=new TH1F("fhMassPtGreater3KpTC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3KpTC=new TH1F("fhMassPtGreater3KpTC","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3KpTC->Sumw2();
   fOutput->Add(fhMassPtGreater3KpTC);
-  fhMassPtGreater3Lpi=new TH1F("fhMassPtGreater3Lpi","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3Lpi=new TH1F("fhMassPtGreater3Lpi","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3Lpi->Sumw2();
   fOutput->Add(fhMassPtGreater3Lpi);
-  fhMassPtGreater3LpiTC=new TH1F("fhMassPtGreater3LpiTC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3LpiTC=new TH1F("fhMassPtGreater3LpiTC","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3LpiTC->Sumw2();
   fOutput->Add(fhMassPtGreater3LpiTC);
-  fhMassPtGreater3Dk=new TH1F("fhMassPtGreater3Dk","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3Dk=new TH1F("fhMassPtGreater3Dk","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3Dk->Sumw2();
   fOutput->Add(fhMassPtGreater3Dk);
-  fhMassPtGreater3DkTC=new TH1F("fhMassPtGreater3DkTC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater3DkTC=new TH1F("fhMassPtGreater3DkTC","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater3DkTC->Sumw2();
   fOutput->Add(fhMassPtGreater3DkTC);
 
-  fhMassPtGreater33Pr=new TH1F("fhMassPtGreater33Pr","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater33Pr=new TH1F("fhMassPtGreater33Pr","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater33Pr->Sumw2();
   fOutput->Add(fhMassPtGreater33Pr);
-  fhMassPtGreater33PrTC=new TH1F("fhMassPtGreater33PrTC","Pt > 3 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater33PrTC=new TH1F("fhMassPtGreater33PrTC","Pt > 3 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater33PrTC->Sumw2();
   fOutput->Add(fhMassPtGreater33PrTC);
 
 
-  fhMassPtGreater2=new TH1F("fhMassPtGreater2","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2=new TH1F("fhMassPtGreater2","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2->Sumw2();
   fOutput->Add(fhMassPtGreater2);
-  fhMassPtGreater2TC=new TH1F("fhMassPtGreater2TC","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2TC=new TH1F("fhMassPtGreater2TC","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2TC->Sumw2();
   fOutput->Add(fhMassPtGreater2TC);
-  fhMassPtGreater2Kp=new TH1F("fhMassPtGreater2Kp","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2Kp=new TH1F("fhMassPtGreater2Kp","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2Kp->Sumw2();
   fOutput->Add(fhMassPtGreater2Kp);
-  fhMassPtGreater2KpTC=new TH1F("fhMassPtGreater2KpTC","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2KpTC=new TH1F("fhMassPtGreater2KpTC","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2KpTC->Sumw2();
   fOutput->Add(fhMassPtGreater2KpTC);
-  fhMassPtGreater2Lpi=new TH1F("fhMassPtGreater2Lpi","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2Lpi=new TH1F("fhMassPtGreater2Lpi","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2Lpi->Sumw2();
   fOutput->Add(fhMassPtGreater2Lpi);
-  fhMassPtGreater2LpiTC=new TH1F("fhMassPtGreater2LpiTC","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2LpiTC=new TH1F("fhMassPtGreater2LpiTC","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2LpiTC->Sumw2();
   fOutput->Add(fhMassPtGreater2LpiTC);
-  fhMassPtGreater2Dk=new TH1F("fhMassPtGreater2Dk","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2Dk=new TH1F("fhMassPtGreater2Dk","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2Dk->Sumw2();
   fOutput->Add(fhMassPtGreater2Dk);
-  fhMassPtGreater2DkTC=new TH1F("fhMassPtGreater2DkTC","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater2DkTC=new TH1F("fhMassPtGreater2DkTC","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater2DkTC->Sumw2();
   fOutput->Add(fhMassPtGreater2DkTC);
-  fhMassPtGreater23Pr=new TH1F("fhMassPtGreater23Pr","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater23Pr=new TH1F("fhMassPtGreater23Pr","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater23Pr->Sumw2();
   fOutput->Add(fhMassPtGreater23Pr);
-  fhMassPtGreater23PrTC=new TH1F("fhMassPtGreater23PrTC","Pt > 2 GeV/c",100,fLowmasslimit,fUpmasslimit);
+  fhMassPtGreater23PrTC=new TH1F("fhMassPtGreater23PrTC","Pt > 2 GeV/c",200,fLowmasslimit,fUpmasslimit);
   fhMassPtGreater23PrTC->Sumw2();
   fOutput->Add(fhMassPtGreater23PrTC);
   
@@ -568,10 +568,10 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   hisname.Form("hMass");
-  TH1F *hMassInv=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+  TH1F *hMassInv=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
   fOutputMC->Add(hMassInv);
   hisname.Form("hbMass");
-  TH1F *hBMassInv=new TH1F(hisname.Data(),hisname.Data(),100,fLowmasslimit,fUpmasslimit);
+  TH1F *hBMassInv=new TH1F(hisname.Data(),hisname.Data(),200,fLowmasslimit,fUpmasslimit);
   fOutputMC->Add(hBMassInv);
 
   // proton specific
@@ -1068,7 +1068,10 @@ void AliAnalysisTaskSELambdac::UserCreateOutputObjects()
   PostData(4,fNentries);
   if (fPriorsHists) PostData(5,fAPriori);
   if (fMultiplicityHists) PostData(6,fMultiplicity);
-  fCounter = new AliNormalizationCounter("NormalizationCounter");
+   TString normName="NormalizationCounter";
+   AliAnalysisDataContainer *cont = GetOutputSlot(7)->GetContainer();
+  if(cont)normName=(TString)cont->GetName(); 
+  fCounter = new AliNormalizationCounter(normName.Data());
    fCounter->Init();
     PostData(7,fCounter);
   if (fFillNtuple) {
@@ -1212,7 +1215,7 @@ void AliAnalysisTaskSELambdac::UserExec(Option_t */*option*/)
 
     isThereA3prongWithGoodTracks=kTRUE;
 
-    if (fRDCutsProduction->IsInFiducialAcceptance(d->Pt(),d->Y(4122))) fNentries->Fill(6);
+    if (fRDCutsProduction->IsInFiducialAcceptance(d->Pt(),d->Y(4122))) {fNentries->Fill(6);}else{continue;}
 
     Int_t ptbin=fRDCutsProduction->PtBin(d->Pt());
     if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds

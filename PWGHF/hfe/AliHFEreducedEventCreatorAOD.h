@@ -32,6 +32,7 @@ class AliHFEextraCuts;
 class AliHFEpidTPC;
 class AliHFEsignalCuts;
 class AliHFEreducedEvent;
+class AliHFEV0taginfo;
 
 class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
   public:
@@ -48,6 +49,8 @@ class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
     void SetMinNclustersTPCPID(Int_t mincl) { fNclustersTPCPID = mincl; };
     void SetMinNclustersITS(Int_t mincl) { fNclustersITS = mincl; };
     void SetNbOfTOFSigma(Float_t nbOfTOFSigma) { fNbOfTOFSigma = nbOfTOFSigma; };
+    void SetFlagPileupEvents() { fFlagPileupEvents = kTRUE; }
+    void SetSelectSignalOnly(Bool_t select = kTRUE) { fSelectSignalOnly = select; } 
     AliHFEpidTPC *GetTPCResponse() { return fTPCpid; }
 
     Bool_t IsTOFmismatch(const AliVTrack *const track, const AliPIDResponse *const pid) const;
@@ -65,12 +68,15 @@ class AliHFEreducedEventCreatorAOD : public AliAnalysisTaskSE{
     AliHFEextraCuts *fExtraCuts;      // HFE IP info
     AliHFEsignalCuts *fSignalCuts;    // Signal Cuts
     AliHFEpidTPC *fTPCpid;            // TPC PID
+    AliHFEV0taginfo *fV0Tagger;       // Tags v0 tracks per Event
     Int_t fEventNumber;               // Event Number
     Int_t fNclustersTPC;              // Min Number of clusters in TPC
     Int_t fNclustersTPCPID;           // Min Number of clusters for TPC PID
     Int_t fNclustersITS;              // Min Number of clusters in ITS
     Float_t fNbOfTOFSigma;            // Nb of TOF Sigma
     Bool_t fRemoveFirstEvent;         // Remove first event from chunk
+    Bool_t fFlagPileupEvents;         // Flag pileup events
+    Bool_t fSelectSignalOnly;         // Select signal-only tracks
   
     ClassDef(AliHFEreducedEventCreatorAOD, 2)
 };

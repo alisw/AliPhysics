@@ -38,7 +38,7 @@ AliPHOSClusterSelection::AliPHOSClusterSelection()
   : fMinChargedParticleTrackDistance(-1.), 
     fNotUnfolded(false),
     fMaxDispR2(-1.),
-    fIsCore(-1.),
+    fIsCore(false),
     fMaxTOF(-1.)
 {
   // Defaults to the most lenient selection allowable
@@ -126,7 +126,7 @@ Bool_t AliPHOSClusterSelection::IsSelectedDisp(AliVCluster* cluster) const
     return true;
   else{
     Double_t m02 = 0.,m20 = 0.;
-    if(fIsCore<0){//No core calculation
+    if(!fIsCore){//No core calculation
       m02 = cluster->GetM02();
       m20 = cluster->GetM20();
       return AliPHOSClusterSelection::TestLambda(cluster->E(),m20,m02) ;
@@ -198,53 +198,63 @@ AliPHOSClusterSelection* AliPHOSClusterSelection::SetMaxTOF(Float_t maxTOF)
 
 TString AliPHOSClusterSelection::ToString() const
 {
-  // returns a string an quasi-unique string for whatever selection 
+  // returns a string an quasi-unique string for whatever selection
   // parameters the instance contains. The uniqueness of the string
   // is limited by the precision given in the formatting of the string.
   // Take care that the precision is sufficient for your needs.
 
-  return TString::Format("%.1f_%i_%.1f_%.1f_%.1f",
-			 fMinChargedParticleTrackDistance,
-			 fNotUnfolded,
-			 fMaxDispR2,
-			 fMaxTOF
-			 );
+  TString string ="v1";
+  string+=Form("_%.2f", fMinChargedParticleTrackDistance);
+  string+=Form("_%i", fNotUnfolded);
+  string+=Form("_%.2f", fMaxDispR2);
+  string+=Form("_%i", fIsCore);
+  string+=Form("_%.2f", fMaxTOF);
+  return string;
 }
 
 
 Float_t AliPHOSClusterSelection::GetMinChargedParticleTrackDistance(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(0))->String());
-  Float_t flt= s->Atof();
-  //delete s; //s is defined in the stack, no delete necessary
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMinChargedParticleTrackDistance);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 Bool_t AliPHOSClusterSelection::GetUnfolded(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(1))->String());
-  Bool_t bl = s->Atoi(); 
-  return bl;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kNotUnfolded);
+  Float_t flt = objString->String().Atoi();
+  delete array;
+  return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxDispR2(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(2))->String());
-  Float_t flt = s->Atof(); 
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxDispR2);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
 Bool_t AliPHOSClusterSelection::GetIsCore(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(3))->String());
-  Bool_t blt = s->Atoi(); 
-  return blt;
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kIsCore);
+  Float_t flt = objString->String().Atoi();
+  delete array;
+  return flt;
 }
 
 Float_t AliPHOSClusterSelection::GetMaxTOF(const TString& string)
 {
-  TString * s =&(static_cast<TObjString*>(string.Tokenize("_")->At(4))->String());
-  Float_t flt = s->Atof(); 
+  TObjArray* array = string.Tokenize("_");
+  TObjString* objString = (TObjString*) array->At(kMaxTOF);
+  Float_t flt = objString->String().Atof();
+  delete array;
   return flt;
 }
 
@@ -285,7 +295,8 @@ void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster  * clu, AliVCaloCells
 { 
   //calculate dispecrsion of the cluster in the circle with radius distanceCut around the maximum
   //Copied from pi0flowtask
-  Int_t fRunNumber;
+  AliVEvent* vevent = AliPHOSClusterSelection::GetCurrentEvent();
+  Int_t runNumber = vevent->GetRunNumber();
   const Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
   // Calculates the center of gravity in the local PHOS-module coordinates
   Float_t wtot = 0;
@@ -302,18 +313,9 @@ void  AliPHOSClusterSelection::EvalCoreLambdas(AliVCluster  * clu, AliVCaloCells
     Float_t zi=0. ;
     Int_t absId = clu->GetCellAbsId(iDigit) ;
 
-
-    AliESDEvent* EventESD = dynamic_cast<AliESDEvent*> (AliPHOSClusterSelection::GetCurrentEvent());//dynamic cast to test for ESD or AOD
-
-    AliAODEvent* EventAOD = dynamic_cast<AliAODEvent*> (AliPHOSClusterSelection::GetCurrentEvent());
-    if(EventESD)
-      fRunNumber = EventESD->GetRunNumber() ;
-    if(EventAOD)
-      fRunNumber = EventESD->GetRunNumber() ;
-
     AliOADBContainer geomContainer("phosGeo");//Initialize Geometry
     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
-    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(runNumber,"PHOSRotationMatrixes");
     AliPHOSGeometry * fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
     for(Int_t mod=0; mod<5; mod++) {
       if(!matrixes->At(mod)) {
@@ -390,7 +392,7 @@ Bool_t AliPHOSClusterSelection::TestLambda(Double_t pt,Double_t l1,Double_t l2) 
   //Tuned using pp data 
   //copied from Pi0FlowTask
   Double_t l2Mean, l1Mean, l2Sigma, l1Sigma, c, R2;
-  if(fIsCore<0){
+  if(! fIsCore ){
     l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
     l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
     l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;

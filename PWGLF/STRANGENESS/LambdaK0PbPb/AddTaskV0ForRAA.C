@@ -66,40 +66,13 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    AliAnalysisTaskV0ForRAA *task = new AliAnalysisTaskV0ForRAA(taskname);
 
    Double_t minPt=0.0;
-   
-   //--- esd track cuts V0 daughters ---//
-   // esd track cuts for pions high pt
-   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts(cutsname);
-   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-   esdTrackCuts->SetMinNCrossedRowsTPC(70);
-   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
-
-   // esd track cuts for protons high pt
-   TString cutsnameCh = cutsname;
-   cutsnameCh +="_charged";
-   AliESDtrackCuts* esdTrackCutsCharged = new AliESDtrackCuts(cutsnameCh);
-   esdTrackCutsCharged->SetMaxChi2PerClusterTPC(4);
-   esdTrackCutsCharged->SetMinNCrossedRowsTPC(70);
-   esdTrackCutsCharged->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsCharged->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsCharged->SetRequireSigmaToVertex(kFALSE);
-
-   // esd track cuts for all low pt
-   TString cutsnameLowPt  = cutsname;
-   cutsnameLowPt +="_lowpt";
-   AliESDtrackCuts* esdTrackCutsLowPt = new AliESDtrackCuts(cutsnameLowPt);
-   esdTrackCutsLowPt->SetMaxChi2PerClusterTPC(4);
-   esdTrackCutsLowPt->SetMinNCrossedRowsTPC(70);
-   esdTrackCutsLowPt->SetAcceptKinkDaughters(kFALSE);
-   esdTrackCutsLowPt->SetRequireTPCRefit(kTRUE);
-   esdTrackCutsLowPt->SetRequireSigmaToVertex(kFALSE);
+   task->SetESDTrackCuts(70,4,kTRUE);
+   task->SetESDTrackCutsCharged(70,4,kTRUE);
+   task->SetESDTrackCutsLowPt(70,4,kTRUE);
+  
 
    //Add cuts to task
-   task->SetESDTrackCutsCharged(esdTrackCutsCharged);
-   task->SetESDTrackCuts(esdTrackCuts);
-   task->SetESDTrackCutsLowPt(esdTrackCutsLowPt);
+  
 
    //--- analysis modes ---//
    task->SetAnapp(anaPP);

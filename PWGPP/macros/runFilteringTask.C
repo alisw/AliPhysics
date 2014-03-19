@@ -34,14 +34,13 @@ void runFilteringTask( const char* esdList,
     mgr->SetDebugLevel(0);
 
     AliESDInputHandler* esdH = new AliESDInputHandler();
-    //esdH->SetReadFriends(1);
-    //esdH->SetReadFriends(1);
+    esdH->SetReadFriends(1);
     mgr->SetInputEventHandler(esdH);  
 
     // Enable MC event handler
     AliMCEventHandler* handlerMC = new AliMCEventHandler;
     //handler->SetReadTR(kFALSE);
-    if (mc) mgr->SetMCtruthEventHandler(handlerMC);
+    mgr->SetMCtruthEventHandler(handlerMC);
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskCDBconnect.C");
     AddTaskCDBconnect(ocdb);
@@ -58,8 +57,6 @@ void runFilteringTask( const char* esdList,
     AliXRDPROOFtoolkit::FilterList(esdList,Form("%s esdTree",esdFileName),0);
     TChain * chain = toolkit.MakeChain(Form("%s.Good",esdList),"esdTree","asd",nFiles,firstFile);
 
-
-
     if(!chain) {
         printf("ERROR: chain cannot be created\n");
         return;
@@ -72,9 +69,10 @@ void runFilteringTask( const char* esdList,
 
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
-    AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("Filtered.root");
+    AliAnalysisTaskFilteredTree* task = (AliAnalysisTaskFilteredTree*)AddTaskFilteredTree("FilterEvents_Trees.root");
     task->SetLowPtTrackDownscaligF(scalingTracks);
     task->SetLowPtV0DownscaligF(scalingV0);
+    task->SetUseESDfriends(kTRUE);
 
     // Init
     if (!mgr->InitAnalysis()) 

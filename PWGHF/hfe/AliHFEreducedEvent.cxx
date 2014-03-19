@@ -36,7 +36,8 @@ TObject(),
   fNmcparticles(0),
   fRunNumber(0),
   fTrigger(0),
-  fSPDMultiplicity(0)
+  fSPDMultiplicity(0),
+  fPileupFlag(kFALSE)
 {
   //
   // Default constructor
@@ -51,8 +52,10 @@ TObject(),
   memset(fVX, 0, sizeof(Float_t)*2);
   memset(fVY, 0, sizeof(Float_t)*2);
   memset(fVZ, 0, sizeof(Float_t)*2);
+  memset(fVMC, 0, sizeof(Double_t)*3);
   memset(fNContrib, 0, sizeof(Int_t) * 2);
-  memset(fVertexResolution, 0, sizeof(Float_t)*2);
+  fVertexResolution[0] = fVertexResolution[1] = 999.;
+  fVertexDispersion[0] = fVertexDispersion[0] = 999.;
 }
 
 //_______________________________________
@@ -64,7 +67,8 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   fNmcparticles(ref.fNmcparticles),
   fRunNumber(ref.fRunNumber),
   fTrigger(ref.fTrigger),
-  fSPDMultiplicity(ref.fSPDMultiplicity)
+  fSPDMultiplicity(ref.fSPDMultiplicity),
+  fPileupFlag(ref.fPileupFlag)
 {
   //
   // Copy constructor
@@ -83,7 +87,9 @@ AliHFEreducedEvent::AliHFEreducedEvent(const AliHFEreducedEvent &ref):
   memcpy(fVX, ref.fVX, sizeof(Float_t)*2);
   memcpy(fVY, ref.fVY, sizeof(Float_t)*2);
   memcpy(fVZ, ref.fVZ, sizeof(Float_t)*2);
+  memcpy(fVMC, ref.fVMC, sizeof(Double_t)*3);
   memcpy(fVertexResolution, ref.fVertexResolution, sizeof(Float_t)*2);
+  memcpy(fVertexDispersion, ref.fVertexDispersion, sizeof(Float_t)*2);
   memcpy(fNContrib, ref.fNContrib, sizeof(Int_t) * 2);
 }
 
@@ -109,9 +115,12 @@ AliHFEreducedEvent &AliHFEreducedEvent::operator=(const AliHFEreducedEvent &ref)
     memcpy(fVX, ref.fVX, sizeof(Float_t)*2);
     memcpy(fVY, ref.fVY, sizeof(Float_t)*2);
     memcpy(fVZ, ref.fVZ, sizeof(Float_t)*2);
+    memcpy(fVMC, ref.fVMC, sizeof(Double_t)*3);
     memcpy(fNContrib, ref.fNContrib, sizeof(Int_t) * 2);
     memcpy(fVertexResolution, ref.fVertexResolution, sizeof(Float_t)*2);
+    memcpy(fVertexDispersion, ref.fVertexDispersion, sizeof(Float_t)*2);
     fSPDMultiplicity = ref.fSPDMultiplicity;
+    fPileupFlag = ref.fPileupFlag;
     memcpy(fCentrality, ref.fCentrality, sizeof(Float_t) * kCentBuff);
     memcpy(fV0Multiplicity, ref.fV0Multiplicity, sizeof(Float_t) * 2);
     memcpy(fZDCEnergy, ref.fZDCEnergy, sizeof(Float_t) *4);

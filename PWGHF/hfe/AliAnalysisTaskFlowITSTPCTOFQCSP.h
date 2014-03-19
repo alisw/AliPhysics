@@ -48,7 +48,7 @@ public:
     void                                 SetEnableDebugMode() {fDebug = kTRUE; };
     void                                 SetCentralityParameters(Double_t CentralityMin, Double_t CentralityMax, const char* CentralityMethod); //select centrality
     void                                 CheckCentrality(AliAODEvent *event,Bool_t &centralitypass); //to use only events with the correct centrality....
-    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec);
+    void                                 SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Float_t fTPCnSigma,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec);
     void                                 SelectPhotonicElectronMethod(Bool_t dca){fDCA = dca;}
     void                                 SetInvariantMassCut(Double_t invmass) {fInvmassCut = invmass;};
     void                                 SetPtMinAssoCut(Double_t ptminimumasso) {fptminAsso = ptminimumasso;};
@@ -72,7 +72,9 @@ public:
     void                                 SetMultCorrelationCut(Bool_t multcut) {fMultCut = multcut;};
     void                                 SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef=0.,Int_t switchTRand=0);
     Bool_t                               IsEventSelectedForCentrFlattening(Float_t centvalue);
-    
+    void                                 SetAssoITSRefit(Bool_t itsref) {fAssoITSRefit = itsref;};
+    void                                 SetAssoTPCCluster(Int_t tpc_clust) {fAssoTPCCluster = tpc_clust;};
+
     
     AliHFEpid *GetPID() const { return fPID; };
     
@@ -175,6 +177,13 @@ private:
     TH1F                 *fHistCentrDistr;//-> isto for Centr Flat
     TH1F                 *fCentralityNoPassForFlattening; //!QA histogram of events that do not pass centrality cut for flattening
     Double_t              fptminAsso;//minassopt
+    THnSparseF           *fSparsephipsiULS;//! ULSSparse
+    THnSparseF           *fSparsephipsiLS;//! LSSparse
+    THnSparseF           *fSparseMassULS;//!ssss
+    THnSparseF           *fSparseMassLS;//!ssssss
+    Int_t                 fAssoTPCCluster;//asso tpc cluster
+    Bool_t                fAssoITSRefit;//asso its refit
+    
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowITSTPCTOFQCSP& operator=(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented

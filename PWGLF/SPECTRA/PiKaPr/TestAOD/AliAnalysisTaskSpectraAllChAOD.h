@@ -30,11 +30,13 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fHelperPID(0x0),
     fIsMC(0),
     fDoDoubleCounting(0),
+    fFillOnlyEvents(0),
     fCharge(0),
     fVZEROside(0),
     fOutput(0x0),
     fnCentBins(20),
-    fnQvecBins(40)
+    fnQvecBins(40),
+    fnNchBins(200)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -46,6 +48,9 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
  
   void SetDoDoubleCounting(Bool_t doDoubleCounting = kFALSE)    {fDoDoubleCounting = doDoubleCounting; };
   Bool_t GetDoDoubleCounting()           const           { return fDoDoubleCounting;};
+ 
+  void SetFillOnlyEvents(Bool_t fillOnlyEvents = kFALSE)    {fFillOnlyEvents = fillOnlyEvents; };
+  Bool_t GetFillOnlyEvents()           const           { return fFillOnlyEvents;};
  
   void SetCharge(Int_t charge = 0)    {fCharge = charge; };
   Int_t GetCharge()           const           { return fCharge;};
@@ -67,6 +72,7 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetHelperPID(AliHelperPID* pid)                     { fHelperPID = pid; }
   void SetnCentBins(Int_t val)                             { fnCentBins = val; }
   void SetnQvecBins(Int_t val)                             { fnQvecBins = val; }
+  void SetnNchBins(Int_t val)                             { fnNchBins = val; }
   
  private:
   
@@ -76,15 +82,17 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   AliHelperPID                   * fHelperPID;                    // points to class for PID
   Bool_t                          fIsMC;                         // true if processing MC
   Bool_t                          fDoDoubleCounting;           // true is double counting for Nsigma accepetd
+  Bool_t                          fFillOnlyEvents;               // if true fill only NSparseHistEv
   Int_t                            fCharge;                      // charge to be selected
   Int_t                            fVZEROside;                  // 0: VZERO-A 1: VZERO-C
   TList                          * fOutput;                     // output list
   Int_t                            fnCentBins;                  // number of bins for the centrality axis
   Int_t                            fnQvecBins;                 // number of bins for the q vector axis
+  Int_t                            fnNchBins;                 // number of bins for the Nch axis
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 5);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 6);
 };
 
 #endif

@@ -11,6 +11,7 @@
 #include "TArrayF.h"
 #include "TF1.h"
 #include "TRandom.h"
+#include "TROOT.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -158,19 +159,10 @@ AliAnalysisTaskBFPsi::AliAnalysisTaskBFPsi(const char *name)
   fnAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
-  fPtMinForCorrections(0.3),//=================================correction
-  fPtMaxForCorrections(1.5),//=================================correction
-  fPtBinForCorrections(36), //=================================correction
   fEtaMin(-0.8),
-  fEtaMax(-0.8),
-  fEtaMinForCorrections(-0.8),//=================================correction
-  fEtaMaxForCorrections(0.8),//=================================correction
-  fEtaBinForCorrections(16), //=================================correction
+  fEtaMax(0.8),
   fPhiMin(0.),
   fPhiMax(360.),
-  fPhiMinForCorrections(0.),//=================================correction
-  fPhiMaxForCorrections(360.),//=================================correction
-  fPhiBinForCorrections(100), //=================================correction
   fDCAxyCut(-1),
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
@@ -493,7 +485,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
     Int_t nPsiBins; 
     psibins = fBalance->GetBinning(fBalance->GetBinningString(), "eventPlane", nPsiBins);
 
-    
+  
     // run the event mixing also in bins of event plane (statistics!)
     if(fRunMixingEventPlane){
       if(fEventClass=="Multiplicity"){
@@ -519,7 +511,12 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
 	}
       }
     }
-
+    
+    if(centbins) delete [] centbins; 
+    if(multbins) delete [] multbins; 
+    if(vtxbins)  delete [] vtxbins; 
+    if(psibins)  delete [] psibins; 
+    
     // check pool manager
     if(!fPoolMgr){
       AliError("Event Mixing required, but Pool Manager not initialized...");
@@ -616,6 +613,7 @@ void AliAnalysisTaskBFPsi::UserCreateOutputObjects() {
   AliInfo("Finished setting up the Output");
 
   TH1::AddDirectory(oldStatus);
+
 }
 
 
@@ -660,20 +658,6 @@ void AliAnalysisTaskBFPsi::SetInputCorrection(TString filename,
       return; 
     }
   }//loop over centralities: ONLY the PbPb case is covered
-
-  if(fHistCorrectionPlus[0]){
-    fEtaMinForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmin();
-    fEtaMaxForCorrections = fHistCorrectionPlus[0]->GetXaxis()->GetXmax();
-    fEtaBinForCorrections = fHistCorrectionPlus[0]->GetNbinsX();
-    
-    fPtMinForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmin();
-    fPtMaxForCorrections = fHistCorrectionPlus[0]->GetYaxis()->GetXmax();
-    fPtBinForCorrections = fHistCorrectionPlus[0]->GetNbinsY();
-    
-    fPhiMinForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmin();
-    fPhiMaxForCorrections = fHistCorrectionPlus[0]->GetZaxis()->GetXmax();
-    fPhiBinForCorrections = fHistCorrectionPlus[0]->GetNbinsZ();
-  }
 }
 
 //________________________________________________________________________
@@ -713,7 +697,7 @@ void AliAnalysisTaskBFPsi::UserExec(Option_t *) {
     return;
   }
   // get the reaction plane
-  if(fEventClass != "Multiplicity") {
+  if(fEventClass != "Multiplicity" && gAnalysisLevel!="AODnano") {
     gReactionPlane = GetEventPlane(eventMain);
     fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
     if(gReactionPlane < 0){
@@ -950,7 +934,7 @@ Double_t AliAnalysisTaskBFPsi::IsEventAccepted(AliVEvent *event){
 Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
     // Checks the Event cuts
     // Fills Event statistics histograms
-  
+
   Float_t gCentrality = -1.;
   Double_t gMultiplicity = -1.;
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
@@ -996,6 +980,19 @@ Double_t AliAnalysisTaskBFPsi::GetRefMultiOrCentrality(AliVEvent *event){
 
     }//AOD header
   }//AOD
+
+  // calculate centrality always (not only in centrality mode)
+  else if(gAnalysisLevel == "AODnano" ) { //centrality via JF workaround
+    
+    AliAODHeader *header = (AliAODHeader*) event->GetHeader();
+    if(header){
+      gCentrality = (Float_t) gROOT->ProcessLine(Form("100.0 + 100.0 * ((AliNanoAODHeader*) %p)->GetCentrality(\"%s\")", header,fCentralityEstimator.Data())) / 100 - 1.0;
+      
+      // QA histogram
+      fHistCentStatsUsed->Fill(0.,gCentrality);
+
+    }//AOD header
+  }//AODnano
   
   else if(gAnalysisLevel == "ESD" || gAnalysisLevel == "MCESD"){ // centrality class for ESDs or MC-ESDs
     AliCentrality *centrality = event->GetCentrality();
@@ -1264,28 +1261,8 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
   // -- Get efficiency correction of particle dependent on (eta, phi, pt, charge, centrality) 
 
   Double_t correction = 1.;
-  Int_t binEta = 0, binPt = 0, binPhi = 0;
-
-  //Printf("EtaMAx: %lf - EtaMin: %lf - EtaBin: %lf", fEtaMaxForCorrections,fEtaMinForCorrections,fEtaBinForCorrections);
-  if(fEtaBinForCorrections != 0) {
-    Double_t widthEta = (fEtaMaxForCorrections - fEtaMinForCorrections)/fEtaBinForCorrections;
-    if(fEtaMaxForCorrections != fEtaMinForCorrections) 
-      binEta = (Int_t)((vEta-fEtaMinForCorrections)/widthEta)+1;
-  }
-
-  if(fPtBinForCorrections != 0) {
-    Double_t widthPt = (fPtMaxForCorrections - fPtMinForCorrections)/fPtBinForCorrections;
-    if(fPtMaxForCorrections != fPtMinForCorrections) 
-      binPt = (Int_t)((vPt-fPtMinForCorrections)/widthPt) + 1;
-  }
- 
-  if(fPhiBinForCorrections != 0) {
-    Double_t widthPhi = (fPhiMaxForCorrections - fPhiMinForCorrections)/fPhiBinForCorrections;
-    if(fPhiMaxForCorrections != fPhiMinForCorrections) 
-      binPhi = (Int_t)((vPhi-fPhiMinForCorrections)/widthPhi)+ 1;
-  }
-
   Int_t gCentralityInt = -1;
+
   for (Int_t i=0; i<fCentralityArrayBinsForCorrections-1; i++){
     if((fCentralityArrayForCorrections[i] <= gCentrality)&&(gCentrality <= fCentralityArrayForCorrections[i+1])){
       gCentralityInt = i;
@@ -1303,12 +1280,12 @@ Double_t AliAnalysisTaskBFPsi::GetTrackbyTrackCorrectionMatrix( Double_t vEta,
     
     if(fHistCorrectionPlus[gCentralityInt]){
       if (vCharge > 0) {
-	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionPlus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
 	//Printf("CORRECTIONplus: %.2f | Centrality %d",correction,gCentralityInt);  
       }
       if (vCharge < 0) {
-	correction = fHistCorrectionMinus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->GetBin(binEta, binPt, binPhi));
-	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt);
+	correction = fHistCorrectionPlus[gCentralityInt]->GetBinContent(fHistCorrectionMinus[gCentralityInt]->FindBin(vEta,vPt,vPhi));
+	//Printf("CORRECTIONminus: %.2f | Centrality %d",correction,gCentralityInt); 
       }
     }
     else {
@@ -1580,6 +1557,53 @@ TObjArray* AliAnalysisTaskBFPsi::GetAcceptedTracks(AliVEvent *event, Double_t gC
       tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
     }//track loop
   }// AOD analysis
+
+
+  // nano AODs
+  else if(gAnalysisLevel == "AODnano") { // not fully supported yet (PID missing)
+    // Loop over tracks in event
+    
+    for (Int_t iTracks = 0; iTracks < event->GetNumberOfTracks(); iTracks++) {
+      AliVTrack* aodTrack = dynamic_cast<AliVTrack *>(event->GetTrack(iTracks));
+      if (!aodTrack) {
+	AliError(Form("Could not receive track %d", iTracks));
+	continue;
+      }
+      
+      // AOD track cuts (not needed)
+      //if(!aodTrack->TestFilterBit(fnAODtrackCutBit)) continue;
+     
+      vCharge = aodTrack->Charge();
+      vEta    = aodTrack->Eta();
+      vY      = -999.;
+      vPhi    = aodTrack->Phi();// * TMath::RadToDeg();
+      vPt     = aodTrack->Pt();
+           
+      
+      // Kinematics cuts from ESD track cuts
+      if( vPt < fPtMin || vPt > fPtMax)      continue;
+      if( vEta < fEtaMin || vEta > fEtaMax)  continue;
+      
+       
+      // fill QA histograms
+      fHistPt->Fill(vPt,gCentrality);
+      fHistEta->Fill(vEta,gCentrality);
+      fHistRapidity->Fill(vY,gCentrality);
+      if(vCharge > 0) fHistPhiPos->Fill(vPhi,gCentrality);
+      else if(vCharge < 0) fHistPhiNeg->Fill(vPhi,gCentrality);
+      fHistPhi->Fill(vPhi,gCentrality);
+      if(vCharge > 0)      fHistEtaPhiPos->Fill(vEta,vPhi,gCentrality); 		 
+      else if(vCharge < 0) fHistEtaPhiNeg->Fill(vEta,vPhi,gCentrality);
+      
+      //=======================================correction
+      Double_t correction = GetTrackbyTrackCorrectionMatrix(vEta, vPhi, vPt, vCharge, gCentrality);  
+      //Printf("CORRECTIONminus: %.2f | Centrality %lf",correction,gCentrality);
+      
+      // add the track to the TObjArray
+      tracksAccepted->Add(new AliBFBasicParticle(vEta, vPhi, vPt, vCharge, correction));  
+    }//track loop
+  }// AOD nano analysis
+
 
   //==============================================================================================================
   else if(gAnalysisLevel == "MCAOD") {

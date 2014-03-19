@@ -110,7 +110,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fRecoPV;                    //!histogram to record if an event has a prim. vert.
   TH1F        *fPVtxZ;                     //!primary vertex Z before cut
   TH1F        *fTrMultDist;                //!track multiplicity distribution
-  TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt
+  TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt, eta, phi
+  TH3F        *fMCIsoDirPhotonPtEtaPhi;    //!direct produced photon pt, eta, phi, isolated @ mc level
   TH1F        *fDecayPhotonPtMC;           //!decay photon pt
   TH2F        *fCellAbsIdVsAmpl;           //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;            //!total number of clusters vs. highest clus energy in the event
@@ -143,6 +144,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH2F        *fTrackPtPhiCut;    //!selected tracks pt vs. phi in "triggered event"
   TH2F        *fTrackPtEta;       //!selected tracks pt vs. eta
   TH2F        *fTrackPtEtaCut;    //!selected tracks pt vs. eta in "triggered event"
+  TH2F        *fMaxCellEPhi;      //!max cell energy vs. cell phi
 
 
   AliAnalysisTaskEMCALIsoPhoton(const AliAnalysisTaskEMCALIsoPhoton&); // not implemented

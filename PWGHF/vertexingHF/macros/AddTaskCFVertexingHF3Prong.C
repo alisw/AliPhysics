@@ -36,14 +36,18 @@ const Float_t multmin_0_20 = 0;
 const Float_t multmax_0_20 = 20;
 const Float_t multmin_20_50 = 20;
 const Float_t multmax_20_50 = 50;
-const Float_t multmin_50_102 = 50;
-const Float_t multmax_50_102 = 102;
-Double_t refMult=9.26; // reference multiplicity for LHC10b pass2 data
+const Float_t multmin_50_80 = 50;
+const Float_t multmax_50_80 = 80;
+const Float_t multmin_80_100 = 80;
+const Float_t multmax_80_100 = 100;
+const Float_t multmin_100_400 = 100;
+const Float_t multmax_100_400 = 400;
+
 
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPbData = kFALSE, Double_t refMult=9.26)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -171,10 +175,13 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	const Int_t nbinfake = 3;  //bins in fake
 	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
 	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
-	const Int_t nbinmult = 48;  //bins in multiplicity (total number)
+	const Int_t nbinmult = 49;  //bins in multiplicity (total number)
 	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
-	const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
+	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 80
+	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 80 and 100
+	const Int_t nbinmult_100_400 = 3; //bins in multiplicity between 100 and 400
+	if(isPPbData) nbinmult += nbinmult_100_400;
 	
 	//the sensitive variables, their indices
 	const UInt_t ipT = 0;
@@ -327,16 +334,26 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	for(Int_t i=0; i<=nbinnormDecayLXY; i++) binLimnormDecayLXY[i]=(Double_t)normDecLXYmin  + (normDecLXYmax-normDecLXYmin)  /nbinnormDecayLXY*(Double_t)i ;
 
 	// multiplicity
-	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
-	if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
-	}
-	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
-	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_102)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
-	}
-	for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
-	
+      for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
+      if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
+               Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
+      }
+      for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
+      if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_80)  {
+               Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
+      }
+      for(Int_t i=0; i<=nbinmult_50_80; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_80 + (multmax_50_80-multmin_50_80)/nbinmult_50_80*(Double_t)i ; 
+      if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80] != multmin_80_100)  {
+               Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 3rd range - differs from expected!\n");
+      }
+      for(Int_t i=0; i<=nbinmult_80_100; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80]=(Double_t)multmin_80_100 + (multmax_80_100-multmin_80_100)/nbinmult_80_100*(Double_t)i ; 
+      if (binLimmult[nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100] != multmin_100_400) {
+               Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 4th range - differs from expected!\n");
+      }
+      if(isPPbData){
+	for (Int_t i = 0; i<=nbinmult_100_400; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50+nbinmult_50_80+nbinmult_80_100]= (Double_t)multmin_100_400 + (multmax_100_400-multmin_100_400)/nbinmult_100_400*(Double_t)i ;
+      }
+
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
@@ -570,28 +587,49 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 		}
 	}
 
-	task->SetMultiplicityEstimator(multiplicityEstimator);
-	if(estimatorFilename.EqualTo("") ) {
-	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
-	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
-	} else{
-	  const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
-	  TProfile* multEstimatorAvg[4];                       
-	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
-	  if(!fileEstimator)  {
-	    AliFatal("File with multiplicity estimator not found"); 
-	    return;
-	  }
-	  for(Int_t ip=0; ip<4; ip++) {
-	    multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
-	  }
-	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
-	  task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
-	  task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
-	  task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
-	  task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
-	  task->SetReferenceMultiplcity(refMult);
-	}
+   task->SetMultiplicityEstimator(multiplicityEstimator);
+   if(estimatorFilename.EqualTo("") ) {
+     printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
+     task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
+   } else{
+     TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+     if(!fileEstimator)  {
+       AliFatal("File with multiplicity estimator not found"); 
+       return;
+     }      
+     task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
+     task->SetReferenceMultiplcity(refMult);
+
+      if (isPPbData) {  //load multiplicity estimators for pPb
+         const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+         TProfile *multEstimatorAvg[2];
+         for (Int_t ip=0; ip < 2; ip++) {
+            multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));    
+            if (!multEstimatorAvg[ip]) {
+               AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+               return;               
+            }         
+         }
+         task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+         task->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+         
+      } else {    //load multiplicity estimators for pp
+         const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+         TProfile* multEstimatorAvg[4];                       
+
+         for(Int_t ip=0; ip<4; ip++) {
+            multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));  
+            if (!multEstimatorAvg[ip]) {
+               AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+               return;               
+            }  
+         }
+         task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+         task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+         task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+         task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+     }
+   }
 
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());

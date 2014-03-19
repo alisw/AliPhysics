@@ -16,11 +16,9 @@
 #pragma link C++ class AliAnalysisTaskDeltaPt+;
 #pragma link C++ class AliAnalysisTaskScale+;
 #pragma link C++ class AliEmcalJet+;
-#pragma link C++ class AliEmcalJetTask+;
 #pragma link C++ class AliJetContainer+;
 #pragma link C++ class AliJetEmbeddingTask+;
 #pragma link C++ class AliJetEmbeddingFromGenTask+;
-#pragma link C++ class AliJetEmbeddingFromAODTask+;
 #pragma link C++ class AliJetEmbeddingFromPYTHIATask+;
 #pragma link C++ class AliJetModelBaseTask+;
 #pragma link C++ class AliJetModelMergeBranches+;
@@ -29,7 +27,6 @@
 #pragma link C++ class AliJetResponseMaker+;
 #pragma link C++ class AliRhoParameter+;
 #pragma link C++ class AliLocalRhoParameter+;
-#pragma link C++ class AliEmcalJetFinder+;
 #pragma link C++ class AliJetTriggerSelectionTask+;
 
 // user tasks
@@ -53,10 +50,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalJetTagger+;
 #pragma link C++ class AliAnalysisTaskEmcalJetTriggerQA+;
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
-#pragma link C++ class AliAnalysisTaskFullpAJets+;
-#pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
-#pragma link C++ class AliAnalysisTaskHJetDphi+;
 #pragma link C++ class AliAnalysisTaskRhoVnModulation+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
@@ -64,4 +58,13 @@
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliNtupCumInfo+;
 #pragma link C++ class AliNtupZdcInfo+;
+
+#ifdef HAVE_FASTJET
+#pragma link C++ class AliEmcalJetTask+;
+#pragma link C++ class AliEmcalJetFinder+;
+#pragma link C++ class AliJetEmbeddingFromAODTask+;
+#pragma link C++ class AliAnalysisTaskFullpAJets+;
+#pragma link C++ class AliAnalysisTaskFullppJet;
+#pragma link C++ class AliAnalysisTaskHJetDphi+;
+#endif
 #endif

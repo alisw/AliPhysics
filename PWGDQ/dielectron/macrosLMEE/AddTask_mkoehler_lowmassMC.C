@@ -41,7 +41,7 @@ AliAnalysisTask *AddTask_mkoehler_lowmassMC(Bool_t hasMC_aod = kFALSE){
   
   //add dielectron analysis with different cuts to the task
   for (Int_t i=0; i<nDie; ++i){ //nDie defined in config file
-    AliDielectron *jpsi=Config_mkoehler_lowmassMC(i,isAOD);
+    AliDielectron *jpsi=Config_mkoehler_lowmassMC(i,isAOD, hasMC);
     task->AddDielectron(jpsi);
   }
 

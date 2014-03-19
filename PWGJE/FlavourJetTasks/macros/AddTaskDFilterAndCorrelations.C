@@ -10,7 +10,9 @@ void *AddTaskDFilterAndCorrelations(
   Float_t R = 0.4,
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
-  Double_t percjetareacut = 1.)
+  Double_t percjetareacut = 1.,
+  AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND
+)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -71,7 +73,11 @@ void *AddTaskDFilterAndCorrelations(
   taskCorr->SetJetAcceptanceType(cutType);
   taskCorr->SetJetPtCut(jptcut);
   taskCorr->SetPercAreaCut(percjetareacut);
-  
+  taskCorr->SetMakeGeneralHistograms(kTRUE);
+  if(theMCon && trType!=AliAnalysisTaskEmcal::kND){
+     taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
+     taskCorr->SetTriggerTypeSel(trType);
+  }
   mgr->AddTask(taskCorr);
 
   if(theMCon) {
@@ -117,6 +123,7 @@ void *AddTaskDFilterAndCorrelations(
 
   // ------ input data ------
   AliAnalysisDataContainer *cinput0  = mgr->GetCommonInputContainer();
+  cinput0->SetName(Form("in%s%s",candname.Data(),suffix.Data()));
   
   // ----- output data -----
   
@@ -132,8 +139,8 @@ void *AddTaskDFilterAndCorrelations(
   
   AliAnalysisDataContainer *coutputFC3 = mgr->CreateContainer(nameContainerFC3, TClonesArray::Class(),AliAnalysisManager::kExchangeContainer, outputfileF.Data()); //
   
-  mgr->ConnectInput(taskFilter,0,mgr->GetCommonInputContainer());
-  mgr->ConnectInput(taskCorr,0,mgr->GetCommonInputContainer());
+  mgr->ConnectInput(taskFilter,0,cinput0);
+  mgr->ConnectInput(taskCorr,0,cinput0);
   
   mgr->ConnectOutput(taskFilter,1,coutputF0);
   mgr->ConnectOutput(taskFilter,2,coutputF1);

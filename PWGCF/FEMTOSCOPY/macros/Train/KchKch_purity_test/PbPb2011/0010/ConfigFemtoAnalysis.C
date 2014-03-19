@@ -56,7 +56,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double PionMass = 0.13956995;
   double KaonMass = 0.493677;
   const int cMu=1;
-  const int cKt=5;
+  const int cKt=3;
 
   //-------Single track cuts------------------------------------------------->
   double DCAxy=2.4;//cm // our standard is 0.20 cm; super narrow was 0.015cm
@@ -77,7 +77,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //Orig Kch in PbPb
   //int multbins[cMu+1] = {0, 100, 300, 500, 900};
   //Test for flat part of centrality distribution....
-  int multbins[5] = {0, 50, 300, 500, 900};
+  int multbins[5] = {0, 100, 300, 500, 900};
+ // int multbins[5] = {0, 50, 300, 500, 900};
   //.................................................
 
   int runch[2] = {1, 1};
@@ -85,7 +86,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   
   int runktdep = 1;
-  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
+//YS  double ktrng[cKt+1] = {0.2, 0.36, 0.48, 0.6, 1.0, 1.5};
+  double ktrng[cKt+1] = {0.2, 0.4, 0.6, 1.5};
+
 // double ktrng[8] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.0};
 
   int run3d = 1;
@@ -165,7 +168,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoKTPairCut             *ktpcuts[20*8];
   AliFemtoCorrFctnDirectYlm     *cylmkttpc[20*8];
   AliFemtoQinvCorrFctn          *cqinvkttpc[20*8];
-  AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
+ // AliFemtoCorrFctn3DLCMSSym     *cq3dlcmskttpc[20*8];
+  AliFemtoBPLCMS3DCorrFctn  *cq3dlcmskttpc[20*8];
+ 
   AliFemtoCorrFctnTPCNcls       *cqinvnclstpc[20];
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
@@ -215,7 +220,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    
 	  dtc1etaphitpc[aniter]->SetPt(0.14,1.5);
 	  //	  dtc1etaphitpc[aniter]->SetEta(-1.2,1.2);
-	  dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
+	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8); //0.5
 	  // 	//    dtc1etaphitpc[aniter]->SetEta(-0.5,0.5);
 ///	  dtc1etaphitpc[aniter]->SetMass(PionMass);
 	  dtc1etaphitpc[aniter]->SetMass(KaonMass);
@@ -410,19 +415,23 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      cqinvsqtpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvsqtpc[ktm]);
 
-	      cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
-	      cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
-	      cqinvinnertpc[ktm]->SetRadius(1.2);
-	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
+//	      cqinvinnertpc[ktm] = new AliFemtoTPCInnerCorrFctn(Form("cqinvinner%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+//	      cqinvinnertpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
+//	      cqinvinnertpc[ktm]->SetRadius(1.2);
+//	      anetaphitpc[aniter]->AddCorrFctn(cqinvinnertpc[ktm]);
 
 //---- Correlation Function vs Delta_Eta and Delta_Phi (not Phi*)---->>>
-	      cdedpetaphi[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ikT%i", chrgs[ichg], imult, ikt),100,100);
-	      anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[ktm]);
+//	      cdedpetaphi[ktm] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%ikT%i", chrgs[ichg], imult, ikt),100,100);
+//	      anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[ktm]);
 //---- Correlation Function vs Delta_Eta and Delta_Phi (not Phi*)----<<<
 
 	      if (run3d) {
-		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
-//		cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
+	//	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),60,(imult>3)?((imult>6)?((imult>7)?0.6:0.4):0.25):0.15);
+
+        //    AliFemtoBPLCMS3DCorrFctn *cq3dallpiptpc = new AliFemtoBPLCMS3DCorrFctn("cq3dallpiptpc",100,-1.5,1.5);
+                                 
+	cq3dlcmskttpc[ktm] = new AliFemtoBPLCMS3DCorrFctn(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,-0.5,0.5);
+//	cq3dlcmskttpc[ktm] = new AliFemtoCorrFctn3DLCMSSym(Form("cq3d%stpcM%ikT%i", chrgs[ichg], imult, ikt),50,0.5);
 		cq3dlcmskttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 		anetaphitpc[aniter]->AddCorrFctn(cq3dlcmskttpc[ktm]);
 	      }

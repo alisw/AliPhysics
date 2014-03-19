@@ -42,6 +42,9 @@ AliFlowAnalysisWithMultiparticleCorrelations::AliFlowAnalysisWithMultiparticleCo
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
  fPropagateError(kTRUE),
+ fAnalysisTag(""),
+ fDumpThePoints(kFALSE),
+ fMaxNoEventsPerFile(100),
  // 1.) Control histograms:
  fControlHistogramsList(NULL),
  fControlHistogramsFlagsPro(NULL),
@@ -198,7 +201,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  // e) Calculate multi-particle correlations from Q-vector components; 
  // f) Calculate e-b-e cumulants; 
  // g) Reset Q-vector components;
- // h) Cross-check results with nested loops.
+ // h) Cross-check results with nested loops;
+ // i) Dump the points.
 
  // a) Cross-check internal flags:
  if(fUseInternalFlags){if(!this->CrossCheckInternalFlags(anEvent)){return;}}
@@ -226,6 +230,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEv
  if(fCrossCheckWithNestedLoops){this->CrossCheckWithNestedLoops(anEvent);}
  if(fCrossCheckDiffWithNestedLoops){this->CrossCheckDiffWithNestedLoops(anEvent);}
 
+ // i) Dump the points:
+ if(fDumpThePoints){this->DumpThePoints(anEvent);}
+ 
 } // end of AliFlowAnalysisWithMultiparticleCorrelations::Make(AliFlowEventSimple *anEvent)
 
 //=======================================================================================================================
@@ -1763,7 +1770,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  // d) Q-cumulants;
  // e) Weights;
  // f) Differential correlations;
- // g) Nested loops.
+ // g) Nested loops;
+ // h) Dump the points.
 
  TString sMethodName = "AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()";
 
@@ -1861,6 +1869,16 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  if(fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !fCalculateDiffCos))
  {
   Fatal(sMethodName.Data(),"fCrossCheckDiffWithNestedLoops && (0 == fCrossCheckDiffCSCOBN[0] && !CalculateDiffCos)"); 
+ }
+
+ // h) Dump the points:
+ if(fDumpThePoints && !fFillMultDistributionsHist)
+ {
+  Fatal(sMethodName.Data(),"if(fDumpThePoints && !fFillMultDistributionsHist)"); 
+ }
+ if(fDumpThePoints && fMaxNoEventsPerFile <= 0)
+ {
+  Fatal(sMethodName.Data(),"if(fDumpThePoints && fMaxNoEventsPerFile <= 0)"); 
  }
 
 } // end of void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
@@ -1992,63 +2010,64 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
 
  // b) Book all control histograms: // TBI add setters for all these values
  //  b0) Book TH1D *fKinematicsHist[2][3]:
- Int_t nBins[2][3] = {{360,1000,1000},{360,1000,1000}}; // [RP,POI][phi,pt,eta]
- Double_t min[2][3] = {{0.,0.,-1.},{0.,0.,-1.}}; // [RP,POI][phi,pt,eta]
- Double_t max[2][3] = {{TMath::TwoPi(),10.,1.},{TMath::TwoPi(),10.,1.}}; // [RP,POI][phi,pt,eta]
  TString name[2][3] = {{"RP,phi","RP,pt","RP,eta"},{"POI,phi","POI,pt","POI,eta"}}; // [RP,POI][phi,pt,eta]
  TString title[2] = {"Reference particles (RP)","Particles of interest (POI)"}; // [RP,POI]
  Int_t lineColor[2] = {kBlue,kRed}; // [RP,POI]
  Int_t fillColor[2] = {kBlue-10,kRed-10}; // [RP,POI]
  TString xAxisTitle[3] = {"#phi","p_{T}","#eta"}; // [phi,pt,eta]
- for(Int_t rp=0;rp<2;rp++) // [RP,POI]
+ if(fFillKinematicsHist)
  {
-  for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
   {
-   fKinematicsHist[rp][ppe] = new TH1D(name[rp][ppe].Data(),title[rp].Data(),nBins[rp][ppe],min[rp][ppe],max[rp][ppe]);
-   fKinematicsHist[rp][ppe]->GetXaxis()->SetTitle(xAxisTitle[ppe].Data());
-   fKinematicsHist[rp][ppe]->SetLineColor(lineColor[rp]);
-   fKinematicsHist[rp][ppe]->SetFillColor(fillColor[rp]);
-   fKinematicsHist[rp][ppe]->SetMinimum(0.); 
-   if(fFillKinematicsHist){fControlHistogramsList->Add(fKinematicsHist[rp][ppe]);}
+   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
+   {
+    fKinematicsHist[rp][ppe] = new TH1D(name[rp][ppe].Data(),title[rp].Data(),fnBins[rp][ppe],fMin[rp][ppe],fMax[rp][ppe]);
+    fKinematicsHist[rp][ppe]->GetXaxis()->SetTitle(xAxisTitle[ppe].Data());
+    fKinematicsHist[rp][ppe]->SetLineColor(lineColor[rp]);
+    fKinematicsHist[rp][ppe]->SetFillColor(fillColor[rp]);
+    fKinematicsHist[rp][ppe]->SetMinimum(0.); 
+    fControlHistogramsList->Add(fKinematicsHist[rp][ppe]);
+   }
   }
- }
+ } // if(fFillKinematicsHist)
 
  //  b1) Book TH1D *fMultDistributionsHist[3]: // TBI add setters for all these values
- Int_t nBinsMult[3] = {3000,3000,3000}; // [RP,POI,reference multiplicity]
- Double_t minMult[3] = {0.,0.,0.}; // [RP,POI,reference multiplicity]
- Double_t maxMult[3] = {3000.,3000.,3000.}; // [RP,POI,reference multiplicity]
  TString nameMult[3] = {"Multiplicity (RP)","Multiplicity (POI)","Multiplicity (REF)"}; // [RP,POI,reference multiplicity]
  TString titleMult[3] = {"Reference particles (RP)","Particles of interest (POI)",""}; // [RP,POI,reference multiplicity]
  Int_t lineColorMult[3] = {kBlue,kRed,kGreen+2}; // [RP,POI,reference multiplicity]
  Int_t fillColorMult[3] = {kBlue-10,kRed-10,kGreen-10}; // [RP,POI,reference multiplicity]
  TString xAxisTitleMult[3] = {"Multiplicity (RP)","Multiplicity (POI)","Multiplicity (REF)"}; // [phi,pt,eta]
- for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
+ if(fFillMultDistributionsHist)
  {
-  fMultDistributionsHist[rprm] = new TH1D(nameMult[rprm].Data(),titleMult[rprm].Data(),nBinsMult[rprm],minMult[rprm],maxMult[rprm]);
-  fMultDistributionsHist[rprm]->GetXaxis()->SetTitle(xAxisTitleMult[rprm].Data());
-  fMultDistributionsHist[rprm]->SetLineColor(lineColorMult[rprm]);
-  fMultDistributionsHist[rprm]->SetFillColor(fillColorMult[rprm]);
-  if(fFillMultDistributionsHist){fControlHistogramsList->Add(fMultDistributionsHist[rprm]);}
- } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
+  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
+  {
+   fMultDistributionsHist[rprm] = new TH1D(nameMult[rprm].Data(),titleMult[rprm].Data(),fnBinsMult[rprm],fMinMult[rprm],fMaxMult[rprm]);
+   fMultDistributionsHist[rprm]->GetXaxis()->SetTitle(xAxisTitleMult[rprm].Data());
+   fMultDistributionsHist[rprm]->SetLineColor(lineColorMult[rprm]);
+   fMultDistributionsHist[rprm]->SetFillColor(fillColorMult[rprm]);
+   fControlHistogramsList->Add(fMultDistributionsHist[rprm]);
+  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
+ } // if(fFillMultDistributionsHist)
 
- //  b2) Book TH2D *fMultCorrelationsHist[3]: TBI too large objects to store in this way, perhaps,
- // ...
- fMultCorrelationsHist[0] = new TH2D("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",nBinsMult[0],minMult[0],maxMult[0],nBinsMult[1],minMult[1],maxMult[1]);
- fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
- fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
- if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[0]);}
-
- // ...
- fMultCorrelationsHist[1] = new TH2D("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",nBinsMult[0],minMult[0],maxMult[0],nBinsMult[2],minMult[2],maxMult[2]);
- fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
- fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
- if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[1]);}
-
- // ...
- fMultCorrelationsHist[2] = new TH2D("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",nBinsMult[1],minMult[1],maxMult[1],nBinsMult[2],minMult[2],maxMult[2]);
- fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
- fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
- if(fFillMultCorrelationsHist){fControlHistogramsList->Add(fMultCorrelationsHist[2]);}
+ //  b2) Book TH2I *fMultCorrelationsHist[3]: 
+ if(fFillMultCorrelationsHist)
+ {
+  // ...
+  fMultCorrelationsHist[0] = new TH2I("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[1],fMinMult[1],fMaxMult[1]);
+  fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
+  fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
+  fControlHistogramsList->Add(fMultCorrelationsHist[0]);
+  // ...
+  fMultCorrelationsHist[1] = new TH2I("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+  fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
+  fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
+  fControlHistogramsList->Add(fMultCorrelationsHist[1]);
+  // ...
+  fMultCorrelationsHist[2] = new TH2I("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",fnBinsMult[1],fMinMult[1],fMaxMult[1],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+  fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
+  fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
+  fControlHistogramsList->Add(fMultCorrelationsHist[2]);
+ } // if(fFillMultCorrelationsHist){
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHistograms()
 
@@ -2101,7 +2120,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
   if(fFillMultDistributionsHist){fMultDistributionsHist[rprm]->Fill(dMult[rprm]);}      
  } 
 
- // c) Fill TH2D *fMultCorrelationsHist[3]:  
+ // c) Fill TH2I *fMultCorrelationsHist[3]:  
  if(fFillMultCorrelationsHist)
  {
   fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI); // RP vs. POI
@@ -2119,8 +2138,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
 
  // a) Initialize TH1D *fKinematicsHist[2][3];
  // b) Initialize TH1D *fMultDistributionsHist[3]; 
- // c) Initialize TH2D *fMultCorrelationsHist[3].  
-
+ // c) Initialize TH2D *fMultCorrelationsHist[3];  
+ // d) Initialize default binning values for fKinematicsHist[2][3];
+ // e) Initialize default binning values for fMultCorrelationsHist[3].
+ 
  // a) Initialize TH1D *fKinematicsHist[2][3]:
  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
  {
@@ -2136,11 +2157,48 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
   fMultDistributionsHist[rprm] = NULL;      
  } 
 
- // c) Initialize TH2D *fMultCorrelationsHist[3]: 
+ // c) Initialize TH2I *fMultCorrelationsHist[3]: 
  for(Int_t r=0;r<3;r++) // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
  {
   fMultCorrelationsHist[r] = NULL; 
  }
+
+ // d) Initialize default binning values for fKinematicsHist[2][3]:
+ // nBins:
+ fnBins[0][0] = 360;  // [RP][phi]
+ fnBins[0][1] = 1000; // [RP][pt]
+ fnBins[0][2] = 1000; // [RP][eta]
+ fnBins[1][0] = 360;  // [POI][phi]
+ fnBins[1][1] = 1000; // [POI][pt]
+ fnBins[1][2] = 1000; // [POI][eta]
+ // Min:
+ fMin[0][0] = 0.;  // [RP][phi]
+ fMin[0][1] = 0.;  // [RP][pt]
+ fMin[0][2] = -1.; // [RP][eta]
+ fMin[1][0] = 0.;  // [POI][phi]
+ fMin[1][1] = 0.;  // [POI][pt]
+ fMin[1][2] = -1.; // [POI][eta]
+ // Max:
+ fMax[0][0] = TMath::TwoPi(); // [RP][phi]
+ fMax[0][1] = 10.;            // [RP][pt]
+ fMax[0][2] = 1.;             // [RP][eta]
+ fMax[1][0] = TMath::TwoPi(); // [POI][phi]
+ fMax[1][1] = 10.;            // [POI][pt]
+ fMax[1][2] = 1.;             // [POI][eta]
+
+ // e) Initialize default binning values for fMultCorrelationsHist[3]:
+ // nBins:
+ fnBinsMult[0] = 3000; // [RP]
+ fnBinsMult[1] = 3000; // [POI]
+ fnBinsMult[2] = 3000; // [REF]
+ // Min:
+ fMinMult[0] = 0.; // [RP]
+ fMinMult[1] = 0.; // [POI]
+ fMinMult[2] = 0.; // [REF]
+ // Max:
+ fMaxMult[0] = 3000.; // [RP]
+ fMaxMult[1] = 3000.; // [POI]
+ fMaxMult[2] = 3000.; // [REF]
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHistograms()
 
@@ -3028,12 +3086,12 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
   if(!fMultDistributionsHist[rprm] && fFillMultDistributionsHist){Fatal(sMethodName.Data(),"%s",nameMult[rprm].Data());} // TBI 
  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
 
- // f) Get pointers to TH2D *fMultCorrelationsHist[3]: TBI automatize the things here...
- fMultCorrelationsHist[0] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
+ // f) Get pointers to TH2I *fMultCorrelationsHist[3]: TBI automatize the things here...
+ fMultCorrelationsHist[0] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
  if(!fMultCorrelationsHist[0] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. POI)");} // TBI 
- fMultCorrelationsHist[1] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
+ fMultCorrelationsHist[1] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
  if(!fMultCorrelationsHist[1] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. REF)");} // TBI 
- fMultCorrelationsHist[2] = dynamic_cast<TH2D*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
+ fMultCorrelationsHist[2] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
  if(!fMultCorrelationsHist[2] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (POI vs. REF)");} // TBI 
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistograms()
@@ -3629,7 +3687,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
 {
  // Book all base objects. 
 
- fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",5,0,5);
+ fInternalFlagsPro = new TProfile("fInternalFlagsPro","Internal flags and settings",8,0,8);
  fInternalFlagsPro->SetLabelSize(0.05);
  fInternalFlagsPro->SetStats(kFALSE);
  fInternalFlagsPro->SetFillColor(kGray);
@@ -3639,6 +3697,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForBase()
  fInternalFlagsPro->GetXaxis()->SetBinLabel(3,"fMaxNoRPs"); fInternalFlagsPro->Fill(2.5,fMaxNoRPs); 
  fInternalFlagsPro->GetXaxis()->SetBinLabel(4,"fExactNoRPs"); fInternalFlagsPro->Fill(3.5,fExactNoRPs);  
  fInternalFlagsPro->GetXaxis()->SetBinLabel(5,"fPropagateError"); fInternalFlagsPro->Fill(4.5,fPropagateError);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(6,Form("fAnalysisTag = %s",fAnalysisTag.Data())); 
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(7,"fDumpThePoints"); fInternalFlagsPro->Fill(6.5,fDumpThePoints);  
+ fInternalFlagsPro->GetXaxis()->SetBinLabel(8,"fMaxNoEventsPerFile"); fInternalFlagsPro->Fill(7.5,fMaxNoEventsPerFile);  
 
  fHistList->Add(fInternalFlagsPro); 
 
@@ -4534,6 +4595,299 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForWeights()
 } // void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForWeights()
 
 //=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+{
+ // Set number of bins for histograms fKinematicsHist[2][3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
+ {
+  cout<<"Well, it would be better for you to use RP or POI here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")))
+ {
+  cout<<"phi, pt or eta, please!"<<endl;
+  Fatal(sMethodName.Data(),"!(TString(variable).EqualTo... variable = %s ",variable);
+ }
+
+ Int_t rp = 0; // [RP,POI]
+ if(TString(type).EqualTo("POI")){rp=1;} 
+
+ Int_t ppe = 0; // [phi,pt,eta]
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ fnBins[rp][ppe] = nBins;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+{
+ // Set min bin range for histograms fKinematicsHist[2][3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
+ {
+  cout<<"Well, it would be better for you to use RP or POI here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")))
+ {
+  cout<<"phi, pt or eta, please!"<<endl;
+  Fatal(sMethodName.Data(),"!(TString(variable).EqualTo... variable = %s ",variable);
+ }
+
+ Int_t rp = 0; // [RP,POI]
+ if(TString(type).EqualTo("POI")){rp=1;} 
+
+ Int_t ppe = 0; // [phi,pt,eta]
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ fMin[rp][ppe] = min;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)
+{
+ // Set max bin range for histograms fKinematicsHist[2][3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
+ {
+  cout<<"Well, it would be better for you to use RP or POI here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta")))
+ {
+  cout<<"phi, pt or eta, please!"<<endl;
+  Fatal(sMethodName.Data(),"!(TString(variable).EqualTo... variable = %s ",variable);
+ }
+
+ Int_t rp = 0; // [RP,POI]
+ if(TString(type).EqualTo("POI")){rp=1;} 
+
+ Int_t ppe = 0; // [phi,pt,eta]
+ if(TString(variable).EqualTo("pt")){ppe=1;} 
+ if(TString(variable).EqualTo("eta")){ppe=2;} 
+
+ fMax[rp][ppe] = max;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t min)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+{
+ // Set number of bins for histograms fMultDistributionsHist[3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
+ {
+  cout<<"Well, it would be better for you to use RP, POI or REF here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+
+ Int_t rpr = 0; // [RP,POI,REF]
+ if(TString(type).EqualTo("POI")){rpr=1;} 
+ else if(TString(type).EqualTo("REF")){rpr=2;} 
+
+ fnBinsMult[rpr] = nBinsMult;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)
+{
+ // Set min bin range for histograms fMultDistributionsHist[3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
+ {
+  cout<<"Well, it would be better for you to use RP, POI or REF here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+
+ Int_t rpr = 0; // [RP,POI,REF]
+ if(TString(type).EqualTo("POI")){rpr=1;} 
+ else if(TString(type).EqualTo("REF")){rpr=2;} 
+
+ fMinMult[rpr] = minMult;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type const Double_t minMult)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)
+{
+ // Set max bin range for histograms fMultDistributionsHist[3].
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)";
+ 
+ // Basic protection:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
+ {
+  cout<<"Well, it would be better for you to use RP, POI or REF here..."<<endl;
+  Fatal(sMethodName.Data(),"!(TString(type).EqualTo... type = %s ",type);
+ }
+
+ Int_t rpr = 0; // [RP,POI,REF]
+ if(TString(type).EqualTo("POI")){rpr=1;} 
+ else if(TString(type).EqualTo("REF")){rpr=2;} 
+
+ fMaxMult[rpr] = maxMult;
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t minMult)
+
+//=======================================================================================================================
+
+void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)
+{
+ // Dump the points into the external file. 
+ 
+ // Dumping format: 
+ // Event <eventNo> Multiplicity <multRP> 
+ // phi pt eta
+
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)";
+
+ // Basic protection:
+ if(!anEvent){Fatal(sMethodName.Data(),"if(!anEvent)");} 
+ if(!fMultDistributionsHist[0]){Fatal(sMethodName.Data(),"if(!fMultDistributionsHist[0])");} 
+ if(fMaxNoEventsPerFile<=0){Fatal(sMethodName.Data(),"if(fMaxNoEventsPerFile<=0)");} 
+
+ // Determine event number and multiplicity:
+ Int_t eventNo = (Int_t) fMultDistributionsHist[0]->GetEntries(); // TBI this is a little bit shaky...
+ Int_t multRP = (Int_t) anEvent->GetNumberOfRPs(); // TBI shall I promote this variable into data member? 
+
+ // Determine external file name:
+ Int_t fileCounter = (Int_t)((eventNo-1)/fMaxNoEventsPerFile);
+ TString filename = Form("%s_%d.dat",fAnalysisTag.Data(),fileCounter);
+
+ // Open external file and dump:
+ ofstream myfile;
+ myfile.open(filename.Data(),ios::app); 
+ myfile << Form("Event %d Multiplicity %d\n",eventNo,multRP);   
+ Int_t nTracks = (Int_t) anEvent->NumberOfTracks();
+ Double_t dPhi = 0., dPt = 0., dEta = 0.;
+ for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ {
+  AliFlowTrackSimple *pTrack = anEvent->GetTrack(t);
+  if(!pTrack){printf("\n AAAARGH: pTrack is NULL in MPC::DumpThePoints(AliFlowEventSimple *anEvent) !!!!"); continue;}
+  if(pTrack->InRPSelection()) 
+  {
+   dPhi = pTrack->Phi(); 
+   dPt = pTrack->Pt();
+   dEta = pTrack->Eta();
+   myfile<<Form("%f %f %f\n",dPhi,dPt,dEta);
+   //cout<<Form("%f %f %f",dPhi,dPt,dEta)<<endl;
+  }
+ } // for(Int_t t=0;t<nTracks;t++) // loop over all tracks
+ myfile<<"\n";
+ myfile.close();
+
+} // void AliFlowAnalysisWithMultiparticleCorrelations::DumpThePoints(AliFlowEventSimple *anEvent)
+
+//=======================================================================================================================
+
+TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+{
+ // Access from external ROOT file the desired histogram with weights. 
+
+ // a) Return value; 
+ // b) Method name; 
+ // c) Basic protection for arguments; 
+ // d) Check if the external ROOT file exists at specified path; 
+ // e) Access the external ROOT file and fetch the desired histogram with weights;
+ // f) Close the external ROOT file. 
+
+ // a) Return value:
+ TH1D *hist = NULL; 
+
+ // b) Method name: 
+ TString sMethodName = "Double_t AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)"; 
+
+ // c) Basic protection for arguments:
+ if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI"))){Fatal(sMethodName.Data(),"!(TString(type).EqualTo...");}
+ if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){Fatal(sMethodName.Data(),"!(TString(variable).EqualTo...");}
+
+ // d) Check if the external ROOT file exists at specified path:
+ if(gSystem->AccessPathName(filePath,kFileExists))
+ {
+  Fatal(sMethodName.Data(),"if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath);
+ }
+
+ // e) Access the external ROOT file and fetch the desired histogram with weights:
+ TFile *weightsFile = TFile::Open(filePath,"READ");
+ TList *weightsFileLOK = weightsFile->GetListOfKeys(); 
+ if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1) // TBI get rid of the 2nd condition at some point...
+ {
+  //printf("\n => if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1)\n\n"); 
+  Fatal(sMethodName.Data(),"if(!weightsFileLOK || weightsFileLOK->GetEntries() != 1)");
+ } 
+ // Access TDirectoryFile "weightsMPCanalysis":
+ TDirectoryFile *directoryFile = dynamic_cast<TDirectoryFile*>(weightsFile->Get("weightsMPCanalysis"));
+ if(!directoryFile)
+ {
+  //printf("\n => if(!directoryFile)\n\n");   
+  Fatal(sMethodName.Data(),"if(!directoryFile)");
+ } 
+ // Access the specified list:
+ TList *list = dynamic_cast<TList*>(directoryFile->Get(listName));
+ if(!list)
+ {
+  //printf("\n => if(!list)\n\n");   
+  Fatal(sMethodName.Data(),"if(!list)");
+ }
+ // Finally, access the desired histogram:
+ hist = dynamic_cast<TH1D*>(list->FindObject(Form("%s,%s",type,variable)));
+ if(!hist)
+ {
+  //printf("\n => if(!hist)\n\n");   
+  Warning(sMethodName.Data(),"if(!hist)");
+  return NULL;
+ } else { hist->SetDirectory(0); }
+
+ // f) Close the external ROOT file: 
+ weightsFile->Close(); delete weightsFile;
+
+ return hist;
+
+} // TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

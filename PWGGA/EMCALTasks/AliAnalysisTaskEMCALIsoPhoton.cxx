@@ -85,6 +85,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fPVtxZ(0),
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
+  fMCIsoDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
@@ -114,7 +115,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrackPtPhi(0),     
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
-  fTrackPtEtaCut(0)   
+  fTrackPtEtaCut(0),
+  fMaxCellEPhi(0)
 {
   // Default constructor.
   for(Int_t i = 0; i < 12;    i++)  fGeomMatrix[i] =  0;
@@ -164,6 +166,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fPVtxZ(0),            
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
+  fMCIsoDirPhotonPtEtaPhi(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
@@ -193,7 +196,8 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrackPtPhi(0),     
   fTrackPtPhiCut(0),   
   fTrackPtEta(0),     
-  fTrackPtEtaCut(0)   
+  fTrackPtEtaCut(0),   
+  fMaxCellEPhi(0)
 {
   // Constructor
 
@@ -237,9 +241,13 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrMultDist = new TH1F("fTrMultDist","track multiplicity;tracks/event;#events",200,0.5,200.5);
   fOutputList->Add(fTrMultDist);
 
-  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
+  fMCDirPhotonPtEtaPhi = new TH3F("hMCDirPhotonPtEtaPhi","photon (gq->#gammaq) p_{T}, #eta, #phi;GeV/c;#eta;#phi",101,-1.5,99.5,154,-0.77,0.77,130,1.38,3.20);
   fMCDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCDirPhotonPtEtaPhi);
+
+  fMCIsoDirPhotonPtEtaPhi = new TH3F("hMCIsoDirPhotonPtEtaPhi","photon (gq->#gammaq, isolated@MC) p_{T}, #eta, #phi;GeV/c;#eta;#phi",101,-1.5,99.5,154,-0.77,0.77,130,1.38,3.20);
+  fMCIsoDirPhotonPtEtaPhi->Sumw2();
+  fOutputList->Add(fMCIsoDirPhotonPtEtaPhi);
 
   fDecayPhotonPtMC = new TH1F("hDecayPhotonPtMC","decay photon p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",1000,0,100);
   fDecayPhotonPtMC->Sumw2();
@@ -285,12 +293,12 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCDirPhotonPtEtaPhiNoClus = new TH3F("hMCDirPhotonPhiEtaNoClus","p_{T}, #eta and  #phi of prompt photons with no reco clusters;p_{T};#eta;#phi",1000,0,100,154,-0.77,0.77,130,1.38,3.20);
   fOutputList->Add(fMCDirPhotonPtEtaPhiNoClus);
 
-  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=101;
+  Int_t nEt=1000, nM02=400, nCeIso=1000, nTrIso=1000,  nAllIso=1000,  nCeIsoNoUE=1000,  nAllIsoNoUE=1000, nTrClDphi=200, nTrClDeta=100, nClEta=140, nClPhi=128, nTime=60, nMult=100, nPhoMcPt=100;
   Int_t bins[] = {nEt, nM02, nCeIso, nTrIso, nAllIso, nCeIsoNoUE, nAllIsoNoUE, nTrClDphi, nTrClDeta,nClEta,nClPhi,nTime,nMult,nPhoMcPt};
   fNDimensions = sizeof(bins)/sizeof(Int_t);
   const Int_t ndims =   fNDimensions;
-  Double_t xmin[] = { 0.,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,-1.5};
-  Double_t xmax[] = { 100., 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,99.5};
+  Double_t xmin[] = { -0.5,   0.,  -10.,   -10., -10., -10., -10., -0.1,-0.05, -0.7, 1.4,-0.15e-06,-0.5,-0.5};
+  Double_t xmax[] = { 99.5, 4., 190., 190., 190.,  190., 190., 0.1, 0.05, 0.7, 3.192, 0.15e-06,99.5,99.5};
   if(fPeriod.Contains("11h")){
     xmax[12]=3999.5;
   }
@@ -344,6 +352,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fTrackPtEtaCut = new TH2F("fTrackPtEtaCut",";p_{T} [GeV/c];#eta",100,-0.25,49.75,18,-0.9,0.9);     
   fTrackPtEtaCut->Sumw2();
   fQAList->Add(fTrackPtEtaCut);
+
+
+  fMaxCellEPhi = new TH2F("fMaxCellEPhi","Most energetic cell in event; GeV;#phi",100,-0.25,49.75,63,0,6.3); 
+  fMaxCellEPhi->Sumw2();
+  fQAList->Add(fMaxCellEPhi);
 
   PostData(1, fOutputList);
   PostData(2, fQAList);
@@ -631,7 +644,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     }
     const Int_t ndims =   fNDimensions;
     Double_t outputValues[ndims];
-    ptmc = GetClusSource(c);
+    if(mcptsum<2)
+      ptmc = GetClusSource(c);
+    else
+      ptmc = -0.1;
     outputValues[0] = Et;
     outputValues[1] = c->GetM02();
     outputValues[2] = ceiso/*cecore*/-ceisoue;
@@ -892,6 +908,9 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     Int_t pdgMom = mcmom->GetPdgCode();
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+      Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), 0.4);
+      if(ptsum<2)
+	fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fNClusForDirPho==0)
 	fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug){
@@ -909,15 +928,15 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
 Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
 {
   if(!c)
-    return -1;
+    return -0.1;
   if(!fStack)
-    return -1;
+    return -0.1;
   Int_t nmcp = fStack->GetNtrack();
   Int_t clabel = c->GetLabel();
   if(fDebug && fMcIdFamily.Contains(Form("%d",clabel)))
     printf("\n\t ==== Label %d is a descendent of the prompt photon ====\n\n",clabel);
   if(!fMcIdFamily.Contains(Form("%d",clabel)))
-    return -1;
+    return -0.1;
   fNClusForDirPho++;
   TString partonposstr = (TSubString)fMcIdFamily.operator()(0,1);
   Int_t partonpos = partonposstr.Atoi();
@@ -931,16 +950,16 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   Double_t Et = c->E()*TMath::Sin(clsVec.Theta());
   TParticle *mcp = static_cast<TParticle*>(fStack->Particle(partonpos));
   if(!mcp)
-    return -1;
+    return -0.1;
   if(fDebug){
     printf("\tclus mc truth eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, stackpos=%d\n",mcp->Eta(),mcp->Phi(),mcp->Energy(),mcp->GetPdgCode(),clabel);
   }
   Int_t lab1 =  mcp->GetFirstDaughter();
   if(lab1<0 || lab1>nmcp)
-    return -1;
+    return -0.1;
   TParticle *mcd = static_cast<TParticle*>(fStack->Particle(lab1));
   if(!mcd)
-    return -1;
+    return -0.1;
   if(fDebug)
     printf("\t\tmom mc truth eta=%1.1f,phi=%1.1f,E=%1.1f, pdgcode=%d, stackpos=%d\n",mcd->Eta(),mcd->Phi(),mcd->Energy(),mcd->GetPdgCode(),lab1);
   if(mcd->GetPdgCode()==22){
@@ -949,7 +968,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   }
   else{
     printf("Warning: daughter of photon parton is not a photon\n");
-    return -1;
+    return -0.1;
   }
   return fDirPhoPt;
 }
@@ -1024,18 +1043,15 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
   Int_t nTracks = fStack->GetNtrack();
   Float_t ptsum = 0;
   TString addpartlabels = "";
-  for(Int_t iTrack=0;iTrack<nTracks;iTrack++){
+  for(Int_t iTrack=8;iTrack<nTracks;iTrack++){
     TParticle *mcp = static_cast<TParticle*>(fStack->Particle(iTrack));  
     if(!mcp)
       continue;  
-    Int_t firstd = mcp->GetFirstDaughter();
-    Int_t lastd = mcp->GetLastDaughter();
-    if((iTrack==6 || iTrack==7) && mcp->GetPdgCode()==22){
-     for(Int_t id=firstd;id<=lastd;id++)
-      addpartlabels += Form("%d,",id);
-     continue;
-    }
-   if(mcp->Rho()>2.5)
+    Int_t status = mcp->GetStatusCode();
+    if(status!=1)
+      continue;
+    Float_t mcvr = TMath::Sqrt(mcp->Vx()*mcp->Vx()+ mcp->Vy()* mcp->Vy() + mcp->Vz()*mcp->Vz());
+   if(mcvr>1)
       continue;
     else {
       if(fDebug)
@@ -1045,19 +1061,14 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
     Float_t deta = mcp->Eta() - etaclus;
     if(fDebug)
       printf("      >>>> mcphi = %1.1f, mceta = %1.1f\n>>>> dphi = %1.1f, deta = %1.1f\n", mcp->Phi(), mcp->Eta(),dphi,deta);
-    if(deta>10)
+    if(deta>R || dphi>R)
       continue;
     Float_t dR = TMath::Sqrt(dphi*dphi +  deta*deta);
     if(dR>R)
       continue;
-    if(addpartlabels.Contains(Form("%d",iTrack))){
-      if(fDebug)
-	printf("      >>>> list of particles included (and their daughters) %s\n",addpartlabels.Data());
-      continue;
-    }
     addpartlabels += Form("%d,",iTrack);
-    for(Int_t id=firstd;id<=lastd;id++)
-      addpartlabels += Form("%d,",id);
+    if(mcp->Pt()<0.2)
+      continue;
     ptsum += mcp->Pt();
   }
   return ptsum;
@@ -1091,8 +1102,11 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     }
   }
   for(int ic=0;ic<nclus;ic++){
-    AliVCluster *c = (AliVCluster*)fESDClusters->At(ic);
+    AliVCluster *c = dynamic_cast<AliVCluster*>(fESDClusters->At(ic));
+    //AliESDCaloCluster *c = (AliESDCaloCluster*)fESDClusters->At(ic);
     if(!c)
+      continue;
+    if(!c->IsEMCAL())
       continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
@@ -1142,13 +1156,24 @@ void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
     cells = fAODCells;
   if(!cells)
     return;
+  Double_t maxe = 0;
+  Double_t maxphi = -10;
   Int_t ncells = cells->GetNumberOfCells();
+  Double_t eta,phi;
   for (Int_t i=0; i<ncells; i++) {
     Short_t absid = TMath::Abs(cells->GetCellNumber(i));
     Double_t e = cells->GetCellAmplitude(absid);
     if(e>0.05)
       fNCells50++;
+    else 
+      continue;
+    fGeom->EtaPhiFromIndex(absid,eta,phi);
+    if(maxe<e){
+      maxe = e;
+      maxphi = phi;
+    }
   }
+  fMaxCellEPhi->Fill(maxe,maxphi);
 
 }
 //________________________________________________________________________

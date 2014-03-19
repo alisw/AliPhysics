@@ -139,6 +139,10 @@ fUseAODMerging(kFALSE)
 
   SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
   
+  SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Ideal\"");
+  
+  SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Residual\"");
+  
   UseOCDBSnapshots(fUseOCDBSnapshots);
   
   SetGenerator(generator);
@@ -770,6 +774,8 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
     AliError("Please fix the number of input events using MakeNofEventsFixed()");
     return 0;
   }
+  
+  const std::vector<int>& runs = RunList();
 
   std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
 
@@ -777,7 +783,7 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
   
   out << "#!/bin/bash" << std::endl;
 //  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
-  out << "root.exe -b -q simrun.C --run 0 --event " << fFixedNofEvents << std::endl;
+  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
  
   gSystem->Exec("chmod +x simrun.sh");
   

@@ -180,8 +180,8 @@ mergeByComponent()
     echo "processing following files from ${fileList}_${det}:"
     cat ${fileList}_${det}
 
-    echo aliroot -b -q "mergeByComponent.C(\"${det}\", \"${fileList}_${det}\")"
-    aliroot -b -q "mergeByComponent.C(\"${det}\", \"${fileList}_${det}\")" 2>&1 | tee -a merge_${det}.log
+    echo aliroot -b -q "mergeByComponent.C(\"${det}\",\"${fileList}_${det}\")"
+    aliroot -b -q "mergeByComponent.C(\"${det}\",\"${fileList}_${det}\")" 2>&1 | tee -a merge_${det}.log
     if validateMerging ${det}; then
       echo "### merge OK: mv CalibObjects.root ../CalibObjects_${det}.root"
       mv -f CalibObjects.root ../CalibObjects_${det}.root
@@ -291,8 +291,8 @@ if [[ $isLocal -eq 0 ]]; then
     echo "alien_find done"
     echo
   else 
-    echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
-    aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\", \"$path\", \"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+    echo aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\",\"$path\",\"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
+    aliroot -b -q "mergeByComponent.C(\"MAKEALIENLIST\",\"$alienFileList\",\"$path\",\"AliESDfriends_v1.root\")" 2>&1 | tee -a copy.log
     echo "MAKEALIENLIST done"
     echo
   fi
@@ -372,8 +372,8 @@ else
   echo "***********************"
   finalCalibObjectsList="finalObjects.list"
   ls -1 CalibObjects_*.root > $finalCalibObjectsList
-  echo aliroot -b -q "mergeByComponent.C(\"ALL\", \"$finalCalibObjectsList\")" | tee -a merge.log
-  aliroot -b -q "mergeByComponent.C(\"ALL\", \"$finalCalibObjectsList\")" 2>&1 | tee -a merge.log
+  echo aliroot -b -q "mergeByComponent.C(\"ALL\",\"$finalCalibObjectsList\")" | tee -a merge.log
+  aliroot -b -q "mergeByComponent.C(\"ALL\",\"$finalCalibObjectsList\")" 2>&1 | tee -a merge.log
   mv -f syswatch.log syswatch_merge_ALL.log
 fi
 
@@ -393,8 +393,8 @@ rm -f $localFileList
 echo "***********************" 2>&1 | tee -a ocdb.log
 echo making ${det} OCDB 2>&1 | tee -a ocdb.log
 echo "***********************" 2>&1 | tee -a ocdb.log
-echo aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
-aliroot -b -q "makeOCDB.C($run, \"$ocdb\", \"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
+echo aliroot -b -q "makeOCDB.C($run,\"$ocdb\",\"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
+aliroot -b -q "makeOCDB.C($run,\"$ocdb\",\"$defaultOCDB\")" 2>&1 | tee -a ocdb.log
 mv syswatch.log syswatch_makeOCDB.log
 
 # summary

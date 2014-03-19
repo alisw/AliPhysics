@@ -30,11 +30,11 @@ class AliPIDResponse;
 
 class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
  public:
-   
-  AliAnalysisTaskV0ForRAA(const char *name="AliAnalysisTaskV0ForRAA");
+
+  AliAnalysisTaskV0ForRAA();   
+  AliAnalysisTaskV0ForRAA(const char *name);
   virtual ~AliAnalysisTaskV0ForRAA();
   
-
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
@@ -42,22 +42,21 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
 
 
   //-- MC truth/reco --//
-  void SetMCMode(Bool_t mcmode)                               {fMCMode = mcmode; if(fMCMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC reco");}
-  void SetMCTruthMode(Bool_t mcmode)                          {fMCTruthMode = mcmode; if(fMCTruthMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC truth");}
-  void SelectInjected(Bool_t injected)                        {fSelectInjected = injected; if(fSelectInjected) Printf("AliAnalysisTaskV0ForRAA::only injected MC particles");}
-  void SelectMBMotherMC(Bool_t mbmother)                      {fSelectMBMotherMC = mbmother;if(mbmother)  Printf("AliAnalysisTaskV0ForRAA::only MB mother MC for sec lambdas selected");}
+  void SetMCMode(Bool_t mcmode)                               {fMCMode            = mcmode;  if(fMCMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC reco");}
+  void SetMCTruthMode(Bool_t mcmode)                          {fMCTruthMode       = mcmode;  if(fMCTruthMode) Printf("AliAnalysisTaskV0ForRAA::running mc mode: histos of MC truth");}
+  void SelectInjected(Bool_t injected)                        {fSelectInjected    = injected;if(fSelectInjected) Printf("AliAnalysisTaskV0ForRAA::only injected MC particles");}
+  void SelectMBMotherMC(Bool_t mbmother)                      {fSelectMBMotherMC  = mbmother;if(mbmother)  Printf("AliAnalysisTaskV0ForRAA::only MB mother MC for sec lambdas selected");}
   void SelectOnlyPosLabelMC(Bool_t poslabel)                  {fCheckNegLabelReco = poslabel;if(poslabel) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth and reco with pos label reco");}
-
-  void SelectOnlyFoundRecoV0MC(Bool_t found)                  {fOnlyFoundRecoV0 = found;if(found) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth with found reco V0");}
+  void SelectOnlyFoundRecoV0MC(Bool_t found)                  {fOnlyFoundRecoV0   = found;   if(found) Printf("AliAnalysisTaskV0ForRAA::Select only MC truth with found reco V0");}
 
 
   //-- Centrality  --//
   // use centrality - if yes, which one
-  void  SetUseCentrality(Int_t cent)                          {fUseCentrality = cent; Printf("AliAnalysisTaskV0ForRAA::centrality selected for detector %i (0=off, 1=VZERO, 2=SPD)",cent);}
+  void  SetUseCentrality(Int_t cent)                          {fUseCentrality      = cent; Printf("AliAnalysisTaskV0ForRAA::centrality selected for detector %i (0=off, 1=VZERO, 2=SPD)",cent);}
   // set range
   void  SetUseCentralityRange(Int_t range)                    {fUseCentralityRange = range;if(fUseCentrality) Printf("AliAnalysisTaskV0::centrality range %i",fUseCentralityRange);}
   // centrality bin to be used
-  void  SetUseCentralityBin(Int_t bin)                        {fUseCentralityBin = bin; if(fUseCentrality) Printf("AliAnalysisTaskV0ForRAA::centrality selected for bin %i",fUseCentralityBin); }
+  void  SetUseCentralityBin(Int_t bin)                        {fUseCentralityBin   = bin; if(fUseCentrality) Printf("AliAnalysisTaskV0ForRAA::centrality selected for bin %i",fUseCentralityBin); }
 
 
   //-- event cuts --//
@@ -68,9 +67,9 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SelectWithNoSDD(Bool_t sdd)                            {fSelNoSDD =sdd; if(sdd) Printf("AliAnalysisTaskV0ForRAA:: only events with NO SDD selected!");}
 
   //-- track cuts --//
-  void SetESDTrackCuts(AliESDtrackCuts *esdcuts =NULL)        {fESDTrackCuts = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set");}
-  void SetESDTrackCutsCharged(AliESDtrackCuts *esdcuts=NULL)  {fESDTrackCutsCharged = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles set");}
-  void SetESDTrackCutsLowPt(AliESDtrackCuts *esdcuts=NULL)    {fESDTrackCutsLowPt = esdcuts;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set");}
+  void SetESDTrackCuts(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)       {fNcr=ncr;fChi2cls=chi2,fTPCrefit=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for V0s set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCutsCharged(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE) {fNcrCh=ncr;fChi2clsCh=chi2,fTPCrefitCh=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for charged particles setncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
+  void SetESDTrackCutsLowPt(Int_t ncr, Double_t chi2=4, Bool_t tpcrefit=kTRUE)  {fNcrLpt=ncr;fChi2clsLpt=chi2,fTPCrefitLpt=tpcrefit;Printf("AliAnalysisTaskV0ForRAA::AliESDtrackCuts for low pt particles set ncr %i, chi2 %1.2f, TPC refit %i",ncr,chi2,tpcrefit);}
   void SetUseOnthefly(Bool_t useonthefly)                     {fOntheFly = useonthefly; if(!fOntheFly) Printf("AliAnalysisTaskV0ForRAA::offline V0s");}
   void SetUsePID(Bool_t usepid,Double_t nsigma=100.0,Double_t pcut=100.0,Bool_t pidpion=kFALSE,Double_t nsigma2=100.0) {fUsePID = usepid;fNSigma = nsigma;fPPIDcut = pcut; fUsePIDPion = pidpion;fNSigma2 = nsigma2; if(fUsePID) Printf("AliAnalysisTaskV0ForRAA::proton PID! of %4.2f for p: %4.2f, also pion? %i nsig2=%4.2f",fNSigma,pcut,pidpion,fNSigma2);}
   void SetCutMoreNclsThanRows(Bool_t cut)                     {fMoreNclsThanRows=cut; if(cut) Printf("AliAnalysisTaskV0ForRAA::cut on more ncls than crossed rows");}  
@@ -90,17 +89,17 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   if(shiftVal) { fShift=kTRUE; fDeltaInvP = shiftVal; Printf("AliAnalysisTaskV0::WARNING!!!!!!!!!!!!!! pt shift introduced!");}
   }
   */
-  void SetDCAV0ToVertexK0(Double_t dcaTovertex)               {fDCAToVertexK0 = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex K0s %2.3f",dcaTovertex);}
-  void SetDCAV0ToVertexL(Double_t dcaTovertex)                {fDCAToVertexL = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex L/AL %2.3f",dcaTovertex);}
-  void SetDCADaughtersL(Double_t dcaDaughters)                {fDCADaughtersL = dcaDaughters; Printf("AliAnalysisTaskV0:ForRAA:dca daughters L %2.3f",dcaDaughters);}
+  void SetDCAV0ToVertexK0(Double_t dcaTovertex)               {fDCAToVertexK0  = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex K0s %2.3f",dcaTovertex);}
+  void SetDCAV0ToVertexL(Double_t dcaTovertex)                {fDCAToVertexL   = dcaTovertex; Printf("AliAnalysisTaskV0ForRAA::dca to vertex L/AL %2.3f",dcaTovertex);}
+  void SetDCADaughtersL(Double_t dcaDaughters)                {fDCADaughtersL  = dcaDaughters; Printf("AliAnalysisTaskV0:ForRAA:dca daughters L %2.3f",dcaDaughters);}
   void SetDCADaughtersAL(Double_t dcaDaughters)               {fDCADaughtersAL = dcaDaughters; Printf("AliAnalysisTaskV0ForRAA::dca daughters AL %2.3f",dcaDaughters);}
   void SetDCADaughtersK0(Double_t dcaDaughters)               {fDCADaughtersK0 = dcaDaughters; Printf("AliAnalysisTaskV0ForRAA::dca daughters K0s %2.3f",dcaDaughters);}
   void SetDCADaughtersLargeToVertex(Double_t dcaDaughtersVtx) {fDCADaughtersToVtxLarge = dcaDaughtersVtx; Printf("AliAnalysisTaskV0ForRAA::dca daughters to vertex large %2.3f",dcaDaughtersVtx);}
   void SetDCADaughtersSmallToVertex(Double_t dcaDaughtersVtx) {fDCADaughtersToVtxSmall = dcaDaughtersVtx; Printf("AliAnalysisTaskV0ForRAA::dca daughters to vertex small %2.3f",dcaDaughtersVtx);}
-  void SetDecayRadiusXYMinMax(Double_t decMin,Double_t decMax){fDecayRadXYMin = decMin;fDecayRadXYMax = decMax; Printf("AliAnalysisTaskV0ForRAA::min xy decay radius %2.3f max %2.3f",decMin,decMax);}
-  void SetCosOfPointingAngleL(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngL=pointAng;fCPAPtCutL = ptMaxCut;Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleL %1.5f and pt max %2.2f",pointAng,ptMaxCut);} 
-  void SetCosOfPointingAngleK(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngK=pointAng;fCPAPtCutK0 = ptMaxCut; Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleK  %1.5f and pt max %2.2f",pointAng,ptMaxCut);}
-  void SetOpeningAngleCut(Double_t opang, Double_t maxpt)     {fOpengAngleDaughters=opang; fOpAngPtCut=maxpt,Printf("AliAnalysisTaskV0::cut on opening angle %1.3f up to pt= %2.2f",opang,maxpt);}
+  void SetDecayRadiusXYMinMax(Double_t decMin,Double_t decMax){fDecayRadXYMin  = decMin;fDecayRadXYMax = decMax; Printf("AliAnalysisTaskV0ForRAA::min xy decay radius %2.3f max %2.3f",decMin,decMax);}
+  void SetCosOfPointingAngleL(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngL = pointAng;fCPAPtCutL = ptMaxCut;Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleL %1.5f and pt max %2.2f",pointAng,ptMaxCut);} 
+  void SetCosOfPointingAngleK(Double_t pointAng,Double_t ptMaxCut=100.0) {fCosPointAngK = pointAng;fCPAPtCutK0 = ptMaxCut; Printf("AliAnalysisTaskV0ForRAA::SetCosOfPointingAngleK  %1.5f and pt max %2.2f",pointAng,ptMaxCut);}
+  void SetOpeningAngleCut(Double_t opang, Double_t maxpt)     {fOpengAngleDaughters=opang; fOpAngPtCut = maxpt,Printf("AliAnalysisTaskV0::cut on opening angle %1.3f up to pt= %2.2f",opang,maxpt);}
 
   void SetMaxDecayLength(Double_t decLength)                  {fDecayLengthMax = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMaxDecayLength %2.3f",decLength);}
   void SetMinDecayLength(Double_t decLength)                  {fDecayLengthMin = decLength; Printf("AliAnalysisTaskV0ForRAA::SetMinDecayLength %2.3f",decLength);}
@@ -108,25 +107,25 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   void SetDCAYK0(Double_t dcaYK)                              {fDCAYK = dcaYK; Printf("AliAnalysisTaskV0ForRAA::SetDCAYK0 %2.3f",dcaYK);}
   void SetDCAXLambda(Double_t dcaXL)                          {fDCAXL = dcaXL; Printf("AliAnalysisTaskV0ForRAA::SetDCAXLambda %2.3f",dcaXL);}
   void SetDCAYLambda(Double_t dcaYL)                          {fDCAXL = dcaYL; Printf("AliAnalysisTaskV0ForRAA::SetDCAYLambda %2.3f",dcaYL);}
-  void SetDCAZ(Double_t dcaZ)                                 {fDCAZ = dcaZ; Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
+  void SetDCAZ(Double_t dcaZ)                                 {fDCAZ  = dcaZ;  Printf("AliAnalysisTaskV0ForRAA::SetDCAZ %2.3f",dcaZ);}
   void SetChi2CutKf(Bool_t chi2){ fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %i",chi2);}
   //Double_t chi2)                            {fChiCutKf = chi2; Printf("AliAnalysisTaskV0ForRAA::SetChi2CutKf %3.2f",chi2);}
-  void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut=alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
-  void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la,Double_t slope=0.2,Double_t qtLinear=0.0){fQtCutPt = ptmax;fQtCutPtLow=ptmin, fArmQtSlope=slope,fArmCutK0=k0s;fArmCutL=la;fQtCut = qtLinear;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. slope: %1.2f.  Is K0s? %i La? %i, qt linear: %3.2f",ptmin,ptmax,slope,k0s,la,qtLinear);}
-  void SetMinMassDiffLK0s(Double_t diffK,Double_t diffL)     {fExcludeLambdaFromK0s = diffK;fExcludeK0sFromLambda = diffL; Printf("AliAnalysisTaskV0ForRAA::SetMaxMassDifferenceL for K0s %1.3f  K0s for L %1.3f",diffK,diffL);}
+  void SetArmenterosCutAlpha(Double_t alfaMin)                {fAlfaCut = alfaMin;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut a=%1.3f",alfaMin);}
+  void SetArmenterosCutQt(Double_t ptmin,Double_t ptmax,Bool_t k0s,Bool_t la,Double_t slope=0.2,Double_t qtLinear=0.0){fQtCutPt = ptmax;fQtCutPtLow = ptmin, fArmQtSlope = slope,fArmCutK0 = k0s;fArmCutL = la;fQtCut = qtLinear;Printf("AliAnalysisTaskV0ForRAA::SetArmenterosCut ptmin = %3.2f ptmax = %3.2f. slope: %1.2f.  Is K0s? %i La? %i, qt linear: %3.2f",ptmin,ptmax,slope,k0s,la,qtLinear);}
+  void SetMinMassDiffLK0s(Double_t diffK,Double_t diffL)      {fExcludeLambdaFromK0s = diffK;fExcludeK0sFromLambda = diffL; Printf("AliAnalysisTaskV0ForRAA::SetMaxMassDifferenceL for K0s %1.3f  K0s for L %1.3f",diffK,diffL);}
 
-  void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0=ptK0; fCtauPtCutL=ptL;
+  void SetCtauCut(Double_t ctK0s, Double_t ctL,Double_t ptK0=100.0,Double_t ptL=100.0) {fCtauK0s = ctK0s*2.6842; fCtauL = ctL*7.89;fCtauPtCutK0 = ptK0; fCtauPtCutL = ptL;
     Printf("AliAnalysisTaskV0ForRAA::SetCtauCut ctK=%2.2f, ctL = %2.2f for ptK= %5.2f ptL=%5.2f",ctK0s,ctL,ptK0,ptL);}
-  void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters =doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
+  void SetDoEtaOfMCDaughtersCut(Bool_t doCut,Double_t eta=5.0){fEtaCutMCDaughters = doCut; fEtaCutMCDaughtersVal=eta; Printf("AliAnalysisTaskV0ForRAA::eta cut on V0 (MC truth ? %i) daughters %1.3f !",doCut,eta);}
   //  void SetEtaSignCut(Double_t etasign)                        {fEtaSignCut = etasign;Printf("AliAnalysisTaskV0ForRAA::eta cut sign on  daughters %2.2f !",etasign);}
   void SetLowHighMassCut(Double_t lowK=0.25,Double_t highK=0.75,Double_t lowL=1.05,Double_t highL=1.25){fK0sLowMassCut = lowK; fK0sHighMassCut = highK; fLLowMassCut = lowL; fLHighMassCut = highL; Printf("AliAnalysisTaskV0ForRAA::SetLowHighMassCut K0s: low = %1.3f  high = %1.3f  Lambda: low = %1.3f  high = %1.3f",lowK,highK,lowL,highL);}
   void SetMinMaxNCLSITS(Int_t minP,Int_t maxP,Int_t minN,Int_t maxN,Bool_t switchCase=kFALSE,Double_t radmin=0.0000,Double_t radmax=10000.0){fMinNCLSITSPos = minP; fMaxNCLSITSPos = maxP;fMinNCLSITSNeg = minN; fMaxNCLSITSNeg = maxN;fSwitchCaseITSCls = switchCase;fDecRadCutITSMin=radmin;fDecRadCutITSMax=radmax;Printf("AliAnalysisTaskV0ForRAA::SetMinMaxNCLSITS for V0 daughters minPos %i, maxPos %i, minNeg %i, maxNeg %i switch case %i for 2D decay rad. min: %3.2f  max: %3.2f",minP,maxP,minN,maxN,switchCase,radmin,radmax);}
   
   void SetTPCTrackCutsMI(Bool_t tlength=kFALSE, Bool_t crows=kFALSE, Bool_t ncls=kFALSE,Double_t lf1=1.0,Double_t lf2=0.85){fCutMITrackLength = tlength; fCutMICrossedR=crows;  fCutMITPCncls=ncls; fCutMITrackLengthLengthF=lf1;fCutMICrossedRLengthF=lf2;Printf("AliAnalysisTaskV0ForRAA::SetTPCTrackCutsMI track length %i  crossed rows %i  ncls %i factor length %1.2f factor ncr %1.2f",fCutMITrackLength, fCutMICrossedR,fCutMITPCncls,lf1,lf2);}
 
-  void SetFillDetHistoAL(Bool_t fillAL=kFALSE){fSetFillDetAL = fillAL; if(fillAL) Printf("AliAnalysisTaskV0ForRAA::SetFillDetHistoAL fill detetctor histos with AL instead L");}
-  void SetFillPt(Bool_t fillpt =kFALSE) {fSetPtDepHist = fillpt;if(fillpt) Printf("AliAnalysisTaskV0ForRAA::SetFillPt fill pt instead of mass");}
-
+  void SetFillDetHistoAL(Bool_t fillAL = kFALSE)              {fSetFillDetAL = fillAL; if(fillAL) Printf("AliAnalysisTaskV0ForRAA::SetFillDetHistoAL fill detetctor histos with AL instead L");}
+  void SetFillPt(Bool_t fillpt = kFALSE)                      {fSetPtDepHist = fillpt; if(fillpt) Printf("AliAnalysisTaskV0ForRAA::SetFillPt fill pt instead of mass");}
+  void SetMinDistTPCInner(Double_t dist = 1000000.0)          {fDistanceTPCInner = dist; Printf("AliAnalysisTaskV0ForRAA::SetMinDistTPCInner set dist min to %2.2f",dist); }
 
  private:
    
@@ -375,6 +374,17 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fVertexZCut;               // z vertex cut value
   Bool_t    fVtxStatus;                // vertex cut on/off
 
+  //esdtrackcuts
+  Int_t     fNcr;                      // esd track cuts: number of crossed rows TPC for V0 daughters
+  Double_t  fChi2cls;                  // esd track cuts: chi2 per cluster TPC for V0 daughters
+  Bool_t    fTPCrefit;                 // esd track cuts: tpc refit  for V0 daughters
+  Int_t     fNcrCh;                    // esd track cuts: number of crossed rows TPC for charged
+  Double_t  fChi2clsCh;                // esd track cuts: chi2 per cluster TPC for charged
+  Bool_t    fTPCrefitCh;               // esd track cuts: tpc refit for charged
+  Int_t     fNcrLpt;                   // esd track cuts: number of crossed rows TPC for low pt
+  Double_t  fChi2clsLpt;               // esd track cuts: chi2 per cluster TPC for low pt
+  Bool_t    fTPCrefitLpt;              // esd track cuts: tpc refit for low pt
+
   //PID
   Bool_t    fUsePID;                   // use proton pid yes/no
   Bool_t    fUsePIDPion;               // use pion pid yes/no
@@ -388,6 +398,7 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   Double_t  fRatioFoundOverFindable;   // cut on found over findable clusters TPC
   Double_t  fRatioMaxCRowsOverFindable;// cut on crossed rows over finable max
   Double_t  fChi2PerClusterITS;        // cut on chi2 per ITS cluster
+  Double_t  fDistanceTPCInner;         // cut on distance of daughters at TPC entrance
   Int_t     fMinNCLSITSPos;            // min ncls ITS of pos daugter cut
   Int_t     fMinNCLSITSNeg;            // min ncls ITS of neg daugter cut
   Int_t     fMaxNCLSITSPos;            // max ncls ITS of pos daugter cut
@@ -481,6 +492,6 @@ class AliAnalysisTaskV0ForRAA : public AliAnalysisTaskSE {
   AliAnalysisTaskV0ForRAA(const AliAnalysisTaskV0ForRAA&);
   AliAnalysisTaskV0ForRAA&operator=(const AliAnalysisTaskV0ForRAA&);
    
-  ClassDef(AliAnalysisTaskV0ForRAA, 0); 
+  ClassDef(AliAnalysisTaskV0ForRAA,1); 
 };
 #endif

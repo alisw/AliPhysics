@@ -5,7 +5,8 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   const Bool_t recalibClus    = kFALSE,  //recalibrate cluster energy
   const Bool_t recalcClusPos  = kFALSE,  //recalculate cluster position
   const Bool_t nonLinearCorr  = kFALSE,  //apply non-linearity
-  const Bool_t remExotic      = kFALSE,  //remove exotic cells
+  const Bool_t remExoticCell  = kFALSE,  //remove exotic cells
+  const Bool_t remExoticClus  = kTRUE,   //remove exotic clusters
   const Bool_t fidRegion      = kFALSE,  //apply fiducial cuts
   const Bool_t calibEnergy    = kFALSE,  //calibrate energy
   const Bool_t calibTime      = kFALSE,  //calibrate timing
@@ -50,6 +51,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   if (remBC) {
     EMCALSupply->SwitchOnClusterBadChannelCheck();
     EMCALSupply->SwitchOnBadCellRemove();
+    EMCALSupply->SwitchOnUpdateCell();
   } else {
     EMCALSupply->SwitchOffClusterBadChannelCheck();
     EMCALSupply->SwitchOffBadCellRemove();
@@ -81,11 +83,15 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
     EMCALSupply->SwitchOffNonLinearityCorrection();
   }
   
-  if (remExotic) {
+  if (remExoticCell) {
     EMCALSupply->SwitchOnExoticCellRemove();
-    EMCALSupply->SwitchOnClusterExoticChannelCheck();
   } else {
     EMCALSupply->SwitchOffExoticCellRemove();
+  }
+
+  if (remExoticClus) {
+    EMCALSupply->SwitchOnClusterExoticChannelCheck();
+  } else {
     EMCALSupply->SwitchOffClusterExoticChannelCheck();
   }
   
@@ -94,13 +100,17 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   else
     EMCALSupply->SwitchOffCellFiducialRegion();
 
-  if (calibTime)
+  if (calibTime) {
     EMCALSupply->SwitchOnCalibrateTime();
+    EMCALSupply->SwitchOnUpdateCell();
+  }
   else
     EMCALSupply->SwitchOffCalibrateTime();
 
-  if (calibEnergy)
+  if (calibEnergy) {
     EMCALSupply->SwitchOnCalibrateEnergy();
+    EMCALSupply->SwitchOnUpdateCell();
+  }
   else
     EMCALSupply->SwitchOffCalibrateEnergy();
 

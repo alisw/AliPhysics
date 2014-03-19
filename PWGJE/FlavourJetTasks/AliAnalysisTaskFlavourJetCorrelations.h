@@ -50,7 +50,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   virtual ~AliAnalysisTaskFlavourJetCorrelations();
 
   virtual void     UserCreateOutputObjects();
-  virtual void     UserExec(Option_t *option);
+  virtual Bool_t   Run();
   virtual void     Terminate(Option_t *);
   virtual void     Init();
   virtual void     LocalInit() {Init();}
@@ -82,7 +82,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Bool_t SetD0WidthForDStar(Int_t nptbins,Float_t* width);
 
   //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
-  void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet);
+  void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet, AliAODEvent* aodEvent);
   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR, AliAODEvent* aodEvent);
 
   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR);
@@ -110,7 +110,6 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Int_t  fPDGdaughters[4];       // PDG codes of daughters
   Float_t fSigmaD0[30];          //
   TString fBranchName;           // AOD branch name
-  TList *fmyOutput;                //! user output
   AliRDHFCuts *fCuts;            // Cuts 
 
   Double_t fMinMass;             // mass lower limit histogram
@@ -123,7 +122,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
   TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,2); // class for charm-jet CorrelationsExch
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,3); // class for charm-jet CorrelationsExch
 };
 
 #endif

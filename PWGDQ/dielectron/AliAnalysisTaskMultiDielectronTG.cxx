@@ -622,7 +622,10 @@ void AliAnalysisTaskMultiDielectronTG::FinishTaskOutput()
     die->SaveDebugTree();
     AliDielectronMixingHandler *mix=die->GetMixingHandler();
 //    printf("\n\n\n===============\ncall mix in Terminate: %p (%p)\n=================\n\n",mix,die);
-    if (mix) mix->MixRemaining(die);
+    if(!mix) continue;
+    for (Int_t ipool=0; ipool<mix->GetNumberOfBins(); ++ipool){
+      mix->MixRemaining(die, ipool);
+    }
   }
   PostData(1, &fListHistos);
   PostData(2, &fListCF);

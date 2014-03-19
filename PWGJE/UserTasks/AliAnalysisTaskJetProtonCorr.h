@@ -9,13 +9,17 @@
 #define ID(x) x, #x
 #define LAB(x) x + 1, #x
 
+class TF1;
 class TList;
 class TClonesArray;
+class AliOADBContainer;
+class AliTOFPIDParams;
 class AliVParticle;
 class AliVTrack;
 class AliPIDResponse;
 class AliEventPoolManager;
 class AliEventPool;
+class AliEventplane;
 class AliESDtrackCuts;
 
 class AliAnalysisTaskJetProtonCorr :
@@ -30,6 +34,8 @@ public:
   virtual Bool_t Notify();
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(const Option_t *option);
+
+  void SetParamsTOF();
 
   // task configuration
   void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
@@ -63,10 +69,13 @@ public:
   // histograms
   enum Hist_t {
       kHistStat = 0,
+      kHistVertexNctb,
+      kHistVertexZ,
       kHistCentrality,
       kHistCentralityUsed,
       kHistCentralityCheck,
       kHistCentralityCheckUsed,
+      kHistCentralityVsMult,
       kHistSignalTPC,
       kHistSignalTOF,
       kHistBetaTOF,
@@ -74,30 +83,30 @@ public:
       kHistDeltaTPCSemi,
       kHistDeltaTOF,
       kHistDeltaTOFSemi,
-      kHistExpSigmaTOFe,
-      kHistExpSigmaTOFmu,
-      kHistExpSigmaTOFpi,
-      kHistExpSigmaTOFk,
-      kHistExpSigmaTOFp,
-      kHistExpSigmaTOFd,
-      kHistExpSigmaTOFeSemi,
-      kHistExpSigmaTOFmuSemi,
-      kHistExpSigmaTOFpiSemi,
-      kHistExpSigmaTOFkSemi,
-      kHistExpSigmaTOFpSemi,
-      kHistExpSigmaTOFdSemi,
-      kHistCmpSigmaTOFe,
-      kHistCmpSigmaTOFmu,
-      kHistCmpSigmaTOFpi,
-      kHistCmpSigmaTOFk,
-      kHistCmpSigmaTOFp,
-      kHistCmpSigmaTOFd,
-      kHistCmpSigmaTOFeSemi,
-      kHistCmpSigmaTOFmuSemi,
-      kHistCmpSigmaTOFpiSemi,
-      kHistCmpSigmaTOFkSemi,
-      kHistCmpSigmaTOFpSemi,
-      kHistCmpSigmaTOFdSemi,
+      // kHistExpSigmaTOFe,
+      // kHistExpSigmaTOFmu,
+      // kHistExpSigmaTOFpi,
+      // kHistExpSigmaTOFk,
+      // kHistExpSigmaTOFp,
+      // kHistExpSigmaTOFd,
+      // kHistExpSigmaTOFeSemi,
+      // kHistExpSigmaTOFmuSemi,
+      // kHistExpSigmaTOFpiSemi,
+      // kHistExpSigmaTOFkSemi,
+      // kHistExpSigmaTOFpSemi,
+      // kHistExpSigmaTOFdSemi,
+      // kHistCmpSigmaTOFe,
+      // kHistCmpSigmaTOFmu,
+      // kHistCmpSigmaTOFpi,
+      // kHistCmpSigmaTOFk,
+      // kHistCmpSigmaTOFp,
+      // kHistCmpSigmaTOFd,
+      // kHistCmpSigmaTOFeSemi,
+      // kHistCmpSigmaTOFmuSemi,
+      // kHistCmpSigmaTOFpiSemi,
+      // kHistCmpSigmaTOFkSemi,
+      // kHistCmpSigmaTOFpSemi,
+      // kHistCmpSigmaTOFdSemi,
       kHistNsigmaTPCe,
       kHistNsigmaTPCmu,
       kHistNsigmaTPCpi,
@@ -112,13 +121,13 @@ public:
       kHistNsigmaTOFp,
       kHistNsigmaTOFd,
       kHistNsigmaTOFmismatch,
-      kHistNsigmaTOFmismatch2,
       kHistDeltaTOFe,
       kHistDeltaTOFmu,
       kHistDeltaTOFpi,
       kHistDeltaTOFk,
       kHistDeltaTOFp,
       kHistDeltaTOFd,
+
       kHistNsigmaTPCeSemi,
       kHistNsigmaTPCmuSemi,
       kHistNsigmaTPCpiSemi,
@@ -133,13 +142,13 @@ public:
       kHistNsigmaTOFpSemi,
       kHistNsigmaTOFdSemi,
       kHistNsigmaTOFmismatchSemi,
-      kHistNsigmaTOFmismatch2Semi,
       kHistDeltaTOFeSemi,
       kHistDeltaTOFmuSemi,
       kHistDeltaTOFpiSemi,
       kHistDeltaTOFkSemi,
       kHistDeltaTOFpSemi,
       kHistDeltaTOFdSemi,
+
       kHistNsigmaTPCTOF,
       kHistNsigmaTPCTOFPt,
       kHistNsigmaTPCTOFUsed,
@@ -148,17 +157,25 @@ public:
       kHistNsigmaTPCTOFUsedPt,
       kHistNsigmaTPCTOFUsedPtCentral,
       kHistNsigmaTPCTOFUsedPtSemiCentral,
+
       kHistEvPlane,
       kHistEvPlaneUsed,
       kHistEvPlaneCheck,
       kHistEvPlaneCheckUsed,
       kHistEvPlaneCorr,
+      kHistEvPlaneCorrNoTrgJets,
+      kHistEvPlaneCorrNoTrgJetsTrgd,
       kHistJetPtCentral,
       kHistJetPtSemi,
       kHistEtaPhiTrgHad,
       kHistEtaPhiTrgJet,
       kHistEtaPhiAssHad,
       kHistEtaPhiAssProt,
+      kHistPhiTrgJetEvPlane,
+      kHistPhiTrgHadEvPlane,
+      kHistPhiAssHadEvPlane,
+      kHistPhiAssHadVsEvPlane,
+      kHistPhiAssProtEvPlane,
       kHistLast
   };
 
@@ -166,6 +183,7 @@ public:
   enum Stat_t {
       kStatSeen = 1,
       kStatTrg,
+      kStatVtx,
       kStatCent,
       kStatEvPlane,
       kStatPID,
@@ -189,25 +207,42 @@ public:
     kCorrHadProt,
     kCorrJetHad,
     kCorrJetProt,
+
+    kCorrRndJetHad,
+    kCorrRndJetProt,
+    kCorrRndHadHad,
+    kCorrRndHadProt,
+
+    kCorrRndJetExcHad,
+    kCorrRndJetExcProt,
+    kCorrRndHadExcHad,
+    kCorrRndHadExcProt,
+
     kCorrLast
   };
 
   enum Class_t {
     kClCentral = 0,
     kClSemiCentral,
-    kClDijet,
+    // kClDijet,
     kClLast
   };
 
   enum Trg_t {
     kTrgHad = 0,
     kTrgJet,
+    kTrgHadRnd,
+    kTrgJetRnd,
     kTrgLast
   };
 
   enum Ass_t {
-    kAssHad,
+    kAssHad = 0,
     kAssProt,
+    kAssHadJetExc,
+    kAssProtJetExc,
+    kAssHadHadExc,
+    kAssProtHadExc,
     kAssLast
   };
 
@@ -222,8 +257,11 @@ public:
     AliHistCorr(TString name, TList *outputList = 0x0);
     ~AliHistCorr();
 
-    void Trigger(Float_t weight = 1.) { fHistStat->Fill(1., weight); }
+    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistStat->Fill(1., weight); fHistCorrTrgEtaPhi->Fill(phi, eta, weight); }
+    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistCorrAssEtaPhi->Fill(phi, eta, weight); }
     void Fill(AliVParticle *trgPart, AliVParticle *assPart, Float_t weight = 1.);
+    void Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight = 1.);
+    void Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight = 1.);
 
   protected:
     TList *fOutputList;
@@ -233,6 +271,9 @@ public:
     TH1F *fHistCorrPhi;
     TH2F *fHistCorrPhi2;
     TH2F *fHistCorrEtaPhi;
+    TH2F *fHistCorrAvgEtaPhi;
+    TH2F *fHistCorrTrgEtaPhi;
+    TH2F *fHistCorrAssEtaPhi;
 
     AliHistCorr(const AliHistCorr &rhs);
     AliHistCorr& operator=(const AliHistCorr &rhs);
@@ -241,13 +282,19 @@ public:
   };
 
   AliHistCorr*& GetHistCorr(CorrType_t corr, Class_t cl, Ev_t ev) { return fHistCorr[kEvLast*(kClLast*corr + cl) + ev]; }
-  AliEventPoolManager*& GetPoolMgr(Trg_t trg, Ass_t ass) { return fPoolMgr[kTrgLast * ass + trg]; }
-  AliEventPool*& GetPool(Class_t cls, Trg_t trg, Ass_t ass) { return fPool[kClLast * (kTrgLast * ass + trg) + cls]; }
+  AliEventPoolManager*& GetPoolMgr(Ass_t ass) { return fPoolMgr[ass]; }
+  AliEventPool*& GetPool(Ass_t ass) { return fPool[ass]; }
 
 protected:
   AliMCEvent  *fMCEvent; //!
   AliESDEvent *fESDEvent; //!
   AliAODEvent *fAODEvent; //!
+
+  Int_t fRunNumber; //! current run number
+  AliOADBContainer *fOADBContainerTOF; //! container for OADB entry with TOF parameters
+  AliTOFPIDParams *fParamsTOF; //! TOF parametrization
+
+  AliEventplane *fEventplane; //! pointer to the event plane
 
   UInt_t fTriggerMask;		//! internal representation of trigger conditions
   UInt_t fClassMask;		//! internal representation of event classes
@@ -255,13 +302,13 @@ protected:
   Float_t fCentralityCheck; //!
   Float_t fZvtx; //!
   AliPIDResponse *fPIDResponse; //!
-  Float_t fEventPlane; //!
-  Float_t fEventPlaneCheck; //!
+  Float_t fEventPlaneAngle; //!
+  Float_t fEventPlaneAngleCheck; //!
   TObjArray *fPrimTrackArray; //!
   TClonesArray *fJetArray; //!
 
-  AliEventPoolManager *fPoolMgr[kTrgLast * kAssLast]; //!
-  AliEventPool *fPool[kClLast * kTrgLast * kAssLast]; //!
+  AliEventPoolManager *fPoolMgr[kAssProt + 1]; //!
+  AliEventPool *fPool[kAssProt + 1]; //!
 
   AliHistCorr **fHistCorr; //! [kCorrLast*kEvLast*kClLast]; //!
 
@@ -277,7 +324,7 @@ protected:
   Bool_t CleanUpEvent();
 
   Float_t GetCentrality() const { return fCentrality; }
-  Float_t GetEventPlane() const { return fEventPlane; }
+  Float_t GetEventPlaneAngle() const { return fEventPlaneAngle; }
   AliPIDResponse* GetPID() const { return fPIDResponse; }
   Bool_t IsCentral() { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
   Bool_t IsSemiCentral() { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
@@ -296,6 +343,11 @@ protected:
   Bool_t AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart);
 
   TObjArray* CloneTracks(TObjArray *tracks) const;
+
+  Bool_t GenerateRandom(TCollection *trgJetArray, TCollection *trgHadArray,
+			TCollection *assHadJetArray, TCollection *assProtJetArray,
+			TCollection *assHadHadArray, TCollection *assProtHadArray,
+			Float_t pFraction = .5);
 
   Bool_t Correlate(CorrType_t corr, Class_t cl, Ev_t ev,
 		   TCollection *trgArray, TCollection *assArray, Float_t weight = 1.);
@@ -350,6 +402,11 @@ protected:
   Float_t fAssPartPtMin;
   Float_t fAssPartPtMax;
   Float_t fTrgAngleToEvPlane;
+
+  TF1 *fTrgJetPhiModCent;
+  TF1 *fTrgJetPhiModSemi;
+  TF1 *fTrgHadPhiModCent;
+  TF1 *fTrgHadPhiModSemi;
 
   // not implemented
   AliAnalysisTaskJetProtonCorr(const AliAnalysisTaskJetProtonCorr &rhs);
