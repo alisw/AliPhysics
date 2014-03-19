@@ -1489,7 +1489,7 @@ void AliJetFlowTools::GetNominalValues(
             fBinsTrue->At(fBinsTrue->GetSize()),
             readMe,
             "nominal_values");
-    v2 = GetV2(nominalIn, nominalOut, .5666666, "nominal v_{2}");
+    v2 = GetV2(nominalIn, nominalOut, .57, "nominal v_{2}");
 
     // close the open files, reclaim ownership of histograms which are necessary outside of the file scope
     ratio->SetDirectory(0);     // disassociate from current gDirectory
@@ -1704,7 +1704,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    .57,
                     "v_{2} with correlated uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
@@ -1713,7 +1713,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     1.));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .57, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2001,14 +2001,14 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    .57,
                     "v_{2} with shape uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
                     relativeErrorOutLow));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .57, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2260,6 +2260,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2270,6 +2271,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2385,6 +2387,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2395,6 +2398,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2501,7 +2505,7 @@ void AliJetFlowTools::GetShapeUncertainty(
            }
            canvasV2->cd(j);
            if(i==0) canvasNominalV2->cd(j);
-           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .56, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .57, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
            if(ratioV2) {
                Style(ratioV2);
                for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
@@ -2773,6 +2777,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             } else if(rm && eff) {
                                 Style(rm);
@@ -2781,6 +2786,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             }
                         }
@@ -2859,6 +2865,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2867,6 +2874,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2942,6 +2950,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2950,6 +2959,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
