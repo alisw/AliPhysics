@@ -437,7 +437,7 @@ parseConfig()
   #logs
   logDirectory=${workingDirectory}/logs
   #OCDB storage
-  #ocdbStorage="raw://"
+  ocdbStorage="raw://"
   #email to
   #MAILTO="fbellini@cern.ch"
 
