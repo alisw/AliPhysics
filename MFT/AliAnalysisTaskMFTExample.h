@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TH1D.h"
+#include "TList.h"
 
 //====================================================================================================================================================
 
@@ -42,6 +43,8 @@ private:
 
   Double_t fPrimaryVertex[3], fVtxResolutionITS[3];
   Int_t fVertexMode;
+
+  TList *fHistogramList;
 
   TH1D *fHistPtSingleMuons, *fHistPtSingleMuonsFromJpsi;
   TH1D *fHistPtDimuonsOS, *fHistMassDimuonsOS;

@@ -45,7 +45,7 @@ Bool_t AliMFTSupport::ExtrapAODMuonToZ(AliAODTrack *muon, Double_t z, Double_t x
 
   param -> SetNonBendingCoor(muon->XAtDCA());
   param -> SetBendingCoor(muon->YAtDCA());
-  param -> SetZ(0.);
+  param -> SetZ(AliMFTConstants::fZEvalKinem);
   param -> SetNonBendingSlope(muon->Px()/muon->Pz());
   param -> SetBendingSlope(muon->Py()/muon->Pz());
   param -> SetInverseBendingMomentum( muon->Charge() * (1./muon->Pz()) / (TMath::Sqrt(1+TMath::Power(muon->Py()/muon->Pz(),2))) );
@@ -78,8 +78,8 @@ Bool_t AliMFTSupport::RefitAODDimuonWithCommonVertex(AliAODDimuon *dimuon, Doubl
   param0 -> SetBendingCoor(muon0->YAtDCA());
   param1 -> SetBendingCoor(muon1->YAtDCA());
 
-  param0 -> SetZ(0.);
-  param1 -> SetZ(0.);
+  param0 -> SetZ(AliMFTConstants::fZEvalKinem);
+  param1 -> SetZ(AliMFTConstants::fZEvalKinem);
  
   param0 -> SetNonBendingSlope(muon0->Px()/muon0->Pz());
   param1 -> SetNonBendingSlope(muon1->Px()/muon1->Pz());
@@ -89,6 +89,8 @@ Bool_t AliMFTSupport::RefitAODDimuonWithCommonVertex(AliAODDimuon *dimuon, Doubl
 
   param0 -> SetInverseBendingMomentum( muon0->Charge() * (1./muon0->Pz()) / (TMath::Sqrt(1+TMath::Power(muon0->Py()/muon0->Pz(),2))) );
   param1 -> SetInverseBendingMomentum( muon1->Charge() * (1./muon1->Pz()) / (TMath::Sqrt(1+TMath::Power(muon1->Py()/muon1->Pz(),2))) );
+
+  // here we understand in which direction we have to search the minimum...
 
   Double_t step = 1.;  // in cm
   Double_t startPoint = 0.;
@@ -138,6 +140,8 @@ Bool_t AliMFTSupport::RefitAODDimuonWithCommonVertex(AliAODDimuon *dimuon, Doubl
     if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1.;   // towards z positive
     else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1.;   // towards z negative
   }
+
+  // now we now that the minimum is between z[0] and z[2] and we search it
     
   step *= 0.5;
   while (step>AliMFTConstants::fPrecisionPointOfClosestApproach) {
