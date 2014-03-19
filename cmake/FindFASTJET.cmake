@@ -2,28 +2,39 @@
 #
 # Author: Marco van Leeuwen
 #
-# Simple first version; checks env variables and fastjet-config; does not verify that includes and libs are really present
+# Simple first version; checks env variables and fastjet-config; verifies that fastjet/PseudoJet.hh exists
 
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
-set(FASTJET_ROOT $ENV{FASTJET_ROOT})
+# FASTJET_ROOT is a legacy env variable; could be removed
+if (NOT FASTJET)
+  set(FASTJET $ENV{FASTJET_ROOT})
+endif(NOT FASTJET)
 
-if (NOT FASTJET_ROOT)
-  set(FASTJET_ROOT $ENV{FASTJET})
-endif(NOT FASTJET_ROOT)
+if (NOT FASTJET)
+  set(FASTJET $ENV{FASTJET})
+endif(NOT FASTJET)
 
-if (NOT FASTJET_ROOT)
-  execute_process (COMMAND fastjet-config --prefix OUTPUT_VARIABLE FASTJET_ROOT)
-  string (STRIP "${FASTJET_ROOT}" FASTJET_ROOT)
-endif(NOT FASTJET_ROOT)
+if (NOT FASTJET)
+  execute_process (COMMAND fastjet-config --prefix OUTPUT_VARIABLE FASTJET)
+  string (STRIP "${FASTJET}" FASTJET)
+endif(NOT FASTJET)
 
-if (FASTJET_ROOT) 
-  message(STATUS "FASTJET found in ${FASTJET_ROOT}")
+# Check for one of the header files
+if (FASTJET)
+  find_path(FASTJET include/fastjet/PseudoJet.hh PATHS ${FASTJET})
+  if (FASTJET-NOTFOUND)
+    message(STATUS "Header file fastjet/PseudoJet.hh not found in ${FASTJET}/include")
+  endif (FASTJET-NOTFOUND)
+endif (FASTJET)
+
+if (FASTJET AND NOT FASTJET-NOTFOUND) 
+  message(STATUS "FASTJET found in ${FASTJET}")
   set (FASTJET_FOUND true)
-  set (FASTJET_INCLUDE_DIR ${FASTJET_ROOT}/include)
+  set (FASTJET_INCLUDE_DIR ${FASTJET}/include)
   message(STATUS "FASTJET include directory: ${FASTJET_INCLUDE_DIR}")
   set (FASTJET_DEFINITIONS -DHAVE_FASTJET)
 else()
   message(STATUS "FASTJET not found; make sure to set the FASTJET_ROOT environment variable or have fastjet-config in your path to use fastjet")
-endif(FASTJET_ROOT)
+endif(FASTJET AND NOT FASTJET-NOTFOUND)
 
