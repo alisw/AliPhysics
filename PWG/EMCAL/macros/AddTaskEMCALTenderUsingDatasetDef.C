@@ -89,6 +89,8 @@ AliAnalysisTaskSE *AddTaskEMCALTenderUsingDatasetDef(
   }
 
   if(isMC) { //no timing cuts when running on MC
+    calibEnergy = kFALSE;
+    calibTime   = kFALSE;
     timeMin = -1;
     timeMax =  1e6;
     timeCut =  1e6;
