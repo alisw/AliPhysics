@@ -1,28 +1,28 @@
-void AddTaskPWG4HighPtTrackQA(TString year = "2010", TString prodType = "LHC10h",Bool_t isPbPb = kTRUE, Int_t iAODanalysis = 0, Bool_t bReduced = kTRUE, Int_t filterBit = 272)
+void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t bReduced = kTRUE, Int_t filterBit = 272)
 {
 
+  Bool_t isPbPb = kFALSE;
+  if(prodType.Contains("LHC10h") || prodType.EqualTo("LHC11h")) isPbPb = kTRUE;
+
   if(iAODanalysis==0) { //run on ESDs
-    if(year.Contains("2010")) {
+    if(prodType.EqualTo("LHC10h") || prodType.EqualTo("LHC11a")) {
       if(bReduced)
 	AddTaskPWG4HighPtTrackQAAllReduced(prodType.Data(),isPbPb,iAODanalysis);
       else
 	AddTaskPWG4HighPtTrackQAAll(prodType.Data(),isPbPb,iAODanalysis);
     }
-    else if(year.Contains("2011")) {
+    else if(prodType.Contains("LHC12") || prodType.Contains("LHC13")) {
+      AddTaskPWG4HighPtTrackQApPb();
+    } else {
       if(bReduced)
 	AddTaskPWG4HighPtTrackQAAllReduced2011(prodType.Data(),isPbPb,iAODanalysis);
       else
 	AddTaskPWG4HighPtTrackQAAll2011(prodType.Data(),isPbPb,iAODanalysis);
     }
-    else if(year.Contains("2013")) {
-      AddTaskPWG4HighPtTrackQApPb();
-    }
-
   }
-  else if(iAODanalysis==1) {
+  else if(iAODanalysis==1) { //run on AODs
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
-
 }
 
 void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b") {
@@ -34,49 +34,29 @@ void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b") {
     AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kEMCEJE);
     AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kEMCEJE);
   }
-
 }
 
 
 void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    
 
-  int cent = 10;
+  Int_t cent = 10;
   
-  AliPWG4HighPtTrackQA *taskTrackQA00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
-  AliPWG4HighPtTrackQA *taskTrackQA01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-  //  AliPWG4HighPtTrackQA *taskTrackQA02cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
-  // AliPWG4HighPtTrackQA *taskTrackQA10cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,0);
-  // AliPWG4HighPtTrackQA *taskTrackQA11cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
-  //  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
-  //  AliPWG4HighPtTrackQA *taskTrackQA21cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
-  //  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
-  //  AliPWG4HighPtTrackQA *taskTrackQA41cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
-  //  AliPWG4HighPtTrackQA *taskTrackQA50cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
-  //  AliPWG4HighPtTrackQA *taskTrackQA60cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);
-  AliPWG4HighPtTrackQA *taskTrackQA70cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0);
-  AliPWG4HighPtTrackQA *taskTrackQA71cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1);
-  AliPWG4HighPtTrackQA *taskTrackQA72cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2);
+  AliPWG4HighPtTrackQA *taskTrackQA00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0); //RAA track cuts
+  AliPWG4HighPtTrackQA *taskTrackQA01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1); //global hybrid unconstrained
+  AliPWG4HighPtTrackQA *taskTrackQA70cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0); //global hybrid constrained category 1
+  AliPWG4HighPtTrackQA *taskTrackQA71cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1); //global hybrid constrained category 2
+  AliPWG4HighPtTrackQA *taskTrackQA72cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2); //global hybrid constrained all
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtTrackQA *taskTrackQA00 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
       AliPWG4HighPtTrackQA *taskTrackQA01 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-      //    AliPWG4HighPtTrackQA *taskTrackQA02 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
-      // AliPWG4HighPtTrackQA *taskTrackQA10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,0);
-      // AliPWG4HighPtTrackQA *taskTrackQA11 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
-      //      AliPWG4HighPtTrackQA *taskTrackQA20 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
-      //      AliPWG4HighPtTrackQA *taskTrackQA21 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
-      //      AliPWG4HighPtTrackQA *taskTrackQA40 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
-      //      AliPWG4HighPtTrackQA *taskTrackQA41 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
-      //      AliPWG4HighPtTrackQA *taskTrackQA50 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
-      //      AliPWG4HighPtTrackQA *taskTrackQA60 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);
       AliPWG4HighPtTrackQA *taskTrackQA70 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0);
       AliPWG4HighPtTrackQA *taskTrackQA71 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1);
       AliPWG4HighPtTrackQA *taskTrackQA72 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2);
     }
   }
-
 }
 
 void AddTaskPWG4HighPtTrackQAAll2011(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
@@ -129,10 +109,8 @@ void AddTaskPWG4HighPtTrackQAAll2011(char *prodType = "LHC11h",Bool_t isPbPb=kTR
 	AliPWG4HighPtTrackQA *taskTrackQA74 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagSemiCentral);
 	AliPWG4HighPtTrackQA *taskTrackQA75 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagSemiCentral);
       }
-
     }
   }
-
 }
 
 void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
@@ -149,7 +127,6 @@ void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC11h",Bool_t isPbPb=
       AliPWG4HighPtTrackQA *taskTrackQA72 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2);
     }
   }
-
 }
 
 
@@ -168,7 +145,6 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA74cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlag);
   AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlag);
-  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlag);
 
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE00cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE01cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagEMCEJE);
@@ -178,11 +154,9 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE74cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagEMCEJE);
   AliPWG4HighPtTrackQA *taskTrackQAEMCJE75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
-  AliPWG4HighPtTrackQA *taskTrackQAEMCJE40cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlagEMCEJE);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
-
       AliPWG4HighPtTrackQA *taskTrackQA00 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA01 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA70 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlag);
@@ -191,7 +165,6 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
       AliPWG4HighPtTrackQA *taskTrackQA05 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA74 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlag);
       AliPWG4HighPtTrackQA *taskTrackQA75 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlag);
-      AliPWG4HighPtTrackQA *taskTrackQA40 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlag);
 
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE00 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE01 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagEMCEJE);
@@ -201,15 +174,9 @@ void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=k
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE05 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE74 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagEMCEJE);
       AliPWG4HighPtTrackQA *taskTrackQAEMCJE75 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagEMCEJE);
-      AliPWG4HighPtTrackQA *taskTrackQAEMCJE40 = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0,iPhysicsSelectionFlagEMCEJE);
-
     }
   }
-
 }
-
-
-
 
 void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    
@@ -221,7 +188,6 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
   AliPWG4HighPtTrackQA *taskTrackQA00C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagCentral);
   AliPWG4HighPtTrackQA *taskTrackQA01C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagCentral);
-  AliPWG4HighPtTrackQA *taskTrackQA21C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1,iPhysicsSelectionFlagCentral);
   AliPWG4HighPtTrackQA *taskTrackQA70C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlagCentral);
   AliPWG4HighPtTrackQA *taskTrackQA71C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1,iPhysicsSelectionFlagCentral);
   AliPWG4HighPtTrackQA *taskTrackQA72C = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2,iPhysicsSelectionFlagCentral);
@@ -231,23 +197,21 @@ void AddTaskPWG4HighPtTrackQAAllReduced2011(char *prodType = "LHC10h",Bool_t isP
 
   AliPWG4HighPtTrackQA *taskTrackQA00SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA01SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1,iPhysicsSelectionFlagSemiCentral);
-  AliPWG4HighPtTrackQA *taskTrackQA21SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA70SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA71SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA72SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA05SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,5,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA74SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,4,iPhysicsSelectionFlagSemiCentral);
   AliPWG4HighPtTrackQA *taskTrackQA75SC = ConfigureTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,5,iPhysicsSelectionFlagSemiCentral);
-
 }
 
 void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 1, Int_t filterBit = 768) 
 {  
-  UInt_t iPhysicsSelectionFlagMB = AliVEvent::kMB; 
-  UInt_t iPhysicsSelectionFlagCentral = AliVEvent::kCentral;
+  UInt_t iPhysicsSelectionFlagMB          = AliVEvent::kMB; 
+  UInt_t iPhysicsSelectionFlagCentral     = AliVEvent::kCentral;
   UInt_t iPhysicsSelectionFlagSemiCentral = AliVEvent::kSemiCentral;
-  UInt_t iPhysicsSelectionFlagINT7 = AliVEvent::kINT7; 
-  UInt_t iPhysicsSelectionFlagEMCEJE = AliVEvent::kEMCEJE; 
+  UInt_t iPhysicsSelectionFlagINT7        = AliVEvent::kINT7; 
+  UInt_t iPhysicsSelectionFlagEMCEJE      = AliVEvent::kEMCEJE; 
 
   Int_t cent = 10;
 
@@ -266,14 +230,15 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
       strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" || 
       strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || 
       strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || 
-      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f") {
+      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f" || strRunPeriod.Contains("lhc12a17") || strRunPeriod.Contains("lhc14a1")) {
     filterBit  = 768;
     filterBit1 = 256;
     filterBit2 = 512;
     bIncludeNoITS = kFALSE;
+    if(strRunPeriod == "lhc10h") bIncludeNoITS = kTRUE;
   }
   else if (strRunPeriod == "lhc11a" || strRunPeriod == "lhc10hold" || strRunPeriod == "lhc12a15a" || strRunPeriod.Contains("lhc11a2")) {
-    filterBit  = 272; 
+    filterBit  = 272;
     filterBit1 = 16;
     filterBit2 = 256;
     bIncludeNoITS = kTRUE;
@@ -508,9 +473,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   if(trackType==5 || trackType==6) {
     // tight global tracks
     trackCuts = CreateTrackCutsPWGJE(1003);
-
     trackCutsReject = CreateTrackCutsPWGJE(10021003); 
-    
     trackCutsTPConly = CreateTrackCutsPWGJE(2002);
 
     trackCutsReject->SetEtaRange(-0.9,0.9);
@@ -518,7 +481,6 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     
     trackCutsTPConly->SetEtaRange(-0.9,0.9);
     trackCutsTPConly->SetPtRange(0.15, 1e10);
-
   }
 
   trackCuts->SetEtaRange(-0.9,0.9);
@@ -531,6 +493,8 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     trigName += "kAny";
   else if(iPhysicsSelectionFlag == AliVEvent::kINT7)
     trigName += "kINT7";
+  else if(iPhysicsSelectionFlag == AliVEvent::kINT8)
+    trigName += "kINT8";
   else if(iPhysicsSelectionFlag == AliVEvent::kMB)
     trigName += "kMB";
   else if(iPhysicsSelectionFlag == AliVEvent::kCentral)
@@ -551,7 +515,6 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
   taskPWG4TrackQA->SetCuts(trackCuts);
   taskPWG4TrackQA->SetCutsITSLoose(trackCutsReject);
   taskPWG4TrackQA->SetCutsTPConly(trackCutsTPConly);
-  
   taskPWG4TrackQA->SetPtMax(100.);
  
   if(iAODanalysis)
@@ -563,13 +526,7 @@ AliPWG4HighPtTrackQA* ConfigureTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14"
     taskPWG4TrackQA->SetIsPbPb(kTRUE);
     taskPWG4TrackQA->SetCentralityClass(centClass);
   }
-  //  taskPWG4TrackQA->SetSigmaConstrainedMax(5.);
-
-  cout << "iPhysicsSelectionFlag: " << iPhysicsSelectionFlag << endl;
   taskPWG4TrackQA->SelectCollisionCandidates(iPhysicsSelectionFlag);
-
-
-
 
   // E. Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
