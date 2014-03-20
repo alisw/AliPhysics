@@ -50,22 +50,15 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
-  fHistEventQA(0),
-  fHistTrNegativeLabels(0),
-  fHistTrZeroLabels(0),
-  fHistNCellsEnergy(0),
-  fHistFcrossEnergy(0),
-  fHistClusTimeEnergy(0),
-  fHistClusEnergyMinusCellEnergy(0),
-  fHistCellsAbsIdEnergy(0),
-  fHistChVSneCells(0),
-  fHistChVSneClus(0),
-  fHistChVSneCorrCells(0)
+  fHistEventQA(0)
 {
   // Default constructor.
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+
+    fHistTrNegativeLabels[i] = 0;
+    fHistTrZeroLabels[i] = 0;
     fHistTrPhiEtaZeroLab[i] = 0;
     fHistTrPtZeroLab[i] = 0;
     fHistTrEmcPhiEta[i] = 0;
@@ -75,9 +68,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
     fHistDeltaPtvsPt[i] = 0;
+
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusDeltaPhiEPEnergy[i] = 0;
+    fHistNCellsEnergy[i] = 0;
+    fHistFcrossEnergy[i] = 0;
+    fHistClusTimeEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
+
+    fHistCellsAbsIdEnergy[i] = 0;
+
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
   }
@@ -102,22 +102,15 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
-  fHistEventQA(0),
-  fHistTrNegativeLabels(0),
-  fHistTrZeroLabels(0),
-  fHistNCellsEnergy(0),
-  fHistFcrossEnergy(0),
-  fHistClusTimeEnergy(0),
-  fHistClusEnergyMinusCellEnergy(0),
-  fHistCellsAbsIdEnergy(0),
-  fHistChVSneCells(0),
-  fHistChVSneClus(0),
-  fHistChVSneCorrCells(0)
+  fHistEventQA(0)
 {
   // Standard constructor.
 
   for (Int_t i = 0; i < 4; i++) {
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+
+    fHistTrNegativeLabels[i] = 0;
+    fHistTrZeroLabels[i] = 0;
     fHistTrPhiEtaZeroLab[i] = 0;
     fHistTrPtZeroLab[i] = 0;
     fHistTrEmcPhiEta[i] = 0;
@@ -127,9 +120,16 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
     fHistDeltaEtaPt[i] = 0;
     fHistDeltaPhiPt[i] = 0;
     fHistDeltaPtvsPt[i] = 0;
+
     fHistClusPhiEtaEnergy[i] = 0;
     fHistClusDeltaPhiEPEnergy[i] = 0;
+    fHistNCellsEnergy[i] = 0;
+    fHistFcrossEnergy[i] = 0;
+    fHistClusTimeEnergy[i] = 0;
     fHistClusMCEnergyFraction[i] = 0;
+
+    fHistCellsAbsIdEnergy[i] = 0;
+
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
   }
@@ -150,20 +150,24 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
 
+  TString histname;
+
   if (fParticleCollArray.GetEntriesFast()>0) {
     if (!fParticleLevel && fIsMC) {
-      fHistTrNegativeLabels = new TH1F("fHistTrNegativeLabels","fHistTrNegativeLabels", 500, 0, 1);
-      fHistTrNegativeLabels->GetXaxis()->SetTitle("% of negative labels");
-      fHistTrNegativeLabels->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistTrNegativeLabels);
+      for (Int_t i = 0; i < fNcentBins; i++) {
+	histname = Form("fHistTrNegativeLabels_%d",i);
+	fHistTrNegativeLabels[i] = new TH1F(histname,histname, 500, 0, 1);
+	fHistTrNegativeLabels[i]->GetXaxis()->SetTitle("% of negative labels");
+	fHistTrNegativeLabels[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistTrNegativeLabels[i]);
 
-      fHistTrZeroLabels = new TH1F("fHistTrZeroLabels","fHistTrZeroLabels", 500, 0, 1);
-      fHistTrZeroLabels->GetXaxis()->SetTitle("% of negative labels");
-      fHistTrZeroLabels->GetYaxis()->SetTitle("counts");
-      fOutput->Add(fHistTrZeroLabels);
+	histname = Form("fHistTrZeroLabels_%d",i);	
+	fHistTrZeroLabels[i] = new TH1F(histname,histname, 500, 0, 1);
+	fHistTrZeroLabels[i]->GetXaxis()->SetTitle("% of negative labels");
+	fHistTrZeroLabels[i]->GetYaxis()->SetTitle("counts");
+	fOutput->Add(fHistTrZeroLabels[i]);
+      }
     }
-
-    TString histname;
 
     Int_t nlabels = 4;
     if (fParticleLevel)
@@ -242,8 +246,6 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   }
 
   if (fClusterCollArray.GetEntriesFast()>0) {
-    TString histname;
-
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistClusPhiEtaEnergy_";
       histname += i;
@@ -268,60 +270,41 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
 	fHistClusMCEnergyFraction[i]->GetYaxis()->SetTitle("counts");
 	fOutput->Add(fHistClusMCEnergyFraction[i]);
       }
+
+      histname = "fHistClusTimeEnergy_";
+      histname += i;
+      fHistClusTimeEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
+      fHistClusTimeEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistClusTimeEnergy[i]->GetYaxis()->SetTitle("Time");
+      fOutput->Add(fHistClusTimeEnergy[i]);
+
+      Int_t nbins = fMaxCellsInCluster;
+      while (nbins > fNbins) nbins /= 2;
+      histname = "fHistNCellsEnergy_";
+      histname += i;
+      fHistNCellsEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
+      fHistNCellsEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistNCellsEnergy[i]->GetYaxis()->SetTitle("N_{cells}");
+      fOutput->Add(fHistNCellsEnergy[i]);
+
+      histname = "fHistFcrossEnergy_";
+      histname += i;
+      fHistFcrossEnergy[i] = new TH2F(histname,histname, fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
+      fHistFcrossEnergy[i]->GetXaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistFcrossEnergy[i]->GetYaxis()->SetTitle("F_{cross}");
+      fOutput->Add(fHistFcrossEnergy[i]); 
+
+      histname = "fHistCellsAbsIdEnergy_";
+      histname += i;
+      fHistCellsAbsIdEnergy[i] = new TH2F(histname,histname, 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
+      fHistCellsAbsIdEnergy[i]->GetXaxis()->SetTitle("cell abs. Id");
+      fHistCellsAbsIdEnergy[i]->GetYaxis()->SetTitle("E_{cluster} (GeV)");
+      fHistCellsAbsIdEnergy[i]->GetZaxis()->SetTitle("counts");    
+      fOutput->Add(fHistCellsAbsIdEnergy[i]);
     }
-
-    fHistClusTimeEnergy = new TH2F("fHistClusTimeEnergy","Time vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, fNbins,  -1e-6, 1e-6);
-    fHistClusTimeEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-    fHistClusTimeEnergy->GetYaxis()->SetTitle("Time");
-    fOutput->Add(fHistClusTimeEnergy);
-
-    Int_t nbins = fMaxCellsInCluster;
-    while (nbins > fNbins) nbins /= 2;
-    fHistNCellsEnergy = new TH2F("fHistNCellsEnergy","Number of cells vs. energy of clusters", fNbins, fMinBinPt, fMaxBinPt, nbins, -0.5, fMaxCellsInCluster-0.5);
-    fHistNCellsEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-    fHistNCellsEnergy->GetYaxis()->SetTitle("N_{cells}");
-    fOutput->Add(fHistNCellsEnergy);
-
-    fHistFcrossEnergy = new TH2F("fHistFcrossEnergy","fHistFcrossEnergy", fNbins, fMinBinPt, fMaxBinPt, 200, -3.5, 1.5);
-    fHistFcrossEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-    fHistFcrossEnergy->GetYaxis()->SetTitle("F_{cross}");
-    fOutput->Add(fHistFcrossEnergy); 
-
-    fHistClusEnergyMinusCellEnergy = new TH2F("fHistClusEnergyMinusCellEnergy","fHistClusEnergyMinusCellEnergy", 
-					      fNbins, fMinBinPt, fMaxBinPt, fNbins, -fMaxBinPt/2, fMaxBinPt/2);
-    fHistClusEnergyMinusCellEnergy->GetXaxis()->SetTitle("E_{cluster} (GeV)");
-    fHistClusEnergyMinusCellEnergy->GetYaxis()->SetTitle("E_{cluster} - #Sigma_{i}E_{cell,i} (GeV)");
-    fOutput->Add(fHistClusEnergyMinusCellEnergy); 
-     
-    fHistCellsAbsIdEnergy = new TH2F("fHistCellsAbsIdEnergy","fHistCellsAbsIdEnergy", 11600,0,11599,(Int_t)(fNbins / 2), fMinBinPt, fMaxBinPt / 2);
-    fHistCellsAbsIdEnergy->GetXaxis()->SetTitle("cell abs. Id");
-    fHistCellsAbsIdEnergy->GetYaxis()->SetTitle("E_{cluster} (GeV)");
-    fHistCellsAbsIdEnergy->GetZaxis()->SetTitle("counts");    
-    fOutput->Add(fHistCellsAbsIdEnergy);
-    
-    fHistChVSneCells = new TH2F("fHistChVSneCells","Charged energy vs. neutral (cells) energy", 
-				(Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
-    fHistChVSneCells->GetXaxis()->SetTitle("Energy (GeV)");
-    fHistChVSneCells->GetYaxis()->SetTitle("Momentum (GeV/c)");
-    fOutput->Add(fHistChVSneCells);
-    
-    fHistChVSneClus = new TH2F("fHistChVSneClus","Charged energy vs. neutral (clusters) energy", 
-			       (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5);
-    fHistChVSneClus->GetXaxis()->SetTitle("Energy (GeV)");
-    fHistChVSneClus->GetYaxis()->SetTitle("Momentum (GeV/c)");
-    fOutput->Add(fHistChVSneClus);
-    
-    fHistChVSneCorrCells = new TH2F("fHistChVSneCorrCells","Charged energy vs. neutral (corrected cells) energy", 
-				    (Int_t)(fNbins * 2.5), fMinBinPt, fMaxBinPt * 2.5, (Int_t)(fNbins * 2.5), fMinBinPt , fMaxBinPt * 2.5);
-    fHistChVSneCorrCells->GetXaxis()->SetTitle("Energy (GeV)");
-    fHistChVSneCorrCells->GetYaxis()->SetTitle("Momentum (GeV/c)");
-    fOutput->Add(fHistChVSneCorrCells);
   }
        
   if (fJetCollArray.GetEntriesFast()>0) {
-
-    TString histname;
-
     for (Int_t i = 0; i < fNcentBins; i++) {
       histname = "fHistJetsPhiEta_";
       histname += i;
@@ -602,16 +585,11 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
       leadingClusEta = leadingClusVect.Eta();
       leadingClusPhi = leadingClusVect.Phi();
     }
-
-    fHistChVSneClus->Fill(clusSum, trackSum);
   }
   
   if (fCaloCells) {
     ncells = DoCellLoop(cellSum, cellCutSum);
     AliDebug(2,Form("%d cells found in the event", ncells));
-    
-    fHistChVSneCells->Fill(cellSum, trackSum);
-    fHistChVSneCorrCells->Fill(cellCutSum, trackSum);
   }
 
   if (fJets) {
@@ -711,7 +689,7 @@ Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
   for (Int_t pos = 0; pos < ncells; pos++) {
     Float_t amp   = cells->GetAmplitude(pos);
     Int_t   absId = cells->GetCellNumber(pos);
-    fHistCellsAbsIdEnergy->Fill(absId,amp);
+    fHistCellsAbsIdEnergy[fCentBin]->Fill(absId,amp);
     sum += amp;
     if (amp < fCellEnergyCut)
       continue;
@@ -831,13 +809,11 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
     while (ep >= TMath::Pi()) ep -= TMath::Pi();
     fHistClusDeltaPhiEPEnergy[fCentBin]->Fill(cluster->E(), ep);
 
-    fHistNCellsEnergy->Fill(cluster->E(), cluster->GetNCells());
+    fHistNCellsEnergy[fCentBin]->Fill(cluster->E(), cluster->GetNCells());
 
-    fHistClusTimeEnergy->Fill(cluster->E(), cluster->GetTOF());
+    fHistClusTimeEnergy[fCentBin]->Fill(cluster->E(), cluster->GetTOF());
 
-    if (cells) fHistFcrossEnergy->Fill(cluster->E(), GetFcross(cluster, cells));
-
-    if (cells) fHistClusEnergyMinusCellEnergy->Fill(cluster->E(), cluster->E() - GetCellEnergySum(cluster,cells));
+    if (cells) fHistFcrossEnergy[fCentBin]->Fill(cluster->E(), GetFcross(cluster, cells));
 
     if (fHistClusMCEnergyFraction[fCentBin])
       fHistClusMCEnergyFraction[fCentBin]->Fill(cluster->GetMCEnergyFraction());
@@ -852,7 +828,6 @@ Int_t AliAnalysisTaskSAQA::DoClusterLoop(Float_t &sum, AliVCluster* &leading)
 Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
 {
   // Do track loop.
-
   if (!fTracks)
     return 0;
 
@@ -866,7 +841,6 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
   Int_t zero = 0;
 
   for (Int_t i = 0; i < ntracks; i++) {
-
     AliVParticle* track = static_cast<AliVParticle*>(fTracks->At(i)); // pointer to reconstructed to track  
 
     if (!track) {
@@ -933,11 +907,11 @@ Int_t AliAnalysisTaskSAQA::DoTrackLoop(Float_t &sum, AliVParticle* &leading)
       fHistDeltaPtvsPt[fCentBin]->Fill(vtrack->Pt(), vtrack->Pt() - vtrack->GetTrackPtOnEMCal());
   }
 
-  if (fHistTrNegativeLabels)
-    fHistTrNegativeLabels->Fill(1. * neg / ntracks);
+  if (fHistTrNegativeLabels[fCentBin])
+    fHistTrNegativeLabels[fCentBin]->Fill(1. * neg / ntracks);
 
-  if (fHistTrZeroLabels)
-    fHistTrZeroLabels->Fill(1. * zero / ntracks);
+  if (fHistTrZeroLabels[fCentBin])
+    fHistTrZeroLabels[fCentBin]->Fill(1. * zero / ntracks);
 
   return nAccTracks;
 }
