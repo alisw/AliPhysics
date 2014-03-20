@@ -37,7 +37,6 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
-  fDoJet2Histogram(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistLeadingJets1PtArea(0),
@@ -48,7 +47,6 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistLeadingJets2CorrPtAreaAcceptance(0),
   fHistJets1(0),
   fHistJets2(0),
-  fHistJets2Acceptance(0),
   fHistMatching(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
@@ -127,7 +125,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fDeltaEtaDeltaPhiAxis(0),
   fNEFAxis(0),
   fZAxis(0),
-  fDoJet2Histogram(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
   fHistLeadingJets1PtArea(0),
@@ -138,7 +135,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistLeadingJets2CorrPtAreaAcceptance(0),
   fHistJets1(0),
   fHistJets2(0),
-  fHistJets2Acceptance(0),
   fHistMatching(0),
   fHistJets1PhiEta(0),
   fHistJets1PtArea(0),
@@ -665,16 +661,26 @@ void AliJetResponseMaker::AllocateTHnSparse()
   max[dim] = 1.5;
   dim++;
 
-  title[dim] = "NEF";
-  nbins[dim] = fNbins/4;
-  min[dim] = 0;
-  max[dim] = 1.2;
-  dim++;
+  if (fNEFAxis) {
+    title[dim] = "NEF";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+  }
 
-  title[dim] = "Z";
-  nbins[dim] = fNbins/4;
+  if (fZAxis) {
+    title[dim] = "Z";
+    nbins[dim] = fNbins/4;
+    min[dim] = 0;
+    max[dim] = 1.2;
+    dim++;
+  }
+
+  title[dim] = "p_{T,particle}^{leading} (GeV/c)";
+  nbins[dim] = 120;
   min[dim] = 0;
-  max[dim] = 1.2;
+  max[dim] = 120;
   dim++;
 
   Int_t dim1 = dim, dim2 = dim;
@@ -708,17 +714,10 @@ void AliJetResponseMaker::AllocateTHnSparse()
     dim2++;
   }
 
-  if (fDoJet2Histogram) {
-    fHistJets2 = new THnSparseD("fHistJets2","fHistJets2",dim2,nbins,min,max);
-    for (Int_t i = 0; i < dim2; i++) 
-      fHistJets2->GetAxis(i)->SetTitle(title[i]);
-    fOutput->Add(fHistJets2);
-  }
-
-  fHistJets2Acceptance = new THnSparseD("fHistJets2Acceptance","fHistJets2Acceptance",dim2,nbins,min,max);
+  fHistJets2 = new THnSparseD("fHistJets2","fHistJets2",dim2,nbins,min,max);
   for (Int_t i = 0; i < dim2; i++) 
-    fHistJets2Acceptance->GetAxis(i)->SetTitle(title[i]);
-  fOutput->Add(fHistJets2Acceptance);
+    fHistJets2->GetAxis(i)->SetTitle(title[i]);
+  fOutput->Add(fHistJets2);
   
   // Matching
 
@@ -764,6 +763,18 @@ void AliJetResponseMaker::AllocateTHnSparse()
   nbins[dim] = fNbins/2;
   min[dim] = 0;
   max[dim] = 1.2;
+  dim++;
+
+  title[dim] = "p_{T,particle,1}^{leading} (GeV/c)";
+  nbins[dim] = 120;
+  min[dim] = 0;
+  max[dim] = 120;
+  dim++;
+
+  title[dim] = "p_{T,particle,2}^{leading} (GeV/c)";
+  nbins[dim] = 120;
+  min[dim] = 0;
+  max[dim] = 120;
   dim++;
 
   if (fDeltaPtAxis) {
@@ -891,7 +902,7 @@ void AliJetResponseMaker::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t Z, Double_t CorrPt, Double_t MCPt, Int_t Set)
+void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Int_t Set)
 {
   if (fHistoType==1) {
     THnSparse *histo = 0;
@@ -899,8 +910,6 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
       histo = fHistJets1;
     else if (Set==2)
       histo = fHistJets2;
-    else if (Set==3)
-      histo = fHistJets2Acceptance;
 
     if (!histo)
       return;
@@ -920,11 +929,13 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
       else if (title=="NEF")
 	contents[i] = NEF;
       else if (title=="Z")
-	contents[i] = Z;
+	contents[i] = LeadingPt/Pt;
       else if (title=="p_{T}^{corr}")
 	contents[i] = CorrPt;
       else if (title=="p_{T}^{MC}")
 	contents[i] = MCPt;
+      else if (title=="p_{T,particle}^{leading} (GeV/c)")
+	contents[i] = LeadingPt;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -935,7 +946,7 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
     if (Set == 1) {
       fHistJets1PtArea->Fill(A, Pt);
       fHistJets1PhiEta->Fill(Eta, Phi);
-      fHistJets1ZvsPt->Fill(Z, Pt);
+      fHistJets1ZvsPt->Fill(LeadingPt/Pt, Pt);
       fHistJets1NEFvsPt->Fill(NEF, Pt);
       fHistJets1CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
       if (fIsJet1Rho)
@@ -950,7 +961,7 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
     else if (Set == 3) {
       fHistJets2PtAreaAcceptance->Fill(A, Pt);
       fHistJets2PhiEtaAcceptance->Fill(Eta, Phi);
-      fHistJets2ZvsPt->Fill(Z, Pt);
+      fHistJets2ZvsPt->Fill(LeadingPt/Pt, Pt);
       fHistJets2NEFvsPt->Fill(NEF, Pt);
       fHistJets2CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
       if (fIsJet2Rho)
@@ -962,7 +973,7 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
 //________________________________________________________________________
 void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
 					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t Z1, Double_t Z2)
+					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2)
 {
   if (fHistoType==1) {
     Double_t contents[20]={0};
@@ -1006,9 +1017,13 @@ void AliJetResponseMaker::FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_
       else if (title=="NEF_{2}")
 	contents[i] = NEF2;
       else if (title=="Z_{1}")
-	contents[i] = Z1;
+	contents[i] = LeadingPt1/Pt1;
       else if (title=="Z_{2}")
-	contents[i] = Z2;
+	contents[i] = LeadingPt2/Pt2;
+      else if (title=="p_{T,particle,1}^{leading} (GeV/c)")
+	contents[i] = LeadingPt1;
+      else if (title=="p_{T,particle,2}^{leading} (GeV/c)")
+	contents[i] = LeadingPt2;
       else 
 	AliWarning(Form("Unable to fill dimension %s!",title.Data()));
     }
@@ -1644,15 +1659,15 @@ Bool_t AliJetResponseMaker::FillHistograms()
   
   jets2->ResetCurrentID();
   while ((jet2 = jets2->GetNextJet())) {
+
     AliDebug(2,Form("Processing jet (2) %d", jets2->GetCurrentID()));
 
-    if (fDoJet2Histogram)
-      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
-		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 2);
+    Double_t ptLeading2 = jets2->GetLeadingHadronPt(jet2);
+    Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 
     if (jets2->AcceptJet(jet2))
-      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), jet2->MaxPartPt()/jet2->Pt(), 
-		   jet2->Pt() - jets2->GetRhoVal() * jet2->Area(), jet2->MCPt(), 3);
+      FillJetHisto(jet2->Phi(), jet2->Eta(), jet2->Pt(), jet2->Area(), jet2->NEF(), ptLeading2, 
+		   corrpt2, jet2->MCPt(), 2);
 
     jet1 = jet2->MatchedJet();
 
@@ -1676,12 +1691,12 @@ Bool_t AliJetResponseMaker::FillHistograms()
       ce2 = jet2->ClosestJetDistance();
     }
 
+    Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
     Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
-    Double_t corrpt2 = jet2->Pt() - jets2->GetRhoVal() * jet2->Area();
 
     FillMatchingHistos(jet1->Pt(), jet2->Pt(), jet1->Eta(), jet2->Eta(), jet1->Phi(), jet2->Phi(), 
 		       jet1->Area(), jet2->Area(), d, ce1, ce2, corrpt1, corrpt2, jet1->MCPt(), 
-		       jet1->NEF(), jet2->NEF(), jet1->MaxPartPt()/jet1->Pt(), jet2->MaxPartPt()/jet2->Pt());
+		       jet1->NEF(), jet2->NEF(), ptLeading1, ptLeading2);
   }
 
   jets1->ResetCurrentID();
@@ -1689,8 +1704,11 @@ Bool_t AliJetResponseMaker::FillHistograms()
     if (jet1->MCPt() < fMinJetMCPt) continue;
     AliDebug(2,Form("Processing jet (1) %d", jets1->GetCurrentID()));
 
-    FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), jet1->MaxPartPt()/jet1->Pt(), 
-		 jet1->Pt() - jets1->GetRhoVal() * jet1->Area(), jet1->MCPt(), 1);
+    Double_t ptLeading1 = jets1->GetLeadingHadronPt(jet1);
+    Double_t corrpt1 = jet1->Pt() - jets1->GetRhoVal() * jet1->Area();
+
+    FillJetHisto(jet1->Phi(), jet1->Eta(), jet1->Pt(), jet1->Area(), jet1->NEF(), ptLeading1, 
+		 corrpt1, jet1->MCPt(), 1);
   }
   return kTRUE;
 }
