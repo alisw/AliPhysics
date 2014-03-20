@@ -297,8 +297,10 @@ Bool_t AliHFEInclusiveSpectrum::Correct(Bool_t subtractcontamination, Bool_t sub
     ////////////////////
     // Normalization
     ////////////////////
-    correctedspectrumD = Normalize(dataGridAfterFirstSteps);
-    alltogetherspectrumD = Normalize(dataGridAfterFirstSteps);
+    if(dataGridAfterFirstSteps) {
+      correctedspectrumD = Normalize(dataGridAfterFirstSteps);
+      alltogetherspectrumD = Normalize(dataGridAfterFirstSteps);
+    }
   }
   
   // QA final results
