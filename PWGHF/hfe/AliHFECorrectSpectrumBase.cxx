@@ -86,7 +86,7 @@ AliHFECorrectSpectrumBase::AliHFECorrectSpectrumBase(const char *name):
 
   memset(fEtaRange, 0, sizeof(Double_t) * 2);
   memset(fEtaRangeNorm, 0, sizeof(Double_t) * 2);
-  memset(fDims, 0, sizeof(Double_t) * 3);
+  memset(fDims, 0, sizeof(Int_t) * 3);
   SetNbDimensions(1);
  
 }

@@ -1194,7 +1194,7 @@ Bool_t AliHFENonPhotonicElectron::FilterCategory2Track(const AliVTrack * const t
     const AliESDtrack *esdtrack = static_cast<const AliESDtrack *>(track);
     if(esdtrack->GetStatus() & AliESDtrack::kITSpureSA) return kFALSE;
     if(esdtrack->GetStatus() & AliESDtrack::kTPCin) return kFALSE;
-    if(esdtrack->GetStatus() & !AliESDtrack::kITSrefit) return kFALSE;
+    if(!(esdtrack->GetStatus() & AliESDtrack::kITSrefit)) return kFALSE;
     nclustersITS = esdtrack->GetITSclusters(NULL);
     for(int ily = 2; ily < 5; ily++)
       if(esdtrack->HasPointOnITSLayer(ily)) nclustersOuter++;
