@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_Helium3Pi(TString name="name"){
+AliAnalysisTask *AddTask_Helium3PiAOD(TString name="name"){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
