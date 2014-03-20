@@ -187,7 +187,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
       AliHeader* header = (AliHeader*) mcEvent->Header();
       AliGenCocktailEventHeader* cocktailHeader = dynamic_cast<AliGenCocktailEventHeader*> (header->GenEventHeader());
       AliGenEventHeader* mcHeader = dynamic_cast<AliGenEventHeader*> (cocktailHeader ? cocktailHeader->GetHeaders()->First() : header->GenEventHeader());
-      if (!mcHeader) { printf("mc header not found\n"); }
+      if (!mcHeader) { printf("mc header not found\n"); return; }
       nProduced = mcEvent->GetNumberOfTracks();
       nPrimGen = mcHeader->NProduced();
       fZvtx = mcEvent->GetPrimaryVertex()->GetZ();
@@ -335,5 +335,21 @@ AliCFParticle* AliAnalysisTaskCFTree::AddTrack(AliVParticle* part, UInt_t mask, 
   // kinematic cuts
   if (pt < fPtMin || TMath::Abs(eta) > fTrackEtaCut) return NULL;
 
-  return new ((*fParticles)[fParticles->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask);
+  
+  AliCFParticle* cfpart = new ((*fParticles)[fParticles->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,3);
+
+  AliVTrack* track = dynamic_cast<AliVTrack*> (part);
+  if (!track) return cfpart;
+  Float_t ncl  = track->GetTPCsignalN();
+  Float_t dedx = track->GetTPCsignalTunedOnData(); if (dedx<=0) dedx = track->GetTPCsignal();
+  Float_t beta = -99;
+  if (track->GetStatus()&AliESDtrack::kTOFpid){
+    Double_t tof[5];
+    track->GetIntegratedTimes(tof);
+    beta = tof[0]/track->GetTOFsignal();
+  }
+  cfpart->SetAt(ncl,0);
+  cfpart->SetAt(dedx,1);
+  cfpart->SetAt(beta,2);
+  return cfpart;
 }
