@@ -553,7 +553,7 @@ void AliHFEreducedEventCreatorAOD::UserExec(Option_t *){
 	    nslicetemp=0;
 	    for(Int_t b=(iplane*8);b<((iplane*8)+8);b++){
 	      if(track->GetTRDntrackletsPID()>0){
-		      if(arraytrdsignals[b]>0.001) nslicetemp++;
+		if(arraytrdsignals && (arraytrdsignals[b]>0.001)) nslicetemp++;
 	      }
 	    }
 	    if(nslicetemp > 0) hfetrack.SetTRDstatus(iplane);

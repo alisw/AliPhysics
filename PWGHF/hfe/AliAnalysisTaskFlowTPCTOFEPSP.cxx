@@ -32,6 +32,7 @@
 #include "TLorentzVector.h"
 #include "TParticle.h"
 #include "TF1.h"
+#include <TArrayD.h>
 
 #include <TDirectory.h>
 #include <TTreeStream.h>
@@ -86,7 +87,7 @@ ClassImp(AliAnalysisTaskFlowTPCTOFEPSP)
 
 //____________________________________________________________________
 AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
-  AliAnalysisTaskSE(),
+AliAnalysisTaskSE(),
   fListHist(0x0), 
   fAODAnalysis(kFALSE),
   fFilter(1<<4),
@@ -98,6 +99,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fVZEROEventPlaneC(kFALSE),
   fSubEtaGapTPC(kFALSE),
   fEtaGap(0.0),
+  fPtBinning(),
   fNbBinsCentralityQCumulant(4),
   fNbBinsPtQCumulant(12),
   fMinPtQCumulant(0.2),
@@ -135,6 +137,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fPIDTOFOnly(0),
   fPIDqa(0),
   fflowEvent(NULL),
+  fAsFunctionOfP(kTRUE),
   fHFEBackgroundCuts(0),
   fPIDBackground(0),
   fPIDBackgroundqa(0),
@@ -149,6 +152,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP() :
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
   fContaminationv2(0x0),
+  fContaminationmeanpt(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -208,6 +212,7 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fVZEROEventPlaneC(kFALSE),
   fSubEtaGapTPC(kFALSE),
   fEtaGap(0.0),
+  fPtBinning(),
   fNbBinsCentralityQCumulant(4),
   fNbBinsPtQCumulant(15),
   fMinPtQCumulant(0.0),
@@ -245,6 +250,7 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fPIDTOFOnly(0),
   fPIDqa(0),
   fflowEvent(NULL),
+  fAsFunctionOfP(kTRUE),
   fHFEBackgroundCuts(0),
   fPIDBackground(0),
   fPIDBackgroundqa(0),
@@ -259,6 +265,7 @@ AliAnalysisTaskFlowTPCTOFEPSP:: AliAnalysisTaskFlowTPCTOFEPSP(const char *name) 
   fEventPlaneaftersubtraction(0x0),
   fFractionContamination(0x0),
   fContaminationv2(0x0),
+  fContaminationmeanpt(0x0),
   fCosSin2phiep(0x0),
   fCos2phie(0x0),
   fSin2phie(0x0),
@@ -340,6 +347,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fVZEROEventPlaneC(ref.fVZEROEventPlaneC),
   fSubEtaGapTPC(ref.fSubEtaGapTPC),
   fEtaGap(ref.fEtaGap),
+  fPtBinning(ref.fPtBinning),
   fNbBinsCentralityQCumulant(ref.fNbBinsCentralityQCumulant),
   fNbBinsPtQCumulant(ref.fNbBinsPtQCumulant),
   fMinPtQCumulant(ref.fMinPtQCumulant),
@@ -377,6 +385,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fPIDTOFOnly(NULL),
   fPIDqa(NULL),
   fflowEvent(NULL),
+  fAsFunctionOfP(ref.fAsFunctionOfP),
   fHFEBackgroundCuts(NULL),
   fPIDBackground(NULL),
   fPIDBackgroundqa(NULL),
@@ -391,6 +400,7 @@ AliAnalysisTaskFlowTPCTOFEPSP::AliAnalysisTaskFlowTPCTOFEPSP(const AliAnalysisTa
   fEventPlaneaftersubtraction(NULL),
   fFractionContamination(NULL),
   fContaminationv2(NULL),
+  fContaminationmeanpt(0x0),
   fCosSin2phiep(NULL),
   fCos2phie(NULL),
   fSin2phie(NULL),
@@ -468,6 +478,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fVZEROEventPlaneC = fVZEROEventPlaneC;
   target.fSubEtaGapTPC = fSubEtaGapTPC;
   target.fEtaGap = fEtaGap;
+  target.fPtBinning = fPtBinning;
   target.fNbBinsCentralityQCumulant = fNbBinsCentralityQCumulant;
   target.fNbBinsPtQCumulant = fNbBinsPtQCumulant;
   target.fMinPtQCumulant = fMinPtQCumulant;
@@ -505,6 +516,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fPIDTOFOnly = fPIDTOFOnly;
   target.fPIDqa = fPIDqa;
   target.fflowEvent = fflowEvent;
+  target.fAsFunctionOfP = fAsFunctionOfP;
   target.fHFEBackgroundCuts = fHFEBackgroundCuts;  	 
   target.fPIDBackground = fPIDBackground; 		
   target.fPIDBackgroundqa = fPIDBackgroundqa; 		 	 
@@ -518,7 +530,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::Copy(TObject &o) const {
   target.fEventPlane=fEventPlane;     		 	 
   target.fEventPlaneaftersubtraction=fEventPlaneaftersubtraction; 		 	 
   target.fFractionContamination=fFractionContamination;     		 	 
-  target.fContaminationv2=fContaminationv2;           		 	 
+  target.fContaminationv2=fContaminationv2;           
+  target.fContaminationmeanpt=fContaminationmeanpt;           		 	 
   target.fCosSin2phiep=fCosSin2phiep;         		 	 
   target.fCos2phie=fCos2phie;   		 	 
   target.fSin2phie=fSin2phie;   		 	 
@@ -751,6 +764,8 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   Double_t binLimPt[21] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
 			   1.3, 1.4, 1.5, 2., 2.5, 3., 4., 6.};
 
+  if(!fPtBinning.GetSize()) fPtBinning.Set(nBinsPt+1, binLimPt);
+
   Int_t nBinsPtPlus = fNbBinsPtQCumulant;
   Double_t minPtPlus = fMinPtQCumulant;
   Double_t maxPtPlus = fMaxPtQCumulant;
@@ -906,14 +921,17 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   // Fraction of contamination, centrality
   const Int_t nDimcont=2;
-  Int_t nBincont[nDimcont] = {nBinsPt,nBinsC};
+  Int_t nBincont[nDimcont] = {fPtBinning.GetSize()-1,nBinsC};
   fFractionContamination = new THnSparseF("Contamination","Contamination",nDimcont,nBincont);
-  fFractionContamination->SetBinEdges(0,binLimPt);
+  fFractionContamination->SetBinEdges(0,fPtBinning.GetArray());
   fFractionContamination->SetBinEdges(1,binLimC);
   fFractionContamination->Sumw2();
   //  
-  fContaminationv2 = new TProfile2D("Contaminationv2","",nBinsC,binLimC,nBinsPt,binLimPt);
+  fContaminationv2 = new TProfile2D("Contaminationv2","",nBinsC,binLimC,fPtBinning.GetSize()-1,fPtBinning.GetArray());
   fContaminationv2->Sumw2();
+  //  
+  fContaminationmeanpt = new TProfile2D("Contaminationmeanpt","",nBinsC,binLimC,fPtBinning.GetSize()-1,fPtBinning.GetArray());
+  fContaminationmeanpt->Sumw2();
 
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: fraction of contamination");
 
@@ -941,11 +959,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   // Maps delta phi
   const Int_t nDimg=5;
-  Int_t nBing[nDimg] = {nBinsPhi,nBinsC,nBinsPt, nBinsCharge,nBinsEtaLess};
+  Int_t nBing[nDimg] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1, nBinsCharge,nBinsEtaLess};
   fDeltaPhiMaps = new THnSparseF("DeltaPhiMaps","DeltaPhiMaps",nDimg,nBing);
   fDeltaPhiMaps->SetBinEdges(0,binLimPhi);
   fDeltaPhiMaps->SetBinEdges(1,binLimC);
-  fDeltaPhiMaps->SetBinEdges(2,binLimPt);
+  fDeltaPhiMaps->SetBinEdges(2,fPtBinning.GetArray());
   fDeltaPhiMaps->SetBinEdges(3,binLimCharge);
   fDeltaPhiMaps->SetBinEdges(4,binLimEtaLess);
   fDeltaPhiMaps->Sumw2();  
@@ -954,11 +972,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
 
   // Maps cos phi
   const Int_t nDimh=5;
-  Int_t nBinh[nDimh] = {nBinsCos,nBinsC,nBinsPt,nBinsCharge,nBinsEtaLess};
+  Int_t nBinh[nDimh] = {nBinsCos,nBinsC,fPtBinning.GetSize()-1,nBinsCharge,nBinsEtaLess};
   fCosPhiMaps = new THnSparseF("CosPhiMaps","CosPhiMaps",nDimh,nBinh);
   fCosPhiMaps->SetBinEdges(0,binLimCos);
   fCosPhiMaps->SetBinEdges(1,binLimC);
-  fCosPhiMaps->SetBinEdges(2,binLimPt);
+  fCosPhiMaps->SetBinEdges(2,fPtBinning.GetArray());
   fCosPhiMaps->SetBinEdges(3,binLimCharge);
   fCosPhiMaps->SetBinEdges(4,binLimEtaLess);
   fCosPhiMaps->Sumw2();
@@ -994,37 +1012,37 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
     
     // Monitoring Event plane after subtraction of the track
     const Int_t nDime=4;
-    Int_t nBine[nDime] = {nBinsCos, nBinsC, nBinsPt, nBinsEta};
+    Int_t nBine[nDime] = {nBinsCos, nBinsC, fPtBinning.GetSize()-1, nBinsEta};
     fCos2phie = new THnSparseF("cos2phie","cos2phie",nDime,nBine);
-    fCos2phie->SetBinEdges(2,binLimPt);
+    fCos2phie->SetBinEdges(2,fPtBinning.GetArray());
     fCos2phie->SetBinEdges(3,binLimEta);
     fCos2phie->SetBinEdges(0,binLimCos);
     fCos2phie->SetBinEdges(1,binLimC);
     fCos2phie->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cos2phie");
     fSin2phie = new THnSparseF("sin2phie","sin2phie",nDime,nBine);
-    fSin2phie->SetBinEdges(2,binLimPt);
+    fSin2phie->SetBinEdges(2,fPtBinning.GetArray());
     fSin2phie->SetBinEdges(3,binLimEta);
     fSin2phie->SetBinEdges(0,binLimCos);
     fSin2phie->SetBinEdges(1,binLimC);
     fSin2phie->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: sin2phie");
     fCos2phiep = new THnSparseF("cos2phiep","cos2phiep",nDime,nBine);
-    fCos2phiep->SetBinEdges(2,binLimPt);
+    fCos2phiep->SetBinEdges(2,fPtBinning.GetArray());
     fCos2phiep->SetBinEdges(3,binLimEta);
     fCos2phiep->SetBinEdges(0,binLimCos);
     fCos2phiep->SetBinEdges(1,binLimC);
     fCos2phiep->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cos2phiep");
     fSin2phiep = new THnSparseF("sin2phiep","sin2phiep",nDime,nBine);
-    fSin2phiep->SetBinEdges(2,binLimPt);
+    fSin2phiep->SetBinEdges(2,fPtBinning.GetArray());
     fSin2phiep->SetBinEdges(3,binLimEta);
     fSin2phiep->SetBinEdges(0,binLimCos);
     fSin2phiep->SetBinEdges(1,binLimC);
     fSin2phiep->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: sin2phiep");
     fSin2phiephiep = new THnSparseF("sin2phie_phiep","sin2phie_phiep",nDime,nBine);
-    fSin2phiephiep->SetBinEdges(2,binLimPt);
+    fSin2phiephiep->SetBinEdges(2,fPtBinning.GetArray());
     fSin2phiephiep->SetBinEdges(3,binLimEta);
     fSin2phiephiep->SetBinEdges(0,binLimCos);
     fSin2phiephiep->SetBinEdges(1,binLimC);
@@ -1065,7 +1083,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: profilecosres");
     
     // Profile Maps cos phi
-    fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,nBinsPt,binLimPt);
+    fProfileCosPhiMaps = new TProfile2D("ProfileCosPhiMaps","ProfileCosPhiMaps",nBinsC,binLimC,fPtBinning.GetSize()-1,fPtBinning.GetArray());
     fProfileCosPhiMaps->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: profilecosphimaps");
 
@@ -1077,9 +1095,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fMonitorTrackCuts) {
     // Debugging tracking steps
     const Int_t nDimTrStep=2;
-    Int_t nBinTrStep[nDimTrStep] = {nBinsPt,nBinsStep};
+    Int_t nBinTrStep[nDimTrStep] = {fPtBinning.GetSize()-1,nBinsStep};
     fTrackingCuts = new THnSparseF("TrackingCuts","TrackingCuts",nDimTrStep,nBinTrStep);
-    fTrackingCuts->SetBinEdges(0,binLimPt);
+    fTrackingCuts->SetBinEdges(0,fPtBinning.GetArray());
     fTrackingCuts->SetBinEdges(1,binLimStep);
     fTrackingCuts->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: trackingcuts");
@@ -1092,11 +1110,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fMonitorContamination) { 
     // Maps delta phi contamination
     const Int_t nDimgcont=4;
-    Int_t nBingcont[nDimgcont] = {nBinsPhiLess,nBinsC,nBinsPt, nBinsTPCdEdx};
+    Int_t nBingcont[nDimgcont] = {nBinsPhiLess,nBinsC,fPtBinning.GetSize()-1, nBinsTPCdEdx};
     fDeltaPhiMapsContamination = new THnSparseF("DeltaPhiMapsContamination","DeltaPhiMapsContamination",nDimgcont,nBingcont);
     fDeltaPhiMapsContamination->SetBinEdges(0,binLimPhiLess);
     fDeltaPhiMapsContamination->SetBinEdges(1,binLimC);
-    fDeltaPhiMapsContamination->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsContamination->SetBinEdges(2,fPtBinning.GetArray());
     fDeltaPhiMapsContamination->SetBinEdges(3,binLimTPCdEdx);
     fDeltaPhiMapsContamination->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapscontamination");
@@ -1109,22 +1127,22 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fMonitorWithoutPID) {
     //
     const Int_t nDimgb=3;
-    Int_t nBingb[nDimgb] = {nBinsPhi,nBinsC,nBinsPt};
+    Int_t nBingb[nDimgb] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1};
     
     fDeltaPhiMapsBeforePID = new THnSparseF("DeltaPhiMapsBeforePID","DeltaPhiMapsBeforePID",nDimgb,nBingb);
     fDeltaPhiMapsBeforePID->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsBeforePID->SetBinEdges(1,binLimC);
-    fDeltaPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsBeforePID->SetBinEdges(2,fPtBinning.GetArray());
     fDeltaPhiMapsBeforePID->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapsbeforepid");
     
     const Int_t nDimhb=3;
-    Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,nBinsPt};
+    Int_t nBinhb[nDimhb] = {nBinsCos,nBinsC,fPtBinning.GetSize()-1};
     
     fCosPhiMapsBeforePID = new THnSparseF("CosPhiMapsBeforePID","CosPhiMapsBeforePID",nDimhb,nBinhb);
     fCosPhiMapsBeforePID->SetBinEdges(0,binLimCos);
     fCosPhiMapsBeforePID->SetBinEdges(1,binLimC);
-    fCosPhiMapsBeforePID->SetBinEdges(2,binLimPt);
+    fCosPhiMapsBeforePID->SetBinEdges(2,fPtBinning.GetArray());
     fCosPhiMapsBeforePID->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: cosphimapsbeforepid");
   }
@@ -1135,45 +1153,45 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   if(fMonitorPhotonic) {
     
     const Int_t nDimgbp=3;
-    Int_t nBingbp[nDimgbp] = {nBinsPhi,nBinsC,nBinsPt};
+    Int_t nBingbp[nDimgbp] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1};
     
     fDeltaPhiMapsTaggedPhotonic = new THnSparseF("DeltaPhiMapsTaggedPhotonic","DeltaPhiMapsTaggedPhotonic",nDimgbp,nBingbp);
     fDeltaPhiMapsTaggedPhotonic->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsTaggedPhotonic->SetBinEdges(1,binLimC);
-    fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedPhotonic->SetBinEdges(2,fPtBinning.GetArray());
     fDeltaPhiMapsTaggedPhotonic->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapstaggedphotonic");
     
     fDeltaPhiMapsTaggedNonPhotonic = new THnSparseF("DeltaPhiMapsTaggedNonPhotonic","DeltaPhiMapsTaggedNonPhotonic",nDimgbp,nBingbp);
     fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(1,binLimC);
-    fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedNonPhotonic->SetBinEdges(2,fPtBinning.GetArray());
     fDeltaPhiMapsTaggedNonPhotonic->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapstaggednonphotonic");
     
     fDeltaPhiMapsTaggedPhotonicLS = new THnSparseF("DeltaPhiMapsTaggedPhotonicLS","DeltaPhiMapsTaggedPhotonicLS",nDimgbp,nBingbp);
     fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(0,binLimPhi);
     fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(1,binLimC);
-    fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,binLimPt);
+    fDeltaPhiMapsTaggedPhotonicLS->SetBinEdges(2,fPtBinning.GetArray());
     fDeltaPhiMapsTaggedPhotonicLS->Sumw2();  
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: deltaphimapstaggedphotonicls");    
 
     const Int_t nDimMCSource=3;
-    Int_t nBinMCSource[nDimMCSource] = {nBinsC,nBinsPt,nBinsSource};
+    Int_t nBinMCSource[nDimMCSource] = {nBinsC,fPtBinning.GetSize()-1,nBinsSource};
     fMCSourceDeltaPhiMaps = new THnSparseF("MCSourceDeltaPhiMaps","MCSourceDeltaPhiMaps",nDimMCSource,nBinMCSource);
     fMCSourceDeltaPhiMaps->SetBinEdges(0,binLimC);
-    fMCSourceDeltaPhiMaps->SetBinEdges(1,binLimPt);
+    fMCSourceDeltaPhiMaps->SetBinEdges(1,fPtBinning.GetArray());
     fMCSourceDeltaPhiMaps->SetBinEdges(2,binLimSource);
     fMCSourceDeltaPhiMaps->Sumw2();
     AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: mcsourcedeltaphimaps");
     
     // Maps invmass opposite
     const Int_t nDimOppSign=5;
-    Int_t nBinOppSign[nDimOppSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+    Int_t nBinOppSign[nDimOppSign] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1,nBinsInvMass,nBinsSource};
     fOppSignDeltaPhiMaps = new THnSparseF("OppSignDeltaPhiMaps","OppSignDeltaPhiMaps",nDimOppSign,nBinOppSign);
     fOppSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
     fOppSignDeltaPhiMaps->SetBinEdges(1,binLimC);
-    fOppSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+    fOppSignDeltaPhiMaps->SetBinEdges(2,fPtBinning.GetArray());
     fOppSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
     fOppSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
     fOppSignDeltaPhiMaps->Sumw2();
@@ -1181,11 +1199,11 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
     
     // Maps invmass same sign
     const Int_t nDimSameSign=5;
-    Int_t nBinSameSign[nDimSameSign] = {nBinsPhi,nBinsC,nBinsPt,nBinsInvMass,nBinsSource};
+    Int_t nBinSameSign[nDimSameSign] = {nBinsPhi,nBinsC,fPtBinning.GetSize()-1,nBinsInvMass,nBinsSource};
     fSameSignDeltaPhiMaps = new THnSparseF("SameSignDeltaPhiMaps","SameSignDeltaPhiMaps",nDimSameSign,nBinSameSign);
     fSameSignDeltaPhiMaps->SetBinEdges(0,binLimPhi);
     fSameSignDeltaPhiMaps->SetBinEdges(1,binLimC);
-    fSameSignDeltaPhiMaps->SetBinEdges(2,binLimPt);
+    fSameSignDeltaPhiMaps->SetBinEdges(2,fPtBinning.GetArray());
     fSameSignDeltaPhiMaps->SetBinEdges(3,binLimInvMass);
     fSameSignDeltaPhiMaps->SetBinEdges(4,binLimSource);
     fSameSignDeltaPhiMaps->Sumw2();
@@ -1227,6 +1245,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserCreateOutputObjects()
   fListHist->Add(fDeltaPhiMaps);
   fListHist->Add(fPIDqa->MakeList("HFEpidQA"));
   fListHist->Add(fContaminationv2);
+  fListHist->Add(fContaminationmeanpt);
   AliDebug(2,"AliAnalysisTaskFlowTPCTOFEPSP: add default");
 
   if(fMonitorEventPlane) {
@@ -2171,7 +2190,9 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
       fCosPhiMaps->Fill(&valuensparseh[0]); //TR: fCosPhiQSum+=valuensparseh[0]*TMath:Sqrt(qAna->X()*qAna->X()+qAna->Y()*qAna->Y()); fCosPhiQN++;
       if((valuefractioncont[1] >=0) && (valuefractioncont[1] < 11)){
 	if(fContamination[((Int_t)valuefractioncont[1])]){
-	  Double_t weight = fContamination[((Int_t)valuefractioncont[1])]->Eval(track->P());
+	  Double_t weight = 1.;
+	  if(fAsFunctionOfP) weight = fContamination[((Int_t)valuefractioncont[1])]->Eval(track->P());
+	  else weight = fContamination[((Int_t)valuefractioncont[1])]->Eval(track->Pt());
 	  if(weight<0.0) weight=0.0;
 	  if(weight>1.0) weight=1.0;
 	  fFractionContamination->Fill(&valuefractioncont[0],weight);
@@ -2183,6 +2204,7 @@ void AliAnalysisTaskFlowTPCTOFEPSP::UserExec(Option_t */*option*/)
 	    AliDebug(2,Form("Check for centrality 5: value v2 %f, contamination %f\n",fv2contamination[5]->Eval(track->Pt()),fContamination[5]->Eval(track->P())));
 	    fContaminationv2->Fill(valuefractioncont[1],valuefractioncont[0],v2,weight);
 	  }
+	  fContaminationmeanpt->Fill(valuefractioncont[1],valuefractioncont[0],TMath::Abs(track->Pt()));
 	}     
       }
       if(fMonitorEventPlane) {

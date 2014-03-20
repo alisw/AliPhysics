@@ -54,8 +54,10 @@ TObject(),
   memset(fVZ, 0, sizeof(Float_t)*2);
   memset(fVMC, 0, sizeof(Double_t)*3);
   memset(fNContrib, 0, sizeof(Int_t) * 2);
-  fVertexResolution[0] = fVertexResolution[1] = 999.;
-  fVertexDispersion[0] = fVertexDispersion[0] = 999.;
+  fVertexResolution[1] = 999.;
+  fVertexResolution[0] = fVertexResolution[1];
+  fVertexDispersion[0] = 999.;
+  fVertexDispersion[1] = fVertexDispersion[0];
 }
 
 //_______________________________________
