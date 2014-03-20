@@ -36,5 +36,6 @@ if (FASTJET AND NOT FASTJET-NOTFOUND)
   set (FASTJET_DEFINITIONS -DHAVE_FASTJET)
 else()
   message(STATUS "FASTJET not found; make sure to set the FASTJET_ROOT environment variable or have fastjet-config in your path to use fastjet")
+  set (FASTJET)
 endif(FASTJET AND NOT FASTJET-NOTFOUND)
 
