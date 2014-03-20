@@ -133,7 +133,6 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliEmcalEsdTrackFilterTask *eTask = new AliEmcalEsdTrackFilterTask(taskName); // default is no cut
-  Bool_t includeNoITS = kFALSE;
   if ((dataSet == kLHC11c && cutsType == kHybrid) ||
       (dataSet == kLHC11d && cutsType == kHybrid) ||
       (dataSet == kLHC11h && cutsType == kHybrid)) {
@@ -143,6 +142,7 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041008);       //1004 removes ITSrefit requirement from standard set   
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetHybridTrackCuts(hybsp);
+    eTask->SetIncludeNoITS(kFALSE);
   } else if ((dataSet == kLHC10h && cutsType == kHybrid) ||
 	     (dataSet == kLHC11a && cutsType == kHybrid)) {
     /* hybrid track cuts*/
@@ -151,10 +151,18 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
     AliESDtrackCuts *hybsp = CreateTrackCutsPWGJE(10041006);       //1004 removes ITSrefit requirement from standard set    
     hybsp->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
     eTask->SetHybridTrackCuts(hybsp);
-    includeNoITS = kTRUE;
+    eTask->SetIncludeNoITS(kTRUE);
+  }
+  else if (dataSet == kLHC11h && cutsType == kTpcOnly) {
+    /* TPC-only constrained track cuts*/
+    AliESDtrackCuts *cutsp = CreateTrackCutsPWGJE(2001);       //TPC-only loose track cuts
+    eTask->SetTrackCuts(cutsp);
+    eTask->SetHybridTrackCuts(0);
+  }
+  else {
+    ::Error("AddTaskEmcalEsdTrackFilter","Track cuts type / period not recognized! Undefined beahviour will follow!");
   }
   eTask->SetTracksName(name);
-  eTask->SetIncludeNoITS(includeNoITS);
 
   cout << " *** Track selector task configured to select " << cutsLabel  << " in dataset "<< dataSetLabel << " *** " << endl;
 
