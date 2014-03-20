@@ -692,7 +692,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
         part = aodEvent->GetTrack(ipart);
 	
 	// track selection cuts
-	if ( !(((AliAODTrack*)part)->TestFilterBit(fFilterBit)) ) return 0; 
+	if (fFilterBit != 0 && !(((AliAODTrack*)part)->TestFilterBit(fFilterBit))) return 0; 
 	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
 	
 	// DCA XY
