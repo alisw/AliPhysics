@@ -561,8 +561,8 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=0.1;//pi-pi, pi-k, pi-p
     fQcut[1]=0.1;//k-k
     fQcut[2]=0.6;//the rest
-    fNormQcutLow[0] = 1.15;// was 0.15
-    fNormQcutHigh[0] = 1.2;// was 0.175
+    fNormQcutLow[0] = 0.15;// was 0.15
+    fNormQcutHigh[0] = 0.175;// was 0.175
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -581,8 +581,8 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=0.2;//pi-pi, pi-k, pi-p
     fQcut[1]=0.2;//k-k
     fQcut[2]=1.2;//the rest
-    fNormQcutLow[0] = 1.15;// was 0.3
-    fNormQcutHigh[0] = 1.2;// was 0.35
+    fNormQcutLow[0] = 0.3;// was 0.3
+    fNormQcutHigh[0] = 0.35;// was 0.35
     fNormQcutLow[1] = 1.34;//1.34
     fNormQcutHigh[1] = 1.4;//1.4
     fNormQcutLow[2] = 1.1;//1.1
@@ -601,7 +601,7 @@ void AliThreePionRadii::ParInit()
     fQcut[0]=2.0;// 0.4
     fQcut[1]=2.0;
     fQcut[2]=2.0;
-    fNormQcutLow[0] = 1.15;// was 1.0
+    fNormQcutLow[0] = 1.0;// was 1.0
     fNormQcutHigh[0] = 1.2;// was 1.2
     fNormQcutLow[1] = 1.0;
     fNormQcutHigh[1] = 1.2;
@@ -1260,10 +1260,10 @@ void AliThreePionRadii::UserExec(Option_t *)
       if(myTracks >= fMultLimit) {cout<<"More tracks than Track Limit"<<endl; return;}
       
       status=aodtrack->GetStatus();
-                
+      
       if(!aodtrack->TestFilterBit(BIT(7))) continue;// AOD filterBit cut
       if(aodtrack->GetTPCNcls() < 70) continue;// TPC nCluster cut
-
+      
       // FilterBit Overlap Check
       if(fFilterBit != 7){
 	Bool_t goodTrackOtherFB = kFALSE;
