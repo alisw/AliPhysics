@@ -104,7 +104,7 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB |
   cutsRP->SetMaxDCAToVertexXY(3.0);
   cutsRP->SetMaxDCAToVertexZ(3.0);
   cutsRP->SetAcceptKinkDaughters(kFALSE);
-  cutsRP->SetMinimalTPCdedx(10.);
+  cutsRP->SetMinimalTPCdedx(-1e10);
   cutsRP->SetAODfilterBit(AODfilterBitRP);    
   cutsRP->SetQA(doQA);
 
@@ -137,7 +137,7 @@ void AddTaskFlowHigherOrdersAllPID(Int_t triggerSelectionString=AliVEvent::kMB |
   //iexample: francesco's tunig TPC Bethe Bloch for data:
   //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
   //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
-  cutsPOI->SetMinimalTPCdedx(10.);
+  cutsPOI->SetMinimalTPCdedx(-1e10);
   cutsPOI->SetAODfilterBit(AODfilterBitPOI);
  // cutsPOI->SetAODfilterBit(768);  
   cutsPOI->SetQA(doQA);
