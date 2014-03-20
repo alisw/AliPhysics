@@ -1041,7 +1041,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
-        fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
+        if(primPart->GetPDG()) fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
 
         fPrimaryE = primPart->Energy();
         fPrimaryEt = primPart->Energy()*TMath::Sin(primPart->Theta());
@@ -1059,7 +1059,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fDepositedCode = part->GetPdgCode();
 	fDepositedE = part->Energy();
         fDepositedEt = part->Energy()*TMath::Sin(part->Theta());
-        fDepositedCharge = (Int_t) part->GetPDG()->Charge();
+        if(part->GetPDG()) fDepositedCharge = (Int_t) part->GetPDG()->Charge();
 
         fDepositedVx = part->Vx();
         fDepositedVy = part->Vy();
