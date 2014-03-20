@@ -47,7 +47,7 @@ const Float_t multmax_100_400 = 400;
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPbData = kFALSE, Double_t refMult=9.26)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2, TString multFile="", Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t useWeight=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPbData = kFALSE, Double_t refMult=9.26, Bool_t isFineNtrkBin=kFALSE)
 //AliCFContainer *AddTaskCFVertexingHF3Prong(const char* cutFile = "./DplustoKpipiCuts.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 411, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
@@ -93,9 +93,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	  printf("Will not be corrected with weights \n");
 	}else{
 	  TFile *fileMult = TFile::Open(multFile.Data());
-	  TDirectoryFile *dir1 = (TDirectoryFile*)fileMult->Get("PWG3_D2H_DMult_DplusLoose");
-	  TList* list1=(TList*)dir1->Get("coutputDplusLoose");
-	  hMult=(TH1F*)list1->FindObject("hGenPrimaryParticlesInelGt0");
+	  if(isPPbData) hMult = (TH1F*)fileMult->Get("hNtrUnCorrEvWithCandWeight");
+	  else {
+	    TDirectoryFile *dir1 = (TDirectoryFile*)fileMult->Get("PWG3_D2H_DMult_DplusLoose");
+	    TList* list1=(TList*)dir1->Get("coutputDplusLoose");
+	    hMult=(TH1F*)list1->FindObject("hGenPrimaryParticlesInelGt0");
+	  }
 	}
 	
 	// check that the fKeepD0fromB flag is set to true when the fKeepD0fromBOnly flag is true
@@ -182,7 +185,23 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 80 and 100
 	const Int_t nbinmult_100_400 = 3; //bins in multiplicity between 100 and 400
 	if(isPPbData) nbinmult += nbinmult_100_400;
-	
+
+	// Fine Ntrk bining setting
+	Double_t *binLimmultFine;
+	Int_t nbinmultTmp=nbinmult;
+	if(isFineNtrkBin){
+	  Int_t nbinLimmultFine=100;
+	  if(isPPbData) nbinLimmultFine = 200;
+	  const UInt_t nbinMultFine = nbinLimmultFine;
+	  binLimmultFine = new Double_t[nbinMultFine+1];
+	  for (Int_t ibin0 = 0 ; ibin0<nbinMultFine+1; ibin0++){
+	    binLimmultFine[ibin0] = ibin0;
+	  }
+	  nbinmultTmp=nbinLimmultFine;
+	}
+	const Int_t nbinmultTot=nbinmultTmp;
+
+
 	//the sensitive variables, their indices
 	const UInt_t ipT = 0;
 	const UInt_t iy  = 1;
@@ -219,7 +238,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	iBin[ifake]=nbinfake;
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
-	iBin[imult]=nbinmult;
+	iBin[imult]=nbinmultTot;
 	
 	//arrays for lower bounds :
 	Double_t *binLimpT=new Double_t[iBin[ipT]+1];
@@ -401,7 +420,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 		printf("normDecayLXY\n");
 		container -> SetBinLimits(inormDecayLXY,binLimnormDecayLXY);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imult,binLimmult);
+		if(isFineNtrkBin) container -> SetBinLimits(imult,binLimmultFine);
+		else container -> SetBinLimits(imult,binLimmult);
 		
 		container -> SetVarTitle(ipT,"pt");
 		container -> SetVarTitle(iy,"y");
@@ -457,7 +477,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 		printf("fake\n");
 		container -> SetBinLimits(ifakeFast,binLimfake);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imultFast,binLimmult);
+		if(isFineNtrkBin) container -> SetBinLimits(imultFast,binLimmultFine);
+		else container -> SetBinLimits(imultFast,binLimmult);
 
 		container -> SetVarTitle(ipTFast,"pt");
 		container -> SetVarTitle(iyFast,"y");
@@ -564,12 +585,17 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
 	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
 	task->SetUseNchWeight(useNchWeight); //correction with mult weight
-	if(useNchWeight){
+	if(useNchWeight || useNtrkWeight){
 	  if(hMult) task->SetMCNchHisto(hMult);
 	  else{
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
+	  task->SetUseNchWeight(kTRUE);
+	  if(useNtrkWeight) task->SetUseNchTrackletsWeight();
+	}
+	if(isPPbData) { 
+	  task->SetIsPPbData(kTRUE); 
 	}
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
