@@ -108,7 +108,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
   if (!(InputEvent()->FindListObject(fTracksName)))
     InputEvent()->AddObject(fTracks);
 
-  if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex if fDoSpdVtxCon==kTRUE
+  if (!fHybridTrackCuts) { // constrain TPC tracks to SPD vertex if fDoSpdVtxCon==kTRUE
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
     am->LoadBranch("Tracks");
