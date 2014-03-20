@@ -230,7 +230,7 @@ void AddTaskPWG4HighPtTrackQAAOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRUE, 
       strRunPeriod == "lhc13b" || strRunPeriod == "lhc13c" || strRunPeriod == "lhc13d" || strRunPeriod == "lhc13e" || 
       strRunPeriod == "lhc13f" || strRunPeriod == "lhc13g" || 
       strRunPeriod == "lhc12a15e" || strRunPeriod == "lhc13b4" || strRunPeriod == "lhc13b4_fix" || 
-      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f") {
+      strRunPeriod == "lhc13b4_plus" || strRunPeriod == "lhc12a15f" || strRunPeriod.Contains("lhc12a17") || strRunPeriod.Contains("lhc14a1")) {
     filterBit  = 768;
     filterBit1 = 256;
     filterBit2 = 512;
