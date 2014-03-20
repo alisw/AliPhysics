@@ -63,6 +63,9 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   } else if (strTrackCuts.Contains("lhc12g")) {
     dataSet = kLHC11h;
     dataSetLabel = "LHC12g";
+  } else if (strTrackCuts.Contains("lhc12")) {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC12";
   } else if (strTrackCuts.Contains("lhc13b")) {
     dataSet = kLHC11h;
     dataSetLabel = "LHC13b";
@@ -93,6 +96,12 @@ AliEmcalEsdTrackFilterTask* AddTaskEmcalEsdTrackFilter(
   } else if (strTrackCuts.Contains("lhc12f2a")) {
     dataSet = kLHC11d;
     dataSetLabel = "LHC12f2a";
+  } else if (strTrackCuts.Contains("lhc12a17")) {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC12a17";
+  } else if (strTrackCuts.Contains("lhc14a1")) {
+    dataSet = kLHC11h;
+    dataSetLabel = "LHC14a1";
   } else {
     ::Warning("AddTaskEmcalEsdTpcTrack", "Dataset not recognized, will assume LHC11h");
   }
