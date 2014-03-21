@@ -38,12 +38,11 @@ class AliAnalysisTaskSAQA : public AliAnalysisTaskEmcalJet {
 					       Float_t maxClusterE, Float_t maxClusterEta, Float_t maxClusterPhi,
 					       Float_t maxJetPt, Float_t maxJetEta, Float_t maxJetPhi);
   Bool_t                      RetrieveEventObjects()                                        ;
-  Int_t                       DoCellLoop(Float_t &sum, Float_t &sum_cut)                    ;
+  Int_t                       DoCellLoop(Float_t &sum)                    ;
   Int_t                       DoTrackLoop(Float_t &sum, AliVParticle* &leading)             ;
   Int_t                       DoClusterLoop(Float_t &sum, AliVCluster* &leading)            ;
   Int_t                       DoJetLoop(AliEmcalJet* &leading)                              ;
   Double_t                    GetFcross(AliVCluster *cluster, AliVCaloCells *cells)         ;
-  Double_t                    GetCellEnergySum(AliVCluster *cluster, AliVCaloCells *cells)  ;
 
   Float_t                     fCellEnergyCut;            // Energy cell cut
   Bool_t                      fParticleLevel;            // Set particle level analysis
