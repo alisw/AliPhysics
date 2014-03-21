@@ -36,7 +36,7 @@ ClassImp(AliAnalysisTaskSAQA)
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() : 
   AliAnalysisTaskEmcalJet("AliAnalysisTaskSAQA", kTRUE),
-  fCellEnergyCut(0.1),
+  fCellEnergyCut(0.05),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
   fCentMethod2(""),
@@ -88,7 +88,7 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 //________________________________________________________________________
 AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) : 
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fCellEnergyCut(0.1),
+  fCellEnergyCut(0.05),
   fParticleLevel(kFALSE),
   fIsMC(kFALSE),
   fCentMethod2(""),
@@ -540,7 +540,6 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   Float_t trackSum = 0;
   Float_t clusSum = 0;
   Float_t cellSum = 0;
-  Float_t cellCutSum = 0;
 
   Int_t ntracks = 0;
   Int_t nclusters = 0;
@@ -588,7 +587,7 @@ Bool_t AliAnalysisTaskSAQA::FillHistograms()
   }
   
   if (fCaloCells) {
-    ncells = DoCellLoop(cellSum, cellCutSum);
+    ncells = DoCellLoop(cellSum);
     AliDebug(2,Form("%d cells found in the event", ncells));
   }
 
@@ -675,7 +674,7 @@ void AliAnalysisTaskSAQA::FillEventQAHisto(Float_t cent, Float_t cent2, Float_t 
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
+Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum)
 {
   // Do cell loop.
 
@@ -685,27 +684,21 @@ Int_t AliAnalysisTaskSAQA::DoCellLoop(Float_t &sum, Float_t &sum_cut)
     return 0;
 
   const Int_t ncells = cells->GetNumberOfCells();
+  Int_t nAccCells = 0;
 
   for (Int_t pos = 0; pos < ncells; pos++) {
     Float_t amp   = cells->GetAmplitude(pos);
     Int_t   absId = cells->GetCellNumber(pos);
-    fHistCellsAbsIdEnergy[fCentBin]->Fill(absId,amp);
-    sum += amp;
+
     if (amp < fCellEnergyCut)
       continue;
-    sum_cut += amp;
+
+    fHistCellsAbsIdEnergy[fCentBin]->Fill(absId,amp);
+    nAccCells++;
+    sum += amp;
   } 
 
-  return ncells;
-}
-
-//________________________________________________________________________
-Double_t AliAnalysisTaskSAQA::GetCellEnergySum(AliVCluster *cluster, AliVCaloCells *cells)
-{
-  Double_t sum = 0;
-  for (Int_t i = 0; i < cluster->GetNCells(); i++) 
-    sum += cells->GetCellAmplitude(cluster->GetCellAbsId(i));
-  return sum;
+  return nAccCells;
 }
 
 //________________________________________________________________________
