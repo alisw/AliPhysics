@@ -107,6 +107,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentV0A;            // percentile centrality from V0A
+  Float_t  fCentV0A0;         // percentile centrality from V0A-123
   Float_t  fCentV0A123;         // percentile centrality from V0A-123
   Float_t  fCentV0C;            // percentile centrality from V0C
   Float_t  fCentV0MEq;          // percentile centrality from V0 equalized channel
@@ -147,6 +148,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TH1F    *fHtempV0M;           // histogram with centrality vs multiplicity using V0
   TH1F    *fHtempV0A;           // histogram with centrality vs multiplicity using V0A
+  TH1F    *fHtempV0A0;          // histogram with centrality vs multiplicity using V0A-123
   TH1F    *fHtempV0A123;        // histogram with centrality vs multiplicity using V0A-123
   TH1F    *fHtempV0C;           // histogram with centrality vs multiplicity using V0C
   TH1F    *fHtempV0MEq;         // histogram with centrality vs multiplicity using V0  equalized channel
@@ -189,6 +191,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TH1F *fHOutCentV0M    ;       //control histogram for centrality
   TH1F *fHOutCentV0A    ;       //control histogram for centrality
+  TH1F *fHOutCentV0A0   ;       //control histogram for centrality
   TH1F *fHOutCentV0A123 ;       //control histogram for centrality
   TH1F *fHOutCentV0C    ;       //control histogram for centrality
   TH1F *fHOutCentV0MEq  ;       //control histogram for centrality
@@ -256,6 +259,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0AC;          //control histogram for multiplicity
   TH1F *fHOutMultV0M ;          //control histogram for multiplicity
   TH1F *fHOutMultV0A ;          //control histogram for multiplicity
+  TH1F *fHOutMultV0A0 ;         //control histogram for multiplicity
   TH1F *fHOutMultV0A123 ;       //control histogram for multiplicity
   TH1F *fHOutMultV0C ;          //control histogram for multiplicity
   TH1F *fHOutMultV0MEq ;        //control histogram for multiplicity
