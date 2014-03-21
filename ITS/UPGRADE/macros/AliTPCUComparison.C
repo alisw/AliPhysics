@@ -55,7 +55,7 @@ static Int_t allselected=0;
 static Int_t allfound=0;
 
 Int_t AliTPCUComparison
-(Float_t ptcutl=0.2, Float_t ptcuth=10., const Char_t *dir=".") {
+(Float_t ptcutl=0., Float_t ptcuth=2., const Char_t *dir=".") {
    gBenchmark->Start("AliTPCUComparison");
 
    ::Info("AliTPCUComparison.C","Doing comparison...");
@@ -80,23 +80,24 @@ Int_t AliTPCUComparison
    hmpt->SetFillColor(6);
 
 
-
+   Int_t nb=100;
    TH1F *hgood=(TH1F*)gROOT->FindObject("hgood");
-   if (!hgood) hgood=new TH1F("hgood","Good tracks",30,0.2,6.1);
+   if (!hgood) hgood=new TH1F("hgood","Good tracks",nb,ptcutl,ptcuth);
     
    TH1F *hfound=(TH1F*)gROOT->FindObject("hfound");
-   if (!hfound) hfound=new TH1F("hfound","Found tracks",30,0.2,6.1);
+   if (!hfound) hfound=new TH1F("hfound","Found tracks",nb,ptcutl,ptcuth);
 
    TH1F *hfake=(TH1F*)gROOT->FindObject("hfake");
-   if (!hfake) hfake=new TH1F("hfake","Fake tracks",30,0.2,6.1);
+   if (!hfake) hfake=new TH1F("hfake","Fake tracks",nb,ptcutl,ptcuth);
 
    TH1F *hg=(TH1F*)gROOT->FindObject("hg");
-   if (!hg) hg=new TH1F("hg","Efficiency for good tracks",30,0.2,6.1);
+   if (!hg) hg=new TH1F("hg","Efficiency for good tracks",nb,ptcutl,ptcuth);
    hg->SetLineColor(4); hg->SetLineWidth(2);
 
    TH1F *hf=(TH1F*)gROOT->FindObject("hf");
-   if (!hf) hf=new TH1F("hf","Efficiency for fake tracks",30,0.2,6.1);
+   if (!hf) hf=new TH1F("hf","Efficiency for fake tracks",nb,ptcutl,ptcuth);
    hf->SetFillColor(1); hf->SetFillStyle(3013); hf->SetLineWidth(2);
+
 
    TH1F *he=(TH1F*)gROOT->FindObject("he");
    if (!he) 
@@ -330,9 +331,9 @@ Int_t AliTPCUComparison
    hg->SetXTitle("Pt (GeV/c)");
    hg->Draw();
 
-   TLine *line1 = new TLine(0.1,1.0,6.1,1.0); line1->SetLineStyle(4);
+   TLine *line1 = new TLine(ptcutl,1.0,ptcuth,1.0); line1->SetLineStyle(4);
    line1->Draw("same");
-   TLine *line2 = new TLine(0.1,0.9,6.1,0.9); line2->SetLineStyle(4);
+   TLine *line2 = new TLine(ptcutl,0.9,ptcuth,0.9); line2->SetLineStyle(4);
    line2->Draw("same");
 
    hf->SetFillColor(1);
@@ -547,13 +548,12 @@ Int_t GoodTracksTPC(const Char_t *dir) {
         if ((good[i]&0x5000) != 0x5000)
         if ((good[i]&0x2800) != 0x2800) continue;
         if ((good[i]&0x7FF ) < good_number) continue;
-
         TParticle *p = (TParticle*)stack->Particle(i);
         if (p == 0x0) {
          cerr<<"Can not get particle "<<i<<endl;
          continue;
         }
-        if (p->Pt()<0.100) continue;
+        if (p->Pt() <= 0.) continue;
         if (TMath::Abs(p->Pz()/p->Pt())>0.999) continue;
 
         Double_t vx=p->Vx(),vy=p->Vy(),vz=p->Vz();
