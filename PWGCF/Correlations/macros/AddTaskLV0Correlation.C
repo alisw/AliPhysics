@@ -23,7 +23,9 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
 											   Double_t fMassCutK0               = 0.0105,             
 											   Double_t fMassCutLa               = 0.0105,
 											   Double_t fTriglow			     = 6.0,
-											   Double_t fTrighigh                = 12.0) 
+											   Double_t fTrighigh                = 12.0,
+											   Double_t fTPCClusters			 = 70,
+											   Double_t fTPCfindratio            = 0.8) 
 {
 	// Get the current analysis manager.
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -79,6 +81,8 @@ AliLeadingV0Correlation* AddTaskLV0Correlation(TString  fListName               
 	myTask->SetMassCutLa(fMassCutLa);
 	myTask->SetTrigLow(fTriglow);
 	myTask->SetTrigHigh(fTrighigh);
+	myTask->SetTPCClusters(fTPCClusters);
+	myTask->SetTPCFinables(fTPCfindratio);
 	
 	mgr->AddTask(myTask);
 	
