@@ -35,6 +35,13 @@ class TObjArray;
 const int    kN1 = 8; 
 const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
 
+// pt bins for Xi minus
+const int    kN2 = 12; 
+const float  kPtBinV02[kN2+1] = {0.0,2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0,10.0,15.0,1000.};
+
+const int    kN3 = 3; 
+const float  kPtBinV03[kN3+1] = {0.0,2.0,7.0,1000.};
+
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
 
@@ -129,6 +136,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Bool_t   fDoMixEvt;                    //  Do Mixed Events
   Float_t  fTrigPtMin;                   //  Minimum pt for trigger particle
   Float_t  fTrigPtMax;                   //  Maximum pt for trigger particle
+  Float_t  fTrigPtMCMin;                 //  Minimum pt for trigger particle in MC
+  Float_t  fTrigPtMCMax;                 //  Maximum pt for trigger particle in MC
   Float_t  fTrigEtaMax;                  //  Maximum eta for trigger particle
   Bool_t   fCheckIDTrig;                 //  Do comparison with V0's daughter tracks?
   Bool_t   fSeparateInjPart;             //  Separate MC injected particles in case of correlation 
@@ -161,6 +170,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TObjArray* fTriggerPartMC;             // MC Trigger particle array
   TObjArray* fAssocParticles;            // Associated particle array
   TObjArray* fAssocPartMC;               // MC Associated particle array
+  TObjArray* fXiTriggerPartMC;           // Xi leading particle: MC Trigger particle array
 
   TH1F*   fEvents;                       //! Counter for the number of events in each step
   TH1F*   fCentrality;                   //! Event centrality per centil
@@ -186,13 +196,16 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fCheckIDTrigPtK0s;             //! Trigger particle: pt comparison between trigger track and K0s daughter track
   TH3F*   fCheckIDTrigPhiK0s;            //! Trigger particle: phi comparison between trigger track and K0s daughter track
   TH3F*   fCheckIDTrigEtaK0s;            //! Trigger particle: eta comparison between trigger track and K0s daughter track
+  TH3F*   fCheckIDTrigNclsK0s;           //! Trigger particle: number of cluster of the daughter particle 
   TH3F*   fCheckIDTrigPtLambda;          //! Trigger particle: pt comparison between trigger track and Lambda daughter track
   TH3F*   fCheckIDTrigPhiLambda;         //! Trigger particle: phi comparison between trigger track and Lambda daughter track
   TH3F*   fCheckIDTrigEtaLambda;         //! Trigger particle: eta comparison between trigger track and Lambda daughter track
+  TH3F*   fCheckIDTrigNclsLambda;        //! Trigger particle: number of cluster of the daughter particle  
   TH3F*   fCheckIDTrigPtAntiLambda;      //! Trigger particle: pt comparison between trigger track and AntiLambda daughter track
   TH3F*   fCheckIDTrigPhiAntiLambda;     //! Trigger particle: phi comparison between trigger track and AntiLambda daughter track
   TH3F*   fCheckIDTrigEtaAntiLambda;     //! Trigger particle: eta comparison between trigger track and AntiLambda daughter track
- 
+  TH3F*   fCheckIDTrigNclsAntiLambda;    //! Trigger particle: number of cluster of the daughter particle 
+
   // ==============  Monte Carlo  ================= //
   TH1F*   fInjectedParticles;            //! Number of injected particles
 
@@ -299,7 +312,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMCResPhi;             //! AntiLambda Assoc: phi resolution
 
 
-  /// ====== Histohgrmas for Correlations ====== ///
+  /// ====== Histograms for Correlations ====== ///
 
   TH3F*   fHistArmenterosPodolanski;     //! Armenteros-Podolanski plot inside 3 sigma of the signal
   TH3F*   fHistArmPodBckg;               //! Armenteros-Podolanski plot outside 3 sigma of the signal      
@@ -308,9 +321,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   //           K0s            //
   TH3F*   fK0sMass;                      //! Mass for K0s
   TH3F*   fK0sMassEmbeded;               //! Mass for K0s embeded
-  TH3F*   fK0sPtvsEta;                   //! K0s: pt vs eta
-  TH3F*   fK0sPtvsRap;                   //! K0s: pt vs rap
-  TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs phi
+  TH3F*   fK0sMassPtEta;                 //! K0s: mass vs pt vs eta
+  TH3F*   fK0sMassPtRap;                 //! K0s: mass vs pt vs rap
+  TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
   TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
   TH3F*   fK0sDCADaugToPrimVtx;          //! K0s: DCA to primary vertex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -334,9 +347,9 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMassEmbeded;            //! Mass for Lambda embeded
   TH3F*   fLambdaMass2;                  //! Mass for Lambda (rejecting crosscontamination)
   TH3F*   fLambdaMass2Embeded;           //! Mass for Lambda embded (rejecting crosscontamination)
-  TH3F*   fLambdaPtvsEta;                //! Lambda: pt vs eta
-  TH3F*   fLambdaPtvsRap;                //! Lambda: pt vs rap
-  TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs phi 
+  TH3F*   fLambdaMassPtEta;              //! Lambda: mass vs pt vs eta
+  TH3F*   fLambdaMassPtRap;              //! Lambda: mass vs pt vs rap
+  TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
   TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
   TH3F*   fLambdaDCADaugToPrimVtx;       //! Lambda: DCA to primary vrtex of daughters vs leading particle's pt inside a radio wrt the near-side peak
@@ -361,8 +374,8 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMass2;                    //! Mass for AntiLambda (rejecting crosscontamination)
   TH3F*   fAntiLambdaMass2Embeded;             //! Mass for AntiLambda embded (rejecting crosscontamination)
 
-  TH3F*   fAntiLambdaPtvsEta;                  //! AntiLambda: pt vs eta
-  TH3F*   fAntiLambdaPtvsRap;                  //! AntiLambda: pt vs rap
+  TH3F*   fAntiLambdaMassPtEta;                //! AntiLambda: pt vs eta
+  TH3F*   fAntiLambdaMassPtRap;                //! AntiLambda: pt vs rap
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
   TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
@@ -379,7 +392,15 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fAntiLambdaBckgPhiRadio ;            //! AntiLambda background: Phi vs radio inside a radio wrt the near-side peak
   TH2F*   fAntiLambdaBckgDCANegDaugToPrimVtx;  //! AntiLambda background: DCA of Negative daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
   TH2F*   fAntiLambdaBckgDCAPosDaugToPrimVtx;  //! AntiLambda background: DCA of Positive daughter to the primary vertex inside the radio 0.4 wrt the near-side peak
+  
+  //           Xi Minus          //
+  TH2F*   fXiMinusPtMCAssoc;                         //! Xi Minus MC: Pt vs Centrality when they are associated particles
+  TH2F*   fXiMinusPtMCTrigger;                       //! Xi Minus MC: Pt vs Centrality when they are trigger particles
+  TH3F*   fXiMinusdPhidEtaMC[kNCent*kN2];            //! Xi Minus MC: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fXiMinusdPhidEtaMC2[kNCent*kN2];           //! Xi Minus MC: Delta phi,Delta eta vs Z vertex position
+  TH3F*   fXiMinusdPhidEtaMC3[kNCent*kN3];           //! Xi Minus MC: Delta phi,Delta eta vs Z vertex position
 
+  //        Gamma converison      //
   TH3F*  fGammaConversiondPhidEta[kNCent];     //! Gamma conversion: Delta phi,Delta eta vs Z vertex position
   
     
