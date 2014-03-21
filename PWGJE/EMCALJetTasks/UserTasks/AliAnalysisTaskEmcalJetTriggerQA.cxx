@@ -7,6 +7,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TProfile.h>
 #include <THnSparse.h>
 #include <TList.h>
 #include <TLorentzVector.h>
@@ -42,6 +43,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA() :
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fhTriggerbit(0), 
   fHistRhovsCentFull(0),
   fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
@@ -99,6 +101,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
   fTriggerType(-1),
   fNFastOR(16),
   fhNEvents(0),
+  fhTriggerbit(0),
   fHistRhovsCentFull(0),
   fHistRhovsCentCharged(0),
   fh3PtEtaPhiTracks(0),
@@ -149,11 +152,7 @@ AliAnalysisTaskEmcalJetTriggerQA::AliAnalysisTaskEmcalJetTriggerQA(const char *n
 AliAnalysisTaskEmcalJetTriggerQA::~AliAnalysisTaskEmcalJetTriggerQA()
 {
   // Destructor.
-  if (fOutput) {
-    delete fOutput;  // delete output object list
-    fOutput = 0;
-  }
-
+ 
 }
 
 //________________________________________________________________________
@@ -227,6 +226,9 @@ void AliAnalysisTaskEmcalJetTriggerQA::UserCreateOutputObjects()
 
   fhNEvents = new TH1F("fhNEvents","fhNEvents;selection;N_{evt}",5,0,5);
   fOutput->Add(fhNEvents);
+
+  fhTriggerbit = new TProfile("fhTriggerbit","fhTriggerbit;;TriggerBit",1,0,1);
+  fOutput->Add(fhTriggerbit);
 
   fHistRhovsCentFull = new TH2F("fHistRhovsCentFull", "fHistRhovsCentFull", 101, -1,  100, 300, 0., 300.);
   fHistRhovsCentFull->GetXaxis()->SetTitle("Centrality (%)");
@@ -679,9 +681,8 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
     }
   }
 
-  if(GetJetContainer(fContainerFull) && GetJetContainer(fContainerCharged)) {
+  if(GetJetContainer(fContainerFull) && GetJetContainer(fContainerCharged))
     fh2PtLeadJet1VsLeadJet2->Fill(ptLeadJet1,ptLeadJet2);
-  }
 
   fh3PtLeadJet1VsPatchEnergy->Fill(ptLeadJet1,fMaxPatchEnergy,fTriggerType);
   fh3PtLeadJet2VsPatchEnergy->Fill(ptLeadJet2,fMaxPatchEnergy,fTriggerType);
@@ -695,6 +696,8 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::FillHistograms()
 Bool_t AliAnalysisTaskEmcalJetTriggerQA::Run()
 {
   // Run analysis code here, if needed. It will be executed before FillHistograms().
+
+  fhTriggerbit->Fill(0.5,GetCollisionCandidates());
 
   //Check if event is selected (vertex & pile-up)
   if(!SelectEvent())
@@ -752,7 +755,6 @@ Int_t AliAnalysisTaskEmcalJetTriggerQA::GetLeadingCellId(const AliVCluster *clus
       iCellAbsIdMax = absId;
     }
   }
-
   return iCellAbsIdMax;
 }
 
