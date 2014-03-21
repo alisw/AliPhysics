@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 341 2013-09-30 15:59:19Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 371 2013-11-30 19:23:47Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -64,9 +64,10 @@ public:
     fSelectPrimaryMCDataParticles = flagMCData;
   }
 
-  void SetRangeN(Int_t nMin, Int_t nMax) {
+  void SetRangeN(Int_t nMin, Int_t nMax, Double_t deltaEta) {
     fNMin = nMin;
     fNMax = nMax;
+    fDeltaEta = deltaEta;
   }
 
   TString GetOutputListName() const;
@@ -111,6 +112,7 @@ private:
   Int_t                fSelectPrimaryMCDataParticles; // 0: no, 1: yes, -1: only non-primary particles
   Int_t                fNMin;
   Int_t                fNMax;
+  Double_t             fDeltaEta;
   // histogram data
   Int_t    fnBinsCent, fnBinsPt, fnBinsPhi, fnBinsEta;
   Double_t fxMinCent,  fxMinPt,  fxMinPhi,  fxMinEta;
