@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 359 2013-10-29 15:39:09Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 371 2013-11-30 19:23:47Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -61,6 +61,7 @@ AliAnalysisTaskLongRangeCorrelations::AliAnalysisTaskLongRangeCorrelations(const
   , fSelectPrimaryMCDataParticles(0)
   , fNMin(-1)
   , fNMax(-1)
+  , fDeltaEta(-1)
   , fnBinsCent( 220), fnBinsPt(400), fnBinsPhi(4),              fnBinsEta(120)
   , fxMinCent( -5.0), fxMinPt( 0.0), fxMinPhi( 0.0),            fxMinEta(-1.5)
   , fxMaxCent(105.0), fxMaxPt( 4.0), fxMaxPhi( TMath::TwoPi()), fxMaxEta( 1.5) {
@@ -292,6 +293,8 @@ TString AliAnalysisTaskLongRangeCorrelations::GetOutputListName() const {
     listName += TString::Format("_nMin%d", fNMin);
   if (-1 != fNMax)
     listName += TString::Format("_nMax%d", fNMax);
+  if (fDeltaEta >= 0)
+    listName += TString::Format("_deltaEta%02.0f", 10*fDeltaEta);
   return listName;
 }
 
@@ -484,19 +487,31 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    TObjArray* tracks2,
 							    Double_t vertexZ,
 							    Double_t weight) {
-  const Long64_t nc1(tracks1->GetEntriesFast());
-  if (fNMin != -1 && nc1 < fNMin) return;
-  if (fNMax != -1 && nc1 > fNMax) return;
+  THnSparse* hN1ForThisEvent(ComputeNForThisEvent(tracks1, "hN1", vertexZ));
 
-  const Long64_t nc2(tracks1->GetEntriesFast());
-  if (fNMin != -1 && nc2 < fNMin) return;
-  if (fNMax != -1 && nc2 > fNMax) return;
+  hN1ForThisEvent->GetAxis(1)->SetRangeUser( fDeltaEta-0.10001,  fDeltaEta+0.09999);
+  TH1 *hTemp = hN1ForThisEvent->Projection(0);
+  const Long64_t ncPlus = Long64_t(hTemp->GetEntries());
+  delete hTemp;
+
+  hN1ForThisEvent->GetAxis(1)->SetRangeUser(-fDeltaEta-0.10001, -fDeltaEta+0.09999);
+  hTemp = hN1ForThisEvent->Projection(0);
+  const Long64_t ncMinus = Long64_t(hTemp->GetEntries());
+  delete hTemp;
+
+  // restore full axis range
+  hN1ForThisEvent->GetAxis(1)->SetRange(0, -1);
+
+  if (fNMin != -1 && ncPlus < fNMin) return;
+  if (fNMax != -1 && ncPlus > fNMax) return;
+  
+  if (fNMin != -1 && ncMinus < fNMin) return;
+  if (fNMax != -1 && ncMinus > fNMax) return;
 
   AliTHn* hN1(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   if (NULL == hN1) return;
 
   // <n_1>
-  THnSparse* hN1ForThisEvent(ComputeNForThisEvent(tracks1, "hN1", vertexZ));
   AddTHnSparseToAliTHn(hN1,hN1ForThisEvent, weight); 
 //   hN1->GetGrid(0)->GetGrid()->Add(hN1ForThisEvent, weight);
 
