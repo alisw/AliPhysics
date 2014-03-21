@@ -88,6 +88,11 @@ class AliAODPidHF : public TObject{
   void SetPLimit(Double_t *plim){for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
   void SetPLimit(Double_t *plim,Int_t npLim){fnPLimit=npLim;for(Int_t i=0;i<fnPLimit;i++) fPLimit[i]=plim[i];return;}
   void SetAsym(Bool_t asym){fAsym=asym;return;}
+  void SetUseAsymmnSigmaTOF(Double_t nsmin, Double_t nsmax, Double_t nscompmin, Double_t nscompmax){
+    fUseAsymTOF=kTRUE; 
+    fLownSigmaTOF=nsmin; fUpnSigmaTOF=nsmax;
+    fLownSigmaCompatTOF=nscompmin; fUpnSigmaCompatTOF=nscompmax;
+  }
   void SetTPC(Bool_t tpc){fTPC=tpc;return;}
   void SetTOF(Bool_t tof){fTOF=tof;return;}
   void SetITS(Bool_t its){fITS=its;return;}
@@ -195,6 +200,7 @@ class AliAODPidHF : public TObject{
   Int_t ApplyPidTPCRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const;
   Int_t ApplyPidITSRaw(AliAODTrack *track,Int_t specie) const;
+  Int_t ApplyTOFCompatibilityBand(AliAODTrack *track,Int_t specie) const;
 
   void PrintAll() const;
 
@@ -219,6 +225,11 @@ class AliAODPidHF : public TObject{
   Int_t fMatch; //switch to combine the info from more detectors: 1 = || , 2 = &, 3 = p region
   Bool_t fCompat; // compatibility region : useful only if fMatch=1
   Double_t fPCompatTOF; //  compatibility p limit for TOF  
+  Bool_t fUseAsymTOF; // flag for using asymmetrig nSigmaCut in TOF for fMatch==1
+  Double_t fLownSigmaTOF;  // lower nsigma TOF (for fUseAsymTOF)
+  Double_t fUpnSigmaTOF;  // upper nsigma TOF (for fUseAsymTOF)
+  Double_t fLownSigmaCompatTOF;  // lower nsigma TOF (for fUseAsymTOF)
+  Double_t fUpnSigmaCompatTOF;  // upper nsigma TOF (for fUseAsymTOF)
   Int_t fnNSigmaCompat; // number of sigmas
   Double_t *fnSigmaCompat; //[fnNSigmaCompat]  0: n sigma for TPC compatibility band, 1: for TOF  
   Double_t fMaxnSigmaCombined[3];  // nSigma cut for pi,K,p (TPC^2+TOF^2)
@@ -245,7 +256,7 @@ class AliAODPidHF : public TObject{
   Bool_t fUseCombined; // detectors to be involved for combined PID
   Bool_t fDefaultPriors; // use default priors for combined PID
 
-  ClassDef(AliAODPidHF,21) // AliAODPid for heavy flavor PID
+  ClassDef(AliAODPidHF,22) // AliAODPid for heavy flavor PID
 
     };
 
