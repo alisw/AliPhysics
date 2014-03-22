@@ -1028,7 +1028,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhMassPtLocMax[inlm]) ;
       
       fhSelectedMassPtLocMax[inlm]  = new TH2F
-      (Form("hSelectedMassPtLocMax%d",inlm+1),Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, NLM=%s",,nlm[inlm].Data()),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+      (Form("hSelectedMassPtLocMax%d",inlm+1),Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, NLM=%s",nlm[inlm].Data()),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
       fhSelectedMassPtLocMax[inlm]->SetYTitle("mass (GeV/c^{2})");
       fhSelectedMassPtLocMax[inlm]->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhSelectedMassPtLocMax[inlm]) ;
