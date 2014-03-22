@@ -270,7 +270,7 @@ void AliDielectron::Init()
   if (fCutQA) {
     fQAmonitor = new AliDielectronCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
     fQAmonitor->AddTrackFilter(&fTrackFilter);
-    fQAmonitor->AddPairFilter(&fPairFilter);
+    if(!fNoPairing) fQAmonitor->AddPairFilter(&fPairFilter);
     fQAmonitor->AddEventFilter(&fEventFilter);
     fQAmonitor->Init();
   }
