@@ -778,6 +778,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (!fAliAnalysisUtils)
       fAliAnalysisUtils = new AliAnalysisUtils();
     fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMaxVtxZ(999);
     if(fMinVz<-10.) fMinVz = -10.; 
     if(fMinVz>10.)  fMaxVz = 10.;
 
