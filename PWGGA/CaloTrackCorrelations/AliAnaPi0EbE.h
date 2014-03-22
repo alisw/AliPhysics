@@ -50,9 +50,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           FillRejectedClusterHistograms(TLorentzVector mom, Int_t mctag, Int_t nMaxima);
   
-  void           FillSelectedClusterHistograms(AliVCluster* cluster, 
-                                               Int_t nLocMax,
-                                               Int_t tag,
+  void           FillSelectedClusterHistograms(AliVCluster* cluster, Float_t pt,
+                                               Int_t nLocMax,        Int_t tag,
                                                Float_t asy = 0);
     
   void           FillWeightHistograms(AliVCluster *clus);
@@ -157,8 +156,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F         * fhPt  ;                   //! Number of identified  pi0/eta vs pT
   TH1F         * fhE   ;                   //! Number of identified  pi0/eta vs E
-  TH2F         * fhEEta  ;                 //! E vs eta of identified  pi0/eta
-  TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta
   TH2F         * fhPtEta  ;                //! Pt vs eta of identified  pi0/eta
   TH2F         * fhPtPhi  ;                //! Pt vs phi of identified  pi0/eta
   TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta
@@ -181,8 +178,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   TH1F         * fhPtReject  ;             //! Number of rejected as  pi0/eta vs pT
   TH1F         * fhEReject   ;             //! Number of rejected as  pi0/eta vs E
-  TH2F         * fhEEtaReject  ;           //! E vs eta of rejected as  pi0/eta 
-  TH2F         * fhEPhiReject  ;           //! E vs phi of rejected as  pi0/eta 
+  TH2F         * fhPtEtaReject  ;          //! pT vs eta of rejected as  pi0/eta
+  TH2F         * fhPtPhiReject  ;          //! pT vs phi of rejected as  pi0/eta
   TH2F         * fhEtaPhiReject  ;         //! eta vs phi of rejected as  pi0/eta 
   
   TH2F         * fhMass  ;                 //! pair mass vs E, for all pairs
@@ -192,6 +189,10 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
   TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
   
+  TH2F         * fhMassPtLocMax[3] ;       //! pair mass vs pT, for all pairs
+  TH2F         * fhSelectedMassPtLocMax[3] ;//! pair mass vs pT, for selected pairs
+  TH2F         * fhMCSelectedMassPtLocMax[6][3] ;//! pair mass vs pT, for selected pairs, vs originating particle
+
   TH2F         * fhMassNoOverlap  ;                 //! pair mass vs E, for all pairs, no overlap
   TH2F         * fhMassPtNoOverlap  ;               //! pair mass vs pT, for all pairs, no overlap
   TH2F         * fhMassSplitPtNoOverlap  ;          //! pair mass vs pT (split), for all pairs, no overlap
@@ -219,8 +220,8 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for pi0 mother
   TH2F         * fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for eta mother
   
-  TH2F         * fhAsymmetry ;             //! cluster E vs asymmetry of 2 splitted clusters
-  TH2F         * fhSelectedAsymmetry  ;    //! cluster E vs asymmetry of 2 splitted clusters, for selected pairs
+  TH2F         * fhAsymmetry ;             //! cluster pT vs asymmetry of 2 splitted clusters
+  TH2F         * fhSelectedAsymmetry  ;    //! cluster pT vs asymmetry of 2 splitted clusters, for selected pairs
   TH1F         * fhSplitE  ;               //! split sub-cluster pair energy sum
   TH1F         * fhSplitPt  ;              //! split sub-cluster pair pT sum
   TH2F         * fhSplitPtEta  ;           //! split sub-cluster pair pT sum vs eta
@@ -230,57 +231,57 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
   TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
   
-  TH2F         * fhEDispersion ;           //! E vs disp of selected cluster
-  TH2F         * fhELambda0 ;              //! E vs lambda0 of selected cluster 
-  TH2F         * fhELambda1 ;              //! E vs lambda1 of selected cluster 
-  TH2F         * fhELambda0NoTRD ;         //! E vs lambda0 of selected cluster, not behind TRD 
-  TH2F         * fhELambda0FracMaxCellCut ;//! E vs lambda0 of selected cluster, fraction of cluster energy in max cell cut 
-  TH2F         * fhEFracMaxCell ;          //! E vs frac max cell of selected cluster 
-  TH2F         * fhEFracMaxCellNoTRD ;     //! E vs frac max cell of selected cluster, not behind TRD  
-  TH2F         * fhENCells;                //! E vs N cells in selected cluster
-  TH2F         * fhETime;                  //! E vs Time of selected cluster 
-  TH2F         * fhEPairDiffTime;          //! E vs Pair of clusters time difference vs E
+  TH2F         * fhPtDispersion ;           //! pT vs disp of selected cluster
+  TH2F         * fhPtLambda0 ;              //! pT vs lambda0 of selected cluster 
+  TH2F         * fhPtLambda1 ;              //! pT vs lambda1 of selected cluster 
+  TH2F         * fhPtLambda0NoTRD ;         //! pT vs lambda0 of selected cluster, not behind TRD 
+  TH2F         * fhPtLambda0FracMaxCellCut ;//! pT vs lambda0 of selected cluster, fraction of cluster energy in max cell cut 
+  TH2F         * fhPtFracMaxCell ;          //! pT vs frac max cell of selected cluster 
+  TH2F         * fhPtFracMaxCellNoTRD ;     //! pT vs frac max cell of selected cluster, not behind TRD  
+  TH2F         * fhPtNCells;                //! pT vs N cells in selected cluster
+  TH2F         * fhPtTime;                  //! pT vs Time of selected cluster 
+  TH2F         * fhEPairDiffTime;           //! E pair vs Pair of clusters time difference vs E
   
-  TH2F         * fhDispEtaE ;              //! shower dispersion in eta direction
-  TH2F         * fhDispPhiE ;              //! shower dispersion in phi direction
-  TH2F         * fhLambda0DispEta[7] ;     //! shower shape correlation l0 vs disp eta
-  TH2F         * fhLambda0DispPhi[7] ;     //! shower shape correlation l0 vs disp phi
-  TH2F         * fhSumEtaE ;               //! shower dispersion in eta direction
-  TH2F         * fhSumPhiE ;               //! shower dispersion in phi direction
-  TH2F         * fhSumEtaPhiE ;            //! shower dispersion in eta and phi direction
-  TH2F         * fhDispEtaPhiDiffE ;       //! shower dispersion eta - phi
-  TH2F         * fhSphericityE ;           //! shower sphericity in eta vs phi
-  TH2F         * fhDispEtaDispPhi[7] ;     //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F         * fhAsymmetryLambda0[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
-  TH2F         * fhAsymmetryDispEta[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
-  TH2F         * fhAsymmetryDispPhi[7] ;   //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhPtDispEta ;              //! shower dispersion in eta direction
+  TH2F         * fhPtDispPhi ;              //! shower dispersion in phi direction
+  TH2F         * fhLambda0DispEta[7] ;      //! shower shape correlation l0 vs disp eta
+  TH2F         * fhLambda0DispPhi[7] ;      //! shower shape correlation l0 vs disp phi
+  TH2F         * fhPtSumEta ;               //! shower dispersion in eta direction
+  TH2F         * fhPtSumPhi ;               //! shower dispersion in phi direction
+  TH2F         * fhPtSumEtaPhi ;            //! shower dispersion in eta and phi direction
+  TH2F         * fhPtDispEtaPhiDiff ;       //! shower dispersion eta - phi
+  TH2F         * fhPtSphericity ;           //! shower sphericity in eta vs phi
+  TH2F         * fhDispEtaDispPhi[7] ;      //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
+  TH2F         * fhAsymmetryLambda0[7] ;    //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhAsymmetryDispEta[7] ;    //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
+  TH2F         * fhAsymmetryDispPhi[7] ;    //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
 
   //MC histograms
   
-  TH2F         * fhEMCLambda0[6] ;            //! E vs lambda0 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCLambda1[6] ;            //! E vs lambda1 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCDispersion[6] ;         //! E vs dispersion of pi0 pairs but really from MC particle
-  TH2F         * fhEMCLambda0NoTRD[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
-  TH2F         * fhEMCLambda0FracMaxCellCut[6] ;//! E vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
-  TH2F         * fhEMCFracMaxCell[6] ;        //! E vs fraction of max cell 
+  TH2F         * fhMCPtLambda0[6] ;              //! pT vs lambda0 of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtLambda1[6] ;              //! pT vs lambda1 of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtDispersion[6] ;           //! pT vs dispersion of pi0 pairs but really from MC particle
+  TH2F         * fhMCPtLambda0NoTRD[6] ;         //! pT vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
+  TH2F         * fhMCPtLambda0FracMaxCellCut[6] ;//! pT vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
+  TH2F         * fhMCPtFracMaxCell[6] ;       //! pT vs fraction of max cell
   
-  TH2F         * fhMCEDispEta[6] ;            //! shower dispersion in eta direction
-  TH2F         * fhMCEDispPhi[6] ;            //! shower dispersion in phi direction
+  TH2F         * fhMCPtDispEta[6] ;           //! shower dispersion in eta direction
+  TH2F         * fhMCPtDispPhi[6] ;           //! shower dispersion in phi direction
   TH2F         * fhMCLambda0DispEta[7][6] ;   //! shower shape correlation l0 vs disp eta
   TH2F         * fhMCLambda0DispPhi[7][6] ;   //! shower shape correlation l0 vs disp phi
-  TH2F         * fhMCESumEtaPhi[6] ;          //! shower dispersion in eta vs phi direction
-  TH2F         * fhMCEDispEtaPhiDiff[6] ;     //! shower dispersion in eta -phi direction
-  TH2F         * fhMCESphericity[6] ;         //! shower sphericity, eta vs phi
+  TH2F         * fhMCPtSumEtaPhi[6] ;         //! shower dispersion in eta vs phi direction
+  TH2F         * fhMCPtDispEtaPhiDiff[6] ;    //! shower dispersion in eta -phi direction
+  TH2F         * fhMCPtSphericity[6] ;        //! shower sphericity, eta vs phi
   TH2F         * fhMCDispEtaDispPhi[7][6] ;   //! shower dispersion in eta direction vs phi direction for 5 E bins [0-2],[2-4],[4-6],[6-10],[> 10]
-  TH2F         * fhMCEAsymmetry[6] ;          //! E asymmetry of 2 splitted clusters vs cluster E
+  TH2F         * fhMCPtAsymmetry[6] ;         //! E asymmetry of 2 splitted clusters vs cluster pT
   TH2F         * fhMCAsymmetryLambda0[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhMCAsymmetryDispEta[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   TH2F         * fhMCAsymmetryDispPhi[7][6] ; //! E asymmetry of 2 splitted clusters vs lam0 for 5 E bins
   
   TH1F         * fhMCE[6];                    //! Number of identified as pi0 vs E coming from X
   TH1F         * fhMCPt[6];                   //! Number of identified as pi0 vs Pt coming from X
-  TH2F         * fhMCPhi[6];                  //! pt vs phi of identified as pi0, coming from X
-  TH2F         * fhMCEta[6];                  //! pt vs eta of identified as pi0, coming from X
+  TH2F         * fhMCPtPhi[6];                //! pt vs phi of identified as pi0, coming from X
+  TH2F         * fhMCPtEta[6];                //! pt vs eta of identified as pi0, coming from X
   TH1F         * fhMCEReject[6];              //! Number of rejected as pi0 vs E coming from X
   TH1F         * fhMCPtReject[6];             //! Number of rejected as pi0 vs Pt coming from X
 
@@ -335,7 +336,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhTrackMatchedDPhiNeg  ;  //! Phi distance between track and cluster vs cluster E
   TH2F         * fhTrackMatchedDEtaDPhiNeg ; //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
-  TH2F         * fhTrackMatchedMCParticleE;    //! Trace origin of matched particle, energy
+  TH2F         * fhTrackMatchedMCParticlePt;   //! Trace origin of matched particle, energy
   TH2F         * fhTrackMatchedMCParticleDEta; //! Trace origin of matched particle, eta residual
   TH2F         * fhTrackMatchedMCParticleDPhi; //! Trace origin of matched particle, phi residual
   TH2F         * fhdEdx  ;                 //! matched track dEdx vs cluster E
@@ -343,18 +344,18 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEOverPNoTRD;                 //! matched track E cluster over P track vs cluster E, not behind TRD 
 
   // Local maxima
-  TH2F         * fhNLocMaxE;               //! number of maxima in selected clusters
   TH2F         * fhNLocMaxPt;              //! number of maxima in selected clusters
-  TH2F         * fhMCNLocMaxPt[6];         //! number of maxima in selected clusters
-  TH2F         * fhELambda0LocMax[3] ;     //! E vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster
-  TH2F         * fhELambda1LocMax[3] ;     //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
-  TH2F         * fhEDispersionLocMax[3] ;  //! E vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
-  TH2F         * fhEDispEtaLocMax[3] ;     //! E vs eta dispersion of selected cluster, 1,2,>2 local maxima in cluster 
-  TH2F         * fhEDispPhiLocMax[3] ;     //! E vs phi dispersion of selected cluster, 1,2,>2 local maxima in cluster 
-  TH2F         * fhESumEtaPhiLocMax[3] ;   //! E vs dispersion in eta and phi direction
-  TH2F         * fhEDispEtaPhiDiffLocMax[3] ; //! E vs dispersion eta - phi
-  TH2F         * fhESphericityLocMax[3] ;  //! E vs sphericity in eta vs phi  
-  TH2F         * fhEAsymmetryLocMax[3] ;   //! E asymmetry of 2 splitted clusters vs cluster E for different NLM
+  TH2F         * fhMCNLocMaxPt[6];         //! number of maxima in selected clusters, vs originating particle
+  TH2F         * fhPtLambda0LocMax[3] ;     //! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster
+  TH2F         * fhMCPtLambda0LocMax[6][3] ;//! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster, vs originating particle
+  TH2F         * fhPtLambda1LocMax[3] ;     //! pT vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster
+  TH2F         * fhPtDispersionLocMax[3] ;  //! pT vs lambda1 of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhPtDispEtaLocMax[3] ;     //! pT vs eta dispersion of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhPtDispPhiLocMax[3] ;     //! pT vs phi dispersion of selected cluster, 1,2,>2 local maxima in cluster 
+  TH2F         * fhPtSumEtaPhiLocMax[3] ;   //! pT vs dispersion in eta and phi direction
+  TH2F         * fhPtDispEtaPhiDiffLocMax[3] ; //! pT vs dispersion eta - phi
+  TH2F         * fhPtSphericityLocMax[3] ;  //! pT vs sphericity in eta vs phi  
+  TH2F         * fhPtAsymmetryLocMax[3] ;   //! E asymmetry of 2 splitted clusters vs cluster E for different NLM
 
   TH2F         * fhMassPairLocMax[8];      //! pair mass, origin is same pi0, combine clusters depending on number of maxima
   
@@ -384,7 +385,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,33)
+  ClassDef(AliAnaPi0EbE,34)
 } ;
 
 
