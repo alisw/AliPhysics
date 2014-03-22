@@ -315,6 +315,7 @@ void AliAnalysisTaskMultiDielectron::FinishTaskOutput()
   Int_t ic=0;
   AliDielectron *die=0;
   AliDielectron *die2=0;
+  fPairArray=0x0;
 
   // main loop
   while ( (die=static_cast<AliDielectron*>(nextDie())) ){
