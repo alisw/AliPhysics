@@ -55,7 +55,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     jetFinderKt->SetMinJetPt(0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
     jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
-    jetFinderAkt->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
     TF1 *fScale = new TF1("fScale","[0]",0.,100.);
     fScale->SetParameter(0,scaleFact);
