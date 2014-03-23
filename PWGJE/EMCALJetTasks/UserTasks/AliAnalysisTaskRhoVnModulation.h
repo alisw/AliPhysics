@@ -92,6 +92,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetCentralityClasses(TArrayD* c)                {fCentralityClasses = c;}
         void                    SetPtBinsHybrids(TArrayD* p)                    {fPtBinsHybrids = p;}
         void                    SetPtBinsJets(TArrayD* p)                       {fPtBinsJets = p;}
+        void                    SetExpectedRuns(TArrayI* r)                     {fExpectedRuns = r;}
+        void                    SetExpectedSemiGoodRuns(TArrayI* r)             {fExpectedSemiGoodRuns = r;}
         void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
@@ -230,6 +232,8 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TArrayD*                fCentralityClasses;     //-> centrality classes (maximum 10)
         TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
         TArrayD*                fPtBinsJets;            //-> pt bins for jet vn analysis
+        TArrayI*                fExpectedRuns;          //-> array of expected run numbers, used for QA
+        TArrayI*                fExpectedSemiGoodRuns;  //-> array of expected semi-good runs, used for cuts and QA
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
@@ -263,6 +267,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
         const char*             fNameRho;               //! name of rho
         TString                 fNameSmallRho;          // name of small rho
+        AliRhoParameter*        fCachedRho;             //! temp cache for rho pointer
         // additional jet cuts (most are inherited)
         Float_t                 fLocalJetMinEta;        // local eta cut for jets
         Float_t                 fLocalJetMaxEta;        // local eta cut for jets
@@ -384,7 +389,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 24);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 25);
 };
 
 #endif
