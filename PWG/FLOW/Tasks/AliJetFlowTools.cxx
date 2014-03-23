@@ -82,6 +82,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fOutputFileName     ("UnfoldedSpectra.root"),
     fOutputFile         (0x0),
     fCentralityBin      (0),
+    fCentralityArray    (0x0),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -871,6 +872,15 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
+    if(fCentralityArray) {
+        printf(" merging centralities \n");
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            printf( " searching for %s \n", spectrumName.Data());
+            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
+        }
+    }
+
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     if(!fDphiUnfolding) {
@@ -887,6 +897,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
         TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityBin)));
+        if(fCentralityArray) {
+            for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+               printf(" merging centralities \n");
+               rho->Add((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(i))));
+            }
+        }
         if(!rho) return 0x0;
         Bool_t normalizeToFullSpectrum = (fEventCount < 0) ? kTRUE : kFALSE;
         if (normalizeToFullSpectrum) fEventCount = rho->GetEntries();
@@ -924,6 +940,15 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+    if(fCentralityArray) {
+        printf(" merging centralities \n");
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            printf(" searching for %s \n ", deltaptName.Data());
+            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
+        }
+    }
+
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     if(!fDphiUnfolding) {
@@ -995,6 +1020,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
+        }
+    }
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), low, up, "e");
@@ -1008,6 +1039,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
+        }
+    }
+
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), low, up, "e");
