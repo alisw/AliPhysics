@@ -307,16 +307,21 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  if(!isPion && !isProton && !isKaon && !unidentified){
 		      eTBkgdAsReconstructed += et*corrBkgd*corrEff*corrNotID;
 		  }
-		  Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
-		  if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode){eTtotalAsReconstructedPi+=et*corrBkgd*corrEff*corrNotID;}
-		  if(pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode){eTtotalAsReconstructedK+=et*corrBkgd*corrEff*corrNotID;}
-		  if(pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){eTtotalAsReconstructedP+=et*corrBkgd*corrEff*corrNotID;}
+		  TParticlePDG *pdg = simPart->GetPDG(0);
+		  if(pdg){
+		    Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
+		    if(pdgCode==fgPiPlusCode ||pdgCode==fgPiMinusCode){eTtotalAsReconstructedPi+=et*corrBkgd*corrEff*corrNotID;}
+		    if(pdgCode==fgKPlusCode ||pdgCode==fgKMinusCode){eTtotalAsReconstructedK+=et*corrBkgd*corrEff*corrNotID;}
+		    if(pdgCode==fgProtonCode ||pdgCode==fgAntiProtonCode){eTtotalAsReconstructedP+=et*corrBkgd*corrEff*corrNotID;}
+		  }
 		}
 	    }
 
 	    if(cutset==2) eTtotalSimAll += Et(simPart);
 	    if(stack->IsPhysicalPrimary(label)){
 	      if (TMath::Abs(simPart->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut()){
+		TParticlePDG *pdg = simPart->GetPDG(0);
+		if(!pdg) continue;
 		Int_t pdgCode =  simPart->GetPDG(0)->PdgCode();
 		Int_t mypid = 0;
 		if(pdgCode==AliAnalysisHadEt::fgPiPlusCode) mypid = 1;
@@ -729,6 +734,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float myEt = Et(simPart);
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      eTtotalRecoBkgd+=myEt;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
@@ -751,6 +758,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -772,6 +781,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -789,6 +800,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -804,6 +817,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -819,6 +834,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -834,6 +851,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      float pT = simPart->Pt();
 		      float eta = simPart->Eta();
 		      eTtotalRecoBkgd+=myEt;
+		      TParticlePDG *simpdg = simPart->GetPDG(0);
+		      if(!simpdg) continue;
 		      if(fUseRecoPt){//Then we switch the pT and the Et
 			myEt = Et(track->P(),track->Theta(),simPart->GetPDG(0)->PdgCode(),track->Charge());
 			pT = track->Pt();
@@ -848,8 +867,12 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		      TParticle *grandma = NULL;
 		      if(mom->GetFirstMother()>=0) stack->Particle(mom->GetFirstMother());
 		      if(grandma){
+			TParticlePDG *mompdg = mom->GetPDG(0);
+			if(!mompdg) continue;
 			Int_t pdgCodeMom =  mom->GetPDG(0)->PdgCode();
 			if(pdgCodeMom==fgPiPlusCode || pdgCodeMom==fgPiMinusCode || pdgCodeMom==fgProtonCode ||pdgCodeMom==fgAntiProtonCode || pdgCodeMom==fgKPlusCode || pdgCode==fgKMinusCode){
+			  TParticlePDG *grandmapdg = grandma->GetPDG(0);
+			  if(!grandmapdg) continue;
 			  Int_t pdgCodeGrandma =  grandma->GetPDG(0)->PdgCode();
 		      
 			  if(pdgCodeGrandma == fgXiCode){
@@ -918,6 +941,7 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		    }
 		    if(!written){
 		      int mycode = simPart->GetPDG(0)->PdgCode();
+		      if(!mycode) continue;
 		      if( (pdgCode == fgGammaCode || pdgCode == fgPi0Code) && (mycode==fgEPlusCode||mycode==fgEMinusCode)){
 			written = true;
 			float myEt = Et(simPart);
@@ -1059,7 +1083,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	if (stack->IsPhysicalPrimary(iPart)){//primaries
 
 	  if (TMath::Abs(part->Eta()) < fHadEtReco->GetCorrections()->GetEtaCut())	    {
-
+	    TParticlePDG *pdg = part->GetPDG(0);
+	    if(!pdg) continue;
 	    Int_t pdgCode =  part->GetPDG(0)->PdgCode();
 	    bool filled = false;
 	    //Investigating smearing...
@@ -1607,9 +1632,11 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 	      float mompT = -5;
 	      if(part->GetFirstMother()>=0){
 		mom = stack->Particle(part->GetFirstMother());
-		pdgCodeMom =  mom->GetPDG(0)->PdgCode();
-		momEta = mom->Eta();
-		mompT = mom->Pt();
+		if(mom->GetPDG(0)){
+		  pdgCodeMom =  mom->GetPDG(0)->PdgCode();
+		  momEta = mom->Eta();
+		  mompT = mom->Pt();
+		}
 	      }
 	      //We want to separate the gammas by pi0, eta, omega0 but we don't want to double count energy so we get the et from the gamma daughter
 	      if(pdgCodeMom == fgEtaCode){
