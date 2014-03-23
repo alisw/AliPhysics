@@ -83,7 +83,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetDebugMode(-1);
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
-  jetTask->SetModulationFitMinMaxP(.001, 1);
+  jetTask->SetModulationFitMinMaxP(.01, 1);
   jetTask->SetRandomConeRadius(jetradius);
   // if centralities haven't been specified use defaults
   if(!centralities) {
@@ -94,7 +94,12 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   if(!randomizer) jetTask->SetRandomSeed(new TRandom3(0));
 
 
+  // pass the expected run lists to the task. the total list is used for QA plots which are stored per run-number, the semi-good list is used to change the phi acceptance of jets and pico trakcs, and - if an alternatie is provided - switch to a 'small rho' task, which also runs on limited acceptance
+  Int_t totalRuns[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, /* up till here original good TPC list */169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309, /* original semi-good tpc list */169415, 169411, 169035, 168988, 168984, 168826, 168777, 168512, 168511, 168467, 168464, 168342, 168310, 168115, 168108, 168107, 167987, 167915, 167903, /*new runs, good according to RCT */ 169238, 169160, 169156, 169148, 169145, 169144 /* run swith missing OROC 8 but seem ok in QA */};
+  jetTask->SetExpectedRuns(new TArrayI(sizeof(totalRuns)/sizeof(totalRuns[0]), totalRuns));
 
+  Int_t semiGoodRuns[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+  jetTask->SetExpectedSemiGoodRuns(new TArrayI(sizeof(semiGoodRuns)/sizeof(semiGoodRuns[0]), semiGoodRuns));
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
