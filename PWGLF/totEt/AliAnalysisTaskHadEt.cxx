@@ -275,6 +275,12 @@ if (!fESDEvent) {
 	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITS( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITS() );
 	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceTPCNoPID() );
 	fMCAnalysis->FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID( fRecAnalysis->GetCorrectedPiKPEtFullAcceptanceITSNoPID() );//Had
+
+	fMCAnalysis->FillSimRawEtVsRecoRawEtFullAcceptanceTPC( fRecAnalysis->GetRawEtFullAcceptanceTPC() );
+	fMCAnalysis->FillSimRawEtVsRecoRawEtFullAcceptanceITS( fRecAnalysis->GetRawEtFullAcceptanceITS() );
+	fMCAnalysis->FillSimRawEtVsRecoRawEtFullAcceptanceTPCNoPID( fRecAnalysis->GetRawEtFullAcceptanceTPCNoPID() );
+	fMCAnalysis->FillSimRawEtVsRecoRawEtFullAcceptanceITSNoPID( fRecAnalysis->GetRawEtFullAcceptanceITSNoPID() );//Had
+
       }
       if(fMCAnalysis->EMCAL()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtEMCALAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtEMCALAcceptanceTPC() );
