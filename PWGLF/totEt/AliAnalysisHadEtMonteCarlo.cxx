@@ -46,6 +46,8 @@ Float_t AliAnalysisHadEtMonteCarlo::fgSmearWidths[4] = {0.005,0.006,0.007,0.008}
 
 AliAnalysisHadEtMonteCarlo::AliAnalysisHadEtMonteCarlo():AliAnalysisHadEt()
 							,fSimPiKPEt(0)
+							,fSimRawEtTPC(0)
+							,fSimRawEtITS(0)
 							,fSimHadEt(0)
 							,fSimTotEt(0) 
 							,fSimPiKPEtShouldBeReco(0)
@@ -78,6 +80,8 @@ void AliAnalysisHadEtMonteCarlo::ResetEventValues(){//resetting event variables
     fSimHadEt=0.0;
     fSimTotEt=0.0;
     fSimPiKPEt=0.0;
+    fSimRawEtTPC=0.0;
+    fSimRawEtITS=0.0;
 }
 Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 { // analyse MC and real event info
@@ -1094,6 +1098,8 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
 		//To investigate Smearing...
 		Float_t myet = Et(part);
 		fSimPiKPEt += myet;
+		if(part->Pt()>0.150) fSimRawEtTPC += myet;
+		if(part->Pt()>0.100) fSimRawEtITS += myet;
 		Float_t theta = part->Theta();
 		Short_t charge = 1;
 		Float_t momentum = part->P();
@@ -1703,22 +1709,30 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     FillHisto1D("SimTotEt",fSimTotEt,1.0);
     FillHisto1D("SimHadEt",fSimHadEt,1.0);
     FillHisto1D("SimPiKPEt",fSimPiKPEt,1.0);
+    FillHisto1D("SimRawEtTPC",fSimRawEtTPC,1.0);
+    FillHisto1D("SimRawEtITS",fSimRawEtITS,1.0);
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){
       FillHisto1D("SimHadEtND",fSimHadEt,1.0);
       FillHisto1D("SimTotEtND",fSimTotEt,1.0);
       FillHisto1D("NEventsND",0.5,1);
       FillHisto1D("SimPiKPEtND",fSimPiKPEt,1.0);
+      FillHisto1D("SimRawEtNDTPC",fSimRawEtTPC,1.0);
+      FillHisto1D("SimRawEtNDITS",fSimRawEtITS,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtNDV0AND",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtNDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsNDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtNDV0AND",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtNDV0ANDTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtNDV0ANDITS",fSimRawEtITS,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtNDMB",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtNDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsNDMB",0.5,1);
 	FillHisto1D("SimPiKPEtNDMB",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtNDMBTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtNDMBITS",fSimRawEtITS,1.0);
       }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kSD){
@@ -1726,17 +1740,23 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
       FillHisto1D("SimTotEtSD",fSimTotEt,1.0);
       FillHisto1D("NEventsSD",0.5,1);
       FillHisto1D("SimPiKPEtSD",fSimPiKPEt,1.0);
+      FillHisto1D("SimRawEtSDTPC",fSimRawEtTPC,1.0);
+      FillHisto1D("SimRawEtSDITS",fSimRawEtITS,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtSDV0AND",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtSDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsSDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtSDV0AND",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtSDV0ANDTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtSDV0ANDITS",fSimRawEtITS,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtSDMB",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtSDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsSDMB",0.5,1);
 	FillHisto1D("SimPiKPEtSDMB",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtSDMBTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtSDMBITS",fSimRawEtITS,1.0);
       }
     }
     if(fDataSet!=20100 && AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kDD){
@@ -1744,17 +1764,22 @@ Int_t AliAnalysisHadEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
       FillHisto1D("SimTotEtDD",fSimTotEt,1.0);
       FillHisto1D("NEventsDD",0.5,1);
       FillHisto1D("SimPiKPEtDD",fSimPiKPEt,1.0);
+      FillHisto1D("SimRawEtDDTPC",fSimRawEtTPC,1.0);
       if(kIsOfflineV0AND){
 	FillHisto1D("SimHadEtDDV0AND",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtDDV0AND",fSimTotEt,1.0);
 	FillHisto1D("NEventsDDV0AND",0.5,1);
 	FillHisto1D("SimPiKPEtDDV0AND",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtDDV0ANDTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtDDV0ANDITS",fSimRawEtITS,1.0);
       }
       if(kIsOfflineMB){
 	FillHisto1D("SimHadEtDDMB",fSimHadEt,1.0);
 	FillHisto1D("SimTotEtDDMB",fSimTotEt,1.0);
 	FillHisto1D("NEventsDDMB",0.5,1);
 	FillHisto1D("SimPiKPEtDDMB",fSimPiKPEt,1.0);
+	FillHisto1D("SimRawEtDDMBTPC",fSimRawEtTPC,1.0);
+	FillHisto1D("SimRawEtDDMBITS",fSimRawEtITS,1.0);
       }
     }
     if(fCentBin != -1){//if we have Pb+Pb and a centrality bin was found
@@ -2093,9 +2118,11 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   TString *sHadEt = new TString("HadEt");
   TString *sTotEt = new TString("TotEt");
   TString *sPiKPEt =  new TString("PiKPEt");
+  TString *sRawEt =  new TString("RawEt");
   TString *sTotEtString = new TString("total E_{T}");
   TString *sHadEtString = new TString("hadronic E_{T}");
   TString *sPiKPEtString = new TString("E_{T}^{#pi,K,p}");
+  TString *sRawEtString = new TString("E_{T}^{raw}");
   TString *sFull = new TString("Full");
   TString *sEMCAL = new TString("EMCAL");
   TString *sPHOS = new TString("PHOS");
@@ -2160,6 +2187,13 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
 	      snprintf(ytitle,50,"Reconstructed %s",sPiKPEtString->Data());
 	      snprintf(xtitle,50,"Simulated %s",sPiKPEtString->Data());
 	      CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt*4,minEtPiKP,maxEtPiKP,nbinsEt*4,minEtPiKP,maxEtPiKP);
+
+	      //And for the raw ET
+	      snprintf(histoname,200,"Sim%sVsReco%s%sAcceptance%s%s",sRawEt->Data(),sRawEt->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	      snprintf(histotitle,200,"Simulated %s vs reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",sRawEtString->Data(),sRawEtString->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	      snprintf(ytitle,50,"Reconstructed %s",sRawEtString->Data());
+	      snprintf(xtitle,50,"Simulated %s",sRawEtString->Data());
+	      CreateHisto2D(histoname,histotitle,xtitle,ytitle,nbinsEt*4,minEtPiKP,maxEtPiKP,nbinsEt*4,minEtPiKP,maxEtPiKP);
 	    }
 	  }
 
@@ -2184,6 +2218,26 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   CreateHisto1D("SimPiKPEtNDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimPiKPEtDDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimPiKPEtSDMB","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDV0ANDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDV0ANDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDV0ANDTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDMBTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDMBTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDMBTPC","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDV0ANDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDV0ANDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDV0ANDITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtNDMBITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtDDMBITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
+  CreateHisto1D("SimRawEtSDMBITS","Simulated #pi,K,p E_{T}","Simulated #pi,K,p E_{T}","Number of events",nbinsEt*4,minEtPiKP,maxEtPiKP);
   CreateHisto1D("SimTotEt","Simulated Total E_{T}","Simulated Total E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimHadEt","Simulated Hadronic E_{T}","Simulated Hadronic E_{T}","Number of events",nbinsEt*4,minEt,maxEt);
   CreateHisto1D("SimTotEtND","Simulated Total E_{T}","Simulated Total E_{T} for non-diffractive events","Number of events",nbinsEt*4,minEt,maxEt);
