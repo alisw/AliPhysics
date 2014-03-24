@@ -774,6 +774,26 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     }
   }
 
+  if (fUseAliAnaUtils) {
+    if (!fAliAnalysisUtils)
+      fAliAnalysisUtils = new AliAnalysisUtils();
+    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMaxVtxZ(999);
+    if(fMinVz<-10.) fMinVz = -10.; 
+    if(fMinVz>10.)  fMaxVz = 10.;
+
+    if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("VtxSel2013pA",1);
+      return kFALSE;
+    }
+
+    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+      fHistEventRejection->Fill("PileUp",1);
+      return kFALSE;
+    }
+  }
+
   if ((fMinVz != -999) && (fMaxVz != -999)) {
     if (fNVertCont == 0 ) {
       if (fGeneralHistograms) 
@@ -834,24 +854,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (nTracksAcc<fMinNTrack) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("minNTrack",1);
-      return kFALSE;
-    }
-  }
-
-  if (fUseAliAnaUtils) {
-    if (!fAliAnalysisUtils)
-      fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
-    fAliAnalysisUtils->SetMaxVtxZ(10.);
-
-    if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("VtxSel2013pA",1);
-      return kFALSE;
-    }
-
-    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
-      fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
   }

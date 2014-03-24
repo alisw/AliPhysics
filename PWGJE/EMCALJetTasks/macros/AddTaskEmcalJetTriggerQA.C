@@ -106,6 +106,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   task->SelectCollisionCandidates(pSel);
 
   task->SetUseAliAnaUtils(kTRUE);
+  task->SetVzRange(-10.,10.);
 
   if(kPeriod.Contains("LHC13b4")) 
     task-SetIsPythia(kTRUE);

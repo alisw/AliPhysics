@@ -308,7 +308,26 @@ Bool_t AliDielectronPID::IsSelected(TObject* track)
       pid->SetTPCsignal(origdEdx/GetEtaCorr(aodTrack)/fgCorrdEdx);
     }
   }
-  
+
+  // check for corrections and add their variables to the fill map
+  if(fgFunCntrdCorr)  {
+    fUsedVars->SetBitNumber(fgFunCntrdCorr->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorr->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunCntrdCorr->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  if(fgFunWdthCorr)  {
+    fUsedVars->SetBitNumber(fgFunWdthCorr->GetXaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorr->GetYaxis()->GetUniqueID(), kTRUE);
+    fUsedVars->SetBitNumber(fgFunWdthCorr->GetZaxis()->GetUniqueID(), kTRUE);
+  }
+  for(UChar_t icut=0; icut<fNcuts; ++icut) {
+    if(!fMapElectronCutLow[icut]) continue;
+    for(Int_t idim=0; idim<fMapElectronCutLow[icut]->GetNdimensions(); idim++) {
+      TString var(fMapElectronCutLow[icut]->GetAxis(idim)->GetName());
+      fUsedVars->SetBitNumber(AliDielectronVarManager::GetValueType(var.Data()), kTRUE);
+    }
+  }
+
   //Fill values
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
@@ -443,12 +462,13 @@ Bool_t AliDielectronPID::IsSelectedTPC(AliVTrack * const part, Int_t icut, Doubl
     // get array of values for the corresponding dimensions using axis names
     for(Int_t idim=0; idim<fMapElectronCutLow[icut]->GetNdimensions(); idim++) {
       vals[idim] = values[AliDielectronVarManager::GetValueType(fMapElectronCutLow[icut]->GetAxis(idim)->GetName())];
+      // printf(" \t %s %.3f ",fMapElectronCutLow[icut]->GetAxis(idim)->GetName(),vals[idim]);
     }
     // find bin for values (w/o creating it in case it is not filled)
     Long_t bin = fMapElectronCutLow[icut]->GetBin(vals,kFALSE);
     if(bin>0) lowElectronCut=fMapElectronCutLow[icut]->GetBinContent(bin);
     else lowElectronCut=100;
-    //printf("low cut %.3f \t for %d dimensional cut map \n",lowElectronCut,fMapElectronCutLow[icut]->GetNdimensions());
+    //    printf("  low cut %.3f (%ld) \n", lowElectronCut,bin);
     delete [] vals;
   }
 

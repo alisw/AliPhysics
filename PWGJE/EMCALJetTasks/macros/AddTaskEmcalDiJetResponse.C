@@ -12,7 +12,7 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
 							     Double_t    ptTrackBias         = 0.,
 							     Int_t       responseVar         = 0,
 							     Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
-							     Float_t     nefCut              = 0.95
+							     Float_t     nefCut              = 10.
 							     ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -56,73 +56,63 @@ AliAnalysisTaskEmcalDiJetResponse* AddTaskEmcalDiJetResponse(TString     kTracks
   TString wagonName = Form("DiJetResponse_%s_%s_Rho%dTC%sMatch%dHadTrig%dRV%d",strJetsFull.Data(),strJetsFullMC.Data(),rhoType,trigClass.Data(),matchFullCh,(Int_t)(ptTrackBias),responseVar);
 
   //Configure DiJet task
-  AliAnalysisTaskEmcalDiJetResponse *taskDiJet = new AliAnalysisTaskEmcalDiJetResponse(wagonName.Data());
+  AliAnalysisTaskEmcalDiJetResponse *taskDiJetResp = new AliAnalysisTaskEmcalDiJetResponse(wagonName.Data());
  
   Printf("strJetsFull: %s",strJetsFull.Data());
   Printf("strJetsCh: %s",strJetsCh.Data());
 
-  taskDiJet->SetUseAliAnaUtils(kTRUE);
-  taskDiJet->SetIsPythia(kTRUE);
+  taskDiJetResp->SetUseAliAnaUtils(kTRUE);
+  taskDiJetResp->SetVzRange(-10.,10.);
+  taskDiJetResp->SetIsPythia(kTRUE);
 
-  taskDiJet->SetJetCorrelationType(corrType);
+  taskDiJetResp->SetJetCorrelationType(corrType);
 
-  taskDiJet->SetContainerFull(0);
-  taskDiJet->SetContainerCharged(1);
-  taskDiJet->SetContainerFullMC(2);
-  taskDiJet->SetContainerChargedMC(3);
+  taskDiJetResp->SetContainerFull(0);
+  taskDiJetResp->SetContainerCharged(1);
+  taskDiJetResp->SetContainerFullMC(2);
+  taskDiJetResp->SetContainerChargedMC(3);
 
-  taskDiJet->AddParticleContainer(kTracksName.Data());
-  taskDiJet->AddClusterContainer(kClusName.Data());
+  taskDiJetResp->AddParticleContainer(kTracksName.Data());
+  taskDiJetResp->AddClusterContainer(kClusName.Data());
    
-  taskDiJet->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
-  taskDiJet->AddJetContainer(strJetsCh.Data(),"TPC",R);
-  taskDiJet->AddJetContainer(strJetsFullMC.Data(),"EMCAL",R);
-  taskDiJet->AddJetContainer(strJetsChMC.Data(),"TPC",R);
+  taskDiJetResp->AddJetContainer(strJetsFull.Data(),"EMCAL",R);
+  taskDiJetResp->AddJetContainer(strJetsCh.Data(),"TPC",R);
+  taskDiJetResp->AddJetContainer(strJetsFullMC.Data(),"EMCAL",R);
+  taskDiJetResp->AddJetContainer(strJetsChMC.Data(),"TPC",R);
 
-  taskDiJet->SetZLeadingCut(0.98,0.98,0);
-  taskDiJet->SetZLeadingCut(0.98,0.98,2);
+  taskDiJetResp->SetZLeadingCut(0.98,0.98,0);
+  taskDiJetResp->SetZLeadingCut(0.98,0.98,2);
 
-  taskDiJet->SetNEFCut(0.,nefCut,0);
-  taskDiJet->SetNEFCut(0.,nefCut,2);
+  taskDiJetResp->SetNEFCut(0.,nefCut,0);
+  taskDiJetResp->SetNEFCut(0.,nefCut,2);
 
   for(Int_t i=0; i<4; i++) {
-    taskDiJet->SetPercAreaCut(0.6, i);
-    taskDiJet->SetPtBiasJetTrack(ptTrackBias,i);
+    taskDiJetResp->SetPercAreaCut(0.6, i);
+    taskDiJetResp->SetPtBiasJetTrack(ptTrackBias,i);
   }
 
-  taskDiJet->SetRhoType(rhoType);
+  taskDiJetResp->SetRhoType(rhoType);
+  taskDiJetResp->SetCentralityEstimator(CentEst);
+  taskDiJetResp->SelectCollisionCandidates(pSel);
+  taskDiJetResp->SetFullChargedMatchingType(matchFullCh);
+  taskDiJetResp->SetDoChargedCharged(kTRUE);
+  taskDiJetResp->SetDoFullCharged(kTRUE);
+  taskDiJetResp->SetMatchFullCharged(kTRUE);
+  taskDiJetResp->SetResponseVar(responseVar);
+  taskDiJetResp->SetPtMinTriggerJet(0.);
 
-  taskDiJet->SetCentralityEstimator(CentEst);
-
-  taskDiJet->SelectCollisionCandidates(pSel);
-
-  taskDiJet->SetFullChargedMatchingType(matchFullCh);
-
-  taskDiJet->SetDoChargedCharged(kTRUE);
-  taskDiJet->SetDoFullCharged(kTRUE);
-  taskDiJet->SetMatchFullCharged(kTRUE);
-
-  taskDiJet->SetResponseVar(responseVar);
-
-  taskDiJet->SetPtMinTriggerJet(0.);
-
-  mgr->AddTask(taskDiJet);
+  mgr->AddTask(taskDiJetResp);
 
   //Connnect input
-  mgr->ConnectInput (taskDiJet, 0, mgr->GetCommonInputContainer() );
+  mgr->ConnectInput (taskDiJetResp, 0, mgr->GetCommonInputContainer() );
 
   //Connect output
   AliAnalysisDataContainer *coutput1 = 0x0;
-
   TString contName(wagonName);
   contName += "_histos";
-
-  //  TString outputfile = Form("%s:%s",AliAnalysisManager::GetCommonFileName(),wagonName.Data());
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
-
   coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-
-  mgr->ConnectOutput(taskDiJet,1,coutput1);
+  mgr->ConnectOutput(taskDiJetResp,1,coutput1);
   
-  return taskDiJet;
+  return taskDiJetResp;
 }

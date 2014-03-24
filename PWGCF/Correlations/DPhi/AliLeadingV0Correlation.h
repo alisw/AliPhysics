@@ -77,6 +77,8 @@ public:
 	void SetMassCutLa(Double_t aMassCutLambda){fMassCutLa=aMassCutLambda;}
 	void SetTrigLow(Double_t aTriglow){fTriglow=aTriglow;}
 	void SetTrigHigh(Double_t aTrighigh){fTrighigh=aTrighigh;}
+	void SetTPCClusters(Double_t aTPCClusters){fTPCClusters=aTPCClusters;}
+	void SetTPCFinables(Double_t aTPCfindratio){fTPCfindratio=aTPCfindratio;}
 	
 private:
 	AliLeadingV0Correlation(const  AliLeadingV0Correlation &det);
@@ -147,6 +149,8 @@ private:
 	Double_t        fMassCutLa;						// selection for systamatics
 	Double_t        fTriglow;						// selection for systamatics
 	Double_t        fTrighigh;						// selection for systamatics
+	Double_t        fTPCClusters;					// selection for systamatics
+	Double_t        fTPCfindratio;					// selection for systamatics
 	
 	Bool_t          fUseChargeHadrons;				// Only pi,k,and proton
 	Double_t        fPtMin;							// 0.15 
@@ -154,11 +158,11 @@ private:
 	
 	TList       * fOutputList;						// Output list
 	
-	TH1F        *fHist_Mult_B4_Trg_Sel;				//! multiplicity distribution
-	TH1F        *fHist_Mult_Af_Trg_Sel;				//! multiplicity distribution
-	TH1F        *fHist_Mult_PVz_Cut;				//! multiplicity distribution
-	TH1F        *fHist_Mult_SPD_PVz;				//! multiplicity distribution
-	TH1F        *fHist_Mult_SPD_PVz_Pileup;			//! multiplicity distribution
+	TH2F        *fHist_Mult_B4_Trg_Sel;				//! multiplicity distribution
+	TH2F        *fHist_Mult_Af_Trg_Sel;				//! multiplicity distribution
+	TH2F        *fHist_Mult_PVz_Cut;				//! multiplicity distribution
+	TH2F        *fHist_Mult_SPD_PVz;				//! multiplicity distribution
+	TH2F        *fHist_Mult_SPD_PVz_Pileup;			//! multiplicity distribution
 	
 	TH1F		*fHistPVx;							//! multiplicity distribution
 	TH1F		*fHistPVy;							//! multiplicity distribution
@@ -172,12 +176,12 @@ private:
 	TH2F		*fHistMCGenK0;
 	TH2F		*fHistMCGenLAM;
 	TH2F		*fHistMCGenALAM;
-	TH2F		*fHistReconstK0;
-	TH2F		*fHistReconstLA;
-	TH2F		*fHistReconstALA;
-	TH2F		*fHistMCAssoK0;
-	TH2F		*fHistMCAssoLA;
-	TH2F		*fHistMCAssoALA;
+	THnSparse   *fHistReconstK0;
+	THnSparse   *fHistReconstLA;
+	THnSparse   *fHistReconstALA;
+	THnSparse   *fHistMCAssoK0;
+	THnSparse   *fHistMCAssoLA;
+	THnSparse   *fHistMCAssoALA;
 	
 	THnSparse   *fHistReconstSib;
 	THnSparse   *fHistReconstMix;
@@ -185,6 +189,8 @@ private:
 	THnSparse   *fHistReconstMixGEN;
 	THnSparse   *fHistReconstSibASO;
 	THnSparse   *fHistReconstMixASO;
+	THnSparse   *fHistReconstSibFEED;
+	THnSparse   *fHistReconstMixFEED;
 	
 	TH1F        *fHistTriggerSib;
 	TH1F		*fHistTriggerMix;

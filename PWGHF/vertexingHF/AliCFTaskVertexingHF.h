@@ -125,6 +125,10 @@ public:
 	  fHistoMCNch=new TH1F(*h);
 	}
 	void CreateMeasuredNchHisto();
+ 	void SetMeasuredNchHisto(TH1F* h){
+	  if(fHistoMeasNch) delete fHistoMeasNch;
+	  fHistoMeasNch=new TH1F(*h);
+	}
 	Double_t GetNchWeight(Int_t nch);
 	void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
 	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }

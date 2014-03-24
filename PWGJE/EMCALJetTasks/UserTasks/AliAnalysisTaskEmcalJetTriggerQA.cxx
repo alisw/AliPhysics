@@ -170,7 +170,7 @@ Bool_t AliAnalysisTaskEmcalJetTriggerQA::SelectEvent() {
     TString trigType2 = "J2";
     if(fTriggerClass.Contains("G")) {
       trigType1 = "G1";
-      trigType1 = "G2";
+      trigType2 = "G2";
     }
 
     TString firedTrigClass = InputEvent()->GetFiredTriggerClasses();

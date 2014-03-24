@@ -218,10 +218,6 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
   ,fPhoVertexReco_step1(0)
-  ,fPhoVertexReco_step2(0)
-  ,fPhoVertexReco_step3(0)
-  ,fPhoVertexReco_step4(0)
-  ,fPhoVertexReco_step5(0)
   ,fMatchV0_0(0)
   ,fMatchV0_1(0)
   ,fMatchMC_0(0)
@@ -376,10 +372,6 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
   ,fPhoVertexReco_step1(0)
-  ,fPhoVertexReco_step2(0)
-  ,fPhoVertexReco_step3(0)
-  ,fPhoVertexReco_step4(0)
-  ,fPhoVertexReco_step5(0)
   ,fMatchV0_0(0)
   ,fMatchV0_1(0)
   ,fMatchMC_0(0)
@@ -734,29 +726,24 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(itsPixel & BIT(4))cout << "5th layer hit" << endl;
     */
 
-    if(mcPho)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
-
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    if(mcPho && iHijing==1)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     //RecKink
     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
       if(track->GetKinkIndex(0) != 0) continue;
     } 
-    if(mcPho && iHijing==1)fPhoVertexReco_step2->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // RecPrim
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    if(mcPho && iHijing==1)fPhoVertexReco_step3->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    if(mcPho && iHijing==1)fPhoVertexReco_step4->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==1)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    if(mcPho && iHijing==1)fPhoVertexReco_step5->Fill(track->Pt(),conv_proR); // check MC vertex
 
     int nTPCcl = track->GetTPCNcls();
     //int nTPCclF = track->GetTPCNclsF(); // warnings
@@ -768,7 +755,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
     pt = track->Pt();
-    //if(pt<2.5)continue;
+    if(pt<2.5)continue;
     if(pt<0.1)continue;
     
     //Int_t charge = track->Charge();
@@ -945,15 +932,13 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     double emcphimax = 3.14;
     if(phi>emcphimim && phi<emcphimax)
       {
-       if(eop<-900)//no matching
-         {
-          if(fFlagPhotonicElec)fMatchV0_0->Fill(pt);  // data  
-          if(mcele>-0.5)fMatchMC_0->Fill(pt); // MC  
-         }
-       else
+       if(fFlagPhotonicElec)fMatchV0_0->Fill(pt);  // data  
+       if(mcele>2.1)fMatchMC_0->Fill(pt,mcWeight); // MC  
+
+       if(eop>=0.0) // have a match
          {
           if(fFlagPhotonicElec)fMatchV0_1->Fill(pt);   
-          if(mcele>-0.5)fMatchMC_1->Fill(pt);   
+          if(mcele>2.1)fMatchMC_1->Fill(pt,mcWeight);   
          }
       }
 
@@ -1530,22 +1515,12 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fPhoVertexReco_Invmass);
 
   fPhoVertexReco_step0= new TH2D("fPhoVertexReco_step0","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_step0->Sumw2();
   fOutputList->Add(fPhoVertexReco_step0);
 
   fPhoVertexReco_step1= new TH2D("fPhoVertexReco_step1","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_step1->Sumw2();
   fOutputList->Add(fPhoVertexReco_step1);
-
-  fPhoVertexReco_step2= new TH2D("fPhoVertexReco_step2","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step2);
-
-  fPhoVertexReco_step3= new TH2D("fPhoVertexReco_step3","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step3);
-
-  fPhoVertexReco_step4= new TH2D("fPhoVertexReco_step4","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step4);
-
-  fPhoVertexReco_step5= new TH2D("fPhoVertexReco_step5","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step5);
 
   fMatchV0_0 = new TH1D("fMatchV0_0","V0 match",100,0,20);
   fOutputList->Add(fMatchV0_0);

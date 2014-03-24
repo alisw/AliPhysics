@@ -422,15 +422,15 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     
     //    if(mumpdg == 1010010030 ||mumpdg == -1010010030 ){
 
-    if(mumpdg == 1010010030){
+    if(mumpdg == -1010010030){
 
       //	if(PDGCode==-211 || PDGCode==+211){  
-      if(PDGCode==-211){  
+      if(PDGCode==+211){  
 	Track0[nTrack0++]=j;
       }
       
       //	if(PDGCode==1000020030 ||PDGCode==-1000020030 ){
-      if(PDGCode==1000020030){
+      if(PDGCode==-1000020030){
 	Track1[nTrack1++]=j;
 	// 	new((*fNuclei)[nnuclei++]) AliAODTrack(*aodtrack);
       }
