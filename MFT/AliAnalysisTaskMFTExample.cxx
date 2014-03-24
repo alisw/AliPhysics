@@ -13,6 +13,7 @@
 #include "AliMFTConstants.h"
 #include "AliMFTSupport.h"
 #include "TRandom.h"
+#include "TList.h"
 
 ClassImp(AliAnalysisTaskMFTExample)
 
@@ -21,6 +22,7 @@ ClassImp(AliAnalysisTaskMFTExample)
 AliAnalysisTaskMFTExample::AliAnalysisTaskMFTExample() : 
   AliAnalysisTaskSE(),
   fVertexMode(0),
+  fHistogramList(0),
   fHistPtSingleMuons(0),
   fHistPtSingleMuonsFromJpsi(0),
   fHistPtDimuonsOS(0),
@@ -45,6 +47,7 @@ AliAnalysisTaskMFTExample::AliAnalysisTaskMFTExample() :
 AliAnalysisTaskMFTExample::AliAnalysisTaskMFTExample(const Char_t *name) : 
   AliAnalysisTaskSE(name),
   fVertexMode(0),
+  fHistogramList(0),
   fHistPtSingleMuons(0),
   fHistPtSingleMuonsFromJpsi(0),
   fHistPtDimuonsOS(0),
@@ -63,15 +66,7 @@ AliAnalysisTaskMFTExample::AliAnalysisTaskMFTExample(const Char_t *name) :
   fVtxResolutionITS[2] = 4.e-4;
 
   // Define input and output slots here
-  DefineOutput(1, TH1D::Class());
-  DefineOutput(2, TH1D::Class());
-  DefineOutput(3, TH1D::Class());
-  DefineOutput(4, TH1D::Class());
-  DefineOutput(5, TH1D::Class());
-  DefineOutput(6, TH1D::Class());
-  DefineOutput(7, TH1D::Class());
-  DefineOutput(8, TH1D::Class());
-  DefineOutput(9, TH1D::Class());
+  DefineOutput(1, TList::Class());
 
 }
 
@@ -81,6 +76,9 @@ void AliAnalysisTaskMFTExample::UserCreateOutputObjects() {
 
   // Called once
 
+  fHistogramList = new TList();
+  fHistogramList->SetOwner(kTRUE);
+  
   fHistPtSingleMuons = new TH1D("fHistPtSingleMuons","p_{T} of single muons (All)", 100, 0, 10);
   fHistPtSingleMuons -> SetXTitle("p_{T}  [GeV/c]");
   fHistPtSingleMuons -> Sumw2();
@@ -117,16 +115,18 @@ void AliAnalysisTaskMFTExample::UserCreateOutputObjects() {
   fHistResidualZVtxJpsi -> SetXTitle("Residual  [#mum]");
   fHistResidualZVtxJpsi -> Sumw2();
 
-  PostData(1, fHistPtSingleMuons);
-  PostData(2, fHistPtSingleMuonsFromJpsi);
-  PostData(3, fHistMassDimuonsOS);
-  PostData(4, fHistMassDimuonsJpsi);
-  PostData(5, fHistPtDimuonsOS);
-  PostData(6, fHistPtDimuonsJpsi);
-  PostData(7, fHistResidualXVtxJpsi);
-  PostData(8, fHistResidualYVtxJpsi);
-  PostData(9, fHistResidualZVtxJpsi);
-  
+  fHistogramList->Add(fHistPtSingleMuons);
+  fHistogramList->Add(fHistPtSingleMuonsFromJpsi);
+  fHistogramList->Add(fHistMassDimuonsOS);
+  fHistogramList->Add(fHistMassDimuonsJpsi);
+  fHistogramList->Add(fHistPtDimuonsOS);
+  fHistogramList->Add(fHistPtDimuonsJpsi);
+  fHistogramList->Add(fHistResidualXVtxJpsi);
+  fHistogramList->Add(fHistResidualYVtxJpsi);
+  fHistogramList->Add(fHistResidualZVtxJpsi);
+
+  PostData(1, fHistogramList);
+
 }
 
 //====================================================================================================================================================
@@ -227,15 +227,7 @@ void AliAnalysisTaskMFTExample::UserExec(Option_t *) {
  
   //--------------------------------------------------------------------------------------------------
    
-  PostData(1, fHistPtSingleMuons);
-  PostData(2, fHistPtSingleMuonsFromJpsi);
-  PostData(3, fHistMassDimuonsOS);
-  PostData(4, fHistMassDimuonsJpsi);
-  PostData(5, fHistPtDimuonsOS);
-  PostData(6, fHistPtDimuonsJpsi);
-  PostData(7, fHistResidualXVtxJpsi);
-  PostData(8, fHistResidualYVtxJpsi);
-  PostData(9, fHistResidualZVtxJpsi);
+  PostData(1, fHistogramList);
 
 }
 

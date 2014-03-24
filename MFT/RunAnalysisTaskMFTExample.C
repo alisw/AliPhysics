@@ -24,28 +24,12 @@ Bool_t RunAnalysisTaskMFTExample(const Char_t *runType="local",       // "grid" 
   mgr->AddTask(task);
   
   // create output container(s)
-  AliAnalysisDataContainer *output1 = mgr->CreateContainer("output1",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output2 = mgr->CreateContainer("output2",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output3 = mgr->CreateContainer("output3",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output4 = mgr->CreateContainer("output4",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output5 = mgr->CreateContainer("output5",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output6 = mgr->CreateContainer("output6",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output7 = mgr->CreateContainer("output7",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output8 = mgr->CreateContainer("output8",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
-  AliAnalysisDataContainer *output9 = mgr->CreateContainer("output9",   TH1D::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
+  AliAnalysisDataContainer *histogramList = mgr->CreateContainer("list", TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisMFT_Output.root");
   
   // connect input and output
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, output1);
-  mgr->ConnectOutput(task, 2, output2);
-  mgr->ConnectOutput(task, 3, output3);
-  mgr->ConnectOutput(task, 4, output4);
-  mgr->ConnectOutput(task, 5, output5);
-  mgr->ConnectOutput(task, 6, output6);
-  mgr->ConnectOutput(task, 7, output7);
-  mgr->ConnectOutput(task, 8, output8);
-  mgr->ConnectOutput(task, 9, output9);
-  
+  mgr->ConnectOutput(task, 1, histogramList);
+
   // RUN ANALYSIS
 
   TStopwatch timer;
