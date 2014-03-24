@@ -1290,7 +1290,7 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
     for(Int_t jj=0;jj<kNCent;jj++){
       for(Int_t k=0;k<kN3;k++){
 	snprintf(hNameHist,100, "fXiMinusdPhidEtaMC3_%.2f_%.2f_Cent_%.0f_%.0f",kPtBinV02[k],kPtBinV02[k+1],kBinCent[jj],kBinCent[jj+1]); 
-	fXiMinusdPhidEtaMC3[jj*kN2+k] = new TH3F(hNameHist,"Xi Minus MC (LP): #Delta#varphi vs #Delta#eta vs p_{T,l}; #Delta#varphi (rad); #Delta#eta; Vertex Z (cm)",
+	fXiMinusdPhidEtaMC3[jj*kN3+k] = new TH3F(hNameHist,"Xi Minus MC (LP): #Delta#varphi vs #Delta#eta vs p_{T,l}; #Delta#varphi (rad); #Delta#eta; Vertex Z (cm)",
 						 nbinsdPhi,-TMath::PiOver2(),3*TMath::PiOver2(),
 						 nbinsdEta,-1.5,1.5,
 						 nbinsVtx,-10.,10.);
