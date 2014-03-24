@@ -34,13 +34,14 @@ void AliAnalysisESESetter::SetNanoAODHeader(const AliAODEvent */* event*/   , Al
 void AliAnalysisESESetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNanoAODTrack * spTrack) {
   // Set custom variables in the special track
   // 1. Cache the indexes
-  static const Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
-  static const Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
-  static const Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
+  
+  static  Int_t kcstNSigmaTPCPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPi");
+  static  Int_t kcstNSigmaTPCKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCKa");
+  static  Int_t kcstNSigmaTPCPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTPCPr");
 
-  static const Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
-  static const Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
-  static const Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
+  static  Int_t kcstNSigmaTOFPi  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPi");
+  static  Int_t kcstNSigmaTOFKa  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFKa");
+  static  Int_t kcstNSigmaTOFPr  = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstNSigmaTOFPr");
 
   // TODO: set Bayes vars in special track
 
@@ -69,6 +70,8 @@ void AliAnalysisESESetter::SetNanoAODTrack (const AliAODTrack * aodTrack, AliNan
   Double_t nsigmaTOFkProton = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kProton);
   Double_t nsigmaTOFkKaon   = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kKaon); 
   Double_t nsigmaTOFkPion   = pidResponse->NumberOfSigmasTOF(inEvHMain, AliPID::kPion); 
+
+
 
   
 

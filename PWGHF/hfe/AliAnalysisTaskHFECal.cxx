@@ -218,10 +218,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
   ,fPhoVertexReco_step1(0)
-  ,fPhoVertexReco_step2(0)
-  ,fPhoVertexReco_step3(0)
-  ,fPhoVertexReco_step4(0)
-  ,fPhoVertexReco_step5(0)
+  ,fMatchV0_0(0)
+  ,fMatchV0_1(0)
+  ,fMatchMC_0(0)
+  ,fMatchMC_1(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -372,10 +372,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
   ,fPhoVertexReco_step1(0)
-  ,fPhoVertexReco_step2(0)
-  ,fPhoVertexReco_step3(0)
-  ,fPhoVertexReco_step4(0)
-  ,fPhoVertexReco_step5(0)
+  ,fMatchV0_0(0)
+  ,fMatchV0_1(0)
+  ,fMatchMC_0(0)
+  ,fMatchMC_1(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -716,8 +716,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     fTrackPtBefTrkCuts->Fill(track->Pt());		
 
-    UChar_t itsPixel = track->GetITSClusterMap();
     /*
+    UChar_t itsPixel = track->GetITSClusterMap();
     cout << "nITS = " << nITS << endl;
     if(itsPixel & BIT(0))cout << "1st layer hit" << endl;
     if(itsPixel & BIT(1))cout << "2nd layer hit" << endl;
@@ -726,41 +726,36 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(itsPixel & BIT(4))cout << "5th layer hit" << endl;
     */
 
-    if(mcPho)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
-
     // RecKine: ITSTPC cuts  
     if(!ProcessCutStep(AliHFEcuts::kStepRecKineITSTPC, track)) continue;
-    if(mcPho && iHijing==0)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     //RecKink
     if(fRejectKinkMother) { // Quick and dirty fix to reject both kink mothers and daughters
       if(track->GetKinkIndex(0) != 0) continue;
     } 
-    if(mcPho && iHijing==0)fPhoVertexReco_step2->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // RecPrim
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
-    if(mcPho && iHijing==0)fPhoVertexReco_step3->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    if(mcPho && iHijing==0)fPhoVertexReco_step4->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==0)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==1)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
-    if(mcPho && iHijing==0)fPhoVertexReco_step5->Fill(track->Pt(),conv_proR); // check MC vertex
 
     int nTPCcl = track->GetTPCNcls();
     //int nTPCclF = track->GetTPCNclsF(); // warnings
     //int nITS = track->GetNcls(0);
    
-    if(mcPho && iHijing==0)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==1)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR); // check MC vertex
  
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
     Double_t mom = -999., eop=-999., pt = -999., dEdx=-999., fTPCnSigma=-10, phi=-999., eta=-999.;
     pt = track->Pt();
-    //if(pt<2.5)continue;
+    if(pt<2.5)continue;
     if(pt<0.1)continue;
     
     //Int_t charge = track->Charge();
@@ -890,7 +885,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     hfetrack.SetPbPb();
     if(!fPID->IsSelected(&hfetrack, NULL, "", fPIDqa)) pidpassed = 0;
 
-    if(pidpassed==0) continue;
+    if(pidpassed==0) continue; // nSigma rejection
  
     //--- photonic ID
 
@@ -930,6 +925,21 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
            if(fFlagPhotonicElec) fPhoElecPtMC_eta_TPC->Fill(phoval,mcWeight);
            if(fFlagConvinatElec) fSameElecPtMC_eta_TPC->Fill(phoval,mcWeight);
           }
+      }
+
+    //--- matchin check
+    double emcphimim = 1.396;
+    double emcphimax = 3.14;
+    if(phi>emcphimim && phi<emcphimax)
+      {
+       if(fFlagPhotonicElec)fMatchV0_0->Fill(pt);  // data  
+       if(mcele>2.1)fMatchMC_0->Fill(pt,mcWeight); // MC  
+
+       if(eop>=0.0) // have a match
+         {
+          if(fFlagPhotonicElec)fMatchV0_1->Fill(pt);   
+          if(mcele>2.1)fMatchMC_1->Fill(pt,mcWeight);   
+         }
       }
 
     //+++++++  E/p cut ++++++++++++++++   
@@ -1252,7 +1262,7 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   Double_t max[16] = {kMaxP,   6.5, 4.0,   1.0,   4.0,  2.0, 0.05,    3.0,   3.0,  1.0,  20.0, 100,  100,  2.0, 180,  6.5};
   //fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;Ncell;clsF;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
   fEleInfo = new THnSparseD("fEleInfo", "Electron Info; pT [GeV/c]; TPC signal;phi;eta;nSig; E/p;Rmatch;DCA_xy;DCA_z;M20;mcpT;Centrality;charge;opp;same;trigCond;MCele", 16, nBins, min, max);
-  if(fqahist==1)fOutputList->Add(fEleInfo);
+  //if(fqahist==1)fOutputList->Add(fEleInfo);
 
   // Make common binning
   Int_t nBinsEop[3] =  { 10, 50, 100};
@@ -1505,22 +1515,24 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fPhoVertexReco_Invmass);
 
   fPhoVertexReco_step0= new TH2D("fPhoVertexReco_step0","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_step0->Sumw2();
   fOutputList->Add(fPhoVertexReco_step0);
 
   fPhoVertexReco_step1= new TH2D("fPhoVertexReco_step1","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_step1->Sumw2();
   fOutputList->Add(fPhoVertexReco_step1);
 
-  fPhoVertexReco_step2= new TH2D("fPhoVertexReco_step2","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step2);
+  fMatchV0_0 = new TH1D("fMatchV0_0","V0 match",100,0,20);
+  fOutputList->Add(fMatchV0_0);
 
-  fPhoVertexReco_step3= new TH2D("fPhoVertexReco_step3","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step3);
+  fMatchV0_1 = new TH1D("fMatchV0_1","V0 match",100,0,20);
+  fOutputList->Add(fMatchV0_1);
 
-  fPhoVertexReco_step4= new TH2D("fPhoVertexReco_step4","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step4);
+  fMatchMC_0 = new TH1D("fMatchMC_0","MC match",100,0,20);
+  fOutputList->Add(fMatchMC_0);
 
-  fPhoVertexReco_step5= new TH2D("fPhoVertexReco_step5","photon production Vertex mass selection",40,0,20,250,0,50);
-  fOutputList->Add(fPhoVertexReco_step5);
+  fMatchMC_1 = new TH1D("fMatchMC_1","MC match",100,0,20);
+  fOutputList->Add(fMatchMC_1);
 
   PostData(1,fOutputList);
 }

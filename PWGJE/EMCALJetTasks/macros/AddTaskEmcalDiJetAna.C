@@ -10,9 +10,9 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
 						   Int_t       matchFullCh         = AliAnalysisTaskEmcalDiJetBase::kNoMatching,
 						   Double_t    ptTrackBias         = 0.,
 						   Int_t       corrType            = AliAnalysisTaskEmcalDiJetBase::kCorrelateTwo,
-						   Float_t     nefCut              = 0.95,
+						   Float_t     nefCut              = 10.,
 						   Int_t       nCentBins           = 5,
-						   Double_t    scaleFact           = 1.42
+						   Double_t    scaleFact           = 1.28
 						   ) {
   
   enum AlgoType {kKT, kANTIKT};
@@ -55,7 +55,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
     jetFinderKt->SetMinJetPt(0.);
     jetFinderAKt  = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus);
     jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
-    jetFinderAkt->SelectCollisionCandidates(AliVEvent::kAny);
+    jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
     TF1 *fScale = new TF1("fScale","[0]",0.,100.);
     fScale->SetParameter(0,scaleFact);
@@ -86,6 +86,7 @@ AliAnalysisTaskEmcalDiJetAna* AddTaskEmcalDiJetAna(TString     kTracksName      
   taskDiJet = new AliAnalysisTaskEmcalDiJetAna(wagonName.Data());
 
   taskDiJet->SetUseAliAnaUtils(kTRUE);
+  taskDiJet->SetVzRange(-10.,10.);
   taskDiJet->SetTriggerClass(trigClass.Data());
 
   if(ptminTrack==0.) {

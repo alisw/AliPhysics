@@ -20,7 +20,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              isEMCalTrain            = kFALSE,
   Bool_t              calculateExternalRho    = kTRUE,
   Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
-  Int_t               numberOfCentralityBins  = 20
+  Int_t               numberOfCentralityBins  = 20,
+  const char*         externalRhoName         = "ExternalRhoTask"
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -90,18 +91,14 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   // #### Define extern rho task
   if(calculateExternalRho)
   {
-    TString myRhoName("ExternalRhoTask");
+    TString myRhoName(externalRhoName);
 
-    AliAnalysisTaskRhoSparse* mgrTask = manager->GetTask(myRhoName.Data());
-    if(!mgrTask) // rho task does not yet exist
-    {
-      AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
-      AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
-      jetFinderRhoKT->SetMinJetPt(0);
+    AliEmcalJetTask* jetFinderRho = AddTaskEmcalJet(usedTracks,"",1,0.4,1,0.150,0.300); // anti-kt
+    AliEmcalJetTask* jetFinderRhoKT = AddTaskEmcalJet(usedTracks,"",0,0.4,1,0.150,0.300); // kt
+    jetFinderRhoKT->SetMinJetPt(0);
 
-      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
-      AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), jetFinderRho->GetName(), usedTracks, "", myRhoName.Data(), jetRadius,"TPC", 0., 5., 0, 0,0,kFALSE,myRhoName.Data(),kTRUE);
-    }    
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
+    AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), jetFinderRho->GetName(), usedTracks, "", myRhoName.Data(), 0.4,"TPC", 0., 5., 0, 0,0,kFALSE,myRhoName.Data(),kTRUE);
   }
 
   // #### Define analysis task

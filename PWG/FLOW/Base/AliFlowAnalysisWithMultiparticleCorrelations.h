@@ -109,6 +109,9 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t GetMaxNoRPs() const {return this->fMaxNoRPs;};
   void SetExactNoRPs(Int_t const exact) {fUseInternalFlags = kTRUE; this->fExactNoRPs = exact;};
   Int_t GetExactNoRPs() const {return this->fExactNoRPs;};
+  void SetAnalysisTag(const char *at) {this->fAnalysisTag = TString(at);};
+  TString GetAnalysisTag() const {return this->fAnalysisTag;};
+  void SetDumpThePoints(Bool_t const dtp, Int_t const max) {this->fDumpThePoints = dtp; this->fMaxNoEventsPerFile = max;};
 
   //  5.1.) Control histograms:  
   void SetControlHistogramsList(TList* const chl) {this->fControlHistogramsList = chl;};
@@ -278,6 +281,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   static void DumpPointsForDurham(TGraphErrors *ge);
   static void DumpPointsForDurham(TH1D *h);
   static void DumpPointsForDurham(TH1F *h);
+  virtual void DumpThePoints(AliFlowEventSimple *anEvent);
+  TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable);
 
  private:
   AliFlowAnalysisWithMultiparticleCorrelations(const AliFlowAnalysisWithMultiparticleCorrelations& afawQc);
@@ -302,6 +307,9 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fMaxNoRPs;             // maximum number of RPs allowed for the analysis 
   Int_t fExactNoRPs;           // exact (randomly shuffled) number of RPs selected for the analysis 
   Bool_t fPropagateError;      // prevent error propagation if something strange happens during calculations 
+  TString fAnalysisTag;        // tag internally this analysis
+  Bool_t fDumpThePoints;       // dump the data points into the external file 
+  Int_t fMaxNoEventsPerFile;   // maximum number of events to be dumped in a single file
 
   // 1.) Control histograms:  
   TList *fControlHistogramsList;        // list to hold all 'control histograms' objects
@@ -312,7 +320,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t fFillMultCorrelationsHist;     // fill or not TH2D *fMultCorrelationsHist[3]  
   TH1D *fKinematicsHist[2][3];          // [RP,POI][phi,pt,eta] distributions
   TH1D *fMultDistributionsHist[3];      // multiplicity distribution [RP,POI,reference multiplicity]
-  TH2D *fMultCorrelationsHist[3];       // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
+  TH2I *fMultCorrelationsHist[3];       // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
   Int_t fnBins[2][3];                   // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
   Double_t fMin[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]
   Double_t fMax[2][3];                  // [RP,POI][phi,pt,eta], corresponds to fKinematicsHist[2][3]

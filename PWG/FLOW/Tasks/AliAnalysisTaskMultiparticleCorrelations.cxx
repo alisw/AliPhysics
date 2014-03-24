@@ -43,6 +43,9 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
+ fAnalysisTag(""),
+ fDumpThePoints(kFALSE),
+ fMaxNoEventsPerFile(100),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -154,6 +157,9 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
  fMinNoRPs(-44),
  fMaxNoRPs(-44),
  fExactNoRPs(-44),
+ fAnalysisTag(""),
+ fDumpThePoints(kFALSE),
+ fMaxNoEventsPerFile(0),
  fFillControlHistograms(kFALSE),
  fFillKinematicsHist(kFALSE),
  fFillMultDistributionsHist(kFALSE),
@@ -258,6 +264,8 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  if(fUseInternalFlags){fMPC->SetMinNoRPs(fMinNoRPs);}
  if(fUseInternalFlags){fMPC->SetMaxNoRPs(fMaxNoRPs);}
  if(fUseInternalFlags){fMPC->SetExactNoRPs(fExactNoRPs);}
+ fMPC->SetAnalysisTag(fAnalysisTag.Data());
+ fMPC->SetDumpThePoints(fDumpThePoints,fMaxNoEventsPerFile);
  fMPC->SetFillControlHistograms(fFillControlHistograms);
  fMPC->SetFillKinematicsHist(fFillKinematicsHist);
  fMPC->SetFillMultDistributionsHist(fFillMultDistributionsHist);
@@ -306,6 +314,7 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
    }
   } // for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
  } // for(Int_t rp=0;rp<2;rp++) // [RP,POI]
+
 
  // Control histos:
  // Kinematics:

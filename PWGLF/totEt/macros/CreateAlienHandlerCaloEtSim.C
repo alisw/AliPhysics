@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode, int production, Bool_t isPHOS, Bool_t ispp,Bool_t isData, Int_t runnum)
+AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputName, const char * pluginRunMode, int production, Bool_t isPHOS, Bool_t ispp,Bool_t isData, Int_t runnum, Bool_t runCompiledVersion)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -16,8 +16,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 
   // Set versions of used packages
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-34-08");
-   plugin->SetAliROOTVersion("v5-05-02-AN");
+   plugin->SetROOTVersion("v5-34-08-4");
+   plugin->SetAliROOTVersion("v5-05-63-AN");
   // Declare input data to be processed.
 
   // Method 1: Create automatically XML collections using alien 'find' command.
@@ -99,7 +99,8 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	 plugin->SetGridDataDir("/alice/data/2011/LHC11h_2");//PbPb data
 	 plugin->SetDataPattern("*ESDs/pass2/*ESDs.root");
 	 plugin->SetRunPrefix("000");   // real data
-	 plugin->AddRunNumber(169099);
+	 //plugin->AddRunNumber(169099);
+	 plugin->AddRunNumber(168464);
 	 outputDir = outputDir + "LHC11hPass2";
        }
     }
@@ -154,6 +155,19 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
 	plugin->SetGridDataDir(" /alice/sim/2013/LHC13d2");
 	plugin->AddRunNumber(139465);//probably our focus now
       }
+      if(production==5){//2011 production - not perfect but the best fit
+	cout<<"I am here setting grid data dir"<<endl;
+	outputDir = outputDir + "LHC14a6";
+	plugin->SetGridDataDir(" /alice/sim/2014/LHC14a6");
+// 	  outputDir = outputDir + "LHC11a4_bisTEST";
+// 	  plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");
+// 	plugin->AddRunNumber(139465);
+// 	plugin->AddRunNumber(137161);
+// 	outputDir = outputDir + "LHC14a1a";
+// 	plugin->SetGridDataDir(" /alice/sim/2014/LHC14a1a");
+	plugin->AddRunNumber(168464);//probably our focus now
+	//plugin->AddRunNumber(169238);//test 18 Mar 14 - does this let me submit jobs?
+      }
 
 
     }
@@ -174,12 +188,17 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   // Declare the analysis source files names separated by blancs. To be compiled runtime IN THE SAME ORDER THEY ARE LISTED
   //plugin->SetAdditionalRootLibs("libPHOSUtils.so libEMCALUtils.so libPWG4CaloCalib.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so");
   // using ACLiC on the worker nodes.
-  plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisEtSelector.cxx AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtRecEffCorrection.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtReconstructed.cxx AliAnalysisTaskTotEt.cxx");
+  if(runCompiledVersion){
+    plugin->SetAdditionalLibs("libPHOSUtils.so libTENDER.so libTENDERSupplies.so libPWGTools.so libPWGEMCAL.so badchannels.root libPWGLFtotEt.so corrections.root calocorrections.root ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
+  }
+  else{
+    plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisEtSelector.cxx AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtRecEffCorrection.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtReconstructed.cxx AliAnalysisTaskTotEt.cxx");
   //plugin->SetAnalysisSource("AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.cxx AliAnalysisEtCommon.cxx AliAnalysisEtSelector.cxx AliAnalysisEtSelectorPhos.cxx AliAnalysisEt.cxx AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedEmcal.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTotEt.cxx");
   // Declare all libraries (other than the default ones for the framework. These will be
   // loaded by the generated analysis macro. Add all extra files (task .cxx/.h) here.
-  plugin->SetAdditionalLibs("libPHOSUtils.so libTENDER.so libTENDERSupplies.so libPWGTools.so libPWGEMCAL.so AliAnalysisEtCuts.cxx AliAnalysisEtCuts.h AliAnalysisHadEtCorrections.cxx AliAnalysisHadEtCorrections.h AliAnalysisEtCommon.cxx AliAnalysisEtCommon.h AliAnalysisEtSelector.cxx AliAnalysisEtSelector.h AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorPhos.h AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtSelectorEmcal.h AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtTrackMatchCorrections.h AliAnalysisEtRecEffCorrection.cxx AliAnalysisEtRecEffCorrection.h AliAnalysisEt.cxx AliAnalysisEt.h AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.cxx AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTransverseEnergy.h AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtMonteCarlo.h AliAnalysisEmEtReconstructed.cxx AliAnalysisEmEtReconstructed.h AliAnalysisTaskTotEt.cxx AliAnalysisTaskTotEt.h badchannels.root corrections.root calocorrections.root ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
-  plugin->SetExecutableCommand("aliroot -b -q");
+    plugin->SetAdditionalLibs("libPHOSUtils.so libTENDER.so libTENDERSupplies.so libPWGTools.so libPWGEMCAL.so AliAnalysisEtCuts.cxx AliAnalysisEtCuts.h AliAnalysisHadEtCorrections.cxx AliAnalysisHadEtCorrections.h AliAnalysisEtCommon.cxx AliAnalysisEtCommon.h AliAnalysisEtSelector.cxx AliAnalysisEtSelector.h AliAnalysisEtSelectorPhos.cxx AliAnalysisEtSelectorPhos.h AliAnalysisEtSelectorEmcal.cxx AliAnalysisEtSelectorEmcal.h AliAnalysisEtTrackMatchCorrections.cxx AliAnalysisEtTrackMatchCorrections.h AliAnalysisEtRecEffCorrection.cxx AliAnalysisEtRecEffCorrection.h AliAnalysisEt.cxx AliAnalysisEt.h AliAnalysisEtMonteCarlo.cxx AliAnalysisEtMonteCarlo.h AliAnalysisEtMonteCarloPhos.cxx AliAnalysisEtMonteCarloPhos.h AliAnalysisEtMonteCarloEmcal.cxx AliAnalysisEtMonteCarloEmcal.h AliAnalysisEtReconstructed.cxx AliAnalysisEtReconstructed.h AliAnalysisEtReconstructedPhos.cxx AliAnalysisEtReconstructedPhos.h AliAnalysisEtReconstructedEmcal.cxx AliAnalysisEtReconstructedEmcal.h AliAnalysisTaskTransverseEnergy.cxx AliAnalysisTaskTransverseEnergy.h AliAnalysisEmEtMonteCarlo.cxx AliAnalysisEmEtMonteCarlo.h AliAnalysisEmEtReconstructed.cxx AliAnalysisEmEtReconstructed.h AliAnalysisTaskTotEt.cxx AliAnalysisTaskTotEt.h badchannels.root corrections.root calocorrections.root ConfigEtMonteCarlo.C ConfigEtReconstructed.C");
+  }
+    plugin->SetExecutableCommand("aliroot -b -q");
   // add extra include files/path
   plugin->AddIncludePath("-I. -I$ALICE_ROOT/EMCAL -I$ALICE_ROOT/ANALYSIS");
 
@@ -193,13 +212,13 @@ AliAnalysisGrid* CreateAlienHandlerCaloEtSim(TString outputDir, TString outputNa
   plugin->SetAnalysisMacro("DavidEtAnalysis.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore). The optimum for an analysis
   // is correlated with the run time - count few hours TTL per job, not minutes !
-  plugin->SetSplitMaxInputFileNumber(100);
+  plugin->SetSplitMaxInputFileNumber(20);
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   //plugin->SetMaxInitFailed(50);
   // Optionally resubmit threshold.
   //plugin->SetMasterResubmitThreshold(90);
   // Optionally set time to live (default 30000 sec)
-  plugin->SetTTL(20000);
+  plugin->SetTTL(30000);
   // Optionally set input format (default xml-single)
   plugin->SetInputFormat("xml-single");
   // Optionally modify the name of the generated JDL (default analysis.jdl)

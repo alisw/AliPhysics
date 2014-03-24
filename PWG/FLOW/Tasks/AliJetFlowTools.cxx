@@ -82,6 +82,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fOutputFileName     ("UnfoldedSpectra.root"),
     fOutputFile         (0x0),
     fCentralityBin      (0),
+    fCentralityArray    (0x0),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -302,7 +303,7 @@ void AliJetFlowTools::Make() {
                     if(unfoldedJetSpectrumOut->GetBinContent(i+1) > 0) fRMSRatio->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1) / unfoldedJetSpectrumOut->GetBinContent(i+1));
                }
             }
-            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2"), fEventPlaneRes));
             if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
                 v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
@@ -319,7 +320,7 @@ void AliJetFlowTools::Make() {
                 ratio = ProtectHeap(ratio);
                 ratio->Write();
             }
-            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2"), fEventPlaneRes));
              if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
                 v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
@@ -871,6 +872,15 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
+    if(fCentralityArray) {
+        printf(" merging centralities \n");
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            printf( " searching for %s \n", spectrumName.Data());
+            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
+        }
+    }
+
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     if(!fDphiUnfolding) {
@@ -887,6 +897,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
         TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityBin)));
+        if(fCentralityArray) {
+            for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+               printf(" merging centralities \n");
+               rho->Add((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(i))));
+            }
+        }
         if(!rho) return 0x0;
         Bool_t normalizeToFullSpectrum = (fEventCount < 0) ? kTRUE : kFALSE;
         if (normalizeToFullSpectrum) fEventCount = rho->GetEntries();
@@ -924,6 +940,15 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+    if(fCentralityArray) {
+        printf(" merging centralities \n");
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            printf(" searching for %s \n ", deltaptName.Data());
+            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
+        }
+    }
+
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     if(!fDphiUnfolding) {
@@ -995,6 +1020,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
+        }
+    }
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), low, up, "e");
@@ -1008,6 +1039,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
+        }
+    }
+
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), low, up, "e");
@@ -1489,7 +1527,7 @@ void AliJetFlowTools::GetNominalValues(
             fBinsTrue->At(fBinsTrue->GetSize()),
             readMe,
             "nominal_values");
-    v2 = GetV2(nominalIn, nominalOut, .5666666, "nominal v_{2}");
+    v2 = GetV2(nominalIn, nominalOut, fEventPlaneRes, "nominal v_{2}");
 
     // close the open files, reclaim ownership of histograms which are necessary outside of the file scope
     ratio->SetDirectory(0);     // disassociate from current gDirectory
@@ -1704,7 +1742,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    fEventPlaneRes,
                     "v_{2} with correlated uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
@@ -1713,7 +1751,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     1.));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2001,14 +2039,14 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
                     nominalIn,
                     nominalOut,
-                    .56,
+                    fEventPlaneRes,
                     "v_{2} with shape uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
                     relativeErrorOutLow));
         shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
-        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, .56, "v_{2}"));
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
         Style(nominalV2Error, kYellow, kV2);
@@ -2260,6 +2298,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2270,6 +2309,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
                    if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2385,6 +2425,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2395,6 +2436,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
                    if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2501,7 +2543,7 @@ void AliJetFlowTools::GetShapeUncertainty(
            }
            canvasV2->cd(j);
            if(i==0) canvasNominalV2->cd(j);
-           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, .56, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, fEventPlaneRes, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
            if(ratioV2) {
                Style(ratioV2);
                for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
@@ -2773,6 +2815,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             } else if(rm && eff) {
                                 Style(rm);
@@ -2781,6 +2824,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                                 Style(gPad, "PEARSON");
                                 rm->DrawCopy("colz");
                                 canvasMISC->cd(4);
+                                Style(gPad, "GRID");
                                 eff->DrawCopy();
                             }
                         }
@@ -2859,6 +2903,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2867,6 +2912,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -2942,6 +2988,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -2950,6 +2997,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -3163,8 +3211,8 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
                 Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
                 error2 = ratio*ratio*A*A+ratio*ratio*B*B;
                 if(error2 > 0 ) error2 = TMath::Sqrt(error2);
-                gr->SetPoint(gr->GetN(), binCent, ratio);
-                gr->SetPointError(gr->GetN()-1, 0.5*binWidth, error2);
+                gr->SetPoint(i-1, binCent, ratio);
+                gr->SetPointError(i-1, 0.5*binWidth, error2);
             }
         }
     } else {
@@ -3173,8 +3221,8 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
             binCent = dud->GetXaxis()->GetBinCenter(i);
             if(xmax > 0. && binCent > xmax) continue;
             binWidth = dud->GetXaxis()->GetBinWidth(i);
-            gr->SetPoint(gr->GetN(),binCent,dud->GetBinContent(i));
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,dud->GetBinError(i));
+            gr->SetPoint(i-1,binCent,dud->GetBinContent(i));
+            gr->SetPointError(i-1, 0.5*binWidth,dud->GetBinError(i));
         }
     }
 
@@ -3198,25 +3246,30 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
         printf(" GetV2 called with NULL argument(s) \n ");
         return 0x0;
     }
-    Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
     gr->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
     Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     Double_t pre(TMath::Pi()/(4.*r)), in(0.), out(0.), ein(0.), eout(0.);
+
+    cout << " GetV2 " << endl;
+    cout << " prefactor " << pre << endl;
     for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
         binCent = h1->GetXaxis()->GetBinCenter(i);
-        j = h2->FindBin(binCent);
         binWidth = h1->GetXaxis()->GetBinWidth(i);
-        if(h2->GetBinContent(j) > 0.) {
+        if(h2->GetBinContent(i) > 0.) {
             in = h1->GetBinContent(i);
+            cout << " yield in " << in  << endl;
             ein = h1->GetBinError(i);
-            out = h2->GetBinContent(j);
-            eout = h2->GetBinError(j);
+            out = h2->GetBinContent(i);
+            cout << " yield out " << out << endl;
+            eout = h2->GetBinError(i);
             ratio = pre*((in-out)/(in+out));
-            error2 =TMath::Power(((r*4.)/(TMath::Pi())), 2.)*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
+            cout << " v2 " << ratio << endl;
+            error2 = (4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout;
+            error2 = error2*pre*pre;
             if(error2 > 0) error2 = TMath::Sqrt(error2);
-            gr->SetPoint(gr->GetN(),binCent,ratio);
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
+            gr->SetPoint(i-1,binCent,ratio);
+            gr->SetPointError(i-1,0.5*binWidth,error2);
         }
     }
     if(strcmp(name, "")) gr->SetNameTitle(name.Data(), name.Data());
@@ -3252,8 +3305,8 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         eoutUp = out*relativeErrorOutUp->GetBinContent(1+i);
         eoutLow = out*relativeErrorOutLow->GetBinContent(1+i);
         // get the error squared
-        error2Up =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
-        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
+        error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
         // set the errors 
@@ -3487,8 +3540,8 @@ void AliJetFlowTools::MakeAU() {
     Int_t low[] = {1, 6, 11, 16, 21, 26, 31, 36};
     Int_t up[] = {5, 10, 15, 20, 25, 30, 35, 40};
     TString stringArray[] = {"a", "b", "c", "d", "e", "f", "g", "h"};
-    TH1D* dPtdPhi[6];
-    for(Int_t i(0); i < 6; i++) dPtdPhi[i] = new TH1D(Form("dPtdPhi_%i", i), Form("dPtdPhi_%i", i), 8, 0, TMath::Pi());
+    TH1D* dPtdPhi[8];
+    for(Int_t i(0); i < 8; i++) dPtdPhi[i] = new TH1D(Form("dPtdPhi_%i", i), Form("dPtdPhi_%i", i), 8, 0, TMath::Pi());
 
     for(Int_t i(0); i < 8; i++) {
         // 1) manipulation of input histograms
