@@ -39,7 +39,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 
-#include "AliRawDataHeader.h"
 #include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawEvent.h"

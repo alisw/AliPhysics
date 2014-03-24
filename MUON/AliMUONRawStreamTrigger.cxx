@@ -232,7 +232,15 @@ Bool_t AliMUONRawStreamTrigger::GetNextDDL()
   
   Int_t totalDataWord  = GetReader()->GetDataSize(); // in bytes
   
-  Bool_t scalerEvent =  GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+  AliRawReader * reader = GetReader();
+  if (!reader) return kFALSE;
+
+  const AliRawDataHeader * cdh = reader->GetDataHeader();
+  const AliRawDataHeaderV3 * cdh3 = reader->GetDataHeaderV3();
+
+  if (!cdh && !cdh3) return kFALSE;
+
+  Bool_t scalerEvent = ((cdh ?  cdh->GetL1TriggerMessage() : cdh3->GetL1TriggerMessage()) & 0x1) == 0x1;
 
   AliDebug(3, Form("DDL Number %d totalDataWord %d\n", fCurrentDDLIndex,
                    totalDataWord));
@@ -377,7 +385,15 @@ Bool_t AliMUONRawStreamTrigger::NextDDL()
 
   Int_t totalDataWord = GetReader()->GetDataSize(); // in bytes
 
-  Bool_t scalerEvent =  GetReader()->GetDataHeader() && GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+  AliRawReader * reader = GetReader();
+  if (!reader) return kFALSE;
+
+  const AliRawDataHeader * cdh = reader->GetDataHeader();
+  const AliRawDataHeaderV3 * cdh3 = reader->GetDataHeaderV3();
+
+  if (!cdh && !cdh3) return kFALSE;
+
+  Bool_t scalerEvent = ((cdh ?  cdh->GetL1TriggerMessage() : cdh3->GetL1TriggerMessage()) & 0x1) == 0x1;
 
 
   UInt_t *buffer = new UInt_t[totalDataWord/4];
