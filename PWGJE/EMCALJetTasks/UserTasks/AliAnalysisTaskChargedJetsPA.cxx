@@ -137,6 +137,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     // ########## Default background estimates
     AddHistogram2D<TH2D>("hKTBackgroundImprovedCMS", "KT background density (Improved CMS approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
     AddHistogram2D<TH2D>("hKTBackgroundImprovedCMSExternal", "KT background density (Improved CMS approach from external task)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
+    AddHistogram2D<TH2D>("hDeltaPtExternalBgrd", "Background fluctuations #delta p_{T} (KT, External)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
     AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion_Signal", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion w/ 1/N_{sig} probability)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
@@ -1925,6 +1926,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     // Calculate the delta pt
     Double_t tmpDeltaPtNoBackground = GetDeltaPt(0.0);
     Double_t tmpDeltaPtKTImprovedCMS = GetDeltaPt(backgroundKTImprovedCMS);
+    Double_t tmpDeltaPtExternalBgrd = GetDeltaPt(backgroundKTImprovedCMSExternal);
+
 
     Double_t tmpDeltaPtKTImprovedCMSPartialExclusion = 0.0;
     if(fNcoll)
@@ -1959,6 +1962,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
 
     // If valid, fill the delta pt histograms
 
+    if(tmpDeltaPtExternalBgrd > -10000.0)
+      FillHistogram("hDeltaPtExternalBgrd", tmpDeltaPtExternalBgrd, centralityPercentile);
     if(tmpDeltaPtKTImprovedCMS > -10000.0)
       FillHistogram("hDeltaPtKTImprovedCMS", tmpDeltaPtKTImprovedCMS, centralityPercentile);
     if(tmpDeltaPtKTImprovedCMSPartialExclusion > -10000.0)
