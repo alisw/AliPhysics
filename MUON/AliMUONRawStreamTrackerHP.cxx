@@ -715,7 +715,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 		detail = Form(
 			"At byte %lu in DDL %d, event %d, iBlock %d, iDsp %d [DSP ID: %d (0x%X)],"
 			" iBus %d [bus patch ID: %d (0x%X)].",
-			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader),
+			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeaderV3),
 			AliDAQ::DdlID("MUONTRK", fRawStream->GetDDL()),
 			fRawStream->GetReader()->GetEventIndex(),
 			int(fBlockCount)-1,
@@ -852,7 +852,7 @@ void AliMUONRawStreamTrackerHP::AliDecoderEventHandler::OnError(
 			message = Form(
 				"%s (At byte %lu)",
 				ErrorCodeToMessage(error),
-				(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
+				(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeaderV3)
 			);
 			break;
 		case kHighErrorDetail:

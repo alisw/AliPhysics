@@ -431,7 +431,7 @@ AliMUONRawWriter::WriteTrackerDDL(AliMpExMap& busPatchMap, Int_t iDDL)
   // total length in bytes
   // DDL header
 
-  Int_t headerSize = sizeof(AliRawDataHeader)/4;
+  Int_t headerSize = sizeof(AliRawDataHeaderV3)/4;
   
   fHeader->fSize = (totalDDLLength + headerSize) * 4;
   
@@ -465,7 +465,7 @@ Int_t AliMUONRawWriter::WriteTriggerDDL(const AliMUONVTriggerStore& triggerStore
  // DDL event one per half chamber
 
  // DDL header size
-  Int_t headerSize = sizeof(AliRawDataHeader)/4;
+  Int_t headerSize = sizeof(AliRawDataHeaderV3)/4;
 
   // global trigger for trigger pattern
   AliMUONGlobalTrigger* gloTrg = triggerStore.Global();
