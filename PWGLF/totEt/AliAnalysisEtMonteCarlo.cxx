@@ -1041,7 +1041,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
-        fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
+        if(primPart->GetPDG()) fPrimaryCharge = (Int_t) primPart->GetPDG()->Charge();
 
         fPrimaryE = primPart->Energy();
         fPrimaryEt = primPart->Energy()*TMath::Sin(primPart->Theta());
@@ -1059,7 +1059,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fDepositedCode = part->GetPdgCode();
 	fDepositedE = part->Energy();
         fDepositedEt = part->Energy()*TMath::Sin(part->Theta());
-        fDepositedCharge = (Int_t) part->GetPDG()->Charge();
+        if(part->GetPDG()) fDepositedCharge = (Int_t) part->GetPDG()->Charge();
 
         fDepositedVx = part->Vx();
         fDepositedVy = part->Vy();
@@ -1079,6 +1079,11 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 // 	}
 	
 	pdg = primPart->GetPDG(0);
+        if (!pdg)
+        {
+            Printf("ERROR: Could not get particle PDG %d", iPart);
+            continue;
+        }
 	//Int_t code = primPart->GetPdgCode();
 
 	Bool_t written = kFALSE;
@@ -1268,7 +1273,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  fHistChargedTracksAcceptedLowPtCent->Fill(fReconstructedEt, fCentClass);
 		  fHistChargedTracksAcceptedLowPtCentEffCorr->Fill(clEt, fCentClass);
 		  if(fReconstructedEt>=0.5) fHistChargedTracksAcceptedLowPtCent500MeV->Fill(fReconstructedEt, fCentClass);
-		  if(pdg->PdgCode()!=fgAntiProtonCode){
+		  if(pdg && pdg->PdgCode()!=fgAntiProtonCode){
 		    fHistChargedTracksAcceptedLowPtCentNoAntiProtons->Fill(fReconstructedEt, fCentClass);
 		  }
 		  else{

@@ -79,6 +79,10 @@ class AliJetFlowTools {
             fActiveDir->cd();
         }
         void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetCentralityBin(TArrayI* bins)         {
+            fCentralityArray = bins;
+            fCentralityBin = fCentralityArray->At(0);
+        }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
@@ -185,7 +189,7 @@ class AliJetFlowTools {
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
-        static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .7, TString name = "");
+        static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
                 TH1* h1, TH1* h2, Double_t r, TString name, 
                 TH1* relativeErrorInUp,
@@ -309,6 +313,7 @@ class AliJetFlowTools {
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
         Int_t                   fCentralityBin;         // centrality bin
+        TArrayI*                fCentralityArray;       // array of bins that are merged
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding

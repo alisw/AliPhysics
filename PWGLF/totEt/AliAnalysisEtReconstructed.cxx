@@ -302,13 +302,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
         cluster->GetPosition(pos);
         TVector3 cp(pos);
 	fClusterPositionAll->Fill(cp.Phi(), cp.PseudoRapidity());
-	fClusterPositionAllEnergy->Fill(cp.Phi(), cp.PseudoRapidity(),cluster->E());
+	fClusterPositionAllEnergy->Fill(cp.Phi(), cp.PseudoRapidity(),GetCorrectionModification(*cluster,0,0,cent)*cluster->E());
 
 	//if(TMath::Abs(cp.Eta())> fCuts->fCuts->GetGeometryEmcalEtaAccCut() || cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMaxCut()*TMath::Pi()/180. ||  cp.Phi() >  fCuts->GetGeometryEmcalPhiAccMinCut()*TMath::Pi()/180.) continue;//Do not accept if cluster is not in the acceptance
-	fTotAllRawEt += TMath::Sin(cp.Theta())*cluster->E();
-	fTotAllRawEtEffCorr += CorrectForReconstructionEfficiency(*cluster,cent);
+	fTotAllRawEt += TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
+	fTotAllRawEtEffCorr +=GetCorrectionModification(*cluster,0,0,cent)* CorrectForReconstructionEfficiency(*cluster,cent);
 
-	fClusterEnergyCent->Fill(cluster->E(),cent);
+	fClusterEnergyCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(),cent);
 
         Bool_t matched = kTRUE;//default to no track matched
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
@@ -334,7 +334,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                 }
                 else {
 		  totalMatchedPt +=track->Pt();
-		  fClusterEnergyCentMatched->Fill(cluster->E(),cent);
+		  fClusterEnergyCentMatched->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(),cent);
 		  fHistMatchedClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
 
 		  float eff = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cent);
@@ -342,10 +342,10 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  //cout<<"pt "<<track->Pt()<<" eff "<<eff<<" total "<<nChargedHadronsTotal<<endl;
 		  nChargedHadronsMeasured++;
 		  nChargedHadronsTotal += 1/eff;
-		  Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,cent);
-		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*cluster->E();
+		  Double_t effCorrEt = GetCorrectionModification(*cluster,0,0,cent) * CorrectForReconstructionEfficiency(*cluster,cent);
+		  nChargedHadronsEtMeasured+= TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		  //One efficiency is the gamma efficiency and the other is the track matching efficiency.
-		  nChargedHadronsEtTotal+= 1/eff *TMath::Sin(cp.Theta())*cluster->E();
+		  nChargedHadronsEtTotal+= 1/eff *TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		  //cout<<"nFound "<<1<<" nFoundTotal "<<1/eff<<" etMeas "<<TMath::Sin(cp.Theta())*cluster->E()<<" ET total "<< 1/eff *TMath::Sin(cp.Theta())*cluster->E()<<endl;
 
 		  Float_t nSigmaPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion); 
@@ -353,24 +353,24 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		  bool isProton = (nSigmaPion>3.0 && nSigmaProton<3.0 && track->Pt()<0.9);
 		  //cout<<"NSigmaProton "<<nSigmaProton<<endl;
 		  etPiKPMatched += effCorrEt;
-		  etPiKPMatchedNoEff  +=TMath::Sin(cp.Theta())*cluster->E();
+		  etPiKPMatchedNoEff  +=TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		  if(isProton){
 		    if(track->Charge()>0){
 		      etPIDProtons += effCorrEt;
-		      etPIDProtonsNoEff +=TMath::Sin(cp.Theta())*cluster->E();
+		      etPIDProtonsNoEff +=TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		    }
 		    else{
-		      etPIDAntiProtonsNoEff +=TMath::Sin(cp.Theta())*cluster->E();
+		      etPIDAntiProtonsNoEff +=TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		      etPIDAntiProtons += effCorrEt;
 		    }
 		  }
-		  if(TMath::Sin(cp.Theta())*cluster->E()>0.5){
+		  if(TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E()>0.5){
 		    nChargedHadronsMeasured500MeV++;
 		    nChargedHadronsTotal500MeV += 1/eff;
-		    nChargedHadronsEtMeasured500MeV+= TMath::Sin(cp.Theta())*cluster->E();
-		    nChargedHadronsEtTotal500MeV+= 1/eff *TMath::Sin(cp.Theta())*cluster->E();
+		    nChargedHadronsEtMeasured500MeV+= TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
+		    nChargedHadronsEtTotal500MeV+= 1/eff *TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		  }
-		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*cluster->E(),cent);
+		  fHistMatchedTracksEvspTvsCent->Fill(track->P(),TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E(),cent);
 		  fHistMatchedTracksEvspTvsCentEffCorr->Fill(track->P(),effCorrEt,cent);
 		  //Weighed by the number of tracks we didn't find
 		  fHistMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
@@ -378,13 +378,13 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		    for(int cbtest = 0; cbtest<20; cbtest++){//then we calculate the deposit matched to hadrons with different centrality bins' efficiencies
 		      float efftest = fTmCorrections->TrackMatchingEfficiency(track->Pt(),cbtest);
 		      if(TMath::Abs(efftest)<1e-5) efftest = 1.0;
-		      Double_t effCorrEttest = CorrectForReconstructionEfficiency(*cluster,cbtest);
+		      Double_t effCorrEttest = GetCorrectionModification(*cluster,0,0,cent)*CorrectForReconstructionEfficiency(*cluster,cbtest);
 		      fHistPeripheralMatchedTracksEvspTvsCentEffTMCorr->Fill(track->P(), effCorrEttest,cbtest, (1/efftest-1) );
 		    }
 		  }
 		  cluster->GetPosition(pos);	  
 		  TVector3 p2(pos);
-		  uncorrEt += TMath::Sin(p2.Theta())*cluster->E();
+		  uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 		  if(uncorrEt>=0.5) fHistMatchedTracksEvspTvsCentEffTMCorr500MeV->Fill(track->P(), effCorrEt,cent, (1/eff-1) );
                     const Double_t *pidWeights = track->PID();
 
@@ -403,7 +403,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
                         }
                         if (fCuts->GetHistMakeTreeDeposit() && fDepositTree)
                         {
-                            fEnergyDeposited = cluster->E();
+                            fEnergyDeposited =GetCorrectionModification(*cluster,0,0,cent)* cluster->E();
                             fMomentumTPC = track->P();
                             fCharge = track->Charge();
                             fParticlePid = maxpid;
@@ -430,24 +430,24 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
                                 if (track->Charge() == 1)
                                 {
-                                    fHistProtonEnergyDeposit->Fill(cluster->E(), track->E());
+                                    fHistProtonEnergyDeposit->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(), track->E());
                                 }
                                 else if (track->Charge() == -1)
                                 {
-                                    fHistAntiProtonEnergyDeposit->Fill(cluster->E(), track->E());
+                                    fHistAntiProtonEnergyDeposit->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(), track->E());
                                 }
                             }
                             else if (maxpid == AliPID::kPion)
                             {
-                                fHistChargedPionEnergyDeposit->Fill(cluster->E(), track->E());
+                                fHistChargedPionEnergyDeposit->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(), track->E());
                             }
                             else if (maxpid == AliPID::kKaon)
                             {
-                                fHistChargedKaonEnergyDeposit->Fill(cluster->E(), track->E());
+                                fHistChargedKaonEnergyDeposit->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(), track->E());
                             }
                             else if (maxpid == AliPID::kMuon)
                             {
-                                fHistMuonEnergyDeposit->Fill(cluster->E(), track->E());
+                                fHistMuonEnergyDeposit->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(), track->E());
                             }
                         }
                     }
@@ -466,16 +466,16 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    TVector3 p2(pos);
 	    
 	    fClusterPositionAccepted->Fill(p2.Phi(), p2.PseudoRapidity());
-	    fClusterPositionAcceptedEnergy->Fill(p2.Phi(), p2.PseudoRapidity(),cluster->E());
-	    fClusterEnergy->Fill(cluster->E());
-	    fClusterEnergyCentNotMatched->Fill(cluster->E(),cent);
+	    fClusterPositionAcceptedEnergy->Fill(p2.Phi(), p2.PseudoRapidity(),GetCorrectionModification(*cluster,0,0,cent)*cluster->E());
+	    fClusterEnergy->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E());
+	    fClusterEnergyCentNotMatched->Fill(GetCorrectionModification(*cluster,0,0,cent)*cluster->E(),cent);
 	    fHistClusterSizeVsCent->Fill(cluster->GetNCells(),cent);
-	    fClusterEt->Fill(TMath::Sin(p2.Theta())*cluster->E());
-	    uncorrEt += TMath::Sin(p2.Theta())*cluster->E();
-	    float myuncorrEt = TMath::Sin(p2.Theta())*cluster->E();
+	    fClusterEt->Fill(TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E());
+	    uncorrEt += TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
+	    float myuncorrEt = TMath::Sin(p2.Theta())*GetCorrectionModification(*cluster,0,0,cent)*cluster->E();
 	    fTotRawEt += myuncorrEt;
 
-	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,cent);
+	    Double_t effCorrEt = CorrectForReconstructionEfficiency(*cluster,cent)*GetCorrectionModification(*cluster,0,0,cent);
 	    rawSignal += myuncorrEt;
 	    effCorrSignal +=effCorrEt;
 	    //cout<<"cluster energy "<<cluster->E()<<" eff corr Et "<<effCorrEt<<endl;

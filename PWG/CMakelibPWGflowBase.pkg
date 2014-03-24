@@ -55,8 +55,6 @@ set ( SRCS
       FLOW/Base/AliFlowAnalysisWithFittingQDistribution.cxx 
       FLOW/Base/AliFlowAnalysisWithMixedHarmonics.cxx 
       FLOW/Base/AliFlowAnalysisWithNestedLoops.cxx
-      FLOW/Base/AliFlowMSPHistograms.cxx
-      FLOW/Base/AliFlowAnalysisWithMSP.cxx
       FLOW/Base/AliFlowOnTheFlyEventGenerator.cxx
       FLOW/Base/AliFlowAnalysisWithMultiparticleCorrelations.cxx
 )

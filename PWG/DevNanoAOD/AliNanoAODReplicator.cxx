@@ -495,7 +495,7 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
     AliVTrack *track = (AliVTrack*)source.GetTrack(j);
     
     AliAODTrack *aodtrack =(AliAODTrack*)track;// FIXME DYNAMIC CAST?
-    if(!fTrackCut->IsSelected(aodtrack)) continue;
+    if(fTrackCut && !fTrackCut->IsSelected(aodtrack)) continue;
 
     AliNanoAODTrack * special = new((*fTracks)[ntracks++]) AliNanoAODTrack (aodtrack, fVarList);
     

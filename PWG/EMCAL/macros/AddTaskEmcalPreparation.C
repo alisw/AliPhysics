@@ -40,6 +40,8 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   Float_t timeMax       =  50e-9;   // maximum time of physical signal in a cell/digit
   Float_t timeCut       = 1e6;
   if(isMC) {
+    calibEnergy = kFALSE;
+    calibTime   = kFALSE;
     timeMin = -1.;
     timeMax = 1e6;
   }

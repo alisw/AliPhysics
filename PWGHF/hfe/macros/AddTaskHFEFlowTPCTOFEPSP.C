@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1,Int_t debuglevel=2,Double_t etarange=80,Double_t ITSclustersback=0,Double_t minTPCback=-2.0,Double_t maxTPCback=5.0){
+AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=16,Bool_t scalarProduct=kFALSE,Bool_t cutPileup=kFALSE,Int_t tpcCls=110, Double_t tpcClsr=60, Int_t tpcClspid=80, Int_t itsCls=4, Int_t pixellayer=2, Double_t dcaxy=100,Double_t dcaz=200, Double_t tofsig=30., Double_t tpceff=50., Int_t vzero=1, Int_t debuglevel=2, Double_t etarange=80, Bool_t ptbinsmall=kFALSE, Double_t ITSclustersback=0, Double_t minTPCback=-2.0, Double_t maxTPCback=5.0){
 
   //
   // Define TPC cut for 2011 data
@@ -131,7 +131,16 @@ AliAnalysisTask *AddTaskHFEFlowTPCTOFEPSP(UInt_t trigger=131073,Int_t aodfilter=
     /////////////////////////////////////////////
     /////////////////////////////////////////////
     
-  }  
+  } 
+
+  if(ptbinsmall){
+   
+    Int_t nBinsPt = 33;
+    Double_t binLimPt[34] = {0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.2,
+			     1.3, 1.4, 1.5, 1.75, 2., 2.25, 2.5, 2.75, 3.,3.25, 3.5, 3.75, 4.,4.25,4.5,4.75,5.,5.25,5.5,5.75,6.};
+    task.SetPtBinning(nBinsPt+1, binLimPt);
+  
+  } 
 
 
   task->SetHFEVZEROEventPlane(0x0);

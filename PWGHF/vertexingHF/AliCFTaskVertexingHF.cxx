@@ -313,7 +313,7 @@ void AliCFTaskVertexingHF::Init()
   if(fUseWeight && fUseZWeight) { AliFatal("Can not use at the same time pt and z-vtx weights, please choose"); return; }
   if(fUseWeight && fUseNchWeight) { AliInfo("Beware, using at the same time pt and Nch weights, please check"); }
   if(fUseNchWeight && !fHistoMCNch) { AliFatal("Need to pass the MC Nch distribution to use Nch weights"); return; }
-  if(fUseNchWeight) CreateMeasuredNchHisto();
+  if(fUseNchWeight && !fHistoMeasNch) CreateMeasuredNchHisto();
 
   AliRDHFCuts *copyfCuts = 0x0;
   if (!fCuts){

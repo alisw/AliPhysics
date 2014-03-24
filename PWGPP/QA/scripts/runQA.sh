@@ -76,6 +76,7 @@ updateQA()
   for detectorScript in $ALICE_ROOT/PWGPP/QA/detectorQAscripts/*; do
     echo
     echo "##############################################"
+    echo $(date)
     unset planB
     [[ ! ${detectorScript} =~ .*\.sh$ ]] && continue
     detector=${detectorScript%.sh}
@@ -107,6 +108,7 @@ updateQA()
     echo "  outputDir=$outputDir"
     echo "  tmpPrefix=$tmpPrefix"
     
+    #unset the detector functions from previous iterations (detectors)
     unset -f runLevelQA
     unset -f periodLevelQA
     unset -f runLevelHighPtTreeQA
@@ -119,6 +121,7 @@ updateQA()
     declare -A arrOfTouchedProductions
     while read qaFile; do
       echo
+      echo $(date)
       
       #first check if input file exists
       [[ ! -f ${qaFile%\#*} ]] && echo "file ${qaFile%\#*} not accessible" && continue
@@ -203,6 +206,7 @@ updateQA()
       cd ${tmpProductionDir}
       echo
       echo "running period level stuff in ${tmpProductionDir}"
+      echo $(date)
     
       productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
       echo productionDir=${outputDir}/${tmpProductionDir#${tmpPrefix}}
@@ -307,7 +311,7 @@ executePlanB()
     echo
     echo "trouble detected, sending email to ${MAILTO}"
 
-    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+    grep BAD ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
   fi
 }
 
@@ -433,7 +437,7 @@ parseConfig()
   #logs
   logDirectory=${workingDirectory}/logs
   #OCDB storage
-  #ocdbStorage="raw://"
+  ocdbStorage="raw://"
   #email to
   #MAILTO="fbellini@cern.ch"
 

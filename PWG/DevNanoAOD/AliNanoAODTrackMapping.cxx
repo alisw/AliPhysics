@@ -212,7 +212,7 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TRDChi2"          ) return fTRDChi2          ;
     else if(varName == "TRDnSlices"       ) return fTRDnSlices       ;
 
-    std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName);
+    std::map<TString,Int_t>::iterator it = fMapCstVar.find(varName); // FIXME: do I need to delete "it"?
     if(it != fMapCstVar.end()) {
       //element found;
 	return it->second;

@@ -9,8 +9,10 @@ void runCaloEt(bool submit = false, // true or false
 	       //const char *dataType="realPbPb", // "sim" or "real" etc.
 	       const char *pluginRunMode="test", // "test" or "full" or "terminate"
 	       const char *det = "EMCal",
-	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0) // "PHOS" or "EMCAL" or EMCalDetail
+	       int production = 1, Bool_t withtender = kTRUE, Int_t runnum = 0, Bool_t withNonlinearity = kTRUE, Bool_t withReclusterizing = kFALSE, Int_t trackmatchcuts=0, Bool_t is2011 = kFALSE) // "PHOS" or "EMCAL" or EMCalDetail
 {
+  bool runCompiledVersion = kTRUE;
+  class AliAnalysisEtCuts;
   TStopwatch timer;
   timer.Start();
   gSystem->Load("libTree");
@@ -30,6 +32,12 @@ void runCaloEt(bool submit = false, // true or false
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
 
+    gSystem->Load("libTENDER.so");
+    gSystem->Load("libTENDERSupplies.so"); 
+    gSystem->Load("libPWGTools.so");
+    gSystem->Load("libPWGEMCAL.so");
+    gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
+    //gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
 
 
   if (!submit) { 
@@ -39,28 +47,32 @@ void runCaloEt(bool submit = false, // true or false
     cout << "submitting to grid" << endl;
   }
    
-  gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelector.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelectorPhos.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtSelectorEmcal.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtTrackMatchCorrections.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtRecEffCorrection.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtMonteCarloEmcal.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtReconstructed.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtReconstructedPhos.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEtReconstructedEmcal.cxx+g");  
-  //gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
-  //gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
-  gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
-
+  if(runCompiledVersion){
+    gSystem->Load("libPWGLFtotEt.so");
+  }
+  else{
+    gROOT->ProcessLine(".L AliAnalysisEtCuts.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisHadEtCorrections.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtCommon.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtSelector.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtSelectorPhos.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtSelectorEmcal.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtTrackMatchCorrections.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtRecEffCorrection.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEt.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtMonteCarlo.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtMonteCarloPhos.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtMonteCarloEmcal.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtReconstructed.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtReconstructedPhos.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEtReconstructedEmcal.cxx+g");  
+    //gROOT->ProcessLine(".L AliAnalysisEtSelectionContainer.cxx+g");
+    //gROOT->ProcessLine(".L AliAnalysisEtSelectionHandler.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisTaskTransverseEnergy.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEmEtMonteCarlo.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisEmEtReconstructed.cxx+g");
+    gROOT->ProcessLine(".L AliAnalysisTaskTotEt.cxx+g");
+  }
   TString detStr(det);
   TString dataStr(dataType);
   if ( detStr.Contains("PHOS") ) {
@@ -74,14 +86,30 @@ void runCaloEt(bool submit = false, // true or false
   }
   else{
     gSystem->CopyFile("calocorrections.EMCAL.root","calocorrections.root",kTRUE);
-    if ( dataStr.Contains("sim") ) {
-      gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
-    }
-    else{
-      gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.data.C","ConfigEtMonteCarlo.C",kTRUE);
-    }
+//     if(is2011){
+//       if ( dataStr.Contains("sim") ) {
+// 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.C","ConfigEtMonteCarlo.C",kTRUE);
+//       }
+//       else{
+// 	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.2011.data.C","ConfigEtMonteCarlo.C",kTRUE);
+//       }
+//     }
+//     else{
+      if ( dataStr.Contains("sim") ) {
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.C","ConfigEtMonteCarlo.C",kTRUE);
+      }
+      else{
+	gSystem->CopyFile("ConfigEtMonteCarlo.EMCAL.data.C","ConfigEtMonteCarlo.C",kTRUE);
+      }
+//     }
   }
 
+  if(is2011){
+      gSystem->CopyFile("ConfigEtReconstructed.2011.C","ConfigEtReconstructed.C",kTRUE);
+  }
+  else{
+      gSystem->CopyFile("ConfigEtReconstructed.2010.C","ConfigEtReconstructed.C",kTRUE);
+  }
 
   char *kTreeName = "esdTree" ;
   TChain * chain   = new TChain(kTreeName,"myESDTree") ;
@@ -128,7 +156,8 @@ void runCaloEt(bool submit = false, // true or false
   if(!isPb){ cout<<"I am not PbPb!!"<<endl;}
   if (submit) {
     gROOT->LoadMacro("CreateAlienHandlerCaloEtSim.C");
-    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode, production,detStr.Contains("PHOS"),!isPb,dataStr.Contains("real"),runnum);  
+    cout<<"Passing in production number "<<production<<endl;
+    AliAnalysisGrid *alienHandler = CreateAlienHandlerCaloEtSim(outputDir, outputName, pluginRunMode, production,detStr.Contains("PHOS"),!isPb,dataStr.Contains("real"),runnum,runCompiledVersion);  
     if (!alienHandler) return;
     mgr->SetGridHandler(alienHandler);
   }
@@ -150,14 +179,14 @@ void runCaloEt(bool submit = false, // true or false
 //       chain->Add("/data/LHC10h8/137161/111/AliESDs.root");//Hijing Pb+Pb
 //       chain->Add("/data/LHC10h8/137161/222/AliESDs.root");//Hijing Pb+Pb
 chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
-  chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
-  chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
- chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
+//   chain->Add("/data/LHC11a10a_bis/139465/002/AliESDs.root");
+//   chain->Add("/data/LHC11a10a_bis/139465/003/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/004/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/006/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/007/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/008/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/009/AliESDs.root");
+//  chain->Add("/data/LHC11a10a_bis/139465/010/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/011/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/012/AliESDs.root");
 // chain->Add("/data/LHC11a10a_bis/139465/013/AliESDs.root");
@@ -244,12 +273,6 @@ chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
     if(detStr.Contains("EMC")){
   //if(0){
     cout<<"You are running over EMCal data and using the tender supply"<<endl;
-    gSystem->Load("libTENDER.so");
-    gSystem->Load("libTENDERSupplies.so"); 
-    gSystem->Load("libPWGTools.so");
-    gSystem->Load("libPWGEMCAL.so");
-    gROOT->ProcessLine(".include $ALICE_ROOT/Tender/"); 
-    gSystem->AddIncludePath("-I$ALICE_ROOT/ANALYSIS "); 
     //this macro is downloaded from the EMCal tender supply twiki 
     //hopefully it will be replaced by something checked in to aliroot
     //I have added the function from GetOCDBRecParam.C in Jiri's example to this so that we don't add gobs of macros to the code
@@ -288,26 +311,28 @@ chain->Add("/data/LHC11a10a_bis/139465/001/AliESDs.root");
 
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");//tendertasks
     TString runPeriod = "LHC10h";
-    Bool_t distBC         = kTRUE;   //distance to bad channel
-    Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy
-    Bool_t recalcClusPos  = kTRUE;   //recalculate cluster position
-    Bool_t nonLinearCorr  = kTRUE;   //apply non-linearity
-    Bool_t remExotic      = kTRUE;   //remove exotic cells
-    Bool_t fidRegion      = kTRUE;  //apply fiducial cuts
-    Bool_t calibEnergy    = kTRUE;   //calibrate energy
-    Bool_t calibTime      = kTRUE;   //calibrate timing
-    Bool_t remBC          = kTRUE;   //remove bad channels
-    UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
-    Bool_t reclusterize   = kFALSE;   //reclusterize
-    Float_t seedthresh    = 0.3;     //seed threshold
-    Float_t cellthresh    = 0.05;    //cell threshold
-    UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2;
-    Bool_t trackMatch     = kTRUE;  //track matching
-    Bool_t updateCellOnly = kFALSE;  //only change if you run your own clusterizer task
-    Float_t timeMin       = 100e-9;  //minimum time of physical signal in a cell/digit (s)
-    Float_t timeMax       = 900e-9;  //maximum time of physical signal in a cell/digit (s)
-    Float_t timeCut       = 50e-9;   //maximum time difference between the digits inside EMC cluster (s)
-    AliAnalysisTaskSE *tender = AddTaskEMCALTender(runPeriod.Data(), distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
+  Bool_t distBC         = kTRUE;   //distance to bad channel
+  Bool_t recalibClus    = kTRUE;   //recalibrate cluster energy
+  Bool_t recalcClusPos  = kTRUE;   //recalculate cluster position
+  Bool_t nonLinearCorr  = kTRUE;   //apply non-linearity
+  Bool_t remExotic      = kTRUE;   //remove exotic cells
+  Bool_t fidRegion      = kTRUE;  //apply fiducial cuts -->  different from defaults
+  Bool_t calibEnergy    = kTRUE;   //calibrate energy
+  Bool_t calibTime      = kTRUE;   //calibrate timing
+  Bool_t remBC          = kTRUE;   //remove bad channels
+  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected;
+  Bool_t reclusterize   = kFALSE;   //reclusterize --> different from defaults
+  Float_t seedthresh    = 0.100;   //seed threshold
+  Float_t cellthresh    = 0.050;   //cell threshold
+  UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2;
+  Bool_t trackMatch     = kTRUE;   //track matching
+  Bool_t updateCellOnly = kFALSE;  //only change if you run your own clusterizer task
+  Float_t timeMin       = 100e-9;  //minimum time of physical signal in a cell/digit (s)
+  Float_t timeMax       = 900e-9;  //maximum time of physical signal in a cell/digit (s)
+  Float_t timeCut       = 900e-9;  //maximum time difference between the digits inside EMC cluster (s)
+    const char *pass      = 0 ;       //string defining pass (use none if figured out from path)
+    //AliAnalysisTaskSE *tender = AddTaskEMCALTender();
+    AliAnalysisTaskSE *tender = AddTaskEMCALTender(distBC, recalibClus, recalcClusPos, nonLinearCorr, remExotic, 
 						   fidRegion, calibEnergy, calibTime, remBC, nonLinFunct, reclusterize, seedthresh, 
 						   cellthresh, clusterizer, trackMatch, updateCellOnly, timeMin, timeMax, timeCut);
     
