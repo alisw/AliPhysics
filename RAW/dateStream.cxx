@@ -61,7 +61,7 @@ struct gdcEventDescriptorStruct {
   struct eventHeaderStruct header;
   int loaded;
   unsigned long32 detPattern;
-  eventTimestampType timestamp; 
+  eventTimestampSecType timestamp; 
 } *currGdc;
 struct ldcEventDescriptorStruct {
   struct equipmentEventDescriptorStruct *head;
@@ -71,7 +71,7 @@ struct ldcEventDescriptorStruct {
   struct eventHeaderStruct header;
   int loaded;
   unsigned long32 detPattern;
-  eventTimestampType timestamp; 
+  eventTimestampSecType timestamp; 
 } *currLdc;
 struct equipmentEventDescriptorStruct {
   struct equipmentEventDescriptorStruct *next;
@@ -89,7 +89,7 @@ struct payloadDescriptorStruct {
 int lineNmb;
 eventGdcIdType currGdcId;
 unsigned long32 currDetPattern;
-eventTimestampType currTimestamp; 
+eventTimestampSecType currTimestamp; 
 eventLdcIdType currLdcId;
 equipmentIdType currEquipmentId;
 int currRunNb;
@@ -632,10 +632,6 @@ void loadPayload( const char *fileName ) {
 	  printf( "\n" );
 	  
 	  printf( "      " );
-	  if ( cdh->cdhMBZ3 != 0 ) {
-	    printf( "MBZ3:0x%x ",
-		    cdh->cdhMBZ3 );
-	  }
 	  printf( "ROI:0x(%08x-%01x)", cdh->cdhRoiHigh, cdh->cdhRoiLow );
 	  if ( cdh->cdhRoiHigh != 0
 	       || cdh->cdhRoiLow != 0 ) {
@@ -1587,11 +1583,11 @@ RoiHigh/Low reference:0x%x-%x current:0x%x-%x\n",
 	if ( cdh->cdhMBZ0 != 0
 	     || cdh->cdhMBZ1 != 0
 	     || cdh->cdhMBZ2 != 0
-	     || cdh->cdhMBZ3 != 0 ) {
+	     ) {
 	  fprintf( stderr,
-		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ2:0x%x MBZ3:0x%x\n",
+		   "%s: CDH check failed. MBZ0:0x%x MBZ1:0x%x MBZ2:0x%x\n",
 		   myName,
-		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ2, cdh->cdhMBZ3 );
+		   cdh->cdhMBZ0, cdh->cdhMBZ1, cdh->cdhMBZ2 );
 	  exit( 1 );
 	}
       }

@@ -169,7 +169,7 @@ UChar_t AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
 
   UInt_t currentFilePos = fFile->Tellp();
   UInt_t size = currentFilePos-fDataHeaderPos;
-  size -= sizeof(AliRawDataHeader);
+  size -= sizeof(AliRawDataHeaderV3);
   size /= 4;
   
   if (size > 0x3FFFFFF) {
