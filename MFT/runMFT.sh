@@ -9,7 +9,6 @@ OUTDIR=${CURDIR}/test
 echo 'working directory:' $OUTDIR
 mkdir $OUTDIR
 RUN=169099  # run number for OCDB access
-SEED=12345  # random number generator seed should be used
 SIMDIR="generated" # sub-directory where to move simulated files prior to reco
 # Copy *ALL* the macros we need in the output directory, not to mess
 # with our source dir in any way.
@@ -34,7 +33,7 @@ cd $OUTDIR
 ###############################################################################
 
 echo "Running simulation  ..."
-aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\",$RUN\) >$OUTDIR/testSim.out 2>$OUTDIR/testSim.err
+aliroot -l -b -q runSimulation.C\($NEVENTS,\""$SIMCONFIG"\",$RUN\) >$OUTDIR/testSim.out 2>$OUTDIR/testSim.err
 mkdir $SIMDIR
 echo "Copying generated files to $SIMDIR"
 cp $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
@@ -49,7 +48,7 @@ rm -f AliESD*.root *QA*.root
 echo "Running reconstruction  ..."
 cd $OUTDIR
 
-aliroot -l -b -q runReconstruction.C\($SEED,\""SAVEDIGITS"\"\) >$OUTDIR/testReco.out 2>$OUTDIR/testReco.err
+aliroot -l -b -q runReconstruction.C\(\""SAVEDIGITS"\"\) >$OUTDIR/testReco.out 2>$OUTDIR/testReco.err
       
 aliroot -l -b -q AliMFTClusterQA.C\(\) >$OUTDIR/mftClusterQA.out 2>$OUTDIR/mftClusterQA.err
 
