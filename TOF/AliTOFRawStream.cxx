@@ -125,6 +125,7 @@ Revision 0.01  2005/07/22 A. De Caro
 
 #include "AliRawEventHeaderBase.h"
 #include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 
 #include "AliTOFDecoderV2.h"
 #include "AliTOFTDCHit.h"
@@ -1436,7 +1437,8 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
 
   Int_t currentEquipment;
   Int_t currentDDL;
-  const AliRawDataHeader *currentCDH;
+  const AliRawDataHeader *currentCDH = 0x0;
+  const AliRawDataHeaderV3 *currentCDHV3 = 0x0;
 
   //pointers
   UChar_t *data = 0x0;
@@ -1456,6 +1458,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     }
 
     currentCDH = fRawReader->GetDataHeader();
+    if (!currentCDH) currentCDHV3 = fRawReader->GetDataHeaderV3();
     const Int_t kDataSize = fRawReader->GetDataSize();
     const Int_t kDataWords = kDataSize / 4;
     data = new UChar_t[kDataSize];
@@ -1487,7 +1490,7 @@ Bool_t AliTOFRawStream::Decode(Int_t verbose = 0) {
     fDecoder->SetPackedDataBuffer(&fPackedDataBuffer[currentDDL]);
     
     //start decoding
-    if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH) == kTRUE) {
+    if (fDecoder->Decode((UInt_t *)data, kDataWords, currentCDH, currentCDHV3) == kTRUE) {
       fRawReader->AddMajorErrorLog(kDDLDecoder,Form("DDL # = %d",currentDDL));
       if (verbose) AliWarning(Form("Error while decoding DDL # %d: decoder returned with errors", currentDDL));
       ResetDataBuffer(currentDDL);
@@ -1719,8 +1722,11 @@ AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
 
   /* read and check CDH info */
   const AliRawDataHeader *currentCDH = fRawReader->GetDataHeader();
-  Int_t currentMiniEventID = currentCDH->GetMiniEventID();
-  Int_t currentEventID1 = currentCDH->GetEventID1();
+  const AliRawDataHeaderV3 *currentCDHV3 = fRawReader->GetDataHeaderV3();
+  Int_t currentMiniEventID = currentCDH ? currentCDH->GetMiniEventID(): -1;
+  currentMiniEventID = currentCDHV3 ? currentCDHV3->GetMiniEventID(): -1;
+  Int_t currentEventID1 = currentCDH? currentCDH->GetEventID1() : -1;
+  currentEventID1 = currentCDHV3? currentCDHV3->GetEventID1() : -1;
 
   /* read decoder summary data */
   AliTOFDecoderSummaryData *decodersd;

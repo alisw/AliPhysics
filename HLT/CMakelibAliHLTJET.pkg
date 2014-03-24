@@ -49,7 +49,8 @@ set ( CLASS_HDRS
 
 set ( CLASS_HDRS_FJ  	fastjet/AliHLTJETFastJetHeader.h fastjet/AliHLTJETFastJetFinder.h fastjet/AliHLTJETFastJetComponent.h)
 
-include ("JET/CMakejet.conf")
+# Quick fix 20-March-2014; disable fastjet 
+# include ("JET/CMakejet.conf")
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
 

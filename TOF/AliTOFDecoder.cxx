@@ -50,6 +50,7 @@ TOF Raw Data decoder
 #include "AliTOFDecoder.h"
 #include "AliTOFGeometry.h"
 #include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliTOFRawDataFormat.h"
 
 ClassImp(AliTOFDecoder)
@@ -177,7 +178,7 @@ AliTOFDecoder::~AliTOFDecoder()
 //_________________________________________________________________
 
 Bool_t
-AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
+AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh, const AliRawDataHeaderV3 *cdhV3)
 {
   /* main decoding routine.
    * it loops over nWords 32-bit words 
@@ -216,9 +217,11 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
   Short_t  currentBunchID = -1;
   Short_t  currentL0BCID = -1;
   Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)(-1);
+  currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : (Short_t)(-1);
   Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
+  currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : (Short_t)(-1);
   AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
-  if (!cdh)
+  if (!cdh && !cdhV3)
     AliWarning("CDH not valid: deltaBunchID not reliable ");
 
   /*** V2718 patch ***/
@@ -934,7 +937,7 @@ void AliTOFDecoder::GetArrayDDL(Int_t* array, Int_t ddl){
 }
 
 //------------------------------------------------------------
-void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh)
+void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh, const AliRawDataHeaderV3 *cdhV3)
 {
   /* It loops over nWords 32-bit words 
    * starting at *rawData and prints them in 0x format.
@@ -942,9 +945,11 @@ void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRaw
    */
 
  Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)(-1);
+ currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : (Short_t)(-1);
  Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
+ currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : (Short_t)(-1);
  AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
- if (!cdh)
+ if (!cdh && !cdhV3)
    AliWarning("CDH not valid: deltaBunchID not reliable ");
 
  AliInfo("Printing raw data stack for current equipment\n");

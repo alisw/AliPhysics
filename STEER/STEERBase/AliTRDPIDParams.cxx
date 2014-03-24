@@ -99,10 +99,6 @@ AliTRDPIDParams::AliTRDPIDCentrality *AliTRDPIDParams::FindCentrality(Double_t v
       break;
     }
   }
-  if(!tmp){
-      AliDebug(10,"Using default centrality class");
-      return FindCentrality(-1);
-  }
   return tmp;
 }
 
@@ -113,10 +109,12 @@ Bool_t AliTRDPIDParams::GetThresholdParameters(Int_t ntracklets, Double_t effici
   // Use IsEqual definition
   //
   AliTRDPIDCentrality *cent = FindCentrality(centrality);
+  if(!cent)cent = FindCentrality(-1);// try default class
   if(!cent){
-    AliDebug(1, "Centrality class not available");
-    return kFALSE;
+      AliDebug(1, "Centrality class not available");
+      return kFALSE;
   }
+  
   cent->GetThresholdParameters(ntracklets, efficiency, params);
   return kTRUE;
 }

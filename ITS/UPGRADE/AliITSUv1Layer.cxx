@@ -2593,9 +2593,9 @@ TGeoVolume* AliITSUv1Layer::CreateSpaceFrameOuterB1(const TGeoManager *mgr){
   segmentVol->AddNode(sideBeamVol,8, beamTransf[7]);
   segmentVol->AddNode(bottomBeam1Vol,1,bottomBeamTransf1);
   segmentVol->AddNode(bottomBeam2Vol,1,bottomBeamTransf2);
-  segmentVol->AddNode(bottomBeam2Vol,1,bottomBeamTransf3);
+  segmentVol->AddNode(bottomBeam2Vol,2,bottomBeamTransf3);
   segmentVol->AddNode(bottomBeam3Vol,1,bottomBeamTransf4);
-  segmentVol->AddNode(bottomBeam3Vol,1,bottomBeamTransf5);
+  segmentVol->AddNode(bottomBeam3Vol,2,bottomBeamTransf5);
 
 
   // Then build up the space frame

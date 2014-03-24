@@ -239,7 +239,7 @@ void AliTRDNDFast::BuildHistos(){
 	Double_t pars[kNpar];
 	for(Int_t ipar=0;ipar<kNpar;ipar++)pars[ipar]=GetParam(idim,ipar);
         // Also Fill overflow bins!!!
-	for(Int_t ii=0;ii<=fHistos[idim]->GetNbinsX()+1;ii++){
+	for(Int_t ii=1;ii<=fHistos[idim]->GetNbinsX()+1;ii++){
 	    Double_t xval=fHistos[idim]->GetXaxis()->GetBinCenter(ii);
 	    Double_t val=langaufunc(&xval,&pars[0]);
 	    //Double_t val=fFunc[idim]->Eval(xval);
