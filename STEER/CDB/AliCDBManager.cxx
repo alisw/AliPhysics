@@ -428,10 +428,10 @@ void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
       TString rawFolder = entryValue(re_RawFolder);
       TString mcFolder = entryValue(re_MCFolder);
       if ( !rawFolder.IsNull() ){
-        entryValue.Replace(0, 6, "/cvmfs/alice.cern.ch/calibration");
+        entryValue.Replace(0, 6, "/cvmfs/alice-ocdb.cern.ch/calibration");
         //entryValue.Replace(entryValue.Length()-4, entryValue.Length(), "");
       } else if ( !mcFolder.IsNull() ){
-        entryValue.Replace(0,36,"/cvmfs/alice.cern.ch/calibration/MC");
+        entryValue.Replace(0,36,"/cvmfs/alice-ocdb.cern.ch/calibration/MC");
       } else {
         AliFatal(Form("Environment variable for cvmfs OCDB folder set for an invalid OCDB storage:\n   %s", entryValue.Data()));
       }
