@@ -940,7 +940,7 @@ inline void AliDielectronVarManager::FillVarAODTrack(const AliAODTrack *particle
     values[AliDielectronVarManager::kTPCsignalNfrac] = tpcNcls>0?tpcSignalN/tpcNcls:0;
     values[AliDielectronVarManager::kTPCclsDiff]     = tpcSignalN-tpcNcls;
 
-    if(Req(kPIn))         values[AliDielectronVarManager::kPIn]         = pid->GetTPCmomentum();
+    values[AliDielectronVarManager::kPIn]         = pid->GetTPCmomentum();
     if(Req(kTPCsignal))   values[AliDielectronVarManager::kTPCsignal]   = pid->GetTPCsignal();
     if(Req(kTOFsignal))   values[AliDielectronVarManager::kTOFsignal]   = pid->GetTOFsignal();
     if(Req(kTOFmismProb)) values[AliDielectronVarManager::kTOFmismProb] = fgPIDResponse->GetTOFMismatchProbability(particle);

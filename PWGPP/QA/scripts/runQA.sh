@@ -311,7 +311,7 @@ executePlanB()
     echo
     echo "trouble detected, sending email to ${MAILTO}"
 
-    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+    grep BAD ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
   fi
 }
 

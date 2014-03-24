@@ -213,10 +213,6 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fPhoVertexReco_Invmass;
  TH2D                   *fPhoVertexReco_step0;
  TH2D                   *fPhoVertexReco_step1;
- TH2D                   *fPhoVertexReco_step2;
- TH2D                   *fPhoVertexReco_step3;
- TH2D                   *fPhoVertexReco_step4;
- TH2D                   *fPhoVertexReco_step5;
  TH1D                   *fMatchV0_0;
  TH1D                   *fMatchV0_1;
  TH1D                   *fMatchMC_0;

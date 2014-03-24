@@ -27,7 +27,8 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   AliJetResponseMaker* address   = 0,
   Double_t    nefmincut          = -10,
   Double_t    nefmaxcut          = 10,
-  Int_t       jetTagging         = 0
+  Int_t       jetTagging         = 0,
+  Double_t    maxTrackPt         = 100
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -81,6 +82,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetCont1->ConnectClusterContainer(clusCont1);
   jetCont1->SetNEFCut(nefmincut,nefmaxcut);
   jetCont1->SetFlavourCut(jetTagging);
+  jetCont1->SetMaxTrackPt(maxTrackPt);
 
     
   AliParticleContainer *trackCont2 = jetTask->AddParticleContainer(ntracks2);
@@ -96,6 +98,7 @@ AliJetResponseMaker* AddTaskJetResponseMaker(
   jetCont2->ConnectParticleContainer(trackCont2);
   jetCont2->ConnectClusterContainer(clusCont2);
   jetCont2->SetFlavourCut(jetTagging);
+  jetCont2->SetMaxTrackPt(1000); // disable default 100 GeV/c track cut for particle level jets
 
     
   jetTask->SetMatching(matching, maxDistance1, maxDistance2);

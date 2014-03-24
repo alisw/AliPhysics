@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fCachedRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -105,7 +105,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fCachedRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -175,6 +175,8 @@ AliAnalysisTaskRhoVnModulation::~AliAnalysisTaskRhoVnModulation()
     if(fFitModulation)          delete fFitModulation;
     if(fHistSwap)               delete fHistSwap;
     if(fCentralityClasses)      delete fCentralityClasses;
+    if(fExpectedRuns)           delete fExpectedRuns;
+    if(fExpectedSemiGoodRuns)   delete fExpectedSemiGoodRuns;
     if(fFitControl)             delete fFitControl;
 }
 //_____________________________________________________________________________
@@ -294,6 +296,14 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     if(!fCentralityClasses) {   // classes must be defined at this point
         Double_t c[] = {0., 20., 40., 60., 80., 100.};
         fCentralityClasses = new TArrayD(sizeof(c)/sizeof(c[0]), c);
+    }
+    if(!fExpectedRuns) {        // expected runs must be defined at this point
+        Int_t r[] =  {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, /* up till here original good TPC list */169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309, /* original semi-good tpc list */169415, 169411, 169035, 168988, 168984, 168826, 168777, 168512, 168511, 168467, 168464, 168342, 168310, 168115, 168108, 168107, 167987, 167915, 167903, /*new runs, good according to RCT */ 169238, 169160, 169156, 169148, 169145, 169144 /* run swith missing OROC 8 but seem ok in QA */};
+        fExpectedRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
+    }
+    if(!fExpectedSemiGoodRuns) {
+        Int_t r[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+        fExpectedSemiGoodRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
     }
     // global QA
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
@@ -453,14 +463,20 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fReduceBinsXByFactor = 1;
     fReduceBinsYByFactor = 1;
     if(fFillQAHistograms) {
-        fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", 100, -.5, 99.5, 100, -1.1, 1.1);
+        fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", fExpectedRuns->GetSize()+1, -.5, fExpectedRuns->GetSize()+.5, 100, -1.1, 1.1);
         fHistRunnumbersEta->Sumw2();
         fOutputList->Add(fHistRunnumbersEta);
-        fHistRunnumbersPhi = new TH2F("fHistRunnumbersPhi", "fHistRunnumbersPhi", 100, -.5, 99.5, 100, -0.2, TMath::TwoPi()+0.2);
+        fHistRunnumbersPhi = new TH2F("fHistRunnumbersPhi", "fHistRunnumbersPhi", fExpectedRuns->GetSize()+1, -.5, fExpectedRuns->GetSize()+.5, 100, -0.2, TMath::TwoPi()+0.2);
         fHistRunnumbersPhi->Sumw2();
         fOutputList->Add(fHistRunnumbersPhi);
+        for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) { 
+            fHistRunnumbersPhi->GetXaxis()->SetBinLabel(i+1, Form("%i", fExpectedRuns->At(i)));
+            fHistRunnumbersEta->GetXaxis()->SetBinLabel(i+1, Form("%i", fExpectedRuns->At(i)));
+        }
+        fHistRunnumbersPhi->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
+        fHistRunnumbersEta->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
     }
-    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 52, -0.5, 52.5);
+    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 54, -0.5, 54.5);
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
     if(fUsePtWeight) fHistSwap->Sumw2();
 
@@ -624,9 +640,9 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     }
     // if all went well, update the local rho parameter
     fLocalRho->SetLocalRho(fFitModulation);
-    // fill a number of histograms 
-    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
+    // fill a number of histograms. event qa needs to be filled first as it also determines the runnumber for the track qa 
     if(fFillQAHistograms)       FillQAHistograms(InputEvent());
+    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
     // send the output to the connected output container
     PostData(1, fOutputList);
     switch (fRunModeType) {
@@ -1384,6 +1400,47 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
 {
     // event cuts
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    // only done if the runnumber changes, could be moved to a call to AliAnalysisTaskSE::Notify()
+    if(fRunNumber != InputEvent()->GetRunNumber()) {
+        fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
+        if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
+        // reset the cuts. should be a pointless operation except for the case where the run number changes
+        // from semi-good back to good on one node, which is not a likely scenario
+        AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
+        AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
+        if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
+            if(fDebug > 0) printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
+            fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
+        }
+        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
+        for(Int_t i(0); i < fExpectedSemiGoodRuns->GetSize(); i++) {
+            if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
+               if(fDebug > 0) printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
+                flaggedAsSemiGood = kTRUE;
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
+                AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);    // only affects vn extraction, NOT jet finding
+                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
+                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
+                if(tempRho) {
+                    if(fDebug > 0) printf("__FUNC__ %s > switching to small rho, caching normal rho \n ", __func__);
+                    fHistAnalysisSummary->SetBinContent(54, 1.);        // bookkeep the fact that small rho is used
+                    fCachedRho = fRho;          // cache the original rho ...
+                    fRho = tempRho;             // ... and use the small rho
+                }
+            }
+        }
+        if(!flaggedAsSemiGood) {
+            // in case the run is not a semi-good run, check if it is recognized as another run
+            // only done to catch unexpected runs
+            for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) {
+                if(fExpectedRuns->At(i) == fRunNumber) break; // run is known, break the loop else store the number in a random bin
+                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
+            }
+            fHistAnalysisSummary->SetBinContent(53, 1.);                // bookkeep which rho estimate is used 
+        }
+    }
+    // continue with event selection 
     if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
     if(fSemiCentralInclusive && ! (event->GetTriggerMask() & (ULong64_t(1)<<7))) return kFALSE;
     if(TMath::Abs(InputEvent()->GetPrimaryVertex()->GetZ()) > 10.) return kFALSE;
@@ -1412,38 +1469,8 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     if(fExplicitOutlierCut == 2010 || fExplicitOutlierCut == 2011) {
        if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
     }
-    if(fRho->GetVal() <= 0 ) return kFALSE;
     if(fTracks->GetEntries() < 1) return kFALSE;
-    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
-    // only done if the runnumber changes
-    if(fRunNumber != InputEvent()->GetRunNumber()) {
-        fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
-        if(fDebug > 0 ) printf("> NEW RUNNNUMBER DETECTED: %i <\n", fRunNumber);
-        Int_t semiGoodTPCruns[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
-        for(Int_t i(0); i < (int)(sizeof(semiGoodTPCruns)/sizeof(semiGoodTPCruns[0])); i++) {
-            if(semiGoodTPCruns[i] == fRunNumber) { // run is semi-good
-                if(fDebug > 0) printf(" > SEMI-GOOD TPC DETECTED, adjusting acceptance accordingly ... <\n");
-                flaggedAsSemiGood = kTRUE;
-                AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);
-                AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);
-                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
-                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
-                if(tempRho) {
-                    if(fDebug > 0) printf(" > found small rho, will use this as estimate < \n");
-                    fRho = tempRho;
-                }
-            }
-        }
-        if(!flaggedAsSemiGood) {
-            // in case the run is not a semi-good run, check if it is recognized as a good run
-            Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081};
-            for(Int_t i(0); i < (int)(sizeof(runs)/sizeof(runs[0])); i++) {
-                if(runs[i] == fRunNumber) break; // run is good, break the loop else store the number in a random bin
-                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
-            }
-        }
-    }
+    if(fRho->GetVal() <= 0 ) return kFALSE;
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1659,9 +1686,8 @@ void AliAnalysisTaskRhoVnModulation::FillQAHistograms(AliVEvent* vevent)
     fHistVertexz->Fill(vevent->GetPrimaryVertex()->GetZ());
     fHistCentrality->Fill(fCent);
     Int_t runNumber(InputEvent()->GetRunNumber());
-    Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, 169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-    for(fMappedRunNumber = 0; fMappedRunNumber < 64; fMappedRunNumber++) {
-        if(runs[fMappedRunNumber]==runNumber) break;
+    for(fMappedRunNumber = 0; fExpectedRuns->GetSize()+1; fMappedRunNumber++) {
+        if(fExpectedRuns->At(fMappedRunNumber) == runNumber) break;
     }
 }
 //_____________________________________________________________________________
@@ -1731,6 +1757,8 @@ void AliAnalysisTaskRhoVnModulation::FillAnalysisSummaryHistogram() const
     fHistAnalysisSummary->SetBinContent(51, fMaxCones);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(52, "fUseScaledRho");
     fHistAnalysisSummary->SetBinContent(52, fUseScaledRho);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(53, "used rho");
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(54, "used small rho");
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
@@ -1739,15 +1767,6 @@ void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
     switch (fRunModeType) {
         case kLocal : {
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-        if(fFillQAHistograms) {
-            Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, 169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-            for(Int_t i(0); i < 64; i++) { 
-                fHistRunnumbersPhi->GetXaxis()->SetBinLabel(i+1, Form("%i", runs[i]));
-                fHistRunnumbersEta->GetXaxis()->SetBinLabel(i+1, Form("%i", runs[i]));
-            }
-            fHistRunnumbersPhi->GetXaxis()->SetBinLabel(65, "undetermined");
-            fHistRunnumbersEta->GetXaxis()->SetBinLabel(65, "undetermined");
-        }
         AliAnalysisTaskRhoVnModulation::Dump();
         for(Int_t i(0); i < fHistAnalysisSummary->GetXaxis()->GetNbins(); i++) printf( " > flag: %s \t content %.2f \n", fHistAnalysisSummary->GetXaxis()->GetBinLabel(1+i), fHistAnalysisSummary->GetBinContent(1+i));
         } break;
