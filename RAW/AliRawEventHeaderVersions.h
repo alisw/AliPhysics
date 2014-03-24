@@ -177,4 +177,19 @@ START_EVENT_HEADER(3,13)
 
 END_EVENT_HEADER(3,13)
 
+START_EVENT_HEADER(3,14)
+
+   UInt_t fType;          // event type
+   UInt_t fRunNb;     // run number
+   UInt_t fId[2];  // id field
+   UInt_t fTriggerPattern[4];   // trigger pattern
+   UInt_t fDetectorPattern; // detector pattern
+   UInt_t fTypeAttribute[3];  // system (0,1) and user (2) attributes
+   UInt_t fLdcId;         // LDC id
+   UInt_t fGdcId;         // GDC id
+   UInt_t fTimestamp;     // event timestamp
+   UInt_t fTimestampUsec; // event timestamp (microseconds)
+
+END_EVENT_HEADER(3,14)
+
 #endif
