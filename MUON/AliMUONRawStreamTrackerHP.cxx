@@ -51,6 +51,7 @@
 #include "AliMUONDDLTracker.h"
 #include "AliMUONLogger.h"
 #include "AliRawReader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
 #include <cassert>
