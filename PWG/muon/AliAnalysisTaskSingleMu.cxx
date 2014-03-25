@@ -422,11 +422,8 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   Bool_t isMC = furtherOpt.Contains("MC");
   
   TAxis* srcAxis = gridSparseArray[0]->GetAxis(kHvarMotherType);
-  Int_t unIdBin = srcAxis->GetNbins();
-  for ( Int_t ibin=1; ibin<=srcAxis->GetNbins(); ibin++ ) {
-    currName = srcAxis->GetBinLabel(ibin);
-    if ( currName.Contains("Unidentified") ) unIdBin = ibin;
-  }
+  Int_t unIdBin = srcAxis->FindBin(fSrcKeys->At(kUnidentified)->GetName());
+  if ( unIdBin < 1 ) unIdBin = srcAxis->GetNbins();
   
   Int_t firstSrcBin = ( isMC ) ? 1 : unIdBin;
   Int_t lastSrcBin  = ( isMC ) ? srcAxis->GetNbins() - 1 : unIdBin;
@@ -618,14 +615,15 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
   sumMothers[kRecoHF].Set(0);
   sumMothers[kRecoBkg].Set(0);
   sumMothers[kInputHF].Set(3);
-  sumMothers[kInputHF][0] = kCharmMu;
-  sumMothers[kInputHF][1] = kBeautyMu;
-  sumMothers[kInputHF][2] = kQuarkoniumMu;
+  
+  sumMothers[kInputHF][0] = srcAxis->FindBin(fSrcKeys->At(kCharmMu)->GetName());
+  sumMothers[kInputHF][1] = srcAxis->FindBin(fSrcKeys->At(kBeautyMu)->GetName());
+  sumMothers[kInputHF][2] = srcAxis->FindBin(fSrcKeys->At(kQuarkoniumMu)->GetName());
   sumMothers[kInputDecay].Set(1);
-  sumMothers[kInputDecay][0] = kDecayMu;
+  sumMothers[kInputDecay][0] = srcAxis->FindBin(fSrcKeys->At(kDecayMu)->GetName());
   sumMothers[kRecoAll].Set(srcAxis->GetNbins());
-  for ( Int_t isrc=1; isrc<srcAxis->GetNbins(); ++isrc ) {
-    sumMothers[kRecoAll][isrc-1] = isrc;
+  for ( Int_t isrc=0; isrc<srcAxis->GetNbins(); ++isrc ) {
+    sumMothers[kRecoAll][isrc] = isrc+1;
   }
   
   meanZ = vtxFit->GetParameter(1);
