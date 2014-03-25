@@ -58,6 +58,8 @@ struct AliRawDataHeader {
 
   ULong64_t GetTriggerClasses() const
   {return (((ULong64_t) (fROILowTriggerClassHigh & 0x3FFFF)) << 32) | fTriggerClassLow;}
+  ULong64_t GetTriggerClassesNext50() const
+  {return 0;}
   ULong64_t GetROI() const
   {return (((ULong64_t) fROIHigh) << 4) | ((fROILowTriggerClassHigh >> 28) & 0xF);}
 
