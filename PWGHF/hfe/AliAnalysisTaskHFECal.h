@@ -217,6 +217,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH1D                   *fMatchV0_1;
  TH1D                   *fMatchMC_0;
  TH1D                   *fMatchMC_1;
+ TH2D                   *fpair;
 
  //<----- correction
  TGraphErrors           *fnSigEtaCorr[7];
