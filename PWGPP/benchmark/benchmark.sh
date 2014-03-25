@@ -238,11 +238,12 @@ goCPass0()
   #validate CPass0
   cd ${outputDir}
   touch ${doneFile}
-  [[ -f ${outputDirMC}/galice.root ]] && echo "sim ${outputDirMC}/galice.root" >> ${doneFile}
-  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
-  [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${doneFile}
   echo "dir ${outputDir}" >> ${doneFile}
-  summarizeLogs >> ${doneFile}
+  if summarizeLogs >> ${doneFile}; then
+    [[ -f ${outputDirMC}/galice.root ]] && echo "sim ${outputDirMC}/galice.root" >> ${doneFile}
+    [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
+    [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${doneFile}
+  fi
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
@@ -480,14 +481,15 @@ goCPass1()
   #validate CPass1
   cd ${outputDir}
   touch ${doneFile}
-  [[ -f AliESDs_Barrel.root ]] && echo "esd ${outputDir}/AliESDs_Barrel.root" >> ${doneFile}
-  [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
-  [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${doneFile}
-  [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${doneFile}
-  [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
   echo "dir ${outputDir}" >> ${doneFile}
-  summarizeLogs >> ${doneFile}
-  
+  if summarizeLogs >> ${doneFile}; then
+    [[ -f AliESDs_Barrel.root ]] && echo "esd ${outputDir}/AliESDs_Barrel.root" >> ${doneFile}
+    [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
+    [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${doneFile}
+    [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${doneFile}
+    [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+  fi
+
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
 }
@@ -608,10 +610,11 @@ goMergeCPass0()
   #validate merging cpass0
   cd ${outputDir}
   touch ${doneFile}
-  [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFile}
-  [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
   echo "dir ${outputDir}" >> ${doneFile}
-  summarizeLogs >> ${doneFile}
+  if summarizeLogs >> ${doneFile}; then
+    [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFile}
+    [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
+  fi
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
@@ -753,6 +756,9 @@ goMergeCPass1()
     touch merge.log
     touch trending.root
     touch FilterEvents_Trees.root
+    touch CalibObjects.root
+    touch dcsTime.root
+    touch ${qaMergedOutputFileName}
   else
     #aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
     aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
@@ -776,12 +782,14 @@ goMergeCPass1()
   #validate merge cpass1
   cd ${outputDir}
   touch ${doneFile}
-  [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFile}
-  [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFile}
-  [[ -f trending.root ]] && echo "trendingfile ${outputDir}/trending.root" >> ${doneFile}
-  [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
   echo "dir ${outputDir}" >> ${doneFile}
-  summarizeLogs >>  ${doneFile}
+  if summarizeLogs >>  ${doneFile}; then
+    [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFile}
+    [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFile}
+    [[ -f trending.root ]] && echo "trendingfile ${outputDir}/trending.root" >> ${doneFile}
+    [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
+    [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+  fi
       
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
@@ -843,6 +851,7 @@ goSubmitMakeflow()
 goGenerateMakeflow()
 {
   #generate the makeflow file
+  [[ $# -lt 3 ]] && echo "args: id inputFileList configFile" && return 1
   productionID=${1}
   inputFileList=${2}
   configFile=${3}
@@ -927,26 +936,26 @@ goGenerateMakeflow()
     for extraOption in "${extraOpts[@]}"; do echo -n \"${extraOption}\"" "; done; echo
     echo
 
-    #CPass1 list of Calib/QA files to merge
-    # the trick is to have the string "Stage.txt" in the file name of the list of directories with QA output to trigger
-    # the production of the trending tree (only then the task->Finish() will be called in QAtrain_duo.C, on the grid
+    #CPass1 list of Calib/QA/ESD/filtered files
+    # the trick with QA is to have the string "Stage.txt" in the file name of the list of directories with QA output to trigger
+    # the production of the QA trending tree (only then the task->Finish() will be called in QAtrain_duo.C, on the grid
     # this corresponds to the last merging stage)
-    arr_cpass1_calib_list[${runNumber}]="meta/cpass1.calib.run${runNumber}.list"
-    echo "${arr_cpass1_calib_list[${runNumber}]} : benchmark.sh ${arr_cpass1_outputs[*]}"
-    echo "  ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]};"
-    echo
     arr_cpass1_QA_list[${runNumber}]="meta/cpass1.QA.run${runNumber}.lastMergingStage.txt.list"
     echo "${arr_cpass1_QA_list[${runNumber}]}: benchmark.sh ${arr_cpass1_outputs[*]}"
     echo "  ./benchmark.sh PrintValues dir ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
     echo
-
-    #CPass1 output file lists
+    arr_cpass1_calib_list[${runNumber}]="meta/cpass1.calib.run${runNumber}.list"
+    echo "${arr_cpass1_calib_list[${runNumber}]} : benchmark.sh ${arr_cpass1_outputs[*]}"
+    echo "  ./benchmark.sh PrintValues calibfile ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_outputs[*]};"
+    echo
     arr_cpass1_ESD_list[${runNumber}]="meta/cpass1.ESD.run${runNumber}.list"
     echo "${arr_cpass1_ESD_list[${runNumber}]} : benchmark.sh ${arr_cpass1_outputs[*]}"
     echo "  ./benchmark.sh PrintValues esd ${arr_cpass1_ESD_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    echo
     arr_cpass1_filtered_list[${runNumber}]="meta/cpass1.filtered.run${runNumber}.list"
     echo "${arr_cpass1_filtered_list[${runNumber}]} : benchmark.sh ${arr_cpass1_outputs[*]}"
     echo "  ./benchmark.sh PrintValues filteredTree ${arr_cpass1_filtered_list[${runNumber}]} ${arr_cpass1_outputs[*]}"
+    echo
   
     #CPass1 merging
     arr_cpass1_merged[${runNumber}]="meta/merge.cpass1.run${runNumber}.done"
@@ -1175,6 +1184,7 @@ summarizeLogs()
       fi
     elif [[ ${validationStatus} -eq 1 ]]; then
       echo "${finallog} BAD ${errorSummary}"
+      logstatus=1
     elif [[ ${validationStatus} -eq 2 ]]; then
       echo "${finallog} OK MWAH ${errorSummary}"
     fi
