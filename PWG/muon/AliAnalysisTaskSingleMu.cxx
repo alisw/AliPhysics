@@ -683,6 +683,7 @@ void AliAnalysisTaskSingleMu::Terminate(Option_t *) {
       histo->Divide(eventVertex);
       Double_t norm = histo->GetBinContent(histo->FindBin(0.));
       histo->GetYaxis()->SetTitle("#frac{dN_{#mu}}{dv_{z}} / #left(#frac{1}{N_{MB}}#frac{dN_{MB}}{dv_{z}}#right)");
+      histo->SetTitle(Form("%g < p_{T} (GeV/c) < %g",ptAxis->GetBinLowEdge(firstPtBin), ptAxis->GetBinUpEdge(lastPtBin)));
       slope = ( histo->GetBinContent(histo->FindBin(meanZ+sigmaZ)) -
                histo->GetBinContent(histo->FindBin(meanZ-sigmaZ)) ) / ( 2. * sigmaZ );
       
