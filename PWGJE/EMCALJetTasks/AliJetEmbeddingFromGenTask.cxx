@@ -35,6 +35,7 @@ ClassImp(AliJetEmbeddingFromGenTask)
 AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask() : 
   AliJetModelBaseTask("AliJetEmbeddingFromGenTask"),
   fGen(0),
+  fMassless(kFALSE),
   fHistTrials(0),
   fHistXsection(0),
   fHistPtHard(0)
@@ -47,6 +48,7 @@ AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask() :
 AliJetEmbeddingFromGenTask::AliJetEmbeddingFromGenTask(const char *name, Bool_t drawqa) :
   AliJetModelBaseTask(name,drawqa),
   fGen(0),
+  fMassless(kFALSE),
   fHistTrials(0),
   fHistXsection(0),
   fHistPtHard(0)
@@ -153,7 +155,9 @@ void AliJetEmbeddingFromGenTask::Run()
       continue;
     if (pt>fPtMax)
       continue;
-    AddTrack(pt, eta, phi,0,0,0,0,0,0,c,part->GetMass());
+    Double_t mass = part->GetMass();
+    if(fMassless) mass = 0.;
+    AddTrack(pt, eta, phi,0,0,0,0,0,0,c,mass);
   }
 
   FillPythiaHistograms();
@@ -169,7 +173,6 @@ void AliJetEmbeddingFromGenTask::FillPythiaHistograms() {
   AliRunLoader *rl = AliRunLoader::Instance();
   AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
   if(genPH) {
-    // Printf("found pythia event header. pThard: %f Trials: %d xsec: %f",genPH->GetPtHard(),genPH->Trials(),genPH->GetXsection());
     Float_t xsec = genPH->GetXsection();
     Int_t trials = genPH->Trials();
     Float_t pthard = genPH->GetPtHard();

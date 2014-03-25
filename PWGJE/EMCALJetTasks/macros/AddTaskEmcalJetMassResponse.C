@@ -1,6 +1,7 @@
 AliAnalysisTaskEmcalJetMassResponse* AddTaskEmcalJetMassResponse(const char * njetsBase,
 								 const Double_t R,
 								 const char * nrhoBase, 
+								 const char * nrhoMass, 
 								 const char * ntracks, 
 								 const char * nclusters,
 								 TF1        * fBkgMass,
@@ -45,6 +46,7 @@ AliAnalysisTaskEmcalJetMassResponse* AddTaskEmcalJetMassResponse(const char * nj
   AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
   if(jetContBase) {
     jetContBase->SetRhoName(nrhoBase);
+    jetContBase->SetRhoMassName(nrhoMass);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
     jetContBase->SetPercAreaCut(0.6);
@@ -66,6 +68,8 @@ AliAnalysisTaskEmcalJetMassResponse* AddTaskEmcalJetMassResponse(const char * nj
   TString outputfile = Form("%s",AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contName.Data(), TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
   mgr->ConnectOutput(task,1,coutput1);
+  AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%sTree",contName.Data()), TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  mgr->ConnectOutput(task,2,coutput2);
 
   return task;  
 
