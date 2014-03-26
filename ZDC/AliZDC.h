@@ -87,6 +87,8 @@ public:
   void  SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
   void  SetpAsystem() {fIspASystem = kTRUE;}
   void  SetRELDISGenerator() {fIsRELDISgen = kTRUE;}
+  
+  void  SetOnlyZEM() {fOnlyZEM=kTRUE;}
 
 private:
 
@@ -108,7 +110,9 @@ protected:
   Bool_t  fIspASystem;       // Configuring pA collisions (MC only)
   Bool_t  fIsRELDISgen;	     // Is RELDIS used as generator
   
-  ClassDef(AliZDC,12)  	// Zero Degree Calorimeter base class
+  Bool_t fOnlyZEM;	     // build only ZEM (no had. calorimeters!)
+  
+  ClassDef(AliZDC,13)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

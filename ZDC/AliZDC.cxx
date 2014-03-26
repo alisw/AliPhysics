@@ -66,7 +66,8 @@ AliZDC::AliZDC() :
   fSpectatorTracked(1),
   fBeamEnergy(0.),
   fIspASystem(kFALSE),
-  fIsRELDISgen(kFALSE)
+  fIsRELDISgen(kFALSE),
+  fOnlyZEM(kFALSE)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -83,7 +84,7 @@ AliZDC::AliZDC() :
 //_____________________________________________________________________________
 AliZDC::AliZDC(const char *name, const char *title) : 
   AliDetector(name,title),
-  fNoShower  (0),
+  fNoShower(0),
   fPedCalib(0),
   fEnCalibData(0),
   fTowCalibData(0),
@@ -91,7 +92,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fSpectatorTracked(1),
   fBeamEnergy(0.),
   fIspASystem(kFALSE),
-  fIsRELDISgen(kFALSE)
+  fIsRELDISgen(kFALSE),
+  fOnlyZEM(kFALSE)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -134,7 +136,8 @@ fZDCCalibFName(ZDC.fZDCCalibFName),
 fSpectatorTracked(ZDC.fSpectatorTracked),
 fBeamEnergy(ZDC.fBeamEnergy),
 fIspASystem(ZDC.fIspASystem),
-fIsRELDISgen(ZDC.fIsRELDISgen)
+fIsRELDISgen(ZDC.fIsRELDISgen),
+fOnlyZEM(ZDC.fOnlyZEM)
 {
   // copy constructor
 }
@@ -151,6 +154,8 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fZDCCalibFName = ZDC.fZDCCalibFName;
     fBeamEnergy = ZDC.fBeamEnergy;
     fIspASystem = ZDC.fIspASystem;
+    fIsRELDISgen = ZDC.fIsRELDISgen;
+    fOnlyZEM = ZDC.fOnlyZEM;
   } return *this;
 }
 
@@ -161,7 +166,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   // 		Add a ZDC hit to the hit list.
   
   static Float_t trackTime=0., trackEta=0., primKinEn=0., xImpact=0., yImpact=0., sFlag=0.;
-  static Int_t   pcPDGcode, motPDGcode;
+  static Int_t   pcPDGcode=0, motPDGcode=0;
 
   AliZDCHit *newquad, *curprimquad;
   newquad = new AliZDCHit(fIshunt, track, vol, hits);
@@ -169,7 +174,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
   
   if(fNhits==0){
       // First hit -> setting flag for primary or secondary particle
-      TParticle * p = gAlice->GetMCApp()->Particle(track);
+      /*TParticle * p = gAlice->GetMCApp()->Particle(track);
       Int_t imo = p->GetFirstMother();
       //
       if(track != imo){
@@ -177,7 +182,7 @@ void AliZDC::AddHit(Int_t track, Int_t *vol, Float_t *hits)
       }
       else if(track == imo){
         newquad->SetSFlag(0);  // PRIMARY particle entering the ZDC
-      }
+      }*/
       //  
       sFlag 	 = newquad->GetSFlag();
       primKinEn  = newquad->GetPrimKinEn();
@@ -555,7 +560,7 @@ void AliZDC::Digits2Raw()
      
     if(lADCDataGEO==0){ 
       if(indADC0>=knADCData1){
-        AliWarning(" Problem with digit index 4 ADC0\n");
+        AliWarning(Form(" Problem with digit index %d for ADC0\n", indADC0));
 	return;
       }
       Int_t indLG = indADC0+knADCData1;
@@ -577,7 +582,7 @@ void AliZDC::Digits2Raw()
     }
     else if(lADCDataGEO==1){ 
       if(indADC1>=knADCData2){
-         AliWarning(" Problem with digit index 4 ADC1\n");
+         AliWarning(Form(" Problem with digit index %d for ADC1\n", indADC1));
 	 return;
       }
       Int_t indLG = indADC1+knADCData2;
@@ -599,7 +604,7 @@ void AliZDC::Digits2Raw()
     }
     else if(lADCDataGEO==2){ 
       if(indADC2>=knADCData3){
-        AliWarning(" Problem with digit index 4 ADC2\n");
+        AliWarning(Form(" Problem with digit index %d for ADC2\n", indADC2));
 	return;
       }
       Int_t indLG = indADC2+knADCData3;
@@ -621,7 +626,7 @@ void AliZDC::Digits2Raw()
     }
     else if(lADCDataGEO==3){ 
       if(indADC3>=knADCData4){
-         AliWarning(" Problem with digit index 4 ADC2\n");
+         AliWarning(Form(" Problem with digit index %d for ADC2\n", indADC3));
 	 return;
       }
       Int_t indLG = indADC3+knADCData4;
