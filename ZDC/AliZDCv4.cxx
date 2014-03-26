@@ -46,6 +46,7 @@
 #include "AliRun.h"
 #include "AliZDCv4.h"
 #include "AliMC.h"
+#include "AliMCParticle.h"
  
 class  AliZDCHit;
 class  AliPDG;
@@ -229,6 +230,7 @@ void AliZDCv4::CreateBeamLine()
   //
   // Create the beam line elements
   //
+  if(fOnlyZEM) printf("\n  Only ZEM configuration requested: no side-C beam pipe, no side-A hadronic ZDCs\n\n");
   
   Double_t zd1, zd2, zCorrDip, zInnTrip, zD1;
   Double_t conpar[9], tubpar[3], tubspar[5], boxpar[3];
@@ -238,16 +240,21 @@ void AliZDCv4::CreateBeamLine()
   gMC->Matrix(irotpipe1,90.-1.0027,0.,90.,90.,1.0027,180.);      
   gMC->Matrix(irotpipe2,90.+1.0027,0.,90.,90.,1.0027,0.);
 
-  //
   Int_t *idtmed = fIdtmed->GetArray();
+  Double_t dx=0., dy=0., dz=0.;
+  Double_t thx=0., thy=0., thz=0.;
+  Double_t phx=0., phy=0., phz=0.;
   
+  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRONT");
+  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
+    
   ////////////////////////////////////////////////////////////////
   //								//
   //                SIDE C - RB26 (dimuon side)			//
   //								//
-  ///////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////
   
-  
+if(!fOnlyZEM){  
   // -- Mother of the ZDCs (Vacuum PCON)
   zd1 = 1921.6;
   
@@ -579,13 +586,13 @@ void AliZDCv4::CreateBeamLine()
   // --------------------------------------------------------
   // TRANSFORMATION MATRICES
   // Combi transformation: 
-  Double_t dx = -3.970000;
-  Double_t dy = 0.000000;
-  Double_t dz = 0.0;
+  dx = -3.970000;
+  dy = 0.000000;
+  dz = 0.0;
   // Rotation: 
-  Double_t thx = 84.989100;   Double_t phx = 180.000000;
-  Double_t thy = 90.000000;   Double_t phy = 90.000000;
-  Double_t thz = 185.010900;  Double_t phz = 0.000000;
+  thx = 84.989100;   phx = 180.000000;
+  thy = 90.000000;   phy = 90.000000;
+  thz = 185.010900;  phz = 0.000000;
   TGeoRotation *rotMatrix1c = new TGeoRotation("c",thx,phx,thy,phy,thz,phz);
   // Combi transformation: 
   dx = -3.970000;
@@ -627,7 +634,6 @@ void AliZDCv4::CreateBeamLine()
   TGeoCompositeShape *pOutTrousersC = new TGeoCompositeShape("outTrousersC", "QCLext:ZDCC_c1+QCLext:ZDCC_c2");
   
   // Volume: QCLext
-  TGeoMedium *medZDCFe = gGeoManager->GetMedium("ZDC_ZIRONT");
   TGeoVolume *pQCLext = new TGeoVolume("QCLext",pOutTrousersC, medZDCFe);
   pQCLext->SetLineColor(kGreen);
   pQCLext->SetVisLeaves(kTRUE);
@@ -639,7 +645,6 @@ void AliZDCv4::CreateBeamLine()
   // Inner trousers
   TGeoCompositeShape *pIntTrousersC = new TGeoCompositeShape("intTrousersC", "QCLint:ZDCC_c1+QCLint:ZDCC_c2");
   // Volume: QCLint
-  TGeoMedium *medZDCvoid = gGeoManager->GetMedium("ZDC_ZVOID");
   TGeoVolume *pQCLint = new TGeoVolume("QCLint",pIntTrousersC, medZDCvoid);
   pQCLint->SetLineColor(kTeal);
   pQCLint->SetVisLeaves(kTRUE);
@@ -696,7 +701,7 @@ void AliZDCv4::CreateBeamLine()
     gMC->Gspos("QLUC", 1, "ZDCC", 0., 0.,  fPosZNC[2]+66.+boxpar[2], 0, "ONLY");
     printf("	C SIDE LUMINOMETER %1.2f < z < %1.2f\n",  fPosZNC[2]+66., fPosZNC[2]+66.+2*boxpar[2]);
   }
-  	         
+}  	         
   // --  END OF BEAM PIPE VOLUME DEFINITION FOR SIDE C (RB26 SIDE) 
   // ----------------------------------------------------------------
 
@@ -1724,6 +1729,16 @@ void AliZDCv4::CreateZDC()
   
   Int_t *idtmed = fIdtmed->GetArray();
 
+  // Parameters for EM calorimeter geometry
+  // NB -> parameters used ONLY in CreateZDC()
+  Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
+  Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
+  Int_t   fDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
+  Float_t fDimZEM[6] = {fZEMLength, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
+  Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-kFibRadZEM;
+  Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
+
+if(!fOnlyZEM){
   // Parameters for hadronic calorimeters geometry
   // NB -> parameters used ONLY in CreateZDC()
   Float_t fGrvZN[3] = {0.03, 0.03, 50.};  // Grooves for neutron detector
@@ -1733,14 +1748,6 @@ void AliZDCv4::CreateZDC()
   Int_t   fTowZN[2] = {2, 2};  		  // Tower for neutron detector
   Int_t   fTowZP[2] = {4, 1};  		  // Tower for proton detector
 
-  // Parameters for EM calorimeter geometry
-  // NB -> parameters used ONLY in CreateZDC()
-  Float_t kDimZEMPb  = 0.15*(TMath::Sqrt(2.));  // z-dimension of the Pb slice
-  Float_t kFibRadZEM = 0.0315; 			// External fiber radius (including cladding)
-  Int_t   fDivZEM[3] = {92, 0, 20}; 		// Divisions for EM detector
-  Float_t fDimZEM[6] = {fZEMLength, 3.5, 3.5, 45., 0., 0.}; // Dimensions of EM detector
-  Float_t fFibZEM2 = fDimZEM[2]/TMath::Sin(fDimZEM[3]*kDegrad)-kFibRadZEM;
-  Float_t fFibZEM[3] = {0., 0.0275, fFibZEM2};  // Fibers for EM calorimeter
 
   
   //-- Create calorimeters geometry
@@ -1855,7 +1862,7 @@ void AliZDCv4::CreateZDC()
   gMC->Gspos("ZPRO", 2, "ZDCA", fPosZPA[0], fPosZPA[1], fPosZPA[2]+fDimZP[2], 0, "ONLY");
   //Ch debug
   //printf("\n ZP left -> %f < z < %f cm\n",fPosZPl[2],fPosZPl[2]+2*fDimZP[2]);  
-    
+}    
   
   // -------------------------------------------------------------------------------
   // -> EM calorimeter (ZEM)  
@@ -2069,6 +2076,8 @@ void AliZDCv4::AddAlignableVolumes() const
  // name with the corresponding volume path. Needs to be syncronized with
  // eventual changes in the geometry.
  //
+ if(fOnlyZEM) return;
+ 
  TString volpath1 = "ALIC_1/ZDCC_1/ZNEU_1";
  TString volpath2 = "ALIC_1/ZDCC_1/ZPRO_1";
  TString volpath3 = "ALIC_1/ZDCA_1/ZNEU_2";
@@ -2303,7 +2312,7 @@ void AliZDCv4::StepManager()
       //printf("\t Particle: mass = %1.3f, E = %1.3f GeV, pz = %1.2f GeV -> stopped in volume %s\n", 
       //     gMC->TrackMass(), p[3], p[2], gMC->CurrentVolName());
       //
-      if(ipr!=0){
+      /*if(ipr!=0){
         printf("\n\t **********************************\n");
         printf("\t ********** Side C **********\n");
         printf("\t # of particles in IT = %d\n",fpLostITC);
@@ -2315,7 +2324,7 @@ void AliZDCv4::StepManager()
         printf("\t # of particles in TDI = %d\n",fpLostTDI);
         printf("\t # of particles in VColl = %d\n",fpcVCollA);
         printf("\t **********************************\n");
-      }
+      }*/
       gMC->StopTrack();
       return;
   }
@@ -2447,7 +2456,6 @@ void AliZDCv4::StepManager()
         hits[4] = xdet[0];
       }
       hits[5] = xdet[1];
-      hits[6] = 0;
       hits[7] = 0;
       hits[8] = 0;
       hits[9] = 0;
@@ -2455,19 +2463,35 @@ void AliZDCv4::StepManager()
       Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
       TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
       hits[10] = part->GetPdgCode();
-      //if(part->GetPdgCode()>10000) printf("\t PDGCode = %d\n", part->GetPdgCode());
       //
       Int_t imo = part->GetFirstMother();
-      if(imo>0){
-    	TParticle *pmot = gAlice->GetMCApp()->Particle(imo);
-    	hits[11] = pmot->GetPdgCode();
-        hits[13] = pmot->Eta();
+      //printf(" tracks: pc %d -> mother %d \n", curTrackN,imo); 
+      
+      int trmo = imo;
+      TParticle *pmot = 0x0;
+      Bool_t isChild = kFALSE;
+      if(imo>-1){
+        pmot = gAlice->GetMCApp()->Particle(imo);
+	trmo = pmot->GetFirstMother();
+	isChild = kTRUE;
+        while(trmo!=-1){
+	   pmot = gAlice->GetMCApp()->Particle(trmo);
+           //printf("  **** pc %d -> mother %d \n", trch,trmo); 
+	   trmo = pmot->GetFirstMother();
+	}
+      }
+      
+      if(isChild && pmot){
+          hits[6]  = 1;
+    	  hits[11] = pmot->GetPdgCode();
+   	  hits[13] = pmot->Eta();
       }
       else{
-        hits[11] = 0;
+        hits[6] = 0;
+    	hits[11] = 0;
         hits[13] = part->Eta();
       }
-      //
+      
       hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
 
       AddHit(curTrackN, vol, hits);
@@ -2475,19 +2499,20 @@ void AliZDCv4::StepManager()
       if(fNoShower==1){
         if(vol[0]==1){
           fnDetectedC += 1;
-          if(fnDetectedC==1) printf("	### Particle in ZNC\n\n");
+          //if(fnDetectedC==1) printf("	### Particle in ZNC\n\n");
         }
         else if(vol[0]==2){
           fpDetectedC += 1;
-          if(fpDetectedC==1) printf("	### Particle in ZPC\n\n");
+          //if(fpDetectedC==1) printf("	### Particle in ZPC\n\n");
         }
+        //else if(vol[0]==3) printf("	### Particle in ZEM\n\n");	  
         else if(vol[0]==4){
           fnDetectedA += 1;
-          if(fnDetectedA==1) printf("	### Particle in ZNA\n\n");	  
+          //if(fnDetectedA==1) printf("	### Particle in ZNA\n\n");	  
         }
         else if(vol[0]==5){
           fpDetectedA += 1;
-          if(fpDetectedA==1) printf("	### Particle in ZPA\n\n"); 	 
+          //if(fpDetectedA==1) printf("	### Particle in ZPA\n\n"); 	 
         }
     	//
         //printf("\t Pc: x %1.2f y %1.2f z %1.2f  E %1.2f GeV pz = %1.2f GeV in volume %s\n", 
