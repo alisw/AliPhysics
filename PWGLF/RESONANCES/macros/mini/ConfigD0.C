@@ -138,13 +138,13 @@ Bool_t ConfigD0
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t   use     [8] = { 1	   ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
-   Bool_t   useIM   [8] = { 1	   ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
+   Bool_t   use     [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
+   Bool_t   useIM   [8] = { 1	    ,  1       ,  1	 ,  1	    ,  1	,  1	    ,  1       ,  1	  };
    TString  name    [8] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "RotateK1", "RotateK2", "LikePP" , "LikeMM" };
    TString  comp    [8] = {"PAIR"   , "PAIR"   , "MIX"	 , "MIX"    , "ROTATE1" , "ROTATE1" , "PAIR"   , "PAIR"   };
    TString  output  [8] = {"SPARSE" , "SPARSE" , "SPARSE" , "SPARSE" , "SPARSE"  , "SPARSE"  , "SPARSE" , "SPARSE" };
-   Char_t   charge1 [8] = {'+'	   , '-'      , '+'	 , '-'      , '+'	, '-'	    , '+'      , '-'	  };
-   Char_t   charge2 [8] = {'-'	   , '+'      , '-'	 , '+'      , '-'	, '+'	    , '+'      , '-'	  };
+   Char_t   charge1 [8] = {'-'	    , '+'      , '-'	 , '+'      , '-'	, '+'	    , '+'      , '-'	  };
+   Char_t   charge2 [8] = {'+'	    , '-'      , '+'	 , '-'      , '+'	, '-'	    , '+'      , '-'	  };
    Int_t    cutID1  [8] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK	,  iCutK    ,  iCutK   ,  iCutK   };
    Int_t    cutID2  [8] = { iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi  ,  iCutPi	,  iCutPi   ,  iCutPi  ,  iCutPi  };
    Int_t    ipdg    [8] = { 421     , -421     ,  421	 , -421     ,  421	, -421      ,  421     , -421	  };
@@ -169,11 +169,11 @@ Bool_t ConfigD0
 
       // axis X: invmass (or resolution)
       //if (useIM[i]) 
-         out->AddAxis(imID, 800, 1.4, 2.2);
+         out->AddAxis(imID, 1600, 0.6, 2.2);
       //else
       //   out->AddAxis(resID, 200, -0.02, 0.02);
       // axis Y: transverse momentum
-      out->AddAxis(ptID, 150, 0.0, 15.0);
+      out->AddAxis(ptID, 200, 0.0, 20.0);
       
       // axiz Z: rapidity
       //out->AddAxis(yID, 100, -1, 1);
@@ -186,6 +186,7 @@ Bool_t ConfigD0
       //out->AddAxis(daug2dcaID, 200, -1.0, 1.0);    
       
       if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+      else out->AddAxis(centID, 400, 0.0, 400.0);
    }
    
    
@@ -227,13 +228,14 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(imID, 800, 1.4, 2.2);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_True2", mode.Data(), "TRUE");
@@ -242,8 +244,6 @@ Bool_t ConfigD0
    out->SetCharge(1, '-');
    out->SetDaughter(0, AliRsnDaughter::kKaon);
    out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, '+');
-   out->SetCharge(1, '-');
    out->SetMotherPDG(-421);
    out->SetMotherMass(1.86486);
    // pair cuts
@@ -251,13 +251,14 @@ Bool_t ConfigD0
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
    // binnings
-   out->AddAxis(imID, 800, 1.4, 2.2);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
    // INVARIANT RESOLUTION
@@ -279,12 +280,13 @@ Bool_t ConfigD0
    out->SetCheckMomentumConservation(checkP);
    // binnings
    out->AddAxis(resID, 200, -0.02, 0.02);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_Res2", mode.Data(), "TRUE");
@@ -301,12 +303,13 @@ Bool_t ConfigD0
    out->SetCheckMomentumConservation(checkP);
    // binnings
    out->AddAxis(resID, 200, -0.02, 0.02);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
    //out->AddAxis(nsistID, 10, 0, 5);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
    // GENERATED MOTHERS
@@ -323,11 +326,12 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 800, 1.4, 2.2);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    // create output
    AliRsnMiniOutput *out = task->CreateOutput("D0_TrueMC2", mode.Data(), "MOTHER");
@@ -339,11 +343,12 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 800, 1.4, 2.2);
-   out->AddAxis(ptID, 150, 0.0, 15.0);
+   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
    if (!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
+   else out->AddAxis(centID, 400, 0.0, 400.0);
    
    
    }
@@ -409,7 +414,7 @@ void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionDCA
    AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(0.0,1,0.001);
+   axisPionDCA->SetBins(-1.0,1,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
@@ -528,7 +533,7 @@ void AddMonitorOutput_KaonDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonDCA
    AliRsnValueDaughter *axisKaonDCA = new AliRsnValueDaughter("kaon_dca", AliRsnValueDaughter::kDCAXY);
-   axisKaonDCA->SetBins(0.0,1,0.001);
+   axisKaonDCA->SetBins(-1.0,1,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonDCA = new AliRsnListOutput("Kaon_DCA", AliRsnListOutput::kHistoDefault);

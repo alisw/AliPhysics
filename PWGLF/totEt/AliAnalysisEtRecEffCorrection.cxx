@@ -18,7 +18,7 @@ AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection() : TNamed("RecEff"
   fEnergyCorrection->SetName("ReCorr");
 }
 
-AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection(TString name, const TF1 &correction,const TH2F &recoEff, const Double_t maxEnergy) : TNamed(name, name)
+AliAnalysisEtRecEffCorrection::AliAnalysisEtRecEffCorrection(TString name, const TF1 &correction,const TH2F &recoEff, Double_t maxEnergy) : TNamed(name, name)
     ,fEnergyCorrection(new TF1(correction))										    	,fRecoEff(new TH2F(recoEff))
     ,fMaxEnergy(maxEnergy)
 {}
