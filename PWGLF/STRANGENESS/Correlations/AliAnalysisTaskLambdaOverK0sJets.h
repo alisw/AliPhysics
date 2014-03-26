@@ -194,6 +194,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fTriggerMCResEta;              //! Trigger particle MC: eta resolution
   TH3F*   fTriggerMCResPhi;              //! Trigger particle MC: phi resolution
   TH3F*   fTriggerPtCent;                //! Trigger particle: pt vs centrality vs Z vertex
+  TH3F*   fTriggerPtCentCh;              //! Trigger particle: pt vs centrality vs Z vertex for hh correlations
   TH2F*   fNTrigPerEvt;                  //! Trigger particle: Number of particle triggers per event
   TH1F*   fTriggerWiSPDHit;              //! Trigger particle: Has Hits in the SPD?
   TH2F*   fTriggerEtaPhi;                //! Trigger particle: eta vs phi
