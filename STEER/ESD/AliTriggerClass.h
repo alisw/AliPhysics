@@ -50,8 +50,10 @@ public:
                   void    Reset() { fStatus = kFALSE; }
 
              ULong64_t    GetValue() const { return (fStatus) ? fClassMask : 0; }
+             ULong64_t    GetValueNext50() const { return (fStatus) ? fClassMaskNext50 : 0; }
                 Bool_t    GetStatus() const { return fStatus; }
                ULong64_t  GetMask() const { return fClassMask; }
+               ULong64_t  GetMaskNext50() const { return fClassMaskNext50; }
     AliTriggerDescriptor* GetDescriptor() const { return fDescriptor; }
        AliTriggerCluster* GetCluster() const { return fCluster; }
         AliTriggerBCMask* GetBCMask() const { return fMask[0]; }
@@ -70,6 +72,7 @@ public:
 
 private:
 	       ULong64_t  fClassMask;    // trigger mask (1<< (index-1))
+	       ULong64_t  fClassMaskNext50; // trigger mask (1<< (index-1))
 	       	 UChar_t  fIndex;        // position of class in mask
     AliTriggerDescriptor* fDescriptor;   // pointer to the descriptor
        AliTriggerCluster* fCluster;      // pointer to the cluster
@@ -81,7 +84,7 @@ private:
 		  UInt_t  fTimeGroup;    // time group
 		  UInt_t  fTimeWindow;   // the size of time window for its group
 
-  ClassDef( AliTriggerClass, 5 )  // Define a trigger class object
+  ClassDef( AliTriggerClass, 6 )  // Define a trigger class object
 };
 
 #endif
