@@ -1171,14 +1171,16 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Float_t  spdCorr =0;              //  corrected spd2 multiplicity
   Int_t    multCND = 0;             //  no. tracks (candle condition)
 
-  Float_t  multV0A0 = 0;           //  multiplicity from V0 reco side A (ring 0)
+  Float_t  multV0A0 = 0;            //  multiplicity from V0 reco side A (ring 0)
   Float_t  multV0A123 = 0;          //  multiplicity from V0 reco side A (ring 1-2-3)
   Float_t  multV0A  = 0;            //  multiplicity from V0 reco side A
   Float_t  multV0C  = 0;            //  multiplicity from V0 reco side C
   Float_t  multV0AEq  = 0;          //  multiplicity from V0 reco side A
   Float_t  multV0CEq  = 0;          //  multiplicity from V0 reco side C
-  Float_t  multV0ACorr  = 0;            //  multiplicity from V0 reco side A
-  Float_t  multV0CCorr  = 0;            //  multiplicity from V0 reco side C
+  Float_t  multV0A0Corr  = 0;       //  multiplicity from V0 reco side A (ring 0)
+  Float_t  multV0A123Corr  = 0;     //  multiplicity from V0 reco side A (ring 1-2-3)
+  Float_t  multV0ACorr  = 0;        //  multiplicity from V0 reco side A
+  Float_t  multV0CCorr  = 0;        //  multiplicity from V0 reco side C
   Short_t  multV0AOnline  = 0;      //  multiplicity from V0 reco side A
   Short_t  multV0COnline  = 0;      //  multiplicity from V0 reco side C
   Float_t  v0Corr = 0;              // corrected V0 multiplicity (used for MC)
@@ -1257,8 +1259,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   for (int i=40; i<64; i++)
     multV0A123 += esdV0->GetMultiplicity(i);
 
-  multV0ACorr = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
-  multV0CCorr = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
+  multV0A0Corr   = AliESDUtils::GetCorrV0A0(multV0A0,zvtx);    
+  multV0A123Corr = AliESDUtils::GetCorrV0A(multV0A123,zvtx);    
+  multV0ACorr    = AliESDUtils::GetCorrV0A(multV0A,zvtx);    
+  multV0CCorr    = AliESDUtils::GetCorrV0C(multV0C,zvtx);    
 
   v0Corr = multV0A+multV0C; // Todo: C.L. not clear why here we do not use the sum of the corrected values?
 
@@ -1557,7 +1561,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Scaling for MC
   if (fIsMCInput) {
     fUseScaling=kFALSE;
-    v0Corr  = Short_t((multV0A+multV0C)  * fV0MScaleFactorMC);
+    v0Corr   = Short_t((multV0A+multV0C)  * fV0MScaleFactorMC);
+    multV0A0 = multV0A0 * fV0MScaleFactorMC;
     multV0A  = multV0A * fV0MScaleFactorMC;
     multV0C  = multV0C * fV0MScaleFactorMC;
   }
@@ -1571,8 +1576,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Centrality Selection
   if(fHtempV0M) fCentV0M = fHtempV0M->GetBinContent(fHtempV0M->FindBin((v0Corr)));
   if(fHtempV0A) fCentV0A = fHtempV0A->GetBinContent(fHtempV0A->FindBin((multV0ACorr)));
-  if(fHtempV0A0) fCentV0A0 = fHtempV0A0->GetBinContent(fHtempV0A0->FindBin((multV0A0)));
-  if(fHtempV0A123) fCentV0A123 = fHtempV0A123->GetBinContent(fHtempV0A123->FindBin((multV0A123)));
+  if(fHtempV0A0) fCentV0A0 = fHtempV0A0->GetBinContent(fHtempV0A0->FindBin((multV0A0Corr)));
+  if(fHtempV0A123) fCentV0A123 = fHtempV0A123->GetBinContent(fHtempV0A123->FindBin((multV0A123Corr)));
   if(fHtempV0C) fCentV0C = fHtempV0C->GetBinContent(fHtempV0C->FindBin((multV0CCorr)));
   if(fHtempV0MEq) fCentV0MEq = fHtempV0MEq->GetBinContent(fHtempV0MEq->FindBin((multV0AEq+multV0CEq)));
   if(fHtempV0AEq) fCentV0AEq = fHtempV0AEq->GetBinContent(fHtempV0AEq->FindBin((multV0AEq)));
@@ -1788,8 +1793,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 	fHOutMultV0AC->Fill(multV0A,multV0C);
 	fHOutMultV0M->Fill(multV0ACorr+multV0CCorr);
 	fHOutMultV0A->Fill(multV0ACorr);
-	fHOutMultV0A0->Fill(multV0A0);
-	fHOutMultV0A123->Fill(multV0A123);
+	fHOutMultV0A0->Fill(multV0A0Corr);
+	fHOutMultV0A123->Fill(multV0A123Corr);
 	fHOutMultV0C->Fill(multV0CCorr);
 	fHOutMultV0MEq->Fill(multV0AEq+multV0CEq);
 	fHOutMultV0AEq->Fill(multV0AEq);
