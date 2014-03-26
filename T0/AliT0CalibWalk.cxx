@@ -44,7 +44,8 @@ ClassImp(AliT0CalibWalk)
 				      fWalk(0),
 				      fAmpLEDRec(0),
 				      fQTC(0),
-				      fAmpLED(0)
+                                      fAmpLED(0), 
+                                      fCalibByData(kFALSE)
 {
   //
 }
@@ -53,7 +54,8 @@ ClassImp(AliT0CalibWalk)
 AliT0CalibWalk::AliT0CalibWalk(const char* name):TNamed(),
 				      fWalk(0),
 				      fAmpLEDRec(0),				  				      fQTC(0),
-				      fAmpLED(0)
+				      fAmpLED(0), 
+                                      fCalibByData(kFALSE)
     
 {
   TString namst = "Calib_";
@@ -69,8 +71,8 @@ AliT0CalibWalk::AliT0CalibWalk(const AliT0CalibWalk& calibda) :
   fWalk(0),
   fAmpLEDRec(0),
   fQTC(0),
-  fAmpLED(0)
- 
+  fAmpLED(0) , 
+  fCalibByData(kFALSE)
 {
 // copy constructor
   SetName(calibda.GetName());
@@ -102,7 +104,8 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
   Float_t sigma,cfdmean, qtmean, ledmean;
   Bool_t ok=true;
   Float_t   mips[50];
-  
+  cout<<" @@@@ fCalibByData "<<fCalibByData<<endl;
+
   gFile = TFile::Open(laserFile);
   if(!gFile) {
     AliError("No input laser data found ");
@@ -120,12 +123,12 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	  nmips++;
 	}	
       }    
-      
+      /*     
       if (nmips<17) {
 	ok=false;
 	return ok;
       } 
-       
+      */     
       Float_t x1[50], y1[50]; 
       Float_t x2[50], xx2[50],y2[50];
       Float_t xx1[50],yy1[50], xx[50];
@@ -189,9 +192,10 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
 	      }				   
 	      else
 		{ 
-		  ok=false;
+		  //	  ok=false;
 		  printf("no peak in LED spectrum for PMT %i amplitude %i\n",i,im);
-		  return ok;
+		  ledmean=0;
+		  //  return ok;
 		}
 	      x2[im] = ledmean;
 	      xx2[im] = x2[nmips-im-1];
@@ -216,7 +220,8 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       grwalkqtc->SetTitle(Form("PMT%i",i));
       TGraph *grwalkled = new TGraph (nmips,x2,y1);
       grwalkled->SetTitle(Form("PMT%i",i));
-      fWalk.AddAtAndExpand(grwalkqtc,i);
+      if(!fCalibByData)
+	fWalk.AddAtAndExpand(grwalkqtc,i);
       fAmpLEDRec.AddAtAndExpand(grwalkled,i);
       //	  cout<<" add walk "<<i<<endl;
       
@@ -230,9 +235,40 @@ Bool_t AliT0CalibWalk::MakeWalkCorrGraph(const char *laserFile)
       if(i==23)
 	cout<<"Graphs created..."<<endl;   
 	}
-    } //if gFile exits
+    }
+  Float_t xpoint, ypoint, xdata[250], ydata[250];
+  Int_t ipmt;
+  if(fCalibByData) {
+    cout<<" read ingraph "<<endl;
+    ifstream ingraph ("calibfit.txt");
+    for (Int_t i=0; i<24; i++) 
+      {
+	for (Int_t ip=0; ip<200; ip++) 
+	  {
+	    ingraph>>ipmt>>xpoint>>ypoint; 
+	    // cout<<i<<" "<<ipmt<<" "<<ip<<" "<< xpoint<<" "<<ypoint<<endl;  
+	    xdata[ip]=xpoint;
+	    ydata[ip]=ypoint;
+	  }
+	for (Int_t ip=200; ip<250; ip++) {
+	    xdata[ip] =xdata[ip-1]+10;
+	    ydata[ip]=ydata[199];
+	}
+       
+	TGraph *grwalkqtc = new TGraph (250,xdata,ydata);
+	grwalkqtc->Print();
+	grwalkqtc->SetTitle(Form("PMT%i",i));
+	fWalk.AddAtAndExpand(grwalkqtc,i);
+	for (Int_t ip=0; ip<250; ip++)
+	  {
+	    xdata[ip]=0;
+	    ydata[ip]=0;
+	  }
+      }
+  }
 
-  return ok;
+  
+return ok;
 }
 
 void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma) 
@@ -251,7 +287,7 @@ void AliT0CalibWalk::GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma)
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
-  printf(" mean %f max %f sigma %f \n",mean, meanEstimate , sigma);  
+  //  printf(" mean %f max %f sigma %f \n",mean, meanEstimate , sigma);  
 
   delete fit;
 }
