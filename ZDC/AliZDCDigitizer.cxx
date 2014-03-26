@@ -468,8 +468,8 @@ void AliZDCDigitizer::ReadPMTGains()
        read = fscanf(fdata,"%f ",&data[ic]);
        if(read==0) AliDebug(3, " Error in reading PMT gains from external file ");
     }
-    beam[ir] = data[0];
-    det[ir] = data[1];
+    beam[ir] = (int) (data[0]);
+    det[ir]  = (int) (data[1]);
     gain[ir] = data[2];
     aEne[ir] = data[3];
     bEne[ir] = data[4];
