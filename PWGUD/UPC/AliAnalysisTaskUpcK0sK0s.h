@@ -29,7 +29,7 @@ class AliAnalysisTaskUpcK0sK0s : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
-  void SortArray(Double_t *dArray);
+  void SortArray(Int_t *dArray);
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
