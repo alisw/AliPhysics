@@ -46,6 +46,7 @@ public:
   //  Getters
                TString    GetDetectors();
              ULong64_t    GetClassMask() const { return fClassMask; }
+             ULong64_t    GetClassMaskNext50() const { return fClassMaskNext50; }
 	        UInt_t    GetClusterMask() const { return fClusterMask; }
 	     	UInt_t    GetL0TriggerInputs() const { return fL0TriggerInputs; }
 	     	UInt_t    GetL1TriggerInputs() const { return fL1TriggerInputs; }
@@ -58,12 +59,14 @@ public:
 	       // Setters to be used in case raw data when the trigger information
 	       // is read from the event header
 	       void       SetClassMask(ULong64_t mask) { fClassMask = mask; }
+	       void       SetClassMaskNext50(ULong64_t mask) { fClassMaskNext50 = mask; }
 	       void       SetClusterMask(UInt_t mask)  { fClusterMask = mask; }
 	       void       SetL0TriggerInputs(UInt_t mask)  { fL0TriggerInputs = mask; }
 	       void       SetL1TriggerInputs(UInt_t mask)  { fL1TriggerInputs = mask; }
 	       void       SetL2TriggerInputs(UShort_t mask)  { fL2TriggerInputs = mask; }
 protected:
              ULong64_t    fClassMask;          // UID ( bitwise OR of conditions mask )
+             ULong64_t    fClassMaskNext50;    // UID ( bitwise OR of conditions mask )  high 50 bits for run2
                 UInt_t    fClusterMask;        // UID ( bitwise OR of clusters mask - detector pattern)
     	        UInt_t    fL0TriggerInputs;    // L0 trigger inputs (24 bits)
                 UInt_t    fL1TriggerInputs;    // L1 trigger inputs (24 bits)
@@ -78,7 +81,7 @@ private:
 		AliCentralTrigger( const AliCentralTrigger& ctp ); // Implemented
 		AliCentralTrigger& operator=( const AliCentralTrigger& ctp ); // Not implemented
 
-   ClassDef( AliCentralTrigger, 5 )  // class for running the Central Trigger Processor
+   ClassDef( AliCentralTrigger, 6 )  // class for running the Central Trigger Processor
 };
 
 
