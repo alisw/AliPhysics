@@ -327,7 +327,25 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	ConvCutarray[1] = "8000012032093603007200000000"; ElecCutarray[1] = "9047540023910262371"; MesonCutarray[1] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
 	ConvCutarray[2] = "8000012042093603007200000000"; ElecCutarray[2] = "9047540023510262371"; MesonCutarray[2] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
 	ConvCutarray[3] = "8000012012093603007200000000"; ElecCutarray[3] = "9047540023610262371"; MesonCutarray[3] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
+} else if ( trainConfig == 21 ) {
+	
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540043310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  +  3Cls ITS
+	ConvCutarray[1] = "8000011002093603007200000000"; ElecCutarray[1] = "9047540053310262371"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  +  4Cls ITS
+	ConvCutarray[2] = "8000011002093603007200000000"; ElecCutarray[2] = "9047540063310262371"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  +  5Cls ITS
+	ConvCutarray[3] = "8000011002093603007200000000"; ElecCutarray[3] = "9047540073310262371"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  +  4Cls ITS no Any
+	
+	
+} else if ( trainConfig == 22 ) {
+	
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540043310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 3 ITScls
+	ConvCutarray[1] = "8000012002093603007200000000"; ElecCutarray[1] = "9047540053310262371"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
+	ConvCutarray[2] = "8000012002093603007200000000"; ElecCutarray[2] = "9047540063310262371"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 5 ITScls
+	ConvCutarray[3] = "8000012002093603007200000000"; ElecCutarray[3] = "9047540073310262371"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
+	
 }
+
+
+
 
 
 
@@ -355,12 +373,9 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
 
       analysisCuts[i] = new AliConversionCuts();
-      if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
-            cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
-            return 0;
-      } else {
+     
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19   ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21  ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
@@ -370,7 +385,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	      }
 	    }
 	  }
-	  else if (  ( trainConfig >= 10 && trainConfig <= 18 ) || trainConfig == 20 ){
+	  else if (  ( trainConfig >= 10 && trainConfig <= 18 ) || trainConfig == 20 || trainConfig == 22 ){
 	    
     	    if (doWeighting){
 	      analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -378,18 +393,21 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	    
 	  }
    
-
+           if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
+	      cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
+	      return 0;
+	    } else {
       
-	  if (doEtaShiftIndCuts) {
+		if (doEtaShiftIndCuts) {
 	  
-	      analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
-	      analysisCuts[i]->SetEtaShift(stringShift);
-	      
-	  }
-	  ConvCutList->Add(analysisCuts[i]);
-	  analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-	  analysisCuts[i]->SetAcceptedHeader(HeaderList);
-	}
+		  analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
+		  analysisCuts[i]->SetEtaShift(stringShift);
+		
+		}
+		ConvCutList->Add(analysisCuts[i]);
+		analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+		analysisCuts[i]->SetAcceptedHeader(HeaderList);
+	    }
 
 
 
@@ -428,6 +446,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
    task->SetElectronCutList(ElecCutList);
 
    task->SetMoveParticleAccordingToVertex(kTRUE);
+   task->SetProductionVertextoVGamma(kTRUE);
 
 
    if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
