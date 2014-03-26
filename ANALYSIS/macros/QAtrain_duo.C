@@ -42,10 +42,11 @@ UInt_t kTriggerMask = kTriggerInt;
 
 Int_t runNumbers[5] = {158626};
 
+
 Bool_t doCDBconnect   = 1;
 Bool_t doEventStat    = 1;
-Bool_t doCentrality   = 1;
-Bool_t doQAsym        = 1;
+Bool_t doCentrality   = 0;
+Bool_t doQAsym        = 0;
 Bool_t doVZERO        = 1;   // there is a 2nd file
 Bool_t doVZEROPbPb    = 1; 
 Bool_t doVertex       = 1;
@@ -74,6 +75,8 @@ Bool_t doPHOS         = 1; // new
 Bool_t doPHOSTrig     = 1; // new
 Bool_t doEMCAL        = 1;
 Bool_t doFBFqa        = 1; // new - not ported yet to revision
+
+Bool_t doTaskFilteredTree        = 0;      // high pt filter task
 
                // Debug level
 Int_t       debug_level        = 1;        // Debugging
@@ -133,7 +136,7 @@ void QAtrain_duo(const char *suffix="", Int_t run = 0,
   if (mgr->InitAnalysis()) {                                                                                                              
     mgr->PrintStatus(); 
     mgr->SetSkipTerminate(kTRUE);
-//    mgr->SetNSysInfo(1);
+    mgr->SetNSysInfo(100);
     mgr->StartAnalysis("local", chain);
   }
   timer.Print();
@@ -144,11 +147,11 @@ void LoadLibraries()
   gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/TRD");
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
+  gSystem->Load("libESDfilter.so");
   gSystem->Load("libCORRFW");
   gSystem->Load("libTENDER");
   gSystem->Load("libPWGPP.so");
   gSystem->Load("libAliHLTTrigger.so");
-  gSystem->Load("libPWGTools"); 
 
   if (doEMCAL || doPHOS || doCALO) {
      gSystem->Load("libEMCALUtils");
@@ -189,8 +192,8 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     AliTaskCDBconnect *taskCDB = AddTaskCDBconnect(cdb_location, run_number);    
 //    AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
     if (!taskCDB) return;
-    AliCDBManager *cdb = AliCDBManager::Instance();
-    cdb->SetDefaultStorage(cdb_location);
+//    AliCDBManager *cdb = AliCDBManager::Instance();
+//    cdb->SetDefaultStorage(cdb_location);
 //    taskCDB->SetRunNumber(run_number);
   }    
   
@@ -395,12 +398,12 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
 
   
       gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
-      AliAnalysisTaskCaloTrackCorrelation *taskCaloQA = AddTaskCalorimeterQA(kFALSE, "default");
+      AliAnalysisTaskCaloTrackCorrelation *taskCaloQA = AddTaskCalorimeterQA("default");
       taskCaloQA->SetDebugLevel(0);
       // offline mask set in AddTask to kMB
       taskCaloQA->SelectCollisionCandidates(kTriggerMask);
       // Add a new calo task with EMC1 trigger only
-      taskCaloQA = AddTaskCalorimeterQA(kFALSE, "trigEMC");
+      taskCaloQA = AddTaskCalorimeterQA("trigEMC");
       taskCaloQA->SetDebugLevel(0);
       taskCaloQA->SelectCollisionCandidates(kTriggerEMC);
   }
@@ -531,6 +534,15 @@ void AddAnalysisTasks(const char *suffix, const char *cdb_location)
     AliAnalysisTaskSE *qaFBFCE = (AliAnalysisTaskSE*) AddTaskFBFqa("qaFBFce",kFALSE);
     qaFBFCE->SelectCollisionCandidates(AliVEvent::kCentral);
   }
+  
+//Jacek
+   if (gSystem->Getenv("QA_TaskFilteredTree")) doTaskFilteredTree=1;
+   if (doTaskFilteredTree) {
+      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
+      AddTaskFilteredTree("FilterEvents_Trees.root");
+   }   
+   
+
 }
 
 void QAmerge(const char *suffix, const char *dir, Int_t stage)
@@ -539,7 +551,7 @@ void QAmerge(const char *suffix, const char *dir, Int_t stage)
   TStopwatch timer;
   timer.Start();
   TString outputDir = dir;
-  TString outputFiles = Form("QAresults%s.root,EventStat_temp%s.root,RecoQAresults%s.root",suffix,suffix,suffix);
+  TString outputFiles = Form("QAresults%s.root,EventStat_temp%s.root,RecoQAresults%s.root,FilterEvents_trees%s.root",suffix,suffix,suffix);
   TString mergeExcludes = "";
   TObjArray *list = outputFiles.Tokenize(",");
   TIter *iter = new TIter(list);

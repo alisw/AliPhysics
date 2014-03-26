@@ -603,13 +603,19 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Int_t countAllBoards = 0;
 
     Bool_t containTriggerData = kFALSE;
-  Bool_t hasReadoutErrors = kFALSE;
+    Bool_t hasReadoutErrors = kFALSE;
     AliMUONRawStreamTriggerHP rawStreamTrig(rawReader);
     while (rawStreamTrig.NextDDL()) 
       {
        containTriggerData = kTRUE;
 
-        Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+       const AliRawDataHeader * cdh = rawReader->GetDataHeader();
+       const AliRawDataHeaderV3 * cdh3 = rawReader->GetDataHeaderV3();
+       
+       if (!cdh && !cdh3) continue;
+
+       Bool_t scalerEvent = ((cdh ?  cdh->GetL1TriggerMessage() : cdh3->GetL1TriggerMessage()) & 0x1) == 0x1;
+
         if ( scalerEvent ) AliDebug(1,Form("Scaler event: evtSpecie recoParam %s  QA %s\n",
                                            AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie())),
                                            AliRecoParam::GetEventSpecieName(CurrentEventSpecie())));

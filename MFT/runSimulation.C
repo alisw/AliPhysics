@@ -1,9 +1,11 @@
-void runSimulation(Int_t seed,
-		   Int_t nevents,
+void runSimulation(Int_t nevents,
 		   const Char_t *config,
 		   Int_t runNumber) {
   
   AliSimulation *simulator = new AliSimulation(config);
+
+  TDatime dt;
+  UInt_t seed = dt.Get();
 
   simulator->SetSeed(seed);
   simulator->SetRunNumber(runNumber);

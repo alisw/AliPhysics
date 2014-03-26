@@ -27,7 +27,6 @@
 #include "AliCTPRawData.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
-#include "AliRawDataHeaderSim.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
 #include "AliFstream.h"

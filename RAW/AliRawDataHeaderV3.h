@@ -1,16 +1,18 @@
-#ifndef ALIRAWDATAHEADER_H
-#define ALIRAWDATAHEADER_H
+#ifndef ALIRAWDATAHEADERV3_H
+#define ALIRAWDATAHEADERV3_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-struct AliRawDataHeader {
-  AliRawDataHeader() :
+struct AliRawDataHeaderV3 {
+  AliRawDataHeaderV3() :
     fSize(0xFFFFFFFF), 
-    fWord2(2<<24),
+    fWord2(3<<24),
     fEventID2(0),
     fAttributesSubDetectors(0),
     fStatusMiniEventID(0x10000),  // status bit 4: no L1/L2 trigger information
     fTriggerClassLow(0),
+    fTriggerClassesMiddleLow(0),
+    fTriggerClassesMiddleHigh(0),
     fROILowTriggerClassHigh(0),
     fROIHigh(0)
   {}
@@ -18,7 +20,7 @@ struct AliRawDataHeader {
   // Adding virtual destructor breaks
   // C++ struct backward compatibility
   // Do not uncomment the line below!!!
-  //  virtual ~AliRawDataHeader() {}
+  //  virtual ~AliRawDataHeaderV3() {}
 
   UShort_t  GetEventID1() const
     {
@@ -57,14 +59,18 @@ struct AliRawDataHeader {
     {return fStatusMiniEventID & 0xFFF;};
 
   ULong64_t GetTriggerClasses() const
-  {return (((ULong64_t) (fROILowTriggerClassHigh & 0x3FFFF)) << 32) | fTriggerClassLow;}
+  {return (((ULong64_t) (fTriggerClassesMiddleLow & 0x3FFFF)) << 32) | fTriggerClassLow;}
   ULong64_t GetTriggerClassesNext50() const
-  {return 0;}
+  {return (((ULong64_t) (fROILowTriggerClassHigh & 0x3FFFF)) << 32) | fTriggerClassesMiddleHigh;}
   ULong64_t GetROI() const
   {return (((ULong64_t) fROIHigh) << 4) | ((fROILowTriggerClassHigh >> 28) & 0xF);}
 
   void      SetTriggerClass(ULong64_t mask)
     {fTriggerClassLow = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
+     fTriggerClassesMiddleLow = (UInt_t)((mask >> 32) & 0x3FFFF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-17)
+    };
+  void      SetTriggerClassNext50(ULong64_t mask)
+    {fTriggerClassesMiddleHigh = (UInt_t)(mask & 0xFFFFFFFF);  // low bits of trigger class
      fROILowTriggerClassHigh = (UInt_t)((mask >> 32) & 0x3FFFF); // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-17)
     };
 
@@ -74,6 +80,8 @@ struct AliRawDataHeader {
   UInt_t    fAttributesSubDetectors; // block attributes (bits 24-31) and participating sub detectors
   UInt_t    fStatusMiniEventID; // status & error bits (bits 12-27) and mini event ID (bits 0-11)
   UInt_t    fTriggerClassLow;   // low bits of trigger class
+  UInt_t    fTriggerClassesMiddleLow; // 18 bits go into eventTriggerPattern[1] (low), 14 bits are zeroes (cdhMBZ2)
+  UInt_t    fTriggerClassesMiddleHigh; // Goes into eventTriggerPattern[1] (high) and [2] (low)
   UInt_t    fROILowTriggerClassHigh; // low bits of ROI data (bits 28-31) and high bits of trigger class (bits 0-17)
   UInt_t    fROIHigh;           // high bits of ROI data
 };

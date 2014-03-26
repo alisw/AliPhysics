@@ -751,14 +751,14 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
     const char* name = nd->GetName();
     if (strstr(name,GetITSLayerPattern())) {
       numberOfLayers++;
-      if (sscanf(name, Form("%s%%d",AliITSUGeomTGeo::GetITSLayerPattern()),&lrID)!=1)
+      if (sscanf(name, Form("%s%%2d",AliITSUGeomTGeo::GetITSLayerPattern()),&lrID)!=1)
 	AliFatal(Form("Failed to extract layer ID from the %s",name));
       //
       fLr2Wrapper[lrID] = -1; // not wrapped
     }
     else if (strstr(name,GetITSWrapVolPattern())) { // this is a wrapper volume, may cointain layers
       int wrID = -1;
-      if (sscanf(name, Form("%s%%d",AliITSUGeomTGeo::GetITSWrapVolPattern()),&wrID)!=1) 
+      if (sscanf(name, Form("%s%%2d",AliITSUGeomTGeo::GetITSWrapVolPattern()),&wrID)!=1) 
 	AliFatal(Form("Failed to extract wrapper ID from the %s",name));
       //
       TObjArray* nodesW = nd->GetNodes();
@@ -766,7 +766,7 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
       for (Int_t jw=0; jw<nNodesW; jw++) {
 	TGeoNode* ndW = (TGeoNode*)nodesW->At(jw);
 	if (strstr(ndW->GetName(),GetITSLayerPattern())) {
-	  if (sscanf(ndW->GetName(), Form("%s%%d",AliITSUGeomTGeo::GetITSLayerPattern()),&lrID)!=1) {
+	  if (sscanf(ndW->GetName(), Form("%s%%2d",AliITSUGeomTGeo::GetITSLayerPattern()),&lrID)!=1) {
 	    AliFatal(Form("Failed to extract layer ID from the %s",ndW->GetName()));
 	  }
 	  numberOfLayers++;

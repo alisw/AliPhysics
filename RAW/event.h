@@ -45,10 +45,18 @@
  *                                L1 trigger message [14-21]
  *    V03.08  RD        17-Jan-07 Added "BY DETECTOR" event system attribute
  *    V03.09  RD        08-Feb-07 Moved trigger and detector masks down 1 bit
+ *            KS        14-May-08 Define trigger error bits 13+14 for the CDH
+ *    V03.10  RD        10-Nov-09 Define ATTR_EMPTY_EVENT attribute (removed)
+ *    V03.11  RD        01-Dec-10 Timestamp sec + usec
+ *    V03.12  RD        13-Sep-11 Added ATTR_ORIGINAL_EVENT and CDH_ORIGINAL_EVENT
+ *    V03.13  RD        15-Feb-12 Added SYNC event
+ *            RD        15-Jan-14 Added FLUSHED_EVENT and INCOMPLETE_EVENT
+ *    V03.14  RD        12-Feb-14 Changes for increased number of trigger classes
+ *                                (old:50, new:100) and for CDH V3
  *
  * Preprocessor definitions:
  *  NDEBUG  Define BEFORE including this file to disable run-time checks on
- *          various parameters
+ *          various parameters made via assert()
  *
  * Related facilities:
  *  validateEvent.c  Validation program, should be run after EACH change to
@@ -57,8 +65,8 @@
 #ifndef __event_h__
 #define __event_h__
 
-#define EVENT_MAJOR_VERSION_NUMBER 0x0003
-#define EVENT_MINOR_VERSION_NUMBER 0x0009
+#define EVENT_MAJOR_VERSION_NUMBER  3
+#define EVENT_MINOR_VERSION_NUMBER 14
 
 /* ========== System includes ========= */
 #include <string.h> /* Needed by: memset, memcpy */
@@ -66,14 +74,16 @@
 
 /* ========== Definitions for the event header ========== */
 
-/* ---------- Header base size ---------- */
-/* This value must be updated for each change in the eventHeaderStruct */
-#define EVENT_HEAD_BASE_SIZE 68
+/* ------------------------- Header base size ------------------------- */
+/* This value must be updated for each change in the eventHeaderStruct  */
+/* This has not been made automatic as we want to keep this value under */
+/* strict control...                                                    */
+#define EVENT_HEAD_BASE_SIZE 80
 
 /* ---------- Event size ---------- */
 typedef unsigned long32 eventSizeType;
 
-/* ---------- Magic signature and its byte-swapped version ---------- */
+/* ----------- Magic signature and its byte-swapped version ----------- */
 typedef unsigned long32 eventMagicType;
 #define EVENT_MAGIC_NUMBER         ((eventMagicType)0xDA1E5AFE)
 #define EVENT_MAGIC_NUMBER_SWAPPED ((eventMagicType)0xFE5A1EDA)
@@ -102,8 +112,9 @@ typedef unsigned long32 eventTypeType;
 #define END_OF_DATA                     ((eventTypeType)11)
 #define SYSTEM_SOFTWARE_TRIGGER_EVENT   ((eventTypeType)12)
 #define DETECTOR_SOFTWARE_TRIGGER_EVENT ((eventTypeType)13)
+#define SYNC_EVENT                      ((eventTypeType)14)
 #define EVENT_TYPE_MIN                  1
-#define EVENT_TYPE_MAX                  13
+#define EVENT_TYPE_MAX                  14
 enum eventTypeEnum {
   startOfRun                   = START_OF_RUN,
   endOfRun                     = END_OF_RUN,
@@ -117,7 +128,8 @@ enum eventTypeEnum {
   startOfData                  = START_OF_DATA,
   endOfData                    = END_OF_DATA,
   systemSoftwareTriggerEvent   = SYSTEM_SOFTWARE_TRIGGER_EVENT,
-  detectorSoftwareTriggerEvent = DETECTOR_SOFTWARE_TRIGGER_EVENT
+  detectorSoftwareTriggerEvent = DETECTOR_SOFTWARE_TRIGGER_EVENT,
+  syncEvent                    = SYNC_EVENT
 };
 #define EVENT_TYPE_OK(t) (((t) >= EVENT_TYPE_MIN) && (((t) <= EVENT_TYPE_MAX)))
 
@@ -187,19 +199,20 @@ typedef unsigned long32 eventIdType[EVENT_ID_WORDS];
                       memcpy((void*)to,(const void*)from,EVENT_ID_BYTES)
 #define ADD_EVENT_ID(a,b) ((a)[1]+=(b)[1],(a)[0]+=(b)[0])
 #define SUB_EVENT_ID(a,b) ((a)[1]-=(b)[1],(a)[0]-=(b)[0])
-#define ZERO_EVENT_ID(id) memset(id,0,EVENT_ID_BYTES)
+#define ZERO_EVENT_ID(id) memset((void *)(id),0,EVENT_ID_BYTES)
 
 /* ---------- Trigger pattern (and relative masks) ---------- */
-#define EVENT_TRIGGER_PATTERN_BYTES    8
+// The top bit of the trigger pattern is reserved for the validity flag
+#define EVENT_TRIGGER_PATTERN_BYTES    16
 #define EVENT_TRIGGER_PATTERN_WORDS    ((EVENT_TRIGGER_PATTERN_BYTES)>>2)
 typedef unsigned long32 eventTriggerPatternType[EVENT_TRIGGER_PATTERN_WORDS];
 #define EVENT_TRIGGER_ID_MIN           0
-#define EVENT_TRIGGER_ID_MAX           49
+#define EVENT_TRIGGER_ID_MAX           99
 #define CHECK_TRIGGER(t)               (assert(((t)>=EVENT_TRIGGER_ID_MIN) && \
                                                ((t)<=EVENT_TRIGGER_ID_MAX)))
 #define TRIGGER_TO_BIT(t)              (1<<((t)&0x1f))
 #define TRIGGER_TO_WORD(t)             (CHECK_TRIGGER(t), (t)>>5)
-#define ZERO_TRIGGER_PATTERN(p)        ((p)[0]=0, (p)[1]=0)
+#define ZERO_TRIGGER_PATTERN(p)        memset( (void *)(p), 0, EVENT_TRIGGER_PATTERN_BYTES )
 #define SET_TRIGGER_IN_PATTERN(p,id)   (p)[TRIGGER_TO_WORD(id)] |= \
                                                             TRIGGER_TO_BIT(id)
 #define CLEAR_TRIGGER_IN_PATTERN(p,id) (p)[TRIGGER_TO_WORD(id)] &= \
@@ -208,19 +221,18 @@ typedef unsigned long32 eventTriggerPatternType[EVENT_TRIGGER_PATTERN_WORDS];
                                                             TRIGGER_TO_BIT(id)
 #define TEST_TRIGGER_IN_PATTERN(p,id)  (((p)[TRIGGER_TO_WORD(id)] & \
                                                      TRIGGER_TO_BIT(id)) != 0)
-#define TRIGGER_PATTERN_INVALID(p)     (((p)[1] & 0x80000000) == 0)
-#define TRIGGER_PATTERN_VALID(p)       (((p)[1] & 0x80000000) != 0)
-#define VALIDATE_TRIGGER_PATTERN(p)    ((p)[1] |= 0x80000000)
-#define INVALIDATE_TRIGGER_PATTERN(p)  ((p)[1] &= 0x7fffffff)
-#define COPY_TRIGGER_PATTERN(f,t)      ((t)[0] = (f)[0], (t)[1]=(f)[1])
-#define TRIGGER_PATTERN_OK(p)          (((p)[1] & 0x7fe00000) == 0)
+#define TRIGGER_PATTERN_INVALID(p)     (((p)[EVENT_TRIGGER_PATTERN_WORDS-1] & 0x80000000) == 0)
+#define TRIGGER_PATTERN_VALID(p)       (((p)[EVENT_TRIGGER_PATTERN_WORDS-1] & 0x80000000) != 0)
+#define VALIDATE_TRIGGER_PATTERN(p)    ((p)[EVENT_TRIGGER_PATTERN_WORDS-1] |= 0x80000000)
+#define INVALIDATE_TRIGGER_PATTERN(p)  ((p)[EVENT_TRIGGER_PATTERN_WORDS-1] &= 0x7fffffff)
+#define COPY_TRIGGER_PATTERN(f,t)      memcpy( (void *)(t), (void *)(f),  EVENT_TRIGGER_PATTERN_BYTES )
+#define TRIGGER_PATTERN_OK(p)          (((p)[EVENT_TRIGGER_PATTERN_WORDS-1] & 0x7ffffff0) == 0)
 
 /* ---------- Detectors cluster (and relative masks) ---------- */
 #define EVENT_DETECTOR_PATTERN_BYTES 4
 #define EVENT_DETECTOR_PATTERN_WORDS (EVENT_DETECTOR_PATTERN_BYTES>>2)
 typedef unsigned long32 eventDetectorPatternType[EVENT_DETECTOR_PATTERN_WORDS];
 #define EVENT_DETECTOR_ID_MIN     0
-#define EVENT_DETECTOR_HW_ID_MAX 23
 #define EVENT_DETECTOR_ID_MAX    30
 #define CHECK_DETECTOR(d) (assert(((d) >= EVENT_DETECTOR_ID_MIN) &&\
                                   ((d) <= EVENT_DETECTOR_ID_MAX)))
@@ -235,28 +247,8 @@ typedef unsigned long32 eventDetectorPatternType[EVENT_DETECTOR_PATTERN_WORDS];
 #define VALIDATE_DETECTOR_PATTERN(p)    ((p)[0] |= 0x80000000)
 #define INVALIDATE_DETECTOR_PATTERN(p)  ((p)[0] &= 0x7fffffff)
 #define COPY_DETECTOR_PATTERN(f,t)      ((t)[0] = (f)[0])
-#define DETECTOR_PATTERN_OK(p)          (((p)[0] & 0x3f000000) == 0)
-#define EVENT_DETECTOR_ITS_SPD   0
-#define EVENT_DETECTOR_ITS_SDD   1
-#define EVENT_DETECTOR_ITS_SSD   2
-#define EVENT_DETECTOR_TPC       3
-#define EVENT_DETECTOR_TRD       4
-#define EVENT_DETECTOR_TOF       5
-#define EVENT_DETECTOR_HMPID     6
-#define EVENT_DETECTOR_PHOS      7
-#define EVENT_DETECTOR_CPV       8
-#define EVENT_DETECTOR_PMD       9
-#define EVENT_DETECTOR_MUON_TRK 10
-#define EVENT_DETECTOR_MOUN_TRG 11
-#define EVENT_DETECTOR_FMD      12
-#define EVENT_DETECTOR_T0       13
-#define EVENT_DETECTOR_V0       14
-#define EVENT_DETECTOR_ZDC      15
-#define EVENT_DETECTOR_ACORDE   16
-#define EVENT_DETECTOR_TRG      17
-#define EVENT_DETECTOR_EMCAL    18
-#define EVENT_DETECTOR_HLT      19
-#define EVENT_DETECTOR_DAQ_TEST 30
+#define DETECTOR_PATTERN_OK(p)          (((p)[0] & 0x1f000000) == 0)
+
 
 /* ---------- The sizes and positions of the typeAttribute field ---------- */
 #define ALL_ATTRIBUTE_WORDS    3
@@ -327,7 +319,10 @@ typedef unsigned long32 eventTypeAttributeType[ALL_ATTRIBUTE_WORDS];
 #define ATTR_KEEP_PAGES           70          /* Do not deallocate pages   */
 #define ATTR_HLT_DECISION	  71	      /* Event contains HLT decis. */
 #define ATTR_BY_DETECTOR_EVENT    72          /* Event created by "by det."*/
+#define ATTR_ORIGINAL_EVENT       73	      /* All original payloads     */
 
+#define ATTR_FLUSHED_EVENT        92          /* Flushed event             */
+#define ATTR_INCOMPLETE_EVENT     93          /* Incomplete event          */
 #define ATTR_EVENT_DATA_TRUNCATED 94          /* Truncated payload         */
 #define ATTR_EVENT_ERROR          95          /* Invalid event content     */
 
@@ -341,6 +336,9 @@ typedef unsigned long32 eventTypeAttributeType[ALL_ATTRIBUTE_WORDS];
                  ATTR_2_B(ATTR_KEEP_PAGES)           | \
                  ATTR_2_B(ATTR_HLT_DECISION)         | \
                  ATTR_2_B(ATTR_BY_DETECTOR_EVENT)    | \
+                 ATTR_2_B(ATTR_ORIGINAL_EVENT)       | \
+                 ATTR_2_B(ATTR_INCOMPLETE_EVENT)     | \
+                 ATTR_2_B(ATTR_FLUSHED_EVENT)        | \
                  ATTR_2_B(ATTR_EVENT_DATA_TRUNCATED) | \
                  ATTR_2_B(ATTR_EVENT_ERROR))) == 0)
 
@@ -352,8 +350,26 @@ typedef eventHostIdType eventGdcIdType;
 #define HOST_ID_MAX ((eventHostIdType)511)       /* The maximum allowed ID */
 #define VOID_ID     ((eventHostIdType)-1)        /* Unloaded ID            */
 
-/* ---------- timestamp ---------- */
-/* The following definition is in common for 32 and 64 bit machines.
+/* ---------- Timestamps ----------
+
+   The timestamp of the event is associated to:
+
+   - Trigger arrived on the LDC
+   - First sub-event arrived on the GDC
+   - Event ready when monitoring by detector
+
+   The timestamp is split into seconds and microseconds.
+   
+   Please note that the typical accuracy of the Unix clock is on
+   the order of the millisecond.
+
+   For more details on the subject, see the man page for gettimeofday
+   and the description of the Unix standard type struct timeval
+*/
+
+/* ---------- Seconds timestamp ----------
+
+   The following definition is in common for 32 and 64 bit machines.
    In both architectures, the field must be loaded into a time_t
    variable before being used. Failure to do so may cause undefined
    results up to the early termination of the process.
@@ -364,13 +380,17 @@ typedef eventHostIdType eventGdcIdType;
 
    time_t t;
 
-   t = eventHeaderStruct.eventTimestamp;
+   t = eventHeaderStruct.eventTimestampSec;
    cTime( &t ); (or whatever else can be done with a time_t)
 
    Please note that the available timestamp will wrap sometime
    around Jan 18, 19:14:07, 2038...
 */
-typedef unsigned long32 eventTimestampType;
+typedef unsigned long32 eventTimestampSecType;
+
+/* Microseconds: range [0..999999]
+ */
+typedef unsigned long32 eventTimestampUsecType;
 
 /* ---------- The event header structure (with + without data) ---------- */
 struct eventHeaderStruct { 
@@ -386,7 +406,12 @@ struct eventHeaderStruct {
   eventTypeAttributeType    eventTypeAttribute;
   eventLdcIdType            eventLdcId;
   eventGdcIdType            eventGdcId;
-  eventTimestampType        eventTimestamp;
+  union {
+    eventTimestampSecType   eventTimestampSec;
+    /* This definition is only for backward compatibility with event.h < 3.11 */
+    eventTimestampSecType   eventTimestamp;
+  };
+  eventTimestampUsecType    eventTimestampUsec;
 };
 
 struct eventStruct {
@@ -395,9 +420,9 @@ struct eventStruct {
 };
 
 /* ========== Definitions for the Vector ========== */
-typedef short        eventVectorBankIdType;
-typedef unsigned int eventVectorSizeType;
-typedef unsigned int eventVectorOffsetType;
+typedef short       eventVectorBankIdType;
+typedef datePointer eventVectorSizeType;
+typedef datePointer eventVectorOffsetType;
 
 struct eventVectorStruct {
   eventVectorBankIdType eventVectorBankId;
@@ -433,7 +458,13 @@ struct equipmentHeaderStruct {
 struct equipmentDescriptorStruct {
   struct equipmentHeaderStruct equipmentHeader;
   struct eventVectorStruct     equipmentVector;
-};
+}
+#ifdef __GNUC__
+  __attribute__((__packed__));
+#else
+  // Find whatever method for your compiler to pack the above structure without paddings
+  ;
+#endif
 
 struct equipmentStruct {
   struct equipmentHeaderStruct equipmentHeader;
@@ -457,27 +488,75 @@ struct eventLocationDescriptorStruct {
      (sizeof( struct equipmentDescriptorStruct ))))
 
 /* ========== Common data header ========== */
-#define CDH_SIZE (8 * 4)
-#define CDH_VERSION 2
+#define CDH_SIZE (4* 10)
+#define CDH_VERSION 3
 
-#define CDH_TRIGGER_OVERLAP_ERROR_BIT            0
-#define CDH_TRIGGER_MISSING_ERROR_BIT            1
-#define CDH_DATA_PARITY_ERROR_BIT                2
-#define CDH_CONTROL_PARITY_ERROR_BIT             3
-#define CDH_TRIGGER_INFORMATION_UNAVAILABLE_BIT  4
-#define CDH_FEE_ERROR_BIT                        5
-#define CDH_HLT_DECISION_BIT                     6
-#define CDH_HLT_PAYLOAD_BIT                      7
-#define CDH_DDG_PAYLOAD_BIT                      8
-#define CDH_TRIGGER_L1_TIME_VIOLATION_ERROR_BIT  9
-#define CDH_TRIGGER_L2_TIME_VIOLATION_ERROR_BIT 10
-#define CDH_TRIGGER_PREPULSE_ERROR_BIT          11
-#define CDH_TRIGGER_ERROR_BIT                   12
+#define CDH_TRIGGER_OVERLAP_ERROR_BIT             0
+#define CDH_TRIGGER_MISSING_ERROR_BIT             1
+#define CDH_DATA_PARITY_ERROR_BIT                 2
+#define CDH_CONTROL_PARITY_ERROR_BIT              3
+#define CDH_TRIGGER_INFORMATION_UNAVAILABLE_BIT   4
+#define CDH_FEE_ERROR_BIT                         5
+#define CDH_HLT_DECISION_BIT                      6
+#define CDH_HLT_PAYLOAD_BIT                       7
+#define CDH_DDG_PAYLOAD_BIT                       8
+#define CDH_TRIGGER_L1_TIME_VIOLATION_ERROR_BIT   9
+#define CDH_TRIGGER_L2_TIME_VIOLATION_ERROR_BIT  10
+#define CDH_TRIGGER_PREPULSE_ERROR_BIT           11
+#define CDH_TRIGGER_ERROR_BIT                    12
+#define CDH_TRIGGER_L1_MISSING_L2_RECEIVED_BIT   13
+#define CDH_TRIGGER_MULTI_EVENT_BUFFER_ERROR_BIT 14
+#define CDH_ORIGINAL_EVENT_BIT                   15
+
+/* Macro to load the trigger classes of an event header
+   using the cdhTriggerClasses* fields */
+#define CDH_LOAD_EVENT_TRIGGER_PATTERN( etp, l, ml, mh, h )	\
+  ( etp[0] = ((unsigned long32)(l)),					\
+    etp[1] = ((unsigned long32)(ml) & 0x0003ffff) | ((unsigned long32)(mh) << 18), \
+    etp[2] = ((unsigned long32)(mh) >> 14) | ((unsigned long32)(h) << 18), \
+    etp[3] = ((unsigned long32)(h)  >> 14) & 0xf)
 
 /* Please note how the above data structure has been
    defined for LE systems. Code running on BE systems
    must have all fields reverted to work correctly! */
 struct commonDataHeaderStruct {
+  unsigned cdhBlockLength               : 32;
+  /* ------------------------------------- */
+  unsigned cdhEventId1                  : 12;
+  unsigned cdhMBZ1                      :  2;
+  unsigned cdhL1TriggerMessage          :  8;
+  unsigned cdhMBZ0                      :  2;
+  unsigned cdhVersion                   :  8;
+  /* ------------------------------------- */
+  unsigned cdhEventId2                  : 24;
+  unsigned cdhParRequests               :  8;
+  /* ------------------------------------- */
+  unsigned cdhParticipatingSubDetectors : 24;
+  unsigned cdhBlockAttributes           :  8;
+  /* ------------------------------------- */
+  unsigned cdhMiniEventId               : 12;
+  unsigned cdhStatusErrorBits           : 20;
+  /* ------------------------------------- */
+  unsigned cdhTriggerClassesLow         : 32; // Goes into eventTriggerPattern[0]
+  /* ------------------------------------- */
+  unsigned cdhTriggerClassesMiddleLow   : 18; // Goes into eventTriggerPattern[1] (low)
+  unsigned cdhMBZ2                      : 14;
+  /* ------------------------------------- */
+  unsigned cdhTriggerClassesMiddleHigh  : 32; // Goes into eventTriggerPattern[1] (high) and [2] (low)
+  /* ------------------------------------- */
+  unsigned cdhTriggerClassesHigh        : 18; // Goes into eventTriggerPattern[2] (high) and [3]
+  unsigned cdhMBZ4                      : 10;
+  unsigned cdhRoiLow                    :  4;
+  /* ------------------------------------- */
+  unsigned cdhRoiHigh                   : 32;
+};
+
+/* Old (V2) structure, defined for backward
+   compatibility.
+
+   MAY DISAPPEAR IN FUTURE VERSIONS OF DATE!
+*/
+struct commonDataHeaderV2Struct {
   unsigned cdhBlockLength               : 32;
   /* ------------------------------------- */
   unsigned cdhEventId1                  : 12;

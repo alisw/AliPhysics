@@ -428,10 +428,10 @@ void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
       TString rawFolder = entryValue(re_RawFolder);
       TString mcFolder = entryValue(re_MCFolder);
       if ( !rawFolder.IsNull() ){
-        entryValue.Replace(0, 6, "/cvmfs/alice.cern.ch/calibration");
+        entryValue.Replace(0, 6, "/cvmfs/alice-ocdb.cern.ch/calibration");
         //entryValue.Replace(entryValue.Length()-4, entryValue.Length(), "");
       } else if ( !mcFolder.IsNull() ){
-        entryValue.Replace(0,36,"/cvmfs/alice.cern.ch/calibration/MC");
+        entryValue.Replace(0,36,"/cvmfs/alice-ocdb.cern.ch/calibration/MC");
       } else {
         AliFatal(Form("Environment variable for cvmfs OCDB folder set for an invalid OCDB storage:\n   %s", entryValue.Data()));
       }
@@ -742,13 +742,13 @@ void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
     }
 
     // now read the file with the uri and first and last run
-    ifstream *file = new ifstream(inoutFile.Data());
-    if (!*file) {
+    std::ifstream file(inoutFile.Data());
+    if (!file.is_open()) {
       AliFatal(Form("Error opening file \"%s\"!", inoutFile.Data()));
     }
     TString lhcPeriod;
     TObjArray* oStringsArray = 0;
-    while (lhcPeriod.ReadLine(*file)){
+    while (lhcPeriod.ReadLine(file)){
       oStringsArray = lhcPeriod.Tokenize(' ');
     }
     TObjString *oStrUri = dynamic_cast<TObjString*> (oStringsArray->At(0));
@@ -761,8 +761,7 @@ void AliCDBManager::SetDefaultStorageFromRun(Int_t run) {
     fStartRunLHCPeriod = firstRun.Atoi();
     fEndRunLHCPeriod = lastRun.Atoi();
 
-    file->close();
-    delete file;
+    file.close();
 
   } else { // if not cvmfs case, "plain" AliEn case
     // retrieve XML file from alien
