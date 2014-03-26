@@ -28,7 +28,10 @@
 
 set ( SRCS
   UPC/AliAnalysisTaskUpcPsi2s.cxx
-  UPC/AliAnalysisTaskUpcK0sK0s.cxx)
+  UPC/AliAnalysisTaskUpcK0sK0s.cxx
+  UPC/AliUpcParticle.cxx
+  UPC/AliAnalysisTaskUpcTree.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
