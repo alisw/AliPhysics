@@ -740,7 +740,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(!ProcessCutStep(AliHFEcuts::kStepRecPrim, track)) continue;
     
     // HFEcuts: ITS layers cuts
-    //if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
+    if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
     
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
@@ -1770,9 +1770,12 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 
   } // end of associate loop
 
-  int numPair = numULS-numLS;
-  fpair->Fill(ptEle,numPair);
-
+  if(numULS>0 || numLS>0)
+    {
+     int numPair = numULS-numLS;
+     fpair->Fill(ptEle,numPair);
+    }
+   
   fFlagPhotonicElec = flagPhotonicElec;
   fFlagConvinatElec = flagConvinatElec;
   
