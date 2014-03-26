@@ -2,17 +2,17 @@
 //==============================================================================
 Int_t       runOnData          = 0;       // Set to 1 if processing real data
 Int_t       iCollision         = 0;       // 0=pp, 1=Pb-Pb
-Int_t       run_flag           = 1100;    // year (2011 = 1100)
+Int_t       run_flag           = 1100;   // year (2011 = 1100)
 //==============================================================================
-Bool_t      doCDBconnect        =1;
+Bool_t      doCDBconnect      = 1;
 Bool_t      usePhysicsSelection = kTRUE; // use physics selection
 Bool_t      useTender           = kFALSE; // use tender wagon
-Bool_t      useCentrality       = kTRUE; // centrality
+Bool_t      useCentrality       = kFALSE; // centrality
 Bool_t      useV0tender         = kFALSE;  // use V0 correction in tender
 Bool_t      useDBG              = kTRUE;  // activate debugging
-Bool_t      useMC               = kFALSE;  // use MC info
-Bool_t      useKFILTER          = kFALSE;  // use Kinematics filter
-Bool_t      useTR               = kFALSE;  // use track references
+Bool_t      useMC               = kTRUE;  // use MC info
+Bool_t      useKFILTER          = kTRUE;  // use Kinematics filter
+Bool_t      useTR               = kTRUE;  // use track references
 Bool_t      useCORRFW           = kFALSE; // do not change
 Bool_t      useAODTAGS          = kFALSE; // use AOD tags
 Bool_t      useSysInfo          = kFALSE; // use sys info
@@ -27,35 +27,38 @@ Int_t       iJETANdelta        = 0;      // Jet delta AODs
 Int_t       iPWGHFvertexing     = 1;      // Vertexing HF task (PWG3)
 Int_t       iPWGDQJPSIfilter    = 0;      // JPSI filtering (PWG3)
 Int_t       iPWGHFd2h           = 1;      // D0->2 hadrons (PWG3)
-Int_t       iPWGPP               =1;      // high pt filter task
+Int_t       iPIDResponse        = 1;      // PID response
 Int_t       iPWGLFForward       = 1;      // Forward mult task (PWGLF)
-Bool_t doPIDResponse  = 1;
-Bool_t doPIDqa        = 1; //new
+
+Int_t run_number = 0;
 
 // ### Configuration macros used for each module
 //==============================================================================
  TString configPWGHFd2h = (iCollision==0)?"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF.C"
-                          :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_highmult.C";
-                                                 
+                          :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent.C";
+//                            :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_Pb_AllCent_NoLS_NoDstar_16var.C";
+//                            :"$ALICE_ROOT/PWGHF/vertexingHF/ConfigVertexingHF_ITSUpgrade_16var.C";
 // Temporaries.
+class AliOADBPhysicsSelection;                                                                                                                  
+AliOADBPhysicsSelection *CreateOADBphysicsSelection();
 void AODmerge();
 void AddAnalysisTasks();
 Bool_t LoadCommonLibraries();
 Bool_t LoadAnalysisLibraries();
 Bool_t LoadLibrary(const char *);
+
 TChain *CreateChain();
 const char *cdbPath = "raw://";
-Int_t run_number = 0;
 
 //______________________________________________________________________________
-void AODtrain(Int_t merge=0)
+void AODtrainsim(Int_t merge=0)
 {
 // Main analysis train macro.
 
   if (merge || doCDBconnect) {
     TGrid::Connect("alien://");
     if (!gGrid || !gGrid->IsConnected()) {
-      ::Error("QAtrain", "No grid connection");
+      ::Error("AODtrainsim", "No grid connection");
       return;
     }
   }
@@ -100,6 +103,7 @@ void AODtrain(Int_t merge=0)
    if (useMC) {
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mcHandler);
+      mcHandler->SetPreReadMode(1);
       mcHandler->SetReadTR(useTR); 
    }   
    // AOD output container, created automatically when setting an AOD handler
@@ -144,29 +148,14 @@ void AddAnalysisTasks(const char *cdb_location){
   // Tender and supplies. Needs to be called for every event.
   //
    AliAnalysisManager::SetCommonFileName("AODQA.root");
-   if (useTender) {
-      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
-      // IF V0 tender needed, put kTRUE below
-      AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
-//      tender->SetDebugLevel(2);
-   }
+    //
+   // PIDResponse(JENS)
    //
-  // PIDResponse(JENS)
-  //
-  if (doPIDResponse) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
-    AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse();
-//    PIDResponse->SelectCollisionCandidates(AliVEvent::kAny);
-  }  
- 
-  //
-  // PIDqa(JENS)
-  //
-  if (doPIDqa) {
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDqa.C");
-    AliAnalysisTaskPIDqa *PIDQA = AddTaskPIDqa();
-    PIDQA->SelectCollisionCandidates(AliVEvent::kAny);
-  }  
+   if (iPIDResponse) {
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"); 
+     AliAnalysisTaskPIDResponse *PIDResponse = AddTaskPIDResponse(kTRUE);
+//     PIDResponse->SelectCollisionCandidates(AliVEvent::kAny);
+   }  
   // CDB connection
   //
   if (doCDBconnect && !useTender) {
@@ -177,7 +166,13 @@ void AddAnalysisTasks(const char *cdb_location){
     cdb->SetDefaultStorage(cdb_location);
 //    taskCDB->SetRunNumber(run_number);
   }    
- 
+   if (useTender) {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+      // IF V0 tender needed, put kTRUE below
+      AliAnalysisTaskSE *tender = AddTaskTender(useV0tender);
+//      tender->SetDebugLevel(2);
+   }
+
    if (usePhysicsSelection) {
    // Physics selection task
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
@@ -186,20 +181,13 @@ void AddAnalysisTasks(const char *cdb_location){
 //      AliOADBPhysicsSelection * oadbDefaultPbPb = CreateOADBphysicsSelection();      
 //      physSelTask->GetPhysicsSelection()->SetCustomOADBObjects(oadbDefaultPbPb,0,0);
       mgr->AddStatisticsTask(AliVEvent::kAny);
-   }
-   
-
-//Jacek
-   if (iPWGPP) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskFilteredTree.C");
-      AddTaskFilteredTree("FilterEvents_Trees.root");
-   }   
-   
+    }
    // Centrality (only Pb-Pb)
    if (useCentrality) {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-      //taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
+      taskCentrality->SetMCInput();
+    //  taskCentrality->SelectCollisionCandidates(AliVEvent::kAny);
    }
    
 // --- PWGLF - Forward (cholm@nbi.dk) -----------------------------
@@ -216,15 +204,15 @@ void AddAnalysisTasks(const char *cdb_location){
         AddTaskCentralMult(useMC, pwglfForwardSys, pwglfSNN, pwglfField);
    }
  
-    
-
-   if (iESDfilter) {
+   
+   
+    if (iESDfilter) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
       if (iMUONcopyAOD) {
          printf("Registering delta AOD file\n");
          mgr->RegisterExtraFile("AliAOD.Muons.root");
-          mgr->RegisterExtraFile("AliAOD.Dimuons.root");
+         mgr->RegisterExtraFile("AliAOD.Dimuons.root");
       }
       AliAnalysisTaskESDfilter *taskesdfilter = 
                  AddTaskESDFilter(useKFILTER, 
@@ -236,21 +224,20 @@ void AddAnalysisTasks(const char *cdb_location){
                                   kFALSE,               // disable cascades
                                   kFALSE,               // disable kinks
                                   run_flag);            // run flag (YY00)
-        mgr->RegisterExtraFile("AliAOD.Dimuons.root");
    }   
 
 // ********** PWG3 wagons ******************************************************           
-   // PWGHF vertexing
+   // PWG3 vertexing
    if (iPWGHFvertexing) {
       gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/macros/AddTaskVertexingHF.C");
-      if (!iPWGHFd2h) TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), "file:ConfigVertexingHF.C");
+      if (!iPWGHFd2h) TFile::Cp(gSystem->ExpandPathName(configPWG3d2h.Data()), "file:ConfigVertexingHF.C");
       AliAnalysisTaskSEVertexingHF *taskvertexingHF = AddTaskVertexingHF();
       if (!taskvertexingHF) ::Warning("AnalysisTrainNew", "AliAnalysisTaskSEVertexingHF cannot run for this train conditions - EXCLUDED");
       else mgr->RegisterExtraFile("AliAOD.VertexingHF.root");
       taskvertexingHF->SelectCollisionCandidates(0);
    }   
       
-   // PWGDQ JPSI filtering (only pp)
+   // PWG3 JPSI filtering (only pp)
    if (iPWGDQJPSIfilter && (iCollision==0)) {
       gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/AddTaskJPSIFilter.C");
       AliAnalysisTaskSE *taskJPSIfilter = AddTaskJPSIFilter();
@@ -259,7 +246,7 @@ void AddAnalysisTasks(const char *cdb_location){
       taskJPSIfilter->SelectCollisionCandidates(0);
    }   
 
-   // PWGHF D2h
+   // PWG3 D2h
    if (iPWGHFd2h) {   
      gROOT->LoadMacro("$ALICE_ROOT/PWGHF/vertexingHF/AddD2HTrain.C");
      TFile::Cp(gSystem->ExpandPathName(configPWGHFd2h.Data()), "file:ConfigVertexingHF.C");
@@ -274,7 +261,7 @@ void AddAnalysisTasks(const char *cdb_location){
    Bool_t  kIsPbPb = (iCollision==0)?false:true; // can be more intlligent checking the name of the data set
    TString kDefaultJetBackgroundBranch = "";
    TString kJetSubtractBranches = "";
-   UInt_t kHighPtFilterMask = 272;// from esd filter
+   UInt_t kHighPtFilterMask = 768;// from esd filter
    UInt_t iPhysicsSelectionFlag = 0;
    if (iJETAN) {
      gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/AddTaskJets.C");
@@ -332,6 +319,7 @@ void AddAnalysisTasks(const char *cdb_location){
      } 
    }
 }
+
 //______________________________________________________________________________
 Bool_t LoadCommonLibraries()
 {
@@ -348,7 +336,7 @@ Bool_t LoadCommonLibraries()
    success &= LoadLibrary("libANALYSIS.so");
    success &= LoadLibrary("libOADB.so");
    success &= LoadLibrary("libANALYSISalice.so");
-     success &= LoadLibrary("libESDfilter.so");
+   success &= LoadLibrary("libESDfilter.so");
    success &= LoadLibrary("libCORRFW.so");
    gROOT->ProcessLine(".include $ALICE_ROOT/include");
    if (success) {
@@ -373,7 +361,7 @@ Bool_t LoadAnalysisLibraries()
    if (doCDBconnect && !useTender) {
       if (!LoadLibrary("PWGPP")) return kFALSE;
    }
-          
+
    if (iESDfilter || iPWGMuonTrain) {
       if (!LoadLibrary("PWGmuon")) return kFALSE;
    }   
@@ -388,18 +376,11 @@ Bool_t LoadAnalysisLibraries()
           !LoadLibrary("siscone") ||
           !LoadLibrary("SISConePlugin") ||
           !LoadLibrary("FASTJETAN")) return kFALSE;
-   }  
-   // PWG2 FORWARD
-   if (iPWGLFForward) {
-      //if (!LoadLibrary("PWGLFforward", mode, kTRUE)) return kFALSE;
-     if (!LoadLibrary("PWGLFforward2")) return kFALSE;
-  }   
-   
+   }     
    // PWG3 Vertexing HF
    if (iPWGHFvertexing || iPWGHFd2h) {
       if (!LoadLibrary("PWGflowBase") ||
           !LoadLibrary("PWGflowTasks") ||
-          !LoadLibrary("PWGTRD") ||
           !LoadLibrary("PWGHFvertexingHF")) return kFALSE;
    }    
  //    if (iPWGHFvertexing || iPWG3d2h) {
@@ -414,6 +395,7 @@ Bool_t LoadAnalysisLibraries()
    ::Info("AnalysisTrainNew.C::LoadAnalysisLibraries", "Load other libraries:   SUCCESS");
    return kTRUE;
 }
+
 
 //______________________________________________________________________________
 Bool_t LoadLibrary(const char *module)
@@ -466,7 +448,7 @@ void AODmerge()
   TStopwatch timer;
   timer.Start();
   TString outputDir = "wn.xml";
-  TString outputFiles = "EventStat_temp.root,AODQA.root,AliAOD.root,AliAOD.VertexingHF.root,FilterEvents_Trees.root,AliAOD.Muons.root,AliAOD.Jets.root";
+  TString outputFiles = "EventStat_temp.root,AODQA.root,AliAOD.root,AliAOD.VertexingHF.root,AliAOD.Muons.root,AliAOD.Jets.root,pyxsec_hists.root";
   TString mergeExcludes = "";
   TObjArray *list = outputFiles.Tokenize(",");
   TIter *iter = new TIter(list);

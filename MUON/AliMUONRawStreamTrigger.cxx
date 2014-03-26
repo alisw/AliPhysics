@@ -40,6 +40,7 @@
 
 #include "AliRawReader.h"
 #include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 
