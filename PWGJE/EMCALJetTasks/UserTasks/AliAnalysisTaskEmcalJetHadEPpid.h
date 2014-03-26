@@ -14,7 +14,6 @@ class TGraph;
 // AliROOT classes
 class AliEventPoolManager;
 class AliLocalRhoParameter;
-// added 12/9
 class AliEMCALTrack;
 class AliMagF;
 class AliESDEvent;
@@ -23,7 +22,12 @@ class AliEMCALGeometry;
 class AliEMCALRecoUtils;
 class AliESDtrack;
 
-// this whole section of includes added 
+// container classes
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
+
+// includes
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
@@ -34,10 +38,11 @@ class AliESDtrack;
 #include <TRandom3.h>
 #include <AliLog.h>
 
+// Local Rho includes
 #include "AliAnalysisTaskLocalRho.h"
 #include "AliLocalRhoParameter.h"
 
-// PID stuff
+// PID includes
 #include "AliPIDResponse.h"
 
 #include "AliAnalysisFilter.h"
@@ -56,38 +61,49 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
   void                    SetVariableBinning(Bool_t v)          { doVariableBinning = v; } // do variable binning switch
+  void		              SetvarbinTHnSparse(Bool_t vb)         { dovarbinTHnSparse = vb; } // variable THnSparse bin switch
+  void					  SetmakeQAhistos(Bool_t QAhist)        { makeQAhistos = QAhist; } // make QA histos  
+  void					  SetmakeBIAShistos(Bool_t BIAShist)    { makeBIAShistos = BIAShist; } // make bias histos
+  void			          SetmakeextraCORRhistos(Bool_t Xhist)  { makeextraCORRhistos = Xhist; } // make extra correlations histos
+  void		              SetDataType(Bool_t data)		        { useAOD = data; }    // data type switch
+  void					  SetcutType(TString cut)				{ fcutType = cut; }    // EMCAL / TPC acceptance cut
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
-  void		          SetvarbinTHnSparse(Bool_t vb)         { dovarbinTHnSparse = vb; }
-  void		          SetDataType(Bool_t data)		{ useAOD = data; }
+  void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
 
   // getters
   TString		  GetLocalRhoName() const		{return fLocalRhoName; }
 
   // set names of some objects
-  virtual void            SetLocalRhoName(const char *ln)          {fLocalRhoName = ln; }
-  virtual void            SetTracksName(const char *tn)            {fTracksName = tn; }
-  virtual void            SetJetsName(const char *jn)              {fJetsName = jn; }
+  virtual void            SetLocalRhoName(const char *ln)       { fLocalRhoName = ln; }
+  virtual void            SetTracksName(const char *tn)         { fTracksName = tn; }
+  virtual void            SetJetsName(const char *jn)           { fJetsName = jn; }
 
-  // bias and cuts
+  // bias and cuts - setters
   virtual void            SetAreaCut(Double_t a)                { fAreacut    = a; }
   virtual void            SetTrkBias(Double_t b)                { fTrkBias    = b; }  //require a track with pt > b in jet
   virtual void            SetClusBias(Double_t b)               { fClusBias   = b; }  //require a cluster with pt > b in jet
   virtual void            SetTrkEta(Double_t e)                 { fTrkEta   = e; }  //eta range of the associated tracks
   virtual void            SetJetPtcut(Double_t jpt)             { fJetPtcut = jpt; } // jet pt cut
- 
-  // eta and phi limits of jets
+  virtual void			  SetJetRad(Double_t jrad)				{ fJetRad = jrad; } // jet radius 
+
+  // eta and phi limits of jets - setters
   virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
   virtual void            SetJetPhi(Double_t pmin, Double_t pmax)  { fPhimin = pmin; fPhimax = pmax; }
 
-  // event mixing setters
+  // event mixing - setters
   virtual void            SetEventMixing(Int_t yesno)		   { fDoEventMixing=yesno; }
   virtual void	          SetMixingTracks(Int_t tracks)		   { fMixingTracks = tracks; }
 
+  // jet container - setters
+  void SetContainerAllJets(Int_t c)         { fContainerAllJets      = c;}
+  void SetContainerPIDJets(Int_t c)         { fContainerPIDJets      = c;}
+
 protected:
   // functions 
-  void			 ExecOnce();
-  Bool_t		 Run();
+  void					 ExecOnce();
+  Bool_t		         Run();
   virtual void           Terminate(Option_t *); 
+  virtual Int_t          AcceptMyJet(AliEmcalJet *jet);
   virtual Int_t          GetCentBin(Double_t cent) const; // centrality bin of event
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
   Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
@@ -106,7 +122,8 @@ protected:
   Double_t               fTrkBias;                 // track bias
   Double_t               fClusBias;                // cluster bias
   Double_t               fTrkEta;                  // eta min/max of tracks
-  Double_t	         fJetPtcut;		   // jet pt to cut on for correlations
+  Double_t	             fJetPtcut;		           // jet pt to cut on for correlations
+  Double_t				 fJetRad;				   // jet radius
 
   // event mixing
   Int_t			 fDoEventMixing;
@@ -115,13 +132,20 @@ protected:
   // switches for plots
   Bool_t		 doPlotGlobalRho;
   Bool_t		 doVariableBinning;
-  Bool_t                 dovarbinTHnSparse;
- 
+  Bool_t         dovarbinTHnSparse;
+  Bool_t		 makeQAhistos;
+  Bool_t		 makeBIAShistos;
+  Bool_t		 makeextraCORRhistos; 
+
   // data type switch
-  Bool_t	         useAOD;
+  Bool_t	     useAOD;
+
+  // Cut type (EMCAL/TPC acceptance)
+  TString        fcutType;
 
   // switches for PID
   Bool_t		 doPID;
+  Bool_t		 doPIDtrackBIAS;
 
   // local rho value
   Double_t		 fLocalRhoVal;
@@ -144,7 +168,7 @@ protected:
   Double_t			 nPIDtof;
 
   // event pool
-  TObjArray*		 CloneAndReduceTrackList(TObjArray* tracks);
+  TObjArray*		    CloneAndReduceTrackList(TObjArray* tracks);
   AliEventPoolManager   *fPoolMgr;  // event pool Manager object
 
   // PID
@@ -152,9 +176,9 @@ protected:
   AliTPCPIDResponse	*fTPCResponse;   // TPC pid response object
 
  private:
-  // needed for PID
-  AliESDEvent     *fESD;                  //ESD object
-  AliAODEvent	  *fAOD;		  //AOD object
+  // needed for PID, track objects
+  AliESDEvent       *fESD;          // ESD object
+  AliAODEvent	    *fAOD;		  // AOD object
 
   TH2F                  *fHistTPCdEdX;
   TH2F	                *fHistITSsignal;
@@ -169,6 +193,7 @@ protected:
   TH1F                  *fHistEP0A[6];//!
   TH1F                  *fHistEP0C[6];//!
   TH2F                  *fHistEPAvsC[6];//!
+  TH1F					*fHistJetPtcorrGlRho[6];//!
   TH2F                  *fHistJetPtvsdEP[6];//!
   TH2F                  *fHistJetPtvsdEPBias[6];//!
   TH2F                  *fHistRhovsdEP[6]; //!
@@ -182,32 +207,32 @@ protected:
   TH2F                  *fHistJetPtNconBiasCh[6]; //!
   TH2F                  *fHistJetPtNconEm[6]; //!
   TH2F                  *fHistJetPtNconBiasEm[6]; //!
-  TH1F		        *fHistJetHaddPhiINcent[6];
-  TH1F			*fHistJetHaddPhiOUTcent[6];
-  TH1F			*fHistJetHaddPhiMIDcent[6];
-// ***********************
+  TH1F		            *fHistJetHaddPhiINcent[6];
+  TH1F			        *fHistJetHaddPhiOUTcent[6];
+  TH1F			        *fHistJetHaddPhiMIDcent[6];
+
   TH1                   *fHistCentrality;
   TH1                   *fHistZvtx;
   TH1                   *fHistMult;
-  TH1			*fHistJetPhi;
-  TH1		        *fHistTrackPhi;
-  TH1		        *fHistJetHaddPhiIN;
-  TH1			*fHistJetHaddPhiOUT;
-  TH1			*fHistJetHaddPhiMID;
-  TH1			*fHistJetHaddPhiBias;
-  TH1			*fHistJetHaddPhiINBias;
-  TH1			*fHistJetHaddPhiOUTBias;
-  TH1			*fHistJetHaddPhiMIDBias;
+  TH1		        	*fHistJetPhi;
+  TH1		            *fHistTrackPhi;
+  TH1		            *fHistJetHaddPhiIN;
+  TH1			        *fHistJetHaddPhiOUT;
+  TH1			        *fHistJetHaddPhiMID;
+  TH1					*fHistJetHaddPhiBias;
+  TH1					*fHistJetHaddPhiINBias;
+  TH1					*fHistJetHaddPhiOUTBias;
+  TH1					*fHistJetHaddPhiMIDBias;
 
   TH1                   *fHistMEdPHI; // phi distrubtion of mixed events
-  TH1			*fHistTrackPtallcent;
+  TH1					*fHistTrackPtallcent;
 
   TH2                   *fHistJetEtaPhi;  
   TH2                   *fHistTrackEtaPhi[4][7];
-  TH1		        *fHistJetHadbindPhi[9]; 
-  TH1			*fHistJetHadbindPhiIN[9]; 
-  TH1			*fHistJetHadbindPhiMID[9]; 
-  TH1		        *fHistJetHadbindPhiOUT[9]; 
+  TH1		        	*fHistJetHadbindPhi[9]; 
+  TH1					*fHistJetHadbindPhiIN[9]; 
+  TH1					*fHistJetHadbindPhiMID[9]; 
+  TH1		       		*fHistJetHadbindPhiOUT[9]; 
   TH2                   *fHistJetHEtaPhi;
 
   TH1                   *fHistJetPt[2];
@@ -217,19 +242,28 @@ protected:
   TH2                   *fHistJetH[2][5][3];
   TH2                   *fHistJetHBias[2][5][3];
   TH2                   *fHistJetHTT[2][5][3];
-  TH1F			*fHistJetHdPHI[11];
-  TH2F			*fHistJetHdETAdPHI[11];
+  TH1F					*fHistJetHdPHI[11];
+  TH2F					*fHistJetHdETAdPHI[11];
   TH2F                  *fHistSEphieta; // single events phi-eta distributions
   TH2F                  *fHistMEphieta; // mixed events phi-eta distributions
-  TH1F			*fHistJetHaddPHI;
+  TH1F					*fHistJetHaddPHI;
 
   // PID status histo's
-  TH1			*fHistPID;
+  TH1					*fHistPID;
 
   // THn Sparse's
   THnSparse             *fhnPID;          // PID sparse
   THnSparse             *fhnMixedEvents;  // mixed events matrix
   THnSparse             *fhnJH;           // jet hadron events matrix
+
+  // container objects
+  AliJetContainer            *fJetsCont;                   //!Jets
+  AliParticleContainer       *fTracksCont;                 //!Tracks
+  AliClusterContainer        *fCaloClustersCont;           //!Clusters
+
+  // container specifier
+  Int_t					fContainerAllJets;  // number of container with all full jets
+  Int_t					fContainerPIDJets;  // number of container with full jets meeting Pt cut (for PID)
 
 // ***********************************************************
    
