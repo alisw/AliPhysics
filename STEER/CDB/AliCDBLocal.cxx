@@ -977,12 +977,12 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   // We expect the file with valid paths for this run to be generated in the current directory
   // and to be named as the CVMFS OCDB tag, without .gz, with '_runnumber' appended
   // Fill fValidFileIds from file
-  ifstream *file = new ifstream(runValidFile.Data());
-  if (!*file) {
+  std::ifstream file (runValidFile.Data());
+  if (!file.is_open()) {
     AliFatal(Form("Error opening file \"%s\"!", runValidFile.Data()));
   }
   TString filepath;
-  while (filepath.ReadLine(*file)) {
+  while (filepath.ReadLine(file)) {
     // skip line in case it is not a root file path
     if(! filepath.EndsWith(".root")) {
       continue;
@@ -1017,8 +1017,7 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
     fValidFileIds.AddLast(validId);
   }
 
-  file->close();
-  delete file;
+  file.close();
   return;
 }
 
