@@ -84,7 +84,7 @@ AliAnalysisTaskLambdaOverK0sJets::AliAnalysisTaskLambdaOverK0sJets(const char *n
 
   fOutput(0), fOutputQA(0), fOutputME(0), fMEList(0x0), fTriggerParticles(0x0), fChargedAssocParticles(0x0), fTriggerPartMC(0x0), fAssocParticles(0x0), fAssocPartMC(0x0), fXiTriggerPartMC(0x0), fEvents(0), fCentrality(0),  fCentrality2(0), fCentralityTrig(0), fPrimaryVertexX(0), fPrimaryVertexY(0), fPrimaryVertexZ(0),
 
- fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
+ fTriggerEventPlane(0),  fTriggerMCPtCent(0), fTriggerMCResPt(0), fTriggerMCResEta(0), fTriggerMCResPhi(0), fTriggerPtCent(0),  fTriggerPtCentCh(0), fNTrigPerEvt(0), fTriggerWiSPDHit(0), fTriggerEtaPhi(0), fCheckTriggerFromV0Daug(0), fTriggerComingFromDaug(0), fTriggerIsV0(0), fCheckIDTrigPtK0s(0), fCheckIDTrigPhiK0s(0), fCheckIDTrigEtaK0s(0), fCheckIDTrigNclsK0s(0), fCheckIDTrigPtLambda(0), fCheckIDTrigPhiLambda(0), fCheckIDTrigEtaLambda(0),  fCheckIDTrigNclsLambda(0), fCheckIDTrigPtAntiLambda(0), fCheckIDTrigPhiAntiLambda(0), fCheckIDTrigEtaAntiLambda(0), fCheckIDTrigNclsAntiLambda(0), 
 
 fInjectedParticles(0),
 
@@ -375,6 +375,9 @@ void AliAnalysisTaskLambdaOverK0sJets::UserCreateOutputObjects()
   // Pt Trigger particle vs centrality:
   fTriggerPtCent = new TH3F("fTriggerPtCent","Trigger particle;#it{p}_{T} (GeV/#it{c});centrality (%);Vertex Z (cm)",nbinPtLP,pMin,ptMaxLP,100,0.,100.,nbinsVtx,-10.,10.);
   fOutput->Add(fTriggerPtCent);
+
+  fTriggerPtCentCh = new TH3F("fTriggerPtCentCh","Trigger particle;#it{p}_{T} (GeV/#it{c});centrality (%);Vertex Z (cm)",nbinPtLP,pMin,ptMaxLP,100,0.,100.,nbinsVtx,-10.,10.);
+  fOutput->Add(fTriggerPtCentCh);
 
   fNTrigPerEvt = new TH2F("fNTrigPerEvt","Number of Trigger Particles Per Event;Counts;Centrality",51,-0.5,50.5,100,0.,100);
   fOutput->Add(fNTrigPerEvt);
@@ -3515,13 +3518,12 @@ void AliAnalysisTaskLambdaOverK0sJets::TriggerParticle()
   // ----------------------------
   // 2. Checking if the trigger particle 
   // might be a daughter from the V0-candidate
-  /*
   for (Int_t i=0; i<(fTriggerParticles->GetEntriesFast()); i++){
     AliMiniParticle* trig = (AliMiniParticle*) fTriggerParticles->At(i);
     Int_t id = trig->ID();
     V0Loop(kTriggerCheck,kFALSE,i,id);
   }
-  */
+ 
     
 }
 
@@ -3634,11 +3636,13 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
     if(trig->WhichCandidate()==0){
       fTriggerComingFromDaug->Fill(trig->Pt());
       fCheckTriggerFromV0Daug->Fill(1);
+      fTriggerPtCentCh->Fill(trig->Pt(),centrality,zv);
       if(fIsV0LP)  fCheckTriggerFromV0Daug->Fill(2);
     }
     else if( trig->WhichCandidate()==1){
       fTriggerEtaPhi->Fill(trig->Phi(),trig->Eta());
       fTriggerPtCent->Fill(trig->Pt(),centrality,zv);
+      fTriggerPtCentCh->Fill(trig->Pt(),centrality,zv);
       fCheckTriggerFromV0Daug->Fill(0);
 
       phi2 = ( (trig->Phi() > TMath::Pi()) ? trig->Phi() - TMath::Pi() : trig->Phi() )  ;
@@ -4058,8 +4062,6 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
   // h-h correlations
   for (Int_t i=0; i<(fTriggerParticles->GetEntriesFast()); i++){
     AliMiniParticle* trig = (AliMiniParticle*) fTriggerParticles->At(i);
-    if( trig->WhichCandidate() == 0 ) continue;
-
     
     for(Int_t j=0; j<(fAssocParticles->GetEntriesFast()); j++){
       AliMiniParticle* tChAssoc = (AliMiniParticle*) (fAssocParticles->At(j));
@@ -4072,11 +4074,11 @@ void AliAnalysisTaskLambdaOverK0sJets::UserExec(Option_t *)
       dEta = trig->Eta() - lEta;
       
       pt =  tChAssoc->Pt();
-
+      
       for( Int_t k=0; k<kNc; k++)
 	if( pt>=kPtBinCharged[k]  && pt<kPtBinCharged[k+1] ) 
 	  fChargeddPhidEta[curCentBin*kNc*kNVtxZ + k*kNVtxZ + curVtxBin]->Fill(dPhi,dEta);
-
+      
     }
     
   }
