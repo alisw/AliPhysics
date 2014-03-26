@@ -591,18 +591,22 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     outputContainer->Add(fhReSS[2]) ;
   }
   
-  fhEventBin=new TH1I("hEventBin","Number of real pairs per bin(cen,vz,rp)",
-                      GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0, 
-                      GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
-  fhEventBin->SetXTitle("bin");
-  outputContainer->Add(fhEventBin) ;
+  if(DoOwnMix())
+  {
+    fhEventBin=new TH1I("hEventBin","Number of real pairs per bin(cen,vz,rp)",
+                        GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                        GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhEventBin->SetXTitle("bin");
+    outputContainer->Add(fhEventBin) ;
+    
+    
+    fhEventMixBin=new TH1I("hEventMixBin","Number of mixed pairs per bin(cen,vz,rp)",
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
+                           GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
+    fhEventMixBin->SetXTitle("bin");
+    outputContainer->Add(fhEventMixBin) ;
+	}
   
-  fhEventMixBin=new TH1I("hEventMixBin","Number of mixed pairs per bin(cen,vz,rp)",
-                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1,0,
-                         GetNCentrBin()*GetNZvertBin()*GetNRPBin()+1) ;
-  fhEventMixBin->SetXTitle("bin");
-  outputContainer->Add(fhEventMixBin) ;  
-	
   if(GetNCentrBin()>1)
   {
     fhCentrality=new TH1F("hCentralityBin","Number of events in centrality bin",GetNCentrBin(),0.,1.*GetNCentrBin()) ;
@@ -1949,7 +1953,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
     if (evtIndex1 != currentEvtIndex) 
     {
       //Fill event bin info
-      fhEventBin->Fill(eventbin) ;
+      if(DoOwnMix()) fhEventBin->Fill(eventbin) ;
       if(GetNCentrBin() > 1) 
       {
         fhCentrality->Fill(curCentrBin);

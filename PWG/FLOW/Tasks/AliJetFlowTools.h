@@ -79,6 +79,10 @@ class AliJetFlowTools {
             fActiveDir->cd();
         }
         void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetCentralityBin(TArrayI* bins)         {
+            fCentralityArray = bins;
+            fCentralityBin = fCentralityArray->At(0);
+        }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
@@ -309,6 +313,7 @@ class AliJetFlowTools {
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
         Int_t                   fCentralityBin;         // centrality bin
+        TArrayI*                fCentralityArray;       // array of bins that are merged
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding

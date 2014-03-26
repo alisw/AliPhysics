@@ -631,10 +631,10 @@ void AliJetResponseMaker::AllocateTHnSparse()
 {
   // Allocate THnSparse histograms.
 
-  TString title[20]= {""};
-  Int_t nbins[20]  = {0};
-  Double_t min[20] = {0.};
-  Double_t max[20] = {0.};
+  TString title[25]= {""};
+  Int_t nbins[25]  = {0};
+  Double_t min[25] = {0.};
+  Double_t max[25] = {0.};
   Int_t dim = 0;
 
   title[dim] = "#phi";

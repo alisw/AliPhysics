@@ -250,31 +250,60 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
 Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const{
   //we calculate factors for each value and then multiply them to get the overall bounds
   //neutral corrections, pt cut, pid, efficiency, background
-  float neutral = 1.0;
-  float ptcut = 1.0;
-  float pid = 1.0;
-  float efficiency = 1.0;
-  float background = 1.0;
-  if(isLowBound){//is lower bound
-    if(isHadronic) neutral= fNeutralCorrectionLow/fNeutralCorrection;
-    else{neutral = fNotHadronicCorrectionLow/fNotHadronicCorrection;}
-    if(isTPC) ptcut = ffpTcutCorrectionTPCLow/fpTcutCorrectionTPC;
-    else{ptcut = ffpTcutCorrectionITSLow/fpTcutCorrectionITS;}
-    pid = fNotIDConstTPCLow/fNotIDConstTPC;
-    efficiency = fEfficiencyErrorLow;
-    background = fBackgroundErrorLow;
+
+//   Float_t neutral = fNeutralCorrection;
+//   if(!isHadronic) neutral = fNotHadronicCorrection;
+//   Float_t ptcut = fpTcutCorrectionTPC;
+//   if(!isTPC) ptcut = fpTcutCorrectionITS;
+//   Float_t pid = fNotIDConstTPC;
+//   Float_t efficiency = (fEfficiencyErrorHigh+fEfficiencyErrorLow)/2.0;
+//   Float_t background = fBackground;
+
+  Float_t neutralFracErr = (fNeutralCorrection - fNeutralCorrectionLow)/fNeutralCorrection;
+  if(!isHadronic){
+    neutralFracErr = (fNotHadronicCorrection - fNotHadronicCorrectionLow)/fNotHadronicCorrection;
   }
-  else{//is higher bound
-    if(isHadronic) neutral= fNeutralCorrectionHigh/fNeutralCorrection;
-    else{neutral= fNotHadronicCorrectionHigh/fNotHadronicCorrection;}
-    if(isTPC) ptcut = ffpTcutCorrectionTPCHigh/fpTcutCorrectionTPC;
-    else{ptcut = ffpTcutCorrectionITSHigh/fpTcutCorrectionITS;}
-    pid = fNotIDConstTPCHigh/fNotIDConstTPC;
-    efficiency = fEfficiencyErrorHigh;
-    background = fBackgroundErrorHigh;
+  Float_t ptcutFracErr = (ffpTcutCorrectionTPCHigh-fpTcutCorrectionTPC)/fpTcutCorrectionTPC;
+  if(!isTPC){
+    ptcutFracErr = (ffpTcutCorrectionTPCHigh-fpTcutCorrectionTPC)/fpTcutCorrectionTPC;
   }
-  //cout<<"neutral "<<neutral<<" ptcut "<<ptcut<<" pid "<<pid<<" efficiency "<<efficiency<<" background "<<background<<" overall "<<neutral*ptcut*pid*efficiency*background<<endl;
-  return neutral*ptcut*pid*efficiency*background*et;
+  Float_t pidFracErr = (fNotIDConstTPCHigh-fNotIDConstTPC)/fNotIDConstTPC;
+  Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
+  Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
+  Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr);
+  //cout<<"fracerrs neutral "<<neutralFracErr<<" ptcut "<<ptcutFracErr<<" pid "<<pidFracErr<<" efficiency "<<efficiencyFracErr<<" bkgd "<<backgroundFracErr<<" total fracerr "<<fracerr<<endl;
+  if(isLowBound){
+    return et*(1.0-fracerr);
+  }
+  else{
+    return et*(1.0+fracerr);
+  }
+
+//   Float_t neutral = 1.0;
+//   Float_t ptcut = 1.0;
+//   Float_t pid = 1.0;
+//   Float_t efficiency = 1.0;
+//   Float_t background = 1.0;
+//   if(isLowBound){//is lower bound
+//     if(isHadronic) neutral= fNeutralCorrectionLow/fNeutralCorrection;
+//     else{neutral = fNotHadronicCorrectionLow/fNotHadronicCorrection;}
+//     if(isTPC) ptcut = ffpTcutCorrectionTPCLow/fpTcutCorrectionTPC;
+//     else{ptcut = ffpTcutCorrectionITSLow/fpTcutCorrectionITS;}
+//     pid = fNotIDConstTPCLow/fNotIDConstTPC;
+//     efficiency = fEfficiencyErrorLow;
+//     background = fBackgroundErrorLow;
+//   }
+//   else{//is higher bound
+//     if(isHadronic) neutral= fNeutralCorrectionHigh/fNeutralCorrection;
+//     else{neutral= fNotHadronicCorrectionHigh/fNotHadronicCorrection;}
+//     if(isTPC) ptcut = ffpTcutCorrectionTPCHigh/fpTcutCorrectionTPC;
+//     else{ptcut = ffpTcutCorrectionITSHigh/fpTcutCorrectionITS;}
+//     pid = fNotIDConstTPCHigh/fNotIDConstTPC;
+//     efficiency = fEfficiencyErrorHigh;
+//     background = fBackgroundErrorHigh;
+//   }
+//   //cout<<"neutral "<<neutral<<" ptcut "<<ptcut<<" pid "<<pid<<" efficiency "<<efficiency<<" background "<<background<<" overall "<<neutral*ptcut*pid*efficiency*background<<endl;
+//   return neutral*ptcut*pid*efficiency*background*et;
 }
 // AliAnalysisHadEtCorrections & operator = (const AliAnalysisHadEtCorrections & g) {
 

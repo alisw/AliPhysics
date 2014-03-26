@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskTrackingUncert() {
   //
   AliAnalysisTrackingUncertainties *task    = new AliAnalysisTrackingUncertainties("trackingUncertainty");
   //
-  task->SelectCollisionCandidates(AliVEvent::kMB);
+  task->SelectCollisionCandidates(AliVEvent::kMB|AliVEvent::kINT7);
   mgr->AddTask(task);
   //  
   //  

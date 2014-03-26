@@ -2,6 +2,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
                                        Bool_t isMC       = kFALSE, //run MC 
                                        Bool_t enableQAMesonTask = kTRUE, //enable QA in AliAnalysisTaskGammaConvDalitzV1
                                        Bool_t enableDoMesonChic = kFALSE, // enable additional Chic analysis
+				       Bool_t enableSetProdVtxVGamma = kTRUE,
 				       TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
                                        Bool_t doWeighting = kFALSE,  //enable Weighting
                                        TString generatorName = "DPMJET",				
@@ -15,6 +16,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    cout<<"isMC: "<<isMC<<endl;
    cout<<"enableQAMesonTask: "<<enableQAMesonTask<<endl;
    cout<<"enableDoMesonChic: "<<enableDoMesonChic<<endl;
+   cout<<"enableSetProdVtxVGamma: "<<enableSetProdVtxVGamma<<endl;
    cout<<"fileNameInputForWeighting: "<<fileNameInputForWeighting.Data()<<endl;
    cout<<"doWeighting: "<<doWeighting<<endl;
    cout<<"generatorName: "<<generatorName.Data()<<endl;
@@ -39,6 +41,10 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    gSystem->Load("libTENDER.so");
    gSystem->Load("libTENDERSupplies.so");
 
+   
+  
+   
+   
 
    cout<<"Entro 0"<<endl;
 
@@ -65,7 +71,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    ConvCutnumber = "8000000160084001001500000000";   //Offline  V0 finder 
    }
    else {
-   ConvCutnumber = "8000000160084001001500000000";   //Online  V0 finder
+   ConvCutnumber = "8000000060084001001500000000";   //Online  V0 finder
    }
    
    TString ElecCuts      = "9000540000000200000";            //Electron Cuts
@@ -238,8 +244,22 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 
         ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540023310262301"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 
-}
+}  else if ( trainConfig == 13 ) {
+	
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540053310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
+	
+}  else if ( trainConfig == 14 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540073310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
+	
+}  else if ( trainConfig == 15 ) {
 
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540053310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls
+	
+}  else if ( trainConfig == 16 ) {
+  
+	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540073310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
+}
 
 
 
@@ -265,13 +285,10 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
    for(Int_t i = 0; i<numberOfCuts; i++){
 
 
-      analysisCuts[i] = new AliConversionCuts();
-      if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
-            cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
-            return 0;
-      } else {
+          analysisCuts[i] = new AliConversionCuts();
+      
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 || trainConfig == 11  ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 || trainConfig == 11  || trainConfig == 13 || trainConfig == 14 ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){
@@ -280,27 +297,27 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
                analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 	      }
 	    }
-	  } else if ( trainConfig == 7 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12  ){
+	  } else if ( trainConfig == 7 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12  || trainConfig == 15 || trainConfig == 16 ){
 	    
-    	    if (doWeighting){
-	      analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
-	    }
+	      if (doWeighting){
+		  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
+	      }
 	  }
-
+	  if( ! analysisCuts[i]->InitializeCutsFromCutString(ConvCutarray[i].Data()) ) {
+            cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
+            return 0;
+	  } else { 
+	  	  	  
+	      if (doEtaShiftIndCuts) {
 	  
+		analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
+		analysisCuts[i]->SetEtaShift(stringShift);
+	      }
+	      ConvCutList->Add(analysisCuts[i]);
+	      analysisCuts[i]->SetFillCutHistograms("",kFALSE);
+	      analysisCuts[i]->SetAcceptedHeader(HeaderList);
 	  
-	  
-	  
-	  if (doEtaShiftIndCuts) {
-	  
-	      analysisCuts[i]->DoEtaShift(doEtaShiftIndCuts);
-	      analysisCuts[i]->SetEtaShift(stringShift);
-	      
 	  }
-	  ConvCutList->Add(analysisCuts[i]);
-	  analysisCuts[i]->SetFillCutHistograms("",kFALSE);
-	  analysisCuts[i]->SetAcceptedHeader(HeaderList);
-	}
 
 
 
@@ -339,8 +356,8 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
    task->SetElectronCutList(ElecCutList);
 
    task->SetMoveParticleAccordingToVertex(kTRUE);
-
-
+   
+   if(enableSetProdVtxVGamma) task->SetProductionVertextoVGamma(kTRUE);
    if(enableQAMesonTask) task->SetDoMesonQA(kTRUE);
    if(enableDoMesonChic) task->SetDoChicAnalysis(kTRUE);
 

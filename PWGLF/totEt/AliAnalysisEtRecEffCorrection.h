@@ -23,7 +23,7 @@ public:
     AliAnalysisEtRecEffCorrection();
 
 //! Constructor
-    AliAnalysisEtRecEffCorrection(TString name, const TF1& correction, const TH2F &recoEff, const Double_t maxEnergy);
+    AliAnalysisEtRecEffCorrection(TString name, const TF1& correction, const TH2F &recoEff, Double_t maxEnergy);
 
 //! Copy constructor
     AliAnalysisEtRecEffCorrection(const AliAnalysisEtRecEffCorrection &obj);
