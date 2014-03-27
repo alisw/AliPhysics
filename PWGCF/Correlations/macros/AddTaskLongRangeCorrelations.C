@@ -1,20 +1,47 @@
 // -*- c++ -*-
-// $Id: AddTaskLongRangeCorrelations.C 371 2013-11-30 19:23:47Z cmayer $
+// $Id: AddTaskLongRangeCorrelations.C 407 2014-03-21 11:55:57Z cmayer $
 
 const Double_t centMin[] = {  0,   0,  10,  20,  30,  40,  50,  60,  70,  80 };
 const Double_t centMax[] = {  5,  10,  20,  30,  40,  50,  60,  70,  80, 100 };
 const Int_t    nMin[]    = { -1, 120,  70,  35,  20,   5,   0,   0,   0,  -1 };
 const Int_t    nMax[]    = { -1, 400, 275, 200, 145, 100,  68,  46,  30,  -1 };
 
-const Double_t deltaEta[] = { -1, 0, 0.2, 0.4, 0.6, 1.4 };
+const Double_t deltaEta1[] = {
+  -1,
+  0.0,
+  0.2,
+  0.4,
+  0.6,
+  0.8,
+  1.0,
+  1.2,
+  1.4
+};
+const Double_t deltaEta2[] = {
+  -1,
+  0.1,
+  0.3,
+  0.5,
+  0.7,
+  0.9,
+  1.1,
+  1.3
+};
+
+const size_t nDeltaEta[] = {
+  1,
+  sizeof(deltaEta1) / sizeof(Double_t),
+  sizeof(deltaEta2) / sizeof(Double_t)
+};
 
 AliAnalysisTaskLongRangeCorrelations*
-AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
-			     Bool_t runMixing    = !kTRUE,
-			     Int_t  mixingTracks = 50000,
-			     Int_t selPrimMC  = 0, Int_t selPrimMCData = 0,
-			     Double_t ptMin   = 0.2, 
-			     Double_t phiMin  = 0, Double_t phiMax  = TMath::TwoPi()) {
+AddTaskLongRangeCorrelations(Int_t    trackFilter  = 128, // TPC only
+			     Bool_t   runMixing    = !kTRUE,
+			     Int_t    mixingTracks = 50000,
+			     Int_t    selPrimMC    = 0, Int_t selPrimMCData = 0,
+			     Int_t    cutDeltaEta  = 0,
+			     Double_t ptMin        = 0.2, 			     
+			     Double_t phiMin       = 0, Double_t phiMax  = TMath::TwoPi()) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (NULL == mgr) {
@@ -36,9 +63,10 @@ AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWGCFEbyE.outputLongRangeCorrelations.root";
 
+  cutDeltaEta = TMath::Min(2, cutDeltaEta);
   for (Int_t i=0; i<sizeof(centMin)/sizeof(Double_t); ++i) {
-    size_t jMin = (nMin[i] < 0) ? 0 : 1;
-    size_t jMax = (nMin[i] < 0) ? 1 : sizeof(deltaEta)/sizeof(Double_t);
+    size_t jMin = (nMin[i] < 0) ? 0 : size_t(cutDeltaEta != 0);
+    size_t jMax = (nMin[i] < 0) ? 1 : nDeltaEta[cutDeltaEta];
     for (Int_t j=jMin; j<jMax; ++j) {      
       taskLRC = new AliAnalysisTaskLongRangeCorrelations("TaskLongRangeCorrelations");
       taskLRC->SetRunMixing(runMixing);
@@ -49,8 +77,22 @@ AddTaskLongRangeCorrelations(Int_t  trackFilter  = 128, // TPC only
       taskLRC->SetPhiRange(phiMin, phiMax);
       taskLRC->SelectCollisionCandidates(AliVEvent::kMB);
       taskLRC->SetSelectPrimaryMCParticles(selPrimMC, selPrimMCData);
-      taskLRC->SetRangeN(nMin[i], nMax[i], deltaEta[j]);
-      Printf("%f %f %d %d %f", centMin[i], centMax[i], nMin[i], nMax[i], deltaEta[j]);
+      
+      switch (cutDeltaEta) {
+      case 1:
+	taskLRC->SetRangeN(nMin[i], nMax[i], deltaEta1[j]);
+	break;
+      case 2:
+	taskLRC->SetRangeN(nMin[i], nMax[i], deltaEta2[j]);
+	break;
+      default:
+	taskLRC->SetRangeN(-1, -1, -1.);
+	break;
+      }
+      Printf("%f %f %d %d %f", centMin[i], centMax[i],
+	     taskLRC->GetNMin(),
+	     taskLRC->GetNMax(),
+	     taskLRC->GetDeltaEta());
       listLRC = mgr->CreateContainer(taskLRC->GetOutputListName(), TList::Class(),
 				     AliAnalysisManager::kOutputContainer,
 				     outputFileName.Data());

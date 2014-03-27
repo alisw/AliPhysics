@@ -13,7 +13,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 371 2013-11-30 19:23:47Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.cxx 407 2014-03-21 11:55:57Z cmayer $
 
 #include <numeric>
 #include <functional>
@@ -489,24 +489,26 @@ void AliAnalysisTaskLongRangeCorrelations::CalculateMoments(TString prefix,
 							    Double_t weight) {
   THnSparse* hN1ForThisEvent(ComputeNForThisEvent(tracks1, "hN1", vertexZ));
 
-  hN1ForThisEvent->GetAxis(1)->SetRangeUser( fDeltaEta-0.10001,  fDeltaEta+0.09999);
-  TH1 *hTemp = hN1ForThisEvent->Projection(0);
-  const Long64_t ncPlus = Long64_t(hTemp->GetEntries());
-  delete hTemp;
+  if (fDeltaEta >= 0) {
+    hN1ForThisEvent->GetAxis(1)->SetRangeUser( fDeltaEta/2+0.00001,  fDeltaEta/2+0.19999);
+    TH1 *hTemp = hN1ForThisEvent->Projection(0);
+    const Long64_t ncPlus = Long64_t(hTemp->GetEntries());
+    delete hTemp;
+    
+    hN1ForThisEvent->GetAxis(1)->SetRangeUser(-fDeltaEta/2-0.19999, -fDeltaEta/2-0.00001);
+    hTemp = hN1ForThisEvent->Projection(0);
+    const Long64_t ncMinus = Long64_t(hTemp->GetEntries());
+    delete hTemp;
+    
+    // restore full axis range
+    hN1ForThisEvent->GetAxis(1)->SetRange(0, -1);
 
-  hN1ForThisEvent->GetAxis(1)->SetRangeUser(-fDeltaEta-0.10001, -fDeltaEta+0.09999);
-  hTemp = hN1ForThisEvent->Projection(0);
-  const Long64_t ncMinus = Long64_t(hTemp->GetEntries());
-  delete hTemp;
-
-  // restore full axis range
-  hN1ForThisEvent->GetAxis(1)->SetRange(0, -1);
-
-  if (fNMin != -1 && ncPlus < fNMin) return;
-  if (fNMax != -1 && ncPlus > fNMax) return;
-  
-  if (fNMin != -1 && ncMinus < fNMin) return;
-  if (fNMax != -1 && ncMinus > fNMax) return;
+    if (fNMin != -1 && ncPlus < fNMin) return;
+    if (fNMax != -1 && ncPlus > fNMax) return;
+    
+    if (fNMin != -1 && ncMinus < fNMin) return;
+    if (fNMax != -1 && ncMinus > fNMax) return;
+  }
 
   AliTHn* hN1(dynamic_cast<AliTHn*>(fOutputList->FindObject(prefix+"histMoment1PhiEta_1")));
   if (NULL == hN1) return;
