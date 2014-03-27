@@ -78,10 +78,20 @@ class AliJetFlowTools {
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
         }
-        void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetCentralityBin(Int_t bin)             {
+            // in case of one centraltiy
+            fCentralityArray = new TArrayI(1);
+            fCentralityArray->AddAt(bin, 0);
+            // for one centrality there's no need for weights
+            fCentralityWeights = new TArrayD(1);
+            fCentralityWeights->AddAt(1., 0);
+        }
         void            SetCentralityBin(TArrayI* bins)         {
             fCentralityArray = bins;
-            fCentralityBin = fCentralityArray->At(0);
+        }
+        void            SetCentralityWeight(TArrayD* weights)   {
+            fCentralityWeights = weights;
+            if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
         }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
@@ -312,8 +322,8 @@ class AliJetFlowTools {
         Bool_t                  fRefreshInput;          // re-read the input (called automatically if input list changes)
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
-        Int_t                   fCentralityBin;         // centrality bin
         TArrayI*                fCentralityArray;       // array of bins that are merged
+        TArrayD*                fCentralityWeights;     // array of centrality weights
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
