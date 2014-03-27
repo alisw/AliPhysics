@@ -159,7 +159,7 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fIspASystem = ZDC.fIspASystem;
     fIsRELDISgen = ZDC.fIsRELDISgen;
     fOnlyZEM = ZDC.fOnlyZEM;
-    fFindMother = fFindMother;
+    fFindMother = ZDC.fFindMother;
   } return *this;
 }
 
