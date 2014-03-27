@@ -67,7 +67,8 @@ AliZDC::AliZDC() :
   fBeamEnergy(0.),
   fIspASystem(kFALSE),
   fIsRELDISgen(kFALSE),
-  fOnlyZEM(kFALSE)
+  fOnlyZEM(kFALSE),
+  fFindMother(kFALSE)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -93,7 +94,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fBeamEnergy(0.),
   fIspASystem(kFALSE),
   fIsRELDISgen(kFALSE),
-  fOnlyZEM(kFALSE)
+  fOnlyZEM(kFALSE),
+  fFindMother(kFALSE)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -137,7 +139,8 @@ fSpectatorTracked(ZDC.fSpectatorTracked),
 fBeamEnergy(ZDC.fBeamEnergy),
 fIspASystem(ZDC.fIspASystem),
 fIsRELDISgen(ZDC.fIsRELDISgen),
-fOnlyZEM(ZDC.fOnlyZEM)
+fOnlyZEM(ZDC.fOnlyZEM),
+fFindMother(ZDC.fFindMother)
 {
   // copy constructor
 }
@@ -156,6 +159,7 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fIspASystem = ZDC.fIspASystem;
     fIsRELDISgen = ZDC.fIsRELDISgen;
     fOnlyZEM = ZDC.fOnlyZEM;
+    fFindMother = fFindMother;
   } return *this;
 }
 
