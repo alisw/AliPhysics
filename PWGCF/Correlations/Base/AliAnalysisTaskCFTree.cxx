@@ -39,6 +39,7 @@
 #include "AliAnalysisFilter.h"
 #include "AliPIDResponse.h"
 #include "AliTPCPIDResponse.h"
+#include "AliAODTracklets.h"
 // root
 #include "TMath.h"
 #include "TFile.h"
@@ -54,6 +55,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   AliAnalysisTask(name,""),
   fDebug(0),
   fMode(0),
+  fIsAOD(1),
   fInputHandler(0x0),
   fMcHandler(0x0),
   fTrackFilter(0x0),
@@ -64,6 +66,8 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fEventStatistics(0x0),
   fTree(0x0),
   fParticles(0x0),
+  fTracklets(0x0),
+  fMuons(0x0),
   fField(0),
   fCentrality(0),
   fZvtx(0),
@@ -81,7 +85,9 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fPtMin(0.15),
   fSharedClusterCut(0.4),
   fCrossedRowsCut(100),
-  fFoundFractionCut(0.8)
+  fFoundFractionCut(0.8),
+  fStoreTracklets(0),
+  fStoreMuons(0)
 {
   Info("AliAnalysisTaskCFTree","Calling Constructor");
   DefineInput(0,TChain::Class());
@@ -95,6 +101,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
 void AliAnalysisTaskCFTree::ConnectInputData(Option_t* /*option*/){
   fInputHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fMcHandler    = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  fInputHandler->SetNeedField();
 }
 //-----------------------------------------------------------------------------
 
@@ -109,6 +116,8 @@ void AliAnalysisTaskCFTree::CreateOutputObjects(){
   fListOfHistos->Add(fEventStatistics);
 
   fParticles = new TClonesArray("AliCFParticle",2000);
+  if (fStoreTracklets) fTracklets = new TClonesArray("AliCFParticle",100);
+  if (fStoreMuons)     fMuons     = new TClonesArray("AliCFParticle",100);
   // create file-resident tree
   TDirectory *owd = gDirectory;
   OpenFile(1);
@@ -123,6 +132,8 @@ void AliAnalysisTaskCFTree::CreateOutputObjects(){
   fTree->Branch("bc",&fBc);
   fTree->Branch("mask",&fSelectMask);
   fTree->Branch("particles",&fParticles);
+  fTree->Branch("tracklets",&fTracklets);
+  fTree->Branch("muons",&fMuons);
   PostData(0,fListOfHistos);
   PostData(1,fTree);
 }
@@ -174,7 +185,44 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
         if (mask & fTPConlyConstrainedMask) AddTrack(track,mask,3);
       }
     }
+
+    if (fIsAOD){
+      AliAODEvent* aod = (AliAODEvent*) event;
+      
+      if (fStoreTracklets){
+        AliAODTracklets* tracklets = aod->GetTracklets();
+        Int_t nTracklets = tracklets->GetNumberOfTracklets();
+        for (Int_t i=0;i<nTracklets;i++){
+          Float_t phi   = tracklets->GetPhi(i);
+          Float_t theta = tracklets->GetTheta(i);
+          Float_t dphi  = tracklets->GetDeltaPhi(i);
+          new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliCFParticle(dphi,-TMath::Log(TMath::Tan(theta/2)),phi,0,0);
+        }
+      }
+      
+      if (fStoreMuons){
+        for (Int_t iTrack = 0; iTrack < aod->GetNTracks(); iTrack++) {
+          AliAODTrack* track = aod->GetTrack(iTrack);
+          if (!track->IsMuonTrack()) continue;
+          Float_t pt     = track->Pt();
+          Float_t eta    = track->Eta();
+          Float_t phi    = track->Phi();
+          Short_t charge = track->Charge();
+          Float_t dca    = track->DCA();
+          Float_t chi2   = track->Chi2perNDF();
+          Float_t rabs   = track->GetRAtAbsorberEnd();
+          Int_t   mask   = track->GetMatchTrigger();
+          if (rabs < 17.6 || rabs > 89.5) continue;
+          if (eta < -4 || eta > -2.5) continue;
+          AliCFParticle* part = new ((*fMuons)[fMuons->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,3);
+          part->SetAt(dca,0);
+          part->SetAt(chi2,1);
+          part->SetAt(rabs,2);
+        }
+      }
+    }
   }
+  
   else { // MC analysis
     AliMCEvent* mcEvent = fMcHandler ? fMcHandler->MCEvent() : 0;
     TClonesArray* mcTracks = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
