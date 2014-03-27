@@ -81,8 +81,8 @@ AliJetFlowTools::AliJetFlowTools() :
     fRefreshInput       (kTRUE),
     fOutputFileName     ("UnfoldedSpectra.root"),
     fOutputFile         (0x0),
-    fCentralityBin      (0),
     fCentralityArray    (0x0),
+    fCentralityWeights  (0x0),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -366,7 +366,7 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     else if(fUnfoldingAlgorithm == kNone) {
         TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
         clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
-        return clone;
+        return clone;//RebinTH1D(clone, fBinsTrue, clone->GetName(), kFALSE);
     }
     else return 0x0; 
     // do the actual unfolding with the selected function
@@ -865,23 +865,27 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         // clear minuit state to avoid constraining the fit with the results of the previous iteration
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
-    // extract the spectra
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
-    fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
-    if(!fJetPtDeltaPhi) {
+    // extract the spectra 
+    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
+    if(!fInputList->FindObject(spectrumName.Data())) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
-    if(fCentralityArray) {
-        printf(" merging centralities \n");
-        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
-            printf( " searching for %s \n", spectrumName.Data());
-            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
-        }
+
+    // get the first scaled spectrum
+    fJetPtDeltaPhi = (TH2D*)fInputList->FindObject(spectrumName.Data());
+    // clone the spectrum on the heap. this is necessary since scale or add change the
+    // contents of the original histogram
+    fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
+    fJetPtDeltaPhi->Scale(fCentralityWeights->At(0));
+    printf("Extracted %i wight weight %.2f \n", spectrumName.Data(), fCentralityWeights->At(0));
+    // merge subsequent bins (if any)
+    for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+        spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+        printf( " Merging with %s with weight %.4f \n", spectrumName.Data(), fCentralityWeights->At(i));
+        fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())), fCentralityWeights->At(i));
     }
 
-    fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     if(!fDphiUnfolding) {
         fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), 1, 40, "e");
@@ -896,12 +900,10 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
-        TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityBin)));
-        if(fCentralityArray) {
-            for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-               printf(" merging centralities \n");
-               rho->Add((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(i))));
-            }
+        TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(0))));
+        rho->Scale(fCentralityWeights->At(0));
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+           rho->Add((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(i))), fCentralityWeights->At(i));
         }
         if(!rho) return 0x0;
         Bool_t normalizeToFullSpectrum = (fEventCount < 0) ? kTRUE : kFALSE;
@@ -932,7 +934,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     // extract the delta pt matrices
     TString deltaptName("");
-    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityBin) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin);
+    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
@@ -940,16 +942,17 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fRefreshInput = kTRUE;
         return kTRUE;
     }
-    if(fCentralityArray) {
-        printf(" merging centralities \n");
-        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
-            deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
-            printf(" searching for %s \n ", deltaptName.Data());
-            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
-        }
+
+    // clone the distribution on the heap and if requested merge with other centralities
+    fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
+    fDeltaPtDeltaPhi->Scale(fCentralityWeights->At(0));
+    printf("Extracted %s with weight %.2f \n", deltaptName.Data(), fCentralityWeights->At(0));
+    for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+        printf(" Merging with %s with weight %.4f \n", deltaptName.Data(), fCentralityWeights->At(i));
+        fDeltaPtDeltaPhi->Add((TH2D*)fInputList->FindObject(deltaptName.Data()), fCentralityWeights->At(i));
     }
 
-    fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     if(!fDphiUnfolding) {
         fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), 1, 40, "e");
@@ -982,12 +985,12 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         }
     }
     fDptIn = new TH2D(*rfIn);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
     fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
     fDptOut = new TH2D(*rfOut);
-    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
+    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)));
     fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ProtectHeap(fDptOut);
@@ -1014,7 +1017,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
     // extract the spectra
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
+    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
     fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
     if(!fJetPtDeltaPhi) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
@@ -1031,7 +1034,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
     fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), low, up, "e");
     // extract the delta pt matrices
     TString deltaptName("");
-    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityBin) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin);
+    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
@@ -1059,7 +1062,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         }
     }
     fDptIn = new TH2D(*rfIn);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
     fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
@@ -1400,7 +1403,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type)
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2.);
-    h->SetMarkerSize(2.);
+    h->SetMarkerSize(1.);
     h->SetTitle("");
     h->GetYaxis()->SetLabelSize(0.05);
     h->GetXaxis()->SetLabelSize(0.05);
@@ -1408,31 +1411,36 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type)
     h->GetXaxis()->SetTitleOffset(1.5);
     h->GetYaxis()->SetTitleSize(.05);
     h->GetXaxis()->SetTitleSize(.05);
-    h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
        } break;
        case kBar : {
             h->SetFillColor(col);
             h->SetBarWidth(.6);
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
             h->SetBarOffset(0.2);
        }
        default : break;
@@ -1445,7 +1453,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2.);
-    h->SetMarkerSize(2.);
+    h->SetMarkerSize(1.);
     h->SetTitle("");
     h->SetFillColor(kYellow);
     h->GetYaxis()->SetLabelSize(0.05);
@@ -1505,7 +1513,6 @@ void AliJetFlowTools::GetNominalValues(
     printf("\n\n\n\t\t GetNominalValues \n > Recovered the following file structure : \n <");
     readMe->ls();
     TFile* output(new TFile(outFile.Data(), "RECREATE"));   // create new output file
-
     // get some placeholders, have to be initialized but will be deleted
     ratio = new TH1D("nominal", "nominal", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
     TH1D* nominalIn(new TH1D("nominal in", "nominal in", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1532,7 +1539,6 @@ void AliJetFlowTools::GetNominalValues(
     // close the open files, reclaim ownership of histograms which are necessary outside of the file scope
     ratio->SetDirectory(0);     // disassociate from current gDirectory
     readMe->Close();
-//    output->Close();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::GetCorrelatedUncertainty(
@@ -1706,8 +1712,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                 upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
             } else {
                 // the in and out of plane correlated errors will be fully correlated, so take the correlation coefficient equal to 1
-                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) - 2.*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
-                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 2.*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) - 1.*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 1.*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
             }
             // set the errors 
             ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
@@ -1748,7 +1754,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     relativeErrorInLow,
                     relativeErrorOutUp,
                     relativeErrorOutLow,
-                    1.));
+                    .5));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
@@ -3164,11 +3170,11 @@ Bool_t AliJetFlowTools::SetRawInput (
         fSpectrumOut->Scale(1./((double)fEventCount));
     }
     fDptIn = ConstructDPtResponseFromTH1D(fDptInDist, fAvoidRoundingError);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
     fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ConstructDPtResponseFromTH1D(fDptOutDist, fAvoidRoundingError);
-    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
+    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)));
     fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
     fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     
@@ -3251,20 +3257,15 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
     Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     Double_t pre(TMath::Pi()/(4.*r)), in(0.), out(0.), ein(0.), eout(0.);
 
-    cout << " GetV2 " << endl;
-    cout << " prefactor " << pre << endl;
     for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
         binCent = h1->GetXaxis()->GetBinCenter(i);
         binWidth = h1->GetXaxis()->GetBinWidth(i);
         if(h2->GetBinContent(i) > 0.) {
             in = h1->GetBinContent(i);
-            cout << " yield in " << in  << endl;
             ein = h1->GetBinError(i);
             out = h2->GetBinContent(i);
-            cout << " yield out " << out << endl;
             eout = h2->GetBinError(i);
             ratio = pre*((in-out)/(in+out));
-            cout << " v2 " << ratio << endl;
             error2 = (4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout;
             error2 = error2*pre*pre;
             if(error2 > 0) error2 = TMath::Sqrt(error2);
@@ -3394,8 +3395,8 @@ void AliJetFlowTools::SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut)
     summary->GetXaxis()->SetBinLabel(1, "fBetaIn");
     summary->SetBinContent(2, fBetaOut);
     summary->GetXaxis()->SetBinLabel(2, "fBetaOut");
-    summary->SetBinContent(3, fCentralityBin);
-    summary->GetXaxis()->SetBinLabel(3, "fCentralityBin");
+    summary->SetBinContent(3, fCentralityArray->At(0));
+    summary->GetXaxis()->SetBinLabel(3, "fCentralityArray[0]");
     summary->SetBinContent(4, (int)convergedIn);
     summary->GetXaxis()->SetBinLabel(4, "convergedIn");
     summary->SetBinContent(5, (int)convergedOut);
