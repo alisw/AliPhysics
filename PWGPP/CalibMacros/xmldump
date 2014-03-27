@@ -1,26 +1,27 @@
-
-
 xmldump(){
-	#
-	# Dump object from file
-        #
+#
+# Dump object from file
+#
 # Example usage:
 #       xmldump /cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Calib/RecoParam/Run0_999999999_v1_s0.root AliCDBEntry Run0_999999999_v1_s0.dump
 
- 	fin=$1	
-        object=$2
-        fout=$3
-	
-	echo "void xmldump(){" >xmldump.C
-	echo "printf(\"Hallo world\n\");" >>xmldump.C
-	echo "TFile* fin=TFile::Open(\"$fin\");"     >>xmldump.C
-	echo "TFile* fout=TFile::Open(\"$fout.xml\",\"recreate\");"     >>xmldump.C
-        echo "TObject * obj= (TObject*)fin->Get(\"$2\");"  >>xmldump.C
-        echo "obj->Print();"  >>xmldump.C
-        echo "obj->Write();"  >>xmldump.C
-        echo "delete fout;"  >>xmldump.C
-        echo "}"  >>xmldump.C
-        aliroot -b -q xmldump.C
+  fin=$1	
+  object=$2
+  fout=$3
+
+  cat > xmldump.C <<EOF
+void xmldump(){
+  printf(\"Hallo world\n\");
+  TFile* fin=TFile::Open(\"$fin\");
+  TFile* fout=TFile::Open(\"$fout.xml\",\"recreate\");
+  TObject * obj= (TObject*)fin->Get(\"$2\");
+  obj->Print();
+  obj->Write();
+  delete fout;
+}
+EOF
+  
+  aliroot -b -q xmldump.C
 }
 
 
