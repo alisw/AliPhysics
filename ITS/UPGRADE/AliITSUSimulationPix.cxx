@@ -479,9 +479,9 @@ Double_t AliITSUSimulationPix::SpreadFunGauss2D(const Double_t *dtIn)
   // The spread function is assumed to be gaussian in 2D
   // Parameters should be: mean0,sigma0
   return GausInt2D(fResponseParam->GetParameter(kG1SigX),  // sigX
-		   fResponseParam->GetParameter(kG1SigZ),  // sigZ
 		   dtIn[kCellX1]-fResponseParam->GetParameter(kG1MeanX),    // x1-xmean
 		   dtIn[kCellX2]-fResponseParam->GetParameter(kG1MeanX),    // x2-xmean
+		   fResponseParam->GetParameter(kG1SigZ),  // sigZ
 		   dtIn[kCellZ1]-fResponseParam->GetParameter(kG1MeanZ),    // z1-zmean
 		   dtIn[kCellZ2]-fResponseParam->GetParameter(kG1MeanZ));   // z2-zmean
   //
