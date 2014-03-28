@@ -1,9 +1,5 @@
-void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t bReduced = kTRUE, Int_t filterBit = 272)
+void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272)
 {
-
-  Bool_t isPbPb = kFALSE;
-  if(prodType.Contains("LHC10h") || prodType.EqualTo("LHC11h")) isPbPb = kTRUE;
-
   if(iAODanalysis==0) { //run on ESDs
     if(prodType.EqualTo("LHC10h") || prodType.EqualTo("LHC11a")) {
       if(bReduced)
