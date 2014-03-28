@@ -6,7 +6,7 @@ void SetITSULegacyPatterns()
   AliITSUGeomTGeo::SetITSLayerPattern("ITSULayer");
   AliITSUGeomTGeo::SetITSWrapVolPattern("ITSUWrapVol");
   AliITSUGeomTGeo::SetITSStavePattern("ITSULadder");
-  AliITSUGeomTGeo::SetITSSubStavePattern("");
+  AliITSUGeomTGeo::SetITSHalfStavePattern("");
   AliITSUGeomTGeo::SetITSModulePattern("");
   AliITSUGeomTGeo::SetITSChipPattern("ITSUModule");
   AliITSUGeomTGeo::SetITSSensorPattern("ITSUSensor");
