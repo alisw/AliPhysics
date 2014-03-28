@@ -21,9 +21,9 @@
 
 
   Example usage:
-  export mcProd=/hera/alice/miranov/alice-tpc-notes/MCprodutions/code
+  export mcProd=$ALICE_ROOT/PWGPP/CalibMacros/
   .L  $mcProd/AliOCDBToolkit.cxx+
-d  MakeDiffExampleUseCase();
+  MakeDiffExampleUseCase();
 
 
 */
@@ -306,3 +306,13 @@ void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, c
   }
 }
 
+void DumpOCDBAsTxt(const TMap *cdbMap0, const TList *cdbList0){
+  //
+  // Dump the OCDb configuatation as formated text file 
+  // with following collumns
+  // cdb name  prefix cdb path
+  // OCDB entries are sorted alphabetically
+  // e.g:
+  // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root 
+
+}
