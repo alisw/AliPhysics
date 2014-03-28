@@ -336,9 +336,9 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
     fListOfHistos->Add(new TH2F("V0AMultCorrelation", "V0A multiplicity;V0A multiplicity;SPD tracklets", 1000, -.5, 999.5, 1000, -.5, 999.5));
   }
-  if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
+  if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2 || fAssociatedFromDetector == 1 || fAssociatedFromDetector == 2)
     fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
-  if (fTriggersFromDetector == 3)
+  if (fTriggersFromDetector == 3 || fAssociatedFromDetector == 3)
     fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets;entries", 100, -0.1, 0.1));
   
   PostData(0,fListOfHistos);
