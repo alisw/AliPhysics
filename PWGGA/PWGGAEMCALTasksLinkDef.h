@@ -31,5 +31,6 @@
 #pragma link C++ class AliAnalysisTaskEMCALCaloTrackCorr+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0V2ShSh+;
 #pragma link C++ class AliEMCalpi0ClusterEvaluationTask+;
+#pragma link C++ class AliAnalysisTaskEMCALIsolation+;
 
 #endif
