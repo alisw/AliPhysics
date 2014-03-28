@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// $Id: AliAnalysisTaskLongRangeCorrelations.h 371 2013-11-30 19:23:47Z cmayer $
+// $Id: AliAnalysisTaskLongRangeCorrelations.h 405 2014-03-21 11:49:16Z cmayer $
 #ifndef _AliAnalysisTaskLongRangeCorrelations_H_
 #define _AliAnalysisTaskLongRangeCorrelations_H_
 
@@ -69,6 +69,10 @@ public:
     fNMax = nMax;
     fDeltaEta = deltaEta;
   }
+
+  Double_t GetDeltaEta() const { return fDeltaEta; }
+  Int_t GetNMin() const { return fNMin; }
+  Int_t GetNMax() const { return fNMax; }
 
   TString GetOutputListName() const;
 

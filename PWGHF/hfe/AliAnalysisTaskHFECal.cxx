@@ -222,6 +222,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMatchV0_1(0)
   ,fMatchMC_0(0)
   ,fMatchMC_1(0)
+  ,fpair(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -376,6 +377,7 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMatchV0_1(0)
   ,fMatchMC_0(0)
   ,fMatchMC_1(0)
+  ,fpair(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -739,11 +741,12 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     
     // HFEcuts: ITS layers cuts
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsITS, track)) continue;
-    if(mcPho && iHijing==0)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
-    if(mcPho && iHijing==1)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
     
     // HFE cuts: TPC PID cleanup
     if(!ProcessCutStep(AliHFEcuts::kStepHFEcutsTPC, track)) continue;
+
+    if(mcPho && iHijing==0)fPhoVertexReco_step0->Fill(track->Pt(),conv_proR); // check MC vertex
+    if(mcPho && iHijing==1)fPhoVertexReco_step1->Fill(track->Pt(),conv_proR); // check MC vertex
 
     int nTPCcl = track->GetTPCNcls();
     //int nTPCclF = track->GetTPCNclsF(); // warnings
@@ -1534,6 +1537,9 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fMatchMC_1 = new TH1D("fMatchMC_1","MC match",100,0,20);
   fOutputList->Add(fMatchMC_1);
 
+  fpair = new TH2D("fpair","pair of associate",100,0,20,21,-10.5,10.5);
+  fOutputList->Add(fpair);
+
   PostData(1,fOutputList);
 }
 
@@ -1584,6 +1590,9 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
        TParticle* particle = stack->Particle(label);
        p1 = particle->GetFirstMother();
      }
+
+  int numULS = 0;
+  int numLS = 0;
 
   //for(Int_t jTracks = itrack+1; jTracks<fESD->GetNumberOfTracks(); jTracks++){
   for(Int_t jTracks = 0; jTracks<fESD->GetNumberOfTracks(); jTracks++){
@@ -1690,7 +1699,6 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     phoinfo[1] = ptPrim;
     phoinfo[2] = mass;
     phoinfo[3] = nSig;
-    //phoinfo[3] = dEdxAsso;
     phoinfo[4] = openingAngle;
     phoinfo[5] = ishower;
     phoinfo[6] = ep;
@@ -1716,6 +1724,11 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
     if(fFlagLS ) fInvmassLSreco->Fill(ptPrim,mass);
     if(fFlagULS) fInvmassULSreco->Fill(ptPrim,mass);
   
+    // check double count
+    if(mass<fInvmassCut && fFlagULS)numULS++;
+    if(mass<fInvmassCut && fFlagLS)numLS++;
+
+
     // for real data  
     //printf("mce =%f\n",mce);
     if(mce<-0.5) // mce==-1. is real
@@ -1755,7 +1768,14 @@ void AliAnalysisTaskHFECal::SelectPhotonicElectron(Int_t itrack, Double_t cent, 
 	      }
         }
 
-  }
+  } // end of associate loop
+
+  if(numULS>0 || numLS>0)
+    {
+     int numPair = numULS-numLS;
+     fpair->Fill(ptEle,numPair);
+    }
+   
   fFlagPhotonicElec = flagPhotonicElec;
   fFlagConvinatElec = flagConvinatElec;
   

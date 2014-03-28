@@ -56,7 +56,8 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   void SetDoFullCharged(Bool_t b)           { fDoFullCharged    = b;}
   void SetDoFullFull(Bool_t b)              { fDoFullFull       = b;}
 
-  void SetPtMinTriggerJet(Double_t ptmin)  {fPtMinTriggerJet = ptmin;}
+  void SetPtMinTriggerJet(Double_t ptmin)   { fPtMinTriggerJet  = ptmin;}
+  void SetDoPtBias(Bool_t b)                { fDoPtBias         = b;}
 
   void SetMinSharedFraction(Double_t f)     { fMinFractionShared = f;}
 
@@ -105,6 +106,7 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   Bool_t            fDoFullFull;                //  do full-full ana
 
   Double_t          fPtMinTriggerJet;           //  minimum pT of trigger jet
+  Bool_t            fDoPtBias;                  //  pT trigger jet > pT assoc jet
   Double_t          fMinFractionShared;         //  minimum fraction charged pT
 
   Bool_t            fMatchingDone;              // flag to indicate if matching is done or not
@@ -118,6 +120,6 @@ class AliAnalysisTaskEmcalDiJetBase : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskEmcalDiJetBase(const AliAnalysisTaskEmcalDiJetBase&);            // not implemented
   AliAnalysisTaskEmcalDiJetBase &operator=(const AliAnalysisTaskEmcalDiJetBase&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcalDiJetBase, 5) // dijet base task
+  ClassDef(AliAnalysisTaskEmcalDiJetBase, 6) // dijet base task
 };
 #endif

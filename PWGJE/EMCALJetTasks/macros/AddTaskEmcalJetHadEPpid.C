@@ -2,7 +2,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
    const char *nTracks        = "PicoTracks",
-   const char *nRho	      = "rhoCh",
+   const char *nClusters      = "CaloClustersCorr",
+   const char *nRho	          = "rhoCh",
    const char *lrho           = "lrho",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
@@ -12,7 +13,18 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t EvtMix         = 0, 
    const Double_t TrkBias     = 5,
    const Double_t ClusBias    = 5,
-   const Double_t TrkEta      = 0.9                                               
+   const Double_t TrkEta      = 0.9,                                               
+   Bool_t	PID               = 0, //kFALSE,
+   Bool_t   PIDtrackBIAS      = 0, //kFALSE,
+   Bool_t   varbinTHnSparse   = 0, //kFALSE,
+   Bool_t   isAOD             = 0, //kFALSE,
+   Bool_t   QAhistos		  = 0, //kFALSE,
+   Bool_t   BIAShistos        = 0, //kFALSE,
+   Bool_t   extraCORRhistos   = 0, //kFALSE,
+   const Double_t JetPtcut    = 15.0,
+   const Double_t JetRadius   = 0.4,
+   const Int_t MixingTracks   = 50000,
+   TString cutType			  = "EMCAL"
 )
 {  
   
@@ -50,7 +62,36 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetTrkBias(TrkBias);
   correlationtask->SetClusBias(ClusBias);
   correlationtask->SetTrkEta(TrkEta); 
+  // Added on/after March20, 2014
+  correlationtask->SetdoPID(PID);
+  correlationtask->SetdoPIDtrackBIAS(PIDtrackBIAS);
+  correlationtask->SetvarbinTHnSparse(varbinTHnSparse);
+  correlationtask->SetDataType(isAOD);
+  correlationtask->SetmakeQAhistos(QAhistos);
+  correlationtask->SetmakeBIAShistos(BIAShistos);  
+  correlationtask->SetmakeextraCORRhistos(extraCORRhistos);
+  correlationtask->SetJetPtcut(JetPtcut);
+  correlationtask->SetJetRad(JetRadius);
+  correlationtask->SetMixingTracks(MixingTracks);
+  correlationtask->SetcutType(cutType);
+
+  // =================== set up containers ================================================
+  // Cluster Container
+  AliClusterContainer *clusCont = correlationtask->AddClusterContainer(nClusters);
+
+  // Particle Container
+  AliParticleContainer *partCont = correlationtask->AddParticleContainer(nTracks);
   
+  // Jet Containers
+  AliJetContainer *jetCont0 = correlationtask->AddJetContainer(nJets, cutType, JetRadius);
+  AliJetContainer *jetCont1 = correlationtask->AddJetContainer(nJets, cutType, JetRadius);
+  correlationtask->SetContainerAllJets(0);
+  correlationtask->SetContainerPIDJets(1);
+
+  // jet container cuts..
+  correlationtask->SetJetPtCut(JetPtcut, 1);
+  correlationtask->SetPercAreaCut(0.6, 1); 
+
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers
   //-------------------------------------------------------

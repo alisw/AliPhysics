@@ -32,8 +32,13 @@ class TString;
 
 class TObjArray;
 
+// pt fpr V0
 const int    kN1 = 8; 
 const float  kPtBinV0[kN1+1] = {2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0};
+
+// pt for charged particles
+const int    kNc = 3; 
+const float  kPtBinCharged[kN1+1] = {2.0,2.25,3.0,4.0};
 
 // pt bins for Xi minus
 const int    kN2 = 12; 
@@ -41,6 +46,7 @@ const float  kPtBinV02[kN2+1] = {0.0,2.0,2.25,2.5,2.75,3.0,3.5,4.0,5.0,7.0,10.0,
 
 const int    kN3 = 3; 
 const float  kPtBinV03[kN3+1] = {0.0,2.0,7.0,1000.};
+// -------
 
 const int    kNVtxZ = 10; 
 const double kBinVtxZ[kNVtxZ+1] = {-10.,-8.,-6.,-4.,-2.,0.,2.,4.,6.,8.,10.};
@@ -167,6 +173,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TList** fMEList;                       //![] List of Mixed Events
 
   TObjArray* fTriggerParticles;          // Trigger particle array
+  TObjArray* fChargedAssocParticles;      // Trigger particle array
   TObjArray* fTriggerPartMC;             // MC Trigger particle array
   TObjArray* fAssocParticles;            // Associated particle array
   TObjArray* fAssocPartMC;               // MC Associated particle array
@@ -187,6 +194,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fTriggerMCResEta;              //! Trigger particle MC: eta resolution
   TH3F*   fTriggerMCResPhi;              //! Trigger particle MC: phi resolution
   TH3F*   fTriggerPtCent;                //! Trigger particle: pt vs centrality vs Z vertex
+  TH3F*   fTriggerPtCentCh;              //! Trigger particle: pt vs centrality vs Z vertex for hh correlations
   TH2F*   fNTrigPerEvt;                  //! Trigger particle: Number of particle triggers per event
   TH1F*   fTriggerWiSPDHit;              //! Trigger particle: Has Hits in the SPD?
   TH2F*   fTriggerEtaPhi;                //! Trigger particle: eta vs phi
@@ -318,11 +326,12 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fHistArmPodBckg;               //! Armenteros-Podolanski plot outside 3 sigma of the signal      
 
 
+
   //           K0s            //
   TH3F*   fK0sMass;                      //! Mass for K0s
   TH3F*   fK0sMassEmbeded;               //! Mass for K0s embeded
   TH3F*   fK0sMassPtEta;                 //! K0s: mass vs pt vs eta
-  TH3F*   fK0sMassPtRap;                 //! K0s: mass vs pt vs rap
+  TH3F*   fK0sMassPtRap[kNCent];         //! K0s: mass vs pt vs rap vs centrality
   TH3F*   fK0sMassPtPhi;                 //! K0s: mass vs pt vs phi
 
   TH2F*   fK0sDaughtersPt;               //! K0s: pt of daughters
@@ -348,7 +357,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fLambdaMass2;                  //! Mass for Lambda (rejecting crosscontamination)
   TH3F*   fLambdaMass2Embeded;           //! Mass for Lambda embded (rejecting crosscontamination)
   TH3F*   fLambdaMassPtEta;              //! Lambda: mass vs pt vs eta
-  TH3F*   fLambdaMassPtRap;              //! Lambda: mass vs pt vs rap
+  TH3F*   fLambdaMassPtRap[kNCent];      //! Lambda: mass vs pt vs rap
   TH3F*   fLambdaMassPtPhi;              //! Lambda: mass vs pt vs phi 
 
   TH2F*   fLambdaDaughtersPt;            //! Lambda: pt of daughters
@@ -375,7 +384,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fAntiLambdaMass2Embeded;             //! Mass for AntiLambda embded (rejecting crosscontamination)
 
   TH3F*   fAntiLambdaMassPtEta;                //! AntiLambda: pt vs eta
-  TH3F*   fAntiLambdaMassPtRap;                //! AntiLambda: pt vs rap
+  TH3F*   fAntiLambdaMassPtRap[kNCent];        //! AntiLambda: pt vs rap
   TH3F*   fAntiLambdaMassPtPhi;                //! Lambda: mass vs phi 
 
   TH2F*   fAntiLambdaDaughtersPt;              //! AntiLambda: pt of daughters
@@ -401,8 +410,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH3F*   fXiMinusdPhidEtaMC3[kNCent*kN3];           //! Xi Minus MC: Delta phi,Delta eta vs Z vertex position
 
   //        Gamma converison      //
-  TH3F*  fGammaConversiondPhidEta[kNCent];     //! Gamma conversion: Delta phi,Delta eta vs Z vertex position
-  
+  TH3F*  fGammaConversiondPhidEta[kNCent];        //! Gamma conversion: Delta phi,Delta eta vs Z vertex position
+
+  //        Charged particles     //
+  TH2F*  fChargeddPhidEta[kNVtxZ*kNCent*kNc];     //! Charged particles: Delta phi,Delta eta 
     
   ///  ==== Quality Assurance plots === ///
 
@@ -509,6 +520,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
 
 
   ///  ==== Mixed Events plots === ///
+  TH2F*  fChargeddPhidEtaME[kNVtxZ*kNCent*kNc+1];             //! K0s Mixed Events
   TH2F*  fK0sdPhidEtaME[kNVtxZ*kNCent*kN1+1];             //! K0s Mixed Events
   TH2F*  fLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];          //! Lambda Mixed Events
   TH2F*  fAntiLambdadPhidEtaME[kNVtxZ*kNCent*kN1+1];      //! AntiLambda Mixed Events
