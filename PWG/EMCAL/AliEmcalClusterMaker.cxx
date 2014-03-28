@@ -28,7 +28,8 @@ AliEmcalClusterMaker::AliEmcalClusterMaker() :
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
   fEtaPhiDistAfter(0),
-  fEnergyTimeHistAfter(0)
+  fEnergyTimeHistAfter(0),
+  fEnergyExoticClusters(0)
 {
   // Default constructor.
 }
@@ -45,7 +46,8 @@ AliEmcalClusterMaker::AliEmcalClusterMaker(const char *name, Bool_t histo) :
   fEnergyTimeHistBefore(0),
   fEnergyDistAfter(0),
   fEtaPhiDistAfter(0),
-  fEnergyTimeHistAfter(0)
+  fEnergyTimeHistAfter(0),
+  fEnergyExoticClusters(0)
 {
   // Standard constructor.
   
@@ -86,6 +88,8 @@ void AliEmcalClusterMaker::UserCreateOutputObjects()
   fOutput->Add(fEtaPhiDistAfter);
   fEnergyTimeHistAfter = new TH2F("hEnergyTimeDistAfter","hEnergyTimeDistAfter;E_{clus} (GeV);time",60,0,30,500,0,1e-6);
   fOutput->Add(fEnergyTimeHistAfter);
+  fEnergyExoticClusters = new TH1F("fEnergyExoticClusters","fEnergyExoticClusters;E_{ex clus} (GeV)",60,0,30);
+  fOutput->Add(fEnergyExoticClusters);
   PostData(1, fOutput);
 }
 
@@ -156,8 +160,14 @@ Bool_t AliEmcalClusterMaker::Run()
     }
     if (fRecoUtils) {
       if (fRecoUtils->IsRejectExoticCluster()) {
-	if (fRecoUtils->IsExoticCluster(oc,fCaloCells))
-	continue;
+	Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
+	fRecoUtils->SwitchOnRejectExoticCell();                  //switch on temporarily
+	Bool_t exResult = fRecoUtils->IsExoticCluster(oc,fCaloCells);
+	if (!exRemoval) fRecoUtils->SwitchOffRejectExoticCell(); //switch back off
+	if(exResult) {
+	  fEnergyExoticClusters->Fill(oc->E());
+	  continue;
+	}
       }
       if (fRecoUtils->GetNonLinearityFunction()!=AliEMCALRecoUtils::kNoCorrection) {
 	Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(oc);
