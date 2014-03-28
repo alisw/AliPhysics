@@ -144,6 +144,7 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
     AliError(Form("CycleID %d is outside of allowed +-%d range",roCycle,kMaxROCycleAccept));
     return;
   }
+  //  AliInfo(Form("Col:%4d Row:%4d Trk:%4d Hit:%4d Sg:%.4f ROC: %d",col,row,trk,ht,signal,roCycle));
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);  
   if (!oldItem) {    
