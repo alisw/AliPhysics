@@ -49,6 +49,7 @@ class AliAnalysisUtils;
 class TFormula;
 class TMap;
 class AliGenEventHeader;
+class AliVEvent;
 
 
 class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
@@ -99,7 +100,10 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
     void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
     void   SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
-    
+   
+    // track cuts
+    void   SetTrackletDphiCut( Double_t val )    { fTrackletDphiCut = val; }
+
     void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
     void   SetUseChargeHadrons( Bool_t val ) { fUseChargeHadrons = val; }
     void   SetSelectParticleSpecies( Int_t trigger, Int_t associated ) { fParticleSpeciesTrigger = trigger; fParticleSpeciesAssociated = associated; }
@@ -122,6 +126,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     void   SetCustomBinning(const char* binningStr) { fCustomBinning = binningStr; }
     void   SetPtOrder(Bool_t flag) { fPtOrder = flag; }
     void   SetTriggersFromDetector(Int_t flag) { fTriggersFromDetector = flag; }
+    void   SetAssociatedFromDetector(Int_t flag) { fAssociatedFromDetector = flag; }
     void   SetMCUseUncheckedCentrality(Bool_t flag) { fMCUseUncheckedCentrality = flag; }
     
     AliHelperPID* GetHelperPID() { return fHelperPID; }
@@ -148,6 +153,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     AliGenEventHeader* GetFirstHeader();
     Bool_t AcceptEventCentralityWeight(Double_t centrality);
     void ShiftTracks(TObjArray* tracks, Double_t angle);
+    TObjArray* GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet);
 
     // General configuration
     Int_t               fDebug;           //  Debug flag
@@ -212,6 +218,9 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t               fParticleSpeciesAssociated; // Select which particle to use for the associated [ -1 (all, default) 0 (pions) 1 (kaons) 2 (protons) 3 (others) particles ]
     Bool_t             fCheckMotherPDG;     // Check the PDG code of mother for secondaries 
 
+    // Tracklets cuts
+    Double_t      	fTrackletDphiCut;    //maximum Dphi cut on tracklets
+    
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Int_t fTriggerSelectCharge;    // select charge of trigger particle: 1: positive; -1 negative
     Int_t fAssociatedSelectCharge; // select charge of associated particle: 1: positive; -1 negative
@@ -230,12 +239,13 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
-    Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C
+    Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
+    Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
     Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
     
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef(AliAnalysisTaskPhiCorrelations, 43); // Analysis task for delta phi correlations
+    ClassDef(AliAnalysisTaskPhiCorrelations, 45); // Analysis task for delta phi correlations
   };
 
 class AliDPhiBasicParticle : public AliVParticle
