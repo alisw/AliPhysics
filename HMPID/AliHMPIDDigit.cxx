@@ -17,7 +17,6 @@
 #include <TClonesArray.h>     //WriteRaw() 
 #include <TBox.h>             //Draw() 
 #include <TPolyLine.h>        //Draw() 
-#include <AliRawDataHeader.h> //WriteRaw()
 #include "AliHMPIDParam.h"
 #include <AliDAQ.h>           //WriteRaw()
 #include "Riostream.h"        //WriteRaw()

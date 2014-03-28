@@ -51,7 +51,7 @@
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliSimulation.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliDigitizationInput.h"
 
 #include "AliDAQ.h"
@@ -394,7 +394,7 @@ void AliModule::Digits2Raw()
     fstream rawFile(fileName, ios::out);
     if (!rawFile) break;
 
-    AliRawDataHeader header;
+    AliRawDataHeaderV3 header;
     header.fSize = ddlSize + sizeof(header);
     rawFile.write((char*) &header, sizeof(header));
 

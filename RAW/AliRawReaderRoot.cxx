@@ -191,10 +191,19 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
     fSubEvent = fEvent->GetSubEvent(fSubEventIndex-1);
     fEquipment = fSubEvent->GetEquipment(fEquipmentIndex);
     fRawData = fEquipment->GetRawData();
-      fCount = 0;
+    fCount = 0;
     fHeader = (AliRawDataHeader*) ((UChar_t*) fRawData->GetBuffer() + 
       ((UChar_t*) rawReader.fHeader - 
        (UChar_t*) rawReader.fRawData->GetBuffer()));
+    // Now check the version of the header
+    UChar_t version = 2;
+    if (fHeader) version = fHeader->GetVersion();
+    if (version==3) {
+      fHeader = NULL;
+      fHeaderV3 = (AliRawDataHeaderV3*) ((UChar_t*) fRawData->GetBuffer() + 
+      ((UChar_t*) rawReader.fHeaderV3 - 
+       (UChar_t*) rawReader.fRawData->GetBuffer()));
+    }
     fPosition = (UChar_t*) fRawData->GetBuffer() + 
       (rawReader.fPosition - (UChar_t*) rawReader.fRawData->GetBuffer());
     fEnd = ((UChar_t*) fRawData->GetBuffer()) + fRawData->GetSize();
@@ -445,22 +454,56 @@ Bool_t AliRawReaderRoot::ReadHeader()
 
       // "read" the data header
       fHeader = (AliRawDataHeader*) fPosition;
-#ifndef R__BYTESWAP
-      SwapData((void*) fHeader, (void*) fHeaderSwapped, sizeof(AliRawDataHeader));
-      fHeader=fHeaderSwapped;
+      // Now check the version of the header
+      UChar_t version = 2;
+      if (fHeader) version=fHeader->GetVersion();
+      if (version==2) {
+ #ifndef R__BYTESWAP
+	SwapData((void*) fHeader, (void*) fHeaderSwapped, sizeof(AliRawDataHeader));
+	fHeader=fHeaderSwapped;
 #endif
-      if ((fPosition + fHeader->fSize) != fEnd) {
-	if (fHeader->fSize != 0xFFFFFFFF)
-	  Warning("ReadHeader",
-		  "Equipment %d : raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
-		  fEquipment->GetEquipmentHeader()->GetId(),fHeader->fSize, fEnd - fPosition);
-	fHeader->fSize = fEnd - fPosition;
+	if ((fPosition + fHeader->fSize) != fEnd) {
+	  if (fHeader->fSize != 0xFFFFFFFF)
+	    Warning("ReadHeader",
+		    "Equipment %d : raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
+		    fEquipment->GetEquipmentHeader()->GetId(),fHeader->fSize, fEnd - fPosition);
+	  fHeader->fSize = fEnd - fPosition;
+	}
+	fPosition += sizeof(AliRawDataHeader);
+	fHeaderV3 = 0;
+      } else if (version==3) {
+	fHeaderV3 = (AliRawDataHeaderV3*) fPosition;
+#ifndef R__BYTESWAP
+	SwapData((void*) fHeaderV3, (void*) fHeaderSwapped, sizeof(AliRawDataHeaderV3));
+	fHeaderV3=fHeaderSwappedV3;
+#endif
+	if ((fPosition + fHeaderV3->fSize) != fEnd) {
+	  if (fHeaderV3->fSize != 0xFFFFFFFF)
+	    Warning("ReadHeader",
+		    "Equipment %d : raw data size found in the header is wrong (%d != %ld)! Using the equipment size instead !",
+		    fEquipment->GetEquipmentHeader()->GetId(),fHeader->fSize, fEnd - fPosition);
+	  fHeaderV3->fSize = fEnd - fPosition;
+	}
+	fPosition += sizeof(AliRawDataHeaderV3);
+	fHeader = 0;
       }
-      fPosition += sizeof(AliRawDataHeader);
     }
 
     if (fHeader && (fHeader->fSize != 0xFFFFFFFF)) {
       fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+
+      // check consistency of data size in the header and in the sub event
+      if (fPosition + fCount > fEnd) {  
+	Error("ReadHeader", "size in data header exceeds event size!");
+	Warning("ReadHeader", "skipping %ld bytes", fEnd - fPosition);
+	fEquipment->GetEquipmentHeader()->Dump();
+	fCount = 0;
+	fPosition = fEnd;
+	fErrorCode = kErrSize;
+	continue;
+      }
+    } else if (fHeaderV3 && (fHeaderV3->fSize != 0xFFFFFFFF)) {
+      fCount = fHeaderV3->fSize - sizeof(AliRawDataHeaderV3);
 
       // check consistency of data size in the header and in the sub event
       if (fPosition + fCount > fEnd) {  
@@ -526,6 +569,7 @@ Bool_t AliRawReaderRoot::Reset()
   fEquipment = NULL;
   fRawData = NULL;
   fHeader = NULL;
+  fHeaderV3 = NULL;
 
   fCount = 0;
   fPosition = fEnd = NULL;

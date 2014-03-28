@@ -1,6 +1,8 @@
-void runReconstruction(Int_t seed, 
-		       const Char_t *recOptions) {
+void runReconstruction(const Char_t *recOptions) {
   
+  TDatime dt;
+  UInt_t seed = dt.Get();
+
   gRandom->SetSeed(seed);
 
   AliReconstruction *reco = new AliReconstruction("galice.root");

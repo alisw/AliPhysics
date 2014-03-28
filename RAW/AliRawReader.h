@@ -17,6 +17,7 @@
 
 #include "AliRawDataErrorLog.h"
 #include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 
 class THashList;
 class TChain;
@@ -94,29 +95,42 @@ class AliRawReader: public TObject {
 
     Int_t            GetDataSize() const 
       {if (fHeader) {
-	if (fHeader->fSize != 0xFFFFFFFF) return fHeader->fSize - sizeof(AliRawDataHeader); 
-	else return GetEquipmentSize() - GetEquipmentHeaderSize() - sizeof(AliRawDataHeader);
-      } else return GetEquipmentSize() - GetEquipmentHeaderSize();};
+	  if (fHeader->fSize != 0xFFFFFFFF) return fHeader->fSize - sizeof(AliRawDataHeader); 
+	  else return GetEquipmentSize() - GetEquipmentHeaderSize() - sizeof(AliRawDataHeader);
+	} else if(fHeaderV3){
+	  if (fHeaderV3->fSize != 0xFFFFFFFF) return fHeaderV3->fSize - sizeof(AliRawDataHeaderV3); 
+	  else return GetEquipmentSize() - GetEquipmentHeaderSize() - sizeof(AliRawDataHeaderV3);
+	}
+	else return GetEquipmentSize() - GetEquipmentHeaderSize();};
 
     Int_t            GetVersion() const 
-      {if (fHeader) return fHeader->GetVersion(); else return -1;};
+      {if (fHeader) return fHeader->GetVersion();
+	else if (fHeaderV3) return fHeaderV3->GetVersion();
+	else return -1;};
     Bool_t           IsValid() const 
-      {if (fHeader) return fHeader->TestAttribute(0); 
-      else return kFALSE;};
+      {if (fHeader) return fHeader->TestAttribute(0);
+	else if (fHeaderV3) return fHeaderV3->TestAttribute(0);
+	else return kFALSE;};
     Bool_t           IsCompressed() const 
       {if (fHeader) return fHeader->TestAttribute(1); 
+	else if (fHeaderV3) return fHeaderV3->TestAttribute(1);
       else return kFALSE;};
     Bool_t           TestBlockAttribute(Int_t index) const
-      {if (fHeader) return fHeader->TestAttribute(index); 
+      {if (fHeader) return fHeader->TestAttribute(index);
+	else if (fHeaderV3) return fHeaderV3->TestAttribute(index);
       else return kFALSE;};
     UChar_t          GetBlockAttributes() const 
       {if (fHeader) return fHeader->GetAttributes(); 
+	else if (fHeaderV3) return fHeaderV3->GetAttributes();
       else return 0;};
     UInt_t           GetStatusBits() const
       {if (fHeader) return fHeader->GetStatus(); 
+	else if (fHeaderV3) return fHeaderV3->GetStatus();
       else return 0;};
     const AliRawDataHeader* GetDataHeader() const
       {return fHeader;}
+    const AliRawDataHeaderV3* GetDataHeaderV3() const
+      {return fHeaderV3;}
 
     virtual Bool_t   ReadHeader() = 0;
     virtual Bool_t   ReadNextData(UChar_t*& data) = 0;
@@ -189,6 +203,7 @@ class AliRawReader: public TObject {
     Bool_t           fRequireHeader;        // if false, data without header is accepted
 
     AliRawDataHeader* fHeader;              // current data header
+    AliRawDataHeaderV3* fHeaderV3;              // current data header
     Int_t            fCount;                // counter of bytes to be read for current DDL
 
     Int_t            fSelectEquipmentType;  // type of selected equipment (<0 = no selection)
@@ -205,6 +220,7 @@ class AliRawReader: public TObject {
     TClonesArray     fErrorLogs;            // raw data decoding errors
 
     AliRawDataHeader* fHeaderSwapped;       // temporary buffer for swapping header on PowerPC
+    AliRawDataHeaderV3* fHeaderSwappedV3;       // temporary buffer for swapping header on PowerPC
 
     UInt_t SwapWord(UInt_t x) const;
     UShort_t SwapShort(UShort_t x) const;

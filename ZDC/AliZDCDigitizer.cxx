@@ -64,7 +64,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fBeamEnergy(0.),
   fBeamType(""),
   fIspASystem(kFALSE),
-  fIsRELDISgen(kFALSE)
+  fIsRELDISgen(kFALSE),
+  fSpectatorData(0)
 {
   // Default constructor    
   for(Int_t i=0; i<2; i++) fADCRes[i]=0.;
@@ -81,7 +82,8 @@ AliZDCDigitizer::AliZDCDigitizer(AliDigitizationInput* digInput):
   fBeamEnergy(0.),
   fBeamType(""),
   fIspASystem(kFALSE),
-  fIsRELDISgen(kFALSE)
+  fIsRELDISgen(kFALSE),
+  fSpectatorData(NULL)
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -95,7 +97,10 @@ AliZDCDigitizer::AliZDCDigitizer(AliDigitizationInput* digInput):
 AliZDCDigitizer::~AliZDCDigitizer()
 {
 // Destructor
-// Not implemented
+   if(fSpectatorData!=NULL){
+      fSpectatorData->Close();
+      delete fSpectatorData;
+   } 
 }
 
 
@@ -110,7 +115,8 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fBeamEnergy(digitizer.fBeamEnergy),
   fBeamType(digitizer.fBeamType),
   fIspASystem(digitizer.fIspASystem),
-  fIsRELDISgen(digitizer.fIsRELDISgen)
+  fIsRELDISgen(digitizer.fIsRELDISgen),
+  fSpectatorData(digitizer.fSpectatorData)
 {
   // Copy constructor
 
@@ -178,7 +184,7 @@ Bool_t AliZDCDigitizer::Init()
      AliInfo(" AliZDCDigitizer -> Manually setting beam type to A-A\n");
   }    
   printf("\n\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
-  if(fSpectators2Track) printf("\t  AliZDCDigitizer ->  spectator signal added at digit level\n");
+  if(fSpectators2Track) printf("\n\t  AliZDCDigitizer ->  spectator signal added at digit level\n\n");
   
   if(fBeamEnergy>0.1){
     ReadPMTGains();
@@ -323,10 +329,10 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       specPProj = hijingHeader->ProjSpectatorsp();
       specNTarg = hijingHeader->TargSpectatorsn();
       specPTarg = hijingHeader->TargSpectatorsp();
-      printf("\t AliZDCDigitizer: b = %1.2f fm\n"
+      /*printf("\t AliZDCDigitizer: b = %1.2f fm\n"
       " \t    PROJECTILE:  #spectator n %d, #spectator p %d\n"
       " \t    TARGET:  #spectator n %d, #spectator p %d\n", 
-      impPar, specNProj, specPProj, specNTarg, specPTarg);
+      impPar, specNProj, specPProj, specNTarg, specPTarg);*/
     
       // Applying fragmentation algorithm and adding spectator signal
       Int_t freeSpecNProj=0, freeSpecPProj=0;
@@ -335,10 +341,10 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       if(specNTarg!=0 || specPTarg!=0) Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
       if(freeSpecNProj!=0) SpectatorSignal(1, freeSpecNProj, pm);
       if(freeSpecPProj!=0) SpectatorSignal(2, freeSpecPProj, pm);
-      printf("\t AliZDCDigitizer -> Adding spectator signal for PROJECTILE: %d free  n and %d free p\n",freeSpecNProj,freeSpecPProj);
+      //printf("\t AliZDCDigitizer -> Adding spectator signal for PROJECTILE: %d free  n and %d free p\n",freeSpecNProj,freeSpecPProj);
       if(freeSpecNTarg!=0) SpectatorSignal(3, freeSpecNTarg, pm);
       if(freeSpecPTarg!=0) SpectatorSignal(4, freeSpecPTarg, pm);
-      printf("\t AliZDCDigitizer -> Adding spectator signal for TARGET: %d free  n and %d free p\n",freeSpecNTarg,freeSpecPTarg);
+      //printf("\t AliZDCDigitizer -> Adding spectator signal for TARGET: %d free  n and %d free p\n",freeSpecNTarg,freeSpecPTarg);
     }
   }
 
@@ -462,8 +468,8 @@ void AliZDCDigitizer::ReadPMTGains()
        read = fscanf(fdata,"%f ",&data[ic]);
        if(read==0) AliDebug(3, " Error in reading PMT gains from external file ");
     }
-    beam[ir] = data[0];
-    det[ir] = data[1];
+    beam[ir] = (int) (data[0]);
+    det[ir]  = (int) (data[1]);
     gain[ir] = data[2];
     aEne[ir] = data[3];
     bEne[ir] = data[4];
@@ -635,13 +641,12 @@ void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
 }
 
 //_____________________________________________________________________________
-void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents, 
-                                      Float_t pm[5][5]) const
+void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents, Float_t pm[5][5]) 
 {
 // add signal of the spectators
   
-  TFile *specSignalFile = TFile::Open("$ALICE_ROOT/ZDC/SpectatorSignal.root");
-  if(!specSignalFile || !specSignalFile->IsOpen()) {
+  if(!fSpectatorData) fSpectatorData = TFile::Open("$ALICE_ROOT/ZDC/SpectatorSignal.root");
+  if(!fSpectatorData || !fSpectatorData->IsOpen()) {
     AliError((" Opening file $ALICE_ROOT/ZDC/SpectatorSignal.root failed\n"));
     return;
   }
@@ -652,43 +657,43 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   //
   if(TMath::Abs(sqrtS-5500) < 100.){
     AliInfo(" Extracting signal from SpectatorSignal/energy5500 ");
-    specSignalFile->cd("energy5500");
+    fSpectatorData->cd("energy5500");
     //
     if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
-      specSignalFile->GetObject("energy5500/ZNCSignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy5500/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
     } 
     else if(SpecType == 2) { // --- Signal for projectile spectator protons
-      specSignalFile->GetObject("energy5500/ZPCSignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy5500/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
     }
     else if(SpecType == 3) { // --- Signal for target spectator neutrons
-      specSignalFile->GetObject("energy5500/ZNASignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy5500/ZNASignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNASignal from SpectatorSignal.root file");
     }
     else if(SpecType == 4) { // --- Signal for target spectator protons
-      specSignalFile->GetObject("energy5500/ZPASignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy5500/ZPASignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
     }
   }
   else if(TMath::Abs(sqrtS-2760) < 100.){
     AliInfo(" Extracting signal from SpectatorSignal/energy2760 ");
-    specSignalFile->cd("energy2760");
+    fSpectatorData->cd("energy2760");
     //
     if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
-      specSignalFile->GetObject("energy2760/ZNCSignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy2760/ZNCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNCSignal from SpectatorSignal.root file");
     } 
     else if(SpecType == 2) { // --- Signal for projectile spectator protons
-      specSignalFile->GetObject("energy2760/ZPCSignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy2760/ZPCSignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPCSignal from SpectatorSignal.root file");
     }
     else if(SpecType == 3) { // --- Signal for target spectator neutrons
-      specSignalFile->GetObject("energy2760/ZNASignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy2760/ZNASignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZNASignal from SpectatorSignal.root file");
     }
     else if(SpecType == 4) { // --- Signal for target spectator protons
-      specSignalFile->GetObject("energy2760/ZPASignal;1",zdcSignal);
+      fSpectatorData->GetObject("energy2760/ZPASignal;1",zdcSignal);
       if(!zdcSignal) AliError("  PROBLEM!!! Can't retrieve ZPASignal from SpectatorSignal.root file");
     }
   }
@@ -743,8 +748,6 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
      }
   }while(iev<numEvents);
   
-  specSignalFile->Close();
-  delete specSignalFile;
 }
 
 

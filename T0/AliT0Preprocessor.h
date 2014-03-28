@@ -1,5 +1,5 @@
 #ifndef ALI_T0_PREPROCESSOR_H
-#define ALI_T0_PREPRECESSOR_H
+#define ALI_T0_PREPROCESSOR_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

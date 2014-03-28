@@ -117,9 +117,9 @@ protected:
   Float_t fTDIAperturePos;	  // TDI semi-aperture pos. y dir.
   Float_t fTDIApertureNeg;	  // TDI semi-aperture  neg. y dir. (abs. value)
   
-  Float_t fLumiLength;  // Luminometer length
+  Float_t fLumiLength;  	  // Luminometer length
   
-  ClassDef(AliZDCv4,1)  // Zero Degree Calorimeter version 1
+  ClassDef(AliZDCv4, 1)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif
