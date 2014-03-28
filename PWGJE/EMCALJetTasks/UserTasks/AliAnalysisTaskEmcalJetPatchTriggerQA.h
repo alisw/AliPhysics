@@ -46,6 +46,7 @@ class AliAnalysisTaskEmcalJetPatchTriggerQA : public AliAnalysisTaskEmcalJet {
   THnSparse             *fhnJetTriggerQA;      //! jet sparse
 
 
+  AliAnalysisTaskEmcalJetPatchTriggerQA(const AliAnalysisTaskEmcalJetPatchTriggerQA&);            // not implemented
   AliAnalysisTaskEmcalJetPatchTriggerQA& operator=(const AliAnalysisTaskEmcalJetPatchTriggerQA&); // not implemented
   
   ClassDef(AliAnalysisTaskEmcalJetPatchTriggerQA, 4); // ChristineQA

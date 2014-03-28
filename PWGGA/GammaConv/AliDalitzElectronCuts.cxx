@@ -1223,6 +1223,9 @@ Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
                 fesdTrackCuts->SetMinNClustersITS(5);
                 // 5 hits in total in the ITS. At least 1 hit in any layer of SPD
                 break;
+	case 7: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+                fesdTrackCuts->SetMinNClustersITS(4);
+		break;
 	default:
 		cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
 		return kFALSE;
@@ -1624,6 +1627,7 @@ Bool_t AliDalitzElectronCuts::SetPsiPairCut(Int_t psiCut) {
         fPsiPairCut = 0.52;
         fDeltaPhiCutMin = 0.0;
         fDeltaPhiCutMax = 0.12;
+	break;
   case 4:
         fDoPsiPairCut = kTRUE;
         fPsiPairCut = 0.30;

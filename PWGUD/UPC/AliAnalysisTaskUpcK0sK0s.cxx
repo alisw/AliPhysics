@@ -16,6 +16,7 @@
 // c++ headers
 #include <iostream>
 #include <string.h>
+#include <bitset>
 
 // root headers
 #include "TH1I.h"
@@ -196,8 +197,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   //input event
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
-  //cout<<"File: "<<(aod->GetHeader()->GetESDFileName()).Data()<<" Event: "<<aod->GetHeader()->GetEventNumberESDFile()<<endl;
-
+  
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
@@ -205,7 +205,6 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   
   fRunNum = aod ->GetRunNumber();
   fHistTriggersPerRun->Fill(fRunNum);
-
 
   //primary vertex
   AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
@@ -247,6 +246,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
 
     if ( pTrack->Charge() == nTrack->Charge())continue;
 
+      if(!(pTrack->TestFilterBit(1<<0))) continue;
+      if(!(nTrack->TestFilterBit(1<<0))) continue;
       if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
       if(!(pTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
@@ -265,6 +266,7 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
       V0Index[nGoodV0s] = iV0;
       V0TrackID[2*nGoodV0s] = pTrack->GetID();
       V0TrackID[2*nGoodV0s+1] = nTrack->GetID();
+
       nGoodV0s++; 
       if(nGoodV0s > 2) break;
   }//V0s loop
@@ -290,9 +292,10 @@ void AliAnalysisTaskUpcK0sK0s::RunAODhist()
   }//Track loop
 
   if(nGoodV0s == 2 && nGoodTracks == 4){
-  	//SortArray(TrackID);
-  	//SortArray(V0TrackID);
-	//for(Int_t i=0; i<4; i++) if (TrackID[i] != V0TrackID[i]) return;
+  	SortArray(TrackID);
+  	SortArray(V0TrackID);
+	for(Int_t i=0; i<4; i++) if (TrackID[i] != V0TrackID[i]) return;
+	
 	AliAODv0 *v00 = aod->GetV0(V0Index[0]);	
 	AliAODv0 *v01 = aod->GetV0(V0Index[1]);				
 	fHistK0sMass->Fill(v00->MassK0Short(),v01->MassK0Short());
@@ -314,11 +317,21 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
   fDataFilnam = aod->GetHeader()->GetESDFileName();
   fEvtNum = aod->GetHeader()->GetEventNumberESDFile();
   fRunNum = aod->GetRunNumber();
+  
 
+  //Trigger
   //Trigger
   TString trigger = aod->GetFiredTriggerClasses();
   
-  if( !trigger.Contains("CCUP") ) return;
+  fTrigger[0]  = trigger.Contains("CCUP4-B"); // Central UPC Pb-Pb 2011
+  fTrigger[1]  = trigger.Contains("CCUP2-B"); // Double gap
+  fTrigger[2]  = trigger.Contains("CCUP7-B"); // Central UPC p-Pb 2013
+  
+  Bool_t isTriggered = kFALSE;
+  for(Int_t i=0; i<ntrg; i++) {
+    if( fTrigger[i] ) isTriggered = kTRUE;
+  }
+  if(!isTriggered ) return;
 
   //trigger inputs
   fL0inputs = aod->GetHeader()->GetL0TriggerInputs();
@@ -365,6 +378,8 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
 
     if ( pTrack->Charge() == nTrack->Charge())continue;
 
+      if(!(pTrack->TestFilterBit(1<<0))) continue;
+      if(!(nTrack->TestFilterBit(1<<0))) continue;
       if(!(pTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
       if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit) ) continue;
@@ -429,11 +444,11 @@ void AliAnalysisTaskUpcK0sK0s::RunAODtree()
 }//RunAOD
 
 //_____________________________________________________________________________
-void AliAnalysisTaskUpcK0sK0s::SortArray(Double_t *dArray) {
+void AliAnalysisTaskUpcK0sK0s::SortArray(Int_t *dArray) {
     for (Int_t i = 3; i > 0; --i) {
         for (Int_t j = 0; j < i; ++j) {
             if (dArray[j] > dArray[j+1]) {
-                Double_t dTemp = dArray[j];
+                Int_t dTemp = dArray[j];
                 dArray[j] = dArray[j+1];
                 dArray[j+1] = dTemp;
             }
@@ -453,33 +468,4 @@ void AliAnalysisTaskUpcK0sK0s::Terminate(Option_t *)
 
   cout<<"Analysis complete."<<endl;
 }//Terminate
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
