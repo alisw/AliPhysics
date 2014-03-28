@@ -108,6 +108,10 @@ class AliAnalysisTaskSELc2V0bachelor : public AliAnalysisTaskSE
 
   Double_t GetAlpha(Double_t xyz[3],Double_t pxpypz[3]);
 
+  Int_t SearchForCommonMother(TClonesArray *mcArray,
+			      Int_t dgLabels[10],Int_t ndg,
+			      Int_t &ndgCk, Int_t *pdgDg, Int_t &labelMother) const;
+
   Bool_t fUseMCInfo;          // Use MC info
   TList *fOutput;             // User output slot 1 // general histos
   TList *fOutputAll;          // User output slot 4 // histos without pid and cut on V0
