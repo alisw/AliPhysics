@@ -35,11 +35,12 @@ class AliEmcalClusterMaker : public AliAnalysisTaskEmcal {
   TH1F                  *fEnergyDistAfter;           //!energy distribution after
   TH2F                  *fEtaPhiDistAfter;           //!eta/phi distribution after
   TH2F                  *fEnergyTimeHistAfter;       //!energy/time distribution after
+  TH1F                  *fEnergyExoticClusters;      //!energy of exotic clusters
 
  private:
   AliEmcalClusterMaker(const AliEmcalClusterMaker&);            // not implemented
   AliEmcalClusterMaker &operator=(const AliEmcalClusterMaker&); // not implemented
 
-  ClassDef(AliEmcalClusterMaker, 1) // Emcal cluster maker
+  ClassDef(AliEmcalClusterMaker, 2) // Emcal cluster maker
 };
 #endif
