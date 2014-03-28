@@ -142,6 +142,7 @@ fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fCheckMotherPDG(kTRUE),
+fTrackletDphiCut(999.),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
@@ -337,6 +338,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   }
   if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
     fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
+  if (fTriggersFromDetector == 3)
+    fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets;entries", 100, -0.1, 0.1));
   
   PostData(0,fListOfHistos);
   
@@ -1495,6 +1498,9 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	{
 	  Double_t eta=-TMath::Log(TMath::Tan(trklets->GetTheta(itrklets)/2));
 	  if(TMath::Abs(eta)>fTrackEtaCut)continue;
+	  if(TMath::Abs(trklets->GetDeltaPhi(itrklets))>fTrackletDphiCut)continue;
+	  TH1F* DphiTrklets = (TH1F*)fListOfHistos->FindObject("DphiTrklets");
+	  DphiTrklets->Fill(trklets->GetDeltaPhi(itrklets));
 	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,trklets->GetPhi(itrklets), 1.1, 0); // fit pT = 1.1 and charge = 0
 	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);
 	  
