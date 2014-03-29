@@ -86,6 +86,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fSharedClusterCut(0.4),
   fCrossedRowsCut(100),
   fFoundFractionCut(0.8),
+  fStoreTracks(0),
   fStoreTracklets(0),
   fStoreMuons(0)
 {
@@ -115,7 +116,7 @@ void AliAnalysisTaskCFTree::CreateOutputObjects(){
 
   fListOfHistos->Add(fEventStatistics);
 
-  fParticles = new TClonesArray("AliCFParticle",2000);
+  if (fStoreTracks)    fParticles = new TClonesArray("AliCFParticle",2000);
   if (fStoreTracklets) fTracklets = new TClonesArray("AliCFParticle",100);
   if (fStoreMuons)     fMuons     = new TClonesArray("AliCFParticle",100);
   // create file-resident tree
@@ -131,9 +132,9 @@ void AliAnalysisTaskCFTree::CreateOutputObjects(){
   fTree->Branch("orbit",&fOrbit);
   fTree->Branch("bc",&fBc);
   fTree->Branch("mask",&fSelectMask);
-  fTree->Branch("particles",&fParticles);
-  fTree->Branch("tracklets",&fTracklets);
-  fTree->Branch("muons",&fMuons);
+  if (fStoreTracks)    fTree->Branch("particles",&fParticles);
+  if (fStoreTracklets) fTree->Branch("tracklets",&fTracklets);
+  if (fStoreMuons)     fTree->Branch("muons",&fMuons);
   PostData(0,fListOfHistos);
   PostData(1,fTree);
 }
@@ -142,7 +143,9 @@ void AliAnalysisTaskCFTree::CreateOutputObjects(){
 
 //-----------------------------------------------------------------------------
 void AliAnalysisTaskCFTree::Exec(Option_t *){
-  fParticles->Clear();
+  if (fParticles) fParticles->Clear();
+  if (fTracklets) fTracklets->Clear();
+  if (fMuons)     fMuons->Clear();
   
   fEventStatistics->Fill("before cuts",1);
   
@@ -172,20 +175,21 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
     if (TMath::Abs(fZvtx) >= fZVertexCut || vertex->GetNContributors()<fnTracksVertex)  return;
     fEventStatistics->Fill("after vertex selection",1);
     
-    for (Int_t ipart=0;ipart<event->GetNumberOfTracks();ipart++){
-      AliVTrack* track = (AliVTrack*) event->GetTrack(ipart);
-      if (!track) continue;
-      UInt_t mask = GetFilterMap(track);
-      if (!(mask & fTrackFilterBit)) continue;
+    if (fParticles) {
+      for (Int_t ipart=0;ipart<event->GetNumberOfTracks();ipart++){
+        AliVTrack* track = (AliVTrack*) event->GetTrack(ipart);
+        if (!track) continue;
+        UInt_t mask = GetFilterMap(track);
+        if (!(mask & fTrackFilterBit)) continue;
 
-      if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
-      else if (track->InheritsFrom("AliESDtrack")) {
-        if (mask)                           AddTrack(track,mask,1);
-        if (mask & fHybridConstrainedMask)  AddTrack(track,mask,2);
-        if (mask & fTPConlyConstrainedMask) AddTrack(track,mask,3);
+        if (track->InheritsFrom("AliAODTrack")) AddTrack(track,mask,0);
+        else if (track->InheritsFrom("AliESDtrack")) {
+          if (mask)                           AddTrack(track,mask,1);
+          if (mask & fHybridConstrainedMask)  AddTrack(track,mask,2);
+          if (mask & fTPConlyConstrainedMask) AddTrack(track,mask,3);
+        }
       }
     }
-
     if (fIsAOD){
       AliAODEvent* aod = (AliAODEvent*) event;
       
@@ -264,51 +268,104 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
     if (vertex->GetNContributors()<fnTracksVertex)  fZvtx=-1000;
     fEventStatistics->Fill("after check for vertex contributors",1);
     
-    UInt_t* masks = new UInt_t[nProduced];
-    for (Int_t i=0;i<nProduced;i++) masks[i]=0;
-    
-    // Loop over reconstructed tracks to set masks
-    for (Int_t ipart=0;ipart<event->GetNumberOfTracks();ipart++){
-      AliVTrack* part = (AliVTrack*) event->GetTrack(ipart);
-      if (!part) continue;
-      Int_t label = TMath::Abs(part->GetLabel());
-      if (label>=nProduced) continue;
-      masks[label] |= GetFilterMap(part);
-    }
-    
-    // Loop over mc tracks to be stored
-    for (Int_t ipart=0;ipart<nProduced;ipart++){
-      AliVParticle* part = 0;
-      Bool_t isPrimary = 0;
-      if (mcTracks) { // AOD analysis
-        AliAODMCParticle* particle = (AliAODMCParticle*) mcTracks->At(ipart);
-        if (!particle) continue;
-        // skip injected signals
-        AliAODMCParticle* mother = particle;
-        while (!mother->IsPrimary()) mother = (AliAODMCParticle*) mcTracks->At(mother->GetMother());
-        if (mother->GetLabel()>=nPrimGen) continue;
-        part = particle;
-        // check for primary
-        isPrimary = particle->IsPhysicalPrimary();
-      } else { // ESD analysis
-        AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(ipart);
-        if (!particle) continue;
-        // skip injected signals
-        AliMCParticle* mother = particle;
-        while (mother->GetMother()>=0) mother = (AliMCParticle*) mcEvent->GetTrack(mother->GetMother());
-        if (mother->GetLabel()>=nPrimGen) continue;
-        part = particle;
-        // check for primary
-        isPrimary = mcEvent->IsPhysicalPrimary(ipart);
+    if (fParticles) {
+      UInt_t* masks = new UInt_t[nProduced];
+      for (Int_t i=0;i<nProduced;i++) masks[i]=0;
+      
+      // Loop over reconstructed tracks to set masks
+      for (Int_t ipart=0;ipart<event->GetNumberOfTracks();ipart++){
+        AliVTrack* part = (AliVTrack*) event->GetTrack(ipart);
+        if (!part) continue;
+        Int_t label = TMath::Abs(part->GetLabel());
+        if (label>=nProduced) continue;
+        masks[label] |= GetFilterMap(part);
       }
       
-      // store only primaries and all reconstructed (non-zero mask)
-      Int_t mask = masks[ipart];
-      if (isPrimary) mask |= (1 << 30);
-      if (!mask) continue; 
-      AddTrack(part,mask);
+      // Loop over mc tracks to be stored
+      for (Int_t ipart=0;ipart<nProduced;ipart++){
+        AliVParticle* part = 0;
+        Bool_t isPrimary = 0;
+        if (mcTracks) { // AOD analysis
+          AliAODMCParticle* particle = (AliAODMCParticle*) mcTracks->At(ipart);
+          if (!particle) continue;
+          // skip injected signals
+          AliAODMCParticle* mother = particle;
+          while (!mother->IsPrimary()) mother = (AliAODMCParticle*) mcTracks->At(mother->GetMother());
+          if (mother->GetLabel()>=nPrimGen) continue;
+          part = particle;
+          // check for primary
+          isPrimary = particle->IsPhysicalPrimary();
+        } else { // ESD analysis
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(ipart);
+          if (!particle) continue;
+          // skip injected signals
+          AliMCParticle* mother = particle;
+          while (mother->GetMother()>=0) mother = (AliMCParticle*) mcEvent->GetTrack(mother->GetMother());
+          if (mother->GetLabel()>=nPrimGen) continue;
+          part = particle;
+          // check for primary
+          isPrimary = mcEvent->IsPhysicalPrimary(ipart);
+        }
+        
+        // store only primaries and all reconstructed (non-zero mask)
+        Int_t mask = masks[ipart];
+        if (isPrimary) mask |= (1 << 30);
+        if (!mask) continue; 
+        AddTrack(part,mask);
+      }
+      delete[] masks;
     }
-    delete[] masks;
+    
+    if (fIsAOD){
+      AliAODEvent* aod = (AliAODEvent*) event;
+    
+      if (fStoreTracklets) {
+        AliAODTracklets* tracklets = aod->GetTracklets();
+        Int_t nTracklets = tracklets->GetNumberOfTracklets();
+        for (Int_t i=0;i<nTracklets;i++){
+          Float_t phi   = tracklets->GetPhi(i);
+          Float_t theta = tracklets->GetTheta(i);
+          Float_t dphi  = tracklets->GetDeltaPhi(i);
+          AliCFParticle* tracklet = new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliCFParticle(dphi,-TMath::Log(TMath::Tan(theta/2)),phi,0,0,4);
+          Int_t label1 = tracklets->GetLabel(i,0);
+          Int_t label2 = tracklets->GetLabel(i,1);
+          if (label1!=label2) continue;
+          AliAODMCParticle* particle = (AliAODMCParticle*) mcTracks->At(label1);
+          if (!particle) continue;
+          Short_t charge = particle->Charge();
+          Float_t ptMC   = particle->Pt();
+          Float_t etaMC  = particle->Eta();
+          Float_t phiMC  = particle->Phi();
+          Float_t pdg    = particle->PdgCode();
+          tracklet->SetCharge(charge);
+          tracklet->SetAt(ptMC,0);
+          tracklet->SetAt(etaMC,1);
+          tracklet->SetAt(phiMC,2);
+          tracklet->SetAt(pdg,3);
+        }
+      }
+
+      if (fStoreMuons){
+        for (Int_t iTrack = 0; iTrack < aod->GetNTracks(); iTrack++) {
+          AliAODTrack* track = aod->GetTrack(iTrack);
+          if (!track->IsMuonTrack()) continue;
+          Float_t pt     = track->Pt();
+          Float_t eta    = track->Eta();
+          Float_t phi    = track->Phi();
+          Short_t charge = track->Charge();
+          Float_t dca    = track->DCA();
+          Float_t chi2   = track->Chi2perNDF();
+          Float_t rabs   = track->GetRAtAbsorberEnd();
+          Int_t   mask   = track->GetMatchTrigger();
+          if (rabs < 17.6 || rabs > 89.5) continue;
+          if (eta < -4 || eta > -2.5) continue;
+          AliCFParticle* part = new ((*fMuons)[fMuons->GetEntriesFast()]) AliCFParticle(pt,eta,phi,charge,mask,3);
+          part->SetAt(dca,0);
+          part->SetAt(chi2,1);
+          part->SetAt(rabs,2);
+        }
+      }
+    }
   }
   fTree->Fill();
   PostData(0,fListOfHistos);
