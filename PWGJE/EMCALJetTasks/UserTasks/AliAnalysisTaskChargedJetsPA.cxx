@@ -374,7 +374,9 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedConePt(Double_t eta, D
       if(IsTrackInCone(tmpTrack, eta, phi, radius))
         tmpConePt = tmpConePt + tmpTrack->Pt();
   }
-  tmpConePt -= background*radius*radius*TMath::Pi(); // subtract background
+  Double_t realConeArea = (2.0*fTrackEtaWindow) * TMath::TwoPi() * MCGetOverlapCircleRectancle(eta, phi, radius, -fTrackEtaWindow, +fTrackEtaWindow, 0., TMath::TwoPi());
+  tmpConePt -= background * realConeArea; // subtract background
+
   return tmpConePt;
 }
 
