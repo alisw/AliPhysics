@@ -39,7 +39,7 @@ AliT0CalibAnalysisTask::AliT0CalibAnalysisTask(const char *name)
   fT0_amplitude(0x0), fT0_time(0x0),
   fcentralityV0M(0), fcentralityZDC(0), fcentralityTRK(0), fcentralityCLA(0),
   fESDtracks(0),
-    fMultiplicity(-99999),
+  fMultiplicity(-99999),
   fTriggerinput(0x0), fZDCbg(kFALSE),
   fTOFtracks(0), fT0tofTrack(0),
   fESDpid(new AliESDpid())
@@ -118,6 +118,9 @@ void AliT0CalibAnalysisTask::UserCreateOutputObjects()
   for ( Int_t i=0; i<24; i++) {
     fT0OutTree->Branch(Form("amp%i", i+1), &famp[i]);
     fT0OutTree->Branch(Form("time%i", i+1), &ftime[i]);
+    fT0OutTree->Branch(Form("ftimefriend%i", i+1), &ftimefriend[i]);
+    fT0OutTree->Branch(Form("fampfriend%i", i+1), &fampfriend[i]);
+    fT0OutTree->Branch(Form("fampledfriend%i", i+1), &fampledfriend[i]);
   } 
   for ( Int_t i=0; i<5; i++) {
     fT0OutTree->Branch(Form("fOrA%i", i+1), &fOrA[i]);
@@ -312,11 +315,29 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	AliCentrality *centrality = fESD->GetCentrality();
 	
 	//The centrality function you can use
+	if(centrality) {
+	  fcentralityV0M = centrality->GetCentralityPercentile("V0M"); // returns the centrality 
+	  fcentralityTRK = centrality->GetCentralityPercentile("TRK"); // returns the centrality 
+	  fcentralityZDC = centrality->GetCentralityPercentile("ZEMvsZDC"); // returns the 
+	}
+	AliESDfriend* esdFriend = static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+	if (esdFriend) {
+	  //	  cout<<" !!!!!esdFriend "<<endl;
+	  AliESDTZEROfriend * t0friend =esdFriend-> GetTZEROfriend();
+	  //	  cout<<" !!!!t0friend "<<t0friend<<endl;
+	  if(t0friend){
+	    Double_t  *ftimefr =  t0friend->GetT0timeCorr();
+	    Double_t  *fampqtcfr =  t0friend->GetT0ampQTC();
+	    Double_t  *fampledfr =  t0friend->GetT0ampLEDminCFD();
+	    for (Int_t iii=0; iii<24; iii++){
+	      ftimefriend[iii]=ftimefr[iii];
+	      fampfriend[iii]=fampqtcfr[iii];
+	      fampledfriend[iii]=fampledfr[iii];
+	      //	      cout<<" friend "<<ftimefriend[iii]<<endl;
+	    }
+	  } //t0friend
+	} //ESDfriend
 	
-	fcentralityV0M = centrality->GetCentralityPercentile("V0M"); // returns the centrality 
-	fcentralityTRK = centrality->GetCentralityPercentile("TRK"); // returns the centrality 
-	fcentralityZDC = centrality->GetCentralityPercentile("ZEMvsZDC"); // returns the 
-
       
       } //selected
     } //ESD
