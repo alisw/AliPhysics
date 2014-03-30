@@ -371,17 +371,17 @@ void AliEMCALDigitizer::Digitize(Int_t event)
               
 	  }//First entry is not NULL
 	  else {
-	    Info("Digitize", "NULL sdigit pointer");
+	    AliDebug(1, "NULL sdigit pointer");
 	    continue;
 	  }
 	}//There is at least one entry
 	else {
-	  Info("Digitize", "NULL sdigits array");
+	  AliDebug(1, "NULL sdigits array");
 	  continue;
 	}
       }// SDigits array exists
       else {
-	Info("Digitizer","Null sdigit pointer");
+	AliDebug(1,"Null sdigit pointer");
 	continue;
       }
     }// input loop
@@ -510,7 +510,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           
       }// Digit pointer exists
       else{
-	Info("Digitizer","Digit pointer is null");
+	AliDebug(1,"Digit pointer is null");
       }
     } // for(absID = 0; absID < nEMC; absID++)
       
