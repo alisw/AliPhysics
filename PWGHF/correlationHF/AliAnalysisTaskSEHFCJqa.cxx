@@ -279,25 +279,37 @@ void AliAnalysisTaskSEHFCJqa::UserExec(Option_t */*option*/){
   // heavy flavor candidates association to MC truth
   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
-  if (!aod) {
-    Printf("ERROR: aod not available");
-    return;
-  }
-  fhEventCounter->Fill(0);
+  if(aod){
+    fhEventCounter->Fill(0);
 
-  if(!fCuts->IsEventSelected(aod)){
-    PostData(1,fhEventCounter);
-    return;
+    if(!fCuts->IsEventSelected(aod)){
+      PostData(1,fhEventCounter);
+      return;
+    }
+    fhEventCounter->Fill(1);
   }
-  fhEventCounter->Fill(1);
 
-  TClonesArray *arrayJets;
+  TClonesArray *arrayJets=0x0;
   if(!aod && AODEvent() && IsStandardAOD()) {
     // In case there is an AOD handler writing a standard AOD, use the AOD 
     // event in memory rather than the input (ESD) event.    
     aod = dynamic_cast<AliAODEvent*> (AODEvent());
     // in this case the braches in the deltaAOD (AliAOD.VertexingHF.root)
     // have to taken from the AOD event hold by the AliAODExtension
+    if (!aod) {
+      Printf("ERROR: aod not available");
+      return;
+    }
+    else {
+      fhEventCounter->Fill(0);
+
+      if(!fCuts->IsEventSelected(aod)){
+	PostData(1,fhEventCounter);
+	return;
+      }
+      fhEventCounter->Fill(1);
+    }
+
     AliAODHandler* aodHandler = (AliAODHandler*) 
       ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
 
@@ -388,7 +400,7 @@ void AliAnalysisTaskSEHFCJqa::UserExec(Option_t */*option*/){
 
     AliAODTrack *aodtrack=aod->GetTrack(j);
     // CHECK FILTER MAPS
-    if(!FillTrackHistosAndSelectTrack(aodtrack,vESD,magfield))continue;
+    if(!FillTrackHistosAndSelectTrack(aodtrack,&vESD,magfield))continue;
     //    if(j%100==0)  
   
     Double_t p=aodtrack->P();
@@ -495,7 +507,7 @@ void AliAnalysisTaskSEHFCJqa::SetupPIDresponse(){
 }
 
 //_______________________________________________________________
-Bool_t AliAnalysisTaskSEHFCJqa::FillTrackHistosAndSelectTrack(AliAODTrack *aodtr, const AliESDVertex primary, const Double_t magfield){
+Bool_t AliAnalysisTaskSEHFCJqa::FillTrackHistosAndSelectTrack(AliAODTrack *aodtr, const AliESDVertex *primary, const Double_t magfield){
   
   Bool_t retval=kTRUE;
   // THnSparse for filter bits
@@ -540,7 +552,7 @@ Bool_t AliAnalysisTaskSEHFCJqa::FillTrackHistosAndSelectTrack(AliAODTrack *aodtr
   }
   point[13]=aodtr->GetTPCNcls();
   point[14]=aodtr->GetTPCNCrossedRows();
-  esdtrack.RelateToVertex(&primary,magfield,4.);// CHECK THIS : I put 4.. usually we set it to 3 
+  esdtrack.RelateToVertex(primary,magfield,4.);// CHECK THIS : I put 4.. usually we set it to 3 
   esdtrack.GetImpactParameters(iparxy,iparz);
   point[15]=iparxy;
 
@@ -626,8 +638,11 @@ AliAODMCParticle* AliAnalysisTaskSEHFCJqa::IsMCJet(TClonesArray *arrayMC,const A
   sort( idx2.begin(), idx2.end() );
   idx2.erase( unique( idx2.begin(), idx2.end() ), idx2.end() );
   if (idx2.size() == 0) return 0x0;
-  Double_t* arrayOfWeights = new Double_t [(int)idx2.size()];
-  for(Int_t ii=0;ii<(Int_t)idx2.size();ii++)arrayOfWeights[ii]=0;
+  Double_t* arrayOfWeights = new Double_t[(UInt_t)idx2.size()];
+  if(!arrayOfWeights){
+    return 0x0;
+  }
+  for(UInt_t ii=0;ii<(UInt_t)idx2.size();ii++)arrayOfWeights[ii]=0;
 
   for (unsigned int idxloop =0 ;idxloop<idx2.size();idxloop++){
     for (unsigned int z=0; z< idx.size() ; ++z){
@@ -647,11 +662,16 @@ AliAODMCParticle* AliAnalysisTaskSEHFCJqa::IsMCJet(TClonesArray *arrayMC,const A
   }
   
   AliAODMCParticle *parton = 0x0;
-  parton=(AliAODMCParticle*)arrayMC->At(idx.at(winner));
-  contribution = arrayOfWeights[winner]/jet->Pt();
-   
-  if(arrayOfWeights)    delete arrayOfWeights;
-
+  if(winner>0){
+    parton=(AliAODMCParticle*)arrayMC->At(idx.at(winner));
+    contribution = arrayOfWeights[winner]/jet->Pt();
+  }
+  else {
+  
+    if(arrayOfWeights)    delete [] arrayOfWeights;
+    return 0x0;
+  }
+  if(arrayOfWeights)    delete [] arrayOfWeights;
 
   return parton;
   
