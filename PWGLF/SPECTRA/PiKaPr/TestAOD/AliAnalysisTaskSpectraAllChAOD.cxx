@@ -202,7 +202,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	  if(!partMC->Charge()) continue;//Skip neutrals
 	  if(fCharge != 0 && partMC->Charge()*fCharge < 0.) continue;//if fCharge != 0 only select fCharge
 	  
-	  if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  //if(partMC->Eta() < fTrackCuts->GetEtaMin() || partMC->Eta() > fTrackCuts->GetEtaMax())continue;//ETA CUT ON GENERATED!!!!!!!!!!!!!!!!!!!!!!!!!!
 	  
 	  //pt     cent    IDgen        isph        y
  	  Double_t varSt[5];
