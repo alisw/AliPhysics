@@ -26,6 +26,7 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   if(trig==3) strTrigger = "kMBkCentralkSemiCentral";
   if(trig==4) strTrigger = "kEMCEJE";
   if(trig==5) strTrigger = "kINT7";
+  if(trig==6) strTrigger = "kMB";
 
   TString strTrigger2 = "";
   if(trig==1) strTrigger2 = "kCentral";
@@ -33,6 +34,7 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   if(trig==3) strTrigger2 = "kMBkCentralSemiCentral";
   if(trig==4) strTrigger2 = "kEMCEJE";
   if(trig==5) strTrigger2 = "kINT7";
+  if(trig==6) strTrigger2 = "kMB";
 
   Int_t globStTrackType = 0;
   Int_t globStCuts = 5;
@@ -40,7 +42,7 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   Int_t globCnoSPDCuts = 5;
 
   TFile * f1 = TFile::Open(strFileIn.Data());
-  f1->ls();
+
   //Load histograms
   TList *histsGlobSt = 0x0;
   histsGlobSt = (TList*)f1->Get(Form("PWG4_HighPtTrackQACent%dTrackType%dCuts%d%s/qa_histsQAtrackCent%dType%dcuts%d%s",cent,globStTrackType,globStCuts,strTrigger.Data(),cent,globStTrackType,globStCuts,strTrigger2.Data()));
@@ -58,6 +60,11 @@ void processJETrackQA(TString strFileIn   = "AnalysisResults.root",
   //histsGlobCnoSPD->Print();
   TH1F *fNEventSelGlobCnoSPD = histsGlobCnoSPD->FindObject("fNEventSel");
   float NEventsGlobCnoSPD = fNEventSelGlobCnoSPD->GetEntries();
+
+  if(NEventsGlobSt==0)
+    NEventsGlobSt=0.1;
+  if(NEventsGlobCnoSPD==0)
+    NEventsGlobCnoSPD=0.1;
 
   //---------------------------------------------------------------------------------------------------
   //                       phi distribution of hybrid tracks
