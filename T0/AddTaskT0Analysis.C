@@ -4,6 +4,9 @@ AliAnalysisTask  *AddTaskT0Analysis()
   //
   // add calibration task
   //
+  gSystem->Load("libANALYSIS");
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libT0calib"); 
 
   cout<<"@@@ AddTaskT0Analysis "<<endl;
   gSystem->Load("libANALYSIS");
