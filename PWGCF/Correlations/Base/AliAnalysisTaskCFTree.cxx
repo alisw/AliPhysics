@@ -86,6 +86,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
   fSharedClusterCut(0.4),
   fCrossedRowsCut(100),
   fFoundFractionCut(0.8),
+  fDphiCut(1.e9),
   fStoreTracks(0),
   fStoreTracklets(0),
   fStoreMuons(0)
@@ -200,6 +201,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
           Float_t phi   = tracklets->GetPhi(i);
           Float_t theta = tracklets->GetTheta(i);
           Float_t dphi  = tracklets->GetDeltaPhi(i);
+          if (TMath::Abs(dphi)>fDphiCut) continue;
           new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliCFParticle(dphi,-TMath::Log(TMath::Tan(theta/2)),phi,0,0);
         }
       }
@@ -326,6 +328,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
           Float_t phi   = tracklets->GetPhi(i);
           Float_t theta = tracklets->GetTheta(i);
           Float_t dphi  = tracklets->GetDeltaPhi(i);
+          if (TMath::Abs(dphi)>fDphiCut) continue;
           AliCFParticle* tracklet = new ((*fTracklets)[fTracklets->GetEntriesFast()]) AliCFParticle(dphi,-TMath::Log(TMath::Tan(theta/2)),phi,0,0,4);
           Int_t label1 = tracklets->GetLabel(i,0);
           Int_t label2 = tracklets->GetLabel(i,1);
