@@ -44,6 +44,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   void SetSharedClusterCut(Float_t val) { fSharedClusterCut = val;  }
   void SetCrossedRowsCut(Int_t val)     { fCrossedRowsCut = val; }
   void SetFoundFractionCut(Float_t val) { fFoundFractionCut = val;  }
+  void SetDphiCut(Float_t val)          { fDphiCut = val; }
   // Switchers for additional data to be stored
   void SetStoreTracks(Bool_t val=kTRUE)    { fStoreTracks    = val; }
   void SetStoreTracklets(Bool_t val=kTRUE) { fStoreTracklets = val; }
@@ -92,11 +93,12 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   Float_t fSharedClusterCut;  // cut on shared clusters
   Int_t   fCrossedRowsCut;    // cut on crossed rows
   Float_t fFoundFractionCut;  // cut on crossed rows/findable clusters
+  Float_t fDphiCut;           // cut on tracklet dphi
   //
   Bool_t fStoreTracks;        // if kTRUE - Barrel tracks will be stored as AliCFParticles
   Bool_t fStoreTracklets;     // if kTRUE - SPD tracklets will be stored as AliCFParticles
   Bool_t fStoreMuons;         // if kTRUE - muon tracks will be stored as AliCFParticles
-  ClassDef(AliAnalysisTaskCFTree,2);
+  ClassDef(AliAnalysisTaskCFTree,3);
 };
 #endif
 
