@@ -21,10 +21,10 @@ class TRandom;
 class AliGenEMlib :public AliGenLib {
 public:
     
-  enum particles{kPizero, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi};
-  enum centrality{kpp=0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7, k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
-  enum PtParamSet{kPizero7TeVpp=0x10, kPizeroEta7TeVpp=0x20, kPizero7TeVpplow=0x30, kPizeroEta7TeVpplow=0x40, kPizero7TeVpphigh=0x50, kPizeroEta7TeVpphigh=0x60, kPizero2760GeVpp=0x70, kPizeroEta2760GeVpp=0x80, kPizero2760GeVpplow=0x90, kPizeroEta2760GeVpplow=0xA0, kPizero2760GeVpphigh=0xB0, kPizeroEta2760GeVpphigh=0xC0, kPichargedPbPb=0xD0, kPizeroPbPb=0xE0, kPichargedPPb=0xF0 };
-  enum v2Sys{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
+  enum Particle_t{kPromptRealGamma, kPromptVirtGamma, kThermRealGamma, kThermVirtGamma, kPizero, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi};
+  enum Centrality_t{kpp=0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7, k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
+  enum PtParamSet_t{kPizero7TeVpp=0x10, kPizeroEta7TeVpp=0x20, kPizero7TeVpplow=0x30, kPizeroEta7TeVpplow=0x40, kPizero7TeVpphigh=0x50, kPizeroEta7TeVpphigh=0x60, kPizero2760GeVpp=0x70, kPizeroEta2760GeVpp=0x80, kPizero2760GeVpplow=0x90, kPizeroEta2760GeVpplow=0xA0, kPizero2760GeVpphigh=0xB0, kPizeroEta2760GeVpphigh=0xC0, kPichargedPbPb=0xD0, kPizeroPbPb=0xE0, kPichargedPPb=0xF0 };
+  enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
   
   AliGenEMlib() { } ;
 
@@ -79,8 +79,31 @@ public:
 			    const Double_t T,
 			    const Double_t n);
 
+  static Double_t PtExponential(const Double_t *pt, const Double_t *param);
+  static Double_t PtModifiedHagedornPowerlaw(const Double_t *pt, const Double_t *param);
+  static Double_t IntegratedKrollWada(Double_t mh);
 
+  // prompt gamma
+  static Int_t    IpPromptRealGamma(TRandom *ran);
+  static Double_t PtPromptRealGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YPromptRealGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2PromptRealGamma(const Double_t *px, const Double_t *dummy);
 
+  static Int_t    IpPromptVirtGamma(TRandom *ran);
+  static Double_t PtPromptVirtGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YPromptVirtGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2PromptVirtGamma(const Double_t *px, const Double_t *dummy);
+
+  // thermal gamma
+  static Int_t    IpThermRealGamma(TRandom *ran);
+  static Double_t PtThermRealGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YThermRealGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2ThermRealGamma(const Double_t *px, const Double_t *dummy);
+
+  static Int_t    IpThermVirtGamma(TRandom *ran);
+  static Double_t PtThermVirtGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YThermVirtGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2ThermVirtGamma(const Double_t *px, const Double_t *dummy);
 
   // Pizero
     static Int_t    IpPizero(TRandom *ran);
@@ -131,13 +154,16 @@ public:
   static Double_t V2Param(const Double_t *px, const Double_t *param);
   static Double_t V2Flat(const Double_t *px, const Double_t *param);
   static Double_t KEtScal(Double_t pt, Int_t np);
+  static Double_t GetTAA(Int_t cent);
 
   static Double_t CrossOverLc(const double a, const double b, const double x);
   static Double_t CrossOverRc(const double a, const double b, const double x);
 
-  static const Double_t fgkV2param[16][15]; // array of v2 parameter
-  static const Double_t fgkHM[7];
-  static const Double_t fgkMtFactor[2][7];
+  static const Double_t fgkV2param[16][15];          // parameters of pi v2
+  static const Double_t fgkRawPtOfV2Param[16][10];   // parameters of the raw pt spectrum of v2 analysys
+  static const Double_t fgkThermPtParam[16][2];      // parameters of thermal gamma pt
+  static const Double_t fgkHM[8];                    // particle masses
+  static const Double_t fgkMtFactor[2][8];           // mt scaling factor
 
   ClassDef(AliGenEMlib,0)
 };
