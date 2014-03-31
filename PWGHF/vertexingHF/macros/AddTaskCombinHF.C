@@ -15,6 +15,7 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson=0, TString containerStr="",
     TFile *f=TFile::Open(cutObjFile.Data(),"READ");
     if(f){
       analysiscuts=(AliRDHFCuts*)f->Get(cutObjNam.Data());
+      AliESDtrackCuts *esdc=analysiscuts->GetTrackCuts();
       pid=analysiscuts->GetPidHF();
     }
   }
@@ -38,6 +39,11 @@ AliAnalysisTaskCombinHF *AddTaskCombinHF(Int_t meson=0, TString containerStr="",
   }
 
   AliAnalysisTaskCombinHF *dTask = new AliAnalysisTaskCombinHF(meson,analysiscuts);
+  if(!cutObjFile.IsNull()){
+    dTask->SetKaonTrackCuts(esdc);
+    dTask->SetPionTrackCuts(esdc);
+    dTask->SetTrackCuts(esdc);
+  }
   dTask->SetReadMC(readMC);
   dTask->SetDebugLevel(0);
   dTask->SetPIDHF(pid);

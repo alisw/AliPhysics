@@ -88,7 +88,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF():
   fReadMC(kFALSE),
   fPromptFeeddown(kPrompt),
   fGoUpToQuark(kTRUE),
-  fFullAnalysis(0)  
+  fFullAnalysis(0),
+  fmaxPforIDPion(0.6),
+  fmaxPforIDKaon(2.),  
+  fKeepNegID(kFALSE)  
 {
   // default constructor
 }
@@ -138,7 +141,10 @@ AliAnalysisTaskCombinHF::AliAnalysisTaskCombinHF(Int_t meson, AliRDHFCuts* analy
   fReadMC(kFALSE),
   fPromptFeeddown(1),
   fGoUpToQuark(kTRUE),
-  fFullAnalysis(0)
+  fFullAnalysis(0),
+  fmaxPforIDPion(0.6),
+  fmaxPforIDKaon(2.),  
+  fKeepNegID(kFALSE)  
 
 {
   // standard constructor
@@ -671,6 +677,7 @@ Bool_t AliAnalysisTaskCombinHF::IsTrackSelected(AliAODTrack* track){
   // track selection cuts
 
   if(track->Charge()==0) return kFALSE;
+  if(track->GetID()<0&&!fKeepNegID)return kFALSE;
   if(!(track->TestFilterMask(fFilterMask))) return kFALSE;
   if(!SelectAODTrack(track,fTrackCutsAll)) return kFALSE;    
   return kTRUE;
@@ -681,7 +688,11 @@ Bool_t AliAnalysisTaskCombinHF::IsKaon(AliAODTrack* track){
 
   if(!fPidHF) return kTRUE;
   Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);  
-  if(isKaon>=0 && SelectAODTrack(track,fTrackCutsKaon)) return kTRUE;
+
+  if(SelectAODTrack(track,fTrackCutsKaon)) {
+    if(isKaon>=1)    return kTRUE;
+    else if(isKaon>=0 && track->P()>fmaxPforIDKaon)return kTRUE;
+  }
   return kFALSE;
 }
 //________________________________________________________________________
@@ -690,7 +701,10 @@ Bool_t AliAnalysisTaskCombinHF::IsPion(AliAODTrack* track){
 
   if(!fPidHF) return kTRUE;
   Int_t isPion=fPidHF->MakeRawPid(track,AliPID::kPion);
-  if(isPion>=0&& SelectAODTrack(track,fTrackCutsPion)) return kTRUE;
+  if(SelectAODTrack(track,fTrackCutsPion)) {
+    if(isPion>=1)    return kTRUE;
+    else if(isPion>=0 && track->P()>fmaxPforIDPion)return kTRUE;
+  }
   return kFALSE;
 }
 //________________________________________________________________________
