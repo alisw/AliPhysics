@@ -74,8 +74,8 @@ fRunList()
     }
   }
   
-  SetPackages("VO_ALICE@AliRoot::v5-04-46-AN","VO_ALICE@GEANT3::v1-15","VO_ALICE@ROOT::v5-34-05");
-
+  SetPackages("VO_ALICE@AliRoot::v5-04-Rev-18","VO_ALICE@ROOT::v5-34-08-5","VO_ALICE@GEANT3::v1-15a-1");
+  
   TString basedir = gSystem->ExpandPathName("$ALICE_ROOT/PWG/muondep");
   
   TString dir;
@@ -98,6 +98,26 @@ AliMuonGridSubmitter::~AliMuonGridSubmitter()
   delete fInternalMap;
   delete fVars;
 }
+
+///______________________________________________________________________________
+void AliMuonGridSubmitter::AddIncludePath(const char* pathList) const
+{
+  TObjArray* paths = TString(pathList).Tokenize(" ");
+  TIter next(paths);
+  TObjString* p;
+  TString includePath = gSystem->GetIncludePath();
+  
+  while ( ( p = static_cast<TObjString*>(next()) ) )
+  {
+    if ( !includePath.Contains(p->String()) )
+    {
+      gSystem->AddIncludePath(p->String().Data());
+    }
+  }
+  
+  delete paths;
+}
+
 
 //______________________________________________________________________________
 void AliMuonGridSubmitter::AddToTemplateFileList(const char* filename)
@@ -555,6 +575,27 @@ UInt_t AliMuonGridSubmitter::NofRuns() const
 }
 
 //______________________________________________________________________________
+TObjArray* AliMuonGridSubmitter::OrderKeys(const TMap& map) const
+{
+  /// return an array where the map's keys are sorted alphabetically
+  /// the returned array should be deleted by the client
+  
+  TObjArray* keyArray = new TObjArray;
+  keyArray->SetOwner(kTRUE);
+  TObjString* key;
+  
+  TIter next(&map);
+  while ( ( key = static_cast<TObjString*>(next())) )
+  {
+    keyArray->Add(new TObjString(key->String()));
+  }
+  
+  keyArray->Sort();
+  return keyArray;
+}
+
+
+//______________________________________________________________________________
 void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
                                     const TObjArray& values) const
 {
@@ -632,7 +673,11 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
     std::cout << std::string(80,'*') << std::endl;
   }
 
-  TIter next(fInternalMap);
+  std::cout << "-- Internals : " << std::endl;
+  
+  TObjArray* im = OrderKeys(*fInternalMap);
+  
+  TIter next(im);
   TObjString* key;
   
   while ( ( key = static_cast<TObjString*>(next()) ) )
@@ -641,6 +686,8 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
     
     std::cout << key->String() << " : " << value.Data() << std::endl;
   }
+  
+  delete im;
   
   if ( NofRuns() )
   {
@@ -654,14 +701,20 @@ void AliMuonGridSubmitter::Print(Option_t* /*opt*/) const
     std::cout << std::endl;
   }
   
-  TIter nextVar(fVars);
+  std::cout << std::endl << "-- Variables : " << std::endl;
+
+  TObjArray* iv = OrderKeys(*fVars);
+  
+  TIter nextVar(iv);
   while ( ( key = static_cast<TObjString*>(nextVar())) )
   {
     TObjString* value = static_cast<TObjString*>(fVars->GetValue(key->String()));
     std::cout << "Variable " << key->String() << " will be replaced by " << value->String() << std::endl;
   }
   
-  std::cout << "Files to be uploaded:" << std::endl;
+  delete iv;
+  
+  std::cout << std::endl << "-- Files to be uploaded:" << std::endl;
   TIter nextFile(LocalFileList());
   TObjString* sfile;
   while ( ( sfile = static_cast<TObjString*>(nextFile())) )
@@ -875,6 +928,17 @@ void AliMuonGridSubmitter::SetRunList(int runNumber)
   // set the runlist from a text file
   fRunList.clear();
   fRunList.push_back(runNumber);
+}
+
+//______________________________________________________________________________
+TString AliMuonGridSubmitter::GetVar(const char* key) const
+{
+  TObjString* o = static_cast<TObjString*>(Vars()->GetValue(key));
+  if (o)
+  {
+    return o->String();
+  }
+  return "";
 }
 
 //______________________________________________________________________________
