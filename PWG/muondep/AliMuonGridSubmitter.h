@@ -115,8 +115,14 @@ public:
 
   void AddToLocalFileList(const char* filename);
 
+  void AddIncludePath(const char* pathList) const;
+
+  TString GetVar(const char* key) const;
+
 protected:
   
+  TObjArray* OrderKeys(const TMap& map) const;
+
   std::ostream* CreateJDLFile(const char* name);
 
   TString GetMapValue(const char* key) const;
