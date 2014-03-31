@@ -410,9 +410,9 @@ void AliAnalysisTaskCombinHF::UserExec(Option_t */*option*/){
   // build the combinatorics
   Int_t nSelected=0;
   Int_t nFiltered=0;
-
-  AliAODVertex* v2=new AliAODVertex(); 
-  AliAODVertex* v3=new AliAODVertex();
+  Double_t dummypos[3]={0.,0.,0.};
+  AliAODVertex* v2=new AliAODVertex(dummypos,999.,-1,2);
+  AliAODVertex* v3=new AliAODVertex(dummypos,999.,-1,3);
   // dummy values of track impact parameter, needed to build an AliAODRecoDecay object
   Double_t d02[2]={0.,0.};
   Double_t d03[3]={0.,0.,0.};
