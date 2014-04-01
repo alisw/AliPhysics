@@ -43,6 +43,7 @@ public:
   
   AliParticleYield();
   AliParticleYield(Int_t pdg, Int_t system, Float_t sqrts, Float_t value, Float_t stat, Float_t syst, Float_t norm, Float_t ymin, Float_t ymax, Int_t status, Int_t type, TString centr, Int_t isSum = 0, TString tag = "ALICE");
+  AliParticleYield(Int_t pdg, Int_t system, Float_t sqrts, Float_t value, Float_t stat, Float_t syst, Float_t normPos, Float_t normNeg, Float_t ymin, Float_t ymax, Int_t status, Int_t type, TString centr, Int_t isSum = 0, TString tag = "ALICE");
   virtual ~AliParticleYield();
   AliParticleYield(const AliParticleYield& part); 
   
@@ -71,7 +72,10 @@ public:
   Int_t   GetPdgCode2()        const{ return fPdgCode2; }
   Float_t GetSqrtS()           const{ return fSqrtS           ;}
   Float_t GetYield()           const{ return fYield           ;}
-  Float_t GetNormError()       const{ return fNormError       ;}
+  Float_t GetNormError()       const;
+  Float_t GetNormErrorNeg()    const{ return fNormErrorNeg; }
+  Float_t GetNormErrorPos()    const{ return fNormErrorPos; }
+
   TString GetPartName()        const{ return fPartName        ;}
   Float_t GetStatError()       const{ return fStatError       ;}
   Int_t   GetStatus()          const{ return fStatus          ;}
@@ -99,7 +103,9 @@ public:
   void SetPdgCode2        (Int_t var             ) { fPdgCode2 = var;        }  
   void SetSqrtS           (Float_t var           ) { fSqrtS = var           ;}
   void SetYield           (Float_t var           ) { fYield = var           ;}
-  void SetNormError       (Float_t var           ) { fNormError = var       ;}
+  void SetNormError       (Float_t var           ) { fNormErrorPos = var    ; fNormErrorNeg=0;};
+  void SetNormErrorNeg    (Float_t var           ) { fNormErrorNeg = var;}
+  void SetNormErrorPos    (Float_t var           ) { fNormErrorPos = var;}
   void SetPartName        (TString var           ) { fPartName = var; SetPdgCode(var); }
   void SetStatError       (Float_t var           ) { fStatError = var       ;}
   void SetStatus          (AliPYStatusCode_t var ) { fStatus = var          ;}
@@ -131,10 +137,13 @@ private:
   Float_t fYield;           // The yield
   Float_t fStatError;       // StatError
   Float_t fSystError;       // SystError
-  Float_t fNormError;       // Normalization error
+  Float_t fNormErrorPos;    // Normalization error, if the error is simmetric, this is used as the symmetric error. Otherwise it is just the positive one
+  Float_t fNormErrorNeg;    // Normalization error (negative)
   Float_t fYMin;            // min rapidity cut
   Float_t fYMax;            // max rapidity cut
   Int_t   fStatus;          // Status code, to determine the quality of the measurement, see AliPYStatusCode_t for possible values
+
+
 
   UInt_t  fMeasurementType; // Measurement Type, e.g. actually measured, interpolated from 2 centrality bins  or only total error given, etc. THIS IS A BIT MASK see AliPYMeasurementType_t for possible values and the IsType* Methods for easy access. Be carefull not to set mutually exclusive values
 
