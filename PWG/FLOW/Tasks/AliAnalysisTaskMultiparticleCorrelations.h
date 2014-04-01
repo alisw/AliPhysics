@@ -68,7 +68,7 @@ class AliAnalysisTaskMultiparticleCorrelations : public AliAnalysisTaskSE{
   void SetWeightsHist(TH1D* const hist, const char *type, const char *variable); // .cxx
   TH1D* GetHistogramWithWeights(const char *filePath, const char *listName, const char *type, const char *variable)
   {
-   AliFlowAnalysisWithMultiparticleCorrelations *mpc;
+   AliFlowAnalysisWithMultiparticleCorrelations *mpc = new AliFlowAnalysisWithMultiparticleCorrelations();
    return mpc->GetHistogramWithWeights(filePath,listName,type,variable);
   };
 
