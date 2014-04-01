@@ -188,13 +188,22 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
   }
   TString line;
   Int_t ipart = 0;
+  std::cout << "Reading " << fileName << std::endl;
+  
   while (line.ReadLine(filestream) ) {
     // Strip trailing and leading whitespaces
     line = line.Strip(TString::kLeading,  ' ');
     line = line.Strip(TString::kTrailing, ' ');
 
     // Skip commented lines and headers
-    if (line.BeginsWith("#")) continue;
+    if (line.BeginsWith("#")) {
+      //print comments. It if they look like warnings, print them such that they are really visible
+      if(line.Contains("warn", TString::kIgnoreCase)) std::cout << std::endl << "********************************************************" <<std::endl ;
+      std::cout << " " << line.Data() << std::endl;      
+      if(line.Contains("warn", TString::kIgnoreCase)) std::cout << "********************************************************" <<std::endl << std::endl;
+
+      continue;
+    }
     if (line.BeginsWith("PDG")) continue;
 
     // Tokenize line using custom separator
