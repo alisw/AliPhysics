@@ -619,11 +619,11 @@ Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
   if(v0side==0/*V0A*/){
     if( CheckSplineArray(fSplineArrayV0A) ) {
       spline = (TSpline*)fSplineArrayV0A->At(ic);
-      cout<<"Qvec V0A - ic: "<<ic<<" - Found TSpline..."<<endl;
+      //cout<<"Qvec V0A - ic: "<<ic<<" - Found TSpline..."<<endl;
     } else {
       spline = new TSpline3(h1D,"sp3");
       fSplineArrayV0A->AddAtAndExpand(spline,ic);
-      cout<<"Qvec V0A - ic: "<<ic<<" - TSpline not found. Creating..."<<endl;
+      //cout<<"Qvec V0A - ic: "<<ic<<" - TSpline not found. Creating..."<<endl;
     }
   }
   else if(v0side==1/*V0C*/){
