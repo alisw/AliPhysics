@@ -39,6 +39,7 @@
 #include "TObjArray.h"
 #include "TString.h"
 #include "TTree.h"
+#include "TMessage.h"
 //
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
@@ -58,6 +59,7 @@ TList  * ConvertListStringToCDBId(const TList *cdbList0);
 void LoadOCDBFromLog(const char *logName, Int_t verbose);
 void LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList);
 void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
+void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0);
 
 
 
@@ -101,6 +103,38 @@ void MakeDiffExampleUseCase(){
 }
 
 
+void DumpOCDBAsTxt(const TString fInput,const TString fType){
+    TFile *file;
+    const TMap *cdbMap;
+    const TList *cdbList;
+
+
+    if(fType.EqualTo("MC",TString::kIgnoreCase)){
+        file = TFile::Open(fInput.Data());
+        cdbMap = (TMap*)file->Get("cdbMap");          // 
+        TList *cdbListMC0 = (TList*)file->Get("cdbList");     // this is list of TObjStrings
+        cdbList = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
+    } 
+    else if(fType.EqualTo("ESD",TString::kIgnoreCase)){
+        file = TFile::Open(fInput.Data());
+        TList *listESD = ((TTree*)file->Get("esdTree"))->GetUserInfo();
+        cdbMap = (TMap*)listESD->FindObject("cdbMap");  
+        TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
+        cdbList = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
+    }
+    else if(fType.EqualTo("log",TString::kIgnoreCase)){
+        AliCDBManager * man = AliCDBManager::Instance();
+        LoadOCDBFromLog(fInput.Data(),0);
+        cdbMap = man->GetStorageMap();        // this is map of 
+        cdbList =man->GetRetrievedIds();     // this is list of AliCDBId
+    }
+    else{
+        printf("unsupported option: %s",fType.Data());
+        return;
+    }
+    cout <<"BEGINDUMP:" << endl;
+    DumpOCDB(cdbMap,cdbList);
+}
 
 
 Bool_t ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion){
@@ -306,13 +340,57 @@ void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, c
   }
 }
 
-void DumpOCDBAsTxt(const TMap *cdbMap0, const TList *cdbList0){
+void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0){
   //
   // Dump the OCDb configuatation as formated text file 
   // with following collumns
   // cdb name  prefix cdb path
   // OCDB entries are sorted alphabetically
   // e.g:
-  // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root 
+    // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root $SIZE_AliCDBEntry_Object $HASH_AliCDBEntry_Object
 
+    AliCDBManager * man = AliCDBManager::Instance();
+    TIter next(cdbList0);
+    AliCDBId *CDBId;
+    TString cdbName;
+    TString cdbPath;
+    TObjString *ostr;
+    AliCDBEntry *cdbEntry;
+    UInt_t hash;
+    TMessage * file;
+    Int_t size; 
+
+    while ((CDBId  =(AliCDBId*) next())){
+        cdbName = CDBId->GetPath();
+        ostr = (TObjString*)cdbMap0->GetValue(cdbName.Data());
+        if(!ostr) ostr = (TObjString*)cdbMap0->GetValue("default");
+        cdbPath = ostr->GetString();
+        if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
+
+        cdbEntry = (AliCDBEntry*) man->Get(*CDBId);
+        TObject *obj = cdbEntry->GetObject();
+        file = new TMessage(TBuffer::kWrite);
+        file->WriteObject(obj);
+        size = file->Length();
+        if(!obj){
+            printf("object %s empty!\n",cdbName.Data());
+            continue;
+        }
+        hash = TString::Hash(file->Buffer(),size);
+        printf("%s\t%s\t%s/Run%d_%d_v%d_s%d.root\t%d\t%u\n",
+                cdbName.Data(),
+                cdbPath.Data(),
+                cdbName.Data(),
+                CDBId->GetFirstRun(),
+                CDBId->GetLastRun(),
+                CDBId->GetVersion(),
+                CDBId->GetSubVersion(),
+                size,
+                hash
+              );
+        //if(!(CDBId->GetPathLevel(0)).Contains("TPC")) continue;
+        //cout << CDBId.ToString() << endl;
+
+        delete file;
+    }
 }
