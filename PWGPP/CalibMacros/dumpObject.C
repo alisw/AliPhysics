@@ -71,7 +71,7 @@ void ExampleUse(){
   //
 }
 
-void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData){
+void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml){
   //
   //  
   //  DumpOCDBFile("$ALICE_ROOT/OCDB/ITS/Align/Data/Run0_999999999_v0_s0.root", "ITS_Align_Data_Run0_999999999_v0_s0.dump")
@@ -80,10 +80,20 @@ void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData)
   TFile *falignITS  = TFile::Open(finput);
   AliCDBEntry *entry  = (AliCDBEntry*)falignITS->Get("AliCDBEntry");
   if (!entry) return; 
-  if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
   TObject *obj = ((AliCDBEntry*)falignITS->Get("AliCDBEntry"))->GetObject();  
-  if (!obj) return;
-  gROOT->ProcessLine(TString::Format("DumpObjectRecursive((TObject*)%p); >>%s",obj, foutput).Data());
+
+  //
+  if (!xml){
+    if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
+    if (!obj) return;
+    gROOT->ProcessLine(TString::Format("DumpObjectRecursive((TObject*)%p); >>%s",obj, foutput).Data());
+  }
+  if (xml){
+    TFile * f = TFile::Open(TString::Format("%s.xml",foutput).Data(),"recreate");
+    if (dumpMetaData) entry->Write("AliCDBEntry");
+    else obj->Write("AliCDBEntry");
+    f->Close();
+  }
 }
 
 
