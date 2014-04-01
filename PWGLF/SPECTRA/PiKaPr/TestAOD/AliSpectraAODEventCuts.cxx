@@ -26,6 +26,7 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 #include "TProfile.h"
+#include "TSpline.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliAODTrack.h"
@@ -82,7 +83,11 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fV0Apol1(-1),
   fV0Apol2(-1),
   fV0Apol3(-1),
-  fV0Apol4(-1)
+  fV0Apol4(-1),
+  fQvecIntList(0),
+  fQvecIntegral(0), 
+  fSplineArrayV0A(0),
+  fSplineArrayV0C(0)
 {
   // Constructor
   fOutput=new TList();
@@ -92,6 +97,10 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   fCalib=new TList();
   fCalib->SetOwner();
   fCalib->SetName("fCalib");
+  
+  fQvecIntList=new TList();
+  fQvecIntList->SetOwner();
+  fQvecIntList->SetName("fQvecIntList");
   
   TH1I *fHistoCuts = new TH1I("fHistoCuts", "Event Cuts", kNVtxCuts, -0.5, kNVtxCuts - 0.5);
   TH1F *fHistoVtxBefSel = new TH1F("fHistoVtxBefSel", "Vtx distr before event selection;z (cm)",500,-15,15);
@@ -107,6 +116,11 @@ AliSpectraAODEventCuts::AliSpectraAODEventCuts(const char *name) :
   TH2F *fQVecCCor = new TH2F("fQVecCCor", "QVec VZERO C;centrality;Qvector VZERO-C",20,0,100,100,0,10);
   TH2F *fV0M = new TH2F("fV0M", "V0 Multiplicity, before correction;V0 sector",64,-.5,63.5,500,0,1000);
   TH2F *fV0MCor = new TH2F("fV0MCor", "V0 Multiplicity, after correction;V0 sector",64,-.5,63.5,500,0,1000);
+  
+  fSplineArrayV0A = new TObjArray();
+  fSplineArrayV0A->SetOwner();
+  fSplineArrayV0C = new TObjArray();
+  fSplineArrayV0C->SetOwner();
   
   fOutput->Add(fHistoCuts);
   fOutput->Add(fHistoVtxBefSel);
@@ -583,3 +597,63 @@ Long64_t AliSpectraAODEventCuts::Merge(TCollection* list)
   return count+1;
 }
 
+//______________________________________________________
+Double_t AliSpectraAODEventCuts::GetQvecPercentile(Int_t v0side){
+ 
+  //check Qvec and Centrality consistency
+  if(fCent>90.) return -999.;
+  if(v0side==0/*V0A*/){ if(fqV0A== -999.) return -999.; }
+  if(v0side==1/*V0C*/){ if(fqV0C== -999.) return -999.; }
+  
+  fQvecIntegral = 0x0;
+
+  if(v0side==0/*V0A*/){ fQvecIntegral = (TH2D*)fQvecIntList->FindObject("VZEROA"); }
+  if(v0side==1/*V0C*/){ fQvecIntegral = (TH2D*)fQvecIntList->FindObject("VZEROC"); }
+
+  Double_t ic = (Int_t)fCent; //fQvecIntegral: 1% centrality bin
+  
+  TH1D *h1D = (TH1D*)fQvecIntegral->ProjectionY("h1D",ic+1,ic+1);
+  
+  TSpline *spline = 0x0;
+  
+  if(v0side==0/*V0A*/){
+    if( CheckSplineArray(fSplineArrayV0A) ) {
+      spline = (TSpline*)fSplineArrayV0A->At(ic);
+      cout<<"Qvec V0A - ic: "<<ic<<" - Found TSpline..."<<endl;
+    } else {
+      spline = new TSpline3(h1D,"sp3");
+      fSplineArrayV0A->AddAtAndExpand(spline,ic);
+      cout<<"Qvec V0A - ic: "<<ic<<" - TSpline not found. Creating..."<<endl;
+    }
+  }
+  else if(v0side==1/*V0C*/){
+    if( CheckSplineArray(fSplineArrayV0C) ) {
+      spline = (TSpline*)fSplineArrayV0C->At(ic);
+    } else {
+      spline = new TSpline3(h1D,"sp3");
+      fSplineArrayV0C->AddAtAndExpand(spline,ic);
+    }
+  }
+  
+  Double_t percentile =  -999.;
+  if(v0side==0/*V0A*/){ percentile = 100*spline->Eval(fqV0A); }
+  if(v0side==1/*V0C*/){ percentile = 100*spline->Eval(fqV0C); }
+  
+  if(percentile>100. || percentile<0.) return -999.;
+
+  return percentile;
+}
+
+//______________________________________________________
+Bool_t AliSpectraAODEventCuts::CheckSplineArray(TObjArray * splarr){
+  //check TSpline array consistency
+  
+  Int_t n = (Int_t)fCent;
+  
+  if(splarr->GetSize()<n) return kFALSE;
+  
+  if(!splarr->At(n)) return kFALSE;
+    
+  return kTRUE;
+  
+}
