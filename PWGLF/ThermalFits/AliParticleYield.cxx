@@ -478,17 +478,17 @@ void AliParticleYield::WriteThermusFile(TClonesArray * arr, const char * filenam
     
     if(part->IsTypeRatio()) { 
       // If it's a ratio we have to write the 2 pdg codes
-      fileOut << FormatCol(Form("%d %d ",part->GetPdgCode(), part->GetPdgCode2())                              , colwidth) 
-	      << FormatCol(part->GetTag()                                                                      , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+      fileOut << FormatCol(Form("%d\t%d\t",part->GetPdgCode(), part->GetPdgCode2())                              , colwidth) 
+	      << part->GetTag() << "\t"
+	      << Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) << "\t"
+	      << Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) 
 	      << endl;
     }
     else {
-      fileOut << FormatCol(Form("%d",part->GetPdgCode())                                                       , colwidth) 
-	      << FormatCol(part->GetTag()                                                                      , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+      fileOut <<Form("%d",part->GetPdgCode())                                                       << "\t" 
+	      <<part->GetTag()                                                                      << "\t"
+	      <<Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) << "\t"
+	      <<Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) 
 	      << endl;      
     }
   
