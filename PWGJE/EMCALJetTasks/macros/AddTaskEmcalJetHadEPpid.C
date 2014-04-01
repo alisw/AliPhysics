@@ -23,8 +23,10 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    Bool_t   extraCORRhistos   = 0, //kFALSE,
    const Double_t JetPtcut    = 15.0,
    const Double_t JetRadius   = 0.4,
+   const Double_t constitCut  = 0.15,
    const Int_t MixingTracks   = 50000,
-   TString cutType			  = "EMCAL"
+   TString cutType			  = "EMCAL",
+   Bool_t   Comments		  = 0
 )
 {  
   
@@ -72,8 +74,10 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetmakeextraCORRhistos(extraCORRhistos);
   correlationtask->SetJetPtcut(JetPtcut);
   correlationtask->SetJetRad(JetRadius);
+  correlationtask->SetConstituentCut(constitCut);
   correlationtask->SetMixingTracks(MixingTracks);
   correlationtask->SetcutType(cutType);
+  correlationtask->SetdoComments(Comments);
 
   // =================== set up containers ================================================
   // Cluster Container

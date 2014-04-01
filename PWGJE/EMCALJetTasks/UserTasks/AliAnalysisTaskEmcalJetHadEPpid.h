@@ -59,16 +59,22 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
   virtual THnSparse*      NewTHnSparseFPID(const char* name, UInt_t entries);
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+  // set a bun of histogram switches up
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
   void                    SetVariableBinning(Bool_t v)          { doVariableBinning = v; } // do variable binning switch
   void		              SetvarbinTHnSparse(Bool_t vb)         { dovarbinTHnSparse = vb; } // variable THnSparse bin switch
   void					  SetmakeQAhistos(Bool_t QAhist)        { makeQAhistos = QAhist; } // make QA histos  
   void					  SetmakeBIAShistos(Bool_t BIAShist)    { makeBIAShistos = BIAShist; } // make bias histos
   void			          SetmakeextraCORRhistos(Bool_t Xhist)  { makeextraCORRhistos = Xhist; } // make extra correlations histos
+
+  // set data, detectors type, and PID and PID w bias switches
   void		              SetDataType(Bool_t data)		        { useAOD = data; }    // data type switch
   void					  SetcutType(TString cut)				{ fcutType = cut; }    // EMCAL / TPC acceptance cut
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
+
+  // give comments setter
+  void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
 
   // getters
   TString		  GetLocalRhoName() const		{return fLocalRhoName; }
@@ -85,6 +91,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            SetTrkEta(Double_t e)                 { fTrkEta   = e; }  //eta range of the associated tracks
   virtual void            SetJetPtcut(Double_t jpt)             { fJetPtcut = jpt; } // jet pt cut
   virtual void			  SetJetRad(Double_t jrad)				{ fJetRad = jrad; } // jet radius 
+  virtual void 			  SetConstituentCut(Double_t constCut)   { fConstituentCut = constCut; } // constituent Cut
 
   // eta and phi limits of jets - setters
   virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
@@ -103,7 +110,7 @@ protected:
   void					 ExecOnce();
   Bool_t		         Run();
   virtual void           Terminate(Option_t *); 
-  virtual Int_t          AcceptMyJet(AliEmcalJet *jet);
+  virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
   virtual Int_t          GetCentBin(Double_t cent) const; // centrality bin of event
   Float_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
   Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
@@ -124,6 +131,7 @@ protected:
   Double_t               fTrkEta;                  // eta min/max of tracks
   Double_t	             fJetPtcut;		           // jet pt to cut on for correlations
   Double_t				 fJetRad;				   // jet radius
+  Double_t				 fConstituentCut;          // jet constituent cut
 
   // event mixing
   Int_t			 fDoEventMixing;
@@ -146,6 +154,9 @@ protected:
   // switches for PID
   Bool_t		 doPID;
   Bool_t		 doPIDtrackBIAS;
+
+  // do comment switch
+  Bool_t		 doComments;
 
   // local rho value
   Double_t		 fLocalRhoVal;
