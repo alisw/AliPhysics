@@ -164,6 +164,7 @@ class AliJetFlowTools {
                 TArrayI* variantions2ndIn,
                 TArrayI* variantions2ndOut,
                 TString type = "",
+                TString type2 = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
