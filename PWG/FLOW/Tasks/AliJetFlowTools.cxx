@@ -1553,6 +1553,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
+        Float_t corr,                   // correlation strength
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -1620,7 +1621,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             Style(AddLegend(gPad));
             relativeErrorVariation->Write();
         }
-
     }
     // call the functions for a second set of systematic sources
     if(variations2ndIn && variations2ndOut) {
@@ -1693,7 +1693,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationInLow) bInLow = relativeError2ndVariationInLow->GetBinContent(b+1);
         if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
-        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(dInLow));
+        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
     }
@@ -1708,12 +1708,11 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Double_t lowErr(0.), upErr(0.);
         for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
             // add the in and out of plane errors in quadrature
-                // the in and out of plane correlated errors will be fully correlated, so take the correlation coefficient equal to 1
-            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1) - 1.*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
-            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1) - 1.*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1) - 2.*corr*TMath::Abs(relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1));
+            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1) - 2.*corr*TMath::Abs(relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1));
             // set the errors 
-            ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
-            ayh[i] = TMath::Sqrt(upErr)*nominal->GetBinContent(i+1);
+            ayl[i] = TMath::Sqrt(TMath::Abs(lowErr))*nominal->GetBinContent(i+1);
+            ayh[i] = TMath::Sqrt(TMath::Abs(upErr))*nominal->GetBinContent(i+1);
             // get the bin width (which is the 'error' on x
             Double_t binWidth(nominal->GetBinWidth(i+1));
             axl[i] = binWidth/2.;
@@ -1745,12 +1744,12 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     nominalIn,
                     nominalOut,
                     fEventPlaneRes,
-                    "v_{2} with correlated uncertainty",
+                    "v_{2} with shape uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
-                    relativeErrorOutLow,
                     relativeErrorOutUp,
-                    .5));
+                    relativeErrorOutLow,
+                    corr));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
@@ -3301,11 +3300,11 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
     for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
         // extract the absolute errors
         in = h1->GetBinContent(i+1);
-        einUp = in*relativeErrorInUp->GetBinContent(i+1);
-        einLow = in*relativeErrorInLow->GetBinContent(1+i);
+        einUp = TMath::Abs(in*relativeErrorInUp->GetBinContent(i+1));
+        einLow = TMath::Abs(in*relativeErrorInLow->GetBinContent(1+i));
         out = h2->GetBinContent(i+1);
-        eoutUp = out*relativeErrorOutUp->GetBinContent(1+i);
-        eoutLow = out*relativeErrorOutLow->GetBinContent(1+i);
+        eoutUp = TMath::Abs(out*relativeErrorOutUp->GetBinContent(1+i));
+        eoutLow = TMath::Abs(out*relativeErrorOutLow->GetBinContent(1+i));
         // get the error squared
 
         error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutLow);
@@ -3314,6 +3313,11 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
 
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
+//        if(rho > 0) {
+//            if(error2Up > error2Low) error2Low = error2Up;
+//            else error2Low = error2Up;
+//        }
+
         // set the errors 
         ayh[i] = error2Up;
         ayl[i] = error2Low;

@@ -168,6 +168,7 @@ class AliJetFlowTools {
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
+                Float_t corr = .5,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
