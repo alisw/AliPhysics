@@ -64,7 +64,10 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fPIDResponse(0x0),
   fEventPlaneAngle(5.),
   fEventPlaneAngleCheck(5.),
-  fPrimTrackArray(0x0),
+  fEventPlaneAngle3(5.),
+  fPrimTrackArrayAss(0x0),
+  fPrimTrackArrayTrg(0x0),
+  fPrimConstrainedTrackArray(new TClonesArray("AliESDtrack", 100)),
   fJetArray(0x0),
   fPoolMgr(),
   fPool(),
@@ -73,7 +76,10 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fHist(),
   fShortTaskId("jet_prot_corr"),
   fUseStandardCuts(kTRUE),
-  fCutsPrim(0x0),
+  fUseEvplaneV0(kFALSE),
+  fCutsPrimTrg(0x0),
+  fCutsPrimTrgConstrain(new AliESDtrackCuts()),
+  fCutsPrimAss(0x0),
   fCutsTwoTrackEff(0.02),
   fTrgPartPtMin(6.),
   fTrgPartPtMax(8.),
@@ -110,43 +116,48 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fkEvName[kEvSame] = "same";
   fkEvName[kEvMix]  = "mixed";
 
-  // track cuts
+  // track cuts for associates
   if (fUseStandardCuts) {
-    fCutsPrim = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
+    fCutsPrimAss = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
   } else {
-    fCutsPrim = new AliESDtrackCuts();
+    fCutsPrimAss = new AliESDtrackCuts();
 
     // this is taken from PWGJE track cuts
     TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
-    fCutsPrim->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
-    fCutsPrim->SetMinNClustersTPC(70);
-    fCutsPrim->SetMaxChi2PerClusterTPC(4);
-    fCutsPrim->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
-    fCutsPrim->SetAcceptKinkDaughters(kFALSE);
-    fCutsPrim->SetRequireTPCRefit(kTRUE);
-    fCutsPrim->SetMaxFractionSharedTPCClusters(0.4);
+    fCutsPrimAss->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+    fCutsPrimAss->SetMinNClustersTPC(70);
+    fCutsPrimAss->SetMaxChi2PerClusterTPC(4);
+    fCutsPrimAss->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+    fCutsPrimAss->SetAcceptKinkDaughters(kFALSE);
+    fCutsPrimAss->SetRequireTPCRefit(kTRUE);
+    fCutsPrimAss->SetMaxFractionSharedTPCClusters(0.4);
     // ITS
-    fCutsPrim->SetRequireITSRefit(kTRUE);
+    fCutsPrimAss->SetRequireITSRefit(kTRUE);
     //accept secondaries
-    fCutsPrim->SetMaxDCAToVertexXY(2.4);
-    fCutsPrim->SetMaxDCAToVertexZ(3.2);
-    fCutsPrim->SetDCAToVertex2D(kTRUE);
+    fCutsPrimAss->SetMaxDCAToVertexXY(2.4);
+    fCutsPrimAss->SetMaxDCAToVertexZ(3.2);
+    fCutsPrimAss->SetDCAToVertex2D(kTRUE);
     //reject fakes
-    fCutsPrim->SetMaxChi2PerClusterITS(36);
-    fCutsPrim->SetMaxChi2TPCConstrainedGlobal(36);
+    fCutsPrimAss->SetMaxChi2PerClusterITS(36);
+    fCutsPrimAss->SetMaxChi2TPCConstrainedGlobal(36);
 
-    fCutsPrim->SetRequireSigmaToVertex(kFALSE);
+    fCutsPrimAss->SetRequireSigmaToVertex(kFALSE);
 
-    fCutsPrim->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    fCutsPrimAss->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+
   }
 
-  fCutsPrim->SetEtaRange(-0.9, 0.9);
-  fCutsPrim->SetPtRange(0.15, 1E+15);
+  fCutsPrimAss->SetEtaRange(-0.9, 0.9);
+  fCutsPrimAss->SetPtRange(0.15, 1E+15);
 
-  fTrgJetPhiModCent->SetParameter(0, .05);
-  fTrgJetPhiModSemi->SetParameter(0, .20);
-  fTrgHadPhiModCent->SetParameter(0, .05);
-  fTrgHadPhiModSemi->SetParameter(0, .20);
+  // track cuts for triggers
+  fCutsPrimTrg = new AliESDtrackCuts(*fCutsPrimAss);
+
+  // azimuthal modulation for triggers
+  fTrgJetPhiModCent->SetParameter(0, .02);
+  fTrgJetPhiModSemi->SetParameter(0, .02);
+  fTrgHadPhiModCent->SetParameter(0, .04);
+  fTrgHadPhiModSemi->SetParameter(0, .10);
 
   // event mixing pool
   Double_t centralityBins[] = {
@@ -167,7 +178,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
     psiBins[iBin] = iBin * TMath::Pi()/nPsiBins;
 
   const Int_t poolSize = 10; // unused by current event pool implementation
-  const Int_t trackDepth = 1000; // number of tracks to maintain in mixing buffer
+  const Int_t trackDepth = 10000; // number of tracks to maintain in mixing buffer
   const Float_t trackDepthFraction = 0.1;
   const Int_t targetEvents = 1;
   // for (Int_t iTrg = 0; iTrg < kTrgLast; ++iTrg) {
@@ -274,92 +285,92 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 	       100, 0., 10., 200, -2., 2.);
 
   // Nsigma templates - central
-  AddHistogram(ID(kHistNsigmaTPCe), "TPC N#sigma - e hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCe), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N#sigma - #mu hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N#sigma - #pi hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCk), "TPC N#sigma - K hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCk), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCp), "TPC N#sigma - p hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCp), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCd), "TPC N#sigma - d hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCd), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N#sigma - e hypothesis (id. e);p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFe), "TOF N#sigma - e hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFe), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N#sigma - #mu hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N#sigma - #pi hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFk), "TOF N#sigma - K hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFk), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFp), "TOF N#sigma - p hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFp), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFd), "TOF N#sigma - d hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFd), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N#sigma - mismatch;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
   // Nsigma templates - semi-central
-  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N#sigma - e hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N#sigma - #mu hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N#sigma - #pi hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N#sigma - K hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N#sigma - p hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N#sigma - d hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N#sigma - e hypothesis (id. e);p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N#sigma - e hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N#sigma - #mu hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N#sigma - #pi hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N#sigma - K hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N#sigma - p hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N#sigma - d hypothesis;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N#sigma - mismatch;p (GeV/c)",
+  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
@@ -444,35 +455,35 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   // 	       200, 0., .25, 200, 0., .25);
 
   // Nsigma distributions
-  AddHistogram(ID(kHistNsigmaTPCTOF), "N#sigma TPC-TOF;p (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOF), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N#sigma TPC-TOF;p_{T} (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N#sigma TPC-TOF;p (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N#sigma TPC-TOF (central);p (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N_{#sigma,p} TPC-TOF (central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N#sigma TPC-TOF (semi-central);p (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N_{#sigma,p} TPC-TOF (semi-central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N#sigma TPC-TOF;p_{T} (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N#sigma TPC-TOF;p_{T} (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N#sigma TPC-TOF;p_{T} (GeV/c);N#sigma_{TPC};N#sigma_{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
@@ -487,6 +498,8 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   AddHistogram(ID(kHistEvPlaneCheckUsed), "backup event plane;#Psi;counts",
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
 	       kClLast, -.5, kClLast-.5);
+  AddHistogram(ID(kHistEvPlane3), "3rd order event plane;#Psi;counts",
+               100, -0. * TMath::Pi(), 2./3. * TMath::Pi());
   AddHistogram(ID(kHistEvPlaneCorr), "default - backup event plane;#Psi_{def};#Psi_{bak};event class",
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
@@ -532,6 +545,19 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 	       100., 0., 100.);
   AddHistogram(ID(kHistPhiAssHadVsEvPlane), "ass had;#Psi_{ev};#varphi;centrality",
 	       100, -0. * TMath::Pi(), 1. * TMath::Pi(),
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100., 0., 100.);
+
+  AddHistogram(ID(kHistPhiTrgJetEvPlane3), "trg jet;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100., 0., 100.);
+  AddHistogram(ID(kHistPhiTrgHadEvPlane3), "trg had;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100., 0., 100.);
+  AddHistogram(ID(kHistPhiAssHadEvPlane3), "ass had;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100., 0., 100.);
+  AddHistogram(ID(kHistPhiAssProtEvPlane3), "ass prot;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
 	       100., 0., 100.);
 
@@ -644,6 +670,7 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 
     FillH1(kHistEvPlane, fEventPlaneAngle);
     FillH1(kHistEvPlaneCheck, fEventPlaneAngleCheck);
+    FillH1(kHistEvPlane3, fEventPlaneAngle3);
     for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
       if (IsClass((Class_t) iClass)) {
         FillH2(kHistCentralityUsed, fCentrality, iClass);
@@ -675,10 +702,11 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
       fTOFsignal.SetParameter(3, 80.);
     }
 
-    Int_t nPrimTracks = fPrimTrackArray ? fPrimTrackArray->GetEntries() : 0;
-    FillH2(kHistCentralityVsMult, fCentrality, nPrimTracks);
-    for (Int_t iTrack = 0; iTrack < nPrimTracks; ++iTrack) {
-      AliVTrack *trk = (AliVTrack*) fPrimTrackArray->At(iTrack);
+    // associate candidates
+    const Int_t nPrimTracksAss = fPrimTrackArrayAss ? fPrimTrackArrayAss->GetEntries() : 0;
+    FillH2(kHistCentralityVsMult, fCentrality, nPrimTracksAss);
+    for (Int_t iTrack = 0; iTrack < nPrimTracksAss; ++iTrack) {
+      AliVTrack *trk = (AliVTrack*) fPrimTrackArrayAss->At(iTrack);
       FillH2(kHistSignalTPC, trk->P(), trk->GetTPCsignal());
       // ??? pt or p?
       FillH2(kHistSignalTOF, trk->P(), trk->GetTOFsignal() * 1.e-3); // ps -> ns
@@ -703,15 +731,15 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
       else if (phiRel > 2*TMath::Pi())
 	AliError(Form("phiRel = %f greater than 2pi, from phi = %f, psi = %f",
 		      phiRel, trk->Phi(), fEventPlaneAngle));
+      Float_t phiRel3 = trk->Phi() - fEventPlaneAngle3;
+      if (phiRel3 < 0.)
+	phiRel3 += 2. * TMath::Pi();
 
-      if (AcceptTrigger(trk)) {
-	trgArray[kTrgHad].Add(trk);
-	FillH1(kHistEtaPhiTrgHad, trk->Phi(), trk->Eta());
-      }
       if (AcceptAssoc(trk)) {
 	assArray[kAssHad].Add(trk);
 	FillH1(kHistEtaPhiAssHad, trk->Phi(), trk->Eta());
 	FillH2(kHistPhiAssHadEvPlane, phiRel, fCentrality);
+	FillH2(kHistPhiAssHadEvPlane3, phiRel3, fCentrality);
 	FillH3(kHistNsigmaTPCTOFUsed,
 	       trk->P(),
 	       fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
@@ -746,6 +774,7 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  assArray[kAssProt].Add(trk);
 	  FillH1(kHistEtaPhiAssProt, trk->Phi(), trk->Eta());
 	  FillH2(kHistPhiAssProtEvPlane, phiRel, fCentrality);
+	  FillH2(kHistPhiAssProtEvPlane3, phiRel3, fCentrality);
 	}
 
 	// template generation
@@ -853,10 +882,22 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
       }
     }
 
+    const Int_t nPrimTracksTrg = fPrimTrackArrayTrg ? fPrimTrackArrayTrg->GetEntries() : 0;
+    for (Int_t iTrack = 0; iTrack < nPrimTracksTrg; ++iTrack) {
+      AliVTrack *trk = (AliVTrack*) fPrimTrackArrayTrg->At(iTrack);
+      if (AcceptTrigger(trk)) {
+	trgArray[kTrgHad].Add(trk);
+	FillH1(kHistEtaPhiTrgHad, trk->Phi(), trk->Eta());
+      }
+    }
+
     // select trigger jet
     // and remove them from the Q vector
     Int_t nJets = fJetArray ? fJetArray->GetEntries() : 0;
-    TVector2 *qVector  = fEventplane->GetQVector();
+    const TVector2 *qVectorOrig = fEventplane->GetQVector();
+    TVector2 qVector;
+    if (qVectorOrig)
+      qVector = *qVectorOrig;
 
     for (Int_t iJet = 0; iJet < nJets; ++iJet) {
       AliAODJet *jet = (AliAODJet*) fJetArray->At(iJet);
@@ -865,7 +906,7 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	trgArray[kTrgJet].Add(jet);
 	FillH1(kHistEtaPhiTrgJet, jet->Phi(), jet->Eta());
 
-	if (qVector) {
+	if (qVectorOrig) {
 	  Int_t nRefTracks = jet->GetRefTracks()->GetEntriesFast();
 	  for (Int_t iTrack = 0; iTrack < nRefTracks; ++iTrack) {
 	    AliVTrack *track = (AliVTrack*) jet->GetRefTracks()->At(iTrack);
@@ -873,20 +914,18 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    if (fEventplane) {
 	      TVector2 evplaneContrib(fEventplane->GetQContributionX(track),
 				      fEventplane->GetQContributionY(track));
-	      *qVector -= evplaneContrib;
+	      qVector -= evplaneContrib;
 	    }
 	  }
 	}
       }
     }
-    // printf("event plane angle before/after removal of trigger jets: %f/%f, diff: %f\n",
-    // 	   fEventPlaneAngle, qVector->Phi()/2., qVector->Phi()/2. - fEventPlaneAngle);
-    if (qVector) {
+    if (qVectorOrig) {
       for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
 	if (IsClass((Class_t) iClass)) {
-	  FillH3(kHistEvPlaneCorrNoTrgJets, fEventPlaneAngle, qVector->Phi()/2., iClass);
+	  FillH3(kHistEvPlaneCorrNoTrgJets, qVectorOrig->Phi()/2., qVector.Phi()/2., iClass);
 	  if (trgArray[kTrgJet].GetEntriesFast() > 0)
-	    FillH3(kHistEvPlaneCorrNoTrgJetsTrgd, fEventPlaneAngle, qVector->Phi()/2., iClass);
+	    FillH3(kHistEvPlaneCorrNoTrgJetsTrgd, qVectorOrig->Phi()/2., qVector.Phi()/2., iClass);
 	}
       }
     }
@@ -1038,17 +1077,31 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
   // retrieve event plane
   fEventplane = InputEvent()->GetEventplane();
   if (fEventplane) {
-    fEventPlaneAngle = fEventplane->GetEventplane("Q");
-    fEventPlaneAngleCheck = fEventplane->GetEventplane("V0", InputEvent());
-    // use V0 event plane angle from flow task:
-    // fEventPlaneAngleCheck = AliAnalysisTaskVnV0::GetPsi2V0A();
-    // printf("V0A evplane = %f\n", fEventPlaneAngleCheck);
-    // fEventPlaneAngleCheck = AliAnalysisTaskVnV0::GetPsi2V0C();
-    // printf("V0C evplane = %f\n", fEventPlaneAngleCheck);
+    fEventPlaneAngle3 = fEventplane->GetEventplane("V0", InputEvent(), 3);
 
-    FillH1(kHistStat, kStatEvPlane);
+    if (fUseEvplaneV0) {
+      fEventPlaneAngle = fEventplane->GetEventplane("V0", InputEvent());
+      fEventPlaneAngleCheck = fEventplane->GetEventplane("Q");
+    }
+    else {
+      fEventPlaneAngle = fEventplane->GetEventplane("Q");
+      fEventPlaneAngleCheck = fEventplane->GetEventplane("V0", InputEvent());
+      // use V0 event plane angle from flow task:
+      // fEventPlaneAngleCheck = AliAnalysisTaskVnV0::GetPsi2V0A();
+      // printf("V0A evplane = %f\n", fEventPlaneAngleCheck);
+      // fEventPlaneAngleCheck = AliAnalysisTaskVnV0::GetPsi2V0C();
+      // printf("V0C evplane = %f\n", fEventPlaneAngleCheck);
+    }
+
+    // ensure angles to be in [0, ...)
+    if (fEventPlaneAngle3 < 0)
+      fEventPlaneAngle3 += 2.*TMath::Pi()/3.;
+    if (fEventPlaneAngle < 0)
+      fEventPlaneAngle += TMath::Pi();
     if (fEventPlaneAngleCheck < 0)
       fEventPlaneAngleCheck += TMath::Pi();
+
+    FillH1(kHistStat, kStatEvPlane);
   }
   else
     eventGood = kFALSE;
@@ -1062,17 +1115,43 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
 
   // retrieve primary tracks
   if (fESDEvent) {
-    fPrimTrackArray = fCutsPrim->GetAcceptedTracks(fESDEvent);
+    fPrimTrackArrayAss = fCutsPrimAss->GetAcceptedTracks(fESDEvent);
+    fPrimTrackArrayTrg = fCutsPrimTrg->GetAcceptedTracks(fESDEvent);
+    if (fCutsPrimTrgConstrain) {
+      TIter trkIter(fCutsPrimTrgConstrain->GetAcceptedTracks(fESDEvent));
+      while (AliESDtrack *trk = (AliESDtrack*) trkIter()) {
+	if (!fCutsPrimTrg->IsSelected(trk)) {
+	  AliESDtrack *track = (AliESDtrack*) fPrimConstrainedTrackArray->ConstructedAt(fPrimConstrainedTrackArray->GetEntriesFast());
+	  if(trk->GetConstrainedParam()) {
+	    track->Set(trk->GetConstrainedParam()->GetX(),
+		       trk->GetConstrainedParam()->GetAlpha(),
+		       trk->GetConstrainedParam()->GetParameter(),
+		       trk->GetConstrainedParam()->GetCovariance());
+	  }
+	  fPrimTrackArrayTrg->Add(track);
+	}
+      }
+    }
   }
   else if (fAODEvent) {
-    fPrimTrackArray = new TObjArray();
-    Int_t nTracksAOD = fAODEvent->GetNumberOfTracks();
-    for (Int_t iTrack = 0; iTrack < nTracksAOD; ++iTrack) {
+    // associate candidates
+    fPrimTrackArrayAss = new TObjArray();
+    const Int_t nTracksAODAss = fAODEvent->GetNumberOfTracks();
+    for (Int_t iTrack = 0; iTrack < nTracksAODAss; ++iTrack) {
       AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
       // 4: track cuts esdTrackCutsH ???
       // 10: R_AA cuts
       if (trk->TestFilterMask(1 << 4))
-        fPrimTrackArray->Add(trk);
+        fPrimTrackArrayAss->Add(trk);
+    }
+
+    // trigger candidates
+    fPrimTrackArrayTrg = new TObjArray();
+    const Int_t nTracksAODTrg = fAODEvent->GetNumberOfTracks();
+    for (Int_t iTrack = 0; iTrack < nTracksAODTrg; ++iTrack) {
+      AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
+      if (trk->IsHybridGlobalConstrainedGlobal())
+        fPrimTrackArrayTrg->Add(trk);
     }
   }
   else
@@ -1127,7 +1206,11 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
       phiRel -= TMath::Pi();
     if (phiRel < 0.)
       phiRel += 2. * TMath::Pi();
+    Float_t phiRel3 = trg->Phi() - fEventPlaneAngle3;
+    if (phiRel3 < 0.)
+      phiRel3 += 2. * TMath::Pi();
     FillH2(kHistPhiTrgHadEvPlane, phiRel, fCentrality);
+    FillH2(kHistPhiTrgHadEvPlane3, phiRel3, fCentrality);
   }
 
   return (acceptPt && acceptOrientation);
@@ -1183,7 +1266,11 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
       phiRel -= TMath::Pi();
     if (phiRel < 0.)
       phiRel += 2. * TMath::Pi();
+    Float_t phiRel3 = trg->Phi() - fEventPlaneAngle3;
+    if (phiRel3 < 0.)
+      phiRel3 += 2. * TMath::Pi();
     FillH2(kHistPhiTrgJetEvPlane, phiRel, fCentrality);
+    FillH2(kHistPhiTrgJetEvPlane3, phiRel3, fCentrality);
   }
 
   if (acceptOrientation) {
@@ -1225,6 +1312,8 @@ Bool_t AliAnalysisTaskJetProtonCorr::IsProton(AliVTrack *trk)
 Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t psi)
 {
   Float_t deltaPhi = phi - psi;
+  while (deltaPhi < 0.)
+    deltaPhi += 2 * TMath::Pi();
 
   // map to interval [-pi/2, pi/2)
   deltaPhi = std::fmod(deltaPhi + TMath::Pi()/2., TMath::Pi()) - TMath::Pi()/2.;
@@ -1496,9 +1585,13 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
 Bool_t AliAnalysisTaskJetProtonCorr::CleanUpEvent()
 {
   if (fAODEvent) {
-    delete fPrimTrackArray;
-    fPrimTrackArray = 0x0;
+    delete fPrimTrackArrayAss;
+    fPrimTrackArrayAss = 0x0;
+    delete fPrimTrackArrayTrg;
+    fPrimTrackArrayTrg = 0x0;
   }
+
+  fPrimConstrainedTrackArray->Delete();
 
   return kTRUE;
 }

@@ -5,6 +5,7 @@
 #include "AliLog.h"
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
 
 #define ID(x) x, #x
 #define LAB(x) x + 1, #x
@@ -20,7 +21,6 @@ class AliPIDResponse;
 class AliEventPoolManager;
 class AliEventPool;
 class AliEventplane;
-class AliESDtrackCuts;
 
 class AliAnalysisTaskJetProtonCorr :
   public AliAnalysisTaskSE
@@ -50,6 +50,13 @@ public:
   void SetPtThrAss(Float_t minPt, Float_t maxPt) { fAssPartPtMin = minPt; fAssPartPtMax = maxPt; }
   Float_t GetPtMinAss() const { return fAssPartPtMin; }
   Float_t GetPtMaxAss() const { return fAssPartPtMax; }
+
+  void SetTrackCutsAss(AliESDtrackCuts cuts) { *fCutsPrimAss = cuts; }
+  void SetTrackCutsTrg(AliESDtrackCuts cuts) { *fCutsPrimTrg = cuts; }
+  void SetTrackCutsTrgConstrain(AliESDtrackCuts cuts) { *fCutsPrimTrgConstrain = cuts; }
+
+  void SetUseEvplaneV0(Bool_t usev0 = kTRUE) { fUseEvplaneV0 = usev0; }
+  Bool_t GetUseEvplaneV0() const { return fUseEvplaneV0; }
 
   void PrintTask(Option_t *option, Int_t indent) const;
 
@@ -162,6 +169,7 @@ public:
       kHistEvPlaneUsed,
       kHistEvPlaneCheck,
       kHistEvPlaneCheckUsed,
+      kHistEvPlane3,
       kHistEvPlaneCorr,
       kHistEvPlaneCorrNoTrgJets,
       kHistEvPlaneCorrNoTrgJetsTrgd,
@@ -176,6 +184,10 @@ public:
       kHistPhiAssHadEvPlane,
       kHistPhiAssHadVsEvPlane,
       kHistPhiAssProtEvPlane,
+      kHistPhiTrgJetEvPlane3,
+      kHistPhiTrgHadEvPlane3,
+      kHistPhiAssHadEvPlane3,
+      kHistPhiAssProtEvPlane3,
       kHistLast
   };
 
@@ -304,7 +316,11 @@ protected:
   AliPIDResponse *fPIDResponse; //!
   Float_t fEventPlaneAngle; //!
   Float_t fEventPlaneAngleCheck; //!
-  TObjArray *fPrimTrackArray; //!
+  Float_t fEventPlaneAngle3; //!
+
+  TObjArray *fPrimTrackArrayAss; //!
+  TObjArray *fPrimTrackArrayTrg; //!
+  TClonesArray *fPrimConstrainedTrackArray; //!
   TClonesArray *fJetArray; //!
 
   AliEventPoolManager *fPoolMgr[kAssProt + 1]; //!
@@ -390,8 +406,11 @@ protected:
   char fJetBranchName[fgkStringLength];     // jet branch name
 
   Bool_t fUseStandardCuts;
+  Bool_t fUseEvplaneV0;
 
-  AliESDtrackCuts *fCutsPrim;	// track cuts for primary particles
+  AliESDtrackCuts *fCutsPrimTrg;	// track cuts for primary particles (trigger)
+  AliESDtrackCuts *fCutsPrimTrgConstrain;	// track cuts for primary particles (trigger)
+  AliESDtrackCuts *fCutsPrimAss;	// track cuts for primary particles (associate)
   Float_t fCutsTwoTrackEff;
 
   Float_t fTrgPartPtMin;
