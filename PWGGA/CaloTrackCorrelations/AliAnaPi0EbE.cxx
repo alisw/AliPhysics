@@ -229,8 +229,15 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     
   }
   
-  for(Int_t iSM = 0; iSM < 22; iSM++) fhNLocMaxPtSM[iSM] = 0;
-  
+  for(Int_t iSM = 0; iSM < 22; iSM++)
+  {
+    fhNLocMaxPtSM[iSM] = 0;
+    for(Int_t inlm = 0; inlm < 3; inlm++)
+    {
+      fhSelectedMassPtLocMaxSM    [inlm][iSM] = 0;
+      fhSelectedLambda0PtLocMaxSM [inlm][iSM] = 0;
+    }
+  }
   //Initialize parameters
   InitParameters();
   
@@ -1025,6 +1032,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhSelectedMassPtLocMax[inlm]->SetYTitle("mass (GeV/c^{2})");
       fhSelectedMassPtLocMax[inlm]->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhSelectedMassPtLocMax[inlm]) ;
+      
+      for(Int_t iSM = 0; iSM < fNSuperModules; iSM++)
+      {
+        fhSelectedMassPtLocMaxSM[inlm][iSM]  = new TH2F
+        (Form("hSelectedMassPtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhSelectedMassPtLocMaxSM[inlm][iSM]->SetYTitle("mass (GeV/c^{2})");
+        fhSelectedMassPtLocMaxSM[inlm][iSM]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhSelectedMassPtLocMaxSM[inlm][iSM]) ;
+
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]  = new TH2F
+        (Form("hSelectedLambda0PtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs #lambda_{0}^{2}: p_{T} vs mass, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]->SetYTitle("#lambda_{0}^{2}");
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhSelectedLambda0PtLocMaxSM[inlm][iSM]) ;
+      }
       
       if(IsDataMC())
       {
@@ -3099,7 +3121,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPt     ->Fill(mom.Pt(),mass);
     fhSelectedMassSplitPt->Fill(ptSplit ,mass);
     fhSelectedMassPtLocMax[indexMax]->Fill(mom.Pt(),mass);
-
+    
+    Int_t   nSM  = GetModuleNumber(calo);
+    if(nSM < fNSuperModules && nSM >=0)
+    {
+      fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(mom.Pt(),mass);
+      fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(mom.Pt(),calo->GetM02());
+    }
+    
     if(IsDataMC())
     {
       if(mcIndex==kmcPi0)
