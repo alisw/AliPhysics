@@ -35,7 +35,8 @@ fSqrtS(0),
 fYield(0),
 fStatError(0),
 fSystError(0),
-fNormError(0),
+fNormErrorPos(0),
+fNormErrorNeg(0),
 fYMin(0),
 fYMax(0),
 fStatus(0),
@@ -58,7 +59,8 @@ fSqrtS(sqrts),
 fYield(value),
 fStatError(stat),
 fSystError(syst),
-fNormError(norm),
+fNormErrorPos(norm),
+fNormErrorNeg(0),
 fYMin(ymin),
 fYMax(ymax),
 fStatus(status),
@@ -73,6 +75,33 @@ fTag(tag)
   AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
 }
 
+AliParticleYield::AliParticleYield(Int_t pdg, Int_t system, Float_t sqrts, Float_t value, Float_t stat, Float_t syst, Float_t normPos, Float_t normNeg, Float_t ymin, Float_t ymax, Int_t status, Int_t type, TString centr, Int_t isSum, TString tag):
+TObject(),
+fPdgCode(pdg),
+fPdgCode2(0),
+fPartName(""),
+fCollisionSystem(system),
+fSqrtS(sqrts),
+fYield(value),
+fStatError(stat),
+fSystError(syst),
+fNormErrorPos(normPos),
+fNormErrorNeg(normNeg),
+fYMin(ymin),
+fYMax(ymax),
+fStatus(status),
+fMeasurementType(type),
+fCentr(centr),
+fIsSum(isSum),
+fTag(tag)
+
+{
+  // Constructor
+  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
+  AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
+}
+
+
 AliParticleYield::AliParticleYield(const AliParticleYield& part) : 
 TObject(),
 fPdgCode(part.fPdgCode),
@@ -83,7 +112,8 @@ fSqrtS(part.fSqrtS),
 fYield(part.fYield),
 fStatError(part.fStatError),
 fSystError(part.fSystError),
-fNormError(part.fNormError),
+fNormErrorPos(part.fNormErrorPos),
+fNormErrorNeg(part.fNormErrorNeg),
 fYMin(part.fYMin),
 fYMax(part.fYMax),
 fStatus(part.fStatus),
@@ -125,7 +155,6 @@ TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TStri
   TEventList *elist = (TEventList*)gDirectory->Get("particlelist");
   Int_t npart = elist->GetN();
   for(Int_t ipart = 0; ipart < npart; ipart++){
-    //    std::cout << ipart << " " << elist->GetEntry(ipart) << std::endl;
     tree->GetEntry(elist->GetEntry(ipart));
     new((*arr)[ipart]) AliParticleYield(*part);// We need to clone part, because it is overwritten by the next read
   }
@@ -159,13 +188,22 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
   }
   TString line;
   Int_t ipart = 0;
+  std::cout << "Reading " << fileName << std::endl;
+  
   while (line.ReadLine(filestream) ) {
     // Strip trailing and leading whitespaces
     line = line.Strip(TString::kLeading,  ' ');
     line = line.Strip(TString::kTrailing, ' ');
 
     // Skip commented lines and headers
-    if (line.BeginsWith("#")) continue;
+    if (line.BeginsWith("#")) {
+      //print comments. It if they look like warnings, print them such that they are really visible
+      if(line.Contains("warn", TString::kIgnoreCase)) std::cout << std::endl << "********************************************************" <<std::endl ;
+      std::cout << " " << line.Data() << std::endl;      
+      if(line.Contains("warn", TString::kIgnoreCase)) std::cout << "********************************************************" <<std::endl << std::endl;
+
+      continue;
+    }
     if (line.BeginsWith("PDG")) continue;
 
     // Tokenize line using custom separator
@@ -205,7 +243,27 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
     // The "GetError" function can handle % errors. 
     Float_t stat   = GetError(((TObjString*)cols->At(5))  ->String(), yield);
     Float_t syst   = GetError(((TObjString*)cols->At(6))  ->String(), yield);
-    Float_t norm   = GetError(((TObjString*)cols->At(7))  ->String(), yield);
+    TString normString(((TObjString*)cols->At(7))->String());
+
+    Float_t normPos = 0;
+    Float_t normNeg = 0;
+    if (normString.Contains("+") && normString.Contains("-")) {
+      
+      // If the string for the normalization uncertainty contains a + and a -, it means it is asymmetric
+      if(normString.First("+") < normString.First("-") ) {// the + error is quoted first
+        normPos = GetError(normString(1,normString.First("-")-1)+normString(normString.First("e"),normString.Length()), yield); // start from 1 (skip + sign). The second bit is to propagate the scientific notation to the first part of the error
+        normNeg = GetError(normString(normString.First("-")+1,normString.Length()), yield); // +1 -> skip sign
+      } 
+      else {
+        // This is the opposite case
+        normNeg = GetError(normString(1,normString.First("+")-1)+normString(normString.First("e"),normString.Length()), yield); // start from 1 (skip + sign). The second bit is to propagate the scientific notation to the first part of the error
+        normPos = GetError(normString(normString.First("+")+1,normString.Length()), yield); // +1 -> skip sign
+      }
+      
+    } else {
+      // symmetric error: set only normpos
+      normPos   = GetError(((TObjString*)cols->At(7))  ->String(), yield);
+    }
     Float_t ymin   = ((TObjString*)cols->At(8))  ->String().Atof();
     Float_t ymax   = ((TObjString*)cols->At(9))  ->String().Atof();
     Int_t   status = ((TObjString*)cols->At(10)) ->String().Atoi();
@@ -222,7 +280,7 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
     tag   = tag.Strip(TString::kTrailing, ' ');
     
     // add to array
-    AliParticleYield * part = new  AliParticleYield(pdg,system,sqrts,yield,stat,syst,norm,ymin,ymax,status,type,centr,issum,tag);
+    AliParticleYield * part = new  AliParticleYield(pdg,system,sqrts,yield,stat,syst,normPos, normNeg,ymin,ymax,status,type,centr,issum,tag);
     part->SetPartName(name); // Check name and PDG code consistency   
     part->SetPdgCode2(pdg2); // Set second PDG code in case of ratios 
     part->CheckTypeConsistency();                                     
@@ -232,6 +290,7 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
       //    delete part;
 
   }
+  std::cout << "<- File read" << std::endl;
 
 
   return arr;
@@ -353,9 +412,23 @@ void AliParticleYield::SaveAsASCIIFile(TClonesArray * arr, const char * fileName
   char format[20];
   snprintf(format,20,"%%%dg", fSignificantDigits);
 
+  char formatA[30];// We have to rebuild the format for asymmetric uncertainties...
+  snprintf(formatA,30,"+%%%dg-%%%dg", fSignificantDigits, fSignificantDigits);
+
   TIter iter(arr);
   AliParticleYield * part = 0;
+  TString normError ;
   while ((part = (AliParticleYield*) iter.Next())){    
+    if(part->GetNormErrorNeg()) {
+      normError = FormatCol(Form(formatA, // Asymmetric error format  
+                                 RoundToSignificantFigures(part->GetNormErrorPos(),fSignificantDigits), 
+                                 RoundToSignificantFigures(part->GetNormErrorNeg(),fSignificantDigits)),
+                            colWidth,
+                            separator);
+    }
+    else {
+      normError = FormatCol(Form(format, RoundToSignificantFigures(part->GetNormError(),fSignificantDigits)) , colWidth , separator);
+    }
     fileOut 
       << FormatCol(Form("%d",part->GetPdgCode())                                                    , colWidth , separator) 
       << FormatCol(part->GetPartName()                                                              , colWidth , separator) 	    
@@ -364,7 +437,7 @@ void AliParticleYield::SaveAsASCIIFile(TClonesArray * arr, const char * fileName
       << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield(),    fSignificantDigits)) , colWidth , separator)
       << FormatCol(Form(format, RoundToSignificantFigures(part->GetStatError(),fSignificantDigits)) , colWidth , separator) 
       << FormatCol(Form(format, RoundToSignificantFigures(part->GetSystError(),fSignificantDigits)) , colWidth , separator)
-      << FormatCol(Form(format, RoundToSignificantFigures(part->GetNormError(),fSignificantDigits)) , colWidth , separator)	
+      << normError.Data()	
       << FormatCol(Form(format, part->GetYMin())                                                    , colWidth , separator) 
       << FormatCol(Form(format, part->GetYMax())                                                    , colWidth , separator)	    
       << FormatCol(Form("%d",part->GetStatus()          )                                           , colWidth , separator) 
@@ -387,6 +460,7 @@ void AliParticleYield::WriteThermusFile(TClonesArray * arr, const char * filenam
   }
   if(!filename) {
     Printf("<AliParticleYield::WriteThermusFile> Error: no filename provided");
+    return;
   }
 
   ofstream fileOut(filename);
@@ -404,17 +478,17 @@ void AliParticleYield::WriteThermusFile(TClonesArray * arr, const char * filenam
     
     if(part->IsTypeRatio()) { 
       // If it's a ratio we have to write the 2 pdg codes
-      fileOut << FormatCol(Form("%d %d ",part->GetPdgCode(), part->GetPdgCode2())                              , colwidth) 
-	      << FormatCol(part->GetTag()                                                                      , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+      fileOut << FormatCol(Form("%d\t%d\t",part->GetPdgCode(), part->GetPdgCode2())                              , colwidth) 
+	      << part->GetTag() << "\t"
+	      << Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) << "\t"
+	      << Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) 
 	      << endl;
     }
     else {
-      fileOut << FormatCol(Form("%d",part->GetPdgCode())                                                       , colwidth) 
-	      << FormatCol(part->GetTag()                                                                      , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) , colwidth)
-	      << FormatCol(Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) , colwidth)
+      fileOut <<Form("%d",part->GetPdgCode())                                                       << "\t" 
+	      <<part->GetTag()                                                                      << "\t"
+	      <<Form(format, RoundToSignificantFigures(part->GetYield()      , fSignificantDigits)) << "\t"
+	      <<Form(format, RoundToSignificantFigures(part->GetTotalError() , fSignificantDigits)) 
 	      << endl;      
     }
   
@@ -514,29 +588,35 @@ void AliParticleYield::Print (Option_t *) const {
   else {
     Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
   }
-  Printf("Normalizaion uncertainty: %f", fNormError);
+  if(fNormErrorNeg) {
+    Printf("Normalizaion uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
+  }
+  else {
+    Printf("Normalizaion uncertainty: %f", fNormErrorPos);
+  }
 }
 
 Bool_t AliParticleYield::operator==(const AliParticleYield& rhs) {
   // Check if the two particles are identical
 
   Bool_t isEqual = 
-    (fPdgCode         == rhs.fPdgCode         ) &&
-    (fPdgCode2        == rhs.fPdgCode2        ) &&
-    (fPartName        == rhs.fPartName        ) &&
-    (fCollisionSystem == rhs.fCollisionSystem ) &&
-    Compare2Floats(fSqrtS,rhs.fSqrtS          ) &&
-    Compare2Floats(fYield,rhs.fYield          ) &&
-    Compare2Floats(fStatError,rhs.fStatError  ) &&
-    Compare2Floats(fSystError,rhs.fSystError  ) &&
-    Compare2Floats(fNormError,rhs.fNormError  ) &&
-    Compare2Floats(fYMin,rhs.fYMin            ) &&
-    Compare2Floats(fYMax,rhs.fYMax            ) &&
-    (fStatus          == rhs.fStatus          ) &&
-    (fMeasurementType == rhs.fMeasurementType ) &&
-    (fCentr           == rhs.fCentr           ) &&
-    (fIsSum           == rhs.fIsSum           ) &&
-    (fTag             == rhs.fTag             ) ;
+    (fPdgCode         == rhs.fPdgCode              ) &&
+    (fPdgCode2        == rhs.fPdgCode2             ) &&
+    (fPartName        == rhs.fPartName             ) &&
+    (fCollisionSystem == rhs.fCollisionSystem      ) &&
+    Compare2Floats(fSqrtS,rhs.fSqrtS               ) &&
+    Compare2Floats(fYield,rhs.fYield               ) &&
+    Compare2Floats(fStatError,rhs.fStatError       ) &&
+    Compare2Floats(fSystError,rhs.fSystError       ) &&
+    Compare2Floats(fNormErrorPos,rhs.fNormErrorPos ) &&
+    Compare2Floats(fNormErrorNeg,rhs.fNormErrorNeg ) &&
+    Compare2Floats(fYMin,rhs.fYMin                 ) &&
+    Compare2Floats(fYMax,rhs.fYMax                 ) &&
+    (fStatus          == rhs.fStatus               ) &&
+    (fMeasurementType == rhs.fMeasurementType      ) &&
+    (fCentr           == rhs.fCentr                ) &&
+    (fIsSum           == rhs.fIsSum                ) &&
+    (fTag             == rhs.fTag                  ) ;
   
   return isEqual;
   
@@ -594,4 +674,15 @@ Bool_t AliParticleYield::Compare2Floats(Float_t a, Float_t b) {
     Printf("Warning: %f and %f are different", a,b); 
   }
   return areEqual;
+}
+
+
+Float_t AliParticleYield::GetNormError() const {
+  // Returs a symmetrized error in case the normalizatione Error is asymmetric
+  if(fNormErrorNeg) {
+    AliWarning("Error is asymmetric, returining symmetrized uncertainty");
+    return (TMath::Abs(fNormErrorNeg)+TMath::Abs(fNormErrorPos))/2;
+  }
+  else return fNormErrorPos; // If the uncertainty is not asymmetric, fNormErrorPos stores it.
+
 }

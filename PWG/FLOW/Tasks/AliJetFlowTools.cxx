@@ -119,7 +119,6 @@ AliJetFlowTools::AliJetFlowTools() :
     fDphiUnfolding      (kTRUE),
     fDphiDptUnfolding   (kFALSE),
     fExLJDpt            (kTRUE),
-    fSetTreatCorrErrAsUncorrErr(kFALSE),
     fTitleFontSize      (-999.),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
@@ -878,7 +877,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     // contents of the original histogram
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     fJetPtDeltaPhi->Scale(fCentralityWeights->At(0));
-    printf("Extracted %i wight weight %.2f \n", spectrumName.Data(), fCentralityWeights->At(0));
+    printf("Extracted %s wight weight %.2f \n", spectrumName.Data(), fCentralityWeights->At(0));
     // merge subsequent bins (if any)
     for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
         spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
@@ -1531,7 +1530,7 @@ void AliJetFlowTools::GetNominalValues(
             nominalOut,
             1, 
             fBinsTrue->At(0), 
-            fBinsTrue->At(fBinsTrue->GetSize()),
+            fBinsTrue->At(fBinsTrue->GetSize()-1),
             readMe,
             "nominal_values");
     v2 = GetV2(nominalIn, nominalOut, fEventPlaneRes, "nominal v_{2}");
@@ -1549,9 +1548,11 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TArrayI* variations2ndIn,      // second source of variations
         TArrayI* variations2ndOut,     // second source of variations
         TString type,                   // type of uncertaitny
+        TString type2,
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
+        Float_t corr,                   // correlation strength
         TString in,                     // input file name (created by this unfolding class)
         TString out                     // output file name (which will hold results of the systematic test)
         ) const
@@ -1619,7 +1620,6 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             Style(AddLegend(gPad));
             relativeErrorVariation->Write();
         }
-
     }
     // call the functions for a second set of systematic sources
     if(variations2ndIn && variations2ndOut) {
@@ -1639,10 +1639,10 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                type);
+                type2);
         if(relativeError2ndVariationInUp) {
             // canvas with the error from variation strength
-            TCanvas* relativeError2ndVariation(new TCanvas(Form("relativeError2nd_%s", type.Data()), Form("relativeError2nd_%s", type.Data())));
+            TCanvas* relativeError2ndVariation(new TCanvas(Form("relativeError2nd_%s", type2.Data()), Form("relativeError2nd_%s", type2.Data())));
             relativeError2ndVariation->Divide(2);
             relativeError2ndVariation->cd(1);
             Style(gPad, "GRID");
@@ -1692,7 +1692,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationInLow) bInLow = relativeError2ndVariationInLow->GetBinContent(b+1);
         if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
-        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(dInLow));
+        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
     }
@@ -1707,17 +1707,19 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Double_t lowErr(0.), upErr(0.);
         for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
             // add the in and out of plane errors in quadrature
-            if(fSetTreatCorrErrAsUncorrErr) {
-                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1);
-                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            // propagation is tricky because we should consider two cases:
+            // [1] the error is uncorrelated, and we propagate upper 1 with lower 2 and vice versa
+            // [2] the error is correlated - in this case upper 1 should be propagated with upper 2
+            // as the fluctuations are bound to always to of same sign
+            if(corr <= 0) {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
             } else {
-                // the in and out of plane correlated errors will be fully correlated, so take the correlation coefficient equal to 1
-                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) - 1.*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
-                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 1.*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) -2.*corr*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 2.*corr*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
             }
-            // set the errors 
-            ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
-            ayh[i] = TMath::Sqrt(upErr)*nominal->GetBinContent(i+1);
+            ayl[i] = TMath::Sqrt(TMath::Abs(lowErr))*nominal->GetBinContent(i+1);
+            ayh[i] = TMath::Sqrt(TMath::Abs(upErr))*nominal->GetBinContent(i+1);
             // get the bin width (which is the 'error' on x
             Double_t binWidth(nominal->GetBinWidth(i+1));
             axl[i] = binWidth/2.;
@@ -1749,12 +1751,12 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
                     nominalIn,
                     nominalOut,
                     fEventPlaneRes,
-                    "v_{2} with correlated uncertainty",
+                    "v_{2} with shape uncertainty",
                     relativeErrorInUp,
                     relativeErrorInLow,
                     relativeErrorOutUp,
                     relativeErrorOutLow,
-                    .5));
+                    corr));
         // pass the nominal values to the pointer references
         corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
@@ -1926,10 +1928,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         DoIntermediateSystematics(
                 recBinIn, 
                 recBinOut, 
-                relativeErrorRecBinInLow,       // pointer reference
-                relativeErrorRecBinInUp,        // pointer reference
-                relativeErrorRecBinOutLow,      // pointer reference
-                relativeErrorRecBinOutUp,       // pointer reference
+                relativeErrorRecBinInUp,       // pointer reference
+                relativeErrorRecBinInLow,        // pointer reference
+                relativeErrorRecBinOutUp,      // pointer reference
+                relativeErrorRecBinOutLow,       // pointer reference
                 relativeStatisticalErrorIn,
                 relativeStatisticalErrorOut,
                 nominal,
@@ -1984,9 +1986,9 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorRecBinInUp) cInUp = relativeErrorRecBinInUp->GetBinContent(b+1);
         if(relativeErrorRecBinOutUp) cOutUp = relativeErrorRecBinOutUp->GetBinContent(b+1);
         dInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp;
-        if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(dInUp));
+        if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(dInUp));
         dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
-        if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(dOutUp));
+        if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(dOutUp));
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
         if(relativeErrorRegularizationOutLow) aOutLow = relativeErrorRegularizationOutLow->GetBinContent(b+1);
@@ -2010,8 +2012,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         Double_t lowErr(0.), upErr(0.);
         for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
             // add the in and out of plane errors in quadrature
-            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1);
-            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            // take special care here: to propagate the assymetric error, we need to correlate the
+            // InLow with OutUp (minimum value of ratio) and InUp with OutLow (maximum value of ratio)
+            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1);
+            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
             // set the errors 
             ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
             ayh[i] = TMath::Sqrt(upErr)*nominal->GetBinContent(i+1);
@@ -2330,13 +2334,13 @@ void AliJetFlowTools::GetShapeUncertainty(
                    temp->Divide(unfoldedSpectrum);
                    // get the absolute relative error
                    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-                       // check if the error is larger than the current maximum
-                       if( temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorInUp->GetBinContent(b+1)) {
+                       // the variation is HIGHER than the nominal point, so the bar goes UP
+                       if( temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorInUp->GetBinContent(b+1)) {
                            relativeErrorInUp->SetBinContent(b+1, temp->GetBinContent(b+1));
                            relativeErrorInUp->SetBinError(b+1, 0.);
                        }
-                       // check if the error is smaller than the current minimum
-                       else if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorInLow->GetBinContent(b+1)) {
+                       // the variation is LOWER than the nominal point, so the bar goes DOWN
+                       else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorInLow->GetBinContent(b+1)) {
                            relativeErrorInLow->SetBinContent(b+1, temp->GetBinContent(b+1));
                            relativeErrorInLow->SetBinError(b+1, 0.);
                        }
@@ -2458,12 +2462,12 @@ void AliJetFlowTools::GetShapeUncertainty(
                    // get the absolute relative error 
                    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
                        // check if the error is larger than the current maximum
-                       if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorOutUp->GetBinContent(b+1)) {
+                       if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorOutUp->GetBinContent(b+1)) {
                            relativeErrorOutUp->SetBinContent(b+1, temp->GetBinContent(b+1));
                            relativeErrorOutUp->SetBinError(b+1, 0.);
                        }
                        // check if the error is smaller than the current minimum
-                       else if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorOutLow->GetBinContent(b+1)) {
+                       else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorOutLow->GetBinContent(b+1)) {
                            relativeErrorOutLow->SetBinContent(b+1, temp->GetBinContent(b+1));
                            relativeErrorOutLow->SetBinError(b+1, 0.);
                        }
@@ -2653,13 +2657,16 @@ void AliJetFlowTools::GetShapeUncertainty(
 
    // save the relative errors
    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-       relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)-1);
+
+       // to arrive at a min and max from here, combine in up and out low
+       
+       relativeErrorInUp->SetBinContent(b+1, -1.*(relativeErrorInUp->GetBinContent(b+1)-1));
        relativeErrorInUp->SetBinError(b+1, 0.);
-       relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)-1);
+       relativeErrorOutUp->SetBinContent(b+1, -1.*(relativeErrorOutUp->GetBinContent(b+1)-1));
        relativeErrorOutUp->SetBinError(b+1, .0);
-       relativeErrorInLow->SetBinContent(b+1, relativeErrorInLow->GetBinContent(b+1)-1);
+       relativeErrorInLow->SetBinContent(b+1, -1.*(relativeErrorInLow->GetBinContent(b+1)-1));
        relativeErrorInLow->SetBinError(b+1, 0.);
-       relativeErrorOutLow->SetBinContent(b+1, relativeErrorOutLow->GetBinContent(b+1)-1);
+       relativeErrorOutLow->SetBinContent(b+1, -1.*(relativeErrorOutLow->GetBinContent(b+1)-1));
        relativeErrorOutLow->SetBinError(b+1, .0);
    }
    relativeErrorInUp->SetYTitle("relative uncertainty");
@@ -3300,14 +3307,19 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
     for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
         // extract the absolute errors
         in = h1->GetBinContent(i+1);
-        einUp = in*relativeErrorInUp->GetBinContent(i+1);
-        einLow = in*relativeErrorInLow->GetBinContent(1+i);
+        einUp = TMath::Abs(in*relativeErrorInUp->GetBinContent(i+1));
+        einLow = TMath::Abs(in*relativeErrorInLow->GetBinContent(1+i));
         out = h2->GetBinContent(i+1);
-        eoutUp = out*relativeErrorOutUp->GetBinContent(1+i);
-        eoutLow = out*relativeErrorOutLow->GetBinContent(1+i);
+        eoutUp = TMath::Abs(out*relativeErrorOutUp->GetBinContent(1+i));
+        eoutLow = TMath::Abs(out*relativeErrorOutLow->GetBinContent(1+i));
         // get the error squared
-        error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
-        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
+        if(rho <= 0) {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp);
+        } else {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
+        }
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
         // set the errors 

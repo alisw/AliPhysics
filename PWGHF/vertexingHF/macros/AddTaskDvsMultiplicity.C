@@ -80,7 +80,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
   if(isPPbData) dMultTask->SetIsPPbData();
 
   if(NchWeight){
-    TH1F *hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
+    TH1F *hNchPrimaries = NULL; 
+    if(isPPbData) hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight");
+    else hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
     if(hNchPrimaries) {
       dMultTask->UseMCNchWeight(true);
       dMultTask->SetHistoNchWeight(hNchPrimaries);

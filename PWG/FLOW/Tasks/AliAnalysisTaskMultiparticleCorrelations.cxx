@@ -302,19 +302,24 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
 
  // Weights:
  TString type[2] = {"RP","POI"};
- TString variable[3] = {"phi","pt","eta"};
+ TString variable[3] = {"phi","pt","eta"}; 
  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
  {
   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
   {
    if(fUseWeights[rp][ppe])
    {
-    if(!fWeightsHist[rp][ppe]){Fatal(sMethodName.Data(),"fWeightsHist[%d][%d]",rp,ppe);}
-    else{fMPC->SetWeightsHist(fWeightsHist[rp][ppe],type[rp].Data(),variable[ppe].Data());}
-   }
+    if(!fWeightsHist[rp][ppe])
+    {
+     fWeightsHist[rp][ppe] = GetHistogramWithWeights(TString(Form("%s/%s",gSystem->pwd(),"weights.root")).Data(),TString(this->fName).Data(),type[rp].Data(),variable[ppe].Data());
+    }
+    if(!fWeightsHist[rp][ppe])
+    {
+     Fatal(sMethodName.Data(),"fWeightsHist[%d][%d]",rp,ppe);
+    } else{fMPC->SetWeightsHist(fWeightsHist[rp][ppe],type[rp].Data(),variable[ppe].Data());}
+   } // if(fUseWeights[rp][ppe])
   } // for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
  } // for(Int_t rp=0;rp<2;rp++) // [RP,POI]
-
 
  // Control histos:
  // Kinematics:
