@@ -204,7 +204,6 @@ void AliT0CalibAnalysisTask::UserExec(Option_t *)
 	fNcont=0;
 	TString triggers = fESD->GetFiredTriggerClasses();
 	fTrigger.SetString(triggers.Data());
-	if ( !triggers.Contains("Z") ) 	  cout<<triggers<<endl;
 	TString inputtriggers =fESD-> GetHeader()->GetFiredTriggerInputs();
 	// cout<<inputtriggers<<endl;
 	fTriggerinput.SetString(inputtriggers.Data());
