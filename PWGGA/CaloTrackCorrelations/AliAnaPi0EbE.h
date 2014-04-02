@@ -194,9 +194,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMassPt  ;       //! pair mass vs pT, for selected pairs
   TH2F         * fhSelectedMassSplitPt  ;  //! pair mass vs pT (split), for selected pairs
   
-  TH2F         * fhMassPtLocMax[3] ;       //! pair mass vs pT, for all pairs
-  TH2F         * fhSelectedMassPtLocMax[3] ;//! pair mass vs pT, for selected pairs
+  TH2F         * fhMassPtLocMax[3] ;             //! pair mass vs pT, for all pairs, for each NLM case
+  TH2F         * fhSelectedMassPtLocMax[3] ;     //! pair mass vs pT, for selected pairs, for each NLM case
+  TH2F         * fhSelectedMassPtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
   TH2F         * fhMCSelectedMassPtLocMax[6][3] ;//! pair mass vs pT, for selected pairs, vs originating particle
+
+  TH2F         * fhSelectedLambda0PtLocMaxSM[3][22];//! pair mass vs pT, for selected pairs, for each NLM case, for each SM
 
   TH2F         * fhMassNoOverlap  ;                 //! pair mass vs E, for all pairs, no overlap
   TH2F         * fhMassPtNoOverlap  ;               //! pair mass vs pT, for all pairs, no overlap
@@ -350,7 +353,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
   // Local maxima
   TH2F         * fhNLocMaxPt;               //! number of maxima in selected clusters
-  TH2F         * fhNLocMaxPtSM[22] ;        //! Pt of identified clusters, vs NLM
+  TH2F         * fhNLocMaxPtSM[22] ;        //! number of maxima in selected clusters, per super module
   TH2F         * fhMCNLocMaxPt[6];          //! number of maxima in selected clusters, vs originating particle
   TH2F         * fhPtLambda0LocMax[3] ;     //! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster
   TH2F         * fhMCPtLambda0LocMax[6][3] ;//! pT vs lambda0 of selected cluster, 1,2,>2 local maxima in cluster, vs originating particle
