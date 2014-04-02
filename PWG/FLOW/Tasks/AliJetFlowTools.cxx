@@ -119,7 +119,6 @@ AliJetFlowTools::AliJetFlowTools() :
     fDphiUnfolding      (kTRUE),
     fDphiDptUnfolding   (kFALSE),
     fExLJDpt            (kTRUE),
-    fSetTreatCorrErrAsUncorrErr(kFALSE),
     fTitleFontSize      (-999.),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
@@ -1708,9 +1707,17 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         Double_t lowErr(0.), upErr(0.);
         for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
             // add the in and out of plane errors in quadrature
-            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1) - 2.*corr*TMath::Abs(relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1));
-            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1) - 2.*corr*TMath::Abs(relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1));
-            // set the errors 
+            // propagation is tricky because we should consider two cases:
+            // [1] the error is uncorrelated, and we propagate upper 1 with lower 2 and vice versa
+            // [2] the error is correlated - in this case upper 1 should be propagated with upper 2
+            // as the fluctuations are bound to always to of same sign
+            if(corr <= 0) {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+            } else {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) -2.*corr*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 2.*corr*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            }
             ayl[i] = TMath::Sqrt(TMath::Abs(lowErr))*nominal->GetBinContent(i+1);
             ayh[i] = TMath::Sqrt(TMath::Abs(upErr))*nominal->GetBinContent(i+1);
             // get the bin width (which is the 'error' on x
@@ -3306,18 +3313,15 @@ TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
         eoutUp = TMath::Abs(out*relativeErrorOutUp->GetBinContent(1+i));
         eoutLow = TMath::Abs(out*relativeErrorOutLow->GetBinContent(1+i));
         // get the error squared
-
-        error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutLow);
-
-        error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutUp);
-
+        if(rho <= 0) {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp);
+        } else {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
+        }
         if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
         if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
-//        if(rho > 0) {
-//            if(error2Up > error2Low) error2Low = error2Up;
-//            else error2Low = error2Up;
-//        }
-
         // set the errors 
         ayh[i] = error2Up;
         ayl[i] = error2Low;
