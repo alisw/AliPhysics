@@ -201,7 +201,7 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
   fHistos->Fill("tofMonitorTPC", contentSignal);
 
-  if(tofpid->IsGenerateTOFmismatch()){
+  if(tofpid && tofpid->IsGenerateTOFmismatch()){
     AliDebug(1,"Filling TOF mismatch histos");
     TArrayD nsigmismatch(tofpid->GetNmismatchTracks());
     tofpid->GenerateTOFmismatch(track->GetRecTrack(),tofpid->GetNmismatchTracks(), nsigmismatch);

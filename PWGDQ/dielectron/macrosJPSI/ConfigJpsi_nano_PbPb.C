@@ -94,7 +94,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv FILTER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // AOD track filter (needs to be first cut to speed up)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
-  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+  //  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
   //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -105,7 +106,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  //  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 
   // standard cuts
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
@@ -203,7 +204,7 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   Double_t gCut=0.05;
   AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
-  die->GetPairPreFilter().AddCuts(gammaCuts);
+  //  die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
   Double_t yCut=0.9;

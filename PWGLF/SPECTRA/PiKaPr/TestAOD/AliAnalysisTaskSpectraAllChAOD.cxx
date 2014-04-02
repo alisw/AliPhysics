@@ -95,7 +95,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //                                             pt          cent        Q vec     IDrec     IDgen       isph           iswd      y
   Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,   fnQvecBins,        4,        3,         2,          2,       2};
   Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,            0.,      -.5,      -0.5,      -0.5,        -0.5,   -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,            8.,      3.5,      2.5,       1.5,         1.5,     0.5};    
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,            100.,      3.5,      2.5,       1.5,         1.5,     0.5};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -141,7 +141,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   //                                             cent             Q vec                Nch
   Int_t    binsHistRealEv[nvarev] = {    fnCentBins,      fnQvecBins,           fnNchBins};
   Double_t xminHistRealEv[nvarev] = {           0.,               0.,                   0.};
-  Double_t xmaxHistRealEv[nvarev] = {       100.,               8.,               2000.};
+  Double_t xmaxHistRealEv[nvarev] = {       100.,               100.,               2000.};
   THnSparseF* NSparseHistEv = new THnSparseF("NSparseHistEv","NSparseHistEv",nvarev,binsHistRealEv,xminHistRealEv,xmaxHistRealEv);
   NSparseHistEv->GetAxis(0)->SetTitle(Form("%s cent",fEventCuts->GetCentralityMethod().Data()));
   NSparseHistEv->GetAxis(0)->SetName(Form("%s_cent",fEventCuts->GetCentralityMethod().Data()));
@@ -181,8 +181,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   
   Double_t Qvec=0.;//in case of MC we save space in the memory
   if(!fIsMC){
-    if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
-    else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+    //     if(fVZEROside==0)Qvec=fEventCuts->GetqV0A();
+    //     else if (fVZEROside==1)Qvec=fEventCuts->GetqV0C();
+    Qvec=fEventCuts->GetQvecPercentile(fVZEROside);
   }
 
   Double_t Cent=fEventCuts->GetCent();

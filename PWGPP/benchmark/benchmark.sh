@@ -75,7 +75,7 @@ goCPass0()
   runNumber=${6}
   jobindex=${7}
   shift 7
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   #use the jobindex only if set and non-negative
   if [[ -z ${jobindex} || ${jobindex} -lt 0 ]]; then
@@ -262,7 +262,7 @@ goCPass1()
   jobindex=${7}
   shift 7
   extraOpts=("$@")
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   #use the jobindex only if set and non-negative
   if [[ -z ${jobindex} || ${jobindex} -lt 0 ]]; then
@@ -507,7 +507,7 @@ goMergeCPass0()
   runNumber=${4}
   calibrationFilesToMerge=${5}  #can be a non-existent file, will then be produced on the fly
   shift 5
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
@@ -634,7 +634,7 @@ goMergeCPass1()
   qaFilesToMerge=${6}
   filteredFilesToMerge=${7}
   shift 7
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
@@ -802,7 +802,7 @@ goMerge()
   outputFile=${2}  
   configFile=${3-"becnhmark.config"}
   shift 3
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   [[ ! -f ${inputList} ]] && echo "inputList ${inputList} does not exist!" && return 1
   [[ ! -f ${configFile} ]] && echo "configFile ${configFile} does not exist!" && return 1
@@ -821,7 +821,7 @@ goSubmitMakeflow()
   configFile=${3}
   shift 3
   extraOpts=("$@")
-  parseConfig ${configFile} "${extraOpts[@]}"
+  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
 
   [[ -z ${configFile} ]] && configFile="benchmark.config"
   [[ ! -f ${configFile} ]] && echo "no config file found (${configFile})" && return 1
@@ -857,13 +857,15 @@ goGenerateMakeflow()
   configFile=${3}
   shift 3
   extraOpts=("$@")
-  parseConfig ${configFile} "${extraOpts[@]}"
+  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
 
   [[ -z ${configFile} ]] && configFile="benchmark.config"
   [[ ! -f ${configFile} ]] && echo "no config file found (${configFile})" && return 1
 
   commonOutputPath=${baseOutputDirectory}/${productionID}
 
+  self=$(readlink -f "${0}")
+  echo "self: $self"
   #these files will be made a dependency - will be copied to the working dir of the jobs
   declare -a copyFiles
   inputFiles=(
@@ -886,6 +888,7 @@ goGenerateMakeflow()
   declare -A arr_cpass0_merged arr_cpass1_merged
   declare -A arr_cpass0_calib_list arr_cpass1_calib_list 
   declare -A arr_cpass1_QA_list arr_cpass1_ESD_list arr_cpass1_filtered_list
+  declare -A arr_cpass0_profiled_outputs
   declare -A listOfRuns
   [[ -n ${runNumber} ]] && listOfRuns[${runNumber}]=1
   while read x; do listOfRuns[$(guessRunNumber ${x})]=1; done < ${inputFileList}
@@ -899,6 +902,7 @@ goGenerateMakeflow()
     declare -a arr_cpass1_outputs
 
     jobindex=0
+    inputFile=""
     while read inputFile; do
       currentDefaultOCDB=${defaultOCDB}
       [[ -z ${autoOCDB} ]] && autoOCDB=1
@@ -964,6 +968,16 @@ goGenerateMakeflow()
     for extraOption in "${extraOpts[@]}"; do echo -n \"${extraOption}\"" "; done; echo
     echo
 
+    #CPass0 wrapped in a profiling tool (valgrind,....)
+    if [[ -n profilingCommand ]]; then
+      arr_cpass0_profiled_outputs[${runNumber}]="meta/cpass0.jobProfiled.run${runNumber}.done"
+      echo "${arr_cpass0_profiled_outputs[${runNumber}]} : benchmark.sh ${configFile} ${copyFiles[@]}"
+      echo -n " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/profiled ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} profiling"" "
+      for extraOption in "${extraOpts[@]}"; do echo -n \"${extraOption}\"" "; done; 
+      echo "\"useProfilingCommand=${profilingCommand}\""
+      echo
+    fi
+
   done #runs
 
   #Summary
@@ -998,7 +1012,7 @@ goCreateQAplots()
   outputDir=${3}
   configFile=${4}
   shift 4
-  parseConfig ${configFile} ${@}
+  if ! parseConfig ${configFile} ${@}; then return 1; fi
   
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
@@ -1280,7 +1294,7 @@ goMakeFilteredTrees()
   configFile=${11-"benchmark.config"}
   esdFileName=${12-"AliESDs_Barrel.root"}
   shift 12
-  parseConfig ${configFile} "$@"
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
 
   commonOutputPath=${PWD}
   doneFile=${commonOutputPath}/meta/filtering.cpass1.run${runNumber}.done
@@ -1396,7 +1410,7 @@ goSubmitBatch()
   configFile=$(readlink -f ${configFile})
   shift 3
   extraOpts=("$@")
-  parseConfig ${configFile} "${extraOpts[@]}"
+  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
 
   #redirect all output to submit.log
   echo "redirecting all output to ${PWD}/submit_${productionID//"/"/_}.log"
@@ -1541,10 +1555,10 @@ goSubmitBatch()
 
     ###############################################################################
     #run one chunk with valgrind:
-    if [[ -n ${runValgrind} ]]; then
-      [[ -z ${nEventsValgrind} ]] && nEventsValgrind=2
-      [[ -z ${valgrindCommand} ]] && valgrindCommand="/usr/bin/valgrind --tool=callgrind --num-callers=40 -v --trace-children=yes"
-      submit "valgrind" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsValgrind} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind valgrindCommand=${valgrindCommand} "${extraOpts[@]}"
+    if [[ -n ${profilingCommand} ]]; then
+      [[ -z ${nEventsProfiling} ]] && nEventsProfiling=2
+      [[ -z ${profilingCommand} ]] && profilingCommand="/usr/bin/valgrind --tool=callgrind --num-callers=40 -v --trace-children=yes"
+      submit "valgrind" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand=${profilingCommand} "${extraOpts[@]}"
     fi 
 
     ################################################################################
@@ -1909,7 +1923,7 @@ goMakeSummary()
   configFile=${1}
   shift 1
   extraOpts=("$@")
-  parseConfig ${configFile} "${extraOpts[@]}"
+  if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
   
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
@@ -2187,8 +2201,39 @@ parseConfig()
   args=("$@")
 
   #some defaults
+  #autoOCDB=0
+  defaultOCDB="raw://"
+  #runNumber=167123
+  #makeflowPath="/hera/alice/aux/cctools/bin"
+  #makeflowOptions="-T wq -N alice -d all -C ali-copilot.cern.ch:9097"
+  #makeflowOptions="-T wq -N alice -C ali-copilot.cern.ch:9097"
+  makeflowOptions=""
+  batchCommand="/usr/bin/qsub"
+  batchFlags="-b y -cwd -l h_rt=24:0:0,h_rss=4G "
+  baseOutputDirectory="$PWD/output"
+  #alirootEnv="/cvmfs/alice.cern.ch/bin/alienv setenv AliRoot/v5-04-34-AN -c"
+  #alirootEnv="/home/mkrzewic/alisoft/balice_master.sh"
+  #trustedQAtrainMacro='/hera/alice/mkrzewic/gsisvn/Calibration/QAtrain_duo.C'
+  reconstructInTemporaryDir=0
+  recoTriggerOptions="\"\""
+  percentProcessedFilesToContinue=100
+  maxSecondsToWait=$(( 3600*24 ))
+  nEvents=-1
+  nMaxChunks=0
+  postSetUpActionCPass0=""
+  postSetUpActionCPass1=""
+  runCPass0reco=1
+  runCPass0MergeMakeOCDB=1
+  runCPass1reco=1
+  runCPass1MergeMakeOCDB=1
+  runESDfiltering=1
   filteringFactorHighPt=1e2
   filteringFactorV0s=1e1
+  MAILTO=""
+  #pretend=1
+  #dontRedirectStdOutToLog=1
+  logToFinalDestination=1
+  ALIROOT_FORCE_COREDUMP=1
 
   #first, source the config file
   if [ -f ${configFile} ]; then
@@ -2206,21 +2251,25 @@ parseConfig()
     shift
   done
 
+  #do some checking
+  [[ -z ${alirootEnv} ]] && echo "alirootEnv not defined!" && return 1
+
   #export the aliroot function if defined to override normal behaviour
   [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot
+
   return 0
 }
 
 aliroot()
 {
   args="$@"
-  if [[ -n ${valgrindCommand} ]]; then
+  if [[ -n ${useProfilingCommand} ]]; then
     valgrindLogFile="cpu.txt"
     [[ "${args}" =~ rec ]] && valgrindLogFile="cpu_rec.txt"
     [[ "${args}}" =~ Calib ]] && valgrindLogFile="cpu_calib.txt"
-    [[ -n ${valgrindCommand} ]] && valgrindCommand="${valgrindCommand} --log-file=${valgrindLogFile}"
-    echo running ${valgrindCommand} aliroot ${args}
-    ${valgrindCommand} aliroot ${args}
+    [[ -n ${useProfilingCommand} ]] && useProfilingCommand="${useProfilingCommand} --log-file=${valgrindLogFile}"
+    echo running ${useProfilingCommand} aliroot ${args}
+    ${useProfilingCommand} aliroot ${args}
   else
     #to prevent an infinite recursion use "command aliroot" to disable
     #aliases and functions

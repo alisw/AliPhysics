@@ -133,7 +133,6 @@ class AliJetFlowTools {
         void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
-        void            SetTreatCorrErrAsUncorrErr(Bool_t b)    {fSetTreatCorrErrAsUncorrErr = b;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -164,9 +163,11 @@ class AliJetFlowTools {
                 TArrayI* variantions2ndIn,
                 TArrayI* variantions2ndOut,
                 TString type = "",
+                TString type2 = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
+                Float_t corr = .5,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
@@ -362,7 +363,6 @@ class AliJetFlowTools {
         Bool_t                  fDphiUnfolding;         // do the unfolding in in and out of plane orientation
         Bool_t                  fDphiDptUnfolding;      // do the unfolding in dphi and dpt bins (to fit v2)
         Bool_t                  fExLJDpt;               // exclude randon cones with leading jet
-        Bool_t                  fSetTreatCorrErrAsUncorrErr;    // treat the correlated error as uncorrelated
         Double_t                fTitleFontSize;         // title font size
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings

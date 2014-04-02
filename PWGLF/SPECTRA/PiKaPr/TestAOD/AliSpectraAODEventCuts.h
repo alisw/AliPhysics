@@ -66,7 +66,11 @@ class AliSpectraAODEventCuts : public TNamed
     fV0Apol1(-1),
     fV0Apol2(-1),
     fV0Apol3(-1),
-    fV0Apol4(-1)
+    fV0Apol4(-1),
+    fQvecIntList(0),
+    fQvecIntegral(0), 
+    fSplineArrayV0A(0),
+    fSplineArrayV0C(0)
       {
 	for (Int_t i = 0; i<10; i++){
 	  fMeanQxa2[i] = -1;
@@ -122,6 +126,15 @@ class AliSpectraAODEventCuts : public TNamed
     }
   };
   
+  void SetQvecIntegralFile(TFile *f)    {
+    TIter next(f->GetListOfKeys());
+    TKey *key;
+    while ((key = (TKey*)next())) {
+      TH2F * h=(TH2F*)key->ReadObj();
+      fQvecIntList->Add(h);
+    }
+  };
+  
   // Methods
   Bool_t IsSelected(AliAODEvent * aod,AliSpectraAODTrackCuts     *trackcuts);
   Bool_t CheckVtxRange();
@@ -138,7 +151,11 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t  NumberOfPhysSelEvents()     { return ((TH1I*)fOutput->FindObject("fHistoCuts"))->GetBinContent(kPhysSelEvents+1); }
 
   Long64_t Merge(TCollection* list);
-  
+
+  Double_t GetQvecPercentile(Int_t v0side);  
+  Bool_t CheckSplineArray(TObjArray * splarr);
+  TObjArray *GetSplineArrayV0A() { return fSplineArrayV0A; }
+  TObjArray *GetSplineArrayV0C() { return fSplineArrayV0C; }
 
  private:
   
@@ -184,10 +201,15 @@ class AliSpectraAODEventCuts : public TNamed
   Float_t fMeanQxc2[10];             // mean Qxc values for centr - recentering
   Float_t fMeanQyc2[10];             // mean Qyc values for centr - recentering
 
+  TList *fQvecIntList;            // List with Qvec Integrated vs centrality distribution
+  TH2D * fQvecIntegral;           // ! Integrated Qvec distribution
+  TObjArray * fSplineArrayV0A;    // TSpline array for VZERO-A
+  TObjArray * fSplineArrayV0C;    // TSpline array for VZERO-C
+
   AliSpectraAODEventCuts(const AliSpectraAODEventCuts&);
   AliSpectraAODEventCuts& operator=(const AliSpectraAODEventCuts&);
   
-  ClassDef(AliSpectraAODEventCuts, 5);
+  ClassDef(AliSpectraAODEventCuts, 6);
   
 };
 #endif

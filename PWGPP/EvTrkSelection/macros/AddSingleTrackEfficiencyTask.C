@@ -76,7 +76,6 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   const UInt_t itheta = 3;
   const UInt_t izvtx = 4;
   const UInt_t imult = 5;
-  const UInt_t imult = 5;
   const UInt_t icent = 6;
   //
   // Containter bining
@@ -92,14 +91,14 @@ AliCFSingleTrackEfficiencyTask *AddSingleTrackEfficiencyTask(const Bool_t readAO
   const Int_t nbin4 = 9; //bins in theta
   const Int_t nbin5 = 10; //bins in zvtx
   //   A3. Bins for multiplicity
-  const Int_t nbinmult = 48;  //bins in multiplicity (total number)	
-  const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
-  const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
-  const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
+  const Int_t nbinmult = 24;  //bins in multiplicity (total number)	
+  const Int_t nbinmult_0_20 = 10; //bins in multiplicity between 0 and 20
+  const Int_t nbinmult_20_50 = 10; //bins in multiplicity between 20 and 50
+  const Int_t nbinmult_50_102 = 4; //bins in multiplicity between 50 and 102
   //  A4. Bins for centrality
-  const Int_t nbincent = 28;  //bins in centrality
-  const Int_t nbincent_0_10 = 4;  //bins in centrality between 0 and 10
-  const Int_t nbincent_10_60 = 20;  //bins in centrality between 10 and 60
+  const Int_t nbincent = 16;  //bins in centrality
+  const Int_t nbincent_0_10 = 2;  //bins in centrality between 0 and 10
+  const Int_t nbincent_10_60 = 10;  //bins in centrality between 10 and 60
   const Int_t nbincent_60_100 = 4;  //bins in centrality between 60 and 100
 
   //arrays for the number of bins in each dimension
