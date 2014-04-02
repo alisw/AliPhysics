@@ -1,9 +1,6 @@
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
-class AliFlowTrackSimpleCuts;
 class AliFlowEventCuts;
-class AliFlowEventSimpleCuts;
-class AliAnalysisDataContainer;
 
 
 void AddTaskPIDFlow(Int_t triggerSelectionString=AliVEvent::kMB,
@@ -15,14 +12,14 @@ void AddTaskPIDFlow(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t AODfilterBitRP = 272,
                                    Int_t AODfilterBitPOI = 272,
                                    Int_t charge=0,
+                                   Int_t MinTPCdedx = 10,
+                                   Int_t ncentrality = 6,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
                                    Bool_t is2011 = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
-Bool_t debug = kTRUE;
- 
 // Define a range of the detector to exclude
 Bool_t ExcludeRegion = kFALSE;
 Double_t excludeEtaMin = -0.;
@@ -38,7 +35,7 @@ Bool_t QC       = kTRUE;  // cumulants using Q vectors
     
 int centrMin[9] = {0,5,10,20,30,40,50,60,70};
 int centrMax[9] = {5,10,20,30,40,50,60,70,80};
-const int ncentr=6;
+const int ncentr = ncentrality;
     
     
 //---------Data selection----------
@@ -61,6 +58,8 @@ AliFlowEventCuts* cutsEvent[ncentr];
 AliFlowTrackCuts* cutsRP[ncentr];
 AliFlowTrackCuts* cutsPOI[ncentr];
 TString outputSlotName[ncentr][4];
+TString suffixName[ncentr];
+    
 for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr] = DefinecutsEvent();
     //cutsEvent[icentr]->SetUsedDataset(is2011);
@@ -87,7 +86,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsRP[icentr]->SetMaxDCAToVertexXY(3.0);
     cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
     cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
-    cutsRP[icentr]->SetMinimalTPCdedx(10);
+    cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
     cutsRP[icentr]->SetAODfilterBit(AODfilterBitRP);
     cutsRP[icentr]->SetQA(doQA);
     
@@ -118,7 +117,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //cutsPOI->SetAllowTOFmismatch(kFALSE);
     cutsPOI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
     //iexample: francesco's tunig TPC Bethe Bloch for data:
-     cutsPOI[icentr]->SetMinimalTPCdedx(10);
+     cutsPOI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
     cutsPOI[icentr]->SetAODfilterBit(AODfilterBitPOI);
     // cutsPOI->SetAODfilterBit(768);
     cutsPOI[icentr]->SetQA(doQA);
@@ -126,9 +125,9 @@ for(int icentr=0;icentr<ncentr;icentr++){
 
     //=====================================================================
  
-    TString suffixName = "highharmflow";
-    suffixName += Form("%i", centrMin[icentr]);
-    suffixName += Form("%i", centrMax[icentr]);
+    suffixName[icentr] = "highharmflow";
+    suffixName[icentr] += Form("%i", centrMin[icentr]);
+    suffixName[icentr] += Form("%i", centrMax[icentr]);
     
     for(int harmonic=2;harmonic<6;harmonic++){  //for v2,v3,v4 and v5
         outputSlotName[icentr][harmonic-2] = "";
@@ -187,7 +186,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
         return NULL;
     }
 
-    taskFE[icentr] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixName.Data()),"",doQA);
+    taskFE[icentr] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixName[icentr].Data()),"",doQA);
     taskFE[icentr]->SelectCollisionCandidates(triggerSelectionString);
     taskFE[icentr]->SetSubeventEtaRange(etamin, -0.5*EtaGap, 0.5*EtaGap, etamax);
     mgr->AddTask(taskFE[icentr]);
@@ -205,14 +204,14 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     }
     cinput1[icentr] = mgr->GetCommonInputContainer();
     
-    coutputFE[icentr] = mgr->CreateContainer(Form("FlowEventSimple_%s_%d",suffixName.Data(),icentr),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+    coutputFE[icentr] = mgr->CreateContainer(Form("FlowEventSimple_%s_%d",suffixName[icentr].Data(),icentr),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
     mgr->ConnectInput(taskFE[icentr],0,cinput1[icentr]);
     mgr->ConnectOutput(taskFE[icentr],1,coutputFE[icentr]);
 
     if (taskFE[icentr]->GetQAOn()) {
         outputQA[icentr] = fileName;
         outputQA[icentr] += ":QA";
-        coutputFEQA[icentr] = mgr->CreateContainer(Form("QA_%s_%d",suffixName.Data(),icentr), TList::Class(),AliAnalysisManager::kOutputContainer,outputQA[icentr]);
+        coutputFEQA[icentr] = mgr->CreateContainer(Form("QA_%s",suffixName[icentr].Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputQA[icentr]);
         mgr->ConnectOutput(taskFE[icentr],2,coutputFEQA[icentr]);
     }
 
@@ -245,7 +244,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     if (charge!=0) QC_POI[icentr]->SetCharge(charge);
     //SP_POI->SetAllowTOFmismatch(kFALSE);
     QC_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
-    QC_POI[icentr]->SetMinimalTPCdedx(10);
+    QC_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
     QC_POI[icentr]->SetAODfilterBit(AODfilterBitPOI);
     QC_POI[icentr]->SetQA(doQA);
     QC_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
@@ -275,7 +274,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
             if (charge!=0) SP_POI[icentr][hw]->SetCharge(charge);
             //SP_POI->SetAllowTOFmismatch(kFALSE);
             SP_POI[icentr][hw]->SetRequireStrictTOFTPCagreement(kTRUE);
-            SP_POI[icentr][hw]->SetMinimalTPCdedx(10);
+            SP_POI[icentr][hw]->SetMinimalTPCdedx(MinTPCdedx);
             SP_POI[icentr][hw]->SetAODfilterBit(AODfilterBitPOI);
             SP_POI[icentr][hw]->SetQA(doQA);
             SP_POI[icentr][hw]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
@@ -306,7 +305,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
             if (charge!=0) SP_POI_gap[icentr][hw]->SetCharge(charge);
             //SP_POI_gap->SetAllowTOFmismatch(kFALSE);
             SP_POI_gap[icentr][hw]->SetRequireStrictTOFTPCagreement(kTRUE);
-            SP_POI_gap[icentr][hw]->SetMinimalTPCdedx(10);
+            SP_POI_gap[icentr][hw]->SetMinimalTPCdedx(MinTPCdedx);
             SP_POI_gap[icentr][hw]->SetAODfilterBit(AODfilterBitPOI);
             SP_POI_gap[icentr][hw]->SetQA(doQA);
             SP_POI_gap[icentr][hw]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
