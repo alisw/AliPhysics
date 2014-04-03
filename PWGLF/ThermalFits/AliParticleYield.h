@@ -61,8 +61,13 @@ public:
   static Float_t GetError(TString error, Float_t yield) ;
   static const char * FormatCol(const char * text, Int_t width,  const char * sep =" ") ;
   static Double_t RoundToSignificantFigures(double num, int n) ;  
+  static AliParticleYield * FindParticle(TClonesArray * arr, Int_t pdg, Int_t system, Float_t sqrts, TString centrality = "", Int_t isSum = -1, Int_t status = -1, Int_t pdg2 = 0);
+  static AliParticleYield * FindRatio   (TClonesArray * arr, Int_t pdg, Int_t pdg2, Int_t system, Float_t sqrts, TString centrality="", Int_t isSum = -1, Int_t status = -1) { return FindParticle(arr, pdg, system, sqrts, centrality, isSum, status, pdg2); }
   Bool_t operator==(const AliParticleYield& rhs);
   Bool_t IsTheSameMeasurement(AliParticleYield &rhs);
+  static AliParticleYield * Divide(AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError = 0, Option_t * opt="");
+  static AliParticleYield * Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError = 0, Option_t * opt="");
+  void Scale(Float_t scale) ;
 
   // Getters
   TString GetCentr()           const{ return fCentr           ;}
@@ -121,13 +126,16 @@ public:
   void SetTypeBits(UInt_t mask) { fMeasurementType |= mask; } // This switches on the bits passed. Does not affect the others! If you want to set the Whole mask, use SetMeasurementType
 
   static void SetSignificantDigits (Int_t var) { fSignificantDigits = var;}
-
+  
 
 
 
 private:
 
-  Bool_t Compare2Floats(Float_t a, Float_t b) ;
+  static Bool_t   Compare2Floats(Float_t a, Float_t b) ;
+  static Double_t SumErrors(AliParticleYield * part1, AliParticleYield * part2, Int_t error, Option_t * opt) ;
+  void CombineMetadata(AliParticleYield *part1, AliParticleYield*part2) ;
+
 
   Int_t   fPdgCode;         // PdgCode
   Int_t   fPdgCode2;        // The PdgCode of the second particle, only needed in case of a ratio
