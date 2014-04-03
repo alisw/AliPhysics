@@ -13,10 +13,12 @@ void AddTaskPIDFlow(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t AODfilterBitPOI = 272,
                                    Int_t charge=0,
                                    Int_t MinTPCdedx = 10,
-                                   Int_t ncentrality = 6,
+                                   Int_t ncentrality = 2,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
-                                   Bool_t is2011 = kFALSE,
+                                   Bool_t UseQC = kFALSE,
+                                   Bool_t UseSP = kFALSE,
+                                   Bool_t UseSPSUB = kTRUE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
     
@@ -29,9 +31,9 @@ Double_t excludePhiMax = 0.;
    
 // RUN SETTINGS
 // Flow analysis method can be:(set to kTRUE or kFALSE)
-Bool_t SPSUB    = kTRUE;
-Bool_t SP       = kTRUE;  // scalar product method (similar to eventplane method)
-Bool_t QC       = kTRUE;  // cumulants using Q vectors
+Bool_t SPSUB    = UseSPSUB;
+Bool_t SP       = UseSP;  // scalar product method (similar to eventplane method)
+Bool_t QC       = UseQC;  // cumulants using Q vectors
     
 int centrMin[9] = {0,5,10,20,30,40,50,60,70};
 int centrMax[9] = {5,10,20,30,40,50,60,70,80};
@@ -126,13 +128,26 @@ for(int icentr=0;icentr<ncentr;icentr++){
     //=====================================================================
  
     suffixName[icentr] = "highharmflow";
-    suffixName[icentr] += Form("%i", centrMin[icentr]);
-    suffixName[icentr] += Form("%i", centrMax[icentr]);
-    
+    suffixName[icentr] += Form("%i_", centrMin[icentr]);
+    suffixName[icentr] += Form("%i_", centrMax[icentr]);
+    suffixName[icentr] += Form("%.f_", EtaGap*10);
+
+    if(isPID){
+        suffixName[icentr]+=AliFlowTrackCuts::PIDsourceName(sourcePID);
+        suffixName[icentr]+="_";
+        suffixName[icentr]+=AliPID::ParticleName(particleType);//particleType
+    }
+    else{
+        suffixName[icentr]+="AllCharged";
+    }
+    if (charge<0) suffixName[icentr]+="-";
+    if (charge>0) suffixName[icentr]+="+";
+
+
     for(int harmonic=2;harmonic<6;harmonic++){  //for v2,v3,v4 and v5
         outputSlotName[icentr][harmonic-2] = "";
         outputSlotName[icentr][harmonic-2]+=uniqueStr;
-        outputSlotName[icentr][harmonic-2]+=Form("v%i",harmonic);
+        outputSlotName[icentr][harmonic-2]+=Form("_v%i_",harmonic);
         outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
         outputSlotName[icentr][harmonic-2]+="_";
         outputSlotName[icentr][harmonic-2]+=cutsPOI[icentr]->GetName();
@@ -204,7 +219,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     }
     cinput1[icentr] = mgr->GetCommonInputContainer();
     
-    coutputFE[icentr] = mgr->CreateContainer(Form("FlowEventSimple_%s_%d",suffixName[icentr].Data(),icentr),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
+    coutputFE[icentr] = mgr->CreateContainer(Form("FlowEvent_%s",suffixName[icentr].Data()),AliFlowEventSimple::Class(),AliAnalysisManager::kExchangeContainer);
     mgr->ConnectInput(taskFE[icentr],0,cinput1[icentr]);
     mgr->ConnectOutput(taskFE[icentr],1,coutputFE[icentr]);
 
@@ -312,21 +327,23 @@ for (int icentr=0; icentr<ncentr; icentr++) {
         }
     }
 
-    
+    TString Species = "";
+    if(isPID) Species += AliPID::ParticleName(particleType);
+    else      Species += "Allcharged";
 
     for(int i=0;i<4;i++){
         int harm = i+2;
         if(QC) {
-            AddQCmethod( "QC", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, QC_POI[icentr], harm, icentr); // QC TPC
+            AddQCmethod( "QC", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, QC_POI[icentr], Species, harm, icentr); // QC TPC
         }
         if(SP) {
 
-            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI[icentr][0], "Qa", harm, icentr, etamin, etamax,0); // SP Qa
-            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI[icentr][1], "Qb", harm, icentr, etamin, etamax,0); // SP Qb
+            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI[icentr][0], Species, "Qa", harm, icentr, etamin, etamax,0); // SP Qa
+            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI[icentr][1], Species, "Qb", harm, icentr, etamin, etamax,0); // SP Qb
         }
         if(SPSUB && EtaGap!=0){
-            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI_gap[icentr][0], "Qa", harm, icentr, etamin, etamax, EtaGap); // SP Qa
-            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI_gap[icentr][1], "Qb", harm, icentr, etamin, etamax, EtaGap); // SP Qb
+            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI_gap[icentr][0], Species, "Qa", harm, icentr, etamin, etamax, EtaGap); // SP Qa
+            AddSPmethod( "SP", fileName, rptypestr, outputSlotName[icentr][i], triggerSelectionString, coutputFE[icentr], NULL, SP_POI_gap[icentr][1], Species, "Qb", harm, icentr, etamin, etamax, EtaGap); // SP Qb
         }
     }
 
@@ -337,7 +354,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
 //AddQCmethod
 //===========================================================================
 //QC method
-void AddQCmethod(char *name="",TString fileName="", TString rptypestr="", TString outputSlotName="", Int_t triggerSelectionString=0,AliAnalysisDataContainer* coutputFE,AliFlowTrackCuts* cutsRP, AliFlowTrackCuts* cutsPOI,Int_t harm=2, Int_t icentr=0) {
+void AddQCmethod(char *name="",TString fileName="", TString rptypestr="", TString outputSlotName="", Int_t triggerSelectionString=0,AliAnalysisDataContainer* coutputFE,AliFlowTrackCuts* cutsRP, AliFlowTrackCuts* cutsPOI,TString particleType="charged", Int_t harm=2, Int_t icentr=0) {
     
     AliAnalysisDataContainer *coutputQC;
     AliAnalysisTaskQCumulants *taskQC;
@@ -345,8 +362,9 @@ void AddQCmethod(char *name="",TString fileName="", TString rptypestr="", TStrin
     int centrMin[9] = {0,5,10,20,30,40,50,60,70};
     int centrMax[9] = {5,10,20,30,40,50,60,70,80};
     TString folder = "FlowPID_QC_";
-    TString myFolder = Form("%sv%d_%d%d",folder.Data(),harm,centrMin[icentr],centrMax[icentr]);
-    TString myNameQC = Form("%sv%d%s",name,harm,outputSlotName.Data());
+    folder += particleType;
+    TString myFolder = Form("%s_v%i_%i-%i",folder.Data(),harm,centrMin[icentr],centrMax[icentr]);
+    TString myNameQC = Form("%sv%i%s",name,harm,outputSlotName.Data());
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer( Form("TPConly_%s",myFolder.Data()),
                                                                AliFlowEventSimple::Class(),
@@ -384,7 +402,7 @@ void AddQCmethod(char *name="",TString fileName="", TString rptypestr="", TStrin
 }
 //SPmethod
 
-void AddSPmethod(char *name="", TString fileName="", TString rptypestr="", TString outputSlotName="", Int_t triggerSelectionString=0,AliAnalysisDataContainer* coutputFE, AliFlowTrackCuts* cutsRP,AliFlowTrackCuts* cutsPOI, char* Qvector, Int_t harm=2, Int_t icentr=0, Double_t etamin=-0.8, Double_t etamax=0.8, Double_t gap=0.0) {
+void AddSPmethod(char *name="", TString fileName="", TString rptypestr="", TString outputSlotName="", Int_t triggerSelectionString=0,AliAnalysisDataContainer* coutputFE, AliFlowTrackCuts* cutsRP,AliFlowTrackCuts* cutsPOI,TString particleType="charged", char* Qvector, Int_t harm=2, Int_t icentr=0, Double_t etamin=-0.8, Double_t etamax=0.8, Double_t gap=0.0) {
  
     AliAnalysisDataContainer *coutputSP;
     AliAnalysisTaskScalarProduct *taskSP;
@@ -400,8 +418,9 @@ void AddSPmethod(char *name="", TString fileName="", TString rptypestr="", TStri
     }
     
     TString folder = "FlowPID_SP_";
-    TString myFolder = Form("%sv%i_%s_%i-%i_%.f",folder.Data(),harm,Qvector,centrMin[icentr],centrMax[icentr],gap*10);
-    TString myNameSP = Form("%s_v%d_%s_%s_%.f",name,harm,Qvector,outputSlotName.Data(),gap*10);
+    folder += particleType;
+    TString myFolder = Form("%s_v%i_%s_%i-%i_%.f",folder.Data(),harm,Qvector,centrMin[icentr],centrMax[icentr],gap*10);
+    TString myNameSP = Form("%s_v%i_%s_%s_%.f",name,harm,Qvector,outputSlotName.Data(),gap*10);
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     
     AliAnalysisDataContainer *flowEvent = mgr->CreateContainer( Form("TPConly_%s",myFolder.Data()),
