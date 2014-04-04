@@ -592,10 +592,10 @@ void AliParticleYield::Print (Option_t *) const {
     Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
   }
   if(fNormErrorNeg) {
-    Printf("Normalizaion uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
+    Printf("Normalization uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
   }
   else {
-    Printf("Normalizaion uncertainty: %f", fNormErrorPos);
+    Printf("Normalization uncertainty: %f", fNormErrorPos);
   }
 }
 
@@ -704,7 +704,7 @@ AliParticleYield * AliParticleYield::FindParticle(TClonesArray * arr, Int_t pdg,
         part->GetCollisionSystem() == system &&          // same system
         Compare2Floats(part->GetSqrtS(), sqrts) &&       // same energy
         part->GetCentr().Contains(centrality) &&         // compatible centrality
-        (!pdg2 || part->GetPdgCode2() == pdg2) &&        // same PDG2, if requested (we are looking for a ratio)
+        (part->GetPdgCode2() == pdg2) &&                 // same PDG2, if requested (we are looking for a ratio). We also need to check explicitly for pdg2=0 not to match ratios
         (status < 0 || part->GetStatus() == status)  &&  // same status, if requested
         (isSum  < 0 || part->GetIsSum()  == isSum)       // part+antipart or not, if requested
         ) { 
@@ -734,7 +734,7 @@ AliParticleYield * AliParticleYield::FindParticle(TClonesArray * arr, Int_t pdg,
 void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield*part2) {
   // Combines metadata from part1 and part2
   Int_t pdg1 = part1->GetPdgCode();
-  Int_t pdg2 = pdg1 == part2->GetPdgCode() ? 0 : part2->GetPdgCode();
+  Int_t pdg2 = pdg1 == part2->GetPdgCode() ? part1->GetPdgCode2() : part2->GetPdgCode();
   Int_t   system = part1->GetCollisionSystem() == part2->GetCollisionSystem() ? part2->GetCollisionSystem() : -1; 
   Float_t sqrts = Compare2Floats(part1->GetSqrtS(), part2->GetSqrtS()) ? part1->GetSqrtS() : 0;
   Int_t ymin = part1->GetYMin() == part2->GetYMin() ? part2->GetYMin() : -1000; 
@@ -831,11 +831,12 @@ AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliPartic
   }
 
   Float_t value = part1->GetYield() / part2->GetYield();
-  Float_t stat  = SumErrors(part1, part2, 0, sopt.Contains("SL") ? "RL": "R" ); // R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
-  Float_t syst  = SumErrors(part1, part2, 1, sopt.Contains("YQ") ? "R" : "RL" );// R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
+  // Since in a ratio we propagate a relative error, we have to multiply it back for value in order to get the absolute uncertainty
+  Float_t stat  = SumErrors(part1, part2, 0, sopt.Contains("SL") ? "RL": "R" ) *value; // R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
+  Float_t syst  = SumErrors(part1, part2, 1, sopt.Contains("YQ") ? "R" : "RL" )*value;// R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
   Float_t norm = 0;
   if(sopt.Contains("NQ")) {// if opt contains N, propagate the normalization error assuming it is independent
-    norm  = SumErrors(part1, part2, 2, "R");   
+    norm  = SumErrors(part1, part2, 2, "R")*value;   
   }
   
   if(correlatedError) {
@@ -860,8 +861,9 @@ Double_t AliParticleYield::SumErrors(AliParticleYield * part1, AliParticleYield 
   //  error = 1 -> systematic error
   //  error = 2 -> normalization error
   //  Valid options
-  //   "R" it propagates it as a relative error
+  //   "R" it propagates it as a relative error, WARNING: it also returns a relative error!
   //   "L" it propagates it sums the errors linearly (by default it is done in quadrature)
+
   
   TString sopt(opt);
   sopt.ToUpper();
@@ -895,7 +897,7 @@ Double_t AliParticleYield::SumErrors(AliParticleYield * part1, AliParticleYield 
     err = TMath::Sqrt(err1*err1 + err2*err2);
   }
 
-  if(isRelative) return err*(part1->GetYield() + part2->GetYield());
+  if(isRelative) return err;
   
   return err;
 
