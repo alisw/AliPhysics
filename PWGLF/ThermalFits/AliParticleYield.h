@@ -36,7 +36,8 @@ public:
     // Type of measurements (lowest nibble reserved for this)
     kTypeLinearInterpolation = 0x1,
     kTypeParticleRatio       = 0x2, // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
-    
+    kTypeAverageAndRefit     = 0x4, // this means that the measurement has been obtained summing several spectra in smaller centality bins (weihgted by the width of the centrality bin) and refitting them
+
     // Type of errors
     kTypeOnlyTotError        = 0x10, // If on, only the total error is returned as "GetSystError". GetStatError should be set to 0;
   };
