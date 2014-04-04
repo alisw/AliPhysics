@@ -945,7 +945,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   if(fDebug)
     printf("\t^^^^ parton position = %d ^^^^\n",partonpos);
   if(clabel<0 || clabel>nmcp)
-    return 0;
+    return -0.1;
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);
