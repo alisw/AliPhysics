@@ -167,6 +167,7 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Float_t fTreeCascVarAmpV0CEq;   //!
   Int_t fTreeCascVarRefMultEta8;  //!
   Int_t fTreeCascVarRefMultEta5;  //!
+  Int_t fTreeCascVarRunNumber;    //! //want to re-quantile per run? here's your ticket
   
 //===========================================================================================
 //   Histograms

@@ -167,6 +167,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeCascVarTrueMultVZEROC(0),
   fTreeCascVarIsPhysicalPrimary(0), 
   fTreeCascVarPID(0), 
+  fTreeCascVarRunNumber(0), 
   //---> Histograms
   fHistEventCounter(0), 
   //---> MC Generated Histo (analysis level) 
@@ -319,6 +320,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeCascVarTrueMultVZEROC(0),
   fTreeCascVarIsPhysicalPrimary(0), 
   fTreeCascVarPID(0), 
+  fTreeCascVarRunNumber(0), 
   //---> Histograms
   fHistEventCounter(0), 
   //---> MC Generated Histo (analysis level) 
@@ -541,6 +543,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeCascade->Branch("fTreeCascVarTrueMultVZEROC",&fTreeCascVarTrueMultVZEROC,"fTreeCascVarTrueMultVZEROC/I");
   fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimary",&fTreeCascVarIsPhysicalPrimary,"fTreeCascVarIsPhysicalPrimary/I");
   fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
+  fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
 //-----------DECAY-LENGTH-INFO--------------------
   fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
 //------------------------------------------------
@@ -1605,6 +1608,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
           fTreeCascVarAmpV0CEq = fAmplitude_V0CEq; 
           fTreeCascVarRefMultEta8 = fRefMultEta8;
           fTreeCascVarRefMultEta5 = fRefMultEta5;
+          fTreeCascVarRunNumber = fRunNumber; 
 
           fTreeCascVarDistOverTotMom = TMath::Sqrt(
 						TMath::Power( lPosXi[0] - lBestPrimaryVtxPos[0] , 2) +

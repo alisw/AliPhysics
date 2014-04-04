@@ -182,6 +182,8 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarIsPhysicalPrimary; //!
   Int_t   fTreeCascVarPID;         //!
 
+  Int_t   fTreeCascVarRunNumber;         //!
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
