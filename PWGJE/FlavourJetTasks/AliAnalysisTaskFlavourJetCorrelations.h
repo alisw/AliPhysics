@@ -46,7 +46,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
 
   AliAnalysisTaskFlavourJetCorrelations();
-  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
+  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype, Bool_t jetOnly=kFALSE);
   virtual ~AliAnalysisTaskFlavourJetCorrelations();
 
   virtual void     UserCreateOutputObjects();
@@ -64,8 +64,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   // set usage of reconstructed tracks
   void   SetUseReco(Bool_t reco) {fUseReco=reco;}
   Bool_t GetUseReco() {return fUseReco;}
-  //used in AddTaskFlavourJetCorrelation only
-  void SetJetOnlyMode(Bool_t mode=kTRUE) {fJetOnlyMode=mode;}
+  //no setter because needed in the constructor
   Bool_t GetJetOnlyMode() {return fJetOnlyMode;}
   
   void SetMassLimits(Double_t range, Int_t pdg);

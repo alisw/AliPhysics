@@ -81,7 +81,7 @@ fJetOnlyMode(0)
 
 //_______________________________________________________________________________
 
-AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations(const Char_t* name, AliRDHFCuts* cuts,ECandidateType candtype) :
+AliAnalysisTaskFlavourJetCorrelations::AliAnalysisTaskFlavourJetCorrelations(const Char_t* name, AliRDHFCuts* cuts,ECandidateType candtype, Bool_t jetOnly) :
 AliAnalysisTaskEmcalJet(name,kTRUE),
 fUseMCInfo(kTRUE),
 fUseReco(kTRUE),  
@@ -99,7 +99,7 @@ fLeadingJetOnly(kFALSE),
 fJetRadius(0),
 fCandidateArray(0),
 fSideBandArray(0),
-fJetOnlyMode(0)
+fJetOnlyMode(jetOnly)
 {
    //
    // Constructor. Initialization of Inputs and Outputs

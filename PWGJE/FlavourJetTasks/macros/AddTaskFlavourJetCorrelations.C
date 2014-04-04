@@ -32,7 +32,7 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
      
      // create the task
      AliAnalysisTaskFlavourJetCorrelations *task = new AliAnalysisTaskFlavourJetCorrelations("AnaTaskFlavourJetCorrelations", 
-     	dummyDcut, dummycand);
+     	dummyDcut, dummycand, bJetOnly);
      task->SetJetsName(jetArrname);
      task->SetMC(theMCon);
      task->SetUseReco(reco);
@@ -40,7 +40,6 @@ AliAnalysisTaskFlavourJetCorrelations *AddTaskFlavourJetCorrelations(
      task->SetJetAcceptanceType(cutType);
      task->SetJetPtCut(jptcut);
      task->SetPercAreaCut(percjetareacut);
-     task->SetJetOnlyMode();
      mgr->AddTask(task);
 
      if(theMCon) {
