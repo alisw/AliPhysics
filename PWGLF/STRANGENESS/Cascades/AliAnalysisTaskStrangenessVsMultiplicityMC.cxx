@@ -609,7 +609,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   if(! fHistPtVsRefMultEta8_GenXiPlus ) {
     fHistPtVsRefMultEta8_GenXiPlus     = new TH2D( "fHistPtVsRefMultEta8_GenXiPlus",        "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);   fListHist->Add(fHistPtVsRefMultEta8_GenXiPlus);    }
   if(! fHistPtVsRefMultEta8_GenOmegaMinus ) {
-    fHistPtVsRefMultEta5_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta8_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);   fListHist->Add(fHistPtVsRefMultEta8_GenOmegaMinus);    }
+    fHistPtVsRefMultEta8_GenOmegaMinus    = new TH2D( "fHistPtVsRefMultEta8_GenOmegaMinus", "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);   fListHist->Add(fHistPtVsRefMultEta8_GenOmegaMinus);    }
   if(! fHistPtVsRefMultEta8_GenOmegaPlus ) {
     fHistPtVsRefMultEta8_GenOmegaPlus     = new TH2D( "fHistPtVsRefMultEta8_GenOmegaPlus",  "Generated;p_{T} (GeV/c); Mult",200,0,20,100,0,100);   fListHist->Add(fHistPtVsRefMultEta8_GenOmegaPlus);    }
 
