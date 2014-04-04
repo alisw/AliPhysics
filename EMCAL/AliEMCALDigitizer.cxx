@@ -307,6 +307,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   if (!fSDigitizer) fSDigitizer = new AliEMCALSDigitizer(rl->GetFileName().Data());
   fSDigitizer->SetEventRange(0, -1) ;
   
+  //-------------------------------------------------------
   //take all the inputs to add together and load the SDigits
   TObjArray * sdigArray = new TObjArray(fInput) ;
   sdigArray->AddAt(emcalLoader->SDigits(), 0) ;
@@ -320,46 +321,60 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     
     AliRunLoader *  rl2 = AliRunLoader::GetRunLoader(tempo) ;
     
-    if (rl2==0)
-    rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ;
+    if (!rl2)
+      rl2 = AliRunLoader::Open(fInputFileNames[i], tempo) ;
+    
+    if(!rl2)
+    {
+      AliFatal("Run Loader of second event not available!");
+      return; // not needed but in case coverity complains ...
+    }
     
     if (fDigInput)
-    readEvent = dynamic_cast<AliStream*>(fDigInput->GetInputStream(i))->GetCurrentEventNumber() ;
+      readEvent = dynamic_cast<AliStream*>(fDigInput->GetInputStream(i))->GetCurrentEventNumber() ;
+    
     Info("Digitize", "Adding event %d from input stream %d %s %s", readEvent, i, fInputFileNames[i].Data(), tempo.Data()) ;
+    
     rl2->LoadSDigits();
     //     rl2->LoadDigits();
     rl2->GetEvent(readEvent);
-    if(rl2->GetDetectorLoader("EMCAL"))
+    
+    if(!rl2->GetDetectorLoader("EMCAL"))
     {
-      AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
-      
-      if(emcalLoader2)
-      {
-        //Merge 2 simulated sdigits
-        if(emcalLoader2->SDigits()){
-          TClonesArray* sdigits2 = emcalLoader2->SDigits();
-          sdigArray->AddAt(sdigits2, i) ;
-          // Check if first sdigit is of embedded type, if so, handle the sdigits differently:
-          // do not smear energy of embedded, do not add noise to any sdigits
-          if(sdigits2->GetEntriesFast()>0)
-          {
-            //printf("Merged digit type: %d\n",dynamic_cast<AliEMCALDigit*> (sdigits2->At(0))->GetType());
-            AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*> (sdigits2->At(0));
-            if( digit2 && digit2->GetType()==AliEMCALDigit::kEmbedded ) embed = kTRUE;
-          }
-        }
-        
-      }//loader2
-      else  AliFatal("EMCAL Loader of second event not available!");
-      
+      AliFatal("Loader of second input not found");
+      return; // not needed but in case coverity complains ...
     }
-    else Fatal("Digitize", "Loader of second input not found");
+    
+    AliEMCALLoader *emcalLoader2 = dynamic_cast<AliEMCALLoader*>(rl2->GetDetectorLoader("EMCAL"));
+    
+    if(!emcalLoader2)
+    {
+      AliFatal("EMCAL Loader of second event not available!");
+      return; // not needed but in case coverity complains ...
+    }
+
+    //Merge 2 simulated sdigits
+    if(!emcalLoader2->SDigits()) continue;
+    
+    TClonesArray* sdigits2 = emcalLoader2->SDigits();
+    sdigArray->AddAt(sdigits2, i) ;
+    
+    // Check if first sdigit is of embedded type, if so, handle the sdigits differently:
+    // do not smear energy of embedded, do not add noise to any sdigits
+    if( sdigits2->GetEntriesFast() <= 0 ) continue;
+    
+    //printf("Merged digit type: %d\n",dynamic_cast<AliEMCALDigit*> (sdigits2->At(0))->GetType());
+    AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*> (sdigits2->At(0));
+    if( digit2 && digit2->GetType()==AliEMCALDigit::kEmbedded ) embed = kTRUE;
+    
   }// input loop
   
+  //--------------------------------
   //Find the first tower with signal
   Int_t nextSig = nEMC + 1 ;
   TClonesArray * sdigits ;
-  for(i = 0 ; i < fInput ; i++){
+  for(i = 0 ; i < fInput ; i++)
+  {
     if(i > 0 && embed) continue;
     sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
     if(sdigits)
@@ -402,6 +417,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   AliEMCALDigit * digit ;
   AliEMCALDigit * curSDigit ;
   
+  //---------------------------------------------
   //Put Noise contribution, smear time and energy
   Float_t timeResolution = 0;
   Int_t absID = -1 ;
@@ -526,6 +542,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     
   } // for(absID = 0; absID < nEMC; absID++)
   
+  //---------------------------------------------------------
   //Embed simulated amplitude (and time?) to real data digits
   if(embed)
   {
@@ -579,6 +596,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   //JLK is it better to call Clear() here?
   delete sdigArray ; //We should not delete its contents
   
+  //------------------------------
   //remove digits below thresholds
   // until 10-02-2010 remove digits with energy smaller than fDigitThreshold 3*fPinNoise
   // now, remove digits with Digitized ADC smaller than fDigitThreshold = 3,
@@ -605,6 +623,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   Int_t ndigits = digits->GetEntriesFast() ;
   
+  //---------------------------------------------------------------
   //JLK 26-June-2008
   //After we have done the summing and digitizing to create the
   //digits, now we want to calibrate the resulting amplitude to match
