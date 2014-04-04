@@ -376,39 +376,34 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(i = 0 ; i < fInput ; i++)
   {
     if(i > 0 && embed) continue;
+    
     sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
-    if(sdigits)
-    {
-      if (sdigits->GetEntriesFast() )
-      {
-        AliEMCALDigit *sd = dynamic_cast<AliEMCALDigit *>(sdigits->At(0));
-        if(sd)
-        {
-          Int_t curNext = sd->GetId() ;
-          if(curNext < nextSig)
-          nextSig = curNext ;
-          AliDebug(1,Form("input %i : #sdigits %i \n",
-                          i, sdigits->GetEntriesFast()));
-          
-        }//First entry is not NULL
-        else
-        {
-          AliDebug(1, "NULL sdigit pointer");
-          continue;
-        }
-      }//There is at least one entry
-      else
-      {
-        AliDebug(1, "NULL sdigits array");
-        continue;
-      }
-    }// SDigits array exists
-    else
+    if(!sdigits)
     {
       AliDebug(1,"Null sdigit pointer");
       continue;
     }
+    
+    if (sdigits->GetEntriesFast() <= 0 )
+    {
+      AliDebug(1, "No sdigits entries");
+      continue;
+    }
+    
+    AliEMCALDigit *sd = dynamic_cast<AliEMCALDigit *>(sdigits->At(0));
+    if(!sd)
+    {
+      AliDebug(1, "NULL sdigit pointer");
+      continue;
+    }
+    
+    Int_t curNext = sd->GetId() ;
+    if(curNext < nextSig)
+    nextSig = curNext ;
+    AliDebug(1,Form("input %i : #sdigits %i \n",i, sdigits->GetEntriesFast()));
+    
   }// input loop
+  
   AliDebug(1,Form("FIRST tower with signal %i \n", nextSig));
   
   TArrayI index(fInput) ;
@@ -435,110 +430,107 @@ void AliEMCALDigitizer::Digitize(Int_t event)
     //look if we have to add signal?
     digit = dynamic_cast<AliEMCALDigit *>(digits->At(absID)); // absID-1->absID
     
-    if (digit)
+    if (!digit)
     {
-      if(absID==nextSig)
+      AliDebug(1,"Digit pointer is null");
+      continue;
+    }
+    
+    if(absID==nextSig)
+    {
+      // Calculate time as time of the largest digit
+      Float_t time = digit->GetTime() ;
+      Float_t aTime= digit->GetAmplitude() ;
+      
+      // loop over input
+      Int_t nInputs = fInput;
+      if(embed) nInputs = 1; // In case of embedding, merge later real digits, do not smear energy and time of data
+      for(i = 0; i< nInputs ; i++)
       {
-        // Calculate time as time of the largest digit
-        Float_t time = digit->GetTime() ;
-        Float_t aTime= digit->GetAmplitude() ;
-        
-        // loop over input
-        Int_t nInputs = fInput;
-        if(embed) nInputs = 1; // In case of embedding, merge later real digits, do not smear energy and time of data
-        for(i = 0; i< nInputs ; i++)
-        {  //loop over (possible) merge sources
-          TClonesArray* sdtclarr = dynamic_cast<TClonesArray *>(sdigArray->At(i));
-          if(sdtclarr) {
-            Int_t sDigitEntries = sdtclarr->GetEntriesFast();
-            
-            if(sDigitEntries > index[i] )
-            curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
-            else
-            curSDigit = 0 ;
-            
-            //May be several digits will contribute from the same input
-            while(curSDigit && (curSDigit->GetId() == absID))
-            {
-              //Shift primary to separate primaries belonging different inputs
-              Int_t primaryoffset ;
-              if(fDigInput)
-              primaryoffset = fDigInput->GetMask(i) ;
-              else
-              primaryoffset = i ;
-              curSDigit->ShiftPrimary(primaryoffset) ;
-              
-              if(curSDigit->GetAmplitude()>aTime)
-              {
-                aTime = curSDigit->GetAmplitude();
-                time  = curSDigit->GetTime();
-              }
-              
-              *digit = *digit + *curSDigit ;  //adds amplitudes of each digit
-              
-              index[i]++ ;
-              
-              if( sDigitEntries > index[i] )
-              curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
-              else
-              curSDigit = 0 ;
-            }// while
-          }// source exists
-        }// loop over merging sources
-        
-        
-        //Here we convert the summed amplitude to an energy in GeV only for simulation or mixing of simulations
-        energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
-        
-        // add fluctuations for photo-electron creation
-        // corrected fluctuations after comparison with beam test, Paraskevi Ganoti (06/11/2011)
-        Float_t fluct = static_cast<Float_t>((energy*fMeanPhotonElectron)/fGainFluctuations);
-        energy       *= static_cast<Float_t>(gRandom->Poisson(fluct)) / fluct ;
-        
-        //calculate and set time
-        digit->SetTime(time) ;
-        
-        //Find next signal module
-        nextSig = nEMC + 1 ;
-        for(i = 0 ; i < nInputs ; i++){
-          sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
+        //loop over (possible) merge sources
+        TClonesArray* sdtclarr = dynamic_cast<TClonesArray *>(sdigArray->At(i));
+        if(sdtclarr)
+        {
+          Int_t sDigitEntries = sdtclarr->GetEntriesFast();
           
-          if(sdigits){
-            Int_t curNext = nextSig ;
-            if(sdigits->GetEntriesFast() > index[i])
+          if(sDigitEntries > index[i] ) curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
+          else                          curSDigit = 0 ;
+          
+          //May be several digits will contribute from the same input
+          while(curSDigit && (curSDigit->GetId() == absID))
+          {
+            //Shift primary to separate primaries belonging different inputs
+            Int_t primaryoffset = i ;
+            if(fDigInput) primaryoffset = fDigInput->GetMask(i) ;
+            curSDigit->ShiftPrimary(primaryoffset) ;
+            
+            if(curSDigit->GetAmplitude()>aTime)
             {
-              AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
-              if(tmpdigit)
-              {
-                curNext = tmpdigit->GetId() ;
-              }
+              aTime = curSDigit->GetAmplitude();
+              time  = curSDigit->GetTime();
             }
-            if(curNext < nextSig) nextSig = curNext ;
-          }// sdigits exist
-        } // input loop
+            
+            *digit = *digit + *curSDigit ;  //adds amplitudes of each digit
+            
+            index[i]++ ;
+            
+            if( sDigitEntries > index[i] ) curSDigit = dynamic_cast<AliEMCALDigit*>(sdtclarr->At(index[i])) ;
+            else                           curSDigit = 0 ;
+          }// while
+        }// source exists
+      }// loop over merging sources
+      
+      //Here we convert the summed amplitude to an energy in GeV only for simulation or mixing of simulations
+      energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
+      
+      // add fluctuations for photo-electron creation
+      // corrected fluctuations after comparison with beam test, Paraskevi Ganoti (06/11/2011)
+      Float_t fluct = static_cast<Float_t>((energy*fMeanPhotonElectron)/fGainFluctuations);
+      energy       *= static_cast<Float_t>(gRandom->Poisson(fluct)) / fluct ;
+      
+      //calculate and set time
+      digit->SetTime(time) ;
+      
+      //Find next signal module
+      nextSig = nEMC + 1 ;
+      for(i = 0 ; i < nInputs ; i++)
+      {
+        sdigits = dynamic_cast<TClonesArray *>(sdigArray->At(i)) ;
         
-      }//absID==nextSig
+        if(sdigits)
+        {
+          Int_t curNext = nextSig ;
+          if(sdigits->GetEntriesFast() > index[i])
+          {
+            AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
+            if(tmpdigit)
+            {
+              curNext = tmpdigit->GetId() ;
+            }
+          }
+          if(curNext < nextSig) nextSig = curNext ;
+        }// sdigits exist
+      } // input loop
       
-      // add the noise now, no need for embedded events with real data
-      if(!embed)
+    }//absID==nextSig
+    
+    // add the noise now, no need for embedded events with real data
+    if(!embed)
       energy += gRandom->Gaus(0., fPinNoise) ;
-      
-      // JLK 26-June-2008
-      //Now digitize the energy according to the fSDigitizer method,
-      //which merely converts the energy to an integer.  Later we will
-      //check that the stored value matches our allowed dynamic ranges
-      digit->SetAmplitude(fSDigitizer->Digitize(energy)) ;
-      
-      //Set time resolution with final energy
-      timeResolution = GetTimeResolution(energy);
-      digit->SetTime(gRandom->Gaus(digit->GetTime(),timeResolution) ) ;
-      AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
-                       absID, energy, nextSig));
-      //Add delay to time
-      digit->SetTime(digit->GetTime()+fTimeDelay) ;
-      
-    }// Digit pointer exists
-    else AliDebug(1,"Digit pointer is null");
+    
+    // JLK 26-June-2008
+    //Now digitize the energy according to the fSDigitizer method,
+    //which merely converts the energy to an integer.  Later we will
+    //check that the stored value matches our allowed dynamic ranges
+    digit->SetAmplitude(fSDigitizer->Digitize(energy)) ;
+    
+    //Set time resolution with final energy
+    timeResolution = GetTimeResolution(energy);
+    digit->SetTime(gRandom->Gaus(digit->GetTime(),timeResolution) ) ;
+    AliDebug(10,Form(" absID %5i energy %f nextSig %5i\n",
+                     absID, energy, nextSig));
+    //Add delay to time
+    digit->SetTime(digit->GetTime()+fTimeDelay) ;
     
   } // for(absID = 0; absID < nEMC; absID++)
   
