@@ -1,4 +1,4 @@
-void sim(Int_t nev=20) {
+void sim(Int_t nev=3) {
 
   gSystem->Load("liblhapdf");
   gSystem->Load("libEGPythia6");
