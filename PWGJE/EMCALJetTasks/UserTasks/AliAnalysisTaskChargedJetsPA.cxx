@@ -1592,10 +1592,9 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
 
         FillHistogram("hJetPtBgrdSubtractedExternal", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal), centralityPercentile);
-        FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, backgroundKTImprovedCMS);
-        FillHistogram("hJetPtSubtractedRhoExternal", tmpJet->Pt(), centralityPercentile, backgroundKTImprovedCMSExternal);
-        FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, backgroundPP);
-
+        FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
+        FillHistogram("hJetPtSubtractedRhoExternal", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+        FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundPP));
 
         if(fAnalyzeDeprecatedBackgrounds)
         {
