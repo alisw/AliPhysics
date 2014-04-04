@@ -19,10 +19,6 @@ AliAnalysisTask *AddTask_AntiHe4(){
   //========= Add task to the ANALYSIS manager =====
   AliAnalysisTaskAntiHe4 *task = new AliAnalysisTaskAntiHe4("nmartinTaskAntiHe4");
 
-  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  task->SetAnalysisType               (type);
-
-
   Int_t iResult = task->Initialize();
   if (!iResult)
     mgr->AddTask(task);
