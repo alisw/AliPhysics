@@ -120,6 +120,51 @@ class AliAnalysisTaskStrangenessVsMultiplicity : public AliAnalysisTaskSE {
   Int_t fRunNumber;                //!
 
 //===========================================================================================
+//   Variables for V0 Tree
+//===========================================================================================
+	Float_t fTreeVariableChi2V0;         //!
+	Float_t fTreeVariableDcaV0Daughters; //!
+	Float_t fTreeVariableDcaV0ToPrimVertex; //!
+	Float_t fTreeVariableDcaPosToPrimVertex; //!
+	Float_t fTreeVariableDcaNegToPrimVertex; //!
+	Float_t fTreeVariableV0CosineOfPointingAngle; //!
+	Float_t fTreeVariableV0Radius; //!
+	Float_t fTreeVariablePt; //!
+	Float_t fTreeVariableRapK0Short; //!
+	Float_t fTreeVariableRapLambda; //!
+	Float_t fTreeVariableInvMassK0s; //!
+	Float_t fTreeVariableInvMassLambda; //!
+	Float_t fTreeVariableInvMassAntiLambda; //!
+	Float_t fTreeVariableAlphaV0; //!
+	Float_t fTreeVariablePtArmV0;//!
+	Float_t fTreeVariableNegEta; //!
+	Float_t fTreeVariablePosEta; //!
+
+	Float_t fTreeVariableNSigmasPosProton; //!
+	Float_t fTreeVariableNSigmasPosPion; //! 
+	Float_t fTreeVariableNSigmasNegProton; //!
+	Float_t fTreeVariableNSigmasNegPion; //! 
+	
+	Float_t fTreeVariableDistOverTotMom;//!
+	Int_t   fTreeVariableLeastNbrCrossedRows;//!
+	Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
+
+  //Event Multiplicity Variables 
+  Float_t fTreeVariableCentV0A;    //!
+  Float_t fTreeVariableCentV0C;    //!
+  Float_t fTreeVariableCentV0M;    //!
+  Float_t fTreeVariableCentV0AEq;  //!
+  Float_t fTreeVariableCentV0CEq;  //!
+  Float_t fTreeVariableCentV0MEq;  //!
+  Float_t fTreeVariableAmpV0A;     //!
+  Float_t fTreeVariableAmpV0C;     //!
+  Float_t fTreeVariableAmpV0AEq;   //!
+  Float_t fTreeVariableAmpV0CEq;   //!
+  Int_t   fTreeVariableRefMultEta8;  //!
+  Int_t   fTreeVariableRefMultEta5;  //!
+  Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
+
+//===========================================================================================
 //   Variables for Cascade Candidate Tree
 //===========================================================================================
   Int_t fTreeCascVarCharge;         //! 
