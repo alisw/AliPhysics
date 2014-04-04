@@ -866,7 +866,7 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
     cov[1] = GetTilt()*(sz2 - sy2)*correction;
     cov[2] = (t2*sy2+sz2)*correction;
   } else {
-    cov[0] = sy2; cov[1] = 0.; cov[2] = sy2;
+    cov[0] = sy2; cov[1] = 0.; cov[2] = sz2;
   }
 
   AliDebug(4, Form("C(%6.1f %+6.3f %6.1f)  RC[%c]", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?'y':'n'));
