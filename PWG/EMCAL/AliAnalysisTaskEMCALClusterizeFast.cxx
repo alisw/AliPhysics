@@ -512,11 +512,12 @@ Bool_t AliAnalysisTaskEMCALClusterizeFast::AcceptCell(Int_t cellNumber) {
   Bool_t accept = kTRUE;
   if(fRejectExoticCells) {
     //Remove exotic cells before making digits
+    Bool_t exRemoval = fRecoUtils->IsRejectExoticCell();
     fRecoUtils->SwitchOnRejectExoticCell();//switch on and off
     Int_t bunchCrossNo = InputEvent()->GetBunchCrossNumber();
     Bool_t isEx = fRecoUtils->IsExoticCell(cellNumber, fCaloCells, bunchCrossNo);
     if(isEx) accept = kFALSE;
-    fRecoUtils->SwitchOffRejectExoticCell();//switch on and off
+    if(!exRemoval) fRecoUtils->SwitchOffRejectExoticCell();//switch on and off
   }
   return accept;
 }

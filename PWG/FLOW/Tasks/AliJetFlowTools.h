@@ -78,10 +78,20 @@ class AliJetFlowTools {
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
         }
-        void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetCentralityBin(Int_t bin)             {
+            // in case of one centraltiy
+            fCentralityArray = new TArrayI(1);
+            fCentralityArray->AddAt(bin, 0);
+            // for one centrality there's no need for weights
+            fCentralityWeights = new TArrayD(1);
+            fCentralityWeights->AddAt(1., 0);
+        }
         void            SetCentralityBin(TArrayI* bins)         {
             fCentralityArray = bins;
-            fCentralityBin = fCentralityArray->At(0);
+        }
+        void            SetCentralityWeight(TArrayD* weights)   {
+            fCentralityWeights = weights;
+            if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
         }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
@@ -123,7 +133,6 @@ class AliJetFlowTools {
         void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
-        void            SetTreatCorrErrAsUncorrErr(Bool_t b)    {fSetTreatCorrErrAsUncorrErr = b;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -154,9 +163,11 @@ class AliJetFlowTools {
                 TArrayI* variantions2ndIn,
                 TArrayI* variantions2ndOut,
                 TString type = "",
+                TString type2 = "",
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
+                Float_t corr = .5,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "CorrelatedUncertainty.root") const;
         void            GetShapeUncertainty(
@@ -312,8 +323,8 @@ class AliJetFlowTools {
         Bool_t                  fRefreshInput;          // re-read the input (called automatically if input list changes)
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
-        Int_t                   fCentralityBin;         // centrality bin
         TArrayI*                fCentralityArray;       // array of bins that are merged
+        TArrayD*                fCentralityWeights;     // array of centrality weights
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
@@ -352,7 +363,6 @@ class AliJetFlowTools {
         Bool_t                  fDphiUnfolding;         // do the unfolding in in and out of plane orientation
         Bool_t                  fDphiDptUnfolding;      // do the unfolding in dphi and dpt bins (to fit v2)
         Bool_t                  fExLJDpt;               // exclude randon cones with leading jet
-        Bool_t                  fSetTreatCorrErrAsUncorrErr;    // treat the correlated error as uncorrelated
         Double_t                fTitleFontSize;         // title font size
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings

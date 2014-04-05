@@ -279,7 +279,8 @@ Bool_t AddTrackCutsLHC11h(AliAnalysisTaskESDfilter* esdfilter){
    esdTrackCutsHTG->SetMaxDCAToVertexZ(3.2);
    esdTrackCutsHTG->SetDCAToVertex2D(kTRUE);
    esdTrackCutsHTG->SetMaxChi2TPCConstrainedGlobal(36);
-   
+   esdTrackCutsHTG->SetMaxFractionSharedTPCClusters(0.4);
+
    // Than the complementary tracks which will be stored as global
    // constraint, complement is done in the ESDFilter task
    AliESDtrackCuts* esdTrackCutsHTGC = new AliESDtrackCuts(*esdTrackCutsHTG);

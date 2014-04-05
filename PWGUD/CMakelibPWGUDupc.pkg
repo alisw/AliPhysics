@@ -35,6 +35,8 @@ set ( SRCS
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
+set ( EXPORT UPC/AliUpcParticle.h )
+
 set ( EINCLUDE PWGUD/UPC STEER/AOD STEER/ESD STEER/STEERBase VZERO ANALYSIS)
 
 set ( DHDR PWGUDupcLinkDef.h )

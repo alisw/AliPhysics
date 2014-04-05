@@ -47,7 +47,7 @@ class AliAnalysisTaskSEHFCJqa : public AliAnalysisTaskSE {
  private:
   AliAnalysisTaskSEHFCJqa(const AliAnalysisTaskSEHFCJqa&); // copy constructo not implemented yet
   AliAnalysisTaskSEHFCJqa& operator=(const AliAnalysisTaskSEHFCJqa&); // assignment operator not implemented yet
-  Bool_t FillTrackHistosAndSelectTrack(AliAODTrack *aodtr, AliESDVertex primary,Double_t magfield); // method to filter tracks and fill related histograms
+  Bool_t FillTrackHistosAndSelectTrack(AliAODTrack *aodtr,const AliESDVertex *primary,Double_t magfield); // method to filter tracks and fill related histograms
   void SetupPIDresponse();
   void FillJetRecoHisto(const AliAODJet *jet,Int_t partonnat,Double_t contribution,Double_t ptpart);
   void FillTrackHistosPID(AliAODTrack *aodtr);

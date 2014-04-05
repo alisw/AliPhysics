@@ -106,12 +106,12 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetFixedEfficiency(Double_t eff) {fEfficiencyFixed = eff;}
     virtual void SetRequireT0vtx(Bool_t b = true){fRequireTZEROvtx = b;}
     virtual void SetRequireV0AC(Bool_t b = true){fRequireVZEROAC = b;}
-
+    virtual void SetUseHFcuts(Bool_t b = true){fUseHFcuts = b;}
     Double_t GetMomentumSmearing(Int_t cat, Double_t pt);
     void FitMomentumResolution();
 
 
-    // for Fast Jet
+    // for Fast Jet 
     fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
     fastjet::Strategy            GetStrategy()          const {return fStrategy;}
     fastjet::RecombinationScheme GetRecombScheme()      const {return fRecombScheme;}
@@ -158,6 +158,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     Int_t GetListOfTracks(TList *list,Int_t type);
 	Int_t AddDaughters(TList * list, AliAODMCParticle *part, TClonesArray * tca);
+    void AvoidDoubleCountingHF(AliAODEvent *aod, Int_t idtr1, Bool_t &fFlagSameTr);
 	
     AliAODEvent     *fAOD;                // ! where we take the jets from can be input or output AOD
     AliAODExtension *fAODExtension;       // ! AOD extension in case we write a non-sdt branch to a separate file and the aod is standard
@@ -168,6 +169,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     Bool_t        fRequireVZEROAC;        // switch to require V0 AC
     Bool_t        fRequireTZEROvtx;       // switch to require T0 vtx
+    Bool_t        fUseHFcuts;       // switch to require T0 vtx
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fFilterMaskBestPt;      // filter bit to mark jets with high quality leading tracks
 

@@ -57,7 +57,7 @@ fFillPileUpHistograms(0),
 fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
 fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),          fFillEMCALBCHistograms(0),
 fInputAODGammaConvName(""),
-fCheckSplitDistToBad(0),
+fCheckSplitDistToBad(0),            fNSuperModules(0),
 // Histograms
 fhPt(0),                            fhE(0),
 fhPtEta(0),                         fhPtPhi(0),                         fhEtaPhi(0),
@@ -229,6 +229,15 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
     
   }
   
+  for(Int_t iSM = 0; iSM < 22; iSM++)
+  {
+    fhNLocMaxPtSM[iSM] = 0;
+    for(Int_t inlm = 0; inlm < 3; inlm++)
+    {
+      fhSelectedMassPtLocMaxSM    [inlm][iSM] = 0;
+      fhSelectedLambda0PtLocMaxSM [inlm][iSM] = 0;
+    }
+  }
   //Initialize parameters
   InitParameters();
   
@@ -511,6 +520,9 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   
   fhNLocMaxPt->Fill(pt,nMaxima);
   
+  if(nSM < fNSuperModules && nSM >=0)
+    fhNLocMaxPtSM[nSM]->Fill(pt,nMaxima);
+  
   fhPtLambda0LocMax   [indexMax]->Fill(pt,l0);
   fhPtLambda1LocMax   [indexMax]->Fill(pt,l1);
   fhPtDispersionLocMax[indexMax]->Fill(pt,disp);
@@ -526,7 +538,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
     
   }
   
-  if(fCalorimeter=="EMCAL" && nSM < 6)
+  if(fCalorimeter=="EMCAL" && nSM < 6) // CAREFUL FOR 2012-13 runs change 6 to 4, -1 for 2015 ...
   {
     fhPtLambda0NoTRD    ->Fill(pt, l0  );
     fhPtFracMaxCellNoTRD->Fill(pt,maxCellFraction);
@@ -845,18 +857,6 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhPtEta->SetXTitle("E (GeV)");
   outputContainer->Add(fhPtEta) ;
   
-  fhPtPhi  = new TH2F
-  ("hPtPhi","Selected #pi^{0} (#eta) pairs: p_{T} vs #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax);
-  fhPtPhi->SetYTitle("#phi (rad)");
-  fhPtPhi->SetXTitle("p_{T} (GeV/c)");
-  outputContainer->Add(fhPtPhi) ;
-  
-  fhPtEta  = new TH2F
-  ("hPtEta","Selected #pi^{0} (#eta) pairs: p_{T} vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax);
-  fhPtEta->SetYTitle("#eta");
-  fhPtEta->SetXTitle("p_{T} (GeV/c)");
-  outputContainer->Add(fhPtEta) ;
-  
   fhEtaPhi  = new TH2F
   ("hEtaPhi","Selected #pi^{0} (#eta) pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax);
   fhEtaPhi->SetYTitle("#phi (rad)");
@@ -1033,6 +1033,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhSelectedMassPtLocMax[inlm]->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhSelectedMassPtLocMax[inlm]) ;
       
+      for(Int_t iSM = 0; iSM < fNSuperModules; iSM++)
+      {
+        fhSelectedMassPtLocMaxSM[inlm][iSM]  = new TH2F
+        (Form("hSelectedMassPtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+        fhSelectedMassPtLocMaxSM[inlm][iSM]->SetYTitle("mass (GeV/c^{2})");
+        fhSelectedMassPtLocMaxSM[inlm][iSM]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhSelectedMassPtLocMaxSM[inlm][iSM]) ;
+
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]  = new TH2F
+        (Form("hSelectedLambda0PtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs #lambda_{0}^{2}: p_{T} vs mass, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax,ssbins,ssmin,ssmax);
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]->SetYTitle("#lambda_{0}^{2}");
+        fhSelectedLambda0PtLocMaxSM[inlm][iSM]->SetXTitle("p_{T} (GeV/c)");
+        outputContainer->Add(fhSelectedLambda0PtLocMaxSM[inlm][iSM]) ;
+      }
+      
       if(IsDataMC())
       {
         for(Int_t ipart = 0; ipart < 6; ipart++)
@@ -1208,6 +1223,15 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhNLocMaxPt ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhNLocMaxPt) ;
 
+    for(Int_t iSM = 0; iSM < fNSuperModules; iSM++)
+    {
+      fhNLocMaxPtSM[iSM] = new TH2F(Form("hNLocMaxPt_SM%d",iSM),Form("Number of local maxima in cluster, selected clusters in SM %d",iSM),
+                               nptbins,ptmin,ptmax,20,0,20);
+      fhNLocMaxPtSM[iSM] ->SetYTitle("N maxima");
+      fhNLocMaxPtSM[iSM] ->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhNLocMaxPtSM[iSM]) ;
+    }
+    
     if(fAnaType == kSSCalo)
     {
 
@@ -2476,6 +2500,8 @@ void AliAnaPi0EbE::InitParameters()
   fNLMECutMin[1] = 6. ;
   fNLMECutMin[2] = 6. ;
   
+  fNSuperModules = 10;
+  
 }
 
 //__________________________________________________________________
@@ -3095,7 +3121,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPt     ->Fill(mom.Pt(),mass);
     fhSelectedMassSplitPt->Fill(ptSplit ,mass);
     fhSelectedMassPtLocMax[indexMax]->Fill(mom.Pt(),mass);
-
+    
+    Int_t   nSM  = GetModuleNumber(calo);
+    if(nSM < fNSuperModules && nSM >=0)
+    {
+      fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(mom.Pt(),mass);
+      fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(mom.Pt(),calo->GetM02());
+    }
+    
     if(IsDataMC())
     {
       if(mcIndex==kmcPi0)

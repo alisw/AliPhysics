@@ -46,6 +46,8 @@ set ( SRCS
   STRANGENESS/LambdaK0PbPb/AliAnalysisTaskLK0Spectra.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractCascade.cxx
   STRANGENESS/Cascades/AliAnalysisTaskExtractPerformanceCascade.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskStrangenessVsMultiplicity.cxx
+  STRANGENESS/Cascades/AliAnalysisTaskStrangenessVsMultiplicityMC.cxx
   STRANGENESS/Correlations/AliAnalysisTaskLambdaOverK0sJets.cxx
   STRANGENESS/Correlations/AliAnalysisTaskV0ChCorrelations.cxx
   STRANGENESS/Cascades/AliAnalysisTaskCheckCascadepp276.cxx
@@ -62,6 +64,7 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAODMCNuclExReplicator.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskAntiHe4.cxx
  
 
 )
