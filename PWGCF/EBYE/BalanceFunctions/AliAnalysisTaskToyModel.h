@@ -53,6 +53,17 @@ class AliAnalysisTaskToyModel : public TObject {
     fEtaMin = etamin; fEtaMax = etamax;
   }
 
+  // Additional options (for integral studies)
+  void SetSigmaGaussEta(Double_t sigmaGaussEta){
+    fSigmaGaussEta = sigmaGaussEta;
+  }
+  void SetFixPt(Double_t fixPt){
+    fFixPt = fixPt;
+  } 
+  void SetFixedPositiveRatio(Bool_t fixedPositiveRatio=kTRUE){
+    fFixedPositiveRatio = fixedPositiveRatio;
+  }
+
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
     fUseAcceptanceParameterization = kTRUE;
@@ -213,6 +224,10 @@ class AliAnalysisTaskToyModel : public TObject {
   Double_t fPtMax; //pt max for acceptance
   Double_t fEtaMin; //eta min for acceptance
   Double_t fEtaMax; //eta max for acceptance
+  Double_t fSigmaGaussEta; //sigma for the Gaussian distribution of randomly produced particles (default = 4.0)
+  Double_t fFixPt; //fixed pT for unidentified particles (default = -1., i.e. randomly produced pT from fPtSpectraAllCharges)
+  Bool_t fFixedPositiveRatio; //fix ratio of produced positive to negative particles (dafult = kFALSE, i.e. randomly produced ratio)
+  
 
   //Acceptance parameterization
   Bool_t fUseAcceptanceParameterization; //flag acceptance parameterization

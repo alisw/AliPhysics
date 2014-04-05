@@ -52,7 +52,11 @@ class AliCFParticle : public AliVParticle, public TArrayF {
 
   virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
 
-  virtual void SetPhi(Double_t phi) { fPhi = phi; }
+  virtual void SetPt(Double_t pt)        { fPt     = pt;     }
+  virtual void SetEta(Double_t eta)      { fEta    = eta;    }
+  virtual void SetPhi(Double_t phi)      { fPhi    = phi;    }
+  virtual void SetCharge(Short_t charge) { fCharge = charge; }
+  virtual void SetMask(Short_t mask)     { fMask   = mask;   }
  protected:
   Float_t fPt;
   Float_t fEta;

@@ -9,7 +9,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: January 13, 2014.								      //
+	//		version: March 18, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -36,6 +36,10 @@ class AliSelectNonHFE;
 class AliEventPoolManager;
 class AliEventPool;
 class TObjArray;
+	//Lucile
+class AliCaloTrackAODReader;
+class AliCaloTrackReader;
+
 
 	//______________________________________________________________________
 	//Library
@@ -81,6 +85,7 @@ public:
 	void SetNonHFEchi2Cut(Double_t Chi2Cut) { fChi2Cut = Chi2Cut; fChi2CutFlag = kTRUE;};
 	void SetNonHFEdcaCut(Double_t DCAcut) { fDCAcut = DCAcut; fDCAcutFlag = kTRUE;};
 	void SetUseEMCal() { fUseEMCal=kTRUE;};
+	void SetUseTrigger() { fUseTrigger=kTRUE;};
 	void SetUseShowerShapeCut(Bool_t UseShowerShapeCut=kFALSE) { fUseShowerShapeCut=UseShowerShapeCut;};
 	void SetBackground(Bool_t FillBackground=kFALSE) { fFillBackground=FillBackground;};
 	void SetEMCalTriggerEG1() { fEMCEG1=kTRUE; };
@@ -113,6 +118,7 @@ private:
 	Bool_t 				fCorrelationFlag;
 	Bool_t				fIsMC;
 	Bool_t				fUseEMCal;
+	Bool_t				fUseTrigger;
 	Bool_t				fUseShowerShapeCut;
 	Bool_t				fFillBackground;
 	Bool_t				fAssocWithSPD;
@@ -162,6 +168,11 @@ private:
 	TH1F				*fNevent;
 	TH1F				*fPtElec_Inc;
 	
+	TH1F				*fPtPrim;
+	TH1F				*fPtSec;
+	TH1F				*fPtPrim2;
+	TH1F				*fPtSec2;
+	
 	
 	TH1F				*fCharge_n;
 	TH1F				*fCharge_p;
@@ -173,6 +184,13 @@ private:
 	
 	TH1F				*fPtElec_ULS;
 	TH1F				*fPtElec_LS;
+	
+	TH1F				*fPtElec_ULS_NoPid;
+	TH1F				*fPtElec_LS_NoPid;
+	
+	TH1F				*fPtElec_ULS_MC;
+	TH1F				*fPtElec_ULS_MC_weight;
+	
 	TH1F				*fPtElec_ULS2;
 	TH1F				*fPtElec_LS2;
 	
@@ -209,12 +227,28 @@ private:
 	
 	
 	TH1F				**fECluster;
+	TH1F				*fECluster_pure;
 	TH2F				**fEtaPhi;
 	TH2F				*fEtaPhi_num;
 	TH2F				*fEtaPhi_den;
+	
+	TH2F				*fpt_reco_pt_MC_num;
+	TH2F				*fpt_reco_pt_MC_den;
+	
 	TH1F				**fVtxZ;
+	
+	TH1F				*fVtxZ_new1;
+	TH1F				*fVtxZ_new2;
+	TH1F				*fVtxZ_new3;
+	TH1F				*fVtxZ_new4;
+	
 	TH1F				**fEtad;
 	TH1F				**fNTracks;
+	
+	TH2F				**fNTracks_pt;
+	TH2F				**fNTracks_eta;
+	TH2F				**fNTracks_phi;
+	
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
 	TH2F				**fTPCNcls_pid;
@@ -324,23 +358,31 @@ private:
 	TH1F				*fPtMCparticleAllHfe2;
 	TH1F				*fPtMCparticleRecoHfe2;
 	TH1F				*fPtMCelectronAfterAll;
+	TH1F				*fPtMCelectronAfterAll_unfolding;
 	TH1F				*fPtMCelectronAfterAll_nonPrimary;
 	TH1F				*fPtMCelectronAfterAll_Primary;
 	
 	TH1F				*fPtMCpi0;
 	TH1F				*fPtMCeta;
+	TH1F				*fPtMCpi02;
+	TH1F				*fPtMCeta2;
 	
 	TH1F				*fPtMC_EMCal_All;
 	TH1F				*fPtMC_EMCal_Selected;
 	TH1F				*fPtMC_TPC_All;
 	TH1F				*fPtMC_TPC_Selected;
+	TH1F				*fPt_track_match_den;
+	TH1F				*fPt_track_match_num;
 	
+		
 	TH1F				*fPtMCWithLabel;
 	TH1F				*fPtMCWithoutLabel;
 	TH1F				*fPtIsPhysicaPrimary;
 	
 		//For the HFE package
 	AliHFEcuts 			*fCuts;                 		// Cut Collection for HFE
+														//Lucile
+														//AliCaloTrackAODReader 			*reader; 
 	AliCFManager 		*fCFM;                  		// Correction Framework Manager
 	AliHFEpid 			*fPID;                  		// PID
 	AliHFEpidQAmanager 	*fPIDqa;						// PID QA manager
@@ -356,6 +398,7 @@ private:
 	TClonesArray 		*fMCarray;
 	AliAODMCHeader 		*fMCheader;
 	AliAODMCParticle 	*fMCparticle;
+	AliAODMCParticle 	*fMCparticle2;
 	AliAODMCParticle 	*fMCparticleMother;
 	AliAODMCParticle 	*fMCparticleGMother;
 	AliAODMCParticle 	*fMCparticleGGMother;

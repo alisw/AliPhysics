@@ -72,6 +72,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void		 SetCheckMotherPDG(Bool_t checkpdg) { fCheckMotherPDG = checkpdg; }
   Bool_t	 GetCheckMotherPDG() { return fCheckMotherPDG; }
   void		 NextEvent() { fEventCounter++; }
+  UInt_t	 GetEventCounter() { return fEventCounter; }
   void		 SetDCAXYCut(TFormula* value) { fDCAXYCut = value; }
   void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
   void		 SetCrossedRowsCut(Int_t value) { fCrossedRowsCut = value; }

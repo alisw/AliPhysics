@@ -97,7 +97,10 @@
 #include "TBox.h"
 #include "TCanvas.h"
 #include "TText.h"
+#include <sstream>
+
 using std::make_pair;
+
 ClassImp(AliAnalysisTriggerScalers)
 
 namespace {
@@ -135,7 +138,15 @@ namespace {
     g->GetXaxis()->SetNdivisions(505);
 
   }
-  
+
+  //______________________________________________________________________________
+  Bool_t IsMainSatelliteCollision(const char* triggerClassName)
+  {
+    TString tcn(triggerClassName);
+    tcn.ToUpper();
+    
+    return (tcn.Contains("-S-") ||  tcn.Contains("-SC-") || tcn.Contains("-SA-"));
+  }
 }
 
 //_____________________________________________________________________________
@@ -537,6 +548,36 @@ AliAnalysisTriggerScalers::GetPauseAndConfigCorrection(Int_t runNumber, const ch
 }
 
 //______________________________________________________________________________
+void AliAnalysisTriggerScalers::ShowPileUpFactors(const char* triggerClassName, Double_t purity)
+{
+  /// Printout the pile-up factors for the runlist, including some purity if needed
+  
+  if (purity<=0.0)
+  {
+    AliError(Form("Cannot work with purity=%f for trigger %s. Should be strictly positive",purity,triggerClassName));
+    return;
+  }
+
+  const std::vector<int>& rl = GetRunList();
+  Double_t value(0.0),error(0.0);
+  std::vector<std::string> lines; // put the data into lines so we can get the OCDB access printout grouped before the important stuff
+  
+  for ( std::vector<int>::const_iterator it = rl.begin(); it != rl.end(); ++it )
+  {
+    GetPileUpFactor(*it,triggerClassName,purity,value,error);
+    TString period = GetLHCPeriodFromRunNumber(*it);
+    std::ostringstream str;
+    str << Form("RUN %6d PERIOD %6s PILE-UP CORRECTION FACTOR (mu/(1-exp(-mu)) = %7.4f",*it,period.Data(),value);
+    lines.push_back(str.str());
+  }
+
+  for ( std::vector<std::string>::size_type i = 0; i  < lines.size(); ++i )
+  {
+    std::cout << lines[i].c_str() << std::endl;
+  }
+}
+
+//______________________________________________________________________________
 void AliAnalysisTriggerScalers::GetPileUpFactor(Int_t runNumber, const char* triggerClassName,
                                                 Double_t purity,
                                                 Double_t& value, Double_t& error)
@@ -573,7 +614,9 @@ void AliAnalysisTriggerScalers::GetPileUpFactor(Int_t runNumber, const char* tri
   
   AliLHCData* lhc = static_cast<AliLHCData*>(GetOCDBObject("GRP/GRP/LHCData",runNumber));
   
-  Int_t nbcx = NumberOfInteractingBunches(*lhc,runNumber);
+  Bool_t mainSat = IsMainSatelliteCollision(triggerClassName);
+  
+  Int_t nbcx = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
   
   if ( nbcx<=0.0 )
   {
@@ -1236,9 +1279,10 @@ Double_t AliAnalysisTriggerScalers::Mu(Double_t L0B, Double_t Nb)
 }
 
 //______________________________________________________________________________
-Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber) const
+Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber, Bool_t mainSat) const
 {
   /// Extract the number of colliding bunches from the LHC data
+  /// Use mainSat = true if the collisons were main - satellite ones
   
   Int_t numberOfInteractingBunches(0);
   Int_t numberOfInteractingBunchesMeasured(0);
@@ -1248,26 +1292,35 @@ Int_t AliAnalysisTriggerScalers::NumberOfInteractingBunches(const AliLHCData& lh
   int beam2(1);
 
   AliLHCDipValI* val = lhc.GetBunchConfigDeclared(beam1,0);
-
-  for ( Int_t i = 0; i < val->GetSizeTotal(); ++i )
-  {
-    if ( val->GetValue(i) < 0 ) ++numberOfInteractingBunches;
-  }
-
   AliLHCDipValI* valm = lhc.GetBunchConfigMeasured(beam1,0);
 
-  for ( Int_t i = 0; i < valm->GetSizeTotal(); ++i )
+  
+  if ( mainSat )
   {
-    if ( valm->GetValue(i) < 0 ) ++numberOfInteractingBunchesMeasured;
+    numberOfInteractingBunches = val->GetSizeTotal();
+    numberOfInteractingBunchesMeasured = valm->GetSizeTotal();
+    nIBM2 = numberOfInteractingBunches;
   }
-
-  valm = lhc.GetBunchConfigMeasured(beam2,0);
-
-  for ( Int_t i = 0; i < valm->GetSizeTotal(); ++i )
+  else
   {
-    if ( valm->GetValue(i) <= 0 ) ++nIBM2;
-  }
+    for ( Int_t i = 0; i < val->GetSizeTotal(); ++i )
+    {
+      if ( val->GetValue(i) < 0 ) ++numberOfInteractingBunches;
+    }
 
+    for ( Int_t i = 0; i < valm->GetSizeTotal(); ++i )
+    {
+      if ( valm->GetValue(i) < 0 ) ++numberOfInteractingBunchesMeasured;
+    }
+
+    valm = lhc.GetBunchConfigMeasured(beam2,0);
+
+    for ( Int_t i = 0; i < valm->GetSizeTotal(); ++i )
+    {
+      if ( valm->GetValue(i) <= 0 ) ++nIBM2;
+    }
+  }
+  
   if (!numberOfInteractingBunches)
   {
     return 0;
@@ -1445,8 +1498,6 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
     
     GetCTPObjects(runNumber,tc,trs,lhc);
     
-    Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc,runNumber);
-    
     const TObjArray* scalers = trs->GetScalersRecords();
     
     const TObjArray& trClasses = tc->GetClasses();
@@ -1458,6 +1509,10 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
       UChar_t index = GetIndex(triggerClass->GetMask());
       
       if ( !TString(triggerClass->GetName()).Contains(triggerClassName) ) continue;
+      
+      Bool_t mainSat = IsMainSatelliteCollision(triggerClass->GetName());
+      
+      Int_t numberOfInteractingBunches = NumberOfInteractingBunches(*lhc,runNumber,mainSat);
       
       TIter nextScaler(scalers);
       AliTriggerScalersRecord* record;
@@ -1551,12 +1606,14 @@ TGraph* AliAnalysisTriggerScalers::PlotTriggerEvolution(const char* triggerClass
         }
         else if ( swhat.Contains("MU") )
         {
+          AliInfo(Form("run %d seconds %d L0b %d NB %d",runNumber,timelapse,l0b,numberOfInteractingBunches));
           if (timelapse==0) continue;
           value = Mu(l0b/timelapse,numberOfInteractingBunches);
           error = 0.0; // FIXME
         }
         else if ( swhat.Contains("PILEUPFACTOR") )
         {
+          if (timelapse==0) continue;
           Double_t mu = Mu(l0b/timelapse,numberOfInteractingBunches);
           value = mu/(1-TMath::Exp(-mu));
           error = -1.0; // FIXME

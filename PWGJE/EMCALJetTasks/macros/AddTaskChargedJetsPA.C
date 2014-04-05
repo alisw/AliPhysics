@@ -21,7 +21,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              calculateExternalRho    = kTRUE,
   Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
   Int_t               numberOfCentralityBins  = 20,
-  const char*         externalRhoName         = "ExternalRhoTask"
+  const char*         externalRhoName         = "ExternalRhoTask",
+  Double_t            ktJetRadius             = 0.4
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -65,7 +66,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(usedTracks,"",1,jetRadius,1,0.150,0.300); // anti-kt
-  AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,jetRadius,1,0.150,0.300); // kt
+  AliEmcalJetTask* jetFinderTaskKT = AddTaskEmcalJet(usedTracks,"",0,ktJetRadius,1,0.150,0.300); // kt
 
   if(jetRadius < 0.1)
   {

@@ -4570,7 +4570,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetWeightsHist(TH1D* const hi
  TString sType[2] = {"RP","POI"};
  TString sVariable[3] = {"phi","pt","eta"};
  fWeightsHist[rp][ppe]->SetName(Form("%s weights (%s)",sVariable[ppe].Data(),sType[rp].Data()));
- fWeightsHist[rp][ppe]->SetTitle(Form("%s weights (%s)",sVariable[ppe].Data(),sType[rp].Data()));
+ //fWeightsHist[rp][ppe]->SetTitle(Form("%s weights (%s)",sVariable[ppe].Data(),sType[rp].Data()));
 
  // Flag:
  fUseWeights[rp][ppe] = kTRUE; 
@@ -4853,8 +4853,9 @@ TH1D *AliFlowAnalysisWithMultiparticleCorrelations::GetHistogramWithWeights(cons
  TList *list = dynamic_cast<TList*>(directoryFile->Get(listName));
  if(!list)
  {
-  //printf("\n => if(!list)\n\n");   
-  Fatal(sMethodName.Data(),"if(!list)");
+  cout<<Form("listName = %s",listName)<<endl;
+  Warning(sMethodName.Data(),"if(!list)"); 
+  return NULL;
  }
  // Finally, access the desired histogram:
  hist = dynamic_cast<TH1D*>(list->FindObject(Form("%s,%s",type,variable)));

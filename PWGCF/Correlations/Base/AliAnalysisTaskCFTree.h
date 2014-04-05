@@ -31,6 +31,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   void SetTPConlyConstrainedMask(UInt_t mask) { fTPConlyConstrainedMask = mask; }
   void SetDebug(Int_t val)              { fDebug = val; }
   void SetMode(Int_t val)               { fMode = val; }
+  void SetAOD(Bool_t val)               { fIsAOD = val; }
   // Event cut setters
   void SetEventSelectionBit(UInt_t val) { fSelectBit = val; }
   void SetZVertex(Float_t val)          { fZVertexCut = val; }
@@ -43,6 +44,11 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   void SetSharedClusterCut(Float_t val) { fSharedClusterCut = val;  }
   void SetCrossedRowsCut(Int_t val)     { fCrossedRowsCut = val; }
   void SetFoundFractionCut(Float_t val) { fFoundFractionCut = val;  }
+  void SetDphiCut(Float_t val)          { fDphiCut = val; }
+  // Switchers for additional data to be stored
+  void SetStoreTracks(Bool_t val=kTRUE)    { fStoreTracks    = val; }
+  void SetStoreTracklets(Bool_t val=kTRUE) { fStoreTracklets = val; }
+  void SetStoreMuons(Bool_t val=kTRUE)     { fStoreMuons     = val; }
 
  protected:
   AliAnalysisTaskCFTree(const  AliAnalysisTaskCFTree &task);
@@ -53,6 +59,7 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
 
   Int_t fDebug;               // debug level
   Int_t fMode;                // Analysis mode: 0 - data, 1 - mc
+  Bool_t fIsAOD;              // kTRUE - AOD
   AliInputEventHandler* fInputHandler; // AOD or ESD input handler 
   AliInputEventHandler* fMcHandler;    // MC input handler (ESD)
   AliAnalysisFilter* fTrackFilter;     // track filter used in ESD analysis
@@ -64,6 +71,8 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   TTree* fTree;               //! output tree
   // Tree variables
   TClonesArray* fParticles;   //! tree var: selected AliCFParticles
+  TClonesArray* fTracklets;   //! tree var: selected tracklets (stored if fStoreTracklets=kTRUE)
+  TClonesArray* fMuons;       //! tree var: selected muons (stored if fStoreMuons=kTRUE)
   Float_t fField;             //  tree var: magnetic field value
   Float_t fCentrality;        //  tree var: centrality
   Float_t fZvtx;              //  tree var: z-vertex
@@ -84,8 +93,12 @@ class AliAnalysisTaskCFTree : public AliAnalysisTask {
   Float_t fSharedClusterCut;  // cut on shared clusters
   Int_t   fCrossedRowsCut;    // cut on crossed rows
   Float_t fFoundFractionCut;  // cut on crossed rows/findable clusters
-
-  ClassDef(AliAnalysisTaskCFTree,1);
+  Float_t fDphiCut;           // cut on tracklet dphi
+  //
+  Bool_t fStoreTracks;        // if kTRUE - Barrel tracks will be stored as AliCFParticles
+  Bool_t fStoreTracklets;     // if kTRUE - SPD tracklets will be stored as AliCFParticles
+  Bool_t fStoreMuons;         // if kTRUE - muon tracks will be stored as AliCFParticles
+  ClassDef(AliAnalysisTaskCFTree,3);
 };
 #endif
 

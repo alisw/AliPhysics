@@ -984,8 +984,6 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
 
   if(nJets<=0)return;
   
-  Float_t ptOld = 1.E+32;
-  Float_t pT0 = 0;
   Float_t pT1 = 0;
   Float_t phi0 = 0;
   Float_t phi1 = 0;
@@ -1032,12 +1030,10 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
       continue;
     }
     fh1PtJetsIn[iType]->Fill(ptJet);
-    ptOld = ptJet;
     
     // find the dijets assume sorting and acceptance cut...
     if(ij==0){
       ij0 = ij;
-      pT0 = ptJet;
       phi0 = jet->Phi();
       if(phi0<0)phi0+=TMath::Pi()*2.;
     }

@@ -1,2 +1,68 @@
-This file is needed to create an empty directory with git.
-Feel free to add more usefull stuff.
+--------------------------------------------
+Analysis QA 
+Authur: Satyajit Jena <sjena@cern.ch>
+Date: 23 Nov 2013
+Last Update: Mon Mar 31 15:47:10 CEST 2014
+--------------------------------------------
+
+
+README - This readme file
+
+%+++++++++++++++++++++++++++++++++++++++++++
+process.sh:
+
+Script to run each post-processing macro on 
+respective outputs 
+
+Simple script to execute macros and produce output
+
+  Requirement: the macro paths need to be defined
+  ex:  CODE=$ALICE_ROOT/PWGPP/analysisQA
+
+  Arguments for each macro should be change by
+  collecting proper information from respective
+  wagon owner.
+
+  sh process.sh <output.root> <aod-number>
+  ex: sh process.sh output.root 145 eps
+
+
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processCFv2vsPt.C
+ 
+Processing of Flow QA task in Analysis QA train
+
+
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processDrawAnaCaloTrackQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processDrawUDQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processHFEQAtask.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETrackQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETriggerQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJETriggerQA_V2.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processJpsi2eeQAplots.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processMakeQA2pc.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processMultistrangeQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++
+processProduceFastQA.C
+
+%+++++++++++++++++++++++++++++++++++++++++++

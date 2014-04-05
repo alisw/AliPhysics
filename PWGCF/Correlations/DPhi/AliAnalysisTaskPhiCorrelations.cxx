@@ -142,6 +142,7 @@ fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fCheckMotherPDG(kTRUE),
+fTrackletDphiCut(999.),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
@@ -161,6 +162,7 @@ fWeightPerEvent(kFALSE),
 fCustomBinning(),
 fPtOrder(kTRUE),
 fTriggersFromDetector(0),
+fAssociatedFromDetector(0),
 fMCUseUncheckedCentrality(kFALSE),
 fFillpT(kFALSE)
 {
@@ -334,8 +336,10 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
     fListOfHistos->Add(new TH2F("V0AMult", "V0A multiplicity;V0A multiplicity;V0A multiplicity (scaled)", 1000, -.5, 999.5, 1000, -.5, 999.5));
     fListOfHistos->Add(new TH2F("V0AMultCorrelation", "V0A multiplicity;V0A multiplicity;SPD tracklets", 1000, -.5, 999.5, 1000, -.5, 999.5));
   }
-  if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
+  if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2 || fAssociatedFromDetector == 1 || fAssociatedFromDetector == 2)
     fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
+  if (fTriggersFromDetector == 3 || fAssociatedFromDetector == 3)
+    fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets;entries", 100, -0.1, 0.1));
   
   PostData(0,fListOfHistos);
   
@@ -448,6 +452,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fWeightPerEvent", &fWeightPerEvent,"WeightPerEvent/O");
   settingsTree->Branch("fPtOrder", &fPtOrder,"PtOrder/O");
   settingsTree->Branch("fTriggersFromDetector", &fTriggersFromDetector,"TriggersFromDetector/I");
+  settingsTree->Branch("fAssociatedFromDetector", &fAssociatedFromDetector,"AssociatedFromDetector/I");
   settingsTree->Branch("fMCUseUncheckedCentrality", &fMCUseUncheckedCentrality,"MCUseUncheckedCentrality/O");
   settingsTree->Branch("fTwoTrackEfficiencyCut", &fTwoTrackEfficiencyCut,"TwoTrackEfficiencyCut/D");
   settingsTree->Branch("fTwoTrackCutMinRadius", &fTwoTrackCutMinRadius,"TwoTrackCutMinRadius/D");
@@ -1148,34 +1153,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   if (fTriggersFromDetector == 0)
     tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
-  else if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2)
-  {
-    tracks = new TObjArray;
-    tracks->SetOwner(kTRUE);
-    
-    AliVVZERO* vZero = inputEvent->GetVZEROData();
-
-    const Int_t vZeroStart = (fTriggersFromDetector == 1) ? 32 : 0;
-    
-    TH1F* singleCells = (TH1F*) fListOfHistos->FindObject("V0SingleCells");
-    for (Int_t i=vZeroStart; i<vZeroStart+32; i++)
-    {
-      Float_t weight = vZero->GetMultiplicity(i);
-      singleCells->Fill(weight);
-      
-      // rough estimate of multiplicity
-      for (Int_t j=0; j<TMath::Nint(weight); j++)
-      {
-	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fit pT = 1.1 and charge = 0
-	particle->SetUniqueID(-1); // not needed here
-	
-	tracks->Add(particle);
-      }
-    }
-  }
+  else if (fTriggersFromDetector <= 4)
+    tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
     AliFatal(Form("Invalid setting for fTriggersFromDetector: %d", fTriggersFromDetector));
-
+  
   //Printf("Accepted %d tracks", tracks->GetEntries());
   
   // check for outlier in centrality vs number of tracks (rough constants extracted from correlation histgram)
@@ -1222,8 +1204,16 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   // correlate particles with...
   TObjArray* tracksCorrelate = 0;
-  if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0)
-    tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
+  if(fAssociatedFromDetector==0){
+    if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 )
+      tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
+  }
+  else if (fAssociatedFromDetector <= 4){
+    if(fAssociatedFromDetector != fTriggersFromDetector)
+      tracksCorrelate = GetParticlesFromDetector(inputEvent,fAssociatedFromDetector);
+  }
+  else
+    AliFatal(Form("Invalid setting for fAssociatedFromDetector: %d", fAssociatedFromDetector));
   
   // reference multiplicity
   Int_t referenceMultiplicity = -1;
@@ -1467,4 +1457,80 @@ void AliAnalysisTaskPhiCorrelations::ShiftTracks(TObjArray* tracks, Double_t ang
     part->SetPhi(newAngle);
   }
 }
+
+//____________________________________________________________________
+TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* inputEvent, Int_t idet)
+{
+  //1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
+  TObjArray* obj = new TObjArray;
+  obj->SetOwner(kTRUE);
   
+  if (idet == 1 || idet == 2)
+  {
+    AliVVZERO* vZero = inputEvent->GetVZEROData();
+    
+    const Int_t vZeroStart = (idet == 1) ? 32 : 0;
+    
+    TH1F* singleCells = (TH1F*) fListOfHistos->FindObject("V0SingleCells");
+    for (Int_t i=vZeroStart; i<vZeroStart+32; i++)
+      {
+	Float_t weight = vZero->GetMultiplicity(i);
+	singleCells->Fill(weight);
+	
+	// rough estimate of multiplicity
+	for (Int_t j=0; j<TMath::Nint(weight); j++)
+	  {
+	    AliDPhiBasicParticle* particle = new AliDPhiBasicParticle((AliVVZERO::GetVZEROEtaMax(i) + AliVVZERO::GetVZEROEtaMin(i)) / 2, AliVVZERO::GetVZEROAvgPhi(i), 1.1, 0); // fit pT = 1.1 and charge = 0
+	    particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + j + i * 1000);
+	    
+	    obj->Add(particle);
+	  }
+      }    
+  }
+  else if (idet == 3)
+    {
+      if(!fAOD)
+	AliFatal("Tracklets only available on AOD");
+      AliAODTracklets* trklets=(AliAODTracklets*)fAOD->GetTracklets();
+      if(!trklets)
+	AliFatal("AliAODTracklets not found");
+      for(Int_t itrklets=0;itrklets<trklets->GetNumberOfTracklets();itrklets++)
+	{
+	  Double_t eta=-TMath::Log(TMath::Tan(trklets->GetTheta(itrklets)/2));
+	  if(TMath::Abs(eta)>fTrackEtaCut)continue;
+	  if(TMath::Abs(trklets->GetDeltaPhi(itrklets))>fTrackletDphiCut)continue;
+	  TH1F* DphiTrklets = (TH1F*)fListOfHistos->FindObject("DphiTrklets");
+	  DphiTrklets->Fill(trklets->GetDeltaPhi(itrklets));
+	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,trklets->GetPhi(itrklets), 1.1, 0); // fit pT = 1.1 and charge = 0
+	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);
+	  
+	  obj->Add(particle);
+       	}      
+    }
+  else if (idet == 4)
+    {
+      if(!fAOD)
+	AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
+      for (Int_t iTrack = 0; iTrack < fAOD->GetNTracks(); iTrack++) {
+	AliAODTrack* track = fAOD->GetTrack(iTrack);
+	if (!track->IsMuonTrack()) continue;
+	//Float_t dca    = track->DCA();
+	//Float_t chi2   = track->Chi2perNDF();
+	//Int_t   mask   = track->GetMatchTrigger();
+	Float_t eta    = track->Eta();
+	Float_t rabs   = track->GetRAtAbsorberEnd();
+	if (rabs < 17.6 || rabs > 89.5) continue;
+	if (eta < -4 || eta > -2.5) continue;
+	
+	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
+	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+	
+	obj->Add(particle);
+      }
+    }      
+  else
+    AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
+  
+  return obj;  
+}
+

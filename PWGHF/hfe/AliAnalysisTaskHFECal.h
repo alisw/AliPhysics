@@ -61,8 +61,7 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   void SetQAHist (int qahist) {fqahist = qahist;};
   AliHFEpid *GetPID() const { return fPID; }
   void SetRejectKinkMother(Bool_t rejectKinkMother = kFALSE) { fRejectKinkMother = rejectKinkMother; };
-  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
-  void SelectPhotonicElectron2(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonicElec, Bool_t &fFlagConvinatElec, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta);
+  void SelectPhotonicElectron(Int_t itrack, Double_t cent, AliESDtrack *track, Bool_t &fFlagPhotonic, Bool_t &fFlagConvinat, Double_t nSig, Double_t shower, Double_t ep, Double_t mce, Double_t w, Int_t ibgevent, Bool_t tagpi0, Bool_t tageta, Int_t iCal);
   void FindMother(TParticle* part, int &label, int &pid);
   double GetMCweight(double mcPi0pT);
   double GetMCweightEta(double mcEtapT);
@@ -134,8 +133,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
   TH1F			*fPhotoElecPt;		//! photonic elec pt 
   TH2F			*fPhoElecPt;	        //! Pho inclusive ele pt
   TH2F			*fPhoElecPtM20;	        //! Pho inclusive ele pt
+  TH2F			*fPhoElecPtM20Mass;	        //! Pho inclusive ele pt
   TH2F			*fSameElecPt;	        //! Same inclusive ele pt
   TH2F			*fSameElecPtM20;	        //! Same inclusive ele pt
+  TH2F			*fSameElecPtM20Mass;	        //! Same inclusive ele pt
   TH2F			*fSemiElecPtM20;	        //! Same inclusive ele pt
 
   TH1F			*fTrackPtBefTrkCuts;	//! Track pt before track cuts	
@@ -172,8 +173,10 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  THnSparseD 		*fIncpTMCM20pho;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMC;	        //! Pho inclusive ele pt
  THnSparseD 		*fPhoElecPtMCM20;	        //! Pho inclusive ele pt
+ TH2D 		        *fPhoElecPtMCM20Mass;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMC;	        //! Same inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20;	        //! Same inclusive ele pt
+ TH2D 		        *fSameElecPtMCM20Mass;	        //! Same inclusive ele pt
  THnSparseD 		*fIncpTMCM20pho_pi0e;	//! MC HFE pid electron vs centrality
  THnSparseD 		*fPhoElecPtMCM20_pi0e;	        //! Pho inclusive ele pt
  THnSparseD 		*fSameElecPtMCM20_pi0e;	        //! Same inclusive ele pt
