@@ -1303,7 +1303,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
 
   // initialize debug streamer
   TTreeSRedirector *pstreamer(NULL);
-  if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if((recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming())||AliTRDReconstructor::GetStreamLevel()>3) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   if(pstreamer){
     // save config. for calibration
     TVectorD vdy[2], vdx[2], vs2[2];
@@ -1330,7 +1330,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
         << "\n";
     vdx[0].Clear(); vdy[0].Clear(); vs2[0].Clear();
     vdx[1].Clear(); vdy[1].Clear(); vs2[1].Clear();
-    if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 4){    
+    if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 4 ||AliTRDReconstructor::GetStreamLevel()>4){    
       Int_t idx(idxRow[1]);
       if(idx<0){ 
         for(Int_t ir(0); ir<kNrows; ir++){ 
