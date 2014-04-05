@@ -330,7 +330,7 @@ void AliITSUv1Layer::CreateLayer(TGeoVolume *moth){
 
   // Now build up the layer
   alpha = 360./fNStaves;
-  Double_t r = fLayRadius + ((TGeoBBox*)stavVol->GetShape())->GetDY();
+  Double_t r = fLayRadius + ((TGeoBBox*)stavVol->GetShape())->GetDY() + 0.2;
   for (Int_t j=0; j<fNStaves; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);

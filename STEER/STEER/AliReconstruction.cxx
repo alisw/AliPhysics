@@ -346,7 +346,6 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
     fQAWriteExpert[iDet] = kFALSE ; 
   }
   fBeamInt[0][0]=fBeamInt[0][1]=fBeamInt[1][0]=fBeamInt[1][1] = -1;
-
   //
   AddCheckRecoCDBvsSimuCDB("TPC/Calib/RecoParam"); // check for similarity in the sim and rec
   //
@@ -494,6 +493,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
     if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
   }
+
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
 
 }
@@ -680,7 +680,6 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-
   fCheckRecoCDBvsSimuCDB.Delete();
   AliCodeTimer::Instance()->Print();
 }
@@ -844,6 +843,7 @@ void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
   AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
   
 }
+
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
@@ -1808,6 +1808,7 @@ void AliReconstruction::SlaveBegin(TTree*)
   AliSysInfo::AddStamp("LoadLoader");
  
   CheckRecoCDBvsSimuCDB();
+
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
 
   // get trackers

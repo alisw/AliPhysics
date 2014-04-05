@@ -385,7 +385,7 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 
   TString uriString(dbString);
 
-  if (! fCvmfsOcdb.IsNull()) {
+  if ( !fCvmfsOcdb.IsNull() && uriString.BeginsWith("alien://")) {
     AlienToCvmfsUri(uriString);
   }
 
@@ -404,9 +404,6 @@ AliCDBParam* AliCDBManager::CreateParameter(const char* dbString) const {
 //_____________________________________________________________________________
 void AliCDBManager::AlienToCvmfsUri(TString& uriString) const {
 // convert alien storage uri to local:///cvmfs storage uri (called when OCDB_PATH is set)
-
-  if (! uriString.BeginsWith("alien://") && !fCvmfsOcdb.IsNull())
-    AliFatal("Cannot set local://cvmfs storage for a non alien uri");
 
   TObjArray *arr = uriString.Tokenize('?');
   TIter iter(arr);

@@ -23,7 +23,7 @@ class AliGenEMCocktail : public AliGenCocktail
 public:
 
     AliGenEMCocktail();
-  enum GeneratorCode { kGenPizero=0, kGenEta, kGenRho, kGenOmega, kGenEtaprime, kGenPhi, kGenJpsi, kGENs };    
+  enum GeneratorCode { kGenPizero=0, kGenEta, kGenRho, kGenOmega, kGenEtaprime, kGenPhi, kGenJpsi, kGenPromptRealGamma, kGenThermRealGamma, kGenPromptVirtGamma, kGenThermVirtGamma, kGENs };
 
     virtual ~AliGenEMCocktail();    
     virtual void Init();
@@ -40,10 +40,6 @@ public:
   void    SetV2Systematic(Int_t v2sys){ fV2Systematic = v2sys; }
   void    SetForceGammaConversion(Bool_t force=kTRUE){ fForceConv=force; }
   void    SetHeaviestParticle(Int_t part){ fHeaviestParticle=part; }
-    
-protected:
-
-  TVector3& OrthogonalVector(TVector3 &inVec);
     
 private:
     AliGenEMCocktail(const AliGenEMCocktail &cocktail); 

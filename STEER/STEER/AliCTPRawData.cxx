@@ -261,6 +261,7 @@ void AliCTPRawData::RawDataRun2()
   // Now the 4th word
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
+  word |= 1<<11;   // version 1=run2
   word |= ((UInt_t)esr) << 10;
   word |= 0 << 8; // L2SwC - physics trigger
   word |= (l2cluster & 0x3F) << 2; // L2Cluster 1-6

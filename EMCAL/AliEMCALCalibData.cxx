@@ -210,7 +210,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
-          printf(" %2.4f ",fADCpedestal[supermodule][column][row]);
+          printf("[c%d,r%d] %2.4f ",column, row, fADCpedestal[supermodule][column][row]);
         }
         printf("\n");
       }
@@ -231,7 +231,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
-          printf(" %2.4f ",fADCchannel[supermodule][column][row]);
+          printf("[c%d,r%d] %2.4f ",column, row, fADCchannel[supermodule][column][row]);
         }
         printf("\n");
       }
@@ -251,7 +251,7 @@ void  AliEMCALCalibData::Print(Option_t *option) const
       printf("============== Supermodule %d\n",supermodule+1);
       for (Int_t column=0; column<nCol; column++){
         for (Int_t row=0; row<nRow; row++){
-          printf(" %2.4f ",fADCchannelDecal[supermodule][column][row]);
+          printf("[c%d,r%d] %2.4f ",column, row,fADCchannelDecal[supermodule][column][row]);
         }
         printf("\n");
       }

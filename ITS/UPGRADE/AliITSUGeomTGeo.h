@@ -177,6 +177,7 @@ class AliITSUGeomTGeo : public TObject {
   Int_t        ExtractNumberOfLayers();
   void         BuildITS(Bool_t loadSegm);
   //
+  Int_t        ExtractVolumeCopy(const char* name, const char* prefix) const;
  protected:
   //
   //

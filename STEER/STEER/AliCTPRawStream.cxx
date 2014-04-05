@@ -41,6 +41,7 @@ AliCTPRawStream::AliCTPRawStream(AliRawReader* rawReader) :
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
   fClassMask(0),
+  fClassMaskNext50(0),
   fClusterMask(0),
   fRawReader(rawReader)
 {
@@ -63,6 +64,7 @@ AliCTPRawStream::AliCTPRawStream(const AliCTPRawStream& stream) :
   fL1TriggerInputs(0),
   fL2TriggerInputs(0),
   fClassMask(0),
+  fClassMaskNext50(0),
   fClusterMask(0),
   fRawReader(NULL)
 {
@@ -92,6 +94,7 @@ void AliCTPRawStream::Reset()
   fIRArray.Clear();
 
   fClassMask = fClusterMask = 0;
+  fClassMaskNext50 = 0;
 
   if (fRawReader) fRawReader->Reset();
 }
@@ -127,6 +130,147 @@ Bool_t AliCTPRawStream::Next()
   fOrbit |= data[8];
   fOrbit |= (data[9] & 0xF) << 8;
 
+  // 4th word bit 11= version, check here.
+  UInt_t version=data[13] & 0x4;
+
+  if(version == 0){
+   return GetPayloadRun1(data);
+  } 
+  else{
+   return GetPayloadRun2(data);
+  } 
+} 
+Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
+{
+  fClusterMask = data[12];
+
+  fClassMaskNext50 =  ((ULong64_t)data[16] & 0xf) << 46;   // 100..97
+
+  fClassMaskNext50 |= (ULong64_t)data[20] << 38;           // 96..89
+  fClassMaskNext50 |= ((ULong64_t)data[21] & 0xF) << 34;   // 88..85
+
+  fClassMaskNext50 |= (ULong64_t)data[24] << 26;           //84..77
+  fClassMaskNext50 |= ((ULong64_t)data[25] & 0xF) << 22;   //76..73
+
+  fClassMaskNext50 |= (ULong64_t)data[28] << 14;           //72..65   
+  fClassMaskNext50 |= ((ULong64_t)data[29] & 0xF) << 10;   //64..61
+
+  fClassMaskNext50 |= (ULong64_t)data[32] << 2;            //60..53
+  fClassMaskNext50 |= ((ULong64_t)data[33] & 0xc) >> 2;    //52..51
+  fClassMask       = ((ULong64_t)data[33] & 0x3) << 48;    //50..49
+
+  fClassMask |= (ULong64_t)data[36]  << 40;                //48..41
+  fClassMask |= ((ULong64_t)data[37] & 0xf) << 36;         //40..37
+
+  fClassMask |= (ULong64_t)data[40]  << 28;                //36..29
+  fClassMask |= ((ULong64_t)data[41] & 0xf) << 24;         //28..25
+
+  fClassMask |= (ULong64_t)data[44]  << 16;                //24..17
+  fClassMask |= ((ULong64_t)data[45] & 0xf) << 12;         //16..13
+
+  fClassMask |= (ULong64_t)data[48]  << 4;                //12..5
+  fClassMask |= ((ULong64_t)data[49] & 0xf) << 0;         //4..1
+
+  if (fRawReader->GetDataSize() == 52) {
+    AliDebug(1,"No trigger input and interaction records found");
+    fRawReader->RequireHeader(kTRUE);
+    return kTRUE;
+  }
+
+  // Read detector trigger inputs
+  if (fRawReader->GetDataSize() < 72) {
+    AliError(Form("Wrong CTP raw data size: %d",fRawReader->GetDataSize()));
+    fRawReader->RequireHeader(kTRUE);
+    return kFALSE;
+  }
+
+  fL0TriggerInputs = data[52] << 12;
+  fL0TriggerInputs |= (data[53] & 0xF) << 20;
+  fL0TriggerInputs |= data[56];
+  fL0TriggerInputs |= (data[57] & 0xF) << 8;
+
+  fL1TriggerInputs = data[60] << 12;
+  fL1TriggerInputs |= (data[61] & 0xF) << 20;
+  fL1TriggerInputs |= data[64];
+  fL1TriggerInputs |= (data[65] & 0xF) << 8;
+
+  fL2TriggerInputs = data[68] << 12;
+  fL2TriggerInputs |= (data[69] & 0xF) << 20;
+
+  if (fRawReader->GetDataSize() == 72) {
+    AliDebug(1,"No interaction records found");
+    fRawReader->RequireHeader(kTRUE);
+    return kTRUE;
+  }
+
+  // Read IRs
+  Int_t iword = 52;
+  UChar_t level = 0;
+  UInt_t *irdata = NULL;
+  UInt_t irsize = 0;
+  UInt_t orbit = 0;
+  Bool_t incomplete = kFALSE, transerr = kFALSE;
+  while (iword < fRawReader->GetDataSize()) {
+    if (data[iword+1] & 0x80) {
+      UChar_t flag = ((data[iword+1] >> 4) & 0x3);
+      if (flag == 0) {
+	if (irdata) {
+	  new (fIRArray[fIRArray.GetEntriesFast()])
+	    AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+	  irdata = NULL; irsize = 0;
+	}
+	level = 1;
+	orbit = data[iword] << 12;
+	orbit |= (data[iword+1] & 0xF) << 20;
+	transerr = ((data[iword+1] >> 6) & 0x1);
+	iword += 4;
+	continue;
+      }
+      else if (flag == 3) {
+	if (level == 1) {
+	  level = 2;
+	  orbit |= data[iword];
+	  orbit |= ((data[iword+1] & 0xF) << 8);
+	  iword += 4;
+	  AliDebug(1,Form("Orbit=0x%x\n",orbit));
+	  continue;
+	}
+      }
+      UShort_t bc = data[iword];
+      bc |= ((data[iword+1] & 0xF) << 8);
+      AliDebug(1,Form("BC=0x%x\n",bc));
+      if (bc == 0xFFF) {
+	incomplete = kTRUE;
+      }
+      else {
+	if (level == 2) {
+	  level = 3;
+	  irdata = (UInt_t *)&data[iword];
+	  irsize = 0;
+	}
+	if (level == 3) {
+	  irsize++;
+	}
+      }
+    }
+    else
+      AliWarning(Form("Invalid interaction record (%d %d)",iword,fRawReader->GetDataSize()));
+
+    iword += 4;
+  }
+
+  if (irdata) {
+    new (fIRArray[fIRArray.GetEntriesFast()])
+      AliTriggerIR(orbit,irsize,irdata,incomplete,transerr);
+    irdata = NULL; irsize = 0;
+  }
+
+  // Restore the raw-reader state!!
+  fRawReader->RequireHeader(kTRUE);
+ return kTRUE;
+}
+Bool_t AliCTPRawStream::GetPayloadRun1(UChar_t *data)
+{
   fClusterMask = data[12] >> 2;
 
   fClassMask =  ((ULong64_t)data[12] & 0x3) << 48;

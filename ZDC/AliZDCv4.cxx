@@ -2456,6 +2456,7 @@ void AliZDCv4::StepManager()
         hits[4] = xdet[0];
       }
       hits[5] = xdet[1];
+      hits[6] = 0;
       hits[7] = 0;
       hits[8] = 0;
       hits[9] = 0;
@@ -2463,36 +2464,35 @@ void AliZDCv4::StepManager()
       Int_t curTrackN = gAlice->GetMCApp()->GetCurrentTrackNumber();
       TParticle *part = gAlice->GetMCApp()->Particle(curTrackN);
       hits[10] = part->GetPdgCode();
-      //
-      Int_t imo = part->GetFirstMother();
-      //printf(" tracks: pc %d -> mother %d \n", curTrackN,imo); 
-      
-      int trmo = imo;
-      TParticle *pmot = 0x0;
-      Bool_t isChild = kFALSE;
-      if(imo>-1){
-        pmot = gAlice->GetMCApp()->Particle(imo);
-	trmo = pmot->GetFirstMother();
-	isChild = kTRUE;
-        while(trmo!=-1){
-	   pmot = gAlice->GetMCApp()->Particle(trmo);
-           //printf("  **** pc %d -> mother %d \n", trch,trmo); 
-	   trmo = pmot->GetFirstMother();
-	}
-      }
-      
-      if(isChild && pmot){
-          hits[6]  = 1;
-    	  hits[11] = pmot->GetPdgCode();
-   	  hits[13] = pmot->Eta();
-      }
-      else{
-        hits[6] = 0;
-    	hits[11] = 0;
-        hits[13] = part->Eta();
-      }
-      
+      hits[11] = 0;
       hits[12] = 1.0e09*gMC->TrackTime(); // in ns!
+      hits[13] = part->Eta();
+      //
+      if(fFindMother){
+         Int_t imo = part->GetFirstMother();
+         //printf(" tracks: pc %d -> mother %d \n", curTrackN,imo); 
+         
+         int trmo = imo;
+         TParticle *pmot = 0x0;
+         Bool_t isChild = kFALSE;
+         if(imo>-1){
+           pmot = gAlice->GetMCApp()->Particle(imo);
+      	   trmo = pmot->GetFirstMother();
+      	   isChild = kTRUE;
+           while(trmo!=-1){
+      	      pmot = gAlice->GetMCApp()->Particle(trmo);
+              //printf("  **** pc %d -> mother %d \n", trch,trmo); 
+      	      trmo = pmot->GetFirstMother();
+      	   }
+         }
+      
+         if(isChild && pmot){
+             hits[6]  = 1;
+             hits[11] = pmot->GetPdgCode();
+      	     hits[13] = pmot->Eta();
+         }
+      }
+      
 
       AddHit(curTrackN, vol, hits);
 

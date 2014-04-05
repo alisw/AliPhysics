@@ -215,83 +215,199 @@ TVector3 AliGenParam::OrthogonalVector(TVector3 &inVec){
   return res;
 }
 
-double AliGenParam::ScreenFunc1(double d){
-  if(d>1)
-    return 21.12-4.184*log(d+0.952);
-  else
-    return 20.867-3.242*d+0.652*d*d;
+void AliGenParam::RotateVector(Double_t *pin, Double_t *pout, Double_t costheta, Double_t sintheta,
+    Double_t cosphi, Double_t sinphi)
+{
+  // Perform rotation
+  pout[0] = pin[0]*costheta*cosphi-pin[1]*sinphi+pin[2]*sintheta*cosphi;
+  pout[1] = pin[0]*costheta*sinphi+pin[1]*cosphi+pin[2]*sintheta*sinphi;
+  pout[2] = -1.0  * pin[0] * sintheta + pin[2] * costheta;
+  return;
 }
 
-double AliGenParam::ScreenFunc2(double d){
-  if(d>1)
-    return 21.12-4.184*log(d+0.952);
-  else
-    return 20.209-1.93*d-0.086*d*d;
+Double_t AliGenParam::IntegratedKrollWada(Double_t mh){
+  if(mh<0.003) return 0;
+  return 2*log(mh/0.000511/exp(7.0/4.0))/411.0/TMath::Pi();
 }
 
-double AliGenParam::EnergyFraction(double Z, double E){
-  double e0=0.000511/E;
+double AliGenParam::ScreenFunction1(double screenVariable){
+  if(screenVariable>1)
+    return 42.24 - 8.368 * log(screenVariable + 0.952);
+  else
+    return 42.392 - screenVariable * (7.796 - 1.961 * screenVariable);
+}
+
+double AliGenParam::ScreenFunction2(double screenVariable){
+  if(screenVariable>1)
+    return 42.24 - 8.368 * log(screenVariable + 0.952);
+  else
+    return 41.405 - screenVariable * (5.828 - 0.8945 * screenVariable);
+}
+
+double AliGenParam::RandomEnergyFraction(double Z, double photonEnergy){
   double aZ=Z/137.036;
-  double dmin=ScreenVar(Z,e0,0.5);
-  double fcZ=(aZ*aZ)*(1/(1+aZ*aZ)+0.20206-0.0368*aZ*aZ+0.0083*aZ*aZ*aZ);
-  double Fz=8*log(Z)/3;
-  if(E>0.05)
-    Fz+=8*fcZ;
-  double dmax=exp((42.24-Fz)/8.368)-0.952;
-  if(!(dmax>dmin))
-    return fRandom->Uniform(e0,0.5);
+  double epsilon ;
+  double epsilon0Local = 0.000511 / photonEnergy ;
 
-  double e1=0.5-0.5*sqrt(1-dmin/dmax);
-  double emin=TMath::Max(e0,e1);
+  // Do it fast if photon energy < 2. MeV
+  if (photonEnergy < 0.002 )
+    {
+      epsilon = epsilon0Local + (0.5 - epsilon0Local) * fRandom->Rndm();
+    }
+  else
+    {
+      double fZ = 8*log(Z)/3;
+  double fcZ=(aZ*aZ)*(1/(1+aZ*aZ)+0.20206-0.0368*aZ*aZ+0.0083*aZ*aZ*aZ);
+      if (photonEnergy > 0.050) fZ += 8*fcZ;
+      
+      // Limits of the screening variable
+      double screenFactor = 136. * epsilon0Local / pow (Z,1/3);
+      double screenMax = exp ((42.24 - fZ)/8.368) - 0.952 ;
+      double screenMin = std::min(4.*screenFactor,screenMax) ;
+
+      // Limits of the energy sampling
+      double epsilon1 = 0.5 - 0.5 * sqrt(1. - screenMin / screenMax) ;
+      double epsilonMin = std::max(epsilon0Local,epsilon1);
+      double epsilonRange = 0.5 - epsilonMin ;
+
+      // Sample the energy rate of the created electron (or positron)
+      double screen;
+      double gReject ;
+
+      double f10 = ScreenFunction1(screenMin) - fZ;
+      double f20 = ScreenFunction2(screenMin) - fZ;
+      double normF1 = std::max(f10 * epsilonRange * epsilonRange,0.);
+      double normF2 = std::max(1.5 * f20,0.);
+
+      do 
+	{
+	  if (normF1 / (normF1 + normF2) > fRandom->Rndm() )
+	    {
+	      epsilon = 0.5 - epsilonRange * pow(fRandom->Rndm(), 0.333333) ;
+	      screen = screenFactor / (epsilon * (1. - epsilon));
+	      gReject = (ScreenFunction1(screen) - fZ) / f10 ;
+	    }
+	  else
+	    {
+	      epsilon = epsilonMin + epsilonRange * fRandom->Rndm();
+	      screen = screenFactor / (epsilon * (1 - epsilon));
+	      gReject = (ScreenFunction2(screen) - fZ) / f20 ;
+	    }
+	} while ( gReject < fRandom->Rndm() );
+    
+    }   //  End of epsilon sampling
+  return epsilon;
+}
+
+double AliGenParam::RandomPolarAngle(){
+  double u;
+  const double a1 = 0.625;
+  double a2 = 3. * a1;
+  //  double d = 27. ;
+
+  //  if (9. / (9. + d) > fRandom->Rndm())
+  if (0.25 > fRandom->Rndm())
+    {
+      u = - log(fRandom->Rndm() * fRandom->Rndm()) / a1 ;
+    }
+  else
+    {
+      u = - log(fRandom->Rndm() * fRandom->Rndm()) / a2 ;
+    }
+  return u*0.000511;
+}
   
-  double normval=1/(0.5*(ScreenFunc1(dmin)-0.5*Fz)+0.1666667*(ScreenFunc2(dmin)-0.5*Fz));
+Double_t AliGenParam::RandomMass(Double_t mh){
   while(true){
-    double y=fRandom->Uniform(emin,1);
-    double eps=y*(0.38453+y*(0.10234+y*(0.026072+y*(0.014367-0.027313*y)))); //inverse to the enveloping cumulative probability distribution
-    double val=fRandom->Uniform(0,2.12*(eps*eps-eps)+1.53); //enveloping probability density
-    double d=ScreenVar(Z,e0,eps);
-    double bh=((eps*eps)+(1-eps)*(1-eps))*(ScreenFunc1(d)-0.5*Fz)+0.6666667*eps*(1-eps)*(ScreenFunc2(d)-0.5*Fz);
-    bh*=normval;
-    if(val<bh)
-      return eps;
+    double y=fRandom->Rndm();
+    double mee=2*0.000511*TMath::Power(2*0.000511/mh,-y); //inverse of the enveloping cumulative distribution
+    double apxkw=2.0/3.0/137.036/TMath::Pi()/mee;
+    double val=fRandom->Uniform(0,apxkw);  //enveloping probability density0
+    double kw=apxkw*sqrt(1-4*0.000511*0.000511/mee/mee)*(1+2*0.000511*0.000511/mee/mee)*1*1*TMath::Power(1-mee*mee/mh/mh,3);
+    if(val<kw)
+      return mee;
   }
 }
 
-double AliGenParam::PolarAngle(double E){
-  float rand[3];
-  AliRndm rndm;
-  rndm.Rndm(rand,3);
-  double u=-8*log(rand[1]*rand[2])/5;
-  if(!(rand[0]<9.0/36))
-    u/=3;
-  return u*0.000511/E;
+Int_t AliGenParam::VirtualGammaPairProduction(TClonesArray *particles, Int_t nPart)
+{
+  Int_t nPartNew=nPart;
+  for(int iPart=0; iPart<nPart; iPart++){      
+    TParticle *gamma = (TParticle *) particles->At(iPart);
+    if(gamma->GetPdgCode()!=223000 || gamma->GetPdgCode()!=224000) continue;
+    //if(gamma->Energy()<0.001022) continue; //can never be
+    double mass=RandomMass(gamma->Pt());
+
+    // lepton pair kinematics in virtual photon rest frame 
+    double Ee=mass/2;
+    double Pe=TMath::Sqrt((Ee+0.000511)*(Ee-0.000511));
+
+    double costheta = (2.0 * gRandom->Rndm()) - 1.;
+    double sintheta = TMath::Sqrt((1. + costheta) * (1. - costheta));
+    double phi      = 2.0 * TMath::ACos(-1.) * gRandom->Rndm();
+    double sinphi   = TMath::Sin(phi);
+    double cosphi   = TMath::Cos(phi);
+    
+    // momentum vectors of leptons in virtual photon rest frame
+    Double_t pProd1[3] = {Pe * sintheta * cosphi,
+			  Pe * sintheta * sinphi,
+			  Pe * costheta};
+
+    Double_t pProd2[3] = {-1.0 * Pe * sintheta * cosphi,
+			  -1.0 * Pe * sintheta * sinphi,
+			  -1.0 * Pe * costheta}; 
+
+    // lepton 4-vectors in properly rotated virtual photon rest frame
+    Double_t pRot1[3] = {0.};
+    RotateVector(pProd1, pRot1, costheta, -sintheta, -cosphi, -sinphi);
+    Double_t pRot2[3] = {0.};
+    RotateVector(pProd2, pRot2, costheta, -sintheta, -cosphi, -sinphi); 
+
+    TLorentzVector e1V4(pRot1[0],pRot1[1],pRot1[2],Ee);
+    TLorentzVector e2V4(pRot2[0],pRot2[1],pRot2[2],Ee);
+  
+    TVector3 boost(gamma->Px(),gamma->Py(),gamma->Pz());
+    boost*=1/sqrt(gamma->P()*gamma->P()+mass*mass);
+    e1V4.Boost(boost);
+    e2V4.Boost(boost);
+
+    TLorentzVector vtx;
+    gamma->ProductionVertex(vtx);
+    new((*particles)[nPartNew]) TParticle(11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, e1V4, vtx);
+    nPartNew++;
+    new((*particles)[nPartNew]) TParticle(-11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, e2V4, vtx);
+    nPartNew++;
+  }
 }
 
 Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
 {
   //based on: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/PhysicsReferenceManual/html/node27.html
   //     and: http://geant4.cern.ch/G4UsersDocuments/UsersGuides/PhysicsReferenceManual/html/node58.html
+  //     and: G4LivermoreGammaConversionModel.cc
   Int_t nPartNew=nPart;
   for(int iPart=0; iPart<nPart; iPart++){      
     TParticle *gamma = (TParticle *) particles->At(iPart);
     if(gamma->GetPdgCode()!=22) continue;
+    if(gamma->Energy()<0.001022) continue;
 
     TVector3 gammaV3(gamma->Px(),gamma->Py(),gamma->Pz());
-    Float_t az=fRandom->Uniform(TMath::Pi()*2);
-    double frac=EnergyFraction(1,gamma->Energy());
+    double frac=RandomEnergyFraction(1,gamma->Energy());
     double Ee1=frac*gamma->Energy();
     double Ee2=(1-frac)*gamma->Energy();
-    double Pe1=Ee1;//sqrt(Ee1*Ee1-0.000511*0.000511);
-    double Pe2=Ee2;//sqrt(Ee2*Ee2-0.000511*0.000511);
+    double Pe1=sqrt((Ee1+0.000511)*(Ee1-0.000511));
+    double Pe2=sqrt((Ee2+0.000511)*(Ee2-0.000511));
     
     TVector3 rotAxis(OrthogonalVector(gammaV3));
+    Float_t az=fRandom->Uniform(TMath::Pi()*2);
     rotAxis.Rotate(az,gammaV3);
     TVector3 e1V3(gammaV3);
-    e1V3.Rotate(PolarAngle(Ee1),rotAxis);
+    double u=RandomPolarAngle();
+    e1V3.Rotate(u/Ee1,rotAxis);
     e1V3=e1V3.Unit();
     e1V3*=Pe1;
     TVector3 e2V3(gammaV3);
-    e2V3.Rotate(-PolarAngle(Ee2),rotAxis);
+    e2V3.Rotate(-u/Ee2,rotAxis);
     e2V3=e2V3.Unit();
     e2V3*=Pe2;
     // gamma = new TParticle(*gamma);
@@ -460,6 +576,11 @@ void AliGenParam::GenerateN(Int_t ntimes)
       //
       // particle type 
 	  Int_t iPart = fIpParaFunc(fRandom);
+      Int_t iTemp = iPart;
+
+      // custom pdg codes for to destinguish direct photons
+      if((iPart>=221000) && (iPart<=229000)) iPart=22;
+
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
 	  TParticlePDG *particle = pDataBase->GetParticle(iPart);
 	  Float_t am = particle->Mass();
@@ -468,6 +589,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
       //
       // y
 	  ty = TMath::TanH(fYPara->GetRandom());
+
       //
       // pT
 	  if (fAnalog == kAnalog) {
@@ -508,6 +630,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	  p[0]=pt*TMath::Cos(phi);
 	  p[1]=pt*TMath::Sin(phi);
 	  p[2]=pl;
+
 	  if(fVertexSmear==kPerTrack) {
 	      Rndm(random,6);
 	      for (j=0;j<3;j++) {
@@ -540,13 +663,14 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	// select decay particles
 	      Int_t np=fDecayer->ImportParticles(particles);
 
+	iPart=iTemp;
 	if(fForceConv) np=ForceGammaConversion(particles,np);
+	if(iPart==223000 || iPart==224000){
+	  // wgtp*=IntegratedKrollWada(pt);
+	  // wgtch*=IntegratedKrollWada(pt);
+	  // np=VirtualGammaPairProduction(particles,np)
+	}
 
-	// for(int iPart=0; iPart<np; iPart++){
-	//   TParticle *gamma = (TParticle *) particles->At(iPart);
-	//   printf("%i %i:", iPart, gamma->GetPdgCode());
-	//   printf("%i %i %i|",gamma->GetFirstMother(),gamma->GetFirstDaughter(),gamma->GetLastDaughter());
-	// }
 
 	      //  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
 	      if (fGeometryAcceptance) 

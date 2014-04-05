@@ -183,6 +183,8 @@ public:
   void     SetITSchi2Std(Double_t chi2, Int_t step)  { if (step>-1&&step<kNITSchi2Std) fITSchi2Std[step] = chi2;}
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
+  void     SetITSClusterMap(UChar_t amap) {fITSClusterMap = amap;}
+
   UChar_t GetITSSharedMap() const {return fITSSharedMap;}
   void    SetITSSharedFlag(int lr) {fITSSharedMap |= 0x1<<lr;}
   Bool_t  GetITSFakeFlag()   const {return (fITSSharedMap&BIT(7))!=0;}
