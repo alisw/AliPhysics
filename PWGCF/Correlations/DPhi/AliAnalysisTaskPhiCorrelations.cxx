@@ -1153,7 +1153,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   if (fTriggersFromDetector == 0)
     tracks = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesTrigger, kTRUE);
-  else if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2 || fTriggersFromDetector == 3)
+  else if (fTriggersFromDetector <= 4)
     tracks=GetParticlesFromDetector(inputEvent,fTriggersFromDetector);
   else
     AliFatal(Form("Invalid setting for fTriggersFromDetector: %d", fTriggersFromDetector));
@@ -1208,7 +1208,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     if (fParticleSpeciesAssociated != fParticleSpeciesTrigger || fTriggersFromDetector > 0 )
       tracksCorrelate = fAnalyseUE->GetAcceptedParticles(inputEvent, 0, kTRUE, fParticleSpeciesAssociated, kTRUE);
   }
-  else if (fAssociatedFromDetector == 1 || fAssociatedFromDetector == 2 || fAssociatedFromDetector == 3){
+  else if (fAssociatedFromDetector <= 4){
     if(fAssociatedFromDetector != fTriggersFromDetector)
       tracksCorrelate = GetParticlesFromDetector(inputEvent,fAssociatedFromDetector);
   }
@@ -1507,6 +1507,27 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  obj->Add(particle);
        	}      
     }
+  else if (idet == 4)
+    {
+      if(!fAOD)
+	AliFatal("Muon selection only implemented on AOD");//FIXME to be implemented also for ESDs as in AliAnalyseLeadingTrackUE::GetAcceptedPArticles
+      for (Int_t iTrack = 0; iTrack < fAOD->GetNTracks(); iTrack++) {
+	AliAODTrack* track = fAOD->GetTrack(iTrack);
+	if (!track->IsMuonTrack()) continue;
+	//Float_t dca    = track->DCA();
+	//Float_t chi2   = track->Chi2perNDF();
+	//Int_t   mask   = track->GetMatchTrigger();
+	Float_t eta    = track->Eta();
+	Float_t rabs   = track->GetRAtAbsorberEnd();
+	if (rabs < 17.6 || rabs > 89.5) continue;
+	if (eta < -4 || eta > -2.5) continue;
+	
+	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
+	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);
+	
+	obj->Add(particle);
+      }
+    }      
   else
     AliFatal(Form("GetParticlesFromDetector: Invalid idet value: %d", idet));
   
