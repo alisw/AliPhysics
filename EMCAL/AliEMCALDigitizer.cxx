@@ -503,11 +503,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           if(sdigits->GetEntriesFast() > index[i])
           {
             AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
-            if(tmpdigit)
-            {
-              curNext = tmpdigit->GetId() ;
-            }
+            if ( tmpdigit ) curNext = tmpdigit->GetId() ;
           }
+          
           if(curNext < nextSig) nextSig = curNext ;
         }// sdigits exist
       } // input loop
@@ -536,7 +534,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   //---------------------------------------------------------
   //Embed simulated amplitude (and time?) to real data digits
-  if(embed)
+  if ( embed )
   {
     for(Int_t input = 1; input<fInput; input++)
     {
@@ -550,37 +548,37 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       for(Int_t i2 = 0 ; i2 < realDigits->GetEntriesFast() ; i2++)
       {
         AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*>( realDigits->At(i2) ) ;
-        if(digit2)
-        {
-          digit = dynamic_cast<AliEMCALDigit*>( digits->At(digit2->GetId()) ) ;
-          if(digit)
-          {
-            // Put the embedded cell energy in same units as simulated sdigits -> transform to energy units
-            // and multiply to get a big int.
-            Float_t time2 = digit2->GetTime();
-            Float_t e2    = digit2->GetAmplitude();
-            CalibrateADCTime(e2,time2,digit2->GetId());
-            Float_t amp2 = fSDigitizer->Digitize(e2);
-            
-            Float_t e0    = digit ->GetAmplitude();
-            if(e0>0.01)
-            AliDebug(1,Form("digit 1: Abs ID %d, amp %f, type %d, time %e; digit2: Abs ID %d, amp %f, type %d, time %e\n",
-                            digit ->GetId(),digit ->GetAmplitude(), digit ->GetType(), digit->GetTime(),
-                            digit2->GetId(),amp2,                   digit2->GetType(), time2           ));
-            
-            // Sum amplitudes, change digit amplitude
-            digit->SetAmplitude( digit->GetAmplitude() + amp2);
-            // Rough assumption, assign time of the largest of the 2 digits,
-            // data or signal to the final digit.
-            if(amp2 > digit->GetAmplitude())  digit->SetTime(time2);
-            //Mark the new digit as embedded
-            digit->SetType(AliEMCALDigit::kEmbedded);
-            
-            if(digit2->GetAmplitude()>0.01 && e0> 0.01 )
-            AliDebug(1,Form("Embedded digit: Abs ID %d, amp %f, type %d\n",
-                            digit->GetId(), digit->GetAmplitude(), digit->GetType()));
-          }//digit2
-        }//digit2
+        if ( !digit2 ) continue;
+      
+        digit = dynamic_cast<AliEMCALDigit*>( digits->At(digit2->GetId()) ) ;
+        if ( !digit ) continue;
+        
+        // Put the embedded cell energy in same units as simulated sdigits -> transform to energy units
+        // and multiply to get a big int.
+        Float_t time2 = digit2->GetTime();
+        Float_t e2    = digit2->GetAmplitude();
+        CalibrateADCTime(e2,time2,digit2->GetId());
+        Float_t amp2  = fSDigitizer->Digitize(e2);
+        
+        Float_t e0    = digit ->GetAmplitude();
+        if(e0>0.01)
+          AliDebug(1,Form("digit 1: Abs ID %d, amp %f, type %d, time %e; digit2: Abs ID %d, amp %f, type %d, time %e\n",
+                          digit ->GetId(),digit ->GetAmplitude(), digit ->GetType(), digit->GetTime(),
+                          digit2->GetId(),amp2,                   digit2->GetType(), time2           ));
+        
+        // Sum amplitudes, change digit amplitude
+        digit->SetAmplitude( digit->GetAmplitude() + amp2);
+        
+        // Rough assumption, assign time of the largest of the 2 digits,
+        // data or signal to the final digit.
+        if(amp2 > digit->GetAmplitude())  digit->SetTime(time2);
+        
+        //Mark the new digit as embedded
+        digit->SetType(AliEMCALDigit::kEmbedded);
+        
+        if(digit2->GetAmplitude()>0.01 && e0> 0.01 )
+          AliDebug(1,Form("Embedded digit: Abs ID %d, amp %f, type %d\n",
+                          digit->GetId(), digit->GetAmplitude(), digit->GetType()));
       }//loop digit 2
     }//input loop
   }//embed
@@ -598,17 +596,18 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(i = 0 ; i < nEMC ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    if(digit)
-    {
-      //Then get the energy in GeV units.
-      energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-      //Then digitize using the calibration constants of the ocdb
-      Float_t ampADC = energy;
-      DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
-      if(ampADC < fDigitThreshold)
+    if ( !digit ) continue;
+    
+    //Then get the energy in GeV units.
+    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+    
+    //Then digitize using the calibration constants of the ocdb
+    Float_t ampADC = energy;
+    DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
+    
+    if(ampADC < fDigitThreshold)
       digits->RemoveAt(i) ;
-      
-    }// digit exists
+    
   } // digit loop
   
   digits->Compress() ;
@@ -623,17 +622,20 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for (i = 0 ; i < ndigits ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ;
-    if(digit)
-    {
-      digit->SetIndexInList(i) ;
-      energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-      time   = digit->GetTime();
-      Float_t ampADC = energy;
-      DigitizeEnergyTime(ampADC, time, digit->GetId());
-      digit->SetAmplitude(ampADC) ;
-      digit->SetTime(time);
-      // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
-    }// digit exists
+    if( !digit ) continue ;
+    
+    digit->SetIndexInList(i) ;
+    
+    time   = digit->GetTime();
+    digit->SetTime(time);
+
+    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+
+    Float_t ampADC = energy;
+    DigitizeEnergyTime(ampADC, time, digit->GetId());
+    
+    digit->SetAmplitude(ampADC) ;
+    // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
   }//Digit loop
   
 }
