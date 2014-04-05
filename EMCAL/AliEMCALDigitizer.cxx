@@ -683,14 +683,16 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
   time  += fTimeChannel-fTimeChannelDecal;
   
-  if(energy > fNADCEC )
-  energy =  fNADCEC ;
+  if ( energy > fNADCEC ) energy =  fNADCEC ;
 }
 
 //_____________________________________________________________________
-void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
+void AliEMCALDigitizer::DecalibrateTrigger(AliEMCALDigit *digit)
 {
   // Decalibrate, used in Trigger digits
+  
+  if ( !fCalibData ) return ;
+  
   // Load Geometry
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
 	
@@ -700,6 +702,7 @@ void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
     return;
   }
 	
+  // Recover the digit location in row-column-SM
   Int_t absId   = digit->GetId();
   Int_t iSupMod = -1;
   Int_t nModule = -1;
@@ -709,17 +712,18 @@ void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
   Int_t ieta    = -1;
 	
   Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
-	
   if (!bCell) Error("Decalibrate","Wrong cell id number : absId %i ", absId) ;
+  
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 	
-  if (fCalibData)
-  {
-    fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
-    Float_t factor = 1./(fADCchannelEC/0.0162);
-		
-    *digit = *digit * factor;
-  }
+  // Now decalibrate
+  Float_t adcChannel       = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
+  Float_t adcChannelOnline = fCalibData->GetADCchannelOnline(iSupMod,ieta,iphi);
+  //printf("calib param for (SM%d,col%d,row%d): %1.4f - online param: %1.4f \n",iSupMod,ieta,iphi,adcChannel,adcChannelOnline);
+  Float_t factor = 1./(adcChannel/adcChannelOnline);
+  
+  *digit = *digit * factor;
+  
 }
 
 //_____________________________________________________________________
@@ -903,7 +907,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   {
     if (IsDead(digit)) continue;
     
-    Decalibrate(digit);
+    DecalibrateTrigger(digit);
     
     Int_t id = digit->GetId();
     
@@ -1069,7 +1073,7 @@ void AliEMCALDigitizer::InitParameters()
   
   // These defaults are normally not used. 
   // Values are read from calibration database instead
-  fADCchannelEC       = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
+  fADCchannelEC       = 0.0162; // Nominal value set online for most of the channels, MIP peak sitting at ~266./16/1024
   fADCpedestalEC      = 0.0 ;   // GeV
   fADCchannelECDecal  = 1.0;    // No decalibration by default
   fTimeChannel        = 0.0;    // No time calibration by default
