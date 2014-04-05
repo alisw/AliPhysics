@@ -132,7 +132,9 @@ class AliAnalysisTaskFlowTPCEMCalEP : public AliAnalysisTaskSE {
   TH1F			*fTot_etae;		//! inclusive electron
   TH1F			*fPhot_etae;		//! ULS pair 
   TH1F			*fPhotBCG_etae;		//! LS pair
-    
+
+  THnSparse             *fCocktail;             //! for cocktail
+
   AliAnalysisTaskFlowTPCEMCalEP(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
   AliAnalysisTaskFlowTPCEMCalEP& operator=(const AliAnalysisTaskFlowTPCEMCalEP&); // not implemented
   
