@@ -117,6 +117,57 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTrueMultVZEROA(0),
   fTrueMultVZEROC(0),
   fRunNumber(0),
+  //---> Variables for fTreeV0
+	fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariablePtMC(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableRapMC(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegEta(0),
+	fTreeVariablePosEta(0),
+
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+
+	fTreeVariableDistOverTotMom(0),
+	fTreeVariableLeastNbrCrossedRows(0),
+	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+	
+  fTreeVariableCentV0A(0),
+  fTreeVariableCentV0C(0),
+  fTreeVariableCentV0M(0),
+  fTreeVariableCentV0AEq(0),
+  fTreeVariableCentV0CEq(0),
+  fTreeVariableCentV0MEq(0),
+  fTreeVariableAmpV0A(0),
+  fTreeVariableAmpV0C(0),
+  fTreeVariableAmpV0AEq(0),
+  fTreeVariableAmpV0CEq(0),
+  fTreeVariableRefMultEta8(0),
+  fTreeVariableRefMultEta5(0),
+  fTreeVariableRunNumber(0),
+
+  fTreeVariablePtMother(0),
+  fTreeVariablePID(0),
+  fTreeVariablePIDPositive(0),
+  fTreeVariablePIDNegative(0),
+  fTreeVariablePIDMother(0),
+  fTreeVariablePrimaryStatus(0),
+  fTreeVariablePrimaryStatusMother(0),
   //---> Variables for fTreeCascade
   fTreeCascVarCharge(0), 
 	fTreeCascVarMassAsXi(0),
@@ -167,9 +218,13 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeCascVarTrueMultVZEROC(0),
   fTreeCascVarIsPhysicalPrimary(0), 
   fTreeCascVarPID(0), 
+  fTreeCascVarRunNumber(0), 
   //---> Histograms
   fHistEventCounter(0), 
   //---> MC Generated Histo (analysis level) 
+	fHistPt_GenK0Short(0),
+	fHistPt_GenLambda(0),
+	fHistPt_GenAntiLambda(0),
 	fHistPt_GenXiMinus(0),
 	fHistPt_GenXiPlus(0),
 	fHistPt_GenOmegaMinus(0),
@@ -269,6 +324,57 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTrueMultVZEROA(0),
   fTrueMultVZEROC(0),
   fRunNumber(0),
+  //---> Variables for fTreeV0
+	fTreeVariableChi2V0(0),
+	fTreeVariableDcaV0Daughters(0),
+	fTreeVariableDcaV0ToPrimVertex(0),
+	fTreeVariableDcaPosToPrimVertex(0),
+	fTreeVariableDcaNegToPrimVertex(0),
+	fTreeVariableV0CosineOfPointingAngle(0),
+	fTreeVariableV0Radius(0),
+	fTreeVariablePt(0),
+	fTreeVariablePtMC(0),
+	fTreeVariableRapK0Short(0),
+	fTreeVariableRapLambda(0),
+	fTreeVariableRapMC(0),
+	fTreeVariableInvMassK0s(0),
+	fTreeVariableInvMassLambda(0),
+	fTreeVariableInvMassAntiLambda(0),
+	fTreeVariableAlphaV0(0),
+	fTreeVariablePtArmV0(0),
+	fTreeVariableNegEta(0),
+	fTreeVariablePosEta(0),
+
+	fTreeVariableNSigmasPosProton(0),
+	fTreeVariableNSigmasPosPion(0),
+	fTreeVariableNSigmasNegProton(0),
+	fTreeVariableNSigmasNegPion(0),
+
+	fTreeVariableDistOverTotMom(0),
+	fTreeVariableLeastNbrCrossedRows(0),
+	fTreeVariableLeastRatioCrossedRowsOverFindable(0),
+	
+  fTreeVariableCentV0A(0),
+  fTreeVariableCentV0C(0),
+  fTreeVariableCentV0M(0),
+  fTreeVariableCentV0AEq(0),
+  fTreeVariableCentV0CEq(0),
+  fTreeVariableCentV0MEq(0),
+  fTreeVariableAmpV0A(0),
+  fTreeVariableAmpV0C(0),
+  fTreeVariableAmpV0AEq(0),
+  fTreeVariableAmpV0CEq(0),
+  fTreeVariableRefMultEta8(0),
+  fTreeVariableRefMultEta5(0),
+  fTreeVariableRunNumber(0),
+
+  fTreeVariablePtMother(0),
+  fTreeVariablePID(0),
+  fTreeVariablePIDPositive(0),
+  fTreeVariablePIDNegative(0),
+  fTreeVariablePIDMother(0),
+  fTreeVariablePrimaryStatus(0),
+  fTreeVariablePrimaryStatusMother(0),
   //---> Variables for fTreeCascade
   fTreeCascVarCharge(0), 
 	fTreeCascVarMassAsXi(0),
@@ -319,9 +425,13 @@ AliAnalysisTaskStrangenessVsMultiplicityMC::AliAnalysisTaskStrangenessVsMultipli
   fTreeCascVarTrueMultVZEROC(0),
   fTreeCascVarIsPhysicalPrimary(0), 
   fTreeCascVarPID(0), 
+  fTreeCascVarRunNumber(0), 
   //---> Histograms
   fHistEventCounter(0), 
   //---> MC Generated Histo (analysis level) 
+	fHistPt_GenK0Short(0),
+	fHistPt_GenLambda(0),
+	fHistPt_GenAntiLambda(0),
 	fHistPt_GenXiMinus(0),
 	fHistPt_GenXiPlus(0),
 	fHistPt_GenOmegaMinus(0),
@@ -489,6 +599,61 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   //Create Basic V0 Output Tree
   fTreeV0 = new TTree( "fTreeV0", "V0 Candidates");
 
+//------------------------------------------------
+// fTreeV0 Branch definitions
+//------------------------------------------------
+
+//-----------BASIC-INFO---------------------------
+  fTreeV0->Branch("fTreeVariableChi2V0",&fTreeVariableChi2V0,"fTreeVariableChi2V0/F");
+  fTreeV0->Branch("fTreeVariableDcaV0Daughters",&fTreeVariableDcaV0Daughters,"fTreeVariableDcaV0Daughters/F");
+  fTreeV0->Branch("fTreeVariableDcaV0ToPrimVertex",&fTreeVariableDcaV0ToPrimVertex,"fTreeVariableDcaV0ToPrimVertex/F");
+  fTreeV0->Branch("fTreeVariableDcaPosToPrimVertex",&fTreeVariableDcaPosToPrimVertex,"fTreeVariableDcaPosToPrimVertex/F");
+  fTreeV0->Branch("fTreeVariableDcaNegToPrimVertex",&fTreeVariableDcaNegToPrimVertex,"fTreeVariableDcaNegToPrimVertex/F");
+  fTreeV0->Branch("fTreeVariableV0Radius",&fTreeVariableV0Radius,"fTreeVariableV0Radius/F");
+  fTreeV0->Branch("fTreeVariablePt",&fTreeVariablePt,"fTreeVariablePt/F");
+  fTreeV0->Branch("fTreeVariablePtMC",&fTreeVariablePtMC,"fTreeVariablePtMC/F");
+  fTreeV0->Branch("fTreeVariableRapK0Short",&fTreeVariableRapK0Short,"fTreeVariableRapK0Short/F");
+  fTreeV0->Branch("fTreeVariableRapLambda",&fTreeVariableRapLambda,"fTreeVariableRapLambda/F");
+  fTreeV0->Branch("fTreeVariableRapMC",&fTreeVariableRapMC,"fTreeVariableRapMC/F");
+  fTreeV0->Branch("fTreeVariableInvMassK0s",&fTreeVariableInvMassK0s,"fTreeVariableInvMassK0s/F");
+  fTreeV0->Branch("fTreeVariableInvMassLambda",&fTreeVariableInvMassLambda,"fTreeVariableInvMassLambda/F");
+  fTreeV0->Branch("fTreeVariableInvMassAntiLambda",&fTreeVariableInvMassAntiLambda,"fTreeVariableInvMassAntiLambda/F");
+  fTreeV0->Branch("fTreeVariableV0CosineOfPointingAngle",&fTreeVariableV0CosineOfPointingAngle,"fTreeVariableV0CosineOfPointingAngle/F");
+  fTreeV0->Branch("fTreeVariableAlphaV0",&fTreeVariableAlphaV0,"fTreeVariableAlphaV0/F");
+  fTreeV0->Branch("fTreeVariablePtArmV0",&fTreeVariablePtArmV0,"fTreeVariablePtArmV0/F");
+  fTreeV0->Branch("fTreeVariableLeastNbrCrossedRows",&fTreeVariableLeastNbrCrossedRows,"fTreeVariableLeastNbrCrossedRows/I");
+  fTreeV0->Branch("fTreeVariableLeastRatioCrossedRowsOverFindable",&fTreeVariableLeastRatioCrossedRowsOverFindable,"fTreeVariableLeastRatioCrossedRowsOverFindable/F");
+  fTreeV0->Branch("fTreeVariableDistOverTotMom",&fTreeVariableDistOverTotMom,"fTreeVariableDistOverTotMom/F");
+  fTreeV0->Branch("fTreeVariableNSigmasPosProton",&fTreeVariableNSigmasPosProton,"fTreeVariableNSigmasPosProton/F");
+  fTreeV0->Branch("fTreeVariableNSigmasPosPion",&fTreeVariableNSigmasPosPion,"fTreeVariableNSigmasPosPion/F");
+  fTreeV0->Branch("fTreeVariableNSigmasNegProton",&fTreeVariableNSigmasNegProton,"fTreeVariableNSigmasNegProton/F");
+  fTreeV0->Branch("fTreeVariableNSigmasNegPion",&fTreeVariableNSigmasNegPion,"fTreeVariableNSigmasNegPion/F");
+  fTreeV0->Branch("fTreeVariableNegEta",&fTreeVariableNegEta,"fTreeVariableNegEta/F");
+  fTreeV0->Branch("fTreeVariablePosEta",&fTreeVariablePosEta,"fTreeVariablePosEta/F");
+//-----------MULTIPLICITY-INFO--------------------
+  fTreeV0->Branch("fTreeVariableCentV0A",&fTreeVariableCentV0A,"fTreeVariableCentV0A/F");
+  fTreeV0->Branch("fTreeVariableCentV0C",&fTreeVariableCentV0C,"fTreeVariableCentV0C/F");
+  fTreeV0->Branch("fTreeVariableCentV0M",&fTreeVariableCentV0M,"fTreeVariableCentV0M/F");
+  fTreeV0->Branch("fTreeVariableCentV0AEq",&fTreeVariableCentV0AEq,"fTreeVariableCentV0AEq/F");
+  fTreeV0->Branch("fTreeVariableCentV0CEq",&fTreeVariableCentV0CEq,"fTreeVariableCentV0CEq/F");
+  fTreeV0->Branch("fTreeVariableCentV0MEq",&fTreeVariableCentV0MEq,"fTreeVariableCentV0MEq/F");
+  fTreeV0->Branch("fTreeVariableAmpV0A",&fTreeVariableAmpV0A,"fTreeVariableAmpV0A/F");
+  fTreeV0->Branch("fTreeVariableAmpV0C",&fTreeVariableAmpV0C,"fTreeVariableAmpV0C/F");
+  fTreeV0->Branch("fTreeVariableAmpV0AEq",&fTreeVariableAmpV0AEq,"fTreeVariableAmpV0AEq/F");
+  fTreeV0->Branch("fTreeVariableAmpV0CEq",&fTreeVariableAmpV0CEq,"fTreeVariableAmpV0CEq/F");
+  fTreeV0->Branch("fTreeVariableRefMultEta8",&fTreeVariableRefMultEta8,"fTreeVariableRefMultEta8/I");
+  fTreeV0->Branch("fTreeVariableRefMultEta5",&fTreeVariableRefMultEta5,"fTreeVariableRefMultEta5/I");
+  fTreeV0->Branch("fTreeVariableRunNumber",&fTreeVariableRunNumber,"fTreeVariableRunNumber/I");
+//-----------MC Exclusive info--------------------
+  fTreeV0->Branch("fTreeVariablePtMother",&fTreeVariablePtMother,"fTreeVariablePtMother/F");
+  fTreeV0->Branch("fTreeVariablePID",&fTreeVariablePID,"fTreeVariablePID/I");
+  fTreeV0->Branch("fTreeVariablePIDPositive",&fTreeVariablePIDPositive,"fTreeVariablePIDPositive/I");
+  fTreeV0->Branch("fTreeVariablePIDNegative",&fTreeVariablePIDNegative,"fTreeVariablePIDNegative/I");
+  fTreeV0->Branch("fTreeVariablePIDMother",&fTreeVariablePIDMother,"fTreeVariablePIDMother/I");
+  fTreeV0->Branch("fTreeVariablePrimaryStatus",&fTreeVariablePrimaryStatus,"fTreeVariablePrimaryStatus/I");
+  fTreeV0->Branch("fTreeVariablePrimaryStatusMother",&fTreeVariablePrimaryStatusMother,"fTreeVariablePrimaryStatusMother/I");
+//------------------------------------------------
+
   //Create Cascade output tree
   fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
 
@@ -541,6 +706,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   fTreeCascade->Branch("fTreeCascVarTrueMultVZEROC",&fTreeCascVarTrueMultVZEROC,"fTreeCascVarTrueMultVZEROC/I");
   fTreeCascade->Branch("fTreeCascVarIsPhysicalPrimary",&fTreeCascVarIsPhysicalPrimary,"fTreeCascVarIsPhysicalPrimary/I");
   fTreeCascade->Branch("fTreeCascVarPID",&fTreeCascVarPID,"fTreeCascVarPID/I");
+  fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
 //-----------DECAY-LENGTH-INFO--------------------
   fTreeCascade->Branch("fTreeCascVarDistOverTotMom",&fTreeCascVarDistOverTotMom,"fTreeCascVarDistOverTotMom/F");
 //------------------------------------------------
@@ -587,6 +753,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserCreateOutputObjects()
   //Histograms for Efficiency corrections... a bunch of them 
   //1D Histograms - Fine if efficiency doesn't change vs mult (expected) 
   //---> Always filled for |y|<0.5 
+  //V0s: basic Histos
+  if(! fHistPt_GenK0Short ) {
+    fHistPt_GenK0Short    = new TH1D( "fHistPt_GenK0Short",    "Generated;p_{T} (GeV/c)",200,0,20);   fListHist->Add(fHistPt_GenK0Short);    }
+  if(! fHistPt_GenLambda ) {
+    fHistPt_GenLambda     = new TH1D( "fHistPt_GenLambda",     "Generated;p_{T} (GeV/c)",200,0,20);   fListHist->Add(fHistPt_GenLambda);     }
+  if(! fHistPt_GenAntiLambda ) {
+    fHistPt_GenAntiLambda = new TH1D( "fHistPt_GenAntiLambda", "Generated;p_{T} (GeV/c)",200,0,20);   fListHist->Add(fHistPt_GenAntiLambda); }
+  //Cascades: basic Histos
   if(! fHistPt_GenXiMinus ) {
     fHistPt_GenXiMinus    = new TH1D( "fHistPt_GenXiMinus",    "Generated;p_{T} (GeV/c)",200,0,20);   fListHist->Add(fHistPt_GenXiMinus);    }
   if(! fHistPt_GenXiPlus ) {
@@ -1087,13 +1261,17 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
 
       lThisPDG = lPart->GetPdgCode();	      
 
-      if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) ) 
+      if ( (TMath::Abs(lThisPDG) == 3312) || (TMath::Abs(lThisPDG) == 3334) || (TMath::Abs(lThisPDG) == 3122) || lThisPDG == 310 ) 
       {
         lThisRap   = MyRapidity(lPart->Energy(),lPart->Pz());
         lThisPt    = lPart->Pt();
 
         //Use Physical Primaries only for filling These Histos
         if ( lMCstack->IsPhysicalPrimary(ilab)!=kTRUE ) continue;
+
+        if( lThisPDG ==   310 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenK0Short       -> Fill ( lThisPt ); 
+        if( lThisPDG ==  3122 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenLambda     -> Fill ( lThisPt ); 
+        if( lThisPDG == -3122 && TMath::Abs(lThisRap) < 0.5 ) fHistPt_GenAntiLambda -> Fill ( lThisPt ); 
 
         if( lThisPDG ==  3312 && TMath::Abs(lThisRap) < 0.5 ){
           fHistPt_GenXiMinus                -> Fill (lThisPt);          
@@ -1174,6 +1352,273 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
       }
    }//End of loop on tracks
 //----- End Loop on Cascades ------------------------------------------------------------
+
+//------------------------------------------------
+// Fill V0 Tree as needed
+//------------------------------------------------
+
+//Variable definition
+   Int_t    lOnFlyStatus = 0;// nv0sOn = 0, nv0sOff = 0;
+   Double_t lChi2V0 = 0;
+   Double_t lDcaV0Daughters = 0, lDcaV0ToPrimVertex = 0;
+   Double_t lDcaPosToPrimVertex = 0, lDcaNegToPrimVertex = 0;
+   Double_t lV0CosineOfPointingAngle = 0;
+   Double_t lV0Radius = 0, lPt = 0;
+   Double_t lRapK0Short = 0, lRapLambda = 0;
+   Double_t lInvMassK0s = 0, lInvMassLambda = 0, lInvMassAntiLambda = 0;
+   Double_t lAlphaV0 = 0, lPtArmV0 = 0;
+
+   Double_t fMinV0Pt = 0; 
+   Double_t fMaxV0Pt = 100; 
+
+   Int_t nv0s = 0;
+   nv0s = lESDevent->GetNumberOfV0s();
+
+   for (Int_t iV0 = 0; iV0 < nv0s; iV0++) //extra-crazy test
+   {// This is the begining of the V0 loop
+      AliESDv0 *v0 = ((AliESDEvent*)lESDevent)->GetV0(iV0);
+      if (!v0) continue;
+
+      Double_t tDecayVertexV0[3]; v0->GetXYZ(tDecayVertexV0[0],tDecayVertexV0[1],tDecayVertexV0[2]); 
+
+      Double_t tV0mom[3];
+      v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] ); 
+      Double_t lV0TotalMomentum = TMath::Sqrt(
+      tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
+
+      lV0Radius = TMath::Sqrt(tDecayVertexV0[0]*tDecayVertexV0[0]+tDecayVertexV0[1]*tDecayVertexV0[1]);
+
+      lPt = v0->Pt();
+      lRapK0Short = v0->RapK0Short();
+      lRapLambda  = v0->RapLambda();
+      if ((lPt<fMinV0Pt)||(fMaxV0Pt<lPt)) continue;
+
+      UInt_t lKeyPos = (UInt_t)TMath::Abs(v0->GetPindex());
+      UInt_t lKeyNeg = (UInt_t)TMath::Abs(v0->GetNindex());
+
+      Double_t lMomPos[3]; v0->GetPPxPyPz(lMomPos[0],lMomPos[1],lMomPos[2]);
+      Double_t lMomNeg[3]; v0->GetNPxPyPz(lMomNeg[0],lMomNeg[1],lMomNeg[2]);
+
+      AliESDtrack *pTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyPos);
+      AliESDtrack *nTrack=((AliESDEvent*)lESDevent)->GetTrack(lKeyNeg);
+      if (!pTrack || !nTrack) {
+         Printf("ERROR: Could not retreive one of the daughter track");
+         continue;
+      }
+
+      //Daughter Eta for Eta selection, afterwards
+      fTreeVariableNegEta = nTrack->Eta();
+      fTreeVariablePosEta = pTrack->Eta();
+
+      // Filter like-sign V0 (next: add counter and distribution)
+      if ( pTrack->GetSign() == nTrack->GetSign()){
+         continue;
+      } 
+
+      //________________________________________________________________________
+      // Track quality cuts 
+      Float_t lPosTrackCrossedRows = pTrack->GetTPCClusterInfo(2,1);
+      Float_t lNegTrackCrossedRows = nTrack->GetTPCClusterInfo(2,1);
+      fTreeVariableLeastNbrCrossedRows = (Int_t) lPosTrackCrossedRows;
+      if( lNegTrackCrossedRows < fTreeVariableLeastNbrCrossedRows )
+         fTreeVariableLeastNbrCrossedRows = (Int_t) lNegTrackCrossedRows;
+
+      // TPC refit condition (done during reconstruction for Offline but not for On-the-fly)
+      if( !(pTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+      if( !(nTrack->GetStatus() & AliESDtrack::kTPCrefit)) continue;
+     
+  
+      if ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) continue;
+	
+      //GetKinkIndex condition
+      if( pTrack->GetKinkIndex(0)>0 || nTrack->GetKinkIndex(0)>0 ) continue;
+
+      //Findable clusters > 0 condition
+      if( pTrack->GetTPCNclsF()<=0 || nTrack->GetTPCNclsF()<=0 ) continue;
+
+      //Compute ratio Crossed Rows / Findable clusters
+      //Note: above test avoids division by zero! 
+      Float_t lPosTrackCrossedRowsOverFindable = lPosTrackCrossedRows / ((double)(pTrack->GetTPCNclsF())); 
+      Float_t lNegTrackCrossedRowsOverFindable = lNegTrackCrossedRows / ((double)(nTrack->GetTPCNclsF())); 
+
+      fTreeVariableLeastRatioCrossedRowsOverFindable = lPosTrackCrossedRowsOverFindable;
+      if( lNegTrackCrossedRowsOverFindable < fTreeVariableLeastRatioCrossedRowsOverFindable )
+         fTreeVariableLeastRatioCrossedRowsOverFindable = lNegTrackCrossedRowsOverFindable;
+
+      //Lowest Cut Level for Ratio Crossed Rows / Findable = 0.8, set here
+      if ( fTreeVariableLeastRatioCrossedRowsOverFindable < 0.8 ) continue;
+
+      //End track Quality Cuts
+      //________________________________________________________________________
+
+      lDcaPosToPrimVertex = TMath::Abs(pTrack->GetD(lBestPrimaryVtxPos[0],
+							lBestPrimaryVtxPos[1],
+							lMagneticField) );
+
+      lDcaNegToPrimVertex = TMath::Abs(nTrack->GetD(lBestPrimaryVtxPos[0],
+							lBestPrimaryVtxPos[1],
+							lMagneticField) );
+
+      lOnFlyStatus = v0->GetOnFlyStatus();
+      lChi2V0 = v0->GetChi2V0();
+      lDcaV0Daughters = v0->GetDcaV0Daughters();
+      lDcaV0ToPrimVertex = v0->GetD(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+      lV0CosineOfPointingAngle = v0->GetV0CosineOfPointingAngle(lBestPrimaryVtxPos[0],lBestPrimaryVtxPos[1],lBestPrimaryVtxPos[2]);
+      fTreeVariableV0CosineOfPointingAngle=lV0CosineOfPointingAngle;
+
+      // Getting invariant mass infos directly from ESD
+      v0->ChangeMassHypothesis(310);
+      lInvMassK0s = v0->GetEffMass();
+      v0->ChangeMassHypothesis(3122);
+      lInvMassLambda = v0->GetEffMass();
+      v0->ChangeMassHypothesis(-3122);
+      lInvMassAntiLambda = v0->GetEffMass();
+      lAlphaV0 = v0->AlphaV0();
+      lPtArmV0 = v0->PtArmV0();
+
+
+//===============================================
+// Monte Carlo Association starts here
+//===============================================
+
+      //---> Set Everything to "I don't know" before starting
+
+      fTreeVariablePIDPositive = 0;
+      fTreeVariablePIDNegative = 0;
+
+      fTreeVariablePtMother = -1;
+      fTreeVariablePtMC = -1;
+      fTreeVariableRapMC = -100;
+
+      fTreeVariablePID = -1; 
+      fTreeVariablePIDMother = -1;
+
+      fTreeVariablePrimaryStatus = 0; 
+      fTreeVariablePrimaryStatusMother = 0; 
+    
+      Int_t lblPosV0Dghter = (Int_t) TMath::Abs( pTrack->GetLabel() );
+      Int_t lblNegV0Dghter = (Int_t) TMath::Abs( nTrack->GetLabel() );
+		
+      TParticle* mcPosV0Dghter = lMCstack->Particle( lblPosV0Dghter );
+      TParticle* mcNegV0Dghter = lMCstack->Particle( lblNegV0Dghter );
+	    
+      Int_t lPIDPositive = mcPosV0Dghter -> GetPdgCode();
+      Int_t lPIDNegative = mcNegV0Dghter -> GetPdgCode();
+
+      fTreeVariablePIDPositive = lPIDPositive;
+      fTreeVariablePIDNegative = lPIDNegative;
+
+      Int_t lblMotherPosV0Dghter = mcPosV0Dghter->GetFirstMother() ; 
+      Int_t lblMotherNegV0Dghter = mcNegV0Dghter->GetFirstMother();
+    
+      if( lblMotherPosV0Dghter == lblMotherNegV0Dghter && lblMotherPosV0Dghter > -1 ){
+         //either label is fine, they're equal at this stage
+         TParticle* pThisV0 = lMCstack->Particle( lblMotherPosV0Dghter ); 
+         //Set tree variables
+         fTreeVariablePID   = pThisV0->GetPdgCode(); //PDG Code
+         fTreeVariablePtMC  = pThisV0->Pt(); //Perfect Pt
+
+         //Only Interested if it's a Lambda, AntiLambda or K0s 
+         //Avoid the Junction Bug! PYTHIA has particles with Px=Py=Pz=E=0 occasionally, 
+         //having particle code 88 (unrecognized by PDG), for documentation purposes.
+         //Even ROOT's TParticle::Y() is not prepared to deal with that exception!
+         //Note that TParticle::Pt() is immune (that would just return 0)...
+         //Though granted that that should be extremely rare in this precise condition...
+         if( TMath::Abs(fTreeVariablePID) == 3122 || fTreeVariablePID==310 ){
+            fTreeVariableRapMC = pThisV0->Y(); //Perfect Y
+         }
+         if( lMCstack->IsPhysicalPrimary       (lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 1; //Is Primary!
+         if( lMCstack->IsSecondaryFromWeakDecay(lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 2; //Weak Decay!
+         if( lMCstack->IsSecondaryFromMaterial (lblMotherPosV0Dghter) ) fTreeVariablePrimaryStatus = 3; //Material Int!
+         
+         //Now we try to acquire the V0 parent particle, if possible
+         Int_t lblThisV0Parent = pThisV0->GetFirstMother();
+         if ( lblThisV0Parent > -1 ){ //if it has a parent, get it and store specs
+            TParticle* pThisV0Parent = lMCstack->Particle( lblThisV0Parent );
+            fTreeVariablePIDMother   = pThisV0Parent->GetPdgCode(); //V0 Mother PDG
+            fTreeVariablePtMother    = pThisV0Parent->Pt();         //V0 Mother Pt
+            //Primary Status for the V0 Mother particle 
+            if( lMCstack->IsPhysicalPrimary       (lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 1; //Is Primary!
+            if( lMCstack->IsSecondaryFromWeakDecay(lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 2; //Weak Decay!
+            if( lMCstack->IsSecondaryFromMaterial (lblThisV0Parent) ) fTreeVariablePrimaryStatusMother = 3; //Material Int!
+         }
+      }
+
+      fTreeVariablePt = v0->Pt();
+      fTreeVariableChi2V0 = lChi2V0; 
+      fTreeVariableDcaV0ToPrimVertex = lDcaV0ToPrimVertex;
+      fTreeVariableDcaV0Daughters = lDcaV0Daughters;
+      fTreeVariableV0CosineOfPointingAngle = lV0CosineOfPointingAngle; 
+      fTreeVariableV0Radius = lV0Radius;
+      fTreeVariableDcaPosToPrimVertex = lDcaPosToPrimVertex;
+      fTreeVariableDcaNegToPrimVertex = lDcaNegToPrimVertex;
+      fTreeVariableInvMassK0s = lInvMassK0s;
+      fTreeVariableInvMassLambda = lInvMassLambda;
+      fTreeVariableInvMassAntiLambda = lInvMassAntiLambda;
+      fTreeVariableRapK0Short = lRapK0Short;
+      fTreeVariableRapLambda = lRapLambda;
+      fTreeVariableAlphaV0 = lAlphaV0;
+      fTreeVariablePtArmV0 = lPtArmV0;
+
+      //Official means of acquiring N-sigmas 
+      fTreeVariableNSigmasPosProton = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton );
+      fTreeVariableNSigmasPosPion   = fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kPion );
+      fTreeVariableNSigmasNegProton = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton );
+      fTreeVariableNSigmasNegPion   = fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kPion );
+
+//This requires an Invariant Mass Hypothesis afterwards
+      fTreeVariableDistOverTotMom = TMath::Sqrt(
+						TMath::Power( tDecayVertexV0[0] - lBestPrimaryVtxPos[0] , 2) +
+						TMath::Power( tDecayVertexV0[1] - lBestPrimaryVtxPos[1] , 2) +
+						TMath::Power( tDecayVertexV0[2] - lBestPrimaryVtxPos[2] , 2)
+					);
+      fTreeVariableDistOverTotMom /= (lV0TotalMomentum+1e-10); //avoid division by zero, to be sure
+
+      //Copy Multiplicity information 
+      fTreeVariableCentV0A = fCentrality_V0A; 
+      fTreeVariableCentV0C = fCentrality_V0C; 
+      fTreeVariableCentV0M = fCentrality_V0M; 
+      fTreeVariableCentV0AEq = fCentrality_V0AEq; 
+      fTreeVariableCentV0CEq = fCentrality_V0CEq; 
+      fTreeVariableCentV0MEq = fCentrality_V0MEq; 
+      fTreeVariableAmpV0A = fAmplitude_V0A; 
+      fTreeVariableAmpV0C = fAmplitude_V0C; 
+      fTreeVariableAmpV0AEq = fAmplitude_V0AEq; 
+      fTreeVariableAmpV0CEq = fAmplitude_V0CEq; 
+      fTreeVariableRefMultEta8 = fRefMultEta8;
+      fTreeVariableRefMultEta5 = fRefMultEta5;
+      fTreeVariableRunNumber = fRunNumber; 
+
+//------------------------------------------------
+// Fill Tree! 
+//------------------------------------------------
+     
+     // The conditionals are meant to decrease excessive
+     // memory usage!
+     
+     //First Selection: Reject OnFly
+     if( lOnFlyStatus == 0 ){
+       //Second Selection: rough 20-sigma band, parametric.
+       //K0Short: Enough to parametrize peak broadening with linear function.
+       Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02)*fTreeVariablePt;
+       Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02)*fTreeVariablePt;
+       //Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
+       //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+       Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03)*fTreeVariablePt + (8.42220e-02)*TMath::Exp(-(3.80595e+00)*fTreeVariablePt);
+       Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03)*fTreeVariablePt - (7.52690e-02)*TMath::Exp(-(3.46339e+00)*fTreeVariablePt);
+       //Do Selection
+       if( (fTreeVariableInvMassLambda    < lUpperLimitLambda  && fTreeVariableInvMassLambda     > lLowerLimitLambda     ) ||
+          (fTreeVariableInvMassAntiLambda < lUpperLimitLambda  && fTreeVariableInvMassAntiLambda > lLowerLimitLambda     ) ||
+          (fTreeVariableInvMassK0s        < lUpperLimitK0Short && fTreeVariableInvMassK0s        > lLowerLimitK0Short    ) ){
+         //Pre-selection in case this is AA...
+         if ( TMath::Abs(fTreeVariableNegEta)<0.8 && TMath::Abs(fTreeVariablePosEta)<0.8 && fkSaveV0Tree ) fTreeV0->Fill();
+       }
+     }
+   }// This is the end of the V0 loop
+
+//------------------------------------------------
+// Fill V0 tree over.
+//------------------------------------------------
 
 //------------------------------------------------
 // Rerun cascade vertexer! 
@@ -1605,6 +2050,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMC::UserExec(Option_t *)
           fTreeCascVarAmpV0CEq = fAmplitude_V0CEq; 
           fTreeCascVarRefMultEta8 = fRefMultEta8;
           fTreeCascVarRefMultEta5 = fRefMultEta5;
+          fTreeCascVarRunNumber = fRunNumber; 
 
           fTreeCascVarDistOverTotMom = TMath::Sqrt(
 						TMath::Power( lPosXi[0] - lBestPrimaryVtxPos[0] , 2) +
