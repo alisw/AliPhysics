@@ -1814,6 +1814,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         TArrayI* trueBinOut,            // true bin ranges, out of plane
         TArrayI* recBinIn,              // rec bin ranges, in plane
         TArrayI* recBinOut,             // rec bin ranges, out of plane
+        TArrayI* methodIn,              // method in
+        TArrayI* methodOut,             // method out
         Int_t columns,                  // divide the output canvasses in this many columns
         Float_t rangeLow,               // lower pt range
         Float_t rangeUp,                // upper pt range
@@ -1839,6 +1841,8 @@ void AliJetFlowTools::GetShapeUncertainty(
     TH1D* relativeErrorTrueBinInUp(0x0);
     TH1D* relativeErrorRecBinInLow(0x0);
     TH1D* relativeErrorRecBinInUp(0x0);
+    TH1D* relativeErrorMethodInLow(0x0);
+    TH1D* relativeErrorMethodInUp(0x0);
     TH1D* relativeErrorRegularizationOutLow(0x0);
     TH1D* relativeErrorRegularizationOutUp(0x0);
     TH1D* relativeErrorTrueBinOutLow(0x0);
@@ -1847,6 +1851,8 @@ void AliJetFlowTools::GetShapeUncertainty(
     TH1D* relativeErrorRecBinOutUp(0x0);
     TH1D* relativeStatisticalErrorIn(0x0);
     TH1D* relativeStatisticalErrorOut(0x0);
+    TH1D* relativeErrorMethodOutLow(0x0);
+    TH1D* relativeErrorMethodOutUp(0x0);
     // histo for the nominal ratio in / out
     TH1D* nominal(new TH1D("ratio in plane, out of plane", "ratio in plane, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
     TH1D* nominalIn(new TH1D("in plane jet yield", "in plane jet yield", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1960,6 +1966,41 @@ void AliJetFlowTools::GetShapeUncertainty(
             relativeErrorRecBin->Write();
         }
     }
+    if(methodIn && methodOut) {
+        DoIntermediateSystematics(
+                methodIn, 
+                methodOut, 
+                relativeErrorMethodInUp,       // pointer reference
+                relativeErrorMethodInLow,      // pointer reference
+                relativeErrorMethodOutUp,      // pointer reference
+                relativeErrorMethodOutLow,     // pointer reference
+                relativeStatisticalErrorIn,
+                relativeStatisticalErrorOut,
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                "method");
+        if(relativeErrorMethodInUp) {
+            TCanvas* relativeErrorMethod(new TCanvas("relativeErrorMethod", "relativeErrorMethod"));
+            relativeErrorMethod->Divide(2);
+            relativeErrorMethod->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorMethodInUp->DrawCopy("b");
+            relativeErrorMethodInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorMethod->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorMethodOutUp->DrawCopy("b");
+            relativeErrorMethodOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorMethod);
+            Style(AddLegend(gPad));
+            relativeErrorMethod->Write();
+        }
+    }
 
     // and the placeholder for the final systematic
     TH1D* relativeErrorInUp(new TH1D("max shape uncertainty in plane", "max shape uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
@@ -1972,10 +2013,10 @@ void AliJetFlowTools::GetShapeUncertainty(
     relativeErrorOutLow->SetYTitle("relative uncertainty");
 
     // sum of squares for the total systematic error
-    Double_t aInUp(0.), bInUp(0.), cInUp(0.), dInUp(0.);
-    Double_t aOutUp(0.), bOutUp(0.), cOutUp(0.), dOutUp(0.);
-    Double_t aInLow(0.), bInLow(0.), cInLow(0.), dInLow(0.);
-    Double_t aOutLow(0.), bOutLow(0.), cOutLow(0.), dOutLow(0.);
+    Double_t aInUp(0.), bInUp(0.), cInUp(0.), dInUp(0.), eInUp(0.);
+    Double_t aOutUp(0.), bOutUp(0.), cOutUp(0.), dOutUp(0.), eOutUp(0.);
+    Double_t aInLow(0.), bInLow(0.), cInLow(0.), dInLow(0.), eInLow(0.);
+    Double_t aOutLow(0.), bOutLow(0.), cOutLow(0.), dOutLow(0.), eOutLow(0.);
 
     for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
         // for the upper bound
@@ -1985,10 +2026,12 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorTrueBinOutUp) bOutUp = relativeErrorTrueBinOutUp->GetBinContent(b+1);
         if(relativeErrorRecBinInUp) cInUp = relativeErrorRecBinInUp->GetBinContent(b+1);
         if(relativeErrorRecBinOutUp) cOutUp = relativeErrorRecBinOutUp->GetBinContent(b+1);
-        dInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp;
-        if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(dInUp));
-        dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
-        if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(dOutUp));
+        if(relativeErrorMethodInUp) dInUp = relativeErrorMethodInUp->GetBinContent(b+1);
+        if(relativeErrorMethodOutUp) dOutUp = relativeErrorMethodOutUp->GetBinContent(b+1);
+        eInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp + dInUp*dInUp;
+        if(eInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(eInUp));
+        eOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp + dOutUp*dOutUp;
+        if(eOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(eOutUp));
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
         if(relativeErrorRegularizationOutLow) aOutLow = relativeErrorRegularizationOutLow->GetBinContent(b+1);
@@ -1996,10 +2039,12 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorTrueBinOutLow) bOutLow = relativeErrorTrueBinOutLow->GetBinContent(b+1);
         if(relativeErrorRecBinInLow) cInLow = relativeErrorRecBinInLow->GetBinContent(b+1);
         if(relativeErrorRecBinOutLow) cOutLow = relativeErrorRecBinOutLow->GetBinContent(b+1);
-        dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
-        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(dInLow));
-        dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
-        if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
+        if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
+        if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
+        eInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow + dInLow*dInLow;
+        if(eInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(eInLow));
+        eOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow + dOutLow*dOutLow;
+        if(eOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(eOutLow));
     }
     // project the estimated errors on the nominal ratio
     if(nominal) {

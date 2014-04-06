@@ -179,6 +179,8 @@ class AliJetFlowTools {
                 TArrayI* trueBinOut = 0x0,
                 TArrayI* recBinIn = 0x0,
                 TArrayI* recBinOut = 0x0,
+                TArrayI* methodIn = 0x0,
+                TArrayI* methodOut = 0x0,
                 Int_t columns = 4,
                 Float_t rangeLow = 20,
                 Float_t rangeUp = 80,
