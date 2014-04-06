@@ -544,7 +544,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-  FillQA();
+  if(fESD)
+    FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
   /*if(fESD)
