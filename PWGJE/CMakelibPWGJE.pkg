@@ -30,7 +30,6 @@ set ( SRCS
     AliAnaChargedJetResponseMaker.cxx
     AliAnalysisTaskAj.cxx
     AliAnalysisTaskFragmentationFunction.cxx
-    AliAnalysisTaskJetChem.cxx 
     AliAnalysisTaskJetCore.cxx 	
     AliAnalysisTaskJetCorePP.cxx 	
     AliAnalysisTaskJetProperties.cxx

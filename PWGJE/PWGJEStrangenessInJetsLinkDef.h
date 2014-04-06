@@ -7,5 +7,8 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskV0sInJets+;
+#pragma link C++ class AliAnalysisTaskJetChem+;
+#pragma link C++ class AliAnalysisTaskJetChem::AliFragFuncHistosInvMass+;
+#pragma link C++ class AliAnalysisTaskJetChem::AliFragFuncHistosPhiCorrInvMass+;
 
 #endif
