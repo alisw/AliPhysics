@@ -142,7 +142,7 @@ AliTRDReconstructor::~AliTRDReconstructor()
     delete fgTracks;
     fgTracks = NULL;
   }
-  if(fSteerParam&kOwner){
+  if((fSteerParam&kOwner)||  AliTRDReconstructor::GetStreamLevel()>0){
     for(Int_t itask = 0; itask < AliTRDrecoParam::kTRDreconstructionTasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }

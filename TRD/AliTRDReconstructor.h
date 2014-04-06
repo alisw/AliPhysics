@@ -71,7 +71,7 @@ public:
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
-  Bool_t              IsDebugStreaming() const   { return fSteerParam&kDebug;}
+  Bool_t              IsDebugStreaming() const   { return (fSteerParam&kDebug || AliTRDReconstructor::GetStreamLevel()>0);}
   Bool_t              UseClusterRadialCorrection() const { return fSteerParam&kClRadialCorr;}
 
   static void         Options(UInt_t steer=0);
