@@ -335,56 +335,83 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
   case 211:
     if (fIsSum) return "(#pi^{+} + #pi^{-})";
     return "#pi^{+}";
+    break;
   case -211:
     return "#pi^{-}";
+    break;
   case 321:
     if (fIsSum) return "(K^{+} + K^{-})";
     return "K^{+}";
+    break;
   case -321:
     return "K^{-}";
+    break;
   case 2212:
     if (fIsSum) return "(p + #bar{p})";
     return "p";
+    break;
   case -2212:
     return "#bar^{p}";
+    break;
   case 3122:
-    if (fIsSum) return "(#Omega^{-} + #bar{#Omega}^{+})";
-    return "#Omega^{-}";
+    if (fIsSum) return "(#Lambda + #bar{#Lambda})";
+    return "#Lambda";
+    break;
   case -3122:
-    return "#bar{#Omega}^{+}";
+    return "#bar{#Lamnba}";
+    break;
   case 3312:
     if (fIsSum) return "(#Xi^{-} + #bar{#Xi}^{+})";
     return "#Xi^{-}";
+    break;
   case -3312:
     return "#bar{#Xi}^{+}";
+    break;
   case 3334:
     if (fIsSum) return "(#Omega^{-} + #bar{#Omega}^{+})";
     return "#Omega^{-}";
+    break;
   case -3334:
     return "#bar{#Omega}^{+}";
+    break;
   case 310:
     return "K^{0}_{S}";
+    break;
   case 333:
     return "#phi";
+    break;
   case 313:
-    return "K^{*}";
+    if(fIsSum) return "(K* + #bar{K*})";
+    return "K*";
+    break;
+  case -313:
+    return "#bar{K*}";
+    break;
   case 1000010020:
     if(fIsSum) return "(d + #bar{d})";
     return "d";// Deuteron
+    break;
   case -1000010020:
     return "#bar{d}";// Deuteron
+    break;
   case 1000020030:
     if(fIsSum) return "(^{3}He + #bar{^{3}He})";
     return "^{3}He";
+    break;
   case -1000020030:
     return "#bar{^{3}He}";
+    break;
   case 1010010030:
     if(fIsSum) return "^{3}_{#Lambda}H + #bar{^{3}_{#Lambda}H}";
     return "^{3}_{#Lambda}H";
+    break;
   case -1010010030:
     return "#bar{^{3}_{#Lambda}H}";    
+    break;
+  default:
+    AliWarning("Latex Name not know for this particle");
   }
-  AliWarning("Latex Name not know for this particle");
+
   return fPartName.Data();
 
 }
@@ -588,28 +615,58 @@ Bool_t AliParticleYield::CheckTypeConsistency() const {
   } else if (!(fMeasurementType & kTypeOnlyTotError) && (!GetStatError() || !GetSystError())) {
     AliError("Stat or syst errors are null");
   } 
+  if((fMeasurementType & kTypeLinearInterpolation) && (fMeasurementType & kTypeAverageAndRefit) && (fMeasurementType & kTypeExtrPionRatio)) {
+    AliError("Only one out of the \"Liner interpolation\",  \"Average and refit\", \"Extrapolated with constant ratio to pions\" bits can be set"); 
+  }
 
   return isOK;
 }
 
-void AliParticleYield::Print (Option_t *) const {
+void AliParticleYield::Print (Option_t *opt) const {
   // Print
-  Printf("-------------------------------");
-  CheckTypeConsistency();
-  Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
-  Printf("Status: %s, %s", kStatusString[fStatus], fMeasurementType & kTypeLinearInterpolation ? "Interpolated" : "Measured");
-  Printf("%s , sqrt(s) = %2.2f GeV, %2.2f < y < %2.2f %s", kSystemString[fCollisionSystem], fSqrtS, fYMin, fYMax, fCentr.Data()); 
-  if(fMeasurementType & kTypeOnlyTotError) {
-    Printf("%f +- %f (total error)", fYield, fSystError);
+  // Available options: 
+  //  - short
+  //  - justvalue (does not print normalization error)
+  TString sopt(opt);
+  if(sopt.Contains("short")) {
+    printf("[%s]: %f +- %f +- %f ", fPartName.Data(), fYield, fStatError, fSystError);
+    if(fNormErrorNeg) {
+      printf("(+%f-%f)", fNormErrorPos, fNormErrorNeg);    
+    }else if(fNormErrorPos) {
+      printf("(+-%f)", fNormErrorPos);    
+    }
+    printf("[0x%8.8x,%d]\n", fMeasurementType, fStatus);
   }
-  else {
-    Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
-  }
-  if(fNormErrorNeg) {
-    Printf("Normalization uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
-  }
-  else {
-    Printf("Normalization uncertainty: %f", fNormErrorPos);
+  else if (sopt.Contains("justvalue")) {
+    Printf("%f +- %f +- %f ", fYield, fStatError, fSystError);
+    
+  } else {
+    Printf("-------------------------------");
+    CheckTypeConsistency();
+    if(fMeasurementType & kTypeParticleRatio) {
+      Printf("%s [%s] (%d/%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fPdgCode2, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+    }
+    else{ 
+      Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+    }
+    TString measurementType = IsTypeMeasured() ? "Measured" : ""; 
+    if(fMeasurementType & kTypeLinearInterpolation) measurementType += "Interpolated";
+    if(fMeasurementType & kTypeAverageAndRefit) measurementType     += "Averaged+Refitted";
+    if(fMeasurementType & kTypeExtrPionRatio)   measurementType     += "Extrapolated assuming constant ratio to pions";
+    Printf("Status: %s, %s", kStatusString[fStatus],  measurementType.Data());
+    Printf("%s , sqrt(s) = %2.2f GeV, %2.2f < y < %2.2f %s", kSystemString[fCollisionSystem], fSqrtS, fYMin, fYMax, fCentr.Data()); 
+    if(fMeasurementType & kTypeOnlyTotError) {
+      Printf("%f +- %f (total error)", fYield, fSystError);
+    }
+    else {
+      Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
+    }
+    if(fNormErrorNeg) {
+      Printf("Normalization uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
+    }
+    else {
+      Printf("Normalization uncertainty: %f", fNormErrorPos);
+    }
   }
 }
 
@@ -741,12 +798,18 @@ AliParticleYield * AliParticleYield::FindParticle(TClonesArray * arr, Int_t pdg,
     }  
 
   }
+  if(!foundPart) {
+    Printf("ERROR<AliParticleYield::FindParticle>: Cannot find %d (System %d, sqrts = %2.2f TeV, %s, %s, Status:%d, pdg2:%d)", 
+           pdg, system, sqrts, centrality.Data(), isSum ? "part+antipart" : "", status, pdg2);
+  }
   return foundPart;
 
 }
 
-void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield*part2) {
+void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield*part2, const char * pdgSep) {
   // Combines metadata from part1 and part2
+  // pdgSep is a separator to be added in the name and pdg (e.g. + for a sum, / for a ratio)
+
   Int_t pdg1 = part1->GetPdgCode();
   Int_t pdg2 = pdg1 == part2->GetPdgCode() ? part1->GetPdgCode2() : part2->GetPdgCode();
   Int_t   system = part1->GetCollisionSystem() == part2->GetCollisionSystem() ? part2->GetCollisionSystem() : -1; 
@@ -772,6 +835,8 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
   SetTag(tag);
   SetIsSum(issum);
 
+  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
+  if(pdg2) fPartName = fPartName + pdgSep + TDatabasePDG::Instance()->GetParticle(fPdgCode2)->GetName();
 }
 
 AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError , Option_t * opt){
@@ -807,7 +872,7 @@ AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticl
   part->SetStatError(stat);
   part->SetSystError(syst);
   part->SetNormError(norm);
-  part->CombineMetadata(part1, part2);
+  part->CombineMetadata(part1, part2, "+");
 
   return part;
 
@@ -862,7 +927,9 @@ AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliPartic
   part->SetStatError(stat);
   part->SetSystError(syst);
   part->SetNormError(norm);
-  part->CombineMetadata(part1, part2);
+  part->CombineMetadata(part1, part2, "/");
+
+  part->SetMeasurementType(part->GetMeasurementType() | kTypeParticleRatio);// Set ratio bit
 
   return part;
 
