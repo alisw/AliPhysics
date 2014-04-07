@@ -1545,8 +1545,10 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphAsymmErrors*& corrV2,     // correlated uncertainty function pointer
         TArrayI* variationsIn,          // variantions in plnae
         TArrayI* variationsOut,         // variantions out of plane
-        TArrayI* variations2ndIn,      // second source of variations
-        TArrayI* variations2ndOut,     // second source of variations
+        Bool_t sym,                     // treat as symmmetric
+        TArrayI* variations2ndIn,       // second source of variations
+        TArrayI* variations2ndOut,      // second source of variations
+        Bool_t sym2nd,                  // treat as symmetric
         TString type,                   // type of uncertaitny
         TString type2,
         Int_t columns,                  // divide the output canvasses in this many columns
@@ -1683,6 +1685,8 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationInUp) bInUp = relativeError2ndVariationInUp->GetBinContent(b+1);
         if(relativeError2ndVariationOutUp) bInLow = relativeError2ndVariationOutUp->GetBinContent(b+1);
         dInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp;
+        // for a symmetric first variation
+        if(sym) dInUp += aInLow*aInLow;
         if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(dInUp));
         dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
         if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(dOutUp));
@@ -1692,6 +1696,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(relativeError2ndVariationInLow) bInLow = relativeError2ndVariationInLow->GetBinContent(b+1);
         if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
         dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
+        if(sym) dInLow += aInUp*aInUp;
         if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
@@ -3258,13 +3263,6 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
             binWidth = h1->GetXaxis()->GetBinWidth(i);
             if(h2->GetBinContent(j) > 0.) {
                 ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
-            /* original propagation of uncertainty changed 08012014
-            Double_t A = 1./h2->GetBinContent(j)*h1->GetBinError(i);
-            Double_t B = 0.;
-            if(h2->GetBinError(j)>0.) {
-                B = -1.*h1->GetBinContent(i)/(h2->GetBinContent(j)*h2->GetBinContent(j))*h2->GetBinError(j);
-                error2 = A*A + B*B;
-            } else error2 = A*A;        */
                 Double_t A = h1->GetBinError(i)/h1->GetBinContent(i);
                 Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
                 error2 = ratio*ratio*A*A+ratio*ratio*B*B;
