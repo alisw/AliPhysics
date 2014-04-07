@@ -143,15 +143,15 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
 
-  Bool_t IsAccepteddEdx(const Double_t mom,const Double_t signal, AliPID::EParticleType n, const Double_t cutnSig) const;//not used anymore
-  Bool_t IsK0InvMass(const Double_t mass) const; 
-  Int_t  GetListOfV0s(TList *list, const Int_t type, Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
-  Int_t  GetListOfParticles(TList *list, const Int_t type, Int_t particletype, AliAODVertex* primVertex);
-  Int_t  GetListOfMCParticles(TList *outputlist, const Int_t particletype, AliAODEvent* mcaodevent);
-  void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius, Double_t& sumPt, const Double_t minPt, const Double_t maxPt, Bool_t& isBadPt);
-  void   GetTracksInPerpCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, const Double_t radius, Double_t& sumPerpPt);
-  Bool_t MCLabelCheck(AliAODv0* v0, const Int_t particletype, const AliAODTrack* trackNeg, const AliAODTrack* trackPos, TList *listmc, Int_t& negDaughterpdg, Int_t& posDaughterpdg, Int_t& motherType, Int_t& v0Label, Double_t& MCPt, Bool_t& fPhysicalPrimary, Int_t& MCv0PDGCode);
-  Bool_t IsParticleMatching(const AliAODMCParticle* mcp0, const Int_t v0Label);
+  Bool_t IsAccepteddEdx(Double_t mom, Double_t signal, AliPID::EParticleType n, Double_t cutnSig) const;//not used anymore
+  Bool_t IsK0InvMass(Double_t mass) const; 
+  Int_t  GetListOfV0s(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
+  Int_t  GetListOfParticles(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex);
+  Int_t  GetListOfMCParticles(TList *outputlist, Int_t particletype, AliAODEvent* mcaodevent);
+  void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t minPt,  Double_t maxPt, Bool_t& isBadPt);
+  void   GetTracksInPerpCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPerpPt);
+  Bool_t MCLabelCheck(AliAODv0* v0, Int_t particletype, const AliAODTrack* trackNeg, const AliAODTrack* trackPos, TList *listmc, Int_t& negDaughterpdg, Int_t& posDaughterpdg, Int_t& motherType, Int_t& v0Label, Double_t& MCPt, Bool_t& fPhysicalPrimary, Int_t& MCv0PDGCode);
+  Bool_t IsParticleMatching(const AliAODMCParticle* mcp0, Int_t v0Label);
   Bool_t DaughterTrackCheck(AliAODv0* v0, Int_t& nnum, Int_t& pnum);
   Int_t  IsTrackInjected(AliAODv0 *v0, AliAODMCHeader *header, TClonesArray *arrayMC);
   TString GetGenerator(Int_t label, AliAODMCHeader* header);
@@ -161,7 +161,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void SetK0Type(Int_t i){ fK0Type = i; }
   virtual void SetFilterMaskK0(UInt_t i) {fFilterMaskK0 = i;}
 
-  Bool_t IsLaInvMass(const Double_t mass) const; //La and ALa mass check
+  Bool_t IsLaInvMass(Double_t mass) const; //La and ALa mass check
   virtual void SetLaType(Int_t i){ fLaType = i; }
   virtual void SetFilterMaskLa(UInt_t i) {fFilterMaskLa = i;}
 
@@ -172,9 +172,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //virtual void SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}  //already inherited by AliAnalysisFragmentationFunctionTask
   //virtual void UsePhysicsSelection(Bool_t b) {fUsePhysicsSelection = b;} //already inherited by AliAnalysisFragmentationFunctionTask
 
-  void CalculateInvMass(AliAODv0* v0vtx, const Int_t particletype, Double_t& invM, Double_t& trackPt);
+  void CalculateInvMass(AliAODv0* v0vtx, Int_t particletype, Double_t& invM, Double_t& trackPt);
   
-  Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, const Int_t particletype); //don't use this method for MC Analysis
+  Bool_t AcceptBetheBloch(AliAODv0 *v0, AliPIDResponse *PIDResponse, Int_t particletype); //don't use this method for MC Analysis
 
 
   Double_t MyRapidity(Double_t rE, Double_t rPz) const;

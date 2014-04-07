@@ -1506,23 +1506,23 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1MCMultiplicityTracks       = new TH1F("h1MCMultiplicityTracks", "MC Tracks;Ntracks;Count", 201, -0.5, 200.5);
   // fh1MCmotherK0s             = new TH1F("fh1MCmotherK0s","K0s mother pdg codes",10,0.,10.);
   fh1MCmotherLa                 = new TH1F("fh1MCmotherLa","Lambdas mother pdg codes",10,0.,10.);
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(1.,"#Sigma^{-}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(2.,"#Sigma^{0}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(3.,"#Sigma^{+}");  
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(4.,"#Omega^{-}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(5.,"#Xi^{0}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(6.,"#Xi^{-}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(7.,"#Xi^{+}");
-  fh1MCmotherLa->GetXaxis()->SetBinLabel(8.,"primary particle");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(1,"#Sigma^{-}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(2,"#Sigma^{0}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(3,"#Sigma^{+}");  
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(4,"#Omega^{-}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(5,"#Xi^{0}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(6,"#Xi^{-}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(7,"#Xi^{+}");
+  fh1MCmotherLa->GetXaxis()->SetBinLabel(8,"primary particle");
   fh1MCmotherALa                = new TH1F("fh1MCmotherALa","Antilambdas mother pdg codes",10,0.,10.);
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(1.,"#bar{#Sigma^{-}}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(2.,"#bar{#Sigma^{0}}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(3.,"#bar{#Sigma^{+}}");  
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(4.,"#bar{#Omega^{-}}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(5.,"#bar{#Xi^{0}}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(6.,"#Xi^{-}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(7.,"#Xi^{+}");
-  fh1MCmotherALa->GetXaxis()->SetBinLabel(8.,"primary particle");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(1,"#bar{#Sigma^{-}}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(2,"#bar{#Sigma^{0}}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(3,"#bar{#Sigma^{+}}");  
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(4,"#bar{#Omega^{-}}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(5,"#bar{#Xi^{0}}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(6,"#Xi^{-}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(7,"#Xi^{+}");
+  fh1MCmotherALa->GetXaxis()->SetBinLabel(8,"primary particle");
   fh3FeedDownLa                 = new TH3F("fh3FeedDownLa","#Lambda stemming from feeddown from Xi(0/-)", 39, 5., 200., 200, 1.05, 1.25, 200,0.,20.);
   fh3FeedDownALa                = new TH3F("fh3FeedDownALa","#bar#Lambda stemming from feeddown from Xibar(0/+)", 39, 5., 200., 200, 1.05, 1.25, 200, 0., 20.);
   fh1MCProdRadiusK0s            = new TH1F("fh1MCProdRadiusK0s","MC gen. MC K0s prod radius",600,0.,200.);
@@ -1861,8 +1861,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   }
 
   Double_t centPercent = -1;
+  Int_t cl = 0;
   if(fEventClass>0){
-    Int_t cl = 0;
     if(handler && handler->InheritsFrom("AliAODInputHandler")){ 
     
       centPercent = fAOD->GetHeader()->GetCentrality();
@@ -2540,7 +2540,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	if(fAnalysisMC){
 	  Double_t jetPtSmear = -1;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE){fh1FFIMK0ConeSmear->Fill(jetPtSmear);}                          //fill TH1F for normalization purposes 
 	}
 
@@ -2554,7 +2554,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fFFHistosIMK0Cone->FillFF(-1, -1, jetPt, incrementJetPt);
 	if(fAnalysisMC){
 	  Double_t jetPtSmear = -1;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE){fh1FFIMK0ConeSmear->Fill(jetPtSmear);}                          //fill TH1F for normalization purposes 
 	}
       }    
@@ -2936,7 +2936,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    fh3MCrecK0Cone->Fill(jetPt,invMK0Match,fPtMCgenK0s);                                 //fill matching rec. K0s in 3D histogram
 
-	    SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);           //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear   	 
+	    SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);           //jetPt, cent, jetRadius, ptmintrack, &jetPtSmear   	 
 	    
 	    fh3MCrecK0ConeSmear->Fill(jetPtSmear,invMK0Match,fPtMCgenK0s);    //fill matching rec. K0s in 3D histogram, jet pT smeared according to deltaptjet distribution width  
   
@@ -3080,7 +3080,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	if(fAnalysisMC){
 	  Double_t jetPtSmear = -1;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE){fh1FFIMLaConeSmear->Fill(jetPtSmear);}                          //fill TH1F for normalization purposes 
 	}
 
@@ -3094,7 +3094,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	if(fAnalysisMC){ 
 	  Double_t jetPtSmear;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE)fh1FFIMLaConeSmear->Fill(jetPtSmear);}
 
       }
@@ -3185,7 +3185,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    fh3MCrecLaCone->Fill(jetPt,invMLaMatch,fPtMCgenLa);                        //fill matching rec. K0s 3D histogram
 
-	    SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);
+	    SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);
 
 	    fh3MCrecLaConeSmear->Fill(jetPtSmear,invMLaMatch,fPtMCgenLa);              //fill matching rec. Lambdas in 3D histogram, jet pT smeared according to deltaptjet distribution width     
 	        
@@ -3317,7 +3317,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	if(fAnalysisMC){    //jet pt smearing study for Antilambdas
 	  Double_t jetPtSmear = -1;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE){fh1FFIMALaConeSmear->Fill(jetPtSmear);}                          //fill TH1F for normalization purposes 
 	}
 	
@@ -3331,7 +3331,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	if(fAnalysisMC){ 
 	  Double_t jetPtSmear;  
-	  SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
+	  SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);  
 	  if(incrementJetPt == kTRUE)fh1FFIMALaConeSmear->Fill(jetPtSmear);}
 
       }
@@ -3414,7 +3414,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	    
 	    fh3MCrecALaCone->Fill(jetPt,invMALaMatch,fPtMCgenALa);                          //fill matching rec. K0s 3D histogram
 
-	    SmearJetPt(jetPt,centPercent,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);
+	    SmearJetPt(jetPt,cl,GetFFRadius(),GetFFMinLTrackPt(),jetPtSmear);
 	    
 	    fh3MCrecALaConeSmear->Fill(jetPtSmear,invMALaMatch,fPtMCgenALa); 
  	    
@@ -4747,13 +4747,10 @@ TString AliAnalysisTaskJetChem::GetGenerator(Int_t label, AliAODMCHeader* header
  }
 
 //_________________________________________________________________________________________________________________________________________
-Double_t AliAnalysisTaskJetChem::SmearJetPt(Double_t jetPt, Int_t cent, Double_t jetRadius, Double_t ptmintrack, Double_t& jetPtSmear){	   
+Double_t AliAnalysisTaskJetChem::SmearJetPt(Double_t jetPt, Int_t /*cent*/, Double_t /*jetRadius*/, Double_t /*ptmintrack*/, Double_t& jetPtSmear){	   
   
-  TF1 *fsmear = new TF1("f1","[0]*exp(-1*(x-[1])*(x-[1])/(2*[2]*[2]))",-100.,100.);   //smearing according to gaussian function in between  +/- 10 GeV/c
+  static TF1 fsmear("f1","[0]*exp(-1*(x-[1])*(x-[1])/(2*[2]*[2]))",-100.,100.);   //smearing according to gaussian function in between  +/- 10 GeV/c
   
-  jetRadius = 0.4;
-  ptmintrack = 0.15;
-  cent = 10;
   //Int_t cl = 1;
   
   /*  if(cent>10) cl = 2; 
@@ -4761,7 +4758,7 @@ Double_t AliAnalysisTaskJetChem::SmearJetPt(Double_t jetPt, Int_t cent, Double_t
   if(cent>50) cl = 4;
   */
 
-  fsmear->SetParameters(1,0,11.19);//for 2010 PbPb jets, R=0.4, ptmintrack = 0.15 GeV/c, cent 00-10%, delta-pt width estimated via single track embedding
+  fsmear.SetParameters(1,0,11.19);//for 2010 PbPb jets, R=0.4, ptmintrack = 0.15 GeV/c, cent 00-10%, delta-pt width estimated via single track embedding
   //fsmear->SetParameters(1,0,3.28);//for 2010 PbPb jets, R=0.4, ptmintrack = 0.15 GeV/c, cent 50-60%, delta-pt width estimated via single track embedding
   
   //fsmear->SetParameters(1,0,4.472208);// for 2010 PbPb jets, R=0.2, ptmintrack = 0.15 GeV/c, cent 00-10%
@@ -4812,14 +4809,13 @@ Double_t AliAnalysisTaskJetChem::SmearJetPt(Double_t jetPt, Int_t cent, Double_t
   
   */
   
-  Double_t r = fsmear->GetRandom();
+  Double_t r = fsmear.GetRandom();
   jetPtSmear = jetPt + r;
   
   //  std::cout<<"jetPt: "<<jetPt<<std::endl;
   //  std::cout<<"jetPtSmear: "<<jetPtSmear<<std::endl;
   //  std::cout<<"r: "<<r<<std::endl;
   
-  delete fsmear;
   return jetPtSmear;
 }
 
