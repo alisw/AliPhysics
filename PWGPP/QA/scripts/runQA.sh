@@ -423,6 +423,8 @@ validateLog()
 
 parseConfig()
 {
+  args=("$@")
+
   #config file
   configFile=""
   #where to search for qa files
@@ -444,25 +446,26 @@ parseConfig()
   #first, check if the config file is configured
   #is yes - source it so that other options can override it
   #if any
-  for opt in $@; do
+  for opt in "${args[@]}"; do
     if [[ ${opt} =~ configFile=.* ]]; then
       eval "${opt}"
       [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
+      echo "using config file: ${configFile}"
       source "${configFile}"
       break
     fi
   done
 
   #then, parse the options as they override the options from file
-  while [[ -n ${1} ]]; do
-    local var=${1#--}
-    if [[ ${var} =~ .*=.* ]]; then
-      eval "${var}"
-    else
+  for opt in "${args[@]}"; do
+    if [[ ! "${opt}" =~ .*=.* ]]; then
       echo "badly formatted option ${var}, should be: option=value, stopping..."
       return 1
     fi
-    shift
+    local var="${opt%%=*}"
+    local value="${opt#*=}"
+    echo "${var} = ${value}"
+    export ${var}="${value}"
   done
 }
 

@@ -12,14 +12,17 @@
 main()
 {
   if [[ $# -lt 1 ]]; then
-    echo Usage: $0 configFile
+    echo "Usage:  ${0##*/} configFile=/path/to/config"
+    echo "expert: ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" [opt=value]"
     return
   fi
 
   # try to load the config file
-  [[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
-  source $1
-  
+  #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
+  if ! parseConfig "$@"; then return 1; fi
+
+  if [[ -z ${alienFindCommand} ]] && echo "alienFindCommand not defined!" && return 1
+
   #if not set, use the default group
   [[ -z ${alienSyncFilesGroupOwnership} ]] && alienSyncFilesGroupOwnership=$(id -gn)
 
@@ -462,6 +465,45 @@ copyFromAlien()
     echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
     timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
   fi
+}
+
+parseConfig()
+{
+  #config file
+  configFile=""
+  alienFindCommand=""
+  secondsToSuicide=$(( 10*3600 ))
+  localPathPrefix="${PWD}"
+  logOutputPath="${PWD}/alienSyncLogs"
+  unzipFiles=0
+  allOutputToLog=1
+
+  args=("$@")
+
+  #first, check if the config file is configured
+  #is yes - source it so that other options can override it
+  #if any
+  for opt in "${args[@]}"; do
+    if [[ ${opt} =~ configFile=.* ]]; then
+      eval "${opt}"
+      [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
+      echo "using config file: ${configFile}"
+      source "${configFile}"
+      break
+    fi
+  done
+
+  #then, parse the options as they override the options from file
+  for opt in "${args[@]}"; do
+    if [[ ! "${opt}" =~ .*=.* ]]; then
+      echo "badly formatted option ${var}, should be: option=value, stopping..."
+      return 1
+    fi
+    local var="${opt%%=*}"
+    local value="${opt#*=}"
+    echo "${var} = ${value}"
+    export ${var}="${value}"
+  done
 }
 
 main "$@"
