@@ -13,15 +13,15 @@ main()
 {
   if [[ $# -lt 1 ]]; then
     echo "Usage:  ${0##*/} configFile=/path/to/config"
-    echo "expert: ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" [opt=value]"
+    echo 'expert: ${0##*/} alienFindCommand="alien_find /some/path/ file" [opt=value]'
     return
   fi
-
+  
   # try to load the config file
   #[[ ! -f $1 ]] && echo "config file $1 not found, exiting..." | tee -a $logFile && exit 1
   if ! parseConfig "$@"; then return 1; fi
 
-  if [[ -z ${alienFindCommand} ]] && echo "alienFindCommand not defined!" && return 1
+  [[ -z ${alienFindCommand} ]] && echo "alienFindCommand not defined!" && return 1
 
   #if not set, use the default group
   [[ -z ${alienSyncFilesGroupOwnership} ]] && alienSyncFilesGroupOwnership=$(id -gn)
@@ -49,7 +49,7 @@ main()
     exec 6>&1
     exec 1>$logFile 2>&1
   fi
-
+  
   newFilesList=$logOutputPath/"newFiles.list"
   rm -f $newFilesList
   touch $newFilesList
@@ -162,7 +162,7 @@ main()
       originalEntryIndex=${candidateDBrecord[0]}
       [[ $lineNumber -ne $originalEntryIndex ]] && continue
     fi
-
+    
     redownloading=""
     if [[ -f ${destination} ]]; then
       #soft link the downloaded file (maybe to provide a consistent link to the latest version)
@@ -213,7 +213,7 @@ main()
     #  $ALIEN_ROOT/api/bin/alien-token-init $alienUserName
     #  #source /tmp/gclient_env_$UID
     #fi
-
+    
     export copyMethod
     export copyScript
     export copyTimeout
@@ -281,8 +281,8 @@ main()
   done < ${alienFileListCurrent}
 
   [[ $alienFileCounter -gt 0 ]] && mv -f $alienFileListCurrent $localAlienDatabase
-  
-  echo ${0##*/} DONE
+
+  echo "${0##*/} DONE"
  
   if [[ $allOutputToLog -eq 1 ]]; then
     exec 1>&6 6>&-
@@ -290,7 +290,7 @@ main()
  
   cat ${newFilesList} ${redoneFilesList} > ${updatedFilesList}
   eval "${executeEnd}"
-
+  
   echo alienFindCommand:
   echo "  $alienFindCommand"
   echo
@@ -475,7 +475,7 @@ parseConfig()
   secondsToSuicide=$(( 10*3600 ))
   localPathPrefix="${PWD}"
   #define alienSync_localPathPrefix in your env to have a default central location
-  if [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
+  [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
   logOutputPath="${localPathPrefix}/alienSyncLogs"
   unzipFiles=0
   allOutputToLog=0
