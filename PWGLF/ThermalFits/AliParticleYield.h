@@ -9,10 +9,10 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "TCut.h"
 
 class TClonesArray;
 class TTree;
-
 class AliParticleYield : public TObject
 {
 public:
@@ -53,7 +53,8 @@ public:
   static TTree * ReadFromASCIIFileAsTree(const char * fileName, const char * separators = " \t");
   static void SaveAsASCIIFile(TClonesArray * arr, const char * filename, const char * separator = " ", Int_t colWidth = 7);  
   static void WriteThermusFile(TClonesArray * arr, const char * filename, Int_t colWidth = 10);
-  static TClonesArray * GetEntriesMatchingSelection(TTree * tree, TString selection); 
+  static TClonesArray * GetEntriesMatchingSelection(TTree * tree, TCut selection); 
+  static TTree * GetTreeFromArray(TClonesArray * arr) ;
 
   // Misc helpers
   Bool_t CheckTypeConsistency() const;
