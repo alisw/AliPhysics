@@ -13,7 +13,11 @@ main()
 {
   if [[ $# -lt 1 ]]; then
     echo "Usage:  ${0##*/} configFile=/path/to/config"
-    echo 'expert: ${0##*/} alienFindCommand="alien_find /some/path/ file" [opt=value]'
+    echo "expert: ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" [opt=value]"
+    echo "        ${0##*/} alienFindCommand=\"alien_find /some/path/ file\" localPathPrefix=\${PWD}"
+    echo
+    echo "by default files are downloaded to current dir, or \${alienSync_localPathPrefix} if set."
+    echo "At least specify alienFindCommand, either on command line or in the configFile."
     return
   fi
   
