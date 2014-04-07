@@ -474,7 +474,9 @@ parseConfig()
   alienFindCommand=""
   secondsToSuicide=$(( 10*3600 ))
   localPathPrefix="${PWD}"
-  logOutputPath="${PWD}/alienSyncLogs"
+  #define alienSync_localPathPrefix in your env to have a default central location
+  if [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
+  logOutputPath="${localPathPrefix}/alienSyncLogs"
   unzipFiles=0
   allOutputToLog=1
 
