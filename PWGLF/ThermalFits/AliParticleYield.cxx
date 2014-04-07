@@ -12,6 +12,7 @@
 #include "TTree.h"
 #include "TDirectory.h"
 #include "TEventList.h"
+#include "TCut.h"
 
 using std::endl;
 using std::left;
@@ -73,8 +74,10 @@ fTag(tag)
 
 {
   // Constructor
-  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
   AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
+  TParticlePDG * part = TDatabasePDG::Instance()->GetParticle(fPdgCode);
+  if(!part) AliError(Form("No particle with PDG code %d in the database", fPdgCode));
+  else fPartName = part->GetName();
 }
 
 AliParticleYield::AliParticleYield(Int_t pdg, Int_t system, Float_t sqrts, Float_t value, Float_t stat, Float_t syst, Float_t normPos, Float_t normNeg, Float_t ymin, Float_t ymax, Int_t status, Int_t type, TString centr, Int_t isSum, TString tag):
@@ -99,8 +102,10 @@ fTag(tag)
 
 {
   // Constructor
-  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
   AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
+  TParticlePDG * part = TDatabasePDG::Instance()->GetParticle(fPdgCode);
+  if(!part) AliError(Form("No particle with PDG code %d in the database", fPdgCode));
+  else fPartName = part->GetName();
 }
 
 
