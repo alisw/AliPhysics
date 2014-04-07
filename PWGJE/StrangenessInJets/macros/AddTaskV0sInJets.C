@@ -1,5 +1,5 @@
-//AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString flag = "", Bool_t bTreeOutput = 0, TString outputFileTree = "TreeV0.root")
-AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString flag = "")
+//AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "", Bool_t bTreeOutput = 0, TString outputFileTree = "TreeV0.root")
+AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString outputFile = "output.root", Bool_t bIsMC, TString label = "")
 {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -8,8 +8,18 @@ AliAnalysisTaskV0sInJets* AddTaskV0sInJets(TString jetBranchName = "", TString o
       return 0;
     }
 
-  TString taskName = Form("V0_%s_%s",jetBranchName.Data(),flag.Data());
-  TString containerName = Form("V0histo_%s",jetBranchName.Data());
+  TString taskName = "V0";
+  TString containerName = "V0histo";
+  if (jetBranchName.Length())
+    {
+      taskName += Form("_%s",jetBranchName.Data());
+      containerName += Form("_%s",jetBranchName.Data());
+    }
+  if (label.Length())
+    {
+      taskName += Form("_%s",label.Data());
+      containerName += Form("_%s",label.Data());
+    }
   AliAnalysisTaskV0sInJets* mytask = new AliAnalysisTaskV0sInJets(taskName.Data());
 
   // Configure task
