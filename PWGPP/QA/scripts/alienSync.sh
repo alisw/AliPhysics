@@ -478,7 +478,7 @@ parseConfig()
   if [[ -n ${alienSync_localPathPrefix} ]] && localPathPrefix=${alienSync_localPathPrefix}
   logOutputPath="${localPathPrefix}/alienSyncLogs"
   unzipFiles=0
-  allOutputToLog=1
+  allOutputToLog=0
 
   args=("$@")
 
