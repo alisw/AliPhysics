@@ -1389,44 +1389,43 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
         }
 
         //init dummy objects
-        static AliESDVertex* dummyvtxESD=NULL;
-        if (!dummyvtxESD) 
-        {
-          dummyvtxESD=new AliESDVertex();
-          //dummyvtxESD->SetNContributors(1);
-          //UShort_t pindices[1]; pindices[0]=0;
-          //dummyvtxESD->SetIndices(1,pindices);
-          //dummyvtxESD->SetNContributors(0);
-        }
-        static AliESDtrack* dummytrack=NULL;
-        if (!dummytrack) dummytrack=new AliESDtrack();
-        static AliExternalTrackParam* dummyexternaltrackparam=NULL;
-        if (!dummyexternaltrackparam) dummyexternaltrackparam=new AliExternalTrackParam();
-        static AliTrackReference* dummytrackreference=NULL;
-        if (!dummytrackreference) dummytrackreference=new AliTrackReference();
-        static TParticle* dummyparticle=NULL;
-        if (!dummyparticle) dummyparticle=new TParticle();
+        static AliESDVertex dummyvtxESD;
+        //if (!dummyvtxESD) 
+        //{
+        //  dummyvtxESD=new AliESDVertex();
+        //  //dummyvtxESD->SetNContributors(1);
+        //  //UShort_t pindices[1]; pindices[0]=0;
+        //  //dummyvtxESD->SetIndices(1,pindices);
+        //  //dummyvtxESD->SetNContributors(0);
+        //}
+        static AliExternalTrackParam dummyexternaltrackparam;
+        //if (!dummyexternaltrackparam) dummyexternaltrackparam=new AliExternalTrackParam();
+        static AliTrackReference dummytrackreference;
+        //if (!dummytrackreference) dummytrackreference=new AliTrackReference();
+        static TParticle dummyparticle;
+        //if (!dummyparticle) dummyparticle=new TParticle();
 
         //assign the dummy objects if needed
-        if (!track) {track=dummytrack;}
+        if (!track) {track=fDummyTrack;}
         if (!friendTrack) {friendTrack=fDummyFriendTrack;}
+        if (!vtxESD) {vtxESD=&dummyvtxESD;}
         if (mcEvent)
         {
-          if (!refTPCIn) {refTPCIn=dummytrackreference;}
-          if (!refITS) {refITS=dummytrackreference;}
-          if (!particle) {particle=dummyparticle;}
-          if (!particleMother) {particleMother=dummyparticle;}
-          if (!particleTPC) {particleTPC=dummyparticle;}
-          if (!particleMotherTPC) {particleMotherTPC=dummyparticle;}
-          if (!particleITS) {particleITS=dummyparticle;}
-          if (!particleMotherITS) {particleMotherITS=dummyparticle;}
+          if (!refTPCIn) {refTPCIn=&dummytrackreference;}
+          if (!refITS) {refITS=&dummytrackreference;}
+          if (!particle) {particle=&dummyparticle;}
+          if (!particleMother) {particleMother=&dummyparticle;}
+          if (!particleTPC) {particleTPC=&dummyparticle;}
+          if (!particleMotherTPC) {particleMotherTPC=&dummyparticle;}
+          if (!particleITS) {particleITS=&dummyparticle;}
+          if (!particleMotherITS) {particleMotherITS=&dummyparticle;}
         }
         //the following are guaranteed to exist:
-        //if (!tpcInnerC) {tpcInnerC=dummyexternaltrackparam;}
-        //if (!trackInnerC) {trackInnerC=dummyexternaltrackparam;}
-        //if (!trackInnerC2) {trackInnerC2=dummyexternaltrackparam;}
-        //if (!outerITSc) {outerITSc=dummyexternaltrackparam;}
-        //if (!trackInnerC3) {trackInnerC3=dummyexternaltrackparam;}
+        //if (!tpcInnerC) {tpcInnerC=&dummyexternaltrackparam;}
+        //if (!trackInnerC) {trackInnerC=&dummyexternaltrackparam;}
+        //if (!trackInnerC2) {trackInnerC2=&dummyexternaltrackparam;}
+        //if (!outerITSc) {outerITSc=&dummyexternaltrackparam;}
+        //if (!trackInnerC3) {trackInnerC3=&dummyexternaltrackparam;}
         /////////////////////////
 
         //Double_t vtxX=vtxESD->GetX();
@@ -1512,7 +1511,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "centralityF="<<centralityF;
           if (mcEvent)
           {
-            AliTrackReference refDummy;
+            static AliTrackReference refDummy;
             if (!refITS) refITS = &refDummy;
             if (!refTRD) refTRD = &refDummy;
             if (!refTOF) refTOF = &refDummy;
@@ -1559,7 +1558,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           AliInfo("writing tree highPt");
           (*fTreeSRedirector)<<"highPt"<<"\n";
         }
-        //AliSysInfo::AddStamp("a",iTrack,numberOfTracks,numberOfFriendTracks);
+        AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrack=fDummyFriendTrack)?0:1);
 
         delete tpcInnerC;
         delete trackInnerC;
