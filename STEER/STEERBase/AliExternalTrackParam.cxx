@@ -2383,6 +2383,118 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::PropagateParamOnlyBxByBzTo(Double_t xk, const Double_t b[3]) {
+  //----------------------------------------------------------------
+  // Extrapolate this track params (w/o cov matrix) to the plane X=xk in the field b[].
+  //
+  // X [cm] is in the "tracking coordinate system" of this track.
+  // b[]={Bx,By,Bz} [kG] is in the Global coordidate system.
+  //----------------------------------------------------------------
+
+  Double_t dx=xk-fX;
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
+  if (TMath::Abs(fP[4])<=kAlmost0) return kFALSE;
+  // Do not propagate tracks outside the ALICE detector
+  if (TMath::Abs(dx)>1e5 ||
+      TMath::Abs(GetY())>1e5 ||
+      TMath::Abs(GetZ())>1e5) {
+    AliWarning(Form("Anomalous track, target X:%f",xk));
+    Print();
+    return kFALSE;
+  }
+
+  Double_t crv=GetC(b[2]);
+  if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
+
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  //
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  //
+  // Appoximate step length
+  double dy2dx = (f1+f2)/(r1+r2);
+  Double_t step = (TMath::Abs(x2r)<0.05) ? dx*TMath::Abs(r2 + f2*dy2dx)  // chord
+    : 2.*TMath::ASin(0.5*dx*TMath::Sqrt(1.+dy2dx*dy2dx)*crv)/crv;        // arc
+  step *= TMath::Sqrt(1.+ GetTgl()*GetTgl());
+  
+  // Get the track's (x,y,z) and (px,py,pz) in the Global System
+  Double_t r[3]; GetXYZ(r);
+  Double_t p[3]; GetPxPyPz(p);
+  Double_t pp=GetP();
+  p[0] /= pp;
+  p[1] /= pp;
+  p[2] /= pp;
+
+  // Rotate to the system where Bx=By=0.
+  Double_t bt=TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
+  Double_t cosphi=1., sinphi=0.;
+  if (bt > kAlmost0) {cosphi=b[0]/bt; sinphi=b[1]/bt;}
+  Double_t bb=TMath::Sqrt(b[0]*b[0] + b[1]*b[1] + b[2]*b[2]);
+  Double_t costet=1., sintet=0.;
+  if (bb > kAlmost0) {costet=b[2]/bb; sintet=bt/bb;}
+  Double_t vect[7];
+
+  vect[0] = costet*cosphi*r[0] + costet*sinphi*r[1] - sintet*r[2];
+  vect[1] = -sinphi*r[0] + cosphi*r[1];
+  vect[2] = sintet*cosphi*r[0] + sintet*sinphi*r[1] + costet*r[2];
+
+  vect[3] = costet*cosphi*p[0] + costet*sinphi*p[1] - sintet*p[2];
+  vect[4] = -sinphi*p[0] + cosphi*p[1];
+  vect[5] = sintet*cosphi*p[0] + sintet*sinphi*p[1] + costet*p[2];
+
+  vect[6] = pp;
+
+  // Do the helix step
+  g3helx3(GetSign()*bb,step,vect);
+
+  // Rotate back to the Global System
+  r[0] = cosphi*costet*vect[0] - sinphi*vect[1] + cosphi*sintet*vect[2];
+  r[1] = sinphi*costet*vect[0] + cosphi*vect[1] + sinphi*sintet*vect[2];
+  r[2] = -sintet*vect[0] + costet*vect[2];
+
+  p[0] = cosphi*costet*vect[3] - sinphi*vect[4] + cosphi*sintet*vect[5];
+  p[1] = sinphi*costet*vect[3] + cosphi*vect[4] + sinphi*sintet*vect[5];
+  p[2] = -sintet*vect[3] + costet*vect[5];
+
+  // Rotate back to the Tracking System
+  Double_t cosalp = TMath::Cos(fAlpha);
+  Double_t sinalp =-TMath::Sin(fAlpha);
+
+  Double_t 
+  t    = cosalp*r[0] - sinalp*r[1];
+  r[1] = sinalp*r[0] + cosalp*r[1];  
+  r[0] = t;
+
+  t    = cosalp*p[0] - sinalp*p[1]; 
+  p[1] = sinalp*p[0] + cosalp*p[1];
+  p[0] = t; 
+
+  // Do the final correcting step to the target plane (linear approximation)
+  Double_t x=r[0], y=r[1], z=r[2];
+  if (TMath::Abs(dx) > kAlmost0) {
+     if (TMath::Abs(p[0]) < kAlmost0) return kFALSE;
+     dx = xk - r[0];
+     x += dx;
+     y += p[1]/p[0]*dx;
+     z += p[2]/p[0]*dx;  
+  }
+
+
+  // Calculate the track parameters
+  t=TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  fX    = x;
+  fP[0] = y;
+  fP[1] = z;
+  fP[2] = p[1]/t;
+  fP[3] = p[2]/t; 
+  fP[4] = GetSign()/(t*pp);
+
+  return kTRUE;
+}
+
+
 Bool_t AliExternalTrackParam::Translate(Double_t *vTrasl,Double_t *covV){
   //
   //Translation: in the event mixing, the tracks can be shifted 
