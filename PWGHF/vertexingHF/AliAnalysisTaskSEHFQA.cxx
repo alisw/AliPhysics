@@ -793,6 +793,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hStdEstimSignalNtrackletsIn";
     TH2F*hStdEstimSignalNtrackletsIn = new TH2F(hname.Data(),"Std estimator signal vs Number of tracklets in the CC;Std estimator signal;number of tracklets",1000,-0.5,9999.5,5000,-0.5,4999.5);
 
+    hname="hStdEstimSignal";
+    TH1F*hStdEstimSignal = new TH1F(hname.Data(),"Std estimator signal",700,0,1400);
+
     hname="hStdPercentileSecondPercentile";
     TH2F* hStdPercentileSecondPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Second Estimator Percentile;Std estimator percentile;Second estimator percentile",120,-10.,110,120,-10.,110);
 
@@ -810,6 +813,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
     fOutputCheckCentrality->Add(hStdEstimSignalPercentile);
+    fOutputCheckCentrality->Add(hStdEstimSignal);
     fOutputCheckCentrality->Add(hStdEstimSignalNtrackletsIn);
     fOutputCheckCentrality->Add(hStdPercentileSecondPercentile);
     fOutputCheckCentrality->Add(hStdSignalSecondSignal);
@@ -1746,6 +1750,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITSTracksvsPercentile"))->Fill(nSelTracksTPCITS,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITS1SPDTracksvsPercentile"))->Fill(nSelTracksTPCITS1SPD,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalPercentile"))->Fill(stdSignal,stdCentf);
+      ((TH1F*)fOutputCheckCentrality->FindObject("hStdEstimSignal"))->Fill(stdSignal);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalNtrackletsIn"))->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSecondPercentile"))->Fill(stdCentf,secondCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdSignalSecondSignal"))->Fill(stdSignal,secondSignal);
