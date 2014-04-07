@@ -748,7 +748,7 @@ const char *AliAODHandler::GetOutputFileName() const
 }
 
 //______________________________________________________________________________
-const char *AliAODHandler::GetExtraOutputs() const
+const char *AliAODHandler::GetExtraOutputs(Bool_t merge) const
 {
   // Get extra outputs as a string separated by commas.
   static TString eoutputs;
@@ -757,7 +757,7 @@ const char *AliAODHandler::GetExtraOutputs() const
   if (fExtensions) {
     TIter next1(fExtensions);
     while ((obj=(AliAODExtension*)next1())) {
-      if (!obj->IsToMerge()) continue;
+      if (merge && !obj->IsToMerge()) continue;
       if (!eoutputs.IsNull()) eoutputs += ",";
       eoutputs += obj->GetName();
     }
@@ -765,7 +765,7 @@ const char *AliAODHandler::GetExtraOutputs() const
   if (fFilters) {
     TIter next2(fFilters);
     while ((obj=(AliAODExtension*)next2())) {
-      if (!obj->IsToMerge()) continue;
+      if (merge && !obj->IsToMerge()) continue;
       if (!eoutputs.IsNull()) eoutputs += ",";
       eoutputs += obj->GetName();
     }
