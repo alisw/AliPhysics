@@ -135,9 +135,8 @@ AliParticleYield::~AliParticleYield() {
 
 }
 
-TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const char * separators){
-  // Read the table from an ASCII File and returns a tree of particles. See ReadFromASCIIFile for detailed info on the format
-  TClonesArray * arr = ReadFromASCIIFile(fileName, separators);
+TTree * AliParticleYield::GetTreeFromArray(TClonesArray * arr) {
+  // Returns a tree from an array of Tparticles
   AliParticleYield * part = 0;
   TTree * tree = new TTree ("treePart", "Particle Yields and Ratios");
   tree->Branch("particles", &part);
@@ -145,13 +144,23 @@ TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const c
   while ((part = (AliParticleYield*) iterPart.Next())){
     tree->Fill();
   }
-  
+  if(part) delete part;
+  return tree;
+
+
+
+}
+
+
+TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const char * separators){
+  // Read the table from an ASCII File and returns a tree of particles. See ReadFromASCIIFile for detailed info on the format
+  TClonesArray * arr = ReadFromASCIIFile(fileName, separators);
+  TTree * tree = GetTreeFromArray(arr);
   delete arr;
-  delete part;
   return tree;
 }
 
-TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TString selection) {
+TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TCut selection) {
   // Returns an array of particles from a tree created with ReadFromASCIIFileAsTree matching the selection. You can use the normal tree sintax for the selection, e.g. "fCentr == \"V0M0010\" && fStatus == 0".
 
   TClonesArray * arr = new TClonesArray("AliParticleYield");
@@ -197,7 +206,7 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
   Int_t ipart = 0;
   std::cout << "Reading " << fileName << std::endl;
   
-  while (line.ReadLine(filestream) ) {
+  while (line.ReadLine(filestream) ) {    
     // Strip trailing and leading whitespaces
     line = line.Strip(TString::kLeading,  ' ');
     line = line.Strip(TString::kTrailing, ' ');
