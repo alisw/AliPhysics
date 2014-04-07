@@ -37,6 +37,7 @@ public:
     kTypeLinearInterpolation = 0x1,
     kTypeParticleRatio       = 0x2, // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
     kTypeAverageAndRefit     = 0x4, // this means that the measurement has been obtained summing several spectra in smaller centality bins (weihgted by the width of the centrality bin) and refitting them
+    kTypeExtrPionRatio       = 0x8, // Extrapolated from a different centrality bin, assumin the ratio to pions is constant
 
     // Type of errors
     kTypeOnlyTotError        = 0x10, // If on, only the total error is returned as "GetSystError". GetStatError should be set to 0;
@@ -95,8 +96,9 @@ public:
   const char * GetLatexName(Int_t pdg = 0)  const;
   Float_t GetTotalError(Bool_t includeNormalization = kFALSE) const;
 
-  Bool_t  IsTypeMeasured()     const{ CheckTypeConsistency(); return !(fMeasurementType & kTypeLinearInterpolation);}
+  Bool_t  IsTypeMeasured()     const{ CheckTypeConsistency(); return (!(fMeasurementType & kTypeLinearInterpolation) && !(fMeasurementType & kTypeExtrPionRatio));}
   Bool_t  IsTypeRatio()        const{ CheckTypeConsistency(); return (fMeasurementType & kTypeParticleRatio);}
+  Bool_t  IsTypeExtrapolatedWithPionRatio() const { CheckTypeConsistency(); return (fMeasurementType & kTypeExtrPionRatio);}
   Bool_t  IsTypeLinearInterp() const{ CheckTypeConsistency(); return fMeasurementType & kTypeLinearInterpolation;}
   Bool_t  IsTypeOnlyTotErr()   const{ CheckTypeConsistency(); return fMeasurementType & kTypeOnlyTotError;       }
 
@@ -136,7 +138,7 @@ private:
 
   static Bool_t   Compare2Floats(Float_t a, Float_t b) ;
   static Double_t SumErrors(AliParticleYield * part1, AliParticleYield * part2, Int_t error, Option_t * opt) ;
-  void CombineMetadata(AliParticleYield *part1, AliParticleYield*part2) ;
+  void CombineMetadata(AliParticleYield *part1, AliParticleYield*part2, const char * pdgSep) ;
 
 
   Int_t   fPdgCode;         // PdgCode
@@ -165,7 +167,7 @@ private:
   static Int_t fSignificantDigits; // Significant Digits to be used in values and errors
   static Float_t fEpsilon; // Used for float conparisons
 
-  ClassDef(AliParticleYield,1)
+  ClassDef(AliParticleYield,2)
 };
 
 
