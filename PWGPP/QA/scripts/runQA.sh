@@ -294,10 +294,11 @@ updateQA()
         #remove the temp dir
         rm -rf ${tmpPeriodLevelQAdir}
       else
-        echo "locked! cannot move to destination"
-        echo "check and maybe manually do:"
-        echo " rm ${periodLevelLock}"
-        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/" >> ${logSummary}
+        echo "ERROR: cannot move to destination"                     >> ${logSummary}
+        echo "production dir ${productionDir} locked!"               >> ${logSummary}
+        echo "check and maybe manually do:"                          >> ${logSummary}
+        echo " rm ${periodLevelLock}"                                >> ${logSummary}
+        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/"  >> ${logSummary}
         planB=1
       fi
 
