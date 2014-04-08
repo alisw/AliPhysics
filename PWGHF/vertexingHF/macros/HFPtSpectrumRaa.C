@@ -265,7 +265,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
   }
   //
-  else if ( cc == kpPb0100 ){ 
+  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematicsAB->SetCollisionType(2); 
   }
   else { 
@@ -1075,7 +1075,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->Draw();
   TLatex* tc;
   TString system = "Pb-Pb   #sqrt{s_{NN}}=2.76 TeV";
-  if(cc==kpPb0100) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
+  if( cc==kpPb0100 || cc==kpPb020 || cc==kpPb2040 || cc==kpPb4060 || cc==kpPb60100 ) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
   if(decay==1) tc =new TLatex(0.18,0.82,Form("D^{0},  %s ",system.Data()));
   else if(decay==2) tc =new TLatex(0.18,0.82,Form("D^{+},  %s ",system.Data()));
   else if(decay==3) tc =new TLatex(0.18,0.82,Form("D^{*+},  %s ",system.Data()));
