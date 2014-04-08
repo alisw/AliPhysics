@@ -93,6 +93,8 @@ public:
 
   */
 
+  ClassDef(AliEMCALGeoParams,2)
+  
 };
 
 #endif

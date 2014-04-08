@@ -982,7 +982,8 @@ Bool_t AliSimulation::WriteTriggerRawData()
   // Details of the format are given in the
   // trigger TDR - pages 134 and 135.
   AliCTPRawData writer;
-  writer.RawData();
+  //writer.RawData();
+  writer.RawDataRun2();
 
   return kTRUE;
 }

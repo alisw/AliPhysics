@@ -66,3 +66,11 @@ void AliVEventHandler::Changed()
 // in case the lock was set.
    if (IsLocked()) Fatal("Changed","Critical setter of a handler called in locked mode");
 }
+
+//______________________________________________________________________________
+const char *AliVEventHandler::GetExtraOutputs(Bool_t) const
+{
+// Returns extra outputs. If merge is requested, returns only files to be
+// merged. Implementation in derived classes.
+   return 0;
+}
