@@ -518,6 +518,7 @@ guessRunData()
   done
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
   [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
+  [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
   #modify the OCDB: set the year
   ocdbStorage=$(setYear ${year} ${ocdbStorage})
