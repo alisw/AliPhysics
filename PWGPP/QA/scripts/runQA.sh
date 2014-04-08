@@ -52,7 +52,7 @@ updateQA()
   echo outputDirectory=$outputDirectory
   echo
 
-  dateString=$(date +%Y-%m-%d-%H-%M)
+  dateString=$(date +%Y-%m-%d-%H-%M-%S-%N)
   echo "Start time QA process: $dateString"
 
   #logging
