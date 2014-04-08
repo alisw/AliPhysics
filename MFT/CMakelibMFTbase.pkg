@@ -25,13 +25,15 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliMFTConstants.cxx AliMFTPlane.cxx AliMFTSegmentation.cxx AliMFTDigit.cxx AliMFTCluster.cxx AliMFTSupport.cxx )
+set ( SRCS  AliMFTConstants.cxx AliMFTPlane.cxx AliMFTSegmentation.cxx AliMFTDigit.cxx AliMFTCluster.cxx AliMFTAnalysisTools.cxx )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR MFTbaseLinkDef.h)
 
 set ( EINCLUDE  STRUCT RAW MUON STEER/STEER STEER/STEERBase)
+
+set ( EXPORT AliMFTAnalysisTools.h AliMFTConstants.h)
 
 if( ALICE_TARGET STREQUAL "win32gcc")
 	
