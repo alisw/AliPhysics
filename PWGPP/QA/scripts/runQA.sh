@@ -295,7 +295,8 @@ updateQA()
         echo "locked! cannot move to destination"
         echo "check and maybe manually do:"
         echo " rm ${periodLevelLock}"
-        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/"
+        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/" >> ${logSummary}
+        planB=1
       fi
 
     done
