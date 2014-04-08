@@ -544,7 +544,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-  FillQA();
+  if(fESD)
+    FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
   /*if(fESD)
@@ -945,7 +946,7 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetClusSource(const AliVCluster *c)
   if(fDebug)
     printf("\t^^^^ parton position = %d ^^^^\n",partonpos);
   if(clabel<0 || clabel>nmcp)
-    return 0;
+    return -0.1;
   Float_t clsPos[3] = {0,0,0};
   c->GetPosition(clsPos);
   TVector3 clsVec(clsPos);

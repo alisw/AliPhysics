@@ -139,6 +139,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP(const char *name)
   ,fTot_etae(0)
   ,fPhot_etae(0)
   ,fPhotBCG_etae(0)
+  ,fCocktail(0)
 {
   //Named constructor
 
@@ -220,6 +221,7 @@ AliAnalysisTaskFlowTPCEMCalEP::AliAnalysisTaskFlowTPCEMCalEP()
   ,fTot_etae(0)
   ,fPhot_etae(0)
   ,fPhotBCG_etae(0)
+  ,fCocktail(0)
 {
 	//Default constructor
 
@@ -310,6 +312,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   AliCentrality *centrality = fESD->GetCentrality(); 
   cent = centrality->GetCentralityPercentile("V0M");
   fCent->Fill(cent);
+
+  int kCent = 3;
+  if(cent>=20 && cent<=40) kCent = 0;
+  if(cent>=30 && cent<=50) kCent = 1;
     
   //Event planes
   
@@ -348,7 +354,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
   Double_t evPlaneRes[4]={GetCos2DeltaPhi(evPlaneV0A,evPlaneV0C),GetCos2DeltaPhi(evPlaneV0A,evPlaneTPC),GetCos2DeltaPhi(evPlaneV0C,evPlaneTPC),cent};
   fEPres->Fill(evPlaneRes);
   
-  if(fIsMC && fMC && stack && cent>30 && cent<50){
+  if(fIsMC && fMC && stack && cent>20 && cent<40){
    Int_t nParticles = stack->GetNtrack();
    for (Int_t iParticle = 0; iParticle < nParticles; iParticle++) {
       TParticle* particle = stack->Particle(iParticle);
@@ -459,7 +465,10 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
     
     Bool_t pi0Decay= kFALSE;
     Bool_t etaDecay= kFALSE;
-    
+
+
+    Double_t phiD = -999.,phie = -999.,phieRec = -999.,ptD = -999.,pte = -999.,pteRec = -999.;
+ 
     if(fIsMC && fMC && stack){
       Int_t label = track->GetLabel();
       if(label>0){
@@ -484,6 +493,19 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	      motherPt = mother->Pt();
 	      motherPDG = mother->GetPdgCode();
 	      
+             //*************** for cocktail ********************************
+	     if (TMath::Abs(partPDG)==11 && (motherPDG==421 || TMath::Abs(motherPDG)==411)){
+                pteRec = track->Pt();
+                phieRec = track->Phi();
+                phie = particle->Phi();
+                pte = particle->Pt();
+                phiD = mother->Phi();
+                ptD = mother->Pt();
+
+                Double_t cocktail[9]={phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0A,iHijing,kCent};
+                fCocktail->Fill(cocktail);
+             }
+             //*************************************************************    
 	      if (motherPDG==22) whichFirstMother = 3; //gamma
 	      if (motherPDG==111) whichFirstMother = 2; //pi0
 	      if (motherPDG==221) whichFirstMother = 1; //eta
@@ -839,7 +861,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
     fOutputList->Add(fDminuse[k]);
     
   }
-  
+
   int nbin_v2 = 8;
   double bin_v2[9] = {2,2.5,3,4,6,8,10,13,18};
   
@@ -860,6 +882,14 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserCreateOutputObjects()
   
   fPhotBCG_etae = new TH1F("fPhotBCG_etae","fPhotBCG_etae",nbin_v2,bin_v2);  
   fOutputList->Add(fPhotBCG_etae);
+
+  //phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0,iHijing,kCent
+  Int_t binsv8[9]={100,100,100,100,100,100,100,4,4};
+  Double_t xminv8[9]={0,0,0,0,0,0,0,-2,-2};
+  Double_t xmaxv8[9]={2*TMath::Pi(),2*TMath::Pi(),2*TMath::Pi(),50,50,50,TMath::Pi(),2,2};
+  fCocktail = new THnSparseD ("fCocktail","Correlations",9,binsv8,xminv8,xmaxv8);
+  fOutputList->Add(fCocktail);
+
     
   PostData(1,fOutputList);
 }

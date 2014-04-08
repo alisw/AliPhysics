@@ -15,7 +15,7 @@ const Int_t nDie=arrNames->GetEntries();
 Bool_t isAOD=kFALSE;
 Bool_t hasMC=kFALSE;
 Int_t iPeriod=-1;
-enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k11a, k11d, k11h, k12h };
+enum { k10b=0, k10c, k10d, k10e, k10f, k10h, k11a, k11d, k11h, k12h, k13b, k13c, k13d, k13e, k13f };
 
 //______________________________________________________________________________________
 AliAnalysisTask* AddTask_jpsi_Default(TString prod="", Bool_t isMC=kFALSE)
@@ -51,6 +51,11 @@ AliAnalysisTask* AddTask_jpsi_Default(TString prod="", Bool_t isMC=kFALSE)
   else if( !prod.CompareTo("LHC11d") ) iPeriod = k11d;
   else if( !prod.CompareTo("LHC11h") ) iPeriod = k11h;
   else if( !prod.CompareTo("LHC12h") ) iPeriod = k12h;
+  else if( !prod.CompareTo("LHC13b") ) iPeriod = k13b;
+  else if( !prod.CompareTo("LHC13c") ) iPeriod = k13c;
+  else if( !prod.CompareTo("LHC12d") ) iPeriod = k13d;
+  else if( !prod.CompareTo("LHC12e") ) iPeriod = k13e;
+  else if( !prod.CompareTo("LHC12f") ) iPeriod = k13f;
 
   // // aod monte carlo
   // if( list.Contains("LHC11a10") ||
@@ -68,7 +73,12 @@ AliAnalysisTask* AddTask_jpsi_Default(TString prod="", Bool_t isMC=kFALSE)
   switch(iPeriod) {
   case k11d: task->SetTriggerMask(AliVEvent::kEMCEJE+AliVEvent::kEMC7+AliVEvent::kEMCEGA);     break;
   case k11h: task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral); break;
-  case k12h: task->SetTriggerMask(AliVEvent::kAnyINT);                                         break;
+  case k12h: task->SetTriggerMask(AliVEvent::kAnyINT); break;                                      
+  case k13b: task->SetTriggerMask(AliVEvent::kINT7); break;
+  case k13c: task->SetTriggerMask(AliVEvent::kINT7); break;
+  case k13d: task->SetTriggerMask(AliVEvent::kAnyINT); break;
+  case k13e: task->SetTriggerMask(AliVEvent::kAnyINT); break;
+ case k13f: task->SetTriggerMask(AliVEvent::kAnyINT); break;
   }
   mgr->AddTask(task);
 
@@ -205,7 +215,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varRecCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varRecCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
   //  varRecCuts->AddCut(AliDielectronVarManager::kITSchi2Cl,     0.  ,   36.     ); // not defined in AOD
-  varRecCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varRecCuts->AddCut(AliDielectronVarManager::kKinkIndex0,.000001,1e30,kTRUE);
 
   AliDielectronTrackCuts *trkRecCuts = new AliDielectronTrackCuts("TrkRecCuts","TrkRecCuts");
   trkRecCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any

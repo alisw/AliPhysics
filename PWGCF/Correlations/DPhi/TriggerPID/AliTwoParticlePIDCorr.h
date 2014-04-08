@@ -132,6 +132,8 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fcontainPIDasso=containPIDasso;
   }
 
+  void SettingChargeCounting(Int_t val) {SetChargeAxis=val;}
+
  void SetFIllPIDQAHistos(Bool_t FIllPIDQAHistos){fFIllPIDQAHistos=FIllPIDQAHistos;}
   void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
@@ -250,6 +252,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fSelectHighestPtTrig;
     Bool_t fcontainPIDtrig;
     Bool_t fcontainPIDasso;
+    Int_t SetChargeAxis;
      Bool_t frejectPileUp;
     Float_t fminPt;
     Float_t fmaxPt;

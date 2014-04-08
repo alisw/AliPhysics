@@ -46,7 +46,7 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   enum ECandidateType{ kD0toKpi, kDstartoKpipi };
 
   AliAnalysisTaskFlavourJetCorrelations();
-  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype);
+  AliAnalysisTaskFlavourJetCorrelations(const Char_t* name,AliRDHFCuts* cuts, ECandidateType candtype, Bool_t jetOnly=kFALSE);
   virtual ~AliAnalysisTaskFlavourJetCorrelations();
 
   virtual void     UserCreateOutputObjects();
@@ -64,7 +64,8 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   // set usage of reconstructed tracks
   void   SetUseReco(Bool_t reco) {fUseReco=reco;}
   Bool_t GetUseReco() {return fUseReco;}
-  
+  //no setter because needed in the constructor
+  Bool_t GetJetOnlyMode() {return fJetOnlyMode;}
   
   void SetMassLimits(Double_t range, Int_t pdg);
   void SetMassLimits(Double_t lowlimit, Double_t uplimit);
@@ -121,8 +122,9 @@ class AliAnalysisTaskFlavourJetCorrelations : public AliAnalysisTaskEmcalJet
   Double_t fJetRadius;           // jet radius (filled from the JetContainer)
   TClonesArray *fCandidateArray;   //! contains candidates selected by AliRDHFCuts
   TClonesArray *fSideBandArray;    //! contains candidates selected by AliRDHFCuts::IsSelected(kTracks), to be used for side bands (DStar case only!!)
+  Bool_t fJetOnlyMode;           //switch to simple version which analyses jets only
 
-  ClassDef(AliAnalysisTaskFlavourJetCorrelations,3); // class for charm-jet CorrelationsExch
+  ClassDef(AliAnalysisTaskFlavourJetCorrelations,4); // class for charm-jet CorrelationsExch
 };
 
 #endif
