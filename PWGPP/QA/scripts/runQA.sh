@@ -11,7 +11,7 @@ main()
     return 1
   fi
  
-  if ! parseConfig $@; then
+  if ! parseConfig "$@"; then
     ${0}
     return 1
   fi
@@ -28,13 +28,13 @@ main()
     done < <(grep -v "LD_LIBRARY_PATH" /tmp/gclient_env_${UID})
   fi
 
-  updateQA $@
+  updateQA "$@"
 }
 
 updateQA()
 {
   umask 0002
-  parseConfig $@
+  parseConfig "$@"
 
   #be paranoid and make some full paths
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
@@ -152,6 +152,8 @@ updateQA()
       
       echo qaFile=$qaFile
       echo highPtTree=$highPtTree
+      echo ocdbStorage=${ocdbStorage}
+      echo
 
       #what if we have a zip archive?
       if [[ "$qaFile" =~ .*.zip$ ]]; then
@@ -476,7 +478,7 @@ parseConfig()
     fi
     local var="${opt%%=*}"
     local value="${opt#*=}"
-    echo "${var} = ${value}"
+    echo "${var}=${value}"
     export ${var}="${value}"
   done
 }
@@ -492,8 +494,10 @@ guessRunData()
   dataType=""
 
   local shortRunNumber=""
+  oldIFS=${IFS}
   local IFS="/"
   declare -a path=( $1 )
+  IFS="${oldIFS}"
   local dirDepth=$(( ${#path[*]}-1 ))
   i=0
   for ((x=${dirDepth};x>=0;x--)); do
@@ -514,8 +518,11 @@ guessRunData()
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
   [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
   
+  #modify the OCDB: set the year
+  ocdbStorage=$(setYear ${year} ${ocdbStorage})
+
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber}} ]];
+  if [[ -z ${runNumber}} ]]
   then
     #error condition
     return 1
@@ -558,4 +565,31 @@ get_realpath()
   return 0 # success
 }
 
-main $@
+setYear()
+{
+  #set the year
+  #  ${1} - year to be set
+  #  ${2} - where to set the year
+  local year1=$(guessYear ${1})
+  local year2=$(guessYear ${2})
+  local path=${2}
+  [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
+  echo ${path}
+  return 0
+}
+
+guessYear()
+{
+  #guess the year from the path, pick the rightmost one
+  local IFS="/"
+  declare -a pathArray=( ${1} )
+  local field
+  local year
+  for field in ${pathArray[@]}; do
+    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
+  done
+  echo ${year}
+  return 0
+}
+
+main "$@"
