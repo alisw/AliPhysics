@@ -415,7 +415,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
   }
-  else if ( cc == kpPb0100 ){ 
+  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2); 
   }
   //
