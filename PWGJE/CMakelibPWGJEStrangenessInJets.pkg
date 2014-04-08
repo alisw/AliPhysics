@@ -27,6 +27,7 @@
 
 set ( SRCS 
 	StrangenessInJets/AliAnalysisTaskV0sInJets.cxx
+	StrangenessInJets/AliAnalysisTaskJetChem.cxx
 )
 
 set ( DHDR  PWGJEStrangenessInJetsLinkDef.h)

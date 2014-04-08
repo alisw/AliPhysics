@@ -209,6 +209,17 @@ fhPtNPileUpSPDVtxTimeCut2(0),       fhPtNPileUpTrkVtxTimeCut2(0)
       fhMCPtLambda0LocMax     [ipart][i] = 0;
       fhMCSelectedMassPtLocMax[ipart][i] = 0;
     }
+    
+    fhMCPi0PtRecoPtPrimLocMax             [i] = 0;
+    fhMCEtaPtRecoPtPrimLocMax             [i] = 0;
+    fhMCPi0SplitPtRecoPtPrimLocMax        [i] = 0;
+    fhMCEtaSplitPtRecoPtPrimLocMax        [i] = 0;
+
+    fhMCPi0SelectedPtRecoPtPrimLocMax     [i] = 0;
+    fhMCEtaSelectedPtRecoPtPrimLocMax     [i] = 0;
+    fhMCPi0SelectedSplitPtRecoPtPrimLocMax[i] = 0;
+    fhMCEtaSelectedSplitPtRecoPtPrimLocMax[i] = 0;
+
   }
   
   //Weight studies
@@ -2064,6 +2075,67 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap ->SetXTitle("p_{T,reco} (GeV/c)");
       outputContainer->Add(fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap ) ;
       
+      
+      for(Int_t inlm = 0; inlm < 3; inlm++)
+      {
+        fhMCPi0PtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCPi0PtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCPi0PtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCPi0PtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCPi0PtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCPi0SelectedPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCPi0SelectedPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCPi0SelectedPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCPi0SelectedPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCPi0SelectedPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCPi0SplitPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCPi0SplitPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} (split sum) vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCPi0SplitPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCPi0SplitPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCPi0SplitPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCPi0SelectedSplitPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCPi0SelectedSplitPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} (split sum) vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCPi0SelectedSplitPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCPi0SelectedSplitPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCPi0SelectedSplitPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCEtaPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCEtaPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCEtaPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCEtaPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCEtaPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCEtaSelectedPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCEtaSelectedPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCEtaSelectedPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCEtaSelectedPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCEtaSelectedPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCEtaSplitPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCEtaSplitPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} (split sum) vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCEtaSplitPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCEtaSplitPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCEtaSplitPtRecoPtPrimLocMax[inlm] ) ;
+        
+        fhMCEtaSelectedSplitPtRecoPtPrimLocMax[inlm]  = new TH2F
+        (Form("hMCEtaSelectedSplitPtRecoPtPrimLocMax%d",inlm+1),Form("p_{T,reco} (split sum) vs p_{T,gen}, %s",nlm[inlm].Data()),
+         nptbins,ptmin,ptmax,nptbins,ptmin,ptmax);
+        fhMCEtaSelectedSplitPtRecoPtPrimLocMax[inlm] ->SetYTitle("p_{T,gen} (GeV/c)");
+        fhMCEtaSelectedSplitPtRecoPtPrimLocMax[inlm] ->SetXTitle("p_{T,reco} (GeV/c)");
+        outputContainer->Add(fhMCEtaSelectedSplitPtRecoPtPrimLocMax[inlm] ) ;
+        
+      }
+      
       for(Int_t i = 0; i< 6; i++)
       {
         fhMCPtAsymmetry[i]  = new TH2F (Form("hEAsymmetry_MC%s",pname[i].Data()),
@@ -3054,13 +3126,18 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       fhMCMassSplitPt[mcIndex]->Fill(ptSplit ,mass);
       if(mcIndex==kmcPi0)
       {
-        fhMCPi0PtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
-        fhMCPi0SplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+        fhMCPi0PtRecoPtPrim                     ->Fill(mom.Pt(),ptprim);
+        fhMCPi0SplitPtRecoPtPrim                ->Fill(ptSplit ,ptprim);
+        fhMCPi0PtRecoPtPrimLocMax     [indexMax]->Fill(mom.Pt(),ptprim);
+        fhMCPi0SplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
+
       }
       else if(mcIndex==kmcEta)
       {
-        fhMCEtaPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
-        fhMCEtaSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+        fhMCEtaPtRecoPtPrim                     ->Fill(mom.Pt(),ptprim);
+        fhMCEtaSplitPtRecoPtPrim                ->Fill(ptSplit ,ptprim);
+        fhMCEtaPtRecoPtPrimLocMax     [indexMax]->Fill(mom.Pt(),ptprim);
+        fhMCEtaSplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
       }
 
       if(noverlaps==0)
@@ -3133,13 +3210,17 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     {
       if(mcIndex==kmcPi0)
       {
-        fhMCPi0SelectedPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
-        fhMCPi0SelectedSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+        fhMCPi0SelectedPtRecoPtPrim                     ->Fill(mom.Pt(),ptprim);
+        fhMCPi0SelectedSplitPtRecoPtPrim                ->Fill(ptSplit ,ptprim);
+        fhMCPi0SelectedPtRecoPtPrimLocMax     [indexMax]->Fill(mom.Pt(),ptprim);
+        fhMCPi0SelectedSplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
       }
       else if(mcIndex==kmcEta)
       {
-        fhMCEtaSelectedPtRecoPtPrim     ->Fill(mom.Pt(),ptprim);
-        fhMCEtaSelectedSplitPtRecoPtPrim->Fill(ptSplit ,ptprim);
+        fhMCEtaSelectedPtRecoPtPrim                     ->Fill(mom.Pt(),ptprim);
+        fhMCEtaSelectedSplitPtRecoPtPrim                ->Fill(ptSplit ,ptprim);
+        fhMCEtaSelectedPtRecoPtPrimLocMax     [indexMax]->Fill(mom.Pt(),ptprim);
+        fhMCEtaSelectedSplitPtRecoPtPrimLocMax[indexMax]->Fill(ptSplit ,ptprim);
       }
       
       if(noverlaps==0)

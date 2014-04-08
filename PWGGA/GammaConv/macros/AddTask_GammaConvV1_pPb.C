@@ -961,6 +961,17 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 1] = "8020012002092170008260400000"; mesonCutArray[ 1] = "01621035000000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
 		cutarray[ 2] = "8020012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8020012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
+	} else if (trainConfig == 173) {
+		cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01621035009000"; //clean cuts ///New STANDARD CUT
+		cutarray[ 1] = "8000011002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //no MCP smearing
+		cutarray[ 2] = "8000011002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 3] = "8000011002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
+	} else if (trainConfig == 174) {
+		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
+		cutarray[ 1] = "8000012002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
+		cutarray[ 2] = "8000012002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
+		cutarray[ 3] = "8000012002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
+	
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;

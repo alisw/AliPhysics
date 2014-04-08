@@ -2242,13 +2242,16 @@ parseConfig()
     echo "config file ${configFile} not found!, skipping..."
   fi
 
-  #then, parse the options as theya override the optionf from file
-  for ((i=0;i<${#args[@]};i++)) ;do
-    local var="${args[i]%%=*}"
-    local value="${args[i]#*=}"
-    echo exporting ${var}="${value}"
+  #then, parse the options as they override the options from file
+  for opt in "${args[@]}"; do
+    if [[ ! "${opt}" =~ .*=.* ]]; then
+      echo "badly formatted option ${var}, should be: option=value, stopping..."
+      return 1
+    fi
+    local var="${opt%%=*}"
+    local value="${opt#*=}"
+    echo "${var} = ${value}"
     export ${var}="${value}"
-    shift
   done
 
   #do some checking

@@ -124,6 +124,63 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Int_t fRunNumber;                //!
 
 //===========================================================================================
+//   Variables for V0 Tree
+//===========================================================================================
+	Float_t fTreeVariableChi2V0;         //!
+	Float_t fTreeVariableDcaV0Daughters; //!
+	Float_t fTreeVariableDcaV0ToPrimVertex; //!
+	Float_t fTreeVariableDcaPosToPrimVertex; //!
+	Float_t fTreeVariableDcaNegToPrimVertex; //!
+	Float_t fTreeVariableV0CosineOfPointingAngle; //!
+	Float_t fTreeVariableV0Radius; //!
+	Float_t fTreeVariablePt; //!
+	Float_t fTreeVariablePtMC; //!
+	Float_t fTreeVariableRapK0Short; //!
+	Float_t fTreeVariableRapLambda; //!
+	Float_t fTreeVariableRapMC; //!
+	Float_t fTreeVariableInvMassK0s; //!
+	Float_t fTreeVariableInvMassLambda; //!
+	Float_t fTreeVariableInvMassAntiLambda; //!
+	Float_t fTreeVariableAlphaV0; //!
+	Float_t fTreeVariablePtArmV0;//!
+	Float_t fTreeVariableNegEta; //!
+	Float_t fTreeVariablePosEta; //!
+
+	Float_t fTreeVariableNSigmasPosProton; //!
+	Float_t fTreeVariableNSigmasPosPion; //! 
+	Float_t fTreeVariableNSigmasNegProton; //!
+	Float_t fTreeVariableNSigmasNegPion; //! 
+	
+	Float_t fTreeVariableDistOverTotMom;//!
+	Int_t   fTreeVariableLeastNbrCrossedRows;//!
+	Float_t fTreeVariableLeastRatioCrossedRowsOverFindable;//!
+
+  //Event Multiplicity Variables 
+  Float_t fTreeVariableCentV0A;    //!
+  Float_t fTreeVariableCentV0C;    //!
+  Float_t fTreeVariableCentV0M;    //!
+  Float_t fTreeVariableCentV0AEq;  //!
+  Float_t fTreeVariableCentV0CEq;  //!
+  Float_t fTreeVariableCentV0MEq;  //!
+  Float_t fTreeVariableAmpV0A;     //!
+  Float_t fTreeVariableAmpV0C;     //!
+  Float_t fTreeVariableAmpV0AEq;   //!
+  Float_t fTreeVariableAmpV0CEq;   //!
+  Int_t   fTreeVariableRefMultEta8;  //!
+  Int_t   fTreeVariableRefMultEta5;  //!
+  Int_t   fTreeVariableRunNumber; //! //want to re-quantile per run? here's your ticket
+
+  //MC exclusive Characteristics: 7, also required for feeddown tests
+  Float_t fTreeVariablePtMother; //!
+  Int_t fTreeVariablePID; //!
+  Int_t fTreeVariablePIDPositive; //!
+  Int_t fTreeVariablePIDNegative; //!
+  Int_t fTreeVariablePIDMother; //!
+  Int_t fTreeVariablePrimaryStatus; //!
+  Int_t fTreeVariablePrimaryStatusMother; //!
+
+
+//===========================================================================================
 //   Variables for Cascade Candidate Tree
 //===========================================================================================
   Int_t fTreeCascVarCharge;         //! 
@@ -182,6 +239,8 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   Int_t   fTreeCascVarIsPhysicalPrimary; //!
   Int_t   fTreeCascVarPID;         //!
 
+  Int_t   fTreeCascVarRunNumber;         //!
+
 //===========================================================================================
 //   Histograms
 //===========================================================================================
@@ -195,6 +254,10 @@ class AliAnalysisTaskStrangenessVsMultiplicityMC : public AliAnalysisTaskSE {
   //These are all analysis-level
 
   //Let's not care too much about rapidity at the moment! 
+  TH1D *fHistPt_GenK0Short;      //! 
+  TH1D *fHistPt_GenLambda;       //! 
+  TH1D *fHistPt_GenAntiLambda;   //! 
+
   TH1D *fHistPt_GenXiMinus;      //! 
   TH1D *fHistPt_GenXiPlus;       //! 
   TH1D *fHistPt_GenOmegaMinus;   //! 
