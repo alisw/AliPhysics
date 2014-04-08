@@ -310,7 +310,7 @@ main()
   echo
   cat $redoneFilesList
 
-  [[ -n $sendMailTo ]] && echo $logFile | mail -s "alienSync $alienFindCommand done" $sendMailTo
+  [[ -n $MAILTO ]] && echo $logFile | mail -s "alienSync $alienFindCommand done" $MAILTO
 
   exitScript 0
 }
