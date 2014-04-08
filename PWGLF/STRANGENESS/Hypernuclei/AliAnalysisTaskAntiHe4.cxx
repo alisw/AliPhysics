@@ -17,6 +17,10 @@
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 
+#include "AliMCEventHandler.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
+
 #include "AliAnalysisTaskAntiHe4.h"
 
 
@@ -58,6 +62,19 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4()
   fESDtrackCutsSharp(0),
   fESDpid(0), 
   fAntiAlpha(0),
+  fHistHelium4PtGen(0),
+  fHistHelium4PtGenPrim(0),
+  fHistHelium4PtGenSec(0),
+  fHistHelium4PtGenEta(0),
+  fHistHelium4PtGenPrimEta(0),
+  fHistAntiHelium4PtGen(0),
+  fHistAntiHelium4PtGenPrim(0),
+  fHistAntiHelium4PtGenSec(0),
+  fHistAntiHelium4PtGenEta(0),
+  fHistHelium4PtAso(0),
+  fHistHelium4PtAsoPrim(0),
+  fHistHelium4PtAsoSec(0),
+  fHistAntiHelium4PtAso(0),
   fTree(0), 
   fOutputContainer(0)
 {
@@ -96,6 +113,19 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4(const char *name)
     fESDtrackCutsSharp(0),
     fESDpid(0), 
     fAntiAlpha(0),
+    fHistHelium4PtGen(0),
+    fHistHelium4PtGenPrim(0),
+    fHistHelium4PtGenSec(0),
+    fHistHelium4PtGenEta(0),
+    fHistHelium4PtGenPrimEta(0),
+    fHistAntiHelium4PtGen(0),
+    fHistAntiHelium4PtGenPrim(0),
+    fHistAntiHelium4PtGenSec(0),
+    fHistAntiHelium4PtGenEta(0),
+    fHistHelium4PtAso(0),
+    fHistHelium4PtAsoPrim(0),
+    fHistHelium4PtAsoSec(0),
+    fHistAntiHelium4PtAso(0),
     fTree(0), 
     fOutputContainer(0)
 {
@@ -248,7 +278,62 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
     fAntiAlpha->GetAxis(iaxis)->SetTitle(axisTitleMult[iaxis]);
   }  
   //
-  //
+  //  
+  //Create histograms for MC
+  //generated histogramms
+  fHistHelium4PtGen = new TH1F("fHistHelium4PtGen", "Generated  ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtGen->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtGen->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtGenPrim = new TH1F("fHistHelium4PtGenPrim", "Primary generated  ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtGenPrim->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtGenPrim->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtGenSec = new TH1F("fHistHelium4PtGenSec", "Secondary generated  ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtGenSec->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtGenSec->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtGenEta = new TH1F("fHistHelium4PtGenEta", "Generated  ^{4}He in #eta < 0.8", 200, 0.0, 10.0);
+  fHistHelium4PtGenEta->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtGenEta->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtGenPrimEta = new TH1F("fHistHelium4PtGenPrimEta", "Primary generated ^{4}He in #eta < 0.8", 200, 0.0, 10.0);
+  fHistHelium4PtGenPrimEta->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtGenPrimEta->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistAntiHelium4PtGen = new TH1F("fHistAntiHelium4PtGen", "Generated  #bar{^{4}He}", 200, 0.0, 10.0);
+  fHistAntiHelium4PtGen->GetYaxis()->SetTitle("Counts");
+  fHistAntiHelium4PtGen->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistAntiHelium4PtGenPrim = new TH1F("fHistAntiHelium4PtGenPrim", "Primary generated  #bar{^{4}He}", 200, 0.0, 10.0);
+  fHistAntiHelium4PtGenPrim->GetYaxis()->SetTitle("Counts");
+  fHistAntiHelium4PtGenPrim->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistAntiHelium4PtGenSec = new TH1F("fHistAntiHelium4PtGenSec", "Secondary generated  #bar{^{4}He}", 200, 0.0, 10.0);
+  fHistAntiHelium4PtGenSec->GetYaxis()->SetTitle("Counts");
+  fHistAntiHelium4PtGenSec->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistAntiHelium4PtGenEta = new TH1F("fHistAntiHelium4PtGenEta", "Generated  #bar{^{4}He} in #eta < 0.8", 200, 0.0, 10.0);
+  fHistAntiHelium4PtGenEta->GetYaxis()->SetTitle("Counts");
+  fHistAntiHelium4PtGenEta->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  //associated histograms
+  fHistHelium4PtAso = new TH1F("fHistHelium4PtAso", "Associated  ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtAso->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtAso->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtAsoPrim = new TH1F("fHistHelium4PtAsoPrim", "Associated prim ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtAsoPrim->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtAsoPrim->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistHelium4PtAsoSec = new TH1F("fHistHelium4PtAsoSec", "Associated sec  ^{4}He", 200, 0.0, 10.0);
+  fHistHelium4PtAsoSec->GetYaxis()->SetTitle("Counts");
+  fHistHelium4PtAsoSec->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
+  fHistAntiHelium4PtAso = new TH1F("fHistAntiHelium4PtAso", "Associated  #bar{^{4}He}", 200, 0.0, 10.0);
+  fHistAntiHelium4PtAso->GetYaxis()->SetTitle("Counts");
+  fHistAntiHelium4PtAso->GetXaxis()->SetTitle("p_{T}  (GeV/c)");
+
   //
   //
   fOutputContainer = new TObjArray(1);
@@ -269,6 +354,19 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   fOutputContainer->Add(fHistTOF3D);
   fOutputContainer->Add(fHistTOF2D);
   fOutputContainer->Add(fHistTOFnuclei);
+  fOutputContainer->Add(fHistHelium4PtGen);
+  fOutputContainer->Add(fHistHelium4PtGenPrim);
+  fOutputContainer->Add(fHistHelium4PtGenSec);
+  fOutputContainer->Add(fHistHelium4PtGenEta);
+  fOutputContainer->Add(fHistHelium4PtGenPrimEta);
+  fOutputContainer->Add(fHistAntiHelium4PtGen);
+  fOutputContainer->Add(fHistAntiHelium4PtGenPrim);
+  fOutputContainer->Add(fHistAntiHelium4PtGenSec);
+  fOutputContainer->Add(fHistAntiHelium4PtGenEta);
+  fOutputContainer->Add(fHistHelium4PtAso);
+  fOutputContainer->Add(fHistHelium4PtAsoPrim);
+  fOutputContainer->Add(fHistHelium4PtAsoSec);
+  fOutputContainer->Add(fHistAntiHelium4PtAso);
 
 
   //------------ Tree and branch definitions ----------------//  
@@ -301,6 +399,9 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   fTree->Branch("SharedClusters",SharedClusters,"SharedClusters[itrk]/F");
   fTree->Branch("fFileName",fFileName,"fFileName/C");  
   fTree->Branch("fEventNumber",fEventNumber,"fEventNumber/I");
+  //
+  fTree->Branch("fAssociated",fAssociated,"fAssociated[itrk]/O");
+  fTree->Branch("fTrackPt",fTrackPt,"fTrackPt[itrk]/F");
 
 }
 
@@ -317,6 +418,29 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     //return -1;
     return;
   }
+
+  // Monte Carlo
+  AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if (!eventHandler){ 
+    //Printf("ERROR: Could not retrieve MC event handler");
+    fMCtrue = kFALSE;
+  }
+
+  AliMCEvent* mcEvent = 0x0;
+  AliStack* stack = 0x0;
+  if (eventHandler) mcEvent = eventHandler->MCEvent();
+  if (!mcEvent){
+    //Printf("ERROR: Could not retrieve MC event");
+    if (fMCtrue) return;
+  }
+  
+  if (fMCtrue){
+    stack = mcEvent->Stack();
+    if (!stack) return;
+  }
+  
+  //look for the generated particles
+  MCGenerated(stack);
   
   fESD=dynamic_cast<AliESDEvent*>(InputEvent());
   if (!fESD) {
@@ -363,6 +487,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %  
     }
   }
+  //
+  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
   //
   fHistCentralityClass10->Fill(centralityClass10);
   fHistCentralityPercentile->Fill(centralityPercentile);
@@ -445,6 +571,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     Bool_t  hasTOFtime = kFALSE;
     Float_t length = track->GetIntegratedLength();
     UInt_t  status = track->GetStatus();
+    Bool_t  isAssociated = kFALSE;
 
     if (length > 350) {
       time = track->GetTOFsignal() - fESDpid->GetTOFResponse().GetStartTime(track->P());
@@ -462,9 +589,14 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 							   5.04114e-11,
 							   2.13096,
 							   2.38541);
+    if (fMCtrue) cut = 4*AliExternalTrackParam::BetheBlochAleph(2*ptot/(0.938*3),0.9931,
+								31.9806,
+								5.04114e-11,
+								2.13096,
+								2.38541);
     if (eta < 0.8 && tpcSignal > 120 && tpcSignal > cut && tpcSignal < 1000 && track->GetTPCsignalN() > 60 && dcaZ < 15 && dcaXY < 15 && ptot > 1.0 && ptot < 20) {
       //
-      cout << "AntiAlphaEvent" << " " 
+    cout << "AntiAlphaEvent" << " " 
 	   << AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()->GetName() << " " 
 	   << "event number in file: " << fESD->GetEventNumberInFile() 
 	   << " Index " << iTracks 
@@ -498,12 +630,44 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       } else {
 	TOFRefit[itrk] = 0;
       }
+      //itrk++;
       //
       hasTOFout = status&AliESDtrack::kTOFout;
       hasTOFtime  = status&AliESDtrack::kTIME;
       //
       TOFtime[itrk] = hasTOFtime;
       TOFout[itrk]  = hasTOFout;
+
+      if (fMCtrue){ //associated
+
+	Int_t label  = track->GetLabel();
+	TParticle *tparticle = stack->Particle(TMath::Abs(label));
+
+	Bool_t isPrimary = stack->IsPhysicalPrimary(TMath::Abs(label));
+	Bool_t isSecondary = stack->IsSecondaryFromMaterial(TMath::Abs(label));
+
+	Long_t pdgCode = tparticle->GetPdgCode();
+	Double_t pT =(track->Pt())*2;
+	
+	if(pdgCode == 1000020040)
+          {
+            fHistHelium4PtAso->Fill(pT);
+	    if(isPrimary) fHistHelium4PtAsoPrim->Fill(pT);
+	    if(isSecondary)  fHistHelium4PtAsoSec->Fill(pT);
+	    isAssociated = kTRUE;
+          }
+
+	if(pdgCode == -1000020040)
+	  {
+	    fHistAntiHelium4PtAso->Fill(pT);
+	    isAssociated = kTRUE;
+	  }
+
+      }
+      
+      fAssociated[itrk] = isAssociated;
+      fTrackPt[itrk] = track->Pt();
+      
       itrk++;
     }
     //
@@ -586,6 +750,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     }
 
   }//end loop over tracks
+
   if (fillTree) fTree->Fill();
 
   // Post output data.
@@ -761,4 +926,52 @@ void AliAnalysisTaskAntiHe4::SetBBParameters(Int_t runNumber){
     fBBParametersNuclei[4]  = 8.31768;
 
   }
+}
+//______________________________________________________________________________
+void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack) 
+{ 
+
+  // Monte Carlo for genenerated particles
+  if (fMCtrue) //MC loop  
+    {
+ 
+      Int_t stackN = 0;
+
+      for(stackN = 0; stackN < stack->GetNtrack(); stackN++) //loop over stack
+	{
+
+	  Bool_t isPrimary = stack->IsPhysicalPrimary(stackN);
+	  Bool_t isSecondary = stack->IsSecondaryFromMaterial(stackN);
+
+	  const TParticle *tparticle = stack->Particle(stackN);
+	  Long_t pdgCode = tparticle->GetPdgCode();
+
+	  Double_t pTGen = tparticle->Pt();
+	  Double_t eta = tparticle->Eta();
+	  //check which particle it is 
+
+	  //Alpha
+	  if(pdgCode == 1000020040)
+	    {
+	      fHistHelium4PtGen->Fill(pTGen);
+	      if(isPrimary) fHistHelium4PtGenPrim->Fill(pTGen);
+	      if(isSecondary) fHistHelium4PtGenSec->Fill(pTGen);
+	      if(eta < 0.8)fHistHelium4PtGenEta->Fill(pTGen);
+	      if(isPrimary && eta < 0.8)fHistHelium4PtGenPrimEta->Fill(pTGen);
+	    }
+
+	  //Anti-Alpha
+	  if(pdgCode == -1000020040) 
+	    {
+	      fHistAntiHelium4PtGen->Fill(pTGen);
+	      if(isPrimary) fHistAntiHelium4PtGenPrim->Fill(pTGen);
+	      if(isSecondary) fHistAntiHelium4PtGenSec->Fill(pTGen);
+	      if(eta < 0.8)fHistAntiHelium4PtGenEta->Fill(pTGen);
+	    }
+
+  	      
+	}//end loop over stack
+      
+
+    }//end MC
 }
