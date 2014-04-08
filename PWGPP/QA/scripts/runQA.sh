@@ -230,6 +230,7 @@ updateQA()
           continue
         fi
 
+        #moving a dir is an atomic operation, no locking necessary
         if [[ -d ${oldRunDir} ]]; then
           echo "removing old ${oldRunDir}"
           rm -rf ${oldRunDir}
@@ -269,24 +270,34 @@ updateQA()
       #here we are validated so move the produced QA to the final place
       #clean up linked stuff first
       [[ -n ${linkedStuff[@]} ]] && rm ${linkedStuff[@]}
-      #some of the output could be a directory, so handle that
-      #TODO: maybe use rsync?
-      for x in ${tmpPeriodLevelQAdir}/*; do  
-        if [[ -d ${x} ]]; then
-          echo "removing ${productionDir}/${x##*/}"
-          rm -rf ${productionDir}/${x##*/}
-          echo "moving ${x} to ${productionDir}"
-          mv ${x} ${productionDir}
-        fi
-        if [[ -f ${x} ]]; then
-          echo "moving ${x} to ${productionDir}"
-          mv -f ${x} ${productionDir} 
-        fi
-      done
+      periodLevelLock=${productionDir}/runQA.lock
+      if [[ ! -f ${periodLevelLock} ]]; then
+        #some of the output could be a directory, so handle that
+        #TODO: maybe use rsync?
+        #lock to avoid conflicts:
+        echo "${HOSTNAME} ${dateString}" > ${periodLevelLock}
+        for x in ${tmpPeriodLevelQAdir}/*; do  
+          if [[ -d ${x} ]]; then
+            echo "removing ${productionDir}/${x##*/}"
+            rm -rf ${productionDir}/${x##*/}
+            echo "moving ${x} to ${productionDir}"
+            mv ${x} ${productionDir}
+          fi
+          if [[ -f ${x} ]]; then
+            echo "moving ${x} to ${productionDir}"
+            mv -f ${x} ${productionDir} 
+          fi
+        done
+        rm -f ${periodLevelLock}
+        #remove the temp dir
+        rm -rf ${tmpPeriodLevelQAdir}
+      else
+        echo "locked! cannot move to destination"
+        echo "check and maybe manually do:"
+        echo " rm ${periodLevelLock}"
+        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/"
+      fi
 
-      #remove the temp dir
-      rm -rf ${tmpPeriodLevelQAdir}
-    
     done
 
     cd ${workingDirectory}
