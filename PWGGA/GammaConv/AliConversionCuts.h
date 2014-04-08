@@ -357,6 +357,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fRejectExtraSignals;//
    Double_t fminV0Dist; //
    Bool_t fDoSharedElecCut; //
+   Bool_t fDoPhotonQualitySelectionCut; //
+   Int_t fPhotonQualityCut; //
    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
    Bool_t fHasV0AND; // V0AND Offline Trigger
    Bool_t fIsSDDFired; // SDD FIRED to select with SDD events
