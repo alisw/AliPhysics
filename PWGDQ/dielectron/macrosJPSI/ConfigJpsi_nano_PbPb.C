@@ -112,7 +112,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.000001,1e30, kTRUE);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
 
