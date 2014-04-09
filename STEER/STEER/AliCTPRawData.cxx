@@ -261,11 +261,10 @@ void AliCTPRawData::RawDataRun2()
   // Now the 4th word
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
-  word |= 1<<11;   // version 1=run2
+  word |= 1<<12;   // version 1=run2
   word |= ((UInt_t)esr) << 10;
   word |= 0 << 8; // L2SwC - physics trigger
-  word |= (l2cluster & 0x3F) << 2; // L2Cluster 1-6
-  word |= (l2cluster & 0xc0) >> 6; // L2cluster 7-8
+  word |= l2cluster;  // L2cluster 1-8
   AliDebug(1,Form("CTP word4 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
 
@@ -321,27 +320,27 @@ void AliCTPRawData::RawDataRun2()
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l0input >> 12) & 0xFFF);
-  AliDebug(1,Form("CTP word9 = 0x%x",word));
+  AliDebug(1,Form("CTP word14 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l0input >> 0) & 0xFFF);
-  AliDebug(1,Form("CTP word10 = 0x%x",word));
+  AliDebug(1,Form("CTP word15 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l1input >> 12) & 0xFFF);
-  AliDebug(1,Form("CTP word11 = 0x%x",word));
+  AliDebug(1,Form("CTP word16 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l1input >> 0) & 0xFFF);
-  AliDebug(1,Form("CTP word12 = 0x%x",word));
+  AliDebug(1,Form("CTP word17 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
   word |= (UInt_t)((l2input >> 0) & 0xFFF);
-  AliDebug(1,Form("CTP word13 = 0x%x",word));
+  AliDebug(1,Form("CTP word18 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   
   delete outfile;
