@@ -77,6 +77,16 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // task->GetSharingFilter().SetDisableMerging(true);
   // Enable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  // Ignore the ESD information when angle correcting.
+  // 
+  // *IMPORTANT* 
+  // 
+  // This is to counter a known issue with AliESDFMD with ClassDef 
+  // version < 4, where the angle correction flag is incorrectly set.
+  // A fix is coming to AliESDFMD to handle it directly in the class. 
+  // Only set the flag below to true if you know it to be necessary for
+  // your data set.
+  task->GetSharingFilter().SetIgnoreESDWhenAngleCorrecting(false);
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
   // Whether to use simple merging algorithm

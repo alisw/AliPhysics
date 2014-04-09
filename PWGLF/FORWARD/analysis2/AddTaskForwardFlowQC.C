@@ -23,7 +23,7 @@
  * @param outlierCutFMD Cut to remove events with outliers 
  * @param outlierCutSPD Cut to remove events with outliers 
  * @param etaGap        Size of @f$\eta@f$ gap
- * @param useTPCForRef  Use TPC tracks for reference flow
+ * @param useTracksForRef  Use TPC tracks for reference flow
  * @param useCent       Whether to use centrality or impact parameter for MC 
  * @param useMCVtx      Whether to use vertex info from MC header
  * @param satVtx        Use satellite interactions 
@@ -33,21 +33,21 @@
  *
  * @ingroup pwglf_forward_flow
  */
-void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
-                          TString  fwdDet        = "FMD",
-                          Bool_t   useEtaGap     = kFALSE,
-                          Bool_t   use3cor       = kFALSE,
-                          Bool_t   mc            = kFALSE,
-			  Double_t outlierCutFMD = 4.0, 
-			  Double_t outlierCutSPD = 4.0,
-			  Double_t etaGap        = 2.0,
-			  Bool_t   useTPCForRef  = kFALSE,
-			  Bool_t   useCent       = kFALSE,
-			  Bool_t   useMCVtx      = kFALSE,
-			  Bool_t   satVtx        = kFALSE,
-			  TString  addFlow       = "",
-			  Int_t    addFType      = 0,
-			  Int_t    addFOrder     = 0)
+void AddTaskForwardFlowQC(Int_t    maxMom          = 5,
+                          TString  fwdDet          = "FMD",
+                          Bool_t   useEtaGap       = kFALSE,
+                          Bool_t   use3cor         = kFALSE,
+                          Bool_t   mc              = kFALSE,
+			  Double_t outlierCutFMD   = 4.0, 
+			  Double_t outlierCutSPD   = 4.0,
+			  Double_t etaGap          = 2.0,
+			  UInt_t   useTracksForRef = 0,
+			  Bool_t   useCent         = kFALSE,
+			  Bool_t   useMCVtx        = kFALSE,
+			  Bool_t   satVtx          = kFALSE,
+			  TString  addFlow         = "",
+			  Int_t    addFType        = 0,
+			  Int_t    addFOrder       = 0)
 {
   // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -76,7 +76,8 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
   if (fwdDet.Contains("FMD")) flags |= AliForwardFlowTaskQC::kNUAcorr;
   if      (fwdDet.Contains("FMD"))   flags |= AliForwardFlowTaskQC::kFMD;
   else if (fwdDet.Contains("VZERO")) flags |= AliForwardFlowTaskQC::kVZERO;
-  if (useTPCForRef) flags |= AliForwardFlowTaskQC::kTPC;
+  if (useTracksForRef == 1) flags |= AliForwardFlowTaskQC::kTPC;
+  if (useTracksForRef == 2) flags |= AliForwardFlowTaskQC::kHybrid;
 
   const char* name = Form("ForwardFlowQC%s%s", fwdDet.Data(), AliForwardFlowTaskQC::GetQCType(flags, false));
   AliForwardFlowTaskQC* task = 0;
@@ -103,10 +104,10 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
   
   // --- Set eta gap value -----------------------------------------
   if (useEtaGap) {
-    if (useTPCForRef) task->SetEtaGapValue(0.4);
+    if (useTracksForRef) task->SetEtaGapValue(0.4);
     else              task->SetEtaGapValue(etaGap);
   }
-  else if (useTPCForRef && fwdDet.Contains("FMD")) task->SetEtaGapValue(0.1);
+  else if (useTracksForRef && fwdDet.Contains("FMD")) task->SetEtaGapValue(0.0);
 
   // --- Check which harmonics to calculate --------------------------
   task->SetMaxFlowMoment(maxMom);
@@ -130,6 +131,57 @@ void AddTaskForwardFlowQC(Int_t    maxMom        = 5,
 
   // --- Set sigma cuts for outliers ---------------------------------
   task->SetDetectorCuts(outlierCutFMD, outlierCutSPD);
+
+  // --- Setup track cuts --------------------------------------------
+  if (useTracksForRef > 0) {
+    AliAnalysisFilter* trackCuts = new AliAnalysisFilter("trackFilter");
+    if (useTracksForRef == 1) { // tpc tracks
+      AliESDtrackCuts* tpcTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      tpcTrackCuts->SetPtRange(0.2, 5.0);
+      tpcTrackCuts->SetEtaRange(-0.8, 0.8);
+      tpcTrackCuts->SetMinNClustersTPC(70);
+      trackCuts->AddCuts(tpcTrackCuts);
+      task->SetTrackCuts(trackCuts);
+    } else if (useTracksForRef == 2) { // hybrid tracks
+      // Basic cuts for global tracks - working for 10h!
+      AliESDtrackCuts* baseCuts = new AliESDtrackCuts("base");
+      TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+      baseCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+      baseCuts->SetMinNClustersTPC(70);
+      baseCuts->SetMaxChi2PerClusterTPC(4);
+      baseCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+      baseCuts->SetAcceptKinkDaughters(kFALSE);
+      baseCuts->SetRequireTPCRefit(kTRUE);
+      baseCuts->SetMaxFractionSharedTPCClusters(0.4);
+      // ITS
+      baseCuts->SetRequireITSRefit(kTRUE);
+      //accept secondaries
+      baseCuts->SetMaxDCAToVertexXY(2.4);
+      baseCuts->SetMaxDCAToVertexZ(3.2);
+      baseCuts->SetDCAToVertex2D(kTRUE);
+      //reject fakes
+      baseCuts->SetMaxChi2PerClusterITS(36);
+      baseCuts->SetMaxChi2TPCConstrainedGlobal(36);
+      baseCuts->SetRequireSigmaToVertex(kFALSE);
+//      baseCuts->SetEtaRange(-0.9,0.9);
+//      baseCuts->SetPtRange(0.15, 1E+15.);
+      baseCuts->SetEtaRange(-0.8, 0.8);
+      baseCuts->SetPtRange(0.2, 5.);
+  
+      // Good global tracks
+      AliESDtrackCuts* globalCuts = baseCuts->Clone("global");
+      globalCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+      
+      // tracks with vertex constraint
+      AliESDtrackCuts* constrainedCuts = baseCuts->Clone("vertexConstrained");
+      constrainedCuts->SetRequireITSRefit(kFALSE);
+
+      // Add
+      trackCuts->AddCuts(globalCuts);
+      trackCuts->AddCuts(constrainedCuts);
+      task->SetTrackCuts(trackCuts);
+    }
+  }
 
   // --- Create containers for output --------------------------------
   const char* sumName = Form("FlowQCSums%s%s", fwdDet.Data(), AliForwardFlowTaskQC::GetQCType(flags, false));

@@ -68,7 +68,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     // fExtraDead(0),
     fXtraDead(0),
     fInvalidIsEmpty(false),
-    fMergingDisabled(false)
+    fMergingDisabled(false),
+    fIgnoreESDForAngleCorrection(false)
 {
   // 
   // Default Constructor - do not use 
@@ -95,7 +96,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     // fExtraDead(51200),
     fXtraDead(AliFMDStripIndex::Pack(3,'O',19,511)+1),
     fInvalidIsEmpty(false),
-    fMergingDisabled(false)
+    fMergingDisabled(false),
+    fIgnoreESDForAngleCorrection(false)
 {
   // 
   // Constructor 
@@ -574,8 +576,8 @@ AliFMDSharingFilter::SignalInStrip(const AliESDFMD& input,
   // just return read value  
   if (mult == AliESDFMD::kInvalidMult               || 
       mult == 0                                     ||
-      (fCorrectAngles && input.IsAngleCorrected()) || 
-      (!fCorrectAngles && !input.IsAngleCorrected()))
+      (fCorrectAngles && (fIgnoreESDForAngleCorrection || input.IsAngleCorrected())) || 
+      (!fCorrectAngles && !fIgnoreESDForAngleCorrection && !input.IsAngleCorrected()))
     return mult;
 
   // If we want angle corrected data, correct it, 
