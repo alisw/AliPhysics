@@ -216,10 +216,29 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 			Float_t meanmcv=gfundata->GetParameter(0);
 
 
-			hist1data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));
-			hist2data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav-0.0001+meandatav)));
+			hist1data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));			
+			Float_t width=nsig_data_Proj1->GetXaxis()->GetBinWidth(-1.0*nsigmacut);
+			Int_t lowbind=nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav);
+			Int_t upbind=nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav+meandatav);
+			Float_t lowbinpartd=TMath::Abs(nsig_data_Proj1->GetXaxis()->GetBinLowEdge(lowbind)+1.0*nsigmacut*sigmadatav-meandatav);
+			Float_t upbinpartd=TMath::Abs(nsigmacut*sigmadatav+meandatav-nsig_data_Proj1->GetXaxis()->GetBinUpEdge(upbind));
+			
+
+
+			Float_t corrd=(lowbinpartd*nsig_data_Proj1->GetBinContent(lowbind)+upbinpartd*nsig_data_Proj1->GetBinContent(upbind))/width;
+
+			hist2data->SetBinContent(ibin-firstbin+1,nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav+meandatav))-corrd);
+			cout<<corrd/nsig_data_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmadatav+meandatav),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut*sigmadatav+meandatav))<<endl;
+
 			hist1mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut),nsig_data_Proj1->GetXaxis()->FindBin(nsigmacut-0.0001)));
-			hist2mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv-0.0001+meanmcv)));
+			Int_t lowbinmc=nsig_mc_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv);
+			Int_t upbinmc=nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv);
+			Float_t lowbinpartmc=TMath::Abs(nsig_mc_Proj1->GetXaxis()->GetBinLowEdge(lowbinmc)+1.0*nsigmacut*sigmamcv-meanmcv);
+			Float_t upbinpartmc=TMath::Abs(nsigmacut*sigmamcv+meanmcv-nsig_data_Proj1->GetXaxis()->GetBinUpEdge(upbinmc));
+			Float_t corrmc=(lowbinpartmc*nsig_mc_Proj1->GetBinContent(lowbinmc)+upbinpartmc*nsig_mc_Proj1->GetBinContent(upbinmc))/width;
+			cout<<corrmc/nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))<<" aaa "<<endl;
+
+			hist2mc->SetBinContent(ibin-firstbin+1,nsig_mc_Proj1->Integral(nsig_data_Proj1->GetXaxis()->FindBin(-1.0*nsigmacut*sigmamcv+meanmcv),nsig_mc_Proj1->GetXaxis()->FindBin(nsigmacut*sigmamcv+meanmcv))-corrmc);
 			TCanvas* ctmp=new TCanvas(Form("c%d%s",ibin,Particle[ipart].Data()),Form("c%d%s",ibin,Particle[ipart].Data()),800,800);
 			ctmp->cd()->SetLogy();
 
@@ -238,6 +257,11 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 			
 		}
 	
+			hist1data->Sumw2();
+			hist1data->Print("all");
+			hist1data->Sumw2();
+			hist1mc->Sumw2();
+			hist2mc->Sumw2();
 
 		hist2data->GetXaxis()->SetTitle("p_{T} (GeV/c)");
 		hist2data->GetYaxis()->SetTitle("N(-3fit,3fit)/N(-3,3)");
@@ -262,10 +286,22 @@ void corrusingfitsigma(TString nameFile1,TString outputname1,TString nameFile2,T
 		corr->Divide(hist2mc);
 		corr->SetLineColor(kBlue);
 		corr->GetYaxis()->SetTitle("correction");
-		corr->Fit("pol0","R","",minpt,maxpt);
+		corr->Fit("pol0","R0","",minpt,maxpt);
 		
 		oufiletxt<<Particle[ipart].Data()<<" "<<((TF1*)corr->GetListOfFunctions()->At(0))->GetParameter(0)<<endl;
 		lout->Add(corr);
+		TCanvas* corrcanvas=new TCanvas(Form("corrcanvas%s",Particle[ipart].Data()), Form("corrcanvas%s",Particle[ipart].Data()),600,600);
+		corrcanvas->SetMargin(0.12,0.05,0.15,0.1);
+		corr->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+		corr->GetYaxis()->SetTitle("TOF PID mismatch corr.");
+		corr->GetYaxis()->SetTitleOffset(1.5*corr->GetYaxis()->GetTitleOffset());
+		corr->GetYaxis()->SetRangeUser(0.98,1.04);
+	
+		corrcanvas->cd();
+		corr->Draw("E1");
+		corrcanvas->SaveAs(Form("Corr%s.eps",Particle[ipart].Data()));
+		corrcanvas->SaveAs(Form("Corr%s.png",Particle[ipart].Data()));
+
 	}
 	TFile* fileout=TFile::Open("TOFcorrPID.root","Recreate");
 	

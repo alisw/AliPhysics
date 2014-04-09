@@ -69,11 +69,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   AliAnalysisTaskEmcalJet("correlations",kFALSE), 
   fPhimin(-10), fPhimax(10),
   fEtamin(-0.9), fEtamax(0.9),
-  fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), fJetPtcut(15.0), fJetRad(0.4),
+  fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
+  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0),
   useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doComments(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -168,11 +170,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   AliAnalysisTaskEmcalJet(name,kTRUE),
   fPhimin(-10), fPhimax(10),
   fEtamin(-0.9), fEtamax(0.9),
-  fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), fJetPtcut(15.0), fJetRad(0.4),
+  fAreacut(0.0), fTrkBias(5), fClusBias(5), fTrkEta(0.9), 
+  fJetPtcut(15.0), fJetRad(0.4), fConstituentCut(0.15),
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0),
   useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  doComments(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -553,6 +557,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     else centralityBins[ic]=10.0*ic; 
   }
 */
+
   // setup for Pb-Pb collisions
   Int_t nCentralityBins  = 100;
   Double_t centralityBins[nCentralityBins+1];
@@ -597,12 +602,14 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
     if(!inputHandler) {
         AliFatal("Input handler needed");
+		return;
     }
 
     // PID response object
     fPIDResponse = inputHandler->GetPIDResponse();
     if (!fPIDResponse) {
         AliError("PIDResponse object was not created");
+	    return;
     }
     // *****************************************************************************************
 
@@ -801,6 +808,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     AliEmcalJet *jet = static_cast<AliEmcalJet*>(jets->At(ijet));
     if (!jet) continue;
 
+    // apply jet cuts
     if ((jet->Phi()<fPhimin)||(jet->Phi()>fPhimax)) continue;
     if ((jet->Eta()<fEtamin)||(jet->Eta()>fEtamax)) continue;
     if (makeextraCORRhistos) fHistAreavsRawPt[centbin]->Fill(jet->Pt(),jet->Area());
@@ -829,7 +837,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
 	 // (should probably be higher..., but makes a cut on jet pT)
      if (jet->Pt()<0.1) continue;
-     // do we accept jet?
+     // do we accept jet? apply jet cuts
      if (!AcceptMyJet(jet)) continue;
 
      // check on lead jet
@@ -916,15 +924,20 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         // calculate and get some track parameters
         Double_t tracketa=track->Eta();   // eta of track
         Double_t deta=tracketa-jeteta;    // dETA between track and jet
-        Int_t ieta=GetEtaBin(deta);       // bin of eta
+		Int_t ieta = -1;
+        if (makeextraCORRhistos) {
+  		  ieta=GetEtaBin(deta);       // bin of eta
+	      if(ieta<0) continue;              // double check we don't have a negative array index
+		}
 
         // dPHI between jet and hadron
         Double_t dphijh = RelativePhi(jet->Phi(), track->Phi()); // angle between jet and hadron
 
         // jet pt bins
-        Int_t iptjet=-1;                  // initialize jet pT bin
+        Int_t iptjet = -1;                  // initialize jet pT bin
 //        iptjet=GetpTjetBin(jetPt);        // bin of jet pT
-        iptjet=GetpTjetBin(jet->Pt());
+        iptjet=GetpTjetBin(jet->Pt());    // bin of jet pt
+	    if(iptjet<0) continue; 			  // double check we don't have a negative array index
         Double_t dR=sqrt(deta*deta+dphijh*dphijh);                   // difference of R between jet and hadron track
 
         // fill some jet-hadron histo's
@@ -969,15 +982,15 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     	if(ptmax < fTrkBias) continue;    // force PID to happen when max track pt > 5.0 GeV
     }
 
+    // some variables for PID
+    Double_t eta, pt, dEdx, ITSsig, TOFsig, charge = -99.;
+
+    // nSigma of particles in TPC, TOF, and ITS
+    Double_t nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC = -99.;
+    Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF = -99.;
+    Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS = -99.;
+
     if(doPID){
-      // data information for pid    
-      Double_t eta, pt, dEdx, ITSsig, TOFsig, charge = -99.;
-
-      // nSigma of particles in TPC, TOF, and ITS
-      Double_t nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC = -99.;
-      Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF = -99.;
-      Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS = -99.;
-
       // get parameters of track
       charge = track->Charge();    // charge of track
       eta    = track->Eta();       // ETA of track
@@ -1278,10 +1291,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   // print some stats on the event
   event++;
   
-  cout<<"Event #: "<<event<<endl;
-  cout<<"# of jets: "<<Njets<<"      Highest jet pt: "<<highestjetpt<<endl;
-  cout<<"# tracks: "<<Ntracks<<"      Highest track pt: "<<ptmax<<endl;
-  cout<<" =============================================== "<<endl;
+  if (doComments) {
+    cout<<"Event #: "<<event<<"     Jet Radius: "<<fJetRad<<"     Constituent Pt Cut: "<<fConstituentCut<<endl;
+    cout<<"# of jets: "<<Njets<<"      Highest jet pt: "<<highestjetpt<<endl;
+    cout<<"# tracks: "<<Ntracks<<"      Highest track pt: "<<ptmax<<endl;
+    cout<<" =============================================== "<<endl;
+  }
 
   return kTRUE;  // used when the function is of type bool
 }  // end of RUN
@@ -1351,9 +1366,9 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::GetEtaBin(Double_t eta) const
 {
   // Get eta bin for histos.
   Int_t etabin = -1;
-  if (TMath::Abs(eta)<=0.4)				etabin = 0;
+  if (TMath::Abs(eta)<=0.4)				                etabin = 0;
   else if (TMath::Abs(eta)>0.4 && TMath::Abs(eta)<0.8)	etabin = 1;
-  else if (TMath::Abs(eta)>=0.8)			etabin = 2;
+  else if (TMath::Abs(eta)>=0.8)			            etabin = 2;
 
   return etabin;
 } // end of get-eta-bin
@@ -1367,7 +1382,7 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::GetpTjetBin(Double_t pt) const
   else if (pt>=20 && pt<25)	ptbin = 1;
   else if (pt>=25 && pt<40)	ptbin = 2;
   else if (pt>=40 && pt<60)	ptbin = 3;
-  else if (pt>=60)		ptbin = 4;
+  else if (pt>=60)	     	ptbin = 4;
 
   return ptbin;
 } // end of get-jet-pt-bin
@@ -1398,7 +1413,7 @@ Int_t AliAnalysisTaskEmcalJetHadEPpid::GetzVertexBin(Double_t zVtx) const
 {
   // get z-vertex bin for histo.
   int zVbin= -1;
-  if (zVtx>=-10 && zVtx<-8)	zVbin = 0;
+  if (zVtx>=-10 && zVtx<-8)	    zVbin = 0;
   else if (zVtx>=-8 && zVtx<-6)	zVbin = 1;
   else if (zVtx>=-6 && zVtx<-4)	zVbin = 2;
   else if (zVtx>=-4 && zVtx<-2)	zVbin = 3; 

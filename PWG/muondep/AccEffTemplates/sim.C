@@ -11,7 +11,7 @@ void sim(Int_t nev=100)
 
   simulator.SetMakeSDigits("MUON");
   simulator.SetMakeDigits("MUON");// ITS"); // ITS needed to propagate the simulated vertex
-//  simulator.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
+  simulator.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
 
   simulator.SetDefaultStorage(VAR_OCDB_PATH);
   
@@ -24,11 +24,12 @@ void sim(Int_t nev=100)
     
     // MUON Tracker
     simulator.SetSpecificStorage("MUON/Align/Data",VAR_SIM_ALIGNDATA);
-  
+
+    simulator.SetSpecificStorage("ITS/Align/Data",  "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal");
     // Mag.field from OCDB
     simulator.UseMagFieldFromGRP();
 
-    //  simulator.UseVertexFromCDB();  
+    simulator.UseVertexFromCDB();  
   }
   
   // The rest

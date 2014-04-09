@@ -103,7 +103,7 @@ AliAnalysisTaskCFTree::AliAnalysisTaskCFTree(const char* name) :
 void AliAnalysisTaskCFTree::ConnectInputData(Option_t* /*option*/){
   fInputHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fMcHandler    = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-  fInputHandler->SetNeedField();
+  if (fInputHandler) fInputHandler->SetNeedField();
 }
 //-----------------------------------------------------------------------------
 
@@ -321,7 +321,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
     if (fIsAOD){
       AliAODEvent* aod = (AliAODEvent*) event;
     
-      if (fStoreTracklets) {
+      if (fTracklets) {
         AliAODTracklets* tracklets = aod->GetTracklets();
         Int_t nTracklets = tracklets->GetNumberOfTracklets();
         for (Int_t i=0;i<nTracklets;i++){
@@ -333,6 +333,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
           Int_t label1 = tracklets->GetLabel(i,0);
           Int_t label2 = tracklets->GetLabel(i,1);
           if (label1!=label2) continue;
+          if (!mcTracks) continue;
           AliAODMCParticle* particle = (AliAODMCParticle*) mcTracks->At(label1);
           if (!particle) continue;
           Short_t charge = particle->Charge();
@@ -348,7 +349,7 @@ void AliAnalysisTaskCFTree::Exec(Option_t *){
         }
       }
 
-      if (fStoreMuons){
+      if (fMuons){
         for (Int_t iTrack = 0; iTrack < aod->GetNTracks(); iTrack++) {
           AliAODTrack* track = aod->GetTrack(iTrack);
           if (!track->IsMuonTrack()) continue;

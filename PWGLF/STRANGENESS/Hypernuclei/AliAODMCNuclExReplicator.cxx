@@ -284,12 +284,15 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   TClonesArray *arrayMC = 0;
   AliAODMCHeader *mcHeader=0;
   Int_t mumpdg=-100;
- 
+  Int_t mumpdgNeg=-100;
+  
+
   arrayMC = (TClonesArray*) source.GetList()->FindObject(AliAODMCParticle::StdBranchName());
   if (!arrayMC) {
     Printf("Error: MC particles branch not found!\n");
     return;
   }
+  
   // if(arrayMC)
   //   cout<<"Ho caricato array mc"<<endl;
   
@@ -298,9 +301,10 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     printf("AliAnalysisTaskSEDs::UserExec: MC header branch not found!\n");
     return;
   } 
+
   // if(mcHeader)
   //   cout<<"Ho caricato MC header"<<endl;
-
+  
   //  cout<<"Centrality AOD source: "<<source.GetHeader()->GetCentrality()<<endl;
 
   Int_t nsv(0);
@@ -316,12 +320,12 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   Double_t dispersion;
 
   // cout<<"Qui"<<endl;
-  //cout<<source.GetMagneticField()<<endl;
+  // cout<<source.GetMagneticField()<<endl;
 
   AliAODVertex *vtx = source.GetPrimaryVertex();
 						
-  //  cout<<"Source "<<source<<endl;
-  //cout<<"vtx: "<<vtx<<endl;
+  // cout<<"Source "<<source<<endl;
+  // cout<<"vtx: "<<vtx<<endl;
 
   // A Set of very loose cut for a weak strange decay
   
@@ -342,7 +346,7 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
   vtx->GetXYZ(pos);
   vtx->GetCovarianceMatrix(cov);
   fV1 = new AliESDVertex(pos,cov,100.,100,vtx->GetName());
-  //  cout<<"fV1 pricipal loop: "<<fV1<<endl;
+  cout<<"fV1 pricipal loop: "<<fV1<<endl;
   
   if(entries<=0) return;
   indices = new UShort_t[entries];
@@ -424,13 +428,19 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
 
     if(mumpdg == -1010010030){
 
-      //	if(PDGCode==-211 || PDGCode==+211){  
-      if(PDGCode==+211){  
+      if(PDGCode==-211 || PDGCode==+211){  
+	//      if(PDGCode==-211){  
+	
+	//	if(aodtrack->Charge()>0)continue;
+	
 	Track0[nTrack0++]=j;
       }
       
-      //	if(PDGCode==1000020030 ||PDGCode==-1000020030 ){
-      if(PDGCode==-1000020030){
+      if(PDGCode==1000020030 ||PDGCode==-1000020030 ){
+      //if(PDGCode==1000020030){
+	
+	//	if(aodtrack->Charge()<0)continue;
+	
 	Track1[nTrack1++]=j;
 	// 	new((*fNuclei)[nnuclei++]) AliAODTrack(*aodtrack);
       }
@@ -470,6 +480,8 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     AliAODMCParticle *partPos = (AliAODMCParticle*) arrayMC->At(labelpos);
     Int_t mumidPos = partPos->GetMother();
 
+    //    cout<<"\n\nmumidPos: "<<mumidPos <<endl;
+
     //------------------------------
     
     for (Int_t k=0; k <nTrack0 ; k++) {                           //! Pion Tracks Loop
@@ -486,11 +498,16 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       AliAODMCParticle *partNeg = (AliAODMCParticle*) arrayMC->At(labelneg);
       Int_t mumidNeg = partNeg->GetMother();
       
-      
+      //      cout<<"mumidNeg: "<<mumidNeg <<endl;
+
+      // AliAODMCParticle *motherNeg = (AliAODMCParticle*) arrayMC->At(mumidNeg);
+      // mumpdgNeg = motherNeg->GetPdgCode();
+
       //------------------------------
       //  if(mumidPos == mumidNeg && mumidNeg > 0){
       isOk=kFALSE;
       
+      // if(mumidPos == mumidNeg && mumidNeg > 0 && mumpdgNeg  == 1010010030)
       if(mumidPos == mumidNeg && mumidNeg > 0)
 	isOk = kTRUE;
       
@@ -525,6 +542,7 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
 	
       if(io2Prong->CosPointingAngle()<fCosMin)continue;
 	
+      //      cout<<"CPA: "<<io2Prong->CosPointingAngle()<<endl;
       
       // AliAODTrack *trk0 = (AliAODTrack*)io2Prong->GetDaughter(0);
       // AliAODTrack *trk1 = (AliAODTrack*)io2Prong->GetDaughter(1);
@@ -537,6 +555,8 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
       // cout<<"**********************************************"<<endl;
 	
       //      rd =  new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
+
+      //      cout<<"is ok??? "<<isOk<<endl;
       if(isOk){
 	new((*fSecondaryVerices)[nsv++]) AliAODRecoDecayLF2Prong(*io2Prong);
 	new((*fDaughterTracks)[ntracksD++]) AliAODTrack(*negtrackAOD);

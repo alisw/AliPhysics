@@ -256,8 +256,8 @@ void AliAnalysisTaskUpcTree::UserExec(Option_t *){
   
   for (Int_t i=0;i<6;i++) fNofITSClusters[i] = fIsAOD ? aod->GetHeader()->GetNumberOfITSClusters(i) : esd->GetMultiplicity()->GetNumberOfITSClusters(i);
   
-  fIR1 = fIsAOD ? esd->GetHeader()->GetIRInt1InteractionMap() : esd->GetHeader()->GetIRInt1InteractionMap();
-  fIR2 = fIsAOD ? esd->GetHeader()->GetIRInt2InteractionMap() : esd->GetHeader()->GetIRInt2InteractionMap();
+  fIR1 = fIsAOD ? aod->GetHeader()->GetIRInt1InteractionMap() : esd->GetHeader()->GetIRInt1InteractionMap();
+  fIR2 = fIsAOD ? aod->GetHeader()->GetIRInt2InteractionMap() : esd->GetHeader()->GetIRInt2InteractionMap();
   
   AliVVZERO* vzero = event->GetVZEROData();
   for (Int_t i=0; i<32; i++){

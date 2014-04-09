@@ -94,7 +94,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv FILTER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // AOD track filter (needs to be first cut to speed up)
   AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
-  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+  //  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
   //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -105,13 +106,13 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
   varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  //  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 
   // standard cuts
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.000001,1e30, kTRUE);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
 
@@ -122,7 +123,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //  pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF
+  //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF (LHC11h) [-1.5,+3.]
+  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-2.6,4.7); // when eta correction OFF (LHC10h) [-2.0,+3.]
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
 
@@ -203,7 +205,7 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   Double_t gCut=0.05;
   AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
-  die->GetPairPreFilter().AddCuts(gammaCuts);
+  //  die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
   Double_t yCut=0.9;

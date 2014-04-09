@@ -25,6 +25,7 @@
 
 
 #include "TChain.h"
+#include "TClonesArray.h"
 #include "TTree.h"
 #include "TList.h"
 #include "TMath.h"
@@ -59,7 +60,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODJet.h"
-
+#include "AliVVertex.h"
 #include "AliAnalysisTaskJetCorePP.h"
 
 using std::cout;
@@ -76,11 +77,15 @@ fESD(0x0),
 fAODIn(0x0),
 fAODOut(0x0),
 fAODExtension(0x0),
+fMcEvent(0x0),
+fMcHandler(0x0),
 fJetBranchName(""),
 fJetBranchNameChargMC(""),
+fJetBranchNameKine(""),
 fJetBranchNameFullMC(""),
 fJetBranchNameBg(""),
 fJetBranchNameBgChargMC(""),
+fJetBranchNameBgKine(""),
 fListJets(0x0),
 fListJetsGen(0x0),
 fListJetsGenFull(0x0),
@@ -104,12 +109,16 @@ fJetEtaMax(0.5),
 fTriggerEtaCut(0.9),
 fTrackEtaCut(0.9),
 fTrackLowPtCut(0.15),
+fUseExchContainer(0),
 fOutputList(0x0),
 fHistEvtSelection(0x0),
 fh2Ntriggers(0x0),
 fHJetSpec(0x0),
 fHJetSpecSubUeMedian(0x0),
 fHJetSpecSubUeCone(0x0),
+fHJetPhiCorr(0x0),
+fHJetPhiCorrSubUeMedian(0x0),
+fHJetPhiCorrSubUeCone(0x0),
 fHJetUeMedian(0x0),
 fHJetUeCone(0x0),
 fHRhoUeMedianVsCone(0x0),
@@ -142,6 +151,9 @@ fh2NtriggersGen(0x0),
 fHJetSpecGen(0x0),
 fHJetSpecSubUeMedianGen(0x0),
 fHJetSpecSubUeConeGen(0x0),
+fHJetPhiCorrGen(0x0),
+fHJetPhiCorrSubUeMedianGen(0x0),
+fHJetPhiCorrSubUeConeGen(0x0),
 fHJetUeMedianGen(0x0),
 fHJetUeConeGen(0x0),
 fhPtTrkTruePrimRec(0x0),
@@ -153,6 +165,7 @@ fhEntriesToMedianGen(0x0),
 fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
 fIsChargedMC(0),
+fIsKine(0),
 fIsFullMC(0),
 faGenIndex(0),
 faRecIndex(0),
@@ -179,7 +192,8 @@ fnEta(2),
 fEtaSize(0.7),
 fPhiSize(2*TMath::Pi()/fnPhi),
 fCellArea(fPhiSize*fEtaSize),
-fSafetyMargin(1.1)
+fSafetyMargin(1.1),
+fDoubleBinning(kFALSE)
 {
    // default Constructor
 }
@@ -192,11 +206,15 @@ fESD(0x0),
 fAODIn(0x0),
 fAODOut(0x0),
 fAODExtension(0x0),
+fMcEvent(0x0),
+fMcHandler(0x0),
 fJetBranchName(""),
 fJetBranchNameChargMC(""),
+fJetBranchNameKine(""),
 fJetBranchNameFullMC(""),
 fJetBranchNameBg(""),
 fJetBranchNameBgChargMC(""),
+fJetBranchNameBgKine(""),
 fListJets(0x0),
 fListJetsGen(0x0),
 fListJetsGenFull(0x0),
@@ -220,12 +238,16 @@ fJetEtaMax(0.5),
 fTriggerEtaCut(0.9),
 fTrackEtaCut(0.9),
 fTrackLowPtCut(0.15),
+fUseExchContainer(0),
 fOutputList(0x0),
 fHistEvtSelection(0x0),
 fh2Ntriggers(0x0),
 fHJetSpec(0x0),
 fHJetSpecSubUeMedian(0x0),
 fHJetSpecSubUeCone(0x0),
+fHJetPhiCorr(0x0),
+fHJetPhiCorrSubUeMedian(0x0),
+fHJetPhiCorrSubUeCone(0x0),
 fHJetUeMedian(0x0),
 fHJetUeCone(0x0),
 fHRhoUeMedianVsCone(0x0),
@@ -258,6 +280,9 @@ fh2NtriggersGen(0x0),
 fHJetSpecGen(0x0),
 fHJetSpecSubUeMedianGen(0x0),
 fHJetSpecSubUeConeGen(0x0),
+fHJetPhiCorrGen(0x0),
+fHJetPhiCorrSubUeMedianGen(0x0),
+fHJetPhiCorrSubUeConeGen(0x0),
 fHJetUeMedianGen(0x0),
 fHJetUeConeGen(0x0),
 fhPtTrkTruePrimRec(0x0),
@@ -269,6 +294,7 @@ fhEntriesToMedianGen(0x0),
 fhCellAreaToMedian(0x0),
 fhCellAreaToMedianGen(0x0),
 fIsChargedMC(0),
+fIsKine(0),
 fIsFullMC(0),
 faGenIndex(0),
 faRecIndex(0),
@@ -295,11 +321,17 @@ fnEta(2),
 fEtaSize(0.7),
 fPhiSize(2*TMath::Pi()/fnPhi),
 fCellArea(fPhiSize*fEtaSize),
-fSafetyMargin(1.1)
+fSafetyMargin(1.1),
+fDoubleBinning(kFALSE)
 {
 // Constructor
-
    DefineOutput(1, TList::Class());
+
+   TString dummy(name);
+   if(dummy.Contains("KINE")){
+      DefineInput(1, TClonesArray::Class());
+      //XXXX//DefineInput(2, TClonesArray::Class());
+   }
 }
 
 //--------------------------------------------------------------
@@ -309,11 +341,15 @@ fESD(a.fESD),
 fAODIn(a.fAODIn),
 fAODOut(a.fAODOut),
 fAODExtension(a.fAODExtension),
+fMcEvent(a.fMcEvent),
+fMcHandler(a.fMcHandler),
 fJetBranchName(a.fJetBranchName),
 fJetBranchNameChargMC(a.fJetBranchNameChargMC),
+fJetBranchNameKine(a.fJetBranchNameKine),
 fJetBranchNameFullMC(a.fJetBranchNameFullMC),
 fJetBranchNameBg(a.fJetBranchNameBg),
 fJetBranchNameBgChargMC(a.fJetBranchNameBgChargMC),
+fJetBranchNameBgKine(a.fJetBranchNameBgKine),
 fListJets(a.fListJets),
 fListJetsGen(a.fListJetsGen),
 fListJetsGenFull(a.fListJetsGenFull),
@@ -337,12 +373,16 @@ fJetEtaMax(a.fJetEtaMax),
 fTriggerEtaCut(a.fTriggerEtaCut),
 fTrackEtaCut(a.fTrackEtaCut),
 fTrackLowPtCut(a.fTrackLowPtCut),
+fUseExchContainer(a.fUseExchContainer),
 fOutputList(a.fOutputList),
 fHistEvtSelection(a.fHistEvtSelection),
 fh2Ntriggers(a.fh2Ntriggers),
 fHJetSpec(a.fHJetSpec),
 fHJetSpecSubUeMedian(a.fHJetSpecSubUeMedian),
 fHJetSpecSubUeCone(a.fHJetSpecSubUeCone),
+fHJetPhiCorr(a.fHJetPhiCorr),
+fHJetPhiCorrSubUeMedian(a.fHJetPhiCorrSubUeMedian),
+fHJetPhiCorrSubUeCone(a.fHJetPhiCorrSubUeCone),
 fHJetUeMedian(a.fHJetUeMedian),
 fHJetUeCone(a.fHJetUeCone),
 fHRhoUeMedianVsCone(a.fHRhoUeMedianVsCone), 
@@ -375,6 +415,9 @@ fh2NtriggersGen(a.fh2NtriggersGen),
 fHJetSpecGen(a.fHJetSpecGen),
 fHJetSpecSubUeMedianGen(a.fHJetSpecSubUeMedianGen),
 fHJetSpecSubUeConeGen(a.fHJetSpecSubUeConeGen),
+fHJetPhiCorrGen(a.fHJetPhiCorrGen),
+fHJetPhiCorrSubUeMedianGen(a.fHJetPhiCorrSubUeMedianGen),
+fHJetPhiCorrSubUeConeGen(a.fHJetPhiCorrSubUeConeGen),
 fHJetUeMedianGen(a.fHJetUeMedianGen),
 fHJetUeConeGen(a.fHJetUeConeGen),
 fhPtTrkTruePrimRec(a.fhPtTrkTruePrimRec),
@@ -386,6 +429,7 @@ fhEntriesToMedianGen(a.fhEntriesToMedianGen),
 fhCellAreaToMedian(a.fhCellAreaToMedian),
 fhCellAreaToMedianGen(a.fhCellAreaToMedianGen),
 fIsChargedMC(a.fIsChargedMC),
+fIsKine(a.fIsKine),
 fIsFullMC(a.fIsFullMC),
 faGenIndex(a.faGenIndex),
 faRecIndex(a.faRecIndex),
@@ -412,7 +456,8 @@ fnEta(a.fnEta),
 fEtaSize(a.fEtaSize),
 fPhiSize(a.fPhiSize),
 fCellArea(a.fCellArea),
-fSafetyMargin(a.fSafetyMargin)
+fSafetyMargin(a.fSafetyMargin),
+fDoubleBinning(a.fDoubleBinning)
 {
    //Copy Constructor
    fRandom->SetSeed(0);
@@ -447,7 +492,7 @@ Bool_t AliAnalysisTaskJetCorePP::Notify()
    //Implemented Notify() to read the cross sections
    //and number of trials from pyxsec.root
    //inspired by AliAnalysisTaskJetSpectrum2::Notify()
-   if(!fIsChargedMC) return kFALSE; 
+   if(!(fIsChargedMC || fIsKine)) return kFALSE; 
 
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    if(!fESD){
@@ -499,9 +544,14 @@ Bool_t AliAnalysisTaskJetCorePP::Notify()
 void AliAnalysisTaskJetCorePP::Init()
 {
    // check for jet branches
-   if(!strlen(fJetBranchName.Data())){
-      AliError("Jet branch name not set.");
+   if(fJetBranchNameKine.Length()==0){
+      if(!strlen(fJetBranchName.Data())){
+         AliError("Jet branch name not set.");
+      }
    }
+   fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); 
+
+
 }
 
 //--------------------------------------------------------------
@@ -510,17 +560,22 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 {
    // Create histograms and initilize variables
    fSafetyMargin = fBgConeR*fBgConeR /(fBgJetParamR*fBgJetParamR);
-  
+
    // Called once
    fListJets   = new TList();  //reconstructed level antikt jets
    fListJetsBg = new TList();  //reconstructed jets to be removed from bg
 
    fIsChargedMC = (fJetBranchNameChargMC.Length()>0) ? kTRUE : kFALSE;
+   fIsKine      = (fJetBranchNameKine.Length()>0)    ? kTRUE : kFALSE;
    fIsFullMC    = (fJetBranchNameFullMC.Length()>0)  ? kTRUE : kFALSE;
 
    fRandom = new TRandom3(0);
 
-   if(fIsChargedMC){
+   //if(fIsKine){ //?????????????????????????????????????????
+   //}
+
+
+   if(fIsChargedMC || fIsKine){   //full MC or pure kine
       fListJetsGen   = new TList(); //generator level charged antikt jets
       fListJetsBgGen = new TList(); //generator level jets to be removed from bg 
 
@@ -548,27 +603,49 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    //trigger pt spectrum (reconstructed) 
    fh2Ntriggers = new TH2F("fh2Ntriggers","# of triggers",
                              nBinsCentrality,0.0,100.0,50,0.0,50.0);
-   fOutputList->Add(fh2Ntriggers);
+   if(!fIsKine) fOutputList->Add(fh2Ntriggers);
+
+   Int_t bw = (fDoubleBinning==0) ? 1 : 2; //make larger bin width
 
    //Centrality, A, pTjet, pTtrigg, dphi
    const Int_t dimSpec   = 5;
-   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality,  50,   110,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
-   const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,   -20, 0.0, fkDeltaPhiCut};
-   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0, 200.0,50.0, TMath::Pi()};
+   const Int_t nBinsSpec[dimSpec]     = {nBinsCentrality,  50, bw*110,  50, TMath::Nint(10*(TMath::Pi()-fkDeltaPhiCut))};
+   const Double_t lowBinSpec[dimSpec] = {0.0,             0.0,    -20, 0.0, fkDeltaPhiCut};
+   const Double_t hiBinSpec[dimSpec]  = {100.0,           1.0,  200.0,50.0, TMath::Pi()};
    fHJetSpec = new THnSparseF("fHJetSpec",
                    "Recoil jet spectrum [cent,A,pTjet,pTtrig,dphi]",
                    dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
-   fOutputList->Add(fHJetSpec);  
+   if(!fIsKine) fOutputList->Add(fHJetSpec);  
 
    //background estimated as  median of kT jets 
    fHJetSpecSubUeMedian = (THnSparseF*) fHJetSpec->Clone("fHJetSpecSubUeMedian");
    fHJetSpecSubUeMedian->SetTitle("Recoil jet spectrum [cent,A,pTjet-pTUe,pTtrig,dphi]");
-   fOutputList->Add(fHJetSpecSubUeMedian); 
+   if(!fIsKine) fOutputList->Add(fHJetSpecSubUeMedian); 
    //background estimated as weighted  median of kT jets  ala Cone
    fHJetSpecSubUeCone = (THnSparseF*) fHJetSpec->Clone("fHJetSpecSubUeCone");
    fHJetSpecSubUeCone->SetTitle("Recoil jet spectrum [cent,A,pTjet-pTUe,pTtrig,dphi]");
-   fOutputList->Add(fHJetSpecSubUeCone); 
+   if(!fIsKine) fOutputList->Add(fHJetSpecSubUeCone); 
 
+
+   //A, pTjet, pTtrigg, dphi
+   const Int_t dimCor = 4;
+   const Int_t nBinsCor[dimCor]     = {50,  110,   50,      100};
+   const Double_t lowBinCor[dimCor] = {0.0, -20,  0.0, -0.5*TMath::Pi()};
+   const Double_t hiBinCor[dimCor]  = {1.0, 200, 50.0, 1.5*TMath::Pi()};
+   fHJetPhiCorr = new THnSparseF("fHJetPhiCorr",
+                                 "Recoil jet spectrum [A,pTjet,pTtrig,dphi]",
+                                 dimCor,nBinsCor,lowBinCor,hiBinCor);
+
+   if(!fIsKine) fOutputList->Add(fHJetPhiCorr); // Dphi distribution jet-triger
+
+   //background estimated as  median of kT jets 
+   fHJetPhiCorrSubUeMedian = (THnSparseF*) fHJetPhiCorr->Clone("fHJetPhiCorrSubUeMedian");
+   fHJetPhiCorrSubUeMedian->SetTitle("Recoil jet spectrum [A,pTjet-pTUe,pTtrig,dphi]");
+   if(!fIsKine) fOutputList->Add(fHJetPhiCorrSubUeMedian); 
+   //background estimated as weighted  median of kT jets  ala Cone
+   fHJetPhiCorrSubUeCone = (THnSparseF*) fHJetPhiCorr->Clone("fHJetPhiCorrSubUeCone");
+   fHJetPhiCorrSubUeCone->SetTitle("Recoil jet spectrum [A,pTjet-pTUe,pTtrig,dphi]");
+   if(!fIsKine) fOutputList->Add(fHJetPhiCorrSubUeCone); 
 
 
    //------------------- HISTOS FOR DIAGNOSTIC ----------------------
@@ -580,12 +657,12 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fHJetUeMedian = new THnSparseF("fHJetUeMedian",
                    "Recoil jet spectrum [A,pTjet,pTjet-pTUe, pTUe, rhoUe]",
                    dimSpecMed, nBinsSpecMed, lowBinSpecMed, hiBinSpecMed);
-   fOutputList->Add(fHJetUeMedian);  
+   if(!fIsKine) fOutputList->Add(fHJetUeMedian);  
    
    //A, pTjet, pTjet-pTUe, pTUe, rhoUe     bg estimate from kT median Cone
    fHJetUeCone = (THnSparseF*) fHJetUeMedian->Clone("fHJetUeCone");
    fHJetUeCone->SetTitle("Recoil jet spectrum [A,pTjet,pTjet-pTUe, pTUe, rhoUe]");
-   fOutputList->Add(fHJetUeCone); 
+   if(!fIsKine) fOutputList->Add(fHJetUeCone); 
 
    //rho bacground reconstructed data
    const Int_t    dimRho   = 2;
@@ -595,7 +672,7 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
    fHRhoUeMedianVsCone = new THnSparseF("hRhoUeMedianVsCone","[Rho Cone, Rho Median]",  
                                       dimRho, nBinsRho, lowBinRho, hiBinRho);
-   fOutputList->Add(fHRhoUeMedianVsCone);
+   if(!fIsKine) fOutputList->Add(fHRhoUeMedianVsCone);
 
    //Jet number density histos [Trk Mult, jet density, pT trigger]
    /*const Int_t    dimJetDens   = 3;
@@ -632,22 +709,26 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fhCentrality = new TH1D("fhCentrality","Centrality",20,0,100);
    fhCentralityAccept = new TH1D("fhCentralityAccept","Centrality after cut",20,0,100);
    fhEntriesToMedian = new TH1D("fhEntriesToMedian","fhEntriesToMedian",30,0,30);
-   fhCellAreaToMedian =  new TH1D("fhCellAreaToMedian", "fhCellAreaToMedian", 75,0,1.5),
+   fhCellAreaToMedian =  new TH1D("fhCellAreaToMedian", "fhCellAreaToMedian", 75,0,1.5);
 
-   fOutputList->Add(fhJetPhi);
-   fOutputList->Add(fhTriggerPhi);
-   fOutputList->Add(fhJetEta);
-   fOutputList->Add(fhTriggerEta);
+   if(!fIsKine){
+      fOutputList->Add(fhJetPhi);
+      fOutputList->Add(fhTriggerPhi);
+      fOutputList->Add(fhJetEta);
+      fOutputList->Add(fhTriggerEta);
+   }
    fOutputList->Add(fhVertexZ);    
-   fOutputList->Add(fhVertexZAccept);    
-   fOutputList->Add(fhContribVtx); 
-   fOutputList->Add(fhContribVtxAccept); 
-   fOutputList->Add(fhDphiTriggerJet);
-   fOutputList->Add(fhDphiTriggerJetAccept);
-   fOutputList->Add(fhCentrality); 
-   fOutputList->Add(fhCentralityAccept);
-   fOutputList->Add(fhEntriesToMedian);
-   fOutputList->Add(fhCellAreaToMedian);
+   fOutputList->Add(fhVertexZAccept);   
+   if(!fIsKine){
+      fOutputList->Add(fhContribVtx); 
+      fOutputList->Add(fhContribVtxAccept); 
+      fOutputList->Add(fhDphiTriggerJet);
+      fOutputList->Add(fhDphiTriggerJetAccept);
+      fOutputList->Add(fhCentrality); 
+      fOutputList->Add(fhCentralityAccept);
+      fOutputList->Add(fhEntriesToMedian);
+      fOutputList->Add(fhCellAreaToMedian);
+   }
    // raw spectra of INCLUSIVE jets  
    //Centrality, pTjet, A
    /*const Int_t dimRaw   = 3;
@@ -679,23 +760,23 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    */
 
    //analyze MC generator level 
-   if(fIsChargedMC){   
+   if(fIsChargedMC || fIsKine){   
       if(fFillRespMx){
          //Fill response matrix only once 
-         fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", 100,0,200, 100,0,200); 
+         fhJetPtGenVsJetPtRec = new TH2D("fhJetPtGenVsJetPtRec","JetPtGenVsJetPtRec", bw*100,0,200, bw*100,0,200); 
          fOutputList->Add(fhJetPtGenVsJetPtRec); //gen MC charg jet pt spectrum versus rec charged jet pt spectrum
          //....
-         fhJetPtGenVsJetPtRecSubUeMedian = new TH2D("fhJetPtGenVsJetPtRecSubUeMedian","fhJetPtGenVsJetPtRecSubUeMedian", 110,-20,200, 110,-20,200); 
+         fhJetPtGenVsJetPtRecSubUeMedian = new TH2D("fhJetPtGenVsJetPtRecSubUeMedian","fhJetPtGenVsJetPtRecSubUeMedian", bw*110,-20,200, bw*110,-20,200); 
          fOutputList->Add(fhJetPtGenVsJetPtRecSubUeMedian); // with kT median bg subtr 
          //....
          fhJetPtGenVsJetPtRecSubUeCone=(TH2D*)fhJetPtGenVsJetPtRecSubUeMedian->Clone("fhJetPtGenVsJetPtRecSubUeCone");
          fhJetPtGenVsJetPtRecSubUeCone->SetTitle("fhJetPtGenVsJetPtRecSubUeCone");
          fOutputList->Add(fhJetPtGenVsJetPtRecSubUeCone); // with weighted kT median bg subtr 
          //....
-         fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC Gen)",100,0,200); //MC generator charged jet pt spectrum
+         fhJetPtGen = new TH1D("fhJetPtGen","Jet Pt (MC Gen)",bw*100,0,200); //MC generator charged jet pt spectrum
          fOutputList->Add(fhJetPtGen);  
          //....
-         fhJetPtSubUeMedianGen = new TH1D("fhJetPtSubUeMedianGen","Jet Pt - UE pT (MC Gen)",110,-20,200); 
+         fhJetPtSubUeMedianGen = new TH1D("fhJetPtSubUeMedianGen","Jet Pt - UE pT (MC Gen)",bw*110,-20,200); 
          fOutputList->Add(fhJetPtSubUeMedianGen);  // with kT median bg subtr
          //....
          fhJetPtSubUeConeGen = (TH1D*) fhJetPtSubUeMedianGen->Clone("fhJetPtSubUeConeGen");
@@ -727,6 +808,19 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
       fHJetSpecSubUeConeGen =  (THnSparseF*) fHJetSpecSubUeCone->Clone("fHJetSpecSubUeConeGen"); 
       fHJetSpecSubUeConeGen->SetTitle(Form("%s Gen MC",fHJetSpecSubUeCone->GetTitle()));
       fOutputList->Add(fHJetSpecSubUeConeGen);
+      //---
+      fHJetPhiCorrGen = (THnSparseF*) fHJetPhiCorr->Clone("fHJetPhiCorrGen");
+      fHJetPhiCorrGen->SetTitle(Form("%s Gen MC",fHJetPhiCorr->GetTitle()));
+      fOutputList->Add(fHJetPhiCorrGen); 
+
+      fHJetPhiCorrSubUeMedianGen = (THnSparseF*) fHJetPhiCorrSubUeMedian->Clone("fHJetPhiCorrSubUeMedianGen");
+      fHJetPhiCorrSubUeMedianGen->SetTitle(Form("%s Gen MC",fHJetPhiCorrSubUeMedian->GetTitle()));
+      fOutputList->Add(fHJetPhiCorrSubUeMedianGen); 
+ 
+      fHJetPhiCorrSubUeConeGen = (THnSparseF*) fHJetPhiCorrSubUeCone->Clone("fHJetPhiCorrSubUeConeGen");
+      fHJetPhiCorrSubUeConeGen->SetTitle(Form("%s Gen MC", fHJetPhiCorrSubUeCone->GetTitle()));
+      fOutputList->Add(fHJetPhiCorrSubUeConeGen);
+
       //---
       fHJetUeMedianGen  =  (THnSparseF*) fHJetUeMedian->Clone("fHJetUeMedianGen");  
       fHJetUeMedianGen->SetTitle(Form("%s Gen MC", fHJetUeMedian->GetTitle()));
@@ -816,25 +910,47 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    Double_t eventW  = 1.0;
    Double_t ptHard  = 0.0;
    Double_t nTrials = 1.0; // Trials for MC trigger
-   if(fIsChargedMC) fh1AvgTrials->Fill("#sum{avg ntrials}",fAvgTrials); 
+   if(fIsChargedMC || fIsKine) fh1AvgTrials->Fill("#sum{avg ntrials}",fAvgTrials); 
 
    if(TMath::Abs((Float_t) fJetParamR)<0.00001){
       AliError("ANTIKT Cone radius is set to zero.");  
       return;
    }
+
    if(TMath::Abs((Float_t) fBgJetParamR)<0.00001){
-      AliError("KT Cone radius is set to zero.");  
-      return;
-   }
-   if(!strlen(fJetBranchName.Data())){
-      AliError("Jet branch name not set.");
-      return;
-   }
-   if(!strlen(fJetBranchNameBg.Data())){
-      AliError("Jet bg branch name not set.");
+      AliError("ANTIKT Cone radius is set to zero.");  
       return;
    }
 
+   if(!fIsKine){ //real data or full MC
+      if(!strlen(fJetBranchName.Data())){
+         AliError("Name of jet branch not set.");
+         return;
+      }
+      if(!strlen(fJetBranchNameBg.Data())){
+         AliError("Name of jet bg branch not set.");
+         return;
+      }
+   }else{  //Kine
+      //XXXX// if(!strlen(fJetBranchNameBgKine.Data())){
+      //XXXX//   AliError("Name of jet bg branch for kine not set.");
+      //XXXX//   return;
+      //XXXX// }
+
+      Init(); 
+      if(fMcHandler){
+         fMcEvent = fMcHandler->MCEvent(); 
+      }else{
+         if(fDebug > 1) printf("AnalysisTaskJetClusterKine::Handler() fMcHandler=NULL\n");
+         PostData(1, fOutputList);
+         return;
+      } 
+      if(!fMcEvent){
+         if(fDebug > 1) printf("AnalysisTaskJetClusterKine::Exec()   fMcEvent=NULL \n");
+         PostData(1, fOutputList);
+         return;
+      }
+   }
 
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    if(!fESD){
@@ -845,10 +961,11 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
    AliAODEvent* aod = NULL;
    // take all other information from the aod we take the tracks from
-   if(!aod){
-      if(!fESD) aod = fAODIn;
-      else      aod = fAODOut;
+   if(!aod && !fIsKine){
+      if(!fESD)         aod = fAODIn; //not ESD and not kine  => input AOD
+      else              aod = fAODOut;// ESD or kine
    }
+
 
    if(fNonStdFile.Length()!=0){
       // case that we have an AOD extension we can fetch the jets from the extended output
@@ -862,53 +979,66 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    // ----------------- EVENT SELECTION  --------------------------
    fHistEvtSelection->Fill(1); // number of events before event selection
 
-   // physics selection
-   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+   if(!fIsKine){ 
+      // physics selection
+      AliInputEventHandler* inputHandler = (AliInputEventHandler*)
            ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
 
-   if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
-      if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
-      fHistEvtSelection->Fill(2);
-      PostData(1, fOutputList);
-      return;
-   }
-  
+      if(!(inputHandler->IsEventSelected() & fOfflineTrgMask)){
+         if(fDebug) Printf(" Trigger Selection: event REJECTED ... ");
+         fHistEvtSelection->Fill(2);
+         PostData(1, fOutputList);
+         return;
+      }
+
    //check AOD pointer
-   if(!aod){
-      if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
-      fHistEvtSelection->Fill(3);
-      PostData(1, fOutputList);
-      return;
-   }
-   
-   // vertex selection
-   AliAODVertex* primVtx = aod->GetPrimaryVertex();
+      if(!aod){
+         if(fDebug) Printf("%s:%d No AOD",(char*)__FILE__,__LINE__);
+         fHistEvtSelection->Fill(3);
+         PostData(1, fOutputList);
+         return;
+      }
 
-   if(!primVtx){
-      if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
-      fHistEvtSelection->Fill(3);
-      PostData(1, fOutputList);
-      return;
-   }
+      // vertex selection for reconstructed data
+      AliAODVertex* primVtx = aod->GetPrimaryVertex();
 
-   Int_t nTracksPrim = primVtx->GetNContributors();
-   Float_t vtxz = primVtx->GetZ();
-   //Input events
-   fhContribVtx->Fill(nTracksPrim);
-   if( nTracksPrim > 0 ) fhVertexZ->Fill(vtxz);
+      if(!primVtx){
+         if(fDebug) Printf("%s:%d No primVtx",(char*)__FILE__,__LINE__);
+         fHistEvtSelection->Fill(3);
+         PostData(1, fOutputList);
+         return;
+      }  
 
-   if((nTracksPrim < fMinContribVtx) ||
-      (vtxz < fVtxZMin) ||
-      (vtxz > fVtxZMax)){
-      if(fDebug) Printf("%s:%d primary vertex z = %f: event REJECTED...",
+      Int_t nTracksPrim = primVtx->GetNContributors();
+      Float_t vtxz = primVtx->GetZ();
+      //Input events
+      fhContribVtx->Fill(nTracksPrim);
+      if( nTracksPrim > 0 ) fhVertexZ->Fill(vtxz);
+
+      if((nTracksPrim < fMinContribVtx) ||
+         (vtxz < fVtxZMin) ||
+         (vtxz > fVtxZMax)){
+         if(fDebug) Printf("%s:%d primary vertex z = %f: event REJECTED...",
                          (char*)__FILE__,__LINE__,vtxz);
-      fHistEvtSelection->Fill(3);
-      PostData(1, fOutputList);
-      return;
-   }else{
+         fHistEvtSelection->Fill(3);
+         PostData(1, fOutputList);
+         return;
+      }else{
       //Accepted events
-      fhContribVtxAccept->Fill(nTracksPrim);
-      fhVertexZAccept->Fill(vtxz);
+         fhContribVtxAccept->Fill(nTracksPrim);
+         fhVertexZAccept->Fill(vtxz);
+      }
+   }else{ //KINE cut on vertex
+      const AliVVertex *vtxMC = fMcEvent->GetPrimaryVertex();
+      Float_t zVtx = vtxMC->GetZ();
+      fhVertexZ->Fill(zVtx);
+      if(zVtx < fVtxZMin  || zVtx > fVtxZMax){ //vertex cut
+         fHistEvtSelection->Fill(3);
+         PostData(1, fOutputList);
+         return;
+      }else{
+         fhVertexZAccept->Fill(zVtx);
+      }
    }
    //FK// No event class selection imposed
    // event class selection (from jet helper task)
@@ -945,48 +1075,62 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    }
  
    //-----------------select disjunct event subsamples ----------------
-   Int_t eventnum  = aod->GetHeader()->GetEventNumberESDFile();
-   Int_t lastdigit = eventnum % 10;
-   if(!(fEventNumberRangeLow<=lastdigit && lastdigit<=fEventNumberRangeHigh)){
-      fHistEvtSelection->Fill(5);
-      PostData(1, fOutputList);
-      return;
-   } 
+   if(!fIsKine){ //reconstructed data
+      Int_t eventnum  = aod->GetHeader()->GetEventNumberESDFile();
+      Int_t lastdigit = eventnum % 10;
+      if(!(fEventNumberRangeLow<=lastdigit && lastdigit<=fEventNumberRangeHigh)){
+         fHistEvtSelection->Fill(5);
+         PostData(1, fOutputList);
+         return;
+      } 
+   }  
 
    if(fDebug) std::cout<<" ACCEPTED EVENT "<<endl;
    fHistEvtSelection->Fill(0); // accepted events 
    // ==================== end event selection ============================ 
  
    Double_t tmpArrayFive[5];
- 
-   //=============== Reconstructed antikt jets =============== 
-   ReadTClonesArray(fJetBranchName.Data()  , fListJets); 
-   ReadTClonesArray(fJetBranchNameBg.Data(), fListJetsBg); 
+   Double_t tmpArrayFour[4];
 
-   //============ Estimate background in reconstructed events ===========
+
+   TList particleList; //list of tracks
+   Int_t indexTrigg = -1; 
    Double_t rhoFromCellMedian=0.0,    rhoCone=0.0;
 
-   //Find Hadron trigger and Estimate rho from cone
-   TList particleList; //list of tracks
-   Int_t indexTrigg = GetListOfTracks(&particleList); //index of trigger hadron in Particle list
-   EstimateBgCone(fListJets, &particleList, rhoCone);
+   if(!fIsKine){ 
+      //=============== Reconstructed antikt jets =============== 
+      ReadTClonesArray(fJetBranchName.Data()  , fListJets); 
+      ReadTClonesArray(fJetBranchNameBg.Data(), fListJetsBg); 
 
-   //Estimate rho from cell median minus jets
-   EstimateBgRhoMedian(fListJetsBg, &particleList, rhoFromCellMedian,0); //real data
-   //fListJetsBg->Clear(); //this list is further not needed
+      //============ Estimate background in reconstructed events ===========
 
+      //Find Hadron trigger and Estimate rho from cone
+      indexTrigg = GetListOfTracks(&particleList); //index of trigger hadron in Particle list
+      EstimateBgCone(fListJets, &particleList, rhoCone);
+
+      //Estimate rho from cell median minus jets
+      EstimateBgRhoMedian(fListJetsBg, &particleList, rhoFromCellMedian,0); //real data
+   }
    //==============  analyze generator level MC  ================ 
    TList particleListGen; //list of tracks in MC
 
-   if(fIsChargedMC){       
-      //================= generated charged antikt jets ================
-      ReadTClonesArray(fJetBranchNameChargMC.Data(),   fListJetsGen); 
-      ReadTClonesArray(fJetBranchNameBgChargMC.Data(), fListJetsBgGen); 
 
-      if(fIsFullMC){ //generated full jets
-         ReadTClonesArray(fJetBranchNameFullMC.Data(),  fListJetsGenFull); 
+   if(fIsChargedMC || fIsKine){
+
+      if(fIsKine){  //pure kine
+
+         //================= generated charged antikt jets ================
+         ReadTClonesArray(fJetBranchNameKine.Data(),   fListJetsGen); 
+         //XXXX//ReadTClonesArray(fJetBranchNameBgKine.Data(), fListJetsBgGen); 
+      }else{  
+         //================= generated charged antikt jets ================
+         ReadTClonesArray(fJetBranchNameChargMC.Data(),   fListJetsGen); 
+         ReadTClonesArray(fJetBranchNameBgChargMC.Data(), fListJetsBgGen); 
+
+         if(fIsFullMC){ //generated full jets
+            ReadTClonesArray(fJetBranchNameFullMC.Data(),  fListJetsGenFull); 
+         }
       }
-
       //========================================================
       //serarch for charged trigger at the MC generator level
 
@@ -996,67 +1140,87 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       Int_t    triggersMC[200];//list of trigger candidates
       Int_t    ntriggersMC   = 0; //index in triggers array
 
-      if(fESD){//ESD input
+      if(!fIsKine){  
+         if(fESD){//ESD input
 
-         AliMCEvent* mcEvent = MCEvent();
-         if(!mcEvent){
-            PostData(1, fOutputList);
-            return;
-         }
+            AliMCEvent* mcEvent = MCEvent();
+            if(!mcEvent){
+               PostData(1, fOutputList);
+               return;
+            }
+
+            AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+            if(pythiaGenHeader){
+               nTrials = pythiaGenHeader->Trials();
+               ptHard  = pythiaGenHeader->GetPtHard();
+               fh1PtHard->Fill(ptHard,eventW);
+               fh1PtHardNoW->Fill(ptHard,1);
+               fh1PtHardTrials->Fill(ptHard,nTrials);
+            }
          
-         AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-         if(pythiaGenHeader){
-            nTrials = pythiaGenHeader->Trials();
-            ptHard  = pythiaGenHeader->GetPtHard();
-            fh1PtHard->Fill(ptHard,eventW);
-            fh1PtHardNoW->Fill(ptHard,1);
-            fh1PtHardTrials->Fill(ptHard,nTrials);
+            for(Int_t it = 0; it < mcEvent->GetNumberOfTracks(); it++){
+               if(!mcEvent->IsPhysicalPrimary(it)) continue;
+               AliMCParticle* part = (AliMCParticle*) mcEvent->GetTrack(it);
+               if(!part) continue;  
+               if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){ 
+ 
+                  if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
+                     if(indexTriggGen > -1){//trigger candidate was found
+                        triggersMC[ntriggersMC] = indexTriggGen;
+                        ntriggersMC++; 
+                     }
+                  }
+ 
+                  iCounterGen++;//index in particleListGen array 
+               }
+            }
+         }else{  //AOD input
+            if(!fAODIn){
+               PostData(1, fOutputList);
+               return;
+            }
+            TClonesArray *tca = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(AliAODMCParticle::StdBranchName()));
+            if(!tca){ 
+               PostData(1, fOutputList);
+               return;
+            }
+            for(Int_t it = 0; it < tca->GetEntriesFast(); it++){
+               AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
+               if(!part) continue;  
+               if(!part->IsPhysicalPrimary()) continue;
+               if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){
+ 
+                  if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
+                     if(indexTriggGen > -1){ //trigger candidater was found
+                        triggersMC[ntriggersMC] = indexTriggGen;
+                        ntriggersMC++; 
+                     }
+                  }
+ 
+                  iCounterGen++;//number of entries in particleListGen array
+               }
+            }
          }
+      }else{ //analyze kine
 
-         for(Int_t it = 0; it < mcEvent->GetNumberOfTracks(); it++){
-            if(!mcEvent->IsPhysicalPrimary(it)) continue;
-            AliMCParticle* part = (AliMCParticle*) mcEvent->GetTrack(it);
+         for(Int_t it = 0; it < fMcEvent->GetNumberOfTracks(); it++){
+            if(!fMcEvent->IsPhysicalPrimary(it)) continue;
+            AliMCParticle* part = (AliMCParticle*) fMcEvent->GetTrack(it);
             if(!part) continue;  
             if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){ 
-
+ 
                if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
                   if(indexTriggGen > -1){//trigger candidate was found
                      triggersMC[ntriggersMC] = indexTriggGen;
                      ntriggersMC++; 
                   }
                }
-
+ 
                iCounterGen++;//index in particleListGen array 
             }
          }
-      }else{  //AOD input
-         if(!fAODIn){
-            PostData(1, fOutputList);
-            return;
-         }
-         TClonesArray *tca = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(AliAODMCParticle::StdBranchName()));
-         if(!tca){ 
-            PostData(1, fOutputList);
-            return;
-         }
-         for(Int_t it = 0; it < tca->GetEntriesFast(); it++){
-            AliAODMCParticle *part = dynamic_cast<AliAODMCParticle*>(tca->At(it));
-            if(!part) continue;  
-            if(!part->IsPhysicalPrimary()) continue;
-            if(SelectMCGenTracks((AliVParticle*) part, &particleListGen, ptTriggGen, indexTriggGen, iCounterGen)){
-
-               if(fHardest==0 && ntriggersMC<200){//single inclusive trigger
-                  if(indexTriggGen > -1){ //trigger candidater was found
-                     triggersMC[ntriggersMC] = indexTriggGen;
-                     ntriggersMC++; 
-                  }
-               }
-
-               iCounterGen++;//number of entries in particleListGen array
-            }
-         }
       }
-
+  
       //==============  Estimate bg in generated events ==============
       Double_t rhoFromCellMedianGen=0.0, rhoConeGen=0.0;
 
@@ -1064,8 +1228,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       EstimateBgCone(fListJetsGen, &particleListGen, rhoConeGen);
 
       //Estimate rho from cell median minus jets
+      if(!fIsKine)  //XXXX//
       EstimateBgRhoMedian(fListJetsBgGen, &particleListGen, rhoFromCellMedianGen,1);//mc data
-      //fListJetsBgGen->Clear();
 
       //============  Generator trigger+jet ==================
       if(fHardest==0){ //single inclusive trigger
@@ -1107,6 +1271,33 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
  
             if((fJetEtaMin<=etaJetGen) && (etaJetGen<=fJetEtaMax)){ 
 
+               Double_t ptUeFromCellMedianGen = rhoFromCellMedianGen*areaJetGen;
+               Double_t ptUeConeGen         = rhoConeGen*areaJetGen;
+
+               //Rongrong's analysis
+               Double_t dPhiGen = jet->Phi() - triggerGen->Phi();
+               if(dPhiGen>2*TMath::Pi())    dPhiGen -= 2*TMath::Pi();
+               if(dPhiGen<-2*TMath::Pi())   dPhiGen += 2*TMath::Pi();
+               if(dPhiGen<-0.5*TMath::Pi()) dPhiGen += 2*TMath::Pi();
+               if(dPhiGen>1.5*TMath::Pi())  dPhiGen -= 2*TMath::Pi();
+
+               //[A,pTjet,pTtrig,dphi]
+               tmpArrayFour[0] = areaJetGen;
+               tmpArrayFour[1] = jet->Pt();
+               tmpArrayFour[2] = ptTriggGen;
+               tmpArrayFour[3] = dPhiGen;
+
+               fHJetPhiCorrGen->Fill(tmpArrayFour); // Dphi distribution jet-triger
+
+               //[A,pTjet-pTUe,pTtrig,dphi]
+               tmpArrayFour[1] = jet->Pt() - ptUeFromCellMedianGen;
+               fHJetPhiCorrSubUeMedianGen->Fill(tmpArrayFour); 
+
+               //[A,pTjet-pTUe,pTtrig,dphi]
+               tmpArrayFour[1] = jet->Pt() - ptUeConeGen;
+               fHJetPhiCorrSubUeConeGen->Fill(tmpArrayFour);
+
+               //Leticia's analysis
                Double_t dphi = RelativePhi(triggerGen->Phi(), jet->Phi()); 
                if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
 
@@ -1117,10 +1308,6 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
                tmpArrayFive[3] = ptTriggGen;
                tmpArrayFive[4] = TMath::Abs((Double_t) dphi);
                fHJetSpecGen->Fill(tmpArrayFive);
-
-
-               Double_t ptUeFromCellMedianGen = rhoFromCellMedianGen*areaJetGen;
-               Double_t ptUeConeGen         = rhoConeGen*areaJetGen;
 
                //Centrality, A, pTjet-pTbgCellMedian, pTtrigg, dphi
                tmpArrayFive[0] = centValue;
@@ -1163,7 +1350,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          }//jet loop
       }//trigger loop
 
-      if(fFillRespMx){
+      if(fFillRespMx && !fIsKine){
          //================ RESPONSE MATRIX ===============
          //Count jets and trigger-jet pairs at MC  generator level
          for(Int_t ij=0; ij<fListJetsGen->GetEntries(); ij++){
@@ -1289,7 +1476,10 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
    }//analyze generator level MC
     
     
-    
+   if(fIsKine){ //skip reconstructed data analysis in case of kine 
+      PostData(1, fOutputList);
+      return;
+   } 
    //=============  RECONSTRUCTED INCLUSIVE JETS ===============
 
    Double_t etaJet  = 0.0;
@@ -1385,6 +1575,11 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
      
          if((etaJet<fJetEtaMin) || (etaJet>fJetEtaMax)) continue;
          areaJet = jet->EffectiveAreaCharged();
+
+        //subtract bg using estinates base on median of kT jets
+         Double_t ptUeFromCellMedian = rhoFromCellMedian*areaJet;
+         Double_t ptUeCone         = rhoCone*areaJet;
+
          //if(areaJet >= 0.07) injet++; 
          //if(areaJet >= 0.4)  injet4++;
 
@@ -1400,6 +1595,32 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
                              };
          fHDphiVsJetPtAll->Fill(filldp);
          */ 
+         //Rongrong's analysis
+
+         Double_t dPhi = phiJet - triggerHadron->Phi();
+         if(dPhi>2*TMath::Pi())    dPhi -= 2*TMath::Pi();
+         if(dPhi<-2*TMath::Pi())   dPhi += 2*TMath::Pi();
+         if(dPhi<-0.5*TMath::Pi()) dPhi += 2*TMath::Pi();
+         if(dPhi>1.5*TMath::Pi())  dPhi -= 2*TMath::Pi();
+
+         //[A,pTjet,pTtrig,dphi]
+         tmpArrayFour[0] = areaJet;
+         tmpArrayFour[1] = pTJet;
+         tmpArrayFour[2] = triggerHadron->Pt();
+         tmpArrayFour[3] = dPhi;
+
+         fHJetPhiCorr->Fill(tmpArrayFour); // Dphi distribution jet-triger
+
+         //[A,pTjet-pTUe,pTtrig,dphi]
+         tmpArrayFour[1] = pTJet - ptUeFromCellMedian;
+         fHJetPhiCorrSubUeMedian->Fill(tmpArrayFour); 
+
+         //[A,pTjet-pTUe,pTtrig,dphi]
+         tmpArrayFour[1] = pTJet - ptUeCone;
+         fHJetPhiCorrSubUeCone->Fill(tmpArrayFour);
+
+         //Leticia's analysis
+
          // Select back to back trigger - jet pairs
          if(TMath::Abs((Double_t) dphi) < fkDeltaPhiCut) continue;
          fhDphiTriggerJetAccept->Fill(dphi); //Accepted
@@ -1413,11 +1634,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          tmpArrayFive[4] = TMath::Abs((Double_t) dphi);
          fHJetSpec->Fill(tmpArrayFive);
 
-         //subtract bg using estinates base on median of kT jets
-         Double_t ptUeFromCellMedian = rhoFromCellMedian*areaJet;
-         Double_t ptUeCone         = rhoCone*areaJet;
-
-         //Centrality, A, pTjet-pTbgCellMedian, pTtrigg, dphi
+          //Centrality, A, pTjet-pTbgCellMedian, pTtrigg, dphi
          tmpArrayFive[0] = centValue;
          tmpArrayFive[1] = areaJet;
          tmpArrayFive[2] = pTJet-ptUeFromCellMedian;
@@ -1840,15 +2057,23 @@ void AliAnalysisTaskJetCorePP::ReadTClonesArray(TString bname, TList *list){
    }
 
    TClonesArray *array=0x0;
-
-   if(fAODOut&&!array){
-      array = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(bname.Data()));
-   }
-   if(fAODExtension&&!array){
-      array = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(bname.Data()));
-   }
-   if(fAODIn&&!array){
-      array = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(bname.Data()));
+   if(fUseExchContainer){ //take input from exchange containers
+      if(fJetBranchNameKine.Length()>0 && bname.CompareTo(fJetBranchNameKine.Data())==0){
+         array = dynamic_cast<TClonesArray*>(GetInputData(1)); //connect exchange container slot 1
+      }
+      //XXXX// if(fJetBranchNameBgKine.Length()>0 && bname.CompareTo(fJetBranchNameBgKine.Data())==0){
+      //XXXX//   array = dynamic_cast<TClonesArray*>(GetInputData(2)); //connect exchange container slot 2
+      //XXXX// }
+   }else{ //take input from AOD
+      if(fAODOut&&!array){
+         array = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(bname.Data()));
+      }
+      if(fAODExtension&&!array){
+         array = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(bname.Data()));
+      }
+      if(fAODIn&&!array){
+         array = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(bname.Data()));
+      }
    }
 
    list->Clear(); //clear list beforehand
@@ -1857,6 +2082,7 @@ void AliAnalysisTaskJetCorePP::ReadTClonesArray(TString bname, TList *list){
       if(fDebug){
          Printf("########## %s: %d jets",bname.Data(), array->GetEntriesFast());
       }
+
       for(Int_t iJet = 0; iJet < array->GetEntriesFast(); iJet++) {
          AliAODJet *jet = dynamic_cast<AliAODJet*>((*array)[iJet]);
          if (jet) list->Add(jet);

@@ -71,5 +71,5 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
   remExoticClus  = kTRUE;
   AliEmcalClusterMaker *clusMaker = AddTaskEmcalClusterMaker(nonLinFunct,remExoticClus,0,"EmcCaloClusters",0.,kTRUE);
   
-  return clusMaker;
+  return clusterizerTask;
 }

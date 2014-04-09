@@ -54,6 +54,9 @@ AliAnalysisTaskToyModel::AliAnalysisTaskToyModel()
   fNetChargeMean(0.0), fNetChargeSigma(0.0),
   fPtMin(0.0), fPtMax(100.0),
   fEtaMin(-1.0), fEtaMax(1.0),
+  fSigmaGaussEta(4.0),
+  fFixPt(-1.),
+  fFixedPositiveRatio(kFALSE),
   fUseAcceptanceParameterization(kFALSE), fAcceptanceParameterization(0),
   fSimulateDetectorEffects(kFALSE),
   fNumberOfInefficientSectors(0),
@@ -673,18 +676,26 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
 
       //Pseudo-rapidity sampled from a Gaussian centered @ 0
-      vEta = gRandom->Gaus(0.0,4.0);
+      vEta = gRandom->Gaus(0.0,fSigmaGaussEta);
 
       //Fill QA histograms (full phase space)
       fHistEtaTotal->Fill(vEta);
 
       //Decide the charge
       gDecideCharge = gRandom->Rndm();
-      if(gDecideCharge <= 1.*nGeneratedPositive/nMultiplicity)       
-	vCharge = 1;
-      else 
-	vCharge = -1;
-      
+      if(fFixedPositiveRatio){
+	if(iParticleCount < nGeneratedPositive)       
+	  vCharge = 1;
+	else 
+	  vCharge = -1;
+      }
+      else{
+	if(gDecideCharge <= 1.*nGeneratedPositive/nMultiplicity)       
+	  vCharge = 1;
+	else 
+	  vCharge = -1;
+      }
+
       //Acceptance
       if((vEta < fEtaMin) || (vEta > fEtaMax)) continue;
 
@@ -714,7 +725,10 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	}
       }
       else {
-	vPt = fPtSpectraAllCharges->GetRandom();
+	if(fFixPt > -1.)
+	  vPt = fFixPt; // fixed Pt (for integral studies)
+	else
+	  vPt = fPtSpectraAllCharges->GetRandom();
 	vPhi = fAzimuthalAngleAllCharges->GetRandom();
       }
 
