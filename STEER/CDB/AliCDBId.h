@@ -78,7 +78,8 @@ class AliCDBId: public TObject {
 
     TString ToString() const;
     void Print(Option_t* option="") const;
-
+    virtual Int_t Compare(const TObject* obj) const;
+    virtual Bool_t IsSortable() const;
   private:
 
     AliCDBPath fPath;		// path	

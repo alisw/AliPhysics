@@ -178,3 +178,18 @@ void AliCDBId::Print(Option_t* /*option*/) const {
   cout << ToString().Data() << endl;
 
 }
+
+
+
+Int_t AliCDBId::Compare(const TObject* obj) const
+{
+  //
+  // compare according y
+  AliCDBId * o2 = (AliCDBId*)obj;
+  return TString(this->GetPath()).CompareTo((o2->GetPath()));
+  
+}
+
+Bool_t AliCDBId::IsSortable() const {
+   return kTRUE;
+} 
