@@ -582,7 +582,6 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
       AliDebug(1, Form("Tracklet Det[%d] !OK", tracklet->GetDetector()));
       continue;
     }
-    tracklet->FitRobust();
     Double_t x  = tracklet->GetX();//GetX0();
     // reject tracklets which are not considered for inward refit
     if(x > t.GetX()+AliTRDReconstructor::GetMaxStep()) continue;
@@ -885,6 +884,8 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       ptrTracklet->SetKink(t.IsKink());
       ptrTracklet->SetPrimary(t.IsPrimary());
       ptrTracklet->SetPadPlane(fGeom->GetPadPlane(ily, stk));
+      //set first approximation of radial position of anode wire corresponding to middle chamber y=0, z=0
+      // the uncertainty is given by the actual position of the tracklet (y,z) and chamber inclination
       ptrTracklet->SetX0(glb[0]+driftLength);
       if(!ptrTracklet->Init(&t)){
         n=-1; 
@@ -927,15 +928,19 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     } else AliDebug(2, Form("Use external tracklet ly[%d]", ily));
     // propagate track to the radial position of the tracklet
 
-    // fit tracklet 
+    // fit tracklet in the local chamber coordinate system 
     // tilt correction options
     // 0 : no correction
     // 2 : pseudo tilt correction
-    if(!ptrTracklet->FitRobust(t.Charge()>0?kTRUE:kFALSE)){
+    if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk))){
       t.SetErrStat(AliTRDtrackV1::kNoFit, ily);
       AliDebug(4, "Failed Tracklet Fit");
       continue;
     } 
+    // Calculate tracklet position in tracking coordinates
+    // A.Bercuci 27.11.2013    
+    ptrTracklet->SetXYZ(matrix);
+
     x = ptrTracklet->GetX(); //GetX0();
     if(x > (AliTRDReconstructor::GetMaxStep() + t.GetX()) && !PropagateToX(t, x, AliTRDReconstructor::GetMaxStep())) {
       n=-1; 
@@ -1833,7 +1838,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
 {
   //
   // Starting from current X-position of track <t> this function
-  // extrapolates the track up to radial position <xToGo>. 
+  // extrapolates the track up to radial position <xToGo> in steps of <maxStep>. 
   // Returns 1 if track reaches the plane, and 0 otherwise 
   //
 
