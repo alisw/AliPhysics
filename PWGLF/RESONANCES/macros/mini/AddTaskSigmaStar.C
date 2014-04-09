@@ -177,10 +177,17 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
      task->SetUseCentralityPatch(aodN==49);
    }
 
-    task->SelectCollisionCandidates(triggerMask); //AOD
-
+   if(collSyst==kPPb) 
+     task->SelectCollisionCandidates(triggerMask); //
+   else if ( collSyst == kPP ) 
+     task->SelectCollisionCandidates(AliVEvent::kMB); //
+   else
+     task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+    
    if ( collSyst == kPP ) 
      task->UseMultiplicity("QUALITY");
+   else if(collSyst==kPPb) 
+    task->UseCentrality("V0A");   
    else
      task->UseCentrality("V0M");   
 
@@ -256,6 +263,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
      outPlane->AddAxis(planeID, 180, 0.0, TMath::Pi());
    }
    
+
    //
    // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
    //
