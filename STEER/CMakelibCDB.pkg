@@ -23,6 +23,7 @@ set ( SRCS
     CDB/AliBaseCalibViewer.cxx 
     CDB/AliBaseCalibViewerGUI.cxx 
     CDB/AliCalibViewerGUItime.cxx
+    CDB/AliOCDBtoolkit.cxx
     )
 
 string( REPLACE ".cxx" ".h" HDRS "${SRCS}")
