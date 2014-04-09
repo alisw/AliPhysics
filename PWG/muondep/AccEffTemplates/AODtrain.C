@@ -206,7 +206,20 @@ void AddAnalysisTasks(Int_t merge){
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,1); // others
     } else {
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,1); // others
-    }   
+    }
+    
+    if ( 0 && VAR_USE_ITS_RECO ) /* 0 for the moment to get this macro running also with AliRoot <= .... */      
+    {
+      AliAnalysisTaskESDMuonFilter* muFilter = mgr->GetTask("ESD Muon Filter");
+      if ( !muFilter )
+      {
+        std::cout << "ERROR : got a NULL muFilter ! so I cannot ask to keep SPD tracklets !" << std::endl;
+      }
+      else
+      {
+        muFilter->SetWithSPDtracklets(kTRUE);
+      }
+    }
   }   
   
   // ********** PWG3 wagons ******************************************************           

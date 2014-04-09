@@ -80,16 +80,7 @@
   
   cout<<">>>>> RECONSTRUCTION <<<<<"<<endl;
   
-  if ( snapshot )
-  {
-    // for some reason must include ITS objects in the snapshot
-    // (to be able to instantiante the vertexer later on ?)
-    gSystem->Exec("aliroot -b -q rec.C\\(1\\) > rec.log 2>&1");
-  }
-  else
-  {
-    gSystem->Exec("aliroot -b -q rec.C > rec.log 2>&1");
-  }
+  gSystem->Exec("aliroot -b -q rec.C > rec.log 2>&1");
   
   gSystem->Exec("mv syswatch.log recwatch.log");
 

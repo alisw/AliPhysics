@@ -40,7 +40,7 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   void SelectFeeddownD(){fPromptFeeddown=kFeeddown;}
   void SelectPromptAndFeeddownD(){fPromptFeeddown=kBoth;}
   void SetGoUpToQuark(Bool_t opt){fGoUpToQuark=opt;}
-
+  void SetKeepNegIDtracks(Bool_t nid){fKeepNegID=nid;}//set it to kTRUE only if you know what you are doing
   void SetTrackCuts(AliESDtrackCuts* cuts){
     if(fTrackCutsAll) delete fTrackCutsAll;
     fTrackCutsAll=new AliESDtrackCuts(*cuts);
@@ -77,6 +77,8 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   Bool_t CheckAcceptance(TClonesArray* arrayMC, Int_t nProng, Int_t *labDau);
   enum EMesonSpecies {kDzero, kDplus, kDstar, kDs};
   enum EPrompFd {kNone,kPrompt,kFeeddown,kBoth};
+  void SetMaxPforIDPion(Double_t maxpIdPion){fmaxPforIDPion=maxpIdPion;}
+  void SetMaxPforIDKaon(Double_t maxpIdKaon){fmaxPforIDKaon=maxpIdKaon;}
 
  private:
 
@@ -133,7 +135,10 @@ class AliAnalysisTaskCombinHF : public AliAnalysisTaskSE
   Bool_t fGoUpToQuark;   // flag for definition of c,b origin
   Int_t fFullAnalysis;   // flag to set analysis level (0 is the fastest)
 
-  ClassDef(AliAnalysisTaskCombinHF,2); // D+ task from AOD tracks
+  Double_t fmaxPforIDPion; // flag for upper p limit for id band for pion
+  Double_t fmaxPforIDKaon; // flag for upper p limit for id band for kaon
+  Bool_t   fKeepNegID;    // flag to keep also track with negative ID (default kFALSE, change it only if you know what you are doing)
+  ClassDef(AliAnalysisTaskCombinHF,3); // D+ task from AOD tracks
 };
 
 #endif

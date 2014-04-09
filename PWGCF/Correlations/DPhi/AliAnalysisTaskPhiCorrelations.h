@@ -239,8 +239,8 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t fWeightPerEvent;	   // weight with the number of trigger particles per event
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Bool_t fPtOrder;		   // apply pT,a < pt,t condition; default: kTRUE
-    Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
-    Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets
+    Int_t fTriggersFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons
+    Int_t fAssociatedFromDetector;   // 0 = tracks (default); 1 = VZERO_A; 2 = VZERO_C; 3 = SPD tracklets; 4 = forward muons
     Bool_t fMCUseUncheckedCentrality; // use unchecked centrality (only applies to MC); default: kFALSE
     
     Bool_t fFillpT;                // fill sum pT instead of number density

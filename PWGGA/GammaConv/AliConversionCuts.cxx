@@ -165,6 +165,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fRejectExtraSignals(0),
    fminV0Dist(200.),
    fDoSharedElecCut(kFALSE),
+   fDoPhotonQualitySelectionCut(kFALSE),
+   fPhotonQualityCut(0),
    fOfflineTriggerMask(0),
    fHasV0AND(kTRUE),
    fIsSDDFired(kTRUE),
@@ -319,6 +321,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fRejectExtraSignals(ref.fRejectExtraSignals),
    fminV0Dist(ref.fminV0Dist),
    fDoSharedElecCut(ref.fDoSharedElecCut),
+   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
+   fPhotonQualityCut(ref.fPhotonQualityCut),
    fOfflineTriggerMask(ref.fOfflineTriggerMask),
    fHasV0AND(ref.fHasV0AND),
    fIsSDDFired(ref.fIsSDDFired),
@@ -496,7 +500,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    fHistograms->Add(hTrackCuts);
 
    // Photon Cuts
-   hPhotonCuts=new TH1F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts",14,-0.5,13.5);
+   hPhotonCuts=new TH1F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts",15,-0.5,14.5);
    hPhotonCuts->GetXaxis()->SetBinLabel(1,"in");
    hPhotonCuts->GetXaxis()->SetBinLabel(2,"qtcut");
    hPhotonCuts->GetXaxis()->SetBinLabel(3,"chi2");
@@ -508,7 +512,8 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    hPhotonCuts->GetXaxis()->SetBinLabel(9,"CosPAngle");
    hPhotonCuts->GetXaxis()->SetBinLabel(10,"DCA R");
    hPhotonCuts->GetXaxis()->SetBinLabel(11,"DCA Z");
-   hPhotonCuts->GetXaxis()->SetBinLabel(12,"out");
+   hPhotonCuts->GetXaxis()->SetBinLabel(12,"Photon Quality");
+   hPhotonCuts->GetXaxis()->SetBinLabel(13,"out");
    fHistograms->Add(hPhotonCuts);
 
    if(preCut){
@@ -1100,6 +1105,13 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
       cutIndex++; //10
    }
    cutIndex++; //11
+   if (photonAOD){
+		if (fDoPhotonQualitySelectionCut && photonAOD->GetPhotonQuality() != fPhotonQualityCut){
+			if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
+			return kFALSE;
+		}	
+   } 
+   cutIndex++; //12
    if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
 
    // Histos after Cuts
@@ -2986,16 +2998,30 @@ Bool_t AliConversionCuts::SetCosPAngleCut(Int_t cosCut) {
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetSharedElectronCut(Int_t sharedElec) {
 
-   switch(sharedElec){
-   case 0:
-      fDoSharedElecCut = kFALSE;
-      break;
-   case 1:
-      fDoSharedElecCut = kTRUE;
-      break;
-   default:
-      AliError(Form("Shared Electron Cut not defined %d",sharedElec));
-      return kFALSE;
+	switch(sharedElec){
+	case 0:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kFALSE;
+		break;
+	case 1:
+		fDoSharedElecCut = kTRUE;
+		fDoPhotonQualitySelectionCut = kFALSE;
+		break;
+	case 2:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;
+		fPhotonQualityCut = 1;
+	case 3:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;	  
+		fPhotonQualityCut = 2;
+	case 4:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;	  
+		fPhotonQualityCut = 3;
+	default:
+		AliError(Form("Shared Electron Cut not defined %d",sharedElec));	
+		return kFALSE;
    }
 
    return kTRUE;
@@ -3218,11 +3244,11 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t PrimaryTracks10[10][2] =
       {
          {9999,9999}, //  0
-         {1210,2150}, // 10
-         { 817,1435}, // 20
-         { 536, 930}, // 30
-         { 337, 570}, // 40
-         { 197, 327}, // 50
+         {1210,2067}, // 10
+         { 817,1450}, // 20
+         { 536, 921}, // 30
+         { 337, 572}, // 40
+         { 197, 332}, // 50
          { 106, 173}, // 60
          {  51,  81}, // 70
          {  21,  34}, // 80
@@ -3231,14 +3257,14 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t PrimaryTracks5a[10][2] =
       {
          {9999,9999}, // 0
-         {1485,2640}, // 5
-         {1210,2150}, // 10
+         {1485,2562}, // 5
+         {1210,2067}, // 10
          { 995,1760}, // 15
-         { 817,1435}, // 20
+         { 817,1450}, // 20
          { 666,1160}, // 25
-         { 536, 930}, // 30
+         { 536, 921}, // 30
          { 428, 731}, // 35
-         { 337, 570}, // 40
+         { 337, 572}, // 40
          { 260, 436}  // 45
       };
    Int_t PrimaryTracks5b[10][2] =
@@ -3384,14 +3410,18 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
    UInt_t isSelected = AliVEvent::kAny;
+   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+//    cout << 	periodName.Data() << endl;
+   
    if (fInputHandler==NULL) return kFALSE;
    if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
       if (!fTriggerSelectedManually){
          if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
          else {
             if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-               else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-               else fOfflineTriggerMask = AliVEvent::kMB;
+            else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
+            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC11f") == 0  || periodName.CompareTo("LHC13g") == 0 ) fOfflineTriggerMask = AliVEvent::kINT7;      
+            else fOfflineTriggerMask = AliVEvent::kMB;
          }
       }
       // Get the actual offline trigger mask for the event and AND it with the

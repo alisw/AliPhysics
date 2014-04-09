@@ -147,6 +147,13 @@ public:
    * @param flag If true, count invalids as empty
    */
   void SetInvalidIsEmpty(Bool_t flag) { fInvalidIsEmpty = flag; }
+  /**
+   * Set whether to ignore the ESD info when angle correcting, this
+   * is to counter a known issue where the info in the ESD is incorrect
+   * 
+   * @param use ignore the ESD info
+   */
+  void SetIgnoreESDWhenAngleCorrecting(Bool_t use) { fIgnoreESDForAngleCorrection = use; }
   /* @} */
 
   /** 
@@ -460,8 +467,9 @@ protected:
   Bool_t   fRecalculateEta;  // Whether to recalc eta and angle cor (disp vtx)
   TBits    fXtraDead;
   Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
-  Bool_t   fMergingDisabled; // If true, do not merge 
-  ClassDef(AliFMDSharingFilter,9); //
+  Bool_t   fMergingDisabled; // If true, do not merge
+  Bool_t   fIgnoreESDForAngleCorrection; // Ignore ESD information when angle correcting
+  ClassDef(AliFMDSharingFilter,10); //
 };
 
 #endif

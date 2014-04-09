@@ -508,8 +508,11 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       if(ffillTree) ProcessQATree(gamma);
       if(ffillHistograms) ProcessQA(gamma);
    }
-   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())
-      RelabelAODPhotonCandidates(kFALSE);    // In case of AODMC relabeling MC
+   
+   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
+      RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
+      fV0Reader->RelabelAODs(kFALSE);
+   }
       
    PostData(1, fOutputList);
 }

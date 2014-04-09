@@ -72,6 +72,7 @@ fCrossCheckClusterLengthAcc(0),
 fCutSettings(0),
 fEventplaneDist(0),
 fMCEventplaneDist(0),
+fCorrelEventplaneMCDATA(0),
 //global
 fIsMonteCarlo(0),
 // event cut variables
@@ -526,6 +527,11 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fMCEventplaneDist->GetXaxis()->SetTitle("#phi (MC event plane)");
   fMCEventplaneDist->Sumw2();
   
+  fCorrelEventplaneMCDATA = new TH2F("fCorrelEventplaneMCDATA","fCorrelEventplaneMCDATA",40, -2.*TMath::Pi(), 2.*TMath::Pi(), 40, -2.*TMath::Pi(), 2.*TMath::Pi());
+  fCorrelEventplaneMCDATA->GetXaxis()->SetTitle("#phi (event plane)");
+  fCorrelEventplaneMCDATA->GetYaxis()->SetTitle("#phi (MC event plane)");
+  fCorrelEventplaneMCDATA->Sumw2();
+  
   // Add Histos, Profiles etc to List
   fOutputList->Add(fZvPtEtaCent);
   fOutputList->Add(fDeltaphiPtEtaCent);
@@ -565,6 +571,7 @@ void AlidNdPtAnalysisPbPbAOD::UserCreateOutputObjects()
   fOutputList->Add(fCutSettings);
   fOutputList->Add(fEventplaneDist);
   fOutputList->Add(fMCEventplaneDist);
+  fOutputList->Add(fCorrelEventplaneMCDATA);
   
   StoreCutSettingsToHistogram();
   
@@ -669,7 +676,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	
 	dMCEventZv = mcHdr->GetVtxZ();
 	dMCTrackZvPtEtaCent[0] = dMCEventZv;
-	dMCEventplaneAngle = genHijingHeader->ReactionPlaneAngle();
+	dMCEventplaneAngle = MoveMCEventplane(genHijingHeader->ReactionPlaneAngle());
 	fEventStatistics->Fill("MC all events",1);
 	fMCEventplaneDist->Fill(dMCEventplaneAngle);
   }
@@ -680,7 +687,14 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if( dCentrality < 0 ) return;
   fEventStatistics->Fill("after centrality selection",1);
   
+  // get event plane Angle from AODHeader, default is Q
+  ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
+  if(ep) {
+	dEventplaneAngle = ep->GetEventplane("V0",eventAOD);
+  }
   
+  //   cout << dEventplaneAngle << endl;
+  fEventplaneDist->Fill(dEventplaneAngle);
   
   // start with MC truth analysis
   if(fIsMonteCarlo)
@@ -719,9 +733,9 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  fMCGenZvPtEtaCent->Fill(dMCTrackZvPtEtaCent);
 	  
-	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi()-dMCEventplaneAngle;
-	  if( dMCTrackPhiPtEtaCent[0] < 0) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
-	  else if( dMCTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
+	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+// 	  if( dMCTrackPhiPtEtaCent[0] < 0) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
+// 	  else if( dMCTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	  dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
 	  dMCTrackPhiPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackPhiPtEtaCent[3] = dCentrality;
@@ -767,14 +781,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
   dTrackZvPtEtaCent[0] = dEventZv;
   
-  // get event plane Angle from AODHeader, default is Q
-  ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
-  if(ep) {
-	dEventplaneAngle = ep->GetEventplane("V0",eventAOD);
-  }
   
-  cout << dEventplaneAngle << endl;
-  fEventplaneDist->Fill(dEventplaneAngle);
   
   if(AreRelativeCutsEnabled())
   {
@@ -810,9 +817,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	dTrackZvPtEtaCent[2] = track->Eta();
 	dTrackZvPtEtaCent[3] = dCentrality;
 	
-	dTrackPhiPtEtaCent[0] = track->Phi() - dEventplaneAngle;
-	if( dTrackPhiPtEtaCent[0] < 0) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
-	else if( dTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
+	dTrackPhiPtEtaCent[0] = RotatePhi(track->Phi(), dEventplaneAngle); 
+	
+	// 	if( dTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
+	// 	else if( dTrackPhiPtEtaCent[0] > TMath::Pi()) dTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	dTrackPhiPtEtaCent[1] = track->Pt();
 	dTrackPhiPtEtaCent[2] = track->Eta();
 	dTrackPhiPtEtaCent[3] = dCentrality;
@@ -834,9 +842,10 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	  dMCTrackZvPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackZvPtEtaCent[3] = dCentrality;
 	  
-	  dMCTrackPhiPtEtaCent[0] = mcPart->Phi()-dMCEventplaneAngle;
-	  if( dMCTrackPhiPtEtaCent[0] < 0) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
-	  else if( dMCTrackPhiPtEtaCent[0] > 2.*TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
+	  dMCTrackPhiPtEtaCent[0] = RotatePhi(mcPart->Phi(), dEventplaneAngle); // use eventplane and not reactionplan, similar to centrality vs impact paramter
+	  
+	  // 	  if( dMCTrackPhiPtEtaCent[0] < -1.0*TMath::Pi()) dMCTrackPhiPtEtaCent[0] += 2.*TMath::Pi();
+	  // 	  else if( dMCTrackPhiPtEtaCent[0] > TMath::Pi()) dMCTrackPhiPtEtaCent[0] -= 2.*TMath::Pi();
 	  dMCTrackPhiPtEtaCent[1] = mcPart->Pt();
 	  dMCTrackPhiPtEtaCent[2] = mcPart->Eta();
 	  dMCTrackPhiPtEtaCent[3] = dCentrality;
@@ -919,10 +928,73 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dEventZvMultCent[3] = {dEventZv, iAcceptedMultiplicity, dCentrality};
   fZvMultCent->Fill(dEventZvMultCent);
   
+  // store correlation between data and MC eventplane
+  if(fIsMonteCarlo) fCorrelEventplaneMCDATA->Fill(dEventplaneAngle, dMCEventplaneAngle);
+  
   PostData(1, fOutputList);
   
   // delete pointers:
   
+}
+
+Double_t AlidNdPtAnalysisPbPbAOD::MoveMCEventplane(Double_t dMCEP)
+{
+  Double_t retval = 0;
+  retval = dMCEP;
+  
+  if( (dMCEP > 0) && (dMCEP < 1./2.*TMath::Pi()) ) 
+  {
+	return retval;
+  }
+  
+  if( (dMCEP >= 1./2.*TMath::Pi()) && (dMCEP <= 3./2.*TMath::Pi()) )
+  {
+	retval -= TMath::Pi();
+	return retval;
+  }
+  
+  if(dMCEP > 3./2.*TMath::Pi())
+  {
+	retval -= 2.*TMath::Pi();
+	return retval;
+  }
+  
+  return -9999.;
+}
+
+Double_t AlidNdPtAnalysisPbPbAOD::RotatePhi(Double_t phiTrack, Double_t phiEP)
+{
+  Double_t dPhi = 0;
+  dPhi = phiTrack - phiEP;
+  if ((dPhi >= -1./2. * TMath::Pi() ) && 
+	  (dPhi <= 1./2. * TMath::Pi() ) )
+  {
+	return dPhi;
+  }
+  
+  if( (dPhi < 0) )
+  {
+	dPhi += 2.*TMath::Pi();
+  }
+  
+  if ((dPhi > 0) && 
+	  (dPhi > 1./2. * TMath::Pi() ) && 
+	  (dPhi <= 3./2. * TMath::Pi() ) )
+  {
+	dPhi -= TMath::Pi();
+	return dPhi;
+  }	
+  
+  if ((dPhi > 0) && 
+	  (dPhi > 3./2. * TMath::Pi() )) 
+  {
+	dPhi -= 2.*TMath::Pi();
+	return dPhi;
+  }
+  
+//   Printf("[E] dphi = %.4f , phiTrack = %.4f, phiEP = %.4f", dPhi, phiTrack, phiEP);
+  
+  return -9999.;
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::SetRelativeCuts(AliAODEvent *event)
@@ -1044,7 +1116,7 @@ Bool_t AlidNdPtAnalysisPbPbAOD::IsTrackAccepted(AliAODTrack *tr, Double_t dCentr
   
   Double_t dLengthInTPC = 0;
   if ( DoCutLengthInTPCPtDependent() ) { dLengthInTPC = dummy.GetLengthInActiveZone(&par,3,236, bMagZ ,0,0); }
-
+  
   Double_t dNClustersTPC = tr->GetTPCNcls();
   Double_t dCrossedRowsTPC = tr->GetTPCClusterInfo(2,1);
   Double_t dFindableClustersTPC = tr->GetTPCNclsF();

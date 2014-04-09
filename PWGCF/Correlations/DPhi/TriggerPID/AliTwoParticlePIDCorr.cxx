@@ -112,6 +112,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fSelectHighestPtTrig(kFALSE),
   fcontainPIDtrig(kTRUE),
   fcontainPIDasso(kFALSE),
+  SetChargeAxis(0),
   frejectPileUp(kFALSE),
   fminPt(0.2),
   fmaxPt(10.0),
@@ -191,7 +192,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   twoTrackEfficiencyCutValue(0.02),
   fPID(NULL),
  eventno(0),
-  fPtTOFPIDmin(0.6),
+  fPtTOFPIDmin(0.5),
   fPtTOFPIDmax(4.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
@@ -273,6 +274,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fSelectHighestPtTrig(kFALSE),
   fcontainPIDtrig(kTRUE),
   fcontainPIDasso(kFALSE),
+  SetChargeAxis(0),
   frejectPileUp(kFALSE),
   fminPt(0.2),
   fmaxPt(10.0),
@@ -352,7 +354,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   twoTrackEfficiencyCutValue(0.02),
   fPID(NULL),
  eventno(0),
- fPtTOFPIDmin(0.6),
+ fPtTOFPIDmin(0.5),
   fPtTOFPIDmax(4.0),
   fRequestTOFPID(kTRUE),
   fPIDType(NSigmaTPCTOF),
@@ -500,7 +502,7 @@ fOutput->Add(fhistcentrality);
 
   fEventCounter = new TH1F("fEventCounter","EventCounter", 12, 0.5,12.5);
   fEventCounter->GetXaxis()->SetBinLabel(1,"Event Accesed");
-  fEventCounter->GetXaxis()->SetBinLabel(3,"After PileUP Cut");
+  fEventCounter->GetXaxis()->SetBinLabel(3,"After PileUP Cut");//only for MC
   fEventCounter->GetXaxis()->SetBinLabel(5,"Have A Vertex");
   fEventCounter->GetXaxis()->SetBinLabel(7,"After vertex Cut");
   fEventCounter->GetXaxis()->SetBinLabel(9,"Within 0-100% centrality");
@@ -524,9 +526,9 @@ fControlConvResoncances = new TH2F("fControlConvResoncances", ";id;delta mass", 
  fOutput->Add(fControlConvResoncances);
     }
 
-fHistoTPCdEdx = new TH2F("hHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
+fHistoTPCdEdx = new TH2F("fHistoTPCdEdx", ";p_{T} (GeV/c);dE/dx (au.)",200,0.0,10.0,500, 0., 500.);
 fOutputList->Add(fHistoTPCdEdx);
-fHistoTOFbeta = new TH2F(Form("hHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fmaxPt, 500, 0.1, 1.1);
+fHistoTOFbeta = new TH2F(Form("fHistoTOFbeta"), ";p_{T} (GeV/c);v/c",100, 0., fmaxPt, 500, 0.1, 1.1);
   fOutputList->Add(fHistoTOFbeta);
   
    fTPCTOFPion3d=new TH3F ("fTPCTOFpion3d", "fTPCTOFpion3d",100,0., 10., 120,-60.,60.,120,-60.,60);
@@ -584,13 +586,13 @@ for(Int_t i = 0; i < 16; i++)
       fOutput->Add(fHistQA[i]);
     }
 
-   kTrackVariablesPair=6 ;
+   kTrackVariablesPair=6+SetChargeAxis;
 
- if(fcontainPIDtrig && !fcontainPIDasso) kTrackVariablesPair=7;
+   if(fcontainPIDtrig && !fcontainPIDasso) kTrackVariablesPair=7+SetChargeAxis;
  
- if(!fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=7;
+ if(!fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=7+SetChargeAxis;
  
- if(fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=8;
+ if(fcontainPIDtrig && fcontainPIDasso) kTrackVariablesPair=8+SetChargeAxis;
  
  
 // two particle histograms
@@ -617,6 +619,10 @@ for(Int_t i = 0; i < 16; i++)
   }
   if(fcontainPIDasso){
       defaultBinningStr += "PIDAsso: -0.5,0.5,1.5,2.5,3.5\n"; // course
+  }
+  if(SetChargeAxis==2){
+      defaultBinningStr += "TrigCharge: -2.0,0.0,2.0\n"; // course
+      defaultBinningStr += "AssoCharge: -2.0,0.0,2.0\n"; // course
   }
  // =========================================================
   // Customization (adopted from AliUEHistograms)
@@ -659,14 +665,37 @@ for(Int_t i = 0; i < 16; i++)
     dBinsPair[5]       = GetBinning(fBinningString, "delta_phi", iBinPair[5]);
     axisTitlePair[5]   = "#Delta#varphi (rad)";  
 
+    if(!fcontainPIDtrig && !fcontainPIDasso && SetChargeAxis==2){
+    dBinsPair[6]       = GetBinning(fBinningString, "TrigCharge", iBinPair[6]);
+    axisTitlePair[6]   = "TrigCharge";
+
+    dBinsPair[7]       = GetBinning(fBinningString, "AssoCharge", iBinPair[7]);
+    axisTitlePair[7]   = "AssoCharge";
+    }
+
  if(fcontainPIDtrig && !fcontainPIDasso){
     dBinsPair[6]       = GetBinning(fBinningString, "PIDTrig", iBinPair[6]);
     axisTitlePair[6]   = "PIDTrig"; 
+    if(SetChargeAxis==2){
+    dBinsPair[7]       = GetBinning(fBinningString, "TrigCharge", iBinPair[7]);
+    axisTitlePair[7]   = "TrigCharge";
+
+    dBinsPair[8]       = GetBinning(fBinningString, "AssoCharge", iBinPair[8]);
+    axisTitlePair[8]   = "AssoCharge";
+    }
  }
 
  if(!fcontainPIDtrig && fcontainPIDasso){
     dBinsPair[6]       = GetBinning(fBinningString, "PIDAsso", iBinPair[6]);
     axisTitlePair[6]   = "PIDAsso"; 
+
+ if(SetChargeAxis==2){
+    dBinsPair[7]       = GetBinning(fBinningString, "TrigCharge", iBinPair[7]);
+    axisTitlePair[7]   = "TrigCharge";
+
+    dBinsPair[8]       = GetBinning(fBinningString, "AssoCharge", iBinPair[8]);
+    axisTitlePair[8]   = "AssoCharge";
+    }
  }
 
 if(fcontainPIDtrig && fcontainPIDasso){
@@ -675,7 +704,15 @@ if(fcontainPIDtrig && fcontainPIDasso){
     axisTitlePair[6]   = "PIDTrig";
 
     dBinsPair[7]       = GetBinning(fBinningString, "PIDAsso", iBinPair[7]);
-    axisTitlePair[7]   = "PIDAsso";  
+    axisTitlePair[7]   = "PIDAsso";
+
+    if(SetChargeAxis==2){
+    dBinsPair[8]       = GetBinning(fBinningString, "TrigCharge", iBinPair[8]);
+    axisTitlePair[8]   = "TrigCharge";
+
+    dBinsPair[9]       = GetBinning(fBinningString, "AssoCharge", iBinPair[9]);
+    axisTitlePair[9]   = "AssoCharge";
+    }
  }
 	
 	Int_t nEtaBin = -1;
@@ -696,15 +733,15 @@ if(fcontainPIDtrig && fcontainPIDasso){
 
  if((fAnalysisType =="MCAOD") && ffillefficiency) {
 TString Histrename;
-  Int_t effbin[5];
+  Int_t effbin[4];
   effbin[0]=iBinPair[0];
   effbin[1]=iBinPair[1];
   effbin[2]=nPteffbin;
   effbin[3]=nEtaBin;
-  Int_t effsteps=5;
+  Int_t effsteps=5;//for each species type::primMCParticles(0),primRecoTracksMatched(1),allRecoTracksMatched(2),primRecoTracksMatchedPID(3),allRecoTracksMatchedPID(4)
 for(Int_t jj=0;jj<6;jj++)//PID type binning
     {
-      if(jj==5) effsteps=3;//for unidentified particles
+     if(jj==5) effsteps=3;//for unidentified particles
   Histrename="fTrackHistEfficiency";Histrename+=jj;
   fTrackHistEfficiency[jj] = new AliTHn(Histrename.Data(), "Tracking efficiency", effsteps, 4, effbin);
   fTrackHistEfficiency[jj]->SetBinLimits(0, dBinsPair[0]);
@@ -797,17 +834,41 @@ for (Int_t j=0; j<kTrackVariablesPair; j++) {
     //binning for trigger no. counting
 
 	Int_t* fBinst;
-	Int_t dims=3;
-	if(fcontainPIDtrig) dims=4;
+	Int_t dims=3+SetChargeAxis;
+	if(fcontainPIDtrig) dims=4+SetChargeAxis;
         fBinst= new Int_t[dims];
 	for(Int_t i=0; i<3;i++)
 	  {
 	    fBinst[i]=iBinPair[i];
 	  }
-	if(fcontainPIDtrig){
-            fBinst[3]=iBinPair[6];  
-	}
+if(!fcontainPIDtrig && !fcontainPIDasso && SetChargeAxis==2){
+fBinst[3]=iBinPair[6];
+fBinst[4]=iBinPair[7];
+    }
 
+if(fcontainPIDtrig && !fcontainPIDasso){
+fBinst[3]=iBinPair[6]; 
+    if(SetChargeAxis==2){
+fBinst[4]=iBinPair[7];
+fBinst[5]=iBinPair[8];
+    }
+ }
+
+ if(!fcontainPIDtrig && fcontainPIDasso){
+ if(SetChargeAxis==2){
+    fBinst[3]=iBinPair[7];
+    fBinst[4]=iBinPair[8];
+    }
+ }
+
+if(fcontainPIDtrig && fcontainPIDasso){
+  fBinst[3]=iBinPair[6]; 
+    if(SetChargeAxis==2){
+fBinst[4]=iBinPair[8];
+fBinst[5]=iBinPair[9];
+    }
+    }
+ 
   //ThSparse for trigger counting(data & reco MC)
   if(ffilltrigassoUNID || ffilltrigUNIDassoID || ffilltrigIDassoUNID || ffilltrigIDassoID)
 	  {
@@ -1204,7 +1265,7 @@ skipParticlesAbove = eventHeader->NProduced();
   fHistQA[0]->Fill((trkVtx->GetX()));fHistQA[1]->Fill((trkVtx->GetY()));fHistQA[2]->Fill((trkVtx->GetZ()));   //for trkVtx only before vertex cut |zvtx|<10 cm
 
   //count events having a proper vertex
-   fEventCounter->Fill(3);
+   fEventCounter->Fill(5);
 
  if (TMath::Abs(zvtx) > fzvtxcut) return;
 
@@ -1213,7 +1274,7 @@ fHistQA[3]->Fill((trkVtx->GetX()));fHistQA[4]->Fill((trkVtx->GetY()));fHistQA[5]
 //now we have events passed physics trigger, centrality,eventzvtx cut 
 
 //count events after vertex cut
-  fEventCounter->Fill(5);
+  fEventCounter->Fill(7);
      
 if(!aod) return;  //for safety
 
@@ -1344,7 +1405,11 @@ if(ffillhistQATruth)
  Float_t effmatrixtruth=1.0;//In Truth MC, no case of efficiency correction so it should be always 1.0
 if((partMC->Pt()>=fminPtAsso && partMC->Pt()<=fmaxPtAsso) || (partMC->Pt()>=fminPtTrig && partMC->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
-LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,partMC->Charge(),partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth);
+    Short_t chargeval=0;
+    if(partMC->Charge()>0)   chargeval=1;
+    if(partMC->Charge()<0)   chargeval=-1;
+    if(chargeval==0) continue;
+LRCParticlePID* copy6 = new LRCParticlePID(particletypeTruth,chargeval,partMC->Pt(),partMC->Eta(), partMC->Phi(),effmatrixtruth);
 //copy6->SetUniqueID(eventno * 100000 + TMath::Abs(partMC->GetLabel()));
  copy6->SetUniqueID(eventno * 100000 + (Int_t)nooftrackstruth);
  tracksMCtruth->Add(copy6);//************** TObjArray used for truth correlation function calculation
@@ -1490,9 +1555,13 @@ isduplicate2=kTRUE;
  //Clone & Reduce track list(TObjArray) for unidentified particles
 if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
+     Short_t chargeval=0;
+    if(track->Charge()>0)   chargeval=1;
+    if(track->Charge()<0)   chargeval=-1;
+    if(chargeval==0) continue;
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
    effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC);
-   LRCParticlePID* copy = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+   LRCParticlePID* copy = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
    copy->SetUniqueID(eventno * 100000 +(Int_t)trackscount);
    tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
@@ -1651,9 +1720,13 @@ if (((AliAODMCParticle*)recomatched)->IsPhysicalPrimary())  fTrackHistEfficiency
 
 if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig))//to reduce memory consumption in pool
   {
+    Short_t chargeval=0;
+    if(track->Charge()>0)   chargeval=1;
+    if(track->Charge()<0)   chargeval=-1;
+    if(chargeval==0) continue;
 if (fapplyTrigefficiency || fapplyAssoefficiency)
     effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletypeMC);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles 
-    LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+    LRCParticlePID* copy1 = new LRCParticlePID(particletypeMC,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
     copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
     tracksID->Add(copy1);
   }
@@ -1811,10 +1884,9 @@ void AliTwoParticlePIDCorr::doAODevent()
  if(frejectPileUp)  //applicable only for TPC only tracks,not for hybrid tracks?.
       {
  if (fAnalysisUtils && fAnalysisUtils->IsPileUpEvent(aod)) return;
-  }
-
 //count events after PileUP cut
    fEventCounter->Fill(3);
+  }
 
  if (!fPID) return;//this should be available with each event even if we don't do PID selection
   
@@ -1941,9 +2013,13 @@ if(fSampleType=="pPb" || fSampleType=="PbPb") if (cent_v0 < 0)  return;//for pp 
   if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig)) 
   {
  //Clone & Reduce track list(TObjArray) for unidentified particles
+    Short_t chargeval=0;
+    if(track->Charge()>0)   chargeval=1;
+    if(track->Charge()<0)   chargeval=-1;
+    if(chargeval==0) continue;
  if (fapplyTrigefficiency || fapplyAssoefficiency)//get the trackingefficiency x contamination factor for unidentified particles
    effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletype);
- LRCParticlePID* copy = new LRCParticlePID(particletype,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
   copy->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
   tracksUNID->Add(copy);//track information Storage for UNID correlation function(tracks that pass the filterbit & kinematic cuts only)
   }
@@ -2002,9 +2078,13 @@ if (particletype==SpProton)
  
  if((track->Pt()>=fminPtAsso && track->Pt()<=fmaxPtAsso) || (track->Pt()>=fminPtTrig && track->Pt()<=fmaxPtTrig)) 
   {
+    Short_t chargeval=0;
+    if(track->Charge()>0)   chargeval=1;
+    if(track->Charge()<0)   chargeval=-1;
+    if(chargeval==0) continue;
 if (fapplyTrigefficiency || fapplyAssoefficiency)
   effmatrix=GetTrackbyTrackeffvalue(track,cent_v0,zvtx,particletype);//get the tracking eff x TOF matching eff x PID eff x contamination factor for identified particles; Bool_t mesoneffrequired=kFALSE
- LRCParticlePID* copy1 = new LRCParticlePID(particletype,track->Charge(),track->Pt(),track->Eta(), track->Phi(),effmatrix);
+ LRCParticlePID* copy1 = new LRCParticlePID(particletype,chargeval,track->Pt(),track->Eta(), track->Phi(),effmatrix);
     copy1->SetUniqueID(eventno * 100000 + (Int_t)trackscount);
     tracksID->Add(copy1);
   }
@@ -2231,7 +2311,7 @@ if(fSelectHighestPtTrig || fWeightPerEvent)//**************add this data member 
       {
 if (fWeightPerEvent)
     {
-      TAxis* axis;
+      TAxis* axis=0;
    if(ffilltrigassoUNID || ffilltrigUNIDassoID || ffilltrigIDassoUNID || ffilltrigIDassoID) axis = fTHnTrigcount->GetGrid(0)->GetGrid()->GetAxis(2);                                          
   if((fAnalysisType =="MCAOD") && ffilltrigIDassoIDMCTRUTH)    axis = fTHnTrigcountMCTruthPrim->GetGrid(0)->GetGrid()->GetAxis(2);
       triggerWeighting = new TH1F("triggerWeighting", "", axis->GetNbins(), axis->GetXbins()->GetArray());
@@ -2318,12 +2398,21 @@ if (fOnlyOneEtaSide != 0)
       //cout<<"*******************trackefftrig="<<trackefftrig<<endl;
 	Double_t* trigval;
 	Int_t dim=3;
-	if(fcontainPIDtrig) dim=4;
+	if(fcontainPIDtrig && SetChargeAxis==0) dim=4;
+	if(!fcontainPIDtrig && SetChargeAxis==2) dim=4;
+	if(fcontainPIDtrig && SetChargeAxis==2) dim=5;
         trigval= new Double_t[dim];
       trigval[0] = cent;
       trigval[1] = vtx;
       trigval[2] = trigpt;
-if(fcontainPIDtrig)      trigval[3] = particlepidtrig;
+      if(fcontainPIDtrig)   {
+   trigval[3] = particlepidtrig;
+  if(SetChargeAxis==2) trigval[4]=trig->Charge();
+      }
+
+      if(!fcontainPIDtrig) {
+	if(SetChargeAxis==2)  trigval[3]=trig->Charge();      
+      }
 
 	if (fWeightPerEvent)
 	{
@@ -2574,11 +2663,31 @@ if (dphistarminabs < twoTrackEfficiencyCutValue && TMath::Abs(deta) < twoTrackEf
 	vars[3]=asso->Pt();
 	vars[4]=deleta;
 	vars[5]=delphi;
-if(fcontainPIDtrig && !fcontainPIDasso) vars[6]=particlepidtrig;
-if(!fcontainPIDtrig && fcontainPIDasso) vars[6]=particlepidasso;
+if(!fcontainPIDtrig && !fcontainPIDasso && SetChargeAxis==2){
+        vars[6]=trig->Charge();
+	vars[7]=asso->Charge();
+ }
+if(fcontainPIDtrig && !fcontainPIDasso){
+        vars[6]=particlepidtrig;
+if(SetChargeAxis==2){
+        vars[7]=trig->Charge();
+	vars[8]=asso->Charge();
+ }
+	}
+if(!fcontainPIDtrig && fcontainPIDasso){
+        vars[6]=particlepidasso;
+if(SetChargeAxis==2){
+        vars[7]=trig->Charge();
+	vars[8]=asso->Charge();
+   }
+ }
  if(fcontainPIDtrig && fcontainPIDasso){
 	vars[6]=particlepidtrig;
 	vars[7]=particlepidasso;
+if(SetChargeAxis==2){
+        vars[8]=trig->Charge();
+	vars[9]=asso->Charge();
+   }
  }
 
 	if (fWeightPerEvent)

@@ -96,7 +96,7 @@ void drawCorrelationFunctionPsi(const char* filename = "AnalysisResultsPsi_train
     draw(list,listShuffled,listMixed,listQA,
 	 gCentralityEstimator,gCentrality,psiMin,psiMax,vertexZMin,vertexZMax,
 	 ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,normToTrig, normalizationRangePhi,
-	 kUseVzBinning,rebinEta,rebinPhi,eventClass);
+	 kUseVzBinning,rebinEta,rebinPhi,eventClass,bToy);
 }
 
 //______________________________________________________//
@@ -281,7 +281,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 	  Bool_t normToTrig, 
 	  Double_t normalizationRangePhi,				
 	  Bool_t kUseVzBinning,
-	  Int_t rebinEta, Int_t rebinPhi,TString eventClass) {
+	  Int_t rebinEta, Int_t rebinPhi,TString eventClass,Bool_t bToy) {
   //Draws the correlation functions for every centrality bin
   //(+-), (-+), (++), (--)  
   AliTHn *hP = NULL;
@@ -432,9 +432,17 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
 
   // need event statistics for per-trigger yield
   TH2D* hVertexCentrality = NULL;
-  if( normToTrig && !listQA){
+  if( normToTrig && !listQA && !bToy){
     Printf("per-trigger yield option chosen, but QA list for event statistics not available");
     return;
+  }
+  else if( normToTrig && !listQA ){ //special case Toy model (no QA!)
+    hVertexCentrality = new TH2D("hVertexCentrality","Primary vertex distribution - z coordinate (dummy for toy model);V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
+    for(Int_t iX = 0; iX < hVertexCentrality->GetNbinsX(); iX++){
+      for(Int_t iY = 0; iY < hVertexCentrality->GetNbinsY(); iY++){
+	hVertexCentrality->SetBinContent(iX+1,iY+1,1);
+      }
+    }
   }
   else{
     hVertexCentrality = (TH2D*)listQA->FindObject("fHistVz");

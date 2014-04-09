@@ -13,7 +13,9 @@
 class AliMuonAccEffSubmitter : public AliMuonGridSubmitter
 {
 public:
-  AliMuonAccEffSubmitter(const char* generator="GenParamCustom", Bool_t localOnly=kFALSE);
+  AliMuonAccEffSubmitter(const char* generator="GenParamCustom",
+                         Bool_t localOnly=kFALSE,
+                         int pythia8version=8175);
 
   virtual Bool_t Generate(const char* jdlname) const;
   virtual Bool_t Run(const char* mode);
@@ -58,8 +60,6 @@ public:
 
   Bool_t SetGenerator(const char* generator);
 
-  void CleanLocal(const char* excludeList="OCDB_") const;
-  
   Int_t MaxEventsPerChunk() const { return fMaxEventsPerChunk; }
   void SetMaxEventsPerChunk(Int_t n) { fMaxEventsPerChunk = n; }
 
