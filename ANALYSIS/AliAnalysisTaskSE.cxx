@@ -411,9 +411,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    }
             if ((handler->NeedsTOFHeaderReplication() || merging) && (fgTOFHeader))
             {
-              *fgTOFHeader =  *(aod->GetTOFHeader());
+              if (aod->GetTOFHeader()) *fgTOFHeader =  *(aod->GetTOFHeader());
             }
-            if ((handler->NeedsVZEROReplication() || merging) && (fgAODVZERO))
+            if ((handler->NeedsVZEROReplication() || merging) && (fgAODVZERO) && aod->GetVZEROData())
             {
               *fgAODVZERO = *(aod->GetVZEROData());
             }
