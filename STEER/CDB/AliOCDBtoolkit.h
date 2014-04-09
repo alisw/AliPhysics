@@ -28,7 +28,13 @@ public:
   static void LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList);
   static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
   static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0);
-  
+  //
+  // dump object functionality
+  //  
+  static void DumpObjectRecursive(TObject *obj);
+  static void DumpObjectRecursive(TObject *obj, TString prefix, Int_t &counterRec);
+  static void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml);
+  //
 private:
   AliOCDBtoolkit(const AliOCDBtoolkit& source);
   AliOCDBtoolkit& operator= (const AliOCDBtoolkit& rec);
