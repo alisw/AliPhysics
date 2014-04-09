@@ -30,6 +30,7 @@ class AliEMCALCalibData: public TNamed {
   
   // All indexes start from 0!
   Float_t GetADCchannel      (Int_t module, Int_t column, Int_t row) const;
+  Float_t GetADCchannelOnline(Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCchannelDecal (Int_t module, Int_t column, Int_t row) const;
   Float_t GetADCpedestal     (Int_t module, Int_t column, Int_t row) const;
   Float_t GetTimeChannelDecal(Int_t module, Int_t column, Int_t row) const;
@@ -38,6 +39,7 @@ class AliEMCALCalibData: public TNamed {
   Float_t GetADCchannelRef   () const { return fADCchannelRef ; }
 
   void    SetADCchannel      (Int_t module, Int_t column, Int_t row, Float_t value);
+  void    SetADCchannelOnline(Int_t module, Int_t column, Int_t row, Float_t value);
   void    SetADCchannelDecal (Int_t module, Int_t column, Int_t row, Float_t value);
   void    SetADCpedestal     (Int_t module, Int_t column, Int_t row, Float_t value);
   void    SetTimeChannelDecal(Int_t module, Int_t column, Int_t row, Float_t value);
@@ -47,15 +49,16 @@ class AliEMCALCalibData: public TNamed {
 
  protected:
 
-  Float_t  fADCchannelRef ;  // base value of the ADC channel set from cosmics calibration
+  Float_t  fADCchannelRef ;  // base value of the ADC channel set from cosmics calibration, not to be used, instead use fADCchannelOnline
 
   Float_t  fADCchannel      [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCchannelOnline[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row]) obtained from the voltage settings online
   Float_t  fADCchannelDecal [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // decalibrate width of one ADC channel in GeV ([mod][col][row])
   Float_t  fADCpedestal     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // value of the  ADC pedestal ([mod][col][row]), not used
   Float_t  fTimeChannelDecal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ;    // time shift of one ADC channel ([mod][col][row])
   Float_t  fTimeChannel     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; // time shift of one ADC channel ([mod][col][row][bunch crossing number])
 
-  ClassDef(AliEMCALCalibData,4)    // EMCAL Calibration data
+  ClassDef(AliEMCALCalibData,5)    // EMCAL Calibration data
 };
 
 #endif

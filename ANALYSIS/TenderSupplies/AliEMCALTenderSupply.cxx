@@ -109,6 +109,10 @@ AliEMCALTenderSupply::AliEMCALTenderSupply() :
   ,fSetCellMCLabelFromCluster(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
+  ,fUseAutomaticRecalib(1)
+  ,fUseAutomaticRunDepRecalib(1)
+  ,fUseAutomaticTimeCalib(1)
+  ,fUseAutomaticRecParam(1)
 {
   // Default constructor.
 
@@ -172,6 +176,10 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, const AliTender *te
   ,fSetCellMCLabelFromCluster(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
+  ,fUseAutomaticRecalib(1)
+  ,fUseAutomaticRunDepRecalib(1)
+  ,fUseAutomaticTimeCalib(1)
+  ,fUseAutomaticRecParam(1)
 {
   // Named constructor
   
@@ -235,6 +243,10 @@ AliEMCALTenderSupply::AliEMCALTenderSupply(const char *name, AliAnalysisTaskSE *
   ,fSetCellMCLabelFromCluster(0)
   ,fTempClusterArr(0)
   ,fRemapMCLabelForAODs(0)
+  ,fUseAutomaticRecalib(1)
+  ,fUseAutomaticRunDepRecalib(1)
+  ,fUseAutomaticTimeCalib(1)
+  ,fUseAutomaticRecParam(1)
 {
   // Named constructor.
   
@@ -513,26 +525,32 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init recalibration factors
-    if (needRecalib) { 
-      Int_t fInitRecalib = InitRecalib();
-      if (fInitRecalib==0)
-        AliError("InitRecalib returned false, returning");
-      if (fInitRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRecalib>1)
-        AliWarning(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+    if (needRecalib) {
+      if(fUseAutomaticRecalib)
+      {
+        Int_t fInitRecalib = InitRecalib();
+        if (fInitRecalib==0)
+          AliError("InitRecalib returned false, returning");
+        if (fInitRecalib==1)
+          AliWarning("InitRecalib OK");
+        if (fInitRecalib>1)
+          AliWarning(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      }
       
-      Int_t fInitRunDepRecalib = InitRunDepRecalib();
-      if (fInitRunDepRecalib==0)
-        AliError("InitrunDepRecalib returned false, returning");
-      if (fInitRunDepRecalib==1)
-        AliWarning("InitRecalib OK");
-      if (fInitRunDepRecalib>1)
-        AliWarning(Form("No Temperature recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      if(fUseAutomaticRunDepRecalib)
+      {
+        Int_t fInitRunDepRecalib = InitRunDepRecalib();
+        if (fInitRunDepRecalib==0)
+          AliError("InitrunDepRecalib returned false, returning");
+        if (fInitRunDepRecalib==1)
+          AliWarning("InitRecalib OK");
+        if (fInitRunDepRecalib>1)
+          AliWarning(Form("No Temperature recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      }
     }
     
     // init time calibration
-    if (needTimecalib) {
+    if (needTimecalib && fUseAutomaticTimeCalib) {
       Int_t initTC = InitTimeCalibration();
       if (!initTC) 
         AliError("InitTimeCalibration returned false, returning");
@@ -545,7 +563,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     }
 
     // init misalignment matrix
-    if (needMisalign) { 
+    if (needMisalign) {
       if (!InitMisalignMatrix())
         AliError("InitMisalignmentMatrix returned false, returning");
       else
@@ -554,7 +572,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     
     // initiate reco params with some defaults
     // will not overwrite, if those have been provided by user
-    if (needRecoParam) {
+    if (needRecoParam && fUseAutomaticRecParam) {
       Int_t initRC = InitRecParam();
       
       if (initRC == 0)
@@ -1800,6 +1818,7 @@ void AliEMCALTenderSupply::GetPass()
     //printf("AliEMCALTenderSupply::GetPass() - Path contains <calo> or <high-lumi>, set as <pass1>\n");
     fFilepass = TString("pass1");
   }
+  else if (fname.Contains("LHC14a1a")) fFilepass = TString("LHC14a1a");
   else
   {
     AliError(Form("Pass number string not found: %s", fname.Data()));

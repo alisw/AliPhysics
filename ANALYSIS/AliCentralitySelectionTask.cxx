@@ -1665,7 +1665,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetQuality(fQuality);
     esdCent->SetCentralityV0M(fCentV0M);
     esdCent->SetCentralityV0A(fCentV0A);
-    esdCent->SetCentralityV0A123(fCentV0A0);
+    esdCent->SetCentralityV0A0(fCentV0A0);
     esdCent->SetCentralityV0A123(fCentV0A123);
     esdCent->SetCentralityV0C(fCentV0C);
     esdCent->SetCentralityV0MEq(fCentV0MEq);
@@ -2063,3 +2063,4 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) 
   else 
     return kFALSE;
 }
+

@@ -52,14 +52,16 @@ public:
     TF1 *  GetY() {return fYPara;}
     Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
 
-    static double ScreenVar(double Z, double e0, double eps){ return 136/pow(Z,0.333333)*e0/eps/(1-eps); }
-    static double ScreenFunc1(double d);
-    static double ScreenFunc2(double d);
-    static double AuxScreenFunc1(double d, double Fz){ return 3*ScreenFunc1(d)-ScreenFunc2(d)-Fz; }
-    static double AuxScreenFunc2(double d, double Fz){ return 3*0.5*ScreenFunc1(d)-0.5*ScreenFunc2(d)-Fz; }
     static TVector3 OrthogonalVector(TVector3 &inVec);
-    double EnergyFraction(double Z, double E);
-    double PolarAngle(double E);
+    static void RotateVector(Double_t *pin, Double_t *pout, Double_t costheta, Double_t sintheta,
+			   Double_t cosphi, Double_t sinphi);
+    static double IntegratedKrollWada(Double_t mh);
+    static double ScreenFunction1(double d);
+    static double ScreenFunction2(double d);
+    double RandomEnergyFraction(double Z, double E);
+    double RandomPolarAngle();
+    double RandomMass(Double_t mh);
+    Int_t VirtualGammaPairProduction(TClonesArray *particles, Int_t nPart);
     Int_t ForceGammaConversion(TClonesArray *particles, Int_t nPart);
   
 protected:

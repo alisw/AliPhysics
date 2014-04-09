@@ -11,7 +11,7 @@
 #include "AliAODHeader.h"
 #include "TClonesArray.h"
 #include "AliMFTConstants.h"
-#include "AliMFTSupport.h"
+#include "AliMFTAnalysisTools.h"
 #include "TRandom.h"
 #include "TList.h"
 
@@ -209,14 +209,18 @@ void AliAnalysisTaskMFTExample::UserExec(Option_t *) {
 	mcMuon2 = (AliAODMCParticle*) stackMC->At(recMuon2->GetLabel());
 	if (mcMuon2) {
 	  if (mcMuon2->GetMother() == mcMuon1->GetMother()) {
-	    Double_t vertex[3]={0};
+	    Double_t pca[3]={0};
+	    Double_t pcaQuality=0;
+	    TClonesArray *muons = new TClonesArray("AliAODTrack",2);
+	    muons -> Add(recMuon1);
+	    muons -> Add(recMuon2);
 	    TLorentzVector kinem(0,0,0,0);
-	    if (!AliMFTSupport::RefitAODDimuonWithCommonVertex(dimuon, vertex, kinem)) continue;
+	    if (!AliMFTAnalysisTools::RefitAODDimuonWithCommonVertex(muons, pca, pcaQuality, kinem)) continue;
 	    fHistPtDimuonsJpsi    -> Fill(kinem.Pt());
 	    fHistMassDimuonsJpsi  -> Fill(kinem.M());
-	    fHistResidualXVtxJpsi -> Fill(1.e4*(vertex[0] - fPrimaryVertex[0]));
-	    fHistResidualYVtxJpsi -> Fill(1.e4*(vertex[1] - fPrimaryVertex[1]));
-	    fHistResidualZVtxJpsi -> Fill(1.e4*(vertex[2] - fPrimaryVertex[2]));
+	    fHistResidualXVtxJpsi -> Fill(1.e4*(pca[0] - fPrimaryVertex[0]));
+	    fHistResidualYVtxJpsi -> Fill(1.e4*(pca[1] - fPrimaryVertex[1]));
+	    fHistResidualZVtxJpsi -> Fill(1.e4*(pca[2] - fPrimaryVertex[2]));
 	  }
 	}
       }

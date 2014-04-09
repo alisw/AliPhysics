@@ -33,7 +33,10 @@ class AliCTPRawStream: public TObject {
     UShort_t  GetL2Inputs() const { return fL2TriggerInputs; }
 
     ULong64_t GetClassMask()   const { return fClassMask; }  // Provide the trigger class mask
+    ULong64_t GetClassMaskNext50()   const { return fClassMaskNext50; }  // Provide the trigger class mask
     UChar_t   GetClusterMask() const { return fClusterMask; }// Provide the trigger cluster mask
+    Bool_t    GetPayloadRun1(UChar_t* data);
+    Bool_t    GetPayloadRun2(UChar_t* data);
 
     Int_t     GetNIRs() const { return fIRArray.GetEntriesFast(); }
     const TClonesArray &GetAllIRs() const { return fIRArray; }
@@ -55,6 +58,7 @@ class AliCTPRawStream: public TObject {
     UShort_t         fL2TriggerInputs; // L2 trigger inputs (12 bits)
 
     ULong64_t        fClassMask;   // trigger class mask
+    ULong64_t        fClassMaskNext50;   // trigger class mask
     UChar_t          fClusterMask; // trigger cluster mask
 
     AliRawReader*    fRawReader;   // object for reading the raw data

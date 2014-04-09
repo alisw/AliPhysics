@@ -281,21 +281,26 @@ void AliAnalysisDataContainer::PrintContainer(Option_t *option, Int_t indent) co
    for (Int_t i=0; i<indent; i++) ind += " ";
    TString opt(option);
    opt.ToLower();
+   TString ctype = "Container";
+   if (IsExchange()) ctype = "Exchange container";
    Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
    if (!dep) {
-      printf("%sContainer: %s  type: %s POST_LOOP=%i", ind.Data(), GetName(), GetTitle(), IsPostEventLoop());
-      if (fProducer) 
-         printf("%s = Data producer: task %s",ind.Data(),fProducer->GetName());
-      else
-         printf("%s= No data producer",ind.Data());
-      printf("%s = Consumer tasks: ", ind.Data());
-      if (!fConsumers || !fConsumers->GetEntriesFast()) printf("-none-\n");
-      else printf("\n");
+      if (IsPostEventLoop()) printf("%s%s: %s     DATA TYPE: %s POST_LOOP task\n", ind.Data(), ctype.Data(), GetName(), GetTitle());
+      else printf("%s%s: %s     DATA TYPE: %s\n", ind.Data(), ctype.Data(), GetName(), GetTitle());
+      if (!fProducer) 
+//         printf("%s = Data producer: task %s\n",ind.Data(),fProducer->GetName());
+//      else
+         printf("%s= Not connected to a data producer\n",ind.Data());
+      if (fConsumers && fConsumers->GetEntriesFast())
+         printf("%s = Client tasks indented below:\n", ind.Data());
    }
-   if (fFolderName.Length())
-     printf("Filename: %s  folder: %s\n", fFileName.Data(), fFolderName.Data());
-   else
-     printf("Filename: %s\n", fFileName.Data());
+   if (!IsExchange()) {
+      if (!fFolderName.IsNull())
+        printf("%s = Filename: %s  folder: %s\n", ind.Data(),fFileName.Data(), fFolderName.Data());
+      else
+        if (!fFileName.IsNull()) printf("%s = Filename: %s\n", ind.Data(),fFileName.Data());
+   }     
+   ((AliAnalysisDataContainer*)this)->SetTouched(kTRUE);  
    TIter next(fConsumers);
    AliAnalysisTask *task;
    while ((task=(AliAnalysisTask*)next())) task->PrintTask(option, indent+3);
