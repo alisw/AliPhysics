@@ -13,7 +13,7 @@
 * provided "as is" without express or implied warranty.                  *
 **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliTRDseedV1.cxx 60233 2013-01-10 09:04:08Z abercuci $ */
 
 ////////////////////////////////////////////////////////////////////////////
 ////
@@ -36,6 +36,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "TMath.h"
+#include "TGeoManager.h"
 #include "TTreeStream.h"
 #include "TGraphErrors.h"
 
@@ -538,44 +539,95 @@ Int_t AliTRDseedV1::GetChargeGaps(Float_t sz[kNtb], Float_t pos[kNtb], Int_t isz
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::GetEstimatedCrossPoint(Float_t &x, Float_t &z) const
+Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
 {
-// Algorithm to estimate cross point in the x-z plane for pad row cross tracklets.
-// Returns true in case of success.
-  if(!IsRowCross()) return kFALSE;
+// Algorithm to estimate cross point in the x-z plane for pad row cross tracklets or the z coordinate of pad row without pad row cross in the local chamber coordinates.
+// Returns radial offset from anode wire in case of raw cross.
 
-  x=0.; z=0.;
+  Int_t row[] = {-1, -1};
+  Double_t xOff(0.), zOff(0.5 * (pp->GetRow0() + pp->GetRowEnd()));
   AliTRDcluster *c(NULL);
-  // Find radial range for first row
-  Float_t x1[] = {0., 1.e3};
-  for(int ic=0; ic<kNtb; ic++){
-    if(!(c=fClusters[ic])) continue;
-    if(!c->IsInChamber()) continue;
-    if(c->GetX() <= x1[1]) x1[1] = c->GetX();
-    if(c->GetX() >= x1[0]) x1[0] = c->GetX();
-    z=c->GetZ();
-  }
-  if((x1[0] - x1[1])<1.e-5) return kFALSE;
 
-  // Find radial range for second row
-  Bool_t kZ(kFALSE);
-  Float_t x2[] = {0., 1.e3};
-  for(int ic=kNtb; ic<kNclusters; ic++){
-    if(!(c=fClusters[ic])) continue;
-    if(!c->IsInChamber()) continue;
-    if(c->GetX() <= x2[1]) x2[1] = c->GetX();
-    if(c->GetX() >= x2[0]) x2[0] = c->GetX();
-    if(!kZ){
-      z+=c->GetZ();
-      z*=0.5;
-      kZ=kTRUE;
+  if(!IsRowCross()){ 
+    for(int ic=0; ic<kNtb; ic++){
+      if(!(c=fClusters[ic])) continue;
+      if(!c->IsInChamber()) continue;
+      row[0]   = c->GetPadRow();
+      fZfit[0] = pp->GetRowPos(row[0]) - 0.5*pp->GetRowSize(row[0]);
+      break;
     }
+  } else {  
+    Float_t tbm[2] = {0.}, // mean value of time bin in rows
+            w[2] = {0.};   // weight of rows
+    Int_t tb[kNtb]={0}, //array of time bins from first row
+          nc[2] = {0},  // no. of clusters in rows
+          mc(0);  // no. of common clusters
+    // Find radial range for first row
+    for(int ic(0); ic<kNtb; ic++){
+      tb[ic]= -1;
+      if(!(c=fClusters[ic]) || !c->IsInChamber()) continue;
+      if(row[0]<0) row[0] = c->GetPadRow();
+      tb[nc[0]++] = ic; tbm[0] += ic;
+    }
+    if(nc[0]>2){
+      tbm[0] /= nc[0];
+      w[0] = 1.;
+    }
+    // Find radial range for second row
+    for(int ic(kNtb), jc(0); ic<kNclusters; ic++, jc++){
+      if(!(c=fClusters[ic]) || !c->IsInChamber()) continue;
+      if(row[1]<0) row[1] = c->GetPadRow();
+      tbm[1] += jc; nc[1]++;
+      for(Int_t kc(0); kc<nc[0]; kc++) 
+        if(tb[kc]==jc){
+          tb[kc] += 100; // mark common cluster
+          mc++;
+          break;
+        }
+    }
+    if(nc[1]>2){
+      tbm[1] /= nc[1];
+      w[1] = 1.;
+    }
+    //printf("0 : %f[%2d] 1 : %f[%2d] mc[%d]\n", tbm[0], nc[0], tbm[1], nc[1], mc);
+    Float_t ws = w[0]+w[1]; 
+    if(ws<=0){
+      AliError("Too few clusters to estimate tracklet.");
+      return -1;
+    }
+    w[0] /= ws; w[1] /= ws;
+    fZfit[0] = w[0]*(pp->GetRowPos(row[0]) - 0.5*pp->GetRowSize(row[0])) +
+               w[1]*(pp->GetRowPos(row[1]) - 0.5*pp->GetRowSize(row[1])); 
+    if(ws<2.) SetBit(kRowCross, kFALSE); // reset RC bit
+    else{ // find the best matching timebin 
+      Int_t itb(0);
+      if(!mc) { // no common range
+        itb = Int_t(0.5*(tbm[0] + tbm[1])); 
+      } else {
+        Double_t rmax(100.);
+        // compute distance from 
+        for(Int_t jc(0); jc<nc[0]; jc++){
+          if(tb[jc] < 100) continue;
+          Int_t ltb(tb[jc]-100);
+          Double_t r = (1. - ltb/tbm[0])*(1. - ltb/tbm[1]);
+          //printf("tb[%2d] dr[%f %f %f] rmax[%f]\n", ltb, r, 1. - ltb/tbm[0], 1. - ltb/tbm[1], rmax);
+          if(TMath::Abs(r)<rmax){ rmax = TMath::Abs(r); itb = ltb; } 
+        } 
+      }
+      if(itb>0 && (c = fClusters[itb])) xOff = c->GetXloc(fT0, fVD);  
+    }    
   }
-  if((x2[0] - x2[1])<1.e-5) return kFALSE;
 
-  // Find intersection of the 2 radial regions
-  x = 0.5*((x1[0]+x1[1] > x2[0]+x2[1]) ? (x1[1]+x2[0]) : (x1[0]+x2[1]));
-  return kTRUE;
+  fZfit[1] = fZfit[0]/(fX0-xOff);
+  // move to local chamber coordinates
+  fZfit[0]-= zOff;
+  // correct z position for dzdx
+  fZfit[0]+= fZfit[1]*xOff; // in case of RC propate from xoff to anode
+  //else fZfit[0]-= TMath::Tan(-fZfit[1]);     // correct for non-uniformity in dzdx 
+  
+  fS2Z     = 0.05+0.4*TMath::Abs(fZfit[1]); fS2Z *= fS2Z;
+
+  return xOff;
 }
 
 //____________________________________________________________________
@@ -850,14 +902,13 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   //GetPadLength()*GetPadLength()/12.;
 
   // insert systematic uncertainties
-  /* //RS
   if(fkReconstructor){
     Double_t sys[15]; memset(sys, 0, 15*sizeof(Double_t));
     fkReconstructor->GetRecoParam()->GetSysCovMatrix(sys);
-    sy2 += sys[0];
-    sz2 += sys[1];
+//    sy2 += sys[0];
+//    sz2 += sys[1];
   }
-  */
+
   // rotate covariance matrix if no RC
   if(!IsRowCross()){
     Double_t t2 = GetTilt()*GetTilt();
@@ -866,7 +917,7 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
     cov[1] = GetTilt()*(sz2 - sy2)*correction;
     cov[2] = (t2*sy2+sz2)*correction;
   } else {
-    cov[0] = sy2; cov[1] = 0.; cov[2] = sz2;
+    cov[0] = sy2; cov[1] = 0.; cov[2] = sy2;
   }
 
   AliDebug(4, Form("C(%6.1f %+6.3f %6.1f)  RC[%c]", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?'y':'n'));
@@ -2049,16 +2100,21 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
+Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
 {
 //
 // Linear fit of the clusters attached to the tracklet
+//   The fit is performed in local chamber coordinates (27.11.2013) to take into account correctly the misalignment
+//   Also the pad row cross is checked here and some background is removed
 //
 // Author 
 // A.Bercuci <A.Bercuci@gsi.de>
 
   TTreeSRedirector *pstreamer(NULL);
-  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();   if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();   
+  if(recoParam && 
+     recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && 
+     fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
 
   // factor to scale y pulls.
   // ideally if error parametrization correct this is 1.
@@ -2073,56 +2129,116 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
     if(!attach){ 
       AliWarning("No usable AttachClusters calib object.");
     } else { 
-      // kScalePulls = attach->GetScaleCov();//*lyScaler;
+      //kScalePulls = attach->GetScaleCov();//*lyScaler;
     }
     // Retrieve chamber status
     SetChmbGood(calibration->IsChamberGood(fDet));
     if(!IsChmbGood()) kScalePulls*=10.;
   }  
-  Double_t xc[kNclusters], yc[kNclusters], sy[kNclusters];
-  Int_t n(0),           // clusters used in fit 
-        row[]={-1, 0}; // pad row spanned by the tracklet
+
+  // evaluate locally z and dzdx from TRD only information
+  if(EstimatedCrossPoint(pp)<0.) return kFALSE;
+  
+  //printf("D%03d RC[%c] dzdx[%f %f] opt[%d]\n", fDet, IsRowCross()?'y':'n', fZref[1], fZfit[1], opt);
+  Double_t //xchmb = 0.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick(),
+           //zchmb = 0.5 * (pp->GetRow0() + pp->GetRowEnd()),
+           z0    = 0.5 * (pp->GetRow0() + pp->GetRowEnd()) + fZfit[0], z;
+  Double_t xc[kNclusters], yc[kNclusters], dz(0.), dzdx(0.), sy[kNclusters],
+           cs(0.);
+  Int_t n(0),          // clusters used in fit 
+        row[]={-1, -1},// pad row spanned by the tracklet
+        col(-1);       // pad column of current cluster
   AliTRDcluster *c(NULL), **jc = &fClusters[0];
   for(Int_t ic=0; ic<kNtb; ic++, ++jc) {
     if(!(c = (*jc))) continue;
     if(!c->IsInChamber()) continue;
     if(row[0]<0){ 
-      fZfit[0] = c->GetZ();
-      fZfit[1] = 0.;
       row[0] = c->GetPadRow();
+      z      = pp->GetRowPos(row[0]) - 0.5*pp->GetRowSize(row[0]);
+      switch(opt){ 
+        case 0: // no dz correction (only for RC tracklet) and dzdx from chamber position assuming primary
+          dzdx = fZfit[1];
+          dz   = IsRowCross()?(z - z0):0.;//5*dzdx*xchmb; 
+          break;
+        case 1: // dz correction only for RC tracklet and dzdx from reference
+          dzdx = fZref[1];
+          dz   = IsRowCross()?(z - z0):0.;//5*dzdx*xchmb; 
+          break;
+        case 2: // full z correction (z0 & dzdx from reference)
+          dz = c->GetZ()-fZref[0]; 
+          dzdx = fZref[1];
+          break;
+        default:
+          AliError(Form("Wrong option fit %d !", opt));
+          break;
+      }    
     }
-    xc[n]  = c->GetX();
-    yc[n]  = c->GetY();
-    sy[n]  = c->GetSigmaY2()>0?(TMath::Min(TMath::Sqrt(c->GetSigmaY2()), 0.08)):0.08;
+    if(col != c->GetPadCol()){
+      col = c->GetPadCol();
+      cs  = pp->GetColSize(col);
+    }
+    //Use local cluster coordinates - the code should be identical with AliTRDtransform::Transform() !!!
+    //A.Bercuci 27.11.13
+    xc[n] = c->GetXloc(fT0, fVD); // c->GetX();
+    yc[n] = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB; //c->GetY();
+    yc[n]-= fPad[2]*(dz+xc[n]*dzdx);
+    sy[n] = c->GetSigmaY2()>0?(TMath::Min(TMath::Sqrt(c->GetSigmaY2()), 0.08)):0.08;
     n++;
   }
-  Double_t corr = fPad[2]*fPad[0];
-
   for(Int_t ic=kNtb; ic<kNclusters; ic++, ++jc) {
     if(!(c = (*jc))) continue;
     if(!c->IsInChamber()) continue;
-    if(row[1]==0) row[1] = c->GetPadRow() - row[0];
-    xc[n]  = c->GetX();
-    yc[n]  = c->GetY() + corr*row[1];
+    if(row[1]<0){ 
+      row[1] = c->GetPadRow();
+      z      = pp->GetRowPos(row[1]) - 0.5*pp->GetRowSize(row[1]);
+      switch(opt){ 
+        case 0: // no dz correction (only for RC tracklet) and dzdx from chamber position assuming primary
+          dzdx = fZfit[1];
+          dz   = z - z0; 
+          break;
+        case 1: // dz correction only for RC tracklet and dzdx from reference
+          dzdx = fZref[1];
+          dz   = z - z0; 
+          break;
+        case 2: // full z correction (z0 & dzdx from reference)
+          dz = c->GetZ()-fZref[0]; 
+          dzdx = fZref[1];
+          break;
+        default:
+          AliError(Form("Wrong option fit %d !", opt));
+          break;
+      }    
+    }  
+    if(col != c->GetPadCol()){
+      col = c->GetPadCol();
+      cs  = pp->GetColSize(col);
+    }
+    //Use local cluster coordinates - the code should be identical with AliTRDtransform::Transform() !!!
+    //A.Bercuci 27.11.13
+    xc[n]  = c->GetXloc(fT0, fVD); // c->GetX();
+    yc[n]  = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB ;
+    yc[n] -= fPad[2]*(dz+xc[n]*dzdx);
     sy[n]  = c->GetSigmaY2()>0?(TMath::Min(TMath::Sqrt(c->GetSigmaY2()), 0.08)):0.08;
     n++;
   }
+
   UChar_t status(0);
-  Double_t par[3] = {0.,0.,fX0}, cov[3];
+  // the ref radial position is set close to the minimum of 
+  // the y variance of the tracklet
+  fX   = 0.;//set reference to anode wire
+  Double_t par[3] = {0.,0.,fX}, cov[3];
   if(!AliTRDtrackletOflHelper::Fit(n, xc, yc, sy, par, 1.5, cov)){ 
     AliDebug(1, Form("Tracklet fit failed D[%03d].", fDet));
     SetErrorMsg(kFitCl);
     return kFALSE; 
   }
-  fYfit[0] = par[0];
-  fYfit[1] = par[1];
+  fYfit[0] = par[0] - fX * par[1];
+  fYfit[1] = -par[1];
+  //printf(" yfit: %f [%f] x[%e] dydx[%f]\n", fYfit[0], par[0], fX, par[1]);
   // store covariance
   fCov[0] = kScalePulls*cov[0]; // variance of y0
   fCov[1] = kScalePulls*cov[2]; // covariance of y0, dydx
   fCov[2] = kScalePulls*cov[1]; // variance of dydx
-  // the ref radial position is set at the minimum of 
-  // the y variance of the tracklet
-  fX   = 0.;//-fCov[1]/fCov[2];
   // check radial position
   Float_t xs=fX+.5*AliTRDgeometry::CamHght();
   if(xs < 0. || xs > AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()){
@@ -2133,21 +2249,6 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
   fS2Y = fCov[0] + fX*fCov[1];
   fS2Z = fPad[0]*fPad[0]/12.;
   AliDebug(2, Form("[I]  x[cm]=%6.2f y[cm]=%+5.2f z[cm]=%+6.2f dydx[deg]=%+5.2f sy[um]=%6.2f sz[cm]=%6.2f", GetX(), GetY(), GetZ(), TMath::ATan(fYfit[1])*TMath::RadToDeg(), TMath::Sqrt(fS2Y)*1.e4, TMath::Sqrt(fS2Z)));
-  if(IsRowCross()){
-    Float_t x,z;
-    if(!GetEstimatedCrossPoint(x,z)){
-      AliDebug(2, Form("Failed(I) getting crossing point D[%03d].", fDet));
-      SetErrorMsg(kFitFailedY);
-      return kTRUE;
-    }
-    //if(IsPrimary()){ 
-      fZfit[0] = fX0*z/x;
-      fZfit[1] = z/x;
-      fS2Z     = 0.05+0.4*TMath::Abs(fZfit[1]); fS2Z *= fS2Z;
-    //}
-    AliDebug(2, Form("s2y[%f] s2z[%f]", fS2Y, fS2Z));
-    AliDebug(2, Form("[II] x[cm]=%6.2f y[cm]=%+5.2f z[cm]=%+6.2f dydx[deg]=%+5.2f sy[um]=%6.2f sz[um]=%6.2f dzdx[deg]=%+5.2f", GetX(), GetY(), GetZ(), TMath::ATan(fYfit[1])*TMath::RadToDeg(), TMath::Sqrt(fS2Y)*1.e4, TMath::Sqrt(fS2Z)*1.e4, TMath::ATan(fZfit[1])*TMath::RadToDeg()));
-  }
   
   if(pstreamer){
     Float_t x= fX0 -fX,
@@ -2166,7 +2267,6 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
     AliMathBase::EvaluateUni(n, dy, m, s, 0);
     (*pstreamer) << "FitRobust4"
       << "stat=" << status
-      << "chg="  << chg
       << "ncl="  << n
       << "det="  << fDet
       << "x0="   << fX0
@@ -2185,6 +2285,32 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
   }
   return kTRUE;
 }
+
+//___________________________________________________________________
+void AliTRDseedV1::SetXYZ(TGeoHMatrix *mDet)
+{
+// Apply alignment to the local position of tracklet
+// A.Bercuci @ 27.11.2013
+
+  Double_t loc[] = {AliTRDgeometry::AnodePos(), GetLocalY(), fZfit[0]}, trk[3]={0.};
+  mDet->LocalToMaster(loc, trk);
+  fX0 = trk[0];
+  fY  = trk[1];
+  fZ  = trk[2];
+//   if(!IsRowCross()) return;
+//   // recalculate local z coordinate assuming primary track for row cross tracklets
+//   Float_t xOff(fZfit[1]);
+//   fZfit[1] = fZ/(fX0-xOff);
+//   //printf("stk[%d] xoff[%f] dzdx[%f]\n", AliTRDgeometry::GetStack(fDet), xOff, fZfit[1]);
+//   fZfit[0]+= xOff*fZfit[1];
+//   // recalculate tracking coordinates based on the new z coordinate
+//   loc[2] = GetLocalZ();
+//   mDet->LocalToMaster(loc, trk);
+//   fX0 = trk[0];
+//   fY  = trk[1];
+//   fZ  = trk[2];
+}
+
 
 //___________________________________________________________________
 void AliTRDseedV1::Print(Option_t *o) const
@@ -2284,4 +2410,5 @@ Bool_t AliTRDseedV1::IsEqual(const TObject *o) const
   }
   return kTRUE;
 }
+
 
