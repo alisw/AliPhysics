@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: AliMUONAlignment.cxx 51000 2011-08-08 17:58:17Z ivana $ */
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONAlignment
@@ -35,7 +35,7 @@
 #include "AliMUONGeometryModuleTransformer.h"
 #include "AliMUONGeometryDetElement.h"
 #include "AliMUONGeometryBuilder.h"
-#include "AliMillepede.h"
+#include "AliMillePede2.h"
 
 #include "AliMpExMap.h"
 #include "AliMpExMapIterator.h"
@@ -43,9 +43,10 @@
 #include "AliAlignObjMatrix.h"
 #include "AliLog.h"
 
-#include "TMath.h"
-#include "TMatrixDSym.h"
-#include "TClonesArray.h"
+#include <TMath.h>
+#include <TMatrixDSym.h>
+#include <TClonesArray.h>
+#include <TGraphErrors.h>
 
 /// \cond CLASSIMP
 ClassImp(AliMUONAlignment)
@@ -53,1133 +54,190 @@ ClassImp(AliMUONAlignment)
 
 //_____________________________________________________________________
 // static variables
-Int_t AliMUONAlignment::fgNDetElem = 4*2+4*2+18*2+26*2+26*2;
-Int_t AliMUONAlignment::fgNDetElemCh[10] = {4,4,4,4,18,18,26,26,26,26};
-Int_t AliMUONAlignment::fgSNDetElemCh[10] = {4,8,12,16,34,52,78,104,130,156};
-Int_t AliMUONAlignment::fgNParCh = 4;
-Int_t AliMUONAlignment::fgNTrkMod = 16;
-Int_t AliMUONAlignment::fgNCh = 10;
-Int_t AliMUONAlignment::fgNSt = 5;
+const Int_t AliMUONAlignment::fgNDetElemCh[AliMUONAlignment::fgNCh] = { 4, 4, 4, 4, 18, 18, 26, 26, 26, 26 };
+const Int_t AliMUONAlignment::fgSNDetElemCh[AliMUONAlignment::fgNCh+1] = { 0, 4, 8, 12, 16, 34, 52, 78, 104, 130, 156 };
+
+//_____________________________________________________________________
+/// self initialized array, used for adding constraints
+class Array
+{
+
+  public:
+
+  /// contructor
+  Array( void )
+  {
+    for( Int_t i=0; i < AliMUONAlignment::fNGlobal; ++i )
+    { values[i] = 0; }
+  }
+
+  /// array
+  Double_t values[AliMUONAlignment::fNGlobal];
+
+  private:
+
+  /// Not implemented
+  Array(const Array& );
+
+  /// Not implemented
+  Array&  operator = (const Array& );
+
+};
 
 //_____________________________________________________________________
 AliMUONAlignment::AliMUONAlignment()
   : TObject(),
-    fBFieldOn(kTRUE),
-    fStartFac(256.),
-    fResCutInitial(100.),
-    fResCut(100.),
-    fMillepede(0),
-    fTrack(0),
-    fCluster(0),
-    fTrackParam(0),
-    fNGlobal(fgNDetElem*fgNParCh),
-    fNLocal(4),
-    fNStdDev(3),
-    fDetElemId(0),
-    fDetElemNumber(0),
-    fPhi(0.),
-    fCosPhi(1.),
-    fSinPhi(0.),
+    fInitialized( kFALSE ),
+    fRunNumber( 0 ),
+    fBFieldOn( kTRUE ),
+    fStartFac( 256 ),
+    fResCutInitial( 100 ),
+    fResCut( 100 ),
+    fMillepede( 0L ),
+    fCluster( 0L ),
+    fNStdDev( 3 ),
+    fDetElemNumber( 0 ),
+    fUnbias( kFALSE ),
     fTrackRecord(),
-    fTransform(0)
+    fTransform( 0 ),
+    fGeoCombiTransInverse()
 {
-  /// Default constructor	
+  /// constructor
   fSigma[0] = 1.5e-1;
   fSigma[1] = 1.0e-2;
 
-  AliInfo(Form("fSigma[0]: %f\t fSigma[1]: %f",fSigma[0],fSigma[1]));
+  // default allowed variations
+  fAllowVar[0] = 0.5;  // x
+  fAllowVar[1] = 0.5;  // y
+  fAllowVar[2] = 0.01; // phi_z
+  fAllowVar[3] = 5;    // z
 
-  fDoF[0] = kTRUE;  fDoF[1] = kTRUE;  fDoF[2] = kTRUE;  fDoF[3] = kTRUE;
-  fAllowVar[0] = 0.05;  fAllowVar[1] = 0.05;  fAllowVar[2] = 0.001;  fAllowVar[3] = 0.5;
+  // initialize millepede
+  fMillepede = new AliMillePede2();
 
-  AliInfo(Form("fAllowVar[0]: %f\t fAllowVar[1]: %f\t fPhi: %f\t fgNDetElem: %i\t fNGlobal: %i\t fNLocal: %i",fAllowVar[0],fAllowVar[1],fPhi,fgNDetElem,fNGlobal,fNLocal));
+  // initialize degrees of freedom
+  // by default all parameters are free
+  for( Int_t iPar = 0; iPar < fNGlobal; ++iPar )
+  { fGlobalParameterStatus[iPar] = kFreeParId; }
 
-  fMillepede = new AliMillepede();
+  // initialize local equations
+  for(int i=0; i<fNLocal; ++i )
+  { fLocalDerivatives[i] = 0.0; }
 
-  Init(fNGlobal, fNLocal, fNStdDev);
+  for(int i=0; i<fNGlobal; ++i )
+  { fGlobalDerivatives[i] = 0.0; }
 
-  ResetLocalEquation();
-  AliInfo("Parameters initialized to zero");
-
-}
-
-//_____________________________________________________________________
-AliMUONAlignment::AliMUONAlignment(TRootIOCtor* /*dummy*/)
-: TObject(),
-fBFieldOn(kFALSE),
-fStartFac(0.),
-fResCutInitial(0.),
-fResCut(0.),
-fMillepede(0),
-fTrack(0),
-fCluster(0),
-fTrackParam(0),
-fNGlobal(0),
-fNLocal(0),
-fNStdDev(0),
-fDetElemId(0),
-fDetElemNumber(0),
-fPhi(0.),
-fCosPhi(0.),
-fSinPhi(0.),
-fTrackRecord(),
-fTransform(0)
-{
-  /// Root IO constructor
-  ResetConstraints();
-  for (Int_t iCh=0; iCh<10; iCh++) { 
-    fChOnOff[iCh] = kFALSE; 
-  }
-  fSpecLROnOff[0] = kFALSE; fSpecLROnOff[1] = kFALSE;
-  for (Int_t iDoF=0; iDoF<4; iDoF++) {
-    fDoF[iDoF] = kFALSE;
-    fAllowVar[iDoF] = kFALSE;
-  }
-  for (Int_t i=0; i<3; i++) {
-    fClustPos[i] = 0;
-    fClustPosLoc[i] = 0;
-    fTrackPos0[i] = 0;  
-    fTrackPos[i] = 0;   
-    fTrackPosLoc[i] = 0;
-	fDetElemPos[i] = 0;
-  }
-  fTrackSlope0[0]=0;	fTrackSlope0[1]=0;
-  fTrackSlope[0]=0; 	fTrackSlope[1]=0;
-  fMeas[0]=0;	fMeas[1]=0;
-  fSigma[0]=0;	fSigma[1]=0;
-  for (Int_t iLPar=0; iLPar<4; iLPar++) {
-    fLocalDerivatives[iLPar]=0;	
-  }
-  for (Int_t iGPar=0; iGPar<624; iGPar++) {
-    fGlobalDerivatives[iGPar]=0;	
-  }
 }
 
 //_____________________________________________________________________
 AliMUONAlignment::~AliMUONAlignment()
-{}
+{
+  /// destructor
+}
 
 //_____________________________________________________________________
-void AliMUONAlignment::Init(
-  Int_t nGlobal,  /* number of global paramers */
-  Int_t nLocal,   /* number of local parameters */
-  Int_t nStdDev   /* std dev cut */ )
+void AliMUONAlignment::Init( void )
 {
-  /// Initialization of AliMillepede. Fix parameters, define constraints ...
-  fMillepede->InitMille(nGlobal,nLocal,nStdDev,fResCut,fResCutInitial);
 
-  //  Bool_t bStOnOff[5] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-  //  Bool_t bChOnOff[10] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-  //  Bool_t bSpecLROnOff[2] = {kTRUE,kTRUE};
+  /// initialize
+  /**
+  initialize millipede
+  must be called after necessary detectors have been fixed,
+  but before constrains are added and before global parameters initial value are set
+  */
+  if( fInitialized )
+  { AliFatal( "Millepede already initialized" ); }
 
-  //  AllowVariations(bChOnOff);
+  // assign proper groupID to free parameters
+  Int_t nGlobal = 0;
+  for( Int_t iPar = 0; iPar < fNGlobal; ++iPar )
+  {
 
-  // Fix parameters or add constraints here
-  //   for (Int_t iSt=0; iSt<5; iSt++)
-  //   { if (!bStOnOff[iSt]) FixStation(iSt+1); }
+    if( fGlobalParameterStatus[iPar] == kFixedParId )
+    {
+      // fixed parameters are left unchanged
+      continue;
 
-  //   for (Int_t iCh=0; iCh<10; iCh++)
-  //   { if (!bChOnOff[iCh]) FixChamber(iCh+1); }
+    } else if( fGlobalParameterStatus[iPar] == kFreeParId || fGlobalParameterStatus[iPar] == kGroupBaseId ) {
 
-//   FixHalfSpectrometer(bChOnOff,bSpecLROnOff);
+      // free parameters or first element of group are assigned a new group id
+      fGlobalParameterStatus[iPar] = nGlobal++;
+      continue;
 
-  ResetConstraints();
+    } else if( fGlobalParameterStatus[iPar] < kGroupBaseId ) {
 
-  // Define global constrains to be applied
-  // X, Y, P, XvsZ, YvsZ, PvsZ, XvsY, YvsY, PvsY
-  Bool_t bVarXYT[9] = {kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE};
-  Bool_t bDetTLBR[4] = {kFALSE,kTRUE,kFALSE,kTRUE};
-  //  AddConstraints(bStOnOff,bVarXYT,bDetTLBR,bSpecLROnOff);
+      // get detector element id from status, get chamber parameter id
+      const Int_t iDeBase( kGroupBaseId - 1 - fGlobalParameterStatus[iPar] );
+      const Int_t iParBase = iPar%fgNParCh;
 
-  // Other possible way to add constrains
-  bVarXYT[0] = kFALSE; bVarXYT[1] = kFALSE; bVarXYT[2] = kTRUE;
-  bDetTLBR[0] = kFALSE; bDetTLBR[1] = kTRUE; bDetTLBR[2] = kFALSE; bDetTLBR[3] = kFALSE;
-  //  AddConstraints(bStOnOff,bVarXYT,bDetTLBR);
+      // check
+      if( iDeBase < 0 || iDeBase >= iPar/fgNParCh )
+      { AliFatal( Form( "Group for parameter index %i has wrong base detector element: %i", iPar, iDeBase ) ); }
 
-  bVarXYT[0] = kTRUE; bVarXYT[1] = kTRUE; bVarXYT[2] = kFALSE;
-  //  AddConstraints(bStOnOff,bVarXYT);
+      // assign identical group id to current
+      fGlobalParameterStatus[iPar] = fGlobalParameterStatus[iDeBase*fgNParCh + iParBase];
+      AliInfo( Form( "Parameter %i grouped to detector %i (%s)", iPar, iDeBase, GetParameterMaskString( 1<<iParBase ).Data() ) );
+
+    } else AliFatal( Form( "Unrecognized parameter status for index %i: %i", iPar, fGlobalParameterStatus[iPar] ) );
+
+  }
+
+  AliInfo( Form( "Free Parameters: %i out of %i", nGlobal, fNGlobal ) );
+
+  // initialize millepede
+  fMillepede->InitMille( fNGlobal, fNLocal, fNStdDev, fResCut, fResCutInitial, fGlobalParameterStatus );
+  fInitialized = kTRUE;
+
+  // some debug output
+  for( Int_t iPar = 0; iPar < fgNParCh; ++iPar )
+  {  AliInfo( Form( "fAllowVar[%i]= %f", iPar, fAllowVar[iPar] ) ); }
+
+  // set allowed variations for all parameters
+  for( Int_t iDet = 0; iDet < fgNDetElem; ++iDet )
+  {
+    for( Int_t iPar = 0; iPar < fgNParCh; ++iPar )
+    { fMillepede->SetParSigma( iDet*fgNParCh + iPar, fAllowVar[iPar] ); }
+  }
 
   // Set iterations
   if (fStartFac>1) fMillepede->SetIterations(fStartFac);
-}
-
-//_____________________________________________________________________
-void AliMUONAlignment::FixStation(Int_t iSt)
-{
-  /// Fix all detection elements of station iSt
-  Int_t iDetElemFirst = (iSt>1) ? fgSNDetElemCh[2*(iSt-1)-1] : 0;
-  Int_t iDetElemLast = fgSNDetElemCh[2*(iSt)-1];
-  for (Int_t i = iDetElemFirst; i < iDetElemLast; i++)
-  {
-    FixParameter(i*fgNParCh+0, 0.0);
-    FixParameter(i*fgNParCh+1, 0.0);
-    FixParameter(i*fgNParCh+2, 0.0);
-    FixParameter(i*fgNParCh+3, 0.0);
-  }
-
-}
-
-//_____________________________________________________________________
-void AliMUONAlignment::FixChamber(Int_t iCh)
-{
-  /// Fix all detection elements of chamber iCh
-  Int_t iDetElemFirst = (iCh>1) ? fgSNDetElemCh[iCh-2] : 0;
-  Int_t iDetElemLast = fgSNDetElemCh[iCh-1];
-  for (Int_t i = iDetElemFirst; i < iDetElemLast; i++)
-  {
-    FixParameter(i*fgNParCh+0, 0.0);
-    FixParameter(i*fgNParCh+1, 0.0);
-    FixParameter(i*fgNParCh+2, 0.0);
-    FixParameter(i*fgNParCh+3, 0.0);
-  }
-}
-
-//_____________________________________________________________________
-void AliMUONAlignment::FixDetElem(Int_t iDetElemId, TString sVarXYT)
-{
-
-  /// Fix a given detection element
-  Int_t iDetElemNumber = iDetElemId%100;
-  for (int iCh=0; iCh<iDetElemId/100-1; iCh++)
-  {
-    iDetElemNumber += fgNDetElemCh[iCh];
-  }
-
-  if (sVarXYT.Contains("X"))
-  {
-    // X constraint
-    FixParameter(iDetElemNumber*fgNParCh+0, 0.0);
-  }
-
-  if (sVarXYT.Contains("Y"))
-  {
-    // Y constraint
-    FixParameter(iDetElemNumber*fgNParCh+1, 0.0);
-  }
-
-  if (sVarXYT.Contains("T"))
-  {
-    // T constraint
-    FixParameter(iDetElemNumber*fgNParCh+2, 0.0);
-  }
-
-  if (sVarXYT.Contains("Z"))
-  {
-    // T constraint
-    FixParameter(iDetElemNumber*fgNParCh+3, 0.0);
-  }
-
-}
-
-//_____________________________________________________________________
-void AliMUONAlignment::FixHalfSpectrometer(const Bool_t *lChOnOff, const Bool_t *lSpecLROnOff)
-{
-
-  /// Fix left or right detector
-  for (Int_t i = 0; i < fgNDetElem; i++)
-  {
-
-    Int_t iCh=0;
-    for (iCh=1; iCh<=fgNCh; iCh++)
-    { if (i<fgSNDetElemCh[iCh-1]) break; }
-
-    if (lChOnOff[iCh-1])
-    {
-
-      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
-      if (iCh>=1 && iCh<=4)
-      {
-
-        if ((lDetElemNumber==1 || lDetElemNumber==2) && !lSpecLROnOff[0])
-        {
-          // From track crossings
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-        if ((lDetElemNumber==0 || lDetElemNumber==3) && !lSpecLROnOff[1])
-        {
-          // From track crossings
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-      }
-
-      if (iCh>=5 && iCh<=6)
-      {
-
-        if ((lDetElemNumber>=5&&lDetElemNumber<=13) && !lSpecLROnOff[0])
-        {
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-        if (((lDetElemNumber>=0&&lDetElemNumber<=4) ||
-          (lDetElemNumber>=14&&lDetElemNumber<=17)) && !lSpecLROnOff[1])
-        {
-
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-      }
-
-      if (iCh>=7 && iCh<=10)
-      {
-
-        if ((lDetElemNumber>=7&&lDetElemNumber<=19) && !lSpecLROnOff[0])
-        {
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-        if (((lDetElemNumber>=0&&lDetElemNumber<=6) ||
-          (lDetElemNumber>=20&&lDetElemNumber<=25)) && !lSpecLROnOff[1])
-        {
-          FixParameter(i*fgNParCh+0, 0.0);
-          FixParameter(i*fgNParCh+1, 0.0);
-          FixParameter(i*fgNParCh+2, 0.0);
-          FixParameter(i*fgNParCh+3, 0.0);
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::SetNonLinear(const Bool_t *lChOnOff, const Bool_t *lVarXYT)
-{
-
-  /// Set non linear parameter flag selected chambers and degrees of freedom
-  for (Int_t i = 0; i < fgNDetElem; i++)
-  {
-
-    Int_t iCh=0;
-    for (iCh=1; iCh<=fgNCh; iCh++)
-    { if (i<fgSNDetElemCh[iCh-1]) break; }
-
-    if (lChOnOff[iCh-1])
-    {
-
-      if (lVarXYT[0])
-      {
-        // X constraint
-        SetNonLinear(i*fgNParCh+0);
-      }
-
-      if (lVarXYT[1])
-      {
-        // Y constraint
-        SetNonLinear(i*fgNParCh+1);
-      }
-
-      if (lVarXYT[2])
-      {
-        // T constraint
-        SetNonLinear(i*fgNParCh+2);
-      }
-
-      if (lVarXYT[3])
-      {
-        // Z constraint
-        SetNonLinear(i*fgNParCh+3);
-      }
-
-    }
-
-  }
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVarXYT)
-{
-
-  /// Add constraint equations for selected chambers and degrees of freedom
-  for (Int_t i = 0; i < fgNDetElem; i++)
-  {
-
-    Int_t iCh=0;
-    for (iCh=1; iCh<=fgNCh; iCh++)
-    {
-      if (i<fgSNDetElemCh[iCh-1]) break;
-    }
-
-    if (lChOnOff[iCh-1])
-    {
-      if (lVarXYT[0])
-      {
-        // X constraint
-        fConstraintX[i*fgNParCh+0]=1.0;
-      }
-
-      if (lVarXYT[1])
-      {
-        // Y constraint
-        fConstraintY[i*fgNParCh+1]=1.0;
-      }
-
-      if (lVarXYT[2])
-      {
-        // T constraint
-        fConstraintP[i*fgNParCh+2]=1.0;
-      }
-      //       if (lVarXYT[3]) { // Z constraint
-      // 	fConstraintP[i*fgNParCh+3]=1.0;
-      //       }
-
-    }
-  }
-
-  if (lVarXYT[0])
-  {
-    // X constraint
-    AddConstraint(fConstraintX,0.0);
-  }
-
-  if (lVarXYT[1])
-  {
-    // Y constraint
-    AddConstraint(fConstraintY,0.0);
-  }
-
-  if (lVarXYT[2])
-  {
-    // T constraint
-    AddConstraint(fConstraintP,0.0);
-  }
-
-//   if (lVarXYT[3]) { // Z constraint
-//     AddConstraint(fConstraintP,0.0);
-//   }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVarXYT, const Bool_t *lDetTLBR, const Bool_t *lSpecLROnOff)
-{
-  /// Add constraint equations for selected chambers, degrees of freedom and detector half
-  Double_t lDetElemLocX = 0.;
-  Double_t lDetElemLocY = 0.;
-  Double_t lDetElemLocZ = 0.;
-  Double_t lDetElemGloX = 0.;
-  Double_t lDetElemGloY = 0.;
-  Double_t lDetElemGloZ = 0.;
-  Double_t lMeanY = 0.;
-  Double_t lSigmaY = 0.;
-  Double_t lMeanZ = 0.;
-  Double_t lSigmaZ = 0.;
-  Int_t lNDetElem = 0;
-  for (Int_t i = 0; i < fgNDetElem; i++)
-  {
-
-    Int_t iCh=0;
-    for (iCh=1; iCh<=fgNCh; iCh++){
-      if (i<fgSNDetElemCh[iCh-1]) break;
-    }
-    if (lChOnOff[iCh-1]){
-      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
-      Int_t lDetElemId = iCh*100+lDetElemNumber;
-      fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
-             lDetElemGloX,lDetElemGloY,lDetElemGloZ);
-      if (iCh>=1 && iCh<=4){
-  if ((lDetElemNumber==1 || lDetElemNumber==2) && lSpecLROnOff[0]){ // From track crossings
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-  if ((lDetElemNumber==0 || lDetElemNumber==3) && lSpecLROnOff[1]){ // From track crossings
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-      }
-      if (iCh>=5 && iCh<=6){
-  if ((lDetElemNumber>=5&&lDetElemNumber<=13) && lSpecLROnOff[0]){
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-  if (((lDetElemNumber>=0&&lDetElemNumber<=4) ||
-       (lDetElemNumber>=14&&lDetElemNumber<=17)) && lSpecLROnOff[1]){
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-      }
-      if (iCh>=7 && iCh<=10){
-  if ((lDetElemNumber>=7&&lDetElemNumber<=19) && lSpecLROnOff[0]){
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-  if (((lDetElemNumber>=0&&lDetElemNumber<=6) ||
-       (lDetElemNumber>=20&&lDetElemNumber<=25)) && lSpecLROnOff[1]){
-    lMeanY += lDetElemGloY;
-    lSigmaY += lDetElemGloY*lDetElemGloY;
-    lMeanZ += lDetElemGloZ;
-    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
-    lNDetElem++;
-  }
-      }
-    }
-  }
-  if (lNDetElem) {
-    lMeanY /= lNDetElem;
-    lSigmaY /= lNDetElem;
-    lSigmaY = TMath::Sqrt(lSigmaY-lMeanY*lMeanY);
-    lMeanZ /= lNDetElem;
-    lSigmaZ /= lNDetElem;
-    lSigmaZ = TMath::Sqrt(lSigmaZ-lMeanZ*lMeanZ);
-     AliInfo(Form("Used %i DetElem, MeanZ= %f , SigmaZ= %f", lNDetElem,lMeanZ,lSigmaZ));
-  } else {
-    AliError("No detection elements to constrain!!!");
-    return;    
-  }
-		
-  for (Int_t i = 0; i < fgNDetElem; i++){
-    Int_t iCh=0;
-    for (iCh=1; iCh<=fgNCh; iCh++){
-      if (i<fgSNDetElemCh[iCh-1]) break;
-    }
-    if (lChOnOff[iCh-1]){
-      Int_t lDetElemNumber = (iCh==1) ? i : i-fgSNDetElemCh[iCh-2];
-      Int_t lDetElemId = iCh*100+lDetElemNumber;
-      fTransform->Local2Global(lDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
-             lDetElemGloX,lDetElemGloY,lDetElemGloZ);
-      if (lVarXYT[0]) { // X constraint
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXT,0); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXL,0); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXB,0); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXR,0); // Right half
-      }
-      if (lVarXYT[1]) { // Y constraint
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYT,1); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYL,1); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYB,1); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYR,1); // Right half
-      }
-      if (lVarXYT[2]) { // P constraint
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPT,2); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPL,2); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPB,2); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPR,2); // Right half
-      }
-      if (lVarXYT[3]) { // X-Z shearing
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXZT,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXZL,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXZB,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXZR,0,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
-      }
-      if (lVarXYT[4]) { // Y-Z shearing
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYZT,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYZL,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYZB,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYZR,1,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
-      }
-      if (lVarXYT[5]) { // P-Z rotation
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPZT,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPZL,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPZB,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPZR,2,(lDetElemGloZ-lMeanZ)/lSigmaZ); // Right half
-      }
-      if (lVarXYT[6]) { // X-Y shearing
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintXYT,0,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintXYL,0,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintXYB,0,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintXYR,0,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
-      }
-      if (lVarXYT[7]) { // Y-Y scaling
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintYYT,1,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintYYL,1,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintYYB,1,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintYYR,1,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
-      }
-      if (lVarXYT[8]) { // P-Y rotation
-  if (lDetTLBR[0]) ConstrainT(i,iCh,fConstraintPYT,2,(lDetElemGloY-lMeanY)/lSigmaY); // Top half
-  if (lDetTLBR[1]) ConstrainL(i,iCh,fConstraintPYL,2,(lDetElemGloY-lMeanY)/lSigmaY); // Left half
-  if (lDetTLBR[2]) ConstrainB(i,iCh,fConstraintPYB,2,(lDetElemGloY-lMeanY)/lSigmaY); // Bottom half
-  if (lDetTLBR[3]) ConstrainR(i,iCh,fConstraintPYR,2,(lDetElemGloY-lMeanY)/lSigmaY); // Right half
-      }
-    }
-  }
-  if (lVarXYT[0]) { // X constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintXT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintXL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintXB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintXR,0.0); // Right half
-  }
-  if (lVarXYT[1]) { // Y constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintYT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintYL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintYB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintYR,0.0); // Right half
-  }
-  if (lVarXYT[2]) { // T constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintPT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintPL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintPB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintPR,0.0); // Right half
-  }
-  if (lVarXYT[3]) { // X-Z constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintXZT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintXZL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintXZB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintXZR,0.0); // Right half
-  }
-  if (lVarXYT[4]) { // Y-Z constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintYZT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintYZL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintYZB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintYZR,0.0); // Right half
-  }
-  if (lVarXYT[5]) { // P-Z constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintPZT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintPZL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintPZB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintPZR,0.0); // Right half
-  }
-  if (lVarXYT[6]) { // X-Y constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintXYT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintXYL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintXYB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintXYR,0.0); // Right half
-  }
-  if (lVarXYT[7]) { // Y-Y constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintYYT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintYYL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintYYB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintYYR,0.0); // Right half
-  }
-  if (lVarXYT[8]) { // P-Y constraint
-    if (lDetTLBR[0]) AddConstraint(fConstraintPYT,0.0); // Top half
-    if (lDetTLBR[1]) AddConstraint(fConstraintPYL,0.0); // Left half
-    if (lDetTLBR[2]) AddConstraint(fConstraintPYB,0.0); // Bottom half
-    if (lDetTLBR[3]) AddConstraint(fConstraintPYR,0.0); // Right half
-  }
-}
-
-void AliMUONAlignment::ConstrainT(Int_t lDetElem, Int_t lCh, Double_t *lConstraintT, Int_t iVar, Double_t /*lWeight*/) const{
-  /// Set constrain equation for top half of spectrometer
-  Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
-  if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==0 || lDetElemNumber==1){ // From track crossings
-      lConstraintT[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-  if (lCh>=5 && lCh<=6){
-    if (lDetElemNumber>=0&&lDetElemNumber<=9){
-      lConstraintT[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-  if (lCh>=7 && lCh<=10){
-    if (lDetElemNumber>=0&&lDetElemNumber<=13){
-      lConstraintT[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::ConstrainL(Int_t lDetElem, Int_t lCh, Double_t *lConstraintL, Int_t iVar, Double_t lWeight) const{
-  /// Set constrain equation for left half of spectrometer
-  Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
-  if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==1 || lDetElemNumber==2){ // From track crossings
-      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-  if (lCh>=5 && lCh<=6){
-    if (lDetElemNumber>=5&&lDetElemNumber<=13){
-      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-  if (lCh>=7 && lCh<=10){
-    if (lDetElemNumber>=7&&lDetElemNumber<=19){
-      lConstraintL[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::ConstrainB(Int_t lDetElem, Int_t lCh, Double_t *lConstraintB, Int_t iVar, Double_t /*lWeight*/) const{
-  /// Set constrain equation for bottom half of spectrometer
-  Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
-  if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==2 || lDetElemNumber==3){ // From track crossings
-      lConstraintB[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-  if (lCh>=5 && lCh<=6){
-    if ((lDetElemNumber>=9&&lDetElemNumber<=17) ||
-  (lDetElemNumber==0)){
-      lConstraintB[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-  if (lCh>=7 && lCh<=10){
-    if ((lDetElemNumber>=13&&lDetElemNumber<=25) ||
-  (lDetElemNumber==0)){
-      lConstraintB[lDetElem*fgNParCh+iVar]=1.0;
-    }
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::ConstrainR(Int_t lDetElem, Int_t lCh, Double_t *lConstraintR, Int_t iVar, Double_t lWeight) const{
-  /// Set constrain equation for right half of spectrometer
-  Int_t lDetElemNumber = (lCh==1) ? lDetElem : lDetElem-fgSNDetElemCh[lCh-2];
-  if (lCh>=1 && lCh<=4){
-    if (lDetElemNumber==0 || lDetElemNumber==3){ // From track crossings
-      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-  if (lCh>=5 && lCh<=6){
-    if ((lDetElemNumber>=0&&lDetElemNumber<=4) ||
-  (lDetElemNumber>=14&&lDetElemNumber<=17)){
-      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-  if (lCh>=7 && lCh<=10){
-    if ((lDetElemNumber>=0&&lDetElemNumber<=6) ||
-  (lDetElemNumber>=20&&lDetElemNumber<=25)){
-      lConstraintR[lDetElem*fgNParCh+iVar]=lWeight;
-    }
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::ResetConstraints(){
-  /// Reset all constraint equations
-  for (Int_t i = 0; i < fgNDetElem; i++){
-	fConstraintX3[i*fgNParCh+0]=0.0; 
-	fConstraintY3[i*fgNParCh+0]=0.0; 
-	fConstraintX4[i*fgNParCh+0]=0.0; 
-	fConstraintY4[i*fgNParCh+0]=0.0; 
-	fConstraintP4[i*fgNParCh+0]=0.0; 
-	fConstraintX5[i*fgNParCh+0]=0.0; 
-	fConstraintY5[i*fgNParCh+0]=0.0; 
-	fConstraintX[i*fgNParCh+0]=0.0;
-    fConstraintX[i*fgNParCh+1]=0.0;
-    fConstraintX[i*fgNParCh+2]=0.0;
-    fConstraintY[i*fgNParCh+0]=0.0;
-    fConstraintY[i*fgNParCh+1]=0.0;
-    fConstraintY[i*fgNParCh+2]=0.0;
-    fConstraintP[i*fgNParCh+0]=0.0;
-    fConstraintP[i*fgNParCh+1]=0.0;
-    fConstraintP[i*fgNParCh+2]=0.0;
-    fConstraintXT[i*fgNParCh+0]=0.0;
-    fConstraintXT[i*fgNParCh+1]=0.0;
-    fConstraintXT[i*fgNParCh+2]=0.0;
-    fConstraintYT[i*fgNParCh+0]=0.0;
-    fConstraintYT[i*fgNParCh+1]=0.0;
-    fConstraintYT[i*fgNParCh+2]=0.0;
-    fConstraintPT[i*fgNParCh+0]=0.0;
-    fConstraintPT[i*fgNParCh+1]=0.0;
-    fConstraintPT[i*fgNParCh+2]=0.0;
-    fConstraintXZT[i*fgNParCh+0]=0.0;
-    fConstraintXZT[i*fgNParCh+1]=0.0;
-    fConstraintXZT[i*fgNParCh+2]=0.0;
-    fConstraintYZT[i*fgNParCh+0]=0.0;
-    fConstraintYZT[i*fgNParCh+1]=0.0;
-    fConstraintYZT[i*fgNParCh+2]=0.0;
-    fConstraintPZT[i*fgNParCh+0]=0.0;
-    fConstraintPZT[i*fgNParCh+1]=0.0;
-    fConstraintPZT[i*fgNParCh+2]=0.0;
-    fConstraintXYT[i*fgNParCh+0]=0.0;
-    fConstraintXYT[i*fgNParCh+1]=0.0;
-    fConstraintXYT[i*fgNParCh+2]=0.0;
-    fConstraintYYT[i*fgNParCh+0]=0.0;
-    fConstraintYYT[i*fgNParCh+1]=0.0;
-    fConstraintYYT[i*fgNParCh+2]=0.0;
-    fConstraintPYT[i*fgNParCh+0]=0.0;
-    fConstraintPYT[i*fgNParCh+1]=0.0;
-    fConstraintPYT[i*fgNParCh+2]=0.0;
-    fConstraintXL[i*fgNParCh+0]=0.0;
-    fConstraintXL[i*fgNParCh+1]=0.0;
-    fConstraintXL[i*fgNParCh+2]=0.0;
-    fConstraintYL[i*fgNParCh+0]=0.0;
-    fConstraintYL[i*fgNParCh+1]=0.0;
-    fConstraintYL[i*fgNParCh+2]=0.0;
-    fConstraintPL[i*fgNParCh+0]=0.0;
-    fConstraintPL[i*fgNParCh+1]=0.0;
-    fConstraintPL[i*fgNParCh+2]=0.0;
-    fConstraintXZL[i*fgNParCh+0]=0.0;
-    fConstraintXZL[i*fgNParCh+1]=0.0;
-    fConstraintXZL[i*fgNParCh+2]=0.0;
-    fConstraintYZL[i*fgNParCh+0]=0.0;
-    fConstraintYZL[i*fgNParCh+1]=0.0;
-    fConstraintYZL[i*fgNParCh+2]=0.0;
-    fConstraintPZL[i*fgNParCh+0]=0.0;
-    fConstraintPZL[i*fgNParCh+1]=0.0;
-    fConstraintPZL[i*fgNParCh+2]=0.0;
-    fConstraintXYL[i*fgNParCh+0]=0.0;
-    fConstraintXYL[i*fgNParCh+1]=0.0;
-    fConstraintXYL[i*fgNParCh+2]=0.0;
-    fConstraintYYL[i*fgNParCh+0]=0.0;
-    fConstraintYYL[i*fgNParCh+1]=0.0;
-    fConstraintYYL[i*fgNParCh+2]=0.0;
-    fConstraintPYL[i*fgNParCh+0]=0.0;
-    fConstraintPYL[i*fgNParCh+1]=0.0;
-    fConstraintPYL[i*fgNParCh+2]=0.0;
-    fConstraintXB[i*fgNParCh+0]=0.0;
-    fConstraintXB[i*fgNParCh+1]=0.0;
-    fConstraintXB[i*fgNParCh+2]=0.0;
-    fConstraintYB[i*fgNParCh+0]=0.0;
-    fConstraintYB[i*fgNParCh+1]=0.0;
-    fConstraintYB[i*fgNParCh+2]=0.0;
-    fConstraintPB[i*fgNParCh+0]=0.0;
-    fConstraintPB[i*fgNParCh+1]=0.0;
-    fConstraintPB[i*fgNParCh+2]=0.0;
-    fConstraintXZB[i*fgNParCh+0]=0.0;
-    fConstraintXZB[i*fgNParCh+1]=0.0;
-    fConstraintXZB[i*fgNParCh+2]=0.0;
-    fConstraintYZB[i*fgNParCh+0]=0.0;
-    fConstraintYZB[i*fgNParCh+1]=0.0;
-    fConstraintYZB[i*fgNParCh+2]=0.0;
-    fConstraintPZB[i*fgNParCh+0]=0.0;
-    fConstraintPZB[i*fgNParCh+1]=0.0;
-    fConstraintPZB[i*fgNParCh+2]=0.0;
-    fConstraintXYB[i*fgNParCh+0]=0.0;
-    fConstraintXYB[i*fgNParCh+1]=0.0;
-    fConstraintXYB[i*fgNParCh+2]=0.0;
-    fConstraintYYB[i*fgNParCh+0]=0.0;
-    fConstraintYYB[i*fgNParCh+1]=0.0;
-    fConstraintYYB[i*fgNParCh+2]=0.0;
-    fConstraintPYB[i*fgNParCh+0]=0.0;
-    fConstraintPYB[i*fgNParCh+1]=0.0;
-    fConstraintPYB[i*fgNParCh+2]=0.0;
-    fConstraintXR[i*fgNParCh+0]=0.0;
-    fConstraintXR[i*fgNParCh+1]=0.0;
-    fConstraintXR[i*fgNParCh+2]=0.0;
-    fConstraintYR[i*fgNParCh+0]=0.0;
-    fConstraintYR[i*fgNParCh+1]=0.0;
-    fConstraintYR[i*fgNParCh+2]=0.0;
-    fConstraintPR[i*fgNParCh+0]=0.0;
-    fConstraintPR[i*fgNParCh+1]=0.0;
-    fConstraintPR[i*fgNParCh+2]=0.0;
-    fConstraintXZR[i*fgNParCh+0]=0.0;
-    fConstraintXZR[i*fgNParCh+1]=0.0;
-    fConstraintXZR[i*fgNParCh+2]=0.0;
-    fConstraintYZR[i*fgNParCh+0]=0.0;
-    fConstraintYZR[i*fgNParCh+1]=0.0;
-    fConstraintYZR[i*fgNParCh+2]=0.0;
-    fConstraintPZR[i*fgNParCh+0]=0.0;
-    fConstraintPZR[i*fgNParCh+1]=0.0;
-    fConstraintPZR[i*fgNParCh+2]=0.0;
-    fConstraintPZR[i*fgNParCh+0]=0.0;
-    fConstraintPZR[i*fgNParCh+1]=0.0;
-    fConstraintPZR[i*fgNParCh+2]=0.0;
-    fConstraintXYR[i*fgNParCh+0]=0.0;
-    fConstraintXYR[i*fgNParCh+1]=0.0;
-    fConstraintXYR[i*fgNParCh+2]=0.0;
-    fConstraintYYR[i*fgNParCh+0]=0.0;
-    fConstraintYYR[i*fgNParCh+1]=0.0;
-    fConstraintYYR[i*fgNParCh+2]=0.0;
-    fConstraintPYR[i*fgNParCh+0]=0.0;
-    fConstraintPYR[i*fgNParCh+1]=0.0;
-    fConstraintPYR[i*fgNParCh+2]=0.0;
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::AddConstraint(Double_t *par, Double_t value) {
-  /// Constrain equation defined by par to value
-  fMillepede->SetGlobalConstraint(par, value);
-  AliInfo("Adding constraint");
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::InitGlobalParameters(Double_t *par) {
-  /// Initialize global parameters with par array
-  fMillepede->SetGlobalParameters(par);
-  AliInfo("Init Global Parameters");
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::FixParameter(Int_t iPar, Double_t value) {
-  /// Parameter iPar is encourage to vary in [-value;value].
-  /// If value == 0, parameter is fixed
-  fMillepede->SetParSigma(iPar, value);
-  if (TMath::Abs(value)<1e-4) AliInfo(Form("Parameter %i Fixed", iPar));
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::ResetLocalEquation()
-{
-  /// Reset the derivative vectors
-  for(int i=0; i<fNLocal; i++) {
-    fLocalDerivatives[i] = 0.0;
-  }
-  for(int i=0; i<fNGlobal; i++) {
-    fGlobalDerivatives[i] = 0.0;
-  }
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::AllowVariations(const Bool_t *bChOnOff)
-{
-
-  /// Set allowed variation for selected chambers based on fDoF and fAllowVar
-  for (Int_t iCh=1; iCh<=10; iCh++)
-  {
-    if (bChOnOff[iCh-1])
-    {
-
-      Int_t iDetElemFirst = (iCh>1) ? fgSNDetElemCh[iCh-2] : 0;
-      Int_t iDetElemLast = fgSNDetElemCh[iCh-1];
-      for (int i=0; i<fgNParCh; i++)
-      {
-        AliDebug(1,Form("fDoF[%d]= %d",i,fDoF[i]));
-        if (fDoF[i])
-        {
-          for (Int_t j=iDetElemFirst; j<iDetElemLast; j++){
-            FixParameter(j*fgNParCh+i, fAllowVar[i]);
-          }
-        }
-
-      }
-
-    }
-
-  }
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::SetNonLinear(Int_t iPar  /* set non linear flag */ )
-{
-  /// Set nonlinear flag for parameter iPar
-  fMillepede->SetNonLinear(iPar);
-  AliInfo(Form("Parameter %i set to non linear", iPar));
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::SetSigmaXY(Double_t sigmaX, Double_t sigmaY)
-{
-
-  /// Set expected measurement resolution
-  fSigma[0] = sigmaX;   fSigma[1] = sigmaY;
-  AliInfo(Form("Using fSigma[0]=%f and fSigma[1]=%f",fSigma[0],fSigma[1]));
-}
-
-
-//______________________________________________________________________
-void AliMUONAlignment::LocalEquationX( Bool_t doAlignment )
-{
-
-
-  // local cluster record
-  AliMUONAlignmentClusterRecord clusterRecord;
-
-  // store detector and measurement
-  clusterRecord.SetDetElemId( fDetElemId );
-  clusterRecord.SetDetElemNumber( fDetElemNumber );
-  clusterRecord.SetMeas( fMeas[0] );
-  clusterRecord.SetSigma( fSigma[0] );
-
-  // store local derivatives
-  clusterRecord.SetLocalDerivative( 0, fCosPhi );
-  clusterRecord.SetLocalDerivative( 1, fCosPhi*(fTrackPos[2] - fTrackPos0[2]) );
-  clusterRecord.SetLocalDerivative( 2, fSinPhi );
-  clusterRecord.SetLocalDerivative( 3, fSinPhi*(fTrackPos[2] - fTrackPos0[2]) );
-
-  // store global derivatives
-  clusterRecord.SetGlobalDerivative( 0, -fCosPhi );
-  clusterRecord.SetGlobalDerivative( 1, -fSinPhi );
-
-  if (fBFieldOn)
-  {
-
-    clusterRecord.SetGlobalDerivative(
-      2,
-      -fSinPhi*(fTrackPos[0]-fDetElemPos[0])
-      +fCosPhi*(fTrackPos[1]-fDetElemPos[1]) );
-
-  } else {
-
-    clusterRecord.SetGlobalDerivative(
-      2,
-      -fSinPhi*(fTrackPos0[0]+fTrackSlope0[0]*(fTrackPos[2]-fTrackPos0[2])-fDetElemPos[0])
-      +fCosPhi*(fTrackPos0[1]+fTrackSlope0[1]*(fTrackPos[2]-fTrackPos0[2])-fDetElemPos[1]) );
-
-  }
-
-  clusterRecord.SetGlobalDerivative( 3, fCosPhi*fTrackSlope0[0]+fSinPhi*fTrackSlope0[1] );
-
-  // append to trackRecord
-  fTrackRecord.AddClusterRecord( clusterRecord );
-
-  // store local equation
-  if( doAlignment ) LocalEquation( clusterRecord );
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::LocalEquationY(Bool_t doAlignment )
-{
-
-  // local cluster record
-  AliMUONAlignmentClusterRecord clusterRecord;
-
-  // store detector and measurement
-  clusterRecord.SetDetElemId( fDetElemId );
-  clusterRecord.SetDetElemNumber( fDetElemNumber );
-  clusterRecord.SetMeas( fMeas[1] );
-  clusterRecord.SetSigma( fSigma[1] );
-
-  // store local derivatives
-  clusterRecord.SetLocalDerivative( 0, -fSinPhi );
-  clusterRecord.SetLocalDerivative( 1, -fSinPhi*(fTrackPos[2] - fTrackPos0[2] ) );
-  clusterRecord.SetLocalDerivative( 2, fCosPhi );
-  clusterRecord.SetLocalDerivative( 3, fCosPhi*(fTrackPos[2] - fTrackPos0[2] ) );
-
-  // set global derivatives
-  clusterRecord.SetGlobalDerivative( 0,  fSinPhi);
-  clusterRecord.SetGlobalDerivative( 1, -fCosPhi);
-
-  if (fBFieldOn)
-  {
-
-    clusterRecord.SetGlobalDerivative(
-       2,
-      -fCosPhi*(fTrackPos[0]-fDetElemPos[0])
-      -fSinPhi*(fTrackPos[1]-fDetElemPos[1]));
-
-  } else {
-
-    clusterRecord.SetGlobalDerivative(
-       2,
-      -fCosPhi*(fTrackPos0[0]+fTrackSlope0[0]*(fTrackPos[2]-fTrackPos0[2])-fDetElemPos[0])
-      -fSinPhi*(fTrackPos0[1]+fTrackSlope0[1]*(fTrackPos[2]-fTrackPos0[2])-fDetElemPos[1]));
-  }
-
-  clusterRecord.SetGlobalDerivative( 3, -fSinPhi*fTrackSlope0[0]+fCosPhi*fTrackSlope0[1]);
-
-  // append to trackRecord
-  fTrackRecord.AddClusterRecord( clusterRecord );
-
-  // store local equation
-  if( doAlignment ) LocalEquation( clusterRecord );
 
 }
 
 //_____________________________________________________
-void AliMUONAlignment::LocalEquation( const AliMUONAlignmentClusterRecord& clusterRecord )
+AliMillePedeRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track, Bool_t doAlignment, Double_t weight )
 {
+  /// process track for alignment minimization
+  /**
+  returns the alignment records for this track.
+  They can be stored in some output for later reprocessing.
+  */
 
-  // copy to local variables
-  for( Int_t index = 0; index < 4; ++index )
-  {
-    SetLocalDerivative( index, clusterRecord.GetLocalDerivative( index ) );
-    SetGlobalDerivative( clusterRecord.GetDetElemNumber()*fgNParCh + index, clusterRecord.GetGlobalDerivative( index ) );
-  }
+  // reset track records
+  fTrackRecord.Reset();
+  if( fMillepede->GetRecord() ) fMillepede->GetRecord()->Reset();
 
-  // pass equation parameters to millepede
-  fMillepede->SetLocalEquation( fGlobalDerivatives, fLocalDerivatives, clusterRecord.GetMeas(), clusterRecord.GetSigma() );
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::FillRecPointData()
-{
-
-  /// Get information of current cluster
-  fClustPos[0] = fCluster->GetX();
-  fClustPos[1] = fCluster->GetY();
-  fClustPos[2] = fCluster->GetZ();
-  fTransform->Global2Local(
-    fDetElemId,fClustPos[0],fClustPos[1],fClustPos[2],
-    fClustPosLoc[0],fClustPosLoc[1],fClustPosLoc[2]);
-
-}
-
-//______________________________________________________________________
-void AliMUONAlignment::FillTrackParamData()
-{
-
-  /// Get information of current track at current cluster
-  fTrackPos[0] = fTrackParam->GetNonBendingCoor();
-  fTrackPos[1] = fTrackParam->GetBendingCoor();
-  fTrackPos[2] = fTrackParam->GetZ();
-  fTrackSlope[0] = fTrackParam->GetNonBendingSlope();
-  fTrackSlope[1] = fTrackParam->GetBendingSlope();
-  fTransform->Global2Local(
-    fDetElemId,fTrackPos[0],fTrackPos[1],fTrackPos[2],
-    fTrackPosLoc[0],fTrackPosLoc[1],fTrackPosLoc[2]);
-
-}
-
-//_____________________________________________________
-void AliMUONAlignment::FillDetElemData()
-{
-
-  /// Get information of current detection element
-  Double_t lDetElemLocX = 0.;
-  Double_t lDetElemLocY = 0.;
-  Double_t lDetElemLocZ = 0.;
-  fDetElemId = fCluster->GetDetElemId();
-  fDetElemNumber = fDetElemId%100;
-  for (int iCh=0; iCh<fDetElemId/100-1; iCh++)
-  { fDetElemNumber += fgNDetElemCh[iCh]; }
-
-  fTransform->Local2Global(
-    fDetElemId,lDetElemLocX,lDetElemLocY,lDetElemLocZ,
-    fDetElemPos[0],fDetElemPos[1],fDetElemPos[2]);
-
-}
-
-//_____________________________________________________
-AliMUONAlignmentTrackRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track, Bool_t doAlignment )
-{
-  /// Process track and set Local Equations
-  // store current track in running member.
-  fTrack = track;
-
-  // clear track record
-  fTrackRecord.Clear();
-
-  // get number of tracks
-  Int_t nTrackParam = fTrack->GetTrackParamAtCluster()->GetEntries();
-  AliDebug(1,Form("Number of track param entries : %i ", nTrackParam));
+  // get number of track parameters
+  Int_t nTrackParam = track->GetTrackParamAtCluster()->GetEntries();
 
   Bool_t first( kTRUE );
-  for(Int_t iCluster=0; iCluster<nTrackParam; iCluster++)
+  for( Int_t iTrackParam = 0; iTrackParam < nTrackParam; ++iTrackParam )
   {
 
-    // and get new pointers
-    fTrackParam = (AliMUONTrackParam *) fTrack->GetTrackParamAtCluster()->At(iCluster);
-    if ( ! fTrackParam ) continue;
-    fCluster = fTrackParam->GetClusterPtr();
-    if ( ! fCluster ) continue;
-    // if (fDetElemId<500) continue;
+    // get new pointers
+    AliMUONTrackParam* trackParam( (AliMUONTrackParam *) track->GetTrackParamAtCluster()->At(iTrackParam) );
+    if( !trackParam ) continue;
+
+    AliMUONVCluster* cluster = trackParam->GetClusterPtr();
+    if( !cluster ) continue;
 
     // fill local variables for this position --> one measurement
-    FillDetElemData();
-    FillRecPointData();
-    FillTrackParamData();
+    FillDetElemData( cluster );
+    FillRecPointData( cluster );
+
+    // unbias and store track parameters
+    if( fUnbias && !UnbiasTrackParamData( trackParam ) ) continue;
+    FillTrackParamData( trackParam );
 
     if( first )
     {
@@ -1195,137 +253,639 @@ AliMUONAlignmentTrackRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track
 
     }
 
+    // 'inverse' (GlobalToLocal) rotation matrix
+    const Double_t* r( fGeoCombiTransInverse.GetRotationMatrix() );
+
     // calculate measurements
-    fCosPhi = TMath::Cos(fPhi);
-    fSinPhi = TMath::Sin(fPhi);
     if( fBFieldOn )
     {
 
-      fMeas[0] = fTrackPos[0] - fClustPos[0];
-      fMeas[1] = fTrackPos[1] - fClustPos[1];
+      // use residuals (cluster - track) for measurement
+      fMeas[0] = r[0]*(fClustPos[0] - fTrackPos[0]) + r[1]*(fClustPos[1] - fTrackPos[1]);
+      fMeas[1] = r[3]*(fClustPos[0] - fTrackPos[0]) + r[4]*(fClustPos[1] - fTrackPos[1]);
 
     } else {
 
-      fMeas[0] = - fClustPos[0];
-      fMeas[1] = - fClustPos[1];
+      // use cluster position for measurement
+      fMeas[0] = ( r[0]*fClustPos[0] + r[1]*fClustPos[1] );
+      fMeas[1] = ( r[3]*fClustPos[0] + r[4]*fClustPos[1] );
 
     }
 
-    // soùe debugging
-    AliDebug(1,Form("cluster: %i", iCluster));
-    AliDebug(1,Form("x: %f\t y: %f\t z: %f\t DetElemID: %i\t ", fClustPos[0], fClustPos[1], fClustPos[2], fDetElemId));
-    AliDebug(1,Form("fDetElemPos[0]: %f\t fDetElemPos[1]: %f\t fDetElemPos[2]: %f\t DetElemID: %i\t ", fDetElemPos[0],fDetElemPos[1],fDetElemPos[2], fDetElemId));
-
-    AliDebug(1,Form("Track Parameter: %i", iCluster));
-    AliDebug(1,Form("x: %f\t y: %f\t z: %f\t slopex: %f\t slopey: %f", fTrackPos[0], fTrackPos[1], fTrackPos[2], fTrackSlope[0], fTrackSlope[1]));
-    AliDebug(1,Form("x0: %f\t y0: %f\t z0: %f\t slopex0: %f\t slopey0: %f", fTrackPos0[0], fTrackPos0[1], fTrackPos0[2], fTrackSlope0[0], fTrackSlope0[1]));
-
-    AliDebug(1,Form("fMeas[0]: %f\t fMeas[1]: %f\t fSigma[0]: %f\t fSigma[1]: %f", fMeas[0], fMeas[1], fSigma[0], fSigma[1]));
-
     // Set local equations
-    LocalEquationX( doAlignment );
-    LocalEquationY( doAlignment );
+    LocalEquationX();
+    LocalEquationY();
 
   }
 
+  // copy track record
+  fMillepede->SetRecordRun(fRunNumber);
+  fMillepede->SetRecordWeight(weight);
+  fTrackRecord = *fMillepede->GetRecord();
+
+  // save record data
+  if( doAlignment )
+  {
+    fMillepede->SaveRecordData();
+  }
+
+  // return record
   return &fTrackRecord;
 
 }
 
 //______________________________________________________________________________
-void AliMUONAlignment::ProcessTrack( AliMUONAlignmentTrackRecord* track, Bool_t doAlignment )
+void AliMUONAlignment::ProcessTrack( AliMillePedeRecord* trackRecord )
 {
-  /// Process track (from record) and set Local Equations
-  if( !( track && doAlignment ) ) return;
+  /// process track record
+  if( !trackRecord ) return;
 
-  // loop over clusters
-  for( Int_t index = 0; index < track->GetNRecords(); ++index )
-  { if( AliMUONAlignmentClusterRecord* record = track->GetRecord( index ) ) LocalEquation( *record ); }
+  // make sure record storage is initialized
+  if( !fMillepede->GetRecord() ) fMillepede->InitDataRecStorage();
+
+  // copy content
+  *fMillepede->GetRecord() = *trackRecord;
+
+  // save record
+  fMillepede->SaveRecordData();
 
   return;
 
 }
 
-//_____________________________________________________
-void AliMUONAlignment::LocalFit(Int_t iTrack, Double_t *lTrackParam, Int_t lSingleFit)
+//_____________________________________________________________________
+void AliMUONAlignment::FixAll( UInt_t mask )
 {
+  /// fix parameters matching mask, for all chambers
+  AliInfo( Form( "Fixing %s for all detector elements", GetParameterMaskString( mask ).Data() ) );
 
-  /// Call local fit for this tracks
-  Int_t iRes = fMillepede->LocalFit(iTrack,lTrackParam,lSingleFit);
-  if (iRes && !lSingleFit)
-  { fMillepede->SetNLocalEquations(fMillepede->GetNLocalEquations()+1); }
+  // fix all stations
+  for( Int_t i = 0; i < fgNDetElem; ++i )
+  {
+    if( mask & ParX )  FixParameter(i, 0);
+    if( mask & ParY )  FixParameter(i, 1);
+    if( mask & ParTZ ) FixParameter(i, 2);
+    if( mask & ParZ )  FixParameter(i, 3);
+  }
 
 }
 
-//_____________________________________________________
-void AliMUONAlignment::GlobalFit(Double_t *parameters,Double_t *errors,Double_t *pulls)
+//_____________________________________________________________________
+void AliMUONAlignment::FixChamber( Int_t iCh, UInt_t mask )
 {
+  /// fix parameters matching mask, for all detector elements in a given chamber, counting from 1
 
-  /// Call global fit; Global parameters are stored in parameters
-  fMillepede->GlobalFit(parameters,errors,pulls);
+  // check boundaries
+  if( iCh < 1 || iCh > 10 )
+  { AliFatal( Form( "Invalid chamber index %i", iCh ) ); }
 
-  AliInfo("Done fitting global parameters!");
-  for (int iGlob=0; iGlob<fgNDetElem; iGlob++)
-  { printf("%d\t %f\t %f\t %f\t %f \n",iGlob,parameters[iGlob*fgNParCh+0],parameters[iGlob*fgNParCh+1],parameters[iGlob*fgNParCh+3],parameters[iGlob*fgNParCh+2]); }
+  // get first and last element
+  const Int_t iDetElemFirst = fgSNDetElemCh[iCh-1];
+  const Int_t iDetElemLast = fgSNDetElemCh[iCh];
+  for( Int_t i = iDetElemFirst; i < iDetElemLast; ++i )
+  {
 
+    AliInfo( Form( "Fixing %s for detector element %i", GetParameterMaskString(mask).Data(), i ) );
+
+    if( mask & ParX )  FixParameter(i, 0);
+    if( mask & ParY )  FixParameter(i, 1);
+    if( mask & ParTZ ) FixParameter(i, 2);
+    if( mask & ParZ )  FixParameter(i, 3);
+
+  }
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::FixDetElem( Int_t iDetElemId, UInt_t mask )
+{
+  /// fix parameters matching mask, for a given detector element, counting from 0
+  const Int_t iDet( GetDetElemNumber( iDetElemId ) );
+  if ( mask & ParX )  FixParameter(iDet, 0);
+  if ( mask & ParY )  FixParameter(iDet, 1);
+  if ( mask & ParTZ ) FixParameter(iDet, 2);
+  if ( mask & ParZ )  FixParameter(iDet, 3);
 
 }
 
-//_____________________________________________________
-Double_t AliMUONAlignment::GetParError(Int_t iPar)
+//_____________________________________________________________________
+void AliMUONAlignment::FixHalfSpectrometer( const Bool_t *lChOnOff, UInt_t sidesMask, UInt_t mask )
 {
-  /// Get error of parameter iPar
-  Double_t lErr = fMillepede->GetParError(iPar);
-  return lErr;
-}
 
-//_____________________________________________________
-void AliMUONAlignment::PrintGlobalParameters()
-{
-  /// Print global parameters
-  fMillepede->PrintGlobalParameters();
-}
+  /// Fix parameters matching mask for all detectors in selected chambers and selected sides of the spectrometer
+  for( Int_t i = 0; i < fgNDetElem; ++i )
+  {
 
-//_________________________________________________________________________
-TGeoCombiTrans AliMUONAlignment::ReAlign(const TGeoCombiTrans & transform, const double *lMisAlignment) const
-{
-  /// Realign given transformation by given misalignment and return the misaligned transformation
+    // get chamber matching detector
+    const Int_t iCh( GetChamberId(i) );
+    if( !lChOnOff[iCh-1] ) continue;
 
-  Double_t cartMisAlig[3] = {0,0,0};
-  Double_t angMisAlig[3] = {0,0,0};
-//   const Double_t *trans = transform.GetTranslation();
-//   TGeoRotation *rot;
-//   // check if the rotation we obtain is not NULL
-//   if (transform.GetRotation()) {
-//     rot = transform.GetRotation();
-//   }
-//   else {
-//     rot = new TGeoRotation("rot");
-//   }			// default constructor.
+    // get detector element in chamber
+    Int_t lDetElemNumber = i-fgSNDetElemCh[iCh-1];
 
-  cartMisAlig[0] = -TMath::Sign(1.0,transform.GetRotationMatrix()[0])*lMisAlignment[0];
-  cartMisAlig[1] = -TMath::Sign(1.0,transform.GetRotationMatrix()[4])*lMisAlignment[1];
-  cartMisAlig[2] = -TMath::Sign(1.0,transform.GetRotationMatrix()[8])*lMisAlignment[3];
-  angMisAlig[2] = -TMath::Sign(1.0,transform.GetRotationMatrix()[0]*transform.GetRotationMatrix()[4])*lMisAlignment[2]*180./TMath::Pi();
+    // skip detector if its side is off
+    // stations 1 and 2
+    if( iCh>=1 && iCh<=4 )
+    {
+      if( lDetElemNumber == 0 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber == 1 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber == 2 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber == 3 && !( sidesMask & SideBottomRight ) ) continue;
+    }
 
-  TGeoTranslation deltaTrans(cartMisAlig[0], cartMisAlig[1], cartMisAlig[2]);
-  TGeoRotation deltaRot;
-  deltaRot.RotateX(angMisAlig[0]);
-  deltaRot.RotateY(angMisAlig[1]);
-  deltaRot.RotateZ(angMisAlig[2]);
+    // station 3
+    if (iCh>=5 && iCh<=6)
+    {
+      if( lDetElemNumber >= 0 && lDetElemNumber <= 4 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber >= 5 && lDetElemNumber <= 10 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber >= 11 && lDetElemNumber <= 13 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber >= 14 && lDetElemNumber <= 17 && !( sidesMask & SideBottomRight ) ) continue;
+    }
 
-  TGeoCombiTrans deltaTransf(deltaTrans,deltaRot);
-  TGeoHMatrix newTransfMat = transform * deltaTransf;
+    // stations 4 and 5
+    if (iCh>=7 && iCh<=10)
+    {
+      if( lDetElemNumber >= 0 && lDetElemNumber <= 6 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber >= 7 && lDetElemNumber <= 13 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber >= 14 && lDetElemNumber <= 19 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber >= 20 && lDetElemNumber <= 25 && !( sidesMask & SideBottomRight ) ) continue;
+    }
 
-  return TGeoCombiTrans(newTransfMat);
+    // detector is accepted, fix it
+    FixDetElem( i, mask );
+
+  }
+
 }
 
 //______________________________________________________________________
-AliMUONGeometryTransformer *
-AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
-          const double *misAlignments, Bool_t verbose)
-
+void AliMUONAlignment::FixParameter( Int_t iPar )
 {
+
+  /// fix a given parameter, counting from 0
+  if( fInitialized )
+  { AliFatal( "Millepede already initialized" ); }
+
+  fGlobalParameterStatus[iPar] = kFixedParId;
+
+}
+
+
+//_____________________________________________________________________
+void AliMUONAlignment::ReleaseChamber( Int_t iCh, UInt_t mask )
+{
+  /// release parameters matching mask, for all detector elements in a given chamber, counting from 1
+
+  // check boundaries
+  if( iCh < 1 || iCh > 10 )
+  { AliFatal( Form( "Invalid chamber index %i", iCh ) ); }
+
+  // get first and last element
+  const Int_t iDetElemFirst = fgSNDetElemCh[iCh-1];
+  const Int_t iDetElemLast = fgSNDetElemCh[iCh];
+  for( Int_t i = iDetElemFirst; i < iDetElemLast; ++i )
+  {
+
+    AliInfo( Form( "Releasing %s for detector element %i", GetParameterMaskString(mask).Data(), i ) );
+
+    if( mask & ParX )  ReleaseParameter(i, 0);
+    if( mask & ParY )  ReleaseParameter(i, 1);
+    if( mask & ParTZ ) ReleaseParameter(i, 2);
+    if( mask & ParZ )  ReleaseParameter(i, 3);
+
+  }
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::ReleaseDetElem( Int_t iDetElemId, UInt_t mask )
+{
+  /// release parameters matching mask, for a given detector element, counting from 0
+  const Int_t iDet( GetDetElemNumber( iDetElemId ) );
+  if ( mask & ParX )  ReleaseParameter(iDet, 0);
+  if ( mask & ParY )  ReleaseParameter(iDet, 1);
+  if ( mask & ParTZ ) ReleaseParameter(iDet, 2);
+  if ( mask & ParZ )  ReleaseParameter(iDet, 3);
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::ReleaseParameter( Int_t iPar )
+{
+
+  /// release a given parameter, counting from 0
+  if( fInitialized )
+  { AliFatal( "Millepede already initialized" ); }
+
+  fGlobalParameterStatus[iPar] = kFreeParId;
+
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::GroupChamber( Int_t iCh, UInt_t mask )
+{
+  /// group parameters matching mask for all detector elements in a given chamber, counting from 1
+  if( iCh < 1 || iCh > 10 )
+  { AliFatal( Form( "Invalid chamber index %i", iCh ) ); }
+
+  const Int_t detElemMin = 100*iCh;
+  const Int_t detElemMax = 100*iCh + fgNDetElemCh[iCh]-1;
+  GroupDetElems( detElemMin, detElemMax, mask );
+
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::GroupDetElems( Int_t detElemMin, Int_t detElemMax, UInt_t mask )
+{
+  /// group parameters matching mask for all detector elements between min and max
+  // check number of detector elements
+  const Int_t nDetElem = detElemMax - detElemMin + 1;
+  if( nDetElem<2 )
+  { AliFatal( Form( "Requested group of DEs %d-%d contains less than 2 DE's", detElemMin, detElemMax ) ); }
+
+  // create list
+  Int_t* detElemList = new int[nDetElem];
+  for( Int_t i = 0; i < nDetElem; ++i )
+  { detElemList[i] = detElemMin+i; }
+
+  // group
+  GroupDetElems( detElemList, nDetElem, mask );
+  delete[] detElemList;
+
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::GroupDetElems( Int_t* detElemList, Int_t nDetElem, UInt_t mask )
+{
+  /// group parameters matching mask for all detector elements in list
+  if( fInitialized )
+  { AliFatal( "Millepede already initialized" ); }
+
+  const Int_t iDeBase( GetDetElemNumber( detElemList[0] ) );
+  for( Int_t i = 0; i < nDetElem; ++i )
+  {
+    const Int_t iDeCurrent( GetDetElemNumber( detElemList[i] ) );
+    if( mask & ParX ) fGlobalParameterStatus[iDeCurrent*fgNParCh + 0] = (i==0) ?  kGroupBaseId : (kGroupBaseId-iDeBase-1);
+    if( mask & ParY ) fGlobalParameterStatus[iDeCurrent*fgNParCh + 1] = (i==0) ?  kGroupBaseId : (kGroupBaseId-iDeBase-1);
+    if( mask & ParTZ ) fGlobalParameterStatus[iDeCurrent*fgNParCh + 2] = (i==0) ?  kGroupBaseId : (kGroupBaseId-iDeBase-1);
+    if( mask & ParZ ) fGlobalParameterStatus[iDeCurrent*fgNParCh + 3] = (i==0) ?  kGroupBaseId : (kGroupBaseId-iDeBase-1);
+
+    if( i== 0 ) AliInfo( Form( "Creating new group for detector %i and variable %s", detElemList[i], GetParameterMaskString( mask ).Data() ) );
+    else AliInfo( Form( "Adding detector element %i to current group", detElemList[i] ) );
+  }
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::SetChamberNonLinear( Int_t iCh, UInt_t mask )
+{
+  /// Set parameters matching mask as non linear, for all detector elements in a given chamber, counting from 1
+  const Int_t iDetElemFirst = fgSNDetElemCh[iCh-1];
+  const Int_t iDetElemLast = fgSNDetElemCh[iCh];
+  for( Int_t i = iDetElemFirst; i < iDetElemLast; ++i )
+  {
+
+      if( mask & ParX ) SetParameterNonLinear(i, 0);
+      if( mask & ParY ) SetParameterNonLinear(i, 1);
+      if( mask & ParTZ ) SetParameterNonLinear(i, 2);
+      if( mask & ParZ ) SetParameterNonLinear(i, 3);
+
+  }
+
+}
+
+//_____________________________________________________________________
+void AliMUONAlignment::SetDetElemNonLinear( Int_t iDetElemId, UInt_t mask )
+{
+  /// Set parameters matching mask as non linear, for a given detector element, counting from 0
+  const Int_t iDet( GetDetElemNumber( iDetElemId ) );
+  if ( mask & ParX )  SetParameterNonLinear(iDet, 0);
+  if ( mask & ParY )  SetParameterNonLinear(iDet, 1);
+  if ( mask & ParTZ ) SetParameterNonLinear(iDet, 2);
+  if ( mask & ParZ )  SetParameterNonLinear(iDet, 3);
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::SetParameterNonLinear( Int_t iPar )
+{
+  /// Set nonlinear flag for parameter iPar
+  if( !fInitialized )
+  { AliFatal( "Millepede not initialized" ); }
+
+  fMillepede->SetNonLinear( iPar );
+  AliInfo( Form( "Parameter %i set to non linear", iPar ) );
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::AddConstraints( const Bool_t *lChOnOff, UInt_t mask )
+{
+  /// Add constraint equations for selected chambers and degrees of freedom
+
+  Array fConstraintX;
+  Array fConstraintY;
+  Array fConstraintTZ;
+  Array fConstraintZ;
+
+  for( Int_t i = 0; i < fgNDetElem; ++i )
+  {
+
+    // get chamber matching detector
+    const Int_t iCh( GetChamberId(i) );
+    if (lChOnOff[iCh-1])
+    {
+
+      if( mask & ParX ) fConstraintX.values[i*fgNParCh+0]=1.0;
+      if( mask & ParY ) fConstraintY.values[i*fgNParCh+1]=1.0;
+      if( mask & ParTZ ) fConstraintTZ.values[i*fgNParCh+2]=1.0;
+      if( mask & ParZ ) fConstraintTZ.values[i*fgNParCh+3]=1.0;
+
+    }
+  }
+
+  if( mask & ParX ) AddConstraint(fConstraintX.values,0.0);
+  if( mask & ParY ) AddConstraint(fConstraintY.values,0.0);
+  if( mask & ParTZ ) AddConstraint(fConstraintTZ.values,0.0);
+  if( mask & ParZ ) AddConstraint(fConstraintZ.values,0.0);
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::AddConstraints(const Bool_t *lChOnOff, const Bool_t *lVarXYT, UInt_t sidesMask )
+{
+  /*
+  questions:
+  - is there not redundancy/inconsistency between lDetTLBR and lSpecLROnOff ? shouldn't we use only lDetTLBR ?
+  - why is weight ignored for ConstrainT and ConstrainB
+  - why is there no constrain on z
+  */
+
+  /// Add constraint equations for selected chambers, degrees of freedom and detector half
+  Double_t lMeanY = 0.;
+  Double_t lSigmaY = 0.;
+  Double_t lMeanZ = 0.;
+  Double_t lSigmaZ = 0.;
+  Int_t lNDetElem = 0;
+
+  for( Int_t i = 0; i < fgNDetElem; ++i )
+  {
+
+    // get chamber matching detector
+    const Int_t iCh( GetChamberId(i) );
+
+    // skip detector if chamber is off
+    if( lChOnOff[iCh-1] ) continue;
+
+    // get detector element id from detector element number
+    const Int_t lDetElemNumber = i-fgSNDetElemCh[iCh-1];
+    const Int_t lDetElemId = iCh*100+lDetElemNumber;
+
+    // skip detector if its side is off
+    // stations 1 and 2
+    if( iCh>=1 && iCh<=4 )
+    {
+      if( lDetElemNumber == 0 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber == 1 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber == 2 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber == 3 && !( sidesMask & SideBottomRight ) ) continue;
+    }
+
+    // station 3
+    if (iCh>=5 && iCh<=6)
+    {
+      if( lDetElemNumber >= 0 && lDetElemNumber <= 4 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber >= 5 && lDetElemNumber <= 10 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber >= 11 && lDetElemNumber <= 13 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber >= 14 && lDetElemNumber <= 17 && !( sidesMask & SideBottomRight ) ) continue;
+    }
+
+    // stations 4 and 5
+    if (iCh>=7 && iCh<=10)
+    {
+      if( lDetElemNumber >= 0 && lDetElemNumber <= 6 && !( sidesMask & SideTopRight ) ) continue;
+      if( lDetElemNumber >= 7 && lDetElemNumber <= 13 && !( sidesMask & SideTopLeft ) ) continue;
+      if( lDetElemNumber >= 14 && lDetElemNumber <= 19 && !( sidesMask & SideBottomLeft ) ) continue;
+      if( lDetElemNumber >= 20 && lDetElemNumber <= 25 && !( sidesMask & SideBottomRight ) ) continue;
+    }
+
+    // get global x, y and z position
+    Double_t lDetElemGloX = 0.;
+    Double_t lDetElemGloY = 0.;
+    Double_t lDetElemGloZ = 0.;
+    fTransform->Local2Global( lDetElemId, 0, 0, 0, lDetElemGloX, lDetElemGloY, lDetElemGloZ );
+
+    // increment mean Y, mean Z, sigmas and number of accepted detectors
+    lMeanY += lDetElemGloY;
+    lSigmaY += lDetElemGloY*lDetElemGloY;
+    lMeanZ += lDetElemGloZ;
+    lSigmaZ += lDetElemGloZ*lDetElemGloZ;
+    lNDetElem++;
+
+  }
+
+  // calculate mean values
+  lMeanY /= lNDetElem;
+  lSigmaY /= lNDetElem;
+  lSigmaY = TMath::Sqrt(lSigmaY-lMeanY*lMeanY);
+  lMeanZ /= lNDetElem;
+  lSigmaZ /= lNDetElem;
+  lSigmaZ = TMath::Sqrt(lSigmaZ-lMeanZ*lMeanZ);
+  AliInfo( Form( "Used %i DetElem, MeanZ= %f , SigmaZ= %f", lNDetElem,lMeanZ,lSigmaZ ) );
+
+  // create all possible arrays
+  Array fConstraintX[4];  //Array for constraint equation X
+  Array fConstraintY[4];  //Array for constraint equation Y
+  Array fConstraintP[4];  //Array for constraint equation P
+  Array fConstraintXZ[4];  //Array for constraint equation X vs Z
+  Array fConstraintYZ[4];  //Array for constraint equation Y vs Z
+  Array fConstraintPZ[4];  //Array for constraint equation P vs Z
+
+  // do we really need these ?
+  Array fConstraintXY[4];  //Array for constraint equation X vs Y
+  Array fConstraintYY[4];  //Array for constraint equation Y vs Y
+  Array fConstraintPY[4];  //Array for constraint equation P vs Y
+
+  // fill Bool_t sides array based on masks, for convenience
+  Bool_t lDetTLBR[4];
+  lDetTLBR[0] = sidesMask & SideTop;
+  lDetTLBR[1] = sidesMask & SideLeft;
+  lDetTLBR[2] = sidesMask & SideBottom;
+  lDetTLBR[3] = sidesMask & SideRight;
+
+  for( Int_t i = 0; i < fgNDetElem; ++i )
+  {
+
+    // get chamber matching detector
+    const Int_t iCh( GetChamberId(i) );
+
+    // skip detector if chamber is off
+    if( !lChOnOff[iCh-1] ) continue;
+
+    // get detector element id from detector element number
+    const Int_t lDetElemNumber = i-fgSNDetElemCh[iCh-1];
+    const Int_t lDetElemId = iCh*100+lDetElemNumber;
+
+    // get global x, y and z position
+    Double_t lDetElemGloX = 0.;
+    Double_t lDetElemGloY = 0.;
+    Double_t lDetElemGloZ = 0.;
+    fTransform->Local2Global( lDetElemId, 0, 0, 0, lDetElemGloX, lDetElemGloY, lDetElemGloZ );
+
+    // loop over sides
+    for( Int_t iSide = 0; iSide < 4; iSide++ )
+    {
+
+      // skip if side is not selected
+      if( !lDetTLBR[iSide] ) continue;
+
+      // skip detector if it is not in the selected side
+      // stations 1 and 2
+      if( iCh>=1 && iCh<=4 )
+      {
+        if( lDetElemNumber == 0 && !(iSide == 0 || iSide == 3) ) continue; // top-right
+        if( lDetElemNumber == 1 && !(iSide == 0 || iSide == 1) ) continue; // top-left
+        if( lDetElemNumber == 2 && !(iSide == 2 || iSide == 1) ) continue; // bottom-left
+        if( lDetElemNumber == 3 && !(iSide == 2 || iSide == 3) ) continue; // bottom-right
+      }
+
+      // station 3
+      if (iCh>=5 && iCh<=6)
+      {
+        if( lDetElemNumber >= 0 && lDetElemNumber <= 4 && !(iSide == 0 || iSide == 3) ) continue; // top-right
+        if( lDetElemNumber >= 5 && lDetElemNumber <= 9 && !(iSide == 0 || iSide == 1) ) continue; // top-left
+        if( lDetElemNumber >= 10 && lDetElemNumber <= 13 && !(iSide == 2 || iSide == 1) ) continue; // bottom-left
+        if( lDetElemNumber >= 14 && lDetElemNumber <= 17 && !(iSide == 2 || iSide == 3) ) continue; // bottom-right
+      }
+
+      // stations 4 and 5
+      if (iCh>=7 && iCh<=10)
+      {
+        if( lDetElemNumber >= 0 && lDetElemNumber <= 6 && !(iSide == 0 || iSide == 3) ) continue; // top-right
+        if( lDetElemNumber >= 7 && lDetElemNumber <= 13 && !(iSide == 0 || iSide == 1) ) continue; // top-left
+        if( lDetElemNumber >= 14 && lDetElemNumber <= 19 && !(iSide == 2 || iSide == 1) ) continue; // bottom-left
+        if( lDetElemNumber >= 20 && lDetElemNumber <= 25 && !(iSide == 2 || iSide == 3) ) continue; // bottom-right
+      }
+
+      // constrain x
+      if( lVarXYT[0] ) fConstraintX[iSide].values[i*fgNParCh+0] = 1;
+
+      // constrain y
+      if( lVarXYT[1] ) fConstraintY[iSide].values[i*fgNParCh+1] = 1;
+
+      // constrain phi (rotation around z)
+      if( lVarXYT[2] ) fConstraintP[iSide].values[i*fgNParCh+2] = 1;
+
+      // x-z shearing
+      if( lVarXYT[3] ) fConstraintXZ[iSide].values[i*fgNParCh+0] = (lDetElemGloZ-lMeanZ)/lSigmaZ;
+
+      // y-z shearing
+      if( lVarXYT[4] ) fConstraintYZ[iSide].values[i*fgNParCh+1] = (lDetElemGloZ-lMeanZ)/lSigmaZ;
+
+      // phi-z shearing
+      if( lVarXYT[5] ) fConstraintPZ[iSide].values[i*fgNParCh+2] = (lDetElemGloZ-lMeanZ)/lSigmaZ;
+
+      // x-y shearing
+      if( lVarXYT[6] ) fConstraintXY[iSide].values[i*fgNParCh+0] = (lDetElemGloY-lMeanY)/lSigmaY;
+
+      // y-y shearing
+      if( lVarXYT[7] ) fConstraintYY[iSide].values[i*fgNParCh+1] = (lDetElemGloY-lMeanY)/lSigmaY;
+
+      // phi-y shearing
+      if( lVarXYT[8] ) fConstraintPY[iSide].values[i*fgNParCh+2] = (lDetElemGloY-lMeanY)/lSigmaY;
+
+    }
+
+  }
+
+  // pass constraints to millepede
+  for( Int_t iSide = 0; iSide < 4; iSide++ )
+  {
+    // skip if side is not selected
+    if( !lDetTLBR[iSide] ) continue;
+
+    if( lVarXYT[0] ) AddConstraint(fConstraintX[iSide].values,0.0);
+    if( lVarXYT[1] ) AddConstraint(fConstraintY[iSide].values,0.0);
+    if( lVarXYT[2] ) AddConstraint(fConstraintP[iSide].values,0.0);
+    if( lVarXYT[3] ) AddConstraint(fConstraintXZ[iSide].values,0.0);
+    if( lVarXYT[4] ) AddConstraint(fConstraintYZ[iSide].values,0.0);
+    if( lVarXYT[5] ) AddConstraint(fConstraintPZ[iSide].values,0.0);
+    if( lVarXYT[6] ) AddConstraint(fConstraintXY[iSide].values,0.0);
+    if( lVarXYT[7] ) AddConstraint(fConstraintYY[iSide].values,0.0);
+    if( lVarXYT[8] ) AddConstraint(fConstraintPY[iSide].values,0.0);
+  }
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::InitGlobalParameters(Double_t *par)
+{
+  /// Initialize global parameters with par array
+  if( !fInitialized )
+  { AliFatal( "Millepede is not initialized" ); }
+
+  fMillepede->SetGlobalParameters(par);
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::SetAllowedVariation( Int_t iPar, Double_t value )
+{
+  /// "Encouraged" variation for degrees of freedom
+  // check initialization
+  if( fInitialized )
+  { AliFatal( "Millepede already initialized" ); }
+
+  // check initialization
+  if( !(iPar >= 0 && iPar < fgNParCh ) )
+  { AliFatal( Form( "Invalid index: %i", iPar ) ); }
+
+  fAllowVar[iPar] = value;
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::SetSigmaXY(Double_t sigmaX, Double_t sigmaY)
+{
+
+  /// Set expected measurement resolution
+  fSigma[0] = sigmaX;
+  fSigma[1] = sigmaY;
+
+  // print
+  for( Int_t i=0; i<2; ++i )
+  { AliInfo( Form( "fSigma[%i]=%f", i, fSigma[i] ) ); }
+
+}
+
+//_____________________________________________________
+void AliMUONAlignment::GlobalFit( Double_t *parameters, Double_t *errors, Double_t *pulls )
+{
+
+  /// Call global fit; Global parameters are stored in parameters
+  fMillepede->GlobalFit( parameters, errors, pulls );
+
+  AliInfo( "Done fitting global parameters" );
+  for( int iDet=0; iDet<fgNDetElem; ++iDet )
+  {
+    AliInfo( Form( "%d\t %f\t %f\t %f\t %f",
+      iDet,
+      parameters[iDet*fgNParCh+0],parameters[iDet*fgNParCh+1],
+      parameters[iDet*fgNParCh+3],parameters[iDet*fgNParCh+2]
+      ) );
+  }
+
+}
+
+//_____________________________________________________
+void AliMUONAlignment::PrintGlobalParameters() const
+{ fMillepede->PrintGlobalParameters(); }
+
+//_____________________________________________________
+Double_t AliMUONAlignment::GetParError(Int_t iPar) const
+{ return fMillepede->GetParError(iPar); }
+
+//______________________________________________________________________
+AliMUONGeometryTransformer* AliMUONAlignment::ReAlign(
+  const AliMUONGeometryTransformer * transformer,
+  const double *misAlignments, Bool_t )
+{
+
   /// Returns a new AliMUONGeometryTransformer with the found misalignments
   /// applied.
 
@@ -1340,41 +900,63 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
   // Adds the new module transformer to a new geometry transformer
   // Returns the new geometry transformer
 
-  Double_t lModuleMisAlignment[4] = {0.,0.,0.,0.};
-  Double_t lDetElemMisAlignment[4] = {0.,0.,0.,0.};
-  Int_t iDetElemId = 0;
-  Int_t iDetElemNumber = 0;
+  Double_t lModuleMisAlignment[fgNParCh] = {0};
+  Double_t lDetElemMisAlignment[fgNParCh] = {0};
+  const TClonesArray* oldMisAlignArray( transformer->GetMisAlignmentData() );
 
-  AliMUONGeometryTransformer *newGeometryTransformer =
-    new AliMUONGeometryTransformer();
-  for (Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); iMt++) {
+  AliMUONGeometryTransformer *newGeometryTransformer = new AliMUONGeometryTransformer();
+  for( Int_t iMt = 0; iMt < transformer->GetNofModuleTransformers(); ++iMt )
+  {
+
     // module transformers
-    const AliMUONGeometryModuleTransformer *kModuleTransformer =
-      transformer->GetModuleTransformer(iMt, true);
+    const AliMUONGeometryModuleTransformer *kModuleTransformer = transformer->GetModuleTransformer(iMt, kTRUE);
 
-    AliMUONGeometryModuleTransformer *newModuleTransformer =
-      new AliMUONGeometryModuleTransformer(iMt);
+    AliMUONGeometryModuleTransformer *newModuleTransformer = new AliMUONGeometryModuleTransformer(iMt);
     newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
 
-    TGeoCombiTrans moduleTransform =
-      TGeoCombiTrans(*kModuleTransformer->GetTransformation());
-    // New module transformation
-    TGeoCombiTrans newModuleTransform = ReAlign(moduleTransform,lModuleMisAlignment);
+    // get transformation
+    TGeoHMatrix deltaModuleTransform( DeltaTransform( lModuleMisAlignment ) );
+
+    // update module
+    TGeoHMatrix moduleTransform( *kModuleTransformer->GetTransformation() );
+    TGeoHMatrix newModuleTransform( AliMUONGeometryBuilder::Multiply( deltaModuleTransform, moduleTransform ) );
     newModuleTransformer->SetTransformation(newModuleTransform);
 
-    // Get delta transformation:
-    // Tdelta = Tnew * Told.inverse
-    TGeoHMatrix deltaModuleTransform =
-      AliMUONGeometryBuilder::Multiply(newModuleTransform,
-               kModuleTransformer->GetTransformation()->Inverse());
+    // Get matching old alignment and update current matrix accordingly
+    if( oldMisAlignArray )
+    {
+
+      const AliAlignObjMatrix* oldAlignObj(0);
+      const Int_t moduleId( kModuleTransformer->GetModuleId() );
+      const Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, moduleId );
+      for( Int_t pos = 0; pos < oldMisAlignArray->GetEntriesFast(); ++pos )
+      {
+
+        const AliAlignObjMatrix* localAlignObj( dynamic_cast<const AliAlignObjMatrix*>(oldMisAlignArray->At( pos ) ) );
+        if( localAlignObj && localAlignObj->GetVolUID() == volId )
+        {
+          oldAlignObj = localAlignObj;
+          break;
+        }
+
+      }
+
+      // multiply
+      if( oldAlignObj )
+      {
+
+        TGeoHMatrix oldMatrix;
+        oldAlignObj->GetMatrix( oldMatrix );
+        deltaModuleTransform.Multiply( &oldMatrix );
+
+      }
+
+    }
+
     // Create module mis alignment matrix
-    newGeometryTransformer
-      ->AddMisAlignModule(kModuleTransformer->GetModuleId(), deltaModuleTransform);
+    newGeometryTransformer ->AddMisAlignModule(kModuleTransformer->GetModuleId(), deltaModuleTransform);
 
     AliMpExMap *detElements = kModuleTransformer->GetDetElementStore();
-
-    if (verbose)
-      AliInfo(Form("%i DEs in old GeometryStore  %i",detElements->GetSize(), iMt));
 
     TIter next(detElements->CreateIterator());
     AliMUONGeometryDetElement* detElement;
@@ -1383,114 +965,432 @@ AliMUONAlignment::ReAlign(const AliMUONGeometryTransformer * transformer,
     {
       ++iDe;
       // make a new detection element
-      AliMUONGeometryDetElement *newDetElement =
-  new AliMUONGeometryDetElement(detElement->GetId(),
-              detElement->GetVolumePath());
+      AliMUONGeometryDetElement *newDetElement = new AliMUONGeometryDetElement(detElement->GetId(), detElement->GetVolumePath());
       TString lDetElemName(detElement->GetDEName());
       lDetElemName.ReplaceAll("DE","");
-      iDetElemId = lDetElemName.Atoi();
-      iDetElemNumber = iDetElemId%100;
-      for (int iCh=0; iCh<iDetElemId/100-1; iCh++){
-  iDetElemNumber += fgNDetElemCh[iCh];
+
+      // store detector element id and number
+      const Int_t iDetElemId = lDetElemName.Atoi();
+      if( !DetElemIsValid( iDetElemId ) )
+      {
+        AliInfo( Form( "Skipping invalid detector element %i", iDetElemId ) );
+        continue;
       }
-      for (int i=0; i<fgNParCh; i++) {
-  lDetElemMisAlignment[i] = 0.0;
-  if (iMt<fgNTrkMod) {
-    AliInfo(Form("iMt %i, iCh %i, iDe %i, iDeId %i, iDeNb %i, iPar %i",iMt, iDetElemId/100, iDe, iDetElemId, iDetElemNumber, iDetElemNumber*fgNParCh+i));
-    lDetElemMisAlignment[i] =  misAlignments[iDetElemNumber*fgNParCh+i];
-  }
+
+      const Int_t iDetElemNumber( GetDetElemNumber( iDetElemId ) );
+
+      for( int i=0; i<fgNParCh; ++i )
+      {
+        lDetElemMisAlignment[i] = 0.0;
+        if( iMt<fgNTrkMod ) { lDetElemMisAlignment[i] =  misAlignments[iDetElemNumber*fgNParCh+i]; }
       }
-      // local transformation of this detection element.
-      TGeoCombiTrans localTransform
-  = TGeoCombiTrans(*detElement->GetLocalTransformation());
-      TGeoCombiTrans newLocalTransform = ReAlign(localTransform,lDetElemMisAlignment);
-      newDetElement->SetLocalTransformation(newLocalTransform);
 
-      // global transformation
-      TGeoHMatrix newGlobalTransform =
-  AliMUONGeometryBuilder::Multiply(newModuleTransform,
-           newLocalTransform);
-      newDetElement->SetGlobalTransformation(newGlobalTransform);
+      // get transformation
+      TGeoHMatrix deltaGlobalTransform( DeltaTransform( lDetElemMisAlignment ) );
 
-      // add this det element to module
-      newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(),
-                  newDetElement);
+      // update module
+      TGeoHMatrix globalTransform( *detElement->GetGlobalTransformation() );
+      TGeoHMatrix newGlobalTransform( AliMUONGeometryBuilder::Multiply( deltaGlobalTransform, globalTransform ) );
+      newDetElement->SetGlobalTransformation( newGlobalTransform );
+      newModuleTransformer->GetDetElementStore()->Add(newDetElement->GetId(), newDetElement);
 
-      // In the Alice Alignment Framework misalignment objects store
-      // global delta transformation
-      // Get detection "intermediate" global transformation
-      TGeoHMatrix newOldGlobalTransform = newModuleTransform * localTransform;
-      // Get detection element global delta transformation:
-      // Tdelta = Tnew * Told.inverse
-      TGeoHMatrix  deltaGlobalTransform
-  = AliMUONGeometryBuilder::Multiply(newGlobalTransform,
-             newOldGlobalTransform.Inverse());
+      // Get matching old alignment and update current matrix accordingly
+      if( oldMisAlignArray )
+      {
 
-      // Create mis alignment matrix
-      newGeometryTransformer
-  ->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
+        const AliAlignObjMatrix* oldAlignObj(0);
+        const int detElemId( detElement->GetId() );
+        const Int_t volId = AliGeomManager::LayerToVolUID(AliGeomManager::kMUON, detElemId );
+        for( Int_t pos = 0; pos < oldMisAlignArray->GetEntriesFast(); ++pos )
+        {
+
+          const AliAlignObjMatrix* localAlignObj( dynamic_cast<const AliAlignObjMatrix*>(oldMisAlignArray->At( pos ) ) );
+          if( localAlignObj && localAlignObj->GetVolUID() == volId )
+          {
+            oldAlignObj = localAlignObj;
+            break;
+          }
+
+        }
+
+        // multiply
+        if( oldAlignObj )
+        {
+
+          TGeoHMatrix oldMatrix;
+          oldAlignObj->GetMatrix( oldMatrix );
+          deltaGlobalTransform.Multiply( &oldMatrix );
+
+        }
+
+      }
+
+      // Create misalignment matrix
+      newGeometryTransformer->AddMisAlignDetElement(detElement->GetId(), deltaGlobalTransform);
+
     }
 
-    if (verbose)
-      AliInfo(Form("Added module transformer %i to the transformer", iMt));
     newGeometryTransformer->AddModuleTransformer(newModuleTransformer);
   }
+
   return newGeometryTransformer;
+
 }
 
 //______________________________________________________________________
-void AliMUONAlignment::SetAlignmentResolution(const TClonesArray* misAlignArray, Int_t rChId, Double_t rChResX, Double_t rChResY, Double_t rDeResX, Double_t rDeResY)
+void AliMUONAlignment::SetAlignmentResolution( const TClonesArray* misAlignArray, Int_t rChId, Double_t chResX, Double_t chResY, Double_t deResX, Double_t deResY )
 {
 
   /// Set alignment resolution to misalign objects to be stored in CDB
-  Int_t chIdMin = (rChId<0)? 0 : rChId;
-  Int_t chIdMax = (rChId<0)? 9 : rChId;
-  Double_t chResX = rChResX;
-  Double_t chResY = rChResY;
-  Double_t deResX = rDeResX;
-  Double_t deResY = rDeResY;
-
+  /// if rChId is > 0 set parameters for this chamber only, counting from 1
   TMatrixDSym mChCorrMatrix(6);
   mChCorrMatrix[0][0]=chResX*chResX;
   mChCorrMatrix[1][1]=chResY*chResY;
-  //  mChCorrMatrix.Print();
 
   TMatrixDSym mDECorrMatrix(6);
   mDECorrMatrix[0][0]=deResX*deResX;
   mDECorrMatrix[1][1]=deResY*deResY;
-  //  mDECorrMatrix.Print();
 
   AliAlignObjMatrix *alignMat = 0x0;
 
-  for(Int_t chId=chIdMin; chId<=chIdMax; chId++) {
+  for( Int_t chId = 0; chId <= 9; ++chId )
+  {
+
+    // skip chamber if selection is valid, and does not match
+    if( rChId > 0 && chId+1 != rChId ) continue;
+
     TString chName1;
     TString chName2;
-    if (chId<4){
+    if (chId<4)
+    {
+
       chName1 = Form("GM%d",chId);
       chName2 = Form("GM%d",chId);
+
     } else {
+
       chName1 = Form("GM%d",4+(chId-4)*2);
       chName2 = Form("GM%d",4+(chId-4)*2+1);
+
     }
 
-    for (int i=0; i<misAlignArray->GetEntries(); i++) {
+    for( int i=0; i<misAlignArray->GetEntries(); ++i )
+    {
+
       alignMat = (AliAlignObjMatrix*)misAlignArray->At(i);
       TString volName(alignMat->GetSymName());
       if((volName.Contains(chName1)&&
-    ((volName.Last('/')==volName.Index(chName1)+chName1.Length())||
-     (volName.Length()==volName.Index(chName1)+chName1.Length())))||
-   (volName.Contains(chName2)&&
-    ((volName.Last('/')==volName.Index(chName2)+chName2.Length())||
-     (volName.Length()==volName.Index(chName2)+chName2.Length())))){
-  volName.Remove(0,volName.Last('/')+1);
-  if (volName.Contains("GM")) {
-    //	alignMat->Print("NULL");
-    alignMat->SetCorrMatrix(mChCorrMatrix);
-  } else if (volName.Contains("DE")) {
-    //	alignMat->Print("NULL");
-    alignMat->SetCorrMatrix(mDECorrMatrix);
-  }
+        ((volName.Last('/')==volName.Index(chName1)+chName1.Length())||
+        (volName.Length()==volName.Index(chName1)+chName1.Length())))||
+        (volName.Contains(chName2)&&
+        ((volName.Last('/')==volName.Index(chName2)+chName2.Length())||
+        (volName.Length()==volName.Index(chName2)+chName2.Length()))))
+      {
+
+        volName.Remove(0,volName.Last('/')+1);
+        if (volName.Contains("GM")) alignMat->SetCorrMatrix(mChCorrMatrix);
+        else if (volName.Contains("DE")) alignMat->SetCorrMatrix(mDECorrMatrix);
+
       }
+
     }
+
   }
+
+}
+
+
+//_____________________________________________________
+void AliMUONAlignment::FillDetElemData( AliMUONVCluster* cluster )
+{
+
+  /// Get information of current detection element
+  // get detector element number from Alice ID
+  const Int_t detElemId = cluster->GetDetElemId();
+  fDetElemNumber = GetDetElemNumber( detElemId );
+
+  // get detector element
+  const AliMUONGeometryDetElement* detElement = fTransform->GetDetElement( detElemId );
+
+  /*
+  get the global transformation matrix and store its inverse, in order to manually perform
+  the global to Local transformations needed to calculate the derivatives
+  */
+  fGeoCombiTransInverse = detElement->GetGlobalTransformation()->Inverse();
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::FillRecPointData( AliMUONVCluster* cluster )
+{
+
+  /// Get information of current cluster
+  fClustPos[0] = cluster->GetX();
+  fClustPos[1] = cluster->GetY();
+  fClustPos[2] = cluster->GetZ();
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::FillTrackParamData( AliMUONTrackParam* trackParam )
+{
+
+  /// Get information of current track at current cluster
+  fTrackPos[0] = trackParam->GetNonBendingCoor();
+  fTrackPos[1] = trackParam->GetBendingCoor();
+  fTrackPos[2] = trackParam->GetZ();
+  fTrackSlope[0] = trackParam->GetNonBendingSlope();
+  fTrackSlope[1] = trackParam->GetBendingSlope();
+
+}
+
+//______________________________________________________________________
+Bool_t AliMUONAlignment::UnbiasTrackParamData( AliMUONTrackParam* trackParam ) const
+{
+
+  /**
+  calculate unbiased track parameters at a given detector, that is,
+  after taking out the contribution of the detector's cluster from the track
+  */
+
+  // check track parameters
+  if( !trackParam ) return kFALSE;
+
+  // Remove cluster contibution from smoothed track param
+  TMatrixD smoothParameters( trackParam->GetSmoothParameters() );
+  TMatrixD smoothCovariances( trackParam->GetSmoothCovariances() );
+
+  AliMUONVCluster* cluster = trackParam->GetClusterPtr();
+  // p' = p + K(m - H*p)
+  // K  = C H (-V + H C H^t)^-1
+  // C' = C - K H C
+  // where p,C are smoothed param,cov at cluster position
+  // H is the matrix converting the state vector to measurement
+  // V is the measurement cov.matrix
+  // m is the measurement vector
+  static TMatrixD H(2,5);
+  H.Zero();
+  H(0,0)=H(1,2) = 1.;
+
+  // (-Vk+H_k C^n_k H_k^T)^-1
+  static TMatrixD df(2,2);
+  df.Zero();
+  df(0,0) = smoothCovariances(0,0) - cluster->GetErrX2();
+  df(1,1) = smoothCovariances(2,2) - cluster->GetErrY2();
+  df(0,1) = smoothCovariances(0,2);
+  df(1,0) = smoothCovariances(2,0);
+
+  if (df.Determinant() != 0) df.Invert();
+  else {
+    AliInfo( "Determinant = 0\n" );
+    return kFALSE;
+  }
+
+  // gain matrix
+  TMatrixD kTmp( smoothCovariances, TMatrixD::kMultTranspose, H );
+  TMatrixD K(kTmp, TMatrixD::kMult, df);
+
+  TMatrixD dfc(2,1);
+  dfc.Zero();
+  dfc(0,0) = cluster->GetX()-smoothParameters(0,0);
+  dfc(1,0) = cluster->GetY()-smoothParameters(2,0);
+  TMatrixD tmp0(K,TMatrixD::kMult, dfc);
+  smoothParameters += tmp0;
+
+  TMatrixD tmp1(K,   TMatrixD::kMult, H);
+  TMatrixD tmp2(tmp1,TMatrixD::kMult, smoothCovariances);
+  smoothCovariances -= tmp2;
+
+  // update track parameters
+  trackParam->SetParameters( smoothParameters );
+  trackParam->SetCovariances( smoothCovariances );
+
+  return kTRUE;
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::LocalEquationX( void )
+{
+  /// local equation along X
+
+  // 'inverse' (GlobalToLocal) rotation matrix
+  const Double_t* r( fGeoCombiTransInverse.GetRotationMatrix() );
+
+  // local derivatives
+  SetLocalDerivative( 0, r[0] );
+  SetLocalDerivative( 1, r[0]*(fTrackPos[2] - fTrackPos0[2]) );
+  SetLocalDerivative( 2, r[1] );
+  SetLocalDerivative( 3, r[1]*(fTrackPos[2] - fTrackPos0[2]) );
+
+  // global derivatives
+  /*
+  alignment parameters are
+  0: delta_x
+  1: delta_y
+  2: delta_phiz
+  3: delta_z
+  */
+
+  SetGlobalDerivative( fDetElemNumber*fgNParCh + 0, -r[0] );
+  SetGlobalDerivative( fDetElemNumber*fgNParCh + 1, -r[1] );
+
+  if( fBFieldOn )
+  {
+
+    // use local position for derivatives vs 'delta_phi_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 2, -r[1]*fTrackPos[0] + r[0]*fTrackPos[1] );
+
+    // use local slopes for derivatives vs 'delta_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 3, r[0]*fTrackSlope[0] + r[1]*fTrackSlope[1] );
+
+  } else {
+
+    // local copy of extrapolated track positions
+    const Double_t trackPosX = fTrackPos0[0]+fTrackSlope0[0]*( fTrackPos[2]-fTrackPos0[2] );
+    const Double_t trackPosY = fTrackPos0[1]+fTrackSlope0[1]*( fTrackPos[2]-fTrackPos0[2] );
+
+    // use properly extrapolated position for derivatives vs 'delta_phi_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 2, -r[1]*trackPosX + r[0]*trackPosY );
+
+    // use slopes at origin for derivatives vs 'delta_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 3, r[0]*fTrackSlope0[0] + r[1]*fTrackSlope0[1] );
+
+  }
+
+  // store local equation
+  fMillepede->SetLocalEquation( fGlobalDerivatives, fLocalDerivatives, fMeas[0], fSigma[0] );
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::LocalEquationY( void )
+{
+  /// local equation along Y
+
+  // 'inverse' (GlobalToLocal) rotation matrix
+  const Double_t* r( fGeoCombiTransInverse.GetRotationMatrix() );
+
+  // store local derivatives
+  SetLocalDerivative( 0, r[3] );
+  SetLocalDerivative( 1, r[3]*(fTrackPos[2] - fTrackPos0[2] ) );
+  SetLocalDerivative( 2, r[4] );
+  SetLocalDerivative( 3, r[4]*(fTrackPos[2] - fTrackPos0[2] ) );
+
+  // set global derivatives
+  SetGlobalDerivative( fDetElemNumber*fgNParCh + 0, -r[3]);
+  SetGlobalDerivative( fDetElemNumber*fgNParCh + 1, -r[4]);
+
+  if( fBFieldOn )
+  {
+
+    // use local position for derivatives vs 'delta_phi'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 2, -r[4]*fTrackPos[0] + r[3]*fTrackPos[1]);
+
+    // use local slopes for derivatives vs 'delta_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 3, r[3]*fTrackSlope[0]+r[4]*fTrackSlope[1] );
+
+  } else {
+
+    // local copy of extrapolated track positions
+    const Double_t trackPosX = fTrackPos0[0]+fTrackSlope0[0]*( fTrackPos[2]-fTrackPos0[2] );
+    const Double_t trackPosY = fTrackPos0[1]+fTrackSlope0[1]*( fTrackPos[2]-fTrackPos0[2] );
+
+    // use properly extrapolated position for derivatives vs 'delta_phi'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 2, -r[4]*trackPosX + r[3]*trackPosY );
+
+    // use slopes at origin for derivatives vs 'delta_z'
+    SetGlobalDerivative( fDetElemNumber*fgNParCh + 3, r[3]*fTrackSlope0[0]+r[4]*fTrackSlope0[1] );
+
+  }
+
+  // store local equation
+  fMillepede->SetLocalEquation( fGlobalDerivatives, fLocalDerivatives, fMeas[1], fSigma[1] );
+
+}
+
+//_________________________________________________________________________
+TGeoCombiTrans AliMUONAlignment::DeltaTransform( const double *lMisAlignment) const
+{
+  /// Get Delta Transformation, based on alignment parameters
+
+  // translation
+  const TGeoTranslation deltaTrans( lMisAlignment[0], lMisAlignment[1], lMisAlignment[3]);
+
+  // rotation
+  TGeoRotation deltaRot;
+  deltaRot.RotateZ(lMisAlignment[2]*180./TMath::Pi());
+
+  // combined rotation and translation.
+  return TGeoCombiTrans(deltaTrans,deltaRot);
+
+}
+
+//______________________________________________________________________
+void AliMUONAlignment::AddConstraint(Double_t *par, Double_t value)
+{
+  /// Constrain equation defined by par to value
+  if( !fInitialized )
+  { AliFatal( "Millepede is not initialized" ); }
+
+  fMillepede->SetGlobalConstraint(par, value);
+}
+
+//______________________________________________________________________
+Bool_t AliMUONAlignment::DetElemIsValid( Int_t iDetElemId ) const
+{
+  /// return true if given detector element is valid (and belongs to muon tracker)
+  const Int_t iCh = iDetElemId/100;
+  const Int_t iDet = iDetElemId%100;
+  return ( iCh > 0 && iCh <= fgNCh && iDet < fgNDetElemCh[iCh-1] );
+}
+
+//______________________________________________________________________
+Int_t AliMUONAlignment::GetDetElemNumber( Int_t iDetElemId ) const
+{
+  /// get det element number from ID
+  // get chamber and element number in chamber
+  const Int_t iCh = iDetElemId/100;
+  const Int_t iDet = iDetElemId%100;
+
+  // make sure detector index is valid
+  if( !( iCh > 0 && iCh <= fgNCh && iDet < fgNDetElemCh[iCh-1] ) )
+  { AliFatal( Form( "Invalid detector element id: %i", iDetElemId ) ); }
+
+  // add number of detectors up to this chamber
+  return iDet + fgSNDetElemCh[iCh-1];
+
+}
+
+//______________________________________________________________________
+Int_t AliMUONAlignment::GetChamberId( Int_t iDetElemNumber ) const
+{
+  /// get chamber (counting from 1) matching a given detector element id
+  Int_t iCh( 0 );
+  for( iCh=0; iCh<fgNCh; iCh++ )
+  { if( iDetElemNumber < fgSNDetElemCh[iCh] ) break; }
+
+  return iCh;
+}
+
+//______________________________________________________________________
+TString AliMUONAlignment::GetParameterMaskString( UInt_t mask ) const
+{
+  TString out;
+  if( mask & ParX ) out += "X";
+  if( mask & ParY ) out += "Y";
+  if( mask & ParZ ) out += "Z";
+  if( mask & ParTZ ) out += "T";
+  return out;
+}
+
+//______________________________________________________________________
+TString AliMUONAlignment::GetSidesMaskString( UInt_t mask ) const
+{
+  TString out;
+  if( mask & SideTop ) out += "T";
+  if( mask & SideLeft ) out += "L";
+  if( mask & SideBottom ) out += "B";
+  if( mask & SideRight ) out += "R";
+  return out;
 }

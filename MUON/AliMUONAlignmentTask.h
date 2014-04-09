@@ -11,34 +11,29 @@
 ///
 //  Author Javier Castillo, CEA/Saclay - Irfu/SPhN
 
-class TList;
-class TString;
-class TGraphErrors;
-class TClonesArray;
-class AliMUONAlignment;
-class AliMUONGeometryTransformer;
-
 #include "AliAnalysisTaskSE.h"
+#include "AliMUONAlignment.h"
+
+class TString;
+class TClonesArray;
+class AliMUONGeometryTransformer;
 
 class AliMUONAlignmentTask : public AliAnalysisTaskSE
 {
 
   public:
 
-
   /// constructor
-  AliMUONAlignmentTask(const char *name = "AliMUONAlignmentTask", const char *newalignocdb = "local://ReAlignOCDB", const char *oldalignocdb = "none", const char *defaultocdb = "raw://", const char *geofilename = "geometry.root");
-
-  /// copy constructor
-  AliMUONAlignmentTask(const AliMUONAlignmentTask& obj);
-
-  /// asignment operator
-  AliMUONAlignmentTask& operator=(const AliMUONAlignmentTask& other);
+  AliMUONAlignmentTask( const char *name = "AliMUONAlignmentTask" );
 
   /// destructor
   virtual ~AliMUONAlignmentTask();
 
-  virtual void   LocalInit();
+  /// get pointer to alignment class
+  AliMUONAlignment* alignment( void ) const
+  { return fAlign; }
+
+  virtual void LocalInit();
 
   ///@name flags
   //@{
@@ -55,42 +50,79 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   void SetDoAlignment( Bool_t value )
   { fDoAlignment = value; }
 
+  /// merge old and new Align CDBs into the new one.
+  void SetMergeAlignmentCDBs( Bool_t value )
+  { fMergeAlignmentCDBs = value; }
+
+  /// field on alignment
+  void SetBFieldOn( Bool_t value )
+  {
+    fForceBField = kTRUE;
+    fBFieldOn = value;
+  }
+
+  /// run range
+  void SetRunRange( Int_t runNumberMin, Int_t runNumberMax )
+  {
+    fRunNumberMin = runNumberMin;
+    fRunNumberMax = runNumberMax;
+  }
+
+  /// use unbiased residuals
+  void SetUnbias(Bool_t value )
+  {
+    fUnbias = value;
+    if( fAlign ) fAlign->SetUnbias( value );
+  }
+
+  /// use unbiased residuals
+  Bool_t GetUnbias() const
+  { return fUnbias; }
+
   //@}
 
   /// output data
   virtual void UserCreateOutputObjects();
 
   /// per-event method
-  virtual void UserExec(Option_t *option);
+  virtual void UserExec( Option_t* );
   virtual void NotifyRun();
 
   /// termination cleanup
-  virtual void Terminate(const Option_t*);
+  virtual void Terminate( const Option_t* )
+  {}
 
   /// end of task execution
   virtual void FinishTaskOutput();
 
-  /// Set geoemetry file name
-  void SetGeoFilename(const char* geoFilename)
-  {fGeoFilename = geoFilename;}
-
   /// Set default ocdb
-  void SetDefaultStorage(const char* defaultOCDB)
-  {fDefaultStorage = defaultOCDB;}
+  void SetDefaultStorage( TString defaultOCDB )
+  { fDefaultStorage = defaultOCDB; }
 
-  /// Set mis align ocdb
-  void SetOldAlignStorage(const char* oldalignOCDB)
-  {fOldAlignStorage = oldalignOCDB;}
+  /// Set old (misaligned) alignment path for ocdb
+  void SetOldAlignStorage( TString oldalignOCDB )
+  { fOldAlignStorage = oldalignOCDB; }
 
-  /// Set mis align ocdb
-  void SetNewAlignStorage(const char* newalignOCDB)
-  {fNewAlignStorage = newalignOCDB;}
+  /// Set new (realigned) alignment path for ocdb
+  void SetNewAlignStorage( TString newalignOCDB )
+  { fNewAlignStorage = newalignOCDB; }
 
-  /// Flag to set OCDB once at first notify
-  void SetLoadOCDBOnce(Bool_t loadOCDBOnce = kTRUE)
-  {fLoadOCDBOnce = loadOCDBOnce;}
+  /// Flag to set OCDB once at first run notify
+  void SetLoadOCDBOnce( Bool_t loadOCDBOnce = kTRUE )
+  { fLoadOCDBOnce = loadOCDBOnce; }
+
+  protected:
+
+  /// store misalignment matrices from OCDB into geometry transformer
+  void SaveMisAlignmentData( AliMUONGeometryTransformer* ) const;
 
   private:
+
+  /// copy constructor, not implemented
+  AliMUONAlignmentTask(const AliMUONAlignmentTask& obj);
+
+  /// asignment operator, not implemented
+  AliMUONAlignmentTask& operator=(const AliMUONAlignmentTask& other);
 
   ///@name flags
   //@{
@@ -104,13 +136,22 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   /// perform alignment (from either tracks or records depending on fReadRecords)
   Bool_t fDoAlignment;
 
+  /// merge old and new Align CDBs into the new one.
+  Bool_t fMergeAlignmentCDBs;
+
+  /// true if magnetic field was forced to value, instead of reading from GRP
+  Bool_t fForceBField;
+
+  /// Flag for Magnetic field On/Off
+  Bool_t fBFieldOn;
+
+  //! use unbiased residuals
+  Bool_t fUnbias;
+
   //@}
 
   /// The MUON alignment object
   AliMUONAlignment *fAlign;
-
-  /// Geometry file name
-  TString fGeoFilename;
 
   /// location of the default OCDB storage
   TString fDefaultStorage;
@@ -127,8 +168,14 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   /// new geometry transformer containing the new alignment to be applied
   AliMUONGeometryTransformer* fNewGeoTransformer;
 
+  /// set to true if not willing to re-initialize OCDB at every new run
   Bool_t fLoadOCDBOnce;
+
+  /// set to true when OCDB was loaded at least once
   Bool_t fOCDBLoaded;
+
+  //! event number (internal counter)
+  Int_t fEvent;
 
   /// Total number of track read
   Int_t fTrackTot;
@@ -136,32 +183,18 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
   /// Number of tracks used for alignment
   Int_t fTrackOk;
 
-  /// Last run number
-  Int_t fLastRunNumber;
+  /// run range
+  Int_t fRunNumberMin;
+  Int_t fRunNumberMax;
 
   /// Array of alignment parameters
-  Double_t fParameters[4*156];
+  Double_t fParameters[AliMUONAlignment::fNGlobal];
 
   /// Array of alignment parameters errors
-  Double_t fErrors[4*156];
+  Double_t fErrors[AliMUONAlignment::fNGlobal];
 
   /// Array of alignment parameters pulls
-  Double_t fPulls[4*156];
-
-  /// Graph of translations along x
-  TGraphErrors *fMSDEx ;
-
-  /// Graph of translations along y
-  TGraphErrors *fMSDEy ;
-
-  /// Graph of translations along z
-  TGraphErrors *fMSDEz ;
-
-  /// Graph of rotation about z
-  TGraphErrors *fMSDEp;
-
-  /// list of graphs
-  TList *fList;
+  Double_t fPulls[AliMUONAlignment::fNGlobal];
 
   /// list of track records
   TClonesArray *fRecords;
