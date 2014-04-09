@@ -39,7 +39,8 @@ public:
   static Double_t GetAODMuonOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv);
   static Double_t GetAODMuonWeightedOffset(AliAODTrack *muon, Double_t xv, Double_t yv, Double_t zv);
 
-  static Bool_t CalculatePCA(TClonesArray *muons, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem);
+  static Bool_t CalculatePCA(AliAODDimuon *dimuon, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem);
+  static Bool_t CalculatePCA(TObjArray *muons, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem);
   static Double_t GetDistanceBetweenPoints(TVector3 **points, Int_t nPoints);
 
   static Double_t GetPseudoProperDecayTimeXY(Double_t xVtx, Double_t yVtx, Double_t xDimu, Double_t yDimu, Double_t mDimu, Double_t ptDimu);

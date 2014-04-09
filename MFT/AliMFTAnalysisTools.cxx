@@ -30,7 +30,7 @@
 #include "TDatabasePDG.h"
 #include "TMath.h"
 #include "AliLog.h"
-#include "TClonesArray.h"
+#include "TObjArray.h"
 
 #include "AliMFTAnalysisTools.h"
 
@@ -203,7 +203,19 @@ Double_t AliMFTAnalysisTools::GetPseudoProperDecayTimeZ(Double_t zVtx,
 
 //====================================================================================================================================================
 
-Bool_t AliMFTAnalysisTools::CalculatePCA(TClonesArray *muons, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem) {
+Bool_t AliMFTAnalysisTools::CalculatePCA(AliAODDimuon *dimuon, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem) {
+
+  TObjArray *muons = new TObjArray();
+  muons -> Add(dimuon->GetMu(0));
+  muons -> Add(dimuon->GetMu(1));
+
+  return CalculatePCA(muons, pca, pcaQuality, kinem);
+
+}
+
+//====================================================================================================================================================
+
+Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double_t &pcaQuality, TLorentzVector &kinem) {
   
   const Int_t nMuons = muons->GetEntriesFast();
   if (nMuons<2 || nMuons>AliMFTConstants::fNMaxMuonsForPCA) {
