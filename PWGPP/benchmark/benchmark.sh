@@ -885,6 +885,9 @@ goGenerateMakeflow()
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}" &>/dev/null; then return 1; fi
  
+  #make sure this is sanely defined in any case
+  [[ -z ${commonOutputPath} ]] && commonOutputPath=${baseOutputDirectory}/${productionID}
+
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
