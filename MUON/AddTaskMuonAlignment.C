@@ -5,6 +5,10 @@
 /// \author Javier Castillo, CEA/Saclay - Irfu/SPhN
 /// \author Hugo Pereira Da Costa, CEA/Saclay - Irfu/SPhN
 
+#include "AliAnalysisManager.h"
+#include "AliMUONAlignmentTask.h"
+#include "AliVEventHandler.h"
+
 AliMUONAlignmentTask *AddTaskMuonAlignment(
   TString oldAlignmentOCDB,
   TString newAlignmentOCDB,
