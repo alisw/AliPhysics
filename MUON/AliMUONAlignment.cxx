@@ -97,7 +97,6 @@ AliMUONAlignment::AliMUONAlignment()
     fCluster( 0L ),
     fNStdDev( 3 ),
     fDetElemNumber( 0 ),
-    fUnbias( kFALSE ),
     fTrackRecord(),
     fTransform( 0 ),
     fGeoCombiTransInverse()
@@ -234,9 +233,6 @@ AliMillePedeRecord* AliMUONAlignment::ProcessTrack( AliMUONTrack* track, Bool_t 
     // fill local variables for this position --> one measurement
     FillDetElemData( cluster );
     FillRecPointData( cluster );
-
-    // unbias and store track parameters
-    if( fUnbias && !UnbiasTrackParamData( trackParam ) ) continue;
     FillTrackParamData( trackParam );
 
     if( first )
@@ -1141,71 +1137,6 @@ void AliMUONAlignment::FillTrackParamData( AliMUONTrackParam* trackParam )
   fTrackPos[2] = trackParam->GetZ();
   fTrackSlope[0] = trackParam->GetNonBendingSlope();
   fTrackSlope[1] = trackParam->GetBendingSlope();
-
-}
-
-//______________________________________________________________________
-Bool_t AliMUONAlignment::UnbiasTrackParamData( AliMUONTrackParam* trackParam ) const
-{
-
-  /**
-  calculate unbiased track parameters at a given detector, that is,
-  after taking out the contribution of the detector's cluster from the track
-  */
-
-  // check track parameters
-  if( !trackParam ) return kFALSE;
-
-  // Remove cluster contibution from smoothed track param
-  TMatrixD smoothParameters( trackParam->GetSmoothParameters() );
-  TMatrixD smoothCovariances( trackParam->GetSmoothCovariances() );
-
-  AliMUONVCluster* cluster = trackParam->GetClusterPtr();
-  // p' = p + K(m - H*p)
-  // K  = C H (-V + H C H^t)^-1
-  // C' = C - K H C
-  // where p,C are smoothed param,cov at cluster position
-  // H is the matrix converting the state vector to measurement
-  // V is the measurement cov.matrix
-  // m is the measurement vector
-  static TMatrixD H(2,5);
-  H.Zero();
-  H(0,0)=H(1,2) = 1.;
-
-  // (-Vk+H_k C^n_k H_k^T)^-1
-  static TMatrixD df(2,2);
-  df.Zero();
-  df(0,0) = smoothCovariances(0,0) - cluster->GetErrX2();
-  df(1,1) = smoothCovariances(2,2) - cluster->GetErrY2();
-  df(0,1) = smoothCovariances(0,2);
-  df(1,0) = smoothCovariances(2,0);
-
-  if (df.Determinant() != 0) df.Invert();
-  else {
-    AliInfo( "Determinant = 0\n" );
-    return kFALSE;
-  }
-
-  // gain matrix
-  TMatrixD kTmp( smoothCovariances, TMatrixD::kMultTranspose, H );
-  TMatrixD K(kTmp, TMatrixD::kMult, df);
-
-  TMatrixD dfc(2,1);
-  dfc.Zero();
-  dfc(0,0) = cluster->GetX()-smoothParameters(0,0);
-  dfc(1,0) = cluster->GetY()-smoothParameters(2,0);
-  TMatrixD tmp0(K,TMatrixD::kMult, dfc);
-  smoothParameters += tmp0;
-
-  TMatrixD tmp1(K,   TMatrixD::kMult, H);
-  TMatrixD tmp2(tmp1,TMatrixD::kMult, smoothCovariances);
-  smoothCovariances -= tmp2;
-
-  // update track parameters
-  trackParam->SetParameters( smoothParameters );
-  trackParam->SetCovariances( smoothCovariances );
-
-  return kTRUE;
 
 }
 

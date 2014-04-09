@@ -110,10 +110,6 @@ class AliMUONAlignment:public TObject
   void SetBFieldOn( Bool_t value )
   { fBFieldOn = value; }
 
-  /// use unbiased residuals
-  void SetUnbias( Bool_t value )
-  { fUnbias = value; }
-
   void SetAllowedVariation( Int_t iPar, Double_t value );
 
   void SetSigmaXY(Double_t sigmaX, Double_t sigmaY);
@@ -228,8 +224,6 @@ class AliMUONAlignment:public TObject
 
   void FillTrackParamData( AliMUONTrackParam* );
 
-  Bool_t UnbiasTrackParamData( AliMUONTrackParam* ) const;
-
   void LocalEquationX( void );
 
   void LocalEquationY( void );
@@ -325,9 +319,6 @@ class AliMUONAlignment:public TObject
 
   /// current detection element number
   Int_t fDetElemNumber;
-
-  /// unbias
-  Bool_t fUnbias;
 
   /// running Track record
   AliMillePedeRecord fTrackRecord;

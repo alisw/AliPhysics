@@ -89,8 +89,9 @@ AliMUONAlignmentTask::AliMUONAlignmentTask( const char *name ):
   fMergeAlignmentCDBs( kTRUE ),
   fForceBField( kFALSE ),
   fBFieldOn( kFALSE ),
-  fUnbias( kFALSE ),
   fAlign(0x0),
+  fDefaultStorage(),
+  fOldAlignStorage(),
   fNewAlignStorage( "local://ReAlignOCDB" ),
   fOldGeoTransformer(0x0),
   fNewGeoTransformer(0x0),
@@ -181,7 +182,6 @@ void AliMUONAlignmentTask::LocalInit()
     // following flags are only relevant if not reading records
     if( fForceBField ) AliInfo( Form( "fBFieldOn: %s", (fBFieldOn ? "kTRUE":"kFALSE" ) ) );
     else AliInfo( "fBFieldOn: from GRP" );
-    AliInfo( Form( "fUnbias: %s", (fUnbias ? "kTRUE":"kFALSE" ) ) );
   }
 
   // consistency checks between flags
@@ -212,9 +212,6 @@ void AliMUONAlignmentTask::LocalInit()
 
   // initialize
   fAlign->Init();
-
-  // use unbiased residuals
-  fAlign->SetUnbias( fUnbias );
 
   // Do alignment with magnetic field off
   fAlign->SetBFieldOn( fBFieldOn );

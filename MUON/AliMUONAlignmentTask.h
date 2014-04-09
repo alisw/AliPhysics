@@ -9,7 +9,8 @@
 /// \class AliMUONAlignmentTask
 /// \brief Task to align the muon spectrometer
 ///
-//  Author Javier Castillo, CEA/Saclay - Irfu/SPhN
+/// \author Javier Castillo, CEA/Saclay - Irfu/SPhN
+/// \author Hugo Pereira Da Costa, CEA/Saclay - Irfu/SPhN
 
 #include "AliAnalysisTaskSE.h"
 #include "AliMUONAlignment.h"
@@ -67,17 +68,6 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
     fRunNumberMin = runNumberMin;
     fRunNumberMax = runNumberMax;
   }
-
-  /// use unbiased residuals
-  void SetUnbias(Bool_t value )
-  {
-    fUnbias = value;
-    if( fAlign ) fAlign->SetUnbias( value );
-  }
-
-  /// use unbiased residuals
-  Bool_t GetUnbias() const
-  { return fUnbias; }
 
   //@}
 
@@ -144,9 +134,6 @@ class AliMUONAlignmentTask : public AliAnalysisTaskSE
 
   /// Flag for Magnetic field On/Off
   Bool_t fBFieldOn;
-
-  //! use unbiased residuals
-  Bool_t fUnbias;
 
   //@}
 
