@@ -64,7 +64,7 @@ updateQA()
   echo "logFile = $logFile"
 
   #check lock
-  lockFile=${logDirectory}/runQA.lock
+  lockFile=${workingDirectory}/runQA.lock
   [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
   [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
@@ -493,6 +493,8 @@ guessRunData()
   pass=""
   legoTrainRunNumber=""
   dataType=""
+  originalPass=""
+  originalPeriod=""
 
   local shortRunNumber=""
   oldIFS=${IFS}
@@ -509,15 +511,16 @@ guessRunData()
 
     [[ ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
     [[ -n ${legoTrainRunNumber} && -z ${pass} ]] && pass=${fieldPrev}
-    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*}
+    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*} && originalPeriod=${field}
     [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000}
     [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
     [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
     (( i++ ))
   done
+  originalPass=${pass}
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
+  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass=""
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
   #modify the OCDB: set the year

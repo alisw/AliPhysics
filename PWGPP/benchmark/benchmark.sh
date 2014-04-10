@@ -121,6 +121,7 @@ goCPass0()
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
   cd ${runpath}
+  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
 
   #runCPassX/C expects the raw chunk to be linked in the run dir
   #despite it being accessed by the full path
@@ -201,6 +202,7 @@ goCPass0()
 
   for file in ${filesCPass0[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
+    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
 
   echo "this directory (${PWD}) contents:"
@@ -320,6 +322,7 @@ goCPass1()
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
   cd ${runpath}
+  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
 
   #this is needed for runCPass1.sh
   ln -s ${infile} ${runpath}/${chunkName}
@@ -370,6 +373,7 @@ goCPass1()
 
   for file in ${filesCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
+    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
 
   echo "this directory (${PWD}) contents:"
@@ -535,6 +539,7 @@ goMergeCPass0()
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
   cd ${runpath}
+  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -565,6 +570,7 @@ goMergeCPass0()
   )
   for file in ${filesMergeCPass0[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
+    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
   
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
@@ -670,6 +676,7 @@ goMergeCPass1()
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
   cd ${runpath}
+  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -710,6 +717,7 @@ goMergeCPass1()
   )
   for file in ${filesMergeCPass1[*]}; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
+    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
   done
 
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
@@ -885,6 +893,12 @@ goGenerateMakeflow()
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}" &>/dev/null; then return 1; fi
  
+  #extra safety
+  if [[ -z ${commonOutputPath} ]]; then
+    commonOutputPath=${baseOutputDirectory}/${productionID}
+    extraOpts=( "${extraOpts[@]}" "commonOutputPath=${commonOutputPath}" )
+  fi
+
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
@@ -1008,7 +1022,7 @@ goGenerateMakeflow()
   done #runs
 
   #Summary
-  echo "summary.log : benchmark.sh ${configFile} ${arr_cpass1_merged[*]}"
+  echo "${commonOutputPath}/summary.log : benchmark.sh ${configFile} ${arr_cpass1_merged[*]}"
   echo -n "  ${alirootEnv} ./benchmark.sh MakeSummary ${configFile}"" "
   for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
   echo
@@ -1345,6 +1359,7 @@ goMakeFilteredTrees()
   mkdir -p ${runpath}
 
   cd ${runpath}
+  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
   
   cat > filtering.log << EOF
   goMakeFilteredTrees config:
