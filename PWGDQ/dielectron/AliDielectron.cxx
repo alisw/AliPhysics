@@ -1468,20 +1468,27 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
 }
 
 //______________________________________________
-THnBase* AliDielectron::InitEffMap(TString filename)
+TObject* AliDielectron::InitEffMap(TString filename)
 {
   // init an efficiency object for on-the-fly correction calculations
   if(filename.Contains("alien://") && !gGrid) TGrid::Connect("alien://",0,0,"t");
 
   TFile* file=TFile::Open(filename.Data());
   if(!file) return 0x0;
+
+  // NOTE: the spline must have the 'variable name' stored in its fHistogram
+  TSpline3 *hEff = (TSpline3*) file->Get("hEfficiency");
+  //if(hEff) printf("we use a TSpline!!!!!!!!!!! \n");
+  if(hEff) return (hEff->Clone("effMap"));
+
+
   THnBase *hGen = (THnBase*) file->Get("hGenerated");
   THnBase *hFnd = (THnBase*) file->Get("hFound");
   if(!hFnd || !hGen) return 0x0;
 
   hFnd->Divide(hGen);
   printf("[I] AliDielectron::InitEffMap efficiency maps %s with %d dimensions loaded! \n",filename.Data(),hFnd->GetNdimensions());
-  return ((THnBase*) hFnd->Clone("effMap"));
+  return (hFnd->Clone("effMap"));
 }
 
 //________________________________________________________________
