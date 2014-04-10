@@ -70,7 +70,12 @@ fLeadingJetOnly(kFALSE),
 fJetRadius(0),
 fCandidateArray(0),
 fSideBandArray(0),
-fJetOnlyMode(0)
+fJetOnlyMode(0),
+fPmissing(),
+fPtJet(0),
+fIsDInJet(0),
+fTypeDInJet(2),
+fTrackArr(0)
 {
    //
    // Default ctor
@@ -99,7 +104,12 @@ fLeadingJetOnly(kFALSE),
 fJetRadius(0),
 fCandidateArray(0),
 fSideBandArray(0),
-fJetOnlyMode(jetOnly)
+fJetOnlyMode(jetOnly),
+fPmissing(),
+fPtJet(0),
+fIsDInJet(0),
+fTypeDInJet(2),
+fTrackArr(0)
 {
    //
    // Constructor. Initialization of Inputs and Outputs
@@ -229,7 +239,6 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
    
    TClonesArray *arrayDStartoD0pi=0;
-   TClonesArray *trackArr = 0;
    
    if (!aodEvent && AODEvent() && IsStandardAOD()) {
       
@@ -265,12 +274,12 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    }
    
    //retrieve jets
-   trackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoTracks"));
+   fTrackArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("PicoTracks"));
    //clusArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClustersCorr"));
    //jetArr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fJetArrName));
    fJetRadius=GetJetContainer(0)->GetJetRadius();
    
-   if(!trackArr){
+   if(!fTrackArr){
       AliInfo(Form("Could not find the track array\n"));
       return kFALSE;
    }
@@ -403,11 +412,11 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    Double_t leadingJet =0;
    Double_t pointJ[6];
    
-   Int_t ntrarr=trackArr->GetEntriesFast();
+   Int_t ntrarr=fTrackArr->GetEntriesFast();
    hNtrArr->Fill(ntrarr);
    
    for(Int_t i=0;i<ntrarr;i++){
-      AliVTrack *jtrack=static_cast<AliVTrack*>(trackArr->At(i));
+      AliVTrack *jtrack=static_cast<AliVTrack*>(fTrackArr->At(i));
       //reusing histograms
       hPtJetTrks->Fill(jtrack->Pt());
       hPhiJetTrks->Fill(jtrack->Phi());
@@ -441,7 +450,8 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       ejet   = jet->E();
       phiJet = jet->Phi();
       etaJet = jet->Eta();
-      ptjet = jet->Pt();
+      fPtJet = jet->Pt();
+      Double_t origPtJet=fPtJet;
       pointJ[0] = phiJet;
       pointJ[1] = etaJet;
       pointJ[2] = ptjet;
@@ -458,53 +468,83 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       hEjet   ->Fill(ejet);
       hPhiJet ->Fill(phiJet);
       hEtaJet ->Fill(etaJet);
-      hPtJet  ->Fill(ptjet);
+      hPtJet  ->Fill(fPtJet);
       if(fJetOnlyMode) hsJet->Fill(pointJ,1);
       //loop on jet particles
       Int_t ntrjet=  jet->GetNumberOfTracks();    
       for(Int_t itrk=0;itrk<ntrjet;itrk++){
       	 
-      	 AliPicoTrack* jetTrk=(AliPicoTrack*)jet->TrackAt(itrk,trackArr);     
+      	 AliPicoTrack* jetTrk=(AliPicoTrack*)jet->TrackAt(itrk,fTrackArr);     
       	 hdeltaRJetTracks->Fill(DeltaR(jet,jetTrk));
       	 
       }//end loop on jet tracks
       
       if(candidates==0){
       	 hstat->Fill(7);
-      	 hPtJetPerEvNoD->Fill(jet->Pt());
+      	 hPtJetPerEvNoD->Fill(fPtJet);
       }
       if(!fJetOnlyMode) {
-      //Printf("N candidates %d ", candidates);
-      for(Int_t ic = 0; ic < candidates; ic++) {
+      	 //Printf("N candidates %d ", candidates);
+      	 for(Int_t ic = 0; ic < candidates; ic++) {
+      	    
+      	    // D* candidates
+      	    AliVParticle* charm=0x0;
+      	    charm=(AliVParticle*)fCandidateArray->At(ic);
+      	    if(!charm) continue;
+      	    AliAODRecoDecayHF *charmdecay=(AliAODRecoDecayHF*) charm;
+      	    fIsDInJet=IsDInJet(jet, charmdecay, kTRUE);
+      	    if (fIsDInJet) FlagFlavour(jet);
+      	    if (jet->TestFlavourTag(AliEmcalJet::kDStar)) hstat->Fill(4);
+      	    
+      	    //Note: the z component of the jet momentum comes from the eta-phi direction of the jet particles, it is not calculated from the z component of the tracks since, as default, the scheme used for jet reco is the pt-scheme which sums the scalar component, not the vectors. Addind the D daughter momentum component by componet as done here is not 100% correct, but the difference is small, for fairly collimated particles.
+
+      	    Double_t pjet[3];
+      	    jet->PxPyPz(pjet);
+      	    RecalculateMomentum(pjet,fPmissing);      	          	    
+      	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	    
+      	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]);
+      	    
+      	    ((TH1F*)fOutput->FindObject("hmissingp"))->Fill(pmissing);
+      	    Double_t ptdiff=fPtJet-origPtJet;
+      	    ((TH1F*)fOutput->FindObject("hDeltaPtJet"))->Fill(ptdiff);
+      	    ((TH1F*)fOutput->FindObject("hRelDeltaPtJet"))->Fill(ptdiff/origPtJet);
+      	    
+      	    FillHistogramsRecoJetCorr(charm, jet, aodEvent);
+      	    
+      	 }//end loop on candidates
       	 
-      	 // D* candidates
-      	 AliVParticle* charm=0x0;
-      	 charm=(AliVParticle*)fCandidateArray->At(ic);
-      	 if(!charm) continue;
+      	 //retrieve side band background candidates for Dstar
+      	 Int_t nsbcand = 0; if(fSideBandArray) nsbcand=fSideBandArray->GetEntriesFast();
       	 
-      	 
-      	 FlagFlavour(charm, jet);
-      	 if (jet->TestFlavourTag(AliEmcalJet::kDStar)) hstat->Fill(4);
-      	 
-      	 FillHistogramsRecoJetCorr(charm, jet, aodEvent);
-      	 
-      }
-      //retrieve side band background candidates for Dstar
-      Int_t nsbcand = 0; if(fSideBandArray) nsbcand=fSideBandArray->GetEntriesFast();
-      
-      for(Int_t ib=0;ib<nsbcand;ib++){
-      	 if(fCandidateType==kDstartoKpipi && !fUseMCInfo){
-      	    AliAODRecoCascadeHF *sbcand=(AliAODRecoCascadeHF*)fSideBandArray->At(ib);
-      	    if(!sbcand) continue;
-      	    SideBandBackground(sbcand,jet);
+      	 for(Int_t ib=0;ib<nsbcand;ib++){
+      	    if(fCandidateType==kDstartoKpipi && !fUseMCInfo){
+      	       AliAODRecoCascadeHF *sbcand=(AliAODRecoCascadeHF*)fSideBandArray->At(ib);
+      	       if(!sbcand) continue;
+      	       
+      	       fIsDInJet=IsDInJet(jet, sbcand,kFALSE);
+      	       Double_t pjet[3];
+      	       jet->PxPyPz(pjet);
+      	       RecalculateMomentum(pjet,fPmissing);      	          	    
+      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	       
+     	       SideBandBackground(sbcand,jet);
+     	       
+      	    }
+      	    if(fUseMCInfo){
+      	       AliAODRecoDecayHF* charmbg = 0x0;
+      	       charmbg=(AliAODRecoDecayHF*)fCandidateArray->At(ib);
+      	       if(!charmbg) continue;
+      	       fIsDInJet=IsDInJet(jet, charmbg,kFALSE);
+      	       
+      	       Double_t pjet[3];
+      	       jet->PxPyPz(pjet);
+      	       RecalculateMomentum(pjet,fPmissing);      	          	    
+      	       fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
+      	       
+      	       MCBackground(charmbg);
+      	    }
       	 }
-      	 if(fUseMCInfo){
-      	    AliAODRecoDecayHF* charmbg = 0x0;
-      	    charmbg=(AliAODRecoDecayHF*)fCandidateArray->At(ib);
-      	    if(!charmbg) continue;
-      	    MCBackground(charmbg,jet);
-      	 }
-      }
       }
    } // end of jet loop
    
@@ -594,9 +634,21 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
       printf("Problems getting momenta\n");
       return -999;
    }
-   Double_t pjet=jet->P();
-   Double_t z=(p[0]*pj[0]+p[1]*pj[1]+p[2]*pj[2])/(pjet*pjet);
+   
+   RecalculateMomentum(pj, fPmissing);
+   Double_t pjet2=pj[0]*pj[0]+pj[1]*pj[1]+pj[2]*pj[2];
+   Double_t z=(p[0]*pj[0]+p[1]*pj[1]+p[2]*pj[2])/(pjet2);
    return z;
+}
+
+//_______________________________________________________________________________
+
+void AliAnalysisTaskFlavourJetCorrelations::RecalculateMomentum(Double_t* pj, const Double_t* pmissing) const {
+
+   pj[0]+=pmissing[0];
+   pj[1]+=pmissing[1];
+   pj[2]+=pmissing[2];
+
 }
 
 //_______________________________________________________________________________
@@ -690,6 +742,34 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    }
 
    if(!fJetOnlyMode){
+   TH1I* hControlDInJ=new TH1I("hControlDInJ","Checks D in Jet",8, -0.5,7.5);
+   hControlDInJ->GetXaxis()->SetBinLabel(1,"DR In,1 daugh out");
+   hControlDInJ->GetXaxis()->SetBinLabel(2,"DR In,2 daugh out");
+   hControlDInJ->GetXaxis()->SetBinLabel(3,"DR In,3 daugh out");
+   hControlDInJ->GetXaxis()->SetBinLabel(4,"Tot tracks non matched");
+   hControlDInJ->GetXaxis()->SetBinLabel(5,"D0 daug missing");
+   hControlDInJ->GetXaxis()->SetBinLabel(6,"soft pi missing");
+   hControlDInJ->GetXaxis()->SetBinLabel(7,"IDprong diff GetDau");
+   hControlDInJ->GetXaxis()->SetBinLabel(8,"still z>1 (cand)");
+   
+   hControlDInJ->SetNdivisions(1);
+   hControlDInJ->GetXaxis()->SetLabelSize(0.05);
+   fOutput->Add(hControlDInJ);
+   
+   TH1F *hmissingp=new TH1F("hmissingp", "Distribution of missing momentum (modulo)", 50, 0.,30.);
+   fOutput->Add(hmissingp);
+   TH1F *hDeltaPtJet=new TH1F("hDeltaPtJet", "Difference between the jet pt before and after correction", 50, 0.,30.);
+   fOutput->Add(hDeltaPtJet);
+   TH1F *hRelDeltaPtJet=new TH1F("hRelDeltaPtJet", "Difference between the jet pt before and after correction/ original pt", 200, 0.,2.);
+   fOutput->Add(hRelDeltaPtJet);
+   
+   TH1I* hIDddaugh=new TH1I("hIDddaugh", "ID of daughters", 2001,-1000,1000);
+   fOutput->Add(hIDddaugh);
+   TH1I* hIDddaughOut=new TH1I("hIDddaughOut", "ID of daughters not found in jet", 2001,-1000,1000);
+   fOutput->Add(hIDddaughOut);
+   TH1I* hIDjetTracks=new TH1I("hIDjetTracks", "ID of jet tracks", 2001,-1000,1000);
+   fOutput->Add(hIDjetTracks);
+
       if(fCandidateType==kDstartoKpipi) 
       {
       	 
@@ -788,12 +868,13 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
 void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet,  AliAODEvent* aodEvent){
    
    Double_t ptD=candidate->Pt();
-   Double_t ptjet=jet->Pt();
    Double_t deltaR=DeltaR(candidate,jet);
-   Double_t deltaphi = jet->Phi()-candidate->Phi();
-   if(deltaphi<=-(TMath::Pi())/2) deltaphi = deltaphi+2*(TMath::Pi());
-   if(deltaphi>(3*(TMath::Pi()))/2) deltaphi = deltaphi-2*(TMath::Pi());
+   Double_t phiD=candidate->Phi();
+   Double_t deltaphi = jet->Phi()-phiD;
+   if(deltaphi<=-(TMath::Pi())/2.) deltaphi = deltaphi+2.*(TMath::Pi());
+   if(deltaphi>(3.*(TMath::Pi()))/2.) deltaphi = deltaphi-2.*(TMath::Pi());
    Double_t z=Z(candidate,jet);
+   if(z>1) ((TH1I*)fOutput->FindObject("hControlDInJ"))->Fill(7);
    
    TH1F* hDeltaRD=(TH1F*)fOutput->FindObject("hDeltaRD");
    hDeltaRD->Fill(deltaR); 
@@ -801,24 +882,24 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVPartic
       if(fCandidateType==kD0toKpi) {
       	 AliAODRecoDecayHF* dzero=(AliAODRecoDecayHF*)candidate;
       	 
-      	 FillHistogramsD0JetCorr(dzero,deltaphi,z,ptD,ptjet,deltaR, aodEvent);
+      	 FillHistogramsD0JetCorr(dzero,deltaphi,phiD,z,ptD,fPtJet, aodEvent);
       	 
       }
       
       if(fCandidateType==kDstartoKpipi) {
       	 AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)candidate;
-      	 FillHistogramsDstarJetCorr(dstar,deltaphi,z,ptD,ptjet,deltaR);
+      	 FillHistogramsDstarJetCorr(dstar,deltaphi,phiD,z,ptD,fPtJet);
       	 
       }
    } else{ //generated level
       //AliInfo("Non reco");
-      FillHistogramsMCGenDJetCorr(deltaphi,z,ptD,ptjet,deltaR);
+      FillHistogramsMCGenDJetCorr(deltaphi,phiD,z,ptD,fPtJet);
    }
 }
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj,Double_t deltaR, AliAODEvent* aodEvent){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, AliAODEvent* aodEvent){
 
 
    Double_t masses[2]={0.,0.};
@@ -830,20 +911,20 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
    
    TH3F* hPtJetWithD=(TH3F*)fOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
-   Double_t point[7]={z,dPhi,ptj,ptD,masses[0],0, deltaR<fJetRadius ? 1 : 0};
+   Double_t point[8]={z,dPhi,ptj,ptD,masses[0],0, fIsDInJet ? 1 : 0,phiD};
    Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
    if(isselected==1 || isselected==3) {
       
-      if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[0],ptD);
+      if(fIsDInJet) hPtJetWithD->Fill(ptj,masses[0],ptD);
       
-      FillMassHistograms(masses[0], ptD, deltaR);
+      FillMassHistograms(masses[0], ptD);
       hsDphiz->Fill(point,1.);
    }
    if(isselected>=2) {
-      if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,masses[1],ptD);
+      if(fIsDInJet) hPtJetWithD->Fill(ptj,masses[1],ptD);
       
-      FillMassHistograms(masses[1], ptD, deltaR);
+      FillMassHistograms(masses[1], ptD);
       point[4]=masses[1];
       hsDphiz->Fill(point,1.);
    }
@@ -852,7 +933,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t z, Double_t ptD, Double_t ptj, Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi,  Double_t phiD, Double_t z, Double_t ptD, Double_t ptj){
   //dPhi and z not used at the moment,but will be (re)added
 
    AliAODTrack *softpi = (AliAODTrack*)dstar->GetBachelor();
@@ -867,29 +948,29 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
    Int_t isSB=0;//IsDzeroSideBand(dstar);
    
-   Double_t point[7]={z,dPhi,ptj,ptD,deltamass,isSB, deltaR<fJetRadius ? 1 : 0};
+   Double_t point[8]={z,dPhi,ptj,ptD,deltamass,isSB, fIsDInJet ? 1 : 0,phiD};
 
-   if(deltaR<fJetRadius) hPtJetWithD->Fill(ptj,deltamass,ptD);
+   if(fIsDInJet) hPtJetWithD->Fill(ptj,deltamass,ptD);
    
-   FillMassHistograms(deltamass, ptD, deltaR);
+   FillMassHistograms(deltamass, ptD);
    hsDphiz->Fill(point,1.);
    
 }
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t dPhi,Double_t z,Double_t ptD,Double_t ptjet,Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t dPhi,Double_t phiD,Double_t z,Double_t ptD,Double_t ptjet){
    
    Double_t pdgmass=0;
    TH3F* hPtJetWithD=(TH3F*)fOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
-   Double_t point[7]={z,dPhi,ptjet,ptD,pdgmass,0, deltaR<fJetRadius ? 1 : 0};
+   Double_t point[8]={z,dPhi,ptjet,ptD,pdgmass,0, fIsDInJet ? 1 : 0,phiD};
 
    if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    if(fCandidateType==kDstartoKpipi) pdgmass=TDatabasePDG::Instance()->GetParticle(413)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass();
    point[4]=pdgmass;
    hsDphiz->Fill(point,1.);
-   if(deltaR<fJetRadius) {
+   if(fIsDInJet) {
      hPtJetWithD->Fill(ptjet,pdgmass,ptD); // candidates within a jet
    }
    
@@ -897,9 +978,9 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FillMassHistograms(Double_t mass,Double_t ptD, Double_t deltaR){
+void AliAnalysisTaskFlavourJetCorrelations::FillMassHistograms(Double_t mass,Double_t ptD){
    
-   if(deltaR<fJetRadius) {
+   if(fIsDInJet) {
       TH2F* hInvMassptD=(TH2F*)fOutput->FindObject("hInvMassptD");
       hInvMassptD->Fill(mass,ptD);
    }
@@ -907,11 +988,11 @@ void AliAnalysisTaskFlavourJetCorrelations::FillMassHistograms(Double_t mass,Dou
 
 //________________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::FlagFlavour(AliVParticle *charm, AliEmcalJet *jet){
-   Double_t deltaR=DeltaR(charm, jet);
+void AliAnalysisTaskFlavourJetCorrelations::FlagFlavour(AliEmcalJet *jet){
+   
    AliEmcalJet::EFlavourTag tag=AliEmcalJet::kDStar;
    if (fCandidateType==kD0toKpi) tag=AliEmcalJet::kD0;
-   if (deltaR<fJetRadius) jet->AddFlavourTag(tag);
+   if (fIsDInJet) jet->AddFlavourTag(tag);
    
    return;
    
@@ -932,29 +1013,28 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    //Printf("Inv mass = %f between %f and %f or %f and %f?",invM, sixSigmal,fourSigmal,fourSigmar,sixSigmar);
    Double_t z=Z(candDstar,jet);
    Double_t ptD=candDstar->Pt();
-   Double_t ptjet=jet->Pt();
+
    Double_t dPhi=jet->Phi()-candDstar->Phi();
-   Double_t deltaR=DeltaR(candDstar,jet);
-   if(dPhi>TMath::Pi())dPhi = dPhi - 2.*TMath::Pi();
-   if(dPhi<(-1.*TMath::Pi()))dPhi = dPhi + 2.*TMath::Pi();
+
+   if(dPhi<=-(TMath::Pi())/2) dPhi = dPhi+2*(TMath::Pi());
+   if(dPhi>(3*(TMath::Pi()))/2) dPhi = dPhi-2*(TMath::Pi());
    
    Int_t isSideBand=1;//IsDzeroSideBand(candDstar);
-   Double_t point[7]={z,dPhi,ptjet,ptD,deltaM,isSideBand, deltaR<fJetRadius ? 1 : 0};
+   Double_t point[7]={z,dPhi,fPtJet,ptD,deltaM,isSideBand, fIsDInJet ? 1 : 0};
    //fill the background histogram with the side bands or when looking at MC with the real background
    if(isSideBand==1){
       hDiffSideBand->Fill(deltaM,ptD); // M(Kpipi)-M(Kpi) side band background    
       //hdeltaPhiDjaB->Fill(deltaM,ptD,dPhi);
       hsDphiz->Fill(point,1.);
-      if(deltaR<fJetRadius){  // evaluate in the near side	
-      	 //hzptDB->Fill(Z(candDstar,jet),deltaM,ptD);
-      	 hPtJetWithDsb->Fill(ptjet,deltaM,ptD);
+      if(fIsDInJet){  // evaluate in the near side	
+      	 hPtJetWithDsb->Fill(fPtJet,deltaM,ptD);
       }
    }
 }
 
 //_______________________________________________________________________________
 
-void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *candbg, AliEmcalJet *jet){
+void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *candbg){
    
    //need mass, deltaR, pt jet, ptD
    //two cases: D0 and Dstar
@@ -963,8 +1043,6 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
    if(!isselected) return;
    
    Double_t ptD=candbg->Pt();
-   Double_t ptjet=jet->Pt();
-   Double_t deltaR=DeltaR(candbg,jet);
    
    TH2F* hInvMassptDbg=(TH2F*)fOutput->FindObject("hInvMassptDbg");
    TH3F* hPtJetWithDsb=(TH3F*)fOutput->FindObject("hPtJetWithDsb");
@@ -974,7 +1052,7 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
       AliAODRecoCascadeHF* dstarbg = (AliAODRecoCascadeHF*)candbg;
       Double_t deltaM=dstarbg->DeltaInvMass();
       hInvMassptDbg->Fill(deltaM,ptD);
-      if(deltaR<fJetRadius) hPtJetWithDsb->Fill(ptjet,deltaM,ptD);
+      if(fIsDInJet) hPtJetWithDsb->Fill(fPtJet,deltaM,ptD);
    }
    
    if(fCandidateType==kD0toKpi){
@@ -987,11 +1065,11 @@ void AliAnalysisTaskFlavourJetCorrelations::MCBackground(AliAODRecoDecayHF *cand
       
       
       if(isselected==1 || isselected==3) {
-      	 if(deltaR<fJetRadius) hPtJetWithDsb->Fill(ptjet,masses[0],ptD);
+      	 if(fIsDInJet) hPtJetWithDsb->Fill(fPtJet,masses[0],ptD);
       	 hInvMassptDbg->Fill(masses[0],ptD);
       }
       if(isselected>=2) {
-      	 if(deltaR<fJetRadius) hPtJetWithDsb->Fill(ptjet,masses[1],ptD);
+      	 if(fIsDInJet) hPtJetWithDsb->Fill(fPtJet,masses[1],ptD);
       	 hInvMassptDbg->Fill(masses[1],ptD);
       }
       
@@ -1039,4 +1117,157 @@ Int_t AliAnalysisTaskFlavourJetCorrelations::IsDzeroSideBand(AliAODRecoCascadeHF
    if((invM>=sixSigmal && invM<fourSigmal) || (invM>fourSigmar && invM<=sixSigmar)) return 1;
    else return 0;   
 
+}
+
+//_______________________________________________________________________________
+
+Bool_t AliAnalysisTaskFlavourJetCorrelations::AreDaughtersInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Int_t*& daughOutOfJetID, AliAODTrack**& dtrks, Bool_t fillH){
+   //returns true/false and the array of particles not found among jet constituents
+   
+   TH1I* hControlDInJ=(TH1I*)fOutput->FindObject("hControlDInJ");
+   TH1I* hIDddaugh   =(TH1I*)fOutput->FindObject("hIDddaugh");
+   TH1I* hIDddaughOut=(TH1I*)fOutput->FindObject("hIDddaughOut");
+   TH1I* hIDjetTracks=(TH1I*)fOutput->FindObject("hIDjetTracks");
+   
+   Int_t daughtersID[3];
+   Int_t ndaugh=0;
+   Int_t dmatchedID[3]={0,0,0};
+   Int_t countmatches=0;
+   if (fCandidateType==kDstartoKpipi){
+      AliAODRecoCascadeHF* dstar = (AliAODRecoCascadeHF*)charm;
+      AliAODRecoDecayHF2Prong* dzero=dstar->Get2Prong();
+      daughtersID[0]=dzero->GetProngID(0);
+      daughtersID[1]=dzero->GetProngID(1);
+      daughtersID[2]=dstar->GetBachelor()->GetID();
+      ndaugh=3;
+     
+      dtrks=new AliAODTrack*[3];
+      dtrks[0]=(AliAODTrack*)dzero->GetDaughter(0);
+      dtrks[1]=(AliAODTrack*)dzero->GetDaughter(1);
+      dtrks[2]=(AliAODTrack*)dstar->GetBachelor();
+  
+      //check
+      if(fillH){
+      	 if(daughtersID[0]!=((AliAODTrack*)dtrks[0])->GetID() || daughtersID[1]!=((AliAODTrack*)dtrks[1])->GetID())  hControlDInJ->Fill(6);
+      	 
+      	 hIDddaugh->Fill(daughtersID[0]);
+      	 hIDddaugh->Fill(daughtersID[1]);
+      	 hIDddaugh->Fill(daughtersID[2]);
+      	 
+      }
+      //Printf("ID daughters %d, %d, %d",daughtersID[0], daughtersID[1], daughtersID[2]);
+   }
+   
+   if (fCandidateType==kD0toKpi){
+      daughtersID[0]=charm->GetProngID(0);
+      daughtersID[1]=charm->GetProngID(1);
+      ndaugh=2;
+      if(fillH){
+      	 hIDddaugh->Fill(daughtersID[0]);
+      	 hIDddaugh->Fill(daughtersID[1]);
+      }
+      dtrks=new AliAODTrack*[2];
+      dtrks[0]=(AliAODTrack*)charm->GetDaughter(0);
+      dtrks[1]=(AliAODTrack*)charm->GetDaughter(1);
+
+   }
+   
+   const Int_t cndaugh=ndaugh;
+   daughOutOfJetID=new Int_t[cndaugh];
+
+   Int_t nchtrk=thejet->GetNumberOfTracks();
+   for(Int_t itk=0;itk<nchtrk;itk++){
+      AliVTrack* tkjet=((AliPicoTrack*)thejet->TrackAt(itk,fTrackArr))->GetTrack();
+      Int_t idtkjet=tkjet->GetID();
+      if(fillH) hIDjetTracks->Fill(idtkjet);
+      for(Int_t id=0;id<ndaugh;id++){
+      	 if(idtkjet==daughtersID[id]) {
+      	    dmatchedID[id]=daughtersID[id]; //daughter which matches a track in the jet
+      	    countmatches++;
+      	    
+      	 }
+      	 
+      	 if(countmatches==ndaugh) break;
+      }
+   }
+   //reverse: include in the array the ID of daughters not matching
+
+   for(Int_t id=0;id<ndaugh;id++){
+      if(dmatchedID[id]==0) {
+      	 daughOutOfJetID[id]=daughtersID[id];
+      	 if(fillH) hIDddaughOut->Fill(daughOutOfJetID[id]);
+      }
+      else daughOutOfJetID[id]=0;
+   }
+   if(fillH){
+      if((ndaugh-countmatches) == 1) hControlDInJ->Fill(0);
+      if((ndaugh-countmatches) == 2) hControlDInJ->Fill(1);
+      if((ndaugh-countmatches) == 3) hControlDInJ->Fill(2);
+   }
+   if(ndaugh!=countmatches){
+      return kFALSE;
+   }
+   
+   return kTRUE;
+}
+
+//_______________________________________________________________________________
+
+Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliAODRecoDecayHF* charm, Bool_t fillH){
+   
+   //check the conditions type:
+   //type 0 : DeltaR < jet radius, don't check daughters (and don't correct pt jet) 
+   //type 1 : DeltaR < jet radius and check for all daughters among jet tracks, don't correct ptjet
+   //type 2 (default) : DeltaR < jet radius and check for all daughters among jet tracks, if not present, correct the ptjet
+    
+   TH1I* hControlDInJ=(TH1I*)fOutput->FindObject("hControlDInJ");
+   
+   Bool_t testDeltaR=kFALSE;
+   if(DeltaR(thejet,charm)<fJetRadius) testDeltaR=kTRUE;
+   
+   Int_t* daughOutOfJet;
+   AliAODTrack** charmDaugh;
+   Bool_t testDaugh=AreDaughtersInJet(thejet, charm, daughOutOfJet,charmDaugh,fillH);
+   if(!testDaugh && testDeltaR && fTypeDInJet==2){
+      
+      Int_t ndaugh=3;
+      if(fCandidateType==kD0toKpi) ndaugh=2;
+      Int_t nOut=ndaugh;
+      
+      fPmissing[0]=0; 
+      fPmissing[1]=0;
+      fPmissing[2]=0;
+      for(Int_t id=0;id<ndaugh;id++){
+      	 if(daughOutOfJet[id]!=0){ //non-matched daughter
+      	    //get track and its momentum
+      	    nOut--;
+      	    if(fillH) {
+      	       hControlDInJ->Fill(3);
+      	       if(id<2) hControlDInJ->Fill(4);
+      	       if(id==2)hControlDInJ->Fill(5);
+      	    }
+      	    fPmissing[0]+=charmDaugh[id]->Px(); 
+      	    fPmissing[1]+=charmDaugh[id]->Py();
+      	    fPmissing[2]+=charmDaugh[id]->Pz();
+      	 }
+      
+      }
+      
+      //now the D in within the jet
+      testDaugh=kTRUE;
+   
+   }
+   
+   delete[] charmDaugh;
+   
+   Bool_t result=0;
+   switch(fTypeDInJet){
+   case 0:
+      result=testDeltaR;
+   case 1:
+      result=testDeltaR && testDaugh;
+   case 2:
+      result=testDeltaR && testDaugh;
+   }
+ return result;
 }
