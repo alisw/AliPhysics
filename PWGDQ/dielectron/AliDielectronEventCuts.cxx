@@ -45,6 +45,7 @@ const char* AliDielectronEventCuts::fgkVtxNames[AliDielectronEventCuts::kVtxTrac
 
 AliDielectronEventCuts::AliDielectronEventCuts() :
   AliAnalysisCuts(),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fRun(),
   fVtxZmin(0.),
   fVtxZmax(0.),
@@ -69,12 +70,16 @@ AliDielectronEventCuts::AliDielectronEventCuts() :
   //
   // Default Constructor
   //
-  
+  for (Int_t icut=0; icut<5; ++icut){
+    fCorrCutMin[icut]=0x0;
+    fCorrCutMax[icut]=0x0;
+  }
 }
 
 //______________________________________________
 AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* title) :
   AliAnalysisCuts(name, title),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fRun(),
   fVtxZmin(0.),
   fVtxZmax(0.),
@@ -99,6 +104,10 @@ AliDielectronEventCuts::AliDielectronEventCuts(const char* name, const char* tit
   //
   // Named Constructor
   //
+  for (Int_t icut=0; icut<5; ++icut){
+    fCorrCutMin[icut]=0x0;
+    fCorrCutMax[icut]=0x0;
+  }
 }
 
 //______________________________________________
@@ -107,6 +116,7 @@ AliDielectronEventCuts::~AliDielectronEventCuts()
   //
   // Default Destructor
   //
+  if (fUsedVars) delete fUsedVars;
   if (fTriggerAnalysis) delete fTriggerAnalysis;
 }
 
@@ -234,6 +244,30 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   AliAODEvent *ev=dynamic_cast<AliAODEvent*>(event);
   if (!ev) return kFALSE;
 
+  //Fill values
+  Double_t values[AliDielectronVarManager::kNMaxValues];
+  if(fUsedVars->CountBits()) {
+    AliDielectronVarManager::SetFillMap(fUsedVars);
+    AliDielectronVarManager::Fill(ev,values);
+  }
+
+  // correlation cuts
+  for(Int_t i=0; i<5; i++) {
+    if(fCorrCutMin[i]) {
+      Double_t varx = values[fCorrCutMin[i]->GetXaxis()->GetUniqueID()];
+      Double_t vary = values[fCorrCutMin[i]->GetYaxis()->GetUniqueID()];
+      Double_t min  = ((TF1*)fCorrCutMin[i]->GetListOfFunctions()->At(0))->Eval(varx);
+      //      printf("coor cut %d: varx %f -> eval %f > %f \n",i,varx,min,vary);
+      if(vary<min) return kFALSE;
+    }
+    if(fCorrCutMax[i]) {
+      Double_t varx = values[fCorrCutMax[i]->GetXaxis()->GetUniqueID()];
+      Double_t vary = values[fCorrCutMax[i]->GetYaxis()->GetUniqueID()];
+      Double_t max  = ((TF1*)fCorrCutMax[i]->GetListOfFunctions()->At(0))->Eval(varx);
+      if(vary>max) return kFALSE;
+    }
+  }
+
   // run rejection
   Int_t run = ev->GetRunNumber();
   if(fRun.GetNrows()) {
@@ -335,6 +369,62 @@ Bool_t AliDielectronEventCuts::IsSelectedAOD(TObject* event)
   }
 
   return kTRUE;
+}
+
+//______________________________________________
+void AliDielectronEventCuts::SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary)
+{
+  //
+  // add correlation cut using a TF1
+  //
+  fUsedVars->SetBitNumber(varx,kTRUE);
+  fUsedVars->SetBitNumber(vary,kTRUE);
+  // store variables
+  fun->GetXaxis()->SetUniqueID(varx);
+  fun->GetYaxis()->SetUniqueID(vary);
+
+  Int_t i=0;
+  for(i=0; i<5; i++) {
+    if(fCorrCutMin[i]) continue;
+    else {
+      TString key=GetName(); key+=Form("Min%d",i);
+      // clone temporare histogram since otherwise it will not be streamed to file!
+      fCorrCutMin[i] = (TH1*)fun->GetHistogram()->Clone(key.Data());
+      fCorrCutMin[i]->GetListOfFunctions()->AddAt(fun,0);
+      break;
+    }
+  }
+  //printf("-----> corr cut added to %d %p \n",i,fCorrCutMin[i]);
+  //  fCorrCutMin[i]->Print();
+  //fCorrCutMin[i]->GetListOfFunctions()->ls();
+}
+
+//______________________________________________
+void AliDielectronEventCuts::SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary)
+{
+  //
+  // add correlation cut using a TF1
+  //
+  fUsedVars->SetBitNumber(varx,kTRUE);
+  fUsedVars->SetBitNumber(vary,kTRUE);
+  // store variables
+  fun->GetXaxis()->SetUniqueID(varx);
+  fun->GetYaxis()->SetUniqueID(vary);
+
+  Int_t i=0;
+  for(i=0; i<5; i++) {
+    if(fCorrCutMax[i]) continue;
+    else {
+      TString key=GetName(); key+=Form("Max%d",i);
+      // clone temporare histogram since otherwise it will not be streamed to file!
+      fCorrCutMax[i] = (TH1*)fun->GetHistogram()->Clone(key.Data());
+      fCorrCutMax[i]->GetListOfFunctions()->AddAt(fun,0);
+      break;
+    }
+  }
+  //printf("-----> corr cut added to %d %p \n",i,fCorrCutMax[i]);
+  //  fCorrCutMax[i]->Print();
+  //  fCorrCutMax[i]->GetListOfFunctions()->ls();
 }
 
 //________________________________________________________________________

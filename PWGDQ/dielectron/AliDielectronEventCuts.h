@@ -21,6 +21,7 @@
 
 #include <TF1.h>
 #include <TVectorD.h>
+#include <TBits.h>
 
 #include <AliAnalysisUtils.h>
 #include <AliAnalysisCuts.h>
@@ -50,6 +51,9 @@ public:
   void SetCutOnV0MultipicityNTrks(TF1* parMean, TF1* parSigma, Double_t cutSigma=3.) { fparMean=parMean; fparSigma=parSigma; fcutSigma=cutSigma; }
   void SetCutOnNVtxContributorsGloablTPC(TF1* parMin, TF1* parMax) { fparMinVtxContributors=parMin; fparMaxVtxContributors=parMax; }
   void SetRequire2013vertexandevent(Bool_t req13 = kTRUE) {fRequire13sel = req13; }
+  void SetMinCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
+  void SetMaxCorrCutFunction(TF1 *fun, UInt_t varx, UInt_t vary=0);
+
   //
   //Analysis cuts interface
   //
@@ -62,6 +66,8 @@ public:
 
 private:
   static const char* fgkVtxNames[AliDielectronEventCuts::kVtxTracksOrSPD+1];  //vertex names
+
+  TBits     *fUsedVars;             // list of used variables
   TVectorD fRun;                    // run rejection vector
   Double_t fVtxZmin;                // minimum z vertex position
   Double_t fVtxZmax;                // maximum z vertex position
@@ -82,6 +88,9 @@ private:
   const AliESDVertex *fkVertex;         //! current vertex
   const AliAODVertex *fkVertexAOD;      //! current vertex AOD
 
+  TH1* fCorrCutMin[5];       //parametrization of lower limit correlation cut
+  TH1* fCorrCutMax[5];       //parametrization of upper limit correlation cut
+
   TF1*     fparMean;                // parametrization of the mean values
   TF1*     fparSigma;               // parametrization of the sigmas
   Double_t fcutSigma;               // number of absolut sigmas inclusion
@@ -91,7 +100,7 @@ private:
   AliDielectronEventCuts &operator=(const AliDielectronEventCuts &c);
 
   
-  ClassDef(AliDielectronEventCuts,3)         // Dielectron EventCuts
+  ClassDef(AliDielectronEventCuts,4)         // Dielectron EventCuts
 };
 
 
