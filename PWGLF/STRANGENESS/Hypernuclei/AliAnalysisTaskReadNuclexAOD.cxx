@@ -66,6 +66,9 @@ class AliCascadeVertexer;
 #include <AliAODRecoDecayLF.h>
 #include <AliAODRecoDecayLF2Prong.h>
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskReadNuclexAOD)
 
 //________________________________________________________________________

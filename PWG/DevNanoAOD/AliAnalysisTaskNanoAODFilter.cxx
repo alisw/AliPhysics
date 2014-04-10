@@ -42,6 +42,9 @@
 #include "AliNanoAODReplicator.h"
 #include "AliNanoAODTrackMapping.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskNanoAODFilter)
 
 
