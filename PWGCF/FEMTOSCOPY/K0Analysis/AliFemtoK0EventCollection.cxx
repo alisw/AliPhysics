@@ -48,7 +48,8 @@ AliFemtoK0Particle::AliFemtoK0Particle() :
  fPosXYZ(),
  fNegXYZ(),
  fPhi(0),
- fPhiPsi(0)
+ fPhiPsi(0),
+ fCutPass()
 {
   //Default constructor
 }
@@ -77,7 +78,8 @@ AliFemtoK0Particle::AliFemtoK0Particle(const AliFemtoK0Particle &obj) :
  fPosXYZ(),
  fNegXYZ(),
  fPhi(),
- fPhiPsi()
+ fPhiPsi(),
+ fCutPass()
 
 {
   // copy constructor
@@ -116,6 +118,10 @@ AliFemtoK0Particle &AliFemtoK0Particle::operator=(const AliFemtoK0Particle &obj)
    fNegXYZ[j][i] = obj.fNegXYZ[j][i];
   }
  }
+ for(int i=0;i<4;i++){
+  for(int j=0;j<5;j++){
+   fCutPass[i][j] = obj.fCutPass[i][j];
+ }}
  fPhi = obj.fPhi;
  fPhiPsi = obj.fPhiPsi;
  return (*this);
