@@ -1,6 +1,9 @@
 #include "AliITSUClusterLines.h"
 #include <TMath.h>
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliITSUClusterLines);
 
 //////////////////////////////////////////////////////////////////////

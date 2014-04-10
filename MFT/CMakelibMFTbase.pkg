@@ -31,7 +31,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR MFTbaseLinkDef.h)
 
-set ( EINCLUDE  STRUCT RAW MUON STEER/STEER STEER/STEERBase)
+set ( EINCLUDE  STRUCT RAW MUON STEER/STEER STEER/AOD STEER/STEERBase)
 
 set ( EXPORT AliMFTAnalysisTools.h AliMFTConstants.h)
 
