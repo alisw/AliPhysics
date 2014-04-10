@@ -1355,7 +1355,8 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
 
   // initialize debug streamer
   TTreeSRedirector *pstreamer(NULL);
-  if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if((recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming())||
+     AliTRDReconstructor::GetStreamLevel()>3) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   if(pstreamer){
     // save config. for calibration
     TVectorD vdy[2], vdx[2], vs2[2];
@@ -1382,7 +1383,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
         << "\n";
     vdx[0].Clear(); vdy[0].Clear(); vs2[0].Clear();
     vdx[1].Clear(); vdy[1].Clear(); vs2[1].Clear();
-    if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 4){    
+    if(recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 4 ||AliTRDReconstructor::GetStreamLevel()>4){    
       Int_t idx(idxRow[1]);
       if(idx<0){ 
         for(Int_t ir(0); ir<kNrows; ir++){ 
@@ -1484,7 +1485,10 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
       }
     }
   }
-  if(!pstreamer && recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 2 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if(!pstreamer && 
+     ( (recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 2 && fkReconstructor->IsDebugStreaming()) ||
+       AliTRDReconstructor::GetStreamLevel()>2 ) 
+     ) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   if(pstreamer){
     // save config. for calibration
     TVectorD vidx, vn, vx, vy, vr, vs, vsm, vp, vf;
@@ -1545,7 +1549,10 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   if(f[is]<1.e-2){
     AliDebug(1, Form("Seed   seg[%d] row[%2d] n[%2d] f[%f]<0.01.", is, idxRow[0], n[0][is], f[is]));
     SetErrorMsg(kAttachClAttach);
-    if(!pstreamer && recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+    if(!pstreamer && 
+       ( (recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()) ||
+	 AliTRDReconstructor::GetStreamLevel()>1 ) 
+       ) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
     if(pstreamer){
       UChar_t stat(0);
       if(IsKink()) SETBIT(stat, 1);
@@ -1719,7 +1726,10 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   // clear local copy of clusters
   for(Int_t ir(0); ir<kNrows; ir++) clst[ir].Clear();
   
-  if(!pstreamer && recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if(!pstreamer && 
+     ((recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 1 && fkReconstructor->IsDebugStreaming()) ||
+      AliTRDReconstructor::GetStreamLevel()>1 )
+     ) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   if(pstreamer){
     UChar_t stat(0);
     if(IsKink()) SETBIT(stat, 1);
@@ -2112,9 +2122,8 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
 
   TTreeSRedirector *pstreamer(NULL);
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();   
-  if(recoParam && 
-     recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && 
-     fkReconstructor->IsDebugStreaming()) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+  if( (recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming()) ||
+    AliTRDReconstructor::GetStreamLevel()>3 ) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
 
   // factor to scale y pulls.
   // ideally if error parametrization correct this is 1.
@@ -2267,6 +2276,7 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
     AliMathBase::EvaluateUni(n, dy, m, s, 0);
     (*pstreamer) << "FitRobust4"
       << "stat=" << status
+      << "opt="  << opt
       << "ncl="  << n
       << "det="  << fDet
       << "x0="   << fX0
