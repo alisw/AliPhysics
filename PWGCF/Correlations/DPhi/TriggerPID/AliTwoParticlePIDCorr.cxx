@@ -154,6 +154,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr() // All data members should be ini
   fPioncont(0),
   fKaoncont(0),
   fProtoncont(0),
+  fUNIDcont(0),
   fEventno(0),
   fEventnobaryon(0),
   fEventnomeson(0),
@@ -316,6 +317,7 @@ AliTwoParticlePIDCorr::AliTwoParticlePIDCorr(const char *name) // All data membe
   fPioncont(0),
   fKaoncont(0),
   fProtoncont(0),
+   fUNIDcont(0),
   fEventno(0),
   fEventnobaryon(0),
   fEventnomeson(0),
@@ -947,6 +949,9 @@ if(fAnalysisType=="MCAOD"){
 
  fProtoncont=new TH2F("fProtoncont","fProtoncont",10,-0.5,9.5,100,0.,10.);
   fOutputList->Add(fProtoncont);
+
+fUNIDcont=new TH2F("fUNIDcont","fUNIDcont",10,-0.5,9.5,100,0.,10.);
+  fOutputList->Add(fUNIDcont);
   }
 
 fEventno=new TH2F("fEventno","fEventno",iBinPair[0], dBinsPair[0],iBinPair[1],dBinsPair[1]);
@@ -1639,7 +1644,6 @@ fHistoTOFbeta->Fill(track->Pt(), beta);
  fTPCTOFKaon3d->Fill(track->Pt(),fnsigmas[SpKaon][NSigmaTOF],fnsigmas[SpKaon][NSigmaTPC]);
  fTPCTOFProton3d->Fill(track->Pt(),fnsigmas[SpProton][NSigmaTOF],fnsigmas[SpProton][NSigmaTPC]); 
   }
- if(particletypeMC==SpUndefined) continue;
 
  //Pt, Eta , Phi distribution of the reconstructed identified particles
 if(ffillhistQAReco)
@@ -1686,6 +1690,16 @@ if(particletypeMC==SpKaon )
      if(TMath::Abs(pdgCode)==2212) fProtoncont->Fill(5.,track->Pt());
      if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fProtoncont->Fill(7.,track->Pt());
    }
+ if(particletypeMC==SpUndefined )
+   {
+     if(TMath::Abs(pdgCode)==211) fUNIDcont->Fill(1.,track->Pt());
+     if(TMath::Abs(pdgCode)==321) fUNIDcont->Fill(3.,track->Pt());
+     if(TMath::Abs(pdgCode)==2212) fUNIDcont->Fill(5.,track->Pt());
+     if(TMath::Abs(pdgCode)!=211 && TMath::Abs(pdgCode)!=321 && TMath::Abs(pdgCode)!=2212) fUNIDcont->Fill(7.,track->Pt());
+   }
+
+ if(particletypeMC==SpUndefined) continue;
+
 
  //fill tracking efficiency
  if(ffillefficiency)
