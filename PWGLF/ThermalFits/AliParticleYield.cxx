@@ -16,6 +16,8 @@
 using std::endl;
 using std::left;
 using std::setw;
+using std::ifstream;
+using std::ofstream;
 
 ClassImp(AliParticleYield)
 
