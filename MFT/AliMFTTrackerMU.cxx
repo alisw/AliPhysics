@@ -336,6 +336,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       myESDTrack -> SetFirstTrackingPoint(newTrack->GetMFTCluster(0)->GetX(), newTrack->GetMFTCluster(0)->GetY(), newTrack->GetMFTCluster(0)->GetZ());
       myESDTrack -> SetXYAtVertex(newTrack->GetOffsetX(0., AliMFTConstants::fZEvalKinem), newTrack->GetOffsetY(0., AliMFTConstants::fZEvalKinem));
       myESDTrack -> SetRAtAbsorberEnd(newTrack->GetRAtAbsorberEnd());
+      //      myESDTrack -> SetCovariances(newTrack->GetTrackParamAtMFTCluster(0)->GetCovariances());    // waiting for commit from Peter...
       myESDTrack -> SetChi2MatchTrigger(esdTrack->GetChi2MatchTrigger());
       myESDTrack -> SetMuonClusterMap(esdTrack->GetMuonClusterMap());
       myESDTrack -> SetHitsPatternInTrigCh(esdTrack->GetHitsPatternInTrigCh());

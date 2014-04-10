@@ -32,7 +32,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetOutputFileName(const char* fname);
     virtual const char*  GetOutputFileName() const;
     // Extra outputs as a string separated by commas
-    virtual const char*  GetExtraOutputs() const;
+    virtual const char*  GetExtraOutputs(Bool_t merge=kTRUE) const;
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
     virtual Bool_t       GetEntry() {return kTRUE;}

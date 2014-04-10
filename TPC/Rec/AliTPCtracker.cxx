@@ -532,7 +532,10 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
   //
   //
   //fill esds using updated tracks
+
   if (!fEvent) return;
+
+  AliESDtrack iotrack;
   
     // write tracks to the event
     // store index of the track
@@ -554,7 +557,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       }
  
       if (( pt->GetPoints()[2]- pt->GetPoints()[0])>5 && pt->GetPoints()[3]>0.8){
-	AliESDtrack iotrack;
+	iotrack.~AliESDtrack();
+	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -567,7 +571,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
       }
        
       if ( (pt->GetNumberOfClusters()>70)&& (Float_t(pt->GetNumberOfClusters())/Float_t(pt->GetNFoundable()))>0.55) {
-	AliESDtrack iotrack;
+	iotrack.~AliESDtrack();
+	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);
 	iotrack.SetTPCPoints(pt->GetPoints());
 	//iotrack.SetTPCindex(i);
@@ -585,7 +590,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	Int_t found,foundable,shared;
 	pt->GetClusterStatistic(0,60,found, foundable,shared,kFALSE);
 	if ( (found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2)){
-	  AliESDtrack iotrack;
+	  iotrack.~AliESDtrack();
+	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
 	  //iotrack.SetTPCindex(i);
 	  iotrack.SetTPCPoints(pt->GetPoints());
@@ -604,7 +610,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	if (found<20) continue;
 	if (pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
 	//
-	AliESDtrack iotrack;
+	iotrack.~AliESDtrack();
+	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -621,7 +628,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	Int_t found,foundable,shared;
 	pt->GetClusterStatistic(128,158,found, foundable,shared,kFALSE);
 	if ( (found>20) && (pt->GetNShared()/float(pt->GetNumberOfClusters())<0.2) &&float(found)/float(foundable)>0.8){
-	  AliESDtrack iotrack;
+	  iotrack.~AliESDtrack();
+	  new(&iotrack) AliESDtrack;
 	  iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
 	  iotrack.SetTPCPoints(pt->GetPoints());
 	  iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -642,7 +650,8 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	if (pt->GetNShared()/float(pt->GetNumberOfClusters())>0.2) continue;
 	if (float(found)/float(foundable)<0.8) continue;
 	//
-	AliESDtrack iotrack;
+	iotrack.~AliESDtrack();
+	new(&iotrack) AliESDtrack;
 	iotrack.UpdateTrackParams(pt,AliESDtrack::kTPCin);	
 	iotrack.SetTPCPoints(pt->GetPoints());
 	iotrack.SetKinkIndexes(pt->GetKinkIndexes());
@@ -670,6 +679,7 @@ void AliTPCtracker::FillESD(const TObjArray* arr)
 	kink->SetIndex(it, knkId<0 ? 0:1); // update track index of the kink: mother at 0, daughter at 1
       }
     }
+
     // << account for suppressed tracks in the kink indices (RS)  
     AliInfo(Form("Number of filled ESDs-\t%d\n",fEvent->GetNumberOfTracks()));
   

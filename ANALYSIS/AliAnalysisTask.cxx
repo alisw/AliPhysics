@@ -265,7 +265,8 @@ Bool_t AliAnalysisTask::CheckPostData() const
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    for (Int_t islot=0; islot<fNoutputs; islot++) {
       coutput = GetOutputSlot(islot)->GetContainer();
-      if (!mgr->GetOutputs()->FindObject(coutput) || coutput==mgr->GetCommonOutputContainer()) continue;
+      if (!coutput) continue;
+      if (coutput->IsExchange() || !mgr->GetOutputs()->FindObject(coutput) || coutput==mgr->GetCommonOutputContainer()) continue;
       if (!coutput->GetData()) {
          Error("CheckPostData", "Data not posted for slot #%d of task %s (%s)", 
                islot, GetName(), ClassName());
@@ -575,6 +576,21 @@ void AliAnalysisTask::SetUsed(Bool_t flag)
 }   
 
 //______________________________________________________________________________
+void AliAnalysisTask::Reset()
+{
+// Clear activity flag. Reset data for exchange containers.
+   fActive = kFALSE;
+   fHasExecuted = kFALSE;
+   // Call PostData(islot, 0) for all slots connected to exchange containers
+   Int_t islot;
+   AliAnalysisDataContainer *cont;
+   for (islot=0; islot<fNinputs; islot++) {
+      cont = GetInputSlot(islot)->GetContainer();
+      if (cont && cont->IsExchange()) cont->Reset();
+   }   
+}
+   
+//______________________________________________________________________________
 Bool_t AliAnalysisTask::CheckCircularDeps()
 {
 // Check for illegal circular dependencies, e.g. a daughter task should not have
@@ -591,17 +607,34 @@ Bool_t AliAnalysisTask::CheckCircularDeps()
    SetChecked(kFALSE);
    return kFALSE;
 }   
-   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisTask::ProducersTouched() const
+{
+// Check if all producer containers are in the "touched" state.
+   Int_t islot;
+   AliAnalysisDataContainer *cont;
+   for (islot=0; islot<fNinputs; islot++) {
+      cont = GetInputSlot(islot)->GetContainer();
+      // Simulate the data flow so the tasks are printed only when all inputs
+      // are touched
+      if (cont && !cont->IsTouched()) return kFALSE;
+   }
+   return kTRUE;
+}
+
 //______________________________________________________________________________
 void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
 {
 // Print task info.
+   Int_t islot;
+   AliAnalysisDataContainer *cont;
+   if (fActive) return;
+   if (!ProducersTouched()) return;
    TString opt(option);
    opt.ToLower();
    Bool_t dep = (opt.Contains("dep"))?kTRUE:kFALSE;
    TString ind;
-   Int_t islot;
-   AliAnalysisDataContainer *cont;
    for (Int_t i=0; i<indent; i++) ind += " ";
    if (!dep || (dep && IsChecked())) {
       printf("______________________________________________________________________________\n");
@@ -622,8 +655,9 @@ void AliAnalysisTask::PrintTask(Option_t *option, Int_t indent) const
          }            
       }
    }
+   ((AliAnalysisTask*)this)->SetActive(kTRUE);
    PrintContainers(option, indent+3);
-   if (!fBranchNames.IsNull()) printf("Requested branches:   %s\n", fBranchNames.Data());
+   if (!fBranchNames.IsNull()) printf("%sRequested branches:   %s\n", ind.Data(), fBranchNames.Data());
 }      
 
 //______________________________________________________________________________

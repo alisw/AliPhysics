@@ -123,6 +123,7 @@ enum EAliAnalysisFlags {
    AliVEventHandler*   GetOutputEventHandler() const  {return fOutputEventHandler;}
    TObjArray          *GetOutputs() const         {return fOutputs;}
    TObjArray          *GetParamOutputs() const    {return fParamCont;}
+   TObjArray          *GetExchangeContainers() const {return fExchangeCont;}
    Int_t               GetRunFromPath() const     {return fRunFromPath;}
    const char         *GetRequestedBranches() const {return fRequestedBranches.Data();}
    TObjArray          *GetTasks() const           {return fTasks;}
@@ -257,7 +258,8 @@ private:
    TObjArray              *fContainers;          // List of all containers
    TObjArray              *fInputs;              // List of containers with input data
    TObjArray              *fOutputs;             // List of containers with results
-   TObjArray              *fParamCont;           // List of containers with results
+   TObjArray              *fParamCont;           // List of containers with parameters
+   TObjArray              *fExchangeCont;        // List of exchange containers
    TObjArray              *fDebugOptions;        // List of debug options
    TObjArray              *fFileDescriptors;     //! List of file descriptors
    AliAnalysisFileDescriptor *fCurrentDescriptor; //! Current file descriptor
@@ -288,6 +290,6 @@ private:
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static TString          fgMacroNames;         //! Loaded macro names
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,19)  // Analysis manager class
+   ClassDef(AliAnalysisManager,20)  // Analysis manager class
 };   
 #endif

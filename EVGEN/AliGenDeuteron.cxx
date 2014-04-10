@@ -38,8 +38,8 @@
 
 #include "Riostream.h"
 #include "TParticle.h"
-#include "AliRun.h"
 #include "AliStack.h"
+#include "AliRun.h"
 #include "TMath.h"
 #include "TMCProcess.h"
 #include "TList.h"
@@ -59,8 +59,7 @@ AliGenDeuteron::AliGenDeuteron(Int_t sign, Double_t pmax, Double_t rmax, Int_t c
  :fSign(1)
  ,fPmax(pmax)
  ,fRmax(rmax)
- ,fSpinProb(0.75)
- ,fMaxRadius(1000.)
+ ,fSpinProb(1)
  ,fClusterType(cluster)
  ,fModel(0)
  ,fTimeLength(2.5)
@@ -127,12 +126,6 @@ void AliGenDeuteron::Generate()
 			if(fB >= 2.*fR) continue; // no collision
 		}
 		
-		// primary vertex
-		TArrayF primVtx;
-		gener->GetActiveEventHeader()->PrimaryVertex(primVtx);
-		TVector3 r0(primVtx[0],primVtx[1],primVtx[2]);
-		
-		// emerging nucleons from the collision
 		fCurStack = gener->GetStack(ns);
 		if(!fCurStack)
 		{
@@ -145,15 +138,12 @@ void AliGenDeuteron::Generate()
 		TList* neutrons = new TList();
 		neutrons->SetOwner(kFALSE);
 		
-		for (Int_t i=0; i < fCurStack->GetNtrack(); ++i)
+		// particles produced by the generator
+		for (Int_t i=0; i < fCurStack->GetNprimary(); ++i)
 		{
 			TParticle* iParticle = fCurStack->Particle(i);
 			
-			if(iParticle->TestBit(kDoneBit)) continue;
-			
-			// select only nucleons within the freeze-out volume
-			TVector3 r(iParticle->Vx(),iParticle->Vy(),iParticle->Vz());
-			if((r-r0).Mag() > fMaxRadius*1.e-13) continue;
+			if(iParticle->GetStatusCode() != 1) continue;
 			
 			Int_t pdgCode = iParticle->GetPdgCode();
 			if(pdgCode == fSign*2212)// (anti)proton
@@ -197,14 +187,17 @@ Double_t AliGenDeuteron::GetCoalescenceProbability(const TParticle* nucleon1, co
 // returns < 0 if coalescence is not possible
 // otherwise returns a coalescence probability
 //
+	const Double_t kProtonMass  = 0.938272013;
+	const Double_t kNeutronMass = 0.939565378;
+	
 	TVector3 v1(nucleon1->Vx(), nucleon1->Vy(), nucleon1->Vz());
 	TVector3 p1(nucleon1->Px(), nucleon1->Py(), nucleon1->Pz());
 	
 	TVector3 v2(nucleon2->Vx(), nucleon2->Vy(), nucleon2->Vz());
 	TVector3 p2(nucleon2->Px(), nucleon2->Py(), nucleon2->Pz());
 	
-	Double_t deltaP = (p2-p1).Mag();       // relative momentum
-	if( deltaP >= fPmax)       return -1.;
+	Double_t deltaP = 2.*this->GetPcm(p1, kProtonMass, p2, kNeutronMass); // relative momentum in CM frame
+	if( deltaP >= fPmax) return -1.;
 	
 	Double_t deltaR = (v2-v1).Mag();       // relative distance (cm)
 	if(deltaR >= fRmax*1.e-13) return -1.;
@@ -288,7 +281,7 @@ void AliGenDeuteron::WeightMatrix(const TList* protons, const TList* neutrons)
 	Double_t* iWeight = new Double_t[nMaxIntPair];
 	
 	Int_t iIdx = -1;
-	while(true)
+	while(kTRUE)
 	{
 		Int_t j = -1;
 		Double_t wMax = 0;
@@ -412,5 +405,34 @@ void AliGenDeuteron::FixProductionVertex(TParticle* i)
 	
 	// translate by the production vertex (cm)
 	i->SetProductionVertex(i->Vx() + 1.e-13*x, i->Vy() + 1.e-13*y, i->Vz() + 1.e-13*z, i->T());
+}
+
+Double_t AliGenDeuteron::GetS(Double_t p1x, Double_t p1y, Double_t p1z, Double_t m1, Double_t p2x, Double_t p2y, Double_t p2z, Double_t m2) const
+{
+//
+// square of the center of mass energy
+//
+	Double_t E1 = TMath::Sqrt( p1x*p1x + p1y*p1y + p1z*p1z + m1*m1);
+	Double_t E2 = TMath::Sqrt( p2x*p2x + p2y*p2y + p2z*p2z + m2*m2);
+	
+	return (E1+E2)*(E1+E2) - ((p1x+p2x)*(p1x+p2x) + (p1y+p2y)*(p1y+p2y) + (p1z+p2z)*(p1z+p2z));
+}
+
+Double_t AliGenDeuteron::GetPcm(Double_t p1x, Double_t p1y, Double_t p1z, Double_t m1, Double_t p2x, Double_t p2y, Double_t p2z, Double_t m2) const
+{
+//
+// momentum in the CM frame
+//
+	Double_t s = this->GetS(p1x, p1y, p1z, m1, p2x, p2y, p2z, m2);
+	
+	return TMath::Sqrt( (s-(m1-m2)*(m1-m2))*(s-(m1+m2)*(m1+m2)) )/(2.*TMath::Sqrt(s));
+}
+
+Double_t AliGenDeuteron::GetPcm(const TVector3& p1, Double_t m1, const TVector3& p2, Double_t m2) const
+{
+//
+// momentum in the CM frame
+//
+	return this->GetPcm(p1.Px(),p1.Py(),p1.Pz(),m1,p2.Px(),p2.Py(),p2.Pz(),m2);
 }
 
