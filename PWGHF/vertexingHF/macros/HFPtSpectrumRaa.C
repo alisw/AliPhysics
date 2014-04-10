@@ -50,7 +50,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100 };
+enum centrality{ kpp, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centestimator{ kV0M, kV0A, kZNA };
 enum energy{ k276, k5dot023, k55 };
 enum BFDSubtrMethod { kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
@@ -102,6 +103,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
 		     Int_t fdMethod = kNb, Int_t cc=kpp, Int_t Energy=k276,
 		     Double_t MinHypo=1./3., Double_t MaxHypo=3.0, Double_t MaxRb=6.0,
 		     Bool_t isRbHypo=false, Double_t CentralHypo = 1.0,
+		     Int_t ccestimator = kV0M,
 		     Bool_t isUseTaaForRaa=true, const char *shadRbcFile="", Int_t nSigmaShad=3.0,
 		     Int_t isRaavsEP=kPhiIntegrated, Bool_t isScaledAndExtrapRef=kFALSE)
 {
@@ -121,43 +123,67 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   // Values from Alberica's twiki:
   //   https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
-  if ( cc == k07half ) {
-    Tab = 24.81; TabSyst = 0.8037;
-  } else if ( cc == k010 ) {
-    Tab = 23.48; TabSyst = 0.97;
-  } else if ( cc == k1020 ) {
-    Tab = 14.4318; TabSyst = 0.5733;
-  } else if ( cc == k020 ) {
-    Tab = 18.93; TabSyst = 0.74;
-  } else if ( cc == k2040 ) {
-    Tab = 6.86; TabSyst = 0.28;
-  } else if ( cc == k2030 ) {
-    Tab = 8.73769; TabSyst = 0.370219;
-  } else if ( cc == k3040 ) {
-    Tab = 5.02755; TabSyst = 0.22099;
-  } else if ( cc == k4050 ) {
-    Tab = 2.68327; TabSyst = 0.137073;
-  } else if ( cc == k3050 ) {
-    Tab = 3.87011; TabSyst = 0.183847;
-  } else if ( cc == k4060 ) {
-    Tab = 2.00;  TabSyst= 0.11;
-  } else if ( cc == k4080 ) {
-    Tab = 1.20451; TabSyst = 0.071843;
-  } else if ( cc == k5060 ) {
-    Tab = 1.32884; TabSyst = 0.0929536;
-  } else if ( cc == k6080 ) {
-    Tab = 0.419; TabSyst = 0.033;
-  } else if ( cc == k5080 ) {
-    Tab = 0.719; TabSyst = 0.054;
-  } else if ( cc == k80100 ){
-    Tab = 0.0690; TabSyst = 0.0062;
+  if( ccestimator == kV0M ) {
+    if ( cc == k07half ) {
+      Tab = 24.81; TabSyst = 0.8037;
+    } else if ( cc == k010 ) {
+      Tab = 23.48; TabSyst = 0.97;
+    } else if ( cc == k1020 ) {
+      Tab = 14.4318; TabSyst = 0.5733;
+    } else if ( cc == k020 ) {
+      Tab = 18.93; TabSyst = 0.74;
+    } else if ( cc == k2040 ) {
+      Tab = 6.86; TabSyst = 0.28;
+    } else if ( cc == k2030 ) {
+      Tab = 8.73769; TabSyst = 0.370219;
+    } else if ( cc == k3040 ) {
+      Tab = 5.02755; TabSyst = 0.22099;
+    } else if ( cc == k4050 ) {
+      Tab = 2.68327; TabSyst = 0.137073;
+    } else if ( cc == k3050 ) {
+      Tab = 3.87011; TabSyst = 0.183847;
+    } else if ( cc == k4060 ) {
+      Tab = 2.00;  TabSyst= 0.11;
+    } else if ( cc == k4080 ) {
+      Tab = 1.20451; TabSyst = 0.071843;
+    } else if ( cc == k5060 ) {
+      Tab = 1.32884; TabSyst = 0.0929536;
+    } else if ( cc == k6080 ) {
+      Tab = 0.419; TabSyst = 0.033;
+    } else if ( cc == k5080 ) {
+      Tab = 0.719; TabSyst = 0.054;
+    } else if ( cc == k80100 ){
+      Tab = 0.0690; TabSyst = 0.0062;
+    }
   }
 
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
-  else if( cc == kpPb0100 ){
+  if( cc == kpPb0100 ){
     Tab = 0.098334; TabSyst = 0.0070679;
     A=207.2; B=1.;
+  }
+  else if( ccestimator == kV0A ){
+    if ( cc == kpPb020 ) {
+      Tab = 0.183; TabSyst = 0.0201;
+    } else if ( cc == kpPb2040 ) {
+      Tab = 0.134; TabSyst = 0.0134;
+    } else if ( cc == kpPb4060 ) {
+      Tab = 0.0918; TabSyst = 0.0073;
+    } else if ( cc == kpPb60100 ) {
+      Tab = 0.0366; TabSyst = 0.00183;
+    }
+  }
+  else if( ccestimator == kZNA ){
+    if ( cc == kpPb020 ) {
+      Tab = 0.1650; TabSyst = 0.0550;
+    } else if ( cc == kpPb2040 ) {
+      Tab = 0.137; TabSyst = 0.0372;
+    } else if ( cc == kpPb4060 ) {
+      Tab = 0.1001; TabSyst = 0.0690;
+    } else if ( cc == kpPb60100 ) {
+      Tab = 0.045; TabSyst = 0.1029;
+    }
   }
 
   //
@@ -239,7 +265,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
     else if (isRaavsEP == kOutOfPlane) systematicsAB->SetCentrality("3050OutOfPlane");
   }
   //
-  else if ( cc == kpPb0100 ){ 
+  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematicsAB->SetCollisionType(2); 
   }
   else { 
@@ -1049,7 +1075,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   legrcb->Draw();
   TLatex* tc;
   TString system = "Pb-Pb   #sqrt{s_{NN}}=2.76 TeV";
-  if(cc==kpPb0100) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
+  if( cc==kpPb0100 || cc==kpPb020 || cc==kpPb2040 || cc==kpPb4060 || cc==kpPb60100 ) system = "p-Pb   #sqrt{s_{NN}}=5.023 TeV";
   if(decay==1) tc =new TLatex(0.18,0.82,Form("D^{0},  %s ",system.Data()));
   else if(decay==2) tc =new TLatex(0.18,0.82,Form("D^{+},  %s ",system.Data()));
   else if(decay==3) tc =new TLatex(0.18,0.82,Form("D^{*+},  %s ",system.Data()));
