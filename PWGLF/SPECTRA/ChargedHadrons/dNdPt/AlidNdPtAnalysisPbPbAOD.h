@@ -153,6 +153,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenHijingEventHeader* GetHijingEventHeader(AliAODMCHeader *header);
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
+	Double_t RotatePhi(Double_t phiTrack, Double_t phiEP);
+	Double_t MoveMCEventplane(Double_t dMCEP);
     
     Bool_t SetRelativeCuts(AliAODEvent *event);
     
@@ -206,6 +208,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     
     TH1F		*fEventplaneDist; // event plane distribution in phi
     TH1F		*fMCEventplaneDist; // MC event plane distribution in phi
+    TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
     // global variables
     Bool_t fIsMonteCarlo;
     

@@ -60,6 +60,7 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCutsLctoV0.h"
+#include "AliVertexingHFUtils.h"
 #include "AliInputEventHandler.h"
 
 #include "AliFlowEvent.h"
@@ -774,6 +775,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hntrklvsPercentile";
     TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
+    hname="hntrklvsPercentile01";
+    TH2F* hntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+      
     hname="hnTPCTracksvsPercentile";
     TH2F* hnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
@@ -789,6 +793,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hStdEstimSignalNtrackletsIn";
     TH2F*hStdEstimSignalNtrackletsIn = new TH2F(hname.Data(),"Std estimator signal vs Number of tracklets in the CC;Std estimator signal;number of tracklets",1000,-0.5,9999.5,5000,-0.5,4999.5);
 
+    hname="hStdEstimSignal";
+    TH1F*hStdEstimSignal = new TH1F(hname.Data(),"Std estimator signal",700,0,1400);
+
     hname="hStdPercentileSecondPercentile";
     TH2F* hStdPercentileSecondPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Second Estimator Percentile;Std estimator percentile;Second estimator percentile",120,-10.,110,120,-10.,110);
 
@@ -801,10 +808,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hMultOut);
     fOutputCheckCentrality->Add(hMultvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile);
+    fOutputCheckCentrality->Add(hntrklvsPercentile01);
     fOutputCheckCentrality->Add(hnTPCTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
     fOutputCheckCentrality->Add(hStdEstimSignalPercentile);
+    fOutputCheckCentrality->Add(hStdEstimSignal);
     fOutputCheckCentrality->Add(hStdEstimSignalNtrackletsIn);
     fOutputCheckCentrality->Add(hStdPercentileSecondPercentile);
     fOutputCheckCentrality->Add(hStdSignalSecondSignal);
@@ -815,7 +824,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     if(fOnOff[0]){
       TString hname="hNtracklets";
       TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
-
+      hname="hNtracklets01";
+      TH1F* hNtracklets01=new TH1F(hname.Data(),"Number of tracklets |#eta|<1;ntracklets;Entries",5000,-0.5,4999.5);
+        
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultFBit4";
@@ -826,6 +837,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
       TH1F* hMultC08=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.8;multiplicity;Entries",10000,-0.5,9999.5);
 
       fOutputTrack->Add(hNtracklets);
+      fOutputTrack->Add(hNtracklets01);
       fOutputTrack->Add(hMult);
       fOutputTrack->Add(hMultFBit4);
       fOutputTrack->Add(hMultC05);
@@ -1733,10 +1745,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCTracksvsPercentile"))->Fill(nSelTracksTPCOnly,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITSTracksvsPercentile"))->Fill(nSelTracksTPCITS,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITS1SPDTracksvsPercentile"))->Fill(nSelTracksTPCITS1SPD,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalPercentile"))->Fill(stdSignal,stdCentf);
+      ((TH1F*)fOutputCheckCentrality->FindObject("hStdEstimSignal"))->Fill(stdSignal);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalNtrackletsIn"))->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSecondPercentile"))->Fill(stdCentf,secondCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdSignalSecondSignal"))->Fill(stdSignal,secondSignal);
@@ -1746,6 +1760,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     } else{
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	((TH1F*)fOutputTrack->FindObject("hNtracklets01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
 	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
 	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
 	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());

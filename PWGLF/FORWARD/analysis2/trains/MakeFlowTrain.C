@@ -36,14 +36,14 @@ public:
     fOptions.Add("afterburner", "[eta,phi,b,pid]", "What to afterburn", "");
     fOptions.Add("ab-type", "1|2|3|4", "Type of afterburner", "");
     fOptions.Add("ab-order", "2|3|4|5|6", "Order of afterburner", "");
-    fOptions.Add("fwd-dets", "[fmd,vzero]", "Forward detectors", "");
+    fOptions.Add("fwd-dets", "[fmd,vzero]", "Forward detectors", "fmd+vzero");
     fOptions.Set("type", "AOD");
     fOptions.Show(std::cout);
     // QC specific options
     fOptions.Add("QC", "Add QC tasks (requires AODs with FMD and SPD objects)");
-    fOptions.Add("qc-type", "[std,eta-gap,3cor,all]", "Which types of QC's to do", "both");
+    fOptions.Add("qc-type", "[std,eta-gap,3cor,all]", "Which types of QC's to do", "all");
     fOptions.Add("eg-value", "EGVALUE", "Set value in |eta| of the eta gap", "2.0");
-    fOptions.Add("tpc-tracks", "Whether to use TPC tracks for reference flow");
+    fOptions.Add("tracks", "[tpc,hybrid,only]", "Whether or only to use tracks for reference flow", "tpc+hybrid");
     fOptions.Add("sat-vtx", "Whether to use satellite interactions");
     fOptions.Add("outlier-fmd", "NSIGMA", "Outlier cut for FMD", "4.0");
     fOptions.Add("outlier-spd", "NSIGMA", "Outlier cut for SPD", "4.0");
@@ -90,8 +90,8 @@ protected:
     TString  fwdDets  = fOptions.Get("fwd-dets");
     TString  types    = fOptions.Get("qc-type");
     Double_t egValue  = fOptions.AsDouble("eg-value");
-    Bool_t   tpcTr    = fOptions.AsBool("tpc-tracks");
     Bool_t   useCent  = fOptions.AsBool("use-cent");
+    TString  tracks   = fOptions.Get("tracks");
     Bool_t   useMCVtx = fOptions.AsBool("mc-vtx");
     TString  addFlow  = fOptions.Get("afterburner");
     Int_t    abType   = fOptions.AsInt("ab-type");
@@ -105,6 +105,10 @@ protected:
     fwdDets.ToUpper();
     Bool_t doFMD = fwdDets.Contains("FMD");
     Bool_t doVZERO = fwdDets.Contains("VZERO");
+    tracks.ToLower();
+    Bool_t onlyTr     = tracks.Contains("only");
+    Bool_t tpcTr      = tracks.Contains("tpc");
+    Bool_t hybridTr   = tracks.Contains("hybrid");
 
     TString args(TString::Format("AddTaskForwardFlowQC.C(%d,\"%%s\",%%d,%%d,%d,%f,%f,%f,%%d,%d,%d,%d,\"%s\",%d,%d)",
 			moment,
@@ -122,31 +126,47 @@ protected:
     // --- Add the task ----------------------------------------------
     if (doFMD) {
       if (types.Contains("std") || types.Contains("all")) {
-      	gROOT->Macro(Form(args.Data(), "FMD", false, false, false));
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "FMD", false, false, 0));
       	if (tpcTr)
-	  gROOT->Macro(Form(args.Data(), "FMD", false, false, true));
+	  gROOT->Macro(Form(args.Data(), "FMD", false, false, 1));
+      	if (hybridTr)
+	  gROOT->Macro(Form(args.Data(), "FMD", false, false, 2));
       }
       if (types.Contains("eta-gap") || types.Contains("all")) {
-      	gROOT->Macro(Form(args.Data(), "FMD", true, false, false));
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "FMD", true, false, 0));
       	if (tpcTr)
-      	  gROOT->Macro(Form(args.Data(), "FMD", true, false, true));
+      	  gROOT->Macro(Form(args.Data(), "FMD", true, false, 1));
+      	if (hybridTr)
+      	  gROOT->Macro(Form(args.Data(), "FMD", true, false, 2));
       }
-      if (types.Contains("3cor") || types.Contains("all"))
-      	gROOT->Macro(Form(args.Data(), "FMD", false, true, false));
+      if (types.Contains("3cor") || types.Contains("all")) {
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "FMD", false, true, 0));
+      }
     }
     if (doVZERO) {
       if (types.Contains("std") || types.Contains("all")) {
-      	gROOT->Macro(Form(args.Data(), "VZERO", false, false, false));
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, 0));
       	if (tpcTr)
-	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, true));
+	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, 1));
+      	if (hybridTr)
+	  gROOT->Macro(Form(args.Data(), "VZERO", false, false, 2));
       }
       if (types.Contains("eta-gap") || types.Contains("all")) {
-      	gROOT->Macro(Form(args.Data(), "VZERO", true, false, false));
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "VZERO", true, false, 0));
       	if (tpcTr)
-      	  gROOT->Macro(Form(args.Data(), "VZERO", true, false, true));
+      	  gROOT->Macro(Form(args.Data(), "VZERO", true, false, 1));
+      	if (hybridTr)
+      	  gROOT->Macro(Form(args.Data(), "VZERO", true, false, 2));
       }
-      if (types.Contains("3cor") || types.Contains("all"))
-      	gROOT->Macro(Form(args.Data(), "VZERO", false, true, false));
+      if (types.Contains("3cor") || types.Contains("all")) {
+        if (!onlyTr)
+	  gROOT->Macro(Form(args.Data(), "VZERO", false, true, 0));
+      }
     }
   }
   //__________________________________________________________________

@@ -64,6 +64,7 @@ set ( SRCS
   STRANGENESS/Hypernuclei/AliAODMCNuclExReplicator.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskESDNuclExFilterMC.cxx
   STRANGENESS/Hypernuclei/AliAnalysisTaskReadNuclexAOD.cxx
+  STRANGENESS/Hypernuclei/AliAnalysisTaskAntiHe4.cxx
  
 
 )

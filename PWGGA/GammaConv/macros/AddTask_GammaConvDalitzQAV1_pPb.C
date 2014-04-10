@@ -259,8 +259,27 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 }  else if ( trainConfig == 16 ) {
   
 	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540073310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
-}
+	
+}  else if ( trainConfig == 17 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth
+	
+} else if ( trainConfig  == 18 ) {
 
+        ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540093310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + 4ITS cls
+
+} else if ( trainConfig  == 19 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts
+	
+} else if ( trainConfig  == 20 ) {
+
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01621035009000"; // standar cut Annika analysis:
+	
+} else if ( trainConfig  == 21 ) {
+
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01621035009000"; // standar cut Annika analysis: + kFirst
+}
 
 
    TList *ConvCutList  = new TList();
@@ -288,7 +307,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
           analysisCuts[i] = new AliConversionCuts();
       
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 || trainConfig == 11  || trainConfig == 13 || trainConfig == 14 ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 || trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){

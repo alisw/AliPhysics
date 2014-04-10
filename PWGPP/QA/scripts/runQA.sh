@@ -11,7 +11,7 @@ main()
     return 1
   fi
  
-  if ! parseConfig $@; then
+  if ! parseConfig "$@"; then
     ${0}
     return 1
   fi
@@ -28,13 +28,13 @@ main()
     done < <(grep -v "LD_LIBRARY_PATH" /tmp/gclient_env_${UID})
   fi
 
-  updateQA $@
+  updateQA "$@"
 }
 
 updateQA()
 {
   umask 0002
-  parseConfig $@
+  parseConfig "$@"
 
   #be paranoid and make some full paths
   [[ ! -f ${inputList} ]] && echo "no input list: ${inputList}" && return 1
@@ -52,7 +52,7 @@ updateQA()
   echo outputDirectory=$outputDirectory
   echo
 
-  dateString=$(date +%Y-%m-%d-%H-%M)
+  dateString=$(date +%Y-%m-%d-%H-%M-%S-%N)
   echo "Start time QA process: $dateString"
 
   #logging
@@ -152,6 +152,8 @@ updateQA()
       
       echo qaFile=$qaFile
       echo highPtTree=$highPtTree
+      echo ocdbStorage=${ocdbStorage}
+      echo
 
       #what if we have a zip archive?
       if [[ "$qaFile" =~ .*.zip$ ]]; then
@@ -230,6 +232,7 @@ updateQA()
           continue
         fi
 
+        #moving a dir is an atomic operation, no locking necessary
         if [[ -d ${oldRunDir} ]]; then
           echo "removing old ${oldRunDir}"
           rm -rf ${oldRunDir}
@@ -269,24 +272,36 @@ updateQA()
       #here we are validated so move the produced QA to the final place
       #clean up linked stuff first
       [[ -n ${linkedStuff[@]} ]] && rm ${linkedStuff[@]}
-      #some of the output could be a directory, so handle that
-      #TODO: maybe use rsync?
-      for x in ${tmpPeriodLevelQAdir}/*; do  
-        if [[ -d ${x} ]]; then
-          echo "removing ${productionDir}/${x##*/}"
-          rm -rf ${productionDir}/${x##*/}
-          echo "moving ${x} to ${productionDir}"
-          mv ${x} ${productionDir}
-        fi
-        if [[ -f ${x} ]]; then
-          echo "moving ${x} to ${productionDir}"
-          mv -f ${x} ${productionDir} 
-        fi
-      done
+      periodLevelLock=${productionDir}/runQA.lock
+      if [[ ! -f ${periodLevelLock} ]]; then
+        #some of the output could be a directory, so handle that
+        #TODO: maybe use rsync?
+        #lock to avoid conflicts:
+        echo "${HOSTNAME} ${dateString}" > ${periodLevelLock}
+        for x in ${tmpPeriodLevelQAdir}/*; do  
+          if [[ -d ${x} ]]; then
+            echo "removing ${productionDir}/${x##*/}"
+            rm -rf ${productionDir}/${x##*/}
+            echo "moving ${x} to ${productionDir}"
+            mv ${x} ${productionDir}
+          fi
+          if [[ -f ${x} ]]; then
+            echo "moving ${x} to ${productionDir}"
+            mv -f ${x} ${productionDir} 
+          fi
+        done
+        rm -f ${periodLevelLock}
+        #remove the temp dir
+        rm -rf ${tmpPeriodLevelQAdir}
+      else
+        echo "ERROR: cannot move to destination"                     >> ${logSummary}
+        echo "production dir ${productionDir} locked!"               >> ${logSummary}
+        echo "check and maybe manually do:"                          >> ${logSummary}
+        echo " rm ${periodLevelLock}"                                >> ${logSummary}
+        echo " rsync -av ${tmpPeriodLevelQAdir}/ ${productionDir}/"  >> ${logSummary}
+        planB=1
+      fi
 
-      #remove the temp dir
-      rm -rf ${tmpPeriodLevelQAdir}
-    
     done
 
     cd ${workingDirectory}
@@ -423,6 +438,8 @@ validateLog()
 
 parseConfig()
 {
+  args=("$@")
+
   #config file
   configFile=""
   #where to search for qa files
@@ -444,25 +461,26 @@ parseConfig()
   #first, check if the config file is configured
   #is yes - source it so that other options can override it
   #if any
-  for opt in $@; do
+  for opt in "${args[@]}"; do
     if [[ ${opt} =~ configFile=.* ]]; then
       eval "${opt}"
       [[ ! -f ${configFile} ]] && echo "configFile ${configFile} not found, exiting..." && return 1
+      echo "using config file: ${configFile}"
       source "${configFile}"
       break
     fi
   done
 
   #then, parse the options as they override the options from file
-  while [[ -n ${1} ]]; do
-    local var=${1#--}
-    if [[ ${var} =~ .*=.* ]]; then
-      eval "${var}"
-    else
+  for opt in "${args[@]}"; do
+    if [[ ! "${opt}" =~ .*=.* ]]; then
       echo "badly formatted option ${var}, should be: option=value, stopping..."
       return 1
     fi
-    shift
+    local var="${opt%%=*}"
+    local value="${opt#*=}"
+    echo "${var}=${value}"
+    export ${var}="${value}"
   done
 }
 
@@ -477,8 +495,10 @@ guessRunData()
   dataType=""
 
   local shortRunNumber=""
+  oldIFS=${IFS}
   local IFS="/"
   declare -a path=( $1 )
+  IFS="${oldIFS}"
   local dirDepth=$(( ${#path[*]}-1 ))
   i=0
   for ((x=${dirDepth};x>=0;x--)); do
@@ -498,9 +518,13 @@ guessRunData()
   done
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
   [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
+  [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
+  #modify the OCDB: set the year
+  ocdbStorage=$(setYear ${year} ${ocdbStorage})
+
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber}} ]];
+  if [[ -z ${runNumber}} ]]
   then
     #error condition
     return 1
@@ -543,4 +567,31 @@ get_realpath()
   return 0 # success
 }
 
-main $@
+setYear()
+{
+  #set the year
+  #  ${1} - year to be set
+  #  ${2} - where to set the year
+  local year1=$(guessYear ${1})
+  local year2=$(guessYear ${2})
+  local path=${2}
+  [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
+  echo ${path}
+  return 0
+}
+
+guessYear()
+{
+  #guess the year from the path, pick the rightmost one
+  local IFS="/"
+  declare -a pathArray=( ${1} )
+  local field
+  local year
+  for field in ${pathArray[@]}; do
+    [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
+  done
+  echo ${year}
+  return 0
+}
+
+main "$@"

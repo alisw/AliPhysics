@@ -1226,6 +1226,12 @@ Bool_t AliDalitzElectronCuts::SetITSClusterCut(Int_t clsITSCut){
 	case 7: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
                 fesdTrackCuts->SetMinNClustersITS(4);
 		break;
+	case 8: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+                break;
+        case 9: fesdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+		fesdTrackCuts->SetMinNClustersITS(4);
+                break;
+		
 	default:
 		cout<<"Warning: clsITSCut not defined "<<clsITSCut<<endl;
 		return kFALSE;
