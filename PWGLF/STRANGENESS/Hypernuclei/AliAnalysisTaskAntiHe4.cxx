@@ -30,6 +30,8 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskAntiHe4)
 
