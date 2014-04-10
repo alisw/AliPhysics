@@ -1,4 +1,4 @@
-void sim(Int_t nev=3) {
+void sim(Int_t nev=20) {
 
   gSystem->Load("liblhapdf");
   gSystem->Load("libEGPythia6");
@@ -20,10 +20,6 @@ void sim(Int_t nev=3) {
   simulator.SetSpecificStorage("GRP/GRP/Data",
 			       Form("local://%s",gSystem->pwd()));
   
-  simulator.SetSpecificStorage("ITS/Align/Data",
-			       Form("local://%s",gSystem->pwd()));
-
-
   simulator.SetRunQA("ALL:ALL") ; 
   
   simulator.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;

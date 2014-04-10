@@ -26,7 +26,7 @@
 #include "AliITSReconstructor.h"
 #include "AliITSupgrade.h"
 #include "AliITSUpgradeReconstructor.h" //class header
-#include "AliITSChipTypeRec.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITS.h"              //Reconstruct() 
 #include "AliESDEvent.h"           //FillEsd()
 #include "AliRawReader.h"          //Reconstruct() for raw digits
