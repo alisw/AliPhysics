@@ -323,8 +323,8 @@ void AliAnalysisTaskSEDvsMultiplicity::UserCreateOutputObjects()
     fHistNtrEta16vsNtrEta1 = new TH2F("hNtrEta16vsNtrEta1","Uncorrected Eta1.6 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<1.6",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
     fHistNtrEta05vsNtrEta1 = new TH2F("hNtrEta05vsNtrEta1","Uncorrected Eta0.5 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.5",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.5 vs eta 1.0 histogram 
     fHistNtrEta03vsNtrEta1 = new TH2F("hNtrEta03vsNtrEta1","Uncorrected Eta0.3 vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 0.3 vs eta 1.0 histogram 
-    fHistNtrEtaV0AvsNtrEta1 = new TH2F("hNtrEtaV0AvsNtrEta1","Uncorrected Eta-V0A vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0A vs eta 1.0 histogram 
-    fHistNtrEtaV0MvsNtrEta1 = new TH2F("hNtrEtaV0MvsNtrEta1","Uncorrected Eta-V0M vs Eta1.0; Ntracklets #eta<1.0; Ntracklets #eta<0.3",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0M vs eta 1.0 histogram 
+    fHistNtrEtaV0AvsNtrEta1 = new TH2F("hNtrEtaV0AvsNtrEta1","Uncorrected Eta-V0A vs Eta1.0; Ntracklets #eta<1.0; Multiplicity V0A",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0A vs eta 1.0 histogram 
+    fHistNtrEtaV0MvsNtrEta1 = new TH2F("hNtrEtaV0MvsNtrEta1","Uncorrected Eta-V0M vs Eta1.0; Ntracklets #eta<1.0; Multiplicity V0A+V0C",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta V0M vs eta 1.0 histogram 
     fHistNtrCorrEta1vsNtrRawEta1 = new TH2F("hNtrCorrEta1vsNtrRawEta1","Corrected Eta1 vs Eta1.0; Ntracklets #eta<1.0 corrected; Ntracklets #eta<1",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //eta 1.6 vs eta 1.0 histogram 
   }
   fHistNtrVsZvtx = new TH2F("hNtrVsZvtx","Ntracklet vs VtxZ; VtxZ;N_{tracklet};",300,-15,15,nMultBins,firstMultBin,lastMultBin); // 
