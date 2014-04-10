@@ -44,6 +44,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  
+  //ana->SetTrackFilterBit(128);
   mgr->AddTask(ana);
   TString containername = "histEMCIsoPhoton."+trigbitname;
   TString containernameQA = "histosQA."+trigbitname;
