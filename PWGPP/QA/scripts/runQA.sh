@@ -64,7 +64,7 @@ updateQA()
   echo "logFile = $logFile"
 
   #check lock
-  lockFile=${logDirectory}/runQA.lock
+  lockFile=${workingDirectory}/runQA.lock
   [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
   [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
