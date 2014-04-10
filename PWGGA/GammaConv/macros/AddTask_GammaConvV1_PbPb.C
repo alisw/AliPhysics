@@ -485,11 +485,11 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
       cutarray[ 3] = "7340001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
       cutarray[ 4] = "7450001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%
    } else if ( trainConfig == 65){ // cleaner cuts
-      cutarray[ 0] = "7560001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; // 0-5%
-      cutarray[ 1] = "7670001002092970028250400000"; mesonCutArray[ 1] = "01525065009000"; // 5-10%
-      cutarray[ 2] = "7780001002092970028250400000"; mesonCutArray[ 2] = "01525065009000"; // 0-10%
-      cutarray[ 3] = "7890001002092970028250400000"; mesonCutArray[ 3] = "01525065009000"; // 10-20%
-      cutarray[ 4] = "7090001002092970028250400000"; mesonCutArray[ 4] = "01525065009000"; // 0-20%	
+		cutarray[ 0] = "7560001002092970028250400000"; mesonCutArray[0]= "01525065009000"; // 0-5%
+		cutarray[ 1] = "7670001002092970028250400000"; mesonCutArray[1]= "01525065009000"; // 5-10%
+		cutarray[ 2] = "7780001002092970028250400000"; mesonCutArray[2]= "01525065009000"; // 0-10%
+		cutarray[ 3] = "7890001002092970028250400000"; mesonCutArray[3]= "01525065009000"; // 10-20%
+		cutarray[ 4] = "7090001002092970028250400000"; mesonCutArray[4]= "01525065009000"; // 0-20%	
 	} else if ( trainConfig == 66){ // variation eta  0.65
 		cutarray[ 0] = "6010001032092970028250400000"; mesonCutArray[0]= "01523065009000"; // 0-5%
 		cutarray[ 1] = "6120001032092970028250400000"; mesonCutArray[1]= "01523065009000"; // 5-10%

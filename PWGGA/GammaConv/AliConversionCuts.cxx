@@ -1105,6 +1105,7 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
       cutIndex++; //10
    }
    cutIndex++; //11
+
    if (photonAOD){
 		if (fDoPhotonQualitySelectionCut && photonAOD->GetPhotonQuality() != fPhotonQualityCut){
 			if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
@@ -1212,7 +1213,6 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
 ///________________________________________________________________________
 Bool_t AliConversionCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
 {   // Armenteros Qt Cut
-
    if(fDo2DQt){
       if ( !(TMath::Power(photon->GetArmenterosAlpha()/0.95,2)+TMath::Power(photon->GetArmenterosQt()/fQtMax,2) < 1) ){
          return kFALSE;
@@ -2086,11 +2086,34 @@ void AliConversionCuts::PrintCutsWithValues() {
       } else if (fSpecialTrigger > 4){   
          printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
       }
-   }   
+   }
+   printf("Electron cuts: \n");
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{e} < %3.2f\n", fEtaCut );
+   printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
+   printf("\t %3.2f < n sigma e < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
    
-   
-   
-   
+   printf("Photon cuts: \n");
+   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
+   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
+   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
+   if (fDo2DQt){
+	  printf("\t 2 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
+   } else {
+	  printf("\t 1 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
+   }
+   if (fDo2DPsiPairChi2){
+	  printf("\t 2 dimensional triangle chi^{2} and psi_{pair} cut applied with maximum of chi^{2} = %3.2f and |psi_{pair}| = %3.2f \n", fChi2CutConversion, fPsiPairCut ); 
+   } else {
+      printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion ); 
+	  printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut ); 
+   }	   
+   printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
+   printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
+   printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
+   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
 }
 
 ///________________________________________________________________________
@@ -3002,23 +3025,28 @@ Bool_t AliConversionCuts::SetSharedElectronCut(Int_t sharedElec) {
 	case 0:
 		fDoSharedElecCut = kFALSE;
 		fDoPhotonQualitySelectionCut = kFALSE;
+		fPhotonQualityCut = 0;
 		break;
 	case 1:
 		fDoSharedElecCut = kTRUE;
 		fDoPhotonQualitySelectionCut = kFALSE;
+		fPhotonQualityCut = 0;
 		break;
 	case 2:
 		fDoSharedElecCut = kFALSE;
 		fDoPhotonQualitySelectionCut = kTRUE;
 		fPhotonQualityCut = 1;
+		break;
 	case 3:
 		fDoSharedElecCut = kFALSE;
 		fDoPhotonQualitySelectionCut = kTRUE;	  
 		fPhotonQualityCut = 2;
+		break;
 	case 4:
 		fDoSharedElecCut = kFALSE;
 		fDoPhotonQualitySelectionCut = kTRUE;	  
 		fPhotonQualityCut = 3;
+		break;
 	default:
 		AliError(Form("Shared Electron Cut not defined %d",sharedElec));	
 		return kFALSE;
@@ -3244,40 +3272,40 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t PrimaryTracks10[10][2] =
       {
          {9999,9999}, //  0
-         {1210,928}, // 10
-         { 817,683}, // 20
-         { 536, 437}, // 30
-         { 337, 277}, // 40
+         {1210, 928}, // 10
+         { 817, 658}, // 20
+         { 536, 435}, // 30
+         { 337, 276}, // 40
          { 197, 162}, // 50
          { 106, 100}, // 60
-         {  51,  50}, // 70
-         {  21,  10}, // 80
+         {  51,  44}, // 70
+         {  21,  18}, // 80
          {   0,   0}  // 90
       };
    Int_t PrimaryTracks5a[10][2] =
       {
          {9999,9999}, // 0
          {1485,1168}, // 5
-         {1210,928}, // 10
-         { 995,800}, // 15
-         { 817,683}, // 20
-         { 666,1160}, // 25
-         { 536, 437}, // 30
+         {1210, 928}, // 10
+         { 995, 795}, // 15
+         { 817, 658}, // 20
+         { 666, 538}, // 25
+         { 536, 435}, // 30
          { 428, 350}, // 35
-         { 337, 277}, // 40
-         { 260, 200}  // 45
+         { 337, 276}, // 40
+         { 260, 214}  // 45
       };
    Int_t PrimaryTracks5b[10][2] =
       {
-         { 260, 200}, // 45
+         { 260, 214}, // 45
          { 197, 162}, // 50
          { 147, 125}, // 55
          { 106, 100}, // 60
-         {  75, 75}, // 65
-         {  51,  50}, // 70
-         {  34,  30}, // 75
-         {  21,  10}, // 80
-         {  13,  5}, // 85
+         {  75,  63}, // 65
+         {  51,  44}, // 70
+         {  34,  29}, // 75
+         {  21,  18}, // 80
+         {  13,  11}, // 85
          {   0,   0}  // 90
       };
 
