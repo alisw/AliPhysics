@@ -361,7 +361,7 @@ goCPass1()
                "${batchWorkingDirectory}/runCalibTrain.C"
                "${batchWorkingDirectory}/QAtrain_duo.C"
                "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-               "${batchWorkingDirectory}/meta/cpass0.localOCDB.${runNumber}.tgz"
+               "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                "${batchWorkingDirectory}/OCDB.root"
                "${trustedQAtrainMacro}"
                "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/runCPass1.sh"
@@ -597,28 +597,29 @@ goMergeCPass0()
     touch CalibObjects.root
     touch ocdb.log
     touch merge.log
+    touch dcsTime.root
     mkdir -p ./OCDB/TPC/Calib/TimeGain/
     mkdir -p ./OCDB/TPC/Calib/TimeDrift/
     touch ./OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
     touch ./OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
   else
     ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
-  fi
 
+    #produce the calib trees for expert QA (dcsTime.root)
+    goMakeLocalOCDBaccessConfig ./OCDB
+    echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+  fi
+  
   ### produce the output
   #tar the produced OCDB for reuse
   tar czf ${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz ./OCDB
-
-  #produce the calib trees for expert QA (dcsTime.root)
-  goMakeLocalOCDBaccessConfig ./OCDB
-  echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-  aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
 
   /bin/ls
 
   #copy all to output dir
   cp -pf --recursive ${runpath}/* ${outputDir}
-  
+
   if [[ -n ${generateMC} ]]; then
     goPrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
   fi
@@ -756,23 +757,8 @@ goMergeCPass1()
   
   echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
   if [[ -n ${pretend} ]]; then
-    touch CalibObjects.root
     touch ocdb.log
-    touch merge.log
     touch cpass1.localOCDB.${runNumber}.tgz
-  else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
-  fi
-
-  tar czf ${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz ./OCDB
-
-  #merge QA (and filtered trees)
-  [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
-  [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
-
-  #echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
-  echo aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")"
-  if [[ -n ${pretend} ]]; then
     touch ${qaMergedOutputFileName}
     touch merge.log
     touch trending.root
@@ -780,7 +766,16 @@ goMergeCPass1()
     touch CalibObjects.root
     touch dcsTime.root
     touch ${qaMergedOutputFileName}
+    mkdir -p OCDB
   else
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
+
+    #merge QA (and filtered trees)
+    [[ -n ${AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
+    [[ -n ${AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF} ]] && export AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+
+    #echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
+    echo aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")"
     #aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
     aliroot -b -q "QAtrain_duo.C(\"_barrel\",${runNumber},\"${qaFilesToMerge}\",1,\"${ocdbStorage}\")" > mergeQA.log
     mv QAresults_barrel.root ${qaMergedOutputFileName}
@@ -789,11 +784,13 @@ goMergeCPass1()
     #merge filtered trees
     echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
     aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")"
+
+    #produce the calib trees for expert QA
+    echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
   fi
-  
-  #produce the calib trees for expert QA
-  echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-  aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+
+  tar czf ${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz ./OCDB
 
   /bin/ls
 
@@ -932,7 +929,7 @@ goGenerateMakeflow()
   declare -A arr_cpass0_profiled_outputs
   declare -A listOfRuns
   [[ -n ${runNumber} ]] && listOfRuns[${runNumber}]=1
-  while read x; do listOfRuns[$(guessRunNumber ${x})]=1; done < ${inputFileList}
+  while read x; do tmpRun=$(guessRunNumber ${x}); [[ -n ${tmpRun} ]] && listOfRuns[${tmpRun}]=1; done < ${inputFileList}
   for runNumber in "${!listOfRuns[@]}"; do
     [[ -z ${runNumber} ]] && continue
     [[ ! ${runNumber} =~ ^[0-9]*[0-9]$ ]] && continue
@@ -1068,7 +1065,7 @@ goCreateQAplots()
   olddir=${PWD}
   mkdir -p ${outputDir}
   cd ${outputDir}
-  [[ ! "${PWD}" = "${outputDir}" ]] && echo "cannot make ${outputDir}... exiting" && return 1
+  [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "cannot make ${outputDir}... exiting" && return 1
 
   echo ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList=${mergedQAfileList}
   ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
@@ -1163,7 +1160,7 @@ guessRunNumber()
   for ((x=${dirDepth}-1;x>=0;x--)); do
     local field=${path[${x}]}
     field=${field/run/000}
-    [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000} && break
+    [[ ${field} =~ [0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000} && break
   done
   echo ${runNumber}
   return 0
@@ -1237,7 +1234,8 @@ summarizeLogs()
     if [[ ${validationStatus} -eq 0 ]]; then 
       #in pretend mode randomly report an error in rec.log some cases
       if [[ -n ${pretend} && "${log}" == "rec.log" ]]; then
-        [[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${finallog} BAD random error" || echo "${finallog} OK"
+        #[[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${finallog} BAD random error" || echo "${finallog} OK"
+        echo "${finallog} OK"
       else
         echo "${finallog} OK"
       fi
@@ -1904,7 +1902,7 @@ goMakeMergedSummaryTree()
   #       summary_pass0.tree
   #       summary_pass1.tree
   #    
- 
+
   [[ ! -f cpass0.dcsTree.list ]] && echo "no cpass0.dcsTree.list" && return 1
   [[ ! -f cpass1.dcsTree.list ]] && echo "no cpass1.dcsTree.list" && return 1
   [[ ! -f trending.root ]] && echo "no trending.root" && return 1
@@ -2128,10 +2126,8 @@ done
   goPrintValues trendingfile trending.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
   rm -f filtering.list
   goPrintValues filteredTree filtering.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
-  #/bin/ls ${commonOutputPath}/*/cpass0/dcs* > cpass0.dcsTree.list
   rm -f cpass0.dcsTree.list
   goPrintValues dcsTree cpass0.dcsTree.list ${commonOutputPath}/meta/merge.cpass0.run*.done &>/dev/null
-  #/bin/ls ${commonOutputPath}/*/cpass1/dcs* > cpass1.dcsTree.list
   rm -f cpass1.dcsTree.list
   goPrintValues dcsTree cpass1.dcsTree.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
  
