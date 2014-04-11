@@ -462,7 +462,10 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   ana->SwitchOnFiducialCut();
   //Avoid borders of EMCal
   if(calorimeter=="EMCAL")
-    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
+  {
+    //ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
+    ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ;
+  }
   
   ana->SetMinPt(5);
   
