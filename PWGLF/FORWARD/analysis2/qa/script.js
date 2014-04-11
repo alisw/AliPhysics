@@ -76,3 +76,33 @@ function toggle(node,forceHide)
 	}
     }   
 }
+
+function showSub(sub) { 
+    console.log("Will show " + sub + "/index.html");
+    var frm = document.getElementById("frame");
+    if (frm == null) {
+	console.log("No frame, will show in parent")
+	location.assign(sub + "/index.html");
+	return;
+    }
+
+    console.log("Got frame, will show in that")
+    var ifrm = document.getElementById("iframe");
+    ifrm.src = sub + "/index.html";
+    
+    frm.style.visibility = "visible";
+}
+function closeDisplay() { 
+    var frm = document.getElementById("frame");
+    if (frm == null) {
+	console.log("No frame to close");
+	return;
+    }
+
+    console.log("Closing frame");
+    frm.style.visibility = "hidden";
+}
+
+//
+// EOF
+//
