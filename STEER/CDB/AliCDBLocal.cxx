@@ -324,7 +324,6 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
     }
 
   } else if (!query.HasSubVersion()) { // version specified but not subversion -> look for highest subVersion
-
     result->SetVersion(query.GetVersion());
 
     while ((filename = gSystem->GetDirEntry(dirPtr))) { // loop on files
@@ -368,27 +367,25 @@ AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
       TString aString(filename);
       if (aString.BeginsWith('.')) continue;
 
-      if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)) continue;
+      if (!FilenameToId(filename, aRunRange, aVersion, aSubVersion)){
+        AliDebug(5, Form("Could not make id from file: %s", filename));
+        continue;
+      }
       // aRunRange, aVersion, aSubVersion filled from filename
 
       if (!aRunRange.Comprises(query.GetAliCDBRunRange())) continue;
       // aRunRange contains requested run!
 
-      if(query.GetVersion() != aVersion || query.GetSubVersion() != aSubVersion) continue;
+      if(query.GetVersion() != aVersion || query.GetSubVersion() != aSubVersion){
+          continue;
+      }
       // aVersion and aSubVersion are requested version and subVersion!
 
-      if(result->GetVersion() == aVersion && result->GetSubVersion() == aSubVersion){
-        AliError(Form("More than one object valid for run %d, version %d_%d!",
-              query.GetFirstRun(), aVersion, aSubVersion));
-        gSystem->FreeDirectory(dirPtr);
-        delete result;
-        return NULL;
-      }
       result->SetVersion(aVersion);
       result->SetSubVersion(aSubVersion);
       result->SetFirstRun(aRunRange.GetFirstRun());
       result->SetLastRun(aRunRange.GetLastRun());
-
+      break;
     }
   }
 
@@ -652,11 +649,14 @@ TList* AliCDBLocal::GetEntries(const AliCDBId& queryId) {
     AliCDBPath queryPath = queryId.GetAliCDBPath();
     while((anIdPtr = dynamic_cast<AliCDBId*> (iter->Next()))){
       AliCDBPath thisCDBPath = anIdPtr->GetAliCDBPath();
-      if(!(queryPath.Comprises(thisCDBPath))) continue;
+      if(!(queryPath.Comprises(thisCDBPath))){
+        continue;
+      }
 
       AliCDBId thisId(*anIdPtr);
       dataId = GetId(thisId);
-      if(dataId) selectedIds.Add(dataId);
+      if(dataId)
+        selectedIds.Add(dataId);
     }
 
     delete iter; iter=0;
@@ -868,6 +868,7 @@ void AliCDBLocal::QueryValidFiles() {
               const char* filename;
 
               AliCDBRunRange aRunRange; // the runRange got from filename
+              AliCDBRunRange hvRunRange; // the runRange of the highest version valid file
               Int_t aVersion, aSubVersion; // the version and subVersion got from filename
               Int_t highestV=-1, highestSubV=-1; // the highest version and subVersion for this calibration type
 
@@ -881,21 +882,24 @@ void AliCDBLocal::QueryValidFiles() {
                 }
 
                 AliCDBRunRange runrg(fRun, fRun);
-                if (!aRunRange.Comprises(runrg)) continue;
+                if (!aRunRange.Comprises(runrg))
+                  continue;
 
                 // check to keep the highest version/subversion (in case of more than one)
                 if (aVersion > highestV) {
                   highestV = aVersion;
                   highestSubV = aSubVersion;
+                  hvRunRange = aRunRange;
                 } else {
                   if (aSubVersion > highestSubV) {
                     highestSubV = aSubVersion;
+                    hvRunRange = aRunRange;
                   }
                 }
               }
               if(highestV >= 0){
                 AliCDBPath validPath(level0, level1, level2);
-                AliCDBId *validId = new AliCDBId(validPath, aRunRange, highestV, highestSubV);
+                AliCDBId *validId = new AliCDBId(validPath, hvRunRange, highestV, highestSubV);
                 fValidFileIds.AddLast(validId);
               }
 
