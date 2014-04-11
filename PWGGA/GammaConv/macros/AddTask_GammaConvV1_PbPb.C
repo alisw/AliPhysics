@@ -3,10 +3,10 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
                               TString fileNameInputForWeighting = "MCSpectraInput.root", // path to file for weigting input
-                              Int_t doWeightingInt = 0,  //enable Weighting
+                              Int_t headerSelectionInt = 0,  // 1 pi0 header, 2 eta header, 3 both (only for "named" boxes)
                               TString cutnumberAODBranch = "1000000060084000001500000",
-                              TString periodName = "LHC13d2",
-							  Bool_t doWeighting = kFALSE
+                              TString periodName = "LHC13d2",  //name of the period for added signals and weighting
+							  Bool_t doWeighting = kFALSE  //enable Weighting
                            ) {
 
    // ================= Load Librariers =================================
@@ -716,30 +716,42 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 		cutarray[ 2] = "5010002002092970028250000000"; mesonCutArray[2]= "01525065000000"; // 0-10%
 		cutarray[ 3] = "5240002002092970028250000000"; mesonCutArray[3]= "01525065000000"; // 20-40%
 		cutarray[ 4] = "5250002002092970028250000000"; mesonCutArray[4]= "01525065000000"; // 20-50%
-	} else if ( trainConfig == 104){ // variation alpha 0.6&0.8
-		cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[0]= "01525085000000"; // 0-5%
-		cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[1]= "01525085000000"; // 5-10%
-		cutarray[ 2] = "5010001002092970028250400000"; mesonCutArray[2]= "01525085000000"; // 0-10%
-		cutarray[ 3] = "5240001002092970028250400000"; mesonCutArray[3]= "01525065000000"; // 20-40%
-		cutarray[ 4] = "5250001002092970028250400000"; mesonCutArray[4]= "01525065000000"; // 20-50%
-	} else if ( trainConfig == 105){ // variation alpha 0.6&0.8  added signal
-		cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[0]= "01525085000000"; // 0-5%
-		cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[1]= "01525085000000"; // 5-10%
-		cutarray[ 2] = "5010002002092970028250400000"; mesonCutArray[2]= "01525085000000"; // 0-10%
-		cutarray[ 3] = "5240002002092970028250400000"; mesonCutArray[3]= "01525065000000"; // 20-40%
-		cutarray[ 4] = "5250002002092970028250400000"; mesonCutArray[4]= "01525065000000"; // 20-50%	
-	} else if ( trainConfig == 106){ // variation alpha 0.65&0.75
-		cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[0]= "01525045000000"; // 0-5%
-		cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[1]= "01525045000000"; // 5-10%
-		cutarray[ 2] = "5010001002092970028250400000"; mesonCutArray[2]= "01525045000000"; // 0-10%
+	} else if ( trainConfig == 104){ // variation alpha 0.75
+		cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[0]= "01525055000000"; // 0-5%
+		cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[1]= "01525055000000"; // 5-10%
+		cutarray[ 2] = "5010001002092970028250400000"; mesonCutArray[2]= "01525055000000"; // 0-10%
 		cutarray[ 3] = "5240001002092970028250400000"; mesonCutArray[3]= "01525055000000"; // 20-40%
 		cutarray[ 4] = "5250001002092970028250400000"; mesonCutArray[4]= "01525055000000"; // 20-50%
-	} else if ( trainConfig == 107){ // variation alpha 0.65&0.75  added signal
-		cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[0]= "01525045000000"; // 0-5%
-		cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[1]= "01525045000000"; // 5-10%
-		cutarray[ 2] = "5010002002092970028250400000"; mesonCutArray[2]= "01525045000000"; // 0-10%
+	} else if ( trainConfig == 105){ // variation alpha 0.75  added signal
+		cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[0]= "01525055000000"; // 0-5%
+		cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[1]= "01525055000000"; // 5-10%
+		cutarray[ 2] = "5010002002092970028250400000"; mesonCutArray[2]= "01525055000000"; // 0-10%
 		cutarray[ 3] = "5240002002092970028250400000"; mesonCutArray[3]= "01525055000000"; // 20-40%
-		cutarray[ 4] = "5250002002092970028250400000"; mesonCutArray[4]= "01525055000000"; // 20-50%
+		cutarray[ 4] = "5250002002092970028250400000"; mesonCutArray[4]= "01525055000000"; // 20-50%	
+	} else if ( trainConfig == 106){ // variation alpha 0.85
+		cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[0]= "01525075000000"; // 0-5%
+		cutarray[ 1] = "6120001002092970028250400000"; mesonCutArray[1]= "01525075000000"; // 5-10%
+		cutarray[ 2] = "5010001002092970028250400000"; mesonCutArray[2]= "01525075000000"; // 0-10%
+		cutarray[ 3] = "5240001002092970028250400000"; mesonCutArray[3]= "01525075000000"; // 20-40%
+		cutarray[ 4] = "5250001002092970028250400000"; mesonCutArray[4]= "01525075000000"; // 20-50%
+	} else if ( trainConfig == 107){ // variation alpha 0.85  added signal
+		cutarray[ 0] = "6010002002092970028250400000"; mesonCutArray[0]= "01525075000000"; // 0-5%
+		cutarray[ 1] = "6120002002092970028250400000"; mesonCutArray[1]= "01525075000000"; // 5-10%
+		cutarray[ 2] = "5010002002092970028250400000"; mesonCutArray[2]= "01525075000000"; // 0-10%
+		cutarray[ 3] = "5240002002092970028250400000"; mesonCutArray[3]= "01525075000000"; // 20-40%
+		cutarray[ 4] = "5250002002092970028250400000"; mesonCutArray[4]= "01525075000000"; // 20-50%
+	} else if ( trainConfig == 108){ // psi pair 0.2
+		cutarray[ 0] = "6010001002092970028280400000"; mesonCutArray[0]= "01525065000000"; // 0-5%
+		cutarray[ 1] = "6120001002092970028280400000"; mesonCutArray[1]= "01525065000000"; // 5-10%
+		cutarray[ 2] = "5010001002092970028280400000"; mesonCutArray[2]= "01525065000000"; // 0-10%
+		cutarray[ 3] = "5240001002092970028280400000"; mesonCutArray[3]= "01525065000000"; // 20-40%
+		cutarray[ 4] = "5250001002092970028280400000"; mesonCutArray[4]= "01525065000000"; // 20-50%
+	} else if ( trainConfig == 109){ // psi pair 0.2  added signal
+		cutarray[ 0] = "6010002002092970028280400000"; mesonCutArray[0]= "01525065000000"; // 0-5%
+		cutarray[ 1] = "6120002002092970028280400000"; mesonCutArray[1]= "01525065000000"; // 5-10%
+		cutarray[ 2] = "5010002002092970028280400000"; mesonCutArray[2]= "01525065000000"; // 0-10%
+		cutarray[ 3] = "5240002002092970028280400000"; mesonCutArray[3]= "01525065000000"; // 20-40%
+		cutarray[ 4] = "5250002002092970028280400000"; mesonCutArray[4]= "01525065000000"; // 20-50%
 	} else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -759,18 +771,18 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 		TObjString *Header1 = new TObjString("PARAM");
 		HeaderList->Add(Header1);
 	} else if (periodName.CompareTo("LHC14a1a")==0){
-// 		if (doWeightingInt == 1){ 
-// 			TObjString *Header1 = new TObjString("pi0_1");
-// 			HeaderList->Add(Header1);
-// 		} else if (doWeightingInt == 2){
-// 			TObjString *Header1 = new TObjString("eta_2");
-// 			HeaderList->Add(Header1);
-// 		} else {
+		if (headerSelectionInt == 1){ 
+			TObjString *Header1 = new TObjString("pi0_1");
+			HeaderList->Add(Header1);
+		} else if (headerSelectionInt == 2){
+			TObjString *Header1 = new TObjString("eta_2");
+			HeaderList->Add(Header1);
+		} else {
 			TObjString *Header1 = new TObjString("pi0_1");
 			HeaderList->Add(Header1);
 			TObjString *Header2 = new TObjString("eta_2");
 			HeaderList->Add(Header2);
-// 		}  
+		}  
 	} else if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0){
 		TObjString *Header1 = new TObjString("BOX");
 		HeaderList->Add(Header1);
@@ -863,7 +875,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 			}	
 		}	  
 		
-		if ( trainConfig == 70 || trainConfig == 72  || trainConfig == 74  || trainConfig == 76  || trainConfig == 78  || trainConfig == 80  || trainConfig == 82  || trainConfig == 84 || trainConfig == 86  || trainConfig == 88  || trainConfig == 90 || trainConfig == 92 || trainConfig == 94 || trainConfig == 96  || trainConfig == 98  || trainConfig == 100 || trainConfig == 102  || trainConfig == 104 || trainConfig == 106 ){
+		if ( trainConfig == 70 || trainConfig == 72  || trainConfig == 74  || trainConfig == 76  || trainConfig == 78  || trainConfig == 80  || trainConfig == 82  || trainConfig == 84 || trainConfig == 86  || trainConfig == 88  || trainConfig == 90 || trainConfig == 92 || trainConfig == 94 || trainConfig == 96  || trainConfig == 98  || trainConfig == 100 || trainConfig == 102  || trainConfig == 104 || trainConfig == 106 || trainConfig == 108){
 			if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
 				if ( i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
 				if ( i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
@@ -872,7 +884,7 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 				if ( i == 4 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), Form("Eta_Hijing_%s_PbPb_2760GeV_2050TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_2050V0M","Eta_Fit_Data_PbPb_2760GeV_2050V0M");
 			}	
 		} 
-		if ( trainConfig == 71 || trainConfig == 73  || trainConfig == 75  || trainConfig == 77  || trainConfig == 79  || trainConfig == 81  || trainConfig == 83  || trainConfig == 85 || trainConfig == 87  || trainConfig == 89  || trainConfig == 91 || trainConfig == 93 || trainConfig == 95 || trainConfig == 97  || trainConfig == 99  || trainConfig == 101 || trainConfig == 103  || trainConfig == 105 || trainConfig == 107 ){
+		if ( trainConfig == 71 || trainConfig == 73  || trainConfig == 75  || trainConfig == 77  || trainConfig == 79  || trainConfig == 81  || trainConfig == 83  || trainConfig == 85 || trainConfig == 87  || trainConfig == 89  || trainConfig == 91 || trainConfig == 93 || trainConfig == 95 || trainConfig == 97  || trainConfig == 99  || trainConfig == 101 || trainConfig == 103  || trainConfig == 105 || trainConfig == 107 || trainConfig == 109){
 			if (periodName.CompareTo("LHC14a1a") ==0 || periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
 				if ( i == 0 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0005TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0005V0M","Eta_Fit_Data_PbPb_2760GeV_0005V0M");
 				if ( i == 1 && doWeighting)  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kFALSE, kFALSE,fileNameInputForWeighting, Form("Pi0_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), Form("Eta_Hijing_%s_addSig_PbPb_2760GeV_0510TPC",periodName.Data()), "","Pi0_Fit_Data_PbPb_2760GeV_0510V0M","Eta_Fit_Data_PbPb_2760GeV_0510V0M");
@@ -883,6 +895,10 @@ void AddTask_GammaConvV1_PbPb(  Int_t trainConfig = 1,  //change different set o
 		} 
 		
 		analysisCuts[i]->InitializeCutsFromCutString(cutarray[i].Data());
+		if (periodName.CompareTo("LHC14a1b") ==0 || periodName.CompareTo("LHC14a1c") ==0 ){
+			if (headerSelectionInt == 1) analysisCuts[i]->SetAddedSignalPDGCode(111);
+			if (headerSelectionInt == 2) analysisCuts[i]->SetAddedSignalPDGCode(221);
+		}
 		ConvCutList->Add(analysisCuts[i]);
 
 		if (trainConfig == 37 || trainConfig == 38){

@@ -127,39 +127,37 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    } else if (trainConfig == 15) { 
       cutarray[ 0] = "5890001042092970023220000000"; mesonCutArray[ 0] = "01522065009000";    
    } else  if (trainConfig == 16){ 
-      cutarray[ 0] = "6010002032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+      cutarray[ 0] = "6010001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 17) { 
-      cutarray[ 0] = "6120001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+      cutarray[ 0] = "6120001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 18) { 
-      cutarray[ 0] = "5010001032092970023220000000"; mesonCutArray[ 0] = "01523045009000"; 
+      cutarray[ 0] = "5010001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 19) { 
-      cutarray[ 0] = "5020001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";    
+      cutarray[ 0] = "5020001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else if (trainConfig == 20) { 
-      cutarray[ 0] = "5120001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";    
+      cutarray[ 0] = "5120001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else if (trainConfig == 21) { 
-      cutarray[ 0] = "5240001032092970023220000000"; mesonCutArray[ 0] = "01523045009000";       
+      cutarray[ 0] = "5240001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";       
    } else if (trainConfig == 22) {    
-      cutarray[ 0] = "5460001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+      cutarray[ 0] = "5460001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 23) {    
-      cutarray[ 0] = "5480001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+      cutarray[ 0] = "5480001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else if (trainConfig == 24) {    
-      cutarray[ 0] = "5450001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+      cutarray[ 0] = "5450001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 25) { 
-      cutarray[ 0] = "5560001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";
+      cutarray[ 0] = "5560001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";
    } else if (trainConfig == 26) { 
-      cutarray[ 0] = "5680001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+      cutarray[ 0] = "5680001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else if (trainConfig == 27) { 
-      cutarray[ 0] = "5670001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+      cutarray[ 0] = "5670001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 28) { 
-      cutarray[ 0] = "5780001032092970023220000000"; mesonCutArray[ 0] = "01523065009000"; 
+      cutarray[ 0] = "5780001002092970028250400000"; mesonCutArray[ 0] = "01525065009000"; 
    } else if (trainConfig == 29) { 
-      cutarray[ 0] = "4690001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";
+      cutarray[ 0] = "4690001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";
    } else if (trainConfig == 30) { 
-      cutarray[ 0] = "5890001032092970023220000000"; mesonCutArray[ 0] = "01523065009000";    
+      cutarray[ 0] = "5890001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else if (trainConfig == 31) { 
-      cutarray[ 0] = "5080001002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
-   } else if (trainConfig == 32) { 
-      cutarray[ 0] = "5080002002092970023220000000"; mesonCutArray[ 0] = "01525065009000";    
+      cutarray[ 0] = "5080001002092970028250400000"; mesonCutArray[ 0] = "01525065009000";    
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
