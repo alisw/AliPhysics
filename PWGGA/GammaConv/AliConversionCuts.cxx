@@ -3766,7 +3766,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 				gh = (AliGenEventHeader*)genHeaders->At(i);
 				TString GeneratorName = gh->GetName();
 				lastindexA = lastindexA + gh->NProduced();
-// 				cout << i << "\t" << GeneratorName.Data() << endl;
+				cout << i << "\t" << GeneratorName.Data() << endl;
 				for(Int_t j = 0; j<HeaderList->GetEntries();j++){
 				TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
 				if(GeneratorName.CompareTo(GeneratorInList) == 0){
