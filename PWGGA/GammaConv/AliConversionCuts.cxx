@@ -3766,14 +3766,14 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 				gh = (AliGenEventHeader*)genHeaders->At(i);
 				TString GeneratorName = gh->GetName();
 				lastindexA = lastindexA + gh->NProduced();
-// 				cout << i << "\t" << GeneratorName.Data() << endl;
+				cout << i << "\t" << GeneratorName.Data() << endl;
 				for(Int_t j = 0; j<HeaderList->GetEntries();j++){
 				TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
 				if(GeneratorName.CompareTo(GeneratorInList) == 0){
 					if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
 						if(fMCStack){
 							if (fMCStack->Particle(firstindexA)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA)->GetPdgCode() == 221 ) {
-								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1b")==0 ){
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 									if (gh->NProduced() > 10 && (fMCStack->Particle(firstindexA+10)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA+10)->GetPdgCode() == 221 )){
 										fnHeaders++;
 										continue;
@@ -3787,7 +3787,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 						if ( fMCStackAOD){
 							AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
 							if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
-								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1b")==0 ){
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 									if (gh->NProduced() > 10 && (fMCStack->Particle(firstindexA+10)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA+10)->GetPdgCode() == 221 )){
 										fnHeaders++;
 										continue;
@@ -3831,7 +3831,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 					if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
 						if(fMCStack){
 							if (fMCStack->Particle(firstindex)->GetPdgCode() == 111 || fMCStack->Particle(firstindex)->GetPdgCode() == 221 ) {
-								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1b")==0 ){
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 									if (gh->NProduced() > 10 && (fMCStack->Particle(firstindexA+10)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA+10)->GetPdgCode() == 221 )){
 										fNotRejectedStart[number] = firstindex;
 										fNotRejectedEnd[number] = lastindex;
@@ -3851,7 +3851,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 						if ( fMCStackAOD){
 							AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
 							if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
-								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1b")==0 ){
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
 									if (gh->NProduced() > 10 && (fMCStack->Particle(firstindexA+10)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA+10)->GetPdgCode() == 221 )){
 										fNotRejectedStart[number] = firstindex;
 										fNotRejectedEnd[number] = lastindex;
