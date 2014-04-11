@@ -498,6 +498,8 @@ goCPass1()
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
     [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${doneFile}
     [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${doneFile}
+    [[ -f QAresults_barrel.root ]] && echo "qafile ${outputDir}/QAresults_barrel.root" >> ${doneFile}
+    [[ -f QAresults_outer.root ]] && echo "qafile ${outputDir}/QAresults_outer.root" >> ${doneFile}
     [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
   fi
 
