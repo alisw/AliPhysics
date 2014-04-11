@@ -463,13 +463,19 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString calorimeter = "EMCAL
   //Avoid borders of EMCal
   if(calorimeter=="EMCAL")
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> f177d5e... reduce isolated photon fiducial area
   {
     //ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.27, 103, 157) ;
   }
+<<<<<<< HEAD
 =======
     ana->GetFiducialCut()->SetSimpleEMCALFiducialCut(0.6, 86, 174) ;
 >>>>>>> 02f44ef... wagon for photon isolation spectra analysis with CaloTrackCorr frame
+=======
+>>>>>>> f177d5e... reduce isolated photon fiducial area
   
   ana->SetMinPt(5);
   
