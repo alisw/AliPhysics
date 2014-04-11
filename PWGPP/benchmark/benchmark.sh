@@ -865,6 +865,12 @@ goSubmitMakeflow()
     mkdir -p ${commonOutputPath}
   fi
   mkdir -p ${commonOutputPath}/meta
+  
+  self=$(readlink -f "${0}")
+  
+  cp ${self} ${commonOutputPath}
+  cp ${configFile} ${commonOutputPath}
+  cp ${inputList} ${commonOutputPath}
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
@@ -902,8 +908,6 @@ goGenerateMakeflow()
   [[ -z ${configFile} ]] && configFile="benchmark.config"
   [[ ! -f ${configFile} ]] && echo "no config file found (${configFile})" && return 1
 
-  self=$(readlink -f "${0}")
-  
   #these files will be made a dependency - will be copied to the working dir of the jobs
   declare -a copyFiles
   inputFiles=(
@@ -1065,9 +1069,8 @@ goCreateQAplots()
   olddir=${PWD}
   mkdir -p ${outputDir}
   cd ${outputDir}
-  [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "cannot make ${outputDir}... exiting" && return 1
+  [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${olddir} && return 1
 
-  echo ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList=${mergedQAfileList}
   ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
 
   cd ${olddir}
@@ -1179,6 +1182,7 @@ validateLog()
                     'AliFatal'
                     'core dumped'
                     '\.C.*error:.*\.h: No such file'
+                    'line.*Aborted'
   )
 
   warningConditions=(
@@ -1930,14 +1934,18 @@ goMakeMergedSummaryTree()
     //
     // Calibration values dump
     //
+    //Printf("MakeTreeFromList cpass0.dcsTree.list");
     AliXRDPROOFtoolkit::MakeTreeFromList("Calib.TPC.CPass0.root", "dcs","dcs","cpass0.dcsTree.list",1);
+    //Printf("MakeTreeFromList cpass1.dcsTree.list");
     AliXRDPROOFtoolkit::MakeTreeFromList("Calib.TPC.CPass1.root", "dcs","dcs","cpass1.dcsTree.list",1);
     //
     // Calibration status dump
     //
     TFile *fprod = TFile::Open("fproduction.root","recreate");
     TTree  tree0, tree1;
+    //Printf("reading summary_pass0.tree");
     tree0.ReadFile("summary_pass0.tree");
+    //Printf("reading summary_pass1.tree");
     tree1.ReadFile("summary_pass1.tree");
     tree0.Write("CPass0");
     tree1.Write("CPass1");
@@ -1953,6 +1961,7 @@ goMakeMergedSummaryTree()
     stringSetup+="1#CPass0#runnumber#CPass0#fproduction.root+";  // 
     stringSetup+="1#CPass1#runnumber#CPass1#fproduction.root+";  // 
     //
+    //Printf("stringSetup: %s", stringSetup.Data());
     AliXRDPROOFtoolkit::JoinTreesIndex("outAll.root","joinAll","run",stringSetup.Data(), 1);
   }
 EOF
@@ -1975,6 +1984,8 @@ goMakeSummary()
   shift 1
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
+  
+  configFile=$(readlink -f ${configFile})
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -2138,9 +2149,10 @@ done
   goMakeSummaryTree ${commonOutputPath} 0
   goMakeSummaryTree ${commonOutputPath} 1
 
-  goCreateQAplots "qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="filtering.list" &>createQAplots.log
+  goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
 
   #make a merged summary tree out of the QA trending, dcs trees and log summary trees
+  echo goMakeMergedSummaryTree PWD=$PWD
   goMakeMergedSummaryTree
 
   #if set, email the summary
@@ -2299,6 +2311,11 @@ parseConfig()
     echo "config file ${configFile} not found!, skipping..."
   fi
 
+  unset encodedSpaces
+  for opt in "${args[@]}"; do
+    [[ "${opt}" =~ encodedSpaces=.* ]] && encodedSpaces=1 && break
+  done
+
   #then, parse the options as they override the options from file
   for opt in "${args[@]}"; do
     if [[ ! "${opt}" =~ .*=.* ]]; then
@@ -2307,6 +2324,7 @@ parseConfig()
     fi
     local var="${opt%%=*}"
     local value="${opt#*=}"
+    [[ -n ${encodedSpaces} ]] && value=$(decSpaces "${value}")
     echo "${var} = ${value}"
     export ${var}="${value}"
   done
@@ -2384,5 +2402,11 @@ guessRunData()
   fi
   return 0
 }
+
+#these functions encode strings to and from a space-less form
+#use when spaces are not well handled (e.g. in arguments to 
+#commands in makeflow files, etc.
+encSpaces()(a="${1//,/\\,}";echo "${a// /,}")
+decSpaces()(a="${1//\\,/\\ }";b="${a//,/ }";echo "${b//\\ /,}")
 
 main "$@"
