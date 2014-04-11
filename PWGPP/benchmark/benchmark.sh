@@ -453,7 +453,7 @@ goCPass1()
     #make the filtered tree (if requested and not already produced by QA
     [[ -f AliESDs_Barrel.root ]] && echo "AliESDs_Barrel.root" > filtered.list
     if [[ -n ${runESDfiltering} && ! -f FilterEvents_Trees.root ]]; then 
-      goMakeFilteredTrees ${PWD} ${runNumber} "filtered.list" ${filteringFactorHighPt} ${filteringFactorV0s} ${ocdbPath} 1000000 0 10000000 0 ${configFile} AliESDs_Barrel.root "${extraOpts[@]}"
+      goMakeFilteredTrees ${PWD} ${runNumber} "filtered.list" ${filteringFactorHighPt} ${filteringFactorV0s} ${ocdbPath} 1000000 0 10000000 0 ${configFile} AliESDs_Barrel.root "${extraOpts[@]}" >filtering.log
     fi
 
   fi
@@ -501,6 +501,18 @@ goCPass1()
     [[ -f QAresults_barrel.root ]] && echo "qafile ${outputDir}/QAresults_barrel.root" >> ${doneFile}
     [[ -f QAresults_outer.root ]] && echo "qafile ${outputDir}/QAresults_outer.root" >> ${doneFile}
     [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+  else
+    if grep "qa_outer.log.*OK" ${doneFile} > /dev/null; then
+      [[ -f QAresults_Outer.root ]] && echo "qafile ${outputDir}/QAresults_Outer.root" >> ${doneFile}
+      [[ -f QAresults_outer.root ]] && echo "qafile ${outputDir}/QAresults_outer.root" >> ${doneFile}
+    fi
+    if grep "qa_barrel.log.*OK" ${doneFile} > /dev/null; then
+      [[ -f QAresults_Barrel.root ]] && echo "qafile ${outputDir}/QAresults_Barrel.root" >> ${doneFile}
+      [[ -f QAresults_barrel.root ]] && echo "qafile ${outputDir}/QAresults_barrel.root" >> ${doneFile}
+    fi
+    if grep "filtering.log.*OK" ${doneFile} > /dev/null; then
+      [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+    fi
   fi
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
@@ -785,11 +797,11 @@ goMergeCPass1()
 
     #merge filtered trees
     echo aliroot -l -b -q "merge.C(\"${qaFilesToMerge}\",\"\",kFALSE,\"${qaMergedOutputFileName}\")"
-    aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")"
+    aliroot -l -b -q "merge.C(\"${filteredFilesToMerge}\",\"\",kFALSE,\"FilterEvents_Trees.root\")" > mergeFilteredTrees.log
 
     #produce the calib trees for expert QA
     echo aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
-    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")"
+    aliroot -b -q "${ALICE_ROOT}/PWGPP/TPC/macros/CalibSummary.C(${runNumber},\"${ocdbStorage}\")" > calibTree.log
   fi
 
   tar czf ${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz ./OCDB
@@ -809,6 +821,13 @@ goMergeCPass1()
     [[ -f trending.root ]] && echo "trendingfile ${outputDir}/trending.root" >> ${doneFile}
     [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
     [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+  else
+    if grep "mergeQA.log.*OK" ${doneFile} > /dev/null; then
+      [[ -f ${qaMergedOutputFileName} ]] && echo "qafile ${outputDir}/${qaMergedOutputFileName}" >> ${doneFile}
+    fi
+    if grep "mergeFilteredTrees.log.*OK" ${doneFile} > /dev/null; then
+      [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+    fi
   fi
       
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
