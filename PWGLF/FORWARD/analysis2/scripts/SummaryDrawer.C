@@ -31,6 +31,8 @@
 #  include <TPad.h>
 #  include <TRegexp.h>
 #  include <TGraph.h>
+#  include <sstream>
+#  include <iomanip>
 # else 
 #  ifdef __ACLIC__
 class THStack;
@@ -133,7 +135,7 @@ protected:
 
     for (UShort_t i = 0; i < 5; i++) {
       UShort_t      d = (i+1)/2+1;
-      Char_t        r = (i/2 == 1) ? 'i' : 'o';
+      Char_t        r = (i/2 == 1) ? 'o' : 'i';
       TLegendEntry* e = l->AddEntry("dummy", Form("FMD%d%c", d, r), "f");
       e->SetFillColor(RingColor(d, r));
       e->SetFillStyle(1001);
@@ -338,6 +340,25 @@ protected:
     
   //___________________________________________________________________
   /** 
+   * Get a Short_t parameter value 
+   * 
+   * @param c      Parent collection
+   * @param name   Name of parameter
+   * @param value  On return the value
+   * @param verb   If true, complain if not found 
+   */
+  static Bool_t GetParameter(const TObject*  c, 
+			     const TString&  name, 
+			     Short_t&        value,
+			     Bool_t          verb=true)
+  {
+    int v;
+    Bool_t r = DoGetParameter(GetObject(c, name, verb), c, v); 
+    value = v;
+    return r;
+  }
+  //___________________________________________________________________
+  /** 
    * Get a UShort_t parameter value 
    * 
    * @param c      Parent collection
@@ -357,7 +378,7 @@ protected:
   }
   //___________________________________________________________________
   /** 
-   * Get a UShort_t parameter value 
+   * Get a ULong_t parameter value 
    * 
    * @param c      Parent collection
    * @param name   Name of parameter
@@ -750,20 +771,22 @@ protected:
    * @param opts    Options
    * @param flags   Flags
    * @param title   Title on plot
+   *
+   * @return Drawn object - if any
    */
-  void DrawInPad(TVirtualPad* c, 
-		 Int_t        padNo, 
-		 TObject*     h, 
-		 Option_t*    opts="",
-		 UInt_t       flags=0x0,
-		 const char*  title="")
+  TObject* DrawInPad(TVirtualPad* c, 
+		     Int_t        padNo, 
+		     TObject*     h, 
+		     Option_t*    opts="",
+		     UInt_t       flags=0x0,
+		     const char*  title="")
   {
     TVirtualPad* p = c->GetPad(padNo);
     if (!p) { 
       Warning("DrawInPad", "Pad # %d not found in %s", padNo, c->GetName());
-      return;
+      return 0;
     }
-    DrawInPad(p, h, opts, flags, title);
+    return DrawInPad(p, h, opts, flags, title);
   }
   /** 
    * Draw a clone of an object
@@ -771,17 +794,21 @@ protected:
    * @param o       Object
    * @param options Draw options
    * @param title   Title of object
+   *
+   * @return Drawn object - if any
    */
-  virtual void DrawObjClone(TObject* o, Option_t* options, const char* title)
+  virtual TObject* DrawObjClone(TObject* o, Option_t* options, 
+				const char* title)
   {
     if (o->IsA()->InheritsFrom(TH1::Class())) 
-      DrawObjClone(static_cast<TH1*>(o), options, title);
+      return DrawObjClone(static_cast<TH1*>(o), options, title);
     else if (o->IsA()->InheritsFrom(THStack::Class())) 
-      DrawObjClone(static_cast<THStack*>(o), options, title);
+      return DrawObjClone(static_cast<THStack*>(o), options, title);
     else if (o->IsA()->InheritsFrom(TGraph::Class()))
-      o->DrawClone(options);
+      return o->DrawClone(options);
     else 
       o->Draw(options);
+    return o;
   }
   /** 
    * Draw an object clone 
@@ -789,8 +816,11 @@ protected:
    * @param o        Stack object
    * @param options  Draw options 
    * @param title    Title on plot
+   *
+   * @return Drawn object - if any
    */
-  virtual void DrawObjClone(THStack* o, Option_t* options, const char* title)
+  virtual TObject* DrawObjClone(THStack* o, Option_t* options, 
+				const char* title)
   {
     // THStack* tmp = static_cast<THStack*>(o->Clone());
     o->Draw(options);
@@ -798,7 +828,7 @@ protected:
     TAxis*   xAxis = o->GetXaxis();
     if (!xAxis) {
       Warning("DrawObjClone", "No X-axis for drawn stack %s", o->GetName());
-      return;
+      return o;
     }
     TH1*     h     = 0;
     Int_t    nBins = xAxis->GetNbins();
@@ -817,6 +847,7 @@ protected:
       xAxis->Set(nBins, xMin, xMax);
       o->GetHistogram()->Rebuild();
     }
+    return o;
   }
   /** 
    * Draw an object clone 
@@ -824,11 +855,14 @@ protected:
    * @param o        Histogram
    * @param options  Draw options 
    * @param title    Title on plot 
+   *
+   * @return Drawn object - if any
    */
-  virtual void DrawObjClone(TH1* o, Option_t* options, const char* title)
+  virtual TObject* DrawObjClone(TH1* o, Option_t* options, const char* title)
   {
     TH1* tmp = o->DrawCopy(options);
     if (title && title[0] != '\0') tmp->SetTitle(title);
+    return tmp;
   }    
   //__________________________________________________________________
   static void GetLegendPosition(UInt_t    flags, TVirtualPad* p, 
@@ -885,16 +919,18 @@ protected:
    * @param opts    Options
    * @param flags   Flags
    * @param title   Title on plot
+   *
+   * @return Drawn object - if any
    */
-  void DrawInPad(TVirtualPad* p, 
-		 TObject*     h, 
-		 Option_t*    opts="",
-		 UInt_t       flags=0x0,
-		 const char*  title="")
+  TObject* DrawInPad(TVirtualPad* p, 
+		     TObject*     h, 
+		     Option_t*    opts="",
+		     UInt_t       flags=0x0,
+		     const char*  title="")
   {
     if (!p) { 
       Warning("DrawInPad", "No pad specified");
-      return;
+      return 0;
     }
     p->cd();
     // Info("DrawInPad", "Drawing in pad %p", p);
@@ -912,7 +948,7 @@ protected:
     if (!h) {
       if (!(flags & kSilent))
 	Warning("DrawInPad", "Nothing to draw in pad # %s", p->GetName());
-      return;
+      return 0;
     }
     if (o.Contains("text", TString::kIgnoreCase)) {
       TH1* hh = static_cast<TH1*>(h);
@@ -920,7 +956,7 @@ protected:
       hh->SetMarkerSize(2);
       o.Append("30");
     }
-    DrawObjClone(h, o, title);
+    TObject* ret = DrawObjClone(h, o, title);
     
     if (flags & kLegend) {
       MakeLegend(p, flags, true);
@@ -928,6 +964,8 @@ protected:
     p->Modified();
     p->Update();
     p->cd();
+
+    return ret;
   }
   //__________________________________________________________________
   /** 
@@ -1035,6 +1073,121 @@ protected:
     fParName->SetTextSize(s);
     fParVal->SetTextSize(t);
   }  
+  template <typename T>
+  void DrawTParameter(Double_t&      y,
+		      TList*         list, 
+		      const TString& name) {
+    T value;
+    if (!GetParameter(list, name, value)) 
+      return;
+    std::stringstream s;
+    s << std::boolalpha << value;
+    DrawParameter(y, name, s.str().c_str(), 0);
+  }
+      
+  //__________________________________________________________________
+  /**
+   * Structure to hold a dived pad 
+   */
+  struct DividedPad { 
+    TVirtualPad*  fParent;
+    TVirtualPad** fSubs;
+    Bool_t        fLandscape;
+    Int_t         fNCol;
+    Int_t         fNRow;
+
+    DividedPad(TVirtualPad* p, Bool_t landscape, Int_t nCol, Int_t nRow) 
+      : fParent(p), 
+	fSubs(0),
+	fLandscape(landscape),
+	fNCol(landscape ? nRow : nCol),
+	fNRow(landscape ? nCol : nRow)
+    {
+      Int_t nPad = fNCol * fNRow;
+      fSubs      = new TVirtualPad*[nPad];
+    }
+    void Divide(Bool_t commonX, Bool_t commonY) {
+      if ((!commonX && !commonY) || (commonX && commonY)) {
+	// In case we have no common axis or do have both to be common,
+	// we directly use the TVirtualPad::Divide member function 
+	fParent->Divide(fNCol, fNRow, commonX ? 0 : 0.01, commonY ? 0 : 0.01);
+	for (Int_t iPad = 1; iPad <= fNRow*fNCol; iPad++) 
+	  fSubs[iPad-1] = fParent->GetPad(iPad);
+      }
+      else if (commonX && !commonY) {
+	// We need to have common X axis, but not common Y axis. We first
+	// divide the pad in fNCol columns, and then each in to fNRow rows
+	fParent->Divide(fNCol, 1);
+	for (Int_t iCol = 1; iCol <= fNCol; iCol++) { 
+	  TVirtualPad* q = fParent->GetPad(iCol);
+
+	  if (fNRow == 1) {
+	    fSubs[GetIdx(iCol,0)] = q;
+	    continue;
+	  }
+
+	  q->Divide(1,fNRow,0,0);
+	  for (Int_t iRow = 1; iRow <= fNRow; iRow++) 
+	    fSubs[GetIdx(iCol, iRow)] = q->GetPad(iRow);
+	}
+      }
+      else if (!commonX && commonY) { 
+	// We need to have common Y axis, but not common X axis. We first
+	// divide the pad in fNRow rows, and then each in to fNCol columns
+	fParent->Divide(1, fNRow);
+	for (Int_t iRow = 1; iRow <= fNRow; iRow++) { 
+	  TVirtualPad* q = fParent->GetPad(iRow);
+
+	  if (fNCol == 1) {
+	    fSubs[GetIdx(0,iRow)] = q;
+	    continue;
+	  }
+	  
+	  q->Divide(fNCol,1,0,0);
+	  for (Int_t iCol = 1; iCol <= fNCol; iCol++) 
+	    fSubs[GetIdx(iCol, iRow)] = q->GetPad(iCol);
+	}
+      }
+    }
+    virtual ~DividedPad() { if (fSubs) delete [] fSubs; }
+    /** 
+     * Get a sub-pad 
+     * 
+     * @param idx Index (0 based)
+     * 
+     * @return Pad or null
+     */
+    TVirtualPad* GetPad(Int_t idx) {
+      if (!fSubs) {
+	::Warning("GetPad","No sub-pads");
+	return 0;
+      }
+      if (idx < 0 || idx >= (fNRow*fNCol)) {
+	::Warning("GetPad", "Inded %d out of bounds [%d,%d]", 
+		  idx, 0, fNRow*fNCol);
+	return 0;
+      }
+      return fSubs[idx];
+    }
+    Int_t GetIdx(Int_t iCol, Int_t iRow) const 
+    {
+      return (iRow-1) * fNCol + iCol;
+    }
+    /** 
+     * Get a sub-pad 
+     * 
+     * @param iRow  Row number (1-based)
+     * @param iCol  Column number (1-based)
+     * 
+     * @return Pad or null
+     */
+    TVirtualPad* GetPad(Int_t iCol, Int_t iRow) { 
+      if (iRow < 0 || iRow > fNRow) return 0;
+      if (iCol < 0 || iRow > fNCol) return 0;
+      return GetPad(GetIdx(iCol, iRow));
+    }
+  };
+    
   //__________________________________________________________________
   void DivideForRings(Bool_t commonX, Bool_t commonY)
   {
@@ -1279,7 +1432,35 @@ protected:
     printf("Press enter to continue");
     std::cin.get();
   }
+  static void CompileScript(const TString& name, 
+			    const TString& sub, 
+			    const TString& check,
+			    Bool_t         force)
+  {
+    if (!check.IsNull() && gROOT->GetClass(check)) return;
 
+    TString fwd =gSystem->ExpandPathName("$ALICE_ROOT/PWGLF/FORWARD/analysis2");
+    TString macPath(gROOT->GetMacroPath());
+    TString incPath(gSystem->GetIncludePath());
+    if (!macPath.Contains(fwd)) macPath.Append(Form(":%s", fwd.Data()));
+    if (!incPath.Contains(fwd)) gSystem->AddIncludePath(Form("-I%s",
+							     fwd.Data()));
+    if (!sub.IsNull()) { 
+      TObjArray* subs = sub.Tokenize(": ");
+      TObject*   pSub = 0;
+      TIter      iSub(subs);
+      while ((pSub = iSub())) {
+	TString subDir = gSystem->ConcatFileName(fwd, pSub->GetName());
+	if (!macPath.Contains(subDir))
+	  macPath.Append(Form(":%s", subDir.Data()));
+	if (!incPath.Contains(subDir)) 
+	  gSystem->AddIncludePath(Form("-I%s", subDir.Data()));
+      }
+    }
+    
+    gROOT->LoadMacro(Form("%s%s", name.Data(), (force ? "++g" : "+")));
+    
+  }
   //____________________________________________________________________
   virtual void DrawEventInspector(TCollection* parent)
   {

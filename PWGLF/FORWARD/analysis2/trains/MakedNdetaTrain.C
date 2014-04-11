@@ -191,7 +191,7 @@ protected:
       << "          Float_t        vzMax=-999)\n"
       << "{\n"
       << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
-      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C++\",fwd));\n"
+      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C+\",fwd));\n"
       << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
       << "    DrawdNdeta(\"help\"); // Get the help\n"
       << "    return;\n"

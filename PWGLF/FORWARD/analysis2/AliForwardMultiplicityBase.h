@@ -109,6 +109,13 @@ public:
    */
   virtual Bool_t PreData(const TAxis& vertex, const TAxis& eta);
   /** 
+   * Called after processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PostEvent();
+  /** 
    * End of job
    * 
    * @return true on success

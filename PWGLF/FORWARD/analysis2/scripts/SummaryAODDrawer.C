@@ -210,12 +210,12 @@ protected:
   const Char_t* CutMethodName(Int_t lm) const
   {
     switch (lm) {
-    case 0: return "fixed";
-    case 1: return "X#times#Delta_{p}";
-    case 2: return "Fit range";
-    case 3: return "N#times#xi";
-    case 4: return "N#times(#xi+#sigma)";
-    case 5: return "P(#Delta<c)<X";
+    case 0: return "c=X";
+    case 1: return "c=X#times#Delta_{p}";
+    case 2: return "c:Lower bound of fit range";
+    case 3: return "c=#Delta_{p}-X#times#xi";
+    case 4: return "c=#Delta_{p}-X#times(#xi+#sigma)";
+    case 5: return "c:P(#Delta<c)<X";
     }
     return "unknown";
   }
@@ -241,6 +241,30 @@ protected:
     }
     DrawParameter(y, "Parameters", params, size);
     return method;
+  }
+  //____________________________________________________________________
+  void DrawCut(TVirtualPad* parent, Int_t sub, TH2* cuts)
+  {
+    if (!cuts) return;
+    THStack* stack = new THStack(cuts,"x");
+    stack->SetTitle(cuts->GetTitle());
+    for (Int_t i = 1; i <= cuts->GetNbinsY(); i++) {
+      TH1*     hist = static_cast<TH1*>(stack->GetHists()->At(i-1));
+      TString  name(cuts->GetYaxis()->GetBinLabel(i));
+      UShort_t det = UShort_t(name[3]-48);
+      Char_t   rng = name[4];
+      Color_t  col = RingColor(det, rng);
+      hist->SetTitle(name);
+      hist->SetMarkerStyle(20);
+      hist->SetMarkerColor(col);
+      hist->SetLineColor(col);
+      hist->SetFillColor(col);
+      hist->SetLineWidth(0);
+      hist->SetFillStyle(0);
+      hist->SetXTitle("#eta");
+      hist->SetYTitle(cuts->GetZaxis()->GetTitle());
+    }
+    DrawInPad(parent, sub, stack, "nostack p", kLegend|kCenter|kSouth);
   }
   //____________________________________________________________________
   void DrawSharingFilter()
@@ -288,8 +312,8 @@ protected:
       hHigh           = GetH2(c, "highCuts");
       // if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
       // if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
-      DrawInPad(fBody, 2, hLow,  "colz");
-      DrawInPad(fBody, 3, hHigh, "colz");
+      DrawCut(fBody, 2, hLow);
+      DrawCut(fBody, 3, hHigh);
     }
     PrintCanvas("Sharing filter");
 
@@ -321,7 +345,7 @@ protected:
 		  "#Delta/#Delta_{mip} reconstructed and merged");
 	DrawInPad(fBody, 1, anaELoss, "same");
 	DrawInPad(fBody, 1, lowCut,  "lf same"); 
-	DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend); 
+	DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend|kNorth|kWest); 
 	TVirtualPad* p = fBody->GetPad(1);
 	p->cd();
 	TLatex* l = new TLatex(1-p->GetRightMargin(), 
@@ -329,12 +353,38 @@ protected:
 	l->SetNDC();
 	l->SetTextAlign(32);
 	l->Draw();
-	
-	DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",    kLogy,
+
+	TH1*     singles  = GetH1(sc, "singleEloss");
+	TH1*     doubles  = GetH1(sc, "doubleEloss");
+	TH1*     tripples = GetH1(sc, "tripleEloss");
+	Double_t int1     = singles->Integral(0,singles->GetNbinsX()+1);
+	Double_t int2     = doubles->Integral(0,doubles->GetNbinsX()+1);
+	Double_t int3     = tripples->Integral(0,tripples->GetNbinsX()+1);
+	Double_t intT     = int1 + int2 + int3;
+	Double_t f1       = intT > 0 ? int1 / intT : 0;
+	Double_t f2       = intT > 0 ? int2 / intT : 0;
+	Double_t f3       = intT > 0 ? int3 / intT : 0;
+
+	singles->GetXaxis()->SetRangeUser(-.1, 2);
+	DrawInPad(fBody, 2, singles,    "",    kLogy,
 		  "#Delta/#Delta_{mip} for single, double, and tripple hits");
-	DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same",kLogy);
-	DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same",kLogy|kLegend);
+	DrawInPad(fBody, 2, doubles,    "same",    kLogy);
+	DrawInPad(fBody, 2, tripples,   "same",    kLogy);
+	DrawInPad(fBody, 2, lowCut,     "lf same", kLogy); 
+	DrawInPad(fBody, 2, highCut,    "lf same", kLogy|kLegend|kNorth|kWest); 
 	
+	fBody->cd(2);
+	Double_t nameX = fParName->GetX();
+	Double_t valX  = fParVal->GetX();
+	Double_t intY  = 0.4;
+	fParName->SetX(0.5);
+	fParVal->SetX(0.7);
+	DrawParameter(intY, "Singles",  Form("%5.1f%%", 100*f1), 0.05);
+	DrawParameter(intY, "Doubles",  Form("%5.1f%%", 100*f2), 0.05);
+	DrawParameter(intY, "Tripples", Form("%5.1f%%", 100*f3), 0.05);
+	fParName->SetX(nameX);
+	fParVal->SetX(valX);
+
 	DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz",kLogz);
 	// DrawInPad(fBody, 4, GetH1(sc, "distanceBefore"), "",     0x2);
 	// DrawInPad(fBody, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
@@ -342,11 +392,11 @@ protected:
 	
 	TH2* nB = GetH2(sc, "neighborsBefore");
 	if (nB) { 
-	  nB->GetXaxis()->SetRangeUser(0,8); 
-	  nB->GetYaxis()->SetRangeUser(0,8); 
+	  nB->GetXaxis()->SetRangeUser(0,2); 
+	  nB->GetYaxis()->SetRangeUser(0,2); 
 	}
 	DrawInPad(fBody, 5, nB, "colz", kLogz);
-	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", kLogz,
+	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "col same", kLogz,
 		  "Correlation of neighbors before and after merging");
 	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 	
@@ -539,6 +589,7 @@ protected:
       accI->Scale(scale); 
       accO->Scale(scale);
       accI->SetMinimum(0); 
+      accI->SetMaximum(1.3);
     }
     TH2* lCuts = GetH2(c, "lowCuts");
     TH2* maxW  = GetH2(c, "maxWeights");
@@ -546,9 +597,11 @@ protected:
     if (nFiles && lCuts) lCuts->Scale(1. / nFiles->GetVal());
     if (nFiles && maxW)  maxW->Scale(1. / nFiles->GetVal());
     DrawInPad(p, 2, accI); 
-    DrawInPad(p, 2, accO,  "same", kLegend); 
-    DrawInPad(p, 3, lCuts, "colz");
-    DrawInPad(p, 4, maxW,  "colz");
+    DrawInPad(p, 2, accO,  "same", kLegend|kNorth|kCenter); 
+    DrawCut(p, 3, lCuts);
+    // DrawInPad(p, 3, lCuts, "colz");
+    DrawCut(p, 4, maxW);
+    // DrawInPad(p, 4, maxW,  "colz");
   
     PrintCanvas("Density calculator");
 
@@ -570,18 +623,18 @@ protected:
       TH1* occ       = GetH1(sc, "occupancy");
       if (eloss)     eloss    ->SetLineWidth(1);
       if (elossUsed) elossUsed->SetLineWidth(1);
-      if (eloss)     eloss->GetXaxis()->SetRangeUser(-.1, 2);
+      if (eloss)     eloss->GetXaxis()->SetRangeUser(0.05, 2);
       
       DrawInPad(fBody, 1, corr,    "colz",        kLogz);
       DrawInPad(fBody, 1, corrOut, "same",        kLogz);
       DrawInPad(fBody, 2, diff,    "HIST E",      kLogy);
-      DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend);
+      DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend|kNorth|kWest);
       DrawInPad(fBody, 3, occ,      "",           kLogy);
       DrawInPad(fBody, 4, eloss,    "",           kLogy, 
 		"#Delta/#Delta_{mip} before and after cuts");
       DrawInPad(fBody, 4, elossUsed, "same",      kLogy);
       TGraph* thres = CreateCutGraph(tm, iq,  lCuts,  eloss, kYellow+1);
-      DrawInPad(fBody, 4, thres, "lf same", kLogy|kLegend); 
+      DrawInPad(fBody, 4, thres, "lf same", kLogy|kLegend|kNorth|kWest); 
 
       if (eloss && elossUsed) {
 	Int_t    lowBin    = eloss->GetXaxis()->FindBin(0.)+1;
