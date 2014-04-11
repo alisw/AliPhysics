@@ -24,7 +24,7 @@
 #include <TMath.h>
 #include <TError.h>
 #include <TROOT.h>
-#define FIT_OPTIONS "RNQS"
+#define FIT_OPTIONS "RNS"
 
 //====================================================================
 ULong_t AliForwardUtil::AliROOTRevision()
@@ -687,6 +687,7 @@ AliForwardUtil::PrintField(const char* name, const char* value, ...)
 }
 
 //====================================================================
+#if 0 // Moved to separate classes 
 Int_t    AliForwardUtil::fgConvolutionSteps  = 100;
 Double_t AliForwardUtil::fgConvolutionNSigma = 5;
 namespace {
@@ -787,7 +788,8 @@ AliForwardUtil::Landau(Double_t x, Double_t delta, Double_t xi)
   // Return:
   //    @f$ f'_{L}(x;\Delta,\xi) @f$
   //
-  return TMath::Landau(x, delta - xi * mpshift, xi);
+  Double_t deltaP = delta - xi * mpshift;
+  return TMath::Landau(x, deltaP, xi, true);
 }
 //____________________________________________________________________
 Double_t 
@@ -827,7 +829,9 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
   // Return:
   //    @f$ f@f$ evaluated at @f$ x@f$.  
   //
-  Double_t deltap = delta - xi * mpshift;
+  if (xi <= 0) return 0;
+
+  Double_t deltaP = delta; // - sigma * sigmaShift; // + sigma * mpshift;
   Double_t sigma2 = sigmaN*sigmaN + sigma*sigma;
   Double_t sigma1 = sigmaN == 0 ? sigma : TMath::Sqrt(sigma2);
   Double_t xlow   = x - fgConvolutionNSigma * sigma1;
@@ -839,12 +843,35 @@ AliForwardUtil::LandauGaus(Double_t x, Double_t delta, Double_t xi,
     Double_t x1 = xlow  + (i - .5) * step;
     Double_t x2 = xhigh - (i - .5) * step;
     
-    sum += TMath::Landau(x1, deltap, xi, kTRUE) * TMath::Gaus(x, x1, sigma1);
-    sum += TMath::Landau(x2, deltap, xi, kTRUE) * TMath::Gaus(x, x2, sigma1);
+    //sum += TMath::Landau(x1, deltap, xi, kTRUE) * TMath::Gaus(x, x1, sigma1);
+    //sum += TMath::Landau(x2, deltap, xi, kTRUE) * TMath::Gaus(x, x2, sigma1);
+    sum += Landau(x1, deltaP, xi) * TMath::Gaus(x, x1, sigma1);
+    sum += Landau(x2, deltaP, xi) * TMath::Gaus(x, x2, sigma1);
   }
   return step * sum * invSq2pi / sigma1;
 }
 
+namespace { 
+  const Double_t sigmaShift = 0.36390; // TMath::Log(TMath::Sqrt(2.));
+  double deltaSigmaShift(Int_t i, Double_t sigma)
+  {
+    return 0; // - sigma * sigmaShift;
+  }
+  void getIPars(Int_t i, Double_t& delta, Double_t& xi, Double_t& sigma)
+  {
+    Double_t dsig = deltaSigmaShift(i, sigma);
+    if (i == 1) { 
+      delta += dsig;
+      return; // { delta = delta + xi*mpshift; return; } // Do nothing 
+    }
+    
+    delta = i * (delta + xi * TMath::Log(i)) + dsig;
+    xi    = i * xi;
+    sigma = TMath::Sqrt(Double_t(i)) * sigma;
+  }
+}
+    
+    
 //____________________________________________________________________
 Double_t 
 AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi, 
@@ -874,9 +901,10 @@ AliForwardUtil::ILandauGaus(Double_t x, Double_t delta, Double_t xi,
   // Return:
   //    @f$ f_i @f$ evaluated
   //  
-  Double_t deltaI =  (i == 1 ? delta : i * (delta + xi * TMath::Log(i)));
-  Double_t xiI    =  i * xi;
-  Double_t sigmaI =  (i == 1 ? sigma : TMath::Sqrt(Double_t(i))*sigma);
+  Double_t deltaI = delta;
+  Double_t xiI    = xi;
+  Double_t sigmaI = sigma;
+  getIPars(i, deltaI, xiI, sigmaI);
   if (sigmaI < 1e-10) { 
     // Fall back to landau 
     return AliForwardUtil::Landau(x, deltaI, xiI);
@@ -1161,6 +1189,19 @@ AliForwardUtil::ELossFitter::Clear()
   fFitResults.Clear();
   fFunctions.Clear();
 }
+namespace { 
+  void setParLimit(TF1* f, Int_t iPar, Bool_t debug,
+		   Double_t test, Double_t low, Double_t high)
+  {
+    if (test >= low && test <= high) { 
+      if (debug) 
+	printf("Fit: Set par limits on %s: %f, %f\n", 
+	       f->GetParName(iPar), low, high);
+      f->SetParLimits(iPar, low, high);
+    }
+  }
+}
+
 //____________________________________________________________________
 TF1*
 AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
@@ -1194,6 +1235,7 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   // Get the bin with maximum 
   Int_t    peakBin = dist->GetMaximumBin();
   Double_t peakE   = dist->GetBinLowEdge(peakBin);
+  Double_t rmsE    = dist->GetRMS();
   
   // Get the low edge 
   // dist->GetXaxis()->SetRangeUser(fLowCut, peakE);
@@ -1218,31 +1260,22 @@ AliForwardUtil::ELossFitter::Fit1Particle(TH1* dist, Double_t sigman)
   TF1* landau1 = new TF1("landau1", landauGaus1, minE,maxE,kSigmaN+1);
 
   // Set initial guesses, parameter names, and limits  
-  landau1->SetParameters(1,peakE,peakE/10,peakE/5,sigman);
+  landau1->SetParameters(intg,peakE,peakE/10,peakE/5,sigman);
   landau1->SetParNames("C","#Delta_{p}","#xi", "#sigma", "#sigma_{n}");
   landau1->SetNpx(500);
-  if (peakE >= minE && peakE <= fMaxRange) {
-    // printf("Fit1: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
-    landau1->SetParLimits(kDelta, minE, fMaxRange);
-  }
-  if (peakE/10 >= 0 && peakE <= 0.1) {
-    // printf("Fit1: Set par limits on xi: %f, %f\n", 0., 0.1);
-    landau1->SetParLimits(kXi,    0.00, 0.1); // Was fMaxRange - too wide
-  }
-  if (peakE/5 >= 0 && peakE/5 <= 0.1) {
-    // printf("Fit1: Set par limits on sigma: %f, %f\n", 0., 0.1);
-    landau1->SetParLimits(kSigma, 1e-5, 0.1); // Was fMaxRange - too wide
-  }
+  setParLimit(landau1, kDelta, fDebug, peakE,   minE, fMaxRange);
+  setParLimit(landau1, kXi,    fDebug, peakE,   0,    rmsE); // 0.1
+  setParLimit(landau1, kSigma, fDebug, peakE/5, 1e-5, rmsE); // 0.1
   if (sigman <= 0)  landau1->FixParameter(kSigmaN, 0);
-  else {
-    // printf("Fit1: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
-    landau1->SetParLimits(kSigmaN, 0, fMaxRange);
-  }
+  else 
+    setParLimit(landau1, kSigmaN, fDebug, peakE, 0, rmsE);
+  
 
+  TString opts(Form("%s%s", FIT_OPTIONS, fDebug ? "" : "Q"));
   // Do the fit, getting the result object 
   if (fDebug) 
     ::Info("Fit1Particle", "Fitting in the range %f,%f", minE, maxE);
-  TFitResultPtr r = dist->Fit(landau1, FIT_OPTIONS, "", minE, maxE);
+  TFitResultPtr r = dist->Fit(landau1, opts, "", minE, maxE);
   if (!r.Get()) { 
     ::Warning("Fit1Particle", 
 	      "No fit returned when processing %s in the range [%f,%f] "
@@ -1296,6 +1329,7 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
 
   Int_t    minEb = dist->GetXaxis()->FindBin(minE);
   Int_t    maxEb = dist->GetXaxis()->FindBin(maxEi);
+  Double_t rmsE  = dist->GetRMS();
   Double_t intg  = dist->Integral(minEb, maxEb);
   if (intg <= 0) {
     ::Warning("FitNParticle",
@@ -1315,39 +1349,23 @@ AliForwardUtil::ELossFitter::FitNParticle(TH1* dist, UShort_t n,
 				 r->Parameter(kSigma),
 				 r->Parameter(kSigmaN),
 				 n, a.fArray, minE, maxEi);
-  if (minE      <= r->Parameter(kDelta) &&
-      fMaxRange >= r->Parameter(kDelta)) {
-    // Protect against warning from ParameterSettings
-    // printf("FitN: Set par limits on Delta: %f, %f\n", minE, fMaxRange);
-    landaun->SetParLimits(kDelta,  minE, fMaxRange);       // Delta
-  }
-  if (r->Parameter(kXi) >= 0 && r->Parameter(kXi) <= 0.1) {
-    // printf("FitN: Set par limits on xi: %f, %f\n", 0., 0.1);
-    landaun->SetParLimits(kXi,     0.00, 0.1);  // was fMaxRange - too wide
-  }
-  if (r->Parameter(kSigma) >= 1e-5 && r->Parameter(kSigma) <= 0.1) {
-    // printf("FitN: Set par limits on sigma: %f, %f\n", 1e-5, 0.1);
-    landaun->SetParLimits(kSigma,  1e-5, 0.1);  // was fMaxRange - too wide
-  }
-  // Check if we're using the noise sigma 
+  setParLimit(landaun, kDelta, fDebug, r->Parameter(kDelta), minE, fMaxRange);
+  setParLimit(landaun, kXi,    fDebug, r->Parameter(kXi),    0,    rmsE); // 0.1
+  setParLimit(landaun, kSigma, fDebug, r->Parameter(kSigma), 1e-5, rmsE); // 0.1
   if (sigman <= 0)  landaun->FixParameter(kSigmaN, 0);
-  else {
-    // printf("FitN: Set par limits on sigmaN: %f, %f\n", 0., fMaxRange);
-    landaun->SetParLimits(kSigmaN, 0, fMaxRange);
-  }
+  else 
+    setParLimit(landaun, kSigmaN, fDebug, r->Parameter(kSigmaN), 0, rmsE);
 
   // Set the range and name of the scale parameters 
   for (UShort_t i = 2; i <= n; i++) {// Take parameters from last fit 
-    if (a[i-2] >= 0 && a[i-2] <= 1) {
-      // printf("FitN: Set par limits on a_%d: %f, %f\n", i, 0., 1.);
-      landaun->SetParLimits(kA+i-2, 0,1);
-    }
+    setParLimit(landaun, kA+i-2, fDebug, a[i-2], 0, 1);
   }
 
   // Do the fit 
+  TString opts(Form("%s%s", FIT_OPTIONS, fDebug ? "" : "Q"));
   if (fDebug) 
     ::Info("FitNParticle", "Fitting in the range %f,%f (%d)", minE, maxEi, n);
-  TFitResultPtr tr = dist->Fit(landaun, FIT_OPTIONS, "", minE, maxEi);
+  TFitResultPtr tr = dist->Fit(landaun, opts, "", minE, maxEi);
   
   // landaun->SetRange(minE, fMaxRange);
   fFitResults.AddAtAndExpand(new TFitResult(*tr), n-1);
@@ -1361,8 +1379,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
 {
   // 
   // Fit a composite particle signal to the passed energy loss
-  // distribution
-  // 
+  // distribution  // 
   // Parameters:
   //    dist    Data to fit the function to 
   //    sigman If larger than zero, the initial guess of the
@@ -1465,9 +1482,10 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
   comp->SetLineWidth(3);
   
   // Do the fit, getting the result object 
+  TString opts(Form("%s%s", FIT_OPTIONS, fDebug ? "" : "Q"));
   if (fDebug) 
     ::Info("FitComposite", "Fitting composite in the range %f,%f", minE, maxE);
-  /* TFitResultPtr r = */ dist->Fit(comp, FIT_OPTIONS, "", minE, maxE);
+  /* TFitResultPtr r = */ dist->Fit(comp, opts, "", minE, maxE);
 
 #if 0
   TF1* part1 = static_cast<TF1*>(seed->Clone("part1"));
@@ -1496,6 +1514,7 @@ AliForwardUtil::ELossFitter::FitComposite(TH1* dist, Double_t sigman)
 #endif
   return comp;
 }
+#endif
 
 //====================================================================
 AliForwardUtil::Histos::~Histos()

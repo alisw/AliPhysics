@@ -4,6 +4,7 @@
 //
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
+#include "AliLandauGaus.h"
 #include <TF1.h>
 #include <TGraph.h>
 #include <TBrowser.h>
@@ -11,6 +12,7 @@
 #include <THStack.h>
 #include <TLatex.h>
 #include <TLegend.h>
+#include <TLine.h>
 #include <TH1D.h>
 #include <AliLog.h>
 #include <TMath.h>
@@ -55,22 +57,22 @@ AliFMDCorrELossFit::ELossFit::ELossFit()
 }
 //____________________________________________________________________
 AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
-  : fN(f.GetNpar() > AliForwardUtil::ELossFitter::kN ? 
-       Int_t(f.GetParameter(AliForwardUtil::ELossFitter::kN)) : 
+  : fN(f.GetNpar() > AliLandauGaus::kN ? 
+       Int_t(f.GetParameter(AliLandauGaus::kN)) : 
        1),
     fNu(f.GetNDF()),
     fChi2(f.GetChisquare()),
-    fC(f.GetParameter(AliForwardUtil::ELossFitter::kC)),
-    fDelta(f.GetParameter(AliForwardUtil::ELossFitter::kDelta)),
-    fXi(f.GetParameter(AliForwardUtil::ELossFitter::kXi)),
-    fSigma(f.GetParameter(AliForwardUtil::ELossFitter::kSigma)),
-    fSigmaN(f.GetParameter(AliForwardUtil::ELossFitter::kSigmaN)),
+    fC(f.GetParameter(AliLandauGaus::kC)),
+    fDelta(f.GetParameter(AliLandauGaus::kDelta)),
+    fXi(f.GetParameter(AliLandauGaus::kXi)),
+    fSigma(f.GetParameter(AliLandauGaus::kSigma)),
+    fSigmaN(f.GetParameter(AliLandauGaus::kSigmaN)),
     fA(0),
-    fEC(f.GetParError(AliForwardUtil::ELossFitter::kC)),
-    fEDelta(f.GetParError(AliForwardUtil::ELossFitter::kDelta)),
-    fEXi(f.GetParError(AliForwardUtil::ELossFitter::kXi)),
-    fESigma(f.GetParError(AliForwardUtil::ELossFitter::kSigma)),
-    fESigmaN(f.GetParError(AliForwardUtil::ELossFitter::kSigmaN)),
+    fEC(f.GetParError(AliLandauGaus::kC)),
+    fEDelta(f.GetParError(AliLandauGaus::kDelta)),
+    fEXi(f.GetParError(AliLandauGaus::kXi)),
+    fESigma(f.GetParError(AliLandauGaus::kSigma)),
+    fESigmaN(f.GetParError(AliLandauGaus::kSigmaN)),
     fEA(0),
     fQuality(quality),
     fDet(0), 
@@ -89,8 +91,8 @@ AliFMDCorrELossFit::ELossFit::ELossFit(Int_t quality, const TF1& f)
   fA  = new Double_t[fN];
   fEA = new Double_t[fN];
   for (Int_t i = 0; i < fN-1; i++) { 
-    fA[i]  = f.GetParameter(AliForwardUtil::ELossFitter::kA+i);
-    fEA[i] = f.GetParError(AliForwardUtil::ELossFitter::kA+i);
+    fA[i]  = f.GetParameter(AliLandauGaus::kA+i);
+    fEA[i] = f.GetParError(AliLandauGaus::kA+i);
   }
   fA[fN-1]  = -9999;
   fEA[fN-1] = -9999;
@@ -302,7 +304,7 @@ AliFMDCorrELossFit::ELossFit::Evaluate(Double_t x,
   //     \sum_{i=1}^{n} a_i f(x;\Delta_i,\xi_i,\sigma_i')
   // @f] 
   //
-  // (see AliForwardUtil::NLandauGaus) for the maximum @f$ N @f$
+  // (see AliLandauGaus::NLandauGaus) for the maximum @f$ N @f$
   // that fulfills the requirements 
   // 
   // Parameters:
@@ -312,8 +314,8 @@ AliFMDCorrELossFit::ELossFit::Evaluate(Double_t x,
   // Return:
   //    @f$ f_N(x;\Delta,\xi,\sigma')@f$ 
   //
-  return AliForwardUtil::NLandauGaus(x, fDelta, fXi, fSigma, fSigmaN, 
-				     TMath::Min(maxN, UShort_t(fN)), fA);
+  return AliLandauGaus::Fn(x, fDelta, fXi, fSigma, fSigmaN, 
+			   TMath::Min(maxN, UShort_t(fN)), fA);
 }
 
 //____________________________________________________________________
@@ -334,7 +336,7 @@ AliFMDCorrELossFit::ELossFit::EvaluateWeighted(Double_t x,
   //
   // If the denominator is zero, then 1 is returned. 
   //
-  // See also AliForwardUtil::ILandauGaus and AliForwardUtil::NLandauGaus
+  // See also AliLandauGaus::Fi and AliLandauGaus::NLandauGaus
   // for more information on the evaluated functions. 
   // 
   // Parameters:
@@ -350,7 +352,7 @@ AliFMDCorrELossFit::ELossFit::EvaluateWeighted(Double_t x,
   for (Int_t i = 1; i <= n; i++) {
     Double_t a = (i == 1 ? 1 : fA[i-1]);
     if (fA[i-1] < 0) break;
-    Double_t f = AliForwardUtil::ILandauGaus(x,fDelta,fXi,fSigma,fSigmaN,i);
+    Double_t f = AliLandauGaus::Fi(x,fDelta,fXi,fSigma,fSigmaN,i);
     num += i * a * f;
     den += a * f;
   }
@@ -416,9 +418,9 @@ AliFMDCorrELossFit::ELossFit::Print(Option_t* option) const
 	    << (fNu == 0 ? 999 : fChi2 / fNu) << "\n"
 	    << "     Quality:   " << fQuality << "\n" 
 	    << "  NParticles:   " << fN << "  (" << FindMaxWeight() << ")\n"
-	    << OUTPAR("Delta", fDelta, fEDelta) 
-	    << OUTPAR("xi", fXi, fEXi)
-	    << OUTPAR("sigma", fSigma, fESigma)
+	    << OUTPAR("Delta",   fDelta,  fEDelta) 
+	    << OUTPAR("xi",      fXi,     fEXi)
+	    << OUTPAR("sigma",   fSigma,  fESigma)
 	    << OUTPAR("sigma_n", fSigmaN, fESigmaN);
   for (Int_t i = 0; i < fN-1; i++) 
     std::cout << OUTPAR(Form("a%d", i+2), fA[i], fEA[i]);
@@ -434,14 +436,14 @@ AliFMDCorrELossFit::ELossFit::GetF1(Int_t i, Double_t max) const
   TF1*           ret  = 0;
   
   if (i <= 0)
-    ret = AliForwardUtil::MakeNLandauGaus(fC * 1, fDelta, fXi, 
-					  fSigma, fSigmaN, maxW/*fN*/,
-					  fA,  lowX, upX);
+    ret = AliLandauGaus::MakeFn(fC * 1, fDelta, fXi, 
+				fSigma, fSigmaN, maxW/*fN*/, fA,  lowX, upX);
+  else if (i == 1) 
+    ret = AliLandauGaus::MakeF1(fC, fDelta, fXi, fSigma, fSigmaN, lowX, upX);
   else if (i <= maxW) 
-    ret = AliForwardUtil::MakeILandauGaus(fC*(i == 1 ? 1 : fA[i-2]), 
-					  fDelta, fXi, 
-					  fSigma, fSigmaN, i, lowX, upX);
-
+    ret = AliLandauGaus::MakeFi(fC*(i == 1 ? 1 : fA[i-2]), 
+				fDelta, fXi, fSigma, fSigmaN, i, lowX, upX);
+  
   return ret;
 }
 //____________________________________________________________________
@@ -527,6 +529,7 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   bool good = false;
   bool vals = false;
   bool legd = false;
+  bool peak = false;
   if (opt.Contains("COMP")) { 
     opt.ReplaceAll("COMP","");
     comp = true;
@@ -546,7 +549,9 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   if (!opt.Contains("SAME")) { 
     gPad->Clear();
   }
-
+  if (opt.Contains("PEAK")) { 
+    peak = true;
+  }
   TLegend* l = 0;
   if (legd) { 
     l = new TLegend(.3, .5, .59, .94);
@@ -556,11 +561,8 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   }
   TObjArray cleanup;
   Int_t maxW = FindMaxWeight();
-  TF1* tot = AliForwardUtil::MakeNLandauGaus(fC * 1, 
-					     fDelta, fXi, 
-					     fSigma, fSigmaN, 
-					     maxW/*fN*/,     fA, 
-					     0.01,   10);
+  TF1* tot = AliLandauGaus::MakeFn(fC * 1, fDelta, fXi, fSigma, fSigmaN, 
+				   maxW/*fN*/,     fA,  0.01,   10);
   tot->SetLineColor(kBlack);
   tot->SetLineWidth(2);
   tot->SetLineStyle(1);
@@ -626,6 +628,12 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
 
   }
 
+  if (peak) { 
+    TLine* pl = new TLine(fDelta, 0.01*max, fDelta, 1.5*max);
+    pl->SetLineStyle(2);
+    pl->SetLineColor(kBlack);
+    pl->Draw();
+  }
   if (!comp) { 
     gPad->cd();
     return;
@@ -635,7 +643,7 @@ AliFMDCorrELossFit::ELossFit::Draw(Option_t* option)
   opt.Append(" same");
   for (Int_t i=1; i <= fN; i++) { 
     if (good && i > maxW) break;
-    TF1* f = AliForwardUtil::MakeILandauGaus(fC*(i == 1 ? 1 : fA[i-2]), 
+    TF1* f = AliLandauGaus::MakeFi(fC*(i == 1 ? 1 : fA[i-2]), 
 					     fDelta, fXi, 
 					     fSigma, fSigmaN, 
 					     i,      0.01, 10);
@@ -786,6 +794,7 @@ AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
 void
 AliFMDCorrELossFit::CacheBins(UShort_t minQuality) const
 {
+  AliLandauGaus::EnableSigmaShift(TestBit(kHasShift));
   if (fCache.GetSize() > 0) return;
 
   Int_t nRings = fRings.GetEntriesFast();
@@ -1454,7 +1463,10 @@ AliFMDCorrELossFit::Draw(Option_t* option)
 
 
     THStack* stack = static_cast<THStack*>(stacks->At(i));
-
+    if (!stack->GetHists() || stack->GetHists()->GetEntries() <= 0) { 
+      AliWarningF("No histograms in %s", stack->GetName());
+      continue;
+    }
     // Double_t powMax = TMath::Log10(max[i]);
     // Double_t powMin = min[i] <= 0 ? powMax : TMath::Log10(min[i]);
     // if (powMax-powMin > 2. && min[i] != 0) p->SetLogy();

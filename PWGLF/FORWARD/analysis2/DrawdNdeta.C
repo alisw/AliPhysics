@@ -476,7 +476,7 @@ struct dNdetaDrawer
 			     gROOT->GetMacroPath()));
     // Always recompile 
     if (!gROOT->GetClass("RefData"))
-      gROOT->LoadMacro("OtherData.C++");
+      gROOT->LoadMacro("OtherData.C+");
     gROOT->SetMacroPath(savPath);
 
     // --- Get the central results -----------------------------------
@@ -1472,7 +1472,7 @@ struct dNdetaDrawer
 			       gROOT->GetMacroPath(), fwd.Data()));
       // Always recompile 
       if (!gROOT->GetClass("AliceLogo"))
-	gROOT->LoadMacro("AliceLogo.C++");
+	gROOT->LoadMacro("AliceLogo.C+");
       gROOT->SetMacroPath(savPath);
       
       if (gROOT->GetClass("AliceLogo")) {

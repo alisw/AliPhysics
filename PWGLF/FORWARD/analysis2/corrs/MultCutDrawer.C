@@ -117,7 +117,8 @@ struct MultCutDrawer : public SummaryDrawer
     Double_t savY = fParVal->GetY();
     fParVal->SetX(.4);
     fParVal->SetY(.4);
-    
+    // fPause = true;
+
     TIter    iCut(&fCuts);
     TObject* pCut = 0;
     while ((pCut = iCut())) { 
@@ -126,7 +127,9 @@ struct MultCutDrawer : public SummaryDrawer
       TObjArray*              aP = sP.Tokenize(" ");
       TIter                   iP(aP);
       TObjString*             pP = 0;
- 
+      TString                 tM;
+      fBody->SetBottomMargin(0.20);
+      fBody->SetLeftMargin(0.06);
       fBody->Divide(1, aP->GetEntries(), 0, 0);
       Int_t iPad = 1;
       while ((pP = static_cast<TObjString*>(iP()))) {
@@ -134,28 +137,70 @@ struct MultCutDrawer : public SummaryDrawer
 	Double_t p     = pP->String().Atof();
 	Double_t vP[]  = { p, p, p, p, p };
 	THStack* stack = CutStack(method, vP, all);
-
+	if (tM.IsNull()) tM = stack->GetTitle();
 	// Kill title on all but first sub-panel
-	if (iPad != 1) stack->SetTitle("");
-
+	stack->SetTitle("");
 	DrawInPad(fBody, iPad, stack, "nostack p");
+	stack->GetYaxis()->SetTitleSize(0.12);
+	stack->GetYaxis()->SetTitleOffset(0.2);
+	stack->GetYaxis()->SetLabelSize(0.07);
+	if (iPad == 1) stack->GetYaxis()->SetTitle(tM);
+	stack->GetXaxis()->SetTitle("#eta");
+	stack->GetXaxis()->SetTitleSize(0.12);
+	stack->GetXaxis()->SetTitleOffset(0.6);
+	stack->GetXaxis()->SetTitleColor(kBlack);
+	stack->GetXaxis()->SetLabelSize(0.07);
+	stack->GetXaxis()->Dump();
+
+
+	if (iPad == 1) {
+	  Color_t    col   = kBlack;
+	  Double_t   hLtx  = 0.07;
+	  Double_t   yLtx  = 7*(hLtx+.005)+0.01;
+	  TLatex*    nLtx  = new TLatex(-0.75, yLtx, "Ring");
+	  TLatex*    pLtx  = new TLatex(-0.7,  yLtx, "Param");
+	  TLatex*    vLtx  = new TLatex(+0, yLtx, "Mean#pmVar_{min}^{max}");
+	  nLtx->SetTextAlign(31);pLtx->SetTextAlign(11);
+	  nLtx->SetTextSize(hLtx);
+	  pLtx->SetTextSize(hLtx);
+	  vLtx->SetTextSize(hLtx);
+	  nLtx->SetTextColor(col);
+	  pLtx->SetTextColor(col);
+	  vLtx->SetTextColor(col);
+	  nLtx->Draw();
+	  pLtx->Draw();
+	  vLtx->Draw();
+	}
 	// if (iPad == 1) { 
 	//   fBody->cd(1);
 	//   DrawRingLegend(0.4, 0.4, 0.7, 0.9);
 	// }
 	iPad++;
       }
-      PrintCanvas(Form("%s %s", method.Data(), sP.Data()));
+      PrintCanvas(Form("%s   X={%s}", tM.Data(), sP.Data()));
     }
+
     Int_t nAll = fStacks.GetEntries();
+    fBody->SetBottomMargin(0.20);
+    fBody->SetLeftMargin(0.06);
     fBody->Divide(1, nAll, 0, 0);
     for (Int_t iAll = 0; iAll < nAll; iAll++) {
       THStack* all = AllStack(iAll);
       DrawInPad(fBody, iAll+1, all, "nostack hist p");
+      all->GetYaxis()->SetTitleSize(0.12);
+      all->GetYaxis()->SetTitleOffset(0.2);
+      all->GetYaxis()->SetLabelSize(0.07);
+      if (iAll == 0) all->GetYaxis()->SetTitle("c");
+      all->GetXaxis()->SetTitle("#eta");
+      all->GetXaxis()->SetTitleSize(0.12);
+      all->GetXaxis()->SetTitleOffset(0.6);
+      all->GetXaxis()->SetTitleColor(kBlack);
+      all->GetXaxis()->SetLabelSize(0.07);
+      
       TVirtualPad* p = fBody->GetPad(iAll+1);
       p->cd();
       Double_t yT = 1-p->GetTopMargin();
-      if      (iAll == 0) DrawRingLegend(0.4, 0.4, 0.7, yT);
+      if      (iAll == 0) DrawRingLegend(p, kNorth|kCenter); 
       else if (iAll == 1) DrawMethodLegend(0.35, 0.4, 0.55,yT);
       
       Double_t y1 = ((iAll + 2 >= nAll) ? yT - .3 : p->GetBottomMargin());
@@ -386,6 +431,8 @@ struct MultCutDrawer : public SummaryDrawer
       if (!first) first = h;
       h->SetName(method);
       h->SetTitle(Form("%f", param[i-1]));
+      h->SetYTitle(cut->GetMethodString(true));
+      h->SetXTitle("#eta");
       h->SetMarkerColor(col);
       h->SetFillColor(col);
       h->SetLineColor(col);
@@ -397,13 +444,19 @@ struct MultCutDrawer : public SummaryDrawer
       rMin = TMath::Min(min, rMin);
       rMax = TMath::Max(max, rMax);
       all->Add(h);
-      TLatex* ltx = new TLatex(-1.7, i*0.075+0.01, 
-			       Form("%s %7g: %5.3f#pm%6.4f_{%6.4f}^{%6.4f}",
-				    n.Data(), param[i-1], avg, var,
-				    max-avg, avg-min));
-      ltx->SetTextSize(0.07);
-      ltx->SetTextColor(col);
-      h->GetListOfFunctions()->Add(ltx);
+      Double_t   hLtx  = 0.07;
+      Double_t   yLtx  = i*(hLtx+.005)+0.01;
+      TObjArray* lines = new TObjArray(3);
+      TLatex*    nLtx  = new TLatex(-0.75, yLtx, n);
+      TLatex*    pLtx  = new TLatex(-0.7,  yLtx, Form("X=%g", param[i-1]));
+      TLatex*    vLtx  = new TLatex(+0, yLtx, 
+				    Form("%5.3f#pm%6.4f_{%6.4f}^{%6.4f}",
+					 avg, var, max-avg, avg-min));
+      nLtx->SetTextAlign(31);pLtx->SetTextAlign(11);
+      nLtx->SetTextSize(hLtx);pLtx->SetTextSize(hLtx),vLtx->SetTextSize(hLtx);
+      nLtx->SetTextColor(col);pLtx->SetTextColor(col);vLtx->SetTextColor(col);
+      lines->Add(nLtx);lines->Add(pLtx);lines->Add(vLtx);
+      h->GetListOfFunctions()->Add(lines);
       printf("%5.3f+/-%6.4f ", avg, var);
     }
     TLatex* rLtx = new TLatex(6, fMC ? 0.65 : 0.55, 
@@ -413,7 +466,7 @@ struct MultCutDrawer : public SummaryDrawer
     rLtx->SetTextAlign(31);
     first->GetListOfFunctions()->Add(rLtx);
     Printf("-> %5.3f+/-%6.4f", rAvg, rVar);
-    stack->SetTitle(hist->GetTitle());
+    stack->SetTitle(cut->GetMethodString(true)); // hist->GetTitle());
     stack->SetMinimum(0); // 0.98*min);
     stack->SetMaximum(fMC ? 0.7 : 0.6); // 1.02*max);
     all->SetMinimum(0);
@@ -461,11 +514,18 @@ struct MultCutDrawer : public SummaryDrawer
     AliFMDCorrELossFit*       fit  = const_cast<AliFMDCorrELossFit*>(cFit);
     fit->CacheBins(8);
 
-    CreateCanvas("multCuts.pdf");
+    CreateCanvas("multCuts.pdf", true);
 
     fBody->cd();
     
-    Double_t y = .8;
+    Double_t y = .85;
+    TLatex* title = new TLatex(.5, y, "#Delta Cuts");
+    title->SetTextAlign(23);
+    title->SetTextFont(42);
+    title->SetTextSize(0.1);
+    title->Draw();
+    
+    y -= 0.11;
     DrawParameter(y, "Run #", Form("%lu", runNo));
     DrawParameter(y, "System", AliForwardUtil::CollisionSystemString(sys));
     DrawParameter(y, "#sqrt{s_{NN}}", 
@@ -473,7 +533,7 @@ struct MultCutDrawer : public SummaryDrawer
     DrawParameter(y, "L3 field", AliForwardUtil::MagneticFieldString(field));
     DrawParameter(y, "Simulation", Form("%s", mc ? "yes" : "no"));
     DrawParameter(y, "Satellite", Form("%s", sat ? "yes" : "no"));
-    PrintCanvas("Title");
+    PrintCanvas("Delta cuts");
 
     return true;
   }

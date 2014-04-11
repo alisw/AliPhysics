@@ -39,6 +39,9 @@ class TBrowser;
 class AliFMDCorrELossFit : public TObject 
 {
 public:
+  enum { 
+    kHasShift = (1<<14)
+  };
   /** 
    * POD structure to hold data from fits 
    * 
