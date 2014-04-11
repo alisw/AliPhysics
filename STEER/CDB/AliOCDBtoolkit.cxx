@@ -53,8 +53,8 @@
   // Compare alignment example:
   // Compare TPC alignemnt 2013 and 2010
   //
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2013.dump",1);
-  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2010.dump",1);
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2013/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2013.dump",1,1);
+  AliOCDBtoolkit::DumpOCDBFile("/cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Align/Data/Run0_999999999_v1_s0.root","TPCalign2010.dump",1,1);
   diff  TPCalign2013.dump TPCalign2010.dump > TPCalign2013_TPCalign2010.diff
   //
   //    
@@ -137,7 +137,7 @@ void AliOCDBtoolkit::MakeDiffExampleUseCase(){
 }
 
 
-void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput,const TString fType){
+void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, const TString outfile){
   //
   //
   //
@@ -171,7 +171,7 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput,const TString fType){
         return;
     }
   cout <<"BEGINDUMP:" << endl;
-  DumpOCDB(cdbMap,cdbList);
+  DumpOCDB(cdbMap,cdbList,outfile);
 }
 
 
@@ -378,7 +378,7 @@ void AliOCDBtoolkit::MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const 
   }
 }
 
-void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0){
+void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const TString outfile){
   //
   // Dump the OCDB configuatation as formated text file 
   // with following collumns
@@ -401,6 +401,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0){
   UInt_t hash;
   TMessage * file;
   Int_t size; 
+  FILE *ofs = fopen(outfile.Data(),"w");
   
   while ((CDBId  =(AliCDBId*) next())){
     cdbName = CDBId->GetPath();
@@ -415,11 +416,11 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0){
     file->WriteObject(obj);
     size = file->Length();
     if(!obj){
-      printf("object %s empty!\n",cdbName.Data());
+      fprintf(ofs,"object %s empty!\n",cdbName.Data());
       continue;
     }
     hash = TString::Hash(file->Buffer(),size);
-    printf("%s\t%s\t%s/Run%d_%d_v%d_s%d.root\t%d\t%u\n",
+    fprintf(ofs,"%s\t%s\t%s/Run%d_%d_v%d_s%d.root\t%d\t%u\n",
 	   cdbName.Data(),
 	   cdbPath.Data(),
 	   cdbName.Data(),
@@ -434,6 +435,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0){
     //cout << CDBId.ToString() << endl;
     delete file;
   }
+  fclose(ofs);
 }
 
 
@@ -460,7 +462,7 @@ void AliOCDBtoolkit::DumpOCDBFile(const char *finput , const char *foutput, Bool
   if (!xml){
     if (dumpMetaData) gROOT->ProcessLine(TString::Format("((TObject*)%p)->Dump(); >%s",entry, foutput).Data());
     if (!obj) return;
-    gROOT->ProcessLine(TString::Format("DumpObjectRecursive((TObject*)%p); >>%s",obj, foutput).Data());
+    gROOT->ProcessLine(TString::Format("AliOCDBtoolkit::DumpObjectRecursive((TObject*)%p); >>%s",obj, foutput).Data());
   }
   if (xml){
     TFile * f = TFile::Open(TString::Format("%s.xml",foutput).Data(),"recreate");

@@ -17,7 +17,7 @@ public:
   //static AliOCDBtoolkit * Instance();
   
   static void MakeDiffExampleUseCase();    // example usage
-  static void DumpOCDBAsTxt(const TString fInput,const TString fType);
+  static void DumpOCDBAsTxt(const TString fInput,const TString fType, const TString outfile);
   //
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion);   
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, AliCDBId &cdbId);
@@ -27,7 +27,7 @@ public:
   static void LoadOCDBFromLog(const char *logName, Int_t verbose);
   static void LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList);
   static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
-  static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0);
+  static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const TString outfile);
   //
   // dump object functionality
   //  
