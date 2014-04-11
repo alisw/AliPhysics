@@ -312,6 +312,13 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 
       for (UShort_t s = 0; s < nS; s++) { 
 	for (UShort_t t = 0; t < nT; t++) {
+	  // A strip can be marked `bad' for two reasons: 
+	  // 
+	  // - The raw reader fails to read the value 
+	  // - The strip is marked in OCDB as bad (IsDead) 
+	  // 
+	  // Hence, a dead strip will always be marked kInvalid here, 
+	  // while a non-dead bad-read strip will be filled with 0. 
 	  if (fBad(d, r, s, t)) { 
 	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as bad", d, r, s, t));
 	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
@@ -333,15 +340,58 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 }
 
 //____________________________________________________________________
+Bool_t
+AliFMDReconstructor::PreReconstruct() const
+{
+  AliFMDDebug(1, ("Before reoconstructing"));
+  if (fZombie) { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return false;
+  }
+
+  // Get our vertex
+  GetVertex(fESD);
+
+  // Reset bad flags 
+  fBad.Reset(false);
+
+  // Reset the output ESD 
+  if (fESDObj) {
+    fESDObj->Clear();
+    
+    // Pre-set eta values 
+    for (UShort_t d=1; d<=3; d++) { 
+      UShort_t nQ = (d == 1 ? 1 : 2);
+      for (UShort_t q=0; q<nQ; q++) { 
+	UShort_t nStr = (q == 0 ? 512 : 256);
+	Char_t   r    = (q == 0 ? 'I' : 'O');
+	
+	for (UShort_t t = 0; t < nStr; t++) { 
+	  Float_t eta, phi;
+	  // Always use sector 0
+	  PhysicalCoordinates(d, r, 0, t, eta, phi);
+	  fESDObj->SetEta(d, r, 0, t, eta);
+	}
+      }
+    }
+  }
+
+
+  return true;
+}
+
+//____________________________________________________________________
 void 
 AliFMDReconstructor::Reconstruct(AliFMDRawReader& rawReader) const
 {
+  // Reconstruct directly from raw data (no intermediate output on
+  // digit tree or rec point tree).  
+  // 
+  // Parameters: 
+  //   rawReader	FMD Raw event reader 
   AliFMDDebug(1, ("Reconstructing from FMD raw reader"));
-  if (fZombie) { 
-    AliWarning("I'm a zombie - cannot do anything");
-    return;
-  }
-  fBad.Reset(false);
+  if (!PreReconstruct()) return;
+
   UShort_t det, sec, str, fac;
   Short_t  adc, oldDet = -1;
   Bool_t   zs;
@@ -427,19 +477,15 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   digitsTree	Pointer to a tree containing digits 
   //   clusterTree	Pointer to output tree 
   // 
-  if (fZombie) { 
-    AliWarning("I'm a zombie - cannot do anything");
-    return;
-  }
+  if (!PreReconstruct()) return;
+
   if (!fMult) fMult = new TClonesArray("AliFMDRecPoint");
 
   AliFMDDebug(1, ("Reconstructing from digits in a tree"));
-  GetVertex(fESD);
 
-
-
-  static TClonesArray* digits = new TClonesArray("AliFMDDigit");
-  TBranch*      digitBranch   = digitsTree->GetBranch("FMD");
+  // Get the digitis array 
+  static TClonesArray* digits      = new TClonesArray("AliFMDDigit");
+  TBranch*             digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
     return;
@@ -448,8 +494,8 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
 
   if (digits)  digits->Clear();
   if (fMult)   fMult->Clear();
-  if (fESDObj) fESDObj->Clear();
-  
+
+  // Create rec-point output branch 
   fNMult = 0;
   fTreeR = clusterTree;
   fTreeR->Branch("FMD", &fMult);
@@ -570,8 +616,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   
   // digit->Print();
   // Get eta and phi 
-  Float_t eta, phi;
-  PhysicalCoordinates(det, rng, sec, str, eta, phi);
+  Float_t eta = fESDObj->Eta(det, rng, 0, str);
     
   // Substract pedestal. 
   UShort_t counts   = SubtractPedestal(det, rng, sec, str, adc);
@@ -597,6 +642,9 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   
   // Create a `RecPoint' on the output branch. 
   if (fMult) {
+    Float_t phi;
+    PhysicalCoordinates(det, rng, sec, str, eta, phi);
+
     AliFMDRecPoint* m = 
       new ((*fMult)[fNMult]) AliFMDRecPoint(det, rng, sec, str, 
 					    eta, phi, edep, mult);
@@ -605,7 +653,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   }
   
   fESDObj->SetMultiplicity(det, rng, sec, str, mult);
-  fESDObj->SetEta(det, rng, sec, str, eta);
+  // fESDObj->SetEta(det, rng, sec, str, eta);
   
   if (fDiagAll) fDiagAll->Fill(adc, mult);  
 
@@ -685,7 +733,7 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
   //  
   AliFMDParameters* param  = AliFMDParameters::Instance();
   Float_t           ped    = (zsEnabled ? 0 : 
-				param->GetPedestal(det, rng, sec, str));
+			      param->GetPedestal(det, rng, sec, str));
   Float_t           noise  = param->GetPedestalWidth(det, rng, sec, str);
   if(ped < 0 || noise < 0) { 
     AliWarningClass(Form("Invalid pedestal (%f) or noise (%f) "
