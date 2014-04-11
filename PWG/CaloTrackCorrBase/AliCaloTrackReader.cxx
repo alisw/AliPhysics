@@ -112,7 +112,7 @@ fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),
 fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kTRUE),
 //Trigger rejection
-fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(0),
+fRemoveBadTriggerEvents(0),  fTriggerPatchClusterMatch(1),
 fTriggerPatchTimeWindow(),   fTriggerL0EventThreshold(0),
 fTriggerL1EventThreshold(0), fTriggerL1EventThresholdFix(0),
 fTriggerClusterBC(0),        fTriggerClusterIndex(0),         fTriggerClusterId(0),
@@ -378,7 +378,7 @@ Bool_t AliCaloTrackReader::CheckEventTriggers()
   // In case of Mixing, avoid checking the triggers in the min bias events
   if(!fEventTriggerAtSE && (isMB && !isTrigger)) return kTRUE;
   
-  if( IsEventEMCALL1() || IsEventEMCALL0()  )
+  if( (IsEventEMCALL1() || IsEventEMCALL0())  &&  fTriggerPatchClusterMatch)
   {
     if(fRejectEMCalTriggerEventsWith2Tresholds)
     {
