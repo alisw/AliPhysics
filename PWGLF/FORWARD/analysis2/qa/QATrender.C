@@ -27,6 +27,7 @@
 # include <TSystem.h>
 # include <fstream>
 # include <TFile.h>
+# include <TParameter.h>
 # include "QAStructs.h"
 # include "QARing.h"
 # include "QABase.h"
@@ -547,14 +548,19 @@ public:
   /** 
    * CTOR
    * 
-   * @param keep   Whehter to keep all info 
-   * @param single Single run input 
-   * @param prodYear Production yead 
+   * @param keep      Whehter to keep all info 
+   * @param dataType  Data stype 
+   * @param prodYear   Production yea4 
    * @param prodLetter Production letter
    */
-  QATrender(Bool_t keep=false, Bool_t single=false,
-	    Int_t prodYear=0, char prodLetter='\0') 
-    : QABase(single, prodYear, prodLetter), 
+  QATrender(Bool_t         keep, 
+	    const TString& dataType, 
+	    Int_t          prodYear,
+	    const TString& period, 
+	    const TString& pass, 
+	    Long_t         runNo)
+    : QABase(dataType, prodYear, period, pass),
+      fRunNo(runNo),
       fCurrentFile(0),
       fSharingFilter(0),
       fEventInspector(0),
@@ -580,6 +586,7 @@ public:
    */
   QATrender(const QATrender& o) 
     : QABase(o), 
+      fRunNo(o.fRunNo),
       fCurrentFile(o.fCurrentFile),
       fSharingFilter(o.fSharingFilter),
       fEventInspector(o.fEventInspector),
@@ -630,6 +637,11 @@ public:
   void Finish()
   {
     if (!fOutput) return;
+    TList* l = fTree->GetUserInfo();
+    l->Add(new TNamed("period", fPeriod.Data()));
+    l->Add(new TNamed("pass", fPass.Data()));
+    l->Add(new TNamed("type", fDataType.Data()));
+    l->Add(new TParameter<Long_t>("year", fYear));
     fOutput->Write();
     fOutput->Close();
     fOutput = 0;
@@ -665,10 +677,11 @@ public:
       Error("ProcessOne", "Failed to get global stuff from %s", filename);
       return false;
     }
-    fTeXName = Form("qa_%09d", fGlobal->runNo);
+    // fTeXName = Form("qa_%09d", fGlobal->runNo);
     TString title;
-    if (fYear > 0 && fLetter != '\0')
-      title.Form("QA plots for LHC%d%c run %d", fYear, fLetter, fGlobal->runNo);
+    if (!fPeriod.IsNull() && !fPass.IsNull())
+      title.Form("QA plots for %s/%s run %ld (%s)", 
+		 fPeriod.Data(), fPass.Data(), fRunNo, fDataType.Data());
     else 
       title.Form("QA plots for run %d", fGlobal->runNo);
     MakeCanvas(title);
@@ -996,7 +1009,7 @@ public:
       fEnergyFitter      = 0;
     }
     bool keep = fKeep; 
-    if (fSingle) keep = true;
+    // if (fSingle) keep = true;
 
     Close(!keep);
   }
@@ -1011,14 +1024,11 @@ public:
     const char* rpUrl = "http://alimonitor.cern.ch/runview/?run=";
     QABase::WriteLinks();
 
-    TString resName(fTeXName);
-    resName.ReplaceAll("qa", "QAresults");
-    resName.Append(".root");
-    TFile* results = TFile::Open(resName, "READ");
+    TFile* results = TFile::Open("QAresults.root", "READ");
     if (results) { 
       *fHtml << "<h3>QA results</h3>\n"
 	     << "<ul>\n"
-	     << "<li><a href='" << resName << "'>ROOT file</a></li>\n"
+	     << "<li><a href='QAresults.root'>ROOT file</a></li>\n"
 	     << "</ul>"
 	     << std::endl;
       results->Close();
@@ -1032,8 +1042,8 @@ public:
 	   << " (restricted)</li>\n" 
 	   << "  <li><a target='_blank' href='" << crUrl 
 	   << "?raw_run=" << fGlobal->runNo;
-    if (fYear > 0 && fLetter != '\0') 
-      *fHtml << "&partition=LHC" << fYear << fLetter;
+    if (!fPeriod.IsNull()) 
+      *fHtml << "&partition=" << fPeriod;
     *fHtml << "'>Condition Table</a></li>\n"
 	   << "  <li><a target='_blank' href='" << rpUrl << fGlobal->runNo 
 	   << "'>Processing Details</a></li>\n"
@@ -1191,6 +1201,7 @@ public:
   
 
   // --- Members -----------------------------------------------------
+  Long_t  fRunNo;                // Run number (external)
   TFile*  fCurrentFile;          // Current input file 
   TList*  fSharingFilter;        // Sharing filter list
   TList*  fEventInspector;       // Event inspector list

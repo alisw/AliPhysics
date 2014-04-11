@@ -26,6 +26,7 @@ extractDescription()
 row=1
 loopDir()
 {
+    
     # --- Our inputs -------------------------------------------------
     local level=$1 ; shift 
     local here=$1 ; shift 
@@ -48,6 +49,7 @@ loopDir()
 	    subshort=`extractTitle $sub` 
 	fi
 	subbase=`basename $sub` 
+	subtitle=`echo $subbase | sed 's/^0*//'`
 	local subspan=$maxCol
 	local subpar=${parent}${subid}
 	local subvis="table-row"
@@ -88,11 +90,14 @@ EOF
           <span style='width: 4em' id='a${subpar}'>${subpre}</span> 
 EOF
 	if test $link -gt 0 && test -f $sub/index.html ; then 
-	    echo "        <a href='$sub/index.html'>$subbase</a>"
+	    echo "        <span class='lnk' onclick='showSub(\"$sub\")'>$subtitle</span>"
+	    # echo "        <a href='$sub/index.html'>$subbase</a>"
 	else
-            echo "        $subbase"
+            # echo "        $subbase"
+	    echo "        $subtitle"
 	fi
-	subsize=`du -hs $sub | cut -f1` 
+	subsize=`du ${duopt} -s $sub | cut -f1` 
+
 	cat <<EOF
         </td>
         <td style="text-align: right">$subsize</td>
@@ -129,7 +134,9 @@ desc="Collection of downloaded and locally generated ALICE data"
 out=index.html
 inp=.
 link=0
-
+unit=m
+frame=0
+base=$ANA_SRC/qa
 
 while test $# -gt 0 ; do
     case $1 in 
@@ -139,12 +146,21 @@ while test $# -gt 0 ; do
 	-d|--description) desc="$2" ; shift ;;
 	-o|--output)      out="$2" ; shift ;; 
 	-i|--input)       inp="$2" ; shift ;; 
+	-u|--unit)        unit=`echo $2 | tr '[a-z]' '[A-Z]'` ; shift ;;
 	-l|--link)        link=1 ;;
+	-f|--frame)       frame=1 ;;
 	*) echo "$0: Unknown option '$1'" > /dev/stderr ; exit 1;; 
     esac
     shift
 done
 
+case $unit in 
+    M) ut="(MB)"; duopt="-BM" ;; 
+    G) ut="(GB)"; duopt="-BG" ;;
+    h) ut=""    ; duopt="-h"  ;;
+    K) ut="(kB)"; duopt="-BK" ;;
+    *) ut="(?)" ; duopt="-h"  ;;
+esac
 cat <<EOF > ${out}
 <!DOCTYPE html>
 <html>
@@ -164,27 +180,47 @@ cat <<EOF > ${out}
     <p>
       $desc
     </p>
-    <table>
-      <tr>
-        <th colspan="$maxCol" style='min-width:300px'>Directory</th>
-        <th>Size</th>
-        <th>Description</th>
-      </tr>
+    <div id="nav">
+      <table>
+        <tr>
+          <th colspan="$maxCol" style='min-width:300px'>Directory</th>
+         <th>Size $ut</th>
+          <th>Description</th>
+        </tr>
 EOF
 loopDir 0 "${inp}" "" >> ${out}
-
+totalSize=`du ${duopt} -s ${inp} | cut -f1`
 date=`date`
 cat <<EOF >> ${out}
-    </table>
-    <p>
-      <button onClick='hideAll();'>Collapse all</button>
-      <button onClick='expandAll();'>Expand top-level</button>
-    </p>
-    <div class='change'>Last update: ${date}</div>
+        <tr style='border-top:thin solid gray'>
+          <td colspan="$maxCol"><td>$totalSize</td><td></td>
+        </tr>
+      </table>
+      <p>
+        <button onClick='hideAll();'>Collapse all</button>
+        <button onClick='expandAll();'>Expand top-level</button>
+      </p>
+      <div class='change'>Last update: ${date}</div>
+    </div>
+EOF
+if test $frame -gt 0 ; then 
+    cat <<EOF >> ${out}
+    <div id="frame">
+       <div id="close" onclick="closeDisplay()">Close</div>
+       <!-- <div id="dframe"> -->
+         <iframe name="display" id="iframe"></iframe>
+       <!-- </div> -->
+    </div>
+EOF
+fi
+cat <<EOF >> ${out}
   </body>
 </html>
 EOF
-
+cp $base/style.css .
+cp $base/script.js . 
+cp $base/fmd_favicon.png .
+cp $base/fmd_logo.png . 
 #
 # EOF
 #
