@@ -1326,7 +1326,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     }//...after CORR CUT
     //=================================All cuts are passed==================++++==================================================
     //=================================Now Centrality flattening for central trigger==================++++==================================================
-    if(fTrigger==0 || fTrigger==1 || fTrigger==4){
+    if(fTrigger==0 || fTrigger==4){
         if(!IsEventSelectedForCentrFlattening(fCentrality)){
             centralitypass = kFALSE;
             fCentralityNoPassForFlattening->Fill(fCentrality);
