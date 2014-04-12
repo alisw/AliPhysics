@@ -347,7 +347,10 @@ void AliPHOSTenderSupply::ProcessEvent()
      
       clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t tof=EvalTOF(&cluPHOS,cells); 
+      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
+	tof=clu->GetTOF() ;
+      clu->SetTOF(tof);       
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -425,7 +428,10 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetEmcCpvDistance(r); //Distance in sigmas
      
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t tof=EvalTOF(&cluPHOS,cells); 
+      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
+	tof=clu->GetTOF() ;
+      clu->SetTOF(tof);       
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -826,7 +832,6 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
       eMax=elist[iDigit] ;
     }
   }
-
   
    //Try to improve accuracy 
   //Do not account time of soft cells:
