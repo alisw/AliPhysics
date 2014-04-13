@@ -23,7 +23,8 @@ CreateFileCollection(const TString& dir="/data/alice/data/ppb/LHC12g/pass1/18835
   if (recursive) flags |= ChainBuilder::kRecursive;
   if (mc)        flags |= ChainBuilder::kMC;
   UShort_t type = ChainBuilder::CheckSource(dir, flags);
-  Info("", "type=%d", type);
+  Info("", "type=%d, dir=%s tN=%s pa=%s, flags=0x%x", type,
+       dir.Data(), tN.Data(), pa.Data(), flags);
   TChain* chain = ChainBuilder::Create(type, dir, tN, pa, flags);
   if (!chain) { 
     Error("CreateFileCollection", "Failed to make chain");

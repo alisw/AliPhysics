@@ -748,6 +748,19 @@ AliFMDHistCollector::VtxBin::GetLast(Int_t  idx) const
   return last;
 }
 
+#define PRINT_OVERFLOW(D,R,T,H) do {					\
+  printf("Content of FMD%d%c overflow %s rebinning", D, R, T);		\
+  Int_t i = 0;								\
+  for (Int_t ix = 1; ix <= t->GetNbinsX(); ix++) {			\
+  Double_t c = t->GetBinContent(ix, t->GetNbinsY()+1);			\
+  if (c <= 1e-9) continue;						\
+  if ((i % 10) == 0) printf("\n  ");					\
+  printf("%3d: %5.2f ", ix, c);						\
+  i++;									\
+  }									\
+  printf("\n");								\
+  } while (false)
+
 //____________________________________________________________________
 Bool_t
 AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists, 
@@ -845,7 +858,11 @@ AliFMDHistCollector::VtxBin::Collect(const AliForwardUtil::Histos& hists,
       } // if (byCent)
 
       // Outer rings have better phi segmentation - rebin to same as inner. 
-      if (q == 1) t->RebinY(2);
+      if (q == 1) {
+	// PRINT_OVERFLOW(d, r, "before", t);
+	t->RebinY(2);	
+	// PRINT_OVERFLOW(d, r, "after", t);
+      }
 
       nY = t->GetNbinsY();
 

@@ -3,6 +3,7 @@
 //
 #include "AliFMDEnergyFitter.h"
 #include "AliForwardUtil.h"
+#include "AliLandauGausFitter.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -199,7 +200,8 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("maxChi2PerNDF", fMaxChi2PerNDF));
   d->Add(AliForwardUtil::MakeParameter("minWeight",     fMinWeight));
   d->Add(AliForwardUtil::MakeParameter("regCut",        fRegularizationCut));
-
+  d->Add(AliForwardUtil::MakeParameter("deltaShift", 
+				       AliLandauGaus::EnableSigmaShift()));
   if (fRingHistos.GetEntries() <= 0) { 
     AliFatal("No ring histograms where defined - giving up!");
     return;
@@ -280,7 +282,12 @@ AliFMDEnergyFitter::SetCentralityAxis(UShort_t n, Double_t* bins)
 {
   fCentralityAxis.Set(n-1, bins);
 }
-
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::SetEnableDeltaShift(Bool_t use) 
+{
+  AliLandauGaus::EnableSigmaShift(use ? 1 : 0);
+}
 
 //____________________________________________________________________
 Bool_t
@@ -350,7 +357,10 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   //    dir Where the histograms are  
   //
   DGUARD(fDebug, 1, "Fit distributions in AliFMDEnergyFitter");
-  if (!fDoFits) return;
+  if (!fDoFits) {
+    AliInfo("Not asked to do fits, returning");
+    return;
+  }
 
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) {
@@ -376,9 +386,11 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   for (Int_t i = 0; i < nStack; i++) 
     d->Add(stack[i]);
 
+  AliInfoF("Will do fits for %d rings", fRingHistos.GetEntries());
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
+    AliInfoF("Fill fit for FMD%d%c", o->fDet, o->fRing);
     if (CheckSkip(o->fDet, o->fRing, fSkips)) {
       AliWarningF("Skipping FMD%d%c for fitting", o->fDet, o->fRing);
       continue;
@@ -415,6 +427,8 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
   AliFMDCorrELossFit* obj = new AliFMDCorrELossFit;
   obj->SetEtaAxis(fEtaAxis);
   obj->SetLowCut(fLowCut);
+  if (AliLandauGaus::EnableSigmaShift()) 
+    obj->SetBit(AliFMDCorrELossFit::kHasShift);
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -471,10 +485,11 @@ AliFMDEnergyFitter::ReadParameters(const TCollection* col)
   //   true on success, false otherwise 
   //
   if (!col) return false;
-  Bool_t ret = true;
-  TAxis* axis = static_cast<TAxis*>(col->FindObject("etaAxis"));
-  if (!axis) ret = false;
+  Bool_t ret  = true;
+  TH1*   hist = static_cast<TH1*>(col->FindObject("etaAxis"));
+  if (!hist) ret = false;
   else {
+    TAxis* axis = hist->GetXaxis();
     if (axis->GetXbins()->GetArray()) 
       fEtaAxis.Set(axis->GetNbins(), axis->GetXbins()->GetArray());
    else 
@@ -1233,7 +1248,7 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
   }
 
   // Create a fitter object 
-  AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
+  AliLandauGausFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
   f.SetDebug(fDebug > 2); 
 

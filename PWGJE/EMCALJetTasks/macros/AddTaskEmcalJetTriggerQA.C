@@ -13,8 +13,13 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 							   Int_t       pSel                = AliVEvent::kINT7,
 							   Float_t     nefCut              = 10.,
 							   TString     kEmcalTriggers      = "",
-							   TString     kPeriod             = "LHC13b"
+							   TString     kPeriod             = "LHC13b",
+                                                           TString     kBeamType           = "pp" //or pPb or PbPb
 							   ) {
+  // The following three lines are added for backwards compatibility
+  kPeriod.ToLower();
+  if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h")) kBeamType = "PbPb";
+  if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) kBeamType = "pPb";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
@@ -58,7 +63,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
 
   AliAnalysisTaskRhoBase *rhoTask;
   if(rhoType==1) {
-    rhoTask = AttachRhoTask(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus);
+    rhoTask = AttachRhoTask(kBeamType,kTracksName,kClusName,R,ptminTrack,etminClus);
     if(rhoTask) {
       rhoTask->SetCentralityEstimator(CentEst);  
       rhoTask->SelectCollisionCandidates(AliVEvent::kAny);
@@ -109,7 +114,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   task->SetVzRange(-10.,10.);
 
   if(kPeriod.Contains("LHC13b4")) 
-    task-SetIsPythia(kTRUE);
+    task->SetIsPythia(kTRUE);
 
   mgr->AddTask(task);
 
@@ -126,7 +131,7 @@ AliAnalysisTaskEmcalJetTriggerQA* AddTaskEmcalJetTriggerQA(TString     kTracksNa
   return task;  
 }
 
-AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b",
+AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
 				      TString     kTracksName         = "PicoTracks", 
 				      TString     kClusName           = "caloClustersCorr",
 				      Double_t    R                   = 0.4, 
@@ -136,8 +141,6 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
   
   AliAnalysisTaskRhoBase *rhoTaskBase;
 
-  kPeriod.ToLower();
-
   // Add kt jet finder and rho task in case we want background subtraction
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
@@ -146,7 +149,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
   jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
   jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
 
-  if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
+  if(kBeamType == "pPb") {
     jetFinderKt->SetMinJetPt(0.);
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
@@ -171,7 +174,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kPeriod             = "LHC13b"
     rhoTaskSparse->SetUseAliAnaUtils(kTRUE);
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTaskSparse;
   }
-  else if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h") ) {
+  else if(kBeamType=="PbPb") {
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
 
     TF1* sfunc = new TF1("sfunc","[0]*x*x+[1]*x+[2]",-1,100);

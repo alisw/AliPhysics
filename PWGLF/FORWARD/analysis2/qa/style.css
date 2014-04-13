@@ -3,6 +3,13 @@
  */
 body { 
     font-family: sans }
+span.lnk {
+    color: blue;
+}
+span.lnk:hover { 
+    text-decoration:underline;
+}    
+
 a:link { 
     text-decoration:none;
     color: blue; 
@@ -88,8 +95,39 @@ tr:nth-child(even)    {
     background-color:white; }
 table:first-child { 
     border-top: thin solid lightgray; }
+
 table:last-child { 
     border-bottom: thin solid lightgray; }
+
+#frame { 
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    bottom: 5%;
+    visibility: hidden;
+}
+#iframe { 
+    width:100%;
+    height:100%;
+    border: thin solid gray;
+    background-color:white;
+}
+#dframe { 
+    width:100%;
+    height:100%;
+    background-color: white;red
+}
+#close { 
+    position:relative;
+    top:-.01ex;
+    float: right;
+    right: 0;
+    font-weight: bold;
+    cursor: move;
+    color: blue;
+    border:thin solid gray;
+}
 
 /*
  * EOF

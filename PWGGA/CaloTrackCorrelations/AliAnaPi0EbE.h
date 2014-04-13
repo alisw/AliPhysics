@@ -208,26 +208,36 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhSelectedMassPtNoOverlap  ;       //! pair mass vs pT, for selected pairs, no overlap
   TH2F         * fhSelectedMassSplitPtNoOverlap  ;  //! pair mass vs pT (split), for selected pairs, no overlap
 
-  TH2F         * fhMCPi0PtRecoPtPrim;      //! pt reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaPtRecoPtPrim;      //! pt reco vs pt prim for eta mother
-  TH2F         * fhMCPi0PtRecoPtPrimNoOverlap; //! pt reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for eta mother
+  TH2F         * fhMCPi0PtRecoPtPrim;                  //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaPtRecoPtPrim;                  //! pt reco vs pt prim for eta mother
+  TH2F         * fhMCPi0PtRecoPtPrimNoOverlap;         //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaPtRecoPtPrimNoOverlap;         //! pt reco vs pt prim for eta mother
 
-  TH2F         * fhMCPi0SplitPtRecoPtPrim;      //! pt split reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaSplitPtRecoPtPrim;      //! pt split reco vs pt prim for eta mother
-  TH2F         * fhMCPi0SplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SplitPtRecoPtPrim;             //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSplitPtRecoPtPrim;             //! pt split reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SplitPtRecoPtPrimNoOverlap;    //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSplitPtRecoPtPrimNoOverlap;    //! pt split reco vs pt prim for eta mother
 
-  TH2F         * fhMCPi0SelectedPtRecoPtPrim;      //! pt reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaSelectedPtRecoPtPrim;      //! pt reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SelectedPtRecoPtPrim;          //! pt reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedPtRecoPtPrim;          //! pt reco vs pt prim for eta mother
   TH2F         * fhMCPi0SelectedPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for pi0 mother
   TH2F         * fhMCEtaSelectedPtRecoPtPrimNoOverlap; //! pt reco vs pt prim for eta mother
   
-  TH2F         * fhMCPi0SelectedSplitPtRecoPtPrim;      //! pt split reco vs pt prim for pi0 mother
-  TH2F         * fhMCEtaSelectedSplitPtRecoPtPrim;      //! pt split reco vs pt prim for eta mother
+  TH2F         * fhMCPi0SelectedSplitPtRecoPtPrim;          //! pt split reco vs pt prim for pi0 mother
+  TH2F         * fhMCEtaSelectedSplitPtRecoPtPrim;          //! pt split reco vs pt prim for eta mother
   TH2F         * fhMCPi0SelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for pi0 mother
   TH2F         * fhMCEtaSelectedSplitPtRecoPtPrimNoOverlap; //! pt split reco vs pt prim for eta mother
   
+  TH2F         * fhMCPi0PtRecoPtPrimLocMax[3];              //! pt reco vs pt prim for pi0 mother, vs NLM
+  TH2F         * fhMCEtaPtRecoPtPrimLocMax[3];              //! pt reco vs pt prim for eta mother, vs NLM
+  TH2F         * fhMCPi0SplitPtRecoPtPrimLocMax[3];         //! pt split reco vs pt prim for pi0 mother, vs NLM
+  TH2F         * fhMCEtaSplitPtRecoPtPrimLocMax[3];         //! pt split reco vs pt prim for eta mother, vs NLM
+ 
+  TH2F         * fhMCPi0SelectedPtRecoPtPrimLocMax[3];      //! pt reco vs pt prim for pi0 mother, vs NLM
+  TH2F         * fhMCEtaSelectedPtRecoPtPrimLocMax[3];      //! pt reco vs pt prim for eta mother, vs NLM
+  TH2F         * fhMCPi0SelectedSplitPtRecoPtPrimLocMax[3]; //! pt split reco vs pt prim for pi0 mother, vs NLM
+  TH2F         * fhMCEtaSelectedSplitPtRecoPtPrimLocMax[3]; //! pt split reco vs pt prim for eta mother, vs NLM
+
   TH2F         * fhAsymmetry ;             //! cluster pT vs asymmetry of 2 splitted clusters
   TH2F         * fhSelectedAsymmetry  ;    //! cluster pT vs asymmetry of 2 splitted clusters, for selected pairs
   TH1F         * fhSplitE  ;               //! split sub-cluster pair energy sum
@@ -394,7 +404,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,35)
+  ClassDef(AliAnaPi0EbE,36)
 } ;
 
 

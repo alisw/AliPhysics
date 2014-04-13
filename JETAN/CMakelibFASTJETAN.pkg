@@ -25,7 +25,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliFastJetBkg.cxx AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx AliAnalysisTaskJetBackgroundSubtract.cxx)
+set ( SRCS AliFastJetFinder.cxx AliFastJetHeaderV1.cxx AliFastJetInput.cxx AliFastJetBkg.cxx AliSISConeJetFinder.cxx AliSISConeJetHeader.cxx AliAnalysisTaskJetCluster.cxx AliAnalysisTaskJetClusterKine.cxx AliAnalysisTaskJetBackgroundSubtract.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

@@ -30,10 +30,10 @@ public:
 
   void SetTypeAOD(Int_t type = 1) {fiAODAnalysis = type;}
   void SetJetBranchName(char* line){fsJetBranchName = line;}
-  void SetCuts(Double_t z = 10,Double_t r = 1,Double_t cL = 0,Double_t cH = 80){ffCutVertexZ = z; ffCutVertexR2 = r*r;ffCutCentLow = cL;ffCutCentHigh = cH;}
-  void SetPtJetMin(Double_t ptMin = 0){ffCutPtJetMin = ptMin;}
-  void SetPtTrackMin(Double_t ptMin = 0){ffCutPtTrackMin = ptMin;}
-  void SetJetRadius(Double_t r = 0.4){ffRadiusJet = r;}
+  void SetCuts(Double_t z = 10,Double_t r = 1,Double_t cL = 0,Double_t cH = 80){fdCutVertexZ = z; fdCutVertexR2 = r*r;fdCutCentLow = cL;fdCutCentHigh = cH;}
+  void SetPtJetMin(Double_t ptMin = 0){fdCutPtJetMin = ptMin;}
+  void SetPtTrackMin(Double_t ptMin = 0){fdCutPtTrackMin = ptMin;}
+  void SetJetRadius(Double_t r = 0.4){fdRadiusJet = r;}
   void SetJetSelection(Bool_t select = kTRUE){fbJetSelection = select;}
   void SetMCAnalysis(Bool_t select = kTRUE){fbMCAnalysis = select;}
 //  void SetTreeOutput(Bool_t select = kTRUE){fbTreeOutput = select;}
@@ -52,7 +52,7 @@ public:
   void SetCutCPAMin(Double_t val = 0.998){fdCutCPAMin = val;}
   void SetCutNTauMax(Double_t val = 5.){fdCutNTauMax = val;}
 
-  static Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t fVtxZCut, Double_t fVtxR2Cut, Double_t fCentCutLo, Double_t fCentCutUp, Bool_t bCutDeltaZ=kFALSE, Double_t fDeltaZMax=100.);
+  static Bool_t IsSelectedForJets(AliAODEvent* fAOD, Double_t dVtxZCut, Double_t dVtxR2Cut, Double_t dCentCutLo, Double_t dCentCutUp, Bool_t bCutDeltaZ=kFALSE, Double_t dDeltaZMax=100.);
   static Int_t GetCentralityBinIndex(Double_t centrality);
   static Int_t GetCentralityBinEdge(Int_t index);
   static TString GetCentBinLabel(Int_t index);
@@ -71,12 +71,12 @@ public:
   static const Int_t fgkiNBinsPtJetInit; // initial number of bins (uniform binning)
   // axis: K0S invariant mass
   static const Int_t fgkiNBinsMassK0s; // number of bins (uniform binning)
-  static const Double_t fgkfMassK0sMin; // minimum
-  static const Double_t fgkfMassK0sMax; // maximum
+  static const Double_t fgkdMassK0sMin; // minimum
+  static const Double_t fgkdMassK0sMax; // maximum
   // axis: Lambda invariant mass
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
-  static const Double_t fgkfMassLambdaMin; // minimum
-  static const Double_t fgkfMassLambdaMax; // maximum
+  static const Double_t fgkdMassLambdaMin; // minimum
+  static const Double_t fgkdMassLambdaMax; // maximum
 
 private:
   AliAODEvent*  fAODIn;  // Input AOD event
@@ -97,9 +97,9 @@ private:
   Double_t fdCutNTauMax; // [tau] max proper lifetime in multiples of the mean lifetime
   // jet selection
   TString     fsJetBranchName; // name of the branch with jets
-  Double_t     ffCutPtJetMin; // [GeV/c] minimum jet pt
-  Double_t     ffCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
-  Double_t    ffRadiusJet; // R of jet finder used for finding V0s in the jet cone
+  Double_t     fdCutPtJetMin; // [GeV/c] minimum jet pt
+  Double_t     fdCutPtTrackMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t    fdRadiusJet; // R of jet finder used for finding V0s in the jet cone
   Bool_t      fbJetSelection; // switch for the analysis of V0s in jets
 
   Bool_t      fbMCAnalysis; // switch for the analysis of simulated data
@@ -107,10 +107,10 @@ private:
   TRandom*   fRandom; // random number generator
 
   // event cuts
-  Double_t ffCutVertexZ; // [cm] maximum |z| of primary vertex
-  Double_t ffCutVertexR2; // [cm^2] maximum r^2 of primary vertex
-  Double_t ffCutCentLow; // [%] minimum centrality
-  Double_t ffCutCentHigh; // [%] maximum centrality
+  Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
+  Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
+  Double_t fdCutCentLow; // [%] minimum centrality
+  Double_t fdCutCentHigh; // [%] maximum centrality
 /*
   // output branches
   TClonesArray* fBranchV0Rec; // output branch for reconstructed V0s
@@ -118,7 +118,7 @@ private:
   TClonesArray* fBranchJet; // output branch for selected jets
   AliEventInfoObject* fEventInfo; // class to store info about events
 */
-  Double_t ffCentrality;
+  Double_t fdCentrality;
 
   // event histograms
   TH1D*       fh1EventCounterCut; // number of events for different selection steps

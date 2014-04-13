@@ -30,7 +30,6 @@ set ( SRCS
     AliAnaChargedJetResponseMaker.cxx
     AliAnalysisTaskAj.cxx
     AliAnalysisTaskFragmentationFunction.cxx
-    AliAnalysisTaskJetChem.cxx 
     AliAnalysisTaskJetCore.cxx 	
     AliAnalysisTaskJetCorePP.cxx 	
     AliAnalysisTaskJetProperties.cxx
@@ -75,7 +74,7 @@ if(FASTJET_FOUND)
   set ( EINCLUDE ${FASTJET_INCLUDE_DIR} ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
   set ( HDRS ${HDRS}  EMCALJetTasks/FJ_includes.h  )
 else()
-  set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
+  set ( EINCLUDE ANALYSIS JETAN CORRFW PWGJE PWG/Tools PWG/TRD PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
 endif(FASTJET_FOUND)
 
 

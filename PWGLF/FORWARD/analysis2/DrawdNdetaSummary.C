@@ -13,7 +13,7 @@ void DrawdNdetaSummary(const char* fname="forward_dndeta.root",
 {
   gROOT->SetMacroPath(Form("%s:$ALICE_ROOT/PWGLF/FORWARD/analysis2/scripts",
 			   gROOT->GetMacroPath()));
-  gROOT->LoadMacro("SummarydNdetaDrawer.C++g");
+  gROOT->LoadMacro("SummarydNdetaDrawer.C+g");
   
   SummarydNdetaDrawer d;
   d.Run(fname, what);

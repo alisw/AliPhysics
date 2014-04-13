@@ -62,6 +62,9 @@
 #include "AliParticleContainer.h"
 #include "AliClusterContainer.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEmcalJetHadEPpid)
 
 //________________________________________________________________________

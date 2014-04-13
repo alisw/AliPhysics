@@ -28,6 +28,8 @@
 using std::endl;
 using std::cout;
 using std::flush;
+using std::ofstream;
+using std::ios;
 
 //================================================================================================================
 

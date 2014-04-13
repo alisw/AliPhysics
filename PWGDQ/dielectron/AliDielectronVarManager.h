@@ -26,6 +26,7 @@
 #include <TProfile3D.h>
 #include <TH3D.h>
 #include <THnBase.h>
+#include <TSpline.h>
 #include <TFile.h>
 #include <TDatabasePDG.h>
 #include <TKey.h>
@@ -446,8 +447,8 @@ public:
   static void InitAODpidUtil(Int_t type=0);
   static void InitEstimatorAvg(const Char_t* filename);
   static void InitTRDpidEffHistograms(const Char_t* filename);
-  static void SetLegEffMap( THnBase *map) { fgLegEffMap=map; }
-  static void SetPairEffMap(THnBase *map) { fgPairEffMap=map; }
+  static void SetLegEffMap( TObject *map) { fgLegEffMap=map; }
+  static void SetPairEffMap(TObject *map) { fgPairEffMap=map; }
   static void SetFillMap(   TBits   *map) { fgFillMap=map; }
   static void SetVZEROCalibrationFile(const Char_t* filename) {fgVZEROCalibrationFile = filename;}
   
@@ -509,8 +510,8 @@ private:
   static TProfile        *fgMultEstimatorAvg[4][9];  // multiplicity estimator averages (4 periods x 9 estimators)
   static Double_t         fgTRDpidEffCentRanges[10][4];   // centrality ranges for the TRD pid efficiency histograms
   static TH3D            *fgTRDpidEff[10][4];   // TRD pid efficiencies from conversion electrons
-  static THnBase         *fgLegEffMap;             // single electron efficiencies
-  static THnBase         *fgPairEffMap;             // pair efficiencies
+  static TObject         *fgLegEffMap;             // single electron efficiencies
+  static TObject         *fgPairEffMap;             // pair efficiencies
   static TBits           *fgFillMap;             // map for requested variable filling
   static TString          fgVZEROCalibrationFile;  // file with VZERO channel-by-channel calibrations
   static TString          fgVZERORecenteringFile;  // file with VZERO Q-vector averages needed for event plane recentering
@@ -2293,19 +2294,19 @@ inline Double_t AliDielectronVarManager::GetSingleLegEff(Double_t * const values
   //
   if(!fgLegEffMap) return -1.;
 
-  Int_t dim=fgLegEffMap->GetNdimensions();
-  Int_t idx[dim];
-  for(Int_t idim=0; idim<dim; idim++) {
-    UInt_t var = GetValueType(fgLegEffMap->GetAxis(idim)->GetName());
-    idx[idim] = fgLegEffMap->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>fgLegEffMap->GetAxis(idim)->GetNbins()) return 0.0;
-    /*   printf(" [E] AliDielectronVarManager::GetSingleLegEff values %f for %s not found in axis range \n",values[var],fgLegEffMap->GetAxis(idim)->GetName()); */
-    //    printf(" (%d,%f,%s) \t",idx[idim],values[var],fgLegEffMap->GetAxis(idim)->GetName());
+  if(fgLegEffMap->IsA()== THnBase::Class()) {
+    THnBase *eff = static_cast<THnBase*>(fgLegEffMap);
+    Int_t dim=eff->GetNdimensions();
+    Int_t idx[dim];
+    for(Int_t idim=0; idim<dim; idim++) {
+      UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
+    idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
+    if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
+    }
+    //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
+    return (eff->GetBinContent(idx));
   }
-  //  printf(" bin content %f+-%f \n",fgLegEffMap->GetBinContent(idx), fgLegEffMap->GetBinError(idx));
-  //  if(fgLegEffMap->GetBinContent(idx)<0.01) return 0.0;
-  //  if(fgLegEffMap->GetBinError(idx)/fgLegEffMap->GetBinContent(idx)>0.2) return 0.0;
-  return (fgLegEffMap->GetBinContent(idx));
+  return -1.;
 }
 
 inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
@@ -2314,15 +2315,27 @@ inline Double_t AliDielectronVarManager::GetPairEff(Double_t * const values) {
   //
   if(!fgPairEffMap) return -1.;
 
-  Int_t dim=fgPairEffMap->GetNdimensions();
-  Int_t idx[dim];
-  for(Int_t idim=0; idim<dim; idim++) {
-    UInt_t var = GetValueType(fgPairEffMap->GetAxis(idim)->GetName());
-    idx[idim] = fgPairEffMap->GetAxis(idim)->FindBin(values[var]);
-    if(idx[idim] < 0 || idx[idim]>fgPairEffMap->GetAxis(idim)->GetNbins()) return 0.0;
+  if(fgPairEffMap->IsA()== THnBase::Class()) {
+    THnBase *eff = static_cast<THnBase*>(fgPairEffMap);
+    Int_t dim=eff->GetNdimensions();
+    Int_t idx[dim];
+    for(Int_t idim=0; idim<dim; idim++) {
+      UInt_t var = GetValueType(eff->GetAxis(idim)->GetName());
+    idx[idim] = eff->GetAxis(idim)->FindBin(values[var]);
+    if(idx[idim] < 0 || idx[idim]>eff->GetAxis(idim)->GetNbins()) return 0.0;
+    }
+    //  printf(" bin content %f+-%f \n",eff->GetBinContent(idx), eff->GetBinError(idx));
+    return (eff->GetBinContent(idx));
   }
-  //  printf(" bin content %f+-%f \n",fgPairEffMap->GetBinContent(idx), fgPairEffMap->GetBinError(idx));
-  return (fgPairEffMap->GetBinContent(idx));
+  if(fgPairEffMap->IsA()== TSpline3::Class()) {
+    TSpline3 *eff = static_cast<TSpline3*>(fgPairEffMap);
+    if(!eff->GetHistogram()) { printf("no histogram added to the spline\n"); return -1.;}
+    UInt_t var = GetValueType(eff->GetHistogram()->GetXaxis()->GetName());
+    //printf(" bin content %f \n",eff->Eval(values[var]) );
+    return (eff->Eval(values[var]));
+  }
+
+  return -1.;
 }
 
 
