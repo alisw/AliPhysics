@@ -56,10 +56,13 @@ class AliIDFFUtils
   static Int_t PDG2Type(const Int_t pdg);
   
   static Int_t TOFType(const AliAODTrack * trackptr, const Int_t tofmode);
+  static Int_t TPCType(const AliAODTrack * trackptr);
 
-  static Bool_t HMPIDAcceptance(const AliAODTrack *track);
-  static Bool_t HMPIDQA(const AliAODTrack *track);
-  static Int_t HMPIDType(const AliAODTrack * track);
+  static Int_t CombineTPCTOF(const Int_t ktpc, const Int_t ktof);
+
+  //static Bool_t HMPIDAcceptance(const AliAODTrack *track);
+  //static Bool_t HMPIDQA(const AliAODTrack *track);
+  //static Int_t HMPIDType(const AliAODTrack * track);
 
 };
 
