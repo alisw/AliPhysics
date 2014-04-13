@@ -1,4 +1,4 @@
-AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT03_B1_Filter00768_Cut00150_Skip00", Int_t eventClass = 0, Int_t K0type = kOnFly, Int_t Latype = kOnFly, Int_t ALatype = kOnFly, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.3, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1)
+AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768)
 {
   // Creates a JetChem task,
   // configures it and adds it to the analysis manager.
@@ -51,37 +51,36 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(ALatype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskALa(768);
 
   task->SetFFRadius(radius); //jet cone size
-  // task->SetFilterMask(272); //2010 PbPb Track Filter Mask
-  task->SetFilterMask(768);//2011 Track FilterMask
+  task->SetFilterMask(filtermask);//2011 Track FilterMask
 
   //Cuts---------------------------------
   
   task->SetTrackCuts(0.15, -0.9, 0.9, 0., 2*TMath::Pi());// (pt Cut, daughtertrack rap's, phi min max cuts)
   task->SetJetCuts(5., -jetEtaCut, jetEtaCut, 0., 2*TMath::Pi());//(jet pt Cut, jet acceptance, phi min max cuts)
-  //task->SetCuttrackPosNcls(70);
-  //task->SetCuttrackNegNcls(70);
-  //task->SetCuttrackPosRap(100000.0);
-  //task->SetCuttrackNegRap(100000.0);
-  //task->SetCutV0Rap(0.5);
+
   task->SetCuttrackPosEta(0.8);
   task->SetCuttrackNegEta(0.8);
   task->SetCutV0Eta(V0EtaCut); //pseudorapidity cut, dont use 0.5, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
   task->SetCosOfPointingAngle(0.998);
-  //task->SetChi2CutPosDaughter(100000.0);
-  //task->SetChi2CutNegDaughter(100000.0);
   task->SetAcceptKinkDaughters(kFALSE);//accept kink daughters -> dont use this cut anymore
   task->SetRequireTPCRefit(kTRUE);
   task->SetCutV0DecayMin(0.);//multiples of ctau, cut on 2D decay distance over transverse mom. (for K0s, Lambda, Antilambda)
   task->SetCutV0DecayMax(5.);//multiples of ctau (for K0s, Lambda, Antilambda) Lee Barnby uses 3.0, use 5.0!!!!!
-  //task->SetCutV0totMom(10000.);//tot Mom of V0s 
   task->SetCutDcaV0Daughters(1.);//cut value in multiples of sigma default: 1.
   task->SetCutDcaPosToPrimVertex(0.1); //cut value in cm 
   task->SetCutDcaNegToPrimVertex(0.1); //cut value in cm
   task->SetCutV0RadiusMin(5.);//in cm previous value was 0.9 cm
   task->SetCutV0RadiusMax(100.);//in cm
   task->SetCutBetheBloch(3.);//in units of sigma
+
   //task->SetCutRatioTPC(0.8);//Cut on Ratio of crossed Rows over findable clusters in TPC -> not used anymore by Strangeness PAG group
- 
+   //task->SetCuttrackPosNcls(70);
+  //task->SetCuttrackNegNcls(70);
+  //task->SetCuttrackPosRap(100000.0);
+  //task->SetCuttrackNegRap(100000.0);
+  //task->SetCutV0Rap(0.5);
+  //task->SetCutV0totMom(10000.);//tot Mom of V0s 
+
   //Armenteros Cut:
  
   if(IsArmenterosSelected == 1){
