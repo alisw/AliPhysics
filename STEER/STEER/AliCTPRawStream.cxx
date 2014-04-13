@@ -130,8 +130,8 @@ Bool_t AliCTPRawStream::Next()
   fOrbit |= data[8];
   fOrbit |= (data[9] & 0xF) << 8;
 
-  // 4th word bit 11= version, check here.
-  UInt_t version=data[13] & 0x4;
+  // 4th word bit 12= version, check here.
+  UInt_t version=data[13] & 0x10;
 
   if(version == 0){
    return GetPayloadRun1(data);
@@ -142,7 +142,7 @@ Bool_t AliCTPRawStream::Next()
 } 
 Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
 {
-  fClusterMask = data[12];
+  fClusterMask = data[12]&0xef;
 
   fClassMaskNext50 =  ((ULong64_t)data[16] & 0xf) << 46;   // 100..97
 

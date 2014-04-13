@@ -91,6 +91,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fInputs(0),
                     fOutputs(0),
                     fParamCont(0),
+                    fExchangeCont(0),
                     fDebugOptions(0),
                     fFileDescriptors(new TObjArray()),
                     fCurrentDescriptor(0),
@@ -129,6 +130,7 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
      fInputs     = new TObjArray();
      fOutputs    = new TObjArray();
      fParamCont  = new TObjArray();
+     fExchangeCont = new TObjArray();
      fGlobals    = new TMap();
    }
    fIOTimer = new TStopwatch();
@@ -162,6 +164,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fInputs(NULL),
                     fOutputs(NULL),
                     fParamCont(NULL),
+                    fExchangeCont(NULL),
                     fDebugOptions(NULL),
                     fFileDescriptors(new TObjArray()),
                     fCurrentDescriptor(0),
@@ -197,6 +200,7 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
    fInputs     = new TObjArray(*other.fInputs);
    fOutputs    = new TObjArray(*other.fOutputs);
    fParamCont  = new TObjArray(*other.fParamCont);
+   fExchangeCont  = new TObjArray(*other.fExchangeCont);
    fgCommonFileName  = "AnalysisResults.root";
    fgAnalysisManager = this;
 }
@@ -227,6 +231,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fInputs     = new TObjArray(*other.fInputs);
       fOutputs    = new TObjArray(*other.fOutputs);
       fParamCont  = new TObjArray(*other.fParamCont);
+      fExchangeCont  = new TObjArray(*other.fExchangeCont);
       fDebugOptions = NULL;
       fFileDescriptors = new TObjArray();
       fCurrentDescriptor = 0;
@@ -264,18 +269,19 @@ AliAnalysisManager::~AliAnalysisManager()
 {
 // Destructor.
    if (fTasks) {fTasks->Delete(); delete fTasks;}
-   if (fTopTasks) delete fTopTasks;
-   if (fZombies) delete fZombies;
+   delete fTopTasks;
+   delete fZombies;
    if (fContainers) {fContainers->Delete(); delete fContainers;}
-   if (fInputs) delete fInputs;
-   if (fOutputs) delete fOutputs;
-   if (fParamCont) delete fParamCont;
-   if (fDebugOptions) delete fDebugOptions;
-   if (fGridHandler) delete fGridHandler;
-   if (fInputEventHandler) delete fInputEventHandler;
-   if (fOutputEventHandler) delete fOutputEventHandler;
-   if (fMCtruthEventHandler) delete fMCtruthEventHandler;
-   if (fEventPool) delete fEventPool;
+   delete fInputs;
+   delete fOutputs;
+   delete fParamCont;
+   delete fExchangeCont;
+   delete fDebugOptions;
+   delete fGridHandler;
+   delete fInputEventHandler;
+   delete fOutputEventHandler;
+   delete fMCtruthEventHandler;
+   delete fEventPool;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
    if (fGlobals) {fGlobals->DeleteAll(); delete fGlobals;}
    if (fFileDescriptors) {fFileDescriptors->Delete(); delete fFileDescriptors;}
@@ -1441,6 +1447,9 @@ AliAnalysisDataContainer *AliAnalysisManager::CreateContainer(const char *name,
          }   
          break;
       case kExchangeContainer:
+         cont->SetExchange(kTRUE);
+         fExchangeCont->Add(cont);
+         cont->SetDataOwned(kFALSE); // data owned by the publisher
          break;   
    }
    return cont;
@@ -1696,10 +1705,17 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
    Bool_t getsysInfo = ((fNSysInfo>0) && (fMode==kLocalAnalysis))?kTRUE:kFALSE;
    if (getsysInfo)
       Info("PrintStatus", "System information will be collected each %lld events", fNSysInfo);
-   TIter next(fTopTasks);
+   AliAnalysisDataContainer *cont = fCommonInput;
+   if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
+   printf("=== TOP CONTAINER:\n");
+   cont->PrintContainer(option,0);
+   // Reset "touched" flag
+   TIter next(fContainers);
+   while ((cont = (AliAnalysisDataContainer*)next())) cont->SetTouched(kFALSE);
+   TIter nextt(fTasks);
    AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next()))
-      task->PrintTask(option);
+   while ((task=(AliAnalysisTask*)nextt()))
+      task->SetActive(kFALSE);
   
    if (!fAutoBranchHandling && !fRequestedBranches.IsNull()) 
       printf("Requested input branches:\n%s\n", fRequestedBranches.Data());
@@ -1722,7 +1738,13 @@ void AliAnalysisManager::PrintStatus(Option_t *option) const
 void AliAnalysisManager::ResetAnalysis()
 {
 // Reset all execution flags and clean containers.
-   CleanContainers();
+   TIter nextTask(fTasks);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)nextTask())) {
+      // Clean all tasks
+      task->Reset();
+   }         
+//   CleanContainers();
 }
 
 //______________________________________________________________________________
@@ -2250,13 +2272,15 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    }
    fNcalls++;
    AliAnalysisTask *task;
+   // Reset the analysis
+   ResetAnalysis();
    // Check if the top tree is active.
    if (fTree) {
       if (getsysInfo && ((fNcalls%fNSysInfo)==0)) 
          AliSysInfo::AddStamp("Handlers_BeginEventGroup",fNcalls, 1002, 0);
       TIter next(fTasks);
-   // De-activate all tasks
-      while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
+   // De-activate all tasks (not needed anymore after ResetAnalysis
+//      while ((task=(AliAnalysisTask*)next())) task->SetActive(kFALSE);
       AliAnalysisDataContainer *cont = fCommonInput;
       if (!cont) cont = (AliAnalysisDataContainer*)fInputs->At(0);
       if (!cont) {
@@ -2264,7 +2288,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
          if (cdir) cdir->cd();
          return;
       }   
-      cont->SetData(fTree); // This will notify all consumers
+      cont->SetData(fTree); // This set activity for all tasks reading only from the top container
       Long64_t entry = fTree->GetTree()->GetReadEntry();      
 //
 //    Call BeginEvent() for optional input/output and MC services 
@@ -2283,6 +2307,7 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
       TIter next1(fTopTasks);
       Int_t itask = 0;
       while ((task=(AliAnalysisTask*)next1())) {
+         task->SetActive(kTRUE);
          if (fDebug >1) {
             cout << "    Executing task " << task->GetName() << endl;
          }

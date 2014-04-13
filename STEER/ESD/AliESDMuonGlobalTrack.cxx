@@ -53,6 +53,7 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack():
   fXAtVertex(0),
   fYAtVertex(0),
   fRAtAbsorberEnd(0),
+  fCovariances(0),
   fChi2OverNdf(0),
   fChi2MatchTrigger(0),
   fLabel(-1),
@@ -94,6 +95,7 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(Double_t px, Double_t py, Double_t 
   fXAtVertex(0),
   fYAtVertex(0),
   fRAtAbsorberEnd(0),
+  fCovariances(0),
   fChi2OverNdf(0),
   fChi2MatchTrigger(0),
   fLabel(-1),
@@ -137,6 +139,7 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(const AliESDMuonGlobalTrack& muonTr
   fXAtVertex(muonTrack.fXAtVertex),
   fYAtVertex(muonTrack.fYAtVertex),
   fRAtAbsorberEnd(muonTrack.fRAtAbsorberEnd),
+  fCovariances(0),
   fChi2OverNdf(muonTrack.fChi2OverNdf),
   fChi2MatchTrigger(muonTrack.fChi2MatchTrigger),
   fLabel(muonTrack.fLabel),
@@ -153,6 +156,8 @@ AliESDMuonGlobalTrack::AliESDMuonGlobalTrack(const AliESDMuonGlobalTrack& muonTr
   fProdVertexXYZ[0]=muonTrack.fProdVertexXYZ[0];
   fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
   fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
+
+  if (muonTrack.fCovariances) fCovariances = new TMatrixD(*(muonTrack.fCovariances));
 
 }
 
@@ -199,6 +204,15 @@ AliESDMuonGlobalTrack& AliESDMuonGlobalTrack::operator=(const AliESDMuonGlobalTr
   fProdVertexXYZ[1]=muonTrack.fProdVertexXYZ[1];
   fProdVertexXYZ[2]=muonTrack.fProdVertexXYZ[2];
 
+  if (muonTrack.fCovariances) {
+    if (fCovariances) *fCovariances = *(muonTrack.fCovariances);
+    else fCovariances = new TMatrixD(*(muonTrack.fCovariances));
+  } 
+  else {
+    delete fCovariances;
+    fCovariances = 0x0;
+  }
+  
   return *this;
 
 }
@@ -234,6 +248,31 @@ void AliESDMuonGlobalTrack::SetPxPyPz(Double_t px, Double_t py, Double_t pz) {
   fPt       =  kinem.Pt();
   fEta      =  kinem.Eta();
   fRapidity =  kinem.Rapidity(); 
+
+}
+
+//====================================================================================================================================================
+
+const TMatrixD& AliESDMuonGlobalTrack::GetCovariances() const {
+
+  // Return the covariance matrix (create it before if needed)
+
+  if (!fCovariances) {
+    fCovariances = new TMatrixD(5,5);
+    fCovariances->Zero();
+  }
+  return *fCovariances;
+
+}
+
+//====================================================================================================================================================
+
+void AliESDMuonGlobalTrack::SetCovariances(const TMatrixD& covariances) {
+
+  // Set the covariance matrix
+
+  if (fCovariances) *fCovariances = covariances;
+  else fCovariances = new TMatrixD(covariances);
 
 }
 

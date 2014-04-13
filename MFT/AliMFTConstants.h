@@ -57,12 +57,14 @@ public:
 
   static const Double_t fMisalignmentMagnitude;   // Expected misalignment magnitude (for MC, waiting for OCDB)
 
+  static const Int_t fNMaxMuonsForPCA = 10;
+
 protected:
 
   AliMFTConstants() : TObject() {}
   virtual ~AliMFTConstants(){}
 
-  ClassDef(AliMFTConstants, 2)    // MFT global constants 
+  ClassDef(AliMFTConstants, 3)    // MFT global constants 
 
 };
 	

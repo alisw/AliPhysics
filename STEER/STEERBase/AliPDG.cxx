@@ -170,7 +170,7 @@ void AliPDG::AddParticlesToPdgDataBase()
 
   ionCode = kion+20040;
   if(!pdgDB->GetParticle(ionCode)){
-    pdgDB->AddParticle("Alpha","Alpha", 3.727417, kTRUE,
+    pdgDB->AddParticle("Alpha","Alpha", 3.727379, kTRUE,
 		       khShGev/(12.33*kYear2Sec), 6, "Ion", ionCode);
   }
   pdgDB->AddAntiParticle("AntiAlpha", - ionCode);
@@ -189,7 +189,7 @@ void AliPDG::AddParticlesToPdgDataBase()
   ionCode = 1010010030;
   if(!pdgDB->GetParticle(ionCode)){
     pdgDB->AddParticle("HyperTriton","HyperTriton", 2.99131, kFALSE,
-		       2.5-15, 3, "Ion", ionCode);
+		       2.5e-15, 3, "Ion", ionCode);
   }
 
   ionCode = -1010010030;

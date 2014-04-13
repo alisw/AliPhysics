@@ -1,3 +1,4 @@
+#include <Riostream.h>
 #include "TMath.h"
 #include "AliITSUSuze02.h"
 
@@ -7,6 +8,9 @@
 //  Origin: Serhiy.Senuykov@cern.ch
 //  
 //*******************************************************************
+
+using std::cout;
+using std::endl;
 
 ClassImp(AliITSUSuze02)
 

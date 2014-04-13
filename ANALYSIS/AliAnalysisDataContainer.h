@@ -47,7 +47,9 @@ enum ENotifyMessage {
 enum EAnalysisContainerFlags {
    kPostEventLoop = BIT(14),
    kSpecialOutput = BIT(15),
-   kRegisterDataset = BIT(16)
+   kRegisterDataset = BIT(16),
+   kExchangeData  = BIT(17),
+   kTouchedFlag   = BIT(18)
 };     
    AliAnalysisDataContainer();
    AliAnalysisDataContainer(const AliAnalysisDataContainer &cont);
@@ -66,15 +68,18 @@ enum EAnalysisContainerFlags {
    TObjArray                *GetConsumers() const {return fConsumers;}
    virtual void              GetEntry(Long64_t ientry);
    // Setters
+   void                      Reset()              {fData = 0; fDataReady = kFALSE; SetTouched(kFALSE);}
    void                      ResetDataReady()     {fDataReady = kFALSE;}
    virtual Bool_t            SetData(TObject *data, Option_t *option="");
    void                      SetDataOwned(Bool_t flag) {fOwnedData = flag;}
+   void                      SetExchange(Bool_t flag) {TObject::SetBit(kExchangeData,flag);}
    void                      SetPostEventLoop(Bool_t flag=kTRUE) {TObject::SetBit(kPostEventLoop,flag);}
    void                      SetSpecialOutput(Bool_t flag=kTRUE) {TObject::SetBit(kSpecialOutput,flag);}
    void                      SetRegisterDataset(Bool_t flag=kTRUE) {TObject::SetBit(kRegisterDataset,flag);}
    void                      SetFileName(const char *filename);
    void                      SetFile(TFile *f) {fFile = f;}
    void                      SetProducer(AliAnalysisTask *prod, Int_t islot);
+   void                      SetTouched(Bool_t flag=kTRUE)       {TObject::SetBit(kTouchedFlag,flag);}
    void                      AddConsumer(AliAnalysisTask *cons, Int_t islot);
    void                      DeleteData();
    // Wrapping
@@ -82,9 +87,11 @@ enum EAnalysisContainerFlags {
    void                      ImportData(AliAnalysisDataWrapper *pack);
    // Container status checking
    Bool_t                    IsDataReady() const  {return fDataReady;}
+   Bool_t                    IsExchange() const      {return TObject::TestBit(kExchangeData);}
    Bool_t                    IsPostEventLoop() const {return TObject::TestBit(kPostEventLoop);}
    Bool_t                    IsSpecialOutput() const {return TObject::TestBit(kSpecialOutput);}
    Bool_t                    IsRegisterDataset() const {return TObject::TestBit(kRegisterDataset);}
+   Bool_t                    IsTouched() const       {return TObject::TestBit(kTouchedFlag);}
    Bool_t                    IsOwnedData() const  {return fOwnedData;}
    Bool_t                    ClientsExecuted() const;
    Bool_t                    HasConsumers() const {return (fConsumers != 0);}

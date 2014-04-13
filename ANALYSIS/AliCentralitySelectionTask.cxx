@@ -1278,15 +1278,16 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // Equalized signals
   multV0AEq=0.;
   multV0CEq=0.;
-  for(Int_t iCh = 4; iCh < 7; ++iCh) {
-    Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
-    multV0AEq += mult;
+  if (esd) { // only for ESD?
+    for(Int_t iCh = 4; iCh < 7; ++iCh) {
+      Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
+      multV0AEq += mult;
+    }
+    for(Int_t iCh = 0; iCh < 3; ++iCh) {
+      Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
+      multV0CEq += mult;
+    }
   }
-  for(Int_t iCh = 0; iCh < 3; ++iCh) {
-    Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
-    multV0CEq += mult;
-  }
-
   Bool_t kT0BB = kFALSE;    
   if (esd) {
     // ***** T0 info    
@@ -1665,7 +1666,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetQuality(fQuality);
     esdCent->SetCentralityV0M(fCentV0M);
     esdCent->SetCentralityV0A(fCentV0A);
-    esdCent->SetCentralityV0A123(fCentV0A0);
+    esdCent->SetCentralityV0A0(fCentV0A0);
     esdCent->SetCentralityV0A123(fCentV0A123);
     esdCent->SetCentralityV0C(fCentV0C);
     esdCent->SetCentralityV0MEq(fCentV0MEq);
@@ -2063,3 +2064,4 @@ Bool_t AliCentralitySelectionTask::IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) 
   else 
     return kFALSE;
 }
+

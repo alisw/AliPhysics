@@ -78,7 +78,10 @@ TNamed(calibda), fADCchannelRef(calibda.fADCchannelRef)
         fADCchannel[supermodule][column][row] = 
         calibda.GetADCchannel(supermodule,column,row);
         
-        fADCchannelDecal[supermodule][column][row] = 
+        fADCchannelOnline[supermodule][column][row] =
+        calibda.GetADCchannelOnline(supermodule,column,row);
+        
+        fADCchannelDecal[supermodule][column][row] =
         calibda.GetADCchannelDecal(supermodule,column,row);
         
         fADCpedestal[supermodule][column][row] = 
@@ -126,6 +129,9 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
         
         fADCchannel[supermodule][column][row] = 
         calibda.GetADCchannel(supermodule,column,row);
+
+        fADCchannelOnline[supermodule][column][row] =
+        calibda.GetADCchannelOnline(supermodule,column,row);
         
         fADCchannelDecal[supermodule][column][row] = 
         calibda.GetADCchannelDecal(supermodule,column,row);
@@ -175,7 +181,8 @@ void AliEMCALCalibData::Reset()
         fADCpedestal     [supermodule][column][row]=0.;
         
         fADCchannelDecal [supermodule][column][row]=1.;
-        fADCchannel      [supermodule][column][row]=1.;
+        fADCchannel      [supermodule][column][row]=fADCchannelRef;
+        fADCchannelOnline[supermodule][column][row]=fADCchannelRef;
         
         fTimeChannelDecal[supermodule][column][row]=0.;
         
@@ -236,6 +243,26 @@ void  AliEMCALCalibData::Print(Option_t *option) const
         printf("\n");
       }
     }   
+  }
+  
+  if (strstr(option,"adconline") || strstr(option,"all")) {
+    printf("\n	----	ADC online channel values	----\n\n");
+    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
+      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+      // in reality they are 1/3 but leave them as 1/2
+      if(supermodule /2 == 5)
+      nRow = nRow/2;
+      if(supermodule > 11 && supermodule < 18)
+      nCol = nCol*2/3;
+      printf("============== Supermodule %d\n",supermodule+1);
+      for (Int_t column=0; column<nCol; column++){
+        for (Int_t row=0; row<nRow; row++){
+          printf("[c%d,r%d] %2.4f ",column, row,fADCchannelOnline[supermodule][column][row]);
+        }
+        printf("\n");
+      }
+    }
   }
   
   if (strstr(option,"adcdecal") || strstr(option,"all")) {
@@ -312,6 +339,17 @@ Float_t AliEMCALCalibData::GetADCchannel(Int_t supermodule, Int_t column, Int_t 
 }
 
 //________________________________________________________________
+Float_t AliEMCALCalibData::GetADCchannelOnline(Int_t supermodule, Int_t column, Int_t row) const
+{
+  // Set ADC channel witdth values, first online calibration parameter
+  // All indexes start from 0!
+  // Supermodule, column,raw should follow the ALICE convention:
+  // supermodule 0:11, column 0:47, row 0:23
+  
+  return fADCchannelOnline[supermodule][column][row];
+}
+
+//________________________________________________________________
 Float_t AliEMCALCalibData::GetADCchannelDecal(Int_t supermodule, Int_t column, Int_t row) const
 {
   // Set ADC channel decalibration witdth values
@@ -351,9 +389,16 @@ void AliEMCALCalibData::SetADCchannel(Int_t supermodule, Int_t column, Int_t row
 }
 
 //________________________________________________________________
+void AliEMCALCalibData::SetADCchannelOnline(Int_t supermodule, Int_t column, Int_t row, Float_t value)
+{
+  // Set ADC channel online width values
+  fADCchannelOnline[supermodule][column][row] = value;
+}
+
+//________________________________________________________________
 void AliEMCALCalibData::SetADCchannelDecal(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 { 
-  // Set ADC channel width values
+  // Set ADC channel width values, decalibration
   fADCchannelDecal[supermodule][column][row] = value;
 }
 

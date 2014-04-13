@@ -245,6 +245,23 @@ void Config()
     gener->Init();
       
   }
+  else if (generatorFlag==3) {
+    
+    // Pure Pythia6 generator
+    AliGenPythia *generPy = new AliGenPythia(-1); 
+    generPy->SetMomentumRange(0,999999);
+    generPy->SetThetaRange(0., 180.);
+    generPy->SetYRange(-2.5,2.5);
+    generPy->SetPtRange(0,1000);
+    generPy->SetProcess(kPyMb);
+    generPy->SetEnergyCMS(14000.);
+    generPy->SetProjectile("p", 1, 1) ; 
+    generPy->SetTarget("p", 1, 1) ; 
+    generPy->SetSigma(50e-4, 50e-4, 5.0);   //Sigma in (X,Y,Z) (cm) on IP position
+    generPy->SetVertexSmear(kPerEvent);
+    generPy->Init();
+    //
+  }
   // 
   
 

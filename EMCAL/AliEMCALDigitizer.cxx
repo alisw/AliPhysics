@@ -503,11 +503,9 @@ void AliEMCALDigitizer::Digitize(Int_t event)
           if(sdigits->GetEntriesFast() > index[i])
           {
             AliEMCALDigit * tmpdigit = dynamic_cast<AliEMCALDigit *>(sdigits->At(index[i]));
-            if(tmpdigit)
-            {
-              curNext = tmpdigit->GetId() ;
-            }
+            if ( tmpdigit ) curNext = tmpdigit->GetId() ;
           }
+          
           if(curNext < nextSig) nextSig = curNext ;
         }// sdigits exist
       } // input loop
@@ -536,7 +534,7 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   
   //---------------------------------------------------------
   //Embed simulated amplitude (and time?) to real data digits
-  if(embed)
+  if ( embed )
   {
     for(Int_t input = 1; input<fInput; input++)
     {
@@ -550,37 +548,37 @@ void AliEMCALDigitizer::Digitize(Int_t event)
       for(Int_t i2 = 0 ; i2 < realDigits->GetEntriesFast() ; i2++)
       {
         AliEMCALDigit * digit2 = dynamic_cast<AliEMCALDigit*>( realDigits->At(i2) ) ;
-        if(digit2)
-        {
-          digit = dynamic_cast<AliEMCALDigit*>( digits->At(digit2->GetId()) ) ;
-          if(digit)
-          {
-            // Put the embedded cell energy in same units as simulated sdigits -> transform to energy units
-            // and multiply to get a big int.
-            Float_t time2 = digit2->GetTime();
-            Float_t e2    = digit2->GetAmplitude();
-            CalibrateADCTime(e2,time2,digit2->GetId());
-            Float_t amp2 = fSDigitizer->Digitize(e2);
-            
-            Float_t e0    = digit ->GetAmplitude();
-            if(e0>0.01)
-            AliDebug(1,Form("digit 1: Abs ID %d, amp %f, type %d, time %e; digit2: Abs ID %d, amp %f, type %d, time %e\n",
-                            digit ->GetId(),digit ->GetAmplitude(), digit ->GetType(), digit->GetTime(),
-                            digit2->GetId(),amp2,                   digit2->GetType(), time2           ));
-            
-            // Sum amplitudes, change digit amplitude
-            digit->SetAmplitude( digit->GetAmplitude() + amp2);
-            // Rough assumption, assign time of the largest of the 2 digits,
-            // data or signal to the final digit.
-            if(amp2 > digit->GetAmplitude())  digit->SetTime(time2);
-            //Mark the new digit as embedded
-            digit->SetType(AliEMCALDigit::kEmbedded);
-            
-            if(digit2->GetAmplitude()>0.01 && e0> 0.01 )
-            AliDebug(1,Form("Embedded digit: Abs ID %d, amp %f, type %d\n",
-                            digit->GetId(), digit->GetAmplitude(), digit->GetType()));
-          }//digit2
-        }//digit2
+        if ( !digit2 ) continue;
+      
+        digit = dynamic_cast<AliEMCALDigit*>( digits->At(digit2->GetId()) ) ;
+        if ( !digit ) continue;
+        
+        // Put the embedded cell energy in same units as simulated sdigits -> transform to energy units
+        // and multiply to get a big int.
+        Float_t time2 = digit2->GetTime();
+        Float_t e2    = digit2->GetAmplitude();
+        CalibrateADCTime(e2,time2,digit2->GetId());
+        Float_t amp2  = fSDigitizer->Digitize(e2);
+        
+        Float_t e0    = digit ->GetAmplitude();
+        if(e0>0.01)
+          AliDebug(1,Form("digit 1: Abs ID %d, amp %f, type %d, time %e; digit2: Abs ID %d, amp %f, type %d, time %e\n",
+                          digit ->GetId(),digit ->GetAmplitude(), digit ->GetType(), digit->GetTime(),
+                          digit2->GetId(),amp2,                   digit2->GetType(), time2           ));
+        
+        // Sum amplitudes, change digit amplitude
+        digit->SetAmplitude( digit->GetAmplitude() + amp2);
+        
+        // Rough assumption, assign time of the largest of the 2 digits,
+        // data or signal to the final digit.
+        if(amp2 > digit->GetAmplitude())  digit->SetTime(time2);
+        
+        //Mark the new digit as embedded
+        digit->SetType(AliEMCALDigit::kEmbedded);
+        
+        if(digit2->GetAmplitude()>0.01 && e0> 0.01 )
+          AliDebug(1,Form("Embedded digit: Abs ID %d, amp %f, type %d\n",
+                          digit->GetId(), digit->GetAmplitude(), digit->GetType()));
       }//loop digit 2
     }//input loop
   }//embed
@@ -598,17 +596,18 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for(i = 0 ; i < nEMC ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit*>( digits->At(i) ) ;
-    if(digit)
-    {
-      //Then get the energy in GeV units.
-      energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-      //Then digitize using the calibration constants of the ocdb
-      Float_t ampADC = energy;
-      DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
-      if(ampADC < fDigitThreshold)
+    if ( !digit ) continue;
+    
+    //Then get the energy in GeV units.
+    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+    
+    //Then digitize using the calibration constants of the ocdb
+    Float_t ampADC = energy;
+    DigitizeEnergyTime(ampADC, time, digit->GetId())  ;
+    
+    if(ampADC < fDigitThreshold)
       digits->RemoveAt(i) ;
-      
-    }// digit exists
+    
   } // digit loop
   
   digits->Compress() ;
@@ -623,17 +622,20 @@ void AliEMCALDigitizer::Digitize(Int_t event)
   for (i = 0 ; i < ndigits ; i++)
   {
     digit = dynamic_cast<AliEMCALDigit *>( digits->At(i) ) ;
-    if(digit)
-    {
-      digit->SetIndexInList(i) ;
-      energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
-      time   = digit->GetTime();
-      Float_t ampADC = energy;
-      DigitizeEnergyTime(ampADC, time, digit->GetId());
-      digit->SetAmplitude(ampADC) ;
-      digit->SetTime(time);
-      // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
-    }// digit exists
+    if( !digit ) continue ;
+    
+    digit->SetIndexInList(i) ;
+    
+    time   = digit->GetTime();
+    digit->SetTime(time);
+
+    energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ;
+
+    Float_t ampADC = energy;
+    DigitizeEnergyTime(ampADC, time, digit->GetId());
+    
+    digit->SetAmplitude(ampADC) ;
+    // printf("digit amplitude set at end: i %d, amp %f\n",i,digit->GetAmplitude());
   }//Digit loop
   
 }
@@ -681,14 +683,16 @@ void AliEMCALDigitizer::DigitizeEnergyTime(Float_t & energy, Float_t & time, con
   energy = (energy + fADCpedestalEC)/fADCchannelEC/fADCchannelECDecal   ;
   time  += fTimeChannel-fTimeChannelDecal;
   
-  if(energy > fNADCEC )
-  energy =  fNADCEC ;
+  if ( energy > fNADCEC ) energy =  fNADCEC ;
 }
 
 //_____________________________________________________________________
-void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
+void AliEMCALDigitizer::DecalibrateTrigger(AliEMCALDigit *digit)
 {
   // Decalibrate, used in Trigger digits
+  
+  if ( !fCalibData ) return ;
+  
   // Load Geometry
   const AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance();
 	
@@ -698,6 +702,7 @@ void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
     return;
   }
 	
+  // Recover the digit location in row-column-SM
   Int_t absId   = digit->GetId();
   Int_t iSupMod = -1;
   Int_t nModule = -1;
@@ -707,17 +712,18 @@ void AliEMCALDigitizer::Decalibrate(AliEMCALDigit *digit)
   Int_t ieta    = -1;
 	
   Bool_t bCell = geom->GetCellIndex(absId, iSupMod, nModule, nIphi, nIeta) ;
-	
   if (!bCell) Error("Decalibrate","Wrong cell id number : absId %i ", absId) ;
+  
   geom->GetCellPhiEtaIndexInSModule(iSupMod,nModule,nIphi, nIeta,iphi,ieta);
 	
-  if (fCalibData)
-  {
-    fADCchannelEC = fCalibData->GetADCchannel(iSupMod,ieta,iphi);
-    Float_t factor = 1./(fADCchannelEC/0.0162);
-		
-    *digit = *digit * factor;
-  }
+  // Now decalibrate
+  Float_t adcChannel       = fCalibData->GetADCchannel      (iSupMod,ieta,iphi);
+  Float_t adcChannelOnline = fCalibData->GetADCchannelOnline(iSupMod,ieta,iphi);
+  //printf("calib param for (SM%d,col%d,row%d): %1.4f - online param: %1.4f \n",iSupMod,ieta,iphi,adcChannel,adcChannelOnline);
+  Float_t factor = 1./(adcChannel/adcChannelOnline);
+  
+  *digit = *digit * factor;
+  
 }
 
 //_____________________________________________________________________
@@ -901,7 +907,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
   {
     if (IsDead(digit)) continue;
     
-    Decalibrate(digit);
+    DecalibrateTrigger(digit);
     
     Int_t id = digit->GetId();
     
@@ -1067,7 +1073,7 @@ void AliEMCALDigitizer::InitParameters()
   
   // These defaults are normally not used. 
   // Values are read from calibration database instead
-  fADCchannelEC       = 0.0153; // Update 24 Apr 2007: 250./16/1024 - width of one ADC channel in GeV
+  fADCchannelEC       = 0.0162; // Nominal value set online for most of the channels, MIP peak sitting at ~266./16/1024
   fADCpedestalEC      = 0.0 ;   // GeV
   fADCchannelECDecal  = 1.0;    // No decalibration by default
   fTimeChannel        = 0.0;    // No time calibration by default
