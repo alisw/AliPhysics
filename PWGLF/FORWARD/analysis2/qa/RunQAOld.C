@@ -173,8 +173,8 @@ GetListOfFiles(const char* input=".")
  * @ingroup pwglf_forward_qa_scripts
  */
 void
-RunQA(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
-      UShort_t what=0x3)
+RunQAOld(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
+	 UShort_t what=0x3)
 {
   gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/qa:"
 			   "$(ALICE_ROOT)/PWGLF/FORWARD/analysis2/corrs:%s",
