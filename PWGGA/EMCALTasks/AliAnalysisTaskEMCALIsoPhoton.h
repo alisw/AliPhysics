@@ -62,6 +62,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetImportGeometryFromFile(Bool_t  im, 
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
+  void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
   
 
  protected:
@@ -95,6 +96,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               fMaxPtTrack;            //track with highest pt in event
   Double_t               fMaxEClus;              //cluster with highest energy in event
   Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
+  ULong_t                fFilterBit;             // Track selection bit, for AODs 
+
 
   
  private:

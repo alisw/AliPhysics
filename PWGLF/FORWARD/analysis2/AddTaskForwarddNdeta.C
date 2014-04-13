@@ -100,8 +100,8 @@ AddTaskForwarddNdeta(const char* trig     = "INEL",
   // inclusive to b exclusive.  An upper bound of 100 is treated
   // especially, and the upper bound is inclusive in that case .
   if (useCent) {
-    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-    task->SetCentralityAxis(11, bins);
+    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 100 };
+    task->SetCentralityAxis(10, bins);
   }
   // Set satellite vertex flag
   task->SetSatelliteVertices(satVtx);

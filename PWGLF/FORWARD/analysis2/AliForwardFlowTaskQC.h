@@ -22,7 +22,8 @@ class TH2F;
 class TH2D;
 class TH3D;
 class TAxis;
-class AliESDtrackCuts;
+class AliAnalysisFilter;
+class AliESDEvent;
 /**
  * @defgroup pwglf_forward_tasks_flow Flow tasks 
  *
@@ -138,21 +139,24 @@ public:
    * @param eg gap value
    */
   void SetEtaGapValue(Double_t eg) { fEtaGap = eg; }
+  void SetTrackCuts(AliAnalysisFilter* trCuts) { fTrackCuts = trCuts; }
   /**
    * Enum for flow flags
    */
   enum EFlowFlags {
-    kStdQC   = 0x001, // Standard QC{2} and QC{4} calculations
-    kEtaGap  = 0x002, // QC{2} w/ an eta-gap
-    k3Cor    = 0x004, // 3 correlator method for QC{2} w/ an eta-gap
-    kSymEta  = 0x008, // Symmetrize ref flow in std. QC{2} and QC{4} around eta = 0
-    kSatVtx  = 0x010, // Do satellite vertex input (currently not implemented)
-    kNUAcorr = 0x020, // Apply full NUA correction
-    kFMD     = 0x040, // Use FMD for forward flow
-    kVZERO   = 0x080, // Use VZERO for forward flow
-    kTPC     = 0x100, // Use TPC tracks for reference flow
-    kSPD     = 0x200, // SPD object flag
-    kMC      = 0x400  // MC object flag
+    kStdQC   = 0x0001, // Standard QC{2} and QC{4} calculations
+    kEtaGap  = 0x0002, // QC{2} w/ an eta-gap
+    k3Cor    = 0x0004, // 3 correlator method for QC{2} w/ an eta-gap
+    kSymEta  = 0x0008, // Symmetrize ref flow in std. QC{2} and QC{4} around eta = 0
+    kSatVtx  = 0x0010, // Do satellite vertex input (currently not implemented)
+    kNUAcorr = 0x0020, // Apply full NUA correction
+    kFMD     = 0x0040, // Use FMD for forward flow
+    kVZERO   = 0x0080, // Use VZERO for forward flow
+    kSPD     = 0x0100, // SPD object flag
+    kMC      = 0x0200, // MC object flag
+    kTracks  = 0x1000, // Use tracks for reference flow
+    kTPC     = 0x3000, // Use TPC tracks
+    kHybrid  = 0x5000  // Use hybrid tracks
   };
   /**
    * struct to handle cumulant calculations and control histograms
@@ -364,7 +368,7 @@ protected:
      *
      * @return false if bad event (det. hotspot)
      */
-    Bool_t FillTracks(TObjArray* trList, UShort_t mode);
+    Bool_t FillTracks(TObjArray* trList, AliESDEvent* esd, AliAnalysisFilter* trFilter, UShort_t mode);
     /**
      * Do cumulants calculations for current event with 
      * centrality cent
@@ -601,11 +605,11 @@ protected:
    */
   TH2D& CombineHists(TH2D& hcent, TH2D& hfwd);
   /**
-   * Get TPC tracks from ESD or AOD input event
+   * Get Fill tracks from ESD or AOD input event
    *
-   * @return array of tracks
+   * @return true on success
    */
-  TObjArray* GetTracks() const;
+  Bool_t FillTracks(VertexBin* bin, UShort_t mode) const;
   /**
    * Loops over VertexBin list and calls terminate on each
    *
@@ -676,29 +680,29 @@ protected:
    */
   void PrintFlowSetup() const;
 
-  TAxis*           fVtxAxis;       //  Axis to control vertex binning
-  TAxis*           fCentAxis;      //  Axis to control centrality/multiplicity binning
-  Double_t         fFMDCut;        //  FMD sigma cut for outlier events
-  Double_t         fSPDCut;        //  SPD sigma cut for outlier events
-  UShort_t         fFlowFlags;     //  Flow flags, e.g., eta-gap, sat. vtx.
-  Double_t         fEtaGap;        //  Eta gap value
-  TList            fBinsForward;   //  List with forward VertexBin objects 
-  TList            fBinsCentral;   //  List with central VertexBin objects
-  TList*           fSumList;       //  Sum list
-  TList*           fOutputList;    //  Output list
-  AliAODEvent*     fAOD;           //  AOD event
-  AliESDtrackCuts* fESDTrackCuts;  //  ESD track cuts
-  Int_t            fMaxMoment;     //  Calculate v_{n} flag
-  Float_t          fVtx;           //  Z vertex bin
-  Double_t         fCent;          //  Centrality
-  TH2D             fHistdNdedpV0;  //  VZERO d^2N/detadphi histogram
-  TH2D             fHistdNdedp3Cor;//  VZERO d^2N/detadphi histogram
-  TH2D*            fHistFMDSPDCorr;//  Diagnostics hist for multiplicity correlations between FMD and SPD
-  TH1D*            fHistCent;      //  Diagnostics hist for centrality
-  TH1D*            fHistVertexSel; //  Diagnostics hist for selected vertices
-  TH1I*            fHistEventSel;  //  Diagnostics hist for event selection
+  TAxis*             fVtxAxis;       //  Axis to control vertex binning
+  TAxis*             fCentAxis;      //  Axis to control centrality/multiplicity binning
+  Double_t           fFMDCut;        //  FMD sigma cut for outlier events
+  Double_t           fSPDCut;        //  SPD sigma cut for outlier events
+  UShort_t           fFlowFlags;     //  Flow flags, e.g., eta-gap, sat. vtx.
+  Double_t           fEtaGap;        //  Eta gap value
+  TList              fBinsForward;   //  List with forward VertexBin objects 
+  TList              fBinsCentral;   //  List with central VertexBin objects
+  TList*             fSumList;       //  Sum list
+  TList*             fOutputList;    //  Output list
+  AliAODEvent*       fAOD;           //  AOD event
+  AliAnalysisFilter* fTrackCuts;     //  ESD track cuts
+  Int_t              fMaxMoment;     //  Calculate v_{n} flag
+  Float_t            fVtx;           //  Z vertex bin
+  Double_t           fCent;          //  Centrality
+  TH2D               fHistdNdedpV0;  //  VZERO d^2N/detadphi histogram
+  TH2D               fHistdNdedp3Cor;//  3 correlator d^2N/detadphi histogram
+  TH2D*              fHistFMDSPDCorr;//  Diagnostics hist for multiplicity correlations between FMD and SPD
+  TH1D*              fHistCent;      //  Diagnostics hist for centrality
+  TH1D*              fHistVertexSel; //  Diagnostics hist for selected vertices
+  TH1I*              fHistEventSel;  //  Diagnostics hist for event selection
 
-  ClassDef(AliForwardFlowTaskQC, 4); // Analysis task for flow analysis
+  ClassDef(AliForwardFlowTaskQC, 5); // Analysis task for flow analysis
 };
 
 #endif

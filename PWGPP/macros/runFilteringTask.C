@@ -32,6 +32,7 @@ void runFilteringTask( const char* esdList,
     // Make the analysis manager
     AliAnalysisManager *mgr = new AliAnalysisManager("TestManager");
     mgr->SetDebugLevel(0);
+    mgr->SetNSysInfo(10);
 
     AliESDInputHandler* esdH = new AliESDInputHandler();
     esdH->SetReadFriends(1);

@@ -36,7 +36,9 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fOutput(0x0),
     fnCentBins(20),
     fnQvecBins(40),
-    fnNchBins(200)
+    fnNchBins(200),
+    fIsQvecCalibMode(0),
+    fQvecUpperLim(100)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -73,6 +75,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetnCentBins(Int_t val)                             { fnCentBins = val; }
   void SetnQvecBins(Int_t val)                             { fnQvecBins = val; }
   void SetnNchBins(Int_t val)                             { fnNchBins = val; }
+  void SetQvecCalibMode(Bool_t mode)                  { fIsQvecCalibMode = mode; }
+  void SetQvecUpperLimit(Double_t val)                { fQvecUpperLim = val; }
   
  private:
   
@@ -89,10 +93,12 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Int_t                            fnCentBins;                  // number of bins for the centrality axis
   Int_t                            fnQvecBins;                 // number of bins for the q vector axis
   Int_t                            fnNchBins;                 // number of bins for the Nch axis
+  Bool_t                           fIsQvecCalibMode;          //calib mode for Qvector percentile
+  Double_t                         fQvecUpperLim;             //Upper limit for Qvector
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 6);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 7);
 };
 
 #endif

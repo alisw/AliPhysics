@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = kFALSE){
+AliAnalysisTask *AddTaskJPSIFilter(TString period="", Bool_t storeLS = kFALSE, Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -29,14 +29,14 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
   //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
-  AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC);
+  AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC,period);
   
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
     aodHandler->SetCreateNonStandardAOD();
     aodHandler->SetNeedsHeaderReplication();
-    aodHandler->SetNeedsTOFHeaderReplication();
+    if(!period.Contains("LHC10h")) aodHandler->SetNeedsTOFHeaderReplication();
     aodHandler->SetNeedsVZEROReplication();
     /*aodHandler->SetNeedsTracksBranchReplication();
     aodHandler->SetNeedsCaloClustersBranchReplication();

@@ -165,6 +165,8 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fRejectExtraSignals(0),
    fminV0Dist(200.),
    fDoSharedElecCut(kFALSE),
+   fDoPhotonQualitySelectionCut(kFALSE),
+   fPhotonQualityCut(0),
    fOfflineTriggerMask(0),
    fHasV0AND(kTRUE),
    fIsSDDFired(kTRUE),
@@ -227,6 +229,7 @@ AliConversionCuts::AliConversionCuts(const char *name,const char *title) :
    fFitDataPi0(NULL),
    fFitDataEta(NULL),
    fFitDataK0s(NULL),
+   fAddedSignalPDGCode(0),
    fPreSelCut(kFALSE),
    fTriggerSelectedManually(kFALSE),
    fSpecialTriggerName("")
@@ -319,6 +322,8 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fRejectExtraSignals(ref.fRejectExtraSignals),
    fminV0Dist(ref.fminV0Dist),
    fDoSharedElecCut(ref.fDoSharedElecCut),
+   fDoPhotonQualitySelectionCut(ref.fDoPhotonQualitySelectionCut),
+   fPhotonQualityCut(ref.fPhotonQualityCut),
    fOfflineTriggerMask(ref.fOfflineTriggerMask),
    fHasV0AND(ref.fHasV0AND),
    fIsSDDFired(ref.fIsSDDFired),
@@ -381,6 +386,7 @@ AliConversionCuts::AliConversionCuts(const AliConversionCuts &ref) :
    fFitDataPi0(ref.fFitDataPi0),
    fFitDataEta(ref.fFitDataEta),
    fFitDataK0s(ref.fFitDataK0s),
+   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
    fPreSelCut(ref.fPreSelCut),
    fTriggerSelectedManually(ref.fTriggerSelectedManually),
    fSpecialTriggerName(ref.fSpecialTriggerName)
@@ -496,7 +502,7 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    fHistograms->Add(hTrackCuts);
 
    // Photon Cuts
-   hPhotonCuts=new TH1F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts",14,-0.5,13.5);
+   hPhotonCuts=new TH1F(Form("PhotonCuts %s",GetCutNumber().Data()),"PhotonCuts",15,-0.5,14.5);
    hPhotonCuts->GetXaxis()->SetBinLabel(1,"in");
    hPhotonCuts->GetXaxis()->SetBinLabel(2,"qtcut");
    hPhotonCuts->GetXaxis()->SetBinLabel(3,"chi2");
@@ -508,7 +514,8 @@ void AliConversionCuts::InitCutHistograms(TString name, Bool_t preCut){
    hPhotonCuts->GetXaxis()->SetBinLabel(9,"CosPAngle");
    hPhotonCuts->GetXaxis()->SetBinLabel(10,"DCA R");
    hPhotonCuts->GetXaxis()->SetBinLabel(11,"DCA Z");
-   hPhotonCuts->GetXaxis()->SetBinLabel(12,"out");
+   hPhotonCuts->GetXaxis()->SetBinLabel(12,"Photon Quality");
+   hPhotonCuts->GetXaxis()->SetBinLabel(13,"out");
    fHistograms->Add(hPhotonCuts);
 
    if(preCut){
@@ -1100,6 +1107,14 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
       cutIndex++; //10
    }
    cutIndex++; //11
+
+   if (photonAOD){
+		if (fDoPhotonQualitySelectionCut && photonAOD->GetPhotonQuality() != fPhotonQualityCut){
+			if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
+			return kFALSE;
+		}	
+   } 
+   cutIndex++; //12
    if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
 
    // Histos after Cuts
@@ -1200,7 +1215,6 @@ Bool_t AliConversionCuts::PhotonIsSelected(AliConversionPhotonBase *photon, AliV
 ///________________________________________________________________________
 Bool_t AliConversionCuts::ArmenterosQtCut(AliConversionPhotonBase *photon)
 {   // Armenteros Qt Cut
-
    if(fDo2DQt){
       if ( !(TMath::Power(photon->GetArmenterosAlpha()/0.95,2)+TMath::Power(photon->GetArmenterosQt()/fQtMax,2) < 1) ){
          return kFALSE;
@@ -2074,11 +2088,34 @@ void AliConversionCuts::PrintCutsWithValues() {
       } else if (fSpecialTrigger > 4){   
          printf("\t only events triggered by %s \n", fSpecialTriggerName.Data());
       }
-   }   
+   }
+   printf("Electron cuts: \n");
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{e} < %3.2f\n", fEtaCut );
+   printf("\t p_{T,e} > %3.2f\n", fSinglePtCut );
+   printf("\t %3.2f < n sigma e < %3.2f\n", fPIDnSigmaBelowElectronLine, fPIDnSigmaAboveElectronLine );
    
-   
-   
-   
+   printf("Photon cuts: \n");
+   printf("\t %3.2f < R_{conv} < %3.2f\n", fMinR, fMaxR );
+   printf("\t Z_{conv} < %3.2f\n", fMaxZ );
+   if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{conv} < %3.2f\n", fEtaCutMin, fEtaCut );
+     else printf("\t eta_{conv} < %3.2f\n", fEtaCut );
+   printf("\t p_{T,gamma} > %3.2f\n", fPtCut );	 
+   if (fDo2DQt){
+	  printf("\t 2 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
+   } else {
+	  printf("\t 1 dimensional q_{T} cut applied with maximum of %3.2f \n", fQtMax );
+   }
+   if (fDo2DPsiPairChi2){
+	  printf("\t 2 dimensional triangle chi^{2} and psi_{pair} cut applied with maximum of chi^{2} = %3.2f and |psi_{pair}| = %3.2f \n", fChi2CutConversion, fPsiPairCut ); 
+   } else {
+      printf("\t chi^{2} max cut chi^{2} < %3.2f \n", fChi2CutConversion ); 
+	  printf("\t psi_{pair} max cut |psi_{pair}| < %3.2f \n", fPsiPairCut ); 
+   }	   
+   printf("\t cos(Theta_{point}) > %3.2f \n", fCosPAngleCut );
+   printf("\t dca_{R} < %3.2f \n", fDCARPrimVtxCut );
+   printf("\t dca_{Z} < %3.2f \n", fDCAZPrimVtxCut );
+   if (fDoPhotonQualitySelectionCut) printf("\t selection based on photon quality with quality %d \n", fPhotonQualityCut );
 }
 
 ///________________________________________________________________________
@@ -2986,16 +3023,35 @@ Bool_t AliConversionCuts::SetCosPAngleCut(Int_t cosCut) {
 ///________________________________________________________________________
 Bool_t AliConversionCuts::SetSharedElectronCut(Int_t sharedElec) {
 
-   switch(sharedElec){
-   case 0:
-      fDoSharedElecCut = kFALSE;
-      break;
-   case 1:
-      fDoSharedElecCut = kTRUE;
-      break;
-   default:
-      AliError(Form("Shared Electron Cut not defined %d",sharedElec));
-      return kFALSE;
+	switch(sharedElec){
+	case 0:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kFALSE;
+		fPhotonQualityCut = 0;
+		break;
+	case 1:
+		fDoSharedElecCut = kTRUE;
+		fDoPhotonQualitySelectionCut = kFALSE;
+		fPhotonQualityCut = 0;
+		break;
+	case 2:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;
+		fPhotonQualityCut = 1;
+		break;
+	case 3:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;	  
+		fPhotonQualityCut = 2;
+		break;
+	case 4:
+		fDoSharedElecCut = kFALSE;
+		fDoPhotonQualitySelectionCut = kTRUE;	  
+		fPhotonQualityCut = 3;
+		break;
+	default:
+		AliError(Form("Shared Electron Cut not defined %d",sharedElec));	
+		return kFALSE;
    }
 
    return kTRUE;
@@ -3218,40 +3274,40 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
    Int_t PrimaryTracks10[10][2] =
       {
          {9999,9999}, //  0
-         {1210,2067}, // 10
-         { 817,1450}, // 20
-         { 536, 921}, // 30
-         { 337, 572}, // 40
-         { 197, 332}, // 50
-         { 106, 173}, // 60
-         {  51,  81}, // 70
-         {  21,  34}, // 80
+         {1210, 928}, // 10
+         { 817, 658}, // 20
+         { 536, 435}, // 30
+         { 337, 276}, // 40
+         { 197, 162}, // 50
+         { 106, 100}, // 60
+         {  51,  44}, // 70
+         {  21,  18}, // 80
          {   0,   0}  // 90
       };
    Int_t PrimaryTracks5a[10][2] =
       {
          {9999,9999}, // 0
-         {1485,2562}, // 5
-         {1210,2067}, // 10
-         { 995,1760}, // 15
-         { 817,1450}, // 20
-         { 666,1160}, // 25
-         { 536, 921}, // 30
-         { 428, 731}, // 35
-         { 337, 572}, // 40
-         { 260, 436}  // 45
+         {1485,1168}, // 5
+         {1210, 928}, // 10
+         { 995, 795}, // 15
+         { 817, 658}, // 20
+         { 666, 538}, // 25
+         { 536, 435}, // 30
+         { 428, 350}, // 35
+         { 337, 276}, // 40
+         { 260, 214}  // 45
       };
    Int_t PrimaryTracks5b[10][2] =
       {
-         { 260, 436}, // 45
-         { 197, 327}, // 50
-         { 147, 239}, // 55
-         { 106, 173}, // 60
-         {  75, 120}, // 65
-         {  51,  81}, // 70
-         {  34,  53}, // 75
-         {  21,  34}, // 80
-         {  13,  19}, // 85
+         { 260, 214}, // 45
+         { 197, 162}, // 50
+         { 147, 125}, // 55
+         { 106, 100}, // 60
+         {  75,  63}, // 65
+         {  51,  44}, // 70
+         {  34,  29}, // 75
+         {  21,  18}, // 80
+         {  13,  11}, // 85
          {   0,   0}  // 90
       };
 
@@ -3384,14 +3440,18 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
    AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
    UInt_t isSelected = AliVEvent::kAny;
+   TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
+//    cout << 	periodName.Data() << endl;
+   
    if (fInputHandler==NULL) return kFALSE;
    if( fInputHandler->GetEventSelection() || fInputEvent->IsA()==AliAODEvent::Class()) {
       if (!fTriggerSelectedManually){
          if (fPreSelCut) fOfflineTriggerMask = AliVEvent::kAny;
          else {
             if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-               else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-               else fOfflineTriggerMask = AliVEvent::kMB;
+            else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
+            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC11f") == 0  || periodName.CompareTo("LHC13g") == 0 ) fOfflineTriggerMask = AliVEvent::kINT7;      
+            else fOfflineTriggerMask = AliVEvent::kMB;
          }
       }
       // Get the actual offline trigger mask for the event and AND it with the
@@ -3652,202 +3712,269 @@ Bool_t AliConversionCuts::RejectToCloseV0s(AliAODConversionPhoton* photon, TList
 ///________________________________________________________________________
 void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *MCEvent){
 
+	TString periodName = ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->GetPeriodName();
 
 
-   if(fNotRejectedStart){
-      delete[] fNotRejectedStart;
-      fNotRejectedStart = NULL;
-   }
-   if(fNotRejectedEnd){
-      delete[] fNotRejectedEnd;
-      fNotRejectedEnd = NULL;
-   }
-   if(fGeneratorNames){
-      delete[] fGeneratorNames;
-      fGeneratorNames = NULL;
-   }
+	if(fNotRejectedStart){
+		delete[] fNotRejectedStart;
+		fNotRejectedStart = NULL;
+	}
+	if(fNotRejectedEnd){
+		delete[] fNotRejectedEnd;
+		fNotRejectedEnd = NULL;
+	}
+	if(fGeneratorNames){
+		delete[] fGeneratorNames;
+		fGeneratorNames = NULL;
+	}
 
-   if(rejection == 0) return; // No Rejection
+	if(rejection == 0) return; // No Rejection
 
-   AliGenCocktailEventHeader *cHeader = 0x0;
-   AliAODMCHeader *cHeaderAOD = 0x0;
-   Bool_t headerFound = kFALSE;
-   AliStack *fMCStack = 0x0;
-   TClonesArray *fMCStackAOD = 0x0;
-   if(MCEvent->IsA()==AliMCEvent::Class()){
-      cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if(cHeader) headerFound = kTRUE;
-      fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
-   }
-   if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
-      cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
-      fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      
-      
-      if(cHeaderAOD) headerFound = kTRUE;
-   }
+	AliGenCocktailEventHeader *cHeader = 0x0;
+	AliAODMCHeader *cHeaderAOD = 0x0;
+	Bool_t headerFound = kFALSE;
+	AliStack *fMCStack = 0x0;
+	TClonesArray *fMCStackAOD = 0x0;
+	if(MCEvent->IsA()==AliMCEvent::Class()){
+		cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+		if(cHeader) headerFound = kTRUE;
+		fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+	}
+	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
+		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
+		fMCStackAOD = dynamic_cast<TClonesArray*>(MCEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		
+		
+		if(cHeaderAOD) headerFound = kTRUE;
+	}
 
-   if(headerFound){
-      TList *genHeaders = 0x0;
-      if(cHeader) genHeaders = cHeader->GetHeaders();
-      if(cHeaderAOD){
-         genHeaders = cHeaderAOD->GetCocktailHeaders();
-         if(genHeaders->GetEntries()==1){
-            SetRejectExtraSignalsCut(0);
-            return;
-         }
-      }
-      AliGenEventHeader* gh = 0;
-      fnHeaders = 0;
-      Int_t firstindexA = 0;
-      Int_t lastindexA =  -1;
-      if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
-      if(rejection == 2){ // TList of Headers Names
-         for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-            gh = (AliGenEventHeader*)genHeaders->At(i);
-            TString GeneratorName = gh->GetName();
-            lastindexA = lastindexA + gh->NProduced();
-//             cout << i << "\t" << GeneratorName.Data() << endl;
-            for(Int_t j = 0; j<HeaderList->GetEntries();j++){
-               TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-               if(GeneratorName.CompareTo(GeneratorInList) == 0){
-                  if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
-                     if(fMCStack){
-                        if (fMCStack->Particle(firstindexA)->GetPdgCode() == 111 || fMCStack->Particle(firstindexA)->GetPdgCode() == 221 ) {
-                           fnHeaders++;
-                           continue;
-                        }
-                     }   
-                     if ( fMCStackAOD){
-                        AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
-                        if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
-                           fnHeaders++;
-                           continue;
-                       }   
-                     }
-                  }
-                  fnHeaders++;
-                  continue;
-               }
-            }
-            firstindexA = firstindexA + gh->NProduced();
-         }
-      }
+	if(headerFound){
+		TList *genHeaders = 0x0;
+		if(cHeader) genHeaders = cHeader->GetHeaders();
+		if(cHeaderAOD){
+			genHeaders = cHeaderAOD->GetCocktailHeaders();
+			if(genHeaders->GetEntries()==1){
+				SetRejectExtraSignalsCut(0);
+				return;
+			}
+		}
+		AliGenEventHeader* gh = 0;
+		fnHeaders = 0;
+		Int_t firstindexA = 0;
+		Int_t lastindexA =  -1;
+		if(rejection == 1 || rejection == 3) fnHeaders = 1; // MinBiasHeader
+		if(rejection == 2){ // TList of Headers Names
+			for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+				gh = (AliGenEventHeader*)genHeaders->At(i);
+				TString GeneratorName = gh->GetName();
+				lastindexA = lastindexA + gh->NProduced();
+// 				cout << i << "\t" << GeneratorName.Data() << endl;
+				for(Int_t j = 0; j<HeaderList->GetEntries();j++){
+					TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+					if(GeneratorName.CompareTo(GeneratorInList) == 0){
+						if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+							if(fMCStack){
+								if (fMCStack->Particle(firstindexA)->GetPdgCode() == fAddedSignalPDGCode ) {
+									if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
+										if (gh->NProduced() > 10 && fMCStack->Particle(firstindexA+10)->GetPdgCode() == fAddedSignalPDGCode ){
+// 											cout << "cond 1: "<< fnHeaders << endl;
+											fnHeaders++;
+											continue;
+										}	
+										continue;
+									} else {
+// 										cout << "cond 2: " << fnHeaders << endl;
+										fnHeaders++;
+										continue;
+									}	
+								}
+							}   
+							if ( fMCStackAOD){
+								AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA));
+								if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
+									if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
+										if (gh->NProduced() > 10){
+											AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindexA+10));
+											if (  aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
+// 												cout << "cond 1: " << fnHeaders << endl;
+												fnHeaders++;
+												continue;
+											} 
+										}	
+										continue;
+									} else {
+// 										cout << "cond 2: " << fnHeaders << endl;
+										fnHeaders++;
+										continue;
+									}	
+								}   
+							}
+							continue;
+						}
+// 						cout << "cond 3: "<< fnHeaders << endl;
+						fnHeaders++;
+						continue;
+					}
+				}
+				firstindexA = firstindexA + gh->NProduced();
+			}
+		}
+// 		cout << "number of headers: " <<fnHeaders << endl;
+		
+		fNotRejectedStart = new Int_t[fnHeaders];
+		fNotRejectedEnd = new Int_t[fnHeaders];
+		fGeneratorNames = new TString[fnHeaders];
 
-      fNotRejectedStart = new Int_t[fnHeaders];
-      fNotRejectedEnd = new Int_t[fnHeaders];
-      fGeneratorNames = new TString[fnHeaders];
+		if(rejection == 1 || rejection == 3){
+			fNotRejectedStart[0] = 0;
+			fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
+			fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+			return;
+		}
 
-      if(rejection == 1 || rejection == 3){
-         fNotRejectedStart[0] = 0;
-         fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-         fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
-         return;
-      }
+		Int_t firstindex = 0;
+		Int_t lastindex =  -1;
+		Int_t number = 0;
+		
+		for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+			gh = (AliGenEventHeader*)genHeaders->At(i);
+			TString GeneratorName = gh->GetName();
+			lastindex = lastindex + gh->NProduced();
+			for(Int_t j = 0; j<HeaderList->GetEntries();j++){
+				TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
+// 				cout << i << "\t" << GeneratorName.Data() << endl;
+				if(GeneratorName.CompareTo(GeneratorInList) == 0){
+					if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
+						if(fMCStack){
+							if (fMCStack->Particle(firstindex)->GetPdgCode() == fAddedSignalPDGCode ) {
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
+// 									cout << "produced " << gh->NProduced() << " with box generator" << endl;
+									if (gh->NProduced() > 10 && fMCStack->Particle(firstindex+10)->GetPdgCode() == fAddedSignalPDGCode){
+// 										cout << "one of them was a pi0 or eta" <<  endl;
+										fNotRejectedStart[number] = firstindex;
+										fNotRejectedEnd[number] = lastindex;
+										fGeneratorNames[number] = GeneratorName;
+										number++;
+// 										cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+										continue;
+									}	
+								} else {
+									fNotRejectedStart[number] = firstindex;
+									fNotRejectedEnd[number] = lastindex;
+									fGeneratorNames[number] = GeneratorName;
+									number++;
+									continue;
+								}	
+							}
+						}   
+						if ( fMCStackAOD){
+							AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
+							if (  aodMCParticle->GetPdgCode() == fAddedSignalPDGCode ){
+								if (periodName.CompareTo("LHC14a1b")==0 || periodName.CompareTo("LHC14a1c")==0 ){
+									if (gh->NProduced() > 10) {
+										AliAODMCParticle *aodMCParticle2 = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex+10));
+										if ( aodMCParticle2->GetPdgCode() == fAddedSignalPDGCode ){
+											fNotRejectedEnd[number] = lastindex;
+											fNotRejectedStart[number] = firstindex;
+											fGeneratorNames[number] = GeneratorName;
+											number++;
+									} 
+											continue;
+										}
+								} else {
+									fNotRejectedStart[number] = firstindex;
+									fNotRejectedEnd[number] = lastindex;
+									fGeneratorNames[number] = GeneratorName;
+									number++;
+									continue;	
+								}	
+							}   
+						}
+						continue;
+					} else {
+						fNotRejectedStart[number] = firstindex;
+						fNotRejectedEnd[number] = lastindex;
+						fGeneratorNames[number] = GeneratorName;
+// 						cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
+						number++;
+						continue;
+					}
+					
+				}
+			}
+			firstindex = firstindex + gh->NProduced();
+		}
+// 		for (Int_t i = 0; i < number; i++){
+// 			cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
+// 		}	
+	
+	} else { // No Cocktail Header Found
+		fNotRejectedStart = new Int_t[1];
+		fNotRejectedEnd = new Int_t[1];
 
-      Int_t firstindex = 0;
-      Int_t lastindex =  -1;
-      Int_t number = 0;
-      for(Int_t i = 0; i<genHeaders->GetEntries();i++){
-         gh = (AliGenEventHeader*)genHeaders->At(i);
-         TString GeneratorName = gh->GetName();
-         lastindex = lastindex + gh->NProduced();
-         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
-            TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-            if(GeneratorName.CompareTo(GeneratorInList) == 0){
-               if (GeneratorInList.CompareTo("PARAM") == 0 || GeneratorInList.CompareTo("BOX") == 0 ){
-                  if(fMCStack){
-                     if (fMCStack->Particle(firstindex)->GetPdgCode() == 111 || fMCStack->Particle(firstindex)->GetPdgCode() == 221 ) {
-                        fNotRejectedStart[number] = firstindex;
-                        fNotRejectedEnd[number] = lastindex;
-                        fGeneratorNames[number] = GeneratorName;
-                        number++;
-                        continue;
-                     }
-                  }   
-                  if ( fMCStackAOD){
-                     AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(fMCStackAOD->At(firstindex));
-                     if (  aodMCParticle->GetPdgCode() == 111 || aodMCParticle->GetPdgCode() == 221 ){
-                        fNotRejectedStart[number] = firstindex;
-                        fNotRejectedEnd[number] = lastindex;
-                        fGeneratorNames[number] = GeneratorName;
-                        number++;
-                        continue;
-                     }   
-                  }
-                     
-               } else {
-                  fNotRejectedStart[number] = firstindex;
-                  fNotRejectedEnd[number] = lastindex;
-                  fGeneratorNames[number] = GeneratorName;
-   //                cout << "Number of particles produced for: " << i << "\t" << GeneratorName.Data() << "\t" << lastindex-firstindex+1 << endl;
-                   number++;
-                  continue;
-               }
-            }
-         }
-         firstindex = firstindex + gh->NProduced();
-      }
-   } else { // No Cocktail Header Found
-      fNotRejectedStart = new Int_t[1];
-      fNotRejectedEnd = new Int_t[1];
+		fnHeaders = 1;
+		fNotRejectedStart[0] = 0;
+		fNotRejectedEnd[0] = static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
+		fGeneratorNames = new TString[1];
+		fGeneratorNames[0] = "NoCocktailGeneratorFound";
 
-      fnHeaders = 1;
-      fNotRejectedStart[0] = 0;
-      fNotRejectedEnd[0] = static_cast<AliMCEvent*>(MCEvent)->Stack()->GetNprimary()-1;
-      fGeneratorNames = new TString[1];
-      fGeneratorNames[0] = "NoCocktailGeneratorFound";
+		AliGenPythiaEventHeader *mcHeaderPythia = dynamic_cast<AliGenPythiaEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+		if (mcHeaderPythia) fGeneratorNames[0] = "NoCocktailGeneratorFound_Pythia";
+		AliGenDPMjetEventHeader *mcHeaderPhojet = dynamic_cast<AliGenDPMjetEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+		if (mcHeaderPhojet) fGeneratorNames[0] = "NoCocktailGeneratorFound_Phojet";
+		AliGenHijingEventHeader *mcHeaderHijing = dynamic_cast<AliGenHijingEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
+		if (mcHeaderHijing) fGeneratorNames[0] = "NoCocktailGeneratorFound_Hijing";
 
-      AliGenPythiaEventHeader *mcHeaderPythia = dynamic_cast<AliGenPythiaEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if (mcHeaderPythia) fGeneratorNames[0] = "NoCocktailGeneratorFound_Pythia";
-      AliGenDPMjetEventHeader *mcHeaderPhojet = dynamic_cast<AliGenDPMjetEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if (mcHeaderPhojet) fGeneratorNames[0] = "NoCocktailGeneratorFound_Phojet";
-      AliGenHijingEventHeader *mcHeaderHijing = dynamic_cast<AliGenHijingEventHeader*>(static_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
-      if (mcHeaderHijing) fGeneratorNames[0] = "NoCocktailGeneratorFound_Hijing";
-
-      SetRejectExtraSignalsCut(0);
-   }
+		SetRejectExtraSignalsCut(0);
+	}
+	
 }
 
 //_________________________________________________________________________
 Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
 
-   // Not Accepted == kFALSE == 0
-   //     Accepted ==  kTRUE == 1
-   //  FirstHeader ==  kTRUE == 3
-   if(index < 0) return 0; // No Particle
+	// Not Accepted == kFALSE == 0
+	//     Accepted ==  kTRUE == 1
+	//  FirstHeader ==  kTRUE == 3
+	if(index < 0) return 0; // No Particle
 
-   Int_t accepted = 0;
-   if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-      if( index >= MCStack->GetNprimary()){ // Secondary Particle
-         if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
-         return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
-      }
-      for(Int_t i = 0;i<fnHeaders;i++){
-         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-            accepted = 1;
-            if(i == 0) accepted = 2; // MB Header
-         }
-      }
-   }
-   else if(InputEvent->IsA()==AliAODEvent::Class()){
-      TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-      if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
-      if(!aodMCParticle->IsPrimary()){
-         if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
-         return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
-      }
-      index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
-      for(Int_t i = 0;i<fnHeaders;i++){
-         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-            accepted = 1;
-            if(i == 0) accepted = 2; // MB Header
-         }
-      }
-   }
+// 	if (index == 100){
+// 		cout << "possible headers" << endl;
+// 		for(Int_t i = 0;i<fnHeaders;i++){
+// 			cout << i << "\t" <<fGeneratorNames[i] << "\t" << fNotRejectedStart[i] << "\t" <<fNotRejectedEnd[i] << endl;
+// 		}
+// 	}	
+	Int_t accepted = 0;
+	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
+		if( index >= MCStack->GetNprimary()){ // Secondary Particle
+			if( ((TParticle*)MCStack->Particle(index))->GetMother(0) < 0) return 1; // Secondary Particle without Mother??
+			return IsParticleFromBGEvent(((TParticle*)MCStack->Particle(index))->GetMother(0),MCStack,InputEvent);
+		}
+		for(Int_t i = 0;i<fnHeaders;i++){
+			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
+				accepted = 1;
+				if(i == 0) accepted = 2; // MB Header
+			}
+		}
+	}
+	else if(InputEvent->IsA()==AliAODEvent::Class()){
+		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+		if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
+		if(!aodMCParticle->IsPrimary()){
+			if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
+			return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
+		}
+		index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+		for(Int_t i = 0;i<fnHeaders;i++){
+			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
+				accepted = 1;
+				if(i == 0) accepted = 2; // MB Header
+			}
+		}
+	}
 
-   return accepted;
+	return accepted;
 }
 
 //_________________________________________________________________________
@@ -3886,7 +4013,7 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2") || 
+   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
    period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix"))) return 1.;
 
    Int_t kCaseGen = 0;
@@ -3913,7 +4040,7 @@ Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliSta
          } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
             kCaseGen = 3;
          }
-         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") ){
+         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix")  || period.Contains("LHC14a1")  ){
             kCaseGen = 3;
          }
       }

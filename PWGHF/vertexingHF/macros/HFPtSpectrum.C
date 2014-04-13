@@ -38,7 +38,8 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centestimator{ kV0M, kV0A, kZNA };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
@@ -48,7 +49,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[pb]
-		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, 
+		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false,
+		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
 		    Int_t rapiditySlice=kdefault) {
 
@@ -97,43 +99,69 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t tab = 1., tabUnc = 0.;
-  if ( cc == k07half ) {
-    tab = 24.81; tabUnc = 0.8037;
-  } else if ( cc == k010 ) {
-    tab = 23.48; tabUnc = 0.97;
-  } else if ( cc == k1020 ) {
-    tab = 14.4318; tabUnc = 0.5733;
-  } else if ( cc == k020 ) {
-    tab = 18.93; tabUnc = 0.74;
-  } else if ( cc == k2040 ) {
-    tab = 6.86; tabUnc = 0.28;
-  } else if ( cc == k2030 ) {
-    tab = 8.73769; tabUnc = 0.370219;
-  } else if ( cc == k3040 ) {
-    tab = 5.02755; tabUnc = 0.22099;
-  } else if ( cc == k4050 ) {
-    tab = 2.68327; tabUnc = 0.137073;
-  } else if ( cc == k3050 ) {
-    tab = 3.87011; tabUnc = 0.183847;
-  } else if ( cc == k4060 ) {
-    tab = 2.00;  tabUnc= 0.11;
-  } else if ( cc == k4080 ) {
-    tab = 1.20451; tabUnc = 0.071843;
-  } else if ( cc == k5060 ) {
-    tab = 1.32884; tabUnc = 0.0929536;
-  } else if ( cc == k5080 ) {
-    tab = 0.719; tabUnc = 0.054;
-  } else if ( cc == k6080 ) {
-    tab = 0.419; tabUnc = 0.033;
-  } else if ( cc == k80100 ){
-    tab = 0.0690; tabUnc = 0.0062;
+  if( ccestimator == kV0M ) {
+    if ( cc == k07half ) {
+      tab = 24.81; tabUnc = 0.8037;
+    } else if ( cc == k010 ) {
+      tab = 23.48; tabUnc = 0.97;
+    } else if ( cc == k1020 ) {
+      tab = 14.4318; tabUnc = 0.5733;
+    } else if ( cc == k020 ) {
+      tab = 18.93; tabUnc = 0.74;
+    } else if ( cc == k2040 ) {
+      tab = 6.86; tabUnc = 0.28;
+    } else if ( cc == k2030 ) {
+      tab = 8.73769; tabUnc = 0.370219;
+    } else if ( cc == k3040 ) {
+      tab = 5.02755; tabUnc = 0.22099;
+    } else if ( cc == k4050 ) {
+      tab = 2.68327; tabUnc = 0.137073;
+    } else if ( cc == k3050 ) {
+      tab = 3.87011; tabUnc = 0.183847;
+    } else if ( cc == k4060 ) {
+      tab = 2.00;  tabUnc= 0.11;
+    } else if ( cc == k4080 ) {
+      tab = 1.20451; tabUnc = 0.071843;
+    } else if ( cc == k5060 ) {
+      tab = 1.32884; tabUnc = 0.0929536;
+    } else if ( cc == k6080 ) {
+      tab = 0.419; tabUnc = 0.033;
+    } else if ( cc == k5080 ) {
+      tab = 0.719; tabUnc = 0.054;
+    } else if ( cc == k80100 ){
+      tab = 0.0690; tabUnc = 0.0062;
+    }
   }
 
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
-  else if( cc == kpPb0100 ){
+  if( cc == kpPb0100 ){
     tab = 0.098334; tabUnc = 0.0070679;
+    //    A=207.2; B=1.;
   }
+  else if( ccestimator == kV0A ){
+    if ( cc == kpPb020 ) {
+      tab = 0.183; tabUnc = 0.0201;
+    } else if ( cc == kpPb2040 ) {
+      tab = 0.134; tabUnc = 0.0134;
+    } else if ( cc == kpPb4060 ) {
+      tab = 0.0918; tabUnc = 0.0073;
+    } else if ( cc == kpPb60100 ) {
+      tab = 0.0366; tabUnc = 0.00183;
+    }
+  }
+  else if( ccestimator == kZNA ){
+    if ( cc == kpPb020 ) {
+      tab = 0.1650; tabUnc = 0.0550;
+    } else if ( cc == kpPb2040 ) {
+      tab = 0.137; tabUnc = 0.0372;
+    } else if ( cc == kpPb4060 ) {
+      tab = 0.1001; tabUnc = 0.0690;
+    } else if ( cc == kpPb60100 ) {
+      tab = 0.045; tabUnc = 0.1029;
+    }
+  }
+
   tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
   tabUnc *= 1e-9;
 
@@ -387,7 +415,7 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
   }
-  else if ( cc == kpPb0100 ){ 
+  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
     systematics->SetCollisionType(2); 
   }
   //

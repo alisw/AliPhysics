@@ -426,7 +426,7 @@ void AliAODMCNuclExReplicator::ReplicateAndFilter(const AliAODEvent& source)
     
     //    if(mumpdg == 1010010030 ||mumpdg == -1010010030 ){
 
-    if(mumpdg == 1010010030){
+    if(mumpdg == -1010010030){
 
       if(PDGCode==-211 || PDGCode==+211){  
 	//      if(PDGCode==-211){  

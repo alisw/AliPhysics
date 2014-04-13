@@ -182,12 +182,13 @@ file=trending.root
 files=
 path=
 numf=0
+mc=0
 get_filelist()
 {
     mess 3 "Getting file list" 
     
     local datd=data/
-    local esdd=ESDs/
+    local esdd=ESDs/    
     local yerd=$year/
     case x$prodpost in 
 	x_*) ;; 
@@ -195,28 +196,40 @@ get_filelist()
 	*)  mess 3 "Assuming simulation output"
 	    datd=sim/ 
 	    esdd= 
-	    yerd=
+	    if test $year -lt 2013 ; then 
+		yerd=
+	    fi
+	    mc=1
+	    passfull=
+	    passpost=
+	    passno=0
+	    passpre=
 	    ;; 
     esac
     
     local paid=
-    if test "x$passfull" != "x" && test $passno -gt 0 ; then 
+    if test "x$passfull" != "x" && \
+	test $passno -gt 0 && \
+	test $mc -lt 1; then 
 	paid=pass${passno}
     fi
-    local post=${passpost}
-    case x$post in 
-	x_*) ;; 
-	x) ;; 
-	*) post="_${post}" ;; 
-    esac
+    local post=
+    if test $mc -lt 1; then 
+	post=${passpost}
+	case x$post in 
+	    x_*) ;; 
+	    x) ;; 
+	    *) post="_${post}" ;; 
+	esac
+    fi
 
     path=/alice/${datd}${yerd}/${prodfull}/
     local search="$file"
 
     if test "x$run" != "x" ; then 
 	case x$datd in 
-	    xsim) rund=$run ;; 
-	    *)    rund=`printf %09d $run` ;; 
+	    xsim/) rund=$run ;; 
+	    *)     rund=`printf %09d $run` ;; 
 	esac
 	path=$path/$rund/
     fi
@@ -230,7 +243,7 @@ get_filelist()
 EOF
     mess 1 "Getting list of files from AliEn - can take minutes - be patient"
     mess 2 "alien_find ${path} ${search}"
-    files=`alien_find ${path} ${search} | grep -v "files found" 2>> ${redir}` 
+    files=`alien_find ${path} ${search} | grep -v "\(does not\|files found\)" 2>> ${redir}` 
     rm -f .list
     for i in $files ; do 
 	echo $i >> .list 
@@ -325,7 +338,11 @@ download_file()
 	    d=`dirname $o` ;
 	    b=`basename $o` ; 
 	    mess 3 "Unzipping $b in $d"
-	    (cd $d && unzip -n -qq $b)
+	    if ! unzip -n -qq -l $o > /dev/null 2>&1 ; then
+		mess 1 "Bad zip file: $o" 
+		rm -rf $d 
+	    fi
+	    # (cd $d && unzip -n -qq $b)
 	    ;;
     esac
     # analyse_file ${o}
@@ -459,11 +476,11 @@ fi
 
 proddir=LHC${prodyear}${prodletter}
 store=${proddir}
-if test "x$passfull" != "x" && test $passno -gt 0 ; then 
-    store=${store}/pass${passno}
-elif test ! "x$prodpost" = "x" ; then 
+if test ! "x$prodpost" = "x" ; then   
     proddir=${proddir}${prodpost}
-    store=${proddir}/sim
+    store=sim/${proddir}
+elif test "x$passfull" != "x" && test $passno -gt 0 ; then 
+    store=${store}/pass${passno}
 fi
 if test "x$run" ; then 
     store=${store}/`printf %06d $run`

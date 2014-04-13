@@ -98,6 +98,7 @@ fKeepSignalMC(kFALSE),
 fIsCandTrackSPDFirst(kFALSE),
 fMaxPtCandTrackSPDFirst(0.),
 fApplySPDDeadPbPb2011(kFALSE),
+fApplySPDMisalignedPP2012(kFALSE),
 fMaxDiffTRKV0Centr(-1.),
 fRemoveTrackletOutliers(kFALSE),
 fCutOnzVertexSPD(0),
@@ -162,6 +163,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
   fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst),
   fApplySPDDeadPbPb2011(source.fApplySPDDeadPbPb2011),
+  fApplySPDMisalignedPP2012(source.fApplySPDMisalignedPP2012),
   fMaxDiffTRKV0Centr(source.fMaxDiffTRKV0Centr),
   fRemoveTrackletOutliers(source.fRemoveTrackletOutliers),
   fCutOnzVertexSPD(source.fCutOnzVertexSPD),
@@ -242,6 +244,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
   fApplySPDDeadPbPb2011=source.fApplySPDDeadPbPb2011;
+  fApplySPDMisalignedPP2012=source.fApplySPDMisalignedPP2012;
   fMaxDiffTRKV0Centr=source.fMaxDiffTRKV0Centr;
   fRemoveTrackletOutliers=source.fRemoveTrackletOutliers;
   fCutOnzVertexSPD=source.fCutOnzVertexSPD;
@@ -625,6 +628,9 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     }
   }
 
+  // Correcting PP2012 flag to remoce tracks crossing SPD misaligned staves for periods 12def
+  if(fApplySPDMisalignedPP2012 && !(event->GetRunNumber()>=195681 && event->GetRunNumber()<=197388)) fApplySPDMisalignedPP2012=false;
+
   return accept;
 }
 //---------------------------------------------------------------------------
@@ -842,6 +848,22 @@ Bool_t AliRDHFCuts::IsDaughterSelected(AliAODTrack *track,const AliESDVertex *pr
       lay2ok=deadSPDLay2PbPb2011[lad2][mod2];
     }
     if(!lay1ok && !lay2ok) return kFALSE;
+  }
+
+  if(fApplySPDMisalignedPP2012) {
+    // Cut tracks crossing the SPD at 5.6<phi<2pi
+    Double_t xyz1[3],xyz2[3];
+    esdTrack.GetXYZAt(3.9,0.,xyz1);
+    esdTrack.GetXYZAt(7.6,0.,xyz2);
+    Double_t phi1=TMath::ATan2(xyz1[1],xyz1[0]);
+    if(phi1<0) phi1+=2*TMath::Pi();
+    Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
+    if(phi2<0) phi2+=2*TMath::Pi();
+    Bool_t lay1ok=kTRUE;
+    if(phi1>5.6 && phi1<2.*TMath::Pi()) lay1ok=kFALSE;
+    Bool_t lay2ok=kTRUE;
+    if(phi2>5.6 && phi2<2.*TMath::Pi()) lay2ok=kFALSE;
+    if(!lay1ok || !lay2ok) return kFALSE;
   }
 
   return kTRUE; 

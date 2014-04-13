@@ -7,6 +7,7 @@
 class TF1;
 class TH1F;
 class TH2F;
+class TH3F;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AliESDVertex;
@@ -15,6 +16,7 @@ class AliESDVertex;
 #include "THn.h"
 #include "TH3F.h"
 #include "TGraph.h"
+#include "AliStack.h"
 
 class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
  public:
@@ -62,11 +64,27 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   AliESDpid            *fESDpid;                                    //  basic TPC object for n-sigma cuts
   THnF                 *fAntiAlpha;                                 //! histogram for particle ratios as a function of momentum: (0.) dca, (1.) sign, (2.) particle Type, (3.) p_tot
 
+  TH1F                 *fHistHelium4PtGen;                          //! for MC
+  TH1F                 *fHistHelium4PtGenPrim;                      //! for MC
+  TH1F                 *fHistHelium4PtGenSec;                       //! for MC
+  TH1F                 *fHistHelium4PtGenEta;                       //! for MC 
+  TH1F                 *fHistHelium4PtGenPrimEta;                   //! for MC
+  TH1F                 *fHistAntiHelium4PtGen;                      //! for MC
+  TH1F                 *fHistAntiHelium4PtGenPrim;                  //! for MC                        
+  TH1F                 *fHistAntiHelium4PtGenSec;                   //! for MC
+  TH1F                 *fHistAntiHelium4PtGenEta;                   //! for MC
+  TH1F                 *fHistHelium4PtAso;                          //! for MC
+  TH1F                 *fHistHelium4PtAsoPrim;                      //! for MC
+  TH1F                 *fHistHelium4PtAsoSec;                       //! for MC
+  TH1F                 *fHistAntiHelium4PtAso;                      //! for MC
+
+
   void                  BinLogAxis(const THn *h, Int_t axisNumber); //  define function for log axis for search for Anti-Alpha candidates
   void                  BinLogAxis(const TH3 *h, Int_t axisNumber); 
   void                  BinLogAxis(const TH1 *h);
   Bool_t                IsTriggered();
   void                  SetBBParameters(Int_t runnumber);
+  void                  MCGenerated(AliStack* stack); 
 
   //
   // output containers
@@ -94,9 +112,10 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   Float_t TOFout[1000];
   Float_t ITSsignal[1000];
   Float_t SharedClusters[1000];
-  Char_t fFileName[1000]; 
-  Int_t fEventNumber[1000];
-
+  Char_t  fFileName[1000]; 
+  Int_t   fEventNumber[1000];
+  Bool_t  fAssociated[1000];
+  Float_t fTrackPt[1000];
 
   //
   //

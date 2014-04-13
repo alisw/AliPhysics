@@ -62,6 +62,9 @@ class AliFemtoK0Particle  // Reconstructed K0s parameters needed for correlation
   double fPhi;
   double fPhiPsi;
 
+  //for cut check
+  bool fCutPass[4][5];
+
   ClassDef(AliFemtoK0Particle, 1);
 };
 

@@ -14,14 +14,19 @@ enum { kNANO=0 };
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
-Bool_t  isESD = kTRUE;
+Bool_t  isESD     = kTRUE;
+TString periodLHC = "";
 TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE)
+
+AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, TString period="")
 {
   //
   // Setup the instance of AliDielectron
   //
+
+  periodLHC = period;
+  printf("this is -%s- filtering \n",periodLHC.Data());
 
   //ESD handler?
   isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
@@ -112,7 +117,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
 
@@ -123,7 +128,10 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //  pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF
+  if(periodLHC.Contains("LHC10h"))
+    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-2.6,4.7); // when eta correction OFF (LHC10h) [-2.0,+3.]
+  else
+    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF (LHC11h) [-1.5,+3.]
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
 

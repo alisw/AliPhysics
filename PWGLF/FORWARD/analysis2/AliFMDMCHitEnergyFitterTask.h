@@ -44,7 +44,7 @@ class AliMCAuxHandler;
  *     \sigma   = \sigma_1
  * @f]
  *
- * See also AliForwardUtil::ELossFitter
+ * See also AliLandauGausFitter 
  */
 class AliFMDMCHitEnergyFitterTask : public AliBaseESDTask
 {

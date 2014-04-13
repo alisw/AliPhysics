@@ -74,6 +74,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMaxPtTrack(0),
   fMaxEClus(0),
   fNCells50(0),
+  fFilterBit(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -155,6 +156,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMaxPtTrack(0),
   fMaxEClus(0),
   fNCells50(0),
+  fFilterBit(0),
   fESD(0),
   fAOD(0),
   fMCEvent(0),
@@ -478,6 +480,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
     else if(aodTrack){
+      if(!aodTrack->TestFilterBit(fFilterBit))
+	continue;
       fSelPrimTracks->Add(track);
       /*if(fTrackMaxPt<track->Pt())
 	fTrackMaxPt = track->Pt();*/
@@ -544,7 +548,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-  FillQA();
+  if(fESD)
+    FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
   /*if(fESD)
