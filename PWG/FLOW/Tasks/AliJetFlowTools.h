@@ -177,6 +177,7 @@ class AliJetFlowTools {
                 TGraphAsymmErrors*& shapeV2,
                 TArrayI* regularizationIn,
                 TArrayI* regularizationOut,
+                Bool_t RMS = kFALSE,
                 TArrayI* trueBinIn = 0x0,
                 TArrayI* trueBinOut = 0x0,
                 TArrayI* recBinIn = 0x0,
@@ -247,6 +248,19 @@ class AliJetFlowTools {
             t->Draw("same");
             return t;
         } 
+        static TPaveText*       AddText(TString text, EColor col) {
+            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+//            t->SetFillStyle(0);
+            t->SetFillColor(0);            
+            t->SetBorderSize(0);
+            t->AddText(0.,0.,text.Data());
+            t->SetTextColor(col);
+//            t->SetTextSize(0.03);
+            t->SetTextFont(42);
+            t->Draw("same");
+            return t;
+        } 
+
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -309,7 +323,8 @@ class AliJetFlowTools {
                 Float_t rangeLow,
                 Float_t rangeUp,
                 TFile* readMe, 
-                TString source = "") const;
+                TString source = "",
+                Bool_t RMS = kFALSE) const;
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.

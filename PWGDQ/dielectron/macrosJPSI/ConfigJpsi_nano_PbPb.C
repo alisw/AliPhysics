@@ -109,7 +109,8 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   // specific cuts
   varCuts->AddCut(AliDielectronVarManager::kPt,           0.85, 1e30);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
+  if(periodLHC.Contains("LHC11h"))
+    varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
   //  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 
@@ -129,7 +130,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
   if(periodLHC.Contains("LHC10h"))
-    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-2.6,4.7); // when eta correction OFF (LHC10h) [-2.0,+3.]
+    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0,4.7); // when eta correction OFF (LHC10h) [/*-2.0*/,+3.]
   else
     pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF (LHC11h) [-1.5,+3.]
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);

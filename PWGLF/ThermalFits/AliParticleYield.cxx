@@ -12,6 +12,7 @@
 #include "TTree.h"
 #include "TDirectory.h"
 #include "TEventList.h"
+#include "TCut.h"
 
 using std::endl;
 using std::left;
@@ -73,8 +74,10 @@ fTag(tag)
 
 {
   // Constructor
-  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
   AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
+  TParticlePDG * part = TDatabasePDG::Instance()->GetParticle(fPdgCode);
+  if(!part) AliError(Form("No particle with PDG code %d in the database", fPdgCode));
+  else fPartName = part->GetName();
 }
 
 AliParticleYield::AliParticleYield(Int_t pdg, Int_t system, Float_t sqrts, Float_t value, Float_t stat, Float_t syst, Float_t normPos, Float_t normNeg, Float_t ymin, Float_t ymax, Int_t status, Int_t type, TString centr, Int_t isSum, TString tag):
@@ -99,8 +102,10 @@ fTag(tag)
 
 {
   // Constructor
-  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
   AliPDG::AddParticlesToPdgDataBase(); // Make sure that ALICE-defined particles were added to the PDG DB
+  TParticlePDG * part = TDatabasePDG::Instance()->GetParticle(fPdgCode);
+  if(!part) AliError(Form("No particle with PDG code %d in the database", fPdgCode));
+  else fPartName = part->GetName();
 }
 
 
@@ -130,9 +135,8 @@ AliParticleYield::~AliParticleYield() {
 
 }
 
-TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const char * separators){
-  // Read the table from an ASCII File and returns a tree of particles. See ReadFromASCIIFile for detailed info on the format
-  TClonesArray * arr = ReadFromASCIIFile(fileName, separators);
+TTree * AliParticleYield::GetTreeFromArray(TClonesArray * arr) {
+  // Returns a tree from an array of Tparticles
   AliParticleYield * part = 0;
   TTree * tree = new TTree ("treePart", "Particle Yields and Ratios");
   tree->Branch("particles", &part);
@@ -140,13 +144,23 @@ TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const c
   while ((part = (AliParticleYield*) iterPart.Next())){
     tree->Fill();
   }
-  
+  if(part) delete part;
+  return tree;
+
+
+
+}
+
+
+TTree * AliParticleYield::ReadFromASCIIFileAsTree(const char * fileName, const char * separators){
+  // Read the table from an ASCII File and returns a tree of particles. See ReadFromASCIIFile for detailed info on the format
+  TClonesArray * arr = ReadFromASCIIFile(fileName, separators);
+  TTree * tree = GetTreeFromArray(arr);
   delete arr;
-  delete part;
   return tree;
 }
 
-TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TString selection) {
+TClonesArray * AliParticleYield::GetEntriesMatchingSelection(TTree * tree, TCut selection) {
   // Returns an array of particles from a tree created with ReadFromASCIIFileAsTree matching the selection. You can use the normal tree sintax for the selection, e.g. "fCentr == \"V0M0010\" && fStatus == 0".
 
   TClonesArray * arr = new TClonesArray("AliParticleYield");
@@ -192,7 +206,7 @@ TClonesArray * AliParticleYield::ReadFromASCIIFile(const char * fileName, const 
   Int_t ipart = 0;
   std::cout << "Reading " << fileName << std::endl;
   
-  while (line.ReadLine(filestream) ) {
+  while (line.ReadLine(filestream) ) {    
     // Strip trailing and leading whitespaces
     line = line.Strip(TString::kLeading,  ' ');
     line = line.Strip(TString::kTrailing, ' ');
@@ -307,10 +321,11 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
   if(!pdg && fMeasurementType & kTypeParticleRatio) {
     // If it's a ratio, we try to build the ratio name. To avoid an infinite loop we have to call GetLatexname with a non-zero argument.
     static TString name;
-    name ="";
+    name ="#frac{";
     name += GetLatexName(fPdgCode);
-    name += " / ";
+    name += "}{";
     name += GetLatexName(fPdgCode2);
+    name += "}";
     return name.Data();
   }
 
@@ -320,56 +335,83 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
   case 211:
     if (fIsSum) return "(#pi^{+} + #pi^{-})";
     return "#pi^{+}";
+    break;
   case -211:
     return "#pi^{-}";
+    break;
   case 321:
     if (fIsSum) return "(K^{+} + K^{-})";
     return "K^{+}";
+    break;
   case -321:
     return "K^{-}";
+    break;
   case 2212:
     if (fIsSum) return "(p + #bar{p})";
     return "p";
+    break;
   case -2212:
     return "#bar^{p}";
+    break;
   case 3122:
-    if (fIsSum) return "(#Omega^{-} + #bar{#Omega}^{+})";
-    return "#Omega^{-}";
+    if (fIsSum) return "(#Lambda + #bar{#Lambda})";
+    return "#Lambda";
+    break;
   case -3122:
-    return "#bar{#Omega}^{+}";
+    return "#bar{#Lamnba}";
+    break;
   case 3312:
     if (fIsSum) return "(#Xi^{-} + #bar{#Xi}^{+})";
     return "#Xi^{-}";
+    break;
   case -3312:
     return "#bar{#Xi}^{+}";
+    break;
   case 3334:
     if (fIsSum) return "(#Omega^{-} + #bar{#Omega}^{+})";
     return "#Omega^{-}";
+    break;
   case -3334:
     return "#bar{#Omega}^{+}";
+    break;
   case 310:
     return "K^{0}_{S}";
+    break;
   case 333:
     return "#phi";
+    break;
   case 313:
-    return "K^{*}";
+    if(fIsSum) return "(K* + #bar{K*})";
+    return "K*";
+    break;
+  case -313:
+    return "#bar{K*}";
+    break;
   case 1000010020:
     if(fIsSum) return "(d + #bar{d})";
     return "d";// Deuteron
+    break;
   case -1000010020:
     return "#bar{d}";// Deuteron
+    break;
   case 1000020030:
     if(fIsSum) return "(^{3}He + #bar{^{3}He})";
     return "^{3}He";
+    break;
   case -1000020030:
     return "#bar{^{3}He}";
+    break;
   case 1010010030:
-    if(fIsSum) return "^{3}_{#Lambda}H + #bar{^{3}_{#Lambda}H}";
-    return "^{3}_{#Lambda}H";
+    if(fIsSum) return "{}^{3}_{#Lambda}H + {}^{3}_{#Lambda}#bar{H}";
+    return "{}^{3}_{#Lambda}H";
+    break;
   case -1010010030:
-    return "#bar{^{3}_{#Lambda}H}";    
+    return "{}^{3}_{#Lambda}#bar{H}";    
+    break;
+  default:
+    AliWarning("Latex Name not know for this particle");
   }
-  AliWarning("Latex Name not know for this particle");
+
   return fPartName.Data();
 
 }
@@ -573,28 +615,58 @@ Bool_t AliParticleYield::CheckTypeConsistency() const {
   } else if (!(fMeasurementType & kTypeOnlyTotError) && (!GetStatError() || !GetSystError())) {
     AliError("Stat or syst errors are null");
   } 
+  if((fMeasurementType & kTypeLinearInterpolation) && (fMeasurementType & kTypeAverageAndRefit) && (fMeasurementType & kTypeExtrPionRatio)) {
+    AliError("Only one out of the \"Liner interpolation\",  \"Average and refit\", \"Extrapolated with constant ratio to pions\" bits can be set"); 
+  }
 
   return isOK;
 }
 
-void AliParticleYield::Print (Option_t *) const {
+void AliParticleYield::Print (Option_t *opt) const {
   // Print
-  Printf("-------------------------------");
-  CheckTypeConsistency();
-  Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
-  Printf("Status: %s, %s", kStatusString[fStatus], fMeasurementType & kTypeLinearInterpolation ? "Interpolated" : "Measured");
-  Printf("%s , sqrt(s) = %2.2f GeV, %2.2f < y < %2.2f %s", kSystemString[fCollisionSystem], fSqrtS, fYMin, fYMax, fCentr.Data()); 
-  if(fMeasurementType & kTypeOnlyTotError) {
-    Printf("%f +- %f (total error)", fYield, fSystError);
+  // Available options: 
+  //  - short
+  //  - justvalue (does not print normalization error)
+  TString sopt(opt);
+  if(sopt.Contains("short")) {
+    printf("[%s]: %f +- %f +- %f ", fPartName.Data(), fYield, fStatError, fSystError);
+    if(fNormErrorNeg) {
+      printf("(+%f-%f)", fNormErrorPos, fNormErrorNeg);    
+    }else if(fNormErrorPos) {
+      printf("(+-%f)", fNormErrorPos);    
+    }
+    printf("[0x%8.8x,%d]\n", fMeasurementType, fStatus);
   }
-  else {
-    Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
-  }
-  if(fNormErrorNeg) {
-    Printf("Normalizaion uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
-  }
-  else {
-    Printf("Normalizaion uncertainty: %f", fNormErrorPos);
+  else if (sopt.Contains("justvalue")) {
+    Printf("%f +- %f +- %f ", fYield, fStatError, fSystError);
+    
+  } else {
+    Printf("-------------------------------");
+    CheckTypeConsistency();
+    if(fMeasurementType & kTypeParticleRatio) {
+      Printf("%s [%s] (%d/%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fPdgCode2, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+    }
+    else{ 
+      Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+    }
+    TString measurementType = IsTypeMeasured() ? "Measured" : ""; 
+    if(fMeasurementType & kTypeLinearInterpolation) measurementType += "Interpolated";
+    if(fMeasurementType & kTypeAverageAndRefit) measurementType     += "Averaged+Refitted";
+    if(fMeasurementType & kTypeExtrPionRatio)   measurementType     += "Extrapolated assuming constant ratio to pions";
+    Printf("Status: %s, %s", kStatusString[fStatus],  measurementType.Data());
+    Printf("%s , sqrt(s) = %2.2f GeV, %2.2f < y < %2.2f %s", kSystemString[fCollisionSystem], fSqrtS, fYMin, fYMax, fCentr.Data()); 
+    if(fMeasurementType & kTypeOnlyTotError) {
+      Printf("%f +- %f (total error)", fYield, fSystError);
+    }
+    else {
+      Printf("%f +- %f (stat) +- %f (syst)", fYield, fStatError, fSystError);
+    }
+    if(fNormErrorNeg) {
+      Printf("Normalization uncertainty: +%f-%f", fNormErrorPos, fNormErrorNeg);    
+    }
+    else {
+      Printf("Normalization uncertainty: %f", fNormErrorPos);
+    }
   }
 }
 
@@ -686,5 +758,229 @@ Float_t AliParticleYield::GetNormError() const {
     return (TMath::Abs(fNormErrorNeg)+TMath::Abs(fNormErrorPos))/2;
   }
   else return fNormErrorPos; // If the uncertainty is not asymmetric, fNormErrorPos stores it.
+
+}
+
+AliParticleYield * AliParticleYield::FindParticle(TClonesArray * arr, Int_t pdg, Int_t system, Float_t sqrts, TString centrality, Int_t isSum, Int_t status, Int_t pdg2){
+  // Finds a particle in array matching the search criteria. If more than one is found, prints a warning 
+  // If status is -1, tries to return the best (lower status value)
+  // If pdg2 is not zero, we try to match it as well (we are looking for a ratio) 
+  // The centrality is compared with TString::Contains
+
+  TIter iter(arr);
+  AliParticleYield * part = 0;
+  AliParticleYield * foundPart = 0;
+  while ((part = dynamic_cast<AliParticleYield*>(iter.Next()))){
+    if (part->GetPdgCode() == pdg &&                     // same pdg
+        part->GetCollisionSystem() == system &&          // same system
+        Compare2Floats(part->GetSqrtS(), sqrts) &&       // same energy
+        part->GetCentr().Contains(centrality) &&         // compatible centrality
+        (part->GetPdgCode2() == pdg2) &&                 // same PDG2, if requested (we are looking for a ratio). We also need to check explicitly for pdg2=0 not to match ratios
+        (status < 0 || part->GetStatus() == status)  &&  // same status, if requested
+        (isSum  < 0 || part->GetIsSum()  == isSum)       // part+antipart or not, if requested
+        ) { 
+      if (foundPart) { // we already found a patching particle
+        Printf("WARNING<AliParticleYield::FindParticle>: Found another particle matching the same criteria");
+        foundPart->Print();
+        part->Print();
+        if (part->GetStatus() == foundPart->GetStatus()) { // Does it have the same status?! Don't know what to do!
+          Printf("WARNING<AliParticleYield::FindParticle>: they have the same status, I cannot decide, resetting particle");
+          foundPart = 0;
+        }
+        else if (part->GetStatus()< foundPart->GetStatus()) { // Is it of better quality? select it!
+          Printf("WARNING<AliParticleYield::FindParticle>: the new one has a smaller status: selecting it!");
+          foundPart = part;
+        }
+      } else { // First match
+        foundPart = part;
+      }
+
+    }  
+
+  }
+  if(!foundPart) {
+    Printf("ERROR<AliParticleYield::FindParticle>: Cannot find %d (System %d, sqrts = %2.2f TeV, %s, %s, Status:%d, pdg2:%d)", 
+           pdg, system, sqrts, centrality.Data(), isSum ? "part+antipart" : "", status, pdg2);
+  }
+  return foundPart;
+
+}
+
+void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield*part2, const char * pdgSep) {
+  // Combines metadata from part1 and part2
+  // pdgSep is a separator to be added in the name and pdg (e.g. + for a sum, / for a ratio)
+
+  Int_t pdg1 = part1->GetPdgCode();
+  Int_t pdg2 = pdg1 == part2->GetPdgCode() ? part1->GetPdgCode2() : part2->GetPdgCode();
+  Int_t   system = part1->GetCollisionSystem() == part2->GetCollisionSystem() ? part2->GetCollisionSystem() : -1; 
+  Float_t sqrts = Compare2Floats(part1->GetSqrtS(), part2->GetSqrtS()) ? part1->GetSqrtS() : 0;
+  Int_t ymin = part1->GetYMin() == part2->GetYMin() ? part2->GetYMin() : -1000; 
+  Int_t ymax = part1->GetYMax() == part2->GetYMax() ? part2->GetYMax() : -1000; 
+  Int_t status = part1->GetStatus() == part2->GetStatus() ? part2->GetStatus() : -1; 
+  Int_t type = part1->GetMeasurementType() == part2->GetMeasurementType() ? part2->GetMeasurementType() : -1; 
+  
+  TString centr = part1->GetCentr() == part2->GetCentr() ? part2->GetCentr() : part1->GetCentr()+pdgSep+part2->GetCentr(); 
+  TString tag = part1->GetTag() == part2->GetTag() ? part2->GetTag() : part1->GetTag()+pdgSep+part2->GetTag(); 
+  TString name = part1->GetPartName()+pdgSep+part2->GetPartName();
+
+  Int_t issum = part1->GetIsSum() || part2->GetIsSum() ? 1 : 0; 
+
+  SetPdgCode(pdg1);
+  SetPdgCode2(pdg2);
+  SetCollisionSystem(AliPYCSystem_t(system));
+  SetSqrtS(sqrts);
+  SetYMin(ymin);
+  SetYMax(ymax);
+  SetStatus(AliPYStatusCode_t(status));
+  SetMeasurementType(type);
+  SetCentr(centr);
+  SetTag(tag);
+  SetIsSum(issum);
+  SetPartName(name);
+
+}
+
+AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError , Option_t * opt){
+
+  // Computes the ratio of 2 particles.
+  // Valid options:
+  //  - NQ: Propagates normalization errors quadratically (by default they are propagated linearly)
+  //  - SL: propagates STATISTICAL errors linearly
+  //  - YQ: propagates SYSTEMATIC errors quadratically
+  //  NB by default, statistical errors are propagated quadratically and systematic errors linearly
+  // if "Correlated error" is non null, it is subtracted in quadrature from the result. It should be a fractional error.
+
+  if(!part1 || !part2) {
+    Printf("WARNING<AliParticleYield::Add>: part1 or part2 is null!");
+    return 0;    
+  }
+
+  TString sopt(opt);
+  sopt.ToUpper();
+
+  Float_t value = part1->GetYield() + part2->GetYield();
+  Float_t stat  = SumErrors(part1, part2, 0, sopt.Contains("SL") ? "L": "" ); // the option decices if it is propagated linearly pr or quadratically
+  Float_t syst  = SumErrors(part1, part2, 1, sopt.Contains("YQ") ? "" : "L" );// the option decices if it is propagated linearly pr or quadratically
+  Float_t norm = SumErrors(part1, part2, 2, sopt.Contains("NQ") ? "" :"L");   
+  
+  
+  if(correlatedError) {
+    syst = TMath::Sqrt(syst*syst -correlatedError*correlatedError*value*value); // FIXME: this line was never tested
+  }
+
+  AliParticleYield * part = new AliParticleYield();
+  part->SetYield(value);
+  part->SetStatError(stat);
+  part->SetSystError(syst);
+  part->SetNormError(norm);
+  part->CombineMetadata(part1, part2, "+");
+  part->SetIsSum(1); // CombineMetadata inherits this form part1 and part2
+  return part;
+
+
+}
+
+void AliParticleYield::Scale(Float_t scale) {
+  // scales the measurement by an errorless number
+  fYield        *= scale;
+  fNormErrorNeg *= scale;
+  fNormErrorPos *= scale;
+  fStatError    *= scale;
+  fSystError    *= scale;
+  
+}
+
+AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError , Option_t * opt) {
+  // Computes the ratio of 2 particles.
+  // Valid options:
+  //  - NQ: assumes normalization errors to be uncorrelated and propagates them quadratically (otherwise the normalization error on the ratio is set to 0
+  //  - SL: propagates STATISTICAL errors linearly
+  //  - YQ: propagates SYSTEMATIC errors quadratically
+  //  NB by default, statistical errors are propagated quadratically and systematic errors linearly
+  // if "Correlated error" is non null, it is subtracted in quadrature from the result.It should be a fractional error.
+
+  if(!part1 || !part2) {
+    Printf("WARNING<AliParticleYield::Divide>: part1 or part2 is null!");
+    return 0;    
+  }
+
+  TString sopt(opt);
+  sopt.ToUpper();
+  if(part1->IsTypeRatio() || part2->IsTypeRatio()){
+    Printf("WARNING<AliParticleYield::Divide>: If computing a double ratio, some meta info may be not reliable!");          
+  }
+
+  Float_t value = part1->GetYield() / part2->GetYield();
+  // Since in a ratio we propagate a relative error, we have to multiply it back for value in order to get the absolute uncertainty
+  Float_t stat  = SumErrors(part1, part2, 0, sopt.Contains("SL") ? "RL": "R" ) *value; // R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
+  Float_t syst  = SumErrors(part1, part2, 1, sopt.Contains("YQ") ? "R" : "RL" )*value;// R means that it's a relative error, the option decices if it is propagated linearly pr or quadratically
+  Float_t norm = 0;
+  if(sopt.Contains("NQ")) {// if opt contains N, propagate the normalization error assuming it is independent
+    norm  = SumErrors(part1, part2, 2, "R")*value;   
+  }
+  
+  if(correlatedError) {
+    syst = TMath::Sqrt(syst/value*syst/value -correlatedError*correlatedError)*value; // FIXME: this line was never tested
+  }
+
+  AliParticleYield * part = new AliParticleYield();
+  part->SetYield(value);
+  part->SetStatError(stat);
+  part->SetSystError(syst);
+  part->SetNormError(norm);
+  part->CombineMetadata(part1, part2, "/");
+
+  part->SetMeasurementType(part->GetMeasurementType() | kTypeParticleRatio);// Set ratio bit
+
+  return part;
+
+}
+
+Double_t AliParticleYield::SumErrors(AliParticleYield * part1, AliParticleYield * part2, Int_t error, Option_t * opt) {
+
+  // Combines 2 errors. 
+  //  error = 0 -> statistical error
+  //  error = 1 -> systematic error
+  //  error = 2 -> normalization error
+  //  Valid options
+  //   "R" it propagates it as a relative error, WARNING: it also returns a relative error!
+  //   "L" it propagates it sums the errors linearly (by default it is done in quadrature)
+
+  
+  TString sopt(opt);
+  sopt.ToUpper();
+  Bool_t isRelative = sopt.Contains("R");
+  Bool_t isLinear   = sopt.Contains("L");
+
+  Double_t err1 = 0;
+  Double_t err2 = 0;
+  Double_t err  = 0;
+  if (error == 0) {
+    err1 = part1->GetStatError();
+    err2 = part2->GetStatError();
+  } else if (error == 1) {
+    err1 = part1->GetSystError();
+    err2 = part2->GetSystError();
+  } else if (error == 2) {
+    err1 = part1->GetNormError();
+    err2 = part2->GetNormError();
+  } else {
+    Printf("ERROR<AliParticleYield::SumErrors>: wrong error #:%d", error); 
+  }
+
+  if(isRelative) {
+    err1  /= part1->GetYield();
+    err2  /= part2->GetYield();
+  }
+
+  if(isLinear) {
+    err = err1+err2;
+  } else {
+    err = TMath::Sqrt(err1*err1 + err2*err2);
+  }
+
+  if(isRelative) return err;
+  
+  return err;
 
 }

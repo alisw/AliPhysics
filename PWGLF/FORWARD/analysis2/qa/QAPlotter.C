@@ -194,6 +194,37 @@ struct QAPlotter : public QABase
     TGraphAsymmErrors* fGOccupancy;// Graph of mean occupancy              
     Bool_t             fUseVar;    // Use variance 
   };
+  // =================================================================
+  /** 
+   * Compatiblity constructor 
+   * 
+   * @param prodYear    Year
+   * @param prodLetter  Letter
+   * @param useVar      Use variance 
+   */
+  QAPlotter(Long_t prodYear, Char_t prodLetter, Bool_t useVar) 
+    : QABase("", (prodYear < 2000 ? 2000 : 0) + prodYear, 
+	     Form("LHC%02d%c", prodYear % 100, prodLetter, "pass0")), 
+      fNAccepted(0),
+      fVz(0), 
+      fUseVar(useVar)
+  {
+    Info("QAPlotter", "Do we use variance? %s", fUseVar ? "yes" : "no");
+    fFMD1i = new Ring(1, 'I', useVar); 
+    fFMD2i = new Ring(2, 'I', useVar); 
+    fFMD2o = new Ring(2, 'O', useVar); 
+    fFMD3i = new Ring(3, 'I', useVar); 
+    fFMD3o = new Ring(3, 'O', useVar); 
+    fNAccepted = new TGraph;
+    fNAccepted->SetName("nAccepted");
+    fNAccepted->SetMarkerStyle(20);
+    fNAccepted->SetLineWidth(2);
+
+    fVz = new TGraphErrors;
+    fVz->SetName("vz");
+    fVz->SetMarkerStyle(20);
+    fVz->SetLineWidth(2);
+  }
   /** 
    * Constructor 
    */

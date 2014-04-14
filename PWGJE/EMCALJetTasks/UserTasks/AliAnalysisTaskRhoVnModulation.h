@@ -380,6 +380,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
         TH2F*                   fHistJetEtaPhi[10];             //! eta and phi correlation
         TH2F*                   fHistJetPtArea[10];             //! jet pt versus area
+        TH2F*                   fHistJetPtEta[10];              //! jet pt versus eta (temp control)
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
         TH2F*                   fHistJetEtaRho[10];             //! jet eta versus jet rho
         // in plane, out of plane jet spectra
@@ -389,7 +390,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 25);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 26);
 };
 
 #endif
