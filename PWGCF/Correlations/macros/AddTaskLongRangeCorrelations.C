@@ -67,7 +67,10 @@ AddTaskLongRangeCorrelations(Int_t    trackFilter  = 128, // TPC only
   for (Int_t i=0; i<sizeof(centMin)/sizeof(Double_t); ++i) {
     size_t jMin = (nMin[i] < 0) ? 0 : size_t(cutDeltaEta != 0);
     size_t jMax = (nMin[i] < 0) ? 1 : nDeltaEta[cutDeltaEta];
+    if (cutDeltaEta==1 && nMin[i] < 0) continue;
+    if (cutDeltaEta==1 && nMax[i] < 0) continue;
     for (Int_t j=jMin; j<jMax; ++j) {      
+      if (cutDeltaEta==1 && deltaEta1[j] < 0) continue;
       taskLRC = new AliAnalysisTaskLongRangeCorrelations("TaskLongRangeCorrelations");
       taskLRC->SetRunMixing(runMixing);
       taskLRC->SetMixingTracks(mixingTracks);
