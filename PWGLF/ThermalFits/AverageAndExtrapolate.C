@@ -44,6 +44,12 @@ void AverageAndExtrapolate () {
   // AverageAndExtrapolate("protons_neg_0010");
   //  AverageAndExtrapolate("lambda_0010");
   //  AverageAndExtrapolate("k0s_0010");
+  // AverageAndExtrapolate("pions_pos_6080");
+  // AverageAndExtrapolate("pions_neg_6080");
+  // AverageAndExtrapolate("kaons_pos_6080");
+  // AverageAndExtrapolate("kaons_neg_6080");
+  // AverageAndExtrapolate("protons_pos_6080");
+  // AverageAndExtrapolate("protons_neg_6080");
 
 }
 
@@ -292,6 +298,123 @@ void AverageAndExtrapolate(TString what) {
 
     
   }
+
+  if(what == "pions_pos_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyPion][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyPion][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyPion][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyPion][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[0]);
+
+    
+  }
+  if(what == "pions_neg_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyPion][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyPion][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyPion][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyPion][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[0]);
+
+    
+  }
+  if(what == "protons_pos_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyProton][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyProton][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyProton][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyProton][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[2]);
+
+    
+  }
+  if(what == "protons_neg_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyProton][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyProton][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyProton][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyProton][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[2]);
+
+    
+  }
+    if(what == "kaons_pos_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyKaon][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyKaon][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyKaon][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyKaon][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[1]);
+
+    
+  }
+  if(what == "kaons_neg_6080"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[7][kMyKaon][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[8][kMyKaon][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [7][kMyKaon][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [8][kMyKaon][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_6080");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[1]);
+
+    
+  }
+
+
   if(what == "lambda_0010"){ 
 
     TObjArray * arrStat = new TObjArray();

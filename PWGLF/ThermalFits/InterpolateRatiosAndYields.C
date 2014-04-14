@@ -6,17 +6,21 @@
 #endif
 TClonesArray * arr =0;
 
-void InterpolateRatios(Int_t pdg1, Int_t pdg2) ;
+void InterpolateRatios(Int_t pdg1, Int_t pdg2, TString centr1="V0M0005", TString centr2="V0M0510", TString centrfinal="V0M0010") ;
 void Interpolate0010(Int_t pdg) ;
-void ExtrapolateWithConstantRatioToPions(Int_t pdg, TString centrOrigin, TString centrDest);
+void Interpolate6080(Int_t pdg) ;
 
+void ExtrapolateWithConstantRatioToPions(Int_t pdg, TString centrOrigin, TString centrDest);
+Int_t collSystem = -1;
+Float_t energy = -1;
 
 void InterpolateRatiosAndYields() {
 #if !(!defined (__CINT__) || (defined(__MAKECINT__)))
   LoadLibs();
 #endif
+  collSystem = 2; energy =2760;
   // *************** pi, K, pr *****************
-  //  arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_PiKaPr.txt");
+  arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_PiKaPr.txt");
   // Interpolate0010(211);
   // Interpolate0010(-211);
   // Interpolate0010(321);
@@ -25,6 +29,15 @@ void InterpolateRatiosAndYields() {
   // Interpolate0010(-2212);
   //  InterpolateRatios(2212,211);  
   //  InterpolateRatios(321,211);  
+  // Interpolate6080(211);
+  // Interpolate6080(-211);
+  // Interpolate6080(2212);
+  // Interpolate6080(-2212);
+  Interpolate6080(321);
+  Interpolate6080(-321);
+  // InterpolateRatios(2212,211, "V0M6070", "V0M7080", "V0M6080");  
+  // InterpolateRatios(321,211, "V0M6070", "V0M7080", "V0M6080");    
+
   // *************** Lambda and K0 *****************
   // arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_LambdaK0.txt");
   // Interpolate0010(3122);
@@ -34,9 +47,21 @@ void InterpolateRatiosAndYields() {
   // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
   // ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
   // *************** Kstar *****************
-  arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_Kstar892.txt");
-  arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
-  ExtrapolateWithConstantRatioToPions(313, "V0M0020", "V0M0010");
+  // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_Kstar892.txt");
+  // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
+  // ExtrapolateWithConstantRatioToPions(313, "V0M0020", "V0M0010");
+
+  // *************** pPb, deuteron *********************
+  //  collSystem = 1; energy = 5020;
+  // 1. Average pions
+  //arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_PiKaPrLamndaK0.txt");
+  //  Interpolate0010(211);
+  //  Interpolate0010(-211);
+  // 2. Extrapolate the deuteron
+  // arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
+  // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("pPb_5020_PiKaPrLamndaK0.txt"));
+  //  ExtrapolateWithConstantRatioToPions(1000010020, "V0A0010", "V0A0005");
+  // ExtrapolateWithConstantRatioToPions(-1000010020, "V0A0010", "V0A0005");
 
 
 }
@@ -54,8 +79,23 @@ void DUMP(){
 
 void Interpolate0010(Int_t pdg) {
 
-  AliParticleYield * p0 = AliParticleYield::FindParticle(arr, pdg, 2, 2760., "V0M0005");
-  AliParticleYield * p1 = AliParticleYield::FindParticle(arr, pdg, 2, 2760., "V0M0510");
+  TString centrPrefix = collSystem == 2 ? "V0M" : "V0A";
+
+  AliParticleYield * p0 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"0005");
+  AliParticleYield * p1 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"0510");
+  p0->Scale(0.5);
+  p1->Scale(0.5);
+  AliParticleYield * pav = AliParticleYield::Add(p0,p1);
+  std::cout << pav->GetYield() << ", " << pav->GetStatError() << ", "<< pav->GetSystError() << std::endl;
+
+
+} 
+void Interpolate6080(Int_t pdg) {
+
+  TString centrPrefix = collSystem == 2 ? "V0M" : "V0A";
+
+  AliParticleYield * p0 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"6070");
+  AliParticleYield * p1 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"7080");
   p0->Scale(0.5);
   p1->Scale(0.5);
   AliParticleYield * pav = AliParticleYield::Add(p0,p1);
@@ -64,18 +104,18 @@ void Interpolate0010(Int_t pdg) {
 
 } 
 
-void InterpolateRatios(Int_t pdg1, Int_t pdg2) {
+void InterpolateRatios(Int_t pdg1, Int_t pdg2, TString centr1, TString centr2, TString centrfinal) {
 
   AliParticleYield * ratio[2];
-  ratio[0] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., "V0M0005", 1);
-  ratio[1] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., "V0M0510", 1);
+  ratio[0] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., centr1, 1);
+  ratio[1] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., centr2, 1);
   AliParticleYield * average = AliParticleYield::Add(ratio[0], ratio[1]);
   average->Scale(0.5);
   AliParticleYield * pi[2];
-  pi[0] = AliParticleYield::FindParticle(arr, pdg2, 2, 2760., "V0M0005", 0);
-  pi[0] = AliParticleYield::Add(pi[0],AliParticleYield::FindParticle(arr, -pdg2, 2, 2760., "V0M0005", 0));
-  pi[1] = AliParticleYield::FindParticle(arr, pdg2, 2, 2760., "V0M0510", 0);
-  pi[1] = AliParticleYield::Add(pi[1],AliParticleYield::FindParticle(arr, -pdg2, 2, 2760., "V0M0510", 0));
+  pi[0] = AliParticleYield::FindParticle(arr, pdg2, 2, 2760., centr1, 0);
+  pi[0] = AliParticleYield::Add(pi[0],AliParticleYield::FindParticle(arr, -pdg2, 2, 2760., centr1, 0));
+  pi[1] = AliParticleYield::FindParticle(arr, pdg2, 2, 2760., centr2, 0);
+  pi[1] = AliParticleYield::Add(pi[1],AliParticleYield::FindParticle(arr, -pdg2, 2, 2760., centr2, 0));
   
 
   // Scale to get protons with errors corresponding to the ratio
@@ -89,7 +129,7 @@ void InterpolateRatios(Int_t pdg1, Int_t pdg2) {
   pi[0]->SetSystError(0);
   
   ratio[0]->Scale(1./pi[0]->GetYield());
-    ratio[0]->SetCentr("V0M0010");
+  ratio[0]->SetCentr(centrfinal);
 
   ratio[0]->Print();
   //  average->Dump();
@@ -100,9 +140,9 @@ void InterpolateRatios(Int_t pdg1, Int_t pdg2) {
 
 void ExtrapolateWithConstantRatioToPions(Int_t pdg, TString centrOrigin, TString centrDest) {
 
-  AliParticleYield * part       =  AliParticleYield::FindParticle(arr, pdg, 2, 2760., centrOrigin);
-  AliParticleYield * pionOrigin =  AliParticleYield::FindParticle(arr, 211, 2, 2760., centrOrigin);
-  AliParticleYield * pionDest   =  AliParticleYield::FindParticle(arr, 211, 2, 2760., centrDest);
+  AliParticleYield * part       =  AliParticleYield::FindParticle(arr, pdg,collSystem, energy, centrOrigin);
+  AliParticleYield * pionOrigin =  AliParticleYield::FindParticle(arr, 211,collSystem, energy, centrOrigin);
+  AliParticleYield * pionDest   =  AliParticleYield::FindParticle(arr, 211,collSystem, energy, centrDest);
   if(!part || !pionOrigin | !pionDest) {
     return;
   }
