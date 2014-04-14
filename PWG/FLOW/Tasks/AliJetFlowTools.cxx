@@ -1454,7 +1454,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
     h->SetLineWidth(2.);
     h->SetMarkerSize(1.);
     h->SetTitle("");
-    h->SetFillColor(kYellow);
+    h->SetFillColor(kCyan);
     h->GetYaxis()->SetLabelSize(0.05);
     h->GetXaxis()->SetLabelSize(0.05);
     h->GetYaxis()->SetTitleOffset(1.6);
@@ -1689,6 +1689,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(sym) dInUp += aInLow*aInLow;
         if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(dInUp));
         dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
+        if(sym) dOutUp += aOutLow*aOutLow;
         if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(dOutUp));
         // for the lower bound
         if(relativeErrorVariationInLow) aInLow = relativeErrorVariationInLow->GetBinContent(b+1);
@@ -1699,6 +1700,7 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         if(sym) dInLow += aInUp*aInUp;
         if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
         dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
+        if(sym) dOutLow += aOutUp*aOutUp;
         if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
     }
     // project the estimated errors on the nominal ratio
@@ -1741,9 +1743,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         nominalCanvas->Divide(2);
         nominalCanvas->cd(1);
         Style(nominal, kBlack);
-        Style(nominalError, kYellow, kRatio);
-        nominalError->SetLineColor(kYellow);
-        nominalError->SetMarkerColor(kYellow);
+        Style(nominalError, kCyan, kRatio);
+        nominalError->SetLineColor(kCyan);
+        nominalError->SetMarkerColor(kCyan);
         nominalError->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
         nominalError->GetYaxis()->SetRangeUser(.7, 2.2);
         nominalError->DrawClone("a2");
@@ -1767,9 +1769,9 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
-        Style(nominalV2Error, kYellow, kV2);
-        nominalV2Error->SetLineColor(kYellow);
-        nominalV2Error->SetMarkerColor(kYellow);
+        Style(nominalV2Error, kCyan, kV2);
+        nominalV2Error->SetLineColor(kCyan);
+        nominalV2Error->SetMarkerColor(kCyan);
         nominalV2Error->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
         nominalV2Error->DrawClone("a2");
         nominalV2->DrawClone("same E1");
@@ -1815,6 +1817,7 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphAsymmErrors*& shapeV2,    // pointer reference to final shape uncertainty of v2
         TArrayI* regularizationIn,      // regularization strength systematics, in plane
         TArrayI* regularizationOut,     // regularization strenght systematics, out of plane
+        Bool_t RMS,                     // get RMS instead of absolute value  
         TArrayI* trueBinIn,             // true bin ranges, in plane
         TArrayI* trueBinOut,            // true bin ranges, out of plane
         TArrayI* recBinIn,              // rec bin ranges, in plane
@@ -1881,7 +1884,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "regularization");
+                "regularization",
+                RMS);
         if(relativeErrorRegularizationInUp) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRegularization(new TCanvas("relativeErrorRegularization", "relativeErrorRegularization"));
@@ -2085,9 +2089,9 @@ void AliJetFlowTools::GetShapeUncertainty(
         nominalCanvas->Divide(2);
         nominalCanvas->cd(1);
         Style(nominal, kBlack);
-        Style(nominalError, kYellow, kRatio);
-        nominalError->SetLineColor(kYellow);
-        nominalError->SetMarkerColor(kYellow);
+        Style(nominalError, kCyan, kRatio);
+        nominalError->SetLineColor(kCyan);
+        nominalError->SetMarkerColor(kCyan);
         nominalError->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
         nominalError->GetYaxis()->SetRangeUser(.7, 2.2);
         nominalError->DrawClone("a2");
@@ -2109,9 +2113,9 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
         nominalCanvas->cd(2);
         Style(nominalV2, kBlack);
-        Style(nominalV2Error, kYellow, kV2);
-        nominalV2Error->SetLineColor(kYellow);
-        nominalV2Error->SetMarkerColor(kYellow);
+        Style(nominalV2Error, kCyan, kV2);
+        nominalV2Error->SetLineColor(kCyan);
+        nominalV2Error->SetMarkerColor(kCyan);
         nominalV2Error->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
         nominalV2Error->DrawClone("a2");
         nominalV2->DrawClone("same E1");
@@ -2168,11 +2172,11 @@ void AliJetFlowTools::GetShapeUncertainty(
             Float_t rangeLow,                       // lower pt range
             Float_t rangeUp,                        // upper pt range
             TFile* readMe,                          // input file name (created by this unfolding class)
-            TString source                          // source of the variation
+            TString source,                         // source of the variation
+            Bool_t RMS                              // return RMS of distribution of variations as error
             ) const
 {
    // intermediate systematic check function. first index of supplied array is nominal value
-   //
    TList* listOfKeys((TList*)readMe->GetListOfKeys());
    if(!listOfKeys) {
        printf(" > Fatal error, couldn't retrieve list of keys. Input file might have been corrupted ! < \n");
@@ -2201,6 +2205,10 @@ void AliJetFlowTools::GetShapeUncertainty(
    lineUp->SetLineWidth(3);
 
    // define an output histogram with the maximum relative error from this systematic constribution
+   // if the option RMS is set to false, sigma is not really a standard deviation but holds the maximum (or minimum) relative value that the data has
+   // reached in this function call.
+   // if the option RMS is set to true, sigma holds the RMS value (equal to sigma as the mean is zero for relative errors) of the distribution of variations
+   // which should correspond to a 68% confidence level
    relativeErrorInUp = new TH1D(Form("max #sigma/|x| from %s", source.Data()), Form("max #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    relativeErrorInLow = new TH1D(Form("min #sigma/|x| from  %s", source.Data()), Form("min #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    relativeErrorOutUp = new TH1D(Form("max #sigma/|x| from  %s", source.Data()), Form("max #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
@@ -2384,15 +2392,25 @@ void AliJetFlowTools::GetShapeUncertainty(
                    temp->Divide(unfoldedSpectrum);
                    // get the absolute relative error
                    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-                       // the variation is HIGHER than the nominal point, so the bar goes UP
-                       if( temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorInUp->GetBinContent(b+1)) {
-                           relativeErrorInUp->SetBinContent(b+1, temp->GetBinContent(b+1));
-                           relativeErrorInUp->SetBinError(b+1, 0.);
-                       }
-                       // the variation is LOWER than the nominal point, so the bar goes DOWN
-                       else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorInLow->GetBinContent(b+1)) {
-                           relativeErrorInLow->SetBinContent(b+1, temp->GetBinContent(b+1));
-                           relativeErrorInLow->SetBinError(b+1, 0.);
+                       if(!RMS) {       // save the maximum deviation that a variation can cause
+                           // the variation is HIGHER than the nominal point, so the bar goes UP
+                           if( temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorInUp->GetBinContent(b+1)) {
+                               relativeErrorInUp->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorInUp->SetBinError(b+1, 0.);
+                           }
+                           // the variation is LOWER than the nominal point, so the bar goes DOWN
+                           else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorInLow->GetBinContent(b+1)) {
+                               relativeErrorInLow->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorInLow->SetBinError(b+1, 0.);
+                           }
+                       } else if (RMS) { // save info necessary for evaluating the RMS of a distribution of variations
+                           if( temp->GetBinContent(b+1) < 1) {
+                               relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                           }
+                           // the variation is LOWER than the nominal point, so the bar goes DOWN
+                           else if(temp->GetBinContent(b+1) > 1) {
+                               relativeErrorInLow->SetBinContent(b+1, relativeErrorInLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                           }
                        }
                        if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorIn->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
                    }
@@ -2511,18 +2529,27 @@ void AliJetFlowTools::GetShapeUncertainty(
                    temp->Divide(unfoldedSpectrum);
                    // get the absolute relative error 
                    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-                       // check if the error is larger than the current maximum
-                       if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorOutUp->GetBinContent(b+1)) {
-                           relativeErrorOutUp->SetBinContent(b+1, temp->GetBinContent(b+1));
-                           relativeErrorOutUp->SetBinError(b+1, 0.);
-                       }
-                       // check if the error is smaller than the current minimum
-                       else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorOutLow->GetBinContent(b+1)) {
-                           relativeErrorOutLow->SetBinContent(b+1, temp->GetBinContent(b+1));
-                           relativeErrorOutLow->SetBinError(b+1, 0.);
+                       if(!RMS) {
+                           // check if the error is larger than the current maximum
+                           if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorOutUp->GetBinContent(b+1)) {
+                               relativeErrorOutUp->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorOutUp->SetBinError(b+1, 0.);
+                           }
+                           // check if the error is smaller than the current minimum
+                           else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorOutLow->GetBinContent(b+1)) {
+                               relativeErrorOutLow->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorOutLow->SetBinError(b+1, 0.);
+                           }
+                       } else if (RMS) {
+                           if(temp->GetBinContent(b+1) < 1) {
+                               relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                           }
+                           else if(temp->GetBinContent(b+1) > 1) {
+                               relativeErrorOutLow->SetBinContent(b+1, relativeErrorOutLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                           }
                        }
                        if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorOut->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
-                    }
+                   }
                    temp->SetTitle(Form("[%s] / [%s]", defOut.Data(), dirNameOut.Data()));
                    temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                    temp->GetYaxis()->SetTitle("ratio");
@@ -2707,17 +2734,30 @@ void AliJetFlowTools::GetShapeUncertainty(
 
    // save the relative errors
    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-
        // to arrive at a min and max from here, combine in up and out low
-       
-       relativeErrorInUp->SetBinContent(b+1, -1.*(relativeErrorInUp->GetBinContent(b+1)-1));
-       relativeErrorInUp->SetBinError(b+1, 0.);
-       relativeErrorOutUp->SetBinContent(b+1, -1.*(relativeErrorOutUp->GetBinContent(b+1)-1));
-       relativeErrorOutUp->SetBinError(b+1, .0);
-       relativeErrorInLow->SetBinContent(b+1, -1.*(relativeErrorInLow->GetBinContent(b+1)-1));
-       relativeErrorInLow->SetBinError(b+1, 0.);
-       relativeErrorOutLow->SetBinContent(b+1, -1.*(relativeErrorOutLow->GetBinContent(b+1)-1));
-       relativeErrorOutLow->SetBinError(b+1, .0);
+       if(!RMS) {
+           relativeErrorInUp->SetBinContent(b+1, -1.*(relativeErrorInUp->GetBinContent(b+1)-1));
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, -1.*(relativeErrorOutUp->GetBinContent(b+1)-1));
+           relativeErrorOutUp->SetBinError(b+1, .0);
+           relativeErrorInLow->SetBinContent(b+1, -1.*(relativeErrorInLow->GetBinContent(b+1)-1));
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, -1.*(relativeErrorOutLow->GetBinContent(b+1)-1));
+           relativeErrorOutLow->SetBinError(b+1, .0);
+       } else if (RMS) {
+           // these guys are already stored as percentages, so no need to remove the offset of 1
+           // RMS is defined as sqrt(sum(squared))/N
+           // min is defined as negative, max is defined as positive
+           Float_t n((float)variationsIn->GetSize()-1);  // first variation is nominal, so shouldn't be counted
+           relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1))/n);
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1))/n);
+           relativeErrorOutUp->SetBinError(b+1, .0);
+           relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorInLow->GetBinContent(b+1))/n);
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorOutLow->GetBinContent(b+1))/n);
+           relativeErrorOutLow->SetBinError(b+1, .0);
+       }
    }
    relativeErrorInUp->SetYTitle("relative uncertainty");
    relativeErrorOutUp->SetYTitle("relative uncertainty");

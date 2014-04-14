@@ -209,7 +209,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	  
 	  //flag to select particle in the same ETA acceptance of the tracks (to be used for the comparison with AllCh)
 	  Double_t etaselected=-1.;
-	  if(partMC->Eta()<fTrackCuts->GetEtaMin() || partMC->Eta()>fTrackCuts->GetEtaMax())etaselected=1.;
+	  if(partMC->Eta()>=fTrackCuts->GetEtaMin() && partMC->Eta()<=fTrackCuts->GetEtaMax())etaselected=1.;
 	  
 	  //pt     cent    IDgen        isph        y
  	  Double_t varSt[6];

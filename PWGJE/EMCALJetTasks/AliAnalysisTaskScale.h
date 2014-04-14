@@ -3,7 +3,7 @@
 
 // $Id$
 
-class TH2F;
+class TH2;
 class TF1;
 
 #include "AliAnalysisTaskEmcal.h"
@@ -29,31 +29,32 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   Double_t               fEmcalArea;                   //!Emcal area
   Double_t               fTpcArea;                     //!Tpc area
 
-  TH2F                  *fHistPtTPCvsCent;             //!output histogram
-  TH2F                  *fHistPtEMCALvsCent;           //!output histogram
-  TH2F                  *fHistEtvsCent;                //!output histogram
-  TH2F                  *fHistScalevsCent;             //!output histogram
-  TH2F                  *fHistDeltaScalevsCent;        //!output histogram
-  TH2F                  *fHistScaleEmcalvsCent;        //!output histogram
-  TH2F                  *fHistScale2EmcalvsCent;       //!output histogram
-  TH2F                  *fHistChScalevsCent;           //!output histogram
-  TH2F                  *fHistChScale2EmcalvsCent;     //!output histogram
-  TH2F                  *fHistPtTPCvsNtrack;           //!output histogram
-  TH2F                  *fHistPtEMCALvsNtrack;         //!output histogram
-  TH2F                  *fHistEtvsNtrack;              //!output histogram
-  TH2F                  *fHistScalevsNtrack;           //!output histogram
-  TH2F                  *fHistDeltaScalevsNtrack;      //!output histogram
-  TH2F                  *fHistScaleEmcalvsNtrack;      //!output histogram
-  TH2F                  *fHistScale2EmcalvsNtrack;     //!output histogram
-  TH2F                  *fHistChScalevsNtrack;         //!output histogram
-  TH2F                  *fHistChScale2EmcalvsNtrack;   //!output histogram
-  TH2F                  *fHistTrackPtvsCent;           //!output histogram
-  TH2F                  *fHistClusterPtvsCent;         //!output histogram
-  TH2F                  *fHistTrackEtaPhi;             //!output histogram
-  TH2F                  *fHistClusterEtaPhi;           //!output histogram
-  TH2F                  *fHistScalevsScale2Emcal;      //!output histogram
-  TH2F                  *fHistScalevsScaleEmcal;       //!output histogram
-  TH2F                  *fHistScaleEmcalvsScale2Emcal; //!output histogram
+  TH2                   *fHistPtTPCvsCent;             //!output histogram
+  TH2                   *fHistPtEMCALvsCent;           //!output histogram
+  TH2                   *fHistEtvsCent;                //!output histogram
+  TH2                   *fHistScalevsCent;             //!output histogram
+  TH2                   *fHistDeltaScalevsCent;        //!output histogram
+  TH2                   *fHistScaleEmcalvsCent;        //!output histogram
+  TH2                   *fHistScale2EmcalvsCent;       //!output histogram
+  TH2                   *fHistDeltaScale2EmcalvsCent;  //!output histogram
+  TH2                   *fHistChScalevsCent;           //!output histogram
+  TH2                   *fHistChScale2EmcalvsCent;     //!output histogram
+  TH2                   *fHistPtTPCvsNtrack;           //!output histogram
+  TH2                   *fHistPtEMCALvsNtrack;         //!output histogram
+  TH2                   *fHistEtvsNtrack;              //!output histogram
+  TH2                   *fHistScalevsNtrack;           //!output histogram
+  TH2                   *fHistDeltaScalevsNtrack;      //!output histogram
+  TH2                   *fHistScaleEmcalvsNtrack;      //!output histogram
+  TH2                   *fHistScale2EmcalvsNtrack;     //!output histogram
+  TH2                   *fHistChScalevsNtrack;         //!output histogram
+  TH2                   *fHistChScale2EmcalvsNtrack;   //!output histogram
+  TH2                   *fHistTrackPtvsCent;           //!output histogram
+  TH2                   *fHistClusterPtvsCent;         //!output histogram
+  TH2                   *fHistTrackEtaPhi;             //!output histogram
+  TH2                   *fHistClusterEtaPhi;           //!output histogram
+  TH2                   *fHistScalevsScale2Emcal;      //!output histogram
+  TH2                   *fHistScalevsScaleEmcal;       //!output histogram
+  TH2                   *fHistScaleEmcalvsScale2Emcal; //!output histogram
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented
