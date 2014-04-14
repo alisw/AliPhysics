@@ -113,10 +113,10 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
 //  if (!fJets)  return kTRUE;
 
   // get centrality bin
-  Int_t centbin = GetCentBin(fCent);
-  //for pp analyses we will just use the first centrality bin
-  if (centbin == -1)
-    centbin = 0;
+//   Int_t centbin = GetCentBin(fCent);
+//   //for pp analyses we will just use the first centrality bin
+//   if (centbin == -1)
+//     centbin = 0;
 
   // get event plane info from event
   AliEventplane *aliEP = InputEvent()->GetEventplane();
@@ -184,7 +184,7 @@ Bool_t AliAnalysisTaskEmcalJetPatchTriggerQA::Run()
 
      // need to update entries soon
      //Double_t Entries[10] = {centbin, jetPtLocal, jetPtGlobal, jetPtraw, jet->Eta(), jet->Phi(), dEP, fLocalRhoVal, fRhoVal, fEPV0};
-     Double_t Entries[9] = {centbin, jetPtLocal, jetPtGlobal, jetPtraw, jet->Phi(), dEP, fLocalRhoVal, fRhoVal, fEPV0};
+     Double_t Entries[9] = {fCent, jetPtLocal, jetPtGlobal, jetPtraw, jet->Phi(), dEP, fLocalRhoVal, fRhoVal, fEPV0};
      fhnJetTriggerQA->Fill(Entries);        // fill Sparse Histo with entries
 
      // in plane and out of plane histo's
