@@ -480,6 +480,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
     else if(aodTrack){
+      if (!aodTrack->IsHybridGlobalConstrainedGlobal())       
+	continue ;
       if(!aodTrack->TestFilterBit(fFilterBit))
 	continue;
       fSelPrimTracks->Add(track);
