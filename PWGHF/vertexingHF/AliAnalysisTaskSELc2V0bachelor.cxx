@@ -1887,6 +1887,10 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
 						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother);
       AliAODMCParticle *part1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0pos->GetLabel())));
       AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
+      if(!part1 || !part2) {
+	AliDebug(2,"Daughter particles not found\n");
+	return;
+      }
       fCandidateVariables[86]=part1->GetPdgCode();
       fCandidateVariables[87]=part2->GetPdgCode();
     }
@@ -2534,11 +2538,13 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
     lab = TMath::Abs(dgLabels[i]);
     if(lab<0) {
       printf("daughter with negative label %d\n",lab);
+      delete [] labelMother;
       return 0;
     }
     part = (AliAODMCParticle*)mcArray->At(lab);
     if(!part) { 
       printf("no MC particle\n");
+      delete [] labelMother;
       return 0;
     }
 
