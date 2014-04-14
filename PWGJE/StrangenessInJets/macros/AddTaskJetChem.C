@@ -50,7 +50,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(Latype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskLa(768);
   if(ALatype == AliAnalysisTaskJetChem::kOnFlyPrim || AliAnalysisTaskJetChem::kOfflPrim) task->SetFilterMaskALa(768);
 
-  task->SetFFRadius(radius); //jet cone size
+  task->SetFFRadius(jetradius); //jet cone size
   task->SetFilterMask(filtermask);//2011 Track FilterMask
 
   //Cuts---------------------------------
