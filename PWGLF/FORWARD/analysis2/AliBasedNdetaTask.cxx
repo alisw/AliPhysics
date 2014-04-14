@@ -30,8 +30,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fNormalizationScheme(kFull), 
     fFinalMCCorrFile(""),
     fSatelliteVertices(0),
-    fglobalempiricalcorrection(0),
-    fmeabsignalvscentr(0)
+    fEmpiricalCorrection(0),
+    fMeanVsC(0)
 {
   // 
   // Constructor
@@ -54,8 +54,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fNormalizationScheme(kFull), 
     fFinalMCCorrFile(""),
     fSatelliteVertices(0),
-    fglobalempiricalcorrection(0),
-    fmeabsignalvscentr(0)	
+    fEmpiricalCorrection(0),
+    fMeanVsC(0)	
 {
   // 
   // Constructor
@@ -259,7 +259,7 @@ AliBasedNdetaTask::Book()
   DGUARD(fDebug,1,"Create user ouput object");
 
   fSums->Add(AliForwardUtil::MakeParameter("empirical", 
-					   fglobalempiricalcorrection != 0));
+					   fEmpiricalCorrection != 0));
   fSums->Add(AliForwardUtil::MakeParameter("scheme", fNormalizationScheme));
 
   // Make our centrality bins 
@@ -271,10 +271,10 @@ AliBasedNdetaTask::Book()
   while ((bin = static_cast<CentralityBin*>(next()))) 
     bin->CreateOutputObjects(fSums, fTriggerMask);
   
-  fmeabsignalvscentr=new TH2D("meanAbsSignalVsCentr",
-			      "Mean absolute signal versus centrality",
-			      400, 0, 20, 100, 0, 100);
-  fSums->Add(fmeabsignalvscentr);
+  fMeanVsC=new TH2D("meanAbsSignalVsCentr",
+		    "Mean absolute signal versus centrality",
+		    400, 0, 20, 100, 0, 100);
+  fSums->Add(fMeanVsC);
 
   return true;
 }
@@ -2029,18 +2029,18 @@ Bool_t
 AliBasedNdetaTask::ApplyEmpiricalCorrection(const AliAODForwardMult* aod,
 					    TH2D* data)
 {
-  if (!fglobalempiricalcorrection || !data)
+  if (!fEmpiricalCorrection || !data)
     return true;
   Float_t zvertex=aod->GetIpZ();
-  Int_t binzvertex=fglobalempiricalcorrection->GetXaxis()->FindBin(zvertex);
-  if(binzvertex<1||binzvertex>fglobalempiricalcorrection->GetNbinsX())
+  Int_t binzvertex=fEmpiricalCorrection->GetXaxis()->FindBin(zvertex);
+  if(binzvertex<1||binzvertex>fEmpiricalCorrection->GetNbinsX())
     return false;
   for (int i=1;i<=data->GetNbinsX();i++) {
-    Int_t bincorrection=fglobalempiricalcorrection->GetYaxis()
+    Int_t bincorrection=fEmpiricalCorrection->GetYaxis()
       ->FindBin(data->GetXaxis()->GetBinCenter(i));
-    if(bincorrection<1||bincorrection>fglobalempiricalcorrection->GetNbinsY())
+    if(bincorrection<1||bincorrection>fEmpiricalCorrection->GetNbinsY())
       return false;
-    Float_t correction=fglobalempiricalcorrection
+    Float_t correction=fEmpiricalCorrection
       ->GetBinContent(binzvertex,bincorrection);
     if(correction<0.001) {
       data->SetBinContent(i,0,0);

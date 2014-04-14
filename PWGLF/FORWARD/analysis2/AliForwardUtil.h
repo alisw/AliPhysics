@@ -293,6 +293,7 @@ public:
   /* @} */
 
   //==================================================================
+#if 0 // Moved to separate classes
   /** 
    * @{ 
    * @name Energy stragling functions 
@@ -531,7 +532,7 @@ public:
     virtual ~ELossFitter();
     void SetDebug(Bool_t debug=true) { fDebug = debug; }
     /** 
-     * Clear internal arrays 
+     * Clear internal arrays
      * 
      */
     void Clear();
@@ -625,7 +626,7 @@ public:
     Bool_t    fDebug;
   };
   /* @} */
-      
+#endif      
 
   //==================================================================
   /** 

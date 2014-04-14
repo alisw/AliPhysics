@@ -491,7 +491,7 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		if(!managerdata||!ecutsdata||!tcutsdata)
 			return false;
 		if(managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsdata->GetHistoCuts()->GetBinContent(3))
-			cout<<"Please check DATA file possible problem with merging"<<" "<<anagerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsdata->GetHistoCuts()->GetBinContent(3)<<endl;
+			cout<<"Please check DATA file possible problem with merging"<<" "<<managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsdata->GetHistoCuts()->GetBinContent(3)<<endl;
 
 	}
 	return true;

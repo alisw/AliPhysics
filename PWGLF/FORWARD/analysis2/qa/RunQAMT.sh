@@ -9,6 +9,8 @@
 style=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/style.css 
 favicon=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_favicon.png
 logo=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/fmd_logo.png
+script=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/script.js
+topmk=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/makeIndex.sh
 
 # --- Help output ----------------------------------------------
 usage()
@@ -744,8 +746,15 @@ make_trend ${top}/$store
 
 # --- Make index files -----------------------------------------------
 make_index ${top}/${proddir} ${proddir}
-make_index ${top} "QA for the FMD" \
-    "For more information see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
+# make_index ${top} "QA for the FMD" \
+#    "For more information see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>."
+$topmk --title "QA for the FMD" \
+    --description "For more information see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>." \
+    --link \
+    --max-depth 2 \
+    --output index.html 
+fix_perm index.html
+copy_aliroot_file $script
 
 chmod -R g+rwX ${top}/${proddir} >> ${redir} 2>&1
 

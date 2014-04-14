@@ -60,12 +60,12 @@ THnSparseD *AliIDFFUtils::GetTHn(const TString name)
   //get THnSparseD
   //
 
-  const Int_t nvar = 10;
-  //                                   0       1              2              3               4     5      6       7       8         9
-  const TString atitle[nvar]={"TrackEta","JetPt", "TrackTPCsig", "Log10TrackP", "Log10TrackPt",  "z",  "xi",  "pdg",  "tof",  "hmpid"};
-  const Int_t nbins[nvar]   ={         4,     20,          2400,          Nx(),             50,   25,    50,      7,      7,        7};
-  const Double_t xmins[nvar]={         0,      0,             0,        Xmin(),         Xmin(),    0,     0,   -3.5,   -3.5,     -3.5};
-  const Double_t xmaxs[nvar]={       0.9,    100,           200,        Xmax(),         Xmax(),    1,     6,    3.5,    3.5,      3.5};
+  const Int_t nvar = 11;
+  //                                   0       1              2              3               4     5      6       7       8         9     10   
+  const TString atitle[nvar]={"TrackEta","JetPt", "TrackTPCsig", "Log10TrackP", "Log10TrackPt",  "z",  "xi",  "pdg",  "comb",   "tof",  "tpc"};
+  const Int_t nbins[nvar]   ={         4,     15,          1200,          Nx(),             50,   30,    60,      7,      7,        7,      7};
+  const Double_t xmins[nvar]={         0,      5,             0,        Xmin(),         Xmin(),    0,     0,   -3.5,   -3.5,     -3.5,   -3.5};
+  const Double_t xmaxs[nvar]={       0.9,     20,           200,        Xmax(),         Xmax(),  1.2,     6,    3.5,    3.5,      3.5,    3.5};
 
   THnSparseD * hh = new THnSparseD(name,"", nvar, nbins, xmins, xmaxs);
   for(Int_t ia=0; ia<nvar; ia++){
@@ -84,6 +84,7 @@ THnSparseD *AliIDFFUtils::GetTHn(const TString name)
   return hh;
 }
 
+/*
 Bool_t AliIDFFUtils::HMPIDAcceptance(const AliAODTrack *track)
 {
   //
@@ -173,6 +174,41 @@ Int_t AliIDFFUtils::HMPIDType(const AliAODTrack * track)
 
   return kNOTSELECTED;
 }
+*/
+
+
+Int_t AliIDFFUtils::TPCType(const AliAODTrack * trackptr)
+{
+  //
+  //return the (locally defined) particle type judged by TPC
+  //use tofmode for TPC mode
+  //
+
+  const AliPIDResponse::EDetPidStatus tpcstatus =  fPid->CheckPIDStatus(AliPIDResponse::kTPC, trackptr);
+  if(tpcstatus != AliPIDResponse::kDetPidOk)
+    return kNOINFO;
+
+  Double_t nsigma[]={-999,-999,-999, -999};
+  nsigma[kPION]     = fPid->NumberOfSigmasTPC( trackptr, AliPID::kPion);
+  nsigma[kKAON]     = fPid->NumberOfSigmasTPC( trackptr, AliPID::kKaon);
+  nsigma[kPROTON]   = fPid->NumberOfSigmasTPC( trackptr, AliPID::kProton);
+  nsigma[kELECTRON] = fPid->NumberOfSigmasTPC( trackptr, AliPID::kElectron);
+
+  //so that the effective region is really low momentum
+  const Double_t inclusion=5;
+  const Double_t exclusion=5;
+
+  //don't destroy TPC signal shape below 120
+  const Double_t maxsig = 150;
+  if(trackptr->GetTPCsignal()> maxsig){
+    if(TMath::Abs(nsigma[kPION])<inclusion && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])>exclusion && TMath::Abs(nsigma[kELECTRON])>exclusion) return kPION;
+    if(TMath::Abs(nsigma[kPION])>exclusion && TMath::Abs(nsigma[kKAON])<inclusion && TMath::Abs(nsigma[kPROTON])>exclusion && TMath::Abs(nsigma[kELECTRON])>exclusion) return kKAON;
+    if(TMath::Abs(nsigma[kPION])>exclusion && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])<inclusion && TMath::Abs(nsigma[kELECTRON])>exclusion) return kPROTON;
+    if(TMath::Abs(nsigma[kPION])>exclusion && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])>exclusion && TMath::Abs(nsigma[kELECTRON])<inclusion) return kELECTRON;
+  }
+
+  return kNOTSELECTED;
+}
 
 Int_t AliIDFFUtils::TOFType(const AliAODTrack * trackptr, const Int_t tofmode)
 {
@@ -185,36 +221,70 @@ Int_t AliIDFFUtils::TOFType(const AliAODTrack * trackptr, const Int_t tofmode)
   if(tofstatus != AliPIDResponse::kDetPidOk)
     return kNOINFO;
 
-  Double_t nsigma[]={-999,-999,-999};
+  Double_t nsigma[]={-999,-999,-999, -999};
   nsigma[kPION]     = fPid->NumberOfSigmasTOF( trackptr, AliPID::kPion);
   nsigma[kKAON]     = fPid->NumberOfSigmasTOF( trackptr, AliPID::kKaon);
   nsigma[kPROTON]   = fPid->NumberOfSigmasTOF( trackptr, AliPID::kProton);
+  nsigma[kELECTRON] = fPid->NumberOfSigmasTOF( trackptr, AliPID::kElectron);
 
   Double_t inclusion=-999;
   Double_t exclusion=-999;
-  if(tofmode==1){
-    inclusion = 1.5;
-    exclusion = 3;
+  if(tofmode == 1){
+    inclusion = 2;
+    exclusion = 2;
   }
-  else if(tofmode==2){
+  else if(tofmode == 2){
     inclusion = 2;
     exclusion = 3;
   }
-  else if(tofmode==3){
-    inclusion = 2.5;
+  else if(tofmode == 3){
+    inclusion = 3;
     exclusion = 3;
+  }
+  else if(tofmode == 4){
+    inclusion = 3;
+    exclusion = 4;
   }
   else{
     printf("AliIDFFUtils::TOFType bad tofmode ! %d\n", tofmode); exit(1);
   }
 
-  if(TMath::Abs(nsigma[kPION])<inclusion && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])>exclusion) return kPION;
-  if(TMath::Abs(nsigma[kPION])>exclusion && TMath::Abs(nsigma[kKAON])<inclusion && TMath::Abs(nsigma[kPROTON])>exclusion) return kKAON;
-  if(TMath::Abs(nsigma[kPION])>exclusion && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])<inclusion) return kPROTON;
+  const Bool_t kpassEle = kTRUE;
+  /*
+  const Double_t cutEle = 1.5; 
+  //tofmode = 1x then require electron exclusion cut
+  if( tofmode == 4 ){
+    if(TMath::Abs(nsigma[kELECTRON])> cutEle ){
+      kpassEle = kTRUE;
+    }
+    else{
+      kpassEle = kFALSE;
+    }
+  }
+  */
+
+  //cut on electron for pion because the precision of pion is good and the contamination of electron can not be ignored
+  //+1 exclusion sigma in electron/pion to enforce better purity, otherwise not only pion, but also kaon is bias for jet pt 5-10 GeV/c
+  if(TMath::Abs(nsigma[kPION])<inclusion     && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])>exclusion && kpassEle) return kPION;
+  if(TMath::Abs(nsigma[kPION])>exclusion     && TMath::Abs(nsigma[kKAON])<inclusion && TMath::Abs(nsigma[kPROTON])>exclusion && kpassEle) return kKAON;
+  if(TMath::Abs(nsigma[kPION])>exclusion     && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])<inclusion && kpassEle) return kPROTON;
+  if(TMath::Abs(nsigma[kPION])>exclusion+0.5 && TMath::Abs(nsigma[kKAON])>exclusion && TMath::Abs(nsigma[kPROTON])>exclusion && TMath::Abs(nsigma[kELECTRON])<inclusion) return kELECTRON;
 
   return kNOTSELECTED;
 }
 
+Int_t AliIDFFUtils::CombineTPCTOF(const Int_t ktpc, const Int_t ktof)
+{
+  //tpc and tof, if <0 only noinfo or notselected
+  if(ktpc == ktof)
+    return ktpc;
+  else if(ktpc < 0 && ktof >= 0 )
+    return ktof;
+  else if(ktof < 0 && ktpc >= 0)
+    return ktpc;
+  else
+    return kNOTACCEPTED;
+}
 
 void AliIDFFUtils::FillTHn(THnSparseD * hh, Double_t jetpt, const AliAODTrack * track,  AliAODEvent *aodevent, const Int_t tofmode) //AliMCEvent * mcevent)
 {
@@ -237,8 +307,14 @@ void AliIDFFUtils::FillTHn(THnSparseD * hh, Double_t jetpt, const AliAODTrack * 
   
   //===========================================================================================================
 
+  //use tofmode for tpcmode
+  const Int_t ktpc = TPCType(track);
   const Int_t ktof = TOFType(track, tofmode);
-  const Int_t khmpid = HMPIDType(track);
+
+  //fake kcomb by pretpc+pretof
+  const Int_t kcomb = CombineTPCTOF(ktpc, ktof);
+
+  //const Int_t khmpid = HMPIDType(track);
 
   //===========================================================================================================
 
@@ -267,7 +343,7 @@ void AliIDFFUtils::FillTHn(THnSparseD * hh, Double_t jetpt, const AliAODTrack * 
 
   //===========================================================================================================
 
-  const Double_t vars[]={tracketa, jetpt, tracktpc, tracklogmom, tracklogpt, zz, xi, Double_t(mcpdg), Double_t(ktof), Double_t(khmpid)};
+  const Double_t vars[]={tracketa, jetpt, tracktpc, tracklogmom, tracklogpt, zz, xi, (Double_t)mcpdg, (Double_t)kcomb, (Double_t)ktof, (Double_t)ktpc};
   
   hh->Fill(vars);
 }

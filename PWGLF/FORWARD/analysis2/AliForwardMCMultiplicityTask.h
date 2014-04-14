@@ -64,6 +64,18 @@ public:
    * @name Interface methods 
    */
   /** 
+   * Book output objects. Derived class should define this to book
+   * output objects on the processing output list @c fList before the
+   * actual event processing.  This is called on the master and on
+   * each slave.
+   * 
+   * If this member function returns false, the execution is stopped
+   * with a fatal signal.
+   *
+   * @return true on success. 
+   */
+  virtual Bool_t Book();
+  /** 
    * Called before processing a single event - should not do anything
    * but clear data, etc.
    * 
@@ -77,6 +89,13 @@ public:
    */  
   virtual Bool_t Event(AliESDEvent& esd);
   /** 
+   * Called after processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PostEvent();
+  /* 
    * @} 
    */
   /** 

@@ -109,6 +109,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     virtual void FillPhiCorr(Float_t pt, Float_t phi, Float_t invM);
     virtual void AddToOutput(TList* list) const;
 
+
+
   private:
 
     Int_t   fNBinsPt;       // FF histos bins
@@ -141,6 +143,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
 
+  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
+  enum { kK0, kLambda, kAntiLambda }; 
+
   static  void   SetProperties(TH3F* h,const char* x, const char* y,const char* z);
 
   Bool_t IsAccepteddEdx(Double_t mom, Double_t signal, AliPID::EParticleType n, Double_t cutnSig) const;//not used anymore
@@ -148,7 +153,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Int_t  GetListOfV0s(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex, AliAODEvent* aod);
   Int_t  GetListOfParticles(TList *list, Int_t type, Int_t particletype, AliAODVertex* primVertex);
   Int_t  GetListOfMCParticles(TList *outputlist, Int_t particletype, AliAODEvent* mcaodevent);
-  void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t minPt,  Double_t maxPt, Bool_t& isBadPt);
+  void   GetTracksInCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt, Double_t minPt, Double_t maxPt, Bool_t& isBadPt);
   void   GetTracksInPerpCone(TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPerpPt);
   Bool_t MCLabelCheck(AliAODv0* v0, Int_t particletype, const AliAODTrack* trackNeg, const AliAODTrack* trackPos, TList *listmc, Int_t& negDaughterpdg, Int_t& posDaughterpdg, Int_t& motherType, Int_t& v0Label, Double_t& MCPt, Bool_t& fPhysicalPrimary, Int_t& MCv0PDGCode);
   Bool_t IsParticleMatching(const AliAODMCParticle* mcp0, Int_t v0Label);
@@ -227,8 +232,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
  
   // consts
 
-  enum { kTrackUndef =0, kOnFly, kOnFlyPID, kOnFlydEdx, kOnFlyPrim, kOffl, kOfflPID, kOffldEdx, kOfflPrim };  
-  enum { kK0, kLambda, kAntiLambda };  
  
   //--
   Bool_t   fAnalysisMC;
@@ -494,7 +497,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1MCmotherLa;
   TH1F* fh1MCmotherALa;
   TH3F* fh3FeedDownLa;
-  TH3F* fh3FeedDownALa;     
+  TH3F* fh3FeedDownALa; 
+   TH3F* fh3FeedDownLaCone;
+  TH3F* fh3FeedDownALaCone;   
   TH1F* fh1MCProdRadiusK0s;
   TH1F* fh1MCProdRadiusLambda;
   TH1F* fh1MCProdRadiusAntiLambda;
