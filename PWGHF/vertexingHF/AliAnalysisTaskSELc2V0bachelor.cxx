@@ -2537,13 +2537,13 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
   for(Int_t i=0; i<ndg; i++) {
     lab = TMath::Abs(dgLabels[i]);
     if(lab<0) {
-      printf("daughter with negative label %d\n",lab);
+      AliDebug(2,Form("daughter with negative label %d\n",lab));
       delete [] labelMother;
       return 0;
     }
     part = (AliAODMCParticle*)mcArray->At(lab);
     if(!part) { 
-      printf("no MC particle\n");
+      AliDebug(2,"no MC particle\n");
       delete [] labelMother;
       return 0;
     }
@@ -2553,7 +2553,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
       labMother=mother->GetMother();
       mother = (AliAODMCParticle*)mcArray->At(labMother);
       if(!mother) {
-	printf("no MC mother particle\n");
+	AliDebug(2,"no MC mother particle\n");
 	break;
       }
       pdgMother = TMath::Abs(mother->GetPdgCode());
@@ -2568,11 +2568,11 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
 
   for(Int_t i=0; i<ndg; i++) {
     AliAODMCParticle*part0 = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels[i]));
-    printf("part[%d]->GetLabel()=%d(%d) | ",i,dgLabels[i],part0->GetPdgCode());
-    printf("labelMother[%d] = ",i);
+    AliInfo(Form("part[%d]->GetLabel()=%d(%d) | ",i,dgLabels[i],part0->GetPdgCode()));
+    AliInfo(Form("labelMother[%d] = ",i));
     for (Int_t jj=0;jj<labelMother[i]->GetSize(); jj++)
-      printf("%d, ",labelMother[i]->At(jj));
-    printf("\n");
+      AliInfo(Form("%d, ",labelMother[i]->At(jj)));
+    AliInfo("\n");
   }
 
   Int_t pdgToBeReturned=0;
@@ -2586,7 +2586,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
 	  mother = (AliAODMCParticle*)mcArray->At(labelMother[0]->At(ii));
 	  pdgToBeReturned=mother->GetPdgCode();
 	  absLabelMother=labelMother[0]->At(ii);
-	  printf("FOUND label for the mother of this candidate: %d (PDG=%d)\n",labelMother[0]->At(ii),pdgToBeReturned);
+	  AliDebug(2,Form("FOUND label for the mother of this candidate: %d (PDG=%d)\n",labelMother[0]->At(ii),pdgToBeReturned));
 	  mother->Print();
 	  found = kTRUE;
 	  ndgCk=3;
