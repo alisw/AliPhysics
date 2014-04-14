@@ -33,11 +33,12 @@ public:
   static const char * kStatusString[];
 
   enum AliPYMeasurementType_t { // this is a bit mask: more than one bit can be one (be careful not to set mutually exclusive ones).
-    // Type of measurements (lowest nibble reserved for this)
+    // Type of measurements
     kTypeLinearInterpolation = 0x1,
-    kTypeParticleRatio       = 0x2, // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
-    kTypeAverageAndRefit     = 0x4, // this means that the measurement has been obtained summing several spectra in smaller centality bins (weihgted by the width of the centrality bin) and refitting them
-    kTypeExtrPionRatio       = 0x8, // Extrapolated from a different centrality bin, assumin the ratio to pions is constant
+    kTypeParticleRatio       = 0x2,  // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
+    kTypeAverageAndRefit     = 0x4,  // this means that the measurement has been obtained summing several spectra in smaller centality bins (weihgted by the width of the centrality bin) and refitting them
+    kTypeExtrPionRatio       = 0x8,  // Extrapolated from a different centrality bin, assumin the ratio to pions is constant
+    kTypeExtrFit             = 0x20, // Extrapolated fitting the centrality dependence vs npart
 
     // Type of errors
     kTypeOnlyTotError        = 0x10, // If on, only the total error is returned as "GetSystError". GetStatError should be set to 0;
