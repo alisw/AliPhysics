@@ -402,11 +402,11 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
     return "#bar{^{3}He}";
     break;
   case 1010010030:
-    if(fIsSum) return "^{3}_{#Lambda}H + #bar{^{3}_{#Lambda}H}";
-    return "^{3}_{#Lambda}H";
+    if(fIsSum) return "{}^{3}_{#Lambda}H + {}^{3}_{#Lambda}#bar{H}";
+    return "{}^{3}_{#Lambda}H";
     break;
   case -1010010030:
-    return "#bar{^{3}_{#Lambda}H}";    
+    return "{}^{3}_{#Lambda}#bar{H}";    
     break;
   default:
     AliWarning("Latex Name not know for this particle");
@@ -819,9 +819,11 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
   Int_t status = part1->GetStatus() == part2->GetStatus() ? part2->GetStatus() : -1; 
   Int_t type = part1->GetMeasurementType() == part2->GetMeasurementType() ? part2->GetMeasurementType() : -1; 
   
-  TString centr = part1->GetCentr() == part2->GetCentr() ? part2->GetCentr() : part1->GetCentr()+"/"+part2->GetCentr(); 
-  TString tag = part1->GetTag() == part2->GetTag() ? part2->GetTag() : part1->GetTag()+"/"+part2->GetTag(); 
-  Int_t issum = part1->GetIsSum() == part2->GetIsSum() ? part2->GetIsSum() : -1000; 
+  TString centr = part1->GetCentr() == part2->GetCentr() ? part2->GetCentr() : part1->GetCentr()+pdgSep+part2->GetCentr(); 
+  TString tag = part1->GetTag() == part2->GetTag() ? part2->GetTag() : part1->GetTag()+pdgSep+part2->GetTag(); 
+  TString name = part1->GetPartName()+pdgSep+part2->GetPartName();
+
+  Int_t issum = part1->GetIsSum() || part2->GetIsSum() ? 1 : 0; 
 
   SetPdgCode(pdg1);
   SetPdgCode2(pdg2);
@@ -834,9 +836,8 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
   SetCentr(centr);
   SetTag(tag);
   SetIsSum(issum);
+  SetPartName(name);
 
-  fPartName = TDatabasePDG::Instance()->GetParticle(fPdgCode)->GetName();
-  if(pdg2) fPartName = fPartName + pdgSep + TDatabasePDG::Instance()->GetParticle(fPdgCode2)->GetName();
 }
 
 AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError , Option_t * opt){
@@ -873,7 +874,7 @@ AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticl
   part->SetSystError(syst);
   part->SetNormError(norm);
   part->CombineMetadata(part1, part2, "+");
-
+  part->SetIsSum(1); // CombineMetadata inherits this form part1 and part2
   return part;
 
 
