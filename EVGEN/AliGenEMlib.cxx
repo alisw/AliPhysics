@@ -50,15 +50,15 @@ Double_t AliGenEMlib::CrossOverRc(const double a, const double b, const double x
 }
 
 const Double_t AliGenEMlib::fgkV2param[16][15] = {
-  // charged pion                                                                                                                        cent, based on
+  // charged pion                                                                                                                        cent, based on: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FlowPAGQM2012talkIdentified
   {  0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 2.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000 }   // pp no V2
-  ,{ 6.551541e-02, 1.438274e+00, 4.626379e-02, 2.512477e+00, 1.371824e+00, 2.964543e-02, 4.630670e+00, 4.228889e+00, 6.037970e-02, 1.425269e-03, 1.144124e+00, 0, 1, 9.154016e-04, 1.288285e+00 }  // 0-5,  Francesco
-  ,{ 1.171360e-01, 1.333046e+00, 4.536752e-02, 3.046448e+00, 3.903714e+00, 4.407124e-02, 9.122534e-01, 4.834519e+00, 1.186237e-01, 2.179274e-03, 8.968478e-01, 0, 1, 1.501201e-03, 9.902785e-01 }  // 5-10, Francesco
-  ,{ 1.748423e-01, 1.285211e+00, 4.219624e-02, 4.019148e+00, 4.255047e+00, 7.956751e-03, 1.184731e-01,-9.211391e+00, 5.768716e-01, 3.127110e-03, 6.808650e-01, 0, 1, 2.786807e-03, 6.159338e-01 }  // 10-20,Francesco
-  ,{ 2.152937e-01, 1.405391e+00, 5.037925e-02, 3.214458e+00, 3.991894e+00, 3.655882e-02, 1.968766e-01,-1.637650e+01, 7.023397e+00, 4.573453e-03, 6.031381e-01, 0, 1, 3.564348e-03, 5.748053e-01 }  // 20-30,Francesco
-  ,{ 2.409800e-01, 1.476557e+00, 5.759362e-02, 3.339713e+00, 3.642386e+00,-1.544366e-02, 1.098611e-01,-1.373154e+01, 1.471955e+00, 5.200180e-03, 6.315474e-01, 0, 1, 3.776112e-03, 6.298605e-01 }  // 30-40,Francesco
-  ,{ 2.495087e-01, 1.543711e+00, 6.217817e-02, 3.517101e+00, 4.558221e+00, 6.021316e-02, 1.486822e-01,-5.769155e+00, 5.576843e-01, 5.348029e-03, 7.255976e-01, 0, 1, 3.531350e-03, 7.661694e-01 }  // 40-50,Francesco
-  ,{ 2.166449e-01, 1.931014e+00, 8.195656e-02, 2.226742e+00, 3.106472e+00, 1.058786e-01, 8.558786e-01, 4.006680e+00, 2.476313e-01, 5.137623e-03, 9.104401e-01, 0, 1, 2.477450e-03, 1.109649e+00 }  // 50-60,Francesco
+  ,{ 6.551541e-02, 1.438274e+00, 4.626379e-02, 2.512477e+00, 1.371824e+00, 2.964543e-02, 4.630670e+00, 4.228889e+00, 6.037970e-02, 1.425269e-03, 1.144124e+00, 0, 1, 9.154016e-04, 1.288285e+00 }  // 0-5
+  ,{ 1.171360e-01, 1.333046e+00, 4.536752e-02, 3.046448e+00, 3.903714e+00, 4.407124e-02, 9.122534e-01, 4.834519e+00, 1.186237e-01, 2.179274e-03, 8.968478e-01, 0, 1, 1.501201e-03, 9.902785e-01 }  // 5-10
+  ,{ 1.748423e-01, 1.285211e+00, 4.219624e-02, 4.019148e+00, 4.255047e+00, 7.956751e-03, 1.184731e-01,-9.211391e+00, 5.768716e-01, 3.127110e-03, 6.808650e-01, 0, 1, 2.786807e-03, 6.159338e-01 }  // 10-20
+  ,{ 2.152937e-01, 1.405391e+00, 5.037925e-02, 3.214458e+00, 3.991894e+00, 3.655882e-02, 1.968766e-01,-1.637650e+01, 7.023397e+00, 4.573453e-03, 6.031381e-01, 0, 1, 3.564348e-03, 5.748053e-01 }  // 20-30
+  ,{ 2.409800e-01, 1.476557e+00, 5.759362e-02, 3.339713e+00, 3.642386e+00,-1.544366e-02, 1.098611e-01,-1.373154e+01, 1.471955e+00, 5.200180e-03, 6.315474e-01, 0, 1, 3.776112e-03, 6.298605e-01 }  // 30-40
+  ,{ 2.495087e-01, 1.543711e+00, 6.217817e-02, 3.517101e+00, 4.558221e+00, 6.021316e-02, 1.486822e-01,-5.769155e+00, 5.576843e-01, 5.348029e-03, 7.255976e-01, 0, 1, 3.531350e-03, 7.661694e-01 }  // 40-50
+  ,{ 2.166449e-01, 1.931014e+00, 8.195656e-02, 2.226742e+00, 3.106472e+00, 1.058786e-01, 8.558786e-01, 4.006680e+00, 2.476313e-01, 5.137623e-03, 9.104401e-01, 0, 1, 2.477450e-03, 1.109649e+00 }  // 50-60
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 2.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000 }   // 0-10
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 2.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000 }   // 20-40
   ,{ 0.0000000000, 0.0000000000, 0.0000000000,-1.0000000000, 1.0000000000, 0.0000000000, 0.0000000000, 0.0000000000, 2.0000000000, 0.0000000000, 1.0000000000, 0, 1, 0.0000000000, 1.0000000000 }   // 40-60
@@ -92,17 +92,17 @@ const Double_t AliGenEMlib::fgkThermPtParam[16][2] = {
   {  0.0000000000, 0.0000000000 } // pp no V2
   ,{ 0.0000000000, 0.0000000000 } // 0-5
   ,{ 0.0000000000, 0.0000000000 } // 5-10
-  ,{ 2.581823e+01, 3.187900e+00 } // 10-20 //from: https://aliceinfo.cern.ch/Notes/node/249
+  ,{ 3.447105e+01, 3.416818e+00 } // 10-20 //based on: https://aliceinfo.cern.ch/Notes/node/249
   ,{ 0.0000000000, 0.0000000000 } // 20-30
   ,{ 0.0000000000, 0.0000000000 } // 30-40
   ,{ 0.0000000000, 0.0000000000 } // 40-50
   ,{ 0.0000000000, 0.0000000000 } // 50-60
-  ,{ 7.177551e+02, 4.946179e+00 } // 0-10  //from: https://aliceinfo.cern.ch/Notes/node/249
-  ,{ 2.328661e+00, 2.635257e+00 } // 20-40 //from: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
+  ,{ 3.888847e+02, 4.502683e+00 } // 0-10  //based on: https://aliceinfo.cern.ch/Notes/node/249
+  ,{ 1.766210e+00, 2.473812e+00 } // 20-40 //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
   ,{ 0.0000000000, 0.0000000000 } // 40-60
   ,{ 0.0000000000, 0.0000000000 } // 60-80
-  ,{ 1.919280e+01, 2.946472e+00 } // 0-20  //from: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
-  ,{ 0.0000000000, 0.0000000000 } // 0-40 
+  ,{ 1.576151e+01, 2.841202e+00 } // 0-20  //based on: https://twiki.cern.ch/twiki/pub/ALICE/ALICEDirectPhotonSpectrumPaper/directPbPb.pdf
+  ,{ 4.263499e+01, 3.249843e+00 } // 0-40  //based on: https://aliceinfo.cern.ch/Figure/node/2866
   ,{ 0.0000000000, 0.0000000000 } // 20-80
   ,{ 0.0000000000, 0.0000000000 } // 40-80
 };
@@ -119,11 +119,10 @@ const Double_t AliGenEMlib::fgkMtFactor[2][8] = {
   //https://aliceinfo.cern.ch/Figure/node/2634
   //https://aliceinfo.cern.ch/Figure/node/2788
   //https://aliceinfo.cern.ch/Figure/node/4403
-  //J/Psi PbPb from Comparison with Julian Books J/Psi -> e+e-, might be contradicting with https://aliceinfo.cern.ch/Figure/node/3457
   //https://aliceinfo.cern.ch/Notes/node/87
   //best guess:
-  {1., 0.48, 1.0, 0.9, 0.4, 0.25, 0.004, 0.}, //pp
-  {1., 0.48, 1.0, 0.9, 0.4, 0.25, 0.0195, 0.}  //PbPb
+  {1., 0.48, 1.0, 0.9, 0.4, 0.25, 0., 0.}, //pp
+  {1., 0.48, 1.0, 0.9, 0.4, 0.25, 0., 0.}  //PbPb
 };
 
 //==========================================================================
@@ -211,120 +210,108 @@ Double_t AliGenEMlib::PtExponential(const Double_t *px, const Double_t *c){
 
 // Hagedorn with additional Powerlaw
 Double_t AliGenEMlib::PtModifiedHagedornPowerlaw(const Double_t *px, const Double_t *c){
-  double pt=px[0]+0.0001;
-  Double_t invYield = c[0]*pow(c[1]+pt*c[2],-c[3])*CrossOverLc(c[5],c[4],pt)+CrossOverRc(c[7],c[6],pt)*c[8]*pow(pt,-c[9]);
+  const double &pt=px[0];
+  Double_t invYield = c[0]*pow(c[1]+pt*c[2],-c[3])*CrossOverLc(c[5],c[4],pt)+CrossOverRc(c[7],c[6],pt)*c[8]*pow(pt+0.001,-c[9]); //pt+0.001: prevent powerlaw from exploding for pt->0
   
   return invYield*(2*TMath::Pi()*pt);
 }
 
-Double_t AliGenEMlib::IntegratedKrollWada(Double_t mh){
-  if(mh<0.003) return 0;
-  const double me=0.000511;
-  return 2*log(mh/me/exp(7.0/4.0))/411.0/TMath::Pi();
+// double powerlaw for J/Psi yield
+Double_t AliGenEMlib::PtDoublePowerlaw(const Double_t *px, const Double_t *c){
+  const double &pt=px[0];
+  Double_t yield = c[0]*pt*pow(1+pow(pt*c[1],2),-c[2]);
+  
+  return yield;
+}
+
+// integral over krollwada with S=1^2*(1-mee^2/mh^2)^3 from mee=0 up to mee=mh
+// approximation is perfect for mh>20MeV
+Double_t AliGenEMlib::IntegratedKrollWada(const Double_t *mh, const Double_t *){
+  if(*mh<0.002941) return 0;
+  return 2*log(*mh/0.000511/exp(1.75))/411.11/TMath::Pi();
 }
 
 //--------------------------------------------------------------------------
 //
-//                             PromptRealGamma
+//                             DirectRealGamma
 //
 //--------------------------------------------------------------------------
-Int_t AliGenEMlib::IpPromptRealGamma(TRandom *)
-{
-  return 221000;
-}
-
 Double_t AliGenEMlib::PtPromptRealGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  //if(*px<0.001) return 0;
-  const static Double_t promptGammaPtParam[10] = { 7.019259e-02, 6.771695e-01, 8.249346e-01, 5.720419e+00, 1.848869e+01, 2.629075e+01, 1.061126e+01, 3.699205e+01, 5.253572e-02, 5.167275e+00 };
-  //{ 5.449971e-02, 3.843241e-01, 9.469766e-01, 4.993039e+00, 5.342451e+00, 4.457944e+00, 5.555146e+00, 4.458580e+00, 6.035177e-02, 5.102109e+00 };
+  const static Double_t promptGammaPtParam[10] = { 8.715017e-02, 4.439243e-01, 1.011650e+00, 5.193789e+00, 2.194442e+01, 1.062124e+01, 2.469876e+01, 6.052479e-02, 5.611410e-02, 5.169743e+00 };
  
   return PtModifiedHagedornPowerlaw(px,promptGammaPtParam)*GetTAA(fgSelectedCentrality);
 }
 
-Double_t AliGenEMlib::YPromptRealGamma( const Double_t *px, const Double_t */*dummy*/ )
-{
-  return YFlat(*px);
-}
-
-Double_t AliGenEMlib::V2PromptRealGamma( const Double_t */*px*/, const Double_t */*dummy*/ )
-{
-  return 0.0;
-}
-
-//--------------------------------------------------------------------------
-//
-//                             PromptVirtGamma
-//
-//--------------------------------------------------------------------------
-Int_t AliGenEMlib::IpPromptVirtGamma(TRandom *)
-{
-  return 223000;
-}
-
-Double_t AliGenEMlib::PtPromptVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
-{
-  return IntegratedKrollWada(*px)*PtPromptRealGamma(px,px);
-}
-
-Double_t AliGenEMlib::YPromptVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
-{
-  return YFlat(*px);
-}
-
-Double_t AliGenEMlib::V2PromptVirtGamma( const Double_t */*px*/, const Double_t */*dummy*/ )
-{
-  return 0.0;
-}
-
-//--------------------------------------------------------------------------
-//
-//                             ThermRealGamma
-//
-//--------------------------------------------------------------------------
-Int_t AliGenEMlib::IpThermRealGamma(TRandom *)
-{
-  return 222000;
-}
-
-Double_t AliGenEMlib::PtThermRealGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::PtThermalRealGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
   return PtExponential(px,fgkThermPtParam[fgSelectedCentrality]);
 }
 
-Double_t AliGenEMlib::YThermRealGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::PtDirectRealGamma( const Double_t *px, const Double_t */*dummy*/ )
+{
+  return PtPromptRealGamma(px,px)+PtThermalRealGamma(px,px);
+}
+
+Int_t AliGenEMlib::IpDirectRealGamma(TRandom *)
+{
+  return 22;
+}
+
+Double_t AliGenEMlib::YDirectRealGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
   return YFlat(*px);
 }
 
-Double_t AliGenEMlib::V2ThermRealGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::V2DirectRealGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return KEtScal(*px,8);
+  const static Double_t v2Param[3][15] = {
+    { 1.211795e-01, 9.813671e-01, 0.000000e+00, 3.056960e+00, 2.380183e+00, -7.833212e-02, 5.000000e-01, 3.056960e+00, 1.195000e-01, 1.183293e-02, 1.252249e+00, 0, 1, 4.876263e-03, 1.518526e+00 }  // 00-20, based on: https://aliceinfo.cern.ch/Notes/node/249
+    ,{ 1.619000e-01, 2.185695e+00, 0.000000e+00, 1.637681e+00, 1.000000e+00, -1.226399e-06, 3.092027e+00, 3.064692e+00, 1.619000e-01, 2.264320e-02, 1.028641e+00, 0, 1, 8.172203e-03, 1.271637e+00 } // 20-40
+    ,{ 1.335000e-01, 1.331963e+00, 0.000000e+00, 2.252315e+00, 1.198383e+00, -5.861987e-02, 7.132859e-01, 2.252315e+00, 2.934249e-01, 1.571589e-02, 1.001131e+00, 0, 1, 5.179715e-03, 1.329344e+00 } // 00-40
+  };
+  switch(fgSelectedCentrality) {
+  case k0020: return V2Param(px,v2Param[0]); break;
+  case k2040: return V2Param(px,v2Param[1]); break;
+  case k0040: return V2Param(px,v2Param[2]); break;
+  }
+  return 0;
 }
+
 
 //--------------------------------------------------------------------------
 //
-//                             ThermVirtGamma
+//                             DirectVirtGamma
 //
 //--------------------------------------------------------------------------
-Int_t AliGenEMlib::IpThermVirtGamma(TRandom *)
+Double_t AliGenEMlib::PtPromptVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return 224000;
+  return IntegratedKrollWada(px,px)*PtPromptRealGamma(px,px);
 }
 
-Double_t AliGenEMlib::PtThermVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::PtThermalVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return IntegratedKrollWada(*px)*PtThermRealGamma(px,px);
+  return IntegratedKrollWada(px,px)*PtThermalRealGamma(px,px);
 }
 
-Double_t AliGenEMlib::YThermVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::PtDirectVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
+{
+  return IntegratedKrollWada(px,px)*(PtPromptRealGamma(px,px)+PtThermalRealGamma(px,px));
+}
+
+Int_t AliGenEMlib::IpDirectVirtGamma(TRandom *)
+{
+  return 220000;
+}
+
+Double_t AliGenEMlib::YDirectVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
   return YFlat(*px);
 }
 
-Double_t AliGenEMlib::V2ThermVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
+Double_t AliGenEMlib::V2DirectVirtGamma( const Double_t *px, const Double_t */*dummy*/ )
 {
-  return KEtScal(*px,8);
+  return V2DirectRealGamma(px,px);
 }
 
 //--------------------------------------------------------------------------
@@ -340,9 +327,12 @@ Int_t AliGenEMlib::IpPizero(TRandom *)
 
 Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
 {
-  // double pigammacorr=2.385389e-01*log(*px+0.001)+1.557687e+00;
-  // pigammacorr*=9.513666e-03*log(*px+0.001)+9.509347e-01;
-  // return pigammacorr*PtPromptRealGamma(px,px);  //misuse pion for direct gammas
+  // double pigammacorr=1; //misuse pion for direct gammas, tuned for 0040, iteration 0
+  // pigammacorr*=2.258900e-01*log(*px+0.001)+1.591291e+00;  //iteration 1
+  // pigammacorr*=6.601943e-03*log(*px+0.001)+9.593698e-01;  //iteration 2
+  // pigammacorr*=4.019933e-03*log(*px+0.001)+9.843412e-01;  //iteration 3
+  // pigammacorr*=-4.543991e-03*log(*px+0.001)+1.010886e+00; //iteration 4
+  // return pigammacorr*PtPromptRealGamma(px,px); //now the gammas from the pi->gg decay have the pt spectrum of prompt real gammas
   
   // fit functions and corresponding parameter of Pizero pT for pp @ 2.76 TeV and @ 7 TeV and for PbPb @ 2.76 TeV 
 
@@ -357,6 +347,9 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
   Double_t ka=0.;
   Double_t kb=0.;
   Double_t kd=0.;
+
+  double n1,n2,n3;
+  int oldCent;
 
   switch(fgSelectedPtParam|fgSelectedCentrality) {
     // fit to pi charged v1
@@ -407,7 +400,26 @@ Double_t AliGenEMlib::PtPizero( const Double_t *px, const Double_t */*dummy*/ )
     kc=2842.0; kp0=1.465; kp1=0.8324; kn=8.167; kcT=0.0001049; kT=2.29;
     return PtModifiedHagedornThermal(*px,kc,kp0,kp1,kn,kcT,kT);
     break;
-   
+  case kPichargedPbPb|k0020:
+    oldCent=fgSelectedCentrality;
+    fgSelectedCentrality=k0010;
+    n1=PtPizero(px,px);
+    fgSelectedCentrality=k1020;
+    n2=PtPizero(px,px);
+    fgSelectedCentrality=oldCent;
+    return (n1+n2)/2;
+    break;
+  case kPichargedPbPb|k0040:
+    oldCent=fgSelectedCentrality;
+    fgSelectedCentrality=k0010;
+    n1=PtPizero(px,px);
+    fgSelectedCentrality=k1020;
+    n2=PtPizero(px,px);
+    fgSelectedCentrality=k2040;
+    n3=PtPizero(px,px);
+    fgSelectedCentrality=oldCent;
+    return (n1+n2+2*n3)/4;
+    break;
 
     // fit to pizero from conversion analysis
     // for PbPb @ 2.76 TeV
@@ -502,7 +514,8 @@ Double_t AliGenEMlib::YPizero( const Double_t *py, const Double_t */*dummy*/ )
 
 Double_t AliGenEMlib::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
 {
-  double n1,n2,v1,v2;
+  double n1,n2,n3,n4,n5;
+  double v1,v2,v3,v4,v5;
   switch(fgSelectedCentrality) {
   case k0010:
     n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
@@ -511,12 +524,34 @@ Double_t AliGenEMlib::V2Pizero( const Double_t *px, const Double_t */*dummy*/ )
     v2=V2Param(px,fgkV2param[k0510]);
     return (n1*v1+n2*v2)/(n1+n2);
     break;
+  case k0020:
+    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
+    v1=V2Param(px,fgkV2param[k0005]);
+    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
+    v2=V2Param(px,fgkV2param[k0510]);
+    n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
+    v3=V2Param(px,fgkV2param[k1020]);
+    return (n1*v1+n2*v2+2*n3*v3)/(n1+n2+2*n3);
+    break;
   case k2040:
     n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
     v1=V2Param(px,fgkV2param[k2030]);
     n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
     v2=V2Param(px,fgkV2param[k3040]);
     return (n1*v1+n2*v2)/(n1+n2);
+    break;
+  case k0040:
+    n1=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0005]);
+    v1=V2Param(px,fgkV2param[k0005]);
+    n2=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k0510]);
+    v2=V2Param(px,fgkV2param[k0510]);
+    n3=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k1020]);
+    v3=V2Param(px,fgkV2param[k1020]);
+    n4=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k2030]);
+    v4=V2Param(px,fgkV2param[k2030]);
+    n5=PtModifiedHagedornPowerlaw(px,fgkRawPtOfV2Param[k3040]);
+    v5=V2Param(px,fgkV2param[k3040]);
+    return (n1*v1+n2*v2+2*n3*v3+2*n4*v4+2*n5*v5)/(n1+n2+2*n3+2*n4+2*n5);
     break;
 
   default:
@@ -717,7 +752,18 @@ Int_t AliGenEMlib::IpJpsi(TRandom *)
 Double_t AliGenEMlib::PtJpsi( const Double_t *px, const Double_t */*dummy*/ )
 {
   // Jpsi pT
-  return MtScal(*px,6);
+  // based on: //https://aliceinfo.cern.ch/Notes/node/242, https://aliceinfo.cern.ch/Figure/node/3457, www.sciencedirect.com/science/article/pii/S0370269312011446
+  const static Double_t jpsiPtParam[2][3] = {
+    {  9.686337e-03, 2.629441e-01, 4.552044e+00 }
+    ,{ 3.403549e-03, 2.897061e-01, 3.644278e+00 }
+  };
+  const double pt=px[0]*2.28/2.613;
+  switch(fgSelectedCentrality) {
+  case k0020: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[0]); break;
+  case k2040: return 2.405*PtDoublePowerlaw(&pt,jpsiPtParam[1]); break;
+  case k0040: return 0.5*2.405*(PtDoublePowerlaw(&pt,jpsiPtParam[0])+PtDoublePowerlaw(&pt,jpsiPtParam[1])); break;
+  }
+  return 0;
 }
 
 Double_t AliGenEMlib::YJpsi( const Double_t *py, const Double_t */*dummy*/ )
@@ -786,7 +832,7 @@ Double_t AliGenEMlib::KEtScal(const Double_t pt, Int_t np)
   // double val=V2Pizero(&scaledPt, (Double_t*) 0);
   // static const double syserr[12]={0., 0.09, 0.07, 0.06, 0.04, 0.04, 0.04, 0.05, 0., 0., 0., 0.}; //based on pi vs kaon
   // double sys=fgSelectedV2Systematic*min(fgkV2param[fgSelectedCentrality][0],fgkV2param[fgSelectedCentrality][8])*syserr[fgSelectedCentrality];
-  // return TMath::Max(val+sys,0.0);
+  // return std::max(val+sys,0.0);
   return V2Pizero(&scaledPt, (Double_t*) 0);
 }
 
@@ -797,7 +843,7 @@ Double_t AliGenEMlib::V2Param(const Double_t *px, const Double_t *par)
   const double &pt=px[0];
   double val=CrossOverLc(par[4],par[3],pt)*(2*par[0]/(1+TMath::Exp(par[1]*(par[2]-pt)))-par[0])+CrossOverRc(par[4],par[3],pt)*((par[8]-par[5])/(1+TMath::Exp(par[6]*(pt-par[7])))+par[5]);
   double sys=fgSelectedV2Systematic*par[11+fgSelectedV2Systematic*2]*pow(pt,par[12+fgSelectedV2Systematic*2]);
-  return TMath::Max(val+sys,0.0);
+  return std::max(val+sys,0.0);
 }
 
 Double_t AliGenEMlib::V2Flat(const Double_t */*px*/, const Double_t */*param*/)
@@ -845,17 +891,11 @@ GenFunc AliGenEMlib::GetPt(Int_t param, const char * tname) const
 
    switch (param) 
     {
-    case kPromptRealGamma:
-      func=PtPromptRealGamma;
+     case kDirectRealGamma:
+       func=PtDirectRealGamma;
       break;
-    case kPromptVirtGamma:
-      func=PtPromptVirtGamma;
-      break;
-    case kThermRealGamma:
-      func=PtThermRealGamma;
-      break;
-    case kThermVirtGamma:
-      func=PtThermVirtGamma;
+     case kDirectVirtGamma:
+       func=PtDirectVirtGamma;
       break;
     case kPizero:
       func=PtPizero;
@@ -894,17 +934,11 @@ GenFunc AliGenEMlib::GetY(Int_t param, const char * tname) const
 
    switch (param) 
     {
-    case kPromptRealGamma:
-      func=YPromptRealGamma;
+    case kDirectRealGamma:
+      func=YDirectRealGamma;
       break;
-    case kPromptVirtGamma:
-      func=YPromptVirtGamma;
-      break;
-    case kThermRealGamma:
-      func=YThermRealGamma;
-      break;
-    case kThermVirtGamma:
-      func=YThermVirtGamma;
+    case kDirectVirtGamma:
+      func=YDirectVirtGamma;
       break;
     case kPizero:
          func=YPizero;
@@ -943,17 +977,11 @@ GenFuncIp AliGenEMlib::GetIp(Int_t param, const char * tname) const
 
    switch (param) 
     {
-    case kPromptRealGamma:
-      func=IpPromptRealGamma;
+    case kDirectRealGamma:
+      func=IpDirectRealGamma;
       break;
-    case kPromptVirtGamma:
-      func=IpPromptVirtGamma;
-      break;
-    case kThermRealGamma:
-      func=IpThermRealGamma;
-      break;
-    case kThermVirtGamma:
-      func=IpThermVirtGamma;
+    case kDirectVirtGamma:
+      func=IpDirectVirtGamma;
       break;
     case kPizero:
          func=IpPizero;
@@ -992,17 +1020,11 @@ GenFunc AliGenEMlib::GetV2(Int_t param, const char * tname) const
 
   switch (param) 
     {
-    case kPromptRealGamma:
-      func=V2PromptRealGamma;
+    case kDirectRealGamma:
+      func=V2DirectRealGamma;
       break;
-    case kPromptVirtGamma:
-      func=V2PromptVirtGamma;
-      break;
-    case kThermRealGamma:
-      func=V2ThermRealGamma;
-      break;
-    case kThermVirtGamma:
-      func=V2ThermVirtGamma;
+    case kDirectVirtGamma:
+      func=V2DirectVirtGamma;
       break;
     case kPizero:
       func=V2Pizero;

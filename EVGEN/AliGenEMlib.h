@@ -21,7 +21,7 @@ class TRandom;
 class AliGenEMlib :public AliGenLib {
 public:
     
-  enum Particle_t{kPromptRealGamma, kPromptVirtGamma, kThermRealGamma, kThermVirtGamma, kPizero, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi};
+  enum Particle_t{kPizero=0, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi, kDirectRealGamma, kDirectVirtGamma };
   enum Centrality_t{kpp=0x0, k0005=0x1, k0510=0x2, k1020=0x3, k2030=0x4, k3040=0x5, k4050=0x6, k5060=0x7, k0010=0x8, k2040=0x9, k4060=0xA, k6080=0xB, k0020=0xC, k0040=0xD, k2080=0xE, k4080=0xF, kCentralities=0x10};
   enum PtParamSet_t{kPizero7TeVpp=0x10, kPizeroEta7TeVpp=0x20, kPizero7TeVpplow=0x30, kPizeroEta7TeVpplow=0x40, kPizero7TeVpphigh=0x50, kPizeroEta7TeVpphigh=0x60, kPizero2760GeVpp=0x70, kPizeroEta2760GeVpp=0x80, kPizero2760GeVpplow=0x90, kPizeroEta2760GeVpplow=0xA0, kPizero2760GeVpphigh=0xB0, kPizeroEta2760GeVpphigh=0xC0, kPichargedPbPb=0xD0, kPizeroPbPb=0xE0, kPichargedPPb=0xF0 };
   enum v2Sys_t{kLoV2Sys=-1, kNoV2Sys=0, kUpV2Sys=+1};
@@ -81,29 +81,24 @@ public:
 
   static Double_t PtExponential(const Double_t *pt, const Double_t *param);
   static Double_t PtModifiedHagedornPowerlaw(const Double_t *pt, const Double_t *param);
-  static Double_t IntegratedKrollWada(Double_t mh);
+  static Double_t PtDoublePowerlaw(const Double_t *pt, const Double_t *param);
+  static Double_t IntegratedKrollWada(const Double_t *mh, const Double_t *);
 
-  // prompt gamma
-  static Int_t    IpPromptRealGamma(TRandom *ran);
+  // direct gamma
   static Double_t PtPromptRealGamma(const Double_t *px, const Double_t *dummy);
-  static Double_t YPromptRealGamma(const Double_t *py, const Double_t *dummy);
-  static Double_t V2PromptRealGamma(const Double_t *px, const Double_t *dummy);
-
-  static Int_t    IpPromptVirtGamma(TRandom *ran);
   static Double_t PtPromptVirtGamma(const Double_t *px, const Double_t *dummy);
-  static Double_t YPromptVirtGamma(const Double_t *py, const Double_t *dummy);
-  static Double_t V2PromptVirtGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t PtThermalRealGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t PtThermalVirtGamma(const Double_t *px, const Double_t *dummy);
 
-  // thermal gamma
-  static Int_t    IpThermRealGamma(TRandom *ran);
-  static Double_t PtThermRealGamma(const Double_t *px, const Double_t *dummy);
-  static Double_t YThermRealGamma(const Double_t *py, const Double_t *dummy);
-  static Double_t V2ThermRealGamma(const Double_t *px, const Double_t *dummy);
+  static Int_t    IpDirectRealGamma(TRandom *ran);
+  static Double_t PtDirectRealGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YDirectRealGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2DirectRealGamma(const Double_t *px, const Double_t *dummy);
 
-  static Int_t    IpThermVirtGamma(TRandom *ran);
-  static Double_t PtThermVirtGamma(const Double_t *px, const Double_t *dummy);
-  static Double_t YThermVirtGamma(const Double_t *py, const Double_t *dummy);
-  static Double_t V2ThermVirtGamma(const Double_t *px, const Double_t *dummy);
+  static Int_t    IpDirectVirtGamma(TRandom *ran);
+  static Double_t PtDirectVirtGamma(const Double_t *px, const Double_t *dummy);
+  static Double_t YDirectVirtGamma(const Double_t *py, const Double_t *dummy);
+  static Double_t V2DirectVirtGamma(const Double_t *px, const Double_t *dummy);
 
   // Pizero
     static Int_t    IpPizero(TRandom *ran);
