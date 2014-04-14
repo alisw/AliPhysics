@@ -346,7 +346,7 @@ struct ChainBuilder
 			       const TChain* chain)
   {
     if (!chain) return;
-    
+    TDirectory* savDir = gDirectory;
     TFile* out = TFile::Open(output, "RECREATE");
     
     TFileCollection* collection = new TFileCollection(chain->GetName());
@@ -377,10 +377,12 @@ struct ChainBuilder
     TFileInfoMeta* cMeta = new TFileInfoMeta(chain->GetName(), 
 					     "TTree", nEntries);
     collection->AddMetaData(cMeta);
+    out->cd();
     collection->Write();
     Printf("A total of %lld entries", nEntries);
     // collection->Print("MFL");
     out->Close();
+    savDir->cd();
   }
   //------------------------------------------------------------------
   /** 

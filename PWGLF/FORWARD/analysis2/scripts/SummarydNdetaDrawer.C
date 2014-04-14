@@ -187,13 +187,7 @@ protected:
     UShort_t cLow  = centAxis && !onlyMB ? centAxis->GetXmin() : 0;
     UShort_t cHigh = centAxis && !onlyMB ? centAxis->GetXmax() : 100;
 
-    TString savPath(gROOT->GetMacroPath());
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGLF/FORWARD/analysis2",
-			     gROOT->GetMacroPath()));
-    // Always recompile 
-    if (!gROOT->GetClass("RefData"))
-      gROOT->LoadMacro("OtherData.C++");
-    gROOT->SetMacroPath(savPath);
+    CompileScript("OtherData.C", "", "RefData", false);
 
     // If we have V0AND trigger, get NSD other data
     TMultiGraph* other = 0;

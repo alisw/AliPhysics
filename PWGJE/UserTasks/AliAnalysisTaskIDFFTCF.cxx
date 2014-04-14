@@ -186,6 +186,7 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF()
    ,fQATrackHistosRecEffGen(0)  
    ,fQATrackHistosRecEffRec(0)
    ,fQATrackHistosSecRec(0)   
+   ,fQATrackHistosSecRecSSc(0)   
    ,fQATrackHistosRecEffGenPi(0)  
    ,fQATrackHistosRecEffGenPro(0) 
    ,fQATrackHistosRecEffGenK(0)   
@@ -205,8 +206,16 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF()
    ,fQATrackHistosSecRecMu(0)  
    ,fQATrackHistosSecRecProGFL(0) 
    ,fQATrackHistosSecRecKGFL(0)
+   ,fQATrackHistosSecRecPiSSc(0)  
+   ,fQATrackHistosSecRecProSSc(0) 
+   ,fQATrackHistosSecRecKSSc(0)   
+   ,fQATrackHistosSecRecElSSc(0)  
+   ,fQATrackHistosSecRecMuSSc(0)  
+   ,fQATrackHistosSecRecProGFLSSc(0) 
+   ,fQATrackHistosSecRecKGFLSSc(0)
    ,fFFHistosRecEffRec(0)
    ,fFFHistosSecRec(0)
+   ,fFFHistosSecRecSSc(0)
    ,fFFHistosRecEffRecPi(0) 
    ,fFFHistosRecEffRecPro(0)
    ,fFFHistosRecEffRecK(0)  
@@ -221,6 +230,13 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF()
    ,fFFHistosSecRecMu(0) 
    ,fFFHistosSecRecProGFL(0)   
    ,fFFHistosSecRecKGFL(0)
+   ,fFFHistosSecRecPiSSc(0)    
+   ,fFFHistosSecRecProSSc(0)   
+   ,fFFHistosSecRecKSSc(0)     
+   ,fFFHistosSecRecElSSc(0)    
+   ,fFFHistosSecRecMuSSc(0) 
+   ,fFFHistosSecRecProGFLSSc(0)   
+   ,fFFHistosSecRecKGFLSSc(0)
    ,fRandom(0)
 {
    // default constructor
@@ -349,7 +365,8 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const char *name)
   ,fh2PtRecVsGenSec(0)
   ,fQATrackHistosRecEffGen(0)  
   ,fQATrackHistosRecEffRec(0)
-  ,fQATrackHistosSecRec(0) 
+  ,fQATrackHistosSecRec(0)
+  ,fQATrackHistosSecRecSSc(0)    
   ,fQATrackHistosRecEffGenPi(0)  
   ,fQATrackHistosRecEffGenPro(0) 
   ,fQATrackHistosRecEffGenK(0)   
@@ -369,8 +386,16 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const char *name)
   ,fQATrackHistosSecRecMu(0)
   ,fQATrackHistosSecRecProGFL(0) 
   ,fQATrackHistosSecRecKGFL(0)
+  ,fQATrackHistosSecRecPiSSc(0)  
+  ,fQATrackHistosSecRecProSSc(0) 
+  ,fQATrackHistosSecRecKSSc(0)   
+  ,fQATrackHistosSecRecElSSc(0)  
+  ,fQATrackHistosSecRecMuSSc(0)  
+  ,fQATrackHistosSecRecProGFLSSc(0) 
+  ,fQATrackHistosSecRecKGFLSSc(0)
   ,fFFHistosRecEffRec(0)
   ,fFFHistosSecRec(0)
+  ,fFFHistosSecRecSSc(0)
   ,fFFHistosRecEffRecPi(0) 
   ,fFFHistosRecEffRecPro(0)
   ,fFFHistosRecEffRecK(0)  
@@ -385,6 +410,13 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const char *name)
   ,fFFHistosSecRecMu(0)
   ,fFFHistosSecRecProGFL(0)   
   ,fFFHistosSecRecKGFL(0)  
+  ,fFFHistosSecRecPiSSc(0)    
+  ,fFFHistosSecRecProSSc(0)   
+  ,fFFHistosSecRecKSSc(0)     
+  ,fFFHistosSecRecElSSc(0)    
+  ,fFFHistosSecRecMuSSc(0) 
+  ,fFFHistosSecRecProGFLSSc(0)   
+  ,fFFHistosSecRecKGFLSSc(0)
   ,fRandom(0)
 {
   // constructor
@@ -521,7 +553,8 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const  AliAnalysisTaskIDFFTCF &co
   ,fh2PtRecVsGenSec(copy.fh2PtRecVsGenSec)
   ,fQATrackHistosRecEffGen(copy.fQATrackHistosRecEffGen)  
   ,fQATrackHistosRecEffRec(copy.fQATrackHistosRecEffRec)  
-  ,fQATrackHistosSecRec(copy.fQATrackHistosSecRec)  
+  ,fQATrackHistosSecRec(copy.fQATrackHistosSecRec)
+  ,fQATrackHistosSecRecSSc(copy.fQATrackHistosSecRecSSc)   
   ,fQATrackHistosRecEffGenPi(copy.fQATrackHistosRecEffGenPi)  
   ,fQATrackHistosRecEffGenPro(copy.fQATrackHistosRecEffGenPro) 
   ,fQATrackHistosRecEffGenK(copy.fQATrackHistosRecEffGenK)
@@ -541,8 +574,16 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const  AliAnalysisTaskIDFFTCF &co
   ,fQATrackHistosSecRecMu(copy.fQATrackHistosSecRecMu) 
   ,fQATrackHistosSecRecProGFL(copy.fQATrackHistosSecRecProGFL) 
   ,fQATrackHistosSecRecKGFL(copy.fQATrackHistosSecRecKGFL)
+  ,fQATrackHistosSecRecPiSSc(copy.fQATrackHistosSecRecPiSSc)      
+  ,fQATrackHistosSecRecProSSc(copy.fQATrackHistosSecRecProSSc)   
+  ,fQATrackHistosSecRecKSSc(copy.fQATrackHistosSecRecKSSc) 
+  ,fQATrackHistosSecRecElSSc(copy.fQATrackHistosSecRecElSSc)     
+  ,fQATrackHistosSecRecMuSSc(copy.fQATrackHistosSecRecMuSSc)    
+  ,fQATrackHistosSecRecProGFLSSc(copy.fQATrackHistosSecRecProGFLSSc) 
+  ,fQATrackHistosSecRecKGFLSSc(copy.fQATrackHistosSecRecKGFLSSc)
   ,fFFHistosRecEffRec(copy.fFFHistosRecEffRec)  
   ,fFFHistosSecRec(copy.fFFHistosSecRec)   
+  ,fFFHistosSecRecSSc(copy.fFFHistosSecRecSSc)   
   ,fFFHistosRecEffRecPi(copy.fFFHistosRecEffRecPi)  
   ,fFFHistosRecEffRecPro(copy.fFFHistosRecEffRecPro)
   ,fFFHistosRecEffRecK(copy.fFFHistosRecEffRecK)  
@@ -557,6 +598,13 @@ AliAnalysisTaskIDFFTCF::AliAnalysisTaskIDFFTCF(const  AliAnalysisTaskIDFFTCF &co
   ,fFFHistosSecRecMu(copy.fFFHistosSecRecMu)
   ,fFFHistosSecRecProGFL(copy.fFFHistosSecRecProGFL)   
   ,fFFHistosSecRecKGFL(copy.fFFHistosSecRecKGFL)  
+  ,fFFHistosSecRecPiSSc(copy.fFFHistosSecRecPiSSc)
+  ,fFFHistosSecRecProSSc(copy.fFFHistosSecRecProSSc)   
+  ,fFFHistosSecRecKSSc(copy.fFFHistosSecRecKSSc)
+  ,fFFHistosSecRecElSSc(copy.fFFHistosSecRecElSSc) 
+  ,fFFHistosSecRecMuSSc(copy.fFFHistosSecRecMuSSc)
+  ,fFFHistosSecRecProGFLSSc(copy.fFFHistosSecRecProGFLSSc)
+  ,fFFHistosSecRecKGFLSSc(copy.fFFHistosSecRecKGFLSSc)
   ,fRandom(copy.fRandom)
 {
   // copy constructor
@@ -691,6 +739,7 @@ AliAnalysisTaskIDFFTCF& AliAnalysisTaskIDFFTCF::operator=(const AliAnalysisTaskI
     fQATrackHistosRecEffGen        = o.fQATrackHistosRecEffGen;  
     fQATrackHistosRecEffRec        = o.fQATrackHistosRecEffRec;  
     fQATrackHistosSecRec           = o.fQATrackHistosSecRec;  
+    fQATrackHistosSecRecSSc        = o.fQATrackHistosSecRecSSc;
     fQATrackHistosRecEffGenPi      = o.fQATrackHistosRecEffGenPi;  
     fQATrackHistosRecEffGenPro     = o.fQATrackHistosRecEffGenPro; 
     fQATrackHistosRecEffGenK       = o.fQATrackHistosRecEffGenK;
@@ -710,8 +759,16 @@ AliAnalysisTaskIDFFTCF& AliAnalysisTaskIDFFTCF::operator=(const AliAnalysisTaskI
     fQATrackHistosSecRecMu         = o.fQATrackHistosSecRecMu; 
     fQATrackHistosSecRecProGFL     = o.fQATrackHistosSecRecProGFL;
     fQATrackHistosSecRecKGFL       = o.fQATrackHistosSecRecKGFL;
+    fQATrackHistosSecRecPiSSc      = o.fQATrackHistosSecRecPiSSc;      
+    fQATrackHistosSecRecProSSc     = o.fQATrackHistosSecRecProSSc;   
+    fQATrackHistosSecRecKSSc       = o.fQATrackHistosSecRecKSSc;    
+    fQATrackHistosSecRecElSSc      = o.fQATrackHistosSecRecElSSc;     
+    fQATrackHistosSecRecMuSSc      = o.fQATrackHistosSecRecMuSSc;    
+    fQATrackHistosSecRecProGFLSSc  = o.fQATrackHistosSecRecProGFLSSc; 
+    fQATrackHistosSecRecKGFLSSc    = o.fQATrackHistosSecRecKGFLSSc;
     fFFHistosRecEffRec             = o.fFFHistosRecEffRec;  
     fFFHistosSecRec                = o.fFFHistosSecRec;   
+    fFFHistosSecRecSSc             = o.fFFHistosSecRecSSc;
     fFFHistosRecEffRecPi           = o.fFFHistosRecEffRecPi;  
     fFFHistosRecEffRecPro          = o.fFFHistosRecEffRecPro;
     fFFHistosRecEffRecK            = o.fFFHistosRecEffRecK;  
@@ -726,6 +783,13 @@ AliAnalysisTaskIDFFTCF& AliAnalysisTaskIDFFTCF::operator=(const AliAnalysisTaskI
     fFFHistosSecRecMu              = o.fFFHistosSecRecMu;    
     fFFHistosSecRecProGFL          = o.fFFHistosSecRecProGFL;   
     fFFHistosSecRecKGFL            = o.fFFHistosSecRecKGFL;  
+    fFFHistosSecRecPiSSc           = o.fFFHistosSecRecPiSSc;
+    fFFHistosSecRecProSSc          = o.fFFHistosSecRecProSSc;   
+    fFFHistosSecRecKSSc            = o.fFFHistosSecRecKSSc;
+    fFFHistosSecRecElSSc           = o.fFFHistosSecRecElSSc; 
+    fFFHistosSecRecMuSSc           = o.fFFHistosSecRecMuSSc;
+    fFFHistosSecRecProGFLSSc       = o.fFFHistosSecRecProGFLSSc;
+    fFFHistosSecRecKGFLSSc         = o.fFFHistosSecRecKGFLSSc;
     fRandom                        = o.fRandom;
   }
   
@@ -773,6 +837,8 @@ AliAnalysisTaskIDFFTCF::AliFragFuncHistos::AliFragFuncHistos(const char* name,
   ,fh2Xi(0)
   ,fh2Z(0)
   ,fh1JetPt(0)
+  ,fh3TrackPtVsEta(0)
+  ,fh3TrackPVsEta(0)
   ,fNameFF(name)
 {
   // default constructor
@@ -798,6 +864,8 @@ AliAnalysisTaskIDFFTCF::AliFragFuncHistos::AliFragFuncHistos(const AliFragFuncHi
   ,fh2Xi(copy.fh2Xi)
   ,fh2Z(copy.fh2Z)
   ,fh1JetPt(copy.fh1JetPt)
+  ,fh3TrackPtVsEta(copy.fh3TrackPtVsEta) 
+  ,fh3TrackPVsEta(copy.fh3TrackPVsEta) 
   ,fNameFF(copy.fNameFF)
 {
   // copy constructor
@@ -810,23 +878,25 @@ AliAnalysisTaskIDFFTCF::AliFragFuncHistos& AliAnalysisTaskIDFFTCF::AliFragFuncHi
   
   if(this!=&o){
     TObject::operator=(o);
-    fNBinsJetPt = o.fNBinsJetPt;
-    fJetPtMin   = o.fJetPtMin;
-    fJetPtMax   = o.fJetPtMax;
-    fNBinsPt    = o.fNBinsPt; 
-    fPtMin      = o.fPtMin;   
-    fPtMax      = o.fPtMax;   
-    fNBinsXi    = o.fNBinsXi; 
-    fXiMin      = o.fXiMin;   
-    fXiMax      = o.fXiMax;   
-    fNBinsZ     = o.fNBinsZ;  
-    fZMin       = o.fZMin;    
-    fZMax       = o.fZMax;    
-    fh2TrackPt  = o.fh2TrackPt;
-    fh2Xi       = o.fh2Xi;
-    fh2Z        = o.fh2Z;
-    fh1JetPt    = o.fh1JetPt;
-    fNameFF     = o.fNameFF;
+    fNBinsJetPt     = o.fNBinsJetPt;
+    fJetPtMin       = o.fJetPtMin;
+    fJetPtMax       = o.fJetPtMax;
+    fNBinsPt        = o.fNBinsPt; 
+    fPtMin          = o.fPtMin;   
+    fPtMax          = o.fPtMax;   
+    fNBinsXi        = o.fNBinsXi; 
+    fXiMin          = o.fXiMin;   
+    fXiMax          = o.fXiMax;   
+    fNBinsZ         = o.fNBinsZ;  
+    fZMin           = o.fZMin;    
+    fZMax           = o.fZMax;    
+    fh2TrackPt      = o.fh2TrackPt;
+    fh2Xi           = o.fh2Xi;
+    fh2Z            = o.fh2Z;
+    fh1JetPt        = o.fh1JetPt;
+    fh3TrackPtVsEta = o.fh3TrackPtVsEta;
+    fh3TrackPVsEta  = o.fh3TrackPVsEta;
+    fNameFF         = o.fNameFF;
   }
     
   return *this;
@@ -837,10 +907,13 @@ AliAnalysisTaskIDFFTCF::AliFragFuncHistos::~AliFragFuncHistos()
 {
   // destructor 
 
-  if(fh1JetPt)   delete fh1JetPt;
   if(fh2TrackPt) delete fh2TrackPt;
   if(fh2Xi)      delete fh2Xi;
   if(fh2Z)       delete fh2Z;
+  if(fh1JetPt)   delete fh1JetPt;
+  
+  if(fh3TrackPtVsEta) delete fh3TrackPtVsEta; 
+  if(fh3TrackPVsEta)  delete fh3TrackPVsEta; 
 }
 
 //_________________________________________________________________
@@ -853,15 +926,25 @@ void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::DefineHistos()
   fh2Z       = new TH2F(Form("fh2FFZ%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsZ, fZMin, fZMax);
   fh2Xi      = new TH2F(Form("fh2FFXi%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax, fNBinsXi, fXiMin, fXiMax);
 
+  fh3TrackPtVsEta = new TH3F(Form("fh3FFTrackPtVsEta%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,
+			     20,-1,1,fNBinsPt, fPtMin, fPtMax);
+
+  fh3TrackPVsEta  = new TH3F(Form("fh3FFTrackPVsEta%s",fNameFF.Data()),"",fNBinsJetPt, fJetPtMin, fJetPtMax,
+			     20,-1,1,300, -1, 2); // Xianguo: fine log binning
+
+
   AliAnalysisTaskIDFFTCF::SetProperties(fh1JetPt, "p_{T} [GeV/c]", "entries"); 
   AliAnalysisTaskIDFFTCF::SetProperties(fh2TrackPt,"jet p_{T} [GeV/c]","p_{T} [GeV/c]","entries");
   AliAnalysisTaskIDFFTCF::SetProperties(fh2Xi,"jet p_{T} [GeV/c]","#xi", "entries");
   AliAnalysisTaskIDFFTCF::SetProperties(fh2Z,"jet p_{T} [GeV/c]","z","entries");
+
+  AliAnalysisTaskIDFFTCF::SetProperties(fh3TrackPtVsEta,"jet pt","eta","p_{T} [GeV/c]");
+  AliAnalysisTaskIDFFTCF::SetProperties(fh3TrackPVsEta,"jet pt","eta","p [GeV/c]");
 }
 
 //_______________________________________________________________________________________________________________
-void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t jetPt, Bool_t incrementJetPt, Float_t norm, 
-									Bool_t scaleStrangeness, Float_t scaleFacStrangeness)
+void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t trackEta, Float_t jetPt, Bool_t incrementJetPt, 
+						       Float_t norm, Bool_t scaleStrangeness, Float_t scaleFacStrangeness)
 {
 
   // fill FF
@@ -873,10 +956,25 @@ void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t 
   // when zero track are found in the background region
   if((int)trackPt==-1) return;
  
-  if(norm)fh2TrackPt->Fill(jetPt,trackPt,1/norm);
-  else if(scaleStrangeness) fh2TrackPt->Fill(jetPt,trackPt,scaleFacStrangeness);
-  else fh2TrackPt->Fill(jetPt,trackPt);
- 
+  const Double_t tracklogPt  = TMath::Log10(trackPt);
+
+  Double_t theta     = 2*TMath::ATan(TMath::Exp(-1*trackEta));
+  Double_t trackP    = trackPt / TMath::Sin(theta);
+  Double_t tracklogP = TMath::Log10(trackP);
+
+  if(norm)fh2TrackPt->Fill(jetPt,tracklogPt,1/norm);
+  else if(scaleStrangeness) fh2TrackPt->Fill(jetPt,tracklogPt,scaleFacStrangeness);
+  else fh2TrackPt->Fill(jetPt,tracklogPt);
+
+  if(norm) fh3TrackPtVsEta->Fill(jetPt,trackEta,tracklogPt,1/norm);
+  else if(scaleStrangeness) fh3TrackPtVsEta->Fill(jetPt,trackEta,tracklogPt,scaleFacStrangeness);
+  else fh3TrackPtVsEta->Fill(jetPt,trackEta,tracklogPt);
+
+  if(norm) fh3TrackPVsEta->Fill(jetPt,trackEta,tracklogP,1/norm);
+  else if(scaleStrangeness) fh3TrackPVsEta->Fill(jetPt,trackEta,tracklogP,scaleFacStrangeness);
+  else fh3TrackPVsEta->Fill(jetPt,trackEta,tracklogP);
+
+
   Double_t z = 0.;
   if(jetPt>0) z = trackPt / jetPt;
   Double_t xi = 0;
@@ -886,7 +984,6 @@ void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::FillFF(Float_t trackPt, Float_t 
     z  = 1-1e-06;
     xi = 1e-06;
   }
-
 
   if(norm){
     fh2Xi->Fill(jetPt,xi,1/norm);
@@ -912,6 +1009,9 @@ void AliAnalysisTaskIDFFTCF::AliFragFuncHistos::AddToOutput(TList* list) const
   list->Add(fh2TrackPt);
   list->Add(fh2Xi);
   list->Add(fh2Z);
+
+  list->Add(fh3TrackPtVsEta);
+  list->Add(fh3TrackPVsEta);
 }
 
 //_________________________________________________________________________________________________________
@@ -1304,7 +1404,7 @@ void AliAnalysisTaskIDFFTCF::UserCreateOutputObjects()
 
 
     fTHnIDFF  = AliIDFFUtils::GetTHn("THnIDFF");
-    fTHnIncl  = AliIDFFUtils::GetTHn("THnIncl");
+    fTHnIncl  = 0x0;//AliIDFFUtils::GetTHn("THnIncl");
   } // end: FF
   
   // efficiency
@@ -1332,7 +1432,7 @@ void AliAnalysisTaskIDFFTCF::UserCreateOutputObjects()
   
   if(fFFMode){
     fCommonHistList->Add(fTHnIDFF);
-    fCommonHistList->Add(fTHnIncl);
+    //fCommonHistList->Add(fTHnIncl);
   }
     
   Bool_t genJets    = (fJetTypeGen != kJetsUndef) ? kTRUE : kFALSE;
@@ -1389,6 +1489,7 @@ void AliAnalysisTaskIDFFTCF::UserCreateOutputObjects()
   if(fEffMode && recJetsEff && genTracks){
     if(fQAMode&1){
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRec,"RecEffRec",&fQATrackHistosRecEffGen,"RecEffGen",&fQATrackHistosSecRec,"SecRec");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecSSc,"SecRecSSc");
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecPi,"RecEffRec_piPlusPiMinus",&fQATrackHistosRecEffGenPi,"RecEffGen_piPlusPiMinus",&fQATrackHistosSecRecPi,"SecRec_piPlusPiMinus");
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecPro,"RecEffRec_ppbar",&fQATrackHistosRecEffGenPro,"RecEffGen_ppbar",&fQATrackHistosSecRecPro,"SecRec_ppbar");
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecK,"RecEffRec_kPlusKMinus",&fQATrackHistosRecEffGenK,"RecEffGen_kPlusKMinus",&fQATrackHistosSecRecK,"SecRec_kPlusKMinus");
@@ -1396,9 +1497,17 @@ void AliAnalysisTaskIDFFTCF::UserCreateOutputObjects()
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecMu,"RecEffRec_muPlusMuMinus",&fQATrackHistosRecEffGenMu,"RecEffGen_muPlusMuMinus",&fQATrackHistosSecRecMu,"SecRec_muPlusMuMinus");
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecProGFL,"RecEffRec_ppbarGFL",0,"",&fQATrackHistosSecRecProGFL,"SecRec_ppbarGFL");
       BookQAHistos(fCommonHistList,&fQATrackHistosRecEffRecKGFL,"RecEffRec_kPlusKMinusGFL",0,"",&fQATrackHistosSecRecKGFL,"SecRec_kPlusKMinusGFL");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecPiSSc ,"SecRec_piPlusPiMinusSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecProSSc,"SecRec_ppbarSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecKSSc,"SecRec_kPlusKMinusSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecElSSc,"SecRec_ePlusEMinusSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecMuSSc,"SecRec_muPlusMuMinusSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecProGFLSSc,"SecRec_ppbarGFLSSc");
+      BookQAHistos(fCommonHistList,0x0,"",0x0,"",&fQATrackHistosSecRecKGFLSSc,"SecRec_kPlusKMinusGFLSSc");
     }
     if(fFFMode){
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRec,"RecEffRec",0x0,"",&fFFHistosSecRec,"SecRec");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecSSc,"SecRecSSc");
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecPi,"RecEffRec_piPlusPiMinus",0x0,"",&fFFHistosSecRecPi,"SecRec_piPlusPiMinus");
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecPro,"RecEffRec_ppbar",0x0,"",&fFFHistosSecRecPro,"SecRec_ppbar");
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecK,"RecEffRec_kPlusKMinus",0x0,"",&fFFHistosSecRecK,"SecRec_kPlusKMinus");
@@ -1406,6 +1515,13 @@ void AliAnalysisTaskIDFFTCF::UserCreateOutputObjects()
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecMu,"RecEffRec_muPlusMuMinus",0x0,"",&fFFHistosSecRecMu,"SecRec_muPlusMuMinus");
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecProGFL,"RecEffRec_ppbarGFL",0x0,"",&fFFHistosSecRecProGFL,"SecRec_ppbarGFL");
       BookFFHistos(fCommonHistList,&fFFHistosRecEffRecKGFL,"RecEffRec_kPlusKMinusGFL",0x0,"",&fFFHistosSecRecKGFL,"SecRec_kPlusKMinusGFL");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecPiSSc,"SecRec_piPlusPiMinusSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecProSSc,"SecRec_ppbarSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecKSSc,"SecRec_kPlusKMinusSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecElSSc,"SecRec_ePlusEMinusSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecMuSSc,"SecRec_muPlusMuMinusSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecProGFLSSc,"SecRec_ppbarGFLSSc");
+      BookFFHistos(fCommonHistList,0x0,"",0x0,"",&fFFHistosSecRecKGFLSSc,"SecRec_kPlusKMinusGFLSSc");
     }
 
     fCommonHistList->Add(fh1nRecEffJets);
@@ -1695,7 +1811,7 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
         // fill inclusive tracks XXX, they have the same track cuts!
         AliAODTrack * inclusiveaod  = dynamic_cast<AliAODTrack*>(fTracksRecCuts->At(it));
         if(inclusiveaod){
-          AliIDFFUtils::FillTHn(fTHnIncl, -999, inclusiveaod, fAOD, fTOFCutMode);
+          //AliIDFFUtils::FillTHn(fTHnIncl, -999, inclusiveaod, fAOD, fTOFCutMode);
         }
 
       }      
@@ -1750,18 +1866,19 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	AliAODTrack * aodtrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
 	if(!aodtrack) continue;
 		
-	Float_t trackPt = trackVP->Pt();
+	Float_t trackPt  = trackVP->Pt();
+	Float_t trackEta = trackVP->Eta();
 	
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
 	if(fFFMode){
 	  
-	  fFFHistosRecCutsInc->FillFF(trackPt, jetPt, incrementJetPt); 
+	  fFFHistosRecCutsInc->FillFF(trackPt, trackEta, jetPt, incrementJetPt); 
 	    
 	  AliIDFFUtils::FillTHn(fTHnIDFF, jetPt, aodtrack, fAOD, fTOFCutMode);
 
 	  if(it==0){ // leading track, all jets 
-	    fFFHistosRecLeadingTrack->FillFF( trackPt, jetPt, kTRUE);
+	    fFFHistosRecLeadingTrack->FillFF( trackPt, trackEta, jetPt, kTRUE);
 	  }
 	} 
 
@@ -1802,21 +1919,22 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	if(isBadJet) continue; 
 	
 	Bool_t incrementJetPt = kTRUE; // there could be 0 tracks in jet: first fill jet pt histo once 
-	fFFHistosRecCutsIncPi->FillFF(-1, jetPt, incrementJetPt);
-	fFFHistosRecCutsIncPro->FillFF(-1, jetPt, incrementJetPt); 
-	fFFHistosRecCutsIncK->FillFF(-1, jetPt, incrementJetPt);   
-	fFFHistosRecCutsIncEl->FillFF(-1, jetPt, incrementJetPt);  
-	fFFHistosRecCutsIncMu->FillFF(-1, jetPt, incrementJetPt);   
+	fFFHistosRecCutsIncPi->FillFF(-1, -1, jetPt, incrementJetPt);
+	fFFHistosRecCutsIncPro->FillFF(-1,-1, jetPt, incrementJetPt); 
+	fFFHistosRecCutsIncK->FillFF(-1,  -1, jetPt, incrementJetPt);   
+	fFFHistosRecCutsIncEl->FillFF(-1, -1, jetPt, incrementJetPt);  
+	fFFHistosRecCutsIncMu->FillFF(-1, -1, jetPt, incrementJetPt);   
       
 	incrementJetPt = kFALSE; 
 
 	for(Int_t it=0; it<jettracklist->GetSize(); ++it){
-	  
+
 	  AliAODTrack * rectrack  = dynamic_cast<AliAODTrack*>(jettracklist->At(it));
 	  if(!rectrack) continue;
 
 	  Int_t label   = TMath::Abs(rectrack->GetLabel());
-	  Float_t recPt = rectrack->Pt();
+	  Float_t recPt  = rectrack->Pt();
+	  Float_t recEta = rectrack->Eta();
 	  
 	  // find MC track in our list
 	  AliAODMCParticle* gentrack = dynamic_cast<AliAODMCParticle*> (tca->At(label));
@@ -1826,11 +1944,11 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	  if(gentrack){
 	    Int_t mcpdg = TMath::Abs(gentrack->GetPdgCode());
 	    
-	    if(mcpdg == 211)  fFFHistosRecCutsIncPi->FillFF(recPt, jetPt, incrementJetPt);
-	    if(mcpdg == 2212) fFFHistosRecCutsIncPro->FillFF(recPt, jetPt, incrementJetPt);
-	    if(mcpdg == 321)  fFFHistosRecCutsIncK->FillFF(recPt, jetPt, incrementJetPt);
-	    if(mcpdg == 11)   fFFHistosRecCutsIncEl->FillFF(recPt, jetPt, incrementJetPt);
-	    if(mcpdg == 13)   fFFHistosRecCutsIncMu->FillFF(recPt, jetPt, incrementJetPt); 
+	    if(mcpdg == 211)  fFFHistosRecCutsIncPi->FillFF(recPt,  recEta, jetPt, incrementJetPt);
+	    if(mcpdg == 2212) fFFHistosRecCutsIncPro->FillFF(recPt, recEta, jetPt, incrementJetPt);
+	    if(mcpdg == 321)  fFFHistosRecCutsIncK->FillFF(recPt,   recEta, jetPt, incrementJetPt);
+	    if(mcpdg == 11)   fFFHistosRecCutsIncEl->FillFF(recPt,  recEta, jetPt, incrementJetPt);
+	    if(mcpdg == 13)   fFFHistosRecCutsIncMu->FillFF(recPt,  recEta, jetPt, incrementJetPt); 
 	  }
 	}
 	delete jettracklist;	
@@ -1868,12 +1986,12 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
       if(isBadJet) continue; 
 
       Bool_t incrementJetPt = kTRUE; // first fill jet pt histo once 
-      fFFHistosGenInc->FillFF(-1, jetPt, incrementJetPt);
-      fFFHistosGenIncPi->FillFF(-1, jetPt, incrementJetPt);
-      fFFHistosGenIncPro->FillFF(-1, jetPt, incrementJetPt); 
-      fFFHistosGenIncK->FillFF(-1, jetPt, incrementJetPt);   
-      fFFHistosGenIncEl->FillFF(-1, jetPt, incrementJetPt);  
-      fFFHistosGenIncMu->FillFF(-1, jetPt, incrementJetPt);   
+      fFFHistosGenInc->FillFF(-1,   -1, jetPt, incrementJetPt);
+      fFFHistosGenIncPi->FillFF(-1, -1, jetPt, incrementJetPt);
+      fFFHistosGenIncPro->FillFF(-1,-1, jetPt, incrementJetPt); 
+      fFFHistosGenIncK->FillFF(-1,  -1, jetPt, incrementJetPt);   
+      fFFHistosGenIncEl->FillFF(-1, -1, jetPt, incrementJetPt);  
+      fFFHistosGenIncMu->FillFF(-1, -1, jetPt, incrementJetPt);   
 
       incrementJetPt = kFALSE;
 
@@ -1881,12 +1999,13 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	
 	AliVParticle*   trackVP = dynamic_cast<AliVParticle*>(jettracklist->At(it));
 	if(!trackVP)continue;
-	
-	Float_t trackPt = trackVP->Pt();
+
+	Float_t trackPt  = trackVP->Pt();
+	Float_t trackEta = trackVP->Eta();
 	
 	if(fFFMode){
 
-	  fFFHistosGenInc->FillFF( trackPt, jetPt, incrementJetPt);
+	  fFFHistosGenInc->FillFF( trackPt, trackEta, jetPt, incrementJetPt);
 
 	  AliAODMCParticle* gentrack = dynamic_cast<AliAODMCParticle*>(trackVP);
 	  
@@ -1894,16 +2013,16 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	    
 	    Int_t mcpdg = TMath::Abs(gentrack->GetPdgCode());
 	    
-	    if(mcpdg == 211)  fFFHistosGenIncPi->FillFF(trackPt, jetPt, incrementJetPt);
-	    if(mcpdg == 2212) fFFHistosGenIncPro->FillFF(trackPt, jetPt, incrementJetPt);
-	    if(mcpdg == 321)  fFFHistosGenIncK->FillFF(trackPt, jetPt, incrementJetPt);
-	    if(mcpdg == 11)   fFFHistosGenIncEl->FillFF(trackPt, jetPt, incrementJetPt);
-	    if(mcpdg == 13)   fFFHistosGenIncMu->FillFF(trackPt, jetPt, incrementJetPt);
+	    if(mcpdg == 211)  fFFHistosGenIncPi->FillFF(trackPt, trackEta, jetPt, incrementJetPt);
+	    if(mcpdg == 2212) fFFHistosGenIncPro->FillFF(trackPt, trackEta, jetPt, incrementJetPt);
+	    if(mcpdg == 321)  fFFHistosGenIncK->FillFF(trackPt, trackEta, jetPt, incrementJetPt);
+	    if(mcpdg == 11)   fFFHistosGenIncEl->FillFF(trackPt, trackEta, jetPt, incrementJetPt);
+	    if(mcpdg == 13)   fFFHistosGenIncMu->FillFF(trackPt, trackEta, jetPt, incrementJetPt);
 	  }
 	}
 	
 	if(it==0){ // leading track, all jets 
-	  fFFHistosGenLeadingTrack->FillFF( trackPt, jetPt, kTRUE );	  
+	  fFFHistosGenLeadingTrack->FillFF( trackPt, trackEta, jetPt, kTRUE);	  
 	}
       	
       } // track loop 
@@ -1956,6 +2075,7 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 
     // secondaries
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRec,fTracksAODMCChargedSec,indexAODTrSec,isGenSec);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,0,kFALSE,kTRUE);
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecPi,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,211);
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecPro,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,2212);
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecK,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,321);
@@ -1963,8 +2083,15 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecMu,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,13);
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecProGFL,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,2212,kTRUE);
     if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecKGFL,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,321,kTRUE);
- 
 
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecPiSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,211,kFALSE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecProSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,2212,kFALSE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecKSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,321,kFALSE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecElSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,11,kFALSE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecMuSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,13,kFALSE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecProGFLSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,2212,kTRUE,kTRUE);
+    if(fQAMode&1) FillSingleTrackHistosRecGen(0x0,fQATrackHistosSecRecKGFLSSc,fTracksAODMCChargedSec,indexAODTrSec,isGenSec,321,kTRUE,kTRUE);
+ 
     // jet track eff    
     Double_t sumPtGenLeadingJetRecEff = 0;
     Double_t sumPtGenLeadingJetSec    = 0;
@@ -2047,6 +2174,9 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRec,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0);
 	  else                FillJetTrackHistosRec(fFFHistosSecRec,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec);
 
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,0,kFALSE,kTRUE);
+	  else                FillJetTrackHistosRec(fFFHistosSecRecSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,kFALSE,kTRUE);
+
 	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecPi,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,211);
 	  else                FillJetTrackHistosRec(fFFHistosSecRecPi,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,211);
 
@@ -2067,6 +2197,31 @@ void AliAnalysisTaskIDFFTCF::UserExec(Option_t *)
 
 	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecKGFL,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,321,kTRUE); 
 	  else                FillJetTrackHistosRec(fFFHistosSecRecKGFL,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,321,kTRUE); 
+
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecPiSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,211,kFALSE,kTRUE);
+	  else                FillJetTrackHistosRec(fFFHistosSecRecPiSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,211,kFALSE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecProSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,2212,kFALSE,kTRUE); 
+	  else                FillJetTrackHistosRec(fFFHistosSecRecProSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,2212,kFALSE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecKSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,321,kFALSE,kTRUE); 
+	  else                FillJetTrackHistosRec(fFFHistosSecRecKSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,321,kFALSE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecElSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,11,kFALSE,kTRUE); 
+	  else                FillJetTrackHistosRec(fFFHistosSecRecElSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,11,kFALSE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecMuSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,13,kFALSE,kTRUE);
+	  else                FillJetTrackHistosRec(fFFHistosSecRecMuSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,13,kFALSE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecProGFLSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,2212,kTRUE,kTRUE); 
+	  else                FillJetTrackHistosRec(fFFHistosSecRecProGFLSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,2212,kTRUE,kTRUE);
+
+	  if(GetFFRadius()>0) FillJetTrackHistosRec(fFFHistosSecRecKGFLSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts, indexAODTrSec,isGenSec,0,321,kTRUE,kTRUE); 
+	  else                FillJetTrackHistosRec(fFFHistosSecRecKGFLSSc,jet,jettracklistGenSec,fTracksAODMCChargedSec,fTracksRecQualityCuts,indexAODTrSec,isGenSec,jettracklistRec,321,kTRUE,kTRUE); 
+
+
+
 	}
 	
 	delete jettracklistGenPrim;
@@ -2377,7 +2532,7 @@ Int_t AliAnalysisTaskIDFFTCF::GetListOfJets(TList *list, Int_t type)
 }
 
 // _________________________________________________________________________________________________________
-void AliAnalysisTaskIDFFTCF::SetProperties(THnSparse* h, Int_t dim, const char** labels)
+void AliAnalysisTaskIDFFTCF::SetProperties(THnSparse* h,const Int_t dim, const char** labels)
 {
   // Set properties of THnSparse 
 
@@ -2413,7 +2568,7 @@ void AliAnalysisTaskIDFFTCF::SetProperties(TH1* h,const char* x, const char* y, 
 
 // ________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFFTCF::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
-						  Double_t radius, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
+						  const Double_t radius, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -2454,7 +2609,7 @@ void AliAnalysisTaskIDFFTCF::GetJetTracksPointing(TList* inputlist, TList* outpu
 }
 
 // _________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskIDFFTCF::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt)
+void AliAnalysisTaskIDFFTCF::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
 {
   // list of jet tracks from trackrefs
   
@@ -2560,10 +2715,11 @@ void  AliAnalysisTaskIDFFTCF::AssociateGenRec(TList* tracksAODMCCharged,TList* t
 
 // _____________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskIDFFTCF::FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-							 const TArrayI& indexAODTr, const TArrayS& isRefGen, Int_t pdg, Bool_t scaleGFL){
+							 const TArrayI& indexAODTr, const TArrayS& isRefGen, const Int_t pdg, const Bool_t scaleGFL, 
+                                                         const Bool_t scaleStrangeness){
 
   // fill QA for single track reconstruction efficiency
-  
+
   Int_t nTracksGen  = tracksGen->GetSize();
 
   if(!nTracksGen) return;
@@ -2591,15 +2747,22 @@ void AliAnalysisTaskIDFFTCF::FillSingleTrackHistosRecGen(AliFragFuncQATrackHisto
 
     if(iRec>=0 && trackQARec){
 
-      if(scaleGFL){ 
+      if(scaleGFL || scaleStrangeness){ 
 	
-	Double_t GFLcorr = 1; 
-  	if(gentrack->GetPdgCode() == -2212)      GFLcorr = TrackingPtGeantFlukaCorrectionPrMinus(ptGen);  
-  	else if(gentrack->GetPdgCode() == -321)  GFLcorr = TrackingPtGeantFlukaCorrectionKaMinus(ptGen);  
-
 	Double_t weight = 1;
-	if(GFLcorr > 0) weight = 1/GFLcorr;
 	
+	if(scaleGFL){
+	  Double_t GFLcorr = 1; 
+	  if(gentrack->GetPdgCode() == -2212)      GFLcorr = TrackingPtGeantFlukaCorrectionPrMinus(ptGen);  
+	  else if(gentrack->GetPdgCode() == -321)  GFLcorr = TrackingPtGeantFlukaCorrectionKaMinus(ptGen);  
+	  
+	  if(GFLcorr > 0) weight *= 1/GFLcorr;
+	}	
+	if(scaleStrangeness){
+	  Double_t strCorr = GetMCStrangenessFactorCMS(gentrack);	  
+	  weight *= strCorr;
+	}
+
 	trackQARec->FillTrackQA(etaGen, phiGen, ptGen, kFALSE, 0, kTRUE, weight);
       }
       else trackQARec->FillTrackQA(etaGen, phiGen, ptGen);
@@ -2611,7 +2774,8 @@ void AliAnalysisTaskIDFFTCF::FillSingleTrackHistosRecGen(AliFragFuncQATrackHisto
 
 void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec, AliAODJet* jet, 
 						    TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-						    const TArrayS& isRefGen, TList* jetTrackListTR, Int_t pdg, Bool_t scaleGFL)
+						    const TArrayS& isRefGen, TList* jetTrackListTR, const Int_t pdg, 
+						    const Bool_t scaleGFL, const Bool_t scaleStrangeness)
 {
   // fill objects for jet track reconstruction efficiency or secondaries contamination 
   // arguments histGen/histRec can be of different type: AliFragFuncHistos*, AliFragFuncIntraJetHistos*, ...
@@ -2620,7 +2784,9 @@ void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec
 
   // ensure proper normalization, even for secondaries
   Double_t jetPtRec = jet->Pt();
-  ffhistRec->FillFF(-1, jetPtRec, kTRUE);
+  //TVector3 jet3Mom = (jet->MomentumVector())->Vect();
+
+  ffhistRec->FillFF(-1, -1, jetPtRec, kTRUE);
 
   Int_t nTracksJet = jetTrackList->GetSize(); // list with AODMC tracks
   if(nTracksJet == 0) return; 
@@ -2653,7 +2819,8 @@ void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec
     if(pdg && TMath::Abs(gentrack->GetPdgCode()) != pdg) continue;  
 
 
-    Double_t ptRec = -1;	
+    Double_t ptRec  = -1;	
+    Double_t etaRec = -1;	
 
     Int_t iRec   = indexAODTr[iGen]; // can be -1 if no good reconstructed track 
     Bool_t isRec = (iRec>=0) ? kTRUE : kFALSE; 
@@ -2666,8 +2833,9 @@ void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec
       AliAODTrack* rectrack = dynamic_cast<AliAODTrack*> (tracksRec->At(iRec));
       if(!rectrack) continue;
 
-      ptRec = rectrack->Pt();	
-      
+      ptRec  = rectrack->Pt();	
+      etaRec = rectrack->Eta();	
+     
       if(jetTrackListTR){ 
         Int_t iRecTR = jetTrackListTR->IndexOf(rectrack); 
         if(iRecTR >=0 ) isJetTrack = kTRUE; // rec tracks assigned to jet 
@@ -2675,26 +2843,29 @@ void  AliAnalysisTaskIDFFTCF::FillJetTrackHistosRec(AliFragFuncHistos* ffhistRec
     
       if(isJetTrack){
 	
-	Double_t trackPt = ptRec;
+ 	Double_t trackPt  = ptRec;
+ 	Double_t trackEta = etaRec;
 	Bool_t incrementJetPt = kFALSE; 
 	
-	if(scaleGFL){
-	
-	  //Double_t weight = 1; 
-	  //if(gentrack->GetPdgCode() == -2212)      weight = TrackingPtGeantFlukaCorrectionPrMinus(ptGen);  
-	  //else if(gentrack->GetPdgCode() == -321)  weight = TrackingPtGeantFlukaCorrectionKaMinus(ptGen);  
-	  //else                                     weight = 1; 
-	  
-	  Double_t GFLcorr = 1; 
-	  if(gentrack->GetPdgCode() == -2212)      GFLcorr = TrackingPtGeantFlukaCorrectionPrMinus(ptGen);  
-	  else if(gentrack->GetPdgCode() == -321)  GFLcorr = TrackingPtGeantFlukaCorrectionKaMinus(ptGen);  
+	if(scaleGFL || scaleStrangeness){
 
 	  Double_t weight = 1;
-	  if(GFLcorr > 0) weight = 1/GFLcorr;
 
-	  ffhistRec->FillFF( trackPt, jetPtRec, incrementJetPt, 0, kTRUE, weight );
+	  if(scaleGFL){
+	    Double_t GFLcorr = 1; 
+	    if(gentrack->GetPdgCode() == -2212)      GFLcorr = TrackingPtGeantFlukaCorrectionPrMinus(ptGen);  
+	    else if(gentrack->GetPdgCode() == -321)  GFLcorr = TrackingPtGeantFlukaCorrectionKaMinus(ptGen);  
+
+	    if(GFLcorr > 0) weight *= 1/GFLcorr;
+	  }
+	  if(scaleStrangeness){
+	    Double_t strCorr = GetMCStrangenessFactorCMS(gentrack);	  
+	    weight *= strCorr;
+	  }
+
+	  ffhistRec->FillFF( trackPt, trackEta, jetPtRec, incrementJetPt, 0, kTRUE, weight );
 	}
-	else  ffhistRec->FillFF( trackPt, jetPtRec, incrementJetPt );
+	else  ffhistRec->FillFF( trackPt, trackEta, jetPtRec, incrementJetPt);
 	
 	listRecTracks->Add(rectrack);	
       }
@@ -2809,7 +2980,7 @@ void AliAnalysisTaskIDFFTCF::BookFFHistos(TList* list, AliFragFuncHistos** rec, 
 }
 
 //____________________________________________________________________________________
-Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc)
+Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(const Double_t pTmc)
 {
   // GEANT-FLUKA correction for pbar from Roberto via Benjamin
 
@@ -2818,11 +2989,153 @@ Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionPrMinus(Double_t
 }
 
 //____________________________________________________________________________________
-Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc)
+Double_t  AliAnalysisTaskIDFFTCF::TrackingPtGeantFlukaCorrectionKaMinus(const Double_t pTmc)
 {
 
   // GEANT-FLUKA correction for K- from Roberto via Benjamin
 
   Double_t corr = TMath::Min((0.972865 + 0.0117093 * pTmc), 1.);
   return corr; 
+}
+
+//__________________________________________________________________________________________________
+Double_t AliAnalysisTaskIDFFTCF::GetMCStrangenessFactorCMS(AliAODMCParticle* daughter)
+{
+  // strangeness ratio MC/data as function of mother pt from CMS data in |eta|<2.0
+
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca) return 1;
+
+  AliAODMCParticle* currentMother   = daughter;
+  AliAODMCParticle* currentDaughter = daughter;
+
+
+  // find first primary mother K0s, Lambda or Xi   
+  while(1){
+
+    Int_t daughterPDG   = currentDaughter->GetPdgCode();	
+
+    Int_t motherLabel   = currentDaughter->GetMother();
+    if(motherLabel >= tca->GetEntriesFast()){ // protection
+      currentMother = currentDaughter; 
+      break; 
+    }
+
+    currentMother     = (AliAODMCParticle*) tca->At(motherLabel);
+
+    if(!currentMother){ 
+      currentMother = currentDaughter; 
+      break; 
+    }
+
+    Int_t motherPDG   = currentMother->GetPdgCode();	
+ 
+    // phys. primary found ?  	
+    if(currentMother->IsPhysicalPrimary()) break; 
+
+    if(TMath::Abs(daughterPDG) == 321){ // K+/K- e.g. from phi (ref data not feeddown corrected)
+      currentMother = currentDaughter; break; 
+    }	 	
+    if(TMath::Abs(motherPDG) == 310 ){ // K0s e.g. from phi (ref data not feeddown corrected)
+      break; 
+    } 	
+    if(TMath::Abs(motherPDG) == 3212 && TMath::Abs(daughterPDG) == 3122){ // mother Sigma0, daughter Lambda (this case not included in feeddown corr.)
+      currentMother = currentDaughter; break; 
+    }
+
+    currentDaughter = currentMother;
+  }
+
+
+  Int_t motherPDG   = currentMother->GetPdgCode();	
+  Double_t motherPt = currentMother->Pt();	
+
+  Double_t fac = 1;
+
+  if(TMath::Abs(motherPDG) == 310 || TMath::Abs(motherPDG)==321){ // K0s / K+ / K-
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.768049;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.732933;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.650298;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.571332;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.518734;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.492543;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.482704;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.488056;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.488861;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.492862;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.504332;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.501858;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.512970;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.524131;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.539130;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.554101;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.560348;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.568869;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.583310;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.604818;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.632630;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.710070;
+    else if(6.00 <= motherPt && motherPt < 8.00) fac = 0.736365;
+    else if(8.00 <= motherPt && motherPt < 10.00) fac = 0.835865;
+  }
+
+  if(TMath::Abs(motherPDG) == 3122){ // Lambda
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.645162;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.627431;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.457136;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.384369;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.330597;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.309571;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.293620;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.283709;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.282047;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.277261;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.275772;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.280726;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.288540;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.288315;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.296619;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.302993;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.338121;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.349800;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.356802;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.391202;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.422573;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.573815;
+    else if(6.00 <= motherPt && motherPt < 8.00) fac = 0.786984;
+    else if(8.00 <= motherPt && motherPt < 10.00) fac = 1.020021;
+  }	
+  
+  if(TMath::Abs(motherPDG) == 3312 || TMath::Abs(motherPDG) == 3322){ // xi 
+
+    if(0.00 <= motherPt && motherPt < 0.20) fac = 0.666620;
+    else if(0.20 <= motherPt && motherPt < 0.40) fac = 0.575908;
+    else if(0.40 <= motherPt && motherPt < 0.60) fac = 0.433198;
+    else if(0.60 <= motherPt && motherPt < 0.80) fac = 0.340901;
+    else if(0.80 <= motherPt && motherPt < 1.00) fac = 0.290896;
+    else if(1.00 <= motherPt && motherPt < 1.20) fac = 0.236074;
+    else if(1.20 <= motherPt && motherPt < 1.40) fac = 0.218681;
+    else if(1.40 <= motherPt && motherPt < 1.60) fac = 0.207763;
+    else if(1.60 <= motherPt && motherPt < 1.80) fac = 0.222848;
+    else if(1.80 <= motherPt && motherPt < 2.00) fac = 0.208806;
+    else if(2.00 <= motherPt && motherPt < 2.20) fac = 0.197275;
+    else if(2.20 <= motherPt && motherPt < 2.40) fac = 0.183645;
+    else if(2.40 <= motherPt && motherPt < 2.60) fac = 0.188788;
+    else if(2.60 <= motherPt && motherPt < 2.80) fac = 0.188282;
+    else if(2.80 <= motherPt && motherPt < 3.00) fac = 0.207442;
+    else if(3.00 <= motherPt && motherPt < 3.20) fac = 0.240388;
+    else if(3.20 <= motherPt && motherPt < 3.40) fac = 0.241916;
+    else if(3.40 <= motherPt && motherPt < 3.60) fac = 0.208276;
+    else if(3.60 <= motherPt && motherPt < 3.80) fac = 0.234550;
+    else if(3.80 <= motherPt && motherPt < 4.00) fac = 0.251689;
+    else if(4.00 <= motherPt && motherPt < 5.00) fac = 0.310204;
+    else if(5.00 <= motherPt && motherPt < 6.00) fac = 0.343492;  
+  }
+  
+  Double_t weight = 1;
+  if(fac > 0) weight = 1/fac;
+	
+  return weight;
 }

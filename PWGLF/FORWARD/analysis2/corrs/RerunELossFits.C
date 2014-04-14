@@ -80,6 +80,7 @@ TCollection* GetCollection(const TCollection* parent, const TString& name)
  */
 void RerunELossFits(Bool_t forceSet=false, 
 		    const TString& input="forward_eloss.root", 
+		    Bool_t shift=true,
 		    const TString& output="")
 {
   const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
@@ -92,7 +93,7 @@ void RerunELossFits(Bool_t forceSet=false,
     outName = input;
     outName.ReplaceAll(".root", "_rerun.root");
   }
-
+  Bool_t  allOk = false;
   try {
     // --- Open input file ---------------------------------------------
     inFile = TFile::Open(input, "READ");
@@ -100,10 +101,10 @@ void RerunELossFits(Bool_t forceSet=false,
       throw TString::Format("Failed to open %s", input.Data());
 
     // --- InFiled input collections --------------------------------------
-    TCollection* inFwdSum = GetCollection(inFile, "Forward");
+    TCollection* inFwdSum = GetCollection(inFile, "ForwardELossSums");
     if (!inFwdSum) throw TString("Cannot proceed without sums");
 
-    TCollection* inFwdRes = GetCollection(inFile, "ForwardResults");
+    TCollection* inFwdRes = GetCollection(inFile, "ForwardELossResults");
     if (!inFwdRes) throw TString("Cannot proceed with merged list");
 
     TCollection* inEFSum = GetCollection(inFwdRes, "fmdEnergyFitter");
@@ -120,11 +121,15 @@ void RerunELossFits(Bool_t forceSet=false,
     // --- Write copy of sum collection to output --------------------
     TCollection* outFwdSum = static_cast<TCollection*>(inFwdSum->Clone());
     outFile->cd();
-    outFwdSum->Write("Forward", TObject::kSingleKey);
+    outFwdSum->Write(inFwdSum->GetName(), TObject::kSingleKey);
     
     // --- Make our fitter object ------------------------------------
     AliFMDEnergyFitter* fitter = new AliFMDEnergyFitter("energy");
+    fitter->SetDoFits(true);
+    fitter->SetEnableDeltaShift(shift);
+    fitter->Init();
     if (forceSet || !fitter->ReadParameters(inEFSum)) {
+      Printf("Forced settings");
 
       const TAxis* etaAxis = static_cast<TAxis*>(GetObject(inEFSum,"etaAxis"));
       if (!etaAxis) throw TString("Cannot proceed without eta axis");
@@ -153,9 +158,9 @@ void RerunELossFits(Bool_t forceSet=false,
       // fitter->SetMaxChi2PerNDF(10);
       // Enable debug 
     }
-    fitter->SetDebug(1);
+    fitter->SetDebug(3);
     fitter->SetStoreResiduals(AliFMDEnergyFitter::kResidualSquareDifference);
-    // fitter->SetRegularizationCut(3e6);
+    fitter->SetRegularizationCut(1e6); // Lower by factor 3
     // Set the number of bins to subtract from maximum of distributions
     // to get the lower bound of the fit range
     // fitter->SetFitRangeBinWidth(2);
@@ -164,6 +169,7 @@ void RerunELossFits(Bool_t forceSet=false,
 
     // --- Now do the fits -------------------------------------------
     fitter->Print();
+    outFwdSum->ls("R");
     fitter->Fit(static_cast<TList*>(outFwdSum));
     
     // --- Copy full result folder -----------------------------------
@@ -179,8 +185,9 @@ void RerunELossFits(Bool_t forceSet=false,
 
     // --- Write out new results folder ------------------------------
     outFile->cd();
-    outFwdRes->Write("ForwardResults", TObject::kSingleKey);
+    outFwdRes->Write(inFwdRes->GetName(), TObject::kSingleKey);
     Printf("Wrote results to \"%s\" (%s)", outName.Data(), outFile->GetName());
+    allOk = true;
   }
   catch (const TString& e) {
     Error("RerunELossFits", e);
@@ -191,8 +198,9 @@ void RerunELossFits(Bool_t forceSet=false,
     outFile->Close();
   }
     
-  gROOT->Macro(Form("%s/corrs/DrawCorrELoss.C(false,false,\"%s\")", 
-		    fwd, outName.Data()));
+  if (allOk)
+    gROOT->Macro(Form("%s/corrs/DrawCorrELoss.C(false,false,\"%s\")", 
+		      fwd, outName.Data()));
 }
 
 

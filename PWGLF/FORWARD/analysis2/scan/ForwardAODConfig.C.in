@@ -1,0 +1,222 @@
+/**
+ * @file   ForwardAODConfig.C
+ * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @date   Wed Mar 23 13:56:02 2011
+ * 
+ * @brief  
+ * 
+ * @ingroup pwglf_forward_scripts_tasks
+ * 
+ */
+/**
+ * Configuration script for forward multiplicity task.  
+ *
+ * You can copy this to your working directory or to some other
+ * directory up-front in your ROOT macro path, and edit it to suit your
+ * needs.
+ * 
+ * @param task  Task to configure 
+ *
+ * @ingroup pwglf_forward_aod
+ */
+void
+ForwardAODConfig(AliForwardMultiplicityBase* task)
+{
+  if (!task) return;
+
+  Info("ForwardAODConfig", "Setting up task %s (%p)", task->GetName(), task);
+
+  // --- General parameters ------------------------------------------
+  // Whether to enable low flux specific code 
+  task->SetEnableLowFlux(kFALSE);
+
+  // --- Cuts --------------------------------------------------------
+  // Would like to use dynamic cast but CINT interprets that as a 
+  // static cast - sigh!
+  Bool_t         mc  = (task->IsA()==AliForwardMCMultiplicityTask::Class());
+  AliFMDMultCuts cSharingLow(@sflow@ 
+			     /*AliFMDMultCuts::kFixed, 0.05*/);
+  AliFMDMultCuts cSharingHigh(@sfhigh@ 
+			      /*AliFMDMultCuts::kMPVFraction, 0.8*/);
+  AliFMDMultCuts cDensity(@dclow@ 
+			  /*AliFMDMultCuts::kMPVFraction, 0.3*/);
+  
+  // --- Event inspector ---------------------------------------------
+  // Set the number of SPD tracklets for which we consider the event a
+  // low flux event
+  task->GetEventInspector().SetLowFluxCut(1000); 
+  // Set the maximum error on v_z [cm]
+  task->GetEventInspector().SetMaxVzErr(0.2);
+  // Least number of constributors to 2nd pile-up vertex
+  task->GetEventInspector().SetMinPileupContributors(3);
+  // Least distance from primary to 2nd pile-up vertex (cm)
+  task->GetEventInspector().SetMinPileupDistance(.8);
+  // V0-AND triggered events flagged as NSD 
+  task->GetEventInspector().SetUseV0AndForNSD(false);
+  // Use primary vertex selection from 1st physics WG
+  task->GetEventInspector().SetUseFirstPhysicsVtx(false);
+  // Use satellite collisions
+  task->GetEventInspector().SetUseDisplacedVertices(false);
+  // Which centrality estimator to use 
+  task->GetEventInspector().SetCentralityMethod("V0M");
+
+  // --- Sharing filter ----------------------------------------------
+  // If the following is uncommented, then the merging of shared
+  // signals is disabled completely
+  // task->GetSharingFilter().SetDisableMerging(true);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  // Disable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
+  // Whether to use simple merging algorithm
+  task->GetSharingFilter().SetUseSimpleSharing(true);
+  // Whether to allow for 3 strip hits 
+  task->GetSharingFilter().SetAllow3Strips(@three@);
+  // Do not cut fixed/hard on multiplicity 
+  // task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
+  // Set the number of xi's (width of landau peak) to stop at 
+  // task->GetSharingFilter().GetHCuts().SetNXi(nXi);
+  // Set whether or not to include sigma in cut
+  // task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
+  // Set upper sharing cut 
+  task->GetSharingFilter().SetHCuts(cSharingHigh);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetLCuts(cSharingLow);
+  // If true, consider AliESDFMD::kInvalidMult as a zero signal.  This
+  // has the unfortunate side effect, that we cannot use the
+  // on-the-fly calculation of the phi acceptance.  
+  // 
+  // *IMPORTANT*
+  // 
+  // Before revision 43711 of AliFMDReconstructor, all strips with no
+  // signal where set to kInvalidMult.  From revision 43711 (Release
+  // 4-19-Rev-09) empty strips that are not marked as bad have a
+  // signal of 0 (zero).  That means, that for any reconstruction done
+  // with releases prior to 4-19-Rev-09 this flag _must_ be defined as
+  // true. 
+  // 
+  // The unfortunate side effect mentioned above is especially cruel
+  // in this case, since we would benefit a lot from this setting for
+  // that data.  However, one can add dead strips here using
+  // AliFMDSharingFilter::AddDeadStrip or
+  // AliFMDSharingFilter::AddDeadRegion to remedy the situation, since
+  // strips added explicitly here are always ignored.  In the future,
+  // the acceptance maker script should generate the list
+  // automaticallu.
+  //
+  // LHC10c-900Gev is effected up-to and including pass3 
+  // LHC10c-7TeV is effected up-to and including pass2
+  // LHC10c-CPass0 should be OK, but has limited statistics 
+  // LHC10c_11a_FMD should be OK, but has few runs  
+  task->GetSharingFilter().SetInvalidIsEmpty(false);
+  // Dead region in FMD2i
+  task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
+  // One can add extra dead strips from a script like 
+  // 
+  //   void deadstrips(AliFMDSharingFilter* filter)
+  //   {
+  //     filter->AddDead(...);
+  //     // ... and so on 
+  //   }
+  //
+  // and then do here 
+  // 
+  // task->GetSharingFilter().AddDead("deadstrips.C");
+   
+  // --- Density calculator ------------------------------------------
+  // Set the maximum number of particle to try to reconstruct 
+  task->GetDensityCalculator().SetMaxParticles(10);
+  // Wet whether to use poisson statistics to estimate N_ch
+  task->GetDensityCalculator().SetUsePoisson(true);
+  // Set whether or not to include sigma in cut
+  task->GetDensityCalculator().SetCuts(cDensity);
+  // Set lumping (nEta,nPhi)
+  task->GetDensityCalculator().SetLumping(32,4);
+  // Recalculate phi taking (x,y) offset of IP into account 
+  task->GetDensityCalculator().SetRecalculatePhi(true);
+  // Least acceptable quality of ELoss fits
+  task->GetDensityCalculator().SetMinQuality(8);
+  // Set the maximum ratio of outlier bins to the total number of bins
+  task->GetDensityCalculator().SetMaxOutliers(.10);
+  // Set the maximum relative diviation between N_ch from Eloss and Poisson
+  task->GetDensityCalculator().SetOutlierCut(0.5);
+  // Set whether or not to use the phi acceptance
+  //   AliFMDDensityCalculator::kPhiNoCorrect
+  //   AliFMDDensityCalculator::kPhiCorrectNch
+  //   AliFMDDensityCalculator::kPhiCorrectELoss
+  task->GetDensityCalculator()
+    .SetUsePhiAcceptance(AliFMDDensityCalculator::kPhiCorrectNch);
+
+  // --- Corrector ---------------------------------------------------
+  // Whether to use the secondary map correction
+  task->GetCorrections().SetUseSecondaryMap(true);
+  // Whether to use the vertex bias correction (deprecated)
+  task->GetCorrections().SetUseVertexBias(false);
+  // Whether to use the acceptance correction from dead-strips (deprecated)
+  task->GetCorrections().SetUseAcceptance(false);
+  // Whether to use the merging efficiency correction  (deprecated)
+  task->GetCorrections().SetUseMergingEfficiency(false);
+
+  // --- Histogram Collector -----------------------------------------
+  // Set the number of extra bins (beyond the secondary map border) 
+  task->GetHistCollector().SetNCutBins(2);
+  // Set the correction cut, that is, when bins in the secondary map 
+  // is smaller than this, they are considered empty 
+  task->GetHistCollector().SetCorrectionCut(0.5);
+  // How to calculate the value of overlapping bins. 
+  // Possible values are 
+  //    kStraightMean 
+  //    kStraightMeanNoZero 
+  //    kWeightedMean 
+  //    kLeastError 
+  //    kSum
+  //    kPreferInner
+  //    kPreferOuter
+  task->GetHistCollector().SetMergeMethod(AliFMDHistCollector::kStraightMean);
+  // How to find the fiducial area of the secondary maps 
+  // Possible values are 
+  //   kByCut    Only bins larger that cut are trusted 
+  //   kDistance Only bins that are more than half the size of it neighbors
+  task->GetHistCollector().SetFiducialMethod(AliFMDHistCollector::kByCut);
+  // Additional diagnostics output - off by default
+  // 
+  // If this option is enabled, then the summed per-vertex, per-ring
+  // d2N/detadphi histograms will be stored in the output, as well as
+  // copies of the secondary maps
+  // task->GetHistCollector().SetMakeBGHitMaps(true);
+  //
+  // If this option is enabled, then a 3D histogram will be made for
+  // each ring, summing dN/deta for each centrality bin.
+  // task->GetHistCollector().SetMakeCentralitySums(true);
+
+  // --- Eventplane Finder -------------------------------------------
+  task->GetEventPlaneFinder().SetUsePhiWeights(false);
+
+  // --- Ring AOD output ---------------------------------------------
+  // If set to true, then 5 additional branches will be created on the
+  // output AOD - one for each FMD ring.  The branches each contain a
+  // TH2D object of the (primary) charged particle multiplicity per
+  // (eta,phi)-bin in that event 
+  // task->SetStorePerRing(true);
+
+  // --- Set limits on fits the energy -------------------------------
+  // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING
+  // Maximum relative error on parameters 
+  // AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
+  // Least weight to use 
+  // AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
+  // Maximum value of reduced chi^2 
+  // AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 10;
+
+  // --- Debug -------------------------------------------------------
+  // Set the overall debug level (1: some output, 3: a lot of output)
+  // task->SetDebug(0);
+  // Set the debug level of a single algorithm 
+  // task->GetSharingFilter().SetDebug(3);
+}
+// Local Variables:
+//  mode: C++
+// End:
+//
+// EOF
+//

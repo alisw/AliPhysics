@@ -47,4 +47,7 @@
 #pragma link C++ class AliPHOSpPbPi0Header+;
 #pragma link C++ class AliAnalysisTaskSEPHOSpPbPi0+;
 
+//PHOS_Correlations
+#pragma link C++ class AliPHOSCorrelations+;
+
 #endif
