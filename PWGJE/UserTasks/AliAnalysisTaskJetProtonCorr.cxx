@@ -540,33 +540,33 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 
   AddHistogram(ID(kHistPhiTrgJetEvPlane), "trg jet;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiTrgHadEvPlane), "trg had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadEvPlane), "ass had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssProtEvPlane), "ass prot;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadVsEvPlane), "ass had;#Psi_{ev};#varphi;centrality",
 	       100, -0. * TMath::Pi(), 1. * TMath::Pi(),
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
 
   AddHistogram(ID(kHistPhiTrgJetEvPlane3), "trg jet;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiTrgHadEvPlane3), "trg had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadEvPlane3), "ass had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssProtEvPlane3), "ass prot;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
 
   for (Int_t iCorr = 0; iCorr < kCorrLast; ++iCorr) {
     for (Int_t iCl = 0; iCl < kClLast; ++iCl) {
