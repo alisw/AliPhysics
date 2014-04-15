@@ -41,6 +41,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   void SetRunSyst(Bool_t runSyst){fRunSystematics = runSyst;}
   void SetIsMC(Bool_t MC){isMC = MC;}
   void InitSystematics();
+  Double_t GetMedian(Double_t *daArray);
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
@@ -112,6 +113,8 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TList *fListSystematics;
   TList *fListJPsiLoose;
   TList *fListJPsiTight;
+  TList *fListPsi2sLoose;
+  TList *fListPsi2sTight;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented
