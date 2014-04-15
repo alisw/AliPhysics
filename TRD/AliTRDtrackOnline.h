@@ -124,8 +124,9 @@ class AliTRDtrackOnline : public TObject
   void Print(Option_t *option = "") const;
 
   static Float_t GetX(AliVTrdTracklet *trkl) { return fgGeometry->GetTime0(trkl->GetDetector() % 6); }
-  static Float_t GetZ(AliVTrdTracklet *trkl) { return fgGeometry->GetPadPlane((trkl->GetDetector() % 6), (trkl->GetDetector()/6) % 5)->GetRowPos(trkl->GetBinZ()) -
-      fgGeometry->GetPadPlane((trkl->GetDetector() % 6), (trkl->GetDetector()/6) % 5)->GetRowSize(trkl->GetBinZ()); }
+  static Float_t GetZ(AliVTrdTracklet *trkl) { return
+      fgGeometry->GetPadPlane(trkl->GetDetector())->GetRowPos(trkl->GetBinZ()) -
+      .5 * fgGeometry->GetPadPlane(trkl->GetDetector())->GetRowSize(trkl->GetBinZ()); }
   static AliTRDgeometry *fgGeometry;
 
  protected:
