@@ -133,6 +133,8 @@ class AliJetFlowTools {
         void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
+        void            SetRMS(Bool_t r)                        {fRMS                   = r;}
+        void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -177,7 +179,6 @@ class AliJetFlowTools {
                 TGraphAsymmErrors*& shapeV2,
                 TArrayI* regularizationIn,
                 TArrayI* regularizationOut,
-                Bool_t RMS = kFALSE,
                 TArrayI* trueBinIn = 0x0,
                 TArrayI* trueBinOut = 0x0,
                 TArrayI* recBinIn = 0x0,
@@ -237,25 +238,21 @@ class AliJetFlowTools {
         }
         static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
             TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
-//            t->SetFillStyle(0);
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
             t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T} charged jets", r));
             t->SetTextColor(kBlack);
-//            t->SetTextSize(0.03);
             t->SetTextFont(42);
             t->Draw("same");
             return t;
         } 
         static TPaveText*       AddText(TString text, EColor col) {
             TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
-//            t->SetFillStyle(0);
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
             t->SetTextColor(col);
-//            t->SetTextSize(0.03);
             t->SetTextFont(42);
             t->Draw("same");
             return t;
@@ -334,6 +331,8 @@ class AliJetFlowTools {
         TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         // members, accessible via setters
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
+        Bool_t                  fRMS;                   // systematic method
+        Bool_t                  fSymmRMS;               // symmetric systematic method
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output

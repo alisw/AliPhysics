@@ -73,6 +73,8 @@ using namespace std;
 //_____________________________________________________________________________
 AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
+    fRMS                (kTRUE),
+    fSymmRMS            (kTRUE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
     fSaveFull           (kTRUE),
     fActiveString       (""),
@@ -1817,7 +1819,6 @@ void AliJetFlowTools::GetShapeUncertainty(
         TGraphAsymmErrors*& shapeV2,    // pointer reference to final shape uncertainty of v2
         TArrayI* regularizationIn,      // regularization strength systematics, in plane
         TArrayI* regularizationOut,     // regularization strenght systematics, out of plane
-        Bool_t RMS,                     // get RMS instead of absolute value  
         TArrayI* trueBinIn,             // true bin ranges, in plane
         TArrayI* trueBinOut,            // true bin ranges, out of plane
         TArrayI* recBinIn,              // rec bin ranges, in plane
@@ -1885,7 +1886,7 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeUp,
                 readMe,
                 "regularization",
-                RMS);
+                fRMS);
         if(relativeErrorRegularizationInUp) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRegularization(new TCanvas("relativeErrorRegularization", "relativeErrorRegularization"));
@@ -2044,6 +2045,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
         if(relativeErrorRegularizationOutLow) aOutLow = relativeErrorRegularizationOutLow->GetBinContent(b+1);
+        if(fSymmRMS) {  // take first category as symmetric
+            aInLow = aInUp;
+            aOutLow = aOutUp;
+        }
         if(relativeErrorTrueBinInLow) bInLow = relativeErrorTrueBinInLow->GetBinContent(b+1);
         if(relativeErrorTrueBinOutLow) bOutLow = relativeErrorTrueBinOutLow->GetBinContent(b+1);
         if(relativeErrorRecBinInLow) cInLow = relativeErrorRecBinInLow->GetBinContent(b+1);
@@ -2214,15 +2219,31 @@ void AliJetFlowTools::GetShapeUncertainty(
    relativeErrorOutUp = new TH1D(Form("max #sigma/|x| from  %s", source.Data()), Form("max #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    relativeErrorOutLow = new TH1D(Form("min #sigma/|x| from %s", source.Data()), Form("min #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
-       relativeErrorInUp->SetBinContent(b+1, 1.);
-       relativeErrorInUp->SetBinError(b+1, 0.);
-       relativeErrorOutUp->SetBinContent(b+1, 1.);
-       relativeErrorOutUp->SetBinError(b+1, .0);
-       relativeErrorInLow->SetBinContent(b+1, 1.);
-       relativeErrorInLow->SetBinError(b+1, 0.);
-       relativeErrorOutLow->SetBinContent(b+1, 1.);
-       relativeErrorOutLow->SetBinError(b+1, .0);
+       if(!RMS) {
+           relativeErrorInUp->SetBinContent(b+1, 1.);
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, 1.);
+           relativeErrorOutUp->SetBinError(b+1, .0);
+           relativeErrorInLow->SetBinContent(b+1, 1.);
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, 1.);
+           relativeErrorOutLow->SetBinError(b+1, .0);
+       } else if(RMS) {
+           relativeErrorInUp->SetBinContent(b+1, 0.);
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, 0.);
+           relativeErrorOutUp->SetBinError(b+1, 0.);
+           relativeErrorInLow->SetBinContent(b+1, 0.);
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, 0.);
+           relativeErrorOutLow->SetBinError(b+1, 0.);
+       } 
    }
+   Int_t relativeErrorInUpN[100] = {0};
+   Int_t relativeErrorOutUpN[100] = {0};
+   Int_t relativeErrorInLowN[100] = {0};
+   Int_t relativeErrorOutLowN[100] = {0};
+   
    // define an output histogram with the systematic error from this systematic constribution
    if(!relativeStatisticalErrorIn && !relativeStatisticalErrorOut) {
        relativeStatisticalErrorIn = new TH1D("relative statistical error, in plane", "#sigma/|x|, statistical, in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
@@ -2403,14 +2424,21 @@ void AliJetFlowTools::GetShapeUncertainty(
                                relativeErrorInLow->SetBinContent(b+1, temp->GetBinContent(b+1));
                                relativeErrorInLow->SetBinError(b+1, 0.);
                            }
-                       } else if (RMS) { // save info necessary for evaluating the RMS of a distribution of variations
-                           if( temp->GetBinContent(b+1) < 1) {
+                       } else if (RMS && !fSymmRMS) { // save info necessary for evaluating the RMS of a distribution of variations
+                           printf(" oops shouldnt be here \n " );
+                           if(temp->GetBinContent(b+1) < 1) {
                                relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorInUpN[b]++;
                            }
                            // the variation is LOWER than the nominal point, so the bar goes DOWN
                            else if(temp->GetBinContent(b+1) > 1) {
                                relativeErrorInLow->SetBinContent(b+1, relativeErrorInLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorInLowN[b]++;
                            }
+                       } else if (fSymmRMS) {
+                           // save symmetric sum of square to get a symmetric rms
+                           relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)+TMath::Power(temp->GetBinContent(b+1)-1., 2));
+                           relativeErrorInUpN[b]++;
                        }
                        if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorIn->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
                    }
@@ -2540,13 +2568,20 @@ void AliJetFlowTools::GetShapeUncertainty(
                                relativeErrorOutLow->SetBinContent(b+1, temp->GetBinContent(b+1));
                                relativeErrorOutLow->SetBinError(b+1, 0.);
                            }
-                       } else if (RMS) {
+                       } else if (RMS && !fSymmRMS) {
+                           printf(" OOps \n ");
                            if(temp->GetBinContent(b+1) < 1) {
                                relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorOutUpN[b]++;
                            }
                            else if(temp->GetBinContent(b+1) > 1) {
                                relativeErrorOutLow->SetBinContent(b+1, relativeErrorOutLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorOutLowN[b]++;
                            }
+                       } else if (fSymmRMS) {
+                           // save symmetric rms value
+                           relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)+TMath::Power(temp->GetBinContent(b+1)-1., 2));
+                           relativeErrorOutUpN[b]++;
                        }
                        if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorOut->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
                    }
@@ -2748,15 +2783,25 @@ void AliJetFlowTools::GetShapeUncertainty(
            // these guys are already stored as percentages, so no need to remove the offset of 1
            // RMS is defined as sqrt(sum(squared))/N
            // min is defined as negative, max is defined as positive
-           Float_t n((float)variationsIn->GetSize()-1);  // first variation is nominal, so shouldn't be counted
-           relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1))/n);
-           relativeErrorInUp->SetBinError(b+1, 0.);
-           relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1))/n);
-           relativeErrorOutUp->SetBinError(b+1, .0);
-           relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorInLow->GetBinContent(b+1))/n);
-           relativeErrorInLow->SetBinError(b+1, 0.);
-           relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorOutLow->GetBinContent(b+1))/n);
-           relativeErrorOutLow->SetBinError(b+1, .0);
+           if(!fSymmRMS) {
+               if(relativeErrorInUpN[b] < 1) relativeErrorInUpN[b] = 1;
+               if(relativeErrorInLowN[b] < 1) relativeErrorInLowN[b] = 1;
+               if(relativeErrorOutUpN[b] < 1) relativeErrorOutUpN[b] = 1;
+               if(relativeErrorOutLowN[b] < 1) relativeErrorOutLowN[b] = 1;
+               relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1)/relativeErrorInUpN[b]));
+               relativeErrorInUp->SetBinError(b+1, 0.);
+               relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1)/relativeErrorOutUpN[b]));
+               relativeErrorOutUp->SetBinError(b+1, .0);
+               relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorInLow->GetBinContent(b+1)/relativeErrorInLowN[b]));
+               relativeErrorInLow->SetBinError(b+1, 0.);
+               relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorOutLow->GetBinContent(b+1)/relativeErrorOutLowN[b]));
+               relativeErrorOutLow->SetBinError(b+1, .0);
+           } else if (fSymmRMS) {
+               if(relativeErrorInUpN[b] < 1) relativeErrorInUpN[b] = 1;
+               if(relativeErrorOutUpN[b] < 1) relativeErrorOutUpN[b] = 1;
+               relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1)/relativeErrorInUpN[b]));
+               relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1)/relativeErrorOutUpN[b]));
+           }
        }
    }
    relativeErrorInUp->SetYTitle("relative uncertainty");
