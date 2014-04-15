@@ -5,7 +5,7 @@ class AliFlowTrackCuts;
 class AliFlowEventCuts;
 
 
-void AddTaskFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
+void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Float_t etamin=-0.8,
                                    Float_t etamax=0.8,
                                    Float_t EtaGap=0.2,
@@ -19,6 +19,7 @@ void AddTaskFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t ncentrality = 6,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
+                                   Bool_t VZERO = kFALSE, // use vzero sp method
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -41,7 +42,7 @@ int centrMax[9] = {5,10,20,30,40,50,60,70,80};
 const int ncentr = ncentrality;
     
     
-//---------Data selection----------
+//---------Data selection---------- ESD only!!!
 //kMC, kGlobal, kESD_TPConly, kESD_SPDtracklet
 AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kTPCstandalone;
 AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kTPCstandalone;
@@ -51,8 +52,8 @@ AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kTPCstandalone;
 AliFlowTrackCuts::trackParameterMix rpmix = AliFlowTrackCuts::kPure;
 AliFlowTrackCuts::trackParameterMix poimix = AliFlowTrackCuts::kPure;
     
-const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);
-const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype);
+const char* rptypestr = AliFlowTrackCuts::GetParamTypeName(rptype);  //ESD
+const char* poitypestr = AliFlowTrackCuts::GetParamTypeName(poitype); //ESD
 
     
 //===========================================================================
@@ -75,21 +76,29 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr]->SetQA(doQA);
     cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
     
-    
     // RP TRACK CUTS:
-    cutsRP[icentr] = new AliFlowTrackCuts(Form("TPConlyRP_%d",icentr));
-    cutsRP[icentr]->SetParamType(rptype);
-    cutsRP[icentr]->SetParamMix(rpmix);
-    cutsRP[icentr]->SetPtRange(0.2,5.);
-    cutsRP[icentr]->SetEtaRange(etamin,etamax);
-    cutsRP[icentr]->SetMinNClustersTPC(70);
-    //  cutsRP->SetMinChi2PerClusterTPC(0.1);//
-    // cutsRP->SetMaxChi2PerClusterTPC(4.0);//
-    cutsRP[icentr]->SetMaxDCAToVertexXY(3.0);
-    cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
-    cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
-    cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-    cutsRP[icentr]->SetAODfilterBit(AODfilterBitRP);
+    cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
+    if(!VZERO){
+        //cutsRP[icentr]->SetParamType(rptype);
+        cutsRP[icentr]->SetParamMix(rpmix);
+        cutsRP[icentr]->SetPtRange(0.2,5.);
+        cutsRP[icentr]->SetEtaRange(etamin,etamax);
+        cutsRP[icentr]->SetMinNClustersTPC(70);
+        //  cutsRP->SetMinChi2PerClusterTPC(0.1);//
+        // cutsRP->SetMaxChi2PerClusterTPC(4.0);//
+        cutsRP[icentr]->SetMaxDCAToVertexXY(3.0);
+        cutsRP[icentr]->SetMaxDCAToVertexZ(3.0);
+        cutsRP[icentr]->SetAcceptKinkDaughters(kFALSE);
+        cutsRP[icentr]->SetMinimalTPCdedx(MinTPCdedx);
+        cutsRP[icentr]->SetAODfilterBit(AODfilterBitRP);
+    }
+    
+    if(VZERO) { // use vzero sub analysis
+        cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
+      //  cutsRP[icentr]->SetV0gainEqualizationPerRing(kFALSE);
+        cutsRP[icentr]->SetApplyRecentering(kTRUE);
+        EtaGap = 0.;
+    }//vzero is not a tracking device it is just a scintillator. so pt range or DCAtoVertex are not set here.
     cutsRP[icentr]->SetQA(doQA);
 
     
@@ -105,13 +114,20 @@ for(int icentr=0;icentr<ncentr;icentr++){
     SP_POI[icentr]->SetParamMix(poimix);
     SP_POI[icentr]->SetPtRange(0.2,5.);//
     SP_POI[icentr]->SetMinNClustersTPC(70);
-    if(Qvector=="Qa"){
+    if(!VZERO && Qvector=="Qa"){
         SP_POI[icentr]->SetEtaRange( +0.5*EtaGap, etamax );
-    }
-    if(Qvector=="Qb"){
-        SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
-    }
+        printf(" > NOTE: Using half TPC (Qa) as POI selection u < \n");
 
+    }
+    if(!VZERO && Qvector=="Qb"){
+        SP_POI[icentr]->SetEtaRange( etamin,-0.5*EtaGap );
+        printf(" > NOTE: Using half TPC (Qb) as POI selection u < \n");
+
+    }
+    if(VZERO){
+        SP_POI[icentr]->SetEtaRange( etamin,etamax );
+        printf(" > NOTE: Using full TPC as POI selection u < \n");
+    }
     // SP_POI->SetMinChi2PerClusterTPC(0.1); //
     // SP_POI->SetMaxChi2PerClusterTPC(4.0); //
     //  SP_POI->SetRequireITSRefit(kTRUE);
@@ -263,8 +279,10 @@ for (int icentr=0; icentr<ncentr; icentr++) {
                                                                    AliAnalysisManager::kExchangeContainer );
         
         tskFilter[icentr][harm-2] = new AliAnalysisTaskFilterFE( Form("TaskFilter_%s",myNameSP[icentr][harm-2].Data()),cutsRP[icentr], NULL);
-        tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
-        
+        if(!VZERO){
+            tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
+        }
+        else tskFilter[icentr][harm-2]->SetSubeventEtaRange(-10, -1, +1, 10);
         mgr->AddTask(tskFilter[icentr][harm-2]);
         mgr->ConnectInput( tskFilter[icentr][harm-2],0,coutputFE[icentr]);
         mgr->ConnectOutput(tskFilter[icentr][harm-2],1,flowEvent[icentr][harm-2]);
@@ -310,11 +328,11 @@ AliFlowEventCuts* DefinecutsEvent(Int_t icentr){
     return cutsEvent;
 }
 AliFlowTrackCuts* DefineRPcuts(Int_t icentr){
-    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts(Form("TPConlyRP_%d",icentr));
+    AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts(Form("RP_%d",icentr));
     return cutsRP;
 }
 AliFlowTrackCuts* DefinePOIcuts(Int_t icentr){
-    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts(Form("TPConlyPOI_%d",icentr));
+    AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts(Form("POI_%d",icentr));
     return cutsPOI;
 }
 
