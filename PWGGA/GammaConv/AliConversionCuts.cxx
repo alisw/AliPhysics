@@ -3450,7 +3450,10 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
          else {
             if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
             else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC11f") == 0  || periodName.CompareTo("LHC13g") == 0 ) fOfflineTriggerMask = AliVEvent::kINT7;      
+            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC13g") == 0 ) {
+				fOfflineTriggerMask = AliVEvent::kINT7;      
+// 				cout << "will take kINT7 as trigger mask" << endl; 
+			}	
             else fOfflineTriggerMask = AliVEvent::kMB;
          }
       }
