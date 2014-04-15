@@ -94,29 +94,50 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   //
   // tree variables
   //
-  Char_t Name[1000];  
-  Int_t  evnt, itrk;
-  //
-  Float_t TrkPtot[1000];
-  Float_t TPCPtot[1000];
-  Float_t DeDx[1000];
-  Float_t DCAZ[1000];
-  Float_t TPCNsignal[1000];
-  Float_t ITSnCluster[1000];
-  Float_t Sign[1000];
-  Float_t DCAXY[1000];
-  Float_t Mass[1000];
-  Float_t ITSRefit[1000];
-  Float_t TOFRefit[1000];
-  Float_t TOFtime[1000];
-  Float_t TOFout[1000];
-  Float_t ITSsignal[1000];
-  Float_t SharedClusters[1000];
-  Char_t  fFileName[1000]; 
+  Char_t fName[1000];  
+  Int_t  fEvnt;
+  Char_t  fFileName[1000];
   Int_t   fEventNumber[1000];
+  // 
+  Int_t  fItrk;
+  //
+  Double_t fEta[1000];
+  Int_t    fKinkIndex[1000];
+  //
+  UShort_t   fTPCNsignal[1000];
+  UShort_t   fTPCnCluster[1000];
+  Double_t   fChi2PerClusterTPC[1000];
+  Bool_t  fTPCRefit[1000];
+  Double_t fTPCsignal0[1000];
+  Double_t fTPCsignal1[1000];
+  Double_t fTPCsignal2[1000];
+  Double_t fTPCsignal3[1000];
+  Int_t   fTPCSharedClusters[1000];
+  UShort_t   fTPCNclsIter1[1000];
+  //
+  Double_t fITSsignal[1000];
+  Int_t   fITSnCluster[1000];
+  Double_t   fChi2PerClusterITS[1000];
+  Bool_t  fITSRefit[1000];
+  //
+  Bool_t  fTOFRefit[1000];
+  Bool_t  fTOFtime[1000];
+  Bool_t  fTOFout[1000];
+  Double_t fTOFsignalDz[1000];
+  Double_t fTOFsignalDx[1000];
+  //
+  Float_t fDCAZ[1000];
+  Float_t fDCAXY[1000];
+  //
+  Double_t fTrkPtot[1000];
+  Double_t fTPCPtot[1000];
+  Double_t fTrackPt[1000];
+  Double_t fDeDx[1000];
+  Double_t fSign[1000];
+  Float_t fMass[1000];
+  //
   Bool_t  fAssociated[1000];
-  Float_t fTrackPt[1000];
-
+ 
   //
   //
   AliAnalysisTaskAntiHe4(const AliAnalysisTaskAntiHe4&); // not implemented
