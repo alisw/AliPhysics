@@ -1,6 +1,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF1.h"
 
 #include "AliLog.h"
 
@@ -10,7 +11,6 @@
 #define ID(x) x, #x
 #define LAB(x) x + 1, #x
 
-class TF1;
 class TList;
 class TClonesArray;
 class AliOADBContainer;
@@ -38,7 +38,7 @@ public:
   void SetParamsTOF();
 
   // task configuration
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
+  void SetJetBranchName(const char* branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   void SetPtThrPart(Float_t minPt, Float_t maxPt) { fTrgPartPtMin = minPt; fTrgPartPtMax = maxPt; }
@@ -51,12 +51,32 @@ public:
   Float_t GetPtMinAss() const { return fAssPartPtMin; }
   Float_t GetPtMaxAss() const { return fAssPartPtMax; }
 
-  void SetTrackCutsAss(AliESDtrackCuts cuts) { *fCutsPrimAss = cuts; }
-  void SetTrackCutsTrg(AliESDtrackCuts cuts) { *fCutsPrimTrg = cuts; }
-  void SetTrackCutsTrgConstrain(AliESDtrackCuts cuts) { *fCutsPrimTrgConstrain = cuts; }
+  void SetTrackCutsAss(const AliESDtrackCuts &cuts) { *fCutsPrimAss = cuts; }
+  void SetTrackCutsTrg(const AliESDtrackCuts &cuts) { *fCutsPrimTrg = cuts; }
+  void SetTrackCutsTrgConstrain(const AliESDtrackCuts &cuts) { *fCutsPrimTrgConstrain = cuts; }
 
   void SetUseEvplaneV0(Bool_t usev0 = kTRUE) { fUseEvplaneV0 = usev0; }
   Bool_t GetUseEvplaneV0() const { return fUseEvplaneV0; }
+
+  void SetJetV2(Float_t v2Cent, Float_t v2Semi) {
+    fTrgJetPhiModCent->SetParameter(0, v2Cent);
+    fTrgJetPhiModSemi->SetParameter(0, v2Semi);
+  }
+  void SetHadV2(Float_t v2Cent, Float_t v2Semi) {
+    fTrgHadPhiModCent->SetParameter(0, v2Cent);
+    fTrgHadPhiModSemi->SetParameter(0, v2Semi);
+  }
+
+  void SetLeadingTrackPtMin(Float_t pt) { fTrgJetLeadTrkPtMin = pt; }
+  void SetLeadingTrackPtMax(Float_t pt) { fTrgJetLeadTrkPtMax = pt; }
+
+  void SetJetAreaMin(Float_t area) { fTrgJetAreaMin = area; }
+
+  void SetFilterMask(Int_t mask) { fAssFilterMask = mask; }
+  Int_t GetFilterMask() const { return fAssFilterMask; }
+
+  void SetErrorCount(Int_t cnt) { fErrorMsg = cnt; }
+  Int_t GetErrorCount() const { return fErrorMsg; }
 
   void PrintTask(Option_t *option, Int_t indent) const;
 
@@ -328,6 +348,8 @@ protected:
 
   AliHistCorr **fHistCorr; //! [kCorrLast*kEvLast*kClLast]; //!
 
+  Int_t fErrorMsg; //! remaining number of error messages to be printed
+
   Bool_t DetectTriggers();
   void   MarkTrigger(Trigger_t trg) { fTriggerMask |= (1 << trg); }
   Bool_t IsTrigger(Trigger_t trg) const { return (fTriggerMask & (1 << trg)); }
@@ -342,21 +364,21 @@ protected:
   Float_t GetCentrality() const { return fCentrality; }
   Float_t GetEventPlaneAngle() const { return fEventPlaneAngle; }
   AliPIDResponse* GetPID() const { return fPIDResponse; }
-  Bool_t IsCentral() { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
-  Bool_t IsSemiCentral() { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
+  Bool_t IsCentral() const { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
+  Bool_t IsSemiCentral() const { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
 
-  AliVTrack* GetLeadingTrack(AliAODJet *jet) const;
+  AliVTrack* GetLeadingTrack(const AliAODJet *jet) const;
 
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
 		      Float_t phi2, Float_t pt2, Float_t charge2,
-		      Float_t radius, Float_t bSign);
+		      Float_t radius, Float_t bSign) const;
 
-  Bool_t AcceptTrigger(AliVTrack *trg);
-  Bool_t AcceptTrigger(AliAODJet *trg);
-  Bool_t AcceptAssoc(AliVTrack *trk);
-  Bool_t IsProton(AliVTrack *trk);
-  Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi);
-  Bool_t AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart);
+  Bool_t AcceptTrigger(const AliVTrack *trg);
+  Bool_t AcceptTrigger(const AliAODJet *trg);
+  Bool_t AcceptAssoc(const AliVTrack *trk) const;
+  Bool_t IsProton(const AliVTrack *trk) const;
+  Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi) const;
+  Bool_t AcceptTwoTracks(const AliVParticle *trgPart, const AliVParticle *assPart) const;
 
   TObjArray* CloneTracks(TObjArray *tracks) const;
 
@@ -413,11 +435,16 @@ protected:
   AliESDtrackCuts *fCutsPrimAss;	// track cuts for primary particles (associate)
   Float_t fCutsTwoTrackEff;
 
+  UInt_t  fAssFilterMask;
+  Float_t fTrgJetEtaMax;
+  Float_t fHadEtaMax;
   Float_t fTrgPartPtMin;
   Float_t fTrgPartPtMax;
   Float_t fTrgJetPtMin;
   Float_t fTrgJetPtMax;
   Float_t fTrgJetLeadTrkPtMin;
+  Float_t fTrgJetLeadTrkPtMax;
+  Float_t fTrgJetAreaMin;
   Float_t fAssPartPtMin;
   Float_t fAssPartPtMax;
   Float_t fTrgAngleToEvPlane;

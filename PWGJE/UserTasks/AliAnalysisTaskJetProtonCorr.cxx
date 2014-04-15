@@ -4,6 +4,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF1.h"
 #include "TFormula.h"
 #include "TRandom.h"
 
@@ -72,6 +73,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fPoolMgr(),
   fPool(),
   fHistCorr(0x0),
+  fErrorMsg(10),
   fOutputList(),
   fHist(),
   fShortTaskId("jet_prot_corr"),
@@ -81,11 +83,16 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fCutsPrimTrgConstrain(new AliESDtrackCuts()),
   fCutsPrimAss(0x0),
   fCutsTwoTrackEff(0.02),
+  fAssFilterMask(1 << 10),
+  fTrgJetEtaMax(0.45),
+  fHadEtaMax(0.8),
   fTrgPartPtMin(6.),
   fTrgPartPtMax(8.),
   fTrgJetPtMin(50.),
   fTrgJetPtMax(80.),
-  fTrgJetLeadTrkPtMin(5.),
+  fTrgJetLeadTrkPtMin(6.),
+  fTrgJetLeadTrkPtMax(100.),
+  fTrgJetAreaMin(0.6 * TMath::Pi() * 0.2*0.2),
   fAssPartPtMin(2.),
   fAssPartPtMax(4.),
   fTrgAngleToEvPlane(TMath::Pi() / 4.),
@@ -147,15 +154,15 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
 
   }
 
-  fCutsPrimAss->SetEtaRange(-0.9, 0.9);
+  fCutsPrimAss->SetEtaRange(-fHadEtaMax, fHadEtaMax);
   fCutsPrimAss->SetPtRange(0.15, 1E+15);
 
   // track cuts for triggers
   fCutsPrimTrg = new AliESDtrackCuts(*fCutsPrimAss);
 
   // azimuthal modulation for triggers
-  fTrgJetPhiModCent->SetParameter(0, .02);
-  fTrgJetPhiModSemi->SetParameter(0, .02);
+  fTrgJetPhiModCent->SetParameter(0, .10);
+  fTrgJetPhiModSemi->SetParameter(0, .10);
   fTrgHadPhiModCent->SetParameter(0, .04);
   fTrgHadPhiModSemi->SetParameter(0, .10);
 
@@ -871,11 +878,11 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  Double_t rndTOFmismatch = AliTOFPIDResponse::GetMismatchRandomValue(trk->Eta());
 
 	  if(IsClass(kClCentral)) {
-	    FillH2(kHistNsigmaTOFmismatch, p, (rndTOFmismatch - expTOF) / expSigmaTOF);
+	    FillH2(kHistNsigmaTOFmismatch, trk->P(), (rndTOFmismatch - expTOF) / expSigmaTOF);
 	    FillH2(kHistDeltaTOF, trk->P(), deltaTOF * 1.e-3); // ps -> ns
 	  }
 	  if(IsClass(kClSemiCentral)) {
-	    FillH2(kHistNsigmaTOFmismatchSemi, p, (rndTOFmismatch - expTOF) / expSigmaTOF);
+	    FillH2(kHistNsigmaTOFmismatchSemi, trk->P(), (rndTOFmismatch - expTOF) / expSigmaTOF);
 	    FillH2(kHistDeltaTOFSemi, trk->P(), deltaTOF * 1.e-3); // ps -> ns
 	  }
 	}
@@ -1139,9 +1146,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     const Int_t nTracksAODAss = fAODEvent->GetNumberOfTracks();
     for (Int_t iTrack = 0; iTrack < nTracksAODAss; ++iTrack) {
       AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
-      // 4: track cuts esdTrackCutsH ???
-      // 10: R_AA cuts
-      if (trk->TestFilterMask(1 << 4))
+      if (trk->TestFilterMask(fAssFilterMask))
         fPrimTrackArrayAss->Add(trk);
     }
 
@@ -1165,7 +1170,10 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
       if (AODEvent())
         fJetArray = dynamic_cast<TClonesArray*> (AODEvent()->FindListObject(fJetBranchName));
       if (!fJetArray) {
-        printf("no jet branch \"%s\" found, in the AODs are:\n", fJetBranchName);
+	if (fErrorMsg > 0) {
+	  AliError(Form("no jet branch \"%s\" found, in the AODs are:", fJetBranchName));
+	  --fErrorMsg;
+	}
         if (fDebug > 0) {
 	  fAODEvent->GetList()->Print();
           if (AODEvent())
@@ -1188,7 +1196,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
   return eventGood;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliVTrack *trg)
 {
   // check pt interval
   Bool_t acceptPt =
@@ -1216,7 +1224,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
   return (acceptPt && acceptOrientation);
 }
 
-AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(AliAODJet *jet) const
+AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(const AliAODJet *jet) const
 {
   // return leading track within a jet
 
@@ -1237,15 +1245,22 @@ AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(AliAODJet *jet) const
   return (AliAODTrack*) jet->GetRefTracks()->At(iLeadingTrack);
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliAODJet *trg)
 {
   // restrict eta
-  if (TMath::Abs(trg->Eta()) > .5)
+  if (TMath::Abs(trg->Eta()) > fTrgJetEtaMax)
+    return kFALSE;
+
+  // reject too small jets
+  if (trg->EffectiveAreaCharged() < fTrgJetAreaMin)
     return kFALSE;
 
   // require hard leading track
   // (leading track biased jet sample)
-  if (GetLeadingTrack(trg)->Pt() < fTrgJetLeadTrkPtMin)
+  // but reject jets with too high pt constituents
+  const Float_t ptLeadTrack = GetLeadingTrack(trg)->Pt();
+  if ((ptLeadTrack < fTrgJetLeadTrkPtMin) ||
+      (ptLeadTrack > fTrgJetLeadTrkPtMax))
     return kFALSE;
 
   // check for jet orientation w.r.t. event plane
@@ -1253,6 +1268,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
   Bool_t acceptOrientation = IsSemiCentral() ?
     AcceptAngleToEvPlane(trg->Phi(), GetEventPlaneAngle()) :
     kTRUE;
+
   // check for jet pt
   Bool_t acceptPt =
     (trg->Pt() >= fTrgJetPtMin) &&
@@ -1284,7 +1300,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
   return (acceptPt && acceptOrientation);
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(AliVTrack *trk)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(const AliVTrack *trk) const
 {
   if ((trk->Pt() > fAssPartPtMin) && (trk->Pt() < fAssPartPtMax) &&
       (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) &&
@@ -1297,7 +1313,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(AliVTrack *trk)
   return kFALSE;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::IsProton(AliVTrack *trk)
+Bool_t AliAnalysisTaskJetProtonCorr::IsProton(const AliVTrack *trk) const
 {
   Double_t nSigmaProtonTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
   Double_t nSigmaProtonTOF = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton);
@@ -1309,7 +1325,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::IsProton(AliVTrack *trk)
   return kFALSE;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t psi)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t psi) const
 {
   Float_t deltaPhi = phi - psi;
   while (deltaPhi < 0.)
@@ -1327,7 +1343,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t p
 
 Float_t AliAnalysisTaskJetProtonCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
 						  Float_t phi2, Float_t pt2, Float_t charge2,
-						  Float_t radius, Float_t bSign)
+						  Float_t radius, Float_t bSign) const
 {
   // calculates dphistar
   // from AliUEHistograms
@@ -1350,7 +1366,7 @@ Float_t AliAnalysisTaskJetProtonCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Flo
 }
 
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(const AliVParticle *trgPart, const AliVParticle *assPart) const
 {
   // apply two track pair cut
 
@@ -1480,15 +1496,15 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     do {
       trgJetPhi = fTrgJetPhiModSemi->GetRandom();
     } while (!AcceptAngleToEvPlane(trgJetPhi, 0));
-    trgJetPhi += fEventPlaneAngle;
-    if (trgJetPhi < 0.)
-      trgJetPhi += 2. * TMath::Pi();
-    else if (trgJetPhi > 2. * TMath::Pi())
-      trgJetPhi -= 2. * TMath::Pi();
   }
   else {
     trgJetPhi = fTrgJetPhiModCent->GetRandom();
   }
+  trgJetPhi += fEventPlaneAngle;
+  if (trgJetPhi < 0.)
+    trgJetPhi += 2. * TMath::Pi();
+  else if (trgJetPhi > 2. * TMath::Pi())
+    trgJetPhi -= 2. * TMath::Pi();
 
   // generate one trigger particle
   TLorentzVector *trgJet = new TLorentzVector();
@@ -1533,15 +1549,15 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     do {
       trgHadPhi = fTrgHadPhiModSemi->GetRandom();
     } while (!AcceptAngleToEvPlane(trgHadPhi, 0));
-    trgHadPhi += fEventPlaneAngle;
-    if (trgHadPhi < 0.)
-      trgHadPhi += 2. * TMath::Pi();
-    else if (trgHadPhi > 2. * TMath::Pi())
-      trgHadPhi -= 2. * TMath::Pi();
   }
   else {
     trgHadPhi = fTrgHadPhiModCent->GetRandom();
   }
+  trgHadPhi += fEventPlaneAngle;
+  if (trgHadPhi < 0.)
+    trgHadPhi += 2. * TMath::Pi();
+  else if (trgHadPhi > 2. * TMath::Pi())
+    trgHadPhi -= 2. * TMath::Pi();
 
   // generate one trigger particle
   TLorentzVector *trgHad = new TLorentzVector();
