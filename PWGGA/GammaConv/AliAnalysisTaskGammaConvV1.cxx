@@ -164,6 +164,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
    hNGammaCandidates(NULL),
+   hNGoodESDTracksVsNGammaCanditates(NULL),
    hNV0Tracks(NULL),
    hEtaShift(NULL),
    tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -305,6 +306,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
    hNGammaCandidates(NULL),
+   hNGoodESDTracksVsNGammaCanditates(NULL),
    hNV0Tracks(NULL),
    hEtaShift(NULL),
    tESDMesonsInvMassPtDcazMinDcazMaxFlag(NULL),
@@ -448,6 +450,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 	hNEvents = new TH1I*[fnCuts];
 	hNGoodESDTracks = new TH1I*[fnCuts];
 	hNGammaCandidates = new TH1I*[fnCuts];
+	hNGoodESDTracksVsNGammaCanditates = new TH2F*[fnCuts];
 	hNV0Tracks = new TH1I*[fnCuts];
 	hEtaShift = new TProfile*[fnCuts];
 	hESDConvGammaPt = new TH1F*[fnCuts];
@@ -520,6 +523,12 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		else if(fIsHeavyIon == 2) hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
 		else hNGammaCandidates[iCut] = new TH1I("GammaCandidates","GammaCandidates",50,0,50);
 		fESDList[iCut]->Add(hNGammaCandidates[iCut]);
+		if(fIsHeavyIon == 1) hNGoodESDTracksVsNGammaCanditates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",4000,0,4000,100,0,100);
+		else if(fIsHeavyIon == 2) hNGoodESDTracksVsNGammaCanditates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",400,0,400,50,0,50);
+		else hNGoodESDTracksVsNGammaCanditates[iCut] = new TH2F("GoodESDTracksVsGammaCandidates","GoodESDTracksVsGammaCandidates",200,0,200,50,0,50);
+		fESDList[iCut]->Add(hNGoodESDTracksVsNGammaCanditates[iCut]);
+
+		
 		if(fIsHeavyIon == 1) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
 		else if(fIsHeavyIon == 2) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
 		else hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",1500,0,1500);
@@ -1046,6 +1055,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       ProcessPhotonCandidates(); // Process this cuts gammas
 
       hNGammaCandidates[iCut]->Fill(fGammaCandidates->GetEntries());
+	  hNGoodESDTracksVsNGammaCanditates[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks(),fGammaCandidates->GetEntries());
       if(fDoMesonAnalysis){ // Meson Analysis
          if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseMCPSmearing() && fIsMC){
             fUnsmearedPx = new Double_t[fGammaCandidates->GetEntries()]; // Store unsmeared Momenta
