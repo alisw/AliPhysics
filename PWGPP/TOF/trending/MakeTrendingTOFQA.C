@@ -182,12 +182,14 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     avRawTime=hRawTime->GetMean();
     if (!isMC){
       hRawTime->Fit("landau","RQ0","",200.,250.);
-      peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
-      spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
-      peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
-      spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
-      printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-      printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
+      if (hRawTime->GetFunction("landau")) {
+	peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
+	spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
+	peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
+	spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
+      // 	printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
+      // printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
+      }
     } else {
       printf("Reminder: Raw time not available in MC simulated data.");
     }
@@ -199,14 +201,16 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if ((hTime)&&(hTime->GetEntries()>0)) {
     avTime=hTime->GetMean();
     hTime->Fit("landau","RQ0","",0.,50.);
-    peakTime=(hTime->GetFunction("landau"))->GetParameter(1);
-    spreadTime=(hTime->GetFunction("landau"))->GetParameter(2);
-    peakTimeErr=(hTime->GetFunction("landau"))->GetParError(1);
-    spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
-    negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
-    printf("Main peak time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-    printf("Main peak time (landau): spread = %f +- %f\n",spreadTime,spreadTimeErr );
-    printf("Ratio of tracks with time<12.5 ns / total = %f\n",negTimeRatio );
+    if (hTime->GetFunction("landau")) {
+      peakTime=(hTime->GetFunction("landau"))->GetParameter(1);
+      spreadTime=(hTime->GetFunction("landau"))->GetParameter(2);
+      peakTimeErr=(hTime->GetFunction("landau"))->GetParError(1);
+      spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
+      negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
+    // printf("Main peak time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
+    // printf("Main peak time (landau): spread = %f +- %f\n",spreadTime,spreadTimeErr );
+    // printf("Ratio of tracks with time<12.5 ns / total = %f\n",negTimeRatio );
+    }
     MakeUpHisto(hTime, "matched tracks", 20, kBlue+2);
     hTime->Rebin(2);
     
@@ -222,12 +226,14 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if ((hTot)&&(hTot->GetEntries()>0)){
     avTot=hTot->GetMean();
     hTot->Fit("gaus","","",0.,50.);
-    peakTot=(hTot->GetFunction("gaus"))->GetParameter(1);
-    spreadTot=(hTot->GetFunction("gaus"))->GetParameter(2);
-    peakTotErr=(hTot->GetFunction("gaus"))->GetParError(1);
-    spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
-    printf("Main peak ToT (gaus): mean = %f +- %f\n",peakTot,peakTotErr );
-    printf("Main peak ToT (gaus): spread = %f +- %f\n",spreadTot,spreadTotErr );	
+    if (hTot->GetFunction("gaus")) {
+      peakTot=(hTot->GetFunction("gaus"))->GetParameter(1);
+      spreadTot=(hTot->GetFunction("gaus"))->GetParameter(2);
+      peakTotErr=(hTot->GetFunction("gaus"))->GetParError(1);
+      spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
+    // printf("Main peak ToT (gaus): mean = %f +- %f\n",peakTot,peakTotErr );
+    // printf("Main peak ToT (gaus): spread = %f +- %f\n",spreadTot,spreadTotErr );	
+    }
   }      
   MakeUpHisto(hTot, "matched tracks", 8, kViolet-3);
   
@@ -306,7 +312,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
     if (hMatchingVsPt->GetFunction("pol0")){
       matchEffLinFit1Gev=(hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
       matchEffLinFit1GevErr=(hMatchingVsPt->GetFunction("pol0"))->GetParError(0);	
-      printf("Matching efficiency fit param is %f +- %f\n",matchEffLinFit1Gev,matchEffLinFit1GevErr );
+      //printf("Matching efficiency fit param is %f +- %f\n",matchEffLinFit1Gev,matchEffLinFit1GevErr );
     }
   } else {
     printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
@@ -374,8 +380,8 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
       spreadPiDiffTime=(hPionDiff->GetFunction("gaus"))->GetParameter(2);
       peakPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(1);
       spreadPiDiffTimeErr=(hPionDiff->GetFunction("gaus"))->GetParError(2);
-      printf("Main peak t-t_exp (gaus): mean = %f +- %f\n",peakPiDiffTime,peakPiDiffTimeErr );
-      printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
+      // printf("Main peak t-t_exp (gaus): mean = %f +- %f\n",peakPiDiffTime,peakPiDiffTimeErr );
+      // printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
     }
   }
   
@@ -519,13 +525,15 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if ((hT0A)&&(hT0A->GetEntries()>0)) {
     avT0A = hT0A->GetMean();
     hT0A->Fit("gaus","RQ0", "", -1000., 1000.);
-    peakT0A=(hT0A->GetFunction("gaus"))->GetParameter(1);
-    spreadT0A=(hT0A->GetFunction("gaus"))->GetParameter(2);
-    peakT0AErr=(hT0A->GetFunction("gaus"))->GetParError(1);
-    spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);	
-    printf("Main peak T0A(gaus): mean = %f +- %f\n",peakT0A,peakT0AErr );
-    printf("Main peak T0A (gaus): spread = %f +- %f\n",spreadT0A,spreadT0AErr );	 
-    //add integral of main peak over total
+    if (hT0A->GetFunction("gaus")) {
+      peakT0A=(hT0A->GetFunction("gaus"))->GetParameter(1);
+      spreadT0A=(hT0A->GetFunction("gaus"))->GetParameter(2);
+      peakT0AErr=(hT0A->GetFunction("gaus"))->GetParError(1);
+      spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);	
+      // printf("Main peak T0A(gaus): mean = %f +- %f\n",peakT0A,peakT0AErr );
+      // printf("Main peak T0A (gaus): spread = %f +- %f\n",spreadT0A,spreadT0AErr );
+      //add integral of main peak over total
+    }
   }
   MakeUpHisto(hT0A, "events", 8, kBlue);
   hT0A->Rebin(2);
@@ -534,13 +542,15 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if ((hT0C)&&(hT0C->GetEntries()>0)) {
     avT0C=hT0C->GetMean();
     hT0C->Fit("gaus","RQ0","", -1000., 1000.);
-    peakT0C=(hT0C->GetFunction("gaus"))->GetParameter(1);
-    spreadT0C=(hT0C->GetFunction("gaus"))->GetParameter(2);
-    peakT0CErr=(hT0C->GetFunction("gaus"))->GetParError(1);
-    spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);	
-    printf("Main peak T0C(gaus): mean = %f +- %f\n",peakT0C,peakT0CErr );
-    printf("Main peak T0C (gaus): spread = %f +- %f\n",spreadT0C,spreadT0CErr );	 
-    //add integral of main peak over total
+    if (hT0C->GetFunction("gaus")) {
+      peakT0C=(hT0C->GetFunction("gaus"))->GetParameter(1);
+      spreadT0C=(hT0C->GetFunction("gaus"))->GetParameter(2);
+      peakT0CErr=(hT0C->GetFunction("gaus"))->GetParError(1);
+      spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);	
+      // printf("Main peak T0C(gaus): mean = %f +- %f\n",peakT0C,peakT0CErr );
+      // printf("Main peak T0C (gaus): spread = %f +- %f\n",spreadT0C,spreadT0CErr );
+      //add integral of main peak over total
+    }
   }
   MakeUpHisto(hT0C, "events", 8, kGreen+1);
   hT0C->Rebin(2);
@@ -549,16 +559,18 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   if ((hT0AC)&&(hT0AC->GetEntries()>0)) {
     avT0AC=hT0AC->GetMean();
     hT0AC->Fit("gaus","RQ0", "",-1000., 1000.);
-    peakT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(1);
-    spreadT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(2);
-    peakT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(1);
-    spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);	
-    printf("Main peak T0AC(gaus): mean = %f +- %f\n",peakT0AC,peakT0ACErr );
-    printf("Main peak T0AC (gaus): spread = %f +- %f\n",spreadT0AC,spreadT0ACErr );	 
+    if (hT0AC->GetFunction("gaus")) {
+      peakT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(1);
+      spreadT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(2);
+      peakT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(1);
+      spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);	
+      // printf("Main peak T0AC(gaus): mean = %f +- %f\n",peakT0AC,peakT0ACErr );
+      // printf("Main peak T0AC (gaus): spread = %f +- %f\n",spreadT0AC,spreadT0ACErr );	 
+    }
   }
   MakeUpHisto(hT0AC, "events", 8, kRed+1);
   hT0AC->Rebin(2);
-
+  
   TLegend *lT0 = new TLegend(0.7125881,0.6052519,0.979435,0.7408306,NULL,"brNDC");
   lT0->SetTextSize(0.041);
   lT0->AddEntry(hT0AC, "T0 A&C","L");
@@ -566,20 +578,21 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   lT0->AddEntry(hT0C, "T0 C","L");
   lT0->SetFillColor(kWhite);
   lT0->SetShadowColor(0);
-
+  
   TH1F*hT0res=(TH1F*)timeZeroList->FindObject("hT0DetRes");
   if ((hT0res)&&(hT0res->GetEntries()>0)) {
     avT0res=hT0res->GetMean();
     hT0res->Fit("gaus");
-    peakT0res=(hT0res->GetFunction("gaus"))->GetParameter(1);
-    spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
-    peakT0resErr=(hT0res->GetFunction("gaus"))->GetParError(1);
-    spreadT0resErr=(hT0res->GetFunction("gaus"))->GetParError(2);	
-    printf("Main peak T0res(gaus): mean = %f +- %f\n",peakT0res,peakT0resErr );
-    printf("Main peak T0res (gaus): spread = %f +- %f\n",spreadT0res,spreadT0resErr );	 
+    if (hT0res->GetFunction("gaus")) {
+      peakT0res=(hT0res->GetFunction("gaus"))->GetParameter(1);
+      spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
+      peakT0resErr=(hT0res->GetFunction("gaus"))->GetParError(1);
+      spreadT0resErr=(hT0res->GetFunction("gaus"))->GetParError(2);	
+      // printf("Main peak T0res(gaus): mean = %f +- %f\n",peakT0res,peakT0resErr );
+      // printf("Main peak T0res (gaus): spread = %f +- %f\n",spreadT0res,spreadT0resErr );	 
     //add integral of main peak over total
+    }
   }
-  
   TH1F*hT0fillRes=(TH1F*)timeZeroList->FindObject("hT0fillRes");
   if ((hT0fillRes)&&(hT0fillRes->GetEntries()>0)) {
     avT0fillRes=hT0fillRes->GetMean();
