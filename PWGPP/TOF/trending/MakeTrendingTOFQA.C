@@ -12,7 +12,8 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
 			Int_t runNumber,          // run number
 			Bool_t isMC=kFALSE,       //MC flag, to disable meaningless checks
 			Bool_t canvasE = kFALSE,  //enable display plots on canvas and save png
-			Bool_t IsOnGrid = kFALSE) //set to kTRUE to access files on the grid
+			Bool_t IsOnGrid = kFALSE, //set to kTRUE to access files on the grid
+      TString ocdbStorage = "raw://") //set the default ocdb storage
 {   
   // macro to generate tree with TOF QA trending variables
   // access qa PWGPP output files  
@@ -163,7 +164,7 @@ Int_t MakeTrendingTOFQA(TString qafilename,       //full path of the QA output; 
   ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
 
   //save quantities for trending
-  goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber);
+  goodChannelRatio=(Double_t)GetGoodTOFChannelsRatio(runNumber,kFALSE,ocdbStorage);
 	
   //--------------------------------- Multiplicity ----------------------------------//
 
