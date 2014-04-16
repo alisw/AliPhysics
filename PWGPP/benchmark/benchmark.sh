@@ -2173,7 +2173,6 @@ done
   goCreateQAplots "${PWD}/qa.list" "${productionID}" "QAplots" "${configFile}" "${extraOpts[@]}" filteringList="${PWD}/filtering.list" &>createQAplots.log
 
   #make a merged summary tree out of the QA trending, dcs trees and log summary trees
-  echo goMakeMergedSummaryTree PWD=$PWD
   goMakeMergedSummaryTree
 
   #if set, email the summary
