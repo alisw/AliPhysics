@@ -73,6 +73,7 @@ makeHTMLindexPerPeriod()
 <p><font size="4">Runs:</font></p>
 EOF
 
+local dir
 for dir in 000*; do
   echo "<a href="${dir}">${dir}</a>" >> index.html
 done
