@@ -674,7 +674,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
   double kCheckDCAK0	[5] = {0.1,0.2,0.3,0.5,1.0};
   double kCheckDCAPi	[5] = {1.0,0.6,0.4,0.2,0.1};
   double kCheckDCAPiPi	[5] = {0.1,0.2,0.3,0.5,1.0};
-  double kCheckAvgSep	[5] = {0.0,2.5,5.0,7.5,10.0};
+  double kCheckAvgSep	[5] = {10.0,7.5,5.0,2.5,0.0};
 
 ////////////////////////////////////////////////////////////////  
   //v0 tester
@@ -1319,7 +1319,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
             
             //for avg sep
             bool asSkip = kFALSE;
-            for(int iCut=0;iCut<4;iCut++){
+            for(int iCut=0;iCut<4;iCut++){ //other parameters
              if(!(fEvt)->fK0Particle[i].fCutPass[iCut][2] || !(fEvt+evnum)->fK0Particle[j].fCutPass[iCut][2]) asSkip=kTRUE;
             }
             if(asSkip) continue;
