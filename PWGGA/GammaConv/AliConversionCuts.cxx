@@ -1728,6 +1728,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
      return;
   }
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
+	 cout << "I have to find: " <<  fNameHistoReweightingPi0.Data() << endl;
      TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
      hReweightMCHistPi0->SetDirectory(0);
@@ -1735,6 +1736,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
+	  cout << "I have to find: " <<  fNameFitDataPi0.Data() << endl;
      TF1 *fFitDataPi0temp = (TF1*)f->Get(fNameFitDataPi0.Data());
      fFitDataPi0 = new TF1(*fFitDataPi0temp);
      if (fFitDataPi0) AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
@@ -1742,6 +1744,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+	 cout << "I have to find: " <<  fNameHistoReweightingEta.Data() << endl;
      TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
      hReweightMCHistEta->SetDirectory(0);
@@ -1750,6 +1753,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+	 cout << "I have to find: " <<  fNameFitDataEta.Data() << endl;
      TF1 *fFitDataEtatemp = (TF1*)f->Get(fNameFitDataEta.Data());
      fFitDataEta = new TF1(*fFitDataEtatemp);
      if (fFitDataEta) AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
@@ -1757,6 +1761,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 
   }
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
+	 cout << "I have to find: " <<  fNameHistoReweightingK0s.Data() << endl;
      TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
      hReweightMCHistK0s->SetDirectory(0);
@@ -1765,6 +1770,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
+	 cout << "I have to find: " <<  fNameFitDataK0s.Data() << endl; 
      TF1 *fFitDataK0stemp = (TF1*)f->Get(fNameFitDataK0s.Data());
      fFitDataK0s = new TF1(*fFitDataK0stemp);
      if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
