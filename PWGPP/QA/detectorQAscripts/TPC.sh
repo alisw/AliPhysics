@@ -70,8 +70,15 @@ makeHTMLindexPerPeriod()
 <a href="1overPt_vs_run.png">Delta 1/pt</a><br>
 <a href="DCAOffset_vs_run.png">DCAs</a><br>
 <br>
-<a href="Runs/index.html">Qualities relevant to individual runs</a><br>
+<p><font size="4">Runs:</font></p>
+EOF
 
+for dir in 000*; do
+  echo "<a href="${dir}">${dir}</a>" >> index.html
+done
+
+  cat >> index.html <<EOF
+<br>
 <p><font size="4">Additional plots</font></p>
 <a href="occ_AC_Side_IROC_OROC_vs_run.png">Nr of Chambers with lower gain (occupancy)</a><br>
 <br>
