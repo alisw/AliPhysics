@@ -313,6 +313,15 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    THnSparseF* hnspDstandalone=(THnSparseF*)fOutput->FindObject("hsDstandalone");
    THnSparseF* hsJet=(THnSparseF*)fOutput->FindObject("hsJet");
    
+   TH1F* hztracksinjet=(TH1F*)fOutput->FindObject("hztracksinjet");
+   TH1F* hDiffPtTrPtJzNok=(TH1F*)fOutput->FindObject("hDiffPtTrPtJzNok");
+   TH1F* hDiffPtTrPtJzok=(TH1F*)fOutput->FindObject("hDiffPtTrPtJzok");
+   TH1F* hDiffPzTrPtJzok=(TH1F*)fOutput->FindObject("hDiffPzTrPtJzok");
+   TH1F* hDiffPzTrPtJzNok=(TH1F*)fOutput->FindObject("hDiffPzTrPtJzNok");
+   TH1I* hNtrkjzNok=(TH1I*)fOutput->FindObject("hNtrkjzNok");
+   TH1F* hztracksinjetT=(TH1F*)fOutput->FindObject("hztracksinjetT");
+   
+   
    hstat->Fill(0);
    
    // fix for temporary bug in ESDfilter 
@@ -437,7 +446,11 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
    
    Int_t cntjet=0;
    //loop over jets and consider only the leading jet in the event
-   for (Int_t iJets = 0; iJets<njets; iJets++) {    
+   for (Int_t iJets = 0; iJets<njets; iJets++) {
+      fPmissing[0]=0;
+      fPmissing[1]=0;
+      fPmissing[2]=0;
+      
       //Printf("Jet N %d",iJets);
       AliEmcalJet* jet = (AliEmcalJet*)GetJetFromArray(iJets);
       //Printf("Corr task Accept Jet");
@@ -452,6 +465,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       etaJet = jet->Eta();
       fPtJet = jet->Pt();
       Double_t origPtJet=fPtJet;
+      
       pointJ[0] = phiJet;
       pointJ[1] = etaJet;
       pointJ[2] = ptjet;
@@ -471,13 +485,37 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       hPtJet  ->Fill(fPtJet);
       if(fJetOnlyMode) hsJet->Fill(pointJ,1);
       //loop on jet particles
-      Int_t ntrjet=  jet->GetNumberOfTracks();    
+      Int_t ntrjet=  jet->GetNumberOfTracks(); 
+      Double_t sumPtTracks=0,sumPzTracks=0;
+      Int_t zg1jtrk=0;
       for(Int_t itrk=0;itrk<ntrjet;itrk++){
       	 
       	 AliPicoTrack* jetTrk=(AliPicoTrack*)jet->TrackAt(itrk,fTrackArr);     
       	 hdeltaRJetTracks->Fill(DeltaR(jet,jetTrk));
-      	 
+      	 Double_t ztrackj=Z(jetTrk,jet);
+     	 hztracksinjet->Fill(ztrackj);
+     	 sumPtTracks+=jetTrk->Pt(); 
+     	 sumPzTracks+=jetTrk->Pz(); 
+     	 if(ztrackj>1){
+     	    zg1jtrk++;
+     	 }
+     	 
+     	 Double_t ztrackjTr=Z(jetTrk,jet,kTRUE);
+     	 hztracksinjetT->Fill(ztrackjTr);
+     	 
       }//end loop on jet tracks
+      
+      hNtrkjzNok->Fill(zg1jtrk);
+      Double_t diffpt=origPtJet-sumPtTracks;
+      Double_t diffpz=jet->Pz()-sumPzTracks;
+      if(zg1jtrk>0){
+      	 hDiffPtTrPtJzNok->Fill(diffpt);
+      	 hDiffPzTrPtJzNok->Fill(diffpz);
+      
+      }else{
+      	 hDiffPtTrPtJzok->Fill(diffpt);
+      	 hDiffPzTrPtJzok->Fill(diffpz);
+      }
       
       if(candidates==0){
       	 hstat->Fill(7);
@@ -503,7 +541,10 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::Run()
       	    RecalculateMomentum(pjet,fPmissing);      	          	    
       	    fPtJet=TMath::Sqrt(pjet[0]*pjet[0]+pjet[1]*pjet[1]);
       	    
+      	    
+      	    //debugging histograms
       	    Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]);
+      	    for(Int_t k=0;k<3;k++) ((TH1F*)fOutput->FindObject(Form("hMissP%d",k)))->Fill(fPmissing[k]);
       	    
       	    ((TH1F*)fOutput->FindObject("hmissingp"))->Fill(pmissing);
       	    Double_t ptdiff=fPtJet-origPtJet;
@@ -622,7 +663,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::SetD0WidthForDStar(Int_t nptbins,F
 
 //_______________________________________________________________________________
 
-Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet) const{
+Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet* jet, Bool_t transverse) const{
    if(!part || !jet){
       printf("Particle or jet do not exist!\n");
       return -99;
@@ -636,8 +677,25 @@ Double_t AliAnalysisTaskFlavourJetCorrelations::Z(AliVParticle* part,AliEmcalJet
    }
    
    RecalculateMomentum(pj, fPmissing);
+   if(transverse) return ZT(p,pj);
+   else
+   return Z(p,pj);
+}
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskFlavourJetCorrelations::Z(Double_t* p, Double_t *pj) const{
+   
    Double_t pjet2=pj[0]*pj[0]+pj[1]*pj[1]+pj[2]*pj[2];
    Double_t z=(p[0]*pj[0]+p[1]*pj[1]+p[2]*pj[2])/(pjet2);
+   return z;
+}
+
+
+//_______________________________________________________________________________
+Double_t AliAnalysisTaskFlavourJetCorrelations::ZT(Double_t* p, Double_t *pj) const{
+   
+   Double_t pjet2=pj[0]*pj[0]+pj[1]*pj[1];
+   Double_t z=(p[0]*pj[0]+p[1]*pj[1])/(pjet2);
    return z;
 }
 
@@ -742,34 +800,70 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
    }
 
    if(!fJetOnlyMode){
-   TH1I* hControlDInJ=new TH1I("hControlDInJ","Checks D in Jet",8, -0.5,7.5);
-   hControlDInJ->GetXaxis()->SetBinLabel(1,"DR In,1 daugh out");
-   hControlDInJ->GetXaxis()->SetBinLabel(2,"DR In,2 daugh out");
-   hControlDInJ->GetXaxis()->SetBinLabel(3,"DR In,3 daugh out");
-   hControlDInJ->GetXaxis()->SetBinLabel(4,"Tot tracks non matched");
-   hControlDInJ->GetXaxis()->SetBinLabel(5,"D0 daug missing");
-   hControlDInJ->GetXaxis()->SetBinLabel(6,"soft pi missing");
-   hControlDInJ->GetXaxis()->SetBinLabel(7,"IDprong diff GetDau");
-   hControlDInJ->GetXaxis()->SetBinLabel(8,"still z>1 (cand)");
-   
-   hControlDInJ->SetNdivisions(1);
-   hControlDInJ->GetXaxis()->SetLabelSize(0.05);
-   fOutput->Add(hControlDInJ);
-   
-   TH1F *hmissingp=new TH1F("hmissingp", "Distribution of missing momentum (modulo)", 50, 0.,30.);
-   fOutput->Add(hmissingp);
-   TH1F *hDeltaPtJet=new TH1F("hDeltaPtJet", "Difference between the jet pt before and after correction", 50, 0.,30.);
-   fOutput->Add(hDeltaPtJet);
-   TH1F *hRelDeltaPtJet=new TH1F("hRelDeltaPtJet", "Difference between the jet pt before and after correction/ original pt", 200, 0.,2.);
-   fOutput->Add(hRelDeltaPtJet);
-   
-   TH1I* hIDddaugh=new TH1I("hIDddaugh", "ID of daughters", 2001,-1000,1000);
-   fOutput->Add(hIDddaugh);
-   TH1I* hIDddaughOut=new TH1I("hIDddaughOut", "ID of daughters not found in jet", 2001,-1000,1000);
-   fOutput->Add(hIDddaughOut);
-   TH1I* hIDjetTracks=new TH1I("hIDjetTracks", "ID of jet tracks", 2001,-1000,1000);
-   fOutput->Add(hIDjetTracks);
-
+      
+      //debugging histograms
+      TH1I* hControlDInJ=new TH1I("hControlDInJ","Checks D in Jet",8, -0.5,7.5);
+      hControlDInJ->GetXaxis()->SetBinLabel(1,"DR In,1 daugh out");
+      hControlDInJ->GetXaxis()->SetBinLabel(2,"DR In,2 daugh out");
+      hControlDInJ->GetXaxis()->SetBinLabel(3,"DR In,3 daugh out");
+      hControlDInJ->GetXaxis()->SetBinLabel(4,"Tot tracks non matched");
+      hControlDInJ->GetXaxis()->SetBinLabel(5,"D0 daug missing");
+      hControlDInJ->GetXaxis()->SetBinLabel(6,"soft pi missing");
+      hControlDInJ->GetXaxis()->SetBinLabel(7,"IDprong diff GetDau");
+      hControlDInJ->GetXaxis()->SetBinLabel(8,"still z>1 (cand)");
+      
+      hControlDInJ->SetNdivisions(1);
+      hControlDInJ->GetXaxis()->SetLabelSize(0.05);
+      fOutput->Add(hControlDInJ);
+      
+      TH1F *hmissingp=new TH1F("hmissingp", "Distribution of missing momentum (modulo);|p_{missing}|", 200, 0.,20.);
+      fOutput->Add(hmissingp);
+      
+      for(Int_t k=0;k<3;k++) {
+      	 TH1F *hMissPi=new TH1F(Form("hMissP%d",k), Form("Missing p component {%d};p_{%d}",k,k), 400, -10.,10.);
+      	 fOutput->Add(hMissPi);
+      }
+      TH1F *hDeltaPtJet=new TH1F("hDeltaPtJet", "Difference between the jet pt before and after correction;p_{T}^{jet,recalc}-p_{T}^{jet,orig}", 200, 0.,20.);
+      
+      fOutput->Add(hDeltaPtJet);
+      TH1F *hRelDeltaPtJet=new TH1F("hRelDeltaPtJet", "Difference between the jet pt before and after correction/ original pt;(p_{T}^{jet,recalc}-p_{T}^{jet,orig})/p_{T}^{jet,orig}", 200, 0.,1.);
+      fOutput->Add(hRelDeltaPtJet);
+      
+      TH1F* hzDinjet=new TH1F("hzDinjet","Z of candidates with daughters in jet;z",nbinsz,zlims[0],zlims[1]);
+      fOutput->Add(hzDinjet);
+      //frag func of tracks in the jet
+      TH1F* hztracksinjet=new TH1F("hztracksinjet","Z of tracks in jet;z",nbinsz,zlims[0],zlims[1]);
+      fOutput->Add(hztracksinjet);
+      
+      //check jet and tracks
+      TH1F* hDiffPtTrPtJzok=new TH1F("hDiffPtTrPtJzok","Sum p_{T}^{trks} - p_{T}^{jet}, for z<1;(#Sigma p_{T}^{trks}) - p_{T}^{jet}", 100,-0.2,0.2);
+      fOutput->Add(hDiffPtTrPtJzok);
+      TH1F* hDiffPtTrPtJzNok=new TH1F("hDiffPtTrPtJzNok","Sum p_{T}^{trks} - p_{T}^{jet}, for z>1;(#Sigma p_{T}^{trks}) - p_{T}^{jet}", 100,-0.2,0.2);
+      fOutput->Add(hDiffPtTrPtJzNok);
+      TH1F* hDiffPzTrPtJzok=new TH1F("hDiffPzTrPtJzok","Sum p_{z}^{trks} - p_{z}^{jet}, for z<1;(#Sigma p_{z}^{trks}) - p_{z}^{jet}", 100,-0.2,0.2);
+      fOutput->Add(hDiffPzTrPtJzok);
+      TH1F* hDiffPzTrPtJzNok=new TH1F("hDiffPzTrPtJzNok","Sum p_{z}^{trks} - p_{z}^{jet}, for z>1;(#Sigma p_{z}^{trks}) - p_{z}^{jet}", 100,-0.2,0.2);
+      fOutput->Add(hDiffPzTrPtJzNok);
+      TH1I* hNtrkjzNok=new TH1I("hNtrkjzNok", "Number of tracks in a jet with z>1;N^{tracks} (z>1)",5,0,5);
+      fOutput->Add(hNtrkjzNok);
+      
+      //calculate frag func with pt (simply ptD(or track)\cdot pt jet /ptjet^2)
+      TH1F* hzDT=new TH1F("hzDT", "Z of D in jet in transverse components;(p_{T}^{D} dot p_{T}^{jet})/p_{T}^{jet}^{2} ",nbinsz,zlims[0],zlims[1]);
+      fOutput->Add(hzDT);
+      TH1F* hztracksinjetT=new TH1F("hztracksinjetT", "Z of jet tracks in transverse components;(p_{T}^{trks} dot p_{T}^{jet})/p_{T}^{jet}^{2}",nbinsz,zlims[0],zlims[1]);
+      fOutput->Add(hztracksinjetT);
+      
+      TH1I* hIDddaugh=new TH1I("hIDddaugh", "ID of daughters;ID", 2001,-1000,1000);
+      fOutput->Add(hIDddaugh);
+      TH1I* hIDddaughOut=new TH1I("hIDddaughOut", "ID of daughters not found in jet;ID", 2001,-1000,1000);
+      fOutput->Add(hIDddaughOut);
+      TH1I* hIDjetTracks=new TH1I("hIDjetTracks", "ID of jet tracks;ID", 2001,-1000,1000);
+      fOutput->Add(hIDjetTracks);
+      
+      TH1F* hDRdaughOut=new TH1F("hDRdaughOut", "#Delta R of daughters not belonging to the jet tracks (D in jet);#Delta R",200, 0.,2.);
+      fOutput->Add(hDRdaughOut);
+      
+      
       if(fCandidateType==kDstartoKpipi) 
       {
       	 
@@ -874,7 +968,22 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsRecoJetCorr(AliVPartic
    if(deltaphi<=-(TMath::Pi())/2.) deltaphi = deltaphi+2.*(TMath::Pi());
    if(deltaphi>(3.*(TMath::Pi()))/2.) deltaphi = deltaphi-2.*(TMath::Pi());
    Double_t z=Z(candidate,jet);
-   if(z>1) ((TH1I*)fOutput->FindObject("hControlDInJ"))->Fill(7);
+   /*
+   if(z>1) {
+      ((TH1I*)fOutput->FindObject("hControlDInJ"))->Fill(7);
+      Double_t pmissing=TMath::Sqrt(fPmissing[0]*fPmissing[0]+fPmissing[1]*fPmissing[1]+fPmissing[2]*fPmissing[2]);
+      
+      for(Int_t k=0;k<3;k++) ((TH1F*)fOutput->FindObject(Form("hMissP%d",k)))->Fill(fPmissing[k]);
+      
+      ((TH1F*)fOutput->FindObject("hmissingp"))->Fill(pmissing);
+      Double_t ptdiff=fPtJet-jet->Pt();
+      ((TH1F*)fOutput->FindObject("hDeltaPtJet"))->Fill(ptdiff);
+      ((TH1F*)fOutput->FindObject("hRelDeltaPtJet"))->Fill(ptdiff/jet->Pt());
+
+      
+   }
+   */
+   if(fIsDInJet)((TH1F*)fOutput->FindObject("hzDT"))->Fill(Z(candidate,jet,kTRUE));
    
    TH1F* hDeltaRD=(TH1F*)fOutput->FindObject("hDeltaRD");
    hDeltaRD->Fill(deltaR); 
@@ -1221,6 +1330,11 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    //type 2 (default) : DeltaR < jet radius and check for all daughters among jet tracks, if not present, correct the ptjet
     
    TH1I* hControlDInJ=(TH1I*)fOutput->FindObject("hControlDInJ");
+   TH1F* hDRdaughOut=(TH1F*)fOutput->FindObject("hDRdaughOut");
+   
+   fPmissing[0]=0; 
+   fPmissing[1]=0;
+   fPmissing[2]=0;
    
    Bool_t testDeltaR=kFALSE;
    if(DeltaR(thejet,charm)<fJetRadius) testDeltaR=kTRUE;
@@ -1228,15 +1342,17 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    Int_t* daughOutOfJet;
    AliAODTrack** charmDaugh;
    Bool_t testDaugh=AreDaughtersInJet(thejet, charm, daughOutOfJet,charmDaugh,fillH);
+   if(testDaugh && testDeltaR) {
+      //Z of candidates with daughters in the jet
+      ((TH1F*)fOutput->FindObject("hzDinjet"))->Fill(Z(charm,thejet));
+      
+   }
    if(!testDaugh && testDeltaR && fTypeDInJet==2){
       
       Int_t ndaugh=3;
       if(fCandidateType==kD0toKpi) ndaugh=2;
       Int_t nOut=ndaugh;
       
-      fPmissing[0]=0; 
-      fPmissing[1]=0;
-      fPmissing[2]=0;
       for(Int_t id=0;id<ndaugh;id++){
       	 if(daughOutOfJet[id]!=0){ //non-matched daughter
       	    //get track and its momentum
@@ -1245,6 +1361,7 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
       	       hControlDInJ->Fill(3);
       	       if(id<2) hControlDInJ->Fill(4);
       	       if(id==2)hControlDInJ->Fill(5);
+      	       hDRdaughOut->Fill(DeltaR(thejet, charmDaugh[id]));
       	    }
       	    fPmissing[0]+=charmDaugh[id]->Px(); 
       	    fPmissing[1]+=charmDaugh[id]->Py();
@@ -1264,10 +1381,17 @@ Bool_t AliAnalysisTaskFlavourJetCorrelations::IsDInJet(AliEmcalJet *thejet, AliA
    switch(fTypeDInJet){
    case 0:
       result=testDeltaR;
+      break;
    case 1:
       result=testDeltaR && testDaugh;
+      break;
    case 2:
       result=testDeltaR && testDaugh;
+      break;
+   default:
+      AliInfo("Selection type not specified, use 1");
+      result=testDeltaR && testDaugh;
+      break;
    }
  return result;
 }
