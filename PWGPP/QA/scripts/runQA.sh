@@ -495,6 +495,7 @@ guessRunData()
   dataType=""
   originalPass=""
   originalPeriod=""
+  anchorYear=""
 
   local shortRunNumber=""
   oldIFS=${IFS}
@@ -524,7 +525,12 @@ guessRunData()
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
   #modify the OCDB: set the year
-  ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  if [[ ${dataType} =~ sim ]]; then
+    anchorYear=${mcProductionMap[${originalPeriod}]}
+    ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
+  else
+    ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  fi
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
   if [[ -z ${runNumber}} ]]
