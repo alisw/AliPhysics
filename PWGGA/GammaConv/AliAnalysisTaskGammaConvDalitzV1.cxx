@@ -188,6 +188,8 @@ fV0Reader(NULL),
    hESDTruePi0DalitzSecElectronPt(NULL),
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
+   hNGoodESDTracksVsNGoodGammas(NULL),
+   hNGoodESDTracksVsNGoodVGammas(NULL),
    hEtaShift(NULL),
    fRandom(0),
    fUnsmearedPx(NULL),
@@ -197,6 +199,7 @@ fV0Reader(NULL),
    fnCuts(0),
    fiCut(0),
    fNumberOfESDTracks(0),
+   fNumberOfESDTrackskBoth(0),
    fMoveParticleAccordingToVertex(kFALSE),
    fIsHeavyIon(kFALSE),
    fDoMesonAnalysis(kTRUE),
@@ -341,6 +344,8 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    hESDTruePi0DalitzSecElectronPt(NULL),
    hNEvents(NULL),
    hNGoodESDTracks(NULL),
+   hNGoodESDTracksVsNGoodGammas(NULL),
+   hNGoodESDTracksVsNGoodVGammas(NULL),
    hEtaShift(NULL),
    fRandom(0),
    fUnsmearedPx(NULL),
@@ -350,6 +355,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    fnCuts(0),
    fiCut(0),
    fNumberOfESDTracks(0),
+   fNumberOfESDTrackskBoth(0),
    fMoveParticleAccordingToVertex(kFALSE),
    fIsHeavyIon(kFALSE),
    fDoMesonAnalysis(kTRUE),
@@ -515,7 +521,9 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    if( fDoMesonQA ) {
      
    fQAFolder  = new TList*[fnCuts];  
-     
+   
+   hNGoodESDTracksVsNGoodGammas    = new TH2F*[fnCuts];
+   hNGoodESDTracksVsNGoodVGammas   = new TH2F*[fnCuts]; 
    hESDDalitzElectronAfterPt	   = new TH1F*[fnCuts];
    hESDDalitzPositronAfterPt       = new TH1F*[fnCuts];
    hESDDalitzElectronAfterEta      = new TH1F*[fnCuts];
@@ -656,8 +664,13 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 		
 	}
         
-      
-        
+      hNGoodESDTracksVsNGoodGammas[iCut] = new TH2F("hNGoodESDTracksVsNGoodGammas","hNGoodESDTracksVsNGoodGammas",200,-0.5,199.5,100,-0.5,99.5);
+      fQAFolder[iCut]->Add(hNGoodESDTracksVsNGoodGammas[iCut]);
+     
+      hNGoodESDTracksVsNGoodVGammas[iCut] = new TH2F("hNGoodESDTracksVsNVGoodVGammas","hNGoodESDTracksVsNGoodVGammas",200,-0.5,199.5,100,-0.5,99.5);
+      fQAFolder[iCut]->Add(hNGoodESDTracksVsNGoodVGammas[iCut]);
+     
+       
       hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
       fQAFolder[iCut]->Add(hESDConvGammaZR[iCut]);
      
@@ -1220,7 +1233,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
    fSelectorElectronIndex = fElecSelector->GetReconstructedElectronsIndex(); // Electrons from default Cut
    fSelectorPositronIndex = fElecSelector->GetReconstructedPositronsIndex(); // Positrons from default Cut
 
-   //CountESDTracks(); // Estimate Event Multiplicity
+   CountESDTracks(); // Estimate Event Multiplicity
    fNumberOfESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
    //AddTaskContainers(); //Add conatiner
 
@@ -1287,6 +1300,14 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
       CalculatePi0DalitzCandidates();
       CalculateBackground();
       UpdateEventByEventData();
+      
+      if ( fDoMesonQA ) {
+	
+      hNGoodESDTracksVsNGoodGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fGoodGammas->GetEntries());
+      hNGoodESDTracksVsNGoodVGammas[iCut]->Fill(fNumberOfESDTrackskBoth,fGoodVirtualGammas->GetEntries());
+      
+      
+      }
       
       
       if(((AliConversionMesonCuts*)fCutMesonArray->At(iCut))->UseMCPSmearing() && fMCEvent){
@@ -2481,12 +2502,13 @@ void AliAnalysisTaskGammaConvDalitzV1::CountESDTracks(){
    EsdTrackCuts->SetMaxDCAToVertexZ(2);
    EsdTrackCuts->SetEtaRange(-0.8, 0.8);
    EsdTrackCuts->SetPtRange(0.15);
+   EsdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
 
-   fNumberOfESDTracks = 0;
+   fNumberOfESDTrackskBoth = 0;
    for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
       AliESDtrack* curTrack = fESDEvent->GetTrack(iTracks);
       if(!curTrack) continue;
-      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTracks++;
+      if(EsdTrackCuts->AcceptTrack(curTrack) ) fNumberOfESDTrackskBoth++;
    }
    delete EsdTrackCuts;
    EsdTrackCuts=0x0;
