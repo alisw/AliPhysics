@@ -39,6 +39,7 @@ AliTRDTriggerAnalysis::AliTRDTriggerAnalysis() :
   fRequireMatch(kFALSE),
   fRequireMatchElectron(kFALSE),
   fRequireInTime(kTRUE),
+  fJetTriggerMode(kHJTDefault),
   fTRDlayerMaskEl(0x1),
   fTRDnTrackletsEl(5),
   fTRDptHSE(3.),
@@ -168,7 +169,8 @@ Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
     MarkInput(kHEE);
 
   // evaluate TRD GTU tracks
-  Int_t nTracks[90]      = { 0 }; // stack-wise counted number of tracks above pt threshold
+  const Int_t nStacks = (fJetTriggerMode == kHJTWindowZPhi) ? 360 : 90;
+  Int_t nTracks[360] = { 0 }; // stack-wise counted number of tracks above pt threshold
 
   Int_t nTrdTracks = event->GetNumberOfTrdTracks();
 
@@ -209,7 +211,33 @@ Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
 
     // stack-wise counting of tracks above pt threshold for jet trigger
     if (TMath::Abs(trdTrack->Pt()) >= fTRDptHJT) {
-      ++nTracks[globalStack];
+      if (fJetTriggerMode == kHJTDefault)
+	++nTracks[globalStack];
+      else if (fJetTriggerMode == kHJTWindowZPhi) {
+	AliESDTrdTrack *esdTrdTrack = dynamic_cast<AliESDTrdTrack*> (trdTrack);
+	if (esdTrdTrack) {
+	  Double_t a = esdTrdTrack->GetA()/128.;
+	  Double_t b = esdTrdTrack->GetB()/128.;
+	  Double_t c = esdTrdTrack->GetC()/256. / TMath::Tan( -2.0 / 180.0 * TMath::Pi() );
+	  Double_t x = 297.759; // L0: 297.759, L1: 309.17
+
+	  Double_t ypos = -a + x*b + (a >= 0. ? -0.253 : 0.253);
+	  Double_t zpos = c*x + (c >= 0. ? -0.84 : 0.84);
+
+	  const Float_t zStackCenter[5] = {241, 117, 0, -117, -241};
+
+	  Bool_t upperHalfPhi = ypos >= 0.;
+	  Bool_t upperHalfZ = zpos >= zStackCenter[esdTrdTrack->GetStack()];
+
+	  Int_t stackIdx = 20 * esdTrdTrack->GetSector() + (upperHalfPhi ? 10 : 0) + 2 * esdTrdTrack->GetStack() + (upperHalfZ ? 1 : 0);
+	  ++nTracks[stackIdx];
+	  ++nTracks[stackIdx - 10 + (((stackIdx - 10) < 0) ? 360 : 0)];
+	  if ((stackIdx % 10) != 0) {
+	    ++nTracks[stackIdx -  1];
+	    ++nTracks[stackIdx - 11 + (((stackIdx - 11) < 0) ? 360 : 0)];
+	  }
+	}
+      }
     }
 
     // ignore the track for the electron triggers
@@ -237,7 +265,7 @@ Bool_t AliTRDTriggerAnalysis::CalcTriggers(const AliVEvent *event)
   }
 
   // check if HJT condition is fulfilled in any stack
-  for (Int_t iStack = 0; iStack < 90; ++iStack) {
+  for (Int_t iStack = 0; iStack < nStacks; ++iStack) {
     if (nTracks[iStack] >= fTRDnHJT) {
       MarkCondition(kHJT, iStack);
       break;
