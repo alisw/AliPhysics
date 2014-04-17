@@ -228,7 +228,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1DcaNegToPrimVertex(0)    
    ,fh2ArmenterosBeforeCuts(0)
    ,fh2ArmenterosAfterCuts(0)
-   ,fh2BB3SigProton(0)
    ,fh2BBLaPos(0)
    ,fh2BBLaNeg(0)
    ,fh1CrossedRowsOverFindableNeg(0)
@@ -244,7 +243,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh3InvMassEtaTrackPtK0s(0)
    ,fh3InvMassEtaTrackPtLa(0)
    ,fh3InvMassEtaTrackPtALa(0)
-   ,fh1noAssociatedK0s(0)
+ 
    ,fh1TrackMultCone(0)
    ,fh2TrackMultCone(0) 
    ,fh2MCgenK0Cone(0)
@@ -451,7 +450,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1DcaNegToPrimVertex(0)    
   ,fh2ArmenterosBeforeCuts(0)
   ,fh2ArmenterosAfterCuts(0)
-  ,fh2BB3SigProton(0)
   ,fh2BBLaPos(0)
   ,fh2BBLaNeg(0)
   ,fh1CrossedRowsOverFindableNeg(0)
@@ -467,7 +465,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh3InvMassEtaTrackPtK0s(0)
   ,fh3InvMassEtaTrackPtLa(0)
   ,fh3InvMassEtaTrackPtALa(0)
-  ,fh1noAssociatedK0s(0)
   ,fh1TrackMultCone(0)
   ,fh2TrackMultCone(0)
   ,fh2MCgenK0Cone(0)
@@ -677,7 +674,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1DcaNegToPrimVertex(copy.fh1DcaNegToPrimVertex)    
   ,fh2ArmenterosBeforeCuts(copy.fh2ArmenterosBeforeCuts)
   ,fh2ArmenterosAfterCuts(copy.fh2ArmenterosAfterCuts)
-  ,fh2BB3SigProton(copy.fh2BB3SigProton)
   ,fh2BBLaPos(copy.fh2BBLaPos)
   ,fh2BBLaNeg(copy.fh2BBLaPos)
   ,fh1CrossedRowsOverFindableNeg(copy.fh1CrossedRowsOverFindableNeg)
@@ -693,7 +689,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh3InvMassEtaTrackPtK0s(copy.fh3InvMassEtaTrackPtK0s)
   ,fh3InvMassEtaTrackPtLa(copy.fh3InvMassEtaTrackPtLa)
   ,fh3InvMassEtaTrackPtALa(copy.fh3InvMassEtaTrackPtALa)
-  ,fh1noAssociatedK0s(copy.fh1noAssociatedK0s)
+
   ,fh1TrackMultCone(copy.fh1TrackMultCone)
   ,fh2TrackMultCone(copy.fh2TrackMultCone)
   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
@@ -898,7 +894,6 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1DcaNegToPrimVertex           = o.fh1DcaNegToPrimVertex;    
     fh2ArmenterosBeforeCuts         = o.fh2ArmenterosBeforeCuts;
     fh2ArmenterosAfterCuts          = o.fh2ArmenterosAfterCuts;
-    fh2BB3SigProton                 = o.fh2BB3SigProton;
     fh2BBLaPos                      = o.fh2BBLaPos;
     fh2BBLaNeg                      = o.fh2BBLaPos;
     fh1CrossedRowsOverFindableNeg   = o.fh1CrossedRowsOverFindableNeg;
@@ -914,7 +909,6 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh3InvMassEtaTrackPtK0s         = o.fh3InvMassEtaTrackPtK0s;
     fh3InvMassEtaTrackPtLa          = o.fh3InvMassEtaTrackPtLa;
     fh3InvMassEtaTrackPtALa         = o.fh3InvMassEtaTrackPtALa;
-    fh1noAssociatedK0s              = o.fh1noAssociatedK0s;
     fh1TrackMultCone                = o.fh1TrackMultCone;
     fh2TrackMultCone                = o.fh2TrackMultCone;
     fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
@@ -1338,25 +1332,24 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1trackNegEta                = new TH1F("fh1trackNegEta","eta negative daughters",100,-2.,2.);
   fh1V0Eta                      = new TH1F("fh1V0Eta","V0 eta",60,-1.5,1.5);
   fh1V0totMom                   = new TH1F("fh1V0totMom","V0 tot mom",240,0.,20.); 
-  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",1000,0.99,1.0);
+  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",100,0.99,1.0);
   fh1Chi2Pos                    = new TH1F("fh1Chi2Pos", "V0s chi2",100,0.,5.);
   fh1Chi2Neg                    = new TH1F("fh1Chi2Neg", "V0s chi2",100,0.,5.);
   fh1DecayLengthV0              = new TH1F("fh1DecayLengthV0", "V0s decay Length;decay length(cm)",1200,0.,120.);
-  fh2ProperLifetimeK0sVsPtBeforeCut = new TH2F("fh2ProperLifetimeK0sVsPtBeforeCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",1500,0.,15.,500,0.,250.);
-  fh2ProperLifetimeK0sVsPtAfterCut = new TH2F("fh2ProperLifetimeK0sVsPtAfterCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",1500,0.,15.,500,0.,250.);
-  fh1ProperLifetimeV0BeforeCut  = new TH1F("fh1ProperLifetimeV0BeforeCut", "V0s 2D distance over transerse mom.;(cm)",1200,0.,120.);
-  fh1ProperLifetimeV0AfterCut   = new TH1F("fh1ProperLifetimeV0AfterCut", "V0s 2D distance over transverse mom.;(cm)",1200,0.,120.);
-  fh1V0Radius                   = new TH1F("fh1V0Radius", "V0s Radius;Radius(cm)",400,0.,40.);
+  fh2ProperLifetimeK0sVsPtBeforeCut = new TH2F("fh2ProperLifetimeK0sVsPtBeforeCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",150,0.,15.,250,0.,250.);
+  fh2ProperLifetimeK0sVsPtAfterCut = new TH2F("fh2ProperLifetimeK0sVsPtAfterCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",1500,0.,15.,250,0.,250.);
+  fh1ProperLifetimeV0BeforeCut  = new TH1F("fh1ProperLifetimeV0BeforeCut", "V0s 2D distance over transerse mom.;(cm)",120,0.,120.);
+  fh1ProperLifetimeV0AfterCut   = new TH1F("fh1ProperLifetimeV0AfterCut", "V0s 2D distance over transverse mom.;(cm)",120,0.,120.);
+  fh1V0Radius                   = new TH1F("fh1V0Radius", "V0s Radius;Radius(cm)",200,0.,40.);
   fh1DcaV0Daughters             = new TH1F("fh1DcaV0Daughters", "DCA between daughters;dca(cm)",200,0.,2.);
-  fh1DcaPosToPrimVertex         = new TH1F("fh1DcaPosToPrimVertex", "Positive V0 daughter;dca(cm)",1000,0.,10.);
-  fh1DcaNegToPrimVertex         = new TH1F("fh1DcaNegToPrimVertex", "Negative V0 daughter;dca(cm)",1000,0.,10.);
-  fh2ArmenterosBeforeCuts       = new TH2F("fh2ArmenterosBeforeCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c})",200,-1.2,1.2,600,0.,0.35);
-  fh2ArmenterosAfterCuts        = new TH2F("fh2ArmenterosAfterCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c});",200,-1.2,1.2,600,0.,0.35);
-  fh2BB3SigProton               = new TH2F("fh2BB3SigProton","-dE/dX against Momentum for Protons @3sigma from TPC; P (GeV); -dE/dx (keV/cm ?)",1000,0.,10.,1000,0.,200.);
-  fh2BBLaPos                    = new TH2F("fh2BBLaPos","PID of the positive daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
-  fh2BBLaNeg                    = new TH2F("fh2BBLaNeg","PID of the negative daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
-  fh1CrossedRowsOverFindableNeg = new TH1F("fh1CrossedRowsOverFindableNeg","pos daughter crossed rows over findable in TPC;counts",200,0.,2.);
-  fh1CrossedRowsOverFindablePos = new TH1F("fh1CrossedRowsOverFindablePos","neg daughter crossed rows over findable in TPC;counts",200,0.,2.);
+  fh1DcaPosToPrimVertex         = new TH1F("fh1DcaPosToPrimVertex", "Positive V0 daughter;dca(cm)",100,0.,10.);
+  fh1DcaNegToPrimVertex         = new TH1F("fh1DcaNegToPrimVertex", "Negative V0 daughter;dca(cm)",100,0.,10.);
+  fh2ArmenterosBeforeCuts       = new TH2F("fh2ArmenterosBeforeCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c})",200,-1.2,1.2,350,0.,0.35);
+  fh2ArmenterosAfterCuts        = new TH2F("fh2ArmenterosAfterCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c});",200,-1.2,1.2,350,0.,0.35);
+  fh2BBLaPos                    = new TH2F("fh2BBLaPos","PID of the positive daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",100,0,10,200,0,200);
+  fh2BBLaNeg                    = new TH2F("fh2BBLaNeg","PID of the negative daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",100,0,10,200,0,200);
+  fh1CrossedRowsOverFindableNeg = new TH1F("fh1CrossedRowsOverFindableNeg","pos daughter crossed rows over findable in TPC;counts",20,0.,2.);
+  fh1CrossedRowsOverFindablePos = new TH1F("fh1CrossedRowsOverFindablePos","neg daughter crossed rows over findable in TPC;counts",20,0.,2.);
   fh1PosDaughterCharge          = new TH1F("fh1PosDaughterCharge","charge of V0 positive daughters; V0 daughters",3,-2.,2.);
   fh1NegDaughterCharge          = new TH1F("fh1NegDaughterCharge","charge of V0 negative daughters; V0 daughters",3,-2.,2.);
   fh1PtMCK0s                    = new TH1F("fh1PtMCK0s","Pt of MC rec K0s; #it{p}_{T} (GeV/#it{c})",200,0.,20.);
@@ -1374,25 +1367,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh3IMK0MedianCone             = new TH3F("fh3IMK0MedianCone","{K_{0}}^{s} content in median cluster cone",39,5.,200., 400,0.3,0.7, 200,0.,20.);
   fh3IMLaMedianCone             = new TH3F("fh3IMLaMedianCone","#Lambda content in median cluster cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
   fh3IMALaMedianCone            = new TH3F("fh3IMALaMedianCone","#Antilambda content in median cluster cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
-
-  fh1noAssociatedK0s            = new TH1F("fh1noAssociatedK0s","not selected as associated particle",12,0.,12.);
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(1,"K0s: accepted as associated particle");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(2,"K0s: v0 not K0s pdg code (310)");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(3,"K0s: v0 is not primary particle");
-
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(4,"K0s: pos daughter is pion");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(5,"K0s: neg daughter is pion");
-
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(6,"K0s: pos daughter particle is proton");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(7,"K0s: pos daughter particle is electron"); 
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(8,"K0s: pos daughter particle is myon");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(9,"K0s: neg daughter particle is proton");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(10,"K0s: neg daughter particle is electron");  
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(11,"K0s: neg daughter particle is myon");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(12,"K0s: pos daughter particle is something else");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(13,"K0s: neg daughter particle is something else");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(14,"K0s: pos daughter not pion pdg code (211)");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(15,"K0s: neg daughter not pion pdg code (211)");
+ 
 
   fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",200,0.,1000.);
 
@@ -1622,7 +1597,6 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1DcaNegToPrimVertex);    
     fCommonHistList->Add(fh2ArmenterosBeforeCuts);
     fCommonHistList->Add(fh2ArmenterosAfterCuts);
-    fCommonHistList->Add(fh2BB3SigProton);
     fCommonHistList->Add(fh2BBLaPos);
     fCommonHistList->Add(fh2BBLaNeg);
     fCommonHistList->Add(fh1CrossedRowsOverFindableNeg);
@@ -1638,7 +1612,6 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh3InvMassEtaTrackPtK0s);
     fCommonHistList->Add(fh3InvMassEtaTrackPtLa);
     fCommonHistList->Add(fh3InvMassEtaTrackPtALa);
-    fCommonHistList->Add(fh1noAssociatedK0s); 
     fCommonHistList->Add(fh1TrackMultCone);
     fCommonHistList->Add(fh2TrackMultCone);
     fCommonHistList->Add(fh2MCgenK0Cone);
@@ -1993,9 +1966,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   Int_t nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
   
+  if(fDebug>5){std::cout<<"fK0Type: "<<fK0Type<<" kK0: "<<kK0<<" myPrimaryVertex: "<<myPrimaryVertex<<" fAOD:  "<<fAOD<<std::endl;} 
+
   //std::cout<< "nK0s: "<<nK0s<<std::endl;
 
-  if(fDebug>2)Printf("%s:%d Selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
+  if(fDebug>2)Printf("%s:%d Selected V0s after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   if(nK0s != fListK0s->GetEntries()) Printf("%s:%d Mismatch selected K0s: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   fh1K0Mult->Fill(fListK0s->GetEntries());
 
@@ -3759,6 +3734,12 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
     return -1;
   }
   
+  
+  if(fDebug>5){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): type: "<<type<<" particletype: "<<particletype<<"aod: "<<aod<<std::endl;
+    if(type==kTrackUndef){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): kTrackUndef!! "<<std::endl;}
+  }
+  
+  
   if(type==kTrackUndef) return 0;
 
   if(!primVertex) return 0;
@@ -3768,6 +3749,9 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
   lPrimaryVtxPosition[0] = primVertex->GetX();
   lPrimaryVtxPosition[1] = primVertex->GetY();
   lPrimaryVtxPosition[2] = primVertex->GetZ();
+
+  if(fDebug>5){ std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): aod->GetNumberOfV0s: "<<aod->GetNumberOfV0s()<<std::endl; }
+
 
   for(int i=0; i<aod->GetNumberOfV0s(); i++){ // loop over V0s
     
@@ -3836,7 +3820,10 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
     /////////////////////////////////////////////////////////////
     //V0 and track Cuts:
-    
+   
+
+    if(fDebug>6){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
+ 
     if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
     
     //  Double_t PosEta = trackPos->AliAODTrack::Eta();//daughter track charge is sometimes wrong here, account for that!!!
@@ -4744,7 +4731,7 @@ Bool_t AliAnalysisTaskJetChem::MCLabelCheck(AliAODv0* v0, Int_t particletype,con
 	       if(TMath::Abs(posDaughterpdg) != 211){return kFALSE;}//one or both of the daughters are not a pion
 	       if(TMath::Abs(negDaughterpdg) != 211){return kFALSE;}
 	       
-	       if(MCv0PDGCode != 310)  {fh1noAssociatedK0s->Fill(1.);return kFALSE;}
+	       if(MCv0PDGCode != 310)  {return kFALSE;}
 	     }
 	     
 	     if(particletype == kLambda){
