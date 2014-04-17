@@ -255,9 +255,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventData& evtData,
-						    const AliHLTComponentBlockData* blocks, 
-						    AliHLTComponentTriggerData& trigData,
+int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/,
+						    const AliHLTComponentBlockData* /*blocks*/, 
+						    AliHLTComponentTriggerData& /*trigData*/,
 						    AliHLTUInt8_t* outputPtr, 
 						    AliHLTUInt32_t& size,
 						    AliHLTComponentBlockDataList& outputBlocks )
@@ -408,13 +408,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
    
   // read TPC clusters
-  const int kNSlices = 36;
-  const int kNPatches = 6;
+  const UInt_t kNSlices = 36;
+  const UInt_t kNPatches = 6;
 
   const AliHLTTPCClusterData *clustersTPC[kNSlices][kNPatches];
   const AliHLTTPCClusterMCLabel *clustersTPCMC[kNSlices][kNPatches];
-  for( int i=0; i<kNSlices; i++){
-     for( int j=0; j<kNPatches; j++){
+  for( UInt_t i=0; i<kNSlices; i++){
+     for( UInt_t j=0; j<kNPatches; j++){
       clustersTPC[i][j] = 0;
       clustersTPCMC[i][j] =0;
      }

@@ -50,7 +50,7 @@
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
 #include "AliESDfriend.h"
-#include "AliESDV0.h"
+#include "AliESDv0.h"
 
 #include "AliFlatESDEvent.h"
 #include "AliFlatESDTrack.h"
@@ -65,6 +65,8 @@ AliFlatESDEvent::AliFlatESDEvent() :
   fPrimaryVertexMask(0),
   fNTracks(0),
   fTracksPointer(0),
+  fNV0s(0),
+  fV0Pointer(0),
   fSize(0),
   fContent() 
 {
@@ -76,6 +78,8 @@ AliFlatESDEvent::AliFlatESDEvent(AliESDEvent *esd) :
   fPrimaryVertexMask(0),
   fNTracks(0),
   fTracksPointer(0),
+  fNV0s(0),
+  fV0Pointer(0),
   fSize(0),
   fContent() 
 { 
@@ -88,6 +92,8 @@ AliFlatESDEvent::AliFlatESDEvent(AliESDEvent *esd, Bool_t useESDFriends) :
   fPrimaryVertexMask(0),
   fNTracks(0),
   fTracksPointer(0),
+  fNV0s(0),
+  fV0Pointer(0),
   fSize(0),
   fContent() 
 { 
