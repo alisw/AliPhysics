@@ -482,8 +482,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     else if(aodTrack){
       if (!aodTrack->IsHybridGlobalConstrainedGlobal())       
 	continue ;
-      if(!aodTrack->TestFilterBit(fFilterBit))
-	continue;
+      /*if(!aodTrack->TestFilterBit(fFilterBit))
+	continue;*/
       fSelPrimTracks->Add(track);
       /*if(fTrackMaxPt<track->Pt())
 	fTrackMaxPt = track->Pt();*/
