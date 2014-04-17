@@ -1,4 +1,3 @@
-#include <Riostream.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "TF1.h"
@@ -24,8 +23,6 @@
 
 #include "AliAnalysisTaskAntiHe4.h"
 
-using std::cout;
-using std::endl;
 
 ///////////////////////////////////////////////////////////
 //                                                       //
@@ -388,6 +385,7 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   //----------- Track variables --------------//  
   fTree->Branch("fEta",fEta,"fEta[fItrk]/D");
   fTree->Branch("fKinkIndex",fKinkIndex,"fKinkIndex[fItrk]/I");
+  fTree->Branch("fCentrality",fCentrality,"fCentrality[fItrk]/F");
   //
   fTree->Branch("fTPCnCluster",fTPCnCluster,"fTPCnCluster[fItrk]/s");
   fTree->Branch("fTPCNsignal",fTPCNsignal,"fTPCNsignal[fItrk]/s");
@@ -496,7 +494,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   //centrality selection in PbPb 
   //
   Int_t centralityClass10 = -1;
-  Int_t centralityPercentile = -1;
+  Float_t centralityPercentile = -1;
   //
   if (fESD->GetEventSpecie() == 4) { //species == 4 == PbPb
     // PbPb
@@ -539,6 +537,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     fEventNumber[fItrk] = -1;
 
     fEta[fItrk] = -2;
+    fCentrality[fItrk] = -1;
     fTPCNsignal[fItrk] = -1;
     fTPCnCluster[fItrk] = -1;
     fChi2PerClusterTPC[fItrk] = -1;
@@ -666,6 +665,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 
       fEta[fItrk] = eta;
       fKinkIndex[fItrk] = track->GetKinkIndex(0);
+      fCentrality[fItrk] = centralityPercentile;
 
       fTPCNsignal[fItrk] = track->GetTPCsignalN();
       fTPCnCluster[fItrk] = track->GetTPCNcls();

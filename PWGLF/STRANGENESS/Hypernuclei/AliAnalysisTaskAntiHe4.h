@@ -103,6 +103,8 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   //
   Double_t fEta[1000];
   Int_t    fKinkIndex[1000];
+  Float_t    fCentrality[1000];
+
   //
   UShort_t   fTPCNsignal[1000];
   UShort_t   fTPCnCluster[1000];
