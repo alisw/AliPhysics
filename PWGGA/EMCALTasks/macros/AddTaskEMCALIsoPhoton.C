@@ -5,7 +5,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
 						     TString trigbitname = "kEMC7",
 						     TString geoname="EMCAL_COMPLETEV1",
 						     TString pathstrsel = "/",
-						     TString esdTrackSelType = "standard"
+						     TString trackSelType = "standard"
 						     )
 {
   // Get the pointer to the existing analysis manager via the static access method.
@@ -33,7 +33,7 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
   ana->SetPathStringSelect(pathstrsel.Data());
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
   AliESDtrackCuts *cutsp = new AliESDtrackCuts;
-  if(esdTrackSelType == "standard"){
+  if(trackSelType == "standard"){
     cutsp->SetMinNClustersTPC(70);
     cutsp->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     cutsp->SetMaxChi2PerClusterTPC(4);
@@ -45,8 +45,9 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     cutsp->SetPtRange(0.2);
     cutsp->SetEtaRange(-1.0,1.0);
   }
-  if(esdTrackSelType == "hybrid"){
+  if(trackSelType == "hybrid"){
     cutsp = CreateTrackCutsPWGJE(10001008);
+    ana->SetHybridOn();
   }
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
