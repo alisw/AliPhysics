@@ -1,4 +1,4 @@
-AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug)
+AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1)
 {
   // Creates a JetChem task,
   // configures it and adds it to the analysis manager.

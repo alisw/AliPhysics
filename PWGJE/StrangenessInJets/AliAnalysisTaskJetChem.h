@@ -450,7 +450,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1DcaNegToPrimVertex;        
   TH2F* fh2ArmenterosBeforeCuts;     
   TH2F* fh2ArmenterosAfterCuts;      
-  TH2F* fh2BB3SigProton;             
   TH2F* fh2BBLaPos;                  
   TH2F* fh2BBLaNeg;                  
   TH1F* fh1CrossedRowsOverFindableNeg;
@@ -466,7 +465,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3InvMassEtaTrackPtK0s;
   TH3F* fh3InvMassEtaTrackPtLa;
   TH3F* fh3InvMassEtaTrackPtALa;
-  TH1F* fh1noAssociatedK0s;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
   TH2F* fh2MCgenK0Cone;
