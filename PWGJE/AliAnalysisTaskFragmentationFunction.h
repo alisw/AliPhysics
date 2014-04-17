@@ -206,6 +206,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetEventSelectionMask(UInt_t i){fEvtSelectionMask = i;}
   virtual void   SetEventClass(Int_t i){fEventClass = i;}
   virtual void   SetMaxVertexZ(Float_t z){fMaxVertexZ = z;}
+  virtual void   RejectPileupEvents(Bool_t b){fRejectPileup = b;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5, 
 			    Float_t jetPhiMin = 0., Float_t jetPhiMax = 2*TMath::Pi())
   {fJetPtCut = jetPt; fJetEtaMin = jetEtaMin; fJetEtaMax = jetEtaMax; 
@@ -260,9 +261,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t& minPtL, const Double_t& maxPt, Bool_t& isBadPt);
-  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t& r, Double_t& sumPt, 
-				const Double_t& minPtL, const Double_t& maxPt, Bool_t& isBadPt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);  
   void     GetTracksOutOfNJets(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
   void     GetTracksOutOfNJetsStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
   void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt);
@@ -287,7 +287,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void     FillBckgHistos(Int_t type, TList* inputtracklist, TList* inputjetlist, AliAODJet* jet, 
 			  AliFragFuncHistos* ffbckghistocuts,AliFragFuncQATrackHistos* qabckghistos,TH1F* fh1Mult = 0); 
  
-  Double_t GetMCStrangenessFactor(const Double_t& pt);
+  Double_t GetMCStrangenessFactor(const Double_t pt);
   Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
 
   void FillJetShape(AliAODJet* jet, TList* list,  TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt=0, Double_t dPhiUE=0, Double_t normUE = 0, Bool_t scaleStrangeness = kFALSE);
@@ -332,6 +332,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   UInt_t  fEvtSelectionMask;    // trigger class selection
   Int_t   fEventClass;          // centrality class selection
   Float_t fMaxVertexZ;          // maximum abs(z) position of primiary vertex [cm]
+  Bool_t  fRejectPileup;        // SPD pileup rejection
 
   // track cuts
   Float_t fTrackPtCut;    // track transverse momentum cut

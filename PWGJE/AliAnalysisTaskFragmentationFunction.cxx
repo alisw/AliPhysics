@@ -78,6 +78,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction()
    ,fEvtSelectionMask(0)
    ,fEventClass(0)
    ,fMaxVertexZ(10)
+   ,fRejectPileup(kFALSE)
    ,fTrackPtCut(0)
    ,fTrackEtaMin(0)
    ,fTrackEtaMax(0)
@@ -278,6 +279,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fEvtSelectionMask(0)
   ,fEventClass(0)
   ,fMaxVertexZ(10)
+  ,fRejectPileup(kFALSE)
   ,fTrackPtCut(0)
   ,fTrackEtaMin(0)
   ,fTrackEtaMax(0)
@@ -479,6 +481,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fEvtSelectionMask(copy.fEvtSelectionMask)
   ,fEventClass(copy.fEventClass)
   ,fMaxVertexZ(copy.fMaxVertexZ)
+  ,fRejectPileup(copy.fRejectPileup)
   ,fTrackPtCut(copy.fTrackPtCut)
   ,fTrackEtaMin(copy.fTrackEtaMin)
   ,fTrackEtaMax(copy.fTrackEtaMax)
@@ -684,6 +687,7 @@ AliAnalysisTaskFragmentationFunction& AliAnalysisTaskFragmentationFunction::oper
     fEvtSelectionMask              = o.fEvtSelectionMask;
     fEventClass                    = o.fEventClass;
     fMaxVertexZ                    = o.fMaxVertexZ;
+    fRejectPileup                  = o.fRejectPileup;
     fTrackPtCut                    = o.fTrackPtCut;
     fTrackEtaMin                   = o.fTrackEtaMin;
     fTrackEtaMax                   = o.fTrackEtaMax;
@@ -1396,14 +1400,15 @@ void AliAnalysisTaskFragmentationFunction::UserCreateOutputObjects()
   
   
   // Histograms	
-  fh1EvtSelection            = new TH1F("fh1EvtSelection", "Event Selection", 6, -0.5, 5.5);
+  fh1EvtSelection            = new TH1F("fh1EvtSelection", "Event Selection", 7, -0.5, 6.5);
   fh1EvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
   fh1EvtSelection->GetXaxis()->SetBinLabel(2,"event selection: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(3,"event class: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(4,"vertex Ncontr: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
-  
+  fh1EvtSelection->GetXaxis()->SetBinLabel(7,"pileup: rejected");
+ 
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
   fh1VertexZ                 = new TH1F("fh1VertexZ", "Vertex z distribution", 30, -15., 15.);
   fh1EvtMult 	             = new TH1F("fh1EvtMult","Event multiplicity, track pT cut > 150 MeV/c, |#eta| < 0.9",120,0.,12000.);
@@ -2183,6 +2188,13 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
     return;
   }
 
+  if(fRejectPileup && AliAnalysisHelperJetTasks::IsPileUp()){
+    if (fDebug > 1) Printf("%s:%d SPD pileup: event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(6.);
+    PostData(1, fCommonHistList);
+    return;
+  }
+
   if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
   fh1EvtSelection->Fill(0.);
   fh1EvtCent->Fill(centPercent);
@@ -2703,6 +2715,7 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 	  TList* perpjettracklistGen1 = new TList();
 	  TList* perpjettracklistGen2 = new TList();
 
+	  Double_t sumPtGenPerp  = 0.;
 	  Double_t sumPtGenPerp1 = 0.;
 	  Double_t sumPtGenPerp2 = 0.;
 	  GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCCharged, perpjettracklistGen1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerp1); 
@@ -2710,31 +2723,36 @@ void AliAnalysisTaskFragmentationFunction::UserExec(Option_t *)
 
 	  perpjettracklistGen->AddAll(perpjettracklistGen1);
 	  perpjettracklistGen->AddAll(perpjettracklistGen2);
+	  sumPtGenPerp = 0.5*(sumPtGenPerp1+sumPtGenPerp2);
 
 	  TList* perpjettracklistGenSecNS  = new TList();
 	  TList* perpjettracklistGenSecNS1 = new TList();
 	  TList* perpjettracklistGenSecNS2 = new TList();
 
-          Double_t sumPtGenPerpNS1 = 0;
-          Double_t sumPtGenPerpNS2 = 0;
+          Double_t sumPtGenPerpNS;
+          Double_t sumPtGenPerpNS1;
+          Double_t sumPtGenPerpNS2;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecNS, perpjettracklistGenSecNS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpNS1); 
           GetTracksTiltedwrpJetAxis(-1*TMath::Pi()/2.,fTracksAODMCChargedSecNS, perpjettracklistGenSecNS2, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpNS2); 
 
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS1);
 	  perpjettracklistGenSecNS->AddAll(perpjettracklistGenSecNS2);
+	  sumPtGenPerpNS = 0.5*(sumPtGenPerpNS1+sumPtGenPerpNS2);
 
 
 	  TList* perpjettracklistGenSecS  = new TList();
 	  TList* perpjettracklistGenSecS1 = new TList();
 	  TList* perpjettracklistGenSecS2 = new TList();
 
-          Double_t sumPtGenPerpS1 = 0;
-          Double_t sumPtGenPerpS2 = 0;
+          Double_t sumPtGenPerpS;
+          Double_t sumPtGenPerpS1;
+          Double_t sumPtGenPerpS2;
           GetTracksTiltedwrpJetAxis(TMath::Pi()/2.,fTracksAODMCChargedSecS, perpjettracklistGenSecS1, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpS1); 
           GetTracksTiltedwrpJetAxis(-1*TMath::Pi()/2.,fTracksAODMCChargedSecS, perpjettracklistGenSecS2, jet, TMath::Abs(GetFFRadius()) , sumPtGenPerpS2); 
 
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS1);
 	  perpjettracklistGenSecS->AddAll(perpjettracklistGenSecS2);
+	  sumPtGenPerpS = 0.5*(sumPtGenPerpS1+sumPtGenPerpS2);
 
 
           if(perpjettracklistGen->GetSize() != perpjettracklistGen1->GetSize() + perpjettracklistGen2->GetSize()){
@@ -3268,7 +3286,7 @@ void AliAnalysisTaskFragmentationFunction::SetProperties(TH1* h,const char* x, c
 
 // ________________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist, TList* outputlist, const AliAODJet* jet, 
-								const Double_t& radius, Double_t& sumPt, const Double_t& minPtL, const Double_t& maxPt, Bool_t& isBadPt)
+								   const Double_t radius, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
 {
   // fill list of tracks in cone around jet axis  
 
@@ -3309,8 +3327,7 @@ void AliAnalysisTaskFragmentationFunction::GetJetTracksPointing(TList* inputlist
 }
 
 // _________________________________________________________________________________________________________________________________________________________________
-void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t& minPtL, 
-								 const Double_t& maxPt, Bool_t& isBadPt)
+void AliAnalysisTaskFragmentationFunction::GetJetTracksTrackrefs(TList* list, const AliAODJet* jet, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt)
 {
   // list of jet tracks from trackrefs
   
@@ -3991,7 +4008,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
   // get median cluster
 
   AliAODJet* medianCluster = 0;
-  //Double_t   medianDensity = 0;
+  Double_t   medianDensity = 0;
 
   if(TMath::Odd(nBckgClusters)){
     
@@ -4001,7 +4018,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     Double_t clusterPt = medianCluster->Pt();
     Double_t area      = medianCluster->EffectiveAreaCharged();
     
-    //if(area>0) medianDensity = clusterPt/area;
+    if(area>0) medianDensity = clusterPt/area;
   }
   else{
 
@@ -4021,7 +4038,7 @@ void AliAnalysisTaskFragmentationFunction::GetClusterTracksMedian(TList* outputl
     Double_t area2      = medianCluster2->EffectiveAreaCharged();
     if(area2>0) density2 = clusterPt2/area2;
     
-    //medianDensity = 0.5*(density1+density2);
+    medianDensity = 0.5*(density1+density2);
     
     medianCluster = ( (fRandom->Rndm()>0.5) ? medianCluster1 : medianCluster2 );  // select one randomly to avoid adding areas
   }
@@ -4614,7 +4631,7 @@ void AliAnalysisTaskFragmentationFunction::FillBckgHistos(Int_t type, TList* inp
 }
 
 //_____________________________________________________________________________________
-Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Double_t& pt)
+Double_t AliAnalysisTaskFragmentationFunction::GetMCStrangenessFactor(const Double_t pt)
 {
   // factor strangeness data/MC as function of pt from UE analysis (Sara Vallero)
 
