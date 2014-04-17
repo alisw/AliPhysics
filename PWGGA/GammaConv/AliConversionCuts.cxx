@@ -2434,7 +2434,6 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       fMaxR = 70.;
       fMinR = 5.;
       break;
-      // High purity cuts for PbPb (remove first layers of material)
    case 5:
       fMaxR = 180.;
       fMinR = 10.;
@@ -2445,7 +2444,7 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       break;
    case 7:
       fMaxR = 180.;
-      fMinR = 26.;
+      fMinR = 35.; //old 26.
       break;
    case 8:
       fMaxR = 180.;
