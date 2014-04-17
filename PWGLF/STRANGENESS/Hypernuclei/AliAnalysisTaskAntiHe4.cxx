@@ -1,3 +1,4 @@
+#include <Riostream.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "TF1.h"
@@ -23,6 +24,8 @@
 
 #include "AliAnalysisTaskAntiHe4.h"
 
+using std::cout;
+using std::endl;
 
 ///////////////////////////////////////////////////////////
 //                                                       //

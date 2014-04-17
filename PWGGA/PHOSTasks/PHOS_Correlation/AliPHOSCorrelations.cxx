@@ -18,6 +18,7 @@
 // 		Dmitry Blau
 // 07-Feb-2014
 
+#include <Riostream.h>
 #include "THashList.h"
 #include "TObjArray.h"
 #include "TClonesArray.h"
@@ -56,6 +57,9 @@
 #include "AliAODCaloCluster.h"
 #include "AliCaloPhoton.h"
 #include "AliAODVertex.h"
+
+using std::cout;
+using std::endl;
 
 ClassImp(AliPHOSCorrelations)
 
