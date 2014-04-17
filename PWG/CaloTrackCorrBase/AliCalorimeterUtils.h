@@ -285,6 +285,8 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALOADBFilePath(TString path)              { fOADBFilePathEMCAL  = path    ; }
   void          SetPHOSOADBFilePath (TString path)              { fOADBFilePathPHOS   = path    ; }
 
+  void          SetNumberOfSuperModulesUsed(Int_t nSM)          { fNSuperModulesUsed  = nSM     ; }
+  Int_t         GetNumberOfSuperModulesUsed()             const { return fNSuperModulesUsed     ; }
   
  private:
 
@@ -326,10 +328,14 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fImportGeometryFromFile;// Import geometry settings in geometry.root file
   TString            fImportGeometryFilePath;// path fo geometry.root file
 
+  Int_t              fNSuperModulesUsed;     // Number of supermodules to be used in analysis, can be different than the real geo,
+                                             // to be used at initialization of histograms
+
+  
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,15)
+  ClassDef(AliCalorimeterUtils,16)
 } ;
 
 
