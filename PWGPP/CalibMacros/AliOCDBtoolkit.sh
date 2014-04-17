@@ -1,4 +1,15 @@
 #!/bin/bash
+#
+# Shell script to compare content of the OCDB entries.
+#
+# ocdbMakeTable() 
+#       Usage: bash $inputFile $flag $outputFile
+# dumpObject()
+#       Usage: bash $inputFile $object_name $dump_type [XML/MI] $outfile
+# diffObject
+#       Usage: bash $inputFile1 $inputFile2 $object_name $dump_type [XML/MI] $outfile
+# Example usage:  see example functions below
+
 ocdbMakeTable(){
 #
 # create a text file with the OCDB setupt descriptors#
@@ -126,6 +137,10 @@ diffObject(){
     return 1
 }
 
+#
+# Example usage+ developer test routines. 
+#
+
 example1(){
     ocdbMakeTable "/hera/alice/jwagner/simulations/benchmark/aliroot_tests/ppbench/rec.log" "log" "testout"
 }
@@ -139,7 +154,10 @@ example3(){
     diffObject ${file1} ${file2} "object" "MI" "testdiffMI"
     diffObject ${file1} ${file2} "object" "XML" "testdiffXML"
 }
-source /hera/alice/jwagner/software/aliroot/loadMyAliroot.sh TPCdev
-example1
-example2
-example3
+
+developerTest(){
+    source /hera/alice/jwagner/software/aliroot/loadMyAliroot.sh TPCdev
+    example1
+    example2
+    example3
+}
