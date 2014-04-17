@@ -218,8 +218,8 @@ const char* AliDielectronVarManager::fgkParticleNames[AliDielectronVarManager::k
   {"RndmPair",               "P",                                                  ""},
   {"Pairs",                  "pairs/event",                                        ""},
   //
-  {"X",                      "x_{prim.vtx}",                                       "(cm)"},
-  {"Y",                      "y_{prim.vtx}",                                       "(cm)"},
+  {"Xprim",                  "x_{prim.vtx}",                                       "(cm)"},
+  {"Yprim",                  "y_{prim.vtx}",                                       "(cm)"},
   {"Z",                      "z_{prim.vtx}",                                       "(cm)"},
   {"XRes",                   "#Delta x_{prim.vtx}",                                "(cm)"},
   {"YRes",                   "#Delta y_{prim.vtx}",                                "(cm)"},

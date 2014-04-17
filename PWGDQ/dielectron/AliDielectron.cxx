@@ -1475,6 +1475,7 @@ TObject* AliDielectron::InitEffMap(TString filename)
 
   TFile* file=TFile::Open(filename.Data());
   if(!file) return 0x0;
+	else printf("[I] AliDielectron::InitEffMap efficiency maps %s loaded! \n",filename.Data());
 
   // NOTE: the spline must have the 'variable name' stored in its fHistogram
   TSpline3 *hEff = (TSpline3*) file->Get("hEfficiency");
@@ -1487,7 +1488,6 @@ TObject* AliDielectron::InitEffMap(TString filename)
   if(!hFnd || !hGen) return 0x0;
 
   hFnd->Divide(hGen);
-  printf("[I] AliDielectron::InitEffMap efficiency maps %s with %d dimensions loaded! \n",filename.Data(),hFnd->GetNdimensions());
   return (hFnd->Clone("effMap"));
 }
 
