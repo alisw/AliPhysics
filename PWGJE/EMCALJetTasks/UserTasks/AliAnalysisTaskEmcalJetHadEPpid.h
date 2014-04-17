@@ -112,8 +112,8 @@ protected:
   virtual void           Terminate(Option_t *); 
   virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
   virtual Int_t          GetCentBin(Double_t cent) const; // centrality bin of event
-  Float_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
-  Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
+  Double_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
+  Double_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
   virtual Int_t          GetEtaBin(Double_t eta) const;      // eta bins
   virtual Int_t          GetpTjetBin(Double_t pt) const;     // jet pt bins
   virtual Int_t          GetpTtrackBin(Double_t pt) const;   // track pt bins
