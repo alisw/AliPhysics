@@ -48,7 +48,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Calorimeter options
   TString      GetCalorimeter()         const   { return fCalorimeter           ; }
   void         SetCalorimeter(TString & det)    { fCalorimeter         = det    ; }
-  void         SetNumberOfModules(Int_t nmod)   { fNModules            = nmod   ; }
   
   //-------------------------------
   // EVENT Bin Methods
