@@ -1654,6 +1654,10 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("QAHistos") ; 
   
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
+  if(fCalorimeter=="PHOS" && fNModules > 4) fNModules = 4;
+  
   //Histograms
   Int_t nptbins     = GetHistogramRanges()->GetHistoPtBins(); 	        Float_t ptmax     = GetHistogramRanges()->GetHistoPtMax();           Float_t ptmin     = GetHistogramRanges()->GetHistoPtMin();
   Int_t nfineptbins = GetHistogramRanges()->GetHistoFinePtBins(); 	    Float_t ptfinemax = GetHistogramRanges()->GetHistoFinePtMax();       Float_t ptfinemin = GetHistogramRanges()->GetHistoFinePtMin();
@@ -3078,7 +3082,7 @@ void AliAnaCalorimeterQA::InitParameters()
   AddToHistogramsName("AnaCaloQA_");
   
   fCalorimeter     = "EMCAL"; //or PHOS
-  fNModules        = 12; // set maximum to maximum number of EMCAL modules
+  fNModules        = 22; // set maximum to maximum number of EMCAL modules
   fNRCU            = 2;  // set maximum number of RCU in EMCAL per SM
   fTimeCutMin      = -9999999;
   fTimeCutMax      =  9999999;

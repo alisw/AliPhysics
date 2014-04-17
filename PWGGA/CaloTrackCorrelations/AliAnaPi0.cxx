@@ -60,7 +60,7 @@ ClassImp(AliAnaPi0)
 //______________________________________________________
 AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fEventsList(0x0), 
-fCalorimeter(""),            fNModules(12),              
+fCalorimeter(""),            fNModules(22),
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(7.),
 fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),  
@@ -150,7 +150,6 @@ void AliAnaPi0::InitParameters()
   SetInputAODName("PWG4Particle");
   
   AddToHistogramsName("AnaPi0_");
-  fNModules = 12; // set maximum to maximum number of EMCAL modules
   
   fCalorimeter  = "PHOS";
   fUseAngleCut = kFALSE;
@@ -229,6 +228,10 @@ TList * AliAnaPi0::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
   // store them in fOutputContainer
+  
+  // Init the number of modules, set in the class AliCalorimeterUtils
+  fNModules = GetCaloUtils()->GetNumberOfSuperModulesUsed();
+  if(fCalorimeter=="PHOS" && fNModules > 4) fNModules = 4;
   
   //create event containers
   fEventsList = new TList*[GetNCentrBin()*GetNZvertBin()*GetNRPBin()] ;

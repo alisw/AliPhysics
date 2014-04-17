@@ -119,9 +119,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   
   void           SwitchOnSplitClusterDistToBad()             { fCheckSplitDistToBad   = kTRUE  ; }
   void           SwitchOffSplitClusterDistToBad()            { fCheckSplitDistToBad   = kFALSE ; }
-
-  void           SetNumberOfSuperModules(Int_t nSM)          { fNSuperModules         = nSM    ; }
-
   
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
@@ -154,8 +151,6 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
 
   Bool_t         fCheckSplitDistToBad;     // Check the distance to bad channel and to EMCal borders of split clusters
-  
-  Int_t          fNSuperModules;           // Number of supermodules
   
   //Histograms
   
@@ -404,7 +399,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,36)
+  ClassDef(AliAnaPi0EbE,37)
 } ;
 
 
