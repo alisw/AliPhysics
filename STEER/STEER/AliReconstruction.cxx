@@ -1975,9 +1975,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
-  static Long_t aveDMres=0;
-  static Long_t aveDMvir=0;
-  static Float_t aveDCPU=0;
+  // static Long_t aveDMres=0;
+  // static Long_t aveDMvir=0;
+  // static Float_t aveDCPU=0;
 
   AliCodeTimerAuto("",0);
 
