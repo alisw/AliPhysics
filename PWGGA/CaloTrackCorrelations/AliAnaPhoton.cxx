@@ -152,7 +152,9 @@ fhPtNPileUpSPDVtxTimeCut(0),          fhPtNPileUpTrkVtxTimeCut(0),
 fhPtNPileUpSPDVtxTimeCut2(0),         fhPtNPileUpTrkVtxTimeCut2(0),
 fhPtPhotonNPileUpSPDVtx(0),           fhPtPhotonNPileUpTrkVtx(0),
 fhPtPhotonNPileUpSPDVtxTimeCut(0),    fhPtPhotonNPileUpTrkVtxTimeCut(0),
-fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0)
+fhPtPhotonNPileUpSPDVtxTimeCut2(0),   fhPtPhotonNPileUpTrkVtxTimeCut2(0),
+fhEClusterSM(0),                      fhEPhotonSM(0),
+fhPtClusterSM(0),                     fhPtPhotonSM(0)
 {
   //default ctor
   
@@ -292,7 +294,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   Float_t l0cluster  = calo->GetM02();
   Float_t etacluster = mom.Eta();
   Float_t phicluster = mom.Phi();
-  if(phicluster<0) phicluster+=TMath::TwoPi();
+  if(phicluster < 0) phicluster+=TMath::TwoPi();
   Float_t tofcluster   = calo->GetTOF()*1.e9;
   
   Bool_t matched = IsTrackMatched(calo,GetReader()->GetInputEvent());
@@ -305,6 +307,13 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
   fhClusterCuts[1]->Fill(ecluster);
   
   if(ecluster > 0.5) fhEtaPhi->Fill(etacluster, phicluster);
+  
+  Int_t   nSM  = GetModuleNumber(calo);
+  if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+  {
+    fhEClusterSM ->Fill(ecluster ,nSM);
+    fhPtClusterSM->Fill(ptcluster,nSM);
+  }
   
   FillEMCALTriggerClusterBCHistograms(calo->GetID(),ecluster,tofcluster,etacluster,phicluster);
   
@@ -347,7 +356,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom, Int
     if(! in ) return kFALSE ;
   }
   
-  if(GetDebug() > 2) printf("Fiducial cut passed \n");
+  if(GetDebug() > 2) printf("\t Fiducial cut passed \n");
   
   fhClusterCuts[6]->Fill(ecluster);
   
@@ -1796,6 +1805,34 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhClusterCuts[i]->SetXTitle("E (GeV)");
     outputContainer->Add(fhClusterCuts[i]) ;
   }
+  
+  fhEClusterSM = new TH2F("hEClusterSM","Raw clusters E and super-module number",
+                          nptbins,ptmin,ptmax,
+                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+  fhEClusterSM->SetYTitle("SuperModule ");
+  fhEClusterSM->SetXTitle("E (GeV)");
+  outputContainer->Add(fhEClusterSM) ;
+
+  fhPtClusterSM = new TH2F("hPtClusterSM","Raw clusters p_{T} and super-module number",
+                          nptbins,ptmin,ptmax,
+                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+  fhPtClusterSM->SetYTitle("SuperModule ");
+  fhPtClusterSM->SetXTitle("E (GeV)");
+  outputContainer->Add(fhPtClusterSM) ;
+  
+  fhEPhotonSM = new TH2F("hEPhotonSM","Selected clusters E and super-module number",
+                          nptbins,ptmin,ptmax,
+                          GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+  fhEPhotonSM->SetYTitle("SuperModule ");
+  fhEPhotonSM->SetXTitle("E (GeV)");
+  outputContainer->Add(fhEPhotonSM) ;
+  
+  fhPtPhotonSM = new TH2F("hPtPhotonSM","Selected clusters p_{T} and super-module number",
+                           nptbins,ptmin,ptmax,
+                           GetCaloUtils()->GetNumberOfSuperModulesUsed(),0,GetCaloUtils()->GetNumberOfSuperModulesUsed());
+  fhPtPhotonSM->SetYTitle("SuperModule ");
+  fhPtPhotonSM->SetXTitle("E (GeV)");
+  outputContainer->Add(fhPtPhotonSM) ;
   
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax);
   fhNCellsE->SetXTitle("E (GeV)");
@@ -3784,6 +3821,13 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
                               aodph.Pt(), aodph.GetIdentifiedParticleType());
     
     fhClusterCuts[9]->Fill(calo->E());
+    
+    Int_t   nSM  = GetModuleNumber(calo);
+    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
+    {
+      fhEPhotonSM ->Fill(mom.E (),nSM);
+      fhPtPhotonSM->Fill(mom.Pt(),nSM);
+    }
     
     fhNLocMax->Fill(calo->E(),nMaxima);
     
