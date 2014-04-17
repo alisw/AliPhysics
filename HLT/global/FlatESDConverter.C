@@ -22,14 +22,16 @@
 #include "Riostream.h"
 #endif   
 
-void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends = kTRUE) {
+void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends = kTRUE, Bool_t useHLTtree = kFALSE) {
   // -- Convert AliESDEvent to AliFlatESDEvent
 
   ofstream outFile("outFlatESD.dat", std::ifstream::binary | std::ifstream::out);
   //ofstream outFile("outFlatESD.dat");
 
   TFile *file    = new TFile(Form("%s", filename));
-  TTree *esdTree = dynamic_cast<TTree*>(file->Get("esdTree"));
+	
+	TTree *esdTree = useHLTtree? dynamic_cast<TTree*>(file->Get("HLTesdTree")) : dynamic_cast<TTree*>(file->Get("esdTree"));
+
   
   // -- Connect ESD
   AliESDEvent *esd = new AliESDEvent;
@@ -49,7 +51,7 @@ void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends 
   AliFlatESDEvent *flatEsd = NULL;
 
   // -- Event Loop
-  for (Int_t idxEvent = 1; idxEvent < 10; idxEvent++) {
+  for (Int_t idxEvent = 0; idxEvent < esdTree->GetEntries(); idxEvent++) {
     esdTree->GetEntry(idxEvent);
     // -- Book memory for AliFlatESDEvent
    // -- TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -60,12 +62,12 @@ void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends 
 
     // -- Fill AliFlatESDEvent
     flatEsd->Fill(esd, useESDFriends);  
-
+ #if 0
      Printf("TEST: Event %d || Tracks %d | FRIEND Tracks %d || estimated size %llu || sizeof(AliFlatESDEvent) %llu", 
 	   idxEvent, esd->GetNumberOfTracks(), esdFriend->GetNumberOfTracks(), 
 	   AliFlatESDEvent::EstimateSize(esd, useESDFriends), flatEsd->GetSize());
 
- #if 1
+
     AliFlatESDTrack *track = flatEsd->GetTracks();
     for (Int_t idxTrack = 0; idxTrack < flatEsd->GetNumberOfTracks(); ++idxTrack) {      
        AliESDtrack *esdTrack = esd->GetTrack(idxTrack);
