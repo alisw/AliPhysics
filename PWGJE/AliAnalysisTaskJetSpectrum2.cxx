@@ -18,7 +18,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
  
 #include <TROOT.h>
 #include <TRandom.h>
@@ -142,7 +141,12 @@ AliAnalysisTaskSE(),
   fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
-  fHistList(0x0)  
+  fHistList(0x0),
+  fh1EvtSelection(0),
+  fMaxVertexZ(100.),
+  fMinNcontributors(0),
+  fRejectPileup(0)
+  
 {
 
   for(int ij = 0;ij <kJetTypes;++ij){    
@@ -253,7 +257,11 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fh2deltaPt1Pt2(0x0),
   fh2RelPtFGen(0x0),
   fh3RelPtFGenLeadTrkPt(0x0),
-  fHistList(0x0)
+  fHistList(0x0),
+  fh1EvtSelection(0),
+  fMaxVertexZ(100.),
+  fMinNcontributors(0),
+  fRejectPileup(0)
 {
 
   for(int ij = 0;ij <kJetTypes;++ij){    
@@ -387,7 +395,17 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
   //  Histogram
     
 
+  fh1EvtSelection            = new TH1F("fh1EvtSelection", "Event Selection", 7, -0.5, 6.5);
+  fh1EvtSelection->GetXaxis()->SetBinLabel(1,"ACCEPTED");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(2,"event selection: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(3,"event class: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(4,"vertex Ncontr: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(7,"pileup: rejected");
 
+  fHistList->Add(fh1EvtSelection);
+ 
   const Int_t nBinPt = 150;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
@@ -699,6 +717,14 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
     selected = AliAnalysisHelperJetTasks::TestSelectInfo(fEventSelectionMask);
   }
 
+  if(!selected){
+    // no selection by the service task, we continue
+    if (fDebug > 1)Printf("Not selected %s:%d SelectInfo %d  Class %d",(char*)__FILE__,__LINE__, AliAnalysisHelperJetTasks::Selected(),AliAnalysisHelperJetTasks::EventClass());
+    fh1EvtSelection->Fill(1.); 
+    PostData(1, fHistList);
+    return;
+  }
+
   if(fEventClass>0){
     selected = selected&&(AliAnalysisHelperJetTasks::EventClass()==fEventClass);
   }
@@ -706,6 +732,7 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
   if(!selected){
     // no selection by the service task, we continue
     if (fDebug > 1)Printf("Not selected %s:%d SelectInfo %d  Class %d",(char*)__FILE__,__LINE__, AliAnalysisHelperJetTasks::Selected(),AliAnalysisHelperJetTasks::EventClass());
+    fh1EvtSelection->Fill(2.);
     PostData(1, fHistList);
     return;
   }
@@ -820,6 +847,44 @@ void AliAnalysisTaskJetSpectrum2::UserExec(Option_t */*option*/){
       return;
     }
   }
+
+  AliAODVertex* primVtx = aod->GetPrimaryVertex();
+  Int_t nTracksPrim = primVtx->GetNContributors();
+  
+  
+  if (fDebug > 1) Printf("%s:%d primary vertex selection: %d", (char*)__FILE__,__LINE__,nTracksPrim);
+  if(nTracksPrim < fMinNcontributors){
+    if (fDebug > 1) Printf("%s:%d primary vertex selection: event REJECTED...",(char*)__FILE__,__LINE__); 
+    fh1EvtSelection->Fill(3.);
+    PostData(1, fHistList);
+    return;
+  }
+  
+  if(TMath::Abs(primVtx->GetZ())>fMaxVertexZ){
+    if (fDebug > 1) Printf("%s:%d primary vertex z = %f: event REJECTED...",(char*)__FILE__,__LINE__,primVtx->GetZ()); 
+    fh1EvtSelection->Fill(4.);
+    PostData(1, fHistList);
+    return; 
+  }
+  
+  TString primVtxName(primVtx->GetName());
+
+  if(primVtxName.CompareTo("TPCVertex",TString::kIgnoreCase) == 1){
+    if (fDebug > 1) Printf("%s:%d primary vertex selection: TPC vertex, event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(5.);
+    PostData(1, fHistList);
+    return;
+  }
+
+  if(fRejectPileup && AliAnalysisHelperJetTasks::IsPileUp()){
+    if (fDebug > 1) Printf("%s:%d SPD pileup: event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(6.);
+    PostData(1, fHistList);
+    return;
+  }
+
+  if (fDebug > 1) Printf("%s:%d event ACCEPTED ...",(char*)__FILE__,__LINE__); 
+  fh1EvtSelection->Fill(0.);
 
  
   // new Scheme
