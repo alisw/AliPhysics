@@ -52,6 +52,7 @@ set ( SRCS
     UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     UserTasks/AliAnalysisTaskIDFFTCF.cxx
     UserTasks/AliIDFFUtils.cxx
+    UserTasks/AliAnalysisTaskPPJetSpectra.cxx
     )
 
 # Add code that needs fastjet or FJWrapper here 
