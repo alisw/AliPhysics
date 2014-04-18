@@ -84,6 +84,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fCutsPrimAss(0x0),
   fCutsTwoTrackEff(0.02),
   fAssFilterMask(1 << 10),
+  fRequirePID(kTRUE),
   fTrgJetEtaMax(0.45),
   fHadEtaMax(0.8),
   fTrgPartPtMin(6.),
@@ -96,6 +97,9 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fAssPartPtMin(2.),
   fAssPartPtMax(4.),
   fTrgAngleToEvPlane(TMath::Pi() / 4.),
+  fToyMeanNoPart(1.),
+  fToyRadius(.8),
+  fToySmearPhi(.2),
   fTrgJetPhiModCent(new TF1("jetphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgJetPhiModSemi(new TF1("jetphimodsemi", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgHadPhiModCent(new TF1("hadphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
@@ -544,6 +548,12 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   AddHistogram(ID(kHistPhiTrgHadEvPlane), "trg had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
 	       100, 0., 100.);
+  AddHistogram(ID(kHistPhiRndTrgJetEvPlane), "rnd trg jet;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100, 0., 100.);
+  AddHistogram(ID(kHistPhiRndTrgHadEvPlane), "rnd trg had;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadEvPlane), "ass had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
 	       100, 0., 100.);
@@ -946,6 +956,23 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 		   &assArray[kAssHadHadExc], &assArray[kAssProtHadExc],
 		   pFraction);
 
+    const Int_t nRndTrgJet = trgArray[kTrgJetRnd].GetEntries();
+    for (Int_t iTrg = 0; iTrg < nRndTrgJet; ++iTrg) {
+      TLorentzVector *trg = dynamic_cast<TLorentzVector*> (trgArray[kTrgJetRnd].At(iTrg));
+      Float_t phiRel = trg->Phi() - fEventPlaneAngle;
+      if (phiRel < 0.)
+	phiRel += 2. * TMath::Pi();
+      FillH2(kHistPhiRndTrgJetEvPlane, phiRel, fCentrality);
+    }
+    const Int_t nRndTrgHad = trgArray[kTrgHadRnd].GetEntries();
+    for (Int_t iTrg = 0; iTrg < nRndTrgHad; ++iTrg) {
+      TLorentzVector *trg = dynamic_cast<TLorentzVector*> (trgArray[kTrgHadRnd].At(iTrg));
+      Float_t phiRel = trg->Phi() - fEventPlaneAngle;
+      if (phiRel < 0.)
+	phiRel += 2. * TMath::Pi();
+      FillH2(kHistPhiRndTrgHadEvPlane, phiRel, fCentrality);
+    }
+
     // correlate, both same and mixed event
     for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
       if (IsClass((Class_t) iClass)) {
@@ -1146,7 +1173,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     const Int_t nTracksAODAss = fAODEvent->GetNumberOfTracks();
     for (Int_t iTrack = 0; iTrack < nTracksAODAss; ++iTrack) {
       AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
-      if (trk->TestFilterMask(fAssFilterMask))
+      if (trk->TestFilterBit(fAssFilterMask))
         fPrimTrackArrayAss->Add(trk);
     }
 
@@ -1302,19 +1329,28 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliAODJet *trg)
 
 Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(const AliVTrack *trk) const
 {
-  if ((trk->Pt() > fAssPartPtMin) && (trk->Pt() < fAssPartPtMax) &&
-      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) &&
-      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk))
-    if ((trk->GetTPCsignalN() >= 60.) &&
-	(trk->GetTPCsignal() >= 10) &&
-	(TMath::Abs(trk->Eta()) < .9))
+  if ((trk->Pt() > fAssPartPtMin) && (trk->Pt() < fAssPartPtMax) && (TMath::Abs(trk->Eta()) < fHadEtaMax))
+    if (fRequirePID) {
+      if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) &&
+	  (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) && 
+	  (trk->GetTPCsignalN() >= 60.) && (trk->GetTPCsignal() >= 10))
+	return kTRUE;
+      else
+	return kFALSE;
+    }
+    else
       return kTRUE;
-
-  return kFALSE;
+  else
+    return kFALSE;
 }
 
 Bool_t AliAnalysisTaskJetProtonCorr::IsProton(const AliVTrack *trk) const
 {
+  if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) != AliPIDResponse::kDetPidOk) ||
+      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) != AliPIDResponse::kDetPidOk) || 
+      (trk->GetTPCsignalN() < 60.) || (trk->GetTPCsignal() < 10))
+    return kFALSE;
+
   Double_t nSigmaProtonTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
   Double_t nSigmaProtonTOF = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton);
 
@@ -1487,10 +1523,9 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
 {
   // generate random direction
 
-  Float_t meanNoPart = 10;
-  Int_t nPart = gRandom->Poisson(meanNoPart);
+  const Int_t nPart = gRandom->Poisson(fToyMeanNoPart);
 
-  Float_t trgJetEta = gRandom->Uniform(-.5, .5);
+  Float_t trgJetEta = gRandom->Uniform(-fTrgJetEtaMax, fTrgJetEtaMax);
   Float_t trgJetPhi = 0.;
   if (IsClass(kClSemiCentral)) {
     do {
@@ -1512,14 +1547,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   trgJetArray->Add(trgJet);
 
   // generate direction for away side
-  Float_t trgJetEtaAway = gRandom->Uniform(-.9, .9);
-  Float_t trgJetPhiAway = trgJetPhi + TMath::Pi() + gRandom->Gaus(0., .2);
+  Float_t trgJetEtaAway = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
+  Float_t trgJetPhiAway = trgJetPhi + TMath::Pi() + gRandom->Gaus(0., fToySmearPhi);
 
   // generate associated particles
   // with proton/hadron ratio observed in this event
   for (Int_t iPart = 0; iPart < nPart; ++iPart) {
     Float_t deltaEta, deltaPhi;
-    const Float_t r = .8;
+    const Float_t r = fToyRadius;
     do {
       deltaEta = gRandom->Uniform(-r, r);
       deltaPhi = gRandom->Uniform(-r, r);
@@ -1528,13 +1563,13 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     TLorentzVector *assPart = new TLorentzVector();
     Float_t eta = trgJetEtaAway + deltaEta;
     Float_t phi = trgJetPhiAway + deltaPhi;
-    if (eta > .9) {
+    if (eta > fHadEtaMax) {
       delete assPart;
       continue;
     }
-    if (phi < 0.)
+    while (phi < 0.)
       phi += 2. * TMath::Pi();
-    else if (phi > 2. * TMath::Pi())
+    while (phi > 2. * TMath::Pi())
       phi -= 2. * TMath::Pi();
     assPart->SetPtEtaPhiM(3., eta, phi, .14);
     assHadJetArray->Add(assPart);
@@ -1543,7 +1578,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   }
 
   // trigger hadron
-  Float_t trgHadEta = gRandom->Uniform(-.9, .9);
+  Float_t trgHadEta = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
   Float_t trgHadPhi = 0.;
   if (IsClass(kClSemiCentral)) {
     do {
@@ -1565,14 +1600,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   trgHadArray->Add(trgHad);
 
   // generate direction for away side
-  Float_t trgHadEtaAway = gRandom->Uniform(-.9, .9);
-  Float_t trgHadPhiAway = trgHadPhi + TMath::Pi() + gRandom->Gaus(0., .2);
+  Float_t trgHadEtaAway = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
+  Float_t trgHadPhiAway = trgHadPhi + TMath::Pi() + gRandom->Gaus(0., fToySmearPhi);
 
   // generate associated particles
   // with proton/hadron ratio observed in this event
   for (Int_t iPart = 0; iPart < nPart; ++iPart) {
     Float_t deltaEta, deltaPhi;
-    const Float_t r = .8;
+    const Float_t r = fToyRadius;
     do {
       deltaEta = gRandom->Uniform(-r, r);
       deltaPhi = gRandom->Uniform(-r, r);
@@ -1585,9 +1620,9 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
       delete assPart;
       continue;
     }
-    if (phi < 0.)
+    while (phi < 0.)
       phi += 2. * TMath::Pi();
-    else if (phi > 2. * TMath::Pi())
+    while (phi > 2. * TMath::Pi())
       phi -= 2. * TMath::Pi();
     assPart->SetPtEtaPhiM(3., eta, phi, .14);
     assHadHadArray->Add(assPart);

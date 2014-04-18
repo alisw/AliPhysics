@@ -71,6 +71,10 @@ public:
   void SetLeadingTrackPtMax(Float_t pt) { fTrgJetLeadTrkPtMax = pt; }
 
   void SetJetAreaMin(Float_t area) { fTrgJetAreaMin = area; }
+  Float_t GetJetAreaMin() const { return fTrgJetAreaMin; }
+
+  void SetRequirePID(Bool_t req = kTRUE) { fRequirePID = req; }
+  Bool_t GetRequirePID() const { return fRequirePID; }
 
   void SetFilterMask(Int_t mask) { fAssFilterMask = mask; }
   Int_t GetFilterMask() const { return fAssFilterMask; }
@@ -201,6 +205,8 @@ public:
       kHistEtaPhiAssProt,
       kHistPhiTrgJetEvPlane,
       kHistPhiTrgHadEvPlane,
+      kHistPhiRndTrgJetEvPlane,
+      kHistPhiRndTrgHadEvPlane,
       kHistPhiAssHadEvPlane,
       kHistPhiAssHadVsEvPlane,
       kHistPhiAssProtEvPlane,
@@ -436,6 +442,7 @@ protected:
   Float_t fCutsTwoTrackEff;
 
   UInt_t  fAssFilterMask;
+  Bool_t  fRequirePID;
   Float_t fTrgJetEtaMax;
   Float_t fHadEtaMax;
   Float_t fTrgPartPtMin;
@@ -448,6 +455,10 @@ protected:
   Float_t fAssPartPtMin;
   Float_t fAssPartPtMax;
   Float_t fTrgAngleToEvPlane;
+
+  Float_t fToyMeanNoPart;
+  Float_t fToyRadius;
+  Float_t fToySmearPhi;
 
   TF1 *fTrgJetPhiModCent;
   TF1 *fTrgJetPhiModSemi;
