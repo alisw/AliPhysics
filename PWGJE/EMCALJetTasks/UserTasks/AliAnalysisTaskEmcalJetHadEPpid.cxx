@@ -82,9 +82,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
-  isPItpc(0), isKtpc(0), isPtpc(0), nPIDtpc(0) ,   // pid TPC
-  isPIits(0), isKits(0), isPits(0), nPIDits(0) ,  // pid ITS
-  isPItof(0), isKtof(0), isPtof(0), nPIDtof(0) ,  // pid TOF
+  isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
+  isPIits(0), isKits(0), isPits(0), // pid ITS
+  isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0),
@@ -183,9 +183,9 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
-  isPItpc(0), isKtpc(0), isPtpc(0), nPIDtpc(0),   // pid TPC
-  isPIits(0), isKits(0), isPits(0), nPIDits(0),   // pid ITS
-  isPItof(0), isKtof(0), isPtof(0), nPIDtof(0),   // pid TOF
+  isPItpc(0), isKtpc(0), isPtpc(0), // pid TPC
+  isPIits(0), isKits(0), isPits(0), // pid ITS
+  isPItof(0), isKtof(0), isPtof(0), // pid TOF
   fPoolMgr(0x0),
   fPIDResponse(0x0), fTPCResponse(),
   fESD(0), fAOD(0),
@@ -850,10 +850,12 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      // initialize and calculate various parameters: pt, eta, phi, rho, etc...
      Double_t jetphi = jet->Phi();      // phi of jet
      NJETAcc++;   // # accepted jets
-     fLocalRhoVal = fLocalRho->GetLocalVal(jetphi, GetJetRadius(0)); //fmyJetRadius);   // get local rho value
+     fLocalRhoVal = fLocalRho->GetLocalVal(jetphi, fJetRad); //GetJetRadius(0)); // get local rho value
      Double_t jeteta = jet->Eta();     // ETA of jet
 //     Double_t jetptraw = jet->Pt();    // raw pT of jet
-     Double_t jetPt, jetPtGlobal, jetPtLocal = -500;            // initialize corr jet pt
+     Double_t jetPt = -500; 
+     Double_t jetPtGlobal = -500; 
+     Double_t jetPtLocal = -500;            // initialize corr jet pt
      jetPt = jet->Pt();
      jetPtGlobal = jet->Pt()-jet->Area()*fRhoVal;  // corrected pT of jet from rho value
      jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
@@ -988,12 +990,17 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     }
 
     // some variables for PID
-    Double_t eta, pt, dEdx, ITSsig, TOFsig, charge = -99.;
+    Double_t eta = -999; 
+    Double_t pt = -999; 
+    Double_t dEdx = -999;
+    Double_t ITSsig = -999;
+    Double_t TOFsig = -999;
+    Double_t charge = -999;
 
     // nSigma of particles in TPC, TOF, and ITS
-    Double_t nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC = -99.;
-    Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF = -99.;
-    Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS = -99.;
+    Double_t nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC;
+    Double_t nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF;
+    Double_t nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS;
 
     if(doPID){
       // get parameters of track
@@ -1060,8 +1067,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 //    if (makeQAhistos) fHistTOFsignal->Fill(pt, TOFsig);
 
       // Tests to PID pions, kaons, and protons,          (default is undentified tracks)
-      //Double_t nPIDtpc, nPIDits, nPIDtof = 0;
-      Double_t	nPID = -99;
+      Double_t nPIDtpc = 0;
+      Double_t nPIDits = 0; 
+      Double_t nPIDtof = 0;
+      Double_t nPID = -99;
 
       // check track has pT < 0.900 GeV  - use TPC pid
       if (pt<0.900 && dEdx>0) {
@@ -1797,23 +1806,23 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 20:
       label = "TPC PID determination";
-      nbins = 4;
+      nbins = 5;
       xmin = 0.;
-      xmax = 4.;
+      xmax = 5.;
       break;
 
    case 21:
       label = "ITS PID determination";
-      nbins = 4;
+      nbins = 5;
       xmin = 0.;
-      xmax = 4.;
+      xmax = 5.;
       break;
 
    case 22:
       label = "TOF PID determination";
-      nbins = 4;
+      nbins = 5;
       xmin = 0.;
-      xmax = 4.;
+      xmax = 5.;
       break;
 
    } // end of switch
