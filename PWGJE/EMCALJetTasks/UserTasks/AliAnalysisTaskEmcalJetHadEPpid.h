@@ -170,13 +170,8 @@ protected:
 
   // boolean functions for PID
   Bool_t		 isPItpc, isKtpc, isPtpc;
-  Double_t			 nPIDtpc;
-
   Bool_t		 isPIits, isKits, isPits;
-  Double_t			 nPIDits;  
-
   Bool_t		 isPItof, isKtof, isPtof;
-  Double_t			 nPIDtof;
 
   // event pool
   TObjArray*		    CloneAndReduceTrackList(TObjArray* tracks);
