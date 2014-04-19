@@ -1677,35 +1677,38 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
   fHistCorrEtaPhi(0x0),
   fHistCorrAvgEtaPhi(0x0),
   fHistCorrTrgEtaPhi(0x0),
-  fHistCorrAssEtaPhi(0x0)
+  fHistCorrAssEtaPhi(0x0),
+  fHistDphiLo(-TMath::Pi() / 2.),
+  fHistDphiNbins(120),
+  fHistDetaNbins(120)
 {
   // ctor
 
   fHistStat = new TH1F(Form("%s_stat", name.Data()), "statistics",
 		       1, .5, 1.5);
 
-  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta #phi",
-			  100, -2.*TMath::Pi(), 2.*TMath::Pi());
+  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta#phi",
+			  fHistDphiNbins, fHistDphiLo, 2.*TMath::Pi() + fHistDphiLo);
   fHistCorrPhi->Sumw2();
   fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
-			  100, 0.*TMath::Pi(), 2.*TMath::Pi(),
-			  100, 0.*TMath::Pi(), 2.*TMath::Pi());
+			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
+			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
   fHistCorrPhi2->Sumw2();
   fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#phi;#Delta#eta",
-			     100, -1., 2*TMath::Pi()-1.,
-			     100, -2., 2.);
+			     fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+			     fHistDetaNbins, -2., 2.);
   fHistCorrEtaPhi->Sumw2();
   fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
-				100, -1., 2*TMath::Pi()-1.,
-				100, -2., 2.);
+				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+				fHistDetaNbins, -2., 2.);
   fHistCorrAvgEtaPhi->Sumw2();
   fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
-				100, 0., 2*TMath::Pi(),
-				100, -1., 1.);
+				120, 0., 2*TMath::Pi(),
+				120, -1., 1.);
   fHistCorrTrgEtaPhi->Sumw2();
   fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
-				100, 0., 2*TMath::Pi(),
-				100, -1., 1.);
+				120, 0., 2*TMath::Pi(),
+				120, -1., 1.);
   fHistCorrAssEtaPhi->Sumw2();
 
   fOutputList->Add(fHistStat);
@@ -1729,9 +1732,9 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliV
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  while (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  while (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
@@ -1747,9 +1750,9 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, Al
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  while (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  while (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
@@ -1768,9 +1771,9 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TL
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  if (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  else if (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
