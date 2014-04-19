@@ -51,9 +51,17 @@ public:
   Float_t GetPtMinAss() const { return fAssPartPtMin; }
   Float_t GetPtMaxAss() const { return fAssPartPtMax; }
 
+  void SetTwoTrackCut(Float_t cut) { fCutsTwoTrackEff = cut; }
+  Float_t GetTwoTrackCut() const { return fCutsTwoTrackEff; }
+
   void SetTrackCutsAss(const AliESDtrackCuts &cuts) { *fCutsPrimAss = cuts; }
   void SetTrackCutsTrg(const AliESDtrackCuts &cuts) { *fCutsPrimTrg = cuts; }
   void SetTrackCutsTrgConstrain(const AliESDtrackCuts &cuts) { *fCutsPrimTrgConstrain = cuts; }
+
+  void SetTrgJetEtaMax(Float_t etamax) { fTrgJetEtaMax = etamax; }
+  Float_t GetTrgJetEtaMax() const { return fTrgJetEtaMax; }
+  void SetHadEtaMax(Float_t etamax) { fHadEtaMax = etamax; }
+  Float_t GetHadEtaMax() const { return fHadEtaMax; }
 
   void SetUseEvplaneV0(Bool_t usev0 = kTRUE) { fUseEvplaneV0 = usev0; }
   Bool_t GetUseEvplaneV0() const { return fUseEvplaneV0; }
@@ -81,6 +89,16 @@ public:
 
   void SetErrorCount(Int_t cnt) { fErrorMsg = cnt; }
   Int_t GetErrorCount() const { return fErrorMsg; }
+
+  void SetTrgAngleToEvPlane(Float_t angle) { fTrgAngleToEvPlane = angle; }
+  Float_t GetTrgAngleToEvPlane() const { return fTrgAngleToEvPlane; }
+
+  void SetToyMeanNoPart(Float_t mean) { fToyMeanNoPart = mean; }
+  Float_t GetToyMeanNoPart() const { return fToyMeanNoPart; }
+  void SetToyRadius(Float_t radius) { fToyRadius = radius; }
+  Float_t GetToyRadius() const { return fToyRadius; }
+  void SetToySmearPhi(Float_t sigma) { fToySmearPhi = sigma; }
+  Float_t GetToySmearPhi() const { return fToySmearPhi; }
 
   void PrintTask(Option_t *option, Int_t indent) const;
 
@@ -313,6 +331,10 @@ public:
     TH2F *fHistCorrTrgEtaPhi;
     TH2F *fHistCorrAssEtaPhi;
 
+    const Float_t fHistDphiLo;
+    const Int_t   fHistDphiNbins;
+    const Int_t   fHistDetaNbins;
+
     AliHistCorr(const AliHistCorr &rhs);
     AliHistCorr& operator=(const AliHistCorr &rhs);
 
@@ -433,7 +455,7 @@ protected:
   static const Int_t fgkStringLength = 100; // max length for the jet branch name
   char fJetBranchName[fgkStringLength];     // jet branch name
 
-  Bool_t fUseStandardCuts;
+  const Bool_t fUseStandardCuts;
   Bool_t fUseEvplaneV0;
 
   AliESDtrackCuts *fCutsPrimTrg;	// track cuts for primary particles (trigger)
