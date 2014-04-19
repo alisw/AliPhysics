@@ -683,6 +683,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
     delete[] containerInput;
     delete[] containerInputMC;
+    delete cfVtxHF;
     return;
   }
 
@@ -691,6 +692,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliDebug(3,"Event rejected because of null trigger mask");
     delete[] containerInput;
     delete[] containerInputMC;
+    delete cfVtxHF;
     return;
   }
 
@@ -734,6 +736,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       delete[] containerInput;
       delete[] containerInputMC;
       delete [] trackCuts;
+      delete cfVtxHF;
       return;
     }    
   }  else { // keep all centralities
