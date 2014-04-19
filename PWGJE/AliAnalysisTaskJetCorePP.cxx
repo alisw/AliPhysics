@@ -62,8 +62,6 @@
 #include "AliAODJet.h"
 #include "AliVVertex.h"
 #include "AliAnalysisTaskJetCorePP.h"
-#include "AliRunLoader.h" //KF//
-#include "AliHeader.h" //KF//
 
 using std::cout;
 using std::endl;
@@ -913,8 +911,8 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       Float_t xsection = 0;
       Float_t trials  = 0;
  
-      AliRunLoader *rl = AliRunLoader::Instance();
-      AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(rl->GetHeader()->GenEventHeader());
+      AliMCEvent *mcEvent = MCEvent();
+      AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
       if(genPH){
          xsection = genPH->GetXsection();
          trials  = genPH->Trials();
