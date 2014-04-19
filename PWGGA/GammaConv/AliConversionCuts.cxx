@@ -1109,7 +1109,14 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    cutIndex++; //11
 
    if (photonAOD){
-		if (fDoPhotonQualitySelectionCut && photonAOD->GetPhotonQuality() != fPhotonQualityCut){
+	   UChar_t photonQuality = 0;
+	    AliAODEvent * aodEvent = dynamic_cast<AliAODEvent*>(event);
+		if(aodEvent) {
+			photonQuality = DeterminePhotonQualityAOD(photonAOD, event);
+		} else {
+			photonQuality = photonAOD->GetPhotonQuality();
+		}	
+		if (fDoPhotonQualitySelectionCut && photonQuality != fPhotonQualityCut){
 			if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
 			return kFALSE;
 		}	
@@ -4288,3 +4295,29 @@ Bool_t AliConversionCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t even
 
 }
 
+///________________________________________________________________________
+UChar_t AliConversionCuts::DeterminePhotonQualityAOD(AliAODConversionPhoton* photon, AliVEvent* eventDummy){
+
+   AliAODTrack * negTrack = static_cast<AliAODTrack*>(GetTrack(eventDummy, photon->GetTrackLabelNegative()));
+   AliAODTrack * posTrack = static_cast<AliAODTrack*>(GetTrack(eventDummy, photon->GetTrackLabelPositive()));
+
+   if(!negTrack || !posTrack) {
+        return 0;
+   }
+   if(negTrack->Charge() == posTrack->Charge()){
+        return 0;
+   }   
+   Int_t nClusterITSneg = negTrack->GetITSNcls();
+   Int_t nClusterITSpos = posTrack->GetITSNcls();
+//    cout << nClusterITSneg << "\t" << nClusterITSpos <<endl;
+   
+   if (nClusterITSneg > 1 && nClusterITSpos > 1){
+      return 3;
+   } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
+      return 2;
+   } else {
+      return 1;
+   }
+   return 0;
+   
+}

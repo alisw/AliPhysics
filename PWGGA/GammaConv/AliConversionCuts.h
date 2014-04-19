@@ -218,6 +218,7 @@ class AliConversionCuts : public AliAnalysisCuts {
       
    }
    void  LoadReweightingHistosMCFromFile ();
+   UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
    // Event Cuts
    Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
