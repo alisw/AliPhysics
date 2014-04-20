@@ -34,7 +34,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
 
   // Double_t V0EtaCut, Double_t jetEtaCut, Bool_t IsMC, Double_t DeltaVtxZCut can be set externally
-
+  task->SetCutJetEta(jetEtaCut);
   task->SetDeltaZVertexCut(DeltaVtxZCut);
   task->SetBranchRecBackClusters("clustersAOD_KT04_B0_Filter00768_Cut00150_Skip00"); 
   //task->SetEventSelectionMask(AliVEvent::kMB); //for 2010 Pb-Pb data !!
