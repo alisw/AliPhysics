@@ -5,6 +5,7 @@
 
 #include "AliLog.h"
 
+#include "AliVParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 
@@ -15,7 +16,6 @@ class TList;
 class TClonesArray;
 class AliOADBContainer;
 class AliTOFPIDParams;
-class AliVParticle;
 class AliVTrack;
 class AliPIDResponse;
 class AliEventPoolManager;
@@ -308,13 +308,66 @@ public:
     kEvLast
   };
 
+  class AliPartCorr : public AliVParticle {
+  public:
+    AliPartCorr(Float_t eta = 0., Float_t phi = 0., Float_t pt = 0., Float_t charge = 0) :
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge) {}
+    AliPartCorr(const AliVParticle &rhs) :
+      fPt(rhs.Pt()), fEta(rhs.Eta()), fPhi(rhs.Phi()), fCharge(rhs.Charge()) {}
+    virtual ~AliPartCorr() {}
+    
+    // kinematics
+    virtual Double_t Px() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Pt() const { return fPt; }
+    virtual Double_t P()  const { AliFatal("not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t Xv() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t OneOverPt()  const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t E()          const { AliFatal("not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("not implemented"); return 0; }
+
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("not implemented"); return 0; }
+
+    virtual Int_t   PdgCode()     const { AliFatal("not implemented"); return 0; }
+    virtual const Double_t *PID() const { AliFatal("not implemented"); return 0; }
+
+  protected:
+    Float_t fPt;
+    Float_t fEta;
+    Float_t fPhi;
+    Short_t fCharge;
+
+    ClassDef(AliPartCorr, 1);
+  };
+
   class AliHistCorr : public TNamed {
   public:
     AliHistCorr(TString name, TList *outputList = 0x0);
     ~AliHistCorr();
 
-    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistStat->Fill(1., weight); fHistCorrTrgEtaPhi->Fill(phi, eta, weight); }
-    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistCorrAssEtaPhi->Fill(phi, eta, weight); }
+    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) {
+      fHistStat->Fill(1., weight);
+      if (fHistCorrTrgEtaPhi)
+	fHistCorrTrgEtaPhi->Fill(phi, eta, weight);
+    }
+    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) {
+      if (fHistCorrAssEtaPhi)
+	fHistCorrAssEtaPhi->Fill(phi, eta, weight);
+    }
     void Fill(AliVParticle *trgPart, AliVParticle *assPart, Float_t weight = 1.);
     void Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight = 1.);
     void Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight = 1.);

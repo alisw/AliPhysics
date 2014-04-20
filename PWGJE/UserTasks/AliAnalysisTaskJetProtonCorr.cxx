@@ -278,165 +278,165 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 	       100, 0., 100.,
 	       100, 0., 2500.);
 
-  AddHistogram(ID(kHistSignalTPC), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistSignalTPC), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, 0., 300.);
-  AddHistogram(ID(kHistSignalTOF), "TOF time of flight;p_{T} (GeV/c);t (ns)",
+  AddHistogram(ID(kHistSignalTOF), "TOF time of flight;p_{T} (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, 0., 50.);
-  AddHistogram(ID(kHistBetaTOF), "TOF beta;p (GeV/c); #beta",
+  AddHistogram(ID(kHistBetaTOF), "TOF beta;p (GeV/#it{c}); #beta",
 	       100, 0., 10.,
 	       100, 0., 1.);
 
-  AddHistogram(ID(kHistDeltaTPC), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistDeltaTPC), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, -100., 100.);
-  AddHistogram(ID(kHistDeltaTPCSemi), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistDeltaTPCSemi), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, -100., 100.);
-  AddHistogram(ID(kHistDeltaTOF), "TOF time of flight;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOF), "TOF time of flight;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
   // Nsigma templates - central
-  AddHistogram(ID(kHistNsigmaTPCe), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe), "TPC N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCk), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCk), "TPC N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCp), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCp), "TPC N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCd), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCd), "TPC N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFe), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFe), "TOF N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFk), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFk), "TOF N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFp), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFp), "TOF N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFd), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFd), "TOF N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N_{#sigma,p} - mismatch;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
   // Nsigma templates - semi-central
-  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N_{#sigma,p} - mismatch;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
   // delta templates
-  AddHistogram(ID(kHistDeltaTOFe), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFe), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFmu), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFmu), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFk), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFk), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFp), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFp), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFd), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFd), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
-  AddHistogram(ID(kHistDeltaTOFeSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFeSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFmuSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFmuSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpiSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpiSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFkSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFkSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFdSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFdSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
   // sigma comparisons
-  // AddHistogram(ID(kHistExpSigmaTOFe), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFe), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFmu), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFmu), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFk), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFk), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFp), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFp), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFd), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFd), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
 
-  // AddHistogram(ID(kHistExpSigmaTOFeSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFeSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFmuSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFmuSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpiSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpiSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFkSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFkSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFdSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFdSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
 
   // AddHistogram(ID(kHistCmpSigmaTOFe), "#sigma comparison;exp #sigma;template #sigma",
@@ -466,35 +466,35 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   // 	       200, 0., .25, 200, 0., .25);
 
   // Nsigma distributions
-  AddHistogram(ID(kHistNsigmaTPCTOF), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOF), "N_{#sigma,p} TPC-TOF;p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N_{#sigma,p} TPC-TOF;p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N_{#sigma,p} TPC-TOF (central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N_{#sigma,p} TPC-TOF (central);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N_{#sigma,p} TPC-TOF (semi-central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N_{#sigma,p} TPC-TOF (semi-central);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
@@ -956,23 +956,6 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 		   &assArray[kAssHadHadExc], &assArray[kAssProtHadExc],
 		   pFraction);
 
-    const Int_t nRndTrgJet = trgArray[kTrgJetRnd].GetEntries();
-    for (Int_t iTrg = 0; iTrg < nRndTrgJet; ++iTrg) {
-      TLorentzVector *trg = dynamic_cast<TLorentzVector*> (trgArray[kTrgJetRnd].At(iTrg));
-      Float_t phiRel = trg->Phi() - fEventPlaneAngle;
-      if (phiRel < 0.)
-	phiRel += 2. * TMath::Pi();
-      FillH2(kHistPhiRndTrgJetEvPlane, phiRel, fCentrality);
-    }
-    const Int_t nRndTrgHad = trgArray[kTrgHadRnd].GetEntries();
-    for (Int_t iTrg = 0; iTrg < nRndTrgHad; ++iTrg) {
-      TLorentzVector *trg = dynamic_cast<TLorentzVector*> (trgArray[kTrgHadRnd].At(iTrg));
-      Float_t phiRel = trg->Phi() - fEventPlaneAngle;
-      if (phiRel < 0.)
-	phiRel += 2. * TMath::Pi();
-      FillH2(kHistPhiRndTrgHadEvPlane, phiRel, fCentrality);
-    }
-
     // correlate, both same and mixed event
     for (Int_t iClass = 0; iClass < kClLast; ++iClass) {
       if (IsClass((Class_t) iClass)) {
@@ -1225,6 +1208,9 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
 
 Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliVTrack *trg)
 {
+  if (TMath::Abs(trg->Eta()) > fHadEtaMax)
+    return kFALSE;
+
   // check pt interval
   Bool_t acceptPt =
     (trg->Pt() >= fTrgPartPtMin) &&
@@ -1527,19 +1513,23 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
 
   Float_t trgJetEta = gRandom->Uniform(-fTrgJetEtaMax, fTrgJetEtaMax);
   Float_t trgJetPhi = 0.;
-  if (IsClass(kClSemiCentral)) {
-    do {
-      trgJetPhi = fTrgJetPhiModSemi->GetRandom();
-    } while (!AcceptAngleToEvPlane(trgJetPhi, 0));
-  }
-  else {
-    trgJetPhi = fTrgJetPhiModCent->GetRandom();
-  }
-  trgJetPhi += fEventPlaneAngle;
-  if (trgJetPhi < 0.)
-    trgJetPhi += 2. * TMath::Pi();
-  else if (trgJetPhi > 2. * TMath::Pi())
-    trgJetPhi -= 2. * TMath::Pi();
+  do {
+    trgJetPhi = IsClass(kClSemiCentral) ?
+      fTrgJetPhiModSemi->GetRandom() :
+      fTrgJetPhiModCent->GetRandom();
+
+    trgJetPhi += fEventPlaneAngle;
+    if (trgJetPhi < 0.)
+      trgJetPhi += 2. * TMath::Pi();
+    else if (trgJetPhi > 2. * TMath::Pi())
+      trgJetPhi -= 2. * TMath::Pi();
+
+    Float_t phiRel = trgJetPhi- fEventPlaneAngle;
+    if (phiRel < 0.)
+      phiRel += 2. * TMath::Pi();
+    FillH2(kHistPhiRndTrgJetEvPlane, phiRel, fCentrality);
+  } while (IsClass(kClSemiCentral) &&
+	   !AcceptAngleToEvPlane(trgJetPhi, GetEventPlaneAngle()));
 
   // generate one trigger particle
   TLorentzVector *trgJet = new TLorentzVector();
@@ -1580,19 +1570,23 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   // trigger hadron
   Float_t trgHadEta = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
   Float_t trgHadPhi = 0.;
-  if (IsClass(kClSemiCentral)) {
-    do {
-      trgHadPhi = fTrgHadPhiModSemi->GetRandom();
-    } while (!AcceptAngleToEvPlane(trgHadPhi, 0));
-  }
-  else {
-    trgHadPhi = fTrgHadPhiModCent->GetRandom();
-  }
-  trgHadPhi += fEventPlaneAngle;
-  if (trgHadPhi < 0.)
-    trgHadPhi += 2. * TMath::Pi();
-  else if (trgHadPhi > 2. * TMath::Pi())
-    trgHadPhi -= 2. * TMath::Pi();
+  do {
+    trgHadPhi = IsClass(kClSemiCentral) ?
+      fTrgHadPhiModSemi->GetRandom() :
+      fTrgHadPhiModCent->GetRandom();
+
+    trgHadPhi += fEventPlaneAngle;
+    if (trgHadPhi < 0.)
+      trgHadPhi += 2. * TMath::Pi();
+    else if (trgHadPhi > 2. * TMath::Pi())
+      trgHadPhi -= 2. * TMath::Pi();
+
+    Float_t phiRel = trgHadPhi - fEventPlaneAngle;
+    if (phiRel < 0.)
+      phiRel += 2. * TMath::Pi();
+    FillH2(kHistPhiRndTrgHadEvPlane, phiRel, fCentrality);
+  } while (IsClass(kClSemiCentral) &&
+	   !AcceptAngleToEvPlane(trgHadPhi, GetEventPlaneAngle()));
 
   // generate one trigger particle
   TLorentzVector *trgHad = new TLorentzVector();
@@ -1654,15 +1648,16 @@ TObjArray* AliAnalysisTaskJetProtonCorr::CloneTracks(TObjArray* tracks) const
 
   Int_t nTracks = tracks->GetEntriesFast();
   for (Int_t i = 0; i < nTracks; i++) {
-    // tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
-
     // WARNING: TObject::Clone() is very!!! expensive, unusable
     // tracksClone->Add(particle->Clone());
 
-    if (AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (tracks->At(i)))
-      tracksClone->Add(new AliESDtrack(*esdTrack));
-    else if (AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (tracks->At(i)))
-      tracksClone->Add(new AliAODTrack(*aodTrack));
+    // if (AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (tracks->At(i)))
+    //   tracksClone->Add(new AliESDtrack(*esdTrack));
+    // else if (AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (tracks->At(i)))
+    //   tracksClone->Add(new AliAODTrack(*aodTrack));
+
+    if (const AliVTrack *track = dynamic_cast<const AliVTrack*> (tracks->At(i)))
+      tracksClone->Add(new AliPartCorr(*track));
   }
 
   return tracksClone;
@@ -1690,34 +1685,34 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
   fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta#phi",
 			  fHistDphiNbins, fHistDphiLo, 2.*TMath::Pi() + fHistDphiLo);
   fHistCorrPhi->Sumw2();
-  fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
-			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
-			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
-  fHistCorrPhi2->Sumw2();
+  // fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
+  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
+  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
+  // fHistCorrPhi2->Sumw2();
   fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#phi;#Delta#eta",
 			     fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
 			     fHistDetaNbins, -2., 2.);
   fHistCorrEtaPhi->Sumw2();
-  fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
-				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
-				fHistDetaNbins, -2., 2.);
-  fHistCorrAvgEtaPhi->Sumw2();
-  fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
-				120, 0., 2*TMath::Pi(),
-				120, -1., 1.);
-  fHistCorrTrgEtaPhi->Sumw2();
-  fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
-				120, 0., 2*TMath::Pi(),
-				120, -1., 1.);
-  fHistCorrAssEtaPhi->Sumw2();
+  // fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
+  // 				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+  // 				fHistDetaNbins, -2., 2.);
+  // fHistCorrAvgEtaPhi->Sumw2();
+  // fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
+  // 				120, 0., 2*TMath::Pi(),
+  // 				120, -1., 1.);
+  // fHistCorrTrgEtaPhi->Sumw2();
+  // fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
+  // 				120, 0., 2*TMath::Pi(),
+  // 				120, -1., 1.);
+  // fHistCorrAssEtaPhi->Sumw2();
 
   fOutputList->Add(fHistStat);
   fOutputList->Add(fHistCorrPhi);
-  fOutputList->Add(fHistCorrPhi2);
+  // fOutputList->Add(fHistCorrPhi2);
   fOutputList->Add(fHistCorrEtaPhi);
-  fOutputList->Add(fHistCorrAvgEtaPhi);
-  fOutputList->Add(fHistCorrTrgEtaPhi);
-  fOutputList->Add(fHistCorrAssEtaPhi);
+  // fOutputList->Add(fHistCorrAvgEtaPhi);
+  // fOutputList->Add(fHistCorrTrgEtaPhi);
+  // fOutputList->Add(fHistCorrAssEtaPhi);
 }
 
 AliAnalysisTaskJetProtonCorr::AliHistCorr::~AliHistCorr()
@@ -1738,9 +1733,11 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliV
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  fHistCorrPhi2->Fill(trgPart->Phi(), assPart->Phi(), weight);
+  if (fHistCorrPhi2)
+    fHistCorrPhi2->Fill(trgPart->Phi(), assPart->Phi(), weight);
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight)
@@ -1756,12 +1753,15 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, Al
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  Float_t trgPhi = trgPart->Phi();
-  if (trgPhi < 0)
-    trgPhi += 2. * TMath::Pi();
-  fHistCorrPhi2->Fill(trgPhi, assPart->Phi(), weight);
+  if (fHistCorrPhi2) {
+    Float_t trgPhi = trgPart->Phi();
+    if (trgPhi < 0)
+      trgPhi += 2. * TMath::Pi();
+    fHistCorrPhi2->Fill(trgPhi, assPart->Phi(), weight);
+  }
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight)
@@ -1777,15 +1777,18 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TL
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  Float_t trgPhi = trgPart->Phi();
-  if (trgPhi < 0)
-    trgPhi += 2. * TMath::Pi();
-  Float_t assPhi = assPart->Phi();
-  if (assPhi < 0)
-    assPhi += 2. * TMath::Pi();
-  fHistCorrPhi2->Fill(trgPhi, assPhi, weight);
+  if (fHistCorrPhi2) {
+    Float_t trgPhi = trgPart->Phi();
+    if (trgPhi < 0)
+      trgPhi += 2. * TMath::Pi();
+    Float_t assPhi = assPart->Phi();
+    if (assPhi < 0)
+      assPhi += 2. * TMath::Pi();
+    fHistCorrPhi2->Fill(trgPhi, assPhi, weight);
+  }
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 // ----- histogram management -----
