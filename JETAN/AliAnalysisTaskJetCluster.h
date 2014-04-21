@@ -27,6 +27,7 @@ namespace fastjet {
 class AliJetHeader;
 class AliESDEvent;
 class AliAODEvent;
+class AliAODTrack;
 class AliAODExtension;
 class AliAODJet;
 class AliGenPythiaEventHeader;
@@ -158,7 +159,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
 
     Int_t GetListOfTracks(TList *list,Int_t type);
 	Int_t AddDaughters(TList * list, AliAODMCParticle *part, TClonesArray * tca);
-    void AvoidDoubleCountingHF(AliAODEvent *aod, Int_t idtr1, Bool_t &fFlagSameTr);
+    Bool_t AvoidDoubleCountingHF(AliAODEvent *aod, AliAODTrack *tr1);
 	
     AliAODEvent     *fAOD;                // ! where we take the jets from can be input or output AOD
     AliAODExtension *fAODExtension;       // ! AOD extension in case we write a non-sdt branch to a separate file and the aod is standard
