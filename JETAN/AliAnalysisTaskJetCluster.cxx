@@ -1901,12 +1901,9 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  if (trPt <= 20. && (ntpcClus < NTPCClsCut.Eval(trPt))) continue;
 	  else if (trPt > 20. && ntpcClus < 100) continue;
 
-	  Int_t idtr1 = tr->GetID(); 
-	  Bool_t flagSame = kFALSE;
-	  AvoidDoubleCountingHF(aod, idtr1, flagSame);
-	  if (flagSame) continue; 
+	  if (AvoidDoubleCountingHF(aod,tr)) continue;
 	}
-	// 
+	//
 
         if(fRequireITSRefit){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
         if (fApplySharedClusterCut) {
@@ -2109,23 +2106,25 @@ Int_t AliAnalysisTaskJetCluster::AddDaughters(TList * list, AliAODMCParticle *pa
 	}			
 return count;	
 }
-void AliAnalysisTaskJetCluster::AvoidDoubleCountingHF(AliAODEvent *aod, Int_t idtr1,  Bool_t &fFlagSameTr){
+
+
+Bool_t AliAnalysisTaskJetCluster::AvoidDoubleCountingHF(AliAODEvent *aod, AliAODTrack *tr1){
   
-	Bool_t sametr = kFALSE;
+  if(!(tr1->TestFilterBit(BIT(9)))) return kFALSE;
 
-     for(int jt = 0;jt < aod->GetNumberOfTracks();++jt){
+  Int_t idtr1 = tr1->GetID();
 
-	AliAODTrack *tr2 = aod->GetTrack(jt);
-	Int_t idtr2 = tr2->GetID();
-	if (idtr2>-1) continue;
+  for(int jt = 0;jt < aod->GetNumberOfTracks();++jt){
 
-	idtr2=-1*idtr2;
-	if (idtr1==idtr2-1) sametr = kTRUE;
+    const AliAODTrack *tr2 = aod->GetTrack(jt);
+    Int_t idtr2 = tr2->GetID();
+	
+    if (!(tr2->TestFilterBit(BIT(4)))) continue;
+    if (idtr1==(idtr2+1)*-1.) return kTRUE;
   	
-     }
-     fFlagSameTr = sametr;
+  }
+  return kFALSE;
 }
-
 void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
    if (!gGrid) {
