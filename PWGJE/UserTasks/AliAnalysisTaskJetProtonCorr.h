@@ -264,15 +264,15 @@ public:
     kCorrJetHad,
     kCorrJetProt,
 
-    kCorrRndJetHad,
-    kCorrRndJetProt,
     kCorrRndHadHad,
     kCorrRndHadProt,
+    kCorrRndJetHad,
+    kCorrRndJetProt,
 
-    kCorrRndJetExcHad,
-    kCorrRndJetExcProt,
     kCorrRndHadExcHad,
     kCorrRndHadExcProt,
+    kCorrRndJetExcHad,
+    kCorrRndJetExcProt,
 
     kCorrLast
   };

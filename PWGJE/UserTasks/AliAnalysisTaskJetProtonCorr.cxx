@@ -582,7 +582,7 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
     for (Int_t iCl = 0; iCl < kClLast; ++iCl) {
       for (Int_t iEv = 0; iEv < kEvLast; ++iEv) {
 	// we don't need the mixed event histograms for the embedded excess particles
-	if ((iCorr > kCorrRndHadProt) && (iEv == kEvMix))
+	if ((iCorr > kCorrRndJetProt) && (iEv == kEvMix))
 	  continue;
 
   	GetHistCorr((CorrType_t) iCorr, (Class_t) iCl, (Ev_t) iEv) =
@@ -1494,6 +1494,12 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
 Bool_t AliAnalysisTaskJetProtonCorr::Correlate(Trg_t trg, Ass_t ass, Class_t cl, Ev_t ev,
 					       TCollection *trgArray, TCollection *assArray, Float_t weight)
 {
+  if ((trg < 0) || (trg > kTrgJetRnd))
+    AliFatal(Form("wrong request for correlation with trigger: %d", trg));
+
+  if ((ass < 0) || (ass > kAssProt))
+    AliFatal(Form("wrong request for correlation with associate: %d", ass));
+
   CorrType_t corr = (CorrType_t) (2 * trg + ass);
 
   return Correlate(corr, cl, ev, trgArray, assArray, weight);
@@ -1553,7 +1559,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     TLorentzVector *assPart = new TLorentzVector();
     Float_t eta = trgJetEtaAway + deltaEta;
     Float_t phi = trgJetPhiAway + deltaPhi;
-    if (eta > fHadEtaMax) {
+    if (TMath::Abs(eta) > fHadEtaMax) {
       delete assPart;
       continue;
     }
@@ -1610,7 +1616,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     TLorentzVector *assPart = new TLorentzVector();
     Float_t eta = trgHadEtaAway + deltaEta;
     Float_t phi = trgHadPhiAway + deltaPhi;
-    if (eta > .9) {
+    if (TMath::Abs(eta) > fHadEtaMax) {
       delete assPart;
       continue;
     }
