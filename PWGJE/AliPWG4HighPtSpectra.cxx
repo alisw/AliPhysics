@@ -41,7 +41,10 @@
 
 #include "AliAnalysisManager.h"
 #include "AliESDInputHandler.h"
+#include "AliAODInputHandler.h"
 #include "AliESDtrack.h"
+#include "AliAODTrack.h"
+#include "AliAODMCParticle.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
 #include "AliCentrality.h"
@@ -56,6 +59,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliESDVertex.h"
 //#include "$ALICE_ROOT/PWG4/JetTasks/AliAnalysisHelperJetTasks.h"
 
 //#include <iostream>
@@ -66,9 +70,11 @@ ClassImp(AliPWG4HighPtSpectra)
 //__________________________________________________________________________
 AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpectra", ""), 
   fReadAODData(0),
+  fNoPythiaInfo(0),
   fCFManagerPos(0x0),
   fCFManagerNeg(0x0),
   fESD(0x0),
+  fAOD(0x0),
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
@@ -78,6 +84,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsReject(0x0),
+  fFilterMask(0),
   fbSelectHIJING(kFALSE),
   fSigmaConstrainedMax(100.),
   fAvgTrials(1),
@@ -97,13 +104,16 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   //Default ctor
   //
 }
+
 //___________________________________________________________________________
 AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   AliAnalysisTask(name,""),
   fReadAODData(0),
+  fNoPythiaInfo(0),
   fCFManagerPos(0x0),
   fCFManagerNeg(0x0),
   fESD(0x0),
+  fAOD(0x0),
   fMC(0x0),
   fStack(0x0),
   fVtx(0x0),
@@ -113,6 +123,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsReject(0x0),
+  fFilterMask(0),
   fbSelectHIJING(kFALSE),
   fSigmaConstrainedMax(100.),
   fAvgTrials(1),
@@ -166,14 +177,24 @@ void AliPWG4HighPtSpectra::ConnectInputData(Option_t *)
     return;
   }
 
-  AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-  if (!esdH) {
-    AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
-    return;
-  } else
-    fESD = esdH->GetEvent();
+  if(fReadAODData) {
+    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   
+    if (!aodH) {
+      AliDebug(2,Form("ERROR: Could not get AODInputHandler"));
+      return;
+    } else
+      fAOD = aodH->GetEvent();
+  } else {
+    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  
+    if (!esdH) {
+      AliDebug(2,Form("ERROR: Could not get ESDInputHandler"));
+      return;
+    } else
+      fESD = esdH->GetEvent();
+  }
+
   AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
   if (!eventHandler) {
     AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
@@ -184,7 +205,8 @@ void AliPWG4HighPtSpectra::ConnectInputData(Option_t *)
 }
 
 //________________________________________________________________________
-Bool_t AliPWG4HighPtSpectra::SelectEvent() {
+Bool_t AliPWG4HighPtSpectra::SelectEvent()
+{
   //
   // Decide if event should be selected for analysis
   //
@@ -198,16 +220,16 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
 
   Bool_t selectEvent = kTRUE;
 
-  //fESD object available?
-  if (!fESD) {
+  //fESD or fAOD object available?
+  if (!fESD && !fAOD) {
     AliDebug(2,Form("ERROR: fInputEvent not available\n"));
-    fNEventReject->Fill("noESD",1);
+    fNEventReject->Fill("noESD/AOD",1);
     selectEvent = kFALSE;
     return selectEvent;
   }
 
   //Trigger
-  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //TODO: still works?
   if(fTriggerMask != AliVEvent::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);
@@ -216,14 +238,19 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
   }
 
   //Check if number of reconstructed tracks is larger than 1
-  if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
-    fNEventReject->Fill("NTracks<2",1);
-    selectEvent = kFALSE;
-    return selectEvent;
+  if(!fReadAODData) { //TODO: check if indeed these things are filtered in AOD cases.
+    if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
+      fNEventReject->Fill("NTracks<2",1);
+      selectEvent = kFALSE;
+      return selectEvent;
+    }
   }
 
   //Check if vertex is reconstructed
-  fVtx = fESD->GetPrimaryVertexSPD();
+  if(fESD)
+    fVtx = fESD->GetPrimaryVertexSPD();
+  if(fAOD)
+    fVtx = fAOD->GetPrimaryVertexSPD(); //TODO: Could also use general vertexing
 
   if(!fVtx) {
     fNEventReject->Fill("noVTX",1);
@@ -231,10 +258,13 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
     return selectEvent;
   }
 
-  if(!fVtx->GetStatus()) {
-    fNEventReject->Fill("VtxStatus",1);
-    selectEvent = kFALSE;
-    return selectEvent;
+  if(!fReadAODData){ //TODO: Is this correct?
+    const AliESDVertex* esdVtx = fESD->GetPrimaryVertexSPD();
+    if(!esdVtx->GetStatus()) {
+      fNEventReject->Fill("VtxStatus",1);
+      selectEvent = kFALSE;
+      return selectEvent;
+    }
   }
 
   // Need vertex cut
@@ -257,19 +287,32 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
   //Centrality selection should only be done in case of PbPb
   if(IsPbPb()) {
     Float_t cent = 0.;
-    if(fCentClass!=CalculateCentrality(fESD) && fCentClass!=10) {
+    Int_t calccent = 0;
+    if(fReadAODData)
+      calccent = CalculateCentrality(fAOD);
+    else
+      calccent = CalculateCentrality(fESD);
+    if(fCentClass!=calccent && fCentClass!=10) {
       fNEventReject->Fill("cent",1);
       selectEvent = kFALSE;
       return selectEvent;
     }
     else {
-      if(dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()) {
-	cent = dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()->GetCentralityPercentile("V0M");
+      if(fReadAODData) {
+        if(dynamic_cast<AliAODEvent*>(fAOD)->GetCentrality()) {
+          cent = dynamic_cast<AliAODEvent*>(fAOD)->GetCentrality()->GetCentralityPercentile("V0M");
+        }
       }
+      else {
+        if(dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()) {
+          cent = dynamic_cast<AliESDEvent*>(fESD)->GetCentrality()->GetCentralityPercentile("V0M");
+        }
+      }
+
       if(cent>90.) {
 	fNEventReject->Fill("cent>90",1);
 	selectEvent = kFALSE;
-	return selectEvent;	
+	return selectEvent;
       }
       fh1Centrality->Fill(cent);
     }
@@ -280,24 +323,22 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent() {
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtSpectra::CalculateCentrality(AliESDEvent *esd){
-
-
+Int_t AliPWG4HighPtSpectra::CalculateCentrality(AliVEvent *event)
+{
   Float_t cent = 999;
 
-  if(esd){
-    if(esd->GetCentrality()){
-      cent = esd->GetCentrality()->GetCentralityPercentile("V0M");
+  if(event){
+    if(event->GetCentrality()){
+      cent = event->GetCentrality()->GetCentralityPercentile("V0M");
     }
   }
 
-  if(cent<0)  return 5;
+  if(cent<0) return 5;
   if(cent>80)return 4;
   if(cent>50)return 3;
   if(cent>30)return 2;
   if(cent>10)return 1;
   return 0;
-
 }
 
 //_________________________________________________
@@ -308,13 +349,19 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   //
   AliDebug(2,Form(">> AliPWG4HighPtSpectra::Exec \n"));  
 
-  if(!fMC) {
-    AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
-    if (!eventHandler) {
-      AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
+  AliVEvent* event;
+  if(fReadAODData)
+    event = fAOD;
+  else {
+    event = fESD;
+    if(!fMC) {
+      AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+      if (!eventHandler) {
+        AliDebug(2,Form( "ERROR: Could not retrieve MC event handler \n"));
+      }
+      else
+        fMC = eventHandler->MCEvent();
     }
-    else
-      fMC = eventHandler->MCEvent();
   }
 
   // All events without selection
@@ -328,18 +375,24 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     return;
   }
 
-  //MCEvent available? 
-  //if yes: get stack
-  if(fMC) {
-    AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
-    fStack = fMC->Stack();                //Particles Stack
-    AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
+  TClonesArray *arrayMC = 0x0;
+  if(fReadAODData){
+    //Open the MC particles in the case of AODanalysis
+    arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+  }
+  else {
+    //In case of ESD event: MCEvent available? if yes: get MC particles stack
+    if(fMC) {
+      AliDebug(2,Form("MC particles: %d", fMC->GetNumberOfTracks()));
+      fStack = fMC->Stack();                //Particles Stack
+      AliDebug(2,Form("MC particles stack: %d", fStack->GetNtrack()));
+    }
   }
 
-  Int_t nTracks = fESD->GetNumberOfTracks();
+  Int_t nTracks = event->GetNumberOfTracks();
   AliDebug(2,Form("nTracks %d", nTracks));
 
-  if(!fTrackCuts) { 
+  if((!fTrackCuts && !fReadAODData) || (fFilterMask==0 && fReadAODData)) { //if the TrackCuts are missing in ESD analysis or the FilterBit is missing in AOD analysis
     fNEventReject->Fill("noTrackCuts",1);
     // Post output data
     PostData(0,fHistList);
@@ -358,8 +411,139 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   Double_t containerInputRecMC[nvar]     = {0.,0.,0.,0.}; //reconstructed yield as function of MC variable
 
   //Now go to rec level
-  for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
-    {   
+  if(fReadAODData) {//AOD analysis
+    Int_t nOfPrimaries = 0;
+    for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
+    {
+      //Get track for analysis
+      AliVTrack *track = 0x0;
+
+      AliAODTrack *aodtrack = fAOD->GetTrack(iTrack);
+      if(!aodtrack)
+        continue;
+      if( !aodtrack->TestFilterMask(fFilterMask) )
+        continue;
+      else {
+        AliAODTrack* trackcopy = new AliAODTrack(*aodtrack);
+        track = (AliVTrack*) trackcopy;
+      }
+      //fill the container
+      containerInputRec[0] = track->Pt();
+      containerInputRec[1] = track->Phi();
+      containerInputRec[2] = track->Eta();
+      containerInputRec[3] = track->GetTPCNcls();//TODO: is this correct substitute?
+
+      if(track->Charge()>0.) {
+        fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed); //TODO: Can charge be used instead of GetSign?
+cout << __LINE__ << ". fill " << kStepReconstructed << " with: " << containerInputRec[0] << ", " << containerInputRec[1] << ", " << containerInputRec[2] << ", " << containerInputRec[3] << endl;
+      }
+      if(track->Charge()<0.) {
+        fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+cout << __LINE__ << ". fill " << kStepReconstructed << " with: " << containerInputRec[0] << ", " << containerInputRec[1] << ", " << containerInputRec[2] << ", " << containerInputRec[3] << endl;
+      }
+
+      if(arrayMC) {
+        Int_t label = TMath::Abs(track->GetLabel());
+	if(label>arrayMC->GetEntries()) {
+	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	    delete track;
+	  continue;
+	}
+	AliAODMCParticle *particle = (AliAODMCParticle*) arrayMC->At(label);
+	if(!particle) {
+	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	    delete track;
+	  continue;
+	}
+	//Only select particles generated by HIJING if requested
+	if(fbSelectHIJING) {
+	  if(!IsHIJINGParticle(label)) {
+	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
+	      delete track;
+            if(particle->IsPhysicalPrimary())
+              nOfPrimaries++;
+	    continue;
+	  }
+	}
+	containerInputRecMC[0] = particle->Pt();      
+	containerInputRecMC[1] = particle->Phi();      
+	containerInputRecMC[2] = particle->Eta();  
+	containerInputRecMC[3] = track->GetTPCNcls();
+
+	//Container with primaries
+	if(particle->IsPhysicalPrimary()) {
+          nOfPrimaries++;
+	  if(particle->Charge()>0.) {
+	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
+          }
+	  if(particle->Charge()<0.) {
+	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
+          }
+	  //Fill pT resolution plots for primaries
+	  //fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
+	}
+
+	//Container with secondaries
+	if (!particle->IsPhysicalPrimary() ) {
+	  if(particle->Charge()>0.) {
+	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
+cout << __LINE__ << ". fill " << kStepSecondaries << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
+	  }
+	  if(particle->Charge()<0.) {
+	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
+cout << __LINE__ << ". fill " << kStepSecondaries << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
+	  }
+	  //Fill pT resolution plots for primaries
+	  //fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
+	}
+      }
+    }//track loop
+
+    //Fill MC containers if particles are findable
+    if(arrayMC) {
+      for(int iPart = 1; iPart<nOfPrimaries; iPart++) {
+	AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(iPart);
+        if(!mcPart) continue;
+
+        //Only select particles generated by HIJING if requested
+        if(fbSelectHIJING) {
+	  if(!IsHIJINGParticle(iPart))
+	    continue;
+        }
+
+        Int_t pdg = mcPart->PdgCode();
+
+        // select charged pions, protons, kaons , electrons, muons
+        if(TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) ==
+	   321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13){
+  
+	  //fill the container
+	  containerInputMC[0] = mcPart->Pt();
+	  containerInputMC[1] = mcPart->Phi();      
+	  containerInputMC[2] = mcPart->Eta();  
+	  //      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
+	  containerInputMC[3] = 159.;
+	  
+	  if(mcPart->IsPhysicalPrimary()) {
+	    if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
+              fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+cout << __LINE__ << ". fill " << kStepMCAcceptance << " with: " << containerInputMC[0] << ", " << containerInputMC[1] << ", " << containerInputMC[2] << ", " << containerInputMC[3] << endl;
+            }
+	    if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
+              fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+cout << __LINE__ << ". fill " << kStepMCAcceptance << " with: " << containerInputMC[0] << ", " << containerInputMC[1] << ", " << containerInputMC[2] << ", " << containerInputMC[3] << endl;
+            }
+	  }
+        }
+      }
+    }
+
+  }//end of AOD analysis
+  else {//ESD analysis
+    for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
+    {
       //Get track for analysis
       AliESDtrack *track = 0x0;
       AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
@@ -380,7 +564,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  continue;
 	
 	AliExternalTrackParam exParam;
-	Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	Bool_t relate = track->RelateToVertexTPC(fESD->GetPrimaryVertexSPD(),fESD->GetMagneticField(),kVeryBig,&exParam);
 	if( !relate ) {
 	  if(track) delete track;
 	  continue;
@@ -401,7 +585,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 		continue;
 	      
 	      AliExternalTrackParam exParam;
-	      Bool_t relate = track->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
+	      Bool_t relate = track->RelateToVertexTPC(fESD->GetPrimaryVertexSPD(),fESD->GetMagneticField(),kVeryBig,&exParam);
 	      if( !relate ) {
 		if(track) delete track;
 		continue;
@@ -412,7 +596,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	      //use global constrained track
 	      track = new AliESDtrack(*esdtrack);
 	      track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-
 	    }
 	  }
 	}
@@ -449,7 +632,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	    continue;
 	  }
 	}
-      
 	if(esdtrack->GetConstrainedParam()) 
 	  track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
       }
@@ -506,10 +688,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  if(particle->GetPDG()->Charge()<0.) {
 	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	  }
-
 	  //Fill pT resolution plots for primaries
 	  fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
-
 	}
 
 	//Container with secondaries
@@ -528,51 +708,52 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
 	if(track) delete track;
       }
-
-
     }//track loop
+
+    //Fill MC containers if particles are findable
+    if(fMC) {
+      for(int iPart = 1; iPart<(fMC->GetNumberOfPrimaries()); iPart++) {
+        AliMCParticle *mcPart  = (AliMCParticle*)fMC->GetTrack(iPart);
+        if(!mcPart) continue;
   
-
-  //Fill MC containers if particles are findable
-  if(fMC) {
-    for(int iPart = 1; iPart<(fMC->GetNumberOfPrimaries()); iPart++) {
-      AliMCParticle *mcPart  = (AliMCParticle*)fMC->GetTrack(iPart);
-      if(!mcPart) continue;
-
-      //Only select particles generated by HIJING if requested
-      if(fbSelectHIJING) {
-	if(!IsHIJINGParticle(iPart))
-	  continue;
-      }
-
-      Int_t pdg = mcPart->PdgCode();
-      
-      // select charged pions, protons, kaons , electrons, muons
-      if(TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) ==
-	 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13){
-
-	//fill the container
-	containerInputMC[0] = mcPart->Pt();
-	containerInputMC[1] = mcPart->Phi();      
-	containerInputMC[2] = mcPart->Eta();  
-	//      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
-	containerInputMC[3] = 159.;
-	
-	if(fStack->IsPhysicalPrimary(iPart)) {
-	  if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-	  if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-	}
+        //Only select particles generated by HIJING if requested
+        if(fbSelectHIJING) {
+	  if(!IsHIJINGParticle(iPart))
+	    continue;
+        }
+  
+        Int_t pdg = mcPart->PdgCode();
+        
+        // select charged pions, protons, kaons , electrons, muons
+        if(TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) ==
+	   321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13){
+  
+	  //fill the container
+	  containerInputMC[0] = mcPart->Pt();
+	  containerInputMC[1] = mcPart->Phi();      
+	  containerInputMC[2] = mcPart->Eta();  
+	  //      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
+	  containerInputMC[3] = 159.;
+	  
+	  if(fStack->IsPhysicalPrimary(iPart)) {
+	    if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	    if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	  }
+        }
       }
     }
-  }
-  
+  }//end of ESD analysis
+
+cout << "Now posting..." << endl;
   PostData(0,fHistList);
   PostData(1,fCFManagerPos->GetParticleContainer());
   PostData(2,fCFManagerNeg->GetParticleContainer());
   
 }
+
 //________________________________________________________________________
-Bool_t AliPWG4HighPtSpectra::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials){
+Bool_t AliPWG4HighPtSpectra::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials)
+{
   //
   // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   // This is to called in Notify and should provide the path to the AOD/ESD file
@@ -636,6 +817,7 @@ Bool_t AliPWG4HighPtSpectra::PythiaInfoFromFile(const char* currFile,Float_t &fX
   }
   return kTRUE;
 }
+
 //________________________________________________________________________
 Bool_t AliPWG4HighPtSpectra::Notify()
 {
@@ -644,6 +826,9 @@ Bool_t AliPWG4HighPtSpectra::Notify()
   // and number of trials from pyxsec.root
   // Copied from AliAnalysisTaskJetSpectrum2
   // 
+
+  if(fNoPythiaInfo)
+    return kTRUE;
 
   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
   Float_t xsection = 0;
@@ -667,7 +852,8 @@ Bool_t AliPWG4HighPtSpectra::Notify()
 }
 
 //________________________________________________________________________
-AliGenPythiaEventHeader*  AliPWG4HighPtSpectra::GetPythiaEventHeader(AliMCEvent *mcEvent){
+AliGenPythiaEventHeader*  AliPWG4HighPtSpectra::GetPythiaEventHeader(AliMCEvent *mcEvent)
+{
   
   if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -697,7 +883,8 @@ AliGenPythiaEventHeader*  AliPWG4HighPtSpectra::GetPythiaEventHeader(AliMCEvent 
 }
 
 //________________________________________________________________________
-AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeader(AliMCEvent *mcEvent){
+AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeader(AliMCEvent *mcEvent)
+{
   
   if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -726,7 +913,6 @@ AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeader(AliMCEvent 
 
 }
 
-
 //___________________________________________________________________________
 void AliPWG4HighPtSpectra::Terminate(Option_t*)
 {
@@ -737,7 +923,8 @@ void AliPWG4HighPtSpectra::Terminate(Option_t*)
 }
 
 //___________________________________________________________________________
-void AliPWG4HighPtSpectra::CreateOutputObjects() {
+void AliPWG4HighPtSpectra::CreateOutputObjects() 
+{
   //HERE ONE CAN CREATE OUTPUT OBJECTS, IN PARTICULAR IF THE OBJECT PARAMETERS DON'T NEED
   //TO BE SET BEFORE THE EXECUTION OF THE TASK
   //
@@ -757,7 +944,7 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
 
   fNEventReject = new TH1F("fNEventReject","Reason events are rejectected for analysis",20,0,20);
   //Set labels
-  fNEventReject->Fill("noESD",0);
+  fNEventReject->Fill("noESD/AOD",0);
   fNEventReject->Fill("Trigger",0);
   fNEventReject->Fill("NTracks<2",0);
   fNEventReject->Fill("noVTX",0);
@@ -815,7 +1002,8 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
 }
 
 //________________________________________________________________________
-Bool_t AliPWG4HighPtSpectra::IsHIJINGParticle(Int_t label) {
+Bool_t AliPWG4HighPtSpectra::IsHIJINGParticle(Int_t label) //TODO: Still need to translate this function...
+{
   //
   // Return kTRUE in case particle is from HIJING event
   //
