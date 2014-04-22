@@ -520,7 +520,7 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
   
-  //cout<<"Event number: "<<((TTree*) GetInputData(0))->GetTree()->GetReadEntry()<<endl;
+ // cout<<"Event number: "<<((TTree*) GetInputData(0))->GetTree()->GetReadEntry()<<endl;
 
   fHistNeventsJPsi->Fill(1);
   fHistNeventsPsi2s->Fill(1);
@@ -811,8 +811,8 @@ for(Int_t i=0; i<5; i++){
 		  if(i==j) fJPsiSels[j] = fJPsiSelsLoose[i];
 		  else fJPsiSels[j] = fJPsiSelsMid[j];
 	  }
- 
   //Two track loop
+  nGoodTracks = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
@@ -880,7 +880,6 @@ for(Int_t i=0; i<4; i++){
 		  if(i==j) fJPsiSels[j] = fJPsiSelsTight[i];
 		  else fJPsiSels[j] = fJPsiSelsMid[j];
 	  }
- 
   //Two track loop
   nGoodTracks = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
@@ -986,7 +985,8 @@ for(Int_t i=0; i<5; i++){
 		  else fJPsiSels[j] = fJPsiSelsMid[j];
 	  }
  
-  //Two track loop
+  //Four track loop
+  nGoodTracks = 0; nSpdHits = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
@@ -1016,7 +1016,7 @@ for(Int_t i=0; i<5; i++){
     
   Int_t mass[3]={-1,-1,-1};
   fChannel = 0;
-  nLepton=0; nHighPt=0;
+  nLepton=0; nPion=0; nHighPt=0;
   
   if(nGoodTracks == 4){
   	  if(i!=4){ if(nSpdHits<2) continue;} 
@@ -1064,7 +1064,8 @@ for(Int_t i=0; i<4; i++){
 		  else fJPsiSels[j] = fJPsiSelsMid[j];
 	  }
  
-  //Two track loop
+  //Four track loop
+  nGoodTracks = 0; nSpdHits = 0;
   for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
     AliAODTrack *trk = aod->GetTrack(itr);
     if( !trk ) continue;
@@ -1094,7 +1095,7 @@ for(Int_t i=0; i<4; i++){
     
   Int_t mass[3]={-1,-1,-1};
   fChannel = 0;
-  nLepton=0; nHighPt=0;
+    nLepton=0; nPion=0; nHighPt=0;
   
   if(nGoodTracks == 4){
   	  if(nSpdHits<2) continue; 
