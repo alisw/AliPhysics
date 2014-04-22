@@ -2053,8 +2053,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
         if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
         if(fSymmRMS) {  // take first category as symmetric
-            aInLow = aInUp*1.5;
-            aOutLow = aOutUp*1.5;
+            aInLow = aInUp;
+            aOutLow = aOutUp;
             if(dInLow < dInUp) dInLow = dInUp;
             if(dOutLow < dOutUp) dOutLow = dOutUp;
         }
