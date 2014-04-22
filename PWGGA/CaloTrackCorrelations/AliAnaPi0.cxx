@@ -10,7 +10,7 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
+ * provided "as is" xwithout express or implied warranty.                  *
  **************************************************************************/
 
 //_________________________________________________________________________
@@ -68,6 +68,7 @@ fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),
 fFillSMCombinations(kFALSE), fCheckConversion(kFALSE),
 fFillBadDistHisto(kFALSE),   fFillSSCombinations(kFALSE),  
 fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),  fFillOriginHisto(0),          fFillArmenterosThetaStar(0),
+fCheckAccInSector(kFALSE),
 //Histograms
 fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
 fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
@@ -1367,7 +1368,25 @@ void AliAnaPi0::FillAcceptanceHistograms()
                   if( absID1 >= 0 && absID2 >= 0) 
                     inacceptance = kTRUE;
                   
-                  //                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2)) 
+                  if(inacceptance && fCheckAccInSector)
+                  {
+                    Int_t sm1 = GetEMCALGeometry()->GetSuperModuleNumber(absID1);
+                    Int_t sm2 = GetEMCALGeometry()->GetSuperModuleNumber(absID2);
+                    
+                    Int_t j=0;
+                    Bool_t sameSector = kFALSE;
+                    for(Int_t isector = 0; isector < fNModules/2; isector++)
+                    {
+                      j=2*isector;
+                      if((sm1==j && sm2==j+1) || (sm1==j+1 && sm2==j)) sameSector = kTRUE;
+                    }
+                    
+                    if(sm1!=sm2 && !sameSector)  inacceptance = kFALSE;
+
+                    //if(sm1!=sm2)printf("sm1 %d, sm2 %d, same sector %d, in acceptance %d\n",sm1,sm2,sameSector,inacceptance);
+                  }
+                
+                  //                  if(GetEMCALGeometry()->Impact(phot1) && GetEMCALGeometry()->Impact(phot2))
                   //                    inacceptance = kTRUE;
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }
@@ -1574,6 +1593,24 @@ void AliAnaPi0::FillAcceptanceHistograms()
                   
                   if( absID1 >= 0 && absID2 >= 0) 
                     inacceptance = kTRUE;
+                  
+                  if(inacceptance && fCheckAccInSector)
+                  {
+                    Int_t sm1 = GetEMCALGeometry()->GetSuperModuleNumber(absID1);
+                    Int_t sm2 = GetEMCALGeometry()->GetSuperModuleNumber(absID2);
+                    
+                    Int_t j=0;
+                    Bool_t sameSector = kFALSE;
+                    for(Int_t isector = 0; isector < fNModules/2; isector++)
+                    {
+                      j=2*isector;
+                      if((sm1==j && sm2==j+1) || (sm1==j+1 && sm2==j)) sameSector = kTRUE;
+                    }
+                    
+                    if(sm1!=sm2 && !sameSector)  inacceptance = kFALSE;
+                    
+                    //if(sm1!=sm2)printf("sm1 %d, sm2 %d, same sector %d, in acceptance %d\n",sm1,sm2,sameSector,inacceptance);
+                  }
                   
                   if(GetDebug() > 2) printf("In %s Real acceptance? %d\n",fCalorimeter.Data(),inacceptance);
                 }

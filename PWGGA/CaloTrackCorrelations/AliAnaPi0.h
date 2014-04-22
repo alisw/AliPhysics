@@ -124,6 +124,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnMultipleCutAnalysisInSimulation()  { fMultiCutAnaSim = kTRUE  ; }
   void         SwitchOffMultipleCutAnalysisInSimulation() { fMultiCutAnaSim = kFALSE ; }
   
+  void         SwitchOnCheckAcceptanceInSector() { fCheckAccInSector   = kTRUE  ; }
+  void         SwitchOffCheckAcceptanceInSector(){ fCheckAccInSector   = kFALSE ; }
+  
   void         FillAcceptanceHistograms();
   void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
                                              Float_t  pt1,     Float_t  pt2,
@@ -170,6 +173,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
   Bool_t   fFillArmenterosThetaStar;   // Fill armenteros histograms
+  
+  Bool_t   fCheckAccInSector;          // Check that the decay pi0 falls in the same SM or sector
   
   //Histograms
   
