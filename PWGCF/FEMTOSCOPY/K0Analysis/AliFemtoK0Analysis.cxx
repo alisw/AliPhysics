@@ -1210,7 +1210,7 @@ void AliFemtoK0Analysis::Exec(Option_t *)
         else{
          if(pMean < kCheckAvgSep[4] || nMean < kCheckAvgSep[4]) continue;
          for(int jCut=0;jCut<5;jCut++){
-          if(pMean > kCheckAvgSep[4] && nMean > kCheckAvgSep[4]) SepPass[jCut] = kTRUE;
+          if(pMean > kCheckAvgSep[jCut] && nMean > kCheckAvgSep[jCut]) SepPass[jCut] = kTRUE;
          }
         }
 
