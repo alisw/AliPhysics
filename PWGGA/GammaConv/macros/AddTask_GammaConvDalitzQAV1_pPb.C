@@ -323,6 +323,14 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 } else if ( trainConfig  == 31 ) {
 	
 	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310265371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
+	
+} else if ( trainConfig  == 32  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + Photon R > 35 cm
+  
+} else if ( trainConfig  == 33  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm 
 }
 
 
@@ -357,7 +365,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
       
 
 	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
-		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 || trainConfig == 31 )
+		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 || trainConfig == 31 || trainConfig == 32 || trainConfig == 33 )
 	  ){
 	    
 	    if (doWeighting){
