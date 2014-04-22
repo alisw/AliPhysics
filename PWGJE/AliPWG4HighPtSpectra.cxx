@@ -424,8 +424,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       if( !aodtrack->TestFilterMask(fFilterMask) )
         continue;
       else {
-        AliAODTrack* trackcopy = new AliAODTrack(*aodtrack);
-        track = (AliVTrack*) trackcopy;
+//        AliAODTrack* trackcopy = new AliAODTrack(*aodtrack);
+        track = static_cast<AliVTrack*>(aodtrack);//(AliVTrack*) trackcopy;
       }
       //fill the container
       containerInputRec[0] = track->Pt();
@@ -482,7 +482,7 @@ cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerI
 cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
           }
 	  //Fill pT resolution plots for primaries
-	  //fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
+	  fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
 	}
 
 	//Container with secondaries
@@ -991,6 +991,9 @@ void AliPWG4HighPtSpectra::CreateOutputObjects()
   fHistList->Add(fPtRelUncertainty1PtSec);
 
   TH1::AddDirectory(oldStatus);   
+
+  OpenFile(1);
+  OpenFile(2);
 
   PostData(0,fHistList);
   PostData(1,fCFManagerPos->GetParticleContainer());
