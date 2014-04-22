@@ -64,6 +64,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
                                                                   fImportGeometryFilePath = pa ; }    
   void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
   void                  SetHybridOn()                          { fSelHybrid = kTRUE; }
+  void                  SetFillQA()                            { fFillQA = kTRUE; }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -98,6 +99,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
   ULong_t                fFilterBit;             // Track selection bit, for AODs 
   Bool_t                 fSelHybrid;             // bool to select hybrid tracks
+  Bool_t                 fFillQA;                // bool to fill the QA plots
 
 
   

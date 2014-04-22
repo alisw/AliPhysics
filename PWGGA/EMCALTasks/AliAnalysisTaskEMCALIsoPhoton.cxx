@@ -76,6 +76,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fNCells50(0),
   fFilterBit(0),
   fSelHybrid(kFALSE),
+  fFillQA(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -160,6 +161,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fNCells50(0),
   fFilterBit(0),
   fSelHybrid(kFALSE),
+  fFillQA(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -554,7 +556,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-  //if(fESD)
+  if(fFillQA)
     FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
