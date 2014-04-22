@@ -2396,8 +2396,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
-	fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);
-	if(nK0s>0) fFFHistosRecCutsK0Evt->FillFF(trackPt, jetPt, incrementJetPt);
+	fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);//histo with tracks/jets after cut selection, for all events
+	if(nK0s>0) fFFHistosRecCutsK0Evt->FillFF(trackPt, jetPt, incrementJetPt);//only for K0s events
 	fh2FFJetTrackEta->Fill(trackEta,jetPt);
 
 
@@ -2406,7 +2406,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       njetTracks = jettracklist->GetSize();
 
       //____________________________________________________________________________________________________________________      
-      //alternative method to estimate secondary constribution in jet cone (second method you can see below in rec. K0s loop & rec. Lambdas loop & rec. Antilambdas loop)
+      //strangeness constribution to jet cone 
 
       if(fAnalysisMC){
 
@@ -2473,11 +2473,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
 	    }
     
-	    //cut on primary particles:
-
-
-
-
 	    if(isFromStrange == kTRUE){
 
 	      Double_t trackPt = part->Pt();
@@ -2606,52 +2601,125 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(jetPerpConeK0list->GetSize() == 0){ // no K0s in jet cone 
 	
-	//Bool_t incrementPerpJetPt = kTRUE;
 	fh3IMK0PerpCone->Fill(jetPt, -1, -1);
       }
-   
-      // ____ rec K0s in median cluster___________________________________________________________________________________________________________ 
       
-      TList* jetMedianConeK0list = new TList();
-      
-      AliAODJet* medianCluster = GetMedianCluster();
-      Double_t medianEta = medianCluster->Eta();
-               
-
-      if(TMath::Abs(medianEta)<fCutjetEta){
-
-	fh1MedianEta->Fill(medianEta);
-	fh1JetPtMedian->Fill(jetPt); //for normalisation by total number of median cluster jets
-	Double_t sumMedianPtK0     = 0.;
+      if(ij==0){//median cluster only once for event
 	
-	Bool_t isBadJetK0Median    = kFALSE; // dummy, do not use
-     
-	GetTracksInCone(fListK0s, jetMedianConeK0list, medianCluster, GetFFRadius(), sumMedianPtK0, 0., 0., isBadJetK0Median); //reconstructed K0s in median cone around jet axis
-	//GetTracksInCone(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0); //original use of function
-      
-	//cut parameters from Fragmentation Function task:
-	//Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-	//Float_t fFFMaxTrackPt;    // reject jetscontaining any track with pt larger than this value, use GetFFMaxTrackPt()
+	// ____ rec K0s in median cluster___________________________________________________________________________________________________________ 
 	
-	for(Int_t it=0; it<jetMedianConeK0list->GetSize(); ++it){ // loop for K0s in median cone
+	TList* jetMedianConeK0list = new TList();
+	TList* jetMedianConeLalist = new TList();
+	TList* jetMedianConeALalist = new TList();
+	
+	AliAODJet* medianCluster = GetMedianCluster();
+	Double_t medianEta = medianCluster->Eta();
+	
+	if(TMath::Abs(medianEta)<=fCutjetEta){
 	  
-	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeK0list->At(it));
-	  if(!v0) continue;
+	  fh1MedianEta->Fill(medianEta);
+	  fh1JetPtMedian->Fill(jetPt); //for normalisation by total number of median cluster jets
 	  
-	Double_t invMMedianK0s =0;
-	Double_t trackPt=0;
+	  Double_t sumMedianPtK0     = 0.;
+	  
+	  Bool_t isBadJetK0Median    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListK0s, jetMedianConeK0list, medianCluster, GetFFRadius(), sumMedianPtK0, 0., 0., isBadJetK0Median); //reconstructed K0s in median cone around jet axis
+	  //GetTracksInCone(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0); //original use of function
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jetscontaining any track with pt larger than this value, use GetFFMaxTrackPt()
+	  
+	  for(Int_t it=0; it<jetMedianConeK0list->GetSize(); ++it){ // loop for K0s in median cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeK0list->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMMedianK0s =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kK0, invMMedianK0s, trackPt);  //function to calculate invMass with TLorentzVector class	
+	    
+	    fh3IMK0MedianCone->Fill(jetPt, invMMedianK0s, trackPt); //(x,y,z)
+	    
+	  }
+	  
+	  if(jetMedianConeK0list->GetSize() == 0){ // no K0s in median cluster cone 
+	    
+	    fh3IMK0MedianCone->Fill(jetPt, -1, -1);
+	  }
+	  
+	  //__________________________________________________________________________________________________________________________________________
+	  // ____ rec Lambdas in median cluster___________________________________________________________________________________________________________ 
+	  
+	  Double_t sumMedianPtLa     = 0.;
+	  Bool_t isBadJetLaMedian    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListLa, jetMedianConeLalist, medianCluster, GetFFRadius(), sumMedianPtLa, 0, 0, isBadJetLaMedian); //reconstructed Lambdas in median cone around jet axis
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
+	  
+	  for(Int_t it=0; it<jetMedianConeLalist->GetSize(); ++it){ // loop for Lambdas in perpendicular cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeLalist->At(it));
+	    if(!v0) continue;
+	  
+	    Double_t invMMedianLa =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kLambda, invMMedianLa, trackPt);  //function to calculate invMass with TLorentzVector class
+	    
+	    fh3IMLaMedianCone->Fill(jetPt, invMMedianLa, trackPt); //(x,y,z)
+	  }
+	  
+	  if(jetMedianConeLalist->GetSize() == 0){ // no Lambdas in median cluster cone 
+	    
+	    fh3IMLaMedianCone->Fill(jetPt, -1, -1);
+	  }
+	  
 	
-	CalculateInvMass(v0, kK0, invMMedianK0s, trackPt);  //function to calculate invMass with TLorentzVector class	
-
-	fh3IMK0MedianCone->Fill(jetPt, invMMedianK0s, trackPt); //(x,y,z)
+	  // ____ rec Antilambdas in median cluster___________________________________________________________________________________________________________ 
 	
-	}
+	  
+	  Double_t sumMedianPtALa     = 0.;
+	  
+	  Bool_t isBadJetALaMedian    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListALa, jetMedianConeALalist, medianCluster, GetFFRadius(), sumMedianPtALa, 0, 0, isBadJetALaMedian); //reconstructed Antilambdas in median cone around jet axis
+	  
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
 	
-	if(jetMedianConeK0list->GetSize() == 0){ // no K0s in median cluster cone 
-	 
-	  fh3IMK0MedianCone->Fill(jetPt, -1, -1);
-	}
-      }
+	  for(Int_t it=0; it<jetMedianConeALalist->GetSize(); ++it){ // loop for Antilambdas in median cluster cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeALalist->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMMedianALa =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kAntiLambda, invMMedianALa, trackPt);  //function to calculate invMass with TLorentzVector class
+	    
+	    fh3IMALaMedianCone->Fill(jetPt, invMMedianALa, trackPt); //(x,y,z)
+	  }
+	  
+	  if(jetMedianConeALalist->GetSize() == 0){ // no Antilambdas in median cluster cone 
+	    
+	    fh3IMALaMedianCone->Fill(jetPt, -1, -1);
+	  }
+	}//median cluster eta cut 
+	
+	delete jetMedianConeK0list;
+	delete jetMedianConeLalist;
+	delete jetMedianConeALalist;
+	
+	
+      }//end ij == 0
       //_________________________________________________________________________________________________________________________________________
       
       //____fetch reconstructed Lambdas in cone perpendicular to jet axis:__________________________________________________________________________
@@ -2684,42 +2752,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
       }
       
-      //__________________________________________________________________________________________________________________________________________
-          // ____ rec Lambdas in median cluster___________________________________________________________________________________________________________ 
-      
-      TList* jetMedianConeLalist = new TList();
-      
-      
-      if(TMath::Abs(medianEta)<fCutjetEta){
-	Double_t sumMedianPtLa     = 0.;
-	Bool_t isBadJetLaMedian    = kFALSE; // dummy, do not use
-	
-	GetTracksInCone(fListLa, jetMedianConeLalist, medianCluster, GetFFRadius(), sumMedianPtLa, 0, 0, isBadJetLaMedian); //reconstructed Lambdas in median cone around jet axis
-	
-	//cut parameters from Fragmentation Function task:
-	//Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-      //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
-	
-	for(Int_t it=0; it<jetMedianConeLalist->GetSize(); ++it){ // loop for Lambdas in perpendicular cone
-	  
-	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeLalist->At(it));
-	  if(!v0) continue;
-	  
-	  Double_t invMMedianLa =0;
-	  Double_t trackPt=0;
-	  
-	  CalculateInvMass(v0, kLambda, invMMedianLa, trackPt);  //function to calculate invMass with TLorentzVector class
-
-	  fh3IMLaMedianCone->Fill(jetPt, invMMedianLa, trackPt); //(x,y,z)
-	}
-	
-	if(jetMedianConeLalist->GetSize() == 0){ // no Lambdas in median cluster cone 
-	  
-	  fh3IMLaMedianCone->Fill(jetPt, -1, -1);
-	}
-      }  
-      //_________________________________________________________________________________________________________________________________________
-      
       
       //____fetch reconstructed Antilambdas in cone perpendicular to jet axis:___________________________________________________________________
       
@@ -2751,49 +2783,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fh3IMALaPerpCone->Fill(jetPt, -1, -1);
 	
       }
-      
-
-          // ____ rec Antilambdas in median cluster___________________________________________________________________________________________________________ 
-      
-      TList* jetMedianConeALalist = new TList();
-      
-      //AliAODJet* medianCluster = GetMedianCluster(); //already loaded at part for K0s, the same for the normalisation histo
-
-      if(TMath::Abs(medianEta)<fCutjetEta){
-
-	Double_t sumMedianPtALa     = 0.;
-	
-	Bool_t isBadJetALaMedian    = kFALSE; // dummy, do not use
-	
-	GetTracksInCone(fListALa, jetMedianConeALalist, medianCluster, GetFFRadius(), sumMedianPtALa, 0, 0, isBadJetALaMedian); //reconstructed Antilambdas in median cone around jet axis
-	
-        
-	//cut parameters from Fragmentation Function task:
-	//Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-	//Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
-	
-	for(Int_t it=0; it<jetMedianConeALalist->GetSize(); ++it){ // loop for Antilambdas in median cluster cone
-	  
-	  AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeALalist->At(it));
-	  if(!v0) continue;
-	  
-	  Double_t invMMedianALa =0;
-	  Double_t trackPt=0;
-	  
-	  CalculateInvMass(v0, kAntiLambda, invMMedianALa, trackPt);  //function to calculate invMass with TLorentzVector class
-	  
-	fh3IMALaMedianCone->Fill(jetPt, invMMedianALa, trackPt); //(x,y,z)
-	}
-	
-	if(jetMedianConeALalist->GetSize() == 0){ // no Antilambdas in median cluster cone 
-	  
-	  fh3IMALaMedianCone->Fill(jetPt, -1, -1);
-	}
-      } 
-      //_________________________________________________________________________________________________________________________________________
-      
-
-
+   
       //MC Analysis 
       //__________________________________________________________________________________________________________________________________________
       
@@ -3127,8 +3117,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	//________________________________________________________________________________________________________________________________________________________
 	  
-
-
 	delete fListMCgenK0sCone;
 	
 	
@@ -3138,9 +3126,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       delete jetPerpConeK0list;
       delete jetPerpConeLalist;
       delete jetPerpConeALalist;
-      delete jetMedianConeK0list;
-      delete jetMedianConeLalist;
-      delete jetMedianConeALalist;
+ 
 
       //---------------La--------------------------------------------------------------------------------------------------------------------------------------------
       
