@@ -92,7 +92,12 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   else shqmax = 2.0;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
+<<<<<<< HEAD
   Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentralityV0);
+=======
+  //V0M estimator:
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentrality);
+>>>>>>> new macros for Kaon Femto in pPb
   Reader->SetFilterBit(7);
   Reader->SetpA2013(kTRUE);
   //Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentralityV0A);
