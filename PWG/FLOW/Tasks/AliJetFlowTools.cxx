@@ -1993,7 +1993,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "method");
+                "method"
+                );
         if(relativeErrorMethodInUp) {
             TCanvas* relativeErrorMethod(new TCanvas("relativeErrorMethod", "relativeErrorMethod"));
             relativeErrorMethod->Divide(2);
@@ -2045,16 +2046,19 @@ void AliJetFlowTools::GetShapeUncertainty(
         // for the lower bound
         if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
         if(relativeErrorRegularizationOutLow) aOutLow = relativeErrorRegularizationOutLow->GetBinContent(b+1);
-        if(fSymmRMS) {  // take first category as symmetric
-            aInLow = aInUp;
-            aOutLow = aOutUp;
-        }
         if(relativeErrorTrueBinInLow) bInLow = relativeErrorTrueBinInLow->GetBinContent(b+1);
         if(relativeErrorTrueBinOutLow) bOutLow = relativeErrorTrueBinOutLow->GetBinContent(b+1);
         if(relativeErrorRecBinInLow) cInLow = relativeErrorRecBinInLow->GetBinContent(b+1);
         if(relativeErrorRecBinOutLow) cOutLow = relativeErrorRecBinOutLow->GetBinContent(b+1);
         if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
         if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
+        if(fSymmRMS) {  // take first category as symmetric
+            aInLow = aInUp*1.5;
+            aOutLow = aOutUp*1.5;
+            if(dInLow < dInUp) dInLow = dInUp;
+            if(dOutLow < dOutUp) dOutLow = dOutUp;
+        }
+
         eInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow + dInLow*dInLow;
         if(eInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(eInLow));
         eOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow + dOutLow*dOutLow;
