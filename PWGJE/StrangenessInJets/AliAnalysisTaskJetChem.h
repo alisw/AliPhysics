@@ -187,7 +187,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //-- K0s
 
   void   SetFFInvMassHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //previous 19, 5.,100.
-			       Int_t nInvM = 400, Float_t invMMin = 0.4,  Float_t invMMax = 0.6, //previous 0.4 to 0.6
+			       Int_t nInvM = 400, Float_t invMMin = 0.3,  Float_t invMMax = 0.7, //previous 0.4 to 0.6
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20.,         //previous 0. to 10.
 			       Int_t nXi = 35, Float_t xiMin = 0., Float_t xiMax = 7.,
 			       Int_t nZ = 11,  Float_t zMin = 0.,  Float_t zMax = 1.1)
@@ -492,14 +492,14 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3IMLaMedianCone;
   TH3F* fh3IMALaMedianCone;
   TH1F* fh1MedianEta;
-  TH1F* fh1JetPtMedian; //for normalisation by total number of median cluster jetsTH3F* fh3IMALaMedianCone;
+  TH1F* fh1JetPtMedian; //for normalisation by total number of median cluster jets TH3F* fh3IMALaMedianCone;
   TH1F* fh1MCMultiplicityPrimary;
   TH1F* fh1MCMultiplicityTracks;
   TH1F* fh1MCmotherLa;
   TH1F* fh1MCmotherALa;
   TH3F* fh3FeedDownLa;
   TH3F* fh3FeedDownALa; 
-   TH3F* fh3FeedDownLaCone;
+  TH3F* fh3FeedDownLaCone;
   TH3F* fh3FeedDownALaCone;   
   TH1F* fh1MCProdRadiusK0s;
   TH1F* fh1MCProdRadiusLambda;
