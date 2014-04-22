@@ -799,7 +799,7 @@ AliParticleYield * AliParticleYield::FindParticle(TClonesArray * arr, Int_t pdg,
 
   }
   if(!foundPart) {
-    Printf("ERROR<AliParticleYield::FindParticle>: Cannot find %d (System %d, sqrts = %2.2f TeV, %s, %s, Status:%d, pdg2:%d)", 
+    Printf("ERROR<AliParticleYield::FindParticle>: Cannot find %d (System %d, sqrts = %2.2f GeV, %s, %s, Status:%d, pdg2:%d)", 
            pdg, system, sqrts, centrality.Data(), isSum ? "part+antipart" : "", status, pdg2);
   }
   return foundPart;
