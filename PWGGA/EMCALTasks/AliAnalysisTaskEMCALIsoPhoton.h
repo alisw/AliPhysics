@@ -104,6 +104,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
  private:
   AliESDEvent *fESD;      //! ESD object
   AliAODEvent *fAOD;      //! AOD object
+  AliVEvent   *fVEvent;   //! AliVEvent
   AliMCEvent  *fMCEvent;  //! MC event object
   AliStack    *fStack;    //!MC particles stack object
   TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
