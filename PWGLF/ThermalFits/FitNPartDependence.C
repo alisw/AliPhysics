@@ -27,11 +27,11 @@ std::map<TString,Float_t> npartPbPb;
 std::map<TString,Float_t> npartPbPbErr;
 
 void ReadCentralityFromFile() ;
-Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1, const char * centr, Color_t color) ;
+Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1, const char * centr, Color_t color,  Bool_t draw = kFALSE) ;
 Double_t ErrorFunction (Double_t *xx, Double_t *p ) ;
 Double_t FuncPlusErr (Double_t *xx, Double_t *p) ;
 
-enum {kNoShift, kShiftUp, kShiftDown};
+enum {kNoShift, kShiftUp, kShiftDown, kShiftHarder, kShiftSofter};
 
 
 TF1 * fForErrors = 0;
@@ -40,22 +40,46 @@ Double_t matrix[npar][npar];
 TString centrFile;
 TString systemAndEnergy;
 Double_t maxy = 0;
-//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
-TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
+TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
+//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
 Int_t collSystem  = 2;
 Float_t energy = 2760;
 
 void FitNPartDependence() {
 
+  // This macro can be used to fit the centrality dependence of
+  // different particles in order to extrapolate or interpolate the
+  // yield as a function of centrality.
+  // The value of npart or dndeta is read from a text file, which must
+  // be in the format "centrTag value error"
+
+  // The particle yields are taken from the machine readable files.
+  // If you want to fit a different particle, you have to uncomment
+  // the corresponding section below.  if you want to try a different
+  // function, scroll down to the definition of f1
+
+  // For the estimate of the systematic uncertainties, the syst graph
+  // is shifted up and down within its uncertainties. Few strategies
+  // are possible (see the call to FitShiftedGraphAndExtrapolate below
+  // to change the behavior):
+  // 1. All points are coherently shifted up and down by 1 syst bar
+  // (kShiftUp, kShiftDown)
+  // 2. A worst case scenario is implemented, where the first point is
+  // shifted by +- 1 sigma, the last one by -+ 1 sigma and all the
+  // other points are shifted smoothly in between (kShiftHarder,
+  // kShiftSofter)
+
+  //__________________________________________________________________//
+
   // KStar
-  //  centrFile = "npart_PbPb.txt";
+  centrFile = "npart_PbPb.txt";
   //  centrFile = "dndeta_PbPb.txt";
-  // maxy = 50;
-  // systemAndEnergy = "Pb-Pb #sqrt{#it{s}}_{NN} = 2.76 TeV";
-  // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080" , 0};
-  // const char * centrToExtrapolate = "V0M0010";
-  // Int_t pdg = 313;
-  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./PbPb_2760_Kstar892.txt");  
+  maxy = 50;
+  systemAndEnergy = "Pb-Pb #sqrt{#it{s}}_{NN} = 2.76 TeV";
+  const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080" , 0};
+  const char * centrToExtrapolate = "V0M0010";
+  Int_t pdg = 313;
+  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./PbPb_2760_Kstar892.txt");  
   // Deuteron
   // gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
   // const char * centralityToPlot[] = {   "V0M0010" ,  "V0M1020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080",0 };
@@ -63,15 +87,16 @@ void FitNPartDependence() {
   // Int_t pdg = 1000010020;
   // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
   // Deuteron pPb
-  centrFile = "dndeta_pPb.txt";
-  const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
-  const char * centrToExtrapolate = "V0A0005";
-  Int_t pdg = 1000010020;
-  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
-  maxy = 0.01;
-  systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
-  energy = 5020;
-  collSystem = 1;
+  //  centrFile = "dndeta_pPb.txt";
+  // const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
+  // //  const char * centrToExtrapolate = "V0A0005";
+  // const char * centrToExtrapolate = "V0A6080";
+  // Int_t pdg = 1000010020;
+  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
+  // maxy = 0.01;
+  // systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
+  // energy = 5020;
+  // collSystem = 1;
   // Helium3
   // gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
   // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2080" ,0};
@@ -88,6 +113,7 @@ void FitNPartDependence() {
   TGraphErrors * grSyst = new TGraphErrors; 
   TGraphErrors * grStat = new TGraphErrors; 
   Double_t maxx = 1.1*npartPbPb[centrToExtrapolate];
+  //Double_t maxx = 1.1*npartPbPb["V0A0005"];
   // Function
   // TF1 * f1 = new TF1 ("f1", "[0] + [1]*x", 0, maxx);
   // f1->SetParameters(1,1);
@@ -135,8 +161,10 @@ void FitNPartDependence() {
   TF1 * fError = new TF1("fError", ErrorFunction, 0,maxx, 0);
 
   // The uncertainty on the systematics is computed shifting the graph up and down + refitting
-  Double_t errorSystPlus  = FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield;
-  Double_t errorSystMinus = FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield;
+  // Double_t errorSystPlus  = FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield;
+  // Double_t errorSystMinus = FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield;
+  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
+  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
 
   // Double_t errorStatPlus  = FitShiftedGraphAndExtrapolate(grStat, kShiftUp  , f1, centrToExtrapolate, kBlue) -yield;
   // Double_t errorStatMinus = FitShiftedGraphAndExtrapolate(grStat, kShiftDown, f1, centrToExtrapolate, kBlue) -yield;
@@ -151,13 +179,13 @@ void FitNPartDependence() {
             << "   +" << fError->Eval(npartPbPb[centrToExtrapolate])  << std::endl;
   std::cout << yield << "    " 
             << errorStat << "     " 
-            << (errorSystPlus-errorSystMinus)/2 << std::endl;// here we need - errorneg because errorneg is negative (!)
+            << (errorSystPlus+errorSystMinus)/2 << std::endl;
   
 
   TGraphErrors * gExtrap = new TGraphErrors();
   gExtrap->SetMarkerStyle(20);
   gExtrap->SetPoint(0, npartPbPb[centrToExtrapolate], yield);
-  gExtrap->SetPointError(0, 0, (errorSystPlus-errorSystMinus)/2);
+  gExtrap->SetPointError(0, 0, (errorSystPlus+errorSystMinus)/2);
   gExtrap->Draw("P");
 
   TLatex * text = new TLatex (0.2,0.81,systemAndEnergy);
@@ -214,7 +242,7 @@ Double_t FuncPlusErr (Double_t *xx, Double_t *p) {
 }
 
 
-Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1, const char * centr, Color_t color) {
+Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1, const char * centr, Color_t color, Bool_t draw) {
   // Shift graph
   // 1 = up
   // 2 = down
@@ -226,14 +254,23 @@ Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1,
       Double_t relError = grLocal->GetEY()[ipoint]/grLocal->GetY()[ipoint];
       Double_t value    = grLocal->GetY() [ipoint];
       if(shift == kShiftUp  ) value += grLocal->GetEY()[ipoint];        
-      if(shift == kShiftDown) value -= grLocal->GetEY()[ipoint];        
+      if(shift == kShiftDown) value -= grLocal->GetEY()[ipoint];   
+      if(shift == kShiftHarder) {        
+        Double_t valueShift = -1. + 2.*Float_t(ipoint)/(npoint-1);
+        value += valueShift*grLocal->GetEY()[ipoint];
+        std::cout << "valueShift " << valueShift << std::endl;
+      }
+      if(shift == kShiftSofter) {        
+        Double_t valueShift = +1. - 2.*Float_t(ipoint)/(npoint-1);
+        value += valueShift*grLocal->GetEY()[ipoint];
+        std::cout << "valueShift " << valueShift << std::endl;
+      }
       grLocal->SetPoint     (ipoint, grLocal->GetX() [ipoint], value);
       grLocal->SetPointError(ipoint, grLocal->GetEX()[ipoint], relError*value);
     }
   }
-  
-
   grLocal->Fit(f1, "", "Q");
+
 
   Double_t yield = f1->Eval(npartPbPb[centr]);
   TF1 * clone = (TF1*) f1->Clone();
@@ -241,7 +278,15 @@ Double_t FitShiftedGraphAndExtrapolate(TGraphErrors * gr, Int_t shift, TF1 * f1,
   clone->SetLineStyle(kDashed);
   clone->SetLineColor(color);
   clone->Draw("Same");
-  delete grLocal;
+  if(draw) {
+    TVirtualPad * oldPad = gPad;
+    new TCanvas(Form("shifted_%d", shift), Form("shifted_%d", shift));
+    grLocal->Draw("AP");
+    clone->Draw("same");
+    oldPad->cd();
+  } else {
+    delete grLocal;
+  }
   return yield;
 
 }
