@@ -661,6 +661,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   if (fFillOnlyStep0)
     zVtx = 0;
   
+  // Event selection based on number of number of MC particles
+  if (fRejectZeroTrackEvents && tracksMC->GetEntriesFast() == 0)
+  {
+    AliInfo(Form("Rejecting event due to kinematic selection: %f %d", centrality, tracksMC->GetEntriesFast()));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    if (tracksMC != tracksCorrelateMC)
+      delete tracksCorrelateMC;
+    delete tracksMC;
+    return;
+  }
+  
   // (MC-true all particles)
   // STEP 0
   fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepAll, tracksMC, tracksCorrelateMC, weight);
