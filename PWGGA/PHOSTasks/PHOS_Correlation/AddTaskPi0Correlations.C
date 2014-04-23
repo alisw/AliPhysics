@@ -1,30 +1,28 @@
 AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 							const char* options = "11h",
-							const char* fPi0Parametrization = "Wide",
 							UInt_t offlineTriggerMask = AliVEvent::kCentral,
 							AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
-							Double_t mean = 0.135,
-							Double_t sigma = 0.04,
+							Double_t sigmaWidth = 3.,
 							Int_t downCentLimit = 0,
 							Int_t upCentLimit = 90 )
 {
-	//Author: Ponomarenko Daniil
+	//Author: Ponomarenko Daniil 
 	/* $Id$ */
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr) 
 	{
-		::Error("AddTaskPi0Correlations", "No analysis manager to connect to");
+		::Error("AddTaskPi0CorrelationsL", "No analysis manager to connect to");
 		return NULL;
 	}
 
 	if (!mgr->GetInputEventHandler()) 
 	{
-		::Error("AddTaskPi0Correlations", "This task requires an input event handler");
+		::Error("AddTaskPi0CorrelationsL", "This task requires an input event handler");
 		return NULL;
 	}
 	
-	
+		
 	stringstream ss;
 	ss << downCentLimit;
 	string strDownCentLimit = ss.str();
@@ -32,17 +30,26 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 	sprintf(text,"%2i",upCentLimit);
 	string strUpCentLimit = text;
 	TString centralityBorder = TString ("CB") + strDownCentLimit.c_str() + TString ("t") + strUpCentLimit.c_str() + TString ("Cnt");
-	TString sName = TString (name) + TString (fPi0Parametrization) + centralityBorder ;
+	TString sigmaBorder = Form("%2iSigma", int(sigmaWidth*10.));
+	if (sigmaWidth == 0) sigmaBorder = "00Sigma";
+	TString sName = TString (name) + sigmaBorder + centralityBorder ;
 
 
 	AliPHOSCorrelations* task = new AliPHOSCorrelations(Form("%sTask", sName.Data()),internalTriggerSelection);
 
-	if( TString(options).Contains("10h") )
+	if( TString(options).Contains("10h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC10h );
-	if( TString(options).Contains("11h") )
+		task->SetCentralityEstimator("V0M");
+	}
+	if( TString(options).Contains("11h") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC11h );
-	if( TString(options).Contains("13") )
+		task->SetCentralityEstimator("V0M");
+	}
+	if( TString(options).Contains("13") )	{
 		task->SetPeriod( AliPHOSCorrelations::kLHC13 );
+		task->SetCentralityEstimator("V0A");
+	}
+
 
 	// Binning 
 	//Any:
@@ -76,7 +83,7 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 	//INT7:
-	if( AliVEvent::kINT7 == offlineTriggerMask ) 
+	if( AliVEvent::kINT7 == offlineTriggerMask || AliVEvent::kPHI7 == offlineTriggerMask) 
 	{
 		const int nbins = 8;
 		Double_t cbin[nbins+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80.};
@@ -96,12 +103,11 @@ AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
 		task->SetCentralityBinning(tbin, tNMixed);
 	}
 
-
 	task->SelectCollisionCandidates(offlineTriggerMask);
 	task->SetInternalTriggerSelection(internalTriggerSelection);
 	task->EnableTOFCut(true, 100.e-9);
-	task->SetMassWindow(mean-sigma, mean+sigma);
 	task->SetCentralityBorders(downCentLimit , upCentLimit) ;
+	task->SetSigmaWidth(sigmaWidth);
 
 	mgr->AddTask(task);
 	mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer() );

@@ -47,12 +47,12 @@ public:
   virtual void   UserExec(Option_t *option);
 //  virtual void   Terminate(Option_t *);
 
-  void SetEventsMultiplisityCheckOnly(Bool_t multChek = true) {fEventsMultiplicityOnly = multChek;}
   void SetHibridGlobalCheking(Int_t hibridCheck = kAllTracks) {fCheckHibridGlobal = hibridCheck; }
   void SetCentralityBinning(const TArrayD& edges, const TArrayI& nMixed);
   void SetInternalTriggerSelection(TriggerSelection selection) { fInternalTriggerSelection = selection; }
   void EnableTOFCut(Bool_t enable = kTRUE, Double_t TOFCut = 100.e-9){fTOFCutEnabled=enable; fTOFCut=TOFCut;}
-  void SetMassWindow(Double_t massMin = 0.1, Double_t massMax = 0.18) { fMassInvMin = massMin; fMassInvMax = massMax; }
+  void SetMassWindow(Double_t massMean = 0.135, Double_t massSigma = 0.01) { fMassInvMean = massMean; fMassInvSigma = massSigma; }
+  void SetSigmaWidth(Double_t sigmaWidth= 0) { fSigmaWidth = sigmaWidth; }
   void SetPeriod(Period period);
   void SetCentralityBorders (double down = 0., double up = 90.) ;
   void SetPtAssocBins(TArrayD * arr){fAssocBins.Set(arr->GetSize(), arr->GetArray()) ;} 
@@ -71,6 +71,7 @@ protected:
     void SetHistCutDistribution();              // Set other histograms.
     void SetHistEtaPhi();                       // Set hists, with track's and cluster's angle distributions.
     void FillTrackEtaPhi();                     // Distribution by track's angles.
+    void SetHistPHOSClusterMap();       // XZE distribution in PHOS.
     void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key.
     void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
     void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key.
@@ -131,6 +132,8 @@ protected:
     AliAnalysisUtils* GetAnalysisUtils();
  
 private:
+  // Geometry
+    AliPHOSGeometry* fPHOSGeo;
   // Make output histograms / conteiners.
     TList * fOutputContainer;              //final histogram / tree container     
    
@@ -146,11 +149,10 @@ private:
     Int_t   fNVtxZBins;
     TArrayD fCentEdges;                 // Centrality Bin Lower edges.
     TArrayI fCentNMixed;                // Number of mixed events for each centrality bin.
-    UInt_t  fNEMRPBins;                  // Binning of Peaction plane.
-    TArrayD fAssocBins;                 // Centrality Bin Lower edges.
+    UInt_t  fNEMRPBins;                  // Binning of Reaction plane.
+    TArrayD fAssocBins;                 //  Assoc Pt Bin Lower edges.
 
   // Control variables
-    Bool_t fEventsMultiplicityOnly; // Analise only events multiplidity.
     Int_t fCheckHibridGlobal;      // For checking/dischecking/passingcheck: t->IsHybridGlobalConstrainedGlobal();
 
   // Behavior / cuts
@@ -162,8 +164,9 @@ private:
     Double_t fCentCutoffDown;   // Ignore Centrality less %. (def = 0%)
     Double_t fCentCutoffUp;     // Ignore Centrality over %. (def = 90%)
 
-    Double_t fMassInvMin ;      //
-    Double_t fMassInvMax ;      // 
+    Double_t fMassInvMean ;      //
+    Double_t fMassInvSigma ;      // 
+    Double_t fSigmaWidth;       // 0 = wide
 
     AliVEvent* fEvent;          //! Current event
     AliESDEvent* fEventESD;     //! Current event, if ESD.
@@ -173,31 +176,31 @@ private:
     Int_t fRunNumber;           //! run number
     Int_t fInternalRunNumber ;  //!Current internal run number
 
-      TProfile* fMultV0;                  // object containing VZERO calibration information
-      Float_t fV0Cpol,fV0Apol;            // loaded by OADB
-      Float_t fMeanQ[9][2][2];    // and recentering
-      Float_t fWidthQ[9][2][2];   //       
-      TString fEPcalibFileName; 
+    TProfile* fMultV0;                  // object containing VZERO calibration information
+    Float_t fV0Cpol,fV0Apol;            // loaded by OADB
+    Float_t fMeanQ[9][2][2];    // and recentering
+    Float_t fWidthQ[9][2][2];   //       
+    TString fEPcalibFileName; 
 
-      Double_t fVertex[3];          //!
-      TVector3 fVertexVector;       //!
-      Int_t fVtxBin;                //!
+    Double_t fVertex[3];          //!
+    TVector3 fVertexVector;       //!
+    Int_t fVtxBin;                //!
 
-      TString fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
-      Float_t fCentrality ;         //! Centrality of the current event
-      Int_t   fCentBin ;            //! Current centrality bin
+    TString fCentralityEstimator; //! Centrality estimator ("V0M", "ZNA")
+    Float_t fCentrality ;         //! Centrality of the current event
+    Int_t   fCentBin ;            //! Current centrality bin
 
-      Bool_t fHaveTPCRP ; //! Is TPC RP defined?
-      Float_t fRP ;       //! Reaction plane calculated with full TPC
-      Int_t fEMRPBin;     //! Event Mixing Reaction Plane Bin
+    Bool_t fHaveTPCRP ; //! Is TPC RP defined?
+    Float_t fRP ;       //! Reaction plane calculated with full TPC
+    Int_t fEMRPBin;     //! Event Mixing Reaction Plane Bin
 
-      TClonesArray * fCaloPhotonsPHOS ;      //! PHOS photons in current event
-      TClonesArray * fTracksTPC ;            //! TPC Tracks in current event
+    TClonesArray * fCaloPhotonsPHOS ;      //! PHOS photons in current event
+    TClonesArray * fTracksTPC ;            //! TPC Tracks in current event
 
-      TObjArray * fCaloPhotonsPHOSLists;  //! array of TList, Containers for events with PHOS photons
-      TObjArray * fTracksTPCLists;        //! array of TList, Containers for events with PHOS photons
+    TObjArray * fCaloPhotonsPHOSLists;  //! array of TList, Containers for events with PHOS photons
+    TObjArray * fTracksTPCLists;        //! array of TList, Containers for events with PHOS photons
 
-  ClassDef(AliPHOSCorrelations, 1);    // PHOS analysis task
+  ClassDef(AliPHOSCorrelations, 2);    // PHOS analysis task
 };
 
 #endif
