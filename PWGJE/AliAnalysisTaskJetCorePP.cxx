@@ -62,6 +62,7 @@
 #include "AliAODJet.h"
 #include "AliVVertex.h"
 #include "AliAnalysisTaskJetCorePP.h"
+#include "AliHeader.h" //KF//
 
 using std::cout;
 using std::endl;
@@ -907,20 +908,6 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 {
    //User Exec
    
-   if(fIsKine){ //Fill Xsection and number of trials
-      Float_t xsection = 0;
-      Float_t trials  = 0;
- 
-      AliMCEvent *mcEvent = MCEvent();
-      AliGenPythiaEventHeader *genPH = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
-      if(genPH){
-         xsection = genPH->GetXsection();
-         trials  = genPH->Trials();
-      }
-      fh1Xsec->Fill("<#sigma>",xsection);
-      fh1Trials->Fill("#sum{ntrials}",trials);
-   }//KF//
-
 
    //Event loop
    Double_t eventW  = 1.0;
@@ -966,7 +953,24 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          PostData(1, fOutputList);
          return;
       }
+ 
+      Float_t xsection = 0;
+      Float_t trials  = 0;
+
+      AliGenPythiaEventHeader *genPH =
+         dynamic_cast<AliGenPythiaEventHeader*> (fMcEvent->GenEventHeader()); 
+      if(genPH){
+         xsection = genPH->GetXsection();
+         trials   = genPH->Trials();
+         ptHard   = genPH->GetPtHard();
+      }
+      fh1Xsec->Fill("<#sigma>",xsection);
+      fh1Trials->Fill("#sum{ntrials}",trials);
+      fh1PtHard->Fill(ptHard,eventW);
+      fh1PtHardNoW->Fill(ptHard,1);
+      fh1PtHardTrials->Fill(ptHard,trials);
    }
+
 
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    if(!fESD){
