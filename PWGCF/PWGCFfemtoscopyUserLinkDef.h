@@ -39,7 +39,9 @@
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDGV0;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
 #pragma link C++ class AliFemtoCorrFctnGammaMonitor;
+#pragma link C++ class AliFemtoCorrFctnMinvMonitor;
 #pragma link C++ class AliFemtoPairCutAntiGamma;
+#pragma link C++ class AliFemtoPairCutResonances;
 //#pragma link C++ class AliFemtoPhiPairCut;
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;

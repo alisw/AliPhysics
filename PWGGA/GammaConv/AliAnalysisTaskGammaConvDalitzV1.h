@@ -218,6 +218,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 
     TH1I **hNEvents;
     TH1I **hNGoodESDTracks;
+    TH2F **hNGoodESDTracksVsNGoodGammas;
+    TH2F **hNGoodESDTracksVsNGoodVGammas;
     TProfile **hEtaShift;
         
     TRandom3 fRandom;
@@ -228,6 +230,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Int_t fnCuts;
     Int_t fiCut;
     Int_t fNumberOfESDTracks;
+    Int_t fNumberOfESDTrackskBoth;
     Bool_t fMoveParticleAccordingToVertex;
     Bool_t fIsHeavyIon;
     Bool_t fDoMesonAnalysis;

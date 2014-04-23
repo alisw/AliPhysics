@@ -186,7 +186,8 @@ AliAnalysisTaskSE(),
   fCutKFDeviationFromVtx(999999.),
   fCutKFDeviationFromVtxV0(0.),
   fCurrentEvent(-1),
-  fBField(0)
+  fBField(0),
+  fKeepingOnlyPYTHIABkg(kFALSE)
 {
   //
   // Default ctor
@@ -305,7 +306,8 @@ AliAnalysisTaskSELc2V0bachelorTMVA::AliAnalysisTaskSELc2V0bachelorTMVA(const Cha
   fCutKFDeviationFromVtx(999999.),
   fCutKFDeviationFromVtxV0(0.),
   fCurrentEvent(-1),
-  fBField(0)
+  fBField(0),
+  fKeepingOnlyPYTHIABkg(kFALSE)
 
 {
   //
@@ -393,7 +395,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::Init() {
   fListCuts->Add(new AliRDHFCutsLctoV0(*fAnalCuts));
   PostData(3,fListCuts);
 
-  if (fUseMCInfo && fKeepingOnlyHIJINGBkg) fUtils = new AliVertexingHFUtils();
+  if (fUseMCInfo && (fKeepingOnlyHIJINGBkg || fKeepingOnlyPYTHIABkg)) fUtils = new AliVertexingHFUtils();
 
   return;
 }
@@ -467,8 +469,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
   fCandidateVariableNames[24]="LcEta";
   fCandidateVariableNames[25]="V0positiveEta";
   fCandidateVariableNames[26]="V0negativeEta";
-  fCandidateVariableNames[27]="combinedPionProb";
-  fCandidateVariableNames[28]="combinedKaonProb";
+  fCandidateVariableNames[27]="TPCProtonProb";
+  fCandidateVariableNames[28]="TOFProtonProb";
   fCandidateVariableNames[29]="bachelorEta";
   fCandidateVariableNames[30]="LcP";
   fCandidateVariableNames[31]="bachelorP";
@@ -594,8 +596,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::UserCreateOutputObjects() {
     fHistoLcpKpiBeforeCuts->GetXaxis()->SetBinLabel(ibin, labelBeforeCuts[ibin-1].Data());
   }
 
-  fHistoBackground = new TH1F("fHistoBackground", "fHistoBackground", 2, -0.5, 1.5);
-  TString labelBkg[2] = {"Injected", "Non-injected"};
+  fHistoBackground = new TH1F("fHistoBackground", "fHistoBackground", 4, -0.5, 3.5);
+  TString labelBkg[4] = {"Injected", "Non-injected", "Non-PYTHIA", "PYTHIA"};
   for (Int_t ibin = 1; ibin <= fHistoBackground->GetNbinsX(); ibin++){
     fHistoBackground->GetXaxis()->SetBinLabel(ibin, labelBkg[ibin-1].Data());
   }
@@ -1078,6 +1080,42 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 	    continue; 
 	  }
 	}
+	else if (fKeepingOnlyPYTHIABkg){
+	  // we have decided to fill the background only when the candidate has the daugthers that all come from HIJING underlying event!
+	  AliAODTrack *bachelor = (AliAODTrack*)lcK0spr->GetBachelor();
+	  AliAODTrack *v0pos = (AliAODTrack*)lcK0spr->Getv0PositiveTrack();
+	  AliAODTrack *v0neg = (AliAODTrack*)lcK0spr->Getv0NegativeTrack();
+	  if (!bachelor || !v0pos || !v0neg) {
+	    AliDebug(2, "Cannot retrieve one of the tracks while checking origin, continuing");
+	    continue;
+	  }
+	  else {
+	    Int_t labelbachelor = TMath::Abs(bachelor->GetLabel());
+	    Int_t labelv0pos = TMath::Abs(v0pos->GetLabel());
+	    Int_t labelv0neg = TMath::Abs(v0neg->GetLabel());
+	    AliAODMCParticle* MCbachelor =  (AliAODMCParticle*)mcArray->At(labelbachelor);
+	    AliAODMCParticle* MCv0pos =  (AliAODMCParticle*)mcArray->At(labelv0pos);
+	    AliAODMCParticle* MCv0neg =  (AliAODMCParticle*)mcArray->At(labelv0neg);
+	    if (!MCbachelor || !MCv0pos || !MCv0neg) {
+	      AliDebug(2, "Cannot retrieve MC particle for one of the tracks while checking origin, continuing");
+	      continue;
+	    }
+	    else {
+	      Int_t isBachelorFromPythia = fUtils->CheckOrigin(mcArray, MCbachelor, kTRUE);
+	      Int_t isv0posFromPythia = fUtils->CheckOrigin(mcArray, MCv0pos, kTRUE);
+	      Int_t isv0negFromPythia = fUtils->CheckOrigin(mcArray, MCv0neg, kTRUE);
+	      if (isBachelorFromPythia != 0 && isv0posFromPythia != 0 && isv0negFromPythia != 0){
+		AliDebug(2, "The candidate is from PYTHIA (i.e. all daughters originate from a quark), keeping it to fill background");
+		fHistoBackground->Fill(2);
+	      }
+	      else {
+		AliDebug(2, "The candidate is NOT from PYTHIA, we skip it when filling background");
+		fHistoBackground->Fill(3);
+		continue; 
+	      }
+	    }
+	  }
+	}
       }
     }
 
@@ -1183,18 +1221,49 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   }
 
   //Bool_t isBachelorID = (((cutsAnal->IsSelected(part,AliRDHFCuts::kPID))&(AliRDHFCutsLctoV0::kLcToK0Spr))==(AliRDHFCutsLctoV0::kLcToK0Spr)); // ID x bachelor
-  Double_t probTPCTOF[AliPID::kSPECIES]={0.};
+  Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
 	
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
-  Double_t probProton = 0.;
-  Double_t probPion = 0.;
-  Double_t probKaon = 0.;
+  Printf("detUsed (TPCTOF case) = %d", detUsed);
+  Double_t probProton = -1.;
+  Double_t probPion = -1.;
+  Double_t probKaon = -1.;
   if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask() ) {
+    Printf("We have found the detector mask for TOF + TPC: probProton will be set to %f", probTPCTOF[AliPID::kProton]);
     probProton = probTPCTOF[AliPID::kProton];
     probPion = probTPCTOF[AliPID::kPion];
     probKaon = probTPCTOF[AliPID::kKaon];
   }
+  else { // if you don't have both TOF and TPC, try only TPC
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
+    Printf("We did not find the detector mask for TOF + TPC, let's see only TPC");
+    detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
+    Printf("detUsed (TPC case) = %d", detUsed);
+    if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {
+      probProton = probTPCTOF[AliPID::kProton];
+      probPion = probTPCTOF[AliPID::kPion];
+      probKaon = probTPCTOF[AliPID::kKaon];
+      Printf("TPC only worked: probProton will be set to %f", probTPCTOF[AliPID::kProton]);
+    }
+    else {
+      Printf("Only TPC did not work...");
+    }
+    // resetting mask to ask for both TPC+TOF
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
+  }
+  Printf("probProton = %f", probProton);
 
+  // now we get the TPC and TOF single PID probabilities (only for Proton, or the tree will explode :) )
+  Double_t probProtonTPC = -1.;
+  Double_t probProtonTOF = -1.;
+  Double_t pidTPC[AliPID::kSPECIES]={-1.};
+  Double_t pidTOF[AliPID::kSPECIES]={-1.};
+  Int_t respTPC = fPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTPC, bachelor, AliPID::kSPECIES, pidTPC);
+  Int_t respTOF = fPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTOF, bachelor, AliPID::kSPECIES, pidTOF);
+  if (respTPC == AliPIDResponse::kDetPidOk) probProtonTPC = pidTPC[AliPID::kProton];
+  if (respTOF == AliPIDResponse::kDetPidOk) probProtonTOF = pidTOF[AliPID::kProton];
+
+  // checking V0 status (on-the-fly vs offline)
   if ( !( !onFlyV0 || (onFlyV0 && fUseOnTheFlyV0) ) ) {
     AliDebug(2, "On-the-fly discarded");
     return;		
@@ -1346,8 +1415,8 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
     fCandidateVariables[24] = part->Eta();
     fCandidateVariables[25] = v0pos->Eta();
     fCandidateVariables[26] = v0neg->Eta();
-    fCandidateVariables[27] = probPion;
-    fCandidateVariables[28] = probKaon;
+    fCandidateVariables[27] = probProtonTPC;
+    fCandidateVariables[28] = probProtonTOF;
     fCandidateVariables[29] = bachelor->Eta();
 
     fCandidateVariables[30] = part->P();
@@ -2001,7 +2070,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
 	    AliDebug(3, "Could not access MC info for second daughter of Lc");
 	  }
 	  else { // we can access safely the K0S mother in the MC
-	    if( daughv01Lc->GetMother() ==  daughv02Lc->GetMother() && daughv01Lc->GetMother()>=0 ){  // This is a true cascade! bachelor and V0 come from the same mother
+	    if( daughv01Lc && (daughv01Lc->GetMother() ==  daughv02Lc->GetMother()) && (daughv01Lc->GetMother()>=0) ){  // This is a true cascade! bachelor and V0 come from the same mother
 	      //Printf("Lc: The mother has label %d", daughv01Lc->GetMother());
 	      AliAODMCParticle *motherLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(daughv01Lc->GetMother()));
 	      Int_t pdgMum = 0, pdgBach = 0, pdgV0 = 0;

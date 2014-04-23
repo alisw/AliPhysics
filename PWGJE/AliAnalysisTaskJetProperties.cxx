@@ -66,6 +66,7 @@ ClassImp(AliAnalysisTaskJetProperties)
     ,fBranchJets("jets")
     ,fTrackType(kTrackAOD)
     ,fJetRejectType(0)
+    ,fRejectPileup(1)
     ,fUseAODInputJets(kTRUE)
     ,fFilterMask(0)
     ,fUsePhysicsSelection(kTRUE)
@@ -174,6 +175,7 @@ AliAnalysisTaskJetProperties::AliAnalysisTaskJetProperties(const char *name)
   ,fBranchJets("jets")
   ,fTrackType(kTrackAOD)
   ,fJetRejectType(0)
+  ,fRejectPileup(1)
   ,fUseAODInputJets(kTRUE)
   ,fFilterMask(0)
   ,fUsePhysicsSelection(kTRUE)
@@ -346,7 +348,7 @@ void AliAnalysisTaskJetProperties::UserCreateOutputObjects()
   fh1EvtSelection->GetXaxis()->SetBinLabel(3,"event class: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(4,"vertex Ncontr: rejected");
   fh1EvtSelection->GetXaxis()->SetBinLabel(5,"vertex z: rejected");
-  fh1EvtSelection->GetXaxis()->SetBinLabel(6,"vertex type: rejected");
+  fh1EvtSelection->GetXaxis()->SetBinLabel(6,"pile up: rejected");
   
   
   fh1VertexNContributors     = new TH1F("fh1VertexNContributors", "Vertex N contributors", 2500,-.5, 2499.5);
@@ -852,6 +854,14 @@ void AliAnalysisTaskJetProperties::UserExec(Option_t *)
     return;
   }
   
+  if(fRejectPileup && AliAnalysisHelperJetTasks::IsPileUp()){
+    if (fDebug > 2) Printf("%s:%d SPD pileup : event REJECTED...",(char*)__FILE__,__LINE__);
+    fh1EvtSelection->Fill(6.);
+    PostData(1, fCommonHistList);
+    return; 
+  }//pile up rejection
+  
+
   fh1VertexZ->Fill(primVtx->GetZ());
   
   if(TMath::Abs(primVtx->GetZ())>fMaxVertexZ){

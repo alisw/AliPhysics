@@ -241,6 +241,19 @@ AliCalorimeterUtils* ConfigureCaloUtils(Int_t kYears, TString kCollisions, TStri
   if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
   else                    recou->SwitchOffRejectExoticCluster();
   
+  if(kCalorimeter=="PHOS")
+  {
+    if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(3);
+    else                cu->SetNumberOfSuperModulesUsed(4);
+  }
+  else
+  {
+    if      (kYears == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    else if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(10);
+    else                     cu->SetNumberOfSuperModulesUsed(20);
+  }
+
+  
   if(kPrint) cu->Print("");
   
   return cu;
@@ -349,11 +362,6 @@ AliAnaPi0* ConfigurePi0Analysis(TString kData, TString kCalorimeter, Int_t kYear
   
   // Calorimeter settings
   anapi0->SetCalorimeter(kCalorimeter);
-  if(kCalorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
-  else {                   
-    if(kYears==2010) anapi0->SetNumberOfModules(4); //EMCAL first year
-    else             anapi0->SetNumberOfModules(10);
-  }
   
   //settings for pp collision mixing
   anapi0->SwitchOnOwnMix(); //Off when mixing done with general mixing frame

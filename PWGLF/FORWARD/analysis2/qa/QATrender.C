@@ -546,6 +546,35 @@ public:
 
   /******************************************************************/
   /** 
+   * Backward compatibility mode constructor 
+   * 
+   * @param keep       Keep temporary files
+   * @param single     Not used  
+   * @param prodYear   Period year 
+   * @param prodLetter Period letter
+   */
+  QATrender(Bool_t keep, 
+	    Bool_t single, 
+	    Int_t  prodYear, 
+	    char   prodLetter) 
+    : QABase("data", (prodYear < 2000 ? 2000 : 0) + prodYear,
+	     Form("LHC%02d%c", (prodYear%2000), prodLetter), "pass0")
+      fRunNo(-1),
+      fCurrentFile(0),
+      fSharingFilter(0),
+      fEventInspector(0),
+      fDensityCalculator(0),
+      fEnergyFitter(0),
+      fFiles(0), 
+      fKeep(keep)
+  {
+    fFMD1i = new Ring(1, 'I'); 
+    fFMD2i = new Ring(2, 'I'); 
+    fFMD2o = new Ring(2, 'O'); 
+    fFMD3i = new Ring(3, 'I'); 
+    fFMD3o = new Ring(3, 'O'); 
+  }      
+  /** 
    * CTOR
    * 
    * @param keep      Whehter to keep all info 
@@ -705,6 +734,8 @@ public:
     if (!oRun) return false;
     
     fGlobal->runNo = oRun->GetUniqueID();
+    if (fRunNo <= 0) fRunNo = fGlobal->runNo;
+
     TH1* oAcc = GetHistogram(fEventInspector,"nEventsAccepted");
     if (!oAcc) return false; 
 

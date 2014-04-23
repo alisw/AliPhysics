@@ -41,7 +41,11 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    gSystem->Load("libTENDER.so");
    gSystem->Load("libTENDERSupplies.so");
 
-   
+  
+ 
+
+
+
   
    
    
@@ -274,12 +278,69 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	
 } else if ( trainConfig  == 20 ) {
 
-	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01621035009000"; // standar cut Annika analysis:
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis:
 	
 } else if ( trainConfig  == 21 ) {
 
-	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01621035009000"; // standar cut Annika analysis: + kFirst
+	ConvCutarray[0] = "8000011002092170008260400000"; ElecCutarray[0] = "9047540013310262371"; MesonCutarray[0] = "01621035009000"; // standard cut Annika analysis: + kFirst
+	
+} else if ( trainConfig  == 22 ){
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540015310262171"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst
+
+} else if ( trainConfig  == 23 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540085310262171"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth
+	
+} else if ( trainConfig  == 24 ){
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540015310262170"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kFirtst No weights
+
+} else if ( trainConfig  == 25 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540085310262170"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100 + Old Standard 2010 + kBoth No weights
+	
+} else if ( trainConfig  == 26 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540013310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kFirts + No weights
+	
+} else if ( trainConfig  == 27 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No weights
+	
+} else if ( trainConfig  == 28 ) {
+  
+	ConvCutarray[0] = "8000011002493603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.075
+	
+} else if ( trainConfig  == 29 ) {
+  
+	ConvCutarray[0] = "8000011002193603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.100
+	
+} else if ( trainConfig  == 30 ) {
+      
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310263371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.150
+	
+} else if ( trainConfig  == 31 ) {
+	
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310265371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
+	
+} else if ( trainConfig  == 32  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + Photon R > 35 cm
+  
+} else if ( trainConfig  == 33  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm 
+	
+} else if ( trainConfig  == 34  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
 }
+
+
+
+
+
 
 
    TList *ConvCutList  = new TList();
@@ -307,7 +368,9 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
           analysisCuts[i] = new AliConversionCuts();
       
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 || trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
+		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 || trainConfig == 31 || trainConfig == 32 || trainConfig == 33 )
+	  ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){

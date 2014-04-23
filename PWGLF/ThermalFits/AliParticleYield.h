@@ -9,10 +9,10 @@
 
 #include "TObject.h"
 #include "TString.h"
+#include "TCut.h"
 
 class TClonesArray;
 class TTree;
-
 class AliParticleYield : public TObject
 {
 public:
@@ -33,10 +33,13 @@ public:
   static const char * kStatusString[];
 
   enum AliPYMeasurementType_t { // this is a bit mask: more than one bit can be one (be careful not to set mutually exclusive ones).
-    // Type of measurements (lowest nibble reserved for this)
+    // Type of measurements
     kTypeLinearInterpolation = 0x1,
-    kTypeParticleRatio       = 0x2, // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
-    
+    kTypeParticleRatio       = 0x2,  // If true, this is a ratio of 2 particles where the propagation of uncertainty was properly taken into account. 
+    kTypeAverageAndRefit     = 0x4,  // this means that the measurement has been obtained summing several spectra in smaller centality bins (weihgted by the width of the centrality bin) and refitting them
+    kTypeExtrPionRatio       = 0x8,  // Extrapolated from a different centrality bin, assumin the ratio to pions is constant
+    kTypeExtrFit             = 0x20, // Extrapolated fitting the centrality dependence vs npart
+
     // Type of errors
     kTypeOnlyTotError        = 0x10, // If on, only the total error is returned as "GetSystError". GetStatError should be set to 0;
   };
@@ -52,7 +55,8 @@ public:
   static TTree * ReadFromASCIIFileAsTree(const char * fileName, const char * separators = " \t");
   static void SaveAsASCIIFile(TClonesArray * arr, const char * filename, const char * separator = " ", Int_t colWidth = 7);  
   static void WriteThermusFile(TClonesArray * arr, const char * filename, Int_t colWidth = 10);
-  static TClonesArray * GetEntriesMatchingSelection(TTree * tree, TString selection); 
+  static TClonesArray * GetEntriesMatchingSelection(TTree * tree, TCut selection); 
+  static TTree * GetTreeFromArray(TClonesArray * arr) ;
 
   // Misc helpers
   Bool_t CheckTypeConsistency() const;
@@ -61,8 +65,13 @@ public:
   static Float_t GetError(TString error, Float_t yield) ;
   static const char * FormatCol(const char * text, Int_t width,  const char * sep =" ") ;
   static Double_t RoundToSignificantFigures(double num, int n) ;  
+  static AliParticleYield * FindParticle(TClonesArray * arr, Int_t pdg, Int_t system, Float_t sqrts, TString centrality = "", Int_t isSum = -1, Int_t status = -1, Int_t pdg2 = 0);
+  static AliParticleYield * FindRatio   (TClonesArray * arr, Int_t pdg, Int_t pdg2, Int_t system, Float_t sqrts, TString centrality="", Int_t isSum = -1, Int_t status = -1) { return FindParticle(arr, pdg, system, sqrts, centrality, isSum, status, pdg2); }
   Bool_t operator==(const AliParticleYield& rhs);
   Bool_t IsTheSameMeasurement(AliParticleYield &rhs);
+  static AliParticleYield * Divide(AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError = 0, Option_t * opt="");
+  static AliParticleYield * Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError = 0, Option_t * opt="");
+  void Scale(Float_t scale) ;
 
   // Getters
   TString GetCentr()           const{ return fCentr           ;}
@@ -88,8 +97,9 @@ public:
   const char * GetLatexName(Int_t pdg = 0)  const;
   Float_t GetTotalError(Bool_t includeNormalization = kFALSE) const;
 
-  Bool_t  IsTypeMeasured()     const{ CheckTypeConsistency(); return !(fMeasurementType & kTypeLinearInterpolation);}
+  Bool_t  IsTypeMeasured()     const{ CheckTypeConsistency(); return (!(fMeasurementType & kTypeLinearInterpolation) && !(fMeasurementType & kTypeExtrPionRatio));}
   Bool_t  IsTypeRatio()        const{ CheckTypeConsistency(); return (fMeasurementType & kTypeParticleRatio);}
+  Bool_t  IsTypeExtrapolatedWithPionRatio() const { CheckTypeConsistency(); return (fMeasurementType & kTypeExtrPionRatio);}
   Bool_t  IsTypeLinearInterp() const{ CheckTypeConsistency(); return fMeasurementType & kTypeLinearInterpolation;}
   Bool_t  IsTypeOnlyTotErr()   const{ CheckTypeConsistency(); return fMeasurementType & kTypeOnlyTotError;       }
 
@@ -121,13 +131,16 @@ public:
   void SetTypeBits(UInt_t mask) { fMeasurementType |= mask; } // This switches on the bits passed. Does not affect the others! If you want to set the Whole mask, use SetMeasurementType
 
   static void SetSignificantDigits (Int_t var) { fSignificantDigits = var;}
-
+  
 
 
 
 private:
 
-  Bool_t Compare2Floats(Float_t a, Float_t b) ;
+  static Bool_t   Compare2Floats(Float_t a, Float_t b) ;
+  static Double_t SumErrors(AliParticleYield * part1, AliParticleYield * part2, Int_t error, Option_t * opt) ;
+  void CombineMetadata(AliParticleYield *part1, AliParticleYield*part2, const char * pdgSep) ;
+
 
   Int_t   fPdgCode;         // PdgCode
   Int_t   fPdgCode2;        // The PdgCode of the second particle, only needed in case of a ratio
@@ -155,7 +168,7 @@ private:
   static Int_t fSignificantDigits; // Significant Digits to be used in values and errors
   static Float_t fEpsilon; // Used for float conparisons
 
-  ClassDef(AliParticleYield,1)
+  ClassDef(AliParticleYield,2)
 };
 
 

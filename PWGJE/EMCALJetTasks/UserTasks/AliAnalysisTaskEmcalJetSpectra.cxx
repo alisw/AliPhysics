@@ -78,7 +78,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra() :
     fHistCorJetPtEPcentGL[i]    = 0;
 
   }
-
+  
   SetMakeGeneralHistograms(kTRUE);
     
 }
@@ -126,7 +126,7 @@ AliAnalysisTaskEmcalJetSpectra::AliAnalysisTaskEmcalJetSpectra(const char *name)
     fHistCorJetPtEPcentGL[i]    = 0;
 
    }
-  
+ 
    SetMakeGeneralHistograms(kTRUE);
  }
 
@@ -281,8 +281,7 @@ void AliAnalysisTaskEmcalJetSpectra::UserCreateOutputObjects()
       fOutput->Add(fHistCorJetPtEPcentGL[i]);
 
   }
-
-  
+ 
   fOutput->Add(fHistRhovsCent);
   fOutput->Add(fHistNjetvsCent);
 
@@ -366,7 +365,6 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
         fLocalRho = GetLocalRhoFromEvent(fLocalRhoName);
     }
 
-
   fHistEP0[centbin]->Fill(fEPV0);
   fHistEP0A[centbin]->Fill(fEPV0A);
   fHistEP0C[centbin]->Fill(fEPV0C);
@@ -402,29 +400,34 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
      // get local rho value
      fLocalRhoVal = fLocalRho->GetLocalVal(jet->Phi(), 0.2);
      Double_t jetPtLocal = jet->Pt() - jet->Area()*fLocalRhoVal;
+     Double_t jetPtGlobal = jet->Pt() - jet->Area()*fRhoVal;
 
      // calculate relative angle between jet and event plane       
      Float_t dEP = -500;              // initialize angle between jet and event plane
      dEP = RelativeEPJET(jet->Phi(),fEPV0);
 
      fHistCorJetPtfromLocalRho[centbin]->Fill(jetPtLocal);
-     fHistCorJetPtfromGlobalRho[centbin]->Fill(jetPt);
+     fHistCorJetPtfromGlobalRho[centbin]->Fill(jetPtGlobal);
 
      fHistRhodEPcentLOC[centbin]->Fill(fLocalRhoVal,dEP);
- 
+     fHistRhodEPcentGL[centbin]->Fill(fRhoVal,dEP);
      fHistRhovsdEPLOC->Fill(fLocalRhoVal,dEP);
-     fHistJetPtvsdEPLOC->Fill(jetPtLocal,dEP);
+     fHistRhovsdEPGL->Fill(fRhoVal,dEP);
 
-     fHistRhoEPcentGL[centbin]->Fill(fRhoVal,fEPV0);
      fHistRhoEPcentLOC[centbin]->Fill(fLocalRhoVal,fEPV0);
-
-     fHistCorJetPtEPcentGL[centbin]->Fill(jetPt,fEPV0);
-     fHistCorJetPtEPcentLOC[centbin]->Fill(jetPt,fEPV0);
-
-     fHistRhovsEPGL->Fill(fRhoVal,fEPV0);
+     fHistRhoEPcentGL[centbin]->Fill(fRhoVal,fEPV0);
      fHistRhovsEPLOC->Fill(fLocalRhoVal,fEPV0);
-     fHistJetPtvsEPGL->Fill(jetPt,fEPV0);
+     fHistRhovsEPGL->Fill(fRhoVal,fEPV0);
+
+     fHistCorJetPtdEPcentLOC[centbin]->Fill(jetPtLocal,dEP);
+     fHistCorJetPtdEPcentGL[centbin]->Fill(jetPt,dEP);
+     fHistJetPtvsdEPLOC->Fill(jetPtLocal,dEP);
+     fHistJetPtvsdEPGL->Fill(jetPt,dEP);
+
+     fHistCorJetPtEPcentLOC[centbin]->Fill(jetPtLocal,fEPV0);
+     fHistCorJetPtEPcentGL[centbin]->Fill(jetPt,fEPV0);
      fHistJetPtvsEPLOC->Fill(jetPtLocal,fEPV0);
+     fHistJetPtvsEPGL->Fill(jetPt,fEPV0);
 
      fHistCorJetPt->Fill(jetPtLocal);
      fHistCorJetPtGL->Fill(jetPt);
@@ -453,7 +456,6 @@ Bool_t AliAnalysisTaskEmcalJetSpectra::Run()
   fHistNjetvsCent->Fill(fCent,NjetAcc);
   return kTRUE;
 }      
-
 
 //_________________________________________________________________________
 Float_t AliAnalysisTaskEmcalJetSpectra:: RelativeEPJET(Double_t jetAng, Double_t EPAng) const

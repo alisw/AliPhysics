@@ -98,8 +98,6 @@ public:
     
   TString      GetCalorimeter()          const  { return fCalorimeter        ; }
   void         SetCalorimeter(TString calo)     { fCalorimeter = calo        ; }
-    
-  void         SetNumberOfModules(Int_t nmod)   { fNModules   = nmod         ; }
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
   Double_t     GetTimeCutMax()           const  { return fTimeCutMax         ; }

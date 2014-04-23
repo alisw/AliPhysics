@@ -30,6 +30,7 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   virtual void RunAODhist();
   virtual void RunAODtree();
   virtual void RunAODMC(AliAODEvent *aod);
+  virtual void RunAODsystematics(AliAODEvent *aod);
   virtual void RunESDtrig();
   virtual void RunESDhist();
   virtual void RunESDtree();
@@ -37,13 +38,17 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   void SetRunTree(Bool_t runTree){fRunTree = runTree;}
   void SetRunHist(Bool_t runHist){fRunHist = runHist;}
+  void SetRunSyst(Bool_t runSyst){fRunSystematics = runSyst;}
   void SetIsMC(Bool_t MC){isMC = MC;}
+  void InitSystematics();
+  Double_t GetMedian(Double_t *daArray);
 
  private:
   Int_t fType; // 0 - ESD, 1 - AOD
   Bool_t isMC;
   Bool_t fRunTree; 
   Bool_t fRunHist;
+  Bool_t fRunSystematics;
   
   AliPIDResponse *fPIDResponse;
   
@@ -99,10 +104,17 @@ class AliAnalysisTaskUpcPsi2s : public AliAnalysisTaskSE {
   TH2D *fHistDiLeptonPtJPsi;
   TH1D *fHistDiElectronMass;
   TH1D *fHistDiMuonMass;
+  TH1D *fHistDiLeptonMass;
   
   TH1D *fHistNeventsPsi2s;
   TH2D *fHistPsi2sMassVsPt;
   TH1D *fHistPsi2sMassCoherent;
+  
+  TList *fListSystematics;
+  TList *fListJPsiLoose;
+  TList *fListJPsiTight;
+  TList *fListPsi2sLoose;
+  TList *fListPsi2sTight;
   
   AliAnalysisTaskUpcPsi2s(const AliAnalysisTaskUpcPsi2s&); //not implemented
   AliAnalysisTaskUpcPsi2s& operator =(const AliAnalysisTaskUpcPsi2s&); //not implemented

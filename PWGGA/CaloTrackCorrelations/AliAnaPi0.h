@@ -48,7 +48,6 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Calorimeter options
   TString      GetCalorimeter()         const   { return fCalorimeter           ; }
   void         SetCalorimeter(TString & det)    { fCalorimeter         = det    ; }
-  void         SetNumberOfModules(Int_t nmod)   { fNModules            = nmod   ; }
   
   //-------------------------------
   // EVENT Bin Methods
@@ -125,6 +124,9 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnMultipleCutAnalysisInSimulation()  { fMultiCutAnaSim = kTRUE  ; }
   void         SwitchOffMultipleCutAnalysisInSimulation() { fMultiCutAnaSim = kFALSE ; }
   
+  void         SwitchOnCheckAcceptanceInSector() { fCheckAccInSector   = kTRUE  ; }
+  void         SwitchOffCheckAcceptanceInSector(){ fCheckAccInSector   = kFALSE ; }
+  
   void         FillAcceptanceHistograms();
   void         FillMCVersusRecDataHistograms(Int_t    index1,  Int_t    index2,
                                              Float_t  pt1,     Float_t  pt2,
@@ -171,6 +173,8 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
   Bool_t   fFillOriginHisto;           // Fill histograms depending on their origin
   Bool_t   fFillArmenterosThetaStar;   // Fill armenteros histograms
+  
+  Bool_t   fCheckAccInSector;          // Check that the decay pi0 falls in the same SM or sector
   
   //Histograms
   
@@ -244,10 +248,14 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Pi0 Acceptance
   TH1F *   fhPrimPi0E ;                //! Spectrum of Primary
   TH1F *   fhPrimPi0Pt ;               //! Spectrum of Primary
+  TH1F *   fhPrimPi0PtRejected ;       //! Spectrum of Primary,rejected
   TH1F *   fhPrimPi0AccE ;             //! Spectrum of primary with accepted daughters
   TH1F *   fhPrimPi0AccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimPi0Y ;                //! Rapidity distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccY ;             //! Rapidity distribution of primary with accepted daughters  vs pT
+  TH2F *   fhPrimPi0Yeta ;             //! PseudoRapidity distribution of primary particles  vs pT
+  TH2F *   fhPrimPi0YetaYcut ;         //! PseudoRapidity distribution of primary particles  vs pT, Y<1
+  TH2F *   fhPrimPi0AccYeta ;          //! PseudoRapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0Phi ;              //! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimPi0AccPhi;            //! Azimutal distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimPi0OpeningAngle ;     //! Opening angle of pair versus pair energy, primaries
@@ -261,10 +269,14 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   //Eta acceptance
   TH1F *   fhPrimEtaE ;                //! Spectrum of Primary
   TH1F *   fhPrimEtaPt ;               //! Spectrum of Primary
+  TH1F *   fhPrimEtaPtRejected ;       //! Spectrum of Primary, rejected
   TH1F *   fhPrimEtaAccE ;             //! Spectrum of primary with accepted daughters
   TH1F *   fhPrimEtaAccPt ;            //! Spectrum of primary with accepted daughters
   TH2F *   fhPrimEtaY ;                //! Rapidity distribution of primary particles vs pT
   TH2F *   fhPrimEtaAccY ;             //! Rapidity distribution of primary with accepted daughters  vs pT
+  TH2F *   fhPrimEtaYeta ;             //! PseudoRapidity distribution of primary particles vs pT
+  TH2F *   fhPrimEtaYetaYcut ;         //! PseudoRapidity distribution of primary particles vs pT, Y<1
+  TH2F *   fhPrimEtaAccYeta ;          //! PseudoRapidity distribution of primary with accepted daughters  vs pT
   TH2F *   fhPrimEtaPhi ;              //! Azimutal distribution of primary particles  vs pT
   TH2F *   fhPrimEtaAccPhi;            //! Azimutal distribution of primary with accepted daughters	 vs pT
   TH2F *   fhPrimEtaOpeningAngle ;     //! Opening angle of pair versus pair energy, eta primaries
@@ -302,15 +314,15 @@ class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
 
-  TH2F *    fhArmPrimPi0[4];           //! Armenteros plots for primary pi0 in 6 energy bins
-  TH2F *    fhArmPrimEta[4];           //! Armenteros plots for primary eta in 6 energy bins
-  TH2F *    fhCosThStarPrimPi0;        //! cos(theta*) plots vs E for primary pi0, same as asymmetry ...
-  TH2F *    fhCosThStarPrimEta;        //! cos(theta*) plots vs E for primary eta, same as asymmetry ...
+  TH2F *   fhArmPrimPi0[4];            //! Armenteros plots for primary pi0 in 6 energy bins
+  TH2F *   fhArmPrimEta[4];            //! Armenteros plots for primary eta in 6 energy bins
+  TH2F *   fhCosThStarPrimPi0;         //! cos(theta*) plots vs E for primary pi0, same as asymmetry ...
+  TH2F *   fhCosThStarPrimEta;         //! cos(theta*) plots vs E for primary eta, same as asymmetry ...
   
   AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
-  ClassDef(AliAnaPi0,26)
+  ClassDef(AliAnaPi0,27)
 } ;
 
 

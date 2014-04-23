@@ -343,7 +343,6 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
                           kFALSE); // time calib
   if(timecut) recou->SetExoticCellDiffTimeCut(50.);
 
-  
   if( nonlin)
   { 
     printf("ConfigureCaloUtils() - Apply non linearity to EMCAL\n");
@@ -353,10 +352,8 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
-    
-  // PHOS 
-  cu->SwitchOffLoadOwnPHOSGeometryMatrices();
-    
+  cu->SetNumberOfSuperModulesUsed(10);
+
   if(print) cu->Print("");
   
   return cu;
@@ -582,14 +579,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
 
-  if(calorimeter=="EMCAL")
-  {
-    ana->SetNumberOfModules(10);
-  }
-  else 
-  {//PHOS
-    ana->SetNumberOfModules(3); 
-  }
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below

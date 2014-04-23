@@ -69,6 +69,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "AliDielectronPairLegCuts.h"
 #include "AliDielectronV0Cuts.h"
 #include "AliDielectronPID.h"
+#include "AliDielectronHistos.h"
 
 #include "AliDielectron.h"
 
@@ -1447,24 +1448,51 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 //______________________________________________
 void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
-  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
-  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
-  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  // clone temporare histogram since otherwise it will not be streamed to file!
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("cntrd%d%d%d",varx,vary,varz);
   fPostPIDCntrdCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
   fPostPIDCntrdCorr->GetListOfFunctions()->AddAt(fun,0);
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDCntrdCorr)  {
+    printf("POST TPC PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDCntrdCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+
 }
 //______________________________________________
 void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
 {
-  fun->GetHistogram()->GetXaxis()->SetUniqueID(varx);
-  fun->GetHistogram()->GetYaxis()->SetUniqueID(vary);
-  fun->GetHistogram()->GetZaxis()->SetUniqueID(varz);
-  // clone temporare histogram since otherwise it will not be streamed to file!
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun->GetHistogram(), valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("wdth%d%d%d",varx,vary,varz);
   fPostPIDWdthCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
   fPostPIDWdthCorr->GetListOfFunctions()->AddAt(fun,0);
+  // check for corrections and add their variables to the fill map
+  if(fPostPIDWdthCorr)  {
+    printf("POST TPC PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
 }
 
 //______________________________________________
@@ -1475,6 +1503,7 @@ TObject* AliDielectron::InitEffMap(TString filename)
 
   TFile* file=TFile::Open(filename.Data());
   if(!file) return 0x0;
+	else printf("[I] AliDielectron::InitEffMap efficiency maps %s loaded! \n",filename.Data());
 
   // NOTE: the spline must have the 'variable name' stored in its fHistogram
   TSpline3 *hEff = (TSpline3*) file->Get("hEfficiency");
@@ -1487,7 +1516,6 @@ TObject* AliDielectron::InitEffMap(TString filename)
   if(!hFnd || !hGen) return 0x0;
 
   hFnd->Divide(hGen);
-  printf("[I] AliDielectron::InitEffMap efficiency maps %s with %d dimensions loaded! \n",filename.Data(),hFnd->GetNdimensions());
   return (hFnd->Clone("effMap"));
 }
 

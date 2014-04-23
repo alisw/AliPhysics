@@ -207,6 +207,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,fSparseMassLS(0)
 ,fAssoTPCCluster(0)
 ,fAssoITSRefit(0)
+,fPhiCut(0)
 {
     //Named constructor
     
@@ -325,6 +326,7 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,fSparseMassLS(0)
 ,fAssoTPCCluster(0)
 ,fAssoITSRefit(0)
+,fPhiCut(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -588,6 +590,13 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         //==========================================================================================================
         Double_t eta = track->Eta();
         Double_t phi = track->Phi();
+        
+        if(fPhiCut){
+            if(phi<1.4 || phi >3.14)continue; //to have same EMCal phi acceptance
+        }
+
+        
+        
         Double_t pt = track->Pt();         //pt track after cuts
         if(pt<fpTCutmin || pt>fpTCutmax) continue;
         //==========================================================================================================
@@ -1314,7 +1323,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     }//...after centrality selectrion
     //============================================================================================================================
     if(fMultCut){
-        if(fTrigger==1 || fTrigger==4){
+        if(fTrigger==1 || fTrigger==4 || fTrigger==5){
             if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
                 //   cout <<" Trigger ==" <<fTrigger<< endl;
                 centralitypass = kFALSE;

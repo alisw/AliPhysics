@@ -96,6 +96,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
         fHistJetPtArea[i] = 0;
+        fHistJetPtEta[i] = 0;
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
@@ -141,6 +142,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name,
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
         fHistJetPtArea[i] = 0;
+        fHistJetPtEta[i] = 0;
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
@@ -408,6 +410,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t, jet} [GeV/c]", 350, -100, 250, i);
         if(fFillQAHistograms)   fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, -1, 1, 100, 0, TMath::TwoPi(), i);
         fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
+        fHistJetPtEta[i] =            BookTH2F("fHistJetPtEta", "p_{t, jet} [GeV/c]", "Eta", 175, -100, 250, 30, -0.9, 0.9, i);
         fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t, jet} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
         // in plane and out of plane spectra
@@ -1328,6 +1331,11 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                     case kCombined : {
                         // to make a nice picture also plot the separate components (v2 and v3) of the fit
                         // only done for cobined fit where there are actually components to split ...
+                        TF1* v0(new TF1("dfit_kV2", "[0]", 0, TMath::TwoPi()));
+                        v0->SetParameter(0, didacticFit->GetParameter(0));        // normalization
+                        v0->SetLineColor(kMagenta);
+                        v0->SetLineStyle(7);
+                        didacticProfile->GetListOfFunctions()->Add(v0);
                         TF1* v2(new TF1("dfit_kV2", "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))", 0, TMath::TwoPi()));
                         v2->SetParameter(0, didacticFit->GetParameter(0));        // normalization
                         v2->SetParameter(3, didacticFit->GetParameter(3));        // v2
@@ -1343,12 +1351,14 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                         v3->FixParameter(2, 2.);        // constant
                         v3->FixParameter(4, didacticFit->GetParameter(6));        // psi3
                         v3->FixParameter(5, 3.);        // constant
-                        v3->SetLineColor(kYellow);
+                        v3->SetLineColor(kCyan);
                         didacticProfile->GetListOfFunctions()->Add(v3);
                     }
                     default : break;
                 }
                 didacticProfile->GetListOfFunctions()->Add(didacticFit);
+                didacticProfile->GetYaxis()->SetTitle("#frac{d #sum #it{p}_{T}}{d #varphi} [GeV/#it{c}]");
+                didacticProfile->GetXaxis()->SetTitle("#varphi");
                 fOutputListGood->Add(didacticProfile);
                 didacticCounterBest++;
                 TH2F* didacticSurface = BookTH2F(Form("surface_%s", didacticProfile->GetName()), "#phi", "#eta", 50, 0, TMath::TwoPi(), 50, -1, 1, -1, kFALSE);
@@ -1648,6 +1658,7 @@ void AliAnalysisTaskRhoVnModulation::FillJetHistograms(Double_t psi2, Double_t p
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
             if(fFillQAHistograms) fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
+            fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta);
             fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho);
             fHistJetPsi3Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt-area*rho);
             fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->Nch());

@@ -119,6 +119,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   void SetKFCutDeviationFromVtxV0(Float_t a) {fCutKFDeviationFromVtxV0 = a;}
   Float_t GetKFCutDeviationFromVtxV0() {return fCutKFDeviationFromVtxV0;}
 
+  void SetKeepingKeepingOnlyPYTHIABkg(Bool_t a) { fKeepingOnlyPYTHIABkg = a;}
+  Bool_t GetKeepingOnlyPYTHIABkg() {return fKeepingOnlyPYTHIABkg;}
+
  private:
   
   EBachelor CheckBachelor(AliAODRecoCascadeHF *part, AliAODTrack* bachelor, TClonesArray *mcArray);
@@ -249,8 +252,9 @@ class AliAnalysisTaskSELc2V0bachelorTMVA : public AliAnalysisTaskSE
   Float_t fCutKFDeviationFromVtxV0; // cut for KF on distance to primary vtx for V0
   Int_t fCurrentEvent;              // current event number - for debug purposes
   Double_t fBField;                   // magnetic field of current event
+  Bool_t fKeepingOnlyPYTHIABkg;       // flag to allow to use only PYTHIA tracks for background
 
-  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA,3); // class for Lc->p K0
+  ClassDef(AliAnalysisTaskSELc2V0bachelorTMVA, 4); // class for Lc->p K0
 };
 
 #endif

@@ -373,7 +373,7 @@ Bool_t AliCFVertexingHF3Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 		vectorMC[7] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
 		break;
 	}
-	
+	delete decay;	
 	bGenValues = kTRUE;
 	return bGenValues;
 }

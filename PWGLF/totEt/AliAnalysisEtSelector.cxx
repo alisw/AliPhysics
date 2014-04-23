@@ -53,17 +53,17 @@ Bool_t AliAnalysisEtSelector::IsNeutralMcParticle(Int_t pIdx, AliStack& s, const
   return s.IsPhysicalPrimary(pIdx) &&(TMath::Abs(TMath::Abs(pdg.Charge()) - fCuts->GetMonteCarloNeutralParticle())<1e-3);
 }
 
-Bool_t AliAnalysisEtSelector::IsEmEtParticle(const Int_t pdgCode) const
+Bool_t AliAnalysisEtSelector::IsEmEtParticle(Int_t pdgCode) const
 {
   return pdgCode == fgGammaCode || pdgCode == fgPi0Code || pdgCode == fgEtaCode || pdgCode == fgEPlusCode || pdgCode == fgEMinusCode;
 }
 
 
-Bool_t AliAnalysisEtSelector::PrimaryIsEmEtParticle(const Int_t pIdx, AliStack& stack) const
+Bool_t AliAnalysisEtSelector::PrimaryIsEmEtParticle(Int_t pIdx, AliStack& stack) const
 {
   return IsEmEtParticle(stack.Particle(GetPrimary(pIdx, stack))->GetPdgCode());
 }
-Int_t AliAnalysisEtSelector::GetPrimary(const Int_t partIdx, AliStack& stack) const
+Int_t AliAnalysisEtSelector::GetPrimary(Int_t partIdx, AliStack& stack) const
 { // get primary
   if(partIdx >= 0) 
   {

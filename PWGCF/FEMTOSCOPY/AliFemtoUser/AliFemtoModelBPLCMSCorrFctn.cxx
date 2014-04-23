@@ -13,7 +13,7 @@
 #include "AliFemtoAnalysisReactionPlane.h"
 #include <cstdio>
 
-#ifdef __ROOT__ 
+#ifdef __ROOT__
 ClassImp(AliFemtoModelBPLCMSCorrFctn)
 #endif
 
@@ -114,17 +114,17 @@ TList* AliFemtoModelBPLCMSCorrFctn::GetOutputList()
   // Prepare the list of objects to be written to the output
   TList *tOutputList = AliFemtoModelCorrFctn::GetOutputList();
 
-  tOutputList->Add(fNumerator3DTrue); 
-  tOutputList->Add(fNumerator3DFake);  
-  tOutputList->Add(fDenominator3D);  
-  tOutputList->Add(fQinvHisto);  
+  tOutputList->Add(fNumerator3DTrue);
+  tOutputList->Add(fNumerator3DFake);
+  tOutputList->Add(fDenominator3D);
+  tOutputList->Add(fQinvHisto);
 
   return tOutputList;
 }
 
 //_________________________
 void AliFemtoModelBPLCMSCorrFctn::Finish(){
-  fQinvHisto->Divide(fDenominator);
+  //fQinvHisto->Divide(fDenominator);
 }
 
 //____________________________
@@ -148,7 +148,7 @@ AliFemtoString AliFemtoModelBPLCMSCorrFctn::Report(){
       stemp += ctemp;
   */
 
-  //  
+  //
   AliFemtoString returnThis = stemp;
   return returnThis;
 }
@@ -159,7 +159,7 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
   if (fPairCut){
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
+      if (!ktc) {
 	cout << "RP aware cut requested, but not connected to the CF" << endl;
 	if (!(fPairCut->Pass(pair))) return;
       }
@@ -178,7 +178,7 @@ void AliFemtoModelBPLCMSCorrFctn::AddRealPair( AliFemtoPair* pair)
 //   if (fPairCut){
 //     if (!(fPairCut->Pass(pair))) return;
 //   }
-  
+
   Double_t weight = fManager->GetWeight(pair);
 
   double qOut = (pair->QOutCMS());
@@ -194,17 +194,17 @@ void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
   if (fPairCut){
     if (fUseRPSelection) {
       AliFemtoKTPairCut *ktc = dynamic_cast<AliFemtoKTPairCut *>(fPairCut);
-      if (!ktc) { 
-	cout << "RP aware cut requested, but not connected to the CF" << endl;
-	if (!(fPairCut->Pass(pair))) return;
+      if (!ktc) {
+        cout << "RP aware cut requested, but not connected to the CF" << endl;
+        if (!(fPairCut->Pass(pair))) return;
       }
       else {
-	AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
-	if (!arp) {
-	  cout << "RP aware cut requested, but not connected to the CF" << endl;
-	  if (!(fPairCut->Pass(pair))) return;
-	}
-	else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
+        AliFemtoAnalysisReactionPlane *arp = dynamic_cast<AliFemtoAnalysisReactionPlane *> (HbtAnalysis());
+        if (!arp) {
+          cout << "RP aware cut requested, but not connected to the CF" << endl;
+          if (!(fPairCut->Pass(pair))) return;
+        }
+        else if (!(ktc->Pass(pair, arp->GetCurrentReactionPlane()))) return;
       }
     }
     else
@@ -224,14 +224,14 @@ void AliFemtoModelBPLCMSCorrFctn::AddMixedPair( AliFemtoPair* pair){
   fDenominator3D->Fill(qOut, qSide, qLong, 1.0);
   fNumeratorFake->Fill(pair->QInv(), weight);
   fDenominator->Fill(pair->QInv(), 1.0);
-
+  fQinvHisto->Fill(qOut, qSide, qLong, pair->QInv() );
 }
 //_______________________
 AliFemtoModelCorrFctn* AliFemtoModelBPLCMSCorrFctn::Clone()
 {
   // Clone the correlation function
   AliFemtoModelBPLCMSCorrFctn *tCopy = new AliFemtoModelBPLCMSCorrFctn(*this);
-  
+
   return tCopy;
 }
 

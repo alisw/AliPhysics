@@ -85,6 +85,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
 
    ,fAnalysisMC(0)
    ,fDeltaVertexZ(0)
+   ,fCutjetEta(0)
    ,fCuttrackNegNcls(0)
    ,fCuttrackPosNcls(0)
    ,fCutPostrackRap(0)
@@ -228,11 +229,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1DcaNegToPrimVertex(0)    
    ,fh2ArmenterosBeforeCuts(0)
    ,fh2ArmenterosAfterCuts(0)
-   ,fh2BB3SigProton(0)
    ,fh2BBLaPos(0)
    ,fh2BBLaNeg(0)
-   ,fh1CrossedRowsOverFindableNeg(0)
-   ,fh1CrossedRowsOverFindablePos(0)
    ,fh1PosDaughterCharge(0)
    ,fh1NegDaughterCharge(0)
    ,fh1PtMCK0s(0)
@@ -244,7 +242,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh3InvMassEtaTrackPtK0s(0)
    ,fh3InvMassEtaTrackPtLa(0)
    ,fh3InvMassEtaTrackPtALa(0)
-   ,fh1noAssociatedK0s(0)
+ 
    ,fh1TrackMultCone(0)
    ,fh2TrackMultCone(0) 
    ,fh2MCgenK0Cone(0)
@@ -270,6 +268,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh3IMK0MedianCone(0)
    ,fh3IMLaMedianCone(0)
    ,fh3IMALaMedianCone(0)
+   ,fh1MedianEta(0)
+   ,fh1JetPtMedian(0)
    ,fh1MCMultiplicityPrimary(0)
    ,fh1MCMultiplicityTracks(0)
    ,fh1MCmotherLa(0)
@@ -308,6 +308,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
 
   ,fAnalysisMC(0)
   ,fDeltaVertexZ(0)
+  ,fCutjetEta(0)
   ,fCuttrackNegNcls(0)
   ,fCuttrackPosNcls(0)
   ,fCutPostrackRap(0)
@@ -451,11 +452,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1DcaNegToPrimVertex(0)    
   ,fh2ArmenterosBeforeCuts(0)
   ,fh2ArmenterosAfterCuts(0)
-  ,fh2BB3SigProton(0)
   ,fh2BBLaPos(0)
   ,fh2BBLaNeg(0)
-  ,fh1CrossedRowsOverFindableNeg(0)
-  ,fh1CrossedRowsOverFindablePos(0)
   ,fh1PosDaughterCharge(0)
   ,fh1NegDaughterCharge(0)
   ,fh1PtMCK0s(0)
@@ -467,7 +465,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh3InvMassEtaTrackPtK0s(0)
   ,fh3InvMassEtaTrackPtLa(0)
   ,fh3InvMassEtaTrackPtALa(0)
-  ,fh1noAssociatedK0s(0)
   ,fh1TrackMultCone(0)
   ,fh2TrackMultCone(0)
   ,fh2MCgenK0Cone(0)
@@ -493,6 +490,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh3IMK0MedianCone(0)
   ,fh3IMLaMedianCone(0)
   ,fh3IMALaMedianCone(0)
+  ,fh1MedianEta(0)
+  ,fh1JetPtMedian(0)
   ,fh1MCMultiplicityPrimary(0)
   ,fh1MCMultiplicityTracks(0)
   ,fh1MCmotherLa(0)
@@ -534,6 +533,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   
   ,fAnalysisMC(copy.fAnalysisMC)
   ,fDeltaVertexZ(copy.fDeltaVertexZ)
+  ,fCutjetEta(copy.fCutjetEta)
   ,fCuttrackNegNcls(copy.fCuttrackNegNcls)
   ,fCuttrackPosNcls(copy.fCuttrackPosNcls)
   ,fCutPostrackRap(copy.fCutPostrackRap)
@@ -677,11 +677,8 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1DcaNegToPrimVertex(copy.fh1DcaNegToPrimVertex)    
   ,fh2ArmenterosBeforeCuts(copy.fh2ArmenterosBeforeCuts)
   ,fh2ArmenterosAfterCuts(copy.fh2ArmenterosAfterCuts)
-  ,fh2BB3SigProton(copy.fh2BB3SigProton)
   ,fh2BBLaPos(copy.fh2BBLaPos)
   ,fh2BBLaNeg(copy.fh2BBLaPos)
-  ,fh1CrossedRowsOverFindableNeg(copy.fh1CrossedRowsOverFindableNeg)
-  ,fh1CrossedRowsOverFindablePos(copy.fh1CrossedRowsOverFindablePos)
   ,fh1PosDaughterCharge(copy.fh1PosDaughterCharge)
   ,fh1NegDaughterCharge(copy.fh1NegDaughterCharge)
   ,fh1PtMCK0s(copy.fh1PtMCK0s)
@@ -693,7 +690,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh3InvMassEtaTrackPtK0s(copy.fh3InvMassEtaTrackPtK0s)
   ,fh3InvMassEtaTrackPtLa(copy.fh3InvMassEtaTrackPtLa)
   ,fh3InvMassEtaTrackPtALa(copy.fh3InvMassEtaTrackPtALa)
-  ,fh1noAssociatedK0s(copy.fh1noAssociatedK0s)
+
   ,fh1TrackMultCone(copy.fh1TrackMultCone)
   ,fh2TrackMultCone(copy.fh2TrackMultCone)
   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
@@ -718,7 +715,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh3IMALaPerpCone(copy.fh3IMALaPerpCone)  
   ,fh3IMK0MedianCone(copy.fh3IMK0MedianCone)
   ,fh3IMLaMedianCone(copy.fh3IMLaMedianCone)
-  ,fh3IMALaMedianCone(copy.fh3IMALaMedianCone)  
+  ,fh3IMALaMedianCone(copy.fh3IMALaMedianCone)
+  ,fh1MedianEta(copy.fh1MedianEta)
+  ,fh1JetPtMedian(copy.fh1JetPtMedian)
   ,fh1MCMultiplicityPrimary(copy.fh1MCMultiplicityPrimary)
   ,fh1MCMultiplicityTracks(copy.fh1MCMultiplicityTracks)
   ,fh1MCmotherLa(copy.fh1MCmotherLa)
@@ -762,6 +761,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
 
     fAnalysisMC                     = o.fAnalysisMC;
     fDeltaVertexZ                   = o.fDeltaVertexZ;
+    fCutjetEta                      = o.fCutjetEta;
     fCuttrackNegNcls                = o.fCuttrackNegNcls;
     fCuttrackPosNcls                = o.fCuttrackPosNcls;
     fCutPostrackRap                 = o.fCutPostrackRap;
@@ -898,11 +898,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1DcaNegToPrimVertex           = o.fh1DcaNegToPrimVertex;    
     fh2ArmenterosBeforeCuts         = o.fh2ArmenterosBeforeCuts;
     fh2ArmenterosAfterCuts          = o.fh2ArmenterosAfterCuts;
-    fh2BB3SigProton                 = o.fh2BB3SigProton;
     fh2BBLaPos                      = o.fh2BBLaPos;
     fh2BBLaNeg                      = o.fh2BBLaPos;
-    fh1CrossedRowsOverFindableNeg   = o.fh1CrossedRowsOverFindableNeg;
-    fh1CrossedRowsOverFindablePos   = o.fh1CrossedRowsOverFindablePos;
     fh1PosDaughterCharge            = o.fh1PosDaughterCharge;
     fh1NegDaughterCharge            = o.fh1NegDaughterCharge;
     fh1PtMCK0s                      = o.fh1PtMCK0s;
@@ -914,7 +911,6 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh3InvMassEtaTrackPtK0s         = o.fh3InvMassEtaTrackPtK0s;
     fh3InvMassEtaTrackPtLa          = o.fh3InvMassEtaTrackPtLa;
     fh3InvMassEtaTrackPtALa         = o.fh3InvMassEtaTrackPtALa;
-    fh1noAssociatedK0s              = o.fh1noAssociatedK0s;
     fh1TrackMultCone                = o.fh1TrackMultCone;
     fh2TrackMultCone                = o.fh2TrackMultCone;
     fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
@@ -940,6 +936,8 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh3IMK0MedianCone               = o.fh3IMK0MedianCone;
     fh3IMLaMedianCone               = o.fh3IMLaMedianCone;
     fh3IMALaMedianCone              = o.fh3IMALaMedianCone; 
+    fh1MedianEta                    = o.fh1MedianEta;
+    fh1JetPtMedian                  = o.fh1JetPtMedian;
     fh1MCMultiplicityPrimary        = o.fh1MCMultiplicityPrimary;
     fh1MCMultiplicityTracks         = o.fh1MCMultiplicityTracks;
     fh1MCmotherLa                   = o.fh1MCmotherLa;
@@ -1283,13 +1281,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   
   // Create histograms / output container
  
-  //for AliPIDResponse:
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-
-  OpenFile(1);
   fCommonHistList = new TList();
+  fCommonHistList->SetOwner();
   
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);//By default (fAddDirectory = kTRUE), histograms are automatically added to the list of objects in memory
@@ -1320,12 +1313,12 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
  
   fh1EvtAllCent	                = new TH1F("fh1EvtAllCent","before centrality selection",100,0.,100.);
   fh1Evt                        = new TH1F("fh1Evt", "All events runned over", 3, 0.,1.);
-  fh1EvtMult 	                = new TH1F("fh1EvtMult","multiplicity",1200,0.,12000.);
-  fh1K0Mult 	                = new TH1F("fh1K0Mult","K0 multiplicity",1000,0.,1000.);//500. all
+  fh1EvtMult 	                = new TH1F("fh1EvtMult","multiplicity",240,0.,240.);
+  fh1K0Mult 	                = new TH1F("fh1K0Mult","K0 multiplicity",100,0.,100.);//500. all
   fh1dPhiJetK0                  = new TH1F("fh1dPhiJetK0","",640,-1,5.4);
-  fh1LaMult 	                = new TH1F("fh1LaMult","La multiplicity",1000,0.,1000.);
+  fh1LaMult 	                = new TH1F("fh1LaMult","La multiplicity",100,0.,100.);
   fh1dPhiJetLa                  = new TH1F("fh1dPhiJetLa","",640,-1,5.4);
-  fh1ALaMult 	                = new TH1F("fh1ALaMult","ALa multiplicity",1000,0.,1000.);
+  fh1ALaMult 	                = new TH1F("fh1ALaMult","ALa multiplicity",100,0.,100.);
   fh1dPhiJetALa                 = new TH1F("fh1dPhiJetALa","",640,-1,5.4);
   fh1JetEta                     = new TH1F("fh1JetEta","#eta distribution of all jets",400,-2.,2.);
   fh1JetPhi                     = new TH1F("fh1JetPhi","#phi distribution of all jets",630,0.,6.3);
@@ -1338,25 +1331,22 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1trackNegEta                = new TH1F("fh1trackNegEta","eta negative daughters",100,-2.,2.);
   fh1V0Eta                      = new TH1F("fh1V0Eta","V0 eta",60,-1.5,1.5);
   fh1V0totMom                   = new TH1F("fh1V0totMom","V0 tot mom",240,0.,20.); 
-  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",1000,0.99,1.0);
+  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",100,0.99,1.0);
   fh1Chi2Pos                    = new TH1F("fh1Chi2Pos", "V0s chi2",100,0.,5.);
   fh1Chi2Neg                    = new TH1F("fh1Chi2Neg", "V0s chi2",100,0.,5.);
   fh1DecayLengthV0              = new TH1F("fh1DecayLengthV0", "V0s decay Length;decay length(cm)",1200,0.,120.);
-  fh2ProperLifetimeK0sVsPtBeforeCut = new TH2F("fh2ProperLifetimeK0sVsPtBeforeCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",1500,0.,15.,500,0.,250.);
-  fh2ProperLifetimeK0sVsPtAfterCut = new TH2F("fh2ProperLifetimeK0sVsPtAfterCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",1500,0.,15.,500,0.,250.);
-  fh1ProperLifetimeV0BeforeCut  = new TH1F("fh1ProperLifetimeV0BeforeCut", "V0s 2D distance over transerse mom.;(cm)",1200,0.,120.);
-  fh1ProperLifetimeV0AfterCut   = new TH1F("fh1ProperLifetimeV0AfterCut", "V0s 2D distance over transverse mom.;(cm)",1200,0.,120.);
-  fh1V0Radius                   = new TH1F("fh1V0Radius", "V0s Radius;Radius(cm)",400,0.,40.);
+  fh2ProperLifetimeK0sVsPtBeforeCut = new TH2F("fh2ProperLifetimeK0sVsPtBeforeCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",150,0.,15.,250,0.,250.);
+  fh2ProperLifetimeK0sVsPtAfterCut = new TH2F("fh2ProperLifetimeK0sVsPtAfterCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",150,0.,15.,250,0.,250.);
+  fh1ProperLifetimeV0BeforeCut  = new TH1F("fh1ProperLifetimeV0BeforeCut", "V0s 2D distance over transerse mom.;(cm)",120,0.,120.);
+  fh1ProperLifetimeV0AfterCut   = new TH1F("fh1ProperLifetimeV0AfterCut", "V0s 2D distance over transverse mom.;(cm)",120,0.,120.);
+  fh1V0Radius                   = new TH1F("fh1V0Radius", "V0s Radius;Radius(cm)",200,0.,40.);
   fh1DcaV0Daughters             = new TH1F("fh1DcaV0Daughters", "DCA between daughters;dca(cm)",200,0.,2.);
-  fh1DcaPosToPrimVertex         = new TH1F("fh1DcaPosToPrimVertex", "Positive V0 daughter;dca(cm)",1000,0.,10.);
-  fh1DcaNegToPrimVertex         = new TH1F("fh1DcaNegToPrimVertex", "Negative V0 daughter;dca(cm)",1000,0.,10.);
-  fh2ArmenterosBeforeCuts       = new TH2F("fh2ArmenterosBeforeCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c})",200,-1.2,1.2,600,0.,0.35);
-  fh2ArmenterosAfterCuts        = new TH2F("fh2ArmenterosAfterCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c});",200,-1.2,1.2,600,0.,0.35);
-  fh2BB3SigProton               = new TH2F("fh2BB3SigProton","-dE/dX against Momentum for Protons @3sigma from TPC; P (GeV); -dE/dx (keV/cm ?)",1000,0.,10.,1000,0.,200.);
-  fh2BBLaPos                    = new TH2F("fh2BBLaPos","PID of the positive daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
-  fh2BBLaNeg                    = new TH2F("fh2BBLaNeg","PID of the negative daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",1000,0,10,1000,0,200);
-  fh1CrossedRowsOverFindableNeg = new TH1F("fh1CrossedRowsOverFindableNeg","pos daughter crossed rows over findable in TPC;counts",200,0.,2.);
-  fh1CrossedRowsOverFindablePos = new TH1F("fh1CrossedRowsOverFindablePos","neg daughter crossed rows over findable in TPC;counts",200,0.,2.);
+  fh1DcaPosToPrimVertex         = new TH1F("fh1DcaPosToPrimVertex", "Positive V0 daughter;dca(cm)",100,0.,10.);
+  fh1DcaNegToPrimVertex         = new TH1F("fh1DcaNegToPrimVertex", "Negative V0 daughter;dca(cm)",100,0.,10.);
+  fh2ArmenterosBeforeCuts       = new TH2F("fh2ArmenterosBeforeCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c})",200,-1.2,1.2,350,0.,0.35);
+  fh2ArmenterosAfterCuts        = new TH2F("fh2ArmenterosAfterCuts","Armenteros Podolanski Plot for K0s Candidates;#alpha;(p^{arm})_{T}/(GeV/#it{c});",200,-1.2,1.2,350,0.,0.35);
+  fh2BBLaPos                    = new TH2F("fh2BBLaPos","PID of the positive daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",100,0,10,200,0,200);
+  fh2BBLaNeg                    = new TH2F("fh2BBLaNeg","PID of the negative daughter of La candidates; P (GeV); -dE/dx (keV/cm ?)",100,0,10,200,0,200);
   fh1PosDaughterCharge          = new TH1F("fh1PosDaughterCharge","charge of V0 positive daughters; V0 daughters",3,-2.,2.);
   fh1NegDaughterCharge          = new TH1F("fh1NegDaughterCharge","charge of V0 negative daughters; V0 daughters",3,-2.,2.);
   fh1PtMCK0s                    = new TH1F("fh1PtMCK0s","Pt of MC rec K0s; #it{p}_{T} (GeV/#it{c})",200,0.,20.);
@@ -1366,37 +1356,20 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1EtaLa                      = new TH1F("fh1EtaLa","#Lambda entries ;#eta",200,-1.,1.);
   fh1EtaALa                     = new TH1F("fh1EtaALa","#bar{#Lambda} entries ;#eta",200,-1.,1.);
   fh3InvMassEtaTrackPtK0s       = new TH3F("fh3InvMassEtaTrackPtK0s","#eta; invMass (GeV/{#it{c}}^{2}); #it{p}_{T} (GeV/#it{c})", 200, -1., 1., 240, 0.4, 0.6, 140, 0., 14.);
-  fh3InvMassEtaTrackPtLa        = new TH3F("fh3InvMassEtaTrackPtLa", "#eta; invMass (GeV/{#it{c}}^{2}; #it{p}_{T} (GeV/#it{c}))",  200, -1., 1., 140, 1.06, 1.2, 140, 0., 14.);
-  fh3InvMassEtaTrackPtALa       = new TH3F("fh3InvMassEtaTrackPtALa","#eta; invMass (GeV/#it{c}^{2}); #it{p}_{T} (GeV/#it{c})",  200, -1., 1., 140, 1.06, 1.2, 140, 0., 14.);
-  fh3IMK0PerpCone               = new TH3F("fh3IMK0PerpCone","{K_{0}}^{s} content in perpendicular cone",39,5.,200., 400,0.3,0.7, 200,0.,20.);
-  fh3IMLaPerpCone               = new TH3F("fh3IMLaPerpCone","#Lambda content in perpendicular cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
-  fh3IMALaPerpCone              = new TH3F("fh3IMALaPerpCone","#Antilambda content in perpendicular cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
-  fh3IMK0MedianCone             = new TH3F("fh3IMK0MedianCone","{K_{0}}^{s} content in median cluster cone",39,5.,200., 400,0.3,0.7, 200,0.,20.);
-  fh3IMLaMedianCone             = new TH3F("fh3IMLaMedianCone","#Lambda content in median cluster cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
-  fh3IMALaMedianCone            = new TH3F("fh3IMALaMedianCone","#Antilambda content in median cluster cone",39,5.,200., 140,1.06,1.2, 200,0.,20.);
+  fh3InvMassEtaTrackPtLa        = new TH3F("fh3InvMassEtaTrackPtLa", "#eta; invMass (GeV/{#it{c}}^{2}; #it{p}_{T} (GeV/#it{c}))",  200, -1., 1., 140, 1.05, 1.25, 140, 0., 14.);
+  fh3InvMassEtaTrackPtALa       = new TH3F("fh3InvMassEtaTrackPtALa","#eta; invMass (GeV/#it{c}^{2}); #it{p}_{T} (GeV/#it{c})",  200, -1., 1., 140, 1.05, 1.25, 140, 0., 14.);
+  fh3IMK0PerpCone               = new TH3F("fh3IMK0PerpCone","{K_{0}}^{s} content in perpendicular cone",39,5.,200., 400,0.4,0.6, 200,0.,20.);
+  fh3IMLaPerpCone               = new TH3F("fh3IMLaPerpCone","#Lambda content in perpendicular cone",39,5.,200., 140,1.05,1.25, 200,0.,20.);
+  fh3IMALaPerpCone              = new TH3F("fh3IMALaPerpCone","#Antilambda content in perpendicular cone",39,5.,200., 140,1.05,1.25, 200,0.,20.);
+  fh3IMK0MedianCone             = new TH3F("fh3IMK0MedianCone","{K_{0}}^{s} content in median cluster cone",39,5.,200., 400,0.4,0.6, 200,0.,20.);
+  fh3IMLaMedianCone             = new TH3F("fh3IMLaMedianCone","#Lambda content in median cluster cone",39,5.,200., 140,1.05,1.25, 200,0.,20.);
+  fh3IMALaMedianCone            = new TH3F("fh3IMALaMedianCone","#Antilambda content in median cluster cone",39,5.,200., 140,1.05,1.25, 200,0.,20.);
+  fh1MedianEta                  = new TH1F("fh1MedianEta","Median cluster axis ;#eta",200,-1.,1.);
+  fh1JetPtMedian                = new TH1F("fh1JetPtMedian","Median cluster jet it{p}_{T} ;#GeV/it{c}",39,5.,200.);
 
-  fh1noAssociatedK0s            = new TH1F("fh1noAssociatedK0s","not selected as associated particle",12,0.,12.);
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(1,"K0s: accepted as associated particle");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(2,"K0s: v0 not K0s pdg code (310)");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(3,"K0s: v0 is not primary particle");
+  fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",200,0.,500.);
 
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(4,"K0s: pos daughter is pion");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(5,"K0s: neg daughter is pion");
-
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(6,"K0s: pos daughter particle is proton");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(7,"K0s: pos daughter particle is electron"); 
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(8,"K0s: pos daughter particle is myon");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(9,"K0s: neg daughter particle is proton");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(10,"K0s: neg daughter particle is electron");  
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(11,"K0s: neg daughter particle is myon");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(12,"K0s: pos daughter particle is something else");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(13,"K0s: neg daughter particle is something else");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(14,"K0s: pos daughter not pion pdg code (211)");
-  fh1noAssociatedK0s->GetXaxis()->SetBinLabel(15,"K0s: neg daughter not pion pdg code (211)");
-
-  fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",200,0.,1000.);
-
-  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",200,0.,1000.,39,5.,200.);
+  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",200,0.,200.,39,5.,200.);
 
   fFFHistosRecCuts   	    = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
@@ -1531,13 +1504,13 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1MCmotherALa->GetXaxis()->SetBinLabel(6,"#Xi^{-}");
   fh1MCmotherALa->GetXaxis()->SetBinLabel(7,"#Xi^{+}");
   fh1MCmotherALa->GetXaxis()->SetBinLabel(8,"primary particle");
-  fh3FeedDownLa                 = new TH3F("fh3FeedDownLa","#Lambda stemming from feeddown from Xi(0/-)", 39, 5., 200., 200, 1.05, 1.25, 200,0.,20.);
-  fh3FeedDownALa                = new TH3F("fh3FeedDownALa","#bar#Lambda stemming from feeddown from Xibar(0/+)", 39, 5., 200., 200, 1.05, 1.25, 200, 0., 20.);
-  fh3FeedDownLaCone             = new TH3F("fh3FeedDownLaCone","#Lambda stemming from feeddown from Xi(0/-) in jet cone", 39, 5., 200., 200, 1.05, 1.25, 200,0.,20.);
-  fh3FeedDownALaCone            = new TH3F("fh3FeedDownALaCone","#bar#Lambda stemming from feeddown from Xibar(0/+) in jet cone", 39, 5., 200., 200, 1.05, 1.25, 200, 0., 20.);
-  fh1MCProdRadiusK0s            = new TH1F("fh1MCProdRadiusK0s","MC gen. MC K0s prod radius",600,0.,200.);
-  fh1MCProdRadiusLambda         = new TH1F("fh1MCProdRadiusLambda","MC gen. MC La prod radius",600,0.,200.);
-  fh1MCProdRadiusAntiLambda     = new TH1F("fh1MCProdRadiusAntiLambda","MC gen. MC ALa prod radius",600,0.,200.);
+  fh3FeedDownLa                 = new TH3F("fh3FeedDownLa","#Lambda stemming from feeddown from Xi(0/-)", 19, 5., 100., 200, 1.05, 1.25, 200,0.,20.);
+  fh3FeedDownALa                = new TH3F("fh3FeedDownALa","#bar#Lambda stemming from feeddown from Xibar(0/+)", 19, 5., 100., 200, 1.05, 1.25, 200, 0., 20.);
+  fh3FeedDownLaCone             = new TH3F("fh3FeedDownLaCone","#Lambda stemming from feeddown from Xi(0/-) in jet cone", 19, 5., 100., 200, 1.05, 1.25, 200,0.,20.);
+  fh3FeedDownALaCone            = new TH3F("fh3FeedDownALaCone","#bar#Lambda stemming from feeddown from Xibar(0/+) in jet cone", 19, 5., 100., 200, 1.05, 1.25, 200, 0., 20.);
+  fh1MCProdRadiusK0s            = new TH1F("fh1MCProdRadiusK0s","MC gen. MC K0s prod radius",200,0.,200.);
+  fh1MCProdRadiusLambda         = new TH1F("fh1MCProdRadiusLambda","MC gen. MC La prod radius",200,0.,200.);
+  fh1MCProdRadiusAntiLambda     = new TH1F("fh1MCProdRadiusAntiLambda","MC gen. MC ALa prod radius",200,0.,200.);
 
   // Pt and inv mass distributions
 
@@ -1622,11 +1595,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1DcaNegToPrimVertex);    
     fCommonHistList->Add(fh2ArmenterosBeforeCuts);
     fCommonHistList->Add(fh2ArmenterosAfterCuts);
-    fCommonHistList->Add(fh2BB3SigProton);
     fCommonHistList->Add(fh2BBLaPos);
     fCommonHistList->Add(fh2BBLaNeg);
-    fCommonHistList->Add(fh1CrossedRowsOverFindableNeg);
-    fCommonHistList->Add(fh1CrossedRowsOverFindablePos);
     fCommonHistList->Add(fh1PosDaughterCharge);
     fCommonHistList->Add(fh1NegDaughterCharge);
     fCommonHistList->Add(fh1PtMCK0s);
@@ -1638,7 +1608,6 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh3InvMassEtaTrackPtK0s);
     fCommonHistList->Add(fh3InvMassEtaTrackPtLa);
     fCommonHistList->Add(fh3InvMassEtaTrackPtALa);
-    fCommonHistList->Add(fh1noAssociatedK0s); 
     fCommonHistList->Add(fh1TrackMultCone);
     fCommonHistList->Add(fh2TrackMultCone);
     fCommonHistList->Add(fh2MCgenK0Cone);
@@ -1664,6 +1633,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh3IMK0MedianCone);
     fCommonHistList->Add(fh3IMLaMedianCone);
     fCommonHistList->Add(fh3IMALaMedianCone);
+    fCommonHistList->Add(fh1MedianEta);
+    fCommonHistList->Add(fh1JetPtMedian);
     fCommonHistList->Add(fh1MCMultiplicityPrimary);       
     fCommonHistList->Add(fh1MCMultiplicityTracks);       
     fCommonHistList->Add(fh1MCmotherLa);
@@ -1691,6 +1662,8 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1MCEtaK0s);
     fCommonHistList->Add(fh1MCEtaLambda);
     fCommonHistList->Add(fh1MCEtaAntiLambda);         
+
+
 
     fV0QAK0->AddToOutput(fCommonHistList);
     fFFHistosRecCuts->AddToOutput(fCommonHistList);
@@ -1724,7 +1697,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
   }
   TH1::AddDirectory(oldStatus);
- 
+ PostData(1, fCommonHistList); 
 }
 
 //_______________________________________________
@@ -1741,6 +1714,14 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
   
+
+  //for AliPIDResponse:
+  //AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  //AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+
+  if (!fPIDResponse){if(fDebug > 1) Printf("AliAnalysisTaskJetChem::UserExec(): fPIDResponse does not exist!"); return;}
+
   //std::cout<<"inputHandler->IsEventSelected(): "<<inputHandler->IsEventSelected()<<std::endl;
   //std::cout<<"fEvtSelectionMask: "<<fEvtSelectionMask<<std::endl;
   
@@ -1993,9 +1974,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   Int_t nK0s = GetListOfV0s(fListK0s,fK0Type,kK0,myPrimaryVertex,fAOD);//all V0s in event with K0s assumption
   
+  if(fDebug>5){std::cout<<"fK0Type: "<<fK0Type<<" kK0: "<<kK0<<" myPrimaryVertex: "<<myPrimaryVertex<<" fAOD:  "<<fAOD<<std::endl;} 
+
   //std::cout<< "nK0s: "<<nK0s<<std::endl;
 
-  if(fDebug>2)Printf("%s:%d Selected Rec tracks after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
+  if(fDebug>2)Printf("%s:%d Selected V0s after cuts: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   if(nK0s != fListK0s->GetEntries()) Printf("%s:%d Mismatch selected K0s: %d %d",(char*)__FILE__,__LINE__,nK0s,fListK0s->GetEntries());
   fh1K0Mult->Fill(fListK0s->GetEntries());
 
@@ -2413,8 +2396,8 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
 	Bool_t incrementJetPt = (it==0) ? kTRUE : kFALSE;
 	
-	fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);
-	if(nK0s>0) fFFHistosRecCutsK0Evt->FillFF(trackPt, jetPt, incrementJetPt);
+	fFFHistosRecCuts->FillFF(trackPt, jetPt, incrementJetPt);//histo with tracks/jets after cut selection, for all events
+	if(nK0s>0) fFFHistosRecCutsK0Evt->FillFF(trackPt, jetPt, incrementJetPt);//only for K0s events
 	fh2FFJetTrackEta->Fill(trackEta,jetPt);
 
 
@@ -2423,7 +2406,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       njetTracks = jettracklist->GetSize();
 
       //____________________________________________________________________________________________________________________      
-      //alternative method to estimate secondary constribution in jet cone (second method you can see below in rec. K0s loop & rec. Lambdas loop & rec. Antilambdas loop)
+      //strangeness constribution to jet cone 
 
       if(fAnalysisMC){
 
@@ -2490,11 +2473,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	      if  (mfl == 3 && codeM != 3) isFromStrange = kTRUE;
 	    }
     
-	    //cut on primary particles:
-
-
-
-
 	    if(isFromStrange == kTRUE){
 
 	      Double_t trackPt = part->Pt();
@@ -2623,45 +2601,125 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       
       if(jetPerpConeK0list->GetSize() == 0){ // no K0s in jet cone 
 	
-	//Bool_t incrementPerpJetPt = kTRUE;
 	fh3IMK0PerpCone->Fill(jetPt, -1, -1);
       }
-   
-      // ____ rec K0s in median cluster___________________________________________________________________________________________________________ 
       
-      TList* jetMedianConeK0list = new TList();
-      
-      AliAODJet* medianCluster = GetMedianCluster();
-
-      Double_t sumMedianPtK0     = 0.;
-
-      Bool_t isBadJetK0Median    = kFALSE; // dummy, do not use
-     
-      GetTracksInCone(fListK0s, jetMedianConeK0list, medianCluster, GetFFRadius(), sumMedianPtK0, 0., 0., isBadJetK0Median); //reconstructed K0s in median cone around jet axis
-      //GetTracksInCone(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0); //original use of function
-      
-      //cut parameters from Fragmentation Function task:
-      //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-      //Float_t fFFMaxTrackPt;    // reject jetscontaining any track with pt larger than this value, use GetFFMaxTrackPt()
-      
-      for(Int_t it=0; it<jetMedianConeK0list->GetSize(); ++it){ // loop for K0s in median cone
+      if(ij==0){//median cluster only once for event
 	
-	AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeK0list->At(it));
-	if(!v0) continue;
+	// ____ rec K0s in median cluster___________________________________________________________________________________________________________ 
 	
-	Double_t invMMedianK0s =0;
-	Double_t trackPt=0;
+	TList* jetMedianConeK0list = new TList();
+	TList* jetMedianConeLalist = new TList();
+	TList* jetMedianConeALalist = new TList();
 	
-	CalculateInvMass(v0, kK0, invMMedianK0s, trackPt);  //function to calculate invMass with TLorentzVector class
+	AliAODJet* medianCluster = GetMedianCluster();
+	Double_t medianEta = medianCluster->Eta();
 	
-	fh3IMK0MedianCone->Fill(jetPt, invMMedianK0s, trackPt); //(x,y,z)
-      }
-      
-      if(jetMedianConeK0list->GetSize() == 0){ // no K0s in median cluster cone 
+	if(TMath::Abs(medianEta)<=fCutjetEta){
+	  
+	  fh1MedianEta->Fill(medianEta);
+	  fh1JetPtMedian->Fill(jetPt); //for normalisation by total number of median cluster jets
+	  
+	  Double_t sumMedianPtK0     = 0.;
+	  
+	  Bool_t isBadJetK0Median    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListK0s, jetMedianConeK0list, medianCluster, GetFFRadius(), sumMedianPtK0, 0., 0., isBadJetK0Median); //reconstructed K0s in median cone around jet axis
+	  //GetTracksInCone(fListK0s, jetConeK0list, jet, GetFFRadius(), sumPtK0, GetFFMinLTrackPt(), GetFFMaxTrackPt(), isBadJetK0); //original use of function
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jetscontaining any track with pt larger than this value, use GetFFMaxTrackPt()
+	  
+	  for(Int_t it=0; it<jetMedianConeK0list->GetSize(); ++it){ // loop for K0s in median cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeK0list->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMMedianK0s =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kK0, invMMedianK0s, trackPt);  //function to calculate invMass with TLorentzVector class	
+	    
+	    fh3IMK0MedianCone->Fill(jetPt, invMMedianK0s, trackPt); //(x,y,z)
+	    
+	  }
+	  
+	  if(jetMedianConeK0list->GetSize() == 0){ // no K0s in median cluster cone 
+	    
+	    fh3IMK0MedianCone->Fill(jetPt, -1, -1);
+	  }
+	  
+	  //__________________________________________________________________________________________________________________________________________
+	  // ____ rec Lambdas in median cluster___________________________________________________________________________________________________________ 
+	  
+	  Double_t sumMedianPtLa     = 0.;
+	  Bool_t isBadJetLaMedian    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListLa, jetMedianConeLalist, medianCluster, GetFFRadius(), sumMedianPtLa, 0, 0, isBadJetLaMedian); //reconstructed Lambdas in median cone around jet axis
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
+	  
+	  for(Int_t it=0; it<jetMedianConeLalist->GetSize(); ++it){ // loop for Lambdas in perpendicular cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeLalist->At(it));
+	    if(!v0) continue;
+	  
+	    Double_t invMMedianLa =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kLambda, invMMedianLa, trackPt);  //function to calculate invMass with TLorentzVector class
+	    
+	    fh3IMLaMedianCone->Fill(jetPt, invMMedianLa, trackPt); //(x,y,z)
+	  }
+	  
+	  if(jetMedianConeLalist->GetSize() == 0){ // no Lambdas in median cluster cone 
+	    
+	    fh3IMLaMedianCone->Fill(jetPt, -1, -1);
+	  }
+	  
 	
-	fh3IMK0MedianCone->Fill(jetPt, -1, -1);
-      }
-      
+	  // ____ rec Antilambdas in median cluster___________________________________________________________________________________________________________ 
+	
+	  
+	  Double_t sumMedianPtALa     = 0.;
+	  
+	  Bool_t isBadJetALaMedian    = kFALSE; // dummy, do not use
+	  
+	  GetTracksInCone(fListALa, jetMedianConeALalist, medianCluster, GetFFRadius(), sumMedianPtALa, 0, 0, isBadJetALaMedian); //reconstructed Antilambdas in median cone around jet axis
+	  
+	  
+	  //cut parameters from Fragmentation Function task:
+	  //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
+	  //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
+	
+	  for(Int_t it=0; it<jetMedianConeALalist->GetSize(); ++it){ // loop for Antilambdas in median cluster cone
+	    
+	    AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeALalist->At(it));
+	    if(!v0) continue;
+	    
+	    Double_t invMMedianALa =0;
+	    Double_t trackPt=0;
+	    
+	    CalculateInvMass(v0, kAntiLambda, invMMedianALa, trackPt);  //function to calculate invMass with TLorentzVector class
+	    
+	    fh3IMALaMedianCone->Fill(jetPt, invMMedianALa, trackPt); //(x,y,z)
+	  }
+	  
+	  if(jetMedianConeALalist->GetSize() == 0){ // no Antilambdas in median cluster cone 
+	    
+	    fh3IMALaMedianCone->Fill(jetPt, -1, -1);
+	  }
+	}//median cluster eta cut 
+	
+	delete jetMedianConeK0list;
+	delete jetMedianConeLalist;
+	delete jetMedianConeALalist;
+	
+	
+      }//end ij == 0
       //_________________________________________________________________________________________________________________________________________
       
       //____fetch reconstructed Lambdas in cone perpendicular to jet axis:__________________________________________________________________________
@@ -2694,42 +2752,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
       }
       
-      //__________________________________________________________________________________________________________________________________________
-          // ____ rec Lambdas in median cluster___________________________________________________________________________________________________________ 
-      
-      TList* jetMedianConeLalist = new TList();
-      
-      //AliAODJet* medianCluster = GetMedianCluster(); //already loaded at part for K0s ??
-
-      Double_t sumMedianPtLa     = 0.;
-      Bool_t isBadJetLaMedian    = kFALSE; // dummy, do not use
-     
-      GetTracksInCone(fListLa, jetMedianConeLalist, medianCluster, GetFFRadius(), sumMedianPtLa, 0, 0, isBadJetLaMedian); //reconstructed Lambdas in median cone around jet axis
-     
-         //cut parameters from Fragmentation Function task:
-      //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-      //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
-      
-      for(Int_t it=0; it<jetMedianConeLalist->GetSize(); ++it){ // loop for Lambdas in perpendicular cone
-	
-	AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeLalist->At(it));
-	if(!v0) continue;
-	
-	Double_t invMMedianLa =0;
-	Double_t trackPt=0;
-	
-	CalculateInvMass(v0, kLambda, invMMedianLa, trackPt);  //function to calculate invMass with TLorentzVector class
-	
-	fh3IMLaMedianCone->Fill(jetPt, invMMedianLa, trackPt); //(x,y,z)
-      }
-      
-      if(jetMedianConeLalist->GetSize() == 0){ // no Lambdas in median cluster cone 
-	
-	fh3IMLaMedianCone->Fill(jetPt, -1, -1);
-      }
-      
-      //_________________________________________________________________________________________________________________________________________
-      
       
       //____fetch reconstructed Antilambdas in cone perpendicular to jet axis:___________________________________________________________________
       
@@ -2761,47 +2783,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	fh3IMALaPerpCone->Fill(jetPt, -1, -1);
 	
       }
-      
-
-          // ____ rec Antilambdas in median cluster___________________________________________________________________________________________________________ 
-      
-      TList* jetMedianConeALalist = new TList();
-      
-      //AliAODJet* medianCluster = GetMedianCluster(); //already loaded at part for K0s
-
-      Double_t sumMedianPtALa     = 0.;
-      
-      Bool_t isBadJetALaMedian    = kFALSE; // dummy, do not use
-     
-      GetTracksInCone(fListALa, jetMedianConeALalist, medianCluster, GetFFRadius(), sumMedianPtALa, 0, 0, isBadJetALaMedian); //reconstructed Antilambdas in median cone around jet axis
-     
-         
-      //cut parameters from Fragmentation Function task:
-      //Float_t fFFMinLTrackPt;   // reject jets with leading track with pt smaller than this value, use GetFFMinLTrackPt()
-      //Float_t fFFMaxTrackPt;    // reject jets containing any track with pt larger than this value, use GetFFMaxTrackPt()
-      
-      for(Int_t it=0; it<jetMedianConeALalist->GetSize(); ++it){ // loop for Antilambdas in median cluster cone
-	
-	AliAODv0* v0 = dynamic_cast<AliAODv0*>(jetMedianConeALalist->At(it));
-	if(!v0) continue;
-	
-	Double_t invMMedianALa =0;
-	Double_t trackPt=0;
-	
-	CalculateInvMass(v0, kAntiLambda, invMMedianALa, trackPt);  //function to calculate invMass with TLorentzVector class
-	
-	fh3IMALaMedianCone->Fill(jetPt, invMMedianALa, trackPt); //(x,y,z)
-      }
-      
-      if(jetMedianConeALalist->GetSize() == 0){ // no Antilambdas in median cluster cone 
-	
-	fh3IMALaMedianCone->Fill(jetPt, -1, -1);
-      }
-      
-      //_________________________________________________________________________________________________________________________________________
-      
-
-
+   
       //MC Analysis 
       //__________________________________________________________________________________________________________________________________________
       
@@ -3135,8 +3117,6 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 	
 	//________________________________________________________________________________________________________________________________________________________
 	  
-
-
 	delete fListMCgenK0sCone;
 	
 	
@@ -3146,9 +3126,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       delete jetPerpConeK0list;
       delete jetPerpConeLalist;
       delete jetPerpConeALalist;
-      delete jetMedianConeK0list;
-      delete jetMedianConeLalist;
-      delete jetMedianConeALalist;
+ 
 
       //---------------La--------------------------------------------------------------------------------------------------------------------------------------------
       
@@ -3759,6 +3737,12 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
     return -1;
   }
   
+  
+  if(fDebug>5){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): type: "<<type<<" particletype: "<<particletype<<"aod: "<<aod<<std::endl;
+    if(type==kTrackUndef){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): kTrackUndef!! "<<std::endl;}
+  }
+  
+  
   if(type==kTrackUndef) return 0;
 
   if(!primVertex) return 0;
@@ -3768,6 +3752,9 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
   lPrimaryVtxPosition[0] = primVertex->GetX();
   lPrimaryVtxPosition[1] = primVertex->GetY();
   lPrimaryVtxPosition[2] = primVertex->GetZ();
+
+  if(fDebug>5){ std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s(): aod->GetNumberOfV0s: "<<aod->GetNumberOfV0s()<<std::endl; }
+
 
   for(int i=0; i<aod->GetNumberOfV0s(); i++){ // loop over V0s
     
@@ -3836,7 +3823,10 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
 
     /////////////////////////////////////////////////////////////
     //V0 and track Cuts:
-    
+   
+
+    if(fDebug>6){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
+ 
     if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
     
     //  Double_t PosEta = trackPos->AliAODTrack::Eta();//daughter track charge is sometimes wrong here, account for that!!!
@@ -4498,6 +4488,8 @@ void AliAnalysisTaskJetChem::GetTracksInCone(TList* inputlist, TList* outputlist
   jet->PxPyPz(jetMom);
   TVector3 jet3mom(jetMom);
 
+  //if(jetets < jetetscutr)continue;
+
   for (Int_t itrack=0; itrack<inputlist->GetSize(); itrack++){
 
     AliVParticle* track = dynamic_cast<AliVParticle*>(inputlist->At(itrack));
@@ -4744,7 +4736,7 @@ Bool_t AliAnalysisTaskJetChem::MCLabelCheck(AliAODv0* v0, Int_t particletype,con
 	       if(TMath::Abs(posDaughterpdg) != 211){return kFALSE;}//one or both of the daughters are not a pion
 	       if(TMath::Abs(negDaughterpdg) != 211){return kFALSE;}
 	       
-	       if(MCv0PDGCode != 310)  {fh1noAssociatedK0s->Fill(1.);return kFALSE;}
+	       if(MCv0PDGCode != 310)  {return kFALSE;}
 	     }
 	     
 	     if(particletype == kLambda){
