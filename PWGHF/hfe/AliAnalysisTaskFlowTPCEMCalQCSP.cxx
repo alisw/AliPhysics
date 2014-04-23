@@ -1304,7 +1304,7 @@ void AliAnalysisTaskFlowTPCEMCalQCSP::CheckCentrality(AliAODEvent* event, Bool_t
     }//...after centrality selectrion
     //============================================================================================================================
     if(fMultCut){
-        if(fTrigger==1 || fTrigger==4){
+        if(fTrigger==1 || fTrigger==4 || fTrigger==5){
             if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
                 //   cout <<" Trigger ==" <<fTrigger<< endl;
                 centralitypass = kFALSE;
