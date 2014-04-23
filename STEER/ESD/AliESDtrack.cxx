@@ -2968,7 +2968,8 @@ Double_t AliESDtrack::GetMassForTracking() const
   return (fPIDForTracking==AliPID::kHe3 || fPIDForTracking==AliPID::kAlpha) ? -m : m;
 }
 
-void    AliESDtrack::SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster){
+
+void    AliESDtrack::SetTOFclusterArray(Int_t /*ncluster*/,Int_t */*TOFcluster*/){
   AliInfo("Method has to be implemented!");
 //   fNtofClusters=ncluster;
 //   if(TOFcluster == fTOFcluster) return;

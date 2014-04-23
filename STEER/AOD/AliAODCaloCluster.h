@@ -56,6 +56,9 @@ class AliAODCaloCluster : public AliAODCluster {
   Double_t GetTrackDz(void)const {return fTrackDz;}
   UChar_t  GetNExMax() const { return fNExMax; }
   Double_t GetTOF() const { return fTOF; }
+  Double_t GetCoreEnergy() const           {return fCoreEnergy ; }
+ 
+ 
 
   Int_t    GetNTracksMatched() const { return fTracksMatched.GetEntriesFast(); }
   TObject *GetTrackMatched(Int_t i) const { return fTracksMatched.At(i); }
@@ -87,6 +90,7 @@ class AliAODCaloCluster : public AliAODCluster {
   void SetNExMax(UChar_t nExMax) { fNExMax = nExMax; }
   void SetTOF(Double_t tof) { fTOF = tof; }
   void SetTrackDistance(Double_t dx, Double_t dz){fTrackDx=dx; fTrackDz=dz;}
+  void SetCoreEnergy(Double_t e)         { fCoreEnergy=e; }
 
   void SetCaloCluster(Double_t dist = -999., 
 		      Double_t disp = -1., 
@@ -126,6 +130,7 @@ class AliAODCaloCluster : public AliAODCluster {
   Double32_t   fTrackDz ;         // Distance to closest track in z (eta)
   UShort_t     fNExMax;           // number of (Ex-)maxima before unfolding
   Double32_t   fTOF;              ////[0,0,12] time-of-flight
+  Double32_t   fCoreEnergy;       // energy of the core of cluster
 
   TRefArray    fTracksMatched;    // references to tracks close to cluster. First entry is the most likely match.
 
@@ -133,7 +138,7 @@ class AliAODCaloCluster : public AliAODCluster {
   UShort_t   *fCellsAbsId;        //[fNCells] array of cell absId numbers
   Double32_t *fCellsAmpFraction;  //[fNCells][0.,1.,16] array with cell amplitudes fraction.
 
-  ClassDef(AliAODCaloCluster,7);
+  ClassDef(AliAODCaloCluster,8);
 };
 
 #endif

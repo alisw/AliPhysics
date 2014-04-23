@@ -37,6 +37,7 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fTrackDz(-999),
   fNExMax(0), 
   fTOF(0.),
+  fCoreEnergy(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(0x0),
@@ -65,6 +66,7 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fTrackDz(-999),
   fNExMax(0),
   fTOF(0.),
+  fCoreEnergy(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(0x0),
@@ -93,6 +95,7 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fTrackDz(-999),
   fNExMax(0),
   fTOF(0.),
+  fCoreEnergy(0.),
   fTracksMatched(),
   fNCells(0),
   fCellsAbsId(0x0),
@@ -131,6 +134,7 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fTrackDz(clus.fTrackDz),
   fNExMax(clus.fNExMax),
   fTOF(clus.fTOF),
+  fCoreEnergy(clus.fCoreEnergy),
   fTracksMatched(clus.fTracksMatched),
   fNCells(clus.fNCells),
   fCellsAbsId(0x0),
@@ -173,6 +177,7 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fTrackDz=clus.fTrackDz;
     fNExMax = clus.fNExMax;
     fTOF = clus.fTOF;
+    fCoreEnergy = clus.fCoreEnergy;
     fTracksMatched = clus.fTracksMatched;
 
     fNCells= clus. fNCells;

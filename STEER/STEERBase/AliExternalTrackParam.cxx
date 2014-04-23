@@ -916,6 +916,45 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   return kTRUE;
 }
 
+//______________________________________________________
+Bool_t AliExternalTrackParam::RotateParamOnly(Double_t alpha)
+{
+  // rotate to new frame, ignore covariance
+  if (TMath::Abs(fP[2]) >= kAlmost1) {
+    AliError(Form("Precondition is not satisfied: |sin(phi)|>1 ! %f",fP[2])); 
+    return kFALSE;
+  }
+  //
+  if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+  else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+  //
+  Double_t &fP0=fP[0];
+  Double_t &fP2=fP[2];
+  //
+  Double_t x=fX;
+  Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
+  Double_t sf=fP2, cf=TMath::Sqrt((1.- fP2)*(1.+fP2)); // Improve precision
+  // RS: check if rotation does no invalidate track model (cos(local_phi)>=0, i.e. particle
+  // direction in local frame is along the X axis
+  if ((cf*ca+sf*sa)<0) {
+    AliDebug(1,Form("Rotation failed: local cos(phi) would become %.2f",cf*ca+sf*sa));
+    return kFALSE;
+  }
+  //
+  Double_t tmp=sf*ca - cf*sa;
+
+  if (TMath::Abs(tmp) >= kAlmost1) {
+     if (TMath::Abs(tmp) > 1.+ Double_t(FLT_EPSILON))  
+        AliWarning(Form("Rotation failed ! %.10e",tmp));
+     return kFALSE;
+  }
+  fAlpha = alpha;
+  fX =  x*ca + fP0*sa;
+  fP0= -x*sa + fP0*ca;
+  fP2=  tmp;
+  return kTRUE;
+}
+
 Bool_t AliExternalTrackParam::Invert() {
   //------------------------------------------------------------------
   // Transform this track to the local coord. system rotated by 180 deg. 

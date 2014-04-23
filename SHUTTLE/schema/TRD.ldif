@@ -12,7 +12,6 @@ objectClass: detectorConfig
 det: TRD
 strictRunOrder: 0
 responsible: r.bailhache@gsi.de
-responsible: kramer@pcikf3.ikf.physik.uni-frankfurt.de
 responsible: hbeck@ikf.uni-frankfurt.de
 
 dn: dcsHost=aldcsamanda.cern.ch,det=TRD,o=shuttle,dc=cern,dc=ch

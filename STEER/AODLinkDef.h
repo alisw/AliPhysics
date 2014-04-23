@@ -31,7 +31,7 @@
 
 #pragma read sourceClass="AliAODTrack" targetClass="AliAODTrack" source="Double32_t fPID[10]"  version="[-22]" \
  target="fPID" targetType="Double32_t*" \
-   code="{fPID = new Double32_t[10];for(Int_t isp=10;isp--;) fPID[isp]=onfile.fPID[isp];}"
+  code="{if (!fPID) fPID = new Double32_t[10];for(Int_t isp=10;isp--;) fPID[isp]=onfile.fPID[isp];}"
 
 #pragma link C++ class AliAODTrack+;
 

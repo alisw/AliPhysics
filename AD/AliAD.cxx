@@ -263,7 +263,7 @@ void AliAD::Digits2Raw()
 
 //_____________________________________________________________________________
 
-Bool_t AliAD::Raw2SDigits(AliRawReader* rawReader)
+Bool_t AliAD::Raw2SDigits(AliRawReader* /*rawReader*/)
 {
 	// reads raw data to produce digits
 	// for AD not implemented yet (needs detailed hardware info)

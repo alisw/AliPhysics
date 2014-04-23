@@ -225,8 +225,8 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   
   Double_t fXPointOfClosestApproach=0, fYPointOfClosestApproach=0, fZPointOfClosestApproach=0;
   
-  AliAODTrack *muon[nMuons];
-  AliMUONTrackParam *param[nMuons];
+  AliAODTrack *muon[AliMFTConstants::fNMaxMuonsForPCA]        = {0};
+  AliMUONTrackParam *param[AliMFTConstants::fNMaxMuonsForPCA] = {0};
 
   // Finding AliMUONTrackParam objects for each muon
   
@@ -249,7 +249,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
 
   Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
   
-  TVector3 **points = new TVector3*[nMuons];
+  TVector3 **points = new TVector3*[AliMFTConstants::fNMaxMuonsForPCA];
   
   for (Int_t i=0; i<3; i++) {
     for (Int_t iMu=0; iMu<nMuons; iMu++) {
@@ -285,8 +285,6 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
       return kFALSE;
     }
     
-    for (Int_t iMu=0; iMu<nMuons; iMu++) delete points[iMu];
-    
     for (Int_t i=0; i<3; i++) {
       for (Int_t iMu=0; iMu<nMuons; iMu++) {
         AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
@@ -300,7 +298,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
 
   }
 
-  // now we now that the minimum is between z[0] and z[2] and we search for it
+  // now we know that the minimum is between z[0] and z[2] and we search for it
   
   step *= 0.5;
   while (step>AliMFTConstants::fPrecisionPointOfClosestApproach) {
@@ -318,6 +316,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     else step *= 0.5;
   }
   
+  //  for (Int_t iMuon=0; iMuon<AliMFTConstants::fNMaxMuonsForPCA; iMuon++) if (points[iMuon]) delete points[iMuon];
   delete [] points;
 
   // Once z of minimum is found, we evaluate the x and y coordinates by averaging over the contributing tracks
@@ -362,6 +361,9 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   }
   if (sum > 0.) pcaQuality =  (sum-squareSum/sum) / (nMuons-1);
   else pcaQuality = 0.;
+
+  for (Int_t iMu=0; iMu<AliMFTConstants::fNMaxMuonsForPCA; iMu++) if (param[iMu]) delete param[iMu];
+  //  delete param;
 
   return kTRUE;
   

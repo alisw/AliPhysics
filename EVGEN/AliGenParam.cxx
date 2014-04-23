@@ -225,11 +225,6 @@ void AliGenParam::RotateVector(Double_t *pin, Double_t *pout, Double_t costheta,
   return;
 }
 
-Double_t AliGenParam::IntegratedKrollWada(Double_t mh){
-  if(mh<0.003) return 0;
-  return 2*log(mh/0.000511/exp(7.0/4.0))/411.0/TMath::Pi();
-}
-
 double AliGenParam::ScreenFunction1(double screenVariable){
   if(screenVariable>1)
     return 42.24 - 8.368 * log(screenVariable + 0.952);
@@ -321,8 +316,8 @@ Double_t AliGenParam::RandomMass(Double_t mh){
   while(true){
     double y=fRandom->Rndm();
     double mee=2*0.000511*TMath::Power(2*0.000511/mh,-y); //inverse of the enveloping cumulative distribution
-    double apxkw=2.0/3.0/137.036/TMath::Pi()/mee;
-    double val=fRandom->Uniform(0,apxkw);  //enveloping probability density0
+    double apxkw=2.0/3.0/137.036/TMath::Pi()/mee; //enveloping probability density
+    double val=fRandom->Uniform(0,apxkw);
     double kw=apxkw*sqrt(1-4*0.000511*0.000511/mee/mee)*(1+2*0.000511*0.000511/mee/mee)*1*1*TMath::Power(1-mee*mee/mh/mh,3);
     if(val<kw)
       return mee;
@@ -334,8 +329,8 @@ Int_t AliGenParam::VirtualGammaPairProduction(TClonesArray *particles, Int_t nPa
   Int_t nPartNew=nPart;
   for(int iPart=0; iPart<nPart; iPart++){      
     TParticle *gamma = (TParticle *) particles->At(iPart);
-    if(gamma->GetPdgCode()!=223000 || gamma->GetPdgCode()!=224000) continue;
-    //if(gamma->Energy()<0.001022) continue; //can never be
+    if(gamma->GetPdgCode()!=220000) continue;
+    if(gamma->Pt()<0.002941) continue;  //approximation of kw in AliGenEMlib is 0 below 0.002941
     double mass=RandomMass(gamma->Pt());
 
     // lepton pair kinematics in virtual photon rest frame 
@@ -378,6 +373,7 @@ Int_t AliGenParam::VirtualGammaPairProduction(TClonesArray *particles, Int_t nPa
     new((*particles)[nPartNew]) TParticle(-11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, e2V4, vtx);
     nPartNew++;
   }
+  return nPartNew;
 }
 
 Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
@@ -390,7 +386,6 @@ Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
     TParticle *gamma = (TParticle *) particles->At(iPart);
     if(gamma->GetPdgCode()!=22) continue;
     if(gamma->Energy()<0.001022) continue;
-
     TVector3 gammaV3(gamma->Px(),gamma->Py(),gamma->Pz());
     double frac=RandomEnergyFraction(1,gamma->Energy());
     double Ee1=frac*gamma->Energy();
@@ -424,8 +419,7 @@ Int_t AliGenParam::ForceGammaConversion(TClonesArray *particles, Int_t nPart)
     new((*particles)[nPartNew]) TParticle(-11, gamma->GetStatusCode(), iPart+1, -1, 0, 0, TLorentzVector(e2V3,Ee2), vtx);
     nPartNew++;
   }
-  // particles->Compress();
-  return particles->GetEntriesFast();
+  return nPartNew;
 }
 
 //____________________________________________________________
@@ -579,7 +573,7 @@ void AliGenParam::GenerateN(Int_t ntimes)
       Int_t iTemp = iPart;
 
       // custom pdg codes for to destinguish direct photons
-      if((iPart>=221000) && (iPart<=229000)) iPart=22;
+      if(iPart==220000) iPart=22;
 
 	  fChildWeight=(fDecayer->GetPartialBranchingRatio(iPart))*fParentWeight;	   
 	  TParticlePDG *particle = pDataBase->GetParticle(iPart);
@@ -664,13 +658,12 @@ void AliGenParam::GenerateN(Int_t ntimes)
 	      Int_t np=fDecayer->ImportParticles(particles);
 
 	iPart=iTemp;
-	if(fForceConv) np=ForceGammaConversion(particles,np);
-	if(iPart==223000 || iPart==224000){
-	  // wgtp*=IntegratedKrollWada(pt);
-	  // wgtch*=IntegratedKrollWada(pt);
-	  // np=VirtualGammaPairProduction(particles,np)
+	if(iPart==220000){
+	  TParticle *gamma = (TParticle *)particles->At(0);
+	  gamma->SetPdgCode(iPart);
+	  np=VirtualGammaPairProduction(particles,np);
 	}
-
+	if(fForceConv) np=ForceGammaConversion(particles,np);
 
 	      //  Selecting  GeometryAcceptance for particles fPdgCodeParticleforAcceptanceCut;
 	      if (fGeometryAcceptance) 

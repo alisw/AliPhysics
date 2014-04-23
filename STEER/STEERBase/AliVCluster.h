@@ -122,6 +122,9 @@ class AliVCluster : public TObject
   virtual Double_t    GetMCEnergyFraction() const           {return 0 ; }
   virtual void        SetMCEnergyFraction(Double_t)         { ; }
   
+  virtual Double_t    GetCoreEnergy() const           {return 0 ; }
+  virtual void        SetCoreEnergy(Double_t)         { ; }
+
   virtual void GetMomentum(TLorentzVector &/*tl*/, Double_t * /*v*/) { ; }
   
   ClassDef(AliVCluster,0)  //VCluster 

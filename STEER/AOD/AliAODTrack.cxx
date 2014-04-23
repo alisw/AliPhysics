@@ -218,7 +218,7 @@ AliAODTrack::~AliAODTrack()
   delete fCovMatrix;
   delete fDetPid;
   delete fDetectorPID;
-  delete[] fPID;
+  if (fPID) {delete[] fPID; fPID = 0;}
 }
 
 
