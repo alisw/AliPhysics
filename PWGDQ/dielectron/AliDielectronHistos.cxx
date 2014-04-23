@@ -1138,10 +1138,13 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
     obj->SetUniqueID(valType[3]); // Tprofile3D variable
   case 3:
     obj->GetZaxis()->SetUniqueID(valType[2]);
+    obj->GetZaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[2])));
   case 2:
     obj->GetYaxis()->SetUniqueID(valType[1]);
+    obj->GetYaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[1])));
   case 1:
     obj->GetXaxis()->SetUniqueID(valType[0]);
+    obj->GetXaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[0])));
   }
 
   return;
