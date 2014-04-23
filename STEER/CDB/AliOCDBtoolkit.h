@@ -35,6 +35,9 @@ public:
   static void DumpObjectRecursive(TObject *obj, TString prefix, Int_t &counterRec);
   static void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml);
   //
+  // addopt OCDB entry
+  //
+  static Bool_t AddoptOCDBEntry( const char *finput, const char *output,  Int_t ustartRun, Int_t uendRun);
 private:
   AliOCDBtoolkit(const AliOCDBtoolkit& source);
   AliOCDBtoolkit& operator= (const AliOCDBtoolkit& rec);

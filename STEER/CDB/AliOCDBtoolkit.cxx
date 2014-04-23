@@ -94,7 +94,7 @@ using namespace std;
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliOCDBtoolkit.h"
-
+#include "AliCDBStorage.h"
 
 
 void AliOCDBtoolkit::MakeDiffExampleUseCase(){
@@ -279,7 +279,7 @@ void AliOCDBtoolkit::LoadOCDBFromLog(const char *logName, Int_t verbose){
   Int_t entries = array->GetEntries();
   for (Int_t i=1; i<entries-2; i+=4){    
     // add protection here line shuld be in expected format
-    if (verbose&2>0) printf("%s\t%s\n",array->At(i)->GetName(),array->At(i+2)->GetName());    
+    if ((verbose&2)>0) printf("%s\t%s\n",array->At(i)->GetName(),array->At(i+2)->GetName());    
     man->SetSpecificStorage(array->At(i)->GetName(),array->At(i+2)->GetName());
   }
   delete array;
@@ -314,11 +314,11 @@ void AliOCDBtoolkit::LoadOCDBFromLog(const char *logName, Int_t verbose){
       printf("%s/Run%d_%d_v%d_s%d.root\n",ocdbPath.Data(),run0,run1,version,subVersion); 
     }
     try {
-      AliCDBEntry*entry= man->Get(ocdbPath.Data(),runRange,version,subVersion);
+      man->Get(ocdbPath.Data(),runRange,version,subVersion);      
     } catch(const exception &e){
       cerr << "OCDB retrieval failed!" << endl;
       cerr << "Detailes: " << e.what() << endl;
-    }
+    }    
   }  
   if ((verbose&1)!=0){
     man->Print();
@@ -337,7 +337,7 @@ void AliOCDBtoolkit::LoadOCDBFromMap(const TMap */*cdbMap*/, const TList */*cdbL
 
 
 
-void AliOCDBtoolkit::MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose){
+void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
   //
   //
   // Print difference between the 2 ocdb maps
@@ -364,7 +364,7 @@ void AliOCDBtoolkit::MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const 
       id0->Print();
       continue;
     }
-    Bool_t isOK=kTRUE;
+    //   Bool_t isOK=kTRUE;
     if (id0->GetFirstRun()!= id1->GetFirstRun() ||id0->GetLastRun()!= id1->GetLastRun()){
       printf("Differrent run range\n");
       id0->Print();
@@ -664,4 +664,38 @@ void DumpTObjectArray(){
   while ((arObject = (TObject*)myiter.Next())) {
     AliOCDBtoolkit::DumpObjectRecursive(arObject);
   } 
+}
+
+
+Bool_t AliOCDBtoolkit::AddoptOCDBEntry( const char *finput, const char *output,  Int_t ustartRun, Int_t uendRun){
+  //
+  // Addopt OCDB entry - keeping all of the CDBentry quantities
+  // finput = "/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual/TPC/Calib/ClusterParam/Run127712_130850_v4_s0.root"
+  
+  TFile * fin = TFile::Open(finput);
+  if (!fin) return kFALSE;
+  AliCDBEntry * entry = (AliCDBEntry*) fin->Get("AliCDBEntry");
+  if (!entry) return kFALSE;
+  
+  AliCDBStorage* pocdbStorage = 0;
+  if (output!=0) AliCDBManager::Instance()->GetStorage(output);
+  else{
+    TString localStorage = "local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+    pocdbStorage = AliCDBManager::Instance()->GetStorage(localStorage.Data());
+  }
+  //
+  AliCDBId  idIn = entry->GetId();
+  AliCDBMetaData *metaDataIn = entry->GetMetaData();
+
+  AliCDBMetaData *metaData= new AliCDBMetaData();
+  metaData->SetObjectClassName(metaDataIn->GetObjectClassName());
+  metaData->SetResponsible(TString::Format("%s: copy",metaDataIn->GetResponsible()).Data());
+  metaData->SetBeamPeriod(metaDataIn->GetBeamPeriod());
+  //
+  metaData->SetAliRootVersion(metaDataIn->GetAliRootVersion()); //root version
+  metaData->SetComment((TString::Format("%s: copy",metaDataIn->GetComment()).Data()));
+  AliCDBId* id1=NULL;
+  id1=new AliCDBId(idIn.GetPath(), ustartRun, uendRun);
+  pocdbStorage->Put(entry->GetObject(), (*id1), metaData);
+  return kTRUE;
 }
