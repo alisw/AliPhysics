@@ -137,6 +137,41 @@ diffObject(){
     return 1
 }
 
+dumpOCDBDiffTable(){
+#
+# Dump  differences between the OCDB tables -comparison based on the hash values of OCDB entries
+# Input:
+#   $1  - list 1
+#   $2  - list 2
+# Output:
+#   difference is stdout
+
+    list1=$1
+    list2=$2
+    shift 2
+    cdbName=$(cut -f1 $list1)
+    for i in $cdbName ; do
+        line1="$(grep $i $list1)"
+        line2="$(grep $i $list2)"
+        if [ -z "${line2}" ] ; then
+            echo $i not found in $list2!
+            continue
+        fi
+        match1=$(echo $line1 | cut -d' ' -f 5)
+        match2=$(echo $line2 | cut -d' ' -f 5)
+        if [ "$match1" -ne "$match2" ] ; then
+            echo $i doesnt match:
+            echo $(echo $line1| awk '{print $2 "/" $3}') \#hash: $match1
+            echo $(echo $line2| awk '{print $2 "/" $3}') \#hash: $match2
+            echo 
+        fi
+    done
+}
+
+
+
+
+
 #
 # Example usage+ developer test routines. 
 #
