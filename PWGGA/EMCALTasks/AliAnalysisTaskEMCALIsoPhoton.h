@@ -100,6 +100,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   ULong_t                fFilterBit;             // Track selection bit, for AODs 
   Bool_t                 fSelHybrid;             // bool to select hybrid tracks
   Bool_t                 fFillQA;                // bool to fill the QA plots
+  TString                fClusIdFromTracks;      // string to hold the list of cluster ids given by tracks
 
 
   
@@ -143,6 +144,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcNClusCut;      //!# of clusters in an event with at least 1 clus with E > fECut ("triggered event")
   TH1F        *fNTracksECut;      //!number of tracks from Array->GetEntries() in "triggered event"
   TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
+  TH1F        *fEmcClusETM1;      //!emcal track matched cluster energy (TracDx,z method)
+  TH1F        *fEmcClusETM2;      //!emcal track matched cluster energy (track->GetEMCALcluster() method)
   TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
   TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
   TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
