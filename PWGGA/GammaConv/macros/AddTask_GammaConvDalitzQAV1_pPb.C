@@ -331,6 +331,10 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 } else if ( trainConfig  == 33  ) {
   
 	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm 
+	
+} else if ( trainConfig  == 34  ) {
+  
+	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
 }
 
 
