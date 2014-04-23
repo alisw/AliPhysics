@@ -1109,7 +1109,14 @@ Bool_t AliConversionCuts::PhotonCuts(AliConversionPhotonBase *photon,AliVEvent *
    cutIndex++; //11
 
    if (photonAOD){
-		if (fDoPhotonQualitySelectionCut && photonAOD->GetPhotonQuality() != fPhotonQualityCut){
+	   UChar_t photonQuality = 0;
+	    AliAODEvent * aodEvent = dynamic_cast<AliAODEvent*>(event);
+		if(aodEvent) {
+			photonQuality = DeterminePhotonQualityAOD(photonAOD, event);
+		} else {
+			photonQuality = photonAOD->GetPhotonQuality();
+		}	
+		if (fDoPhotonQualitySelectionCut && photonQuality != fPhotonQualityCut){
 			if(hPhotonCuts)hPhotonCuts->Fill(cutIndex); //11
 			return kFALSE;
 		}	
@@ -1728,6 +1735,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
      return;
   }
   if (fNameHistoReweightingPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
+	 cout << "I have to find: " <<  fNameHistoReweightingPi0.Data() << endl;
      TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
      hReweightMCHistPi0->SetDirectory(0);
@@ -1735,6 +1743,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
+	  cout << "I have to find: " <<  fNameFitDataPi0.Data() << endl;
      TF1 *fFitDataPi0temp = (TF1*)f->Get(fNameFitDataPi0.Data());
      fFitDataPi0 = new TF1(*fFitDataPi0temp);
      if (fFitDataPi0) AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(),fPathTrFReweighting.Data() ));
@@ -1742,6 +1751,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameHistoReweightingEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+	 cout << "I have to find: " <<  fNameHistoReweightingEta.Data() << endl;
      TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
      hReweightMCHistEta->SetDirectory(0);
@@ -1750,6 +1760,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
+	 cout << "I have to find: " <<  fNameFitDataEta.Data() << endl;
      TF1 *fFitDataEtatemp = (TF1*)f->Get(fNameFitDataEta.Data());
      fFitDataEta = new TF1(*fFitDataEtatemp);
      if (fFitDataEta) AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(),fPathTrFReweighting.Data() ));
@@ -1757,6 +1768,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 
   }
   if (fNameHistoReweightingK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
+	 cout << "I have to find: " <<  fNameHistoReweightingK0s.Data() << endl;
      TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
      hReweightMCHistK0s->SetDirectory(0);
@@ -1765,6 +1777,7 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
+	 cout << "I have to find: " <<  fNameFitDataK0s.Data() << endl; 
      TF1 *fFitDataK0stemp = (TF1*)f->Get(fNameFitDataK0s.Data());
      fFitDataK0s = new TF1(*fFitDataK0stemp);
      if (fFitDataK0s) AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(),fPathTrFReweighting.Data() ));
@@ -2428,7 +2441,6 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       fMaxR = 70.;
       fMinR = 5.;
       break;
-      // High purity cuts for PbPb (remove first layers of material)
    case 5:
       fMaxR = 180.;
       fMinR = 10.;
@@ -2439,7 +2451,7 @@ Bool_t AliConversionCuts::SetRCut(Int_t RCut){
       break;
    case 7:
       fMaxR = 180.;
-      fMinR = 26.;
+      fMinR = 35.; //old 26.
       break;
    case 8:
       fMaxR = 180.;
@@ -3450,7 +3462,10 @@ Bool_t AliConversionCuts::IsTriggerSelected(AliVEvent *fInputEvent)
          else {
             if (fIsHeavyIon == 1) fOfflineTriggerMask = AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
             else if (fIsHeavyIon == 2) fOfflineTriggerMask = AliVEvent::kINT7;
-            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC11f") == 0  || periodName.CompareTo("LHC13g") == 0 ) fOfflineTriggerMask = AliVEvent::kINT7;      
+            else if (periodName.CompareTo("LHC11c") == 0 || periodName.CompareTo("LHC11d") == 0 || periodName.CompareTo("LHC11e") == 0 || periodName.CompareTo("LHC11f") == 0 || periodName.CompareTo("LHC11g") == 0  || periodName.CompareTo("LHC12a") == 0 || periodName.CompareTo("LHC12b") == 0 || periodName.CompareTo("LHC12c") == 0 || periodName.CompareTo("LHC12d") == 0 || periodName.CompareTo("LHC12f") == 0  || periodName.CompareTo("LHC13g") == 0 ) {
+				fOfflineTriggerMask = AliVEvent::kINT7;      
+// 				cout << "will take kINT7 as trigger mask" << endl; 
+			}	
             else fOfflineTriggerMask = AliVEvent::kMB;
          }
       }
@@ -4280,3 +4295,29 @@ Bool_t AliConversionCuts::InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t even
 
 }
 
+///________________________________________________________________________
+UChar_t AliConversionCuts::DeterminePhotonQualityAOD(AliAODConversionPhoton* photon, AliVEvent* eventDummy){
+
+   AliAODTrack * negTrack = static_cast<AliAODTrack*>(GetTrack(eventDummy, photon->GetTrackLabelNegative()));
+   AliAODTrack * posTrack = static_cast<AliAODTrack*>(GetTrack(eventDummy, photon->GetTrackLabelPositive()));
+
+   if(!negTrack || !posTrack) {
+        return 0;
+   }
+   if(negTrack->Charge() == posTrack->Charge()){
+        return 0;
+   }   
+   Int_t nClusterITSneg = negTrack->GetITSNcls();
+   Int_t nClusterITSpos = posTrack->GetITSNcls();
+//    cout << nClusterITSneg << "\t" << nClusterITSpos <<endl;
+   
+   if (nClusterITSneg > 1 && nClusterITSpos > 1){
+      return 3;
+   } else if (nClusterITSneg > 1 || nClusterITSpos > 1){
+      return 2;
+   } else {
+      return 1;
+   }
+   return 0;
+   
+}

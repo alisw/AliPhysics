@@ -40,7 +40,7 @@ class AliIDFFUtils
   };
 
   static THnSparseD* GetTHn(const TString name);
-  static void FillTHn(THnSparseD * hh, Double_t jetpt, const AliAODTrack * trackk,  AliAODEvent* aodevt, const Int_t tofmode);  
+  static void FillTHn(THnSparseD * hh, Double_t jetpt, const AliAODTrack * trackk,  AliAODEvent* aodevt, Int_t tofmode);  
 
   static Bool_t TPCCutPIDN(const AliAODTrack * track);
   static Bool_t TPCCutMIGeo(const AliAODTrack * track, const AliVEvent* evt, TTreeStream * streamer=0x0);
@@ -53,13 +53,16 @@ class AliIDFFUtils
   static Double_t Xmax(){return 2;}
   static Int_t Nx(){return 300;}
 
-  static Int_t PDG2Type(const Int_t pdg);
+  static Int_t PDG2Type(Int_t pdg);
   
-  static Int_t TOFType(const AliAODTrack * trackptr, const Int_t tofmode);
+  static Int_t TOFType(const AliAODTrack * trackptr, Int_t tofmode);
+  static Int_t TPCType(const AliAODTrack * trackptr);
 
-  static Bool_t HMPIDAcceptance(const AliAODTrack *track);
-  static Bool_t HMPIDQA(const AliAODTrack *track);
-  static Int_t HMPIDType(const AliAODTrack * track);
+  static Int_t CombineTPCTOF(Int_t ktpc, Int_t ktof);
+
+  //static Bool_t HMPIDAcceptance(const AliAODTrack *track);
+  //static Bool_t HMPIDQA(const AliAODTrack *track);
+  //static Int_t HMPIDType(const AliAODTrack * track);
 
 };
 

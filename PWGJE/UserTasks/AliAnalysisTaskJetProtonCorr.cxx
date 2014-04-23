@@ -4,6 +4,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF1.h"
 #include "TFormula.h"
 #include "TRandom.h"
 
@@ -72,6 +73,7 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fPoolMgr(),
   fPool(),
   fHistCorr(0x0),
+  fErrorMsg(10),
   fOutputList(),
   fHist(),
   fShortTaskId("jet_prot_corr"),
@@ -81,14 +83,23 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   fCutsPrimTrgConstrain(new AliESDtrackCuts()),
   fCutsPrimAss(0x0),
   fCutsTwoTrackEff(0.02),
+  fAssFilterMask(1 << 10),
+  fRequirePID(kTRUE),
+  fTrgJetEtaMax(0.45),
+  fHadEtaMax(0.8),
   fTrgPartPtMin(6.),
   fTrgPartPtMax(8.),
   fTrgJetPtMin(50.),
   fTrgJetPtMax(80.),
-  fTrgJetLeadTrkPtMin(5.),
+  fTrgJetLeadTrkPtMin(6.),
+  fTrgJetLeadTrkPtMax(100.),
+  fTrgJetAreaMin(0.6 * TMath::Pi() * 0.2*0.2),
   fAssPartPtMin(2.),
   fAssPartPtMax(4.),
   fTrgAngleToEvPlane(TMath::Pi() / 4.),
+  fToyMeanNoPart(1.),
+  fToyRadius(.8),
+  fToySmearPhi(.2),
   fTrgJetPhiModCent(new TF1("jetphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgJetPhiModSemi(new TF1("jetphimodsemi", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
   fTrgHadPhiModCent(new TF1("hadphimodcent", "1 + 2 * [0] * cos(2*x)", 0., 2 * TMath::Pi())),
@@ -147,15 +158,15 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
 
   }
 
-  fCutsPrimAss->SetEtaRange(-0.9, 0.9);
+  fCutsPrimAss->SetEtaRange(-fHadEtaMax, fHadEtaMax);
   fCutsPrimAss->SetPtRange(0.15, 1E+15);
 
   // track cuts for triggers
   fCutsPrimTrg = new AliESDtrackCuts(*fCutsPrimAss);
 
   // azimuthal modulation for triggers
-  fTrgJetPhiModCent->SetParameter(0, .02);
-  fTrgJetPhiModSemi->SetParameter(0, .02);
+  fTrgJetPhiModCent->SetParameter(0, .10);
+  fTrgJetPhiModSemi->SetParameter(0, .10);
   fTrgHadPhiModCent->SetParameter(0, .04);
   fTrgHadPhiModSemi->SetParameter(0, .10);
 
@@ -267,165 +278,165 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 	       100, 0., 100.,
 	       100, 0., 2500.);
 
-  AddHistogram(ID(kHistSignalTPC), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistSignalTPC), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, 0., 300.);
-  AddHistogram(ID(kHistSignalTOF), "TOF time of flight;p_{T} (GeV/c);t (ns)",
+  AddHistogram(ID(kHistSignalTOF), "TOF time of flight;p_{T} (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, 0., 50.);
-  AddHistogram(ID(kHistBetaTOF), "TOF beta;p (GeV/c); #beta",
+  AddHistogram(ID(kHistBetaTOF), "TOF beta;p (GeV/#it{c}); #beta",
 	       100, 0., 10.,
 	       100, 0., 1.);
 
-  AddHistogram(ID(kHistDeltaTPC), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistDeltaTPC), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, -100., 100.);
-  AddHistogram(ID(kHistDeltaTPCSemi), "TPC dE/dx;p (GeV/c);dE/dx (arb. units)",
+  AddHistogram(ID(kHistDeltaTPCSemi), "TPC dE/dx;p (GeV/#it{c});dE/dx (arb. units)",
 	       100, 0., 10., 200, -100., 100.);
-  AddHistogram(ID(kHistDeltaTOF), "TOF time of flight;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOF), "TOF time of flight;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
   // Nsigma templates - central
-  AddHistogram(ID(kHistNsigmaTPCe), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe), "TPC N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCmu), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCk), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCk), "TPC N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCp), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCp), "TPC N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCd), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCd), "TPC N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe_e), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFe), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFe), "TOF N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmu), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFk), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFk), "TOF N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFp), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFp), "TOF N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFd), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFd), "TOF N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmismatch), "TOF N_{#sigma,p} - mismatch;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
   // Nsigma templates - semi-central
-  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCeSemi), "TPC N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCmuSemi), "TPC N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpiSemi), "TPC N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCkSemi), "TPC N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCpSemi), "TPC N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCdSemi), "TPC N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
-  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTPCe_eSemi), "TPC N_{#sigma,p} - e hypothesis (id. e);p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       100, -25., 25.);
 
-  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N_{#sigma,p} - e hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFeSemi), "TOF N_{#sigma,p} - e hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmuSemi), "TOF N_{#sigma,p} - #mu hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpiSemi), "TOF N_{#sigma,p} - #pi hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N_{#sigma,p} - K hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFkSemi), "TOF N_{#sigma,p} - K hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N_{#sigma,p} - p hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFpSemi), "TOF N_{#sigma,p} - p hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N_{#sigma,p} - d hypothesis;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFdSemi), "TOF N_{#sigma,p} - d hypothesis;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N_{#sigma,p} - mismatch;p (GeV/c);N_{#sigma,p}",
+  AddHistogram(ID(kHistNsigmaTOFmismatchSemi), "TOF N_{#sigma,p} - mismatch;p (GeV/#it{c});N_{#sigma,p}",
 	       100, 0., 10.,
 	       200, -100., 100.);
 
   // delta templates
-  AddHistogram(ID(kHistDeltaTOFe), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFe), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFmu), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFmu), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFk), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFk), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFp), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFp), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFd), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFd), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
-  AddHistogram(ID(kHistDeltaTOFeSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFeSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFmuSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFmuSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpiSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpiSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFkSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFkSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFpSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFpSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
-  AddHistogram(ID(kHistDeltaTOFdSemi), "TOF #Delta;p (GeV/c);t (ns)",
+  AddHistogram(ID(kHistDeltaTOFdSemi), "TOF #Delta;p (GeV/#it{c});t (ns)",
 	       100, 0., 10., 200, -2., 2.);
 
   // sigma comparisons
-  // AddHistogram(ID(kHistExpSigmaTOFe), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFe), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFmu), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFmu), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFk), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFk), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFp), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFp), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFd), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFd), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
 
-  // AddHistogram(ID(kHistExpSigmaTOFeSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFeSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFmuSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFmuSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpiSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpiSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFkSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFkSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFpSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFpSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
-  // AddHistogram(ID(kHistExpSigmaTOFdSemi), "TOF time of flight;p (GeV/c);t (ns)",
+  // AddHistogram(ID(kHistExpSigmaTOFdSemi), "TOF time of flight;p (GeV/#it{c});t (ns)",
   // 	       100, 0., 10., 200, 0., .25);
 
   // AddHistogram(ID(kHistCmpSigmaTOFe), "#sigma comparison;exp #sigma;template #sigma",
@@ -455,35 +466,35 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
   // 	       200, 0., .25, 200, 0., .25);
 
   // Nsigma distributions
-  AddHistogram(ID(kHistNsigmaTPCTOF), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOF), "N_{#sigma,p} TPC-TOF;p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N_{#sigma,p} TPC-TOF;p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsed), "N_{#sigma,p} TPC-TOF;p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N_{#sigma,p} TPC-TOF (central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentral), "N_{#sigma,p} TPC-TOF (central);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N_{#sigma,p} TPC-TOF (semi-central);p (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentral), "N_{#sigma,p} TPC-TOF (semi-central);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                100, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPt), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
-  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/c);N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedPtSemiCentral), "N_{#sigma,p} TPC-TOF;p_{T} (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
                50, 0., 10.,
                100, -25., 25.,
                200, -100., 100.);
@@ -533,39 +544,45 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
 
   AddHistogram(ID(kHistPhiTrgJetEvPlane), "trg jet;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiTrgHadEvPlane), "trg had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
+  AddHistogram(ID(kHistPhiRndTrgJetEvPlane), "rnd trg jet;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100, 0., 100.);
+  AddHistogram(ID(kHistPhiRndTrgHadEvPlane), "rnd trg had;#varphi - #Psi_{ev};centrality",
+	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadEvPlane), "ass had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssProtEvPlane), "ass prot;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadVsEvPlane), "ass had;#Psi_{ev};#varphi;centrality",
 	       100, -0. * TMath::Pi(), 1. * TMath::Pi(),
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
 
   AddHistogram(ID(kHistPhiTrgJetEvPlane3), "trg jet;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiTrgHadEvPlane3), "trg had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssHadEvPlane3), "ass had;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
   AddHistogram(ID(kHistPhiAssProtEvPlane3), "ass prot;#varphi - #Psi_{ev};centrality",
 	       100, -0. * TMath::Pi(), 2. * TMath::Pi(),
-	       100., 0., 100.);
+	       100, 0., 100.);
 
   for (Int_t iCorr = 0; iCorr < kCorrLast; ++iCorr) {
     for (Int_t iCl = 0; iCl < kClLast; ++iCl) {
       for (Int_t iEv = 0; iEv < kEvLast; ++iEv) {
 	// we don't need the mixed event histograms for the embedded excess particles
-	if ((iCorr > kCorrRndHadProt) && (iEv == kEvMix))
+	if ((iCorr > kCorrRndJetProt) && (iEv == kEvMix))
 	  continue;
 
   	GetHistCorr((CorrType_t) iCorr, (Class_t) iCl, (Ev_t) iEv) =
@@ -871,11 +888,11 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	  Double_t rndTOFmismatch = AliTOFPIDResponse::GetMismatchRandomValue(trk->Eta());
 
 	  if(IsClass(kClCentral)) {
-	    FillH2(kHistNsigmaTOFmismatch, p, (rndTOFmismatch - expTOF) / expSigmaTOF);
+	    FillH2(kHistNsigmaTOFmismatch, trk->P(), (rndTOFmismatch - expTOF) / expSigmaTOF);
 	    FillH2(kHistDeltaTOF, trk->P(), deltaTOF * 1.e-3); // ps -> ns
 	  }
 	  if(IsClass(kClSemiCentral)) {
-	    FillH2(kHistNsigmaTOFmismatchSemi, p, (rndTOFmismatch - expTOF) / expSigmaTOF);
+	    FillH2(kHistNsigmaTOFmismatchSemi, trk->P(), (rndTOFmismatch - expTOF) / expSigmaTOF);
 	    FillH2(kHistDeltaTOFSemi, trk->P(), deltaTOF * 1.e-3); // ps -> ns
 	  }
 	}
@@ -1139,9 +1156,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
     const Int_t nTracksAODAss = fAODEvent->GetNumberOfTracks();
     for (Int_t iTrack = 0; iTrack < nTracksAODAss; ++iTrack) {
       AliAODTrack *trk = fAODEvent->GetTrack(iTrack);
-      // 4: track cuts esdTrackCutsH ???
-      // 10: R_AA cuts
-      if (trk->TestFilterMask(1 << 4))
+      if (trk->TestFilterBit(fAssFilterMask))
         fPrimTrackArrayAss->Add(trk);
     }
 
@@ -1165,7 +1180,10 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
       if (AODEvent())
         fJetArray = dynamic_cast<TClonesArray*> (AODEvent()->FindListObject(fJetBranchName));
       if (!fJetArray) {
-        printf("no jet branch \"%s\" found, in the AODs are:\n", fJetBranchName);
+	if (fErrorMsg > 0) {
+	  AliError(Form("no jet branch \"%s\" found, in the AODs are:", fJetBranchName));
+	  --fErrorMsg;
+	}
         if (fDebug > 0) {
 	  fAODEvent->GetList()->Print();
           if (AODEvent())
@@ -1188,8 +1206,11 @@ Bool_t AliAnalysisTaskJetProtonCorr::PrepareEvent()
   return eventGood;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliVTrack *trg)
 {
+  if (TMath::Abs(trg->Eta()) > fHadEtaMax)
+    return kFALSE;
+
   // check pt interval
   Bool_t acceptPt =
     (trg->Pt() >= fTrgPartPtMin) &&
@@ -1216,7 +1237,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliVTrack *trg)
   return (acceptPt && acceptOrientation);
 }
 
-AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(AliAODJet *jet) const
+AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(const AliAODJet *jet) const
 {
   // return leading track within a jet
 
@@ -1237,15 +1258,22 @@ AliVTrack* AliAnalysisTaskJetProtonCorr::GetLeadingTrack(AliAODJet *jet) const
   return (AliAODTrack*) jet->GetRefTracks()->At(iLeadingTrack);
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(const AliAODJet *trg)
 {
   // restrict eta
-  if (TMath::Abs(trg->Eta()) > .5)
+  if (TMath::Abs(trg->Eta()) > fTrgJetEtaMax)
+    return kFALSE;
+
+  // reject too small jets
+  if (trg->EffectiveAreaCharged() < fTrgJetAreaMin)
     return kFALSE;
 
   // require hard leading track
   // (leading track biased jet sample)
-  if (GetLeadingTrack(trg)->Pt() < fTrgJetLeadTrkPtMin)
+  // but reject jets with too high pt constituents
+  const Float_t ptLeadTrack = GetLeadingTrack(trg)->Pt();
+  if ((ptLeadTrack < fTrgJetLeadTrkPtMin) ||
+      (ptLeadTrack > fTrgJetLeadTrkPtMax))
     return kFALSE;
 
   // check for jet orientation w.r.t. event plane
@@ -1253,6 +1281,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
   Bool_t acceptOrientation = IsSemiCentral() ?
     AcceptAngleToEvPlane(trg->Phi(), GetEventPlaneAngle()) :
     kTRUE;
+
   // check for jet pt
   Bool_t acceptPt =
     (trg->Pt() >= fTrgJetPtMin) &&
@@ -1284,21 +1313,30 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptTrigger(AliAODJet *trg)
   return (acceptPt && acceptOrientation);
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(AliVTrack *trk)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptAssoc(const AliVTrack *trk) const
 {
-  if ((trk->Pt() > fAssPartPtMin) && (trk->Pt() < fAssPartPtMax) &&
-      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) &&
-      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk))
-    if ((trk->GetTPCsignalN() >= 60.) &&
-	(trk->GetTPCsignal() >= 10) &&
-	(TMath::Abs(trk->Eta()) < .9))
+  if ((trk->Pt() > fAssPartPtMin) && (trk->Pt() < fAssPartPtMax) && (TMath::Abs(trk->Eta()) < fHadEtaMax))
+    if (fRequirePID) {
+      if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) &&
+	  (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) && 
+	  (trk->GetTPCsignalN() >= 60.) && (trk->GetTPCsignal() >= 10))
+	return kTRUE;
+      else
+	return kFALSE;
+    }
+    else
       return kTRUE;
-
-  return kFALSE;
+  else
+    return kFALSE;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::IsProton(AliVTrack *trk)
+Bool_t AliAnalysisTaskJetProtonCorr::IsProton(const AliVTrack *trk) const
 {
+  if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) != AliPIDResponse::kDetPidOk) ||
+      (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) != AliPIDResponse::kDetPidOk) || 
+      (trk->GetTPCsignalN() < 60.) || (trk->GetTPCsignal() < 10))
+    return kFALSE;
+
   Double_t nSigmaProtonTPC = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton);
   Double_t nSigmaProtonTOF = fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton);
 
@@ -1309,7 +1347,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::IsProton(AliVTrack *trk)
   return kFALSE;
 }
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t psi)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t psi) const
 {
   Float_t deltaPhi = phi - psi;
   while (deltaPhi < 0.)
@@ -1327,7 +1365,7 @@ Bool_t AliAnalysisTaskJetProtonCorr::AcceptAngleToEvPlane(Float_t phi, Float_t p
 
 Float_t AliAnalysisTaskJetProtonCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
 						  Float_t phi2, Float_t pt2, Float_t charge2,
-						  Float_t radius, Float_t bSign)
+						  Float_t radius, Float_t bSign) const
 {
   // calculates dphistar
   // from AliUEHistograms
@@ -1350,7 +1388,7 @@ Float_t AliAnalysisTaskJetProtonCorr::GetDPhiStar(Float_t phi1, Float_t pt1, Flo
 }
 
 
-Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart)
+Bool_t AliAnalysisTaskJetProtonCorr::AcceptTwoTracks(const AliVParticle *trgPart, const AliVParticle *assPart) const
 {
   // apply two track pair cut
 
@@ -1456,6 +1494,12 @@ Bool_t AliAnalysisTaskJetProtonCorr::Correlate(CorrType_t corr, Class_t cl, Ev_t
 Bool_t AliAnalysisTaskJetProtonCorr::Correlate(Trg_t trg, Ass_t ass, Class_t cl, Ev_t ev,
 					       TCollection *trgArray, TCollection *assArray, Float_t weight)
 {
+  if ((trg < 0) || (trg > kTrgJetRnd))
+    AliFatal(Form("wrong request for correlation with trigger: %d", trg));
+
+  if ((ass < 0) || (ass > kAssProt))
+    AliFatal(Form("wrong request for correlation with associate: %d", ass));
+
   CorrType_t corr = (CorrType_t) (2 * trg + ass);
 
   return Correlate(corr, cl, ev, trgArray, assArray, weight);
@@ -1471,24 +1515,27 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
 {
   // generate random direction
 
-  Float_t meanNoPart = 10;
-  Int_t nPart = gRandom->Poisson(meanNoPart);
+  const Int_t nPart = gRandom->Poisson(fToyMeanNoPart);
 
-  Float_t trgJetEta = gRandom->Uniform(-.5, .5);
+  Float_t trgJetEta = gRandom->Uniform(-fTrgJetEtaMax, fTrgJetEtaMax);
   Float_t trgJetPhi = 0.;
-  if (IsClass(kClSemiCentral)) {
-    do {
-      trgJetPhi = fTrgJetPhiModSemi->GetRandom();
-    } while (!AcceptAngleToEvPlane(trgJetPhi, 0));
+  do {
+    trgJetPhi = IsClass(kClSemiCentral) ?
+      fTrgJetPhiModSemi->GetRandom() :
+      fTrgJetPhiModCent->GetRandom();
+
     trgJetPhi += fEventPlaneAngle;
     if (trgJetPhi < 0.)
       trgJetPhi += 2. * TMath::Pi();
     else if (trgJetPhi > 2. * TMath::Pi())
       trgJetPhi -= 2. * TMath::Pi();
-  }
-  else {
-    trgJetPhi = fTrgJetPhiModCent->GetRandom();
-  }
+
+    Float_t phiRel = trgJetPhi- fEventPlaneAngle;
+    if (phiRel < 0.)
+      phiRel += 2. * TMath::Pi();
+    FillH2(kHistPhiRndTrgJetEvPlane, phiRel, fCentrality);
+  } while (IsClass(kClSemiCentral) &&
+	   !AcceptAngleToEvPlane(trgJetPhi, GetEventPlaneAngle()));
 
   // generate one trigger particle
   TLorentzVector *trgJet = new TLorentzVector();
@@ -1496,14 +1543,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   trgJetArray->Add(trgJet);
 
   // generate direction for away side
-  Float_t trgJetEtaAway = gRandom->Uniform(-.9, .9);
-  Float_t trgJetPhiAway = trgJetPhi + TMath::Pi() + gRandom->Gaus(0., .2);
+  Float_t trgJetEtaAway = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
+  Float_t trgJetPhiAway = trgJetPhi + TMath::Pi() + gRandom->Gaus(0., fToySmearPhi);
 
   // generate associated particles
   // with proton/hadron ratio observed in this event
   for (Int_t iPart = 0; iPart < nPart; ++iPart) {
     Float_t deltaEta, deltaPhi;
-    const Float_t r = .8;
+    const Float_t r = fToyRadius;
     do {
       deltaEta = gRandom->Uniform(-r, r);
       deltaPhi = gRandom->Uniform(-r, r);
@@ -1512,13 +1559,13 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     TLorentzVector *assPart = new TLorentzVector();
     Float_t eta = trgJetEtaAway + deltaEta;
     Float_t phi = trgJetPhiAway + deltaPhi;
-    if (eta > .9) {
+    if (TMath::Abs(eta) > fHadEtaMax) {
       delete assPart;
       continue;
     }
-    if (phi < 0.)
+    while (phi < 0.)
       phi += 2. * TMath::Pi();
-    else if (phi > 2. * TMath::Pi())
+    while (phi > 2. * TMath::Pi())
       phi -= 2. * TMath::Pi();
     assPart->SetPtEtaPhiM(3., eta, phi, .14);
     assHadJetArray->Add(assPart);
@@ -1527,21 +1574,25 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   }
 
   // trigger hadron
-  Float_t trgHadEta = gRandom->Uniform(-.9, .9);
+  Float_t trgHadEta = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
   Float_t trgHadPhi = 0.;
-  if (IsClass(kClSemiCentral)) {
-    do {
-      trgHadPhi = fTrgHadPhiModSemi->GetRandom();
-    } while (!AcceptAngleToEvPlane(trgHadPhi, 0));
+  do {
+    trgHadPhi = IsClass(kClSemiCentral) ?
+      fTrgHadPhiModSemi->GetRandom() :
+      fTrgHadPhiModCent->GetRandom();
+
     trgHadPhi += fEventPlaneAngle;
     if (trgHadPhi < 0.)
       trgHadPhi += 2. * TMath::Pi();
     else if (trgHadPhi > 2. * TMath::Pi())
       trgHadPhi -= 2. * TMath::Pi();
-  }
-  else {
-    trgHadPhi = fTrgHadPhiModCent->GetRandom();
-  }
+
+    Float_t phiRel = trgHadPhi - fEventPlaneAngle;
+    if (phiRel < 0.)
+      phiRel += 2. * TMath::Pi();
+    FillH2(kHistPhiRndTrgHadEvPlane, phiRel, fCentrality);
+  } while (IsClass(kClSemiCentral) &&
+	   !AcceptAngleToEvPlane(trgHadPhi, GetEventPlaneAngle()));
 
   // generate one trigger particle
   TLorentzVector *trgHad = new TLorentzVector();
@@ -1549,14 +1600,14 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
   trgHadArray->Add(trgHad);
 
   // generate direction for away side
-  Float_t trgHadEtaAway = gRandom->Uniform(-.9, .9);
-  Float_t trgHadPhiAway = trgHadPhi + TMath::Pi() + gRandom->Gaus(0., .2);
+  Float_t trgHadEtaAway = gRandom->Uniform(-fHadEtaMax, fHadEtaMax);
+  Float_t trgHadPhiAway = trgHadPhi + TMath::Pi() + gRandom->Gaus(0., fToySmearPhi);
 
   // generate associated particles
   // with proton/hadron ratio observed in this event
   for (Int_t iPart = 0; iPart < nPart; ++iPart) {
     Float_t deltaEta, deltaPhi;
-    const Float_t r = .8;
+    const Float_t r = fToyRadius;
     do {
       deltaEta = gRandom->Uniform(-r, r);
       deltaPhi = gRandom->Uniform(-r, r);
@@ -1565,13 +1616,13 @@ Bool_t AliAnalysisTaskJetProtonCorr::GenerateRandom(TCollection *trgJetArray,
     TLorentzVector *assPart = new TLorentzVector();
     Float_t eta = trgHadEtaAway + deltaEta;
     Float_t phi = trgHadPhiAway + deltaPhi;
-    if (eta > .9) {
+    if (TMath::Abs(eta) > fHadEtaMax) {
       delete assPart;
       continue;
     }
-    if (phi < 0.)
+    while (phi < 0.)
       phi += 2. * TMath::Pi();
-    else if (phi > 2. * TMath::Pi())
+    while (phi > 2. * TMath::Pi())
       phi -= 2. * TMath::Pi();
     assPart->SetPtEtaPhiM(3., eta, phi, .14);
     assHadHadArray->Add(assPart);
@@ -1603,15 +1654,16 @@ TObjArray* AliAnalysisTaskJetProtonCorr::CloneTracks(TObjArray* tracks) const
 
   Int_t nTracks = tracks->GetEntriesFast();
   for (Int_t i = 0; i < nTracks; i++) {
-    // tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
-
     // WARNING: TObject::Clone() is very!!! expensive, unusable
     // tracksClone->Add(particle->Clone());
 
-    if (AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (tracks->At(i)))
-      tracksClone->Add(new AliESDtrack(*esdTrack));
-    else if (AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (tracks->At(i)))
-      tracksClone->Add(new AliAODTrack(*aodTrack));
+    // if (AliESDtrack* esdTrack = dynamic_cast<AliESDtrack*> (tracks->At(i)))
+    //   tracksClone->Add(new AliESDtrack(*esdTrack));
+    // else if (AliAODTrack* aodTrack = dynamic_cast<AliAODTrack*> (tracks->At(i)))
+    //   tracksClone->Add(new AliAODTrack(*aodTrack));
+
+    if (const AliVTrack *track = dynamic_cast<const AliVTrack*> (tracks->At(i)))
+      tracksClone->Add(new AliPartCorr(*track));
   }
 
   return tracksClone;
@@ -1626,44 +1678,47 @@ AliAnalysisTaskJetProtonCorr::AliHistCorr::AliHistCorr(TString name, TList *outp
   fHistCorrEtaPhi(0x0),
   fHistCorrAvgEtaPhi(0x0),
   fHistCorrTrgEtaPhi(0x0),
-  fHistCorrAssEtaPhi(0x0)
+  fHistCorrAssEtaPhi(0x0),
+  fHistDphiLo(-TMath::Pi() / 2.),
+  fHistDphiNbins(120),
+  fHistDetaNbins(120)
 {
   // ctor
 
   fHistStat = new TH1F(Form("%s_stat", name.Data()), "statistics",
 		       1, .5, 1.5);
 
-  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta #phi",
-			  100, -2.*TMath::Pi(), 2.*TMath::Pi());
+  fHistCorrPhi = new TH1F(Form("%s_phi", name.Data()), ";#Delta#phi",
+			  fHistDphiNbins, fHistDphiLo, 2.*TMath::Pi() + fHistDphiLo);
   fHistCorrPhi->Sumw2();
-  fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
-			  100, 0.*TMath::Pi(), 2.*TMath::Pi(),
-			  100, 0.*TMath::Pi(), 2.*TMath::Pi());
-  fHistCorrPhi2->Sumw2();
+  // fHistCorrPhi2 = new TH2F(Form("%s_phi2", name.Data()), ";#phi_{trg};#phi_{ass}",
+  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi(),
+  // 			  120, 0.*TMath::Pi(), 2.*TMath::Pi());
+  // fHistCorrPhi2->Sumw2();
   fHistCorrEtaPhi = new TH2F(Form("%s_etaphi", name.Data()), ";#Delta#phi;#Delta#eta",
-			     100, -1., 2*TMath::Pi()-1.,
-			     100, -2., 2.);
+			     fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+			     fHistDetaNbins, -2., 2.);
   fHistCorrEtaPhi->Sumw2();
-  fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
-				100, -1., 2*TMath::Pi()-1.,
-				100, -2., 2.);
-  fHistCorrAvgEtaPhi->Sumw2();
-  fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
-				100, 0., 2*TMath::Pi(),
-				100, -1., 1.);
-  fHistCorrTrgEtaPhi->Sumw2();
-  fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
-				100, 0., 2*TMath::Pi(),
-				100, -1., 1.);
-  fHistCorrAssEtaPhi->Sumw2();
+  // fHistCorrAvgEtaPhi = new TH2F(Form("%s_avgetaphi", name.Data()), ";#Delta#phi;avg #eta",
+  // 				fHistDphiNbins, fHistDphiLo, 2*TMath::Pi() + fHistDphiLo,
+  // 				fHistDetaNbins, -2., 2.);
+  // fHistCorrAvgEtaPhi->Sumw2();
+  // fHistCorrTrgEtaPhi = new TH2F(Form("%s_trg_etaphi", name.Data()), ";#varphi;#eta",
+  // 				120, 0., 2*TMath::Pi(),
+  // 				120, -1., 1.);
+  // fHistCorrTrgEtaPhi->Sumw2();
+  // fHistCorrAssEtaPhi = new TH2F(Form("%s_ass_etaphi", name.Data()), ";#varphi;#eta",
+  // 				120, 0., 2*TMath::Pi(),
+  // 				120, -1., 1.);
+  // fHistCorrAssEtaPhi->Sumw2();
 
   fOutputList->Add(fHistStat);
   fOutputList->Add(fHistCorrPhi);
-  fOutputList->Add(fHistCorrPhi2);
+  // fOutputList->Add(fHistCorrPhi2);
   fOutputList->Add(fHistCorrEtaPhi);
-  fOutputList->Add(fHistCorrAvgEtaPhi);
-  fOutputList->Add(fHistCorrTrgEtaPhi);
-  fOutputList->Add(fHistCorrAssEtaPhi);
+  // fOutputList->Add(fHistCorrAvgEtaPhi);
+  // fOutputList->Add(fHistCorrTrgEtaPhi);
+  // fOutputList->Add(fHistCorrAssEtaPhi);
 }
 
 AliAnalysisTaskJetProtonCorr::AliHistCorr::~AliHistCorr()
@@ -1678,15 +1733,17 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(AliVParticle *trgPart, AliV
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  while (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  while (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  fHistCorrPhi2->Fill(trgPart->Phi(), assPart->Phi(), weight);
+  if (fHistCorrPhi2)
+    fHistCorrPhi2->Fill(trgPart->Phi(), assPart->Phi(), weight);
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight)
@@ -1696,18 +1753,21 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, Al
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  while (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  while (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  Float_t trgPhi = trgPart->Phi();
-  if (trgPhi < 0)
-    trgPhi += 2. * TMath::Pi();
-  fHistCorrPhi2->Fill(trgPhi, assPart->Phi(), weight);
+  if (fHistCorrPhi2) {
+    Float_t trgPhi = trgPart->Phi();
+    if (trgPhi < 0)
+      trgPhi += 2. * TMath::Pi();
+    fHistCorrPhi2->Fill(trgPhi, assPart->Phi(), weight);
+  }
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight)
@@ -1717,21 +1777,24 @@ void AliAnalysisTaskJetProtonCorr::AliHistCorr::Fill(TLorentzVector *trgPart, TL
   Float_t deltaEta = assPart->Eta() - trgPart->Eta();
   Float_t avgEta = (assPart->Eta() + trgPart->Eta()) / 2.;
   Float_t deltaPhi = assPart->Phi() - trgPart->Phi();
-  if (deltaPhi > (2.*TMath::Pi()-1.))
+  if (deltaPhi > (2.*TMath::Pi() + fHistDphiLo))
     deltaPhi -= 2. * TMath::Pi();
-  else if (deltaPhi < -1.)
+  else if (deltaPhi < fHistDphiLo)
     deltaPhi += 2. * TMath::Pi();
 
   fHistCorrPhi->Fill(deltaPhi, weight);
-  Float_t trgPhi = trgPart->Phi();
-  if (trgPhi < 0)
-    trgPhi += 2. * TMath::Pi();
-  Float_t assPhi = assPart->Phi();
-  if (assPhi < 0)
-    assPhi += 2. * TMath::Pi();
-  fHistCorrPhi2->Fill(trgPhi, assPhi, weight);
+  if (fHistCorrPhi2) {
+    Float_t trgPhi = trgPart->Phi();
+    if (trgPhi < 0)
+      trgPhi += 2. * TMath::Pi();
+    Float_t assPhi = assPart->Phi();
+    if (assPhi < 0)
+      assPhi += 2. * TMath::Pi();
+    fHistCorrPhi2->Fill(trgPhi, assPhi, weight);
+  }
   fHistCorrEtaPhi->Fill(deltaPhi, deltaEta, weight);
-  fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
+  if (fHistCorrAvgEtaPhi)
+    fHistCorrAvgEtaPhi->Fill(deltaPhi, avgEta, weight);
 }
 
 // ----- histogram management -----

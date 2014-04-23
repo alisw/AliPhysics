@@ -75,8 +75,11 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fMaxEClus(0),
   fNCells50(0),
   fFilterBit(0),
+  fSelHybrid(kFALSE),
+  fFillQA(kFALSE),
   fESD(0),
   fAOD(0),
+  fVEvent(0),
   fMCEvent(0),
   fStack(0),
   fOutputList(0),
@@ -157,8 +160,11 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fMaxEClus(0),
   fNCells50(0),
   fFilterBit(0),
+  fSelHybrid(kFALSE),
+  fFillQA(kFALSE),
   fESD(0),
   fAOD(0),
+  fVEvent(0),
   fMCEvent(0),
   fStack(0),
   fOutputList(0),
@@ -408,8 +414,8 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     if(!filename.Contains(fPathStrOpt.Data()))
       return;
   }
-  AliVEvent *event = (AliVEvent*)InputEvent();
-  if (!event) {
+  fVEvent = (AliVEvent*)InputEvent();
+  if (!fVEvent) {
     printf("ERROR: event not available\n");
     return;
   }
@@ -417,9 +423,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   if(fDebug)
     printf("run number = %d\n",runnumber);
 
-  fESD = dynamic_cast<AliESDEvent*>(event);
+  fESD = dynamic_cast<AliESDEvent*>(fVEvent);
   if(!fESD){
-    fAOD = dynamic_cast<AliAODEvent*>(event);
+    fAOD = dynamic_cast<AliAODEvent*>(fVEvent);
     if(!fAOD){
       printf("ERROR: Invalid type of event!!!\n");
       return;
@@ -433,7 +439,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     printf("event is ok,\n run number=%d\n",runnumber);
 
   
-  AliVVertex *pv = (AliVVertex*)event->GetPrimaryVertex();
+  AliVVertex *pv = (AliVVertex*)fVEvent->GetPrimaryVertex();
   Bool_t pvStatus = kTRUE;
   if(fESD){
     AliESDVertex *esdv = (AliESDVertex*)fESD->GetPrimaryVertex();
@@ -480,7 +486,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
       //printf("pt,eta,phi:%1.1f,%1.1f,%1.1f \n",track->Pt(),track->Eta(), track->Phi());
     }
     else if(aodTrack){
-      if(!aodTrack->TestFilterBit(fFilterBit))
+      if (fSelHybrid && !aodTrack->IsHybridGlobalConstrainedGlobal())       
+	continue ;
+      if(!fSelHybrid && !aodTrack->TestFilterBit(fFilterBit))
 	continue;
       fSelPrimTracks->Add(track);
       /*if(fTrackMaxPt<track->Pt())
@@ -495,7 +503,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     /*if(fESD)
       fGeom->SetMisalMatrix(fESD->GetEMCALMatrix(mod), mod);
       else*/
-    // if(event->GetEMCALMatrix(mod))
+    // if(fVEvent->GetEMCALMatrix(mod))
     fGeomMatrix[mod] = (TGeoHMatrix*) matEMCAL->At(mod);
     fGeom->SetMisalMatrix(fGeomMatrix[mod] , mod);
   }
@@ -548,7 +556,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   FillMcHists();
   if(fDebug)
     printf("passed calling of FillMcHists\n");
-  if(fESD)
+  if(fFillQA)
     FillQA();
   if(fDebug)
     printf("passed calling of FillQA\n");
@@ -1083,11 +1091,24 @@ Float_t AliAnalysisTaskEMCALIsoPhoton::GetMcPtSumInCone(Float_t etaclus, Float_t
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::FillQA() 
 {
+
+  TObjArray *clusters = fESDClusters;
+
+  if (!clusters){
+    clusters = fAODClusters;
+    if(fDebug)
+      printf("ESD clusters empty...");
+  }
+  if (!clusters){
+    if(fDebug)
+      printf("  and AOD clusters as well!!!\n"); 
+    return;
+  }
   if(!fSelPrimTracks)
     return;
   const int ntracks = fSelPrimTracks->GetEntriesFast();
   const int ncells = fNCells50;//fESDCells->GetNumberOfCells();
-  const Int_t nclus = fESDClusters->GetEntries();
+  const Int_t nclus = clusters->GetEntries();
 
   fNTracks->Fill(ntracks);
   fEmcNCells->Fill(ncells);
@@ -1109,8 +1130,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
     }
   }
   for(int ic=0;ic<nclus;ic++){
-    AliVCluster *c = dynamic_cast<AliVCluster*>(fESDClusters->At(ic));
-    //AliESDCaloCluster *c = (AliESDCaloCluster*)fESDClusters->At(ic);
+    AliVCluster *c = dynamic_cast<AliVCluster*>(clusters->At(ic));
+    //AliESDCaloCluster *c = (AliESDCaloCluster*)clusters->At(ic);
     if(!c)
       continue;
     if(!c->IsEMCAL())

@@ -1,21 +1,21 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TF1.h"
 
 #include "AliLog.h"
 
+#include "AliVParticle.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
 
 #define ID(x) x, #x
 #define LAB(x) x + 1, #x
 
-class TF1;
 class TList;
 class TClonesArray;
 class AliOADBContainer;
 class AliTOFPIDParams;
-class AliVParticle;
 class AliVTrack;
 class AliPIDResponse;
 class AliEventPoolManager;
@@ -38,7 +38,7 @@ public:
   void SetParamsTOF();
 
   // task configuration
-  void SetJetBranchName(const char* const branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
+  void SetJetBranchName(const char* branchName) { strncpy(fJetBranchName, branchName, fgkStringLength-1); }
   const char* GetJetBranchName() const { return fJetBranchName; }
 
   void SetPtThrPart(Float_t minPt, Float_t maxPt) { fTrgPartPtMin = minPt; fTrgPartPtMax = maxPt; }
@@ -51,12 +51,54 @@ public:
   Float_t GetPtMinAss() const { return fAssPartPtMin; }
   Float_t GetPtMaxAss() const { return fAssPartPtMax; }
 
-  void SetTrackCutsAss(AliESDtrackCuts cuts) { *fCutsPrimAss = cuts; }
-  void SetTrackCutsTrg(AliESDtrackCuts cuts) { *fCutsPrimTrg = cuts; }
-  void SetTrackCutsTrgConstrain(AliESDtrackCuts cuts) { *fCutsPrimTrgConstrain = cuts; }
+  void SetTwoTrackCut(Float_t cut) { fCutsTwoTrackEff = cut; }
+  Float_t GetTwoTrackCut() const { return fCutsTwoTrackEff; }
+
+  void SetTrackCutsAss(const AliESDtrackCuts &cuts) { *fCutsPrimAss = cuts; }
+  void SetTrackCutsTrg(const AliESDtrackCuts &cuts) { *fCutsPrimTrg = cuts; }
+  void SetTrackCutsTrgConstrain(const AliESDtrackCuts &cuts) { *fCutsPrimTrgConstrain = cuts; }
+
+  void SetTrgJetEtaMax(Float_t etamax) { fTrgJetEtaMax = etamax; }
+  Float_t GetTrgJetEtaMax() const { return fTrgJetEtaMax; }
+  void SetHadEtaMax(Float_t etamax) { fHadEtaMax = etamax; }
+  Float_t GetHadEtaMax() const { return fHadEtaMax; }
 
   void SetUseEvplaneV0(Bool_t usev0 = kTRUE) { fUseEvplaneV0 = usev0; }
   Bool_t GetUseEvplaneV0() const { return fUseEvplaneV0; }
+
+  void SetJetV2(Float_t v2Cent, Float_t v2Semi) {
+    fTrgJetPhiModCent->SetParameter(0, v2Cent);
+    fTrgJetPhiModSemi->SetParameter(0, v2Semi);
+  }
+  void SetHadV2(Float_t v2Cent, Float_t v2Semi) {
+    fTrgHadPhiModCent->SetParameter(0, v2Cent);
+    fTrgHadPhiModSemi->SetParameter(0, v2Semi);
+  }
+
+  void SetLeadingTrackPtMin(Float_t pt) { fTrgJetLeadTrkPtMin = pt; }
+  void SetLeadingTrackPtMax(Float_t pt) { fTrgJetLeadTrkPtMax = pt; }
+
+  void SetJetAreaMin(Float_t area) { fTrgJetAreaMin = area; }
+  Float_t GetJetAreaMin() const { return fTrgJetAreaMin; }
+
+  void SetRequirePID(Bool_t req = kTRUE) { fRequirePID = req; }
+  Bool_t GetRequirePID() const { return fRequirePID; }
+
+  void SetFilterMask(Int_t mask) { fAssFilterMask = mask; }
+  Int_t GetFilterMask() const { return fAssFilterMask; }
+
+  void SetErrorCount(Int_t cnt) { fErrorMsg = cnt; }
+  Int_t GetErrorCount() const { return fErrorMsg; }
+
+  void SetTrgAngleToEvPlane(Float_t angle) { fTrgAngleToEvPlane = angle; }
+  Float_t GetTrgAngleToEvPlane() const { return fTrgAngleToEvPlane; }
+
+  void SetToyMeanNoPart(Float_t mean) { fToyMeanNoPart = mean; }
+  Float_t GetToyMeanNoPart() const { return fToyMeanNoPart; }
+  void SetToyRadius(Float_t radius) { fToyRadius = radius; }
+  Float_t GetToyRadius() const { return fToyRadius; }
+  void SetToySmearPhi(Float_t sigma) { fToySmearPhi = sigma; }
+  Float_t GetToySmearPhi() const { return fToySmearPhi; }
 
   void PrintTask(Option_t *option, Int_t indent) const;
 
@@ -181,6 +223,8 @@ public:
       kHistEtaPhiAssProt,
       kHistPhiTrgJetEvPlane,
       kHistPhiTrgHadEvPlane,
+      kHistPhiRndTrgJetEvPlane,
+      kHistPhiRndTrgHadEvPlane,
       kHistPhiAssHadEvPlane,
       kHistPhiAssHadVsEvPlane,
       kHistPhiAssProtEvPlane,
@@ -220,15 +264,15 @@ public:
     kCorrJetHad,
     kCorrJetProt,
 
-    kCorrRndJetHad,
-    kCorrRndJetProt,
     kCorrRndHadHad,
     kCorrRndHadProt,
+    kCorrRndJetHad,
+    kCorrRndJetProt,
 
-    kCorrRndJetExcHad,
-    kCorrRndJetExcProt,
     kCorrRndHadExcHad,
     kCorrRndHadExcProt,
+    kCorrRndJetExcHad,
+    kCorrRndJetExcProt,
 
     kCorrLast
   };
@@ -264,13 +308,66 @@ public:
     kEvLast
   };
 
+  class AliPartCorr : public AliVParticle {
+  public:
+    AliPartCorr(Float_t eta = 0., Float_t phi = 0., Float_t pt = 0., Float_t charge = 0) :
+      fPt(pt), fEta(eta), fPhi(phi), fCharge(charge) {}
+    AliPartCorr(const AliVParticle &rhs) :
+      fPt(rhs.Pt()), fEta(rhs.Eta()), fPhi(rhs.Phi()), fCharge(rhs.Charge()) {}
+    virtual ~AliPartCorr() {}
+    
+    // kinematics
+    virtual Double_t Px() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Pt() const { return fPt; }
+    virtual Double_t P()  const { AliFatal("not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t Xv() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t OneOverPt()  const { AliFatal("not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t E()          const { AliFatal("not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("not implemented"); return 0; }
+
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("not implemented"); return 0; }
+
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("not implemented"); return 0; }
+
+    virtual Int_t   PdgCode()     const { AliFatal("not implemented"); return 0; }
+    virtual const Double_t *PID() const { AliFatal("not implemented"); return 0; }
+
+  protected:
+    Float_t fPt;
+    Float_t fEta;
+    Float_t fPhi;
+    Short_t fCharge;
+
+    ClassDef(AliPartCorr, 1);
+  };
+
   class AliHistCorr : public TNamed {
   public:
     AliHistCorr(TString name, TList *outputList = 0x0);
     ~AliHistCorr();
 
-    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistStat->Fill(1., weight); fHistCorrTrgEtaPhi->Fill(phi, eta, weight); }
-    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) { fHistCorrAssEtaPhi->Fill(phi, eta, weight); }
+    void Trigger(Float_t phi, Float_t eta, Float_t weight = 1.) {
+      fHistStat->Fill(1., weight);
+      if (fHistCorrTrgEtaPhi)
+	fHistCorrTrgEtaPhi->Fill(phi, eta, weight);
+    }
+    void Ass(Float_t phi, Float_t eta, Float_t weight = 1.) {
+      if (fHistCorrAssEtaPhi)
+	fHistCorrAssEtaPhi->Fill(phi, eta, weight);
+    }
     void Fill(AliVParticle *trgPart, AliVParticle *assPart, Float_t weight = 1.);
     void Fill(TLorentzVector *trgPart, AliVParticle *assPart, Float_t weight = 1.);
     void Fill(TLorentzVector *trgPart, TLorentzVector *assPart, Float_t weight = 1.);
@@ -286,6 +383,10 @@ public:
     TH2F *fHistCorrAvgEtaPhi;
     TH2F *fHistCorrTrgEtaPhi;
     TH2F *fHistCorrAssEtaPhi;
+
+    const Float_t fHistDphiLo;
+    const Int_t   fHistDphiNbins;
+    const Int_t   fHistDetaNbins;
 
     AliHistCorr(const AliHistCorr &rhs);
     AliHistCorr& operator=(const AliHistCorr &rhs);
@@ -328,6 +429,8 @@ protected:
 
   AliHistCorr **fHistCorr; //! [kCorrLast*kEvLast*kClLast]; //!
 
+  Int_t fErrorMsg; //! remaining number of error messages to be printed
+
   Bool_t DetectTriggers();
   void   MarkTrigger(Trigger_t trg) { fTriggerMask |= (1 << trg); }
   Bool_t IsTrigger(Trigger_t trg) const { return (fTriggerMask & (1 << trg)); }
@@ -342,21 +445,21 @@ protected:
   Float_t GetCentrality() const { return fCentrality; }
   Float_t GetEventPlaneAngle() const { return fEventPlaneAngle; }
   AliPIDResponse* GetPID() const { return fPIDResponse; }
-  Bool_t IsCentral() { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
-  Bool_t IsSemiCentral() { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
+  Bool_t IsCentral() const { return ((fCentrality >= 0.) && (fCentrality <= 10.)); }
+  Bool_t IsSemiCentral() const { return ((fCentrality >= 30.) && (fCentrality <= 50.)); }
 
-  AliVTrack* GetLeadingTrack(AliAODJet *jet) const;
+  AliVTrack* GetLeadingTrack(const AliAODJet *jet) const;
 
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1,
 		      Float_t phi2, Float_t pt2, Float_t charge2,
-		      Float_t radius, Float_t bSign);
+		      Float_t radius, Float_t bSign) const;
 
-  Bool_t AcceptTrigger(AliVTrack *trg);
-  Bool_t AcceptTrigger(AliAODJet *trg);
-  Bool_t AcceptAssoc(AliVTrack *trk);
-  Bool_t IsProton(AliVTrack *trk);
-  Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi);
-  Bool_t AcceptTwoTracks(AliVParticle *trgPart, AliVParticle *assPart);
+  Bool_t AcceptTrigger(const AliVTrack *trg);
+  Bool_t AcceptTrigger(const AliAODJet *trg);
+  Bool_t AcceptAssoc(const AliVTrack *trk) const;
+  Bool_t IsProton(const AliVTrack *trk) const;
+  Bool_t AcceptAngleToEvPlane(Float_t phi, Float_t psi) const;
+  Bool_t AcceptTwoTracks(const AliVParticle *trgPart, const AliVParticle *assPart) const;
 
   TObjArray* CloneTracks(TObjArray *tracks) const;
 
@@ -405,7 +508,7 @@ protected:
   static const Int_t fgkStringLength = 100; // max length for the jet branch name
   char fJetBranchName[fgkStringLength];     // jet branch name
 
-  Bool_t fUseStandardCuts;
+  const Bool_t fUseStandardCuts;
   Bool_t fUseEvplaneV0;
 
   AliESDtrackCuts *fCutsPrimTrg;	// track cuts for primary particles (trigger)
@@ -413,14 +516,24 @@ protected:
   AliESDtrackCuts *fCutsPrimAss;	// track cuts for primary particles (associate)
   Float_t fCutsTwoTrackEff;
 
+  UInt_t  fAssFilterMask;
+  Bool_t  fRequirePID;
+  Float_t fTrgJetEtaMax;
+  Float_t fHadEtaMax;
   Float_t fTrgPartPtMin;
   Float_t fTrgPartPtMax;
   Float_t fTrgJetPtMin;
   Float_t fTrgJetPtMax;
   Float_t fTrgJetLeadTrkPtMin;
+  Float_t fTrgJetLeadTrkPtMax;
+  Float_t fTrgJetAreaMin;
   Float_t fAssPartPtMin;
   Float_t fAssPartPtMax;
   Float_t fTrgAngleToEvPlane;
+
+  Float_t fToyMeanNoPart;
+  Float_t fToyRadius;
+  Float_t fToySmearPhi;
 
   TF1 *fTrgJetPhiModCent;
   TF1 *fTrgJetPhiModSemi;

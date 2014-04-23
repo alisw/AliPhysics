@@ -105,11 +105,11 @@ private:
 	Bool_t IsTrackFromV0(AliAODTrack* track);
 	void FillCorrelationSibling(Double_t MultipOrCent,
 								TObjArray*triggerArray,TObjArray*selectedV0Array,
-								TH2F*triggerHist,THnSparse*associateHist);
+								TH1F*triggerHist,THnSparse*associateHist);
 	void FillCorrelationMixing(Double_t MultipOrCentMix,Double_t pvxMix,
 							   Double_t poolmax,Double_t poolmin,
 							   TObjArray*triggerArray,TObjArray*selectedV0Array,
-							   TH2F*triggerHist,THnSparse*associateHist);
+							   TH1F*triggerHist,THnSparse*associateHist);
 	
 	AliAODEvent              * fAODEvent;			//  AOD Event
 	AliEventPoolManager      * fPoolMgr;			//  event pool manager for Event Mixing
@@ -176,12 +176,16 @@ private:
 	TH2F		*fHistMCGenK0;
 	TH2F		*fHistMCGenLAM;
 	TH2F		*fHistMCGenALAM;
+	TH2F		*fHistMCGenLAMXIPLS;
+	TH2F		*fHistMCGenLAMXI;
 	THnSparse   *fHistReconstK0;
 	THnSparse   *fHistReconstLA;
 	THnSparse   *fHistReconstALA;
 	THnSparse   *fHistMCAssoK0;
 	THnSparse   *fHistMCAssoLA;
 	THnSparse   *fHistMCAssoALA;
+	THnSparse   *fHistMCAssoLAXI;
+	THnSparse   *fHistMCAssoALAXiPlus;
 	
 	THnSparse   *fHistReconstSib;
 	THnSparse   *fHistReconstMix;
@@ -192,12 +196,12 @@ private:
 	THnSparse   *fHistReconstSibFEED;
 	THnSparse   *fHistReconstMixFEED;
 	
-	TH2F        *fHistTriggerSib;
-	TH2F		*fHistTriggerMix;
-	TH2F		*fHistTriggerSibGEN;
-	TH2F		*fHistTriggerMixGEN;
-	TH2F		*fHistTriggerSibASO;
-	TH2F		*fHistTriggerMixASO;
+	TH1F        *fHistTriggerSib;
+	TH1F		*fHistTriggerMix;
+	TH1F		*fHistTriggerSibGEN;
+	TH1F		*fHistTriggerMixGEN;
+	TH1F		*fHistTriggerSibASO;
+	TH1F		*fHistTriggerMixASO;
 
 	ClassDef(AliLeadingV0Correlation, 1); 
 };
@@ -209,14 +213,14 @@ public:
 							Float_t phi, 
 							Float_t pt, 
 							Short_t candidate,
-						    Double_t dcaV0toP,
-						    Double_t cosp):
+						    Double_t dcapostoP,
+						    Double_t dcanegtoP):
 	  fEta(eta), 
 	  fPhi(phi), 
 	  fpT(pt), 
 	  fCandidate(candidate),
-	  fdcaV0toP(dcaV0toP),
-	  fcosp(cosp)
+	  fdcapostoP(dcapostoP),
+	  fdcanegtoP(dcanegtoP)
     {
     }
     virtual ~V0Correlationparticle(){}
@@ -243,8 +247,8 @@ public:
     virtual Int_t    PdgCode()            const { AliFatal("Not implemented"); return 0;}
     virtual const    Double_t *PID()      const { AliFatal("Not implemented"); return 0;}
     virtual Short_t  WhichCandidate()     const { return fCandidate;}
-	virtual Double_t DCAPostoP()     const { return fdcaV0toP;}
-	virtual Double_t DCANegtoP()     const { return fcosp;}
+	virtual Double_t DCAPostoP()     const { return fdcapostoP;}
+	virtual Double_t DCANegtoP()     const { return fdcanegtoP;}
 
 	
 private:
@@ -252,8 +256,8 @@ private:
     Float_t  fPhi;            // Phi
     Float_t  fpT;             // pT
     Short_t  fCandidate;      // 1-K0,2-Lam,3-Alam
-	Double_t fdcaV0toP;
-	Double_t fcosp;
+	Double_t fdcapostoP;
+	Double_t fdcanegtoP;
 	
 	
     ClassDef( V0Correlationparticle, 1);

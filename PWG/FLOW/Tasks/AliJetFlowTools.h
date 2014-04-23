@@ -133,6 +133,8 @@ class AliJetFlowTools {
         void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
+        void            SetRMS(Bool_t r)                        {fRMS                   = r;}
+        void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -236,17 +238,26 @@ class AliJetFlowTools {
         }
         static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
             TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
-//            t->SetFillStyle(0);
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
             t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T} charged jets", r));
             t->SetTextColor(kBlack);
-//            t->SetTextSize(0.03);
             t->SetTextFont(42);
             t->Draw("same");
             return t;
         } 
+        static TPaveText*       AddText(TString text, EColor col) {
+            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+            t->SetFillColor(0);            
+            t->SetBorderSize(0);
+            t->AddText(0.,0.,text.Data());
+            t->SetTextColor(col);
+            t->SetTextFont(42);
+            t->Draw("same");
+            return t;
+        } 
+
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -309,7 +320,8 @@ class AliJetFlowTools {
                 Float_t rangeLow,
                 Float_t rangeUp,
                 TFile* readMe, 
-                TString source = "") const;
+                TString source = "",
+                Bool_t RMS = kFALSE) const;
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
@@ -319,6 +331,8 @@ class AliJetFlowTools {
         TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         // members, accessible via setters
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
+        Bool_t                  fRMS;                   // systematic method
+        Bool_t                  fSymmRMS;               // symmetric systematic method
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output

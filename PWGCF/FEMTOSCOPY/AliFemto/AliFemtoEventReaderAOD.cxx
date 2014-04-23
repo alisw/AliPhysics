@@ -1335,6 +1335,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTPCK=-1000.;
   float nsigmaTPCPi=-1000.;
   float nsigmaTPCP=-1000.;
+  float nsigmaTPCE=-1000.;
 
   //   cout<<"in reader fESDpid"<<fESDpid<<endl;
 
@@ -1342,11 +1343,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
     nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kKaon);
     nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kPion);
     nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kProton);
+    nsigmaTPCE = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kElectron);
   }
 
   tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
   tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
   tFemtoTrack->SetNSigmaTPCP(nsigmaTPCP);
+  tFemtoTrack->SetNSigmaTPCE(nsigmaTPCE);
 
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
@@ -1362,6 +1365,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTOFPi=-1000.;
   float nsigmaTOFK=-1000.;
   float nsigmaTOFP=-1000.;
+  float nsigmaTOFE=-1000.;
 
   if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
       (tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
@@ -1374,6 +1378,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 	    nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);
 	    nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon);
 	    nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kProton);
+	    nsigmaTOFE = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kElectron);
 
 	    Double_t len=200;// esdtrack->GetIntegratedLength(); !!!!!
 	    Double_t tof=tAodTrack->GetTOFsignal();
@@ -1384,6 +1389,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
+  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
 
 
   //////////////////////////////////////

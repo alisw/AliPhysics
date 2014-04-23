@@ -63,7 +63,8 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
   void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
-  
+  void                  SetHybridOn()                          { fSelHybrid = kTRUE; }
+  void                  SetFillQA()                            { fFillQA = kTRUE; }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -97,12 +98,15 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               fMaxEClus;              //cluster with highest energy in event
   Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
   ULong_t                fFilterBit;             // Track selection bit, for AODs 
+  Bool_t                 fSelHybrid;             // bool to select hybrid tracks
+  Bool_t                 fFillQA;                // bool to fill the QA plots
 
 
   
  private:
   AliESDEvent *fESD;      //! ESD object
   AliAODEvent *fAOD;      //! AOD object
+  AliVEvent   *fVEvent;   //! AliVEvent
   AliMCEvent  *fMCEvent;  //! MC event object
   AliStack    *fStack;    //!MC particles stack object
   TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal

@@ -187,7 +187,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //-- K0s
 
   void   SetFFInvMassHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //previous 19, 5.,100.
-			       Int_t nInvM = 400, Float_t invMMin = 0.4,  Float_t invMMax = 0.6, //previous 0.4 to 0.6
+			       Int_t nInvM = 400, Float_t invMMin = 0.3,  Float_t invMMax = 0.7, //previous 0.4 to 0.6
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20.,         //previous 0. to 10.
 			       Int_t nXi = 35, Float_t xiMin = 0., Float_t xiMax = 7.,
 			       Int_t nZ = 11,  Float_t zMin = 0.,  Float_t zMax = 1.1)
@@ -236,6 +236,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   //--
   Bool_t   fAnalysisMC;
   Double_t fDeltaVertexZ;
+  Double_t fCutjetEta;
   Double_t fCuttrackNegNcls;
   Double_t fCuttrackPosNcls; 
   Double_t fCutPostrackRap;
@@ -244,6 +245,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutPostrackEta;
   Double_t fCutNegtrackEta;
   Double_t fCutEta;
+
   Double_t fCutV0cosPointAngle;
   Double_t fCutChi2PosDaughter;
   Double_t fCutChi2NegDaughter;
@@ -270,6 +272,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetCuttrackPosEta(Double_t posEta){fCutPostrackEta=posEta; Printf("AliAnalysisTaskJetChem:: SetCuttrackPosEta %f",posEta);}
   void SetCuttrackNegEta(Double_t negEta){fCutNegtrackEta=negEta; Printf("AliAnalysisTaskJetChem:: SetCuttrackNegEta %f",negEta);}
   void SetCutV0Eta(Double_t v0Eta){fCutEta=v0Eta; Printf("AliAnalysisTaskJetChem:: SetCutV0Eta %f",v0Eta);}
+  void SetCutJetEta(Double_t jetEta){fCutjetEta=jetEta; Printf("AliAnalysisTaskJetChem:: SetCutjetEta %f",jetEta);}
   void SetCosOfPointingAngle(Double_t cospointAng){fCutV0cosPointAngle=cospointAng; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngle %f",cospointAng);}
   void SetChi2CutPosDaughter(Double_t chi2PosDaughter){fCutChi2PosDaughter=chi2PosDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutPosDaughter %f",chi2PosDaughter);}
   void SetChi2CutNegDaughter(Double_t chi2NegDaughter){fCutChi2NegDaughter=chi2NegDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutNegDaughter %f",chi2NegDaughter);}
@@ -291,7 +294,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
  private:
   
-  Int_t fK0Type;                                           //! K0 cuts
+  Int_t fK0Type;                                           // K0 cuts
   UInt_t fFilterMaskK0;                                    //! K0 legs cuts
   TList* fListK0s;                                         //! K0 list 
   AliPIDResponse *fPIDResponse;	                           // PID
@@ -303,7 +306,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliFragFuncHistosInvMass*  fFFHistosIMK0Cone;            //! K0 FF jet cone   
   AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMK0;  //! K0 correlation to jet axis 
   
-  Int_t fLaType;                                           //! La cuts
+  Int_t fLaType;                                           // La cuts
   UInt_t fFilterMaskLa;                                    //! La legs cuts
   TList* fListLa;                                          //! La list 
   
@@ -312,7 +315,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliFragFuncHistosInvMass*  fFFHistosIMLaCone;            //! La FF jet cone   
   AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMLa;  //! La correlation to jet axis 
   
-  Int_t fALaType;                                          //! ALa cuts
+  Int_t fALaType;                                          // ALa cuts
 
   UInt_t fFilterMaskALa;                                   //! ALa legs cuts
   TList* fListALa;                                         //! ALa list 
@@ -450,11 +453,8 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1DcaNegToPrimVertex;        
   TH2F* fh2ArmenterosBeforeCuts;     
   TH2F* fh2ArmenterosAfterCuts;      
-  TH2F* fh2BB3SigProton;             
   TH2F* fh2BBLaPos;                  
   TH2F* fh2BBLaNeg;                  
-  TH1F* fh1CrossedRowsOverFindableNeg;
-  TH1F* fh1CrossedRowsOverFindablePos;
   TH1F* fh1PosDaughterCharge;
   TH1F* fh1NegDaughterCharge;
   TH1F* fh1PtMCK0s;
@@ -466,7 +466,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3InvMassEtaTrackPtK0s;
   TH3F* fh3InvMassEtaTrackPtLa;
   TH3F* fh3InvMassEtaTrackPtALa;
-  TH1F* fh1noAssociatedK0s;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
   TH2F* fh2MCgenK0Cone;
@@ -492,13 +491,15 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3IMK0MedianCone;
   TH3F* fh3IMLaMedianCone;
   TH3F* fh3IMALaMedianCone;
+  TH1F* fh1MedianEta;
+  TH1F* fh1JetPtMedian; //for normalisation by total number of median cluster jets TH3F* fh3IMALaMedianCone;
   TH1F* fh1MCMultiplicityPrimary;
   TH1F* fh1MCMultiplicityTracks;
   TH1F* fh1MCmotherLa;
   TH1F* fh1MCmotherALa;
   TH3F* fh3FeedDownLa;
   TH3F* fh3FeedDownALa; 
-   TH3F* fh3FeedDownLaCone;
+  TH3F* fh3FeedDownLaCone;
   TH3F* fh3FeedDownALaCone;   
   TH1F* fh1MCProdRadiusK0s;
   TH1F* fh1MCProdRadiusLambda;

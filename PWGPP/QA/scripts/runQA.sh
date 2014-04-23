@@ -130,6 +130,7 @@ updateQA()
         echo "could not guess run data from ${qaFile}"
         continue
       fi
+      echo "anchorYear for ${originalPeriod} is: ${anchorYear}"
 
       tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
       tmpRunDir=${tmpProductionDir}/000${runNumber}
@@ -495,8 +496,9 @@ guessRunData()
   dataType=""
   originalPass=""
   originalPeriod=""
+  anchorYear=""
 
-  local shortRunNumber=""
+  shortRunNumber=""
   oldIFS=${IFS}
   local IFS="/"
   declare -a path=( $1 )
@@ -519,12 +521,19 @@ guessRunData()
     (( i++ ))
   done
   originalPass=${pass}
+  [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass=""
+  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass="" #for MC not from lego, the runnumber is identified as lego train number, thus needs to be nulled
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
   #modify the OCDB: set the year
-  ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  if [[ ${dataType} =~ sim ]]; then 
+    anchorYear=$(for x in $mcProductionMap ; do [[ "${x}" =~ ${originalPeriod} ]] && echo ${x} && break; done)
+    anchorYear=${anchorYear#*=}
+    ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
+  else
+    ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  fi
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
   if [[ -z ${runNumber}} ]]

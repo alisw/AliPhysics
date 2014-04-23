@@ -51,7 +51,8 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
     virtual ~AliFragFuncHistos();
     
     virtual void DefineHistos();
-    virtual void FillFF(Float_t trackPt, Float_t jetPt,Bool_t incrementJetPt, Float_t norm = 0, Bool_t scaleStrangeness = kFALSE, Float_t scaleFacStrangeness = 1.);
+    virtual void FillFF(Float_t trackPt, Float_t trackEta, Float_t jetPt, 
+			Bool_t incrementJetPt, Float_t norm = 0, Bool_t scaleStrangeness = kFALSE, Float_t scaleFacStrangeness = 1.);
 
     virtual void AddToOutput(TList* list) const;
 
@@ -74,6 +75,9 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
     TH2F*   fh2Xi;        //! FF: xi 
     TH2F*   fh2Z;         //! FF: z  
     TH1F*   fh1JetPt;     //! jet pt 
+
+    TH3F*   fh3TrackPtVsEta;  //! FF: track transverse momentum vs track eta 
+    TH3F*   fh3TrackPVsEta;   //! FF: track momentum vs track eta 
 
     TString fNameFF;      // histo names prefix
     
@@ -257,18 +261,20 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
 
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
   void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, Double_t r, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);  
 
   void     AssociateGenRec(TList* tracksAODMCCharged,TList* tracksRec, TArrayI& indexAODTr,TArrayI& indexMCTr,TArrayS& isRefGen,TH2F* fh2PtRecVsGen);
 
   void     FillSingleTrackHistosRecGen(AliFragFuncQATrackHistos* trackQAGen, AliFragFuncQATrackHistos* trackQARec, TList* tracksGen, 
-				       const TArrayI& indexAODTr, const TArrayS& isRefGen, Int_t pdg = 0, Bool_t scaleGFL = kFALSE);
+				       const TArrayI& indexAODTr, const TArrayS& isRefGen, Int_t pdg = 0, 
+				       Bool_t scaleGFL = kFALSE, Bool_t scaleStrangeness = kFALSE);
 
 
   void     FillJetTrackHistosRec(AliFragFuncHistos* histRec,  AliAODJet* jet, 
 				 TList* jetTrackList, const TList* tracksGen, const TList* tracksRec, const TArrayI& indexAODTr,
-				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, Int_t pdg = 0, Bool_t scaleGFL = kFALSE);
+				 const TArrayS& isRefGen, TList* jetTrackListTR = 0, Int_t pdg = 0, 
+				 Bool_t scaleGFL = kFALSE, Bool_t scaleStrangeness = kFALSE);
 
 
   Float_t  CalcJetArea(Float_t etaJet, Float_t rc) const;
@@ -281,7 +287,9 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
 
   Double_t  TrackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc);
   Double_t  TrackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc);
+  Double_t  GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
     
+
 
   // Consts
   enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts,  
@@ -462,6 +470,7 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGen;      //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosRecEffRec;      //! tracking efficiency: reconstructed primaries
   AliFragFuncQATrackHistos* fQATrackHistosSecRec;         //! reconstructed secondaries
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecSSc;      //! reconstructed secondaries
 
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGenPi;     //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosRecEffGenPro;    //! tracking efficiency: generated primaries 
@@ -485,10 +494,20 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncQATrackHistos* fQATrackHistosSecRecProGFL;   //! tracking efficiency: generated primaries 
   AliFragFuncQATrackHistos* fQATrackHistosSecRecKGFL;     //! tracking efficiency: generated primaries 
 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecPiSSc;       //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecProSSc;      //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecKSSc;        //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecElSSc;       //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecMuSSc;       //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecProGFLSSc;   //! tracking efficiency: generated primaries 
+  AliFragFuncQATrackHistos* fQATrackHistosSecRecKGFLSSc;     //! tracking efficiency: generated primaries 
+
+
 
 
   AliFragFuncHistos*  fFFHistosRecEffRec;                 //! tracking efficiency: FF reconstructed primaries
   AliFragFuncHistos*  fFFHistosSecRec;                    //! secondary contamination: FF reconstructed secondaries 
+  AliFragFuncHistos*  fFFHistosSecRecSSc;                 //! secondary contamination: FF reconstructed secondaries 
 
   AliFragFuncHistos*  fFFHistosRecEffRecPi;               //! tracking efficiency: FF reconstructed primaries
   AliFragFuncHistos*  fFFHistosRecEffRecPro;              //! tracking efficiency: FF reconstructed primaries
@@ -498,7 +517,6 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosRecEffRecProGFL;           //! tracking efficiency: FF reconstructed primaries
   AliFragFuncHistos*  fFFHistosRecEffRecKGFL;             //! tracking efficiency: FF reconstructed primaries
 
-
   AliFragFuncHistos*  fFFHistosSecRecPi;                  //! secondary contamination: FF reconstructed secondaries 
   AliFragFuncHistos*  fFFHistosSecRecPro;                 //! secondary contamination: FF reconstructed secondaries 
   AliFragFuncHistos*  fFFHistosSecRecK;                   //! secondary contamination: FF reconstructed secondaries 
@@ -507,6 +525,13 @@ class AliAnalysisTaskIDFFTCF : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosSecRecProGFL;              //! secondary contamination: FF reconstructed secondaries 
   AliFragFuncHistos*  fFFHistosSecRecKGFL;                //! secondary contamination: FF reconstructed secondaries 
 
+  AliFragFuncHistos*  fFFHistosSecRecPiSSc;            //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecProSSc;           //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecKSSc;             //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecElSSc;            //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecMuSSc;            //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecProGFLSSc;        //! tracking efficiency: FF reconstructed primaries
+  AliFragFuncHistos*  fFFHistosSecRecKGFLSSc;          //! tracking efficiency: FF reconstructed primaries
 
 
   TRandom3*                   fRandom;          // TRandom3 for background estimation 

@@ -24,6 +24,7 @@ class iostream;
 #include "THnSparse.h"
 #include "THn.h"
 #include "TClonesArray.h"
+#include "TString.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -154,7 +155,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AliGenPythiaEventHeader* GetPythiaEventHeader(AliAODMCHeader *header);
     
 	Double_t RotatePhi(Double_t phiTrack, Double_t phiEP);
-	Double_t MoveMCEventplane(Double_t dMCEP);
+	Double_t MoveEventplane(Double_t dMCEP);
     
     Bool_t SetRelativeCuts(AliAODEvent *event);
     
@@ -165,6 +166,9 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     Bool_t IsPythiaParticle(const AliAODMCParticle *part, AliGenPythiaEventHeader* pythiaGenHeader);
     
     static Double_t* GetArrayClone(Int_t n, Double_t* source);
+	
+	void SetEventplaneSelector(char *c) { fEPselector = c; }
+	TString GetEventplaneSelector() { return fEPselector; }
     
   private :
     
@@ -211,6 +215,8 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
     // global variables
     Bool_t fIsMonteCarlo;
+	
+	TString fEPselector;
     
     // event cut variables
     Double_t fCutMaxZVertex;
@@ -269,7 +275,7 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     AlidNdPtAnalysisPbPbAOD(const AlidNdPtAnalysisPbPbAOD&); // not implemented
     AlidNdPtAnalysisPbPbAOD& operator=(const AlidNdPtAnalysisPbPbAOD&); // not implemented  
     
-    ClassDef(AlidNdPtAnalysisPbPbAOD,7); // has to be at least 1, otherwise not streamable...
+    ClassDef(AlidNdPtAnalysisPbPbAOD,8); // has to be at least 1, otherwise not streamable...
 };
 
 #endif

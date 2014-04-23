@@ -142,7 +142,7 @@ fUseChargeHadrons(kFALSE),
 fParticleSpeciesTrigger(-1),
 fParticleSpeciesAssociated(-1),
 fCheckMotherPDG(kTRUE),
-fTrackletDphiCut(999.),
+fTrackletDphiCut(9999999.),
 fSelectCharge(0),
 fTriggerSelectCharge(0),
 fAssociatedSelectCharge(0),
@@ -339,7 +339,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   if (fTriggersFromDetector == 1 || fTriggersFromDetector == 2 || fAssociatedFromDetector == 1 || fAssociatedFromDetector == 2)
     fListOfHistos->Add(new TH1F("V0SingleCells", "V0 single cell multiplicity;multiplicity;events", 100, -0.5, 99.5));
   if (fTriggersFromDetector == 3 || fAssociatedFromDetector == 3)
-    fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets;entries", 100, -0.1, 0.1));
+    fListOfHistos->Add(new TH1F("DphiTrklets", "tracklets Dphi;#Delta#phi,trklets (mrad);entries", 100, -100, 100));
   
   PostData(0,fListOfHistos);
   
@@ -660,6 +660,17 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseCorrectionMode()
   
   if (fFillOnlyStep0)
     zVtx = 0;
+  
+  // Event selection based on number of number of MC particles
+  if (fRejectZeroTrackEvents && tracksMC->GetEntriesFast() == 0)
+  {
+    AliInfo(Form("Rejecting event due to kinematic selection: %f %d", centrality, tracksMC->GetEntriesFast()));
+    fHistos->FillEvent(centrality, AliUEHist::kCFStepAnaTopology);
+    if (tracksMC != tracksCorrelateMC)
+      delete tracksCorrelateMC;
+    delete tracksMC;
+    return;
+  }
   
   // (MC-true all particles)
   // STEP 0
@@ -1498,10 +1509,11 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	{
 	  Double_t eta=-TMath::Log(TMath::Tan(trklets->GetTheta(itrklets)/2));
 	  if(TMath::Abs(eta)>fTrackEtaCut)continue;
-	  if(TMath::Abs(trklets->GetDeltaPhi(itrklets))>fTrackletDphiCut)continue;
+	  Double_t pT=1000*TMath::Abs(trklets->GetDeltaPhi(itrklets));//in mrad
+	  if(pT>fTrackletDphiCut)continue;
 	  TH1F* DphiTrklets = (TH1F*)fListOfHistos->FindObject("DphiTrklets");
-	  DphiTrklets->Fill(trklets->GetDeltaPhi(itrklets));
-	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,trklets->GetPhi(itrklets), 1.1, 0); // fit pT = 1.1 and charge = 0
+	  DphiTrklets->Fill(1000*trklets->GetDeltaPhi(itrklets)); //in mrad
+	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,trklets->GetPhi(itrklets), pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
 	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);
 	  
 	  obj->Add(particle);
@@ -1516,11 +1528,12 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	if (!track->IsMuonTrack()) continue;
 	//Float_t dca    = track->DCA();
 	//Float_t chi2   = track->Chi2perNDF();
-	//Int_t   mask   = track->GetMatchTrigger();
-	Float_t eta    = track->Eta();
 	Float_t rabs   = track->GetRAtAbsorberEnd();
+	Float_t eta    = track->Eta();
+	Int_t   matching   = track->GetMatchTrigger();
 	if (rabs < 17.6 || rabs > 89.5) continue;
 	if (eta < -4 || eta > -2.5) continue;
+	if (matching < 2) continue;
 	
 	AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,track->Phi(), track->Pt(), track->Charge()); 
 	particle->SetUniqueID(fAnalyseUE->GetEventCounter() * 100000 + iTrack);

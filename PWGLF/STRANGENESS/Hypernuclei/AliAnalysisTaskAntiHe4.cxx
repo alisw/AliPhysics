@@ -30,8 +30,6 @@
 //                                                       //
 ///////////////////////////////////////////////////////////
 
-using std::cout;
-using std::endl;
 
 ClassImp(AliAnalysisTaskAntiHe4)
 
@@ -78,7 +76,9 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4()
   fHistHelium4PtAsoSec(0),
   fHistAntiHelium4PtAso(0),
   fTree(0), 
-  fOutputContainer(0)
+  fOutputContainer(0),
+  fEvnt(0),
+  fItrk(0)
 {
   // default Constructor
   
@@ -129,7 +129,9 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4(const char *name)
     fHistHelium4PtAsoSec(0),
     fHistAntiHelium4PtAso(0),
     fTree(0), 
-    fOutputContainer(0)
+    fOutputContainer(0),
+    fEvnt(0),
+    fItrk(0)
 {
   // Constructor
 
@@ -152,7 +154,7 @@ AliAnalysisTaskAntiHe4::AliAnalysisTaskAntiHe4(const char *name)
   fESDtrackCuts->SetRequireTPCRefit(kTRUE);
   //fESDtrackCuts->SetRequireITSRefit(kTRUE);
   fESDtrackCuts->SetMinNClustersITS(2);
-  fESDtrackCuts->SetEtaRange(-0.8,0.8);
+  fESDtrackCuts->SetEtaRange(-1.0,1.0);
   //
   // cuts for final plots
   //
@@ -372,38 +374,52 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
 
 
   //------------ Tree and branch definitions ----------------//  
-  fTree = new TTree("tree", " alpha tree");   
-  
+  fTree = new TTree("tree", "alpha tree");     
   //------------ Event variables ------------//
-  fTree->Branch("Name",Name,"Name/C");
-  fTree->Branch("Evnt",&evnt, "evnt/I"); 
-  fTree->Branch("itrk", &itrk, "itrk/I"); 
-
+  fTree->Branch("fName",fName,"fName/C");
+  fTree->Branch("fEvnt",&fEvnt, "fEvnt/I"); 
+  fTree->Branch("fFileName",fFileName,"fFileName/C");
+  fTree->Branch("fEventNumber",fEventNumber,"fEventNumber/I");
+  fTree->Branch("fItrk",&fItrk, "fItrk/I"); 
   //-------------------------------------------//  
   //----------- Track variables --------------//  
-
-  fTree->Branch("TrkPtot",TrkPtot,"TrkPtot[itrk]/F"); 
-  fTree->Branch("TPCPtot",TPCPtot,"TPCPtot[itrk]/F"); 
-  fTree->Branch("DeDx",DeDx,"DeDx[itrk]/F");  
-  fTree->Branch("Sign",Sign,"Sign[itrk]/F");  
-  fTree->Branch("DCAXY",DCAXY,"DCAXY[itrk]/F");  
-  fTree->Branch("DCAZ",DCAZ,"DCAZ[itrk]/F");
-  fTree->Branch("ITSnCluster",ITSnCluster,"ITSnCluster[itrk]/F"); 
-  fTree->Branch("TPCNsignal",TPCNsignal,"TPCNsignal[itrk]/F");  
-  fTree->Branch("Mass",Mass,"Mass[itrk]/F");
+  fTree->Branch("fEta",fEta,"fEta[fItrk]/D");
+  fTree->Branch("fKinkIndex",fKinkIndex,"fKinkIndex[fItrk]/I");
+  fTree->Branch("fCentrality",fCentrality,"fCentrality[fItrk]/F");
   //
-  fTree->Branch("ITSRefit",ITSRefit,"ITSRefit[itrk]/F"); 
-  fTree->Branch("TOFtime",TOFtime,"TOFtime[itrk]/F"); 
-  fTree->Branch("TOFRefit",TOFRefit,"TOFRefit[itrk]/F"); 
-  fTree->Branch("TOFout",TOFout,"TOFout[itrk]/F"); 
+  fTree->Branch("fTPCnCluster",fTPCnCluster,"fTPCnCluster[fItrk]/s");
+  fTree->Branch("fTPCNsignal",fTPCNsignal,"fTPCNsignal[fItrk]/s");
+  fTree->Branch("fChi2PerClusterTPC",fChi2PerClusterTPC,"fChi2PerClusterTPC[fItrk]/D");
+  fTree->Branch("fTPCRefit",fTPCRefit,"fTPCRefit[fItrk]/O");
+  fTree->Branch("fTPCsignal0",fTPCsignal0,"fTPCsignal0[fItrk]/D");
+  fTree->Branch("fTPCsignal1",fTPCsignal1,"fTPCsignal1[fItrk]/D");
+  fTree->Branch("fTPCsignal2",fTPCsignal2,"fTPCsignal2[fItrk]/D");
+  fTree->Branch("fTPCsignal3",fTPCsignal3,"fTPCsignal3[fItrk]/D");
+  fTree->Branch("fTPCSharedClusters",fTPCSharedClusters,"fTPCSharedClusters[fItrk]/I");
+  fTree->Branch("fTPCNclsIter1",fTPCNclsIter1,"fTPCNclsIter1[fItrk]/s");
   //
-  fTree->Branch("ITSsignal",ITSsignal,"ITSsignal[itrk]/F");
-  fTree->Branch("SharedClusters",SharedClusters,"SharedClusters[itrk]/F");
-  fTree->Branch("fFileName",fFileName,"fFileName/C");  
-  fTree->Branch("fEventNumber",fEventNumber,"fEventNumber/I");
+  fTree->Branch("fITSsignal",fITSsignal,"fITSsignal[fItrk]/D");
+  fTree->Branch("fITSnCluster",fITSnCluster,"fITSnCluster[fItrk]/I");
+  fTree->Branch("fChi2PerClusterITS",fChi2PerClusterITS,"fChi2PerClusterITS[fItrk]/D");
+  fTree->Branch("fITSRefit",fITSRefit,"fITSRefit[fItrk]/O");
   //
-  fTree->Branch("fAssociated",fAssociated,"fAssociated[itrk]/O");
-  fTree->Branch("fTrackPt",fTrackPt,"fTrackPt[itrk]/F");
+  fTree->Branch("fTOFtime",fTOFtime,"fTOFtime[fItrk]/O");
+  fTree->Branch("fTOFRefit",fTOFRefit,"fTOFRefit[fItrk]/O");
+  fTree->Branch("fTOFout",fTOFout,"fTOFout[fItrk]/O");
+  fTree->Branch("fTOFsignalDz",fTOFsignalDz,"fTOFsignalDz[fItrk]/D");
+  fTree->Branch("fTOFsignalDx",fTOFsignalDx,"fTOFsignalDx[fItrk]/D");
+  //
+  fTree->Branch("fDCAXY",fDCAXY,"fDCAXY[fItrk]/F");
+  fTree->Branch("fDCAZ",fDCAZ,"fDCAZ[fItrk]/F");
+  //
+  fTree->Branch("fTrkPtot",fTrkPtot,"fTrkPtot[fItrk]/D"); 
+  fTree->Branch("fTPCPtot",fTPCPtot,"fTPCPtot[fItrk]/D"); 
+  fTree->Branch("fTrackPt",fTrackPt,"fTrackPt[fItrk]/D");
+  fTree->Branch("fDeDx",fDeDx,"fDeDx[fItrk]/D");  
+  fTree->Branch("fSign",fSign,"fSign[fItrk]/D");  
+  fTree->Branch("fMass",fMass,"Mass[fItrk]/F");
+  //
+  fTree->Branch("fAssociated",fAssociated,"fAssociated[fItrk]/O");
 
 }
 
@@ -478,7 +494,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   //centrality selection in PbPb 
   //
   Int_t centralityClass10 = -1;
-  Int_t centralityPercentile = -1;
+  Float_t centralityPercentile = -1;
   //
   if (fESD->GetEventSpecie() == 4) { //species == 4 == PbPb
     // PbPb
@@ -489,8 +505,6 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       if (centralityPercentile < 0. || centralityPercentile > 80. ) return; //select only events with centralities between 0 and 80 %  
     }
   }
-  //
-  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
   //
   fHistCentralityClass10->Fill(centralityClass10);
   fHistCentralityPercentile->Fill(centralityPercentile);
@@ -509,9 +523,9 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   }
   //
   Float_t dca[2], cov[3]; // dca_xy, dca_z, sigma_xy, sigma_xy_z, sigma_z for th // for Anti-Alpha
-  evnt =  fESD->GetEventNumberInFile();
-  sscanf(fInputHandler->GetTree()->GetCurrentFile()->GetName(),"%s", Name);
-  itrk = 0;
+  fEvnt =  fESD->GetEventNumberInFile();
+  sscanf(fInputHandler->GetTree()->GetCurrentFile()->GetName(),"%s", fName);
+  fItrk = 0;
   //
   Int_t runNumber = 0;
   runNumber = fESD->GetRunNumber();
@@ -519,7 +533,45 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
   Bool_t fillTree = kFALSE;
   // Track loop to fill the spectram
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    //
+
+    fEventNumber[fItrk] = -1;
+
+    fEta[fItrk] = -2;
+    fCentrality[fItrk] = -1;
+    fTPCNsignal[fItrk] = -1;
+    fTPCnCluster[fItrk] = -1;
+    fChi2PerClusterTPC[fItrk] = -1;
+    fTPCRefit[fItrk] = kFALSE;
+    fTPCsignal0[fItrk] = -1;
+    fTPCsignal1[fItrk] = -1;
+    fTPCsignal2[fItrk] = -1;
+    fTPCsignal3[fItrk] = -1;
+    fTPCSharedClusters[fItrk] = -1;
+    fTPCNclsIter1[fItrk] = -1;
+
+    fITSsignal[fItrk] = -1;
+    fITSnCluster[fItrk] = -1;
+    fChi2PerClusterITS[fItrk] = -1;
+    fITSRefit[fItrk] = kFALSE;
+
+    fTOFRefit[fItrk] = kFALSE;
+    fTOFtime[fItrk] = kFALSE;
+    fTOFout[fItrk] = kFALSE;
+    fTOFsignalDz[fItrk] = -1;
+    fTOFsignalDx[fItrk] = -1;
+
+    fDCAZ[fItrk] = -1;
+    fDCAXY[fItrk] = -1;
+
+    fTrkPtot[fItrk] = -1;
+    fTPCPtot[fItrk] = -1;
+    fTrackPt[fItrk] = -1;
+    fDeDx[fItrk] = -1;
+    fSign[fItrk] = -2;
+    fMass[fItrk] = -1;
+    
+    fAssociated[fItrk] = kFALSE;
+
     AliESDtrack* track = dynamic_cast<AliESDtrack*>(fESD->GetTrack(iTracks));
     if (!fESDtrackCuts->AcceptTrack(track)) continue;
     //
@@ -596,7 +648,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 								5.04114e-11,
 								2.13096,
 								2.38541);
-    if (eta < 0.8 && tpcSignal > 120 && tpcSignal > cut && tpcSignal < 1000 && track->GetTPCsignalN() > 60 && dcaZ < 15 && dcaXY < 15 && ptot > 1.0 && ptot < 20) {
+    if (eta < 1.0 && tpcSignal > 120 && tpcSignal > cut && tpcSignal < 1000 && track->GetTPCsignalN() > 60 && dcaZ < 15 && dcaXY < 15 && ptot > 1.0 && ptot < 20) {
       //
     cout << "AntiAlphaEvent" << " " 
 	   << AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->GetTree()->GetCurrentFile()->GetName() << " " 
@@ -607,38 +659,54 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       //
       fillTree = kTRUE;
       //
-      TrkPtot[itrk] = track->P();
-      TPCPtot[itrk] = ptot;
-      DeDx[itrk] = tpcSignal;
-      DCAZ[itrk] = dcaZ;
-      TPCNsignal[itrk] = track->GetTPCsignalN();
-      ITSnCluster[itrk] = track->GetNcls(0);
-      Sign[itrk] = sign;
-      DCAXY[itrk] = dcaXY;
-      Mass[itrk] = mass;
-      //
-      ITSsignal[itrk] = track->GetITSsignal();
-      SharedClusters[itrk] = shared.CountBits();
+
       sscanf(fInputHandler->GetTree()->GetCurrentFile()->GetName(),"%s", fFileName);
-      //fFileName[itrk] = fInputHandler->GetTree()->GetCurrentFile()->GetName();
-      fEventNumber[itrk] = fESD->GetEventNumberInFile();
-      //
-      if(status&AliESDtrack::kITSrefit) 
-	ITSRefit[itrk] = 1;	
-      else ITSRefit[itrk] = 0;
-      //
-      if (time < 99998) {
-	TOFRefit[itrk] = 1;
-      } else {
-	TOFRefit[itrk] = 0;
-      }
-      //itrk++;
-      //
+      fEventNumber[fItrk] = fESD->GetEventNumberInFile();
+
+      fEta[fItrk] = eta;
+      fKinkIndex[fItrk] = track->GetKinkIndex(0);
+      fCentrality[fItrk] = centralityPercentile;
+
+      fTPCNsignal[fItrk] = track->GetTPCsignalN();
+      fTPCnCluster[fItrk] = track->GetTPCNcls();
+      fChi2PerClusterTPC[fItrk] = track->GetTPCchi2()/fTPCnCluster[fItrk];
+      if(status&AliESDtrack::kTPCrefit)
+        fTPCRefit[fItrk] = kTRUE;
+      else fTPCRefit[fItrk] = kFALSE;
+      fTPCsignal0[fItrk] = signal[0];
+      fTPCsignal1[fItrk] = signal[1];
+      fTPCsignal2[fItrk] = signal[2];
+      fTPCsignal3[fItrk] = signal[3];
+      fTPCSharedClusters[fItrk] = shared.CountBits();
+      fTPCNclsIter1[fItrk] = track->GetTPCNclsIter1();
+
+      fITSsignal[fItrk] = track->GetITSsignal();
+      fITSnCluster[fItrk] = track->GetNcls(0);
+      fChi2PerClusterITS[fItrk] = track->GetITSchi2()/fITSnCluster[fItrk];
+      if(status&AliESDtrack::kITSrefit)
+        fITSRefit[fItrk] = kTRUE;
+      else fITSRefit[fItrk] = kFALSE;
+
+
+      if(status&AliESDtrack::kITSrefit)
+        fITSRefit[fItrk] = kTRUE;
+      else fITSRefit[fItrk] = kFALSE;
       hasTOFout = status&AliESDtrack::kTOFout;
       hasTOFtime  = status&AliESDtrack::kTIME;
-      //
-      TOFtime[itrk] = hasTOFtime;
-      TOFout[itrk]  = hasTOFout;
+      fTOFtime[fItrk] = hasTOFtime;
+      fTOFout[fItrk]  = hasTOFout;
+      fTOFsignalDz[fItrk] = track->GetTOFsignalDz();
+      fTOFsignalDx[fItrk] = track->GetTOFsignalDx();
+
+      fDCAZ[fItrk] = dcaXY;
+      fDCAXY[fItrk] = dcaZ;
+
+      fTrkPtot[fItrk] = track->P();
+      fTPCPtot[fItrk] = ptot;
+      fTrackPt[fItrk] = track->Pt();
+      fDeDx[fItrk] = tpcSignal;
+      fSign[fItrk] = sign;
+      fMass[fItrk] = mass;
 
       if (fMCtrue){ //associated
 
@@ -667,10 +735,9 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
 
       }
       
-      fAssociated[itrk] = isAssociated;
-      fTrackPt[itrk] = track->Pt();
-      
-      itrk++;
+      fAssociated[fItrk] = isAssociated;
+
+      fItrk++;
     }
     //
     // do pid fill histogram for raw ratios
@@ -700,7 +767,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     if(sign<0) {
       fHistDeDx->Fill(ptot, track->GetTPCsignal());
       if (track->GetTPCsignalN() > 100 &&
-          TMath::Abs(track->Eta()) < 0.8 &&
+          TMath::Abs(track->Eta()) < 1.0 &&
           signal[3]/signal[1] > 0.6 &&
           signal[0]/signal[1] > 0.5 &&
           signal[3]/signal[1] < 1.2 &&
@@ -958,8 +1025,8 @@ void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack)
 	      fHistHelium4PtGen->Fill(pTGen);
 	      if(isPrimary) fHistHelium4PtGenPrim->Fill(pTGen);
 	      if(isSecondary) fHistHelium4PtGenSec->Fill(pTGen);
-	      if(eta < 0.8)fHistHelium4PtGenEta->Fill(pTGen);
-	      if(isPrimary && eta < 0.8)fHistHelium4PtGenPrimEta->Fill(pTGen);
+	      if(TMath::Abs(eta) < 1.0)fHistHelium4PtGenEta->Fill(pTGen);
+	      if(isPrimary && TMath::Abs(eta) < 1.0)fHistHelium4PtGenPrimEta->Fill(pTGen);
 	    }
 
 	  //Anti-Alpha
@@ -968,7 +1035,7 @@ void AliAnalysisTaskAntiHe4::MCGenerated(AliStack* stack)
 	      fHistAntiHelium4PtGen->Fill(pTGen);
 	      if(isPrimary) fHistAntiHelium4PtGenPrim->Fill(pTGen);
 	      if(isSecondary) fHistAntiHelium4PtGenSec->Fill(pTGen);
-	      if(eta < 0.8)fHistAntiHelium4PtGenEta->Fill(pTGen);
+	      if(TMath::Abs(eta) < 1.0)fHistAntiHelium4PtGenEta->Fill(pTGen);
 	    }
 
   	      

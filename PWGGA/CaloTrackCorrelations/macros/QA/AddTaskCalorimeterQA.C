@@ -90,6 +90,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
 
+  if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+  else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
+  else                   cu->SetNumberOfSuperModulesUsed(20);
+  
   AliEMCALRecoUtils* reco = cu->GetEMCALRecoUtils();
   reco->SwitchOnRejectExoticCell() ; // reject exotic cells, fill different histograms for exotic clusters and good clusters
   reco->SetExoticCellDiffTimeCut(10000); // Open  
@@ -130,22 +134,19 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="de
   
   if     (year==2010)
   {  
-    emcalQA->SetNumberOfModules(4); 
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 200) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-230,90,120);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(370,450,40);
   }
-  else if(year==2011)
+  else if(year==2011 || year==2012)
   {            
-    emcalQA->SetNumberOfModules(10); 
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 191*TMath::DegToRad(), 200) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(100,450,100);
   }
   else 
   {
-    emcalQA->SetNumberOfModules(12); 
-    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ; // revise
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 320*TMath::DegToRad(), 400) ; // revise
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-700,90,200); // revise
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(50,450,100);  // revise     
   }

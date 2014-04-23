@@ -227,7 +227,7 @@ what=3
 if test $notr -gt 0 ; then let what=$what^0x2 ; fi
 if test $norn -gt 0 ; then let what=$what^0x1 ; fi
 
-scr=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunQA.C
+scr=$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/RunQAOld.C
 mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"
 
 enable_trap

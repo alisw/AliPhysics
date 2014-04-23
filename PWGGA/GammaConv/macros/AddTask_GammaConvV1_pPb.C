@@ -962,16 +962,35 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 		cutarray[ 2] = "8020012002093172003290000000"; mesonCutArray[ 2] = "01621035000000";  //old standard eta=0.9 y=0.8 
 		cutarray[ 3] = "8020012002092170008260400000"; mesonCutArray[ 3] = "01621035008000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
 	} else if (trainConfig == 173) {
-		cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01621035009000"; //clean cuts ///New STANDARD CUT
-		cutarray[ 1] = "8000011002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //no MCP smearing
-		cutarray[ 2] = "8000011002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
-		cutarray[ 3] = "8000011002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;
+		cutarray[ 0] = "8000011002092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities
+		cutarray[ 1] = "8000011002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1
+		cutarray[ 2] = "8000011002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2
+		cutarray[ 3] = "8000011002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3
 	} else if (trainConfig == 174) {
-		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01621035009000";  //new standard eta=0.9 y=0.8 // BG track multiplicity
-		cutarray[ 1] = "8000012002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  //new standard eta=0.9 y=0.8 //no MCP smearing      
-		cutarray[ 2] = "8000012002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  //old standard eta=0.9 y=0.8 
-		cutarray[ 3] = "8000012002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  //new standard eta=0.9 y=0.8 // fPSigSmearingCte=0.014;		
-	
+		cutarray[ 0] = "8000012002092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // all Photon Qualities
+		cutarray[ 1] = "8000012002092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // only photon quality 1
+		cutarray[ 2] = "8000012002092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // only photon quality 2
+		cutarray[ 3] = "8000012002092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // only photon quality 3
+	} else if (trainConfig == 175) {
+		cutarray[ 0] = "8000011002092170008260410000"; mesonCutArray[ 0] = "01621035009000";  //no shared electron cut on
+		cutarray[ 1] = "8000011002192170008260400000"; mesonCutArray[ 1] = "01621035009000";  //single pt cut 0.1
+		cutarray[ 2] = "8000011002292170008260400000"; mesonCutArray[ 2] = "01621035009000";  //single pt cut 0.15
+		cutarray[ 3] = "8000011002492170008260400000"; mesonCutArray[ 3] = "01621035009000";  //single pt cut 0.075
+	} else if (trainConfig == 176) {
+		cutarray[ 0] = "8000012002092170008260410000"; mesonCutArray[ 0] = "01621035009000";  //no shared electron cut on
+		cutarray[ 1] = "8000012002192170008260400000"; mesonCutArray[ 1] = "01621035009000";  //single pt cut 0.1
+		cutarray[ 2] = "8000012002292170008260400000"; mesonCutArray[ 2] = "01621035009000";  //single pt cut 0.15
+		cutarray[ 3] = "8000012002492170008260400000"; mesonCutArray[ 3] = "01621035009000";  //single pt cut 0.075
+	} else if (trainConfig == 177) {
+		cutarray[ 0] = "8000011007092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // min R =35 cm
+		cutarray[ 1] = "8000011007092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // min R =35 cm & only photon quality 1
+		cutarray[ 2] = "8000011007092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // min R =35 cm & only photon quality 2
+		cutarray[ 3] = "8000011007092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3
+	} else if (trainConfig == 178) {
+		cutarray[ 0] = "8000012007092170008260400000"; mesonCutArray[ 0] = "01621035009000";  // min R =35 cm
+		cutarray[ 1] = "8000012007092170008260420000"; mesonCutArray[ 1] = "01621035009000";  // min R =35 cm & only photon quality 1
+		cutarray[ 2] = "8000012007092170008260430000"; mesonCutArray[ 2] = "01621035009000";  // min R =35 cm & only photon quality 2
+		cutarray[ 3] = "8000012007092170008260440000"; mesonCutArray[ 3] = "01621035009000";  // min R =35 cm & only photon quality 3
 	} else {
 		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
 		return;
@@ -1009,7 +1028,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 	for(Int_t i = 0; i<numberOfCuts; i++){
 		
 		analysisCuts[i] = new AliConversionCuts();
-		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151){
+		if ( trainConfig == 1 || trainConfig == 3 || trainConfig == 5 || trainConfig == 7 || trainConfig == 9 || trainConfig == 11 || trainConfig == 13 || trainConfig == 15|| trainConfig == 17|| trainConfig == 19 || trainConfig == 21 || trainConfig == 133 || trainConfig == 135 || trainConfig == 137 || trainConfig == 139 || trainConfig == 141 || trainConfig == 143 || trainConfig == 145 || trainConfig == 147 || trainConfig == 149 || trainConfig == 151 || trainConfig == 173 || trainConfig == 175 || trainConfig == 177  ){
 			if (doWeighting){
 				if (generatorName.CompareTo("DPMJET")==0){
 					analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "Eta_DPMJET_LHC13b2_efix_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
@@ -1018,7 +1037,7 @@ void AddTask_GammaConvV1_pPb(  Int_t trainConfig = 1,  //change different set of
 				}
 			}
 		}   
-		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18|| trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152){
+		if ( trainConfig == 2 || trainConfig == 4 || trainConfig == 6 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12 || trainConfig == 14 || trainConfig == 16|| trainConfig == 18|| trainConfig == 20|| trainConfig == 22 || trainConfig == 134 || trainConfig == 136 || trainConfig == 138 || trainConfig == 140 || trainConfig == 142 || trainConfig == 144 || trainConfig == 146 || trainConfig == 148 || trainConfig == 150 || trainConfig == 152 || trainConfig == 174 || trainConfig == 176 || trainConfig == 178){
 			if (doWeighting){
 				analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 			}

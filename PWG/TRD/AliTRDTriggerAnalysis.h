@@ -21,6 +21,8 @@ public:
 
   enum TRDTrigger_t { kHCO = 0, kHJT, kHSE, kHQU, kHEE, kHlast };
 
+  enum JetTriggerMode_t { kHJTDefault = 0, kHJTWindowZPhi };
+
   void ResetTriggers();
   Bool_t CalcTriggers(const AliVEvent* event);
 
@@ -61,6 +63,9 @@ public:
   void SetRequireInTime(Bool_t val) { fRequireInTime = val; }
   Bool_t GetRequireInTime() const { return fRequireInTime; }
 
+  void SetJetTriggerMode(Int_t mode) { fJetTriggerMode = mode; }
+  Int_t GetJetTriggerMode() const { return fJetTriggerMode; }
+
   void SetVerbosity(UChar_t val) { fVerbosity = val; }
   UChar_t GetVerbosity() const { return fVerbosity; }
 
@@ -87,6 +92,9 @@ protected:
   Bool_t fRequireMatchElectron;	// require a matched global track
 				// for the electron conditions
   Bool_t fRequireInTime;	// require the tracks to be in time
+  Int_t  fJetTriggerMode;       // select mode for jet trigger
+				// 0: default (stack-wise counting, as hw)
+				// 1: count in overlapping windows of stack size
 
   // trigger thresholds
   UChar_t fTRDlayerMaskEl;      // mask for tracklet requirements

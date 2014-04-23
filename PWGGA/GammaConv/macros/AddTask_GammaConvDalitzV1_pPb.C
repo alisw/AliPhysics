@@ -327,6 +327,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	ConvCutarray[1] = "8000012032093603007200000000"; ElecCutarray[1] = "9047540023910262371"; MesonCutarray[1] = "01033035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.6 and |Gamma_eta| < 0.65 and |e+_eta| < 0.65 and |e-_eta| < 0.65 
 	ConvCutarray[2] = "8000012042093603007200000000"; ElecCutarray[2] = "9047540023510262371"; MesonCutarray[2] = "01032035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.7 and |Gamma_eta| < 0.75 and |e+_eta| < 0.75 and |e-_eta| < 0.75
 	ConvCutarray[3] = "8000012012093603007200000000"; ElecCutarray[3] = "9047540023610262371"; MesonCutarray[3] = "01034035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 +  |Y| < 0.5 and |Gamma_eta| < 0.60 and |e+_eta| < 0.60 and |e-_eta| < 0.60  
+	
 } else if ( trainConfig == 21 ) {
 	
 	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540043310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  +  3Cls ITS
@@ -342,6 +343,14 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	ConvCutarray[2] = "8000012002093603007200000000"; ElecCutarray[2] = "9047540063310262371"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 5 ITScls
 	ConvCutarray[3] = "8000012002093603007200000000"; ElecCutarray[3] = "9047540073310262371"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
 	
+} else if ( trainConfig == 23 ) {
+  
+	ConvCutarray[0] = "8000011002493603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.075
+	ConvCutarray[1] = "8000011002193603007200000000"; ElecCutarray[1] = "9047540023310262371"; MesonCutarray[1] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt > 0.100
+	ConvCutarray[2] = "8000011002093603007200000000"; ElecCutarray[2] = "9047540023310263371"; MesonCutarray[2] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.150
+	ConvCutarray[3] = "8000011002093603007200000000"; ElecCutarray[3] = "9047540023310265371"; MesonCutarray[3] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + Pt{e} > 0.175
+	
+  
 }
 
 
@@ -375,7 +384,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
       analysisCuts[i] = new AliConversionCuts();
      
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21  ){
+	  if (  ( trainConfig >= 1 && trainConfig <= 9 ) || trainConfig == 19  || trainConfig == 21 || trainConfig == 23 ){
 	    
 	    if (doWeighting){
 	      if (generatorName.CompareTo("DPMJET")==0){

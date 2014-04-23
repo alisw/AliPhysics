@@ -40,8 +40,8 @@
 
 #include "AliLeadingV0Correlation.h"
 
-#define CorrBinsX 24
-#define CorrBinsY 26
+#define CorrBinsX 240
+#define CorrBinsY 260
 
 
 Double_t PI =TMath::Pi();
@@ -105,12 +105,16 @@ AliLeadingV0Correlation::AliLeadingV0Correlation()
 	fHistMCGenK0				(0),
 	fHistMCGenLAM				(0),
 	fHistMCGenALAM				(0),
+	fHistMCGenLAMXIPLS			(0),
+	fHistMCGenLAMXI 			(0),
 	fHistReconstK0				(0),
 	fHistReconstLA				(0),
 	fHistReconstALA				(0),
 	fHistMCAssoK0				(0),
 	fHistMCAssoLA				(0),
 	fHistMCAssoALA				(0),
+	fHistMCAssoLAXI				(0),
+	fHistMCAssoALAXiPlus		(0),
 	fHistReconstSib				(0),
 	fHistReconstMix				(0),
 	fHistReconstSibGEN			(0),
@@ -188,12 +192,16 @@ AliLeadingV0Correlation::AliLeadingV0Correlation(const char *name)
 	fHistMCGenK0				(0),
 	fHistMCGenLAM				(0),
 	fHistMCGenALAM				(0),
+	fHistMCGenLAMXIPLS			(0),
+	fHistMCGenLAMXI 			(0),
 	fHistReconstK0				(0),
 	fHistReconstLA				(0),
 	fHistReconstALA				(0),
 	fHistMCAssoK0				(0),
 	fHistMCAssoLA				(0),
 	fHistMCAssoALA				(0),
+	fHistMCAssoLAXI				(0),
+	fHistMCAssoALAXiPlus		(0),
 	fHistReconstSib				(0),
 	fHistReconstMix				(0),
 	fHistReconstSibGEN			(0),
@@ -279,26 +287,32 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistEventViceReconst= new TH2F("fHistEventViceReconst", "fHistEventViceReconst", 200, -20, 20, 10,0,1000);
 	fOutputList->Add(fHistEventViceReconst);
 	
-	fHistMCGenLAM  = new TH2F("fHistMCGenLAM" , "fHistMCGenLAM" ,140,1.06,1.2, 120, 0, 6);
+	fHistMCGenLAM  = new TH2F("fHistMCGenLAM" , "fHistMCGenLAM" ,140,1.06,1.2, 120, 0, fTriglow);
 	fOutputList->Add(fHistMCGenLAM);
 	
-	fHistMCGenALAM = new TH2F("fHistMCGenALAM", "fHistMCGenALAM",140,1.06,1.2, 120, 0, 6);
+	fHistMCGenALAM = new TH2F("fHistMCGenALAM", "fHistMCGenALAM",140,1.06,1.2, 120, 0, fTriglow);
 	fOutputList->Add(fHistMCGenALAM);
 	
-	fHistMCGenK0   = new TH2F("fHistMCGenK0"  , "fHistMCGenK0"  ,200,0.4,0.6, 120, 0, 6);
+	fHistMCGenK0   = new TH2F("fHistMCGenK0"  , "fHistMCGenK0"  ,200,0.4,0.6, 120, 0, fTriglow);
 	fOutputList->Add(fHistMCGenK0);
+	
+	fHistMCGenLAMXIPLS = new TH2F("fHistMCGenLAMXIPLS", "fHistMCGenLAMXIPLS",140,1.06,1.2, 120, 0, fTriglow);
+	fOutputList->Add(fHistMCGenLAMXIPLS);
+	
+	fHistMCGenLAMXI   = new TH2F("fHistMCGenLAMXI"  , "fHistMCGenLAMXI"  ,140,1.06,1.2, 120, 0, fTriglow);
+	fOutputList->Add(fHistMCGenLAMXI);
 	
 	//New dimension for feed down corection 
 	
 	const Int_t ndimsK0 = 4;       
-	Int_t    binsK0[ndimsK0] = {200, 120,500, 1000};
-	Double_t xminK0[ndimsK0] = {0.4,   0,  0,  0.9};
-	Double_t xmaxK0[ndimsK0] = {0.6,   6, 10,    1};
+	Int_t    binsK0[ndimsK0] = {200, 120,500,1000};
+	Double_t xminK0[ndimsK0] = {0.4,   0,  0,0.99};
+	Double_t xmaxK0[ndimsK0] = {0.6,   fTriglow, 10,   1};
 	
 	const Int_t ndimsLA = 4;       
 	Int_t    binsLA[ndimsLA] = { 140, 120,500,1000};
-	Double_t xminLA[ndimsLA] = {1.06,   0,  0,   0};
-	Double_t xmaxLA[ndimsLA] = { 1.2,   6, 10,   1};
+	Double_t xminLA[ndimsLA] = {1.06,   0,  0,0.99};
+	Double_t xmaxLA[ndimsLA] = { 1.2,   fTriglow, 10,   1};
 	
 	fHistReconstK0= new THnSparseD("fHistReconstK0"  , "fHistReconstK0",ndimsK0,binsK0,xminK0,xmaxK0);
 	fHistReconstK0->Sumw2();
@@ -324,15 +338,23 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fHistMCAssoALA->Sumw2();
 	fOutputList->Add(fHistMCAssoALA);
 	
+	fHistMCAssoLAXI= new THnSparseD("fHistMCAssoLAXI" , "fHistMCAssoLAXI" , ndimsLA,binsLA,xminLA,xmaxLA);
+	fHistMCAssoLAXI->Sumw2();
+	fOutputList->Add(fHistMCAssoLAXI);
+	
+	fHistMCAssoALAXiPlus= new THnSparseD("fHistMCAssoALAXiPlus" , "fHistMCAssoALAXiPlus" , ndimsLA,binsLA,xminLA,xmaxLA);
+	fHistMCAssoALAXiPlus->Sumw2();
+	fOutputList->Add(fHistMCAssoALAXiPlus);
+	
 	//--------------------------------------------Correlation Histos -----------------------------------------------------//
 	
 	//0-pTK0,1-PhiK0,2-EtaK0,3-DPhiK0,4-DEtaK0,5-TYPE,6-CutSet
 	const Int_t ndimsv0CORR = 8;       
 	Int_t    binsv0CORR[ndimsv0CORR] = {120, 200,          200,CorrBinsX,      CorrBinsY,4,500,1000};
 	
-	Double_t xminv0CORR[ndimsv0CORR] = {  0,   0,-fTrackEtaCut,    -PI/2,-2*fTrackEtaCut,0,  0,   0};
+	Double_t xminv0CORR[ndimsv0CORR] = {  0,   0,-fTrackEtaCut,    -PI/2,-2*fTrackEtaCut,0,  0,0.99};
 	
-	Double_t xmaxv0CORR[ndimsv0CORR] = {  6,2*PI, fTrackEtaCut,   3*PI/2, 2*fTrackEtaCut,4, 10,   1};
+	Double_t xmaxv0CORR[ndimsv0CORR] = {  fTriglow,2*PI, fTrackEtaCut,   3*PI/2, 2*fTrackEtaCut,4, 10,   1};
 	
 	fHistReconstSib= new THnSparseD("fHistReconstSib", "fHistReconstSib", ndimsv0CORR, binsv0CORR, xminv0CORR, xmaxv0CORR);
 	fHistReconstSib->Sumw2();
@@ -367,27 +389,27 @@ void AliLeadingV0Correlation::UserCreateOutputObjects()
 	fOutputList->Add(fHistReconstMixFEED);
 	
 	
-	fHistTriggerSib= new TH2F("fHistTriggerSib", "fHistTriggerSib", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerSib= new TH1F("fHistTriggerSib", "fHistTriggerSib", 100, fTriglow, fTrighigh);
 	fHistTriggerSib->Sumw2();
 	fOutputList->Add(fHistTriggerSib);
 	
-	fHistTriggerMix= new TH2F("fHistTriggerMix", "fHistTriggerMix", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerMix= new TH1F("fHistTriggerMix", "fHistTriggerMix", 100, fTriglow, fTrighigh);
 	fHistTriggerMix->Sumw2();
 	fOutputList->Add(fHistTriggerMix);
 	
-	fHistTriggerSibGEN= new TH2F("fHistTriggerSibGEN", "fHistTriggerSibGEN", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerSibGEN= new TH1F("fHistTriggerSibGEN", "fHistTriggerSibGEN", 100, fTriglow, fTrighigh);
 	fHistTriggerSibGEN->Sumw2();
 	fOutputList->Add(fHistTriggerSibGEN);
 	
-	fHistTriggerMixGEN= new TH2F("fHistTriggerMixGEN", "fHistTriggerMixGEN", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerMixGEN= new TH1F("fHistTriggerMixGEN", "fHistTriggerMixGEN", 100, fTriglow, fTrighigh);
 	fHistTriggerMixGEN->Sumw2();
 	fOutputList->Add(fHistTriggerMixGEN);
 	
-	fHistTriggerSibASO= new TH2F("fHistTriggerSibASO", "fHistTriggerSibASO", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerSibASO= new TH1F("fHistTriggerSibASO", "fHistTriggerSibASO", 100, fTriglow, fTrighigh);
 	fHistTriggerSibASO->Sumw2();
 	fOutputList->Add(fHistTriggerSibASO);
 	
-	fHistTriggerMixASO= new TH2F("fHistTriggerMixASO", "fHistTriggerMixASO", 100, fTriglow, fTrighigh,200,0,2*PI);
+	fHistTriggerMixASO= new TH1F("fHistTriggerMixASO", "fHistTriggerMixASO", 100, fTriglow, fTrighigh);
 	fHistTriggerMixASO->Sumw2();
 	fOutputList->Add(fHistTriggerMixASO);
 	
@@ -466,7 +488,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			if (!mcTrack) continue;
 			// Charged track Generated level
 			Double_t mcTrackPt  = mcTrack->Pt();
-			if ((mcTrackPt<fPtMin)||(mcTrackPt>6.0)) continue;
+			if ((mcTrackPt<fPtMin)||(mcTrackPt>fTriglow)) continue;
 			
 			Double_t mcTrackEta = mcTrack->Eta();
 			Double_t mcTrackPhi = mcTrack->Phi();
@@ -479,8 +501,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			// V0 Generated level
 			Int_t mcPartPdg		  = mcTrack->GetPdgCode();
 			
-			Double_t mcRapidity   = mcTrack->Y();
-			Bool_t V0RapMax       = TMath::Abs(mcRapidity)<fRapidityCut;
+			Bool_t V0EtaMax       = TMath::Abs(mcTrackEta)<fTrackEtaCut;
 			Double_t mcMass       = mcTrack->M();
 			
 			Double_t mcK0[3] = {mcMass,mcTrackPt,nMCTracks};
@@ -494,21 +515,21 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Int_t MotherPdg            = mcMother->GetPdgCode();
 			
 			Bool_t IsK0 = mcPartPdg==310;
-			if (IsK0 && V0RapMax && TrIsPrime) 
+			if (IsK0 && V0EtaMax && TrIsPrime) 
 			{
 				fHistMCGenK0->Fill(mcK0[0],mcK0[1]);
 				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,1,0,0));
 			} 
 			
 			Bool_t IsLambda = mcPartPdg==3122;
-			if (IsLambda && V0RapMax && TrIsPrime) 
+			if (IsLambda && V0EtaMax && TrIsPrime) 
 			{
 				fHistMCGenLAM->Fill(mcLa[0],mcLa[1]);
 				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,2,0,0));
 			}
 			
 			Bool_t IsAntiLambda = mcPartPdg==-3122;
-			if (IsAntiLambda && V0RapMax && TrIsPrime) 
+			if (IsAntiLambda && V0EtaMax && TrIsPrime) 
 			{	
 				fHistMCGenALAM->Fill(mcAl[0],mcAl[1]);
 				selectedV0sMC->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,3,0,0));
@@ -516,21 +537,24 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			
 			Bool_t IsXImin  =MotherPdg== 3312;
 			Bool_t IsXIPlus =MotherPdg==-3312;
-			Bool_t IsOmega  =MotherPdg==-3334;
+			Bool_t IsXizero =MotherPdg== 3322;
+			Bool_t IsOmega  =MotherPdg== 3334;
 			
-			if (IsLambda && V0RapMax && IsOmega) 
+			if (IsLambda && V0EtaMax && (IsXizero || IsXImin)) 
 			{	
 				selectedV0sMCXI->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,1,0,0));
+				fHistMCGenLAMXI->Fill(mcLa[0],mcLa[1]);
 			}
 			
-			if (IsLambda && V0RapMax && IsXImin) 
+			if (IsLambda && V0EtaMax && IsOmega) 
 			{	
 				selectedV0sMCXI->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,2,0,0));
 			}
 			
-			if (IsAntiLambda && V0RapMax && IsXIPlus) 
+			if (IsAntiLambda && V0EtaMax && IsXIPlus) 
 			{	
 				selectedV0sMCXI->Add(new V0Correlationparticle(mcTrackEta,mcTrackPhi,mcTrackPt,3,0,0));
+				fHistMCGenLAMXIPLS->Fill(mcAl[0],mcAl[1]);
 			}
 		}
 		
@@ -624,12 +648,11 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 	Double_t lDcaPosToPrimVertex = 0;Double_t lDcaNegToPrimVertex = 0;Double_t lDcaV0Daughters     = 0;
 	Double_t lV0cosPointAngle    = 0;Double_t lV0DecayLength      = 0;Double_t lV0Radius           = 0;
 	Double_t lcTauLambda         = 0;Double_t lcTauAntiLambda     = 0;   
-	Double_t lcTauK0s            = 0;
-	Double_t lDCAV0toPVz         = 0;
+	Double_t lcTauK0s            = 0; 
+	Double_t lDCAV0PVz           = 0; 
 	
 	Double_t lInvMassK0   = 0, lInvMassLambda    = 0, lInvMassAntiLambda = 0;
 	Double_t lPtV0s       = 0; Double_t lPhiV0s  = 0; Double_t lEtaV0s   = 0;
-	Double_t lRapK0s      = 0, lRapLambda        = 0, lRapAntiLambda     = 0;
 	Double_t lPzV0s       = 0; Double_t lAlphaV0 = 0, lPtArmV0           = 0;
 	Double_t lPV0s        = 0;
 	
@@ -651,7 +674,7 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		AliAODv0* aodV0 = dynamic_cast<AliAODv0 *>(fAODEvent->GetV0(i));
 		if (!aodV0) continue;
 		
-		if (((aodV0->Pt())<fPtMin)||((aodV0->Pt())>6.0)) continue;
+		if (((aodV0->Pt())<fPtMin)||((aodV0->Pt())>fTriglow)) continue;
 		
 		// get daughters
    	    AliAODTrack *myTrackPos=(AliAODTrack *)(aodV0->GetDaughter(0));
@@ -674,8 +697,8 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		
 		// DCA between daughter and Primary Vertex:
 		if (myTrackPos) lDcaPosToPrimVertex = aodV0->DcaPosToPrimVertex();
-		if (myTrackNeg) lDcaNegToPrimVertex = aodV0->DcaNegToPrimVertex(); 
-		lDCAV0toPVz = aodV0->DcaV0ToPrimVertex(); 
+		if (myTrackNeg) lDcaNegToPrimVertex = aodV0->DcaNegToPrimVertex();   
+		lDCAV0PVz   = aodV0->DcaV0ToPrimVertex(); 
 		
 		// Quality tracks cuts:
 		if ( !(IsAcseptedDaughterTrack(myTrackPos)) || !(IsAcseptedDaughterTrack(myTrackNeg)) ) { continue;}
@@ -693,11 +716,6 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 		lPhiV0s= aodV0->Phi();
 		lEtaV0s= aodV0->Eta();
 		lPzV0s = aodV0->Pz();
-		
-		// Rapidity:
-		lRapK0s    = aodV0->RapK0Short();
-		lRapLambda = aodV0->RapLambda();
-		lRapAntiLambda = aodV0->Y(-3122);		
 		
 		if (lPtV0s==0) {continue;}
 		
@@ -762,69 +780,67 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 
 		Bool_t k0APcut = (lPtArmV0>(TMath::Abs(0.2*lAlphaV0)));
 		
-		Bool_t k0Rapcut = (TMath::Abs(lRapK0s)        < fRapidityCut);
-		Bool_t laRapcut = (TMath::Abs(lRapLambda)     < fRapidityCut);
-		Bool_t alaRapcut= (TMath::Abs(lRapAntiLambda) < fRapidityCut);
+		Bool_t V0Etacut = (TMath::Abs(lEtaV0s)        < fTrackEtaCut);
 		
 		Bool_t k0cutset = IsAcseptedK0(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassLambda,lInvMassAntiLambda);
 		Bool_t lacutset = IsAcseptedLA(lV0Radius,lDcaPosToPrimVertex,lDcaNegToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		Bool_t alacutset= IsAcseptedLA(lV0Radius,lDcaNegToPrimVertex,lDcaPosToPrimVertex,lDcaV0Daughters,lV0cosPointAngle,lInvMassK0);
 		
-		Double_t spK0[4] = {lInvMassK0,lPtV0s,lDCAV0toPVz,lV0cosPointAngle};
-		Double_t spLa[4] = {lInvMassLambda,lPtV0s,lDCAV0toPVz,lV0cosPointAngle};
-		Double_t spAl[4] = {lInvMassAntiLambda,lPtV0s,lDCAV0toPVz,lV0cosPointAngle};
+		Double_t spK0[4] = {lInvMassK0,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
+		Double_t spLa[4] = {lInvMassLambda,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
+		Double_t spAl[4] = {lInvMassAntiLambda,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
 	
 		switch (fCase) {
 			case 1:
 				fHistReconstK0->Fill(spK0); 
-				if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+				if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 				
 				fHistReconstLA->Fill(spLa); 
-				if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+				if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 				
 				fHistReconstALA->Fill(spAl);
-				if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+				if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
 				
 				break;
 				
 			case 2:
-				if(k0ctcut && k0Rapcut && k0cutset && cutK0Pid)
+				if(k0ctcut && V0Etacut && k0cutset && cutK0Pid)
 				{
 					fHistReconstK0->Fill(spK0); 
-					if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 				}
 				
-				if (lactcut && laRapcut && lacutset && cutLambdaPid)
+				if (lactcut && V0Etacut && lacutset && cutLambdaPid)
 				{
 					fHistReconstLA->Fill(spLa); 
-					if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 				}
 				
-				if (alactcut && alaRapcut && alacutset && cutAntiLambdaPid)
+				if (alactcut && V0Etacut && alacutset && cutAntiLambdaPid)
 				{
 					fHistReconstALA->Fill(spAl);
-					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
 				}
 
 				break;
 				
 			case 3:
-				if(k0ctcut && k0Rapcut && k0cutset && cutK0Pid && k0APcut)
+				if(k0ctcut && V0Etacut && k0cutset && cutK0Pid && k0APcut)
 				{
 					fHistReconstK0->Fill(spK0); 
-					if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsK0InvMass(lInvMassK0))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 				}
 				
-				if (lactcut && laRapcut && lacutset && cutLambdaPid)
+				if (lactcut && V0Etacut && lacutset && cutLambdaPid)
 				{
 					fHistReconstLA->Fill(spLa); 
-					if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 				}
 				
-				if (alactcut && alaRapcut && alacutset && cutAntiLambdaPid)
+				if (alactcut && V0Etacut && alacutset && cutAntiLambdaPid)
 				{
 					fHistReconstALA->Fill(spAl);
-					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0s->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
 				}
 				break;
 				
@@ -860,79 +876,99 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Int_t MotherPdg  = mcPosMother->GetPdgCode();
 			Bool_t IsPrime   = mcPosMother->IsPhysicalPrimary();
 			
-			Double_t rcK0[4] = {lInvMassK0,lPtV0s,lDCAV0toPVz,lDcaNegToPrimVertex};
-			Double_t rcLa[4] = {lInvMassLambda,lPtV0s,lDCAV0toPVz,lDcaNegToPrimVertex};
-			Double_t rcAl[4] = {lInvMassAntiLambda,lPtV0s,lDCAV0toPVz,lDcaNegToPrimVertex};
+			Int_t myGrandMotherLabel = mcPosMother->GetMother();
+			AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)mcArray->At(myGrandMotherLabel);
+			Int_t GrandMotherPdg     = mcGrandMother->GetPdgCode();
+			
+			Double_t rcK0[4] = {lInvMassK0,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
+			Double_t rcLa[4] = {lInvMassLambda,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
+			Double_t rcAl[4] = {lInvMassAntiLambda,lPtV0s,lDCAV0PVz,lV0cosPointAngle};
 			
 			switch (fCase) {
 				case 1:
 					fHistMCAssoK0->Fill(rcK0);
-					if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 					
 					fHistMCAssoLA->Fill(rcLa);
-					if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 					
 					fHistMCAssoALA->Fill(rcAl);
-					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+					if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
 					
 					break;
 					
 				case 2:
-					if ((k0ctcut && k0Rapcut && k0cutset)&&(MotherPdg     ==  310 && 
+					if ((k0ctcut && V0Etacut && k0cutset)&&(MotherPdg     ==  310 && 
 															PosDaughterPdg==  211 && 
 															NegDaughterPdg== -211 &&
 															IsPrime))
 					{
 						fHistMCAssoK0->Fill(rcK0);
-						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 					}
 					
-					if ((lactcut && laRapcut && lacutset)&&(MotherPdg     == 3122 && 
+					if ((lactcut && V0Etacut && lacutset)&&(MotherPdg     == 3122 && 
 															PosDaughterPdg== 2212 && 
 															NegDaughterPdg== -211 &&
 															IsPrime)) 
 					{
 						fHistMCAssoLA->Fill(rcLa);
-						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 					}
 					
-					if ((alactcut && alaRapcut && alacutset)&&(MotherPdg     == -3122 && 
+					if ((alactcut && V0Etacut && alacutset)&&(MotherPdg     == -3122 && 
 															   PosDaughterPdg==   211 && 
 															   NegDaughterPdg== -2212 &&
 															   IsPrime))
 					{
 						fHistMCAssoALA->Fill(rcAl);
-						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
+					}
+					
+					if ((lactcut && V0Etacut && lacutset)&&(MotherPdg     == 3122 && 
+															PosDaughterPdg== 2212 && 
+															NegDaughterPdg== -211 &&
+															(GrandMotherPdg==3322 ||GrandMotherPdg==3312))) 
+					{
+						fHistMCAssoLAXI->Fill(rcLa);
+					}
+					
+					if ((alactcut && V0Etacut && alacutset)&&(MotherPdg      == -3122 && 
+															   PosDaughterPdg==   211 && 
+															   NegDaughterPdg== -2212 &&
+															   GrandMotherPdg== -3312))
+					{
+						fHistMCAssoALAXiPlus->Fill(rcAl);
 					}
 					
 					break;
 					
 				case 3:
-					if ((k0ctcut && k0Rapcut && k0cutset && k0APcut)&&(MotherPdg     ==  310 && 
+					if ((k0ctcut && V0Etacut && k0cutset && k0APcut)&&(MotherPdg     ==  310 && 
 																	   PosDaughterPdg==  211 && 
 																	   NegDaughterPdg== -211 &&
 																	   IsPrime))
 					{
 						fHistMCAssoK0->Fill(rcK0); 
-						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsK0InvMass(lInvMassK0))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,1,lDCAV0PVz,lV0cosPointAngle));
 					}
 					
-					if ((lactcut && laRapcut && lacutset)&&(MotherPdg     == 3122 && 
+					if ((lactcut && V0Etacut && lacutset)&&(MotherPdg     == 3122 && 
 															PosDaughterPdg== 2212 && 
 															NegDaughterPdg== -211 &&
 															IsPrime)) 
 					{
 						fHistMCAssoLA->Fill(rcLa);
-						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsLambdaInvMass(lInvMassLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,2,lDCAV0PVz,lV0cosPointAngle));
 					}
 					
-					if ((alactcut && alaRapcut && alacutset)&&(MotherPdg     == -3122 && 
+					if ((alactcut && V0Etacut && alacutset)&&(MotherPdg     == -3122 && 
 															   PosDaughterPdg==   211 && 
 															   NegDaughterPdg== -2212 &&
 															   IsPrime))
 					{
 						fHistMCAssoALA->Fill(rcAl);
-						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0toPVz,lV0cosPointAngle));
+						if(IsLambdaInvMass(lInvMassAntiLambda))selectedV0sAssoc->Add(new V0Correlationparticle(lEtaV0s,lPhiV0s,lPtV0s,3,lDCAV0PVz,lV0cosPointAngle));
 					}
 					break;
 					
@@ -958,9 +994,7 @@ void AliLeadingV0Correlation::Terminate(Option_t *)
 }
 //---------------------------------------------------------------------------------------
 Bool_t AliLeadingV0Correlation::IsAcseptedDaughterTrack(const AliAODTrack *itrack)
-{
-	if(TMath::Abs(itrack->Eta())>fTrackEtaCut)return kFALSE;
-	
+{	
 	if (!itrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
 	
 	Float_t nCrossedRowsTPC = itrack->GetTPCClusterInfo(2,1);
@@ -1081,11 +1115,11 @@ Bool_t AliLeadingV0Correlation::IsTrackFromV0(AliAODTrack* track)
 void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 									  TObjArray*triggerArray,
 									  TObjArray*selectedV0Array,
-									  TH2F*triggerHist,
+									  TH1F*triggerHist,
 									  THnSparse*associateHist)
 {
 	Double_t  binsv0CORR[8];
-	Double_t  binsTrigSib[3];
+	Double_t  binsTrigSib[2];
 	Int_t counterSibMCA=0;
 	
     for(Int_t i=0;i<triggerArray->GetEntriesFast();i++)
@@ -1106,10 +1140,9 @@ void AliLeadingV0Correlation::FillCorrelationSibling(Double_t MultipOrCent,
 		if(counterSibMCA==triggerArray->GetEntriesFast()){
 			
 			binsTrigSib[0]=triggerPt;
-			binsTrigSib[1]=triggerPhi;
-			binsTrigSib[2]=MultipOrCent;
+			binsTrigSib[1]=MultipOrCent;
 			
-			if(triggerHist)triggerHist->Fill(binsTrigSib[0],binsTrigSib[1]);
+			if(triggerHist)triggerHist->Fill(binsTrigSib[0]);
 			
 			for (Int_t j=0; j<selectedV0Array->GetEntriesFast(); j++){
 				
@@ -1140,7 +1173,7 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 								   Double_t poolmin,
 								   TObjArray*triggerArray,
 								   TObjArray*selectedV0Array,
-								   TH2F*triggerHist,
+								   TH1F*triggerHist,
 								   THnSparse*associateHist)
 {
 	if(TMath::Abs(pvxMix)>=fpvzcut || MultipOrCentMix>poolmax || MultipOrCentMix < poolmin)
@@ -1180,10 +1213,9 @@ void AliLeadingV0Correlation::FillCorrelationMixing(Double_t MultipOrCentMix,
 				if(counterMix==triggerArray->GetEntriesFast()){
 					
 					binsTrigMix[0]=trigPt;
-					binsTrigMix[1]=trigPhi;
-					binsTrigMix[2]=MultipOrCentMix;
+					binsTrigMix[1]=MultipOrCentMix;
 					
-					if(triggerHist)triggerHist->Fill(binsTrigMix[0],binsTrigMix[1]);
+					if(triggerHist)triggerHist->Fill(binsTrigMix[0]);
 					
 					for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
 						
