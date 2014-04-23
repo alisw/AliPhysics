@@ -1,5 +1,3 @@
-//AddTask macro for higher harmonic flow analysis with SP method only.
-
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
 class AliFlowEventCuts;
@@ -80,7 +78,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
     if(!VZERO){
         //cutsRP[icentr]->SetParamType(rptype);
-        cutsRP[icentr]->SetParamMix(rpmix);
+   //     cutsRP[icentr]->SetParamMix(rpmix);
         cutsRP[icentr]->SetPtRange(0.2,5.);
         cutsRP[icentr]->SetEtaRange(etamin,etamax);
         cutsRP[icentr]->SetMinNClustersTPC(70);
@@ -110,8 +108,8 @@ for(int icentr=0;icentr<ncentr;icentr++){
     SP_POI[icentr] = DefinePOIcuts(icentr);
 
     SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
-    SP_POI[icentr]->SetParamType(poitype);
-    SP_POI[icentr]->SetParamMix(poimix);
+    //SP_POI[icentr]->SetParamType(poitype);
+    //SP_POI[icentr]->SetParamMix(poimix);
     SP_POI[icentr]->SetPtRange(0.2,5.);//
     SP_POI[icentr]->SetMinNClustersTPC(70);
     if(!VZERO && Qvector=="Qa"){
@@ -131,7 +129,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     // SP_POI->SetMinChi2PerClusterTPC(0.1); //
     // SP_POI->SetMaxChi2PerClusterTPC(4.0); //
     //  SP_POI->SetRequireITSRefit(kTRUE);
-    //  SP_POI->SetRequireTPCRefit(kTRUE);
+    //  SP_POI->SetRequireTPCRefit(kTRUE);
     //  SP_POI->SetMinNClustersITS(2);
     //  SP_POI->SetMaxChi2PerClusterITS(1.e+09);
     SP_POI[icentr]->SetMaxDCAToVertexXY(3.0);
@@ -270,6 +268,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
         
 
     for(int harm=2;harm<6;harm++){
+ //   for(int harm=2;harm<3;harm++){
         myNameSP[icentr][harm-2] = "SP_";
         myNameSP[icentr][harm-2] += Qvector;
         myNameSP[icentr][harm-2] += Form("_v%i_%s_%.f",harm,outputSlotName[icentr][harm-2].Data(),EtaGap*10);
@@ -306,6 +305,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
                                          TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
         mgr->AddTask(taskSP[icentr][harm-2]);
         mgr->ConnectInput(taskSP[icentr][harm-2],0,flowEvent[icentr][harm-2]);
+    //    mgr->ConnectInput(taskSP[icentr][harm-2],0,coutputFE[icentr]);
         mgr->ConnectOutput(taskSP[icentr][harm-2],1,coutputSP[icentr][harm-2]);
     }
 
