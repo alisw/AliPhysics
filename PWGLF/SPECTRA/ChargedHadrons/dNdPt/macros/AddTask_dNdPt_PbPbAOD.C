@@ -31,6 +31,8 @@ AlidNdPtAnalysisPbPbAOD *AddTask_dNdPt_PbPbAOD( UInt_t uTriggerMask = AliVEvent:
   
   task->SelectCollisionCandidates(uTriggerMask);
   
+  task->SetEventplaneSelector("Q");
+  
   task->SetCutMinNCrossedRowsTPC(dNCrossedRowsTPC);
   task->SetCutMinNClustersTPC(dNClustersTPC);
   task->SetCutLengthInTPCPtDependent(bDoCutTPCLength);
