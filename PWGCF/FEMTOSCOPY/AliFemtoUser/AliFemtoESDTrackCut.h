@@ -1,12 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //                                                                       //
 // AliFemtoESDTrackCut: A basic track cut that used information from     //
-// ALICE ESD to accept or reject the track.                              //
-// Enables the selection on charge, transverse momentum, rapidity,       //
-// pid probabilities, number of ITS and TPC clusters                     //
-// Author: Marek Chojnacki (WUT), mchojnacki@knf.pw.edu.pl               //
-//                                                                       //
-///////////////////////////////////////////////////////////////////////////
+// ALICE ESD to accept or reject the track.                             ////////////////////////////////////////////////
 #include "AliESDtrackCuts.h"
 
 #ifndef ALIFEMTOESDTRACKCUT_H
@@ -73,6 +68,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   void SetMomRangeTOFpidIs(const float& minp, const float& maxp);
   void SetMomRangeTPCpidIs(const float& minp, const float& maxp);
   void SetMomRangeITSpidIs(const float& minp, const float& maxp);
+  void SetElectronRejection(Bool_t);
 
  private:   // here are the quantities I want to cut on...
 
@@ -120,6 +116,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   float             fMaxPforTPCpid;  // momentum till which TPC PID is requested
   float             fMinPforITSpid;  // momentum from which ITS PID is requested
   float             fMaxPforITSpid;  // momentum till which ITS PID is requested
+  bool fElectronRejection;
 
   float PidFractionElectron(float mom) const;
   float PidFractionPion(float mom) const;
@@ -139,6 +136,7 @@ class AliFemtoESDTrackCut : public AliFemtoTrackCut
   bool IsKaonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsPionNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
   bool IsProtonNSigma(float mom, float nsigmaTPC, float nsigmaTOF);
+  bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP);
 
   Bool_t CheckITSClusterRequirement(AliESDtrackCuts::ITSClusterRequirement req, Bool_t clusterL1, Bool_t clusterL2); //the same as in AliESDtrackCuts
 
@@ -156,7 +154,8 @@ inline void AliFemtoESDTrackCut::SetCharge(const int& ch){fCharge = ch;}
 inline void AliFemtoESDTrackCut::SetPidProbElectron(const float& lo,const float& hi){fPidProbElectron[0]=lo; fPidProbElectron[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbPion(const float& lo,const float& hi){fPidProbPion[0]=lo; fPidProbPion[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbKaon(const float& lo,const float& hi){fPidProbKaon[0]=lo; fPidProbKaon[1]=hi;}
-inline void AliFemtoESDTrackCut::SetPidProbProton(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
+inline void AliFemtoESDTrackCut::SetPidProbProton
+(const float& lo,const float& hi){fPidProbProton[0]=lo; fPidProbProton[1]=hi;}
 inline void AliFemtoESDTrackCut::SetPidProbMuon(const float& lo,const float& hi){fPidProbMuon[0]=lo; fPidProbMuon[1]=hi;}
 inline void AliFemtoESDTrackCut::SetLabel(const bool& flag){fLabel=flag;}
 inline void AliFemtoESDTrackCut::SetStatus(const long& status){fStatus=status;}
@@ -175,6 +174,6 @@ inline void AliFemtoESDTrackCut::SetMaxImpactXY(const float& maximpxy) { fMaxImp
 inline void AliFemtoESDTrackCut::SetMinImpactXY(const float& minimpxy) { fMinImpactXY = minimpxy; }
 inline void AliFemtoESDTrackCut::SetMaxImpactXYPtDep(const float& maxoff, const float& maxnrm, const float& maxpow) { fMaxImpactXYPtOff = maxoff; fMaxImpactXYPtNrm = maxnrm; fMaxImpactXYPtPow = maxpow; }
 inline void AliFemtoESDTrackCut::SetMaxImpactZ(const float& maximpz) { fMaxImpactZ = maximpz; }
-
+inline void AliFemtoESDTrackCut::SetElectronRejection(Bool_t setE) { fElectronRejection = setE; }
 
 #endif
