@@ -75,6 +75,7 @@ fMCEventplaneDist(0),
 fCorrelEventplaneMCDATA(0),
 //global
 fIsMonteCarlo(0),
+fEPselector("Q"),
 // event cut variables
 fCutMaxZVertex(10.),  
 // track kinematic cut variables
@@ -676,7 +677,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
 	
 	dMCEventZv = mcHdr->GetVtxZ();
 	dMCTrackZvPtEtaCent[0] = dMCEventZv;
-	dMCEventplaneAngle = MoveMCEventplane(genHijingHeader->ReactionPlaneAngle());
+	dMCEventplaneAngle = MoveEventplane(genHijingHeader->ReactionPlaneAngle());
 	fEventStatistics->Fill("MC all events",1);
 	fMCEventplaneDist->Fill(dMCEventplaneAngle);
   }
@@ -690,7 +691,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   // get event plane Angle from AODHeader, default is Q
   ep = const_cast<AliAODEvent*>(eventAOD)->GetEventplane();
   if(ep) {
-	dEventplaneAngle = ep->GetEventplane("V0",eventAOD);
+	dEventplaneAngle = MoveEventplane(ep->GetEventplane(GetEventplaneSelector().Data(),eventAOD));
   }
   
   //   cout << dEventplaneAngle << endl;
@@ -937,7 +938,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   
 }
 
-Double_t AlidNdPtAnalysisPbPbAOD::MoveMCEventplane(Double_t dMCEP)
+Double_t AlidNdPtAnalysisPbPbAOD::MoveEventplane(Double_t dMCEP)
 {
   Double_t retval = 0;
   retval = dMCEP;
@@ -1256,6 +1257,7 @@ void AlidNdPtAnalysisPbPbAOD::StoreCutSettingsToHistogram()
   fCutSettings->Fill("fCutMaxChi2TPCConstrainedGlobal", fCutMaxChi2TPCConstrainedGlobal);
   if(fCutLengthInTPCPtDependent) fCutSettings->Fill("fCutLengthInTPCPtDependent", 1);
   fCutSettings->Fill("fPrefactorLengthInTPCPtDependent", fPrefactorLengthInTPCPtDependent);
+  fCutSettings->Fill(Form("EP selector %s", fEPselector.Data()), 1);
 }
 
 Bool_t AlidNdPtAnalysisPbPbAOD::GetDCA(const AliAODTrack *track, AliAODEvent *evt, Double_t d0z0[2])
