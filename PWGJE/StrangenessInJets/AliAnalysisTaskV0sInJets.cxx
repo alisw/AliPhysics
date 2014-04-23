@@ -2083,7 +2083,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
           if (jetMed)
             {
               if(fDebug>5) printf("TaskV0sInJets: Searching for V0 %d %d in the med. cone\n",bIsCandidateK0s,bIsCandidateLambda);
-              if (IsParticleInCone(v0,jetMed,fdRadiusJet)) // V0 in rnd. cone?
+              if (IsParticleInCone(v0,jetMed,fdRadiusJet)) // V0 in med. cone?
                 {
                   if(fDebug>5) printf("TaskV0sInJets: V0 %d %d found in the med. cone\n",bIsCandidateK0s,bIsCandidateLambda);
                   bIsInConeMed = kTRUE;
@@ -2946,18 +2946,20 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Do
 
 AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array, Double_t dEtaConeMax) const
 {
-// sort kt clusters according to pT/area and return the middle one, basic code taken from AliAnalysisTaskJetChem
+// sort kt clusters by pT/area and return the middle one, based on code in AliAnalysisTaskJetChem
   if (!array)
     {
       if(fDebug>0) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Error: No array\n");
       return NULL;
     }
   Int_t iNCl = array->GetEntriesFast();
+//  Int_t iNClE = array->GetEntries();
   if (iNCl<3) // need at least 3 clusters (skipping 2 highest)
     {
       if(fDebug>2) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Warning: Too little clusters\n");
       return NULL;
     }
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: EntriesFast: %d, Entries: %d\n",iNCl,iNClE);
 
   // get list of densities
   Double_t* dBgDensity = new Double_t[iNCl];
@@ -2967,6 +2969,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
       AliAODJet* clusterBg = (AliAODJet*)(array->At(ij));
       if (!clusterBg)
         {
+//          printf("AliAnalysisTaskV0sInJets::GetMedianCluster: cluster %d/%d not ok\n",ij,iNCl);
           delete[] dBgDensity;
           delete[] iIndexList;
           return NULL;
@@ -2980,7 +2983,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
       dBgDensity[ij] = dDensityBg;
       iIndexList[ij] = ij;
     }
-  // sort iIndexList according to descending dBgDensity
+  // sort iIndexList by dBgDensity in descending order
   TMath::Sort(iNCl, dBgDensity, iIndexList);
 
   // get median cluster with median density
@@ -2993,15 +2996,20 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array,
   else // even number: picking randomly one of the two closest to median
     {
       Int_t iIndexMed1 = iIndexList[(Int_t) (0.5*iNCl)]; // = (n - skip)/2 + 1, skip = 2
-      iIndexMed = ( (fRandom->Rndm()>0.5) ? iIndexMed1 : (iIndexMed1+1) ); // select one randomly to avoid adding areas
+      Int_t iIndexMed2 = iIndexList[(Int_t) (0.5*iNCl+1)]; // = (n - skip)/2 + 1 + 1, skip = 2
+      iIndexMed = ( (fRandom->Rndm()>0.5) ? iIndexMed1 : iIndexMed2 ); // select one randomly to avoid adding areas
     }
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: getting median cluster %d/%d ok\n",iIndexMed,iNCl);
   clusterMed = (AliAODJet*)(array->At(iIndexMed));
 
   delete[] dBgDensity;
   delete[] iIndexList;
 
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: checking eta cut %g\n",dEtaConeMax);
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: checking eta cut |%g| < %g?\n",clusterMed->Eta(),dEtaConeMax);
   if (TMath::Abs(clusterMed->Eta())>dEtaConeMax)
     return NULL;
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: cluster %d/%d passed\n",iIndexMed,iNCl);
   return clusterMed;
 }
 
