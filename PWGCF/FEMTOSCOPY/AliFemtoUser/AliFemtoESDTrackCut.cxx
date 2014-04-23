@@ -113,7 +113,8 @@ ClassImp(AliFemtoESDTrackCut)
     fMinPforTPCpid(0.0),
     fMaxPforTPCpid(10000.0),
     fMinPforITSpid(0.0),
-    fMaxPforITSpid(10000.0)
+   fMaxPforITSpid(10000.0),
+   fElectronRejection(0)
 {
   // Default constructor
   fNTracksPassed = fNTracksFailed = 0;
@@ -359,6 +360,10 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     float ipidmax = 0.0;
 
+    //****N Sigma Method -- electron rejection****
+    if(fElectronRejection) 
+      if(!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP())) 
+	return false;
 
     //****N Sigma Method****
 	if(fPIDMethod==0){
@@ -1042,6 +1047,7 @@ void AliFemtoESDTrackCut::SetNsigma(Double_t nsigma)
   fNsigma = nsigma;
 }
 
+
 void AliFemtoESDTrackCut::SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req)
 {
   fCutClusterRequirementITS[det] = req;
@@ -1064,4 +1070,12 @@ Bool_t AliFemtoESDTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClust
   }
 
   return kFALSE;
+}
+
+bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+{
+   if(nsigmaTPCE<3 && nsigmaTPCPi>3 && nsigmaTPCK>3 && nsigmaTPCP>3)
+      return false;
+   else
+     return true;
 }
