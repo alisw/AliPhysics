@@ -459,6 +459,10 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
     AliESDVertex *esdv = (AliESDVertex*)fESD->GetPrimaryVertex();
     pvStatus = esdv->GetStatus();
   }
+  /*if(fAOD){
+    AliAODVertex *aodv = (AliAODVertex*)fAOD->GetPrimaryVertex();
+    pvStatus = aodv->GetStatus();
+    }*/
   if(!pv)
     return;
   if(!pvStatus)
@@ -466,7 +470,7 @@ void AliAnalysisTaskEMCALIsoPhoton::UserExec(Option_t *)
   else
     fRecoPV->Fill(1);
   fPVtxZ->Fill(pv->GetZ());
-  if(TMath::Abs(pv->GetZ())>15)
+  if(TMath::Abs(pv->GetZ())>10)
     return;
   if(fDebug)
     printf("passed vertex cut\n");
