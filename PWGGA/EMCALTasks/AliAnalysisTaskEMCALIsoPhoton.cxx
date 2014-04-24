@@ -78,6 +78,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fSelHybrid(kFALSE),
   fFillQA(kFALSE),
   fClusIdFromTracks(""),
+  fCpvFromTrack(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -166,6 +167,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fSelHybrid(kFALSE),
   fFillQA(kFALSE),
   fClusIdFromTracks(""),
+  fCpvFromTrack(kFALSE),
   fESD(0),
   fAOD(0),
   fVEvent(0),
@@ -622,6 +624,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       continue;
     if(c->E()<fECut)
       continue;
+    if(fCpvFromTrack && fClusIdFromTracks.Contains(Form("%d",ic)))
+       continue;
     Short_t id;
     Double_t Emax = GetMaxCellEnergy( c, id);
     Double_t Ecross = GetCrossEnergy( c, id);
