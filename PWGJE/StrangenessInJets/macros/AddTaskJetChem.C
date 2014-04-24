@@ -101,9 +101,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   task->SetQAJetHistoBins();
   task->SetQATrackHistoBins();
   task->SetFFInvMassHistoBins();
-  task->SetPhiCorrInvMassHistoBins();
   task->SetFFInvMassLaHistoBins();
-  task->SetPhiCorrInvMassLaHistoBins();
   
   mgr->AddTask(task);
   
