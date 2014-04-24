@@ -72,12 +72,13 @@ class DetectorK : public TNamed {
   Float_t GetResolution(char *name, Int_t axis=0);
   Float_t GetLayerEfficiency(char *name);
 
-  void PrintLayout(); 
+  void PrintLayout(Bool_t full = kFALSE); 
   void PlotLayout(Int_t plotDead = kTRUE);
   
   void MakeAliceAllNew(Bool_t flagTPC =1,Bool_t flagMon=1);
   void MakeAliceCurrent(Int_t AlignResiduals = 0, Bool_t flagTPC =1);
-  void AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip=1);
+  void AddTPC(Float_t phiResMean=0.1, Float_t zResMean=0.1, Int_t skip=1);
+  void AddTRD(Float_t phiResMean=0.02, Float_t zResMean=2.5, Float_t lrEff=0.9);
   void RemoveTPC();
 
   void SetBField(Float_t bfield) {fBField = bfield; }
@@ -155,6 +156,8 @@ class DetectorK : public TNamed {
   static Bool_t GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir=0);
   static Bool_t PropagateToR(AliExternalTrackParam* trc, double r, double b, int dir=0);
   Double_t* PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay);
+
+  Bool_t IsITSLayer(const TString& lname);
 
  protected:
  

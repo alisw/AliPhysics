@@ -4,7 +4,6 @@
 
 //void standardPlots() {
 
-
 void testDetectorUp() {
 
 
@@ -53,10 +52,11 @@ void testDetectorUp() {
   its.MakeStandardPlots(0,2,1,kTRUE);
   //  return;
   its.AddTPC(0.1,0.1);
+  //  its.AddTRD(0.02,2.5);
   its.SolveViaBilloir(0);
  
   its.MakeStandardPlots(1,1,1,kTRUE);
-
+  //  its.PrintLayout(1);
 }
 
 void testDetectorCurr() {
