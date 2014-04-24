@@ -63,8 +63,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
   void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
-  void                  SetHybridOn()                          { fSelHybrid = kTRUE; }
-  void                  SetFillQA()                            { fFillQA = kTRUE; }
+  void                  SetHybridOn()                           { fSelHybrid = kTRUE; }
+  void                  SetFillQA()                             { fFillQA = kTRUE; }
+  void                  SelectCPVFromTrack(Bool_t b)             { fCpvFromTrack = b; }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -101,6 +102,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fSelHybrid;             // bool to select hybrid tracks
   Bool_t                 fFillQA;                // bool to fill the QA plots
   TString                fClusIdFromTracks;      // string to hold the list of cluster ids given by tracks
+  Bool_t                 fCpvFromTrack;
 
 
   
