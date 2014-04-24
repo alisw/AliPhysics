@@ -30,6 +30,7 @@ class AliUnfolding;
 #include "TVirtualPad.h"
 #include "TPaveText.h"
 #include "TLegend.h"
+#include "TLatex.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -222,12 +223,12 @@ class AliJetFlowTools {
         static TH1D*    SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
         // set style
         void            SetTitleFontSize(Double_t s)    {fTitleFontSize = s;}
-        static void     Style();
+        static void     Style(Bool_t legacy = kFALSE);
         static void     Style(TCanvas* c, TString style = "PEARSON");
-        static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
+        static void     Style(TVirtualPad* c, TString style = "SPECTRUM", Bool_t legacy = kFALSE);
         static void     Style(TLegend* l);
-        static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
-        static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
+        static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty, Bool_t legacy = kFALSE);
+        static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty, Bool_t legacy = kFALSE);
         static TLegend* AddLegend(TVirtualPad* p, Bool_t style = kFALSE) {
             if(!style) return p->BuildLegend(.565, .663, .882, .883);
             else {
@@ -241,7 +242,7 @@ class AliJetFlowTools {
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T} charged jets", r));
+            t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T}^{-1} charged jets", r));
             t->SetTextColor(kBlack);
             t->SetTextFont(42);
             t->Draw("same");
@@ -257,6 +258,19 @@ class AliJetFlowTools {
             t->Draw("same");
             return t;
         } 
+        static TLatex*          AddLogo(Bool_t logo, Double_t xmin = .59, Double_t ymax = .81) {
+            return AddTLatex(xmin, ymax, logo ? "ALICE Preliminary" : "ALICE");
+        }
+        static TLatex*          AddSystem() {
+            return AddTLatex(0.55, 87, "Pb-Pb #sqrt{#it{s}}}_{NN} = 2.76 TeV");
+        }
+        static TLatex*          AddTLatex(Double_t xmin, Double_t ymax, TString string) {
+TLatex* tex = new TLatex(xmin, ymax, string.Data());
+            tex->SetNDC();
+            tex->SetTextFont(42);
+            tex->Draw("same");
+            return tex;
+        }
 
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
