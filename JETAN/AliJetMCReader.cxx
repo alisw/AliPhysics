@@ -60,7 +60,6 @@ Bool_t AliJetMCReader::FillMomentumArray(Int_t event)
   Int_t goodTrack = 0;
   Int_t nt = 0;
   Float_t pt, e;
-  TVector3 p;
 
   // clear array
   ClearArray();
@@ -84,10 +83,9 @@ Bool_t AliJetMCReader::FillMomentumArray(Int_t event)
     TParticle *part = (TParticle*)arrayMC[label]; //particle
     pt = part->Pt(); // pt of the particle
     if (pt < ptMin) continue; //check  cuts 
-    p = part->P();
     e = part->Energy();
    // fill momentum array
-    new ((*fMomentumArray)[goodTrack]) TLorentzVector(p.X(), p.Y(), p.Z(), e);
+    new ((*fMomentumArray)[goodTrack]) TLorentzVector(part->Px(), part->Py(), part->Pz(), e);
     goodTrack++;
   }
   printf("\nNumber of good tracks %d \n", goodTrack);

@@ -1216,20 +1216,20 @@ Bool_t AliV0Reader::UpdateV0Information(){
     delete fNegativeTrackLorentzVector;
   }
   if(fUseKFParticle){
-    fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeKFParticle->Px(),fCurrentNegativeKFParticle->Py(),fCurrentNegativeKFParticle->Pz());
+    fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeKFParticle->Px(),fCurrentNegativeKFParticle->Py(),fCurrentNegativeKFParticle->Pz(),0.);
   }
   else  { //if(fUseESDTrack){
-    fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeESDTrack->Px(),fCurrentNegativeESDTrack->Py(),fCurrentNegativeESDTrack->Pz());
+    fNegativeTrackLorentzVector = new TLorentzVector(fCurrentNegativeESDTrack->Px(),fCurrentNegativeESDTrack->Py(),fCurrentNegativeESDTrack->Pz(),0.);
   }
 	
   if(fPositiveTrackLorentzVector != NULL){
     delete fPositiveTrackLorentzVector;
   }
   if(fUseKFParticle){
-    fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveKFParticle->Px(),fCurrentPositiveKFParticle->Py(),fCurrentPositiveKFParticle->Pz());
+    fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveKFParticle->Px(),fCurrentPositiveKFParticle->Py(),fCurrentPositiveKFParticle->Pz(),0.);
   }
   else  { // if(fUseESDTrack){  fPositiveTrackLorentzVector must be reinitialized, so assuming use ESD if not kfparticle Svein. 
-    fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveESDTrack->Px(),fCurrentPositiveESDTrack->Py(),fCurrentPositiveESDTrack->Pz());
+    fPositiveTrackLorentzVector = new TLorentzVector(fCurrentPositiveESDTrack->Px(),fCurrentPositiveESDTrack->Py(),fCurrentPositiveESDTrack->Pz(),0.);
   }
 	
   if(fMotherCandidateLorentzVector != NULL){
