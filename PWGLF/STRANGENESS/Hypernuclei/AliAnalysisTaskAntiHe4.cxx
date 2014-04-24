@@ -23,6 +23,8 @@
 
 #include "AliAnalysisTaskAntiHe4.h"
 
+using std::cout;
+using std::endl;
 
 ///////////////////////////////////////////////////////////
 //                                                       //
