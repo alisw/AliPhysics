@@ -8,6 +8,7 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TArrayI.h"
+#include "TRandom3.h"
 // aliroot includes
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -123,6 +124,12 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
         fHistSFJetSpectrum = BookTH1F("fHistSFJetSpectrum", "p_{t} SF jets [GeV/c]", 100, 0, 200);
         fHistSFJetEtaPhi = BookTH2F("fHistSFJetEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi());
     }
+    // reset the random seed
+    if(gRandom) {
+        delete gRandom;
+        gRandom = new TRandom3(0);
+    }
+
     fOutputList->Sort();
     PostData(1, fOutputList);
 }
