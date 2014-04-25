@@ -58,7 +58,7 @@ class AliUEHist : public TObject
   void GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, TH3** trackHist, TH1** eventHist);
   void GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, THnBase** trackHist, TH2** eventHist);
   
-  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger = kTRUE);
+  TH2* GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger = kTRUE, Int_t stepForMixed = -1);
   
   TH1* GetTriggersAsFunctionOfMultiplicity(AliUEHist::CFStep step, Float_t ptLeadMin, Float_t ptLeadMax);
 
@@ -106,6 +106,7 @@ class AliUEHist : public TObject
   void SetPartSpecies(Int_t species)    { fPartSpecies = species;}
   void SetCentralityRange(Float_t min, Float_t max)    { fCentralityMin = min; fCentralityMax = max; }
   void SetZVtxRange(Float_t min, Float_t max)          { fZVtxMin = min; fZVtxMax = max; }
+  void SetPt2Min(Float_t ptMin)			       { fPt2Min = ptMin; }
   
   Float_t GetTrackEtaCut() { return fTrackEtaCut; }
   void SetTrackEtaCut(Float_t value) { fTrackEtaCut = value; }
@@ -137,6 +138,8 @@ class AliUEHist : public TObject
   void Reset();
   THnBase* ChangeToThn(THnBase* sparse);
   
+  static TString CombineBinning(TString defaultBinning, TString customBinning);
+  
 protected:
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
   void SetStepNames(AliCFContainer* container);
@@ -157,6 +160,7 @@ protected:
   Float_t fCentralityMax;             // centrality max for projections
   Float_t fZVtxMin;                   // z vtx min for projections
   Float_t fZVtxMax;                   // z vtx max for projections
+  Float_t fPt2Min;		      // pT min for projections (for pT,2 (only 2+1 corr case))
   
   TH1F* fContaminationEnhancement;    // histogram that contains the underestimation of secondaries in the MC as function of pT
   
@@ -172,7 +176,7 @@ protected:
   
   TString fHistogramType;             // what is stored in this histogram
   
-  ClassDef(AliUEHist, 14) // underlying event histogram container
+  ClassDef(AliUEHist, 15) // underlying event histogram container
 };
 
 #endif

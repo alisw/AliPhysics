@@ -56,6 +56,7 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fCentralityMax(0),
   fZVtxMin(0),
   fZVtxMax(0),
+  fPt2Min(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
@@ -83,9 +84,9 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
     
   // track level
   Int_t nTrackVars = 4; // eta vs pT vs pT,lead (vs delta phi) vs multiplicity
-  Int_t iTrackBin[6];
-  Double_t* trackBins[6];
-  const char* trackAxisTitle[6];
+  Int_t iTrackBin[7];
+  Double_t* trackBins[7];
+  const char* trackAxisTitle[7];
   
   // eta
   Int_t nEtaBins = -1;
@@ -163,6 +164,15 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
     axis = 0;
     title = "d^{2}#Sigma p_{T}/d#varphid#eta";
   }
+  else if (TString(reqHist).BeginsWith("TwoPlusOne"))
+  { 
+    useVtxAxis = 1;
+
+    reqHist = "TwoPlusOne";
+    fHistogramType = reqHist;
+    axis = 3;
+    title = "d^{2}N_{ch}/d#varphid#eta";
+  }
   else
     AliFatal(Form("Invalid histogram requested: %s", reqHist));
   
@@ -215,10 +225,37 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
       trackAxisTitle[5] = vertexTitle;
     }
   }
+  else if (axis == 3)
+  {
+    nTrackVars = 7;
+    initRegions = 1;
+
+    iTrackBin[0] = nDeltaEtaBins;
+    trackBins[0] = deltaEtaBins;
+    trackAxisTitle[0] = "#Delta#eta";
+  
+    iTrackBin[2] = nLeadingpTBins;
+    trackBins[2] = leadingpTBins;
+    trackAxisTitle[2] = "Trigger 1 p_{T} (GeV/c)";
+    
+    trackAxisTitle[3] = "centrality";
+  
+    iTrackBin[4] = nLeadingPhiBins;
+    trackBins[4] = leadingPhiBins;
+    trackAxisTitle[4] = "#Delta#varphi (rad)";
+
+    iTrackBin[5] = nVertexBins;
+    trackBins[5] = vertexBins;
+    trackAxisTitle[5] = vertexTitle;
+
+    iTrackBin[6] = nLeadingpTBins2;
+    trackBins[6] = leadingpTBins2;
+    trackAxisTitle[6] = "Trigger 2 p_{T} (GeV/c)";
+  }
     
   for (UInt_t i=0; i<initRegions; i++)
   {
-    if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0)
+    if (axis >= 2)
       fTrackHist[i] = new AliTHn(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
     else
       fTrackHist[i] = new AliCFContainer(Form("fTrackHist_%d", i), title, fgkCFSteps, nTrackVars, iTrackBin);
@@ -234,19 +271,23 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   
   // event level
   Int_t nEventVars = 2;
-  Int_t iEventBin[3];
+  Int_t iEventBin[4];
 
   // track 3rd and 4th axis --> event 1st and 2nd axis
   iEventBin[0] = iTrackBin[2];
   iEventBin[1] = iTrackBin[3];
   
   // plus track 5th axis (in certain cases)
-  if (axis == 2 && useVtxAxis)
+  if (axis >= 2 && useVtxAxis)
   {
     nEventVars = 3;
     iEventBin[2] = iTrackBin[5];
   }
-  
+  if (axis >= 3)
+  {
+    nEventVars = 4;
+    iEventBin[3] = iTrackBin[6];
+  }
   fEventHist = new AliCFContainer("fEventHist", title, fgkCFSteps, nEventVars, iEventBin);
   
   fEventHist->SetBinLimits(0, trackBins[2]);
@@ -255,10 +296,15 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   fEventHist->SetBinLimits(1, trackBins[3]);
   fEventHist->SetVarTitle(1, trackAxisTitle[3]);
   
-  if (axis == 2 && useVtxAxis)
+  if (axis >= 2 && useVtxAxis)
   {
     fEventHist->SetBinLimits(2, trackBins[5]);
     fEventHist->SetVarTitle(2, trackAxisTitle[5]);
+  }
+  if (axis >= 3)
+  {
+    fEventHist->SetBinLimits(3, trackBins[6]);
+    fEventHist->SetVarTitle(3, trackAxisTitle[6]);
   }
 
   SetStepNames(fEventHist);
@@ -290,7 +336,30 @@ AliUEHist::AliUEHist(const char* reqHist, const char* binning) :
   delete[] vertexBins;
   delete[] vertexBinsEff;
 }
+  
+TString AliUEHist::CombineBinning(TString defaultBinning, TString customBinning) 
+{
+  // combine default binning with custom binning
+  // replaces binnings in default binning if it is defined in custom binning
+  
+  TString binningStr;
 
+  TObjArray* lines = defaultBinning.Tokenize("\n");
+  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
+  {
+    TString line(lines->At(i)->GetName());
+    TString tag = line(0, line.Index(":")+1);
+    if (!customBinning.BeginsWith(tag) && !customBinning.Contains(TString("\n") + tag))
+      binningStr += line + "\n";
+    else
+      Printf("Using custom binning for %s", tag.Data());
+  }
+  delete lines;
+  binningStr += customBinning;
+  
+  return binningStr;
+}
+  
 Double_t* AliUEHist::GetBinning(const char* configuration, const char* tag, Int_t& nBins)
 {
   // takes the binning from <configuration> identified by <tag>
@@ -343,6 +412,7 @@ AliUEHist::AliUEHist(const AliUEHist &c) :
   fCentralityMax(0),
   fZVtxMin(0),
   fZVtxMax(0),
+  fPt2Min(0),
   fContaminationEnhancement(0),
   fCombineMinMax(0),
   fTrackEtaCut(0),
@@ -448,6 +518,7 @@ void AliUEHist::Copy(TObject& c) const
   target.fCentralityMax = fCentralityMax;
   target.fZVtxMin = fZVtxMin;
   target.fZVtxMax = fZVtxMax;
+  target.fPt2Min = fPt2Min;
   
   if (fContaminationEnhancement)
     target.fContaminationEnhancement = dynamic_cast<TH1F*> (fContaminationEnhancement->Clone());
@@ -526,6 +597,8 @@ void AliUEHist::SetBinLimits(THnBase* grid)
     grid->GetAxis(0)->SetRangeUser(fEtaMin, fEtaMax);
   if (fPtMax > fPtMin)
     grid->GetAxis(1)->SetRangeUser(fPtMin, fPtMax);
+  if (fPt2Min > 0)
+    grid->GetAxis(6)->SetRangeUser(fPt2Min, grid->GetAxis(6)->GetXmax() - 0.01);
 }  
 
 //____________________________________________________________________
@@ -864,7 +937,7 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
 }
 
 //____________________________________________________________________
-TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger)
+TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t normalizePerTrigger, Int_t stepForMixed)
 {
   // Calls GetUEHist(...) for *each* vertex bin and multiplicity bin and performs a sum of ratios:
   // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
@@ -874,14 +947,14 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   // returns a 2D histogram: deltaphi, deltaeta
   //
   // Parameters:
-  //   mixed: AliUEHist containing mixed event corresponding to this object
+  //   mixed: AliUEHist containing mixed event corresponding to this object (the histograms are taken from step <stepForMixed> if defined otherwise from step <step>)
   //   <other parameters> : check documentation of AliUEHist::GetUEHist
   //  normalizePerTrigger: divide through number of triggers
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
-
+  
   TH2* totalTracks = 0;
   
   THnBase* trackSameAll = 0;
@@ -895,13 +968,13 @@ TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEH
   Int_t nCorrelationFunctions = 0;
   
   GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackSameAll, &eventSameAll);
-  mixed->GetHistsZVtxMult(step, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
+  mixed->GetHistsZVtxMult((stepForMixed == -1) ? step : (CFStep) stepForMixed, region, ptLeadMin, ptLeadMax, &trackMixedAll, &eventMixedAll);
   
   // If we ask for histograms from step8 (TTR cut applied) there is a hole at 0,0; so this cannot be used for the
   // mixed-event normalization. If step6 is available, the normalization factor is read out from that one.
   // If step6 is not available we fallback to taking the normalization along all delta phi (WARNING requires a
   // flat delta phi distribution)
-  if (step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0 && !fSkipScaleMixedEvent)
+  if (stepForMixed == -1 && step == kCFStepBiasStudy && mixed->fEventHist->GetGrid(kCFStepReconstructed)->GetEntries() > 0 && !fSkipScaleMixedEvent)
   {
     Printf("Using mixed-event normalization factors from step %d", kCFStepReconstructed);
     mixed->GetHistsZVtxMult(kCFStepReconstructed, region, ptLeadMin, ptLeadMax, &trackMixedAllStep6, &eventMixedAllStep6);
