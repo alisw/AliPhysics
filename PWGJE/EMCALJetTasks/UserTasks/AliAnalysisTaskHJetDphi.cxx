@@ -69,7 +69,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi() :
   fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
-  fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(kFALSE), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
+  fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(0), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
   fMinTrkPt(0.15), fMaxTrkPt(1e4), fMinTrkEta(-0.9), fMaxTrkEta(0.9), fMinTrkPhi(0), fMaxTrkPhi(2*pi), 
   fRadius(0.4), fJetArrName(""), fPLJetArrName(""), fDLJetArrName(""), fJetArray(0x0), fPLJetArray(0x0), fDLJetArray(0x0),
   fRhoName(""), fRho(0x0), fRhoValue(0), fEvtBkg(0x0), fPtHardBinName(0x0), fPtHardBin(-1),
@@ -128,7 +128,7 @@ AliAnalysisTaskHJetDphi::AliAnalysisTaskHJetDphi(const char *name) :
   fEsdTrkCut(0x0), fEsdHybCut(0x0), fFilterMask(0), fRequireITSRefit(kTRUE), fRequireSharedClsCut(kTRUE),
   fIsInit(kFALSE), fNonStdFile(""), fMcParticleArrName(""), fMcParticleArray(0x0),  fMcParticlelMap(0x0), 
   fEmbTrkArrName(""), fEmbTrkArray(0x0), fTrackArrName(""), fTrackArray(0x0), 
-  fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(kFALSE), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
+  fTriggerTrkIndex(-1), fTriggerTrkPt(-1), fSwitchOnAvoidTpcHole(kFALSE), fAvoidTpcHole(0), fCutTPCBoundary(kFALSE), fDistToTPCBoundary(0.), 
   fMinTrkPt(0.15), fMaxTrkPt(1e4), fMinTrkEta(-0.9), fMaxTrkEta(0.9), fMinTrkPhi(0), fMaxTrkPhi(2*pi), 
   fRadius(0.4), fJetArrName(""), fPLJetArrName(""), fDLJetArrName(""), fJetArray(0x0), fPLJetArray(0x0), fDLJetArray(0x0),
   fRhoName(""), fRho(0x0), fRhoValue(0), fEvtBkg(0x0), fPtHardBinName(0x0), fPtHardBin(-1),
@@ -227,7 +227,7 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
   const Double_t hiBinJetA[dimJetA]  = {upJetPtBin,    1,   10, 10};
 
   const Int_t dimJetqa = 7;
-  const Int_t nBinsJetqa[dimJetqa]     = {nJetPtBins/10, 36,  24,  6,   100, 10, 11};
+  const Int_t nBinsJetqa[dimJetqa]     = {nJetPtBins/5, 36,  24,  6,   100, 10, 11};
   const Double_t lowBinJetqa[dimJetqa] = {lowJetPtBin,   0,  -0.6, 0,   0,   0,  0};
   const Double_t hiBinJetqa[dimJetqa]  = {upJetPtBin,    360, 0.6, 1.2, 500, 10, 11};
 
@@ -237,10 +237,10 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
   const Double_t lowBinTT[dimTT] = {lowTrkPtBin, 0,   0};
   const Double_t hiBinTT[dimTT]  = {upTrkPtBin,  100, 11}; 
   
-  const Int_t dimCor = 7;
-  const Int_t nBinsCor[dimCor]     = {nTrkPtBins, nJetPtBins,  140,     6,   10, 40,    11};
-  const Double_t lowBinCor[dimCor] = {lowTrkPtBin,lowJetPtBin, pi-4.95, 0,   0,  -1.95, 0};
-  const Double_t hiBinCor[dimCor]  = {upTrkPtBin, upJetPtBin,  pi+2.05, 1.2, 100, 2.05,  11};
+  const Int_t dimCor = 8;
+  const Int_t nBinsCor[dimCor]     = {nTrkPtBins, nJetPtBins,  140,     6,   10, 40,    11, 10};
+  const Double_t lowBinCor[dimCor] = {lowTrkPtBin,lowJetPtBin, pi-4.95, 0,   0,  -1.95, 0,  0};
+  const Double_t hiBinCor[dimCor]  = {upTrkPtBin, upJetPtBin,  pi+2.05, 1.2, 100, 2.05, 11, 10};
 
   // Leading track QA
   const Int_t dimLeadTrkqa = 5;
@@ -311,7 +311,7 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
 
       if(fRunTrkQA)
 	{
-	  fhTrkPt[i] = new TH2F(Form("%s_fhTrkPt",triggerName[i]),Form("%s: Trigger track p_{T} vs centrality;p_{T}^{Trigger} (GeV/c);Centrality",triggerName[i]),nTrkPtBins,lowTrkPtBin,upTrkPtBin,10,0,100);
+	  fhTrkPt[i] = new TH2F(Form("%s_fhTrkPt",triggerName[i]),Form("%s: Track p_{T} vs centrality;p_{T}^{track} (GeV/c);Centrality",triggerName[i]),nTrkPtBins,lowTrkPtBin,upTrkPtBin,10,0,100);
 	  fOutputList->Add(fhTrkPt[i]);
 
 	  fhTrkQA[i] = new THnSparseF(Form("%s_fhTrkQA",triggerName[i]),Form("%s: track p_{T} vs #phi vs #eta vs centrality;p_{T,track} (GeV/c);#phi;#eta;centrality",triggerName[i]),dimTrkqa,nBinsTrkqa,lowBinTrkqa,hiBinTrkqa);
@@ -346,7 +346,7 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
 	      fhTTPt[i][j] = new THnSparseF(Form("%s_fhTTPt%s",triggerName[i],dataType[j]),Form("%s-%s: TT p_{T} vs centrality vs pT hard bin;p_{T,TT}^{ch} (GeV/c);centrality;ptHardBin",dataName[j],triggerName[i]),dimTT,nBinsTT,lowBinTT,hiBinTT);
 	      fOutputList->Add(fhTTPt[i][j]);
 
-	      fHJetPhiCorr[i][j] = new THnSparseF(Form("%s_fHJetPhiCorr%s",triggerName[i],dataType[j]),Form("%s-%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin",dataName[j],triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
+	      fHJetPhiCorr[i][j] = new THnSparseF(Form("%s_fHJetPhiCorr%s",triggerName[i],dataType[j]),Form("%s-%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin vs event bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin;EventBin",dataName[j],triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
 	      fHJetPhiCorr[i][j]->SetBinEdges(3,newbins);
 	      fOutputList->Add(fHJetPhiCorr[i][j]);
 	    }
@@ -361,10 +361,10 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
 
 	  if(fRunBkgFlow)
 	    {
-	      fHJetPhiCorrUp[i] = new THnSparseF(Form("%s_fHJetPhiCorrUp",triggerName[i]),Form("%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin",triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
+	      fHJetPhiCorrUp[i] = new THnSparseF(Form("%s_fHJetPhiCorrUp",triggerName[i]),Form("%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin vs event bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin;EventBin",triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
 	      fOutputList->Add(fHJetPhiCorrUp[i]);
 	      
-	      fHJetPhiCorrDown[i] = new THnSparseF(Form("%s_fHJetPhiCorrDown",triggerName[i]),Form("%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin",triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
+	      fHJetPhiCorrDown[i] = new THnSparseF(Form("%s_fHJetPhiCorrDown",triggerName[i]),Form("%s: single inclusive TT p_{T} vs recoil jet p_{T} vs #Delta#varphi vs area vs centrality vs #Delta#eta vs pt hard bin vs event bin (R=%1.1f);TT p_{T} (GeV/c);p_{T,jet}^{ch} (GeV/c);#Delta#varphi;area;centrality;#Delta#eta;ptHardBin;EventBin",triggerName[i],fRadius),dimCor,nBinsCor,lowBinCor,hiBinCor);
 	      fOutputList->Add(fHJetPhiCorrDown[i]);
 	    }
 	}
@@ -421,20 +421,29 @@ Bool_t AliAnalysisTaskHJetDphi::UserNotify()
   AliInfo("User Nofity");
 
   Int_t runNumber = InputEvent()->GetRunNumber();
+
+  fAvoidTpcHole = 0;
   if(fSwitchOnAvoidTpcHole)
     {
-      Int_t runs[28] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-      Bool_t isSemigood = kFALSE;
+      Int_t runs_iroc[28] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+      Int_t runs_oroc[23] = {169591, 169590, 169588, 169587, 169586, 169584, 169557, 169555, 169554, 169553, 169550, 169515, 169512, 169506, 169504, 169498, 169475, 169420, 169418, 169099, 169040, 169045, 169044};
+
       for(Int_t i=0; i<28; i++)
 	{
-	  if(runNumber==runs[i])
+	  if(runNumber==runs_iroc[i])
 	    {
-	      isSemigood = kTRUE;
+	      fAvoidTpcHole = 1;
 	      break;
 	    }
 	}
-      if(isSemigood) fAvoidTpcHole = kTRUE;
-      else           fAvoidTpcHole = kFALSE;
+      for(Int_t i=0; i<23; i++)
+	{
+	  if(runNumber==runs_oroc[i])
+	    {
+	      fAvoidTpcHole = 2;
+	      break;
+	    }
+	}
     }
 
   if(fIsMC)
@@ -735,7 +744,12 @@ Int_t AliAnalysisTaskHJetDphi::FindSingleIncTrigger(const TClonesArray *trackArr
       trigPt = tt->Pt();
       trigPhi = tt->Phi();
       trigEta = tt->Eta();
-      if(fSwitchOnAvoidTpcHole && fAvoidTpcHole && trigPhi>3.91-pi && trigPhi<5.51-pi) trigIndex = -1;
+
+      if(fSwitchOnAvoidTpcHole)
+	{
+	  if(fAvoidTpcHole==1 && !(trigPhi>3.89 && trigPhi<5.53)) trigIndex = -1;
+	  if(fAvoidTpcHole==2 && !(trigPhi>2.45 && trigPhi<3.44)) trigIndex = -1;
+	}
 
       if(fCutTPCBoundary)
 	{
@@ -791,7 +805,7 @@ void AliAnalysisTaskHJetDphi::RunSingleInclHJetCorr(Double_t trigPt, Double_t tr
       Double_t jetPtCorr = jetPt-rho*jetArea;
       if(jetPtCorr>fJetPtMin)
 	{
-	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin};
+	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin,Entry()%10};
 	  hn->Fill(fill);
 	}
     }
@@ -926,11 +940,8 @@ void AliAnalysisTaskHJetDphi::RunJetQA(const TClonesArray *jetArray, const Doubl
       Double_t fillA[] = {jetPtCorr, jetArea, fCentrality, (Double_t)fPtHardBin};
       hJetArea->Fill(fillA);
 
-      if(jetPtCorr>fJetPtMin)
-	{
-	  Double_t fillQA[] = {jetPtCorr, jetPhi*TMath::RadToDeg(), jetEta, jetArea, (Double_t)nCons, fCentrality, (Double_t)fPtHardBin};
-	  hJetQA->Fill(fillQA);
-	}
+      Double_t fillQA[] = {jetPtCorr, jetPhi*TMath::RadToDeg(), jetEta, jetArea, (Double_t)nCons, fCentrality, (Double_t)fPtHardBin};
+      hJetQA->Fill(fillQA);
     }
 }
 
@@ -1345,7 +1356,7 @@ void AliAnalysisTaskHJetDphi::PrintConfig()
   printf("Track eta range: %2.1f < eta < %2.1f\n",fMinTrkEta, fMaxTrkEta);
   printf("Track phi range: %2.0f < phi < %2.0f\n",fMinTrkPhi*TMath::RadToDeg(),fMaxTrkPhi*TMath::RadToDeg());
   printf("Cut TT away from boundary: %s with distance = %2.2f\n",decision[fCutTPCBoundary],fDistToTPCBoundary);
-  printf("Avoid TPC holes: %s\n", decision[fAvoidTpcHole]);
+  printf("Avoid TPC holes: %s\n", decision[fSwitchOnAvoidTpcHole]);
   printf("Jet cone size R = %1.1f, and jet pt > %1.0f GeV/c \n",fRadius,fJetPtMin);
   printf("Run track QA: %s\n",decision[fRunTrkQA]);
   printf("Run jet QA: %s\n",decision[fRunJetQA]);
