@@ -72,12 +72,12 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   Int_t thresType  = AliIsolationCut::kSumPtIC ; 
   
   // Photon analysis
-  
   maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
-  // Photon analysis
+  // Isolation analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,kFALSE,simu,debug,print), n++); // Photon isolation
 
+  // QA histograms on clusters or tracks
   if(qaan)
   {
     maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,simu,debug,print),n++);
