@@ -88,8 +88,8 @@ echo "* ocdbPath: $ocdbPath"
 echo "* triggerAlias: $triggerAlias"
 echo ""
 
-echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")"
-time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")" &> rec.log
+echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")"
+time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")" &> rec.log
 
 exitcode=$?
 
