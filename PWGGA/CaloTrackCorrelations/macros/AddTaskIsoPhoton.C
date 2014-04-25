@@ -78,7 +78,11 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   // Photon analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,kFALSE,simu,debug,print), n++); // Photon isolation
 
-  if(qaan)  maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,simu,debug,print),n++);
+  if(qaan)
+  {
+    maker->AddAnalysis(ConfigureQAAnalysis(calorimeter,simu,debug,print),n++);
+    maker->AddAnalysis(ConfigureChargedAnalysis(simu,debug), n++); // charged tracks plots
+  }
   
   maker->SetAnaDebug(debug)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -587,6 +591,42 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter = "EMCAL", Bool_t s
   ConfigureMC(ana,simu);
   
   if(print) ana->Print("");
+  
+  return ana;
+  
+}
+
+//___________________________________________________________________________________
+AliAnaChargedParticles* ConfigureChargedAnalysis(Bool_t simulation, Int_t debugLevel)
+{
+  
+  AliAnaChargedParticles *ana = new AliAnaChargedParticles();
+  ana->SetDebug(debugLevel); //10 for lots of messages
+  
+  // selection cuts
+  
+  ana->SetMinPt(0.5);
+  ana->SwitchOnFiducialCut();
+  ana->GetFiducialCut()->SetSimpleCTSFiducialCut(0.8, 0, 360) ; //more restrictive cut in reader and after in isolation
+  
+  ana->SwitchOffFillVertexBC0Histograms() ;
+  //if(!simulation) ana->SwitchOnFillPileUpHistograms();
+  
+  // Input / output delta AOD settings
+  
+  ana->SetOutputAODName(Form("Hadron%s",kAnaIsoPhotonName.Data()));
+  ana->SetOutputAODClassName("AliAODPWG4Particle");
+  ana->SetInputAODName(Form("Hadron%s",kAnaIsoPhotonName.Data()));
+  
+  //Set Histograms name tag, bins and ranges
+  
+  ana->AddToHistogramsName("AnaHadrons_");
+  SetHistoRangeAndNBins(ana->GetHistogramRanges(),""); // see method below
+  
+  ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+  ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
+  
+  if(debugLevel > 0) ana->Print("");
   
   return ana;
   
