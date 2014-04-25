@@ -10,7 +10,7 @@
  * copies and that both the copyright notice and this permission notice   *
  * appear in the supporting documentation. The authors make no claims     *
  * about the suitability of this software for any purpose. It is          *
- * provided "as is" xwithout express or implied warranty.                  *
+ * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
 //_________________________________________________________________________
