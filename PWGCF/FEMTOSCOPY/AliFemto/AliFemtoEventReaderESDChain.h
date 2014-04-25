@@ -69,6 +69,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 
   void CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent);
   void SetpA2013(Bool_t pa2013);
+  void SetUseMVPlpSelection(Bool_t mvplp);
+  void SetIsPileUpEvent(Bool_t ispileup);
+
  protected:
 
  private:
@@ -100,6 +103,9 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   int    fMagFieldSign;
 
   Bool_t fpA2013;
+  Bool_t fisPileUp;
+  Bool_t fMVPlp;
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

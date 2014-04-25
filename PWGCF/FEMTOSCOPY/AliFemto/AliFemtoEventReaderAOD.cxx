@@ -29,6 +29,7 @@
 #include "AliPID.h"
 
 #include "AliAODpidUtil.h"
+#include "AliAnalysisUtils.h"
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -63,6 +64,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -95,6 +98,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -117,6 +122,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fEstEventMult = aReader.fEstEventMult;
   fUsePreCent = aReader.fUsePreCent;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
 
 }
@@ -161,6 +168,8 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fUsePreCent = aReader.fUsePreCent;
   fEstEventMult = aReader.fEstEventMult;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent= aReader.fFlatCent;
 
@@ -307,38 +316,31 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
+  //AliAnalysisUtils
+  if(fisPileUp||fpA2013)
+    {
+      AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+      if(fpA2013)
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
+      if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
+      else anaUtil->SetUseMVPlpSelection(kFALSE);
+      if(fisPileUp)
+	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
+      delete anaUtil;   
+    }
+
+
   // Primary Vertex position
-  //  double fV1[3];
-  if(fpA2013)
-  {
-    const AliAODVertex* trkVtx = fEvent->GetPrimaryVertex();
-    if (!trkVtx || trkVtx->GetNContributors()<=0)  return;
-    TString vtxTtl = trkVtx->GetTitle();
-    if (!vtxTtl.Contains("VertexerTracks")) return;
-    Float_t zvtx = trkVtx->GetZ();
-    const AliAODVertex* spdVtx = fEvent->GetPrimaryVertexSPD();
-    if (spdVtx->GetNContributors()<=0)  return;
-    TString vtxTyp = spdVtx->GetTitle();
-    Double_t cov[6]={0};
-    spdVtx->GetCovarianceMatrix(cov);
-    Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25))  return;
-    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)  return;
+  const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
+  if(!aodvertex || aodvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
 
-    if (TMath::Abs(zvtx) > 10)  return;
-  }
-  fEvent->GetPrimaryVertex()->GetPosition(fV1);
-
+  aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   tEvent->SetPrimVertPos(vertex);
 
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
 
-  // Check to see whether the additional info exists
-  //   if (fPWG2AODTracks)
-  //     nofTracks=fPWG2AODTracks->GetEntries();
-  //   else
   nofTracks=fEvent->GetNumberOfTracks();
 
   AliEventplane *ep = fEvent->GetEventplane();
@@ -543,18 +545,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
     //counting particles to set multiplicity
     if(fEstEventMult==kGlobalCount){
-      double impact[2];
-      double covimpact[3];
-      AliAODTrack* trk_clone = (AliAODTrack*)aodtrack->Clone("trk_clone");
-      if (trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-        if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
-          //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
-          if (aodtrack->Chi2perNDF() < 4.0)
-            if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
-              if (aodtrack->GetTPCNcls() > 70)
-                if (aodtrack->Eta() < 0.8)
-                  tNormMult++;
-      }
+      AliAODTrack* trk_clone = (AliAODTrack*)aodtrack->Clone("trk_clone"); //no DCA cut for global count
+      //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+      if (aodtrack->Chi2perNDF() < 4.0)
+	if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
+	  if (aodtrack->GetTPCNcls() > 70)
+	    if (aodtrack->Eta() < 0.8)
+	      tNormMult++;
       delete trk_clone;
     }
 
@@ -1508,6 +1505,18 @@ void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
 }
+
+void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
+{
+  fMVPlp = mvplp;
+}
+
+void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
+{
+  fisPileUp = ispileup;
+}
+
+
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
 {
