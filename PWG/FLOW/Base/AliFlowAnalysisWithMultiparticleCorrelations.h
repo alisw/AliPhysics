@@ -126,6 +126,13 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t GetFillMultDistributionsHist() const {return this->fFillMultDistributionsHist;};
   void SetFillMultCorrelationsHist(Bool_t const mch) {this->fFillMultCorrelationsHist = mch;};
   Bool_t GetFillMultCorrelationsHist() const {return this->fFillMultCorrelationsHist;};
+  void SetDontFill(const char *type) 
+  {
+   if(TString(type).EqualTo("RP")){this->fDontFill[0] = kTRUE;} 
+   else if(TString(type).EqualTo("POI")){this->fDontFill[1] = kTRUE;} 
+   else if(TString(type).EqualTo("REF")){this->fDontFill[2] = kTRUE;} 
+   else{Fatal("void SetDontFill(const char *type)","type = %s ???? Allowed: RP, POI and REF.",type);}
+  }; // void SetDontFill(const char *type) 
   void SetnBins(const char *type, const char *variable, const Int_t nBins); // .cxx
   void SetMin(const char *type, const char *variable, const Double_t min); // .cxx
   void SetMax(const char *type, const char *variable, const Double_t max); // .cxx
@@ -317,7 +324,8 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Bool_t fFillControlHistograms;        // fill or not control histograms (by default they are all filled)
   Bool_t fFillKinematicsHist;           // fill or not fKinematicsHist[2][3]
   Bool_t fFillMultDistributionsHist;    // fill or not TH1D *fMultDistributionsHist[3]    
-  Bool_t fFillMultCorrelationsHist;     // fill or not TH2D *fMultCorrelationsHist[3]  
+  Bool_t fFillMultCorrelationsHist;     // fill or not TH2D *fMultCorrelationsHist[3]
+  Bool_t fDontFill[3];                  // don't fill control histograms [0=RP,1=POI,2=REF]  
   TH1D *fKinematicsHist[2][3];          // [RP,POI][phi,pt,eta] distributions
   TH1D *fMultDistributionsHist[3];      // multiplicity distribution [RP,POI,reference multiplicity]
   TH2I *fMultCorrelationsHist[3];       // [RP vs. POI, RP vs. refMult, POI vs. refMult]  
@@ -327,7 +335,7 @@ class AliFlowAnalysisWithMultiparticleCorrelations{
   Int_t fnBinsMult[3];                  // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMinMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
   Double_t fMaxMult[3];                 // [RP,POI,REF], corresponds to fMultDistributionsHist[3]   
-  
+
   // 2.) Q-vectors:
   TList *fQvectorList;           // list to hold all Q-vector objects       
   TProfile *fQvectorFlagsPro;    // profile to hold all flags for Q-vector
