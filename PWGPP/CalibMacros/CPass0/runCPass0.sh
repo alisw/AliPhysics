@@ -23,7 +23,10 @@ if [ $# -lt 3 ]; then
     # alien Setup
     nEvents=99999999
     ocdbPath="raw://"
-    triggerAlias="?Trigger=kCalibBarrel"
+    
+    # use the value passed by LPM, or by default use the kCalibBarrel alias
+    triggerAlias=${ALIEN_JDL_TRIGGERALIAS-?Trigger=kCalibBarrel}
+    #triggerAlias="?Trigger=kPhysicsAll"
 fi
 
 if [ $# -ge 4 ]; then
@@ -56,6 +59,7 @@ if [ "$2" == "OCDB" ]; then
     echo "Generating OCDB.root only"
     export OCDB_SNAPSHOT_CREATE="kTRUE"
     export OCDB_SNAPSHOT_FILENAME="OCDB.root"
+    touch OCDB.generating.job
 fi
 
 CHUNKNAME="$1"
@@ -84,37 +88,44 @@ echo "* ocdbPath: $ocdbPath"
 echo "* triggerAlias: $triggerAlias"
 echo ""
 
-echo executing aliroot -l -b -q "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")"
-time aliroot -l -b -q "recCPass0.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerAlias\")" &> rec.log
+echo executing aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")"
+time aliroot -l -b -q -x "recCPass0.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerAlias\")" &> rec.log
 
 exitcode=$?
 
 echo "*! Exit code of recCPass0.C: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    exit $exitcode
+    echo "recCPass0.C exited with code $exitcode" > validation_error.message
+    exit 10
 fi
 
 mv syswatch.log syswatch_rec.log
 
 if [ "$2" == "OCDB" ]; then
     echo "*! Reconstruction ran in fake mode to create OCDB.root, exiting quickly now"
-    touch OCDB.generating.job
 
     if [ -f OCDB.root ]; then
         echo "* OCDB.root was indeed produced"
     else
         echo "! Error: OCDB.root was NOT generated !!!"
+        echo "OCDB.root was not generated" > validation_error.message
         exit 1
     fi
+    
     exit 0
 fi
 
 echo "* Running AliRoot to make calibration..."
-echo executing aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
-time aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> calib.log
+echo executing aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
+time aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> calib.log
 exitcode=$?
 
 echo "*! Exit code of runCalibTrain.C: $exitcode"
 
-exit $exitcode
+if [ $exitcode -ne 0 ]; then
+    echo "runCalibTrain.C exited with code $exitcode" > validation_error.message
+    exit 40
+fi
+
+exit 0

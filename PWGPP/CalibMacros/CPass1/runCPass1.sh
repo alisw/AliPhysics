@@ -2,7 +2,7 @@
 
 # Script to run:
 #    1. reconstruction
-#    2. calibration
+#    2. calibration 
 #
 # Files assumed to be in working directory:
 # recCPass1.C          - reconstruction macro
@@ -23,7 +23,9 @@ if [ $# -eq 1 ]; then
     # alien Setup
     nEvents=99999999
     ocdbPath="raw://"
-    triggerOptions="?Trigger=kCalibBarrel"
+    # use the value passed by LPM, or by default use the kCalibBarrel alias
+    triggerOptions=${ALIEN_JDL_TRIGGERALIAS-?Trigger=kCalibBarrel}
+    #triggerOptions="?Trigger=kPhysicsAll"
 fi
 
 if [ $# -ge 4 ]; then
@@ -89,28 +91,34 @@ echo
 if [ "$2" == "OCDB" ]; then
     export OCDB_SNAPSHOT_CREATE="kTRUE"
     export OCDB_SNAPSHOT_FILENAME="OCDB.root"
+    touch OCDB.generating.job
 
     echo "* Running AliRoot to generate the OCDB based on $CHUNKNAME"
 
     echo "OCDB/recCPass1.C" >&2
-    time aliroot -l -b -q recCPass1.C\(\"$CHUNKNAME\"\) &> rec.log
+    time aliroot -l -b -q -x recCPass1.C\(\"$CHUNKNAME\"\) &> rec.log
     exitcode=$?
     echo "Exit code: $exitcode"
+    
+    if [ $exitcode -ne 0 ]; then
+        echo "recCPass1.C for OCDB snapshot exited with code $exitcode" > validation_error.message
+        exit 10
+    fi
 
     echo "* Reconstruction ran in fake mode to create OCDB.root, exiting quickly now"
-    touch OCDB.generating.job
 
     if [ -f OCDB.root ]; then
         echo "* OCDB.root was indeed produced"
     else
         echo "* Error: OCDB.root was NOT generated !!!"
+        echo "OCDB.root was not generated" > validation_error.message
         exit 1
     fi
 
-    exit $exitcode
+    exit 0
 fi
 
-for COMMON_FILE in wn.xml localOCDBaccessConfig.C AddTaskTPCCalib.C OCDB.root QAtrain_duo.C; do
+for COMMON_FILE in wn.xml localOCDBaccessConfig.C AddTaskTPCCalib.C AddTaskTRDCalib.C OCDB.root QAtrain_duo.C; do
     if [ -f $COMMON_FILE ]; then
         ln -s ../$COMMON_FILE Barrel/$COMMON_FILE
         ln -s ../$COMMON_FILE OuterDet/$COMMON_FILE
@@ -131,26 +139,28 @@ cd Barrel
 
 echo "* Running AliRoot to reconstruct barrel of $CHUNKNAME"
 
-echo executing aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")"
-time aliroot -l -b -q "recCPass1.C(\"$CHUNKNAME\",$nEvents,\"$ocdbPath\",\"$triggerOptions\")" &> ../rec.log
+echo executing aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")"
+time aliroot -l -b -q -x "recCPass1.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\", \"$triggerOptions\")" &> ../rec.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    exit $exitcode
+    echo "recCPass1.C exited with code $exitcode" > ../validation_error.message
+    exit 10
 fi
 
 mv syswatch.log ../syswatch_rec_Barrel.log
 
 echo "* Running AliRoot to make calibration..."
 
-echo executing aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
-time aliroot -l -b -q "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> ../calib.log
+echo executing aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")"
+time aliroot -l -b -q -x "runCalibTrain.C($runNum,\"AliESDs.root\",\"$ocdbPath\")" &> ../calib.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    exit $exitcode
+    echo "runCalibTrain.C exited with code $exitcode" > ../validation_error.message
+    exit 40
 fi
 
 mv syswatch.log ../syswatch_calib.log
@@ -158,14 +168,18 @@ mv syswatch.log ../syswatch_calib.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (barrel) ..."
 
-    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"$ocdbPath\")"
-    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"wn.xml\",0,\"$ocdbPath\")" &> ../qa_barrel.log
+#    echo executing aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")"
+#    time aliroot -b -q "QAtrain_duo.C(\"_barrel\",$runNum,\"$ocdbPath\")" &> ../qa_barrel.log
+
+    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_barrel\",$runNum)"
+    time aliroot -b -q -x "QAtrain_duo.C(\"_barrel\",$runNum)" &> ../qa_barrel.log
 
     exitcode=$?
     echo "Exit code: $exitcode"
 
     if [ $exitcode -ne 0 ]; then
-        exit $exitcode
+        echo "QAtrain_duo.C / barrel exited with code $exitcode" > ../validation_error.message
+        exit 100
     fi
 
     for file in *.stat; do
@@ -176,7 +190,7 @@ fi
 mv AliESDs.root ../AliESDs_Barrel.root
 mv AliESDfriends.root ../AliESDfriends_Barrel.root
 
-for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root; do
+for file in AliESDfriends_v1.root QAresults_barrel.root EventStat_temp_barrel.root AODtpITS.root Run*.Event*_*.ESD.tag.root; do
     if [ -f "$file" ]; then
         mv "$file" ../
     fi
@@ -188,13 +202,14 @@ cd ../OuterDet
 
 echo "* Running AliRoot to reconstruct outer of $CHUNKNAME"
 
-echo executing aliroot -l -b -q "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")"
-time aliroot -l -b -q "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")" &> ../rec_Outer.log
+echo executing aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")"
+time aliroot -l -b -q -x "recCPass1_OuterDet.C(\"$CHUNKNAME\", $nEvents, \"$ocdbPath\")" &> ../rec_Outer.log
 exitcode=$?
 echo "Exit code: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    exit $exitcode
+    echo "recCPass1_OuterDet.C exited with code $exitcode" > ../validation_error.message
+    exit 11
 fi
 
 mv syswatch.log ../syswatch_rec_Outer.log
@@ -202,14 +217,18 @@ mv syswatch.log ../syswatch_rec_Outer.log
 if [ -f QAtrain_duo.C ]; then
     echo "* Running the QA train (outer) ..."
 
-    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"$ocdbPath\")"
-    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"wn.xml\",0,\"$ocdbPath\")" &> ../qa_outer.log
+#    echo executing aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")"
+#    time aliroot -b -q "QAtrain_duo.C(\"_outer\",$runNum,\"$ocdbPath\")" &> ../qa_outer.log
+
+    echo executing aliroot -b -q -x "QAtrain_duo.C(\"_outer\",$runNum)"
+    time aliroot -b -q -x "QAtrain_duo.C(\"_outer\",$runNum)" &> ../qa_outer.log
 
     exitcode=$?
     echo "Exit code: $exitcode"
 
     if [ $exitcode -ne 0 ]; then
-        exit $exitcode
+        echo "QAtrain_duo.C  / outer exited with code $exitcode" > ../validation_error.message
+        exit 101
     fi
 
     for file in *.stat ; do
@@ -226,4 +245,4 @@ for file in QAresults_outer.root EventStat_temp_outer.root; do
     fi
 done
 
-exit $exitcode
+exit 0
