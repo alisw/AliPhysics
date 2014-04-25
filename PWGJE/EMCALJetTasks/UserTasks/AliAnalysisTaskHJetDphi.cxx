@@ -56,7 +56,6 @@ using std::endl;
 ClassImp(AliAnalysisTaskHJetDphi)
 
 const Double_t pi = TMath::Pi();
-const Double_t areaCut[4] = {0.1, 0.23, 0.4, 0.63};
 const Double_t kSector = pi/9;
 
 //________________________________________________________________________
