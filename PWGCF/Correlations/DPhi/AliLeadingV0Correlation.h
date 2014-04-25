@@ -15,6 +15,7 @@
 #include "THnSparse.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 
 class TList;
 class AliAODEvent;
@@ -105,7 +106,7 @@ private:
 	Bool_t IsTrackFromV0(AliAODTrack* track);
 	void FillCorrelationSibling(Double_t MultipOrCent,
 								TObjArray*triggerArray,TObjArray*selectedV0Array,
-								TH1F*triggerHist,THnSparse*associateHist);
+								TH3F*triggerHist,THnSparse*associateHist);
 	void FillCorrelationMixing(Double_t MultipOrCentMix,Double_t pvxMix,
 							   Double_t poolmax,Double_t poolmin,
 							   TObjArray*triggerArray,TObjArray*selectedV0Array,
@@ -196,11 +197,11 @@ private:
 	THnSparse   *fHistReconstSibFEED;
 	THnSparse   *fHistReconstMixFEED;
 	
-	TH1F        *fHistTriggerSib;
+	TH3F        *fHistTriggerSib;
 	TH1F		*fHistTriggerMix;
-	TH1F		*fHistTriggerSibGEN;
+	TH3F		*fHistTriggerSibGEN;
 	TH1F		*fHistTriggerMixGEN;
-	TH1F		*fHistTriggerSibASO;
+	TH3F		*fHistTriggerSibASO;
 	TH1F		*fHistTriggerMixASO;
 
 	ClassDef(AliLeadingV0Correlation, 1); 
