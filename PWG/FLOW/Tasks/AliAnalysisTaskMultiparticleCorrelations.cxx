@@ -108,6 +108,10 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   fCrossCheckDiffCSCOBN[0] = 0; // cos/sin
   fCrossCheckDiffCSCOBN[1] = 2; // correlator order
   fCrossCheckDiffCSCOBN[2] = 4; // bin number 
+  // Initialize default vaulues for fDontFill[3]:
+  fDontFill[0] = kFALSE;
+  fDontFill[1] = kFALSE;
+  fDontFill[2] = kFALSE;
   // Initialize default binning values for fKinematicsHist[2][3]:
   // nBins:
   fnBins[0][0] = 360;  // [RP][phi]
@@ -210,6 +214,10 @@ AliAnalysisTaskMultiparticleCorrelations::AliAnalysisTaskMultiparticleCorrelatio
   fCrossCheckDiffCSCOBN[0] = 0; // cos/sin
   fCrossCheckDiffCSCOBN[1] = 2; // correlator order
   fCrossCheckDiffCSCOBN[2] = 4; // bin number 
+  // Initialize default vaulues for fDontFill[3]:
+  fDontFill[0] = kFALSE;
+  fDontFill[1] = kFALSE;
+  fDontFill[2] = kFALSE;
   // Initialize default binning values for fKinematicsHist[2][3]:
   // nBins:
   fnBins[0][0] = 360;  // [RP][phi]
@@ -267,6 +275,9 @@ void AliAnalysisTaskMultiparticleCorrelations::UserCreateOutputObjects()
  fMPC->SetAnalysisTag(fAnalysisTag.Data());
  fMPC->SetDumpThePoints(fDumpThePoints,fMaxNoEventsPerFile);
  fMPC->SetFillControlHistograms(fFillControlHistograms);
+ if(fDontFill[0]){fMPC->SetDontFill("RP");}
+ if(fDontFill[1]){fMPC->SetDontFill("POI");}
+ if(fDontFill[2]){fMPC->SetDontFill("REF");}
  fMPC->SetFillKinematicsHist(fFillKinematicsHist);
  fMPC->SetFillMultDistributionsHist(fFillMultDistributionsHist);
  fMPC->SetFillMultCorrelationsHist(fFillMultCorrelationsHist);
