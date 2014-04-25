@@ -13,6 +13,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
                                                       const Bool_t   tm            = kTRUE,
                                                       const Int_t    minCen        = -1,
                                                       const Int_t    maxCen        = -1,
+                                                      const Int_t    nlmMax        =  2,
                                                       const Bool_t   qaan          = kFALSE,
                                                       const Int_t    debug         = -1,
                                                       const Bool_t   print         = kFALSE
@@ -20,8 +21,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
 {
   // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
-  printf("AddTaskIsoPhoton() - Settings: cone %2.2f, pth %2.2f, timeCut On %d, calorimeter %s, simu %d, exotic %d, non lin %d, trigger %s, TM %d, qa %d, debug %d, centrality %d-%d\n",
-                                         cone,    pth,    timecut   ,    calorimeter.Data(),simu, exotic,    nonlin,     trigger.Data(), tm,    qaan,   debug, minCen, maxCen );
+  printf("AddTaskIsoPhoton() - Settings: cone %2.2f, pth %2.2f, timeCut On %d, NLM max cut %d, calorimeter %s, simu %d, exotic %d, non lin %d, trigger %s, TM %d, qa %d, debug %d, centrality %d-%d\n",
+                                         cone,    pth,    timecut   ,    nlmMax,      calorimeter.Data(),simu, exotic,    nonlin,     trigger.Data(), tm,    qaan,   debug, minCen, maxCen );
   
   // Get the pointer to the existing analysis manager via the static access method.
   
@@ -72,7 +73,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskIsoPhoton(const Float_t  cone       
   
   // Photon analysis
   
-  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,simu,debug,print), n++); // Photon cluster selection
+  maker->AddAnalysis(ConfigurePhotonAnalysis(calorimeter,tm,nlmMax,simu,debug,print), n++); // Photon cluster selection
   
   // Photon analysis
   maker->AddAnalysis(ConfigureIsolationAnalysis(calorimeter,"Photon", partInCone,thresType,cone, pth,tm,kFALSE,simu,debug,print), n++); // Photon isolation
@@ -361,7 +362,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t nonlin = kTRUE, Bool_t exotic = k
 }
 
 //_____________________________________
-AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
+AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm = kFALSE, Int_t nlmMax = 2, Bool_t simu = kFALSE, Int_t debug = -1, Bool_t print = kFALSE)
 {
   
   AliAnaPhoton *ana = new AliAnaPhoton();
@@ -391,7 +392,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString calorimeter = "EMCAL", Bool_t tm =
     
     // NLM cut, used in all, exclude clusters with more than 2 maxima
     // Not needed if M02 cut is already strong or clusterizer V2
-    ana->SetNLMCut(1, 2) ;
+    ana->SetNLMCut(1, nlmMax) ;
   }
   
   if(tm)
