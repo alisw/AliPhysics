@@ -1150,18 +1150,18 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh3InvMassEtaTrackPtK0s       = new TH3F("fh3InvMassEtaTrackPtK0s","#eta; invMass (GeV/{#it{c}}^{2}); #it{p}_{T} (GeV/#it{c})", 200, -1., 1., 400, 0.3, 0.7, 140, 0., 14.);
   fh3InvMassEtaTrackPtLa        = new TH3F("fh3InvMassEtaTrackPtLa", "#eta; invMass (GeV/{#it{c}}^{2}; #it{p}_{T} (GeV/#it{c}))",  200, -1., 1., 200, 1.05, 1.25, 140, 0., 14.);
   fh3InvMassEtaTrackPtALa       = new TH3F("fh3InvMassEtaTrackPtALa","#eta; invMass (GeV/#it{c}^{2}); #it{p}_{T} (GeV/#it{c})",  200, -1., 1., 200, 1.05, 1.25, 140, 0., 14.);
-  fh3IMK0PerpCone               = new TH3F("fh3IMK0PerpCone","{K_{0}}^{s} content in perpendicular cone",39,5.,200.,400,0.3,0.7, 200,0.,20.);
-  fh3IMLaPerpCone               = new TH3F("fh3IMLaPerpCone","#Lambda content in perpendicular cone",39,5.,200., 200,1.05,1.25, 200,0.,20.);
-  fh3IMALaPerpCone              = new TH3F("fh3IMALaPerpCone","#Antilambda content in perpendicular cone",39,5.,200.,200,1.05,1.25, 200,0.,20.);
-  fh3IMK0MedianCone             = new TH3F("fh3IMK0MedianCone","{K_{0}}^{s} content in median cluster cone",39,5.,200.,400,0.3,0.7, 200,0.,20.);
-  fh3IMLaMedianCone             = new TH3F("fh3IMLaMedianCone","#Lambda content in median cluster cone",39,5.,200., 200,1.05,1.25, 200,0.,20.);
-  fh3IMALaMedianCone            = new TH3F("fh3IMALaMedianCone","#Antilambda content in median cluster cone",39,5.,200., 200,1.05,1.25, 200,0.,20.);
+  fh3IMK0PerpCone               = new TH3F("fh3IMK0PerpCone","{K_{0}}^{s} content in perpendicular cone",19,5.,100.,400,0.3,0.7, 200,0.,20.);
+  fh3IMLaPerpCone               = new TH3F("fh3IMLaPerpCone","#Lambda content in perpendicular cone",19,5.,100., 200,1.05,1.25, 200,0.,20.);
+  fh3IMALaPerpCone              = new TH3F("fh3IMALaPerpCone","#Antilambda content in perpendicular cone",19,5.,100.,200,1.05,1.25, 200,0.,20.);
+  fh3IMK0MedianCone             = new TH3F("fh3IMK0MedianCone","{K_{0}}^{s} content in median cluster cone",19,5.,100.,400,0.3,0.7, 200,0.,20.);
+  fh3IMLaMedianCone             = new TH3F("fh3IMLaMedianCone","#Lambda content in median cluster cone",19,5.,100., 200,1.05,1.25, 200,0.,20.);
+  fh3IMALaMedianCone            = new TH3F("fh3IMALaMedianCone","#Antilambda content in median cluster cone",19,5.,100., 200,1.05,1.25, 200,0.,20.);
   fh1MedianEta                  = new TH1F("fh1MedianEta","Median cluster axis ;#eta",200,-1.,1.);
-  fh1JetPtMedian                = new TH1F("fh1JetPtMedian","Median cluster jet it{p}_{T} ;#GeV/it{c}",39,5.,200.);
+  fh1JetPtMedian                = new TH1F("fh1JetPtMedian","Median cluster jet it{p}_{T} ;#GeV/it{c}",19,5.,100.);
 
   fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",200,0.,500.);
 
-  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",200,0.,200.,39,5.,200.);
+  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",200,0.,200.,19,5.,100.);
 
   fFFHistosRecCuts   	    = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
@@ -1239,29 +1239,29 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   // MC histograms
   //***************
 
-  fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",39,5.,200.,200,0.,20.);
-  fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",39,5.,200.,200,0.,20.);
-  fh2MCgenALaCone               = new TH2F("fh2MCgenALaCone", "MC gen #Antilambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",39,5.,200.,200,0.,20.);
+  fh2MCgenK0Cone                = new TH2F("fh2MCgenK0Cone", "MC gen {K^{0}}^{s} #it{p}_{T}  in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  fh2MCgenLaCone                = new TH2F("fh2MCgenLaCone", "MC gen #Lambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T} ; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
+  fh2MCgenALaCone               = new TH2F("fh2MCgenALaCone", "MC gen #Antilambda #it{p}_{T} in cone around rec jet axis versus jet #it{p}_{T}; jet #it{p}_{T}",19,5.,100.,200,0.,20.);
 
   fh2MCgenK0Cone->GetYaxis()->SetTitle("MC gen K^{0}}^{s} #it{p}_{T}");
   fh2MCgenLaCone->GetYaxis()->SetTitle("MC gen #Lambda #it{p}_{T}");
   fh2MCgenALaCone->GetYaxis()->SetTitle("MC gen #Antilambda #it{p}_{T}");
 
-  fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",39,5.,200.,200,-1.,1.);
-  fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",39,5.,200.,200,-1.,1.);
-  fh2MCEtagenALaCone            = new TH2F("fh2MCEtagenALaCone","MC gen #Antilambda #it{p}_{T} #eta distribution in jet cone;#eta",39,5.,200.,200,-1.,1.);
-  fh1FFIMK0ConeSmear            = new TH1F("fh1FFIMK0ConeSmear","Smeared jet pt study for K0s-in-cone-jets; smeared jet #it{p}_{T}", 39,5.,200.);
-  fh1FFIMLaConeSmear            = new TH1F("fh1FFIMLaConeSmear","Smeared jet pt study for La-in-cone-jets; smeared jet #it{p}_{T}", 39,5.,200.);
-  fh1FFIMALaConeSmear           = new TH1F("fh1FFIMALaConeSmear","Smeared jet pt study for ALa-in-cone-jets; smeared jet #it{p}_{T}", 39,5.,200.);
+  fh2MCEtagenK0Cone             = new TH2F("fh2MCEtagenK0Cone","MC gen {K^{0}}^{s} #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  fh2MCEtagenLaCone             = new TH2F("fh2MCEtagenLaCone","MC gen #Lambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  fh2MCEtagenALaCone            = new TH2F("fh2MCEtagenALaCone","MC gen #Antilambda #it{p}_{T} #eta distribution in jet cone;#eta",19,5.,100.,200,-1.,1.);
+  fh1FFIMK0ConeSmear            = new TH1F("fh1FFIMK0ConeSmear","Smeared jet pt study for K0s-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
+  fh1FFIMLaConeSmear            = new TH1F("fh1FFIMLaConeSmear","Smeared jet pt study for La-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
+  fh1FFIMALaConeSmear           = new TH1F("fh1FFIMALaConeSmear","Smeared jet pt study for ALa-in-cone-jets; smeared jet #it{p}_{T}", 19,5.,100.);
   
-  fh3MCrecK0Cone                = new TH3F("fh3MCrecK0Cone", "MC rec {K^{0}}^{s} #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",39,5.,200., 400,0.3,0.7, 200,0.,20.);  
-  fh3MCrecLaCone                = new TH3F("fh3MCrecLaCone", "MC rec {#Lambda #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",39,5.,200., 200,1.05,1.25, 200,0.,20.);            
-  fh3MCrecALaCone               = new TH3F("fh3MCrecALaCone", "MC rec {#Antilambda #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",39,5.,200.,200,1.05,1.25, 200,0.,20.);
-  fh3MCrecK0ConeSmear           = new TH3F("fh3MCrecK0ConeSmear", "MC rec {K^{0}}^{s} #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",39,5.,200., 400,0.3,0.7, 200,0.,20.);  
-  fh3MCrecLaConeSmear           = new TH3F("fh3MCrecLaConeSmear", "MC rec {#Lambda #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",39,5.,200., 200,1.05,1.25, 200,0.,20.);            
-  fh3MCrecALaConeSmear          = new TH3F("fh3MCrecALaConeSmear", "MC rec {#Antilambda #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",39,5.,200.,200,1.05,1.25, 200,0.,20.);
-  fh3SecContinCone              = new TH3F("fh3SecContinCone","secondary contamination of jet cones; jet #it{p}_{T}; track #it{p}_{T}, #eta",39,5.,200.,200,0.,20.,200,-1.,1.);
-  fh3StrContinCone              = new TH3F("fh3StrContinCone","strange particle contamination of jet cones; jet #it{p}_{T}; track #it{p}_{T}, #eta",39,5.,200.,200,0.,20.,200,-1.,1.);
+  fh3MCrecK0Cone                = new TH3F("fh3MCrecK0Cone", "MC rec {K^{0}}^{s} #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",19,5.,100., 400,0.3,0.7, 200,0.,20.);  
+  fh3MCrecLaCone                = new TH3F("fh3MCrecLaCone", "MC rec {#Lambda #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",19,5.,100., 200,1.05,1.25, 200,0.,20.);            
+  fh3MCrecALaCone               = new TH3F("fh3MCrecALaCone", "MC rec {#Antilambda #it{p}_{T}  in cone around jet axis matching MC gen particle; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",19,5.,100.,200,1.05,1.25, 200,0.,20.);
+  fh3MCrecK0ConeSmear           = new TH3F("fh3MCrecK0ConeSmear", "MC rec {K^{0}}^{s} #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2};#it{p}_{T}",19,5.,100., 400,0.3,0.7, 200,0.,20.);  
+  fh3MCrecLaConeSmear           = new TH3F("fh3MCrecLaConeSmear", "MC rec {#Lambda #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",19,5.,100., 200,1.05,1.25, 200,0.,20.);            
+  fh3MCrecALaConeSmear          = new TH3F("fh3MCrecALaConeSmear", "MC rec {#Antilambda #it{p}_{T}  in cone around jet axis matching MC gen particle, with jet p_{T} smeared; jet #it{p}_{T}; inv mass (GeV/#it{c}^{2});#it{p}_{T}",19,5.,100.,200,1.05,1.25, 200,0.,20.);
+  fh3SecContinCone              = new TH3F("fh3SecContinCone","secondary contamination of jet cones; jet #it{p}_{T}; track #it{p}_{T}, #eta",19,5.,100.,200,0.,20.,200,-1.,1.);
+  fh3StrContinCone              = new TH3F("fh3StrContinCone","strange particle contamination of jet cones; jet #it{p}_{T}; track #it{p}_{T}, #eta",19,5.,100.,200,0.,20.,200,-1.,1.);
 
   fh1MCMultiplicityPrimary      = new TH1F("fh1MCMultiplicityPrimary", "MC Primary Particles;NPrimary;Count", 201, -0.5, 200.5);
   fh1MCMultiplicityTracks       = new TH1F("h1MCMultiplicityTracks", "MC Tracks;Ntracks;Count", 201, -0.5, 200.5);
