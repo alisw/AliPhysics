@@ -144,7 +144,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   //-- K0s
 
-  void   SetFFInvMassHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //previous 19, 5.,100.
+  void   SetFFInvMassHistoBins(Int_t nJetPt = 19, Float_t jetPtMin = 5., Float_t jetPtMax = 100., //previous 19, 5.,100.
 			       Int_t nInvM = 400, Float_t invMMin = 0.3,  Float_t invMMax = 0.7, //previous 0.4 to 0.6
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20.,         //previous 0. to 10.
 			       Int_t nXi = 35, Float_t xiMin = 0., Float_t xiMax = 7.,
@@ -157,7 +157,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   
   // --La and ALa
 
-  void   SetFFInvMassLaHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //La
+  void   SetFFInvMassLaHistoBins(Int_t nJetPt = 19, Float_t jetPtMin = 5., Float_t jetPtMax = 100., //La
 				 //Int_t nInvM = 140, Float_t invMMin = 1.06,  Float_t invMMax = 1.2,//original inv. mass range, now I shifted to Vits slightly larger mass window
 			       Int_t nInvM = 200, Float_t invMMin = 1.05,  Float_t invMMax = 1.25,
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20., 
