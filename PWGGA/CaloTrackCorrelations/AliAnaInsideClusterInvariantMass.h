@@ -773,7 +773,11 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TH2F       * fhNLocMaxDiffCut   [5][5]   [2] ;        //! Number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
   TH2F       * fhM02NLocMaxDiffCut[5][5][3][2] ;        //! M02 for 3 kinds of number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
+  TH2F       * fhMassNLocMaxDiffCut[5][5][3][2] ;       //! Mass for 3 kinds of number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
 
+  TH2F       * fhNLocMaxDiffCutPi0   [5][5]   [2] ;     //! Number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks, cluster selected as pi0
+  TH2F       * fhM02NLocMaxDiffCutPi0[5][5][3][2] ;     //! M02 for 3 kinds of number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks, cluster selected as pi0
+  TH2F       * fhMassNLocMaxDiffCutPi0[5][5][3][2] ;    //! M02 for 3 kinds of number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment

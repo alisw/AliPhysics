@@ -522,12 +522,20 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   {
     for(Int_t j = 0; j < 5; j++)
     {
-      fhNLocMaxDiffCut[i][j][0] = 0;
-      fhNLocMaxDiffCut[i][j][1] = 0;
+      fhNLocMaxDiffCut   [i][j][0] = 0;
+      fhNLocMaxDiffCut   [i][j][1] = 0;
+      fhNLocMaxDiffCutPi0[i][j][0] = 0;
+      fhNLocMaxDiffCutPi0[i][j][1] = 0;
       for(Int_t k = 0; k < 3; k++)
       {
-        fhM02NLocMaxDiffCut[i][j][k][0] = 0;
-        fhM02NLocMaxDiffCut[i][j][k][1] = 0;
+        fhM02NLocMaxDiffCut    [i][j][k][0] = 0;
+        fhM02NLocMaxDiffCut    [i][j][k][1] = 0;
+        fhM02NLocMaxDiffCutPi0 [i][j][k][0] = 0;
+        fhM02NLocMaxDiffCutPi0 [i][j][k][1] = 0;
+        fhMassNLocMaxDiffCut   [i][j][k][0] = 0;
+        fhMassNLocMaxDiffCut   [i][j][k][1] = 0;
+        fhMassNLocMaxDiffCutPi0[i][j][k][0] = 0;
+        fhMassNLocMaxDiffCutPi0[i][j][k][1] = 0;
       }
     }
   }
@@ -2595,13 +2603,21 @@ void AliAnaInsideClusterInvariantMass::FillNCellHistograms(Int_t   ncells,  Floa
 //______________________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clus, AliVCaloCells* cells, Bool_t matched)
 {
-  // Calculate weights and fill histograms
+  // Calculate NLM for different settings
 
   Float_t energy = clus->E();
   Float_t m02    = clus->GetM02();
   
   Float_t minEOrg     = GetCaloUtils()->GetLocalMaximaCutE() ;
   Float_t minEDiffOrg = GetCaloUtils()->GetLocalMaximaCutEDiff();
+  
+  Int_t    nlm  = 0;
+  Double_t mass = 0., angle = 0.;
+  TLorentzVector    lv1, lv2;
+  Int_t    absId1   =-1; Int_t   absId2   =-1;
+  Float_t  distbad1 =-1; Float_t distbad2 =-1;
+  Bool_t   fidcut1  = 0; Bool_t  fidcut2  = 0;
+  Int_t pidTag = -1;
   
   //printf("E %f, m02 %f; Org: minE %f, minDiffE %f\n",energy, m02, minEOrg,minEDiffOrg);
   for(Int_t iE = 0; iE < fNLMSettingN; iE++)
@@ -2610,14 +2626,37 @@ void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clu
     {
       GetCaloUtils()->SetLocalMaximaCutE    (fNLMMinE   [iE]   );
       GetCaloUtils()->SetLocalMaximaCutEDiff(fNLMMinDiff[iDiff]);
-      Int_t nlm = GetCaloUtils()->GetNumberOfLocalMaxima(clus, cells)  ;
-      fhNLocMaxDiffCut[iE][iDiff][matched]         ->Fill(energy,nlm);
-      Int_t inlm = nlm-1;
-      if(inlm>2) inlm = 2;
-      fhM02NLocMaxDiffCut[iE][iDiff][inlm][matched]->Fill(energy,m02);
+      
+      //nlm = GetCaloUtils()->GetNumberOfLocalMaxima(clus, cells)  ;
       
       //printf("\t Change: i %d minE %f, j %d minDiffE %f - NLM = %d\n",iE, fNLMMinE[iE], iDiff, fNLMMinDiff[iDiff],nlm);
 
+      pidTag = GetCaloPID()->GetIdentifiedParticleTypeFromClusterSplitting(clus,cells,GetCaloUtils(),
+                                                                                 GetVertex(0), nlm, mass, angle,
+                                                                                 lv1,lv2,absId1,absId2,
+                                                                                 distbad1,distbad2,fidcut1,fidcut2);
+      if (nlm <= 0)
+      {
+        if(GetDebug() > 0 )
+        Info("MakeAnalysisFillHistograms","No local maximum found! It did not pass CaloPID selection criteria \n");
+        
+        continue;
+      }
+
+      Int_t inlm = nlm-1;
+      if(inlm>2) inlm = 2;
+      
+      fhNLocMaxDiffCut    [iE][iDiff]      [matched]->Fill(energy,nlm);
+      fhM02NLocMaxDiffCut [iE][iDiff][inlm][matched]->Fill(energy,m02);
+      fhMassNLocMaxDiffCut[iE][iDiff][inlm][matched]->Fill(energy,mass);
+
+      if(pidTag==AliCaloPID::kPi0)
+      {
+        fhNLocMaxDiffCutPi0    [iE][iDiff]      [matched]->Fill(energy,nlm);
+        fhM02NLocMaxDiffCutPi0 [iE][iDiff][inlm][matched]->Fill(energy,m02);
+        fhMassNLocMaxDiffCutPi0[iE][iDiff][inlm][matched]->Fill(energy,mass);
+      }
+      
     }
   }
   
@@ -2981,6 +3020,77 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   Int_t nMatched = 2;
   if(!fFillTMHisto) nMatched = 1;
   
+  
+  if(fFillNLMDiffCutHisto)
+  {
+    for(Int_t imatch = 0; imatch < nMatched; imatch++)
+    {
+      for(Int_t iE = 0; iE < fNLMSettingN; iE++)
+      {
+        for(Int_t iDiff = 0; iDiff < fNLMSettingN; iDiff++)
+        {
+          fhNLocMaxDiffCut[iE][iDiff][imatch]  = new TH2F(Form("hNLocMax_MinE%d_MinDiffE%d%s",iE, iDiff, sMatched[imatch].Data()),
+                                                          Form("NLM for E_{LM}>%1.2f, #Delta E=%1.2F %s", fNLMMinE[iE], fNLMMinDiff[iDiff],sMatched[imatch].Data()),
+                                                          nptbins,ptmin,ptmax, nMaxBins,0,nMaxBins);
+          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetYTitle("NLM");
+          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetXTitle("E_{cluster}");
+          outputContainer->Add(fhNLocMaxDiffCut[iE][iDiff][imatch]) ;
+          
+          fhNLocMaxDiffCutPi0[iE][iDiff][imatch]  = new TH2F(Form("hNLocMaxPi0_MinE%d_MinDiffE%d%s",iE, iDiff, sMatched[imatch].Data()),
+                                                             Form("#pi^{0} NLM for E_{LM}>%1.2f, #Delta E=%1.2F %s",
+                                                                  fNLMMinE[iE], fNLMMinDiff[iDiff],sMatched[imatch].Data()),
+                                                             nptbins,ptmin,ptmax, nMaxBins,0,nMaxBins);
+          fhNLocMaxDiffCutPi0[iE][iDiff][imatch]->SetYTitle("NLM");
+          fhNLocMaxDiffCutPi0[iE][iDiff][imatch]->SetXTitle("E_{#pi^{0}}");
+          outputContainer->Add(fhNLocMaxDiffCutPi0[iE][iDiff][imatch]) ;
+          
+          for(Int_t inlm = 0; inlm < 3; inlm++)
+          {
+            
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxM02_MinE%d_MinDiffE%d_NLM%s%s",
+                                                                          iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
+                                                                     Form("#lambda^{2}_{0} for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
+                                                                          fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
+                                                                     nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetYTitle("#lambda^{2}_{0}");
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
+            outputContainer->Add(fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]) ;
+            
+            fhMassNLocMaxDiffCut[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxMass_MinE%d_MinDiffE%d_NLM%s%s",
+                                                                           iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
+                                                                      Form("M_{split} for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
+                                                                           fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
+                                                                      nptbins,ptmin,ptmax, mbins,mmin,mmax);
+            fhMassNLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetYTitle("M_{split}");
+            fhMassNLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
+            outputContainer->Add(fhMassNLocMaxDiffCut[iE][iDiff][inlm][imatch]) ;
+            
+            fhM02NLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxPi0M02_MinE%d_MinDiffE%d_NLM%s%s",
+                                                                             iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
+                                                                        Form("#pi^{0} #lambda^{2}_{0} for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
+                                                                             fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
+                                                                        nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+            fhM02NLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]->SetYTitle("#lambda^{2}_{0}");
+            fhM02NLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
+            outputContainer->Add(fhM02NLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]) ;
+            
+            fhMassNLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxPi0Mass_MinE%d_MinDiffE%d_NLM%s%s",
+                                                                              iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
+                                                                         Form("#pi^{0} M_{split} for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
+                                                                              fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
+                                                                         nptbins,ptmin,ptmax, mbins,mmin,mmax);
+            fhMassNLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]->SetYTitle("M_{split}");
+            fhMassNLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
+            outputContainer->Add(fhMassNLocMaxDiffCutPi0[iE][iDiff][inlm][imatch]) ;
+            
+          }
+          
+        }
+      }
+    }
+    return outputContainer;
+  }
+
   if(fCheckSplitDistToBad)
   {
     for(Int_t inlm = 0; inlm < 3; inlm++)
@@ -4927,39 +5037,6 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   }
   
   
-  
-  if(fFillNLMDiffCutHisto)
-  {
-    for(Int_t imatch = 0; imatch < nMatched; imatch++)
-    {
-      for(Int_t iE = 0; iE < fNLMSettingN; iE++)
-      {
-        for(Int_t iDiff = 0; iDiff < fNLMSettingN; iDiff++)
-        {
-          fhNLocMaxDiffCut[iE][iDiff][imatch]  = new TH2F(Form("hNLocMax_MinE%d_MinDiffE%d%s",iE, iDiff, sMatched[imatch].Data()),
-                                                          Form("NLM for E_{LM}>%1.2f, #Delta E=%1.2F %s", fNLMMinE[iE], fNLMMinDiff[iDiff],sMatched[imatch].Data()),
-                                                          nptbins,ptmin,ptmax, nMaxBins,0,nMaxBins);
-          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetYTitle("NLM");
-          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetXTitle("E_{cluster}");
-          outputContainer->Add(fhNLocMaxDiffCut[iE][iDiff][imatch]) ;
-          
-          for(Int_t inlm = 0; inlm < 3; inlm++)
-          {
-            
-            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxM02_MinE%d_MinDiffE%d_NLM%s%s",iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
-                                                                     Form("NLM for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
-                                                                          fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
-                                                                     nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
-            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetYTitle("#lambda^{2}_{0}");
-            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
-            outputContainer->Add(fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]) ;
-          }
-          
-        }
-      }
-    }
-  }
-  
   if(fFillSSWeightHisto)
   {
     for(Int_t nlm = 0; nlm < 3; nlm++)
@@ -6323,6 +6400,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if(fFillNLMDiffCutHisto)
     {
       FillNLMDiffCutHistograms(cluster,cells,matched);
+      return;
     }
     
     // Get PID, N local maximum, *** split cluster ***
