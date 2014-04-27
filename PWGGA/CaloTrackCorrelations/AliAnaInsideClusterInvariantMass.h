@@ -78,6 +78,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
                                      Bool_t matched, Int_t mcindex,
                                      Float_t mass  , Int_t ebin);
 
+  void         FillNLMDiffCutHistograms(AliVCluster *cluster, AliVCaloCells *cells, Bool_t matched);
+
   void         FillNCellHistograms(Int_t   ncells,  Float_t energy, Int_t nMax,
                                    Bool_t  matched, Int_t mcindex,
                                    Float_t mass   , Float_t l0);
@@ -160,6 +162,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillSSWeightHistograms()          { fFillSSWeightHisto   = kTRUE  ; }
   void         SwitchOffFillSSWeightHistograms()         { fFillSSWeightHisto   = kFALSE ; }
 
+  void         SwitchOnFillNLMDiffCutsHistograms()       { fFillNLMDiffCutHisto = kTRUE  ; }
+  void         SwitchOffFillNLMDiffCutsHistograms()      { fFillNLMDiffCutHisto = kFALSE ; }
+  
   void         SwitchOnFillEbinHistograms()              { fFillEbinHisto       = kTRUE  ; }
   void         SwitchOffFillEbinHistograms()             { fFillEbinHisto       = kFALSE ; }
   
@@ -172,11 +177,18 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnSplitClusterDistToBad()           { fCheckSplitDistToBad = kTRUE  ; }
   void         SwitchOffSplitClusterDistToBad()          { fCheckSplitDistToBad = kFALSE ; }
   
-  void         SetNWeightForShowerShape(Int_t n)           { fSSWeightN = n ; }
-  void         SetWeightForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSWeight[i] = v ; }
+  void         SetNWeightForShowerShape(Int_t n)         { fSSWeightN = n ; }
+  void         SetWeightForShowerShape(Int_t i, Float_t v)
+                                                         { if (i < 10) fSSWeight[i] = v ; }
 
-  void         SetNECellCutForShowerShape(Int_t n)           { fSSECellCutN = n ; }
-  void         SetECellCutForShowerShape(Int_t i, Float_t v) { if (i < 10) fSSECellCut[i] = v ; }
+  void         SetNumberOfNLocMaxSettings(Int_t n)       { fNLMSettingN = n ; }
+  void         SetNLocMaxMinE   (Int_t i, Float_t v)     { if (i < 5) fNLMMinE   [i] = v ; }
+  void         SetNLocMaxMinDiff(Int_t i, Float_t v)     { if (i < 5) fNLMMinDiff[i] = v ; }
+  
+  
+  void         SetNECellCutForShowerShape(Int_t n)       { fSSECellCutN = n ; }
+  void         SetECellCutForShowerShape(Int_t i, Float_t v)
+                                                         { if (i < 10) fSSECellCut[i] = v ; }
 
  
   void         RecalculateClusterShowerShapeParametersWithCellCut(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
@@ -203,6 +215,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillSSExtraHisto ;     // Fill shower shape extra histos
   Bool_t       fFillMCHisto ;          // Fill MC energy fraction histos
   Bool_t       fFillSSWeightHisto ;    // Fill weigth histograms
+  Bool_t       fFillNLMDiffCutHisto ;  // Fill NLM histograms for different settings
   Bool_t       fFillEbinHisto ;        // Fill E bin histograms
   Bool_t       fFillMCOverlapHisto ;   // Fill MC particles overlap histograms
   Bool_t       fFillNCellHisto ;       // Fill n cells in cluster dependent histograms
@@ -217,6 +230,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   Float_t      fSSECellCut[10];        // List of cell min energy cuts to test
   Int_t        fSSECellCutN;           // Total number of cell min energy cuts to test
+
+  Float_t      fNLMMinE   [5];         // List of local maxima min energy
+  Float_t      fNLMMinDiff[5];         // List of local maxima min difference cell energy
+  Int_t        fNLMSettingN;           // Total number of NLM settings to test
   
   Float_t      fWSimu;                 // Slope of the linear correction factor for the shower
                                        // shape weight in simulation, about 0.07
@@ -753,10 +770,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassOnBorder[3];                       //! split mass of clusters with second LM on EMCAL border
   TH2F       * fhM02OnBorder[3];                        //! m02 of clusters with second LM close to EMCAL border
   
+  
+  TH2F       * fhNLocMaxDiffCut   [5][5]   [2] ;        //! Number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
+  TH2F       * fhM02NLocMaxDiffCut[5][5][3][2] ;        //! M02 for 3 kinds of number of maxima for different values of min Loc Max value and min difference between cells, matched/unmatched with tracks
+
+  
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,28)
+  ClassDef(AliAnaInsideClusterInvariantMass,29)
   
 } ;
 

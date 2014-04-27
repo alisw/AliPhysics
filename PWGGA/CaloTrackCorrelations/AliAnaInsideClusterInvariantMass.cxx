@@ -56,11 +56,13 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fMinNCells(0),                             fMinBadDist(0),
   fHistoECut(0),                             fCheckSplitDistToBad(0),                   fFillAngleHisto(kFALSE),
   fFillTMHisto(kFALSE),                      fFillTMResidualHisto(kFALSE),              fFillSSExtraHisto(kFALSE),
-  fFillMCHisto(kFALSE),                      fFillSSWeightHisto(kFALSE),                fFillEbinHisto(0),
+  fFillMCHisto(kFALSE),                      fFillSSWeightHisto(kFALSE),
+  fFillNLMDiffCutHisto(kFALSE),              fFillEbinHisto(0),
   fFillMCOverlapHisto(0),                    fFillNCellHisto(0),                        fFillIdConvHisto(0),
   fFillIdEtaHisto(0),                        fFillHighMultHisto(0),
   fFillArmenterosHisto(0),                   fFillThetaStarHisto(0),
-  fSSWeightN(0),                             fSSECellCutN(0),                           fWSimu(0),
+  fSSWeightN(0),                             fSSECellCutN(0),
+  fNLMSettingN(0),                           fWSimu(0),
   fhMassAsyCutNLocMax1(0),                   fhMassAsyCutNLocMax2(0),                   fhMassAsyCutNLocMaxN(0),
   fhM02AsyCutNLocMax1(0),                    fhM02AsyCutNLocMax2(0),                    fhM02AsyCutNLocMaxN(0),
   fhMassM02CutNLocMax1(0),                   fhMassM02CutNLocMax2(0),                   fhMassM02CutNLocMaxN(0),
@@ -513,6 +515,20 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
       fhArmAfterCutsNLocMax2[i][j] = 0;
       fhArmAfterCutsNLocMaxN[i][j] = 0;
       
+    }
+  }
+  
+  for(Int_t i = 0; i < 5; i++)
+  {
+    for(Int_t j = 0; j < 5; j++)
+    {
+      fhNLocMaxDiffCut[i][j][0] = 0;
+      fhNLocMaxDiffCut[i][j][1] = 0;
+      for(Int_t k = 0; k < 3; k++)
+      {
+        fhM02NLocMaxDiffCut[i][j][k][0] = 0;
+        fhM02NLocMaxDiffCut[i][j][k][1] = 0;
+      }
     }
   }
   
@@ -2575,6 +2591,41 @@ void AliAnaInsideClusterInvariantMass::FillNCellHistograms(Int_t   ncells,  Floa
     }
   }
 }
+
+//______________________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::FillNLMDiffCutHistograms(AliVCluster *clus, AliVCaloCells* cells, Bool_t matched)
+{
+  // Calculate weights and fill histograms
+
+  Float_t energy = clus->E();
+  Float_t m02    = clus->GetM02();
+  
+  Float_t minEOrg     = GetCaloUtils()->GetLocalMaximaCutE() ;
+  Float_t minEDiffOrg = GetCaloUtils()->GetLocalMaximaCutEDiff();
+  
+  //printf("E %f, m02 %f; Org: minE %f, minDiffE %f\n",energy, m02, minEOrg,minEDiffOrg);
+  for(Int_t iE = 0; iE < fNLMSettingN; iE++)
+  {
+    for(Int_t iDiff = 0; iDiff < fNLMSettingN; iDiff++)
+    {
+      GetCaloUtils()->SetLocalMaximaCutE    (fNLMMinE   [iE]   );
+      GetCaloUtils()->SetLocalMaximaCutEDiff(fNLMMinDiff[iDiff]);
+      Int_t nlm = GetCaloUtils()->GetNumberOfLocalMaxima(clus, cells)  ;
+      fhNLocMaxDiffCut[iE][iDiff][matched]         ->Fill(energy,nlm);
+      Int_t inlm = nlm-1;
+      if(inlm>2) inlm = 2;
+      fhM02NLocMaxDiffCut[iE][iDiff][inlm][matched]->Fill(energy,m02);
+      
+      //printf("\t Change: i %d minE %f, j %d minDiffE %f - NLM = %d\n",iE, fNLMMinE[iE], iDiff, fNLMMinDiff[iDiff],nlm);
+
+    }
+  }
+  
+  GetCaloUtils()->SetLocalMaximaCutE    (minEOrg    );
+  GetCaloUtils()->SetLocalMaximaCutEDiff(minEDiffOrg);
+
+}
+
 
 //_____________________________________________________________________________________________
 void AliAnaInsideClusterInvariantMass::FillSSExtraHistograms(AliVCluster  *cluster, Int_t nMax,
@@ -4875,6 +4926,40 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
     outputContainer->Add(fhEtaEtaPhiNLocMaxN) ;
   }
   
+  
+  
+  if(fFillNLMDiffCutHisto)
+  {
+    for(Int_t imatch = 0; imatch < nMatched; imatch++)
+    {
+      for(Int_t iE = 0; iE < fNLMSettingN; iE++)
+      {
+        for(Int_t iDiff = 0; iDiff < fNLMSettingN; iDiff++)
+        {
+          fhNLocMaxDiffCut[iE][iDiff][imatch]  = new TH2F(Form("hNLocMax_MinE%d_MinDiffE%d%s",iE, iDiff, sMatched[imatch].Data()),
+                                                          Form("NLM for E_{LM}>%1.2f, #Delta E=%1.2F %s", fNLMMinE[iE], fNLMMinDiff[iDiff],sMatched[imatch].Data()),
+                                                          nptbins,ptmin,ptmax, nMaxBins,0,nMaxBins);
+          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetYTitle("NLM");
+          fhNLocMaxDiffCut[iE][iDiff][imatch]->SetXTitle("E_{cluster}");
+          outputContainer->Add(fhNLocMaxDiffCut[iE][iDiff][imatch]) ;
+          
+          for(Int_t inlm = 0; inlm < 3; inlm++)
+          {
+            
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]  = new TH2F(Form("hNLocMaxM02_MinE%d_MinDiffE%d_NLM%s%s",iE, iDiff, snlm[inlm].Data(),sMatched[imatch].Data()),
+                                                                     Form("NLM for E_{LM}>%1.2f, #Delta E=%1.2F NLM %s %s",
+                                                                          fNLMMinE[iE], fNLMMinDiff[iDiff],snlm[inlm].Data(), sMatched[imatch].Data()),
+                                                                     nptbins,ptmin,ptmax, ssbins,ssmin,ssmax);
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetYTitle("#lambda^{2}_{0}");
+            fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]->SetXTitle("E_{cluster}");
+            outputContainer->Add(fhM02NLocMaxDiffCut[iE][iDiff][inlm][imatch]) ;
+          }
+          
+        }
+      }
+    }
+  }
+  
   if(fFillSSWeightHisto)
   {
     for(Int_t nlm = 0; nlm < 3; nlm++)
@@ -6165,6 +6250,10 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fSSECellCut[0] = 0.16;  fSSECellCut[1] = 0.18; fSSECellCut[2] = 0.2; fSSECellCut[3] = 0.22; fSSECellCut[4] = 0.24;
   fSSECellCut[5] = 0.26;  fSSECellCut[6] = 0.28; fSSECellCut[7] = 0.3; fSSECellCut[8] = 0.32; fSSECellCut[9] = 0.34;
 
+  fNLMSettingN = 5;
+  fNLMMinE   [0] = 0.10; fNLMMinE   [1] = 0.20; fNLMMinE   [2] = 0.35; fNLMMinE   [3] = 0.50; fNLMMinE   [4] = 1.00;
+  fNLMMinDiff[0] = 0.03; fNLMMinDiff[1] = 0.05; fNLMMinDiff[2] = 0.10; fNLMMinDiff[3] = 0.15; fNLMMinDiff[4] = 0.20;
+  
 }
 
 
@@ -6230,6 +6319,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     //printf("en %2.2f, GetMinEnergy() %2.2f, GetMaxEnergy() %2.2f, nc %d, fMinNCells %d,  bd %2.2f, fMinBadDist %2.2f\n",
     //       en,GetMinEnergy(), GetMaxEnergy(), nc, fMinNCells, bd, fMinBadDist);
+    
+    if(fFillNLMDiffCutHisto)
+    {
+      FillNLMDiffCutHistograms(cluster,cells,matched);
+    }
     
     // Get PID, N local maximum, *** split cluster ***
     
