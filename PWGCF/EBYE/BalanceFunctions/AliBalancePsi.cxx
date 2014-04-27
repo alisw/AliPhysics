@@ -1894,8 +1894,7 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 					    Double_t ptAssociatedMax,
 					    AliBalancePsi *bMixed,
 					    Bool_t normToTrig,
-					    Double_t normalizationRangePhi,
-					    TH2D *hVertexCentrality) {
+					    Double_t normalizationRangePhi) {
 
   // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
   // does the division by event mixing inside,
@@ -1909,10 +1908,6 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   if(!bMixed){
     AliError("No Event Mixing AliTHn");
     return NULL;
-  }
-  if(normToTrig && !hVertexCentrality){
-    AliError("Per-trigger yield option chosen, but QA histogram for event statistics not available");
-    return NULL; 
   }
 
   TH2D *gHist  = NULL;
@@ -1998,29 +1993,15 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	// then get the correlation function (divide fSame/fmixed)
 	fSame->Divide(fMixed);
 	
-	// // averaging with number of triggers:
-	// // average over number of triggers in each sub-bin
-	// Double_t NTrigSubBin = 0;
-	// if(type=="PN" || type=="PP")
-	//   NTrigSubBin = (Double_t)(fHistP->Project(0,1)->Integral());
-	// else if(type=="NP" || type=="NN")
-	//   NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral());
-	// fSame->Scale(NTrigSubBin);
-
-	// averaging with number of events:
-	// average over number of events in each sub-bin
-	Int_t binStatsVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(binVertexLowEdge + 0.00001) + 0.00001;
-	Int_t binStatsVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(binVertexUpEdge - 0.00001) - 0.00001;
-	Int_t binStatsPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(binPsiLowEdge + 0.00001) + 0.00001;
-	Int_t binStatsPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(binPsiUpEdge - 0.00001) - 0.00001;
-
-	Double_t NEventsSubBin = (Double_t)hVertexCentrality->Integral(binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
-
-	//Printf("Averaging from %d < z < %d and %d < cent < %d ",binStatsVertexLowEdge,binStatsVertexUpEdge,binStatsPsiLowEdge,binStatsPsiUpEdge);
-	//Printf("Averaging from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",binVertexLowEdge,binVertexUpEdge,binPsiLowEdge,binPsiUpEdge,NEventsSubBin);
-	fSame->Scale(NEventsSubBin);
+	// averaging with number of triggers:
+	// average over number of triggers in each sub-bin
+	Double_t NTrigSubBin = 0;
+	if(type=="PN" || type=="PP")
+	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->Integral());
+	else if(type=="NP" || type=="NN")
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral());
+	fSame->Scale(NTrigSubBin);
 	
-	// OLD and NEW averaging:
 	// for the first: clone
 	if( (iBinPsi == binPsiMin && iBinVertex == binVertexMin) || !gHist ){
 	  gHist = (TH2D*)fSame->Clone();
@@ -2034,41 +2015,23 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
   if(gHist){
     
-    //// OLD averaging:
-    //// average over number of bins nbinsVertex * nbinsPsi
-    // gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
-
-    // // averaging with number of triggers:
-    // // first set to full range and then obtain number of all triggers 
-    // Double_t NTrigAll = 0;
-    // if(type=="PN" || type=="PP"){
-    //   fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-    //   fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    //   fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
-    //   NTrigAll = (Double_t)(fHistP->Project(0,1)->Integral());
-    // }
-    // else if(type=="NP" || type=="NN"){
-    //   fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
-    //   fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
-    //   fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
-    //   NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral());
-    // }
-    // gHist->Scale(1./NTrigAll);
-
-    // averaging with number of events:
-    // first set to full range and then obtain number of all events 
-    Int_t binStatsAllVertexLowEdge = hVertexCentrality->GetXaxis()->FindBin(vertexZMin + 0.00001) + 0.00001;
-    Int_t binStatsAllVertexUpEdge  = hVertexCentrality->GetXaxis()->FindBin(vertexZMax - 0.00001) - 0.00001;
-    Int_t binStatsAllPsiLowEdge    = hVertexCentrality->GetYaxis()->FindBin(psiMin + 0.00001) + 0.00001;
-    Int_t binStatsAllPsiUpEdge     = hVertexCentrality->GetYaxis()->FindBin(psiMax - 0.00001) - 0.00001;
-
-    Double_t NEventsAll = (Double_t)hVertexCentrality->Integral(binStatsAllVertexLowEdge,binStatsAllVertexUpEdge,binStatsAllPsiLowEdge,binStatsAllPsiUpEdge);
-    
-    //Printf("All from %d < z < %d and %d < cent < %d ",binStatsAllVertexLowEdge,binStatsAllVertexUpEdge,binStatsAllPsiLowEdge,binStatsAllPsiUpEdge);
-    //Printf("All from %.2f < z < %.2f and %.2f < cent < %.2f --> %.2f ",vertexZMin,vertexZMax,psiMin,psiMax,NEventsAll);
-
-    gHist->Scale(1./NEventsAll);
-    
+    // averaging with number of triggers:
+    // first set to full range and then obtain number of all triggers 
+    Double_t NTrigAll = 0;
+    if(type=="PN" || type=="PP"){
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistP->Project(0,1)->Integral());
+    }
+    else if(type=="NP" || type=="NN"){
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral());
+    }
+    gHist->Scale(1./NTrigAll);
+   
   }
   
   return gHist;

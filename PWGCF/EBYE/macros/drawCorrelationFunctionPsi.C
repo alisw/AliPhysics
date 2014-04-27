@@ -430,28 +430,6 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
   TCanvas *cNN[4];
   TString histoTitle, pngName;
 
-  // need event statistics for per-trigger yield
-  TH2D* hVertexCentrality = NULL;
-  if( normToTrig && !listQA && !bToy){
-    Printf("per-trigger yield option chosen, but QA list for event statistics not available");
-    return;
-  }
-  else if( normToTrig && !listQA ){ //special case Toy model (no QA!)
-    hVertexCentrality = new TH2D("hVertexCentrality","Primary vertex distribution - z coordinate (dummy for toy model);V_{z} (cm);Centrality percentile;Entries",100,-20.,20.,220,-5,105);
-    for(Int_t iX = 0; iX < hVertexCentrality->GetNbinsX(); iX++){
-      for(Int_t iY = 0; iY < hVertexCentrality->GetNbinsY(); iY++){
-	hVertexCentrality->SetBinContent(iX+1,iY+1,1);
-      }
-    }
-  }
-  else{
-    hVertexCentrality = (TH2D*)listQA->FindObject("fHistVz");
-    if(!hVertexCentrality){
-      Printf("per-trigger yield option chosen, but QA histogram for event statistics not available");
-      return;
-    }
-  }
-
   // if no mixing then divide by convoluted histograms
   if(!listBFMixed && listQA){
 
@@ -607,7 +585,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPN[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
+    gHistPN[3] = b->GetCorrelationFunction("PN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi);
     gHistPN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -821,7 +799,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNP[2]->SaveAs(pngName.Data());
 
     //Correlation function (-+)
-    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
+    gHistNP[3] = b->GetCorrelationFunction("NP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi);
     gHistNP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1036,7 +1014,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cPP[2]->SaveAs(pngName.Data());
 
     //Correlation function (++)
-    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
+    gHistPP[3] = b->GetCorrelationFunction("PP",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi);
     gHistPP[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistPP[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
@@ -1249,7 +1227,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //cNN[2]->SaveAs(pngName.Data());
 
     //Correlation function (--)
-    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi,hVertexCentrality);
+    gHistNN[3] = b->GetCorrelationFunction("NN",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig,normalizationRangePhi);
     gHistNN[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     if(normToTrig)
       gHistNN[3]->GetZaxis()->SetTitle("#frac{1}{N_{trig}}#frac{d^{2}N_{assoc}}{d#Delta#eta#Delta#varphi} (rad^{-1})");
