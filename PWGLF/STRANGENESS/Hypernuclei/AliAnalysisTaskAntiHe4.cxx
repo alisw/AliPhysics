@@ -1,3 +1,4 @@
+#include <Riostream.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "TF1.h"
@@ -411,6 +412,8 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   fTree->Branch("fTOFsignalDz",fTOFsignalDz,"fTOFsignalDz[fItrk]/D");
   fTree->Branch("fTOFsignalDx",fTOFsignalDx,"fTOFsignalDx[fItrk]/D");
   //
+  fTree->Branch("fTRDin",fTRDin,"fTRDin[fItrk]/O");
+  //
   fTree->Branch("fDCAXY",fDCAXY,"fDCAXY[fItrk]/F");
   fTree->Branch("fDCAZ",fDCAZ,"fDCAZ[fItrk]/F");
   //
@@ -508,6 +511,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     }
   }
   //
+  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
+  //
   fHistCentralityClass10->Fill(centralityClass10);
   fHistCentralityPercentile->Fill(centralityPercentile);
   //
@@ -561,6 +566,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     fTOFout[fItrk] = kFALSE;
     fTOFsignalDz[fItrk] = -1;
     fTOFsignalDx[fItrk] = -1;
+
+    fTRDin[fItrk] = kFALSE;
 
     fDCAZ[fItrk] = -1;
     fDCAXY[fItrk] = -1;
@@ -699,6 +706,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       fTOFout[fItrk]  = hasTOFout;
       fTOFsignalDz[fItrk] = track->GetTOFsignalDz();
       fTOFsignalDx[fItrk] = track->GetTOFsignalDx();
+
+      fTRDin[fItrk] = status&AliESDtrack::kTRDin;
 
       fDCAZ[fItrk] = dcaXY;
       fDCAXY[fItrk] = dcaZ;
