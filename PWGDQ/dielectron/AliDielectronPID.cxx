@@ -739,13 +739,16 @@ Double_t AliDielectronPID::GetPIDCorr(const AliVTrack *track, TH1 *hist)
   AliDielectronVarManager::FillVarVParticle(track,values);
 
   TF1 *fun = (TF1*)hist->GetListOfFunctions()->At(0);
-  Int_t dim=fun->GetNdim();
+  Int_t dim=(fun?fun->GetNdim():hist->GetDimension());
 
   Double_t var[3] = {0.,0.,0.};
   if(dim>0) var[0] = values[hist->GetXaxis()->GetUniqueID()];
   if(dim>1) var[1] = values[hist->GetYaxis()->GetUniqueID()];
   if(dim>2) var[2] = values[hist->GetZaxis()->GetUniqueID()];
-  Double_t corr = fun->Eval(var[0],var[1],var[2]);
+  Double_t corr = 0.0;
+  if(fun) corr = fun->Eval(var[0],var[1],var[2]);
+  else    corr = hist->GetBinContent( hist->FindFixBin(var[0],var[1],var[2]) );
+  //  for(Int_t i=0;i<dim;i++) printf("%d:%.3f  ",i,var[i]);
   //  printf("%d-dim CORR value: %f (track %p) \n",dim,corr,track);
   return corr;
 }
