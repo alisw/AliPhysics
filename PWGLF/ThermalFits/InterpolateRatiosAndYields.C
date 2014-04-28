@@ -27,25 +27,25 @@ void InterpolateRatiosAndYields() {
   // Interpolate0010(-321);
   // Interpolate0010(2212);
   // Interpolate0010(-2212);
-  //  InterpolateRatios(2212,211);  
-  //  InterpolateRatios(321,211);  
+  // InterpolateRatios(2212,211, "V0M0005", "V0M0510", "V0M0010");  
+  // InterpolateRatios(321,211 , "V0M0005", "V0M0510", "V0M0010");  
   // Interpolate6080(211);
   // Interpolate6080(-211);
   // Interpolate6080(2212);
   // Interpolate6080(-2212);
-  Interpolate6080(321);
-  Interpolate6080(-321);
+  // Interpolate6080(321);
+  // Interpolate6080(-321);
   // InterpolateRatios(2212,211, "V0M6070", "V0M7080", "V0M6080");  
-  // InterpolateRatios(321,211, "V0M6070", "V0M7080", "V0M6080");    
+  //  InterpolateRatios(321,211, "V0M6070", "V0M7080", "V0M6080");    
 
   // *************** Lambda and K0 *****************
   // arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_LambdaK0.txt");
   // Interpolate0010(3122);
   // Interpolate0010(310);
   // *************** Helium 3 *****************
-  // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
-  // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
-  // ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
+  arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
+  arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
+  ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
   // *************** Kstar *****************
   // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_Kstar892.txt");
   // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
@@ -62,6 +62,8 @@ void InterpolateRatiosAndYields() {
   // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("pPb_5020_PiKaPrLamndaK0.txt"));
   //  ExtrapolateWithConstantRatioToPions(1000010020, "V0A0010", "V0A0005");
   // ExtrapolateWithConstantRatioToPions(-1000010020, "V0A0010", "V0A0005");
+  // ExtrapolateWithConstantRatioToPions(1000010020, "V0A6000", "V0A6080");
+  // ExtrapolateWithConstantRatioToPions(-1000010020, "V0A6000", "V0A6080");
 
 
 }
@@ -106,11 +108,14 @@ void Interpolate6080(Int_t pdg) {
 
 void InterpolateRatios(Int_t pdg1, Int_t pdg2, TString centr1, TString centr2, TString centrfinal) {
 
+  // Get the ratios from the DB for the correct centralities
   AliParticleYield * ratio[2];
   ratio[0] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., centr1, 1);
   ratio[1] = AliParticleYield::FindRatio(arr, pdg1, pdg2, 2, 2760., centr2, 1);
+
   AliParticleYield * average = AliParticleYield::Add(ratio[0], ratio[1]);
   average->Scale(0.5);
+
   AliParticleYield * pi[2];
   pi[0] = AliParticleYield::FindParticle(arr, pdg2, 2, 2760., centr1, 0);
   pi[0] = AliParticleYield::Add(pi[0],AliParticleYield::FindParticle(arr, -pdg2, 2, 2760., centr1, 0));
@@ -122,18 +127,20 @@ void InterpolateRatios(Int_t pdg1, Int_t pdg2, TString centr1, TString centr2, T
   ratio[0]->Scale(pi[0]->GetYield()) ;
   ratio[1]->Scale(pi[1]->GetYield()) ;
 
-  ratio[0]->Add(ratio[0], ratio[1]);
-  pi[0]->Add(pi[0],pi[1]);
+  ratio[0] = AliParticleYield::Add(ratio[0], ratio[1]);
+  pi[0]    = AliParticleYield::Add(pi[0],pi[1]);
   pi[0]->SetNormError(0);
   pi[0]->SetStatError(0);
   pi[0]->SetSystError(0);
   
   ratio[0]->Scale(1./pi[0]->GetYield());
   ratio[0]->SetCentr(centrfinal);
-
-  ratio[0]->Print();
+  cout << "*** "<< ratio[0]->GetPartName() << " " <<  centrfinal << " ***"<< std::endl;
+  std::cout << "RATIO OF AVERAGE: " ;
+  ratio[0]->Print("justvalue");
   //  average->Dump();
-  average->Print();
+  std::cout << "AVERAGE OF RATIO: " ;
+  average->Print("justvalue");
 
     
 }
