@@ -202,7 +202,7 @@ public:
   void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void      SetX0(Float_t x0)        { fX0 = x0; }
-  void      SetXYZ(TGeoHMatrix *mDet);
+  void      SetXYZ(TGeoHMatrix *mDet/*, Float_t zpp*/);
   void      SetYref(Int_t i, Float_t y) { if(i==0||i==1) fYref[i]     = y;}
   void      SetZref(Int_t i, Float_t z) { if(i==0||i==1) fZref[i]     = z;}
 //   void      SetUsabilityMap(Long_t um)  { fUsable = um; }
