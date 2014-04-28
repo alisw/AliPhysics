@@ -241,10 +241,10 @@ protected:
   TH1		       		*fHistJetHadbindPhiOUT[9]; 
   TH2                   *fHistJetHEtaPhi;
 
-  TH1                   *fHistJetPt[2];
-  TH1                   *fHistJetPtBias[2];
-  TH1                   *fHistJetPtTT[2];
-  TH2                   *fHistAreavsRawPt[2];
+  TH1                   *fHistJetPt[6];
+  TH1                   *fHistJetPtBias[6];
+  TH1                   *fHistJetPtTT[6];
+  TH2                   *fHistAreavsRawPt[6];
   TH2                   *fHistJetH[2][5][3];
   TH2                   *fHistJetHBias[2][5][3];
   TH2                   *fHistJetHTT[2][5][3];
