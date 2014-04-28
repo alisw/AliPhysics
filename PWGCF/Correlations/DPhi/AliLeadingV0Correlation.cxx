@@ -1104,6 +1104,7 @@ void AliLeadingV0Correlation::Terminate(Option_t *)
 //---------------------------------------------------------------------------------------
 Bool_t AliLeadingV0Correlation::IsAcseptedDaughterTrack(const AliAODTrack *itrack)
 {	
+	if(fCase==1 || fCase==2)
 	if(TMath::Abs(itrack->Eta())>fTrackEtaCut)return kFALSE;
 	
 	if (!itrack->IsOn(AliAODTrack::kTPCrefit)) return kFALSE;
