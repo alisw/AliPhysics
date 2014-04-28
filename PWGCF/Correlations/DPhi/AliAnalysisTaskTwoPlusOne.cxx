@@ -203,7 +203,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     for (Int_t jMix=0; jMix<nMix; jMix++){
       TObjArray* bgTracks = pool->GetEvent(jMix);
       
-      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / nMix);
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix);
     }
   }
 
