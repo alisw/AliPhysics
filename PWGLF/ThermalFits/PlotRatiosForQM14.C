@@ -47,6 +47,12 @@ TClonesArray *arrSTARPbPb=0, *arrPHENIXPbPb=0, *arrBRAHMSPbPb=0;
 TClonesArray *arrSTARpp  =0, *arrPHENIXpp=0;
 
 const Double_t *scaleRatios = 0;
+Double_t *correlatedUnc = 0;
+Double_t correlatedUncLocalPbPb[14] = {0.0424 , 0.0424     ,  0.041     ,  0      , 0         , 0.0424       , 0.0424       , 0               , 0.05    , 0.05   };
+Double_t correlatedUncLocalPP  [14] = {0.0424 , 0.0424     ,  0.041     ,  0      , 0         , 0.0424       , 0.0424       , 0               , 0.0424    , 0.0424   };
+Double_t correlatedUncZero[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+
 TClonesArray * PlotRatiosForQM14() {
 #if !(!defined (__CINT__) || (defined(__MAKECINT__)))
   LoadLibs();
@@ -58,16 +64,17 @@ TClonesArray * PlotRatiosForQM14() {
   // Uncomment stuff in this section to save the inputs for thermal models
   //#define SAVE_INPUT_THERMAL_MODEL
 #ifdef SAVE_INPUT_THERMAL_MODEL
-  //PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/0);
-  //  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
   // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/0);
   // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/1);
 
 
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/1);
-  //  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/1);
+  //  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/1);
+  //PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M2030", /*separateCharges*/1);
 
   return 0;
 #endif
@@ -82,16 +89,19 @@ TClonesArray * PlotRatiosForQM14() {
   DrawRatio("frame");
   
   DrawRatio("PbPb_0010");
-  DrawRatio("PbPbSTAR");
-  //  DrawRatio("PbPbPHENIX");
-  //  DrawRatio("PbPbBRAHMS");
-  // DrawRatio("PbPb_6080");
+  // DrawRatio("PbPbSTAR");
+  // DrawRatio("PbPbPHENIX");
+  // DrawRatio("PbPbBRAHMS");
+  //  DrawRatio("PbPb_6080");
   
-  //  DrawRatio("pp7");
-  //DrawRatio("pPb0005");
-  //DrawRatio("pp276");
-  //DrawRatio("pp900");
-
+  DrawRatio("pp7");
+  DrawRatio("pPb0005");
+  DrawRatio("pp276");
+  DrawRatio("pp900");
+  // DrawRatio("ppSTAR");
+  // DrawRatio("ppPHENIX");
+  //  DrawRatio("ppBRAHMS");
+  
   NewLegendQM();
 
   return 0;
@@ -109,11 +119,14 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
   // FIXME: THIS SHOULD BE REVIEWED TO MAKE SURE THE PLOTS ARE LABELLED CORRECTLY
 
   const Int_t nratio = 10;
-  Int_t num  [nratio]    = {kPDGK  , kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron , kPDGHE3      , kPDGHyperTriton , kPDGPhi , kPDGKStar};
   //  Int_t denum[nratio]    = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGPi       , kPDGDeuteron , kPDGPi          , kPDGK   , -kPDGK};
-  Int_t denum[nratio]    = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGProton   , kPDGDeuteron , kPDGPi          , kPDGK   , -kPDGK};
-  Int_t isSum[nratio]    = {1      ,1           ,1           ,1        ,1          ,0             ,0             ,1                ,0        ,1      };
-  static const Double_t scale[] = {1      ,3           ,1           ,30       ,250         ,50            ,100           ,4e5              ,2       ,2      };
+
+  Int_t num  [nratio]            = {kPDGK  , kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron , kPDGHE3      , kPDGHyperTriton , kPDGPhi , kPDGKStar};
+  Int_t denum[nratio]            = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGProton   , kPDGDeuteron , kPDGPi          , kPDGK   , kPDGK};
+  Int_t isSum[nratio]            = {1      , 1          ,  1         ,   1     , 1         , 0            , 0            , 1               , 1       , 1      };
+  static const Double_t scale[]  = {1      , 3          ,  0.5       ,  30     ,  250      , 50           , 100          , 4e5             , 2       , 2      };
+  //  static const Double_t scale[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,};
+  
   scaleRatios = scale;
   TH1F * h = new TH1F(Form("hRatio_%d_%0.0f_%s_%d",system,energy,centrality.Data(),errorType), histotitle, nratio, 1+shift, nratio+1+shift);
 
@@ -145,14 +158,14 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
           {
             part1 = new AliParticleYield(*part1); // We need to clone it to avoid a mess if we need to use this particle again later
             // If the sum was requested, try to recover it!
-            if(isSum[iratio-1]  && TDatabasePDG::Instance()->GetParticle(-denum[iratio])) { // Before looking for anti particle, check if it makes sense (antiparticle is different from particle)
+            if(isSum[iratio-1]) { 
               std::cout << "  Looking for " <<  -num[iratio-1] <<std::endl;
               AliParticleYield * part1_bar = AliParticleYield::FindParticle(arr, -num[iratio-1], system, energy, centrality,0);
               if(part1 && part1_bar) {
                 std::cout << "Adding " << part1_bar->GetPartName() << " " << part1->GetPartName() << std::endl;            
                 part1 = AliParticleYield::Add(part1, part1_bar);
                 
-              } else {
+              } else if (TDatabasePDG::Instance()->GetParticle(-num[iratio-1])){ // Before scaling x2 check it it makes sense (antiparticle exists) 
                 std::cout << "WARNING: Sum requested but not found, scaling x2 " << part1->GetName() << std::endl;
                 part1->Scale(2);
               }
@@ -174,13 +187,13 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
         if(part2) 
           {
             part2 = new AliParticleYield(*part2); // We need to clone it to avoid a mess if we need to use this particle again later
-            if(isSum[iratio-1] && TDatabasePDG::Instance()->GetParticle(-denum[iratio])) { // Before looking for anti particle, check if it makes sense 
+            if(isSum[iratio-1]) { 
               std::cout << "  Looking for " <<  -denum[iratio-1] << std::endl;
               AliParticleYield * part2_bar = AliParticleYield::FindParticle(arr, -denum[iratio-1], system, energy, centrality,0);
               if(part2 && part2_bar){
                 std::cout << "Adding " << part2_bar->GetPartName() << " " << part2->GetPartName() << std::endl;            
                 part2 = AliParticleYield::Add(part2, part2_bar);
-              } else {
+              } else if (TDatabasePDG::Instance()->GetParticle(-denum[iratio-1])){ // Before scaling x2 check it it makes sense (antiparticle exists) 
                 std::cout << "WARNING: Sum requested but not found, scaling x2 " << part2->GetName() << std::endl;
                 part2->Scale(2);
               }
@@ -192,7 +205,7 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
           }
 
       }
-      ratio = AliParticleYield::Divide(part1, part2, 0, "YQ"); // Assume by that the systematics of part1 and part2 are uncorrelated.
+      ratio = AliParticleYield::Divide(part1, part2, correlatedUnc[iratio-1], "YQ"); // Assume by that the systematics of part1 and part2 are uncorrelated.
       if(ratio) {
         std::cout << "" << std::endl;
         std::cout << "WARNING: building ratio " << num[iratio-1] <<"/"<<denum[iratio-1]<<": Check uncertainties!!" << std::endl;
@@ -275,7 +288,8 @@ void   PrepareThermalModelsInputFiles(TClonesArray * arr, Int_t system, Float_t 
     }
   }
   std::cout << "Particles for thermal model fits:" << std::endl; 
-  arrOut->Print("short");
+  //  arrOut->Print("short");
+  arrOut->Print("");
   std::cout << "" << std::endl;
   // Write GSI input file
   TIter it(arrOut);
@@ -441,10 +455,17 @@ void DrawRatio(TString what) {
   // This is used to simplify the code above
   // In order to draw syst error bars, we need to convert to graphs the syst errors histos
 
+  // Sample colors
+  //  const Int_t colors[]     = {kBlack, kRed+1 , kBlue+1, kGreen+3, kMagenta+1, kOrange-1,kCyan+2,kYellow+2  , kWhite};
+
   TClonesArray * array = 0;
   Int_t system,  color, marker;
   Float_t energy = 0, shift = 0;
   TString centrality, label;
+  // FIXME: move this in the different sections below
+  correlatedUnc = 0;
+  std::cout << "Plotting " << what.Data() << std::endl;
+  
 
   if (what == "frame" ) {
     // This is a bit of an hack: since the particle labels come
@@ -452,6 +473,7 @@ void DrawRatio(TString what) {
     // the only one where we have all the ratios, we draw the PbPb
     // ratio here and then we set lines and markers to white. We also
     // add the "NoLegend" flag, so that it does not show up in the legend 
+    correlatedUnc = correlatedUncZero;
     TH1 * h = GetHistoRatios(arrPbPb,       AliParticleYield::kCSPbPb, 2760, "V0M0010", "NoLegend", kWhite);
     h->Draw();
     Int_t nratio = h->GetNbinsX();
@@ -468,13 +490,14 @@ void DrawRatio(TString what) {
     }
 
     TLatex *   tex = new TLatex(8.8,0.037,"ALICE Preliminary");
-    tex->SetTextFont(52);
+    tex->SetTextFont(42);
     tex->SetLineWidth(2);
     tex->Draw();
 
     h->GetYaxis()->SetDecimals(1);
     h->GetYaxis()->SetNdivisions(505);
-
+    //    h->GetXaxis()->CenterLabels(1);
+    gPad->SetGridx();
 
   }
   else if (what == "PbPb_0010") {
@@ -484,6 +507,8 @@ void DrawRatio(TString what) {
     color  = kRed+1;
     marker = kFullCircle;
     shift =  0;
+    correlatedUnc = correlatedUncLocalPbPb;
+
   }
 
   else if (what == "PbPb_6080") {
@@ -492,63 +517,89 @@ void DrawRatio(TString what) {
     label = "Pb-Pb, #sqrt{s_{NN}} = 2.76 TeV, 60-80%";
     color  = kBlue+1;
     marker = kFullCircle;
-    shift =  0.1;
+    shift =  0.0;
+    correlatedUnc = correlatedUncLocalPbPb;
   }
   else if (what == "pp7") {
     array = arrpp7;
     system = 0; energy = 7000.; centrality = "";
     label = "pp #sqrt{s} = 7 TeV";
-    color  = kCyan-8;
+    color  = kMagenta+1;
     marker = kFullCircle;
     shift =  0.2;
+    correlatedUnc = correlatedUncLocalPP;
   }
   else if (what == "pp900") {
     array = arrpp900;
     system = 0; energy = 900.; centrality = "";
     label = "pp #sqrt{s} = 0.9 TeV";
-    color  = kMagenta-9;
+    color  = kCyan+2;
     marker = kFullCircle;
     shift =  -0.2;
+    correlatedUnc = correlatedUncLocalPP;  
   }
   else if (what == "pp276") {
     array = arrpp276;
     system = 0; energy = 2760.; centrality = "";
     label = "pp #sqrt{s} = 2.76 TeV";
-    color  = kYellow-7;
+    color  = kYellow+2;
     marker = kFullCircle;
     shift = 0;
+    correlatedUnc = correlatedUncLocalPP;
   }
   else if (what == "pPb0005") {
     array = arrpPb;
-    system = 0; energy = 5020.; centrality = "V0A0005";
+    system = 1; energy = 5020.; centrality = "V0A0005";
     label = "p-Pb, #sqrt{s_{NN}} = 5.02 TeV, V0A 0-5%";
     color  = kBlack;
     marker = kFullCircle;
     shift = -0.2;
+    correlatedUnc = correlatedUncLocalPP;
   } 
   else if (what == "PbPbSTAR") {
     array = arrSTARPbPb;
-    system = 2; energy = 200.; centrality = "00";
+    system = 2; energy = 200.; centrality = "0005";
     label = "STAR, Pb-Pb, #sqrt{s_{NN}} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenStar;
     shift = +0.2;
+    correlatedUnc = correlatedUncZero;
   }
   else if (what == "PbPbPHENIX") {
     array = arrPHENIXPbPb;
-    system = 2; energy = 200.; centrality = "00";
+    system = 2; energy = 200.; centrality = "0005";
     label = "PHENIX, Pb-Pb, #sqrt{s_{NN}} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenSquare;
-    shift = -0.2;
+    shift = -0.15;
+    correlatedUnc = correlatedUncZero;
   }
   else if (what == "PbPbBRAHMS") {
     array = arrBRAHMSPbPb;
-    system = 2; energy = 200.; centrality = "00";
-    label = "BRAHMS, Pb-Pb, #sqrt{s_{NN}} = 0.2 TeV, 0-5%";
+    system = 2; energy = 200.; centrality = "0010";
+    label = "BRAHMS, Pb-Pb, #sqrt{s_{NN}} = 0.2 TeV, 0-10%";
     color  = kBlack;
     marker = kOpenCross;
-    shift = -0.4;
+    shift = -0.3;
+    correlatedUnc = correlatedUncZero;
+  }
+  else if (what == "ppSTAR") {
+    array = arrSTARpp;
+    system = 0; energy = 200.; centrality = "";
+    label = "STAR, pp, #sqrt{s} = 0.2 TeV";
+    color  = kBlack;
+    marker = kOpenStar;
+    shift = 0.;
+    correlatedUnc = correlatedUncZero;
+  }
+  else if (what == "ppPHENIX") {
+    array = arrPHENIXpp;
+    system = 0; energy = 200.; centrality = "";
+    label = "PHENIX, pp, #sqrt{s} = 0.2 TeV";
+    color  = kBlack;
+    marker = kOpenSquare;
+    shift = -0.2;
+    correlatedUnc = correlatedUncZero;
   }
 
 
@@ -556,8 +607,15 @@ void DrawRatio(TString what) {
     std::cout << "Unknown ratio " << what.Data() << std::endl;
   }
 
+  if(!correlatedUnc) {
+    std::cout << "correlatedUnc not set!" << std::endl;
+    
+  }
+  std::cout << "CORR: " << correlatedUnc[1] << std::endl;
+
   if(array) {
-    GetHistoRatios(array,  system,  energy, centrality, label, color, marker, kStatError, shift)->Draw("same");
+    AliPWGHistoTools::GetGraphFromHisto(GetHistoRatios(array,  system,  energy, centrality, label, color, marker, kStatError, shift)
+                                        ,0)->Draw("PZ");
     AliPWGHistoTools::GetGraphFromHisto(GetHistoRatios(array,  system,  energy, centrality, label+"NoLegend", color, marker, kSystError, shift)
                                         ,0)->Draw("[]");
   }

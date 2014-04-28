@@ -40,8 +40,8 @@ Double_t matrix[npar][npar];
 TString centrFile;
 TString systemAndEnergy;
 Double_t maxy = 0;
-TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
-//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
+//TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (#it{N}_{part})^{#it{c}}";
+TString label = "#frac{d#it{N}}{d#it{y}} = #it{a} + #it{b} #times (d#it{N}/d#it{#eta})^{#it{c}}";
 Int_t collSystem  = 2;
 Float_t energy = 2760;
 
@@ -71,6 +71,8 @@ void FitNPartDependence() {
 
   //__________________________________________________________________//
 
+  // WARNING: check isSum
+
   // KStar
   centrFile = "npart_PbPb.txt";
   //  centrFile = "dndeta_PbPb.txt";
@@ -87,7 +89,7 @@ void FitNPartDependence() {
   // Int_t pdg = 1000010020;
   // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
   // Deuteron pPb
-  //  centrFile = "dndeta_pPb.txt";
+  // centrFile = "dndeta_pPb.txt";
   // const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
   // //  const char * centrToExtrapolate = "V0A0005";
   // const char * centrToExtrapolate = "V0A6080";
@@ -113,7 +115,7 @@ void FitNPartDependence() {
   TGraphErrors * grSyst = new TGraphErrors; 
   TGraphErrors * grStat = new TGraphErrors; 
   Double_t maxx = 1.1*npartPbPb[centrToExtrapolate];
-  //Double_t maxx = 1.1*npartPbPb["V0A0005"];
+  //  Double_t maxx = 1.1*npartPbPb["V0A0005"];
   // Function
   // TF1 * f1 = new TF1 ("f1", "[0] + [1]*x", 0, maxx);
   // f1->SetParameters(1,1);
@@ -128,7 +130,7 @@ void FitNPartDependence() {
   Int_t icentr = 0;
   AliParticleYield * part = 0;
   while (centralityToPlot[icentr]) {
-    part =  AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centralityToPlot[icentr]);
+    part =  AliParticleYield::FindParticle (arr, pdg, collSystem, energy, centralityToPlot[icentr]);
     if(part) {
       grSyst->SetPoint     (icentr , npartPbPb[centralityToPlot[icentr]]    , part->GetYield());
       grSyst->SetPointError(icentr , npartPbPbErr[centralityToPlot[icentr]] , part->GetSystError());
@@ -161,10 +163,10 @@ void FitNPartDependence() {
   TF1 * fError = new TF1("fError", ErrorFunction, 0,maxx, 0);
 
   // The uncertainty on the systematics is computed shifting the graph up and down + refitting
-  // Double_t errorSystPlus  = FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield;
-  // Double_t errorSystMinus = FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield;
-  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
-  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
+  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield);
+  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield);
+  // Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
+  // Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
 
   // Double_t errorStatPlus  = FitShiftedGraphAndExtrapolate(grStat, kShiftUp  , f1, centrToExtrapolate, kBlue) -yield;
   // Double_t errorStatMinus = FitShiftedGraphAndExtrapolate(grStat, kShiftDown, f1, centrToExtrapolate, kBlue) -yield;
