@@ -1074,7 +1074,7 @@ Bool_t AliFemtoESDTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSClust
 
 bool AliFemtoESDTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
-   if(nsigmaTPCE<3 && nsigmaTPCPi>3 && nsigmaTPCK>3 && nsigmaTPCP>3)
+  if(TMath::Abs(nsigmaTPCE)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
       return false;
    else
      return true;
