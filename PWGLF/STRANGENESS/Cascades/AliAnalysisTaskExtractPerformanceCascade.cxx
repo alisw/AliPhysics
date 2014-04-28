@@ -285,6 +285,10 @@ f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus(0),
 
 //ZNA
 
@@ -543,6 +547,10 @@ f3dHistGenSelectedPtVsYCMSVsMultV0AXiMinus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus(0),
 f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus(0),
+f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus(0),
 
 //ZNA
 
@@ -1276,6 +1284,27 @@ void AliAnalysisTaskExtractPerformanceCascade::UserCreateOutputObjects()
     if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus);
   }
   
+    //Cross-check primary selection criteria
+    //Should not impact much but inspired by rumors of DPMJet issues with primary selection (?)
+    
+    if(! f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus) {
+        f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus = new TH3F( "f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+        if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus);
+    }
+    if(! f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus) {
+        f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus = new TH3F( "f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus", "Pt_{#Xi} Vs Y_{#Xi} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Xi} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+        if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus);
+    }
+    //--- 3D Histo (Pt, Y, Multiplicity) for generated OmegaMinus/Plus
+    
+    if(! f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus) {
+        f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus = new TH3F( "f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+        if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus);
+    }
+    if(! f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus) {
+        f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus = new TH3F( "f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus", "Pt_{#Omega} Vs Y_{#Omega} Vs Multiplicity; Pt_{cascade} (GeV/c); Y_{#Omega} ; Mult", lCustomNBins, 0., lCustomPtUpperLimit, 48, -1.2,1.2,lCustomNBinsMultiplicity,0,lCustomNBinsMultiplicity);
+        if(fkIsNuclear) fListHist->Add(f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus);
+    }
   
   //======================================================================================
   //--------------------------------------------------------------------------------------
@@ -2197,6 +2226,52 @@ void AliAnalysisTaskExtractPerformanceCascade::UserExec(Option_t *)
    }
 //----- End Loop on primary Xi, Omega ----------------------------------------------------------
 
+    
+    //----- Loop on primary Xi, Omega --------------------------------------------------------------
+    for (Int_t iCurrentLabelStack = 0; iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+    {// This is the begining of the loop on primaries
+        
+        TParticle* lCurrentParticlePrimary = 0x0;
+        lCurrentParticlePrimary = lMCstack->Particle( iCurrentLabelStack );
+        if(!lCurrentParticlePrimary){
+            Printf("Cascade loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iCurrentLabelStack );
+            continue;
+        }
+        if ( TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3312 || TMath::Abs(lCurrentParticlePrimary->GetPdgCode()) == 3334 ) {
+            Double_t lRapXiMCPrimary = -100;
+            if( (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) != 0 ) {
+                if ( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) !=0 ){
+                    lRapXiMCPrimary = 0.5*TMath::Log( (lCurrentParticlePrimary->Energy() + lCurrentParticlePrimary->Pz()) / (lCurrentParticlePrimary->Energy() - lCurrentParticlePrimary->Pz() +1.e-13) );
+                }
+            }
+            //IsPhysicalPrimary: Cross-check with old index test
+            // (cascades -> negligible difference ?... )
+            if ( lMCstack->IsPhysicalPrimary(iCurrentLabelStack)!=kTRUE ) continue;
+            
+            //=================================================================================
+            // Xi Histograms
+            if( lCurrentParticlePrimary->GetPdgCode() == 3312 ){
+                lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+                f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+            }
+            if( lCurrentParticlePrimary->GetPdgCode() == -3312 ){
+                lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+                f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+            }
+            // Omega Histograms
+            if( lCurrentParticlePrimary->GetPdgCode() == 3334 ){
+                lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+                f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+            }
+            if( lCurrentParticlePrimary->GetPdgCode() == -3334 ){
+                lPtCurrentPart    = lCurrentParticlePrimary->Pt();
+                f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus->Fill(lPtCurrentPart, lRapXiMCPrimary+fpArapidityShift, lMultiplicityV0A);
+            }
+        }
+    }
+    //----- End Loop on primary Xi, Omega ----------------------------------------------------------
+
+    
 //------------------------------------------------
 // MAIN CASCADE LOOP STARTS HERE
 //------------------------------------------------
