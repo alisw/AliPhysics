@@ -74,14 +74,14 @@ void FitNPartDependence() {
   // WARNING: check isSum
 
   // KStar
-  centrFile = "npart_PbPb.txt";
-  //  centrFile = "dndeta_PbPb.txt";
-  maxy = 50;
-  systemAndEnergy = "Pb-Pb #sqrt{#it{s}}_{NN} = 2.76 TeV";
-  const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080" , 0};
-  const char * centrToExtrapolate = "V0M0010";
-  Int_t pdg = 313;
-  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./PbPb_2760_Kstar892.txt");  
+  // centrFile = "npart_PbPb.txt";
+  // //  centrFile = "dndeta_PbPb.txt";
+  // maxy = 50;
+  // systemAndEnergy = "Pb-Pb #sqrt{#it{s}}_{NN} = 2.76 TeV";
+  // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080" , 0};
+  // const char * centrToExtrapolate = "V0M0010";
+  // Int_t pdg = 313;
+  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./PbPb_2760_Kstar892.txt");  
   // Deuteron
   // gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
   // const char * centralityToPlot[] = {   "V0M0010" ,  "V0M1020" ,  "V0M2040" ,  "V0M4060" ,  "V0M6080",0 };
@@ -99,6 +99,19 @@ void FitNPartDependence() {
   // systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
   // energy = 5020;
   // collSystem = 1;
+  // K* pPb
+  centrFile =  "dndeta_pPb.txt";
+  //  centrFile = "dndeta_PbPb.txt";
+  maxy = 1;
+  systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
+  const char * centralityToPlot[] = {   "V0A0020" ,  "V0A2040" ,  "V0A4060" ,  "V0A6080", "V0A8000" , 0};
+  const char * centrToExtrapolate = "V0A0005";
+  Int_t pdg = 313;
+  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./pPb_5020_Kstar.txt");  
+  energy = 5020;
+  collSystem = 1;
+
+
   // Helium3
   // gROOT->ProcessLine(".x figTemplate.C(0,0.00001,400,0.2)");  
   // const char * centralityToPlot[] = {   "V0M0020" ,  "V0M2080" ,0};
@@ -163,10 +176,10 @@ void FitNPartDependence() {
   TF1 * fError = new TF1("fError", ErrorFunction, 0,maxx, 0);
 
   // The uncertainty on the systematics is computed shifting the graph up and down + refitting
-  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield);
-  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield);
-  // Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
-  // Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
+  // Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftUp  , f1, centrToExtrapolate, kRed)-yield);
+  // Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftDown, f1, centrToExtrapolate, kRed)-yield);
+  Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
+  Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
 
   // Double_t errorStatPlus  = FitShiftedGraphAndExtrapolate(grStat, kShiftUp  , f1, centrToExtrapolate, kBlue) -yield;
   // Double_t errorStatMinus = FitShiftedGraphAndExtrapolate(grStat, kShiftDown, f1, centrToExtrapolate, kBlue) -yield;
