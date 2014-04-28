@@ -107,13 +107,13 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
     if(fHistIntV3)      fOutputList->Add(fHistIntV3);
     // create the QA histos
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
-        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistOriginalEtaPhi[i] = BookTH2F("fHistOriginalEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistToyEtaPhi[i] = BookTH2F("fHistToyEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
         fHistOriginalDeltaPhi[i] = BookTH1F("fHistOriginalDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
         fHistToyDeltaPhi[i] = BookTH1F("fHistToyDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
-        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 100, 0, 20, 80, 0, .8, i);
+        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 200, 0, 200, 80, 0, .8, i);
         // add to outputlist
         if(fFuncDiffV2[i]) fOutputList->Add(fFuncDiffV2[i]);
         if(fFuncDiffV3[i]) fOutputList->Add(fFuncDiffV3[i]);
