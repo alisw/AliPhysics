@@ -1,4 +1,4 @@
- /*************************************************************************
+/*************************************************************************
  *                                                                       *
  *                                                                       *
  *      Task for Jet Chemistry Analysis in PWG4 Jet Task Force Train     *
@@ -95,8 +95,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fCutNegtrackEta(0)
    ,fCutEta(0)
    ,fCutV0cosPointAngle(0)
-   ,fCutChi2PosDaughter(0)
-   ,fCutChi2NegDaughter(0)
    ,fKinkDaughters(0)
    ,fRequireTPCRefit(0)
    ,fCutArmenteros(0)
@@ -194,9 +192,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh1trackNegEta(0)          
    ,fh1V0Eta(0)
    ,fh1V0totMom(0)           
-   ,fh1CosPointAngle(0)        
-   ,fh1Chi2Pos(0)                 
-   ,fh1Chi2Neg(0)   
+   ,fh1CosPointAngle(0)           
    ,fh1DecayLengthV0(0)    
    ,fh2ProperLifetimeK0sVsPtBeforeCut(0)    
    ,fh2ProperLifetimeK0sVsPtAfterCut(0)
@@ -220,7 +216,10 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem()
    ,fh3InvMassEtaTrackPtLa(0)
    ,fh3InvMassEtaTrackPtALa(0)
    ,fh1TrackMultCone(0)
-   ,fh2TrackMultCone(0) 
+   ,fh2TrackMultCone(0)
+   ,fh2NJK0(0)
+   ,fh2NJLa(0)
+   ,fh2NJALa(0)
    ,fh2MCgenK0Cone(0)
    ,fh2MCgenLaCone(0)
    ,fh2MCgenALaCone(0) 
@@ -292,8 +291,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fCutNegtrackEta(0)
   ,fCutEta(0)
   ,fCutV0cosPointAngle(0)
-  ,fCutChi2PosDaughter(0)
-  ,fCutChi2NegDaughter(0)
   ,fKinkDaughters(0)
   ,fRequireTPCRefit(0)
   ,fCutArmenteros(0)
@@ -392,8 +389,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh1V0Eta(0)  
   ,fh1V0totMom(0)            
   ,fh1CosPointAngle(0)        
-  ,fh1Chi2Pos(0)                 
-  ,fh1Chi2Neg(0) 
   ,fh1DecayLengthV0(0) 
   ,fh2ProperLifetimeK0sVsPtBeforeCut(0)  
   ,fh2ProperLifetimeK0sVsPtAfterCut(0)            
@@ -418,6 +413,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const char *name)
   ,fh3InvMassEtaTrackPtALa(0)
   ,fh1TrackMultCone(0)
   ,fh2TrackMultCone(0)
+  ,fh2NJK0(0)
+  ,fh2NJLa(0)
+  ,fh2NJALa(0)
   ,fh2MCgenK0Cone(0)
   ,fh2MCgenLaCone(0)
   ,fh2MCgenALaCone(0)
@@ -492,8 +490,6 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fCutNegtrackEta(copy.fCutNegtrackEta)
   ,fCutEta(copy.fCutEta)
   ,fCutV0cosPointAngle(copy.fCutV0cosPointAngle)
-  ,fCutChi2PosDaughter(copy.fCutChi2PosDaughter)
-  ,fCutChi2NegDaughter(copy.fCutChi2NegDaughter)
   ,fKinkDaughters(copy.fKinkDaughters)
   ,fRequireTPCRefit(copy.fRequireTPCRefit)
   ,fCutArmenteros(copy.fCutArmenteros)
@@ -591,9 +587,7 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh1trackNegEta(copy.fh1trackNegEta)          
   ,fh1V0Eta(copy.fh1V0Eta)   
   ,fh1V0totMom(copy.fh1V0totMom)           
-  ,fh1CosPointAngle(copy.fh1CosPointAngle)        
-  ,fh1Chi2Pos(copy.fh1Chi2Pos)                 
-  ,fh1Chi2Neg(copy.fh1Chi2Neg)    
+  ,fh1CosPointAngle(copy.fh1CosPointAngle)           
   ,fh1DecayLengthV0(copy.fh1DecayLengthV0)  
   ,fh2ProperLifetimeK0sVsPtBeforeCut(copy.fh2ProperLifetimeK0sVsPtBeforeCut)  
   ,fh2ProperLifetimeK0sVsPtAfterCut(copy.fh2ProperLifetimeK0sVsPtAfterCut)    
@@ -618,6 +612,9 @@ AliAnalysisTaskJetChem::AliAnalysisTaskJetChem(const  AliAnalysisTaskJetChem &co
   ,fh3InvMassEtaTrackPtALa(copy.fh3InvMassEtaTrackPtALa)
   ,fh1TrackMultCone(copy.fh1TrackMultCone)
   ,fh2TrackMultCone(copy.fh2TrackMultCone)
+  ,fh2NJK0(copy.fh2NJK0)
+  ,fh2NJLa(copy.fh2NJLa)
+  ,fh2NJALa(copy.fh2NJALa)
   ,fh2MCgenK0Cone(copy.fh2MCgenK0Cone)
   ,fh2MCgenLaCone(copy.fh2MCgenLaCone)
   ,fh2MCgenALaCone(copy.fh2MCgenALaCone)
@@ -694,8 +691,6 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fCutNegtrackEta                 = o.fCutNegtrackEta;  
     fCutEta                         = o.fCutEta;
     fCutV0cosPointAngle             = o.fCutV0cosPointAngle;
-    fCutChi2PosDaughter             = o.fCutChi2PosDaughter;
-    fCutChi2NegDaughter             = o.fCutChi2NegDaughter;
     fKinkDaughters                  = o.fKinkDaughters;
     fRequireTPCRefit                = o.fRequireTPCRefit;
     fCutArmenteros                  = o.fCutArmenteros;
@@ -786,9 +781,7 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh1trackNegEta                  = o.fh1trackNegEta;        
     fh1V0Eta                        = o.fh1V0Eta;  
     fh1V0totMom                     = o.fh1V0totMom;            
-    fh1CosPointAngle                = o.fh1CosPointAngle;        
-    fh1Chi2Pos                      = o.fh1Chi2Pos;                 
-    fh1Chi2Neg                      = o.fh1Chi2Neg;              
+    fh1CosPointAngle                = o.fh1CosPointAngle;                      
     fh1DecayLengthV0                = o.fh1DecayLengthV0;  
     fh2ProperLifetimeK0sVsPtBeforeCut = o.fh2ProperLifetimeK0sVsPtBeforeCut;
     fh2ProperLifetimeK0sVsPtAfterCut= o.fh2ProperLifetimeK0sVsPtAfterCut; 
@@ -813,6 +806,9 @@ AliAnalysisTaskJetChem& AliAnalysisTaskJetChem::operator=(const AliAnalysisTaskJ
     fh3InvMassEtaTrackPtALa         = o.fh3InvMassEtaTrackPtALa;
     fh1TrackMultCone                = o.fh1TrackMultCone;
     fh2TrackMultCone                = o.fh2TrackMultCone;
+    fh2NJK0                         = o.fh2NJK0;
+    fh2NJLa                         = o.fh2NJLa;
+    fh2NJALa                        = o.fh2NJALa;
     fh2MCgenK0Cone                  = o.fh2MCgenK0Cone;
     fh2MCgenLaCone                  = o.fh2MCgenLaCone;
     fh2MCgenALaCone                 = o.fh2MCgenALaCone; 
@@ -1109,25 +1105,23 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1Evt                        = new TH1F("fh1Evt", "All events runned over", 3, 0.,1.);
   fh1EvtMult 	                = new TH1F("fh1EvtMult","multiplicity",240,0.,240.);
   fh1K0Mult 	                = new TH1F("fh1K0Mult","K0 multiplicity",100,0.,100.);//500. all
-  fh1dPhiJetK0                  = new TH1F("fh1dPhiJetK0","",640,-1,5.4);
+  fh1dPhiJetK0                  = new TH1F("fh1dPhiJetK0","",64,-1,5.4);
   fh1LaMult 	                = new TH1F("fh1LaMult","La multiplicity",100,0.,100.);
-  fh1dPhiJetLa                  = new TH1F("fh1dPhiJetLa","",640,-1,5.4);
+  fh1dPhiJetLa                  = new TH1F("fh1dPhiJetLa","",64,-1,5.4);
   fh1ALaMult 	                = new TH1F("fh1ALaMult","ALa multiplicity",100,0.,100.);
-  fh1dPhiJetALa                 = new TH1F("fh1dPhiJetALa","",640,-1,5.4);
-  fh1JetEta                     = new TH1F("fh1JetEta","#eta distribution of all jets",400,-2.,2.);
-  fh1JetPhi                     = new TH1F("fh1JetPhi","#phi distribution of all jets",630,0.,6.3);
-  fh2JetEtaPhi                  = new TH2F("fh2JetEtaPhi","#eta and #phi distribution of all jets",400,-2.,2.,630,0.,6.3);
+  fh1dPhiJetALa                 = new TH1F("fh1dPhiJetALa","",64,-1,5.4);
+  fh1JetEta                     = new TH1F("fh1JetEta","#eta distribution of all jets",40,-2.,2.);
+  fh1JetPhi                     = new TH1F("fh1JetPhi","#phi distribution of all jets",63,0.,6.3);
+  fh2JetEtaPhi                  = new TH2F("fh2JetEtaPhi","#eta and #phi distribution of all jets",400,-2.,2.,63,0.,6.3);
   fh1V0JetPt                    = new TH1F("fh1V0JetPt","#p_{T} distribution of all jets containing v0s",200,0.,200.);
   fh2FFJetTrackEta              = new TH2F("fh2FFJetTrackEta","charged track eta distr. in jet cone",200,-1.,1.,40,0.,200.);  
-  fh1trackPosNCls               = new TH1F("fh1trackPosNCls","NTPC clusters positive daughters",250,0.,250.);
-  fh1trackNegNCls               = new TH1F("fh1trackNegNCls","NTPC clusters negative daughters",250,0.,250.);
+  fh1trackPosNCls               = new TH1F("fh1trackPosNCls","NTPC clusters positive daughters",10,0.,100.);
+  fh1trackNegNCls               = new TH1F("fh1trackNegNCls","NTPC clusters negative daughters",10,0.,100.);
   fh1trackPosEta                = new TH1F("fh1trackPosEta","eta positive daughters",100,-2.,2.);
   fh1trackNegEta                = new TH1F("fh1trackNegEta","eta negative daughters",100,-2.,2.);
   fh1V0Eta                      = new TH1F("fh1V0Eta","V0 eta",60,-1.5,1.5);
-  fh1V0totMom                   = new TH1F("fh1V0totMom","V0 tot mom",240,0.,20.); 
-  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",100,0.99,1.0);
-  fh1Chi2Pos                    = new TH1F("fh1Chi2Pos", "V0s chi2",100,0.,5.);
-  fh1Chi2Neg                    = new TH1F("fh1Chi2Neg", "V0s chi2",100,0.,5.);
+  fh1V0totMom                   = new TH1F("fh1V0totMom","V0 tot mom",100,0.,20.); 
+  fh1CosPointAngle              = new TH1F("fh1CosPointAngle", "Cosine of V0's pointing angle",50,0.99,1.0);
   fh1DecayLengthV0              = new TH1F("fh1DecayLengthV0", "V0s decay Length;decay length(cm)",1200,0.,120.);
   fh2ProperLifetimeK0sVsPtBeforeCut = new TH2F("fh2ProperLifetimeK0sVsPtBeforeCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",150,0.,15.,250,0.,250.);
   fh2ProperLifetimeK0sVsPtAfterCut = new TH2F("fh2ProperLifetimeK0sVsPtAfterCut"," K0s ProperLifetime vs Pt; p_{T} (GeV/#it{c})",150,0.,15.,250,0.,250.);
@@ -1159,9 +1153,15 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
   fh1MedianEta                  = new TH1F("fh1MedianEta","Median cluster axis ;#eta",200,-1.,1.);
   fh1JetPtMedian                = new TH1F("fh1JetPtMedian","Median cluster jet it{p}_{T} ;#GeV/it{c}",19,5.,100.);
 
-  fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",200,0.,500.);
+  fh1TrackMultCone          = new TH1F("fh1TrackMultCone","track multiplicity in jet cone; number of tracks",20,0.,50.);
 
-  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",200,0.,200.,19,5.,100.);
+  fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",50,0.,50.,19,5.,100.);
+
+  fh2NJK0                   = new TH2F("fh2NJK0","#it{K}^{0}_{s} in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 0.3, 0.7,200,0.,20.); 
+
+  fh2NJLa                   = new TH2F("fh2NJLa","#Lambda in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 1.05, 1.25,200,0.,20.);
+
+  fh2NJALa                  = new TH2F("fh2NJALa","#bar{#Lambda} in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 1.05, 1.25,200,0.,20.);
 
   fFFHistosRecCuts   	    = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
@@ -1340,9 +1340,7 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh1trackNegEta);          
     fCommonHistList->Add(fh1V0Eta); 
     fCommonHistList->Add(fh1V0totMom);        
-    fCommonHistList->Add(fh1CosPointAngle);        
-    fCommonHistList->Add(fh1Chi2Pos);                 
-    fCommonHistList->Add(fh1Chi2Neg);              
+    fCommonHistList->Add(fh1CosPointAngle);                      
     fCommonHistList->Add(fh1DecayLengthV0); 
     fCommonHistList->Add(fh2ProperLifetimeK0sVsPtBeforeCut);
     fCommonHistList->Add(fh2ProperLifetimeK0sVsPtAfterCut);
@@ -1367,6 +1365,9 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
     fCommonHistList->Add(fh3InvMassEtaTrackPtALa);
     fCommonHistList->Add(fh1TrackMultCone);
     fCommonHistList->Add(fh2TrackMultCone);
+    fCommonHistList->Add(fh2NJK0);
+    fCommonHistList->Add(fh2NJLa);
+    fCommonHistList->Add(fh2NJALa);
     fCommonHistList->Add(fh2MCgenK0Cone);
     fCommonHistList->Add(fh2MCgenLaCone);
     fCommonHistList->Add(fh2MCgenALaCone);
@@ -2083,15 +2084,48 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
   
   //_____no jets events______________________________________________________________________________________________________________________________________
 
-  if(nRecJetsCuts == 0){
-
+  if(nRecJetsCuts == 0){//no jet events
+    
     // std::cout<<"################## found event without any jet!!!!!###################"<<std::endl;
-
-
-  }
-
-
-
+    
+    for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
+      
+      AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListK0s->At(it));
+      if(!v0) continue;
+      
+      Double_t invMK0s =0;
+      Double_t trackPt=0;
+      CalculateInvMass(v0, kK0, invMK0s, trackPt);
+      fh2NJK0->Fill(trackPt,invMK0s);
+      
+    }
+    
+    for(Int_t it=0; it<fListLa->GetSize(); ++it){ // loop all K0s 
+      
+      AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListLa->At(it));
+      if(!v0) continue;
+      
+      Double_t invMLa =0;
+      Double_t trackPt=0;	
+      CalculateInvMass(v0, kLambda, invMLa, trackPt);
+      fh2NJLa->Fill(trackPt,invMLa);
+      
+    } 
+    
+    for(Int_t it=0; it<fListALa->GetSize(); ++it){ // loop all K0s 
+      
+      AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListALa->At(it));
+      if(!v0) continue;
+      
+      Double_t invMALa =0;
+      Double_t trackPt=0;	
+      CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);
+      fh2NJALa->Fill(trackPt,invMALa);
+      
+    } 
+    
+  }//no jet events
+  
   //____ fill all jet related histos  ________________________________________________________________________________________________________________________
   //##########################jet loop########################################################################################################################
   

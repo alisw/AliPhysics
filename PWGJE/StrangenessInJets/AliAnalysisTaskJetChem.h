@@ -185,10 +185,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutPostrackEta;
   Double_t fCutNegtrackEta;
   Double_t fCutEta;
-
   Double_t fCutV0cosPointAngle;
-  Double_t fCutChi2PosDaughter;
-  Double_t fCutChi2NegDaughter;
   Bool_t   fKinkDaughters;
   Bool_t   fRequireTPCRefit;
   Double_t fCutArmenteros; 
@@ -214,8 +211,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetCutV0Eta(Double_t v0Eta){fCutEta=v0Eta; Printf("AliAnalysisTaskJetChem:: SetCutV0Eta %f",v0Eta);}
   void SetCutJetEta(Double_t jetEta){fCutjetEta=jetEta; Printf("AliAnalysisTaskJetChem:: SetCutjetEta %f",jetEta);}
   void SetCosOfPointingAngle(Double_t cospointAng){fCutV0cosPointAngle=cospointAng; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngle %f",cospointAng);}
-  void SetChi2CutPosDaughter(Double_t chi2PosDaughter){fCutChi2PosDaughter=chi2PosDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutPosDaughter %f",chi2PosDaughter);}
-  void SetChi2CutNegDaughter(Double_t chi2NegDaughter){fCutChi2NegDaughter=chi2NegDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutNegDaughter %f",chi2NegDaughter);}
   void SetAcceptKinkDaughters(Bool_t isKinkDaughtersAccepted){fKinkDaughters=isKinkDaughtersAccepted; Printf("AliAnalysisTaskJetChem:: SetAcceptKinkDaughters %i", isKinkDaughtersAccepted);}
   void SetRequireTPCRefit(Bool_t isTPCRefit){fRequireTPCRefit=isTPCRefit; Printf("AliAnalysisTaskJetChem:: SetRequireTPCRefit %i", isTPCRefit);}
   void SetCutArmenteros(Double_t armenteros){fCutArmenteros=armenteros; Printf("AliAnalysisTaskJetChem:: SetCutArmenteros %f", armenteros);}
@@ -349,8 +344,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1V0Eta;                    
   TH1F* fh1V0totMom;                 
   TH1F* fh1CosPointAngle;            
-  TH1F* fh1Chi2Pos;                  
-  TH1F* fh1Chi2Neg;                  
   TH1F* fh1DecayLengthV0;            
   TH2F* fh2ProperLifetimeK0sVsPtBeforeCut;
   TH2F* fh2ProperLifetimeK0sVsPtAfterCut;
@@ -375,6 +368,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3InvMassEtaTrackPtALa;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
+  TH2F* fh2NJK0;
+  TH2F* fh2NJLa;
+  TH2F* fh2NJALa;
   TH2F* fh2MCgenK0Cone;
   TH2F* fh2MCgenLaCone;
   TH2F* fh2MCgenALaCone;
