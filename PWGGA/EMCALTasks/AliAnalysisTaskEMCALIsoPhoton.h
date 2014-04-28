@@ -65,7 +65,10 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
   void                  SetHybridOn()                           { fSelHybrid = kTRUE; }
   void                  SetFillQA()                             { fFillQA = kTRUE; }
-  void                  SelectCPVFromTrack(Bool_t b)             { fCpvFromTrack = b; }
+  void                  SelectCPVFromTrack(Bool_t b)            { fCpvFromTrack = b; }
+  void                  SetEtPtHistoBinning(Int_t n, 
+					    Double_t lowx, 
+					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -102,7 +105,10 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Bool_t                 fSelHybrid;             // bool to select hybrid tracks
   Bool_t                 fFillQA;                // bool to fill the QA plots
   TString                fClusIdFromTracks;      // string to hold the list of cluster ids given by tracks
-  Bool_t                 fCpvFromTrack;
+  Bool_t                 fCpvFromTrack;          // set the track-matching method to track->GetEMCALcluster()
+  Int_t                  fNBinsPt;               // set the number of bins in axis of histograms filled with pt (or Et)
+  Double_t               fPtBinLowEdge;          // low edge of the first pt (Et) bin
+  Double_t               fPtBinHighEdge;         // high edge of the first pt (Et) bin
 
 
   
