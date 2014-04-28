@@ -5,7 +5,7 @@
 // This class implements a container for particle yields results, to
 // be used e.g. in thermal model fits, with utility methods to
 // read/write to ASCII files or root trees
-// Author: Michele FLoris, michele.floris@cern.ch
+// Author: Michele Floris, michele.floris@cern.ch
 
 #include "TObject.h"
 #include "TString.h"
@@ -42,6 +42,10 @@ public:
 
     // Type of errors
     kTypeOnlyTotError        = 0x10, // If on, only the total error is returned as "GetSystError". GetStatError should be set to 0;
+
+    // Additional flags
+    kTypeAveragePartAntiPart = 0x100, // Can only be set if isSum = 1. It indicates that it is an averrage rather than a sum TODO: add separate bits for different averages (e.g. quadratic)?           
+
   };
   
   AliParticleYield();
