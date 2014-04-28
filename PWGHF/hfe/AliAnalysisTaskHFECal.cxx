@@ -596,7 +596,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(fmcData && fMC && stack)
       {
        Int_t label = TMath::Abs(track->GetLabel());
-       mcLabel = track->GetLabel();
+       //mcLabel = track->GetLabel();
+       mcLabel = fabs(track->GetLabel()); // check for conv. issue
        
        if(mcLabel>-1)
        {
@@ -760,7 +761,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     //int nTPCclF = track->GetTPCNclsF(); // warnings
     //int nITS = track->GetNcls(0);
    
-    if(mcPho && iHijing==1)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR); // check MC vertex
  
     fTrackPtAftTrkCuts->Fill(track->Pt());		
     
@@ -861,7 +861,9 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
 
     if(nITS<2.5)continue;
     if(nTPCcl<100)continue;
-   
+ 
+    if(mcPho)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR,mcWeight); // check MC vertex
+  
     CheckNclust->Fill(nTPCcl); 
     CheckNits->Fill(nITS); 
     CheckDCA->Fill(dca_xy,dca_z); 
@@ -1023,8 +1025,10 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
                   if(fFlagConvinatElec) fSameElecPtMCM20_pi0e->Fill(phoval,mcWeight);
                  
                   // check production vertex
-                  fPhoVertexReco_EMCal->Fill(track->Pt(),conv_proR);
-                  if(fFlagPhotonicElec)fPhoVertexReco_Invmass->Fill(track->Pt(),conv_proR);
+                  //fPhoVertexReco_EMCal->Fill(track->Pt(),conv_proR);
+                  //if(fFlagPhotonicElec)fPhoVertexReco_Invmass->Fill(track->Pt(),conv_proR);
+                  fPhoVertexReco_EMCal->Fill(track->Pt(),conv_proR,mcWeight);
+                  if(fFlagPhotonicElec)fPhoVertexReco_Invmass->Fill(track->Pt(),conv_proR,mcWeight);
 
                   }
                // --- eta
@@ -1525,12 +1529,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fSamRecoMaxE);
 
   fPhoVertexReco_HFE = new TH2D("fPhoVertexReco_HFE","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_HFE->Sumw2();
   fOutputList->Add(fPhoVertexReco_HFE);
 
   fPhoVertexReco_EMCal = new TH2D("fPhoVertexReco_EMCal","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_EMCal->Sumw2();
   fOutputList->Add(fPhoVertexReco_EMCal);
 
   fPhoVertexReco_Invmass = new TH2D("fPhoVertexReco_Invmass","photon production Vertex mass selection",40,0,20,250,0,50);
+  fPhoVertexReco_Invmass->Sumw2();
   fOutputList->Add(fPhoVertexReco_Invmass);
 
   fPhoVertexReco_step0= new TH2D("fPhoVertexReco_step0","photon production Vertex mass selection",40,0,20,250,0,50);
