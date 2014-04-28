@@ -444,7 +444,12 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     {
         fMCPartLevel = mcPartLevel;
     };
-
+    
+    inline void SetJetRAcceptance(Double_t r)
+    {
+        fJetRAccept = r;
+    };
+    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List
@@ -575,7 +580,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
     Double_t fParticlePtUp;
     Int_t fParticlePtBins;
 
-    Double_t fJetR;
+    Double_t fJetR;  // Jet resolution parameter
+    Double_t fJetRAccept;  // Jet radius used for additional acceptance constraint. Used to restrict eta acceptance in full ana
     Double_t fFullEDJetR;  // Radius used to calculate boundaries for jet within EMCal
     Double_t fChargedEDJetR;  // Radius used to calculate boundaries (in eta) for jet within TPC
     Double_t fJetRForRho;  // Required distance a track/cluster must be away from a jet for rho calculation
