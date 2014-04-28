@@ -129,6 +129,7 @@ fCentr(part.fCentr),
 fIsSum(part.fIsSum),
 fTag(part.fTag){
   // Copy constructor
+  
 }
 
 AliParticleYield::~AliParticleYield() {
@@ -817,13 +818,14 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
   Int_t ymin = part1->GetYMin() == part2->GetYMin() ? part2->GetYMin() : -1000; 
   Int_t ymax = part1->GetYMax() == part2->GetYMax() ? part2->GetYMax() : -1000; 
   Int_t status = part1->GetStatus() == part2->GetStatus() ? part2->GetStatus() : -1; 
-  Int_t type = part1->GetMeasurementType() == part2->GetMeasurementType() ? part2->GetMeasurementType() : -1; 
+  Int_t type = part1->GetMeasurementType() | part2->GetMeasurementType();
   
   TString centr = part1->GetCentr() == part2->GetCentr() ? part2->GetCentr() : part1->GetCentr()+pdgSep+part2->GetCentr(); 
   TString tag = part1->GetTag() == part2->GetTag() ? part2->GetTag() : part1->GetTag()+pdgSep+part2->GetTag(); 
   TString name = part1->GetPartName()+pdgSep+part2->GetPartName();
 
   Int_t issum = part1->GetIsSum() || part2->GetIsSum() ? 1 : 0; 
+
 
   SetPdgCode(pdg1);
   SetPdgCode2(pdg2);
@@ -842,7 +844,7 @@ void AliParticleYield::CombineMetadata(AliParticleYield *part1, AliParticleYield
 
 AliParticleYield * AliParticleYield::Add   (AliParticleYield * part1, AliParticleYield * part2, Double_t correlatedError , Option_t * opt){
 
-  // Computes the ratio of 2 particles.
+  // Computes the sum of 2 particles.
   // Valid options:
   //  - NQ: Propagates normalization errors quadratically (by default they are propagated linearly)
   //  - SL: propagates STATISTICAL errors linearly
@@ -903,6 +905,7 @@ AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliPartic
     Printf("WARNING<AliParticleYield::Divide>: part1 or part2 is null!");
     return 0;    
   }
+
 
   TString sopt(opt);
   sopt.ToUpper();
