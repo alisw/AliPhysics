@@ -1157,11 +1157,11 @@ void AliAnalysisTaskJetChem::UserCreateOutputObjects()
 
   fh2TrackMultCone          = new TH2F("fh2TrackMultCone","track multiplicity in jet cone vs. jet momentum; number of tracks; jet it{p}_{T} (GeV/it{c})",50,0.,50.,19,5.,100.);
 
-  fh2NJK0                   = new TH2F("fh2NJK0","#it{K}^{0}_{s} in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 0.3, 0.7,200,0.,20.); 
+  fh2NJK0                   = new TH2F("fh2NJK0","#it{K}^{0}_{s} in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 0.3, 0.7,200,0.,20.); 
 
-  fh2NJLa                   = new TH2F("fh2NJLa","#Lambda in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 1.05, 1.25,200,0.,20.);
+  fh2NJLa                   = new TH2F("fh2NJLa","#Lambda in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 1.05, 1.25,200,0.,20.);
 
-  fh2NJALa                  = new TH2F("fh2NJALa","#bar{#Lambda} in events with no selected jets; it{p}_{T} (GeV/it{c}; invM (GeV/it{c^{2}}", 200, 1.05, 1.25,200,0.,20.);
+  fh2NJALa                  = new TH2F("fh2NJALa","#bar{#Lambda} in events with no selected jets; invM (GeV/#it{c^{2}}; #it{p}_{T} (GeV/#it{c})", 200, 1.05, 1.25,200,0.,20.);
 
   fFFHistosRecCuts   	    = new AliFragFuncHistos("RecCuts", fFFNBinsJetPt, fFFJetPtMin, fFFJetPtMax, 
 						     fFFNBinsPt, fFFPtMin, fFFPtMax, 
@@ -2086,7 +2086,9 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
 
   if(nRecJetsCuts == 0){//no jet events
     
-    // std::cout<<"################## found event without any jet!!!!!###################"<<std::endl;
+    if(fDebug>6) { std::cout<<"################## nRecJetsCuts == 0 ###################"<<std::endl;
+      std::cout<<"fListK0s->GetSize() in NJ event: "<<fListK0s->GetSize()<<std::endl;
+    }
     
     for(Int_t it=0; it<fListK0s->GetSize(); ++it){ // loop all K0s 
       
@@ -2096,11 +2098,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMK0s =0;
       Double_t trackPt=0;
       CalculateInvMass(v0, kK0, invMK0s, trackPt);
-      fh2NJK0->Fill(trackPt,invMK0s);
+      fh2NJK0->Fill(invMK0s, trackPt);
       
     }
     
-    for(Int_t it=0; it<fListLa->GetSize(); ++it){ // loop all K0s 
+    for(Int_t it=0; it<fListLa->GetSize(); ++it){ // loop all La 
       
       AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListLa->At(it));
       if(!v0) continue;
@@ -2108,11 +2110,11 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMLa =0;
       Double_t trackPt=0;	
       CalculateInvMass(v0, kLambda, invMLa, trackPt);
-      fh2NJLa->Fill(trackPt,invMLa);
+      fh2NJLa->Fill(invMLa, trackPt);
       
     } 
     
-    for(Int_t it=0; it<fListALa->GetSize(); ++it){ // loop all K0s 
+    for(Int_t it=0; it<fListALa->GetSize(); ++it){ // loop all ALa 
       
       AliAODv0* v0 = dynamic_cast<AliAODv0*>(fListALa->At(it));
       if(!v0) continue;
@@ -2120,7 +2122,7 @@ void AliAnalysisTaskJetChem::UserExec(Option_t *)
       Double_t invMALa =0;
       Double_t trackPt=0;	
       CalculateInvMass(v0, kAntiLambda, invMALa, trackPt);
-      fh2NJALa->Fill(trackPt,invMALa);
+      fh2NJALa->Fill(invMALa, trackPt);
       
     } 
     
@@ -3610,7 +3612,7 @@ Int_t AliAnalysisTaskJetChem::GetListOfV0s(TList *list, const Int_t type, const 
     //V0 and track Cuts:
    
 
-    if(fDebug>6){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
+    if(fDebug>7){if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa))){std::cout<<"AliAnalysisTaskJetChem::GetListOfV0s: invM not in selected mass window "<<std::endl;}}
  
     if(!(IsK0InvMass(invMK0s)) && !(IsLaInvMass(invMLa)) && !(IsLaInvMass(invMALa)))continue; 
     
