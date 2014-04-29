@@ -42,6 +42,9 @@ set ( SRCS
  EMCALTasks/AliAnalysisTaskEMCALPi0V2ShSh.cxx
  EMCALTasks/AliEMCalpi0ClusterEvaluationTask.cxx
  EMCALTasks/AliAnalysisTaskEMCALIsolation.cxx
+ EMCALTasks/AliAnalysisTaskEMCALMesonGGSDM.cxx
+ EMCALTasks/AliAnalysisTaskEMCALMesonGGSDMpPb.cxx
+ EMCALTasks/AliAnalysisTaskSDMGammaMC.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
