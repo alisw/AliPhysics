@@ -10,9 +10,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliEventServerPreferencesWindow+;
-#pragma link C++ class AliEventServerWindow+;
-#pragma link C++ class AliRecoServerThread+;
-#pragma link C++ class AliRecoServer+;
 #pragma link C++ class  AliQAHistNavigator+;
 #pragma link C++ class  AliQAHistViewer+;
 #pragma link C++ class  AliQADirList+;

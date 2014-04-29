@@ -70,7 +70,7 @@ list(APPEND SRCS ${GFILES})
 set ( SHLIBS  ${BINLIBDIRS} EVGEN -lEGPythia6 Pythia6 -lpythia6 AliPythia6 lhapdf THijing hijing THerwig herwig TPHIC FASTSIM microcern)
 
 set ( EINCLUDE STEER/STEER )
-set ( ELIBS ${ELIBS} MONITOR )
+set ( ELIBS ${ELIBS} MONITOR MONITORzmq )
 
 
 set ( DATE_ROOT $ENV{DATE_ROOT})
