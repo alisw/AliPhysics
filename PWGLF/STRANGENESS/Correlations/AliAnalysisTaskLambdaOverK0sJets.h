@@ -95,6 +95,7 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   void SetNSigmaPID(Float_t nSigma=3) {fNSigma=nSigma;} 
   void SetNClsTPC(Float_t nClsTPC=70.) {fDaugNClsTPC=nClsTPC;}
   //   2.  V0 candidate
+  void SetEtaCut(Bool_t etaCut=kFALSE) {fUseEtaCut=etaCut;} 
   void SetMaxY(Float_t yMax=0.5) {fYMax=yMax;} 
   void SetMinCPA(Float_t minCPA=0.998) {fMinCPA=minCPA;} 
   void SetCtau(Float_t minCtau = 0., Float_t maxCtau = 3.) {fMinCtau=minCtau;fMaxCtau=maxCtau;} 
@@ -138,10 +139,10 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   Int_t    fEndOfHijingEvent;            //  Limit natural-injected MC  particles 
   AliPIDResponse *fPIDResponse;          //  PID Response
 
-
   Float_t fMinPtDaughter;                //  Minimum transverse momentum for V0's daughters
   Float_t fMaxEtaDaughter;               //  Maximum pseudo-rapidity for V0's daughters  
   Float_t fMaxDCADaughter;               //  Maximum Distance of Closest Approach between daughters (given in sigmas)
+  Bool_t  fUseEtaCut;                    //  Swicth between rapidity or pseudo-rapidity cut
   Float_t fYMax;                         //  Maximum rapidity for V0
   Float_t fDCAToPrimVtx;                 //  Mimimum distance of closest approach of daughters to the vertex            
   Float_t fMinCPA;                       //  Minimum Cosine of the Pointing Angle to the vertex for V0  
