@@ -29,6 +29,8 @@
 
 #include "AliTwoPlusOneContainer.h"
 
+#include "TList.h"
+
 #include "AliCFContainer.h"
 #include "AliVParticle.h"
 
@@ -46,7 +48,8 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
   fTriggerPt2Max(0),
   fPtAssocMin(0),
   fPtAssocMax(0),
-  fAlpha(alpha)
+  fAlpha(alpha),
+  fMergeCount(0)
 {
   // Constructor
   //
@@ -88,7 +91,8 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) 
   fTriggerPt2Max(0),
   fPtAssocMin(0),
   fPtAssocMax(0),
-  fAlpha(0.2)
+  fAlpha(0.2),
+  fMergeCount(0)
 {
   //
   // AliTwoPlusOneContainer copy constructor
@@ -101,6 +105,8 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c) 
   fTriggerPt2Max = ((AliTwoPlusOneContainer &) c).getTriggerPt2Max();
   fPtAssocMin = ((AliTwoPlusOneContainer &) c).getPtAssocMin();
   fPtAssocMax = ((AliTwoPlusOneContainer &) c).getPtAssocMax();
+  fAlpha = ((AliTwoPlusOneContainer &) c).fAlpha;
+  fMergeCount = ((AliTwoPlusOneContainer &) c).fMergeCount;
 }
 
 //____________________________________________________________________
@@ -299,3 +305,40 @@ void AliTwoPlusOneContainer::Copy(TObject& c) const
 
 }
 
+//____________________________________________________________________
+Long64_t AliTwoPlusOneContainer::Merge(TCollection* list)
+{
+  // Merge a list of AliTwoPlusOneContainer objects with this. 
+  // Returns the number of merged objects (including this).
+
+  if (!list)
+    return 0;
+
+  if (list->IsEmpty())
+    return 1;
+
+  TIterator* iter = list->MakeIterator();
+  TObject* obj;
+
+  // collections of objects
+  TList* lists = new TList;
+
+  Int_t count = 0;
+  while ((obj = iter->Next())) {
+    
+    AliTwoPlusOneContainer* entry = dynamic_cast<AliTwoPlusOneContainer*> (obj);
+    if (entry == 0) 
+      continue;
+
+    lists->Add(entry->fTwoPlusOne);
+
+    fMergeCount += entry->fMergeCount;
+    count++;
+  }
+  
+  fTwoPlusOne->Merge(lists);
+
+  delete lists;
+  return count+1;
+
+}
