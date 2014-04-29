@@ -47,7 +47,6 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
 
     Bool_t              EventSelection(Double_t*);
     Int_t               GetListOfTracks(Int_t, TList*);
-    Int_t               GetTCAJets(TClonesArray*,TString);
     Int_t               GetListOfJets(TClonesArray*, TList*, Bool_t);
     void                FillJetContainer(TList*, THnSparseF*);
     Double_t            GetUE(TList*, TList*, Double_t,THnSparseF*);
@@ -61,9 +60,9 @@ class AliAnalysisTaskPPJetSpectra : public AliAnalysisTaskSE
 
     AliESDEvent*        fESD;
     AliAODEvent*        fAOD;
-    AliMCEvent*         fMC;
-    AliAODEvent*        fAODJets;
-    AliAODExtension*    fAODExtension;
+    AliAODEvent*        fAODIn;
+    AliAODEvent*        fAODOut;
+    AliAODExtension*    fAODExt;
     TString             fNonStdFile;
     Int_t               fDebug;
     Bool_t              fUseMC;
