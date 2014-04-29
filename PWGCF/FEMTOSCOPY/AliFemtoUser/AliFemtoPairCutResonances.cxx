@@ -69,18 +69,18 @@ bool AliFemtoPairCutResonances::Pass(const AliFemtoPair* pair){
 
   double mK0min = 0.00049;
   double mK0max = 0.00051;
-  double mK0 = 0.000497614;
+  //double mK0 = 0.000497614;
   double mRhomin = 0.000765;
   double mRhomax = 0.000785;
-  double mRho = 0.00077526;
+  //double mRho = 0.00077526;
   double mLmin = 1.095;
   double mLmax = 1.135;
-  double mL = 1.115683;
+  //double mL = 1.115683;
 
   if ((pair->Track1()->Track()->Charge() * pair->Track2()->Track()->Charge()) < 0.0) {
-    double theta1 = pair->Track1()->Track()->P().Theta();
-    double theta2 = pair->Track2()->Track()->P().Theta();
-    double dtheta = TMath::Abs(theta1 - theta2);
+    // double theta1 = pair->Track1()->Track()->P().Theta();
+    // double theta2 = pair->Track2()->Track()->P().Theta();
+    // double dtheta = TMath::Abs(theta1 - theta2);
 
     // check on ee pairs (gamma)
     double e1 = TMath::Sqrt(me*me + pair->Track1()->Track()->P().Mag2());
