@@ -14,7 +14,7 @@
 void AddHistograms (TH1 * hdest, TH1 * hsource, Float_t scale = 1. , Int_t isLinear = 0) ;
 TH1* PrintYieldAndError(TH1 * hsyst, TH1* hstat, Int_t ifunc = 0, Double_t massParticle=0.139) ;
 TH1* ReweightSpectra(TClonesArray * histos, Double_t * weights, Int_t isLinear = 0, TString suffix = "") ;
-void LoadStuff() ;
+void LoadStuff(Bool_t loadPbPb = kTRUE) ;
 void AverageAndExtrapolate(TString what);
 
 
@@ -28,7 +28,7 @@ TH1 * hK0SSyst[7]   ;
 
 void AverageAndExtrapolate () {
 
-  LoadStuff();
+  LoadStuff(0); // True PbPb, False pPb
 
   //  PrintYieldAndError(hSpectraCentr_sys[0][kMyProton][0], hSpectraCentr_stat[0][kMyProton][0], 0, mass[2]);
 
@@ -36,8 +36,9 @@ void AverageAndExtrapolate () {
   // icentr, ipart, icharge
 
   //  AverageAndExtrapolate("pions_pos_0020");
-  // AverageAndExtrapolate("pions_pos_0010");
+  //  AverageAndExtrapolate("pions_pos_0010");
   // AverageAndExtrapolate("pions_neg_0010");
+  AverageAndExtrapolate("pions_sum_0010");
   // AverageAndExtrapolate("kaons_pos_0010");
   // AverageAndExtrapolate("kaons_neg_0010");
   // AverageAndExtrapolate("protons_pos_0010");
@@ -50,7 +51,7 @@ void AverageAndExtrapolate () {
   // AverageAndExtrapolate("kaons_neg_6080");
   // AverageAndExtrapolate("protons_pos_6080");
   // AverageAndExtrapolate("protons_neg_6080");
-
+  
 }
 
 TH1* PrintYieldAndError(TH1 * hsyst, TH1* hstat, Int_t ifunc, Double_t massParticle) {
@@ -58,12 +59,14 @@ TH1* PrintYieldAndError(TH1 * hsyst, TH1* hstat, Int_t ifunc, Double_t massParti
   TF1 * f = 0;
   if (ifunc == 0) {
     f= BGBlastWave("fBlastWave",  massParticle);
+    f->SetParameters(massParticle, 0.640, 0.097, 0.73, 100); // FIXME
   }
   else if (ifunc == 1) {
     f  = fm.GetTsallis(massParticle, 0.2, 11, 800, "fTsallisPion");
   }
   
-  TH1 * h =  YieldMean(hstat, hsyst, f);
+  //  TH1 * h =  YieldMean(hstat, hsyst, f, 0.0, 100, 0.01, 0.1, "");
+  TH1 * h =  YieldMean(hstat, hsyst, f, 0.0, 100);
   //  std::cout << "H " << h << std::endl;
   std::cout << "" << std::endl;
   std::cout << h->GetBinContent(1) << ", " << h->GetBinContent(2) << ", " << h->GetBinContent(3) << std::endl;
@@ -131,9 +134,15 @@ void AddHistograms (TH1 * hdest, TH1 * hsource, Float_t scale, Int_t isLinear) {
 }
 
 
-void LoadStuff() {
-  gROOT->LoadMacro("LoadSpectraPiKPPbPb.C");
-  LoadSpectraPiKPPbPb();
+void LoadStuff(Bool_t loadPbPb) {
+  if(loadPbPb){
+    gROOT->LoadMacro("LoadSpectraPiKPPbPb.C");
+    LoadSpectraPiKPPbPb();
+  }
+  else {
+    gROOT->LoadMacro("LoadSpectraPiKPProtonLead.C");
+    LoadSpectraPiKPProtonLead();
+  }
   LoadLibs();
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/UTILS/YieldMean.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGLF/SPECTRA/UTILS/SpectraUtils.C");
@@ -195,6 +204,29 @@ void AverageAndExtrapolate(TString what) {
     arrSyst->Add(hSpectraCentr_sys [1][kMyPion][kMyPos]);
     
     Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_0010");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_0010");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[0]);
+
+    
+  }
+  if(what == "pions_sum_0010"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[0][kMyPion][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[1][kMyPion][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[0][kMyPion][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[1][kMyPion][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [0][kMyPion][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [1][kMyPion][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [0][kMyPion][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [1][kMyPion][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5, 0.5, 0.5};
     
     TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_0010");
     TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_0010");

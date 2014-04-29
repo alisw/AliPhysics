@@ -43,7 +43,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(char* title, const int& aPhiB
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
-  fEtaCorrectionsDen(0)
+  fEtaCorrectionsDen(0),
+  fphiL(0),
+  fphiT(0)
 {
 
   fphiL = (-(int)(aPhiBins/4)+0.5)*2.*TMath::Pi()/aPhiBins;
@@ -159,7 +161,9 @@ AliFemtoCorrFctnDEtaDPhi::AliFemtoCorrFctnDEtaDPhi(const AliFemtoCorrFctnDEtaDPh
   fPtCorrectionsNum(0),
   fPtCorrectionsDen(0),
   fEtaCorrectionsNum(0),
-  fEtaCorrectionsDen(0)
+  fEtaCorrectionsDen(0),
+  fphiL(0),
+  fphiT(0)
 {
   // copy constructor
   if (aCorrFctn.fDPhiDEtaNumerator)

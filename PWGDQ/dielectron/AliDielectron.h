@@ -141,6 +141,8 @@ public:
 
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
