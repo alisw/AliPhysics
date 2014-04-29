@@ -626,7 +626,7 @@ Bool_t AliAnalysisMuonUtility::SetSparseRange(AliCFGridSparse* gridSparse,
     maxVarBin = axis->FindBin(varMax);
   }
   
-  if ( axis->GetFirst() == minVarBin && axis->GetLast() == maxVarBin ) return kFALSE;
+  if ( axis->GetFirst() == minVarBin && axis->GetLast() == maxVarBin && axis->TestBit(TAxis::kAxisRange) ) return kFALSE;
   
   gridSparse->SetRangeUser(ivar, axis->GetBinCenter(minVarBin), axis->GetBinCenter(maxVarBin));
   
