@@ -67,14 +67,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
 
-  // General histos
-  TH2                        *fHistLeadingJets1PtArea;                 //!leading jet pt vs. area histogram 1
-  TH2                        *fHistLeadingJets1CorrPtArea;             //!leading jet corr pt vs. area histogram 1
-  TH2                        *fHistLeadingJets2PtArea;                 //!leading jet pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2CorrPtArea;             //!leading jet corr pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2PtAreaAcceptance;       //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistLeadingJets2CorrPtAreaAcceptance;   //!leading jet corr pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-
   // THnSparse
   THnSparse                  *fHistJets1;                              //!jet1 THnSparse
   THnSparse                  *fHistJets2;                              //!jet2 THnSparse
@@ -92,9 +84,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets2PhiEta;                        //!phi-eta distribution of jets 2
   TH2                        *fHistJets2PtArea;                        //!inclusive jet pt vs. area histogram 2
   TH2                        *fHistJets2CorrPtArea;                    //!inclusive jet pt vs. area histogram 2
-  TH2                        *fHistJets2PhiEtaAcceptance;              //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2PtAreaAcceptance;              //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2CorrPtAreaAcceptance;          //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistJets2NEFvsPt;                       //!Jet neutral energy fraction vs. jet pt 2
   TH2                        *fHistJets2CEFvsCEFPt;                    //!Jet charged energy fraction vs. charged jet pt 2
   TH2                        *fHistJets2ZvsPt;                         //!Constituent Pt over Jet Pt ratio vs. jet pt 2
