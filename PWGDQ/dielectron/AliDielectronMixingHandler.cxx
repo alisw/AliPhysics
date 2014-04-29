@@ -359,12 +359,11 @@ void AliDielectronMixingHandler::Init(const AliDielectron *diele)
   //
   // initialise event buffers
   //
-
   Int_t size=GetNumberOfBins();
 
   AliDebug(10,Form("Creating a pool array with size %d \n",size));
 
-  if(diele->DoEventProcess()) fArrPools.Expand(size);
+  if(diele && diele->DoEventProcess()) fArrPools.Expand(size);
 
   //add statics histogram if we have a histogram manager
   if (diele && diele->fHistos && diele->DoEventProcess()) {
