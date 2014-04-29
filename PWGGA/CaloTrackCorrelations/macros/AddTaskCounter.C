@@ -1,5 +1,9 @@
+// Configuration of simple task counting events
+// Gets the cross section from file pyxsec if requested
+
 //___________________________________________________________________
-AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "MB")
+AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "",
+                                        Bool_t xsOn = kFALSE)
 {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,7 +13,9 @@ AliAnalysisTaskCounter * AddTaskCounter(const TString trigger = "MB")
   //if     (kCollision=="pp"  )   counter->SetZVertexCut(10.);  //Open cut
   //else if(kCollision=="PbPb")   counter->SetZVertexCut(10.);  //Centrality defined in this range.
   
-
+  if(xsOn) counter->SwitchOnMCCrossSectionCalculation();
+  else     counter->SwitchOffMCCrossSectionCalculation();
+  
   if(trigger=="EMC8")
   {
     printf("counter trigger EMC8\n");
