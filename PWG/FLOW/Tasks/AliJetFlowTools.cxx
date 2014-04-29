@@ -1197,7 +1197,7 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     // general method to normalize all vertical slices of a th2 to unity
     // i.e. get a probability matrix
     if(!histo) {
-        printf(" > NormalizeTH2D:: fatal error, NULL pointer passed < \n");
+        printf(" > NormalizeTH2D:: NULL pointer passed, returning NULL < \n");
         return NULL;
     }
     Int_t binsX = histo->GetXaxis()->GetNbins();
@@ -2097,8 +2097,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
         if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
         if(fSymmRMS) {  // take first category as symmetric
-            aInLow = aInUp*1.5;
-            aOutLow = aOutUp*1.5;
+//            aInLow = aInUp*1.5;
+//            aOutLow = aOutUp*1.5;
+            aInLow = aInUp;
+            aOutLow = aOutUp;
             if(dInLow < dInUp) dInLow = dInUp;
             if(dOutLow < dOutUp) dOutLow = dOutUp;
         }

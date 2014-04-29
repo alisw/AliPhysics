@@ -1454,7 +1454,31 @@ void AliDielectron::SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, 
   // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("cntrd%d%d%d",varx,vary,varz);
   fPostPIDCntrdCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
-  fPostPIDCntrdCorr->GetListOfFunctions()->AddAt(fun,0);
+  if(fPostPIDCntrdCorr)  {
+    fPostPIDCntrdCorr->GetListOfFunctions()->AddAt(fun,0);
+    // check for corrections and add their variables to the fill map
+    printf("POST TPC PID CORRECTION added for centroids:  ");
+    switch(fPostPIDCntrdCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDCntrdCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDCntrdCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDCntrdCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+
+}
+//______________________________________________
+void AliDielectron::SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  fPostPIDCntrdCorr = (TH1*)fun->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDCntrdCorr)  {
     printf("POST TPC PID CORRECTION added for centroids:  ");
@@ -1479,7 +1503,30 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
   // clone temporare histogram, otherwise it will not be streamed to file!
   TString key = Form("wdth%d%d%d",varx,vary,varz);
   fPostPIDWdthCorr = (TH1*)fun->GetHistogram()->Clone(key.Data());
-  fPostPIDWdthCorr->GetListOfFunctions()->AddAt(fun,0);
+  if(fPostPIDWdthCorr)  {
+    fPostPIDWdthCorr->GetListOfFunctions()->AddAt(fun,0);
+    // check for corrections and add their variables to the fill map
+    printf("POST TPC PID CORRECTION added for widths:  ");
+    switch(fPostPIDWdthCorr->GetDimension()) {
+    case 3: printf(" %s, ",fPostPIDWdthCorr->GetZaxis()->GetName());
+    case 2: printf(" %s, ",fPostPIDWdthCorr->GetYaxis()->GetName());
+    case 1: printf(" %s ",fPostPIDWdthCorr->GetXaxis()->GetName());
+    }
+    printf("\n");
+    fUsedVars->SetBitNumber(varx, kTRUE);
+    fUsedVars->SetBitNumber(vary, kTRUE);
+    fUsedVars->SetBitNumber(varz, kTRUE);
+  }
+}
+//______________________________________________
+void AliDielectron::SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary, UInt_t varz)
+{
+  UInt_t valType[20] = {0};
+  valType[0]=varx;     valType[1]=vary;     valType[2]=varz;
+  AliDielectronHistos::StoreVariables(fun, valType);
+  // clone temporare histogram, otherwise it will not be streamed to file!
+  TString key = Form("cntrd%d%d%d",varx,vary,varz);
+  fPostPIDWdthCorr = (TH1*)fun->Clone(key.Data());
   // check for corrections and add their variables to the fill map
   if(fPostPIDWdthCorr)  {
     printf("POST TPC PID CORRECTION added for widths:  ");
@@ -1493,6 +1540,7 @@ void AliDielectron::SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary, UIn
     fUsedVars->SetBitNumber(vary, kTRUE);
     fUsedVars->SetBitNumber(varz, kTRUE);
   }
+
 }
 
 //______________________________________________

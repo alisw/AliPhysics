@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-// AliFemtoCorrFctnGammaMonitor - A correlation function that analyzes            //
-// two particle mass minvariant with various mass assumptions                     //
+// AliFemtoCorrFctnGammaMonitor - A correlation function that analyzes        //
+// two particle mass minvariant with various mass assumptions                 //
 //                                                                            //
 // Authors: Małgorzata Janik majanik@cern.ch
 //          Anna Zaborowska azaborow@cern.ch                                   //
@@ -118,13 +118,13 @@ void AliFemtoCorrFctnMinvMonitor::AddRealPair( AliFemtoPair* pair){
   double mgammamax = 0.04;
   double mK0min = 0.00049;
   double mK0max = 0.00051;
-  double mK0 = 0.000497614;
+  //double mK0 = 0.000497614;
   double mRhomin = 0.000765;
   double mRhomax = 0.000785;
-  double mRho = 0.00077526;
+  //double mRho = 0.00077526;
   double mLmin = 1.095;
   double mLmax = 1.135;
-  double mL = 1.115683;
+  //double mL = 1.115683;
 
   if ((pair->Track1()->Track()->Charge() * pair->Track2()->Track()->Charge()) < 0.0) {
 
@@ -178,7 +178,8 @@ void AliFemtoCorrFctnMinvMonitor::AddRealPair( AliFemtoPair* pair){
 }
 //____________________________
 void AliFemtoCorrFctnMinvMonitor::AddMixedPair( AliFemtoPair* pair){
-  }
+
+ }
 
 
 void AliFemtoCorrFctnMinvMonitor::WriteHistos()
