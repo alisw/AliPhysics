@@ -1784,7 +1784,7 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
   
   if(ftopoConstraint){
     if(ntcheck>0) {
-      //* Add Lc to primary vertex to improve the primary vertex resolution
+      // Add Lc to primary vertex to improve the primary vertex resolution
       primVtxCopy += Lc;
       Lc.SetProductionVertex(primVtxCopy);
     }
