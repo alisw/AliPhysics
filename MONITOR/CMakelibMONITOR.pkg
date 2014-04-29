@@ -59,7 +59,7 @@ if(DIMDIR)
   set ( CXXFLAGS  "-DALI_DIM ${CXXFLAGS}")
 endif(DIMDIR)
 
-set ( ELIBS ${ELIBS} ${ZEROMQ_LIBRARY} )
+set ( ELIBS ${ELIBS} )
 
 # this must be set in a better way
 set ( ELIBSDIR ${ELIBSDIR}  /usr/lib64)
