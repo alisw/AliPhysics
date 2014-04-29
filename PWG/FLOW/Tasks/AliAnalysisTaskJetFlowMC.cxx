@@ -113,7 +113,7 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
         fHistToyEtaPhi[i] = BookTH2F("fHistToyEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
         fHistOriginalDeltaPhi[i] = BookTH1F("fHistOriginalDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
         fHistToyDeltaPhi[i] = BookTH1F("fHistToyDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
-        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 200, 0, 200, 80, 0, .8, i);
+        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 1000, 0, 200, 200, 0, .2, i);
         // add to outputlist
         if(fFuncDiffV2[i]) fOutputList->Add(fFuncDiffV2[i]);
         if(fFuncDiffV3[i]) fOutputList->Add(fFuncDiffV3[i]);
