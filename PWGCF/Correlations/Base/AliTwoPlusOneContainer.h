@@ -44,6 +44,7 @@ class AliTwoPlusOneContainer : public TNamed
   AliTwoPlusOneContainer(const AliTwoPlusOneContainer &c);
   AliTwoPlusOneContainer& operator=(const AliTwoPlusOneContainer& c);
   virtual void Copy(TObject& c) const;
+  virtual Long64_t Merge(TCollection* list);
  
 protected:
   void DeleteContainers();
@@ -57,8 +58,9 @@ protected:
   Double_t fPtAssocMin;              //minimum energy for the associated particles
   Double_t fPtAssocMax;              //maximum energy for the associated particle
   Double_t fAlpha;                   //minimum energy for the first trigger particle
+  Int_t fMergeCount;	             // counts how many objects have been merged together
   
-  ClassDef(AliTwoPlusOneContainer, 1)  // underlying event histogram container
+  ClassDef(AliTwoPlusOneContainer, 2)  // underlying event histogram container
 };
 
 

@@ -67,6 +67,8 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   void         FillPileUpHistograms(Int_t clusterID) ;
   
+  void         FillAcceptanceHistograms();
+ 
   void         FillTrackMatchingShowerShapeControlHistograms(AliAODPWG4ParticleCorrelation  * pCandidate,
                                                              AliCaloPID * pid) ;
   
@@ -123,6 +125,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t        GetHistoNPtInConeBins()         const { return fHistoNPtInConeBins; }
   Float_t      GetHistoPtInConeMin()           const { return fHistoPtInConeMin  ; }
   Float_t      GetHistoPtInConeMax()           const { return fHistoPtInConeMax  ; }
+  
+ // For histograms in arrays, index in the array, corresponding to a particle
+  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
+                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };
   
  private:
   
@@ -279,6 +285,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhConeSumPtVSUEClusterPhiBand;              //! fhConeSumPtVSUEClusterPhiBand
   
   //MC
+
+  TH2F *   fhEtaPrimMC  [7];                      //! Pt vs Eta of generated photon
+  TH1F *   fhEPrimMC    [7];                      //! Number of generated photon vs E
+  TH1F *   fhPtPrimMCiso[7];                      //! Number of generated isolated photon vs pT
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
   TH2F *   fhPhiIsoPrompt;                        //! Phi of isolated prompt gamma
   TH2F *   fhEtaIsoPrompt;                        //! eta of isolated prompt gamma
@@ -430,7 +440,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,24)
+  ClassDef(AliAnaParticleIsolation,25)
 } ;
 
 
