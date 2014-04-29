@@ -23,7 +23,7 @@ class AliHFSystErr : public TNamed
  public:
 
   AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
-  
+    
   virtual ~AliHFSystErr();
   
   void DrawErrors(TGraphAsymmErrors *grErrFeeddown=0) const; 
@@ -79,7 +79,6 @@ class AliHFSystErr : public TNamed
     fIsRapidityScan = flag; 
     AliInfo("Settings for the pPb vs y measurement");
   }
-
 
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
@@ -143,6 +142,29 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb0100RapScan0101();
   void InitDstartoD0pi2013pPb0100RapScan0104();
   void InitDstartoD0pi2013pPb0100RapScan0408();
+    
+    
+  void InitD0toKpi2013pPb020V0A();
+  void InitD0toKpi2013pPb2040V0A();
+  void InitD0toKpi2013pPb4060V0A();
+  void InitD0toKpi2013pPb60100V0A();
+    
+  void InitD0toKpi2013pPb020ZNA();
+  void InitD0toKpi2013pPb2040ZNA();
+  void InitD0toKpi2013pPb4060ZNA();
+  void InitD0toKpi2013pPb60100ZNA();
+    
+  void InitDstartoD0pi2013pPb020V0A();
+  void InitDstartoD0pi2013pPb2040V0A();
+  void InitDstartoD0pi2013pPb4060V0A();
+  void InitDstartoD0pi2013pPb60100V0A();
+    
+  void InitDstartoD0pi2013pPb020ZNA();
+  void InitDstartoD0pi2013pPb2040ZNA();
+  void InitDstartoD0pi2013pPb4060ZNA();
+  void InitDstartoD0pi2013pPb60100ZNA();
+
+    
 
  private:
 
@@ -202,7 +224,7 @@ class AliHFSystErr : public TNamed
 
   Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
   Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
-  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement  
+  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement
  
   ClassDef(AliHFSystErr,5);  // class for systematic errors of charm hadrons
 };
