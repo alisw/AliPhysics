@@ -22,9 +22,9 @@ AliAnalysisTaskPPJetSpectra::AliAnalysisTaskPPJetSpectra()
   ,fOutputList(0)
   ,fESD(0)
   ,fAOD(0)
-  ,fMC(0)
-  ,fAODJets(0)
-  ,fAODExtension(0)
+  ,fAODIn(0)
+  ,fAODOut(0)
+  ,fAODExt(0)
   ,fNonStdFile("")
   ,fDebug(0)
   ,fUseMC(kFALSE)
@@ -84,9 +84,9 @@ AliAnalysisTaskPPJetSpectra::AliAnalysisTaskPPJetSpectra(const char* name):AliAn
   ,fOutputList(0)
   ,fESD(0)
   ,fAOD(0)
-  ,fMC(0)
-  ,fAODJets(0)
-  ,fAODExtension(0)
+  ,fAODIn(0)
+  ,fAODOut(0)
+  ,fAODExt(0)
   ,fNonStdFile("")
   ,fDebug(0)
   ,fUseMC(kFALSE)
@@ -282,7 +282,7 @@ void AliAnalysisTaskPPJetSpectra::UserCreateOutputObjects()
 }
 
 //---------------------------------------------------------------------------------------------------
-void AliAnalysisTaskPPJetSpectra::UserExec(Option_t *option)
+void AliAnalysisTaskPPJetSpectra::UserExec(Option_t */*option*/)
 {
   Double_t evtContainer[7];
   Bool_t isEventSelected = EventSelection(evtContainer);
@@ -301,44 +301,33 @@ void AliAnalysisTaskPPJetSpectra::UserExec(Option_t *option)
   TClonesArray *tcaGenBckg = 0;
 
   Int_t rJ, gJ, rB, gB;
+  if(fAODOut && !tcaRecJets && fRecJetBranch.Length() > 0) tcaRecJets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fRecJetBranch.Data()));
+  if(fAODOut && !tcaGenJets && fGenJetBranch.Length() > 0) tcaGenJets = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fGenJetBranch.Data()));
+  if(fAODOut && !tcaRecBckg && fRecBckgBranch.Length() > 0) tcaRecBckg = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fRecBckgBranch.Data()));
+  if(fAODOut && !tcaGenBckg && fGenBckgBranch.Length() > 0) tcaGenBckg = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(fGenBckgBranch.Data()));
 
-  if(fRecJetBranch.Length() > 0) {
-    tcaRecJets = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fRecJetBranch.Data()));
-    if(!tcaRecJets)                tcaRecJets = dynamic_cast<TClonesArray*>(fAODJets->GetList()->FindObject(fRecJetBranch.Data()));
-    if(!tcaRecJets)                tcaRecJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fRecJetBranch.Data()));
-    if(!tcaRecJets)                tcaRecJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fRecJetBranch.Data()));
-    if(fAODExtension&&!tcaRecJets) tcaRecJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fRecJetBranch.Data()));
-    if(tcaRecJets) rJ =  tcaRecJets->GetEntries();
-    else rJ = -1;
-  } else rJ = -1;
+  if(fAODExt) {
+    if(!tcaRecJets && fRecJetBranch.Length() > 0) tcaRecJets = dynamic_cast<TClonesArray*>(fAODExt->GetAOD()->FindListObject(fRecJetBranch.Data()));
+    if(!tcaGenJets && fGenJetBranch.Length() > 0) tcaGenJets = dynamic_cast<TClonesArray*>(fAODExt->GetAOD()->FindListObject(fGenJetBranch.Data()));
+    if(!tcaRecBckg && fRecBckgBranch.Length() > 0) tcaRecBckg = dynamic_cast<TClonesArray*>(fAODExt->GetAOD()->FindListObject(fRecBckgBranch.Data()));
+    if(!tcaGenBckg && fGenBckgBranch.Length() > 0) tcaGenBckg = dynamic_cast<TClonesArray*>(fAODExt->GetAOD()->FindListObject(fGenBckgBranch.Data()));
+  }
 
-  if(fGenJetBranch.Length() > 0) {
-    tcaGenJets = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fGenJetBranch.Data()));
-    if(!tcaGenJets)                tcaGenJets = dynamic_cast<TClonesArray*>(fAODJets->GetList()->FindObject(fGenJetBranch.Data()));
-    if(!tcaGenJets)                tcaGenJets = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fGenJetBranch.Data()));
-    if(!tcaGenJets)                tcaGenJets = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fGenJetBranch.Data()));
-    if(fAODExtension&&!tcaGenJets) tcaGenJets = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fGenJetBranch.Data()));
-    if(tcaGenJets) gJ =  tcaGenJets->GetEntries();
-    else gJ = -1;
-  } else gJ = -1;
+  if(fAODIn) {
+    if(!tcaRecJets && fRecJetBranch.Length() > 0) tcaRecJets = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fRecJetBranch.Data()));
+    if(!tcaGenJets && fGenJetBranch.Length() > 0) tcaGenJets = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fGenJetBranch.Data()));
+    if(!tcaRecBckg && fRecBckgBranch.Length() > 0) tcaRecBckg = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fRecBckgBranch.Data()));
+    if(!tcaGenBckg && fGenBckgBranch.Length() > 0) tcaGenBckg = dynamic_cast<TClonesArray*>(fAODIn->FindListObject(fGenBckgBranch.Data()));
+  }
 
-  if(fRecBckgBranch.Length() > 0) {
-    tcaRecBckg = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fRecBckgBranch.Data()));
-    if(!tcaRecBckg)                tcaRecBckg = dynamic_cast<TClonesArray*>(fAODJets->GetList()->FindObject(fRecBckgBranch.Data()));
-    if(!tcaRecBckg)                tcaRecBckg = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fRecBckgBranch.Data()));
-    if(!tcaRecBckg)                tcaRecBckg = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fRecBckgBranch.Data()));
-    if(fAODExtension&&!tcaRecBckg) tcaRecBckg = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fRecBckgBranch.Data()));
-    rB =  tcaRecBckg->GetEntries();
-  } else rB = -1;
-
-  if(fGenBckgBranch.Length() > 0) {
-    tcaGenBckg = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(fGenBckgBranch.Data()));
-    if(!tcaGenBckg)                tcaGenBckg = dynamic_cast<TClonesArray*>(fAODJets->GetList()->FindObject(fGenBckgBranch.Data()));
-    if(!tcaGenBckg)                tcaGenBckg = dynamic_cast<TClonesArray*>(fAOD->FindListObject(fGenBckgBranch.Data()));
-    if(!tcaGenBckg)                tcaGenBckg = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(fGenBckgBranch.Data()));
-    if(fAODExtension&&!tcaGenBckg) tcaGenBckg = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(fGenBckgBranch.Data()));
-    gB =  tcaGenBckg->GetEntries();
-  } else gB = -1;
+  if(!tcaRecJets) rJ = -1; 
+  else rJ = tcaRecJets->GetEntries();
+  if(!tcaGenJets) gJ = -1; 
+  else gJ = tcaGenJets->GetEntries();
+  if(!tcaRecBckg) rB = -1; 
+  else rB = tcaRecBckg->GetEntries();
+  if(!tcaGenBckg) gB = -1; 
+  else gB = tcaGenBckg->GetEntries();
 
   TList jetRecListNoCut; 
   TList jetGenListNoCut; 
@@ -493,44 +482,26 @@ Bool_t AliAnalysisTaskPPJetSpectra::EventSelection(Double_t evtContainer[6]) {
   Bool_t isTriggerSelected = inputHandler->IsEventSelected() & fEvtSelectionMask;
   evtContainer[0] = (Int_t)isTriggerSelected;
 
-  fESD = (AliESDEvent*)InputEvent();
+  fESD = dynamic_cast<AliESDEvent*>(InputEvent());
   if(!fESD && fDebug > 2) 
     printf("%s: %d No ESD event found\n",(char*)__FILE__, __LINE__);
 
-  fMC = MCEvent();
-  if(!fMC && fDebug > 2) 
-    printf("%s: %d No MC event found\n", (char*)__FILE__, __LINE__);
+  if(!fESD) fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+  fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
 
+  if(!fESD)fAOD = fAODIn;
+  else fAOD = fAODOut;
+
+  if(fNonStdFile.Length()!=0) {
+    AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+    fAODExt = (aodH?aodH->GetExtension(fNonStdFile.Data()):0);
+  }
 
   TObject* handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-  if( handler && handler->InheritsFrom("AliAODInputHandler") ) {
-    fAOD  =  ((AliAODInputHandler*)handler)->GetEvent();
-    handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-    fAODJets = ((AliAODHandler*)handler)->GetAOD();
-    if (fDebug > 1)  
-      Printf("%s:%d AOD event from input", (char*)__FILE__,__LINE__);
-  }
-  else {
-    handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
-    if( handler && handler->InheritsFrom("AliAODHandler") ) {
-      fAOD = ((AliAODHandler*)handler)->GetAOD();
-      fAODJets = fAOD;
-      if (fDebug > 1)  
-        Printf("%s:%d AOD event from output", (char*)__FILE__,__LINE__);
-    }    
-  }
-  
-  if(!fAODJets)
-  {
-    if(fDebug > 1) 
-      printf("%s: %d No AOD found\n",(char*)__FILE__,__LINE__);
-    return kFALSE;
-  }
-  handler = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
   Float_t centrality = -1;
   if(fEventClass > 0)
   {
-    if(handler->InheritsFrom("AliAODHandler")) centrality = fAOD->GetHeader()->GetCentrality();
+    if(handler->InheritsFrom("AliAODHandler")) centrality = fAODIn->GetHeader()->GetCentrality();
     else if(fESD) centrality = fESD->GetCentrality()->GetCentralityPercentile("V0M");
     else centrality = AliAnalysisHelperJetTasks::EventClass();
   }
@@ -620,6 +591,9 @@ Int_t AliAnalysisTaskPPJetSpectra::GetListOfTracks(Int_t trackType, TList *track
   }
   else {
     TClonesArray *tca=dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(!tca) {
+      if(fDebug > 2) printf("no branch %s\n", AliAODMCParticle::StdBranchName());
+    }
     for(Int_t i = 0; i < tca->GetEntries(); i++) {
       AliAODMCParticle *particle = (AliAODMCParticle*)tca->At(i);
       if(!particle) continue;
@@ -636,22 +610,6 @@ Int_t AliAnalysisTaskPPJetSpectra::GetListOfTracks(Int_t trackType, TList *track
   }
   trackList->Sort();
   return trackList->GetEntries();
-}
-
-//---------------------------------------------------------------------------------------------------
-Int_t AliAnalysisTaskPPJetSpectra::GetTCAJets(TClonesArray* jca, TString branch) {
-  if( branch.Length() == 0) {
-    if(fDebug) printf("%s: %d No branch \"%s\" selected\n", (char*)__FILE__,__LINE__, branch.Data() );
-    return 0;
-  }
-
-  jca = dynamic_cast<TClonesArray*>(fAODJets->FindListObject(branch.Data()));
-  if(!jca)                jca = dynamic_cast<TClonesArray*>(fAODJets->GetList()->FindObject(branch.Data()));
-  if(!jca)                jca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(branch.Data()));
-  if(!jca)                jca = dynamic_cast<TClonesArray*>(fAOD->GetList()->FindObject(branch.Data()));
-  if(fAODExtension&&!jca) jca = dynamic_cast<TClonesArray*>(fAODExtension->GetAOD()->FindListObject(branch.Data()));
-  return jca->GetEntries();
-
 }
 
 //---------------------------------------------------------------------------------------------------
