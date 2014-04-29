@@ -4,7 +4,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    Float_t  maxCen    = 40.,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
-							    Bool_t   doQA      = kTRUE){
+							    Bool_t   doQA      = kTRUE,
+							    Bool_t   useEtaCut = kFALSE){
 
 
 
@@ -39,6 +40,7 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetTriggerEta(etaMaxTrig);
   task->SetCheckIDTrig(checkIDTrig);
   // V0 candidates
+  task->SetEtaCut(useEtaCut);
   task->SetMaxY(rapMaxV0);
   task->SetMaxDCADaughter(dcaDaug); // Added to perform systematics
   task->SetDCAToPrimVtx(dca2PrmVtx); // Added to perform systematics
