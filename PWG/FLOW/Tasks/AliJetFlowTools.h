@@ -242,7 +242,7 @@ class AliJetFlowTools {
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., Form("#it{R} = 0.%i #it{k}_{T}^{-1} charged jets", r));
+            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k} charged jets, |#eta_{jet}|<%.1f", r, .9-r/10.));
             t->SetTextColor(kBlack);
             t->SetTextFont(42);
             t->Draw("same");
