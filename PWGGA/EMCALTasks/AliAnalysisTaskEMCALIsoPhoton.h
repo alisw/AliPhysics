@@ -48,6 +48,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
   void                   LoopOnCells();
+  bool                   IsExotic(AliVCluster *c);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -154,6 +155,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
   TH1F        *fEmcClusETM1;      //!emcal track matched cluster energy (TracDx,z method)
   TH1F        *fEmcClusETM2;      //!emcal track matched cluster energy (track->GetEMCALcluster() method)
+  TH1F        *fEmcClusNotExo;    //!cluster energy (exotics removed)
   TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
   TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
   TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
