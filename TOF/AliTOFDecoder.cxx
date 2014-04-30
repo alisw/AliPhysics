@@ -948,9 +948,10 @@ void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRaw
  currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : (Short_t)(-1);
  Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
  currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : (Short_t)(-1);
- AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh->GetEventID2(), currentMiniEventID));
  if (!cdh && !cdhV3)
    AliWarning("CDH not valid: deltaBunchID not reliable ");
+ else
+   AliDebug(1, Form("EvID1 = %d, EvID2 = %d, currentMiniEventID = %d", currentEventID1, cdh ? cdh->GetEventID2() : cdhV3->GetEventID2(), currentMiniEventID));
 
  AliInfo("Printing raw data stack for current equipment\n");
  AliInfo("  wordN  -  Hex Word "); 
