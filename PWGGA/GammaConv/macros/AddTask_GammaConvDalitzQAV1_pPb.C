@@ -262,8 +262,8 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	
 }  else if ( trainConfig == 16 ) {
   
-	ConvCutarray[0] = "8000012002093603007200000000"; ElecCutarray[0] = "9047540073310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011  + 4 ITScls no Any
-	
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083300262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  +  No psipair
+		
 }  else if ( trainConfig == 17 ) {
   
 	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth
@@ -335,7 +335,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 } else if ( trainConfig  == 34  ) {
   
 	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
-}
+} 
 
 
 
@@ -368,7 +368,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
           analysisCuts[i] = new AliConversionCuts();
       
 
-	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
+	  if (  ( trainConfig >= 1 && trainConfig <= 6 ) || trainConfig == 9 ||  trainConfig == 11  || trainConfig == 13 || trainConfig == 14 || trainConfig == 16 || trainConfig == 17 || trainConfig == 18 || trainConfig == 19 || trainConfig == 20 || trainConfig == 21 || trainConfig == 22 || trainConfig == 23 ||
 		  trainConfig == 28 || trainConfig == 29 || trainConfig == 30 || trainConfig == 31 || trainConfig == 32 || trainConfig == 33 )
 	  ){
 	    
@@ -379,7 +379,7 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
                analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
 	      }
 	    }
-	  } else if ( trainConfig == 7 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12  || trainConfig == 15 || trainConfig == 16 ){
+	  } else if ( trainConfig == 7 || trainConfig == 8 || trainConfig == 10 || trainConfig == 12  || trainConfig == 15 ){
 	    
 	      if (doWeighting){
 		  analysisCuts[i]->SetUseReweightingWithHistogramFromFile(kTRUE, kTRUE, kFALSE, fileNameInputForWeighting, "Pi0_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "Eta_Hijing_LHC13e7_addSig_pPb_5023GeV_MBV0A", "","Pi0_Fit_Data_pPb_5023GeV_MBV0A","Eta_Fit_Data_pPb_5023GeV_MBV0A");
