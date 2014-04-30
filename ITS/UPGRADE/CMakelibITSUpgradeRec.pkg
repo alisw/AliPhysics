@@ -63,5 +63,4 @@ set ( DHDR ITSUpgradeRecLinkDef.h)
 
 set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase)
 
-set ( EXPORT UPGRADE/AliITSUTrackerSAaux.h )
 # set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
