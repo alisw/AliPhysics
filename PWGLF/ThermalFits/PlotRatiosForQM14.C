@@ -16,6 +16,7 @@
 #include "TDatabasePDG.h"
 #include "TH2F.h"
 #include "TSystem.h"
+#include "TPaveText.h"
 
 
 
@@ -32,8 +33,10 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
 TH1F * GetHistoYields(TClonesArray * arr, Int_t system, Float_t energy, TString centrality, const char * histotitle) ;
 void   PrepareThermalModelsInputFiles(TClonesArray * arr, Int_t system, Float_t energy, TString centrality, Bool_t separateCharges=0) ;
 void SetStyle(Bool_t graypalette=0) ;
-void NewLegendQM() ;
+void NewLegendQM(Double_t x1, Double_t y1, Double_t x2, Double_t y2) ;
 void DrawRatio(TString what);
+void DrawYield(TString what);
+
 void DrawFrame(Bool_t yields = 0) ;
 void LoadArrays() ;
 //void AddLabel(Float_t x, Float_t y, TString text);
@@ -48,17 +51,27 @@ const Int_t nratio = 10;
 
 Int_t num  [nratio]            = {kPDGK  , kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron , kPDGHE3      , kPDGHyperTriton , kPDGPhi , kPDGKStar};
 Int_t denum[nratio]            = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGProton   , kPDGDeuteron , kPDGPi          , kPDGK   , kPDGK};
-Int_t isSum[nratio]            = {1      , 1          ,  1         ,   1     , 1         , 0            , 0            , 1               , 1       , 1      };
-const char * ratiosLabels[]          = {"K/^{}#pi", 
-                                        "p/^{}#pi",   
-                                        "#Lambda /^{}K_{s}^{0}", 
-                                        "#Xi/^{}#pi",
-                                        "#Omega/^{}#pi",
-                                        "d/^{}p",
-                                        "^{3}He^{}/d",
-                                        "{}^{3}_{#Lambda}H^{}/#pi",
-                                        "#phi /^{}K",
-                                        "K*/^{}K",};
+Int_t isSum[nratio]            = {1      , 1          ,  1         ,   1     , 1         , 1            , 0            , 1               , 1       , 1      };
+// const char * ratiosLabels[]          = {"K/^{}#pi", 
+//                                         "p/^{}#pi",   
+//                                         "#Lambda /^{}K_{s}^{0}", 
+//                                         "#Xi/^{}#pi",
+//                                         "#Omega/^{}#pi",
+//                                         "d/^{}p",
+//                                         "^{3}He^{}/d",
+//                                         "{}^{3}_{#Lambda}H^{}/#pi",
+//                                         "#phi /^{}K",
+//                                         "K*/^{}K",};
+const char * ratiosLabels[]          = {"#frac{K^{+}+K^{-}}{#pi^{+}+#pi^{-}}", 
+                                        "#frac{p+#bar{p}}{#pi^{+}+#pi^{-}}", 
+                                        "#frac{2#Lambda}{K_{s}^{0}}", 
+                                        "#frac{#Xi^{-}+#Xi^{+}}{#pi^{+}+#pi^{-}}",
+                                        "#frac{#Omega^{-}+#Omega^{+}}{#pi^{+}+#pi^{-}}",
+                                        "#frac{d}{p+#bar{p}}",
+                                        "#frac{{}^{3}He }{d}",
+                                        "#frac{{}^{3}_{#Lambda}H+{}^{3}_{#Lambda}#bar{H} }{#pi^{+}+#pi^{-}}",
+                                        "#frac{#phi}{K^{+}+K^{-}}",
+                                        "#frac{K*+#bar{K}*}{K^{+}+K^{-}}",};
 static const Double_t scale[]  = {1      , 3          ,  0.5       ,  30     ,  250      , 50           , 100          , 4e5             , 2       , 1      };
 //static const Double_t scale[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,};
 
@@ -69,7 +82,7 @@ static const Double_t scale[]  = {1      , 3          ,  0.5       ,  30     ,  
 const Int_t markers[]    = {kFullCircle, kFullSquare,kOpenCircle,kOpenSquare,kOpenDiamond,kOpenCross,kFullCross,kFullDiamond,kFullStar,kOpenStar,0};
 //
 
-Double_t maxy = 0.4;
+Double_t maxy = 0.5;
 
 // Data arrays;
 TClonesArray *arrPbPb=0, *arrpp7=0, *arrpPb=0, * arrpp276=0, * arrpp900=0, * arrThermus=0;
@@ -122,25 +135,13 @@ TClonesArray * PlotRatiosForQM14() {
   //  c1->SetLogy();
 
   // CENTRAL
-  DrawRatio("allpp");  
-  //  DrawRatio("frame");
-  
-  //  DrawRatio("PbPb_0010");
-  // DrawRatio("PbPbSTAR");
-  // DrawRatio("PbPbPHENIX");
-  // DrawRatio("PbPbBRAHMS");
-  //    DrawRatio("PbPb_6080");
-  
-    //  DrawRatio("pp7");
-  //  DrawRatio("pPb0005");
-    //  DrawRatio("pp276");
-    //  DrawRatio("pp900");
-  // DrawRatio("ppSTAR");
-  // DrawRatio("ppPHENIX");
-  //  DrawRatio("ppBRAHMS");
-  
-  NewLegendQM();
-
+  //  DrawRatio("allpp");  
+  //  DrawRatio("PbPbWithPP7TeV");
+  //  DrawRatio("allsyst");
+  //  DrawRatio("PbPb6080andpPb0005");
+  //  DrawRatio("pp_vsRHIC");
+  //  DrawRatio("PbPb_vsRHIC");
+  //  DrawRatio("aliceall");
   return 0;
   // 
   TCanvas * c2 = new TCanvas("Yields", "Yields", 1400, 600);
@@ -148,7 +149,7 @@ TClonesArray * PlotRatiosForQM14() {
 
   GetHistoYields(arrPbPb,       AliParticleYield::kCSPbPb, 2760, "V0M0010", "Pb-Pb, #sqrt{s_{NN}} = 2.76 TeV, 0-10%")->Draw();
   GetHistoYields(arrThermus,       AliParticleYield::kCSPbPb, 2760, "V0M0010", "Thermus")->Draw("same");
-  NewLegendQM();
+  //  NewLegendQM();
   return arrPbPb;
 }
 
@@ -195,14 +196,21 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
             // If the sum was requested, try to recover it!
             if(isSum[iratio-1]) { 
               std::cout << "  Looking for " <<  -num[iratio-1] <<std::endl;
-              AliParticleYield * part1_bar = AliParticleYield::FindParticle(arr, -num[iratio-1], system, energy, centrality,0);
-              if(part1 && part1_bar) {
-                std::cout << "Adding " << part1_bar->GetPartName() << " " << part1->GetPartName() << std::endl;            
-                part1 = AliParticleYield::Add(part1, part1_bar);
-                
-              } else if (TDatabasePDG::Instance()->GetParticle(-num[iratio-1])){ // Before scaling x2 check it it makes sense (antiparticle exists) 
-                std::cout << "WARNING: Sum requested but not found, scaling x2 " << part1->GetName() << std::endl;
-                part1->Scale(2);
+              // If it's lambda and ALICE, use 2L instead of L + Lbar // FIXME: do the same for deuterons?
+              if((num[iratio-1] == kPDGLambda || num[iratio-1] == kPDGDeuteron) && energy > 300) {
+                std::cout << "   It's Lambda or deuteron ALICE: Scaling x2 " << std::endl;
+                part1->Print();
+                part1->Scale(2.);
+              } else {
+                AliParticleYield * part1_bar = AliParticleYield::FindParticle(arr, -num[iratio-1], system, energy, centrality,0);
+                if(part1 && part1_bar) {
+                  std::cout << "Adding " << part1_bar->GetPartName() << " " << part1->GetPartName() << std::endl;            
+                  part1 = AliParticleYield::Add(part1, part1_bar);
+                  
+                } else if (TDatabasePDG::Instance()->GetParticle(-num[iratio-1])){ // Before scaling x2 check it it makes sense (antiparticle exists) 
+                  std::cout << "WARNING: Sum requested but not found, scaling x2 " << part1->GetName() << std::endl;
+                  part1->Scale(2);
+                }
               }
             } else if(part1) { // if we are here, it means the sum was *not* requested (isSum=0), but we found something with (!isSum) = 1
               // if the not sum was requested, but the sum is found, divide by 2 so that it is comparable
@@ -213,6 +221,8 @@ TH1F * GetHistoRatios(TClonesArray * arr, Int_t system, Float_t energy, TString 
         }
  
       }
+
+
       std::cout << "  Looking for " <<  denum[iratio-1] << " ("<<isSum[iratio-1]<<")"<<std::endl;
       AliParticleYield * part2 = AliParticleYield::FindParticle(arr, denum[iratio-1], system, energy, centrality,isSum[iratio-1]);
       if(part2) {
@@ -468,16 +478,19 @@ void SetStyle(Bool_t graypalette) {
   gStyle->SetEndErrorSize(5);
 }
 
-void NewLegendQM() {
+void NewLegendQM(Double_t x1, Double_t y1, Double_t x2, Double_t y2) {
 
   const char * style = "lp";
   const char ** labels=0;
   //  Bool_t beautify=kFALSE;
   Bool_t useTitle=kTRUE;
-  
-  TLegend * l = new TLegend(  0.0985145, 0.733119, 0.301016, 0.869775);
-  l->SetFillColor(kWhite);
 
+  TLegend * l = new TLegend(x1, y1, x2, y2);
+  l->SetFillColor(kWhite);
+  l->SetTextFont(43);
+  l->SetTextSize(25);
+  l->SetBorderSize(1);
+  l->SetLineWidth(1);
   // const Int_t markers[] = {20,24,21,25,23,28,33,20,24,21,25,23,28,33};
   // const Int_t colors[]  = {1,2,3,4,6,7,8,9,10,11,1,2,3,4,6,7,8,9,10};
 
@@ -517,6 +530,16 @@ void NewLegendQM() {
 }
 
 
+void DrawYield(TString what) {
+  // This is used to simplify the code above
+  // In order to draw syst error bars, we need to convert to graphs the syst errors histos
+  if (what == "frame" ) {
+    correlatedUnc = correlatedUncZero;
+    DrawFrame(1);
+  }
+
+}
+
 void DrawRatio(TString what) {
   // This is used to simplify the code above
   // In order to draw syst error bars, we need to convert to graphs the syst errors histos
@@ -534,11 +557,6 @@ void DrawRatio(TString what) {
   
 
   if (what == "frame" ) {
-    // This is a bit of an hack: since the particle labels come
-    // directly from AliPArticleYield, and since the PbPb sample is
-    // the only one where we have all the ratios, we draw the PbPb
-    // ratio here and then we set lines and markers to white. We also
-    // add the "NoLegend" flag, so that it does not show up in the legend 
     correlatedUnc = correlatedUncZero;
     DrawFrame();
     // TH1 * h = GetHistoRatios(arrPbPb,       AliParticleYield::kCSPbPb, 2760, "V0M0010", "NoLegend", kWhite);
@@ -553,17 +571,35 @@ void DrawRatio(TString what) {
       if(exp > 2) {
         //        TLatex * scaleLabel = new TLatex(iratio+1+0.2,maxy*1.01, Form("#times %0.0f 10^{%0.0f}", man, exp));
         TLatex * scaleLabel = new TLatex(iratio+1+0.2,0.005, Form("#times %0.0f 10^{%0.0f}", man, exp));
+        scaleLabel->SetTextFont(43);
+        scaleLabel->SetTextSize(20);
         scaleLabel->Draw();
       } else {
-        TLatex * scaleLabel = new TLatex(iratio+1+0.2,0.005, Form("#times %g", scale[iratio]));
+        Double_t shift = scale[iratio] < 50 ? 0.3 : 0.2;
+        TLatex * scaleLabel = new TLatex(iratio+1+shift,  0.005, Form("#times %g", scale[iratio]));
+        scaleLabel->SetTextFont(43);
+        scaleLabel->SetTextSize(20);
         scaleLabel->Draw();
       }      
     }
 
-    TLatex *   tex = new TLatex(8.8,0.037,"ALICE Preliminary");
-    tex->SetTextFont(42);
-    tex->SetLineWidth(2);
-    tex->Draw();
+    
+    TPaveText *pt = new TPaveText(    0.169679, 0.842881, 0.378514, 0.929595,"brNDC");
+    pt->SetBorderSize(0);
+    pt->SetFillColor(0);
+    pt->SetLineWidth(1);
+    pt->SetTextFont(43);
+    pt->SetTextSize(23);
+    pt->AddText("ALICE Preliminary");
+    pt->Draw();
+    // pt = new TPaveText(    0.167671, 0.815206, 0.375502, 0.865021,"brNDC");
+    // pt->SetBorderSize(0);
+    // pt->SetFillColor(0);
+    // pt->SetLineWidth(1);
+    // pt->SetTextFont(43);
+    // pt->SetTextSize(20);
+    // pt->AddText("particle+antiparticle");
+    // pt->Draw();
 
     gPad->SetGridx();
 
@@ -571,7 +607,7 @@ void DrawRatio(TString what) {
   else if (what == "PbPb_0010") {
     array = arrPbPb;
     system = 2; energy = 2760.; centrality = "V0M0010";
-    label = "Pb-Pb, #sqrt{s}{}_{NN} = 2.76 TeV, 0-10%";
+    label = "Pb-Pb, #sqrt{s}_{NN} = 2.76 TeV, 0-10%";
     color  = kRed+1;
     marker = kFullCircle;
     shift =  0;
@@ -582,7 +618,7 @@ void DrawRatio(TString what) {
   else if (what == "PbPb_6080") {
     array = arrPbPb;
     system = 2; energy = 2760.; centrality = "V0M6080";
-    label = "Pb-Pb, #sqrt{s_{NN}} = 2.76 TeV, 60-80%";
+    label = "Pb-Pb, #sqrt{s}_{NN} = 2.76 TeV, 60-80%";
     color  = kBlue+1;
     marker = kFullCircle;
     shift =  0.0;
@@ -618,7 +654,7 @@ void DrawRatio(TString what) {
   else if (what == "pPb0005") {
     array = arrpPb;
     system = 1; energy = 5020.; centrality = "V0A0005";
-    label = "p-Pb, #sqrt{s_{NN}} = 5.02 TeV, V0A 0-5%";
+    label = "p-Pb, #sqrt{s}_{NN} = 5.02 TeV, V0A 0-5%";
     color  = kBlack;
     marker = kFullCircle;
     shift = -0.2;
@@ -627,7 +663,7 @@ void DrawRatio(TString what) {
   else if (what == "PbPbSTAR") {
     array = arrSTARPbPb;
     system = 2; energy = 200.; centrality = "0005";
-    label = "STAR, Au-Au, #sqrt{s_{NN}} = 0.2 TeV, 0-5%";
+    label = "STAR, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenStar;
     shift = +0.2;
@@ -636,7 +672,7 @@ void DrawRatio(TString what) {
   else if (what == "PbPbPHENIX") {
     array = arrPHENIXPbPb;
     system = 2; energy = 200.; centrality = "0005";
-    label = "PHENIX, Au-Au, #sqrt{s_{NN}} = 0.2 TeV, 0-5%";
+    label = "PHENIX, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenSquare;
     shift = -0.15;
@@ -645,7 +681,7 @@ void DrawRatio(TString what) {
   else if (what == "PbPbBRAHMS") {
     array = arrBRAHMSPbPb;
     system = 2; energy = 200.; centrality = "0010";
-    label = "BRAHMS, Au-Au, #sqrt{s_{NN}} = 0.2 TeV, 0-10%";
+    label = "BRAHMS, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-10%";
     color  = kBlack;
     marker = kOpenCross;
     shift = -0.3;
@@ -673,17 +709,109 @@ void DrawRatio(TString what) {
   else if (what == "allpp"){
     DrawRatio("frame");
     DrawRatio("pp7");
+    DrawRatio("pp276");
+    DrawRatio("pp900");
     array =0;
-    // DrawRatio("pp276");
-    // DrawRatio("pp900");
-    // myCan->Print("Ratios_pponly.eps");
-    // gSystem->Exec("epstopdf Ratios_pponly.eps Ratios_pponly.pdf");
-    // gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_pponly.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+    NewLegendQM(0.62249, 0.635734, 0.910643, 0.94673);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_pponly.eps");
+    gSystem->Exec("epstopdf Ratios_pponly.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_pponly.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
   }
+  else if (what == "PbPbWithPP7TeV"){
+    
+    DrawRatio("frame");
+    DrawRatio("PbPb_0010");
+    DrawRatio("pp7");
+    array =0;
+
+    NewLegendQM(0.413655, 0.748094, 0.910643, 0.948736);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_withpp7tev.eps");
+    gSystem->Exec("epstopdf Ratios_withpp7tev.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_withpp7tev.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+  } else if(what == "allsyst") {
+
+    DrawRatio("frame");
+    DrawRatio("PbPb_0010");
+    DrawRatio("pp7");
+    DrawRatio("pPb0005");
+    array =0;
+
+    NewLegendQM(0.413655, 0.641754, 0.910643, 0.948736);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_allsystems.eps");
+    gSystem->Exec("epstopdf Ratios_allsystems.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_allsystems.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+
+  }else if(what =="PbPb6080andpPb0005") {
+    DrawRatio("frame");
+    DrawRatio("PbPb_6080");
+    DrawRatio("pPb0005");
+    array=0;
+
+
+    NewLegendQM(0.413655, 0.72803, 0.910643, 0.948736);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_6080vspPb.eps");
+    gSystem->Exec("epstopdf Ratios_6080vspPb.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_6080vspPb.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+    
+    
+  }else if(what =="pp_vsRHIC") {
+    DrawRatio("frame");
+    DrawRatio("pp7");
+    DrawRatio("ppSTAR");
+    DrawRatio("ppPHENIX");
+    array=0;
+
+    NewLegendQM(0.413655, 0.677869, 0.910643, 0.948736);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_vsRHIC_pp.eps");
+    gSystem->Exec("epstopdf Ratios_vsRHIC_pp.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_vsRHIC_pp.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+        
+  } else if (what =="PbPb_vsRHIC") {
+    DrawRatio("frame");
+    DrawRatio("PbPb_0010");
+    DrawRatio("PbPbSTAR");
+    DrawRatio("PbPbPHENIX");
+    DrawRatio("PbPbBRAHMS");
+    array = 0;
+
+
+    NewLegendQM(0.380522, 0.589587, 0.975904, 0.936697);
+
+    myCan->Update();
+    gSystem->ProcessEvents();
+    myCan->Print("Ratios_vsRHIC_PbPb.eps");
+    gSystem->Exec("epstopdf Ratios_vsRHIC_PbPb.eps");
+    gSystem->Exec("if [ \"$USER\" = \"mfloris\" ]; then cp Ratios_vsRHIC_PbPb.{eps,pdf} /Users/mfloris/Documents/PapersNTalks/ALICE/ThermalFits/img/; fi ");
+  } else if (what == "aliceall") {
+    DrawRatio("frame");
+    DrawRatio("PbPb_0010");
+    DrawRatio("PbPb_6080");
+    DrawRatio("pPb0005");
+    DrawRatio("pp7");
+    DrawRatio("pp276");
+    DrawRatio("pp900");
+  }
+
 
 
   else {
     std::cout << "Unknown ratio " << what.Data() << std::endl;
+    return;
   }
 
   if(!correlatedUnc) {
@@ -707,11 +835,12 @@ void DrawFrame(Bool_t isYields) {
   myCan->Draw();
   myCan->cd();
   // Set the Pads
-  TPad    *myPadLabel = new TPad("myPadLabel","myPadLabel",0.0,0.92,1.0,1.0);
+  Double_t boundaryLabels = 0.85;//0.92;
+  TPad    *myPadLabel = new TPad("myPadLabel","myPadLabel",0.0, boundaryLabels,1.0,1.0);
   myPadSetUp(myPadLabel);
   myPadLabel->Draw();
 
-  TPad    *myPadHisto = new TPad("myPadHisto","myPadHisto",0.0,isYields ? 0.25 : 0.05 ,1.0,0.92,0);
+  TPad    *myPadHisto = new TPad("myPadHisto","myPadHisto",0.0,isYields ? 0.25 : 0.05 ,1.0, boundaryLabels,0);
   myPadSetUp(myPadHisto);
   myPadHisto->Draw();
 
@@ -721,15 +850,22 @@ void DrawFrame(Bool_t isYields) {
 
   myPadLabel->cd();
 
-  double xLabelPosition[nratio] = {0.124498, 0.211847, 0.295181, 0.39, 0.477912, 0.566265, 0.640562, 0.727912, 0.825301, 0.910643 }; 
-  double yLabelPosition     = 0.39;
+  double xLabelPosition[nratio] = {0.124498, 0.211847, 0.31, 0.38, 0.465, 0.575, 0.644, 0.72, 0.82, 0.905 }; 
+  double yLabelPosition     = 0.40;
 
   // labels
   for(Int_t iratio = 0; iratio < nratio; iratio++){
     TLatex *myRatio = new TLatex(xLabelPosition[iratio],yLabelPosition,ratiosLabels[iratio]);
-    myLatexDraw(myRatio,0.5);    
+    myLatexDraw(myRatio,20);    
   }
-  
+  // Xi's and Omega's bar (there was no way to convince root to draw it properly)
+  TLine *line = new TLine(0.408,0.75,0.418,0.75);
+  line->SetLineWidth(2);
+  line->Draw();
+  line = new TLine(0.498,0.75,0.513,0.75);
+  line->SetLineWidth(2);
+  line->Draw();
+
   
   if(isYields) {
     myPadStdDev->cd();
@@ -757,7 +893,7 @@ void DrawFrame(Bool_t isYields) {
   //  myPadHisto->SetLogy();
   myPadHisto->SetTicks(1,1);
   
-  TH2F *myBlankHisto = new TH2F("NoLegend","NoLegend",nratio,1,nratio+1,10,-0.01,maxy);
+  TH2F *myBlankHisto = new TH2F("NoLegend","NoLegend",nratio,1,nratio+1,10, isYields ? -0.01 : 0, maxy+0.01  );
   myBlankHisto->GetXaxis()->SetLabelFont(43); // precision 3: size will be in pixels
   myBlankHisto->GetYaxis()->SetLabelFont(43);
   myBlankHisto->GetYaxis()->SetTitleFont(43);
@@ -767,7 +903,7 @@ void DrawFrame(Bool_t isYields) {
   myBlankHisto->SetMinimum(0);
   myBlankHisto->SetNdivisions(10,"x");
   myBlankHisto->SetNdivisions(505,"y");
-  myBlankHisto->SetYTitle("d#it{N}/d#it{y}");
+  if(isYields) myBlankHisto->SetYTitle("d#it{N}/d#it{y}");
   myBlankHisto->SetLabelOffset(0.012,"xy");
   myBlankHisto->SetTitleOffset(1,"y");
   myBlankHisto->Draw();
@@ -775,8 +911,9 @@ void DrawFrame(Bool_t isYields) {
 }
 
 void myLatexDraw(TLatex *currentLatex, Float_t currentSize, Int_t currentColor){
-  currentLatex->SetTextSize(currentSize);
-  currentLatex->SetTextAngle(0);
+  currentLatex->SetTextFont(43);
+  currentLatex->SetTextSizePixels(Int_t(currentSize));
+  //  currentLatex->SetTextAngle(0);
   currentLatex->Draw();
   return;
 }
@@ -801,3 +938,4 @@ void myPadSetUp(TPad *currentPad){
   currentPad->SetBottomMargin(0.02);
   return;
 }
+
