@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Author : Marta Verweij - UU
+// Author : Marta Verweij, D. Keijdener - UU
 //-----------------------------------------------------------------------
 
 #ifndef ALIPWG4HIGHPTSPECTRA_H
@@ -161,7 +161,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH2F *fPtRelUncertainty1PtPrim;              //! Pt vs relUncertainty1Pt for primary particles
   TH2F *fPtRelUncertainty1PtSec;               //! Pt vs relUncertainty1Pt for secondary particles
 
-  ClassDef(AliPWG4HighPtSpectra,3);
+  ClassDef(AliPWG4HighPtSpectra,4);
 };
 
 #endif
