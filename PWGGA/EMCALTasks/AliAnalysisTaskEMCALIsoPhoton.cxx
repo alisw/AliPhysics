@@ -119,6 +119,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fEmcNCellsCut(0),
   fEmcClusETM1(0),
   fEmcClusETM2(0),
+  fEmcClusNotExo(0),
   fEmcClusEPhi(0),    
   fEmcClusEPhiCut(0), 
   fEmcClusEEta(0),    
@@ -211,6 +212,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fEmcNCellsCut(0),
   fEmcClusETM1(0),
   fEmcClusETM2(0),
+  fEmcClusNotExo(0),
   fEmcClusEPhi(0),    
   fEmcClusEPhiCut(0), 
   fEmcClusEEta(0),    
@@ -356,6 +358,9 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fEmcClusETM2 = new TH1F("fEmcClusETM2","(method track->GetEMCALcluster());GeV;counts",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge);
   fEmcClusETM2->Sumw2();
   fQAList->Add(fEmcClusETM2);
+  fEmcClusNotExo  = new TH1F("fEmcClusNotExo","exotics removed;GeV;counts",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge);
+  fEmcClusNotExo->Sumw2();
+  fQAList->Add(fEmcClusNotExo);
   fEmcClusEPhi = new TH2F("fEmcClusEPhi",";GeV;#phi",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge,63,0,6.3);    
   fEmcClusEPhi->Sumw2();
   fQAList->Add(fEmcClusEPhi);
@@ -636,11 +641,10 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       continue;
     if(fCpvFromTrack && fClusIdFromTracks.Contains(Form("%d",ic)))
        continue;
+    if(IsExotic(c))
+      continue;
     Short_t id;
     Double_t Emax = GetMaxCellEnergy( c, id);
-    Double_t Ecross = GetCrossEnergy( c, id);
-    if((1-Ecross/Emax)>fExoticCut)
-      continue;
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
@@ -1173,6 +1177,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillQA()
       fEmcClusETM1->Fill(c->E());
     if(fClusIdFromTracks.Contains(Form("%d",ic)))
       fEmcClusETM2->Fill(c->E());
+    if(!IsExotic(c))
+      fEmcClusNotExo->Fill(c->E());
     fEmcClusEPhi->Fill(c->E(), cphi);
     fEmcClusEEta->Fill(c->E(), ceta);
     if(fMaxEClus>fECut){
@@ -1235,6 +1241,17 @@ void AliAnalysisTaskEMCALIsoPhoton::LoopOnCells()
   }
   fMaxCellEPhi->Fill(maxe,maxphi);
 
+}
+//________________________________________________________________________
+bool AliAnalysisTaskEMCALIsoPhoton::IsExotic(AliVCluster *c)
+{
+  bool isExo = 0;
+  Short_t id;
+  Double_t Emax = GetMaxCellEnergy( c, id);
+  Double_t Ecross = GetCrossEnergy( c, id);
+  if((1-Ecross/Emax)>fExoticCut)
+    isExo = 1;
+  return isExo;
 }
 //________________________________________________________________________
 void AliAnalysisTaskEMCALIsoPhoton::Terminate(Option_t *) 
