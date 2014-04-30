@@ -91,7 +91,7 @@ AliITSUv0::AliITSUv0()
 }
 
 //______________________________________________________________________
-AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
+AliITSUv0::AliITSUv0(const char *title, Int_t nlay)
   :AliITSU(title,nlay)
   ,fNWrapVol(0)
   ,fWrapRMin(0)
@@ -490,10 +490,10 @@ void AliITSUv0::CreateMaterials() {
 }
 
 //______________________________________________________________________
-void AliITSUv0::DefineLayer(const Int_t nlay, const double phi0, const Double_t r,
-			    const Double_t zlen, const Int_t nstav,
-			    const Int_t nmod, const Double_t lthick,
-			    const Double_t dthick, const UInt_t dettypeID)
+void AliITSUv0::DefineLayer(Int_t nlay, double phi0, Double_t r,
+			    Double_t zlen, Int_t nstav,
+			    Int_t nmod, Double_t lthick,
+			    Double_t dthick, UInt_t dettypeID)
 {
   //     Sets the layer parameters
   // Inputs:

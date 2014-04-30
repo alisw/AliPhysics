@@ -57,12 +57,12 @@ public:
   void SetCutString(const char *cutString )                            {fStrCuts=cutString;}
 
   //general thresholds for the different qualities
-  void SetAlarmThreshold(const Double_t min, const Double_t max, const QualityFlag_t quality=kERROR);
-  void ResetAlarmThreshold(const QualityFlag_t quality);
+  void SetAlarmThreshold(Double_t min, Double_t max, QualityFlag_t quality=kERROR);
+  void ResetAlarmThreshold(QualityFlag_t quality);
   void ResetAlarmThresholds();
 
   //descriptions
-  void SetQualityDescription(const char* text, const QualityFlag_t quality=kERROR);
+  void SetQualityDescription(const char* text, QualityFlag_t quality=kERROR);
   
   //alarm type
   void SetAlarmType(AlarmType_t type) {fAlarmType=type;}
@@ -73,9 +73,9 @@ public:
   const char*   GetQualityName()  const {return AliTPCCalibQAChecker::QualityName(fQualityLevel);}
   const char*   GetQualityDescription() const { return QualityDescription(fQualityLevel);}
   
-  static const char* QualityName(const AliTPCCalibQAChecker::QualityFlag_t quality);
-  static Color_t QualityColor(const AliTPCCalibQAChecker::QualityFlag_t quality);
-  const char* QualityDescription(const QualityFlag_t quality) const;
+  static const char* QualityName(AliTPCCalibQAChecker::QualityFlag_t quality);
+  static Color_t QualityColor(AliTPCCalibQAChecker::QualityFlag_t quality);
+  const char* QualityDescription(QualityFlag_t quality) const;
   
   virtual void Draw(Option_t *option="");
   virtual void Print(Option_t *option="") const;  
