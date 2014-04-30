@@ -1507,13 +1507,16 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	AliFatal("AliAODTracklets not found");
       for(Int_t itrklets=0;itrklets<trklets->GetNumberOfTracklets();itrklets++)
 	{
-	  Double_t eta=-TMath::Log(TMath::Tan(trklets->GetTheta(itrklets)/2));
+	  Float_t eta=-TMath::Log(TMath::Tan(trklets->GetTheta(itrklets)/2));
 	  if(TMath::Abs(eta)>fTrackEtaCut)continue;
-	  Double_t pT=1000*TMath::Abs(trklets->GetDeltaPhi(itrklets));//in mrad
+	  Float_t pT=1000*TMath::Abs(trklets->GetDeltaPhi(itrklets));//in mrad
 	  if(pT>fTrackletDphiCut)continue;
 	  TH1F* DphiTrklets = (TH1F*)fListOfHistos->FindObject("DphiTrklets");
 	  DphiTrklets->Fill(1000*trklets->GetDeltaPhi(itrklets)); //in mrad
-	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,trklets->GetPhi(itrklets), pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
+	  Float_t phi=trklets->GetPhi(itrklets);
+	  phi+=trklets->GetDeltaPhi(itrklets)*39./34.; //correction dphi*39./34. (Dphi in rad)
+	  
+	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,phi, pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
 	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);
 	  
 	  obj->Add(particle);
