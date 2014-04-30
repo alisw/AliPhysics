@@ -59,6 +59,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliESDVertex.h"
 //#include "$ALICE_ROOT/PWG4/JetTasks/AliAnalysisHelperJetTasks.h"
 
@@ -77,6 +78,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fAOD(0x0),
   fMC(0x0),
   fStack(0x0),
+  fArrayMCAOD(0x0),
   fVtx(0x0),
   fTriggerMask(AliVEvent::kMB),
   fIsPbPb(0),
@@ -116,6 +118,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fAOD(0x0),
   fMC(0x0),
   fStack(0x0),
+  fArrayMCAOD(0x0),
   fVtx(0x0),
   fTriggerMask(AliVEvent::kMB),
   fIsPbPb(0),
@@ -229,7 +232,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
   }
 
   //Trigger
-  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //TODO: still works?
+  UInt_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if(fTriggerMask != AliVEvent::kAny && !(isSelected&fTriggerMask)) { //Select collison candidates
     AliDebug(2,Form(" Trigger Selection: event REJECTED ... "));
     fNEventReject->Fill("Trigger",1);
@@ -238,7 +241,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
   }
 
   //Check if number of reconstructed tracks is larger than 1
-  if(!fReadAODData) { //TODO: check if indeed these things are filtered in AOD cases.
+  if(!fReadAODData) {
     if(!fESD->GetNumberOfTracks() || fESD->GetNumberOfTracks()<2)  {
       fNEventReject->Fill("NTracks<2",1);
       selectEvent = kFALSE;
@@ -250,7 +253,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
   if(fESD)
     fVtx = fESD->GetPrimaryVertexSPD();
   if(fAOD)
-    fVtx = fAOD->GetPrimaryVertexSPD(); //TODO: Could also use general vertexing
+    fVtx = fAOD->GetPrimaryVertex();
 
   if(!fVtx) {
     fNEventReject->Fill("noVTX",1);
@@ -258,7 +261,7 @@ Bool_t AliPWG4HighPtSpectra::SelectEvent()
     return selectEvent;
   }
 
-  if(!fReadAODData){ //TODO: Is this correct?
+  if(!fReadAODData){
     const AliESDVertex* esdVtx = fESD->GetPrimaryVertexSPD();
     if(!esdVtx->GetStatus()) {
       fNEventReject->Fill("VtxStatus",1);
@@ -375,10 +378,9 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     return;
   }
 
-  TClonesArray *arrayMC = 0x0;
   if(fReadAODData){
     //Open the MC particles in the case of AODanalysis
-    arrayMC = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+    fArrayMCAOD = (TClonesArray*) fAOD->GetList()->FindObject(AliAODMCParticle::StdBranchName());
   }
   else {
     //In case of ESD event: MCEvent available? if yes: get MC particles stack
@@ -412,7 +414,6 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
   //Now go to rec level
   if(fReadAODData) {//AOD analysis
-    Int_t nOfPrimaries = 0;
     for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
     {
       //Get track for analysis
@@ -421,47 +422,36 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       AliAODTrack *aodtrack = fAOD->GetTrack(iTrack);
       if(!aodtrack)
         continue;
-      if( !aodtrack->TestFilterMask(fFilterMask) )
+      if( !aodtrack->TestFilterBit(fFilterMask) )
         continue;
       else {
-//        AliAODTrack* trackcopy = new AliAODTrack(*aodtrack);
-        track = static_cast<AliVTrack*>(aodtrack);//(AliVTrack*) trackcopy;
+        track = static_cast<AliVTrack*>(aodtrack);
       }
       //fill the container
       containerInputRec[0] = track->Pt();
       containerInputRec[1] = track->Phi();
       containerInputRec[2] = track->Eta();
-      containerInputRec[3] = track->GetTPCNcls();//TODO: is this correct substitute?
+      containerInputRec[3] = track->GetTPCNcls();
 
       if(track->Charge()>0.) {
-        fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed); //TODO: Can charge be used instead of GetSign?
-cout << __LINE__ << ". fill " << kStepReconstructed << " with: " << containerInputRec[0] << ", " << containerInputRec[1] << ", " << containerInputRec[2] << ", " << containerInputRec[3] << endl;
+        fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
       }
       if(track->Charge()<0.) {
         fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
-cout << __LINE__ << ". fill " << kStepReconstructed << " with: " << containerInputRec[0] << ", " << containerInputRec[1] << ", " << containerInputRec[2] << ", " << containerInputRec[3] << endl;
       }
 
-      if(arrayMC) {
+      if(fArrayMCAOD) {
         Int_t label = TMath::Abs(track->GetLabel());
-	if(label>arrayMC->GetEntries()) {
-	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
-	    delete track;
+	if(label>fArrayMCAOD->GetEntries()) {
 	  continue;
 	}
-	AliAODMCParticle *particle = (AliAODMCParticle*) arrayMC->At(label);
+	AliAODMCParticle *particle = (AliAODMCParticle*) fArrayMCAOD->At(label);
 	if(!particle) {
-	  if(fTrackType==1 || fTrackType==2 || fTrackType==7)
-	    delete track;
 	  continue;
 	}
 	//Only select particles generated by HIJING if requested
 	if(fbSelectHIJING) {
 	  if(!IsHIJINGParticle(label)) {
-	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
-	      delete track;
-            if(particle->IsPhysicalPrimary())
-              nOfPrimaries++;
 	    continue;
 	  }
 	}
@@ -472,39 +462,35 @@ cout << __LINE__ << ". fill " << kStepReconstructed << " with: " << containerInp
 
 	//Container with primaries
 	if(particle->IsPhysicalPrimary()) {
-          nOfPrimaries++;
 	  if(particle->Charge()>0.) {
 	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
           }
 	  if(particle->Charge()<0.) {
 	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-cout << __LINE__ << ". fill " << kStepReconstructedMC << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
           }
 	  //Fill pT resolution plots for primaries
-	  fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
+	  //fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //This has not been implemented in AOD analysis, since they are also produced by the AddTaskPWG4HighPtTrackQA.C macro
 	}
 
 	//Container with secondaries
 	if (!particle->IsPhysicalPrimary() ) {
 	  if(particle->Charge()>0.) {
 	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
-cout << __LINE__ << ". fill " << kStepSecondaries << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
 	  }
 	  if(particle->Charge()<0.) {
 	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
-cout << __LINE__ << ". fill " << kStepSecondaries << " with: " << containerInputRecMC[0] << ", " << containerInputRecMC[1] << ", " << containerInputRecMC[2] << ", " << containerInputRecMC[3] << endl;
 	  }
 	  //Fill pT resolution plots for primaries
-	  //fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //TODO: have to reimplement this for AOD analysis
+	  //fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //This has not been implemented in AOD analysis, since they are also produced by the AddTaskPWG4HighPtTrackQA.C macro
 	}
       }
     }//track loop
 
     //Fill MC containers if particles are findable
-    if(arrayMC) {
-      for(int iPart = 1; iPart<nOfPrimaries; iPart++) {
-	AliAODMCParticle *mcPart = (AliAODMCParticle*) arrayMC->At(iPart);
+    if(fArrayMCAOD) {
+      int noPart = fArrayMCAOD->GetEntriesFast();
+      for(int iPart = 1; iPart<noPart; iPart++) {
+	AliAODMCParticle *mcPart = (AliAODMCParticle*) fArrayMCAOD->At(iPart);
         if(!mcPart) continue;
 
         //Only select particles generated by HIJING if requested
@@ -529,11 +515,9 @@ cout << __LINE__ << ". fill " << kStepSecondaries << " with: " << containerInput
 	  if(mcPart->IsPhysicalPrimary()) {
 	    if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
               fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-cout << __LINE__ << ". fill " << kStepMCAcceptance << " with: " << containerInputMC[0] << ", " << containerInputMC[1] << ", " << containerInputMC[2] << ", " << containerInputMC[3] << endl;
             }
 	    if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
               fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-cout << __LINE__ << ". fill " << kStepMCAcceptance << " with: " << containerInputMC[0] << ", " << containerInputMC[1] << ", " << containerInputMC[2] << ", " << containerInputMC[3] << endl;
             }
 	  }
         }
@@ -744,7 +728,6 @@ cout << __LINE__ << ". fill " << kStepMCAcceptance << " with: " << containerInpu
     }
   }//end of ESD analysis
 
-cout << "Now posting..." << endl;
   PostData(0,fHistList);
   PostData(1,fCFManagerPos->GetParticleContainer());
   PostData(2,fCFManagerNeg->GetParticleContainer());
@@ -894,7 +877,7 @@ AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeader(AliMCEvent 
     AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
     
     if (!genCocktailHeader) {
-      //      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
+      AliWarningGeneral(Form(" %s:%d",(char*)__FILE__,__LINE__),"Unknown header type (not Pythia or Cocktail)");
       //      AliWarning(Form("%s %d: Unknown header type (not Pythia or Cocktail)",(char*)__FILE__,__LINE__));
       return 0;
     }
@@ -911,6 +894,17 @@ AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeader(AliMCEvent 
   }
   return hijingGenHeader;
 
+}
+
+//________________________________________________________________________
+AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeaderAOD(AliAODEvent *aodEvent)
+{
+  AliGenHijingEventHeader* hijingGenHeader = 0x0;
+  if(aodEvent) {
+    AliAODMCHeader* mcHeader = (AliAODMCHeader*) aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    hijingGenHeader = (AliGenHijingEventHeader*) mcHeader->GetCocktailHeaders()->FindObject("Hijing");
+  }
+  return hijingGenHeader;
 }
 
 //___________________________________________________________________________
@@ -1005,31 +999,52 @@ void AliPWG4HighPtSpectra::CreateOutputObjects()
 }
 
 //________________________________________________________________________
-Bool_t AliPWG4HighPtSpectra::IsHIJINGParticle(Int_t label) //TODO: Still need to translate this function...
+Bool_t AliPWG4HighPtSpectra::IsHIJINGParticle(Int_t label)
 {
   //
   // Return kTRUE in case particle is from HIJING event
   //
 
-  AliGenHijingEventHeader*  hijingHeader = GetHijingEventHeader(fMC);
+  AliGenHijingEventHeader* hijingHeader;
+  if(fReadAODData)
+    hijingHeader = GetHijingEventHeaderAOD(fAOD);
+  else
+    hijingHeader = GetHijingEventHeader(fMC);
 
   Int_t nproduced = hijingHeader->NProduced();
 
-  TParticle * mom = fStack->Particle(label);
-  Int_t iMom = label;
-  Int_t iParent = mom->GetFirstMother();
-  while(iParent!=-1){
-    iMom = iParent;
-    mom = fStack->Particle(iMom);
-    iParent = mom->GetFirstMother();
-  }
+  if(fReadAODData) {
+    AliAODMCParticle* mom = (AliAODMCParticle*) fArrayMCAOD->At(label);
+    Int_t iMom = label;
+    Int_t iParent = mom->GetMother();
+    while(iParent!=-1){
+      iMom = iParent;
+      mom = (AliAODMCParticle*) fArrayMCAOD->At(iMom);
+      iParent = mom->GetMother();
+    }
 
-  if(iMom<nproduced) {
-    return kTRUE;
-  } else {
-    return kFALSE;
+    if(iMom<nproduced) {
+      return kTRUE;
+    } else {
+      return kFALSE;
+    }
   }
-
+  else { //ESD analysis
+    TParticle * mom = fStack->Particle(label);
+    Int_t iMom = label;
+    Int_t iParent = mom->GetFirstMother();
+    while(iParent!=-1){
+      iMom = iParent;
+      mom = fStack->Particle(iMom);
+      iParent = mom->GetFirstMother();
+    }
+  
+    if(iMom<nproduced) {
+      return kTRUE;
+    } else {
+      return kFALSE;
+    }
+  }
 }
 
 #endif

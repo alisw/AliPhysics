@@ -104,6 +104,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static AliGenHijingEventHeader*  GetHijingEventHeader(AliMCEvent *mcEvent);
+  static AliGenHijingEventHeader*  GetHijingEventHeaderAOD(AliAODEvent *aodEvent);
 
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
 
@@ -118,7 +119,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   AliESDEvent *fESD;      //! ESD object
   AliAODEvent *fAOD;      //! AOD object
   AliMCEvent  *fMC;       //! MC event object, only used in ESD analysis
-  AliStack    *fStack;    //! stack object
+  AliStack    *fStack;    //! stack object, only used in ESD analysis
+  TClonesArray *fArrayMCAOD;  //! TClonesArray of AliAODMCParticles, only used in AOD analysis
 
   const AliVVertex   *fVtx;     //! vertex object
 

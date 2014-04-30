@@ -19,7 +19,7 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
   else if(iAODanalysis==1) { //run on AODs
     if(doEfficiency==1){
       gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_ROOT/PWGJE/macros/AddTaskPWG4HighPtSpectra.C"));
-      AddTaskPWG4HighPtSpectraQA_AOD(prodType.Data(),isPbPb,AliVEvent::kMB,kFALSE,kFALSE);//TODO:bHijing has to become kTRUE
+      AddTaskPWG4HighPtSpectraQA_AOD(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
     }
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
