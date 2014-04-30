@@ -39,7 +39,7 @@
 
 ClassImp(AliTwoPlusOneContainer)
 
-AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* binning, const Double_t alpha) : 
+AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* binning, Double_t alpha) : 
   TNamed(name, name),
   fTwoPlusOne(0),
   fTriggerPt1Min(0),

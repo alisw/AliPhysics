@@ -59,8 +59,8 @@ class AliHFEV0taginfo: public TNamed{
                 virtual Int_t Compare(const TObject *ref) const;
 
                 //Setter
-                void SetTrack(const Int_t trackID, const AliPID::EParticleType Pinfo); //Set track ID
-                void SetProdR(const Int_t trackID, const Double_t prodR); //Set V0 daughter production vertex radius
+                void SetTrack(Int_t trackID, AliPID::EParticleType Pinfo); //Set track ID
+                void SetProdR(Int_t trackID, Double_t prodR); //Set V0 daughter production vertex radius
                 //Getter
                 Int_t GetTrackID() const { return fTrackID; };
                 AliPID::EParticleType GetPinfo() const { return fPinfo; };

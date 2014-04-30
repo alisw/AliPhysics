@@ -288,14 +288,14 @@ AliHFEV0taginfo::AliHFEV0tag::~AliHFEV0tag(){
 
 //Set track ID and particle info 
 //___________________________________________________________________
-void AliHFEV0taginfo::AliHFEV0tag::SetTrack(const Int_t trackID, const AliPID::EParticleType Pinfo){
+void AliHFEV0taginfo::AliHFEV0tag::SetTrack(Int_t trackID, AliPID::EParticleType Pinfo){
     fTrackID = trackID;
     fPinfo = Pinfo;
 }
 
 //Set track ID and production verxtex
 //___________________________________________________________________
-void AliHFEV0taginfo::AliHFEV0tag::SetProdR(const Int_t trackID, const Double_t prodR){
+void AliHFEV0taginfo::AliHFEV0tag::SetProdR(Int_t trackID, Double_t prodR){
     fTrackID = trackID;
     fProdR = prodR;
 }

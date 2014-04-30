@@ -4658,11 +4658,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForWeights()
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)
 {
  // Set number of bins for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4685,15 +4685,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, co
 
  fnBins[rp][ppe] = nBins;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)
 {
  // Set min bin range for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4716,15 +4716,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, cons
 
  fMin[rp][ppe] = min;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t max)
 {
  // Set max bin range for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t max)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4747,15 +4747,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, cons
 
  fMax[rp][ppe] = max;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t min)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t min)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)
 {
  // Set number of bins for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4770,15 +4770,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type
 
  fnBinsMult[rpr] = nBinsMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)
 {
  // Set min bin range for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4793,15 +4793,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, 
 
  fMinMult[rpr] = minMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type const Double_t minMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t maxMult)
 {
  // Set max bin range for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t maxMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4816,7 +4816,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, 
 
  fMaxMult[rpr] = maxMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t minMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t minMult)
 
 //=======================================================================================================================
 
