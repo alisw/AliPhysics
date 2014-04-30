@@ -37,6 +37,7 @@ set ( SRCS
     AliITSUClusterPix.cxx
     AliITSUSeed.cxx
     AliITSUTrackerGlo.cxx
+    AliITSUTrackerSA.cxx
     AliITSUTrackCond.cxx
     AliITSUTrackHyp.cxx
     AliITSUMatLUT.cxx
@@ -58,6 +59,9 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR ITSUpgradeRecLinkDef.h)
 
+#set_source_files_properties( AliITSUTrackerSA.cxx PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize -ffast-math -std=gnu++11" )
+
 set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase)
 
+set ( EXPORT UPGRADE/AliITSUTrackerSAaux.h )
 # set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
