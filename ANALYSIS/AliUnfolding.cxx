@@ -303,14 +303,14 @@ void AliUnfolding::SetStaticVariables(TH2* correlation, TH1* measured, TH1* effi
     if (sum <= 0)
       continue;
     Float_t maxValue = 0;
-    Int_t maxBin = -1;
+    //    Int_t maxBin = -1;
     for (Int_t j=1; j<=correlation->GetNbinsY(); ++j)
     {
       // find most probably value
       if (maxValue < correlation->GetBinContent(i, j))
       {
         maxValue = correlation->GetBinContent(i, j);
-        maxBin = j;
+	//        maxBin = j;
       }
 
       // npart sum to 1
@@ -1339,12 +1339,8 @@ void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured,
   {
     params[i] = initialConditions->GetBinContent(i+1) * efficiency->GetBinContent(i+1);
 
-    Bool_t fix = kFALSE;
     if (params[i] < 0)
-    {
-      fix = kTRUE;
       params[i] = -params[i];
-    }
     params[i]=TMath::Sqrt(params[i]);
   } 
 
