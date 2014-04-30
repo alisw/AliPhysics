@@ -43,7 +43,7 @@ class AliFemtoEventReaderKinematicsChainESD : public AliFemtoEventReader
 
   AliFemtoEvent* ReturnHbtEvent();
   AliFemtoString Report();
-  void SetConstrained(const bool constrained);
+  void SetConstrained(bool constrained);
   bool GetConstrained() const;
 
   //void SetESDSource(AliESDEvent *aESD);

@@ -2424,7 +2424,7 @@ TParticle *AliAnalysisTaskFilteredTree::GetMother(TParticle *const particle, Ali
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack *const stack) 
+Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(Int_t label, AliStack *const stack) 
 {
   Bool_t isFromConversion = kFALSE;
 
@@ -2456,7 +2456,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromConversion(const Int_t label, AliStack
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *const stack) 
+Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(Int_t label, AliStack *const stack) 
 {
   Bool_t isFromMaterial = kFALSE;
 
@@ -2486,7 +2486,7 @@ Bool_t AliAnalysisTaskFilteredTree::IsFromMaterial(const Int_t label, AliStack *
 }
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(const Int_t label, AliStack *const stack) 
+Bool_t AliAnalysisTaskFilteredTree::IsFromStrangeness(Int_t label, AliStack *const stack) 
 {
   Bool_t isFromStrangeness = kFALSE;
 
@@ -2685,7 +2685,7 @@ Int_t AliAnalysisTaskFilteredTree::GetMCTrueTrackMult(AliMCEvent *const mcEvent,
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, const Double_t centralityF, const Double_t chi2TPCInnerC) 
+void AliAnalysisTaskFilteredTree::FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, Double_t centralityF, Double_t chi2TPCInnerC) 
 {
   //
   // Fill pT relative resolution histograms for 

@@ -227,7 +227,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
-  static  void   SetProperties(THnSparse* h,const Int_t dim, const char** labels);
+  static  void   SetProperties(THnSparse* h, Int_t dim, const char** labels);
 
   void   SetHighPtThreshold(Float_t pt = 5.) { fQATrackHighPtThreshold = pt; }
 
@@ -261,8 +261,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetFFBckgRadius() const { return fFFBckgRadius; }
-  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);
-  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, const Double_t r, Double_t& sumPt, const Double_t minPtL, const Double_t maxPt, Bool_t& isBadPt);  
+  void	   GetJetTracksTrackrefs(TList* l, const AliAODJet* j, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);
+  void	   GetJetTracksPointing(TList* in, TList* out, const AliAODJet* j, Double_t r, Double_t& sumPt, Double_t minPtL, Double_t maxPt, Bool_t& isBadPt);  
   void     GetTracksOutOfNJets(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt);
   void     GetTracksOutOfNJetsStat(Int_t nCases, TList* in, TList* out, TList* jets, Double_t& pt, Double_t &normFactor);
   void     GetTracksTiltedwrpJetAxis(Float_t alpha, TList* inputlist, TList* outputlist, const AliAODJet* jet, Double_t radius, Double_t& sumPt);
@@ -280,14 +280,14 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
 				 Bool_t fillJS = kFALSE, TProfile* hProNtracksLeadingJet = 0, TProfile** hProDelRPtSum = 0, TProfile* hProDelR80pcPt = 0);
 
 
-  Float_t  CalcJetArea(const Float_t etaJet, const Float_t rc) const;
+  Float_t  CalcJetArea(const Float_t etaJet, Float_t rc) const;
   void     GetClusterTracksOutOf1Jet(AliAODJet* jet, TList* outputlist, Double_t &normFactor);
   void     GetClusterTracksMedian(TList* outputlist, Double_t &normFactor);
 
   void     FillBckgHistos(Int_t type, TList* inputtracklist, TList* inputjetlist, AliAODJet* jet, 
 			  AliFragFuncHistos* ffbckghistocuts,AliFragFuncQATrackHistos* qabckghistos,TH1F* fh1Mult = 0); 
  
-  Double_t GetMCStrangenessFactor(const Double_t pt);
+  Double_t GetMCStrangenessFactor(Double_t pt);
   Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter);
 
   void FillJetShape(AliAODJet* jet, TList* list,  TProfile* hProNtracksLeadingJet, TProfile** hProDelRPtSum, TProfile* hProDelR80pcPt=0, Double_t dPhiUE=0, Double_t normUE = 0, Bool_t scaleStrangeness = kFALSE);

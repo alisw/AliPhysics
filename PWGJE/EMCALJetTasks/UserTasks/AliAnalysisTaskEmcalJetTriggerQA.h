@@ -43,7 +43,7 @@ class AliAnalysisTaskEmcalJetTriggerQA : public AliAnalysisTaskEmcalJet {
   Double_t GetECross(Int_t absID) const;
 
   Double_t GetZ(const AliVParticle *trk, const AliEmcalJet *jet)       const;
-  Double_t GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const;
+  Double_t GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const;
 
  protected:
   Bool_t                      FillHistograms()   ;
