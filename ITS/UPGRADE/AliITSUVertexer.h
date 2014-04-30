@@ -31,8 +31,8 @@ class AliITSUVertexer : public AliVertexer {
   UShort_t GetNumOfVertices() const { return fNoVertices; }
 
   // Setters
-  void SetPhiCut(const Double_t phicut) { fPhiCut=phicut; }
-  void SetZCut(const Double_t zcut)     { fZCut=zcut; }
+  void SetPhiCut(Double_t phicut) { fPhiCut=phicut; }
+  void SetZCut(Double_t zcut)     { fZCut=zcut; }
 
   #ifdef MC_CHECK
   // Debug + MC truth

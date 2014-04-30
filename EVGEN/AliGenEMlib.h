@@ -45,39 +45,39 @@ public:
   static Int_t fgSelectedV2Systematic; // selected v2 systematics, usefully values: -1,0,1
 
 
-  static Double_t PtModifiedHagedornThermal(const Double_t pt, 
-					    const Double_t c, 
-					    const Double_t p0, 
-					    const Double_t p1, 
-					    const Double_t n,
-					    const Double_t cT,
-					    const Double_t T);
+  static Double_t PtModifiedHagedornThermal(Double_t pt, 
+					    Double_t c, 
+					    Double_t p0, 
+					    Double_t p1, 
+					    Double_t n,
+					    Double_t cT,
+					    Double_t T);
 
 
  
-  static Double_t PtModifiedHagedornExp(const Double_t pt,
-					const Double_t c,
-					const Double_t p0,
-					const Double_t p1,
-					const Double_t p2,
-					const Double_t n); 
+  static Double_t PtModifiedHagedornExp(Double_t pt,
+					Double_t c,
+					Double_t p0,
+					Double_t p1,
+					Double_t p2,
+					Double_t n); 
 
 
-  static Double_t PtModifiedHagedornExp2(const Double_t pt,
-                                           const Double_t c,
-                                           const Double_t a,
-                                           const Double_t b,
-                                           const Double_t p0,
-                                           const Double_t p1,
-                                           const Double_t d,
-                                           const Double_t n);
+  static Double_t PtModifiedHagedornExp2(Double_t pt,
+                                           Double_t c,
+                                           Double_t a,
+                                           Double_t b,
+                                           Double_t p0,
+                                           Double_t p1,
+                                           Double_t d,
+                                           Double_t n);
 
 
-  static Double_t PtTsallis(const Double_t pt,
-			    const Double_t m,
-			    const Double_t c,
-			    const Double_t T,
-			    const Double_t n);
+  static Double_t PtTsallis(Double_t pt,
+			    Double_t m,
+			    Double_t c,
+			    Double_t T,
+			    Double_t n);
 
   static Double_t PtExponential(const Double_t *pt, const Double_t *param);
   static Double_t PtModifiedHagedornPowerlaw(const Double_t *pt, const Double_t *param);
@@ -151,8 +151,8 @@ public:
   static Double_t KEtScal(Double_t pt, Int_t np);
   static Double_t GetTAA(Int_t cent);
 
-  static Double_t CrossOverLc(const double a, const double b, const double x);
-  static Double_t CrossOverRc(const double a, const double b, const double x);
+  static Double_t CrossOverLc(double a, double b, double x);
+  static Double_t CrossOverRc(double a, double b, double x);
 
   static const Double_t fgkV2param[16][15];          // parameters of pi v2
   static const Double_t fgkRawPtOfV2Param[16][10];   // parameters of the raw pt spectrum of v2 analysys

@@ -23,15 +23,15 @@ class AliToyMCEventGeneratorSimple : public AliToyMCEventGenerator {
   AliToyMCEvent* GenerateLaser(Double_t time);
   
   void SetParametersToyGen(const Char_t* parfilename="$ALICE_ROOT/TPC/Upgrade/files/params.root", Double_t vertexMean = 0., Double_t vertexSigma = 7.);
-  void RunSimulation(const Int_t nevents=10, const Int_t ntracks=20, const Int_t rate=50);
-  void RunSimulationBunchTrain(const Int_t nevents=10, const Int_t ntracks=20);
-  void RunSimulationESD(const Int_t nevents=10, const Int_t ntracks=20);
-  void RunSimulationLaser(const Int_t nevents=1);
+  void RunSimulation(Int_t nevents=10, Int_t ntracks=20, Int_t rate=50);
+  void RunSimulationBunchTrain(Int_t nevents=10, Int_t ntracks=20);
+  void RunSimulationESD(Int_t nevents=10, Int_t ntracks=20);
+  void RunSimulationLaser(Int_t nevents=1);
   
   void SetInputESD(const Char_t* filename) {fInputFileNameESD = filename;}
-  Int_t OpenInputAndGetMaxEvents(const Int_t type, const Int_t nevents);
-  void RunSimulation2(const Bool_t equalspacing, const Int_t type, const Int_t nevents, const Int_t ntracks);
-  void GetNGeneratedEventsAndSpacing(const Bool_t equalSpacing, Int_t &ngen, Double_t &spacing);
+  Int_t OpenInputAndGetMaxEvents(Int_t type, Int_t nevents);
+  void RunSimulation2(Bool_t equalspacing, Int_t type, Int_t nevents, Int_t ntracks);
+  void GetNGeneratedEventsAndSpacing(Bool_t equalSpacing, Int_t &ngen, Double_t &spacing);
   Bool_t CloseInputFile();
 
  private:
