@@ -106,6 +106,7 @@ public:
   Bool_t  IsTypeExtrapolatedWithPionRatio() const { CheckTypeConsistency(); return (fMeasurementType & kTypeExtrPionRatio);}
   Bool_t  IsTypeLinearInterp() const{ CheckTypeConsistency(); return fMeasurementType & kTypeLinearInterpolation;}
   Bool_t  IsTypeOnlyTotErr()   const{ CheckTypeConsistency(); return fMeasurementType & kTypeOnlyTotError;       }
+  Bool_t  IsTypeAverage()       const{CheckTypeConsistency(); return fMeasurementType & kTypeAveragePartAntiPart;}
 
   static Int_t   GetSignificantDigits()  { return fSignificantDigits; }
 
