@@ -86,7 +86,7 @@ public:
 
 	// VZERO study
 	static void DoVZEROStudy(const AliESDEvent *ESDEvent, TObjArray* hists,
-	                         const Int_t run);
+	                         Int_t run);
 
 	// gap determination
 	static Int_t GetGapConfig(const AliESDEvent *ESDEvent, TH2 *hitMapSPDinner,
@@ -101,7 +101,7 @@ public:
 	                               Int_t& forwardA, Int_t& forwardC,
 	                               Int_t& central);
 
-	static void SPDLoadGeom(const Int_t run); // only needed for ESDs, not in AODs
+	static void SPDLoadGeom(Int_t run); // only needed for ESDs, not in AODs
 
 	// functions needed for the empty event study (ESD only)
 	static Int_t GetEventType(const AliESDEvent *ESDEvent);
@@ -126,12 +126,12 @@ public:
 	static void SwapTrack(const AliVTrack *trks[]);
 	static Int_t GetCombCh(const AliVTrack *trks[]);
 	static Int_t GetCombPID(AliPIDResponse *pid, const AliVTrack *trks[],
-	                        const Int_t mode, TH2 *comb2trkPID = 0x0);
+	                        Int_t mode, TH2 *comb2trkPID = 0x0);
 	static Int_t GetCombPID(const TParticle* particles[], TH2 *comb2trkPID = 0x0);
-	static void GetMassPtCtsOA(const Int_t pid, const TVector3* momenta[],
+	static void GetMassPtCtsOA(Int_t pid, const TVector3* momenta[],
 	                           Double_t& mass, Double_t& pt, Double_t& cts,
 	                           Double_t& oa);
-	static void GetPWAinfo(const Int_t pid, const AliVTrack *trks[],
+	static void GetPWAinfo(Int_t pid, const AliVTrack *trks[],
 	                       Float_t& theta, Float_t& phi, Float_t& mass,
 	                       Float_t momentum[]);
 	static void FillSPDtrkltMap(const AliVEvent *event, TH2 *hitMapSPDtrklt);
@@ -156,11 +156,11 @@ private:
 #endif
 
 	// helpers for the SPD gap determination
-	static Bool_t SPDLoc2Glo(const Int_t id, const Double_t *loc, Double_t *glo);
-	static Int_t CheckChipEta(const Int_t chipKey, const TString scut,
+	static Bool_t SPDLoc2Glo(Int_t id, const Double_t *loc, Double_t *glo);
+	static Int_t CheckChipEta(Int_t chipKey, TString scut,
 	                          const Double_t vtxPos[], TH2 *hitMapSPDinner,
 	                          TH2 *hitMapSPDouter);
-	static void GetNFO(const AliESDEvent *ESDEvent, const TString etacut,
+	static void GetNFO(const AliESDEvent *ESDEvent, TString etacut,
 	                   Int_t ctr[], TH2 *hitMapSPDinner, TH2 *hitMapSPDouter);
 
 	// AOD only
@@ -170,12 +170,12 @@ private:
 	// independent
 	//----------
 	static Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk,
-	                    const Int_t mode = 0);
-	static Int_t GetPID(const Int_t pdgCode);
+	                    Int_t mode = 0);
+	static Int_t GetPID(Int_t pdgCode);
 	static Int_t CombinePID(const Int_t pid[]);
 
 	static TLorentzVector GetKinematics(const Double_t *pa, const Double_t *pb,
-	                                    const Double_t ma, const Double_t mb,
+	                                    Double_t ma, Double_t mb,
 	                                    Double_t & cts);
 	static Double_t GetOA(const Double_t *pa, const Double_t *pb);
 };
