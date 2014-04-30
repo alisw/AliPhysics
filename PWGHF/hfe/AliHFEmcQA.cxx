@@ -259,7 +259,7 @@ void AliHFEmcQA::CreatDefaultHistograms(TList * const qaList)
 }
   
 //__________________________________________
-void AliHFEmcQA::CreateHistograms(const Int_t kquark) 
+void AliHFEmcQA::CreateHistograms(Int_t kquark) 
 {
   // create histograms
 
@@ -642,7 +642,7 @@ void AliHFEmcQA::GetMesonKine()
 
 }
 //__________________________________________
-void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark) 
+void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, Int_t kquark) 
 {
   // get heavy quark kinematics
 
@@ -731,7 +731,7 @@ void AliHFEmcQA::GetQuarkKine(TParticle *part, Int_t iTrack, const Int_t kquark)
 }
 
 //__________________________________________
-void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
+void AliHFEmcQA::EndOfEventAna(Int_t kquark)
 {
   // end of event analysis
 
@@ -842,7 +842,7 @@ void AliHFEmcQA::EndOfEventAna(const Int_t kquark)
 }
 
 //__________________________________________
-void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
+void AliHFEmcQA::GetHadronKine(TParticle* mcpart, Int_t kquark)
 {
     // decay electron kinematics
 
@@ -925,7 +925,7 @@ void AliHFEmcQA::GetHadronKine(TParticle* mcpart, const Int_t kquark)
 }
 
 //__________________________________________
-void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kdecayed) 
+void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, Int_t kquark, Int_t kdecayed) 
 {
     // decay electron kinematics
     
@@ -1283,7 +1283,7 @@ void AliHFEmcQA::GetDecayedKine(TParticle* mcpart, const Int_t kquark, Int_t kde
 }
 
 //____________________________________________________________________
-void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, const Int_t kquark, Int_t kdecayed)
+void  AliHFEmcQA::GetDecayedKine(AliAODMCParticle *mcpart, Int_t kquark, Int_t kdecayed)
 {
   // decay electron kinematics
 
@@ -1462,7 +1462,7 @@ void AliHFEmcQA::IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &gran
 }
 
 //__________________________________________
-void AliHFEmcQA::HardScattering(const Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
+void AliHFEmcQA::HardScattering(Int_t kquark, Int_t &motherID, Int_t &mothertype, Int_t &motherlabel)
 {
        // mothertype -1 means this heavy quark coming from hard vertex
 
@@ -2164,7 +2164,7 @@ Int_t AliHFEmcQA::GetElecSource(const AliAODMCParticle * const mcpart) const
   return origin;
 }
 //__________________________________________
-Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel){
+Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, Int_t iBgLevel){
   //
   // Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
   //
@@ -2353,7 +2353,7 @@ Double_t AliHFEmcQA::GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLeve
 }
 
 //__________________________________________
-Double_t AliHFEmcQA::GetWeightFactor(const AliAODMCParticle * const mcpart, const Int_t iBgLevel){
+Double_t AliHFEmcQA::GetWeightFactor(const AliAODMCParticle * const mcpart, Int_t iBgLevel){
   //
   // Get weighting factor for the realistic background estimation, for three possible background yield levels, indicated by the argument "iLevel": the best estimate (0), the lower uncertainty level (1), and the upper uncertainty level (2)
   //
@@ -2444,7 +2444,7 @@ Int_t AliHFEmcQA::GetMother(const AliVParticle * const mcpart) const {
   return label;
 }
 //__________________________________________
-Int_t AliHFEmcQA::GetWeightCentralityBin(const Float_t percentile) const {
+Int_t AliHFEmcQA::GetWeightCentralityBin(Float_t percentile) const {
   //
   //translate the centrality percentile into the centrality bin of the reference weighting histograms for electron background
   //
