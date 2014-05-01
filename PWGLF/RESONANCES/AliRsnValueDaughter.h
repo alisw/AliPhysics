@@ -46,6 +46,10 @@ public:
       kPhi,        // azimuthal angle at vertex
       kPhiOuterTPC,// azimuthal angle at TPC outer radius
       kV0DCA,       // V0 DCA 
+      kV0Radius,       // V0 radius
+      kV0Mass,       // V0 mass 
+      kV0P,       // V0 momentum
+      kV0Pt,       // V0 transverse momentum
       kDaughterDCA, // DCA of V0 Daughters
       kCosPointAng, // V0 Cosing of Pointing Angle
       kLambdaProtonPIDCut,         //V0 - Lambda number of sigmas proton	   
