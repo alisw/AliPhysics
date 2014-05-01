@@ -91,8 +91,6 @@ void AddTaskEMCALMesonGGSDM()
     mgr->ConnectInput (task[i],0,mgr->GetCommonInputContainer());
     mgr->ConnectOutput(task[i],1,coutput[i]);
         
-    RequestMemory(task[i],2000*1024); // request 1.0GB memory for task
-    
     //AliMCEventHandler* handler = new AliMCEventHandler;
     //handler->SetReadTR(kFALSE);
     //mgr->SetMCtruthEventHandler(handler);
