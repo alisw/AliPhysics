@@ -37,6 +37,9 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Bool_t      minDCAcutFixed = kFALSE,
    Bool_t      maxDCAcutFixed = kFALSE,
    Bool_t      ptdepPIDcut = kFALSE,
+   Bool_t      checkFeedDown = kTRUE,
+   Bool_t      checkQuark = kTRUE,
+   UShort_t    originDselection = 0,
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
    Double_t    maxYlab =  0.5,
@@ -82,9 +85,16 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    task->SelectCollisionCandidates(trigger);
    task->SetMaxNDaughters(maxSisters);
    task->SetCheckMomentumConservation(checkP);
+   task->SetCheckFeedDown(checkFeedDown);
+   task->SetRejectCandidateIfNotFromQuark(checkQuark);
+   task->SetDselection(originDselection);
    
+      
    ::Info("AddAnalysisTaskD0", Form("Maximum numbers of daughters allowed (-1 means cut not applied): %i",maxSisters));
-   ::Info("AddAnalysisTaskD0", Form("Are we checking the momentum conservation?: %s", checkP? "yes" : "no"));
+   ::Info("AddAnalysisTaskD0", Form("Are we checking the momentum conservation? %s", checkP? "yes" : "no"));
+   ::Info("AddAnalysisTaskD0", Form("Are we checking the feedown? %s", checkFeedDown? "yes" : "no"));
+   ::Info("AddAnalysisTaskD0", Form("Are we rejecting the Hijing generated? %s", checkQuark? "yes" : "no"));
+   ::Info("AddAnalysisTaskD0", Form("Which D0 are we keeping? %s", (originDselection==0? "only from c quark" : originDselection==1? "only from b quark" : "both from c and b quark") ));
 
 
    if (isPP) 
@@ -185,7 +195,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut,"", cutsPairY, cutsPair)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
