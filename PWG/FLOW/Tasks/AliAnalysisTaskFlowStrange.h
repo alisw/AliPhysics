@@ -42,7 +42,15 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   virtual void Exec(Option_t*);
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
+  virtual void MyUserExec(Option_t *);
+  virtual void MyUserCreateOutputObjects();
+  virtual void MyPrintConfig();
+  virtual void PrintConfig();
 
+  void SetHarmonic(Int_t val) {fHarmonic= val;}
+
+  void SetOutputList(TList *lst) {fList=lst;}
+  TList* GetOutputList() {return fList;}
   TList* RunTerminateAgain(TList *lst);
 
   void SetDebug(Int_t val=1) {fDebug = val;}
@@ -52,7 +60,6 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void Setpp() {fRunOnpA = kFALSE; fRunOnpp = kTRUE; }
   void SetReadESD(Bool_t val) {fReadESD=val;}
   void SetReadMC(Bool_t val) {fReadMC=val;}
-  void MyUserExec(Option_t *);
 
   void SetAvoidExec(Bool_t val) {fAvoidExec=val;}
   void SetVertexZcut(Double_t val) {fVertexZcut=val;}
@@ -81,9 +88,11 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
     {fVZECa=val1;fVZECb=val2;fVZEAa=val3;fVZEAb=val4;}
 
   void SetSkipSelection(Bool_t val) {fSkipSelection=val;}
+  void SetSkipVn(Bool_t val) {fSkipVn=val;}
   void SetPostMatched(Int_t val) {fPostMatched=val;}
   void SetK0L0(Int_t specie) {fSpecie=specie;}
   void SetMass(Int_t n, Double_t m, Double_t M) {fMassBins=n;fMinMass=m;fMaxMass=M;}
+  void SetPtEdges(Int_t n, Double_t *p);
   void SetOnline(Bool_t val) {fOnline=val;}
   void SetHomemade(Bool_t val) {fHomemade=val;}
   void SetExcludeTPCEdges(Bool_t value) {fExcludeTPCEdges=value;}
@@ -94,11 +103,13 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetMaxDCAdaughters(Double_t val) {fDecayMaxDCAdaughters=val;}
   void SetMinCosinePointingAngleXY(Double_t val) {fDecayMinCosinePointingAngleXY=val;}
   void SetMinQt(Double_t val, Bool_t val2=kTRUE) {fDecayMinQt=val; fDecayAPCutPie=val2;}
+  void SetStopPIDAtPt(Double_t val) {fDecayStopPIDAtPt=val;}
   void SetMinRadXY(Double_t val) {fDecayMinRadXY=val;}
   void SetMaxDecayLength(Double_t val) {fDecayMaxDecayLength=val;}
   void SetMaxProductIPXY(Double_t val) {fDecayMaxProductIPXY=val;}
 
   void SetDauMinNClsTPC(Int_t val) {fDaughterMinNClsTPC=val;}
+  void SetDauMinNClsITS(Int_t val) {fDaughterMinNClsITS=val;}
   void SetDauMinXRows(Int_t val) {fDaughterMinXRows=val;}
   void SetDauMaxChi2PerNClsTPC(Double_t val) {fDaughterMaxChi2PerNClsTPC=val;}
   void SetDauMinXRowsOverNClsFTPC(Double_t val) {fDaughterMinXRowsOverNClsFTPC=val;}
@@ -109,6 +120,17 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void SetDauMinImpactParameterXY(Double_t val) {fDaughterMinImpactParameterXY=val;}
   void SetDauMaxNSigmaPID(Double_t val) {fDaughterMaxNSigmaPID=val;}
   void SetDauUnTagProcedure(Bool_t val) {fDaughterUnTag=val;}
+  void SetDauSPDRequireAny(Bool_t val) {fDaughterSPDRequireAny=val;}
+  void SetDauITSrefit(Bool_t val) {fDaughterITSrefit=val;}
+
+  void OpenToyModel();
+  void MakeToyEvent(Int_t seed=0, Int_t m_decay = 30, Double_t v_decay = 0.05,
+		    Double_t mass_decay_mu = 0.497648, Double_t mass_decay_sg = 0.01,
+		    Int_t m_bgr = 30, Double_t v_bgr = 0.08,
+		    Int_t mtpc_a = 300, Double_t v_tpca = 0.10, Int_t mtpc_c = 300, Double_t v_tpcc = 0.10,
+		    Int_t mvze_a = 300, Double_t v_vzea = 0.10, Int_t mvze_c = 300, Double_t v_vzec = 0.10 );
+  void CloseToyModel();
+  TList* RebinDecayVn(Int_t nbins, Int_t *bins);
 
  private:
   AliAnalysisTaskFlowStrange(const AliAnalysisTaskFlowStrange& analysisTask);
@@ -138,6 +160,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
 
   void ComputePsi2(AliVEvent *event);
   void AddMakeQSpy();
+  void FillMakeQSpy();
+  void ComputeChi2VZERO();
   void MakeQVZE(AliVEvent *event);
   void MakeQTPC(AliVEvent *event);
   void MakeQTPC(AliESDEvent *event);
@@ -148,6 +172,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void ResetContainers();
 
   void AddCandidates();
+  TList* RebinDecayVn(TList *tList,Int_t nbins, Int_t *bins);
 
   Double_t GetMCDPHI(Double_t phi);
 
@@ -183,7 +208,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t PassesFilterBit(AliESDtrack *me);
 
   void LoadTrack(AliESDtrack *myTrack, Double_t aodChi2NDF=0);
-  Bool_t AcceptDaughter();
+  Bool_t AcceptDaughter(Bool_t strongITS=kTRUE);
   Bool_t AcceptCandidate();
   Bool_t PassesPIDCuts(AliESDtrack *myTrack, AliPID::EParticleType pid=AliPID::kProton);
 
@@ -199,7 +224,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   void AddVZEROResponse();
   void SaveVZEROResponse();
   void AddVZEQA();
-  void SaveVZEROQA();
+  void FillVZEQA();
+  void FillVZEQA(AliAODEvent *tAOD);
 
   Int_t RefMult(AliAODEvent *tAOD, Int_t fb);
   Int_t RefMultTPC();
@@ -224,6 +250,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Int_t fPostMatched;    // post only (un)matched particles
   Bool_t fAvoidExec;     // avoids Exec
   Bool_t fSkipSelection; // skip decay finder
+  Bool_t fSkipVn;        // skip flow computation
   Bool_t fUseFP;         // flow package?
   Bool_t fRunOnpA;       // make task compatible with pA event selection
   Bool_t fRunOnpp;       // make task compatible with pp event selection
@@ -255,6 +282,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Bool_t  fVZEsave; // make vze response
   TList  *fVZEload; // adress to calibration file
   TH2D   *fVZEResponse; // vze response vs centrality class
+  Double_t fVZEextW[64]; // vze weights
   Bool_t  fVZEmb;   // integrate response (linearity)
   Bool_t  fVZEByDisk; // normalized by disk
   Int_t   fVZECa;   // start of V0C (ring number 0-3)
@@ -273,6 +301,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fQVZECSin;
   Double_t fQVZEA;
   Double_t fQVZEC;
+  Bool_t fVZEWarning;
   // TPC QVector
   Double_t fQTPCACos;
   Double_t fQTPCASin;
@@ -291,8 +320,8 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Int_t    fMassBins; // opens
   Double_t fMinMass;  // mass
   Double_t fMaxMass;  // window
-  Double_t fMinMassX; // HP window
-  Double_t fMaxMassX; // HP window
+  Int_t fPtBins;        // to shrink
+  Double_t fPtBinEdge[100]; // output
 
   Int_t fRFPFilterBit;    // RFP TPC
   Double_t fRFPminPt;     // RFP TPC
@@ -314,6 +343,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDecayCosinePointingAngleXY; // DECAY
   Double_t fDecayRadXY;                 // DECAY
   Double_t fDecayDecayLength;           // DECAY
+  Double_t fDecayDecayLengthLab;        // DECAY
   Double_t fDecayQt;                    // DECAY
   Double_t fDecayAlpha;                 // DECAY
   Double_t fDecayRapidity;              // DECAY
@@ -339,6 +369,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDecayMinCosinePointingAngleXY; // DECAY CUTS
   Double_t fDecayMinQt;                    // DECAY CUTS
   Bool_t   fDecayAPCutPie;                 // DECAY CUTS
+  Double_t fDecayStopPIDAtPt;              // DECAY CUTS
   Double_t fDecayMinRadXY;                 // DECAY CUTS
   Double_t fDecayMaxDecayLength;           // DECAY CUTS
   Double_t fDecayMaxProductIPXY;           // DECAY CUTS
@@ -348,6 +379,7 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDaughterEta;               // DAUGHTER
   Double_t fDaughterPt;                // DAUGHTER
   Int_t    fDaughterNClsTPC;           // DAUGHTER
+  Int_t    fDaughterNClsITS;           // DAUGHTER
   Int_t    fDaughterITSConfig[6];      // DAUGHTER
   Int_t    fDaughterCharge;            // DAUGHTER
   Int_t    fDaughterNFClsTPC;          // DAUGHTER
@@ -376,11 +408,14 @@ class AliAnalysisTaskFlowStrange : public AliAnalysisTaskSE {
   Double_t fDaughterMaxEta;               // DAUGHTER CUTS
   Double_t fDaughterMinPt;                // DAUGHTER CUTS
   Int_t    fDaughterMinNClsTPC;           // DAUGHTER CUTS
+  Int_t    fDaughterMinNClsITS;           // DAUGHTER CUTS
   Int_t    fDaughterMinXRows;             // DAUGHTER CUTS
   Double_t fDaughterMaxChi2PerNClsTPC;    // DAUGHTER CUTS
   Double_t fDaughterMinXRowsOverNClsFTPC; // DAUGHTER CUTS
   Double_t fDaughterMinImpactParameterXY; // DAUGHTER CUTS
   Double_t fDaughterMaxNSigmaPID;         // DAUGHTER CUTS
+  Bool_t   fDaughterSPDRequireAny;        // DAUGHTER CUTS
+  Bool_t   fDaughterITSrefit;             // DAUGHTER CUTS
 
   ClassDef(AliAnalysisTaskFlowStrange, 6);
 };

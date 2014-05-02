@@ -64,7 +64,7 @@ updateQA()
   echo "logFile = $logFile"
 
   #check lock
-  lockFile=${logDirectory}/runQA.lock
+  lockFile=${workingDirectory}/runQA.lock
   [[ -f ${lockFile} ]] && echo "lock ${lockFile} exists!" | tee ${logFile} && return 1
   touch ${lockFile}
   [[ ! -f ${lockFile} ]] && echo "cannot lock $lockFile" | tee ${logFile} && return 1
@@ -130,6 +130,7 @@ updateQA()
         echo "could not guess run data from ${qaFile}"
         continue
       fi
+      echo "anchorYear for ${originalPeriod} is: ${anchorYear}"
 
       tmpProductionDir=${tmpPrefix}/${dataType}/${year}/${period}/${pass}
       tmpRunDir=${tmpProductionDir}/000${runNumber}
@@ -493,8 +494,11 @@ guessRunData()
   pass=""
   legoTrainRunNumber=""
   dataType=""
+  originalPass=""
+  originalPeriod=""
+  anchorYear=""
 
-  local shortRunNumber=""
+  shortRunNumber=""
   oldIFS=${IFS}
   local IFS="/"
   declare -a path=( $1 )
@@ -509,19 +513,27 @@ guessRunData()
 
     [[ ${field} =~ ^[0-9]*$ && ${fieldNext} =~ (.*\.zip$|.*\.root$) ]] && legoTrainRunNumber=${field}
     [[ -n ${legoTrainRunNumber} && -z ${pass} ]] && pass=${fieldPrev}
-    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*}
+    [[ ${field} =~ ^LHC[0-9][0-9][a-z].*$ ]] && period=${field%_*} && originalPeriod=${field}
     [[ ${field} =~ ^000[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && runNumber=${field#000}
     [[ ${field} =~ ^[0-9][0-9][0-9][0-9][0-9][0-9]$ ]] && shortRunNumber=${field}
     [[ ${field} =~ ^20[0-9][0-9]$ ]] && year=${field}
     [[ ${field} =~ ^(^sim$|^data$) ]] && dataType=${field}
     (( i++ ))
   done
+  originalPass=${pass}
+  [[ -n ${shortRunNumber} && "${legoTrainRunNumber}" =~ ${shortRunNumber} ]] && legoTrainRunNumber=""
   [[ -z ${legoTrainRunNumber} ]] && pass=${path[$((dirDepth-1))]}
-  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber}
+  [[ "${dataType}" =~ ^sim$ ]] && pass="passMC" && runNumber=${shortRunNumber} && originalPass="" #for MC not from lego, the runnumber is identified as lego train number, thus needs to be nulled
   [[ -n ${legoTrainRunNumber} ]] && pass+="_lego${legoTrainRunNumber}"
   
   #modify the OCDB: set the year
-  ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  if [[ ${dataType} =~ sim ]]; then 
+    anchorYear=$(for x in $mcProductionMap ; do [[ "${x}" =~ ${originalPeriod} ]] && echo ${x} && break; done)
+    anchorYear=${anchorYear#*=}
+    ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
+  else
+    ocdbStorage=$(setYear ${year} ${ocdbStorage})
+  fi
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
   if [[ -z ${runNumber}} ]]

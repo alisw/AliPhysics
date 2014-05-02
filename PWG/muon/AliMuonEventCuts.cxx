@@ -259,7 +259,7 @@ void AliMuonEventCuts::SetDefaultTrigClassPatterns ()
 
 
 //________________________________________________________________________
-void AliMuonEventCuts::SetTrigClassPatterns ( const TString trigPattern )
+void AliMuonEventCuts::SetTrigClassPatterns ( TString trigPattern )
 {
   /// Set trigger classes
   ///
@@ -488,7 +488,7 @@ UInt_t AliMuonEventCuts::GetTriggerInputBitMaskFromInputName(const char* inputNa
 }
 
 //________________________________________________________________________
-TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( const TString trigClassName ) const
+TArrayI AliMuonEventCuts::GetTrigClassPtCutLevel ( TString trigClassName ) const
 {
   /// Get trigger class pt cut level for tracking/trigger matching
   ///
@@ -618,7 +618,7 @@ const TObjArray* AliMuonEventCuts::GetSelectedTrigClassesInEvent( const AliVEven
 
 
 //________________________________________________________________________
-void AliMuonEventCuts::BuildTriggerClasses ( const TString firedTrigClasses,
+void AliMuonEventCuts::BuildTriggerClasses ( TString firedTrigClasses,
                                              UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs )
 {
   //
@@ -738,7 +738,7 @@ AliMuonEventCuts::CheckTriggerClassCombination ( const TObjArray* combo,
 
 //_____________________________________________________________________________
 void
-AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType )
+AliMuonEventCuts::AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, UInt_t comboType )
 {
   /// Add current trigger to the selected class for the event
   
@@ -817,7 +817,7 @@ void AliMuonEventCuts::SetCentralityClasses(Int_t nCentralityBins, Double_t* cen
 }
 
 //________________________________________________________________________
-void AliMuonEventCuts::SetCentralityEstimator ( const TString centralityEstimator )
+void AliMuonEventCuts::SetCentralityEstimator ( TString centralityEstimator )
 {
   /// Set centrality estimator
   fCentralityClasses->SetName(centralityEstimator.Data());

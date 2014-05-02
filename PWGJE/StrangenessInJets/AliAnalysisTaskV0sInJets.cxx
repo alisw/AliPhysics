@@ -46,13 +46,13 @@
 ClassImp(AliAnalysisTaskV0sInJets)
 
 // upper edges of centrality bins
-const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10, 30, 50, 80}; // Alice Zimmermann
+//const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10, 30, 50, 80}; // Alice Zimmermann
 //const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10, 20, 40, 60, 80}; // Vit Kucera, initial binning
 //const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {5, 10, 20, 40, 60, 80}; // Iouri Belikov, LF analysis
-//const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10}; // only central
+const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10}; // only central
 
 // axis: pT of V0
-const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtV0[2] = {0, 30};
+const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtV0[2] = {0, 12};
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtV0)/sizeof((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0])-1;
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[AliAnalysisTaskV0sInJets::fgkiNBinsPtV0]-(AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0])/0.1); // bin width 0.1 GeV/c
 // axis: pT of jets
@@ -60,9 +60,9 @@ const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtJet[2] = {0, 100};
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtJet = sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtJet)/sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtJet[0])-1;
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtJetInit = int(((AliAnalysisTaskV0sInJets::fgkdBinsPtJet)[AliAnalysisTaskV0sInJets::fgkiNBinsPtJet]-(AliAnalysisTaskV0sInJets::fgkdBinsPtJet)[0])/5.); // bin width 5 GeV/c
 // axis: K0S invariant mass
-const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsMassK0s = 200;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMin = 0.4;
-const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMax = 0.6;
+const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsMassK0s = 300;
+const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMin = 0.35;
+const Double_t AliAnalysisTaskV0sInJets::fgkdMassK0sMax = 0.65;
 // axis: Lambda invariant mass
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsMassLambda = 200;
 const Double_t AliAnalysisTaskV0sInJets::fgkdMassLambdaMin = 1.05;
@@ -89,6 +89,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
   fdCutNTauMax(5),
 
   fsJetBranchName(0),
+  fsJetBgBranchName(0),
   fdCutPtJetMin(0),
   fdCutPtTrackMin(5),
   fdRadiusJet(0.4),
@@ -115,6 +116,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
   fh2EventCentTracks(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
+  fh1NMedConeCent(0),
   fh1AreaExcluded(0),
 
   fh2CCK0s(0),
@@ -277,16 +279,19 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
       fhnV0InJetK0s[i] = 0;
       fhnV0InPerpK0s[i] = 0;
       fhnV0InRndK0s[i] = 0;
+      fhnV0InMedK0s[i] = 0;
       fhnV0OutJetK0s[i] = 0;
       fhnV0NoJetK0s[i] = 0;
       fhnV0InJetLambda[i] = 0;
       fhnV0InPerpLambda[i] = 0;
       fhnV0InRndLambda[i] = 0;
+      fhnV0InMedLambda[i] = 0;
       fhnV0OutJetLambda[i] = 0;
       fhnV0NoJetLambda[i] = 0;
       fhnV0InJetALambda[i] = 0;
       fhnV0InPerpALambda[i] = 0;
       fhnV0InRndALambda[i] = 0;
+      fhnV0InMedALambda[i] = 0;
       fhnV0OutJetALambda[i] = 0;
       fhnV0NoJetALambda[i] = 0;
 
@@ -309,6 +314,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
       fh1PhiJet[i] = 0;
       fh1NJetPerEvent[i] = 0;
       fh2EtaPhiRndCone[i] = 0;
+      fh2EtaPhiMedCone[i] = 0;
 
       fh1VtxZ[i] = 0;
       fh2VtxXY[i] = 0;
@@ -335,6 +341,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
   fdCutNTauMax(5),
 
   fsJetBranchName(0),
+  fsJetBgBranchName(0),
   fdCutPtJetMin(0),
   fdCutPtTrackMin(5),
   fdRadiusJet(0.4),
@@ -360,6 +367,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
   fh2EventCentTracks(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
+  fh1NMedConeCent(0),
   fh1AreaExcluded(0),
 
   fh2CCK0s(0),
@@ -522,16 +530,19 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
       fhnV0InJetK0s[i] = 0;
       fhnV0InPerpK0s[i] = 0;
       fhnV0InRndK0s[i] = 0;
+      fhnV0InMedK0s[i] = 0;
       fhnV0OutJetK0s[i] = 0;
       fhnV0NoJetK0s[i] = 0;
       fhnV0InJetLambda[i] = 0;
       fhnV0InPerpLambda[i] = 0;
       fhnV0InRndLambda[i] = 0;
+      fhnV0InMedLambda[i] = 0;
       fhnV0OutJetLambda[i] = 0;
       fhnV0NoJetLambda[i] = 0;
       fhnV0InJetALambda[i] = 0;
       fhnV0InPerpALambda[i] = 0;
       fhnV0InRndALambda[i] = 0;
+      fhnV0InMedALambda[i] = 0;
       fhnV0OutJetALambda[i] = 0;
       fhnV0NoJetALambda[i] = 0;
 
@@ -554,6 +565,7 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
       fh1PhiJet[i] = 0;
       fh1NJetPerEvent[i] = 0;
       fh2EtaPhiRndCone[i] = 0;
+      fh2EtaPhiMedCone[i] = 0;
 
       fh1VtxZ[i] = 0;
       fh2VtxXY[i] = 0;
@@ -572,24 +584,24 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
 
 AliAnalysisTaskV0sInJets::~AliAnalysisTaskV0sInJets()
 {
-/*
-  if (fBranchV0Rec)
-    fBranchV0Rec->Delete();
-  delete fBranchV0Rec;
-  fBranchV0Rec = 0;
-  if (fBranchV0Gen)
-    fBranchV0Gen->Delete();
-  delete fBranchV0Gen;
-  fBranchV0Gen = 0;
-  if (fBranchJet)
-    fBranchJet->Delete();
-  delete fBranchJet;
-  fBranchJet = 0;
-  if (fEventInfo)
-    fEventInfo->Delete();
-  delete fEventInfo;
-  fEventInfo = 0;
-*/
+  /*
+    if (fBranchV0Rec)
+      fBranchV0Rec->Delete();
+    delete fBranchV0Rec;
+    fBranchV0Rec = 0;
+    if (fBranchV0Gen)
+      fBranchV0Gen->Delete();
+    delete fBranchV0Gen;
+    fBranchV0Gen = 0;
+    if (fBranchJet)
+      fBranchJet->Delete();
+    delete fBranchJet;
+    fBranchJet = 0;
+    if (fEventInfo)
+      fEventInfo->Delete();
+    delete fEventInfo;
+    fEventInfo = 0;
+  */
   delete fRandom;
   fRandom = 0;
 }
@@ -601,39 +613,39 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
 
   fRandom = new TRandom3(0);
 
-/*
-  if (!fBranchV0Rec && fbTreeOutput)
+  /*
+    if (!fBranchV0Rec && fbTreeOutput)
+      {
+  //      fBranchV0Rec = new TClonesArray("AliAODv0",0);
+        fBranchV0Rec = new TClonesArray("AliV0Object",0);
+        fBranchV0Rec->SetName("branch_V0Rec");
+      }
+    if (!fBranchV0Gen && fbTreeOutput)
+      {
+        fBranchV0Gen = new TClonesArray("AliAODMCParticle",0);
+        fBranchV0Gen->SetName("branch_V0Gen");
+      }
+    if (!fBranchJet && fbTreeOutput)
+      {
+  //      fBranchJet = new TClonesArray("AliAODJet",0);
+        fBranchJet = new TClonesArray("AliJetObject",0);
+        fBranchJet->SetName("branch_Jet");
+      }
+    if (!fEventInfo && fbTreeOutput)
+      {
+        fEventInfo = new AliEventInfoObject();
+        fEventInfo->SetName("eventInfo");
+      }
+    Int_t dSizeBuffer = 32000; // default 32000
+    if (fbTreeOutput)
     {
-//      fBranchV0Rec = new TClonesArray("AliAODv0",0);
-      fBranchV0Rec = new TClonesArray("AliV0Object",0);
-      fBranchV0Rec->SetName("branch_V0Rec");
+    ftreeOut = new TTree("treeV0","Tree V0");
+    ftreeOut->Branch("branch_V0Rec",&fBranchV0Rec,dSizeBuffer,2);
+    ftreeOut->Branch("branch_V0Gen",&fBranchV0Gen,dSizeBuffer,2);
+    ftreeOut->Branch("branch_Jet",&fBranchJet,dSizeBuffer,2);
+    ftreeOut->Branch("eventInfo",&fEventInfo,dSizeBuffer,2);
     }
-  if (!fBranchV0Gen && fbTreeOutput)
-    {
-      fBranchV0Gen = new TClonesArray("AliAODMCParticle",0);
-      fBranchV0Gen->SetName("branch_V0Gen");
-    }
-  if (!fBranchJet && fbTreeOutput)
-    {
-//      fBranchJet = new TClonesArray("AliAODJet",0);
-      fBranchJet = new TClonesArray("AliJetObject",0);
-      fBranchJet->SetName("branch_Jet");
-    }
-  if (!fEventInfo && fbTreeOutput)
-    {
-      fEventInfo = new AliEventInfoObject();
-      fEventInfo->SetName("eventInfo");
-    }
-  Int_t dSizeBuffer = 32000; // default 32000
-  if (fbTreeOutput)
-  {
-  ftreeOut = new TTree("treeV0","Tree V0");
-  ftreeOut->Branch("branch_V0Rec",&fBranchV0Rec,dSizeBuffer,2);
-  ftreeOut->Branch("branch_V0Gen",&fBranchV0Gen,dSizeBuffer,2);
-  ftreeOut->Branch("branch_Jet",&fBranchJet,dSizeBuffer,2);
-  ftreeOut->Branch("eventInfo",&fEventInfo,dSizeBuffer,2);
-  }
-*/
+  */
 
   fOutputListStd = new TList();
   fOutputListStd->SetOwner();
@@ -661,6 +673,9 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
   fh1NRndConeCent = new TH1D("fh1NRndConeCent","Number of rnd. cones in centrality bins;centrality;counts",fgkiNBinsCent,0,fgkiNBinsCent);
   for (Int_t i = 0; i < fgkiNBinsCent; i++)
     fh1NRndConeCent->GetXaxis()->SetBinLabel(i+1,GetCentBinLabel(i).Data());
+  fh1NMedConeCent = new TH1D("fh1NMedConeCent","Number of med.-cl. cones in centrality bins;centrality;counts",fgkiNBinsCent,0,fgkiNBinsCent);
+  for (Int_t i = 0; i < fgkiNBinsCent; i++)
+    fh1NMedConeCent->GetXaxis()->SetBinLabel(i+1,GetCentBinLabel(i).Data());
   fh1AreaExcluded = new TH1D("fh1AreaExcluded","Area of excluded cones in centrality bins;centrality;area",fgkiNBinsCent,0,fgkiNBinsCent);
   for (Int_t i = 0; i < fgkiNBinsCent; i++)
     fh1AreaExcluded->GetXaxis()->SetBinLabel(i+1,GetCentBinLabel(i).Data());
@@ -668,6 +683,7 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
   fOutputListStd->Add(fh1EventCent);
   fOutputListStd->Add(fh1EventCent2);
   fOutputListStd->Add(fh1NRndConeCent);
+  fOutputListStd->Add(fh1NMedConeCent);
   fOutputListStd->Add(fh1AreaExcluded);
   fOutputListStd->Add(fh2EventCentTracks);
 
@@ -794,6 +810,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
       fOutputListStd->Add(fhnV0InPerpK0s[i]);
       fhnV0InRndK0s[i] = new THnSparseD(Form("fhnV0InRndK0s_%d",i),Form("K0s: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsKIncl,xminKIncl,xmaxKIncl);
       fOutputListStd->Add(fhnV0InRndK0s[i]);
+      fhnV0InMedK0s[i] = new THnSparseD(Form("fhnV0InMedK0s_%d",i),Form("K0s: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsKIncl,xminKIncl,xmaxKIncl);
+      fOutputListStd->Add(fhnV0InMedK0s[i]);
       fhnV0OutJetK0s[i] = new THnSparseD(Form("fhnV0OutJetK0s_%d",i),Form("K0s: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsKIncl,xminKIncl,xmaxKIncl);
       fOutputListStd->Add(fhnV0OutJetK0s[i]);
       fhnV0NoJetK0s[i] = new THnSparseD(Form("fhnV0NoJetK0s_%d",i),Form("K0s: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsKIncl,xminKIncl,xmaxKIncl);
@@ -804,6 +822,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
       fOutputListStd->Add(fhnV0InPerpLambda[i]);
       fhnV0InRndLambda[i] = new THnSparseD(Form("fhnV0InRndLambda_%d",i),Form("Lambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
       fOutputListStd->Add(fhnV0InRndLambda[i]);
+      fhnV0InMedLambda[i] = new THnSparseD(Form("fhnV0InMedLambda_%d",i),Form("Lambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
+      fOutputListStd->Add(fhnV0InMedLambda[i]);
       fhnV0OutJetLambda[i] = new THnSparseD(Form("fhnV0OutJetLambda_%d",i),Form("Lambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
       fOutputListStd->Add(fhnV0OutJetLambda[i]);
       fhnV0NoJetLambda[i] = new THnSparseD(Form("fhnV0NoJetLambda_%d",i),Form("Lambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
@@ -814,6 +834,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
       fOutputListStd->Add(fhnV0InPerpALambda[i]);
       fhnV0InRndALambda[i] = new THnSparseD(Form("fhnV0InRndALambda_%d",i),Form("ALambda: Mass vs Pt in rnd. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
       fOutputListStd->Add(fhnV0InRndALambda[i]);
+      fhnV0InMedALambda[i] = new THnSparseD(Form("fhnV0InMedALambda_%d",i),Form("ALambda: Mass vs Pt in med.-cl. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
+      fOutputListStd->Add(fhnV0InMedALambda[i]);
       fhnV0OutJetALambda[i] = new THnSparseD(Form("fhnV0OutJetALambda_%d",i),Form("ALambda: Pt outside jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
       fOutputListStd->Add(fhnV0OutJetALambda[i]);
       fhnV0NoJetALambda[i] = new THnSparseD(Form("fhnV0NoJetALambda_%d",i),Form("ALambda: Pt in jet-less events, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c})",GetCentBinLabel(i).Data()),iNDimIncl,binsLIncl,xminLIncl,xmaxLIncl);
@@ -856,6 +878,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
       fOutputListStd->Add(fh2EtaPtJet[i]);
       fh2EtaPhiRndCone[i] = new TH2D(Form("fh2EtaPhiRndCone_%d",i),Form("Rnd. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone",GetCentBinLabel(i).Data()),80,-1.,1.,100,0.,TMath::TwoPi());
       fOutputListStd->Add(fh2EtaPhiRndCone[i]);
+      fh2EtaPhiMedCone[i] = new TH2D(Form("fh2EtaPhiMedCone_%d",i),Form("Med.-cl. cones: eta vs phi, cent: %s;#it{#eta} cone;#it{#phi} cone",GetCentBinLabel(i).Data()),80,-1.,1.,100,0.,TMath::TwoPi());
+      fOutputListStd->Add(fh2EtaPhiMedCone[i]);
       fh1PhiJet[i] = new TH1D(Form("fh1PhiJet_%d",i),Form("Jet phi spectrum, cent: %s;#it{#phi} jet",GetCentBinLabel(i).Data()),100,0.,TMath::TwoPi());
       fOutputListStd->Add(fh1PhiJet[i]);
       fh1NJetPerEvent[i] = new TH1D(Form("fh1NJetPerEvent_%d",i),Form("Number of selected jets per event, cent: %s;# jets;# events",GetCentBinLabel(i).Data()),100,0.,100.);
@@ -1197,17 +1221,17 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
 {
   // Main loop, called for each event
   if(fDebug>5) printf("TaskV0sInJets: UserExec: Start\n");
-/*
-  // reset branches for each event
-  if (fBranchV0Rec)
-    fBranchV0Rec->Clear();
-  if (fBranchV0Gen)
-    fBranchV0Gen->Clear();
-  if (fBranchJet)
-    fBranchJet->Clear();
-  if (fEventInfo)
-    fEventInfo->Reset();
-*/
+  /*
+    // reset branches for each event
+    if (fBranchV0Rec)
+      fBranchV0Rec->Clear();
+    if (fBranchV0Gen)
+      fBranchV0Gen->Clear();
+    if (fBranchJet)
+      fBranchJet->Clear();
+    if (fEventInfo)
+      fEventInfo->Reset();
+  */
   if (!fiAODAnalysis)
     return;
 
@@ -1284,6 +1308,11 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
 //  fdCentrality = fAODIn->GetHeader()->GetCentrality(); // event centrality
   fdCentrality = fAODIn->GetHeader()->GetCentralityP()->GetCentralityPercentile("V0M"); // event centrality
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
+  if (iCentIndex<0)
+    {
+      if(fDebug>5) printf("TaskV0sInJets: Event is out of histogram range\n");
+      return;
+    }
   fh1EventCounterCut->Fill(2); // selected events (vertex, centrality)
   fh1EventCounterCutCent[iCentIndex]->Fill(2);
 
@@ -1421,6 +1450,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
 //  Int_t iNJetAll = 0; // number of reconstructed jets in fBranchJet
 //  iNJetAll = fBranchJet->GetEntriesFast(); // number of reconstructed jets
   TClonesArray* jetArray = 0; // object where the input jets are stored
+  TClonesArray* jetArrayBg = 0; // object where the kt clusters are stored
   Int_t iNJet = 0; // number of reconstructed jets in the input
   TClonesArray* jetArraySel = new TClonesArray("AliAODJet",0); // object where the selected jets are copied
   Int_t iNJetSel = 0; // number of selected reconstructed jets
@@ -1432,6 +1462,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
 //  AliJetObject* objectJet = 0;
   AliAODJet* jetPerp = 0; // pointer to a perp. cone
   AliAODJet* jetRnd = 0; // pointer to a rand. cone
+  AliAODJet* jetMed = 0; // pointer to a median cluster
   TVector3 vecJetMomentum; // 3D vector of jet momentum
 //  TVector3 vecPerpConeMomentum; // 3D vector of perpendicular cone momentum
 //  TVector3 vecRndConeMomentum; // 3D vector of random cone momentum
@@ -1453,6 +1484,16 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
         {
           if(fDebug>2) printf("TaskV0sInJets: No jets in array\n");
           bJetEventGood = kFALSE;
+        }
+      if (bJetEventGood)
+        {
+//          printf("TaskV0sInJets: Loading bg array of name: %s\n",fsJetBgBranchName.Data());
+          jetArrayBg = (TClonesArray*)(fAODOut->FindListObject(fsJetBgBranchName.Data())); // find object with jets in the output AOD
+          if (!jetArrayBg)
+            {
+              if(fDebug>0) printf("TaskV0sInJets: No bg array of name: %s\n",fsJetBgBranchName.Data());
+//              bJetEventGood = kFALSE;
+            }
         }
     }
   else // no in-jet analysis
@@ -1524,16 +1565,16 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
           if (bPrintJetSelection)
             if(fDebug>7) printf("accepted\n");
           if(fDebug>5) printf("TaskV0sInJets: Jet %d with pt %.2f passed selection\n",iJet,jetSel->Pt());
-/*
-          if (fbTreeOutput)
-          {
-//          new ((*fBranchJet)[iNJetAll++]) AliAODJet(*((AliAODJet*)jetSel));
-          objectJet = new ((*fBranchJet)[iNJetAll++]) AliJetObject(jetSel); // copy selected jet to the array
-//          objectJet->SetPtLeadingTrack(dPtLeadTrack);
-          objectJet->SetRadius(fdRadiusJet);
-          objectJet = 0;
-          }
-*/
+          /*
+                    if (fbTreeOutput)
+                    {
+          //          new ((*fBranchJet)[iNJetAll++]) AliAODJet(*((AliAODJet*)jetSel));
+                    objectJet = new ((*fBranchJet)[iNJetAll++]) AliJetObject(jetSel); // copy selected jet to the array
+          //          objectJet->SetPtLeadingTrack(dPtLeadTrack);
+                    objectJet->SetRadius(fdRadiusJet);
+                    objectJet = 0;
+                    }
+          */
           TLorentzVector vecPerpPlus(*(jetSel->MomentumVector()));
           vecPerpPlus.RotateZ(TMath::Pi()/2.); // rotate vector by 90 deg around z
           TLorentzVector vecPerpMinus(*(jetSel->MomentumVector()));
@@ -1586,6 +1627,12 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
           fh1NRndConeCent->Fill(iCentIndex);
           fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(),jetRnd->Phi());
         }
+      jetMed = GetMedianCluster(jetArrayBg,dJetEtaWindow);
+      if (jetMed)
+        {
+          fh1NMedConeCent->Fill(iCentIndex);
+          fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(),jetMed->Phi());
+        }
     }
 
   // Loading primary vertex info
@@ -1614,6 +1661,7 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
       Bool_t bIsInConeJet = kFALSE; // candidate within the jet cones
       Bool_t bIsInConePerp = kFALSE; // candidate within the perpendicular cone
       Bool_t bIsInConeRnd = kFALSE; // candidate within the random cone
+      Bool_t bIsInConeMed = kFALSE; // candidate within the median-cluster cone
       Bool_t bIsOutsideCones = kFALSE; // candidate outside excluded cones
 
       // Invariant mass calculation
@@ -1976,20 +2024,20 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
       if (!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
         continue;
 
-/*
-      if(fDebug>5) printf("TaskV0sInJets: Adding selected V0 to branch\n");
-      // Add selected candidates to the output tree branch
-      if ((bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda) && fbTreeOutput)
-        {
-          objectV0 = new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliV0Object(v0,primVtx);
-//          new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliAODv0(*((AliAODv0*)v0));
-          objectV0->SetIsCandidateK0S(bIsCandidateK0s);
-          objectV0->SetIsCandidateLambda(bIsCandidateLambda);
-          objectV0->SetIsCandidateALambda(bIsCandidateALambda);
-          objectV0->SetNSigmaPosProton(dNSigmaPosProton);
-          objectV0->SetNSigmaNegProton(dNSigmaNegProton);
-        }
-*/
+      /*
+            if(fDebug>5) printf("TaskV0sInJets: Adding selected V0 to branch\n");
+            // Add selected candidates to the output tree branch
+            if ((bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda) && fbTreeOutput)
+              {
+                objectV0 = new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliV0Object(v0,primVtx);
+      //          new ((*fBranchV0Rec)[iNV0SelV0Rec++]) AliAODv0(*((AliAODv0*)v0));
+                objectV0->SetIsCandidateK0S(bIsCandidateK0s);
+                objectV0->SetIsCandidateLambda(bIsCandidateLambda);
+                objectV0->SetIsCandidateALambda(bIsCandidateALambda);
+                objectV0->SetNSigmaPosProton(dNSigmaPosProton);
+                objectV0->SetNSigmaNegProton(dNSigmaNegProton);
+              }
+      */
 
       // Selection of V0s in jet cones, perpendicular cones, random cones, outside cones
       if (bJetEventGood && iNJetSel && (bIsCandidateK0s || bIsCandidateLambda || bIsCandidateALambda))
@@ -2029,6 +2077,16 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
                 {
                   if(fDebug>5) printf("TaskV0sInJets: V0 %d %d found in the rnd. cone\n",bIsCandidateK0s,bIsCandidateLambda);
                   bIsInConeRnd = kTRUE;
+                }
+            }
+          // Selection of V0s in median-cluster cones
+          if (jetMed)
+            {
+              if(fDebug>5) printf("TaskV0sInJets: Searching for V0 %d %d in the med. cone\n",bIsCandidateK0s,bIsCandidateLambda);
+              if (IsParticleInCone(v0,jetMed,fdRadiusJet)) // V0 in med. cone?
+                {
+                  if(fDebug>5) printf("TaskV0sInJets: V0 %d %d found in the med. cone\n",bIsCandidateK0s,bIsCandidateLambda);
+                  bIsInConeMed = kTRUE;
                 }
             }
           // Selection of V0s outside jet cones
@@ -2127,6 +2185,11 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
               Double_t valueKInRnd[3] = {dMassV0K0s,dPtV0,dEtaV0};
               fhnV0InRndK0s[iCentIndex]->Fill(valueKInRnd);
             }
+          if (bIsInConeMed)
+            {
+              Double_t valueKInMed[3] = {dMassV0K0s,dPtV0,dEtaV0};
+              fhnV0InMedK0s[iCentIndex]->Fill(valueKInMed);
+            }
           if (!iNJetSel)
             {
               Double_t valueKNoJet[3] = {dMassV0K0s,dPtV0,dEtaV0};
@@ -2170,6 +2233,11 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
               Double_t valueLInRnd[3] = {dMassV0Lambda,dPtV0,dEtaV0};
               fhnV0InRndLambda[iCentIndex]->Fill(valueLInRnd);
             }
+          if (bIsInConeMed)
+            {
+              Double_t valueLInMed[3] = {dMassV0Lambda,dPtV0,dEtaV0};
+              fhnV0InMedLambda[iCentIndex]->Fill(valueLInMed);
+            }
           if (!iNJetSel)
             {
               Double_t valueLNoJet[3] = {dMassV0Lambda,dPtV0,dEtaV0};
@@ -2212,6 +2280,11 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
             {
               Double_t valueALInRnd[3] = {dMassV0ALambda,dPtV0,dEtaV0};
               fhnV0InRndALambda[iCentIndex]->Fill(valueALInRnd);
+            }
+          if (bIsInConeMed)
+            {
+              Double_t valueALInMed[3] = {dMassV0ALambda,dPtV0,dEtaV0};
+              fhnV0InMedALambda[iCentIndex]->Fill(valueALInMed);
             }
           if (!iNJetSel)
             {
@@ -2321,16 +2394,16 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
 //          Double_t dResolutionV0Eta = particleMCMother->Eta()-v0->Eta();
 //          Double_t dResolutionV0Phi = particleMCMother->Phi()-v0->Phi();
 
-/*
-          if (fbTreeOutput)
-          {
-          objectV0->SetPtTrue(dPtV0Gen);
-          objectV0->SetEtaTrue(dEtaV0Gen);
-          objectV0->SetPhiTrue(dPhiV0Gen);
-          objectV0->SetPDGCode(iPdgCodeMother);
-          objectV0->SetPDGCodeMother(iPdgCodeMotherOfMother);
-          }
-*/
+          /*
+                    if (fbTreeOutput)
+                    {
+                    objectV0->SetPtTrue(dPtV0Gen);
+                    objectV0->SetEtaTrue(dEtaV0Gen);
+                    objectV0->SetPhiTrue(dPhiV0Gen);
+                    objectV0->SetPDGCode(iPdgCodeMother);
+                    objectV0->SetPDGCodeMother(iPdgCodeMotherOfMother);
+                    }
+          */
 
           // K0s
 //          if (bIsCandidateK0s && bIsInPeakK0s) // selected candidates in peak
@@ -2841,7 +2914,7 @@ Bool_t AliAnalysisTaskV0sInJets::OverlapWithJets(const TClonesArray* array, cons
   return kFALSE;
 }
 
-AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Double_t dEtaMax, Double_t dDistance) const
+AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const
 {
 // generate a random cone which does not overlap with selected jets
 //  printf("Generating random cone...\n");
@@ -2853,7 +2926,7 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Do
   for (Int_t iTry=0; iTry<iNTrialsMax; iTry++)
     {
 //      printf("Try %d\n",iTry);
-      dEta = dEtaMax*(2*fRandom->Rndm()-1.); // random eta in [-dEtaMax,+dEtaMax]
+      dEta = dEtaConeMax*(2*fRandom->Rndm()-1.); // random eta in [-dEtaConeMax,+dEtaConeMax]
       dPhi = TMath::TwoPi()*fRandom->Rndm(); // random phi in [0,2*Pi]
       vecCone.SetPtEtaPhiM(1.,dEta,dPhi,0.);
       part = new AliAODJet(vecCone);
@@ -2869,6 +2942,75 @@ AliAODJet* AliAnalysisTaskV0sInJets::GetRandomCone(const TClonesArray* array, Do
   if (!bStatus)
     part = 0;
   return part;
+}
+
+AliAODJet* AliAnalysisTaskV0sInJets::GetMedianCluster(const TClonesArray* array, Double_t dEtaConeMax) const
+{
+// sort kt clusters by pT/area and return the middle one, based on code in AliAnalysisTaskJetChem
+  if (!array)
+    {
+      if(fDebug>0) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Error: No array\n");
+      return NULL;
+    }
+  Int_t iNCl = array->GetEntriesFast();
+//  Int_t iNClE = array->GetEntries();
+  if (iNCl<3) // need at least 3 clusters (skipping 2 highest)
+    {
+      if(fDebug>2) printf("AliAnalysisTaskV0sInJets::GetMedianCluster: Warning: Too little clusters\n");
+      return NULL;
+    }
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: EntriesFast: %d, Entries: %d\n",iNCl,iNClE);
+
+  // get list of densities
+  Double_t* dBgDensity = new Double_t[iNCl];
+  Int_t* iIndexList = new Int_t[iNCl];
+  for (Int_t ij=0; ij<iNCl; ij++)
+    {
+      AliAODJet* clusterBg = (AliAODJet*)(array->At(ij));
+      if (!clusterBg)
+        {
+//          printf("AliAnalysisTaskV0sInJets::GetMedianCluster: cluster %d/%d not ok\n",ij,iNCl);
+          delete[] dBgDensity;
+          delete[] iIndexList;
+          return NULL;
+        }
+      Double_t dPtBg = clusterBg->Pt();
+      Double_t dAreaBg = clusterBg->EffectiveAreaCharged();
+
+      Double_t dDensityBg = 0;
+      if(dAreaBg>0)
+        dDensityBg = dPtBg/dAreaBg;
+      dBgDensity[ij] = dDensityBg;
+      iIndexList[ij] = ij;
+    }
+  // sort iIndexList by dBgDensity in descending order
+  TMath::Sort(iNCl, dBgDensity, iIndexList);
+
+  // get median cluster with median density
+  AliAODJet* clusterMed = 0;
+  Int_t iIndexMed = 0;
+  if (TMath::Odd(iNCl)) // odd number of clusters
+    {
+      iIndexMed = iIndexList[(Int_t) (0.5*(iNCl+1))]; // = (n - skip + 1)/2 + 1, skip = 2
+    }
+  else // even number: picking randomly one of the two closest to median
+    {
+      Int_t iIndexMed1 = iIndexList[(Int_t) (0.5*iNCl)]; // = (n - skip)/2 + 1, skip = 2
+      Int_t iIndexMed2 = iIndexList[(Int_t) (0.5*iNCl+1)]; // = (n - skip)/2 + 1 + 1, skip = 2
+      iIndexMed = ( (fRandom->Rndm()>0.5) ? iIndexMed1 : iIndexMed2 ); // select one randomly to avoid adding areas
+    }
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: getting median cluster %d/%d ok\n",iIndexMed,iNCl);
+  clusterMed = (AliAODJet*)(array->At(iIndexMed));
+
+  delete[] dBgDensity;
+  delete[] iIndexList;
+
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: checking eta cut %g\n",dEtaConeMax);
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: checking eta cut |%g| < %g?\n",clusterMed->Eta(),dEtaConeMax);
+  if (TMath::Abs(clusterMed->Eta())>dEtaConeMax)
+    return NULL;
+//  printf("AliAnalysisTaskV0sInJets::GetMedianCluster: cluster %d/%d passed\n",iIndexMed,iNCl);
+  return clusterMed;
 }
 
 Double_t AliAnalysisTaskV0sInJets::AreaCircSegment(Double_t dRadius, Double_t dDistance) const

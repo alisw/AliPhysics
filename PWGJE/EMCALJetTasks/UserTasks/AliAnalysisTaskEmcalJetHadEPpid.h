@@ -112,8 +112,8 @@ protected:
   virtual void           Terminate(Option_t *); 
   virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
   virtual Int_t          GetCentBin(Double_t cent) const; // centrality bin of event
-  Float_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
-  Float_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
+  Double_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
+  Double_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
   virtual Int_t          GetEtaBin(Double_t eta) const;      // eta bins
   virtual Int_t          GetpTjetBin(Double_t pt) const;     // jet pt bins
   virtual Int_t          GetpTtrackBin(Double_t pt) const;   // track pt bins
@@ -170,13 +170,8 @@ protected:
 
   // boolean functions for PID
   Bool_t		 isPItpc, isKtpc, isPtpc;
-  Double_t			 nPIDtpc;
-
   Bool_t		 isPIits, isKits, isPits;
-  Double_t			 nPIDits;  
-
   Bool_t		 isPItof, isKtof, isPtof;
-  Double_t			 nPIDtof;
 
   // event pool
   TObjArray*		    CloneAndReduceTrackList(TObjArray* tracks);
@@ -246,10 +241,10 @@ protected:
   TH1		       		*fHistJetHadbindPhiOUT[9]; 
   TH2                   *fHistJetHEtaPhi;
 
-  TH1                   *fHistJetPt[2];
-  TH1                   *fHistJetPtBias[2];
-  TH1                   *fHistJetPtTT[2];
-  TH2                   *fHistAreavsRawPt[2];
+  TH1                   *fHistJetPt[6];
+  TH1                   *fHistJetPtBias[6];
+  TH1                   *fHistJetPtTT[6];
+  TH2                   *fHistAreavsRawPt[6];
   TH2                   *fHistJetH[2][5][3];
   TH2                   *fHistJetHBias[2][5][3];
   TH2                   *fHistJetHTT[2][5][3];

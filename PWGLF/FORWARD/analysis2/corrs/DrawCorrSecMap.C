@@ -35,12 +35,13 @@ DrawCorrSecMap(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
   // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
+  gSystem->AddIncludePath(Form("-I%s/scripts -I%s", fwd, fwd));
   gROOT->LoadMacro(Form("%s/scripts/SummaryDrawer.C", fwd));
   gROOT->LoadMacro(Form("%s/corrs/CorrDrawer.C", fwd));
 
   CorrDrawer d;
   d.Run(AliForwardCorrectionManager::kSecondaryMap, runNo, sys, sNN, field, 
-	false, false, "", fname);
+	false, false, "LANDSCAPE", fname);
 }
 //
 // EOF

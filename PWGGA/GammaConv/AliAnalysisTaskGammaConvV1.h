@@ -177,6 +177,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;
+   TH2F **hNGoodESDTracksVsNGammaCanditates;
    TH1I **hNV0Tracks;
    TProfile **hEtaShift;
    TTree **tESDMesonsInvMassPtDcazMinDcazMaxFlag;

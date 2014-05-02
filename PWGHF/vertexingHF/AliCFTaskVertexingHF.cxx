@@ -683,6 +683,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliDebug(3,Form("z coordinate of MC vertex = %f, it was required to be within [-%f, +%f], skipping event", zMCVertex, fCuts->GetMaxVtxZ(), fCuts->GetMaxVtxZ()));
     delete[] containerInput;
     delete[] containerInputMC;
+    delete cfVtxHF;
     return;
   }
 
@@ -691,6 +692,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
     AliDebug(3,"Event rejected because of null trigger mask");
     delete[] containerInput;
     delete[] containerInputMC;
+    delete cfVtxHF;
     return;
   }
 
@@ -734,6 +736,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       delete[] containerInput;
       delete[] containerInputMC;
       delete [] trackCuts;
+      delete cfVtxHF;
       return;
     }    
   }  else { // keep all centralities
@@ -1403,6 +1406,36 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
   fFuncWeight->SetParameters(2.94999e+00,3.47032e+00,2.81278e+00,2.5,1.93370e-02,3.86865e+00,-1.54113e-01,8.86944e-02,2.56267e-02);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC10f6a(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
+  fFuncWeight->SetParameters(2.41522e+01,4.92146e+00,6.72495e+00,2.5,6.15361e-03,4.78995e+00,-4.29135e-01,3.99421e-01,-1.57220e-02);
+  fUseWeight=kTRUE;
+}
+
+//________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC10f6a(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
+  fFuncWeight->SetParameters(2.77730e+01,4.78942e+00,7.45378e+00,2.5,9.86255e-02,2.30120e+00,-4.16435e-01,3.43770e-01,-2.29380e-02);
+  fUseWeight=kTRUE;
+}
+
+//________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC10f6a(){
+  // weight function from the ratio of the LHC12a17b MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,40.);
+  fFuncWeight->SetParameters(1.34412e+01,3.20068e+00,5.14481e+00,2.5,7.59405e-04,7.51821e+00,-3.93811e-01,2.16849e-02,-3.37768e-02,2.40308e+00);
   fUseWeight=kTRUE;
 }
 

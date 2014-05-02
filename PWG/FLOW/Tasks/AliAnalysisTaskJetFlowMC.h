@@ -42,6 +42,8 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         void    SetIntegratedV3(TH1* v3)                        { fHistIntV3 = v3; }
         void    SetTrackSpectrum(TF1* ts)                       { fTrackSpectrum = ts; }
         void    SetRandomizeEta(Bool_t b)                       { fRandomizeEta = b; }
+        void    SetMultiplicity(Int_t m)                        { fMult = m; }
+        void    SetReuseTracks(Bool_t r)                        { fReuseTracks = r; }
         void    SetSingleFragmentationJetSpectrum(TF1* js)      { fJetSpectrumSF = js; }
         void    SetNoOfSFJets(Int_t n)                          { fNoOfSFJets = n; }
         // additional methods
@@ -92,6 +94,8 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         TString         fTracksInName;          // name of input track array
         TClonesArray   *fTracksIn;              //!track array in
         TClonesArray   *fTracksOut;             //!track array out
+        Bool_t          fReuseTracks;           // use original event as template
+        Int_t           fMult;                  // multiplicity of new event
         Int_t           fCenBin;                //! centrality bin
         TArrayI*        fCentralityClasses;     // centrality classes (max 10) 
         TF1*            fFuncVn;                //! vn function
@@ -126,6 +130,6 @@ class AliAnalysisTaskJetFlowMC : public AliAnalysisTaskSE
         AliAnalysisTaskJetFlowMC(const AliAnalysisTaskJetFlowMC&);            // not implemented
         AliAnalysisTaskJetFlowMC &operator=(const AliAnalysisTaskJetFlowMC&); // not implemented
 
-        ClassDef(AliAnalysisTaskJetFlowMC, 1); // Task to generate toy mc PicoTracks based on real events
+        ClassDef(AliAnalysisTaskJetFlowMC, 2); // Task to generate toy mc PicoTracks based on real events
 };
 #endif

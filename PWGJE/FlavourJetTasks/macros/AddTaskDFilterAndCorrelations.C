@@ -11,7 +11,8 @@ void *AddTaskDFilterAndCorrelations(
   Float_t jptcut = 10.,
   const char *cutType = "TPC",
   Double_t percjetareacut = 1.,
-  AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND
+  AliAnalysisTaskEmcal::TriggerType trType=AliAnalysisTaskEmcal::kND,
+  Int_t typeDjet=2
 )
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -73,7 +74,7 @@ void *AddTaskDFilterAndCorrelations(
   taskCorr->SetJetAcceptanceType(cutType);
   taskCorr->SetJetPtCut(jptcut);
   taskCorr->SetPercAreaCut(percjetareacut);
-  taskCorr->SetMakeGeneralHistograms(kTRUE);
+  taskCorr->SetTypeDJetSelection(typeDjet);
   if(theMCon && trType!=AliAnalysisTaskEmcal::kND){
      taskCorr->SetCaloTriggerPatchInfoName("EmcalTriggers");
      taskCorr->SetTriggerTypeSel(trType);

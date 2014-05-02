@@ -62,6 +62,8 @@ class AliCascadeVertexer;
 #include <TLorentzVector.h>
 #include <AliVTrack.h>
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskHelium3PiAOD)
 

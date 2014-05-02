@@ -45,7 +45,6 @@ DrawCorrELoss(ULong_t runNo, UShort_t sys, UShort_t sNN, Short_t field,
 	      Bool_t mc=false, Bool_t sat=false, 
 	      const char* fname=0, Bool_t details=true)
 {
-  //__________________________________________________________________
   // Load libraries and object 
   // const char* fwd = "$ALICE_ROOT/PWGLF/FORWARD/analysis2";
   Setup(false);
@@ -69,7 +68,7 @@ DrawCorrELoss(Bool_t      mc,
   Setup(true);
 
   CorrDrawer::Summarize(AliForwardCorrectionManager::kELossFits, 
-			mc, file, local);
+			mc, file, local, "LANDSCAPE FEW");
 }
 /** 
  * Draw the energy loss correction
@@ -90,9 +89,9 @@ DrawCorrELoss(Bool_t mc, Bool_t dummy,
     Error("DrawCorrELoss", "Failed to open %s", file);
     return;
   }
-  TList* res = static_cast<TList*>(hist->Get("ForwardResults"));
+  TList* res = static_cast<TList*>(hist->Get("ForwardELossResults"));
   if (!res) { 
-    Error("DrawCorrEloss", "Failed to get ForwardResults from %s", file);
+    Error("DrawCorrEloss", "Failed to get ForwardELossResults from %s", file);
     return;
   }
   TList* ef = static_cast<TList*>(res->FindObject("fmdEnergyFitter"));
@@ -113,6 +112,7 @@ DrawCorrELoss(Bool_t mc, Bool_t dummy,
   CorrDrawer* cd = new CorrDrawer;
   cd->fELossExtra = file;
   cd->fMinQuality = 8;
+  // cd->fLandscape = true;
   cd->Summarize(const_cast<const AliFMDCorrELossFit*>(fits), true);
 }
 

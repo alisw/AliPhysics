@@ -13,6 +13,7 @@ Int_t SFT_gbSpecie;
 Bool_t SFT_gbHomemade;
 Bool_t SFT_gbOnline;
 Int_t SFT_gbMinNClsTPC;
+Int_t SFT_gbMinNClsITS;
 Int_t SFT_gbMinXRows;
 Double_t SFT_gbMaxChi2PerNClsTPC;
 Double_t SFT_gbMinXRowsOverNClsFTPC;
@@ -24,6 +25,7 @@ Double_t SFT_gbMaxNSigmaPID;
 Double_t SFT_gbMaxRapidity;
 Double_t SFT_gbMaxDCAdaughters;
 Double_t SFT_gbMinCosinePointingAngleXY;
+Double_t SFT_gbPIDPt;
 Double_t SFT_gbMinQt;
 Bool_t   SFT_gbQtPie;
 Double_t SFT_gbMinRadXY;
@@ -48,6 +50,7 @@ Int_t SFT_gbRFPTPCncls;
 Bool_t SFT_gbAddPitoMCRP;
 Bool_t SFT_gbAllCC;
 Bool_t SFT_gbSkipSelection;
+Bool_t SFT_gbSkipVn;
 Int_t SFT_gbWhichPsi;
 Bool_t SFT_gbFlowPackage;
 Bool_t SFT_gbShrinkFP;
@@ -71,6 +74,8 @@ Int_t SFT_gbDauITS2On;
 Int_t SFT_gbDauITS3On;
 Int_t SFT_gbDauITS4On;
 Int_t SFT_gbDauITS5On;
+Bool_t SFT_gbDauSPDany;
+Bool_t SFT_gbDauITSrefit;
 
 Bool_t SFT_gbUntagDaughter;
 Int_t SFT_gbPostMatched;
@@ -84,25 +89,25 @@ void AddTaskFlowStrange(TString configFile, TString alienaddress, Bool_t skipTer
 void AddTaskFlowStrange(TString configFile, Bool_t skipTerminate=kFALSE) {
   SFT_ReadConfig(configFile);
   if(SFT_gbAllCC) {
-    int centMin[9] = {00,05,10,20,30,40,50,60,70};
-    int centMax[9] = {05,10,20,30,40,50,60,70,80};
-    int ncent=9;
+    int centMin[8] = {00,05,10,20,30,40,50,60};
+    int ncent=7;
     if(SFT_gbRunPP) {
       ncent=3;
-      centMin[0]=10; centMax[0]=30;
-      centMin[1]=30; centMax[1]=50;
-      centMin[2]=0; centMax[2]=100;
+      centMin[0]=00;
+      centMin[1]=20;
+      centMin[2]=40;
+      centMin[3]=60;
     } else if(SFT_gbRunPA) {
-      ncent=4;
-      centMin[0]=00; centMax[0]=20;
-      centMin[1]=20; centMax[1]=40;
-      centMin[2]=40; centMax[2]=60;
-      centMin[3]=60; centMax[3]=80;
+      ncent=3;
+      centMin[0]=00;
+      centMin[1]=20;
+      centMin[2]=40;
+      centMin[3]=60;
     }
     TString antSuffix = SFT_gbSuffix;
     for(int cc=0; cc!=ncent; ++cc) {
       SFT_gbCentPerMin = centMin[cc];
-      SFT_gbCentPerMax = centMax[cc];
+      SFT_gbCentPerMax = centMin[cc+1];
       SFT_gbSuffix = Form("%s%02d%02d",antSuffix.Data(),SFT_gbCentPerMin,SFT_gbCentPerMax);
       AddTaskFlowStrange(skipTerminate);
     }
@@ -129,9 +134,16 @@ void AddTaskFlowStrange(Bool_t skipTerminate) {
   taskSel->SetAvoidExec(SFT_gbAvoidExec);
   taskSel->SetSkipCentralitySelection(SFT_gbSkipCentrality);
   taskSel->SetSkipSelection(SFT_gbSkipSelection);
+  taskSel->SetSkipVn(SFT_gbSkipVn);
   taskSel->SetExtraEventRejection(SFT_gbExtraEventCut);
   taskSel->SetCentralityRange(SFT_gbCentMethod,SFT_gbCentPerMin,SFT_gbCentPerMax);
   taskSel->SetSkipTerminate(skipTerminate);
+  taskSel->SetHarmonic(SFT_gbHarmonic);
+  Int_t npt = 24;
+  Double_t ptbin[25] = { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8,
+                         2.0, 2.2, 2.4, 2.8, 3.2, 3.6, 4.0, 4.5, 5.0, 6.0,
+                         8.0, 10., 12., 16., 20.};
+  taskSel->SetPtEdges(npt,ptbin);
   if(SFT_gbRunPP) taskSel->Setpp();
   if(SFT_gbRunPA) taskSel->SetpA();
   taskSel->SetDebug(SFT_gbDebug);
@@ -159,6 +171,7 @@ void AddTaskFlowStrange(Bool_t skipTerminate) {
   taskSel->SetVertexZcut(SFT_gbVertexZcut);
 
   taskSel->SetDauMinNClsTPC(SFT_gbMinNClsTPC);
+  taskSel->SetDauMinNClsITS(SFT_gbMinNClsITS);
   taskSel->SetDauMinXRows(SFT_gbMinXRows);
   taskSel->SetDauMaxChi2PerNClsTPC(SFT_gbMaxChi2PerNClsTPC);
   taskSel->SetDauMinXRowsOverNClsFTPC(SFT_gbMinXRowsOverNClsFTPC);
@@ -173,11 +186,14 @@ void AddTaskFlowStrange(Bool_t skipTerminate) {
   taskSel->SetDauITSLayer(3,SFT_gbDauITS3On);
   taskSel->SetDauITSLayer(4,SFT_gbDauITS4On);
   taskSel->SetDauITSLayer(5,SFT_gbDauITS5On);
+  taskSel->SetDauSPDRequireAny(SFT_gbDauSPDany);
+  taskSel->SetDauITSrefit(SFT_gbDauITSrefit);
 
   taskSel->SetMaxRapidity(SFT_gbMaxRapidity);
   taskSel->SetMaxDCAdaughters(SFT_gbMaxDCAdaughters);
   taskSel->SetMinCosinePointingAngleXY(SFT_gbMinCosinePointingAngleXY);
   taskSel->SetMinQt(SFT_gbMinQt,SFT_gbQtPie);
+  taskSel->SetStopPIDAtPt(SFT_gbPIDPt);
   taskSel->SetMinRadXY(SFT_gbMinRadXY);
   taskSel->SetMaxDecayLength(SFT_gbMaxDecayLength);
   taskSel->SetMaxProductIPXY(SFT_gbMaxProductIPXY);
@@ -390,6 +406,7 @@ void SFT_PrintConfig() {
   printf("* SKIPCENTRALITY  %d *\n", SFT_gbSkipCentrality );
   printf("* ESD  %d *\n", SFT_gbReadESD );
   printf("* MC  %d *\n", SFT_gbReadMC );
+  printf("* HARMONIC  %d *\n", SFT_gbHarmonic );
   printf("* ADDPITOMCEP  %d *\n", SFT_gbAddPitoMCRP );
   printf("* POSTMATCHED  %d *\n", SFT_gbPostMatched );
   printf("* EXTRAEVENTCUT  %d *\n", SFT_gbExtraEventCut );
@@ -401,6 +418,7 @@ void SFT_PrintConfig() {
   printf("* HOMEMADE  %d *\n", SFT_gbHomemade );
   printf("* ONLINE  %d *\n", SFT_gbOnline );
   printf("* MINNCLSTTPC  %d *\n", SFT_gbMinNClsTPC );
+  printf("* MINNCLSITS  %d *\n", SFT_gbMinNClsITS );
   printf("* MINXROWS  %d *\n", SFT_gbMinXRows );
   printf("* MAXCHI2NCLSTPC  %f *\n", SFT_gbMaxChi2PerNClsTPC );
   printf("* MINXROWSNFCLSTPC  %f *\n", SFT_gbMinXRowsOverNClsFTPC );
@@ -415,12 +433,14 @@ void SFT_PrintConfig() {
   printf("* MINCTP  %f *\n", SFT_gbMinCosinePointingAngleXY );
   printf("* MINQT  %f *\n", SFT_gbMinQt );
   printf("* QTPIE  %f *\n", SFT_gbQtPie );
+  printf("* STOPPID  %f *\n", SFT_gbPIDPt );
   printf("* MINRADXY  %f *\n", SFT_gbMinRadXY );
   printf("* MAXDL  %f *\n", SFT_gbMaxDecayLength );
   printf("* D0D0XY  %f *\n", SFT_gbMaxProductIPXY );
   printf("* DEBUG  %d *\n", SFT_gbDebug );
   printf("* QA  %d *\n", SFT_gbQA );
   printf("* SKIPSELECTION  %d *\n", SFT_gbSkipSelection );
+  printf("* SKIPVN  %d *\n", SFT_gbSkipVn );
   printf("* USEFP  %d *\n", SFT_gbFlowPackage );
   printf("* SPVZE  %d *\n", SFT_gbSPVZE );
   printf("* SPVZEHALF  %d *\n", SFT_gbSPVZEhalf );
@@ -454,6 +474,8 @@ void SFT_PrintConfig() {
   printf("* DAUITS3  %d *\n", SFT_gbDauITS3On );
   printf("* DAUITS4  %d *\n", SFT_gbDauITS4On );
   printf("* DAUITS5  %d *\n", SFT_gbDauITS5On );
+  printf("* DAUSPDANY  %d *\n", SFT_gbDauSPDany );
+  printf("* DAUITSrefit  %d *\n", SFT_gbDauITSrefit );
   printf("***********************************\n");
 }
 void SFT_ReadConfig(TString ipf) {
@@ -501,6 +523,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbOnline;
     } else if(!varname.CompareTo("MINNCLSTTPC")) {
       input >> SFT_gbMinNClsTPC;
+    } else if(!varname.CompareTo("MINNCLSITS")) {
+      input >> SFT_gbMinNClsITS;
     } else if(!varname.CompareTo("MINXROWS")) {
       input >> SFT_gbMinXRows;
     } else if(!varname.CompareTo("MAXCHI2NCLSTPC")) {
@@ -527,6 +551,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbMinQt;
     } else if(!varname.CompareTo("QTPIE")) {
       input >> SFT_gbQtPie;
+    } else if(!varname.CompareTo("STOPPID")) {
+      input >> SFT_gbPIDPt;
     } else if(!varname.CompareTo("MINRADXY")) {
       input >> SFT_gbMinRadXY;
     } else if(!varname.CompareTo("MAXDL")) {
@@ -539,6 +565,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbQA;
     } else if(!varname.CompareTo("SKIPSELECTION")) {
       input >> SFT_gbSkipSelection;
+    } else if(!varname.CompareTo("SKIPVN")) {
+      input >> SFT_gbSkipVn;
     } else if(!varname.CompareTo("USEFP")) {
       input >> SFT_gbFlowPackage;
     } else if(!varname.CompareTo("SPVZE")) {
@@ -607,6 +635,10 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbDauITS4On;
     } else if(!varname.CompareTo("DAUITS5")) {
       input >> SFT_gbDauITS5On;
+    } else if(!varname.CompareTo("DAUSPDANY")) {
+      input >> SFT_gbDauSPDany;
+    } else if(!varname.CompareTo("DAUITSREFIT")) {
+      input >> SFT_gbDauITSrefit;
     } else if(!varname.CompareTo("RFVZEC_RingMin")) {
       input >> SFT_gbV0CRingMin;
     } else if(!varname.CompareTo("RFVZEC_RingMax")) {
@@ -615,6 +647,8 @@ void SFT_ReadConfig(TString ipf) {
       input >> SFT_gbV0ARingMin;
     } else if(!varname.CompareTo("RFVZEA_RingMax")) {
       input >> SFT_gbV0ARingMax;
+    } else if(!varname.CompareTo("HARMONIC")) {
+      input >> SFT_gbHarmonic;
     } else {
       printf("I dont understand %s\n",varname.Data());
     }
@@ -636,6 +670,7 @@ void SFT_ResetVars() {
   SFT_gbHomemade=0;
   SFT_gbOnline=0;
   SFT_gbMinNClsTPC=70;
+  SFT_gbMinNClsITS=-1;
   SFT_gbMinXRows=70;
   SFT_gbMaxChi2PerNClsTPC=4.0;
   SFT_gbMinXRowsOverNClsFTPC=0.8;
@@ -649,6 +684,7 @@ void SFT_ResetVars() {
   SFT_gbMinCosinePointingAngleXY=0.998;
   SFT_gbMinQt=0.2;
   SFT_gbQtPie=kTRUE;
+  SFT_gbPIDPt=3.0;
   SFT_gbMinRadXY=5.0;
   SFT_gbMaxDecayLength=3.0;
   SFT_gbMaxProductIPXY=0.0;
@@ -673,7 +709,8 @@ void SFT_ResetVars() {
   SFT_gbV0ARingMax=3;
   SFT_gbAllCC=0;
   SFT_gbSkipSelection=0;
-  SFT_gbWhichPsi=2;
+  SFT_gbSkipVn=0;
+  SFT_gbWhichPsi=1;
   SFT_gbFlowPackage=0;
   SFT_gbSPVZE=0;
   SFT_gbSPVZEhalf=kFALSE;
@@ -697,4 +734,6 @@ void SFT_ResetVars() {
   SFT_gbDauITS5On=-1;
   SFT_gbSkipCentrality=kFALSE;
   SFT_gbAddPitoMCRP=kFALSE;
+  SFT_gbDauSPDany=kFALSE;
+  SFT_gbDauITSrefit=kFALSE;
 }

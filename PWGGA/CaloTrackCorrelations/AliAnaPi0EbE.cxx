@@ -57,7 +57,7 @@ fFillPileUpHistograms(0),
 fFillWeightHistograms(kFALSE),      fFillTMHisto(0),
 fFillSelectClHisto(0),              fFillOnlySimpleSSHisto(1),          fFillEMCALBCHistograms(0),
 fInputAODGammaConvName(""),
-fCheckSplitDistToBad(0),            fNSuperModules(0),
+fCheckSplitDistToBad(0),
 // Histograms
 fhPt(0),                            fhE(0),
 fhPtEta(0),                         fhPtPhi(0),                         fhEtaPhi(0),
@@ -531,7 +531,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, Float_t p
   
   fhNLocMaxPt->Fill(pt,nMaxima);
   
-  if(nSM < fNSuperModules && nSM >=0)
+  if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     fhNLocMaxPtSM[nSM]->Fill(pt,nMaxima);
   
   fhPtLambda0LocMax   [indexMax]->Fill(pt,l0);
@@ -1044,7 +1044,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       fhSelectedMassPtLocMax[inlm]->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhSelectedMassPtLocMax[inlm]) ;
       
-      for(Int_t iSM = 0; iSM < fNSuperModules; iSM++)
+      for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
       {
         fhSelectedMassPtLocMaxSM[inlm][iSM]  = new TH2F
         (Form("hSelectedMassPtLocMax%d_SM%d",inlm+1,iSM),Form("Selected #pi^{0} (#eta) pairs mass: p_{T} vs mass, NLM=%s for SM=%d",nlm[inlm].Data(),iSM),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
@@ -1234,7 +1234,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhNLocMaxPt ->SetXTitle("p_{T} (GeV/c)");
     outputContainer->Add(fhNLocMaxPt) ;
 
-    for(Int_t iSM = 0; iSM < fNSuperModules; iSM++)
+    for(Int_t iSM = 0; iSM < GetCaloUtils()->GetNumberOfSuperModulesUsed(); iSM++)
     {
       fhNLocMaxPtSM[iSM] = new TH2F(Form("hNLocMaxPt_SM%d",iSM),Form("Number of local maxima in cluster, selected clusters in SM %d",iSM),
                                nptbins,ptmin,ptmax,20,0,20);
@@ -2571,9 +2571,6 @@ void AliAnaPi0EbE::InitParameters()
   fNLMECutMin[0] = 10.;
   fNLMECutMin[1] = 6. ;
   fNLMECutMin[2] = 6. ;
-  
-  fNSuperModules = 10;
-  
 }
 
 //__________________________________________________________________
@@ -3200,7 +3197,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     fhSelectedMassPtLocMax[indexMax]->Fill(mom.Pt(),mass);
     
     Int_t   nSM  = GetModuleNumber(calo);
-    if(nSM < fNSuperModules && nSM >=0)
+    if(nSM < GetCaloUtils()->GetNumberOfSuperModulesUsed() && nSM >=0)
     {
       fhSelectedMassPtLocMaxSM   [indexMax][nSM]->Fill(mom.Pt(),mass);
       fhSelectedLambda0PtLocMaxSM[indexMax][nSM]->Fill(mom.Pt(),calo->GetM02());

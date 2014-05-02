@@ -282,8 +282,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
 
       histname = "fHistDeltaPtRCvsEP_";
       histname += i;
-      fHistDeltaPtRCvsEP[i] = new TH2F(histname.Data(), histname.Data(), 402, -TMath::Pi()*1.01, TMath::Pi()*3.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
-      fHistDeltaPtRCvsEP[i]->GetXaxis()->SetTitle("#phi_{RC} - #Psi_{EP}");
+      fHistDeltaPtRCvsEP[i] = new TH2F(histname.Data(), histname.Data(), 101, 0, TMath::Pi()*1.01, fNbins * 2, -fMaxBinPt, fMaxBinPt);
+      fHistDeltaPtRCvsEP[i]->GetXaxis()->SetTitle("#phi_{RC} - #psi_{RP}");
       fHistDeltaPtRCvsEP[i]->GetYaxis()->SetTitle("#delta#it{p}_{T}^{RC} (GeV/#it{c})");
       fHistDeltaPtRCvsEP[i]->GetZaxis()->SetTitle("counts");
       fOutput->Add(fHistDeltaPtRCvsEP[i]);
@@ -451,7 +451,12 @@ Bool_t AliAnalysisTaskDeltaPt::FillHistograms()
 	fHistRhoVSRCPt[fCentBin]->Fill(fRhoVal * rcArea, RCpt);
 	
 	fHistRCPt[fCentBin]->Fill(RCpt);
-	fHistDeltaPtRCvsEP[fCentBin]->Fill(RCphi - fEPV0, RCpt - rcArea * fRhoVal);
+
+	Double_t ep = RCphi - fEPV0;
+	while (ep < 0) ep += TMath::Pi();
+	while (ep >= TMath::Pi()) ep -= TMath::Pi();
+
+	fHistDeltaPtRCvsEP[fCentBin]->Fill(ep, RCpt - rcArea * fRhoVal);
       }
 
       if (fJetsCont) {

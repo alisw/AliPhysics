@@ -90,24 +90,24 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    task->SetDoEtaOfMCDaughtersCut(kFALSE,0.8);
    
    //TPC cuts
-   task->SetCutMoreNclsThanRows(kTRUE);
-   task->SetCutMoreNclsThanFindable(kTRUE);
+   // task->SetCutMoreNclsThanRows(kTRUE);
+   // task->SetCutMoreNclsThanFindable(kTRUE);
    task->SetLowPtTPCCutAliESDTrackCut(-1.0);
-   task->SetRatioFoundOverFindable(0.5);
+   //  task->SetRatioFoundOverFindable(0.5);
 
    //V0 specific cuts
-   task->SetCosOfPointingAngleK(0.99,1000.0);
-   task->SetCosOfPointingAngleL(0.998,1000.0);
+   //task->SetCosOfPointingAngleK(0.99,1000.0);
+   //task->SetCosOfPointingAngleL(0.998,1000.0);
 
 
-   task->SetArmenterosCutQt(-1.0,6.0,kTRUE,kFALSE);
+   //task->SetArmenterosCutQt(-1.0,6.0,kTRUE,kFALSE);
    
-   task->SetDCAV0ToVertexK0(0.4);
-   task->SetDCAV0ToVertexL(1.2);
+   //task->SetDCAV0ToVertexK0(0.4);
+   //task->SetDCAV0ToVertexL(1.2);
 
-   task->SetDCADaughtersK0(0.23);
-   task->SetDCADaughtersL(0.35);
-   task->SetDCADaughtersAL(0.35);
+   //task->SetDCADaughtersK0(0.23);
+   //task->SetDCADaughtersL(0.35);
+   //task->SetDCADaughtersAL(0.35);
    
    task->SetDecayRadiusXYMinMax(radCut,1000.0);
 
@@ -115,9 +115,10 @@ AliAnalysisTaskV0ForRAA *AddTaskV0ForRAA(Bool_t anaPP=kFALSE, Bool_t wSDD=kFALSE
    //--- centrality ---//
    task->SetUseCentrality(centDet);        // 0=off, 1=VZERO, 2=SPD
    task->SetUseCentralityBin(cent);        // bin to be used 0,5,10,20,30,40,50,60,70,80,90,(100=SPDonly)
-   task->SetUseCentralityRange(centRange); // add centrality bin for increasing original bin range. For cent 60-80%: cent = 60 and centRange = 10
+   task->SetUseCentralityRange(centRange); // Add centrality bin for increasing original bin range. 
+                                           // For cent 60-80%: cent = 60 and centRange = 10
    
-   task->SelectCollisionCandidates(AliVEvent::kMB);// | AliVEvent::kCentral | AliVEvent::kSemiCentral );
+   task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral );
    
    mgr->AddTask(task);
  

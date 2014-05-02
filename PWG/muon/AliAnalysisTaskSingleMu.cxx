@@ -43,6 +43,7 @@
 #include "TStyle.h"
 //#include "TMCProcess.h"
 #include "TArrayI.h"
+#include "TArrayD.h"
 #include "TPaveStats.h"
 #include "TFitResultPtr.h"
 #include "TFile.h"
@@ -225,8 +226,6 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
     ((TH1*)GetMergeableObject(physSel, trigClassName, centrality, "hIpVtx"))->Fill(ipVz);
   }
   
-  TF1* beautyMuWgt = static_cast<TF1*>(GetWeight("beautyMu"));
-
   // Bool_t isPileupFromSPD = ( fAODEvent && ! fAODEvent->GetTracklets() ) ? InputEvent()->IsPileupFromSPD(3, 0.8, 3., 2., 5.) : InputEvent()->IsPileupFromSPDInMultBins(); // Avoid break when reading Muon AODs (tracklet info is not present and IsPileupFromSPDInMultBins crashes // UNCOMMENT TO REJECT PILEUP
   // if ( isPileupFromSPD ) return; // UNCOMMENT TO REJECT PILEUP
   
@@ -239,7 +238,7 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
     
     TObjArray selectedTracks(nTracks);
     TArrayI trackSources(nTracks);
-    TArrayF trackWgt(nTracks);
+    TArrayD trackWgt(nTracks);
     trackWgt.Reset(1.);
     for (Int_t itrack = 0; itrack < nTracks; itrack++) {
       track = ( istep == kStepReconstructed ) ? AliAnalysisMuonUtility::GetTrack(itrack,InputEvent()) : MCEvent()->GetTrack(itrack);
@@ -255,9 +254,16 @@ void AliAnalysisTaskSingleMu::ProcessEvent(TString physSel, const TObjArray& sel
       selectedTracks.AddAt(track,itrack);
       trackSources[itrack] = GetParticleType(track);
       
-      if ( trackSources[itrack] == kBeautyMu && beautyMuWgt ) {
-        AliVParticle* mcTrack = ( kStepReconstructed ) ? MCEvent()->GetTrack(track->GetLabel()) : track;
-        trackWgt[itrack] = beautyMuWgt->Eval(mcTrack->Pt());
+      TObject* wgtObj = GetWeight(fSrcKeys->At(trackSources[itrack])->GetName());
+      
+      if ( wgtObj  ) {
+        AliVParticle* mcTrack = ( istep == kStepReconstructed ) ? MCEvent()->GetTrack(track->GetLabel()) : track;
+        if ( wgtObj->IsA() == TF1::Class() ) trackWgt[itrack] = static_cast<TF1*>(wgtObj)->Eval(mcTrack->Pt());
+        else if ( wgtObj->IsA()->InheritsFrom(TH1::Class()) ) {
+          TH1* wgtHisto = static_cast<TH1*>(wgtObj);
+          trackWgt[itrack] = wgtHisto->GetBinContent(wgtHisto->GetXaxis()->FindBin(mcTrack->Pt()));
+        }
+        AliDebug(3,Form("Apply weights %s:  pt %g  gen pt %g  weight %g",wgtObj->GetName(),track->Pt(),mcTrack->Pt(),trackWgt[itrack]));
 //        Int_t iancestor = fUtilityMuonAncestor->GetAncestor(track,MCEvent());
 //        AliVParticle* motherPart = MCEvent()->GetTrack(iancestor);
 //        trackWgt[itrack] = beautyMuWgt->GetBinContent(beautyMuWgt->GetXaxis()->FindBin(motherPart->Pt()));

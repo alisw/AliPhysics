@@ -186,8 +186,8 @@ AliAnalysisTaskJetCorePP* AddTaskJetCorePP(
         mgr->ConnectInput(task, 1, containerKineJets); 
       }
       if(analBranchBgKine.Length()>0){ //kine jets to be removed from bg = input slot 2
-        //XXXX// AliAnalysisDataContainer* containerKineJetsBg = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject(analBranchBgKine.Data());
-        //XXXX// mgr->ConnectInput(task, 2, containerKineJetsBg);  
+         AliAnalysisDataContainer* containerKineJetsBg = (AliAnalysisDataContainer*)mgr->GetContainers()->FindObject(analBranchBgKine.Data());
+         mgr->ConnectInput(task, 2, containerKineJetsBg);  
       }
    }
 

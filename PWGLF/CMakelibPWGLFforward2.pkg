@@ -115,7 +115,11 @@ set ( SRCS
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
-set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
+set ( HDRS ${HDRS} 
+  FORWARD/analysis2/AliFMDStripIndex.h 
+  FORWARD/analysis2/AliLandauGaus.h 
+  FORWARD/analysis2/AliLandauGausFitter.h 
+  )
 
 set ( EINCLUDE  
   ANALYSIS 
@@ -131,6 +135,8 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
              FORWARD/analysis2/AliAODCentralMult.h 
 	     FORWARD/analysis2/AliOADBForward.h
              FORWARD/analysis2/AliForwardUtil.h  
+	     FORWARD/analysis2/AliLandauGaus.h 
+	     FORWARD/analysis2/AliLandauGausFitter.h 
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
 	     FORWARD/analysis2/AliForwardCorrectionManager.h

@@ -165,6 +165,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets() :
     fParticlePtUp(200.0),
     fParticlePtBins(200),
     fJetR(0.4),
+    fJetRAccept(0.4),
     fFullEDJetR(0.6),
     fChargedEDJetR(0.8),
     fJetRForRho(0.5),
@@ -343,6 +344,7 @@ AliAnalysisTaskFullpAJets::AliAnalysisTaskFullpAJets(const char *name) :
     fParticlePtUp(200.0),
     fParticlePtBins(2000),
     fJetR(0.4),
+    fJetRAccept(0.4),
     fFullEDJetR(0.6),
     fChargedEDJetR(0.8),
     fJetRForRho(0.5),
@@ -1324,7 +1326,7 @@ void AliAnalysisTaskFullpAJets::InitChargedJets()
         AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTChargedJets->At(i);
         
         fTPCJet->SetIsJetInArray(IsInTPC(fJetR,myJet->Phi(),myJet->Eta(),kFALSE),i);
-        fTPCFullJet->SetIsJetInArray(IsInTPC(fJetR,myJet->Phi(),myJet->Eta(),kTRUE),i);
+        fTPCFullJet->SetIsJetInArray(IsInTPC(fJetRAccept,myJet->Phi(),myJet->Eta(),kTRUE),i);
         fTPCOnlyJet->SetIsJetInArray(IsInTPCFull(fJetR,myJet->Phi(),myJet->Eta()),i);
         fTPCJetUnbiased->SetIsJetInArray(IsInTPC(fJetR,myJet->Phi(),myJet->Eta(),kFALSE),i);
     }
@@ -1393,7 +1395,7 @@ void AliAnalysisTaskFullpAJets::InitFullJets()
         AliEmcalJet *myJet =(AliEmcalJet*) fmyAKTFullJets->At(i);
         
         fEMCalJet->SetIsJetInArray(IsInEMCal(myJet->Phi(),myJet->Eta()),i);
-        fEMCalFullJet->SetIsJetInArray(IsInEMCalFull(fJetR,myJet->Phi(),myJet->Eta()),i);
+        fEMCalFullJet->SetIsJetInArray(IsInEMCalFull(fJetRAccept,myJet->Phi(),myJet->Eta()),i);
         fEMCalPartJet->SetIsJetInArray(IsInEMCalPart(fJetR,myJet->Phi(),myJet->Eta()),i);
         fEMCalPartJetUnbiased->SetIsJetInArray(IsInEMCalPart(fJetR,myJet->Phi(),myJet->Eta()),i);
     }

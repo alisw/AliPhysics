@@ -218,6 +218,7 @@ class AliConversionCuts : public AliAnalysisCuts {
       
    }
    void  LoadReweightingHistosMCFromFile ();
+   UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
    // Event Cuts
    Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
@@ -262,7 +263,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx);
    Bool_t SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx);
    Bool_t SetInPlaneOutOfPlane(Int_t inOutPlane);
-   
+   void SetAddedSignalPDGCode(Int_t addedSignalPDGcode) {fAddedSignalPDGCode = addedSignalPDGcode;}
    // Request Flags
 
    Int_t IsHeavyIon(){return fIsHeavyIon;}
@@ -422,6 +423,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    TF1  *fFitDataPi0; //fit to pi0 spectrum in Data
    TF1  *fFitDataEta; //fit to eta spectrum in Data
    TF1  *fFitDataK0s; //fit to K0s spectrum in Data
+   Int_t fAddedSignalPDGCode;
    Bool_t fPreSelCut; // Flag for preselection cut used in V0Reader
    Bool_t fTriggerSelectedManually; // Flag for manual trigger selection
    TString fSpecialTriggerName; // Name of the Special Triggers

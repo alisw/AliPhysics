@@ -48,6 +48,7 @@ const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; //
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
+  , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
@@ -130,6 +131,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
@@ -177,6 +179,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   : AliAnalysisTaskPIDV0base(name)
+  , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
@@ -259,6 +262,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
   , fhEventsTriggerSelVtxCut(0x0) 
@@ -380,6 +384,9 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   fGenRespPrDeltaPrimePi = 0x0;
   fGenRespPrDeltaPrimePr = 0x0;
   
+  delete fhMaxEtaVariation;
+  fhMaxEtaVariation = 0x0;
+  
   /*OLD with deltaSpecies 
   delete [] fGenRespElDeltaEl;
   delete [] fGenRespElDeltaKa;
@@ -479,6 +486,56 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
   
   if(fDebug > 1)
     printf("File: %s, Line: %d: SetUpPIDcombined done\n", (char*)__FILE__, __LINE__);
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
+{
+  // Calculate the maximum deviation from unity of the eta correction factors for each row in 1/dEdx(splines)
+  // from the eta correction map of the TPCPIDResponse. The result is stored in fhMaxEtaVariation.
+  
+  if (!fPIDResponse) {
+    AliError("No PID response!");
+    return kFALSE;
+  }
+  
+  delete fhMaxEtaVariation;
+  
+  const TH2D* hEta = fPIDResponse->GetTPCResponse().GetEtaCorrMap();
+  if (!hEta) {
+    AliError("No eta correction map!");
+    return kFALSE;
+  }
+  
+  // Take binning from hEta in Y for fhMaxEtaVariation
+  fhMaxEtaVariation = hEta->ProjectionY("hMaxEtaVariation");
+  fhMaxEtaVariation->SetDirectory(0);
+  fhMaxEtaVariation->Reset();
+  
+  // For each bin in 1/dEdx, loop of all tanTheta bins and find the maximum deviation from unity.
+  // Store the result in fhMaxEtaVariation
+  
+  for (Int_t binY = 1; binY <= fhMaxEtaVariation->GetNbinsX(); binY++) {
+    Double_t maxAbs = -1;
+    for (Int_t binX = 1; binX <= hEta->GetNbinsX(); binX++) {
+      Double_t curr = TMath::Abs(hEta->GetBinContent(binX, binY) - 1.);
+      if (curr > maxAbs)
+        maxAbs = curr;
+    }
+    
+    if (maxAbs < 1e-12) {
+      AliError(Form("Maximum deviation from unity is zero for 1/dEdx = %f (bin %d)", hEta->GetYaxis()->GetBinCenter(binY), binY));
+      delete fhMaxEtaVariation;
+      return kFALSE;
+    }
+    
+    fhMaxEtaVariation->SetBinContent(binY, maxAbs);
+  }
+  
+  printf("AliAnalysisTaskPID: Calculated max eta variation.\n");
+  
+  return kTRUE;
 }
 
 
@@ -876,6 +933,19 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
 
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
+  
+  Int_t run = InputEvent()->GetRunNumber();
+  
+  if (run != fRun){
+    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
+    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
+      if (!CalculateMaxEtaVariationMapFromPIDResponse())
+        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
+    }
+  }
+  
+  fRun = run;
   
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
@@ -1916,6 +1986,28 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString fileP
 
 
 //_____________________________________________________________________________
+Double_t AliAnalysisTaskPID::GetMaxEtaVariation(Double_t dEdxSplines)
+{
+  // Returns the maximum eta variation (i.e. deviation of eta correction factor from unity) for the
+  // given (spline) dEdx
+  
+  if (dEdxSplines < 1. || !fhMaxEtaVariation) {
+    Printf("Error GetMaxEtaVariation: No map or invalid dEdxSplines (%f)!", dEdxSplines);
+    return 999.;
+  } 
+  
+  Int_t bin = fhMaxEtaVariation->GetXaxis()->FindFixBin(1. / dEdxSplines);
+  
+  if (bin == 0) 
+    bin = 1;
+  if (bin > fhMaxEtaVariation->GetXaxis()->GetNbins())
+    bin = fhMaxEtaVariation->GetXaxis()->GetNbins();
+  
+  return fhMaxEtaVariation->GetBinContent(bin);
+}
+
+
+//_____________________________________________________________________________
 Int_t AliAnalysisTaskPID::GetRandomParticleTypeAccordingToParticleFractions(Double_t trackPt, Double_t jetPt,
                                                                             Double_t centralityPercentile, 
                                                                             Bool_t smearByError,
@@ -2229,7 +2321,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     Double_t etaCorrEl = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxEl) : 1.;
     Double_t etaCorrKa = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxKa) : 1.;
     Double_t etaCorrPi = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPi) : 1.;
-    Double_t etaCorrMu = fTakeIntoAccountMuons && !fPIDResponse->UseTPCEtaCorrection() ? 
+    Double_t etaCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCEtaCorrection() ? 
                             fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxMu) : 1.;
     Double_t etaCorrPr = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPr) : 1.;
 
@@ -2252,11 +2344,33 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
                                              + fSystematicScalingEtaCorrectionHighMomenta * fractionHighMomentumScaleFactor;
       }
       
+      Double_t maxEtaVariationEl = GetMaxEtaVariation(dEdxEl);
+      etaCorrEl = etaCorrEl * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrEl - 1.0) / maxEtaVariationEl);
+      
+      Double_t maxEtaVariationKa = GetMaxEtaVariation(dEdxKa);
+      etaCorrKa = etaCorrKa * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrKa - 1.0) / maxEtaVariationKa);
+      
+      Double_t maxEtaVariationPi = GetMaxEtaVariation(dEdxPi);
+      etaCorrPi = etaCorrPi * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPi - 1.0) / maxEtaVariationPi);
+      
+      if (fTakeIntoAccountMuons) {
+        Double_t maxEtaVariationMu = GetMaxEtaVariation(dEdxMu);
+        etaCorrMu = etaCorrMu * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrMu - 1.0) / maxEtaVariationMu);
+      }
+      else
+        etaCorrMu = 1.0;
+      
+      Double_t maxEtaVariationPr = GetMaxEtaVariation(dEdxPr);
+      etaCorrPr = etaCorrPr * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPr - 1.0) / maxEtaVariationPr);
+      
+      
+      /*OLD
       etaCorrEl = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrEl - 1.0);
       etaCorrKa = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrKa - 1.0);
       etaCorrPi = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrPi - 1.0);
       etaCorrMu = fTakeIntoAccountMuons ? (1.0 + usedSystematicScalingEtaCorrection * (etaCorrMu - 1.0)) : 1.0;
       etaCorrPr = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrPr - 1.0);
+      */
     }
     
     // Get the multiplicity correction factors for the (modified) expected dEdx

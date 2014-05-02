@@ -27,6 +27,15 @@
 #include <TDirectory.h>
 #include <TTree.h>
 #include <TROOT.h>
+#define MCAOD_SLOT 4
+#define PRIMARY_SLOT 5
+#ifdef POST_AOD
+# define DEFINE(N,C) DefineOutput(N,C)
+# define POST(N,O)   PostData(N,O)
+#else
+# define DEFINE(N,C) do { } while(false)
+# define POST(N,O)   do { } while(false)
+#endif
 
 //====================================================================
 AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
@@ -78,6 +87,8 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
   fPrimary->Sumw2();
   fPrimary->SetStats(0);
   fPrimary->SetDirectory(0);
+  DEFINE(MCAOD_SLOT,AliAODForwardMult::Class());
+  DEFINE(PRIM_SLOT, TH2D::Class());
 }
 
 //____________________________________________________________________
@@ -103,6 +114,15 @@ AliForwardMCMultiplicityTask::CreateBranches(AliAODHandler* ah)
   ah->AddBranch("TH2D", &fPrimary);
 }
 
+//____________________________________________________________________
+Bool_t
+AliForwardMCMultiplicityTask::Book()
+{
+  Bool_t ret = AliForwardMultiplicityBase::Book();
+  POST(MCAOD_SLOT, &fMCAODFMD);
+  POST(PRIM_SLOT,  fPrimary);
+  return ret;
+}
 
 //____________________________________________________________________
 void
@@ -317,6 +337,16 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
     fHData->Add(&(fAODFMD.GetHistogram()));
 
   return true;
+}
+
+//____________________________________________________________________
+Bool_t
+AliForwardMCMultiplicityTask::PostEvent()
+{
+  Bool_t ret = AliForwardMultiplicityBase::PostEvent();
+  POST(MCAOD_SLOT, &fMCAODFMD);
+  POST(PRIMARY_SLOT, fPrimary);
+  return ret;
 }
 
 //____________________________________________________________________

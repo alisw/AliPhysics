@@ -21,6 +21,7 @@
 #include <TClonesArray.h>
 #include "AliFMDCorrELossFit.h"
 #include "AliForwardUtil.h"
+#include "AliLandauGaus.h"
 class TH1;
 class TH2;
 class AliESDFMD;
@@ -54,20 +55,20 @@ public:
    */
   enum { 
     /** Index of pre-constant @f$ C@f$ */
-    kC		= AliForwardUtil::ELossFitter::kC,
+    kC		= AliLandauGaus::kC,
     /** Index of most probable value @f$ \Delta_p@f$ */
-    kDelta	= AliForwardUtil::ELossFitter::kDelta, 
+    kDelta	= AliLandauGaus::kDelta, 
     /** Index of Landau width @f$ \xi@f$ */
-    kXi		= AliForwardUtil::ELossFitter::kXi, 
+    kXi		= AliLandauGaus::kXi, 
     /** Index of Gaussian width @f$ \sigma@f$ */
-    kSigma	= AliForwardUtil::ELossFitter::kSigma, 
+    kSigma	= AliLandauGaus::kSigma, 
     /** Index of Gaussian additional width @f$ \sigma_n@f$ */
-    kSigmaN	= AliForwardUtil::ELossFitter::kSigmaN,
+    kSigmaN	= AliLandauGaus::kSigmaN,
     /** Index of Number of particles @f$ N@f$ */
-    kN		= AliForwardUtil::ELossFitter::kN, 
+    kN		= AliLandauGaus::kN, 
     /** Base index of particle strengths @f$ a_i@f$ for 
 	@f$i=2,\ldots,N@f$ */
-    kA		= AliForwardUtil::ELossFitter::kA
+    kA		= AliLandauGaus::kA
   };
   /** 
    * Enumeration of residual methods 
@@ -292,6 +293,13 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1);
+  /**
+   * Whether to enable the extra shift in the MPV from @f$ \sigma/\xi@f$ 
+   *
+   * @param use If true, enable extra shift @f$\delta\Delta_p(\sigma/\xi)@f$  
+   */
+  void SetEnableDeltaShift(Bool_t use=true);
+
   /* @} */
   // -----------------------------------------------------------------
   /** 

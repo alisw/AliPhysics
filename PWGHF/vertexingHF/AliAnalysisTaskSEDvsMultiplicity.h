@@ -61,6 +61,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   }
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
+  void SetKeepEstimatorCorrelationPlots(Bool_t use=kTRUE){fKeepCorrPlots=use;}
 
   void SetMultiplVsZProfileLHC10b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
@@ -134,6 +135,8 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH2F* fHistNtrEta16vsNtrEta1; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
   TH2F* fHistNtrEta05vsNtrEta1; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
   TH2F* fHistNtrEta03vsNtrEta1; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
+  TH2F* fHistNtrEtaV0AvsNtrEta1; //!hist. for Ntracklets in eta-V0A vs. eta<1.
+  TH2F* fHistNtrEtaV0MvsNtrEta1; //!hist. for Ntracklets in eta-V0M vs. eta<1.
   TH2F* fHistNtrCorrEta1vsNtrRawEta1; //!hist. for Ntracklets in eta<1 with and w/o corrections 
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
@@ -182,6 +185,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
   Bool_t fUseBit;    // flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
+  Bool_t fKeepCorrPlots; // flag to look at the correlation of different estimators (eta ranges)
 
   Bool_t fUseNchWeight; // weight on the MC on the generated multiplicity
   TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
@@ -194,7 +198,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,10); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,11); // D vs. mult task
 };
 
 #endif

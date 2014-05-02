@@ -45,6 +45,7 @@ public:
   void SetPhiStarDifferenceMinimum(double dtpc);
   void SetEtaDifferenceMinimum(double etpc);
   void SetMinimumRadius(double minrad);
+  void SetMaximumRadius(double maxrad);
   void SetMagneticFieldSign(int magsign);
   void SetPhiStarMin(Bool_t);
 
@@ -54,6 +55,7 @@ public:
   //Double_t fRadius;           // Radius at which the separation is calculated
   Double_t fEtaMin;           // Minimum allowed pair separation in eta
   Double_t fMinRad;
+  Double_t fMaxRad;
   Int_t fMagSign;
   Bool_t fPhistarmin;
 

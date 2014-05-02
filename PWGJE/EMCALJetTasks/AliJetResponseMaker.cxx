@@ -39,12 +39,6 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
-  fHistLeadingJets1PtArea(0),
-  fHistLeadingJets1CorrPtArea(0),
-  fHistLeadingJets2PtArea(0),
-  fHistLeadingJets2CorrPtArea(0),
-  fHistLeadingJets2PtAreaAcceptance(0),
-  fHistLeadingJets2CorrPtAreaAcceptance(0),
   fHistJets1(0),
   fHistJets2(0),
   fHistMatching(0),
@@ -57,9 +51,6 @@ AliJetResponseMaker::AliJetResponseMaker() :
   fHistJets2PhiEta(0),
   fHistJets2PtArea(0),
   fHistJets2CorrPtArea(0),
-  fHistJets2PhiEtaAcceptance(0),
-  fHistJets2PtAreaAcceptance(0),
-  fHistJets2CorrPtAreaAcceptance(0),
   fHistJets2NEFvsPt(0),
   fHistJets2CEFvsCEFPt(0),
   fHistJets2ZvsPt(0),
@@ -127,12 +118,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fZAxis(0),
   fIsJet1Rho(kFALSE),
   fIsJet2Rho(kFALSE),
-  fHistLeadingJets1PtArea(0),
-  fHistLeadingJets1CorrPtArea(0),
-  fHistLeadingJets2PtArea(0),
-  fHistLeadingJets2CorrPtArea(0),
-  fHistLeadingJets2PtAreaAcceptance(0),
-  fHistLeadingJets2CorrPtAreaAcceptance(0),
   fHistJets1(0),
   fHistJets2(0),
   fHistMatching(0),
@@ -145,9 +130,6 @@ AliJetResponseMaker::AliJetResponseMaker(const char *name) :
   fHistJets2PhiEta(0),
   fHistJets2PtArea(0),
   fHistJets2CorrPtArea(0),
-  fHistJets2PhiEtaAcceptance(0),
-  fHistJets2PtAreaAcceptance(0),
-  fHistJets2CorrPtAreaAcceptance(0),
   fHistJets2NEFvsPt(0),
   fHistJets2CEFvsCEFPt(0),
   fHistJets2ZvsPt(0),
@@ -270,27 +252,6 @@ void AliJetResponseMaker::AllocateTH2()
     fHistJets2CorrPtArea->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
     fHistJets2CorrPtArea->GetZaxis()->SetTitle("counts");
     fOutput->Add(fHistJets2CorrPtArea);
-  }
-
-  fHistJets2PhiEtaAcceptance = new TH2F("fHistJets2PhiEtaAcceptance", "fHistJets2PhiEtaAcceptance", 40, -1, 1, 40, 0, TMath::Pi()*2);
-  fHistJets2PhiEtaAcceptance->GetXaxis()->SetTitle("#eta");
-  fHistJets2PhiEtaAcceptance->GetYaxis()->SetTitle("#phi");
-  fOutput->Add(fHistJets2PhiEtaAcceptance);
-
-  fHistJets2PtAreaAcceptance = new TH2F("fHistJets2PtAreaAcceptance", "fHistJets2PtAreaAcceptance", 
-					fNbins/2, 0, 1.5, fNbins, fMinBinPt, fMaxBinPt);
-  fHistJets2PtAreaAcceptance->GetXaxis()->SetTitle("area");
-  fHistJets2PtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2} (GeV/c)");
-  fHistJets2PtAreaAcceptance->GetZaxis()->SetTitle("counts");
-  fOutput->Add(fHistJets2PtAreaAcceptance);
-
-  if (fIsJet2Rho) {
-    fHistJets2CorrPtAreaAcceptance = new TH2F("fHistJets2CorrPtAreaAcceptance", "fHistJets2CorrPtAreaAcceptance", 
-					      fNbins/2, 0, 1.5, 2*fNbins, -fMaxBinPt, fMaxBinPt);
-    fHistJets2CorrPtAreaAcceptance->GetXaxis()->SetTitle("area");
-    fHistJets2CorrPtAreaAcceptance->GetYaxis()->SetTitle("p_{T,2}^{corr} (GeV/c)");
-    fHistJets2CorrPtAreaAcceptance->GetZaxis()->SetTitle("counts");
-    fOutput->Add(fHistJets2CorrPtAreaAcceptance);
   }
 
   fHistJets2ZvsPt = new TH2F("fHistJets2ZvsPt", "fHistJets2ZvsPt", 120, 0, 1.2, fNbins, fMinBinPt, fMaxBinPt);
@@ -955,17 +916,11 @@ void AliJetResponseMaker::FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, 
     else if (Set == 2) {
       fHistJets2PtArea->Fill(A, Pt);
       fHistJets2PhiEta->Fill(Eta, Phi);
-      if (fIsJet2Rho)
-	fHistJets2CorrPtArea->Fill(A, CorrPt);
-    }
-    else if (Set == 3) {
-      fHistJets2PtAreaAcceptance->Fill(A, Pt);
-      fHistJets2PhiEtaAcceptance->Fill(Eta, Phi);
       fHistJets2ZvsPt->Fill(LeadingPt/Pt, Pt);
       fHistJets2NEFvsPt->Fill(NEF, Pt);
       fHistJets2CEFvsCEFPt->Fill(1-NEF, (1-NEF)*Pt);
       if (fIsJet2Rho)
-	fHistJets2CorrPtAreaAcceptance->Fill(A, CorrPt);
+	fHistJets2CorrPtArea->Fill(A, CorrPt);
     }
   }
 }

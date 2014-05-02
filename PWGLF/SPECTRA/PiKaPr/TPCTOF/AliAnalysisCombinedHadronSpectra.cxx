@@ -878,7 +878,7 @@ void AliAnalysisCombinedHadronSpectra::BinLogAxis(const TH1 *h) {
 
 
 //________________________________________________________________________
-Int_t AliAnalysisCombinedHadronSpectra::GetPythiaEventProcessType(const AliHeader* aHeader, const Bool_t adebug) const {
+Int_t AliAnalysisCombinedHadronSpectra::GetPythiaEventProcessType(const AliHeader* aHeader, Bool_t adebug) const {
   //
   // get the process type of the event.
   //

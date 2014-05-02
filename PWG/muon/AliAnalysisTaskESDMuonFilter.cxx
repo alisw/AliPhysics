@@ -51,6 +51,7 @@
 #include "AliESDMuonTrack.h"
 #include "AliESDtrack.h"
 #include "AliESDMuonGlobalTrack.h"   // AU
+#include "AliMFTAnalysisTools.h"     // AU
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -409,6 +410,9 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
     esdMuGlobalTrack -> GetFirstTrackingPoint(pos);
 
     if (mcH) mcH->SelectParticle(esdMuGlobalTrack->GetLabel()); // to insure that particle's ancestors will be in output MC branches
+
+    Double_t covTr[21] = {0};
+    AliMFTAnalysisTools::ConvertCovMatrixMUON2AOD(esdMuGlobalTrack->GetCovariances(), covTr);
     
     aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuGlobalTrack->GetUniqueID(), // ID
                                                   esdMuGlobalTrack->GetLabel(),    // label
@@ -416,7 +420,7 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   kTRUE,                           // cartesian coordinate system
                                                   pos,                             // position
                                                   kFALSE,                          // isDCA
-                                                  0x0,                             // covariance matrix
+                                                  covTr,                           // covariance matrix
                                                   esdMuGlobalTrack->Charge(),      // charge
                                                   itsClusMap,                      // ITSClusterMap
                                                   primary,                         // origin vertex
@@ -424,6 +428,9 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   kFALSE,                          // used for primary vertex fit?
                                                   AliAODTrack::kPrimary,           // track type
                                                   selectInfo);
+
+
+    aodTrack->SetPIDForTracking(AliPID::kMuon);
 
     Double_t xyAtVertex[2] = {0};
     esdMuGlobalTrack -> GetXYAtVertex(xyAtVertex);

@@ -146,8 +146,7 @@ struct QAPlotter : public QABase
       Double_t el = y-q.min;
       Double_t eh = q.max-y;
       if (fUseVar) { 
-	Info("UpdateGraph", "Setting errors on %s to variance",
-	     g->GetName());
+	//Info("UpdateGraph", "Setting errors on %s to variance",g->GetName());
 	el = q.var; 
 	eh = q.var; 
       }
@@ -195,11 +194,46 @@ struct QAPlotter : public QABase
     TGraphAsymmErrors* fGOccupancy;// Graph of mean occupancy              
     Bool_t             fUseVar;    // Use variance 
   };
+  // =================================================================
+  /** 
+   * Compatiblity constructor 
+   * 
+   * @param prodYear    Year
+   * @param prodLetter  Letter
+   * @param useVar      Use variance 
+   */
+  QAPlotter(Long_t prodYear, Char_t prodLetter, Bool_t useVar) 
+    : QABase("", (prodYear < 2000 ? 2000 : 0) + prodYear, 
+	     Form("LHC%02d%c", prodYear % 100, prodLetter, "pass0")), 
+      fNAccepted(0),
+      fVz(0), 
+      fUseVar(useVar)
+  {
+    Info("QAPlotter", "Do we use variance? %s", fUseVar ? "yes" : "no");
+    fFMD1i = new Ring(1, 'I', useVar); 
+    fFMD2i = new Ring(2, 'I', useVar); 
+    fFMD2o = new Ring(2, 'O', useVar); 
+    fFMD3i = new Ring(3, 'I', useVar); 
+    fFMD3o = new Ring(3, 'O', useVar); 
+    fNAccepted = new TGraph;
+    fNAccepted->SetName("nAccepted");
+    fNAccepted->SetMarkerStyle(20);
+    fNAccepted->SetLineWidth(2);
+
+    fVz = new TGraphErrors;
+    fVz->SetName("vz");
+    fVz->SetMarkerStyle(20);
+    fVz->SetLineWidth(2);
+  }
   /** 
    * Constructor 
    */
-  QAPlotter(Int_t prodYear=0, Char_t prodLetter='\0', Bool_t useVar=false) 
-    : QABase(false, prodYear, prodLetter),
+  QAPlotter(const TString& dataType, 
+	    Int_t          year, 
+	    const TString& period, 
+	    const TString& pass, 
+	    Bool_t         useVar=true) 
+    : QABase(dataType, year, period, pass),
       fNAccepted(0),
       fVz(0),
       fUseVar(useVar)
@@ -229,6 +263,23 @@ struct QAPlotter : public QABase
   {
     fFiles.Add(new TObjString(filename));
   }
+  const char* GetUserInfo(TList* l, const char* name, const char* def) const
+  {
+    if (!l) {
+      Warning("GetUserInfo", "No user information list");
+      return def;
+    }
+    
+    TObject* o = l->FindObject(name);
+    if (!o) {
+      Warning("GetUserInfo", "User information %s not found", name);
+      l->ls();
+      return def;
+    }
+
+    Info("GetUserInfo", "Got user information %s=%s", name, o->GetTitle());
+    return o->GetTitle();
+  }
   /** 
    * Make a tree 
    * 
@@ -239,11 +290,18 @@ struct QAPlotter : public QABase
   Bool_t MakeTree(bool read)
   {
     if (fFiles.GetEntriesFast() <= 0) return QABase::MakeTree(read);
-
+    if (fFiles.GetEntriesFast() == 1 && read) {
+      TFile* file = TFile::Open(fFiles.At(0)->GetName(), "READ");
+      if (file) {
+	fTree       = static_cast<TTree*>(file->Get("T"));
+	return true;
+      }
+    }
     TChain* chain = new TChain("T", "T");
     if (!chain->AddFileInfoList(&fFiles)) return false;
     
     fTree   = chain;
+    
     return true;
   }
 
@@ -258,7 +316,6 @@ struct QAPlotter : public QABase
       Error("Run", "No input tree");
       return;
     }
-      
     fFirst = 0xFFFFFFFF;
     fLast  = 0;
 
@@ -266,6 +323,12 @@ struct QAPlotter : public QABase
     UInt_t j = 0;
     fRuns.Set(nEntries);
     Info("Run", "Got %d runs", nEntries);
+    TList* l = fTree->GetUserInfo();
+    fPeriod   = GetUserInfo(l, "period", "?");
+    fPass     = GetUserInfo(l, "pass",   "?");
+    fDataType = GetUserInfo(l, "type",   "?");
+      
+
     for (UInt_t i = 0; i < nEntries; i++) {
       fTree->GetEntry(i);
 
@@ -298,11 +361,11 @@ struct QAPlotter : public QABase
    */
   void Plot()
   {
-    fTeXName = Form("trend_%09d_%09d", fFirst, fLast);
+    // fTeXName = Form("trend_%09d_%09d", fFirst, fLast);
     TString title;
-    if (fYear != 0 && fLetter != '\0') 
-      title.Form("QA trends for LHC%d%c runs %d --- %d", 
-		 fYear, fLetter, fFirst, fLast);
+    if (!fPeriod.IsNull() && !fPass.IsNull()) 
+      title.Form("QA trends for %s/%s runs %d --- %d", 
+		 fPeriod.Data(), fPass.Data(), fFirst, fLast);
     else
       title.Form("QA trends for runs %d --- %d", fFirst, fLast);
     MakeCanvas(title);
@@ -520,9 +583,9 @@ struct QAPlotter : public QABase
     else         ytitle.Append(" (errors: min/max)");
     h->SetYTitle(ytitle.Data());
     h->SetXTitle("Run #");
-    Info("AddRuns", "%s: %s vs %s", h->GetName(), 
-	 h->GetXaxis()->GetTitle(), h->GetYaxis()->GetTitle());
-
+    // Info("AddRuns", "%s: %s vs %s", h->GetName(), 
+    //      h->GetXaxis()->GetTitle(), h->GetYaxis()->GetTitle());
+  
     Int_t    r1  = h->GetXaxis()->GetXmin();
     Int_t    r2  = h->GetXaxis()->GetXmax();
     Double_t lx  = 0;
@@ -580,7 +643,7 @@ struct QAPlotter : public QABase
       TObjString* area = new TObjString;
       TString&    spec = area->String();
       spec.Form("<span style=\"left: %d%%; bottom: %d%%;\" "
-		"onClick='window.location=\"qa_%09d.html\"' "
+		"onClick='window.location=\"%09d/index.html\"' "
 		"onMouseOver='this.style.cursor=\"pointer\"' "
 		"alt=\"%d\""
 		">%d</span>",
@@ -605,7 +668,7 @@ struct QAPlotter : public QABase
       << "<div class='runs'>\n"
       << "  Runs:<br> ";
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
-      o << "<a href='qa_" << Form("%09d", fRuns[i]) << ".html'>"
+      o << "<a href='" << Form("%09d", fRuns[i]) << "/index.html'>"
 	<< fRuns[i] << "</a> " << std::flush;
     }
     o << "\n"

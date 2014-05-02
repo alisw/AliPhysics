@@ -218,6 +218,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   void SetSystematicScalingMultCorrection(Double_t scaleFactor) 
     { fSystematicScalingMultCorrection = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
+  Double_t GetMaxEtaVariation(Double_t dEdxSplines);
+  Bool_t CalculateMaxEtaVariationMapFromPIDResponse();
+  
   void CleanupParticleFractionHistos();
   Bool_t GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t multiplicity,
                              AliPID::EParticleType species, Double_t& fraction, Double_t& fractionErrorStat,
@@ -259,6 +262,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
  private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+  Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
@@ -364,6 +368,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t* fGenRespPrDeltaPr; //! Generated responses for a single track
   */
   
+  TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
+  
   TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
   TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
   TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
@@ -388,7 +394,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 17);
+  ClassDef(AliAnalysisTaskPID, 18);
 };
 
 

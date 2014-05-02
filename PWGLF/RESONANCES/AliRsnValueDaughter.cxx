@@ -106,7 +106,7 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kPt:           	       return "SingleTrackPt";
       case kPtpc:         	       return "SingleTrackPtpc";
       case kEta:          	       return "SingleTrackEta";
-      case kY:          	       return "SingleTrackY";
+      case kY:                         return "SingleTrackY";
       case kMass:         	       return "SingleTrackMass";
       case kITSsignal:    	       return "SingleTrackITSsignal";
       case kTPCsignal:    	        return "SingleTrackTPCsignal";
@@ -132,6 +132,10 @@ const char *AliRsnValueDaughter::GetTypeName() const
       case kPhi:                        return "SingleTrackPhi";
       case kPhiOuterTPC:                return "SingleTrackPhiOuterTPC";
       case kV0DCA:        	        return "V0DCAToPrimaryVertex";
+      case kV0Radius:        	        return "V0Radius";
+      case kV0Mass:        	        return "V0Mass";
+      case kV0P:        	        return "V0Momentum";
+      case kV0Pt:        	        return "V0TransverseMomentum";
       case kDaughterDCA:  	        return "V0DaughterDCA";
       case kCosPointAng:  	        return "V0CosineOfPointingAngle";
       case kLambdaProtonPIDCut:         return "V0LambdaProtonNsigma";
@@ -204,11 +208,11 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
    case kEta:
      fComputedValue = (fUseMCInfo ? refMC->Eta() : ref->Eta());
      return kTRUE;
-     
+
    case kY:
      fComputedValue = (fUseMCInfo ? refMC->Y() : ref->Y());
      return kTRUE;   
-
+ 
    case kMass:
      fComputedValue = (fUseMCInfo ? refMC->M() : ref->M());
      return kTRUE;
@@ -536,6 +540,72 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
        return kFALSE;
      }	 	 
 
+   case kV0Radius:
+     if(v0esd) {
+       Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       v0ESD->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
+       fComputedValue = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
+       return kTRUE;
+      }
+     if(v0aod) {
+        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+	fComputedValue = v0AOD->RadiusV0();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+
+   case kV0Mass:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->GetEffMass();
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->MassLambda();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 
+	 
+   case kV0P:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->P();
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->Ptot2V0();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+
+   case kV0Pt:
+     if(v0esd) {
+       AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
+       fComputedValue = v0ESD->Pt();
+       return kTRUE;
+     }
+     if(v0aod) {
+       AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
+       fComputedValue = v0AOD->Pt2V0();
+       return kTRUE;
+     }
+     else {
+       fComputedValue = -999;
+       return kFALSE;
+     }	 	 
+
    case kDaughterDCA:
      if(v0esd) {
        AliESDv0 *v0ESD = dynamic_cast<AliESDv0 *>(v0esd);
@@ -560,7 +630,8 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
      }
      if(v0aod) {
        AliAODv0 *v0AOD = dynamic_cast<AliAODv0 *>(v0aod);
-       fComputedValue = TMath::Cos(v0AOD->OpenAngleV0());
+       AliAODVertex *vertex = fEvent->GetRefAOD()->GetPrimaryVertex();
+       fComputedValue = v0AOD->CosPointingAngle(vertex);
        return kTRUE;
      }
      else {

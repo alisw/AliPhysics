@@ -36,14 +36,10 @@ class TCanvas;
  */
 struct QABase 
 {
-  /** 
-   * Constructor
-   * 
-   * @param single  If true, only process one file. 
-   * @param prodYear Production year 
-   * @param prodLetter Production letter 
-   */
-  QABase(Bool_t single=false, Int_t prodYear=0, Char_t prodLetter='\0') 
+  QABase(const TString& dataType, 
+	 Int_t          prodYear, 
+	 const TString& period, 
+	 const TString& pass) 
     : fFMD1i(0),
       fFMD2i(0),
       fFMD2o(0),
@@ -55,13 +51,14 @@ struct QABase
       fStore(0),
       fTeX(0), 
       fHtml(0),
-      fTeXName(""),
+      fTeXName("index"),
       fToDelete(""),
       fCanvas(0), 
-      fSingle(single), 
-      fOutputName("forward_trend.root"),
+      fOutputName("trending.root"),
+      fDataType(dataType), 
       fYear(prodYear), 
-      fLetter(prodLetter)
+      fPeriod(period), 
+      fPass(pass)
   {}
   /** 
    * Copy constructor 
@@ -83,8 +80,11 @@ struct QABase
       fTeXName(o.fTeXName),
       fToDelete(o.fToDelete),
       fCanvas(o.fCanvas),
-      fSingle(o.fSingle), 
-      fOutputName(o.fOutputName)
+      fOutputName(o.fOutputName),
+      fDataType(o.fDataType), 
+      fYear(o.fYear), 
+      fPeriod(o.fPeriod), 
+      fPass(o.fPass)
   {}
   /** 
    * Assignment operator
@@ -130,15 +130,13 @@ struct QABase
    */
   virtual Bool_t MakeTree(bool read)
   {
-    if (!fSingle) { 
-      fOutput = new TFile(OutputName(), (read ? "READ" : "RECREATE"));
-      if (!fOutput) { 
-	Error("MakeTree", "Failed to open output file");
-	return false;
-      }
-      if (read) fTree   = static_cast<TTree*>(fOutput->Get("T"));
-      else      fTree   = new TTree("T", "T");
+    fOutput = new TFile(OutputName(), (read ? "READ" : "RECREATE"));
+    if (!fOutput) { 
+      Error("MakeTree", "Failed to open output file");
+      return false;
     }
+    if (read) fTree   = static_cast<TTree*>(fOutput->Get("T"));
+    else      fTree   = new TTree("T", "T");
     if (!fTree) { 
       Error("MakeTree", "No tree defined!");
       return false;
@@ -294,9 +292,10 @@ struct QABase
    * @param pngName Base name of PNG
    * @param runNo   Run number to append
    */
-  void PrintCanvas(const char* pngName, UInt_t runNo)
+  void PrintCanvas(const char* pngName, UInt_t /*runNo*/)
   {
-    TString s(Form("%s_%09d", pngName, runNo));
+    // TString s(Form("%s_%09d", pngName, runNo));
+    TString s(pngName);
     PrintCanvas(s.Data());
   }
   /** 
@@ -445,10 +444,11 @@ struct QABase
   TString        fTeXName;	// Base name of LaTeX file 
   TString        fToDelete;	// List of files to possibly delete
   TCanvas*       fCanvas;	// Pointer to canvas object
-  Bool_t         fSingle;	// Whether we're processing one run only
   TString        fOutputName;   // Output tree file name 
+  TString        fDataType;	// Data type       
   Int_t          fYear;         // Production year
-  Char_t         fLetter;       // Production letter
+  TString        fPeriod;       // Period identifier 
+  TString        fPass;         // Pass identifier 
 };
 
 #endif

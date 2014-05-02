@@ -211,7 +211,7 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       AliDebugClass(2, "Failed check on DCA to primary vertes");
       return kFALSE;
    }
-   if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
+      if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
       AliDebugClass(2, "Failed check on cosine of pointing angle");
       return kFALSE;
    }
@@ -224,7 +224,14 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       return kFALSE;
    }
 
-
+   Double_t v0Position[3]; // from $ALICE_ROOT/ANALYSIS/AliESDV0Cuts.cxx
+  v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
+  Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
+  if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
+    AliDebugClass(2, "Failed fiducial volume");
+    return kFALSE;   
+  }
+    
    // check PID on proton or antiproton from V0
 
    // check initialization of PID object
@@ -399,19 +406,29 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
 
-   // next cut is effective (should it be in AODV0?)
-   if (TMath::Abs( TMath::Cos(v0->OpenAngleV0()) ) < fMinCosPointAngle) {
-      AliDebugClass(2, "Failed check on cosine of pointing angle");
-      return kFALSE;
+   // next cut is effective (should it be in AODV0?)     
+   AliAODVertex *vertex = lAODEvent->GetPrimaryVertex();
+   Double_t cospointangle = v0->CosPointingAngle(vertex);
+   if (TMath::Abs( cospointangle )  < fMinCosPointAngle) {
+     AliDebugClass(2, "Failed check on cosine of pointing angle");
+     return kFALSE;
    }
-   // next cut is effective (should it be in AODV0?)
+ 
+  // next cut is effective (should it be in AODV0?)
    if (TMath::Abs(v0->DcaV0Daughters()) > fMaxDaughtersDCA) {
       AliDebugClass(2, "Failed check on DCA between daughters");
       return kFALSE;
    }
+
    if (TMath::Abs(v0->RapLambda()) > fMaxRapidity) {
       AliDebugClass(2, "Failed check on V0 rapidity");
       return kFALSE;
+   }
+
+   Double_t radius = v0->RadiusV0();
+   if ( ( radius < 0.8 ) || ( radius > 100 ) ) {
+     AliDebugClass(2, "Failed fiducial volume");
+     return kFALSE;   
    }
 
    //-----------------------------------------------------------

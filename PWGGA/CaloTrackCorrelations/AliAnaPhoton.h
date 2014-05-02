@@ -439,10 +439,15 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhPtPhotonNPileUpSPDVtxTimeCut2;           //! photon pt vs number of spd pile-up vertices, time cut +-75 ns
   TH2F * fhPtPhotonNPileUpTrkVtxTimeCut2;           //! photon pt vs number of track pile-up vertices, time cut +- 75 ns
 	
+  TH2F * fhEClusterSM ;                             //! cluster E distribution per SM, before any selection, after reader
+  TH2F * fhEPhotonSM  ;                             //! photon-like cluster E distribution per SM
+  TH2F * fhPtClusterSM;                             //! cluster E distribution per SM, before any selection, after reader
+  TH2F * fhPtPhotonSM ;                             //! photon-like cluster E distribution per SM
+  
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,35)
+  ClassDef(AliAnaPhoton,36)
 
 } ;
  

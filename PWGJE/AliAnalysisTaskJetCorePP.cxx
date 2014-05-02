@@ -62,6 +62,7 @@
 #include "AliAODJet.h"
 #include "AliVVertex.h"
 #include "AliAnalysisTaskJetCorePP.h"
+#include "AliHeader.h" //KF//
 
 using std::cout;
 using std::endl;
@@ -330,7 +331,7 @@ fDoubleBinning(kFALSE)
    TString dummy(name);
    if(dummy.Contains("KINE")){
       DefineInput(1, TClonesArray::Class());
-      //XXXX//DefineInput(2, TClonesArray::Class());
+      DefineInput(2, TClonesArray::Class());
    }
 }
 
@@ -493,49 +494,52 @@ Bool_t AliAnalysisTaskJetCorePP::Notify()
    //and number of trials from pyxsec.root
    //inspired by AliAnalysisTaskJetSpectrum2::Notify()
    if(!(fIsChargedMC || fIsKine)) return kFALSE; 
-
-   fESD = dynamic_cast<AliESDEvent*>(InputEvent());
-   if(!fESD){
-      if(fDebug>1) AliError("ESD not available");
-      fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
-   } 
- 
-   fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
-
-
-   if(fNonStdFile.Length()!=0){
-      // case that we have an AOD extension we can fetch the jets from the extended output
-      AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
-      fAODExtension = aodH ? aodH->GetExtension(fNonStdFile.Data()) : 0;
-      if(!fAODExtension){
-         if(fDebug>1) Printf("AODExtension found for %s",fNonStdFile.Data());
-      } 
-   }
- 
-   TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
    Float_t xsection = 0;
-   Float_t ftrials  = 1;
-
+   Float_t trials  = 1;
    fAvgTrials = 1;
-   if(tree){
-      TFile *curfile = tree->GetCurrentFile();
-      if(!curfile) {
-         Error("Notify","No current file");
-         return kFALSE;
-      }
-      if(!fh1Xsec || !fh1Trials){
-         Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
-         return kFALSE;
-      }
-      AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,ftrials);
-      fh1Xsec->Fill("<#sigma>",xsection);
-      // construct a poor man average trials
-      Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
-      if(ftrials>=nEntries && nEntries>0.) fAvgTrials = ftrials/nEntries;
-      fh1Trials->Fill("#sum{ntrials}",ftrials);
-   }  
 
-   if(fDebug)Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
+   if(fIsChargedMC){ 
+      fESD = dynamic_cast<AliESDEvent*>(InputEvent());
+      if(!fESD){
+         if(fDebug>1) AliError("ESD not available");
+         fAODIn = dynamic_cast<AliAODEvent*>(InputEvent());
+      } 
+ 
+      fAODOut = dynamic_cast<AliAODEvent*>(AODEvent());
+
+
+      if(fNonStdFile.Length()!=0){
+         // case that we have an AOD extension we can fetch the jets from the extended output
+         AliAODHandler *aodH = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
+         fAODExtension = aodH ? aodH->GetExtension(fNonStdFile.Data()) : 0;
+         if(!fAODExtension){
+            if(fDebug>1) Printf("AODExtension found for %s",fNonStdFile.Data());
+         } 
+      }
+ 
+      TTree *tree = AliAnalysisManager::GetAnalysisManager()->GetTree();
+
+      if(tree){
+         TFile *curfile = tree->GetCurrentFile();
+         if(!curfile) {
+            Error("Notify","No current file");
+            return kFALSE;
+         }
+         if(!fh1Xsec || !fh1Trials){
+            Printf("%s%d No Histogram fh1Xsec",(char*)__FILE__,__LINE__);
+            return kFALSE;
+         }
+         AliAnalysisHelperJetTasks::PythiaInfoFromFile(curfile->GetName(),xsection,trials);
+         fh1Xsec->Fill("<#sigma>",xsection);
+         // construct a poor man average trials
+         Float_t nEntries = (Float_t)tree->GetTree()->GetEntries();
+         if(trials>=nEntries && nEntries>0.) fAvgTrials = trials/nEntries;
+         fh1Trials->Fill("#sum{ntrials}",trials);
+      }  
+
+      if(fDebug)Printf("Reading File %s",fInputHandler->GetTree()->GetCurrentFile()->GetName());
+   }
+
 
    return kTRUE;
 }
@@ -570,10 +574,6 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
    fIsFullMC    = (fJetBranchNameFullMC.Length()>0)  ? kTRUE : kFALSE;
 
    fRandom = new TRandom3(0);
-
-   //if(fIsKine){ //?????????????????????????????????????????
-   //}
-
 
    if(fIsChargedMC || fIsKine){   //full MC or pure kine
       fListJetsGen   = new TList(); //generator level charged antikt jets
@@ -906,6 +906,9 @@ void AliAnalysisTaskJetCorePP::UserCreateOutputObjects()
 
 void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 {
+   //User Exec
+   
+
    //Event loop
    Double_t eventW  = 1.0;
    Double_t ptHard  = 0.0;
@@ -932,25 +935,42 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
          return;
       }
    }else{  //Kine
-      //XXXX// if(!strlen(fJetBranchNameBgKine.Data())){
-      //XXXX//   AliError("Name of jet bg branch for kine not set.");
-      //XXXX//   return;
-      //XXXX// }
+       if(!strlen(fJetBranchNameBgKine.Data())){
+         AliError("Name of jet bg branch for kine not set.");
+         return;
+       }
 
       Init(); 
       if(fMcHandler){
          fMcEvent = fMcHandler->MCEvent(); 
       }else{
-         if(fDebug > 1) printf("AnalysisTaskJetClusterKine::Handler() fMcHandler=NULL\n");
+         if(fDebug > 1) printf("AliAnalysisTaskJetCorePP::Exec() fMcHandler=NULL\n");
          PostData(1, fOutputList);
          return;
       } 
       if(!fMcEvent){
-         if(fDebug > 1) printf("AnalysisTaskJetClusterKine::Exec()   fMcEvent=NULL \n");
+         if(fDebug > 1) printf("AliAnalysisTaskJetCorePP::Exec() fMcEvent=NULL \n");
          PostData(1, fOutputList);
          return;
       }
+ 
+      Float_t xsection = 0;
+      Float_t trials  = 0;
+
+      AliGenPythiaEventHeader *genPH =
+         dynamic_cast<AliGenPythiaEventHeader*> (fMcEvent->GenEventHeader()); 
+      if(genPH){
+         xsection = genPH->GetXsection();
+         trials   = genPH->Trials();
+         ptHard   = genPH->GetPtHard();
+      }
+      fh1Xsec->Fill("<#sigma>",xsection);
+      fh1Trials->Fill("#sum{ntrials}",trials);
+      fh1PtHard->Fill(ptHard,eventW);
+      fh1PtHardNoW->Fill(ptHard,1);
+      fh1PtHardTrials->Fill(ptHard,trials);
    }
+
 
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    if(!fESD){
@@ -1121,7 +1141,7 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
 
          //================= generated charged antikt jets ================
          ReadTClonesArray(fJetBranchNameKine.Data(),   fListJetsGen); 
-         //XXXX//ReadTClonesArray(fJetBranchNameBgKine.Data(), fListJetsBgGen); 
+         ReadTClonesArray(fJetBranchNameBgKine.Data(), fListJetsBgGen); 
       }else{  
          //================= generated charged antikt jets ================
          ReadTClonesArray(fJetBranchNameChargMC.Data(),   fListJetsGen); 
@@ -1228,7 +1248,6 @@ void AliAnalysisTaskJetCorePP::UserExec(Option_t *)
       EstimateBgCone(fListJetsGen, &particleListGen, rhoConeGen);
 
       //Estimate rho from cell median minus jets
-      if(!fIsKine)  //XXXX//
       EstimateBgRhoMedian(fListJetsBgGen, &particleListGen, rhoFromCellMedianGen,1);//mc data
 
       //============  Generator trigger+jet ==================
@@ -2061,9 +2080,9 @@ void AliAnalysisTaskJetCorePP::ReadTClonesArray(TString bname, TList *list){
       if(fJetBranchNameKine.Length()>0 && bname.CompareTo(fJetBranchNameKine.Data())==0){
          array = dynamic_cast<TClonesArray*>(GetInputData(1)); //connect exchange container slot 1
       }
-      //XXXX// if(fJetBranchNameBgKine.Length()>0 && bname.CompareTo(fJetBranchNameBgKine.Data())==0){
-      //XXXX//   array = dynamic_cast<TClonesArray*>(GetInputData(2)); //connect exchange container slot 2
-      //XXXX// }
+      if(fJetBranchNameBgKine.Length()>0 && bname.CompareTo(fJetBranchNameBgKine.Data())==0){
+        array = dynamic_cast<TClonesArray*>(GetInputData(2)); //connect exchange container slot 2
+      }
    }else{ //take input from AOD
       if(fAODOut&&!array){
          array = dynamic_cast<TClonesArray*>(fAODOut->FindListObject(bname.Data()));

@@ -43,12 +43,12 @@ class AliMuonEventCuts : public AliAnalysisCuts
   void SkipTestsNonInFilterMask ( UInt_t skipMask = 0xFFFF) { fCheckMask = ~skipMask; }
   
   // Handle trigger
-  void SetTrigClassPatterns ( const TString trigPattern );
+  void SetTrigClassPatterns (TString trigPattern );
   /// Get default trigger class patterns
   TString GetDefaultTrigClassPatterns() { return fDefaultTrigClassPatterns; };
-  void SetTrigClassLevels ( const TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
-  TArrayI GetTrigClassPtCutLevel ( const TString trigClassName ) const;
-  void SetTrigInputsMap ( const TString trigInputsMap );
+  void SetTrigClassLevels (TString pattern = "MSL:Lpt,MUSL:Lpt,MSH:Hpt,MUSH:Hpt,MUL:LptLpt,MUU:LptLpt,MLL:LptLpt" );
+  TArrayI GetTrigClassPtCutLevel (TString trigClassName ) const;
+  void SetTrigInputsMap (TString trigInputsMap );
   /// Get trigger classes found in run
   TList* GetAllSelectedTrigClasses () const { return fAllSelectedTrigClasses; }
   const TObjArray* GetSelectedTrigClassesInEvent ( const AliVEvent* event );
@@ -62,17 +62,17 @@ class AliMuonEventCuts : public AliAnalysisCuts
   /// Get centrality classes
   TAxis* GetCentralityClasses() const { return fCentralityClasses; }
   
-  void SetCentralityEstimator ( const TString centralityEstimator = "V0M" );
+  void SetCentralityEstimator (TString centralityEstimator = "V0M" );
   TString GetCentralityEstimator () const;
   Double_t GetCentrality ( const AliVEvent* event ) const;
   
   
   /// Set Physics selection mask
-  void SetPhysicsSelectionMask ( const UInt_t physicsSelectionMask ) { fPhysicsSelectionMask = physicsSelectionMask; }
+  void SetPhysicsSelectionMask (UInt_t physicsSelectionMask ) { fPhysicsSelectionMask = physicsSelectionMask; }
   
   
   /// Set minimum number of vertex contributors
-  void SetVertexMinNContributors ( const Int_t vertexMinNContributors ) { fVertexMinNContributors = vertexMinNContributors; }
+  void SetVertexMinNContributors (Int_t vertexMinNContributors ) { fVertexMinNContributors = vertexMinNContributors; }
   /// Get minimum number of vertex contributors
   Int_t GetVertexMinNContributors () const { return fVertexMinNContributors; }
   /// Set Vz limits
@@ -89,7 +89,7 @@ class AliMuonEventCuts : public AliAnalysisCuts
 
  protected:
   
-  void BuildTriggerClasses ( const TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
+  void BuildTriggerClasses (TString firedTrigClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs );
   Bool_t CheckTriggerClassPattern ( const TString& toCheck ) const;
   Bool_t CheckTriggerClassCombination ( const TObjArray* combo, const TString& firedTriggerClasses, UInt_t l0Inputs, UInt_t l1Inputs, UInt_t l2Inputs ) const;
   void AddToEventSelectedClass ( const TString& toCheck, const TObjString* foundTrig, const UInt_t comboType = 0 );
