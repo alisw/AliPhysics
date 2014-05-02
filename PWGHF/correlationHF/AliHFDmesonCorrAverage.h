@@ -1,4 +1,3 @@
-// WORK IN PROG
 #ifndef ALIHFDMESONCORRAVERAGE_H
 #define ALIHFDMESONCORRAVERAGE_H
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
