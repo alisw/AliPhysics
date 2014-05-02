@@ -353,10 +353,12 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
     fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
     fHistPtHard->Fill(fPtHard);
-    fXsection = fPythiaHeader->GetXsection();
-    if(fXsection>0.) {
-      fHistXsection->Fill(fPtHardBin+1, fXsection);
-      fHistTrials->Fill(fPtHardBin+1, fPythiaHeader->Trials());
+    if(fPythiaHeader) {
+      fXsection = fPythiaHeader->GetXsection();
+      if(fXsection>0.) {
+	fHistXsection->Fill(fPtHardBin+1, fXsection);
+	fHistTrials->Fill(fPtHardBin+1, fPythiaHeader->Trials());
+      }
     }
   }
 
