@@ -9,6 +9,12 @@
 // class for systematic uncertainties on D meson -hadron correlation distribution
 //
 // Author: A. Rossi, andrea.rossi@cern.ch
+//
+// Responsible of the values set for the different mesons/datasets
+//      D0:  in pp (2010 min bias) Fabio Colamaria, fabio.colamaria@ba.infn.it ;  p-Pb (2013 min bias): Fabio Colamaria, fabio.colamaria@ba.infn.it,  Somnath Kar, somnath.kar@cern.ch
+//      D*+: in pp 2010 min. bias and p-Pb 2013 min. bias  Sandro Bjelogrlic, sandro.bjelogrlic@cern.ch
+//      D+:  in pp 2010 min. bias and p-Pb 2013 min. bias  Jitendra Kumar, jitendra.kumar@cern.ch
+//
 /////////////////////////////////////////////////////////////
 #include <TH1D.h>
 #include <TH2D.h>
