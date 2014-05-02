@@ -194,7 +194,8 @@ AliHFDhadronCorrSystUnc::~AliHFDhadronCorrSystUnc(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP(){ 
+  Printf("Loading syst unc for D0 pp2010 3-5 0.3 thr");
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore03";
@@ -361,7 +362,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss03HP()
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP(){ 
+  Printf("Loading syst unc for D0 pp2010 5-8 0.3 thr");
 
   fmeson=0;
   fstrmeson="Dzero";
@@ -380,7 +382,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -528,7 +530,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss03HP()
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(){
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(){ 
+
+  Printf("Loading syst unc for D0 pp2010 8-16 0.3 thr");
   
   fmeson=0;
   fstrmeson="Dzero";
@@ -548,7 +552,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -701,6 +705,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss03HP(
 
 //--------------------------------------------------
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP(){
+  Printf("Loading syst unc for D*+ pp 2010, 3<pt(D)<5 GeV/c, pt(assoc)>0.3");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
@@ -718,7 +723,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -868,7 +873,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss03HP()
 }
 
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03HP(){
-
+  Printf("Loading syst unc for D*+ pp 2010, 5<pt(D)<8 GeV/c, pt(assoc)>0.3");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
@@ -886,7 +891,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss03HP()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -1058,7 +1063,7 @@ void AliHFDhadronCorrSystUnc::InitEmptyHistosFromTemplate(){
 
 
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03HP(){
-  
+  Printf("Loading syst unc for D*+ pp 2010, 8<pt(D)<16 GeV/c, pt(assoc)>0.3");  
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
@@ -1076,7 +1081,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss03HP(
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -1479,8 +1484,8 @@ void AliHFDhadronCorrSystUnc::BuildTotalNonFlatUncHisto(){
   Double_t errMin,errMax,mcClosureMinmax,mcClosureMaxmin;
 
   mcClosureMinmax=fhMCclosureTestMin->GetBinContent(fhMCclosureTestMin->GetMaximumBin());
-  Printf("The maximum is :%f", mcClosureMinmax);
   mcClosureMaxmin=fhMCclosureTestMax->GetBinContent(fhMCclosureTestMax->GetMinimumBin());
+  Printf("MC closure - The max of min is: %f, the min of max is: %f", mcClosureMinmax, mcClosureMaxmin);
 
   for(Int_t j=1;j<=fhTotalNonFlatDPhiMin->GetNbinsX();j++){
     errMin=(fhMCclosureTestMin->GetBinContent(j)*fhMCclosureTestMin->GetBinContent(j)-mcClosureMinmax*mcClosureMinmax);// Forced to this quadrature subtraction, doing: (fhMCclosureTestMin->GetBinContent(j)-mcClosureMinmax)*(fhMCclosureTestMin->GetBinContent(j)-mcClosureMinmax) gives the wrong result.. of course  
@@ -1564,48 +1569,324 @@ void AliHFDhadronCorrSystUnc::BuildTotalNonFDUncHisto(){
 
 }
 
+
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss){
+  
   if(meson==0){
+    
+    // 0.3 GeV/c
     if(TMath::Abs(minptAss-0.3)<0.0001){
       if(ptD>2&&ptD<5){
-	InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();    
+	InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();    
+	InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();        
       }
-      else InitStandardUncertaintiesPP2010DzeroHighPtAss03HP();    
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DzeroHighPtAss03HP();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }     
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DzeroLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPP2010DzeroMidPtAss05();               
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DzeroHighPtAss05();
+      }      
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }       
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DzeroLowPtAss1();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPP2010DzeroMidPtAss1();
+	
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DzeroHighPtAss1();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
     }
     else {
-      printf("Methods for syst unc not ready yet for this pt(ass) bin \n");
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
     }
-  }
+  }    
   else if(meson==1){
+    // 0.3 GeV/c
     if(TMath::Abs(minptAss-0.3)<0.0001){
-      if(ptD>2&&ptD<5){
-	InitStandardUncertaintiesPP2010DstarLowPtAss03HP();    
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DstarLowPtAss03HP();	
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DstarMidPtAss03HP();    
+	InitStandardUncertaintiesPP2010DstarMidPtAss03HP();
       }
-      else InitStandardUncertaintiesPP2010DstarHighPtAss03HP();    
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DstarHighPtAss03HP();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DstarLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPP2010DstarMidPtAss05();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DstarHighPtAss05();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DstarLowPtAss1();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPP2010DstarMidPtAss1();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DstarHighPtAss1();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
     }
     else {
-      printf("Methods for syst unc not ready yet for this pt(ass) bin \n");
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
     }
   }
   else if(meson==2){
+    // 0.3 GeV/c
     if(TMath::Abs(minptAss-0.3)<0.0001){
-      if(ptD>2&&ptD<5){
-	InitStandardUncertaintiesPP2010DplusLowPtAss03();    
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DplusLowPtAss03();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPP2010DplusMidPtAss03();    
+	InitStandardUncertaintiesPP2010DplusMidPtAss03();
       }
-      else InitStandardUncertaintiesPP2010DplusHighPtAss03();    
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DplusHighPtAss03();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPP2010DplusLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPP2010DplusMidPtAss05();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPP2010DplusHighPtAss05();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DplusLowPtAss1();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DplusMidPtAss1();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DplusHighPtAss1();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
     }
     else {
       printf("Methods for syst unc not ready yet for this pt(ass) bin \n");
     }
+  }
+  else {
+    printf("PP:No meson is found  Check your input \n");
+  }
+}
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss){
+  
+  if(meson==0){
+    // 0.3 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DzeroLowPtAss03();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DzeroMidPtAss03();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DzeroHighPtAss03();
+      }
+      
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DzeroLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DzeroMidPtAss05();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DzeroHighPtAss05();
+      }
+      
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DzeroLowPtAss1();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DzeroMidPtAss1();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DzeroHighPtAss1();
+      } 
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+    }
+  }
+  else if(meson==1){
+    // 0.3 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DstarLowPtAss03();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DstarMidPtAss03();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DstarHighPtAss03();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DstarLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DstarMidPtAss05();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DstarHighPtAss05();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DstarLowPtAss1();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DstarMidPtAss1();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DstarHighPtAss1();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+    }
+  }
+  else if(meson==2){
+    // 0.3 GeV/c
+    if(TMath::Abs(minptAss-0.3)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DplusLowPtAss03();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DplusMidPtAss03();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DplusHighPtAss03();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 0.5 GeV/c
+    else if(TMath::Abs(minptAss-0.5)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DplusLowPtAss05();
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DplusMidPtAss05();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DplusHighPtAss05();
+      }      
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    // 1 GeV/c
+    else if(TMath::Abs(minptAss-1.)<0.0001){
+      if(ptD>3&&ptD<5){
+	InitStandardUncertaintiesPPb2013DplusLowPtAss1();      
+      }
+      else if(ptD>5&&ptD<8){
+	InitStandardUncertaintiesPPb2013DplusMidPtAss1();
+      }
+      else if(ptD>8&&ptD<16){
+	InitStandardUncertaintiesPPb2013DplusHighPtAss1();
+      }
+      else {
+	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
+      }
+    }
+    else {
+      printf("Methods for syst unc not ready yet for this pt(ass) bin \n");
+    }
+  }
+  else {
+        printf("pPb-No meson is found  Check your input \n");
   }
 }
 
@@ -2077,7 +2358,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -2169,7 +2450,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss03(){ 
 //     else if(0.1<x&&x<0.2){    
 //       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
 //     }
-//     if(0.2<x&&x<0.4){    
+//     if(0.2<x&&x<0.4){
 //       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
 //     } 
     
@@ -2196,7 +2477,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -2243,7 +2524,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss03(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -2364,7 +2645,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -2412,7 +2693,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -2516,7 +2797,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss03(){
 
 //////// HIGHER PT ASS THRESHOLDS
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){ 
+  Printf("Setting syst for D0 pp 2010 3-5 0.5 thr");
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -2583,7 +2865,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -2683,7 +2965,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss05(){ 
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ 
+  Printf("Setting syst for D0 pp 2010 5-8 0.5 thr");
 
   fmeson=0;
   fstrmeson="Dzero";
@@ -2702,7 +2985,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -2749,7 +3032,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -2850,7 +3133,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss05(){ 
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){ 
+  Printf("Setting syst for D0 pp 2010 8-16 0.5 thr");
   
   fmeson=0;
   fstrmeson="Dzero";
@@ -2870,7 +3154,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -2918,7 +3202,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -3022,7 +3306,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss05(){
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -3040,7 +3325,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -3189,8 +3474,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss05(){ 
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -3208,7 +3493,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -3254,7 +3539,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -3356,8 +3641,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss05(){ 
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
+  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");  
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -3375,12 +3660,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
-
+// check those values
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.2); // check this one in particular
   }
   
   // MC CORRECTIONS   -5% +10% for assoc track eff
@@ -3420,7 +3705,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -3523,8 +3808,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){ 
+  Printf("Setting uncertainties for Dplus pp 2010, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt3to5";
@@ -3590,7 +3876,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -3691,8 +3977,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss05(){ 
 }
 
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
-  fmeson=0;
+  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt5to8";
@@ -3709,7 +3995,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -3756,7 +4042,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -3858,8 +4144,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss05(){ 
 
 
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=0;
+  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");  
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt8to16";
@@ -3877,7 +4163,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -3925,7 +4211,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -4028,7 +4314,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss05(){
 
 
 // pt(assoc)> 1 GeV/c
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss1(){
+  Printf("Setting uncertainties for Dzero pp 2010, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -4095,7 +4382,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss1(){ P
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -4195,8 +4482,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroLowPtAss1(){ P
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){
+  Printf("Setting uncertainties for Dzero pp 2010, 5<pt(D)<8, pt(assoc)>1 GeV/c ");
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -4214,7 +4501,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){ P
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -4261,7 +4548,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){ P
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -4362,8 +4649,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroMidPtAss1(){ P
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){
+  Printf("Setting uncertainties for Dzero pp 2010, 8<pt(D)<16, pt(assoc)>1 GeV/c ");  
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -4382,7 +4669,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -4430,7 +4717,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -4535,6 +4822,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DzeroHighPtAss1(){ 
 
 //--------------------------------------------------
 void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+  Printf("Setting uncertainties for Dstar pp 2010, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
@@ -4552,7 +4840,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ P
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -4701,8 +4989,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarLowPtAss1(){ P
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss1(){
+  Printf("Setting uncertainties for Dstar pp 2010, 5<pt(D)<8, pt(assoc)>1 GeV/c ");
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
@@ -4720,7 +5008,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss1(){ P
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -4868,8 +5156,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarMidPtAss1(){ P
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){ 
+  Printf("Setting uncertainties for Dstar pp 2010, 8<pt(D)<16, pt(assoc)>1 GeV/c ");  
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
@@ -4887,12 +5175,13 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+  
+      fhBackSubtractionMax->SetBinContent(j,0.2);
   }
   
   // MC CORRECTIONS   -5% +10% for assoc track eff
@@ -5035,8 +5324,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){ 
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss1(){
+  Printf("Setting uncertainties for Dplus pp 2010, 3<pt(D)<5, pt(assoc)>1 GeV/c ");
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt3to5";
@@ -5102,7 +5392,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss1(){ P
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5202,9 +5492,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusLowPtAss1(){ P
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){ 
+  Printf("Setting uncertainties for Dplus pp 2010, 5<pt(D)<8, pt(assoc)>1 GeV/c ");
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt5to8";
@@ -5221,7 +5511,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){ P
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -5268,7 +5558,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){ P
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5369,9 +5659,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusMidPtAss1(){ P
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){
+  Printf("Setting uncertainties for Dplus pp 2010, 8<pt(D)<16, pt(assoc)>1 GeV/c ");  
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt8to16";
@@ -5389,7 +5679,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -5437,7 +5727,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5551,7 +5841,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DplusHighPtAss1(){ 
 
 // pt assoc > 0.3 GeV/c
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");  
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore03";
@@ -5582,12 +5873,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
   //  -5%  +10% for assoc track eff 
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
@@ -5605,12 +5896,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -5618,7 +5909,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5640,7 +5931,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -5718,8 +6009,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss03(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 5<pt(D)<8, pt(assoc)>0.3 GeV/c ");  
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore03";
@@ -5737,7 +6028,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -5748,12 +6039,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -5772,19 +6063,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5806,7 +6097,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -5885,8 +6176,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss03(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 8<pt(D)<16, pt(assoc)>0.3 GeV/c ");    
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore03";
@@ -5905,7 +6196,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -5917,12 +6208,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -5941,19 +6232,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -5975,7 +6266,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -6057,7 +6348,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss03()
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");  
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
@@ -6075,7 +6367,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -6087,12 +6379,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
   // MC CORRECTIONS, -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -6111,19 +6403,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -6145,7 +6437,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -6224,8 +6516,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss03(){
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 5<pt(D)<8, pt(assoc)>0.3 GeV/c ");  
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
@@ -6243,53 +6535,53 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.04);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.04);
   }
   
   // MC CORRECTIONS/ -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.04);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.04);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -6311,7 +6603,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -6391,179 +6683,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss03(){
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss03(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 8<pt(D)<16, pt(assoc)>0.3 GeV/c ");    
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore03";
   fstrptD="Dpt8to16";
-  if(!fhDeltaPhiTemplate){
-    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
-  }
-  Double_t x;
-  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
-  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
-  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
-    fhYieldExtraction->SetBinContent(j,0.1);
-  }
-
-  // Background D MESON candidate subtraction (side-band variations, etc.)
-  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
-  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
-  }
-
-  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
-  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
-  }
-  
-  // MC CORRECTIONS   -5% +10% for assoc track eff
-  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
-  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
-  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
-  }
-  // MC D EFF CORRECTION
-  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
-  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
-  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
-  }
-
-
-  // Contamination from secondary tracks
-  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
-  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
-  }
-
-  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
-  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
-  }
-
-  // MC CLOSURETEST (D meson efficiency)
-  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
-  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
-    x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
-    
-    if(-0.4<x&&x<-0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-    else if(-0.2<x&&x<-0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    else if(-0.1<x&&x<0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
-    }
-    else if(0.1<x&&x<0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    if(0.2<x&&x<0.4){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-  }
-
-  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
-  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
-    
-    //     if(-0.4<x&&x<-0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.1<x&&x<0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
-    //     }
-    //     else if(0.1<x&&x<0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     if(0.2<x&&x<0.4){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    
-  }
-  
-  // Feed-down 
-
-  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
-  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
-    x=fhBeautyFDmin->GetBinLowEdge(j);
-    fhBeautyFDmin->SetBinContent(j,-0.05);
-    
-  //   if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-  }
-
-  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
-  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
-    x=fhBeautyFDmax->GetBinLowEdge(j);
-    fhBeautyFDmax->SetBinContent(j,0.03);
-   
-//     if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     } 
-    
-  }
-
-
-}
-
-
-
-
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  fmeson=0;
-  fstrmeson="Dplus";
-  fstrptAss="ptAsMore03";
-  fstrptD="Dpt3to5";
   if(!fhDeltaPhiTemplate){
     fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
   }
@@ -6584,41 +6709,209 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
     fhBackSubtractionMax->SetBinContent(j,0.05);
   }
-
   
-  // MC CORRECTIONS ( associatate track efficiency):
-  //  -5%  +10% for assoc track eff 
+  // MC CORRECTIONS   -5% +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
-
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.08);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.08);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
+  }
+
+  // MC CLOSURETEST (D meson efficiency)
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinLowEdge(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
+    
+    if(-0.4<x&&x<-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+    else if(-0.2<x&&x<-0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    else if(-0.1<x&&x<0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
+    }
+    else if(0.1<x&&x<0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    if(0.2<x&&x<0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
+    
+    //     if(-0.4<x&&x<-0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.1<x&&x<0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
+    //     }
+    //     else if(0.1<x&&x<0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     if(0.2<x&&x<0.4){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    
+  }
+  
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+    
+  //   if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+//     if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     } 
+    
+  }
+
+
+}
+
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
+  Printf("Setting uncertainties for Dplus pPb 2013, 3<pt(D)<5, pt(assoc)>0.3 GeV/c ");    
+  fmeson=2;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore03";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.1);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.1);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.035);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -6626,7 +6919,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -6648,7 +6941,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -6726,9 +7019,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss03(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){
+  Printf("Setting uncertainties for Dplus pPb 2013, 5<pt(D)<8, pt(assoc)>0.3 GeV/c ");    
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore03";
   fstrptD="Dpt5to8";
@@ -6745,54 +7038,54 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -6814,7 +7107,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -6893,9 +7186,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss03(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 8<pt(D)<16, pt(assoc)>0.3 GeV/c ");    
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore03";
   fstrptD="Dpt8to16";
@@ -6913,55 +7206,55 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -6983,7 +7276,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03()
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.08);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -7065,7 +7358,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss03()
 
 //////// HIGHER PT ASS THRESHOLDS
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");    
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -7096,12 +7390,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   //  -5%  +10% for assoc track eff 
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
@@ -7119,12 +7413,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -7132,7 +7426,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -7154,7 +7448,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.07);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -7232,8 +7526,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");    
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -7251,7 +7545,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -7262,12 +7556,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -7286,19 +7580,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -7320,7 +7614,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.07);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -7399,8 +7693,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss05(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");      
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore05";
@@ -7419,7 +7713,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -7431,12 +7725,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -7455,19 +7749,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -7489,7 +7783,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.07);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -7571,7 +7865,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss05()
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");      
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
@@ -7589,24 +7884,24 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.07);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.07);
   }
   
   // MC CORRECTIONS, -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -7625,19 +7920,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -7659,7 +7954,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.7);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -7738,345 +8033,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss05(){
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss05(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");      
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt5to8";
-  if(!fhDeltaPhiTemplate){
-    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
-  }
-  Double_t x;
-  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
-  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
-  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
-    fhYieldExtraction->SetBinContent(j,0.1);
-  }
-
-  // Background D MESON candidate subtraction (side-band variations, etc.)
-  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
-  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
-  }
-
-  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
-  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
-  }
-  
-  // MC CORRECTIONS/ -5%  10% for assoc track eff
-  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
-  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
-  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
-  }
-
-  // MC D EFF CORRECTION
-  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
-  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
-  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
-  }
-
-
-  // Contamination from secondary tracks
-  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
-  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
-  }
-
-  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
-  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
-  }
-
-  // MC CLOSURETEST (D meson efficiency)
-  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
-  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
-    x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
-    
-    if(-0.4<x&&x<-0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-    else if(-0.2<x&&x<-0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    else if(-0.1<x&&x<0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
-    }
-    else if(0.1<x&&x<0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    if(0.2<x&&x<0.4){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-  }
-
-  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
-  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
-    
-    //     if(-0.4<x&&x<-0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.1<x&&x<0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
-    //     }
-    //     else if(0.1<x&&x<0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     if(0.2<x&&x<0.4){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    
-  }
-  
-  // Feed-down 
-
-  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
-  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
-    x=fhBeautyFDmin->GetBinLowEdge(j);
-    fhBeautyFDmin->SetBinContent(j,-0.05);
-    
-  //   if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-  }
-
-  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
-  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
-    x=fhBeautyFDmax->GetBinLowEdge(j);
-    fhBeautyFDmax->SetBinContent(j,0.03);
-   
-//     if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     } 
-    
-  }
-
-}
-
-
-
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=1;
-  fstrmeson="Dstar";
-  fstrptAss="ptAsMore05";
-  fstrptD="Dpt8to16";
-  if(!fhDeltaPhiTemplate){
-    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
-  }
-  Double_t x;
-  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
-  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
-  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
-    fhYieldExtraction->SetBinContent(j,0.1);
-  }
-
-  // Background D MESON candidate subtraction (side-band variations, etc.)
-  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
-  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
-  }
-
-  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
-  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
-  }
-  
-  // MC CORRECTIONS   -5% +10% for assoc track eff
-  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
-  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
-  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
-  }
-  // MC D EFF CORRECTION
-  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
-  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
-  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
-  }
-
-
-  // Contamination from secondary tracks
-  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
-  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
-  }
-
-  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
-  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
-  }
-
-  // MC CLOSURETEST (D meson efficiency)
-  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
-  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
-    x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
-    
-    if(-0.4<x&&x<-0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-    else if(-0.2<x&&x<-0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    else if(-0.1<x&&x<0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
-    }
-    else if(0.1<x&&x<0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    if(0.2<x&&x<0.4){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-  }
-
-  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
-  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
-    
-    //     if(-0.4<x&&x<-0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.1<x&&x<0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
-    //     }
-    //     else if(0.1<x&&x<0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     if(0.2<x&&x<0.4){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    
-  }
-  
-  // Feed-down 
-
-  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
-  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
-    x=fhBeautyFDmin->GetBinLowEdge(j);
-    fhBeautyFDmin->SetBinContent(j,-0.05);
-    
-  //   if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-  }
-
-  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
-  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
-    x=fhBeautyFDmax->GetBinLowEdge(j);
-    fhBeautyFDmax->SetBinContent(j,0.03);
-   
-//     if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     } 
-    
-  }
-
-
-}
-
-
-
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  fmeson=0;
-  fstrmeson="Dplus";
-  fstrptAss="ptAsMore05";
-  fstrptD="Dpt3to5";
   if(!fhDeltaPhiTemplate){
     fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
   }
@@ -8097,18 +8059,16 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
     fhBackSubtractionMax->SetBinContent(j,0.05);
   }
-
   
-  // MC CORRECTIONS ( associatate track efficiency):
-  //  -5%  +10% for assoc track eff 
+  // MC CORRECTIONS/ -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
@@ -8126,12 +8086,348 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
+  }
+
+  // MC CLOSURETEST (D meson efficiency)
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinLowEdge(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
+    
+    if(-0.4<x&&x<-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+    else if(-0.2<x&&x<-0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    else if(-0.1<x&&x<0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
+    }
+    else if(0.1<x&&x<0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    if(0.2<x&&x<0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    fhMCclosureTestMax->SetBinContent(j,0.07);
+    
+    //     if(-0.4<x&&x<-0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.1<x&&x<0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
+    //     }
+    //     else if(0.1<x&&x<0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     if(0.2<x&&x<0.4){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    
+  }
+  
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+    
+  //   if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+//     if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     } 
+    
+  }
+
+}
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss05(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");        
+  fmeson=1;
+  fstrmeson="Dstar";
+  fstrptAss="ptAsMore05";
+  fstrptD="Dpt8to16";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.1);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.05);
+  }
+  
+  // MC CORRECTIONS   -5% +10% for assoc track eff
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.08);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.08);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.035);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.035);
+  }
+
+  // MC CLOSURETEST (D meson efficiency)
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinLowEdge(j);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
+    
+    if(-0.4<x&&x<-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+    else if(-0.2<x&&x<-0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    else if(-0.1<x&&x<0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
+    }
+    else if(0.1<x&&x<0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    if(0.2<x&&x<0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    fhMCclosureTestMax->SetBinContent(j,0.07);
+    
+    //     if(-0.4<x&&x<-0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.1<x&&x<0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
+    //     }
+    //     else if(0.1<x&&x<0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     if(0.2<x&&x<0.4){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    
+  }
+  
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+    
+  //   if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+//     if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     } 
+    
+  }
+
+
+}
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 3<pt(D)<5, pt(assoc)>0.5 GeV/c ");        
+  fmeson=2;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore05";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.1);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.1);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.035);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -8139,7 +8435,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -8161,7 +8457,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.06);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -8239,9 +8535,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss05(){
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 5<pt(D)<8, pt(assoc)>0.5 GeV/c ");        
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt5to8";
@@ -8258,54 +8554,54 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -8327,7 +8623,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.06);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -8406,9 +8702,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss05(){
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 8<pt(D)<16, pt(assoc)>0.5 GeV/c ");          
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore05";
   fstrptD="Dpt8to16";
@@ -8426,55 +8722,55 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05()
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -8496,7 +8792,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05()
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.06);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -8577,7 +8873,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss05()
 
 
 // pt(assoc)> 1 GeV/c
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){
+  Printf("Setting uncertainties for Dzero pPb 2013, 3<pt(D)<5, pt(assoc)>1 GeV/c ");          
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -8608,12 +8905,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ 
   //  -5%  +10% for assoc track eff 
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
@@ -8631,12 +8928,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -8644,7 +8941,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -8666,7 +8963,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -8744,8 +9041,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroLowPtAss1(){ 
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){
+  Printf("Setting uncertainties for Dzero pPb 2013, 5<pt(D)<8, pt(assoc)>1 GeV/c ");          
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -8763,7 +9060,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
@@ -8774,12 +9071,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ 
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -8798,19 +9095,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -8832,7 +9129,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -8911,8 +9208,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroMidPtAss1(){ 
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){ 
+  Printf("Setting uncertainties for Dzero pPb 2013, 8<pt(D)<16, pt(assoc)>1 GeV/c ");            
   fmeson=0;
   fstrmeson="Dzero";
   fstrptAss="ptAsMore1";
@@ -8931,7 +9228,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.05);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
@@ -8943,12 +9240,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -8967,19 +9264,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -9001,7 +9298,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -9083,7 +9380,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DzeroHighPtAss1(){
 
 
 //--------------------------------------------------
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ 
+ Printf("Setting uncertainties for Dstar pPb 2013, 3<pt(D)<5, pt(assoc)>1 GeV/c ");            
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
@@ -9101,24 +9399,24 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.08);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.08);
   }
   
   // MC CORRECTIONS, -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
@@ -9137,19 +9435,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -9171,7 +9469,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -9250,8 +9548,8 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarLowPtAss1(){ 
 
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ 
+ Printf("Setting uncertainties for Dstar pPb 2013, 5<pt(D)<8, pt(assoc)>1 GeV/c ");            
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
@@ -9269,23 +9567,23 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.06);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.06);
   }
   
   // MC CORRECTIONS/ -5%  10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
   // MC D EFF CORRECTION
@@ -9303,19 +9601,19 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -9337,7 +9635,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -9417,178 +9715,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarMidPtAss1(){ 
 
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DstarHighPtAss1(){ 
+  Printf("Setting uncertainties for Dstar pPb 2013, 8<pt(D)<16, pt(assoc)>1 GeV/c ");            
   fmeson=1;
   fstrmeson="Dstar";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt8to16";
-  if(!fhDeltaPhiTemplate){
-    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
-  }
-  Double_t x;
-  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
-  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
-  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
-    fhYieldExtraction->SetBinContent(j,0.1);
-  }
-
-  // Background D MESON candidate subtraction (side-band variations, etc.)
-  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
-  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
-  }
-
-  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
-  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
-  }
-  
-  // MC CORRECTIONS   -5% +10% for assoc track eff
-  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
-  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
-  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
-  }
-  // MC D EFF CORRECTION
-  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
-  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
-  }
-
-  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
-  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
-  }
-
-
-  // Contamination from secondary tracks
-  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
-  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
-  }
-
-  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
-  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
-  }
-
-  // MC CLOSURETEST (D meson efficiency)
-  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
-  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
-    x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
-    
-    if(-0.4<x&&x<-0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-    else if(-0.2<x&&x<-0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    else if(-0.1<x&&x<0.1){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
-    }
-    else if(0.1<x&&x<0.2){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
-    }
-    if(0.2<x&&x<0.4){    
-      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
-    }
-  }
-
-  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
-  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
-    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
-    
-    //     if(-0.4<x&&x<-0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.2<x&&x<-0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     else if(-0.1<x&&x<0.1){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
-    //     }
-    //     else if(0.1<x&&x<0.2){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
-    //     }
-    //     if(0.2<x&&x<0.4){    
-    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
-    //     }
-    
-  }
-  
-  // Feed-down 
-
-  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
-  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
-    x=fhBeautyFDmin->GetBinLowEdge(j);
-    fhBeautyFDmin->SetBinContent(j,-0.05);
-    
-  //   if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
-//     }
-  }
-
-  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
-  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
-    x=fhBeautyFDmax->GetBinLowEdge(j);
-    fhBeautyFDmax->SetBinContent(j,0.03);
-   
-//     if(-0.4<x&&x<-0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.2<x&&x<-0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     else if(-0.1<x&&x<0.1){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
-//     }
-//     else if(0.1<x&&x<0.2){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
-//     }
-//     if(0.2<x&&x<0.4){    
-//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
-//     } 
-    
-  }
-
-
-}
-
-
-
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  fmeson=0;
-  fstrmeson="Dplus";
-  fstrptAss="ptAsMore1";
-  fstrptD="Dpt3to5";
   if(!fhDeltaPhiTemplate){
     fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
   }
@@ -9609,41 +9741,208 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ 
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
     fhBackSubtractionMax->SetBinContent(j,0.05);
   }
-
   
-  // MC CORRECTIONS ( associatate track efficiency):
-  //  -5%  +10% for assoc track eff 
+  // MC CORRECTIONS   -5% +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
-
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.08);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.08);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
+  }
+
+  // MC CLOSURETEST (D meson efficiency)
+  fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
+  for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
+    x=fhMCclosureTestMin->GetBinLowEdge(j);
+    fhMCclosureTestMin->SetBinContent(j,-0);
+    
+    if(-0.4<x&&x<-0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+    else if(-0.2<x&&x<-0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    else if(-0.1<x&&x<0.1){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.02);      
+    }
+    else if(0.1<x&&x<0.2){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.015);      
+    }
+    if(0.2<x&&x<0.4){    
+      fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
+    }
+  }
+
+  fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
+  for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
+    x=fhMCclosureTestMax->GetBinLowEdge(j);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
+    
+    //     if(-0.4<x&&x<-0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.2<x&&x<-0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     else if(-0.1<x&&x<0.1){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.08);      
+    //     }
+    //     else if(0.1<x&&x<0.2){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.06);      
+    //     }
+    //     if(0.2<x&&x<0.4){    
+    //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
+    //     }
+    
+  }
+  
+  // Feed-down 
+
+  fhBeautyFDmin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmin");
+  for(Int_t j=1;j<=fhBeautyFDmin->GetNbinsX();j++){
+    x=fhBeautyFDmin->GetBinLowEdge(j);
+    fhBeautyFDmin->SetBinContent(j,-0.05);
+    
+  //   if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmin->SetBinContent(j,fhBeautyFDmin->GetBinContent(j)-0.04);      
+//     }
+  }
+
+  fhBeautyFDmax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBeautyFDmax");
+  for(Int_t j=1;j<=fhBeautyFDmax->GetNbinsX();j++){
+    x=fhBeautyFDmax->GetBinLowEdge(j);
+    fhBeautyFDmax->SetBinContent(j,0.03);
+   
+//     if(-0.4<x&&x<-0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.2<x&&x<-0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     else if(-0.1<x&&x<0.1){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.08);      
+//     }
+//     else if(0.1<x&&x<0.2){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.06);      
+//     }
+//     if(0.2<x&&x<0.4){    
+//       fhBeautyFDmax->SetBinContent(j,fhBeautyFDmax->GetBinContent(j)+0.04);      
+//     } 
+    
+  }
+
+
+}
+
+
+
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 3<pt(D)<5, pt(assoc)>1 GeV/c ");            
+  fmeson=2;
+  fstrmeson="Dplus";
+  fstrptAss="ptAsMore1";
+  fstrptD="Dpt3to5";
+  if(!fhDeltaPhiTemplate){
+    fhDeltaPhiTemplate=new TH1D("fhDeltaPhiTemplate","fhDeltaPhiTemplate",32,-TMath::Pi()/2.,3./2.*TMath::Pi());
+  }
+  Double_t x;
+  // D MESON YIELD EXTRACTION (->NORMALIZATION): relative uncertainty is constant
+  fhYieldExtraction=(TH1D*)fhDeltaPhiTemplate->Clone("fhYieldExtraction");
+  for(Int_t j=1;j<=fhYieldExtraction->GetNbinsX();j++){
+    fhYieldExtraction->SetBinContent(j,0.1);
+  }
+
+  // Background D MESON candidate subtraction (side-band variations, etc.)
+  fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
+  for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
+  }
+
+  fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
+  for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
+    fhBackSubtractionMax->SetBinContent(j,0.1);
+  }
+
+  
+  // MC CORRECTIONS ( associatate track efficiency):
+  //  -5%  +10% for assoc track eff 
+  fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
+  for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
+  }
+
+  fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
+  for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
+  }
+
+  // MC D EFF CORRECTION
+  fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
+  for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
+  }
+
+  fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
+  for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
+  }
+
+
+  // Contamination from secondary tracks
+  fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
+  for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
+    fhSecContaminationMin->SetBinContent(j,-0.035);
+  }
+
+  fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
+  for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
 
@@ -9651,7 +9950,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ 
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -9673,7 +9972,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     //    x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -9751,9 +10050,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusLowPtAss1(){ 
   
 }
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 5<pt(D)<8, pt(assoc)>1 GeV/c ");            
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt5to8";
@@ -9770,54 +10069,54 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){ 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS:  -5%  +10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -9839,7 +10138,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){ 
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      
@@ -9918,9 +10217,9 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusMidPtAss1(){ 
 }
 
 
-void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){ Printf("TEMPORARY VALUES (PP 2010 ass 03)");
-  
-  fmeson=0;
+void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){ 
+  Printf("Setting uncertainties for Dplus pPb 2013, 8<pt(D)<16, pt(assoc)>1 GeV/c ");            
+  fmeson=2;
   fstrmeson="Dplus";
   fstrptAss="ptAsMore1";
   fstrptD="Dpt8to16";
@@ -9938,55 +10237,55 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.1);
   }
 
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.05);
+    fhBackSubtractionMax->SetBinContent(j,0.1);
   }
   
   // MC CORRECTIONS,  -5% 10% for assoc track eff
   fhMCcorrectionsMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMin");
   for(Int_t j=1;j<=fhMCcorrectionsMin->GetNbinsX();j++){
-    fhMCcorrectionsMin->SetBinContent(j,-0.05);
+    fhMCcorrectionsMin->SetBinContent(j,-0.04);
   }
 
   fhMCcorrectionsMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCcorrectionsMax");
   for(Int_t j=1;j<=fhMCcorrectionsMax->GetNbinsX();j++){
-    fhMCcorrectionsMax->SetBinContent(j,0.10);
+    fhMCcorrectionsMax->SetBinContent(j,0.04);
   }
 
 
   // MC D EFF CORRECTION
   fhMCDefficiencyMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMin");
   for(Int_t j=1;j<=fhMCDefficiencyMin->GetNbinsX();j++){
-    fhMCDefficiencyMin->SetBinContent(j,-0.05);
+    fhMCDefficiencyMin->SetBinContent(j,-0.1);
   }
 
   fhMCDefficiencyMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCDefficiencyMax");
   for(Int_t j=1;j<=fhMCDefficiencyMax->GetNbinsX();j++){
-    fhMCDefficiencyMax->SetBinContent(j,0.05);
+    fhMCDefficiencyMax->SetBinContent(j,0.1);
   }
 
 
   // Contamination from secondary tracks
   fhSecContaminationMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMin");
   for(Int_t j=1;j<=fhSecContaminationMin->GetNbinsX();j++){
-    fhSecContaminationMin->SetBinContent(j,-0.05);
+    fhSecContaminationMin->SetBinContent(j,-0.035);
   }
 
   fhSecContaminationMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhSecContaminationMax");
   for(Int_t j=1;j<=fhSecContaminationMax->GetNbinsX();j++){
-    fhSecContaminationMax->SetBinContent(j,0.05);
+    fhSecContaminationMax->SetBinContent(j,0.035);
   }
 
   // MC CLOSURETEST (D meson efficiency)
   fhMCclosureTestMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMin");
   for(Int_t j=1;j<=fhMCclosureTestMin->GetNbinsX();j++){
     x=fhMCclosureTestMin->GetBinLowEdge(j);
-    fhMCclosureTestMin->SetBinContent(j,-0.08);
+    fhMCclosureTestMin->SetBinContent(j,-0.0);
     
     if(-0.4<x&&x<-0.2){    
       fhMCclosureTestMin->SetBinContent(j,fhMCclosureTestMin->GetBinContent(j)-0.01);      
@@ -10008,7 +10307,7 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPPb2013DplusHighPtAss1(){
   fhMCclosureTestMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhMCclosureTestMax");
   for(Int_t j=1;j<=fhMCclosureTestMax->GetNbinsX();j++){
     x=fhMCclosureTestMax->GetBinLowEdge(j);
-    fhMCclosureTestMax->SetBinContent(j,0.);
+    fhMCclosureTestMax->SetBinContent(j,0.05);
     
     //     if(-0.4<x&&x<-0.2){    
     //       fhMCclosureTestMax->SetBinContent(j,fhMCclosureTestMax->GetBinContent(j)-0.04);      

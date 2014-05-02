@@ -23,7 +23,7 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   ~AliHFDhadronCorrSystUnc();
   void InitEmptyHistosFromTemplate();
   void InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss);
-
+  void InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss);
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
   void InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();
   void InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();
