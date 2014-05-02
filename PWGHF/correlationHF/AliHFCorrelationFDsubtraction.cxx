@@ -13,10 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliHFCorrelationFDsubtraction.cxx 58972 2012-10-08 17:14:03Z zconesa $ */
+/* $Id: $ */
 
 /////////////////////////////////////////////////////////////
 //
+// Class for subtracting D-hadron correlations from secondary D from B meson decay from D-hadron correlations of prompt+secondary D mesons
+//       n.b. requires the evaluation of the fraction of prompt D mesons using the same receipes used for D meson cross-section and RAA in D2H pag
+//       (-> fprompt obtained from FONLL predictions of prompt and secondary D, prompt and secondary D meson efficiencies and a range of hypotheses for
+//       RAA(DfromB)/RAA(promptD) (if needed)
 //
 // Author: A. Rossi, andrea.rossi@cern.ch
 /////////////////////////////////////////////////////////////
