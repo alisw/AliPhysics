@@ -31,7 +31,7 @@ class AliDielectronBtoJPSItoEleCDFfitFCN : public TNamed {
 		virtual ~AliDielectronBtoJPSItoEleCDFfitFCN();
 
 		Double_t EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
-				const Double_t* invariantmass, const Double_t* pt, const Int_t* type, const Int_t ncand) const;
+				const Double_t* invariantmass, const Double_t* pt, const Int_t* type, Int_t ncand) const;
 
                 // getters for parameters
 		Double_t GetResWeight()                    const { return fParameters[0]; }

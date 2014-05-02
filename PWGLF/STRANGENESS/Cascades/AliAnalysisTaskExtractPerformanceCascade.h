@@ -311,7 +311,12 @@ class AliAnalysisTaskExtractPerformanceCascade : public AliAnalysisTaskSE {
   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultV0AXiPlus;       //! Generated Xi+ Distrib, at event selection level
   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaMinus;      //! Generated Omega- Distrib, at event selection level
   TH3F      *f3dHistGenSelectedPtVsYCMSVsMultV0AOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
-  
+
+    TH3F      *f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiMinus;      //! Generated Xi- Distrib, at event selection level
+    TH3F      *f3dHistGenSelectedPrimPtVsYCMSVsMultV0AXiPlus;       //! Generated Xi+ Distrib, at event selection level
+    TH3F      *f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaMinus;      //! Generated Omega- Distrib, at event selection level
+    TH3F      *f3dHistGenSelectedPrimPtVsYCMSVsMultV0AOmegaPlus;       //! Generated Omega+ Distrib, at event selection level
+    
 //---> Multiplicity -> ZNA centrality
   
   TH3F      *f3dHistGenPtVsYVsMultZNAXiMinus;      //! Generated Xi- Distrib

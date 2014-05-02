@@ -114,7 +114,7 @@ AliFemtoString AliFemtoEventReaderKinematicsChainESD::Report()
 }
 
 //__________________
-void AliFemtoEventReaderKinematicsChainESD::SetConstrained(const bool constrained)
+void AliFemtoEventReaderKinematicsChainESD::SetConstrained(bool constrained)
 {
   // Select whether to read constrained or not constrained momentum
   fConstrained=constrained;

@@ -1,4 +1,5 @@
 AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
+						TString cfg="ConfigJpsi_jb_PbPb.C",
 				    Bool_t gridconf=kFALSE,
 				    Bool_t hasMC=kFALSE,
 				    ULong64_t triggers=AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB,
@@ -31,24 +32,29 @@ AliAnalysisTask *AddTask_jbook_JPsi(TString config="1",
   TString configFile("");
   printf("%s \n",gSystem->pwd());
   TString trainRoot=gSystem->Getenv("TRAIN_ROOT");
+  if(cfg.IsNull()) cfg="ConfigJpsi_jb_PbPb.C";
 
-  // gsi config
-  if (!trainRoot.IsNull())  configFile="$TRAIN_ROOT/jbook_jpsi/ConfigJpsi_jb_PbPb.C";
-  // alien config
-  else if(!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C .")) {
+  // the different paths
+  TString gsiPath("$TRAIN_ROOT/jbook_jpsi/");
+  TString alienPath("alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/");
+  TString alirootPath("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/");
+
+  ////////// >>>>>>>>>> gsi config
+  if (!trainRoot.IsNull())  configFile=gsiPath.Data();
+  ////////// >>>>>>>>>> alien config
+  else if(!gSystem->Exec(Form("alien_cp %s/%s .",alienPath.Data(),cfg.Data()))) {
     gSystem->Exec(Form("ls -l %s",gSystem->pwd()));
-    configFile=Form("%s/ConfigJpsi_jb_PbPb.C",gSystem->pwd());
+    configFile=gSystem->pwd();
   }
   else {
-    printf("ERROR: couldn't copy file %s from grid \n",
-	   "alien:///alice/cern.ch/user/j/jbook/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C");
+    printf("ERROR: couldn't copy file %s/%s from grid \n", alienPath.Data(),cfg.Data() );
     return;
   }
-
-  // aliroot config
-  if(!gridconf && trainRoot.IsNull())
-    configFile="$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_jb_PbPb.C"; // aliroot config
-
+  ///////// >>>>>>>>> aliroot config
+  if(!gridconf && trainRoot.IsNull()) configFile=alirootPath.Data();
+  ///////// add config to path
+  configFile+="/";
+  configFile+=cfg.Data();
 
   // trigger selection
   ULong64_t triggerSets[]={AliVEvent::kCentral , AliVEvent::kSemiCentral , AliVEvent::kMB,

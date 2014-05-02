@@ -92,7 +92,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   else shqmax = 2.0;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
-  Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentralityV0);
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentrality);
   Reader->SetFilterBit(7);
   Reader->SetpA2013(kTRUE);
   //Reader->SetUseMultiplicity(AliFemtoEventReaderAODChain::kCentralityV0A);
@@ -224,9 +224,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //primary particles: hits in ITS + DCA cut
 	  //dtc1etaphitpc[aniter]->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
 	  //				 AliESDtrackCuts::kAny);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(2.0);
-	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
-	  dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
+	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0182, 0.0350, -1.01);
 	  //dtc1etaphitpc[aniter]->SetMaxSigmaToVertex(6.0);
 

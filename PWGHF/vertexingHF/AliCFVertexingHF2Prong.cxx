@@ -173,10 +173,12 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	}
 	else{
 		AliWarning("There are problems!! particle was expected to be either a D0 or a D0bar, check...");
+		delete decay;
 		return vectorMC;
 	}
 	if (cosThetaStar < -1 || cosThetaStar > 1) {
 		AliWarning("Invalid value for cosine Theta star, returning");
+		delete decay;
 		return bGenValues;
 	}
 		

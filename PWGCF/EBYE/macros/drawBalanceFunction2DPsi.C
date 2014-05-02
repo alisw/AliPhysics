@@ -1105,7 +1105,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 
       //for 3<pT,assoc<8<pT,trig<15
       if(ptTriggerMax>10){
-	rangeReduced = 0.4;
+	rangeReduced = 0.3;
       }
 
       cout<<"Use reduced range = "<<rangeReduced<<endl;

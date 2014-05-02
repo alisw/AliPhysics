@@ -99,7 +99,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
     jetFinderRhoKT->SetMinJetPt(0);
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");
-    AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), jetFinderRho->GetName(), usedTracks, "", myRhoName.Data(), 0.4,"TPC", 0., 5., 0, 0,0,kFALSE,myRhoName.Data(),kTRUE);
+    AliAnalysisTaskRhoSparse* rhotask = AddTaskRhoSparse(jetFinderRhoKT->GetName(), NULL, usedTracks, "", myRhoName.Data(), 0.4,"TPC", 0., 5., 0, 0,2,kFALSE,myRhoName.Data(),kTRUE);
   }
 
   // #### Define analysis task

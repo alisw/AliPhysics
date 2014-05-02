@@ -576,7 +576,19 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
-    
+  
+  if(kCalorimeter=="PHOS")
+  {
+    if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(3);
+    else                cu->SetNumberOfSuperModulesUsed(4);
+  }
+  else
+  {
+    if      (kYears == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    else if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(10);
+    else                     cu->SetNumberOfSuperModulesUsed(20);
+  }
+  
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
@@ -1453,17 +1465,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
-
-  if(kCalorimeter=="EMCAL")
-  {
-    if     (kYears==2010)  ana->SetNumberOfModules(4); 
-    else if(kYears==2011)  ana->SetNumberOfModules(10);
-    else                   ana->SetNumberOfModules(12); 
-  }
-  else 
-  {//PHOS
-    ana->SetNumberOfModules(3); 
-  }
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below

@@ -29,7 +29,6 @@
 #pragma link off all functions;
 
 #pragma link C++ nestedclasses;
-
 // ZDC tasks 
 #pragma link C++ class AliAnalysisTaskZDCPbPb+;
 #pragma link C++ class AliAnalysisTaskZDCTreeMaker+;
@@ -96,6 +95,7 @@
 #pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
+// #pragma link C++ class AliForwardUtil::ELossFitter+;
 
 // FMD corrections
 #pragma link C++ class AliFMDCorrAcceptance+;

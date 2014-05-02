@@ -235,8 +235,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 	if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
 	delete arr;
       }
-      hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
-      ((TProfile*)hist)->BuildOptions(pmin,pmax,opt.Data());
+      hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),pmin,pmax,opt.Data());
       //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
     }
 
@@ -1139,10 +1138,13 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
     obj->SetUniqueID(valType[3]); // Tprofile3D variable
   case 3:
     obj->GetZaxis()->SetUniqueID(valType[2]);
+    obj->GetZaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[2])));
   case 2:
     obj->GetYaxis()->SetUniqueID(valType[1]);
+    obj->GetYaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[1])));
   case 1:
     obj->GetXaxis()->SetUniqueID(valType[0]);
+    obj->GetXaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[0])));
   }
 
   return;

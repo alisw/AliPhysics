@@ -34,6 +34,14 @@
 #include <THStack.h>
 #include <iostream>
 #include <iomanip>
+#define AOD_SLOT 3
+#ifdef POST_AOD
+# define DEFINE(N) DefineOutput(N,AliAODForwardMult::Class())
+# define POST(N)   PostData(N,fAODFMD)
+#else
+# define DEFINE(N) do { } while(false)
+# define POST(N)   do { } while(false)
+#endif
 
 //====================================================================
 AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name) 
@@ -50,6 +58,8 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
     fHTiming(0)
 {
   DGUARD(fDebug, 3,"Named CTOR of AliForwardMultiplicityBase %s",name);
+
+  DEFINE(AOD_SLOT);
 }
 
 
@@ -63,7 +73,7 @@ AliForwardMultiplicityBase::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg debug level
   //
-  AliBaseESDTask::        SetDebug(dbg);
+  AliBaseESDTask::       SetDebug(dbg);
   GetSharingFilter()	.SetDebug(dbg);
   GetDensityCalculator().SetDebug(dbg);
   GetCorrections()	.SetDebug(dbg);
@@ -129,6 +139,8 @@ AliForwardMultiplicityBase::Book()
     xaxis->SetBinLabel(kTimingTotal, "Total");
     fList->Add(fHTiming);
   }
+
+  POST(AOD_SLOT);
   return true;
 }
 //____________________________________________________________________
@@ -258,6 +270,13 @@ AliForwardMultiplicityBase::InitMembers(const TAxis& eta, const TAxis& /*pv*/)
   fRingSums.Get(2, 'O')->SetMarkerColor(AliForwardUtil::RingColor(2, 'O'));
   fRingSums.Get(3, 'I')->SetMarkerColor(AliForwardUtil::RingColor(3, 'I'));
   fRingSums.Get(3, 'O')->SetMarkerColor(AliForwardUtil::RingColor(3, 'O'));
+}
+//____________________________________________________________________
+Bool_t
+AliForwardMultiplicityBase::PostEvent()
+{
+  POST(AOD_SLOT);
+  return true;
 }
 //____________________________________________________________________
 Bool_t

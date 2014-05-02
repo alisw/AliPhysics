@@ -197,7 +197,7 @@ protected:
     opts.Add("cut-edges", "Cut edges of acceptance", true);
     opts.Add("trigEff", "EFFICIENCY", "Trigger efficiency", 1.);
     opts.Add("trigEff0", "EFFICIENCY", "0-bin trigger efficiency", 1.);
-    opts.Add("mc", "Also analyse MC truth", false);
+    opts.Add("mc", "Also analyse MC truth", fHelper->IsMC());
     
     // Rewrite our URL 
     TString outString = fHelper->OutputLocation();

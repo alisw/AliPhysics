@@ -20,6 +20,8 @@ void AliRsnMiniPair::Fill
    fDCA2 = p2->DCA();  
 
    fMother = -1;
+   fIsFromB = kFALSE;
+   fIsQuarkFound = kFALSE;
    fPmother[0] = -1.0;
    fPmother[1] = -1.0;
    fPmother[2] = -1.0;
@@ -29,6 +31,8 @@ void AliRsnMiniPair::Fill
       fPmother[0] = p1->PmotherX();
       fPmother[1] = p1->PmotherY();
       fPmother[2] = p1->PmotherZ();
+      fIsFromB = p1->IsFromB();
+      fIsQuarkFound = p1->IsQuarkFound();
    }
 
    Int_t i;

@@ -67,8 +67,8 @@ maxTimeToLive=53000
 [[ -n ${ALIEN_JDL_TTL} ]] && maxTimeToLive=$(( ${ALIEN_JDL_TTL}-2000 ))
 
 # setup components to be merged
-#components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
-components="TOF MeanVertex T0 SDD TRD TPCCalib"
+components="TOF MeanVertex T0 SDD TRD TPCCalib TPCCluster TPCAlign"
+#components="TOF MeanVertex T0 SDD TRD TPCCalib"
 
 #################################################################
 echo "" | tee -a merge.log

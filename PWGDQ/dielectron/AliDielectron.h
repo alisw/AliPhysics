@@ -19,6 +19,7 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 #include <THnBase.h>
+#include <TSpline.h>
 
 #include <AliAnalysisFilter.h>
 #include <AliKFParticle.h>
@@ -140,6 +141,8 @@ public:
 
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
   Bool_t DoEventProcess() const { return fEventProcess; }
@@ -152,8 +155,8 @@ private:
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
   TH1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
   TH1 *fPostPIDWdthCorr;    // post pid correction object for widths
-  THnBase *fLegEffMap;      // single electron efficiency map
-  THnBase *fPairEffMap;      // pair efficiency map
+  TObject *fLegEffMap;      // single electron efficiency map
+  TObject *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -213,7 +216,7 @@ private:
   void ClearArrays();
   
   TObjArray* PairArray(Int_t i);
-  THnBase* InitEffMap(TString filename);
+  TObject* InitEffMap(TString filename);
   
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays

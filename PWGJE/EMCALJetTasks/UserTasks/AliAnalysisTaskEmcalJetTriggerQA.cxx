@@ -722,7 +722,7 @@ Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(const AliVParticle *trk, const A
 }
 
 //________________________________________________________________________
-Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(const Double_t trkPx, const Double_t trkPy, const Double_t trkPz, const Double_t jetPx, const Double_t jetPy, const Double_t jetPz) const
+Double_t AliAnalysisTaskEmcalJetTriggerQA::GetZ(Double_t trkPx, Double_t trkPy, Double_t trkPz, Double_t jetPx, Double_t jetPy, Double_t jetPz) const
 {
   // 
   // Get the z of a constituent inside of a jet

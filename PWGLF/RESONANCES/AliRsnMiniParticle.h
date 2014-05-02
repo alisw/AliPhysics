@@ -16,7 +16,7 @@ class AliRsnDaughter;
 class AliRsnMiniParticle : public TObject {
 public:
 
-   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fCutBits(0x0) {Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;}
+   AliRsnMiniParticle() : fIndex(-1), fCharge(0), fPDG(0), fMother(0), fMotherPDG(0), fDCA(0), fNTotSisters(0), fIsFromB(kFALSE), fIsQuarkFound(kFALSE), fCutBits(0x0) {Int_t i = 3; while (i--) fPsim[i] = fPrec[i] = fPmother[i] = 0.0;}
 
    Int_t         &Index()                    {return fIndex;}
    Char_t        &Charge()                   {return fCharge;}
@@ -37,6 +37,8 @@ public:
    Double_t       Mass();
    Int_t         &Mother()                   {return fMother;}
    Short_t       &MotherPDG()                {return fMotherPDG;}
+   Bool_t        &IsFromB()                  {return fIsFromB;}
+   Bool_t        &IsQuarkFound()             {return fIsQuarkFound;}
    UShort_t      &CutBits()                  {return fCutBits;}
    Double_t       DCA()                      {return fDCA;}
    Short_t        NTotSisters()              {return fNTotSisters;}
@@ -59,9 +61,11 @@ private:
    Short_t   fMotherPDG;    // PDG code of mother
    Double_t  fDCA;          // DCA of the particle
    Short_t   fNTotSisters;  // number of  daughters of the particle
+   Bool_t    fIsFromB;	    // is the particle from B meson flag	
+   Bool_t    fIsQuarkFound; // is the particle from a quark flag (used to reject or accept Hijing event)
    UShort_t  fCutBits;      // list of bits used to know what cuts were passed by this track
 
-   ClassDef(AliRsnMiniParticle,5)
+   ClassDef(AliRsnMiniParticle,6)
 };
 
 #endif

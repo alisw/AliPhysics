@@ -32,7 +32,8 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
   fHistScalevsCent(0),  
   fHistDeltaScalevsCent(0), 
   fHistScaleEmcalvsCent(0),      
-  fHistScale2EmcalvsCent(0),     
+  fHistScale2EmcalvsCent(0),
+  fHistDeltaScale2EmcalvsCent(0),     
   fHistChScalevsCent(0),          
   fHistChScale2EmcalvsCent(0),   
   fHistPtTPCvsNtrack(0), 
@@ -69,7 +70,8 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistScalevsCent(0),  
   fHistDeltaScalevsCent(0), 
   fHistScaleEmcalvsCent(0),      
-  fHistScale2EmcalvsCent(0),     
+  fHistScale2EmcalvsCent(0),
+  fHistDeltaScale2EmcalvsCent(0),  
   fHistChScalevsCent(0),          
   fHistChScale2EmcalvsCent(0),   
   fHistPtTPCvsNtrack(0), 
@@ -101,56 +103,160 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
 
-  fHistPtTPCvsCent             = new TH2F("PtTPCvsCent","rho vs cent",            101, -1, 100,   500,   0, 1000);
-  fHistPtEMCALvsCent           = new TH2F("PtEMCALvsCent","rho vs cent",          101, -1, 100,   500,   0, 1000);
-  fHistEtvsCent                = new TH2F("EtvsCent","rho vs cent",               101, -1, 100,   500,   0, 1000);
-  fHistScalevsCent             = new TH2F("ScalevsCent","rho vs cent",            101, -1, 100,   500,   0, 5);
-  fHistDeltaScalevsCent        = new TH2F("DeltaScalevsCent","rho vs cent",       101, -1, 100,   500,  -2.5, 2.5);
-  fHistScaleEmcalvsCent        = new TH2F("ScaleEmcalvsCent","",                  101, -1, 100,   500,   0, 5);
-  fHistScale2EmcalvsCent       = new TH2F("Scale2EmcalvsCent","",                 101, -1, 100,   500,   0, 5);
-  fHistChScalevsCent           = new TH2F("ChScalevsCent","",                     101, -1, 100,   500,   0, 5);
-  fHistChScale2EmcalvsCent     = new TH2F("ChScale2EmcalvsCent","",               101, -1, 100,   500,   0, 5);
-  fHistPtTPCvsNtrack           = new TH2F("PtTPCvsNtrack","rho vs cent",          500,  0, 2500,  500,   0, 1000);
-  fHistPtEMCALvsNtrack         = new TH2F("PtEMCALvsNtrack","rho vs cent",        500,  0, 2500,  500,   0, 1000);
-  fHistEtvsNtrack              = new TH2F("EtvsNtrack","rho vs cent",             500,  0, 2500,  500,   0, 1000);
-  fHistScalevsNtrack           = new TH2F("ScalevsNtrack","rho vs cent",          500,  0, 2500,  500,   0, 5);
-  fHistDeltaScalevsNtrack      = new TH2F("DeltaScalevsNtrack","rho vs cent",     500,  0, 2500,  500,  -2.5, 2.5);
-  fHistScaleEmcalvsNtrack      = new TH2F("ScaleEmcalvsNtrack","",                500,  0, 2500,  500,   0, 5);
-  fHistScale2EmcalvsNtrack     = new TH2F("Scale2EmcalvsNtrack","",               500,  0, 2500,  500,   0, 5);
-  fHistChScalevsNtrack         = new TH2F("ChScalevsNtrack","",                   500,  0, 2500,  500,   0, 5);
-  fHistChScale2EmcalvsNtrack   = new TH2F("ChScale2EmcalvsNtrack","",             500,  0, 2500,  500,   0, 5);
-  fHistTrackPtvsCent           = new TH2F("TrackPtvsCent","Track pt vs cent",     101, -1, 100,   500,   0, 100);
-  fHistClusterPtvsCent         = new TH2F("ClusterPtvsCent","Cluster pt vs cent", 101, -1, 100,   500,   0, 100);
-  fHistTrackEtaPhi             = new TH2F("TrackEtaPhi","Track eta phi",          100, -1.0, 1.0, 101,   0, 2.02*TMath::Pi());
-  fHistClusterEtaPhi           = new TH2F("ClusterEtaPhi","Cluster eta phi",      100, -1.0, 1.0, 101,   0, 2.02*TMath::Pi());
-  fHistScalevsScale2Emcal      = new TH2F("ScalevsScale2Emcal","",                500,  0, 5,     500,   0, 5);
-  fHistScalevsScaleEmcal       = new TH2F("ScalevsScaleEmcal","",                 500,  0, 5,     500,   0, 5);
-  fHistScaleEmcalvsScale2Emcal = new TH2F("ScaleEmcalvsScale2Emcal","",           500,  0, 5,     500,   0, 5);
-
+  fHistPtTPCvsCent = new TH2F("fHistPtTPCvsCent", "fHistPtTPCvsCent", 101, -1, 100, 750, 0, 1500);
+  fHistPtTPCvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistPtTPCvsCent->GetYaxis()->SetTitle("#sum p_{T,track}^{TPC} GeV/c");
+  fHistPtTPCvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistPtTPCvsCent);
+
+  fHistPtEMCALvsCent = new TH2F("fHistPtEMCALvsCent", "fHistPtEMCALvsCent", 101, -1, 100, 250, 0, 500);
+  fHistPtEMCALvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistPtEMCALvsCent->GetYaxis()->SetTitle("#sum p_{T,track}^{EMCal} GeV/c");
+  fHistPtEMCALvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistPtEMCALvsCent);
+
+  fHistEtvsCent = new TH2F("fHistEtvsCent", "fHistEtvsCent", 101, -1, 100, 250, 0, 500);
+  fHistEtvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistEtvsCent->GetYaxis()->SetTitle("#sum E_{T,cluster} GeV");
+  fHistEtvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistEtvsCent);
+
+  fHistScalevsCent = new TH2F("fHistScalevsCent", "fHistScalevsCent", 101, -1, 100, 500, 0, 5);
+  fHistScalevsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScalevsCent->GetYaxis()->SetTitle("s_{TPC} = (#sum E_{T,cluster} + #sum p_{T,track}^{TPC}) / #sum p_{T,track}^{TPC}");
+  fHistScalevsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScalevsCent);
+
+  fHistDeltaScalevsCent = new TH2F("fHistDeltaScalevsCent", "fHistDeltaScalevsCent", 101, -1, 100, 500, -2.5, 2.5);
+  fHistDeltaScalevsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistDeltaScalevsCent->GetYaxis()->SetTitle("s_{TPC}-s^{old}");
+  fHistDeltaScalevsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaScalevsCent);
-  fOutput->Add(fHistScaleEmcalvsCent);      
-  fOutput->Add(fHistScale2EmcalvsCent);     
-  fOutput->Add(fHistChScalevsCent);    
-  fOutput->Add(fHistChScale2EmcalvsCent);   
+
+  fHistScaleEmcalvsCent= new TH2F("fHistScaleEmcalvsCent", "fHistScaleEmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistScaleEmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScaleEmcalvsCent->GetYaxis()->SetTitle("s_{EMC}");
+  fHistScaleEmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleEmcalvsCent);
+
+  fHistScale2EmcalvsCent = new TH2F("fHistScale2EmcalvsCent", "fHistScale2EmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistScale2EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScale2EmcalvsCent->GetYaxis()->SetTitle("s_{2 #times EMC}");
+  fHistScale2EmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScale2EmcalvsCent);
+
+  fHistDeltaScale2EmcalvsCent = new TH2F("fHistDeltaScale2EmcalvsCent", "fHistDeltaScale2EmcalvsCent", 101, -1, 100, 500, -2.5, 2.5);
+  fHistDeltaScale2EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistDeltaScale2EmcalvsCent->GetYaxis()->SetTitle("s_{2 #times EMC}-s^{old}");
+  fHistDeltaScale2EmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistDeltaScale2EmcalvsCent);
+
+  fHistChScalevsCent = new TH2F("fHistChScalevsCent", "fHistChScalevsCent", 101, -1, 100, 500, 0, 5);
+  fHistChScalevsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistChScalevsCent->GetYaxis()->SetTitle("s_{TPC}^{ch}");
+  fHistChScalevsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistChScalevsCent);
+
+  fHistChScale2EmcalvsCent = new TH2F("fHistChScale2EmcalvsCent", "fHistChScale2EmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistChScale2EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistChScale2EmcalvsCent->GetYaxis()->SetTitle("s_{2 #times EMC}^{ch}");
+  fHistChScale2EmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistChScale2EmcalvsCent);
+
+  fHistPtTPCvsNtrack = new TH2F("fHistPtTPCvsNtrack", "fHistPtTPCvsNtrack", 800, 0, 4000,  750, 0, 1500);
+  fHistPtTPCvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistPtTPCvsNtrack->GetYaxis()->SetTitle("#sum p_{T,track}^{TPC}");
+  fHistPtTPCvsNtrack->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistPtTPCvsNtrack);
+
+  fHistPtEMCALvsNtrack = new TH2F("fHistPtEMCALvsNtrack", "fHistPtEMCALvsNtrack", 800, 0, 4000,  500, 0, 1000);
+  fHistPtEMCALvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistPtEMCALvsNtrack->GetYaxis()->SetTitle("#sum p_{T,track}^{EMCal}");
+  fHistPtEMCALvsNtrack->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistPtEMCALvsNtrack);
+
+  fHistEtvsNtrack = new TH2F("fHistEtvsNtrack", "fHistEtvsNtrack", 800,  0, 4000, 500, 0, 1000);
+  fHistEtvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistEtvsNtrack->GetYaxis()->SetTitle("#sum E_{T,cluster}");
+  fHistEtvsNtrack->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistEtvsNtrack);
+
+  fHistScalevsNtrack = new TH2F("fHistScalevsNtrack", "fHistScalevsNtrack", 800, 0, 4000,  500, 0, 5);
+  fHistScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistScalevsNtrack->GetYaxis()->SetTitle("s_{TPC}");
+  fHistScalevsNtrack->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScalevsNtrack);
+
+  fHistDeltaScalevsNtrack = new TH2F("fHistDeltaScalevsNtrack", "fHistDeltaScalevsNtrack", 800, 0, 4000, 500, -2.5, 2.5);
+  fHistDeltaScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistDeltaScalevsNtrack->GetYaxis()->SetTitle("s_{TPC}-s^{old}");
+  fHistDeltaScalevsNtrack->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistDeltaScalevsNtrack);
-  fOutput->Add(fHistScaleEmcalvsNtrack);      
-  fOutput->Add(fHistScale2EmcalvsNtrack);     
-  fOutput->Add(fHistChScalevsNtrack);    
-  fOutput->Add(fHistChScale2EmcalvsNtrack);   
+
+  fHistScaleEmcalvsNtrack = new TH2F("fHistScaleEmcalvsNtrack", "fHistScaleEmcalvsNtrack", 800, 0, 4000, 500, 0, 5);
+  fHistScaleEmcalvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistScaleEmcalvsNtrack->GetYaxis()->SetTitle("s_{EMC}");
+  fHistScaleEmcalvsNtrack->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleEmcalvsNtrack);
+
+  fHistScale2EmcalvsNtrack = new TH2F("fHistScale2EmcalvsNtrack","fHistScale2EmcalvsNtrack", 800, 0, 4000, 500, 0, 5);
+  fHistScale2EmcalvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistScale2EmcalvsNtrack->GetYaxis()->SetTitle("s_{2 #times EMC}");
+  fHistScale2EmcalvsNtrack->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScale2EmcalvsNtrack);
+
+  fHistChScalevsNtrack = new TH2F("fHistChScalevsNtrack", "fHistChScalevsNtrack", 800, 0, 4000, 500, 0, 5);
+  fHistChScalevsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistChScalevsNtrack->GetYaxis()->SetTitle("s_{TPC}^{ch}");
+  fHistChScalevsNtrack->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistChScalevsNtrack);
+
+  fHistChScale2EmcalvsNtrack = new TH2F("fHistChScale2EmcalvsNtrack", "fHistChScale2EmcalvsNtrack", 800,  0, 4000, 500, 0, 5);
+  fHistChScale2EmcalvsNtrack->GetXaxis()->SetTitle("No. of tracks");
+  fHistChScale2EmcalvsNtrack->GetYaxis()->SetTitle("s_{2 #times EMC}^{ch}");
+  fHistChScale2EmcalvsNtrack->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistChScale2EmcalvsNtrack);
+
+  fHistTrackPtvsCent = new TH2F("fHistTrackPtvsCent", "fHistTrackPtvsCent", 101, -1, 100, 500, 0, 100);
+  fHistTrackPtvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistTrackPtvsCent->GetYaxis()->SetTitle("p_{T,track} GeV/c");
+  fHistTrackPtvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistTrackPtvsCent);
+
+  fHistClusterPtvsCent = new TH2F("fHistClusterPtvsCent", "fHistClusterPtvsCent", 101, -1, 100, 500, 0, 100);
+  fHistClusterPtvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistClusterPtvsCent->GetYaxis()->SetTitle("E_{T,cluster} GeV");
+  fHistClusterPtvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistClusterPtvsCent);
+
+  fHistTrackEtaPhi = new TH2F("fHistTrackEtaPhi", "fHistTrackEtaPhi", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistTrackEtaPhi->GetXaxis()->SetTitle("#eta");
+  fHistTrackEtaPhi->GetYaxis()->SetTitle("#phi");
+  fHistTrackEtaPhi->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistTrackEtaPhi);
+
+  fHistClusterEtaPhi = new TH2F("fHistClusterEtaPhi", "fHistClusterEtaPhi", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistClusterEtaPhi->GetXaxis()->SetTitle("#eta");
+  fHistClusterEtaPhi->GetYaxis()->SetTitle("#phi");
+  fHistClusterEtaPhi->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistClusterEtaPhi);
-  fOutput->Add(fHistScalevsScale2Emcal);      
-  fOutput->Add(fHistScalevsScaleEmcal);       
+
+  fHistScalevsScale2Emcal = new TH2F("fHistScalevsScale2Emcal", "fHistScalevsScale2Emcal",500, 0, 5, 500, 0, 5);
+  fHistScalevsScale2Emcal->GetXaxis()->SetTitle("s_{TPC}");
+  fHistScalevsScale2Emcal->GetYaxis()->SetTitle("s_{2 #times EMC}");
+  fHistScalevsScale2Emcal->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScalevsScale2Emcal);
+
+  fHistScalevsScaleEmcal = new TH2F("fHistScalevsScaleEmcal", "fHistScalevsScaleEmcal", 500, 0, 5, 500, 0, 5);
+  fHistScalevsScaleEmcal->GetXaxis()->SetTitle("s_{TPC}");
+  fHistScalevsScaleEmcal->GetYaxis()->SetTitle("s_{EMC}");
+  fHistScalevsScaleEmcal->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScalevsScaleEmcal);
+
+  fHistScaleEmcalvsScale2Emcal = new TH2F("fHistScaleEmcalvsScale2Emcal", "fHistScaleEmcalvsScale2Emcal", 500, 0, 5, 500, 0, 5);
+  fHistScaleEmcalvsScale2Emcal->GetXaxis()->SetTitle("s_{EMC}");
+  fHistScaleEmcalvsScale2Emcal->GetYaxis()->SetTitle("s_{2 #times EMC}");
+  fHistScaleEmcalvsScale2Emcal->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScaleEmcalvsScale2Emcal);
 
   PostData(1, fOutput);
@@ -251,6 +357,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   fHistEtvsCent->Fill(fCent, Et);
   fHistScalevsCent->Fill(fCent, scalecalc);
   fHistDeltaScalevsCent->Fill(fCent, scalecalc - scale);
+  fHistDeltaScale2EmcalvsCent->Fill(fCent, scalecalcemcal2 - scale);
   fHistPtTPCvsNtrack->Fill(Ntracks, ptTPC);
   fHistPtEMCALvsNtrack->Fill(Ntracks, ptEMCAL);
   fHistEtvsNtrack->Fill(Ntracks, Et);

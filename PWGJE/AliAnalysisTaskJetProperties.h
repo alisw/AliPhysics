@@ -44,6 +44,7 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   {fMaxVertexZ = VtxZ; fNContributors = nContributors;}
   virtual void   SetTrackCuts(Float_t trackPt = 0.15, Float_t trackEtaMin = -0.9, Float_t trackEtaMax = 0.9)
   {fTrackPtCut = trackPt; fTrackEtaMin = trackEtaMin; fTrackEtaMax = trackEtaMax;}
+  virtual void   SetPileupRejection(Bool_t IsPileupReject){fRejectPileup = IsPileupReject;}
   virtual void   SetJetCuts(Float_t jetPt = 5., Float_t jetEtaMin = -0.5, Float_t jetEtaMax = 0.5) 
   {fJetPtCut = jetPt; fJetEtaMin = jetEtaMin; fJetEtaMax = jetEtaMax;}
   virtual void   SetJetRejectType(Int_t i){fJetRejectType = i;}
@@ -53,7 +54,7 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   
   enum {kTrackUndef=0, kTrackAOD, kTrackKine,kTrackAODMC};//for track selection
   enum {kNoReject=0, kReject1Track};//for jet rejection
-  
+  enum {kRejectPileup=1};//for pileup rejection
  protected:
   Int_t	   GetListOfJetTracks(TList* l, const AliAODJet* j);
   Int_t	   GetListOfJets(TList* list);
@@ -75,6 +76,7 @@ class AliAnalysisTaskJetProperties : public AliAnalysisTaskSE {
   TString fBranchJets;          // branch name for reconstructed jets
   Int_t   fTrackType;           // type of generated tracks
   Int_t   fJetRejectType;       // type of jets rejected
+  Bool_t  fRejectPileup;        // pileup rejection
   Bool_t  fUseAODInputJets;     // take jets from in/output - only relevant if AOD event both in input AND output and we want to use output
   UInt_t  fFilterMask;	        // filter bit for selected tracks
   Bool_t  fUsePhysicsSelection; // switch for event selection

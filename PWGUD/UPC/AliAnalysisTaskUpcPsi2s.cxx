@@ -65,7 +65,7 @@ using std::endl;
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s() 
-  : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
+  : AliAnalysisTaskSE(),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
@@ -75,8 +75,9 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
+    fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
+    fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
 
@@ -87,7 +88,7 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s()
 
 //_____________________________________________________________________________
 AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name) 
-  : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
+  : AliAnalysisTaskSE(name),fType(0),isMC(kFALSE),fRunTree(kTRUE),fRunHist(kTRUE),fRunSystematics(kFALSE),fPIDResponse(0),fJPsiTree(0),fPsi2sTree(0),
     fRunNum(0),fPerNum(0),fOrbNum(0),fL0inputs(0),fL1inputs(0),
     fTOFtrig1(0), fTOFtrig2(0),
     fVtxContrib(0),fVtxChi2(0),fVtxNDF(0),
@@ -97,8 +98,9 @@ AliAnalysisTaskUpcPsi2s::AliAnalysisTaskUpcPsi2s(const char *name)
     fJPsiAODTracks(0),fJPsiESDTracks(0),fPsi2sAODTracks(0),fPsi2sESDTracks(0),fGenPart(0),
     fListTrig(0),fHistCcup4TriggersPerRun(0), fHistCcup7TriggersPerRun(0), fHistCcup2TriggersPerRun(0),
     fHistZedTriggersPerRun(0),fHistCvlnTriggersPerRun(0), fHistMBTriggersPerRun(0),fHistCentralTriggersPerRun(0),fHistSemiCentralTriggersPerRun(0),
-    fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),
-    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0)
+    fListHist(0),fHistNeventsJPsi(0),fHistTPCsignalJPsi(0),fHistDiLeptonPtJPsi(0),fHistDiElectronMass(0),fHistDiMuonMass(0),fHistDiLeptonMass(0),
+    fHistNeventsPsi2s(0),fHistPsi2sMassVsPt(0),fHistPsi2sMassCoherent(0),
+    fListSystematics(0),fListJPsiLoose(0),fListJPsiTight(0),fListPsi2sLoose(0),fListPsi2sTight(0)
 
 {
 
@@ -323,6 +325,10 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistDiMuonMass = new TH1D("fHistDiMuonMass","Invariant mass of J/#psi candidates",100,2,5);
   fHistDiMuonMass->GetXaxis()->SetTitle("Invariant mass(#mu^{+}#mu^{-}) (GeV/c)");
   fListHist->Add(fHistDiMuonMass);
+  
+  fHistDiLeptonMass = new TH1D("fHistDiLeptonMass","Invariant mass of J/#psi candidates",130,2.1,6.0);
+  fHistDiLeptonMass->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}) (GeV/c)");
+  fListHist->Add(fHistDiLeptonMass);
 
   TString CutNamePsi2s[14] = {"Analyzed","Triggered","Vertex cut","V0 decision","Neutron ZDC cut","Four good tracks",
   				"DiLepton - DiPion","Like sign leptons","Like sign pions","Like sign both","Oposite sign","PID","Dimuom","Dielectron"};
@@ -336,9 +342,16 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   fHistPsi2sMassVsPt->GetYaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
   fListHist->Add(fHistPsi2sMassVsPt);
   
-  fHistPsi2sMassCoherent = new TH1D("fHistPsi2sMassAllCoherent","Invariant mass of coherent #psi(2s) candidates",100,3,6);
+  fHistPsi2sMassCoherent = new TH1D("fHistPsi2sMassAllCoherent","Invariant mass of coherent #psi(2s) candidates",50,2.5,5.5);
   fHistPsi2sMassCoherent->GetXaxis()->SetTitle("Invariant mass(l^{+}l^{-}#pi^{+}#pi^{-}) (GeV/c)");
   fListHist->Add(fHistPsi2sMassCoherent);
+  
+  fListSystematics = new TList();
+  fListSystematics->SetOwner();
+  fListSystematics->SetName("fListSystematics");
+  fListHist->Add(fListSystematics);
+  InitSystematics();
+
   
   PostData(1, fJPsiTree);
   PostData(2, fPsi2sTree);
@@ -346,6 +359,90 @@ void AliAnalysisTaskUpcPsi2s::UserCreateOutputObjects()
   PostData(4, fListHist);
 
 }//UserCreateOutputObjects
+
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::InitSystematics()
+{ 
+
+fListJPsiLoose = new TList();
+fListJPsiLoose->SetOwner();
+fListJPsiLoose->SetName("JPsiLoose");
+fListSystematics->Add(fListJPsiLoose);
+
+TH1D *fHistJPsiNClusLoose = new TH1D("JPsiNClusLoose","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiLoose->Add(fHistJPsiNClusLoose);
+
+TH1D *fHistJPsiChi2Loose = new TH1D("JPsiChi2Loose","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiLoose->Add(fHistJPsiChi2Loose);
+
+TH1D *fHistJPsiDCAzLoose = new TH1D("JPsiDCAzLoose","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiLoose->Add(fHistJPsiDCAzLoose);
+
+TH1D *fHistJPsiDCAxyLoose = new TH1D("JPsiDCAxyLoose","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiLoose->Add(fHistJPsiDCAxyLoose);
+
+TH1D *fHistJPsiITShitsLoose = new TH1D("JPsiITShitsLoose","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiLoose->Add(fHistJPsiITShitsLoose);
+
+
+fListJPsiTight = new TList();
+fListJPsiTight->SetOwner();
+fListJPsiTight->SetName("JPsiTight");
+fListSystematics->Add(fListJPsiTight);
+
+TH1D *fHistJPsiNClusTight = new TH1D("JPsiNClusTight","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiTight->Add(fHistJPsiNClusTight);
+
+TH1D *fHistJPsiChi2Tight = new TH1D("JPsiChi2Tight","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiTight->Add(fHistJPsiChi2Tight);
+
+TH1D *fHistJPsiDCAzTight = new TH1D("JPsiDCAzTight","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiTight->Add(fHistJPsiDCAzTight);
+
+TH1D *fHistJPsiDCAxyTight = new TH1D("JPsiDCAxyTight","Invariant mass of J/#psi candidates",130,2.1,6.0);
+fListJPsiTight->Add(fHistJPsiDCAxyTight);
+
+
+fListPsi2sLoose = new TList();
+fListPsi2sLoose->SetOwner();
+fListPsi2sLoose->SetName("Psi2sLoose");
+fListSystematics->Add(fListPsi2sLoose);
+
+TH1D *fHistPsi2sNClusLoose = new TH1D("Psi2sNClusLoose","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sLoose->Add(fHistPsi2sNClusLoose);
+
+TH1D *fHistPsi2sChi2Loose = new TH1D("Psi2sChi2Loose","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sLoose->Add(fHistPsi2sChi2Loose);
+
+TH1D *fHistPsi2sDCAzLoose = new TH1D("Psi2sDCAzLoose","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sLoose->Add(fHistPsi2sDCAzLoose);
+
+TH1D *fHistPsi2sDCAxyLoose = new TH1D("Psi2sDCAxyLoose","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sLoose->Add(fHistPsi2sDCAxyLoose);
+
+TH1D *fHistPsi2sITShitsLoose = new TH1D("Psi2sITShitsLoose","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sLoose->Add(fHistPsi2sITShitsLoose);
+
+
+fListPsi2sTight = new TList();
+fListPsi2sTight->SetOwner();
+fListPsi2sTight->SetName("Psi2sTight");
+fListSystematics->Add(fListPsi2sTight);
+
+TH1D *fHistPsi2sNClusTight = new TH1D("Psi2sNClusTight","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sTight->Add(fHistPsi2sNClusTight);
+
+TH1D *fHistPsi2sChi2Tight = new TH1D("Psi2sChi2Tight","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sTight->Add(fHistPsi2sChi2Tight);
+
+TH1D *fHistPsi2sDCAzTight = new TH1D("Psi2sDCAzTight","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sTight->Add(fHistPsi2sDCAzTight);
+
+TH1D *fHistPsi2sDCAxyTight = new TH1D("Psi2sDCAxyTight","Invariant mass of #psi(2S) candidates",50,2.5,5.5);
+fListPsi2sTight->Add(fHistPsi2sDCAxyTight);
+
+
+}
 
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::UserExec(Option_t *) 
@@ -422,6 +519,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   //input event
   AliAODEvent *aod = (AliAODEvent*) InputEvent();
   if(!aod) return;
+  
+ // cout<<"Event number: "<<((TTree*) GetInputData(0))->GetTree()->GetReadEntry()<<endl;
 
   fHistNeventsJPsi->Fill(1);
   fHistNeventsPsi2s->Fill(1);
@@ -459,7 +558,10 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   if( fZDCAenergy > 8200 || fZDCCenergy > 8200) return;
   
   fHistNeventsJPsi->Fill(5);
-  fHistNeventsPsi2s->Fill(5);
+  fHistNeventsPsi2s->Fill(5); 
+  
+  //Systematics - cut variation
+  if(fRunSystematics) RunAODsystematics(aod);
 
   //Two tracks loop
   Int_t nGoodTracks = 0;
@@ -467,9 +569,12 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   
   TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
   Short_t qLepton[4], qPion[4];
-  UInt_t nLepton=0, nPion=0, nHighPt=0;
-  Double_t fRecTPCsignal[5];
+  UInt_t nLepton=0, nPion=0, nHighPt=0, nSpdHits=0;
+  Double_t fRecTPCsignal[5], fRecTPCsignalDist;
+  Int_t fChannel = 0;
   Int_t mass[3]={-1,-1,-1};
+  Double_t TrackPt[5]={0,0,0,0,0};
+  Double_t MeanPt = -1;
   
    
   //Four track loop
@@ -486,10 +591,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
       AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
       if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       delete trk_clone;
-
       if(TMath::Abs(dca[1]) > 2) continue;
+      Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+      if((trk->HasPointOnITSLayer(0))||(trk->HasPointOnITSLayer(1))) nSpdHits++;
      
       TrackIndex[nGoodTracks] = itr;
+      TrackPt[nGoodTracks] = trk->Pt();
       nGoodTracks++;
 				  
       if(nGoodTracks > 4) break;  
@@ -498,12 +606,13 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
   nLepton=0; nPion=0; nHighPt=0;
   mass[0]= -1; mass[1]= -1, mass[2]= -1;
   
-  if(nGoodTracks == 4){
+  if(nGoodTracks == 4 && nSpdHits>1){
+    	  MeanPt = GetMedian(TrackPt);
   	  fHistNeventsPsi2s->Fill(6);
   	  for(Int_t i=0; i<4; i++){
 	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[i]);
 		
-      		if(trk->Pt() > 1){   
+      		if(trk->Pt() > MeanPt){   
       			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
       			qLepton[nLepton] = trk->Charge();
       			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
@@ -531,14 +640,26 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 		if((qLepton[0]*qLepton[1] > 0) && (qPion[0]*qPion[1] > 0)) fHistNeventsPsi2s->Fill(10);
 		if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0)){
 			fHistNeventsPsi2s->Fill(11);
-	 		if(mass[0] == mass[1]) {
+	 		if(mass[0] != -1 && mass[1] != -1) {
 				fHistNeventsPsi2s->Fill(12); 
   				vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
   				vDilepton = vLepton[0]+vLepton[1];
 				fHistPsi2sMassVsPt->Fill(vCandidate.M(),vCandidate.Pt());
-				if(vCandidate.Pt() < 0.15) fHistPsi2sMassCoherent->Fill(vCandidate.M());
-				if(mass[0] == 0) fHistNeventsPsi2s->Fill(13);	
-  				if(mass[0] == 1) fHistNeventsPsi2s->Fill(14);
+				fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  				if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  				else { 
+					fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  					if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+					}
+				
+				if(fChannel == -1) {
+					fHistNeventsPsi2s->Fill(13);
+					if(vDilepton.M() > 3.0 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.15) fHistPsi2sMassCoherent->Fill(vCandidate.M());
+					}	
+  				if(fChannel == 1){ 
+					fHistNeventsPsi2s->Fill(14);
+					if(vDilepton.M() > 2.6 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.3) fHistPsi2sMassCoherent->Fill(vCandidate.M());
+					}
 				}
 			}
 		}
@@ -561,7 +682,8 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
       if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       delete trk_clone;
       if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[0]) > 0.2) continue;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
      
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -597,16 +719,24 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 				fHistNeventsJPsi->Fill(9);
 				fHistTPCsignalJPsi->Fill(fRecTPCsignal[0],fRecTPCsignal[1]);
 				if(nHighPt == 2) fHistNeventsJPsi->Fill(10);
-				if(mass[0] == mass[1] && mass[0] != -1) {
+				if(mass[0] != -1 && mass[1] != -1) {
 					fHistNeventsJPsi->Fill(11);
 					vCandidate = vLepton[0]+vLepton[1];
+					fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  					if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  					else { 
+						fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  						if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+						}
 					if( vCandidate.M() > 2.8 && vCandidate.M() < 3.2) fHistDiLeptonPtJPsi->Fill(vLepton[0].Pt(),vLepton[1].Pt());
-					if(mass[0] == 0) {
+					if(fChannel == -1) {
 						fHistDiMuonMass->Fill(vCandidate.M());
+						if(vCandidate.Pt()<0.15)fHistDiLeptonMass->Fill(vCandidate.M());
 						fHistNeventsJPsi->Fill(12);
 						}
-  					if(mass[0] == 1) {
+  					if(fChannel == 1) {
 						fHistDiElectronMass->Fill(vCandidate.M());
+						if(vCandidate.Pt()<0.3)fHistDiLeptonMass->Fill(vCandidate.M());
 						fHistNeventsJPsi->Fill(13);
    						}
 					}
@@ -620,6 +750,394 @@ void AliAnalysisTaskUpcPsi2s::RunAODhist()
 
 }
 
+//_____________________________________________________________________________
+void AliAnalysisTaskUpcPsi2s::RunAODsystematics(AliAODEvent* aod)
+{
+
+  Double_t fJPsiSels[4];
+
+  fJPsiSels[0] =   70; //min number of TPC clusters
+  fJPsiSels[1] =   4; //chi2
+  fJPsiSels[2] =   2; //DCAz
+  fJPsiSels[3] =   1; // DCAxy 1x 
+
+  Double_t fJPsiSelsMid[4];
+
+  fJPsiSelsMid[0] =   70; //min number of TPC clusters
+  fJPsiSelsMid[1] =   4; //chi2
+  fJPsiSelsMid[2] =   2; //DCAz
+  fJPsiSelsMid[3] =   1; // DCAxy 1x 
+  
+  Double_t fJPsiSelsLoose[4];
+
+  fJPsiSelsLoose[0] =   60; //min number of TPC clusters
+  fJPsiSelsLoose[1] =   5; //chi2
+  fJPsiSelsLoose[2] =   3; //DCAz
+  fJPsiSelsLoose[3] =   2; // DCAxy 2x 
+
+  Double_t fJPsiSelsTight[4];
+
+  fJPsiSelsTight[0] =   80; //min number of TPC clusters
+  fJPsiSelsTight[1] =   3.5; //chi2
+  fJPsiSelsTight[2] =   1; //DCAz
+  fJPsiSelsTight[3] =   0.5; // DCAxy 0.5x 
+
+  Int_t nGoodTracks = 0;
+  Int_t TrackIndex[5] = {-1,-1,-1,-1,-1};
+  
+  TLorentzVector vLepton[4], vPion[4], vCandidate, vDilepton;
+  Short_t qLepton[4],qPion[4];
+  UInt_t nLepton=0, nPion=0, nHighPt=0;
+  Double_t fRecTPCsignal[5], fRecTPCsignalDist;
+  Int_t fChannel = 0;
+
+  AliAODVertex *fAODVertex = aod->GetPrimaryVertex();
+  
+  TDatabasePDG *pdgdat = TDatabasePDG::Instance();
+  
+  TParticlePDG *partMuon = pdgdat->GetParticle( 13 );
+  Double_t muonMass = partMuon->Mass();
+  
+  TParticlePDG *partElectron = pdgdat->GetParticle( 11 );
+  Double_t electronMass = partElectron->Mass();
+  
+  TParticlePDG *partPion = pdgdat->GetParticle( 211 );
+  Double_t pionMass = partPion->Mass();
+
+  
+for(Int_t i=0; i<5; i++){
+	  //cout<<"Loose sytematics, cut"<<i<<endl;
+	  for(Int_t j=0; j<4; j++){
+		  if(i==j) fJPsiSels[j] = fJPsiSelsLoose[i];
+		  else fJPsiSels[j] = fJPsiSelsMid[j];
+	  }
+  //Two track loop
+  nGoodTracks = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if(i!=4){ if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;}
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      
+      if(trk->GetTPCNcls() < fJPsiSels[0])continue;
+      if(trk->Chi2perNDF() > fJPsiSels[1])continue;
+      if(TMath::Abs(dca[1]) > fJPsiSels[2]) continue;      
+      if(TMath::Abs(dca[0]) > fJPsiSels[3]*cut_DCAxy) continue;
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+    
+  Int_t mass[3]={-1,-1,-1};
+  fChannel = 0;
+  nLepton=0; nHighPt=0;
+  
+  if(nGoodTracks == 2){
+  	  for(Int_t k=0; k<2; k++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);		
+      		if(trk->Pt() > 1) nHighPt++;     
+      		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
+      		qLepton[nLepton] = trk->Charge();
+      		if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+				mass[nLepton] = 0;
+				}
+      		if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+				mass[nLepton] = 1;
+				}
+       		nLepton++;		
+  		}		
+  	if(nLepton == 2){
+		if(qLepton[0]*qLepton[1] < 0 && nHighPt > 0 && (mass[0]!=-1 || mass[1]!=-1)){
+			vCandidate = vLepton[0]+vLepton[1];		  
+  			fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  			if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  			else { 
+				fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  				if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+				}
+			if(fChannel == -1 && vCandidate.Pt()<0.15) ((TH1D*)(fListJPsiLoose->At(i)))->Fill(vCandidate.M()); 
+  			if(fChannel == 1 && vCandidate.Pt()<0.3) ((TH1D*)(fListJPsiLoose->At(i)))->Fill(vCandidate.M()); 	
+			}
+		}
+  }
+}//loose cuts
+
+for(Int_t i=0; i<4; i++){
+	  //cout<<"Tight sytematics, cut"<<i<<endl;
+	  for(Int_t j=0; j<4; j++){
+		  if(i==j) fJPsiSels[j] = fJPsiSelsTight[i];
+		  else fJPsiSels[j] = fJPsiSelsMid[j];
+	  }
+  //Two track loop
+  nGoodTracks = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if((!trk->HasPointOnITSLayer(0))&&(!trk->HasPointOnITSLayer(1))) continue;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      
+      if(trk->GetTPCNcls() < fJPsiSels[0])continue;
+      if(trk->Chi2perNDF() > fJPsiSels[1])continue;
+      if(TMath::Abs(dca[1]) > fJPsiSels[2]) continue;      
+      if(TMath::Abs(dca[0]) > fJPsiSels[3]*cut_DCAxy) continue;
+     
+      TrackIndex[nGoodTracks] = itr;
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 2) break;  
+  }//Track loop
+    
+  Int_t mass[3]={-1,-1,-1};
+  fChannel = 0;
+  nLepton=0; nHighPt=0;
+  
+  if(nGoodTracks == 2){
+  	  for(Int_t k=0; k<2; k++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);		
+      		if(trk->Pt() > 1) nHighPt++;     
+      		fRecTPCsignal[nLepton] = trk->GetTPCsignal();     
+      		qLepton[nLepton] = trk->Charge();
+      		if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+				mass[nLepton] = 0;
+				}
+      		if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      				vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+				mass[nLepton] = 1;
+				}
+       		nLepton++;		
+  		}		
+  	if(nLepton == 2){
+		if(qLepton[0]*qLepton[1] < 0 && nHighPt > 0 && (mass[0]!=-1 || mass[1]!=-1)){
+			vCandidate = vLepton[0]+vLepton[1];		  
+  			fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  			if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  			else { 
+				fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  				if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+				}
+			if(fChannel == -1 && vCandidate.Pt()<0.15) ((TH1D*)(fListJPsiTight->At(i)))->Fill(vCandidate.M()); 
+  			if(fChannel == 1 && vCandidate.Pt()<0.3) ((TH1D*)(fListJPsiTight->At(i)))->Fill(vCandidate.M()); 	
+			}
+		}
+  }
+}//tight cuts
+
+//---------------------------------------------Psi2s------------------------------------------------------------------------
+
+  Double_t fPsi2sSels[4];
+
+  fPsi2sSels[0] =   50; //min number of TPC clusters
+  fPsi2sSels[1] =   4; //chi2
+  fPsi2sSels[2] =   2; //DCAz
+  fPsi2sSels[3] =   4; // DCAxy 1x 
+
+  Double_t fPsi2sSelsMid[4];
+
+  fPsi2sSelsMid[0] =   50; //min number of TPC clusters
+  fPsi2sSelsMid[1] =   4; //chi2
+  fPsi2sSelsMid[2] =   2; //DCAz
+  fPsi2sSelsMid[3] =   4; // DCAxy 1x 
+  
+  Double_t fPsi2sSelsLoose[4];
+
+  fPsi2sSelsLoose[0] =   60; //min number of TPC clusters
+  fPsi2sSelsLoose[1] =   5; //chi2
+  fPsi2sSelsLoose[2] =   3; //DCAz
+  fPsi2sSelsLoose[3] =   6; // DCAxy 2x 
+
+  Double_t fPsi2sSelsTight[4];
+
+  fPsi2sSelsTight[0] =   70; //min number of TPC clusters
+  fPsi2sSelsTight[1] =   3.5; //chi2
+  fPsi2sSelsTight[2] =   1; //DCAz
+  fPsi2sSelsTight[3] =   2; // DCAxy 0.5x 
+
+  nGoodTracks = 0; nLepton=0; nHighPt=0; fChannel = 0;
+  Int_t nSpdHits = 0;
+  Double_t TrackPt[5]={0,0,0,0,0};
+  Double_t MeanPt = -1;
+
+for(Int_t i=0; i<5; i++){
+	  //cout<<"Loose systematics psi2s, cut"<<i<<endl;
+	  for(Int_t j=0; j<4; j++){
+		  if(i==j) fJPsiSels[j] = fJPsiSelsLoose[i];
+		  else fJPsiSels[j] = fJPsiSelsMid[j];
+	  }
+ 
+  //Four track loop
+  nGoodTracks = 0; nSpdHits = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if((trk->HasPointOnITSLayer(0))||(trk->HasPointOnITSLayer(1))) nSpdHits++;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      
+      if(trk->GetTPCNcls() < fJPsiSels[0])continue;
+      if(trk->Chi2perNDF() > fJPsiSels[1])continue;
+      if(TMath::Abs(dca[1]) > fJPsiSels[2]) continue;      
+      if(TMath::Abs(dca[0]) > fJPsiSels[3]*cut_DCAxy) continue;
+      if((trk->HasPointOnITSLayer(0))||(trk->HasPointOnITSLayer(1))) nSpdHits++;
+     
+      TrackIndex[nGoodTracks] = itr;
+      TrackPt[nGoodTracks] = trk->Pt();
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 4) break;  
+  }//Track loop
+    
+  Int_t mass[3]={-1,-1,-1};
+  fChannel = 0;
+  nLepton=0; nPion=0; nHighPt=0;
+  
+  if(nGoodTracks == 4){
+  	  if(i!=4){ if(nSpdHits<2) continue;} 
+    	  MeanPt = GetMedian(TrackPt);
+  	  for(Int_t k=0; k<4; k++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);
+      		if(trk->Pt() > MeanPt){   
+      			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
+      			qLepton[nLepton] = trk->Charge();
+      			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+					mass[nLepton] = 0;
+					}
+      			if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+					mass[nLepton] = 1;
+					}
+			nLepton++;
+			}
+		else{
+			qPion[nPion] = trk->Charge();
+			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+			nPion++;
+			}	      
+    		}
+	if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0) && mass[0] != -1 && mass[1] != -1){
+  		vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
+  		vDilepton = vLepton[0]+vLepton[1];
+		fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  		if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  		else { 
+			fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  			if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+			}			
+		if(fChannel == -1) if(vDilepton.M() > 3.0 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.15) ((TH1D*)(fListPsi2sLoose->At(i)))->Fill(vCandidate.M());		
+  		if(fChannel == 1) if(vDilepton.M() > 2.6 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.3) ((TH1D*)(fListPsi2sLoose->At(i)))->Fill(vCandidate.M());
+	}
+  }   
+}//loose cuts
+
+for(Int_t i=0; i<4; i++){
+	  //cout<<"Tight systematics psi2s, cut"<<i<<endl;
+	  for(Int_t j=0; j<4; j++){
+		  if(i==j) fJPsiSels[j] = fJPsiSelsTight[i];
+		  else fJPsiSels[j] = fJPsiSelsMid[j];
+	  }
+ 
+  //Four track loop
+  nGoodTracks = 0; nSpdHits = 0;
+  for(Int_t itr=0; itr<aod ->GetNumberOfTracks(); itr++) {
+    AliAODTrack *trk = aod->GetTrack(itr);
+    if( !trk ) continue;
+    if(!(trk->TestFilterBit(1<<0))) continue;
+
+      if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+      if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+      if((trk->HasPointOnITSLayer(0))||(trk->HasPointOnITSLayer(1))) nSpdHits++;
+      Double_t dca[2] = {0.0,0.0}, cov[3] = {0.0,0.0,0.0};
+      AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
+      if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+      delete trk_clone;
+      Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+      
+      if(trk->GetTPCNcls() < fJPsiSels[0])continue;
+      if(trk->Chi2perNDF() > fJPsiSels[1])continue;
+      if(TMath::Abs(dca[1]) > fJPsiSels[2]) continue;      
+      if(TMath::Abs(dca[0]) > fJPsiSels[3]*cut_DCAxy) continue;
+      if((trk->HasPointOnITSLayer(0))||(trk->HasPointOnITSLayer(1))) nSpdHits++;
+     
+      TrackIndex[nGoodTracks] = itr;
+      TrackPt[nGoodTracks] = trk->Pt();
+      nGoodTracks++;
+				  
+      if(nGoodTracks > 4) break;  
+  }//Track loop
+    
+  Int_t mass[3]={-1,-1,-1};
+  fChannel = 0;
+    nLepton=0; nPion=0; nHighPt=0;
+  
+  if(nGoodTracks == 4){
+  	  if(nSpdHits<2) continue; 
+    	  MeanPt = GetMedian(TrackPt);
+  	  for(Int_t k=0; k<4; k++){
+	  	AliAODTrack *trk = aod->GetTrack(TrackIndex[k]);
+      		if(trk->Pt() > MeanPt){   
+      			fRecTPCsignal[nLepton] = trk->GetTPCsignal();      
+      			qLepton[nLepton] = trk->Charge();
+      			if(fRecTPCsignal[nLepton] > 40 && fRecTPCsignal[nLepton] < 70){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), muonMass);
+					mass[nLepton] = 0;
+					}
+      			if(fRecTPCsignal[nLepton] > 70 && fRecTPCsignal[nLepton] < 100){
+      					vLepton[nLepton].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), electronMass);
+					mass[nLepton] = 1;
+					}
+			nLepton++;
+			}
+		else{
+			qPion[nPion] = trk->Charge();
+			vPion[nPion].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+			nPion++;
+			}	      
+    		}
+	if((qLepton[0]*qLepton[1] < 0) && (qPion[0]*qPion[1] < 0) && mass[0] != -1 && mass[1] != -1){
+  		vCandidate = vLepton[0]+vLepton[1]+vPion[0]+vPion[1];
+  		vDilepton = vLepton[0]+vLepton[1];
+		fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-56,2)+TMath::Power(fRecTPCsignal[1]-56,2));
+  		if (fRecTPCsignalDist < 3.6*4.0) fChannel = -1;
+  		else { 
+			fRecTPCsignalDist = TMath::Sqrt(TMath::Power(fRecTPCsignal[0]-78,2)+TMath::Power(fRecTPCsignal[1]-78,2));
+  			if (fRecTPCsignalDist < 4.1*4.0) fChannel = 1; 
+			}			
+		if(fChannel == -1) if(vDilepton.M() > 3.0 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.15) ((TH1D*)(fListPsi2sTight->At(i)))->Fill(vCandidate.M());		
+  		if(fChannel == 1) if(vDilepton.M() > 2.6 && vDilepton.M() < 3.2 && vCandidate.Pt()<0.3) ((TH1D*)(fListPsi2sTight->At(i)))->Fill(vCandidate.M());
+	}
+  }   
+}//Tight cuts
+
+
+}
 //_____________________________________________________________________________
 void AliAnalysisTaskUpcPsi2s::RunAODtree()
 {
@@ -812,7 +1330,6 @@ void AliAnalysisTaskUpcPsi2s::RunAODtree()
       AliAODTrack* trk_clone=(AliAODTrack*)trk->Clone("trk_clone");
       if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       delete trk_clone;
-      if(!trk->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
       if(TMath::Abs(dca[1]) > 2) continue;
       Double_t cut_DCAxy = 4*(0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
       if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
@@ -1265,7 +1782,7 @@ void AliAnalysisTaskUpcPsi2s::RunESDtree()
       if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
       trk->GetImpactParameters(dca[0],dca[1]);
       if(TMath::Abs(dca[1]) > 2) continue;
-      if(TMath::Abs(dca[1]) > 0.2) continue;
+      if(TMath::Abs(dca[0]) > 0.2) continue;
       
       TrackIndex[nGoodTracks] = itr;
       nGoodTracks++;
@@ -1395,3 +1912,26 @@ void AliAnalysisTaskUpcPsi2s::Terminate(Option_t *)
   cout<<"Analysis complete."<<endl;
 }//Terminate
 
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskUpcPsi2s::GetMedian(Double_t *daArray) {
+    // Allocate an array of the same size and sort it.
+    Double_t dpSorted[4];
+    for (Int_t i = 0; i < 4; ++i) {
+        dpSorted[i] = daArray[i];
+    }
+    for (Int_t i = 3; i > 0; --i) {
+        for (Int_t j = 0; j < i; ++j) {
+            if (dpSorted[j] > dpSorted[j+1]) {
+                Double_t dTemp = dpSorted[j];
+                dpSorted[j] = dpSorted[j+1];
+                dpSorted[j+1] = dTemp;
+            }
+        }
+    }
+
+    // Middle or average of middle values in the sorted array.
+    Double_t dMedian = 0.0;
+    dMedian = (dpSorted[2] + dpSorted[1])/2.0;
+    
+    return dMedian;
+}

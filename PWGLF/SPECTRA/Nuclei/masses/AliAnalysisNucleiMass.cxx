@@ -310,7 +310,7 @@ void AliAnalysisNucleiMass::UserCreateOutputObjects()
       }
     }
 
-    const Int_t BinM2pT[nPart]={1,1,1,250,500,500,1,400,1};//1,1,600,250,500,500,1000,400,600
+    const Int_t BinM2pT[nPart]={1,1,1,1000,1000,500,1,400,1};//1,1,600,250,500,500,1000,400,600//1,1,1,250,500,500,1,400,1
     const Double_t RangeM2min[nPart]={0.0,0.0,-0.1,0.0,0.0,0.0,0.0,0.0,0.0};
     const Double_t RangeM2max[nPart]={1.0,1.0,0.5,2.0,4.0,6.0,12.0,4.0,6.0};
 

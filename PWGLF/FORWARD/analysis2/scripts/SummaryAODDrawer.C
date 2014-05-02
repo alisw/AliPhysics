@@ -210,11 +210,12 @@ protected:
   const Char_t* CutMethodName(Int_t lm) const
   {
     switch (lm) {
-    case 0: return "fixed";
-    case 1: return "fraction of MPV";
-    case 2: return "fit range";
-    case 3: return "Landau width";
-    case 4: return "Probability";
+    case 0: return "c=X";
+    case 1: return "c=X#times#Delta_{p}";
+    case 2: return "c:Lower bound of fit range";
+    case 3: return "c=#Delta_{p}-X#times#xi";
+    case 4: return "c=#Delta_{p}-X#times(#xi+#sigma)";
+    case 5: return "c:P(#Delta<c)<X";
     }
     return "unknown";
   }
@@ -226,38 +227,44 @@ protected:
 
     Int_t method = 0;
     if (!GetParameter(c, "method", method)) return -1;
+    DrawParameter(y, name, CutMethodName(method), size);
 
-    Double_t val = 0;
-    Bool_t   sig = false;
-    switch (method) {
-    case 0: // Fixed 
-      DrawParameter(y, name, "fixed", size); 
-      break;
-    case 1: // MPV
-      GetParameter(c, "frac", val);
-      DrawParameter(y, name, Form("Fraction of #Delta_{p} (%3d%%)",
-				  Int_t(val*100)), size);
-      break;
-    case 2: // Fit range
-      DrawParameter(y, name, "Fit range"); 
-      break;
-    case 3: // Landau width
-      GetParameter(c, "nXi", val);
-      GetParameter(c, "sigma", sig);
-      DrawParameter(y, name, Form("N#times%s#xi%s (N=%4.1f)",
-				  (sig ? "(" : ""),
-				  (sig ? "+#sigma)" : ""), 
-				  val), size);
-      break;
-    case 4: // Probability;
-      GetParameter(c, "probability", val);
-      DrawParameter(y, name, Form("P(#Delta)<%f", val), size);
-      break;
-    default:
-      DrawParameter(y, name, "Unknown", size);
-      break;
+    TString params;
+    const char*  cuts[] = { "fmd1i", "fmd2i", "fmd2o", "fmd3i", "fmd3o", 0 };
+    const char** pcut   = cuts;
+    while (*pcut) { 
+      Double_t cut;
+      GetParameter(c, *pcut, cut);
+      if (pcut != cuts) params.Append(", ");
+      params.Append(Form("%5.2f", cut));
+      pcut++;
     }
+    DrawParameter(y, "Parameters", params, size);
     return method;
+  }
+  //____________________________________________________________________
+  void DrawCut(TVirtualPad* parent, Int_t sub, TH2* cuts)
+  {
+    if (!cuts) return;
+    THStack* stack = new THStack(cuts,"x");
+    stack->SetTitle(cuts->GetTitle());
+    for (Int_t i = 1; i <= cuts->GetNbinsY(); i++) {
+      TH1*     hist = static_cast<TH1*>(stack->GetHists()->At(i-1));
+      TString  name(cuts->GetYaxis()->GetBinLabel(i));
+      UShort_t det = UShort_t(name[3]-48);
+      Char_t   rng = name[4];
+      Color_t  col = RingColor(det, rng);
+      hist->SetTitle(name);
+      hist->SetMarkerStyle(20);
+      hist->SetMarkerColor(col);
+      hist->SetLineColor(col);
+      hist->SetFillColor(col);
+      hist->SetLineWidth(0);
+      hist->SetFillStyle(0);
+      hist->SetXTitle("#eta");
+      hist->SetYTitle(cuts->GetZaxis()->GetTitle());
+    }
+    DrawInPad(parent, sub, stack, "nostack p", kLegend|kCenter|kSouth);
   }
   //____________________________________________________________________
   void DrawSharingFilter()
@@ -272,7 +279,7 @@ protected:
     fBody->Divide(1, 3, 0, 0);
     fBody->cd(1);
   
-    Double_t y = .8;
+    Double_t y = .95;
     Bool_t   angle=false, lowSignal=false, disabled=false;
 
     if (GetParameter(c, "angle", angle))
@@ -305,8 +312,8 @@ protected:
       hHigh           = GetH2(c, "highCuts");
       // if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
       // if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
-      DrawInPad(fBody, 2, hLow,  "colz");
-      DrawInPad(fBody, 3, hHigh, "colz");
+      DrawCut(fBody, 2, hLow);
+      DrawCut(fBody, 3, hHigh);
     }
     PrintCanvas("Sharing filter");
 
@@ -326,21 +333,58 @@ protected:
 	else            fBody->Divide(2,3);
 	
 	TH1*    esdELoss = GetH1(sc, "esdEloss");
+	TH1*    anaELoss = GetH1(sc, "anaEloss");
+	Double_t esdInt  = esdELoss->Integral(0,esdELoss->GetNbinsX()+1);
+	Double_t anaInt  = anaELoss->Integral(0,anaELoss->GetNbinsX()+1);
+	Double_t frac    = esdInt > 0 ? (esdInt-anaInt)/esdInt : 1;
 	esdELoss->GetXaxis()->SetRangeUser(-.1, 2);
 	TGraph* lowCut   = CreateCutGraph(lm, iq,  hLow,  esdELoss, kYellow+1);
 	TGraph* highCut  = CreateCutGraph(hm, iq,  hHigh, esdELoss, kCyan+1);
 	
 	DrawInPad(fBody, 1, esdELoss, "", kLogy,
 		  "#Delta/#Delta_{mip} reconstructed and merged");
-	DrawInPad(fBody, 1, GetH1(sc, "anaEloss"), "same");
+	DrawInPad(fBody, 1, anaELoss, "same");
 	DrawInPad(fBody, 1, lowCut,  "lf same"); 
-	DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend); 
-	
-	DrawInPad(fBody, 2, GetH1(sc, "singleEloss"),    "",    kLogy,
+	DrawInPad(fBody, 1, highCut, "lf same", kLogy|kLegend|kNorth|kWest); 
+	TVirtualPad* p = fBody->GetPad(1);
+	p->cd();
+	TLatex* l = new TLatex(1-p->GetRightMargin(), 
+			       0.5, Form("Loss: %5.1f%%", frac*100));
+	l->SetNDC();
+	l->SetTextAlign(32);
+	l->Draw();
+
+	TH1*     singles  = GetH1(sc, "singleEloss");
+	TH1*     doubles  = GetH1(sc, "doubleEloss");
+	TH1*     tripples = GetH1(sc, "tripleEloss");
+	Double_t int1     = singles->Integral(0,singles->GetNbinsX()+1);
+	Double_t int2     = doubles->Integral(0,doubles->GetNbinsX()+1);
+	Double_t int3     = tripples->Integral(0,tripples->GetNbinsX()+1);
+	Double_t intT     = int1 + int2 + int3;
+	Double_t f1       = intT > 0 ? int1 / intT : 0;
+	Double_t f2       = intT > 0 ? int2 / intT : 0;
+	Double_t f3       = intT > 0 ? int3 / intT : 0;
+
+	singles->GetXaxis()->SetRangeUser(-.1, 2);
+	DrawInPad(fBody, 2, singles,    "",    kLogy,
 		  "#Delta/#Delta_{mip} for single, double, and tripple hits");
-	DrawInPad(fBody, 2, GetH1(sc, "doubleEloss"),    "same",kLogy);
-	DrawInPad(fBody, 2, GetH1(sc, "tripleEloss"),    "same",kLogy|kLegend);
+	DrawInPad(fBody, 2, doubles,    "same",    kLogy);
+	DrawInPad(fBody, 2, tripples,   "same",    kLogy);
+	DrawInPad(fBody, 2, lowCut,     "lf same", kLogy); 
+	DrawInPad(fBody, 2, highCut,    "lf same", kLogy|kLegend|kNorth|kWest); 
 	
+	fBody->cd(2);
+	Double_t nameX = fParName->GetX();
+	Double_t valX  = fParVal->GetX();
+	Double_t intY  = 0.4;
+	fParName->SetX(0.5);
+	fParVal->SetX(0.7);
+	DrawParameter(intY, "Singles",  Form("%5.1f%%", 100*f1), 0.05);
+	DrawParameter(intY, "Doubles",  Form("%5.1f%%", 100*f2), 0.05);
+	DrawParameter(intY, "Tripples", Form("%5.1f%%", 100*f3), 0.05);
+	fParName->SetX(nameX);
+	fParVal->SetX(valX);
+
 	DrawInPad(fBody, 3, GetH2(sc, "singlePerStrip"), "colz",kLogz);
 	// DrawInPad(fBody, 4, GetH1(sc, "distanceBefore"), "",     0x2);
 	// DrawInPad(fBody, 4, GetH1(sc, "distanceAfter"),  "same", 0x12);
@@ -348,11 +392,11 @@ protected:
 	
 	TH2* nB = GetH2(sc, "neighborsBefore");
 	if (nB) { 
-	  nB->GetXaxis()->SetRangeUser(0,8); 
-	  nB->GetYaxis()->SetRangeUser(0,8); 
+	  nB->GetXaxis()->SetRangeUser(0,2); 
+	  nB->GetYaxis()->SetRangeUser(0,2); 
 	}
 	DrawInPad(fBody, 5, nB, "colz", kLogz);
-	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "p same", kLogz,
+	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "col same", kLogz,
 		  "Correlation of neighbors before and after merging");
 	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 	
@@ -380,7 +424,18 @@ protected:
     // --- MC --------------------------------------------------------
     DrawTrackDensity(c);
   }
-
+  //__________________________________________________________________
+  /** 
+   * Draw a slice fit on a 2D histogram
+   * 
+   * @param inY   Whether to slice in Y
+   * @param h     2D histogram
+   * @param nVar  Number of variances
+   * @param p     Master pad to draw in 
+   * @param sub   Sub pad number 
+   * @param flags Flags 
+   * @param cut   Cut value 
+   */
   void ShowSliceFit(Bool_t inY, TH2* h, Double_t nVar, 
 		    TVirtualPad* p, Int_t sub, UShort_t flags=0,
 		    Double_t cut=-1)
@@ -487,11 +542,11 @@ protected:
     fBody->Divide(2, 2);
     fBody->cd(1);
   
-    Double_t y = .8;
+    Double_t y = .9;
     Int_t maxParticles=0, phiAcceptance=0, etaLumping=0, phiLumping=0;
     Bool_t method=false, recalcEta=false, recalcPhi=false;
     Double_t maxOutliers=0, outlierCut=0;
-    Double_t size = fLandscape ? 0.06 : 0.04;
+    Double_t size = fLandscape ? 0.05 : 0.03;
   
     GetParameter(c, "maxParticle", maxParticles);
 
@@ -522,7 +577,7 @@ protected:
       DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()), size);
 
     TCollection* lc = GetCollection(c, "lCuts");
-    PrintCut(lc, y, "Threshold", size);
+    Int_t tm = PrintCut(lc, y, "Threshold", size);
 
     TVirtualPad* p = fBody; // fBody->cd(2);
     // p->Divide(3,1);
@@ -534,6 +589,7 @@ protected:
       accI->Scale(scale); 
       accO->Scale(scale);
       accI->SetMinimum(0); 
+      accI->SetMaximum(1.3);
     }
     TH2* lCuts = GetH2(c, "lowCuts");
     TH2* maxW  = GetH2(c, "maxWeights");
@@ -541,12 +597,15 @@ protected:
     if (nFiles && lCuts) lCuts->Scale(1. / nFiles->GetVal());
     if (nFiles && maxW)  maxW->Scale(1. / nFiles->GetVal());
     DrawInPad(p, 2, accI); 
-    DrawInPad(p, 2, accO,  "same", kLegend); 
-    DrawInPad(p, 3, lCuts, "colz");
-    DrawInPad(p, 4, maxW,  "colz");
+    DrawInPad(p, 2, accO,  "same", kLegend|kNorth|kCenter); 
+    DrawCut(p, 3, lCuts);
+    // DrawInPad(p, 3, lCuts, "colz");
+    DrawCut(p, 4, maxW);
+    // DrawInPad(p, 4, maxW,  "colz");
   
     PrintCanvas("Density calculator");
 
+    UShort_t iq = 1;
     const char** ptr   = GetRingNames(false);
     while (*ptr) { 
       TCollection* sc = GetCollection(c, *ptr);
@@ -564,15 +623,35 @@ protected:
       TH1* occ       = GetH1(sc, "occupancy");
       if (eloss)     eloss    ->SetLineWidth(1);
       if (elossUsed) elossUsed->SetLineWidth(1);
+      if (eloss)     eloss->GetXaxis()->SetRangeUser(0.05, 2);
       
       DrawInPad(fBody, 1, corr,    "colz",        kLogz);
       DrawInPad(fBody, 1, corrOut, "same",        kLogz);
       DrawInPad(fBody, 2, diff,    "HIST E",      kLogy);
-      DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend);
+      DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend|kNorth|kWest);
       DrawInPad(fBody, 3, occ,      "",           kLogy);
       DrawInPad(fBody, 4, eloss,    "",           kLogy, 
 		"#Delta/#Delta_{mip} before and after cuts");
-      DrawInPad(fBody, 4, elossUsed, "same",      kLogy|kLegend);
+      DrawInPad(fBody, 4, elossUsed, "same",      kLogy);
+      TGraph* thres = CreateCutGraph(tm, iq,  lCuts,  eloss, kYellow+1);
+      DrawInPad(fBody, 4, thres, "lf same", kLogy|kLegend|kNorth|kWest); 
+
+      if (eloss && elossUsed) {
+	Int_t    lowBin    = eloss->GetXaxis()->FindBin(0.)+1;
+	Int_t    upBin     = eloss->GetNbinsX()+1;
+	Double_t beforeInt = eloss->Integral(lowBin,upBin);
+	Double_t afterInt  = elossUsed->Integral(lowBin,upBin);
+	Double_t frac      = beforeInt > 0 ? (beforeInt-afterInt)/beforeInt : 1;
+	TVirtualPad* pp = fBody->GetPad(4);
+	pp->cd();
+	TLatex* l = new TLatex(1-pp->GetRightMargin(), 
+			       0.5, Form("Loss: %5.1f%%", frac*100));
+	l->SetNDC();
+	l->SetTextAlign(32);
+	l->Draw();
+      }
+
+
       TH1* phiB = GetH1(sc, "phiBefore");
       TH1* phiA = GetH1(sc, "phiAfter");
       TH1* outliers = GetH1(sc, "outliers");
@@ -613,6 +692,7 @@ protected:
       }
       PrintCanvas(Form("Density calculator - %s", *ptr));
       ptr++;    
+      iq++;
     }
 
     TCollection* cc = GetCollection(c, "esd_mc_comparison", false); 

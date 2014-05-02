@@ -53,7 +53,7 @@ AliAnalysisTaskSE *AddTaskEmcalPreparation(const char *perstr  = "LHC11h",
 
   //----------------------- Add clusterizer -------------------------------------------------------
   clusterizer    = AliEMCALRecParam::kClusterizerv2;
-  remExoticCell  = kFALSE;
+  remExoticCell  = kTRUE;
   gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskClusterizerFast.C");
   AliAnalysisTaskEMCALClusterizeFast *clusterizerTask = AddTaskClusterizerFast("ClusterizerFast","","",clusterizer,cellthresh,seedthresh,
 									       timeMin,timeMax,timeCut,remExoticCell,distBC,

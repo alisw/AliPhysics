@@ -160,6 +160,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Double_t                    fPtHard;                     //!event pt hard
   Int_t                       fPtHardBin;                  //!event pt hard bin
   Int_t                       fNTrials;                    //!event trials
+  Float_t                     fXsection;                   //!x-section from pythia header
   TObjArray                   fParticleCollArray;          // particle/track collection array
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
@@ -180,6 +181,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 7) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 8) // EMCAL base analysis task
 };
 #endif

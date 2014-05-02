@@ -28,6 +28,7 @@ AliFemtoPairCutAntiGamma(),
   fDPhiStarMin(0),
   fEtaMin(0),
   fMinRad(0.8),
+  fMaxRad(2.5),
   fMagSign(1),
   fPhistarmin(kTRUE)
 {
@@ -38,12 +39,14 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairC
   fDPhiStarMin(0),
   fEtaMin(0),
   fMinRad(0.8),
+  fMaxRad(2.5),
   fMagSign(1),
   fPhistarmin(kTRUE)
 {
   fDPhiStarMin = c.fDPhiStarMin;
   fEtaMin = c.fEtaMin;
   fMinRad = c.fMinRad;
+  fMaxRad = c.fMaxRad;
   fMagSign = c.fMagSign;
   fPhistarmin = c.fPhistarmin;
 }
@@ -58,6 +61,7 @@ AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const Al
     fDPhiStarMin = c.fDPhiStarMin;
     fEtaMin = c.fEtaMin;
     fMinRad = c.fMinRad;
+    fMaxRad = c.fMaxRad;
     fMagSign = c.fMagSign;
     fPhistarmin = c.fPhistarmin;
 
@@ -94,6 +98,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   else {
     AliAODEvent *fAOD;
     fAOD = aodH->GetEvent();
+    //cout<<fAOD<<endl;
     magsign = fAOD->GetMagneticField();
   }
 
@@ -112,7 +117,7 @@ bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   rad = fMinRad;
 
   if (fPhistarmin) {
-    for (rad = 0.8; rad < 2.5; rad += 0.01) {
+    for (rad = fMinRad; rad < fMaxRad; rad += 0.01) {
       Double_t dps = (phi2-phi1+(TMath::ASin(-0.075*chg2*fMagSign*rad/ptv2))-(TMath::ASin(-0.075*chg1*fMagSign*rad/ptv1)));
       dps = TVector2::Phi_mpi_pi(dps);
       Double_t etad = eta2 - eta1;
@@ -187,6 +192,11 @@ void AliFemtoPairCutRadialDistance::SetEtaDifferenceMinimum(double etpc)
 void AliFemtoPairCutRadialDistance::SetMinimumRadius(double minrad)
 {
   fMinRad = minrad;
+}
+
+void AliFemtoPairCutRadialDistance::SetMaximumRadius(double maxrad)
+{
+  fMaxRad = maxrad;
 }
 
 void AliFemtoPairCutRadialDistance::SetMagneticFieldSign(int magsign)

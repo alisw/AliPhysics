@@ -1,4 +1,4 @@
-void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272)
+void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 0, Bool_t isPbPb=kTRUE, Bool_t bReduced = kTRUE, Int_t filterBit = 272, Bool_t doEfficiency = kFALSE)
 {
   if(iAODanalysis==0) { //run on ESDs
     if(prodType.EqualTo("LHC10h") || prodType.EqualTo("LHC11a")) {
@@ -17,12 +17,16 @@ void AddTaskPWG4HighPtTrackQA(TString prodType = "LHC10h", Int_t iAODanalysis = 
     }
   }
   else if(iAODanalysis==1) { //run on AODs
+    if(doEfficiency==1){
+      gROOT->LoadMacro(gSystem->ExpandPathName("$ALICE_ROOT/PWGJE/macros/AddTaskPWG4HighPtSpectra.C"));
+      AddTaskPWG4HighPtSpectraQA_AOD(prodType.Data(),isPbPb,AliVEvent::kMB,kTRUE,kFALSE);
+    }
     AddTaskPWG4HighPtTrackQAAOD(prodType.Data(),isPbPb,iAODanalysis,filterBit); 
   }
 }
 
-void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b") {
-
+void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b")
+{
   AliPWG4HighPtTrackQA *taskTrackQA05cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,0,5,AliVEvent::kINT7);
   AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kINT7);
   
@@ -31,7 +35,6 @@ void AddTaskPWG4HighPtTrackQApPb(char *prodType = "LHC13b") {
     AliPWG4HighPtTrackQA *taskTrackQA75cent10 = ConfigureTaskPWG4HighPtTrackQA(prodType,kFALSE,0,10,7,5,AliVEvent::kEMCEJE);
   }
 }
-
 
 void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    
@@ -124,7 +127,6 @@ void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC11h",Bool_t isPbPb=
     }
   }
 }
-
 
 void AddTaskPWG4HighPtTrackQALHC11hLTS(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0) 
 {    

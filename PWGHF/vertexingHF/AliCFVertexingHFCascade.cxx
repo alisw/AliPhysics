@@ -195,10 +195,12 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 	}
 	else{
 	  AliWarning("There are problems!! particle was expected to be either a D0 or a D0bar, check...");
+	  delete decay;
 	  return vectorMC;
 	}
 	if (cosThetaStar < -1 || cosThetaStar > 1) {
 	  AliWarning("Invalid value for cosine Theta star, returning");
+	  delete decay;
 	  return bGenValues;
 	}
 	
@@ -207,6 +209,7 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 	// evaluate the correct cascade
 	if (!EvaluateIfD0toKpi(mcPartDaughterD0,vectorD0)) {
 	  AliDebug(2, "Error! the D0 MC doesn't have correct daughters!!");
+	  delete decay;
 	  return bGenValues;  
 	}	
 

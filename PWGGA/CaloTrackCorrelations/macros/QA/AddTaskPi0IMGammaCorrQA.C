@@ -276,6 +276,11 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t simulation, Int_t debugLevel)
 
   cu->SwitchOnCorrectClusterLinearity();
 
+  if(kCalorimeter=="PHOS")
+    cu->SetNumberOfSuperModulesUsed(3);
+  else
+    cu->SetNumberOfSuperModulesUsed(10);
+  
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
@@ -378,14 +383,6 @@ AliAnaPi0* ConfigurePi0Analysis(TString calorimeter, TString collision,
   
   // Calorimeter settings
   ana->SetCalorimeter(calorimeter);
-  if(calorimeter=="PHOS") ana->SetNumberOfModules(3); //PHOS first year
-  else 
-  {                   
-//    if     (year == 2010) ana->SetNumberOfModules( 4); // EMCAL first year
-//    else if(year == 2011) ana->SetNumberOfModules(10); // Second year
-//    else                    ana->SetNumberOfModules(12);
-    ana->SetNumberOfModules(12);
-  }
   
   //settings for pp collision mixing
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
@@ -569,18 +566,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis(TString calorimeter,  Bool_t simulation
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
-  
-  if(calorimeter=="EMCAL")
-  {
-//    if     (year==2010)  ana->SetNumberOfModules(4); 
-//    else if(year==2011)  ana->SetNumberOfModules(10);
-//    else
-    ana->SetNumberOfModules(12);
-  }
-  else 
-  {//PHOS
-    ana->SetNumberOfModules(3); 
-  }
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges(),calorimeter); // see method below

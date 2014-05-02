@@ -28,6 +28,8 @@
 using std::endl;
 using std::cout;
 using std::flush;
+using std::ofstream;
+using std::ios;
 
 //================================================================================================================
 
@@ -281,6 +283,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInFinis
    else if(fCalculateOnlySin && 0==cs){continue;}
    for(Int_t c=0;c<fMaxCorrelator;c++) 
    {
+    if(c==fDontGoBeyond){continue;}
+    if(fCalculateOnlyForHarmonicQC && c%2==0){continue;}
     if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"fCorrelationsPro[%d][%d] is NULL, for one reason or another...",cs,c);}
    }
   }
@@ -332,6 +336,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckPointersUsedInMake(
    else if(fCalculateOnlySin && 0==cs){continue;}
    for(Int_t c=0;c<fMaxCorrelator;c++) 
    {
+    if(c==fDontGoBeyond){continue;}
+    if(fCalculateOnlyForHarmonicQC && c%2==0){continue;}
     if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"fCorrelationsPro[%d][%d] is NULL, for one reason or another...",cs,c);}
    }
   }
@@ -1852,6 +1858,18 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  }
 
  // f) Differential correlations:
+ if(fCalculateDiffCorrelations && !fCalculateDiffQvectors)
+ {
+  Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !fCalculateDiffQvectors"); 
+ }
+ if(fCalculateDiffCorrelations && !fCalculateQvector)
+ {
+  Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !fCalculateQvector"); 
+ }
+ if(!fCalculateDiffCorrelations && fCalculateDiffQvectors)
+ {
+  Fatal(sMethodName.Data(),"!fCalculateDiffCorrelations && fCalculateDiffQvectors"); 
+ }
  if(fCalculateDiffCorrelations && !fUseDefaultBinning && (fnDiffBins < 1 || !fRangesDiffBins))
  {
   Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !fUseDefaultBinning && (fnDiffBins < 1 || !fRangesDiffBins)"); 
@@ -1859,6 +1877,10 @@ void AliFlowAnalysisWithMultiparticleCorrelations::CrossCheckSettings()
  if(fCalculateDiffCorrelations && !(fCalculateDiffCos || fCalculateDiffSin))
  {
   Fatal(sMethodName.Data(),"fCalculateDiffCorrelations && !(fCalculateDiffCos || fCalculateDiffSin)"); 
+ }
+ if(fCalculateDiffCorrelations && fDontFill[1])
+ {
+  Warning(sMethodName.Data(),"fCalculateDiffCorrelations && fDontFill[1]"); 
  }
 
  // g) Nested loops:
@@ -1992,7 +2014,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  //  b2) Book TH2D *fMultCorrelationsHist[3].
 
  // a) Book the profile holding all the flags for control histograms: TBI stil incomplete 
- fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",4,0,4);
+ fControlHistogramsFlagsPro = new TProfile("fControlHistogramsFlagsPro","Flags and settings for control histograms",7,0,7);
  fControlHistogramsFlagsPro->SetTickLength(-0.01,"Y");
  fControlHistogramsFlagsPro->SetMarkerStyle(25);
  fControlHistogramsFlagsPro->SetLabelSize(0.04);
@@ -2004,6 +2026,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(2,"fFillKinematicsHist"); fControlHistogramsFlagsPro->Fill(1.5,fFillKinematicsHist);
  fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(3,"fFillMultDistributionsHist"); fControlHistogramsFlagsPro->Fill(2.5,fFillMultDistributionsHist);
  fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(4,"fFillMultCorrelationsHist"); fControlHistogramsFlagsPro->Fill(3.5,fFillMultCorrelationsHist);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(5,"fDontFill[0=RP]"); fControlHistogramsFlagsPro->Fill(4.5,fDontFill[0]);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(6,"fDontFill[1=POI]"); fControlHistogramsFlagsPro->Fill(5.5,fDontFill[1]);
+ fControlHistogramsFlagsPro->GetXaxis()->SetBinLabel(7,"fDontFill[2=REF]"); fControlHistogramsFlagsPro->Fill(6.5,fDontFill[2]);
  fControlHistogramsList->Add(fControlHistogramsFlagsPro);
 
  if(!fFillControlHistograms){return;} // TBI is this safe? Well, perhaps it is if I can't implement it better...
@@ -2019,6 +2044,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  {
   for(Int_t rp=0;rp<2;rp++) // [RP,POI]
   {
+   if(fDontFill[rp]){continue;}
    for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
    {
     fKinematicsHist[rp][ppe] = new TH1D(name[rp][ppe].Data(),title[rp].Data(),fnBins[rp][ppe],fMin[rp][ppe],fMax[rp][ppe]);
@@ -2041,6 +2067,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  {
   for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
   {
+   if(fDontFill[rprm]){continue;}
    fMultDistributionsHist[rprm] = new TH1D(nameMult[rprm].Data(),titleMult[rprm].Data(),fnBinsMult[rprm],fMinMult[rprm],fMaxMult[rprm]);
    fMultDistributionsHist[rprm]->GetXaxis()->SetTitle(xAxisTitleMult[rprm].Data());
    fMultDistributionsHist[rprm]->SetLineColor(lineColorMult[rprm]);
@@ -2052,21 +2079,27 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHisto
  //  b2) Book TH2I *fMultCorrelationsHist[3]: 
  if(fFillMultCorrelationsHist)
  {
-  // ...
-  fMultCorrelationsHist[0] = new TH2I("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[1],fMinMult[1],fMaxMult[1]);
-  fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
-  fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
-  fControlHistogramsList->Add(fMultCorrelationsHist[0]);
-  // ...
-  fMultCorrelationsHist[1] = new TH2I("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
-  fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
-  fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
-  fControlHistogramsList->Add(fMultCorrelationsHist[1]);
-  // ...
-  fMultCorrelationsHist[2] = new TH2I("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",fnBinsMult[1],fMinMult[1],fMaxMult[1],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
-  fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
-  fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
-  fControlHistogramsList->Add(fMultCorrelationsHist[2]);
+  if(!fDontFill[0] && !fDontFill[1])
+  {
+   fMultCorrelationsHist[0] = new TH2I("Multiplicity (RP vs. POI)","Multiplicity (RP vs. POI)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[1],fMinMult[1],fMaxMult[1]);
+   fMultCorrelationsHist[0]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
+   fMultCorrelationsHist[0]->GetYaxis()->SetTitle(xAxisTitleMult[1].Data());
+   fControlHistogramsList->Add(fMultCorrelationsHist[0]);
+  }
+  if(!fDontFill[0] && !fDontFill[2])
+  {
+   fMultCorrelationsHist[1] = new TH2I("Multiplicity (RP vs. REF)","Multiplicity (RP vs. REF)",fnBinsMult[0],fMinMult[0],fMaxMult[0],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+   fMultCorrelationsHist[1]->GetXaxis()->SetTitle(xAxisTitleMult[0].Data());
+   fMultCorrelationsHist[1]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
+   fControlHistogramsList->Add(fMultCorrelationsHist[1]);
+  }
+  if(!fDontFill[1] && !fDontFill[2])
+  {
+   fMultCorrelationsHist[2] = new TH2I("Multiplicity (POI vs. REF)","Multiplicity (POI vs. REF)",fnBinsMult[1],fMinMult[1],fMaxMult[1],fnBinsMult[2],fMinMult[2],fMaxMult[2]);
+   fMultCorrelationsHist[2]->GetXaxis()->SetTitle(xAxisTitleMult[1].Data());
+   fMultCorrelationsHist[2]->GetYaxis()->SetTitle(xAxisTitleMult[2].Data());
+   fControlHistogramsList->Add(fMultCorrelationsHist[2]);
+  }
  } // if(fFillMultCorrelationsHist){
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForControlHistograms()
@@ -2102,7 +2135,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
      {
       if((0==rp && pTrack->InRPSelection()) || (1==rp && pTrack->InPOISelection())) // TBI 
       { 
-       fKinematicsHist[rp][ppe]->Fill(dPhiPtEta[ppe]);
+       if(fKinematicsHist[rp][ppe]){fKinematicsHist[rp][ppe]->Fill(dPhiPtEta[ppe]);}
       }
      } // for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
     } // for(Int_t rp=0;rp<2;rp++) // [RP,POI]
@@ -2117,15 +2150,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlow
  Double_t dMult[3] = {dMultRP,dMultPOI,dMultREF};
  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  {
-  if(fFillMultDistributionsHist){fMultDistributionsHist[rprm]->Fill(dMult[rprm]);}      
+  if(fFillMultDistributionsHist && fMultDistributionsHist[rprm]){fMultDistributionsHist[rprm]->Fill(dMult[rprm]);}      
  } 
 
  // c) Fill TH2I *fMultCorrelationsHist[3]:  
  if(fFillMultCorrelationsHist)
  {
-  fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI); // RP vs. POI
-  fMultCorrelationsHist[1]->Fill((Int_t)dMultRP,(Int_t)dMultREF); // RP vs. refMult
-  fMultCorrelationsHist[2]->Fill((Int_t)dMultPOI,(Int_t)dMultREF); // POI vs. refMult
+  if(fMultCorrelationsHist[0]){fMultCorrelationsHist[0]->Fill((Int_t)dMultRP,(Int_t)dMultPOI);} // RP vs. POI
+  if(fMultCorrelationsHist[1]){fMultCorrelationsHist[1]->Fill((Int_t)dMultRP,(Int_t)dMultREF);} // RP vs. refMult
+  if(fMultCorrelationsHist[2]){fMultCorrelationsHist[2]->Fill((Int_t)dMultPOI,(Int_t)dMultREF);} // POI vs. refMult
  } // if(fFillMultCorrelationsHist)
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::FillControlHistograms(AliFlowEventSimple *anEvent)
@@ -2139,8 +2172,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
  // a) Initialize TH1D *fKinematicsHist[2][3];
  // b) Initialize TH1D *fMultDistributionsHist[3]; 
  // c) Initialize TH2D *fMultCorrelationsHist[3];  
- // d) Initialize default binning values for fKinematicsHist[2][3];
- // e) Initialize default binning values for fMultCorrelationsHist[3].
+ // d) Initialize Bool_t fDontFill[3];   
+ // e) Initialize default binning values for fKinematicsHist[2][3];
+ // f) Initialize default binning values for fMultCorrelationsHist[3].
  
  // a) Initialize TH1D *fKinematicsHist[2][3]:
  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
@@ -2163,7 +2197,13 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
   fMultCorrelationsHist[r] = NULL; 
  }
 
- // d) Initialize default binning values for fKinematicsHist[2][3]:
+ // d) Initialize Bool_t fDontFill[3]:
+ for(Int_t rpr=0;rpr<3;rpr++) // [RP,POI,REF]
+ {
+  fDontFill[rpr] = kFALSE;
+ }
+
+ // e) Initialize default binning values for fKinematicsHist[2][3]:
  // nBins:
  fnBins[0][0] = 360;  // [RP][phi]
  fnBins[0][1] = 1000; // [RP][pt]
@@ -2186,7 +2226,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForControlHis
  fMax[1][1] = 10.;            // [POI][pt]
  fMax[1][2] = 1.;             // [POI][eta]
 
- // e) Initialize default binning values for fMultCorrelationsHist[3]:
+ // f) Initialize default binning values for fMultCorrelationsHist[3]:
  // nBins:
  fnBinsMult[0] = 3000; // [RP]
  fnBinsMult[1] = 3000; // [POI]
@@ -2291,6 +2331,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
   else if(fCalculateOnlySin && 0==cs){continue;}
   for(Int_t c=0;c<fMaxCorrelator;c++) // [1p,2p,...,8p]
   {
+   if(c==fDontGoBeyond){continue;}
+   if(fCalculateOnlyForHarmonicQC && c%2==0){continue;}
    fCorrelationsPro[cs][c] = new TProfile(Form("%dpCorrelations%s",c+1,sCosSin[cs].Data()),"",nBins[c],0.,1.*nBins[c]);
    fCorrelationsPro[cs][c]->Sumw2();
    fCorrelationsPro[cs][c]->SetStats(kFALSE);
@@ -2322,7 +2364,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
    {
     if(fCalculateOnlyCos && 1==cs){continue;}
     else if(fCalculateOnlySin && 0==cs){continue;}
-    fCorrelationsPro[cs][0]->GetXaxis()->SetBinLabel(binNo[cs][0]++,Form("%s(%d)",sCosSin[cs].Data(),n1));
+    if(fCorrelationsPro[cs][0]){fCorrelationsPro[cs][0]->GetXaxis()->SetBinLabel(binNo[cs][0]++,Form("%s(%d)",sCosSin[cs].Data(),n1));}
    } // for(Int_t cs=0;cs<2;cs++) 
    nToBeFilled[0]++; 
   }
@@ -2340,7 +2382,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
     {
      if(fCalculateOnlyCos && 1==cs){continue;}
      else if(fCalculateOnlySin && 0==cs){continue;}
-     fCorrelationsPro[cs][1]->GetXaxis()->SetBinLabel(binNo[cs][1]++,Form("%s(%d,%d)",sCosSin[cs].Data(),n1,n2));
+     if(fCorrelationsPro[cs][1]){fCorrelationsPro[cs][1]->GetXaxis()->SetBinLabel(binNo[cs][1]++,Form("%s(%d,%d)",sCosSin[cs].Data(),n1,n2));}
     } // for(Int_t cs=0;cs<2;cs++) 
     nToBeFilled[1]++; 
    }
@@ -2357,7 +2399,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
      {
       if(fCalculateOnlyCos && 1==cs){continue;}
       else if(fCalculateOnlySin && 0==cs){continue;}
-      fCorrelationsPro[cs][2]->GetXaxis()->SetBinLabel(binNo[cs][2]++,Form("%s(%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3));
+      if(fCorrelationsPro[cs][2]){fCorrelationsPro[cs][2]->GetXaxis()->SetBinLabel(binNo[cs][2]++,Form("%s(%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3));}
      } // for(Int_t cs=0;cs<2;cs++) 
      nToBeFilled[2]++; 
     }
@@ -2375,7 +2417,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
       {
        if(fCalculateOnlyCos && 1==cs){continue;}
        else if(fCalculateOnlySin && 0==cs){continue;}
-       fCorrelationsPro[cs][3]->GetXaxis()->SetBinLabel(binNo[cs][3]++,Form("%s(%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4));
+       if(fCorrelationsPro[cs][3]){fCorrelationsPro[cs][3]->GetXaxis()->SetBinLabel(binNo[cs][3]++,Form("%s(%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4));}
       } // for(Int_t cs=0;cs<2;cs++) 
       nToBeFilled[3]++; 
      } 
@@ -2393,7 +2435,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
        {
         if(fCalculateOnlyCos && 1==cs){continue;}
         else if(fCalculateOnlySin && 0==cs){continue;}
-        fCorrelationsPro[cs][4]->GetXaxis()->SetBinLabel(binNo[cs][4]++,Form("%s(%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5));
+        if(fCorrelationsPro[cs][4]){fCorrelationsPro[cs][4]->GetXaxis()->SetBinLabel(binNo[cs][4]++,Form("%s(%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5));}
        } // for(Int_t cs=0;cs<2;cs++) 
        nToBeFilled[4]++; 
       }
@@ -2413,7 +2455,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
         {
          if(fCalculateOnlyCos && 1==cs){continue;}
          else if(fCalculateOnlySin && 0==cs){continue;}
-         fCorrelationsPro[cs][5]->GetXaxis()->SetBinLabel(binNo[cs][5]++,Form("%s(%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6));         
+         if(fCorrelationsPro[cs][5]){fCorrelationsPro[cs][5]->GetXaxis()->SetBinLabel(binNo[cs][5]++,Form("%s(%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6));}         
         } // for(Int_t cs=0;cs<2;cs++) 
         nToBeFilled[5]++; 
        }
@@ -2433,7 +2475,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
          {
           if(fCalculateOnlyCos && 1==cs){continue;}
           else if(fCalculateOnlySin && 0==cs){continue;}
-          fCorrelationsPro[cs][6]->GetXaxis()->SetBinLabel(binNo[cs][6]++,Form("%s(%d,%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6,n7));
+          if(fCorrelationsPro[cs][6]){fCorrelationsPro[cs][6]->GetXaxis()->SetBinLabel(binNo[cs][6]++,Form("%s(%d,%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6,n7));}
          } // for(Int_t cs=0;cs<2;cs++) 
          nToBeFilled[6]++; 
         }
@@ -2454,7 +2496,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
           {
            if(fCalculateOnlyCos && 1==cs){continue;}
            else if(fCalculateOnlySin && 0==cs){continue;}
-           fCorrelationsPro[cs][7]->GetXaxis()->SetBinLabel(binNo[cs][7]++,Form("%s(%d,%d,%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6,n7,n8));
+           if(fCorrelationsPro[cs][7]){fCorrelationsPro[cs][7]->GetXaxis()->SetBinLabel(binNo[cs][7]++,Form("%s(%d,%d,%d,%d,%d,%d,%d,%d)",sCosSin[cs].Data(),n1,n2,n3,n4,n5,n6,n7,n8));}
           } // for(Int_t cs=0;cs<2;cs++) 
           nToBeFilled[7]++; 
          }
@@ -2473,6 +2515,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForCorrelations
   else if(fCalculateOnlySin && 0==cs){continue;}
   for(Int_t c=0;c<fMaxCorrelator;c++) // [1p,2p,...,8p]
   {
+   if(!fCorrelationsPro[cs][c]){continue;}
    fCorrelationsPro[cs][c]->SetTitle(Form("%d-p correlations, %s terms, %d/%d in total",c+1,sCosSin[cs].Data(),nToBeFilled[c],nBinsTitle[c]));
    fCorrelationsPro[cs][c]->GetXaxis()->SetRangeUser(0.,fCorrelationsPro[cs][c]->GetBinLowEdge(nToBeFilled[c]+1));
   }
@@ -2507,6 +2550,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::BookEverythingForDiffCorrelat
  fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(4,"fCalculateDiffCorrelationsVsPt"); fDiffCorrelationsFlagsPro->Fill(3.5,fCalculateDiffCorrelationsVsPt); 
  fDiffCorrelationsFlagsPro->GetXaxis()->SetBinLabel(5,"fUseDefaultBinning"); fDiffCorrelationsFlagsPro->Fill(4.5,fUseDefaultBinning); 
  fDiffCorrelationsList->Add(fDiffCorrelationsFlagsPro);
+
+ if(!fCalculateDiffCorrelations){return;}  
 
  // b) Book TProfile *fDiffCorrelationsPro[2][4] ([0=cos,1=sin][1p,2p,3p,4p]):
  Bool_t fDiffStore[2][4] = {{0,1,1,1},{0,0,0,0}}; // store or not TBI promote to data member, and implement setter perhaps  
@@ -3064,6 +3109,9 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
  fFillKinematicsHist = fControlHistogramsFlagsPro->GetBinContent(2);
  fFillMultDistributionsHist = fControlHistogramsFlagsPro->GetBinContent(3);
  fFillMultCorrelationsHist = fControlHistogramsFlagsPro->GetBinContent(4);
+ fDontFill[0] = fControlHistogramsFlagsPro->GetBinContent(5);
+ fDontFill[1] = fControlHistogramsFlagsPro->GetBinContent(6);
+ fDontFill[2] = fControlHistogramsFlagsPro->GetBinContent(7);
 
  if(!fFillControlHistograms){return;} // TBI is this safe enough
 
@@ -3071,6 +3119,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
  TString name[2][3] = {{"RP,phi","RP,pt","RP,eta"},{"POI,phi","POI,pt","POI,eta"}}; // [RP,POI][phi,pt,eta]
  for(Int_t rp=0;rp<2;rp++) // [RP,POI]
  {
+  if(fDontFill[rp]){continue;}
   for(Int_t ppe=0;ppe<3;ppe++) // [phi,pt,eta]
   {
    fKinematicsHist[rp][ppe] = dynamic_cast<TH1D*>(fControlHistogramsList->FindObject(name[rp][ppe].Data()));
@@ -3082,17 +3131,27 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistogra
  TString nameMult[3] = {"Multiplicity (RP)","Multiplicity (POI)","Multiplicity (REF)"}; // [RP,POI,reference multiplicity]
  for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
  {
+  if(fDontFill[rprm]){continue;}
   fMultDistributionsHist[rprm] = dynamic_cast<TH1D*>(fControlHistogramsList->FindObject(nameMult[rprm].Data()));
   if(!fMultDistributionsHist[rprm] && fFillMultDistributionsHist){Fatal(sMethodName.Data(),"%s",nameMult[rprm].Data());} // TBI 
  } // for(Int_t rprm=0;rprm<3;rprm++) // [RP,POI,reference multiplicity]
 
- // f) Get pointers to TH2I *fMultCorrelationsHist[3]: TBI automatize the things here...
- fMultCorrelationsHist[0] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
- if(!fMultCorrelationsHist[0] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. POI)");} // TBI 
- fMultCorrelationsHist[1] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
- if(!fMultCorrelationsHist[1] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. REF)");} // TBI 
- fMultCorrelationsHist[2] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
- if(!fMultCorrelationsHist[2] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (POI vs. REF)");} // TBI 
+ // f) Get pointers to TH2I *fMultCorrelationsHist[3]: TBI automatize the things here (at some point...)...
+ if(!fDontFill[0] && !fDontFill[1])
+ {
+  fMultCorrelationsHist[0] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. POI)"));
+  if(!fMultCorrelationsHist[0] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. POI)");} // TBI 
+ }
+ if(!fDontFill[0] && !fDontFill[2])
+ {
+  fMultCorrelationsHist[1] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (RP vs. REF)"));
+  if(!fMultCorrelationsHist[1] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (RP vs. REF)");} // TBI 
+ }
+ if(!fDontFill[1] && !fDontFill[2])
+ {
+  fMultCorrelationsHist[2] = dynamic_cast<TH2I*>(fControlHistogramsList->FindObject("Multiplicity (POI vs. REF)"));
+  if(!fMultCorrelationsHist[2] && fFillMultCorrelationsHist){Fatal(sMethodName.Data(),"Multiplicity (POI vs. REF)");} // TBI 
+ }
 
 } // void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForControlHistograms()
 
@@ -3143,6 +3202,8 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForCorrelations()
   else if(fCalculateOnlySin && 0==cs){continue;}
   for(Int_t c=0;c<fMaxCorrelator;c++)
   {
+   if(c==fDontGoBeyond){continue;}
+   if(fCalculateOnlyForHarmonicQC && c%2==0){continue;}
    fCorrelationsPro[cs][c] = dynamic_cast<TProfile*>(fCorrelationsList->FindObject(Form("%dpCorrelations%s",c+1,sCosSin[cs].Data())));
    if(!fCorrelationsPro[cs][c]){Fatal(sMethodName.Data(),"%dpCorrelations%s",c+1,sCosSin[cs].Data());} 
   }
@@ -3222,6 +3283,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::GetPointersForDiffCorrelation
 
  if(!fCalculateDiffCorrelations){return;} 
 
+ // TBI get all pointers below for diff. stuff eventually, not needed for the time being. 
 
  // d) Get pointers to TProfile *fDiffCorrelationsPro[2][4]: // TBI
  /*
@@ -4397,7 +4459,7 @@ Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x,
 
  return wCov;
 
-} // Double_t AliFlowAnalysisWithMultiparticleCorrelationsCovariance(const char *x, const char *y, TProfile2D *profile2D, Bool_t bUnbiasedEstimator = kFALSE)
+} // Double_t AliFlowAnalysisWithMultiparticleCorrelations::Covariance(const char *x, const char *y, TProfile2D *profile2D, Bool_t bUnbiasedEstimator = kFALSE)
 
 //=======================================================================================================================
 
@@ -4596,11 +4658,11 @@ void AliFlowAnalysisWithMultiparticleCorrelations::InitializeArraysForWeights()
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)
 {
  // Set number of bins for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4623,15 +4685,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, co
 
  fnBins[rp][ppe] = nBins;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, const Int_t nBins)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBins(const char *type, const char *variable, Int_t nBins)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)
 {
  // Set min bin range for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4654,15 +4716,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, cons
 
  fMin[rp][ppe] = min;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, const Double_t min)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMin(const char *type, const char *variable, Double_t min)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t max)
 {
  // Set max bin range for histograms fKinematicsHist[2][3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t max)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t max)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI")))
@@ -4685,15 +4747,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, cons
 
  fMax[rp][ppe] = max;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, const Double_t min)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMax(const char *type, const char *variable, Double_t min)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)
 {
  // Set number of bins for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4708,15 +4770,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type
 
  fnBinsMult[rpr] = nBinsMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, const Int_t nBinsMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetnBinsMult(const char *type, Int_t nBinsMult)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)
 {
  // Set min bin range for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, const Double_t minMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4731,15 +4793,15 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, 
 
  fMinMult[rpr] = minMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type const Double_t minMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMinMult(const char *type, Double_t minMult)
 
 //=======================================================================================================================
 
-void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)
+void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t maxMult)
 {
  // Set max bin range for histograms fMultDistributionsHist[3].
 
- TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t maxMult)";
+ TString sMethodName = "void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t maxMult)";
  
  // Basic protection:
  if(!(TString(type).EqualTo("RP") || TString(type).EqualTo("POI") || TString(type).EqualTo("REF")))
@@ -4754,7 +4816,7 @@ void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, 
 
  fMaxMult[rpr] = maxMult;
 
-} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, const Double_t minMult)
+} // void AliFlowAnalysisWithMultiparticleCorrelations::SetMaxMult(const char *type, Double_t minMult)
 
 //=======================================================================================================================
 

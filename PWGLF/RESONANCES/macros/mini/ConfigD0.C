@@ -27,6 +27,9 @@ Bool_t ConfigD0
    Bool_t                  minDCAcutFixed = kFALSE,
    Bool_t                  maxDCAcutFixed = kFALSE,
    Bool_t                  ptdepPIDcut = kFALSE,
+   Bool_t      		   checkFeedDown = kTRUE,
+   Bool_t      		   checkQuark = kTRUE,
+   UShort_t    		   originDselection = 0,
    const char      	  *suffix,
    AliRsnCutSet           *cutsPairY,
    AliRsnCutSet           *cutsPair
@@ -169,7 +172,7 @@ Bool_t ConfigD0
 
       // axis X: invmass (or resolution)
       //if (useIM[i]) 
-         out->AddAxis(imID, 1600, 0.6, 2.2);
+         out->AddAxis(imID, 320, 0.6, 2.2);
       //else
       //   out->AddAxis(resID, 200, -0.02, 0.02);
       // axis Y: transverse momentum
@@ -227,8 +230,11 @@ Bool_t ConfigD0
    out->SetPairCuts(cutsPair);
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
+   out->SetCheckFeedDown(checkFeedDown);
+   out->SetRejectCandidateIfNotFromQuark(checkQuark);
+   out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(imID, 320, 0.6, 2.2);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -250,8 +256,11 @@ Bool_t ConfigD0
    out->SetPairCuts(cutsPair);
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
+   out->SetCheckFeedDown(checkFeedDown);
+   out->SetRejectCandidateIfNotFromQuark(checkQuark);
+   out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(imID, 320, 0.6, 2.2);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -278,6 +287,9 @@ Bool_t ConfigD0
    out->SetPairCuts(cutsPair);
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
+   out->SetCheckFeedDown(checkFeedDown);
+   out->SetRejectCandidateIfNotFromQuark(checkQuark);
+   out->SetDselection(originDselection);
    // binnings
    out->AddAxis(resID, 200, -0.02, 0.02);
    out->AddAxis(ptID, 200, 0.0, 20.0);
@@ -301,6 +313,9 @@ Bool_t ConfigD0
    out->SetPairCuts(cutsPair);
    out->SetMaxNSisters(maxSisters);
    out->SetCheckMomentumConservation(checkP);
+   out->SetCheckFeedDown(checkFeedDown);
+   out->SetRejectCandidateIfNotFromQuark(checkQuark);
+   out->SetDselection(originDselection);
    // binnings
    out->AddAxis(resID, 200, -0.02, 0.02);
    out->AddAxis(ptID, 200, 0.0, 20.0);
@@ -326,7 +341,7 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(imID, 320, 0.6, 2.2);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
@@ -343,7 +358,7 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 1600, 0.6, 2.2);
+   out->AddAxis(imID, 320, 0.6, 2.2);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 

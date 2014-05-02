@@ -63,7 +63,7 @@
 
 //==============================================================================
 //------------------------------------------------------------------------------
-void AliCDMesonUtils::GetMassPtCtsOA(const Int_t pid,
+void AliCDMesonUtils::GetMassPtCtsOA(Int_t pid,
                                      const TVector3* momenta[], Double_t & mass,
                                      Double_t &pt, Double_t &cts, Double_t &oa)
 {
@@ -102,7 +102,7 @@ void AliCDMesonUtils::GetMassPtCtsOA(const Int_t pid,
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonUtils::GetPWAinfo(const Int_t pid, const AliVTrack *trks[],
+void AliCDMesonUtils::GetPWAinfo(Int_t pid, const AliVTrack *trks[],
                                  Float_t& theta, Float_t& phi, Float_t& mass,
                                  Float_t momentum[])
 {
@@ -241,7 +241,7 @@ Int_t AliCDMesonUtils::GetCombCh(const AliVTrack * trks[])
 
 //------------------------------------------------------------------------------
 Int_t AliCDMesonUtils::GetCombPID(AliPIDResponse* pid, const AliVTrack* trks[],
-                                  const Int_t mode, TH2* comb2trkPID /*= 0x0 */)
+                                  Int_t mode, TH2* comb2trkPID /*= 0x0 */)
 {
 	//
 	// Get PID for a two track system (data)
@@ -450,7 +450,7 @@ Bool_t AliCDMesonUtils::CutEvent(const AliAODEvent *AODEvent, TH1 *hpriv,
 
 //------------------------------------------------------------------------------
 void AliCDMesonUtils::DoVZEROStudy(const AliESDEvent *ESDEvent,
-                                   TObjArray* hists, const Int_t run)
+                                   TObjArray* hists, Int_t run)
 {
 	//
 	//
@@ -907,7 +907,7 @@ Int_t AliCDMesonUtils::FMDHitCombinations(const AliESDEvent* ESDEvent,
 
 //==============================================================================
 //------------------------------------------------------------------------------
-void AliCDMesonUtils::SPDLoadGeom(const Int_t run)
+void AliCDMesonUtils::SPDLoadGeom(Int_t run)
 {
 	// method to get the gGeomanager
 	// it is called at the CreatedOutputObject stage
@@ -942,7 +942,7 @@ void AliCDMesonUtils::SPDLoadGeom(const Int_t run)
 }
 
 //------------------------------------------------------------------------------
-Bool_t AliCDMesonUtils::SPDLoc2Glo(const Int_t id, const Double_t *loc,
+Bool_t AliCDMesonUtils::SPDLoc2Glo(Int_t id, const Double_t *loc,
                                    Double_t *glo)
 {
 	//
@@ -962,7 +962,7 @@ Bool_t AliCDMesonUtils::SPDLoc2Glo(const Int_t id, const Double_t *loc,
 
 
 //------------------------------------------------------------------------------
-Int_t AliCDMesonUtils::CheckChipEta(const Int_t chipKey, const TString scut,
+Int_t AliCDMesonUtils::CheckChipEta(Int_t chipKey, TString scut,
                                     const Double_t vtxPos[],
                                     TH2 *hitMapSPDinner, TH2 *hitMapSPDouter)
 {
@@ -1054,7 +1054,7 @@ Int_t AliCDMesonUtils::CheckChipEta(const Int_t chipKey, const TString scut,
 
 
 //------------------------------------------------------------------------------
-void AliCDMesonUtils::GetNFO(const AliESDEvent *ESDEvent, const TString etacut,
+void AliCDMesonUtils::GetNFO(const AliESDEvent *ESDEvent, TString etacut,
                              Int_t ctr[], TH2 *hitMapSPDinner,
                              TH2 *hitMapSPDouter)
 {
@@ -1179,7 +1179,7 @@ void AliCDMesonUtils::FillSPDtrkltMap(const AliVEvent* event,
 
 //==========================================================================
 Int_t AliCDMesonUtils::GetPID(AliPIDResponse *pid, const AliVTrack *trk,
-                              const Int_t mode /* = 0 */)
+                              Int_t mode /* = 0 */)
 {
 	// determines PID for ESDs and AODs
 	// 
@@ -1299,7 +1299,7 @@ Int_t AliCDMesonUtils::GetPID(AliPIDResponse *pid, const AliVTrack *trk,
 
 
 //==========================================================================
-Int_t AliCDMesonUtils::GetPID(const Int_t pdgCode)
+Int_t AliCDMesonUtils::GetPID(Int_t pdgCode)
 {
 	//
 	// determine particle type based on PDG code
@@ -1386,8 +1386,8 @@ Int_t AliCDMesonUtils::CombinePID(const Int_t pid[])
 //------------------------------------------------------------------------------
 TLorentzVector AliCDMesonUtils::GetKinematics(const Double_t *pa,
                                               const Double_t *pb,
-                                              const Double_t ma,
-                                              const Double_t mb, Double_t& cts)
+                                              Double_t ma,
+                                              Double_t mb, Double_t& cts)
 {
 	//
 	//get kinematics, cts = cos(theta_{#star})

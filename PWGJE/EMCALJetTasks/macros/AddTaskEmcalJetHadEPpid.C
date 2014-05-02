@@ -26,7 +26,8 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Double_t constitCut  = 0.15,
    const Int_t MixingTracks   = 50000,
    TString cutType			  = "EMCAL",
-   Bool_t   Comments		  = 0
+   Bool_t   Comments		  = 0,
+   Int_t esdcuts			  = 10001006
 )
 {  
   
@@ -95,6 +96,12 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   // jet container cuts..
   correlationtask->SetJetPtCut(JetPtcut, 1);
   correlationtask->SetPercAreaCut(0.6, 1); 
+
+  // ===================================================================
+  // ESD track quality cuts
+  AliESDtrackCuts *esdTrackCuts = 0x0;
+  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/macros/CreateTrackCutsPWGJE.C");
+  esdTrackCuts = CreateTrackCutsPWGJE(esdcuts);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

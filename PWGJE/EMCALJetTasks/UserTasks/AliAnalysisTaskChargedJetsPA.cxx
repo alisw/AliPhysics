@@ -2,7 +2,6 @@
 #include <Riostream.h>
 #include <TROOT.h>
 #include <TFile.h>
-#include <TCint.h>
 #include <TChain.h>
 #include <TTree.h>
 #include <TKey.h>
@@ -554,7 +553,7 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsEventInAcceptance(AliVEvent* event
   }
   else // Failsafe vertex cut
   {
-    if(TMath::Abs(event->GetPrimaryVertex()->GetZ()) > 10.0)
+    if(!event->GetPrimaryVertex() || (TMath::Abs(event->GetPrimaryVertex()->GetZ()) > 10.0) || (event->GetPrimaryVertex()->GetNContributors()<1)) 
       return kFALSE;
   }
 

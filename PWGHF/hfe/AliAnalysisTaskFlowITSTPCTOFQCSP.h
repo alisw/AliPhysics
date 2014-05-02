@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
-//  Task for Heavy Flavour Electron Flow  TPC plus TOF                //
+//  Task for Heavy Flavour Electron Flow ITS TPC TOF                  //
 //                                                                    //
 //  Author: Andrea Dubla (Utrecht University)                         //
 //                                                                    //
@@ -74,6 +74,7 @@ public:
     Bool_t                               IsEventSelectedForCentrFlattening(Float_t centvalue);
     void                                 SetAssoITSRefit(Bool_t itsref) {fAssoITSRefit = itsref;};
     void                                 SetAssoTPCCluster(Int_t tpc_clust) {fAssoTPCCluster = tpc_clust;};
+    void                                 SetPhiCut(Bool_t phicut){fPhiCut = phicut;};
 
     
     AliHFEpid *GetPID() const { return fPID; };
@@ -183,7 +184,8 @@ private:
     THnSparseF           *fSparseMassLS;//!ssssss
     Int_t                 fAssoTPCCluster;//asso tpc cluster
     Bool_t                fAssoITSRefit;//asso its refit
-    
+    Bool_t                fPhiCut;//Phi cut to simulate emcal acc
+
     
     AliAnalysisTaskFlowITSTPCTOFQCSP(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented
     AliAnalysisTaskFlowITSTPCTOFQCSP& operator=(const AliAnalysisTaskFlowITSTPCTOFQCSP&); // not implemented

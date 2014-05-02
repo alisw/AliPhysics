@@ -48,6 +48,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   GetDaughtersInfo(int firstd, int lastd, int selfid, const char *indputindent);
   Float_t                GetMcPtSumInCone(Float_t etaclus, Float_t phiclus, Float_t R);
   void                   LoopOnCells();
+  bool                   IsExotic(AliVCluster *c);
   void                   SetExotCut(Double_t c)                 { fExoticCut          = c;       }
   void                   SetGeoName(const char *n)              { fGeoName            = n;       }
   void                   SetIsoConeR(Double_t r)                { fIsoConeR           = r;       }
@@ -62,7 +63,13 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   void                   SetImportGeometryFromFile(Bool_t  im, 
                                            TString pa = "")     { fImportGeometryFromFile = im ; 
                                                                   fImportGeometryFilePath = pa ; }    
-  
+  void                  SetTrackFilterBit(ULong_t bit)          { fFilterBit = bit;  }
+  void                  SetHybridOn()                           { fSelHybrid = kTRUE; }
+  void                  SetFillQA()                             { fFillQA = kTRUE; }
+  void                  SelectCPVFromTrack(Bool_t b)            { fCpvFromTrack = b; }
+  void                  SetEtPtHistoBinning(Int_t n, 
+					    Double_t lowx, 
+					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
 
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
@@ -95,11 +102,21 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   Double_t               fMaxPtTrack;            //track with highest pt in event
   Double_t               fMaxEClus;              //cluster with highest energy in event
   Int_t                  fNCells50;              // variable to keep the number of cells with E>50 MeV
+  ULong_t                fFilterBit;             // Track selection bit, for AODs 
+  Bool_t                 fSelHybrid;             // bool to select hybrid tracks
+  Bool_t                 fFillQA;                // bool to fill the QA plots
+  TString                fClusIdFromTracks;      // string to hold the list of cluster ids given by tracks
+  Bool_t                 fCpvFromTrack;          // set the track-matching method to track->GetEMCALcluster()
+  Int_t                  fNBinsPt;               // set the number of bins in axis of histograms filled with pt (or Et)
+  Double_t               fPtBinLowEdge;          // low edge of the first pt (Et) bin
+  Double_t               fPtBinHighEdge;         // high edge of the first pt (Et) bin
+
 
   
  private:
   AliESDEvent *fESD;      //! ESD object
   AliAODEvent *fAOD;      //! AOD object
+  AliVEvent   *fVEvent;   //! AliVEvent
   AliMCEvent  *fMCEvent;  //! MC event object
   AliStack    *fStack;    //!MC particles stack object
   TGeoHMatrix *fGeomMatrix[12];//! Geometry misalignment matrices for EMCal
@@ -136,6 +153,9 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fEmcNClusCut;      //!# of clusters in an event with at least 1 clus with E > fECut ("triggered event")
   TH1F        *fNTracksECut;      //!number of tracks from Array->GetEntries() in "triggered event"
   TH1F        *fEmcNCellsCut;     //!number of emcal cells in a in "triggered event"
+  TH1F        *fEmcClusETM1;      //!emcal track matched cluster energy (TracDx,z method)
+  TH1F        *fEmcClusETM2;      //!emcal track matched cluster energy (track->GetEMCALcluster() method)
+  TH1F        *fEmcClusNotExo;    //!cluster energy (exotics removed)
   TH2F        *fEmcClusEPhi;      //!cluster E spectrum vs. phi
   TH2F        *fEmcClusEPhiCut;   //!cluster E spectrum vs. phi in "triggered event"
   TH2F        *fEmcClusEEta;      //!cluster E spectrum vs. eta
