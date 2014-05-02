@@ -12,7 +12,6 @@ objectClass: detectorConfig
 det: TRD
 strictRunOrder: 0
 responsible: r.bailhache@gsi.de
-responsible: kramer@pcikf3.ikf.physik.uni-frankfurt.de
 responsible: o.busch@gsi.de
 responsible: watanabe@sakura.cc.tsukuba.ac.jp
 responsible: hbeck@ikf.uni-frankfurt.de

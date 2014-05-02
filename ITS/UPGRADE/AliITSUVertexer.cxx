@@ -18,6 +18,9 @@ using TMath::ATan2;
 using TMath::TwoPi;
 using TMath::BubbleLow;
 
+using std::cout;
+using std::endl;
+
 //////////////////////////////////////////////////////////////////////
 // This class is used to compute the position of all the primary    // 
 // vertices in a single event using the upgraded ITS.               //

@@ -167,7 +167,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/, const Int_t rate/*=50*/)
+void AliToyMCEventGeneratorSimple::RunSimulation(Int_t nevents/*=10*/, Int_t ntracks/*=400*/, Int_t rate/*=50*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -203,7 +203,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationLaser(const Int_t nevents/*=1*/)
+void AliToyMCEventGeneratorSimple::RunSimulationLaser(Int_t nevents/*=1*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -275,7 +275,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
   return retEvent;
 }
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulationESD(Int_t nevents/*=10*/, Int_t ntracks/*=400*/)
 {
   //
   // run simulation using esd input with equal event spacing
@@ -335,7 +335,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(Int_t nevents/*=10*/, Int_t ntracks/*=400*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -428,7 +428,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
 
 
 //________________________________________________________________
-Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, const Int_t nevents) {
+Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(Int_t type, Int_t nevents) {
 
   
 
@@ -465,7 +465,7 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
 
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation2(const Bool_t equalspacing, const Int_t type, const Int_t nevents, const Int_t ntracks) {
+void AliToyMCEventGeneratorSimple::RunSimulation2(Bool_t equalspacing, Int_t type, Int_t nevents, Int_t ntracks) {
 
   //type==0 simple toy
   //type==1 esd input
@@ -622,7 +622,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::GetNGeneratedEventsAndSpacing(const Bool_t equalSpacing, Int_t &ngen, Double_t &spacing)
+void AliToyMCEventGeneratorSimple::GetNGeneratedEventsAndSpacing(Bool_t equalSpacing, Int_t &ngen, Double_t &spacing)
 {
 
   static Int_t bunchCounter = 0;

@@ -59,6 +59,14 @@ class AliExternalTrackParam: public AliVTrack {
 
   }
 
+  void SetParamOnly(double x, double alpha, const double param[5]) {
+    //  Sets the parameters, neglect cov matrix
+    if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+    else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+    fX=x; fAlpha=alpha;
+    for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
+  }
+
   void Set(Double_t xyz[3],Double_t pxpypz[3],Double_t cv[21],Short_t sign);
 
   static void SetMostProbablePt(Double_t pt) { fgMostProbablePt=pt; }
@@ -186,6 +194,7 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t *GetResiduals(Double_t *p,Double_t *cov,Bool_t updated=kTRUE) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
+  Bool_t RotateParamOnly(Double_t alpha);
   Bool_t Invert();
   Bool_t PropagateTo(Double_t x, Double_t b);
   Bool_t PropagateParamOnlyTo(Double_t xk, Double_t b);

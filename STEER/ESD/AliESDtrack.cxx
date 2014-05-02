@@ -2969,7 +2969,7 @@ Double_t AliESDtrack::GetMassForTracking() const
 }
 
 
-void    AliESDtrack::SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster){
+void    AliESDtrack::SetTOFclusterArray(Int_t /*ncluster*/,Int_t */*TOFcluster*/){
   AliInfo("Method has to be implemented!");
 //   fNtofClusters=ncluster;
 //   if(TOFcluster == fTOFcluster) return;

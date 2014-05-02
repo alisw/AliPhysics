@@ -10,6 +10,9 @@
 #include <TObject.h>
 #include <Riostream.h>
 #include "AliStrLine.h"
+#include <vector>
+
+using std::vector;
 
 
 class AliITSUClusterLines : public TObject {

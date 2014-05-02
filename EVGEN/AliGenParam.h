@@ -55,7 +55,6 @@ public:
     static TVector3 OrthogonalVector(TVector3 &inVec);
     static void RotateVector(Double_t *pin, Double_t *pout, Double_t costheta, Double_t sintheta,
 			   Double_t cosphi, Double_t sinphi);
-    static double IntegratedKrollWada(Double_t mh);
     static double ScreenFunction1(double d);
     static double ScreenFunction2(double d);
     double RandomEnergyFraction(double Z, double E);

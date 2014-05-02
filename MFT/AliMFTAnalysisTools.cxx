@@ -208,8 +208,10 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(AliAODDimuon *dimuon, Double_t *pca, Do
   TObjArray *muons = new TObjArray();
   muons -> Add(dimuon->GetMu(0));
   muons -> Add(dimuon->GetMu(1));
-
-  return CalculatePCA(muons, pca, pcaQuality, kinem);
+  
+  Bool_t result = CalculatePCA(muons, pca, pcaQuality, kinem);
+  delete muons;
+  return result;
 
 }
 
@@ -224,15 +226,18 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   }
   
   Double_t fXPointOfClosestApproach=0, fYPointOfClosestApproach=0, fZPointOfClosestApproach=0;
-  
-  AliAODTrack *muon[nMuons];
-  AliMUONTrackParam *param[nMuons];
+
+  AliAODTrack *muon[AliMFTConstants::fNMaxMuonsForPCA]        = {0};
+  AliMUONTrackParam *param[AliMFTConstants::fNMaxMuonsForPCA] = {0};
 
   // Finding AliMUONTrackParam objects for each muon
   
   for (Int_t iMu=0; iMu<nMuons; iMu++) {
     muon[iMu] = (AliAODTrack*) muons->At(iMu);
-    if (TMath::Abs(muon[iMu]->Pz())<1.e-6) return kFALSE;
+    if (TMath::Abs(muon[iMu]->Pz())<1.e-6) {
+      for(Int_t i=0;i<iMu;i++) delete param[i];
+      return kFALSE;
+    }
     param[iMu] = new AliMUONTrackParam();
     param[iMu] -> SetNonBendingCoor(muon[iMu]->XAtDCA());
     param[iMu] -> SetBendingCoor(muon[iMu]->YAtDCA());
@@ -241,35 +246,38 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     param[iMu] -> SetBendingSlope(muon[iMu]->Py()/muon[iMu]->Pz());
     param[iMu] -> SetInverseBendingMomentum( muon[iMu]->Charge() * (1./muon[iMu]->Pz()) / (TMath::Sqrt(1+TMath::Power(muon[iMu]->Py()/muon[iMu]->Pz(),2))) );
   }
-
+  
   // here we want to understand in which direction we have to search the minimum...
   
   Double_t step = 1.;  // initial step, in cm
   Double_t startPoint = 0.;
-
+  
   Double_t r[3]={0}, z[3]={startPoint, startPoint+step, startPoint+2*step};
   
-  TVector3 **points = new TVector3*[nMuons];
+  TVector3 **points = new TVector3*[AliMFTConstants::fNMaxMuonsForPCA];
   
   for (Int_t i=0; i<3; i++) {
     for (Int_t iMu=0; iMu<nMuons; iMu++) {
       AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
       points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
-    }
+  	  	}
     r[i] = GetDistanceBetweenPoints(points,nMuons);
+    for (Int_t iMu=0; iMu<nMuons; iMu++) delete points[iMu]; 
   }
-
+  
   Int_t researchDirection = 0;
   
   if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1;   // towards z positive
   else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1;   // towards z negative
   else if (r[0]<r[1] && r[1]>r[2]) {
     printf("E-AliMFTAnalysisTools::CalculatePCA: Point of closest approach cannot be found for dimuon (no minima)\n");
+    for (Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
+    delete points;
     return kFALSE;
-  }
-
+  }	
+  
   while (TMath::Abs(researchDirection)>0.5) {
-
+      
     if (researchDirection>0) {
       z[0] = z[1];
       z[1] = z[2];
@@ -282,24 +290,25 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     }
     if (TMath::Abs(z[0])>900.) {
       printf("E-AliMFTAnalysisTools::CalculatePCA: Point of closest approach cannot be found for dimuon (no minima in the fiducial region)\n");
+      for (Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
+      delete points;
       return kFALSE;
     }
     
-    for (Int_t iMu=0; iMu<nMuons; iMu++) delete points[iMu];
-    
     for (Int_t i=0; i<3; i++) {
       for (Int_t iMu=0; iMu<nMuons; iMu++) {
-        AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
-        points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
+	AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
+	points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
       }      
       r[i] = GetDistanceBetweenPoints(points,nMuons);
+      for (Int_t iMu=0;iMu<nMuons;iMu++) delete points[iMu];
     }
     researchDirection=0;
     if      (r[0]>r[1] && r[1]>r[2]) researchDirection = +1;   // towards z positive
     else if (r[0]<r[1] && r[1]<r[2]) researchDirection = -1;   // towards z negative
-
+    
   }
-
+  
   // now we now that the minimum is between z[0] and z[2] and we search for it
   
   step *= 0.5;
@@ -308,18 +317,17 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
     z[2] = z[1]+step;
     for (Int_t i=0; i<3; i++) {
       for (Int_t iMu=0; iMu<nMuons; iMu++) {
-        AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
-        points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
+	AliMUONTrackExtrap::ExtrapToZ(param[iMu], z[i]);
+	points[iMu] = new TVector3(param[iMu]->GetNonBendingCoor(),param[iMu]->GetBendingCoor(),z[i]);
       }      
       r[i] = GetDistanceBetweenPoints(points,nMuons);
+      for (Int_t iMu=0;iMu<nMuons;iMu++)	delete points[iMu];
     }
     if      (r[0]<r[1]) z[1] = z[0];
     else if (r[2]<r[1]) z[1] = z[2];
     else step *= 0.5;
   }
   
-  delete [] points;
-
   // Once z of minimum is found, we evaluate the x and y coordinates by averaging over the contributing tracks
   
   fZPointOfClosestApproach = z[1];
@@ -338,7 +346,7 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   pca[2] = fZPointOfClosestApproach;
   
   // Evaluating the kinematics of the N-muon
-
+  
   Double_t pTot[3] = {0};
   Double_t ene = 0.;
   Double_t massMu = TDatabasePDG::Instance()->GetParticle("mu-")->Mass();
@@ -350,9 +358,9 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   }
   
   kinem.SetPxPyPzE(pTot[0], pTot[1], pTot[2], ene);
-
+  
   // Evaluating the PCA quality of the N-muon
-
+  
   Double_t sum=0.,squareSum=0.;
   for (Int_t iMu=0; iMu<nMuons; iMu++) {
     Double_t wOffset = AliMFTAnalysisTools::GetAODMuonWeightedOffset(muon[iMu],fXPointOfClosestApproach, fYPointOfClosestApproach, fZPointOfClosestApproach);
@@ -362,7 +370,9 @@ Bool_t AliMFTAnalysisTools::CalculatePCA(TObjArray *muons, Double_t *pca, Double
   }
   if (sum > 0.) pcaQuality =  (sum-squareSum/sum) / (nMuons-1);
   else pcaQuality = 0.;
-
+  
+  for(Int_t iMu=0;iMu<nMuons;iMu++) delete param[iMu];
+  delete points;
   return kTRUE;
   
 }

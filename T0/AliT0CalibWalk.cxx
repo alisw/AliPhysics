@@ -37,6 +37,7 @@
 
 using std::cout;
 using std::endl;
+using std::ifstream;
 ClassImp(AliT0CalibWalk)
 
 //________________________________________________________________

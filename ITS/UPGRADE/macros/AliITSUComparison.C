@@ -200,6 +200,7 @@ Int_t AliITSUComparison
            Int_t lbl=t->GetLabel();
            if (lab==TMath::Abs(lbl)) {
 	      if (cnt==0) {esd=t; tlab=lbl;}
+              if (lbl> 0) {esd=t; tlab=lbl;}  
               cnt++;
            }
         }

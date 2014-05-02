@@ -135,6 +135,10 @@ macro(ALICE_ConfigureCompiler)
   endif(ALIPROFILE STREQUAL "YES")
 
   ALICE_RootConfig(RCFLAGS --auxcflags)
+  if ( CMAKE_CXX_COMPILER MATCHES "clang") 
+  string(REPLACE "-pthread" " " RCFLAGS "${RCFLAGS}")
+  endif ( CMAKE_CXX_COMPILER MATCHES "clang") 
+
   ALICE_RootConfig(RLFLAGS --ldflags)
 
   set(CXXFLAGS "${CXXFLAGS} ${RCFLAGS}")

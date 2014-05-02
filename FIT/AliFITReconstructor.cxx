@@ -35,6 +35,9 @@
 #include <TMath.h>
 #include <Riostream.h>
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliFITReconstructor)
 
 AliFITReconstructor:: AliFITReconstructor(): AliReconstructor(),

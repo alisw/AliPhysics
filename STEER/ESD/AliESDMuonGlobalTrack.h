@@ -128,6 +128,9 @@ public:
   void SetProdVertexXYZ(Double_t x, Double_t y, Double_t z) { fProdVertexXYZ[0]=x; fProdVertexXYZ[1]=y; fProdVertexXYZ[2]=z; }
   void GetProdVertexXYZ(Double_t *vertex) { vertex[0]=fProdVertexXYZ[0]; vertex[1]=fProdVertexXYZ[1]; vertex[2]=fProdVertexXYZ[2]; }
 
+  const TMatrixD& GetCovariances() const;
+  void            SetCovariances(const TMatrixD& covariances);
+
   AliESDEvent* GetESDEvent() const { return fESDEvent; }
   void         SetESDEvent(AliESDEvent* evt) { fESDEvent = evt; }  
   
@@ -147,6 +150,8 @@ protected:
 
   Double_t fRAtAbsorberEnd;
 
+  mutable TMatrixD *fCovariances; // Covariance matrix of track parameters (see AliMUONTrackParam)
+
   // global tracking info
   Double_t fChi2OverNdf;            //  chi2/ndf in the MUON+MFT track fit
   Double_t fChi2MatchTrigger;       //  chi2 of trigger/track matching
@@ -163,7 +168,7 @@ protected:
 
   AliESDEvent *fESDEvent;           //! Pointer back to event to which the track belongs
   
-  ClassDef(AliESDMuonGlobalTrack,3) // MUON+MFT ESD track class 
+  ClassDef(AliESDMuonGlobalTrack,4) // MUON+MFT ESD track class 
 
 };
 

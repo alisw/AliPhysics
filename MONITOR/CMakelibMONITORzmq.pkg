@@ -1,6 +1,6 @@
 # -*- mode: CMake -*- 
 #--------------------------------------------------------------------------------#
-# Package File for ITSrec                                                        #
+# Package File for MONITOR                                                       #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,41 +26,36 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS
-    AliITSURecoParam.cxx
-    AliITSUReconstructor.cxx
-    AliITSUClusterizer.cxx
-    AliITSUClusterLines.cxx	
-    AliITSURecoSens.cxx
-    AliITSURecoLayer.cxx
-    AliITSURecoDet.cxx
-    AliITSUClusterPix.cxx
-    AliITSUSeed.cxx
-    AliITSUTrackerGlo.cxx
-    AliITSUTrackerSA.cxx
-    AliITSUTrackCond.cxx
-    AliITSUTrackHyp.cxx
-    AliITSUMatLUT.cxx
-    AliITSUVertexer.cxx
-
-#
-#    v0/AliITSlayerUpgrade.cxx 
-#    v0/AliITStrackerUpgrade.cxx 
-#    v0/AliITStrackU.cxx 
-#    v0/AliITStrackerU.cxx 
-#    v0/AliITSUpgradeReconstructor.cxx 
-#    v0/AliITSUpgradeClusterList.cxx 
-#    v0/AliITSUpgradeClusterListNode.cxx 
-#    v0/AliITSUPixelModule.cxx 
-#    v0/AliITSUpgradeClusterFinder.cxx 
+set ( SRCS   
+    AliEventServerWindow.cxx
+    AliRecoServerThread.cxx
+    AliRecoServer.cxx
     )
+
+string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR ITSUpgradeRecLinkDef.h)
+set ( DHDR  MONITORzmqLinkDef.h)
 
-#set_source_files_properties( AliITSUTrackerSA.cxx PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize -ffast-math -std=gnu++11" )
+set ( EINCLUDE  STEER/STEERBase "${ZEROMQ_INCLUDE_DIR}")
 
-set ( EINCLUDE TPC RAW ITS ITS/UPGRADE ITS/UPGRADE/v0 STEER/STEER STEER/ESD STEER/STEERBase)
+set(DIMDIR $ENV{DIMDIR})
+set(ODIR $ENV{ODIR})
 
-# set ( EXPORT AliITStrackV2.h AliITSVertexer.h AliITSRecoParam.h)
+if(DIMDIR)
+  set ( SRCS ${SRCS}  SORNotifier.cxx)
+  set ( EINCLUDE ${EINCLUDE}  ${DIMDIR}/dim)
+  set ( ELIBS  dim)
+  set ( ELIBSDIR  ${DIMDIR}/${ODIR})
+  if(ELIBSDIR STREQUAL "${DIMDIR}/")
+    set (ELIBSDIR ${DIMDIR}/linux)
+  endif(ELIBSDIR STREQUAL "${DIMDIR}/")
+
+  set ( CXXFLAGS  "-DALI_DIM ${CXXFLAGS}")
+endif(DIMDIR)
+
+set ( ELIBS ${ELIBS} ${ZEROMQ_LIBRARY} )
+
+# this must be set in a better way
+set ( ELIBSDIR ${ELIBSDIR}  /usr/lib64)

@@ -6,7 +6,19 @@
 cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
 # This will only build MONITOR only if ZeroMQ is found
+set (PACKAGES
+  CMakebinalitestproc.pkg
+  CMakebinderoot.pkg
+  CMakebinmonitorCheck.pkg
+  CMakebinmonitorGDC.pkg
+  CMakelibMONITOR.pkg
+)
+
 if(ZEROMQ_FOUND)
-file(GLOB PACKAGES CMake*.pkg)
-ALICE_BuildModule()
+set(PACKAGES "${PACKAGES}"
+  CMakelibMONITORzmq.pkg
+  CMakebinalieventserver.pkg
+)
 ENDIF(ZEROMQ_FOUND)
+
+ALICE_BuildModule()

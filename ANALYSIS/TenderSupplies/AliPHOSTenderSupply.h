@@ -60,6 +60,7 @@ protected:
   Bool_t IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   void   CorrectPHOSMisalignment(TVector3 & globalPos, Int_t module);
   void   EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t &m20) ;
+  Double_t CoreEnergy(AliVCluster * clu) ;  
   Double_t EvalTOF(AliVCluster * clu,AliVCaloCells * cells); 
   Double_t CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG); 
   void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;

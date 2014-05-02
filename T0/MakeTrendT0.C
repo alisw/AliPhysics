@@ -1,6 +1,6 @@
 #define NPMTs 24
 
-int MakeTrendT0( char *infile, int run) {
+int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://") {
 
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -102,7 +102,7 @@ int MakeTrendT0( char *infile, int run) {
   //-------------------- READ OCDB TIME DELAYS ---------------------------
   // Arguments:
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
+  man->SetDefaultStorage(ocdbStorage);
   man->SetRun(run);
   AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
   AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entry->GetObject(); 

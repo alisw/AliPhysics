@@ -61,7 +61,7 @@ AliGenEMCocktail::AliGenEMCocktail()
   fCentrality(0),
   fV2Systematic(0),
   fForceConv(kFALSE),
-  fHeaviestParticle(kGenJpsi)
+  fSelectedParticles(kGenHadrons)
 {
   // Constructor
 
@@ -97,7 +97,7 @@ void AliGenEMCocktail::CreateCocktail()
 
   // Create and add electron sources to the generator
   // pizero
-  if(fHeaviestParticle<kGenPizero)return;
+  if(fSelectedParticles&kGenPizero){
   AliGenParam *genpizero=0;
   Char_t namePizero[10];    
   snprintf(namePizero,10,"Pizero");    
@@ -106,13 +106,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(namePizero,genpizero);
   TF1 *fPtPizero = genpizero->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenPizero] = fPtPizero->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kPizero] = fPtPizero->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenPizero] = fPtPizero->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kPizero] = fPtPizero->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
 
   // eta  
-  if(fHeaviestParticle<kGenEta)return;
+  if(fSelectedParticles&kGenEta){
   AliGenParam *geneta=0;
   Char_t nameEta[10];    
   snprintf(nameEta,10,"Eta");    
@@ -121,13 +122,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(nameEta,geneta);
   TF1 *fPtEta = geneta->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenEta] = fPtEta->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kEta] = fPtEta->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenEta] = fPtEta->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kEta] = fPtEta->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
 
   // rho  
-  if(fHeaviestParticle<kGenRho)return;
+  if(fSelectedParticles&kGenRho){
   AliGenParam *genrho=0;
   Char_t nameRho[10];    
   snprintf(nameRho,10,"Rho");    
@@ -136,13 +138,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(nameRho,genrho);
   TF1 *fPtRho = genrho->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenRho] = fPtRho->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kRho] = fPtRho->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenRho] = fPtRho->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kRho] = fPtRho->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
   
   // omega
-  if(fHeaviestParticle<kGenOmega)return;
+  if(fSelectedParticles&kGenOmega){
   AliGenParam *genomega=0;
   Char_t nameOmega[10];    
   snprintf(nameOmega,10,"Omega");    
@@ -151,13 +154,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(nameOmega,genomega);
   TF1 *fPtOmega = genomega->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenOmega] = fPtOmega->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kOmega] = fPtOmega->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenOmega] = fPtOmega->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kOmega] = fPtOmega->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
 
   // etaprime
-  if(fHeaviestParticle<kGenEtaprime)return;
+  if(fSelectedParticles&kGenEtaprime){
   AliGenParam *genetaprime=0;
   Char_t nameEtaprime[10];    
   snprintf(nameEtaprime,10,"Etaprime");    
@@ -166,13 +170,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(nameEtaprime,genetaprime);
   TF1 *fPtEtaprime = genetaprime->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
 
   // phi  
-  if(fHeaviestParticle<kGenPhi)return;
+  if(fSelectedParticles&kGenPhi){
   AliGenParam *genphi=0;
   Char_t namePhi[10];    
   snprintf(namePhi,10,"Phi");    
@@ -181,13 +186,14 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(namePhi,genphi);
   TF1 *fPtPhi = genphi->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenPhi] = fPtPhi->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kPhi] = fPtPhi->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenPhi] = fPtPhi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kPhi] = fPtPhi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
 
   // jpsi  
-  if(fHeaviestParticle<kGenJpsi)return;
+  if(fSelectedParticles&kGenJpsi){
   AliGenParam *genjpsi=0;
   Char_t nameJpsi[10];    
   snprintf(nameJpsi,10,"Jpsi");    
@@ -196,76 +202,44 @@ void AliGenEMCocktail::CreateCocktail()
   AddSource2Generator(nameJpsi,genjpsi);
   TF1 *fPtJpsi = genjpsi->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
-#endif
-
-  // prompt gamma
-  if(fDecayMode==kGammaEM){
-    if(fHeaviestParticle<kGenPromptRealGamma)return;
-    TDatabasePDG::Instance()->AddParticle("PromptRealGamma","PromptRealGamma",0,true,0,0,"GaugeBoson",221000);
-    //gMC->DefineParticle(221000, "PromptGamma", kPTGamma, 0, 0, 0,"Gamma", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
-    AliGenParam *genPromptRealG=0;
-    Char_t namePromptRealG[10];    
-    snprintf(namePromptRealG,10,"PromptRealGamma");    
-    genPromptRealG = new AliGenParam(fNPart*0.5, new AliGenEMlib(), AliGenEMlib::kPromptRealGamma, "DUMMY");
-    genPromptRealG->SetYRange(fYMin, fYMax);
-    AddSource2Generator(namePromptRealG,genPromptRealG);
-    TF1 *fPtPromptRealG = genPromptRealG->GetPt();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-    fYieldArray[kGenPromptRealGamma] = fPtPromptRealG->Integral(fPtMin,fPtMax,1.e-6);
-#else
-    fYieldArray[kGenPromptRealGamma] = fPtPromptRealG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
-#endif
-
-    if(fHeaviestParticle<kGenThermRealGamma)return;
-    TDatabasePDG::Instance()->AddParticle("ThermRealGamma","ThermRealGamma",0,true,0,0,"GaugeBoson",222000);
-    //gMC->DefineParticle(221000, "ThermGamma", kPTGamma, 0, 0, 0,"Gamma", 0.0, 0, 0, 0, 0, 0, 0, 0, 0, kFALSE);
-    AliGenParam *genThermRealG=0;
-    Char_t nameThermRealG[10];    
-    snprintf(nameThermRealG,10,"ThermRealGamma");    
-    genThermRealG = new AliGenParam(fNPart*0.5, new AliGenEMlib(), AliGenEMlib::kThermRealGamma, "DUMMY");
-    genThermRealG->SetYRange(fYMin, fYMax);
-    AddSource2Generator(nameThermRealG,genThermRealG);
-    TF1 *fPtThermRealG = genThermRealG->GetPt();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-    fYieldArray[kGenThermRealGamma] = fPtThermRealG->Integral(fPtMin,fPtMax,1.e-6);
-#else
-    fYieldArray[kGenThermRealGamma] = fPtThermRealG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
-#endif
-
-    if(fHeaviestParticle<kGenPromptVirtGamma)return;
-    TDatabasePDG::Instance()->AddParticle("PromptVirtGamma","PromptVirtGamma",0,true,0,0,"GaugeBoson",223000);
-    AliGenParam *genPromptVirtG=0;
-    Char_t namePromptVirtG[10];    
-    snprintf(namePromptVirtG,10,"PromptVirtGamma");    
-    genPromptVirtG = new AliGenParam(fNPart*0.5, new AliGenEMlib(), AliGenEMlib::kPromptVirtGamma, "DUMMY");
-    genPromptVirtG->SetYRange(fYMin, fYMax);
-    AddSource2Generator(namePromptVirtG,genPromptVirtG);
-    TF1 *fPtPromptVirtG = genPromptVirtG->GetPt();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-    fYieldArray[kGenPromptVirtGamma] = fPtPromptVirtG->Integral(fPtMin,fPtMax,1.e-6);
-#else
-    fYieldArray[kGenPromptVirtGamma] = fPtPromptVirtG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
-#endif
-
-    if(fHeaviestParticle<kGenThermVirtGamma)return;
-    TDatabasePDG::Instance()->AddParticle("ThermVirtGamma","ThermVirtGamma",0,true,0,0,"GaugeBoson",224000);
-    AliGenParam *genThermVirtG=0;
-    Char_t nameThermVirtG[10];    
-    snprintf(nameThermVirtG,10,"ThermVirtGamma");    
-    genThermVirtG = new AliGenParam(fNPart*0.5, new AliGenEMlib(), AliGenEMlib::kThermVirtGamma, "DUMMY");
-    genThermVirtG->SetYRange(fYMin, fYMax);
-    AddSource2Generator(nameThermVirtG,genThermVirtG);
-    TF1 *fPtThermVirtG = genThermVirtG->GetPt();
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-    fYieldArray[kGenThermVirtGamma] = fPtThermVirtG->Integral(fPtMin,fPtMax,1.e-6);
-#else
-    fYieldArray[kGenThermVirtGamma] = fPtThermVirtG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+    fYieldArray[kJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
   }
-  
+
+  // direct gamma
+  if(fDecayMode!=kGammaEM) return;
+  if(fSelectedParticles&kGenDirectRealGamma){
+    AliGenParam *genDirectRealG=0;
+    Char_t nameDirectRealG[10];    
+    snprintf(nameDirectRealG,10,"DirectRealGamma");    
+    genDirectRealG = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kDirectRealGamma, "DUMMY");
+    genDirectRealG->SetYRange(fYMin, fYMax);
+    AddSource2Generator(nameDirectRealG,genDirectRealG);
+    TF1 *fPtDirectRealG = genDirectRealG->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kDirectRealGamma] = fPtDirectRealG->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kDirectRealGamma] = fPtDirectRealG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+#endif
+  }
+
+  if(fSelectedParticles&kGenDirectVirtGamma){
+    TDatabasePDG::Instance()->AddParticle("DirectVirtGamma","DirectVirtGamma",0,true,0,0,"GaugeBoson",220000);
+    AliGenParam *genDirectVirtG=0;
+    Char_t nameDirectVirtG[10];    
+    snprintf(nameDirectVirtG,10,"DirectVirtGamma");    
+    genDirectVirtG = new AliGenParam(fNPart/0.775, new AliGenEMlib(), AliGenEMlib::kDirectVirtGamma, "DUMMY");
+    genDirectVirtG->SetYRange(fYMin/0.775, fYMax/0.775);
+    AddSource2Generator(nameDirectVirtG,genDirectVirtG);
+    TF1 *fPtDirectVirtG = genDirectVirtG->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kDirectVirtGamma] = fPtDirectVirtG->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kDirectVirtGamma] = fPtDirectVirtG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+#endif
+  }
 }
 
 //-------------------------------------------------------------------
@@ -362,44 +336,37 @@ void AliGenEMCocktail::Generate()
 
     switch (pdgMother){
     case 111:
-      dNdy = fYieldArray[kGenPizero];
+      dNdy = fYieldArray[kPizero];
       break;
     case 221:
-      dNdy = fYieldArray[kGenEta];
+      dNdy = fYieldArray[kEta];
       break;
     case 113:
-      dNdy = fYieldArray[kGenRho];
+      dNdy = fYieldArray[kRho];
       break;
     case 223:
-      dNdy = fYieldArray[kGenOmega];
+      dNdy = fYieldArray[kOmega];
       break;
     case 331:
-      dNdy = fYieldArray[kGenEtaprime];
+      dNdy = fYieldArray[kEtaprime];
       break;
     case 333:
-      dNdy = fYieldArray[kGenPhi];
+      dNdy = fYieldArray[kPhi];
       break;
     case 443:
-      dNdy = fYieldArray[kGenJpsi];
+      dNdy = fYieldArray[kJpsi];
       break;
+    case 22:
+      dNdy = fYieldArray[kDirectRealGamma];
+      break;
+    case 220000:
+      dNdy = fYieldArray[kDirectVirtGamma];
+      break;
+      
     default:
       dNdy = 0.;
     }
 
-    switch (pdgMother){
-    case 221000:
-      dNdy = fYieldArray[kGenPromptRealGamma];
-      break;
-    case 223000:
-      dNdy = fYieldArray[kGenPromptVirtGamma];
-      break;
-    case 222000:
-      dNdy = fYieldArray[kGenThermRealGamma];
-      break;      
-    case 224000:
-      dNdy = fYieldArray[kGenThermVirtGamma];
-      break;   
-    }
     weight = dNdy*part->GetWeight();
     part->SetWeight(weight);
   }	
