@@ -93,6 +93,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -171,6 +172,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -525,7 +527,6 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
     return kFALSE;
   }
 
-  Float_t xsection = 0;
   Float_t trials   = 0;
   Int_t   pthard   = 0;
 
@@ -541,13 +542,15 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   Int_t nevents = tree->GetEntriesFast();
 
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
+  fXsection = fPythiaHeader->GetXsection();
+  if(!fXsection>0.)
+    PythiaInfoFromFile(curfile->GetName(), fXsection, trials, pthard);
 
   // TODO: Workaround
   if ((pthard < 0) || (pthard > 10))
     pthard = 0;
   fHistTrials->Fill(pthard, trials);
-  fHistXsection->Fill(pthard, xsection);
+  fHistXsection->Fill(pthard, fXsection);
   fHistEvents->Fill(pthard, nevents);
 
   return kTRUE;
