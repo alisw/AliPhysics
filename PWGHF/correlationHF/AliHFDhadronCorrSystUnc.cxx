@@ -1715,13 +1715,13 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010(Int_t meson,Double
     // 1 GeV/c
     else if(TMath::Abs(minptAss-1.)<0.0001){
       if(ptD>3&&ptD<5){
-	InitStandardUncertaintiesPPb2013DplusLowPtAss1();
+	InitStandardUncertaintiesPP2010DplusLowPtAss1();
       }
       else if(ptD>5&&ptD<8){
-	InitStandardUncertaintiesPPb2013DplusMidPtAss1();
+	InitStandardUncertaintiesPP2010DplusMidPtAss1();
       }
       else if(ptD>8&&ptD<16){
-	InitStandardUncertaintiesPPb2013DplusHighPtAss1();
+	InitStandardUncertaintiesPP2010DplusHighPtAss1();
       }
       else {
 	printf("Methods for syst unc not ready yet for this pt(ass) bin  \n");
