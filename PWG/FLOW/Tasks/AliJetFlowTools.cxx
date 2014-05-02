@@ -1533,7 +1533,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
        } break;
        case kV2 : {
 //            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
-            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet}");
+            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
        } break;
        default : break;
