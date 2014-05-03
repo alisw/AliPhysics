@@ -236,7 +236,7 @@ Bool_t AliCluster::GetXRefPlane(Float_t &xref) const
   TGeoHMatrix m = *mt;
   m.MultiplyLeft(ml);
 
-  xref = (m.Inverse()).GetTranslation()[0];
+  xref = -(m.Inverse()).GetTranslation()[0];
   return kTRUE;
 }
 
