@@ -56,6 +56,7 @@ public:
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
   Double_t GetChi2YSlope() const            { return fkChi2YSlope; }
   Double_t GetChi2ZSlope() const            { return fkChi2ZSlope; }
+	Double_t GetChi2Cut() const              { return fChi2Cut; }
 	Double_t GetChi2YCut() const              { return fkChi2YCut; }
   Double_t GetPhiSlope() const              { return fkPhiSlope;   }
   Float_t  GetNClusters() const;
@@ -128,6 +129,7 @@ public:
   void     SetChi2Z(Double_t chi2)                            {fkChi2Z = chi2;}
   void     SetChi2YSlope(Double_t chi2YSlope)                 {fkChi2YSlope = chi2YSlope;}
   void     SetChi2ZSlope(Double_t chi2ZSlope)                 {fkChi2ZSlope = chi2ZSlope;}
+	void	   SetChi2Cut(Double_t chi2Cut)                      {fChi2Cut = chi2Cut; }
 	void	   SetChi2YCut(Double_t chi2Cut)                      {fkChi2YCut = chi2Cut; }
   void     SetPhiSlope(Double_t phiSlope)                     {fkPhiSlope = phiSlope;}
   void     SetNMeanClusters(Double_t meanNclusters)           {fkNMeanClusters = meanNclusters;}
@@ -170,6 +172,7 @@ private:
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
   Double_t  fkChi2YSlope;            // Slope of the chi2-distribution in y-direction
   Double_t  fkChi2ZSlope;            // Slope of the chi2-distribution in z-direction
+  Double_t  fChi2Cut;		     // Cut on the Chi2 track/tracklet 0 used to diecide if the kalman track should be updated
   Double_t  fkChi2YCut;							 // Cut on the Chi2 in y-direction in the likelihood filter
   Double_t  fkPhiSlope;              // Slope of the distribution of the deviation between track angle and tracklet angle
   Double_t  fkNMeanClusters;         // Mean number of clusters per tracklet

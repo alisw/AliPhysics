@@ -52,6 +52,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fkChi2Y(.25)
   ,fkChi2YSlope(7.73)
   ,fkChi2ZSlope(0.069)
+  ,fChi2Cut(25)
   ,fkChi2YCut(0.5)
   ,fkPhiSlope(10.6)
   ,fkNMeanClusters(20.)
@@ -121,6 +122,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkChi2Y(ref.fkChi2Y)
   ,fkChi2YSlope(ref.fkChi2YSlope)
   ,fkChi2ZSlope(ref.fkChi2ZSlope)
+  ,fChi2Cut(ref.fChi2Cut)
   ,fkChi2YCut(ref.fkChi2YCut)
   ,fkPhiSlope(ref.fkPhiSlope)
   ,fkNMeanClusters(ref.fkNMeanClusters)
@@ -175,6 +177,7 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   fkChi2Y               = ref.fkChi2Y;
   fkChi2YSlope          = ref.fkChi2YSlope;
   fkChi2ZSlope          = ref.fkChi2ZSlope;
+  fChi2Cut            = ref.fChi2Cut;
   fkChi2YCut            = ref.fkChi2YCut;
   fkPhiSlope            = ref.fkPhiSlope;
   fkNMeanClusters       = ref.fkNMeanClusters;
@@ -269,6 +272,7 @@ AliTRDrecoParam *AliTRDrecoParam::GetCosmicTestParam()
   par->fSysCovMatrix[1] = 2.; // z direction (1 cm)
   par->fkChi2YSlope     = 0.11853;
   par->fkChi2ZSlope     = 0.04527;
+  par->fkChi2YCut       = 25.;
   par->fkChi2YCut       = 1.;
   par->fkPhiSlope       = 10.; //3.17954;
   par->fkMaxTheta       = 2.1445;

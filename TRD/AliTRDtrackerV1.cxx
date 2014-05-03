@@ -639,6 +639,7 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
 		<< "vcov.="<<&vcov
 	        << "vpar.="<<&vpar
 		<< "tracklet.="      << tracklet
+		<< "chi2="<< chi2 
 		<< "param0.="		<< &param0
 		<< "param1.="		<< &param1
 		<< "\n";
@@ -649,7 +650,8 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
 		 p[0]-t.GetY(),p[1]-t.GetZ(),
 		 chi2,t.Pt()*t.Charge(),t.GetAlpha()));
     */
-    if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
+    if (chi2 < fkRecoParam->GetChi2Cut() && ((AliExternalTrackParam&)t).Update(p, cov)){  // MI parameterizad chi2 cut 03.05.2014
+      //    if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
       // Register info to track
       t.SetNumberOfClusters();
       t.UpdateChi2(chi2);
@@ -1010,11 +1012,12 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 		<< "param0.="		<< &param0
 		<< "param1.="		<< &param1
 		<< "\n";
-    }
-
-    // update Kalman with the TRD measurement
-    if(chi2>10){ // RS
-      //    if(chi2>1e+10){ // TODO
+     }
+     
+     // update Kalman with the TRD measurement
+     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
+       //       if(chi2>10){ // RS
+       //    if(chi2>1e+10){ // TODO
       t.SetErrStat(AliTRDtrackV1::kChi2, ily);
       if(debugLevel > 2){
         UChar_t status(t.GetStatusTRD());
