@@ -33,7 +33,7 @@ class AliTRDptrgCBB : public TObject {
 
   AliRunLoader *fRunLoader;  //!
   AliTRDptrgParam *fParam; // singleton obj containing configuration parameters
-  AliTRDptrgParam:: AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
+  AliTRDptrgParam::AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
 
   AliTRDptrgCBAC *fCBA; // control box at a side of the solenoid
   AliTRDptrgCBAC *fCBC; // control box at c side of the solenoid
