@@ -638,6 +638,14 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
 //  fS2Z     = 0.05+0.4*TMath::Abs(fZfit[1]); 
   Float_t s2dzdx(0.0245-0.0014*fZfit[1]+0.0557*fZfit[1]*fZfit[1]); s2dzdx*=s2dzdx;
   fS2Z  = fZfit[1]*fZfit[1]*sx*sx+fS2Y*fS2Y*s2dzdx; 
+  //
+  // MI modification 02.05.2014 -  add wire step + unisochronity contribution + diffusion contribution
+  // Normalization factor for fS2Z+=(factor*wirepitch/sqrt(12))^2
+  // MI question - fS2Y definetion looks strange. Is it  used somewhere at all???
+  //
+  const Double_t kWirePitch=0.125;
+  const Double_t kWirePitchFactor=12;
+  fS2Z+=kWirePitch*kWirePitch/kWirePitchFactor;
 
   return fS2Y;
 }
@@ -922,15 +930,21 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   }
 
   // rotate covariance matrix if no RC
+  Double_t t2 = GetTilt()*GetTilt();
   if(!IsRowCross()){
-    Double_t t2 = GetTilt()*GetTilt();
     Double_t correction = 1./(1. + t2);
     cov[0] = (sy2+t2*sz2)*correction;
     cov[1] = GetTilt()*(sz2 - sy2)*correction;
     cov[2] = (t2*sy2+sz2)*correction;
    } else {
      cov[0] = sy2; cov[1] = 0.; cov[2] = sz2;
+    //
+    // MI change (03.05.2014)  
+    // current implemenatation of the linear fit does not take into account step for padrow crossing
+    // bug to be fixed - step should be taken properly into account in the fit, rather than increase of the error estimate
+     cov[0]+=t2*GetPadLength()*GetPadLength()/24.; //this line will disappear after fix of linear FIT 
    }
+
 
   AliDebug(4, Form("C(%6.1f %+6.3f %6.1f)  RC[%c]", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?'y':'n'));
 }
@@ -1368,7 +1382,7 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   // initialize debug streamer
   TTreeSRedirector *pstreamer(NULL);
   if((recoParam->GetStreamLevel(AliTRDrecoParam::kTracker) > 3 && fkReconstructor->IsDebugStreaming())||
-     AliTRDReconstructor::GetStreamLevel()>3) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+     AliTRDReconstructor::GetStreamLevel()>30) pstreamer = fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
   if(pstreamer){
     // save config. for calibration
     TVectorD vdy[2], vdx[2], vs2[2];
@@ -2266,9 +2280,25 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
   fYfit[1] = -par[1];
   //printf(" yfit: %f [%f] x[%e] dydx[%f]\n", fYfit[0], par[0], fX, par[1]);
   // store covariance
-  fCov[0] = kScalePulls*cov[0]; // variance of y0
-  fCov[1] = kScalePulls*cov[2]; // covariance of y0, dydx
-  fCov[2] = kScalePulls*cov[1]; // variance of dydx
+
+   //
+  // MI comment modification (03.05.2014)
+  // In currently used code variance is used to estimate the tracklet error 
+  //     see AliTRDtrackerV1::AliTRDLeastSquare::Eval()
+  // 2 problems:
+  //    a.) Assumption about the intdpendent error not valid beacause of time response function 
+  //    b.) Constuction of cluster errors used in cl->GetSigmaY2() and AliTRDtrackerV1::AliTRDLeastSquare::Eval
+  //        to be parameterized
+  //    c.) For crossing pad-rows the linear fit AliTRDtrackerV1::AliTRDLeastSquare::Eval do not take into account step
+  //        Therefore y possition is biased, bias is y dependent
+  // Effective correction factor used to rescale error estimates
+  // In future additional angular dependent error should be investigated ( as in TPC and in previous versions of the TRD tracking) 
+  // 
+  const Double_t kCorrelError=1.5;
+
+  fCov[0] = kCorrelError*kScalePulls*cov[0]; // variance of y0
+  fCov[1] = kCorrelError*kScalePulls*cov[2]; // covariance of y0, dydx
+  fCov[2] = kCorrelError*kScalePulls*cov[1]; // variance of dydx
   // check radial position
   Float_t xs=fX+.5*AliTRDgeometry::CamHght();
   if(xs < 0. || xs > AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()){

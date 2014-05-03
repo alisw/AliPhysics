@@ -624,7 +624,34 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
-    if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
+
+    if(fkReconstructor->IsDebugStreaming()){
+      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+      AliExternalTrackParam param0(t);
+      AliExternalTrackParam param1(t);
+      param1.Update(p, cov);
+      TVectorD vcov(3,cov);
+      TVectorD vpar(3,p);
+      cstreamer << "FollowProlongationInfo"
+		<< "EventNumber="	<< eventNumber
+		<< "iplane="<<iplane
+		<< "vcov.="<<&vcov
+	        << "vpar.="<<&vpar
+		<< "tracklet.="      << tracklet
+		<< "chi2="<< chi2 
+		<< "param0.="		<< &param0
+		<< "param1.="		<< &param1
+		<< "\n";
+    }
+    /*
+    AliInfo(Form("Pl:%d X:%+e : %+e P: %+e %+e Cov:%+e %+e %+e -> dXY: %+e %+e | chi2:%.2f pT:%.2f alp:%.3f",
+		 iplane,x,t.GetX(),p[0],p[1],cov[0],cov[1],cov[2],
+		 p[0]-t.GetY(),p[1]-t.GetZ(),
+		 chi2,t.Pt()*t.Charge(),t.GetAlpha()));
+    */
+    if (chi2 < fkRecoParam->GetChi2Cut() && ((AliExternalTrackParam&)t).Update(p, cov)){  // MI parameterizad chi2 cut 03.05.2014
+      //    if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
       // Register info to track
       t.SetNumberOfClusters();
       t.UpdateChi2(chi2);
@@ -985,11 +1012,12 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 		<< "param0.="		<< &param0
 		<< "param1.="		<< &param1
 		<< "\n";
-    }
-
-    // update Kalman with the TRD measurement
-    if(chi2>10){ // RS
-      //    if(chi2>1e+10){ // TODO
+     }
+     
+     // update Kalman with the TRD measurement
+     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
+       //       if(chi2>10){ // RS
+       //    if(chi2>1e+10){ // TODO
       t.SetErrStat(AliTRDtrackV1::kChi2, ily);
       if(debugLevel > 2){
         UChar_t status(t.GetStatusTRD());
