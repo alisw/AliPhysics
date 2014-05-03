@@ -1667,6 +1667,34 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             SavePadToPDF(relativeErrorVariation);
             Style(AddLegend(gPad));
             relativeErrorVariation->Write();
+
+            // now smoothen the diced response error (as it is expected to be flat)
+            // this is done by fitting a constant to the diced resonse error histo
+            //
+            TF1* lin = new TF1("lin", "[0]", rangeLow, rangeUp);
+            relativeErrorVariationInUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            if(!gMinuit->fISW[1] == 3) printf(" fit is NOT ok ! " );
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationInLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+            relativeErrorVariationOutUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationOutLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+
+        
+        
         }
     }
     // call the functions for a second set of systematic sources
@@ -2001,7 +2029,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "recBin");
+                "recBin",
+                fRMS);
         if(relativeErrorRecBinOutUp) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRecBin(new TCanvas("relativeErrorRecBin"," relativeErrorRecBin"));
@@ -2097,10 +2126,10 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
         if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
         if(fSymmRMS) {  // take first category as symmetric
-//            aInLow = aInUp*1.5;
-//            aOutLow = aOutUp*1.5;
             aInLow = aInUp;
             aOutLow = aOutUp;
+            cInLow = cInUp;
+            cOutLow = cOutUp;   // other sources
             if(dInLow < dInUp) dInLow = dInUp;
             if(dOutLow < dOutUp) dOutLow = dOutUp;
         }

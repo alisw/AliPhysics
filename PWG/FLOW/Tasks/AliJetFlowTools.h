@@ -258,8 +258,11 @@ class AliJetFlowTools {
             t->Draw("same");
             return t;
         } 
-        static TLatex*          AddLogo(Bool_t logo, Double_t xmin = .59, Double_t ymax = .81) {
-            return AddTLatex(xmin, ymax, logo ? "ALICE Preliminary" : "ALICE");
+        static TLatex*          AddLogo(Int_t logo, Double_t xmin = .59, Double_t ymax = .81) {
+            if(logo == 0) return AddTLatex(xmin, ymax, "ALICE");
+            else if (logo == 1) return AddTLatex(xmin, ymax, "ALICE Preliminary");
+            else if (logo == 2) return AddTLatex(xmin, ymax, "ALICE Simulation");
+            return 0x0;
         }
         static TLatex*          AddSystem() {
             return AddTLatex(0.55, 87, "Pb-Pb #sqrt{#it{s}}}_{NN} = 2.76 TeV");
