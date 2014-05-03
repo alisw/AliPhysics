@@ -22,7 +22,7 @@ class AliTRDptrgTLMU : public TObject {
  public:
   AliTRDptrgTLMU(AliRunLoader *rl = 0x0);
   AliTRDptrgTLMU(AliRunLoader *rl,  AliTRDptrgParam *param, 
-                 AliTRDptrgOperatingMode_t operatingMode);
+                 AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode);
   ~AliTRDptrgTLMU();
 
   Int_t* Simulate(); // starts a simulation
@@ -50,7 +50,7 @@ class AliTRDptrgTLMU : public TObject {
   // variables -----------------------------------------------------------------
   AliRunLoader *fRunLoader;  //!
   AliTRDptrgParam *fParam; // Configuration parameter object
-  AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
+  AliTRDptrgParam::AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
   
   const UInt_t* fInputMask; // input mask for TOF-bits (18x32=576)
   UInt_t fTOFinputBits[18]; // input bits from TOF (18x32)

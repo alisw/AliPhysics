@@ -15,6 +15,10 @@ class TArrayI;
 class TObjArray;
 #include "TObject.h"
 
+ 
+
+class AliTRDptrgParam : public TObject {
+ public:
   enum AliTRDptrgFEBType_t{ kUndefined = (Int_t)0, 
                             kTZERO = (Int_t)1, 
                             kVZERO = (Int_t)2 };
@@ -24,9 +28,6 @@ class TObjArray;
                                 kC = (Int_t)2,
                                 kUnknown = (Int_t)3 };
 
-
-class AliTRDptrgParam : public TObject {
- public:
   struct AliTRDptrgPTmasks {
     Bool_t fCBA[2]; // contribute CB-A look up results to pretrigger decision?
     Bool_t fCBC[2]; // contribute CB-C look up results to pretrigger decision?

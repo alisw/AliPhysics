@@ -71,7 +71,7 @@ void AliTRDTriggerL0::Trigger()
 
   AliTRDptrgParam* param = AliTRDptrgParam::Instance();
 
-  AliTRDptrgCBB* ptrgCBB = new AliTRDptrgCBB(runLoader, param, kDigits);
+  AliTRDptrgCBB* ptrgCBB = new AliTRDptrgCBB(runLoader, param, AliTRDptrgParam::kDigits);
 
   Int_t* simulationResult;
   simulationResult = ptrgCBB->Simulate();

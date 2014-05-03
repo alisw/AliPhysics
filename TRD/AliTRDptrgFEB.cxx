@@ -51,10 +51,10 @@ AliTRDptrgFEB::AliTRDptrgFEB(AliRunLoader *rl)
   fRunLoader(rl),
   fParam(0),
   fLUTArray(0),
-  fType(kUndefined),
-  fOperatingMode(kDigits),
+  fType(AliTRDptrgParam::kUndefined),
+  fOperatingMode(AliTRDptrgParam::kDigits),
   fInputChannelCount(0),
-  fPosition(kUnknown),  
+  fPosition(AliTRDptrgParam::kUnknown),  
   fID(0),
   fThreshold(0)
 {
@@ -63,9 +63,9 @@ AliTRDptrgFEB::AliTRDptrgFEB(AliRunLoader *rl)
 }
 
 //______________________________________________________________________________
-AliTRDptrgFEB::AliTRDptrgFEB(AliRunLoader *rl, AliTRDptrgFEBType_t febType, 
-                             AliTRDptrgOperatingMode_t operatingMode,
-                             AliTRDptrgFEBPosition_t position, Int_t id, 
+AliTRDptrgFEB::AliTRDptrgFEB(AliRunLoader *rl, AliTRDptrgParam::AliTRDptrgFEBType_t febType, 
+                             AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode,
+                             AliTRDptrgParam::AliTRDptrgFEBPosition_t position, Int_t id, 
                              AliTRDptrgParam *param)
   : TObject(),
   fRunLoader(rl),
@@ -103,7 +103,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
 {
   // loads T0 or V0 digits and discriminates them automatically
  
-  if (this->fType == kVZERO) {
+  if (this->fType == AliTRDptrgParam::kVZERO) {
     // load V0's digits --------------------------------------------------------
     // behavior adapted for AliVZERODigitizer.cxx 40613 2010-04-22 09:57:15Z   
  
@@ -149,7 +149,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
 
       Int_t position = -1;
       if ((pmNumber >= 32) && (pmNumber <= 63)) { // V0-A (matched v40613)
-        position = 1; // kA
+        position = 1; // AliTRDptrgParam::kA
       } 
       else if ((pmNumber >= 0) && (pmNumber <= 31)) { // V0-C (matched v40613)
         position = 2; // kB
@@ -186,7 +186,7 @@ Int_t AliTRDptrgFEB::LoadDigits()
     loader->UnloadDigits();
     return inputVector;
   }
-  else if (this->fType == kTZERO) {
+  else if (this->fType == AliTRDptrgParam::kTZERO) {
     // load T0's digits --------------------------------------------------------
     AliLoader * fT0Loader = this->fRunLoader->GetLoader("T0Loader");
     //   AliT0digit *fDigits; 
@@ -228,10 +228,10 @@ Int_t AliTRDptrgFEB::LoadDigits()
     // A: 12 to 23
     // positions according to AliT0Digitizer.cxx Revision 37491
     Int_t nStart = 0;
-    if (this->fPosition == kC) { // C
+    if (this->fPosition == AliTRDptrgParam::kC) { // C
       nStart = 0;
     }
-    else if (this->fPosition == kA) { // A
+    else if (this->fPosition == AliTRDptrgParam::kA) { // A
       nStart = 12;
     }
 
@@ -264,10 +264,10 @@ Int_t AliTRDptrgFEB::LoadAndProcessHits()
   // loads TO or VO hits and converts them to digits optimized for ptrg  
   // afterwards the digits will be discriminated
   AliError("LoadAndProcessHits() - not yet implemented!\n");
-  if (this->fType == kVZERO) {		
+  if (this->fType == AliTRDptrgParam::kVZERO) {		
     return 0;
   }
-  else if (this->fType == kTZERO) {
+  else if (this->fType == AliTRDptrgParam::kTZERO) {
     return 0;
   }
   return -1;
@@ -280,7 +280,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
 
   if (this->fParam == 0x0) {
     AliWarning("No paramater object specified - start loading defaults\n");
-    if (this->fType == kVZERO) {		
+    if (this->fType == AliTRDptrgParam::kVZERO) {		
       // initialize threshold
       this->fThreshold = new UInt_t[8]; 
       for (Int_t i = 0; i < 8; i++) {
@@ -344,7 +344,7 @@ Bool_t AliTRDptrgFEB::LoadParams()
   }
   else {
     // load parameters from object
-    if (this->fType == kVZERO) {		
+    if (this->fType == AliTRDptrgParam::kVZERO) {		
       // threshold
       this->fThreshold = 
         this->fParam->GetFEBV0Thresholds(this->fPosition, (this->fID - 1));
@@ -398,7 +398,7 @@ Int_t* AliTRDptrgFEB::Simulate()
   
   Int_t *result = new Int_t;
   (*result) = -1; 
-  if (this->fOperatingMode == kDigits) {
+  if (this->fOperatingMode == AliTRDptrgParam::kDigits) {
     Int_t inputVector = this->LoadDigits();
     delete result; // delete error return value
 
@@ -418,7 +418,7 @@ Int_t* AliTRDptrgFEB::Simulate()
       AliDebug(4, Form("FEB result[%d] = 0x%x",(iLUT + 1),result[iLUT + 1])); 
     }
   }
-  else if (this->fOperatingMode == kHits) {
+  else if (this->fOperatingMode == AliTRDptrgParam::kHits) {
     return result;
   }
   return result;
