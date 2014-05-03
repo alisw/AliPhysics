@@ -36,4 +36,4 @@ set ( DHDR PWGCFflowCMELinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE STEER/STEERBase)
+set ( EINCLUDE ANALYSIS STEER/STEERBase)
