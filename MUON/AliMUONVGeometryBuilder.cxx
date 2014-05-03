@@ -143,7 +143,7 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
   Int_t moduleId = AliMpDEManager::GetGeomModuleId(detElemId);
   AliMUONStringIntMap* svMap = GetSVMap(moduleId);     
 
-  Int_t nofDaughters = gMC->NofVolDaughters(volName);
+  Int_t nofDaughters = TVirtualMC::GetMC()->NofVolDaughters(volName);
   if (nofDaughters == 0) {
 
     // Get the name of the last volume in the path
@@ -165,8 +165,8 @@ void AliMUONVGeometryBuilder::MapSV(const TString& path0,
   }  
 
   for (Int_t i=0; i<nofDaughters; i++) {
-    Int_t copyNo = gMC->VolDaughterCopyNo(volName, i);
-    TString newName =  gMC->VolDaughterName(volName, i);
+    Int_t copyNo = TVirtualMC::GetMC()->VolDaughterCopyNo(volName, i);
+    TString newName =  TVirtualMC::GetMC()->VolDaughterName(volName, i);
             
     TString path = path0;
     path += ComposePath(newName, copyNo);

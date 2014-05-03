@@ -2076,7 +2076,7 @@ Int_t  AliToyMCReconstruction::GetSector(AliExternalTrackParam *track) {
   //track->Local2GlobalPosition(xd,track->GetAlpha());
   
   // use TPCParams to get the sector number
-  Float_t xyz[3] = {xd[0],xd[1],xd[2]};
+  Float_t xyz[3] = {static_cast<Float_t>(xd[0]),static_cast<Float_t>(xd[1]),static_cast<Float_t>(xd[2])};
   Int_t   i[3]   = {0,0,0};
   if(fTPCParam){
     sector  = fTPCParam->Transform0to1(xyz,i);

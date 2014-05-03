@@ -759,10 +759,10 @@ void AliITSUv1::StepManager()
   //   none.
   //
   if(!(this->IsActive())) return;
-  if(!(gMC->TrackCharge())) return;
+  if(!(TVirtualMC::GetMC()->TrackCharge())) return;
   //
   Int_t copy, lay = 0;
-  Int_t id = gMC->CurrentVolID(copy);
+  Int_t id = TVirtualMC::GetMC()->CurrentVolID(copy);
 
   Bool_t notSens = kFALSE;
   while ((lay<fNLayers)  && (notSens = (id!=fIdSens[lay]))) ++lay;
@@ -782,42 +782,42 @@ void AliITSUv1::StepManager()
   Int_t chipID, status = 0;
   //
   // Track status
-  if(gMC->IsTrackInside())      status +=  1;
-  if(gMC->IsTrackEntering())    status +=  2;
-  if(gMC->IsTrackExiting()) {
+  if(TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
+  if(TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
+  if(TVirtualMC::GetMC()->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
     status +=  4;
   } // if Outer ITS mother Volume
-  if(gMC->IsTrackOut())         status +=  8;
-  if(gMC->IsTrackDisappeared()) status += 16;
-  if(gMC->IsTrackStop())        status += 32;
-  if(gMC->IsTrackAlive())       status += 64;
+  if(TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
+  if(TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
+  if(TVirtualMC::GetMC()->IsTrackStop())        status += 32;
+  if(TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
   //
   // retrieve the indices with the volume path
   //
-  gMC->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackPosition(position);
   int chip=-1,module=-1,sstave=-1,stave=-1,level=0; // volume copies on different levels
-  gMC->CurrentVolOffID(++level,chip);
-  if (fGeomTGeo->GetNModules(lay)>0)    gMC->CurrentVolOffID(++level,module);
-  if (fGeomTGeo->GetNHalfStaves(lay)>0) gMC->CurrentVolOffID(++level,sstave);
-  gMC->CurrentVolOffID(++level,stave);
+  TVirtualMC::GetMC()->CurrentVolOffID(++level,chip);
+  if (fGeomTGeo->GetNModules(lay)>0)    TVirtualMC::GetMC()->CurrentVolOffID(++level,module);
+  if (fGeomTGeo->GetNHalfStaves(lay)>0) TVirtualMC::GetMC()->CurrentVolOffID(++level,sstave);
+  TVirtualMC::GetMC()->CurrentVolOffID(++level,stave);
   //
   chipID = fGeomTGeo->GetChipIndex(lay,stave,sstave,module,chip);
   // Fill hit structure.
   //
   hit.SetChip(chipID);
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
+  TVirtualMC::GetMC()->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackMomentum(momentum);
   hit.SetPosition(position);
-  hit.SetTime(gMC->TrackTime());
+  hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
-  hit.SetEdep(gMC->Edep());
+  hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());
-  if(gMC->IsTrackEntering()){
+  if(TVirtualMC::GetMC()->IsTrackEntering()){
     hit.SetStartPosition(position);
-    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
     hit.SetStartStatus(status);
     return; // don't save entering hit.
   } // end if IsEntering
@@ -826,7 +826,7 @@ void AliITSUv1::StepManager()
   new(lhits[fNhits++]) AliITSUHit(hit); // Use Copy Construtor.
   // Save old position... for next hit.
   hit.SetStartPosition(position);
-  hit.SetStartTime(gMC->TrackTime());
+  hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetStartStatus(status);
 
   return;

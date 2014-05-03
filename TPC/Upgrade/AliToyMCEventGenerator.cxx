@@ -150,7 +150,7 @@ void AliToyMCEventGenerator::MakeITSClusters(AliToyMCTrack &trackIn/*, Double_t 
     xyz[1]+=gRandom->Gaus(0,sigmaY);
     xyz[2]+=gRandom->Gaus(0,sigmaZ);
 
-    Float_t xyzf[3]={xyz[0],xyz[1],xyz[2]};
+    Float_t xyzf[3]={static_cast<Float_t>(xyz[0]),static_cast<Float_t>(xyz[1]),static_cast<Float_t>(xyz[2])};
 
     SetPoint(xyzf,sigmaY,sigmaZ,point);
     
@@ -201,7 +201,7 @@ void AliToyMCEventGenerator::MakeTRDClusters(AliToyMCTrack &trackIn/*, Double_t 
     xyz[1]+=gRandom->Gaus(0,sigmaY);
     xyz[2]+=gRandom->Gaus(0,sigmaZ);
     
-    Float_t xyzf[3]={xyz[0],xyz[1],xyz[2]};
+    Float_t xyzf[3]={static_cast<Float_t>(xyz[0]),static_cast<Float_t>(xyz[1]),static_cast<Float_t>(xyz[2])};
 
     SetPoint(xyzf,sigmaY,sigmaZ,point);
 
@@ -290,7 +290,7 @@ void AliToyMCEventGenerator::CreateSpacePoints(AliToyMCTrack &trackIn,
     Int_t sector=pUdist.GetVolumeID();    
     
     // set distorted point
-    Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
+    Float_t distPoint[3]={static_cast<Float_t>(xyz[0]),static_cast<Float_t>(xyz[1]),static_cast<Float_t>(xyz[2])};
     Float_t dxyz[3]={0.,0.,0.};
     if (!fUseStepCorrection){
       fTPCCorrection->DistortPoint(distPoint, sector);
@@ -446,7 +446,7 @@ void AliToyMCEventGenerator::ConvertTrackPointsToLocalClusters(AliTrackPointArra
 //     const Double_t localZ=splXZ->Eval(localX/*,0x0,"S"*/);
     const Double_t localY=grXY->Eval(localX/*,0x0,"S"*/);
     const Double_t localZ=grXZ->Eval(localX/*,0x0,"S"*/);
-    Float_t xyz[3]={localX,localY,localZ};
+    Float_t xyz[3]={static_cast<Float_t>(localX),static_cast<Float_t>(localY),static_cast<Float_t>(localZ)};
 
     if (!SetupCluster(tempCl,xyz,sec,t0)) continue;
     tempCl.SetLabel(tr.GetUniqueID(), 0);

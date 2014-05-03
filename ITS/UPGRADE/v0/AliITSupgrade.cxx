@@ -21,7 +21,7 @@
 #include <TGeoManager.h>    
 #include <TGeoVolume.h>         //CreateGeometry()
 #include <TGeoMatrix.h>
-#include <TVirtualMC.h>         //->gMC in StepManager
+#include <TVirtualMC.h>         //->TVirtualMC::GetMC() in StepManager
 #include <TPDGCode.h>           //StepHistory
 #include <TClonesArray.h>
 #include <TGeoGlobalMagField.h>
@@ -251,7 +251,7 @@ void AliITSupgrade::CreateGeometry()
   //Creates detailed geometry simulation (currently GEANT volumes tree)        
   //
   AliInfo("Start ITS upgrade preliminary version building");
-  if(!gMC->IsRootGeometrySupported()) return;                
+  if(!TVirtualMC::GetMC()->IsRootGeometrySupported()) return;                
   TGeoVolumeAssembly *vol= CreateVol();
   gGeoManager->GetVolume("ALIC")->AddNode(vol,0);
   AliInfo("Stop ITS upgrade preliminary version building");
@@ -269,11 +269,11 @@ void AliITSupgrade::StepManager()
   if(!fSegmentation) AliFatal("No segmentation available");
 
   if(!(this->IsActive())) return;
-  if(!(gMC->TrackCharge())) return;
-  TString volumeName=gMC->CurrentVolName();
+  if(!(TVirtualMC::GetMC()->TrackCharge())) return;
+  TString volumeName=TVirtualMC::GetMC()->CurrentVolName();
   if(volumeName.Contains("Be")) return;
   if(volumeName.Contains("Cu")) return;
-  if(gMC->IsTrackExiting()) {
+  if(TVirtualMC::GetMC()->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
   } // if Outer ITS mother Volume
 
@@ -285,36 +285,36 @@ void AliITSupgrade::StepManager()
   
   //
   // Track status
-  if(gMC->IsTrackInside())      status +=  1;
-  if(gMC->IsTrackEntering())    status +=  2;
-  if(gMC->IsTrackExiting())     status +=  4;
-  if(gMC->IsTrackOut())         status +=  8;
-  if(gMC->IsTrackDisappeared()) status += 16;
-  if(gMC->IsTrackStop())        status += 32;
-  if(gMC->IsTrackAlive())       status += 64;
+  if(TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
+  if(TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
+  if(TVirtualMC::GetMC()->IsTrackExiting())     status +=  4;
+  if(TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
+  if(TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
+  if(TVirtualMC::GetMC()->IsTrackStop())        status += 32;
+  if(TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
 
   //
   // Fill hit structure.
   //
   Int_t copy=-1;
-  gMC->CurrentVolID(copy);   
+  TVirtualMC::GetMC()->CurrentVolID(copy);   
 
   volumeName.Remove(0,12);          // remove letters to get the layer number
   hit.SetModule(fSegmentation->GetIdIndex(volumeName.Atoi(),copy)); // layer and sector information are together in the IdIndex (if copy=0 the idIndex is the layer)); 
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
+  TVirtualMC::GetMC()->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackMomentum(momentum);
   hit.SetPosition(position);
     
-  hit.SetTime(gMC->TrackTime());
+  hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
-  hit.SetEdep(gMC->Edep());
+  hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());
-  if(gMC->IsTrackEntering()){
+  if(TVirtualMC::GetMC()->IsTrackEntering()){
     hit.SetStartPosition(position);
-    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
     hit.SetStartStatus(status);
     return; // don't save entering hit.
   } 
@@ -323,7 +323,7 @@ void AliITSupgrade::StepManager()
   new((*fHits)[fNhits++]) AliITShit(hit); // Use Copy Construtor.
   // Save old position... for next hit.
   hit.SetStartPosition(position);
-  hit.SetStartTime(gMC->TrackTime());
+  hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetStartStatus(status);
   return;
 
@@ -401,11 +401,11 @@ void AliITSupgrade::SetFullSegmentation(TArrayD xsize,TArrayD zsize){
 void AliITSupgrade::StepHistory()
 { 
   // This methode is invoked from StepManager() in order to print out
-  TString volumeName=gMC->CurrentVolName();
+  TString volumeName=TVirtualMC::GetMC()->CurrentVolName();
   if(!volumeName.Contains("Silicon")) return;
   static Int_t iStepN;
   const char *sParticle;
-  switch(gMC->TrackPid()){
+  switch(TVirtualMC::GetMC()->TrackPid()){
   case kProton:      sParticle="PROTON"    ;break;
   case kNeutron:     sParticle="neutron"   ;break;
   case kGamma:       sParticle="gamma"     ;break;
@@ -417,40 +417,40 @@ void AliITSupgrade::StepHistory()
   }
 
   TString flag="funny combination";
-  if(gMC->IsTrackAlive()) {
-    if(gMC->IsTrackEntering())      flag="enters to";
-    else if(gMC->IsTrackExiting())  flag="exits from";
-    else if(gMC->IsTrackInside())   flag="inside";
-    else if(gMC->IsTrackStop())     flag="stopped in";
+  if(TVirtualMC::GetMC()->IsTrackAlive()) {
+    if(TVirtualMC::GetMC()->IsTrackEntering())      flag="enters to";
+    else if(TVirtualMC::GetMC()->IsTrackExiting())  flag="exits from";
+    else if(TVirtualMC::GetMC()->IsTrackInside())   flag="inside";
+    else if(TVirtualMC::GetMC()->IsTrackStop())     flag="stopped in";
   }
 
   Int_t vid=0,copy=0;
-  TString path=gMC->CurrentVolName(); path.Prepend("-");path.Prepend(gMC->CurrentVolOffName(1));//current volume and his mother are always there
-  vid=gMC->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
-  vid=gMC->CurrentVolOffID(3,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
+  TString path=TVirtualMC::GetMC()->CurrentVolName(); path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->CurrentVolOffName(1));//current volume and his mother are always there
+  vid=TVirtualMC::GetMC()->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->VolName(vid));}
+  vid=TVirtualMC::GetMC()->CurrentVolOffID(3,copy);  if(vid) {path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->VolName(vid));}
   
 
-  AliInfo(Form("\n Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,gMC->TrackPid(),flag.Data(),path.Data(),gMC->TrackMass(),gMC->TrackCharge(),gMC->Edep()*1e9,gMC->Etot()));
+  AliInfo(Form("\n Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,TVirtualMC::GetMC()->TrackPid(),flag.Data(),path.Data(),TVirtualMC::GetMC()->TrackMass(),TVirtualMC::GetMC()->TrackCharge(),TVirtualMC::GetMC()->Edep()*1e9,TVirtualMC::GetMC()->Etot()));
 
-  Double_t gMcTrackPos[3]; gMC->TrackPosition(gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2]);
-  Double_t  gMcTrackPosLoc[3]; gMC->Gmtod(gMcTrackPos,gMcTrackPosLoc,1);
+  Double_t gMcTrackPos[3]; TVirtualMC::GetMC()->TrackPosition(gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2]);
+  Double_t  gMcTrackPosLoc[3]; TVirtualMC::GetMC()->Gmtod(gMcTrackPos,gMcTrackPosLoc,1);
   TString v(volumeName.Data());
   v.ReplaceAll("LayerSilicon","");
   Int_t ilayer = v.Atoi();
   Double_t rXY = TMath::Sqrt(gMcTrackPos[0]*gMcTrackPos[0]+gMcTrackPos[1]*gMcTrackPos[1]);
-  AliInfo(Form("gMC Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) (deltaR %5.5lf - width %5.5f)",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2], rXY , rXY - (fRadii.At(ilayer)),fWidths.At(ilayer)));
+  AliInfo(Form("TVirtualMC::GetMC() Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) (deltaR %5.5lf - width %5.5f)",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2], rXY , rXY - (fRadii.At(ilayer)),fWidths.At(ilayer)));
 
 
   AliDebug(10,Form("Step %i: tid=%i flags alive=%i disap=%i enter=%i exit=%i inside=%i out=%i stop=%i new=%i",
 		   iStepN, gAlice->GetMCApp()->GetCurrentTrackNumber(),
-		   gMC->IsTrackAlive(), gMC->IsTrackDisappeared(),gMC->IsTrackEntering(), gMC->IsTrackExiting(),
-		   gMC->IsTrackInside(),gMC->IsTrackOut(),        gMC->IsTrackStop(),     gMC->IsNewTrack()));
+		   TVirtualMC::GetMC()->IsTrackAlive(), TVirtualMC::GetMC()->IsTrackDisappeared(),TVirtualMC::GetMC()->IsTrackEntering(), TVirtualMC::GetMC()->IsTrackExiting(),
+		   TVirtualMC::GetMC()->IsTrackInside(),TVirtualMC::GetMC()->IsTrackOut(),        TVirtualMC::GetMC()->IsTrackStop(),     TVirtualMC::GetMC()->IsNewTrack()));
 
   Float_t a,z,den,rad,abs; a=z=den=rad=abs=-1;
-  Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
+  Int_t mid=TVirtualMC::GetMC()->CurrentMaterial(a,z,den,rad,abs);
   AliDebug(10, Form("Step %i: mid=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f\n\n",iStepN,mid,a,z,den,rad,abs));
 /*
-  TArrayI proc;  gMC->StepProcesses(proc);
+  TArrayI proc;  TVirtualMC::GetMC()->StepProcesses(proc);
 
   AliInfo("Processes in this step:");
   for ( int i = 0 ; i < proc.GetSize(); i++)

@@ -1327,7 +1327,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
     for (Int_t irow=0; irow<159; irow++){
       AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
       if (cluster0 &&cluster0->GetX()>10){
-	Double_t x0[3]={cluster0->GetRow(),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
+	Double_t x0[3]={ static_cast<Double_t>(cluster0->GetRow()),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
 	Int_t index0[1]={cluster0->GetDetector()};
 	transform->Transform(x0,index0,0,1);  
 	cluster0->SetX(x0[0]);
@@ -1337,7 +1337,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
       }
       AliTPCclusterMI *cluster1=seed1->GetClusterPointer(irow);
       if (cluster1&&cluster1->GetX()>10){
-	Double_t x1[3]={cluster1->GetRow(),cluster1->GetPad(),cluster1->GetTimeBin()+deltaTimeCluster};
+	Double_t x1[3]={ static_cast<Double_t>(cluster1->GetRow()),cluster1->GetPad(),cluster1->GetTimeBin()+deltaTimeCluster};
 	Int_t index1[1]={cluster1->GetDetector()};
 	transform->Transform(x1,index1,0,1);  
 	cluster1->SetX(x1[0]);
@@ -1387,7 +1387,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
 	if (!isOKT) break;
 	Double_t rD[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
 	transform->RotatedGlobal2Global(cluster->GetDetector()%36,rD);  // transform to global
-	Float_t  r[3]={rD[0],rD[1],rD[2]};
+	Float_t  r[3]={static_cast<Float_t>(rD[0]),static_cast<Float_t>(rD[1]),static_cast<Float_t>(rD[2])};
 	if (corr){
 	  corr->DistortPoint(r, cluster->GetDetector());
 	}
@@ -1407,7 +1407,7 @@ void AliTPCcalibCosmic::MakeFitTree(TTree * treeInput, TTreeSRedirector *pcstrea
 	if (!isOKT) break;
 	Double_t rD[3]={cluster->GetX(),cluster->GetY(),cluster->GetZ()};
 	transform->RotatedGlobal2Global(cluster->GetDetector()%36,rD);
-	Float_t  r[3]={rD[0],rD[1],rD[2]};
+	Float_t  r[3]={static_cast<Float_t>(rD[0]),static_cast<Float_t>(rD[1]),static_cast<Float_t>(rD[2])};
 	if (corr){
 	  corr->DistortPoint(r, cluster->GetDetector());
 	}

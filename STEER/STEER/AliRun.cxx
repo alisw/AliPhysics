@@ -136,7 +136,7 @@ AliRun::~AliRun()
    }
     
   delete fMCApp;
-  delete gMC; gMC=0;
+  delete TVirtualMC::GetMC(); //gMC=0;
   if (fModules) {
     fModules->Delete();
     delete fModules;

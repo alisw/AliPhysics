@@ -888,7 +888,7 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   AliPDG::AddParticlesToPdgDataBase();  
   
-  gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+  TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
 
   gAlice->GetMCApp()->Init();
   
@@ -906,13 +906,13 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   AliGenerator *gen=gAlice->GetMCApp()->Generator();
   gAlice->GetMCApp()->ResetGenerator(gener);
   //Prepare MC for Lego Run
-  gMC->InitLego();
+  TVirtualMC::GetMC()->InitLego();
   
   //Run Lego Object
   
   
   AliRunLoader::Instance()->SetNumberOfEventsPerFile(nev);
-  gMC->ProcessRun(nev);
+  TVirtualMC::GetMC()->ProcessRun(nev);
   
   // End of this run, close files
   FinishRun();
@@ -1102,7 +1102,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+   TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    AliSysInfo::AddStamp("RunSimulation_GetField");
    gAlice->GetMCApp()->Init();
    AliSysInfo::AddStamp("RunSimulation_InitMCApp");
@@ -1223,7 +1223,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
-  gMC->ProcessRun(nEvents);
+  TVirtualMC::GetMC()->ProcessRun(nEvents);
 
   // End of this run, close files
   if(nEvents>0) FinishRun();
@@ -1959,7 +1959,7 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
     
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+   TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    
    gAlice->GetMCApp()->Init();
 

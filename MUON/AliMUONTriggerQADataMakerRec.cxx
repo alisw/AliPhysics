@@ -789,9 +789,9 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
       Float_t readoutErrors[AliMUONQAIndices::kNtrigStructErrorBins] = {
 	countAllBoards>0?((Float_t)rawStreamTrig.GetLocalEoWErrors())/((Float_t)countAllBoards):0,
-	((Float_t)rawStreamTrig.GetRegEoWErrors())/16.,
-	((Float_t)rawStreamTrig.GetGlobalEoWErrors())/6.,
-	((Float_t)rawStreamTrig.GetDarcEoWErrors())/2.
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetRegEoWErrors())/16.),
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetGlobalEoWErrors())/6.),
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetDarcEoWErrors())/2.)
       };
     
       for (Int_t ibin=0; ibin<AliMUONQAIndices::kNtrigStructErrorBins; ibin++){
@@ -815,8 +815,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Float_t fraction[AliMUONQAIndices::kNtrigCalibSummaryBins] = {
 	((Float_t)(nStripsTot - nFiredStrips)) / ((Float_t)nStripsTot),
         (Float_t)nDeadLocal / ((Float_t)AliMUONConstants::NTriggerCircuit()),
-	(Float_t)nDeadRegional / 16.,
-	(Float_t)nDeadGlobal / 6., // Number of bits of global response
+	static_cast<Float_t>((Float_t)nDeadRegional / 16.),
+	static_cast<Float_t>((Float_t)nDeadGlobal / 6.), // Number of bits of global response
 	(Float_t)nNoisyStrips / ((Float_t)nStripsTot),
       };
 

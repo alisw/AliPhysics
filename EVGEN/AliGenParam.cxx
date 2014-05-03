@@ -427,7 +427,7 @@ void AliGenParam::Init()
 {
   // Initialisation
 
-    if (gMC) fDecayer = gMC->GetDecayer();
+    if (TVirtualMC::GetMC()) fDecayer = TVirtualMC::GetMC()->GetDecayer();
   //Begin_Html
   /*
     <img src="picts/AliGenParam.gif">

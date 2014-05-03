@@ -243,7 +243,7 @@ void AliPIPEv0::CreateGeometry()
     ppcon[61] =    0.;
     ppcon[62] =    4.1;
     
-    gMC->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon,63);
+    TVirtualMC::GetMC()->Gsvolu("QBPM", "PCON", idtmed[kAir], ppcon,63);
 
 
 //
@@ -252,24 +252,24 @@ void AliPIPEv0::CreateGeometry()
 
 //
 // The Vacuum 
-    gMC->Gsvolu("QBVA","TUBE", idtmed[kVac], ptube, 0);
+    TVirtualMC::GetMC()->Gsvolu("QBVA","TUBE", idtmed[kVac], ptube, 0);
     ptube[0] =   0.0;
     ptube[1] =   kRinSt;
     ptube[2] =   (90.-hlenQbbe2)/2.;
     dz = -90. + ptube[2];
-    gMC->Gsposp ("QBVA", 1, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp ("QBVA", 1, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
     dz = dz + ptube[2];
 
     ptube[1] =   kRinBe;
     ptube[2] =   hlenQbbe+hlenQbab;
     dz = dz + ptube[2];
-    gMC->Gsposp ("QBVA", 2, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp ("QBVA", 2, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
     dz = dz + ptube[2];
 
     ptube[1] =   kRinSt;
     ptube[2] =   (800.-hlenQbbe1-2.*hlenQbab)/2.;
     dz = dz + ptube[2];
-    gMC->Gsposp ("QBVA", 3, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp ("QBVA", 3, "QBPM", 0., 0., dz , 0, "ONLY", ptube, 3);
 
 //
 // Be Pipe in central Alice 
@@ -277,7 +277,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] = kRoutBe;
     ptube[2] = hlenQbbe;
     
-    gMC->Gsvolu("QBBE","TUBE", idtmed[kBe], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QBBE","TUBE", idtmed[kBe], ptube, 3);
     
 //
 //  Support Ring
@@ -286,17 +286,17 @@ void AliPIPEv0::CreateGeometry()
     ptube[0] = kRoutSB;
     ptube[1] = 4.0;
     ptube[2] = 0.6;
-    gMC->Gsvolu("QBSR", "TUBE", idtmed[kAlu], ptube,3);
+    TVirtualMC::GetMC()->Gsvolu("QBSR", "TUBE", idtmed[kAlu], ptube,3);
     // Inner support
     ptube[0] = kRoutSB;
     ptube[1] = 3.5;
-    gMC->Gsvolu("QBSS", "TUBE", idtmed[kPA], ptube,3);
-    gMC->Gspos("QBSS", 1, "QBSR", 0.0, 0.0,  0.0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QBSS", "TUBE", idtmed[kPA], ptube,3);
+    TVirtualMC::GetMC()->Gspos("QBSS", 1, "QBSR", 0.0, 0.0,  0.0, 0, "ONLY");
 
-    gMC->Gspos("QBSR", 1, "QBPM", 0.0, 0.0,  40., 0, "ONLY");
-    gMC->Gspos("QBSR", 2, "QBPM", 0.0, 0.0, 150., 0, "ONLY");
-    gMC->Gspos("QBSR", 3, "QBPM", 0.0, 0.0, 260., 0, "ONLY");
-    gMC->Gspos("QBSR", 4, "QBPM", 0.0, 0.0,- 46., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBSR", 1, "QBPM", 0.0, 0.0,  40., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBSR", 2, "QBPM", 0.0, 0.0, 150., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBSR", 3, "QBPM", 0.0, 0.0, 260., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBSR", 4, "QBPM", 0.0, 0.0,- 46., 0, "ONLY");
 //
 // Flange and Fixed Point: non absorber side
 //
@@ -323,27 +323,27 @@ void AliPIPEv0::CreateGeometry()
     ppcon[13] = kRinSt;
     ppcon[14] = 3.6;
     
-    gMC->Gsvolu("QB29", "PCON", idtmed[kAir], ppcon,15);
+    TVirtualMC::GetMC()->Gsvolu("QB29", "PCON", idtmed[kAir], ppcon,15);
     
 
 //    Flange
     ptube[0] = kRinSt;
     ptube[1] = 5.7;
     ptube[2] = 1.75;
-    gMC->Gsvolu("QF29","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QF29", 1, "QB29", 0.0, 0.0, -hlenQb29+1.75, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QF29","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QF29", 1, "QB29", 0.0, 0.0, -hlenQb29+1.75, 0, "ONLY");
 //    Pipe
     ptube[0] = kRinSt;
     ptube[1] = 3.06;
     ptube[2] = hlenQb29;
-    gMC->Gsvolu("QS29","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QS29", 1, "QB29", 0.0, 0.0, 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QS29","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QS29", 1, "QB29", 0.0, 0.0, 0., 0, "ONLY");
 //    Fixed point
     ptube[0] = kRinSt;
     ptube[1] = 3.5;
     ptube[2] = 0.3;
-    gMC->Gsvolu("QP29","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QP29", 1, "QB29", 0.0, 0.0, -hlenQb29+9.75+3., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QP29","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QP29", 1, "QB29", 0.0, 0.0, -hlenQb29+9.75+3., 0, "ONLY");
     
 //
 //
@@ -353,7 +353,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] =   kRoutSt;
     ptube[2] =   hlenQb28;    
 
-    gMC->Gsvolu("QB28","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QB28","TUBE", idtmed[kInox], ptube, 3);
 //
 //
 // Air with high transport cuts outside QB28
@@ -361,7 +361,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] =   100.;
     ptube[2] =   hlenQb28;    
 
-    gMC->Gsvolu("QA28","TUBE", idtmed[kAirHigh], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QA28","TUBE", idtmed[kAirHigh], ptube, 3);
     gGeoManager->SetVolumeAttribute("QA28", "SEEN", 0);
 //  Al-Be (40-60 wgt%, rho=2.7 g/cm**3) beam pipe
 //
@@ -378,7 +378,7 @@ void AliPIPEv0::CreateGeometry()
     }
     ptube[2] =   hlenQbab;    
 
-    gMC->Gsvolu("QBAB","TUBE", idtmed[fPipeMaterial], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QBAB","TUBE", idtmed[fPipeMaterial], ptube, 3);
 
 // 2.5 mm thick SS tube for hanging pump
 /*
@@ -386,7 +386,7 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] = 3.15;
     ptube[2] = hlenQb26;
     
-    gMC->Gsvolu("QB26","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QB26","TUBE", idtmed[kInox], ptube, 3);
 */
 //
 // Bellows
@@ -438,16 +438,16 @@ void AliPIPEv0::CreateGeometry()
     pconQBE0[31] = kRinSB;
     pconQBE0[32] = kRoutSB;
 
-    gMC->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 33);
+    TVirtualMC::GetMC()->Gsvolu("QBE0", "PCON", idtmed[kAir], pconQBE0, 33);
 //
 //  Undulated piece mother
     ptube[0] =  kRinSB;
     ptube[1] =  3.60;
     ptube[2] =  kdzubA;
-    gMC->Gsvolu("QBEM","TUBE", idtmed[kAir], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QBEM","TUBE", idtmed[kAir], ptube, 3);
     dz = -kdzbA+kdzubA+2.5;
-    gMC->Gspos("QBEM", 2 ,"QBE0", 0.0, 0.0,   dz, 0 , "ONLY");
-    gMC->Gspos("QBEM", 1 ,"QBE0", 0.0, 0.0,  -dz, idrotm[2012], "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBEM", 2 ,"QBE0", 0.0, 0.0,   dz, 0 , "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBEM", 1 ,"QBE0", 0.0, 0.0,  -dz, idrotm[2012], "ONLY");
 //  
     Float_t pund[30];
     Float_t uw = 0.02;
@@ -491,29 +491,29 @@ void AliPIPEv0::CreateGeometry()
     pund[25] = pund[22];
     pund[26] = pund[23];
 
-    gMC->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 27);
+    TVirtualMC::GetMC()->Gsvolu("QBEU", "PCON", idtmed[kInox], pund, 27);
 
     for (i = 0; i < 18; i++)
     {
 	dz = -kdzubA+(1+2*i)*ut;
-	gMC->Gspos("QBEU", i+1 ,"QBEM", 0.0, 0.0,   dz, 0 , "ONLY");
+	TVirtualMC::GetMC()->Gspos("QBEU", i+1 ,"QBEM", 0.0, 0.0,   dz, 0 , "ONLY");
     }
     ptube[0] =  kRinSB;
     ptube[1] =  kRinSB+uw;
     ptube[2] =  uz;
-    gMC->Gsvolu("QBEW","TUBE", idtmed[kInox], ptube, 3);
-    gMC->Gspos("QBEW", 1 ,"QBEM", 0.0, 0.0,   kdzubA-uz, 0 , "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QBEW","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QBEW", 1 ,"QBEM", 0.0, 0.0,   kdzubA-uz, 0 , "ONLY");
 
 //
 //  BeamPipe
-    gMC->Gsvolu("QBEP","TUBE", idtmed[kInox], ptube, 0);
+    TVirtualMC::GetMC()->Gsvolu("QBEP","TUBE", idtmed[kInox], ptube, 0);
     ptube[0] =  kRinSB;
     ptube[1] =  kRoutSB;
     ptube[2] =  1.25;
-    gMC->Gsposp("QBEP", 1 ,"QBE0", 0.0, 0.0, -kdzbA+1.25, 0 , "ONLY", ptube, 3);
-    gMC->Gsposp("QBEP", 2 ,"QBE0", 0.0, 0.0,  kdzbA-1.25, 0 , "ONLY", ptube, 3);    
+    TVirtualMC::GetMC()->Gsposp("QBEP", 1 ,"QBE0", 0.0, 0.0, -kdzbA+1.25, 0 , "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp("QBEP", 2 ,"QBE0", 0.0, 0.0,  kdzbA-1.25, 0 , "ONLY", ptube, 3);    
     ptube[2] = kdzbbA;
-    gMC->Gsposp("QBEP", 3 ,"QBE0", 0.0, 0.0,  0., 0 , "ONLY", ptube, 3);    
+    TVirtualMC::GetMC()->Gsposp("QBEP", 3 ,"QBE0", 0.0, 0.0,  0., 0 , "ONLY", ptube, 3);    
 //  
 //
 //  ----> End Bellow
@@ -523,32 +523,32 @@ void AliPIPEv0::CreateGeometry()
     //
     // first the beryllium section
     Float_t zpos = -(hlenQbbe2-hlenQbbe1)/2;
-    gMC->Gspos("QBBE", 1, "QBPM", 0., 0., zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBBE", 1, "QBPM", 0., 0., zpos, 0, "ONLY");
 
     // next meta-metal transition QBT1 on on-absorber side
 //    zpos = zpos + hlenQbbe + hlenQbt1;
-//    gMC->Gspos("QBT1", 1, "QBPM", 0., 0.,  zpos, 0, "ONLY");
+//    TVirtualMC::GetMC()->Gspos("QBT1", 1, "QBPM", 0., 0.,  zpos, 0, "ONLY");
     
     // Aluminium OR Al-be alloy section
     zpos = hlenQbbe1+hlenQbab;
-    gMC->Gspos("QBAB", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBAB", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
     //
     // inox flange at the start of bellow
     zpos = zpos + hlenQbab + hlenQb29;
-    gMC->Gspos("QB29", 1, "QBPM", 0.0, 0.0, zpos, idrotm[2012], "ONLY");
+    TVirtualMC::GetMC()->Gspos("QB29", 1, "QBPM", 0.0, 0.0, zpos, idrotm[2012], "ONLY");
     //
     // bellow section
     zpos = zpos + hlenQb29 + hlenQbe0;
-    gMC->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBE0", 2 ,"QBPM", 0.0, 0.0, zpos, 0, "ONLY");
     // 
     // inox flange at the end of bellow and start of thick inox for pump
     zpos = zpos + hlenQbe0 + hlenQb29;
-    gMC->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QB29", 2, "QBPM", 0.0, 0.0, zpos, 0, "ONLY");
     //   
     //last inox section till 800 cm
     zpos = zpos + hlenQb29 + hlenQb28;
-    gMC->Gspos("QB28", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY"); 
-    gMC->Gspos("QA28", 1, "ALIC", 0.0, 0.0, zpos, 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QB28", 1, "QBPM", 0.0, 0.0, zpos, 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("QA28", 1, "ALIC", 0.0, 0.0, zpos, 0, "ONLY"); 
     
 //******** end of placement on non-absorber side *********
     //
@@ -558,7 +558,7 @@ void AliPIPEv0::CreateGeometry()
 //
 // Beam pipes between elements
 //    
-    gMC->Gsvolu("QB24","TUBE", idtmed[kInox], ptube, 0);
+    TVirtualMC::GetMC()->Gsvolu("QB24","TUBE", idtmed[kInox], ptube, 0);
     ptube[0] = kRinSt;
     ptube[1] = kRoutSt;
     ptube[2] = hlenQb24[0];
@@ -607,20 +607,20 @@ void AliPIPEv0::CreateGeometry()
     bpbe[31] = kRinSt;
     bpbe[32] = kRoutSt;
 
-    gMC->Gsvolu("QA24","PCON", idtmed[kInox], bpbe, 33);
+    TVirtualMC::GetMC()->Gsvolu("QA24","PCON", idtmed[kInox], bpbe, 33);
 
     dz = hlenQbbe2 + hlenQb24[0];
     
-    gMC->Gspos("QA24", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QA24", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
 //
 // Bellow on absorber side
 
     dz = dz+hlenQb24[0] + kdzbA;
-    gMC->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QBE0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
 //
     ptube[2] = hlenQb24[1];
     dz = dz + kdzb + ptube[2];
-    gMC->Gsposp("QB24", 2 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp("QB24", 2 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
     dz = dz + ptube[2];
     
 //
@@ -631,9 +631,9 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] = 4.300;
     ptube[2] = 1.4;
     
-    gMC->Gsvolu("QFA0","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QFA0","TUBE", idtmed[kInox], ptube, 3);
     dz = dz + ptube[2];
-    gMC->Gspos("QFA0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QFA0", 1 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY");
     dz = dz + ptube[2];
 //
 //
@@ -641,15 +641,15 @@ void AliPIPEv0::CreateGeometry()
     ptube[1] = kRoutSB;
     ptube[2] = hlenQb24[2];
     dz = dz + ptube[2];
-    gMC->Gsposp("QB24", 3 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
+    TVirtualMC::GetMC()->Gsposp("QB24", 3 ,"QBPM", 0.0, 0.0, -dz, 0, "ONLY", ptube, 3);
 
 // --- Place the PIPE ghost volume (QBPM) in its mother volume (ALIC)
 //    by rotating it to 180 deg. and make it invisible
 // 
-    gMC->Gspos("QBPM",1,"ALIC", 0, 0, 0, 0, "ONLY");
-    gMC->Gsbool("QBPM", "L3DX");
-    gMC->Gsbool("QBPM", "L3O3");
-    gMC->Gsbool("QBPM", "L3O4");
+    TVirtualMC::GetMC()->Gspos("QBPM",1,"ALIC", 0, 0, 0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsbool("QBPM", "L3DX");
+    TVirtualMC::GetMC()->Gsbool("QBPM", "L3O3");
+    TVirtualMC::GetMC()->Gsbool("QBPM", "L3O4");
 
 
 //
@@ -660,38 +660,38 @@ void AliPIPEv0::CreateGeometry()
     pbox[0] =  6.50;
     pbox[1] =  6.75;
     pbox[2] = 15.60;
-    gMC->Gsvolu("QI32","BOX", idtmed[kInox], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("QI32","BOX", idtmed[kInox], pbox, 3);
     
     pbox[0] =  5.90;
     pbox[1] =  6.15;
     pbox[2] = 15.00;
-    gMC->Gsvolu("QI42","BOX", idtmed[kGetter], pbox, 3);
-    gMC->Gspos("QI42", 1, "QI32", 0.0, 0.0, 0.0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QI42","BOX", idtmed[kGetter], pbox, 3);
+    TVirtualMC::GetMC()->Gspos("QI42", 1, "QI32", 0.0, 0.0, 0.0, 0, "ONLY");
 // <-
 
     ptube[0] =  0.0;
     ptube[1] = 19.0;
     ptube[2] =  2.5;
-    gMC->Gsvolu("QI33","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QI33","TUBE", idtmed[kInox], ptube, 3);
 
 
     ptube[0] =  0.0;
     ptube[1] = 15.0;
     ptube[2] =  2.5;
-    gMC->Gsvolu("QI43","TUBE", idtmed[kAir], ptube, 3);
-    gMC->Gspos("QI43", 1, "QI33", 0.0, 0.0, 0.0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QI43","TUBE", idtmed[kAir], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QI43", 1, "QI33", 0.0, 0.0, 0.0, 0, "ONLY");
 // 
 // Connecting tube ->
     ptube[0] =  0.0;
     ptube[1] =  4.5;
     ptube[2] = 14.6;
-    gMC->Gsvolu("QI34","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QI34","TUBE", idtmed[kInox], ptube, 3);
     
     ptube[0] =  0.0;
     ptube[1] =  3.9;
     ptube[2] = 14.6;
-    gMC->Gsvolu("QI44","TUBE", idtmed[kAir], ptube, 3);
-    gMC->Gspos("QI44", 1, "QI34", 0.0, 0.0, 0.0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QI44","TUBE", idtmed[kAir], ptube, 3);
+    TVirtualMC::GetMC()->Gspos("QI44", 1, "QI34", 0.0, 0.0, 0.0, 0, "ONLY");
 // <-
 
   //
@@ -699,12 +699,12 @@ void AliPIPEv0::CreateGeometry()
     ptube[0] =  4.6;
     ptube[1] =  7.30;
     ptube[2] =  2.15;
-    gMC->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
+    TVirtualMC::GetMC()->Gsvolu("QI35","TUBE", idtmed[kInox], ptube, 3);
 // <-
-    gMC->Gspos("QI32", 1, "QBPM", 0.0, -44.25, zPump, 0, "ONLY");
-    gMC->Gspos("QI33", 1, "QBPM", 0.0, -35.00, zPump,idrotm[2002], "ONLY");
-    gMC->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
-    gMC->Gspos("QI35", 1, "QBPM", 0.0, -24.35, zPump,idrotm[2002], "ONLY");
+    TVirtualMC::GetMC()->Gspos("QI32", 1, "QBPM", 0.0, -44.25, zPump, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QI33", 1, "QBPM", 0.0, -35.00, zPump,idrotm[2002], "ONLY");
+    TVirtualMC::GetMC()->Gspos("QI34", 1, "QBPM", 0.0, -17.90, zPump,idrotm[2002], "ONLY");
+    TVirtualMC::GetMC()->Gspos("QI35", 1, "QBPM", 0.0, -24.35, zPump,idrotm[2002], "ONLY");
 
     gGeoManager->SetVolumeAttribute("QBPM", "SEEN", 1);
     gGeoManager->SetVolumeAttribute("QBEM", "SEEN", 1);

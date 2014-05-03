@@ -111,7 +111,7 @@ void AliEMCALWsuCosmicRaySetUp::CreateGeometry()
 
   Int_t *idtmed = fIdtmed->GetArray()+1;
   int idAir = idtmed[0];
-  gMC->Gsvolu(GetName(),"BOX",idAir, fMasterVolume,3); // Master volume
+  TVirtualMC::GetMC()->Gsvolu(GetName(),"BOX",idAir, fMasterVolume,3); // Master volume
   //
   // Sc counters
   //
@@ -121,24 +121,24 @@ void AliEMCALWsuCosmicRaySetUp::CreateGeometry()
   sc[2] = 1.0; // thicness of Sc is 2 cm
   Float_t zsc[3] = {10.,330.6, 810.1}; 
   int idSC = idtmed[1];
-  gMC->Gsvolu("SCOU","TUBE",idSC, sc,3); // Master volume
+  TVirtualMC::GetMC()->Gsvolu("SCOU","TUBE",idSC, sc,3); // Master volume
   printf(" idtmed[0] %i idtmed[1] %i \n", idtmed[0] , idtmed[1]); 
   Int_t idRot=0; // no rotation
   for(Int_t i=0; i<3; i++) {
     Float_t zpos = zsc[i] - fMasterVolume[2];
-    gMC->Gspos("SCOU", i+1, "WSUC", 0.0, 0.0, zpos, idRot, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SCOU", i+1, "WSUC", 0.0, 0.0, zpos, idRot, "ONLY"); 
   }
   //
   // Dead end : Dec 2,2010
   //
   Float_t zbox[3]={30., 30.0, 0.1};
-  gMC->Gsvolu("SEND","BOX",idAir, zbox,3); // Master volume
-  gMC->Gspos("SEND", 1, "WSUC", 0.0, 0.0, 448.0, idRot, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("SEND","BOX",idAir, zbox,3); // Master volume
+  TVirtualMC::GetMC()->Gspos("SEND", 1, "WSUC", 0.0, 0.0, 448.0, idRot, "ONLY"); 
   // Hists
   fLHists = new TList;
   fLHists->SetName("hists");
   //
-  //AliMC *ALIMC  = dynamic_cast<AliMC *>(gMC);
+  //AliMC *ALIMC  = dynamic_cast<AliMC *>(TVirtualMC::GetMC());
   //AliGenBox* gB = dynamic_cast<AliGenBox *>(ALIMC->Generator());
   //Double_t p = gB->
   Double_t pmom=1.5; 
@@ -183,15 +183,15 @@ void AliEMCALWsuCosmicRaySetUp::DefineCuts(const Int_t idtmed)
   // Dec 2,2010 : it works
   Float_t cutgam=10.e-5; // 100 kev;
   Float_t cutele=10.e-5; // 100 kev;
-  gMC->Gstpar(idtmed,"CUTGAM", cutgam);
-  gMC->Gstpar(idtmed,"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
-  gMC->Gstpar(idtmed,"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-  gMC->Gstpar(idtmed,"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  TVirtualMC::GetMC()->Gstpar(idtmed,"CUTGAM", cutgam);
+  TVirtualMC::GetMC()->Gstpar(idtmed,"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
+  TVirtualMC::GetMC()->Gstpar(idtmed,"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+  TVirtualMC::GetMC()->Gstpar(idtmed,"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
   // --- Generate explicitly delta rays in Lead ---
-  gMC->Gstpar(idtmed, "LOSS", 3) ;
-  gMC->Gstpar(idtmed, "DRAY", 1) ;
-  gMC->Gstpar(idtmed, "DCUTE", cutele) ;
-  gMC->Gstpar(idtmed, "DCUTM", cutele) ;
+  TVirtualMC::GetMC()->Gstpar(idtmed, "LOSS", 3) ;
+  TVirtualMC::GetMC()->Gstpar(idtmed, "DRAY", 1) ;
+  TVirtualMC::GetMC()->Gstpar(idtmed, "DCUTE", cutele) ;
+  TVirtualMC::GetMC()->Gstpar(idtmed, "DCUTM", cutele) ;
 }
  
 void AliEMCALWsuCosmicRaySetUp::StepManager(void)
@@ -202,17 +202,17 @@ void AliEMCALWsuCosmicRaySetUp::StepManager(void)
   static TLorentzVector pos;  // Lorentz vector of the track current position.
   static TLorentzVector mom;  // Lorentz vector of the track current momentum.
 
-  if(pri>=2) printf("<I> AliEMCALWsuCosmicRaySetUp::StepManager %s \n", gMC->CurrentVolName());
+  if(pri>=2) printf("<I> AliEMCALWsuCosmicRaySetUp::StepManager %s \n", TVirtualMC::GetMC()->CurrentVolName());
   Int_t tracknumber =  gAlice->GetMCApp()->GetCurrentTrackNumber();
   //  Int_t parent=0;
   TParticle* part=0;
-  curVolName = gMC->CurrentVolName();
+  curVolName = TVirtualMC::GetMC()->CurrentVolName();
   if(curVolName.Contains("SEND")) {
-    gMC->TrackMomentum(mom);
-    gMC->TrackPosition(pos);
+    TVirtualMC::GetMC()->TrackMomentum(mom);
+    TVirtualMC::GetMC()->TrackPosition(pos);
     if(pri>=2) printf(" %s tracknumber %i p %f \n", curVolName.Data(), tracknumber, mom.P());
     if(pri>=2) printf(" x %f y %f z %f \n", pos[0], pos[1], pos[2]);
-    if(gMC->IsTrackEntering()) { // primary only TList *l = GetLhists(1);
+    if(TVirtualMC::GetMC()->IsTrackEntering()) { // primary only TList *l = GetLhists(1);
       TList *l = 0;
       if(tracknumber==0){
         l = GetLhists(1);

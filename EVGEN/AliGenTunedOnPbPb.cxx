@@ -187,7 +187,7 @@ void AliGenTunedOnPbPb::Generate()
       Double_t phi = fgV2->GetRandom(-TMath::Pi(),TMath::Pi());
       Double_t px = pt*TMath::Cos(phi);
       Double_t py = pt*TMath::Sin(phi);
-      Float_t p[3] = {px,py,pz};
+      Float_t p[3] = {static_cast<Float_t>(px),static_cast<Float_t>(py),static_cast<Float_t>(pz)};
       Float_t polar[3] = {0.,0.,0.};
       
       if(TMath::Abs(y)< fYlimitForFlatness || gRandom->Rndm() < 1 - fYdecreaseSp*(TMath::Abs(y) - fYlimitForFlatness)){// check on pseudorapidity distribution

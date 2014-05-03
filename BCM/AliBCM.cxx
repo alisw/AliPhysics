@@ -83,27 +83,27 @@ void AliBCM::StepManager()
     Int_t   copy = -1; 
     
     
-    if (gMC->TrackCharge() && 
-	gMC->CurrentVolID(copy) == fVolId) {
+    if (TVirtualMC::GetMC()->TrackCharge() && 
+	TVirtualMC::GetMC()->CurrentVolID(copy) == fVolId) {
 	// Charged particle inside sensitive volume
 	//
 	// Entering
-	if (gMC->IsTrackEntering()) {
+	if (TVirtualMC::GetMC()->IsTrackEntering()) {
 	    edepT = 0.;
-	    gMC->TrackPosition(xh[0],xh[1],xh[2]);
-	    xh[3] = gMC->TrackTime();
+	    TVirtualMC::GetMC()->TrackPosition(xh[0],xh[1],xh[2]);
+	    xh[3] = TVirtualMC::GetMC()->TrackTime();
 	}
 	
 	//
 	// Any step
-	if ((edep = gMC->Edep()) > 0.) {
+	if ((edep = TVirtualMC::GetMC()->Edep()) > 0.) {
 	    Double_t x[3];   
-	    gMC->TrackPosition(x[0],x[1],x[2]); 
+	    TVirtualMC::GetMC()->TrackPosition(x[0],x[1],x[2]); 
 	    edepT += edep;
 	}
 	//
 	// Exiting 
-	if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared())
+	if(TVirtualMC::GetMC()->IsTrackExiting()||TVirtualMC::GetMC()->IsTrackStop()||TVirtualMC::GetMC()->IsTrackDisappeared())
 	{
 	    Int_t track = gAlice->GetMCApp()->GetCurrentTrackNumber();
 	    TClonesArray &lhits = *fHits;
@@ -198,7 +198,7 @@ void AliBCM::Init()
 
     //
     // Here the BCM initialisation code (if any!)
-    fVolId =  gMC->VolId("BCMpcd");
+    fVolId =  TVirtualMC::GetMC()->VolId("BCMpcd");
 }
 
 void AliBCM::MakeBranch(Option_t* option)

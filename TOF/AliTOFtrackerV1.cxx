@@ -615,7 +615,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     distR+=deltaY*deltaY;
     distR+=dzTW*dzTW;
     distR = TMath::Sqrt(distR);
-    Float_t info[10] = {distR, deltaY, dzTW,
+    Float_t info[10] = {distR, deltaY, static_cast<Float_t>(dzTW),
 			0.,0.,0.,0.,0.,0.,0.};
     t->SetTOFInfo(info);
 

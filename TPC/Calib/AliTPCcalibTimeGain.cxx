@@ -254,9 +254,9 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   
   // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 - proton points at higher dE/dx), meanDriftlength, momenta (only filled if enough space is available), run number, eta
   Int_t timeBins = TMath::Nint(deltaTime/deltaIntegrationTimeGain);
-  Int_t binsGainTime[7]    = {150,  timeBins,    4,  25, 200, 10000000, 20};
-  Double_t xminGainTime[7] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5,  -1};
-  Double_t xmaxGainTime[7] = {  8,   EndTime,  4.5, 250,  50, 9999999.5, 1};
+  Int_t binsGainTime[7]    = {150,  static_cast<Int_t>(timeBins),    4,  25, 200, 10000000, 20};
+  Double_t xminGainTime[7] = {0.5, static_cast<Double_t>(StartTime),  0.5,   0, 0.1,    -0.5,  -1};
+  Double_t xmaxGainTime[7] = {  8,   static_cast<Double_t>(EndTime),  4.5, 250,  50, 9999999.5, 1};
   fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number, eta;dEdx",7,binsGainTime,xminGainTime,xmaxGainTime);
   BinLogX(fHistGainTime, 4);
   //
@@ -387,7 +387,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
 	meanP = 30; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
+      Double_t vec[6] = {tpcSignal,static_cast<Double_t>(time),1,meanDrift,meanP,static_cast<Double_t>(runNumber)};
       fHistGainTime->Fill(vec);
     }
     
@@ -479,7 +479,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
-      Double_t vec[7] = {tpcSignal,time,particleCase,meanDrift,meanP,runNumber, eta};
+      Double_t vec[7] = {tpcSignal,static_cast<Double_t>(time),static_cast<Double_t>(particleCase),meanDrift,meanP,static_cast<Double_t>(runNumber), eta};
       fHistGainTime->Fill(vec);
     }
     
@@ -526,7 +526,7 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       }
 	Double_t tpcSignal = GetTPCdEdx(seed);
 	//dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-	Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
+	Double_t vec[6] = {tpcSignal,static_cast<Double_t>(time),1,meanDrift,meanP,static_cast<Double_t>(runNumber)};
 	fHistGainTime->Fill(vec);
       }
     }

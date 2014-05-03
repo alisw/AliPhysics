@@ -142,7 +142,7 @@ TParticle* AliGenReaderCwn::NextParticle()
     Float_t prwn;
     Float_t p[4];
 // Read the next particle
-    if (fCode == kGEANT3) fIdpart=gMC->PDGFromId(fIdpart);
+    if (fCode == kGEANT3) fIdpart=TVirtualMC::GetMC()->PDGFromId(fIdpart);
     Double_t amass = TDatabasePDG::Instance()->GetParticle(fIdpart)->Mass();
     if(fE<=amass) {
 	Warning("Generate","Particle %d  E = %f mass = %f %f %f \n",

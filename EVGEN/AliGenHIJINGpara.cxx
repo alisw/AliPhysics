@@ -279,8 +279,8 @@ void AliGenHIJINGpara::Init()
     }
 //
 //
-    if (fPi0Decays && gMC)
-	fDecayer = gMC->GetDecayer();
+    if (fPi0Decays && TVirtualMC::GetMC())
+	fDecayer = TVirtualMC::GetMC()->GetDecayer();
 
     if (fPi0Decays)
     {

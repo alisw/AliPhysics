@@ -254,7 +254,7 @@ void AliGenEMCocktail::AddSource2Generator(Char_t* nameSource,
   genSource->SetPhiRange(phiMin, phiMax);
   genSource->SetWeighting(fWeightingMode);
   genSource->SetForceGammaConversion(fForceConv);
-  if (!gMC) genSource->SetDecayer(fDecayer);  
+  if (!TVirtualMC::GetMC()) genSource->SetDecayer(fDecayer);  
   genSource->Init();
     
   AddGenerator(genSource,nameSource,1.); // Adding Generator    
