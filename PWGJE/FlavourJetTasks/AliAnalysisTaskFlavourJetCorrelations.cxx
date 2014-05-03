@@ -789,9 +789,9 @@ Bool_t  AliAnalysisTaskFlavourJetCorrelations::DefineHistoForAnalysis(){
       //thnsparse for jets
       const Int_t nAxis=6;   
       const Int_t nbinsSparse[nAxis]={nbinsphi,nbinseta, nbinsptjet, nbinsptjet,nbinsContrib, nbinsA};
-      const Double_t minSparse[nAxis]={philims[0],etalims[0],ptjetlims[0],ptjetlims[0],nContriblims[0],arealims[0]};
+      const Double_t minSparse[nAxis]={philims[0],etalims[0],ptjetlims[0],ptjetlims[0],static_cast<Double_t>(nContriblims[0]),arealims[0]};
       const Double_t 
-      maxSparse[nAxis]={philims[1],etalims[1],ptjetlims[1],ptjetlims[1],nContriblims[1],arealims[1]};
+	maxSparse[nAxis]={philims[1],etalims[1],ptjetlims[1],ptjetlims[1],static_cast<Double_t>(nContriblims[1]),arealims[1]};
       THnSparseF *hsJet=new THnSparseF("hsJet","#phi, #eta, p_{T}^{jet}, E^{jet}, N contrib, Area", nAxis, nbinsSparse, minSparse, maxSparse);
       hsJet->Sumw2();
       
@@ -1020,7 +1020,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsD0JetCorr(AliAODRecoDe
    
    TH3F* hPtJetWithD=(TH3F*)fOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
-   Double_t point[8]={z,dPhi,ptj,ptD,masses[0],0, fIsDInJet ? 1 : 0,phiD};
+   Double_t point[8]={z,dPhi,ptj,ptD,masses[0],0, static_cast<Double_t>(fIsDInJet ? 1 : 0),phiD};
    Printf("Candidate in FillHistogramsD0JetCorr IsA %s", (candidate->IsA())->GetName());   
    Int_t isselected=fCuts->IsSelected(candidate,AliRDHFCuts::kAll,aodEvent);
    if(isselected==1 || isselected==3) {
@@ -1057,7 +1057,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsDstarJetCorr(AliAODRec
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
    Int_t isSB=0;//IsDzeroSideBand(dstar);
    
-   Double_t point[8]={z,dPhi,ptj,ptD,deltamass,isSB, fIsDInJet ? 1 : 0,phiD};
+   Double_t point[8]={z,dPhi,ptj,ptD,deltamass,static_cast<Double_t>(isSB), static_cast<Double_t>(fIsDInJet ? 1 : 0),phiD};
 
    if(fIsDInJet) hPtJetWithD->Fill(ptj,deltamass,ptD);
    
@@ -1073,7 +1073,7 @@ void AliAnalysisTaskFlavourJetCorrelations::FillHistogramsMCGenDJetCorr(Double_t
    Double_t pdgmass=0;
    TH3F* hPtJetWithD=(TH3F*)fOutput->FindObject("hPtJetWithD");
    THnSparseF* hsDphiz=(THnSparseF*)fOutput->FindObject("hsDphiz");
-   Double_t point[8]={z,dPhi,ptjet,ptD,pdgmass,0, fIsDInJet ? 1 : 0,phiD};
+   Double_t point[8]={z,dPhi,ptjet,ptD,pdgmass,0, static_cast<Double_t>(fIsDInJet ? 1 : 0),phiD};
 
    if(fCandidateType==kD0toKpi) pdgmass=TDatabasePDG::Instance()->GetParticle(421)->Mass();
    if(fCandidateType==kDstartoKpipi) pdgmass=TDatabasePDG::Instance()->GetParticle(413)->Mass()-TDatabasePDG::Instance()->GetParticle(421)->Mass();
@@ -1129,7 +1129,7 @@ void AliAnalysisTaskFlavourJetCorrelations::SideBandBackground(AliAODRecoCascade
    if(dPhi>(3*(TMath::Pi()))/2) dPhi = dPhi-2*(TMath::Pi());
    
    Int_t isSideBand=1;//IsDzeroSideBand(candDstar);
-   Double_t point[7]={z,dPhi,fPtJet,ptD,deltaM,isSideBand, fIsDInJet ? 1 : 0};
+   Double_t point[7]={z,dPhi,fPtJet,ptD,deltaM,static_cast<Double_t>(isSideBand), static_cast<Double_t>(fIsDInJet ? 1 : 0)};
    //fill the background histogram with the side bands or when looking at MC with the real background
    if(isSideBand==1){
       hDiffSideBand->Fill(deltaM,ptD); // M(Kpipi)-M(Kpi) side band background    

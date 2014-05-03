@@ -1021,7 +1021,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
             continue;
         
         if (fDoPID) {
-          Double_t valuesGenYield[kGenYieldNumAxes] = { mcID, mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
+          Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
           valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
         
           fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
@@ -1029,7 +1029,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         
         if (fDoEfficiency) {
-          Double_t valueEff[kEffNumAxes] = { mcID, mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
+          Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
                                             -1, -1, -1 };
           
           fContainerEff->Fill(valueEff, kStepGenWithGenCuts);    
@@ -1098,11 +1098,11 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
             IsInAcceptedEtaRange(TMath::Abs(mcTrack->Eta()))) {
           
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-          Double_t value[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
+          Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
                                           -1, -1, -1 };
           fContainerEff->Fill(value, kStepRecWithGenCuts);    
             
-          Double_t valueMeas[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
                                               -1, -1, -1 };
           fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);    
         }
@@ -1125,7 +1125,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     if (fDoEfficiency) {
       if (mcTrack) {
-        Double_t valueRecAllCuts[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
                                                   -1, -1, -1 };
         fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
         
@@ -1134,7 +1134,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
         
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-        Double_t valueGenAllCuts[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
+        Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
                                                   centralityPercentile, -1, -1, -1 };
         if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);

@@ -547,12 +547,12 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
       //
 
       if (!fSmallTHnSparse){
-	Double_t vecHistMC[10] = {iPart, centrality,  pT, sign, rap, 0, 1, 0, dxy, 0};
+	Double_t vecHistMC[10] = {static_cast<Double_t>(iPart), centrality,  pT, static_cast<Double_t>(sign), rap, 0, 1, 0, dxy, 0};
 	if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
       }
       else{
 	if (rap>fRapidityCutLow && rap<fRapidityCutHigh){
-	  Double_t vecHistMC[8] = {iPart, centrality,  pT, sign, 1, 0, dxy, 0};
+	  Double_t vecHistMC[8] = {static_cast<Double_t>(iPart), centrality,  pT, static_cast<Double_t>(sign), 1, 0, dxy, 0};
 	  if (!fOnlyQA) fHistMCparticles->Fill(vecHistMC);
 	}
       }
@@ -726,12 +726,12 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
     for(Int_t iPart = 0; iPart < 3; iPart++) {
 
       if (!fSmallTHnSparse) {
-	Double_t vecHistReal[9]  = {iPart,  centrality,   pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0]};
+	Double_t vecHistReal[9]  = {static_cast<Double_t>(iPart),  centrality,   pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0]};
 	if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
       }
       else {
 	if (pullsTPC[iPart]>fTPCnSigmaCutLow && pullsTPC[iPart]<fTPCnSigmaCutHigh && rap[iPart]>fRapidityCutLow && rap[iPart]<fRapidityCutHigh) {
-	  Double_t vecHistReal[7]  = {iPart,  centrality,   pT, sign, hasTOF, pullsTOF[iPart], dca[0]};
+	  Double_t vecHistReal[7]  = {static_cast<Double_t>(iPart),  centrality,   pT, static_cast<Double_t>(sign), static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0]};
 	  if (!fOnlyQA) fHistRealTracks->Fill(vecHistReal);
 	}
       }
@@ -781,11 +781,11 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
 	if (!fSmallTHnSparse){
-	  Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
+	  Double_t vectorHistMC[10] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(code)};
 	  if (!fOnlyQA) { 
 	    fHistMCparticles->Fill(vectorHistMC);
 	    if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
-	      Double_t vectorHistMCmother[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], motherCode};
+	      Double_t vectorHistMCmother[10] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(motherCode)};
 	      fHistMCparticles->Fill(vectorHistMCmother);
 	    }
 	  }
@@ -793,11 +793,11 @@ void AliAnalysisCombinedHadronSpectra::UserExec(Option_t *)
 	else{
 	  if (pullsTPC[iPart]>fTPCnSigmaCutLow && pullsTPC[iPart]<fTPCnSigmaCutHigh && rap[iPart]>fRapidityCutLow && rap[iPart]<fRapidityCutHigh) {
 	    //                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
-	    Double_t vectorHistMC[8] = {iPart,  centrality,  pT, sign, hasTOF, pullsTOF[iPart], dca[0], code};
+	    Double_t vectorHistMC[8] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign), static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(code)};
 	    if (!fOnlyQA) { 
 	      fHistMCparticles->Fill(vectorHistMC);
 	      if (motherCode != -1 && fSaveMotherPDG) { //if mother of weak decay is K0, lambda or sigma+ add track again with this information
-		Double_t vectorHistMCmother[8] = {iPart,  centrality,  pT, sign, hasTOF, pullsTOF[iPart], dca[0], motherCode};
+		Double_t vectorHistMCmother[8] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign), static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(motherCode)};
 		fHistMCparticles->Fill(vectorHistMCmother);
 	      }
 	    }

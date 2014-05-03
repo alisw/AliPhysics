@@ -897,8 +897,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 
       if(fPtKn > 4.299) fPtKn = 4.299;
 
-      Float_t xTOfill[] = {fPtPhi,KpTrack->Eta(),fPtKp,fPtKn,(fPidKp%128)*0.01,(fPidKn%128)*0.01,tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
-      Float_t xTOfill2[] = {fPtPhi,KpTrack->Eta(),fPtKp,fPtKn,(fPidKp%128)*0.01,(fPidKn%128)*0.01,tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
+      Float_t xTOfill[] = {static_cast<Float_t>(fPtPhi),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>((fPidKp%128)*0.01),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
+      Float_t xTOfill2[] = {static_cast<Float_t>(fPtPhi),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>((fPidKp%128)*0.01),static_cast<Float_t>((fPidKn%128)*0.01),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
       
       Int_t ipt = 0;
       while(fPtPhiMin[ipt] < fPtPhi && ipt < nPtBin){
@@ -922,8 +922,8 @@ void AliAnalysisTaskPhiBayes::Analyze(AliAODEvent* aodEvent)
 	if((fPidKp%128) > 80) fContPid2->Fill(0,fMassV0,fCentrality,xTOfill2);// use tagging on positive track
 
 	if(fPIDuserCut){
-	  Float_t xUser[] = {KpTrack->Eta(),fPtKp,isTrue,0,deltaphi1,fPsi};
-	  Float_t xUser2[] = {KnTrack->Eta(),fPtKn,isTrue,0,deltaphi2,fPsi};
+	  Float_t xUser[] = {static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(isTrue),0,static_cast<Float_t>(deltaphi1),static_cast<Float_t>(fPsi)};
+	  Float_t xUser2[] = {static_cast<Float_t>(KnTrack->Eta()),static_cast<Float_t>(fPtKn),static_cast<Float_t>(isTrue),0,static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
 	  
 	  if(fPIDuserCut->IsSelected(KpTrack,AliPID::kPion)){ // to be filled for positive
 	    xUser[3] = 1;

@@ -2767,7 +2767,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           if (TMath::Abs(chargeMC) < 0.01)
             continue; // Reject neutral particles (only relevant, if mcID is not used)
           
-          Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { mcID, pT, centPercent, -1, -1, -1, -1 };
+          Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { static_cast<Double_t>(mcID), pT, centPercent, -1, -1, -1, -1 };
 
           for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
             if (fInclusivePIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
@@ -2776,7 +2776,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             }
           }
           
-          Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { mcID, pT, part->Eta(), chargeMC,
+          Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), pT, part->Eta(), chargeMC,
                                                                   centPercent, -1, -1, -1 };// no jet pT etc since inclusive spectrum 
           for (Int_t i = 0; i < fNumInclusivePIDtasks; i++)
             fInclusivePIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
@@ -2832,7 +2832,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                 continue;
                 
               // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-              Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { mcID, gentrack->Pt(), gentrack->Eta(), gentrack->Charge() / 3.,
+              Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), gentrack->Pt(), gentrack->Eta(), gentrack->Charge() / 3.,
                                                                   centPercent,
                                                                   -1, -1, -1 };// no jet pT etc since inclusive spectrum 
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
@@ -2842,8 +2842,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
                   fInclusivePIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
               }
                   
-              Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { mcID, inclusiveaod->Pt(), inclusiveaod->Eta(),
-                                                                      inclusiveaod->Charge(), centPercent,
+              Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), inclusiveaod->Pt(), inclusiveaod->Eta(),
+                                                                      static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
                                                                       -1, -1, -1 };// no jet pT etc since inclusive spectrum 
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
                 if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
@@ -2894,8 +2894,8 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             
             if (gentrack) {
               Int_t mcID = AliAnalysisTaskPID::PDGtoMCID(pdg);
-              Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, inclusiveaod->Pt(), inclusiveaod->Eta(), 
-                                                                            inclusiveaod->Charge(), centPercent,
+              Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), inclusiveaod->Pt(), inclusiveaod->Eta(), 
+                                                                            static_cast<Double_t>(inclusiveaod->Charge()), centPercent,
                                                                             -1, -1, -1 };
               for (Int_t i = 0; i < fNumInclusivePIDtasks; i++) {
                 if ((!fInclusivePIDtask[i]->GetUseTPCCutMIGeo() && !fInclusivePIDtask[i]->GetUseTPCnclCut()) ||
@@ -2916,7 +2916,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
               
               if (gentrack->IsPhysicalPrimary()) {
                 // AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-                Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, gentrack->Pt(), gentrack->Eta(), 
+                Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), gentrack->Pt(), gentrack->Eta(), 
                                                                               gentrack->Charge() / 3., centPercent, -1, -1, 
                                                                               -1 };
                 
@@ -3062,7 +3062,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             if (TMath::Abs(chargeMC) < 0.01)
               continue; // Reject neutral particles (only relevant, if mcID is not used)
             
-            Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { mcID, trackPt, centPercent, jetPt, z, xi, chargeMC };
+            Double_t valuesGenYield[AliAnalysisTaskPID::kGenYieldNumAxes] = { static_cast<Double_t>(mcID), trackPt, centPercent, jetPt, z, xi, chargeMC };
             
             for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
               if (fJetPIDtask[i]->IsInAcceptedEtaRange(TMath::Abs(part->Eta()))) {
@@ -3072,7 +3072,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             }
             
             
-            Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { mcID, trackPt, part->Eta(), chargeMC,
+            Double_t valuesEff[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), trackPt, part->Eta(), chargeMC,
                                                                     centPercent, jetPt, z, xi };
             for (Int_t i = 0; i < fNumJetPIDtasks; i++)
               fJetPIDtask[i]->FillEfficiencyContainer(valuesEff, AliAnalysisTaskPID::kStepGenWithGenCuts);
@@ -3216,7 +3216,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           Double_t z = -1., xi = -1.;
           AliAnalysisTaskPID::GetJetTrackObservables(pT, jetPt, z, xi);
             
-          Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, pT, aodtrack->Eta(), aodtrack->Charge(),
+          Double_t valueRecAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), pT, aodtrack->Eta(), static_cast<Double_t>(aodtrack->Charge()),
                                                                         centPercent, jetPt, z, xi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
             if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
@@ -3240,7 +3240,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
             Double_t genPt = gentrack->Pt();
             Double_t genZ = -1., genXi = -1.;
             AliAnalysisTaskPID::GetJetTrackObservables(genPt, jetPt, genZ, genXi);
-            Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { mcID, genPt, gentrack->Eta(), 
+            Double_t valueGenAllCuts[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), genPt, gentrack->Eta(), 
                                                                           gentrack->Charge() / 3., centPercent, jetPt, genZ, 
                                                                           genXi };
             
@@ -3317,7 +3317,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
           
 			
 					// AliAODMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-          Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { mcID, genPt, gentrack->Eta(), gentrack->Charge() / 3.,
+          Double_t value[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), genPt, gentrack->Eta(), gentrack->Charge() / 3.,
                                                               centPercent, jetPt, genZ, genXi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
             if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||
@@ -3326,7 +3326,7 @@ void AliAnalysisTaskIDFragmentationFunction::UserExec(Option_t *)
               fJetPIDtask[i]->FillEfficiencyContainer(value, AliAnalysisTaskPID::kStepRecWithGenCuts);
           }
           
-          Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { mcID, measPt, aodtrack->Eta(), aodtrack->Charge(),
+          Double_t valueMeas[AliAnalysisTaskPID::kEffNumAxes] = { static_cast<Double_t>(mcID), measPt, aodtrack->Eta(), static_cast<Double_t>(aodtrack->Charge()),
                                                                   centPercent, jetPt, measZ, measXi };
           for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
             if ((!fJetPIDtask[i]->GetUseTPCCutMIGeo() && !fJetPIDtask[i]->GetUseTPCnclCut()) ||

@@ -65,6 +65,9 @@
 
 #include "AliGenCocktailEventHeader.h"
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliAnalysisTaskEMCALMesonGGSDM)
 
 //________________________________________________________________________

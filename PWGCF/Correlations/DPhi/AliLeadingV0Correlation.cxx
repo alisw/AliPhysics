@@ -506,9 +506,9 @@ void AliLeadingV0Correlation::UserExec(Option_t *)
 			Bool_t V0EtaMax       = TMath::Abs(mcTrackEta)<fTrackEtaCut;
 			Double_t mcMass       = mcTrack->M();
 			
-			Double_t mcK0[3] = {mcMass,mcTrackPt,nMCTracks};
-			Double_t mcLa[3] = {mcMass,mcTrackPt,nMCTracks};
-			Double_t mcAl[3] = {mcMass,mcTrackPt,nMCTracks};
+			Double_t mcK0[3] = {mcMass,mcTrackPt,static_cast<Double_t>(nMCTracks)};
+			Double_t mcLa[3] = {mcMass,mcTrackPt,static_cast<Double_t>(nMCTracks)};
+			Double_t mcAl[3] = {mcMass,mcTrackPt,static_cast<Double_t>(nMCTracks)};
 			
 			Int_t myTrackMotherLabel = mcTrack->GetMother();
 			

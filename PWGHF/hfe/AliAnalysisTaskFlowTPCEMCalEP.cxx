@@ -451,7 +451,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
             
     SelectPhotonicElectron(iTracks,track, fFlagPhotonicElec, fFlagPhotonicElecBCG);
            
-    Double_t corr[12]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C),fFlagPhotonicElec,fFlagPhotonicElecBCG,m02,m20};
+    Double_t corr[12]={phi,fTPCnSigma,cent,pt,EovP,GetDeltaPhi(phi,evPlaneCorrTPC),GetDeltaPhi(phi,evPlaneV0A),GetDeltaPhi(phi,evPlaneV0C), static_cast<Double_t>(fFlagPhotonicElec), static_cast<Double_t>(fFlagPhotonicElecBCG),m02,m20};
     fCorr->Fill(corr);
     
     
@@ -502,7 +502,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
                 phiD = mother->Phi();
                 ptD = mother->Pt();
 
-                Double_t cocktail[9]={phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0A,iHijing,kCent};
+                Double_t cocktail[9]={phiD,phie,phieRec,ptD,pte,pteRec,evPlaneV0A, static_cast<Double_t>(iHijing), static_cast<Double_t>(kCent)};
                 fCocktail->Fill(cocktail);
              }
              //*************************************************************    
@@ -631,7 +631,7 @@ void AliAnalysisTaskFlowTPCEMCalEP::UserExec(Option_t*)
 	      }
 	      
     
-	      Double_t mc[15]={EovP,fTPCnSigma,partPt,fFlagPhotonicElec,fFlagPhotonicElecBCG,whichPart,cent,pt,whichFirstMother,whichSecondMother,whichThirdMother,iHijing,motherPt,secondMotherPt,thirdMotherPt};
+	      Double_t mc[15]={EovP,fTPCnSigma,partPt, static_cast<Double_t>(fFlagPhotonicElec), static_cast<Double_t>(fFlagPhotonicElecBCG), static_cast<Double_t>(whichPart),cent,pt, static_cast<Double_t>(whichFirstMother), static_cast<Double_t>(whichSecondMother), static_cast<Double_t>(whichThirdMother), static_cast<Double_t>(iHijing),motherPt,secondMotherPt,thirdMotherPt};
  
 // 	      fMCphotoElecPt->Fill(mc);
 	      if (motherPDG==22 || motherPDG==111 || motherPDG==221) fMCphotoElecPt->Fill(mc);// mother = gamma, pi0, eta

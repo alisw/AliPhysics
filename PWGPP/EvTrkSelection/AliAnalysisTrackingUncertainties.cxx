@@ -530,7 +530,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMinNClustersTPC(0);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistNcl[kNumberOfAxes] = {nclsTPC, pT, eta, phi, iPid};
+	Double_t vecHistNcl[kNumberOfAxes] = {static_cast<Double_t>(nclsTPC), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histNcl->Fill(vecHistNcl);
       }
     }
@@ -542,7 +542,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMaxChi2PerClusterTPC(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, iPid};
+	Double_t vecHistChi2Tpc[kNumberOfAxes] = {chi2TPC, pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histChi2Tpc->Fill(vecHistChi2Tpc);
       }
     }
@@ -554,7 +554,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMaxDCAToVertexZ(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, iPid};
+	Double_t vecHistDcaZ[kNumberOfAxes] = {TMath::Abs(dca[1]), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histDcaZ->Fill(vecHistDcaZ);
       }
     }
@@ -567,7 +567,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
       Int_t hasPoint = 0;
       if (track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1)) hasPoint = 1;
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistSpd[kNumberOfAxes] = {hasPoint, pT, eta, phi, iPid};
+	Double_t vecHistSpd[kNumberOfAxes] = {static_cast<Double_t>(hasPoint), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histSpd->Fill(vecHistSpd);
       }
     }
@@ -580,7 +580,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMinNCrossedRowsTPC(0);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistNcr[kNumberOfAxes] = {ncrTPC, pT, eta, phi, iPid};
+	Double_t vecHistNcr[kNumberOfAxes] = {static_cast<Double_t>(ncrTPC), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histNcr->Fill(vecHistNcr);
       }
     }
@@ -593,7 +593,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.);
     if (fESDtrackCuts->AcceptTrack(track)) {
        for(Int_t iPid = 0; iPid < 6; iPid++) {
-	 Double_t vecHistCRoverFC[kNumberOfAxes] = {nCRoverFC, pT, eta, phi, iPid};
+	 Double_t vecHistCRoverFC[kNumberOfAxes] = {static_cast<Double_t>(nCRoverFC), pT, eta, phi, static_cast<Double_t>(iPid)};
 	 if (IsConsistentWithPid(iPid, track)) histCRoverFC->Fill(vecHistCRoverFC);
        }
     }
@@ -605,7 +605,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMaxChi2PerClusterITS(999.);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistChi2ITS[kNumberOfAxes] = {chi2ITS, pT, eta, phi, iPid};
+	Double_t vecHistChi2ITS[kNumberOfAxes] = {chi2ITS, pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histChi2Its->Fill(vecHistChi2ITS);
       }
     }
@@ -617,7 +617,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     fESDtrackCuts->SetMinLengthActiveVolumeTPC(0);
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistTpcLength[kNumberOfAxes] = {tpcLength, pT, eta, phi, iPid};
+	Double_t vecHistTpcLength[kNumberOfAxes] = {tpcLength, pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histTpcLength->Fill(vecHistTpcLength);
       }
     }
@@ -647,7 +647,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {isMatched, pT, eta, phi, iPid};
+	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histTpcItsMatch->Fill(vecHistTpcItsMatch); // fill with 1 here
       }
     }
@@ -661,7 +661,7 @@ void AliAnalysisTrackingUncertainties::ProcessTrackCutVariation() {
     isMatched=kTRUE;
     if (fESDtrackCuts->AcceptTrack(track)) {
       for(Int_t iPid = 0; iPid < 6; iPid++) {
-	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {isMatched, pT, eta, phi, iPid};
+	Double_t vecHistTpcItsMatch[kNumberOfAxes] = {static_cast<Double_t>(isMatched), pT, eta, phi, static_cast<Double_t>(iPid)};
 	if (IsConsistentWithPid(iPid, track)) histTpcItsMatch->Fill(vecHistTpcItsMatch); // fill with 0 here
       }
     }

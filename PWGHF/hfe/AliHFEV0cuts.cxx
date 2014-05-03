@@ -442,7 +442,7 @@ Bool_t AliHFEV0cuts::GammaCuts(AliESDv0 *v0){
 
   Float_t iMass = v0->GetEffMass(0, 0);
   Float_t iP = v0->P();
-  Float_t p[2] = {d[0]->GetP(), d[1]->GetP()};
+  Float_t p[2] = {static_cast<Float_t>(d[0]->GetP()), static_cast<Float_t>(d[1]->GetP())};
 
   // Cut values
   const Double_t cutChi2NDF = 1.5;              // ORG [7.]  
@@ -798,7 +798,7 @@ Bool_t AliHFEV0cuts::K0Cuts(AliESDv0 *v0){
 
   Float_t iMass = v0->GetEffMass(2, 2);
   Float_t iP = v0->P();
-  Float_t p[2] = {d[0]->GetP(), d[1]->GetP()};
+  Float_t p[2] = {static_cast<Float_t>(d[0]->GetP()), static_cast<Float_t>(d[1]->GetP())};
   Double_t theta = v0->Theta();
   Double_t phi = v0->Phi();
   Double_t pt = v0->Pt();
@@ -1065,14 +1065,14 @@ Bool_t AliHFEV0cuts::LambdaCuts(AliESDv0 *v0, Bool_t &isLambda ){
   // production vertex is set in the 'CreateMotherParticle' function
   //kfMother[1]->SetMassConstraint(cL0mass, 0.);
 
-  Float_t dMass[2] = {TMath::Abs(mMass[0] - cL0mass), TMath::Abs(mMass[1] - cL0mass)};
+  Float_t dMass[2] = {static_cast<Float_t>(TMath::Abs(mMass[0] - cL0mass)), static_cast<Float_t>(TMath::Abs(mMass[1] - cL0mass))};
   
   AliESDtrack* d[2];
   d[0] = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(pIndex));
   d[1] = dynamic_cast<AliESDtrack*>(fInputEvent->GetTrack(nIndex));
   if(!d[0] || !d[1])    return kFALSE;
   
-  Float_t p[2] = {d[0]->GetP(), d[1]->GetP()}; 
+  Float_t p[2] = {static_cast<Float_t>(d[0]->GetP()), static_cast<Float_t>(d[1]->GetP())}; 
 
   // check the 3 lambda - antilambda variables
   Int_t check[2] = {-1, -1};   // 0 : lambda, 1 : antilambda
