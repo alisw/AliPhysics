@@ -128,6 +128,8 @@ private:
   TH1D*       fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
   TH1D*       fh1EventCent; //! number of events for different centralities
   TH1D*       fh1EventCent2; //! number of events for different centralities
+  TH1D*       fh1EventCent2Jets; //! number of events for different centralities
+  TH1D*       fh1EventCent2NoJets; //! number of events for different centralities
   TH2D*       fh2EventCentTracks; //! number of tracks vs centrality
   TH1D*       fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
   TH2D*       fh2VtxXY[fgkiNBinsCent]; //! xy coordinates of the primary vertex
