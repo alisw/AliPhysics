@@ -30,7 +30,7 @@ class AliJBaseTrack : public TLorentzVector {
   AliJBaseTrack(const TLorentzVector & a);
   virtual ~AliJBaseTrack(){;}		//destructor
 
-  float   GetTwoPiPhi() const {return Phi()>-kJPi/3 ? Phi() : kJTwoPi+Phi();} 
+  float   GetTwoPiPhi() const {return Phi()>-AliJConst::kJPi/3 ? Phi() : AliJConst::kJTwoPi+Phi();} 
   TLorentzVector GetLorentzVector(){ return TLorentzVector( *this);}
 
   Int_t         GetID()           const { return fID;}

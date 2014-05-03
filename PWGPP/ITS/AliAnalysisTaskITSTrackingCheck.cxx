@@ -2815,7 +2815,7 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
 
     // fill ntuple with track properties
     if(fFillNtuples && SelectPt(track->Pt())) {
-      Float_t fillArray[22]={track->Pt(),track->Eta(),track->Phi(),d0z0[0],d0z0[1],TMath::Sqrt(covd0z0[0]),TMath::Sqrt(covd0z0[2]),ptMC,pdgMC,pdgMoth,d0MC,d0z0MCv[0],d0z0MCv[1],sigmad0MCv,TMath::Sqrt(covd0z0MCv[2]),(Float_t)iITSflag,isPrimaryFl,isTPCSelFl};
+      Float_t fillArray[22]={static_cast<Float_t>(track->Pt()),static_cast<Float_t>(track->Eta()),static_cast<Float_t>(track->Phi()),static_cast<Float_t>(d0z0[0]),static_cast<Float_t>(d0z0[1]),static_cast<Float_t>(TMath::Sqrt(covd0z0[0])),static_cast<Float_t>(TMath::Sqrt(covd0z0[2])),ptMC,static_cast<Float_t>(pdgMC),static_cast<Float_t>(pdgMoth),static_cast<Float_t>(d0MC),static_cast<Float_t>(d0z0MCv[0]),static_cast<Float_t>(d0z0MCv[1]),static_cast<Float_t>(sigmad0MCv),static_cast<Float_t>(TMath::Sqrt(covd0z0MCv[2])),static_cast<Float_t>(iITSflag),static_cast<Float_t>(isPrimaryFl),static_cast<Float_t>(isTPCSelFl)};
       fNtupleESDTracks->Fill(fillArray);
     }
 

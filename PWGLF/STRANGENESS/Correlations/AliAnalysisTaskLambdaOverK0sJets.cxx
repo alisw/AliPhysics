@@ -48,7 +48,7 @@
 
 #include "AliAnalysisTaskLambdaOverK0sJets.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 
 ClassImp(AliAnalysisTaskLambdaOverK0sJets)

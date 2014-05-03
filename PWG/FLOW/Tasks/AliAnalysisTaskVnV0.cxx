@@ -1000,10 +1000,10 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  }
 
 	  // flow A and C side
-	  Float_t xMCepAv2[5] = {iC,0/*charge*/,1,EvPlaneMCV2[0],1};
-	  Float_t xMCepCv2[5] = {iC,0/*charge*/,1,EvPlaneMCV2[1],1};
-	  Float_t xMCepAv3[5] = {iC,0/*charge*/,1,EvPlaneMCV3[0],1};
-	  Float_t xMCepCv3[5] = {iC,0/*charge*/,1,EvPlaneMCV3[1],1};
+	  Float_t xMCepAv2[5] = {static_cast<Float_t>(iC),0/*charge*/,1,EvPlaneMCV2[0],1};
+	  Float_t xMCepCv2[5] = {static_cast<Float_t>(iC),0/*charge*/,1,EvPlaneMCV2[1],1};
+	  Float_t xMCepAv3[5] = {static_cast<Float_t>(iC),0/*charge*/,1,EvPlaneMCV3[0],1};
+	  Float_t xMCepCv3[5] = {static_cast<Float_t>(iC),0/*charge*/,1,EvPlaneMCV3[1],1};
 	  
 	  for(Int_t iT=0;iT < nMCtrack;iT++){
 	    AliAODMCParticle *mctr = (AliAODMCParticle*) mcArray->At(iT);
@@ -1248,7 +1248,7 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	fPID->ComputeProb(aodTrack,fOutputAOD); // compute Bayesian probabilities
 	Float_t tofMismProbMC = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
 
-	Float_t xMC[5] = {iC,aodTrack->Charge(),1,evplaneMC,fPID->GetCurrentMask(1)&&tofMismProbMC < 0.5}; // to fill analysis v2 container
+	Float_t xMC[5] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),1,static_cast<Float_t>(evplaneMC),static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProbMC < 0.5)}; // to fill analysis v2 container
 
 	Float_t v2mc = TMath::Cos(2*(aodTrack->Phi() - evplaneMC));
 
@@ -1284,8 +1284,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	Float_t *probRead = fPID->GetProb();
 	Float_t prob[8] = {probRead[0],probRead[1],probRead[2],probRead[3],probRead[4],probRead[5],probRead[6],probRead[7]};
 	Float_t tofMismProb = fPID->GetTOFMismProb(); // TOF mismatch probability requested to be lower than 50% for TOF analysis 
-	Float_t x[6] = {iC,aodTrack->Charge(),1,evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v2 container
-	Float_t x3[6] = {iC,aodTrack->Charge(),1,evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v3 container
+	Float_t x[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),1,static_cast<Float_t>(evPlAngV0[iV0]),static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v2 container
+	Float_t x3[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),1,static_cast<Float_t>(evPlAngV0v3[iV0]),static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v3 container
 
 	// in case fill DCA info
 	if(fFillDCA){
@@ -1354,12 +1354,12 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	else if(deltaPhiV0v3 < -TMath::Pi()) deltaPhiV0v3 += 2*TMath::Pi();
 
 	// variable to fill QA container
-	Float_t xQA[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0,x[4]}; // v2
-	Float_t xQA3[5] = {iC,aodTrack->Pt(), 0.0,deltaPhiV0v3,x[4]}; // v3
+	Float_t xQA[5] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Pt()), 0.0,deltaPhiV0,x[4]}; // v2
+	Float_t xQA3[5] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Pt()), 0.0,deltaPhiV0v3,x[4]}; // v3
 
 	// extra QA TProfiles
 	if(iV0==1 && aodTrack->Pt() < 20 && fPID->GetCurrentMask(0) && fPID->GetCurrentMask(1)){
-	  Float_t xQApid[2] = {iC,aodTrack->Pt()};
+	  Float_t xQApid[2] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Pt())};
 	  fContQApid->Fill(0,nsigmaTPC[2],v2V0,xQApid); // v2 TPC (V0C) w.r.t pions
 	  fContQApid->Fill(1,nsigmaTOF[2],v2V0,xQApid); // v2 TOF (V0C) w.r.t. pions
 	  fContQApid->Fill(2,nsigmaTPC[3],v2V0,xQApid); // v2 TPC (V0C) w.r.t kaons
@@ -1587,8 +1587,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
       AliFlowVZEROResults *contV0v3[2] = {fContAllChargesV0Av3,fContAllChargesV0Cv3};
      
       for(Int_t iV0=0;iV0<2;iV0++){ // loop on A and C side
-	Float_t x[6] = {iC,-1/*my K0s are negative for convention*/,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
-	Float_t x3[6] = {iC,-1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
+	Float_t x[6] = {static_cast<Float_t>(iC),-1/*my K0s are negative for convention*/,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
+	Float_t x3[6] = {static_cast<Float_t>(iC),-1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
 
 	Float_t v2V0 = TMath::Cos(2*(fPhiK0s[imy] - evPlAngV0[iV0]));
 	Float_t v3V0 = TMath::Cos(3*(fPhiK0s[imy] - evPlAngV0v3[iV0]));
@@ -1675,8 +1675,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 	  if(deltaphi > TMath::Pi()) deltaphi -= 2*TMath::Pi();
 	  if(deltaphi < -TMath::Pi()) deltaphi += 2*TMath::Pi();
 
-	  Float_t x[6] = {iC,1,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
-	  Float_t x3[6] = {iC,1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
+	  Float_t x[6] = {static_cast<Float_t>(iC),1,1,evPlAngV0[iV0],1,0}; // to fill analysis v2 container
+	  Float_t x3[6] = {static_cast<Float_t>(iC),1,1,evPlAngV0v3[iV0],1,0}; // to fill analysis v3 container
 	  
 	  Float_t decaylength = myV0->DecayLengthXY(fOutputAOD->GetPrimaryVertex());
 	  //	  printf("decay length = %f\n",decaylength);
@@ -1732,8 +1732,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
             if(prob[4] < 0.61) prob[4] = 0.61;
 	    
-	    Float_t xdec[6] = {iC,aodTrack->Charge(),prob[4],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v2 container
-	    Float_t xdec3[6] = {iC,aodTrack->Charge(),prob[4],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to fill analysis v3 container
+	    Float_t xdec[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob[4],evPlAngV0[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v2 container
+	    Float_t xdec3[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob[4],evPlAngV0v3[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to fill analysis v3 container
 
 	    // Fill Container for (anti)proton from lambda
 	    if(nsigma < 2 && xdec[2] > 0.6 && TMath::Abs(aodTrack->Eta()) < 0.8){
@@ -1754,8 +1754,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
             if(prob[2] < 0.61) prob[2] = 0.61;
 
-            Float_t xdec[6] = {iC,aodTrack->Charge(),prob[2],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to 
-            Float_t xdec3[6] = {iC,aodTrack->Charge(),prob[2],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb < 0.5,0}; // to 
+            Float_t xdec[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob[2],evPlAngV0[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to 
+            Float_t xdec3[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob[2],evPlAngV0v3[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb < 0.5),0}; // to 
 
             if(nsigma < 2 && xdec[2] > 0.6 && TMath::Abs(aodTrack->Eta()) < 0.8){
               if(fV2) contV0[iV0]->Fill(12,aodTrack->Pt(),v2V0,xdec);
@@ -1773,8 +1773,8 @@ void AliAnalysisTaskVnV0::Analyze(AliAODEvent* aodEvent, Float_t v0Centr)
 
             if(prob2[2] < 0.61) prob2[2] = 0.61;
 
-            Float_t xdecB[6] = {iC,aodTrack->Charge(),prob2[2],evPlAngV0[iV0],fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5,0}; // to
-            Float_t xdecB3[6] = {iC,aodTrack->Charge(),prob2[2],evPlAngV0v3[iV0],fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5,0}; // to
+            Float_t xdecB[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob2[2],evPlAngV0[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5),0}; // to
+            Float_t xdecB3[6] = {static_cast<Float_t>(iC),static_cast<Float_t>(aodTrack->Charge()),prob2[2],evPlAngV0v3[iV0],static_cast<Float_t>(fPID->GetCurrentMask(1)&&tofMismProb2 < 0.5),0}; // to
 
             if(nsigma < 2 && xdecB[2] > 0.6  && TMath::Abs(aodTrack->Eta()) < 0.8){
               if(fV2) contV0[iV0]->Fill(12,aodTrack->Pt(),v2V0,xdecB);

@@ -309,7 +309,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	  Int_t mcID = fHelperPID->GetParticleSpecies(partMC);
 	  if(fDoPID && (mcID>3 || mcID < -3)) continue;
 	  // PID ID, pt, y, eta, phi
-	  Double_t varfill2[6] = {(partMC->Charge() > 0 ? mcID+1 : -1*(mcID+1)), partMC->Pt(), partMC->Y(), cent, partMC->Eta(), partMC->Phi()};
+	  Double_t varfill2[6] = {static_cast<Double_t>((partMC->Charge() > 0 ? mcID+1 : -1*(mcID+1))), partMC->Pt(), partMC->Y(), cent, partMC->Eta(), partMC->Phi()};
 	  hTrackMc->Fill(varfill2);
 
 	  if(!fDoPID || mcID == 1)
@@ -339,7 +339,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
     if(fDoPID && (dataID>3 || dataID < -3)) continue;
 
     // PID ID, pt, y, eta, phi
-    Double_t varfill3[6] = {(track->Charge() > 0 ? dataID+1 : -1*(dataID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
+    Double_t varfill3[6] = {static_cast<Double_t>((track->Charge() > 0 ? dataID+1 : -1*(dataID+1))), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
     hTrackReco->Fill(varfill3);
 
     if(!fDoPID || dataID==1)
@@ -363,7 +363,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
 	if(fDoPID && (genID>3 || genID < -3)) continue;
 
 	// PID ID, pt, y, eta, phi
-	Double_t varfill4[6] = {(track->Charge() > 0 ? genID+1 : -1*(genID+1)), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
+	Double_t varfill4[6] = {static_cast<Double_t>((track->Charge() > 0 ? genID+1 : -1*(genID+1))), track->Pt(), track->Y(), cent, track->Eta(), track->Phi()};
 	hTrackMatch->Fill(varfill4);
 
 	if(genID==1)
@@ -424,7 +424,7 @@ void AliAnalysisTaskPhiEffMc::UserExec(Option_t *)
   UnlikeSign(kaonsPosData,kaonsNegData,hPairReco,cent);
   LikeSign(kaonsPosData,kaonsNegData,hPairReco,cent);
   
-  Double_t varfill5[4] = {cent, fAOD->GetPrimaryVertex()->GetZ(), nMc, nReco};
+  Double_t varfill5[4] = {cent, fAOD->GetPrimaryVertex()->GetZ(), static_cast<Double_t>(nMc), static_cast<Double_t>(nReco)};
   hEvent->Fill(varfill5);
 
   kaonsPosMc->Clear();

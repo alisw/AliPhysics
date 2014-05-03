@@ -304,7 +304,7 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
     isMatch = kTRUE;
   
   if(isTPC){
-    Double_t vecTrackingEff[5] = { isMatch,esdTrack->Phi(), esdTrack->Pt(),esdTrack->Eta(),esdTrack->GetITSclusters(0) };
+    Double_t vecTrackingEff[5] = { static_cast<Double_t>(isMatch),esdTrack->Phi(), esdTrack->Pt(),esdTrack->Eta(),static_cast<Double_t>(esdTrack->GetITSclusters(0)) };
     fTrackingEffHisto->Fill(vecTrackingEff);
   }
 }
@@ -405,11 +405,11 @@ void AliPerformanceMatch::FillHistograms(AliESDtrack *const refParam, AliESDtrac
   }
 
   // Fill histograms
-  Double_t vResolHisto[9] = {delta[0],delta[1],delta[2],delta[3],delta[4],refParam->Phi(),refParam->Eta(),refParam->Pt(),isRec};
+  Double_t vResolHisto[9] = {delta[0],delta[1],delta[2],delta[3],delta[4],refParam->Phi(),refParam->Eta(),refParam->Pt(),static_cast<Double_t>(isRec)};
   if(fabs(pull[4])<5)
     fResolHisto->Fill(vResolHisto);
 
-  Double_t vPullHisto[9] = {pull[0],pull[1],pull[2],pull[3],pull[4],refParam->Phi(),refParam->Eta(),refParam->OneOverPt(),isRec};
+  Double_t vPullHisto[9] = {pull[0],pull[1],pull[2],pull[3],pull[4],refParam->Phi(),refParam->Eta(),refParam->OneOverPt(),static_cast<Double_t>(isRec)};
   if(fabs(pull[4])<5)
     fPullHisto->Fill(vPullHisto);
 }

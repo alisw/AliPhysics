@@ -318,7 +318,7 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK,isEventTriggered);
 
   Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
-  Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
+  Double_t vEventCount[2] = { static_cast<Double_t>(isEventTriggered), static_cast<Double_t>(isTrigAndVertex)};
   fEventCount->Fill(vEventCount);
 
   //
@@ -403,11 +403,11 @@ void AlidNdPtCutAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent * cons
       multAll++;
     }
 
-    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
+    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),static_cast<Double_t>(multAll)};
     fRecEventHist->Fill(vRecEventHist);
 
     if(IsUseMCInfo()) {
-      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],multAll};
+      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multAll)};
       fRecMCEventHist->Fill(vRecMCEventHist);
     }
   }
@@ -523,7 +523,7 @@ void AlidNdPtCutAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *
   //Double_t vRecMCTrackHist[11] = { nClust,chi2PerCluster,clustPerFindClust,b[0],b[1],eta,phi,pt,kinkIdx,isPrim, polarity }; 
   //fRecMCTrackHist->Fill(vRecMCTrackHist);
 
-  Double_t vRecMCTrackHist[13] = { nCrossedRowsTPC, chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, hasStrangeMother, isFromMaterial, isPrim, charge }; 
+  Double_t vRecMCTrackHist[13] = { static_cast<Double_t>(nCrossedRowsTPC), chi2PerCluster, ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared , b[0], b[1], eta, phi, pt, static_cast<Double_t>(hasStrangeMother), static_cast<Double_t>(isFromMaterial), static_cast<Double_t>(isPrim), static_cast<Double_t>(charge) }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 
 }

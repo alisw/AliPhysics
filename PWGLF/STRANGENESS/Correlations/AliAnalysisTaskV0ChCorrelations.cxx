@@ -865,7 +865,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
 					if (dPhiMix > (1.5*kPi)) dPhiMix -= 2.0*kPi;
 					if (dPhiMix < (-0.5*kPi)) dPhiMix += 2.0*kPi;
 				
-					Double_t spMix[7] = {dPhiMix, dEtaMix, trigPt, assoc->Pt(), lCent, lPVz, trigC};
+					Double_t spMix[7] = {dPhiMix, dEtaMix, trigPt, assoc->Pt(), lCent, lPVz, static_cast<Double_t>(trigC)};
 				    fHistdPhidEtaMix->Fill(spMix);
 					
 				} // end of mixing track loop
@@ -890,7 +890,7 @@ void AliAnalysisTaskV0ChCorrelations::UserExec(Option_t *)
                         if (dPhiMix > (1.5*kPi)) dPhiMix -= 2.0*kPi;
                         if (dPhiMix < (-0.5*kPi)) dPhiMix += 2.0*kPi;
 
-                        Double_t spMix[7] = {dPhiMix, dEtaMix, trigPt, assoc->Pt(), lCent, lPVz, trigC};
+                        Double_t spMix[7] = {dPhiMix, dEtaMix, trigPt, assoc->Pt(), lCent, lPVz, static_cast<Double_t>(trigC)};
                         fHistdPhidEtaMix->Fill(spMix);
 
                     } // end of mixing track loop

@@ -926,7 +926,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   if(bIsEventSelectedSemi) fEventStatisticsCentralityTrigger->Fill(dCentrality, 1);
   if(bIsEventSelectedCentral) fEventStatisticsCentralityTrigger->Fill(dCentrality, 2);
   
-  Double_t dEventZvMultCent[3] = {dEventZv, iAcceptedMultiplicity, dCentrality};
+  Double_t dEventZvMultCent[3] = {dEventZv, static_cast<Double_t>(iAcceptedMultiplicity), dCentrality};
   fZvMultCent->Fill(dEventZvMultCent);
   
   // store correlation between data and MC eventplane
