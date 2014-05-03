@@ -113,6 +113,8 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets():
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
+  fh1EventCent2Jets(0),
+  fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
@@ -364,6 +366,8 @@ AliAnalysisTaskV0sInJets::AliAnalysisTaskV0sInJets(const char* name):
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
+  fh1EventCent2Jets(0),
+  fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
   fh1V0CandPerEvent(0),
   fh1NRndConeCent(0),
@@ -666,6 +670,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
   for (Int_t i = 0; i < iNCategEvent; i++)
     fh1EventCounterCut->GetXaxis()->SetBinLabel(i+1,categEvent[i].Data());
   fh1EventCent2 = new TH1D("fh1EventCent2","Number of events vs centrality;centrality;counts",100,0,100);
+  fh1EventCent2Jets = new TH1D("fh1EventCent2Jets","Number of sel.-jet events vs centrality;centrality;counts",100,0,100);
+  fh1EventCent2NoJets = new TH1D("fh1EventCent2NoJets","Number of no-jet events vs centrality;centrality;counts",100,0,100);
   fh2EventCentTracks = new TH2D("fh2EventCentTracks","Number of tracks vs centrality;centrality;tracks;counts",100,0,100,150,0,15e3);
   fh1EventCent = new TH1D("fh1EventCent","Number of events in centrality bins;centrality;counts",fgkiNBinsCent,0,fgkiNBinsCent);
   for (Int_t i = 0; i < fgkiNBinsCent; i++)
@@ -682,6 +688,8 @@ void AliAnalysisTaskV0sInJets::UserCreateOutputObjects()
   fOutputListStd->Add(fh1EventCounterCut);
   fOutputListStd->Add(fh1EventCent);
   fOutputListStd->Add(fh1EventCent2);
+  fOutputListStd->Add(fh1EventCent2Jets);
+  fOutputListStd->Add(fh1EventCent2NoJets);
   fOutputListStd->Add(fh1NRndConeCent);
   fOutputListStd->Add(fh1NMedConeCent);
   fOutputListStd->Add(fh1AreaExcluded);
@@ -1618,6 +1626,10 @@ void AliAnalysisTaskV0sInJets::UserExec(Option_t *)
           fh1EventCounterCutCent[iCentIndex]->Fill(5);
         }
     }
+  if (iNJetSel)
+    fh1EventCent2Jets->Fill(fdCentrality);
+  else
+    fh1EventCent2NoJets->Fill(fdCentrality);
 
   if (iNJetSel)
     {
