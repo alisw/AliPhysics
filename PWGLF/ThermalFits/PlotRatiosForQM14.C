@@ -328,55 +328,74 @@ void   PrepareThermalModelsInputFiles(TClonesArray * arr, Int_t system, Float_t 
   // If "Separate charges" is true, tries to dump both charges are dumped
   TClonesArray * arrOut = new TClonesArray("AliParticleYield");
   TClonesArray * arrOutGSI = new TClonesArray("AliParticleYield"); // We add dummy lines to the GSI output file if needed!
-  const Int_t npart = 12;
-  Int_t particles  [npart] = {kPDGPi ,kPDGK   ,kPDGKS0, kPDGKStar, kPDGPhi, kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron, kPDGHyperTriton, kPDGHE3    };
-  Int_t isSum[npart]       = {1      ,1       ,0      , 1        , 0      , 1           ,1            ,1        ,1          ,0           , 1              , 0          };
+;
 
   Int_t ipartOut = 0; // Index for the array
   Int_t ipartOutGSI = 0; // Index for the array
   
   for(Int_t ipart = 0; ipart < npart; ipart++){
     if(!separateCharges) {
-      AliParticleYield * part = AliParticleYield::FindParticle(arr, particles[ipart], system, energy, centrality,  isSum[ipart]);
-      if(!part && isSum[ipart]) {
+      AliParticleYield * part = AliParticleYield::FindParticle(arr, particleYields[ipart], system, energy, centrality,  isSumYields[ipart]);
+      if(!part && isSumYields[ipart]) {
         //Could not find the particle, but the sum was requested: build the sum!
-        part = AliParticleYield::FindParticle(arr, particles[ipart], system, energy, centrality,  0);
-        AliParticleYield * part2 = AliParticleYield::FindParticle(arr, -particles[ipart], system, energy, centrality,  0);
+        part = AliParticleYield::FindParticle(arr, particleYields[ipart], system, energy, centrality,  0);
+        AliParticleYield * part2 = AliParticleYield::FindParticle(arr, -particleYields[ipart], system, energy, centrality,  0);
         if(part2 && part) part = AliParticleYield::Add(part, part2);        
         else if(part) part->Scale(2.); // If we only found a particle, we can scale it by a factor 2.
         else part = 0;
       }
       // We want to save the average of particle and antiparticle in this case
       if(part) {
-        if(isSum[ipart] && !part->IsTypeAverage()) part->Scale(0.5); // If it's not already an average, but just a sum, divide by 2
+        if(isSumYields[ipart] && !part->IsTypeAverage()) part->Scale(0.5); // If it's not already an average, but just a sum, divide by 2
         new((*arrOut   )[ipartOut++]) AliParticleYield(*part);
         new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(*part);
       } else { // Add dummy particle to the GSI list
-        new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(particles[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+        new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(particleYields[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
       }
     }
     else {
-      // ignore isSum and try to find both particles
+      // ignore isSumYields and try to find both particleYields
       Bool_t notFound = 0;
-      AliParticleYield * part = AliParticleYield::FindParticle(arr, particles[ipart], system, energy, centrality,  0);
-      if(part) new((*arrOut)[ipartOut++]) AliParticleYield(*part);
-      else notFound=1;
+      AliParticleYield * part = AliParticleYield::FindParticle(arr, particleYields[ipart], system, energy, centrality,  0);
+      if(part) {
+	new((*arrOut)[ipartOut++]) AliParticleYield(*part);
+	new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(*part);
+      }
+      else {
+	// std::cout << "ADDING DUMMY part " << particleYields[ipart] << std::endl;	
+	// new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(particleYields[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+	notFound=1;
+      }
       // Try to find antiparticle (-pdg code)
-      part = AliParticleYield::FindParticle(arr, -particles[ipart], system, energy, centrality,  0);
+      part = AliParticleYield::FindParticle(arr, -particleYields[ipart], system, energy, centrality,  0);
       if(part) {
         new((*arrOut)[ipartOut++]) AliParticleYield(*part);
         new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(*part);
       }
       else if (notFound) {
         // If neither charge was found, check if we at least have the sum 
-        part = AliParticleYield::FindParticle(arr, abs(particles[ipart]), system, energy, centrality,  1);
-        if (part) {
-          part->Scale(0.5);
+        part = AliParticleYield::FindParticle(arr, abs(particleYields[ipart]), system, energy, centrality,  1);	
+        if (part) { 
+          if(!part->IsTypeAverage()) part->Scale(0.5); // If it's a sum (not an average) divide by 2
           new((*arrOut)[ipartOut++]) AliParticleYield(*part);
           new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(*part);
+	  if(TDatabasePDG::Instance()->GetParticle(-particleYields[ipart]) && 
+	     (particleYields[ipart] != kPDGLambda) && 
+	     (particleYields[ipart] != kPDGKStar)
+	     ){// if only the sum was found, add a dummy entry to the
+	       // GSI file, so that anton always has the same # of
+	       // lines. However, we don't do this for the Lambda and
+	       // KStar (always one of the charges or the average)
+	    new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(-particleYields[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+	  }
         }
         else {
-          new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(particles[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+	  std::cout << "ADDING DUMMY sum " << particleYields[ipart] << std::endl;
+          new((*arrOutGSI)[ipartOutGSI++]) AliParticleYield(particleYields[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+	  if (particleYields[ipart]==kPDGHyperTriton) {
+	    // If is the 3LH, add another one for the antiparticle
+	    AliParticleYield(-particleYields[ipart], system, energy, -10, -10, -10, -10, -10, -10, 5, 256, "DUMMY", 1, "ALICE");        
+	  }
         }
       }
       
