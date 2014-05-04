@@ -71,6 +71,7 @@ set ( SRCS
   AliGenHBTosl.cxx 
   AliGenReaderEMD.cxx 
   AliDecayerPolarized.cxx 
+  AliDecayerExodus.cxx 
   AliGenCorrHF.cxx 
   AliGenCosmicsParam.cxx 
   AliGenKrypton.cxx 
