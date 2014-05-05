@@ -293,6 +293,8 @@ Int_t AliITSUTrackerCooked::MakeSeeds(Int_t l1, Int_t l2) {
          if (TMath::Abs(phi2-phi1) > kpWin) continue;  //check in Phi
  
          Double_t zr3=z1 + (r3-r1)/(r2-r1)*(z2-z1);
+         Double_t d13=r1-r3, d32=r3-r2, d=r1-r2;
+         Double_t phir3=d32/d*phi1 + d13/d*phi2;  // FIXME
          Int_t start3=layer3.FindClusterIndex(zr3-kzWin/2);
          for (Int_t n3=start3; n3<nClusters3; n3++) {
              AliCluster *c3=layer3.GetCluster(n3);
@@ -304,7 +306,7 @@ Int_t AliITSUTrackerCooked::MakeSeeds(Int_t l1, Int_t l2) {
              if (z3 > (zr3+kzWin/2)) break;  //check in Z
              Float_t xyz3[3]; c3->GetGlobalXYZ(xyz3);
              Double_t phi3=TMath::ATan2(xyz3[1],xyz3[0]);
-             if (TMath::Abs(phi2-phi3) > kpWin/2) continue;  //check in Phi
+             if (TMath::Abs(phir3-phi3) > kpWin/100) continue;  //check in Phi
 
              AliITSUClusterPix cc(*((AliITSUClusterPix*)c2));
              cc.GoToFrameTrk();
