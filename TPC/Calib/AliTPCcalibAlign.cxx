@@ -700,8 +700,8 @@ void  AliTPCcalibAlign::ExportTrackPoints(AliESDEvent *event){
       Double_t dc[6]={0,0,0};
       tpcVertex->GetXYZ(dxyz);
       tpcVertex->GetCovarianceMatrix(dc);
-      Float_t xyz[3]={dxyz[0],dxyz[1],dxyz[2]};
-      Float_t cov[6]={dc[0]+1,dc[1],dc[2]+1,dc[3],dc[4],dc[5]+100.}; 
+      Float_t xyz[3]={static_cast<Float_t>(dxyz[0]),static_cast<Float_t>(dxyz[1]),static_cast<Float_t>(dxyz[2])};
+      Float_t cov[6]={static_cast<Float_t>(dc[0]+1),static_cast<Float_t>(dc[1]),static_cast<Float_t>(dc[2]+1),static_cast<Float_t>(dc[3]),static_cast<Float_t>(dc[4]),static_cast<Float_t>(dc[5]+100.)}; 
       AliTrackPoint point(xyz,cov,73);  // add point to not existing volume
       Float_t dtpc[2],dcov[3];
       track0->GetImpactParametersTPC(dtpc,dcov);

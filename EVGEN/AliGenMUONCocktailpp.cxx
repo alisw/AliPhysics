@@ -562,7 +562,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     gencharm->SetMomentumRange(0,9999);
     gencharm->SetForceDecay(kAll);
     Double_t ratioccbar = chard[fCentralityBin]*sigmaccbar/fSigmaReaction;
-    if (!gMC) gencharm->SetDecayer(fDecayer);  
+    if (!TVirtualMC::GetMC()) gencharm->SetDecayer(fDecayer);  
     gencharm->Init();
     if (!fSigmaSilent) {
       AliInfo(Form("c-cbar prod. cross-section in pp %5.3g b",sigmaccbar));
@@ -575,7 +575,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     genbeauty->SetMomentumRange(0,9999);
     genbeauty->SetForceDecay(kAll);
     Double_t ratiobbbar = bhard[fCentralityBin]*sigmabbbar/fSigmaReaction;
-    if (!gMC) genbeauty->SetDecayer(fDecayer);  
+    if (!TVirtualMC::GetMC()) genbeauty->SetDecayer(fDecayer);  
     genbeauty->Init();
     if (!fSigmaSilent) {
       AliInfo(Form("b-bbar prod. cross-section in pp  %5.3g b",sigmabbbar));
@@ -620,7 +620,7 @@ void AliGenMUONCocktailpp::AddReso2Generator(Char_t* nameReso,
     genReso->SetYRange(-8.,8.);
     genReso->SetPhiRange(0.,360.);
     genReso->SetForceDecay(fDecayModeResonance);
-    if (!gMC) genReso->SetDecayer(fDecayer);  
+    if (!TVirtualMC::GetMC()) genReso->SetDecayer(fDecayer);  
     genReso->Init();  // generation in 4pi
 // Ratios with respect to the reaction cross-section in the 
 // kinematics limit of the MUONCocktail

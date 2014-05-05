@@ -137,7 +137,7 @@ AliMUONLocalStruct::operator=(const AliMUONLocalStruct& event)
 void AliMUONLocalStruct::GetXPattern(TArrayS& array) const
 {
     /// return array of X pattern
-    Short_t vec[4] = {GetX1(), GetX2(), GetX3(), GetX4()};
+  Short_t vec[4] = {static_cast<Short_t>(GetX1()), static_cast<Short_t>(GetX2()), static_cast<Short_t>(GetX3()), static_cast<Short_t>(GetX4())};
     array.Set(4, vec);
 }
 
@@ -145,7 +145,7 @@ void AliMUONLocalStruct::GetXPattern(TArrayS& array) const
 void AliMUONLocalStruct::GetYPattern(TArrayS& array) const
 {
     /// return array of Y pattern
-    Short_t vec[4] = {GetY1(), GetY2(), GetY3(), GetY4()};
+  Short_t vec[4] = {static_cast<Short_t>(GetY1()), static_cast<Short_t>(GetY2()), static_cast<Short_t>(GetY3()), static_cast<Short_t>(GetY4())};
     array.Set(4, vec);
 }
 

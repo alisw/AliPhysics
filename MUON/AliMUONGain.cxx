@@ -492,7 +492,7 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
 
 	  // 1. - linear fit over gAlinbpf1 points
 
-	  Double_t par[4] = {0.,0.5,0.,ADCMax()};
+	  Double_t par[4] = {0.,0.5,0.,static_cast<Double_t>(ADCMax())};
 	  Int_t nbs   = nEntries - fnInit;
 	  if(nbs < fnbpf1)fnbpf1=nbs;
 

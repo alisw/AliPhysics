@@ -287,17 +287,17 @@ void AliLego::StepManager()
     
     TString tmp1, tmp2;
     copy = 1;
-    id  = gMC->CurrentVolID(copy);
-    vol = gMC->VolName(id);
-    Float_t step  = gMC->TrackStep();
+    id  = TVirtualMC::GetMC()->CurrentVolID(copy);
+    vol = TVirtualMC::GetMC()->VolName(id);
+    Float_t step  = TVirtualMC::GetMC()->TrackStep();
     
     TLorentzVector pos, mom; 
-    gMC->TrackPosition(pos);  
-    gMC->TrackMomentum(mom);
+    TVirtualMC::GetMC()->TrackPosition(pos);  
+    TVirtualMC::GetMC()->TrackMomentum(mom);
     
     Int_t status = 0;
-    if (gMC->IsTrackEntering()) status = 1;
-    if (gMC->IsTrackExiting())  status = 2; 
+    if (TVirtualMC::GetMC()->IsTrackEntering()) status = 1;
+    if (TVirtualMC::GetMC()->IsTrackExiting())  status = 2; 
   
     if (! fStepBack) {
     //      printf("\n volume %s %d", vol, status);      
@@ -314,7 +314,7 @@ void AliLego::StepManager()
 	    TClonesArray &lvols = *fVolumesFwd;
 	    if (fStepsForward > 0) {
 		AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesFwd)[fStepsForward-1]);
-		if (tmp && tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
+		if (tmp && tmp->IsVEqual(vol, copy) && TVirtualMC::GetMC()->IsTrackEntering()) {
 		    fStepsForward -= 2;
 		    fVolumesFwd->RemoveAt(fStepsForward);
 		    fVolumesFwd->RemoveAt(fStepsForward+1);		  
@@ -328,7 +328,7 @@ void AliLego::StepManager()
 	//
 	// Get current material properties
 	
-	gMC->CurrentMaterial(a,z,dens,radl,absl);
+	TVirtualMC::GetMC()->CurrentMaterial(a,z,dens,radl,absl);
 
 	
 	if (z < 1) return;
@@ -336,7 +336,7 @@ void AliLego::StepManager()
 	// --- See if we have to stop now
 	if (TMath::Abs(pos[2]) > TMath::Abs(fGener->ZMax())  || 
 	    pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
-	    if (!gMC->IsNewTrack()) {
+	    if (!TVirtualMC::GetMC()->IsNewTrack()) {
 		// Not the first step, add past contribution
 		if (!fStopped) {
 		    if (absl) fTotAbso += t/absl;
@@ -346,7 +346,7 @@ void AliLego::StepManager()
 		
 //		printf("We will stop now %5d %13.3f !\n", fStopped, t);
 //		printf("%13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %s %13.3f\n",
-//		       pos[2], TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, gMC->CurrentVolName(), fTotRadl);
+//		       pos[2], TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, TVirtualMC::GetMC()->CurrentVolName(), fTotRadl);
 		if (fDebug) {
 		    //
 		    //  generate "mirror" particle flying back
@@ -371,7 +371,7 @@ void AliLego::StepManager()
 	    
 	    if (fDebug) fStepBack = 1;
 	    fStopped = kTRUE;
-	    gMC->StopTrack();
+	    TVirtualMC::GetMC()->StopTrack();
 	    return;
 	} // outside scoring region ?
 	
@@ -389,7 +389,7 @@ void AliLego::StepManager()
 	    if (radl) fTotRadl += step/radl;
 	    fTotGcm2 += step*dens;
 //	     printf("%13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %13.3f %s %13.3f\n",
-//	     pos[2],  TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, gMC->CurrentVolName(), fTotRadl);
+//	     pos[2],  TMath::Sqrt(pos[0] * pos[0] + pos[1] * pos[1]), step, a, z, radl, absl, TVirtualMC::GetMC()->CurrentVolName(), fTotRadl);
 	}
 
     } else {
@@ -401,7 +401,7 @@ void AliLego::StepManager()
 	    TClonesArray &lvols = *fVolumesBwd;
 	    if (fStepsBackward < fStepsForward) {
 		AliDebugVolume* tmp = dynamic_cast<AliDebugVolume*>((*fVolumesBwd)[fStepsBackward]);
-		if (tmp && tmp->IsVEqual(vol, copy) && gMC->IsTrackEntering()) {
+		if (tmp && tmp->IsVEqual(vol, copy) && TVirtualMC::GetMC()->IsTrackEntering()) {
 		    fStepsBackward += 2;
 		    fVolumesBwd->RemoveAt(fStepsBackward-1);
 		    fVolumesBwd->RemoveAt(fStepsBackward-2);		  
@@ -411,7 +411,7 @@ void AliLego::StepManager()
 	    fStepsBackward--;
 	    //	  printf("\n steps %d %s %d", fStepsBackward, vol, fErrorCondition);	  
 	    if (fStepsBackward < 0) {
-		gMC->StopTrack();
+		TVirtualMC::GetMC()->StopTrack();
 		fStepBack = 0;
 		return;
 	    }

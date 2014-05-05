@@ -460,7 +460,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
 	// "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
-	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, dipAngleTgl};
+	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot,  static_cast<Double_t>(ipad),  static_cast<Double_t>(nContributors), dipAngleTgl};
 	if (fMinMomentumMIP > meanP && meanP < fMaxMomentumMIP) fHistPadEqual->Fill(vecPadEqual);
       }
       //
@@ -470,8 +470,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
 			       seed->CookdEdxAnalytical(fLowerTrunc,fUpperTrunc,0,row0,row1)/corrFactorMip,
 			       meanDrift,
 			       3,
-			       nContributors,
-			       ncls};
+			       static_cast<Double_t>(nContributors),
+			       static_cast<Double_t>(ncls)};
 	//
 	fHistGainMult->Fill(vecMult);
 	vecMult[0]=mipSignalShort/corrFactorMip; vecMult[1]=mipSignalShort/corrFactorMip; vecMult[3]=0;
@@ -522,7 +522,7 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       //
       for(Int_t ipad = 0; ipad < 3; ipad++) {
 	// AK. -  run Number To be removed - not needed 
-	Double_t vecGainSec[5] = {vecMip[ipad], sector[ipad], ipad, runNumber, ncl[ipad]};
+	Double_t vecGainSec[5] = {vecMip[ipad], sector[ipad],  static_cast<Double_t>(ipad),  static_cast<Double_t>(runNumber),  static_cast<Double_t>(ncl[ipad])};
 	if (isNotSplit[ipad]) fHistGainSector->Fill(vecGainSec);
       }
     }
@@ -1060,7 +1060,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
     Int_t ncont = vertex->GetNContributors();
     for (Int_t ipad=0; ipad<3; ipad++){
       // histogram with enahanced phi granularity - to make gain phi maps
-      Double_t xxx[4]={0,gangle[ipad],1./dedxDef,ipad*2+((side>0)?0:1)};
+      Double_t xxx[4]={0,gangle[ipad],1./dedxDef, static_cast<Double_t>(ipad*2+((side>0)?0:1))};
       Double_t nclR=0;
       if (ipad==0)  {xxx[0]=vecIROCTot[4]/medianMIP0; nclR=ncl21IROC/63.;}
       if (ipad==1)  {xxx[0]=vecOROC0Tot[4]/medianMIP0;nclR=ncl21OROC0/63.;}
@@ -1075,7 +1075,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
       // Maybe dead end - we can not put all info which can be used into the THnSparse
       // It is keeped there for educational point of view
       //
-      Double_t xxx[6]={0,1./dedxDef, TMath::Abs(langle[ipad]), TMath::Abs(tgl), ncont, ipad };
+      Double_t xxx[6]={0,1./dedxDef, TMath::Abs(langle[ipad]), TMath::Abs(tgl),  static_cast<Double_t>(ncont),  static_cast<Double_t>(ipad) };
       if (ipad==0)  {xxx[0]=vecIROCTot[4]/medianMIP0;}
       if (ipad==1)  {xxx[0]=vecOROC0Tot[4]/medianMIP0;}
       if (ipad==2)  {xxx[0]=vecOROC1Tot[4]/medianMIP0;}
@@ -1541,7 +1541,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
       for (Int_t irow=0; irow<159; irow++){
 	AliTPCclusterMI *cluster0=seed0->GetClusterPointer(irow);
 	if (cluster0 &&cluster0->GetX()>10){
-	  Double_t x0[3]={cluster0->GetRow(),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
+	  Double_t x0[3]={ static_cast<Double_t>(cluster0->GetRow()),cluster0->GetPad(),cluster0->GetTimeBin()+deltaTimeCluster};
 	  Int_t index0[1]={cluster0->GetDetector()};
 	  transform->Transform(x0,index0,0,1);  
 	  cluster0->SetX(x0[0]);
@@ -1551,7 +1551,7 @@ void AliTPCcalibGainMult::ProcessCosmic(const AliESDEvent * event) {
 	}
 	AliTPCclusterMI *cluster1=seed1->GetClusterPointer(irow);
 	if (cluster1&&cluster1->GetX()>10){
-	  Double_t x1[3]={cluster1->GetRow(),cluster1->GetPad(),cluster1->GetTimeBin()+deltaTimeCluster};
+	  Double_t x1[3]={ static_cast<Double_t>(cluster1->GetRow()),cluster1->GetPad(),cluster1->GetTimeBin()+deltaTimeCluster};
 	  Int_t index1[1]={cluster1->GetDetector()};
 	  transform->Transform(x1,index1,0,1);  
 	  cluster1->SetX(x1[0]);

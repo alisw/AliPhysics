@@ -1,16 +1,16 @@
-AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2) 
+AliGenerator* AddMCGenPythia(Float_t e_cms = 2760., Double_t ptHardMin = 0., Double_t ptHardMax = 1., Int_t tune = 2,Int_t cr=1) 
 {
   //Add Pythia generator: pt-hard bin or min bias
 
   gSystem->Load("liblhapdf.so");
  
   AliGenerator *genP = NULL;
-  genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune);
+  genP = CreatePythia6Gen(e_cms, ptHardMin, ptHardMax, tune,cr);
   
   return genP;
 }
 
-AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune) {
+AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, Int_t tune, Int_t cr) {
     
   gSystem->Load("libpythia6.4.25.so");
   gSystem->Load("libEGPythia6.so");
@@ -41,12 +41,16 @@ AliGenerator* CreatePythia6Gen(Float_t e_cms, Int_t ptHardMin, Int_t ptHardMax, 
 
   if(tune == 0){ // tune Perugia0
     genP->SetTune(320);
+    if(cr==0) genP->SetTune(324);
   }
   if(tune == 1){ // tune Perugia2010
     genP->SetTune(327);
+    if(cr==0) genP->SetTune(324);
   } 
   if(tune == 2){ // tune Perugia2011 ('central' Perugia 2011)
     genP->SetTune(350);
+    if(cr==0) genP->SetTune(354);
   }
+  genP->Print();
   return genP;
 }

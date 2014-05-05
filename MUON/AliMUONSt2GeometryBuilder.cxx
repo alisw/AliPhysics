@@ -136,8 +136,8 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
   
 //     
 //   Sensitive volumes
-     gMC->Gsvolu("S03G", "TUBS", idGas, tpar, 5);
-     gMC->Gsvolu("S04G", "TUBS", idGas, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("S03G", "TUBS", idGas, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("S04G", "TUBS", idGas, tpar, 5);
 
      Int_t detElemId;
 
@@ -146,35 +146,35 @@ void AliMUONSt2GeometryBuilder::CreateGeometry()
      posz = -kDeltaZ;
 
      detElemId = 301;
-     gMC->Gsvolu("LE01", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LE01", "TUBS", idAir, tpar, 5);
      GetEnvelopes(2)->AddEnvelope("LE01", detElemId, true, TGeoTranslation(posx, posy, posz),
 				   TGeoRotation("rot1",90,0,90,90,0,0) );
      detElemId = 401;
-     gMC->Gsvolu("LF01", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LF01", "TUBS", idAir, tpar, 5);
      GetEnvelopes(3)->AddEnvelope("LF01", detElemId, true, TGeoTranslation(posx, posy, posz),
 				   TGeoRotation("rot1",90,0,90,90,0,0) );
      detElemId = 300;
-     gMC->Gsvolu("LE02", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LE02", "TUBS", idAir, tpar, 5);
      GetEnvelopes(2)->AddEnvelope("LE02", detElemId, true, TGeoTranslation(-posx, posy,-posz),
 				  TGeoRotation("rot2",90,180,90,90,180,0) );
      detElemId = 400;
-     gMC->Gsvolu("LF02", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LF02", "TUBS", idAir, tpar, 5);
      GetEnvelopes(3)->AddEnvelope("LF02", detElemId, true, TGeoTranslation(-posx, posy,-posz),
 				  TGeoRotation("rot2",90,180,90,90,180,0) );
      detElemId = 302;
-     gMC->Gsvolu("LE03", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LE03", "TUBS", idAir, tpar, 5);
      GetEnvelopes(2)->AddEnvelope("LE03", detElemId, true, TGeoTranslation(posx, -posy, -posz),
 				  TGeoRotation("rot3",90,0,90,270,180,0) );
      detElemId = 402;
-     gMC->Gsvolu("LF03", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LF03", "TUBS", idAir, tpar, 5);
      GetEnvelopes(3)->AddEnvelope("LF03", detElemId, true, TGeoTranslation(posx, -posy, -posz),
 				  TGeoRotation("rot3",90,0,90,270,180,0) );
      detElemId = 303;
-     gMC->Gsvolu("LE04", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LE04", "TUBS", idAir, tpar, 5);
      GetEnvelopes(2)->AddEnvelope("LE04", detElemId, true, TGeoTranslation(-posx, -posy, posz),
 				  TGeoRotation("rot4",90,180,90,270,0,0) );
      detElemId = 403;
-     gMC->Gsvolu("LF04", "TUBS", idAir, tpar, 5);
+     TVirtualMC::GetMC()->Gsvolu("LF04", "TUBS", idAir, tpar, 5);
      GetEnvelopes(3)->AddEnvelope("LF04", detElemId, true, TGeoTranslation(-posx, -posy, posz),
 				  TGeoRotation("rot4",90,180,90,270,0,0) );
 

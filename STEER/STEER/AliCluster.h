@@ -58,6 +58,7 @@ class AliCluster : public TObject {
   virtual  Bool_t   GetGlobalXYZ(Float_t xyz[3]) const;
   virtual  Bool_t   GetGlobalCov(Float_t cov[6]) const;
   virtual  Bool_t   GetXRefPlane(Float_t &xref) const;
+  virtual  Bool_t   GetXAlphaRefPlane(Float_t &x, Float_t &alpha) const;
 
   Bool_t   Misalign();
 

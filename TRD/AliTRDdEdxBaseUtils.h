@@ -57,11 +57,11 @@ class AliTRDdEdxBaseUtils
   //                                   Math and Histogram
   //===================================================================================
   static void BinLogX(TAxis *axis);
-  static void GetCDFCuts(const TH1D *hh, const Int_t ncut, Double_t cuts[], const Double_t cdfs[], const Double_t thres);
-  static Double_t GetMeanRMS(const Double_t nn, const Double_t sum, const Double_t w2s, Double_t * grms=0x0, Double_t * gerr=0x0);
-  static Double_t TruncatedMean(const Int_t nx, const Double_t xdata[], const Double_t lowfrac, const Double_t highfrac, Double_t * grms=0x0, Double_t * gerr=0x0, Double_t *wws=0x0);
-  static Double_t TruncatedMean(const TH1 *hh, const Double_t lowfrac, const Double_t highfrac, Double_t * grms=0x0, Double_t * gerr=0x0);
-  static void FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, TH1D *&hwid, TH1D *&hres, const Double_t thres, const Double_t lowfrac, const Double_t highfrac);
+  static void GetCDFCuts(const TH1D *hh, Int_t ncut, Double_t cuts[], const Double_t cdfs[], Double_t thres);
+  static Double_t GetMeanRMS(Double_t nn, Double_t sum, Double_t w2s, Double_t * grms=0x0, Double_t * gerr=0x0);
+  static Double_t TruncatedMean(Int_t nx, const Double_t xdata[], Double_t lowfrac, Double_t highfrac, Double_t * grms=0x0, Double_t * gerr=0x0, Double_t *wws=0x0);
+  static Double_t TruncatedMean(const TH1 *hh, Double_t lowfrac, Double_t highfrac, Double_t * grms=0x0, Double_t * gerr=0x0);
+  static void FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, TH1D *&hwid, TH1D *&hres, Double_t thres, Double_t lowfrac, Double_t highfrac);
 
   //===================================================================================
   //                                TRD Analysis Fast Tool
@@ -83,22 +83,22 @@ class AliTRDdEdxBaseUtils
   
   static Int_t NTRDchamber(){return 18*5*6;} //540
   static Int_t NTRDtimebin(){return NTRDchamber()*31;} //16740
-  static Int_t ToDetector(const Int_t gtb);
-  static Int_t ToTimeBin(const Int_t gtb);
-  static Int_t ToSector(const Int_t gtb);
-  static Int_t ToStack(const Int_t gtb);
-  static Int_t ToLayer(const Int_t gtb);
+  static Int_t ToDetector(Int_t gtb);
+  static Int_t ToTimeBin(Int_t gtb);
+  static Int_t ToSector(Int_t gtb);
+  static Int_t ToStack(Int_t gtb);
+  static Int_t ToLayer(Int_t gtb);
 
-  static void CheckRunB(const TString listrun1kg, const Int_t run, TString & type);
-  static TString GetRunType(const Int_t run);
+  static void CheckRunB(TString listrun1kg, Int_t run, TString & type);
+  static TString GetRunType(Int_t run);
 
-  static void SetQ0Frac(const Double_t q0){ fgQ0Frac = q0; }
-  static void SetQ1Frac(const Double_t q1){ fgQ1Frac = q1; }
-  static void SetTimeBinCountCut(const Double_t tbc){ fgTimeBinCountCut = tbc; }
-  static void SetCalibTPCnclsCut(const Int_t tpc){ fgCalibTPCnclsCut = tpc; }
-  static void SetExBOn(const Bool_t kon){ fgExBOn = kon; }
-  static void SetPadGainOn(const Bool_t kon){ fgPadGainOn = kon; }
-  static void SetQScale(const Double_t scale){ fgQScale = scale; }
+  static void SetQ0Frac(Double_t q0){ fgQ0Frac = q0; }
+  static void SetQ1Frac(Double_t q1){ fgQ1Frac = q1; }
+  static void SetTimeBinCountCut(Double_t tbc){ fgTimeBinCountCut = tbc; }
+  static void SetCalibTPCnclsCut(Int_t tpc){ fgCalibTPCnclsCut = tpc; }
+  static void SetExBOn(Bool_t kon){ fgExBOn = kon; }
+  static void SetPadGainOn(Bool_t kon){ fgPadGainOn = kon; }
+  static void SetQScale(Double_t scale){ fgQScale = scale; }
  
   static Double_t Q0Frac(){return fgQ0Frac;}
   static Double_t Q1Frac(){return fgQ1Frac;}
@@ -120,11 +120,11 @@ class AliTRDdEdxBaseUtils
   static Double_t MeanTR(const Double_t * xx, const Double_t * par);
   static Double_t MeandEdxTR(const Double_t * xx, const Double_t * par);
 
-  static Double_t QMeanTPC(const Double_t bg);
-  static Double_t Q0MeanTRDpp(const Double_t bg);
-  static Double_t Q1MeanTRDpp(const Double_t bg);
-  static Double_t Q0MeanTRDPbPb(const Double_t bg);
-  static Double_t Q1MeanTRDPbPb(const Double_t bg);
+  static Double_t QMeanTPC(Double_t bg);
+  static Double_t Q0MeanTRDpp(Double_t bg);
+  static Double_t Q1MeanTRDpp(Double_t bg);
+  static Double_t Q0MeanTRDPbPb(Double_t bg);
+  static Double_t Q1MeanTRDPbPb(Double_t bg);
 
   typedef Double_t (*FFunc)(const Double_t *xx, const Double_t *par);
   

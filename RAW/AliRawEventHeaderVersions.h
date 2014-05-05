@@ -4,7 +4,7 @@
 #include "AliRawEventHeaderBase.h"
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0) 
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0) 
 START_EVENT_HEADER(3,1)
 
    UInt_t fType;          // event type
@@ -45,7 +45,7 @@ START_EVENT_HEADER(3,3)
 END_EVENT_HEADER(3,3)
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimestamp(0)
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0), fTimestamp(0)
 START_EVENT_HEADER(3,4)
 
    UInt_t fType;          // event type
@@ -131,7 +131,7 @@ START_EVENT_HEADER(3,9)
 END_EVENT_HEADER(3,9)
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimestamp(0), fTimestampUsec(0)
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0), fTimestamp(0), fTimestampUsec(0)
 START_EVENT_HEADER(3,11)
 
    UInt_t fType;          // event type

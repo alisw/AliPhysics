@@ -140,7 +140,7 @@ void AliPHOSvFast::CreateGeometry()
   bigbox[1] =   GetBigBox(1) / 2.0 ;
   bigbox[2] =   GetBigBox(2) / 2.0 ;
   
-  gMC->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PHOS", "BOX ", idtmed[798], bigbox, 3) ;
   
   // --- Position  PHOS mdules in ALICE setup ---
   
@@ -156,7 +156,7 @@ void AliPHOSvFast::CreateGeometry()
 
     Float_t xP1 = r * TMath::Sin( angle / kRADDEG ) ;
     Float_t yP1 = -r * TMath::Cos( angle / kRADDEG ) ;
-    gMC->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("PHOS", i, "ALIC", xP1, yP1, 0.0, idrotm[i-1], "ONLY") ;
  
   } // for GetNModules
 
@@ -422,23 +422,23 @@ void AliPHOSvFast::StepManager(void)
   // Only verifies if the particle reaches PHOS and stops the tracking 
 
   TLorentzVector lv ; 
-  gMC->TrackPosition(lv) ;
+  TVirtualMC::GetMC()->TrackPosition(lv) ;
   TVector3 pos = lv.Vect() ; 
   Int_t modid  ; 
-  gMC->CurrentVolID(modid);
+  TVirtualMC::GetMC()->CurrentVolID(modid);
   
-  Float_t energy = gMC->Etot() ; //Total energy of current track
+  Float_t energy = TVirtualMC::GetMC()->Etot() ; //Total energy of current track
 
   //Calculating mass of current particle
   TDatabasePDG * pdg = TDatabasePDG::Instance() ;
-  TParticlePDG * partPDG = pdg->GetParticle(gMC->TrackPid()) ;
+  TParticlePDG * partPDG = pdg->GetParticle(TVirtualMC::GetMC()->TrackPid()) ;
   Float_t mass = partPDG->Mass() ;
 
   if(energy > mass){
     pos.SetMag(TMath::Sqrt(energy*energy-mass*mass)) ;
     TLorentzVector pTrack(pos, energy) ;  
 
-    TParticle * part = new TParticle(gMC->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
+    TParticle * part = new TParticle(TVirtualMC::GetMC()->TrackPid(), 0,-1,-1,-1,-1, pTrack, lv)  ;
         
     AliPHOSFastRecParticle rp(*part) ;
 
@@ -453,7 +453,7 @@ void AliPHOSvFast::StepManager(void)
   }
   // stop the track as soon PHOS is reached
   
-  gMC->StopTrack() ; 
+  TVirtualMC::GetMC()->StopTrack() ; 
 
 }
 

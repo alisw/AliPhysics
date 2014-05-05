@@ -1445,7 +1445,7 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     return;
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
-  Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+  Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t i[1]={cluster->GetDetector()};
   transform->Transform(x,i,0,1);  
   //  if (cluster->GetDetector()%36>17){
@@ -1655,7 +1655,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
   }// end of side loop
 }
 //_____________________________________________________________________________
-void AliTPCtracker::GetTailValue(const Float_t ampfactor,Double_t &ionTailMax, Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1){
+void AliTPCtracker::GetTailValue(Float_t ampfactor,Double_t &ionTailMax, Double_t &ionTailTotal,TGraphErrors **graphRes,Float_t *indexAmpGraphs,AliTPCclusterMI *cl0,AliTPCclusterMI *cl1){
 
   //
   // Function in order to calculate the amount of the correction to be added for a given cluster, return values are ionTailTaoltal and ionTailMax
@@ -5393,7 +5393,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       kink->SetDaughter(paramd);
       kink->Update();
 
-      Float_t x[3] = { kink->GetPosition()[0],kink->GetPosition()[1],kink->GetPosition()[2]};
+      Float_t x[3] = { static_cast<Float_t>(kink->GetPosition()[0]),static_cast<Float_t>(kink->GetPosition()[1]),static_cast<Float_t>(kink->GetPosition()[2])};
       Int_t index[4];
       fkParam->Transform0to1(x,index);
       fkParam->Transform1to2(x,index);
@@ -6115,7 +6115,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       kink->SetDaughter(paramd);
       kink->Update();
 
-      Float_t x[3] = { kink->GetPosition()[0],kink->GetPosition()[1],kink->GetPosition()[2]};
+      Float_t x[3] = { static_cast<Float_t>(kink->GetPosition()[0]),static_cast<Float_t>(kink->GetPosition()[1]),static_cast<Float_t>(kink->GetPosition()[2])};
       Int_t index[4];
       fkParam->Transform0to1(x,index);
       fkParam->Transform1to2(x,index);

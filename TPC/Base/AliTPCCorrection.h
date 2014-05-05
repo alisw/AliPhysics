@@ -33,22 +33,22 @@ public:
   
 
   // functions to correct a space point
-          void CorrectPoint (      Float_t x[],const Short_t roc);
-          void CorrectPointLocal(Float_t x[],const Short_t roc);
-          void CorrectPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
-	  virtual void GetCorrection(const Float_t x[],const Short_t roc,Float_t dx[]);
+          void CorrectPoint (      Float_t x[], Short_t roc);
+          void CorrectPointLocal(Float_t x[], Short_t roc);
+          void CorrectPoint (const Float_t x[], Short_t roc,Float_t xp[]);
+	  virtual void GetCorrection(const Float_t x[], Short_t roc,Float_t dx[]);
 
-  virtual void GetCorrectionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
-  virtual void GetCorrectionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetCorrectionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetCorrectionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
   
   // functions to distort a space point
-          void DistortPoint (      Float_t x[],const Short_t roc);
-          void DistortPointLocal(Float_t x[],const Short_t roc);
-          void DistortPoint (const Float_t x[],const Short_t roc,Float_t xp[]);
-  virtual void GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]);
+          void DistortPoint (      Float_t x[], Short_t roc);
+          void DistortPointLocal(Float_t x[], Short_t roc);
+          void DistortPoint (const Float_t x[], Short_t roc,Float_t xp[]);
+  virtual void GetDistortion(const Float_t x[], Short_t roc,Float_t dx[]);
 
-  virtual void GetDistortionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
-  virtual void GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetDistortionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
+  virtual void GetDistortionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta);
   
   // initialization and update functions
   virtual void Init();
@@ -126,34 +126,34 @@ protected:
   // Simple Interpolation functions: e.g. with tricubic interpolation (not yet in TH3)
   Int_t fILow, fJLow, fKLow;          // variable to help in the interpolation 
   // Double_t versions
-  void Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
+  void Interpolate2DEdistortion( Int_t order, Double_t r, Double_t z, 
 				 const Double_t er[kNZ][kNR], Double_t &erValue );
-  void Interpolate3DEdistortion( const Int_t order, const Double_t r, const Float_t phi, const Double_t z, 
+  void Interpolate3DEdistortion( Int_t order, Double_t r, Float_t phi, Double_t z, 
 				 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], 
 				 const Double_t ez[kNZ][kNPhi][kNR],
 				 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue);
   // TMatrixD versions (for e.g. Poisson relaxation)
-  Double_t Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
-			      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+  Double_t Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
+			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
 			      const TMatrixD &array );
-  Double_t Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
-			      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+  Double_t Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
+			      Int_t  nx,    Int_t  ny,    Int_t  nz,
 			      const Double_t xv[], const Double_t yv[], const Double_t zv[],
 			      TMatrixD **arrayofArrays );
   Double_t Interpolate( const Double_t xArray[], const Double_t yArray[], 
-			const Int_t order, const Double_t x );
-  void Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low );
+			Int_t order, Double_t x );
+  void Search( Int_t n, const Double_t xArray[], Double_t x, Int_t &low );
  
   // TMatrixF versions (smaller size, e.g. for final look up table)
-  Float_t Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
-			      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+  Float_t Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
+			      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
 			      const TMatrixF &array );
-  Float_t Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
-			      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+  Float_t Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
+			      Int_t  nx,    Int_t  ny,    Int_t  nz,
 			      const Double_t xv[], const Double_t yv[], const Double_t zv[],
 			       TMatrixF **arrayofArrays ); 
   Float_t Interpolate( const Double_t xArray[], const Float_t yArray[], 
-			const Int_t order, const Double_t x );
+			Int_t order, Double_t x );
 
   virtual Int_t IsPowerOfTwo ( Int_t i ) const  ;
 
@@ -162,14 +162,14 @@ protected:
   // Algorithms to solve the laplace or poisson equation 
   void PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity, 
 			   TMatrixD &arrayErOverEz, TMatrixD &arrayDeltaEz,
-			   const Int_t rows, const Int_t columns, const Int_t iterations,
-			   const Bool_t rocDisplacement = kTRUE);
+			   Int_t rows, Int_t columns, Int_t iterations,
+			   Bool_t rocDisplacement = kTRUE);
 
   void PoissonRelaxation3D( TMatrixD **arrayofArrayV, TMatrixD **arrayofChargeDensities, 
 			    TMatrixD **arrayofEroverEz, TMatrixD **arrayofEPhioverEz, TMatrixD **arrayofEz,
-			    const Int_t rows, const Int_t columns,  const Int_t phislices, 
-			    const Float_t deltaphi, const Int_t iterations, const Int_t summetry,
-			    const Bool_t rocDisplacement = kTRUE); 
+			    Int_t rows, Int_t columns,  Int_t phislices, 
+			    Float_t deltaphi, Int_t iterations, Int_t summetry,
+			    Bool_t rocDisplacement = kTRUE); 
   void   SetIsLocal(Bool_t isLocal){fIsLocal=isLocal;}
   Bool_t IsLocal() const  { return fIsLocal;}
 protected:

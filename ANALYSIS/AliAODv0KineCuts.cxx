@@ -556,9 +556,9 @@ Bool_t  AliAODv0KineCuts::CaseLambda(AliAODv0* const v0, Int_t &pdgV0, Int_t &pd
   kfMother[1] = CreateMotherParticle(daughter[0], daughter[1], TMath::Abs(kPiPlus), TMath::Abs(kProton));
   if(!kfMother[1]) return kFALSE;
 
-  Float_t dMass[2] = {TMath::Abs(mMass[0] - cL0mass), TMath::Abs(mMass[1] - cL0mass)};
+  Float_t dMass[2] = {static_cast<Float_t>(TMath::Abs(mMass[0] - cL0mass)), static_cast<Float_t>(TMath::Abs(mMass[1] - cL0mass))};
   
-  Float_t p[2] = {daughter[0]->P(), daughter[1]->P()}; 
+  Float_t p[2] = {static_cast<Float_t>(daughter[0]->P()), static_cast<Float_t>(daughter[1]->P())}; 
 
   // check the 3 lambda - antilambda variables
   Int_t check[2] = {-1, -1};   // 0 : lambda, 1 : antilambda

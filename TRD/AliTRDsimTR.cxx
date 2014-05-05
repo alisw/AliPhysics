@@ -463,10 +463,10 @@ Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
   Int_t   nPhCand = gRandom->Poisson(nTr);
   
   // Link the MC stack and get info about parent electron
-  TVirtualMCStack *stack = gMC->GetStack();
+  TVirtualMCStack *stack = TVirtualMC::GetMC()->GetStack();
   Int_t    track = stack->GetCurrentTrackNumber();
   Double_t px, py, pz, ptot;
-  gMC->TrackMomentum(px,py,pz,ptot);
+  TVirtualMC::GetMC()->TrackMomentum(px,py,pz,ptot);
   ptot = TMath::Sqrt(px*px+py*py+pz*pz);
   px /= ptot;
   py /= ptot;
@@ -476,8 +476,8 @@ Int_t AliTRDsimTR::TrPhotons(Float_t p, Float_t mass
   Double_t x;
   Double_t y;
   Double_t z; 
-  gMC->TrackPosition(x,y,z);
-  Double_t t = gMC->TrackTime();  
+  TVirtualMC::GetMC()->TrackPosition(x,y,z);
+  Double_t t = TVirtualMC::GetMC()->TrackTime();  
 
   // Counter for TR analysed in custom code (e < 15keV)
   nPhoton = 0;  

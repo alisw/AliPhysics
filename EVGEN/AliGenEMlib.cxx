@@ -40,12 +40,12 @@ Int_t AliGenEMlib::fgSelectedPtParam=AliGenEMlib::kPizero7TeVpp;
 Int_t AliGenEMlib::fgSelectedCentrality=AliGenEMlib::kpp;
 Int_t AliGenEMlib::fgSelectedV2Systematic=AliGenEMlib::kNoV2Sys;
 
-Double_t AliGenEMlib::CrossOverLc(const double a, const double b, const double x){
+Double_t AliGenEMlib::CrossOverLc(double a, double b, double x){
   if(x<b-a/2) return 1.0;
   else if(x>b+a/2) return 0.0;
   else return cos(((x-b)/a+0.5)*TMath::Pi())/2+0.5;
 }
-Double_t AliGenEMlib::CrossOverRc(const double a, const double b, const double x){
+Double_t AliGenEMlib::CrossOverRc(double a, double b, double x){
   return 1-CrossOverLc(a,b,x);
 }
 
@@ -136,13 +136,13 @@ const Double_t AliGenEMlib::fgkMtFactor[2][8] = {
 //                              General functions
 //
 //--------------------------------------------------------------------------
-Double_t AliGenEMlib::PtModifiedHagedornThermal(const Double_t pt,
-                                                const Double_t c,
-                                                const Double_t p0,
-                                                const Double_t p1,
-                                                const Double_t n,
-                                                const Double_t cT,
-                                                const Double_t T)
+Double_t AliGenEMlib::PtModifiedHagedornThermal(Double_t pt,
+                                                Double_t c,
+                                                Double_t p0,
+                                                Double_t p1,
+                                                Double_t n,
+                                                Double_t cT,
+                                                Double_t T)
 {
   // Modified Hagedorn Thermal fit to Picharged for PbPb:
   Double_t invYield;
@@ -153,12 +153,12 @@ Double_t AliGenEMlib::PtModifiedHagedornThermal(const Double_t pt,
 
 
 
-Double_t AliGenEMlib::PtModifiedHagedornExp(const Double_t pt,
-					    const Double_t c,
-					    const Double_t p1,
-					    const Double_t p2,
-					    const Double_t p0,
-					    const Double_t n)
+Double_t AliGenEMlib::PtModifiedHagedornExp(Double_t pt,
+					    Double_t c,
+					    Double_t p1,
+					    Double_t p2,
+					    Double_t p0,
+					    Double_t n)
 {
   // Modified Hagedorn exponentiel fit to Pizero for PbPb:
   Double_t invYield;
@@ -168,14 +168,14 @@ Double_t AliGenEMlib::PtModifiedHagedornExp(const Double_t pt,
 }
 
 
-Double_t AliGenEMlib::PtModifiedHagedornExp2(const Double_t pt,
-                                             const Double_t c,
-                                             const Double_t a,
-                                             const Double_t b,
-                                             const Double_t p0,
-                                             const Double_t p1,
-                                             const Double_t d,
-                                             const Double_t n)
+Double_t AliGenEMlib::PtModifiedHagedornExp2(Double_t pt,
+                                             Double_t c,
+                                             Double_t a,
+                                             Double_t b,
+                                             Double_t p0,
+                                             Double_t p1,
+                                             Double_t d,
+                                             Double_t n)
 {
   // Modified Hagedorn exponential fit to charged pions for pPb:
   Double_t invYield;
@@ -184,11 +184,11 @@ Double_t AliGenEMlib::PtModifiedHagedornExp2(const Double_t pt,
   return invYield*(2*TMath::Pi()*pt);
 }
 
-Double_t AliGenEMlib::PtTsallis(const Double_t pt,
-                                const Double_t m,
-                                const Double_t c,
-                                const Double_t T,
-                                const Double_t n)
+Double_t AliGenEMlib::PtTsallis(Double_t pt,
+                                Double_t m,
+                                Double_t c,
+                                Double_t T,
+                                Double_t n)
 {
   // Tsallis fit to Pizero for pp:
   Double_t mt;
@@ -825,7 +825,7 @@ Double_t AliGenEMlib::MtScal(Double_t pt, Int_t np)
   return norm*(pt/scaledPt)*scaledYield;
 }
 
-Double_t AliGenEMlib::KEtScal(const Double_t pt, Int_t np)
+Double_t AliGenEMlib::KEtScal(Double_t pt, Int_t np)
 {
   const int nq=2; //number of quarks for particle np, here always 2
   Double_t scaledPt = sqrt(pow(2.0/nq*(sqrt(pt*pt+fgkHM[np]*fgkHM[np])-fgkHM[np])+fgkHM[0],2)-fgkHM[0]*fgkHM[0]);

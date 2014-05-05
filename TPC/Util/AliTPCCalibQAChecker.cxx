@@ -422,7 +422,7 @@ void AliTPCCalibQAChecker::Print(Option_t * const option) const
   }
 }
 //_________________________________________________________________________
-void AliTPCCalibQAChecker::SetAlarmThreshold(const Double_t min, const Double_t max, const QualityFlag_t quality)
+void AliTPCCalibQAChecker::SetAlarmThreshold(Double_t min, Double_t max, QualityFlag_t quality)
 {
   //
   //set the alarm thresholds for a specific quality level
@@ -432,7 +432,7 @@ void AliTPCCalibQAChecker::SetAlarmThreshold(const Double_t min, const Double_t 
   fThresMax[quality]=max;
 }
 //_________________________________________________________________________
-void AliTPCCalibQAChecker::ResetAlarmThreshold(const QualityFlag_t quality)
+void AliTPCCalibQAChecker::ResetAlarmThreshold(QualityFlag_t quality)
 {
   //
   //set the alarm thresholds for a specific quality level
@@ -453,7 +453,7 @@ void AliTPCCalibQAChecker::ResetAlarmThresholds()
   }
 }
 //_________________________________________________________________________
-void AliTPCCalibQAChecker::SetQualityDescription(const char* text, const QualityFlag_t quality)
+void AliTPCCalibQAChecker::SetQualityDescription(const char* text, QualityFlag_t quality)
 {
   //
   // set an description for the quality level
@@ -531,7 +531,7 @@ AliTPCCalibQAChecker* AliTPCCalibQAChecker::NextSubChecker()
   return al;
 }
 //_________________________________________________________________________
-const char* AliTPCCalibQAChecker::QualityName(const AliTPCCalibQAChecker::QualityFlag_t quality)
+const char* AliTPCCalibQAChecker::QualityName(AliTPCCalibQAChecker::QualityFlag_t quality)
 {
   //
   // get quality name for quality
@@ -554,7 +554,7 @@ const char* AliTPCCalibQAChecker::QualityName(const AliTPCCalibQAChecker::Qualit
   }
 }
 //_________________________________________________________________________
-Color_t AliTPCCalibQAChecker::QualityColor(const AliTPCCalibQAChecker::QualityFlag_t quality)
+Color_t AliTPCCalibQAChecker::QualityColor(AliTPCCalibQAChecker::QualityFlag_t quality)
 {
   //
   // get quality color for quality
@@ -585,7 +585,7 @@ Color_t AliTPCCalibQAChecker::QualityColor(const AliTPCCalibQAChecker::QualityFl
   
 }
 //_________________________________________________________________________
-const char* AliTPCCalibQAChecker::QualityDescription(const QualityFlag_t quality) const
+const char* AliTPCCalibQAChecker::QualityDescription(QualityFlag_t quality) const
 {
   //
   // return description for quality

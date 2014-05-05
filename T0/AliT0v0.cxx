@@ -186,9 +186,9 @@ void AliT0v0::CreateGeometry()
 //    ppcon[40] =   3.15;
 //    ppcon[41] =   7.6;
 
-    gMC->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
+    TVirtualMC::GetMC()->Gsvolu("0SUP", "PCON", idtmed[kAir], ppcon,42);
     z=-69.7;//-14.1/2;
-    gMC->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
+    TVirtualMC::GetMC()->Gspos("0SUP",1,"ALIC",0.,0.,z,idrotm[901],"ONLY");
 
 
    Float_t zdetRight=69.7,zdetLeft=350;
@@ -197,23 +197,23 @@ void AliT0v0::CreateGeometry()
  //-------------------------------------------------------------------
   
     
-    gMC->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
-    gMC->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
-    gMC->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],idrotm[901],"ONLY");
-    gMC->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],0,"ONLY");
+    TVirtualMC::GetMC()->Gsvolu("0STR","PCON",idtmed[kAir],pstartR,18);
+    TVirtualMC::GetMC()->Gsvolu("0STL","TUBE",idtmed[kAir],pstart,3);
+    TVirtualMC::GetMC()->Gspos("0STR",1,"ALIC",0.,0.,-zdetRight-pstart[2],idrotm[901],"ONLY");
+    TVirtualMC::GetMC()->Gspos("0STL",1,"ALIC",0.,0.,zdetLeft+pstart[2],0,"ONLY");
 
 //T0 interior
-    gMC->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
-    gMC->Gsvolu("0PMT","TUBE",idtmed[kOpAir],ppmt,3);     
-    gMC->Gsvolu("0DIV","TUBE",idtmed[kVac],pdivider,3);     
-    gMC->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
-    gMC->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
-    gMC->Gsvolu("0SU3","TUBE",idtmed[kC],psupport3,3);//kryshka perednaiai  C
-    gMC->Gsvolu("0SU4","TUBE",idtmed[kC],psupport3,3);//kryshka zadnaiai  C
-    //    gMC->Gsvolu("0SU5","TUBE",idtmed[kAir],psupport4,3);// dyrki dlia feu v zadnej kryshke Air
-    gMC->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
-    gMC->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
-    gMC->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
+    TVirtualMC::GetMC()->Gsvolu("0INS","TUBE",idtmed[kAir],pinstart,3);
+    TVirtualMC::GetMC()->Gsvolu("0PMT","TUBE",idtmed[kOpAir],ppmt,3);     
+    TVirtualMC::GetMC()->Gsvolu("0DIV","TUBE",idtmed[kVac],pdivider,3);     
+    TVirtualMC::GetMC()->Gsvolu("0SU1","TUBE",idtmed[kC],psupport1,3);//C kozhuh vnutri
+    TVirtualMC::GetMC()->Gsvolu("0SU2","TUBE",idtmed[kC],psupport2,3);// snaruzhi  C
+    TVirtualMC::GetMC()->Gsvolu("0SU3","TUBE",idtmed[kC],psupport3,3);//kryshka perednaiai  C
+    TVirtualMC::GetMC()->Gsvolu("0SU4","TUBE",idtmed[kC],psupport3,3);//kryshka zadnaiai  C
+    //    TVirtualMC::GetMC()->Gsvolu("0SU5","TUBE",idtmed[kAir],psupport4,3);// dyrki dlia feu v zadnej kryshke Air
+    TVirtualMC::GetMC()->Gsvolu("0SU6","TUBE",idtmed[kC],psupport5,3);// stakanchik dlai feu  C
+    TVirtualMC::GetMC()->Gsvolu("0SU7","TUBE",idtmed[kAl],psupport6,3);//kryshechka stakanchika  Al
+    TVirtualMC::GetMC()->Gsvolu("0SU8","TUBE",idtmed[kAl],psupport7,3);//kolechko snaruzhu stakanchika Al
        
 // first ring: 12 units of Scintillator+PMT+divider
   Float_t  theta  = (180 / TMath::Pi()) * TMath::ATan(6.5 / zdetRight);
@@ -236,13 +236,13 @@ void AliT0v0::CreateGeometry()
 		   90. + theta, phi[1],
 		   theta,       phi[2]);  
 	z=-pstart[2]+pinstart[2]+0.2;
-	gMC->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
-	gMC->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos ("0INS", is + 1, "0STR", x, y, z, idrotm[902 + is], "ONLY");
+	TVirtualMC::GetMC()->Gspos ("0INS", is + 13, "0STL", x, y, z, 0, "ONLY");
 	
 	x = 9 * TMath::Sin(angle/2+is * angle);
 	y = 9 * TMath::Cos(angle/2+is * angle);
 
-	gMC->Gspos ("0INS", is + 25, "0STL", x, y, z, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos ("0INS", is + 25, "0STL", x, y, z, 0, "ONLY");
 		
       }	
    
@@ -250,127 +250,127 @@ void AliT0v0::CreateGeometry()
    x=0;
    y=0;
    z=-pinstart[2]+ppmt[2]+2.*psupport6[2]+0.1;
-   gMC->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0PMT",1,"0INS",x,y,z,0,"ONLY");
    z=z+pdivider[2]+ppmt[2];
-   gMC->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0DIV",1,"0INS",x,y,z,0,"ONLY");
    
    // PMT
    
    // Entry window (glass)
-   gMC->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
-   //   gMC->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
+   TVirtualMC::GetMC()->Gsvolu("0TOP","TUBE",idtmed[kOpGlass],ptop,3); //glass
+   //   TVirtualMC::GetMC()->Gsvolu("0TOP","TUBE",idtmed[12],ptop,3); //lucite
    z=-ppmt[2]+ptop[2];
-   gMC->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0TOP",1,"0PMT",0,0,z,0,"ONLY");
    
    //Fotokatod
    
-   gMC->Gsvolu ("0REG", "TUBE", idtmed[kOpGlass], preg, 3); //photocathode dobavil bogdanov(AliT0v2)
+   TVirtualMC::GetMC()->Gsvolu ("0REG", "TUBE", idtmed[kOpGlass], preg, 3); //photocathode dobavil bogdanov(AliT0v2)
    z = -ppmt[2] + 2 * ptop[2] + preg[2]; //photocathode dobavil bogdanov 
-   gMC->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); //photocathode dobavil bogdanov(AliT0v2)
+   TVirtualMC::GetMC()->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY"); //photocathode dobavil bogdanov(AliT0v2)
    
    // Bottom glass
-   gMC->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
+   TVirtualMC::GetMC()->Gsvolu("0BOT","TUBE",idtmed[kGlass],pbot,3);
    z=ppmt[2]-pbot[2];
    AliDebugClass(1,Form(" Z bottom %f\n",z));
-   gMC->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0BOT",1,"0PMT",0,0,z,0,"ONLY");
    // Side cylinder glass
-   gMC->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
+   TVirtualMC::GetMC()->Gsvolu("0OUT","TUBE",idtmed[kGlass],pglass,3);
    z=ppmt[2]-pglass[2];
-   gMC->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0OUT",1,"0PMT",0,0,z,0,"ONLY");
    //PMT electrodes support structure
-   gMC->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
-   gMC->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
+   TVirtualMC::GetMC()->Gsvolu("0CER","TUBE",idtmed[kCer],pcer,3);
+   TVirtualMC::GetMC()->Gsvolu("0STE","TUBE",idtmed[kSteel],psteel,3);
    z=-ppmt[2]+2*ptop[2]+0.3;;
    for (is=1; is<=15; is++)
      {
        z=z+psteel[2]+pcer[2];
-       gMC->Gspos("0CER",is,"0PMT",0,0,z,0,"ONLY");
+       TVirtualMC::GetMC()->Gspos("0CER",is,"0PMT",0,0,z,0,"ONLY");
        z=z+psteel[2]+pcer[2];
-       gMC->Gspos("0STE",is,"0PMT",0,0,z,0,"ONLY");
+       TVirtualMC::GetMC()->Gspos("0STE",is,"0PMT",0,0,z,0,"ONLY");
      }
    
    // Divider
    // Knob at the bottom of PMT baloon
    
-   gMC->Gsvolu("0NB","TUBE",idtmed[6],pknob,3);
+   TVirtualMC::GetMC()->Gsvolu("0NB","TUBE",idtmed[6],pknob,3);
    z=-pdivider[2]+pknob[2];
-   gMC->Gspos("0NB",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0KB","TUBE",idtmed[kGlass],pknob_bot,3);
+   TVirtualMC::GetMC()->Gspos("0NB",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0KB","TUBE",idtmed[kGlass],pknob_bot,3);
    z=-pdivider[2]+2*pknob[2]+pknob_bot[2];
-   gMC->Gspos("0KB",1,"0DIV ",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0VAC","TUBE",idtmed[kVac],pknob_vac,3);
+   TVirtualMC::GetMC()->Gspos("0KB",1,"0DIV ",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0VAC","TUBE",idtmed[kVac],pknob_vac,3);
    z=-pdivider[2]+pknob_vac[2];
-   gMC->Gspos("0VAC",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0VAC",1,"0DIV",0,0,z,0,"ONLY");
    //Steel pins + pin holes
-   gMC->Gsvolu("0PIN","TUBE",idtmed[kSteel],ppins,3);
+   TVirtualMC::GetMC()->Gsvolu("0PIN","TUBE",idtmed[kSteel],ppins,3);
    z=-pdivider[2]+ppins[2];
-   gMC->Gspos("0PIN",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0HOL","TUBE",idtmed[kBrass],phole,3);
+   TVirtualMC::GetMC()->Gspos("0PIN",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0HOL","TUBE",idtmed[kBrass],phole,3);
    z=-pdivider[2]+2*ppins[2]+phole[2];
-   gMC->Gspos("0HOL",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0HOL",1,"0DIV",0,0,z,0,"ONLY");
    
    //Socket
-   gMC->Gsvolu("0V1","TUBE",idtmed[kCer],pdiv1,3);
+   TVirtualMC::GetMC()->Gsvolu("0V1","TUBE",idtmed[kCer],pdiv1,3);
    z=-pdivider[2]+pdiv1[2];
-   gMC->Gspos("0V1",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0V1",1,"0DIV",0,0,z,0,"ONLY");
    //Resistors
-   gMC->Gsvolu("0V2","TUBE",idtmed[kAir],pdiv2,3);
+   TVirtualMC::GetMC()->Gsvolu("0V2","TUBE",idtmed[kAir],pdiv2,3);
    z=pdivider[2]-pdiv2[2];
-   gMC->Gspos("0V2",1,"0DIV",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0RS","TUBE",idtmed[kCer],presist,3);
+   TVirtualMC::GetMC()->Gspos("0V2",1,"0DIV",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0RS","TUBE",idtmed[kCer],presist,3);
    z=-pdiv2[2]+presist[2];
-   gMC->Gspos("0RS",1,"0V2",0,0,z,0,"ONLY");
-   gMC->Gsvolu("0RB","TUBE",idtmed[kRibber],pribber,3);
+   TVirtualMC::GetMC()->Gspos("0RS",1,"0V2",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gsvolu("0RB","TUBE",idtmed[kRibber],pribber,3);
    z=pdiv2[2]-pribber[2];
-   gMC->Gspos("0RB",1,"0V2",0,0,z,0,"ONLY");
+   TVirtualMC::GetMC()->Gspos("0RB",1,"0V2",0,0,z,0,"ONLY");
    
    
    //Support  left side
    /*   
    z=-pstart[2]+psupport1[2];
-   gMC->Gspos("0SU1",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
-   gMC->Gspos("0SU2",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh vnutri
+   TVirtualMC::GetMC()->Gspos("0SU1",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
+   TVirtualMC::GetMC()->Gspos("0SU2",2,"0STL",0,0,z,0,"ONLY"); //C kozhuh vnutri
    z=-pstart[2]+psupport3[2];
-   gMC->Gspos("0SU3",2,"0STL",0,0,z,0,"ONLY"); //peredniaia kryshka
+   TVirtualMC::GetMC()->Gspos("0SU3",2,"0STL",0,0,z,0,"ONLY"); //peredniaia kryshka
    z=-pstart[2]+2.*psupport1[2];
-   gMC->Gspos("0SU4",2,"0STL",0,0,z,0,"MANY"); //zadnaiai kryshka
+   TVirtualMC::GetMC()->Gspos("0SU4",2,"0STL",0,0,z,0,"MANY"); //zadnaiai kryshka
    */
    z=-pstart[2]+psupport1[2]+0.1;
-   gMC->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
-   gMC->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
+   TVirtualMC::GetMC()->Gspos("0SU1",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh snaruzhi
+   TVirtualMC::GetMC()->Gspos("0SU2",1,"0STR",0,0,z,0,"ONLY"); //C kozhuh vnutri
    z=-pstart[2]+psupport3[2]+0.1;
-   gMC->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
+   TVirtualMC::GetMC()->Gspos("0SU3",1,"0STR",0,0,z,0,"ONLY"); //peredniaia kryshka
    z=-pstart[2]+2.*psupport1[2]+0.1;
-   gMC->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
-   gMC->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
+   TVirtualMC::GetMC()->Gspos("0SU4",1,"0STR",0,0,z,0,"MANY"); //zadnaiai kryshka
+   TVirtualMC::GetMC()->Gspos("0SU6",1,"0INS",0,0,0,0,"ONLY");//C stakanchik dlia feu 
    z=-pinstart[2]+psupport6[2];
-   gMC->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
+   TVirtualMC::GetMC()->Gspos("0SU7",1,"0INS",0,0,z,0,"ONLY"); //Al kryshechka 
    
    z=pinstart[2]-psupport7[2];
-   gMC->Gspos("0SU8",1,"0INS",0,0,z,0,"ONLY"); //Al kolechko
+   TVirtualMC::GetMC()->Gspos("0SU8",1,"0INS",0,0,z,0,"ONLY"); //Al kolechko
    
    
    Float_t par[3];
    par[0]=4.4;
    par[1]=4.5;
    par[2]=0.5;
-   gMC->Gsvolu("0SC0","TUBE",idtmed[kC],par,3);
+   TVirtualMC::GetMC()->Gsvolu("0SC0","TUBE",idtmed[kC],par,3);
    z=ppcon[3]+par[2];
-   gMC->Gspos("0SC0",1,"0SUP",0,0,z,0,"ONLY"); 
+   TVirtualMC::GetMC()->Gspos("0SC0",1,"0SUP",0,0,z,0,"ONLY"); 
    z += par[2];
    par[0]=4.4;
    par[1]=5.1;
    par[2]=0.05;
-   gMC->Gsvolu("0SC1","TUBE",idtmed[kC],par,3);
+   TVirtualMC::GetMC()->Gsvolu("0SC1","TUBE",idtmed[kC],par,3);
    z += par[2];
-   gMC->Gspos("0SC1",1,"0SUP",0,0,z,0,"ONLY"); 
+   TVirtualMC::GetMC()->Gspos("0SC1",1,"0SUP",0,0,z,0,"ONLY"); 
    z=z+par[2];
    par[0]=4.9;
    par[1]=5.0;
    par[2]=6.9/2;
-    gMC->Gsvolu("0SC2","TUBE",idtmed[kC],par,3);
+    TVirtualMC::GetMC()->Gsvolu("0SC2","TUBE",idtmed[kC],par,3);
     z += par[2];
-    gMC->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SC2",1,"0SUP",0,0,z,0,"ONLY"); 
     z += par[2];
     /*
     Float_t parC[5];
@@ -379,54 +379,54 @@ void AliT0v0::CreateGeometry()
     parC[2]=5.2;
     parC[3]=5.5;
     parC[4]=5.6;
-    gMC->Gsvolu("0SC3","CONE",idtmed[kC],parC,5);
+    TVirtualMC::GetMC()->Gsvolu("0SC3","CONE",idtmed[kC],parC,5);
     z += parC[0];
-    gMC->Gspos("0SC3",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SC3",1,"0SUP",0,0,z,0,"ONLY"); 
     z += parC[0];
     par[0]=5.5;
     par[1]=5.6;
     par[2]=1.2/2;
-    gMC->Gsvolu("0SC4","TUBE",idtmed[kC],par,3);
+    TVirtualMC::GetMC()->Gsvolu("0SC4","TUBE",idtmed[kC],par,3);
     z += par[2];
-    gMC->Gspos("0SC4",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SC4",1,"0SUP",0,0,z,0,"ONLY"); 
     par[0]=5.1;
     par[1]=5.5;
     par[2]=1.2/2;
-    gMC->Gsvolu("0SA0","TUBE",idtmed[kAl],par,3);
-    gMC->Gspos("0SA0",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsvolu("0SA0","TUBE",idtmed[kAl],par,3);
+    TVirtualMC::GetMC()->Gspos("0SA0",1,"0SUP",0,0,z,0,"ONLY"); 
     //gvozdi dlia skruchivaniia Al i C parts
     par[0]=5.75; 
     par[1]=5.78;
-    gMC->Gsvolu("0SN1","TUBE",idtmed[kSteel],par,3);
-    gMC->Gspos("0SN1",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsvolu("0SN1","TUBE",idtmed[kSteel],par,3);
+    TVirtualMC::GetMC()->Gspos("0SN1",1,"0SUP",0,0,z,0,"ONLY"); 
     z += par[2];
     */
     par[0]=3.15;
     par[1]=4.9;
     par[2]=0.1/2;
-    gMC->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
+    TVirtualMC::GetMC()->Gsvolu("0SA1","TUBE",idtmed[kAl],par,3);
     
     z += par[2];
-    gMC->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SA1",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.15;
     par[1]=3.16;
     par[2]=4.5/2;
-    gMC->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
+    TVirtualMC::GetMC()->Gsvolu("0SA2","TUBE",idtmed[kAl],par,3);
     z += par[2];
-    gMC->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SA2",1,"0SUP",0,0,z,0,"ONLY"); 
     z=z+par[2];
     par[0]=3.16; // eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.2;
-    gMC->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
+    TVirtualMC::GetMC()->Gsvolu("0SA3","TUBE",idtmed[kAl],par,3);
     z += par[2];
-    gMC->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("0SA3",1,"0SUP",0,0,z,0,"ONLY"); 
     par[0]=3.16; // gvozdi eta chast' prikruchena k absorberu
     par[1]=7.5;
     par[2]=0.01;
-    gMC->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
-    gMC->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsvolu("0SN2","TUBE",idtmed[kSteel],par,3);
+    TVirtualMC::GetMC()->Gspos("0SN2",1,"0SUP",0,0,z,0,"ONLY"); 
     
  
 }    
@@ -494,10 +494,10 @@ void AliT0v0::CreateMaterials()
    AliMixture( 3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
    AliMixture( 4, "PMT glass   $",aglass,zglass,dglass,-2,wglass);
    TString namate;
-   gMC->GetMaterial((*fIdmate)[3], namate, a, z, d, radl, absl, par);
+   TVirtualMC::GetMC()->GetMaterial((*fIdmate)[3], namate, a, z, d, radl, absl, par);
    acer[0]=a;
    zcer[0]=z;
-   gMC->GetMaterial((*fIdmate)[4], namate, a, z, d, radl, absl, par);
+   TVirtualMC::GetMC()->GetMaterial((*fIdmate)[4], namate, a, z, d, radl, absl, par);
    acer[1]=a;
    zcer[1]=z;
    
@@ -534,7 +534,7 @@ void AliT0v0::Init()
 //
 //Int_t *idtmed  = gAlice->Idtmed();
   AliT0::Init();
-  fIdSens1=gMC->VolId("0TOP");
+  fIdSens1=TVirtualMC::GetMC()->VolId("0TOP");
   AliDebug(1,Form("%s: *** T0 version 0 initialized ***\n",ClassName()));
   
 }

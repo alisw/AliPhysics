@@ -40,7 +40,7 @@ class AliITSUv1 : public AliITSU {
   
 
   AliITSUv1();
-  AliITSUv1(const char *title, const Int_t nlay);
+  AliITSUv1(const char *title, Int_t nlay);
   virtual       ~AliITSUv1() ;
   virtual void   SetNWrapVolumes(Int_t n);
   virtual void   AddAlignableVolumes() const;
@@ -79,7 +79,7 @@ class AliITSUv1 : public AliITSU {
   AliITSUv1(const AliITSUv1 &source); // copy constructor
   AliITSUv1& operator=(const AliITSUv1 &source); // assignment operator
 
-  TGeoVolume* CreateWrapperVolume(const Int_t nLay);
+  TGeoVolume* CreateWrapperVolume(Int_t nLay);
 
   //
   Int_t     fNWrapVol;       // number of wrapper volumes

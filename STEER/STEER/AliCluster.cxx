@@ -29,6 +29,7 @@
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
 #include <TGeoPhysicalNode.h>
+#include <TMath.h>
 
 #include "AliCluster.h"
 #include "AliLog.h"
@@ -236,7 +237,35 @@ Bool_t AliCluster::GetXRefPlane(Float_t &xref) const
   TGeoHMatrix m = *mt;
   m.MultiplyLeft(ml);
 
-  xref = (m.Inverse()).GetTranslation()[0];
+  xref = -(m.Inverse()).GetTranslation()[0];
+  return kTRUE;
+}
+
+//______________________________________________________________________________
+Bool_t AliCluster::GetXAlphaRefPlane(Float_t &x, Float_t &alpha) const
+{
+  // Get the distance between the origin and the ref. plane together with
+  // the rotation anlge of the ref. plane.
+  // All the needed information is taken only
+  // from TGeo.
+  const TGeoHMatrix *mt = GetTracking2LocalMatrix();
+  if (!mt) return kFALSE;
+
+  const TGeoHMatrix *ml = GetMatrix();
+  if (!ml) return kFALSE;
+
+  TGeoHMatrix m(*ml);
+  m.Multiply(mt);
+  const Double_t txyz[3]={0.}; Double_t xyz[3]={0.};
+  m.LocalToMaster(txyz,xyz);
+    
+  x=TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+    
+  Double_t a=TMath::ATan2(xyz[1],xyz[0]);
+  if (a<0) a+=TMath::TwoPi();
+  else if (a>=TMath::TwoPi()) a-=TMath::TwoPi();
+  alpha=a;
+
   return kTRUE;
 }
 

@@ -41,7 +41,7 @@ AliTRDptrgCBB::AliTRDptrgCBB(AliRunLoader *rl)
   : TObject(),
   fRunLoader(rl),
   fParam(0),
-  fOperatingMode(kDigits),
+  fOperatingMode(AliTRDptrgParam::kDigits),
   fCBA(0),
   fCBC(0),
   fTLMU(0),
@@ -54,7 +54,7 @@ AliTRDptrgCBB::AliTRDptrgCBB(AliRunLoader *rl)
 
 
 AliTRDptrgCBB::AliTRDptrgCBB(AliRunLoader *rl, AliTRDptrgParam* param, 
-                             AliTRDptrgOperatingMode_t operatingMode)
+                             AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode)
   : TObject(),
   fRunLoader(rl),
   fParam(param),
@@ -66,8 +66,8 @@ AliTRDptrgCBB::AliTRDptrgCBB(AliRunLoader *rl, AliTRDptrgParam* param,
   fPTmasks(0x0) 
 {
   // recommended ctor
-  this->fCBA = new AliTRDptrgCBAC(rl, kA, operatingMode, param);
-  this->fCBC = new AliTRDptrgCBAC(rl, kC, operatingMode, param);
+  this->fCBA = new AliTRDptrgCBAC(rl, AliTRDptrgParam::kA, operatingMode, param);
+  this->fCBC = new AliTRDptrgCBAC(rl, AliTRDptrgParam::kC, operatingMode, param);
   this->fTLMU = new AliTRDptrgTLMU(rl, param, operatingMode);
 
   this->LoadParams();

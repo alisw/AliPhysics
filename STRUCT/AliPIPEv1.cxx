@@ -128,8 +128,8 @@ void AliPIPEv1::CreateGeometry()
   tpar[1] = 3.;
   tpar[2] = (absorberDistance + 700.) / 2.;
   dzmo = tpar[2] - absorberDistance;
-  gMC->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
-  gMC->Gspos("QQMO", 1, "ALIC", 0., 0., -dzmo, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("QQMO", "TUBE", idtmed[2015], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("QQMO", 1, "ALIC", 0., 0., -dzmo, 0, "ONLY");
   
   //       BEAM PIPE IN DRIFT SPACE 
   
@@ -137,24 +137,24 @@ void AliPIPEv1::CreateGeometry()
   tpar[0] = 0.;
   tpar[1] = 3.;
   tpar[2] = 30;
-  gMC->Gsvolu("QDT1", "TUBE", idtmed[2015], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("QDT1", "TUBE", idtmed[2015], tpar, 3);
   
   tpar[0] = 2.9;
-  gMC->Gsvolu("QTB1", "TUBE", idtmed[2004], tpar, 3);
-  gMC->Gspos("QTB1", 1, "QDT1", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("QDT1", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("QTB1", "TUBE", idtmed[2004], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTB1", 1, "QDT1", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("QDT1", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
   
   
   //     30-90 
   tpar[0] = 0.;
   tpar[1] = 3.;
   tpar[2] = 30.;
-  gMC->Gsvolu("QDT2", "TUBE", idtmed[2015], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("QDT2", "TUBE", idtmed[2015], tpar, 3);
   
   tpar[0] = 2.9;
-  gMC->Gsvolu("QTB2", "TUBE", idtmed[2004], tpar, 3);
-  gMC->Gspos("QTB2", 1, "QDT2", 0., 0., 0.,   0, "ONLY");
-  gMC->Gspos("QDT2", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("QTB2", "TUBE", idtmed[2004], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTB2", 1, "QDT2", 0., 0., 0.,   0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("QDT2", 1, "QQMO", 0., 0., dzmo, 0, "ONLY");
   
   //       beam pipe outside absorber on the left side 
   
@@ -164,13 +164,13 @@ void AliPIPEv1::CreateGeometry()
   tpar[0] = 0.;
   tpar[1] = 3.;
   tpar[2] = (kZFlange - 30)/2;
-  gMC->Gsvolu("QDT5", "TUBE", idtmed[2015], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("QDT5", "TUBE", idtmed[2015], tpar, 3);
   
   tpar[0] = 2.9;
   zpos    = -30. - tpar[2] + dzmo;
-  gMC->Gsvolu("QTB5", "TUBE", idtmed[2004], tpar, 3);
-  gMC->Gspos("QTB5", 1, "QDT5", 0., 0., 0.,   0, "ONLY");
-  gMC->Gspos("QDT5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("QTB5", "TUBE", idtmed[2004], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTB5", 1, "QDT5", 0., 0., 0.,   0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("QDT5", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   //     STRAIGHT STEEL PIECE 
   
@@ -180,21 +180,21 @@ void AliPIPEv1::CreateGeometry()
   tpar[0] = 0.;
   tpar[1] = r2 + dr;
   tpar[2] = (zpos + 700.) / 2.;
-  gMC->Gsvolu("QDT7", "TUBE", idtmed[2015], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("QDT7", "TUBE", idtmed[2015], tpar, 3);
   tpar[0] = r2;
-  gMC->Gsvolu("QTB7", "TUBE", idtmed[2018], tpar, 3);
-  gMC->Gspos("QTB7", 1, "QDT7", 0., 0., 0.,   0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("QTB7", "TUBE", idtmed[2018], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("QTB7", 1, "QDT7", 0., 0., 0.,   0, "ONLY");
   zpos = zpos - tpar[2] + dzmo;
-  gMC->Gspos("QDT7", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("QDT7", 1, "QQMO", 0., 0., zpos, 0, "ONLY");
   
   //     flange dn 63 
   
   tpar[0] = 3.;
   tpar[1] = 5.7;
   tpar[2] = 2.;
-  gMC->Gsvolu("QN63", "TUBE", idtmed[2018], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("QN63", "TUBE", idtmed[2018], tpar, 3);
   zpos = tpar[2] - kZFlange;
-  gMC->Gspos("QN63", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("QN63", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   
   
   //     Replace Absorber or Shield by Beam-Pipe 
@@ -202,28 +202,28 @@ void AliPIPEv1::CreateGeometry()
   
   if (gAlice->GetModule("ABSO") == 0) {
     
-    gMC->Gspos("QN63", 2, "ALIC", 0., 0., kZFlange, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QN63", 2, "ALIC", 0., 0., kZFlange, 0, "ONLY");
     r2      = 2.9;
     dr      = .1;
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
     tpar[2] = (kZFlange - absorberDistance) / 2.;
-    gMC->Gsvolu("QDT8", "TUBE", idtmed[2015], tpar, 3);
+    TVirtualMC::GetMC()->Gsvolu("QDT8", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
-    gMC->Gsvolu("QTB8", "TUBE", idtmed[2004], tpar, 3);
-    gMC->Gspos("QTB8", 1, "QDT8", 0., 0., 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QTB8", "TUBE", idtmed[2004], tpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTB8", 1, "QDT8", 0., 0., 0., 0, "ONLY");
     zpos    = absorberDistance + tpar[2];
-    gMC->Gspos("QDT8", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QDT8", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
     dr      = .015;
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
     tpar[2] = (absorberEnd - kZFlange) / 2.;
-    gMC->Gsvolu("QDTS", "TUBE", idtmed[2015], tpar, 3);
+    TVirtualMC::GetMC()->Gsvolu("QDTS", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
-    gMC->Gsvolu("QTBS", "TUBE", idtmed[2018], tpar, 3);
-    gMC->Gspos("QTBS", 1, "QDTS", 0., 0., 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QTBS", "TUBE", idtmed[2018], tpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTBS", 1, "QDTS", 0., 0., 0., 0, "ONLY");
     zpos = tpar[2] + kZFlange;
-    gMC->Gspos("QDTS", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QDTS", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   }
   if (gAlice->GetModule("SHIL") == 0) {
     r2      = 2.9;
@@ -231,12 +231,12 @@ void AliPIPEv1::CreateGeometry()
     tpar[0] = 0.;
     tpar[1] = r2 + dr;
     tpar[2] = (700. - absorberEnd) / 2.;
-    gMC->Gsvolu("QDT9", "TUBE", idtmed[2015], tpar, 3);
+    TVirtualMC::GetMC()->Gsvolu("QDT9", "TUBE", idtmed[2015], tpar, 3);
     tpar[0] = r2;
-    gMC->Gsvolu("QTB9", "TUBE", idtmed[2018], tpar, 3);
-    gMC->Gspos("QTB9", 1, "QDT9", 0., 0., 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu("QTB9", "TUBE", idtmed[2018], tpar, 3);
+    TVirtualMC::GetMC()->Gspos("QTB9", 1, "QDT9", 0., 0., 0., 0, "ONLY");
     zpos = absorberEnd + tpar[2];
-    gMC->Gspos("QDT9", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("QDT9", 1, "ALIC", 0., 0., zpos, 0, "ONLY");
   }
 }
 

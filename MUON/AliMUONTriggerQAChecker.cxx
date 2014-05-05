@@ -84,16 +84,16 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   // BEGIN OF LIMITS
   // Fixme: Move me to reference histos
   Float_t safeFactor = 5.;
-  Float_t warningPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
-  Float_t warningPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 3.1, 0.0001, safeFactor*0.4};
-  Float_t warningPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
+  Float_t warningPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.), 100., 100., 100., 100., static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.)};
+  Float_t warningPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {static_cast<Float_t>(safeFactor*0.4), static_cast<Float_t>(safeFactor*1.), 3.1, 0.0001, static_cast<Float_t>(safeFactor*0.4)};
+  Float_t warningPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.), static_cast<Float_t>(safeFactor*1.)};
 
   Float_t* warningPercent[kNrawsHistos] = {warningPercentTrigAlgo, warningPercentCalib, warningPercentReadout};
   
   Float_t errorFactor = 30.;
-  Float_t errorPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., 100., 100., 100., 100., errorFactor*1., errorFactor*1., errorFactor*1.};
-  Float_t errorPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {errorFactor*0.4, errorFactor*1., 6.2, 3.*0.0001, errorFactor*0.4};
-  Float_t errorPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., errorFactor*1.};
+  Float_t errorPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.), 100., 100., 100., 100., static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.)};
+  Float_t errorPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {static_cast<Float_t>(errorFactor*0.4), static_cast<Float_t>(errorFactor*1.), 6.2, 3.*0.0001, static_cast<Float_t>(errorFactor*0.4)};
+  Float_t errorPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.), static_cast<Float_t>(errorFactor*1.)};
   // END OF LIMTS
 
   Float_t* errorPercent[kNrawsHistos] = {errorPercentTrigAlgo, errorPercentCalib, errorPercentReadout};

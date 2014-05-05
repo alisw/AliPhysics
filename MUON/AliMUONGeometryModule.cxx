@@ -150,7 +150,7 @@ void  AliMUONGeometryModule::SetSensitiveVolume(const TString& volName)
 /// Add the volume specified by volName to the list of sensitive
 /// volumes
 
-  SetSensitiveVolume(gMC->VolId(volName));
+  SetSensitiveVolume(TVirtualMC::GetMC()->VolId(volName));
 }      
 
 //______________________________________________________________________________
@@ -193,5 +193,5 @@ Bool_t AliMUONGeometryModule::IsSensitiveVolume(const TString& volName) const
 /// Check if the volume specified by volName  is present in the list
 /// of sensitive volumes.
 
-  return IsSensitiveVolume(gMC->VolId(volName));
+  return IsSensitiveVolume(TVirtualMC::GetMC()->VolId(volName));
 }

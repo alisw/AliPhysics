@@ -286,7 +286,7 @@ void AliITS::Init(){
     //      none.
     Int_t i;
     // Array of TStrings
-    if(gMC) for(i=0;i<fIdN;i++) fIdSens[i] = gMC->VolId(fIdName[i]);
+    if(TVirtualMC::GetMC()) for(i=0;i<fIdN;i++) fIdSens[i] = TVirtualMC::GetMC()->VolId(fIdName[i]);
  
 }
 //______________________________________________________________________

@@ -458,30 +458,30 @@ AliFMD::SetTrackingParameters(Int_t imed,
 			      Int_t   rayleigh_scattering)
 {
   // Disabled by request of FCA, kept for reference only
-  if (!gMC) return;
+  if (!TVirtualMC::GetMC()) return;
   TArrayI& idtmed = *(GetIdtmed());
   Int_t    iimed  = idtmed[imed];
-  // gMC->Gstpar(iimed, "CUTGAM",	gamma);
-  // gMC->Gstpar(iimed, "CUTELE",	electron);
-  // gMC->Gstpar(iimed, "CUTNEU",	neutral_hadron);
-  // gMC->Gstpar(iimed, "CUTHAD",	charged_hadron);
-  // gMC->Gstpar(iimed, "CUTMUO",	muon);
-  // gMC->Gstpar(iimed, "BCUTE",	electron_bremstrahlung);
-  // gMC->Gstpar(iimed, "BCUTM",	muon__bremstrahlung);
-  // gMC->Gstpar(iimed, "DCUTE",	electron_delta);
-  // gMC->Gstpar(iimed, "DCUTM",	muon_delta);
-  // gMC->Gstpar(iimed, "PPCUTM",	muon_pair);
-  // gMC->Gstpar(iimed, "ANNI",	Float_t(annihilation));
-  // gMC->Gstpar(iimed, "BREM",	Float_t(bremstrahlung));
-  // gMC->Gstpar(iimed, "COMP",	Float_t(compton_scattering));
-  // gMC->Gstpar(iimed, "DCAY",	Float_t(decay));
-  // gMC->Gstpar(iimed, "DRAY",	Float_t(delta_ray));
-  // gMC->Gstpar(iimed, "HADR",	Float_t(hadronic));
-  // gMC->Gstpar(iimed, "LOSS",	Float_t(energy_loss));
-  // gMC->Gstpar(iimed, "MULS",	Float_t(multiple_scattering));
-  // gMC->Gstpar(iimed, "PAIR",	Float_t(pair_production));
-  // gMC->Gstpar(iimed, "PHOT",	Float_t(photon_production));
-  // gMC->Gstpar(iimed, "RAYL",	Float_t(rayleigh_scattering));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "CUTGAM",	gamma);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "CUTELE",	electron);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "CUTNEU",	neutral_hadron);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "CUTHAD",	charged_hadron);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "CUTMUO",	muon);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "BCUTE",	electron_bremstrahlung);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "BCUTM",	muon__bremstrahlung);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "DCUTE",	electron_delta);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "DCUTM",	muon_delta);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "PPCUTM",	muon_pair);
+  // TVirtualMC::GetMC()->Gstpar(iimed, "ANNI",	Float_t(annihilation));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "BREM",	Float_t(bremstrahlung));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "COMP",	Float_t(compton_scattering));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "DCAY",	Float_t(decay));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "DRAY",	Float_t(delta_ray));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "HADR",	Float_t(hadronic));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "LOSS",	Float_t(energy_loss));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "MULS",	Float_t(multiple_scattering));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "PAIR",	Float_t(pair_production));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "PHOT",	Float_t(photon_production));
+  // TVirtualMC::GetMC()->Gstpar(iimed, "RAYL",	Float_t(rayleigh_scattering));
 }
 #endif
 
@@ -730,7 +730,7 @@ AliFMD::AddHitByFields(Int_t    track,
   hit = new (a[fNhits]) AliFMDHit(fIshunt, track, detector, ring, sector, 
 				  strip, x, y, z, px, py, pz, edep, pdg, t, 
 				  l, stop);
-  // gMC->AddTrackReference(track, 12);
+  // TVirtualMC::GetMC()->AddTrackReference(track, 12);
   fNhits++;
   
   //Reference track

@@ -135,7 +135,7 @@ void AliPHOSv0::CreateGeometry()
 
   // Create a PHOS module.
   
-  gMC->Gsvolu("PHOS", "TRD1", idtmed[798], geom->GetPHOSParams(), 4) ;        
+  TVirtualMC::GetMC()->Gsvolu("PHOS", "TRD1", idtmed[798], geom->GetPHOSParams(), 4) ;        
   
   this->CreateGeometryforEMC() ; 
 
@@ -166,7 +166,7 @@ void AliPHOSv0::CreateGeometry()
     Float_t pos[3];
     for (iXYZ=0; iXYZ<3; iXYZ++)
       pos[iXYZ] = geom->GetModuleCenter(iModule,iXYZ);
-    gMC->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
+    TVirtualMC::GetMC()->Gspos("PHOS", iModule+1, "ALIC", pos[0], pos[1], pos[2],
 	       idrotm[iModule], "ONLY") ;
   }
   if(!anyModuleCreated)
@@ -205,37 +205,37 @@ void AliPHOSv0::CreateGeometryforEMC()
   // ======= Define the strip ===============
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetStripHalfSize() + ipar);
-  gMC->Gsvolu("PSTR", "BOX ", idtmed[716], par, 3) ;  //Made of steel
+  TVirtualMC::GetMC()->Gsvolu("PSTR", "BOX ", idtmed[716], par, 3) ;  //Made of steel
    
   // --- define steel volume (cell of the strip unit)
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAirCellHalfSize() + ipar);
-  gMC->Gsvolu("PCEL", "BOX ", idtmed[798], par, 3);
+  TVirtualMC::GetMC()->Gsvolu("PCEL", "BOX ", idtmed[798], par, 3);
 
   // --- define wrapped crystal and put it into steel cell
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetWrappedHalfSize() + ipar);
-  gMC->Gsvolu("PWRA", "BOX ", idtmed[702], par, 3);
+  TVirtualMC::GetMC()->Gsvolu("PWRA", "BOX ", idtmed[702], par, 3);
   const Float_t * pin    = emcg->GetAPDHalfSize() ; 
   const Float_t * preamp = emcg->GetPreampHalfSize() ;
   Float_t y = (emcg->GetAirGapLed()-2*pin[1]-2*preamp[1])/2;
-  gMC->Gspos("PWRA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PWRA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
     
   // --- Define crystal and put it into wrapped crystall ---
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetCrystalHalfSize() + ipar);
-  gMC->Gsvolu("PXTL", "BOX ", idtmed[699], par, 3) ;
-  gMC->Gspos("PXTL", 1, "PWRA", 0.0, 0.0, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gsvolu("PXTL", "BOX ", idtmed[699], par, 3) ;
+  TVirtualMC::GetMC()->Gspos("PXTL", 1, "PWRA", 0.0, 0.0, 0.0, 0, "ONLY") ;
       
   // --- define APD/PIN preamp and put it into AirCell
  
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAPDHalfSize() + ipar);
-  gMC->Gsvolu("PPIN", "BOX ", idtmed[705], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PPIN", "BOX ", idtmed[705], par, 3) ;
   const Float_t * crystal = emcg->GetCrystalHalfSize() ;
   y = crystal[1] + emcg->GetAirGapLed() /2 - preamp[1]; 
-  gMC->Gspos("PPIN", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PPIN", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ;
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetPreampHalfSize() + ipar);
-  gMC->Gsvolu("PREA", "BOX ", idtmed[711], par, 3) ;   // Here I assumed preamp as a printed Circuit
+  TVirtualMC::GetMC()->Gsvolu("PREA", "BOX ", idtmed[711], par, 3) ;   // Here I assumed preamp as a printed Circuit
   y = crystal[1] + emcg->GetAirGapLed() /2 + pin[1]  ;    // May it should be changed
-  gMC->Gspos("PREA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ; // to ceramics?
+  TVirtualMC::GetMC()->Gspos("PREA", 1, "PCEL", 0.0, y, 0.0, 0, "ONLY") ; // to ceramics?
   
   
   // --- Fill strip with wrapped cristals in steel cells
@@ -249,26 +249,26 @@ void AliPHOSv0::CreateGeometryforEMC()
       icel += 2, lev += 2) {
     Float_t x = (2*(lev / 2) - 1 - emcg->GetNCellsXInStrip())* acel[0] ;
     Float_t z = acel[2];
-    gMC->Gspos("PCEL", icel, "PSTR", x, y, +z, 0, "ONLY") ;
-    gMC->Gspos("PCEL", icel + 1, "PSTR", x, y, -z, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("PCEL", icel, "PSTR", x, y, +z, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("PCEL", icel + 1, "PSTR", x, y, -z, 0, "ONLY") ;
   }
 
   // --- define the support plate, hole in it and position it in strip ----
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetSupportPlateHalfSize() + ipar);
-  gMC->Gsvolu("PSUP", "BOX ", idtmed[701], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PSUP", "BOX ", idtmed[701], par, 3) ;
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetSupportPlateInHalfSize() + ipar);
-  gMC->Gsvolu("PSHO", "BOX ", idtmed[798], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PSHO", "BOX ", idtmed[798], par, 3) ;
   Float_t z = emcg->GetSupportPlateThickness()/2 ;
-  gMC->Gspos("PSHO", 1, "PSUP", 0.0, 0.0, z, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PSHO", 1, "PSUP", 0.0, 0.0, z, 0, "ONLY") ;
 
   y = acel[1] ;
-  gMC->Gspos("PSUP", 1, "PSTR", 0.0, y, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PSUP", 1, "PSTR", 0.0, y, 0.0, 0, "ONLY") ;
 
   
   // ========== Fill module with strips and put them into inner thermoinsulation=============
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetInnerThermoHalfSize() + ipar);
-  gMC->Gsvolu("PTII", "BOX ", idtmed[706], par, 3) ;     
+  TVirtualMC::GetMC()->Gsvolu("PTII", "BOX ", idtmed[706], par, 3) ;     
   
   const Float_t * inthermo = emcg->GetInnerThermoHalfSize() ;
   const Float_t * strip    = emcg->GetStripHalfSize() ;
@@ -281,7 +281,7 @@ void AliPHOSv0::CreateGeometryforEMC()
     Float_t x = (2*irow + 1 - emcg->GetNStripX())* strip[0] ;
     for(icol = 0; icol < emcg->GetNStripZ(); icol ++){
       z = (2*icol + 1 - emcg->GetNStripZ()) * strip[2] ;
-      gMC->Gspos("PSTR", nr, "PTII", x, y, z, 0, "ONLY") ;
+      TVirtualMC::GetMC()->Gspos("PSTR", nr, "PTII", x, y, z, 0, "ONLY") ;
       nr++ ;
     }
   }
@@ -289,24 +289,24 @@ void AliPHOSv0::CreateGeometryforEMC()
   
   // ------- define the air gap between thermoinsulation and cooler
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetAirGapHalfSize() + ipar);
-  gMC->Gsvolu("PAGA", "BOX ", idtmed[798], par, 3) ;   
+  TVirtualMC::GetMC()->Gsvolu("PAGA", "BOX ", idtmed[798], par, 3) ;   
   const Float_t * agap = emcg->GetAirGapHalfSize() ;
   y = agap[1] - inthermo[1]  ;
   
-  gMC->Gspos("PTII", 1, "PAGA", 0.0, y, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PTII", 1, "PAGA", 0.0, y, 0.0, 0, "ONLY") ;
 
 
   // ------- define the Al passive cooler 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetCoolerHalfSize() + ipar);
-  gMC->Gsvolu("PCOR", "BOX ", idtmed[701], par, 3) ;   
+  TVirtualMC::GetMC()->Gsvolu("PCOR", "BOX ", idtmed[701], par, 3) ;   
   const Float_t * cooler = emcg->GetCoolerHalfSize() ;
   y = cooler[1] - agap[1]  ;
   
-  gMC->Gspos("PAGA", 1, "PCOR", 0.0, y, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PAGA", 1, "PCOR", 0.0, y, 0.0, 0, "ONLY") ;
   
   // ------- define the outer thermoinsulating cover
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetOuterThermoParams() + ipar);
-  gMC->Gsvolu("PTIO", "TRD1", idtmed[706], par, 4) ;        
+  TVirtualMC::GetMC()->Gsvolu("PTIO", "TRD1", idtmed[706], par, 4) ;        
   const Float_t * outparams = emcg->GetOuterThermoParams() ; 
   
   Int_t idrotm[99] ;
@@ -314,128 +314,128 @@ void AliPHOSv0::CreateGeometryforEMC()
   // Frame in outer thermoinsulation and so on: z out of beam, y along beam, x across beam
   
   z = outparams[3] - cooler[1] ;
-  gMC->Gspos("PCOR", 1, "PTIO", 0., 0.0, z, idrotm[1], "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PCOR", 1, "PTIO", 0., 0.0, z, idrotm[1], "ONLY") ;
   
   // -------- Define the outer Aluminium cover -----
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetAlCoverParams() + ipar);
-  gMC->Gsvolu("PCOL", "TRD1", idtmed[701], par, 4) ;        
+  TVirtualMC::GetMC()->Gsvolu("PCOL", "TRD1", idtmed[701], par, 4) ;        
   const Float_t * covparams = emcg->GetAlCoverParams() ; 
   z = covparams[3] - outparams[3] ;
-  gMC->Gspos("PTIO", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PTIO", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
 
   // --------- Define front fiberglass cover -----------
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFiberGlassHalfSize() + ipar);
-  gMC->Gsvolu("PFGC", "BOX ", idtmed[717], par, 3) ;  
+  TVirtualMC::GetMC()->Gsvolu("PFGC", "BOX ", idtmed[717], par, 3) ;  
   z = - outparams[3] ;
-  gMC->Gspos("PFGC", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFGC", 1, "PCOL", 0., 0.0, z, 0, "ONLY") ;
 
   //=============This is all with cold section==============
   
 
   //------ Warm Section --------------
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetWarmAlCoverHalfSize() + ipar);
-  gMC->Gsvolu("PWAR", "BOX ", idtmed[701], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PWAR", "BOX ", idtmed[701], par, 3) ; 
   const Float_t * warmcov = emcg->GetWarmAlCoverHalfSize() ;
   
   // --- Define the outer thermoinsulation ---
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetWarmThermoHalfSize() + ipar);
-  gMC->Gsvolu("PWTI", "BOX ", idtmed[706], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PWTI", "BOX ", idtmed[706], par, 3) ; 
   const Float_t * warmthermo = emcg->GetWarmThermoHalfSize() ;
   z = -warmcov[2] + warmthermo[2] ;
   
-  gMC->Gspos("PWTI", 1, "PWAR", 0., 0.0, z, 0, "ONLY") ;     
+  TVirtualMC::GetMC()->Gspos("PWTI", 1, "PWAR", 0., 0.0, z, 0, "ONLY") ;     
   
   // --- Define cables area and put in it T-supports ---- 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetTCables1HalfSize() + ipar);
-  gMC->Gsvolu("PCA1", "BOX ", idtmed[718], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PCA1", "BOX ", idtmed[718], par, 3) ; 
   const Float_t * cbox = emcg->GetTCables1HalfSize() ;
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetTSupport1HalfSize() + ipar);
-  gMC->Gsvolu("PBE1", "BOX ", idtmed[701], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PBE1", "BOX ", idtmed[701], par, 3) ;
   const Float_t * beams = emcg->GetTSupport1HalfSize() ;
   Int_t isup ;
   for(isup = 0; isup < emcg->GetNTSuppots(); isup++){
     Float_t x = -cbox[0] + beams[0] + (2*beams[0]+emcg->GetTSupportDist())*isup ;
-    gMC->Gspos("PBE1", isup, "PCA1", x, 0.0, 0.0, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("PBE1", isup, "PCA1", x, 0.0, 0.0, 0, "ONLY") ;
   }
   
   z = -warmthermo[2] + cbox[2];
-  gMC->Gspos("PCA1", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
+  TVirtualMC::GetMC()->Gspos("PCA1", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetTCables2HalfSize() + ipar);
-  gMC->Gsvolu("PCA2", "BOX ", idtmed[718], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PCA2", "BOX ", idtmed[718], par, 3) ; 
   const Float_t * cbox2 = emcg->GetTCables2HalfSize() ;
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetTSupport2HalfSize() + ipar);
-  gMC->Gsvolu("PBE2", "BOX ", idtmed[701], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PBE2", "BOX ", idtmed[701], par, 3) ;
   for(isup = 0; isup < emcg->GetNTSuppots(); isup++){
     Float_t x = -cbox[0] + beams[0] + (2*beams[0]+emcg->GetTSupportDist())*isup ;
-    gMC->Gspos("PBE2", isup, "PCA2", x, 0.0, 0.0, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("PBE2", isup, "PCA2", x, 0.0, 0.0, 0, "ONLY") ;
   }
   
   z = -warmthermo[2] + 2*cbox[2] + cbox2[2];
-  gMC->Gspos("PCA2", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
+  TVirtualMC::GetMC()->Gspos("PCA2", 1, "PWTI", 0.0, 0.0, z, 0, "ONLY") ;     
   
   
   // --- Define frame ---
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFrameXHalfSize() + ipar);
-  gMC->Gsvolu("PFRX", "BOX ", idtmed[716], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFRX", "BOX ", idtmed[716], par, 3) ; 
   const Float_t * posit1 = emcg->GetFrameXPosition() ;
-  gMC->Gspos("PFRX", 1, "PWTI", posit1[0],  posit1[1], posit1[2], 0, "ONLY") ;
-  gMC->Gspos("PFRX", 2, "PWTI", posit1[0], -posit1[1], posit1[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFRX", 1, "PWTI", posit1[0],  posit1[1], posit1[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFRX", 2, "PWTI", posit1[0], -posit1[1], posit1[2], 0, "ONLY") ;
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFrameZHalfSize() + ipar);
-  gMC->Gsvolu("PFRZ", "BOX ", idtmed[716], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFRZ", "BOX ", idtmed[716], par, 3) ; 
   const Float_t * posit2 = emcg->GetFrameZPosition() ;
-  gMC->Gspos("PFRZ", 1, "PWTI",  posit2[0], posit2[1], posit2[2], 0, "ONLY") ;
-  gMC->Gspos("PFRZ", 2, "PWTI", -posit2[0], posit2[1], posit2[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFRZ", 1, "PWTI",  posit2[0], posit2[1], posit2[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFRZ", 2, "PWTI", -posit2[0], posit2[1], posit2[2], 0, "ONLY") ;
 
  // --- Define Fiber Glass support ---
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGupXHalfSize() + ipar);
-  gMC->Gsvolu("PFG1", "BOX ", idtmed[717], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFG1", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit3 = emcg->GetFGupXPosition() ;
-  gMC->Gspos("PFG1", 1, "PWTI", posit3[0],  posit3[1], posit3[2], 0, "ONLY") ;
-  gMC->Gspos("PFG1", 2, "PWTI", posit3[0], -posit3[1], posit3[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG1", 1, "PWTI", posit3[0],  posit3[1], posit3[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG1", 2, "PWTI", posit3[0], -posit3[1], posit3[2], 0, "ONLY") ;
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGupZHalfSize() + ipar);
-  gMC->Gsvolu("PFG2", "BOX ", idtmed[717], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFG2", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit4 = emcg->GetFGupZPosition();
-  gMC->Gspos("PFG2", 1, "PWTI",  posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
-  gMC->Gspos("PFG2", 2, "PWTI", -posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG2", 1, "PWTI",  posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG2", 2, "PWTI", -posit4[0], posit4[1], posit4[2], 0, "ONLY") ;
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGlowXHalfSize() + ipar);
-  gMC->Gsvolu("PFG3", "BOX ", idtmed[717], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFG3", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit5 = emcg->GetFGlowXPosition() ;
-  gMC->Gspos("PFG3", 1, "PWTI", posit5[0],  posit5[1], posit5[2], 0, "ONLY") ;
-  gMC->Gspos("PFG3", 2, "PWTI", posit5[0], -posit5[1], posit5[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG3", 1, "PWTI", posit5[0],  posit5[1], posit5[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG3", 2, "PWTI", posit5[0], -posit5[1], posit5[2], 0, "ONLY") ;
 
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFGlowZHalfSize() + ipar);
-  gMC->Gsvolu("PFG4", "BOX ", idtmed[717], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PFG4", "BOX ", idtmed[717], par, 3) ; 
   const Float_t * posit6 = emcg->GetFGlowZPosition() ;
-  gMC->Gspos("PFG4", 1, "PWTI",  posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
-  gMC->Gspos("PFG4", 2, "PWTI", -posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG4", 1, "PWTI",  posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PFG4", 2, "PWTI", -posit6[0], posit6[1], posit6[2], 0, "ONLY") ;
 
   // --- Define Air Gap for FEE electronics ----- 
   
   for (ipar=0; ipar<3; ipar++) par[ipar] = *(emcg->GetFEEAirHalfSize() + ipar);
-  gMC->Gsvolu("PAFE", "BOX ", idtmed[798], par, 3) ; 
+  TVirtualMC::GetMC()->Gsvolu("PAFE", "BOX ", idtmed[798], par, 3) ; 
   const Float_t * posit7 = emcg->GetFEEAirPosition() ;
-  gMC->Gspos("PAFE", 1, "PWTI",  posit7[0], posit7[1], posit7[2], 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PAFE", 1, "PWTI",  posit7[0], posit7[1], posit7[2], 0, "ONLY") ;
   
   // Define the EMC module volume and combine Cool and Warm sections
   
   for (ipar=0; ipar<4; ipar++) par[ipar] = *(emcg->GetEMCParams() + ipar);
-  gMC->Gsvolu("PEMC", "TRD1", idtmed[798], par, 4) ;        
+  TVirtualMC::GetMC()->Gsvolu("PEMC", "TRD1", idtmed[798], par, 4) ;        
   z =  - warmcov[2] ;
-  gMC->Gspos("PCOL", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PCOL", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
   z = covparams[3] ;
-  gMC->Gspos("PWAR", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PWAR", 1, "PEMC",  0., 0., z, 0, "ONLY") ;
   
   
   // Put created EMC geometry into PHOS volume
   
   z = geom->GetCPVBoxSize(1) / 2. ;
-  gMC->Gspos("PEMC", 1, "PHOS", 0., 0., z, 0, "ONLY") ; 
+  TVirtualMC::GetMC()->Gspos("PEMC", 1, "PHOS", 0., 0., z, 0, "ONLY") ; 
   
 }
 
@@ -493,28 +493,28 @@ void AliPHOSv0::CreateGeometryforCPV()
   par[0] = geom->GetCPVBoxSize(0) / 2.0 ;  
   par[1] = geom->GetCPVBoxSize(1) / 2.0 ; 
   par[2] = geom->GetCPVBoxSize(2) / 2.0 ;
-  gMC->Gsvolu("PCPV", "BOX ", idtmed[798], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PCPV", "BOX ", idtmed[798], par, 3) ;
 
   const Float_t * emcParams = geom->GetEMCAGeometry()->GetEMCParams() ;
   z = - emcParams[3] ;
   Int_t rotm ;
   AliMatrix(rotm, 90.,0., 0., 0., 90., 90.) ;
 
-  gMC->Gspos("PCPV", 1, "PHOS", 0.0, 0.0, z, rotm, "ONLY") ; 
+  TVirtualMC::GetMC()->Gspos("PCPV", 1, "PHOS", 0.0, 0.0, z, rotm, "ONLY") ; 
   
   // Gassiplex board
   
   par[0] = geom->GetGassiplexChipSize(0)/2.;
   par[1] = geom->GetGassiplexChipSize(1)/2.;
   par[2] = geom->GetGassiplexChipSize(2)/2.;
-  gMC->Gsvolu("PCPC","BOX ",idtmed[707],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCPC","BOX ",idtmed[707],par,3);
   
   // Cu+Ni foil covers Gassiplex board
 
   par[1] = geom->GetCPVCuNiFoilThickness()/2;
-  gMC->Gsvolu("PCPD","BOX ",idtmed[710],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCPD","BOX ",idtmed[710],par,3);
   y      = -(geom->GetGassiplexChipSize(1)/2 - par[1]);
-  gMC->Gspos("PCPD",1,"PCPC",0,y,0,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos("PCPD",1,"PCPC",0,y,0,0,"ONLY");
 
   // Position of the chip inside CPV
 
@@ -528,7 +528,7 @@ void AliPHOSv0::CreateGeometryforCPV()
     for (Int_t iz=0; iz<geom->GetNumberOfCPVChipsZ(); iz++) {
       copy++;
       z = zStep * (iz+1) - geom->GetCPVActiveSize(1)/2;
-      gMC->Gspos("PCPC",copy,"PCPV",x,y,z,0,"ONLY");
+      TVirtualMC::GetMC()->Gspos("PCPC",copy,"PCPV",x,y,z,0,"ONLY");
     }
   }
 
@@ -537,52 +537,52 @@ void AliPHOSv0::CreateGeometryforCPV()
   par[0] = geom->GetCPVActiveSize(0)        / 2;
   par[1] = geom->GetCPVTextoliteThickness() / 2;
   par[2] = geom->GetCPVActiveSize(1)        / 2;
-  gMC->Gsvolu("PCPF","BOX ",idtmed[707],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCPF","BOX ",idtmed[707],par,3);
 
   // Argon gas volume
 
   par[1] = (geom->GetFTPosition(2) - geom->GetFTPosition(1) - geom->GetCPVTextoliteThickness()) / 2;
-  gMC->Gsvolu("PCPG","BOX ",idtmed[715],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCPG","BOX ",idtmed[715],par,3);
 
   for (Int_t i=0; i<4; i++) {
     y = geom->GetCPVFrameSize(1) / 2 - geom->GetFTPosition(i) + geom->GetCPVTextoliteThickness()/2;
-    gMC->Gspos("PCPF",i+1,"PCPV",0,y,0,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos("PCPF",i+1,"PCPV",0,y,0,0,"ONLY");
     if(i==1){
       y-= (geom->GetFTPosition(2) - geom->GetFTPosition(1)) / 2;
-      gMC->Gspos("PCPG",1,"PCPV ",0,y,0,0,"ONLY");
+      TVirtualMC::GetMC()->Gspos("PCPG",1,"PCPV ",0,y,0,0,"ONLY");
     }
   }
 
   // Dummy sensitive plane in the middle of argone gas volume
 
   par[1]=0.001;
-  gMC->Gsvolu("PCPQ","BOX ",idtmed[715],par,3);
-  gMC->Gspos ("PCPQ",1,"PCPG",0,0,0,0,"ONLY");
+  TVirtualMC::GetMC()->Gsvolu("PCPQ","BOX ",idtmed[715],par,3);
+  TVirtualMC::GetMC()->Gspos ("PCPQ",1,"PCPG",0,0,0,0,"ONLY");
 
   // Cu+Ni foil covers textolite
 
   par[1] = geom->GetCPVCuNiFoilThickness() / 2;
-  gMC->Gsvolu("PCP1","BOX ",idtmed[710],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCP1","BOX ",idtmed[710],par,3);
   y = geom->GetCPVTextoliteThickness()/2 - par[1];
-  gMC->Gspos ("PCP1",1,"PCPF",0,y,0,0,"ONLY");
+  TVirtualMC::GetMC()->Gspos ("PCP1",1,"PCPF",0,y,0,0,"ONLY");
 
   // Aluminum frame around CPV
 
   par[0] = geom->GetCPVFrameSize(0)/2;
   par[1] = geom->GetCPVFrameSize(1)/2;
   par[2] = geom->GetCPVBoxSize(2)  /2;
-  gMC->Gsvolu("PCF1","BOX ",idtmed[701],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCF1","BOX ",idtmed[701],par,3);
 
   par[0] = geom->GetCPVBoxSize(0)/2 - geom->GetCPVFrameSize(0);
   par[1] = geom->GetCPVFrameSize(1)/2;
   par[2] = geom->GetCPVFrameSize(2)/2;
-  gMC->Gsvolu("PCF2","BOX ",idtmed[701],par,3);
+  TVirtualMC::GetMC()->Gsvolu("PCF2","BOX ",idtmed[701],par,3);
 
   for (Int_t j=0; j<=1; j++) {
     x = TMath::Sign(1,2*j-1) * (geom->GetCPVBoxSize(0) - geom->GetCPVFrameSize(0)) / 2;
-    gMC->Gspos("PCF1",j+1,"PCPV", x,0,0,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos("PCF1",j+1,"PCPV", x,0,0,0,"ONLY");
     z = TMath::Sign(1,2*j-1) * (geom->GetCPVBoxSize(2) - geom->GetCPVFrameSize(2)) / 2;
-    gMC->Gspos("PCF2",j+1,"PCPV",0, 0,z,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos("PCF2",j+1,"PCPV",0, 0,z,0,"ONLY");
   }
 
 }
@@ -617,21 +617,21 @@ void AliPHOSv0::CreateGeometryforSupport()
   par[0] =  geom->GetRailRoadSize(0) / 2.0 ;
   par[1] =  geom->GetRailRoadSize(1) / 2.0 ;
   par[2] =  geom->GetRailRoadSize(2) / 2.0 ;
-  gMC->Gsvolu("PRRD", "BOX ", idtmed[798], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PRRD", "BOX ", idtmed[798], par, 3) ;
 
   y0     = -(geom->GetRailsDistanceFromIP() - geom->GetRailRoadSize(1) / 2.0) ;
-  gMC->Gspos("PRRD", 1, "ALIC", 0.0, y0, 0.0, 0, "ONLY") ; 
+  TVirtualMC::GetMC()->Gspos("PRRD", 1, "ALIC", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // --- Dummy box containing one rail
 
   par[0] =  geom->GetRailOuterSize(0) / 2.0 ;
   par[1] =  geom->GetRailOuterSize(1) / 2.0 ;
   par[2] =  geom->GetRailOuterSize(2) / 2.0 ;
-  gMC->Gsvolu("PRAI", "BOX ", idtmed[798], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PRAI", "BOX ", idtmed[798], par, 3) ;
 
   for (i=0; i<2; i++) {
     x0     = (2*i-1) * geom->GetDistanceBetwRails()  / 2.0 ;
-    gMC->Gspos("PRAI", i, "PRRD", x0, 0.0, 0.0, 0, "ONLY") ; 
+    TVirtualMC::GetMC()->Gspos("PRAI", i, "PRRD", x0, 0.0, 0.0, 0, "ONLY") ; 
   }
 
   // --- Upper and bottom steel parts of the rail
@@ -639,32 +639,32 @@ void AliPHOSv0::CreateGeometryforSupport()
   par[0] =  geom->GetRailPart1(0) / 2.0 ;
   par[1] =  geom->GetRailPart1(1) / 2.0 ;
   par[2] =  geom->GetRailPart1(2) / 2.0 ;
-  gMC->Gsvolu("PRP1", "BOX ", idtmed[716], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PRP1", "BOX ", idtmed[716], par, 3) ;
 
   y0     = - (geom->GetRailOuterSize(1) - geom->GetRailPart1(1))  / 2.0 ;
-  gMC->Gspos("PRP1", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PRP1", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
   y0     =   (geom->GetRailOuterSize(1) - geom->GetRailPart1(1))  / 2.0 - geom->GetRailPart3(1);
-  gMC->Gspos("PRP1", 2, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gspos("PRP1", 2, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ;
 
   // --- The middle vertical steel parts of the rail
 
   par[0] =  geom->GetRailPart2(0) / 2.0 ;
   par[1] =  geom->GetRailPart2(1) / 2.0 ;
   par[2] =  geom->GetRailPart2(2) / 2.0 ;
-  gMC->Gsvolu("PRP2", "BOX ", idtmed[716], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PRP2", "BOX ", idtmed[716], par, 3) ;
 
   y0     =   - geom->GetRailPart3(1) / 2.0 ;
-  gMC->Gspos("PRP2", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
+  TVirtualMC::GetMC()->Gspos("PRP2", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // --- The most upper steel parts of the rail
 
   par[0] =  geom->GetRailPart3(0) / 2.0 ;
   par[1] =  geom->GetRailPart3(1) / 2.0 ;
   par[2] =  geom->GetRailPart3(2) / 2.0 ;
-  gMC->Gsvolu("PRP3", "BOX ", idtmed[716], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PRP3", "BOX ", idtmed[716], par, 3) ;
 
   y0     =   (geom->GetRailOuterSize(1) - geom->GetRailPart3(1))  / 2.0 ;
-  gMC->Gspos("PRP3", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
+  TVirtualMC::GetMC()->Gspos("PRP3", 1, "PRAI", 0.0, y0, 0.0, 0, "ONLY") ; 
 
   // --- The wall of the cradle
   // --- The wall is empty: steel thin walls and air inside
@@ -675,17 +675,17 @@ void AliPHOSv0::CreateGeometryforSupport()
   par[2] =  geom->GetCradleWall(2) / 2.0 ;
   par[3] =  geom->GetCradleWall(3) ;
   par[4] =  geom->GetCradleWall(4) ;
-  gMC->Gsvolu("PCRA", "TUBS", idtmed[716], par, 5) ;
+  TVirtualMC::GetMC()->Gsvolu("PCRA", "TUBS", idtmed[716], par, 5) ;
 
   par[0] +=  geom->GetCradleWallThickness() ;
   par[1] -=  geom->GetCradleWallThickness() ;
   par[2] -=  geom->GetCradleWallThickness() ;
-  gMC->Gsvolu("PCRE", "TUBS", idtmed[798], par, 5) ;
-  gMC->Gspos ("PCRE", 1, "PCRA", 0.0, 0.0, 0.0, 0, "ONLY") ; 
+  TVirtualMC::GetMC()->Gsvolu("PCRE", "TUBS", idtmed[798], par, 5) ;
+  TVirtualMC::GetMC()->Gspos ("PCRE", 1, "PCRA", 0.0, 0.0, 0.0, 0, "ONLY") ; 
 
   for (i=0; i<2; i++) {
     z0 = (2*i-1) * (geom->GetOuterBoxSize(2) + geom->GetCradleWall(2) )/ 2.0  ;
-        gMC->Gspos("PCRA", i, "ALIC", 0.0, 0.0, z0, 0, "ONLY") ; 
+        TVirtualMC::GetMC()->Gspos("PCRA", i, "ALIC", 0.0, 0.0, z0, 0, "ONLY") ; 
   }
 
   // --- The "wheels" of the cradle
@@ -693,7 +693,7 @@ void AliPHOSv0::CreateGeometryforSupport()
   par[0] = geom->GetCradleWheel(0) / 2;
   par[1] = geom->GetCradleWheel(1) / 2;
   par[2] = geom->GetCradleWheel(2) / 2;
-  gMC->Gsvolu("PWHE", "BOX ", idtmed[716], par, 3) ;
+  TVirtualMC::GetMC()->Gsvolu("PWHE", "BOX ", idtmed[716], par, 3) ;
 
   y0 = -(geom->GetRailsDistanceFromIP() - geom->GetRailRoadSize(1) -
 	 geom->GetCradleWheel(1)/2) ;
@@ -703,7 +703,7 @@ void AliPHOSv0::CreateGeometryforSupport()
     for (j=0; j<2; j++) {
       copy = 2*i + j;
       x0 = (2*j-1) * geom->GetDistanceBetwRails()  / 2.0 ;
-      gMC->Gspos("PWHE", copy, "ALIC", x0, y0, z0, 0, "ONLY") ; 
+      TVirtualMC::GetMC()->Gspos("PWHE", copy, "ALIC", x0, y0, z0, 0, "ONLY") ; 
     }
   }
 

@@ -175,7 +175,7 @@ AliTPCCorrection::~AliTPCCorrection() {
   //
 }
 
-void AliTPCCorrection::CorrectPoint(Float_t x[],const Short_t roc) {
+void AliTPCCorrection::CorrectPoint(Float_t x[], Short_t roc) {
   //
   // Corrects the initial coordinates x (cartesian coordinates)
   // according to the given effect (inherited classes)
@@ -186,7 +186,7 @@ void AliTPCCorrection::CorrectPoint(Float_t x[],const Short_t roc) {
   for (Int_t j=0;j<3;++j) x[j]+=dx[j];
 }
 
-void AliTPCCorrection::CorrectPoint(const Float_t x[],const Short_t roc,Float_t xp[]) {
+void AliTPCCorrection::CorrectPoint(const Float_t x[], Short_t roc,Float_t xp[]) {
   //
   // Corrects the initial coordinates x (cartesian coordinates) and stores the new 
   // (distorted) coordinates in xp. The distortion is set according to the given effect (inherited classes)
@@ -197,7 +197,7 @@ void AliTPCCorrection::CorrectPoint(const Float_t x[],const Short_t roc,Float_t 
   for (Int_t j=0;j<3;++j) xp[j]=x[j]+dx[j];
 }
 
-void AliTPCCorrection::DistortPoint(Float_t x[],const Short_t roc) {
+void AliTPCCorrection::DistortPoint(Float_t x[], Short_t roc) {
   //
   // Distorts the initial coordinates x (cartesian coordinates)
   // according to the given effect (inherited classes)
@@ -208,7 +208,7 @@ void AliTPCCorrection::DistortPoint(Float_t x[],const Short_t roc) {
   for (Int_t j=0;j<3;++j) x[j]+=dx[j];
 }
 
-void AliTPCCorrection::DistortPointLocal(Float_t x[],const Short_t roc) {
+void AliTPCCorrection::DistortPointLocal(Float_t x[], Short_t roc) {
   //
   // Distorts the initial coordinates x (cartesian coordinates)
   // according to the given effect (inherited classes)
@@ -225,7 +225,7 @@ void AliTPCCorrection::DistortPointLocal(Float_t x[],const Short_t roc) {
   x[1]= +sa*gxyz[0]+ca*gxyz[1];
   x[2]= gxyz[2];
 }
-void AliTPCCorrection::CorrectPointLocal(Float_t x[],const Short_t roc) {
+void AliTPCCorrection::CorrectPointLocal(Float_t x[], Short_t roc) {
   //
   // Distorts the initial coordinates x (cartesian coordinates)
   // according to the given effect (inherited classes)
@@ -243,7 +243,7 @@ void AliTPCCorrection::CorrectPointLocal(Float_t x[],const Short_t roc) {
   x[2]=  gxyz[2];
 }
 
-void AliTPCCorrection::DistortPoint(const Float_t x[],const Short_t roc,Float_t xp[]) {
+void AliTPCCorrection::DistortPoint(const Float_t x[], Short_t roc,Float_t xp[]) {
   //
   // Distorts the initial coordinates x (cartesian coordinates) and stores the new 
   // (distorted) coordinates in xp. The distortion is set according to the given effect (inherited classes)
@@ -254,7 +254,7 @@ void AliTPCCorrection::DistortPoint(const Float_t x[],const Short_t roc,Float_t 
   for (Int_t j=0;j<3;++j) xp[j]=x[j]+dx[j];
 }
 
-void AliTPCCorrection::GetCorrection(const Float_t /*x*/[],const Short_t /*roc*/,Float_t dx[]) {
+void AliTPCCorrection::GetCorrection(const Float_t /*x*/[], Short_t /*roc*/,Float_t dx[]) {
   //
   // This function delivers the correction values dx in respect to the inital coordinates x
   // roc represents the TPC read out chamber (offline numbering convention)
@@ -263,7 +263,7 @@ void AliTPCCorrection::GetCorrection(const Float_t /*x*/[],const Short_t /*roc*/
   for (Int_t j=0;j<3;++j) { dx[j]=0.; }
 }
 
-void AliTPCCorrection::GetDistortion(const Float_t x[],const Short_t roc,Float_t dx[]) {
+void AliTPCCorrection::GetDistortion(const Float_t x[], Short_t roc,Float_t dx[]) {
   //
   // This function delivers the distortion values dx in respect to the inital coordinates x
   // roc represents the TPC read out chamber (offline numbering convention)
@@ -272,7 +272,7 @@ void AliTPCCorrection::GetDistortion(const Float_t x[],const Short_t roc,Float_t
   for (Int_t j=0;j<3;++j) dx[j]=-dx[j];
 }
 
-void AliTPCCorrection::GetCorrectionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta) {
+void AliTPCCorrection::GetCorrectionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta) {
   // author: marian.ivanov@cern.ch
   //
   // In this (virtual)function calculates the dx'/dz,  dy'/dz  and dz'/dz at given point (x,y,z)
@@ -351,7 +351,7 @@ void AliTPCCorrection::GetCorrectionDz(const Float_t x[],const Short_t roc,Float
   dx[2] = fitz.GetParameter(1);
 }
 
-void AliTPCCorrection::GetDistortionDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta) {
+void AliTPCCorrection::GetDistortionDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta) {
   // author: marian.ivanov@cern.ch
   //
   // In this (virtual)function calculates the dx'/dz,  dy'/dz  and dz'/dz at given point (x,y,z)
@@ -416,7 +416,7 @@ void AliTPCCorrection::GetDistortionDz(const Float_t x[],const Short_t roc,Float
     dx[2] = fitz.GetParameter(1);
 }
 
-void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta){
+void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta){
   //
   // Integrate 3D distortion along drift lines starting from the roc plane
   //   to the expected z position of the point, this assumes that dz is small
@@ -455,7 +455,7 @@ void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[],const Short_t r
     //  the slopes will be positive.
     // but since we chose deltaZ opposite sign the singn of the corretion should be fine
     
-    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    Float_t xyz2[3]={xyz[0],xyz[1],static_cast<Float_t>(xyz[2]+deltaZ/2.)};
     GetCorrectionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=deltaZ*dxyz[0];
     xyz[1]+=deltaZ*dxyz[1];
@@ -468,7 +468,7 @@ void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[],const Short_t r
   dx[2]=      sumdz; //TODO: is sumdz correct?
 }
 
-void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[],const Short_t roc,Float_t dx[], Float_t delta){
+void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[], Short_t roc,Float_t dx[], Float_t delta){
   //
   // Integrate 3D distortion along drift lines
   // To define the drift lines virtual function  AliTPCCorrection::GetCorrectionDz is used
@@ -498,7 +498,7 @@ void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[],const Short_t r
     // and since we are moving towards the read-out plane the deltaZ for
     //   weighting the dK/dz should have the opposite sign
     deltaZ*=sign;
-    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    Float_t xyz2[3]={xyz[0],xyz[1],static_cast<Float_t>(xyz[2]+deltaZ/2.)};
     GetDistortionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=-deltaZ*dxyz[0];
     xyz[1]+=-deltaZ*dxyz[1];
@@ -763,7 +763,7 @@ TH2F* AliTPCCorrection::CreateTH2F(const char *name,const char *title,
 
 // Simple Interpolation functions: e.g. with bi(tri)cubic interpolations (not yet in TH2 and TH3)
 
-void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double_t r, const Double_t z, 
+void AliTPCCorrection::Interpolate2DEdistortion( Int_t order, Double_t r, Double_t z, 
 						  const Double_t er[kNZ][kNR], Double_t &erValue ) {
   //
   // Interpolate table - 2D interpolation
@@ -784,7 +784,7 @@ void AliTPCCorrection::Interpolate2DEdistortion( const Int_t order, const Double
 
 }
 
-void AliTPCCorrection::Interpolate3DEdistortion( const Int_t order, const Double_t r, const Float_t phi, const Double_t z, 
+void AliTPCCorrection::Interpolate3DEdistortion( Int_t order, Double_t r, Float_t phi, Double_t z, 
 						 const Double_t er[kNZ][kNPhi][kNR], const Double_t ephi[kNZ][kNPhi][kNR], const Double_t ez[kNZ][kNPhi][kNR],
 						 Double_t &erValue, Double_t &ephiValue, Double_t &ezValue) {
   //
@@ -828,8 +828,8 @@ void AliTPCCorrection::Interpolate3DEdistortion( const Int_t order, const Double
 
 }
 
-Double_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
-					      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+Double_t AliTPCCorrection::Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
+					      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
 					      const TMatrixD &array ) {
   //
   // Interpolate table (TMatrix format) - 2D interpolation
@@ -855,8 +855,8 @@ Double_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t
 
 }
 
-Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
-					      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+Double_t AliTPCCorrection::Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
+					      Int_t  nx,    Int_t  ny,    Int_t  nz,
 					      const Double_t xv[], const Double_t yv[], const Double_t zv[],
 					      TMatrixD **arrayofArrays ) {
   //
@@ -893,7 +893,7 @@ Double_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t
 }
 
 Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t yArray[], 
-				       const Int_t order, const Double_t x ) {
+				       Int_t order, Double_t x ) {
   //
   // Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
   //
@@ -911,8 +911,8 @@ Double_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Double_t 
 
 }
 
-Float_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t x, const Double_t y, 
-					      const Int_t nx,  const Int_t ny, const Double_t xv[], const Double_t yv[], 
+Float_t AliTPCCorrection::Interpolate2DTable( Int_t order, Double_t x, Double_t y, 
+					      Int_t nx,  Int_t ny, const Double_t xv[], const Double_t yv[], 
 					      const TMatrixF &array ) {
   //
   // Interpolate table (TMatrix format) - 2D interpolation
@@ -939,8 +939,8 @@ Float_t AliTPCCorrection::Interpolate2DTable( const Int_t order, const Double_t 
 
 }
 
-Float_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t x,   const Double_t y,   const Double_t z,
-					      const Int_t  nx,    const Int_t  ny,    const Int_t  nz,
+Float_t AliTPCCorrection::Interpolate3DTable( Int_t order, Double_t x,   Double_t y,   Double_t z,
+					      Int_t  nx,    Int_t  ny,    Int_t  nz,
 					      const Double_t xv[], const Double_t yv[], const Double_t zv[],
 					      TMatrixF **arrayofArrays ) {
   //
@@ -977,7 +977,7 @@ Float_t AliTPCCorrection::Interpolate3DTable( const Int_t order, const Double_t 
 
 }
 Float_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Float_t yArray[], 
-				       const Int_t order, const Double_t x ) {
+				       Int_t order, Double_t x ) {
   //
   // Interpolate function Y(x) using linear (order=1) or quadratic (order=2) interpolation.
   // Float version (in order to decrease the OCDB size)
@@ -998,7 +998,7 @@ Float_t AliTPCCorrection::Interpolate( const Double_t xArray[], const Float_t yA
 
 
 
-void AliTPCCorrection::Search( const Int_t n, const Double_t xArray[], const Double_t x, Int_t &low ) {
+void AliTPCCorrection::Search( Int_t n, const Double_t xArray[], Double_t x, Int_t &low ) {
   //
   // Search an ordered table by starting at the most recently used point
   //
@@ -1097,8 +1097,8 @@ void AliTPCCorrection::InitLookUpfulcrums() {
 
 void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDensity, 
 					   TMatrixD &arrayErOverEz, TMatrixD &arrayDeltaEz, 
-					   const Int_t rows, const Int_t columns, const Int_t iterations,
-					   const Bool_t rocDisplacement ) {
+					   Int_t rows, Int_t columns, Int_t iterations,
+					   Bool_t rocDisplacement ) {
   //
   // Solve Poisson's Equation by Relaxation Technique in 2D (assuming cylindrical symmetry)
   //
@@ -1334,8 +1334,8 @@ void AliTPCCorrection::PoissonRelaxation2D(TMatrixD &arrayV, TMatrixD &chargeDen
 
 void AliTPCCorrection::PoissonRelaxation3D( TMatrixD**arrayofArrayV, TMatrixD**arrayofChargeDensities, 
 		    TMatrixD**arrayofEroverEz, TMatrixD**arrayofEPhioverEz, TMatrixD**arrayofDeltaEz,
-		    const Int_t rows, const Int_t columns,  const Int_t phislices, 
-		    const Float_t deltaphi, const Int_t iterations, const Int_t symmetry,
+		    Int_t rows, Int_t columns,  Int_t phislices, 
+		    Float_t deltaphi, Int_t iterations, Int_t symmetry,
 		    Bool_t rocDisplacement  ) {
   //
   // 3D - Solve Poisson's Equation in 3D by Relaxation Technique
@@ -1764,7 +1764,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   //
   // simulate the track
   Int_t npoints=0;
-  Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
+  Float_t covPoint[6]={0,0,0, static_cast<Float_t>(kSigmaY*kSigmaY),0,static_cast<Float_t>(kSigmaZ*kSigmaZ)};  //covariance at the local frame
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
     if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,5,kTRUE,kMaxSnp)) return 0;
     track.GetXYZ(xyz);
@@ -1780,7 +1780,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointArray0.GetPoint(pIn0,npoints);
     pointArray1.GetPoint(pIn1,npoints);
     Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
-    Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
+    Float_t distPoint[3]={static_cast<Float_t>(xyz[0]),static_cast<Float_t>(xyz[1]),static_cast<Float_t>(xyz[2])};
     DistortPoint(distPoint, sector);
     pIn0.SetXYZ(xyz[0], xyz[1],xyz[2]);
     pIn1.SetXYZ(distPoint[0], distPoint[1],distPoint[2]);
@@ -2435,7 +2435,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	Double_t pt=0;
 	//
 	if (1 && oldR>1) {
-	  Float_t xyz1[3]={gx,gy,gz};
+	  Float_t xyz1[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
 	  Int_t sector=(gz>0)?0:18;
 	  correction->CorrectPoint(xyz1, sector);
 	  refX=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
@@ -2507,7 +2507,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	if (iter==1){
 	  for (Int_t icorr=0; icorr<ncorr; icorr++) {
 	    AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
-	    Float_t distPoint[3]={gx,gy,gz}; 
+	    Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)}; 
 	    Int_t sector= (gz>0)? 0:18;
 	    if (r0>80){
 	      corr->DistortPoint(distPoint, sector);
@@ -3095,7 +3095,7 @@ Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t r, Double_t k
   //
   //
   //
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->DistortPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3117,7 +3117,7 @@ Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->CorrectPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3137,8 +3137,8 @@ Double_t AliTPCCorrection::GetCorrXYZDz(Double_t gx, Double_t gy, Double_t gz, I
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetCorrectionDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3162,8 +3162,8 @@ Double_t AliTPCCorrection::GetCorrXYZIntegrateZ(Double_t gx, Double_t gy, Double
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetCorrectionIntegralDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3188,7 +3188,7 @@ Double_t AliTPCCorrection::GetDistXYZ(Double_t gx, Double_t gy, Double_t gz, Int
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->DistortPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3208,8 +3208,8 @@ Double_t AliTPCCorrection::GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, I
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetDistortionDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3233,8 +3233,8 @@ Double_t AliTPCCorrection::GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetDistortionIntegralDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];

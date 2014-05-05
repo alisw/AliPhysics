@@ -108,8 +108,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
      tpar1[4] = 102.0;
 
 
-     gMC->Gsvolu("SQM3","TUBS", idAir, tpar1, 5);
-     gMC->Gsvolu("SQM4","TUBS", idAir, tpar1, 5);
+     TVirtualMC::GetMC()->Gsvolu("SQM3","TUBS", idAir, tpar1, 5);
+     TVirtualMC::GetMC()->Gsvolu("SQM4","TUBS", idAir, tpar1, 5);
 
 
 //==================================================================================
@@ -144,19 +144,19 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   bparH[0] = 95.5/2.; // extension beyond 0 deg in x direction // 94.5
   bparH[1] = 1.2/2.;  // extension beyond 0 deg in y direction (3.7[total extn] - 2.5[frame dim])
   bparH[2] = zCu/2.;     //Thickness of Copper sheet
-  gMC->Gsvolu("SCU0L", "BOX", idCU, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SCU0L", "BOX", idCU, bparH, 3);
   
   bparH[2] = zCbb/2.; // thickness of cathode sheet in z direction
-  gMC->Gsvolu("SCB0L", "BOX", idPCB, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SCB0L", "BOX", idPCB, bparH, 3);
   
   bparH[2] = zRoha/2.;     //Thickness of Roha cell
-  gMC->Gsvolu("SRH0L", "BOX", idRoha, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SRH0L", "BOX", idRoha, bparH, 3);
 
   bparH[2] = zMeb/2;       //Thickness of mechanical exit board
-  gMC->Gsvolu("SMB0L", "BOX", idPCB, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SMB0L", "BOX", idPCB, bparH, 3);
   
   bparH[2] = zEeb/2;          //Thickness of effective electronic  exit board
-  gMC->Gsvolu("SEB0L", "BOX", idCU, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SEB0L", "BOX", idCU, bparH, 3);
   
   //Segment-1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Float_t pgpar[10]; // polygon
@@ -170,23 +170,23 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgpar[7] = zCu/2.; // z-position of the second plane
   pgpar[8] = pgpar[5];  // innner radius of second plane
   pgpar[9] = pgpar[6];  // outer radious of second plane
-  gMC->Gsvolu("SCU1L", "PGON", idCU, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SCU1L", "PGON", idCU, pgpar, 10);
 
   pgpar[4] = -zCbb/2.; // z-position of the first plane
   pgpar[7] = zCbb/2.;  // Thickness of copper-sheet
-  gMC->Gsvolu("SCB1L", "PGON", idPCB, pgpar, 10);  
+  TVirtualMC::GetMC()->Gsvolu("SCB1L", "PGON", idPCB, pgpar, 10);  
   
   pgpar[4] = -zRoha/2.;  // Thickness of Roha cell
   pgpar[7] = zRoha/2.;  // Thickness of Roha cell
-  gMC->Gsvolu("SRH1L", "PGON", idRoha, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SRH1L", "PGON", idRoha, pgpar, 10);
        
   pgpar[4] = -zMeb/2.;  // Thickness of mechanical exit board
   pgpar[7] = zMeb/2.;  // Thickness of mechanical exit board
-  gMC->Gsvolu("SMB1L", "PGON", idPCB, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SMB1L", "PGON", idPCB, pgpar, 10);
   
   pgpar[4] = -zEeb/2.;  // Thickness of electronic readout board
   pgpar[7] = zEeb/2.;  // Thickness of electronic readout board
-  gMC->Gsvolu("SEB1L", "PGON", idCU, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SEB1L", "PGON", idCU, pgpar, 10);
        
 
 //Segment-2 - vertical box (simalar to horizontal bar as in Segment 0)~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,20 +196,20 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   bparV[0] = 1.0/2.;
   bparV[1] = 95.5/2.; // 94.5
   bparV[2] = zCu/2.;
-  gMC->Gsvolu("SCU2L", "BOX", idCU, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SCU2L", "BOX", idCU, bparV, 3);
   
   bparV[2] = zCbb/2.;
-  gMC->Gsvolu("SCB2L", "BOX", idPCB, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SCB2L", "BOX", idPCB, bparV, 3);
   
   
   bparV[2] = zRoha/2.;
-  gMC->Gsvolu("SRH2L", "BOX", idRoha, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SRH2L", "BOX", idRoha, bparV, 3);
   
   bparV[2] = zMeb/2;
-  gMC->Gsvolu("SMB2L", "BOX", idPCB, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SMB2L", "BOX", idPCB, bparV, 3);
   
   bparV[2] = zEeb/2;
-  gMC->Gsvolu("SEB2L", "BOX", idCU, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SEB2L", "BOX", idCU, bparV, 3);
        
   //....(Setting posion of Segment 0,1,2)..................................................................
   
@@ -224,109 +224,109 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   
   
   // chamber 3
-  gMC->Gspos("SCB0L",1, "SQM3",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB1L",1, "SQM3", 0.0,0.0,zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB2L",1, "SQM3",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB0L",1, "SQM3",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB1L",1, "SQM3", 0.0,0.0,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB2L",1, "SQM3",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
   
-  gMC->Gspos("SCB0L",2, "SQM3",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB1L",2, "SQM3", 0.0,0.0,-zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB2L",2, "SQM3",xposVerBox,yposVerBox,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB0L",2, "SQM3",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB1L",2, "SQM3", 0.0,0.0,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB2L",2, "SQM3",xposVerBox,yposVerBox,-zposCbbBar,0, "ONLY");
 
   // chamber 4
-  gMC->Gspos("SCB0L",3, "SQM4",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB1L",3, "SQM4", 0.0,0.0,zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB2L",3, "SQM4",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB0L",3, "SQM4",xposHorBox,yposHorBox,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB1L",3, "SQM4", 0.0,0.0,zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB2L",3, "SQM4",xposVerBox,yposVerBox,zposCbbBar,0, "ONLY");
   
-  gMC->Gspos("SCB0L",4, "SQM4",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB1L",4, "SQM4", 0.0,0.0,-zposCbbBar,0, "ONLY");
-  gMC->Gspos("SCB2L",4, "SQM4",xposVerBox,yposVerBox,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB0L",4, "SQM4",xposHorBox,yposHorBox,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB1L",4, "SQM4", 0.0,0.0,-zposCbbBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCB2L",4, "SQM4",xposVerBox,yposVerBox,-zposCbbBar,0, "ONLY");
   
 
   //Positioning Copper sheet
   
   // chamber 3
 
-  gMC->Gspos("SCU0L",1, "SQM3",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU1L",1, "SQM3", 0.0,0.0,zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU2L",1, "SQM3",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU0L",1, "SQM3",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU1L",1, "SQM3", 0.0,0.0,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU2L",1, "SQM3",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
   
-  gMC->Gspos("SCU0L",2, "SQM3",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU1L",2, "SQM3", 0.0,0.0,-zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU2L",2, "SQM3",xposVerBox,yposVerBox,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU0L",2, "SQM3",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU1L",2, "SQM3", 0.0,0.0,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU2L",2, "SQM3",xposVerBox,yposVerBox,-zposCuBar,0, "ONLY");
 
   // chamber 4
-  gMC->Gspos("SCU0L",3, "SQM4",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU1L",3, "SQM4", 0.0,0.0,zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU2L",3, "SQM4",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU0L",3, "SQM4",xposHorBox,yposHorBox,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU1L",3, "SQM4", 0.0,0.0,zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU2L",3, "SQM4",xposVerBox,yposVerBox,zposCuBar,0, "ONLY");
   
-  gMC->Gspos("SCU0L",4, "SQM4",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU1L",4, "SQM4", 0.0,0.0,-zposCuBar,0, "ONLY");
-  gMC->Gspos("SCU2L",4, "SQM4",xposVerBox,yposVerBox,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU0L",4, "SQM4",xposHorBox,yposHorBox,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU1L",4, "SQM4", 0.0,0.0,-zposCuBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SCU2L",4, "SQM4",xposVerBox,yposVerBox,-zposCuBar,0, "ONLY");
      
   //Positioning Roha cell 
   
   // chamber 3
   
-  gMC->Gspos("SRH0L",1, "SQM3",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH1L",1, "SQM3", 0.0,0.0,zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH2L",1, "SQM3",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH0L",1, "SQM3",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH1L",1, "SQM3", 0.0,0.0,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH2L",1, "SQM3",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
   
-  gMC->Gspos("SRH0L",2, "SQM3",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH1L",2, "SQM3", 0.0,0.0,-zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH2L",2, "SQM3",xposVerBox,yposVerBox,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH0L",2, "SQM3",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH1L",2, "SQM3", 0.0,0.0,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH2L",2, "SQM3",xposVerBox,yposVerBox,-zposRohaBar,0, "ONLY");
   
   // chamber 4
   
-  gMC->Gspos("SRH0L",3, "SQM4",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH1L",3, "SQM4", 0.0,0.0,zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH2L",3, "SQM4",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH0L",3, "SQM4",xposHorBox,yposHorBox,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH1L",3, "SQM4", 0.0,0.0,zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH2L",3, "SQM4",xposVerBox,yposVerBox,zposRohaBar,0, "ONLY");
   
-  gMC->Gspos("SRH0L",4, "SQM4",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH1L",4, "SQM4", 0.0,0.0,-zposRohaBar,0, "ONLY");
-  gMC->Gspos("SRH2L",4, "SQM4",xposVerBox,yposVerBox,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH0L",4, "SQM4",xposHorBox,yposHorBox,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH1L",4, "SQM4", 0.0,0.0,-zposRohaBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SRH2L",4, "SQM4",xposVerBox,yposVerBox,-zposRohaBar,0, "ONLY");
 
   //Positioning of Mech. exit board
   
   // chamber 3
   
-  gMC->Gspos("SMB0L",1, "SQM3",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB1L",1, "SQM3", 0.0,0.0,zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB2L",1, "SQM3",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB0L",1, "SQM3",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB1L",1, "SQM3", 0.0,0.0,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB2L",1, "SQM3",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
   
-  gMC->Gspos("SMB0L",2, "SQM3",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB1L",2, "SQM3", 0.0,0.0,-zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB2L",2, "SQM3",xposVerBox,yposVerBox,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB0L",2, "SQM3",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB1L",2, "SQM3", 0.0,0.0,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB2L",2, "SQM3",xposVerBox,yposVerBox,-zposMebBar,0, "ONLY");
   // chamber 4
   
-  gMC->Gspos("SMB0L",3, "SQM4",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB1L",3, "SQM4", 0.0,0.0,zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB2L",3, "SQM4",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB0L",3, "SQM4",xposHorBox,yposHorBox,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB1L",3, "SQM4", 0.0,0.0,zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB2L",3, "SQM4",xposVerBox,yposVerBox,zposMebBar,0, "ONLY");
   
-  gMC->Gspos("SMB0L",4, "SQM4",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB1L",4, "SQM4", 0.0,0.0,-zposMebBar,0, "ONLY");
-  gMC->Gspos("SMB2L",4, "SQM4",xposVerBox,yposVerBox,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB0L",4, "SQM4",xposHorBox,yposHorBox,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB1L",4, "SQM4", 0.0,0.0,-zposMebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SMB2L",4, "SQM4",xposVerBox,yposVerBox,-zposMebBar,0, "ONLY");
   
   //Positioning of Electronic exit board
   
   
   // chamber 3
 
-  gMC->Gspos("SEB0L",1, "SQM3",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB1L",1, "SQM3", 0.0,0.0,zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB2L",1, "SQM3",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB0L",1, "SQM3",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB1L",1, "SQM3", 0.0,0.0,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB2L",1, "SQM3",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
   
-  gMC->Gspos("SEB0L",2, "SQM3",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB1L",2, "SQM3", 0.0,0.0,-zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB2L",2, "SQM3",xposVerBox,yposVerBox,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB0L",2, "SQM3",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB1L",2, "SQM3", 0.0,0.0,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB2L",2, "SQM3",xposVerBox,yposVerBox,-zposEebBar,0, "ONLY");
   // chamber 4
 
-  gMC->Gspos("SEB0L",3, "SQM4",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB1L",3, "SQM4", 0.0,0.0,zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB2L",3, "SQM4",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB0L",3, "SQM4",xposHorBox,yposHorBox,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB1L",3, "SQM4", 0.0,0.0,zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB2L",3, "SQM4",xposVerBox,yposVerBox,zposEebBar,0, "ONLY");
   
-  gMC->Gspos("SEB0L",4, "SQM4",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB1L",4, "SQM4", 0.0,0.0,-zposEebBar,0, "ONLY");
-  gMC->Gspos("SEB2L",4, "SQM4",xposVerBox,yposVerBox,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB0L",4, "SQM4",xposHorBox,yposHorBox,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB1L",4, "SQM4", 0.0,0.0,-zposEebBar,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SEB2L",4, "SQM4",xposVerBox,yposVerBox,-zposEebBar,0, "ONLY");
   
   
   //----------------------------------------------------------------------
@@ -339,43 +339,43 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame1[1] = 2.5/2.;               
   frame1[2] = 5.0/2.;
   
-  gMC->Gsvolu("SFRM1", "BOX", idPGF30, frame1, 3); //Frame - 1 // fill with pkk GF30
+  TVirtualMC::GetMC()->Gsvolu("SFRM1", "BOX", idPGF30, frame1, 3); //Frame - 1 // fill with pkk GF30
   
   Float_t arib1[3];
   arib1[0] = frame1[0];
   arib1[1] = 0.9/2.;
   arib1[2] =(frame1[2]-0.95)/2.0;
   
-  gMC->Gsvolu("SFRA1", "BOX", idAir, arib1, 3); // fill with air
+  TVirtualMC::GetMC()->Gsvolu("SFRA1", "BOX", idAir, arib1, 3); // fill with air
   
   Float_t xposarib1 = 0;
   Float_t yposarib1 = -frame1[1] + arib1[1];
   Float_t zposarib1 = frame1[2] - arib1[2];
   
-  gMC->Gspos("SFRA1",1, "SFRM1", xposarib1, yposarib1, zposarib1,0, "ONLY");  //replace pkk GF30 with air(b)
-  gMC->Gspos("SFRA1",2, "SFRM1", xposarib1, yposarib1, -zposarib1,0, "ONLY"); //replace pkk GF30 with air(nb)
+  TVirtualMC::GetMC()->Gspos("SFRA1",1, "SFRM1", xposarib1, yposarib1, zposarib1,0, "ONLY");  //replace pkk GF30 with air(b)
+  TVirtualMC::GetMC()->Gspos("SFRA1",2, "SFRM1", xposarib1, yposarib1, -zposarib1,0, "ONLY"); //replace pkk GF30 with air(nb)
   
   Float_t rrib1[3];
   rrib1[0] = frame1[0];
   rrib1[1] = 0.6/2.;
   rrib1[2] =(frame1[2]-0.95)/2.0;
   
-  gMC->Gsvolu("SFRR1", "BOX", idRoha, rrib1, 3); // fill with rohacell
+  TVirtualMC::GetMC()->Gsvolu("SFRR1", "BOX", idRoha, rrib1, 3); // fill with rohacell
   
   Float_t xposrrib1 = 0.0;
   Float_t yposrrib1 = frame1[1] - rrib1[1];
   Float_t zposrrib1 = frame1[2] - rrib1[2];
   
-  gMC->Gspos("SFRR1",1, "SFRM1", xposrrib1, yposrrib1, zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
-  gMC->Gspos("SFRR1",2, "SFRM1", xposrrib1, yposrrib1, -zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
+  TVirtualMC::GetMC()->Gspos("SFRR1",1, "SFRM1", xposrrib1, yposrrib1, zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
+  TVirtualMC::GetMC()->Gspos("SFRR1",2, "SFRM1", xposrrib1, yposrrib1, -zposrrib1,0, "ONLY");//replace pkk GF30 with rohacell
   
   
   Float_t xposFr1 = frame1[0] + 20.6;
   Float_t yposFr1 = -3.7 + frame1[1] ;
   Float_t zposFr1 = 0.0;
   
-  gMC->Gspos("SFRM1",1, "SQM3", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
-  gMC->Gspos("SFRM1",2, "SQM4", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
+  TVirtualMC::GetMC()->Gspos("SFRM1",1, "SQM3", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
+  TVirtualMC::GetMC()->Gspos("SFRM1",2, "SQM4", xposFr1, yposFr1, zposFr1,0, "ONLY");// frame -1
   
   
   //......................................................................................
@@ -386,21 +386,21 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame2[1] = 1.2/2.;
   frame2[2] = 5.0/2;
   
-  gMC->Gsvolu("SFRM2", "BOX", idPGF30, frame2, 3); //Frame - 2
+  TVirtualMC::GetMC()->Gsvolu("SFRM2", "BOX", idPGF30, frame2, 3); //Frame - 2
   
   Float_t rrib2[3];
   rrib2[0] = frame2[0]-1.0/2.0;
   rrib2[1] = frame2[1];
   rrib2[2] =(frame2[2]-0.95)/2.0;
 
-  gMC->Gsvolu("SFRR2", "BOX", idRoha, rrib2, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRR2", "BOX", idRoha, rrib2, 3);
       
   Float_t xposrrib2 = -1.0/2.0;
   Float_t yposrrib2 = 0.0;
   Float_t zposrrib2 = frame2[2] - rrib2[2];
   
-  gMC->Gspos("SFRR2",1, "SFRM2", xposrrib2, yposrrib2, zposrrib2,0, "ONLY");//replace pkk GF30 with rohacell
-  gMC->Gspos("SFRR2",2, "SFRM2", xposrrib2, yposrrib2, -zposrrib2,0, "ONLY");//replace pkk GF30 with roha
+  TVirtualMC::GetMC()->Gspos("SFRR2",1, "SFRM2", xposrrib2, yposrrib2, zposrrib2,0, "ONLY");//replace pkk GF30 with rohacell
+  TVirtualMC::GetMC()->Gspos("SFRR2",2, "SFRM2", xposrrib2, yposrrib2, -zposrrib2,0, "ONLY");//replace pkk GF30 with roha
   
 
   
@@ -408,8 +408,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   Float_t yposFr2 = -frame2[1];
   Float_t zposFr2 = 0.0;
   
-  gMC->Gspos("SFRM2",1, "SQM3", xposFr2, yposFr2, zposFr2,0, "MANY");//global positing of frame in SQM3
-  gMC->Gspos("SFRM2",2, "SQM4", xposFr2, yposFr2, zposFr2,0, "MANY");//global positing of frame in SQM4
+  TVirtualMC::GetMC()->Gspos("SFRM2",1, "SQM3", xposFr2, yposFr2, zposFr2,0, "MANY");//global positing of frame in SQM3
+  TVirtualMC::GetMC()->Gspos("SFRM2",2, "SQM4", xposFr2, yposFr2, zposFr2,0, "MANY");//global positing of frame in SQM4
   
   
   //......................................................................................
@@ -428,7 +428,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgparFr3[8] = pgparFr3[5];
   pgparFr3[9] = pgparFr3[6];
   
-  gMC->Gsvolu("SFRM3", "PGON", idPGF30, pgparFr3, 10);
+  TVirtualMC::GetMC()->Gsvolu("SFRM3", "PGON", idPGF30, pgparFr3, 10);
   
   Float_t pgparRrib3[10];
   pgparRrib3[0] = 0.;
@@ -442,17 +442,17 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgparRrib3[8] = pgparRrib3[5];
   pgparRrib3[9] = pgparRrib3[6];
   
-  gMC->Gsvolu("SFRR3", "PGON", idRoha, pgparRrib3, 10);
+  TVirtualMC::GetMC()->Gsvolu("SFRR3", "PGON", idRoha, pgparRrib3, 10);
   
   Float_t xposrrib3 = 0.0;
   Float_t yposrrib3 = 0.0;
   Float_t zposrrib3 = 0.0;
 
-  gMC->Gspos("SFRR3",1, "SFRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR3",1, "SFRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
   
   zposrrib3 = 3.45;
   
-  gMC->Gspos("SFRR3",2, "SFRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR3",2, "SFRM3", xposrrib3, yposrrib3, zposrrib3,0, "ONLY");
   
       
   
@@ -460,8 +460,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   Float_t yposFr3 = 0.0;
   Float_t zposFr3 = -frame1[2];
       
-  gMC->Gspos("SFRM3",1, "SQM3", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
-  gMC->Gspos("SFRM3",2, "SQM4", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
+  TVirtualMC::GetMC()->Gspos("SFRM3",1, "SQM3", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
+  TVirtualMC::GetMC()->Gspos("SFRM3",2, "SQM4", xposFr3, yposFr3, zposFr3,0, "ONLY");// frame -1
   
   
   //......................................................................................
@@ -472,21 +472,21 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame4[1] = 4.0/2.;
   frame4[2] = frame1[2];
   
-  gMC->Gsvolu("SFRM4", "BOX", idPGF30, frame4, 3); 
+  TVirtualMC::GetMC()->Gsvolu("SFRM4", "BOX", idPGF30, frame4, 3); 
   
   Float_t rrib4[3];
   rrib4[0] = frame4[0];
   rrib4[1] = frame4[1]-1.0/2;
   rrib4[2] =(frame4[2]-0.95)/2.0;
 
-  gMC->Gsvolu("SFRR4", "BOX", idRoha, rrib4, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRR4", "BOX", idRoha, rrib4, 3);
   
   Float_t xposrrib4 = 0.0;
   Float_t yposrrib4 = -1.0/2;
   Float_t zposrrib4 = frame4[2] - rrib4[2];
   
-  gMC->Gspos("SFRR4",1, "SFRM4", xposrrib4, yposrrib4, zposrrib4,0, "ONLY");
-  gMC->Gspos("SFRR4",2, "SFRM4", xposrrib4, yposrrib4, -zposrrib4,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR4",1, "SFRM4", xposrrib4, yposrrib4, zposrrib4,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR4",2, "SFRM4", xposrrib4, yposrrib4, -zposrrib4,0, "ONLY");
   
 
   
@@ -494,8 +494,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   Float_t yposFr4 = -frame4[1] + 117.6;
   Float_t zposFr4 = 0.0;
   
-  gMC->Gspos("SFRM4",1, "SQM3", xposFr4, yposFr4, zposFr4,0, "MANY");
-  gMC->Gspos("SFRM4",2, "SQM4", xposFr4, yposFr4, zposFr4,0, "MANY");
+  TVirtualMC::GetMC()->Gspos("SFRM4",1, "SQM3", xposFr4, yposFr4, zposFr4,0, "MANY");
+  TVirtualMC::GetMC()->Gspos("SFRM4",2, "SQM4", xposFr4, yposFr4, zposFr4,0, "MANY");
   
   
   //......................................................................................
@@ -505,42 +505,42 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame5[1] = 101.0/2.;              
   frame5[2] = 5.0/2.;
   
-  gMC->Gsvolu("SFRM5", "BOX", idPGF30, frame5, 3); //Frame - 1
+  TVirtualMC::GetMC()->Gsvolu("SFRM5", "BOX", idPGF30, frame5, 3); //Frame - 1
       
   Float_t arib5[3];
   arib5[0] = 0.9/2.0;
   arib5[1] = frame5[1];
   arib5[2] = (frame5[2]-0.95)/2.0;
   
-  gMC->Gsvolu("SFRA5", "BOX", idAir, arib5, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRA5", "BOX", idAir, arib5, 3);
   
   Float_t xposarib5 = -frame5[0] + arib5[0];
   Float_t yposarib5 = 0.0;
   Float_t zposarib5 = frame5[2] - arib5[2];
       
-  gMC->Gspos("SFRA5",1, "SFRM5", xposarib5, yposarib5, zposarib5,0, "ONLY");
-  gMC->Gspos("SFRA5",2, "SFRM5", xposarib5, yposarib5, -zposarib5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRA5",1, "SFRM5", xposarib5, yposarib5, zposarib5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRA5",2, "SFRM5", xposarib5, yposarib5, -zposarib5,0, "ONLY");
   
   Float_t rrib5[3];
   rrib5[0] = 0.8/2.0;
   rrib5[1] = frame5[1];
   rrib5[2] = (frame5[2]-0.95)/2.0;
   
-  gMC->Gsvolu("SFRR5", "BOX", idRoha, rrib5, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRR5", "BOX", idRoha, rrib5, 3);
   
   Float_t xposrrib5 = frame5[0] - rrib5[0];
   Float_t yposrrib5 = 0.0;
   Float_t zposrrib5 = frame5[2] - rrib5[2];
   
-  gMC->Gspos("SFRR5",1, "SFRM5", xposrrib5, yposrrib5, zposrrib5,0, "ONLY");
-  gMC->Gspos("SFRR5",2, "SFRM5", xposrrib5, yposrrib5, -zposrrib5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR5",1, "SFRM5", xposrrib5, yposrrib5, zposrrib5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR5",2, "SFRM5", xposrrib5, yposrrib5, -zposrrib5,0, "ONLY");
   
   Float_t xposFr5 = -3.7 + frame5[0];
   Float_t yposFr5 = frame5[1] + 20.6;
   Float_t zposFr5 = 0.0;
   
-  gMC->Gspos("SFRM5",1, "SQM3", xposFr5, yposFr5, zposFr5,0, "ONLY");
-  gMC->Gspos("SFRM5",2, "SQM4", xposFr5, yposFr5, zposFr5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM5",1, "SQM3", xposFr5, yposFr5, zposFr5,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM5",2, "SQM4", xposFr5, yposFr5, zposFr5,0, "ONLY");
   
   //......................................................................................
   //Frame -6 
@@ -550,21 +550,21 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame6[1] = 2.5/2.;
   frame6[2] = frame1[2];
   
-  gMC->Gsvolu("SFRM6", "BOX", idPGF30, frame6, 3); 
+  TVirtualMC::GetMC()->Gsvolu("SFRM6", "BOX", idPGF30, frame6, 3); 
   
   Float_t rrib6[3];
   rrib6[0] = frame6[0];
   rrib6[1] = 1.5/2.;
   rrib6[2] =(frame2[2]-0.95)/2.0;
 
-  gMC->Gsvolu("SFRR6", "BOX", idRoha, rrib6, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRR6", "BOX", idRoha, rrib6, 3);
   
   Float_t xposrrib6 = 0.0;
   Float_t yposrrib6 = 1.0/2.0;
   Float_t zposrrib6 = frame6[2] - rrib6[2];
 
-  gMC->Gspos("SFRR6",1, "SFRM6", xposrrib6, yposrrib6, zposrrib6,0, "ONLY");
-  gMC->Gspos("SFRR6",2, "SFRM6", xposrrib6, yposrrib6, -zposrrib6,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR6",1, "SFRM6", xposrrib6, yposrrib6, zposrrib6,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR6",2, "SFRM6", xposrrib6, yposrrib6, -zposrrib6,0, "ONLY");
   
   
   
@@ -572,8 +572,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   Float_t yposFr6 = frame6[1] + 20.6;
   Float_t zposFr6 = 0.0;
 
-  gMC->Gspos("SFRM6",1, "SQM3", xposFr6, yposFr6, zposFr6,0, "ONLY");
-  gMC->Gspos("SFRM6",2, "SQM4", xposFr6, yposFr6, zposFr6,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM6",1, "SQM3", xposFr6, yposFr6, zposFr6,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM6",2, "SQM4", xposFr6, yposFr6, zposFr6,0, "ONLY");
   
   
 //......................................................................................
@@ -591,7 +591,7 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgparFr7[8] = pgparFr7[5];
   pgparFr7[9] = pgparFr7[6];
   
-  gMC->Gsvolu("SFRM7", "PGON", idPGF30, pgparFr7, 10);
+  TVirtualMC::GetMC()->Gsvolu("SFRM7", "PGON", idPGF30, pgparFr7, 10);
   
   Float_t pgparRrib7[10];
   pgparRrib7[0] = 0.;
@@ -605,24 +605,24 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgparRrib7[8] = pgparRrib7[5];
   pgparRrib7[9] = pgparRrib7[6];
   
-  gMC->Gsvolu("SFRR7", "PGON", idRoha, pgparRrib7, 10);
+  TVirtualMC::GetMC()->Gsvolu("SFRR7", "PGON", idRoha, pgparRrib7, 10);
   
   Float_t xposrrib7 = 0.0;
   Float_t yposrrib7 = 0.0;
   Float_t zposrrib7 = 0.0;
   
-  gMC->Gspos("SFRR7",1, "SFRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR7",1, "SFRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
   
   zposrrib7 = 3.45;
   
-  gMC->Gspos("SFRR7",2, "SFRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR7",2, "SFRM7", xposrrib7, yposrrib7, zposrrib7,0, "ONLY");
   
   Float_t xposFr7 = 0.0;
   Float_t yposFr7 = 0.0;
   Float_t zposFr7 = -frame1[2];
   
-  gMC->Gspos("SFRM7",1, "SQM3", xposFr7, yposFr7, zposFr7,0, "ONLY");
-  gMC->Gspos("SFRM7",2, "SQM4", xposFr7, yposFr7, zposFr7,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM7",1, "SQM3", xposFr7, yposFr7, zposFr7,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM7",2, "SQM4", xposFr7, yposFr7, zposFr7,0, "ONLY");
   
   
   //......................................................................................
@@ -634,21 +634,21 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   frame8[1] = 1.2/2.0;
   frame8[2] = frame1[2];
   
-  gMC->Gsvolu("SFRM8", "BOX", idPGF30, frame8, 3); //Frame - 2
+  TVirtualMC::GetMC()->Gsvolu("SFRM8", "BOX", idPGF30, frame8, 3); //Frame - 2
       
   Float_t rrib8[3];
   rrib8[0] = frame8[0]-1.0/2;
   rrib8[1] = frame8[1];
   rrib8[2] =(frame8[2]-0.95)/2.0;
   
-  gMC->Gsvolu("SFRR8", "BOX", idRoha, rrib8, 3);
+  TVirtualMC::GetMC()->Gsvolu("SFRR8", "BOX", idRoha, rrib8, 3);
   
   Float_t xposrrib8 = -1.0/2;
   Float_t yposrrib8 = 0.0;
   Float_t zposrrib8 = frame8[2] - rrib8[2];
   
-  gMC->Gspos("SFRR8",1, "SFRM8", xposrrib8, yposrrib8, zposrrib8,0, "ONLY");
-  gMC->Gspos("SFRR8",2, "SFRM8", xposrrib8, yposrrib8, -zposrrib8,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR8",1, "SFRM8", xposrrib8, yposrrib8, zposrrib8,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRR8",2, "SFRM8", xposrrib8, yposrrib8, -zposrrib8,0, "ONLY");
   
   
   
@@ -656,8 +656,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   Float_t yposFr8 = -frame8[1];
   Float_t zposFr8 = 0.0;
   
-  gMC->Gspos("SFRM8",1, "SQM3", xposFr8, yposFr8, zposFr8,0, "ONLY");
-  gMC->Gspos("SFRM8",2, "SQM4", xposFr8, yposFr8, zposFr8,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM8",1, "SQM3", xposFr8, yposFr8, zposFr8,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SFRM8",2, "SQM4", xposFr8, yposFr8, zposFr8,0, "ONLY");
   
   
   
@@ -670,8 +670,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   bparH[0] = 94.5/2.;
   bparH[1] = 1.2/2.;
   bparH[2] = zsenv/2.;
-  gMC->Gsvolu("SC3G0", "BOX", idGas, bparH, 3);
-  gMC->Gsvolu("SC4G0", "BOX", idGas, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SC3G0", "BOX", idGas, bparH, 3);
+  TVirtualMC::GetMC()->Gsvolu("SC4G0", "BOX", idGas, bparH, 3);
   
  //Segment-1 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   pgpar[0] = 0.;
@@ -684,8 +684,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   pgpar[7] = zsenv/2.;
   pgpar[8] = pgpar[5];
   pgpar[9] = pgpar[6];
-  gMC->Gsvolu("SC3G1", "PGON", idGas, pgpar, 10);
-  gMC->Gsvolu("SC4G1", "PGON", idGas, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SC3G1", "PGON", idGas, pgpar, 10);
+  TVirtualMC::GetMC()->Gsvolu("SC4G1", "PGON", idGas, pgpar, 10);
   
 
   //Segment-2 - vertical box ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -693,8 +693,8 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   bparV[0] = 1.0/2.;
   bparV[1] = 95.5/2.;
   bparV[2] = zsenv/2.;
-  gMC->Gsvolu("SC3G2", "BOX", idGas, bparV, 3);
-  gMC->Gsvolu("SC4G2", "BOX", idGas, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SC3G2", "BOX", idGas, bparV, 3);
+  TVirtualMC::GetMC()->Gsvolu("SC4G2", "BOX", idGas, bparV, 3);
   
   //...........................................................................................
   
@@ -704,14 +704,14 @@ void AliMUONSt2GeometryBuilderV2::CreateGeometry()
   xposVerBox = -bparV[0];
   yposVerBox = bparV[1] + 23.1;
   
-  gMC->Gspos("SC3G0",1, "SQM3", xposHorBox,yposHorBox,0.,0, "ONLY");
-  gMC->Gspos("SC3G1",1, "SQM3", 0.,0.,0.,0, "ONLY");
-  gMC->Gspos("SC3G2",1, "SQM3", xposVerBox,yposVerBox,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC3G0",1, "SQM3", xposHorBox,yposHorBox,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC3G1",1, "SQM3", 0.,0.,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC3G2",1, "SQM3", xposVerBox,yposVerBox,0.,0, "ONLY");
      
   
-  gMC->Gspos("SC4G0",1, "SQM4", xposHorBox,yposHorBox,0.,0, "ONLY");
-  gMC->Gspos("SC4G1",1, "SQM4", 0.,0.,0.,0, "ONLY");
-  gMC->Gspos("SC4G2",1, "SQM4", xposVerBox,yposVerBox,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC4G0",1, "SQM4", xposHorBox,yposHorBox,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC4G1",1, "SQM4", 0.,0.,0.,0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("SC4G2",1, "SQM4", xposVerBox,yposVerBox,0.,0, "ONLY");
      
   
   //^^^^^^^^^^^^^^^^^^^^^^^^^ Sensitive volumes ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

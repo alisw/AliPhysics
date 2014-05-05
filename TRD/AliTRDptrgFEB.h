@@ -19,9 +19,9 @@ class AliRunLoader;
 class AliTRDptrgFEB : public TObject {
  public:
   AliTRDptrgFEB(AliRunLoader *rl = 0x0);
-  AliTRDptrgFEB(AliRunLoader *rl, AliTRDptrgFEBType_t febType, 
-                AliTRDptrgOperatingMode_t operatingMode, 
-                AliTRDptrgFEBPosition_t position, Int_t id,
+  AliTRDptrgFEB(AliRunLoader *rl, AliTRDptrgParam::AliTRDptrgFEBType_t febType, 
+                AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode, 
+                AliTRDptrgParam::AliTRDptrgFEBPosition_t position, Int_t id,
                 AliTRDptrgParam *param);
 
   ~AliTRDptrgFEB();
@@ -37,10 +37,10 @@ protected:
   AliTRDptrgParam *fParam; // Configuration parameter object
   TObjArray fLUTArray; // Array with Look-Up-Tables
 
-  AliTRDptrgFEBType_t fType; // Indicates what input FEB uses (V0 or T0)
-  AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
+  AliTRDptrgParam::AliTRDptrgFEBType_t fType; // Indicates what input FEB uses (V0 or T0)
+  AliTRDptrgParam::AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
   Int_t fInputChannelCount; // Number of input channels 
-  AliTRDptrgFEBPosition_t fPosition; // 0 = unkown, 1 = A, 2 = C
+  AliTRDptrgParam::AliTRDptrgFEBPosition_t fPosition; // 0 = unkown, 1 = A, 2 = C
   Int_t fID; // 0 = T0, 1 = V0-1, 2 = V0-2, 3 = V0-3, 4 = V0-4 (numbering?)
   
   UInt_t *fThreshold; // specifies the threshold for incoming analog signals

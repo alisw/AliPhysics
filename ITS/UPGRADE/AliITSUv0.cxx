@@ -91,7 +91,7 @@ AliITSUv0::AliITSUv0()
 }
 
 //______________________________________________________________________
-AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
+AliITSUv0::AliITSUv0(const char *title, Int_t nlay)
   :AliITSU(title,nlay)
   ,fNWrapVol(0)
   ,fWrapRMin(0)
@@ -490,10 +490,10 @@ void AliITSUv0::CreateMaterials() {
 }
 
 //______________________________________________________________________
-void AliITSUv0::DefineLayer(const Int_t nlay, const double phi0, const Double_t r,
-			    const Double_t zlen, const Int_t nstav,
-			    const Int_t nmod, const Double_t lthick,
-			    const Double_t dthick, const UInt_t dettypeID)
+void AliITSUv0::DefineLayer(Int_t nlay, double phi0, Double_t r,
+			    Double_t zlen, Int_t nstav,
+			    Int_t nmod, Double_t lthick,
+			    Double_t dthick, UInt_t dettypeID)
 {
   //     Sets the layer parameters
   // Inputs:
@@ -682,10 +682,10 @@ void AliITSUv0::StepManager()
   // Return:
   //   none.
   if(!(this->IsActive())) return;
-  if(!(gMC->TrackCharge())) return;
+  if(!(TVirtualMC::GetMC()->TrackCharge())) return;
   //
   Int_t copy, lay = 0;
-  Int_t id = gMC->CurrentVolID(copy);
+  Int_t id = TVirtualMC::GetMC()->CurrentVolID(copy);
 
   Bool_t notSens = kFALSE;
   while ((lay<fNLayers)  && (notSens = (id!=fIdSens[lay]))) ++lay;
@@ -693,7 +693,7 @@ void AliITSUv0::StepManager()
 	   
   if (notSens) return;
 
-  if(gMC->IsTrackExiting()) {
+  if(TVirtualMC::GetMC()->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
   } // if Outer ITS mother Volume
 
@@ -704,13 +704,13 @@ void AliITSUv0::StepManager()
   Int_t   cpn0, cpn1, mod, status = 0;
   //
   // Track status
-  if(gMC->IsTrackInside())      status +=  1;
-  if(gMC->IsTrackEntering())    status +=  2;
-  if(gMC->IsTrackExiting())     status +=  4;
-  if(gMC->IsTrackOut())         status +=  8;
-  if(gMC->IsTrackDisappeared()) status += 16;
-  if(gMC->IsTrackStop())        status += 32;
-  if(gMC->IsTrackAlive())       status += 64;
+  if(TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
+  if(TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
+  if(TVirtualMC::GetMC()->IsTrackExiting())     status +=  4;
+  if(TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
+  if(TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
+  if(TVirtualMC::GetMC()->IsTrackStop())        status += 32;
+  if(TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
 
   //
   // retrieve the indices with the volume path
@@ -720,8 +720,8 @@ void AliITSUv0::StepManager()
     return; // not an ITS sensitive volume.
   } else {
     copy = 1;
-    gMC->CurrentVolOffID(1,cpn1);
-    gMC->CurrentVolOffID(2,cpn0);
+    TVirtualMC::GetMC()->CurrentVolOffID(1,cpn1);
+    TVirtualMC::GetMC()->CurrentVolOffID(2,cpn0);
   } //
 
   mod = fGeomTGeo->GetChipIndex(lay,cpn0,cpn1);
@@ -731,17 +731,17 @@ void AliITSUv0::StepManager()
   //
   hit.SetChip(mod);
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
+  TVirtualMC::GetMC()->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackMomentum(momentum);
   hit.SetPosition(position);
-  hit.SetTime(gMC->TrackTime());
+  hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
-  hit.SetEdep(gMC->Edep());
+  hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());
-  if(gMC->IsTrackEntering()){
+  if(TVirtualMC::GetMC()->IsTrackEntering()){
     hit.SetStartPosition(position);
-    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
     hit.SetStartStatus(status);
     return; // don't save entering hit.
   } // end if IsEntering
@@ -750,7 +750,7 @@ void AliITSUv0::StepManager()
   new(lhits[fNhits++]) AliITSUHit(hit); // Use Copy Construtor.
   // Save old position... for next hit.
   hit.SetStartPosition(position);
-  hit.SetStartTime(gMC->TrackTime());
+  hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetStartStatus(status);
 
   return;

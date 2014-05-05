@@ -324,25 +324,25 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			fTriggerData->SetL1JetThreshold(  i, fSTURawStream->GetL1JetThreshold(i)  );
 		}
 		
-		Int_t v0[2] = {fSTURawStream->GetV0A(), fSTURawStream->GetV0C()};
+		Int_t v0[2] = { static_cast<Int_t>(fSTURawStream->GetV0A()),  static_cast<Int_t>(fSTURawStream->GetV0C())};
 		
 		Int_t type[15] = 
 		{
-			fSTURawStream->GetG(0, 0),
-			fSTURawStream->GetG(1, 0),
-			fSTURawStream->GetG(2, 0),
-			fSTURawStream->GetJ(0, 0),
-			fSTURawStream->GetJ(1, 0),
-			fSTURawStream->GetJ(2, 0),
-			fSTURawStream->GetG(0, 1),
-			fSTURawStream->GetG(1, 1),
-			fSTURawStream->GetG(2, 1),
-			fSTURawStream->GetJ(0, 1),
-			fSTURawStream->GetJ(1, 1),
-			fSTURawStream->GetJ(2, 1),
-			fSTURawStream->GetRawData(), 
-			fSTURawStream->GetRegionEnable(), 
-			fSTURawStream->GetFwVersion()
+		  static_cast<Int_t>(fSTURawStream->GetG(0, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(1, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(2, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(0, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(1, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(2, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(0, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetG(1, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetG(2, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(0, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(1, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(2, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetRawData()), 
+		  static_cast<Int_t>(fSTURawStream->GetRegionEnable()), 
+		  static_cast<Int_t>(fSTURawStream->GetFwVersion())
 		};		
 
 		// Modify DCS config from STU payload content

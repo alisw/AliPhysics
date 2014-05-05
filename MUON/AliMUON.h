@@ -98,7 +98,7 @@ class AliMUON : public  AliDetector
     virtual void  SetAlign(Bool_t align = true);
     virtual void  SetAlign(const TString& fileName, Bool_t align = true);
     
-                    /// Set flag to inactivate calls to gMC->SetMaxStep
+                    /// Set flag to inactivate calls to TVirtualMC::GetMC()->SetMaxStep
     virtual void  SetIsMaxStep(Bool_t isMaxStep) { fIsMaxStep = isMaxStep; }
     
                    /// Set scaler event for trigger
@@ -175,7 +175,7 @@ class AliMUON : public  AliDetector
     Int_t fCurIterPad;        ///< Current pad index
    
     // Options
-    Bool_t fIsMaxStep;          ///< Flag to inactivate calls to gMC->SetMaxStep
+    Bool_t fIsMaxStep;          ///< Flag to inactivate calls to TVirtualMC::GetMC()->SetMaxStep
     Bool_t fTriggerScalerEvent; ///< Flag to generates scaler event
     Int_t  fTriggerResponseV1;  ///< Flag to select TriggerResponseV1 (for cluster size in MTR)
     Int_t  fTriggerCoinc44;     ///< Flag to select TriggerCoinc44 

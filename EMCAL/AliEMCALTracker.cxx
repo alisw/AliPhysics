@@ -409,7 +409,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   Int_t nclusters = fClusters->GetEntries();
   for (Int_t ic=0; ic<nclusters; ic++) {
     AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
-    Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
+    Float_t clsPos[3] = {static_cast<Float_t>(cluster->X()),static_cast<Float_t>(cluster->Y()),static_cast<Float_t>(cluster->Z())};
     Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
     //printf("\n dR=%f,wind=%f\n",dR,fClusterWindow); //MARCEL
     if (dR > fClusterWindow) continue;

@@ -199,13 +199,13 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // new composed  correction  - will replace soon ExB correction
   //
   if(fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
-    Float_t distPoint[3]={xx[0],xx[1],xx[2]};
+    Float_t distPoint[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
     correction->CorrectPoint(distPoint, sector);
     xx[0]=distPoint[0];
     xx[1]=distPoint[1];
     xx[2]=distPoint[2];
     if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
-      Float_t distPointDelta[3]={xx[0],xx[1],xx[2]};
+      Float_t distPointDelta[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
       correctionDelta->CorrectPoint(distPointDelta, sector);
       xx[0]=distPointDelta[0];
       xx[1]=distPointDelta[1];

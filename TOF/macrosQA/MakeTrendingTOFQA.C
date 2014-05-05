@@ -1227,18 +1227,18 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	  //hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimePi");
  
-	TProfile * profDiffTimePi = (TProfile*)hDiffTimePi->ProfileX(profilename, 490, 510); 
-	profDiffTimePi->SetLineWidth(2);
-	profDiffTimePi->SetLineColor(kRed+2); 
+	// TProfile * profDiffTimePi = (TProfile*)hDiffTimePi->ProfileX(profilename, 490, 510); 
+	// profDiffTimePi->SetLineWidth(2);
+	// profDiffTimePi->SetLineColor(kRed+2); 
 
 	TH2F * hDiffTimePiTh=(TH2F*)pidList->At(6); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimePiTh");
 	hDiffTimePiTh->GetYaxis()->SetRangeUser(-2000.,2000.); 
   
-	TProfile * profDiffTimePiTh = (TProfile*)hDiffTimePiTh->ProfileX(profilename, 490, 510);
-	profDiffTimePiTh->SetLineWidth(2);
-	profDiffTimePiTh->SetLineColor(kRed+2);
+	// TProfile * profDiffTimePiTh = (TProfile*)hDiffTimePiTh->ProfileX(profilename, 490, 510);
+	// profDiffTimePiTh->SetLineWidth(2);
+	// profDiffTimePiTh->SetLineColor(kRed+2);
 
 	TH2F * hDiffTimeKa=(TH2F*)pidList->At(9); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
@@ -1246,34 +1246,34 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	sprintf(profilename,"profDiffTimeKa");
 	hDiffTimeKa->GetYaxis()->SetRangeUser(-2000.,2000.);
   
-	TProfile * profDiffTimeKa = (TProfile*)hDiffTimeKa->ProfileX(profilename, 490, 510); 
-	profDiffTimeKa->SetLineWidth(2);
-	profDiffTimeKa->SetLineColor(kBlue);  
+	// TProfile * profDiffTimeKa = (TProfile*)hDiffTimeKa->ProfileX(profilename, 490, 510); 
+	// profDiffTimeKa->SetLineWidth(2);
+	// profDiffTimeKa->SetLineColor(kBlue);  
 
 	TH2F * hDiffTimeKaTh=(TH2F*)pidList->At(11); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimeKaTh");
 	hDiffTimeKaTh->GetYaxis()->SetRangeUser(-2000.,2000.);
-	TProfile * profDiffTimeKaTh = (TProfile*)hDiffTimeKaTh->ProfileX(profilename, 490, 510); 
-	profDiffTimeKaTh->SetLineWidth(2);
-	profDiffTimeKaTh->SetLineColor(kBlue);
+	// TProfile * profDiffTimeKaTh = (TProfile*)hDiffTimeKaTh->ProfileX(profilename, 490, 510); 
+	// profDiffTimeKaTh->SetLineWidth(2);
+	// profDiffTimeKaTh->SetLineColor(kBlue);
   
 	TH2F * hDiffTimePro=(TH2F*)pidList->At(14); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimePro");
 	hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
 	hDiffTimePro->GetYaxis()->SetRangeUser(-2000.,2000.);
-	TProfile * profDiffTimePro = (TProfile*)hDiffTimePro->ProfileX(profilename, 490, 510); 
-	profDiffTimePro->SetLineWidth(2);
-	profDiffTimePro->SetLineColor(kGreen+2);  
+	// TProfile * profDiffTimePro = (TProfile*)hDiffTimePro->ProfileX(profilename, 490, 510); 
+	// profDiffTimePro->SetLineWidth(2);
+	// profDiffTimePro->SetLineColor(kGreen+2);  
 
 	TH2F * hDiffTimeProTh=(TH2F*)pidList->At(16); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimeProTh");
 	hDiffTimeProTh->GetYaxis()->SetRangeUser(-2000.,2000.);
-	TProfile * profDiffTimeProTh = (TProfile*)hDiffTimeProTh->ProfileX(profilename, 490, 510);
-	profDiffTimeProTh->SetLineWidth(2);
-	profDiffTimeProTh->SetLineColor(kGreen+2);
+	// TProfile * profDiffTimeProTh = (TProfile*)hDiffTimeProTh->ProfileX(profilename, 490, 510);
+	// profDiffTimeProTh->SetLineWidth(2);
+	// profDiffTimeProTh->SetLineColor(kGreen+2);
 
 	if (canvasE){
 		TCanvas *cPidPerformance= new TCanvas("cPidPerformance","summary of pid performance",800,800);
@@ -1329,19 +1329,19 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 		gPad->SetGridx();
 		gPad->SetGridy();
 		hDiffTimePiTh->Draw("colz");
-		profDiffTimePiTh->Draw("same");
+		// profDiffTimePiTh->Draw("same");
 		cPidPerformanceTh->cd(2);
 		gPad->SetLogz();
 		gPad->SetGridx();
 		gPad->SetGridy();
 		hDiffTimeKaTh->Draw("colz");
-		profDiffTimeKaTh->Draw("same");
+		// profDiffTimeKaTh->Draw("same");
 		cPidPerformanceTh->cd(3);
 		gPad->SetLogz();
 		gPad->SetGridx();
 		gPad->SetGridy();
 		hDiffTimeProTh->Draw("colz");
-		profDiffTimeProTh->Draw("same");
+		// profDiffTimeProTh->Draw("same");
 		// cPidPerformanceTh->cd(4);
 		// profDiffTimePiTh->Draw();
 		// profDiffTimeKaTh->Draw("same");
@@ -1363,18 +1363,18 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t isM
 	hMass->Write();
 	hDiffTimeT0TOFPion1GeV->Write();
 	hDiffTimePi->Write();
-	profDiffTimePi->Write();
+	// profDiffTimePi->Write();
 	hDiffTimeKa->Write();
-	profDiffTimeKa->Write();
+	// profDiffTimeKa->Write();
 	hDiffTimePro->Write();
-	profDiffTimePro->Write();
+	// profDiffTimePro->Write();
 	//lPid->Draw();
 	hDiffTimePiTh->Write();
-	profDiffTimePiTh->Write();
+	// profDiffTimePiTh->Write();
 	hDiffTimeKaTh->Write();
-	profDiffTimeKaTh->Write();
+	// profDiffTimeKaTh->Write();
 	hDiffTimeProTh->Write();
-	profDiffTimeProTh->Write();
+	// profDiffTimeProTh->Write();
   
 	//SIGMAS PID
 	TH2F * hSigmaPi=(TH2F*)pidList->At(7); 

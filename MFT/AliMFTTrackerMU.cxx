@@ -347,7 +347,7 @@ Int_t AliMFTTrackerMU::Clusters2Tracks(AliESDEvent *event) {
       for (Int_t iCluster=0; iCluster<newTrack->GetNMFTClusters(); iCluster++) {
 	AliMFTCluster *localCluster = newTrack->GetMFTCluster(iCluster);
 	mftClusterPattern |= 1 << localCluster->GetPlane();
-	mftClusterPattern |= IsCorrectMatch(localCluster, newTrack->GetMCLabel()) << fNMaxPlanes+localCluster->GetPlane();
+	mftClusterPattern |= IsCorrectMatch(localCluster, newTrack->GetMCLabel()) << (fNMaxPlanes + localCluster->GetPlane());
       }
       myESDTrack -> SetMFTClusterPattern(mftClusterPattern);
       

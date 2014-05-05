@@ -237,7 +237,7 @@ void AliITSU::Init()
   // classes therefore it should be called after a call to CreateGeometry.
   //
   if (!fIdSens) fIdSens = new Int_t[fNLayers];
-  for(int i=0;i<fNLayers;i++) fIdSens[i] = gMC ? gMC->VolId(fLayerName[i]) : 0;
+  for(int i=0;i<fNLayers;i++) fIdSens[i] = TVirtualMC::GetMC() ? TVirtualMC::GetMC()->VolId(fLayerName[i]) : 0;
   fGeomTGeo     = new AliITSUGeomTGeo(kTRUE);
   InitSimulation();
   //

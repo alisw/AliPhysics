@@ -208,22 +208,22 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
   Int_t moduleId;
 
   // the panel volume contains the nomex
-  Float_t panelpar[3] = { kPanelLength/2., kPanelHeight/2., kPanelWidth/2. }; 
-  Float_t nomexpar[3] = { kNomexLength/2., kNomexHeight/2., kNomexWidth/2. }; 
+  Float_t panelpar[3] = { static_cast<Float_t>(kPanelLength/2.), static_cast<Float_t>(kPanelHeight/2.), static_cast<Float_t>(kPanelWidth/2.) }; 
+  Float_t nomexpar[3] = { static_cast<Float_t>(kNomexLength/2.), static_cast<Float_t>(kNomexHeight/2.), static_cast<Float_t>(kNomexWidth/2.) }; 
   Float_t twidth =  kPanelWidth +  kNomexBWidth; 
-  Float_t nomexbpar[3] = {kNomexLength/2., kNomexHeight/2.,twidth/2. };// bulk nomex 
+  Float_t nomexbpar[3] = {static_cast<Float_t>(kNomexLength/2.), static_cast<Float_t>(kNomexHeight/2.),static_cast<Float_t>(twidth/2.) };// bulk nomex 
 
   // insulating material contains PCB-> gas   
   twidth = 2*(kInsuWidth + kPcbWidth) + kSensWidth ; 
-  Float_t insupar[3] = {kInsuLength/2., kInsuHeight/2., twidth/2. }; 
+  Float_t insupar[3] = {static_cast<Float_t>(kInsuLength/2.), static_cast<Float_t>(kInsuHeight/2.), static_cast<Float_t>(twidth/2.) }; 
   twidth -= 2 * kInsuWidth; 
-  Float_t pcbpar[3]  = {kPcbLength/2., kPcbHeight/2., twidth/2. }; 
-  Float_t senspar[3] = {kSensLength/2., kSensHeight/2., kSensWidth/2. }; 
+  Float_t pcbpar[3]  = {static_cast<Float_t>(kPcbLength/2.), static_cast<Float_t>(kPcbHeight/2.), static_cast<Float_t>(twidth/2.) }; 
+  Float_t senspar[3] = {static_cast<Float_t>(kSensLength/2.), static_cast<Float_t>(kSensHeight/2.), static_cast<Float_t>(kSensWidth/2.) }; 
   Float_t theight    = 2 * kHframeHeight + kSensHeight;
-  Float_t hFramepar[3] = {kHframeLength/2., theight/2., kHframeWidth/2.}; 
-  Float_t bFramepar[3] = {kBframeLength/2., kBframeHeight/2., kBframeWidth/2.}; 
-  Float_t vFramepar[3] = {kVframeLength/2., kVframeHeight/2., kVframeWidth/2.};
-  Float_t nulocpar[3]  = {kNulocLength/2.,  kNulocHeight/2.,  kNulocWidth/2.}; 
+  Float_t hFramepar[3] = {static_cast<Float_t>(kHframeLength/2.), static_cast<Float_t>(theight/2.), static_cast<Float_t>(kHframeWidth/2.)}; 
+  Float_t bFramepar[3] = {static_cast<Float_t>(kBframeLength/2.), static_cast<Float_t>(kBframeHeight/2.), static_cast<Float_t>(kBframeWidth/2.)}; 
+  Float_t vFramepar[3] = {static_cast<Float_t>(kVframeLength/2.), static_cast<Float_t>(kVframeHeight/2.), static_cast<Float_t>(kVframeWidth/2.)};
+  Float_t nulocpar[3]  = {static_cast<Float_t>(kNulocLength/2.),  static_cast<Float_t>(kNulocHeight/2.),  static_cast<Float_t>(kNulocWidth/2.)}; 
 
   Float_t xx;
   Float_t xxmax = (kBframeLength - kNulocLength)/2.; 
@@ -255,26 +255,26 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       // Only for chamber 5: slat 1 has a PCB shorter by 5cm!
 
       Float_t tlength = 35.;
-      Float_t panelpar2[3]  = { tlength/2., panelpar[1],  panelpar[2]}; 
-      Float_t nomexpar2[3]  = { tlength/2., nomexpar[1],  nomexpar[2]}; 
-      Float_t nomexbpar2[3] = { tlength/2., nomexbpar[1],  nomexbpar[2]}; 
-      Float_t insupar2[3]   = { tlength/2., insupar[1],   insupar[2]}; 
-      Float_t pcbpar2[3]    = { tlength/2., pcbpar[1],    pcbpar[2]}; 
-      Float_t senspar2[3]   = { tlength/2., senspar[1],   senspar[2]}; 
-      Float_t hFramepar2[3] = { tlength/2., hFramepar[1], hFramepar[2]}; 
-      Float_t bFramepar2[3] = { tlength/2., bFramepar[1], bFramepar[2]}; 
+      Float_t panelpar2[3]  = { static_cast<Float_t>(tlength/2.), panelpar[1],  panelpar[2]}; 
+      Float_t nomexpar2[3]  = { static_cast<Float_t>(tlength/2.), nomexpar[1],  nomexpar[2]}; 
+      Float_t nomexbpar2[3] = { static_cast<Float_t>(tlength/2.), nomexbpar[1],  nomexbpar[2]}; 
+      Float_t insupar2[3]   = { static_cast<Float_t>(tlength/2.), insupar[1],   insupar[2]}; 
+      Float_t pcbpar2[3]    = { static_cast<Float_t>(tlength/2.), pcbpar[1],    pcbpar[2]}; 
+      Float_t senspar2[3]   = { static_cast<Float_t>(tlength/2.), senspar[1],   senspar[2]}; 
+      Float_t hFramepar2[3] = { static_cast<Float_t>(tlength/2.), hFramepar[1], hFramepar[2]}; 
+      Float_t bFramepar2[3] = { static_cast<Float_t>(tlength/2.), bFramepar[1], bFramepar[2]}; 
       Float_t pcbDLength3   = (kPcbLength - tlength);
       
       // For rounded pcb of central slat
       Float_t csvPcbLength = 59.25-40.; // PQ-LAT-SR1
-      Float_t panelpar3[3]  = { csvPcbLength/2., panelpar[1],  panelpar[2]}; 
-      Float_t nomexpar3[3]  = { csvPcbLength/2., nomexpar[1],  nomexpar[2]}; 
-      Float_t nomexbpar3[3] = { csvPcbLength/2., nomexbpar[1],  nomexbpar[2]}; 
-      Float_t insupar3[3]   = { csvPcbLength/2., insupar[1],   insupar[2]}; 
-      Float_t pcbpar3[3]    = { csvPcbLength/2., pcbpar[1],    pcbpar[2]}; 
-      Float_t senspar3[3]   = { csvPcbLength/2., senspar[1],   senspar[2]}; 
-      Float_t hFramepar3[3] = { csvPcbLength/2., hFramepar[1], hFramepar[2]}; 
-      Float_t bFramepar3[3] = { csvPcbLength/2., bFramepar[1], bFramepar[2]}; 
+      Float_t panelpar3[3]  = { static_cast<Float_t>(csvPcbLength/2.), panelpar[1],  panelpar[2]}; 
+      Float_t nomexpar3[3]  = { static_cast<Float_t>(csvPcbLength/2.), nomexpar[1],  nomexpar[2]}; 
+      Float_t nomexbpar3[3] = {static_cast<Float_t>( csvPcbLength/2.), nomexbpar[1],  nomexbpar[2]}; 
+      Float_t insupar3[3]   = { static_cast<Float_t>(csvPcbLength/2.), insupar[1],   insupar[2]}; 
+      Float_t pcbpar3[3]    = { static_cast<Float_t>(csvPcbLength/2.), pcbpar[1],    pcbpar[2]}; 
+      Float_t senspar3[3]   = { static_cast<Float_t>(csvPcbLength/2.), senspar[1],   senspar[2]}; 
+      Float_t hFramepar3[3] = { static_cast<Float_t>(csvPcbLength/2.), hFramepar[1], hFramepar[2]}; 
+      Float_t bFramepar3[3] = { static_cast<Float_t>(csvPcbLength/2.), bFramepar[1], bFramepar[2]}; 
       Float_t cPhi = TMath::RadToDeg()*(TMath::Pi()/2.-TMath::ACos(hFramepar3[1]/(AliMUONConstants::Rmin(2)-kRframeLength)));
       Float_t cFramepar3[5] = { AliMUONConstants::Rmin(2)-kRframeLength, AliMUONConstants::Rmin(2), kRframeWidth, -cPhi, cPhi}; 
 
@@ -446,98 +446,98 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      
       // create the panel volume 
  
-      gMC->Gsvolu("S05C","BOX",kCarbonMaterial,panelpar,3);
-      gMC->Gsvolu("SB5C","BOX",kCarbonMaterial,panelpar2,3);
-      gMC->Gsvolu("SC5C","BOX",kCarbonMaterial,panelpar3,3);
-      gMC->Gsvolu("SD5C","BOX",kCarbonMaterial,panelpar,3);
-      gMC->Gsvolu("S06C","BOX",kCarbonMaterial,panelpar,3);
-      gMC->Gsvolu("SC6C","BOX",kCarbonMaterial,panelpar3,3);
-      gMC->Gsvolu("SD6C","BOX",kCarbonMaterial,panelpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05C","BOX",kCarbonMaterial,panelpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5C","BOX",kCarbonMaterial,panelpar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5C","BOX",kCarbonMaterial,panelpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5C","BOX",kCarbonMaterial,panelpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06C","BOX",kCarbonMaterial,panelpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6C","BOX",kCarbonMaterial,panelpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6C","BOX",kCarbonMaterial,panelpar,3);
  
       // create the nomex volume (honey comb)
 
-      gMC->Gsvolu("S05N","BOX",kNomexMaterial,nomexpar,3);
-      gMC->Gsvolu("SB5N","BOX",kNomexMaterial,nomexpar2,3);
-      gMC->Gsvolu("SC5N","BOX",kNomexMaterial,nomexpar3,3);
-      gMC->Gsvolu("SD5N","BOX",kNomexMaterial,nomexpar,3);
-      gMC->Gsvolu("S06N","BOX",kNomexMaterial,nomexpar,3);
-      gMC->Gsvolu("SC6N","BOX",kNomexMaterial,nomexpar3,3);
-      gMC->Gsvolu("SD6N","BOX",kNomexMaterial,nomexpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05N","BOX",kNomexMaterial,nomexpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5N","BOX",kNomexMaterial,nomexpar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5N","BOX",kNomexMaterial,nomexpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5N","BOX",kNomexMaterial,nomexpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06N","BOX",kNomexMaterial,nomexpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6N","BOX",kNomexMaterial,nomexpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6N","BOX",kNomexMaterial,nomexpar,3);
  
       // create the nomex volume (bulk)
 
-      gMC->Gsvolu("S05X","BOX",kNomexBMaterial,nomexbpar,3);
-      gMC->Gsvolu("SB5X","BOX",kNomexBMaterial,nomexbpar2,3);
-      gMC->Gsvolu("SC5X","BOX",kNomexBMaterial,nomexbpar3,3);
-      gMC->Gsvolu("SD5X","BOX",kNomexBMaterial,nomexbpar,3);
-      gMC->Gsvolu("S06X","BOX",kNomexBMaterial,nomexbpar,3);
-      gMC->Gsvolu("SC6X","BOX",kNomexBMaterial,nomexbpar3,3);
-      gMC->Gsvolu("SD6X","BOX",kNomexBMaterial,nomexbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05X","BOX",kNomexBMaterial,nomexbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5X","BOX",kNomexBMaterial,nomexbpar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5X","BOX",kNomexBMaterial,nomexbpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5X","BOX",kNomexBMaterial,nomexbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06X","BOX",kNomexBMaterial,nomexbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6X","BOX",kNomexBMaterial,nomexbpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6X","BOX",kNomexBMaterial,nomexbpar,3);
 
       // create the insulating material volume 
 
-      gMC->Gsvolu("S05I","BOX",kInsuMaterial,insupar,3);
-      gMC->Gsvolu("SB5I","BOX",kInsuMaterial,insupar2,3);
-      gMC->Gsvolu("SC5I","BOX",kInsuMaterial,insupar3,3);
-      gMC->Gsvolu("SD5I","BOX",kInsuMaterial,insupar,3);
-      gMC->Gsvolu("S06I","BOX",kInsuMaterial,insupar,3);
-      gMC->Gsvolu("SC6I","BOX",kInsuMaterial,insupar3,3);
-      gMC->Gsvolu("SD6I","BOX",kInsuMaterial,insupar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05I","BOX",kInsuMaterial,insupar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5I","BOX",kInsuMaterial,insupar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5I","BOX",kInsuMaterial,insupar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5I","BOX",kInsuMaterial,insupar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06I","BOX",kInsuMaterial,insupar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6I","BOX",kInsuMaterial,insupar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6I","BOX",kInsuMaterial,insupar,3);
  
       // create the PCB volume 
 
-      gMC->Gsvolu("S05P","BOX",kPcbMaterial,pcbpar,3);
-      gMC->Gsvolu("SB5P","BOX",kPcbMaterial,pcbpar2,3);
-      gMC->Gsvolu("SC5P","BOX",kPcbMaterial,pcbpar3,3);
-      gMC->Gsvolu("SD5P","BOX",kPcbMaterial,pcbpar,3);
-      gMC->Gsvolu("S06P","BOX",kPcbMaterial,pcbpar,3);
-      gMC->Gsvolu("SC6P","BOX",kPcbMaterial,pcbpar3,3);
-      gMC->Gsvolu("SD6P","BOX",kPcbMaterial,pcbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05P","BOX",kPcbMaterial,pcbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5P","BOX",kPcbMaterial,pcbpar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5P","BOX",kPcbMaterial,pcbpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5P","BOX",kPcbMaterial,pcbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06P","BOX",kPcbMaterial,pcbpar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6P","BOX",kPcbMaterial,pcbpar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6P","BOX",kPcbMaterial,pcbpar,3);
  
       // create the sensitive volumes,
 
-      gMC->Gsvolu("S05G","BOX",kSensMaterial,dum,0);
-      gMC->Gsvolu("SC5G","BOX",kSensMaterial,senspar3,3);
-      gMC->Gsvolu("SD5G","BOX",kSensMaterial,senspar,3);
-      gMC->Gsvolu("S06G","BOX",kSensMaterial,dum,0);
-      gMC->Gsvolu("SC6G","BOX",kSensMaterial,senspar3,3);
-      gMC->Gsvolu("SD6G","BOX",kSensMaterial,senspar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05G","BOX",kSensMaterial,dum,0);
+      TVirtualMC::GetMC()->Gsvolu("SC5G","BOX",kSensMaterial,senspar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5G","BOX",kSensMaterial,senspar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06G","BOX",kSensMaterial,dum,0);
+      TVirtualMC::GetMC()->Gsvolu("SC6G","BOX",kSensMaterial,senspar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6G","BOX",kSensMaterial,senspar,3);
 
       // create the vertical frame volume 
 
-      gMC->Gsvolu("S05V","BOX",kVframeMaterial,vFramepar,3);
-      gMC->Gsvolu("S06V","BOX",kVframeMaterial,vFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05V","BOX",kVframeMaterial,vFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06V","BOX",kVframeMaterial,vFramepar,3);
 
       // create the rounded vertical frame volume 
 
-      gMC->Gsvolu("SC5D","TUBS",kRframeMaterial,cFramepar3,5);
-      gMC->Gsvolu("SD5D","TUBS",kRframeMaterial,rFramepar3,5);
-      gMC->Gsvolu("SC6D","TUBS",kRframeMaterial,cFramepar3,5);
-      gMC->Gsvolu("SD6D","TUBS",kRframeMaterial,rFramepar3,5);
+      TVirtualMC::GetMC()->Gsvolu("SC5D","TUBS",kRframeMaterial,cFramepar3,5);
+      TVirtualMC::GetMC()->Gsvolu("SD5D","TUBS",kRframeMaterial,rFramepar3,5);
+      TVirtualMC::GetMC()->Gsvolu("SC6D","TUBS",kRframeMaterial,cFramepar3,5);
+      TVirtualMC::GetMC()->Gsvolu("SD6D","TUBS",kRframeMaterial,rFramepar3,5);
 
       // create the horizontal frame volume 
 
-      gMC->Gsvolu("S05H","BOX",kHframeMaterial,hFramepar,3);
-      gMC->Gsvolu("SB5H","BOX",kHframeMaterial,hFramepar2,3);
-      gMC->Gsvolu("SC5H","BOX",kHframeMaterial,hFramepar3,3);
-      gMC->Gsvolu("SD5H","BOX",kHframeMaterial,hFramepar,3);
-      gMC->Gsvolu("S06H","BOX",kHframeMaterial,hFramepar,3);
-      gMC->Gsvolu("SC6H","BOX",kHframeMaterial,hFramepar3,3);
-      gMC->Gsvolu("SD6H","BOX",kHframeMaterial,hFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05H","BOX",kHframeMaterial,hFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5H","BOX",kHframeMaterial,hFramepar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5H","BOX",kHframeMaterial,hFramepar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5H","BOX",kHframeMaterial,hFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06H","BOX",kHframeMaterial,hFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6H","BOX",kHframeMaterial,hFramepar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6H","BOX",kHframeMaterial,hFramepar,3);
  
       // create the horizontal border volume 
 
-      gMC->Gsvolu("S05B","BOX",kBframeMaterial,bFramepar,3);
-      gMC->Gsvolu("SB5B","BOX",kBframeMaterial,bFramepar2,3);
-      gMC->Gsvolu("SC5B","BOX",kBframeMaterial,bFramepar3,3);
-      gMC->Gsvolu("SD5B","BOX",kBframeMaterial,bFramepar,3);
-      gMC->Gsvolu("S06B","BOX",kBframeMaterial,bFramepar,3);
-      gMC->Gsvolu("SC6B","BOX",kBframeMaterial,bFramepar3,3);
-      gMC->Gsvolu("SD6B","BOX",kBframeMaterial,bFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05B","BOX",kBframeMaterial,bFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("SB5B","BOX",kBframeMaterial,bFramepar2,3);
+      TVirtualMC::GetMC()->Gsvolu("SC5B","BOX",kBframeMaterial,bFramepar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD5B","BOX",kBframeMaterial,bFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06B","BOX",kBframeMaterial,bFramepar,3);
+      TVirtualMC::GetMC()->Gsvolu("SC6B","BOX",kBframeMaterial,bFramepar3,3);
+      TVirtualMC::GetMC()->Gsvolu("SD6B","BOX",kBframeMaterial,bFramepar,3);
 
       // Replace the volume shape with a composite shape
       // with substracted overlap with beam shield     
-      if ( gMC->IsRootGeometrySupported() ) { 
+      if ( TVirtualMC::GetMC()->IsRootGeometrySupported() ) { 
 	
 	// Get shape
 	Int_t nSlatType = 2;
@@ -764,75 +764,75 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
       
       // position the nomex volume inside the panel volume
-      gMC->Gspos("S05N",1,"S05C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SB5N",1,"SB5C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC5N",1,"SC5C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD5N",1,"SD5C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("S06N",1,"S06C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC6N",1,"SC6C",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD6N",1,"SD6C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05N",1,"S05C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5N",1,"SB5C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5N",1,"SC5C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5N",1,"SD5C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06N",1,"S06C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6N",1,"SC6C",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6N",1,"SD6C",0.,0.,0.,0,"ONLY"); 
   
       // position panel volume inside the bulk nomex material volume
-      gMC->Gspos("S05C",1,"S05X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("SB5C",1,"SB5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("SC5C",1,"SC5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("SD5C",1,"SD5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("S06C",1,"S06X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("SC6C",1,"SC6X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-      gMC->Gspos("SD6C",1,"SD6X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05C",1,"S05X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5C",1,"SB5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5C",1,"SC5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5C",1,"SD5X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06C",1,"S06X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6C",1,"SC6X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6C",1,"SD6X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
 
       // position the PCB volume inside the insulating material volume
-      gMC->Gspos("S05P",1,"S05I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SB5P",1,"SB5I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC5P",1,"SC5I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD5P",1,"SD5I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("S06P",1,"S06I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC6P",1,"SC6I",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD6P",1,"SD6I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05P",1,"S05I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5P",1,"SB5I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5P",1,"SC5I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5P",1,"SD5I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06P",1,"S06I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6P",1,"SC6I",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6P",1,"SD6I",0.,0.,0.,0,"ONLY"); 
   
       // position the horizontal frame volume inside the PCB volume
-      gMC->Gspos("S05H",1,"S05P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SB5H",1,"SB5P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC5H",1,"SC5P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD5H",1,"SD5P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("S06H",1,"S06P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SC6H",1,"SC6P",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD6H",1,"SD6P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05H",1,"S05P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5H",1,"SB5P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5H",1,"SC5P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5H",1,"SD5P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06H",1,"S06P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6H",1,"SC6P",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6H",1,"SD6P",0.,0.,0.,0,"ONLY"); 
   
       // position the sensitive volume inside the horizontal frame volume
-      gMC->Gsposp("S05G",1,"S05H",0.,0.,0.,0,"ONLY",senspar,3); 
-      gMC->Gsposp("S05G",1,"SB5H",0.,0.,0.,0,"ONLY",senspar2,3); 
-      gMC->Gspos("SC5G",1,"SC5H",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD5G",1,"SD5H",0.,0.,0.,0,"ONLY"); 
-      gMC->Gsposp("S06G",1,"S06H",0.,0.,0.,0,"ONLY",senspar,3); 
-      gMC->Gspos("SC6G",1,"SC6H",0.,0.,0.,0,"ONLY"); 
-      gMC->Gspos("SD6G",1,"SD6H",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gsposp("S05G",1,"S05H",0.,0.,0.,0,"ONLY",senspar,3); 
+      TVirtualMC::GetMC()->Gsposp("S05G",1,"SB5H",0.,0.,0.,0,"ONLY",senspar2,3); 
+      TVirtualMC::GetMC()->Gspos("SC5G",1,"SC5H",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5G",1,"SD5H",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gsposp("S06G",1,"S06H",0.,0.,0.,0,"ONLY",senspar,3); 
+      TVirtualMC::GetMC()->Gspos("SC6G",1,"SC6H",0.,0.,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6G",1,"SD6H",0.,0.,0.,0,"ONLY"); 
   
  
       // position the border volumes inside the PCB volume
       Float_t yborder = ( kPcbHeight - kBframeHeight ) / 2.; 
       Int_t rotB = 0;
-      gMC->Matrix(rotB,90,0,90,270,180,0); // rotation around x for second border
+      TVirtualMC::GetMC()->Matrix(rotB,90,0,90,270,180,0); // rotation around x for second border
 
-      gMC->Gspos("S05B",1,"S05P",0., yborder,0.,0,"ONLY"); 
-      gMC->Gspos("S05B",2,"S05P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SB5B",1,"SB5P",0., yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SB5B",2,"SB5P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SC5B",1,"SC5P",0., yborder,0.,rotB,"ONLY"); 
-      gMC->Gspos("SC5B",2,"SC5P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("S05B",1,"SD5P",0., yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SD5B",1,"SD5P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05B",1,"S05P",0., yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05B",2,"S05P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5B",1,"SB5P",0., yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SB5B",2,"SB5P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5B",1,"SC5P",0., yborder,0.,rotB,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC5B",2,"SC5P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S05B",1,"SD5P",0., yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD5B",1,"SD5P",0.,-yborder,0.,0,"ONLY"); 
 
-      gMC->Gspos("S06B",1,"S06P",0., yborder,0.,0,"ONLY"); 
-      gMC->Gspos("S06B",2,"S06P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SC6B",1,"SC6P",0., yborder,0.,rotB,"ONLY"); 
-      gMC->Gspos("SC6B",2,"SC6P",0.,-yborder,0.,0,"ONLY"); 
-      gMC->Gspos("S06B",1,"SD6P",0., yborder,0.,0,"ONLY"); 
-      gMC->Gspos("SD6B",1,"SD6P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06B",1,"S06P",0., yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06B",2,"S06P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6B",1,"SC6P",0., yborder,0.,rotB,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SC6B",2,"SC6P",0.,-yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("S06B",1,"SD6P",0., yborder,0.,0,"ONLY"); 
+      TVirtualMC::GetMC()->Gspos("SD6B",1,"SD6P",0.,-yborder,0.,0,"ONLY"); 
   
       // create the NULOC volume and position it in the horizontal frame
-      gMC->Gsvolu("S05E","BOX",kNulocMaterial,nulocpar,3);
-      gMC->Gsvolu("S06E","BOX",kNulocMaterial,nulocpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S05E","BOX",kNulocMaterial,nulocpar,3);
+      TVirtualMC::GetMC()->Gsvolu("S06E","BOX",kNulocMaterial,nulocpar,3);
       index = 0;
       Float_t xxmax2 = xxmax - pcbDLength3/2.;
       Float_t xxmax3 = xxmax - (kPcbLength-csvPcbLength)/2.;
@@ -840,25 +840,25 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
       Float_t xxmax4 = (AliMUONConstants::Rmin(2)*TMath::Cos(rPhi3)-kVframeLength/2.) - (kBframeLength - kNulocLength)/2.;
       for (xx = -xxmax; xx <= xxmax; xx += 2*kNulocLength) { 
 	index++; 
-	gMC->Gspos("S05E",2*index-1,"S05B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-	gMC->Gspos("S05E",2*index  ,"S05B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
-	gMC->Gspos("S06E",2*index-1,"S06B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-	gMC->Gspos("S06E",2*index  ,"S06B", xx, 0., kBframeWidth/2.-  kNulocWidth/2, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos("S05E",2*index-1,"S05B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos("S05E",2*index  ,"S05B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos("S06E",2*index-1,"S06B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+	TVirtualMC::GetMC()->Gspos("S06E",2*index  ,"S06B", xx, 0., kBframeWidth/2.-  kNulocWidth/2, 0, "ONLY");
 	if (xx > -xxmax2 && xx< xxmax2) {
-	  gMC->Gspos("S05E",2*index-1,"SB5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S05E",2*index  ,"SB5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S05E",2*index-1,"SB5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S05E",2*index  ,"SB5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
 	if (xx > -xxmax3 && xx< xxmax3) {
-	  gMC->Gspos("S05E",2*index-1,"SC5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2., 0, "ONLY");
- 	  gMC->Gspos("S05E",2*index  ,"SC5B", xx, 0., kBframeWidth/2.- kNulocWidth/2., 0, "ONLY");
- 	  gMC->Gspos("S06E",2*index-1,"SC6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
- 	  gMC->Gspos("S06E",2*index  ,"SC6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S05E",2*index-1,"SC5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2., 0, "ONLY");
+ 	  TVirtualMC::GetMC()->Gspos("S05E",2*index  ,"SC5B", xx, 0., kBframeWidth/2.- kNulocWidth/2., 0, "ONLY");
+ 	  TVirtualMC::GetMC()->Gspos("S06E",2*index-1,"SC6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+ 	  TVirtualMC::GetMC()->Gspos("S06E",2*index  ,"SC6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
 	if (xx > xxmax4 && xx< xxmax) {
-	  gMC->Gspos("S05E",2*index-1,"SD5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S05E",2*index  ,"SD5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S06E",2*index-1,"SD6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-	  gMC->Gspos("S06E",2*index  ,"SD6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S05E",2*index-1,"SD5B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S05E",2*index  ,"SD5B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S06E",2*index-1,"SD6B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("S06E",2*index  ,"SD6B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
 	}
       }      
       
@@ -905,16 +905,16 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
 
       // Add readout cables
-      gMC->Gsvolu("S05L","BOX",kCableMaterial,dum,0);
-      gMC->Gsvolu("S06L","BOX",kCableMaterial,dum,0);
+      TVirtualMC::GetMC()->Gsvolu("S05L","BOX",kCableMaterial,dum,0);
+      TVirtualMC::GetMC()->Gsvolu("S06L","BOX",kCableMaterial,dum,0);
 
       ySlat3 = 0.;
       Float_t lCableX = 0.;
       Float_t lCableX6 = 0.;
       Float_t lCableY = 0.;
       Float_t lCableZ = 0.;
-      Float_t cablepar[3] = {supporthlength/2., kCableHeight/2., kCableWidth/2.};
-      Float_t cablepar6[3] = {supporthlengthCh6/2., kCableHeight/2., kCableWidth/2.};
+      Float_t cablepar[3] = {static_cast<Float_t>(supporthlength/2.), static_cast<Float_t>(kCableHeight/2.), static_cast<Float_t>(kCableWidth/2.)};
+      Float_t cablepar6[3] = {static_cast<Float_t>(supporthlengthCh6/2.), static_cast<Float_t>(kCableHeight/2.), static_cast<Float_t>(kCableWidth/2.)};
       Float_t lCableDY = 0.;
       Int_t cIndex = 0;
       Int_t cIndex6 = 0;
@@ -940,10 +940,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    cablepar6[0] -= (kPcbLength-csvPcbLength)/2.;
 	    lCableX6 = (kPcbLength-csvPcbLength)/2.;
 	  }
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 	
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3);
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 	
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3);
 
 	  // Then bottom cables
 	  if(i>0){
@@ -960,10 +960,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 		lCableDY = lCableY - dMotherInner - cablepar[1];
 	      }
 	    }
-	    gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	    gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	    gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
-	    gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
+	    TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	    TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	    TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
+	    TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
 	  }
 	}
 	
@@ -976,16 +976,16 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  lCableX6 = (kPcbLength+kVframeLength)/2.;
 	  lCableDY = (kYpos3[i+1]+kYpos3[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
 	  lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 	
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3);
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 	
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3);
 	  // Then bottom cables
 	  lCableDY = (kYpos3[i]+kYpos3[i])/2.-cablepar[1];
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
 	}
 	
 	// Cables going out from the end of the slats
@@ -1006,10 +1006,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  cablepar[0] += pcbDLength3/2.;
 	  lCableX -=  pcbDLength3/2.;
 	} 
-	gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
-	gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
+	TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
+	TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
 	// Then bottom cables
 	if(i>0){ // Loop is over top half of slats, lower half are symmetric 
 	  if (i==1) {
@@ -1018,10 +1018,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  else{
 	    lCableDY = (kYpos3[i]+kYpos3[i-1])/2.-cablepar[1]; // half way between 2 slats on same side
 	  }
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
-	  gMC->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S05L",100*i+cIndex++,"S05S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar6,3); 
+	  TVirtualMC::GetMC()->Gsposp("S06L",100*i+cIndex6++,"S06S",lCableX6,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar6,3); 
 	}
       }
 
@@ -1206,74 +1206,74 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
      
     // create the panel volume 
  
-    gMC->Gsvolu("S07C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("SD7C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("S08C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("SD8C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8C","BOX",kCarbonMaterial,panelpar,3);
 
     // create the nomex volume 
 
-    gMC->Gsvolu("S07N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("SD7N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("S08N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("SD8N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8N","BOX",kNomexMaterial,nomexpar,3);
 
 
     // create the nomex volume (bulk)
 
-    gMC->Gsvolu("S07X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("SD7X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("S08X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("SD8X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8X","BOX",kNomexBMaterial,nomexbpar,3);
 
     // create the insulating material volume 
 
-    gMC->Gsvolu("S07I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("SD7I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("S08I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("SD8I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8I","BOX",kInsuMaterial,insupar,3);
 
     // create the PCB volume 
 
-    gMC->Gsvolu("S07P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("SD7P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("S08P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("SD8P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8P","BOX",kPcbMaterial,pcbpar,3);
  
     // create the sensitive volumes,
 
-    gMC->Gsvolu("S07G","BOX",kSensMaterial,dum,0);
-    gMC->Gsvolu("SD7G","BOX",kSensMaterial,senspar,3);
-    gMC->Gsvolu("S08G","BOX",kSensMaterial,dum,0);
-    gMC->Gsvolu("SD8G","BOX",kSensMaterial,senspar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07G","BOX",kSensMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("SD7G","BOX",kSensMaterial,senspar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08G","BOX",kSensMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("SD8G","BOX",kSensMaterial,senspar,3);
 
     // create the vertical frame volume 
 
-    gMC->Gsvolu("S07V","BOX",kVframeMaterial,vFramepar,3);
-    gMC->Gsvolu("S08V","BOX",kVframeMaterial,vFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07V","BOX",kVframeMaterial,vFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08V","BOX",kVframeMaterial,vFramepar,3);
 
     // create the rounded vertical frame volume 
 
-    gMC->Gsvolu("SD7D","TUBS",kRframeMaterial,rFramepar4,5);
-    gMC->Gsvolu("SD8D","TUBS",kRframeMaterial,rFramepar4,5);
+    TVirtualMC::GetMC()->Gsvolu("SD7D","TUBS",kRframeMaterial,rFramepar4,5);
+    TVirtualMC::GetMC()->Gsvolu("SD8D","TUBS",kRframeMaterial,rFramepar4,5);
     
     // create the horizontal frame volume 
 
-    gMC->Gsvolu("S07H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("SD7H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("S08H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("SD8H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8H","BOX",kHframeMaterial,hFramepar,3);
 
     // create the horizontal border volume 
 
-    gMC->Gsvolu("S07B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("SD7B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("S08B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("SD8B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD7B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD8B","BOX",kBframeMaterial,bFramepar,3);
 
     // Replace the volume shape with a composite shape
     // with substracted overlap with beam shield     
-    if ( gMC->IsRootGeometrySupported() ) { 
+    if ( TVirtualMC::GetMC()->IsRootGeometrySupported() ) { 
 	
       // Get shape
       Int_t nSlatType = 1;
@@ -1424,65 +1424,65 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     }
 
     // position the nomex volume inside the panel volume
-    gMC->Gspos("S07N",1,"S07C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD7N",1,"SD7C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S08N",1,"S08C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD8N",1,"SD8C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07N",1,"S07C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD7N",1,"SD7C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08N",1,"S08C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD8N",1,"SD8C",0.,0.,0.,0,"ONLY"); 
 
     // position panel volume inside the bulk nomex material volume
-    gMC->Gspos("S07C",1,"S07X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("SD7C",1,"SD7X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("S08C",1,"S08X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("SD8C",1,"SD8X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07C",1,"S07X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD7C",1,"SD7X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08C",1,"S08X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD8C",1,"SD8X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
 
     // position the PCB volume inside the insulating material volume
-    gMC->Gspos("S07P",1,"S07I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD7P",1,"SD7I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S08P",1,"S08I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD8P",1,"SD8I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07P",1,"S07I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD7P",1,"SD7I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08P",1,"S08I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD8P",1,"SD8I",0.,0.,0.,0,"ONLY"); 
 
     // position the horizontal frame volume inside the PCB volume
-    gMC->Gspos("S07H",1,"S07P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD7H",1,"SD7P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S08H",1,"S08P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD8H",1,"SD8P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07H",1,"S07P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD7H",1,"SD7P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08H",1,"S08P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD8H",1,"SD8P",0.,0.,0.,0,"ONLY"); 
 
     // position the sensitive volume inside the horizontal frame volume
-    gMC->Gsposp("S07G",1,"S07H",0.,0.,0.,0,"ONLY",senspar,3); 
-    gMC->Gspos("SD7G",1,"SD7H",0.,0.,0.,0,"ONLY"); 
-    gMC->Gsposp("S08G",1,"S08H",0.,0.,0.,0,"ONLY",senspar,3); 
-    gMC->Gspos("SD8G",1,"SD8H",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsposp("S07G",1,"S07H",0.,0.,0.,0,"ONLY",senspar,3); 
+    TVirtualMC::GetMC()->Gspos("SD7G",1,"SD7H",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsposp("S08G",1,"S08H",0.,0.,0.,0,"ONLY",senspar,3); 
+    TVirtualMC::GetMC()->Gspos("SD8G",1,"SD8H",0.,0.,0.,0,"ONLY"); 
 
     // position the border volumes inside the PCB volume
     Float_t yborder = ( kPcbHeight - kBframeHeight ) / 2.; 
-    gMC->Gspos("S07B",1,"S07P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S07B",2,"S07P",0.,-yborder,0.,0,"ONLY");
-    gMC->Gspos("S07B",1,"SD7P",0., yborder,0.,0,"ONLY");
-    gMC->Gspos("SD7B",1,"SD7P",0.,-yborder,0.,0,"ONLY");  
-    gMC->Gspos("S08B",1,"S08P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S08B",2,"S08P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S08B",1,"SD8P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD8B",1,"SD8P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07B",1,"S07P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S07B",2,"S07P",0.,-yborder,0.,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos("S07B",1,"SD7P",0., yborder,0.,0,"ONLY");
+    TVirtualMC::GetMC()->Gspos("SD7B",1,"SD7P",0.,-yborder,0.,0,"ONLY");  
+    TVirtualMC::GetMC()->Gspos("S08B",1,"S08P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08B",2,"S08P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S08B",1,"SD8P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD8B",1,"SD8P",0.,-yborder,0.,0,"ONLY"); 
 
     // create the NULOC volume and position it in the horizontal frame
 
-    gMC->Gsvolu("S07E","BOX",kNulocMaterial,nulocpar,3);
-    gMC->Gsvolu("S08E","BOX",kNulocMaterial,nulocpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S07E","BOX",kNulocMaterial,nulocpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S08E","BOX",kNulocMaterial,nulocpar,3);
     index = 0;
     Float_t rPhi3 = TMath::ASin((kYpos41[1]-kPcbHeight/2.)/AliMUONConstants::Rmin(3));
     Float_t xxmax4 = (AliMUONConstants::Rmin(3)*TMath::Cos(rPhi3)-kVframeLength/2.) - (kBframeLength - kNulocLength)/2.;
     for (xx = -xxmax; xx <= xxmax; xx += 2*kNulocLength) { 
       index++; 
-      gMC->Gspos("S07E",2*index-1,"S07B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S07E",2*index  ,"S07B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index-1,"S08B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index  ,"S08B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S07E",2*index-1,"S07B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S07E",2*index  ,"S07B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S08E",2*index-1,"S08B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S08E",2*index  ,"S08B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
     }
     if (xx > xxmax4 && xx< xxmax) {
-      gMC->Gspos("S07E",2*index-1,"SD7B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S07E",2*index  ,"SD7B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index-1,"SD8B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S08E",2*index  ,"SD8B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S07E",2*index-1,"SD7B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S07E",2*index  ,"SD7B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S08E",2*index-1,"SD8B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S08E",2*index  ,"SD8B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
     }
 
     //
@@ -1516,8 +1516,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     voNomexSupportSt4Ch8->AddNode(voCarbonSupportSt4Ch8,2,trCarbon2St4);
  
     // Add readout cables
-    gMC->Gsvolu("S07L","BOX",kCableMaterial,dum,0);
-    gMC->Gsvolu("S08L","BOX",kCableMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("S07L","BOX",kCableMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("S08L","BOX",kCableMaterial,dum,0);
 
     ySlat41 = 0.;
     ySlat42 = 0.;
@@ -1525,7 +1525,7 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     Float_t lCableY = 0.;
     Float_t lCableY8 = 0.;
     Float_t lCableZ = 0.;
-    Float_t cablepar[3] = {supporthlength/2., kCableHeight/2., kCableWidth/2.};
+    Float_t cablepar[3] = {static_cast<Float_t>(supporthlength/2.), static_cast<Float_t>(kCableHeight/2.), static_cast<Float_t>(kCableWidth/2.)};
     Float_t lCableDY = 0.;
     Float_t lCableDY8 = 0.;
     for (i = 0; i<kNslats4; i++){
@@ -1546,10 +1546,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableDY = (kYpos41[i+1]+kYpos41[i+2])/2.-cablepar[1];
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1];
 	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 	
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3);
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 	
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3);
 	// Then bottom cables
 	if (i>0){
 	  if (i==1) { // Rounded slat. Bottom cable starts at dMotherInner (beam pipe)
@@ -1568,10 +1568,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      lCableDY8 = lCableY8 - dMotherInner - cablepar[1];
 	    }
 	  }
-	  gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8-lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8-lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8-lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8-lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
 	}
       }
 
@@ -1583,10 +1583,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableDY = (kYpos41[i+1]+kYpos41[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
 	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
       }	
 
       // Cables going out from the end of the slats
@@ -1601,10 +1601,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableDY8 = (kYpos42[i+1]+kYpos42[i+2])/2.-cablepar[1];
       }
       lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-      gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-      gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-      gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
-      gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8+lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8+lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
       // Then bottom cables
       if(i>0){
 	if (i==1) {
@@ -1621,10 +1621,10 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	    lCableDY8 = lCableY8 - dMotherInner - cablepar[1];
 	  }
 	}
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8-lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8-lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S07L",10*i+cIndex++,"S07S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,lCableY8-lCableDY8,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S08L",10*i+cIndex8++,"S08S",lCableX,-(lCableY8-lCableDY8),lCableZ,0,"ONLY",cablepar,3); 
       }	
     }
     
@@ -1809,74 +1809,74 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 
     // create the panel volume 
  
-    gMC->Gsvolu("S09C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("SD9C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("S10C","BOX",kCarbonMaterial,panelpar,3);
-    gMC->Gsvolu("SD0C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10C","BOX",kCarbonMaterial,panelpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0C","BOX",kCarbonMaterial,panelpar,3);
 
     // create the nomex volume 
 
-    gMC->Gsvolu("S09N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("SD9N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("S10N","BOX",kNomexMaterial,nomexpar,3);
-    gMC->Gsvolu("SD0N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10N","BOX",kNomexMaterial,nomexpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0N","BOX",kNomexMaterial,nomexpar,3);
 
 
     // create the nomex volume (bulk)
 
-    gMC->Gsvolu("S09X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("SD9X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("S10X","BOX",kNomexBMaterial,nomexbpar,3);
-    gMC->Gsvolu("SD0X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10X","BOX",kNomexBMaterial,nomexbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0X","BOX",kNomexBMaterial,nomexbpar,3);
 
     // create the insulating material volume 
 
-    gMC->Gsvolu("S09I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("SD9I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("S10I","BOX",kInsuMaterial,insupar,3);
-    gMC->Gsvolu("SD0I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10I","BOX",kInsuMaterial,insupar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0I","BOX",kInsuMaterial,insupar,3);
 
     // create the PCB volume 
 
-    gMC->Gsvolu("S09P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("SD9P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("S10P","BOX",kPcbMaterial,pcbpar,3);
-    gMC->Gsvolu("SD0P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10P","BOX",kPcbMaterial,pcbpar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0P","BOX",kPcbMaterial,pcbpar,3);
  
     // create the sensitive volumes,
 
-    gMC->Gsvolu("S09G","BOX",kSensMaterial,dum,0);
-    gMC->Gsvolu("SD9G","BOX",kSensMaterial,senspar,3);
-    gMC->Gsvolu("S10G","BOX",kSensMaterial,dum,0);
-    gMC->Gsvolu("SD0G","BOX",kSensMaterial,senspar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09G","BOX",kSensMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("SD9G","BOX",kSensMaterial,senspar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10G","BOX",kSensMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("SD0G","BOX",kSensMaterial,senspar,3);
 
     // create the vertical frame volume 
 
-    gMC->Gsvolu("S09V","BOX",kVframeMaterial,vFramepar,3);
-    gMC->Gsvolu("S10V","BOX",kVframeMaterial,vFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09V","BOX",kVframeMaterial,vFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10V","BOX",kVframeMaterial,vFramepar,3);
 
     // create the rounded vertical frame volume 
 
-    gMC->Gsvolu("SD9D","TUBS",kRframeMaterial,rFramepar5,5);
-    gMC->Gsvolu("SD0D","TUBS",kRframeMaterial,rFramepar5,5);
+    TVirtualMC::GetMC()->Gsvolu("SD9D","TUBS",kRframeMaterial,rFramepar5,5);
+    TVirtualMC::GetMC()->Gsvolu("SD0D","TUBS",kRframeMaterial,rFramepar5,5);
 
     // create the horizontal frame volume 
 
-    gMC->Gsvolu("S09H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("SD9H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("S10H","BOX",kHframeMaterial,hFramepar,3);
-    gMC->Gsvolu("SD0H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10H","BOX",kHframeMaterial,hFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0H","BOX",kHframeMaterial,hFramepar,3);
 
     // create the horizontal border volume 
 
-    gMC->Gsvolu("S09B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("SD9B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("S10B","BOX",kBframeMaterial,bFramepar,3);
-    gMC->Gsvolu("SD0B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD9B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10B","BOX",kBframeMaterial,bFramepar,3);
+    TVirtualMC::GetMC()->Gsvolu("SD0B","BOX",kBframeMaterial,bFramepar,3);
 
     // Replace the volume shape with a composite shape
     // with substracted overlap with beam shield     
-    if ( gMC->IsRootGeometrySupported() ) { 
+    if ( TVirtualMC::GetMC()->IsRootGeometrySupported() ) { 
 	
       // Get shape
       Int_t nSlatType = 1;
@@ -2027,65 +2027,65 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     }
 
     // position the nomex volume inside the panel volume
-    gMC->Gspos("S09N",1,"S09C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD9N",1,"SD9C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S10N",1,"S10C",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD0N",1,"SD0C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09N",1,"S09C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD9N",1,"SD9C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10N",1,"S10C",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD0N",1,"SD0C",0.,0.,0.,0,"ONLY"); 
 
     // position panel  volume inside the bulk nomex material volume
-    gMC->Gspos("S09C",1,"S09X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("SD9C",1,"SD9X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("S10C",1,"S10X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
-    gMC->Gspos("SD0C",1,"SD0X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09C",1,"S09X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD9C",1,"SD9X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10C",1,"S10X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD0C",1,"SD0X",0.,0.,kNomexBWidth/2.,0,"ONLY"); 
 
     // position the PCB volume inside the insulating material volume
-    gMC->Gspos("S09P",1,"S09I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD9P",1,"SD9I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S10P",1,"S10I",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD0P",1,"SD0I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09P",1,"S09I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD9P",1,"SD9I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10P",1,"S10I",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD0P",1,"SD0I",0.,0.,0.,0,"ONLY"); 
 
     // position the horizontal frame volume inside the PCB volume
-    gMC->Gspos("S09H",1,"S09P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD9H",1,"SD9P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("S10H",1,"S10P",0.,0.,0.,0,"ONLY"); 
-    gMC->Gspos("SD0H",1,"SD0P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09H",1,"S09P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD9H",1,"SD9P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10H",1,"S10P",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD0H",1,"SD0P",0.,0.,0.,0,"ONLY"); 
 
     // position the sensitive volume inside the horizontal frame volume
-    gMC->Gsposp("S09G",1,"S09H",0.,0.,0.,0,"ONLY",senspar,3); 
-    gMC->Gspos("SD9G",1,"SD9H",0.,0.,0.,0,"ONLY"); 
-    gMC->Gsposp("S10G",1,"S10H",0.,0.,0.,0,"ONLY",senspar,3); 
-    gMC->Gspos("SD0G",1,"SD0H",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsposp("S09G",1,"S09H",0.,0.,0.,0,"ONLY",senspar,3); 
+    TVirtualMC::GetMC()->Gspos("SD9G",1,"SD9H",0.,0.,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gsposp("S10G",1,"S10H",0.,0.,0.,0,"ONLY",senspar,3); 
+    TVirtualMC::GetMC()->Gspos("SD0G",1,"SD0H",0.,0.,0.,0,"ONLY"); 
 
     // position the border volumes inside the PCB volume
     Float_t yborder = ( kPcbHeight - kBframeHeight ) / 2.; 
-    gMC->Gspos("S09B",1,"S09P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S09B",2,"S09P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S09B",1,"SD9P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD9B",1,"SD9P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S10B",1,"S10P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S10B",2,"S10P",0.,-yborder,0.,0,"ONLY"); 
-    gMC->Gspos("S10B",1,"SD0P",0., yborder,0.,0,"ONLY"); 
-    gMC->Gspos("SD0B",1,"SD0P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09B",1,"S09P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09B",2,"S09P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S09B",1,"SD9P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD9B",1,"SD9P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10B",1,"S10P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10B",2,"S10P",0.,-yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("S10B",1,"SD0P",0., yborder,0.,0,"ONLY"); 
+    TVirtualMC::GetMC()->Gspos("SD0B",1,"SD0P",0.,-yborder,0.,0,"ONLY"); 
 
     //      // create the NULOC volume and position it in the horizontal frame
 
-    gMC->Gsvolu("S09E","BOX",kNulocMaterial,nulocpar,3);
-    gMC->Gsvolu("S10E","BOX",kNulocMaterial,nulocpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S09E","BOX",kNulocMaterial,nulocpar,3);
+    TVirtualMC::GetMC()->Gsvolu("S10E","BOX",kNulocMaterial,nulocpar,3);
     index = 0;
     Float_t rPhi3 = TMath::ASin((kYpos5[1]-kPcbHeight/2.)/AliMUONConstants::Rmin(4));
     Float_t xxmax4 = (AliMUONConstants::Rmin(4)*TMath::Cos(rPhi3)-kVframeLength/2.) - (kBframeLength - kNulocLength)/2.;
     for (xx = -xxmax; xx <= xxmax; xx += 2*kNulocLength) { 
       index++; 
-      gMC->Gspos("S09E",2*index-1,"S09B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S09E",2*index  ,"S09B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index-1,"S10B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index  ,"S10B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S09E",2*index-1,"S09B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S09E",2*index  ,"S09B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S10E",2*index-1,"S10B", xx, 0.,-kBframeWidth/2. + kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S10E",2*index  ,"S10B", xx, 0., kBframeWidth/2. - kNulocWidth/2, 0, "ONLY");
     }
     if (xx > xxmax4 && xx< xxmax) {
-      gMC->Gspos("S09E",2*index-1,"SD9B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S09E",2*index  ,"SD9B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index-1,"SD0B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
-      gMC->Gspos("S10E",2*index  ,"SD0B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S09E",2*index-1,"SD9B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S09E",2*index  ,"SD9B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S10E",2*index-1,"SD0B", xx, 0.,-kBframeWidth/2.+ kNulocWidth/2, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("S10E",2*index  ,"SD0B", xx, 0., kBframeWidth/2.- kNulocWidth/2, 0, "ONLY");
     }
 
     //    
@@ -2115,13 +2115,13 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
     voNomexSupportSt5->AddNode(voCarbonSupportSt5,2,trCarbon2St5);
 
     // Add readout cables
-    gMC->Gsvolu("S09L","BOX",kCableMaterial,dum,0);
+    TVirtualMC::GetMC()->Gsvolu("S09L","BOX",kCableMaterial,dum,0);
 
     ySlat5 = 0.;
     Float_t lCableX = 0.;
     Float_t lCableY = 0.;
     Float_t lCableZ = 0.;
-    Float_t cablepar[3] = {supporthlength/2., kCableHeight/2., kCableWidth/2.};
+    Float_t cablepar[3] = {static_cast<Float_t>(supporthlength/2.), static_cast<Float_t>(kCableHeight/2.), static_cast<Float_t>(kCableWidth/2.)};
     Float_t lCableDY = 0.;
     for (i = 0; i<kNslats5; i++){
       Int_t iCable = 1;
@@ -2142,8 +2142,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	  lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1];
 	}
 	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 	
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3);
 	// Then bottom cables
 	if (i>0) {
 	  if (i==1) { // Rounded slat. Bottom cable starts at dMotherInner (beam pipe)
@@ -2157,8 +2157,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      lCableDY = lCableY - dMotherInner - cablepar[1];
 	    }
 	  }
-	  gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	  gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	  TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
 	}
       }
       
@@ -2169,8 +2169,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableX = (kPcbLength+kVframeLength)/2.;
 	lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1]; // half way between 2 slats on same side
 	lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       }	
 
       // Cables going out from the end of the slats
@@ -2184,8 +2184,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	lCableDY = (kYpos5[i+1]+kYpos5[i+2])/2.-cablepar[1];
       }
       lCableZ = TMath::Power(-1,i)*(nomexthickness/2.+carbonthickness+(-1+iCable++)*kCableWidth+kCableWidth/2.);	
-      gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-      gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY+lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+      TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY+lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       if(i>0){
 	if (i==1) { // Rounded slat. Bottom cable starts at dMotherInner (beam pipe)
 	  lCableDY = (kYpos5[i]+kYpos5[i])/2.-cablepar[1];
@@ -2196,8 +2196,8 @@ void AliMUONSlatGeometryBuilder::CreateGeometry()
 	      lCableDY = lCableY - dMotherInner - cablepar[1];
 	  }
 	}
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
-	gMC->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,lCableY-lCableDY,lCableZ,0,"ONLY",cablepar,3); 
+	TVirtualMC::GetMC()->Gsposp("S09L",10*i+cIndex++,"S09S",lCableX,-(lCableY-lCableDY),lCableZ,0,"ONLY",cablepar,3); 
       }
     }
 

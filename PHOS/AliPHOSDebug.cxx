@@ -510,30 +510,30 @@ void AliPHOSv1::StepManager(void)
   TString name      =  GetGeometry()->GetName() ; 
   Int_t trackpid    =  0  ; 
 
-  if( gMC->IsTrackEntering() ){ // create hit with position and momentum of new particle, 
+  if( TVirtualMC::GetMC()->IsTrackEntering() ){ // create hit with position and momentum of new particle, 
                                 // but may be without energy deposition
 
     // Current position of the hit in the local ref. system
-      gMC -> TrackPosition(pos);
+      TVirtualMC::GetMC() -> TrackPosition(pos);
       Float_t xyzm[3], xyzd[3] ;
       Int_t i;
       for (i=0; i<3; i++) xyzm[i] = pos[i];
-      gMC -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
+      TVirtualMC::GetMC() -> Gmtod (xyzm, xyzd, 1);    // transform coordinate from master to daughter system
       xyd[0]  = xyzd[0];
       xyd[1]  =-xyzd[1];
       xyd[2]  =-xyzd[2];
 
       
       // Current momentum of the hit's track in the local ref. system
-      gMC -> TrackMomentum(pmom);
+      TVirtualMC::GetMC() -> TrackMomentum(pmom);
       Float_t pm[3], pd[3];
       for (i=0; i<3; i++) pm[i]   = pmom[i];
-      gMC -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
+      TVirtualMC::GetMC() -> Gmtod (pm, pd, 2);        // transform 3-momentum from master to daughter system
       pmom[0] = pd[0];
       pmom[1] =-pd[1];
       pmom[2] =-pd[2];
 
-      trackpid = gMC->TrackPid();
+      trackpid = TVirtualMC::GetMC()->TrackPid();
       entered = kTRUE ;      // Mark to create hit even withou energy deposition
 
   }
@@ -543,17 +543,17 @@ void AliPHOSv1::StepManager(void)
 
     // Yuri Kharlov, 28 September 2000
 
-    static Int_t idPCPQ = gMC->VolId("PCPQ");
-    if( gMC->CurrentVolID(copy) == idPCPQ &&
+    static Int_t idPCPQ = TVirtualMC::GetMC()->VolId("PCPQ");
+    if( TVirtualMC::GetMC()->CurrentVolID(copy) == idPCPQ &&
 	entered &&
-	gMC->TrackCharge() != 0) {      
+	TVirtualMC::GetMC()->TrackCharge() != 0) {      
       
       // Digitize the current CPV hit:
 
       // 1. find pad response and
       
       Int_t moduleNumber;
-      gMC->CurrentVolOffID(3,moduleNumber);
+      TVirtualMC::GetMC()->CurrentVolOffID(3,moduleNumber);
       moduleNumber--;
 
 
@@ -617,21 +617,21 @@ void AliPHOSv1::StepManager(void)
   } // end of IHEP configuration
   
 
-  if(gMC->CurrentVolID(copy) == gMC->VolId("PXTL") ) { //  We are inside a PBWO crystal
-    gMC->TrackPosition(pos) ;
+  if(TVirtualMC::GetMC()->CurrentVolID(copy) == TVirtualMC::GetMC()->VolId("PXTL") ) { //  We are inside a PBWO crystal
+    TVirtualMC::GetMC()->TrackPosition(pos) ;
     xyze[0] = pos[0] ;
     xyze[1] = pos[1] ;
     xyze[2] = pos[2] ;
-    xyze[3] = gMC->Edep() ;
+    xyze[3] = TVirtualMC::GetMC()->Edep() ;
 
   
     if ( (xyze[3] != 0) || entered ) {  // Track is inside the crystal and deposits some energy or just entered 
 
-      gMC->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
+      TVirtualMC::GetMC()->CurrentVolOffID(10, relid[0]) ; // get the PHOS module number ;
 
       relid[1] = 0   ;                    // means PBW04
-      gMC->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
-      gMC->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
+      TVirtualMC::GetMC()->CurrentVolOffID(4, relid[2]) ; // get the row number inside the module
+      TVirtualMC::GetMC()->CurrentVolOffID(3, relid[3]) ; // get the cell number inside the module
       
       // get the absolute Id number
       GetGeometry()->RelToAbsNumbering(relid, absid) ; 
