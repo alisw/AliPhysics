@@ -52,9 +52,6 @@
 
 ClassImp(AliTRDReconstructor)
 
-Int_t    AliTRDReconstructor::fgStreamLevel     = 1;        // stream (debug) level
-
-
 AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
 AliTRDonlineTrackMatching AliTRDReconstructor::fgOnlineTrackMatcher;
 TClonesArray *AliTRDReconstructor::fgClusters = NULL;
