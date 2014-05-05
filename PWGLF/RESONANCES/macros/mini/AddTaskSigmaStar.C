@@ -16,7 +16,7 @@
 //  kFALSE --> initialization failed (some config gave errors)
 //
 ****************************************************************************/
-
+ 
 enum ERsnCollType_t { kPP=0,
 		      kPPb,
 		      kPbPb};
@@ -116,7 +116,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
   Double_t    minYlab =  -0.5;
   Double_t    maxYlab =  0.5;
 
-  if( collSyst=kPPb ) {
+  if( collSyst==kPPb ) {
     if (pairCutSetID==pairYCutSet::kPairDefault) { //0<y_cm<0.5
       minYlab =  -0.465;  maxYlab =  0.035;
     }
@@ -177,13 +177,17 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
      task->SetUseCentralityPatch(aodN==49);
    }
 
+     if(collSyst==kPPb)  task->UseESDTriggerMask(triggerMask);
+
+
    if(collSyst==kPPb) 
      task->SelectCollisionCandidates(triggerMask); //
    else if ( collSyst == kPP ) 
      task->SelectCollisionCandidates(AliVEvent::kMB); //
    else
      task->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
-    
+  
+  
    if ( collSyst == kPP ) 
      task->UseMultiplicity("QUALITY");
    else if(collSyst==kPPb) 
@@ -214,27 +218,29 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", cutV, 0, kFALSE);
    if ( collSyst == kPP ) cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup
    
-   //set check for pileup in 2013
-   AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
-   cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
-   ::Info("AddTaskSigmaStar", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
-   if (useMVPileUpSelection){
-     cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
-     cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
-     cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddTaskSigmaStar", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", MinPlpContribMV, MinPlpContribSPD));
-   } else {
-     cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
-     ::Info("AddTaskSigmaStar", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
+   if (collSyst==kPPb) { 
+     //set check for pileup in 2013
+     AliRsnCutEventUtils *cutEventUtils = new AliRsnCutEventUtils("cutEventUtils", rmFirstEvtChunk, rejectPileUp);
+     cutEventUtils->SetUseVertexSelection2013pA(useVtxCut2013pA);
+     ::Info("AddTaskSigmaStar", Form(":::::::::::::::::: Vertex cut as pA 2013: %s", (useVtxCut2013pA?"ON":"OFF")));   
+     if (useMVPileUpSelection){
+       cutEventUtils->SetUseMVPlpSelection(useMVPileUpSelection);
+       cutEventUtils->SetMinPlpContribMV(MinPlpContribMV);
+       cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
+       ::Info("AddTaskSigmaStar", Form("Multiple-vtx Pile-up rejection settings: MinPlpContribMV = %i, MinPlpContribSPD = %i", 
+				       MinPlpContribMV, MinPlpContribSPD));
+     } else {
+       cutEventUtils->SetMinPlpContribSPD(MinPlpContribSPD);
+       ::Info("AddTaskSigmaStar", Form("SPD Pile-up rejection settings: MinPlpContribSPD = %i", MinPlpContribSPD));
+     }
+     ::Info("AddTaskSigmaStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
+     ::Info("AddTaskSigmaStar", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
    }
-   ::Info("AddTaskSigmaStar", Form(":::::::::::::::::: Pile-up rejection mode: %s", (rejectPileUp?"ON":"OFF")));   
-   ::Info("AddTaskSigmaStar", Form("::::::::::::: Remove first event in chunk: %s", (rmFirstEvtChunk?"ON":"OFF")));   
-   
    
    // define and fill cut set for event cut
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutEventUtils);
-   eventCuts->AddCut(cutVertex);
+   if (collSyst==kPPb) eventCuts->AddCut(cutEventUtils);
+   else eventCuts->AddCut(cutVertex);
    eventCuts->SetCutScheme(cutVertex->GetName());
    // set cuts in task
    task->SetEventCuts(eventCuts);
@@ -282,7 +288,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
        
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-     
+ 
    if (!ConfigSigmaStar(task, collSyst, isMC, piPIDCut, pPIDCut, aodFilterBit, trackDCAcut, massTol, lambdaDCA, lambdaCosPoinAn, lambdaDaughDCA, NTPCcluster, "", cutsPair)) return 0x0;
    
    //

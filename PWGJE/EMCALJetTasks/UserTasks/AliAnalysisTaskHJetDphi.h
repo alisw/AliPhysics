@@ -55,7 +55,6 @@ class AliAnalysisTaskHJetDphi : public AliAnalysisTaskSE {
   void SetEmbTrkArrName(char *s)                               { fEmbTrkArrName = s;             }
   void SetTrackArrName(char *s)                                { fTrackArrName=s;                }
   void SetSwitchOnAvoidTpcHole(Bool_t cut)                     { fSwitchOnAvoidTpcHole=cut;      }
-  void SetAvoidTpcHole(Bool_t cut)                             { fAvoidTpcHole=cut;              }
   void SetCutTPCBoundary(Bool_t cut)                           { fCutTPCBoundary=cut;            }
   void SetDistToTPCBoundary(Double_t dist)                     { fDistToTPCBoundary=dist;        }
   void SetTrkPtRange(Double_t min, Double_t max)               { fMinTrkPt=min; fMaxTrkPt=max;   }
@@ -136,7 +135,7 @@ protected:
   Int_t                             fTriggerTrkIndex;            //! Index of the trigger track in the event 
   Double_t                          fTriggerTrkPt;               //! Trigger track pt
   Bool_t                            fSwitchOnAvoidTpcHole;       //  Switch on to avoid TPC hole for the recoil jets
-  Bool_t                            fAvoidTpcHole;               //  Flag if TPC hole is present
+  Int_t                             fAvoidTpcHole;               //  Flag if TPC hole is present
   Bool_t                            fCutTPCBoundary;             //  Flag of reqiring trigger tracks stay away from TPC boundary
   Double_t                          fDistToTPCBoundary;          //  Distance to TPC boundary
   Double_t                          fMinTrkPt;                   //  Minimum pt for tracks
@@ -210,7 +209,7 @@ protected:
   AliAnalysisTaskHJetDphi(const AliAnalysisTaskHJetDphi&);            // not implemented
   AliAnalysisTaskHJetDphi &operator=(const AliAnalysisTaskHJetDphi&); // not implemented
 
-  ClassDef(AliAnalysisTaskHJetDphi, 2);
+  ClassDef(AliAnalysisTaskHJetDphi, 3);
 };
 
 #endif

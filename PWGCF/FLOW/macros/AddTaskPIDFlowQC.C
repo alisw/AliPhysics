@@ -69,8 +69,8 @@ for(int icentr=0;icentr<ncentr;icentr++){
     
     // RP TRACK CUTS:
     cutsRP[icentr] = new AliFlowTrackCuts(Form("TPConlyRP_%d",icentr));
-    cutsRP[icentr]->SetParamType(rptype);
-    cutsRP[icentr]->SetParamMix(rpmix);
+   // cutsRP[icentr]->SetParamType(rptype);
+   // cutsRP[icentr]->SetParamMix(rpmix);
     cutsRP[icentr]->SetPtRange(0.2,5.);
     cutsRP[icentr]->SetEtaRange(etamin,etamax);
     cutsRP[icentr]->SetMinNClustersTPC(70);
@@ -84,40 +84,40 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsRP[icentr]->SetQA(doQA);
 
     
-    //POIs for SP and QC method
+    //POIs for QC method
     //===========================================================================
-    AliFlowTrackCuts  *SP_POI[ncentr];
+    AliFlowTrackCuts  *QC_POI[ncentr];
     //half window for POIs
-    //=======================SP POI Cuts
-    SP_POI[icentr] = DefinePOIcuts(icentr);
+    //=======================QC POI Cuts
+    QC_POI[icentr] = DefinePOIcuts(icentr);
 
-    SP_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
-    SP_POI[icentr]->SetParamType(poitype);
-    SP_POI[icentr]->SetParamMix(poimix);
-    SP_POI[icentr]->SetPtRange(0.2,5.);//
-    SP_POI[icentr]->SetMinNClustersTPC(70);
-    SP_POI[icentr]->SetEtaRange( etamin,etamax );
+    QC_POI[icentr]->GetBayesianResponse()->ForceOldDedx(); // for 2010 data to use old TPC PID Response instead of the official one
+   // QC_POI[icentr]->SetParamType(poitype);
+   // QC_POI[icentr]->SetParamMix(poimix);
+    QC_POI[icentr]->SetPtRange(0.2,5.);//
+    QC_POI[icentr]->SetMinNClustersTPC(70);
+    QC_POI[icentr]->SetEtaRange( etamin,etamax );
   
-    // SP_POI->SetMinChi2PerClusterTPC(0.1); //
-    // SP_POI->SetMaxChi2PerClusterTPC(4.0); //
-    //  SP_POI->SetRequireITSRefit(kTRUE);
-    //  SP_POI->SetRequireTPCRefit(kTRUE);
-    //  SP_POI->SetMinNClustersITS(2);
-    //  SP_POI->SetMaxChi2PerClusterITS(1.e+09);
-    SP_POI[icentr]->SetMaxDCAToVertexXY(3.0);
-    SP_POI[icentr]->SetMaxDCAToVertexZ(3.0);
-    //SP_POI->SetDCAToVertex2D(kTRUE);
-    //SP_POI->SetMaxNsigmaToVertex(1.e+10);
-    //SP_POI->SetRequireSigmaToVertex(kFALSE);
-    SP_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
-    if(isPID) SP_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
-    if (charge!=0) SP_POI[icentr]->SetCharge(charge);
-    //SP_POI->SetAllowTOFmismatch(kFALSE);
-    SP_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
-    SP_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
-    SP_POI[icentr]->SetAODfilterBit(AODfilterBitPOI);
-    SP_POI[icentr]->SetQA(doQA);
-    SP_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
+    // QC_POI[icentr]->SetMinChi2PerClusterTPC(0.1); //
+    // QC_POI[icentr]->SetMaxChi2PerClusterTPC(4.0); //
+    //  QC_POI[icentr]->SetRequireITSRefit(kTRUE);
+    //  QC_POI[icentr]->SetRequireTPCRefit(kTRUE);
+    //  QC_POI[icentr]->SetMinNClustersITS(2);
+    //  QC_POI[icentr]->SetMaxChi2PerClusterITS(1.e+09);
+    QC_POI[icentr]->SetMaxDCAToVertexXY(3.0);
+    QC_POI[icentr]->SetMaxDCAToVertexZ(3.0);
+    //QC_POI[icentr]->SetDCAToVertex2D(kTRUE);
+    //QC_POI[icentr]->SetMaxNsigmaToVertex(1.e+10);
+    //QC_POI[icentr]->SetRequireSigmaToVertex(kFALSE);
+    QC_POI[icentr]->SetAcceptKinkDaughters(kFALSE);
+    if(isPID) QC_POI[icentr]->SetPID(particleType, sourcePID);//particleType, sourcePID
+    if (charge!=0) QC_POI[icentr]->SetCharge(charge);
+    //QC_POI[icentr]->SetAllowTOFmismatch(kFALSE);
+    QC_POI[icentr]->SetRequireStrictTOFTPCagreement(kTRUE);
+    QC_POI[icentr]->SetMinimalTPCdedx(MinTPCdedx);
+    QC_POI[icentr]->SetAODfilterBit(AODfilterBitPOI);
+    QC_POI[icentr]->SetQA(doQA);
+    QC_POI[icentr]->SetPriors((centrMin[icentr]+centrMax[icentr])*0.5);
 
 
 
@@ -146,7 +146,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
         outputSlotName[icentr][harmonic-2]+=Form("_v%i_",harmonic);
         outputSlotName[icentr][harmonic-2]+=cutsRP[icentr]->GetName();
         outputSlotName[icentr][harmonic-2]+="_";
-        outputSlotName[icentr][harmonic-2]+=SP_POI[icentr]->GetName();
+        outputSlotName[icentr][harmonic-2]+=QC_POI[icentr]->GetName();
         outputSlotName[icentr][harmonic-2]+=Form("_%i-",centrMin[icentr]);
         outputSlotName[icentr][harmonic-2]+=Form("%i_",centrMax[icentr]);
         
@@ -207,7 +207,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     // Pass cuts for RPs and POIs to the task:
     taskFE[icentr]->SetCutsEvent(cutsEvent[icentr]);
     taskFE[icentr]->SetCutsRP(cutsRP[icentr]);
-    taskFE[icentr]->SetCutsPOI(SP_POI[icentr]);
+    taskFE[icentr]->SetCutsPOI(QC_POI[icentr]);
     if (cutsRP[icentr]->GetParamType()==AliFlowTrackCuts::kVZERO)
     {
         //TODO: since this is set in a static object all analyses in an analysis train

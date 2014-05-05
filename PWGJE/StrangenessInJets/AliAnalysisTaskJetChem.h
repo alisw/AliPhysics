@@ -89,48 +89,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     ClassDef(AliFragFuncHistosInvMass, 1);
   };
   
-
- //----------------------------------------
-  class AliFragFuncHistosPhiCorrInvMass : public TObject
-  {
-				   
-    public:
-    
-    AliFragFuncHistosPhiCorrInvMass(const char* name = "FFPhiCorrIMhistos", 
-				    Int_t nPt = 0, Float_t ptMin = 0, Float_t ptMax = 0,
-				    Int_t nPhi = 0, Float_t phiMin = 0, Float_t phiMax = 0,
-				    Int_t nInvMass = 0, Float_t invMassMin=0, Float_t invMassMax=0);
-
-    AliFragFuncHistosPhiCorrInvMass(const AliFragFuncHistosPhiCorrInvMass& copy);
-    AliFragFuncHistosPhiCorrInvMass& operator=(const AliFragFuncHistosPhiCorrInvMass &o);
-    virtual ~AliFragFuncHistosPhiCorrInvMass();
-    
-    virtual void DefineHistos();
-    virtual void FillPhiCorr(Float_t pt, Float_t phi, Float_t invM);
-    virtual void AddToOutput(TList* list) const;
-
-
-
-  private:
-
-    Int_t   fNBinsPt;       // FF histos bins
-    Float_t fPtMin;         // FF histos limits
-    Float_t fPtMax;         // FF histos limits
-
-    Int_t   fNBinsPhi;      // FF histos bins
-    Float_t fPhiMin;        // FF histos limits
-    Float_t fPhiMax;        // FF histos limits
-    
-    Int_t   fNBinsInvMass;  // FF histos bins
-    Float_t fInvMassMin;    // FF histos limits
-    Float_t fInvMassMax;    // FF histos limits
-  
-    TH3F*   fh3PhiCorr;     //! FF: phi correlation histo 
-
-    TString fNamePhiCorr;   // histo names prefix
-    
-    ClassDef(AliFragFuncHistosPhiCorrInvMass, 1);
-  };
   
   //----------------------------------------
 
@@ -186,7 +144,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
 
   //-- K0s
 
-  void   SetFFInvMassHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //previous 19, 5.,100.
+  void   SetFFInvMassHistoBins(Int_t nJetPt = 19, Float_t jetPtMin = 5., Float_t jetPtMax = 100., //previous 19, 5.,100.
 			       Int_t nInvM = 400, Float_t invMMin = 0.3,  Float_t invMMax = 0.7, //previous 0.4 to 0.6
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20.,         //previous 0. to 10.
 			       Int_t nXi = 35, Float_t xiMin = 0., Float_t xiMax = 7.,
@@ -196,18 +154,10 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     fFFIMNBinsXi = nXi; fFFIMXiMin = xiMin; fFFIMXiMax = xiMax; fFFIMNBinsZ  = nZ;  fFFIMZMin  = zMin;  fFFIMZMax  = zMax; }
 
 
-  void   SetPhiCorrInvMassHistoBins(Int_t nPt = 40, Float_t ptMin = 0., Float_t ptMax = 20., 
-				    Int_t nPhi = 20, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi(),
-				    Int_t nInvM = 240, Float_t invMMin = 0.4,  Float_t invMMax = 0.6)
-				    
-  { fPhiCorrIMNBinsPt = nPt; fPhiCorrIMPtMin = ptMin; fPhiCorrIMPtMax = ptMax;
-    fPhiCorrIMNBinsPhi = nPhi; fPhiCorrIMPhiMin = phiMin; fPhiCorrIMPhiMax = phiMax;
-    fPhiCorrIMNBinsInvM = nInvM; fPhiCorrIMInvMMin = invMMin; fPhiCorrIMInvMMax = invMMax;
-  }
   
   // --La and ALa
 
-  void   SetFFInvMassLaHistoBins(Int_t nJetPt = 39, Float_t jetPtMin = 5., Float_t jetPtMax = 200., //La
+  void   SetFFInvMassLaHistoBins(Int_t nJetPt = 19, Float_t jetPtMin = 5., Float_t jetPtMax = 100., //La
 				 //Int_t nInvM = 140, Float_t invMMin = 1.06,  Float_t invMMax = 1.2,//original inv. mass range, now I shifted to Vits slightly larger mass window
 			       Int_t nInvM = 200, Float_t invMMin = 1.05,  Float_t invMMax = 1.25,
 			       Int_t nPt = 200, Float_t ptMin = 0., Float_t ptMax = 20., 
@@ -219,17 +169,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
     fFFIMLaNBinsXi = nXi; fFFIMLaXiMin = xiMin; fFFIMLaXiMax = xiMax; fFFIMLaNBinsZ  = nZ;  fFFIMLaZMin  = zMin;  fFFIMLaZMax  = zMax; }
 
 
-  void   SetPhiCorrInvMassLaHistoBins(Int_t nPt = 40, Float_t ptMin = 0., Float_t ptMax = 20.,    //La
-				    Int_t nPhi = 20, Float_t phiMin = 0., Float_t phiMax = 2*TMath::Pi(),
-				    Int_t nInvM = 50, Float_t invMMin = 1.06,  Float_t invMMax = 1.2)
-				    
-  { fPhiCorrIMLaNBinsPt = nPt; fPhiCorrIMLaPtMin = ptMin; fPhiCorrIMLaPtMax = ptMax;
-    fPhiCorrIMLaNBinsPhi = nPhi; fPhiCorrIMLaPhiMin = phiMin; fPhiCorrIMLaPhiMax = phiMax;
-    fPhiCorrIMLaNBinsInvM = nInvM; fPhiCorrIMLaInvMMin = invMMin; fPhiCorrIMLaInvMMax = invMMax;
-  }
 
-
- 
   // consts
 
  
@@ -245,10 +185,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Double_t fCutPostrackEta;
   Double_t fCutNegtrackEta;
   Double_t fCutEta;
-
   Double_t fCutV0cosPointAngle;
-  Double_t fCutChi2PosDaughter;
-  Double_t fCutChi2NegDaughter;
   Bool_t   fKinkDaughters;
   Bool_t   fRequireTPCRefit;
   Double_t fCutArmenteros; 
@@ -274,8 +211,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   void SetCutV0Eta(Double_t v0Eta){fCutEta=v0Eta; Printf("AliAnalysisTaskJetChem:: SetCutV0Eta %f",v0Eta);}
   void SetCutJetEta(Double_t jetEta){fCutjetEta=jetEta; Printf("AliAnalysisTaskJetChem:: SetCutjetEta %f",jetEta);}
   void SetCosOfPointingAngle(Double_t cospointAng){fCutV0cosPointAngle=cospointAng; Printf("AliAnalysisTaskJetChem:: SetCosOfPointingAngle %f",cospointAng);}
-  void SetChi2CutPosDaughter(Double_t chi2PosDaughter){fCutChi2PosDaughter=chi2PosDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutPosDaughter %f",chi2PosDaughter);}
-  void SetChi2CutNegDaughter(Double_t chi2NegDaughter){fCutChi2NegDaughter=chi2NegDaughter; Printf("AliAnalysisTaskJetChem:: SetChi2CutNegDaughter %f",chi2NegDaughter);}
   void SetAcceptKinkDaughters(Bool_t isKinkDaughtersAccepted){fKinkDaughters=isKinkDaughtersAccepted; Printf("AliAnalysisTaskJetChem:: SetAcceptKinkDaughters %i", isKinkDaughtersAccepted);}
   void SetRequireTPCRefit(Bool_t isTPCRefit){fRequireTPCRefit=isTPCRefit; Printf("AliAnalysisTaskJetChem:: SetRequireTPCRefit %i", isTPCRefit);}
   void SetCutArmenteros(Double_t armenteros){fCutArmenteros=armenteros; Printf("AliAnalysisTaskJetChem:: SetCutArmenteros %f", armenteros);}
@@ -304,7 +239,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliFragFuncHistosInvMass*  fFFHistosIMK0AllEvt;          //! K0 pt spec for all events
   AliFragFuncHistosInvMass*  fFFHistosIMK0Jet;             //! K0 FF all dPhi   
   AliFragFuncHistosInvMass*  fFFHistosIMK0Cone;            //! K0 FF jet cone   
-  AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMK0;  //! K0 correlation to jet axis 
   
   Int_t fLaType;                                           // La cuts
   UInt_t fFilterMaskLa;                                    //! La legs cuts
@@ -313,7 +247,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliFragFuncHistosInvMass*  fFFHistosIMLaAllEvt;          //! La pt spec for all events
   AliFragFuncHistosInvMass*  fFFHistosIMLaJet;             //! La FF all dPhi   
   AliFragFuncHistosInvMass*  fFFHistosIMLaCone;            //! La FF jet cone   
-  AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMLa;  //! La correlation to jet axis 
   
   Int_t fALaType;                                          // ALa cuts
 
@@ -335,7 +268,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   AliFragFuncHistosInvMass*  fFFHistosIMALaAllEvt;          //! ALa pt spec for all events
   AliFragFuncHistosInvMass*  fFFHistosIMALaJet;             //! ALa FF all dPhi   
   AliFragFuncHistosInvMass*  fFFHistosIMALaCone;            //! ALa FF jet cone   
-  AliFragFuncHistosPhiCorrInvMass*  fFFHistosPhiCorrIMALa;  //! ALa corelation to jet axis 
   
   // histogram bins 
   
@@ -386,35 +318,7 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   Float_t fFFIMLaZMax;          // FF histos limits
   
 
-  //--K0s
-  
-  Int_t fPhiCorrIMNBinsPt;    // FF histos bins
-  Float_t fPhiCorrIMPtMin;    // FF histos limits
-  Float_t fPhiCorrIMPtMax;    // FF histos limits
-  
-  Int_t fPhiCorrIMNBinsPhi;   // FF histos bins
-  Float_t fPhiCorrIMPhiMin;   // FF histos limits
-  Float_t fPhiCorrIMPhiMax;   // FF histos limits
-  
-  Int_t fPhiCorrIMNBinsInvM;  // FF histos bins
-  Float_t fPhiCorrIMInvMMin;  // FF histos limits
-  Float_t fPhiCorrIMInvMMax;  // FF histos limits
-  
-  //--La
-
-  Int_t fPhiCorrIMLaNBinsPt;    // FF histos bins
-  Float_t fPhiCorrIMLaPtMin;    // FF histos limits
-  Float_t fPhiCorrIMLaPtMax;    // FF histos limits
-
-  Int_t fPhiCorrIMLaNBinsPhi;   // FF histos bins
-  Float_t fPhiCorrIMLaPhiMin;   // FF histos limits
-  Float_t fPhiCorrIMLaPhiMax;   // FF histos limits
-		
-  Int_t   fPhiCorrIMLaNBinsInvM;  // FF histos bins
-  Float_t fPhiCorrIMLaInvMMin;  // FF histos limits
-  Float_t fPhiCorrIMLaInvMMax;  // FF histos limits
-
-
+ 
   // Histograms
   
   TH1F* fh1EvtAllCent; 
@@ -440,13 +344,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1V0Eta;                    
   TH1F* fh1V0totMom;                 
   TH1F* fh1CosPointAngle;            
-  TH1F* fh1Chi2Pos;                  
-  TH1F* fh1Chi2Neg;                  
   TH1F* fh1DecayLengthV0;            
   TH2F* fh2ProperLifetimeK0sVsPtBeforeCut;
   TH2F* fh2ProperLifetimeK0sVsPtAfterCut;
-  TH1F* fh1ProperLifetimeV0BeforeCut;
-  TH1F* fh1ProperLifetimeV0AfterCut; 
   TH1F* fh1V0Radius;                 
   TH1F* fh1DcaV0Daughters;           
   TH1F* fh1DcaPosToPrimVertex;       
@@ -468,6 +368,9 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3InvMassEtaTrackPtALa;
   TH1F* fh1TrackMultCone;
   TH2F* fh2TrackMultCone;
+  TH2F* fh2NJK0;
+  TH2F* fh2NJLa;
+  TH2F* fh2NJALa;
   TH2F* fh2MCgenK0Cone;
   TH2F* fh2MCgenLaCone;
   TH2F* fh2MCgenALaCone;
@@ -495,8 +398,6 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH1F* fh1JetPtMedian; //for normalisation by total number of median cluster jets TH3F* fh3IMALaMedianCone;
   TH1F* fh1MCMultiplicityPrimary;
   TH1F* fh1MCMultiplicityTracks;
-  TH1F* fh1MCmotherLa;
-  TH1F* fh1MCmotherALa;
   TH3F* fh3FeedDownLa;
   TH3F* fh3FeedDownALa; 
   TH3F* fh3FeedDownLaCone;

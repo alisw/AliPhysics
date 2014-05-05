@@ -5585,7 +5585,7 @@ void AliAnalysisTaskProtonLambda::FemtoBufferTrack::GetShiftedPositionAtShiftedR
 //________________________________________________________________________
 void AliAnalysisTaskProtonLambda::FemtoBufferTrack::Set(const AliAODTrack *track,const Float_t bfield,const Double_t priVtx[3]){
   // Overloaded function
-  Float_t priVtxPos[3]={priVtx[0],priVtx[1],priVtx[2]};
+  Float_t priVtxPos[3]={static_cast<Float_t>(priVtx[0]),static_cast<Float_t>(priVtx[1]),static_cast<Float_t>(priVtx[2])};
   Set(track,bfield,priVtxPos);
 }
 //________________________________________________________________________

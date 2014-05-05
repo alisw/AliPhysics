@@ -1794,7 +1794,7 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
                 
                 Bool_t isLikeSign = CheckLikeSign(chargeEventAxis, chargeOthers);
                 
-                Double_t prop6[6] = {ptEventAxis,ptOthers,dEta,dPhi,ntracksCharged, isLikeSign };
+                Double_t prop6[6] = {ptEventAxis,ptOthers,dEta,dPhi,ntracksCharged, static_cast<Double_t>(isLikeSign) };
                 fMapPair[step]->Fill(prop6, strangeWeightEventAxis*strangeWeightOthers);
                 
                 //thrid track loop (Andreas: three particle auto-correlations)

@@ -229,8 +229,8 @@ void AliJetFlowTools::Make() {
         TString("in"),
         jetFindingEfficiency);
     resizedResponseIn->SetNameTitle("ResponseMatrixIn", "response matrix in plane");
-    resizedResponseIn->SetXTitle("p_{T, jet}^{true} [GeV/c]");
-    resizedResponseIn->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
+    resizedResponseIn->SetXTitle("p_{T, jet}^{true} (GeV/#it{c})");
+    resizedResponseIn->SetYTitle("p_{T, jet}^{rec} (GeV/#it{c})");
     resizedResponseIn = ProtectHeap(resizedResponseIn);
     resizedResponseIn->Write();
     kinematicEfficiencyIn->SetNameTitle("KinematicEfficiencyIn","Kinematic efficiency, in plane");
@@ -263,8 +263,8 @@ void AliJetFlowTools::Make() {
                     TString("out"),
                     jetFindingEfficiency);
         resizedResponseOut->SetNameTitle("ResponseMatrixOut", "response matrix in plane");
-        resizedResponseOut->SetXTitle("p_{T, jet}^{true} [GeV/c]");
-        resizedResponseOut->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
+        resizedResponseOut->SetXTitle("p_{T, jet}^{true} (GeV/#it{c})");
+        resizedResponseOut->SetYTitle("p_{T, jet}^{rec} (GeV/#it{c})");
         resizedResponseOut = ProtectHeap(resizedResponseOut);
         resizedResponseOut->Write();
         kinematicEfficiencyOut->SetNameTitle("KinematicEfficiencyOut","Kinematic efficiency, Out plane");
@@ -1197,7 +1197,7 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     // general method to normalize all vertical slices of a th2 to unity
     // i.e. get a probability matrix
     if(!histo) {
-        printf(" > NormalizeTH2D:: fatal error, NULL pointer passed < \n");
+        printf(" > NormalizeTH2D:: NULL pointer passed, returning NULL < \n");
         return NULL;
     }
     Int_t binsX = histo->GetXaxis()->GetNbins();
@@ -1319,24 +1319,59 @@ TH1D* AliJetFlowTools::SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min
     return temp;
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style() 
+void AliJetFlowTools::Style(Bool_t legacy)
 {
     // set global style for your current aliroot session
     if(!gStyle) return;
-    gStyle->SetCanvasColor(-1); 
-    gStyle->SetPadColor(-1); 
-    gStyle->SetFrameFillColor(-1); 
-    gStyle->SetHistFillColor(-1); 
-    gStyle->SetTitleFillColor(-1); 
-    gStyle->SetFillColor(-1); 
-    gStyle->SetFillStyle(4000); 
-    gStyle->SetStatStyle(0); 
-    gStyle->SetTitleStyle(0); 
-    gStyle->SetCanvasBorderSize(0); 
-    gStyle->SetFrameBorderSize(0); 
-    gStyle->SetLegendBorderSize(0); 
-    gStyle->SetStatBorderSize(0); 
-    gStyle->SetTitleBorderSize(0);
+    // legacy style is pleasing to the eye, default is the formal ALICE style
+    if(legacy) {
+        gStyle->SetCanvasColor(-1); 
+        gStyle->SetPadColor(-1); 
+        gStyle->SetFrameFillColor(-1); 
+        gStyle->SetHistFillColor(-1); 
+        gStyle->SetTitleFillColor(-1); 
+        gStyle->SetFillColor(-1); 
+        gStyle->SetFillStyle(4000); 
+        gStyle->SetStatStyle(0); 
+        gStyle->SetTitleStyle(0); 
+        gStyle->SetCanvasBorderSize(0); 
+        gStyle->SetFrameBorderSize(0); 
+        gStyle->SetLegendBorderSize(0); 
+        gStyle->SetStatBorderSize(0); 
+        gStyle->SetTitleBorderSize(0);
+    } else {
+        gStyle->Reset("Plain");
+        gStyle->SetOptTitle(0);
+        gStyle->SetOptStat(0);
+        gStyle->SetPalette(1);
+        gStyle->SetCanvasColor(10);
+        gStyle->SetCanvasBorderMode(0);
+        gStyle->SetFrameLineWidth(1);
+        gStyle->SetFrameFillColor(kWhite);
+        gStyle->SetPadColor(10);
+        gStyle->SetPadTickX(1);
+        gStyle->SetPadTickY(1);
+        gStyle->SetPadBottomMargin(0.15);
+        gStyle->SetPadLeftMargin(0.15);
+        gStyle->SetHistLineWidth(1);
+        gStyle->SetHistLineColor(kRed);
+        gStyle->SetFuncWidth(2);
+        gStyle->SetFuncColor(kGreen);
+        gStyle->SetLineWidth(2);
+        gStyle->SetLabelSize(0.045,"xyz");
+        gStyle->SetLabelOffset(0.01,"y");
+        gStyle->SetLabelOffset(0.01,"x");
+        gStyle->SetLabelColor(kBlack,"xyz");
+        gStyle->SetTitleSize(0.05,"xyz");
+        gStyle->SetTitleOffset(1.25,"y");
+        gStyle->SetTitleOffset(1.2,"x");
+        gStyle->SetTitleFillColor(kWhite);
+        gStyle->SetTextSizePixels(26);
+        gStyle->SetTextFont(42);
+        gStyle->SetLegendBorderSize(0);
+        gStyle->SetLegendFillColor(kWhite);
+        gStyle->SetLegendFont(42);
+    }
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TCanvas* c, TString style)
@@ -1360,11 +1395,15 @@ void AliJetFlowTools::Style(TCanvas* c, TString style)
     } else printf(" > Style called with unknown option %s \n    returning < \n", style.Data());
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TVirtualPad* c, TString style)
+void AliJetFlowTools::Style(TVirtualPad* c, TString style, Bool_t legacy)
 {
-    // set a default style for a canvas
-    c->SetLeftMargin(.25);
-    c->SetBottomMargin(.25);
+    // set a default style for a canva
+    
+    if(legacy) {
+        c->SetLeftMargin(.25);
+        c->SetBottomMargin(.25);
+    }
+    else Style();
     if(!strcmp(style.Data(), "PEARSON")) {
         printf(" > style PEARSON pad < \n");
         gStyle->SetOptStat(0);
@@ -1392,78 +1431,81 @@ void AliJetFlowTools::Style(TVirtualPad* c, TString style)
 void AliJetFlowTools::Style(TLegend* l)
 {
     // set a default style for a legend
-//    l->SetTextSize(.06);
     l->SetFillColor(0);
-//    l->SetFillStyle(4050);
     l->SetBorderSize(0);
+    if(gStyle) l->SetTextSize(gStyle->GetTextSize()*.08);
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TH1* h, EColor col, histoType type)
+void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 {
     // style a histo
     h->SetLineColor(col);
     h->SetMarkerColor(col);
-    h->SetLineWidth(2.);
-    h->SetMarkerSize(1.);
-    h->SetTitle("");
-    h->GetYaxis()->SetLabelSize(0.05);
-    h->GetXaxis()->SetLabelSize(0.05);
-    h->GetYaxis()->SetTitleOffset(1.5);
-    h->GetXaxis()->SetTitleOffset(1.5);
-    h->GetYaxis()->SetTitleSize(.05);
-    h->GetXaxis()->SetTitleSize(.05);
+    h->SetLineWidth(2);
+    h->SetMarkerSize(1);
+    if(legacy) {
+        h->SetTitle("");
+        h->GetYaxis()->SetLabelSize(0.05);
+        h->GetXaxis()->SetLabelSize(0.05);
+        h->GetYaxis()->SetTitleOffset(1.5);
+        h->GetXaxis()->SetTitleOffset(1.5);
+        h->GetYaxis()->SetTitleSize(.05);
+        h->GetXaxis()->SetTitleSize(.05);
+    } else Style();
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
        } break;
        case kBar : {
             h->SetFillColor(col);
             h->SetBarWidth(.6);
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
             h->SetBarOffset(0.2);
        }
        default : break;
     }
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
+void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy)
 {
-    // style a histo
+    // style a tgraph
     h->SetLineColor(col);
     h->SetMarkerColor(col);
-    h->SetLineWidth(2.);
-    h->SetMarkerSize(1.);
+    h->SetLineWidth(2);
+    h->SetMarkerSize(1);
     h->SetTitle("");
     h->SetFillColor(kCyan);
-    h->GetYaxis()->SetLabelSize(0.05);
-    h->GetXaxis()->SetLabelSize(0.05);
-    h->GetYaxis()->SetTitleOffset(1.6);
-    h->GetXaxis()->SetTitleOffset(1.6);
-    h->GetYaxis()->SetTitleSize(.05);
-    h->GetXaxis()->SetTitleSize(.05);
-    h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} [GeV/#it{c}]");
+    if(legacy) {
+        h->GetYaxis()->SetLabelSize(0.05);
+        h->GetXaxis()->SetLabelSize(0.05);
+        h->GetYaxis()->SetTitleOffset(1.6);
+        h->GetXaxis()->SetTitleOffset(1.6);
+        h->GetYaxis()->SetTitleSize(.05);
+        h->GetXaxis()->SetTitleSize(.05);
+    } else Style();
+    h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
@@ -1486,10 +1528,12 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
        } break;
        case kRatio : {
-            h->GetYaxis()->SetTitle("#frac{d#it{N_{in plane}^{jet}}}{d#it{p}_{T}} / #frac{d#it{N_{out of plane}^{jet}}}{d#it{p}_{T}}");
+//            h->GetYaxis()->SetTitle("#frac{d#it{N_{in plane}^{jet}}}{d#it{p}_{T}} / #frac{d#it{N_{out of plane}^{jet}}}{d#it{p}_{T}}");
+            h->GetYaxis()->SetTitle("(d#it{N}^{ch, jet}_{in plane}/(d#it{p}_{T}d#eta))/(d#it{N}^{ch,jet}_{out of plane}/(d#it{p}_{T}d#eta))");
        } break;
        case kV2 : {
-            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
+//            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
+            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
        } break;
        default : break;
@@ -1623,6 +1667,34 @@ void AliJetFlowTools::GetCorrelatedUncertainty(
             SavePadToPDF(relativeErrorVariation);
             Style(AddLegend(gPad));
             relativeErrorVariation->Write();
+
+            // now smoothen the diced response error (as it is expected to be flat)
+            // this is done by fitting a constant to the diced resonse error histo
+            //
+            TF1* lin = new TF1("lin", "[0]", rangeLow, rangeUp);
+            relativeErrorVariationInUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            if(!gMinuit->fISW[1] == 3) printf(" fit is NOT ok ! " );
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationInLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+            relativeErrorVariationOutUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationOutLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+
+        
+        
         }
     }
     // call the functions for a second set of systematic sources
@@ -1957,7 +2029,8 @@ void AliJetFlowTools::GetShapeUncertainty(
                 rangeLow, 
                 rangeUp,
                 readMe,
-                "recBin");
+                "recBin",
+                fRMS);
         if(relativeErrorRecBinOutUp) {
             // canvas with the error from regularization strength
             TCanvas* relativeErrorRecBin(new TCanvas("relativeErrorRecBin"," relativeErrorRecBin"));
@@ -2055,6 +2128,8 @@ void AliJetFlowTools::GetShapeUncertainty(
         if(fSymmRMS) {  // take first category as symmetric
             aInLow = aInUp;
             aOutLow = aOutUp;
+            cInLow = cInUp;
+            cOutLow = cOutUp;   // other sources
             if(dInLow < dInUp) dInLow = dInUp;
             if(dOutLow < dOutUp) dOutLow = dOutUp;
         }

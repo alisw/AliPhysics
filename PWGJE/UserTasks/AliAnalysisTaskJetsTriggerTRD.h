@@ -135,7 +135,7 @@ protected:
 
   Int_t fNoTriggers; 		// numbers of triggers used in histograms
 
-  TH1*&  GetHistogram(Hist_t hist, const Int_t idx = 0) { return fHist[hist + idx]; }
+  TH1*&  GetHistogram(Hist_t hist, Int_t idx = 0) { return fHist[hist + idx]; }
 
   TH1*   AddHistogram(Hist_t hist, const char *hid, TString title,
                       Int_t xbins, Float_t xmin, Float_t xmax, Int_t binType = 1);

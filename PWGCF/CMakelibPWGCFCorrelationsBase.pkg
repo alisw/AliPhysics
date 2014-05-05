@@ -32,6 +32,7 @@ set ( SRCS
     Correlations/Base/AliAnalyseLeadingTrackUE.cxx
     Correlations/Base/AliCFParticle.cxx
     Correlations/Base/AliAnalysisTaskCFTree.cxx
+    Correlations/Base/AliTwoPlusOneContainer.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

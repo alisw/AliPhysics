@@ -55,14 +55,10 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //in $ALICE_ROOT/PWGCF/FEMTOSCOPY/macros/Train/
   //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
   //
-<<<<<<< HEAD
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
-=======
   //Train:
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters,kFALSE);
   //Local:
   //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
->>>>>>> new macros for Kaon Femto in pPb
   //10-90% only two triggers: SemiCentral and MB
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
   taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -70,12 +66,9 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
 
-<<<<<<< HEAD
-=======
   //MC PID (not needed for data):
   AliAnalysisTaskSE *pidresponse = AddTaskPIDResponse(kTRUE);
 
->>>>>>> new macros for Kaon Femto in pPb
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
   //===========================================================================

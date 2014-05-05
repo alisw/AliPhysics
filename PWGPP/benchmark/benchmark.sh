@@ -720,7 +720,7 @@ goMergeCPass1()
                     "${batchWorkingDirectory}/${qaFilesToMerge}"
                     "${batchWorkingDirectory}/OCDB.root"
                     "${batchWorkingDirectory}/localOCDBaccessConfig.C"
-                    "${batchWorkingDirectory}/meta/cpass0.localOCDB.${runNumber}.tgz"
+                    "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                     "${batchWorkingDirectory}/QAtrain_duo.C"
                     "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/mergeMakeOCDB.byComponent.sh"
                     "${ALICE_ROOT}/PWGPP/CalibMacros/CPass1/mergeByComponent.C"

@@ -89,7 +89,7 @@ class AliJPhoton : public AliJBaseTrack {
   Double_t    GetCellAmplitudeFraction(Int_t i) const {  
               if (fCellsAmpFraction && i >=0 && i < fNCells ) return fCellsAmpFraction[i];    
               else return -1;}
-  particleType GetParticleType();
+  AliJConst::particleType GetParticleType();
   Int_t    GetSuperModuleID() const { return fSuperModuleId; }
   void     SetSuperModuleID(Int_t id) { fSuperModuleId = id; }
   Double32_t  GetTrackDx() const {return fTrackDx;}

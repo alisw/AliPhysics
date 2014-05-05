@@ -276,7 +276,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
   Double_t vertexPosition = fAOD->GetPrimaryVertex()->GetZ();
   Double_t pileUp = !(fAOD->IsPileupFromSPD());
   
-  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexPosition, pileUp};
+  Double_t valuesTrigger[3] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp};
   ((THnSparseD *)fTriggerList->At(triggerClass))->Fill(valuesTrigger);
   
 
@@ -305,7 +305,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	if (3.0 < thetaAbs && thetaAbs < 10.0)
 	  pDCA = (p-2.4/2.0) * fAOD->GetTrack(ii)->DCA();
 	
-	Double_t valuesMuon[9] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger, thetaAbs, eta, pDCA, p, pT};
+	Double_t valuesMuon[9] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp, matchTrigger, thetaAbs, eta, pDCA, static_cast<Double_t>(p), static_cast<Double_t>(pT)};
 	((THnSparseD *)fSingleMuonList->At(triggerClass))->Fill(valuesMuon);
       }
   
@@ -348,8 +348,8 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	    Double_t pT = fAOD->GetDimuon(ii)->Pt();
 	    Double_t M = fAOD->GetDimuon(ii)->M();
 	    
-	    Double_t valuesDimuon[18] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
-					 eta1, eta2, pDCA1, pDCA2, p1, p2, y, p, pT, M};
+	    Double_t valuesDimuon[18] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp, matchTrigger1, matchTrigger2, static_cast<Double_t>(nMatchTrigger), thetaAbs1, thetaAbs2,
+					 eta1, eta2, pDCA1, pDCA2, static_cast<Double_t>(p1), p2, y, p, pT, M};
 	    ((THnSparseD *)fDimuonList->At(triggerClass))->Fill(valuesDimuon);
 	  }
 }
@@ -364,7 +364,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
   Double_t vertexPosition = fESD->GetPrimaryVertex()->GetZ();
   Double_t pileUp = !(fESD->IsPileupFromSPD());
   
-  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexPosition, pileUp};
+  Double_t valuesTrigger[3] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp};
   ((THnSparseD *)fTriggerList->At(triggerClass))->Fill(valuesTrigger);
   
 
@@ -386,7 +386,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 	Double_t pUncor1 = fESD->GetMuonTrack(ii)->PUncorrected();
 	Double_t pDCA1 = (p1+pUncor1) * fESD->GetMuonTrack(ii)->GetDCA() / 2.0;
 	
-	Double_t valuesMuon[9] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, thetaAbs1, eta1, pDCA1, p1, pT1};
+	Double_t valuesMuon[9] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp, matchTrigger1, thetaAbs1, eta1, pDCA1, p1, pT1};
 	((THnSparseD *)fSingleMuonList->At(triggerClass))->Fill(valuesMuon);
 	
 	// Second loop on muons, to fill the dimuons histos
@@ -422,7 +422,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 		Double_t pT = TMath::Sqrt(pX*pX + pY*pY);
 		Double_t M = dimuonVector->M();
 		
-		Double_t valuesDimuon[18] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
+		Double_t valuesDimuon[18] = {static_cast<Double_t>(fTrackletMultiplicity), vertexPosition, pileUp, matchTrigger1, matchTrigger2, static_cast<Double_t>(nMatchTrigger), thetaAbs1, thetaAbs2,
 					     eta1, eta2, pDCA1, pDCA2, p1, p2, y, p, pT, M};
 		((THnSparseD *)fDimuonList->At(triggerClass))->Fill(valuesDimuon);
 		delete dimuonVector;

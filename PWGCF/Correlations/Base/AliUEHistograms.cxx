@@ -130,21 +130,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
     ;
 
   // combine customBinning with defaultBinningStr -> use customBinning where available and otherwise defaultBinningStr
-  TString customBinning(binning);
-  TString binningStr;
-
-  TObjArray* lines = defaultBinningStr.Tokenize("\n");
-  for (Int_t i=0; i<lines->GetEntriesFast(); i++)
-  {
-    TString line(lines->At(i)->GetName());
-    TString tag = line(0, line.Index(":")+1);
-    if (!customBinning.BeginsWith(tag) && !customBinning.Contains(TString("\n") + tag))
-      binningStr += line + "\n";
-    else
-      Printf("Using custom binning for %s", tag.Data());
-  }
-  delete lines;
-  binningStr += customBinning;
+  TString binningStr = AliUEHist::CombineBinning(defaultBinningStr, TString(binning));
 
   if (histogramsStr.Contains("1"))
     fNumberDensitypT = new AliUEHist("NumberDensitypT", binningStr);
