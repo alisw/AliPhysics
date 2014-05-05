@@ -84,16 +84,19 @@ AliAnalysisTaskCMEv2A *AddTaskCMEv2A
 
 
   // --- get input and output managers
+
+  TString outputFileName = AliAnalysisManager::GetCommonFileName();
+  outputFileName += Form(":Out%s",name);
+ 
   AliAnalysisDataContainer *aadci = aam->GetCommonInputContainer();
   AliAnalysisDataContainer *aadco = aam->CreateContainer
     (
      Form("List%s",name), 
      TList::Class(),    
      AliAnalysisManager::kOutputContainer, 
-     //Form("Out%s_%s",name,AliAnalysisManager::GetCommonFileName())
-     Form("Out%s.root",name)
-     );
-  // observe that ".root" is automatically appended
+     outputFileName.Data()
+    );
+// observe that ".root" is automatically appended
 
 
   // --- add task and connect input and output managers
