@@ -356,8 +356,8 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     if(fPythiaHeader) {
       fXsection = fPythiaHeader->GetXsection();
       if(fXsection>0.) {
-	fHistXsection->Fill(fPtHardBin+1, fXsection);
-	fHistTrials->Fill(fPtHardBin+1, fPythiaHeader->Trials());
+	fHistXsection->Fill(fPtHardBin, fXsection);
+	fHistTrials->Fill(fPtHardBin, fPythiaHeader->Trials());
       }
     }
   }
