@@ -449,7 +449,7 @@ void AliAnalysisTaskSEHFCJqa::UserExec(Option_t */*option*/){
       Double_t pointET[6]={p,eta,clsE,nEoverP,emcTrackDx,emcTrackDz};
       fhTrackEMCal->Fill(pointET);    
       
-      Double_t pointEmShSh[7]={aodtrack->Pt(),nsigmaEleTPC,nEoverP,cluster->GetM02(),cluster->GetM20(),cluster->GetDispersion(),cluster->GetNCells()};
+      Double_t pointEmShSh[7]={aodtrack->Pt(), static_cast<Double_t>(nsigmaEleTPC), static_cast<Double_t>(nEoverP),cluster->GetM02(),cluster->GetM20(),cluster->GetDispersion(), static_cast<Double_t>(cluster->GetNCells())};
 
       fhSparseShowShapeEleTPC->Fill(pointEmShSh);
 
@@ -703,7 +703,7 @@ AliAODMCParticle *AliAnalysisTaskSEHFCJqa::GetMCPartonOrigin(TClonesArray *array
 //_____________________________________________________________
 void AliAnalysisTaskSEHFCJqa::FillJetRecoHisto(const AliAODJet *jet,Int_t partonnat,Double_t contribution,Double_t ptpart){
 //FIll sparse with reco jets properties
-  Double_t point[8]={jet->Pt(),jet->Eta(),jet->Phi()-TMath::Pi(),jet->GetRefTracks()->GetEntriesFast(),0,partonnat,contribution,ptpart};
+  Double_t point[8]={jet->Pt(),jet->Eta(),jet->Phi()-TMath::Pi(), static_cast<Double_t>(jet->GetRefTracks()->GetEntriesFast()),0, static_cast<Double_t>(partonnat),contribution,ptpart};
   fSparseRecoJets->Fill(point);
 }
 

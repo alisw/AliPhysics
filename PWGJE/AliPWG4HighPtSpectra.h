@@ -14,7 +14,7 @@
  **************************************************************************/
 
 //-----------------------------------------------------------------------
-// Author : Marta Verweij - UU
+// Author : Marta Verweij, D. Keijdener - UU
 //-----------------------------------------------------------------------
 
 #ifndef ALIPWG4HIGHPTSPECTRA_H
@@ -34,7 +34,9 @@ class TList;
 //class AliCFManager;
 class AliESDtrackCuts;
 class AliESDEvent;
-class AliESDVertex;
+class AliAODEvent;
+class AliVEvent;
+class AliVVertex;
 class AliMCEvent;
 class AliStack;
 class AliGenPythiaEventHeader;
@@ -66,7 +68,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
 
   Bool_t IsPbPb() {return fIsPbPb;}  //is PbPb data?
   Bool_t SelectEvent();    //decides if event is used for analysis
-  Int_t CalculateCentrality(AliESDEvent *esd);
+  Int_t CalculateCentrality(AliVEvent *event);
 
   //Setters
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
@@ -84,7 +86,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   //if fTrackType=2 (TPConly constrained)
   void SetTrackType(Int_t trackType) {fTrackType = trackType;}
   //AliESDtrackCuts setters
-  void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;}
+  void SetCuts(AliESDtrackCuts* trackCuts) {fTrackCuts = trackCuts;} // Needs to be specified for ESD analysis, not for AOD analysis
+  void SetFilterMask(Int_t filtermask) {fFilterMask = filtermask;} // Needs to be specified for AOD analysis, not for ESD analysis
   void SetCutsReject(AliESDtrackCuts* trackCuts) {fTrackCutsReject = trackCuts;}
   void SelectHIJINGOnly(Bool_t b)    {fbSelectHIJING = b;}
 
@@ -96,32 +99,40 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   Bool_t IsReadAODData()   const {return fReadAODData;}
   void   SetReadAODData(Bool_t flag=kTRUE) {fReadAODData=flag;}
 
+  Bool_t   IsUsingPythiaInfo() const {return fNoPythiaInfo;}
+  void   SetNoPythiaInfo() {fNoPythiaInfo=kTRUE;}
+
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static AliGenHijingEventHeader*  GetHijingEventHeader(AliMCEvent *mcEvent);
+  static AliGenHijingEventHeader*  GetHijingEventHeaderAOD(AliAODEvent *aodEvent);
 
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
 
 
   
  protected:
-  Bool_t              fReadAODData ;       // flag for AOD/ESD input files
-  const AliCFManager  *fCFManagerPos    ;  // pointer to the CF manager for positive charged particles
-  const AliCFManager  *fCFManagerNeg    ;  // pointer to the CF manager for negative charged particles
+  Bool_t              fReadAODData      ;  // flag for AOD/ESD input files
+  Bool_t              fNoPythiaInfo     ;  // flag to skip reading pyxsec.root and plotting output
+  const AliCFManager  *fCFManagerPos    ;  //! pointer to the CF manager for positive charged particles
+  const AliCFManager  *fCFManagerNeg    ;  //! pointer to the CF manager for negative charged particles
  
   AliESDEvent *fESD;      //! ESD object
-  AliMCEvent  *fMC;       //! MC event object
-  AliStack    *fStack;    //! stack object
+  AliAODEvent *fAOD;      //! AOD object
+  AliMCEvent  *fMC;       //! MC event object, only used in ESD analysis
+  AliStack    *fStack;    //! stack object, only used in ESD analysis
+  TClonesArray *fArrayMCAOD;  //! TClonesArray of AliAODMCParticles, only used in AOD analysis
 
-  const AliESDVertex   *fVtx;     //! vertex object
+  const AliVVertex   *fVtx;     //! vertex object
 
   UInt_t      fTriggerMask;          // Trigger mask to select events 
   Bool_t      fIsPbPb;               // kTRUE if PbPb
   Int_t       fCentClass;            // Select only events from predefined centrality class
 
   Int_t   fTrackType;     // Type of track to be used in analysis
-  //AliESDtrackCuts options. Must be setted in AddTaskPWG4HighPTSpectra.C. They correspond with different steps in container.
+  //AliESDtrackCuts options and FilterMask. The former is must be setted in AddTaskPWG4HighPTSpectra.C for ESD analysis, the latter must be setted in AddTaskPWG4HighPTSpectra.C for AOD analysis. The AliESDtrackCuts correspond with different steps in container.
   AliESDtrackCuts *fTrackCuts;           // trackCuts applied to global tracks
   AliESDtrackCuts *fTrackCutsReject;     // trackCuts to reject tracks (hybrid case)
+  Int_t   fFilterMask;     // Filtermask specifying track cuts. See https://twiki.cern.ch/twiki/bin/view/ALICE/PWGPPAODTrackCuts for values.
 
   Bool_t fbSelectHIJING; //Select only particles from HIJING event
 
@@ -150,7 +161,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH2F *fPtRelUncertainty1PtPrim;              //! Pt vs relUncertainty1Pt for primary particles
   TH2F *fPtRelUncertainty1PtSec;               //! Pt vs relUncertainty1Pt for secondary particles
 
-  ClassDef(AliPWG4HighPtSpectra,3);
+  ClassDef(AliPWG4HighPtSpectra,4);
 };
 
 #endif

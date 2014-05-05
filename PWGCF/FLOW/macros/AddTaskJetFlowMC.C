@@ -35,3 +35,11 @@ AliAnalysisTaskJetFlowMC* AddTaskJetFlowMC(
   mgr->ConnectOutput (eTask, 1, mgr->CreateContainer(Form("%s_container", fileName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   return eTask;
 }
+
+namespace TaskJetFlowMC{
+    TF1* GetSpectrum() {
+        TF1* spectrum = new TF1("fspectrum", "[0]*(TMath::Power([1], 2)*x*TMath::Exp(-[1]*x))+(x>1)*[2]*(1.17676e-01*TMath::Sqrt(0.1396*0.1396+x*x)*TMath::Power(1.+1./[3]/8.21795e-01*TMath::Sqrt(0.1396*0.1396+x*x),-1.*[3]))*(1/(1 + TMath::Exp(-(x - [4])/[5])))", .2, 200.);
+        fspectrum->SetParameters(2434401791.20528 ,2.98507 ,10069622.25117 ,5.50000 ,2.80000 ,0.20000 );
+        return fspectrum;   
+    }
+}

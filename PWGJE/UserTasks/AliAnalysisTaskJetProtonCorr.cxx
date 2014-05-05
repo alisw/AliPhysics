@@ -155,7 +155,6 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
     fCutsPrimAss->SetRequireSigmaToVertex(kFALSE);
 
     fCutsPrimAss->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-
   }
 
   fCutsPrimAss->SetEtaRange(-fHadEtaMax, fHadEtaMax);
@@ -192,16 +191,13 @@ AliAnalysisTaskJetProtonCorr::AliAnalysisTaskJetProtonCorr(const char *name) :
   const Int_t trackDepth = 10000; // number of tracks to maintain in mixing buffer
   const Float_t trackDepthFraction = 0.1;
   const Int_t targetEvents = 1;
-  // for (Int_t iTrg = 0; iTrg < kTrgLast; ++iTrg) {
-    for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
-      GetPoolMgr((Ass_t) iAss) =
-	new AliEventPoolManager(poolSize, trackDepth,
-				nCentralityBins, centralityBins,
-				nVertexBins, vertexBins);
-				// nPsiBins, psiBins);
-      GetPoolMgr((Ass_t) iAss)->SetTargetValues(trackDepth, trackDepthFraction, targetEvents);
-    }
-  // }
+  for (Int_t iAss = 0; iAss <= kAssProt; ++iAss) {
+    GetPoolMgr((Ass_t) iAss) =
+      new AliEventPoolManager(poolSize, trackDepth,
+			      nCentralityBins, centralityBins,
+			      nVertexBins, vertexBins);
+    GetPoolMgr((Ass_t) iAss)->SetTargetValues(trackDepth, trackDepthFraction, targetEvents);
+  }
 
   fHistCorr = new AliHistCorr*[kEvLast*kCorrLast*kClLast];
 
@@ -499,6 +495,56 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
                100, -25., 25.,
                200, -100., 100.);
 
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCe), "N_{#sigma,p} TPC-TOF (central, MC e);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCmu), "N_{#sigma,p} TPC-TOF (central, MC #mu);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCpi), "N_{#sigma,p} TPC-TOF (central, MC pi);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCk), "N_{#sigma,p} TPC-TOF (central, MC K);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCp), "N_{#sigma,p} TPC-TOF (central, MC p);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedCentralMCd), "N_{#sigma,p} TPC-TOF (central, MC d);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCe), "N_{#sigma,p} TPC-TOF (semi-central, MC e);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCmu), "N_{#sigma,p} TPC-TOF (semi-central, MC #mu);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCpi), "N_{#sigma,p} TPC-TOF (semi-central, MC pi);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCk), "N_{#sigma,p} TPC-TOF (semi-central, MC K);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCp), "N_{#sigma,p} TPC-TOF (semi-central, MC p);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+  AddHistogram(ID(kHistNsigmaTPCTOFUsedSemiCentralMCd), "N_{#sigma,p} TPC-TOF (semi-central, MC d);p (GeV/#it{c});N_{#sigma,p}^{TPC};N_{#sigma,p}^{TOF}",
+               100, 0., 10.,
+               100, -25., 25.,
+               200, -100., 100.);
+
   AddHistogram(ID(kHistEvPlane), "default event plane;#Psi;counts",
                100, -0. * TMath::Pi(), 1. * TMath::Pi());
   AddHistogram(ID(kHistEvPlaneUsed), "default event plane;#Psi;counts",
@@ -524,9 +570,9 @@ void AliAnalysisTaskJetProtonCorr::UserCreateOutputObjects()
                100, -0. * TMath::Pi(), 1. * TMath::Pi(),
 	       kClLast, -.5, kClLast-.5);
 
-  AddHistogram(ID(kHistJetPtCentral), "jet spectrum - central;p_{T}^{jet,ch};counts",
+  AddHistogram(ID(kHistJetPtCentral), "jet spectrum - central;p_{T}^{jet,ch} (GeV/#it{c});counts",
                40, 0., 200.);
-  AddHistogram(ID(kHistJetPtSemi), "jet spectrum - semi-peripheral;p_{T}^{jet,ch};counts",
+  AddHistogram(ID(kHistJetPtSemi), "jet spectrum - semi-peripheral;p_{T}^{jet,ch} (GeV/#it{c});counts",
                40, 0., 200.);
 
   AddHistogram(ID(kHistEtaPhiTrgHad), "trg had;#varphi;#eta",
@@ -705,6 +751,7 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
     TObjArray trgArray[kTrgLast];
     TObjArray assArray[kAssLast];
 
+    // prepare TOF response
     TF1 fTOFsignal("fTOFsignal", &AliAnalysisTaskJetProtonCorr::TOFsignal, -2440., 2440., 4);
     fTOFsignal.SetParameter(0, 1.);
     fTOFsignal.SetParameter(1, 0.);
@@ -774,10 +821,20 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 		 trk->Pt(),
 		 fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
 		 fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
+	  if (fMCEvent) {
+	    if (AliMCParticle *mcPart = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(trk->GetLabel()))) {
+	      for (Int_t iParticle = 0; iParticle <= AliPID::kDeuteron; ++iParticle) {
+		if (TMath::Abs(mcPart->Particle()->GetPdgCode()) == AliPID::ParticleCode(iParticle))
+		  FillH3(kHistNsigmaTPCTOFUsedCentralMCe,
+			 trk->P(),
+			 fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
+			 fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton),
+			 1., iParticle);
+	      }
+	    }
+	  }
 	}
 	if (IsClass(kClSemiCentral)) {
-	  if (IsProton(trk))
-	    FillH1(kHistEtaPhiAssProt, trk->Phi(), trk->Eta());
 	  FillH3(kHistNsigmaTPCTOFUsedSemiCentral,
 		 trk->P(),
 		 fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
@@ -786,6 +843,18 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 		 trk->Pt(),
 		 fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
 		 fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton));
+	  if (fMCEvent) {
+	    if (AliMCParticle *mcPart = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(trk->GetLabel()))) {
+	      for (Int_t iParticle = 0; iParticle <= AliPID::kDeuteron; ++iParticle) {
+		if (TMath::Abs(mcPart->Particle()->GetPdgCode()) == AliPID::ParticleCode(iParticle))
+		  FillH3(kHistNsigmaTPCTOFUsedSemiCentralMCe,
+			 trk->P(),
+			 fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kProton),
+			 fPIDResponse->NumberOfSigmasTOF(trk, AliPID::kProton),
+			 1., iParticle);
+	      }
+	    }
+	  }
 	}
 	if (IsProton(trk)) {
 	  assArray[kAssProt].Add(trk);
@@ -795,9 +864,14 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	}
 
 	// template generation
-	Double_t deltaTPC;
-	fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, trk, AliPID::kProton, deltaTPC);
 	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, trk) == AliPIDResponse::kDetPidOk) {
+	  Double_t deltaTPC;
+	  fPIDResponse->GetSignalDelta(AliPIDResponse::kTPC, trk, AliPID::kProton, deltaTPC);
+	  if (IsClass(kClCentral))
+	    FillH2(kHistDeltaTPC, trk->P(), deltaTPC);
+	  if (IsClass(kClSemiCentral))
+	    FillH2(kHistDeltaTPCSemi, trk->P(), deltaTPC);
+
 	  Double_t expTPC = fPIDResponse->GetTPCResponse().GetExpectedSignal(trk, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, corrEta, corrMult);
 	  Double_t expSigmaTPC = fPIDResponse->GetTPCResponse().GetExpectedSigma(trk, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, corrEta, corrMult);
 
@@ -807,20 +881,17 @@ void AliAnalysisTaskJetProtonCorr::UserExec(Option_t * /* option */)
 	    Double_t expSigmaTPCx = fPIDResponse->GetTPCResponse().GetExpectedSigma(trk, AliPID::EParticleType(iParticle), AliTPCPIDResponse::kdEdxDefault, corrEta, corrMult);
 	    Double_t rndTPCx = gRandom->Gaus(expTPCx, expSigmaTPCx);
 
-	    if(IsClass(kClCentral)) {
+	    if(IsClass(kClCentral))
 	      FillH2(kHistNsigmaTPCe, trk->P(), (rndTPCx-expTPC)/expSigmaTPC, 1., iParticle);
-	      FillH2(kHistDeltaTPC, trk->P(), deltaTPC);
-	    }
-	    if(IsClass(kClSemiCentral)) {
+	    if(IsClass(kClSemiCentral))
 	      FillH2(kHistNsigmaTPCeSemi, trk->P(), (rndTPCx-expTPC)/expSigmaTPC, 1., iParticle);
-	      FillH2(kHistDeltaTPCSemi, trk->P(), deltaTPC);
-	    }
 	  }
 	}
 
-	Double_t deltaTOF;
-	fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, trk, AliPID::kProton, deltaTOF);
 	if (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, trk) == AliPIDResponse::kDetPidOk) {
+	  Double_t deltaTOF;
+	  fPIDResponse->GetSignalDelta(AliPIDResponse::kTOF, trk, AliPID::kProton, deltaTOF);
+
 	  AliTOFPIDResponse &tofResponse = fPIDResponse->GetTOFResponse();
 
 	  Float_t p = trk->P();
@@ -1033,10 +1104,10 @@ Bool_t AliAnalysisTaskJetProtonCorr::DetectTriggers()
 
   AliVEvent::EOfflineTriggerTypes physSel =
     (AliVEvent::EOfflineTriggerTypes) ((AliInputEventHandler*) (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  TString trgClasses = InputEvent()->GetFiredTriggerClasses();
+  // TString trgClasses = InputEvent()->GetFiredTriggerClasses();
 
   // physics selection
-  if (physSel & (AliVEvent::kAnyINT | AliVEvent::kCentral | AliVEvent::kSemiCentral))
+  if (physSel & (AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral))
     MarkTrigger(kTriggerInt);
 
   return kTRUE;

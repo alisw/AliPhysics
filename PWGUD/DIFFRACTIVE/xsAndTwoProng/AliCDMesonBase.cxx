@@ -456,9 +456,9 @@ void AliCDMesonBase::FillThnEmptyEvents(THnSparseD * thn, Int_t eventType,
 	//
 
 	Double_t var[]={
-		eventType, multFMDA, multFMDC, multSPDIA, multSPDIC, multSPDOA,
-		multSPDOC, multSPDtrkltA, multSPDtrkltC, fmdSum1I, fmdSum2I, fmdSum2O,
-		fmdSum3I, fmdSum3O//, multTPC, multTPCdiffVertex
+	  static_cast<Double_t>(eventType), static_cast<Double_t>(multFMDA), static_cast<Double_t>(multFMDC), static_cast<Double_t>(multSPDIA), static_cast<Double_t>(multSPDIC), static_cast<Double_t>(multSPDOA),
+	  static_cast<Double_t>(multSPDOC), static_cast<Double_t>(multSPDtrkltA), static_cast<Double_t>(multSPDtrkltC), static_cast<Double_t>(fmdSum1I), static_cast<Double_t>(fmdSum2I), static_cast<Double_t>(fmdSum2O),
+	  static_cast<Double_t>(fmdSum3I), static_cast<Double_t>(fmdSum3O)//, multTPC, multTPCdiffVertex
 	};
 	const Int_t nv = sizeof(var)/sizeof(Double_t);
 	if(nv!=thn->GetNdimensions()){

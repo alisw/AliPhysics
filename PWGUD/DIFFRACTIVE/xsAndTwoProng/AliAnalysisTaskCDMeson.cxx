@@ -511,7 +511,7 @@ void AliAnalysisTaskCDMeson::UserCreateOutputObjects()
 
 		const Int_t nrun = (Int_t)(run1-run0);
 
-		const Int_t bins[2] = {nrun, (Double_t)AliCDMesonBase::kBitGapMax - 1.};
+		const Int_t bins[2] = {nrun, static_cast<Int_t>(AliCDMesonBase::kBitGapMax - 1.)};
 		const Double_t xmin[2] = {(Double_t)run0, 1.};
 		const Double_t xmax[2] = {
 			(Double_t)run1, (Double_t)AliCDMesonBase::kBitGapMax

@@ -207,6 +207,20 @@ public:
       kHistNsigmaTPCTOFUsedPtCentral,
       kHistNsigmaTPCTOFUsedPtSemiCentral,
 
+      kHistNsigmaTPCTOFUsedCentralMCe,
+      kHistNsigmaTPCTOFUsedCentralMCmu,
+      kHistNsigmaTPCTOFUsedCentralMCpi,
+      kHistNsigmaTPCTOFUsedCentralMCk,
+      kHistNsigmaTPCTOFUsedCentralMCp,
+      kHistNsigmaTPCTOFUsedCentralMCd,
+
+      kHistNsigmaTPCTOFUsedSemiCentralMCe,
+      kHistNsigmaTPCTOFUsedSemiCentralMCmu,
+      kHistNsigmaTPCTOFUsedSemiCentralMCpi,
+      kHistNsigmaTPCTOFUsedSemiCentralMCk,
+      kHistNsigmaTPCTOFUsedSemiCentralMCp,
+      kHistNsigmaTPCTOFUsedSemiCentralMCd,
+
       kHistEvPlane,
       kHistEvPlaneUsed,
       kHistEvPlaneCheck,

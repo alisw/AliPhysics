@@ -9,5 +9,6 @@
 #pragma link C++ class AliAnalyseLeadingTrackUE+;
 #pragma link C++ class AliCFParticle+;
 #pragma link C++ class AliAnalysisTaskCFTree+;
+#pragma link C++ class AliTwoPlusOneContainer+;
 
 #endif

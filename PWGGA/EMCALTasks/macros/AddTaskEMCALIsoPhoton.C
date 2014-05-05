@@ -49,6 +49,10 @@ AliAnalysisTaskEMCALIsoPhoton *AddTaskEMCALIsoPhoton(
     cutsp = CreateTrackCutsPWGJE(10001008);
     ana->SetHybridOn();
   }
+  if(trackSelType == "hybridp"){
+    cutsp = CreateTrackCutsPWGJE(10011008);
+    ana->SetHybridOn();
+  }
   ana->SetPrimTrackCuts(cutsp);
   ana->SetPeriod(period.Data());
   ana->SetGeoName(geoname.Data());  

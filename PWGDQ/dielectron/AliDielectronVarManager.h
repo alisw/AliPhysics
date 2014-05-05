@@ -1906,7 +1906,7 @@ inline void AliDielectronVarManager::FillVarVEvent(const AliVEvent *event, Doubl
 								     values[AliDielectronVarManager::kv0C3rpH2]) ); 
 
   Double_t ZDCqvec[3][2];
-  memset(ZDCqvec, 999, sizeof(ZDCqvec));
+  memset(ZDCqvec, 255, sizeof(ZDCqvec));
   GetZDCRP(event, ZDCqvec);
 
   values[AliDielectronVarManager::kZDCArpH1] = TMath::ATan2(ZDCqvec[0][1], ZDCqvec[0][0]);

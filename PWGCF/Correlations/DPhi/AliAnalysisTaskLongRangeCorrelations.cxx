@@ -254,8 +254,8 @@ void AliAnalysisTaskLongRangeCorrelations::UserExec(Option_t* ) {
   if (isMC) {
     TObjArray* tracksMC(GetAcceptedTracks(arrayMC, centrality));
     const Double_t x[2] = {
-      arrayMC->GetEntriesFast(),
-      tracksMC->GetEntriesFast()
+      static_cast<Double_t>(arrayMC->GetEntriesFast()),
+      static_cast<Double_t>(tracksMC->GetEntriesFast())
     };
     Fill("MC_histQAMultiplicity", x);
     Fill("MC_histEventStats", 4.); // analyzed MC events

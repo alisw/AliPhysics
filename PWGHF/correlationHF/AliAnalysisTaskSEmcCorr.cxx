@@ -172,23 +172,23 @@ void AliAnalysisTaskSEmcCorr::UserCreateOutputObjects(){
   fhNprongsD0chargedRef=new TH1F("fhNprongsD0chargedRef","fhNprongsD0chargedRef",20,-0.5,19.5);
 
 
-  Int_t nbinsCorrMC[8]={15,20.,20,20,50,63,20,11};
+  Int_t nbinsCorrMC[8]={15,20,20,20,50,63,20,11};
   Double_t binlowCorrMC[8]={-7.5,0.,-1.,0.,-5.,-0.5*TMath::Pi(),-2,-1.5};
   Double_t binupCorrMC[8]={7.5,20.,1.,2.,5.,1.5*TMath::Pi(),2.,9.5};
   fhMCcorrel=new THnSparseF("fhMCcorrel","fhMCcorrel;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",8,nbinsCorrMC,binlowCorrMC,binupCorrMC);
 
-  Int_t nbinsTrigMC[3]={15,20.,20};
+  Int_t nbinsTrigMC[3]={15,20,20};
   Double_t binlowTrigMC[3]={-7.5,0.,-1.};
   Double_t binupTrigMC[3]={7.5,20.,1.};
   fhMCtrigPart=new THnSparseF("fhMCtrigPart","fhMCcorrel;pdg;ptTrig;etaTrig;",3,nbinsTrigMC,binlowTrigMC,binupTrigMC);
 
 
-  Int_t nbinsCorrMChadron[8]={6,20.,20,20,50,63,20,7};
+  Int_t nbinsCorrMChadron[8]={6,20,20,20,50,63,20,7};
   Double_t binlowCorrMChadron[8]={-1.5,0.,-1.,0.,-5.,-0.5*TMath::Pi(),-2,-1.5};
   Double_t binupCorrMChadron[8]={4.5,20.,1.,2.,5.,1.5*TMath::Pi(),2.,5.5};
   fhMChadroncorrel=new THnSparseF("fhMChadroncorrel","fhMChadroncorrel;pdg;ptTrig;etaTrig;ptAss;etaAss;deltaPhi;deltaEta;pdgAss;",8,nbinsCorrMChadron,binlowCorrMChadron,binupCorrMChadron);
 
-  Int_t nbinsTrigMChadron[3]={6,20.,20};
+  Int_t nbinsTrigMChadron[3]={6,20,20};
   Double_t binlowTrigMChadron[3]={-1.5,0.,-1.};
   Double_t binupTrigMChadron[3]={4.5,20.,1.};
   fhMChadrontrigPart=new THnSparseF("fhMChadrontrigPart","fhMChadroncorrel;pdg;ptTrig;etaTrig;",3,nbinsTrigMChadron,binlowTrigMChadron,binupTrigMChadron);
@@ -538,7 +538,7 @@ void AliAnalysisTaskSEmcCorr::FillCorrelationPlots(AliAODMCParticle *part,TClone
   Double_t phiTrig=part->Phi();
   Double_t etaTrig=part->Eta();
   Double_t deltaPhi;
-  Double_t point[8]={pdgTrig,part->Pt(),etaTrig,0,0,0,0,0};//pdg,ptTrig,etaTrig,ptAss,etaAss,deltaPhi,deltaEta,pdgAss
+  Double_t point[8]={ static_cast<Double_t>(pdgTrig),part->Pt(),etaTrig,0,0,0,0,0};//pdg,ptTrig,etaTrig,ptAss,etaAss,deltaPhi,deltaEta,pdgAss
   fhMCtrigPart->Fill(point);
   for(Int_t jAss=0;jAss<fLastAss;jAss++){
     index=fArrayAssoc->At(jAss);
@@ -629,7 +629,7 @@ void AliAnalysisTaskSEmcCorr::FillCorrelationPlotsHadrons(AliAODMCParticle *part
   Double_t phiTrig=part->Phi();
   Double_t etaTrig=part->Eta();
   Double_t deltaPhi;
-  Double_t point[8]={pdgTrig,part->Pt(),etaTrig,0,0,0,0,0};//pdg,ptTrig,etaTrig,ptAss,etaAss,deltaPhi,deltaEta,pdgAss
+  Double_t point[8]={ static_cast<Double_t>(pdgTrig),part->Pt(),etaTrig,0,0,0,0,0};//pdg,ptTrig,etaTrig,ptAss,etaAss,deltaPhi,deltaEta,pdgAss
   fhMChadrontrigPart->Fill(point);
   for(Int_t jAss=0;jAss<fLastAss;jAss++){
     index=fArrayAssoc->At(jAss);

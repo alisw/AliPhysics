@@ -107,7 +107,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   // Default Constructor 
   for(Int_t ilab=0; ilab<4; ilab++){
     for(Int_t ipta=0; ipta<7; ipta++){
-      fHistTrackEtaPhi[ilab][ipta]=0;
+      //fHistTrackEtaPhi[ilab][ipta]=0; // keep out for now
     }  // end of pt-associated loop
   } // end of lab loop
     
@@ -118,12 +118,13 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
     fHistJetHadbindPhiOUT[itrackpt]=0;
   } // end of trackpt bin loop
 
+/*
   for(Int_t icent = 0; icent<2; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
     fHistJetPtTT[icent]=0;
-    fHistAreavsRawPt[icent]=0;
-    
+    fHistAreavsRawPt[icent]=0;  
+
     for(Int_t iptjet = 0; iptjet<5; ++iptjet){
       for(Int_t ieta = 0; ieta<3; ++ieta){
         fHistJetH[icent][iptjet][ieta]=0;
@@ -132,9 +133,14 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
       } // end of eta loop
     } // end of pt-jet loop
   } // end of centrality loop
+*/
 
   // centrality dependent histo's
   for (Int_t i = 0;i<6;++i){
+    fHistJetPt[i]=0;
+    fHistJetPtBias[i]=0;
+    fHistJetPtTT[i]=0;
+    fHistAreavsRawPt[i]=0;
     fHistJetPtvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
@@ -208,7 +214,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   // Default Constructor 
   for(Int_t ilab=0; ilab<4; ilab++){
     for(Int_t ipta=0; ipta<7; ipta++){
-      fHistTrackEtaPhi[ilab][ipta]=0;
+      //fHistTrackEtaPhi[ilab][ipta]=0; //keep out for now
     }  // end of pt-associated loop
   } // end of lab loop
 
@@ -218,7 +224,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
     fHistJetHadbindPhiMID[itrackpt]=0;
     fHistJetHadbindPhiOUT[itrackpt]=0;
   } // end of trackpt bin loop
-    
+
+/*    
   for(Int_t icent = 0; icent<2; ++icent){
     fHistJetPt[icent]=0;
     fHistJetPtBias[icent]=0;
@@ -233,9 +240,14 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
       } // end of eta loop
     } // end of pt-jet loop
   } // end of centrality loop
+*/
 
   // centrality dependent histo's
   for (Int_t i = 0;i<6;++i){
+    fHistJetPt[i]=0;
+    fHistJetPtBias[i]=0;
+    fHistJetPtTT[i]=0;
+    fHistAreavsRawPt[i]=0;
     fHistJetPtvsTrackPt[i]      = 0;
     fHistRawJetPtvsTrackPt[i]   = 0;
     fHistTrackPt[i]             = 0;
@@ -311,13 +323,13 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     fOutput->Add(fHistTrackPhi);
     //fOutput->Add(fHistTrackEtaPhi);
 
-    for(Int_t ipta=0; ipta<7; ++ipta){ 
-      for(Int_t ilab=0; ilab<4; ++ilab){
-        snprintf(name, nchar, "fHistTrackEtaPhi_%i_%i", ilab,ipta);
-        fHistTrackEtaPhi[ilab][ipta] = new TH2F(name,name,400,-1,1,640,0.0,2.*TMath::Pi());
-        fOutput->Add(fHistTrackEtaPhi[ilab][ipta]);
-      } // end of lab loop
-    } // end of pt-associated loop
+    //for(Int_t ipta=0; ipta<7; ++ipta){ 
+    //  for(Int_t ilab=0; ilab<4; ++ilab){
+    //    snprintf(name, nchar, "fHistTrackEtaPhi_%i_%i", ilab,ipta);
+    //    fHistTrackEtaPhi[ilab][ipta] = new TH2F(name,name,400,-1,1,640,0.0,2.*TMath::Pi());
+    //    fOutput->Add(fHistTrackEtaPhi[ilab][ipta]);
+    //  } // end of lab loop
+    //} // end of pt-associated loop
 
   } // QA histo switch
 
@@ -377,7 +389,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   } // end of trackpt bin loop
 
   if (makeextraCORRhistos) {
-    for(Int_t icent = 0; icent<2; ++icent){
+    for(Int_t icent = 0; icent<6; ++icent){
       snprintf(name, nchar, "fHistJetPt_%i",icent);
       fHistJetPt[icent] = new TH1F(name,name,200,0,200);
       fOutput->Add(fHistJetPt[icent]);
@@ -394,6 +406,7 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
       fHistAreavsRawPt[icent] = new TH2F(name,name,100,0,1,200,0,200);
       fOutput->Add(fHistAreavsRawPt[icent]);
 
+/*
       for(Int_t iptjet = 0; iptjet<5; ++iptjet){
         for(Int_t ieta = 0; ieta<3; ++ieta){
           snprintf(name, nchar, "fHistJetH_%i_%i_%i",icent,iptjet,ieta);
@@ -409,6 +422,8 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
           fOutput->Add(fHistJetHTT[icent][iptjet][ieta]);
         } // end of eta loop
       } // end of pt-jet loop
+*/
+
     } // end of centrality loop
   } // make JetHadhisto old
 
@@ -547,8 +562,8 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   UInt_t cifras = 0;
   UInt_t bitcode = 0;  // bit coded, see GetDimParamsPID() below
   bitcoded = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7; // | 1<<8 | 1<<9;
-  if(makeextraCORRhistos) fhnJH = NewTHnSparseF("fhnJH", bitcoded);
-  if(makeextraCORRhistos) fOutput->Add(fhnJH);
+  if(fDoEventMixing) fhnJH = NewTHnSparseF("fhnJH", bitcoded);
+  if(fDoEventMixing) fOutput->Add(fhnJH);
 
 /*
   // for pp we need mult bins for event mixing. Create binning here, to also make a histogram from it
@@ -911,6 +926,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
 
     // cut on HIGHEST jet pt in event (15 GeV default)
     if (highestjetpt>fJetPtcut) {
+
       // loop over all track for an event containing a jet with a pT>fJetPtCut  (15)GeV
       for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
         AliVTrack* track = static_cast<AliVTrack*>(tracks->At(iTracks));
@@ -931,11 +947,13 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         trCharge = track->Charge();
         Double_t tracketa=track->Eta();   // eta of track
         Double_t deta=tracketa-jeteta;    // dETA between track and jet
-		Int_t ieta = -1;
+/*		
+        Int_t ieta = -1;
         if (makeextraCORRhistos) {
   		  ieta=GetEtaBin(deta);       // bin of eta
 	      if(ieta<0) continue;              // double check we don't have a negative array index
 		}
+*/
 
         // dPHI between jet and hadron
         Double_t dphijh = RelativePhi(jet->Phi(), track->Phi()); // angle between jet and hadron
@@ -948,22 +966,22 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         //Double_t dR=sqrt(deta*deta+dphijh*dphijh);                   // difference of R between jet and hadron track
 
         // fill some jet-hadron histo's
-        if(makeextraCORRhistos) fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());  // fill jet-hadron dPHI--track pT distribution
+        //if(makeextraCORRhistos) fHistJetH[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());  // fill jet-hadron dPHI--track pT distribution
         fHistJetHEtaPhi->Fill(deta,dphijh);                          // fill jet-hadron  eta--phi distribution
 	    fHistJetHaddPHI->Fill(dphijh);
         if(passedTTcut){
-          if(makeextraCORRhistos) fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+          //if(makeextraCORRhistos) fHistJetHTT[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
         }
 
         // does our max track or cluster pass the bias?
         if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
           // set up and fill Jet-Hadron THnSparse
           Double_t triggerEntries[10] = {fCent, jet->Pt(), track->Pt(), deta, dphijh, dEP, zVtx, trCharge, 0, 0};
-          if(makeextraCORRhistos) fhnJH->Fill(triggerEntries);    // fill Sparse Histo with trigger entries
+          fhnJH->Fill(triggerEntries);    // fill Sparse Histo with trigger entries
           
           // fill histo's
           fHistSEphieta->Fill(dphijh, deta); // single event distribution
-          if (makeextraCORRhistos) fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
+          //if (makeextraCORRhistos) fHistJetHBias[centbin][iptjet][ieta]->Fill(dphijh,track->Pt());
 
           if (makeBIAShistos) {
             fHistJetHaddPhiBias->Fill(dphijh);
@@ -1015,7 +1033,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
       // get PID parameters, first check if AOD/ESD
 	  if (!useAOD) {
         AliESDtrack *trackESD = fESD->GetTrack(iTracks);
-  
+
         // get detector signals
         dEdx = trackESD->GetTPCsignal();
         ITSsig = trackESD->GetITSsignal();
@@ -1673,9 +1691,9 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 1:
       label = "Corrected Jet p_{T}";
-      nbins = 250; 
+      nbins = 216; 
       xmin = -50.;
-      xmax = 200.;
+      xmax = 166.;
       break;
 
    case 2:
@@ -1694,21 +1712,21 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 4:
       label = "Track Eta";
-      nbins = 64;
+      nbins = 48;
       xmin = -1.2;
       xmax = 1.2;
       break;
 
    case 5:
       label = "Relative Eta of Track and Jet";
-      nbins = 64;
+      nbins = 48;
       xmin = -1.6;
       xmax = 1.6;
       break;
 
    case 6:
       label = "Relative Phi of Track and Jet";
-      nbins = 64;
+      nbins = 48;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
       break;
@@ -1729,16 +1747,16 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
 
    case 9: 
       label = "Relative angle: Jet and Reaction Plane";
-      nbins = 64;
+      nbins = 48;
       xmin = 0.;
       xmax = 0.5*pi;
       break;
 
    case 10: // don't need
       label = "Jet Pt";
-      nbins = 100; //250;
+      nbins = 216; //250;
       xmin = 0.;
-      xmax = 100.; //250.;
+      xmax = 216.; //250.;
       break;
 
    case 11:

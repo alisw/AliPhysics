@@ -219,7 +219,7 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   // 4: y
   // 5: sign
   const Int_t nDims = 5;
-  Int_t nBins[nDims] = {0., nCentBins, 20, 15, 2};
+  Int_t nBins[nDims] = {0, nCentBins, 20, 15, 2};
   Double_t xMin[nDims] = {0., centRange[0], 0., -4., -2.};
   Double_t xMax[nDims] = {0., centRange[1], 20., -2.5, 2.};
   
@@ -588,7 +588,7 @@ void AliAnalysisTaskMuonTrackingEff::FillTDHistos(Int_t chamber, Int_t detElt, D
 {
   /// Fill the histo for detected tracks
   static_cast<TH3F*>(fDetEltTDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
-  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), static_cast<Double_t>(fCurrentTrack->Charge())};
   x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
   static_cast<THnSparse*>(fChamberTDHistList->At(chamber))->Fill(x);
   x[0] = static_cast<Double_t>(chamber+1);
@@ -600,7 +600,7 @@ void AliAnalysisTaskMuonTrackingEff::FillTTHistos(Int_t chamber, Int_t detElt, D
 {
   /// Fill the histo for all tracks
   static_cast<TH3F*>(fDetEltTTHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
-  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), static_cast<Double_t>(fCurrentTrack->Charge())};
   x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
   static_cast<THnSparse*>(fChamberTTHistList->At(chamber))->Fill(x);
   x[0] = static_cast<Double_t>(chamber+1);
@@ -612,7 +612,7 @@ void AliAnalysisTaskMuonTrackingEff::FillSDHistos(Int_t chamber, Int_t detElt, D
 {
   /// Fill the histo for single detected tracks
   static_cast<TH3F*>(fDetEltSDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
-  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), static_cast<Double_t>(fCurrentTrack->Charge())};
   x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
   static_cast<THnSparse*>(fChamberSDHistList->At(chamber))->Fill(x);
   x[0] = static_cast<Double_t>(chamber+1);

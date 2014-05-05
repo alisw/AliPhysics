@@ -576,7 +576,7 @@ void AliAnalysisTaskSPDdNdEta::UserExec(Option_t *)
         AliError(" Invalid ITS cluster tree !\n");
         return;
       }
-      float vtxf[3] = {vtxESD->GetX(),vtxESD->GetY(),vtxESD->GetZ()};
+      float vtxf[3] = {static_cast<float>(vtxESD->GetX()),static_cast<float>(vtxESD->GetY()),static_cast<float>(vtxESD->GetZ())};
 
       fMultReco->SetPhiWindow(fPhiWindow);
       fMultReco->SetThetaWindow(fThetaWindow); 

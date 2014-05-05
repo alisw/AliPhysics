@@ -572,7 +572,7 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
       nBins1[1] = 600;
       nBins1[5] = 1;
     }
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,nbinr5min,  0,   0,        -0.5, 0.,         -0.5,  0.,           -0.5,};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5, static_cast<Double_t>(nbinr5min),  0,   0,        -0.5, 0.,         -0.5,  0.,           -0.5,};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,4000,fNRPBins-0.5,1.0,fNTrigger-0.5,200.,fNAcceptance+0.5};
      
     const Double_t binArrayArea[nBinsArea+1] = {xmin1[5],0.07,0.1,0.15,0.2,0.25,0.3,0.4,0.5,0.6,xmax1[5]};

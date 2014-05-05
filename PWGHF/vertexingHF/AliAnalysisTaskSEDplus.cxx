@@ -902,8 +902,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	cxy=d->CosPointingAngleXY();
       }
       Double_t impparXY=d->ImpParXY()*10000.;
-      Double_t arrayForSparse[6]={invMass,ptCand,impparXY,cosp,dlen,tracklets};
-      Double_t arrayForSparseTrue[6]={invMass,ptCand,trueImpParXY,cosp,dlen,tracklets};
+      Double_t arrayForSparse[6]={invMass,ptCand,impparXY,cosp,dlen,static_cast<Double_t>(tracklets)};
+      Double_t arrayForSparseTrue[6]={invMass,ptCand,trueImpParXY,cosp,dlen,static_cast<Double_t>(tracklets)};
 
       //Ntuple
       Float_t tmp[31];

@@ -217,7 +217,7 @@ void AliAnalysisDeuteronpA::UserCreateOutputObjects()
   // (9.) CODE -- only MC 0-generated, 1-true rec. primaries, 2-misident prim, 3-second weak, 4-second material, 5-misident sec
   //
   //                              0,           1,           2,  3,      4,              5,    6,    7,       8
-  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      kYBins      ,   50,    2,  100, kDcaBins};
+  Int_t    binsHistReal[9] = {   3,   kMultBins,     kPtBins,  2,      static_cast<Int_t>(kYBins)      ,   50,    2,  100, kDcaBins};
   Double_t xminHistReal[9] = {-0.5,        -0.5,           0, -2,      kYlowBorder ,   -5,- 0.5, -2.5,       -3};
   Double_t xmaxHistReal[9] = { 2.5,        10.5,           3,  2,      kYhighBorder,    5,  1.5,  2.5,        3};
   fHistRealTracks = new THnSparseF("fHistRealTracks","real tracks",9,binsHistReal,xminHistReal,xmaxHistReal);
@@ -234,7 +234,7 @@ void AliAnalysisDeuteronpA::UserCreateOutputObjects()
   fHistTofQA = new TH2F("fHistTofQA","TOF-QA",200,-4.,4.,400,0,1.1);
   fListHist->Add(fHistTofQA);
   //                            0,            1,           2,  3,      4,            5,    6,    7,        8,    9
-  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,    kYBins      ,  50,    2,  100, kDcaBins,    6};
+  Int_t    binsHistMC[10] = {   3,    kMultBins,     kPtBins,  2,    static_cast<Int_t>(kYBins)      ,  50,    2,  100, kDcaBins,    6};
   Double_t xminHistMC[10] = {-0.5,         -0.5,           0, -2,    kYlowBorder ,  -5,- 0.5, -2.5,       -3, -0.5};
   Double_t xmaxHistMC[10] = { 2.5,         10.5,           3,  2,    kYhighBorder,   5,  1.5,  2.5,        3,  5.5};
   //
@@ -460,7 +460,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       if (TMath::Abs(pdg) == 1000020030)  iPart = 2; // select He+/He- only
       if (iPart == -1) continue;
       //
-      Double_t vecHistMC[10] = {iPart, centrality,  pT, sign, rap, 0, 1, 0, dxy, 0};
+      Double_t vecHistMC[10] = {static_cast<Double_t>(iPart), centrality,  pT, static_cast<Double_t>(sign), rap, 0, 1, 0, dxy, 0};
       fHistMCparticles->Fill(vecHistMC);
       //
       if (iPart == 0) fHistEtaPtGen->Fill(pT, trackMC->Y(), 0.);
@@ -629,7 +629,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
       //
       if (iPart != 0) continue;
       //                              0,           1,    2,    3,           4,               5,      6,              7,     8
-      Double_t vecHistReal[9]  = {iPart,  centrality,   pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0]};
+      Double_t vecHistReal[9]  = {static_cast<Double_t>(iPart),  centrality,   pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0]};
       fHistRealTracks->Fill(vecHistReal);
       if (TMath::Abs(rap[1]) < 0.5) fHistPidQA->Fill(ptot,tpcSignal,sign); // has to be used for the very difficult deuterons.
       //
@@ -678,7 +678,7 @@ void AliAnalysisDeuteronpA::UserExec(Option_t *)
 	// IMPORTANT BIG PROBLEM HERE THE PROBABLILITY TO HAVE A PID SIGNAL MUST BE IN !!!!!!!!!!!!
 	//
 	//                              0,           1,   2,    3,           4,               5,      6,               7,      8,   9
-	Double_t vectorHistMC[10] = {iPart,  centrality,  pT, sign,  rap[iPart], pullsTPC[iPart], hasTOF, pullsTOF[iPart], dca[0], code};
+	Double_t vectorHistMC[10] = {static_cast<Double_t>(iPart),  centrality,  pT, static_cast<Double_t>(sign),  rap[iPart], pullsTPC[iPart], static_cast<Double_t>(hasTOF), pullsTOF[iPart], dca[0], static_cast<Double_t>(code)};
 	fHistMCparticles->Fill(vectorHistMC);
 
       }

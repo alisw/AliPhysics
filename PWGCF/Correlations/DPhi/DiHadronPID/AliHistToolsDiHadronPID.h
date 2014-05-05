@@ -34,7 +34,7 @@ public:
 	static TH1F* RebinVariableBinning(const TH1F* histIn, const TH1F* histAxis, Bool_t density = kTRUE);
 	static TH1F* RebinVariableBinning(const TH1F* histIn, const TAxis* xaxis, Bool_t density = kTRUE);
 	static TH1F* TrimHisto(const TH1F* histo, Int_t firstbin, Int_t lastbin);
-	static void ConstMinusHist(TH1F* histo, const Float_t cc = 1);
+	static void ConstMinusHist(TH1F* histo, Float_t cc = 1);
 	static TH3F* MakeHist3D(const char* name, const char* title, 
 		Int_t nbinsX, Double_t minX, Double_t maxX,
 		Int_t nbinsY, Double_t minY, Double_t maxY,

@@ -258,8 +258,8 @@ void  AliESDRecV0Info::Update(Float_t vertex[3])
     //            
     //   
     
-    Float_t v[3] = {fXr[0]-vertex[0],fXr[1]-vertex[1],fXr[2]-vertex[2]};
-    Float_t p[3] = {fPdr[0]+fPm[0], fPdr[1]+fPm[1],fPdr[2]+fPm[2]};
+    Float_t v[3] = {static_cast<Float_t>(fXr[0]-vertex[0]),static_cast<Float_t>(fXr[1]-vertex[1]),static_cast<Float_t>(fXr[2]-vertex[2])};
+    Float_t p[3] = {static_cast<Float_t>(fPdr[0]+fPm[0]), static_cast<Float_t>(fPdr[1]+fPm[1]),static_cast<Float_t>(fPdr[2]+fPm[2])};
     
     Float_t vnorm2 = v[0]*v[0]+v[1]*v[1];
     Float_t vnorm3 = TMath::Sqrt(v[2]*v[2]+vnorm2);

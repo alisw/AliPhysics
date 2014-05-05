@@ -93,6 +93,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -171,6 +172,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -351,6 +353,13 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
     fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
     fHistPtHard->Fill(fPtHard);
+    if(fPythiaHeader) {
+      fXsection = fPythiaHeader->GetXsection();
+      if(fXsection>0.) {
+	fHistXsection->Fill(fPtHardBin, fXsection);
+	fHistTrials->Fill(fPtHardBin, fPythiaHeader->Trials());
+      }
+    }
   }
 
   fHistCentrality->Fill(fCent);
@@ -525,7 +534,6 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
     return kFALSE;
   }
 
-  Float_t xsection = 0;
   Float_t trials   = 0;
   Int_t   pthard   = 0;
 
@@ -541,13 +549,13 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   Int_t nevents = tree->GetEntriesFast();
 
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
+  PythiaInfoFromFile(curfile->GetName(), fXsection, trials, pthard);
 
   // TODO: Workaround
   if ((pthard < 0) || (pthard > 10))
     pthard = 0;
   fHistTrials->Fill(pthard, trials);
-  fHistXsection->Fill(pthard, xsection);
+  fHistXsection->Fill(pthard, fXsection);
   fHistEvents->Fill(pthard, nevents);
 
   return kTRUE;
@@ -981,7 +989,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
     if (fPythiaHeader) {
       fPtHard = fPythiaHeader->GetPtHard();
-    
+
       const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
       const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
       for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {

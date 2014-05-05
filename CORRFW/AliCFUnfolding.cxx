@@ -545,8 +545,8 @@ void AliCFUnfolding::FillDeltaUnfoldedProfile() {
   //  mean_{n+1} = (n*mean_n + value_{n+1}) / (n+1)
   // sigma_{n+1} = sqrt { 1/(n+1) * [ n*sigma_n^2 + (n^2+n)*(mean_{n+1}-mean_n)^2 ] }    (can this be optimized?)
 
-  for (Long_t iBin=0; iBin<fUnfolded->GetNbins(); iBin++) {
-    Double_t deltaInBin   = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M) - fUnfolded->GetBinContent(iBin);
+  for (Long_t iBin=0; iBin<fUnfoldedFinal->GetNbins(); iBin++) {
+    Double_t deltaInBin   = fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M) - fUnfolded->GetBinContent(fCoordinatesN_M);
     Double_t entriesInBin = fDeltaUnfoldedN->GetBinContent(fCoordinatesN_M);
     //AliDebug(2,Form("%e %e ==> delta = %e\n",fUnfoldedFinal->GetBinContent(iBin,fCoordinatesN_M),fUnfolded->GetBinContent(iBin),deltaInBin));
 

@@ -8,6 +8,7 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TArrayI.h"
+#include "TRandom3.h"
 // aliroot includes
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -106,13 +107,13 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
     if(fHistIntV3)      fOutputList->Add(fHistIntV3);
     // create the QA histos
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
-        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistOriginalEtaPhi[i] = BookTH2F("fHistOriginalEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistToyEtaPhi[i] = BookTH2F("fHistToyEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
         fHistOriginalDeltaPhi[i] = BookTH1F("fHistOriginalDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
         fHistToyDeltaPhi[i] = BookTH1F("fHistToyDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
-        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 100, 0, 20, 80, 0, .8, i);
+        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 1000, 0, 200, 200, 0, .2, i);
         // add to outputlist
         if(fFuncDiffV2[i]) fOutputList->Add(fFuncDiffV2[i]);
         if(fFuncDiffV3[i]) fOutputList->Add(fFuncDiffV3[i]);
@@ -123,6 +124,12 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
         fHistSFJetSpectrum = BookTH1F("fHistSFJetSpectrum", "p_{t} SF jets [GeV/c]", 100, 0, 200);
         fHistSFJetEtaPhi = BookTH2F("fHistSFJetEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi());
     }
+    // reset the random seed
+    if(gRandom) {
+        delete gRandom;
+        gRandom = new TRandom3(0);
+    }
+
     fOutputList->Sort();
     PostData(1, fOutputList);
 }

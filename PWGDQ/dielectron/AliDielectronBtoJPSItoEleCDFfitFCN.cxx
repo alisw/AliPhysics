@@ -146,7 +146,7 @@ AliDielectronBtoJPSItoEleCDFfitFCN::~AliDielectronBtoJPSItoEleCDFfitFCN()
 }
 //_________________________________________________________________________________________________
 Double_t AliDielectronBtoJPSItoEleCDFfitFCN::EvaluateLikelihood(const Double_t* pseudoproperdecaytime,
-		const Double_t* invariantmass, const Double_t *pt, const Int_t *type, const Int_t ncand) const
+		const Double_t* invariantmass, const Double_t *pt, const Int_t *type, Int_t ncand) const
 {
 	//
 	// This function evaluates the Likelihood fnction

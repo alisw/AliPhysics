@@ -9,6 +9,12 @@
 // class for systematic uncertainties on D meson -hadron correlation distribution
 //
 // Author: A. Rossi, andrea.rossi@cern.ch
+//
+// Responsible of the values set for the different mesons/datasets
+//      D0:  in pp (2010 min bias) Fabio Colamaria, fabio.colamaria@ba.infn.it ;  p-Pb (2013 min bias): Fabio Colamaria, fabio.colamaria@ba.infn.it,  Somnath Kar, somnath.kar@cern.ch
+//      D*+: in pp 2010 min. bias and p-Pb 2013 min. bias  Sandro Bjelogrlic, sandro.bjelogrlic@cern.ch
+//      D+:  in pp 2010 min. bias and p-Pb 2013 min. bias  Jitendra Kumar, jitendra.kumar@cern.ch
+//
 /////////////////////////////////////////////////////////////
 #include <TH1D.h>
 #include <TH2D.h>
@@ -23,7 +29,7 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   ~AliHFDhadronCorrSystUnc();
   void InitEmptyHistosFromTemplate();
   void InitStandardUncertaintiesPP2010(Int_t meson,Double_t ptD,Double_t minptAss);
-
+  void InitStandardUncertaintiesPPb2013(Int_t meson,Double_t ptD,Double_t minptAss);
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
   void InitStandardUncertaintiesPP2010DzeroLowPtAss03HP();
   void InitStandardUncertaintiesPP2010DzeroMidPtAss03HP();

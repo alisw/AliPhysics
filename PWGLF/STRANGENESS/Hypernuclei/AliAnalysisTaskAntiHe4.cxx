@@ -1,3 +1,4 @@
+#include <Riostream.h>
 #include "TChain.h"
 #include "TTree.h"
 #include "TF1.h"
@@ -23,6 +24,8 @@
 
 #include "AliAnalysisTaskAntiHe4.h"
 
+using std::cout;
+using std::endl;
 
 ///////////////////////////////////////////////////////////
 //                                                       //
@@ -409,6 +412,8 @@ void AliAnalysisTaskAntiHe4::UserCreateOutputObjects()
   fTree->Branch("fTOFsignalDz",fTOFsignalDz,"fTOFsignalDz[fItrk]/D");
   fTree->Branch("fTOFsignalDx",fTOFsignalDx,"fTOFsignalDx[fItrk]/D");
   //
+  fTree->Branch("fTRDin",fTRDin,"fTRDin[fItrk]/O");
+  //
   fTree->Branch("fDCAXY",fDCAXY,"fDCAXY[fItrk]/F");
   fTree->Branch("fDCAZ",fDCAZ,"fDCAZ[fItrk]/F");
   //
@@ -506,6 +511,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     }
   }
   //
+  if (!fTriggerFired[0] && !fTriggerFired[1] && !fTriggerFired[2]) return; // select only events which pass kMB, kCentral, kSemiCentral
+  //
   fHistCentralityClass10->Fill(centralityClass10);
   fHistCentralityPercentile->Fill(centralityPercentile);
   //
@@ -559,6 +566,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     fTOFout[fItrk] = kFALSE;
     fTOFsignalDz[fItrk] = -1;
     fTOFsignalDx[fItrk] = -1;
+
+    fTRDin[fItrk] = kFALSE;
 
     fDCAZ[fItrk] = -1;
     fDCAXY[fItrk] = -1;
@@ -698,6 +707,8 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
       fTOFsignalDz[fItrk] = track->GetTOFsignalDz();
       fTOFsignalDx[fItrk] = track->GetTOFsignalDx();
 
+      fTRDin[fItrk] = status&AliESDtrack::kTRDin;
+
       fDCAZ[fItrk] = dcaXY;
       fDCAXY[fItrk] = dcaZ;
 
@@ -749,7 +760,7 @@ void AliAnalysisTaskAntiHe4::UserExec(Option_t *)
     if (ptot > 0.7 && TMath::Abs(tpcSignal - expSignalTriton)/expSignalTriton < 0.2) id = 2;
     if (ptot > 0.5 && (tpcSignal - expSignalHelium3)/expSignalHelium3 > -0.1 &&  (tpcSignal - expSignalHelium3)/expSignalHelium3 < 0.2) id = 3;
     //
-    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, id, ptotInc};
+    Double_t vecAntiAlpha[4] = {dcaXYsign, sign, static_cast<Double_t>(id), ptotInc};
     if (id != -1 && tpcSignal > 120) fAntiAlpha->Fill(vecAntiAlpha);
     //
     // fill final histograms

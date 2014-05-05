@@ -34,17 +34,18 @@ Bool_t ConfigSigmaStar
    //
 
    //TString s = ""; s+=trackDCAcut; s+="*(0.0026+0.0050/pt^1.01)";
-
    //const char *formula = s;
 
    // integrated pion cut
    AliRsnCutDaughterSigmaStar2010PP *cutPi = new AliRsnCutDaughterSigmaStar2010PP("cutPionForSigmaStar", AliPID::kPion);
-   cutPi->SetPIDCut(piPIDCut);
-   cutPi->SetMinTPCcluster(NTPCcluster);
+   cutPi->SetPIDCut(piPIDCut);    // This is effective! fPIDCut used in IsSelected() after the call to cutQuality
+   //cutPi->SetMinTPCcluster(NTPCcluster);   // NOTE!!!! Not effective!! fMinTPCclsuter NOT USED in IsSelected()
    AliRsnCutTrackQuality *cutQuality = (AliRsnCutTrackQuality*) cutPi->CutQuality();
    cutQuality->SetAODTestFilterBit(aodFilterBit);
-   //cutQuality->SetDCARPtFormula(formula);
+   cutQuality->SetDefaults2011();
+   //cutQuality->SetDCARPtFormula(formula);    
    //cutQuality->SetDCARmax(trackDCAcut);	         
+   //cutQuality->SetDCARmin(0.01);	         
     
    // cut set
    AliRsnCutSet *cutSetPi = new AliRsnCutSet("setPionForSigmaStar", AliRsnTarget::kDaughter);
@@ -54,12 +55,12 @@ Bool_t ConfigSigmaStar
    Int_t iCutPi = task->AddTrackCuts(cutSetPi);
    
    // quality cuts
-   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterLambda");
-   
+   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterLambda");   
    esdTrackCuts->SetAcceptKinkDaughters(0); // 0 = kFalse
    esdTrackCuts->SetMaxChi2PerClusterTPC(4);
    esdTrackCuts->SetMinNClustersTPC(NTPCcluster);
    esdTrackCuts->SetRequireTPCRefit();
+   esdTrackCuts->SetMinDCAToVertexXY(0.05);
    
    // cut lambda
    AliRsnCutV0 *cutLambda = new AliRsnCutV0("cutLambda", kLambda0, AliPID::kProton, AliPID::kPion);
@@ -166,191 +167,197 @@ Bool_t ConfigSigmaStar
    AddMonitorOutput_PionNTPC(cutSetPi->GetMonitorOutput());
    
    AddMonitorOutput_LambdaMass(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaP(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaPt(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDCA(cutSetLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaRadius(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDaughterDCA(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaCosPointAngle(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaProtonPID(cutSetLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaPionPID(cutSetLambda->GetMonitorOutput());
    
    AddMonitorOutput_LambdaMass(cutSetAntiLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaP(cutSetAntiLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaPt(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDCA(cutSetAntiLambda->GetMonitorOutput());
+   AddMonitorOutput_LambdaRadius(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaDaughterDCA(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaCosPointAngle(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiProtonPID(cutSetAntiLambda->GetMonitorOutput());
    AddMonitorOutput_LambdaAntiPionPID(cutSetAntiLambda->GetMonitorOutput());
-    
+   
    if (isMC) {
-   
-   TString mode = "HIST";
-   if (collSyst) mode = "SPARSE";
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarP_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(3224);
-   out->SetMotherMass(1.3828);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-   //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarM_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(3114);
-   out->SetMotherMass(1.3872);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-   //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarPBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(-3224);
-   out->SetMotherMass(1.3828);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-   //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarMBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(-3114);
-   out->SetMotherMass(1.3872);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-   //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("XiP_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(-3312);
-   out->SetMotherMass(1.32171);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("XiM_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetMotherPDG(3312);
-   out->SetMotherMass(1.32171);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   
-   AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520P_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, 0);
-   out->SetCharge(1, 1);
-   out->SetMotherPDG(3124);
-   out->SetMotherMass(1.5195);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520M_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, 0);
-   out->SetCharge(1, -1);
-   out->SetMotherPDG(3124);
-   out->SetMotherMass(1.5195);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   
-   // create output
-   AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520PBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, 0);
-   out->SetCharge(1, 1);
-   out->SetMotherPDG(-3124);
-   out->SetMotherMass(1.5195);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520MBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
-   // selection settings
-   out->SetDaughter(0, AliRsnDaughter::kLambda);
-   out->SetDaughter(1, AliRsnDaughter::kPion);
-   out->SetCharge(0, 0);
-   out->SetCharge(1, -1);
-   out->SetMotherPDG(-3124);
-   out->SetMotherMass(1.5195);
-   // pair cuts
-   out->SetPairCuts(cutsPair);
-   // binnings
-   out->AddAxis(imID, 800, 1.2, 2.0);
-   out->AddAxis(ptID, 100, 0.0, 10.0);
-
-   if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
-   
-   
-   
+     
+     TString mode = "HIST";
+     if (collSyst) mode = "SPARSE";
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarP_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(3224);
+     out->SetMotherMass(1.3828);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarM_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(3114);
+     out->SetMotherMass(1.3872);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarPBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(-3224);
+     out->SetMotherMass(1.3828);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("sigmastarMBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(-3114);
+     out->SetMotherMass(1.3872);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     //out->AddAxis(lambdaDCA, 10, 0.0, 1.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("XiP_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(-3312);
+     out->SetMotherMass(1.32171);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("XiM_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetMotherPDG(3312);
+     out->SetMotherMass(1.32171);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     
+     AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520P_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetCharge(0, 0);
+     out->SetCharge(1, 1);
+     out->SetMotherPDG(3124);
+     out->SetMotherMass(1.5195);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520M_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetCharge(0, 0);
+     out->SetCharge(1, -1);
+     out->SetMotherPDG(3124);
+     out->SetMotherMass(1.5195);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     
+     // create output
+     AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520PBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetCharge(0, 0);
+     out->SetCharge(1, 1);
+     out->SetMotherPDG(-3124);
+     out->SetMotherMass(1.5195);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     AliRsnMiniOutput *out = task->CreateOutput(Form("Lambda1520MBar_TrueMC%s", suffix), mode.Data(), "MOTHER");
+     // selection settings
+     out->SetDaughter(0, AliRsnDaughter::kLambda);
+     out->SetDaughter(1, AliRsnDaughter::kPion);
+     out->SetCharge(0, 0);
+     out->SetCharge(1, -1);
+     out->SetMotherPDG(-3124);
+     out->SetMotherMass(1.5195);
+     // pair cuts
+     out->SetPairCuts(cutsPair);
+     // binnings
+     out->AddAxis(imID, 800, 1.2, 2.0);
+     out->AddAxis(ptID, 100, 0.0, 10.0);
+     
+     if (collSyst) out->AddAxis(centID, 10, 0.0, 100.0);
+     
+     
+     
    }
-
+   
    return kTRUE;
 }
 
@@ -359,7 +366,7 @@ void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionDCA
    AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(0.0,1,0.001);
+   axisPionDCA->SetBins(-0.5,0.5,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
@@ -406,11 +413,45 @@ void AddMonitorOutput_PionNTPC(TObjArray *mon=0,TString opt="",AliRsnLoopDaughte
 }
 
 
+void AddMonitorOutput_LambdaP(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+{
+
+   // Mass
+   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_momentum", AliRsnValueDaughter::kP);
+   axisMass->SetBins(0.,15.,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorMom = new AliRsnListOutput("Lambda_Momentum", AliRsnListOutput::kHistoDefault);
+   outMonitorMom->AddValue(axisMass);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorMom);
+   if (lm) lm->AddOutput(outMonitorMom);
+  
+}
+
+void AddMonitorOutput_LambdaPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
+{
+
+   // Mass
+   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_transversemomentum", AliRsnValueDaughter::kPt);
+   axisMass->SetBins(0.,15.,0.001);
+
+   // output: 2D histogram
+   AliRsnListOutput *outMonitorTrMom = new AliRsnListOutput("Lambda_TransverseMomentum", AliRsnListOutput::kHistoDefault);
+   outMonitorTrMom->AddValue(axisMass);
+
+   // add outputs to loop
+   if (mon) mon->Add(outMonitorTrMom);
+   if (lm) lm->AddOutput(outMonitorTrMom);
+  
+}
+
 void AddMonitorOutput_LambdaMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *lm=0)
 {
 
    // Mass
-   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_mass", AliRsnValueDaughter::kMass);
+   AliRsnValueDaughter *axisMass = new AliRsnValueDaughter("lambda_mass", AliRsnValueDaughter::kV0Mass);
    axisMass->SetBins(0.7,1.5,0.001);
 
    // output: 2D histogram
@@ -425,19 +466,28 @@ void AddMonitorOutput_LambdaMass(TObjArray *mon=0,TString opt="",AliRsnLoopDaugh
 
 void AddMonitorOutput_LambdaDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
 {
+  // Lambda DCA
+  AliRsnValueDaughter *axisLambdaDCA = new AliRsnValueDaughter("lambda_dca", AliRsnValueDaughter::kV0DCA);
+  axisLambdaDCA->SetBins(0.0,0.4,0.001);
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorLambdaDCA = new AliRsnListOutput("Lambda_DCA", AliRsnListOutput::kHistoDefault);
+  outMonitorLambdaDCA->AddValue(axisLambdaDCA); 
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorLambdaDCA);
+  if (ldca) ldca->AddOutput(outMonitorLambdaDCA);
+}
 
-   // Lambda DCA
-   AliRsnValueDaughter *axisLambdaDCA = new AliRsnValueDaughter("lambda_dca", AliRsnValueDaughter::kV0DCA);
-   axisLambdaDCA->SetBins(0.0,1,0.001);
-
-   // output: 2D histogram
-   AliRsnListOutput *outMonitorLambdaDCA = new AliRsnListOutput("Lambda_DCA", AliRsnListOutput::kHistoDefault);
-   outMonitorLambdaDCA->AddValue(axisLambdaDCA);
-
-   // add outputs to loop
-   if (mon) mon->Add(outMonitorLambdaDCA);
-   if (ldca) ldca->AddOutput(outMonitorLambdaDCA);
-  
+void AddMonitorOutput_LambdaRadius(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldca=0)
+{
+  // Lambda Radius
+  AliRsnValueDaughter *axisLambdaRadius = new AliRsnValueDaughter("lambda_radius", AliRsnValueDaughter::kV0Radius);
+  axisLambdaRadius->SetBins(0.0,200,0.2);
+  // output: 2D histogram
+  AliRsnListOutput *outMonitorLambdaRadius = new AliRsnListOutput("Lambda_Radius", AliRsnListOutput::kHistoDefault);
+  outMonitorLambdaRadius->AddValue(axisLambdaRadius); 
+  // add outputs to loop
+  if (mon) mon->Add(outMonitorLambdaRadius);
+  if (ldca) ldca->AddOutput(outMonitorLambdaRadius);
 }
 
 void AddMonitorOutput_LambdaDaughterDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *ldaugdca=0)
@@ -445,7 +495,7 @@ void AddMonitorOutput_LambdaDaughterDCA(TObjArray *mon=0,TString opt="",AliRsnLo
 
    // Lambda Daughter DCA
    AliRsnValueDaughter *axisLambdaDDCA = new AliRsnValueDaughter("lambda_daughterDCA", AliRsnValueDaughter::kDaughterDCA);
-   axisLambdaDDCA->SetBins(0.0,1,0.001);
+   axisLambdaDDCA->SetBins(0.0,2,0.001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorLambdaDDCA = new AliRsnListOutput("Lambda_DaughterDCA", AliRsnListOutput::kHistoDefault);
@@ -462,7 +512,7 @@ void AddMonitorOutput_LambdaCosPointAngle(TObjArray *mon=0,TString opt="",AliRsn
 
    // Lambda Cosine of the Pointing Angle
    AliRsnValueDaughter *axisLambdaCPA = new AliRsnValueDaughter("lambda_cospointang", AliRsnValueDaughter::kCosPointAng);
-   axisLambdaCPA->SetBins(0.97,1,0.0001);
+   axisLambdaCPA->SetBins(0.9,1.,0.0001);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorLambdaCPA = new AliRsnListOutput("Lambda_CosineOfPointingAngle", AliRsnListOutput::kHistoDefault);

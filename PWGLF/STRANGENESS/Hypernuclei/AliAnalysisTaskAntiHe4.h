@@ -128,6 +128,8 @@ class AliAnalysisTaskAntiHe4 : public AliAnalysisTaskSE {
   Double_t fTOFsignalDz[1000];
   Double_t fTOFsignalDx[1000];
   //
+  Bool_t fTRDin[1000];
+  //
   Float_t fDCAZ[1000];
   Float_t fDCAXY[1000];
   //

@@ -10,6 +10,7 @@
 #include <TParticlePDG.h>
 
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliRsnEvent.h"
 #include "AliRsnMiniEvent.h"
 #include "AliRsnMiniParticle.h"
@@ -29,6 +30,8 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
    fMother = -1;
    fMotherPDG = 0;
    fNTotSisters = -1;
+   fIsFromB = kFALSE;
+   fIsQuarkFound = kFALSE;
    fCutBits = 0x0;
    fPsim[0] = fPrec[0] = fPmother[0] = fPsim[1] = fPrec[1] = fPmother[1] = fPsim[2] = fPrec[2] = fPmother[2] = 0.0;
 
@@ -85,6 +88,28 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
 	 fPmother[0]  = part->Px();
 	 fPmother[1]  = part->Py();
 	 fPmother[2]  = part->Pz();
+	 Int_t istep = 0;
+	 Int_t pdgGranma = 0;
+	 Int_t abspdgGranma =0;
+	 Int_t mother_temp = daughter->GetMother();
+	 while (mother_temp >=0 ){
+	       istep++;
+	       AliDebug(2,Form("mother at step %d = %d", istep, mother_temp));
+	       AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(list->At(mother_temp));
+	       if (mcGranma){
+	               pdgGranma = mcGranma->GetPdgCode();
+	               AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+	               abspdgGranma = TMath::Abs(pdgGranma);
+	               if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	        	 fIsFromB=kTRUE;
+	               }
+	               if(abspdgGranma==4 || abspdgGranma==5) fIsQuarkFound=kTRUE;
+	               mother_temp = mcGranma->GetMother();
+	       }else{
+	               AliError("Failed casting the mother particle!");
+	               break;
+	       }
+	 }
        }
      }
    } else {
@@ -105,11 +130,34 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
        // Number of Daughters from MC and Momentum of the Mother
        if (event->GetRefMC()) {
 	 AliMCParticle *part = (AliMCParticle *)event->GetRefMC()->GetTrack(fMother);
+	 AliMCEvent * MCEvent = event->GetRefMCESD();
 	 if(part){
 	   fNTotSisters = part->Particle()->GetNDaughters();
 	   fPmother[0]  = part->Px();
 	   fPmother[1]  = part->Py();
 	   fPmother[2]  = part->Pz();
+	   Int_t istep = 0;
+	   Int_t pdgGranma = 0;
+	   Int_t abspdgGranma =0;
+	   Int_t mother_temp = daughter->GetMother();
+	   while (mother_temp >=0 ){
+		 istep++;
+		 AliDebug(2,Form("mother at step %d = %d", istep, mother_temp));
+		 AliMCParticle* mcGranma = dynamic_cast<AliMCParticle*>(MCEvent->GetTrack(mother_temp));
+		 if (mcGranma){
+		 	 pdgGranma = mcGranma->PdgCode();
+		 	 AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+		 	 abspdgGranma = TMath::Abs(pdgGranma);
+		 	 if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+		 	   fIsFromB=kTRUE;
+		 	 }
+		 	 if(abspdgGranma==4 || abspdgGranma==5) fIsQuarkFound=kTRUE;
+		 	 mother_temp = mcGranma->GetMother();
+		 }else{
+		 	 AliError("Failed casting the mother particle!");
+		 	 break;
+		 }
+	   }
 	 }
        }
      }

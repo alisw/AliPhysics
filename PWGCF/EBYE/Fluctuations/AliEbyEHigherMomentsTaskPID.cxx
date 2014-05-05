@@ -365,7 +365,7 @@ void AliEbyEHigherMomentsTaskPID::doAODEvent(){
   }//--------- Track Loop to select with filterbit
   
   
-  Double_t fContainerPid[3] = { fCentrality, posPidSum, negPidSum};
+  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), posPidSum, negPidSum};
   fTHnCentNplusNminusPid->Fill(fContainerPid);
   
   //cout << fCentrality <<" "<< posPidSum <<" " << negPidSum << endl;
@@ -554,8 +554,8 @@ void AliEbyEHigherMomentsTaskPID::doMCAODEvent(){
   //cout <<fCentrality<<"   " << posPidSumMCTruth << " " << negPidSumMCTruth << endl;
   //cout <<"---------------------------------" << endl;
     
-  Double_t fContainerPid[3] = { fCentrality, posPidSumMCRec, negPidSumMCRec};//Reco.
-  Double_t fContainerPidTruth[3] = { fCentrality, posPidSumMCTruth, negPidSumMCTruth};
+  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), posPidSumMCRec, negPidSumMCRec};//Reco.
+  Double_t fContainerPidTruth[3] = { static_cast<Double_t>(fCentrality), posPidSumMCTruth, negPidSumMCTruth};
   
   fTHnCentNplusNminusPid->Fill(fContainerPid);//Fill the rec. pid tracks
   fTHnCentNplusNminusPidTruth->Fill(fContainerPidTruth);//MC-Truth pid
