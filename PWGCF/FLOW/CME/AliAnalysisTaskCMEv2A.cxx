@@ -1163,7 +1163,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 
   // get pid
   AliPIDResponse *fPID = handler->GetPIDResponse();
-  if(!fPID)
+  if(!fPID && !doMC)    // use PID only if no MC 
     {
       if(debug>-1) cout<<"ERROR: PIDResponse object not available. Discarding event..."<<endl;
       return;
@@ -2213,10 +2213,17 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       fHistDCAxyAfter->Fill(dcaxy);
       fHistDCAzAfter->Fill(dcaz);
 
-      float nsigmapion = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kPion);
-      float nsigmakaon = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kKaon);
-      float nsigmaprot = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kProton);
-      float nsigmaelec = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kElectron);
+      float nsigmapion = 0.;
+      float nsigmakaon = 0.;
+      float nsigmaprot = 0.;
+      float nsigmaelec = 0.;
+
+      if(!doMC){
+	nsigmapion = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kPion);
+	nsigmakaon = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kKaon);
+	nsigmaprot = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kProton);
+	nsigmaelec = fPID->NumberOfSigmasTPC(PIDtrack,(AliPID::EParticleType)AliPID::kElectron);
+      }
 
       bool isPion = fabs(nsigmapion) <= nspid;
       bool isKaon = fabs(nsigmakaon) <= nspid;
