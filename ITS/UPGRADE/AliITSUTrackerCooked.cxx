@@ -14,6 +14,9 @@
 #include "AliITSUTrackerCooked.h"
 #include "AliITSUTrackCooked.h" 
 
+using std::cout;
+using std::endl;
+
 ClassImp(AliITSUTrackerCooked)
 
 //************************************************
