@@ -38,6 +38,8 @@ set ( SRCS
     AliITSUSeed.cxx
     AliITSUTrackerGlo.cxx
     AliITSUTrackerSA.cxx
+    AliITSUTrackerCooked.cxx
+    AliITSUTrackCooked.cxx
     AliITSUTrackCond.cxx
     AliITSUTrackHyp.cxx
     AliITSUMatLUT.cxx
