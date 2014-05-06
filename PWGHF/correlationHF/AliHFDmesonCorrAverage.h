@@ -46,7 +46,8 @@ class AliHFDmesonCorrAverage : public TNamed {
   void SetDzeroSystUnc(AliHFDhadronCorrSystUnc *sys){fSystDzero=(AliHFDhadronCorrSystUnc*)sys->Clone("fSystDzero");}
   void SetDplusSystUnc(AliHFDhadronCorrSystUnc *sys){fSystDplus=(AliHFDhadronCorrSystUnc*)sys->Clone("fSystDplus");}
   void SetDstarSystUnc(AliHFDhadronCorrSystUnc *sys){fSystDstar=(AliHFDhadronCorrSystUnc*)sys->Clone("fSystDstar");}
-  
+
+  void SetSystAreAlreadySet(Bool_t syst){fSystAlreadySet=syst;}
   AliHFDhadronCorrSystUnc* GetAverageSystUncertainty(){return fSystDaverage;}
  private:
   void SetWeights();
@@ -82,7 +83,8 @@ class AliHFDmesonCorrAverage : public TNamed {
   Double_t *fweightsDplusSystBkg;                       // Dplus weights used
   Int_t   fnbinsphi;                        // nbins phi
   Int_t	  fsys;					//system (0=pp, 1=pPb)
-  Int_t	  fyear;				// year  (20010 for pp@7 TeV, 2013 for pPb@5.02 TeV)
+  Int_t	  fyear;				// year  (2010 for pp@7 TeV, 2013 for pPb@5.02 TeV)
+  Bool_t fSystAlreadySet;                       // Set it to kTRUE when systematic uncertainties from external files are set
   ClassDef(AliHFDmesonCorrAverage,1); //class for averaging D meson -hadron correlations
 };
 
