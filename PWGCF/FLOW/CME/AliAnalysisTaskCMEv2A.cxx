@@ -1106,6 +1106,11 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   // --- done with histograms --- //
   // ---------------------------- //
 
+
+  // ------------------------------------ //
+  // --- send data to the output list --- //
+  // ------------------------------------ // 
+  PostData(1,fOutputList);
 }
 
 
