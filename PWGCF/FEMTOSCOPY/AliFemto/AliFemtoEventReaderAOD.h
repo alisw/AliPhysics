@@ -58,6 +58,9 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   void SetpA2013(Bool_t pa2013); //set vertex configuration for pA (2013): IsVertexSelected2013pA
   void SetUseMVPlpSelection(Bool_t mvplp);
   void SetIsPileUpEvent(Bool_t ispileup);
+  void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}
+  void SetMinPlpContribMV(Int_t minPlpContribMV) { fMinPlpContribMV = minPlpContribMV;}
+  void SetMinPlpContribSPD(Int_t minPlpContribSPD) { fMinPlpContribSPD = minPlpContribSPD;}
   void SetDCAglobalTrack(Bool_t dcagt);
 
   bool RejectEventCentFlat(float MagField, float CentPercent);
@@ -103,6 +106,9 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   Bool_t fpA2013; // analysis on pA 2013 data
   Bool_t fisPileUp; //pile up rejection on?
   Bool_t fMVPlp;  //multi-vertex pileup rejection?
+  Int_t fMinVtxContr; //no of contributors for pA 2013 data
+  Int_t fMinPlpContribMV; //no of contributors for multivertex pile-up rejection
+  Int_t fMinPlpContribSPD; //no of contributors for SPD pile-up rejection
   Bool_t fDCAglobalTrack; // to get DCA from global tracks instead of TPC-only
 
   bool fFlatCent;
