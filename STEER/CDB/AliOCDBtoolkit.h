@@ -22,8 +22,13 @@ public:
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion);   
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, AliCDBId &cdbId);
   //
-  static TList  * ConvertListStringToCDBId(const TList *cdbList0); 
-  
+  //
+  //
+  static void LoadOCDB(const TMap *cdbMap0, const TList *cdbList0); // to be implemented
+  static void LoadOCDBFromList(const char *ocdbList); // to be implemented
+  static void SetStorage(const TMap *cdbMap0){;}   // to be iplemented
+  //
+  static TList  * ConvertListStringToCDBId(const TList *cdbList0);   
   static void LoadOCDBFromLog(const char *logName, Int_t verbose);
   static void LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList);
   static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
