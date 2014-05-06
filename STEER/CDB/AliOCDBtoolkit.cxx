@@ -670,8 +670,8 @@ void DumpTObjectArray(){
 Bool_t AliOCDBtoolkit::AddoptOCDBEntry( const char *finput, const char *output,  Int_t ustartRun, Int_t uendRun){
   //
   // Addopt OCDB entry - keeping all of the CDBentry quantities
-  // finput = "/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual/TPC/Calib/ClusterParam/Run127712_130850_v4_s0.root"
-  
+  // // Example usage: 
+  //  AliOCDBtoolkit::AddoptOCDBEntry("/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual/TPC/Calib/ClusterParam/Run127712_130850_v4_s0.root",0,0,AliCDBRunRange::Infinity())
   TFile * fin = TFile::Open(finput);
   if (!fin) return kFALSE;
   AliCDBEntry * entry = (AliCDBEntry*) fin->Get("AliCDBEntry");
