@@ -165,24 +165,24 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   else if( ccestimator == kV0A ){
     if ( cc == kpPb020 ) {
-      Tab = 0.183; TabSyst = 0.0201;
+      Tab = 0.183; TabSyst = 0.006245;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.134; TabSyst = 0.0134;
+      Tab = 0.134; TabSyst = 0.004899;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.0918; TabSyst = 0.0073;
+      Tab = 0.092; TabSyst = 0.004796;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.0366; TabSyst = 0.00183;
+      Tab = 0.041; TabSyst = 0.008832;
     }
   }
   else if( ccestimator == kZNA ){
     if ( cc == kpPb020 ) {
-      Tab = 0.1650; TabSyst = 0.0550;
+      Tab = 0.164; TabSyst = 0.010724;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.137; TabSyst = 0.0372;
+      Tab = 0.137; TabSyst = 0.005099;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.1001; TabSyst = 0.0690;
+      Tab = 0.1011; TabSyst = 0.006;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.045; TabSyst = 0.1029;
+      Tab = 0.0459; TabSyst = 0.003162;
     }
   }
 
