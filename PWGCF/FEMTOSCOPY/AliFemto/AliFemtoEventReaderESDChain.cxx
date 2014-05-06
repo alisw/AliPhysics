@@ -52,7 +52,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fMagFieldSign(0),
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
-  fMVPlp(kFALSE)
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0)
 {
   //constructor with 0 parameters , look at default settings 
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -85,7 +88,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fMagFieldSign(0),
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
-  fMVPlp(kFALSE)
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -104,6 +110,10 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
+  fMinVtxContr =  aReader.fMinVtxContr;
+  fMinPlpContribMV  =  aReader.fMinPlpContribMV;
+  fMinPlpContribSPD  =  aReader.fMinPlpContribSPD;
+
   //   fEventFriend = aReader.fEventFriend;
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
   //   for (int tPad=0; tPad<AliESDfriendTrack::kMaxTPCcluster; tPad++) {
@@ -311,10 +321,14 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   if(fisPileUp||fpA2013)
     {
       AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+      if(fMinVtxContr)
+	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
 	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
       if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
       else anaUtil->SetUseMVPlpSelection(kFALSE);
+      if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
+      if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
 	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
       delete anaUtil;   
