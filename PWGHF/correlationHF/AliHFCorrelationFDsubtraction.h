@@ -35,7 +35,10 @@ class AliHFCorrelationFDsubtraction : public TNamed {
   void SetFpromptGraphFc(TGraphAsymmErrors *gr){fgrConservativeFc=(TGraphAsymmErrors*)gr->Clone();}
   void SetFpromptGraphNb(TGraphAsymmErrors *gr){fgrConservativeNb=(TGraphAsymmErrors*)gr->Clone();}
   void SetMethod(Int_t method){fmethod=method;}
+  void SetSystOption(Int_t systOpt){fSystUseRMSfromFlatDistr=systOpt;}
+  Int_t GetSystOption(){return fSystUseRMSfromFlatDistr;}
   void SubtractFeedDown(TH1D *hFDTempl);
+
   TGraphAsymmErrors* GetUncGraphFromHistos(TH1D *hRef,TH1D *hMin,TH1D *hMax);
   void CalculateEnvelope();
   TGraphAsymmErrors* GetGraphEnvelope(){return fgrEnvelope;}
@@ -51,7 +54,9 @@ class AliHFCorrelationFDsubtraction : public TNamed {
     if (i>=fLastTemplAdded){Printf("Get Template: Error"); return 0;}
     else return fhTemplates[i];
   }
-  
+  TH1D* ReflectHisto(TH1D *h,Double_t scale=1.);
+  TH1D* DuplicateHistoTo2piRange(TH1D *h,Double_t scale=0.5);
+
  private:
 
   Double_t fptmin;                                      //  min pt (D meson pt range)
@@ -76,8 +81,8 @@ class AliHFCorrelationFDsubtraction : public TNamed {
   TH1D* fhEnvelopeMinRatio;                                      // envelope with min relative variation
   TGraphAsymmErrors* fgrEnvelope;                                // graph with envelope
   TGraphAsymmErrors* fgrEnvelopeRatio;                           // graph with envelope of ratios
-  
-  ClassDef(AliHFCorrelationFDsubtraction,1);
+  Int_t fSystUseRMSfromFlatDistr;                      // different option to extract the systematic uncertainty. See .cxx, GetHistoRelSystUncMin method for a description
+  ClassDef(AliHFCorrelationFDsubtraction,2);
   
 };
 #endif
