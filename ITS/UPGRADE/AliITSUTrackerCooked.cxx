@@ -28,8 +28,8 @@ Double_t klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
 // seed "windows" in z and phi: MakeSeeds
 const Double_t kzWin=0.33, kpWin=3.14/4;
 // Maximal accepted impact parameters for the seeds 
-const Double_t kmaxDCAxy=7.;
-const Double_t kmaxDCAz= 2.;
+const Double_t kmaxDCAxy=3.;
+const Double_t kmaxDCAz= 3.;
 
 //************************************************
 // TODO:
@@ -212,16 +212,25 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     Float_t x,a;
     if (!c3->GetXAlphaRefPlane(x,a)) return kFALSE;
 
+    Double_t ca=TMath::Cos(a), sa=TMath::Sin(a);
+    Double_t x1 = r1[0]*ca + r1[1]*sa,
+             y1 =-r1[0]*sa + r1[1]*ca, z1 = r1[2];
+    Double_t x2 = r2[0]*ca + r2[1]*sa,
+             y2 =-r2[0]*sa + r2[1]*ca, z2 = r2[2];
+    Double_t x3 = x,  y3 = c3->GetY(), z3 = c3->GetZ();
+
     Double_t par[5];
-    par[0]=c3->GetY();
-    par[1]=c3->GetZ();
-    Float_t r3[3]; c3->GetGlobalXYZ(r3);
-    Double_t crv=f1(r1[0],r1[1],r2[0],r2[1],r3[0],r3[1]); //curvature
-    Double_t cx0=f2(r1[0],r1[1],r2[0],r2[1],r3[0],r3[1]); //curvature*x0
-    Double_t tgl12=f3(r1[0],r1[1],r2[0],r2[1],r1[2],r2[2]);
-    Double_t tgl23=f3(r2[0],r2[1],r3[0],r3[1],r2[2],r3[2]);
-    par[2]=TMath::Sin(TMath::ASin(r3[0]*crv - cx0) - a); //FIXME
-    if (TMath::Abs(par[2]) >= kAlmost1) return kFALSE;
+    par[0]=y3;
+    par[1]=z3;
+    Double_t crv=f1(x1, y1, x2, y2, x3, y3); //curvature
+    Double_t cx0=f2(x1, y1, x2, y2, x3, y3); //curvature*x0
+    Double_t tgl12=f3(x1, y1, x2, y2, z1, z2);
+    Double_t tgl23=f3(x2, y2, x3, y3, z2, z3);
+
+    Double_t sf=x*crv - cx0;
+    if (TMath::Abs(sf) >= kAlmost1) return kFALSE;
+    par[2]=sf;
+
     par[3]=0.5*(tgl12 + tgl23);
     Double_t bz=GetBz();
     par[4]=(TMath::Abs(bz) < kAlmost0Field) ? par[4]=kAlmost0 : crv/(bz*kB2C);
