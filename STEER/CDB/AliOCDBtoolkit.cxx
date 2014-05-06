@@ -36,6 +36,12 @@
 
   Example usage:
   AliOCDBtoolkit::MakeDiffExampleUseCase();
+  or from the AliOCDBtoolkit.sh in propmpt
+  ocdbMakeTable AliESDs.root ESD OCDBrec.list
+  ocdbMakeTable galice.root ESD OCDBsim.list
+
+  
+   
 
 
 
@@ -106,7 +112,7 @@ void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   //    - AliESDs.root
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  LoadOCDBFromLog("rec.log",0);
+  AliOCDBtoolkit::LoadOCDBFromLog("rec.log",0);
   const TMap *cdbMapLog= man->GetStorageMap();        // this is map of 
   const TList *cdbListLog=man->GetRetrievedIds();     // this is list of AliCDBId
   //  TList *cdbListLog0=man->GetRetrievedIds();     // this is list of AliCDBId
@@ -114,13 +120,13 @@ void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   TFile *fmc = TFile::Open("galice.root");
   TMap *cdbMapMC= (TMap*)fmc->Get("cdbMap");          // 
   TList *cdbListMC0= (TList*)fmc->Get("cdbList");     // this is list of TObjStrings
-  TList *cdbListMC = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
+  TList *cdbListMC = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
   //
   TFile *fesd = TFile::Open("AliESDs.root");
   TList *listESD = ((TTree*)fesd->Get("esdTree"))->GetUserInfo();
   TMap *cdbMapESD= (TMap*)listESD->FindObject("cdbMap");  
   TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
-  TList *cdbListESD = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
+  TList *cdbListESD = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
   //
   //
   //
@@ -142,14 +148,21 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
   //
   //
   TFile *file;
-  const TMap *cdbMap;
-  const TList *cdbList;
+  const TMap *cdbMap=0;
+  const TList *cdbList=0;
   //
   //
-  
+  AliCDBManager * man = AliCDBManager::Instance();
+
   if(fType.EqualTo("MC",TString::kIgnoreCase)){
         file = TFile::Open(fInput.Data());
-        cdbMap = (TMap*)file->Get("cdbMap");          // 
+        cdbMap = (TMap*)file->Get("cdbMap");
+	if (!cdbMap){
+	  printf("cdbMap does not exist in input file\t%s. Exiting\n",fInput.Data());
+	  return;
+	}
+	// 
+	man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
         TList *cdbListMC0 = (TList*)file->Get("cdbList");     // this is list of TObjStrings
         cdbList = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
   } 
@@ -157,11 +170,15 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
       file = TFile::Open(fInput.Data());
       TList *listESD = ((TTree*)file->Get("esdTree"))->GetUserInfo();
       cdbMap = (TMap*)listESD->FindObject("cdbMap");  
+      if (!cdbMap){
+	printf("cdbMap does not exist in input file\t%s. Exiting\n",fInput.Data());
+	return;
+      }
+      man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
       TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
       cdbList = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
     }
     else if(fType.EqualTo("log",TString::kIgnoreCase)){
-        AliCDBManager * man = AliCDBManager::Instance();
         LoadOCDBFromLog(fInput.Data(),0);
         cdbMap = man->GetStorageMap();        // this is map of 
         cdbList =man->GetRetrievedIds();     // this is list of AliCDBId
@@ -393,11 +410,11 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
   cdbList->Sort();
 
   TIter next(cdbList);
-  AliCDBId *CDBId;
-  TString cdbName;
-  TString cdbPath;
+  AliCDBId *CDBId=0;
+  TString cdbName="";
+  TString cdbPath="";
   TObjString *ostr;
-  AliCDBEntry *cdbEntry;
+  AliCDBEntry *cdbEntry=0;
   UInt_t hash;
   TMessage * file;
   Int_t size; 
@@ -411,6 +428,11 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
     
     cdbEntry = (AliCDBEntry*) man->Get(*CDBId);
+    if (!cdbEntry) {
+      printf("Object not avaliable\n");
+      CDBId->Print();
+      continue;
+    }
     TObject *obj = cdbEntry->GetObject();
     file = new TMessage(TBuffer::kWrite);
     file->WriteObject(obj);
