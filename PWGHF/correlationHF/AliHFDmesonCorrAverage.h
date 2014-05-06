@@ -85,7 +85,7 @@ class AliHFDmesonCorrAverage : public TNamed {
   Int_t	  fsys;					//system (0=pp, 1=pPb)
   Int_t	  fyear;				// year  (2010 for pp@7 TeV, 2013 for pPb@5.02 TeV)
   Bool_t fSystAlreadySet;                       // Set it to kTRUE when systematic uncertainties from external files are set
-  ClassDef(AliHFDmesonCorrAverage,1); //class for averaging D meson -hadron correlations
+  ClassDef(AliHFDmesonCorrAverage,2); //class for averaging D meson -hadron correlations
 };
 
 
