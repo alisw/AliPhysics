@@ -95,6 +95,7 @@ updateQA()
     fi
 
     logSummary=${logDirectory}/summary-${detector}-${dateString}.log
+    hostInfo >> ${logSummary}
     outputDir=$(substituteDetectorName ${detector} ${outputDirectory})
     tmpDetectorRunDir=${workingDirectory}/tmpQAtmpRunDir${detector}-${dateString}
     if ! mkdir -p ${tmpDetectorRunDir}; then
@@ -326,8 +327,7 @@ executePlanB()
   if [[ -n ${MAILTO} ]]; then 
     echo
     echo "trouble detected, sending email to ${MAILTO}"
-
-    grep BAD ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
+    cat ${logSummary} | mail -s "qa in need of assistance" ${MAILTO}
   fi
 }
 
@@ -358,7 +358,6 @@ summarizeLogs()
   #check logs
   local logstatus=0
   for log in ${dir}/${logFiles[*]}; do
-    finallog=${PWD%/}/${log}
     [[ ! -f ${log} ]] && continue
     errorSummary=$(validateLog ${log})
     validationStatus=$?
@@ -366,14 +365,14 @@ summarizeLogs()
     if [[ ${validationStatus} -eq 0 ]]; then 
       #in pretend mode randomly report an error in rec.log some cases
       if [[ -n ${pretend} && "${log}" == "rec.log" ]]; then
-        [[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${finallog} BAD random error" || echo "${finallog} OK"
+        [[ $(( ${RANDOM}%2 )) -ge 1 ]] && echo "${log} BAD random error" || echo "${log} OK"
       else
-        echo "${finallog} OK"
+        echo "${log} OK"
       fi
     elif [[ ${validationStatus} -eq 1 ]]; then
-      echo "${finallog} BAD ${errorSummary}"
+      echo "${log} BAD ${errorSummary}"
     elif [[ ${validationStatus} -eq 2 ]]; then
-      echo "${finallog} OK MWAH ${errorSummary}"
+      echo "${log} OK MWAH ${errorSummary}"
     fi
   done
 
@@ -604,6 +603,71 @@ guessYear()
   done
   echo ${year}
   return 0
+}
+
+hostInfo(){
+#
+# Hallo world -  Print AliRoot/Root/Alien system info
+#
+
+#
+# HOST info
+#
+    echo --------------------------------------
+        echo 
+        echo HOSTINFO
+        echo 
+        echo HOSTINFO HOSTNAME"      "$HOSTNAME
+        echo HOSTINFO DATE"          "`date`
+        echo HOSTINFO gccpath"       "`which gcc` 
+        echo HOSTINFO gcc version"   "`gcc --version | grep gcc`
+        echo --------------------------------------    
+
+#
+# ROOT info
+#
+        echo --------------------------------------
+        echo
+        echo ROOTINFO
+        echo 
+        echo ROOTINFO ROOT"           "`which root`
+        echo ROOTINFO VERSION"        "`root-config --version`
+        echo 
+        echo --------------------------------------
+
+
+#
+# ALIROOT info
+#
+        echo --------------------------------------
+        echo
+        echo ALIROOTINFO
+        echo 
+        echo ALIROOTINFO ALIROOT"        "`which aliroot`
+        echo ALIROOTINFO VERSION"        "`echo $ALICE_LEVEL`
+        echo ALIROOTINFO TARGET"         "`echo $ALICE_TARGET`
+        echo 
+        echo --------------------------------------
+
+#
+# Alien info
+#
+#echo --------------------------------------
+#echo
+#echo ALIENINFO
+#for a in `alien --printenv`; do echo ALIENINFO $a; done 
+#echo
+#echo --------------------------------------
+
+#
+# Local Info
+#
+        echo PWD `pwd`
+        echo Dir 
+        ls -al
+        echo
+        echo
+        echo
 }
 
 main "$@"
