@@ -42,6 +42,7 @@
 #include "AliTRDtrapConfig.h"
 #include "AliTRDtrapConfigHandler.h"
 #include "AliTRDCommonParam.h"
+#include "AliTRDgeometry.h"
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalPad.h"
@@ -287,6 +288,8 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
 	  // Online gain table ID 8
           return CacheCDBEntry(kIDOnlineGainFactor  ,"TRD/Calib/Krypton_2012-01"); 
           break;
+      default:
+	AliError(Form("unknown gaintable requested with ID"));
       }
       break;
 
@@ -318,7 +321,7 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
       return CacheCDBEntry(kIDFEE               ,"TRD/Calib/FEE"); 
       break;
     case kIDTrapConfig :
-      return CacheCDBEntry(kIDFEE               ,"TRD/Calib/TrapConfig"); 
+      return CacheCDBEntry(kIDTrapConfig        ,"TRD/Calib/TrapConfig"); 
       break;
     case kIDDCS :
       return CacheCDBEntry(kIDDCS               ,"TRD/Calib/DCS");
@@ -375,6 +378,8 @@ const TObject *AliTRDcalibDB::CacheCDBEntry(Int_t id, const char *cdbPath)
     fCDBEntries[id] = GetCDBEntry(cdbPath);
     if (fCDBEntries[id]) {
       fCDBCache[id] = fCDBEntries[id]->GetObject();
+      if (id == kIDOnlineGainFactor)
+	AliInfo(Form("loaded gain table: %s", fCDBEntries[id]->GetId().GetAliCDBPath().GetPath().Data()));
     }
   } 
   
@@ -1010,39 +1015,30 @@ Int_t AliTRDcalibDB::GetOnlineGainTableID()
         break;
       }
     }
-    if (tableName.CompareTo("Krypton_2011-01")               == 0) {
+    if (tableName.CompareTo("Krypton_2011-01")               == 0)
       fOnlineGainTableID = 1;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2011-01") == 0) {
+    else if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2011-01") == 0)
       fOnlineGainTableID = 2;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Gaintbl_Uniform_FGAN8_2011-01") == 0) {
+    else if (tableName.CompareTo("Gaintbl_Uniform_FGAN8_2011-01") == 0)
       fOnlineGainTableID = 3;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Krypton_2011-02")               == 0) {
+    else if (tableName.CompareTo("Krypton_2011-02")               == 0)
       fOnlineGainTableID = 4;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Krypton_2011-03")               == 0) {
+    else if (tableName.CompareTo("Krypton_2011-03")               == 0)
       fOnlineGainTableID = 5;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2012-01") == 0) {
+    else if (tableName.CompareTo("Gaintbl_Uniform_FGAN0_2012-01") == 0)
       fOnlineGainTableID = 6;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Gaintbl_Uniform_FGAN8_2012-01") == 0) {
+    else if (tableName.CompareTo("Gaintbl_Uniform_FGAN8_2012-01") == 0)
       fOnlineGainTableID = 7;
-      return fOnlineGainTableID;
-    }
-    if (tableName.CompareTo("Krypton_2011-03")               == 0) {
+    else if (tableName.CompareTo("Krypton_2012-01")               == 0)
       fOnlineGainTableID = 8;
-      return fOnlineGainTableID;
-    }
+    else
+      AliFatal(Form("unknown gaintable <%s> requested", tableName.Data()));
 
+    AliInfo(Form("looking for gaintable: %s (id %i)",
+		 tableName.Data(), fOnlineGainTableID));
+
+    if (fOnlineGainTableID > 0)
+      return fOnlineGainTableID;
   } 
   else {
 
@@ -1844,6 +1840,47 @@ AliTRDtrapConfig* AliTRDcalibDB::GetTrapConfig()
     }
 
     AliInfo(Form("using TRAPconfig \"%s\"", fTrapConfig->GetTitle()));
+
+    // we still have to load the gain tables
+    // if the gain filter is active
+    if (HasOnlineFilterGain()) {
+      const Int_t nDets = AliTRDgeometry::Ndet();
+      const Int_t nMcms = AliTRDgeometry::MCMmax();
+      const Int_t nChs  = AliTRDgeometry::ADCmax();
+
+      // gain factors are per MCM
+      // allocate the registers accordingly
+      for (Int_t ch = 0; ch < nChs; ++ch) {
+      	AliTRDtrapConfig::TrapReg_t regFGAN = (AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kFGA0 + ch);
+      	AliTRDtrapConfig::TrapReg_t regFGFN = (AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kFGF0 + ch);
+      	fTrapConfig->SetTrapRegAlloc(regFGAN, AliTRDtrapConfig::kAllocByMCM);
+      	fTrapConfig->SetTrapRegAlloc(regFGFN, AliTRDtrapConfig::kAllocByMCM);
+      }
+
+      for (Int_t iDet = 0; iDet < nDets; ++iDet) {
+      	AliTRDCalOnlineGainTableROC *gainTbl = GetOnlineGainTableROC(iDet);
+      	if (gainTbl) {
+	  const Int_t nRobs = AliTRDgeometry::GetStack(iDet) == 2 ?
+	    AliTRDgeometry::ROBmaxC0() : AliTRDgeometry::ROBmaxC1();
+      	  for (Int_t rob = 0; rob < nRobs; ++rob) {
+	    for (Int_t mcm = 0; mcm < nMcms; ++mcm) {
+	      AliTRDCalOnlineGainTableMCM *gainTblMCM = gainTbl->GetGainTableMCM(rob, mcm);
+
+	      // set ADC reference voltage
+	      fTrapConfig->SetTrapReg(AliTRDtrapConfig::kADCDAC, gainTblMCM->GetAdcdac(), iDet, rob, mcm);
+
+	      // set constants channel-wise
+	      for (Int_t ch = 0; ch < nChs; ++ch) {
+		AliTRDtrapConfig::TrapReg_t regFGAN = (AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kFGA0 + ch);
+		AliTRDtrapConfig::TrapReg_t regFGFN = (AliTRDtrapConfig::TrapReg_t) (AliTRDtrapConfig::kFGF0 + ch);
+		fTrapConfig->SetTrapReg(regFGAN, gainTblMCM->GetFGAN(ch), iDet, rob, mcm);
+		fTrapConfig->SetTrapReg(regFGFN, gainTblMCM->GetFGFN(ch), iDet, rob, mcm);
+	      }
+      	    }
+      	  }
+      	}
+      }
+    }
 
     return fTrapConfig;
   }
