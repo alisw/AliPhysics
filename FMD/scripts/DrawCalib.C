@@ -17,6 +17,7 @@ class TGMainFrame;
 class TGNumberEntry;
 class TGTextEntry;
 class TGHButtonGroup;
+class TGVButtonGroup;
 class TGCheckButton;
 class TGTextButton;
 class TGLayoutHints;
@@ -25,6 +26,7 @@ class TGLabel;
 class TGHorizontalFrame;
 class AliFMDCalibDrawer;
 class TGGroupFrame;
+
 #endif
 
 
@@ -38,6 +40,8 @@ public:
   TGLabel           fLOCDB;
   TGTextEntry       fOCDB; 
   TGTextButton      fInit;
+  TGHorizontalFrame fBottom;
+  TGGroupFrame      fWhere;
   TGHorizontalFrame fFDet;
   TGLabel           fLDet;
   TGNumberEntry     fDet;
@@ -50,7 +54,7 @@ public:
   TGHorizontalFrame fFStr;
   TGLabel           fLStr;
   TGNumberEntry     fStr;
-  TGHButtonGroup    fSelection;
+  TGVButtonGroup    fSelection;
   TGCheckButton     fPedestal;
   TGCheckButton     fNoise;
   TGCheckButton     fGain;
@@ -70,34 +74,86 @@ public:
   TCanvas*          fCRange;
   TCanvas*          fCThreshold;
 
-  Menu(Int_t runNo)
+  Menu(const Menu&)
+    : fMain(gClient->GetRoot()), 
+      fSetup(&fMain, "Setup", kHorizontalFrame), 
+      fLRun(&fSetup, "Run: "),
+      fRun(&fSetup, 0, 8, -1, TGNumberFormat::kNESInteger,
+	   TGNumberFormat::kNEAAnyNumber), 
+      fLOCDB(&fSetup, "OCDB:"),
+      fOCDB(&fSetup, "run"),       
+      fInit(&fSetup, "Init"),
+      fBottom(&fMain),
+      fWhere(&fBottom, "From where", kVerticalFrame),
+      fFDet(&fWhere), 
+      fLDet(&fFDet, "Detector:"),
+      fDet(&fFDet, -1, 1, -1, TGNumberFormat::kNESInteger,
+	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
+	   -1, 3), 
+      fFRing(&fWhere),
+      fLRing(&fFRing,"Ring:"),
+      fRing(&fFRing, ""), 
+      fFSec(&fWhere),
+      fLSec(&fFSec,"Sector:"),
+      fSec(&fFSec, -1, 1, -1, TGNumberFormat::kNESInteger,
+	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
+	   -1, 39), 
+      fFStr(&fWhere),
+      fLStr(&fFStr,"Strip:"),
+      fStr(&fFStr, -1, 1, -1, TGNumberFormat::kNESInteger,
+	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
+	   -1, 511), 
+      fSelection(&fBottom, "what"),
+      fPedestal(&fSelection, "Pedestal"), 
+      fNoise(&fSelection, "Noise"), 
+      fGain(&fSelection, "Gain"), 
+      fDead(&fSelection, "Dead"), 
+      fRate(&fSelection, "Rate"), 
+      fRange(&fSelection, "Range"), 
+      fThreshold(&fSelection, "Threshold"),
+      fDraw(&fMain, "Draw"),
+      fLayout(kLHintsExpandX, 2, 2, 2, 2),
+      fCPedestal(0),
+      fCNoise(0),
+      fCGain(0),
+      fCDead(0),
+      fCRate(0),
+      fCRange(0),
+      fCThreshold(0)
+  {}
+  Menu& operator=(const Menu&) { return *this; }
+  
+
+  Menu(Int_t runNo=0)
     : fMain(gClient->GetRoot()), 
       fSetup(&fMain, "Setup", kHorizontalFrame), 
       fLRun(&fSetup, "Run: "),
       fRun(&fSetup, runNo, 8, -1, TGNumberFormat::kNESInteger,
 	   TGNumberFormat::kNEAAnyNumber), 
       fLOCDB(&fSetup, "OCDB:"),
-      fOCDB(&fSetup, ""),       
+      fOCDB(&fSetup, "run"),       
       fInit(&fSetup, "Init"),
-      fFDet(&fMain), 
+      fBottom(&fMain),
+      fWhere(&fBottom, "From where", kVerticalFrame),
+      fFDet(&fWhere), 
       fLDet(&fFDet, "Detector:"),
       fDet(&fFDet, -1, 1, -1, TGNumberFormat::kNESInteger,
 	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
 	   -1, 3), 
-      fFRing(&fMain),
+      fFRing(&fWhere),
       fLRing(&fFRing,"Ring:"),
       fRing(&fFRing, ""), 
-      fFSec(&fMain),
+      fFSec(&fWhere),
       fLSec(&fFSec,"Sector:"),
       fSec(&fFSec, -1, 1, -1, TGNumberFormat::kNESInteger,
 	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
 	   -1, 39), 
-      fFStr(&fMain),
+      fFStr(&fWhere),
       fLStr(&fFStr,"Strip:"),
       fStr(&fFStr, -1, 1, -1, TGNumberFormat::kNESInteger,
 	   TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax,
 	   -1, 511), 
-      fSelection(&fMain, "what"),
+      fSelection(&fBottom, "what"),
       fPedestal(&fSelection, "Pedestal"), 
       fNoise(&fSelection, "Noise"), 
       fGain(&fSelection, "Gain"), 
@@ -130,12 +186,16 @@ public:
     fFStr.AddFrame(&fLStr,  &fLayout);
     fFStr.AddFrame(&fStr,   &fLayout);
 
+    fWhere.AddFrame(&fFDet,       &fLayout);
+    fWhere.AddFrame(&fFRing,      &fLayout);
+    fWhere.AddFrame(&fFSec,       &fLayout);
+    fWhere.AddFrame(&fFStr,       &fLayout);
+    
+    fBottom.AddFrame(&fWhere,     &fLayout);
+    fBottom.AddFrame(&fSelection, &fLayout);
+
     fMain.AddFrame(&fSetup,      &fLayout);
-    fMain.AddFrame(&fFDet,       &fLayout);
-    fMain.AddFrame(&fFRing,      &fLayout);
-    fMain.AddFrame(&fFSec,       &fLayout);
-    fMain.AddFrame(&fFStr,       &fLayout);
-    fMain.AddFrame(&fSelection,  &fLayout);
+    fMain.AddFrame(&fBottom,     &fLayout);
     fMain.AddFrame(&fDraw,       &fLayout);
 
     fRing.SetAlignment(kTextRight);
@@ -240,19 +300,48 @@ public:
 
       
 void
-DrawCalib()
+DrawCalib(Long_t runNo=145167, const char* store=0)
 {
 #ifdef __CINT__
   gSystem->Load("libFMDutil");
 #endif
 
   AliCDBManager* cdb = AliCDBManager::Instance();
-  // cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  // cdb->SetSpecificStorage("FMD/Calib/Pedestal", "local:///mnt/hitachi/ocdb/2011");
-  // cdb->SetSpecificStorage("FMD/Calib/PulseGain",
-  // "local:///mnt/hitachi/ocdb/2011");
-  cdb->SetDefaultStorage("local:///mnt/hitachi/ocdb/2011");
+  if (!store || store[0] == '\0') cdb->SetDefaultStorageFromRun(runNo);
+  else cdb->SetDefaultStorage(store);
+  cdb->SetRun(runNo);
 
-  Menu* m = new Menu(145167);
+  Menu* m = new Menu(runNo);
   // cd->DrawPedestals(d,r,s,t);
 }  
+#ifdef __MAKECINT__
+#pragma link C++ class Menu;
+#endif
+
+#ifndef __CINT__
+#include <TApplication.h>
+#include <cstdlib>
+/*
+  To compile: 
+
+  g++ -c `root-config --cflags --glibs` -L$ALICE_ROOT/lib/tgt_${ALICE_TARGET} \
+    -I${ALICE_ROOT}/include -I../ -lGeom -lMinuit -lPhysics -lVMC -lXMLParser \
+    -lProofPlayer -lSTEERBase -lSTEER -lCDB -lESD -lRAWDatabase -lRAWDatarec \
+    -lANALYSIS -lFMDbase -lFMDrec -lFMDutil DrawCalib.C 
+*/
+
+int main(int argc, char** argv) { 
+  int runNo = 145167;
+  if (argc > 1) runNo = atoi(argv[1]);
+  
+  TApplication app("app", 0, 0);
+
+  DrawCalib(runNo);
+
+  app.Run();
+
+  return 0;
+}
+#endif
+
+  
