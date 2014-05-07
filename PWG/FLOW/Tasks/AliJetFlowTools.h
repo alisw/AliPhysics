@@ -87,6 +87,7 @@ class AliJetFlowTools {
             fCentralityWeights = new TArrayD(1);
             fCentralityWeights->AddAt(1., 0);
         }
+        void            SetMergeSpectrumBins(TArrayI* a)        {fMergeBinsArray        =       a;}
         void            SetCentralityBin(TArrayI* bins)         {
             fCentralityArray = bins;
         }
@@ -206,8 +207,11 @@ class AliJetFlowTools {
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
+        static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
+        void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
                 TH1* h1, TH1* h2, Double_t r, TString name, 
                 TH1* relativeErrorInUp,
@@ -215,6 +219,15 @@ class AliJetFlowTools {
                 TH1* relativeErrorOutUp,
                 TH1* relativeErrorOutLow,
                 Float_t rho = 0.) const;
+        static void     GetSignificance(
+                TGraphErrors* n,                // points with stat error
+                TGraphAsymmErrors* shape,       // points with shape error
+                TGraphAsymmErrors* corr,        // points with stat error
+                Int_t low,                      // pt lower level
+                Int_t up                        // pt upper level
+        );
+        static void     MinimizeChi2();
+        static Double_t PhenixChi2(const Double_t *xx );
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -242,7 +255,7 @@ class AliJetFlowTools {
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k} charged jets, |#eta_{jet}|<%.1f", r, .9-r/10.));
+            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k}_{T} ch jets, |#eta_{jet}|<%.1f", r, .9-r/10.));
             t->SetTextColor(kBlack);
             t->SetTextFont(42);
             t->Draw("same");
@@ -358,7 +371,8 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         Bool_t                  fRefreshInput;          // re-read the input (called automatically if input list changes)
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
-        TArrayI*                fCentralityArray;       // array of bins that are merged
+        TArrayI*                fCentralityArray;       // array of centrality bins that are merged
+        TArrayI*                fMergeBinsArray;        // array of pt bins that are merged
         TArrayD*                fCentralityWeights;     // array of centrality weights
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency

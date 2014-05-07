@@ -57,6 +57,8 @@
 #include "TMath.h"
 #include "TVirtualFitter.h"
 #include "TFitResultPtr.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
 // aliroot includes
 #include "AliUnfolding.h"
 #include "AliAnaChargedJetResponseMaker.h"
@@ -84,6 +86,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fOutputFileName     ("UnfoldedSpectra.root"),
     fOutputFile         (0x0),
     fCentralityArray    (0x0),
+    fMergeBinsArray     (0x0),
     fCentralityWeights  (0x0),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
@@ -428,6 +431,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
         i++;
     }
     // get the status of TMinuit::mnhess(), fISW[1] == 3 means the hessian matrix was calculated succesfully
+    TH2D* hPearson(0x0);
     if(status == 0 && gMinuit->fISW[1] == 3) {
         // if the unfolding converged and the hessian matrix is reliable, plot the pearson coefficients
         TVirtualFitter *fitter(TVirtualFitter::GetFitter());
@@ -435,10 +439,11 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
         TMatrixD covarianceMatrix(fBinsTrue->GetSize()-1, fBinsTrue->GetSize()-1, fitter->GetCovarianceMatrix());
         TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix));
         pearson->Print();
-        TH2D *hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients, %s plane", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocal = MergeSpectrumBins(fMergeBinsArray, unfoldedLocal, hPearson);
     } else status = -1; 
 
     // step 3) refold the unfolded spectrum and save the ratio measured / refolded
@@ -483,6 +488,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
     fitStatus->SetBinContent(4, (!strcmp(suffix.Data(), "in")) ? fBetaIn : fBetaOut);
     fitStatus->GetXaxis()->SetBinLabel(4, (!strcmp(suffix.Data(), "in")) ? "fBetaIn" : "fBetaOut");
     fitStatus->Write();
+
     return unfoldedLocal;
 }
 //_____________________________________________________________________________
@@ -551,12 +557,14 @@ TH1D* AliJetFlowTools::UnfoldSpectrumSVD(
     // get the pearson coefficients from the covariance matrix
     TMatrixD covarianceMatrix = unfoldSVD.Ereco(errorTreatment);
     TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+    TH2D* hPearson(0x0);
     if(pearson) {
-        TH2D* hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         pearson->Print();
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients_%s", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocalSVD = MergeSpectrumBins(fMergeBinsArray, unfoldedLocalSVD, hPearson);
     } else return 0x0;       // return if unfolding didn't converge
 
     // plot singular values and d_i vector
@@ -675,6 +683,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
         i++;
     }
     // get the status of TMinuit::mnhess(), fISW[1] == 3 means the hessian matrix was calculated succesfully
+    TH2D* hPearson(0x0);
     if(status == 0 && gMinuit->fISW[1] == 3) {
         // if the unfolding converged and the hessian matrix is reliable, plot the pearson coefficients
         TVirtualFitter *fitter(TVirtualFitter::GetFitter());
@@ -682,11 +691,12 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
         TMatrixD covarianceMatrix(fBinsTrue->GetSize()-1, fBinsTrue->GetSize()-1, fitter->GetCovarianceMatrix());
         TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix));
         pearson->Print();
-        TH2D *hPearson(new TH2D(*pearson));
+        hPearson= new TH2D(*pearson);
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients, %s plane", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
     } else status = -1; 
+    if(fMergeBinsArray) unfoldedLocal = MergeSpectrumBins(fMergeBinsArray, unfoldedLocal, hPearson);
 
     // step 3) refold the unfolded spectrum and save the ratio measured / refolded
     TH1D *foldedLocal(fResponseMaker->MultiplyResponseGenerated(unfoldedLocal, resizedResponseLocal,kinematicEfficiencyLocal));
@@ -730,6 +740,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
     fitStatus->SetBinContent(4, (!strcmp(suffix.Data(), "in")) ? fBetaIn : fBetaOut);
     fitStatus->GetXaxis()->SetBinLabel(4, (!strcmp(suffix.Data(), "in")) ? "fBetaIn" : "fBetaOut");
     fitStatus->Write();
+
     return unfoldedLocal;
 }
 //_____________________________________________________________________________
@@ -791,12 +802,14 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
     // get the pearson coefficients from the covariance matrix
     TMatrixD covarianceMatrix = unfoldBayes.Ereco(errorTreatment);
     TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+    TH2D* hPearson(0x0);
     if(pearson) {
-        TH2D* hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         pearson->Print();
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients_%s", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocalBayes = MergeSpectrumBins(fMergeBinsArray, unfoldedLocalBayes, hPearson);
     } else return 0x0;       // return if unfolding didn't converge
 
     // 5) refold the unfolded spectrum
@@ -1094,11 +1107,17 @@ TH1D* AliJetFlowTools::GetPrior(
             return RebinTH1D(fPriorUser, fBinsTrue, Form("kPriorPythia_%s", suffix.Data()), kFALSE);
         } break;
         case kPriorChi2 : {
+            TArrayI* placeHolder(0x0);
+            if(fMergeBinsArray) {
+                placeHolder = fMergeBinsArray;
+                fMergeBinsArray = 0x0;
+            }
             if(fBinsTruePrior && fBinsRecPrior) {       // if set, use different binning for the prior
                 TArrayD* tempArrayTrue(fBinsTrue);      // temporarily cache the original binning
                 fBinsTrue = fBinsTruePrior;             // switch binning schemes (will be used in UnfoldSpectrumChi2())
                 TArrayD* tempArrayRec(fBinsRec);
                 fBinsRec = fBinsRecPrior;
+                // for the prior, do not re-bin the output
                 TH1D* measuredJetSpectrumChi2 = RebinTH1D((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsRec, TString("resized_chi2"), kFALSE);
                 TH1D* measuredJetSpectrumTrueBinsChi2 = RebinTH1D((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsTruePrior, TString("out"), kFALSE);
                 TH2D* resizedResponseChi2(RebinTH2D((!strcmp("in", suffix.Data())) ? fFullResponseIn : fFullResponseOut,fBinsTruePrior, fBinsRec, TString("chi2")));
@@ -1114,6 +1133,7 @@ TH1D* AliJetFlowTools::GetPrior(
                if(!unfolded) {
                     printf(" > GetPrior:: panic, couldn't get prior from Chi2 unfolding! \n");
                     printf("               probably Chi2 unfolding did not converge < \n");
+                    if(placeHolder) fMergeBinsArray = placeHolder;
                     return 0x0;
                 }
                 fBinsTrue = tempArrayTrue;  // reset bins borders
@@ -1130,10 +1150,13 @@ TH1D* AliJetFlowTools::GetPrior(
                 if(!unfolded) {
                     printf(" > GetPrior:: panic, couldn't get prior from Chi2 unfolding! \n");
                     printf("               probably Chi2 unfolding did not converge < \n");
+                    if(placeHolder) fMergeBinsArray = placeHolder;
                     return 0x0;
                 }
+                if(placeHolder) fMergeBinsArray = placeHolder;
             }
             break;
+
         }
         case kPriorMeasured : { 
             unfolded = (TH1D*)measuredJetSpectrumTrueBins->Clone(Form("kPriorMeasured_%s", suffix.Data()));       // copy template to unfolded to use as prior
@@ -1278,6 +1301,35 @@ TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale)
     else if (scale != 1.) histo->Scale(1./scale, "width");
     else printf(" > Histogram integral < 0, cannot normalize \n");
     return histo;
+}
+//_____________________________________________________________________________
+TH1D* AliJetFlowTools::MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr)
+{
+    // merge a spectrum histogram taking into account the correlation terms
+    if(!(bins&&spectrum)) {
+        printf(" > NULL pointer passed as argument in MergeSpectrumBins ! < \n");
+        return 0x0;
+    }
+    Double_t sum(0), error(0), pearson(0);
+    // take the sum of the bin content
+    sum += spectrum->GetBinContent(bins->At(0));
+    sum += spectrum->GetBinContent(bins->At(1));
+    // quadratically sum the errors
+    error += TMath::Power(spectrum->GetBinError(bins->At(0)), 2);
+    error += TMath::Power(spectrum->GetBinError(bins->At(1)), 2);
+    // add the covariance term
+    pearson = corr->GetBinContent(bins->At(0), bins->At(1));
+    if(!corr) {
+        printf(" > PANIC ! something is wrong with the covariance matrix, assuming full correlation ! < \n ");
+        pearson = 1;
+    }
+    error += 2.*spectrum->GetBinError(bins->At(0))*spectrum->GetBinError(bins->At(1))*pearson;
+    spectrum->SetBinContent(1, sum);
+    if(error <= 0) return spectrum;
+    spectrum->SetBinError(1, TMath::Sqrt(error));
+    printf(" > sum is %.2f \t error is %.8f < \n", sum, error);
+    printf(" > REPLACING BIN CONTENT OF FIRST BIN (%i) WITH MERGED BINS (%i) and (%i) < \n", 1, bins->At(0), bins->At(1));
+    return spectrum;
 }
 //_____________________________________________________________________________
 TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatrix) 
@@ -1484,6 +1536,10 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
             h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
             h->SetBarOffset(0.2);
        }
+       case kRatio : {
+            h->SetMarkerStyle(8);
+            h->SetMarkerSize(1);
+       } break;
        default : break;
     }
 }
@@ -1535,6 +1591,8 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
 //            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
             h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
             h->GetYaxis()->SetRangeUser(-.5, 1.);
+            h->SetMarkerStyle(8);
+            h->SetMarkerSize(1);
        } break;
        default : break;
     }
@@ -2293,10 +2351,10 @@ void AliJetFlowTools::GetShapeUncertainty(
    // reached in this function call.
    // if the option RMS is set to true, sigma holds the RMS value (equal to sigma as the mean is zero for relative errors) of the distribution of variations
    // which should correspond to a 68% confidence level
-   relativeErrorInUp = new TH1D(Form("max #sigma/|x| from %s", source.Data()), Form("max #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
-   relativeErrorInLow = new TH1D(Form("min #sigma/|x| from  %s", source.Data()), Form("min #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
-   relativeErrorOutUp = new TH1D(Form("max #sigma/|x| from  %s", source.Data()), Form("max #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
-   relativeErrorOutLow = new TH1D(Form("min #sigma/|x| from %s", source.Data()), Form("min #sigma/|x| from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorInUp = new TH1D(Form("relative error (up) from %s", source.Data()), Form("relative error (up) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorInLow = new TH1D(Form("relative error (low) from  %s", source.Data()), Form("relative error (low) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorOutUp = new TH1D(Form("relative error (up) from  %s", source.Data()), Form("relative error (up)  from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorOutLow = new TH1D(Form("relative error (low) from %s", source.Data()), Form("relative error (low) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
        if(!RMS) {
            relativeErrorInUp->SetBinContent(b+1, 1.);
@@ -2325,8 +2383,8 @@ void AliJetFlowTools::GetShapeUncertainty(
    
    // define an output histogram with the systematic error from this systematic constribution
    if(!relativeStatisticalErrorIn && !relativeStatisticalErrorOut) {
-       relativeStatisticalErrorIn = new TH1D("relative statistical error, in plane", "#sigma/|x|, statistical, in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
-       relativeStatisticalErrorOut = new TH1D("relative statistical error, out of plane", "#sigma/|x|, statistical, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+       relativeStatisticalErrorIn = new TH1D("relative statistical error, in plane", "relative statistical error, in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+       relativeStatisticalErrorOut = new TH1D("relative statistical error, out of plane", "relative statistital error, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
    }
 
    // prepare necessary canvasses
@@ -3459,8 +3517,6 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
 {
     // get v2 from difference of in plane, out of plane yield
     // h1 must hold the in-plane yield, h2 holds the out of plane  yield
-    // different binning is allowed but will mean that the error
-    // propagation is unreliable
     // r is the event plane resolution for the chosen centrality
     if(!(h1 && h2) ) {
         printf(" GetV2 called with NULL argument(s) \n ");
@@ -3862,3 +3918,215 @@ void AliJetFlowTools::MakeAU() {
     v2->Write();
 }
 //_____________________________________________________________________________
+void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphErrors* graph) {
+   // replace bins
+   Double_t x(0), y(0);
+   graph->GetPoint(0, x, y);
+   graph->SetPoint(array->At(0)-1, fBinsTrue->At(array->At(0)), y);
+   graph->SetPointError(array->At(0)-1, 10, graph->GetErrorY(0));
+   graph->SetPoint(array->At(1)-1, -5, -5);
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph) {
+   // replace bins
+   Double_t x(0), y(0);
+   graph->GetPoint(0, x, y);
+   graph->SetPoint(array->At(0)-1, fBinsTrue->At(array->At(0)), y);
+   Double_t yl = graph->GetErrorYlow(0);
+   Double_t yh = graph->GetErrorYhigh(0);
+   graph->SetPointError(array->At(0)-1, 10, 10, yl, yh);
+   graph->SetPoint(array->At(1)-1, -5, -5);
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::GetSignificance(
+        TGraphErrors* n,                // points with stat error
+        TGraphAsymmErrors* shape,       // points with shape error
+        TGraphAsymmErrors* corr,        // points with stat error
+        Int_t low,                      // lower bin (tgraph starts at 0)
+        Int_t up                        // upper bin
+        )
+{
+    // calculate some significance levels
+    Double_t statE(0), shapeE(0), corrE(0), statT(0), totalE(0), y(0), x(0), average(0), averageStat(0), chi2(0);
+
+    // print some stuff
+    for(Int_t i(low); i < up+1; i++) { 
+        n->GetPoint(i, x, y);
+        printf(" > v2 \t %.4f \n", y);
+    }
+    for(Int_t i(low); i < up+1; i++) { 
+        statE = n->GetErrorYlow(i);
+        printf(" > stat \t %.4f \n", statE);
+    }
+    for(Int_t i(low); i < up+1; i++) {    
+        shapeE = shape->GetErrorYlow(i);
+        printf(" > shape \t %.4f \n", shapeE);
+    }
+    for(Int_t i(low); i < up+1; i++) {    
+        corrE = corr->GetErrorYlow(i);
+        printf(" > corr \t %.4f \n", corrE);
+    }
+
+    for(Int_t i(low); i < up+1; i++) {
+        // set some flags to 0
+        statE = 0.;
+        shapeE = 0.;
+        corrE = 0.;
+        x = 0.;
+        y = 0.;
+        totalE = 0.;
+        // get the nominal point
+        n->GetPoint(i, x, y);
+        printf(" > v2 \t %.4f \n", y);
+        // get the uncorrelated errors. all errors are 'low' errors as all v2 points are positive in this range
+        statE = n->GetErrorYlow(i);
+        printf(" > stat \t %.4f \n", statE);
+        statT += statE;
+        shapeE = shape->GetErrorYlow(i);
+        printf(" > shape \t %.4f \n", shapeE);
+        // get the correalted error
+        corrE = corr->GetErrorYlow(i);
+        printf(" > corr \t %.4f \n", corrE);
+        // combine the errors
+        totalE = TMath::Sqrt(statE*statE+shapeE*shapeE) + TMath::Sqrt(corrE*corrE);
+        printf(" > Bin %i \t totalE %.4f \t statE %.4f \t v2 %.4f \t nSigma %.4f \t(just stat %.4f) < \n", i, totalE, statE, y, y/totalE, y/statE);
+        average += y/totalE;
+        averageStat += y/statE;
+        chi2 += TMath::Power(y/totalE, 2);
+    }
+    printf(" > Average n-sigmas: %.4f \t (stat only %.4f) <\n", average/(up-low+1), averageStat/(up-low+1));
+    printf(" > Chi2: %.4f <\n", chi2);
+    printf(" > p-value %.4f <\n", 1.-TMath::Gamma((up-low+1)/2., chi2/2.)); 
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::MinimizeChi2()
+{
+    // Choose method upon creation between:
+    // kMigrad, kSimplex, kCombined, 
+    // kScan, kFumili
+    ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kMigrad );
+    min.SetMaxFunctionCalls(1000000);
+    min.SetMaxIterations(100000);
+    min.SetTolerance(0.001);
+ 
+    ROOT::Math::Functor f(&PhenixChi2,1); 
+    double step[1] = {0.0000001};
+    double variable[1] = { 1};
+        
+    min.SetFunction(f);
+    // Set the free variables to be minimized!
+    min.SetVariable(0,"epsilon",variable[0], step[0]);
+
+    min.Minimize(); 
+    const double *xs = min.X();
+    cout << "Minimum: f(" << xs[0] << "):"  << PhenixChi2(xs) << endl;
+    cout << "p-value: p(" << PhenixChi2(xs) << ", 6) " << TMath::Prob(PhenixChi2(xs), 6) << endl;
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data is " << TMath::Prob(PhenixChi2(xs), 6) << endl; 
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
+{
+    // define arrays with results and errors
+   
+
+    // very ugly, but two set of data, for 0-5  and 30-50 pct centrality
+    // this function has to be static, so this is the easiest way to implement it in the class ...
+
+    // these points are for 0-5  centrality, 30 - 100 gev (in which data is reported)
+/*
+   
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+    };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+ */
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+   
+    // return the function value at certain epsilon
+    const Double_t x = xx[0];
+    Double_t chi2(0);
+    Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
+
+    // implemtation of eq 3 of arXiv:0801.1665v2
+    // this will be minimized w.r.t. 'x', which is epsilon_B in the paper
+    for(Int_t i(0); i < counts; i++) {
+        // quadratic sum of statistical and uncorrelated systematic error
+        // used in paper as 'type A; error
+        Double_t e = TMath::Sqrt(stat[i]*stat[i] + shape[i]*shape[i]);
+
+        // sum of v2 plus epsilon times correlated error minus hypothesis (0)
+        // also the numerator of equation 3 of phenix paper
+        Double_t numerator = TMath::Power(v2[i] + x*corr[i], 2);
+
+        // denominator of equation 3 of phenix paper
+        Double_t denominator = TMath::Power((e*(v2[i]+x*corr[i]))/v2[i], 2);
+
+        // add to the sum
+        chi2 += numerator/denominator;
+    }
+    // add the square of epsilon to the total chi2 as penalty
+    chi2 += x*x;
+
+    return chi2;
+}
