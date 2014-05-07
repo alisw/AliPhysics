@@ -57,46 +57,31 @@ TNamed(calibda), fADCchannelRef(calibda.fADCchannelRef)
   SetTitle(calibda.GetName());
   Reset();
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules;
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-
-    for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
+  
+  for(Int_t supermodule = 0; supermodule < nSMod; supermodule++)
+  {
     nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
     nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-    // in reality they are 1/3 but leave them as 1/2
-
-    if(supermodule /2 == 5)
-      nRow = nRow/2;
-    if(supermodule > 11  && supermodule < 18)
-      nCol  = nCol*2/3;
     
-    for(Int_t column = 0; column<nCol; column++) {
-      
-      for(Int_t row = 0; row<nRow; row++) {
-        
-        fADCchannel[supermodule][column][row] = 
-        calibda.GetADCchannel(supermodule,column,row);
-        
-        fADCchannelOnline[supermodule][column][row] =
-        calibda.GetADCchannelOnline(supermodule,column,row);
-        
-        fADCchannelDecal[supermodule][column][row] =
-        calibda.GetADCchannelDecal(supermodule,column,row);
-        
-        fADCpedestal[supermodule][column][row] = 
-        calibda.GetADCpedestal(supermodule,column,row);
-        
-        fTimeChannelDecal[supermodule][column][row] = 
-        calibda.GetTimeChannelDecal(supermodule,column,row);
-        
+    //Init all SM equally, even the channels known to not exist.
+    
+    for(Int_t column = 0; column<nCol; column++)
+    {
+      for(Int_t row = 0; row<nRow; row++)
+      {
+        SetADCchannel      (supermodule,column,row, calibda.GetADCchannel      (supermodule,column,row));
+        SetADCchannelOnline(supermodule,column,row, calibda.GetADCchannelOnline(supermodule,column,row));
+        SetADCchannelDecal (supermodule,column,row, calibda.GetADCchannelDecal (supermodule,column,row));
+        SetADCpedestal     (supermodule,column,row, calibda.GetADCpedestal     (supermodule,column,row));
+        SetTimeChannelDecal(supermodule,column,row, calibda.GetTimeChannelDecal(supermodule,column,row));
         for(Int_t bc = 0; bc < 4; bc++)
-          fTimeChannel[supermodule][column][row][bc] = 
-          calibda.GetTimeChannel(supermodule,column,row,bc);
-        
-      }
-    }
-  }
+          SetTimeChannel(supermodule,column,row,bc,calibda.GetTimeChannel(supermodule,column,row,bc));
+      } // col
+    } // row
+  } // SM
 }
 
 //________________________________________________________________
@@ -109,46 +94,31 @@ AliEMCALCalibData &AliEMCALCalibData::operator =(const AliEMCALCalibData& calibd
   
   fADCchannelRef = calibda.GetADCchannelRef() ;
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules;
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+  
+  for(Int_t supermodule = 0; supermodule < nSMod; supermodule++)
+  {
+    nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+    nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
- for(Int_t supermodule = 0; supermodule < nSMod; supermodule++) {
-   nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-   nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  // in reality they are 1/3 but leave them as 1/2
-
-    if(supermodule /2 == 5)
-      nRow = nRow/2;
-    if(supermodule > 11 && supermodule < 18)
-      nCol = nCol*2/3;
+    //Init all SM equally, even the channels known to not exist.
     
-    for(Int_t column = 0; column<nCol; column++) {
-      
-      for(Int_t row = 0; row<nRow; row++) {
-        
-        fADCchannel[supermodule][column][row] = 
-        calibda.GetADCchannel(supermodule,column,row);
-
-        fADCchannelOnline[supermodule][column][row] =
-        calibda.GetADCchannelOnline(supermodule,column,row);
-        
-        fADCchannelDecal[supermodule][column][row] = 
-        calibda.GetADCchannelDecal(supermodule,column,row);
-        
-        fADCpedestal[supermodule][column][row] = 
-        calibda.GetADCpedestal(supermodule,column,row);
-        
-        fTimeChannelDecal[supermodule][column][row] = 
-        calibda.GetTimeChannelDecal(supermodule,column,row);
-        
+    for(Int_t column = 0; column<nCol; column++)
+    {
+      for(Int_t row = 0; row<nRow; row++)
+      {
+        SetADCchannel      (supermodule,column,row, calibda.GetADCchannel      (supermodule,column,row));
+        SetADCchannelOnline(supermodule,column,row, calibda.GetADCchannelOnline(supermodule,column,row));
+        SetADCchannelDecal (supermodule,column,row, calibda.GetADCchannelDecal (supermodule,column,row));
+        SetADCpedestal     (supermodule,column,row, calibda.GetADCpedestal     (supermodule,column,row));
+        SetTimeChannelDecal(supermodule,column,row, calibda.GetTimeChannelDecal(supermodule,column,row));
         for(Int_t bc = 0; bc < 4; bc++)
-          fTimeChannel[supermodule][column][row][bc] = 
-          calibda.GetTimeChannel(supermodule,column,row,bc);
-        
-      }
-    }
-  }
+          SetTimeChannel(supermodule,column,row,bc,calibda.GetTimeChannel(supermodule,column,row,bc));
+      } // col
+    } // row
+  } // col
   
   return *this;
 }
@@ -164,31 +134,26 @@ void AliEMCALCalibData::Reset()
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
-   for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
+   for (Int_t supermodule=0; supermodule<nSMod; supermodule++)
+  {
    nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
    nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-  // in reality they are 1/3 but leave them as 1/2
     
-    if(supermodule /2 == 5)
-      nRow = nRow/2;
-    if(supermodule > 11 && supermodule < 18)
-      nCol  = nCol*2/3;
+    //Init all SM equally, even the channels known to not exist.
 
-    for (Int_t column=0; column < nCol; column++){
-      
-      for (Int_t row = 0; row < nRow; row++){
-        
-        fADCpedestal     [supermodule][column][row]=0.;
-        
-        fADCchannelDecal [supermodule][column][row]=1.;
-        fADCchannel      [supermodule][column][row]=fADCchannelRef;
-        fADCchannelOnline[supermodule][column][row]=fADCchannelRef;
-        
-        fTimeChannelDecal[supermodule][column][row]=0.;
-        
+    for (Int_t column=0; column < nCol; column++)
+    {
+      for (Int_t row = 0; row < nRow; row++)
+      {
+       
+        SetADCchannel      (supermodule,column,row, fADCchannelRef);
+        SetADCchannelOnline(supermodule,column,row, fADCchannelRef);
+        SetADCchannelDecal (supermodule,column,row, 1);
+        SetADCpedestal     (supermodule,column,row, 0);
+        SetTimeChannelDecal(supermodule,column,row, 0);
         for(Int_t bc = 0; bc < 4; bc++)
-          fTimeChannel[supermodule][column][row][bc]=0;
-        
+          SetTimeChannel(supermodule,column,row, bc, 0);
+
       }
     }
   }	
@@ -198,132 +163,47 @@ void AliEMCALCalibData::Reset()
 void  AliEMCALCalibData::Print(Option_t *option) const
 {
   // Print tables of pedestals and ADC channels widths
-  // options are: "gain", "ped", "decal", "time", "all"
+  // options are: "gain", "ped", "online", "decal", "time", "timdecal", "all"
   
-  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules; 
+  Int_t nSMod = AliEMCALGeoParams::fgkEMCALModules;
   Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
   Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-
-  if (strstr(option,"ped") || strstr(option,"all")) {
-    printf("\n	----	Pedestal values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-       nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-       nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-        nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-         nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          printf("[c%d,r%d] %2.4f ",column, row, fADCpedestal[supermodule][column][row]);
-        }
-        printf("\n");
-      }
-    } 
-  }
   
-  if (strstr(option,"gain") || strstr(option,"all")) {
-    printf("\n	----	ADC channel values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-        nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-        nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
+  for (Int_t supermodule = 0; supermodule < nSMod; supermodule++)
+  {
+    nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
+    nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
 
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-        nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-        nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          printf("[c%d,r%d] %2.4f ",column, row, fADCchannel[supermodule][column][row]);
-        }
-        printf("\n");
-      }
-    }   
-  }
-  
-  if (strstr(option,"adconline") || strstr(option,"all")) {
-    printf("\n	----	ADC online channel values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-      nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-      nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          printf("[c%d,r%d] %2.4f ",column, row,fADCchannelOnline[supermodule][column][row]);
-        }
-        printf("\n");
+    //Init all SM equally, even the channels known to not exist.
+
+    printf("============== Supermodule %d\n",supermodule+1);
+    for (Int_t column = 0; column < nCol; column++)
+    {
+      for (Int_t row = 0; row < nRow; row++)
+      {
+        printf("[col %d,row %d] ",column, row);
+        if (strstr(option,"gain") || strstr(option,"all"))
+          printf("calib=%2.4f ",GetADCchannel(supermodule,column,row));
+        
+        if (strstr(option,"online") || strstr(option,"all"))
+          printf("calib0=%2.4f ", GetADCchannelOnline(supermodule,column,row));
+        
+        if (strstr(option,"decal") || strstr(option,"all"))
+          printf("calibDecal=%2.4f ",GetADCchannelDecal(supermodule,column,row));
+        
+        if (strstr(option,"ped") || strstr(option,"all"))
+          printf("ped=%2.4f ", GetADCpedestal(supermodule,column,row));
+        
+        if (strstr(option,"time") || strstr(option,"all"))
+          printf("time::bc0 =%2.4f, bc1=%2.4f, bc2=%2.4f, bc3=%2.4f ",
+                 GetTimeChannel(supermodule,column,row,0), GetTimeChannel(supermodule,column,row,1), GetTimeChannel(supermodule,column,row,2), GetTimeChannel(supermodule,column,row,3));
+        
+        if (strstr(option,"timdecal") || strstr(option,"all"))
+          printf("timeDecal=%2.4f ", GetTimeChannelDecal(supermodule,column,row));
+        
+         if (strstr(option,"all") || (row%4==3) ) printf("\n");
       }
     }
-  }
-  
-  if (strstr(option,"adcdecal") || strstr(option,"all")) {
-    printf("\n	----	ADC decalibration channel values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-        nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-        nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          printf("[c%d,r%d] %2.4f ",column, row,fADCchannelDecal[supermodule][column][row]);
-        }
-        printf("\n");
-      }
-    }   
-  }
-  
-  if (strstr(option,"time") || strstr(option,"all")) {
-    printf("\n	----	time channel values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-      nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-      nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-        nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-        nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          for(Int_t bc = 0; bc < 4; bc++)
-            printf(" %2.4f ",fTimeChannel[supermodule][column][row][bc]);
-        }
-        printf("\n");
-      }
-    }   
-  }
-  
-  if (strstr(option,"time") || strstr(option,"all")) {
-    printf("\n	----	time decalibration channel values	----\n\n");
-    for (Int_t supermodule=0; supermodule<nSMod; supermodule++){
-       nCol  = AliEMCALGeoParams::fgkEMCALCols;    //48
-       nRow  = AliEMCALGeoParams::fgkEMCALRows;    //24
-      // in reality they are 1/3 but leave them as 1/2
-      if(supermodule /2 == 5)
-        nRow = nRow/2;
-      if(supermodule > 11 && supermodule < 18)
-        nCol = nCol*2/3;
-      printf("============== Supermodule %d\n",supermodule+1);
-      for (Int_t column=0; column<nCol; column++){
-        for (Int_t row=0; row<nRow; row++){
-          printf(" %2.4f ",fTimeChannelDecal[supermodule][column][row]);
-        }
-        printf("\n");
-      }
-    }   
   }
 }
 
@@ -334,8 +214,10 @@ Float_t AliEMCALCalibData::GetADCchannel(Int_t supermodule, Int_t column, Int_t 
   // All indexes start from 0!
   // Supermodule, column,raw should follow the ALICE convention:
   // supermodule 0:11, column 0:47, row 0:23
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
   
-  return fADCchannel[supermodule][column][row];
+  if(supermodule < 12) return fADCchannel    [supermodule]   [column][row];
+  else                 return fADCchannelDCAL[supermodule-12][column][row];
 }
 
 //________________________________________________________________
@@ -345,8 +227,10 @@ Float_t AliEMCALCalibData::GetADCchannelOnline(Int_t supermodule, Int_t column, 
   // All indexes start from 0!
   // Supermodule, column,raw should follow the ALICE convention:
   // supermodule 0:11, column 0:47, row 0:23
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
   
-  return fADCchannelOnline[supermodule][column][row];
+  if(supermodule < 12) return fADCchannelOnline    [supermodule]   [column][row];
+  else                 return fADCchannelOnlineDCAL[supermodule-12][column][row];
 }
 
 //________________________________________________________________
@@ -356,71 +240,100 @@ Float_t AliEMCALCalibData::GetADCchannelDecal(Int_t supermodule, Int_t column, I
   // All indexes start from 0!
   // Supermodule, column,raw should follow the ALICE convention:
   // supermodule 0:11, column 0:47, row 0:23
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
   
-  return fADCchannelDecal[supermodule][column][row];
+  if(supermodule < 12) return fADCchannelDecal    [supermodule]   [column][row];
+  else                 return fADCchannelDecalDCAL[supermodule-12][column][row];
 }
 
 //________________________________________________________________
 Float_t AliEMCALCalibData::GetADCpedestal(Int_t supermodule, Int_t column, Int_t row) const
 {
   // Get ADC pedestal values
-  return fADCpedestal[supermodule][column][row];
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) return fADCpedestal    [supermodule]   [column][row];
+  else                 return fADCpedestalDCAL[supermodule-12][column][row];
 }
 
 //________________________________________________________________
 Float_t AliEMCALCalibData::GetTimeChannel(Int_t supermodule, Int_t column, Int_t row, Int_t bc) const
 {
-  // Set channel time witdth values
-  return fTimeChannel[supermodule][column][row][bc];
+  // Set channel time values
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) return fTimeChannel    [supermodule]   [column][row][bc];
+  else                 return fTimeChannelDCAL[supermodule-12][column][row][bc];
 }
 
 //________________________________________________________________
 Float_t AliEMCALCalibData::GetTimeChannelDecal(Int_t supermodule, Int_t column, Int_t row) const
 {
-  // Set channel time witdth values
-  return fTimeChannelDecal[supermodule][column][row];
+  // Set channel time decalibrated values
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) return fTimeChannelDecal    [supermodule]   [column][row];
+  else                 return fTimeChannelDecalDCAL[supermodule-12][column][row];
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCchannel(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 { 
   // Set ADC channel width values
-  fADCchannel[supermodule][column][row] = value;
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fADCchannel    [supermodule]   [column][row] = value;
+  else                 fADCchannelDCAL[supermodule-12][column][row] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCchannelOnline(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 {
   // Set ADC channel online width values
-  fADCchannelOnline[supermodule][column][row] = value;
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fADCchannelOnline    [supermodule]   [column][row] = value;
+  else                 fADCchannelOnlineDCAL[supermodule-12][column][row] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCchannelDecal(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 { 
   // Set ADC channel width values, decalibration
-  fADCchannelDecal[supermodule][column][row] = value;
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fADCchannelDecal    [supermodule]   [column][row] = value;
+  else                 fADCchannelDecalDCAL[supermodule-12][column][row] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetADCpedestal(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 {
   // Set ADC pedestal values
-  fADCpedestal[supermodule][column][row] = value;
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fADCpedestal    [supermodule]   [column][row] = value;
+  else                 fADCpedestalDCAL[supermodule-12][column][row] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetTimeChannel(Int_t supermodule, Int_t column, Int_t row, Int_t bc, Float_t value)
 {
-  // Set ADC pedestal values
-  fTimeChannel[supermodule][column][row][bc] = value;
+  // Set time per channel and bunch crossing values
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fTimeChannel    [supermodule]   [column][row][bc] = value;
+  else                 fTimeChannelDCAL[supermodule-12][column][row][bc] = value;
 }
 
 //________________________________________________________________
 void AliEMCALCalibData::SetTimeChannelDecal(Int_t supermodule, Int_t column, Int_t row, Float_t value)
 {
-  // Set ADC pedestal values
-  fTimeChannelDecal[supermodule][column][row] = value;
+  // Set decalibrated time per channel values
+  // DCal has its own array, starting from SM 12, index 0, same col-row size
+  
+  if(supermodule < 12) fTimeChannelDecal    [supermodule]   [column][row] = value;
+  else                 fTimeChannelDecalDCAL[supermodule-12][column][row] = value;
 }
 
 

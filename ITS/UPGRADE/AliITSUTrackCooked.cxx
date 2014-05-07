@@ -38,6 +38,20 @@ AliITSUTrackCooked::~AliITSUTrackCooked()
   //--------------------------------------------------------------------
 }
 
+Int_t AliITSUTrackCooked::Compare(const TObject *o) const {
+  //-----------------------------------------------------------------
+  // This function compares tracks according to the their curvature
+  //-----------------------------------------------------------------
+  const AliITSUTrackCooked *t=(const AliITSUTrackCooked*)o;
+  Double_t co=TMath::Abs(t->OneOverPt());
+  Double_t c =TMath::Abs(OneOverPt());
+  //Double_t co=t->GetSigmaY2()*t->GetSigmaZ2();
+  //Double_t c =GetSigmaY2()*GetSigmaZ2();
+  if (c>co) return 1;
+  else if (c<co) return -1;
+  return 0;
+}
+
 void AliITSUTrackCooked::SetClusterIndex(Int_t l, Int_t i)
 {
     //--------------------------------------------------------------------

@@ -27,6 +27,7 @@ public:
 //Other functions    
     Int_t GetClusterIndex(Int_t i) const { return fIndex[i]; }
     Double_t GetPIDsignal() const { return 0; }
+    Int_t Compare(const TObject *o) const;
 
     void SetClusterIndex(Int_t layer, Int_t index);
     Bool_t Propagate(const AliCluster *c, Double_t thick, Double_t x0rho);

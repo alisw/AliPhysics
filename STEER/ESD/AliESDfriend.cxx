@@ -91,6 +91,21 @@ AliESDfriend::~AliESDfriend() {
 }
 
 
+void AliESDfriend::Reset()
+{
+  //
+  // Reset friend information
+  //
+  fTracks.Delete();
+  for (Int_t i=0;i<72;i++)
+  {
+    fNclustersTPC[i]=0;
+    fNclustersTPCused[i]=0;
+  }
+  delete fESDVZEROfriend; fESDVZEROfriend=0;
+  delete fESDTZEROfriend; fESDTZEROfriend=0;
+}  
+
 
 void AliESDfriend::SetVZEROfriend(AliESDVZEROfriend * obj)
 {
