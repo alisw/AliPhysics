@@ -16,6 +16,7 @@
 #include "AliBaseESDTask.h"
 #include "AliFMDEventInspector.h"
 #include "AliFMDEnergyFitter.h"
+#include "AliFMDESDFixer.h"
 class AliESDEvent;
 class TH2D;
 class TList;
@@ -76,6 +77,14 @@ public:
    */
   virtual Bool_t Book();
   /** 
+   * Called on first event _before_ reading corrections.  Here, the
+   * user class can do additional checking to see if the some (more or
+   * less) corrections are needed.
+   * 
+   * @param esd Event 
+   */
+  virtual void PreCorrections(const AliESDEvent* esd);
+  /** 
    * Called after reading in the first event. Here we can setup stuff
    * depending on the conditions we're running under.
    * 
@@ -121,6 +130,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const{return fEventInspector;}
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  AliFMDESDFixer& GetESDFixer() { return fESDFixer; }
   /**
    * Get reference to the EnergyFitter algorithm 
    * 
@@ -188,6 +203,7 @@ protected:
   AliFMDEnergyFitterTask& operator=(const AliFMDEnergyFitterTask& o);
 
   AliFMDEventInspector fEventInspector; // Algorithm
+  AliFMDESDFixer       fESDFixer;       // Algorithm
   AliFMDEnergyFitter   fEnergyFitter;   // Algorithm
   Bool_t               fOnlyMB;         // Only MB flag
 

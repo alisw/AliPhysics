@@ -21,7 +21,6 @@
 #include <TList.h>
 #include "AliForwardUtil.h"
 #include "AliFMDMultCuts.h"
-#include <TBits.h>
 class AliESDFMD;
 class TAxis;
 class TList;
@@ -133,20 +132,6 @@ public:
    * 
    */
   void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }  
-  /** 
-   * In case of a displaced vertices recalculate eta and angle correction
-   * 
-   * @param use recalculate or not
-   * 
-   */
-  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
-  /** 
-   * Set whether to consider invalid multiplicities as null (or empty)
-   * signal. 
-   * 
-   * @param flag If true, count invalids as empty
-   */
-  void SetInvalidIsEmpty(Bool_t flag) { fInvalidIsEmpty = flag; }
   /**
    * Set whether to ignore the ESD info when angle correcting, this
    * is to counter a known issue where the info in the ESD is incorrect
@@ -244,48 +229,6 @@ public:
    * @param c Cuts object
    */  
   void SetHCuts(const AliFMDMultCuts& c) { fHCuts = c; }
-  /* @} */
-  /** 
-   * @{ 
-   * @name Dead strip handling 
-   */
-  /** 
-   * Add a dead strip
-   * 
-   * @param d  Detector
-   * @param r  Ring 
-   * @param s  Sector 
-   * @param t  Strip
-   */
-  void AddDead(UShort_t d, Char_t r, UShort_t s, UShort_t t);
-  /** 
-   * Add a dead region in a detector ring
-   * 
-   * @param d   Detector
-   * @param r   Ring
-   * @param s1  First sector (inclusive)
-   * @param s2  Last sector (inclusive)
-   * @param t1  First strip (inclusive)
-   * @param t2  Last strip (inclusive)
-   */
-  void AddDeadRegion(UShort_t d, Char_t r, UShort_t s1, UShort_t s2, 
-		     UShort_t t1, UShort_t t2);
-  /** 
-   * Add dead strips from a script.  The script is supposed to accept
-   * a pointer to this object (AliFMDSharingFilter) and then call
-   * AddDead or AddDeadRegion as needed.
-   * 
-   * @code 
-   * void deadstrips(AliFMDSharingFilter* filter)
-   * { 
-   *   filter->AddDead(...);
-   *   // ... and so on 
-   * }
-   * @endcode 
-   *
-   * @param script The script to read dead strips from. 
-   */
-  void AddDead(const Char_t* script);
   /* @} */
 protected:
   /** 
@@ -443,17 +386,6 @@ protected:
    * @return 
    */
   virtual Double_t GetLowCut(UShort_t d, Char_t r, Double_t eta) const;
-  /** 
-   * Check if a strip is marked as dead 
-   * 
-   * @param d   Detector 
-   * @param r   Ring
-   * @param s   Sector 
-   * @param t   Strip 
-   * 
-   * @return true if dead 
-   */
-  virtual Bool_t IsDead(UShort_t d, Char_t r, UShort_t s, UShort_t t) const;
   TList    fRingHistos;      // List of histogram containers
   Bool_t   fCorrectAngles;   // Whether to work on angle corrected signals
   TH2*     fHighCuts;        // High cuts used
@@ -464,12 +396,9 @@ protected:
   AliFMDMultCuts fHCuts;     // Cuts object for high cuts
   Bool_t   fUseSimpleMerging;// enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
-  Bool_t   fRecalculateEta;  // Whether to recalc eta and angle cor (disp vtx)
-  TBits    fXtraDead;
-  Bool_t   fInvalidIsEmpty;  // Consider kInvalidMult as zero 
   Bool_t   fMergingDisabled; // If true, do not merge
   Bool_t   fIgnoreESDForAngleCorrection; // Ignore ESD information when angle correcting
-  ClassDef(AliFMDSharingFilter,10); //
+  ClassDef(AliFMDSharingFilter,11); //
 };
 
 #endif

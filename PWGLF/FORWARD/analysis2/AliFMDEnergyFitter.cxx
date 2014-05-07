@@ -202,6 +202,7 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("regCut",        fRegularizationCut));
   d->Add(AliForwardUtil::MakeParameter("deltaShift", 
 				       AliLandauGaus::EnableSigmaShift()));
+
   if (fRingHistos.GetEntries() <= 0) { 
     AliFatal("No ring histograms where defined - giving up!");
     return;
@@ -325,11 +326,12 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 	  Float_t mult = input.Multiplicity(d,r,s,t);
 	  
 	  // Keep dead-channel information. 
-	  if(mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) 
+	  if (mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) 
 	    continue;
 
 	  // Get the pseudo-rapidity 
 	  Double_t eta1 = input.Eta(d,r,s,t);
+
 	  // Int_t ieta = fEtaAxis.FindBin(eta1);
 	  // if (ieta < 1 || ieta >  fEtaAxis.GetNbins()) continue; 
 
@@ -524,6 +526,18 @@ AliFMDEnergyFitter::CheckSkip(UShort_t d, Char_t r, UShort_t skips)
   return (t & skips) == t;
 }
 
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDEnergyFitter::Print(Option_t*) const
@@ -534,34 +548,31 @@ AliFMDEnergyFitter::Print(Option_t*) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << ind << " Low cut:                " << fLowCut << " E/E_mip\n"
-	    << ind << " Max(particles):         " << fNParticles << '\n'
-	    << ind << " Min(entries):           " << fMinEntries << '\n'
-	    << ind << " Fit range:              " 
-	    << fFitRangeBinWidth << " bins\n"
-	    << ind << " Make fits:              " 
-	    << (fDoFits ? "yes\n" : "no\n")
-	    << ind << " Make object:            " 
-	    << (fDoMakeObject ? "yes\n" : "no\n")
-	    << ind << " Max E/E_mip:            " << fMaxE << '\n'
-	    << ind << " N bins:                 " << fNEbins << '\n'
-	    << ind << " Increasing bins:        " 
-	    << (fUseIncreasingBins ?"yes\n" : "no\n")
-	    << ind << " max(delta p/p):         " << fMaxRelParError << '\n'
-	    << ind << " max(chi^2/nu):          " << fMaxChi2PerNDF << '\n'
-	    << ind << " min(a_i):               " << fMinWeight << '\n'
-	    << ind << " Residuals:              "; 
+  AliForwardUtil::PrintTask(*this);
+
+  gROOT->IncreaseDirLevel();
+  PFV("Low cut [E/E_mip]",	fLowCut);
+  PFV("Max(particles)",	        fNParticles);
+  PFV("Min(entries)",	        fMinEntries);
+  PFV("Fit range [bins]",       fFitRangeBinWidth);
+  PFB("Make fits",              fDoFits);
+  PFB("Make object",            fDoMakeObject);
+  PFV("Max E/E_mip",	        fMaxE);
+  PFV("N bins",	                fNEbins);
+  PFB("Increasing bins",        fUseIncreasingBins);
+  PFV("max(delta p/p)",    	fMaxRelParError);
+  PFV("max(chi^2/nu)",	        fMaxChi2PerNDF);
+  PFV("min(a_i)",	        fMinWeight);
+
+  TString r = "";
   switch (fResidualMethod) { 
-  case kNoResiduals: std::cout << "None"; break;
-  case kResidualDifference: std::cout << "Difference"; break;
-  case kResidualScaledDifference: std::cout << "Scaled difference"; break;
-  case kResidualSquareDifference: std::cout << "Square difference"; break;
+  case kNoResiduals:              r = "None";       break;
+  case kResidualDifference:       r = "Difference"; break;
+  case kResidualScaledDifference: r = "Scaled difference"; break;
+  case kResidualSquareDifference: r = "Square difference"; break;
   }
-  std::cout << std::endl;
+  PFV("Residuals", r);
+  gROOT->DecreaseDirLevel();
 }
   
 //====================================================================

@@ -8,6 +8,7 @@
 #include "AliFMDCorrVertexBias.h"
 #include "AliFMDCorrMergingEfficiency.h"
 #include "AliFMDCorrAcceptance.h"
+#include "AliFMDCorrNoiseGain.h"
 #include "AliForwardUtil.h"
 #include "AliOADBForward.h"
 #include <TString.h>
@@ -28,6 +29,7 @@ const char* AliForwardCorrectionManager::fgkELossFitsSkel    = "elossfits";
 const char* AliForwardCorrectionManager::fgkVertexBiasSkel   = "vertexbias";
 const char* AliForwardCorrectionManager::fgkMergingEffSkel   = "merging";
 const char* AliForwardCorrectionManager::fgkAcceptanceSkel   = "acceptance";
+const char* AliForwardCorrectionManager::fgkNoiseGainSkel    = "noisegain";
 
 #define PREFIX  "$(ALICE_ROOT)/OADB/PWGLF/FORWARD/CORRECTIONS/data/"
 #define DB_NAME "fmd_corrections.root"
@@ -79,17 +81,19 @@ AliForwardCorrectionManager::AliForwardCorrectionManager(Bool_t d)
   RegisterCorrection(kIdAcceptance, fgkAcceptanceSkel, 
 		     PREFIX DB_NAME, AliFMDCorrAcceptance::Class(),
 		     kRun|kSys|kSNN|kSatellite);
+  RegisterCorrection(kIdNoiseGain, fgkNoiseGainSkel,
+		     PREFIX DB_NAME, AliFMDCorrNoiseGain::Class(), kRun);
 }
 //____________________________________________________________________
 Bool_t
 AliForwardCorrectionManager::Init(ULong_t     runNo, 
-				      const char* sys, 
-				      Float_t     sNN, 
-				      Float_t     field,
-				      Bool_t      mc,
-				      Bool_t      sat,
-				      UInt_t      what,
-				      Bool_t      force)
+				  const char* sys, 
+				  Float_t     sNN, 
+				  Float_t     field,
+				  Bool_t      mc,
+				  Bool_t      sat,
+				  UInt_t      what,
+				  Bool_t      force)
 {
   // 
   // Read in correction based on passed parameters
@@ -145,6 +149,7 @@ AliForwardCorrectionManager::Init(ULong_t  runNo,
   EnableCorrection(kIdAcceptance,	what & kAcceptance);
   EnableCorrection(kIdVertexBias,	what & kVertexBias);
   EnableCorrection(kIdMergingEfficiency,what & kMergingEfficiency);
+  EnableCorrection(kIdNoiseGain,	what & kNoiseGain);
   
   return InitCorrections(runNo, sys, sNN, field, mc, sat, force);
 }
@@ -176,6 +181,8 @@ AliForwardCorrectionManager::ParseFields(const TString& fields)
       ret |= kMergingEfficiency;
     else if (str.Contains(fgkAcceptanceSkel, TString::kIgnoreCase))
       ret |= kAcceptance;
+    else if (str.Contains(fgkNoiseGainSkel, TString::kIgnoreCase))
+      ret |= kNoiseGain;
     else 
       AliWarningClassF("Unknown correction: %s", str.Data());
   }
@@ -264,6 +271,17 @@ AliForwardCorrectionManager::GetAcceptance() const
    * @return Acceptance correction due to dead channels 
    */
   return static_cast<const AliFMDCorrAcceptance*>(Get(kIdAcceptance)); 
+}
+//____________________________________________________________________
+const AliFMDCorrNoiseGain*
+AliForwardCorrectionManager::GetNoiseGain() const 
+{
+  /** 
+   * Get the noisegain calibration
+   * 
+   * @return NoiseGain calibration
+   */
+  return static_cast<const AliFMDCorrNoiseGain*>(Get(kIdNoiseGain)); 
 }
 
 //____________________________________________________________________
