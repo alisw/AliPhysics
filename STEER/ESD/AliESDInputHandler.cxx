@@ -172,20 +172,20 @@ void AliESDInputHandler::ConnectFriends()
   //
   // Handle the friends first
   //
-  if (!fTree->FindBranch("ESDfriend.")) {
+  TTree* cTree = fTree->GetTree();
+  if (!cTree) cTree = fTree;      
+  if (!cTree->FindBranch("ESDfriend.")) {
     // Try to add ESDfriend. branch as friend
-      TString esdFriendTreeFName;
-      esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();    
-      TString basename = gSystem->BaseName(esdFriendTreeFName);
-      Int_t index = basename.Index("#")+1;
-      basename.Remove(index);
-      basename += fFriendFileName;
-      TString dirname = gSystem->DirName(esdFriendTreeFName);
-      dirname += "/";
-      esdFriendTreeFName = dirname + basename;
+    TString esdFriendTreeFName;
+    esdFriendTreeFName = (fTree->GetCurrentFile())->GetName();    
+    TString basename = gSystem->BaseName(esdFriendTreeFName);
+    Int_t index = basename.Index("#")+1;
+    basename.Remove(index);
+    basename += fFriendFileName;
+    TString dirname = gSystem->DirName(esdFriendTreeFName);
+    dirname += "/";
+    esdFriendTreeFName = dirname + basename;
 
-    TTree* cTree = fTree->GetTree();
-    if (!cTree) cTree = fTree;      
     cTree->AddFriend("esdFriendTree", esdFriendTreeFName.Data());
     cTree->SetBranchStatus("ESDfriend.", 1);
     fFriend = (AliESDfriend*)(fEvent->FindListObject("AliESDfriend"));
@@ -198,6 +198,7 @@ Bool_t  AliESDInputHandler::FinishEvent()
 {
     // Finish the event 
   if(fEvent)fEvent->Reset();
+  if (fFriend) fFriend->Reset();
   if (fMixingHandler) fMixingHandler->FinishEvent();
   return kTRUE;
 } 
