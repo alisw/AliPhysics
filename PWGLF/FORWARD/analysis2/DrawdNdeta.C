@@ -1,6 +1,6 @@
 /**
  * @file   DrawdNdeta.C
- * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
+ * @author Christian Holm Christensen <cholm@nbi.dk>
  * @date   Wed Mar 23 14:07:10 2011
  * 
  * @brief  Script to visualise the dN/deta for pp and PbPb
@@ -780,41 +780,50 @@ struct dNdetaDrawer
 		  TObjArray&    truths)
   {
     if (!list) return 0;
-    UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 0;
-    // Info("FetchTopResults","got %d centrality bins", n);
-    if (n == 0) {
-      TH1*  h = FetchOne(list, mcList, empCorr, name, "all",
-			 FetchOthers(0,0), -1000, 0, 
-			 max, rmax, amax, fTruth);
-      if (!h) return 0;
-      TObjArray* a = new TObjArray;
-      // Info("FetchTopResults", "Adding %s to result stack", h->GetName());
-      a->AddAt(h, 0);
-      return a;
-    }
+    UShort_t   n = HasCent() ? fCentAxis->GetNbins() : 1;
+    // // Info("FetchTopResults","got %d centrality bins", n);
+    // if (n == 0) {
+    //   TH1* h  = FetchOne(list, mcList, empCorr, name, "all",
+    // 			 FetchOthers(0,0), -1000, 0, 
+    // 			 max, rmax, amax, truths);
+    //   if (!h) return 0;
+    //   TObjArray* a = new TObjArray;
+    //   // Info("FetchTopResults", "Adding %s to result stack", h->GetName());
+    //   a->AddAt(h, 0);
+    //   return a;
+    // }
     
     TObjArray* a = new TObjArray;
     truths.Expand(n);
     for (UShort_t i = 0; i < n; i++) { 
-      UShort_t centLow  = fCentAxis->GetBinLowEdge(i+1);
-      UShort_t centHigh = fCentAxis->GetBinUpEdge(i+1);
-      TString  lname    = Form("cent%03d_%03d", centLow, centHigh);
-      Int_t    col      = GetCentralityColor(i+1);
-      TString  centTxt  = Form("%3d%%-%3d%% central", centLow, centHigh);
-
+      UShort_t centLow  = 0;
+      UShort_t centHigh = 0;
+      TString  lname    = "all";
+      Int_t    col      = -1000;
+      TString  centTxt  = "";
+      if (HasCent()) {
+	centLow  = fCentAxis->GetBinLowEdge(i+1);
+	centHigh = fCentAxis->GetBinUpEdge(i+1);
+	lname    = Form("cent%03d_%03d", centLow, centHigh);
+	col      = GetCentralityColor(i+1);
+        centTxt  = Form("%3d%%-%3d%% central", centLow, centHigh);
+      }
       TH1* tt = static_cast<TH1*>(truths.At(i));
       TH1* ot = tt;
       TH1* h  = FetchOne(list, mcList, empCorr, name, lname,
 			 FetchOthers(centLow,centHigh), col, 
-			 centTxt.Data(), max, rmax, amax, fTruth);
+			 centTxt.Data(), max, rmax, amax, tt);
       if (!h) continue;
-      if (ot != tt) { 
-	//Info("FetchTopResults", "old truth=%p new truth=%p (%s)", 
-	//     ot, tt, name);
+
+      if (tt != ot) { 
 	truths.AddAt(tt, i);
       }
       // Info("FetchTopResults", "Adding %p to result stack", h);
       a->AddAt(h, i);
+    }
+    if (a->GetEntries() <= 0) {
+      delete a;
+      a = 0;
     }
     return a;
   } 
@@ -908,6 +917,8 @@ struct dNdetaDrawer
     TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchHistogram(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchHistogram(list, "dndetaTruth");
+    Info("", "dN/deta truth from %s: %p", list->GetName(), dndetaTruth);
+    Info("", "dN/deta truth from external: %p", truth);
 
     if (mcList && FetchHistogram(mcList, "finalMCCorr")) 
       Warning("FetchCentResults", "dNdeta already corrected for final MC");
@@ -962,7 +973,7 @@ struct dNdetaDrawer
 	  while ((hist = static_cast<TH1*>(next()))) 
 	    max = TMath::Max(max, AddHistogram(fResults, hist));
 	}
-      }
+      } // If show rings
       // Info("FetchCentResults", "Got %p, %p, %p from %s with name %s, max=%f",
       //      dndeta, dndetaMC, dndetaTruth, list->GetName(), name, max);
       
@@ -986,13 +997,16 @@ struct dNdetaDrawer
 	  }
 	}
 	// fOthers->Add(thisOther);
-      }
-    }
+      } // if others for this 
+    } // if not truth 
     if (dndetaMC) { 
       fRatios->Add(Ratio(dndeta,    dndetaMC,    rmax));
       fRatios->Add(Ratio(dndetaSym, dndetaMCSym, rmax));
     }
     if (truth) {
+      Info("", "Forming ratio to truth:\n\t%s\n\t%s",
+	   dndeta->GetName(), 
+	   truth->GetName());
       fRatios->Add(Ratio(dndeta,      truth, rmax));
       fRatios->Add(Ratio(dndetaSym,   truth, rmax));
     }

@@ -163,13 +163,6 @@ public:
    * @param use recalculate or not
    * 
    */
-  void SetRecalculateEta(Bool_t use) { fRecalculateEta = use; }
-  /** 
-   * In case of a displaced vertices recalculate eta and angle correction
-   * 
-   * @param use recalculate or not
-   * 
-   */
   void SetRecalculatePhi(Bool_t use) { fRecalculatePhi = use; }
   /** 
    * Set whether to use the phi acceptance correction. 
@@ -494,7 +487,6 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts;    // Cuts
-  Bool_t   fRecalculateEta;  // Whether to recalc eta and angle correction (disp vtx)
   Bool_t   fRecalculatePhi;  // Whether to correct for (X,Y) offset
   UShort_t fMinQuality;      // Least quality for fits
   AliForwardUtil::Histos fCache;

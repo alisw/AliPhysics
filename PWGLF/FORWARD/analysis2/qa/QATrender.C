@@ -558,7 +558,7 @@ public:
 	    Int_t  prodYear, 
 	    char   prodLetter) 
     : QABase("data", (prodYear < 2000 ? 2000 : 0) + prodYear,
-	     Form("LHC%02d%c", (prodYear%2000), prodLetter), "pass0")
+	     Form("LHC%02d%c", (prodYear%2000), prodLetter), "pass0"),
       fRunNo(-1),
       fCurrentFile(0),
       fSharingFilter(0),

@@ -434,7 +434,8 @@ struct ForwardOADBGUI
     TDatime dt(e->fTimestamp);
     lve->SetSubnames(Form("%lu", e->fRunNo), 
 		     (e->fSys == 1 ? "p-p" : 
-		      e->fSys == 2 ? "Pb-Pb" : "p-Pb"),
+		      e->fSys == 2 ? "Pb-Pb" : 
+		      e->fSys == 3 ? "p-Pb" : "?"),
 		     Form("%4huGeV",e->fSNN), 
 		     Form("%+2hdkG", e->fField), 
 		     (e->fMC ? "MC" : "Real"),

@@ -222,6 +222,8 @@ files=
 path=
 numf=0
 from_local=0
+type=data
+passid=
 get_filelist()
 {
     mess 3 "Getting file list" 
@@ -240,6 +242,8 @@ get_filelist()
 	x) ;; 
 	*)  mess 3 "Assuming simulation output"
 	    datd=sim 
+	    type=sim
+	    passfull=passMC
 	    esdd= 
 	    ;; 
     esac
@@ -254,6 +258,7 @@ get_filelist()
 	passpre=
 	post=
     fi
+    passid=${paid}
     local post=${passpost}
     case x$post in 
 	x_*) ;; 
@@ -332,7 +337,9 @@ analyse_file()
 {
     local dir=`dirname $1` 
     local inp=`basename $1` 
-    local out=`echo $inp | sed 's/trending_/tree_/'` 
+    local r=$2
+    local out=trending.root 
+    # `echo $inp | sed 's/trending_/tree_/'` 
     local ret=0
     mess 2 -n "Analysing $inp -> $out ... "
 
@@ -344,16 +351,24 @@ analyse_file()
 	rm -f $dir/$out
     fi
 
+    
+    mess 1 "Running runQA.sh '$inp' '$type' '$prodyear' '$prodfull' '$passid' '$r' in '$dir'"
     (cd $dir 
-	root -l -b  <<EOF 
-.L RunFileQA.C
-RunFileQA("$inp", "$out", $prodyear, "$prodletter");
-.q
-EOF
+	$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/runQA.sh \
+	    "$inp" "$type" $prodyear "$prodfull" "$passid" "$r" 
 	ret=$? 
-	mess 2 " -> $ret"
-	# rm -f ${scr}.C 
-    ) 2>> $redir
+	mess 2 " -> $ret")
+#     (cd $dir 
+# 	root -l -b  <<EOF 
+# .L RunFileQA.C
+# RunFileQA("$inp", "$out", $prodyear, "$prodletter");
+# .q
+# EOF
+# 	ret=$? 
+# 	mess 2 " -> $ret"
+# 	# rm -f ${scr}.C 
+#     ) 2>> $redir
+
     return $ret
 }
 
@@ -364,7 +379,9 @@ analyse_run()
     local source=$1 ; shift 
     local store=$1 ; shift 
     local r=$1 ; shift 
-    local o=${store}/`basename $file .root`_${r}.root 
+    local rr=`printf %09d $r`
+    local o=${store}/${rr}/input.root
+    mkdir -p ${store}/${rr}
 
     mess 2 -n "$source -> $o ... "
     if test -f $o && test $force -lt 2; then 
@@ -399,11 +416,11 @@ analyse_run()
     check_file ${o} 
     local ret=$? 
     case $ret in 
-	0|2) ;; 
+	0|2) : ;; 
 	1|3|4|5|6) return 2 ;; 
     esac
 
-    analyse_file ${o}
+    analyse_file ${o} ${r}
 
     return 0
 }
@@ -510,44 +527,12 @@ make_trend()
     local ret=0
     mess 1 -n "Analysing for trend $dir ... "
     (cd $dir 
-	rm -f trend_*_*.html 
-	rm -f trend_*_*.pdf
-	rm -f trend_*_*.root
-
-	root -l -b <<EOF 
-.L RunFinalQA.C
-RunFinalQA(".", $prodyear, "$prodletter", $variance);
-.q
-EOF
-	mess 1 -n " ... "
-	# mess 3 -n "root -l -b -q ${scr}.C "
-	# root -l -b -q ${scr}.C  > /dev/null 2>&1 
-	# local ret=$? 
-	# mess 1 " -> $ret"
-	# rm -f ${scr}.C 
-
-	# do the index file 
-	local idx=`ls trend_*_*.html 2> /dev/null` 
-	for i in $idx ; do 
-	    mess 1 "Making index.html point to $i" 
-	    sed -e 's,index.html,../index.html,' \
-		-e "s,!--JOBID--,a target='_blank' href='${jobu}${jobid}'>Job</a," \
-		< $i > index.html 
-	    cp index.html $i
-	done
-	
-	if test ! -f index.html ; then 
-	    echo "No index file found" 
-	    ret=1
-	else 
-	    fix_perm index.html 
-	    fix_perm . > /dev/null 2>&1 
-	fi
-
-	copy_style
-	copy_aliroot_file $favicon
-	copy_aliroot_file $logo
-    ) 2>> $redir
+	echo "hadd trending.root 000*/trending.root"
+	rm -f trending.root 
+	hadd -k trending.root 000*/trending.root 
+	$ALICE_ROOT/PWGLF/FORWARD/analysis2/qa/periodQA.sh trending.root 
+	ret=$?
+    )
     return $ret
 }
 
