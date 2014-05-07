@@ -65,7 +65,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   
   int runktdep = 1;
   //double ktrng[2] = {0.2, 0.3};
-double ktrng[8] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
+double ktrng[8] = { 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
   int run3d = 1; // Do 3D cartesian analysis?
   int runshlcms = 1;
 
@@ -168,8 +168,8 @@ double ktrng[8] = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0};
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
 	  
 	  //PID method
-	  dtc1etaphitpc[aniter]->SetMass(PionMass);
-	  dtc1etaphitpc[aniter]->SetMostProbablePion();
+	  dtc1etaphitpc[aniter]->SetMass(KaonMass);
+	  dtc1etaphitpc[aniter]->SetMostProbableKaon();
           //dtc1etaphitpc[aniter]->SetPIDMethod(1);//contour
           //dtc1etaphitpc[aniter]->SetNsigmaTPCTOF(kTRUE);
 	  //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
