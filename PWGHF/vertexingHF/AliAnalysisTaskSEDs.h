@@ -31,7 +31,11 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliAnalysisTaskSEDs();
   AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* analysiscuts, Int_t fillNtuple=0);
   virtual ~AliAnalysisTaskSEDs();
-  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
+  void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}	
+  void SetWriteOnlySignalInNtuple(Bool_t opt=kTRUE){
+    if(fReadMC) fWriteOnlySignal=opt;
+    else AliError("fReadMC has to be kTRUE");
+  }
   void SetFillNtuple(Int_t fill=0){fFillNtuple=fill;}
   void SetMassRange(Double_t rang=0.4){fMassRange=rang;}
   void SetDoCutVarHistos(Bool_t opt=kTRUE) {fDoCutVarHistos=opt;}
@@ -92,6 +96,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
                                     
                                      
   Bool_t  fReadMC;                    //  flag for access to MC
+  Bool_t  fWriteOnlySignal;           //  flag to control ntuple writing in MC
   Bool_t  fDoCutVarHistos;            //  flag to create and fill histos with distributions of cut variables
   Bool_t  fUseSelectionBit;           // flag for useage of HasSelectionBit
   UChar_t fNPtBins;                   // number of Pt bins
@@ -103,7 +108,7 @@ class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter;//!Counter for normalization
   AliRDHFCutsDstoKKpi *fAnalysisCuts; // Cuts for Analysis
   
-  ClassDef(AliAnalysisTaskSEDs,12);    //  AliAnalysisTaskSE for Ds mass spectra
+  ClassDef(AliAnalysisTaskSEDs,13);    //  AliAnalysisTaskSE for Ds mass spectra
 };
 
 #endif
