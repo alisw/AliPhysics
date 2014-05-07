@@ -182,6 +182,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtDCA2D;                              //! Pt vs DCA2D
   TH2F *fPtDCAZ;                               //! Pt vs DCAZ
   TH2F *fPtNClustersTPC;                       //! Pt vs nClustersTPC
+  TH2F *fPtNClustersTPCPhi;                    //! Phi vs nClustersTPC
   TH2F *fPtNClustersTPCIter1;                  //! Pt vs nClustersTPCIter1
   TH3F *fPtNClustersTPCIter1Phi;               //! Pt vs nClustersTPCIter1 vs Phi
   TH2F *fPtNClustersTPCShared;                 //! Pt vs nClustersTPCShared
@@ -244,6 +245,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TList *fHistList; //! List of Histograms
  
-  ClassDef(AliPWG4HighPtTrackQA,7) 
+  ClassDef(AliPWG4HighPtTrackQA,8) 
 };
 #endif

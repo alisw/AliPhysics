@@ -97,6 +97,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
+  fPtNClustersTPCPhi(0x0),
   fPtNClustersTPCIter1(0x0),
   fPtNClustersTPCIter1Phi(0x0),
   fPtNClustersTPCShared(0x0),
@@ -202,6 +203,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtDCA2D(0x0),
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
+  fPtNClustersTPCPhi(0x0),
   fPtNClustersTPCIter1(0x0),
   fPtNClustersTPCIter1Phi(0x0),
   fPtNClustersTPCShared(0x0),
@@ -274,7 +276,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth) {
+void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t ptBinWidth)
+{
   //
   // Set variable bin sizes for pT axis in histos
   //
@@ -291,7 +294,8 @@ void AliPWG4HighPtTrackQA::SetPtBinEdges(Int_t region, Double_t ptmax, Double_t 
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
+void AliPWG4HighPtTrackQA::UserCreateOutputObjects()
+{
   //Create output objects
   AliDebug(2,Form(">> AliPWG4HighPtTrackQA::UserCreateOutputObjects \n"));
 
@@ -553,6 +557,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNClustersTPC = new TH2F("fPtNClustersTPC","fPtNClustersTPC",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPC);
 
+  fPtNClustersTPCPhi = new TH2F("fPtNClustersTPCPhi","fPtNClustersTPCPhi",fgkNPhiBins,binsPhi,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtNClustersTPCPhi);
+
   fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1","fPtNClustersTPCIter1",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPCIter1);
 
@@ -727,7 +734,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 }
 
 //________________________________________________________________________
-Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
+Bool_t AliPWG4HighPtTrackQA::SelectEvent()
+{
   //
   // Decide if event should be selected for analysis
   //
@@ -851,7 +859,8 @@ Bool_t AliPWG4HighPtTrackQA::SelectEvent() {
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev){
+Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev)
+{
   //
   // Get centrality from ESD or AOD
   //
@@ -865,7 +874,8 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliVEvent *ev){
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
+Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd)
+{
   //
   // Get centrality from ESD
   //
@@ -884,7 +894,8 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(AliESDEvent *esd){
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod){
+Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod)
+{
   //
   // Get centrality from AOD
   //
@@ -898,7 +909,8 @@ Int_t AliPWG4HighPtTrackQA::CalculateCentrality(const AliAODEvent *aod){
 }
 
 //________________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const {
+Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const
+{
   //
   // Get centrality class
   //
@@ -913,7 +925,8 @@ Int_t AliPWG4HighPtTrackQA::GetCentralityClass(Float_t cent) const {
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::UserExec(Option_t *) {  
+void AliPWG4HighPtTrackQA::UserExec(Option_t *)
+{  
   // Main loop
   // Called for each event
   AliDebug(2,Form(">> AliPWG4HighPtTrackQA::UserExec \n"));
@@ -948,7 +961,8 @@ void AliPWG4HighPtTrackQA::UserExec(Option_t *) {
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::DoAnalysisESD() {
+void AliPWG4HighPtTrackQA::DoAnalysisESD()
+{
   //
   // Run analysis on ESD
   //
@@ -1229,7 +1243,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
+void AliPWG4HighPtTrackQA::DoAnalysisAOD()
+{
   //
   // Do QA on AOD input
   //
@@ -1321,7 +1336,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 }
 
 //________________________________________________________________________
-void AliPWG4HighPtTrackQA::FillHistograms() {
+void AliPWG4HighPtTrackQA::FillHistograms()
+{
   //
   // Fill all QA histograms
   //
@@ -1333,6 +1349,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtDCA2D->Fill(fVariables->At(0),fVariables->At(3));
   fPtDCAZ->Fill(fVariables->At(0),fVariables->At(4));
   fPtNClustersTPC->Fill(fVariables->At(0),fVariables->At(5));
+  fPtNClustersTPCPhi->Fill(fVariables->At(1),fVariables->At(5));
   fPtNPointITS->Fill(fVariables->At(0),fVariables->At(6));
   fPtNPointITSPhi->Fill(fVariables->At(0),fVariables->At(6),fVariables->At(1));
   
@@ -1404,7 +1421,8 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
 }
 
 //________________________________________________________________________
-Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials){
+Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials)
+{
   //
   // get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   // This is to called in Notify and should provide the path to the AOD/ESD file
@@ -1467,6 +1485,7 @@ Bool_t AliPWG4HighPtTrackQA::PythiaInfoFromFile(const char* currFile,Float_t &fX
   }
   return kTRUE;
 }
+
 //________________________________________________________________________
 Bool_t AliPWG4HighPtTrackQA::Notify()
 {
@@ -1501,7 +1520,8 @@ Bool_t AliPWG4HighPtTrackQA::Notify()
 }
 
 //________________________________________________________________________
-AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMCEvent *mcEvent){
+AliGenPythiaEventHeader*  AliPWG4HighPtTrackQA::GetPythiaEventHeader(const AliMCEvent *mcEvent)
+{
   
   if(!mcEvent)return 0;
   AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
@@ -1650,7 +1670,8 @@ Float_t AliPWG4HighPtTrackQA::GetTPCClusterInfoFitMap(const AliESDtrack *tr,Int_
 }
 
 //_______________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const {
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const 
+{
   //
   // returns distance between 1st and last hit in TPC
   // distance given in number of padrows
@@ -1673,7 +1694,8 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliESDtrack *track) const {
 }
 
 //_______________________________________________________________________
-Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const {
+Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const 
+{
   //
   // returns distance between 1st and last hit in TPC
   // distance given in number of padrows
@@ -1696,7 +1718,8 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(const AliAODTrack *track) const {
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack) {
+Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack)
+{
   //
   // Return chi2 between global and TPC constrained track
   // track should be the global unconstrained track
@@ -1725,7 +1748,8 @@ Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack) {
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetGGCChi2(AliESDtrack *origtrack) {
+Float_t AliPWG4HighPtTrackQA::GetGGCChi2(AliESDtrack *origtrack)
+{
   //
   // Return chi2 between global and global constrained track
   // track should be the global unconstrained track
