@@ -327,7 +327,7 @@ Int_t AliITSUTrackerCooked::MakeSeeds(Int_t l1, Int_t l2) {
 	 }
      }
    }
-
+   fSeeds->Sort();
    return fSeeds->GetEntriesFast();
 }
 
