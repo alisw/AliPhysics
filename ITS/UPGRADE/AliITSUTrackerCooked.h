@@ -37,7 +37,7 @@ public:
 protected:
   AliITSUTrackerCooked(const AliITSUTrackerCooked&);
   // Other protected functions
-  Int_t MakeSeeds(Int_t layer1, Int_t layer2);
+  Int_t MakeSeeds();
   Bool_t AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
                        const Float_t r2[3], Int_t l2, Int_t i2,
                        const AliCluster *c3,Int_t l3, Int_t i3);
@@ -62,7 +62,7 @@ class AliITSUTrackerCooked::AliITSUlayer {
     AliITSUlayer();
    ~AliITSUlayer(){DeleteClusters();}
 
-    void InsertClusters(TClonesArray *clusters);
+   void InsertClusters(TClonesArray *clusters, Bool_t seedingLayer);
     void SetR(Double_t r) {fR=r;}
     void DeleteClusters();
 

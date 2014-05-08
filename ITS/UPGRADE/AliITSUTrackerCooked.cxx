@@ -30,6 +30,9 @@ const Double_t kzWin=0.33, kpWin=3.14/4;
 // Maximal accepted impact parameters for the seeds 
 const Double_t kmaxDCAxy=3.;
 const Double_t kmaxDCAz= 3.;
+// Layers for the seeding
+const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
+
 
 //************************************************
 // TODO:
@@ -56,7 +59,8 @@ AliITSUTrackerCooked::AliITSUlayer::AliITSUlayer():
   }
 }
 
-void AliITSUTrackerCooked::AliITSUlayer::InsertClusters(TClonesArray *clusters)
+void AliITSUTrackerCooked::
+  AliITSUlayer::InsertClusters(TClonesArray *clusters, Bool_t seedingLayer)
 {
   //--------------------------------------------------------------------
   // Load clusters to this layer
@@ -65,7 +69,7 @@ void AliITSUTrackerCooked::AliITSUlayer::InsertClusters(TClonesArray *clusters)
  
   while (ncl--) {
      AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(ncl);
-     c->GoToFrameGlo();
+     (seedingLayer) ? c->GoToFrameGlo() : c->GoToFrameTrk();
      //if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
      InsertCluster(new AliITSUClusterPix(*c));
   }
@@ -233,7 +237,7 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
 
     par[3]=0.5*(tgl12 + tgl23);
     Double_t bz=GetBz();
-    par[4]=(TMath::Abs(bz) < kAlmost0Field) ? par[4]=kAlmost0 : crv/(bz*kB2C);
+    par[4]=(TMath::Abs(bz) < kAlmost0Field) ? kAlmost0 : crv/(bz*kB2C);
 
     Double_t cov[15];
     for (Int_t i=0; i<15; i++) cov[i]=0.;
@@ -260,21 +264,19 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     return kTRUE;
 }
 
-Int_t AliITSUTrackerCooked::MakeSeeds(Int_t l1, Int_t l2) {
+Int_t AliITSUTrackerCooked::MakeSeeds() {
   //--------------------------------------------------------------------
   // This is the main pattern recongition function.
   // Creates seeds out of two clusters and another point.
   //--------------------------------------------------------------------
-   Int_t l3=5;
-
    if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
    fSeeds=new TObjArray(77777);
 
    Double_t zv=GetZ();
 
-   AliITSUlayer &layer1=fgLayers[l1];
-   AliITSUlayer &layer2=fgLayers[l2];
-   AliITSUlayer &layer3=fgLayers[l3];
+   AliITSUlayer &layer1=fgLayers[kSeedingLayer1];
+   AliITSUlayer &layer2=fgLayers[kSeedingLayer2];
+   AliITSUlayer &layer3=fgLayers[kSeedingLayer3];
    Double_t r1=layer1.GetR();
    Double_t r2=layer2.GetR();
    Double_t r3=layer3.GetR();
@@ -322,7 +324,9 @@ Int_t AliITSUTrackerCooked::MakeSeeds(Int_t l1, Int_t l2) {
 
              AliITSUClusterPix cc(*((AliITSUClusterPix*)c2));
              cc.GoToFrameTrk();
-             AddCookedSeed(xyz1,l1,n1, xyz3,l3,n3, &cc,l2,n2);
+             AddCookedSeed(xyz1, kSeedingLayer1, n1,
+                           xyz3, kSeedingLayer3, n3, 
+                           &cc,  kSeedingLayer2, n2);
 
 	 }
      }
@@ -336,18 +340,16 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
   // This is the main tracking function
   // The clusters must already be loaded
   //--------------------------------------------------------------------
-  Int_t l1=6, l2=4;
 
-  // Possibly, create the track "seeds" (combinatorial)
-  Int_t nSeeds=MakeSeeds(l1,l2);
+  Int_t nSeeds=MakeSeeds();
 
   // Possibly, icrement the seeds with additional clusters (Kalman)
 
   // Possibly, (re)fit the found tracks 
 
 
-  Int_t nClusters1=fgLayers[l1].GetNumberOfClusters();
-  Int_t nClusters2=fgLayers[l2].GetNumberOfClusters();
+  Int_t nClusters1=fgLayers[kSeedingLayer1].GetNumberOfClusters();
+  Int_t nClusters2=fgLayers[kSeedingLayer2].GetNumberOfClusters();
   cout<<nClusters1<<' '<<nClusters2<<endl;
 
     Int_t ngood=0;
@@ -419,7 +421,16 @@ Int_t AliITSUTrackerCooked::LoadClusters(TTree *cTree) {
       if (!br) AliFatal(Form("No cluster branch for layer %d",i));
       br->SetAddress(&clusters);
       br->GetEvent(0);
-      fgLayers[i].InsertClusters(clusters);
+      switch (i) {
+      case kSeedingLayer1: 
+      case kSeedingLayer2: 
+      case kSeedingLayer3: 
+         fgLayers[i].InsertClusters(clusters,kTRUE);
+         break;
+      default:
+         fgLayers[i].InsertClusters(clusters,kFALSE);
+         break;
+      }
       clusters->Delete();
   }
 
