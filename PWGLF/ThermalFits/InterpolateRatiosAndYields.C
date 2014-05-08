@@ -8,6 +8,7 @@ TClonesArray * arr =0;
 
 void InterpolateRatios(Int_t pdg1, Int_t pdg2, TString centr1="V0M0005", TString centr2="V0M0510", TString centrfinal="V0M0010") ;
 void Interpolate0010(Int_t pdg) ;
+void Interpolate2040(Int_t pdg) ;
 void Interpolate6080(Int_t pdg) ;
 
 void ExtrapolateWithConstantRatioToPions(Int_t pdg, TString centrOrigin, TString centrDest);
@@ -38,14 +39,21 @@ void InterpolateRatiosAndYields() {
   // InterpolateRatios(2212,211, "V0M6070", "V0M7080", "V0M6080");  
   //  InterpolateRatios(321,211, "V0M6070", "V0M7080", "V0M6080");    
 
+  Interpolate2040(211);
+  Interpolate2040(-211);
+  Interpolate2040(2212);
+  Interpolate2040(-2212);
+  Interpolate2040(321);
+  Interpolate2040(-321);
+
   // *************** Lambda and K0 *****************
   // arr=   AliParticleYield::ReadFromASCIIFile("PbPb_2760_LambdaK0.txt");
   // Interpolate0010(3122);
   // Interpolate0010(310);
   // *************** Helium 3 *****************
-  arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
-  arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
-  ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
+  // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
+  // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
+  // ExtrapolateWithConstantRatioToPions(1000020030, "V0M0020", "V0M0010");
   // *************** Kstar *****************
   // arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_Kstar892.txt");
   // arr->AbsorbObjects(AliParticleYield::ReadFromASCIIFile("./PbPb_2760_AveragedNumbers.txt"));
@@ -98,6 +106,20 @@ void Interpolate6080(Int_t pdg) {
 
   AliParticleYield * p0 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"6070");
   AliParticleYield * p1 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"7080");
+  p0->Scale(0.5);
+  p1->Scale(0.5);
+  AliParticleYield * pav = AliParticleYield::Add(p0,p1);
+  std::cout << pav->GetYield() << ", " << pav->GetStatError() << ", "<< pav->GetSystError() << std::endl;
+
+
+} 
+
+void Interpolate2040(Int_t pdg) {
+
+  TString centrPrefix = collSystem == 2 ? "V0M" : "V0A";
+
+  AliParticleYield * p0 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"2030");
+  AliParticleYield * p1 = AliParticleYield::FindParticle(arr, pdg, collSystem, energy, centrPrefix+"3040");
   p0->Scale(0.5);
   p1->Scale(0.5);
   AliParticleYield * pav = AliParticleYield::Add(p0,p1);
