@@ -108,6 +108,9 @@ code="{fTrackTime = new Double32_t[AliPID::kSPECIESC];for(Int_t isp=AliPID::kSPE
 #pragma link C++ class AliTrackPoint+;
 
 #pragma link C++ class  AliESDFMD+;
+#pragma read sourceClass="AliESDFMD" targetClass="AliESDFMD" source="float fNoiseFactor"  version="[-3]" target="fNoiseFactor" targetType="float" code="{newObj->SetNoiseFactor(onfile.fNoiseFactor < 1 ? 4 : onfile.fNoiseFactor);newObj->SetBit(AliESDFMD::kNeedNoiseFix);}"
+#pragma read sourceClass="AliESDFMD" targetClass="AliESDFMD" source="bool fAngleCorrected"  version="[-3]" target="fAngleCorrected" targetType="bool" code="{newObj->SetAngleCorrected(onfile.fAngleCorrected ? onfile.fAngleCorrected : true);}"
+
 #pragma link C++ class  AliFMDMap+;
 #pragma link C++ class  AliFMDFloatMap+;
 
