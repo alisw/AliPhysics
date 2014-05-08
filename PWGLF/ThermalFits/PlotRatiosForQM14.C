@@ -43,6 +43,9 @@ void DrawRatio(TString what, Bool_t isYield = kFALSE, Double_t shiftloc=0.);
 void DrawFrame(Bool_t yields = 0) ;
 void DrawExtrapolatedSymbolsAndLegendPbPb0010() ;
 void DrawExtrapolatedSymbolsAndLegendpPb0005() ;
+void DrawMarkerKStarNoFit() ;
+void DrawExtrapolatedSymbolsYieldsPbPb0010();
+
 
 void LoadArrays() ;
 //void AddLabel(Float_t x, Float_t y, TString text);
@@ -51,16 +54,11 @@ void myPaveSetup(float rRatio=0, float rRange3=0, float rRange5=0,
 		 int rFillColor=0);
 void myPadSetUp(TPad *currentPad);
 TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineStyle,
-                                 const char * tag,
-                                 Double_t t = -1, Double_t terr=-1, Double_t v=-1, Double_t verr=-1, 
-                                 Double_t gs=-1, Double_t gser=-1, Double_t gq=-1, Double_t gerr=-1,
-                                 Double_t chi2=-1, Double_t ndf=-1) ;
-
+                                 const char * tag);
 TGraphErrors * PlotGSIYields(const char * fileName, Int_t color=kBlack, Int_t lineStyle = kSolid,
-                             const char * tag = "GSI",
-                             Double_t t = -1, Double_t terr=-1, Double_t v=-1, Double_t verr=-1, 
-                             Double_t gs=-1, Double_t gser=-1, Double_t gq=-1, Double_t gerr=-1,
-                             Double_t chi2=-1, Double_t ndf=-1) ;
+                             const char * tag ="");
+
+void AddLineToThermalLegend(TObject * obj, TString line, const char * optFirst = "L");
 
 // Ratios to be draw. Remember to change the labels in DrawFrame if you change this
 const Int_t nratio = 10;
@@ -132,23 +130,23 @@ TClonesArray * PlotRatiosForQM14() {
   LoadArrays();
 
   // Uncomment stuff in this section to save the inputs for thermal models
-  //#define SAVE_INPUT_THERMAL_MODEL
+#define SAVE_INPUT_THERMAL_MODEL
 #ifdef SAVE_INPUT_THERMAL_MODEL
   PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /* separateCharges*/1);
-  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M2030", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/1);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /* separateCharges*/1);
+  //  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M2040", /*separateCharges*/1);
 
   PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/0);
-  PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/0);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/0);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/0);
-  PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/0);
-  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /*separateCharges*/0);  
-  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M2030", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A6080", /*separateCharges*/0);
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M6080", /*separateCharges*/0);  
+  // PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M2040", /*separateCharges*/0);
 
   return 0;
 #endif
@@ -157,20 +155,22 @@ TClonesArray * PlotRatiosForQM14() {
 
   //DrawRatio("allpp");  
   //  DrawRatio("PbPbWithPP7TeV");
-  // DrawRatio("allsyst");
+  //  DrawRatio("allsyst");
   //  DrawRatio("PbPb6080andpPb0005");
   //DrawRatio("pp_vsRHIC");
-  DrawRatio("PbPb_vsRHIC");
+  //  DrawRatio("PbPb_vsRHIC");
   //  DrawRatio("aliceall");
 
 
   // Yields and FITS
-  // maxy=20000;
-  // DrawRatio("fit_ReferenceFit_PbPb0010", 1);
+  maxy=20000;
+  //DrawRatio("fit_ReferenceFit_PbPb0010", 1);
+  // DrawRatio("fitSHARE_NoPionsNoProtons_PbPb0010",1);
+  //  DrawRatio("fitGSI_NoPionsNoProtons_PbPb0010", 1);
   //  DrawRatio("fitShare_pPb0005", 1);
   //DrawRatio("fitShare_All_PbPb0010", 1);
-
-
+  //  DrawRatio("fitShareWithWithoutNuclei_PbPb0010", 1);
+  //  DrawRatio("fitGSI_PbPb6080", 1);
   //  NewLegendQM();
   return arrPbPb;
 }
@@ -423,25 +423,43 @@ TH1F * GetHistoYields(TClonesArray * arr, Int_t system, Float_t energy, TString 
 
   TH1F * h = new TH1F(Form("hPart_%d_%0.0f_%s",system,energy,centrality.Data()), histotitle, npart, 1+shift, npart+1+shift);
 
-  //  Double_t isSum = -1; // if this is -1, then the sum criterion is ignored
   for(Int_t ipart = 1; ipart <= npart; ipart++){
+    std::cout << "----- Searching " << particleYields[ipart-1] << " -------"  << std::endl;
+    
     AliParticleYield * part = AliParticleYield::FindParticle(arr, particleYields[ipart-1], system, energy, centrality,isSumYields[ipart-1]);
+    if(part) {
+      std::cout << "found" << std::endl;
+      part->Print();
+    }
     if(!part && isSumYields[ipart-1]) {
       //Could not find the particle, but the sum was requested: build the sum!
       part = AliParticleYield::FindParticle(arr, particleYields[ipart-1], system, energy, centrality,  0);
       AliParticleYield * part2 = AliParticleYield::FindParticle(arr, -particleYields[ipart-1], system, energy, centrality,  0);
-        if(part2 && part) part = AliParticleYield::Add(part, part2);        
-        else if(part) part->Scale(2.); // If we only found a particle, we can scale it by a factor 2.
-        else part = 0;
+      if(part2 && part) {
+	std::cout << " Building sum" << std::endl;
+	part->Print();
+	part2->Print();
+	part = AliParticleYield::Add(part, part2);        
+      }
+      else if(part) {
+	std::cout << "Scaling part" << std::endl;
+	part->Print();
+	part = new AliParticleYield(*part); // Always clone before scaling
+	part->Scale(2.); // If we only found a particle, we can scale it by a factor 2.
+      }
+      else part = 0;
     }    
     if(!part){
       std::cout << "Cannot find " << particleYields[ipart-1] << std::endl;
       continue;
     }
-    if(isSumYields[ipart-1]) part->Scale(0.5); // take average
-    
+    if(isSumYields[ipart-1] && !part->IsTypeAverage()) {
+      std::cout << " scaling /2" << std::endl;
+      part = new AliParticleYield(*part); // Always clone before scaling
+      part->Scale(0.5); // take average
+    }
     std::cout << " Plotting " << particleYields[ipart-1] << std::endl;
-
+    part->Print();
     //    part->Scale(scale[ipart-1]);
     h->SetBinContent(ipart, part->GetYield());
     if(errorsType == kTotalError) {
@@ -456,7 +474,7 @@ TH1F * GetHistoYields(TClonesArray * arr, Int_t system, Float_t energy, TString 
   }
   h->SetMarkerStyle(imarker);
   h->SetMarkerColor(icolor);
-  h->SetMarkerSize(1.2);
+  h->SetMarkerSize(1.4);
   
   return h;
 }
@@ -589,12 +607,6 @@ TLegend * NewLegendQM(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Bool_t
   if(isYield) {
     // Add some details on excluded stuff
     l->SetTextSize(16);
-    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
-    m->SetMarkerSize(1.2);
-    l->AddEntry( m, "Not in fit", "p");
-    m = new TMarker(0.1,0.1,markerExtrap);
-    m->SetMarkerSize(1.2);
-    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
   }
     l->Draw();
   return l;
@@ -648,8 +660,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     
       }
     }
-    
-    TPaveText *pt = new TPaveText(    0.169679, 0.842881, 0.378514, 0.929595,"brNDC");
+    TPaveText *pt = new TPaveText(    0.176, 0.842881, 0.378514, 0.929595,"brNDC");
     pt->SetBorderSize(0);
     pt->SetFillColor(0);
     pt->SetLineWidth(1);
@@ -672,7 +683,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "PbPb_0010") {
     array = arrPbPb;
     system = 2; energy = 2760.; centrality = "V0M0010";
-    label = "Pb-Pb, #sqrt{s}_{NN} = 2.76 TeV, 0-10%";
+    label = "Pb-Pb #sqrt{s}_{NN} = 2.76 TeV, 0-10%";
     color  = kRed+1;
     marker = kFullCircle;
     if(!shift)    shiftloc =  0;
@@ -683,7 +694,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "PbPb_6080") {
     array = arrPbPb;
     system = 2; energy = 2760.; centrality = "V0M6080";
-    label = "Pb-Pb, #sqrt{s}_{NN} = 2.76 TeV, 60-80%";
+    label = "Pb-Pb #sqrt{s}_{NN} = 2.76 TeV, 60-80%";
     color  = kBlue+1;
     marker = kFullCircle;
     if(!shift)    shiftloc =  0.0;
@@ -719,7 +730,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "pPb0005") {
     array = arrpPb;
     system = 1; energy = 5020.; centrality = "V0A0005";
-    label = "p-Pb, #sqrt{s}_{NN} = 5.02 TeV, V0A 0-5%";
+    label = "p-Pb #sqrt{s}_{NN} = 5.02 TeV, V0A 0-5%";
     color  = kBlack;
     marker = kFullCircle;
     if(!shift)    shiftloc = -0.2;
@@ -728,7 +739,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "PbPbSTAR") {
     array = arrSTARPbPb;
     system = 2; energy = 200.; centrality = "0005";
-    label = "STAR, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
+    label = "STAR, Au-Au #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenStar;
     if(!shift)    shiftloc = +0.2;
@@ -737,7 +748,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "PbPbPHENIX") {
     array = arrPHENIXPbPb;
     system = 2; energy = 200.; centrality = "0005";
-    label = "PHENIX, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
+    label = "PHENIX, Au-Au #sqrt{s}_{NN} = 0.2 TeV, 0-5%";
     color  = kBlack;
     marker = kOpenSquare;
     if(!shift)    shiftloc = -0.15;
@@ -746,7 +757,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "PbPbBRAHMS") {
     array = arrBRAHMSPbPb;
     system = 2; energy = 200.; centrality = "0010";
-    label = "BRAHMS, Au-Au, #sqrt{s}_{NN} = 0.2 TeV, 0-10%";
+    label = "BRAHMS, Au-Au #sqrt{s}_{NN} = 0.2 TeV, 0-10%";
     color  = kBlack;
     marker = kOpenCross;
     if(!shift)    shiftloc = -0.3;
@@ -755,7 +766,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "ppSTAR") {
     array = arrSTARpp;
     system = 0; energy = 200.; centrality = "";
-    label = "STAR, pp, #sqrt{s} = 0.2 TeV";
+    label = "STAR, pp #sqrt{s} = 0.2 TeV";
     color  = kBlack;
     marker = kOpenStar;
     if(!shift)    shiftloc = 0.;
@@ -764,7 +775,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   else if (what == "ppPHENIX") {
     array = arrPHENIXpp;
     system = 0; energy = 200.; centrality = "";
-    label = "PHENIX, pp, #sqrt{s} = 0.2 TeV";
+    label = "PHENIX, pp #sqrt{s} = 0.2 TeV";
     color  = kBlack;
     marker = kOpenSquare;
     if(!shift)    shiftloc = -0.2;
@@ -772,10 +783,10 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   } 
   // From here on, it's meta names, to draw several series of ratios
   else if (what == "allpp"){
-    DrawRatio("frame");
-    DrawRatio("pp7");
-    DrawRatio("pp276");
+    DrawRatio("frame");    
     DrawRatio("pp900");
+    DrawRatio("pp276");
+    DrawRatio("pp7");
     array =0;
     NewLegendQM(0.62249, 0.635734, 0.910643, 0.94673);
 
@@ -802,9 +813,9 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   } else if(what == "allsyst") {
 
     DrawRatio("frame");
-    DrawRatio("PbPb_0010", 0, 0.2);
     DrawRatio("pp7", 0, -0.2);
     DrawRatio("pPb0005", 0, 0.00001);
+    DrawRatio("PbPb_0010", 0, 0.2);
     array =0;
 
 
@@ -819,12 +830,11 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
   }else if(what =="PbPb6080andpPb0005") {
     DrawRatio("frame");
-    DrawRatio("PbPb_6080");
     DrawRatio("pPb0005");
+    DrawRatio("PbPb_6080");
     array=0;
 
-
-    NewLegendQM(0.413655, 0.72803, 0.910643, 0.948736);
+    NewLegendQM(    0.46988, 0.730036, 0.910643, 0.948736);
     DrawExtrapolatedSymbolsAndLegendpPb0005();
     myCan->Update();
     gSystem->ProcessEvents();
@@ -881,22 +891,116 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
     DrawRatio("frame",1);  
     DrawRatio("PbPb_0010",1);  
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
     // FIXME: sistemare valori rapporti
-    PlotThermusYields("test_outputfile.txt"               , kBlack , kSolid      , "Thermus 2.3" , 155  ,2  ,4220  ,500  ,-1  ,0 ,-1 ,0 ,39.5  ,10);
-    PlotGSIYields("data+therm_s2760_0-10qm14.dat"         , kRed+1 , kDashed     , "GSI"         , 156.5  ,2  , 5380, 560  ,-1  ,0 ,-1 ,0 ,38.4  ,14 );
-    PlotThermusYields("fit_gamma_q_s_fixed_PbPb_0010.txt" , kBlue+1, kDashDotted , "SHARE 3"     , 156 , 3 , 4387 , 767 , -1 ,0 ,-2 ,0 ,17.2 ,10);
+    PlotThermusYields("lhc2760_final_0005_single_gc_output_gs1_wevc_nkst.txt"               , kBlack  , kSolid      , "Thermus 2.3 , 155 #pm 2   , 5882 #pm 532  , 24.6/9");
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14.dat"    , kRed+1  , kDashed     , "GSI         , 156 #pm 1.5 , 5330 #pm 505  , 17.4/9" );
+    PlotThermusYields("fit_gamma_q_s_fixed_with_nuclei_PbPb_0010.txt" , kBlue+1 , kDashDotted , "SHARE 3     , 156 #pm 2   , 4479 #pm 639  , 12.5/8");
 
-    NewLegendQM(0.613454, 0.701578, 0.940763, 0.918272, 1);
+    TLegend * l = NewLegendQM(0.682731, 0.701578, 0.939759, 0.920947, 1);
+    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Not in fit", "p");
+    m = new TMarker(0.1,0.1,markerExtrap);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
 
 
     array =0;
-  } else if( what == "fitGSI_NoPions_PbPb0010") {
-    std::cout << "MISSING DATA" << std::endl;
+  } else if( what == "fitSHARE_NoPionsNoProtons_PbPb0010") {
     array =0;
+
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_0010",1);  
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
+
+    PlotThermusYields("fit_gamma_q_s_fixed_PbPb_0010.txt"            ,kBlack  , kSolid      ,"SHARE 3          , 155 #pm 4 , 4583 #pm 853 , 10.1/5 ");
+    PlotThermusYields("fit_gamma_q_s_fixed_wo_pions_PbPb_0010.txt"   ,kRed+1  , kDashed     ,"SHARE 3 (no #pi)   , 158 #pm 4 , 3801 #pm 738 , 7.2/4");
+    PlotThermusYields("fit_gamma_q_s_fixed_wo_protons_PbPb_0010.txt" ,kBlue+1 , kDashDotted ,"SHARE 3 (no p)  , 159 #pm 3 ,3898 #pm 676  , 2.7/4");
+
+
+    TLegend * l = NewLegendQM(0.682731, 0.701578, 0.939759, 0.920947, 1);
+    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Not in fit", "p");
+    m = new TMarker(0.1,0.1,markerExtrap);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
+
+    // Add markers for additional particles not in fit
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
     
-  }  else if( what == "fitGSI_NoProtons_PbPb0010") {
-    std::cout << "MISSING DATA" << std::endl;
+    myPadLabel->cd();
+    Double_t ymarker = 0.111825;
+    TMarker * marker = new TMarker(0.4267068,ymarker,28);
+    marker->SetMarkerStyle(28);
+    marker->SetMarkerSize(1.2);
+    marker->Draw();
+    marker = new TMarker(0.7881526,ymarker,28);
+    marker->SetMarkerStyle(28);
+    marker->SetMarkerSize(1.2);
+    marker->Draw();
+    marker = new TMarker(0.8644578,ymarker,28);
+    marker->SetMarkerStyle(28);
+    marker->SetMarkerSize(1.2);
+    marker->Draw();
+    marker = new TMarker(0.9558233,ymarker,28);
+    marker->SetMarkerStyle(28);
+    marker->SetMarkerSize(1.2);
+    marker->Draw();
+    myPadHisto->cd();
+
+
+  } else if( what == "fitGSI_NoPionsNoProtons_PbPb0010") {
     array =0;
+
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_0010",1);  
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
+
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14.dat"    , kBlack , kSolid       , "GSI         , 156 #pm 1.5 , 5330 #pm 505 , 17.4/9" );
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14NOp.dat" , kRed+1  , kDashed     , "GSI (no p)  , 156 #pm 2   , 5590 #pm 330,  7.5/8" );
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14NOpi.dat",  kBlue+1, kDashDotted , "GSI (no #pi), 157 #pm 2,  4990 #pm 630, 15.9/8");
+
+
+    TLegend * l = NewLegendQM(0.682731, 0.701578, 0.939759, 0.920947, 1);
+    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Not in fit", "p");
+    m = new TMarker(0.1,0.1,markerExtrap);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
+
+    // Add markers for additional particles not in fit
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
+   
+
+  } else if (what == "fitShareWithWithoutNuclei_PbPb0010") {
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_0010",1);  
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
+
+    PlotThermusYields("fit_gamma_q_s_fixed_PbPb_0010.txt"            ,kBlack  , kSolid      ,"SHARE 3  (no nuclei)        , 155 #pm 4 , 4583 #pm 853 , 10.1/5 ");
+    PlotThermusYields("fit_gamma_q_s_fixed_with_nuclei_PbPb_0010.txt" , kBlue+1 , kDashDotted , "SHARE 3     , 156 #pm 2   , 4479 #pm 639  , 12.5/8");
+
+    TLegend * l = NewLegendQM(0.682731, 0.701578, 0.939759, 0.920947, 1);
+    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Not in fit", "p");
+    m = new TMarker(0.1,0.1,markerExtrap);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
+
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
     
   } else if( what == "fitThermus_GammaSFree_PbPb0010") {
     std::cout << "MISSING DATA" << std::endl;
@@ -907,12 +1011,30 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   } else if( what == "fitShare_All_PbPb0010") {
     DrawRatio("frame",1);  
     DrawRatio("PbPb_0010",1);  
-    PlotThermusYields("fit_gamma_q_s_fixed_PbPb_0010.txt" , kBlack , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
-    PlotThermusYields("fit_gamma_q_fixed_PbPb_0010.txt"   , kBlue  , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
-    PlotThermusYields("fit_gamma_q_s_free_PbPb_0010.txt"  , kRed   , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
+    // PlotThermusYields("fit_gamma_q_s_fixed_PbPb_0010.txt" , kBlack , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
+    // PlotThermusYields("fit_gamma_q_fixed_PbPb_0010.txt"   , kBlue  , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
+    // PlotThermusYields("fit_gamma_q_s_free_PbPb_0010.txt"  , kRed   , kSolid , "SHARE 3" , 100 , 100 , 100  , 100 , -1   , -1  , -2 , -1 , -1  , -1);
     array =0;
   } else if( what == "fitGSI_PbPb6080") {
-    std::cout << "MISSING DATA" << std::endl;
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_6080",1);  
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
+    PlotGSIYields("data+therm_fit2_s2760_60-80qm14.dat", kBlack, kSolid, "GSI, 157 #pm 2, 210 #pm 20, 9.1/7");
+
+    legThermal->SetX1NDC(0.143574);
+    legThermal->SetY1NDC(0.0702247); 
+    legThermal->SetX2NDC(0.659639);
+    legThermal->SetY2NDC(0.238764);
+    legThermal->Draw();
+
+    TLegend * l = NewLegendQM(    0.682731, 0.744382, 0.939759, 0.920947, 1);
+    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
+    m->SetMarkerSize(1.2);
+    l->AddEntry( m, "Not in fit", "p");
+    DrawMarkerKStarNoFit() ;
+    //DrawExtrapolatedSymbolsYieldsPbPb0010();
+
     array =0;
   } else if( what == "fitGSI_pPb0005") {
     std::cout << "MISSING DATA" << std::endl;
@@ -941,10 +1063,10 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
   } else if( what == "fitShare_pPb0005") {
     DrawRatio("frame",1);  
     DrawRatio("pPb0005",1);  
-    PlotThermusYields("fit_gamma_q_fixed_pPb_0005.txt"    , kBlue  , kDashDotted , "SHARE 3"     , 161 , 3 , 114 , 17 , 0.93 ,0.04 ,-2 ,0 ,26.0 ,6);
-    PlotThermusYields("fit_gamma_q_s_free_pPb_0005.txt"   , kRed   , kDashDotted , "SHARE 3"     , 162 , 3 , 111 , 16 , 0.93 ,0.03 ,-2 ,0 ,61.4 ,6);
-    PlotThermusYields("fit_gamma_q_s_fixed_pPb_0005.txt"   , kGreen   , kDashDotted , "SHARE 3"    , 158 , 2 , 125 , 16 , -1 ,-1 ,-2 ,0 ,30.8 ,7);
-    PlotThermusYields("fit_gamma_q_s_free_with_d_pPb_0005.txt", kBlack, kSolid, "SHARE 3", 163, 5, 124, 15, 0.85, 0.08, 0.92, 0.06, 29.3, 7);
+    // PlotThermusYields("fit_gamma_q_fixed_pPb_0005.txt"    , kBlue  , kDashDotted , "SHARE 3"     , 161 , 3 , 114 , 17 , 0.93 ,0.04 ,-2 ,0 ,26.0 ,6);
+    // PlotThermusYields("fit_gamma_q_s_free_pPb_0005.txt"   , kRed   , kDashDotted , "SHARE 3"     , 162 , 3 , 111 , 16 , 0.93 ,0.03 ,-2 ,0 ,61.4 ,6);
+    // PlotThermusYields("fit_gamma_q_s_fixed_pPb_0005.txt"   , kGreen   , kDashDotted , "SHARE 3"    , 158 , 2 , 125 , 16 , -1 ,-1 ,-2 ,0 ,30.8 ,7);
+    // PlotThermusYields("fit_gamma_q_s_free_with_d_pPb_0005.txt", kBlack, kSolid, "SHARE 3", 163, 5, 124, 15, 0.85, 0.08, 0.92, 0.06, 29.3, 7);
     NewLegendQM(0.613454, 0.701578, 0.940763, 0.918272, 1);
     array =0;
 
@@ -983,8 +1105,11 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
   if(array) {
     if(isYield) {
+      TGraphErrors * hstat = 
       AliPWGHistoTools::GetGraphFromHisto(GetHistoYields(array,  system,  energy, centrality, label, color, marker, kStatError, shiftloc)
-                                          ,0)->Draw("PZ");
+                                          ,0);
+      hstat->SetMarkerSize(1.2);
+      hstat->Draw("PZ");
       AliPWGHistoTools::GetGraphFromHisto(GetHistoYields(array,  system,  energy, centrality, label+"NoLegend", color, marker, kSystError, shiftloc)
                                           ,0)->Draw("[]");
     } else {
@@ -1045,19 +1170,6 @@ void DrawFrame(Bool_t isYield) {
     line->SetLineWidth(2);
     line->Draw();
 
-    // Markers for extrapolated points
-    TMarker *marker = new TMarker(0.339357,0.111825,markerNoFit);
-    marker->SetMarkerStyle(28);
-    marker->SetMarkerSize(1.2);
-    marker->Draw();
-    marker = new TMarker(0.369478,0.111825,markerExtrap);
-    marker->SetMarkerStyle(27);
-    marker->SetMarkerSize(1.2);
-    marker->Draw();
-    marker = new TMarker(0.938755,0.111825,markerExtrap);
-    marker->SetMarkerStyle(markerExtrap);
-    marker->SetMarkerSize(1.2);
-    marker->Draw();
 
   }
   else {
@@ -1124,22 +1236,11 @@ void DrawFrame(Bool_t isYield) {
     legThermal->SetBorderSize(1);
     legThermal->SetTextFont(43);
     legThermal->SetTextSize(14);
-    legThermal->SetNColumns(6);
+    //    legThermal->SetNColumns(6);
     legThermal->SetFillColor(0);
     legThermal->SetLineWidth(1);
     legThermal->Draw();
-    // FIXME: make a method "Set header"?
-    legThermal->AddEntry(myBlankHisto, "Model", "0");
-    legThermal->AddEntry(myBlankHisto, "T (MeV)", "0");
-    legThermal->AddEntry(myBlankHisto, "V (fm^{3})", "0");
-    legThermal->AddEntry(myBlankHisto, "#gamma_{s}", "0");
-    legThermal->AddEntry(myBlankHisto, "#gamma_{q}", "0");
-    legThermal->AddEntry(myBlankHisto, "#chi^{2}/NDF", "0");
-
-
-  } else {
   }
-  
 }
 
 void myLatexDraw(TLatex *currentLatex, Float_t currentSize, Int_t currentColor){
@@ -1171,10 +1272,7 @@ void myPadSetUp(TPad *currentPad){
   return;
 }
 TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineStyle,
-                                 const char * tag,
-                                 Double_t t, Double_t terr, Double_t v, Double_t verr, 
-                                 Double_t gs, Double_t gserr, Double_t gq, Double_t gqerr,
-                                 Double_t chi2, Double_t ndf) {
+                                 const char * tag) {
 
   Int_t lw = lineStyle == kSolid ? 2 : 3; // Set line width
 
@@ -1236,46 +1334,17 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
   gThermusStdDev->SetLineStyle(lineStyle);
   myPadHisto->cd();
 
-  legThermal->AddEntry(gThermus, tag, "l");
-  if (t>0) {
-    legThermal->AddEntry(gThermus, Form("%0.0f #pm %0.0f",t,terr), "0");
-  } else {
-    legThermal->AddEntry(gThermus, " ", "0");
-  }
-  if(v>0) {
-    legThermal->AddEntry(gThermus, Form("%0.0f #pm %0.0f",v,verr), "0");
-  } else {
-    legThermal->AddEntry(gThermus, " ", "0");
-  }
-
-  if(gs>0) {
-    legThermal->AddEntry(gThermus, Form("%0.2f #pm %0.2f",gs,gserr), "0");
-  } else {
-    legThermal->AddEntry(gThermus, "fixed", "0");
-  }
-  if(gq>0) {
-    legThermal->AddEntry(gThermus, Form("%0.2f #pm %0.2f",gq,gqerr), "0");
-  } else if(gq==-1){ // -1 is thermus, -2 share
-    legThermal->AddEntry(gThermus, "N/A", "0");
-  } else {
-    legThermal->AddEntry(gThermus, "fixed", "0");
-  }
-  if(chi2>0) {
-    legThermal->AddEntry(gThermus, Form("%0.2f/%0.0f",chi2, ndf), "0");
-  } else {
-    legThermal->AddEntry(gThermus, " ", "0");
-  }
-
+  
+  AddLineToThermalLegend(gThermus, tag, "l");
   return gThermus;
 }
 
 
 
 TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle,
-                             const char * tag,
-                             Double_t t, Double_t terr, Double_t v, Double_t verr, 
-                             Double_t gs, Double_t gserr, Double_t gq, Double_t gqerr,
-                             Double_t chi2, Double_t ndf) {
+                             const char * tag) {
+
+  // tag is a comma separated list of elements to be added to the legend as diferent columns
 
   Int_t lw = lineStyle == kSolid ? 2 : 3; // Set line width
 
@@ -1292,7 +1361,7 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
   
   ifstream gsiFile(filename);
   //  std::istream is(thermusFile);
-  std::cout << "GSI" << std::endl;
+  std::cout << "----- GSI -----" << std::endl;
   
   // Read the std dev and the ratio in 2 maps, then plot them in a graph.
   Int_t ipart = 0;
@@ -1349,33 +1418,7 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
   gGsiStdDev->SetLineStyle(lineStyle);
   myPadHisto->cd();
 
-  legThermal->AddEntry(gGsi, tag, "l");
-  if (t>0) {
-    legThermal->AddEntry(gGsi, Form("%0.0f #pm %0.0f",t,terr), "0");
-  } else {
-    legThermal->AddEntry(gGsi, " ", "0");
-  }
-  if(v>0) {
-    legThermal->AddEntry(gGsi, Form("%0.0f #pm %0.0f",v,verr), "0");
-  } else {
-    legThermal->AddEntry(gGsi, " ", "0");
-  }
-
-  if(gs>0) {
-    legThermal->AddEntry(gGsi, Form("%0.2f #pm %0.2f",gs,gserr), "0");
-  } else {
-    legThermal->AddEntry(gGsi, "fixed", "0");
-  }
-  if(gq>0) {
-    legThermal->AddEntry(gGsi, Form("%0.2f #pm %0.2f",gq,gqerr), "0");
-  } else {
-    legThermal->AddEntry(gGsi, "N/A", "0");
-  }
-  if(chi2>0) {
-    legThermal->AddEntry(gGsi, Form("%0.2f/%0.0f",chi2, ndf), "0");
-  } else {
-    legThermal->AddEntry(gGsi, "--", "0");
-  }
+  AddLineToThermalLegend(gGsi, tag, "L");
 
   return gGsi;
 }
@@ -1450,4 +1493,48 @@ void DrawExtrapolatedSymbolsAndLegendpPb0005() {
    marker->SetMarkerStyle(28);
    marker->SetMarkerSize(1.2);
    marker->Draw();
+}
+
+void AddLineToThermalLegend(TObject * obj, TString line, const char * optFirst) {
+
+  // This should be a comma-separated list of text to be added to the
+  // columns.  If the number of entries does not match the numer of
+  // columns, it returns an error
+  TObjArray * tokens = line.Tokenize(",");
+  if(tokens->GetEntries() != legThermal->GetNColumns()) {
+    std::cout << "Wrong number of columns (" << tokens->GetEntries() << ","<<legThermal->GetNColumns()<<") for the thermal legend, not adding " << line.Data() << std::endl;
+    return;
+  }
+  
+  TIter iter(tokens);
+  TObjString * col;
+  Bool_t first = 1;
+  while((col = (TObjString*)iter.Next())) {
+    // Add entry removing whitespaces
+    legThermal->AddEntry(obj, col->String().Strip(TString::kBoth, ' ').Data(), first ? optFirst : "0");
+    if (first) first = 0;
+  }
+}
+
+void DrawExtrapolatedSymbolsYieldsPbPb0010(){
+    // Markers for extrapolated points
+  myPadLabel->cd();
+  TMarker * marker = new TMarker(0.369478,0.111825,markerExtrap);
+  marker->SetMarkerStyle(markerExtrap);
+  marker->SetMarkerSize(1.2);
+  marker->Draw();
+  marker = new TMarker(0.938755,0.111825,markerExtrap);
+  marker->SetMarkerStyle(markerExtrap);
+  marker->SetMarkerSize(1.2);
+  marker->Draw();
+  myPadHisto->cd();
+}
+
+void DrawMarkerKStarNoFit() {
+  myPadLabel->cd();
+  TMarker *marker = new TMarker(0.339357,0.111825,markerNoFit);
+  marker->SetMarkerStyle(28);
+  marker->SetMarkerSize(1.2);
+  marker->Draw();
+  myPadHisto->cd();
 }
