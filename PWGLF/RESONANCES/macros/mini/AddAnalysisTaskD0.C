@@ -29,6 +29,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Float_t     nsigmaTOFKa = 2.0,
    Float_t     trackDCAcutMax = 7.0,
    Float_t     trackDCAcutMin = 0.0,
+   Float_t     trackDCAZcutMax = 2.0,
    Int_t       NTPCcluster = 70,
    Double_t    minpt = 0.15,
    TString     triggerMask = AliVEvent::kMB,
@@ -73,7 +74,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    } 
 
    // create the task and configure 
-   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f_%s", (isPP? "pp" : ispPb? "pPB": "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, dcaProduct, minpt, eventType.Data());
+   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%s", (isPP? "pp" : ispPb? "pPB": "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, dcaProduct, minpt, eventType.Data());
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -195,7 +196,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, "", cutsPairY, cutsPair)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
@@ -203,7 +204,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    Printf("AddAnalysisTaskD0 - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.5f_%.2f_%s",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,dcaProduct,minpt,eventType.Data()), 
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%s",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,trackDCAZcutMax,dcaProduct,minpt,eventType.Data()), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);
