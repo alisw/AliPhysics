@@ -416,7 +416,23 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   }
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-    systematics->SetCollisionType(2); 
+    systematics->SetCollisionType(2);
+    if(ccestimator==kV0A) {
+      if(cc == kpPb020) systematics->SetCentrality("020V0A");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040V0A");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060V0A");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100V0A");
+    } else if (ccestimator==kZNA) {
+      if(cc == kpPb020) systematics->SetCentrality("020ZNA");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100ZNA");
+    } else {
+      if(!(cc == kpPb0100)) {
+	cout <<" Error on the pPb options"<<endl;
+	return;
+      }
+    }
   }
   //
   else if( cc!=kpp7 )  {
