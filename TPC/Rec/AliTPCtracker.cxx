@@ -339,7 +339,8 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
   Double_t rdistance2  = rdistancey2+rdistancez2;
   //Int_t  accept =0;
   
-  if (AliTPCReconstructor::StreamLevel()>2 && seed->GetNumberOfClusters()>20) {
+  if (AliTPCReconstructor::StreamLevel()>2) {
+    //  if (AliTPCReconstructor::StreamLevel()>2 && seed->GetNumberOfClusters()>20) {
     Float_t rmsy2 = seed->GetCurrentSigmaY2();
     Float_t rmsz2 = seed->GetCurrentSigmaZ2();
     Float_t rmsy2p30 = seed->GetCMeanSigmaY2p30();
@@ -352,12 +353,13 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     param.GetXYZ(gcl.GetMatrixArray());
     cluster->GetGlobalXYZ(gclf);
     gcl[0]=gclf[0];    gcl[1]=gclf[1];    gcl[2]=gclf[2];
-
+    Int_t nclSeed=seed->GetNumberOfClusters();
     
     if (AliTPCReconstructor::StreamLevel()>2) {
     (*fDebugStreamer)<<"ErrParam"<<
       "iter="<<fIteration<<
       "Cl.="<<cluster<<
+      "nclSeed="<<nclSeed<<
       "T.="<<&param<<
       "dy="<<dy<<
       "dz="<<dz<<
