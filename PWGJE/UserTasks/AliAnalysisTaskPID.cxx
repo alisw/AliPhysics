@@ -54,6 +54,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
   , fDoPtResolution(kTRUE)
+  , fDoDeDxCheck(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -131,6 +132,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fDeltaPrimeAxis(0x0)
   , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
@@ -142,8 +144,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
-  , fPtResolutionContainer(0x0)
+  , fQAContainer(0x0)
 {
   // default Constructor
   
@@ -185,6 +188,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
   , fDoPtResolution(kTRUE)
+  , fDoDeDxCheck(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -262,6 +266,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fDeltaPrimeAxis(0x0)
   , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
   , fhEventsTriggerSel(0x0)
@@ -273,8 +278,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
-  , fPtResolutionContainer(0x0)
+  , fQAContainer(0x0)
 {
   // Constructor
   
@@ -328,11 +334,14 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   delete fOutputContainer;
   fOutputContainer = 0x0;
   
-  delete fPtResolutionContainer;
-  fPtResolutionContainer = 0x0;
+  delete fQAContainer;
+  fQAContainer = 0x0;
 
   delete fConvolutedGausDeltaPrime;
   fConvolutedGausDeltaPrime = 0x0;
+  
+  delete fDeltaPrimeAxis;
+  fDeltaPrimeAxis = 0x0;
   
   delete [] fGenRespElDeltaPrimeEl;
   delete [] fGenRespElDeltaPrimeKa;
@@ -446,7 +455,7 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
 {
   // Initialise the PIDcombined object
   
-  if (!fDoPID)
+  if (!fDoPID && !fDoDeDxCheck)
     return;
   
   if(fDebug > 1)
@@ -612,6 +621,8 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   for (Int_t i = 0 + 1; i <= deltaPrimeNBins; i++) {
     deltaPrimeBins[i] = factor * deltaPrimeBins[i - 1];
   }
+  
+  fDeltaPrimeAxis = new TAxis(deltaPrimeNBins, deltaPrimeBins);
   
   const Int_t nMCPIDbins = 5;
   const Double_t mcPIDmin = 0.;
@@ -874,16 +885,17 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->Add(fh1Xsec);
   fOutputContainer->Add(fh1Trials);
   
-  if (fDoPtResolution) {
+  if (fDoDeDxCheck || fDoPtResolution) {
     OpenFile(3);
+    fQAContainer = new TObjArray(1);
+    fQAContainer->SetName(Form("%s_QA", GetName()));
+    fQAContainer->SetOwner(kTRUE);
     
     if(fDebug > 2)
-    printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
-    
-    fPtResolutionContainer = new TObjArray(1);
-    fPtResolutionContainer->SetName(Form("%s_PtResolution", GetName()));
-    fPtResolutionContainer->SetOwner(kTRUE);
-    
+      printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
+  }
+  
+  if (fDoPtResolution) {
     const Int_t nPtBinsRes = 100;
     Double_t pTbinsRes[nPtBinsRes + 1];
 
@@ -909,8 +921,27 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                         Form("Pt resolution for primaries, %s", AliPID::ParticleLatexName(i)),
                                         nBinsPtResolution, ptResolutionBins, ptResolutionXmin, ptResolutionXmax);
       SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
-      fPtResolutionContainer->Add(fPtResolution[i]);
+      fQAContainer->Add(fPtResolution[i]);
     }
+  }
+  
+  
+  
+  if (fDoDeDxCheck) {
+    const Int_t nEtaAbsBins = 9;
+    const Double_t binsEtaAbs[nEtaAbsBins+1] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+    
+    const Double_t dEdxMin = 20;
+    const Double_t dEdxMax = 110;
+    const Int_t nDeDxBins = (Int_t) ((dEdxMax - dEdxMin) / 0.02);
+    const Int_t nBinsDeDxCheck= kDeDxCheckNumAxes;
+    Int_t dEdxCheckBins[kDeDxCheckNumAxes]    = { nSelSpeciesBins, nPtBins, nJetPtBins, nEtaAbsBins, nDeDxBins };
+    Double_t dEdxCheckXmin[kDeDxCheckNumAxes] = { selSpeciesMin, binsPt[0], binsJetPt[0], binsEtaAbs[0], dEdxMin };
+    Double_t dEdxCheckXmax[kDeDxCheckNumAxes] = { selSpeciesMax, binsPt[nPtBins], binsJetPt[nJetPtBins], binsEtaAbs[nEtaAbsBins], dEdxMax };
+    
+    fDeDxCheck = new THnSparseD("fDeDxCheck", "dEdx check", nBinsDeDxCheck, dEdxCheckBins, dEdxCheckXmin, dEdxCheckXmax);
+    SetUpDeDxCheckHist(fDeDxCheck, binsPt, binsJetPt, binsEtaAbs);
+    fQAContainer->Add(fDeDxCheck);
   }
   
   if(fDebug > 2)
@@ -918,7 +949,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   PostData(1, fOutputContainer);
   PostData(2, fContainerEff);
-  PostData(3, fPtResolutionContainer);
+  PostData(3, fQAContainer);
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
@@ -1112,7 +1143,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     // Only process tracks inside the desired eta window    
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
-    if (fDoPID) 
+    if (fDoPID || fDoDeDxCheck) 
       ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
@@ -1410,7 +1441,7 @@ Bool_t AliAnalysisTaskPID::GetParticleFraction(Double_t trackPt, Double_t jetPt,
   else {
     Double_t x0 = 0., x1 = 0., y0 = 0., y1 = 0.;
     Double_t y0errStat = 0., y1errStat = 0., y0errSys = 0., y1errSys = 0.;
-    Int_t trackPtBin = xAxis->FindBin(trackPt);
+    Int_t trackPtBin = xAxis->FindFixBin(trackPt);
     
     // Linear interpolation between nearest neighbours in trackPt
     if (trackPt <= xAxis->GetBinCenter(trackPtBin)) {
@@ -2142,6 +2173,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Do PID: %d\n", fDoPID);
   printf("Do Efficiency: %d\n", fDoEfficiency);
   printf("Do PtResolution: %d\n", fDoPtResolution);
+  printf("Do dEdxCheck: %d\n", fDoDeDxCheck);
   
   printf("\n");
 
@@ -2191,7 +2223,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
   
-  if (!fDoPID)
+  if (!fDoPID && !fDoDeDxCheck)
     return kFALSE;
   
   if(fDebug > 2)
@@ -2504,7 +2536,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     
   }
   else {
-    // No systematic studies on expected signal - just take it as it comve from the TPCPIDResponse
+    // No systematic studies on expected signal - just take it as it comes from the TPCPIDResponse
     dEdxEl = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, 
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
@@ -2639,6 +2671,69 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     
     // In all other cases, the maximum remains untouched from the scaling (and is < AliPID::kSPECIES by construction)
   }
+  
+  if (fDoDeDxCheck) {
+    // Generate the expected responses in DeltaPrime and translate to real dEdx. Only take responses for exactly that species
+    // (i.e. with pre-PID)
+    
+    Int_t numGenEntries = fgkMaxNumGenEntries; // fgkMaxNumGenEntries = 500
+    
+    ErrorCode errCode = kNoErrors;
+  
+    if(fDebug > 2)
+      printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check\n", (char*)__FILE__, __LINE__);
+    
+    // Electrons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaEl / dEdxEl, fGenRespElDeltaPrimeEl, numGenEntries);
+
+    // Kaons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaKa / dEdxKa, fGenRespKaDeltaPrimeKa, numGenEntries);
+
+    // Pions
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaPi / dEdxPi, fGenRespPiDeltaPrimePi, numGenEntries);
+
+    // Protons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaPr / dEdxPr, fGenRespPrDeltaPrimePr, numGenEntries);
+    
+    if (errCode == kNoErrors) {
+      Double_t genEntry[kDeDxCheckNumAxes];
+      genEntry[kDeDxCheckJetPt] = jetPt;
+      genEntry[kDeDxCheckEtaAbs] = TMath::Abs(track->Eta());
+      genEntry[kDeDxCheckP] = pTPC;
+      
+        
+      for (Int_t n = 0; n < numGenEntries; n++)  {
+        // If no MC info is available or shall not be used, use weighting with priors to generate entries for the different species
+        Double_t rnd = fRandom->Rndm(); // Produce uniformly distributed floating point in ]0, 1]
+        
+        // Consider generated response as originating from...
+        if (rnd <= prob[AliPID::kElectron]) {
+          genEntry[kDeDxCheckPID] = 0; // ... an electron
+          genEntry[kDeDxCheckDeDx] = fGenRespElDeltaPrimeEl[n] * dEdxEl;
+        }
+        else if (rnd <= prob[AliPID::kElectron] + prob[AliPID::kKaon]) {
+          genEntry[kDeDxCheckPID] = 1;  // ... a kaon
+          genEntry[kDeDxCheckDeDx] = fGenRespKaDeltaPrimeKa[n] * dEdxKa;
+        }
+        else if (rnd <= prob[AliPID::kElectron] + prob[AliPID::kKaon] + prob[AliPID::kMuon] + prob[AliPID::kPion]) {
+          genEntry[kDeDxCheckPID] = 2;  // ... a pion (or a muon)
+          genEntry[kDeDxCheckDeDx] = fGenRespPiDeltaPrimePi[n] * dEdxPi;
+        }
+        else {
+          genEntry[kDeDxCheckPID] = 3;  // ... a proton
+          genEntry[kDeDxCheckDeDx] = fGenRespPrDeltaPrimePr[n] * dEdxPr;
+        }
+     
+        fDeDxCheck->Fill(genEntry);
+      }
+    }
+    
+    if(fDebug > 2)
+      printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check done\n", (char*)__FILE__, __LINE__);
+  }
+  
+  if (!fDoPID)
+    return kTRUE;
   
   if (!isMC) {
     // Clean up the most probable PID for low momenta (not an issue for the probabilities, since fractions small,
@@ -3259,8 +3354,11 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Dou
     rangeEnd = fConvolutedGausDeltaPrime->GetX(maximumFraction, upBoundSearchBoundLow, upBoundSearchBoundUp, (maxX < 0.4) ? 1e-5 : 0.001);
     
     fConvolutedGausDeltaPrime->SetRange(rangeStart,rangeEnd);
-    fConvolutedGausDeltaPrime->SetNpx(fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindBin(rangeEnd)
-                                      - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindBin(rangeStart) + 1);
+    fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
+    
+    fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
+    //fConvolutedGausDeltaPrime->SetNpx(fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeEnd)
+    //                                  - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeStart) + 1);
     //fConvolutedGausDeltaPrime->SetNpx((rangeEnd - rangeStart) / fDeltaPrimeBinWidth + 1);
   }
   
@@ -3423,4 +3521,27 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  hist->SetBinEdges(kDeDxCheckP, binsPt);
+  hist->SetBinEdges(kDeDxCheckJetPt, binsJetPt);
+  hist->SetBinEdges(kDeDxCheckEtaAbs, binsEtaAbs);
+  
+  
+  // Set axes titles
+  hist->GetAxis(kDeDxCheckPID)->SetTitle("PID");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(1, "e");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(2, "K");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(3, "#pi");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(4, "p");
+  
+  
+  hist->GetAxis(kDeDxCheckJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
+  hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");  
+  hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)"); 
+  hist->GetAxis(kDeDxCheckDeDx)->SetTitle("TPC dE/dx (arb. unit)");
 }
