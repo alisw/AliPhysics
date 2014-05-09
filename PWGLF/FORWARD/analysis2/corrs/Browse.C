@@ -1,13 +1,15 @@
- 	TObject* Browse()
+TObject* Browse(Bool_t rw=false)
 {
-  const char* fwd = "/opt/alice/aliroot/trunk-inst/PWGLF/FORWARD/analysis2";
+  const char* fwd = "${ALICE_ROOT}/PWGLF/FORWARD/analysis2";
   if (!gROOT->GetClass("AliOADBForward"))
     gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
   gSystem->AddIncludePath(Form("-I%s -I$ALICE_ROOT/include", fwd));
-  gROOT->LoadMacro(Form("%s/corrs/ForwardOADBGui.C", fwd));
+  TString macro = Form("%s/corrs/ForwardOADBGui.C+", fwd);
+  Info("", "Loading macro %s", macro.Data());
+  gROOT->LoadMacro(macro);
   
   AliOADBForward* db = new AliOADBForward;
-  db->Open("fmd_corrections.root", "*");
+  db->Open("fmd_corrections.root", "*", rw);
   
   ForwardOADBGui(db);
 
