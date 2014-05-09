@@ -170,7 +170,7 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
       cutarray[ 1] = "00000010020929700222504000000"; mesonCutArray[0] = "01525065000000"; //variation qt 0.07 no2D
       cutarray[ 2] = "00000010020929700281504000000"; mesonCutArray[2] = "01525065000000"; //variation chi2 50.
       cutarray[ 3] = "00000010020929700288504000000"; mesonCutArray[3] = "01525065000000"; //variation chi2 20.
-   } else if (trainConfig == 15) {
+   } else if (trainConfig == 16) {
       cutarray[ 0] = "00000010020929700282604000000"; mesonCutArray[0] = "01525065000000"; //variation psi pair 0.05
       cutarray[ 1] = "00000010020929700282804000000"; mesonCutArray[0] = "01525065000000"; //variation psi pair 0.2
       cutarray[ 2] = "00000010020929700282500000000"; mesonCutArray[2] = "01525065000000"; //variation cosPA -1
