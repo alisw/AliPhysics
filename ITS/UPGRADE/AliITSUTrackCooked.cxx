@@ -19,6 +19,17 @@ AliKalmanTrack()
     }
 }
 
+AliITSUTrackCooked::AliITSUTrackCooked(const AliITSUTrackCooked &t):
+AliKalmanTrack(t)
+{
+    //--------------------------------------------------------------------
+    // Copy constructor
+    //--------------------------------------------------------------------
+    for (Int_t i=0; i<2*AliITSUTrackerCooked::kNLayers; i++) {
+        fIndex[i]=t.fIndex[i];
+    }
+}
+
 AliITSUTrackCooked::AliITSUTrackCooked(const AliESDtrack &t):
 AliKalmanTrack()
 {
@@ -90,28 +101,6 @@ Bool_t AliITSUTrackCooked::PropagateTo(Double_t xk, Double_t t,Double_t x0rho) {
   return kTRUE;
 }
 
-Bool_t AliITSUTrackCooked::
-Propagate(const AliCluster *c, Double_t t, Double_t x0rho) {
-  //------------------------------------------------------------------
-  // This function propagates a track to the plane the cluster belong to
-  // t is the material thicknes in units X/X0
-  // x0rho is the material X0*density
-  //------------------------------------------------------------------
-  Double_t xOverX0,xTimesRho; 
-  xOverX0 = t; xTimesRho = t*x0rho;
-  if (!CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass(),kTRUE)) return kFALSE;
-
-  Float_t xk, alpha;
-  if (!c->GetXAlphaRefPlane(xk,alpha)) return kFALSE;
-
-  Double_t bz=GetBz();
-  if (!AliExternalTrackParam::Propagate(alpha, xk, bz)) return kFALSE;
-  //Double_t b[3]; GetBxByBz(b);
-  //if (!AliExternalTrackParam::PropagateBxByBz(alpha, xk, b)) return kFALSE;
-
-  return kTRUE;
-}
-
 Bool_t AliITSUTrackCooked::Update(const AliCluster *c, Double_t chi2, Int_t idx)
 {
   //--------------------------------------------------------------------
@@ -126,6 +115,38 @@ Bool_t AliITSUTrackCooked::Update(const AliCluster *c, Double_t chi2, Int_t idx)
   fIndex[n]=idx;
   SetNumberOfClusters(n+1);
   SetChi2(GetChi2()+chi2);
+
+  return kTRUE;
+}
+
+Bool_t AliITSUTrackCooked::
+GetPhiZat(Double_t r, Double_t &phi, Double_t &z) const {
+  //------------------------------------------------------------------
+  // This function returns the global cylindrical (phi,z) of the track 
+  // position estimated at the radius r. 
+  // The track curvature is neglected.
+  //------------------------------------------------------------------
+  Double_t d=GetD(0., 0., GetBz());
+  if (TMath::Abs(d) > r) {
+    if (r>1e-1) return kFALSE;
+    r = TMath::Abs(d);
+  }
+
+  Double_t rcurr=TMath::Sqrt(GetX()*GetX() + GetY()*GetY());
+  if (TMath::Abs(d) > rcurr) return kFALSE;
+  Double_t globXYZcurr[3]; GetXYZ(globXYZcurr); 
+  Double_t phicurr=TMath::ATan2(globXYZcurr[1],globXYZcurr[0]);
+
+  if (GetX()>=0.) {
+    phi=phicurr+TMath::ASin(d/r)-TMath::ASin(d/rcurr);
+  } else {
+    phi=phicurr+TMath::ASin(d/r)+TMath::ASin(d/rcurr)-TMath::Pi();
+  }
+
+  // return a phi in [0,2pi[ 
+  if (phi<0.) phi+=2.*TMath::Pi();
+  else if (phi>=2.*TMath::Pi()) phi-=2.*TMath::Pi();
+  z=GetZ()+GetTgl()*(TMath::Sqrt((r-d)*(r+d))-TMath::Sqrt((rcurr-d)*(rcurr+d)));
 
   return kTRUE;
 }
