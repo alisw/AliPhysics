@@ -45,6 +45,8 @@ void DrawExtrapolatedSymbolsAndLegendPbPb0010() ;
 void DrawExtrapolatedSymbolsAndLegendpPb0005() ;
 void DrawMarkerKStarNoFit() ;
 void DrawExtrapolatedSymbolsYieldsPbPb0010();
+Double_t GetGraphRatioAndStdDev(TGraphErrors * gModel, TGraphErrors * &gRatio, TGraphErrors *&gStdDev) ;
+TString particlesToExcludeFromChi2 = "";// The above method recomputes the chi2. This string is used to store values to be excluded from this calculation. Each PDG cocde has to be enclosed in [..]. This is obviously not efficient as it involves many string conversions. But efficiency is not an issue here.
 
 
 void LoadArrays() ;
@@ -86,7 +88,7 @@ Int_t isSumYields[npart]      = {1      ,1       ,0      , 1        , 0      , 1
 const char * yieldsLabels[]          = {"#frac{#pi^{+}+#pi^{-}}{2}",
                                         "#frac{K^{+}+K^{-}}{2}",
                                         "K_{S}^{0}",
-                                        "#frac{K*+#bar{K}*}{2}",
+                                        "#frac{K*+K*}{2}",
                                         "#phi",
                                         "#frac{p+#bar{p}}{2}",
                                         "#Lambda", 
@@ -97,12 +99,11 @@ const char * yieldsLabels[]          = {"#frac{#pi^{+}+#pi^{-}}{2}",
                                         "{}^{3}He",
 };
 
-// Preferred colors and markers
-const Int_t markers[]    = {kFullCircle, kFullSquare,kOpenCircle,kOpenSquare,kOpenDiamond,kOpenCross,kFullCross,kFullDiamond,kFullStar,kOpenStar,0};
 //
 Int_t markerNoFit  = 28;
 Int_t markerExtrap = 27;
 Double_t maxy = 0.5;
+
 
 // Data arrays;
 TClonesArray *arrPbPb=0, *arrpp7=0, *arrpPb=0, * arrpp276=0, * arrpp900=0, * arrThermus=0;
@@ -117,6 +118,7 @@ Double_t correlatedUncZero[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 TCanvas *myCan = 0;
 TPad    *myPadStdDev =0;
+TPad    *myPadRatio  =0;
 TPad    *myPadHisto  =0;
 TPad    *myPadLabel  =0;
 TLegend * legThermal = 0;
@@ -130,7 +132,7 @@ TClonesArray * PlotRatiosForQM14() {
   LoadArrays();
 
   // Uncomment stuff in this section to save the inputs for thermal models
-#define SAVE_INPUT_THERMAL_MODEL
+  //#define SAVE_INPUT_THERMAL_MODEL
 #ifdef SAVE_INPUT_THERMAL_MODEL
   PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
   // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/1);
@@ -163,8 +165,8 @@ TClonesArray * PlotRatiosForQM14() {
 
 
   // Yields and FITS
-  maxy=20000;
-  //DrawRatio("fit_ReferenceFit_PbPb0010", 1);
+  maxy=2000;
+  DrawRatio("fit_ReferenceFit_PbPb0010", 1);
   // DrawRatio("fitSHARE_NoPionsNoProtons_PbPb0010",1);
   //  DrawRatio("fitGSI_NoPionsNoProtons_PbPb0010", 1);
   //  DrawRatio("fitShare_pPb0005", 1);
@@ -534,7 +536,7 @@ void SetStyle(Bool_t graypalette) {
   gStyle->SetHistLineColor(kRed);
   gStyle->SetFuncWidth(2);
   gStyle->SetFuncColor(kGreen);
-  gStyle->SetLineWidth(2);
+  gStyle->SetLineWidth(1);
   gStyle->SetLabelSize(0.045,"yz");
   gStyle->SetLabelSize(0.06,"x");
   gStyle->SetLabelOffset(0.01,"y");
@@ -546,7 +548,7 @@ void SetStyle(Bool_t graypalette) {
   gStyle->SetTitleFillColor(kWhite);
   gStyle->SetTextSizePixels(26);
   gStyle->SetTextFont(42);
-  //  gStyle->SetTickLength(0.04,"X");  gStyle->SetTickLength(0.04,"Y"); 
+  gStyle->SetTickLength(0.012,"X");  gStyle->SetTickLength(0.012,"Y"); 
 
   gStyle->SetLegendBorderSize(0);
   gStyle->SetLegendFillColor(kWhite);
@@ -606,7 +608,10 @@ TLegend * NewLegendQM(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Bool_t
   }
   if(isYield) {
     // Add some details on excluded stuff
-    l->SetTextSize(16);
+    l->SetTextSize(22);
+    l->SetBorderSize(0);
+    l->GetEntry()->SetOption("0");
+    l->SetMargin(0.01);
   }
     l->Draw();
   return l;
@@ -660,22 +665,26 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     
       }
     }
-    TPaveText *pt = new TPaveText(    0.176, 0.842881, 0.378514, 0.929595,"brNDC");
-    pt->SetBorderSize(0);
-    pt->SetFillColor(0);
-    pt->SetLineWidth(1);
-    pt->SetTextFont(43);
-    pt->SetTextSize(23);
-    pt->AddText("ALICE Preliminary");
-    pt->Draw();
-    // pt = new TPaveText(    0.167671, 0.815206, 0.375502, 0.865021,"brNDC");
-    // pt->SetBorderSize(0);
-    // pt->SetFillColor(0);
-    // pt->SetLineWidth(1);
-    // pt->SetTextFont(43);
-    // pt->SetTextSize(20);
-    // pt->AddText("particle+antiparticle");
-    // pt->Draw();
+    if(isYield) {
+      TPaveText *pt = new TPaveText(0.691767, 0.86069, 0.893574, 0.944865,"brNDC");
+      pt->SetBorderSize(0);
+      pt->SetFillColor(0);
+      pt->SetTextAlign(12);
+      pt->SetTextFont(43);
+      pt->SetTextSize(23);
+      pt->AddText("ALICE Preliminary");
+      pt->Draw();
+    }
+    else {
+      TPaveText *pt = new TPaveText(    0.176, 0.842881, 0.378514, 0.929595,"brNDC");
+      pt->SetBorderSize(0);
+      pt->SetFillColor(0);
+      pt->SetLineWidth(1);
+      pt->SetTextFont(43);
+      pt->SetTextSize(23);
+      pt->AddText("ALICE Preliminary");
+      pt->Draw();
+    }
 
     gPad->SetGridx();
 
@@ -891,20 +900,16 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
     DrawRatio("frame",1);  
     DrawRatio("PbPb_0010",1);  
+    particlesToExcludeFromChi2="[313]"; // do not consider K* 
     legThermal->SetNColumns(4);
-    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");    
     // FIXME: sistemare valori rapporti
     PlotThermusYields("lhc2760_final_0005_single_gc_output_gs1_wevc_nkst.txt"               , kBlack  , kSolid      , "Thermus 2.3 , 155 #pm 2   , 5882 #pm 532  , 24.6/9");
     PlotGSIYields("data+therm_fit2_s2760_0-10qm14.dat"    , kRed+1  , kDashed     , "GSI         , 156 #pm 1.5 , 5330 #pm 505  , 17.4/9" );
     PlotThermusYields("fit_gamma_q_s_fixed_with_nuclei_PbPb_0010.txt" , kBlue+1 , kDashDotted , "SHARE 3     , 156 #pm 2   , 4479 #pm 639  , 12.5/8");
 
-    TLegend * l = NewLegendQM(0.682731, 0.701578, 0.939759, 0.920947, 1);
-    TMarker * m = new TMarker(0.1, 0.1,markerNoFit);
-    m->SetMarkerSize(1.2);
-    l->AddEntry( m, "Not in fit", "p");
-    m = new TMarker(0.1,0.1,markerExtrap);
-    m->SetMarkerSize(1.2);
-    l->AddEntry( m, "Extrapolated (Pb-Pb 0-10%)", "p");
+
+    NewLegendQM(0.651606, 0.765993, 0.909639, 0.865951, 1);
     DrawMarkerKStarNoFit() ;
     DrawExtrapolatedSymbolsYieldsPbPb0010();
 
@@ -1125,24 +1130,34 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
 void DrawFrame(Bool_t isYield) {
 
-  myCan = new TCanvas("myCan","BD april.2014",50,10,1000,650);
+  myCan = new TCanvas("myCan","ThermalFits",50,10,1000,isYield ? 820 : 650);
   myCan->Draw();
   myCan->cd();
   // Set the Pads
-  Double_t boundaryLabels = 0.85;//0.92;
+  Double_t boundaryLabels = isYield ? 0.88 : 0.85;//0.92;
   myPadLabel = new TPad("myPadLabel","myPadLabel",0.0, boundaryLabels,1.0,1.0);
   myPadSetUp(myPadLabel);
   myPadLabel->Draw();
 
-  myPadHisto = new TPad("myPadHisto","myPadHisto",0.0,isYield ? 0.25 : 0.05 ,1.0, boundaryLabels,0);
+  myPadHisto = new TPad("myPadHisto","myPadHisto",0.0,isYield ? 0.4 : 0.05 ,1.0, boundaryLabels,0);
   myPadSetUp(myPadHisto);
   myPadHisto->Draw();
 
-  myPadStdDev = new TPad("myPadStdDev","myPadStdDev",0.0,0.0,1.0,0.25,0);
+  myPadStdDev = new TPad("myPadStdDev","myPadStdDev",0.0,0.0,1.0,0.2,0);
   myPadSetUp(myPadStdDev);
   if(isYield)  myPadStdDev->Draw();
   myPadStdDev->SetGridx();
   myPadStdDev->SetGridy();
+
+  // This pad is for the ratios data/model
+  myPadRatio = new TPad("myPadRatio","myPadRatio",0.0,0.2,1.0,0.4,0);
+  myPadSetUp(myPadRatio);
+  if(isYield)  myPadRatio->Draw();
+  myPadRatio->SetGridx();
+  myPadRatio->SetGridy();
+
+
+
   myPadLabel->cd();
 
   double xLabelPosition[nratio] = {0.124498, 0.211847, 0.31, 0.38, 0.465, 0.575, 0.644, 0.72, 0.82, 0.905 }; 
@@ -1163,10 +1178,13 @@ void DrawFrame(Bool_t isYield) {
   }
   // Xi's and Omega's bar (there was no way to convince root to draw it properly)
   if(isYield) {
-    TLine *line = new TLine(0.653,0.75,0.663,0.75);
+    TLine *line = new TLine(0.653,0.660,0.663,0.660);
     line->SetLineWidth(2);
     line->Draw();
-    line = new TLine(0.728,0.75,0.741,0.75);
+    line = new TLine(0.725,0.660,0.738,0.660);
+    line->SetLineWidth(2);
+    line->Draw();
+    line = new TLine(0.362,0.660,0.374,0.660);
     line->SetLineWidth(2);
     line->Draw();
 
@@ -1189,7 +1207,7 @@ void DrawFrame(Bool_t isYield) {
     myPadStdDev->SetTopMargin(0.0);
     myPadStdDev->SetTicks(1,1);
 
-    Float_t devMax = 3.5;
+    Float_t devMax = 4.7;
     
     TH2F *myBlankStdDev = new TH2F("myBlankStdDev","myBlankStdDev",npart,1,npart+1,10,-devMax,+devMax);
     myBlankStdDev->GetXaxis()->SetLabelFont(43); // precision 3: size will be in pixels
@@ -1201,8 +1219,24 @@ void DrawFrame(Bool_t isYield) {
     myBlankStdDev->SetNdivisions(605,"y");
     myBlankStdDev->SetLabelOffset(0.012,"xy");
     myBlankStdDev->SetYTitle("(model-data)/#sigma_{data}");
-    myBlankStdDev->SetTitleOffset(1.3,"y");
+    myBlankStdDev->SetTitleOffset(1.65,"y");
     myBlankStdDev->Draw();
+
+    TH2F *myBlankRatio = new TH2F("myBlankRatio","myBlankRatio",npart,1,npart+1,10,0.33,3);
+    myBlankRatio->GetXaxis()->SetLabelFont(43); // precision 3: size will be in pixels
+    myBlankRatio->GetYaxis()->SetLabelFont(43);
+    myBlankRatio->GetYaxis()->SetTitleFont(43);
+    myBlankRatio->SetLabelSize(23,"xy");
+    myBlankRatio->SetTitleSize(20,"y");
+    myBlankRatio->SetNdivisions(20,"x");
+    myBlankRatio->SetNdivisions(605,"y");
+    myBlankRatio->SetLabelOffset(0.001,"xy");
+    myBlankRatio->SetYTitle("model/data");
+    myBlankRatio->SetTitleOffset(1.65,"y");
+    myPadRatio->cd();
+    myPadRatio->SetLogy();
+    myBlankRatio->Draw();
+
   }
 
   myPadHisto->cd();
@@ -1228,11 +1262,11 @@ void DrawFrame(Bool_t isYield) {
   myBlankHisto->SetNdivisions(505,"y");
   if(isYield) myBlankHisto->SetYTitle("d#it{N}/d#it{y}");
   myBlankHisto->SetLabelOffset(0.012,"xy");
-  myBlankHisto->SetTitleOffset(1,"y");
+  myBlankHisto->SetTitleOffset(isYield ? 1.3 : 1,"y");
   myBlankHisto->Draw();
 
   if(isYield) {
-    legThermal= new TLegend(0.144578, 0.0702247, 0.659639, 0.383226);
+    legThermal = new TLegend(0.144578, 0.0702247, 0.659639, 0.383226);
     legThermal->SetBorderSize(1);
     legThermal->SetTextFont(43);
     legThermal->SetTextSize(14);
@@ -1284,6 +1318,7 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
   Double_t yield, stddev;
   ifstream thermusFile(filename);
   TString line;
+  Double_t chi2 = 0;
   std::cout << "---"<<tag<<"---" << std::endl;
 
   //  std::istream is(thermusFile);
@@ -1299,6 +1334,7 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
 
     if( thermusFile.eof() ) break;
     std::cout << "PDG " << pdg << " " << yield << " " << stddev << std::endl;
+    
     mapYields[TMath::Abs(pdg)] += yield;
     mapStdDev[TMath::Abs(pdg)] += stddev;
     if(pdg < 0) {
@@ -1308,6 +1344,7 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
     }
     delete tokens;
   }
+
   // Now plot
   TGraphErrors * gThermus = new TGraphErrors;
   TGraphErrors * gThermusStdDev = new TGraphErrors;
@@ -1332,9 +1369,16 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
   gThermusStdDev->SetLineWidth(lw);
   gThermusStdDev->SetLineColor(color);    
   gThermusStdDev->SetLineStyle(lineStyle);
+  TGraphErrors* gStdDev2 = 0;
+  TGraphErrors* gRatio   = 0;
+  std::cout << "CHI2: " 
+	    <<  GetGraphRatioAndStdDev(gThermus, gRatio, gStdDev2)
+	    << std::endl;
+  myPadRatio->cd(); 
+  gRatio->Draw("PZ");
+  myPadStdDev->cd();
+  gStdDev2->Draw("PZ");
   myPadHisto->cd();
-
-  
   AddLineToThermalLegend(gThermus, tag, "l");
   return gThermus;
 }
@@ -1349,8 +1393,8 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
   Int_t lw = lineStyle == kSolid ? 2 : 3; // Set line width
 
   const Int_t pdgPbPb0010[] = {211, -211, 321, -321, 310, 313, 333, 2212, -2212, 3122, 3312, -3312, 3334, -3334, 1000010020, 1000020030, 1010010030, -1010010030};
-  const Int_t pdgPbPb6080[] = {211 , -211 , 321 , -321 , 310 , 313 , 333 , 2212 , -2212 , 3122 , 3312 , -3312 , 3334 , -3334 ,1000010020};
-  const Int_t pdgpPb0005[]  = {211, 321, 310, 313, 333, 2212, 3122, 3312, 3334, 1000010020};
+  // const Int_t pdgPbPb6080[] = {211 , -211 , 321 , -321 , 310 , 313 , 333 , 2212 , -2212 , 3122 , 3312 , -3312 , 3334 , -3334 ,1000010020};
+  // const Int_t pdgpPb0005[]  = {211, 321, 310, 313, 333, 2212, 3122, 3312, 3334, 1000010020};
 
   std::map<Int_t,Double_t> mapYields;
   std::map<Int_t,Double_t> mapStdDev;
@@ -1369,7 +1413,7 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
     gsiFile >> data >> uncert >> model;
     if( gsiFile.eof() ) break;
     Int_t pdg = pdgPbPb0010[ipart];
-    std::cout << "PDG " << pdg << " " << data << std::endl;;
+    std::cout << "PDG " << pdg << " " << data << std::endl;
     mapYields[TMath::Abs(pdg)] += model;
     mapUncert[TMath::Abs(pdg)] += uncert;
     mapData[TMath::Abs(pdg)]   += data;
@@ -1384,13 +1428,14 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
   }
 
   // Now plot
+  Double_t chi2 = 0;
   TGraphErrors * gGsi = new TGraphErrors;
   TGraphErrors * gGsiStdDev = new TGraphErrors;
   std::cout << "PDG    \tmodel\tdata\tuncert\tstddev" << std::endl;  // header
   for(Int_t ipart = 0; ipart < npart; ipart++){ // Here we use npart, as this is what we wnat to plot!
     Int_t pdg = particleYields[ipart];
     mapStdDev[TMath::Abs(pdg)]  = ( mapYields[TMath::Abs(pdg)] - mapData[TMath::Abs(pdg)]) /  mapUncert[TMath::Abs(pdg)] ;
-    //    chi2 += 
+    if(pdg!=313) chi2 +=  TMath::Power(( mapYields[TMath::Abs(pdg)] - mapData[TMath::Abs(pdg)]) /  mapUncert[TMath::Abs(pdg)],2); 
     std::cout << "PDG " << pdg <<"\t" 
 	      << mapYields[TMath::Abs(pdg)] << "\t" << mapData[TMath::Abs(pdg)] <<"\t" 
 	      << mapUncert[TMath::Abs(pdg)] << "\t" << mapStdDev[TMath::Abs(pdg)]  
@@ -1401,6 +1446,9 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
     gGsiStdDev->SetPoint(ipart, ipart+1.5, mapStdDev[particleYields[ipart]]);
     gGsiStdDev->SetPointError(ipart, 0.3, 0);
   }
+
+  std::cout << "CHI2: " << chi2 << std::endl;
+  
 
   myPadHisto->cd();
   gGsi->Draw("PZ");
@@ -1417,6 +1465,16 @@ TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle
   gGsiStdDev->SetLineColor(color);    
   gGsiStdDev->SetLineStyle(lineStyle);
   myPadHisto->cd();
+
+  TGraphErrors* gStdDev2 = 0;
+  TGraphErrors* gRatio   = 0;
+  std::cout << "CHI2: " 
+	    <<  GetGraphRatioAndStdDev(gGsi, gRatio, gStdDev2)
+	    << std::endl;
+  myPadRatio->cd(); 
+  gRatio->Draw("PZ");
+  myPadStdDev->cd();
+  gStdDev2->Draw("PZ");
 
   AddLineToThermalLegend(gGsi, tag, "L");
 
@@ -1528,6 +1586,39 @@ void DrawExtrapolatedSymbolsYieldsPbPb0010(){
   marker->SetMarkerSize(1.2);
   marker->Draw();
   myPadHisto->cd();
+  // The corresponding legend
+  
+
+
+  TLegend * leg = new TLegend(0.144578, 0.408249, 0.351406, 0.542403,NULL,"brNDC");
+  leg->SetBorderSize(0);
+  leg->SetTextFont(43);
+  leg->SetTextSize(14);
+  leg->SetLineColor(1);
+  leg->SetLineStyle(1);
+  leg->SetLineWidth(1);
+  leg->SetFillColor(0);
+  leg->SetFillStyle(1001);
+  TLegendEntry * entry=leg->AddEntry("TMarker","Not in fit","p");
+  entry->SetLineColor(1);
+  entry->SetLineStyle(1);
+  entry->SetLineWidth(1);
+  entry->SetMarkerColor(1);
+  entry->SetMarkerStyle(markerNoFit);
+  entry->SetMarkerSize(1.2);
+  entry->SetTextFont(43);
+  entry=leg->AddEntry("TMarker","Extrapolated","p");
+  entry->SetLineColor(1);
+  entry->SetLineStyle(1);
+  entry->SetLineWidth(1);
+  entry->SetMarkerColor(1);
+  entry->SetMarkerStyle(markerExtrap);
+  entry->SetMarkerSize(1.2);
+  entry->SetTextFont(43);
+  leg->Draw();
+  leg->SetMargin(0.1);
+
+  
 }
 
 void DrawMarkerKStarNoFit() {
@@ -1537,4 +1628,93 @@ void DrawMarkerKStarNoFit() {
   marker->SetMarkerSize(1.2);
   marker->Draw();
   myPadHisto->cd();
+}
+
+Double_t GetGraphRatioAndStdDev(TGraphErrors * gModel, TGraphErrors * &gRatio, TGraphErrors *&gStdDev) {
+  
+  // Plots the ratios data/model
+
+  // I recomputed the stddev and the chi2 here, because some values
+  // changed slightly due to typos in some of the input files with
+  // respect to the ones used for those fits. 
+
+  static Float_t shift = 0;
+
+  if(!gModel) {
+    std::cout << "EMPTY MODEL" << std::endl;
+    return 0;
+  }
+  // 0. set up the graphs which we will need
+  TGraphErrors * gTemp = 0;
+  TGraphErrors * gStat = 0;
+  TGraphErrors * gSyst = 0;
+  // the cloning below takes care of the style
+  gRatio = (TGraphErrors*)gModel->Clone();
+  gRatio->Clear();
+  gStdDev = (TGraphErrors*)gModel->Clone();
+  gStdDev->Clear();
+
+  // 1. Find the data graphs. We need both the stat and the syst, since we want the ratio with the total uncertainty (or not?)
+  TVirtualPad * currentPad = gPad;
+  myPadHisto->cd();
+  TList * list = myPadHisto->GetListOfPrimitives(); 
+  TIterator * iter = list->MakeIterator();
+
+  while ((gTemp = (TGraphErrors*) iter->Next())){
+    if(gTemp->InheritsFrom("TGraphErrors")) {
+      // Found a graph, it is the correct one?
+      TString name = gTemp->GetName();
+      TString title = gTemp->GetTitle();
+      std::cout << "name " << name.Data() << std::endl;
+      
+      if (name.Contains("hPart")) {
+	// ok, it's the data
+	if (title.Contains("NoLegend")) gSyst = gTemp; // it's the syst error FIXME: it would be better to add the error type to the data
+	else gStat = gTemp;
+      }
+      if(gStat && gSyst) {
+	std::cout << "Cannot find gStat or gSyst (" << gStat << "," << gSyst <<")" << std::endl;
+	break; // found both stat and syst uncertainties
+      }
+    }
+  }
+
+  
+
+  // Compute the ratio, the stddev and the chi2
+  Int_t npoint = gModel->GetN(); // We are sure that data and model have the same number of points in the same order, because they were created using the particleYields array (FIXME: is this also true for GSI?)
+  Double_t chi2 = 0;
+  for(Int_t ipoint = 0; ipoint < npoint; ipoint++){
+
+    Double_t yield = gStat->GetY()[ipoint];
+    Double_t stat  = gStat->GetEY()[ipoint];
+    Double_t syst  = gSyst->GetEY()[ipoint];
+    Double_t error = TMath::Sqrt(stat*stat+syst*syst);    
+    Double_t model = gModel->GetY()[ipoint];
+    Double_t width = gModel->GetEX()[ipoint];
+    Double_t ratio  = model/yield;
+    Double_t stddev = (model-yield)/error;
+    if(!particlesToExcludeFromChi2.Contains(Form("[%d]", particleYields[ipoint]))) chi2 += TMath::Power(stddev,2);
+    else std::cout << "Ecluding PDG "<< particleYields[ipoint] <<" from chi2 calculation" << std::endl;
+    Double_t errorRatio = error/yield*ratio;
+    gRatio->SetPoint(ipoint, gModel->GetX()[ipoint]+shift, ratio);
+    gRatio->SetPointError(ipoint, 0, errorRatio);
+    gStdDev->SetPoint(ipoint, gModel->GetX()[ipoint]-0.4, stddev);
+    gStdDev->SetPointError(ipoint, 0.2, 0);
+    // std::cout << "PDG " << particleYields[ipoint] <<"\t" 
+    // 	      << model << "\t" << yield <<"\t" 
+    // 	      << error << "\t" << stddev  
+    // 	      << std::endl;
+  }
+  
+  gRatio->SetLineStyle(kSolid);
+  gRatio->SetMarkerStyle(20);
+  gRatio->SetMarkerColor(gRatio->GetLineColor());
+  gRatio->SetLineWidth(2);
+
+  if(!shift) shift = 0.2;
+  else shift -= 2*shift;
+  
+  currentPad->cd();
+  return chi2;
 }
