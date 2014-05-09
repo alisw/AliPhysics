@@ -25,7 +25,9 @@ using std::sort;
 
 #include <Riostream.h>
 
-
+using std::cout;
+using std::endl;
+using std::flush;
 
 //#include "AliITSUtrackSA.h"      // Some dedicated SA track class ?  
 
