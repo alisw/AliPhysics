@@ -43,11 +43,13 @@ namespace {
 #else 
 class AliOADBForward;
 class AliOADBForward::Entry;
-#if 0
+// #if 0
+class TGTransientFrame;
 class TGFrame;
 class TGLVEntry;
 class TGHorizontalFrame;
 class TGTextButton;
+class TGCheckButton;
 class TGTextEntry;
 class TGVerticalFrame;
 class TGLabel;
@@ -58,7 +60,7 @@ class TGLVContainer;
 class TGHButtonGroup;
 class TGLayoutHints;
 class TGNumberEntry;
-#endif
+// #endif
 #endif
 
 struct ForwardOADBDialog
@@ -77,9 +79,11 @@ struct ForwardOADBDialog
     // fProgress.SetRange(0,1);
     fIncrement.Connect("Timeout()","ForwardOADBDialog",this,"HandleIncr()");
   }
+  ForwardOADBDialog(const ForwardOADBDialog&) {}
+  ForwardOADBDialog& operator=(const ForwardOADBDialog&) { return *this; }
   void HandleIncr()
   {
-    Float_t dp = 0.1;
+    // Float_t dp = 0.1;
     // Float_t p  = fProgress.GetPosition();
     // Info("HandleIncr", "Handing increment (%f)", p);
     // if (p+dp >= 1) fProgress.SetPosition(0);
@@ -127,6 +131,7 @@ struct ForwardOADBGUI
       fFileSelect(&fOpenFrame, "Browse"), 
       fTablesText(&fOpenFrame, "*"),
       fOpenButton(&fOpenFrame, "Open"),
+      fRWButton(&fOpenFrame, "R/W"),
       fCloseButton(&fOpenFrame, "Close"),
       fSelectFrame(&fMain), 
       fTableFrame(&fSelectFrame), 
@@ -160,6 +165,7 @@ struct ForwardOADBGUI
     fQueryButton(&fCommandFrame, "Query"),
     fListButton(&fCommandFrame, "List table"),
     fPrintButton(&fCommandFrame, "Print entry"),
+    fCopyButton(&fCommandFrame, "Copy entry"),
     fDrawButton(&fCommandFrame, "Draw entry"),
     fPDFButton(&fCommandFrame, "Summarize entry"),
     fList(&fMain, 800, 400), 
@@ -184,6 +190,7 @@ struct ForwardOADBGUI
     fOpenFrame.AddFrame(&fFileSelect, &fEntryHints);
     fOpenFrame.AddFrame(&fTablesText, &fEntryHints);
     fOpenFrame.AddFrame(&fOpenButton, &fEntryHints);
+    fOpenFrame.AddFrame(&fRWButton,   &fButtonHints);
     fOpenFrame.AddFrame(&fCloseButton, &fEntryHints);
 
     fMain.AddFrame(&fSelectFrame, &fFrameHints);
@@ -249,9 +256,11 @@ struct ForwardOADBGUI
     fOptionsFrame.AddFrame(&fOptionsLabel, &fLabelHints);
     fOptionsFrame.AddFrame(&fOptionsText, &fEntryHints);
 
+    Info("", "Connecting signals");
     fQueryButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleQuery()");
     fListButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleList()");
     fDrawButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleDraw()");
+    fCopyButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandleCopy()");
     fPDFButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandlePDF()");
     fPrintButton.Connect("Clicked()", "ForwardOADBGUI", this, "HandlePrint()");
     fSelectFrame.AddFrame(&fCommandFrame, &fFrameHints);
@@ -301,6 +310,58 @@ struct ForwardOADBGUI
 #endif
     Info("~ForwardOADBGUI", "Closing");
   }
+  ForwardOADBGUI(const ForwardOADBGUI&) 
+    : fMain(gClient->GetRoot(), 10, 10, kVerticalFrame),
+      fOpenFrame(&fMain),
+      fFileText(&fOpenFrame, ""),
+      fFileSelect(&fOpenFrame, ""), 
+      fTablesText(&fOpenFrame, ""),
+      fOpenButton(&fOpenFrame, ""),
+      fRWButton(&fOpenFrame, ""),
+      fCloseButton(&fOpenFrame, ""),
+      fSelectFrame(&fMain), 
+      fTableFrame(&fSelectFrame), 
+      fTableLabel(&fTableFrame, ""), 
+      fTableSelect(&fTableFrame),
+      fRunFrame(&fSelectFrame), 
+      fRunLabel(&fRunFrame, ""), 
+      fRunInput(&fRunFrame),
+    fRunMode(&fRunFrame),
+    fSysFrame(&fSelectFrame), 
+    fSysLabel(&fSysFrame, ""), 
+    fSysSelect(&fSysFrame),
+    fSNNFrame(&fSelectFrame), 
+    fSNNLabel(&fSNNFrame, ""), 
+    fSNNInput(&fSNNFrame),
+    fFldFrame(&fSelectFrame), 
+    fFldLabel(&fFldFrame, ""), 
+    fFldSelect(&fFldFrame),
+    fOtherFrame(&fSelectFrame),
+    fMCButton(&fOtherFrame, ""),
+    fSatButton(&fOtherFrame, ""),
+    fOptionsFrame(&fSelectFrame), 
+    fOptionsLabel(&fOptionsFrame, ""),
+    fOptionsText(&fOptionsFrame, ""),
+    fCommandFrame(&fSelectFrame), 
+    fQueryButton(&fCommandFrame, ""),
+    fListButton(&fCommandFrame, ""),
+    fPrintButton(&fCommandFrame, ""),
+    fCopyButton(&fCommandFrame, ""),
+    fDrawButton(&fCommandFrame, ""),
+    fPDFButton(&fCommandFrame, ""),
+    fList(&fMain, 800, 400), 
+    fListContainer(&fList),
+    fFrameHints(),
+    fLabelHints(),
+    fEntryHints(),
+    fButtonHints(),
+    fListHints(),
+    fMsg(0),
+    fDB(0),
+    fEntry(0)
+  {}
+  ForwardOADBGUI& operator=(const ForwardOADBGUI&) { return *this; }
+
   void UseDB(AliOADBForward* db)
   {
     if (!db) return;
@@ -335,6 +396,7 @@ struct ForwardOADBGUI
     Info("HandleDBEntry", "Selected entry %p", e);
     Bool_t en = (e != 0);
     fDrawButton.SetEnabled(en);
+    fCopyButton.SetEnabled(en);
     fPrintButton.SetEnabled(en);
     fPDFButton.SetEnabled(en);
     
@@ -355,6 +417,7 @@ struct ForwardOADBGUI
     fListButton.SetEnabled(enabled && hasTable);
     fPrintButton.SetEnabled(enabled && hasTable);
     fDrawButton.SetEnabled(enabled && hasTable);
+    fCopyButton.SetEnabled(enabled && hasTable);
     fPDFButton.SetEnabled(enabled && hasTable);
     fOpenButton.SetEnabled(!enabled);
     fCloseButton.SetEnabled(enabled);
@@ -393,12 +456,13 @@ struct ForwardOADBGUI
   void HandleOpen()
   {
     if (fDB) HandleClose();
+    Bool_t rw = fRWButton.IsOn();
     fDB = new AliOADBForward;
     Info("HandleOpen", "Opening DB file %s for tables %s", 
 	 fFileText.GetText(), fTablesText.GetText());
     TString fn(fFileText.GetText());
     TString tn(fTablesText.GetText());
-    if (!fDB->Open(fn, tn, false, true, true)) { 
+    if (!fDB->Open(fn, tn, rw, true, true)) { 
       Error("HandleOpen", "Failed to open database");
       delete fDB;
       fDB = 0;
@@ -573,6 +637,62 @@ struct ForwardOADBGUI
     CorrDraw(o, false);
     // o->Draw(fOptionsText.GetText()); 
   }
+  void HandleCopy()
+  {
+    TString table;
+    SelectedTable(table);
+    if (table.IsNull()) return;
+
+    if (!fEntry) { 
+      Warning("HandleCopy", "No entry selected");
+      return;
+    }
+
+    TObject* o = fEntry->fData;
+    Info("HandleCopy", "Will copy object of type %s", o->ClassName());
+
+
+    ULong_t  newRun   = fRunInput.GetHexNumber();
+    UShort_t newSys   = fSysSelect.GetSelected();
+    UShort_t newSNN   = fSNNInput.GetIntNumber();
+    Short_t  newFld   = fFldSelect.GetSelected();
+    Bool_t   mc       = fMCButton.IsDown();
+    Bool_t   sat      = fSatButton.IsDown();
+    ULong_t  oldRun   = fEntry->fRunNo;
+    UShort_t oldSys   = fEntry->fSys;
+    UShort_t oldSNN   = fEntry->fSNN;
+    Short_t  oldFld   = fEntry->fField;
+
+    TString msg;
+    msg = Form("Will copy %lu/%hu/%hu/%hd -> %lu/%hu/%hu/%hd (%s,%s) in %s",
+	       oldRun, oldSys, oldSNN, oldFld, 
+	       newRun, newSys, newSNN, newFld, 
+	       (mc ? "mc" : "real"), (sat ? "satellite" : "nominal"),
+	       table.Data());
+    
+    Int_t ret = 0;
+    new TGMsgBox(gClient->GetRoot(), gClient->GetRoot(), 
+		 "Confirm copy of OADB entry",
+		 msg.Data(), 0, kMBOk|kMBCancel, &ret);
+    
+    if (ret ==  kMBCancel) {
+      Info("HandleCopy", "%s CANCELLED", msg.Data());
+      return;
+    }
+    Info("HandleCopy", "%s CONFIRMED", msg.Data());
+
+    if (!fDB->CopyEntry(table, 
+			oldRun, oldSys, oldSNN, oldFld, 
+			newRun, newSys, newSNN, newFld, 
+			mc, sat)) { 
+      // Warning("HandleCopy", "Copy failed!");
+      return;
+    }
+    fDB->Update();
+    
+
+    // o->Draw(fOptionsText.GetText()); 
+  }
   void HandlePDF()
   {
     if (!fEntry) { 
@@ -715,6 +835,7 @@ struct ForwardOADBGUI
   TGTextButton      fFileSelect;
   TGTextEntry       fTablesText;
   TGTextButton      fOpenButton;
+  TGCheckButton     fRWButton;
   TGTextButton      fCloseButton;
   TGVerticalFrame   fSelectFrame;
   TGHorizontalFrame fTableFrame;
@@ -743,6 +864,7 @@ struct ForwardOADBGUI
   TGTextButton      fQueryButton;  
   TGTextButton      fListButton;
   TGTextButton      fPrintButton;
+  TGTextButton      fCopyButton;
   TGTextButton      fDrawButton;
   TGTextButton      fPDFButton;
   TGListView        fList;
