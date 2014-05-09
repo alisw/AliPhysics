@@ -687,7 +687,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kRed+1;
     marker = kFullCircle;
     if(!shift)    shiftloc =  0;
-    correlatedUnc = correlatedUncLocalPbPb;
+    //    correlatedUnc = correlatedUncLocalPbPb;
 
   }
 
@@ -698,7 +698,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlue+1;
     marker = kFullCircle;
     if(!shift)    shiftloc =  0.0;
-    correlatedUnc = correlatedUncLocalPbPb;
+    //    correlatedUnc = correlatedUncLocalPbPb;
   }
   else if (what == "pp7") {
     array = arrpp7;
@@ -707,7 +707,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kMagenta+1;
     marker = kFullCircle;
     if(!shift)    shiftloc =  0.2;
-    correlatedUnc = correlatedUncLocalPP;
+    //    correlatedUnc = correlatedUncLocalPP;
   }
   else if (what == "pp900") {
     array = arrpp900;
@@ -716,7 +716,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kCyan+2;
     marker = kFullCircle;
     if(!shift)    shiftloc =  -0.2;
-    correlatedUnc = correlatedUncLocalPP;  
+    //    correlatedUnc = correlatedUncLocalPP;  
   }
   else if (what == "pp276") {
     array = arrpp276;
@@ -725,7 +725,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kYellow+2;
     marker = kFullCircle;
     if(!shift)    shiftloc = 0;
-    correlatedUnc = correlatedUncLocalPP;
+    //    correlatedUnc = correlatedUncLocalPP;
   }
   else if (what == "pPb0005") {
     array = arrpPb;
@@ -734,7 +734,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kFullCircle;
     if(!shift)    shiftloc = -0.2;
-    correlatedUnc = correlatedUncLocalPP;
+    //    correlatedUnc = correlatedUncLocalPP;
   } 
   else if (what == "PbPbSTAR") {
     array = arrSTARPbPb;
@@ -743,7 +743,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kOpenStar;
     if(!shift)    shiftloc = +0.2;
-    correlatedUnc = correlatedUncZero;
+    //    correlatedUnc = correlatedUncZero;
   }
   else if (what == "PbPbPHENIX") {
     array = arrPHENIXPbPb;
@@ -752,7 +752,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kOpenSquare;
     if(!shift)    shiftloc = -0.15;
-    correlatedUnc = correlatedUncZero;
+    //    correlatedUnc = correlatedUncZero;
   }
   else if (what == "PbPbBRAHMS") {
     array = arrBRAHMSPbPb;
@@ -761,7 +761,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kOpenCross;
     if(!shift)    shiftloc = -0.3;
-    correlatedUnc = correlatedUncZero;
+    //    correlatedUnc = correlatedUncZero;
   }
   else if (what == "ppSTAR") {
     array = arrSTARpp;
@@ -770,7 +770,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kOpenStar;
     if(!shift)    shiftloc = 0.;
-    correlatedUnc = correlatedUncZero;
+    //    correlatedUnc = correlatedUncZero;
   }
   else if (what == "ppPHENIX") {
     array = arrPHENIXpp;
@@ -779,7 +779,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     color  = kBlack;
     marker = kOpenSquare;
     if(!shift)    shiftloc = -0.2;
-    correlatedUnc = correlatedUncZero;
+    //    correlatedUnc = correlatedUncZero;
   } 
   // From here on, it's meta names, to draw several series of ratios
   else if (what == "allpp"){
