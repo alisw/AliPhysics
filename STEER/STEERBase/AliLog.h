@@ -43,10 +43,12 @@ class AliLog: public TObject
 		static AliLog *GetRootLogger();
 
 		// delete root logger singleton instance
-		static void DeleteRootLogger();
+		static void DeleteRootLogger(); 
 
 		// NB: the following functions should not be static
 		// NB: deprecated: logging configuration should be made through to a configuration file
+  static void  EnableCoreDump(Bool_t enabled);
+  static void MakeCoreDump(const char *fout);	
   static void  EnableDebug(Bool_t enabled);
   static void  SetGlobalLogLevel(EType_t type);
   static Int_t GetGlobalLogLevel();
@@ -148,6 +150,7 @@ class AliLog: public TObject
 
   static AliLog* fgInstance;                 //! pointer to current instance
   static Bool_t  fgDebugEnabled;             // flag for debug en-/disabling
+  static Bool_t  fgCoreEnabled;             // flag for core dump en-/disabling
 
   UInt_t         fGlobalLogLevel;            // global logging level
   TObjArray      fModuleDebugLevels;         // debug levels for modules
