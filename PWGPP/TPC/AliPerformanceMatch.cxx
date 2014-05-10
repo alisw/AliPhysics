@@ -259,23 +259,20 @@ void AliPerformanceMatch::ProcessITSTPC(Int_t iTrack, AliESDEvent *const esdEven
     // if(trackTPC->GetTPCNclsIter1()<fCutsRC->GetMinNClustersTPC()) continue;
     tpcTrack2 = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent, jTrack);
     if(!tpcTrack2) continue;
-    if(!tpcTrack2->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack2; continue; } 
+    if(!tpcTrack2->RelateToVertex(vtxESD,esdEvent->GetMagneticField(),100.)) { delete tpcTrack2; tpcTrack2=0; continue; } 
     
-     if(!fCutsRC->AcceptTrack(tpcTrack2)) { delete tpcTrack2; continue; }
+     if(!fCutsRC->AcceptTrack(tpcTrack2)) { delete tpcTrack2; tpcTrack2=0; continue; }
     // check matching
-    if (TMath::Abs(esdTrack->GetY() - tpcTrack2->GetY()) > 3) { delete tpcTrack2; continue; }
-    if (TMath::Abs(esdTrack->GetSnp() - tpcTrack2->GetSnp()) > 0.2) { delete tpcTrack2; continue; }
-    if (TMath::Abs(esdTrack->GetTgl() - tpcTrack2->GetTgl()) > 0.2) { delete tpcTrack2; continue; }
+    if (TMath::Abs(esdTrack->GetY() - tpcTrack2->GetY()) > 3) { delete tpcTrack2; tpcTrack2=0; continue; }
+    if (TMath::Abs(esdTrack->GetSnp() - tpcTrack2->GetSnp()) > 0.2) { delete tpcTrack2; tpcTrack2=0; continue; }
+    if (TMath::Abs(esdTrack->GetTgl() - tpcTrack2->GetTgl()) > 0.2) { delete tpcTrack2; tpcTrack2=0; continue; }
     
     hasMatch=kTRUE;
     break;
   }
   
   FillHistograms(tpcTrack2,esdTrack,hasMatch);     
-  /*  if(tpcTrack2) { 
-    delete tpcTrack2;
-   
-    }*/
+  delete tpcTrack2;
 }
 
 //_____________________________________________________________________________
