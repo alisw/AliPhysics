@@ -118,6 +118,7 @@ protected:
     void UpdatePhotonLists();
     void UpdateTrackLists();
 
+    void SetGeometry();
 
     Bool_t SelectESDTrack(AliESDtrack * t) const; //estimate if this track can be used for the RP calculation
     Bool_t SelectAODTrack(AliAODTrack * t) const; //estimate if this track can be used for the RP calculation
