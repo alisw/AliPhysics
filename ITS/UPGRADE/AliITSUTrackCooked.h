@@ -34,6 +34,7 @@ public:
     void SetClusterIndex(Int_t layer, Int_t index);
     
 private:
+    AliITSUTrackCooked &operator=(const AliITSUTrackCooked &tr);
     Int_t fIndex[2*AliITSUTrackerCooked::kNLayers]; // indices of associated clusters
   
     ClassDef(AliITSUTrackCooked,1)   //ITSU stand-alone track

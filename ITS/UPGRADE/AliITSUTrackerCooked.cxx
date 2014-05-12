@@ -384,8 +384,8 @@ Int_t AliITSUTrackerCooked::TakeNextProlongation() {
   const AliCluster *c=0; Int_t ci=-1;
   const AliCluster *cc=0; Int_t cci=-1;
   UShort_t volId=-1;
-  Double_t x, alpha;
-  Double_t z, dz, y, dy, chi2; 
+  Double_t x=0., alpha=0.;
+  Double_t z=0., dz=0., y=0., dy=0., chi2=0.; 
   while ((c=layer.GetNextCluster(ci))!=0) {
     if (c->IsClusterUsed()) continue;
     Int_t id=c->GetVolumeId();
@@ -619,7 +619,7 @@ SelectClusters(Float_t zMin,Float_t zMax,Float_t phiMin, Float_t phiMax) {
   // This function selects clusters within the "road"
   //--------------------------------------------------------------------
   UShort_t volId=-1;
-  Float_t x, alpha;
+  Float_t x=0., alpha=0.;
   for (Int_t i=FindClusterIndex(zMin); i<fN; i++) {
       AliCluster *c=fClusters[i];
       UShort_t id=c->GetVolumeId();
