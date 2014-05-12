@@ -135,7 +135,7 @@ void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of
 
    TList *HeaderList = new TList();
    TObjString *Header1 = new TObjString("BOX");
-   HeaderList->Add(Header2); 
+   HeaderList->Add(Header1); 
 
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];
