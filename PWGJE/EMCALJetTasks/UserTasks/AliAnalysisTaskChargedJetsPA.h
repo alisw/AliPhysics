@@ -62,7 +62,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetExternalRhoTaskName(const char* name) {fRhoTaskName = name;}
   void        SetDijetMaxAngleDeviation(Double_t degrees) {fDijetMaxAngleDeviation = degrees/360.0 * TMath::TwoPi();} // degrees are more comfortable
   void        SetAcceptanceWindows(Double_t trackEta, Double_t signalJetRadius, Double_t bgrdJetRadius){fMinEta = -trackEta; fMaxEta = trackEta; fSignalJetRadius = signalJetRadius; fBackgroundJetRadius = bgrdJetRadius; fMinJetEta = fMinEta+fSignalJetRadius; fMaxJetEta = fMaxEta-fSignalJetRadius; fBackgroundJetEtaWindow = trackEta-fBackgroundJetRadius;}
-  void        SetEtaAcceptance(Double_t minEta, Double_t maxEta) {fMinEta = minEta; fMaxEta = minEta;}
+  void        SetEtaAcceptance(Double_t minEta, Double_t maxEta) {fMinEta = minEta; fMaxEta = maxEta;}
   Int_t       GetInstanceCounter() {return fTaskInstanceCounter;}
 
  private:
