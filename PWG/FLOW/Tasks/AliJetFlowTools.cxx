@@ -38,6 +38,7 @@
 
 // root includes
 #include "TF1.h"
+#include "TF2.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraph.h"
@@ -1491,6 +1492,7 @@ void AliJetFlowTools::Style(TLegend* l)
 void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 {
     // style a histo
+    h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
@@ -1513,27 +1515,27 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
             h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{cht} (GeV/#it{c})");
        } break;
        case kBar : {
             h->SetFillColor(col);
             h->SetBarWidth(.6);
-            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
             h->SetBarOffset(0.2);
        }
        case kRatio : {
@@ -1547,6 +1549,7 @@ void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy)
 {
     // style a tgraph
+    h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
     h->SetLineWidth(2);
@@ -1561,7 +1564,7 @@ void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy
         h->GetYaxis()->SetTitleSize(.05);
         h->GetXaxis()->SetTitleSize(.05);
     } else Style();
-    h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+    h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
@@ -3999,6 +4002,162 @@ void AliJetFlowTools::GetSignificance(
     printf(" > p-value %.4f <\n", 1.-TMath::Gamma((up-low+1)/2., chi2/2.)); 
 }
 //_____________________________________________________________________________
+void AliJetFlowTools::MinimizeChi22d()
+{
+    // Choose method upon creation between:
+    // kMigrad, kSimplex, kCombined, 
+    // kScan, kFumili
+    ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kMigrad );
+    min.SetMaxFunctionCalls(1000000);
+    min.SetMaxIterations(100000);
+    min.SetTolerance(0.001);
+ 
+    ROOT::Math::Functor f(&PhenixChi22d,2); 
+    double step[] = {0.0000001, 0.0000001};
+    double variable[] = {-1., -1.};
+        
+    min.SetFunction(f);
+    // Set the free variables to be minimized!
+    min.SetVariable(0,"epsilon_c",variable[0], step[0]);
+    min.SetVariable(1,"epsilon_b",variable[1], step[1]);
+
+
+    min.Minimize(); 
+    const double *xs = min.X();
+    cout << endl << endl <<  "Minimum: f(" << xs[0] << ", " << xs[1] <<"):"  << PhenixChi22d(xs) << endl;
+    cout << "p-value: p(" << PhenixChi22d(xs) << ", 6) " << TMath::Prob(PhenixChi22d(xs), 4) << endl;
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data is " << TMath::Prob(PhenixChi22d(xs), 4) << endl << endl << endl ; 
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::PhenixChi22d(const Double_t *xx )
+{
+    // define arrays with results and errors
+   
+
+    // very ugly, but two set of data, for 0-5  and 30-50 pct centrality
+    // this function has to be static, so this is the easiest way to implement it in the class ...
+
+    // these points are for 0-5  centrality, 30 - 100 gev (in which data is reported)
+
+ 
+  /* 
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+    };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+*/
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+  
+    // return the function value at certain epsilon
+    const Double_t epsc = xx[0];
+    const Double_t epsb = xx[1];
+    Double_t chi2(0);
+    Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
+
+    // implemtation of eq 3 of arXiv:0801.1665v2
+    // this will be minimized w.r.t. 'x', which is epsilon_B in the paper
+    for(Int_t i(1); i < counts-1; i++) {
+        // quadratic sum of statistical and uncorrelated systematic error
+        Double_t e = stat[i];
+
+        // sum of v2 plus epsilon times correlated error minus hypothesis (0)
+        // also the numerator of equation 3 of phenix paper
+        Double_t numerator = TMath::Power(v2[i]+epsc*corr[i]+epsb*shape[i], 2);
+
+        // denominator of equation 3 of phenix paper
+        Double_t denominator = e*e;//TMath::Power((e*(v2[i]+epsc*corr[i]+epsb*shape[i]))/v2[i], 2);
+
+        // add to the sum
+        chi2 += numerator/denominator;
+    }
+    // add the square of epsilon to the total chi2 as penalty
+    chi2 += epsc*epsc + epsb*epsb;
+
+    return chi2;
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::ConstructFunction2d(Double_t *x, Double_t *par)
+{
+       return AliJetFlowTools::PhenixChi22d(x);
+}
+//_____________________________________________________________________________
+TF2* AliJetFlowTools::ReturnFunction2d()
+{
+      TF2 *f1 = new TF2("2dhist",AliJetFlowTools::ConstructFunction2d, -10, 10, -10, 10, 0);
+      printf(" > locating minima < \n");
+      Double_t chi2(f1->GetMinimum());
+      f1->GetXaxis()->SetTitle("#epsilon{b}");
+      f1->GetXaxis()->SetTitle("#epsilon_{c}");
+      f1->GetZaxis()->SetTitle("#chi^{2}");
+
+      printf(" > minimal chi2 %.8f \n", chi2);
+      cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+      cout << "  observed data is " << TMath::Prob(chi2, 6) << endl; 
+
+      return f1;
+}
+//_____________________________________________________________________________
 void AliJetFlowTools::MinimizeChi2()
 {
     // Choose method upon creation between:
@@ -4010,19 +4169,20 @@ void AliJetFlowTools::MinimizeChi2()
     min.SetTolerance(0.001);
  
     ROOT::Math::Functor f(&PhenixChi2,1); 
-    double step[1] = {0.0000001};
-    double variable[1] = { 1};
+    double step[] = {0.0000001};
+    double variable[] = {-1.};
         
     min.SetFunction(f);
     // Set the free variables to be minimized!
-    min.SetVariable(0,"epsilon",variable[0], step[0]);
+    min.SetVariable(0,"epsilon_c",variable[0], step[0]);
+
 
     min.Minimize(); 
     const double *xs = min.X();
-    cout << "Minimum: f(" << xs[0] << "):"  << PhenixChi2(xs) << endl;
+    cout << endl << endl << "Minimum: f(" << xs[0] << "):"  << PhenixChi2(xs) << endl;
     cout << "p-value: p(" << PhenixChi2(xs) << ", 6) " << TMath::Prob(PhenixChi2(xs), 6) << endl;
     cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
-    cout << "  observed data is " << TMath::Prob(PhenixChi2(xs), 6) << endl; 
+    cout << "  observed data is " << TMath::Prob(PhenixChi2(xs), 6) << endl << endl << endl;
 }
 //_____________________________________________________________________________
 Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
@@ -4034,8 +4194,9 @@ Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
     // this function has to be static, so this is the easiest way to implement it in the class ...
 
     // these points are for 0-5  centrality, 30 - 100 gev (in which data is reported)
-/*
-   
+
+    
+  /* 
    Double_t v2[] = {
         0.0094,
         0.0559,
@@ -4043,7 +4204,7 @@ Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
         0.1077,
         0.1208,
         0.0883
-    };
+   };
    Double_t stat[] = {
         0.0287,
         0.0311, 
@@ -4102,9 +4263,9 @@ Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
         0.0166, 
         0.0165
     };
-   
+  
     // return the function value at certain epsilon
-    const Double_t x = xx[0];
+    const Double_t epsc = xx[0];
     Double_t chi2(0);
     Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
 
@@ -4112,21 +4273,36 @@ Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
     // this will be minimized w.r.t. 'x', which is epsilon_B in the paper
     for(Int_t i(0); i < counts; i++) {
         // quadratic sum of statistical and uncorrelated systematic error
-        // used in paper as 'type A; error
-        Double_t e = TMath::Sqrt(stat[i]*stat[i] + shape[i]*shape[i]);
+        Double_t e = TMath::Sqrt(stat[i]*stat[i]+shape[i]*shape[i]);
 
         // sum of v2 plus epsilon times correlated error minus hypothesis (0)
         // also the numerator of equation 3 of phenix paper
-        Double_t numerator = TMath::Power(v2[i] + x*corr[i], 2);
+        Double_t numerator = TMath::Power(v2[i]+epsc*corr[i], 2);
 
         // denominator of equation 3 of phenix paper
-        Double_t denominator = TMath::Power((e*(v2[i]+x*corr[i]))/v2[i], 2);
+        Double_t denominator = e*e;//TMath::Power((e*(v2[i]+epsc*corr[i]))/v2[i], 2);
 
         // add to the sum
         chi2 += numerator/denominator;
     }
     // add the square of epsilon to the total chi2 as penalty
-    chi2 += x*x;
+    chi2 += epsc*epsc;
 
     return chi2;
 }
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::ConstructFunction(Double_t *x, Double_t *par)
+{
+       return AliJetFlowTools::PhenixChi2(x);
+}
+//_____________________________________________________________________________
+TF1* AliJetFlowTools::ReturnFunction()
+{
+      TF1 *f1 = new TF1("1dmyfunc",AliJetFlowTools::ConstructFunction, -10, 10, 0);
+      printf(" > locating minima < \n");
+      Double_t chi2(f1->GetMinimum());
+      f1->GetXaxis()->SetTitle("#epsilon_{c}");
+      f1->GetYaxis()->SetTitle("#chi^{2}");
+      return f1;
+}
+//_____________________________________________________________________________
