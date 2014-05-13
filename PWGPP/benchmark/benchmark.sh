@@ -55,6 +55,7 @@ generateMC()
   OCDBpath=${2}
   nEventsim=${3}
   if [[ -n ${pretend} ]]; then
+    sleep ${pretendDelay}
     touch galice.root
   else
     if [[ -f sim.C && -f Config.C ]] ; then
@@ -116,12 +117,15 @@ goCPass0()
   
   #runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass0.XXXXXX)
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
-  cd ${runpath}
-  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
+  if ! cd ${runpath}; then
+    echo "PWD=$PWD is not the runpath=${runpath}"
+    touch ${doneFile}
+    return 1
+  fi
 
   #runCPassX/C expects the raw chunk to be linked in the run dir
   #despite it being accessed by the full path
@@ -132,31 +136,32 @@ goCPass0()
     olddir=${PWD}
     outputDirMC=${commonOutputPath}/000${runNumber}/sim/${jobindex}
     simrunpath=${outputDirMC}
-    [[ ${simulateInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && simrunpath=${TMPDIR}
-    [[ ${simulateInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && simrunpath=$(mktemp -d)
+    #[[ ${simulateInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && simrunpath=${TMPDIR}
+    [[ ${simulateInTemporaryDir} -eq 1 ]] && simrunpath=$(mktemp -d -t cpass0MC.XXXXXX)
     mkdir -p ${outputDirMC}
     mkdir -p ${simrunpath}
-    cd ${simrunpath}
+    if cd ${simrunpath}; then
 
-    filesMC=( 
-              "${batchWorkingDirectory}/sim.C"
-              "${batchWorkingDirectory}/rec.C"
-              "${batchWorkingDirectory}/Config.C"
-              "${batchWorkingDirectory}/OCDB_*.root"
-    )
-    for file in ${filesMC[*]}; do
-      [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
-    done
+      filesMC=( 
+      "${batchWorkingDirectory}/sim.C"
+      "${batchWorkingDirectory}/rec.C"
+      "${batchWorkingDirectory}/Config.C"
+      "${batchWorkingDirectory}/OCDB_*.root"
+      )
+      for file in ${filesMC[*]}; do
+        [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
+      done
 
-    generateMC ${runNumber} ${ocdbPath} ${nEvents}
+      generateMC ${runNumber} ${ocdbPath} ${nEvents}
 
-    [[ ! "${simrunpath}" =~ "${outputDirMC}" ]] && mv * ${outputDirMC} #TODO check if it works
-    cd ${olddir}
-    
-    ln -s ${outputDirMC}/* ${runpath}/ 
-    
-    inputList=${outputDirMC}/galice.root #TODO not valid outside shell !!!
-    infile=""
+      [[ ! "${simrunpath}" =~ "${outputDirMC}" ]] && mv * ${outputDirMC} #TODO check if it works
+      cd ${olddir}
+
+      ln -s ${outputDirMC}/* ${runpath}/ 
+
+      inputList=${outputDirMC}/galice.root #TODO not valid outside shell !!!
+      infile=""
+    fi
   fi
   ######
   
@@ -164,8 +169,8 @@ goCPass0()
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec 1> ${logOutputDir}/stdout
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec 2> ${logOutputDir}/stderr
+  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/stdout
+  #[[ -z ${dontRedirectStdOutToLog} ]] && exec 2> ${logOutputDir}/stderr
   echo "${0} $*"
 
   echo "#####################"
@@ -220,6 +225,7 @@ goCPass0()
   #run CPass0
   echo "${runpath}/runCPass0.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
+    sleep ${pretendDelay}
     touch AliESDs.root
     touch AliESDfriends.root
     touch AliESDfriends_v1.root
@@ -237,8 +243,8 @@ goCPass0()
 
   echo rm -f ./${chunkName}
   rm -f ./${chunkName}
-  echo "cp --recursive ${runpath}/* ${outputDir}"
-  cp -p --recursive ${runpath}/* ${outputDir}
+  echo "cp -R ${runpath}/* ${outputDir}"
+  cp -p -R ${runpath}/* ${outputDir}
   echo
   
   #validate CPass0
@@ -251,7 +257,7 @@ goCPass0()
     [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${doneFile}
   fi
 
-  [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
   return 0
 }
 
@@ -309,8 +315,8 @@ goCPass1()
   
   #runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
   runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass1.XXXXXX)
 
   #MC
   if [[ "${infile}" =~ galice\.root ]]; then
@@ -321,16 +327,19 @@ goCPass1()
   #init the running path
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
-  cd ${runpath}
-  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
+  if ! cd ${runpath}; then
+    echo "PWD=$PWD is not the runpath=${runpath}"
+    touch ${doneFile}
+    return 1
+  fi
 
   #this is needed for runCPass1.sh
   ln -s ${infile} ${runpath}/${chunkName}
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec 1> ${logOutputDir}/stdout
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec 2> ${logOutputDir}/stderr
+  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/stdout
+  #[[ -z ${dontRedirectStdOutToLog} ]] && exec 2> ${logOutputDir}/stderr
   echo "${0} $*"
 
   echo "#####################"
@@ -361,6 +370,7 @@ goCPass1()
                "${batchWorkingDirectory}/runCalibTrain.C"
                "${batchWorkingDirectory}/QAtrain_duo.C"
                "${batchWorkingDirectory}/localOCDBaccessConfig.C"
+               "${batchWorkingDirectory}/${configFile}"
                "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz"
                "${batchWorkingDirectory}/OCDB.root"
                "${trustedQAtrainMacro}"
@@ -424,6 +434,7 @@ goCPass1()
   chmod u+x runCPass1.sh
   echo "${runpath}/runCPass1.sh ${infile} ${nEvents} ${runNumber} ${ocdbPath} ${recoTriggerOptions}"
   if [[ -n ${pretend} ]]; then
+    sleep ${pretendDelay}
     touch AliESDs_Barrel.root
     touch AliESDfriends_Barrel.root
     touch AliESDfriends_v1.root
@@ -485,8 +496,8 @@ goCPass1()
   /bin/ls
   echo rm -f ./${chunkName}
   rm -f ./${chunkName}
-  echo "cp --recursive ${runpath}/* ${outputDir}"
-  cp -pf --recursive ${runpath}/* ${outputDir}
+  echo "cp -R ${runpath}/* ${outputDir}"
+  cp -pf -R ${runpath}/* ${outputDir}
   echo
 
   #validate CPass1
@@ -547,13 +558,16 @@ goMergeCPass0()
 
   #runpath=${PWD}/rundir_cpass0_Merge_${runNumber}
   runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass0.XXXXXX)
 
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
-  cd ${runpath}
-  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
+  if ! cd ${runpath}; then 
+    echo "PWD=$PWD is not the runpath=${runpath}"
+    touch ${doneFile}
+    return 1
+  fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -608,6 +622,7 @@ goMergeCPass0()
   
   echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
   if [[ -n ${pretend} ]]; then
+    sleep ${pretendDelay}
     touch CalibObjects.root
     touch ocdb.log
     touch merge.log
@@ -632,7 +647,7 @@ goMergeCPass0()
   /bin/ls
 
   #copy all to output dir
-  cp -pf --recursive ${runpath}/* ${outputDir}
+  cp -pf -R ${runpath}/* ${outputDir}
 
   if [[ -n ${generateMC} ]]; then
     goPrintValues sim ${commonOutputPath}/meta/sim.run${runNumber}.list ${commonOutputPath}/meta/cpass0.job*.run${runNumber}.done
@@ -685,13 +700,16 @@ goMergeCPass1()
 
   #runpath=${PWD}/rundir_cpass1_Merge_${runNumber}
   runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass1.XXXXXX)
 
   mkdir -p ${runpath}
   [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
-  cd ${runpath}
-  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
+  if ! cd ${runpath}; then 
+    echo "PWD=$PWD is not the runpath=${runpath}"
+    touch ${doneFile}
+    return 1
+  fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -771,6 +789,7 @@ goMergeCPass1()
   
   echo "${mergingScript} ${calibrationFilesToMerge} ${runNumber} local://./OCDB ${ocdbStorage}"
   if [[ -n ${pretend} ]]; then
+    sleep ${pretendDelay}
     touch ocdb.log
     touch cpass1.localOCDB.${runNumber}.tgz
     touch ${qaMergedOutputFileName}
@@ -809,7 +828,7 @@ goMergeCPass1()
   /bin/ls
 
   #copy all to output dir
-  cp -pf --recursive ${runpath}/* ${outputDir}
+  cp -pf -R ${runpath}/* ${outputDir}
   
   #validate merge cpass1
   cd ${outputDir}
@@ -839,7 +858,7 @@ goMerge()
   #generic root merge using CPass1 merge.C script
   inputList=${1}
   outputFile=${2}  
-  configFile=${3-"becnhmark.config"}
+  configFile=${3-"benchmark.config"}
   shift 3
   if ! parseConfig ${configFile} "$@"; then return 1; fi
   
@@ -881,14 +900,16 @@ goSubmitMakeflow()
   commonOutputPath=${baseOutputDirectory}/${productionID}
   if [[ -d ${commonOutputPath} ]]; then
     echo "output dir ${commonOutputPath} exists!"
-    return 1
+    #return 1
   else
     mkdir -p ${commonOutputPath}
   fi
   mkdir -p ${commonOutputPath}/meta
   
-  self=$(readlink -f "${0}")
+  self=${0}
+  #if which greadlink; then self=$(greadlink -f "${0}"); fi
   
+  #for reference copy the setup to the output dir
   cp ${self} ${commonOutputPath}
   cp ${configFile} ${commonOutputPath}
   cp ${inputList} ${commonOutputPath}
@@ -915,6 +936,13 @@ goGenerateMakeflow()
   configFile=${3}
   shift 3
   extraOpts=("$@")
+  
+  #batch systems/makeflow sometimes handle spaces in arguments poorly, so encode them
+  for (( i=0;i<${#extraOpts[@]};i++ )); do 
+    extraOpts[i]=$(encSpaces "${extraOpts[i]}")
+  done
+  extraOpts+=("encodedSpaces=1")
+
   if ! parseConfig ${configFile} "${extraOpts[@]}" &>/dev/null; then return 1; fi
  
   #extra safety
@@ -976,16 +1004,12 @@ goGenerateMakeflow()
       #CPass0
       arr_cpass0_outputs[${jobindex}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
       echo "${arr_cpass0_outputs[${jobindex}]} : benchmark.sh ${configFile} ${copyFiles[@]}"
-      echo -n " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex}"" "
-      for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
-      echo
+      echo " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/cpass0 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
 
       #CPass1
       arr_cpass1_outputs[${jobindex}]="${commonOutputPath}/meta/cpass1.job${jobindex}.run${runNumber}.done"
       echo "${arr_cpass1_outputs[${jobindex}]} : benchmark.sh ${configFile} ${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz ${copyFiles[@]}"
-      echo -n " ${alirootEnv} ./benchmark.sh CPass1 ${commonOutputPath}/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex}"" "
-      for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
-      echo
+      echo " ${alirootEnv} ./benchmark.sh CPass1 ${commonOutputPath}/000${runNumber}/cpass1 ${inputFile} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]}"" "
       ((jobindex++))
 
     done< <(grep "/000${runNumber}/" ${inputFileList})
@@ -999,9 +1023,7 @@ goGenerateMakeflow()
     #CPass0 merging
     arr_cpass0_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
     echo "${commonOutputPath}/meta/cpass0.localOCDB.${runNumber}.tgz ${arr_cpass0_merged[${runNumber}]} : benchmark.sh ${configFile} ${arr_cpass0_calib_list[${runNumber}]} ${copyFiles[@]}"
-    echo -n " ${alirootEnv} ./benchmark.sh MergeCPass0 ${commonOutputPath}/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]}"" "
-    for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
-    echo
+    echo " ${alirootEnv} ./benchmark.sh MergeCPass0 ${commonOutputPath}/000${runNumber}/cpass0 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass0_calib_list[${runNumber}]} ${extraOpts[@]}"" "
 
     #CPass1 list of Calib/QA/ESD/filtered files
     # the trick with QA is to have the string "Stage.txt" in the file name of the list of directories with QA output to trigger
@@ -1027,26 +1049,26 @@ goGenerateMakeflow()
     #CPass1 merging
     arr_cpass1_merged[${runNumber}]="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
     echo "${commonOutputPath}/meta/cpass1.localOCDB.${runNumber}.tgz ${arr_cpass1_merged[${runNumber}]} :  benchmark.sh ${configFile} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${copyFiles[@]}"
-    echo -n " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]}"" "
-    for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
-    echo
+    echo " ${alirootEnv} ./benchmark.sh MergeCPass1 ${commonOutputPath}/000${runNumber}/cpass1 ${currentDefaultOCDB} ${configFile} ${runNumber} ${arr_cpass1_calib_list[${runNumber}]} ${arr_cpass1_QA_list[${runNumber}]} ${arr_cpass1_filtered_list[${runNumber}]} ${extraOpts[@]}"" "
 
     #CPass0 wrapped in a profiling tool (valgrind,....)
     if [[ -n ${profilingCommand} ]]; then
-      arr_cpass0_profiled_outputs[${runNumber}]="${commonOutputPath}/meta/cpass0.jobProfiled.run${runNumber}.done"
+      inputFile=$(grep -m1 "${runNumber}/" ${inputFileList})
+      [[ -z ${nEventsProfiling} ]] && nEventsProfiling=2
+      currentDefaultOCDB=$(setYear ${inputFile} ${defaultOCDB})
+      jobindex="profiling"
+
+      arr_cpass0_profiled_outputs[${runNumber}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
       echo "${arr_cpass0_profiled_outputs[${runNumber}]} : benchmark.sh ${configFile} ${copyFiles[@]}"
-      echo -n " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/profiled ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} profiling"" "
-      for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; 
-      echo "\"useProfilingCommand=${profilingCommand}\""
-      echo
+      profilingCommand=$(encSpaces "${profilingCommand}")
+      echo " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/${jobindex} ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]} useProfilingCommand=${profilingCommand}"
     fi
 
   done #runs
 
   #Summary
   echo "${commonOutputPath}/summary.log : benchmark.sh ${configFile} ${arr_cpass1_merged[*]}"
-  echo -n "  ${alirootEnv} ./benchmark.sh MakeSummary ${configFile}"" "
-  for extraOption in "${extraOpts[@]}"; do echo -n \'${extraOption}\'" "; done; echo
+  echo "  ${alirootEnv} ./benchmark.sh MakeSummary ${configFile} ${extraOpts[@]}"
   echo
 
   return 0
@@ -1084,7 +1106,7 @@ goCreateQAplots()
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
   [[ -z ${logOutputDir} ]] && logOutputDir=${PWD}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec 2>&1 > ${logOutputDir}/makeQAplots.log
+  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/makeQAplots.log
   echo "${0} $*"
 
   olddir=${PWD}
@@ -1110,6 +1132,7 @@ goTest()
 
 alirootInfo()
 {
+  (
   umask 0002
   # save aliroot repository info
   [[ -z "${ALICE_ROOT}" ]] && return 1
@@ -1118,10 +1141,10 @@ alirootInfo()
   echo "\${ROOTSYS}=${ROOTSYS}"
   echo "\${PATH}=${PATH}"
   echo "\${LD_LIBRARY_PATH}=${LD_LIBRARY_PATH}"
+  echo
   
   pushd ${PWD}
   cd ${ALICE_ROOT}
-  echo
 
   currentBranch=$(git rev-parse --abbrev-ref HEAD)
   git status
@@ -1130,6 +1153,7 @@ alirootInfo()
   git diff ${currentBranch}
   popd
   return 0
+  )
 }
 
 setYear()
@@ -1317,7 +1341,7 @@ goMakeLocalOCDBaccessConfig()
 
   local tempLocalOCDB=""
   if [[ -f localOCDBaccessConfig.C ]]; then
-    tempLocalOCDB=$(mktemp)
+    tempLocalOCDB=$(mktemp -t tempLocalOCDB.XXXXXX)
     echo "egrep "SetSpecificStorage" localOCDBaccessConfig.C > ${tempLocalOCDB}"
     egrep "SetSpecificStorage" localOCDBaccessConfig.C > ${tempLocalOCDB}
   fi
@@ -1372,8 +1396,8 @@ goMakeFilteredTrees()
   doneFile=${commonOutputPath}/meta/filtering.cpass1.run${runNumber}.done
 
   runpath=${outputDir}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 && -z ${TMPDIR} ]] && runpath=$(mktemp -d)
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t goMakeFilteredTrees.XXXXXX)
 
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
@@ -1381,8 +1405,11 @@ goMakeFilteredTrees()
   mkdir -p ${outputDir}
   mkdir -p ${runpath}
 
-  cd ${runpath}
-  [[ ! ${PWD} =~ ${runpath} ]] && echo "PWD=$PWD is not the runpath=${runpath}" && touch ${doneFile} && return 1
+  if ! cd ${runpath}; then 
+    echo "PWD=$PWD is not the runpath=${runpath}"
+    touch ${doneFile}
+    return 1
+  fi
   
   cat > filtering.log << EOF
   goMakeFilteredTrees config:
@@ -1399,6 +1426,7 @@ EOF
   if [[ -z ${pretend} ]];then
     aliroot -l -b -q "${ALICE_ROOT}/PWGPP/macros/runFilteringTask.C(\"${inputListfiles}\",${filterT},${filterV},\"${OCDBpath}\",${maxFiles},${offsetFile},${maxEvents},${offsetEvent},\"${esdFileName}\")" &>> filtering.log
   else
+    sleep ${pretendDelay}
     touch filtering.log FilterEvents_Trees.root
   fi
   pwd
@@ -1480,7 +1508,7 @@ goSubmitBatch()
   productionID=${1}
   inputList=${2}
   configFile=${3:-"benchmark.config"}
-  configFile=$(readlink -f ${configFile})
+  #if which greadlink; then configFile=$(greadlink -f ${configFile}); fi
   shift 3
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
@@ -1514,7 +1542,8 @@ goSubmitBatch()
   [[ ! -f ${alirootEnv} ]] && echo "alirootEnv script ${alirootEnv} not found!..." && return 1
 
   #move the script, config and some other stuff to ${commonOutputPath} first, then use them from there
-  self=$(readlink -f "${0}")
+  self=${0}
+  #if which greadlink; then self=$(greadlink -f "${0}"); fi
   configPath=$(dirname ${configFile})
   export commonOutputPath=${baseOutputDirectory}/${productionID}
   
@@ -1531,7 +1560,7 @@ goSubmitBatch()
   inputList=${commonOutputPath}/${inputList##*/}
 
   #convert to absolut pathnames
-  inputList=$(readlink -f "${inputList}")
+  #if which greadlink; then inputList=$(greadlink -f "${inputList}"); fi
   #make list of runs
   if [[ -z ${runNumber} ]]; then
     listOfRuns=($(while read x; do guessRunNumber ${x}; done < ${inputList} | sort | uniq))
@@ -1539,7 +1568,7 @@ goSubmitBatch()
     listOfRuns=${runNumber}
   fi
 
-  alirootSource=$(readlink -f "${alirootSource}")
+  #if which greadlink; then alirootSource=$(greadlink -f "${alirootSource}"); fi
 
   echo ""
   echo "### BEGIN CONFIGURATION ###"
@@ -1619,7 +1648,7 @@ goSubmitBatch()
     JOBfilterESDcpass1="fp1_${JOBpostfix}"
     LASTJOB="000"
 
-    oneInputFile=$(egrep -m1 "${runNumber}\/" ${inputList})
+    oneInputFile=$(egrep -m1 "${runNumber}/" ${inputList})
 
     currentDefaultOCDB=${defaultOCDB}
     [[ -z ${autoOCDB} ]] && autoOCDB=1
@@ -2006,7 +2035,7 @@ goMakeSummary()
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
   
-  configFile=$(readlink -f ${configFile})
+  #if which greadlink; then configFile=$(greadlink -f ${configFile}); fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -2289,6 +2318,7 @@ parseConfig()
   shift
   args=("$@")
 
+
   #some defaults
   #autoOCDB=0
   defaultOCDB="raw://"
@@ -2323,28 +2353,32 @@ parseConfig()
   #dontRedirectStdOutToLog=1
   logToFinalDestination=1
   ALIROOT_FORCE_COREDUMP=1
+  pretendDelay=0
 
   #first, source the config file
   if [ -f ${configFile} ]; then
     source ${configFile}
   else
-    echo "config file ${configFile} not found!, skipping..."
+    echo "config file ${configFile} not found!"
+    return 1
   fi
 
   unset encodedSpaces
   for opt in "${args[@]}"; do
-    [[ "${opt}" =~ encodedSpaces=.* ]] && encodedSpaces=1 && break
+    [[ "${opt}" =~ encodedSpaces=.* ]] && encodedSpaces=1 && echo "encodedSpaces!" && break
   done
 
   #then, parse the options as they override the options from file
   for opt in "${args[@]}"; do
+    [[ -z ${opt} ]] && continue
+    [[ -n ${encodedSpaces} ]] && opt="$(decSpaces ${opt})"
+    [[ "${opt}" =~ ^[[:space:]]*$ ]] && continue
     if [[ ! "${opt}" =~ .*=.* ]]; then
-      echo "badly formatted option ${var}, should be: option=value, stopping..."
+      echo "badly formatted option \"${opt}\" should be: option=value, stopping..."
       return 1
     fi
     local var="${opt%%=*}"
     local value="${opt#*=}"
-    [[ -n ${encodedSpaces} ]] && value=$(decSpaces "${value}")
     echo "${var} = ${value}"
     export ${var}="${value}"
   done
@@ -2426,7 +2460,7 @@ guessRunData()
 #these functions encode strings to and from a space-less form
 #use when spaces are not well handled (e.g. in arguments to 
 #commands in makeflow files, etc.
-encSpaces()(a="${1//,/\\,}";echo "${a// /,}")
-decSpaces()(a="${1//\\,/\\ }";b="${a//,/ }";echo "${b//\\ /,}")
+encSpaces()(echo "${1// /@@@@}")
+decSpaces()(echo "${1//@@@@/ }")
 
 main "$@"
