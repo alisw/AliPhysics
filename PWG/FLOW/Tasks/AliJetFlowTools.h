@@ -10,6 +10,7 @@
 
 // root forward declarations
 class TF1;
+class TF2;
 class TH1D;
 class TH2D;
 class TCanvas;
@@ -226,8 +227,14 @@ class AliJetFlowTools {
                 Int_t low,                      // pt lower level
                 Int_t up                        // pt upper level
         );
+        static void     MinimizeChi22d();
+        static Double_t PhenixChi22d(const Double_t *xx );
+        static Double_t ConstructFunction2d(Double_t *x, Double_t *par);
+        static TF2*     ReturnFunction2d();
         static void     MinimizeChi2();
         static Double_t PhenixChi2(const Double_t *xx );
+        static Double_t ConstructFunction(Double_t *x, Double_t *par);
+        static TF1*     ReturnFunction();
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -250,24 +257,39 @@ class AliJetFlowTools {
                 return l;
             }
         }
-        static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
-            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+        static TPaveText*       AddTPaveText(
+                // this text appears under the logo
+                TString text, 
+                Int_t r = 2,
+                Double_t a = .587,
+                Double_t b = .695,
+                Double_t c = .872,
+                Double_t d = .801) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k}_{T} ch jets, |#eta_{jet}|<%.1f", r, .9-r/10.));
+            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k}_{T}, |#eta_{jet}|<%.1f", r, .9-r/10.));
             t->SetTextColor(kBlack);
             t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
             t->Draw("same");
             return t;
         } 
-        static TPaveText*       AddText(TString text, EColor col) {
-            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+        static TPaveText*       AddText(
+                TString text, 
+                EColor col,
+                Double_t a = .2098,
+                Double_t b = .5601,
+                Double_t c = .613,
+                Double_t d = .6211) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
             t->SetTextColor(col);
             t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
             t->Draw("same");
             return t;
         } 
