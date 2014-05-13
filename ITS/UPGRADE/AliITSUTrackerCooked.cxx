@@ -36,6 +36,9 @@ const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
 const Double_t kSigma2=0.0005*0.0005;
 // Max accepted chi2 per cluster
 const Double_t kmaxChi2PerCluster=77.;
+// Tracking "road" from layer to layer
+const Double_t kRoadY=0.7;
+const Double_t kRoadZ=0.7;
 
 //************************************************
 // TODO:
@@ -340,20 +343,11 @@ void AliITSUTrackerCooked::FollowProlongation() {
       return;
     }
 
-    //Calculate the road at the next layer.  FIXME
-    Double_t dr = fgLayers[fI+1].GetR() - r;
-    Double_t xx0 = (fI > 2) ? 0.008 : 0.003;  //rough layer thickness
-    Double_t p = fTrackToFollow->P();
-    Double_t m = fTrackToFollow->GetMass();
-    Double_t beta2 = p*p/(p*p + m*m); 
-    Double_t scat2 = dr*dr*0.14*0.14*xx0/(beta2*p*p); 
-    Double_t dz=7*TMath::Sqrt((scat2 + kSigma2) + kSigma2);
-    Double_t dy=dz;
     //if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) return;
-    Double_t zMin = z - dz; 
-    Double_t zMax = z + dz;
-    Double_t phiMin = phi - dy/r;
-    Double_t phiMax = phi + dy/r;
+    Double_t zMin = z - kRoadZ; 
+    Double_t zMax = z + kRoadZ;
+    Double_t phiMin = phi - kRoadY/r;
+    Double_t phiMax = phi + kRoadY/r;
     if (layer.SelectClusters(zMin, zMax, phiMin, phiMax)==0) return;  
 
     if (!TakeNextProlongation()) return;
@@ -622,14 +616,16 @@ SelectClusters(Float_t zMin,Float_t zMax,Float_t phiMin, Float_t phiMax) {
   Float_t x=0., alpha=0.;
   for (Int_t i=FindClusterIndex(zMin); i<fN; i++) {
       AliCluster *c=fClusters[i];
+      if (c->GetZ() > zMax) break;
+      if (c->IsClusterUsed()) continue;
       UShort_t id=c->GetVolumeId();
       if (id != volId) {
 	volId=id;
         c->GetXAlphaRefPlane(x,alpha); //FIXME
       }
       Double_t cPhi=alpha + c->GetY()/fR;
-      if (c->IsClusterUsed()) continue;
-      if (c->GetZ() > zMax) break;
+      if (cPhi<0.) cPhi+=2.*TMath::Pi();
+      else if (cPhi >= 2.*TMath::Pi()) cPhi-=2.*TMath::Pi();
       if (cPhi <= phiMin) continue;
       if (cPhi >  phiMax) continue;
       fIndex[fNsel++]=i;
