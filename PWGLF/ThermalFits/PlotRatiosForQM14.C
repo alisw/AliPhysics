@@ -146,7 +146,7 @@ TClonesArray * PlotRatiosForQM14() {
   // Uncomment stuff in this section to save the inputs for thermal models
   //#define SAVE_INPUT_THERMAL_MODEL
 #ifdef SAVE_INPUT_THERMAL_MODEL
-  PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
+    PrepareThermalModelsInputFiles(arrPbPb, AliParticleYield::kCSPbPb, 2760, "V0M0010", /*separateCharges*/1);
   // PrepareThermalModelsInputFiles(arrpp7, AliParticleYield::kCSpp, 7000, "", /*separateCharges*/1);
   // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A0005", /*separateCharges*/1);
   // PrepareThermalModelsInputFiles(arrpPb, AliParticleYield::kCSpPb, 5020, "V0A2040", /*separateCharges*/1);
@@ -174,13 +174,15 @@ TClonesArray * PlotRatiosForQM14() {
   //DrawRatio("PbPb6080andpPb0005");
   //  DrawRatio("pp_vsRHIC");
   //  DrawRatio("PbPb_vsRHIC");
-  //  DrawRatio("aliceall");
+  //DrawRatio("aliceall");
 
 
   // Yields and FITS
-  //  maxy=2000;
+  maxy=2000;
 
   //DrawRatio("fit_ReferenceFit_PbPb0010", 1);
+  //  DrawRatio("fit_ReferenceFit_GSIONLY_PbPb0010", 1);
+  //  DrawRatio("fit_ReferenceFit_GSITHERMUS_PbPb0010",1);
   //DrawRatio("fitSHARE_NoPionsNoProtons_PbPb0010",1);
   //  DrawRatio("fitGSI_NoPionsNoProtons_PbPb0010", 1);
   //DrawRatio("fitShare_All_PbPb0010", 1);
@@ -191,12 +193,12 @@ TClonesArray * PlotRatiosForQM14() {
     // maxy=150;
     // DrawRatio("fitGSI_PbPb2040", 1);
   maxy = 60;
-  //  DrawRatio("fitThermus_GammaSFree_pPb0005");
+  // DrawRatio("fitThermus_GammaSFree_pPb0005");
   DrawRatio("fitShare_pPb0005");
    // maxy=20;
    // DrawRatio("fitThermus_GammaSFree_pPb2040");
-   // maxy=9;
-   // DrawRatio("fitThermus_GammaSFree_pPb6080");
+  //   maxy=9;
+  //   DrawRatio("fitThermus_GammaSFree_pPb6080");
    // maxy=9;
    // DrawRatio("fitGSI_pp");
 
@@ -970,7 +972,49 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     SaveCanvas("Fit_PbPb0010_Reference");
 
     array =0;
-  } else if( what == "fitSHARE_NoPionsNoProtons_PbPb0010") {
+  }  else if( what == "fit_ReferenceFit_GSIONLY_PbPb0010") {
+
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_0010",1);  
+    particlesToExcludeFromChi2="[313]"; // do not consider K* 
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");    
+    // FIXME: sistemare valori rapporti   
+    shiftRatioDataModel =0;
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14.dat"                        , kBlack  , kSolid     , "GSI      , 156 #pm 2  , 5330 #pm 505 , 17.4/9");
+
+    myPadHisto->cd();
+    NewLegendQM(0.651606, 0.765993, 0.909639, 0.865951, 1);
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
+
+    SaveCanvas("Fit_PbPb0010_Reference_GSI");
+
+    array =0;
+  } else if( what == "fit_ReferenceFit_GSITHERMUS_PbPb0010") {
+
+    DrawRatio("frame",1);  
+    DrawRatio("PbPb_0010",1);  
+    particlesToExcludeFromChi2="[313]"; // do not consider K* 
+    legThermal->SetNColumns(4);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #chi^{2}/NDF", "0");    
+    // FIXME: sistemare valori rapporti   
+    shiftRatioDataModel =-0.1;
+    PlotThermusYields("lhc2760_final_0005_single_gc_output_gs1_wevc_nkst.txt" , kBlack     , kSolid      , "THERMUS 2.3 , 155 #pm 2 , 5924 #pm 543 , 23.6/9");
+    shiftRatioDataModel =0.1;
+    PlotGSIYields("data+therm_fit2_s2760_0-10qm14.dat"                        , kOrange-1  , kDashed     , "GSI      , 156 #pm 2  , 5330 #pm 505 , 17.4/9");
+
+
+    myPadHisto->cd();
+    NewLegendQM(0.651606, 0.765993, 0.909639, 0.865951, 1);
+    DrawMarkerKStarNoFit() ;
+    DrawExtrapolatedSymbolsYieldsPbPb0010();
+
+    SaveCanvas("Fit_PbPb0010_Reference_GSITHERMUS");
+    //    SaveCanvas("");
+
+    array =0;
+  }else if( what == "fitSHARE_NoPionsNoProtons_PbPb0010") {
     array =0;
 
     DrawRatio("frame",1);  
@@ -1242,14 +1286,32 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     std::cout << "MISSING DATA" << std::endl;
     array =0;
   } else if( what == "fitShare_pPb0005") {
+
+
     DrawRatio("frame",1);  
-    DrawRatio("pPb0005",1);  
-    legThermal->SetNColumns(1);
-    PlotThermusYields("fit_gamma_q_s_fixed_pPb_0005.txt"   , kGreen   , kDashDotted , "SHARE 3 q fix s fix");
-    PlotThermusYields("fit_gamma_q_fixed_pPb_0005.txt"    , kBlue  , kDashDotted , "SHARE 3 q fix   s free");
-    PlotThermusYields("fit_gamma_q_s_free_pPb_0005.txt"   , kRed   , kDashDotted , "SHARE 3 q free  s free");
-    PlotThermusYields("fit_gamma_q_s_free_with_d_pPb_0005.txt", kBlack, kSolid, "SHARE 3 (with d) q free  s free");
-    NewLegendQM(0.613454, 0.701578, 0.940763, 0.918272, 1);
+    DrawRatio("pPb0005",1, 0.00001);  
+    legThermal->SetNColumns(6);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #gamma_{s}, #gamma_{q}, #chi^{2}/NDF", "0");    
+    particlesToExcludeFromChi2="[313][1000010020][1000020030][1010010030]"; // do not consider K* and nuclei 
+ 
+    shiftRatioDataModel = -0.2;
+    PlotThermusYields("NEW_fit_gamma_q_s_fixed_pPb_0005_without_nuclei.txt" , kBlack    , kSolid      , "SHARE 3 , 158 #pm 3 , 121 #pm 18  , 1 (fix)       , 1 (fix) , 24.3/6");
+    shiftRatioDataModel = 0;
+    PlotThermusYields("NEW_fit_gamma_q_fixed_pPb_0005_without_nuclei.txt"   , kBlue+1   , kDashDotted , "SHARE 3 , 161 #pm 3 , 115 #pm 17  , 0.93 #pm 0.04 , 1 (fix) , 20.3/5");
+    shiftRatioDataModel = 0.2;
+    PlotThermusYields("NEW_fit_gamma_q_s_free_pPb_0005_without_nuclei.txt"  , kOrange+2 , kDashDotted , "SHARE 3 , 144 #pm 1 , 81 #pm 25   ,  1.599 #pm 0 , 1.71 #pm 0.06 , 11.4/4");
+
+    NewLegendQM(0.650602, 0.694971, 0.909639, 0.865951, 1);
+    DrawExtrapNotInFitpPb0005() ;
+    DrawMarkerNucleiNoFit();
+    legThermal->SetX1(0.124498 ); 
+    legThermal->SetY1(0.0715488); 
+    legThermal->SetX2(0.672691 ); 
+    legThermal->SetY2(0.384575 ); 
+
+    SaveCanvas("Fit_pPb0005_SHARE");
+
+
     array =0;
 
   } else if( what == "fitShare_pPb2040") {
