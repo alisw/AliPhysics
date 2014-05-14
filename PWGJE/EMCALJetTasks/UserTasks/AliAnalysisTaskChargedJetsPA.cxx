@@ -139,13 +139,13 @@ void AliAnalysisTaskChargedJetsPA::Init()
     AddHistogram2D<TH2D>("hKTBackgroundImprovedCMSExternal20GeV", "KT background density (Improved CMS approach from external task, jet p_{T} > 20 GeV)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
     AddHistogram2D<TH2D>("hPPBackground", "PP background density (Michals approach)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
-    AddHistogram2D<TH2D>("hDeltaPtExternalBgrd", "Background fluctuations #delta p_{T} (KT, External)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtExternalBgrd20GeV", "Background fluctuations #delta p_{T} (KT, External, jet p_{T}>20 GeV)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion_Signal", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion w/ 1/N_{sig} probability)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSFullExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, full leading jet exclusion)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-    AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtExternalBgrd", "Background fluctuations #delta p_{T} (KT, External)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtExternalBgrdVsPt", "Background fluctuations #delta p_{T} (KT, External, in p_{T} bins)", "", 1801, -40.0, 80.0, 200, 0, 200, "#delta p_{T} (GeV/c)","Raw jet p_{T}","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMS", "Background fluctuations #delta p_{T} (KT, Improved CMS-like)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSPartialExclusion_Signal", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, partial jet exclusion w/ 1/N_{sig} probability)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtKTImprovedCMSFullExclusion", "Background fluctuations #delta p_{T} (KT, Improved CMS-like, full leading jet exclusion)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+    AddHistogram2D<TH2D>("hDeltaPtNoBackground", "Background fluctuations #delta p_{T} (No background)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
     AddHistogram1D<TProfile>("hKTMeanBackgroundImprovedCMS", "KT background mean (Improved CMS approach)", "", 100, 0, 100, "Centrality", "#rho mean");
 
@@ -166,12 +166,12 @@ void AliAnalysisTaskChargedJetsPA::Init()
       AddHistogram2D<TH2D>("hTRBackgroundExact",  "TR background density (signal jets exactly excluded)", "LEGO2", 400, 0., 40., fNumberOfCentralityBins, 0, 100, "#rho (GeV/c)","Centrality", "dN^{Events}/d#rho");
 
       // ########## Delta Pt
-      AddHistogram2D<TH2D>("hDeltaPtKTPbPb", "Background fluctuations #delta p_{T} (KT, PbPb w/o ghosts)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-      AddHistogram2D<TH2D>("hDeltaPtKTPbPbWithGhosts", "Background fluctuations #delta p_{T} (KT, PbPb w/ ghosts)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-      AddHistogram2D<TH2D>("hDeltaPtKTCMS", "Background fluctuations #delta p_{T} (KT, CMS-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-      AddHistogram2D<TH2D>("hDeltaPtKTMean", "Background fluctuations #delta p_{T} (KT, Mean)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-      AddHistogram2D<TH2D>("hDeltaPtKTTrackLike", "Background fluctuations #delta p_{T} (KT, track-like)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
-      AddHistogram2D<TH2D>("hDeltaPtTR", "Background fluctuations #delta p_{T} (TR, cone R=0.6)", "", 1201, -40.0, 40.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTPbPb", "Background fluctuations #delta p_{T} (KT, PbPb w/o ghosts)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTPbPbWithGhosts", "Background fluctuations #delta p_{T} (KT, PbPb w/ ghosts)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTCMS", "Background fluctuations #delta p_{T} (KT, CMS-like)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTMean", "Background fluctuations #delta p_{T} (KT, Mean)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtKTTrackLike", "Background fluctuations #delta p_{T} (KT, track-like)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100, "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
+      AddHistogram2D<TH2D>("hDeltaPtTR", "Background fluctuations #delta p_{T} (TR, cone R=0.6)", "", 1801, -40.0, 80.0, fNumberOfCentralityBins, 0, 100,  "#delta p_{T} (GeV/c)","Centrality","dN^{Jets}/d#delta p_{T}");
 
       // ########## Profiles for background means vs. centrality
       AddHistogram1D<TProfile>("hKTMeanBackgroundPbPb", "KT background mean (PbPb approach w/o ghosts)", "", fNumberOfCentralityBins, 0, 100, "Centrality", "#rho mean");
@@ -1627,6 +1627,8 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
         FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
         FillHistogram("hJetPtSubtractedRhoExternal", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
         FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundPP));
+        FillHistogram("hDeltaPtExternalBgrdVsPt", GetDeltaPt(backgroundKTImprovedCMSExternal), GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
+
 
         if(fAnalyzeDeprecatedBackgrounds)
         {
@@ -1974,12 +1976,7 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     // If valid, fill the delta pt histograms
 
     if(tmpDeltaPtExternalBgrd > -10000.0)
-    {
       FillHistogram("hDeltaPtExternalBgrd", tmpDeltaPtExternalBgrd, centralityPercentile);
-      if(fFirstLeadingJet && (fFirstLeadingJet->Pt()>=20.))
-        FillHistogram("hDeltaPtExternalBgrd20GeV", tmpDeltaPtExternalBgrd, centralityPercentile);
-
-    }
     if(tmpDeltaPtKTImprovedCMS > -10000.0)
       FillHistogram("hDeltaPtKTImprovedCMS", tmpDeltaPtKTImprovedCMS, centralityPercentile);
     if(tmpDeltaPtKTImprovedCMSPartialExclusion > -10000.0)
