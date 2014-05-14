@@ -66,7 +66,7 @@ generateMC()
 }
 
 goCPass0()
-{
+(
   umask 0002
   
   targetDirectory=${1}
@@ -259,10 +259,10 @@ goCPass0()
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
   return 0
-}
+)
 
 goCPass1()
-{
+(
   umask 0002
   
   targetDirectory=${1}
@@ -357,6 +357,7 @@ goCPass1()
   echo doneFile      ${doneFile}
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
+  echo batchWorkingDirectory ${batchWorkingDirectory}
   echo ALICE_ROOT         ${ALICE_ROOT}
   echo PWD                ${PWD}
   echo "########## ###########"
@@ -381,15 +382,16 @@ goCPass1()
                "${ALICE_ROOT}/ANALYSIS/macros/QAtrain_duo.C"
   )
 
-  for file in ${filesCPass1[*]}; do
+  for file in "${filesCPass1[@]}"; do
     [[ ! -f ${file##*/} && -f ${file} ]] && echo "copying ${file}" && cp -f ${file} .
-    [[ ${file##*/} =~ .*\.sh ]] && chmod +x ${file##*/}
+    [[ ${file##*/} =~ .*\.sh ]] && echo "making ${file##*/} executable" && chmod +x ${file##*/}
   done
 
   echo "this directory (${PWD}) contents:"
   /bin/ls
   echo
 
+  #remove spaces around commas from calls to root
   sed -i '/.*root .*\.C/ s|\s*,\s*|,|g' *.sh
 
   if [[ -n ${postSetUpActionCPass1} ]]; then
@@ -415,7 +417,9 @@ goCPass1()
   #create the Barrel and OuterDet directories for CPass1 and link the local OCDB directory
   #there to make the localOCDBaccessConfig.C file work, since it may point to the OCDB
   #entries using a relative path, e.g. local://./OCDB
+  echo "linking the OCDB/ for Barrel and OuterDet directories"
   mkdir Barrel OuterDet
+  ls -l
   ln -s ../OCDB Barrel/OCDB
   ln -s ../OCDB OuterDet/OCDB
 
@@ -528,11 +532,11 @@ goCPass1()
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
-}
+)
 
 
 goMergeCPass0()
-{
+(
   #
   # find the output files and merge them
   #
@@ -664,10 +668,10 @@ goMergeCPass0()
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
-}
+)
 
 goMergeCPass1()
-{
+(
   #
   # find the output files and merge them
   #
@@ -851,10 +855,10 @@ goMergeCPass1()
       
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
-}
+)
 
 goMerge()
-{
+(
   #generic root merge using CPass1 merge.C script
   inputList=${1}
   outputFile=${2}  
@@ -872,7 +876,7 @@ goMerge()
   rm -f ${outputFile}
   aliroot -b -q "${ALICE_ROOT}/PWGPP/CalibMacros/CPass0/merge.C(\"${inputList}\",\"\",kFALSE,\"${outputFile}\")" > merge_${inputList}.log
   return 0
-}
+)
 
 goSubmitMakeflow()
 {
@@ -928,7 +932,7 @@ goSubmitMakeflow()
 }
 
 goGenerateMakeflow()
-{
+(
   #generate the makeflow file
   [[ $# -lt 3 ]] && echo "args: id inputFileList configFile" && return 1
   productionID=${1}
@@ -1072,10 +1076,10 @@ goGenerateMakeflow()
   echo
 
   return 0
-}
+)
 
 goPrintValues()
-{
+(
   #print the values given the key from any number of files (store in output file on second argument)
   if [[ $# -lt 3 ]]; then
     echo "goPrintValues key outputFile inputFiles"
@@ -1088,10 +1092,10 @@ goPrintValues()
   shift 2 #remove 2 first arguments from arg list to only pass the input files to awk
   awk -v key=${key} '$0 ~ key" " {print $2}' "$@" | tee ${outputFile}
   return 0
-}
+)
 
 goCreateQAplots()
-{
+(
   umask 0002
   mergedQAfileList=${1}
   productionID=${2}
@@ -1118,21 +1122,15 @@ goCreateQAplots()
 
   cd ${olddir}
   return 0
-}
+)
 
 goTest()
-{
-  umask 0002
-  exec 2>&1
-  exec > >(tee test.log)
-  echo "$@"
-  echo something
-  return 0
-}
+(
+  echo AA
+)
 
 alirootInfo()
-{
-  (
+(
   umask 0002
   # save aliroot repository info
   [[ -z "${ALICE_ROOT}" ]] && return 1
@@ -1153,11 +1151,10 @@ alirootInfo()
   git diff ${currentBranch}
   popd
   return 0
-  )
-}
+)
 
 setYear()
-{
+(
   #set the year
   #  ${1} - year to be set
   #  ${2} - where to set the year
@@ -1167,10 +1164,10 @@ setYear()
   [[ ${year1} -ne ${year2} && -n ${year2} && -n ${year1} ]] && path=${2/\/${year2}\//\/${year1}\/}
   echo ${path}
   return 0
-}
+)
 
 guessPeriod()
-{
+(
   #guess the period from the path, pick the rightmost one
   local IFS="/"
   declare -a path=( ${1} )
@@ -1181,10 +1178,10 @@ guessPeriod()
   done
   echo ${period}
   return 0
-}
+)
 
 guessYear()
-{
+(
   #guess the year from the path, pick the rightmost one
   local IFS="/"
   declare -a path=( ${1} )
@@ -1195,10 +1192,10 @@ guessYear()
   done
   echo ${year}
   return 0
-}
+)
 
 guessRunNumber()
-{
+(
   #guess the run number from the path, pick the rightmost one
   #works for /path/foo/000123456/bar/...
   #and       /path/foo.run123456.bar
@@ -1212,10 +1209,10 @@ guessRunNumber()
   done
   echo ${runNumber}
   return 0
-}
+)
 
 validateLog()
-{
+(
   log=${1}
   errorConditions=(
                     'There was a crash'
@@ -1262,10 +1259,10 @@ validateLog()
   fi
 
   return 0
-}
+)
 
 summarizeLogs()
-{
+(
   #print a summary of logs
   logFiles=(
             "*.log"
@@ -1304,7 +1301,7 @@ summarizeLogs()
   done < <(/bin/ls ${PWD}/*/core 2>/dev/null; /bin/ls ${PWD}/core 2>/dev/null)
   
   return ${logstatus}
-}
+)
 
 spitOutLocalOCDBaccessConfig()
 {
@@ -1364,7 +1361,7 @@ goMakeLocalOCDBaccessConfig()
 }
 
 goMakeFilteredTrees()
-{
+(
   outputDir=${1}
   runNumber=${2}
   #get path to input list
@@ -1391,14 +1388,12 @@ goMakeFilteredTrees()
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
-
-  commonOutputPath=${PWD}
+  [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile=${commonOutputPath}/meta/filtering.cpass1.run${runNumber}.done
 
   runpath=${outputDir}
   #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t goMakeFilteredTrees.XXXXXX)
-
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
@@ -1439,7 +1434,7 @@ EOF
   cd ${commonOutputPath}
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
-}
+)
 
 submit()
 {
@@ -1451,7 +1446,7 @@ submit()
   waitForJOBID=${4}
   command=${5}
   shift 5
-  commandArgs=("$@")
+  local commandArgs=("$@")
 
   #add quote strings around the extra arguments
   for ((i=0; i<${#commandArgs[@]}; i++)); do 
@@ -1905,7 +1900,7 @@ goSubmitBatch()
 }
 
 goWaitForOutput()
-{
+(
   umask 0002
   [[ $# -lt 3 ]] && echo "goWaitForOutput() wrong number of arguments, exiting.." && return 1
   echo searchPath=${1}
@@ -1929,10 +1924,10 @@ goWaitForOutput()
   done
   echo "DONE! exiting..."
   return 0
-}
+)
 
 mergeSysLogs()
-{
+(
   outputFile=${1}
   shift
   inputFiles="$@"
@@ -1945,10 +1940,10 @@ mergeSysLogs()
     (( i++ ))
   done < <(ls -1 ${inputFiles}) > ${outputFile}
   return 0
-}
+)
 
 goMakeMergedSummaryTree()
-{
+(
   # create list of calibration entries
   # takes no arguments, just run it in the base output
   # directory with the following files in the working directory
@@ -2024,10 +2019,10 @@ EOF
 
   aliroot -b -q "mergeTree.C" > mergeTrees.log
   return $?
-}
+)
 
 goMakeSummary()
-{
+(
   #all the final stuff goes in here for ease of use:
   # summary logs
   # qa plot making
@@ -2214,10 +2209,10 @@ done
   [[ -n ${MAILTO} ]] && cat ${log} | mail -s "benchmark ${productionID} done" ${MAILTO}
 
   return 0
-}
+)
 
 goMakeSummaryTree()
-{
+(
   if [[ $# -lt 1 ]] ; then
     return
   fi
@@ -2316,7 +2311,7 @@ goMakeSummaryTree()
   done
 
   return 0
-}
+)
 
 parseConfig()
 {
