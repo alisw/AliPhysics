@@ -1,5 +1,5 @@
-const Int_t numberOfCentralityBins = 12;
-TString centralityArray[numberOfCentralityBins] = {"0-10","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3"};
+const Int_t numberOfCentralityBins = 13;
+TString centralityArray[numberOfCentralityBins] = {"0-80","10-20","20-30","30-40","40-50","50-60","60-70","70-80","0-100","0-1","1-2","2-3","92-8500"};
 
 const Int_t gRebin = 1;
 
@@ -105,6 +105,7 @@ TList *GetListOfObjects(const char* filename,
 
     listBF = dynamic_cast<TList *>(dir->Get(listBFName.Data()));
     cout<<"======================================================="<<endl;
+    cout<<"List name (control): "<<listBFName.Data()<<endl;
     cout<<"List name: "<<listBF->GetName()<<endl;
     //listBF->ls();
     
@@ -441,10 +442,20 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
       gHist[2]->Rebin2D(rebinEta,rebinPhi);
       gHist[2]->Scale(1./(Double_t)(rebinEta*rebinPhi));  
     }
+ 
     // normalization to 1 at (0,0) --> Jan Fietes method
     if(normToTrig){
-      Double_t mixedNorm = gHist[2]->Integral(gHist[2]->GetXaxis()->FindBin(0-10e-5),gHist[2]->GetXaxis()->FindBin(0+10e-5),1,gHist[2]->GetNbinsX());
-      mixedNorm /= gHist[2]->GetNbinsY()*(gHist[2]->GetXaxis()->FindBin(0.01) - gHist[2]->GetXaxis()->FindBin(-0.01) + 1);
+      Double_t mixedNorm = gHist[2]->Integral(gHist[2]->GetXaxis()->FindBin(0-10e-5),gHist[2]->GetXaxis()->FindBin(0+10e-5),gHist[2]->GetNbinsY()/2 + 1,gHist[2]->GetNbinsY());
+      mixedNorm /= 0.5 * gHist[2]->GetNbinsY()*(gHist[2]->GetXaxis()->FindBin(0.01) - gHist[2]->GetXaxis()->FindBin(-0.01) + 1);
+
+      // finite bin correction
+      Double_t binWidthEta = gHist[2]->GetXaxis()->GetBinWidth(gHist[2]->GetNbinsX());
+      Double_t maxEta      = gHist[2]->GetXaxis()->GetBinUpEdge(gHist[2]->GetNbinsX());
+	
+      Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+      //Printf("Finite bin correction: %f", finiteBinCorrection);
+      mixedNorm /= finiteBinCorrection;
+      
       gHist[2]->Scale(1./mixedNorm);
     } 
 
@@ -466,7 +477,7 @@ void draw(TList *list, TList *listBFShuffled, TList *listBFMixed,
     //c[2]->SaveAs(pngName.Data());
 
     //Correlation function (+-)
-    gHist[3] = b->GetCorrelationFunction("ALL",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed);
+    gHist[3] = b->GetCorrelationFunction("ALL",psiMin,psiMax,vertexZMin,vertexZMax,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax,bMixed,normToTrig);
     gHist[3]->GetXaxis()->SetRangeUser(-1.5,1.5);
     gHist[3]->GetZaxis()->SetTitle("C_{+-}(#Delta#eta,#Delta#varphi)");
     c[3] = new TCanvas("c3","",0,300,600,500);
