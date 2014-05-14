@@ -1513,6 +1513,12 @@ goSubmitBatch()
   extraOpts=("$@")
   if ! parseConfig ${configFile} "${extraOpts[@]}"; then return 1; fi
   
+  #batch systems/makeflow sometimes handle spaces in arguments poorly, so encode them
+  for (( i=0;i<${#extraOpts[@]};i++ )); do 
+    extraOpts[i]=$(encSpaces "${extraOpts[i]}")
+  done
+  extraOpts+=("encodedSpaces=1")
+
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
 
