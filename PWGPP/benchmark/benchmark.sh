@@ -467,8 +467,10 @@ goCPass1()
 
     #make the filtered tree (if requested and not already produced by QA
     [[ -f AliESDs_Barrel.root ]] && echo "AliESDs_Barrel.root" > filtered.list
-    if [[ -n ${runESDfiltering} && ! -f FilterEvents_Trees.root ]]; then 
-      goMakeFilteredTrees ${PWD} ${runNumber} "filtered.list" ${filteringFactorHighPt} ${filteringFactorV0s} ${ocdbPath} 1000000 0 10000000 0 ${configFile} AliESDs_Barrel.root "${extraOpts[@]}" >filtering.log
+    if [[ -n ${runESDfiltering} && ! -f FilterEvents_Trees.root && -f filtered.list ]]; then 
+      goMakeFilteredTrees ${PWD} ${runNumber} "${PWD}/filtered.list" ${filteringFactorHighPt} ${filteringFactorV0s} ${ocdbPath} 1000000 0 10000000 0 ${configFile} AliESDs_Barrel.root "${extraOpts[@]}" >filtering.log
+    else
+      echo ""
     fi
 
   fi
@@ -1391,21 +1393,6 @@ goMakeFilteredTrees()
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile=${commonOutputPath}/meta/filtering.cpass1.run${runNumber}.done
 
-  runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
-  [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t goMakeFilteredTrees.XXXXXX)
-
-  [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
-
-  mkdir -p ${outputDir}
-  mkdir -p ${runpath}
-
-  if ! cd ${runpath}; then 
-    echo "PWD=$PWD is not the runpath=${runpath}"
-    touch ${doneFile}
-    return 1
-  fi
-  
   cat > filtering.log << EOF
   goMakeFilteredTrees config:
   runpath=${runpath}
@@ -1416,8 +1403,21 @@ goMakeFilteredTrees()
   offsetEvent=$offsetEvent
   configFile=$configFile
   esdFileName=$esdFileName
+  inputListfiles=$inputListfiles
+  doneFile=$doneFile
 EOF
 
+  #runpath=${outputDir}
+  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
+  #[[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t goMakeFilteredTrees.XXXXXX)
+  #mkdir -p ${outputDir}
+  #mkdir -p ${runpath}
+  #if ! cd ${runpath}; then 
+  #  echo "PWD=$PWD is not the runpath=${runpath}"
+  #  touch ${doneFile}
+  #  return 1
+  #fi
+  
   if [[ -z ${pretend} ]];then
     aliroot -l -b -q "${ALICE_ROOT}/PWGPP/macros/runFilteringTask.C(\"${inputListfiles}\",${filterT},${filterV},\"${OCDBpath}\",${maxFiles},${offsetFile},${maxEvents},${offsetEvent},\"${esdFileName}\")" &>> filtering.log
   else
@@ -1428,11 +1428,13 @@ EOF
   /bin/ls
   touch ${doneFile}
   summarizeLogs >>  ${doneFile}
-  echo mv -f * ${outputDir}
-  mv -f * ${outputDir}
-  [[ -f ${outputDir}/FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
-  cd ${commonOutputPath}
-  [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  
+  #echo mv -f * ${outputDir}
+  #mv -f * ${outputDir}
+  #[[ -f ${outputDir}/FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
+  #cd ${commonOutputPath}
+  #[[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
+  
   return 0
 )
 
