@@ -52,7 +52,7 @@ void testTrackerCooked() {
         TTree *cTree=(TTree *)clsFile->Get(Form("Event%d/TreeR",i));
         tracker->LoadClusters(cTree);
         tracker->Clusters2Tracks(esd);
-        //tracker->PropagateBack(esd);
+        tracker->PropagateBack(esd);
         tracker->RefitInward(esd);
         tracker->UnloadClusters();
 

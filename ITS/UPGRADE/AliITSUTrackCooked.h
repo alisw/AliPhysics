@@ -32,6 +32,7 @@ public:
     Bool_t GetPhiZat(Double_t r,Double_t &phi,Double_t &z) const;
 
     void SetClusterIndex(Int_t layer, Int_t index);
+    void ResetClusters();
     
 private:
     AliITSUTrackCooked &operator=(const AliITSUTrackCooked &tr);
