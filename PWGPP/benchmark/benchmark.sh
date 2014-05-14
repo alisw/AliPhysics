@@ -1719,7 +1719,7 @@ goSubmitBatch()
       submit ${JOBID1} 1 ${nFiles} 000 "${alirootEnv} ${self}" CPass0 ${targetDirectory} ${localInputList} ${nEvents} ${currentDefaultOCDB} ${configFile} ${runNumber} -1 "${extraOpts[@]}"
 
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait} '-maxdepth 1'
+      submit "${JOBID1wait}" 1 1 000 "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass0.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID1wait}
 
     fi #end running CPass0
@@ -1824,7 +1824,7 @@ goSubmitBatch()
 
       ################################################################################
       ## submit a monitoring job that will run until a certain number of jobs are done with reconstruction
-      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait} '-maxdepth 1'
+      submit "${JOBID4wait}" 1 1 "${LASTJOB}" "${alirootEnv} ${self}" WaitForOutput ${commonOutputPath} "meta/cpass1.job*.run${runNumber}.done" ${nFilesToWaitFor} ${maxSecondsToWait}
       LASTJOB=${JOBID4wait}
       ################################################################################
 
@@ -1913,11 +1913,9 @@ goWaitForOutput()
   fileName=${2}
   numberOfFiles=${3}
   maxSecondsToWait=${4}
-  extraFindOptions=${5}
-  echo "command to be executed: /bin/ls -1 ${searchPath}/${fileName} ${extraFindOptions}"
+  echo "command to be executed: /bin/ls -1 ${searchPath}/${fileName}"
   [[ -z "${maxSecondsToWait}" ]] && maxSecondsToWait=$(( 3600*12 ))
   while true; do
-    #n=$(find ${searchPath} ${extraFindOptions} -name "${fileName}" | wc -l)
     n=$(/bin/ls -1 ${searchPath}/${fileName} 2>/dev/null | wc -l)
     [[ ${n} -gt 0 ]] && echo "found ${n} X ${fileName}"
     [[ ${n} -ge ${numberOfFiles} ]] && break
