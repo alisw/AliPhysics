@@ -38,7 +38,7 @@
   AliOCDBtoolkit::MakeDiffExampleUseCase();
   or from the AliOCDBtoolkit.sh in propmpt
   ocdbMakeTable AliESDs.root ESD OCDBrec.list
-  ocdbMakeTable galice.root ESD OCDBsim.list
+  ocdbMakeTable galice.root MC OCDBsim.list
 
   
    
@@ -76,6 +76,11 @@
 
 */
 
+/*
+  To check:
+  1.) Verify hash value uasge as and MD5 sum - 
+
+ */
 
 using namespace std;
 
@@ -164,7 +169,7 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
 	// 
 	man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
         TList *cdbListMC0 = (TList*)file->Get("cdbList");     // this is list of TObjStrings
-        cdbList = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
+        cdbList = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
   } 
     else if(fType.EqualTo("ESD",TString::kIgnoreCase)){
       file = TFile::Open(fInput.Data());
@@ -193,7 +198,7 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
 
 
 Bool_t AliOCDBtoolkit::ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion){
-  //
+  // Functionalit
   // Parse OCDB id string and provide basic ocdb information
   //
   //  a.) parse ocdbPath
@@ -344,14 +349,53 @@ void AliOCDBtoolkit::LoadOCDBFromLog(const char *logName, Int_t verbose){
   }
 }
 
-
-void AliOCDBtoolkit::LoadOCDBFromMap(const TMap */*cdbMap*/, const TList */*cdbList*/){
+void  AliOCDBtoolkit::SetStorage(const TMap *cdbMap){
+  //
+  // Set storages as speified in the map - TO CHECK.. Should go to the AliCDBmanager if not alreadyhhere
+  //   
+  AliCDBManager * man = AliCDBManager::Instance();  
+  TIter iter(cdbMap->GetTable());
+  TPair* aPair=0;
+  while ((aPair = (TPair*) iter.Next())) {
+    //    aPair->Value();
+    //aPair->Print();
+    if (TString(aPair->GetName())=="default") man->SetDefaultStorage(aPair->Value()->GetName());
+    else
+      man->SetSpecificStorage(aPair->GetName(), aPair->Value()->GetName());
+  }  
+}
+ 
+void AliOCDBtoolkit::LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList){
   //
   // Initilaize OCDB
   // Load OCDB setting as specified in maps
-  // Or Do we have already implementation in AliCDBanager?
+  // Or Do we have already implementation in AliCDBanager?  TO CHECK.. Should go to the AliCDBmanager if not alreadyhhere
+  AliCDBManager * man = AliCDBManager::Instance();  
+  AliOCDBtoolkit::SetStorage(cdbMap);  
+  TIter iter(cdbList);
+  TObjString *ocdbString=0;
+  while (( ocdbString= (TObjString*) iter.Next())) {
+    AliCDBId* cdbId = AliCDBId::MakeFromString(ocdbString->String());
+    try {
+      //      AliCDBEntry * cdbEntry = (AliCDBEntry*) man->Get(*cdbId,kTRUE);
+      man->Get(*cdbId,kTRUE);
+    } catch(const exception &e){
+      cerr << "OCDB retrieval failed!" << endl;
+      cerr << "Detailes: " << e.what() << endl;
+    }   
+  }    
 }
 
+void AliOCDBtoolkit::LoadOCDBFromESD(const char *fname){
+  //
+  // Load OCDB setup from the ESD file
+  // 
+  TFile * fesd = TFile::Open(fname);
+  TList *listESD = ((TTree*)fesd->Get("esdTree"))->GetUserInfo();
+  TMap *cdbMapESD= (TMap*)listESD->FindObject("cdbMap");  
+  TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
+  AliOCDBtoolkit::LoadOCDBFromMap(cdbMapESD, cdbListESD0);
+}
 
 
 void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
@@ -361,7 +405,7 @@ void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, co
   // Input:
   //   maps and list charactireizing OCDB setup  
   // Output:
-  //   To be decided, currently it is the teinal output
+  //   To be decided.
   //
   Int_t entriesList0=cdbList0->GetEntries();
   Int_t entriesList1=cdbList1->GetEntries();
@@ -427,7 +471,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     cdbPath = ostr->GetString();
     if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
     
-    cdbEntry = (AliCDBEntry*) man->Get(*CDBId);
+    cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
     if (!cdbEntry) {
       printf("Object not avaliable\n");
       CDBId->Print();
@@ -720,4 +764,15 @@ Bool_t AliOCDBtoolkit::AddoptOCDBEntry( const char *finput, const char *output, 
   id1=new AliCDBId(idIn.GetPath(), ustartRun, uendRun);
   pocdbStorage->Put(entry->GetObject(), (*id1), metaData);
   return kTRUE;
+}
+
+
+void AliOCDBtoolkit::MakeSnapshotFromTxt(const TString fInput, const TString outfile, Bool_t singleKeys){
+  //
+  // Make snasphot form the txt file
+  //
+  AliCDBManager * man = AliCDBManager::Instance();
+  LoadOCDBFromList(fInput.Data());
+  man->DumpToSnapshotFile(outfile.Data(), singleKeys);
+
 }

@@ -39,6 +39,13 @@
 #include "TMessage.h"
 #include "TObject.h"
 #include "TRegexp.h"
+ // STD
+using namespace std;
+#include <iostream>
+#include <algorithm>
+#include <sstream>
+#include <stdexcept>
+#include <functional>
 
 ClassImp(AliCDBParam)
 
@@ -120,11 +127,10 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
 
   f->cd();
+  f->WriteObject(&fEntryCache,"CDBentriesMap");
+  f->WriteObject(fIds,"CDBidsList");
 
-  if(singleKeys){
-    f->WriteObject(&fEntryCache,"CDBentriesMap");
-    f->WriteObject(fIds,"CDBidsList");
-  }else{
+  if(!singleKeys){
     // We write the entries one by one named by their calibration path
     /*
        fEntryCache.Write("CDBentriesMap");
@@ -145,7 +151,7 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   f->Close();
   delete f;
 
-  exit(0);
+  //exit(0);
 }
 
 //_____________________________________________________________________________
@@ -935,11 +941,14 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching, Bool_t doCatch) {
 // get an AliCDBEntry object from the database
 
   // check if query's path and runRange are valid
   // query is invalid also if version is not specified and subversion is!
+  try {
+     
+  
   if (!query.IsValid()) {
     AliError(Form("Invalid query: %s", query.ToString().Data()));
     return NULL;
@@ -1014,10 +1023,16 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
   if(entry && !fIds->Contains(&entry->GetId())){
     fIds->Add(entry->GetId().Clone());
   }
-
-
   return entry;
-
+  }catch(const exception &e){
+    cerr << "OCDB retrieval failed!" << endl;
+    cerr << "Detailes: " << e.what() << endl;
+    if (!doCatch) {
+      throw std::runtime_error(e.what());
+    }
+    return 0;
+  }
+  return 0;
 }
 
 //_____________________________________________________________________________
