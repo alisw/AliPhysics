@@ -33,6 +33,7 @@ class AliAnalysisTaskDeltaPt : public AliAnalysisTaskEmcalJet {
   void                        SetConePhiLimits(Float_t min, Float_t max)           { fConeMinPhi = min, fConeMaxPhi = max  ; }
 
  protected:
+  void                        AllocateHistogramArrays()                                                                     ;
   void                        ExecOnce()                                                                                    ;
   Bool_t                      FillHistograms()                                                                              ;
   void                        GetLeadingJets(Int_t &maxJetIndex, Int_t &max2JetIndex)                                       ;
