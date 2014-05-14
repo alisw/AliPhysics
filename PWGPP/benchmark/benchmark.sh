@@ -1666,7 +1666,7 @@ goSubmitBatch()
     if [[ -n ${profilingCommand} ]]; then
       [[ -z ${nEventsProfiling} ]] && nEventsProfiling=2
       [[ -z ${profilingCommand} ]] && profilingCommand="/usr/bin/valgrind --tool=callgrind --num-callers=40 -v --trace-children=yes"
-      submit "valgrind" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand=${profilingCommand} "${extraOpts[@]}"
+      submit "valgrind" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand="${profilingCommand}" "${extraOpts[@]}"
     fi 
 
     ################################################################################
