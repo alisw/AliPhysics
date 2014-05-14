@@ -515,6 +515,10 @@ RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliITSUTrackCooked *c) {
            //Warning("RefitAt","failed to estimate track !\n");
            return kFALSE;
         }
+        if (!t->Propagate(Double_t(phi), Double_t(r), GetBz())) {
+           //Warning("RefitAt","propagation failed !\n");
+           return kFALSE;
+        }
      }
      Double_t xx0 = (i > 2) ? 0.008 : 0.003;  // Rough layer thickness
      Double_t x0  = 9.36; // Radiation length of Si [cm]
