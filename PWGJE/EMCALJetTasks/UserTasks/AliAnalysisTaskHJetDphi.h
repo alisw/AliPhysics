@@ -49,12 +49,12 @@ class AliAnalysisTaskHJetDphi : public AliAnalysisTaskSE {
   void SetMaxVtxZ(Double_t z)                                  { fMaxVtxZ = z;                   }
   void SetFilterMask(UInt_t filter)                            { fFilterMask = filter;           }
   void SetRequireITSRefit(Bool_t r)                            { fRequireITSRefit = r;           }
+  void SetRequireSharedClsCut(Bool_t r)                        { fRequireSharedClsCut = r;       }
   void SetNonStdFile(char* s)                                  { fNonStdFile = s;                }
   void SetMcParticleArrName(char *s)                           { fMcParticleArrName = s;         }
   void SetEmbTrkArrName(char *s)                               { fEmbTrkArrName = s;             }
   void SetTrackArrName(char *s)                                { fTrackArrName=s;                }
   void SetSwitchOnAvoidTpcHole(Bool_t cut)                     { fSwitchOnAvoidTpcHole=cut;      }
-  void SetAvoidTpcHole(Bool_t cut)                             { fAvoidTpcHole=cut;              }
   void SetCutTPCBoundary(Bool_t cut)                           { fCutTPCBoundary=cut;            }
   void SetDistToTPCBoundary(Double_t dist)                     { fDistToTPCBoundary=dist;        }
   void SetTrkPtRange(Double_t min, Double_t max)               { fMinTrkPt=min; fMaxTrkPt=max;   }
@@ -101,7 +101,7 @@ protected:
   Int_t                             GetPtHardBin(Double_t ptHard);
 
  private:
-  Int_t                             fVerbosity;                  //! Control output
+  Int_t                             fVerbosity;                  //  Control output
   Bool_t                            fIsEmbedding;                //  Flag of embedding trains
   Int_t                             fAnaType;                    //  0-EMCal jet framework; 1-charged jet framework
   TString                           fPeriod;                     //  Run period
@@ -122,6 +122,7 @@ protected:
   AliESDtrackCuts                   *fEsdHybCut;                 //! Track cuts for complementary tracks in ESD
   UInt_t                            fFilterMask;                 //  Filter mask to select AOD tracks
   Bool_t                            fRequireITSRefit;            //  Flag to require ITS refit for AOD tracks
+  Bool_t                            fRequireSharedClsCut;        //  Flag to require cut on fraction of shared TPC clusters
   Bool_t                            fIsInit;                     //! Flag if all the arraies are successfully retrieved
   TString                           fNonStdFile;                 //  Name of delta aod file to catch the extension
   TString                           fMcParticleArrName;          //  Name of the input mc particles
@@ -134,7 +135,7 @@ protected:
   Int_t                             fTriggerTrkIndex;            //! Index of the trigger track in the event 
   Double_t                          fTriggerTrkPt;               //! Trigger track pt
   Bool_t                            fSwitchOnAvoidTpcHole;       //  Switch on to avoid TPC hole for the recoil jets
-  Bool_t                            fAvoidTpcHole;               //  Flag if TPC hole is present
+  Int_t                             fAvoidTpcHole;               //  Flag if TPC hole is present
   Bool_t                            fCutTPCBoundary;             //  Flag of reqiring trigger tracks stay away from TPC boundary
   Double_t                          fDistToTPCBoundary;          //  Distance to TPC boundary
   Double_t                          fMinTrkPt;                   //  Minimum pt for tracks
@@ -208,7 +209,7 @@ protected:
   AliAnalysisTaskHJetDphi(const AliAnalysisTaskHJetDphi&);            // not implemented
   AliAnalysisTaskHJetDphi &operator=(const AliAnalysisTaskHJetDphi&); // not implemented
 
-  ClassDef(AliAnalysisTaskHJetDphi, 1);
+  ClassDef(AliAnalysisTaskHJetDphi, 3);
 };
 
 #endif

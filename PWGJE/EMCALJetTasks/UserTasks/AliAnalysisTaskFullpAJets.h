@@ -21,11 +21,10 @@ class AliEMCALRecoUtils;
 class AliVCaloCells;
 class AliPicoTrack;
 
-#ifndef ALIANALYSISTASKSE_H
-#include "AliAnalysisTaskSE.h"
-#endif
+#include "AliAnalysisTaskEmcalJet.h"
+#include "AliAnalysisTaskEmcal.h"
 
-class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
+class AliAnalysisTaskFullpAJets : public AliAnalysisTaskEmcalJet
 {
     // AlipAJetData Helper Class
     class AlipAJetData
@@ -121,7 +120,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         void DoNEFQAPlots(Bool_t doNEFAna);
         void DoNEFSignalOnly(Bool_t doNEFSignalOnly);
         void DoNEFAnalysis(Double_t nefCut, Double_t signalCut, TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TObjArray *clusterList, TClonesArray *orgClusterList, AliVEvent *event, AliEMCALGeometry *geometry, AliEMCALRecoUtils *recoUtils, AliVCaloCells *cells);
-        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList);
+        void FillMiscJetStats(TClonesArray *jetList, Int_t *indexJetList, Int_t nIndexJetList, TClonesArray *trackList, TClonesArray *clusterList, Double_t *vertex);
         
         // Setters
         void SetName(const char *name);
@@ -201,6 +200,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         TH2F *fhJetConstituentCounts; //!
         TH2F *fhJetTracksCounts; //!
         TH2F *fhJetClustersCounts; //!
+        TH2F *fhJetPtZTrack; //!
+        TH2F *fhJetPtZCluster; //!
         
         // Histograms for Neutral Energy Fraction
         TList *fNEFOutput; //! NEF QA Plots
@@ -279,6 +280,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     // User Defined Sub-Routines
     void TrackCuts();
     void ClusterCuts();
+    void EventCounts();
     void TrackHisto();
     void ClusterHisto();
     void InitChargedJets();
@@ -303,6 +305,9 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     void EstimateFullRhoDijet();
     void EstimateFullRhokT();
     void EstimateFullRhoCMS();
+    
+    void FullJetEnergyDensityProfile();
+    void ChargedJetEnergyDensityProfile();
     
     void DeleteJetData(Bool_t EMCalOn);
     
@@ -430,6 +435,21 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
         fDoNEFSignalOnly = doNEF;
     };
 
+    inline void DoVertexRCut(Bool_t doCut)
+    {
+        fDoVertexRCut = doCut;
+    };
+    
+    inline void SetMCParticleLevel(Bool_t mcPartLevel)
+    {
+        fMCPartLevel = mcPartLevel;
+    };
+    
+    inline void SetJetRAcceptance(Double_t r)
+    {
+        fJetRAccept = r;
+    };
+    
     private:
     TList *fOutput; //! Output list
     TList *flTrack; //! Track QA List
@@ -450,6 +470,15 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     TH1F *fhCentrality; //!
     TH1F *fhEMCalCellCounts;  //! Plots the distribution of cluster counts in the EMCal. Used to determine which cells are hot (if any...)
     
+    TH1F *fhChargeAndNeutralEvents; //!
+    TH1F *fhChargeOnlyEvents; //!
+    TH1F *fhNeutralOnlyEvents; //!
+    TH1F *fhNothingEvents; //!
+    TH1F *fhEMCalChargeAndNeutralEvents; //!
+    TH1F *fhEMCalChargeOnlyEvents; //!
+    TH1F *fhEMCalNeutralOnlyEvents; //!
+    TH1F *fhEMCalNothingEvents; //!
+
     TH2F *fhTrackEtaPhi;  //!
     TH2F *fhTrackPhiPt;  //!
     TH2F *fhTrackEtaPt;  //!
@@ -473,6 +502,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     TProfile2D *fpTrackPtProfile;  //!
     TProfile2D *fpClusterPtProfile;  //!
+    
+    TProfile3D *fpFullJetEDProfile;  //!
+    TProfile3D *fpChargedJetEDProfile;  //!
+    TProfile3D *fpChargedJetEDProfileScaled;  //!
     
     AlipAJetHistos *fTPCRawJets;  //!
     AlipAJetHistos *fEMCalRawJets;  //!
@@ -523,6 +556,8 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Bool_t fTrackQA;
     Bool_t fClusterQA;
     Int_t fCalculateRhoJet;
+    Bool_t fDoVertexRCut;
+    Bool_t fMCPartLevel;
     
     // Protected Global Variables
     Double_t fEMCalPhiMin;
@@ -545,7 +580,10 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     Double_t fParticlePtUp;
     Int_t fParticlePtBins;
 
-    Double_t fJetR;
+    Double_t fJetR;  // Jet resolution parameter
+    Double_t fJetRAccept;  // Jet radius used for additional acceptance constraint. Used to restrict eta acceptance in full ana
+    Double_t fFullEDJetR;  // Radius used to calculate boundaries for jet within EMCal
+    Double_t fChargedEDJetR;  // Radius used to calculate boundaries (in eta) for jet within TPC
     Double_t fJetRForRho;  // Required distance a track/cluster must be away from a jet for rho calculation
     Double_t fJetAreaCutFrac;  // Fudge factor for selecting on jets with threshold Pt or higher
     Double_t fJetAreaThreshold;
@@ -567,6 +605,7 @@ class AliAnalysisTaskFullpAJets : public AliAnalysisTaskSE
     
     // General Global variables
     Int_t fnTracks;
+    Int_t fnEMCalTracks;
     Int_t fnClusters;
     Int_t fnCaloClusters;
     Int_t fnAKTFullJets;

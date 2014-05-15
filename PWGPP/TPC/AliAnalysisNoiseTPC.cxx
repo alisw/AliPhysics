@@ -245,7 +245,7 @@ void AliAnalysisNoiseTPC::UserExec(Option_t *)
   Bool_t hasVtx = vertex;
   if (trackCounter > 98) trackCounter = 98;
   //Double_t vecNoise[7] = {fESD->GetRunNumber(),fESD->GetEventNumberInFile(), trackCounter, isSelectedMB, isSelectedWarm, hasVtx, fESD->GetTimeStamp()};
-  Double_t vecNoise[6] = {fESD->GetEventNumberInFile(), trackCounter, isSelectedMB, isSelectedWarm, hasVtx, fESD->GetTimeStamp()};
+  Double_t vecNoise[6] = {static_cast<Double_t>(fESD->GetEventNumberInFile()), static_cast<Double_t>(trackCounter), static_cast<Double_t>(isSelectedMB), static_cast<Double_t>(isSelectedWarm), static_cast<Double_t>(hasVtx), static_cast<Double_t>(fESD->GetTimeStamp())};
   fHistNoiseTracks->Fill(vecNoise);
 
 

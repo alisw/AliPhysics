@@ -18,9 +18,13 @@ class AliAODTrack;
 class AliAODVertex;
 class AliEventPoolManager;
 class TFormula;
-//class AliAnalysisUtils;
+class AliAnalysisUtils;
 class LRCParticlePID;
 class AliVParticle;
+class AliCFContainer;
+class AliCFGridSparse;
+class THnBase;
+class AliTHn;
 
 
 #include <TObject.h> //LRCParticlePID is a derived class from"TObject"
@@ -34,6 +38,8 @@ class AliVParticle;
 #include "AliVParticle.h"
 #include "TParticle.h"
 #include "AliLog.h"
+#include "AliTHn.h"
+
 
 
 #ifndef ALIANALYSISTASKSE_H
@@ -52,9 +58,10 @@ namespace AliPIDNameSpace {
     
   enum AliDetectorType
   {
-    TPC = 0,
-    TOF,
-    NDetectors
+    fITS = 0,
+    fTPC,
+    fTOF,
+    fNDetectors
   };
   
   
@@ -91,18 +98,28 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     virtual void    doAODevent();
     virtual void    doMCAODevent();
     virtual void     Terminate(Option_t *);
-    void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
-    void SetAsymmetricBin(THnSparse *h,Int_t axisno,Double_t *arraybin,Int_t arraybinsize,TString axisTitle); 
+  void	   SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
 
+  void SettwoTrackEfficiencyCutDataReco(Bool_t twoTrackEfficiencyCutDataReco,Float_t twoTrackEfficiencyCutValue1)
+  {
+    ftwoTrackEfficiencyCutDataReco=twoTrackEfficiencyCutDataReco;
+    twoTrackEfficiencyCutValue=twoTrackEfficiencyCutValue1;
+  }
+  void SetVertextype(Int_t Vertextype){fVertextype=Vertextype;}                                                 //Check it every time
+    void SetZvtxcut(Double_t zvtxcut) {fzvtxcut=zvtxcut;}
+    void SetCustomBinning(TString receivedCustomBinning) { fCustomBinning = receivedCustomBinning; }
+    void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
   void SetAnalysisType(TString AnalysisType){fAnalysisType=AnalysisType;}
   void SetFilterBit(Int_t FilterBit) {fFilterBit=FilterBit;}
+  void SetTrackStatus(UInt_t status) { fTrackStatus = status; }
   void SetfilltrigassoUNID(Bool_t filltrigassoUNID){ffilltrigassoUNID=filltrigassoUNID;}
   void SetfilltrigUNIDassoID(Bool_t filltrigUNIDassoID){ffilltrigUNIDassoID=filltrigUNIDassoID;}
   void SetfilltrigIDassoUNID(Bool_t filltrigIDassoUNID){ffilltrigIDassoUNID=filltrigIDassoUNID;}
   void SetfilltrigIDassoID(Bool_t filltrigIDassoID){ ffilltrigIDassoID=filltrigIDassoID;}
   void SetfilltrigIDassoIDMCTRUTH(Bool_t filltrigIDassoIDMCTRUTH){ffilltrigIDassoIDMCTRUTH=filltrigIDassoIDMCTRUTH;}
+  void SetSelectHighestPtTrig(Bool_t SelectHighestPtTrig){fSelectHighestPtTrig=SelectHighestPtTrig;}
   void SetTriggerSpeciesSelection(Bool_t TriggerSpeciesSelection,Int_t TriggerSpecies,Bool_t containPIDtrig){
     fTriggerSpeciesSelection=TriggerSpeciesSelection;//if it is KTRUE then Set containPIDtrig=kFALSE
     fTriggerSpecies=TriggerSpecies;
@@ -114,7 +131,11 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     fAssociatedSpecies=AssociatedSpecies;
     fcontainPIDasso=containPIDasso;
   }
-  // void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
+
+  void SettingChargeCounting(Int_t val) {SetChargeAxis=val;}
+
+ void SetFIllPIDQAHistos(Bool_t FIllPIDQAHistos){fFIllPIDQAHistos=FIllPIDQAHistos;}
+  void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
   {
     fminPt=minPt;
@@ -139,9 +160,20 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     ffillhistQAReco=fillhistQAReco;
     ffillhistQATruth=fillhistQATruth;
   }
+  void SetPtordering(Bool_t PtOrderDataReco,Bool_t PtOrderMCTruth)
+  {
+    fPtOrderDataReco=PtOrderDataReco;
+    fPtOrderMCTruth=PtOrderMCTruth;
+  }
+  void SetWeightPerEvent(Bool_t flag) {  fWeightPerEvent = flag;}
   void Setselectprimarydatareco(Bool_t onlyprimarydatareco) {fonlyprimarydatareco=onlyprimarydatareco;}
   void SetselectprimaryTruth(Bool_t selectprimaryTruth) {fselectprimaryTruth=selectprimaryTruth;}
   void SetCombinedNSigmaCut(Double_t NSigmaPID) {fNSigmaPID=NSigmaPID;}
+  void SetHighPtKaonNSigmaPID(Float_t HighPtKaonSigma,Float_t HighPtKaonNSigmaPID)
+  {
+    fHighPtKaonSigma=HighPtKaonSigma;
+    fHighPtKaonNSigmaPID=HighPtKaonNSigmaPID;
+  }
   void IgnoreoverlappedTracks(Bool_t UseExclusiveNSigma){fUseExclusiveNSigma=UseExclusiveNSigma;}
   void SetRemoveTracksT0Fill( Bool_t RemoveTracksT0Fill){fRemoveTracksT0Fill=RemoveTracksT0Fill;}
   void SetPairSelectCharge(Int_t SelectCharge){fSelectCharge=SelectCharge;}
@@ -190,28 +222,38 @@ fPtTOFPIDmax=PtTOFPIDmax;
  private:
  //histograms
     TList *fOutput;        //! Output list
+    TList *fOutputList;        //! Output list
+
     TString    fCentralityMethod;     // Method to determine centrality
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
     AliAODVertex* trkVtx;//!
     Float_t zvtx;
     Int_t    fFilterBit;         // track selection cuts
+     UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
+    Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
+    Int_t fVertextype;
     Double_t fzvtxcut;
     Bool_t ffilltrigassoUNID;
     Bool_t ffilltrigUNIDassoID;
     Bool_t ffilltrigIDassoUNID;
     Bool_t ffilltrigIDassoID;
     Bool_t ffilltrigIDassoIDMCTRUTH;
+    Int_t fMaxNofMixingTracks;
     Bool_t fPtOrderMCTruth;
+    Bool_t fPtOrderDataReco;
+    Bool_t fWeightPerEvent;
     Bool_t fTriggerSpeciesSelection;
     Bool_t fAssociatedSpeciesSelection;
     Int_t fTriggerSpecies;
     Int_t fAssociatedSpecies;
     TString fCustomBinning;//for setting customized binning
     TString fBinningString;//final binning string
+    Bool_t fSelectHighestPtTrig;
     Bool_t fcontainPIDtrig;
     Bool_t fcontainPIDasso;
-    // Bool_t frejectPileUp;
+    Int_t SetChargeAxis;
+     Bool_t frejectPileUp;
     Float_t fminPt;
     Float_t fmaxPt;
     Float_t fmineta;
@@ -252,8 +294,14 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fPioncont;//!
     TH2F *fKaoncont;//!
     TH2F *fProtoncont;//!
+    TH2F *fUNIDcont;//!
+    TH2F *fEventno;//!
+    TH2F *fEventnobaryon;//!
+    TH2F *fEventnomeson;//!
+    TH2F *fhistJetTrigestimate;//!
 
     TH2D* fCentralityCorrelation;  //! centrality vs multiplicity
+    TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
     TH2F *fHistoTPCdEdx;//!
     TH2F *fHistoTOFbeta;//!
@@ -272,36 +320,34 @@ fPtTOFPIDmax=PtTOFPIDmax;
     // TH3F *fHistocentNSigmaTPC;//! nsigma TPC
     // TH3F *fHistocentNSigmaTOF;//! nsigma TOF 
     
-    THnSparse *fCorrelatonTruthPrimary;//!
-    THnSparse *fCorrelatonTruthPrimarymix;//!
-    THnSparse *fTHnCorrUNID;//!
-    THnSparse *fTHnCorrUNIDmix;//!
-    THnSparse *fTHnCorrID;//!
-    THnSparse *fTHnCorrIDmix;//!
-    THnSparse *fTHnCorrIDUNID;//!
-    THnSparse *fTHnCorrIDUNIDmix;//!
-    THnSparse *fTHnTrigcount;//!
-    THnSparse *fTHnTrigcountMCTruthPrim;//!
+    AliTHn *fCorrelatonTruthPrimary;//!
+    AliTHn *fCorrelatonTruthPrimarymix;//!
+    AliTHn *fTHnCorrUNID;//!
+    AliTHn *fTHnCorrUNIDmix;//!
+    AliTHn *fTHnCorrID;//!
+    AliTHn *fTHnCorrIDmix;//!
+    AliTHn *fTHnCorrIDUNID;//!
+    AliTHn *fTHnCorrIDUNIDmix;//!
+    AliTHn *fTHnTrigcount;//!
+    AliTHn *fTHnTrigcountMCTruthPrim;//!
+    AliTHn* fTrackHistEfficiency[6]; //! container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species:::::::::0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
 
     
     TH1F *fHistQA[16]; //!
      
-    THnSparse *fTHnrecomatchedallPid[6];//!                 //0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
-    THnSparse *fTHngenprimPidTruth[6];//!
+   
     THnSparse *effcorection[6];//!
     // THnF *effmap[6];  
-    //TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
     Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield);
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
 
 
-  void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+  void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
 //Mixing functions
   void DefineEventPool();
-  // AliAnalysisUtils *fUtils;
   AliEventPoolManager    *fPoolMgr;//! 
   TClonesArray          *fArrayMC;//!
   TString          fAnalysisType;          // "MC", "ESD", "AOD"
@@ -312,14 +358,15 @@ fPtTOFPIDmax=PtTOFPIDmax;
   //PID functions
     Bool_t HasTPCPID(AliAODTrack *track) const; // has TPC PID
     Bool_t HasTOFPID(AliAODTrack *track) const; // has TOF PID
-    Float_t GetBeta(AliAODTrack *track);
-    void CalculateNSigmas(AliAODTrack *track);
-    Int_t FindMinNSigma(AliAODTrack *track);
-    Bool_t* GetDoubleCounting(AliAODTrack * trk);
-    Int_t GetParticle(AliAODTrack * trk);  
-   
-   
-     	   
+    Double_t GetBeta(AliAODTrack *track);
+    void CalculateNSigmas(AliAODTrack *track, Bool_t FIllQAHistos);
+    Int_t FindMinNSigma(AliAODTrack *track, Bool_t FIllQAHistos);
+    Bool_t* GetDoubleCounting(AliAODTrack * trk, Bool_t FIllQAHistos);
+    Int_t GetParticle(AliAODTrack * trk, Bool_t FIllQAHistos);  
+ 
+     TH2F* GetHistogram2D(const char * name);//return histogram "name" from fOutputList
+
+     Bool_t ftwoTrackEfficiencyCutDataReco; 	   
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
   AliPIDResponse *fPID; //! PID
@@ -328,7 +375,10 @@ fPtTOFPIDmax=PtTOFPIDmax;
   Float_t fPtTOFPIDmax; //uper pt bound for the TOCTOF combined circular pid
   Bool_t fRequestTOFPID;//if true returns kSpUndefined if the TOF signal is missing
   PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
+  Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
+  Float_t fHighPtKaonNSigmaPID;// number of sigma for PID cut for Kaons above fHighPtKaonSigma(-1 default, no cut applied)
+  Float_t fHighPtKaonSigma;//lower pt bound for the fHighPtKaonNSigmaPID to be set >0(i.e. to make it applicable)
   Bool_t fUseExclusiveNSigma;//if true returns the identity only if no double counting(i.e not in the overlap area)
   Bool_t fRemoveTracksT0Fill;//if true remove tracks for which only StartTime from To-Fill is available (worst resolution)
  Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
@@ -345,12 +395,10 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fRemoveDuplicates;// remove particles with the same label (double reconstruction)
     Bool_t fapplyTrigefficiency;//if kTRUE then eff correction calculation starts
     Bool_t fapplyAssoefficiency;//if kTRUE then eff correction calculation starts
-    Bool_t ffillefficiency;//if kTRUE then THNsparses used for eff. calculation are filled up
-    Bool_t fSkipAssoEff;
-    Bool_t fSkipTrigEff;
+    Bool_t ffillefficiency;  //if kTRUE then THNsparses used for eff. calculation are filled up
     Bool_t fmesoneffrequired;
     Bool_t fkaonprotoneffrequired;
-    //  AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
+   AliAnalysisUtils*     fAnalysisUtils;      // points to class with common analysis utilities
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
 
 
@@ -360,6 +408,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
   //Int_t fPIDMethod; // PID method
 
  //functions
+  Bool_t CheckTrack(AliAODTrack * part);
   Float_t PhiRange(Float_t DPhi);
   Float_t GetInvMassSquared(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
 Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);

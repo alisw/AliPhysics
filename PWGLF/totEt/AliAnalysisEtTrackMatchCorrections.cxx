@@ -14,7 +14,16 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections() : TName
     ,fMeanNeutral(0)
     ,fMeanGamma(0)
     ,fMeanSecondary(0)
-{}
+								      // ,fNeutronCorrection(0)
+{
+  //fNeutronCorrection = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  for(int i=0;i<20;i++){
+    fNeutronCorrection[i] = 0.0;
+    fHadronCorrection[i] = 0.0;
+    fKaonCorrection[i] = 0.0;
+    fSecondaryCorrection[i] = 0.0;
+  }
+}
 
 AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const TString name, const TF1 &chargedContr, const TF1 &neutralContr, const TF1 &gammaContr, const TF1 &secondaryContr, const TH2F &recoEff,
 								       Double_t meanCharged, Double_t meanNeutral, Double_t meanGammas, Double_t meanSecondary) : TNamed(name,name)
@@ -27,7 +36,14 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const TSt
 																				,fMeanNeutral(meanNeutral)
 																				,fMeanGamma(meanGammas)
 																				,fMeanSecondary(meanSecondary)
-{}
+{
+  for(int i=0;i<20;i++){
+    fNeutronCorrection[i] = 0.0;
+    fHadronCorrection[i] = 0.0;
+    fKaonCorrection[i] = 0.0;
+    fSecondaryCorrection[i] = 0.0;
+  }
+}
 
 //! Copy constructor
 AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const AliAnalysisEtTrackMatchCorrections &obj) : TNamed(obj)
@@ -41,7 +57,14 @@ AliAnalysisEtTrackMatchCorrections::AliAnalysisEtTrackMatchCorrections(const Ali
     ,fMeanGamma(obj.fMeanGamma)
     ,fMeanSecondary(obj.fMeanSecondary)
     
-{}
+{
+  for(int i=0;i<20;i++){
+    fNeutronCorrection[i] = obj.fNeutronCorrection[i];
+    fHadronCorrection[i] = obj.fHadronCorrection[i];
+    fKaonCorrection[i] = obj.fKaonCorrection[i];
+    fSecondaryCorrection[i] = obj.fSecondaryCorrection[i];
+  }
+}
 
 //! Destructor
 AliAnalysisEtTrackMatchCorrections::~AliAnalysisEtTrackMatchCorrections()

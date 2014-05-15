@@ -27,7 +27,9 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 						     TString     trigClass           = "",
 						     TString     kEmcalTriggers      = "",
 						     TString     kPeriod             = "LHC11h",
-						     Int_t       recombScheme        = 0
+						     Int_t       recombScheme        = 0,
+						     TString     tag1                = "Jet",
+						     TString     tag2                = ""
 						     ) {
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -36,8 +38,6 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
       Error("AddTaskEmcalJetTagger","No analysis manager found.");
       return 0;
     }
-  Bool_t ismc=kFALSE;
-  ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
@@ -50,14 +50,25 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   // #### Add necessary jet finder tasks
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
 
+  if(tag2.IsNull()) tag2=tag1;
+
   AliEmcalJetTask* jetFinderTaskBase = 0x0;
   if (strcmp(type,"TPC")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data());
   else if (strcmp(type,"EMCAL")==0)
-    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme);
+    jetFinderTaskBase = AddTaskEmcalJet(kTracksName, kClusName, kANTIKT, R, kFULLJETS, ptminTrack, etminClus,0.005,recombScheme,tag1.Data());
+  jetFinderTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskBase->SetMinJetPt(0.);
 
-  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme);
+  AliEmcalJetTask* jetFinderTaskTag  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTag, etminClus,0.005,recombScheme,tag2.Data());
+  jetFinderTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderTaskTag->SetMinJetPt(0.);
 
+  if(tag1.EqualTo("JetPythia"))
+    jetFinderTaskBase->SelectConstituents(TObject::kBitMask, 0);
+  if(tag2.EqualTo("JetPythia"))
+    jetFinderTaskTag->SelectConstituents(TObject::kBitMask, 0);
+  
   TString strJetsBase = jetFinderTaskBase->GetName();
   TString strJetsTag  = jetFinderTaskTag->GetName();
 
@@ -66,7 +77,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
   TString rhoNameBase = "";
   TString rhoNameTag  = "";
   if(rhoType==1) {
-    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme);
+    rhoTaskBase = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTrack,etminClus,recombScheme,tag1);
     if(rhoTaskBase) {
       rhoTaskBase->SetCentralityEstimator(CentEst);  
       rhoTaskBase->SelectCollisionCandidates(AliVEvent::kAny);
@@ -76,7 +87,7 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(TString     kTracksName    
 	rhoNameBase = rhoTaskBase->GetOutRhoScaledName();
     }
     if(rhoTaskTag) {
-      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.);
+      rhoTaskTag = AttachRhoTaskTagger(kPeriod,kTracksName,kClusName,R,ptminTag,0.,recombScheme,tag2);
       rhoTaskTag->SetCentralityEstimator(CentEst); 
       rhoTaskTag->SelectCollisionCandidates(AliVEvent::kAny);
       rhoNameTag  = rhoTaskTag->GetOutRhoName();
@@ -122,8 +133,6 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
       Error("AddTaskEmcalJetTagger","No analysis manager found.");
       return 0;
     }
-  Bool_t ismc=kFALSE;
-  ismc = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================
@@ -153,7 +162,6 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
     jetContBase->SetRhoName(nrhoBase);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
-    jetContBase->SetZLeadingCut(0.98,0.98);
   }
 
   AliJetContainer *jetContTag = task->AddJetContainer(njetsTag,"TPC",R);
@@ -162,17 +170,12 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
     jetContTag->ConnectParticleContainer(trackCont);
     jetContTag->ConnectClusterContainer(clusterCont);
   }
-
   for(Int_t i=0; i<2; i++) {
     task->SetPercAreaCut(0.6, i);
   }
-
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());
-
   task->SetCentralityEstimator(CentEst);
-
   task->SelectCollisionCandidates(pSel);
-
   task->SetUseAliAnaUtils(kFALSE);
 
   mgr->AddTask(task);
@@ -187,17 +190,17 @@ AliAnalysisTaskEmcalJetTagger* AddTaskEmcalJetTagger(const char * njetsBase,
   mgr->ConnectOutput(task,1,coutput1);
 
   return task;  
-
 }
 
-
+//Attach rho task
 AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "LHC13b",
 					    TString     kTracksName         = "PicoTracks", 
 					    TString     kClusName           = "caloClustersCorr",
 					    Double_t    R                   = 0.4, 
 					    Double_t    ptminTrack          = 0.15, 
 					    Double_t    etminClus           = 0.3,
-					    Int_t       recombScheme        = 0
+					    Int_t       recombScheme        = 0,
+					    TString     tag                 = "Jet"
 					    ) {
   
   AliAnalysisTaskRhoBase *rhoTaskBase;
@@ -207,11 +210,19 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
   // Add kt jet finder and rho task in case we want background subtraction
   AliEmcalJetTask *jetFinderKt;
   AliEmcalJetTask *jetFinderAKt;
-  jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
-  jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme);
+  jetFinderKt   = AddTaskEmcalJet(kTracksName, "", kKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+  jetFinderAKt  = AddTaskEmcalJet(kTracksName, "", kANTIKT, R, kCHARGEDJETS, ptminTrack, etminClus,0.005,recombScheme,tag.Data());
+  jetFinderKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderAKt->SelectCollisionCandidates(AliVEvent::kAny);
+  jetFinderKt->SetMinJetPt(0.);
+  jetFinderAKt->SetMinJetPt(0.);
+
+  if(tag.EqualTo("JetPythia")) {
+    jetFinderKt->SelectConstituents(TObject::kBitMask, 0);
+    jetFinderAKt->SelectConstituents(TObject::kBitMask, 0);
+  }
 
   if(kPeriod.EqualTo("lhc13b") || kPeriod.EqualTo("lhc13c") || kPeriod.EqualTo("lhc13d") || kPeriod.EqualTo("lhc13e") || kPeriod.EqualTo("lhc13f")) {
-
 
     jetFinderKt->SetMinJetPt(0.);
 
@@ -235,7 +246,6 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
 			       kTRUE
 			       );
     rhoTaskSparse->SetUseAliAnaUtils(kTRUE);
-
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTaskSparse;
   }
   else if(kPeriod.EqualTo("lhc10h") || kPeriod.EqualTo("lhc11h") ) {
@@ -246,7 +256,8 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
     sfunc->SetParameter(2,1.76458);
     sfunc->SetParameter(1,-0.0111656);
     sfunc->SetParameter(0,0.000107296);
-    TString rhoname = Form("RhoR%03dptmin%3.0f%s",(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    TString rhoname = Form("%sRhoR%03dptmin%3.0f%s",tag.Data(),(int)(100*R),ptminTrack*1000.0,kTracksName.Data());
+    Printf("rhoname: %s",rhoname.Data());
     AliAnalysisTaskRho *rhoTask = AddTaskRho(
 					     jetFinderKt->GetName(), 
 					     kTracksName, 
@@ -262,9 +273,7 @@ AliAnalysisTaskRhoBase *AttachRhoTaskTagger(TString     kPeriod             = "L
     rhoTask->SetHistoBins(100,0,250);
 
     rhoTaskBase = dynamic_cast<AliAnalysisTaskRhoBase*>rhoTask;
-
   }
 
   return rhoTaskBase;
-
 }

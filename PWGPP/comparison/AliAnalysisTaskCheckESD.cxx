@@ -377,8 +377,8 @@ void AliAnalysisTaskCheckESD::UserExec(Option_t */*option*/)
     }
 
     // dE/dx and TOF
-    Double_t time[AliPID::kSPECIES];
-    track->GetIntegratedTimes(time);
+    Double_t time[AliPID::kSPECIESC];
+    track->GetIntegratedTimes(time,AliPID::kSPECIESC);
     if (iGen == iRec) {
       fDEdxRight->Fill(particle->P(), track->GetTPCsignal());
       if ((track->GetStatus() & AliESDtrack::kTOFpid) != 0) {

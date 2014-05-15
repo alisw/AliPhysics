@@ -18,6 +18,7 @@
 #include "AliGenEventHeader.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
+#include "AliGenEventHeaderTunedPbPb.h"
 
 ClassImp(AliForwardMCFlowTaskQC)
 #if 0
@@ -29,6 +30,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC()
     fBinsForwardTR(),      // List of FMDTR analysis objects
     fBinsCentralTR(),      // List of SPDTR analysis objects
     fBinsMC(),             // List of MC particle analysis objects
+    fAODMCHeader(),        // MC Header
     fHistdNdedpMC(),       // MC particle d^2N/detadphi histogram
     fHistFMDMCCorr(),      // FMD MC correlation
     fHistSPDMCCorr(),      // SPD MC correlation
@@ -49,6 +51,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const char* name)
     fBinsForwardTR(),      // List of FMDTR analysis objects
     fBinsCentralTR(),      // List of SPDTR analysis objects
     fBinsMC(),             // List of MC particles analysis objects
+    fAODMCHeader(0),       // MC Header
     fHistdNdedpMC(),       // MC particles d^2N/detadphi histogram
     fHistFMDMCCorr(),      // FMD MC correlation
     fHistSPDMCCorr(),      // SPD MC correlation
@@ -84,6 +87,7 @@ AliForwardMCFlowTaskQC::AliForwardMCFlowTaskQC(const AliForwardMCFlowTaskQC& o)
     fBinsForwardTR(),                      // List of FMDTR analysis objects
     fBinsCentralTR(),                      // List of SPDTR analysis objects
     fBinsMC(),                             // List of MC particles analysis objects
+    fAODMCHeader(o.fAODMCHeader),          // MC Header
     fHistdNdedpMC(o.fHistdNdedpMC),        // MC particles d^2N/detadphi histogram
     fHistFMDMCCorr(o.fHistFMDMCCorr),      // FMD MC correlation
     fHistSPDMCCorr(o.fHistSPDMCCorr),      // SPD MC correlation
@@ -109,6 +113,7 @@ AliForwardMCFlowTaskQC::operator=(const AliForwardMCFlowTaskQC& o)
   //    o Object to copy from 
   //
   if (&o == this) return *this;
+  fAODMCHeader     = o.fAODMCHeader;
   fHistdNdedpMC    = o.fHistdNdedpMC;
   fHistFMDMCCorr   = o.fHistFMDMCCorr;
   fHistSPDMCCorr   = o.fHistSPDMCCorr;
@@ -136,14 +141,17 @@ void AliForwardMCFlowTaskQC::InitVertexBins()
     // FMD
     if ((fFlowFlags & kFMD)) {
       fBinsForwardTR.Add(new VertexBin(vL, vH, fMaxMoment, "FMDTR", fFlowFlags, fFMDCut, fEtaGap));
-      if (!(fFlowFlags & k3Cor)) fBinsCentralTR.Add(new VertexBin(vL, vH, fMaxMoment, "SPDTR", fFlowFlags, fSPDCut, fEtaGap));
+      if (!(fFlowFlags & k3Cor)) 
+        fBinsCentralTR.Add(new VertexBin(vL, vH, fMaxMoment, "SPDTR", fFlowFlags|kSPD, fSPDCut, fEtaGap));
       if (isNUA) fFlowFlags ^= kNUAcorr;
-      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-FMD", fFlowFlags, -1, fEtaGap));
+      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-FMD", fFlowFlags|kMC, -1, fEtaGap));
+      if ((fFlowFlags & kStdQC)) 
+	fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-SPD", fFlowFlags|kMC|kSPD, -1, fEtaGap));
       if (isNUA) fFlowFlags ^= kNUAcorr;
     }
     // VZERO
     else if ((fFlowFlags & kVZERO)) {
-      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-VZERO", fFlowFlags, -1, fEtaGap));
+      fBinsMC.Add(new VertexBin(vL, vH, fMaxMoment, "MC-VZERO", fFlowFlags|kMC, -1, fEtaGap));
     }
   }
 }
@@ -265,6 +273,21 @@ void AliForwardMCFlowTaskQC::Finalize()
   return;
 }
 //_____________________________________________________________________
+Bool_t AliForwardMCFlowTaskQC::CheckEvent(const AliAODForwardMult* aodfm) 
+{
+  // 
+  //  Function to check that an AOD event meets the cuts
+  //
+  //  Parameters: 
+  //   AliAODForwardMult: forward mult object with trigger and vertex info
+  //
+  //  Return: false if there is no trigger or if the centrality or vertex
+  //  is out of range. Otherwise true.
+  //
+  fAODMCHeader = static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+  return AliForwardFlowTaskQC::CheckEvent(aodfm);
+}
+//_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::CheckTrigger(const AliAODForwardMult* aodfm) const 
 {
   //
@@ -292,21 +315,21 @@ Bool_t AliForwardMCFlowTaskQC::GetCentrality(const AliAODForwardMult* aodfm)
   //
   // Returns true when centrality is set.
   //
-//  fCent = 2.5;
-//  return kTRUE;
-  if (fUseImpactPar) {
-    fCent = GetCentFromB();
-    if (fCentAxis->GetXmin() > fCent || fCent >= fCentAxis->GetXmax()) {
-      fHistEventSel->Fill(kInvCent);
-      return kFALSE;
-    }
-    if (fCent != 0) return kTRUE;
-    else {
-      fHistEventSel->Fill(kNoCent);
-      return kFALSE;
-    }
-  } else 
-    return AliForwardFlowTaskQC::GetCentrality(aodfm);
+  AliGenEventHeaderTunedPbPb* header = 
+    dynamic_cast<AliGenEventHeaderTunedPbPb*>(fAODMCHeader->GetCocktailHeader(0));
+  if (header) fCent = header->GetCentrality();
+  else if (fUseImpactPar) fCent = GetCentFromB();
+  else return AliForwardFlowTaskQC::GetCentrality(aodfm);
+  
+  if (fCentAxis->GetXmin() > fCent || fCent >= fCentAxis->GetXmax()) {
+    fHistEventSel->Fill(kInvCent);
+    return kFALSE;
+  }
+  if (fCent != 0) return kTRUE;
+  else {
+    fHistEventSel->Fill(kNoCent);
+    return kFALSE;
+  }
 }
 //_____________________________________________________________________
 Bool_t AliForwardMCFlowTaskQC::GetVertex(const AliAODForwardMult* aodfm)
@@ -320,10 +343,8 @@ Bool_t AliForwardMCFlowTaskQC::GetVertex(const AliAODForwardMult* aodfm)
   // Returns true if vertex is determined
   //
   if (fUseMCVertex) {
-    AliAODMCHeader* header = 
-      static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
-    if (header) {
-      fVtx = header->GetVtxZ();
+    if (fAODMCHeader) {
+      fVtx = fAODMCHeader->GetVtxZ();
       if (fVtx < fVtxAxis->GetXmin() || fVtx > fVtxAxis->GetXmax()) {
         fHistEventSel->Fill(kInvVtx);
 	return kFALSE;
@@ -349,26 +370,21 @@ Bool_t AliForwardMCFlowTaskQC::FillMCHist()
 
   //retreive MC particles from event
   TClonesArray* mcArray = 
-    static_cast<TClonesArray*>(fAOD->FindListObject(
-                               AliAODMCParticle::StdBranchName()));
+    static_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
   if(!mcArray){
     AliWarning("No MC array found in AOD. Try making it again.");
     return kFALSE;
   }
 
-  AliAODMCHeader* header = 
-    static_cast<AliAODMCHeader*>(fAOD->FindListObject(
-                                  AliAODMCHeader::StdBranchName()));
-  if (!header) 
-    AliWarning("No header file found.");
+  if (!fAODMCHeader) AliWarning("No MC header found.");
 
   Int_t ntracks = mcArray->GetEntriesFast();
 //  Double_t rp = -1, b = -1;
-  if (header) {
+  if (fAODMCHeader) {
 //    rp = header->GetReactionPlaneAngle();
 //    b = header->GetImpactParameter();
-    if (header->GetNCocktailHeaders() > 1) {
-      ntracks = header->GetCocktailHeader(0)->NProduced();
+    if (fAODMCHeader->GetNCocktailHeaders() > 1) {
+      ntracks = fAODMCHeader->GetCocktailHeader(0)->NProduced();
     }
   }
   
@@ -422,11 +438,8 @@ Double_t AliForwardMCFlowTaskQC::GetCentFromB() const
   // Get centrality from MC impact parameter.
   //
   Double_t cent = -1.;
-  AliAODMCHeader* header = 
-    static_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::
-						      StdBranchName()));
-  if (!header) return cent;
-  Double_t b = header->GetImpactParameter();
+  if (!fAODMCHeader) return cent;
+  Double_t b = fAODMCHeader->GetImpactParameter();
   cent = fImpactParToCent->Eval(b);
 
   return cent;

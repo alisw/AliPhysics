@@ -17,6 +17,7 @@
 #pragma link C++ class AliAnalysisTaskEfficiencyBFPsi+;
 #pragma link C++ class AliAnalysisTaskEffContBF+;
 #pragma link C++ class AliAnalysisTaskToyModel+;
+#pragma link C++ class AliAnalysisTaskAODFilterBitQA+;
 
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;
@@ -33,6 +34,7 @@
 #pragma link C++ class AliEbyEHigherMomentsEffContTask+;
 #pragma link C++ class AliHigherMomentsToyModel+;
 #pragma link C++ class AliEbyEMultFluctuationTask+;
+#pragma link C++ class AliEbyEHigherMomentsTaskPID+;
 
 #pragma link C++ class AliAnalysisTaskPtFluc+;
 #pragma link C++ class AliAnalysisTaskPtFlucPbPb+;

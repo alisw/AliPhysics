@@ -1105,7 +1105,7 @@ void drawProjections(TH2D *gHistBalanceFunction2D = 0x0,
 
       //for 3<pT,assoc<8<pT,trig<15
       if(ptTriggerMax>10){
-	rangeReduced = 0.4;
+	rangeReduced = 0.3;
       }
 
       cout<<"Use reduced range = "<<rangeReduced<<endl;
@@ -1413,7 +1413,7 @@ void drawBFPsi2DFromCorrelationFunctions(const char* lhcPeriod = "LHC10h",
   gHistNN->Sumw2();
   gHistNP->Add(gHistNN,-1);
   gHistPN->Add(gHistNP);
-  gHistPN->Scale(0.5);
+  //gHistPN->Scale(0.5);//not needed anymore, since pT,assoc < pT,trig in all pT bins
   TH2D *gHistBalanceFunction2D = dynamic_cast<TH2D *>(gHistPN->Clone());
   gHistBalanceFunction2D->SetStats(kFALSE);
   gHistBalanceFunction2D->GetXaxis()->SetTitle("#Delta#eta");
@@ -1539,6 +1539,8 @@ void mergeBFPsi2D(TString momDirectory = "./",
   //Author: Panos.Christakoglou@nikhef.nl
   TGaxis::SetMaxDigits(3);
   gStyle->SetPalette(55,0);
+
+  cout<<"REDUCE"<<bReduceRangeForMoments<<"  "<<endl;
 
   const Int_t nMaxDirectories = 4; // maximum number of directories to merge (set to 4 for now)
   TString sDirectory[nMaxDirectories];

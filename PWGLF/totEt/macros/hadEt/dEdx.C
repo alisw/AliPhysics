@@ -2,8 +2,13 @@
 //This macro is for  plotting the dE/dx from the TPC as used for particle identification for the transverse energy analysis
 //Particles identified are colored
 //Uses the output of AliAnalysisTaskHadEt
+void Rebin(TH2F *histo){
+  //cout<<"Nbins x "<<histo->GetNbinsX()<<" y "<<histo->GetNbinsY()<<endl;
+  histo->Rebin2D(1,5);
+  //histo->SetAxisRange(0.1,1.5);
+}
 
-void dEdx(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname = "LHC10d4",bool TPC = true, char *filename="Et.ESD.new.sim.LHC10d4.pp.merged.root"){
+void dEdx(char *prodname = "LHC11b1a PYTHIA 7 TeV p+p", char *shortprodname = "LHC11b1a",bool TPC = true, char *filename="rootFiles/LHC11b1a/Et.ESD.new.sim.LHC11b1a.root",bool data = true){
   TFile *file =  new TFile(filename);
   if(!file){
     cerr<<"Error, no file found"<<endl;
@@ -11,12 +16,15 @@ void dEdx(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname =
   }
 
   char *myname = "ITS";
-  if(TPC) myname = "TPC";
-  TH2F *all = out2->FindObject(Form("dEdxAll%s",myname));
-  TH2F *pi = out2->FindObject(Form("dEdxPion%s",myname));
-  TH2F *k = out2->FindObject(Form("dEdxKaon%s",myname));
-  TH2F *p = out2->FindObject(Form("dEdxProton%s",myname));
-  TH2F *e = out2->FindObject(Form("dEdxElectron%s",myname));
+  if(TPC) myname = "TPCITS";
+  cout<<"Using "<<Form("dEdxAll%s",myname)<<endl;
+  TString datastring = "";
+  if(data) datastring = "Data";
+  TH2F *all = out2->FindObject(Form("dEdx%sAll%s",datastring.Data(),myname));
+  TH2F *pi = out2->FindObject(Form("dEdx%sPion%s",datastring.Data(),myname));
+  TH2F *k = out2->FindObject(Form("dEdx%sKaon%s",datastring.Data(),myname));
+  TH2F *p = out2->FindObject(Form("dEdx%sProton%s",datastring.Data(),myname));
+  TH2F *e = out2->FindObject(Form("dEdx%sElectron%s",datastring.Data(),myname));
   gStyle->SetPalette(1);
   pi->SetMarkerColor(2);
   k->SetMarkerColor(3);
@@ -51,10 +59,10 @@ void dEdx(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname =
   c->SetFrameBorderMode(0);
   c->SetLogx();
   all->Draw();
+  //e->Draw("same");
   pi->Draw("same");
   k->Draw("same");
   p->Draw("same");
-  e->Draw("same");
   TLegend *leg = new  TLegend(0.825503,0.768817,0.963087,0.954301);
  leg->AddEntry(pi,"#pi^{#pm}","F");
  leg->AddEntry(k,"K^{#pm}","F");
@@ -65,15 +73,34 @@ void dEdx(char *prodname = "LHC10d4 PYTHIA D6T 7 TeV p+p", char *shortprodname =
   leg->SetBorderSize(0);
  leg->Draw();
 
+  Rebin(all);
+  Rebin(pi);
+  Rebin(k);
+  Rebin(p);
+  Rebin(e);
+  //all->SetAxisRange(0.12,1.5);
+  if(!TPC){all->GetXaxis()->SetRange(all->GetXaxis()->FindBin(0.05));}
+  else{all->GetXaxis()->SetRange(all->GetXaxis()->FindBin(0.1));}
 
  float y = 141.021;
  if(!TPC) y = 463.693;
  TLatex *tex = new TLatex(0.119617,y,prodname);
   tex->SetTextSize(0.0537634);
   tex->Draw();
+  TString dir = "pics";
+  TString detector = "";
+  if(!TPC) detector = "ITS";
+  gSystem->MakeDirectory(Form("%s/%s",dir.Data(),shortprodname));
+  c->Print(Form("%s/%s/dEdx%s.pdf",dir.Data(),shortprodname,detector.Data()));
+  c->Print(Form("%s/%s/dEdx%s.png",dir.Data(),shortprodname,detector.Data()));
+  c->Print(Form("%s/%s/dEdx%s.eps",dir.Data(),shortprodname,detector.Data()));
+  c->Print(Form("%s/%s/dEdx%s.jpg",dir.Data(),shortprodname,detector.Data()));
+  return;
+
   if(TPC){
     c->SaveAs(Form("pics/%s/dEdx.eps",shortprodname));
     c->SaveAs(Form("pics/%s/dEdx.png",shortprodname));
+    c->SaveAs(Form("pics/%s/dEdx.C",shortprodname));
   }
   else{
     c->SaveAs(Form("pics/%s/dEdxITS.eps",shortprodname));

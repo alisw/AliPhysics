@@ -4,9 +4,9 @@ void SETUP()
    gSystem->Load("libJETANdev");
 
    // Set the Inlucde paths
-   gSystem->SetIncludePath("-I$ROOTSYS/include -IJETANdev");
-   gROOT->ProcessLine(".include JETANdev/DEV");
+   gSystem->SetIncludePath("-I$ROOTSYS/include -IJETAN");
+   gROOT->ProcessLine(".include JETAN");
 
    // Set our location, so that other packages can find us
-   gSystem->Setenv("JETANDEV_INCLUDE", "JETANdev/DEV/");
+   gSystem->Setenv("JETAN_INCLUDE", "JETAN");
 }

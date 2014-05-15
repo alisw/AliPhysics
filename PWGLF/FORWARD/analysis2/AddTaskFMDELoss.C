@@ -34,7 +34,8 @@ AddTaskFMDELoss(Bool_t        mc,
 		Bool_t        useCent,
 		Bool_t        onlyMB=false, 
 		Int_t         debug=0,
-		const Char_t* residuals="")
+		const Char_t* residuals="",
+		const Char_t* corrs="")
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -46,14 +47,30 @@ AddTaskFMDELoss(Bool_t        mc,
     return NULL;
   }   
   
+  // --- Set alternative corrections path ----------------------------
+  AliForwardCorrectionManager& cm = AliForwardCorrectionManager::Instance();
+  if (corrs && corrs[0] != '\0') cm.SetPrefix(corrs);
+
   // --- Make the task and add it to the manager ---------------------
   AliFMDEnergyFitterTask* task = new AliFMDEnergyFitterTask("ForwardELoss");
   // --- Set parameters on the algorithms ----------------------------
+
+  // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
   // low flux event
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
+
+  // --- ESD Fixer ---------------------------------------------------
+  // For MC input we explicitly disable the noise correction 
+  if (mc) task->GetESDFixer().SetRecoNoiseFactor(4);
+  // IF the noise correction is bigger than this, flag strip as dead 
+  task->GetESDFixer().SetMaxNoiseCorrection(0.05);
+  // Dead region in FMD2i
+  task->GetESDFixer().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
+
+  // --- Energy loss fitter ------------------------------------------
   // Set the eta axis to use - note, this overrides whatever is used
   // by the rest of the algorithms - but only for the energy fitter
   // algorithm. 
@@ -78,12 +95,7 @@ AddTaskFMDELoss(Bool_t        mc,
   // Set the minimum number of entries in the distribution before
   // trying to fit to the data - 10K seems the absolute minimum
   task->GetEnergyFitter().SetMinEntries(10000);
-  // If set, only collect statistics for MB.  This is to prevent a
-  // bias when looping over data where the MB trigger is downscaled.
-  task->SetOnlyMB(onlyMB);
-  // Debug
-  task->SetDebug(debug);
-
+  // Check if we're to store the residuals 
   TString resi(residuals);
   resi.ToUpper();
   AliFMDEnergyFitter::EResidualMethod rm = AliFMDEnergyFitter::kNoResiduals;
@@ -96,6 +108,15 @@ AddTaskFMDELoss(Bool_t        mc,
       rm = AliFMDEnergyFitter::kResidualDifference;
   }
   task->GetEnergyFitter().SetStoreResiduals(rm);
+
+
+  // --- General -----------------------------------------------------
+  // If set, only collect statistics for MB.  This is to prevent a
+  // bias when looping over data where the MB trigger is downscaled.
+  task->SetOnlyMB(onlyMB);
+  // Debug
+  task->SetDebug(debug);
+
 
   // --- Set limits on fits the energy -------------------------------
   // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING

@@ -29,7 +29,6 @@
 #pragma link off all functions;
 
 #pragma link C++ nestedclasses;
-
 // ZDC tasks 
 #pragma link C++ class AliAnalysisTaskZDCPbPb+;
 #pragma link C++ class AliAnalysisTaskZDCTreeMaker+;
@@ -96,6 +95,7 @@
 #pragma link C++ class AliForwardUtil+;
 #pragma link C++ class AliForwardUtil::Histos+;
 #pragma link C++ class AliForwardUtil::RingHistos+;
+// #pragma link C++ class AliForwardUtil::ELossFitter+;
 
 // FMD corrections
 #pragma link C++ class AliFMDCorrAcceptance+;
@@ -109,6 +109,7 @@
 #pragma link C++ class AliFMDCorrMergingEfficiency+;
 #pragma link C++ class AliFMDCorrSecondaryMap+;
 #pragma link C++ class AliFMDCorrVertexBias+;
+#pragma link C++ class AliFMDCorrNoiseGain+;
 
 // FMD algorithms 
 #pragma link C++ class AliFMDDensityCalculator+;
@@ -122,6 +123,7 @@
 #pragma link C++ class AliFMDEventInspector+;
 #pragma link C++ class AliFMDEventPlaneFinder+;
 #pragma link C++ class AliFMDHistCollector+;
+#pragma link C++ class AliFMDESDFixer+;
 #pragma link C++ class AliFMDSharingFilter+;
 #if ROOT_VERSION_CODE < 0x56300 // ROOT_VERSION(5,99,0)
 #pragma link C++ class AliFMDSharingFilter::RingHistos+;

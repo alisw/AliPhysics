@@ -1220,7 +1220,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
   
   Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
   
-  Double_t vEventCount[3] = { (isEventTriggered && kTRUE) , isTrigAndVertex,  isTrigAndVertex && (TMath::Abs(vtxESD->GetZv()) < 10.)};
+  Double_t vEventCount[3] = { static_cast<Double_t>((isEventTriggered && kTRUE)) , static_cast<Double_t>(isTrigAndVertex),  static_cast<Double_t>(isTrigAndVertex && (TMath::Abs(vtxESD->GetZv()) < 10.))};
   fEventCount->Fill(vEventCount);  
 
   // vertex contributors
@@ -1452,11 +1452,11 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      Double_t vRecEventHist1[3] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv()};
      fRecEventHist1->Fill(vRecEventHist1);
 
-     Double_t vRecEventHist2[3] = {vtxESD->GetZv(),multMBTracks,multRecMult};
+     Double_t vRecEventHist2[3] = {vtxESD->GetZv(),static_cast<Double_t>(multMBTracks),static_cast<Double_t>(multRecMult)};
      fRecEventHist2->Fill(vRecEventHist2);
 
      // 
-     Double_t vRecEventHist[2] = {vtxESD->GetZv(),multMBTracks};
+     Double_t vRecEventHist[2] = {vtxESD->GetZv(),static_cast<Double_t>(multMBTracks)};
      fRecEventHist->Fill(vRecEventHist);
    } 
 
@@ -1483,7 +1483,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        }
      }
 
-     Double_t vMultTrueEventMatrix[3] = { multRecMult, multMCTrueTracks, multMBTracks};
+     Double_t vMultTrueEventMatrix[3] = { static_cast<Double_t>(multRecMult), static_cast<Double_t>(multMCTrueTracks), static_cast<Double_t>(multMBTracks)};
      if(isEventOK && isEventTriggered) {   
        if(TMath::Abs(vtxMC[2]) < 10.0) // both Rec. and corresponding MC events must be accepted
          fEventMultCorrelationMatrix->Fill(vMultTrueEventMatrix);
@@ -1494,7 +1494,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
      //
 
      // all inelastic
-     Double_t vEventMatrix[2] = {vtxMC[2],multMCTrueTracks};
+     Double_t vEventMatrix[2] = {vtxMC[2],static_cast<Double_t>(multMCTrueTracks)};
      fGenEventMatrix->Fill(vEventMatrix); 
      if(isEventTriggered) fTriggerEventMatrix->Fill(vEventMatrix);
      if(isEventOK && isEventTriggered) fRecEventMatrix->Fill(vEventMatrix);
@@ -1557,7 +1557,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
        // checked accepted
        if(accCuts->AcceptTrack(particle)) 
        {
-         Double_t vTrackEventMatrix[4] = {vtxMC[2], particle->Pt(), particle->Eta(),multMCTrueTracks}; 
+         Double_t vTrackEventMatrix[4] = {vtxMC[2], particle->Pt(), particle->Eta(),static_cast<Double_t>(multMCTrueTracks)}; 
          fGenTrackEventMatrix->Fill(vTrackEventMatrix);
 
          if(evtType == AliPWG0Helper::kSD) {
@@ -1620,10 +1620,10 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
          Double_t vRecMCEventHist1[3] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2]};
          fRecMCEventHist1->Fill(vRecMCEventHist1);
 
-         Double_t vRecMCEventHist2[3] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetZv()-vtxMC[2],multMBTracks};
+         Double_t vRecMCEventHist2[3] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multMBTracks)};
          fRecMCEventHist2->Fill(vRecMCEventHist2);
 
-         Double_t vRecMCEventHist3[2] = {multRecMult,evtType};
+         Double_t vRecMCEventHist3[2] = {static_cast<Double_t>(multRecMult),evtType};
          fRecMCEventHist3->Fill(vRecMCEventHist3);
        }
 
@@ -1666,7 +1666,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
 	 {
            if( AlidNdPtHelper::IsPrimaryParticle(stack, iMc, GetParticleMode()) ) { 
 	     fGenPrimTrackMatrix->Fill(vTrackMatrix);
-	     Double_t vMCPrimTrackHist[4] = {vtxMC[2],particle->Pt(),particle->Eta(),multMCTrueTracks}; 
+	     Double_t vMCPrimTrackHist[4] = {vtxMC[2],particle->Pt(),particle->Eta(),static_cast<Double_t>(multMCTrueTracks)}; 
 	     fMCPrimTrackHist->Fill(vMCPrimTrackHist);
            }	     
 
@@ -1688,7 +1688,7 @@ void AlidNdPtAnalysis::Process(AliESDEvent *const esdEvent, AliMCEvent *const mc
                  // fill control histogram
                  if(fHistogramsOn) {
                    Int_t pid = AlidNdPtHelper::ConvertPdgToPid(particle);
-                   Double_t vMCMultRecTrackHist1[3] = {particle->Pt(), particle->Eta(), pid};
+                   Double_t vMCMultRecTrackHist1[3] = {particle->Pt(), particle->Eta(), static_cast<Double_t>(pid)};
 		   fMCMultRecTrackHist1->Fill(vMCMultRecTrackHist1);
 		 }
 	       }
@@ -1756,19 +1756,19 @@ void AlidNdPtAnalysis::FillHistograms(TObjArray *const allChargedTracks,Int_t *c
      Int_t label = TMath::Abs(track->GetLabel());
      for(Int_t iAll=0; iAll<multAll; ++iAll) {
        if(label == labelsAll[iAll]) {
-         Double_t v1[2] = {track->Pt(), multAll}; 
+         Double_t v1[2] = {track->Pt(), static_cast<Double_t>(multAll)}; 
          fRecTrackMultHist1[AlidNdPtHelper::kAllTracks]->Fill(v1);
        }
      }
      for(Int_t iAcc=0; iAcc<multAcc; ++iAcc) {
        if(label == labelsAcc[iAcc]) {
-         Double_t v2[2] = {track->Pt(), multAcc}; 
+         Double_t v2[2] = {track->Pt(), static_cast<Double_t>(multAcc)}; 
          fRecTrackMultHist1[AlidNdPtHelper::kAccTracks]->Fill(v2);
        }
      }
      for(Int_t iRec=0; iRec<multRec; ++iRec) {
        if(label == labelsRec[iRec]) {
-         Double_t v3[2] = {track->Pt(), multRec}; 
+         Double_t v3[2] = {track->Pt(), static_cast<Double_t>(multRec)}; 
          fRecTrackMultHist1[AlidNdPtHelper::kRecTracks]->Fill(v3);
        }
      }
@@ -1803,7 +1803,7 @@ void AlidNdPtAnalysis::FillHistograms(AliESDtrack *const esdTrack, AliStack *con
   Double_t values1[3] = {pt,eta,phi};	  
   fRecTrackHist1[trackObj]->Fill(values1);
 
-  Double_t values[4] = {zv, pt,eta, multRecMult};	  
+  Double_t values[4] = {zv, pt,eta, static_cast<Double_t>(multRecMult)};	  
   if(trackObj == AlidNdPtHelper::kRecTracks) {
     fRecTrackHist->Fill(values);
   }
@@ -1908,8 +1908,8 @@ void AlidNdPtAnalysis::FillHistograms(AliStack *const stack, Int_t label, AlidNd
   Double_t vMCTrackHist1[3] = {gpt,geta,gphi};
   fMCTrackHist1[trackObj]->Fill(vMCTrackHist1);
 
-  Double_t vMCPrimTrackHist1[5] = {gpt,geta,pid,mech,motherPdg};
-  Double_t vMCPrimTrackHist2[5] = {TMath::Abs(particle->GetPdgCode()),mech,motherPdg};
+  Double_t vMCPrimTrackHist1[5] = {gpt,geta,static_cast<Double_t>(pid),static_cast<Double_t>(mech),static_cast<Double_t>(motherPdg)};
+  Double_t vMCPrimTrackHist2[5] = {static_cast<Double_t>(TMath::Abs(particle->GetPdgCode())),static_cast<Double_t>(mech),static_cast<Double_t>(motherPdg)};
   //if(prim && AliPWG0Helper::IsPrimaryCharged(particle, label)) fMCPrimTrackHist1[trackObj]->Fill(vMCPrimTrackHist1);
   if(prim) { 
     fMCPrimTrackHist1[trackObj]->Fill(vMCPrimTrackHist1);

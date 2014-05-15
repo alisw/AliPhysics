@@ -178,7 +178,7 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
     fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
-  if(fRecAnalysis->DataSet()==20100){
+  if(fRecAnalysis->DataSet()==20100 || fRecAnalysis->DataSet()==2011){
     cout<<"Setting track cuts for the 2010 Pb+Pb collisions at 2.76 TeV"<<endl;
     //cout<<"Warning:  Have not set 2010 track cuts yet!!"<<endl;
     fEsdtrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(selectPrimaries);
@@ -190,6 +190,14 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
     // fEsdtrackCutsITS =  AliESDtrackCuts::GetStandardITSPureSATrackCuts2010(kTRUE,kFALSE);//we do want primaries but we do not want to require PID info
    fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
   }
+  if(fRecAnalysis->DataSet()==2011){
+    cout<<"Using 2011 acceptance"<<endl;
+    fMCAnalysis->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
+    fMCAnalysis->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
+    fRecAnalysis->GetCuts()->SetGeometryEmcalPhiAccMinCut(80);
+    fRecAnalysis->GetCuts()->SetGeometryEmcalPhiAccMaxCut(80+100);
+  }
+
 	
 	
   fOutputList->Add(fEsdtrackCutsITSTPC);
@@ -243,6 +251,9 @@ void AliAnalysisTaskTotEt::UserExec(Option_t *)
     }
   if(fMCAnalysis)
     {
+      //set the number of tracks matched and the total number of hadrons calculated from the number of tracks matched so we can use them for calculating corrections
+      fMCAnalysis->SetNumberOfChargedHadronsMatched(fRecAnalysis->GetNumberOfChargedHadronsMatched());
+      fMCAnalysis->SetTotalNumberOfChargedHadrons(fRecAnalysis->GetTotalNumberOfChargedHadrons());
       fHistEtRecvsEtMC->Fill(fRecAnalysis->GetTotNeutralEt(), fMCAnalysis->GetTotNeutralEt());
       if(fMCAnalysis->GetTotNeutralEt()) fHistEtRecOverEtMC->Fill(fRecAnalysis->GetTotNeutralEt()/fMCAnalysis->GetTotNeutralEt(), cent->GetCentralityClass10("V0M"));
       if(fMCAnalysis->GetTotNeutralEt()) fHistDiffEtRecEtMCOverEtMC->Fill(fMCAnalysis->GetTotNeutralEt(), (fRecAnalysis->GetTotNeutralEt()-fMCAnalysis->GetTotNeutralEt())/fMCAnalysis->GetTotNeutralEt());

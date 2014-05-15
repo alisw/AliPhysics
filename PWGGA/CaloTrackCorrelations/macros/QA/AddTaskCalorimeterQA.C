@@ -2,20 +2,13 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                
 //
-AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = kFALSE,
-                                                          const char *suffix="default",
-                                                          TString outputFile = "", 
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(const char *suffix="default",
+                                                          Bool_t kSimulation = kFALSE,
+                                                          TString outputFile = "",
                                                           Int_t year = 2012, 
                                                           Bool_t kPrintSettings = kFALSE)
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
-
-  if(kSimulation)
-  {
-    printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
-    TString ssuffix = suffix;
-    if(!ssuffix.Contains("default")) return;
-  }
   
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -31,9 +24,18 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
     ::Error("AddTaskPartCorr", "This task requires an input event handler");
     return NULL;
   }
+  
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
   Bool_t kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE;
+  
+  TString ssuffix = suffix;
+  if(kUseKinematics || kSimulation)
+  {
+    kSimulation = kTRUE;
+    printf("AddTaskCalorimeterQA - CAREFUL : Triggered events not checked in simulation!! \n");
+    if(!ssuffix.Contains("default")) return;
+  }
   
   // Configure analysis
   //===========================================================================
@@ -56,7 +58,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   reader->SetCTSPtMin  (0.);
   reader->SetZvertexCut(10.);
   
-  if(kUseKinematics)
+  if(kSimulation)
   {
     if(inputDataType == "ESD")
     {
@@ -73,6 +75,14 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
   
+  if(!ssuffix.Contains("default"))
+  {
+    reader->SwitchOnTriggerPatchMatching();
+    reader->SwitchOffBadTriggerEventsRemoval();
+    reader->SetTriggerPatchTimeWindow(8,9);
+    //reader->SetEventTriggerL0Threshold(2.);
+  }
+  
   if(kPrintSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -80,6 +90,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
 
+  if      (year == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+  else if (year <  2014) cu->SetNumberOfSuperModulesUsed(10);
+  else                   cu->SetNumberOfSuperModulesUsed(20);
+  
   AliEMCALRecoUtils* reco = cu->GetEMCALRecoUtils();
   reco->SwitchOnRejectExoticCell() ; // reject exotic cells, fill different histograms for exotic clusters and good clusters
   reco->SetExoticCellDiffTimeCut(10000); // Open  
@@ -94,16 +108,25 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
-  if(kUseKinematics) emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-  else               emcalQA->SwitchOffDataMC() ;
+  if(kSimulation)
+  {
+    emcalQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+    emcalQA->SwitchOffStudyBadClusters();
+    emcalQA->SwitchOffFillAllCellTimeHisto();
+  }
+  else
+  {
+    emcalQA->SwitchOffDataMC() ;
+    emcalQA->SwitchOnStudyBadClusters();
+    emcalQA->SwitchOnFillAllCellTimeHisto();
+  }
   emcalQA->AddToHistogramsName("EMCAL_"); //Begining of histograms name
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOnCorrelation();
   emcalQA->SwitchOffFillAllTH3Histogram();
   emcalQA->SwitchOffFillAllPositionHistogram();
   emcalQA->SwitchOffFillAllPositionHistogram2();
-  emcalQA->SwitchOnStudyBadClusters();
-
+  
   //Set Histrograms bins and ranges
   emcalQA->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 100, 200) ;
   emcalQA->GetHistogramRanges()->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
@@ -111,22 +134,19 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   
   if     (year==2010)
   {  
-    emcalQA->SetNumberOfModules(4); 
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 121*TMath::DegToRad(), 200) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-230,90,120);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(370,450,40);
   }
-  else if(year==2011)
+  else if(year==2011 || year==2012)
   {            
-    emcalQA->SetNumberOfModules(10); 
     emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 191*TMath::DegToRad(), 200) ;
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-600,90,200);
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(100,450,100);
   }
   else 
   {
-    emcalQA->SetNumberOfModules(12); 
-    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 181*TMath::DegToRad(), 200) ; // revise
+    emcalQA->GetHistogramRanges()->SetHistoPhiRangeAndNBins(79*TMath::DegToRad(), 320*TMath::DegToRad(), 400) ; // revise
     emcalQA->GetHistogramRanges()->SetHistoXRangeAndNBins(-700,90,200); // revise
     emcalQA->GetHistogramRanges()->SetHistoYRangeAndNBins(50,450,100);  // revise     
   }
@@ -150,6 +170,8 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   
   // #### Configure Maker ####
   AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
+  if(ssuffix.Contains("default")) maker->SwitchOffDataControlHistograms();
+  else                            maker->SwitchOnDataControlHistograms();
   maker->SetReader(reader);//pointer to reader
   maker->SetCaloUtils(cu); //pointer to calorimeter utils
   maker->AddAnalysis(emcalQA,0);
@@ -184,10 +206,10 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
                                                              AliAnalysisManager::kOutputContainer, 
                                                              Form("%s:%s",outputFile.Data(),cname.Data()));
   
-  cname = Form("CaloQACuts_%s", suffix);
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
-                                                             AliAnalysisManager::kParamContainer, 
-                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
+//  cname = Form("CaloQACuts_%s", suffix);
+//  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
+//                                                             AliAnalysisManager::kParamContainer, 
+//                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
   
 	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
@@ -195,7 +217,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCalorimeterQA(Bool_t kSimulation = k
   //==============================================================================
   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput (task, 1, cout_pc);
-  mgr->ConnectOutput (task, 2, cout_cuts);
+//  mgr->ConnectOutput (task, 2, cout_cuts);
   
   return task;
 }

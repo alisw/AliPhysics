@@ -69,6 +69,12 @@ protected:
   Double_t GetSPDCorrection(Double_t zvert, Double_t eta) const;
 
 private:
+  
+  // not implemented on purpose
+  AliAnalysisMuMuNch(const AliAnalysisMuMuNch& rhs);
+  AliAnalysisMuMuNch& operator=(const AliAnalysisMuMuNch& rhs);
+  
+private:
   TH2F* fSPDCorrection; // Nch/Tracklets_SPD (eta vs z)
   TAxis* fEtaAxis; // Eta axis used for the histos
   TAxis* fZAxis;  // Z vertex axis used for the histos

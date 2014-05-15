@@ -6,11 +6,12 @@ AliTaskCDBconnect* AddTaskCDBconnect(const char *path="raw://", Int_t run=0)
        return NULL;
     }   
     TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+    /*
     if (inputDataType != "ESD") {
        ::Error("AddTaskCDBconnect", "Can only run with ESD input handler");
        return NULL;
     }   
-    
+    */
     AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect", path, run);
     mgr->AddTask(task);
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    

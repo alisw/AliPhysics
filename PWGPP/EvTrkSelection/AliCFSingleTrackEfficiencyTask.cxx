@@ -625,20 +625,20 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     // exclude global constrained and TPC only tracks (filter bits 128 and 512)
     Int_t id = tmptrack->GetID();
     if(isAOD && id<0) {
-      AliDebug(3,"Track removed bc corresponts to either filter bit 128 or 512 (TPC only tracks)\n");
+      AliDebug(3,"Track removed bc corresponds to either filter bit 128 or 512 (TPC only tracks)\n");
+      delete tmptrack; tmptrack=NULL;
       continue;
     }
 
     // Apply ESD track cuts
     if( !fTrackCuts->IsSelected(tmptrack) ){
       AliDebug(3,"Reconstructed track not passing quality criteria\n");
-      if(isAOD) delete tmptrack;
+      if(isAOD) { delete tmptrack; tmptrack=NULL; }
       continue;
     }
     //    cout<<" analysis cuts passed"<<endl;
     fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepReconstructedMC);
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoQualityCuts);
-    if(isAOD) delete tmptrack;
     //    cout << " checking particle pid"<<endl;
 
     //
@@ -646,11 +646,13 @@ void AliCFSingleTrackEfficiencyTask::CheckReconstructedParticles()
     //
     if( !fMCCuts->IsRecoParticlePID(track) ){
       AliDebug(3,"Reconstructed track not passing PID criteria\n");
+      if(isAOD) { delete tmptrack; tmptrack=NULL; }
       continue;
     }
     fCFManager->GetParticleContainer()->Fill(containerInput,kStepRecoPID);
     //    cout << " all steps filled"<<endl;
 
+    if(isAOD) { delete tmptrack; tmptrack=NULL; }
   }
   return;
 }

@@ -56,6 +56,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   void SetFillGlobalPlots(Bool_t fill=kTRUE){fFillGlobal=fill;}
   void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
+  void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
 
   Int_t  GetReadMC() const {return fReadMC;}
   Int_t  GetMCReconstructedTracks() const {return fRecoTr;}
@@ -69,6 +70,7 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t GetMultEv() {return fMultEv;}
   Bool_t GetSoftPiFlag() const {return fSoftPiCut;}
   Bool_t GetMEAxisThresh() const {return fMEAxisThresh;}
+  Bool_t GetKaonCorrelations() const {return fKaonCorr;}
 
   //correlations setters/printers
   void SetNPtBinsCorr(Int_t nbins) {fNPtBinsCorr = nbins;}
@@ -133,8 +135,9 @@ class AliAnalysisTaskSED0Correlations : public AliAnalysisTaskSE
   Double_t  fMultEv;			// event multiplicity (for trigger eff)
   Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
+  Bool_t    fKaonCorr;			// enables correlations of D0-Kcharg and D0-K0
 
-  ClassDef(AliAnalysisTaskSED0Correlations,4); // AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0Correlations,5); // AliAnalysisTaskSE for D0->Kpi
 };
 
 #endif

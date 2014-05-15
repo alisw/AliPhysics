@@ -287,7 +287,7 @@ Bool_t AliCaloTrackMCReader::FillInputEvent(Int_t iEntry,
           p[0] = particle->Px(); p[1] = particle->Py(); p[2] = particle->Pz();
           //Create object and write it to file
           AliAODTrack *aodTrack = new AliAODTrack(0, iParticle, p, kTRUE, x, kFALSE,NULL, 0, 0, 
-                                                  NULL,
+                                                  // NULL,
                                                   0x0,//primary,
                                                   kFALSE, // No fit performed
                                                   kFALSE, // No fit performed

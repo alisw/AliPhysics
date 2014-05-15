@@ -196,8 +196,7 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
       }
     }
 
-    TString tmpFilename = Form("/tmp/mergeListRun%s.txt", currRunString.Data());
-    ofstream tmpFile(tmpFilename.Data());
+    TString tmpFilename = Form("%s/tmp_mergeListRun%s.txt", gSystem->pwd(), currRunString.Data());
     TString mergeFilename = "";
 
     Int_t nPatterns = ( mergeFast ) ? 1 : 2;
@@ -211,6 +210,8 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
 
       if ( ! res || res->GetEntries() == 0 ) continue;
 
+      ofstream tmpFile(tmpFilename.Data());
+      
       Int_t mergeStage = ( ipattern == 1 ) ? GetLastStage(res)  : -1;
       stageName = Form("Stage_%i", mergeStage);
 
@@ -241,11 +242,11 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
         mergeFilename.ReplaceAll(".root", Form("_%s.root", currRunString.Data()));
         mergeGridFiles(mergeFilename, tmpFilename, "alien://", nFilesPerStep, kTRUE, dirsToMerge);
       }
-
-      if ( ! mergeFilename.Contains("alien://") )
-        outFile << gSystem->pwd() << "/";
-      outFile << mergeFilename.Data() << endl;
+      
       gSystem->Exec(Form("rm %s", tmpFilename.Data()));
+
+      if ( ! mergeFilename.Contains("alien://") ) outFile << gSystem->pwd() << "/";
+      outFile << mergeFilename.Data() << endl;
       break;
     } // loop on pattern
     if ( mergeFilename.IsNull() ) runsWithoutOut += currRunString + " ";

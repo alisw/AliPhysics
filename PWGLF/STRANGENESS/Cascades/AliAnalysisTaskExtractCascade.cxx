@@ -103,6 +103,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
+   fkRunVertexers ( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -141,6 +142,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -151,6 +153,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade()
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+  fTreeCascVarkITSRefitBachelor(0),
+  fTreeCascVarkITSRefitNegative(0),
+  fTreeCascVarkITSRefitPositive(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -212,6 +218,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fCentralityEstimator("V0M"),
    fkpAVertexSelection( kFALSE ),
    fEtaRefMult ( 0.5 ),
+   fkRunVertexers ( kFALSE ),
 //------------------------------------------------
 // Tree Variables
 //------------------------------------------------
@@ -250,6 +257,7 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarPIDBachelor(0),
    fTreeCascVarPIDNegative(0),
    fTreeCascVarPIDPositive(0),
+   fTreeCascVarBachTransMom(0),
    fTreeCascVarPosTransMom(0),
    fTreeCascVarNegTransMom(0),
    fTreeCascVarPosTransMomMC(0),
@@ -260,6 +268,10 @@ AliAnalysisTaskExtractCascade::AliAnalysisTaskExtractCascade(const char *name)
    fTreeCascVarPosNSigmaProton(0),
    fTreeCascVarBachNSigmaPion(0),
    fTreeCascVarBachNSigmaKaon(0),
+
+   fTreeCascVarkITSRefitBachelor(0),
+   fTreeCascVarkITSRefitNegative(0),
+   fTreeCascVarkITSRefitPositive(0),
 
 //------------------------------------------------
 // HISTOGRAMS
@@ -316,24 +328,24 @@ fHistMultiplicitySPDNoTPCOnlyNoPileup(0),
    //Set Variables for re-running the cascade vertexers (as done for MS paper)
         
         // New Loose : 1st step for the 7 TeV pp analysis
-        /*
-        fV0Sels[0] =  33.  ;  // max allowed chi2
-        fV0Sels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
-        fV0Sels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
-        fV0Sels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
-        fV0Sels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
-        fV0Sels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
-        fV0Sels[6] = 100.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
         
-        fCascSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
-        fCascSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
-        fCascSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
-        fCascSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
-        fCascSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
-        fCascSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
-        fCascSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
-        fCascSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
-        */
+        fV0VertexerSels[0] =  33.  ;  // max allowed chi2
+        fV0VertexerSels[1] =   0.02;  // min allowed impact parameter for the 1st daughter (LHC09a4 : 0.05)
+        fV0VertexerSels[2] =   0.02;  // min allowed impact parameter for the 2nd daughter (LHC09a4 : 0.05)
+        fV0VertexerSels[3] =   2.0 ;  // max allowed DCA between the daughter tracks       (LHC09a4 : 0.5)
+        fV0VertexerSels[4] =   0.95;  // min allowed cosine of V0's pointing angle         (LHC09a4 : 0.99)
+        fV0VertexerSels[5] =   1.0 ;  // min radius of the fiducial volume                 (LHC09a4 : 0.2)
+        fV0VertexerSels[6] = 200.  ;  // max radius of the fiducial volume                 (LHC09a4 : 100.0)
+        
+        fCascadeVertexerSels[0] =  33.   ;  // max allowed chi2 (same as PDC07)
+        fCascadeVertexerSels[1] =   0.05 ;  // min allowed V0 impact parameter                    (PDC07 : 0.05   / LHC09a4 : 0.025 )
+        fCascadeVertexerSels[2] =   0.010;  // "window" around the Lambda mass                    (PDC07 : 0.008  / LHC09a4 : 0.010 )
+        fCascadeVertexerSels[3] =   0.03 ;  // min allowed bachelor's impact parameter            (PDC07 : 0.035  / LHC09a4 : 0.025 )
+        fCascadeVertexerSels[4] =   2.0  ;  // max allowed DCA between the V0 and the bachelor    (PDC07 : 0.1    / LHC09a4 : 0.2   )
+        fCascadeVertexerSels[5] =   0.95 ;  // min allowed cosine of the cascade pointing angle   (PDC07 : 0.9985 / LHC09a4 : 0.998 )
+        fCascadeVertexerSels[6] =   0.4  ;  // min radius of the fiducial volume                  (PDC07 : 0.9    / LHC09a4 : 0.2   )
+        fCascadeVertexerSels[7] = 100.   ;  // max radius of the fiducial volume                  (PDC07 : 100    / LHC09a4 : 100   )
+        
    // Output slot #0 writes into a TList container (Cascade)
    DefineOutput(1, TList::Class());
    DefineOutput(2, TTree::Class());
@@ -423,6 +435,14 @@ void AliAnalysisTaskExtractCascade::UserCreateOutputObjects()
 /*27*/		fTreeCascade->Branch("fTreeCascVarPosNSigmaProton",&fTreeCascVarPosNSigmaProton,"fTreeCascVarPosNSigmaProton/F");
 /*28*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaPion",&fTreeCascVarBachNSigmaPion,"fTreeCascVarBachNSigmaPion/F");
 /*29*/		fTreeCascade->Branch("fTreeCascVarBachNSigmaKaon",&fTreeCascVarBachNSigmaKaon,"fTreeCascVarBachNSigmaKaon/F");
+    
+/*30*/		fTreeCascade->Branch("fTreeCascVarBachTransMom",&fTreeCascVarBachTransMom,"fTreeCascVarBachTransMom/F");
+/*30*/		fTreeCascade->Branch("fTreeCascVarPosTransMom",&fTreeCascVarPosTransMom,"fTreeCascVarPosTransMom/F");
+/*31*/		fTreeCascade->Branch("fTreeCascVarNegTransMom",&fTreeCascVarNegTransMom,"fTreeCascVarNegTransMom/F");
+
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitBachelor",&fTreeCascVarkITSRefitBachelor,"fTreeCascVarkITSRefitBachelor/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitNegative",&fTreeCascVarkITSRefitNegative,"fTreeCascVarkITSRefitNegative/O");
+/*29*/		fTreeCascade->Branch("fTreeCascVarkITSRefitPositive",&fTreeCascVarkITSRefitPositive,"fTreeCascVarkITSRefitPositive/O");
 
 //------------------------------------------------
 // Particle Identification Setup
@@ -803,19 +823,20 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 //------------------------------------------------
 // Rerun cascade vertexer! 
 //------------------------------------------------
-/*
-  lESDevent->ResetCascades();
-  lESDevent->ResetV0s();
 
-  AliV0vertexer lV0vtxer;
-  AliCascadeVertexer lCascVtxer;
-                
-  lV0vtxer.SetDefaultCuts(fV0Sels);
-  lCascVtxer.SetDefaultCuts(fCascSels);
+  if( fkRunVertexers ){ 
+    lESDevent->ResetCascades();
+    lESDevent->ResetV0s();
 
-  lV0vtxer.Tracks2V0vertices(lESDevent);
-  lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
-*/
+    AliV0vertexer lV0vtxer;
+    AliCascadeVertexer lCascVtxer;
+                  
+    lV0vtxer.SetDefaultCuts(fV0VertexerSels);
+    lCascVtxer.SetDefaultCuts(fCascadeVertexerSels);
+
+    lV0vtxer.Tracks2V0vertices(lESDevent);
+    lCascVtxer.V0sTracks2CascadeVertices(lESDevent);
+  }
 //------------------------------------------------
 // After Trigger Selection
 //------------------------------------------------
@@ -1087,9 +1108,18 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 		  continue;
 	  }
 
-   fTreeCascVarPosEta = pTrackXi->Eta();
-   fTreeCascVarNegEta = nTrackXi->Eta();
-   fTreeCascVarBachEta = bachTrackXi->Eta();
+      fTreeCascVarPosEta = pTrackXi->Eta();
+      fTreeCascVarNegEta = nTrackXi->Eta();
+      fTreeCascVarBachEta = bachTrackXi->Eta();
+      
+      Double_t lBMom[3], lNMom[3], lPMom[3];
+      xi->GetBPxPyPz( lBMom[0], lBMom[1], lBMom[2] );
+      xi->GetPPxPyPz( lPMom[0], lPMom[1], lPMom[2] );
+      xi->GetNPxPyPz( lNMom[0], lNMom[1], lNMom[2] );
+      
+      fTreeCascVarBachTransMom = TMath::Sqrt( lBMom[0]*lBMom[0] + lBMom[1]*lBMom[1] );
+      fTreeCascVarPosTransMom  = TMath::Sqrt( lPMom[0]*lPMom[0] + lPMom[1]*lPMom[1] );
+      fTreeCascVarNegTransMom  = TMath::Sqrt( lNMom[0]*lNMom[0] + lNMom[1]*lNMom[1] );
   
     //------------------------------------------------
     // TPC dEdx information 
@@ -1115,9 +1145,20 @@ void AliAnalysisTaskExtractCascade::UserExec(Option_t *)
 	  ULong_t pStatus    = pTrackXi->GetStatus();
 	  ULong_t nStatus    = nTrackXi->GetStatus();
 	  ULong_t bachStatus = bachTrackXi->GetStatus();
+
+    fTreeCascVarkITSRefitBachelor = kTRUE; 
+    fTreeCascVarkITSRefitNegative = kTRUE; 
+    fTreeCascVarkITSRefitPositive = kTRUE; 
+
     if ((pStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Pos. track has no TPCrefit ... continue!"); continue; }
     if ((nStatus&AliESDtrack::kTPCrefit)    == 0) { AliWarning("Pb / V0 Neg. track has no TPCrefit ... continue!"); continue; }
     if ((bachStatus&AliESDtrack::kTPCrefit) == 0) { AliWarning("Pb / Bach.   track has no TPCrefit ... continue!"); continue; }
+
+    //Extra Debug Information: booleans for ITS refit
+    if ((pStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitPositive = kFALSE; }
+    if ((nStatus&AliESDtrack::kITSrefit)    == 0) { fTreeCascVarkITSRefitNegative = kFALSE; }
+    if ((bachStatus&AliESDtrack::kITSrefit) == 0) { fTreeCascVarkITSRefitBachelor = kFALSE; }
+
 	  // 2 - Poor quality related to TPC clusters: lowest cut of 70 clusters
     if(lPosTPCClusters  < 70) { AliWarning("Pb / V0 Pos. track has less than 70 TPC clusters ... continue!"); continue; }
 	  if(lNegTPCClusters  < 70) { AliWarning("Pb / V0 Neg. track has less than 70 TPC clusters ... continue!"); continue; }

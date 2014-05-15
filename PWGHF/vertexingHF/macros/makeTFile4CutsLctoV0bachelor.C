@@ -57,11 +57,15 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   RDHFLctoV0An->SetKinkRejection(!esdTrackCuts->GetAcceptKinkDaughters());
   RDHFLctoV0An->AddTrackCuts(esdTrackCuts);
   RDHFLctoV0An->AddTrackCutsV0daughters(esdTrackCutsV0daughters);
-  RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kTRUE);
-  RDHFLctoV0An->SetPidSelectionFlag(2); // 0 -> TOF AND TPC
+  RDHFLctoV0An->SetUseTrackSelectionWithFilterBits(kFALSE);//(kTRUE);
+  RDHFLctoV0An->SetLowPtCut(1.0); // default value 1.0 GeV/c
+  RDHFLctoV0An->SetHighPtCut(3.0); // default value 2.5 GeV/c
+  RDHFLctoV0An->SetPidSelectionFlag(4); // 0 -> TOF AND TPC
                                         // 1 -> if (TOF) TOF else TPC w veto
-                                        // 2 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
-                                        // 3 -> if (p>1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
+                                        // 2 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else (p>=2.5) {if (TOF) -2s<TOF<3s AND TPC@3s}
+                                        // 3 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s AND TPC@3s} else if (2.5<=p<3) {if (TOF) -2s<TOF<3s AND TPC@3s} else (p>=3) {if (TOF) -2s<TOF<3s AND -3s<TPC<2s}
+                                        // 4 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s}
+                                        // 5 -> if (p<1) TPC@3s else if (1<=p<2.5) {if (TOF) TOF@3s} else if (p>=2.5) {if (TOF) -2s<TOF<3s else TPC@3s}
 
   const Int_t nptbins=14;
   RDHFLctoV0An->SetNPtBins(nptbins);
@@ -181,10 +185,7 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   anacutsval[15][12]=1.2; // pT min V0 track [GeV/c]
   anacutsval[15][13]=1.2; // pT min V0 track [GeV/c]
 
-
-
   RDHFLctoV0An->SetCuts(nvars,nptbins,anacutsval);
-
 
   //RDHFLc->SetRecoKF(); //set this if you want to recompute the secondary vertex with the KF package
 
@@ -201,37 +202,11 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
 
   RDHFLctoV0An->SetPidHF(pidObjBachelor);
 
-  //2. V0pos
-  AliAODPidHF* pidObjV0pos = new AliAODPidHF();
-  Double_t sigmasV0pos[5]={3.,1.,1.,3.,3.}; // 0, 1(A), 2(A) -> TPC; 3 -> TOF; 4 -> ITS
-  pidObjV0pos->SetSigma(sigmasV0pos);
-  pidObjV0pos->SetAsym(kFALSE);
-  pidObjV0pos->SetMatch(1);
-  pidObjV0pos->SetTPC(kTRUE);
-  pidObjV0pos->SetTOF(kTRUE);
-  pidObjV0pos->SetTOFdecide(kFALSE);
-
-  RDHFLctoV0An->SetPidV0pos(pidObjV0pos);
-
-  //2. V0neg
-  AliAODPidHF* pidObjV0neg = new AliAODPidHF();
-  Double_t sigmasV0neg[5]={3.,1.,1.,3.,3.}; // 0, 1(A), 2(A) -> TPC; 3 -> TOF; 4 -> ITS
-  pidObjV0neg->SetSigma(sigmasV0neg);
-  pidObjV0neg->SetAsym(kFALSE);
-  pidObjV0neg->SetMatch(1);
-  pidObjV0neg->SetTPC(kTRUE);
-  pidObjV0neg->SetTOF(kTRUE);
-  pidObjV0neg->SetTOFdecide(kFALSE);
-
-  RDHFLctoV0An->SetPidV0neg(pidObjV0neg);
-
-
   // uncomment these lines for Baysian PID:
   // Double_t threshold=0.3;
   // SetupCombinedPID(RDHFLctoV0An  ,threshold);
   // RDHFLctoV0An  ->SetPIDStrategy(AliRDHFCutsLctoV0::kCombined);
   //
-
 
   //uncomment these lines to apply cuts with the KF package
   //RDHFLctoV0An->SetCutsStrategy(AliRDHFCutsLctoV0::kKF);
@@ -254,8 +229,6 @@ void makeInputAliAnalysisTaskSELctoV0bachelor(){
   delete fout;
 
   delete pidObjBachelor;
-  delete pidObjV0neg;
-  delete pidObjV0pos;
   //delete RDHFLctoV0An;
 
 }
@@ -489,28 +462,6 @@ void makeInputAliAnalysisTaskSESignificanceMaximization(){
   pidObjBachelor->SetTOF(kTRUE);
   pidObjBachelor->SetTOFdecide(kFALSE);
   RDHFLctoV0->SetPidHF(pidObjBachelor);
-
-  //2. V0pos
-  AliAODPidHF* pidObjV0pos = new AliAODPidHF();
-  Double_t sigmasV0pos[5]={3.,1.,1.,3.,3.}; // 0, 1(A), 2(A) -> TPC; 3 -> TOF; 4 -> ITS
-  pidObjV0pos->SetSigma(sigmasV0pos);
-  pidObjV0pos->SetAsym(kFALSE);
-  pidObjV0pos->SetMatch(1);
-  pidObjV0pos->SetTPC(kTRUE);
-  pidObjV0pos->SetTOF(kTRUE);
-  pidObjV0pos->SetTOFdecide(kFALSE);
-  RDHFLctoV0->SetPidV0pos(pidObjV0pos);
-
-  //2. V0neg
-  AliAODPidHF* pidObjV0neg = new AliAODPidHF();
-  Double_t sigmasV0neg[5]={3.,1.,1.,3.,3.}; // 0, 1(A), 2(A) -> TPC; 3 -> TOF; 4 -> ITS
-  pidObjV0neg->SetSigma(sigmasV0neg);
-  pidObjV0neg->SetAsym(kFALSE);
-  pidObjV0neg->SetMatch(1);
-  pidObjV0neg->SetTPC(kTRUE);
-  pidObjV0neg->SetTOF(kTRUE);
-  pidObjV0neg->SetTOFdecide(kFALSE);
-  RDHFLctoV0->SetPidV0neg(pidObjV0neg);
 
   //activate pileup rejection (for pp)
   //RDHFLctoV0->SetOptPileup(AliRDHFCuts::kRejectPileupEvent);

@@ -3,6 +3,7 @@
 //
 #include "AliFMDEnergyFitter.h"
 #include "AliForwardUtil.h"
+#include "AliLandauGausFitter.h"
 #include <AliESDFMD.h>
 #include <TAxis.h>
 #include <TList.h>
@@ -199,6 +200,8 @@ AliFMDEnergyFitter::CreateOutputObjects(TList* dir)
   d->Add(AliForwardUtil::MakeParameter("maxChi2PerNDF", fMaxChi2PerNDF));
   d->Add(AliForwardUtil::MakeParameter("minWeight",     fMinWeight));
   d->Add(AliForwardUtil::MakeParameter("regCut",        fRegularizationCut));
+  d->Add(AliForwardUtil::MakeParameter("deltaShift", 
+				       AliLandauGaus::EnableSigmaShift()));
 
   if (fRingHistos.GetEntries() <= 0) { 
     AliFatal("No ring histograms where defined - giving up!");
@@ -280,7 +283,12 @@ AliFMDEnergyFitter::SetCentralityAxis(UShort_t n, Double_t* bins)
 {
   fCentralityAxis.Set(n-1, bins);
 }
-
+//____________________________________________________________________
+void
+AliFMDEnergyFitter::SetEnableDeltaShift(Bool_t use) 
+{
+  AliLandauGaus::EnableSigmaShift(use ? 1 : 0);
+}
 
 //____________________________________________________________________
 Bool_t
@@ -318,11 +326,12 @@ AliFMDEnergyFitter::Accumulate(const AliESDFMD& input,
 	  Float_t mult = input.Multiplicity(d,r,s,t);
 	  
 	  // Keep dead-channel information. 
-	  if(mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) 
+	  if (mult == AliESDFMD::kInvalidMult || mult > 10 || mult <= 0) 
 	    continue;
 
 	  // Get the pseudo-rapidity 
 	  Double_t eta1 = input.Eta(d,r,s,t);
+
 	  // Int_t ieta = fEtaAxis.FindBin(eta1);
 	  // if (ieta < 1 || ieta >  fEtaAxis.GetNbins()) continue; 
 
@@ -350,7 +359,10 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   //    dir Where the histograms are  
   //
   DGUARD(fDebug, 1, "Fit distributions in AliFMDEnergyFitter");
-  if (!fDoFits) return;
+  if (!fDoFits) {
+    AliInfo("Not asked to do fits, returning");
+    return;
+  }
 
   TList* d = static_cast<TList*>(dir->FindObject(GetName()));
   if (!d) {
@@ -376,9 +388,11 @@ AliFMDEnergyFitter::Fit(const TList* dir)
   for (Int_t i = 0; i < nStack; i++) 
     d->Add(stack[i]);
 
+  AliInfoF("Will do fits for %d rings", fRingHistos.GetEntries());
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
+    AliInfoF("Fill fit for FMD%d%c", o->fDet, o->fRing);
     if (CheckSkip(o->fDet, o->fRing, fSkips)) {
       AliWarningF("Skipping FMD%d%c for fitting", o->fDet, o->fRing);
       continue;
@@ -415,6 +429,8 @@ AliFMDEnergyFitter::MakeCorrectionsObject(TList* d)
   AliFMDCorrELossFit* obj = new AliFMDCorrELossFit;
   obj->SetEtaAxis(fEtaAxis);
   obj->SetLowCut(fLowCut);
+  if (AliLandauGaus::EnableSigmaShift()) 
+    obj->SetBit(AliFMDCorrELossFit::kHasShift);
 
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
@@ -471,10 +487,11 @@ AliFMDEnergyFitter::ReadParameters(const TCollection* col)
   //   true on success, false otherwise 
   //
   if (!col) return false;
-  Bool_t ret = true;
-  TAxis* axis = static_cast<TAxis*>(col->FindObject("etaAxis"));
-  if (!axis) ret = false;
+  Bool_t ret  = true;
+  TH1*   hist = static_cast<TH1*>(col->FindObject("etaAxis"));
+  if (!hist) ret = false;
   else {
+    TAxis* axis = hist->GetXaxis();
     if (axis->GetXbins()->GetArray()) 
       fEtaAxis.Set(axis->GetNbins(), axis->GetXbins()->GetArray());
    else 
@@ -509,6 +526,18 @@ AliFMDEnergyFitter::CheckSkip(UShort_t d, Char_t r, UShort_t skips)
   return (t & skips) == t;
 }
 
+#define PF(N,V,...)					\
+  AliForwardUtil::PrintField(N,V, ## __VA_ARGS__)
+#define PFB(N,FLAG)				\
+  do {									\
+    AliForwardUtil::PrintName(N);					\
+    std::cout << std::boolalpha << (FLAG) << std::noboolalpha << std::endl; \
+  } while(false)
+#define PFV(N,VALUE)					\
+  do {							\
+    AliForwardUtil::PrintName(N);			\
+    std::cout << (VALUE) << std::endl; } while(false)
+
 //____________________________________________________________________
 void
 AliFMDEnergyFitter::Print(Option_t*) const
@@ -519,34 +548,31 @@ AliFMDEnergyFitter::Print(Option_t*) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
-  std::cout << ind << ClassName() << ": " << GetName() << '\n'
-	    << ind << " Low cut:                " << fLowCut << " E/E_mip\n"
-	    << ind << " Max(particles):         " << fNParticles << '\n'
-	    << ind << " Min(entries):           " << fMinEntries << '\n'
-	    << ind << " Fit range:              " 
-	    << fFitRangeBinWidth << " bins\n"
-	    << ind << " Make fits:              " 
-	    << (fDoFits ? "yes\n" : "no\n")
-	    << ind << " Make object:            " 
-	    << (fDoMakeObject ? "yes\n" : "no\n")
-	    << ind << " Max E/E_mip:            " << fMaxE << '\n'
-	    << ind << " N bins:                 " << fNEbins << '\n'
-	    << ind << " Increasing bins:        " 
-	    << (fUseIncreasingBins ?"yes\n" : "no\n")
-	    << ind << " max(delta p/p):         " << fMaxRelParError << '\n'
-	    << ind << " max(chi^2/nu):          " << fMaxChi2PerNDF << '\n'
-	    << ind << " min(a_i):               " << fMinWeight << '\n'
-	    << ind << " Residuals:              "; 
+  AliForwardUtil::PrintTask(*this);
+
+  gROOT->IncreaseDirLevel();
+  PFV("Low cut [E/E_mip]",	fLowCut);
+  PFV("Max(particles)",	        fNParticles);
+  PFV("Min(entries)",	        fMinEntries);
+  PFV("Fit range [bins]",       fFitRangeBinWidth);
+  PFB("Make fits",              fDoFits);
+  PFB("Make object",            fDoMakeObject);
+  PFV("Max E/E_mip",	        fMaxE);
+  PFV("N bins",	                fNEbins);
+  PFB("Increasing bins",        fUseIncreasingBins);
+  PFV("max(delta p/p)",    	fMaxRelParError);
+  PFV("max(chi^2/nu)",	        fMaxChi2PerNDF);
+  PFV("min(a_i)",	        fMinWeight);
+
+  TString r = "";
   switch (fResidualMethod) { 
-  case kNoResiduals: std::cout << "None"; break;
-  case kResidualDifference: std::cout << "Difference"; break;
-  case kResidualScaledDifference: std::cout << "Scaled difference"; break;
-  case kResidualSquareDifference: std::cout << "Square difference"; break;
+  case kNoResiduals:              r = "None";       break;
+  case kResidualDifference:       r = "Difference"; break;
+  case kResidualScaledDifference: r = "Scaled difference"; break;
+  case kResidualSquareDifference: r = "Square difference"; break;
   }
-  std::cout << std::endl;
+  PFV("Residuals", r);
+  gROOT->DecreaseDirLevel();
 }
   
 //====================================================================
@@ -1224,16 +1250,16 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
   DMSG(fDebug,5,"max(%s) -> %f", dist->GetName(), max);
 
   // Check that we have enough entries 
-  Int_t nEntries = Int_t(dist->GetEntries());
+  Double_t nEntries = dist->GetEntries();
   if (nEntries <= minEntries) { 
-    AliWarning(Form("Histogram at %s has too few entries (%d <= %d)",
+    AliWarning(Form("Histogram at %s has too few entries (%f <= %d)",
 		    dist->GetName(), nEntries, minEntries));
     status = 2;
     return 0;
   }
 
   // Create a fitter object 
-  AliForwardUtil::ELossFitter f(lowCut, maxRange, minusBins); 
+  AliLandauGausFitter f(lowCut, maxRange, minusBins); 
   f.Clear();
   f.SetDebug(fDebug > 2); 
 

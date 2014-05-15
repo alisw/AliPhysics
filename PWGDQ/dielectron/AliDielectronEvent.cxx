@@ -41,7 +41,7 @@ AliDielectronEvent::AliDielectronEvent() :
   TNamed(),
   fArrTrackP(),
   fArrTrackN(),
-  fArrVertex("AliAODVertex",1000),
+  fArrVertex("AliAODVertex",10),
   fArrPairs("AliKFParticle",0),
   fNTracksP(0),
   fNTracksN(0),
@@ -61,7 +61,7 @@ AliDielectronEvent::AliDielectronEvent(const char* name, const char* title) :
   TNamed(name, title),
   fArrTrackP(),
   fArrTrackN(),
-  fArrVertex("AliAODVertex",1000),
+  fArrVertex("AliAODVertex",10),
   fArrPairs("AliKFParticle",0),
   fNTracksP(0),
   fNTracksN(0),
@@ -204,17 +204,21 @@ void AliDielectronEvent::Clear(Option_t *opt)
     delete fArrVertex.RemoveAt(i);
   }
   
+  fArrTrackP.ExpandCreateFast(1);
+  fArrTrackN.ExpandCreateFast(1);
+  fArrVertex.ExpandCreateFast(1);
+
   fArrPairs.Clear(opt);
 }
 
 //______________________________________________
-void AliDielectronEvent::SetAOD()
+void AliDielectronEvent::SetAOD(Int_t size)
 {
   //
   // use AOD as input
   //
-  fArrTrackP.SetClass("AliAODTrack",1000);
-  fArrTrackN.SetClass("AliAODTrack",1000);
+  fArrTrackP.SetClass("AliAODTrack",size);
+  fArrTrackN.SetClass("AliAODTrack",size);
   fIsAOD=kTRUE;
 }
 

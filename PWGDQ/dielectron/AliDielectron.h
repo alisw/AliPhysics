@@ -18,6 +18,8 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <THnBase.h>
+#include <TSpline.h>
 
 #include <AliAnalysisFilter.h>
 #include <AliKFParticle.h>
@@ -54,8 +56,9 @@ public:
   virtual ~AliDielectron();
 
   void Init();
-  
-  void Process(AliVEvent *ev1, AliVEvent *ev2=0);
+
+  void Process(/*AliVEvent *ev1, */TObjArray *arr);
+  Bool_t Process(AliVEvent *ev1, AliVEvent *ev2=0);
 
   const AliAnalysisFilter& GetEventFilter() const { return fEventFilter; }
   const AliAnalysisFilter& GetTrackFilter() const { return fTrackFilter; }
@@ -84,6 +87,7 @@ public:
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
+  void SetPairArraysPointer( TObjArray *arr) { fPairCandidates=arr; }
   void SetHistogramArray(AliDielectronHF * const histoarray) { fHistoArray=histoarray; }
   const TObjArray * GetHistogramArray() const { return fHistoArray?fHistoArray->GetHistArray():0x0; }
   const TObjArray * GetQAHistArray() const { return fQAmonitor?fQAmonitor->GetQAHistArray():0x0; }
@@ -117,6 +121,7 @@ public:
 
   void SetStoreRotatedPairs(Bool_t storeTR) {fStoreRotatedPairs = storeTR;}
   void SetDontClearArrays(Bool_t dontClearArrays=kTRUE) { fDontClearArrays=dontClearArrays; }
+  Bool_t DontClearArrays() const { return fDontClearArrays; }
 
   void AddSignalMC(AliDielectronSignalMC* signal);  
 
@@ -130,21 +135,28 @@ public:
   void SetTRDcorrectionFilename(const Char_t* filename) {fTRDpidCorrectionFilename = filename;}
   void SetVZEROCalibrationFilename(const Char_t* filename) {fVZEROCalibrationFilename = filename;}
   void SetVZERORecenteringFilename(const Char_t* filename) {fVZERORecenteringFilename = filename;}
-  void SetEffMapFilename(const Char_t* filename) {fEffMapFilename = filename;}
-
   void SetZDCRecenteringFilename(const Char_t* filename) {fZDCRecenteringFilename = filename;}
+  void InitLegEffMap(TString filename)  { fLegEffMap=InitEffMap(filename)  ;}
+  void InitPairEffMap(TString filename) { fPairEffMap=InitEffMap(filename) ;}
 
   void SetCentroidCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
   void SetWidthCorrFunction(TF1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetCentroidCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
+  void SetWidthCorrFunction(TH1 *fun, UInt_t varx, UInt_t vary=0, UInt_t varz=0);
 
   void SaveDebugTree();
+  Bool_t DoEventProcess() const { return fEventProcess; }
+  void SetEventProcess(Bool_t setValue=kTRUE) { fEventProcess=setValue; }
+  void  FillHistogramsFromPairArray(Bool_t pairInfoOnly=kFALSE);
 
 private:
 
   Bool_t fCutQA;                    // monitor cuts
   AliDielectronCutQA *fQAmonitor;   // monitoring of cuts
-  TF1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
-  TF1 *fPostPIDWdthCorr;    // post pid correction object for widths
+  TH1 *fPostPIDCntrdCorr;   // post pid correction object for centroids
+  TH1 *fPostPIDWdthCorr;    // post pid correction object for widths
+  TObject *fLegEffMap;      // single electron efficiency map
+  TObject *fPairEffMap;      // pair efficiency map
   AliAnalysisFilter fEventFilter;    // Event cuts
   AliAnalysisFilter fTrackFilter;    // leg cuts
   AliAnalysisFilter fPairPreFilter;  // pair prefilter cuts
@@ -167,7 +179,8 @@ private:
   AliDielectronHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
                                   //  by the analysis framework
- 
+  TBits *fUsedVars;               // used variables
+
   TObjArray fTracks[4];           //! Selected track candidates
                                   //  0: Event1, positive particles
                                   //  1: Event1, negative particles
@@ -189,7 +202,8 @@ private:
   Bool_t fHasMC;                //If we run with MC, at the moment only needed in AOD
   Bool_t fStoreRotatedPairs;    //It the rotated pairs should be stored in the pair array
   Bool_t fDontClearArrays;      //Don't clear the arrays at the end of the Process function, needed for external use of pair and tracks
-  
+  Bool_t fEventProcess;         //Process event (or pair array)
+
   void FillTrackArrays(AliVEvent * const ev, Int_t eventNr=0);
   void EventPlanePreFilter(Int_t arr1, Int_t arr2, TObjArray arrTracks1, TObjArray arrTracks2, const AliVEvent *ev);
   void PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, TObjArray &arrTracks2);
@@ -202,6 +216,7 @@ private:
   void ClearArrays();
   
   TObjArray* PairArray(Int_t i);
+  TObject* InitEffMap(TString filename);
   
   static const char* fgkTrackClassNames[4];   //Names for track arrays
   static const char* fgkPairClassNames[11];   //Names for pair arrays
@@ -210,7 +225,6 @@ private:
   TString fTRDpidCorrectionFilename;         // name for the file containing the single particle TRD pid corrections
   TString fVZEROCalibrationFilename;         // file containing VZERO channel-by-channel calibration
   TString fVZERORecenteringFilename;         // file containing VZERO Q-vector recentering averages
-  TString fEffMapFilename;                   // file containing single electron efficiencies
   TString fZDCRecenteringFilename;         // file containing ZDCQ-vector recentering averages
 
   void ProcessMC(AliVEvent *ev1);
@@ -227,7 +241,7 @@ private:
   AliDielectron(const AliDielectron &c);
   AliDielectron &operator=(const AliDielectron &c);
   
-  ClassDef(AliDielectron,8);
+  ClassDef(AliDielectron,12);
 };
 
 inline void AliDielectron::InitPairCandidateArrays()

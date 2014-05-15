@@ -52,6 +52,9 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t PassesCuts(const AliFlowTrackSimple *track) const;
   Bool_t PassesCuts(TParticle* p) const;
 
+  Int_t GetPOItype() const {return fPOItype;}
+  void SetPOItype(Int_t t) {fPOItype=t;}
+
   virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
 
  protected:
@@ -71,6 +74,7 @@ class AliFlowTrackSimpleCuts : public TNamed {
   Bool_t   fCutMass; // cut on mass?
   Double_t fMassMax; //max mass
   Double_t fMassMin; //min mass
+  Int_t    fPOItype; //which poi type do we produce? (RP=0, POI=1,2,3,4,5...)
 
   ClassDef(AliFlowTrackSimpleCuts,2)
 };

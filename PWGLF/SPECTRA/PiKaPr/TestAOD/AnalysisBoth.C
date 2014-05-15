@@ -27,6 +27,7 @@ Double_t minptforWD[6]={0.2,100.0,0.3,0.2,100.0,0.3};
 Double_t maxptforWD[6]={1.5,-100.0,2.0,1.5,-100.0,2.0};
 Double_t minRanges[3]={0.3,0.3,0.45};
 Double_t maxRanges[3]={1.5,1.2,2.2};
+Double_t TOFPIDsignalmatching[]={-1.0,-1.0,-1.0};
 Double_t fMaxContaminationPIDMC=0.2;
 
 
@@ -48,7 +49,8 @@ enum {
  knormalizationwithbin0integralsMC=0x200, //in this case reconstructed vertex disitrbution uses z vertex for data, those to options will be use only if knormalizationtoeventspassingPhySel is not set
  kuserangeonfigfile=0x400, // use of config file for dca fit settings
  kskipconcutonspectra=0x800, //do not use conPID<02 cut  useful for syst. studies
- kuseTOFmatchingcorrection=0x1000 // if set tof matching correction is applied.	
+ kuseTOFmatchingcorrection=0x1000, // if set tof matching correction is applied.
+ kuseTOFcorrforPIDsignalmatching=0x2000 // rescale the for spectra by the factor given in config files			
   							
 };	
 
@@ -363,12 +365,26 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 			{
 				CleanHisto(spectra[i],-1,100,contPID[i]);
 				CleanHisto(spectraLeonardo[i],-1,100,contPID[i]);
-			}				
+			}
+			// Apply correction for wrongly simulated TOF signal in MC 
+			if(options&kuseTOFcorrforPIDsignalmatching)
+				TOFPIDsignalmatchingApply(spectra[i],TOFPIDsignalmatching[i%3]);
+							
 	}
 	
 	GFCorrection(spectra,tcutsdata->GetPtTOFMatching(),options);
 	GFCorrection(spectraLeonardo,tcutsdata->GetPtTOFMatching(),options);
-		TH1F* allch=GetSumAllCh(spectra,mass);
+	
+	Double_t ycut=tcutsdata->GetY();
+	Double_t etacut=tcutsdata->GetEtaMax()-tcutsdata->GetEtaMin();
+	if(etacut<0.00001)
+	{
+		cout<<"using eta window 1.6"<<endl; 
+		etacut=1.6;
+
+	}
+
+	TH1F* allch=GetSumAllCh(spectra,mass,etacut);
 	lout->Add(allch);	
        	if(options&kuseTOFmatchingcorrection)
 	{	
@@ -389,7 +405,6 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 	if (options&kveretxcorrectionandbadchunkscorr)
 		vertexcorrection=corrbadchunksvtx;
 	cout<<" VTX corr="<<vertexcorrection<<endl;
-	Double_t ycut=tcutsdata->GetY();
 	if(TMath::Abs(ycut)>0.0)
 		vertexcorrection=vertexcorrection/(2.0*ycut);
 	for (int i=0;i<6;i++)
@@ -404,7 +419,7 @@ void AnalysisBoth (UInt_t options=0xF,TString outdate, TString outnamedata, TStr
 		}
 	}	
 	allch->Scale(vertexcorrection);
-	spectraall->Scale(vertexcorrection/1.6);
+	spectraall->Scale(vertexcorrection/etacut);
 
 	//spectraall->Scale(1.0/1.6);
 	lout->Write("output",TObject::kSingleKey);	
@@ -476,7 +491,7 @@ Bool_t   OpenFile(TString dirname,TString outputname, Bool_t mcflag, Bool_t mcas
 		if(!managerdata||!ecutsdata||!tcutsdata)
 			return false;
 		if(managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()!=ecutsdata->GetHistoCuts()->GetBinContent(3))
-			cout<<"Please check DATA file possible problem with merging"<<" "<<anagerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsdata->GetHistoCuts()->GetBinContent(3)<<endl;
+			cout<<"Please check DATA file possible problem with merging"<<" "<<managerdata->GetGenMulvsRawMulHistogram("hHistGenMulvsRawMul")->GetEntries()<<" "<<ecutsdata->GetHistoCuts()->GetBinContent(3)<<endl;
 
 	}
 	return true;
@@ -965,7 +980,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
   	  	TFile *fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
 	  	if (!fGeanFlukaK)
 		{
-			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.321.root";
+			fnameGeanFlukaK="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.321.root";
 			fGeanFlukaK= new TFile(fnameGeanFlukaK.Data());
 			if (!fGeanFlukaK)
 				return;
@@ -1027,7 +1042,7 @@ void GFCorrection(TH1F **Spectra,Float_t tofpt,UInt_t options)
 	  TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 	  if (!fGFProtons)
 	  { 
-		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/GFCorrection/correctionForCrossSection.root";
+		fnameGFProtons=="$ALICE_ROOT/PWGLF/SPECTRA/PiKaPr/TestAOD/correctionForCrossSection.root";
 		TFile* fGFProtons = new TFile (fnameGFProtons.Data());
 		if (!fGFProtons)
 			return;
@@ -1246,7 +1261,7 @@ Double_t eta2y(Double_t pt, Double_t mass, Double_t eta)
   return TMath::ASinH(pt / mt * TMath::SinH(eta));
 }
 
-TH1* GetSumAllCh(TH1F** spectra, Double_t* mass  )
+TH1* GetSumAllCh(TH1F** spectra, Double_t* mass,Double_t etacut)
 {
 	TH1F* allch=(((TH1F*))spectra[0]->Clone("allCh"));
 	allch->Reset();
@@ -1262,9 +1277,9 @@ TH1* GetSumAllCh(TH1F** spectra, Double_t* mass  )
 				Float_t pt=spectra[i]->GetXaxis()->GetBinCenter(j);
 				Float_t mt2=masstmp*masstmp+pt*pt;		
 				Float_t mt=TMath::Sqrt(mt2);
-				Float_t maxy=eta2y(pt,masstmp,0.8);
+				Float_t maxy=eta2y(pt,masstmp,etacut/2.0);
 				Float_t conver=maxy*(TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(maxy)*TMath::CosH(maxy)))+TMath::Sqrt(1-masstmp*masstmp/(mt2*TMath::CosH(0.0)*TMath::CosH(0.0))));
-				conver=conver/1.6;
+				conver=conver/etacut;
 				//cout<<maxy<<" "<<conver<<" "<<masstmp<<""<<spectra[i]->GetName()<<endl;
 				Float_t bincontent=allch->GetBinContent(j);
 				Float_t binerror=allch->GetBinError(j);
@@ -1367,7 +1382,7 @@ Bool_t ReadConfigFile(TString configfile)
 	ifstream infile(configfile.Data());
 	if(infile.is_open()==false)
 		return false;
-	TString namesofSetting[35]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons"};	
+	TString namesofSetting[38]={"CutRangeMin","CutRangeMax","FitRangeMin","FitRangeMax","MinMatPionPlus","MaxMatPionPlus","MinMatKaonPlus","MaxMatKaonPlus","MinMatProtonPlus","MaxMatProtonPlus","MinMatPionMinus","MaxMatPionMinus","MinMatKaonMinus","MaxMatKaonMinus","MinMatProtonMinus","MaxMatProtonMinus","MinWDPionPlus","MaxWDPionPlus","MinWDKaonPlus","MaxWDKaonPlus","MinWDProtonPlus","MaxWDProtonPlus","MinWDPionMinus","MaxWDPionMinus","MinWDKaonMinus","MaxWDKaonMinus","MinWDProtonMinus","MaxWDProtonMinus","MaxContaminationPIDMC","MinPions","MaxPions","MinKaons","MaxKaons","MinProtons","MaxProtons","TOFPIDsignalmatchPion","TOFPIDsignalmatchKaon","TOFPIDsignalmatchProton"};	
 
 	char buffer[256];
 	while (infile.eof()==false)
@@ -1447,7 +1462,13 @@ Bool_t ReadConfigFile(TString configfile)
 			minRanges[2]=(tmpstring.Remove(0,namesofSetting[33].Length()+1)).Atof();
 		else if (tmpstring.Contains(namesofSetting[34]))
 			maxRanges[2]=(tmpstring.Remove(0,namesofSetting[34].Length()+1)).Atof();		
-	        else
+	        else if (tmpstring.Contains(namesofSetting[35]))
+			TOFPIDsignalmatching[0]=(tmpstring.Remove(0,namesofSetting[35].Length()+1)).Atof();		
+		else if (tmpstring.Contains(namesofSetting[36]))
+			TOFPIDsignalmatching[1]=(tmpstring.Remove(0,namesofSetting[36].Length()+1)).Atof();
+		else if (tmpstring.Contains(namesofSetting[37]))
+			TOFPIDsignalmatching[2]=(tmpstring.Remove(0,namesofSetting[37].Length()+1)).Atof();	
+		else  
 			continue;
 
 
@@ -1524,4 +1545,18 @@ void TOFMatchingForNch(TH1* h)
 		return;			
 
 
-}	
+}
+void TOFPIDsignalmatchingApply(TH1* h, Float_t factor)
+{
+	if(factor<0.0)
+		return;
+	for(Int_t ibin=1;ibin<h->GetNbinsX();ibin++)
+	{
+		Float_t ptspectra=h->GetBinCenter(ibin);
+		if(ptspectra<tcutsdata->GetPtTOFMatching())
+			continue;
+		h->SetBinContent(ibin,(h->GetBinContent(ibin)*factor));
+
+	}
+
+}			

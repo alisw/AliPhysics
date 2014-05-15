@@ -129,6 +129,21 @@ TVectorD* AliDielectronHelper::MakeArbitraryBinning(const char* bins)
   return binLimits;
 }
 
+//_____________________________________________________________________________
+void AliDielectronHelper::GetMaxPtAndPhi(const AliVEvent *ev, Double_t &ptMax, Double_t &phiOfptMax){
+  //
+  // find the highest pt and its phi in the event
+  //
+  for(Int_t itrk=0; itrk<ev->GetNumberOfTracks(); itrk++) {
+    AliVParticle *part= ev->GetTrack(itrk);
+    if(part && part->Pt() > ptMax) {
+      ptMax      = part->Pt();
+      phiOfptMax = part->Phi();
+    }
+  }
+
+
+}
 
 //_____________________________________________________________________________
 Int_t AliDielectronHelper::GetNch(const AliMCEvent *ev, Double_t etaRange){

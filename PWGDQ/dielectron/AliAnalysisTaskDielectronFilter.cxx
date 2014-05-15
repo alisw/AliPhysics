@@ -156,6 +156,7 @@ if(fCreateNanoAOD && isAOD){
    extDielectron->GetAOD()->GetStdContent();
    }else if(fCreateNanoAOD && !isAOD){AliWarning("Filtered-Nano AODs creation works only on AODs ");  } 
   
+  PostData(1, const_cast<THashList*>(fDielectron->GetHistogramList()));
   PostData(2,fEventStat);
 }
 
@@ -197,7 +198,7 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
   //before physics selection
   fEventStat->Fill(kAllEvents);
   if (isSelected==0||isRejected) {
-    PostData(3,fEventStat);
+    PostData(2,fEventStat);
     return;
   }
   //after physics selection
@@ -215,8 +216,12 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
    fEventStat->Fill(kV0andEvents);
 
   //Fill Event histograms before the event filter
+  AliDielectronHistos *h=fDielectron->GetHistoManager();
+
   Double_t values[AliDielectronVarManager::kNMaxValues]={0};
   Double_t valuesMC[AliDielectronVarManager::kNMaxValues]={0};
+  if(h)  AliDielectronVarManager::SetFillMap(h->GetUsedVars());
+  else   AliDielectronVarManager::SetFillMap(0x0);
   AliDielectronVarManager::SetEvent(InputEvent());
   AliDielectronVarManager::Fill(InputEvent(),values);
   AliDielectronVarManager::Fill(InputEvent(),valuesMC);
@@ -227,13 +232,12 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
       AliDielectronVarManager::Fill(AliDielectronMC::Instance()->GetMCEvent(),valuesMC);
   }
 
-  AliDielectronHistos *h=fDielectron->GetHistoManager();
-    if (h){
-      if (h->GetHistogramList()->FindObject("Event_noCuts"))
-        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,values);
-      if (hasMC && h->GetHistogramList()->FindObject("MCEvent_noCuts"))
-        h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,valuesMC);
-    }
+  if (h){
+    if (h->GetHistogramList()->FindObject("Event_noCuts"))
+      h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,values);
+    if (hasMC && h->GetHistogramList()->FindObject("MCEvent_noCuts"))
+      h->FillClass("Event_noCuts",AliDielectronVarManager::kNMaxValues,valuesMC);
+  }
 
   //event filter
   if (fEventFilter) {

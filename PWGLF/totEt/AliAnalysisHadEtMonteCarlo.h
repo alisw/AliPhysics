@@ -61,6 +61,11 @@ public:
     void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceITS",fSimPiKPEt,et,1.0);}
     void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceTPCNoPID",fSimPiKPEt,et,1.0);}
     void FillSimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimPiKPEtVsRecoPiKPEtFullAcceptanceITSNoPID",fSimPiKPEt,et,1.0);}
+    //Raw histograms
+    void FillSimRawEtVsRecoRawEtFullAcceptanceTPC(Float_t et){if(fGoodEvent)FillHisto2D("SimRawEtVsRecoRawEtFullAcceptanceTPC",fSimRawEtTPC,et,1.0);}
+    void FillSimRawEtVsRecoRawEtFullAcceptanceITS(Float_t et){if(fGoodEvent)FillHisto2D("SimRawEtVsRecoRawEtFullAcceptanceITS",fSimRawEtITS,et,1.0);}
+    void FillSimRawEtVsRecoRawEtFullAcceptanceTPCNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimRawEtVsRecoRawEtFullAcceptanceTPCNoPID",fSimRawEtTPC,et,1.0);}
+    void FillSimRawEtVsRecoRawEtFullAcceptanceITSNoPID(Float_t et){if(fGoodEvent)FillHisto2D("SimRawEtVsRecoRawEtFullAcceptanceITSNoPID",fSimRawEtITS,et,1.0);}
 
     void FillSimTotEtMinusRecoTotEtFullAcceptanceTPC(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceTPC",et,(fSimTotEt-et)/fSimTotEt,1.0);}
     void FillSimTotEtMinusRecoTotEtFullAcceptanceITS(Float_t et){if(fGoodEvent && fSimTotEt>0.0&&et>0.0)FillHisto2D("SimTotEtMinusRecoTotEtFullAcceptanceITS",et,(fSimTotEt-et)/fSimTotEt,1.0);}
@@ -134,6 +139,8 @@ public:
     AliAnalysisHadEtMonteCarlo(const AliAnalysisHadEtMonteCarlo & g) ; // cpy ctor
 
     Float_t fSimPiKPEt;//simulated Et for pi,k,p event by event
+    Float_t fSimRawEtTPC;//simulated Et for pi,k,p event by event
+    Float_t fSimRawEtITS;//simulated Et for pi,k,p event by event
     Float_t fSimHadEt;//simulated Et event by event
     Float_t fSimTotEt;//total et event by event
     Float_t fSimPiKPEtShouldBeReco;//simulated Et for pi,k,p event by event

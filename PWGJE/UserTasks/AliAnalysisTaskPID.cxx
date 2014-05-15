@@ -48,11 +48,13 @@ const Double_t AliAnalysisTaskPID::fgkSigmaReferenceForTransitionPars = 0.05; //
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID()
   : AliAnalysisTaskPIDV0base()
+  , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
   , fDoPtResolution(kTRUE)
+  , fDoDeDxCheck(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -71,11 +73,15 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
-  , fSystematicScalingSplines(1.0)
+  , fSystematicScalingSplinesThreshold(50.)
+  , fSystematicScalingSplinesBelowThreshold(1.0)
+  , fSystematicScalingSplinesAboveThreshold(1.0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
-  , fSystematicScalingEtaSigmaPara(1.0)
+  , fSystematicScalingEtaSigmaParaThreshold(250.)
+  , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
+  , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
   , fSystematicScalingMultCorrection(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
@@ -126,7 +132,11 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fDeltaPrimeAxis(0x0)
+  , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -134,8 +144,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
-  , fPtResolutionContainer(0x0)
+  , fQAContainer(0x0)
 {
   // default Constructor
   
@@ -171,11 +182,13 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
 //________________________________________________________________________
 AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   : AliAnalysisTaskPIDV0base(name)
+  , fRun(-1)
   , fPIDcombined(new AliPIDCombined())
   , fInputFromOtherTask(kFALSE)
   , fDoPID(kTRUE)
   , fDoEfficiency(kTRUE)
   , fDoPtResolution(kTRUE)
+  , fDoDeDxCheck(kTRUE)
   , fStoreCentralityPercentile(kFALSE)
   , fStoreAdditionalJetInformation(kFALSE)
   , fTakeIntoAccountMuons(kFALSE)
@@ -194,11 +207,15 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fEtaAbsCutLow(0.0)
   , fEtaAbsCutUp(0.9)
   , fDoAnySystematicStudiesOnTheExpectedSignal(kFALSE)
-  , fSystematicScalingSplines(1.0)
+  , fSystematicScalingSplinesThreshold(50.)
+  , fSystematicScalingSplinesBelowThreshold(1.0)
+  , fSystematicScalingSplinesAboveThreshold(1.0)
   , fSystematicScalingEtaCorrectionMomentumThr(0.35)
   , fSystematicScalingEtaCorrectionLowMomenta(1.0)
   , fSystematicScalingEtaCorrectionHighMomenta(1.0)
-  , fSystematicScalingEtaSigmaPara(1.0)
+  , fSystematicScalingEtaSigmaParaThreshold(250.)
+  , fSystematicScalingEtaSigmaParaBelowThreshold(1.0)
+  , fSystematicScalingEtaSigmaParaAboveThreshold(1.0)
   , fSystematicScalingMultCorrection(1.0)
   , fCentralityEstimator("V0M")
   , fhPIDdataAll(0x0)
@@ -249,7 +266,11 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fGenRespPrDeltaPi(new Double_t[fgkMaxNumGenEntries])
   , fGenRespPrDeltaPr(new Double_t[fgkMaxNumGenEntries])
   */
+  , fDeltaPrimeAxis(0x0)
+  , fhMaxEtaVariation(0x0)
   , fhEventsProcessed(0x0)
+  , fhEventsTriggerSel(0x0)
+  , fhEventsTriggerSelVtxCut(0x0) 
   , fhSkippedTracksForSignalGeneration(0x0)
   , fhMCgeneratedYieldsPrimaries(0x0)
   , fh2FFJetPtRec(0x0)
@@ -257,8 +278,9 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
-  , fPtResolutionContainer(0x0)
+  , fQAContainer(0x0)
 {
   // Constructor
   
@@ -312,11 +334,14 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   delete fOutputContainer;
   fOutputContainer = 0x0;
   
-  delete fPtResolutionContainer;
-  fPtResolutionContainer = 0x0;
+  delete fQAContainer;
+  fQAContainer = 0x0;
 
   delete fConvolutedGausDeltaPrime;
   fConvolutedGausDeltaPrime = 0x0;
+  
+  delete fDeltaPrimeAxis;
+  fDeltaPrimeAxis = 0x0;
   
   delete [] fGenRespElDeltaPrimeEl;
   delete [] fGenRespElDeltaPrimeKa;
@@ -367,6 +392,9 @@ AliAnalysisTaskPID::~AliAnalysisTaskPID()
   fGenRespPrDeltaPrimeKa = 0x0;
   fGenRespPrDeltaPrimePi = 0x0;
   fGenRespPrDeltaPrimePr = 0x0;
+  
+  delete fhMaxEtaVariation;
+  fhMaxEtaVariation = 0x0;
   
   /*OLD with deltaSpecies 
   delete [] fGenRespElDeltaEl;
@@ -427,7 +455,7 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
 {
   // Initialise the PIDcombined object
   
-  if (!fDoPID)
+  if (!fDoPID && !fDoDeDxCheck)
     return;
   
   if(fDebug > 1)
@@ -467,6 +495,56 @@ void AliAnalysisTaskPID::SetUpPIDcombined()
   
   if(fDebug > 1)
     printf("File: %s, Line: %d: SetUpPIDcombined done\n", (char*)__FILE__, __LINE__);
+}
+
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskPID::CalculateMaxEtaVariationMapFromPIDResponse()
+{
+  // Calculate the maximum deviation from unity of the eta correction factors for each row in 1/dEdx(splines)
+  // from the eta correction map of the TPCPIDResponse. The result is stored in fhMaxEtaVariation.
+  
+  if (!fPIDResponse) {
+    AliError("No PID response!");
+    return kFALSE;
+  }
+  
+  delete fhMaxEtaVariation;
+  
+  const TH2D* hEta = fPIDResponse->GetTPCResponse().GetEtaCorrMap();
+  if (!hEta) {
+    AliError("No eta correction map!");
+    return kFALSE;
+  }
+  
+  // Take binning from hEta in Y for fhMaxEtaVariation
+  fhMaxEtaVariation = hEta->ProjectionY("hMaxEtaVariation");
+  fhMaxEtaVariation->SetDirectory(0);
+  fhMaxEtaVariation->Reset();
+  
+  // For each bin in 1/dEdx, loop of all tanTheta bins and find the maximum deviation from unity.
+  // Store the result in fhMaxEtaVariation
+  
+  for (Int_t binY = 1; binY <= fhMaxEtaVariation->GetNbinsX(); binY++) {
+    Double_t maxAbs = -1;
+    for (Int_t binX = 1; binX <= hEta->GetNbinsX(); binX++) {
+      Double_t curr = TMath::Abs(hEta->GetBinContent(binX, binY) - 1.);
+      if (curr > maxAbs)
+        maxAbs = curr;
+    }
+    
+    if (maxAbs < 1e-12) {
+      AliError(Form("Maximum deviation from unity is zero for 1/dEdx = %f (bin %d)", hEta->GetYaxis()->GetBinCenter(binY), binY));
+      delete fhMaxEtaVariation;
+      return kFALSE;
+    }
+    
+    fhMaxEtaVariation->SetBinContent(binY, maxAbs);
+  }
+  
+  printf("AliAnalysisTaskPID: Calculated max eta variation.\n");
+  
+  return kTRUE;
 }
 
 
@@ -543,6 +621,8 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   for (Int_t i = 0 + 1; i <= deltaPrimeNBins; i++) {
     deltaPrimeBins[i] = factor * deltaPrimeBins[i - 1];
   }
+  
+  fDeltaPrimeAxis = new TAxis(deltaPrimeNBins, deltaPrimeBins);
   
   const Int_t nMCPIDbins = 5;
   const Double_t mcPIDmin = 0.;
@@ -667,18 +747,31 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     SetUpGenHist(fhGenPr, binsPt, deltaPrimeBins, binsCent, binsJetPt);
     fOutputContainer->Add(fhGenPr);
     
-    
-    fhEventsProcessed = new TH1D("fhEventsProcessed","Number of processed events;Centrality percentile", nCentBins,
-                                 binsCent);
-    fhEventsProcessed->Sumw2();
-    fOutputContainer->Add(fhEventsProcessed);
-    
     fhSkippedTracksForSignalGeneration = new TH2D("fhSkippedTracksForSignalGeneration",
-                                                  "Number of tracks skipped for the signal generation;P_{T}^{gen} (GeV/c);TPC signal N", 
+                                                  "Number of tracks skipped for the signal generation;p_{T}^{gen} (GeV/c);TPC signal N", 
                                                   nPtBins, binsPt, 161, -0.5, 160.5);
     fhSkippedTracksForSignalGeneration->Sumw2();
     fOutputContainer->Add(fhSkippedTracksForSignalGeneration);
   }
+  
+  
+  fhEventsProcessed = new TH1D("fhEventsProcessed",
+                               "Number of events passing trigger selection, vtx and zvtx cuts;Centrality percentile", 
+                               nCentBins, binsCent);
+  fhEventsProcessed->Sumw2();
+  fOutputContainer->Add(fhEventsProcessed);
+  
+  fhEventsTriggerSelVtxCut = new TH1D("fhEventsTriggerSelVtxCut",
+                                      "Number of events passing trigger selection and vtx cut;Centrality percentile", 
+                                      nCentBins, binsCent);
+  fhEventsTriggerSelVtxCut->Sumw2();
+  fOutputContainer->Add(fhEventsTriggerSelVtxCut);
+  
+  fhEventsTriggerSel = new TH1D("fhEventsTriggerSel",
+                                "Number of events passing trigger selection;Centrality percentile", 
+                                nCentBins, binsCent);
+  fOutputContainer->Add(fhEventsTriggerSel);
+  fhEventsTriggerSel->Sumw2();
   
   
   // Generated yields within acceptance
@@ -741,14 +834,14 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     }
     
     fContainerEff->SetVarTitle(kEffMCID,"MC ID");
-    fContainerEff->SetVarTitle(kEffTrackPt,"P_{T} (GeV/c)");
+    fContainerEff->SetVarTitle(kEffTrackPt,"p_{T} (GeV/c)");
     fContainerEff->SetVarTitle(kEffTrackEta,"#eta");
     fContainerEff->SetVarTitle(kEffTrackCharge,"Charge (e_{0})");
     fContainerEff->SetVarTitle(kEffCentrality, "Centrality Percentile");
     if (fStoreAdditionalJetInformation) {
-      fContainerEff->SetVarTitle(kEffJetPt, "P_{T}^{jet} (GeV/c)");
-      fContainerEff->SetVarTitle(kEffZ, "z = P_{T}^{track} / P_{T}^{jet}");
-      fContainerEff->SetVarTitle(kEffXi, "#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+      fContainerEff->SetVarTitle(kEffJetPt, "p_{T}^{jet} (GeV/c)");
+      fContainerEff->SetVarTitle(kEffZ, "z = p_{T}^{track} / p_{T}^{jet}");
+      fContainerEff->SetVarTitle(kEffXi, "#xi = ln(p_{T}^{jet} / p_{T}^{track})");
     }
     
     // Define clean MC sample
@@ -771,11 +864,11 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   if (fDoPID || fDoEfficiency) {
     // Generated jets
-    fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+    fh2FFJetPtRec = new TH2D("fh2FFJetPtRec", "Number of reconstructed jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtRec->Sumw2();
     fOutputContainer->Add(fh2FFJetPtRec);
-    fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;P_{T}^{jet} (GeV/c)",
+    fh2FFJetPtGen = new TH2D("fh2FFJetPtGen", "Number of generated jets;Centrality Percentile;p_{T}^{jet} (GeV/c)",
                             nCentBins, binsCent, nJetPtBins, binsJetPt);
     fh2FFJetPtGen->Sumw2();
     fOutputContainer->Add(fh2FFJetPtGen);
@@ -792,16 +885,17 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   fOutputContainer->Add(fh1Xsec);
   fOutputContainer->Add(fh1Trials);
   
-  if (fDoPtResolution) {
+  if (fDoDeDxCheck || fDoPtResolution) {
     OpenFile(3);
+    fQAContainer = new TObjArray(1);
+    fQAContainer->SetName(Form("%s_QA", GetName()));
+    fQAContainer->SetOwner(kTRUE);
     
     if(fDebug > 2)
-    printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
-    
-    fPtResolutionContainer = new TObjArray(1);
-    fPtResolutionContainer->SetName(Form("%s_PtResolution", GetName()));
-    fPtResolutionContainer->SetOwner(kTRUE);
-    
+      printf("File: %s, Line: %d: UserCreateOutputObjects -> OpenFile(3) successful\n", (char*)__FILE__, __LINE__);
+  }
+  
+  if (fDoPtResolution) {
     const Int_t nPtBinsRes = 100;
     Double_t pTbinsRes[nPtBinsRes + 1];
 
@@ -827,8 +921,27 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
                                         Form("Pt resolution for primaries, %s", AliPID::ParticleLatexName(i)),
                                         nBinsPtResolution, ptResolutionBins, ptResolutionXmin, ptResolutionXmax);
       SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
-      fPtResolutionContainer->Add(fPtResolution[i]);
+      fQAContainer->Add(fPtResolution[i]);
     }
+  }
+  
+  
+  
+  if (fDoDeDxCheck) {
+    const Int_t nEtaAbsBins = 9;
+    const Double_t binsEtaAbs[nEtaAbsBins+1] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+    
+    const Double_t dEdxMin = 20;
+    const Double_t dEdxMax = 110;
+    const Int_t nDeDxBins = (Int_t) ((dEdxMax - dEdxMin) / 0.02);
+    const Int_t nBinsDeDxCheck= kDeDxCheckNumAxes;
+    Int_t dEdxCheckBins[kDeDxCheckNumAxes]    = { nSelSpeciesBins, nPtBins, nJetPtBins, nEtaAbsBins, nDeDxBins };
+    Double_t dEdxCheckXmin[kDeDxCheckNumAxes] = { selSpeciesMin, binsPt[0], binsJetPt[0], binsEtaAbs[0], dEdxMin };
+    Double_t dEdxCheckXmax[kDeDxCheckNumAxes] = { selSpeciesMax, binsPt[nPtBins], binsJetPt[nJetPtBins], binsEtaAbs[nEtaAbsBins], dEdxMax };
+    
+    fDeDxCheck = new THnSparseD("fDeDxCheck", "dEdx check", nBinsDeDxCheck, dEdxCheckBins, dEdxCheckXmin, dEdxCheckXmax);
+    SetUpDeDxCheckHist(fDeDxCheck, binsPt, binsJetPt, binsEtaAbs);
+    fQAContainer->Add(fDeDxCheck);
   }
   
   if(fDebug > 2)
@@ -836,7 +949,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
   
   PostData(1, fOutputContainer);
   PostData(2, fContainerEff);
-  PostData(3, fPtResolutionContainer);
+  PostData(3, fQAContainer);
   
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserCreateOutputObjects -> Done\n", (char*)__FILE__, __LINE__);
@@ -851,6 +964,19 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
 
   if(fDebug > 1)
     printf("File: %s, Line: %d: UserExec\n", (char*)__FILE__, __LINE__);
+  
+  Int_t run = InputEvent()->GetRunNumber();
+  
+  if (run != fRun){
+    // If systematics on eta is investigated, need to calculate the maxEtaVariationMap
+    if ((TMath::Abs(fSystematicScalingEtaCorrectionLowMomenta - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - 1.0) > fgkEpsilon)) {
+      if (!CalculateMaxEtaVariationMapFromPIDResponse())
+        AliFatal("Systematics on eta correction requested, but failed to calculate max eta varation map!");
+    }
+  }
+  
+  fRun = run;
   
   // No processing of event, if input is fed in directly from another task
   if (fInputFromOtherTask)
@@ -870,7 +996,14 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if (!fPIDResponse || !fPIDcombined)
     return;
   
-  if (!GetVertexIsOk(fEvent))
+  Double_t centralityPercentile = -1;
+  if (fStoreCentralityPercentile)
+    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSel);
+  
+  // Check if vertex is ok, but don't apply cut on z position
+  if (!GetVertexIsOk(fEvent, kFALSE))
     return;
   
   fESD = dynamic_cast<AliESDEvent*>(fEvent);
@@ -881,14 +1014,15 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
   if(primaryVertex->GetNContributors() <= 0) 
     return;
   
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCut);
+  
+  // Now check again, but also require z position to be in desired range
+  if (!GetVertexIsOk(fEvent, kTRUE))
+    return;
+  
+  IncrementEventCounter(centralityPercentile, kTriggerSelAndVtxCutAndZvtxCut);
+  
   Double_t magField = fEvent->GetMagneticField();
-  
-  //OLD with DeltaSpecies const Bool_t usePureGausForDelta = kTRUE;
-  
-
-  Double_t centralityPercentile = -1;
-  if (fStoreCentralityPercentile)
-    centralityPercentile = fEvent->GetCentrality()->GetCentralityPercentile(fCentralityEstimator.Data());
   
   if (fMC) {
     if (fDoPID || fDoEfficiency) {
@@ -918,7 +1052,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
             continue;
         
         if (fDoPID) {
-          Double_t valuesGenYield[kGenYieldNumAxes] = { mcID, mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
+          Double_t valuesGenYield[kGenYieldNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), centralityPercentile, -1, -1, -1, -1 };
           valuesGenYield[GetIndexOfChargeAxisGenYield()] = chargeMC;
         
           fhMCgeneratedYieldsPrimaries->Fill(valuesGenYield);
@@ -926,7 +1060,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         
         
         if (fDoEfficiency) {
-          Double_t valueEff[kEffNumAxes] = { mcID, mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
+          Double_t valueEff[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcPart->Pt(), mcPart->Eta(), chargeMC, centralityPercentile,
                                             -1, -1, -1 };
           
           fContainerEff->Fill(valueEff, kStepGenWithGenCuts);    
@@ -945,7 +1079,9 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     
     
     // Apply detector level track cuts
-    Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+    const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
+                                 ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
+    Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
     if (dEdxTPC <= 0)
       continue;
     
@@ -993,11 +1129,11 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
             IsInAcceptedEtaRange(TMath::Abs(mcTrack->Eta()))) {
           
           // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-          Double_t value[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
+          Double_t value[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., centralityPercentile,
                                           -1, -1, -1 };
           fContainerEff->Fill(value, kStepRecWithGenCuts);    
             
-          Double_t valueMeas[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+          Double_t valueMeas[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
                                               -1, -1, -1 };
           fContainerEff->Fill(valueMeas, kStepRecWithGenCutsMeasuredObs);    
         }
@@ -1007,20 +1143,20 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     // Only process tracks inside the desired eta window    
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
-    if (fDoPID) 
+    if (fDoPID || fDoDeDxCheck) 
       ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
       if (mcTrack && fMC->IsPhysicalPrimary(TMath::Abs(label))) {
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
         Double_t valuePtRes[kPtResNumAxes] = { -1, mcTrack->Pt(), track->Pt(), mcTrack->Charge() / 3., centralityPercentile };
-        fPtResolution[mcID]->Fill(valuePtRes);
+        FillPtResolution(mcID, valuePtRes);
       }
     }
     
     if (fDoEfficiency) {
       if (mcTrack) {
-        Double_t valueRecAllCuts[kEffNumAxes] = { mcID, track->Pt(), track->Eta(), track->Charge(), centralityPercentile,
+        Double_t valueRecAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), track->Pt(), track->Eta(),  static_cast<Double_t>(track->Charge()), centralityPercentile,
                                                   -1, -1, -1 };
         fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObs);
         
@@ -1029,7 +1165,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
         fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsStrangenessScaled, weight);
         
         // AliMCParticle->Charge() calls TParticlePDG->Charge(), which returns the charge in units of e0 / 3
-        Double_t valueGenAllCuts[kEffNumAxes] = { mcID, mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
+        Double_t valueGenAllCuts[kEffNumAxes] = {  static_cast<Double_t>(mcID), mcTrack->Pt(), mcTrack->Eta(), mcTrack->Charge() / 3., 
                                                   centralityPercentile, -1, -1, -1 };
         if (fMC->IsPhysicalPrimary(TMath::Abs(label))) {
           fContainerEff->Fill(valueRecAllCuts, kStepRecWithRecCutsMeasuredObsPrimaries);
@@ -1039,8 +1175,6 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     }
   } //track loop 
   
-  IncrementEventsProcessed(centralityPercentile);
-
   if(fDebug > 2)
     printf("File: %s, Line: %d: UserExec -> Processing done\n", (char*)__FILE__, __LINE__);
   
@@ -1066,7 +1200,9 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
   
   fDoAnySystematicStudiesOnTheExpectedSignal = kFALSE;
   
-  if (TMath::Abs(fSystematicScalingSplines - 1.0) > fgkEpsilon) {
+  
+  if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
+      (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -1077,7 +1213,8 @@ void AliAnalysisTaskPID::CheckDoAnyStematicStudiesOnTheExpectedSignal()
     return;
   }
   
-  if (TMath::Abs(fSystematicScalingEtaSigmaPara - 1.0) > fgkEpsilon) {
+  if ((TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
+      (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon)) {
     fDoAnySystematicStudiesOnTheExpectedSignal = kTRUE;
     return;
   }
@@ -1304,7 +1441,7 @@ Bool_t AliAnalysisTaskPID::GetParticleFraction(Double_t trackPt, Double_t jetPt,
   else {
     Double_t x0 = 0., x1 = 0., y0 = 0., y1 = 0.;
     Double_t y0errStat = 0., y1errStat = 0., y0errSys = 0., y1errSys = 0.;
-    Int_t trackPtBin = xAxis->FindBin(trackPt);
+    Int_t trackPtBin = xAxis->FindFixBin(trackPt);
     
     // Linear interpolation between nearest neighbours in trackPt
     if (trackPt <= xAxis->GetBinCenter(trackPtBin)) {
@@ -1720,7 +1857,7 @@ Double_t AliAnalysisTaskPID::GetMCStrangenessFactorCMS(AliMCEvent* mcEvent, AliM
 AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* track, Int_t tofMode) const
 {
   // Get the (locally defined) particle type judged by TOF
-
+  
   if (!fPIDResponse) {
     Printf("ERROR: fEvent not available -> Cannot determine TOF type!");
     return kNoTOFinfo;
@@ -1730,39 +1867,49 @@ AliAnalysisTaskPID::TOFpidInfo AliAnalysisTaskPID::GetTOFType(const AliVTrack* t
   const AliPIDResponse::EDetPidStatus tofStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   if (tofStatus != AliPIDResponse::kDetPidOk)
     return kNoTOFinfo;
-
-  Double_t nsigma[kNumTOFspecies] = { -999., -999., -999. };
+  
+  Double_t nsigma[kNumTOFspecies + 1] = { -999., -999., -999., -999. };
   nsigma[kTOFpion]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
   nsigma[kTOFkaon]   = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
   nsigma[kTOFproton] = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
-
+  
   Double_t inclusion = -999;
   Double_t exclusion = -999;
   
   if (tofMode == 0) {
-    inclusion = 1.5;
-    exclusion = 3;
+    inclusion = 3.;
+    exclusion = 2.5;
   }
-  else if (tofMode == 1) {
-    inclusion = 2;
-    exclusion = 3;
+  else if (tofMode == 1) { // default
+    inclusion = 3.;
+    exclusion = 3.;
   }
   else if (tofMode == 2) {
-    inclusion = 2.5;
-    exclusion = 3;
+    inclusion = 3.;
+    exclusion = 3.5;
   }
   else {
     Printf("ERROR: Bad TOF mode: %d!", tofMode);
     return kNoTOFinfo;
   }
-
+  
+  // Do not cut on nSigma electron because this would also remove pions in a large pT range.
+  // The electron contamination of the pion sample can be treated by TPC dEdx fits afterwards.
   if (TMath::Abs(nsigma[kTOFpion]) < inclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
     return kTOFpion;
   if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) < inclusion && TMath::Abs(nsigma[kTOFproton]) > exclusion)
     return kTOFkaon;
   if (TMath::Abs(nsigma[kTOFpion]) > exclusion && TMath::Abs(nsigma[kTOFkaon]) > exclusion && TMath::Abs(nsigma[kTOFproton]) < inclusion)
     return kTOFproton;
-
+  
+  // There are no TOF electrons selected because the purity is rather bad, even for small momenta
+  // (also a small mismatch probability significantly affects electrons because their fraction
+  // is small). There is no need for TOF electrons anyway, since the dEdx distribution of kaons and 
+  // protons in a given pT bin (also at the dEdx crossings) is very different from that of electrons.
+  // This is due to the steeply falling dEdx of p and K with momentum, whereas the electron dEdx stays
+  // rather constant.
+  // As a result, the TPC fit yields a more accurate electron fraction than the TOF selection can do.
+  
   return kNoTOFpid;
 }
 
@@ -1866,6 +2013,28 @@ Bool_t AliAnalysisTaskPID::SetParticleFractionHistosFromFile(const TString fileP
   
   return kTRUE;
   
+}
+
+
+//_____________________________________________________________________________
+Double_t AliAnalysisTaskPID::GetMaxEtaVariation(Double_t dEdxSplines)
+{
+  // Returns the maximum eta variation (i.e. deviation of eta correction factor from unity) for the
+  // given (spline) dEdx
+  
+  if (dEdxSplines < 1. || !fhMaxEtaVariation) {
+    Printf("Error GetMaxEtaVariation: No map or invalid dEdxSplines (%f)!", dEdxSplines);
+    return 999.;
+  } 
+  
+  Int_t bin = fhMaxEtaVariation->GetXaxis()->FindFixBin(1. / dEdxSplines);
+  
+  if (bin == 0) 
+    bin = 1;
+  if (bin > fhMaxEtaVariation->GetXaxis()->GetNbins())
+    bin = fhMaxEtaVariation->GetXaxis()->GetNbins();
+  
+  return fhMaxEtaVariation->GetBinContent(bin);
 }
 
 
@@ -2004,6 +2173,7 @@ void AliAnalysisTaskPID::PrintSettings(Bool_t printSystematicsSettings) const
   printf("Do PID: %d\n", fDoPID);
   printf("Do Efficiency: %d\n", fDoEfficiency);
   printf("Do PtResolution: %d\n", fDoPtResolution);
+  printf("Do dEdxCheck: %d\n", fDoDeDxCheck);
   
   printf("\n");
 
@@ -2024,12 +2194,17 @@ void AliAnalysisTaskPID::PrintSystematicsSettings() const
   // Print current settings for systematic studies.
   
   printf("\n\nSettings for systematics for task %s:\n", GetName());
-  printf("Splines:\t%f\n", GetSystematicScalingSplines());
+  printf("SplinesThr:\t%f\n", GetSystematicScalingSplinesThreshold());
+  printf("SplinesBelowThr:\t%f\n", GetSystematicScalingSplinesBelowThreshold());
+  printf("SplinesAboveThr:\t%f\n", GetSystematicScalingSplinesAboveThreshold());
   printf("EtaCorrMomThr:\t%f\n", GetSystematicScalingEtaCorrectionMomentumThr());
   printf("EtaCorrLowP:\t%f\n", GetSystematicScalingEtaCorrectionLowMomenta());
   printf("EtaCorrHighP:\t%f\n", GetSystematicScalingEtaCorrectionHighMomenta());
-  printf("SigmaPara:\t%f\n", GetSystematicScalingEtaSigmaPara());
+  printf("SigmaParaThr:\t%f\n", GetSystematicScalingEtaSigmaParaThreshold());
+  printf("SigmaParaBelowThr:\t%f\n", GetSystematicScalingEtaSigmaParaBelowThreshold());
+  printf("SigmaParaAboveThr:\t%f\n", GetSystematicScalingEtaSigmaParaAboveThreshold());
   printf("MultCorr:\t%f\n", GetSystematicScalingMultCorrection());
+  printf("TOF mode: %d\n", GetTOFmode());
   
   printf("\n\n");
 }
@@ -2048,7 +2223,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
   
-  if (!fDoPID)
+  if (!fDoPID && !fDoDeDxCheck)
     return kFALSE;
   
   if(fDebug > 2)
@@ -2083,7 +2258,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   // Momenta
   //Double_t p = track->GetP();
-  //Double_t pTPC = track->GetTPCmomentum();
+  const Double_t pTPC = track->GetTPCmomentum();
   Double_t pT = track->Pt();
   
   Double_t z = -1, xi = -1;
@@ -2093,15 +2268,27 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   Double_t trackCharge = track->Charge();
   
   // TPC signal
-  Double_t dEdxTPC = fPIDResponse->IsTunedOnData() ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
+  const Bool_t tuneOnDataTPC = fPIDResponse->IsTunedOnData() &&
+                               ((fPIDResponse->GetTunedOnDataMask() & AliPIDResponse::kDetTPC) == AliPIDResponse::kDetTPC);
+  Double_t dEdxTPC = tuneOnDataTPC ? fPIDResponse->GetTPCsignalTunedOnData(track) : track->GetTPCsignal();
   
   if (dEdxTPC <= 0) {
-    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), track->GetTPCmomentum(),
+    Printf("Skipping track with strange dEdx value: dEdx %f, pTPC %f, eta %f, ncl %d\n", track->GetTPCsignal(), pTPC,
            track->Eta(), track->GetTPCsignalN());
     return kFALSE;
   }
   
+  // Completely remove tracks from light nuclei defined by el and pr <dEdx> as function of pT.
+  // A very loose cut to be sure not to throw away electrons and/or protons
+  Double_t nSigmaPr = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+  Double_t nSigmaEl = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
   
+  if ((pTPC >= 0.3 && (nSigmaPr > 10 && nSigmaEl > 10)) ||
+      (pTPC <  0.3 && (nSigmaPr > 15 && nSigmaEl > 15))) {
+    Printf("Skipping track which seems to be a light nuclei: dEdx %f, pTPC %f, pT %f, eta %f, ncl %d, nSigmaPr %f, nSigmaEl %f\n",
+           track->GetTPCsignal(), pTPC, pT, track->Eta(), track->GetTPCsignalN(), nSigmaPr, nSigmaEl);
+    return kFALSE;
+  }
   
   
   Double_t dEdxEl, dEdxKa, dEdxPi, dEdxMu, dEdxPr;
@@ -2120,19 +2307,53 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     dEdxPr = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kFALSE, kFALSE);
     
     // Scale splines, if desired
-    if (TMath::Abs(fSystematicScalingSplines - 1.0) > fgkEpsilon) {
-      dEdxEl *= fSystematicScalingSplines;
-      dEdxKa *= fSystematicScalingSplines;
-      dEdxPi *= fSystematicScalingSplines;
-      dEdxMu *= fTakeIntoAccountMuons ? fSystematicScalingSplines : 1.;
-      dEdxPr *= fSystematicScalingSplines;
+    if ((TMath::Abs(fSystematicScalingSplinesBelowThreshold - 1.0) > fgkEpsilon) ||
+        (TMath::Abs(fSystematicScalingSplinesAboveThreshold - 1.0) > fgkEpsilon)) {
+       
+      // Tune turn-on of correction for pions (not so relevant for the other species, since at very large momenta)
+      Double_t bg = 0;
+      Double_t scaleFactor = 1.;
+      Double_t usedSystematicScalingSplines = 1.;
+        
+      bg = pTPC / AliPID::ParticleMass(AliPID::kElectron);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxEl *= usedSystematicScalingSplines;
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kKaon);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxKa *= usedSystematicScalingSplines;
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kPion);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxPi *= usedSystematicScalingSplines;
+      
+      if (fTakeIntoAccountMuons) {
+        bg = pTPC / AliPID::ParticleMass(AliPID::kMuon);
+        scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+        usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                              + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+        dEdxMu *= usedSystematicScalingSplines;
+      }
+      
+      
+      bg = pTPC / AliPID::ParticleMass(AliPID::kProton);
+      scaleFactor = 0.5 * (1. + TMath::Erf((bg - fSystematicScalingSplinesThreshold) / 4.));
+      usedSystematicScalingSplines = fSystematicScalingSplinesBelowThreshold * (1 - scaleFactor)
+                                            + fSystematicScalingSplinesAboveThreshold * scaleFactor;
+      dEdxPr *= usedSystematicScalingSplines;
     }
     
     // Get the eta correction factors for the (modified) expected dEdx
     Double_t etaCorrEl = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxEl) : 1.;
     Double_t etaCorrKa = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxKa) : 1.;
     Double_t etaCorrPi = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPi) : 1.;
-    Double_t etaCorrMu = fTakeIntoAccountMuons && !fPIDResponse->UseTPCEtaCorrection() ? 
+    Double_t etaCorrMu = fTakeIntoAccountMuons && fPIDResponse->UseTPCEtaCorrection() ? 
                             fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxMu) : 1.;
     Double_t etaCorrPr = fPIDResponse->UseTPCEtaCorrection() ? fPIDResponse->GetTPCResponse().GetEtaCorrectionFast(track, dEdxPr) : 1.;
 
@@ -2146,21 +2367,42 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
       
       // Due to additional azimuthal effects, there is an additional eta dependence for low momenta which is not corrected successfully so far.
       // One can assign a different (higher) systematic scale factor for this low-p region and a threshold which separates low- and high-p.
-      // An ERF will be used to get (as a function of P_TPC) from one correction factor to the other within roughly 0.2 GeV/c
+      // An ERF will be used to get (as a function of p_TPC) from one correction factor to the other within roughly 0.2 GeV/c
       Double_t usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionHighMomenta;
       
       if (TMath::Abs(fSystematicScalingEtaCorrectionHighMomenta - fSystematicScalingEtaCorrectionLowMomenta) > fgkEpsilon) {
-        const Double_t pTPC = track->GetTPCmomentum();
         const Double_t fractionHighMomentumScaleFactor = 0.5 * (1. + TMath::Erf((pTPC - fSystematicScalingEtaCorrectionMomentumThr) / 0.1));
         usedSystematicScalingEtaCorrection = fSystematicScalingEtaCorrectionLowMomenta * (1 - fractionHighMomentumScaleFactor)
                                              + fSystematicScalingEtaCorrectionHighMomenta * fractionHighMomentumScaleFactor;
       }
       
+      Double_t maxEtaVariationEl = GetMaxEtaVariation(dEdxEl);
+      etaCorrEl = etaCorrEl * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrEl - 1.0) / maxEtaVariationEl);
+      
+      Double_t maxEtaVariationKa = GetMaxEtaVariation(dEdxKa);
+      etaCorrKa = etaCorrKa * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrKa - 1.0) / maxEtaVariationKa);
+      
+      Double_t maxEtaVariationPi = GetMaxEtaVariation(dEdxPi);
+      etaCorrPi = etaCorrPi * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPi - 1.0) / maxEtaVariationPi);
+      
+      if (fTakeIntoAccountMuons) {
+        Double_t maxEtaVariationMu = GetMaxEtaVariation(dEdxMu);
+        etaCorrMu = etaCorrMu * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrMu - 1.0) / maxEtaVariationMu);
+      }
+      else
+        etaCorrMu = 1.0;
+      
+      Double_t maxEtaVariationPr = GetMaxEtaVariation(dEdxPr);
+      etaCorrPr = etaCorrPr * (1.0 + (usedSystematicScalingEtaCorrection - 1.) * (etaCorrPr - 1.0) / maxEtaVariationPr);
+      
+      
+      /*OLD
       etaCorrEl = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrEl - 1.0);
       etaCorrKa = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrKa - 1.0);
       etaCorrPi = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrPi - 1.0);
       etaCorrMu = fTakeIntoAccountMuons ? (1.0 + usedSystematicScalingEtaCorrection * (etaCorrMu - 1.0)) : 1.0;
       etaCorrPr = 1.0 + usedSystematicScalingEtaCorrection * (etaCorrPr - 1.0);
+      */
     }
     
     // Get the multiplicity correction factors for the (modified) expected dEdx
@@ -2207,27 +2449,76 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     // This means there is no extra parameter for the multiplicitySigmaCorrFactor, but only for the sigma map itself.
     // This is valid, since it appears only as a product. One has to assume a larger systematic shift in case of additional
     // multiplicity dependence....
-    Double_t sigmaRelEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaEl;
     
-    Double_t sigmaRelKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaKa;
+    Bool_t doSigmaSystematics = (TMath::Abs(fSystematicScalingEtaSigmaParaBelowThreshold - 1.0) > fgkEpsilon) ||
+                                (TMath::Abs(fSystematicScalingEtaSigmaParaAboveThreshold - 1.0) > fgkEpsilon);
     
-    Double_t sigmaRelPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaPi;
     
-    Double_t sigmaRelMu = fTakeIntoAccountMuons ? 
-                            fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                            / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                            * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaMu
-                            : 999.;
+    Double_t dEdxElExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaEl = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxElExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaEl = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelEl = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxElExpected * systematicScalingEtaSigmaParaEl * multiplicityCorrSigmaEl;
     
-    Double_t sigmaRelPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          / fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
-                          * fSystematicScalingEtaSigmaPara * multiplicityCorrSigmaPr;
+    
+    Double_t dEdxKaExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault, 
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaKa = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxKaExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaKa = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelKa = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kKaon, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxKaExpected * systematicScalingEtaSigmaParaKa * multiplicityCorrSigmaKa;
+    
+    
+    Double_t dEdxPiExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaPi = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxPiExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaPi = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelPi = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kPion, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxPiExpected * systematicScalingEtaSigmaParaPi * multiplicityCorrSigmaPi;
+    
+    
+    Double_t sigmaRelMu = 999.;
+    if (fTakeIntoAccountMuons) {
+      Double_t dEdxMuExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, 
+                                                                                 kTRUE, kFALSE);
+      Double_t systematicScalingEtaSigmaParaMu = 1.;
+      if (doSigmaSystematics) {
+        Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxMuExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+        systematicScalingEtaSigmaParaMu = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                          + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+      }
+      sigmaRelMu = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kMuon, AliTPCPIDResponse::kdEdxDefault, kTRUE, kFALSE)
+                   / dEdxMuExpected * systematicScalingEtaSigmaParaMu * multiplicityCorrSigmaMu;
+    }
+    
+    
+    Double_t dEdxPrExpected = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
+                                                                               kTRUE, kFALSE);
+    Double_t systematicScalingEtaSigmaParaPr = 1.;
+    if (doSigmaSystematics) {
+      Double_t scaleFactor = 0.5 * (1. + TMath::Erf((dEdxPrExpected - fSystematicScalingEtaSigmaParaThreshold) / 25.));
+      systematicScalingEtaSigmaParaPr = fSystematicScalingEtaSigmaParaBelowThreshold * (1 - scaleFactor)
+                                        + fSystematicScalingEtaSigmaParaAboveThreshold * scaleFactor;
+    }
+    Double_t sigmaRelPr = fPIDResponse->GetTPCResponse().GetExpectedSigma(track, AliPID::kProton, AliTPCPIDResponse::kdEdxDefault,
+                                                                          kTRUE, kFALSE)
+                          / dEdxPrExpected * systematicScalingEtaSigmaParaPr * multiplicityCorrSigmaPr;
     
     // Now scale the (possibly modified) spline values with the (possibly modified) correction factors
     dEdxEl *= etaCorrEl * multiplicityCorrEl;
@@ -2245,7 +2536,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
     
   }
   else {
-    // No systematic studies on expected signal - just take it as it comve from the TPCPIDResponse
+    // No systematic studies on expected signal - just take it as it comes from the TPCPIDResponse
     dEdxEl = fPIDResponse->GetTPCResponse().GetExpectedSignal(track, AliPID::kElectron, AliTPCPIDResponse::kdEdxDefault, 
                                                               fPIDResponse->UseTPCEtaCorrection(),
                                                               fPIDResponse->UseTPCMultiplicityCorrection());
@@ -2307,6 +2598,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 2)
     printf("File: %s, Line: %d: ProcessTrack -> Compute probabilities\n", (char*)__FILE__, __LINE__);
   
+  
   // Use probabilities to weigh the response generation for the different species.
   // Also determine the most probable particle type.
   Double_t prob[AliPID::kSPECIESC];
@@ -2315,38 +2607,168 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
 
   fPIDcombined->ComputeProbabilities(track, fPIDResponse, prob);
   
-  // Bug: One can set the number of species for PIDcombined, but PIDcombined will call PIDresponse, which writes without testing
-  // the probs for kSPECIESC (including light nuclei) into the array.
-  // In this case, when only kSPECIES are considered, the probabilities have to be rescaled!
-  for (Int_t i = AliPID::kSPECIES; i < AliPID::kSPECIESC; i++)
-    prob[i] = 0;
-  
-  // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities
+  // If muons are not to be taken into account, just set their probability to zero and normalise the remaining probabilities later
   if (!fTakeIntoAccountMuons)
     prob[AliPID::kMuon] = 0;
   
-  Double_t probSum = 0.;
-  for (Int_t i = 0; i < AliPID::kSPECIES; i++)
-    probSum += prob[i];
-  
-  if (probSum > 0) {
-    for (Int_t i = 0; i < AliPID::kSPECIES; i++)
-      prob[i] /= probSum;
+  // Priors might cause problems in case of mismatches, i.e. mismatch particles will be identified as pions.
+  // Can be easily caught for low p_TPC by just setting pion (and muon) probs to zero, if dEdx is larger than
+  // expected dEdx of electrons and kaons
+  if (pTPC < 1. && dEdxTPC > dEdxEl && dEdxTPC > dEdxKa) {
+    prob[AliPID::kMuon] = 0;
+    prob[AliPID::kPion] = 0;
   }
   
-  if (!isMC) {
-    // If there is no MC information, take the most probable species for the ID
-    Float_t max = 0.;
-    Int_t maxIndex = -1;
-    for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
-      if (prob[i] > max) {
-        max = prob[i];
-        maxIndex = i;
+  
+  // Bug: One can set the number of species for PIDcombined, but PIDcombined will call PIDresponse, which writes without testing
+  // the probs for kSPECIESC (including light nuclei) into the array.
+  // In this case, when only kSPECIES are considered, the probabilities have to be rescaled!
+  
+  // Exceptions:
+  // 1. If the most probable PID is a light nucleus and above expected dEdx + 5 sigma of el to be sure not to mix up things in the
+  //    high-pT region (also contribution there completely negligable!)
+  // 2. If dEdx is larger than the expected dEdx + 5 sigma of el and pr, it is most likely a light nucleus
+  //    (if dEdx is more than 5 sigma away from expectation, flat TPC probs are set... and the light nuclei splines are not
+  //     too accurate)
+  // In these cases:
+  // The highest expected dEdx is either for pr or for el. Assign 100% probability to the species with highest expected dEdx then.
+  // In all other cases: Throw away light nuclei probs and rescale other probs to 100%.
+  
+  // Find most probable species for the ID 
+  Int_t maxIndex = TMath::LocMax(AliPID::kSPECIESC, prob);
+
+  if ((prob[maxIndex] > 0 && maxIndex >= AliPID::kSPECIES && dEdxTPC > dEdxEl + 5. * sigmaEl) ||
+      (dEdxTPC > dEdxEl + 5. * sigmaEl && dEdxTPC > dEdxPr + 5. * sigmaPr)) {
+    for (Int_t i = 0; i < AliPID::kSPECIESC; i++)
+      prob[i] = 0;
+    
+    if (dEdxEl > dEdxPr) {
+      prob[AliPID::kElectron] = 1.;
+      maxIndex = AliPID::kElectron;
+    }
+    else {
+      prob[AliPID::kProton] = 1.;
+      maxIndex = AliPID::kProton;
+    }
+  }
+  else {
+    for (Int_t i = AliPID::kSPECIES; i < AliPID::kSPECIESC; i++)
+      prob[i] = 0;
+    
+    Double_t probSum = 0.;
+    for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+      probSum += prob[i];
+    
+    if (probSum > 0) {
+      for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        prob[i] /= probSum;
+    }
+    
+    // If all probabilities are equal (should only happen if no priors are used), set most probable PID to pion
+    // because LocMax returns just the first maximal value (i.e. AliPID::kElectron)
+    if (TMath::Abs(prob[maxIndex] - 1. / AliPID::kSPECIES) < 1e-5)
+      maxIndex = AliPID::kPion;
+    
+    // In all other cases, the maximum remains untouched from the scaling (and is < AliPID::kSPECIES by construction)
+  }
+  
+  if (fDoDeDxCheck) {
+    // Generate the expected responses in DeltaPrime and translate to real dEdx. Only take responses for exactly that species
+    // (i.e. with pre-PID)
+    
+    Int_t numGenEntries = fgkMaxNumGenEntries; // fgkMaxNumGenEntries = 500
+    
+    ErrorCode errCode = kNoErrors;
+  
+    if(fDebug > 2)
+      printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check\n", (char*)__FILE__, __LINE__);
+    
+    // Electrons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaEl / dEdxEl, fGenRespElDeltaPrimeEl, numGenEntries);
+
+    // Kaons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaKa / dEdxKa, fGenRespKaDeltaPrimeKa, numGenEntries);
+
+    // Pions
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaPi / dEdxPi, fGenRespPiDeltaPrimePi, numGenEntries);
+
+    // Protons
+    errCode = GenerateDetectorResponse(errCode, 1., sigmaPr / dEdxPr, fGenRespPrDeltaPrimePr, numGenEntries);
+    
+    if (errCode == kNoErrors) {
+      Double_t genEntry[kDeDxCheckNumAxes];
+      genEntry[kDeDxCheckJetPt] = jetPt;
+      genEntry[kDeDxCheckEtaAbs] = TMath::Abs(track->Eta());
+      genEntry[kDeDxCheckP] = pTPC;
+      
+        
+      for (Int_t n = 0; n < numGenEntries; n++)  {
+        // If no MC info is available or shall not be used, use weighting with priors to generate entries for the different species
+        Double_t rnd = fRandom->Rndm(); // Produce uniformly distributed floating point in ]0, 1]
+        
+        // Consider generated response as originating from...
+        if (rnd <= prob[AliPID::kElectron]) {
+          genEntry[kDeDxCheckPID] = 0; // ... an electron
+          genEntry[kDeDxCheckDeDx] = fGenRespElDeltaPrimeEl[n] * dEdxEl;
+        }
+        else if (rnd <= prob[AliPID::kElectron] + prob[AliPID::kKaon]) {
+          genEntry[kDeDxCheckPID] = 1;  // ... a kaon
+          genEntry[kDeDxCheckDeDx] = fGenRespKaDeltaPrimeKa[n] * dEdxKa;
+        }
+        else if (rnd <= prob[AliPID::kElectron] + prob[AliPID::kKaon] + prob[AliPID::kMuon] + prob[AliPID::kPion]) {
+          genEntry[kDeDxCheckPID] = 2;  // ... a pion (or a muon)
+          genEntry[kDeDxCheckDeDx] = fGenRespPiDeltaPrimePi[n] * dEdxPi;
+        }
+        else {
+          genEntry[kDeDxCheckPID] = 3;  // ... a proton
+          genEntry[kDeDxCheckDeDx] = fGenRespPrDeltaPrimePr[n] * dEdxPr;
+        }
+     
+        fDeDxCheck->Fill(genEntry);
       }
     }
-          
+    
+    if(fDebug > 2)
+      printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check done\n", (char*)__FILE__, __LINE__);
+  }
+  
+  if (!fDoPID)
+    return kTRUE;
+  
+  if (!isMC) {
+    // Clean up the most probable PID for low momenta (not an issue for the probabilities, since fractions small,
+    // but to get clean (and nice looking) templates (if most probable PID is used instead of generated responses), it should be done).
+    // Problem: If more than 5 sigma away (and since priors also included), most probable PID for dEdx around protons could be pions.
+    // Idea: Only clean selection for K and p possible. So, just take for the most probable PID the probs from TPC only calculated
+    // by hand without restriction to 5 sigma and without priors. This will not affect the template generation, but afterwards one
+    // can replace the K and p templates with the most probable PID distributions, so all other species templates remain the same.
+    // I.e. it doesn't hurt if the most probable PID is distributed incorrectly between el, pi, mu.
+    Bool_t maxIndexSetManually = kFALSE;
+    
+    if (pTPC < 1.) {
+      Double_t probManualTPC[AliPID::kSPECIES];
+       for (Int_t i = 0; i < AliPID::kSPECIES; i++)
+        probManualTPC[i] = 0;
+      
+      probManualTPC[AliPID::kElectron] = TMath::Exp(-0.5*(dEdxTPC-dEdxEl)*(dEdxTPC-dEdxEl)/(sigmaEl*sigmaEl))/sigmaEl;
+      // Muons are not important here, just ignore and save processing time
+      probManualTPC[AliPID::kMuon] = 0.;//TMath::Exp(-0.5*(dEdxTPC-dEdxMu)*(dEdxTPC-dEdxMu)/(sigmaMu*sigmaMu))/sigmaMu;
+      probManualTPC[AliPID::kPion] = TMath::Exp(-0.5*(dEdxTPC-dEdxPi)*(dEdxTPC-dEdxPi)/(sigmaPi*sigmaPi))/sigmaPi;
+      probManualTPC[AliPID::kKaon] = TMath::Exp(-0.5*(dEdxTPC-dEdxKa)*(dEdxTPC-dEdxKa)/(sigmaKa*sigmaKa))/sigmaKa;
+      probManualTPC[AliPID::kProton] = TMath::Exp(-0.5*(dEdxTPC-dEdxPr)*(dEdxTPC-dEdxPr)/(sigmaPr*sigmaPr))/sigmaPr;
+      
+      const Int_t maxIndexManualTPC = TMath::LocMax(AliPID::kSPECIES, probManualTPC);
+      // Should always be > 0, but in case the dEdx is far off such that the machine accuracy sets every prob to zero,
+      // better take the "old" result
+      if (probManualTPC[maxIndexManualTPC] > 0.)
+        maxIndex = maxIndexManualTPC;
+      
+      maxIndexSetManually = kTRUE;
+    }
+    
+    
     // Translate from AliPID numbering to numbering of this class
-    if (max > 0) {
+    if (prob[maxIndex] > 0 || maxIndexSetManually) {
       if (maxIndex == AliPID::kElectron)
         binMC = 0;
       else if (maxIndex == AliPID::kKaon)
@@ -2932,8 +3354,11 @@ AliAnalysisTaskPID::ErrorCode AliAnalysisTaskPID::SetParamsForConvolutedGaus(Dou
     rangeEnd = fConvolutedGausDeltaPrime->GetX(maximumFraction, upBoundSearchBoundLow, upBoundSearchBoundUp, (maxX < 0.4) ? 1e-5 : 0.001);
     
     fConvolutedGausDeltaPrime->SetRange(rangeStart,rangeEnd);
-    fConvolutedGausDeltaPrime->SetNpx(fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindBin(rangeEnd)
-                                      - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindBin(rangeStart) + 1);
+    fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
+    
+    fConvolutedGausDeltaPrime->SetNpx(fDeltaPrimeAxis->FindFixBin(rangeEnd) - fDeltaPrimeAxis->FindFixBin(rangeStart) + 1);
+    //fConvolutedGausDeltaPrime->SetNpx(fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeEnd)
+    //                                  - fhPIDdataAll->GetAxis(kDataDeltaPrimeSpecies)->FindFixBin(rangeStart) + 1);
     //fConvolutedGausDeltaPrime->SetNpx((rangeEnd - rangeStart) / fDeltaPrimeBinWidth + 1);
   }
   
@@ -2971,18 +3396,18 @@ void AliAnalysisTaskPID::SetUpGenHist(THnSparse* hist, Double_t* binsPt, Double_
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kGenSelectSpecies)->SetBinLabel(4, "p");
   
-  hist->GetAxis(kGenPt)->SetTitle("P_{T} (GeV/c)");
+  hist->GetAxis(kGenPt)->SetTitle("p_{T} (GeV/c)");
   
   hist->GetAxis(kGenDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
   hist->GetAxis(kGenCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kGenJetPt)->SetTitle("P_{T}^{jet} (GeV/c)");
+    hist->GetAxis(kGenJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
     
-    hist->GetAxis(kGenZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kGenZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
-    hist->GetAxis(kGenXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kGenXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGen())->SetTitle("Charge (e_{0})");
@@ -3012,15 +3437,15 @@ void AliAnalysisTaskPID::SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Do
   
   // Set axes titles
   hist->GetAxis(kGenYieldMCID)->SetTitle("MC PID");
-  hist->GetAxis(kGenYieldPt)->SetTitle("P_{T}^{gen} (GeV/c)");
+  hist->GetAxis(kGenYieldPt)->SetTitle("p_{T}^{gen} (GeV/c)");
   hist->GetAxis(kGenYieldCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kGenYieldJetPt)->SetTitle("P_{T}^{jet, gen} (GeV/c)");
+    hist->GetAxis(kGenYieldJetPt)->SetTitle("p_{T}^{jet, gen} (GeV/c)");
     
-    hist->GetAxis(kGenYieldZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kGenYieldZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
     
-    hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kGenYieldXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisGenYield())->SetTitle("Charge (e_{0})");
@@ -3053,18 +3478,18 @@ void AliAnalysisTaskPID::SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* 
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(3, "#pi");
   hist->GetAxis(kDataSelectSpecies)->SetBinLabel(4, "p");
   
-  hist->GetAxis(kDataPt)->SetTitle("P_{T} (GeV/c)");
+  hist->GetAxis(kDataPt)->SetTitle("p_{T} (GeV/c)");
     
   hist->GetAxis(kDataDeltaPrimeSpecies)->SetTitle("TPC #Delta'_{species} (arb. unit)");
   
   hist->GetAxis(kDataCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
   
   if (fStoreAdditionalJetInformation) {
-    hist->GetAxis(kDataJetPt)->SetTitle("P_{T}^{jet} (GeV/c)");
+    hist->GetAxis(kDataJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
   
-    hist->GetAxis(kDataZ)->SetTitle("z = P_{T}^{track} / P_{T}^{jet}");
+    hist->GetAxis(kDataZ)->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
   
-    hist->GetAxis(kDataXi)->SetTitle("#xi = ln(P_{T}^{jet} / P_{T}^{track})");
+    hist->GetAxis(kDataXi)->SetTitle("#xi = ln(p_{T}^{jet} / p_{T}^{track})");
   }
   
   hist->GetAxis(GetIndexOfChargeAxisData())->SetTitle("Charge (e_{0})");
@@ -3090,10 +3515,33 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   hist->SetBinEdges(kPtResCentrality, binsCent);
   
   // Set axes titles
-  hist->GetAxis(kPtResJetPt)->SetTitle("P_{T}^{jet, rec} (GeV/c)");
-  hist->GetAxis(kPtResGenPt)->SetTitle("P_{T}^{gen} (GeV/c)");
-  hist->GetAxis(kPtResRecPt)->SetTitle("P_{T}^{rec} (GeV/c)");  
+  hist->GetAxis(kPtResJetPt)->SetTitle("p_{T}^{jet, rec} (GeV/c)");
+  hist->GetAxis(kPtResGenPt)->SetTitle("p_{T}^{gen} (GeV/c)");
+  hist->GetAxis(kPtResRecPt)->SetTitle("p_{T}^{rec} (GeV/c)");  
   
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  hist->SetBinEdges(kDeDxCheckP, binsPt);
+  hist->SetBinEdges(kDeDxCheckJetPt, binsJetPt);
+  hist->SetBinEdges(kDeDxCheckEtaAbs, binsEtaAbs);
+  
+  
+  // Set axes titles
+  hist->GetAxis(kDeDxCheckPID)->SetTitle("PID");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(1, "e");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(2, "K");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(3, "#pi");
+  hist->GetAxis(kDeDxCheckPID)->SetBinLabel(4, "p");
+  
+  
+  hist->GetAxis(kDeDxCheckJetPt)->SetTitle("p_{T}^{jet} (GeV/c)");
+  hist->GetAxis(kDeDxCheckEtaAbs)->SetTitle("|#eta|");  
+  hist->GetAxis(kDeDxCheckP)->SetTitle("p_{TPC} (GeV/c)"); 
+  hist->GetAxis(kDeDxCheckDeDx)->SetTitle("TPC dE/dx (arb. unit)");
 }

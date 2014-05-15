@@ -81,7 +81,9 @@ class AliBalancePsi : public TObject {
 				 Double_t ptTriggerMax=-1.,
 				 Double_t ptAssociatedMin=-1.,
 				 Double_t ptAssociatedMax=-1,
-				 AliBalancePsi *bMixed=NULL);
+				 AliBalancePsi *bMixed=NULL,
+				 Bool_t normToTrig = kFALSE,
+				 Double_t normalizationRangePhi = TMath::Pi()/6.);
   TH2D   *GetCorrelationFunctionPN(Double_t psiMin, Double_t psiMax,
 				   Double_t vertexZMin=-1,
 				   Double_t vertexZMax=-1,

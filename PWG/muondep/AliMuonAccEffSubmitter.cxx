@@ -38,7 +38,7 @@
 //
 // Basic usage
 //
-// AliMuonAccEffSubmitter a;
+// AliMuonAccEffSubmitter a; // (1)
 // a.UseOCDBSnapshots(kFALSE);
 // a.SetRemoteDir("/alice/cern.ch/user/l/laphecet/Analysis/LHC13d/simjpsi/pp503z0");
 // a.ShouldOverwriteFiles(true);
@@ -49,8 +49,41 @@
 // a.Run("test"); // will do everything but the submit
 // a.Submit(false); // actual submission
 //
+// (1) note that for this to work in the Root prompt you need to load (for instance
+// in your rootlogon.C) all the chain of libraries up to libPWGmuondep. As
+// the time of this writing (March 2014), this means :
 //
-// author: Laurent Aphecetche (Subatech
+// gSystem->Load("libVMC");
+// gSystem->Load("libTree");
+// gSystem->Load("libProofPlayer");
+// gSystem->Load("libPhysics");
+// gSystem->Load("libMatrix");
+// gSystem->Load("libMinuit");
+// gSystem->Load("libXMLParser");
+// gSystem->Load("libGui");
+// gSystem->Load("libSTEERBase");
+// gSystem->Load("libESD");
+// gSystem->Load("libAOD");
+// gSystem->Load("libANALYSIS");
+// gSystem->Load("libRAWDatabase");
+// gSystem->Load("libCDB");
+// gSystem->Load("libSTEER");
+// gSystem->Load("libANALYSISalice");
+// gSystem->Load("libCORRFW");
+// gSystem->Load("libPWGmuon");
+// gSystem->Load("libMUONcore");
+// gSystem->Load("libMUONmapping");
+// gSystem->Load("libMUONcalib");
+// gSystem->Load("libMUONgeometry");
+// gSystem->Load("libMUONtrigger");
+// gSystem->Load("libRAWDatabase");
+// gSystem->Load("libMUONraw");
+// gSystem->Load("libMUONbase");
+// gSystem->Load("libMUONshuttle");
+// gSystem->Load("libMUONrec");
+// gSystem->Load("libPWGmuondep");
+//
+// author: Laurent Aphecetche (Subatech)
 //
 
 #include "AliMuonAccEffSubmitter.h"
@@ -77,8 +110,9 @@ namespace
 ClassImp(AliMuonAccEffSubmitter)
 
 //______________________________________________________________________________
-AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator)
-: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff),
+AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t localOnly,
+                                               int pythia8version)
+: AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly),
 fRatio(-1.0),
 fFixedNofEvents(10000),
 fMaxEventsPerChunk(5000),
@@ -91,13 +125,28 @@ fSnapshotDir(""),
 fUseAODMerging(kFALSE)
 {
   // ctor
+  //
+  // if generator contains "pythia8" and pythia8version is given then
+  // the pythia8version must represent the integer part XXX of the
+  // include directory $ALICE_ROOT/PYTHI8/pythiaXXX/include where the file
+  // Analysis.h is to be found.
   
-  SetOCDBPath("raw://");
+  AddIncludePath("-I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PWG/muon -I$ALICE_ROOT/PWG/muondep -I$ALICE_ROOT/MUON -I$ALICE_ROOT/include -I$ALICE_ROOT/EVGEN");
+  
+  TString ocdbPath("raw://");
+  
+  if (localOnly) {
+    ocdbPath = "local://$ALICE_ROOT/OCDB";
+  }
+  
+  SetOCDBPath(ocdbPath.Data());
   
   SetLocalDirectory("Snapshot",LocalDir());
   
-  SetVar("VAR_OCDB_PATH","\"raw://\"");
+  SetVar("VAR_OCDB_PATH",Form("\"%s\"",ocdbPath.Data()));
 
+  SetVar("VAR_GENPARAM_INCLUDE","AliGenMUONlib.h");
+  SetVar("VAR_GENPARAM_NPART","1");
   SetVar("VAR_GENPARAM_GENLIB_TYPE","AliGenMUONlib::kJpsi");
   SetVar("VAR_GENPARAM_GENLIB_PARNAME","\"pPb 5.03\"");
 
@@ -129,11 +178,74 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P2","0.141776");
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
 
+  SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
+  
+  SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
+  
+  SetVar("VAR_SIM_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Ideal\"");
+  
+  SetVar("VAR_REC_ALIGNDATA","\"alien://folder=/alice/simulation/2008/v4-15-Release/Residual\"");
+  
+  SetVar("VAR_USE_ITS_RECO","0");
+  
   UseOCDBSnapshots(fUseOCDBSnapshots);
+
+  gSystem->Load("libEVGEN");
+
+  if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
+  {
+    fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
+    
+    fCompactMode = 2; // keep AOD as for the time being the filtering driven from AODtrain.C cannot
+    // add SPD tracklets to muon AODs.
+    
+    SetVar("VAR_USE_ITS_RECO","1");
+
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(Form("$ALICE_ROOT/PYTHIA8/pythia%d",pythia8version))))
+    {
+      AliError(Form("Directory -I$ALICE_ROOT/PYTHIA8/pythia%d/include not found",pythia8version));
+      Invalidate();
+      return;
+    }
+    AddIncludePath(Form("-I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%d/include",pythia8version));
+//    SetVar("VAR_PYTHIA8_VERSION",Form("\"%d\"",pythia8version));
+    
+    SetVar("VAR_PYTHIA8_INCLUDES",Form("gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%d/include\");\n",pythia8version));
+  
+    TString p8env;
+    
+    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%d/xmldoc\"));\n",pythia8version);
+    
+    p8env += "  gSystem->Setenv(\"LHAPDF\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF\"));\n";
+    
+    p8env +=  "  gSystem->Setenv(\"LHAPATH\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF/PDFsets\"));\n";
+    
+    SetVar("VAR_PYTHIA8_SETENV",p8env.Data());
+    
+    gSystem->Load("libFASTSIM");
+    gSystem->Load("liblhapdf");      // Parton density functions
+    gSystem->Load("libEGPythia6");   // TGenerator interface
+    gSystem->Load("libpythia6");     // Pythia 6.2
+    gSystem->Load("libAliPythia6");  // ALICE specific implementations
+    gSystem->Load("libpythia8.so");
+    gSystem->Load("libAliPythia8.so");
+  }
+  else
+  {
+    SetVar("VAR_PYTHIA8_INCLUDES","");
+    SetVar("VAR_PYTHIA8_SETENV","");
+  }
   
   SetGenerator(generator);
   
-  MakeNofEventsPropToTriggerCount();
+  if (localOnly)
+  {
+    MakeNofEventsFixed(10);
+  }
+  else
+  {
+    MakeNofEventsPropToTriggerCount();
+  }
   
   AddToTemplateFileList("CheckESD.C");
   AddToTemplateFileList("CheckAOD.C");
@@ -214,7 +326,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   OutputToJDL(*os,"Validationcommand",Form("%s/validation_merge.sh",RemoteDir().Data()));
   
   OutputToJDL(*os,"TTL","7200");
-
+  
   OutputToJDL(*os,"OutputArchive",
     "log_archive.zip:stderr,stdout@disk=1",
     "root_archive.zip:AliAOD.root,AliAOD.Muons.root,AnalysisResults.root@disk=3"
@@ -275,7 +387,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   
   TObjArray files;
   files.SetOwner(kTRUE);
-  TIter next(TemplateFileList());
+  TIter next(LocalFileList());
   TObjString* file;
   
   while ( ( file = static_cast<TObjString*>(next())) )
@@ -307,6 +419,12 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
     OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
            "root_archive.zip:galice*.root,AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
   }
+  else if ( CompactMode() == 2 )
+  {
+    // keep only AODs and QA
+    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
+                "root_archive.zip:galice*.root,AliAOD.root,Merged.QA.Data.root@disk=2");
+  }
   else
   {
     AliError(Form("Unknown CompactMode %d",CompactMode()));
@@ -322,7 +440,14 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
 
   OutputToJDL(*os,"Validationcommand",Form("%s/validation.sh",RemoteDir().Data()));
 
-  OutputToJDL(*os,"TTL","72000");
+  if ( GetVar("VAR_GENERATOR").Contains("pythia",TString::kIgnoreCase) )
+  {
+    OutputToJDL(*os,"TTL","36000");
+  }
+  else
+  {
+    OutputToJDL(*os,"TTL","7200");
+  }
   
   return kTRUE;
 }
@@ -375,8 +500,8 @@ Bool_t AliMuonAccEffSubmitter::MakeOCDBSnapshots()
       }
     }
     
-    LocalFileList()->Add(new TObjString(ocdbSim));
-    LocalFileList()->Add(new TObjString(ocdbRec));
+    AddToLocalFileList(ocdbSim);
+    AddToLocalFileList(ocdbRec);
   }
   
   return ok;
@@ -554,17 +679,17 @@ void AliMuonAccEffSubmitter::Print(Option_t* opt) const
 
   if ( fRatio > 0 )
   {
-    std::cout << Form("For each run, will generate %5.2f times the number of real events for trigger %s",
+    std::cout << std::endl << Form("-- For each run, will generate %5.2f times the number of real events for trigger %s",
                       fRatio,ReferenceTrigger().Data()) << std::endl;
   }
   else
   {
-    std::cout << Form("For each run, will generate %10d events",fFixedNofEvents) << std::endl;
+    std::cout << std::endl <<  Form("-- For each run, will generate %10d events",fFixedNofEvents) << std::endl;
   }
   
-  std::cout << "MaxEventsPerChunk = " << fMaxEventsPerChunk << std::endl;
+  std::cout << "-- MaxEventsPerChunk = " << fMaxEventsPerChunk << std::endl;
   
-  std::cout << "Will" << (fUseOCDBSnapshots ? "" : " NOT") << " use OCDB snaphosts" << std::endl;
+  std::cout << "-- Will" << (fUseOCDBSnapshots ? "" : " NOT") << " use OCDB snaphosts" << std::endl;
 }
 
 //______________________________________________________________________________
@@ -579,6 +704,8 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   /// FULL : all of the above (requires all of the above)
   ///
   /// TEST : as SUBMIT, but in dry mode (does not actually submit the jobs)
+  ///
+  /// LOCALTEST : completely local test (including execution)
   
   if (!IsValid()) return kFALSE;
   
@@ -633,6 +760,16 @@ Bool_t AliMuonAccEffSubmitter::Run(const char* mode)
   if( smode == "SUBMIT" )
   {
     return (Submit(kFALSE)>0);
+  }
+  
+  if ( smode == "LOCALTEST" )
+  {
+    Bool_t ok = Run("LOCAL");
+    if ( ok )
+    {
+      ok = LocalTest();
+    }
+    return ok;
   }
   
   return kFALSE;
@@ -731,6 +868,42 @@ void AliMuonAccEffSubmitter::MakeNofEventsFixed(Int_t nevents)
   SetMapKeyValue("ReferenceTrigger","");
 }
 
+//______________________________________________________________________________
+Int_t AliMuonAccEffSubmitter::LocalTest()
+{
+  /// Generate a local macro (simrun.sh) to execute locally a full scale test
+  /// Can only be used with a fixed number of events (and runnumber is fixed to zero)
+  
+  if ( fRatio > 0 )
+  {
+    AliError("Can only work in local test with a fixed number of events");
+    return 0;
+  }
+  
+  if ( fFixedNofEvents <= 0 )
+  {
+    AliError("Please fix the number of input events using MakeNofEventsFixed()");
+    return 0;
+  }
+  
+  const std::vector<int>& runs = RunList();
+
+  std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
+
+  std::ofstream out("simrun.sh");
+  
+  out << "#!/bin/bash" << std::endl;
+//  root.exe -b -q simrun.C  --run <x> --chunk <y> --event <n>
+  out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
+ 
+  gSystem->Exec("chmod +x simrun.sh");
+  
+  std::cout << "Executing the script : ./simrun.sh" << std::endl;
+
+  gSystem->Exec("./simrun.sh");
+  
+  return 1;
+}
 
 //______________________________________________________________________________
 Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
@@ -906,10 +1079,7 @@ void AliMuonAccEffSubmitter::UpdateLocalFileList(Bool_t clearSnapshots)
       
       if ( !gSystem->AccessPathName(snapshot.Data()) )
       {
-        if ( !LocalFileList()->FindObject(snapshot.Data()) )
-        {
-          LocalFileList()->Add(new TObjString(snapshot));
-        }
+        AddToLocalFileList(snapshot);
       }
     }
   }
@@ -927,6 +1097,11 @@ void AliMuonAccEffSubmitter::UseOCDBSnapshots(Bool_t flag)
   if ( flag )
   {
     SetVar("VAR_OCDB_SNAPSHOT","kTRUE");
+    
+    // for some reason must include ITS objects in the snapshot
+    // (to be able to instantiante the vertexer later on ?)
+    
+    SetVar("VAR_USE_ITS_RECO","1");
   }
   else
   {

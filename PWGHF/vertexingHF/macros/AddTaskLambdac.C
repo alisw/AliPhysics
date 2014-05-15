@@ -1,5 +1,5 @@
 AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t readMC,Bool_t MCPid,Bool_t realPid,Bool_t resPid,Bool_t useKF,
-				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, TString postname="")
+				  Bool_t fillVarHists=kFALSE, Bool_t priorsHists=kFALSE, Bool_t multiplicityHists=kFALSE, Int_t syst=0, TString postname="")
 {
   //==============================================================================                                                      
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -20,14 +20,23 @@ AliAnalysisTaskSE *AddTaskLambdac(TString finname,Bool_t storeNtuple,Bool_t read
       }
   }
   AliRDHFCutsLctopKpi* prodcuts=new AliRDHFCutsLctopKpi();
-  if(stdcuts) prodcuts->SetStandardCutsPP2010();
+  // syst = 0 : pp, syst = 1: PbPb, syst = 2 : pPb
+  if(stdcuts) {
+    if(syst==0) prodcuts->SetStandardCutsPP2010();
+    if(syst==1) prodcuts->SetStandardCutsPbPb2011();
+    if(syst==2) prodcuts->SetStandardCutsPPb2013();
+  }
   else   prodcuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiProdCuts");
   prodcuts->SetName("LctopKpiProdCuts");
   prodcuts->SetMinPtCandidate(-1.);
   prodcuts->SetMaxPtCandidate(10000.);
 
   AliRDHFCutsLctopKpi *analysiscuts = new AliRDHFCutsLctopKpi();
-  if(stdcuts) analysiscuts->SetStandardCutsPP2010();
+  if(stdcuts) {
+   if(syst==0) analysiscuts->SetStandardCutsPP2010();
+   if(syst==1) analysiscuts->SetStandardCutsPbPb2011();
+   if(syst==2) analysiscuts->SetStandardCutsPPb2013();
+  }
   else analysiscuts = (AliRDHFCutsLctopKpi*)filecuts->Get("LctopKpiAnalysisCuts");
   analysiscuts->SetName("LctopKpiAnalysisCuts");
   analysiscuts->SetMinPtCandidate(-1.);

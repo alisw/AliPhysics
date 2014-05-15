@@ -39,7 +39,7 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(const Option_t*);
   
-  virtual Bool_t GetVertexIsOk(AliVEvent* event) const;
+  virtual Bool_t GetVertexIsOk(AliVEvent* event, Bool_t doVtxZcut = kTRUE) const;
   
   virtual Bool_t GetIsPbpOrpPb() const { return fIsPbpOrpPb; };
   virtual void SetIsPbpOrpPb(Bool_t newValue) { fIsPbpOrpPb = newValue; };

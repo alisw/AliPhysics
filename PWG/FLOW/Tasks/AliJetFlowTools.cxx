@@ -38,10 +38,13 @@
 
 // root includes
 #include "TF1.h"
+#include "TF2.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TGraph.h"
 #include "TGraphErrors.h"
+#include "TGraphAsymmErrors.h"
+#include "TLine.h"
 #include "TCanvas.h"
 #include "TLegend.h"
 #include "TArrayD.h"
@@ -55,6 +58,8 @@
 #include "TMath.h"
 #include "TVirtualFitter.h"
 #include "TFitResultPtr.h"
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/Functor.h"
 // aliroot includes
 #include "AliUnfolding.h"
 #include "AliAnaChargedJetResponseMaker.h"
@@ -71,15 +76,19 @@ using namespace std;
 //_____________________________________________________________________________
 AliJetFlowTools::AliJetFlowTools() :
     fResponseMaker      (new AliAnaChargedJetResponseMaker()),
+    fRMS                (kTRUE),
+    fSymmRMS            (kTRUE),
     fPower              (new TF1("fPower","[0]*TMath::Power(x,-([1]))",0.,300.)),
-    fSaveFull           (kFALSE),
+    fSaveFull           (kTRUE),
     fActiveString       (""),
     fActiveDir          (0x0),
     fInputList          (0x0),
     fRefreshInput       (kTRUE),
     fOutputFileName     ("UnfoldedSpectra.root"),
     fOutputFile         (0x0),
-    fCentralityBin      (0),
+    fCentralityArray    (0x0),
+    fMergeBinsArray     (0x0),
+    fCentralityWeights  (0x0),
     fDetectorResponse   (0x0),
     fJetFindingEff      (0x0),
     fBetaIn             (.1),
@@ -91,6 +100,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fAvoidRoundingError (kFALSE),
     fUnfoldingAlgorithm (kChi2),
     fPrior              (kPriorMeasured),
+    fPriorUser          (0x0),
     fBinsTrue           (0x0),
     fBinsRec            (0x0),
     fBinsTruePrior      (0x0),
@@ -115,6 +125,7 @@ AliJetFlowTools::AliJetFlowTools() :
     fDphiUnfolding      (kTRUE),
     fDphiDptUnfolding   (kFALSE),
     fExLJDpt            (kTRUE),
+    fTitleFontSize      (-999.),
     fRMSSpectrumIn      (0x0),
     fRMSSpectrumOut     (0x0),
     fRMSRatio           (0x0),
@@ -157,13 +168,12 @@ void AliJetFlowTools::Make() {
     // 1a) resize the jet spectrum according to the binning scheme in fBinsTrue
     //     parts of the spectrum can end up in over or underflow bins
     TH1D* measuredJetSpectrumIn  = RebinTH1D(fSpectrumIn, fBinsRec, TString("resized_in_"), kFALSE);
-    TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec, TString("resized_out_"), kFALSE);
-
+    TH1D* measuredJetSpectrumOut = RebinTH1D(fSpectrumOut, fBinsRec,  TString("resized_out_"), kFALSE);
+    
     // 1b) resize the jet spectrum to 'true' bins. can serve as a prior and as a template for unfolding
     // the template will be used as a prior for the chi2 unfolding
     TH1D* measuredJetSpectrumTrueBinsIn  = RebinTH1D(fSpectrumIn, fBinsTrue, TString("in"), kFALSE);
     TH1D* measuredJetSpectrumTrueBinsOut = RebinTH1D(fSpectrumOut, fBinsTrue, TString("out"), kFALSE);
-
     // get the full response matrix from the dpt and the detector response
     fDetectorResponse = NormalizeTH2D(fDetectorResponse);
     // get the full response matrix. if test mode is chosen, the full response is replace by a unity matrix
@@ -223,8 +233,8 @@ void AliJetFlowTools::Make() {
         TString("in"),
         jetFindingEfficiency);
     resizedResponseIn->SetNameTitle("ResponseMatrixIn", "response matrix in plane");
-    resizedResponseIn->SetXTitle("p_{T}^{true} [GeV/c]");
-    resizedResponseIn->SetYTitle("p_{T}^{rec} [GeV/c]");
+    resizedResponseIn->SetXTitle("p_{T, jet}^{true} (GeV/#it{c})");
+    resizedResponseIn->SetYTitle("p_{T, jet}^{rec} (GeV/#it{c})");
     resizedResponseIn = ProtectHeap(resizedResponseIn);
     resizedResponseIn->Write();
     kinematicEfficiencyIn->SetNameTitle("KinematicEfficiencyIn","Kinematic efficiency, in plane");
@@ -257,8 +267,8 @@ void AliJetFlowTools::Make() {
                     TString("out"),
                     jetFindingEfficiency);
         resizedResponseOut->SetNameTitle("ResponseMatrixOut", "response matrix in plane");
-        resizedResponseOut->SetXTitle("p_{T}^{true} [GeV/c]");
-        resizedResponseOut->SetYTitle("p_{T}^{rec} [GeV/c]");
+        resizedResponseOut->SetXTitle("p_{T, jet}^{true} (GeV/#it{c})");
+        resizedResponseOut->SetYTitle("p_{T, jet}^{rec} (GeV/#it{c})");
         resizedResponseOut = ProtectHeap(resizedResponseOut);
         resizedResponseOut->Write();
         kinematicEfficiencyOut->SetNameTitle("KinematicEfficiencyOut","Kinematic efficiency, Out plane");
@@ -286,7 +296,7 @@ void AliJetFlowTools::Make() {
             TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out")));
             if(ratio) {
                 ratio->SetNameTitle("RatioInOutPlane", "Ratio in plane, out of plane jet spectrum");
-                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
                 ratio = ProtectHeap(ratio);
                 ratio->Write();
@@ -298,10 +308,10 @@ void AliJetFlowTools::Make() {
                     if(unfoldedJetSpectrumOut->GetBinContent(i+1) > 0) fRMSRatio->Fill(fRMSSpectrumIn->GetBinCenter(i+1), unfoldedJetSpectrumIn->GetBinContent(i+1) / unfoldedJetSpectrumOut->GetBinContent(i+1));
                }
             }
-            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2"), fEventPlaneRes));
             if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 v2->GetYaxis()->SetTitle("v_{2}");
                 v2 = ProtectHeap(v2);
                 v2->Write();
@@ -310,15 +320,15 @@ void AliJetFlowTools::Make() {
             TGraphErrors* ratio(GetRatio((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_in"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_out"), TString(""), kTRUE, fBinsRec->At(fBinsRec->GetSize()-1)));
             if(ratio) {
                 ratio->SetNameTitle("[NC]RatioInOutPlane", "[NC]Ratio in plane, out of plane jet spectrum");
-                ratio->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                ratio->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 ratio->GetYaxis()->SetTitle("yield IN / yield OUT");
                 ratio = ProtectHeap(ratio);
                 ratio->Write();
             }
-            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2")));
+            TGraphErrors* v2(GetV2((TH1D*)unfoldedJetSpectrumIn->Clone("unfoldedLocal_inv2"), (TH1D*)unfoldedJetSpectrumOut->Clone("unfoldedLocal_outv2"), fEventPlaneRes));
              if(v2) {
                 v2->SetNameTitle("v2", "v_{2} from different in, out of plane yield");
-                v2->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                v2->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                 v2->GetYaxis()->SetTitle("v_{2}");
                 v2 = ProtectHeap(v2);
                 v2->Write();
@@ -326,9 +336,21 @@ void AliJetFlowTools::Make() {
         }
     }   // end of if(fDphiUnfolding)
     fDeltaPtDeltaPhi->Write();
+    unfoldedJetSpectrumIn->Sumw2();
+    ProtectHeap(unfoldedJetSpectrumIn, kFALSE);
+    unfoldedJetSpectrumIn->Write();
+    unfoldedJetSpectrumOut->Sumw2();
+    ProtectHeap(unfoldedJetSpectrumOut, kFALSE);
+    unfoldedJetSpectrumOut->Write();
     fJetPtDeltaPhi->Write();
     // save the current state of the unfolding object
     SaveConfiguration(unfoldedJetSpectrumIn ? kTRUE : kFALSE, unfoldedJetSpectrumOut ? kTRUE : kFALSE);
+    TH1D* unfoldedJetSpectrumInForSub((TH1D*)unfoldedJetSpectrumIn->Clone("forSubIn"));
+    TH1D* unfoldedJetSpectrumOutForSub((TH1D*)unfoldedJetSpectrumOut->Clone("forSubOut"));
+    unfoldedJetSpectrumInForSub->Add(unfoldedJetSpectrumOutForSub, -1.);
+    unfoldedJetSpectrumInForSub= ProtectHeap(unfoldedJetSpectrumInForSub);
+    unfoldedJetSpectrumInForSub->Write();
+
 }
 //_____________________________________________________________________________
 TH1D* AliJetFlowTools::UnfoldWrapper(
@@ -349,7 +371,7 @@ TH1D* AliJetFlowTools::UnfoldWrapper(
     else if(fUnfoldingAlgorithm == kNone) {
         TH1D* clone((TH1D*)measuredJetSpectrum->Clone("clone"));
         clone->SetNameTitle(Form("MeasuredJetSpectrum%s", suffix.Data()), Form("measuredJetSpectrum %s", suffix.Data()));
-        return clone;
+        return clone;//RebinTH1D(clone, fBinsTrue, clone->GetName(), kFALSE);
     }
     else return 0x0; 
     // do the actual unfolding with the selected function
@@ -410,6 +432,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
         i++;
     }
     // get the status of TMinuit::mnhess(), fISW[1] == 3 means the hessian matrix was calculated succesfully
+    TH2D* hPearson(0x0);
     if(status == 0 && gMinuit->fISW[1] == 3) {
         // if the unfolding converged and the hessian matrix is reliable, plot the pearson coefficients
         TVirtualFitter *fitter(TVirtualFitter::GetFitter());
@@ -417,10 +440,11 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
         TMatrixD covarianceMatrix(fBinsTrue->GetSize()-1, fBinsTrue->GetSize()-1, fitter->GetCovarianceMatrix());
         TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix));
         pearson->Print();
-        TH2D *hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients, %s plane", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocal = MergeSpectrumBins(fMergeBinsArray, unfoldedLocal, hPearson);
     } else status = -1; 
 
     // step 3) refold the unfolded spectrum and save the ratio measured / refolded
@@ -465,6 +489,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumChi2(
     fitStatus->SetBinContent(4, (!strcmp(suffix.Data(), "in")) ? fBetaIn : fBetaOut);
     fitStatus->GetXaxis()->SetBinLabel(4, (!strcmp(suffix.Data(), "in")) ? "fBetaIn" : "fBetaOut");
     fitStatus->Write();
+
     return unfoldedLocal;
 }
 //_____________________________________________________________________________
@@ -533,12 +558,14 @@ TH1D* AliJetFlowTools::UnfoldSpectrumSVD(
     // get the pearson coefficients from the covariance matrix
     TMatrixD covarianceMatrix = unfoldSVD.Ereco(errorTreatment);
     TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+    TH2D* hPearson(0x0);
     if(pearson) {
-        TH2D* hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         pearson->Print();
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients_%s", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocalSVD = MergeSpectrumBins(fMergeBinsArray, unfoldedLocalSVD, hPearson);
     } else return 0x0;       // return if unfolding didn't converge
 
     // plot singular values and d_i vector
@@ -577,8 +604,8 @@ TH1D* AliJetFlowTools::UnfoldSpectrumSVD(
 
     // save more general bookkeeeping histograms to the output directory
     responseMatrixLocalTransposePrior->SetNameTitle("TransposeResponseMatrix", "Transpose of response matrix, normalize with prior");
-    responseMatrixLocalTransposePrior->SetXTitle("p_{T}^{true} [GeV/c]");
-    responseMatrixLocalTransposePrior->SetYTitle("p_{T}^{rec} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
     responseMatrixLocalTransposePrior->Write();
     priorLocal->SetNameTitle("PriorOriginal", "Prior, original");
     priorLocal->SetXTitle("p_{t} [GeV/c]");
@@ -657,6 +684,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
         i++;
     }
     // get the status of TMinuit::mnhess(), fISW[1] == 3 means the hessian matrix was calculated succesfully
+    TH2D* hPearson(0x0);
     if(status == 0 && gMinuit->fISW[1] == 3) {
         // if the unfolding converged and the hessian matrix is reliable, plot the pearson coefficients
         TVirtualFitter *fitter(TVirtualFitter::GetFitter());
@@ -664,11 +692,12 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
         TMatrixD covarianceMatrix(fBinsTrue->GetSize()-1, fBinsTrue->GetSize()-1, fitter->GetCovarianceMatrix());
         TMatrixD *pearson((TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix));
         pearson->Print();
-        TH2D *hPearson(new TH2D(*pearson));
+        hPearson= new TH2D(*pearson);
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients, %s plane", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
     } else status = -1; 
+    if(fMergeBinsArray) unfoldedLocal = MergeSpectrumBins(fMergeBinsArray, unfoldedLocal, hPearson);
 
     // step 3) refold the unfolded spectrum and save the ratio measured / refolded
     TH1D *foldedLocal(fResponseMaker->MultiplyResponseGenerated(unfoldedLocal, resizedResponseLocal,kinematicEfficiencyLocal));
@@ -712,6 +741,7 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesianAli(
     fitStatus->SetBinContent(4, (!strcmp(suffix.Data(), "in")) ? fBetaIn : fBetaOut);
     fitStatus->GetXaxis()->SetBinLabel(4, (!strcmp(suffix.Data(), "in")) ? "fBetaIn" : "fBetaOut");
     fitStatus->Write();
+
     return unfoldedLocal;
 }
 //_____________________________________________________________________________
@@ -773,12 +803,14 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
     // get the pearson coefficients from the covariance matrix
     TMatrixD covarianceMatrix = unfoldBayes.Ereco(errorTreatment);
     TMatrixD *pearson = (TMatrixD*)CalculatePearsonCoefficients(&covarianceMatrix);
+    TH2D* hPearson(0x0);
     if(pearson) {
-        TH2D* hPearson(new TH2D(*pearson));
+        hPearson = new TH2D(*pearson);
         pearson->Print();
         hPearson->SetNameTitle(Form("PearsonCoefficients_%s", suffix.Data()), Form("Pearson coefficients_%s", suffix.Data()));
         hPearson = ProtectHeap(hPearson);
         hPearson->Write();
+        if(fMergeBinsArray) unfoldedLocalBayes = MergeSpectrumBins(fMergeBinsArray, unfoldedLocalBayes, hPearson);
     } else return 0x0;       // return if unfolding didn't converge
 
     // 5) refold the unfolded spectrum
@@ -805,8 +837,8 @@ TH1D* AliJetFlowTools::UnfoldSpectrumBayesian(
 
     // save more general bookkeeeping histograms to the output directory
     responseMatrixLocalTransposePrior->SetNameTitle("TransposeResponseMatrix", "Transpose of response matrix, normalize with prior");
-    responseMatrixLocalTransposePrior->SetXTitle("p_{T}^{true} [GeV/c]");
-    responseMatrixLocalTransposePrior->SetYTitle("p_{T}^{rec} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+    responseMatrixLocalTransposePrior->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
     responseMatrixLocalTransposePrior->Write();
     priorLocal->SetNameTitle("PriorOriginal", "Prior, original");
     priorLocal->SetXTitle("p_{t} [GeV/c]");
@@ -848,14 +880,27 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         // clear minuit state to avoid constraining the fit with the results of the previous iteration
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
-    // extract the spectra
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
-    fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
-    if(!fJetPtDeltaPhi) {
+    // extract the spectra 
+    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
+    if(!fInputList->FindObject(spectrumName.Data())) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
     }
+
+    // get the first scaled spectrum
+    fJetPtDeltaPhi = (TH2D*)fInputList->FindObject(spectrumName.Data());
+    // clone the spectrum on the heap. this is necessary since scale or add change the
+    // contents of the original histogram
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
+    fJetPtDeltaPhi->Scale(fCentralityWeights->At(0));
+    printf("Extracted %s wight weight %.2f \n", spectrumName.Data(), fCentralityWeights->At(0));
+    // merge subsequent bins (if any)
+    for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+        spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+        printf( " Merging with %s with weight %.4f \n", spectrumName.Data(), fCentralityWeights->At(i));
+        fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())), fCentralityWeights->At(i));
+    }
+
     // in plane spectrum
     if(!fDphiUnfolding) {
         fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), 1, 40, "e");
@@ -870,7 +915,11 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     // normalize spectra to event count if requested
     if(fNormalizeSpectra) {
-        TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityBin)));
+        TH1* rho((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(0))));
+        rho->Scale(fCentralityWeights->At(0));
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+           rho->Add((TH1*)fInputList->FindObject(Form("fHistRho_%i", fCentralityArray->At(i))), fCentralityWeights->At(i));
+        }
         if(!rho) return 0x0;
         Bool_t normalizeToFullSpectrum = (fEventCount < 0) ? kTRUE : kFALSE;
         if (normalizeToFullSpectrum) fEventCount = rho->GetEntries();
@@ -900,7 +949,7 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
     }
     // extract the delta pt matrices
     TString deltaptName("");
-    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityBin) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin);
+    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
@@ -908,7 +957,17 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+
+    // clone the distribution on the heap and if requested merge with other centralities
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
+    fDeltaPtDeltaPhi->Scale(fCentralityWeights->At(0));
+    printf("Extracted %s with weight %.2f \n", deltaptName.Data(), fCentralityWeights->At(0));
+    for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+        deltaptName = (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+        printf(" Merging with %s with weight %.4f \n", deltaptName.Data(), fCentralityWeights->At(i));
+        fDeltaPtDeltaPhi->Add((TH2D*)fInputList->FindObject(deltaptName.Data()), fCentralityWeights->At(i));
+    }
+
     // in plane delta pt distribution
     if(!fDphiUnfolding) {
         fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), 1, 40, "e");
@@ -941,14 +1000,14 @@ Bool_t AliJetFlowTools::PrepareForUnfolding()
         }
     }
     fDptIn = new TH2D(*rfIn);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
     fDptOut = new TH2D(*rfOut);
-    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
-    fDptOut->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptOut->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)));
+    fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ProtectHeap(fDptOut);
     
     fRefreshInput = kTRUE;     // force cloning of the input
@@ -973,18 +1032,24 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         for(Int_t i(0); i < fPower->GetNpar(); i++) fPower->SetParameter(i, 0.);
     }
     // extract the spectra
-    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityBin));
+    TString spectrumName(Form("fHistJetPsi2Pt_%i", fCentralityArray->At(0)));
     fJetPtDeltaPhi = ((TH2D*)fInputList->FindObject(spectrumName.Data()));
     if(!fJetPtDeltaPhi) {
         printf(" Couldn't find spectrum %s ! \n", spectrumName.Data());
         return kFALSE;
+    }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            spectrumName = Form("fHistJetPsi2Pt_%i", fCentralityArray->At(i));
+            fJetPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(spectrumName.Data())));
+        }
     }
     fJetPtDeltaPhi = ProtectHeap(fJetPtDeltaPhi, kFALSE);
     // in plane spectrum
     fSpectrumIn = fJetPtDeltaPhi->ProjectionY(Form("_py_in_%s", spectrumName.Data()), low, up, "e");
     // extract the delta pt matrices
     TString deltaptName("");
-    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityBin) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityBin);
+    deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(0)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(0));
     fDeltaPtDeltaPhi = ((TH2D*)fInputList->FindObject(deltaptName.Data()));
     if(!fDeltaPtDeltaPhi) {
         printf(" Couldn't find delta pt matrix %s ! \n", deltaptName.Data());
@@ -992,6 +1057,13 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         fRefreshInput = kTRUE;
         return kTRUE;
     }
+    if(fCentralityArray) {
+        for(Int_t i(1); i < fCentralityArray->GetSize(); i++) {
+            deltaptName += (fExLJDpt) ? Form("fHistDeltaPtDeltaPhi2ExLJ_%i", fCentralityArray->At(i)) : Form("fHistDeltaPtDeltaPhi2_%i", fCentralityArray->At(i));
+            fDeltaPtDeltaPhi->Add(((TH2D*)fInputList->FindObject(deltaptName.Data())));
+        }
+    }
+
     fDeltaPtDeltaPhi = ProtectHeap(fDeltaPtDeltaPhi, kFALSE);
     // in plane delta pt distribution
     fDptInDist = fDeltaPtDeltaPhi->ProjectionY(Form("_py_in_%s", deltaptName.Data()), low, up, "e");
@@ -1005,9 +1077,9 @@ Bool_t AliJetFlowTools::PrepareForUnfolding(Int_t low, Int_t up) {
         }
     }
     fDptIn = new TH2D(*rfIn);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptIn = ProtectHeap(fDptIn);
     
     return kTRUE;
@@ -1027,12 +1099,26 @@ TH1D* AliJetFlowTools::GetPrior(
     TDirectoryFile* dirOut = new TDirectoryFile(Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()), Form("Prior_%s___%s", suffix.Data(), fActiveString.Data()));
     dirOut->cd();
     switch (fPrior) {    // select the prior for unfolding
+        case kPriorPythia : {
+            if(!fPriorUser) {
+                printf("> GetPrior:: FATAL ERROR! pythia prior requested but prior has not been set ! < \n");
+                return 0x0;
+            }
+            // rebin the given prior to the true spectrum (creates a new histo)
+            return RebinTH1D(fPriorUser, fBinsTrue, Form("kPriorPythia_%s", suffix.Data()), kFALSE);
+        } break;
         case kPriorChi2 : {
+            TArrayI* placeHolder(0x0);
+            if(fMergeBinsArray) {
+                placeHolder = fMergeBinsArray;
+                fMergeBinsArray = 0x0;
+            }
             if(fBinsTruePrior && fBinsRecPrior) {       // if set, use different binning for the prior
                 TArrayD* tempArrayTrue(fBinsTrue);      // temporarily cache the original binning
                 fBinsTrue = fBinsTruePrior;             // switch binning schemes (will be used in UnfoldSpectrumChi2())
                 TArrayD* tempArrayRec(fBinsRec);
                 fBinsRec = fBinsRecPrior;
+                // for the prior, do not re-bin the output
                 TH1D* measuredJetSpectrumChi2 = RebinTH1D((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsRec, TString("resized_chi2"), kFALSE);
                 TH1D* measuredJetSpectrumTrueBinsChi2 = RebinTH1D((!strcmp("in", suffix.Data())) ? fSpectrumIn : fSpectrumOut, fBinsTruePrior, TString("out"), kFALSE);
                 TH2D* resizedResponseChi2(RebinTH2D((!strcmp("in", suffix.Data())) ? fFullResponseIn : fFullResponseOut,fBinsTruePrior, fBinsRec, TString("chi2")));
@@ -1048,6 +1134,7 @@ TH1D* AliJetFlowTools::GetPrior(
                if(!unfolded) {
                     printf(" > GetPrior:: panic, couldn't get prior from Chi2 unfolding! \n");
                     printf("               probably Chi2 unfolding did not converge < \n");
+                    if(placeHolder) fMergeBinsArray = placeHolder;
                     return 0x0;
                 }
                 fBinsTrue = tempArrayTrue;  // reset bins borders
@@ -1064,10 +1151,13 @@ TH1D* AliJetFlowTools::GetPrior(
                 if(!unfolded) {
                     printf(" > GetPrior:: panic, couldn't get prior from Chi2 unfolding! \n");
                     printf("               probably Chi2 unfolding did not converge < \n");
+                    if(placeHolder) fMergeBinsArray = placeHolder;
                     return 0x0;
                 }
+                if(placeHolder) fMergeBinsArray = placeHolder;
             }
             break;
+
         }
         case kPriorMeasured : { 
             unfolded = (TH1D*)measuredJetSpectrumTrueBins->Clone(Form("kPriorMeasured_%s", suffix.Data()));       // copy template to unfolded to use as prior
@@ -1131,7 +1221,7 @@ TH2D* AliJetFlowTools::NormalizeTH2D(TH2D* histo, Bool_t noError) {
     // general method to normalize all vertical slices of a th2 to unity
     // i.e. get a probability matrix
     if(!histo) {
-        printf(" > NormalizeTH2D:: fatal error, NULL pointer passed < \n");
+        printf(" > NormalizeTH2D:: NULL pointer passed, returning NULL < \n");
         return NULL;
     }
     Int_t binsX = histo->GetXaxis()->GetNbins();
@@ -1214,6 +1304,35 @@ TH1D* AliJetFlowTools::NormalizeTH1D(TH1D* histo, Double_t scale)
     return histo;
 }
 //_____________________________________________________________________________
+TH1D* AliJetFlowTools::MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr)
+{
+    // merge a spectrum histogram taking into account the correlation terms
+    if(!(bins&&spectrum)) {
+        printf(" > NULL pointer passed as argument in MergeSpectrumBins ! < \n");
+        return 0x0;
+    }
+    Double_t sum(0), error(0), pearson(0);
+    // take the sum of the bin content
+    sum += spectrum->GetBinContent(bins->At(0));
+    sum += spectrum->GetBinContent(bins->At(1));
+    // quadratically sum the errors
+    error += TMath::Power(spectrum->GetBinError(bins->At(0)), 2);
+    error += TMath::Power(spectrum->GetBinError(bins->At(1)), 2);
+    // add the covariance term
+    pearson = corr->GetBinContent(bins->At(0), bins->At(1));
+    if(!corr) {
+        printf(" > PANIC ! something is wrong with the covariance matrix, assuming full correlation ! < \n ");
+        pearson = 1;
+    }
+    error += 2.*spectrum->GetBinError(bins->At(0))*spectrum->GetBinError(bins->At(1))*pearson;
+    spectrum->SetBinContent(1, sum);
+    if(error <= 0) return spectrum;
+    spectrum->SetBinError(1, TMath::Sqrt(error));
+    printf(" > sum is %.2f \t error is %.8f < \n", sum, error);
+    printf(" > REPLACING BIN CONTENT OF FIRST BIN (%i) WITH MERGED BINS (%i) and (%i) < \n", 1, bins->At(0), bins->At(1));
+    return spectrum;
+}
+//_____________________________________________________________________________
 TMatrixD* AliJetFlowTools::CalculatePearsonCoefficients(TMatrixD* covarianceMatrix) 
 {
     // Calculate pearson coefficients from covariance matrix
@@ -1253,6 +1372,61 @@ TH1D* AliJetFlowTools::SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min
     return temp;
 }
 //_____________________________________________________________________________
+void AliJetFlowTools::Style(Bool_t legacy)
+{
+    // set global style for your current aliroot session
+    if(!gStyle) return;
+    // legacy style is pleasing to the eye, default is the formal ALICE style
+    if(legacy) {
+        gStyle->SetCanvasColor(-1); 
+        gStyle->SetPadColor(-1); 
+        gStyle->SetFrameFillColor(-1); 
+        gStyle->SetHistFillColor(-1); 
+        gStyle->SetTitleFillColor(-1); 
+        gStyle->SetFillColor(-1); 
+        gStyle->SetFillStyle(4000); 
+        gStyle->SetStatStyle(0); 
+        gStyle->SetTitleStyle(0); 
+        gStyle->SetCanvasBorderSize(0); 
+        gStyle->SetFrameBorderSize(0); 
+        gStyle->SetLegendBorderSize(0); 
+        gStyle->SetStatBorderSize(0); 
+        gStyle->SetTitleBorderSize(0);
+    } else {
+        gStyle->Reset("Plain");
+        gStyle->SetOptTitle(0);
+        gStyle->SetOptStat(0);
+        gStyle->SetPalette(1);
+        gStyle->SetCanvasColor(10);
+        gStyle->SetCanvasBorderMode(0);
+        gStyle->SetFrameLineWidth(1);
+        gStyle->SetFrameFillColor(kWhite);
+        gStyle->SetPadColor(10);
+        gStyle->SetPadTickX(1);
+        gStyle->SetPadTickY(1);
+        gStyle->SetPadBottomMargin(0.15);
+        gStyle->SetPadLeftMargin(0.15);
+        gStyle->SetHistLineWidth(1);
+        gStyle->SetHistLineColor(kRed);
+        gStyle->SetFuncWidth(2);
+        gStyle->SetFuncColor(kGreen);
+        gStyle->SetLineWidth(2);
+        gStyle->SetLabelSize(0.045,"xyz");
+        gStyle->SetLabelOffset(0.01,"y");
+        gStyle->SetLabelOffset(0.01,"x");
+        gStyle->SetLabelColor(kBlack,"xyz");
+        gStyle->SetTitleSize(0.05,"xyz");
+        gStyle->SetTitleOffset(1.25,"y");
+        gStyle->SetTitleOffset(1.2,"x");
+        gStyle->SetTitleFillColor(kWhite);
+        gStyle->SetTextSizePixels(26);
+        gStyle->SetTextFont(42);
+        gStyle->SetLegendBorderSize(0);
+        gStyle->SetLegendFillColor(kWhite);
+        gStyle->SetLegendFont(42);
+    }
+}
+//_____________________________________________________________________________
 void AliJetFlowTools::Style(TCanvas* c, TString style)
 {
     // set a default style for a canvas
@@ -1274,9 +1448,15 @@ void AliJetFlowTools::Style(TCanvas* c, TString style)
     } else printf(" > Style called with unknown option %s \n    returning < \n", style.Data());
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TVirtualPad* c, TString style)
+void AliJetFlowTools::Style(TVirtualPad* c, TString style, Bool_t legacy)
 {
-    // set a default style for a canvas
+    // set a default style for a canva
+    
+    if(legacy) {
+        c->SetLeftMargin(.25);
+        c->SetBottomMargin(.25);
+    }
+    else Style();
     if(!strcmp(style.Data(), "PEARSON")) {
         printf(" > style PEARSON pad < \n");
         gStyle->SetOptStat(0);
@@ -1292,101 +1472,1505 @@ void AliJetFlowTools::Style(TVirtualPad* c, TString style)
         c->SetGridy();
         c->SetTicks();
         return;
+    } else if (!strcmp(style.Data(), "GRID")) {
+        printf(" > style GRID pad < \n");
+        gStyle->SetOptStat(0);
+        c->SetGridx();
+        c->SetGridy();
+        c->SetTicks();
     } else printf(" > Style called with unknown option %s \n    returning < \n", style.Data());
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::Style(TLegend* l)
 {
     // set a default style for a legend
-    l->SetTextSize(.06);
     l->SetFillColor(0);
+    l->SetBorderSize(0);
+    if(gStyle) l->SetTextSize(gStyle->GetTextSize()*.08);
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TH1* h, EColor col, histoType type)
+void AliJetFlowTools::Style(TH1* h, EColor col, histoType type, Bool_t legacy)
 {
     // style a histo
+    h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
-    h->SetLineWidth(2.);
-    h->SetMarkerSize(2.);
-    h->SetTitleSize(0.06);
-    h->GetYaxis()->SetLabelSize(0.06);
-    h->GetXaxis()->SetLabelSize(0.06);
-    h->GetYaxis()->SetTitleSize(0.06);
-    h->GetXaxis()->SetTitleSize(0.06);
-    h->GetYaxis()->SetTitleOffset(1.);
-    h->GetXaxis()->SetTitleOffset(.9);
+    h->SetLineWidth(2);
+    h->SetMarkerSize(1);
+    if(legacy) {
+        h->SetTitle("");
+        h->GetYaxis()->SetLabelSize(0.05);
+        h->GetXaxis()->SetLabelSize(0.05);
+        h->GetYaxis()->SetTitleOffset(1.5);
+        h->GetXaxis()->SetTitleOffset(1.5);
+        h->GetYaxis()->SetTitleSize(.05);
+        h->GetXaxis()->SetTitleSize(.05);
+    } else Style();
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetXaxis()->SetTitle("#it{p}_{T}^{ch, jet} (GeV/#it{c})");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{cht} (GeV/#it{c})");
+       } break;
+       case kBar : {
+            h->SetFillColor(col);
+            h->SetBarWidth(.6);
+            h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
+            h->SetBarOffset(0.2);
+       }
+       case kRatio : {
+            h->SetMarkerStyle(8);
+            h->SetMarkerSize(1);
        } break;
        default : break;
     }
 }
 //_____________________________________________________________________________
-void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type)
+void AliJetFlowTools::Style(TGraph* h, EColor col, histoType type, Bool_t legacy)
 {
-    // style a histo
+    // style a tgraph
+    h->GetYaxis()->SetNdivisions(505);
     h->SetLineColor(col);
     h->SetMarkerColor(col);
-    h->SetLineWidth(2.);
-    h->SetMarkerSize(2.);
-    h->GetYaxis()->SetLabelSize(0.06);
-    h->GetXaxis()->SetLabelSize(0.06);
-    h->GetYaxis()->SetTitleSize(0.06);
-    h->GetXaxis()->SetTitleSize(0.06);
-    h->GetYaxis()->SetTitleOffset(1.);
-    h->GetXaxis()->SetTitleOffset(.9);
+    h->SetLineWidth(2);
+    h->SetMarkerSize(1);
+    h->SetTitle("");
+    h->SetFillColor(kCyan);
+    if(legacy) {
+        h->GetYaxis()->SetLabelSize(0.05);
+        h->GetXaxis()->SetLabelSize(0.05);
+        h->GetYaxis()->SetTitleOffset(1.6);
+        h->GetXaxis()->SetTitleOffset(1.6);
+        h->GetYaxis()->SetTitleSize(.05);
+        h->GetXaxis()->SetTitleSize(.05);
+    } else Style();
+    h->GetXaxis()->SetTitle("#it{p}_{T, jet}^{ch} (GeV/#it{c})");
     switch (type) {
         case kInPlaneSpectrum : {
             h->SetTitle("IN PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
         } break;
         case kOutPlaneSpectrum : {
             h->SetTitle("OUT OF PLANE");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
        } break;
        case kUnfoldedSpectrum : {
             h->SetTitle("UNFOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
        } break;
        case kFoldedSpectrum : {
             h->SetTitle("FOLDED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
        } break;
        case kMeasuredSpectrum : {
             h->SetTitle("MEASURED");
-            h->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-            h->GetYaxis()->SetTitle("counts");
+            h->GetYaxis()->SetTitle("#frac{d#it{N}}{d#it{p}_{T}}");
+       } break;
+       case kRatio : {
+//            h->GetYaxis()->SetTitle("#frac{d#it{N_{in plane}^{jet}}}{d#it{p}_{T}} / #frac{d#it{N_{out of plane}^{jet}}}{d#it{p}_{T}}");
+            h->GetYaxis()->SetTitle("(d#it{N}^{ch, jet}_{in plane}/(d#it{p}_{T}d#eta))/(d#it{N}^{ch,jet}_{out of plane}/(d#it{p}_{T}d#eta))");
+       } break;
+       case kV2 : {
+//            h->GetYaxis()->SetTitle("#it{v}_{2} = #frac{1}{#it{R}} #frac{#pi}{4} #frac{#it{N_{in plane}} - #it{N_{out of plane}}}{#it{N_{in plane}} + #it{N_{out of plane}}}");
+            h->GetYaxis()->SetTitle("#it{v}_{2}^{ch, jet} \{EP, |#Delta#eta|>0.9 \} ");
+            h->GetYaxis()->SetRangeUser(-.5, 1.);
+            h->SetMarkerStyle(8);
+            h->SetMarkerSize(1);
        } break;
        default : break;
     }
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::GetNominalValues(
+        TH1D*& ratio,           // pointer reference, output of this function
+        TGraphErrors*& v2,      // pointer reference, as output of this function
+        TArrayI* in,
+        TArrayI* out,
+        TString inFile,
+        TString outFile) const
+{
+    // pass clones of the nominal points and nominal v2 values 
+    if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
+    TFile* readMe(new TFile(inFile.Data(), "READ"));                    // open unfolding output read-only
+    if(readMe->IsZombie()) {
+        printf(" > Fatal error, couldn't read %s for post processing ! < \n", inFile.Data());
+        return;
+    }
+    printf("\n\n\n\t\t GetNominalValues \n > Recovered the following file structure : \n <");
+    readMe->ls();
+    TFile* output(new TFile(outFile.Data(), "RECREATE"));   // create new output file
+    // get some placeholders, have to be initialized but will be deleted
+    ratio = new TH1D("nominal", "nominal", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+    TH1D* nominalIn(new TH1D("nominal in", "nominal in", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* nominalOut(new TH1D("nominal out", "nominal out", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    Int_t iIn[] = {in->At(0), in->At(0)};          // first value is the nominal point
+    Int_t iOut[] = {out->At(0), out->At(0)};
+
+    // call the functions and set the relevant pointer references
+    TH1D* dud(0x0);
+    DoIntermediateSystematics(
+            new TArrayI(2, iIn), 
+            new TArrayI(2, iOut),
+            dud, dud, dud, dud, dud, dud, 
+            ratio,              // pointer reference, output of this function 
+            nominalIn,
+            nominalOut,
+            1, 
+            fBinsTrue->At(0), 
+            fBinsTrue->At(fBinsTrue->GetSize()-1),
+            readMe,
+            "nominal_values");
+    v2 = GetV2(nominalIn, nominalOut, fEventPlaneRes, "nominal v_{2}");
+
+    // close the open files, reclaim ownership of histograms which are necessary outside of the file scope
+    ratio->SetDirectory(0);     // disassociate from current gDirectory
+    readMe->Close();
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::GetCorrelatedUncertainty(
+        TGraphAsymmErrors*& corrRatio,  // correlated uncertainty function pointer
+        TGraphAsymmErrors*& corrV2,     // correlated uncertainty function pointer
+        TArrayI* variationsIn,          // variantions in plnae
+        TArrayI* variationsOut,         // variantions out of plane
+        Bool_t sym,                     // treat as symmmetric
+        TArrayI* variations2ndIn,       // second source of variations
+        TArrayI* variations2ndOut,      // second source of variations
+        Bool_t sym2nd,                  // treat as symmetric
+        TString type,                   // type of uncertaitny
+        TString type2,
+        Int_t columns,                  // divide the output canvasses in this many columns
+        Float_t rangeLow,               // lower pt range
+        Float_t rangeUp,                // upper pt range
+        Float_t corr,                   // correlation strength
+        TString in,                     // input file name (created by this unfolding class)
+        TString out                     // output file name (which will hold results of the systematic test)
+        ) const
+{
+    // do full systematics
+    if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
+    TFile* readMe(new TFile(in.Data(), "READ"));                        // open unfolding output read-only
+    if(readMe->IsZombie()) {
+        printf(" > Fatal error, couldn't read %s for post processing ! < \n", in.Data());
+        return;
+    }
+    printf("\n\n\n\t\t GetCorrelatedUncertainty \n > Recovered the following file structure : \n <");
+    readMe->ls();
+    TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
+
+    // create some null placeholder pointers
+    TH1D* relativeErrorVariationInLow(0x0);
+    TH1D* relativeErrorVariationInUp(0x0);
+    TH1D* relativeErrorVariationOutLow(0x0);
+    TH1D* relativeErrorVariationOutUp(0x0);
+    TH1D* relativeError2ndVariationInLow(0x0);
+    TH1D* relativeError2ndVariationInUp(0x0);
+    TH1D* relativeError2ndVariationOutLow(0x0);
+    TH1D* relativeError2ndVariationOutUp(0x0);
+    TH1D* relativeStatisticalErrorIn(0x0);
+    TH1D* relativeStatisticalErrorOut(0x0);
+    // histo for the nominal ratio in / out
+    TH1D* nominal(new TH1D("ratio in plane, out of plane", "ratio in plane, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* nominalIn(new TH1D("in plane jet yield", "in plane jet yield", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* nominalOut(new TH1D("out of plane jet yield", "out of plane jet yield", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+
+    // call the functions
+    if(variationsIn && variationsOut) {
+        DoIntermediateSystematics(
+                variationsIn, 
+                variationsOut, 
+                relativeErrorVariationInUp,        // pointer reference
+                relativeErrorVariationInLow,       // pointer reference
+                relativeErrorVariationOutUp,       // pointer reference
+                relativeErrorVariationOutLow,      // pointer reference
+                relativeStatisticalErrorIn,        // pointer reference
+                relativeStatisticalErrorOut,       // pointer reference
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                type);
+        if(relativeErrorVariationInUp) {
+            // canvas with the error from variation strength
+            TCanvas* relativeErrorVariation(new TCanvas(Form("relativeError_%s", type.Data()), Form("relativeError_%s", type.Data())));
+            relativeErrorVariation->Divide(2);
+            relativeErrorVariation->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorVariationInUp->DrawCopy("b");
+            relativeErrorVariationInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorVariation->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorVariationOutUp->DrawCopy("b");
+            relativeErrorVariationOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorVariation);
+            Style(AddLegend(gPad));
+            relativeErrorVariation->Write();
+
+            // now smoothen the diced response error (as it is expected to be flat)
+            // this is done by fitting a constant to the diced resonse error histo
+            //
+            TF1* lin = new TF1("lin", "[0]", rangeLow, rangeUp);
+            relativeErrorVariationInUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            if(!gMinuit->fISW[1] == 3) printf(" fit is NOT ok ! " );
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationInLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationInLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+            relativeErrorVariationOutUp->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutUp->SetBinContent(i+1, lin->GetParameter(0));
+            }
+            relativeErrorVariationOutLow->Fit(lin, "L", "", rangeLow, rangeUp);
+            printf(" > Fit over diced resonse, new value for all bins is %.4f < \n ", lin->GetParameter(0));
+            for(Int_t i(0); i < relativeErrorVariationInUp->GetNbinsX(); i++) {
+                relativeErrorVariationOutLow->SetBinContent(i+1, 0);//lin->GetParameter(0));
+            }
+
+        
+        
+        }
+    }
+    // call the functions for a second set of systematic sources
+    if(variations2ndIn && variations2ndOut) {
+        DoIntermediateSystematics(
+                variations2ndIn, 
+                variations2ndOut, 
+                relativeError2ndVariationInUp,        // pointer reference
+                relativeError2ndVariationInLow,       // pointer reference
+                relativeError2ndVariationOutUp,       // pointer reference
+                relativeError2ndVariationOutLow,      // pointer reference
+                relativeStatisticalErrorIn,           // pointer reference
+                relativeStatisticalErrorOut,          // pointer reference
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                type2);
+        if(relativeError2ndVariationInUp) {
+            // canvas with the error from variation strength
+            TCanvas* relativeError2ndVariation(new TCanvas(Form("relativeError2nd_%s", type2.Data()), Form("relativeError2nd_%s", type2.Data())));
+            relativeError2ndVariation->Divide(2);
+            relativeError2ndVariation->cd(1);
+            Style(gPad, "GRID");
+            relativeError2ndVariationInUp->DrawCopy("b");
+            relativeError2ndVariationInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeError2ndVariation->cd(2);
+            Style(gPad, "GRID");
+            relativeError2ndVariationOutUp->DrawCopy("b");
+            relativeError2ndVariationOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeError2ndVariation);
+            Style(AddLegend(gPad));
+            relativeError2ndVariation->Write();
+        }
+
+    }
+
+    // and the placeholder for the final systematic
+    TH1D* relativeErrorInUp(new TH1D("max correlated uncertainty in plane", "max correlated uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorOutUp(new TH1D("max correlated uncertainty out of plane", "max correlated uncertainty out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorInLow(new TH1D("min correlated uncertainty in plane", "min correlated uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorOutLow(new TH1D("min correlated uncertainty out of plane", "min correlated uncertainty out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    relativeErrorInUp->SetYTitle("relative uncertainty");
+    relativeErrorOutUp->SetYTitle("relative uncertainty");
+    relativeErrorInLow->SetYTitle("relative uncertainty");
+    relativeErrorOutLow->SetYTitle("relative uncertainty");
+
+    // merge the correlated errors (FIXME) trivial for one set 
+    Double_t aInUp(0.), bInUp(0.), cInUp(0.), dInUp(0.);
+    Double_t aOutUp(0.), bOutUp(0.), cOutUp(0.), dOutUp(0.);
+    Double_t aInLow(0.), bInLow(0.), cInLow(0.), dInLow(0.);
+    Double_t aOutLow(0.), bOutLow(0.), cOutLow(0.), dOutLow(0.);
+
+    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+        // for the upper bound
+        if(relativeErrorVariationInUp) aInUp = relativeErrorVariationInUp->GetBinContent(b+1);
+        if(relativeErrorVariationOutUp) aOutUp = relativeErrorVariationOutUp->GetBinContent(b+1);
+        if(relativeError2ndVariationInUp) bInUp = relativeError2ndVariationInUp->GetBinContent(b+1);
+        if(relativeError2ndVariationOutUp) bInLow = relativeError2ndVariationOutUp->GetBinContent(b+1);
+        dInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp;
+        // for a symmetric first variation
+        if(sym) dInUp += aInLow*aInLow;
+        if(dInUp > 0) relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(dInUp));
+        dOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp;
+        if(sym) dOutUp += aOutLow*aOutLow;
+        if(dOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(dOutUp));
+        // for the lower bound
+        if(relativeErrorVariationInLow) aInLow = relativeErrorVariationInLow->GetBinContent(b+1);
+        if(relativeErrorVariationOutLow) aOutLow = relativeErrorVariationOutLow->GetBinContent(b+1);
+        if(relativeError2ndVariationInLow) bInLow = relativeError2ndVariationInLow->GetBinContent(b+1);
+        if(relativeError2ndVariationOutLow) bOutLow = relativeError2ndVariationOutLow->GetBinContent(b+1);
+        dInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow;
+        if(sym) dInLow += aInUp*aInUp;
+        if(dInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1*TMath::Sqrt(dInLow));
+        dOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow;
+        if(sym) dOutLow += aOutUp*aOutUp;
+        if(dOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(dOutLow));
+    }
+    // project the estimated errors on the nominal ratio
+    if(nominal) {
+        Double_t* ax = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ay = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* axh = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* axl = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ayh = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ayl = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t lowErr(0.), upErr(0.);
+        for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
+            // add the in and out of plane errors in quadrature
+            // propagation is tricky because we should consider two cases:
+            // [1] the error is uncorrelated, and we propagate upper 1 with lower 2 and vice versa
+            // [2] the error is correlated - in this case upper 1 should be propagated with upper 2
+            // as the fluctuations are bound to always to of same sign
+            if(corr <= 0) {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+            } else {
+                lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(1+i)*relativeErrorOutLow->GetBinContent(i+1) -2.*corr*relativeErrorInLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+                upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1) - 2.*corr*relativeErrorInUp->GetBinContent(i+1)*relativeErrorOutUp->GetBinContent(i+1);
+            }
+            ayl[i] = TMath::Sqrt(TMath::Abs(lowErr))*nominal->GetBinContent(i+1);
+            ayh[i] = TMath::Sqrt(TMath::Abs(upErr))*nominal->GetBinContent(i+1);
+            // get the bin width (which is the 'error' on x
+            Double_t binWidth(nominal->GetBinWidth(i+1));
+            axl[i] = binWidth/2.;
+            axh[i] = binWidth/2.;
+            // now get the coordinate for the point
+            ax[i] = nominal->GetBinCenter(i+1);
+            ay[i] = nominal->GetBinContent(i+1);
+        }
+        // save the nominal ratio
+        TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
+        corrRatio = (TGraphAsymmErrors*)nominalError->Clone();
+        nominalError->SetName("correlated uncertainty");
+        TCanvas* nominalCanvas(new TCanvas("nominalCanvas", "nominalCanvas"));
+        nominalCanvas->Divide(2);
+        nominalCanvas->cd(1);
+        Style(nominal, kBlack);
+        Style(nominalError, kCyan, kRatio);
+        nominalError->SetLineColor(kCyan);
+        nominalError->SetMarkerColor(kCyan);
+        nominalError->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+        nominalError->GetYaxis()->SetRangeUser(.7, 2.2);
+        nominalError->DrawClone("a2");
+        nominal->DrawCopy("same E1");
+        Style(AddLegend(gPad));
+        Style(gPad, "GRID");
+        Style(nominalCanvas);
+        // save nominal v2 and systematic errors
+        TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
+                    nominalIn,
+                    nominalOut,
+                    fEventPlaneRes,
+                    "v_{2} with shape uncertainty",
+                    relativeErrorInUp,
+                    relativeErrorInLow,
+                    relativeErrorOutUp,
+                    relativeErrorOutLow,
+                    corr));
+        // pass the nominal values to the pointer references
+        corrV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
+        nominalCanvas->cd(2);
+        Style(nominalV2, kBlack);
+        Style(nominalV2Error, kCyan, kV2);
+        nominalV2Error->SetLineColor(kCyan);
+        nominalV2Error->SetMarkerColor(kCyan);
+        nominalV2Error->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+        nominalV2Error->DrawClone("a2");
+        nominalV2->DrawClone("same E1");
+        Style(AddLegend(gPad));
+        Style(gPad, "GRID");
+        Style(nominalCanvas);
+        SavePadToPDF(nominalCanvas);
+        nominalCanvas->Write();
+    }
+
+    TCanvas* relativeError(new TCanvas("relativeCorrelatedError"," relativeCorrelatedError"));
+    relativeError->Divide(2);
+    relativeError->cd(1);
+    Style(gPad, "GRID");
+    relativeErrorInUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+    Style(relativeErrorInUp, kBlue, kBar);
+    Style(relativeErrorInLow, kGreen, kBar);
+    relativeErrorInUp->DrawCopy("b");
+    relativeErrorInLow->DrawCopy("same b");
+    Style(relativeStatisticalErrorIn, kRed);
+    relativeStatisticalErrorIn->DrawCopy("same");
+    Style(AddLegend(gPad));
+    relativeError->cd(2);
+    Style(gPad, "GRID");
+    relativeErrorOutUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+    Style(relativeErrorOutUp, kBlue, kBar);
+    Style(relativeErrorOutLow, kGreen, kBar);
+    relativeErrorOutUp->DrawCopy("b");
+    relativeErrorOutLow->DrawCopy("same b");
+    Style(relativeStatisticalErrorOut, kRed);
+    relativeStatisticalErrorOut->DrawCopy("same");
+    Style(AddLegend(gPad));
+
+    // write the buffered file to disk and close the file
+    SavePadToPDF(relativeError);
+    relativeError->Write();
+    output->Write();
+//    output->Close();
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::GetShapeUncertainty(
+        TGraphAsymmErrors*& shapeRatio, // pointer reference to final shape uncertainty of ratio
+        TGraphAsymmErrors*& shapeV2,    // pointer reference to final shape uncertainty of v2
+        TArrayI* regularizationIn,      // regularization strength systematics, in plane
+        TArrayI* regularizationOut,     // regularization strenght systematics, out of plane
+        TArrayI* trueBinIn,             // true bin ranges, in plane
+        TArrayI* trueBinOut,            // true bin ranges, out of plane
+        TArrayI* recBinIn,              // rec bin ranges, in plane
+        TArrayI* recBinOut,             // rec bin ranges, out of plane
+        TArrayI* methodIn,              // method in
+        TArrayI* methodOut,             // method out
+        Int_t columns,                  // divide the output canvasses in this many columns
+        Float_t rangeLow,               // lower pt range
+        Float_t rangeUp,                // upper pt range
+        TString in,                     // input file name (created by this unfolding class)
+        TString out                     // output file name (which will hold results of the systematic test)
+        ) const
+{
+    // do full systematics
+    if(fOutputFile && !fOutputFile->IsZombie()) fOutputFile->Close();   // if for some weird reason the unfolding output is still mutable
+    TFile* readMe(new TFile(in.Data(), "READ"));                        // open unfolding output read-only
+    if(readMe->IsZombie()) {
+        printf(" > Fatal error, couldn't read %s for post processing ! < \n", in.Data());
+        return;
+    }
+    printf("\n\n\n\t\t DOSYSTEMATICS \n > Recovered the following file structure : \n <");
+    readMe->ls();
+    TFile* output(new TFile(out.Data(), "RECREATE"));   // create new output file
+
+    // create some null placeholder pointers
+    TH1D* relativeErrorRegularizationInLow(0x0);
+    TH1D* relativeErrorRegularizationInUp(0x0);
+    TH1D* relativeErrorTrueBinInLow(0x0);
+    TH1D* relativeErrorTrueBinInUp(0x0);
+    TH1D* relativeErrorRecBinInLow(0x0);
+    TH1D* relativeErrorRecBinInUp(0x0);
+    TH1D* relativeErrorMethodInLow(0x0);
+    TH1D* relativeErrorMethodInUp(0x0);
+    TH1D* relativeErrorRegularizationOutLow(0x0);
+    TH1D* relativeErrorRegularizationOutUp(0x0);
+    TH1D* relativeErrorTrueBinOutLow(0x0);
+    TH1D* relativeErrorTrueBinOutUp(0x0);
+    TH1D* relativeErrorRecBinOutLow(0x0);
+    TH1D* relativeErrorRecBinOutUp(0x0);
+    TH1D* relativeStatisticalErrorIn(0x0);
+    TH1D* relativeStatisticalErrorOut(0x0);
+    TH1D* relativeErrorMethodOutLow(0x0);
+    TH1D* relativeErrorMethodOutUp(0x0);
+    // histo for the nominal ratio in / out
+    TH1D* nominal(new TH1D("ratio in plane, out of plane", "ratio in plane, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* nominalIn(new TH1D("in plane jet yield", "in plane jet yield", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* nominalOut(new TH1D("out of plane jet yield", "out of plane jet yield", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+
+    // call the functions
+    if(regularizationIn && regularizationOut) {
+        DoIntermediateSystematics(
+                regularizationIn, 
+                regularizationOut, 
+                relativeErrorRegularizationInUp,        // pointer reference
+                relativeErrorRegularizationInLow,       // pointer reference
+                relativeErrorRegularizationOutUp,       // pointer reference
+                relativeErrorRegularizationOutLow,      // pointer reference
+                relativeStatisticalErrorIn,             // pointer reference
+                relativeStatisticalErrorOut,            // pointer reference
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                "regularization",
+                fRMS);
+        if(relativeErrorRegularizationInUp) {
+            // canvas with the error from regularization strength
+            TCanvas* relativeErrorRegularization(new TCanvas("relativeErrorRegularization", "relativeErrorRegularization"));
+            relativeErrorRegularization->Divide(2);
+            relativeErrorRegularization->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorRegularizationInUp->DrawCopy("b");
+            relativeErrorRegularizationInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorRegularization->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorRegularizationOutUp->DrawCopy("b");
+            relativeErrorRegularizationOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorRegularization);
+            Style(AddLegend(gPad));
+            relativeErrorRegularization->Write();
+        }
+    }
+    if(trueBinIn && trueBinOut) {
+        DoIntermediateSystematics(
+                trueBinIn, 
+                trueBinOut, 
+                relativeErrorTrueBinInUp,       // pointer reference
+                relativeErrorTrueBinInLow,      // pointer reference
+                relativeErrorTrueBinOutUp,      // pointer reference
+                relativeErrorTrueBinOutLow,     // pointer reference
+                relativeStatisticalErrorIn,
+                relativeStatisticalErrorOut,
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                "trueBin");
+        if(relativeErrorTrueBinInUp) {
+            TCanvas* relativeErrorTrueBin(new TCanvas("relativeErrorTrueBin", "relativeErrorTrueBin"));
+            relativeErrorTrueBin->Divide(2);
+            relativeErrorTrueBin->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorTrueBinInUp->DrawCopy("b");
+            relativeErrorTrueBinInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorTrueBin->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorTrueBinOutUp->DrawCopy("b");
+            relativeErrorTrueBinOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorTrueBin);
+            Style(AddLegend(gPad));
+            relativeErrorTrueBin->Write();
+        }
+    }
+    if(recBinIn && recBinOut) {
+        DoIntermediateSystematics(
+                recBinIn, 
+                recBinOut, 
+                relativeErrorRecBinInUp,       // pointer reference
+                relativeErrorRecBinInLow,        // pointer reference
+                relativeErrorRecBinOutUp,      // pointer reference
+                relativeErrorRecBinOutLow,       // pointer reference
+                relativeStatisticalErrorIn,
+                relativeStatisticalErrorOut,
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                "recBin",
+                fRMS);
+        if(relativeErrorRecBinOutUp) {
+            // canvas with the error from regularization strength
+            TCanvas* relativeErrorRecBin(new TCanvas("relativeErrorRecBin"," relativeErrorRecBin"));
+            relativeErrorRecBin->Divide(2);
+            relativeErrorRecBin->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorRecBinInUp->DrawCopy("b");
+            relativeErrorRecBinInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorRecBin->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorRecBinOutUp->DrawCopy("b");
+            relativeErrorRecBinOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorRecBin);
+            Style(AddLegend(gPad));
+            relativeErrorRecBin->Write();
+        }
+    }
+    if(methodIn && methodOut) {
+        DoIntermediateSystematics(
+                methodIn, 
+                methodOut, 
+                relativeErrorMethodInUp,       // pointer reference
+                relativeErrorMethodInLow,      // pointer reference
+                relativeErrorMethodOutUp,      // pointer reference
+                relativeErrorMethodOutLow,     // pointer reference
+                relativeStatisticalErrorIn,
+                relativeStatisticalErrorOut,
+                nominal,
+                nominalIn,
+                nominalOut,
+                columns, 
+                rangeLow, 
+                rangeUp,
+                readMe,
+                "method"
+                );
+        if(relativeErrorMethodInUp) {
+            TCanvas* relativeErrorMethod(new TCanvas("relativeErrorMethod", "relativeErrorMethod"));
+            relativeErrorMethod->Divide(2);
+            relativeErrorMethod->cd(1);
+            Style(gPad, "GRID");
+            relativeErrorMethodInUp->DrawCopy("b");
+            relativeErrorMethodInLow->DrawCopy("same b");
+            Style(AddLegend(gPad));
+            relativeErrorMethod->cd(2);
+            Style(gPad, "GRID");
+            relativeErrorMethodOutUp->DrawCopy("b");
+            relativeErrorMethodOutLow->DrawCopy("same b");
+            SavePadToPDF(relativeErrorMethod);
+            Style(AddLegend(gPad));
+            relativeErrorMethod->Write();
+        }
+    }
+
+    // and the placeholder for the final systematic
+    TH1D* relativeErrorInUp(new TH1D("max shape uncertainty in plane", "max shape uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorOutUp(new TH1D("max shape uncertainty out of plane", "max shape uncertainty out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorInLow(new TH1D("min shape uncertainty in plane", "min shape uncertainty in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    TH1D* relativeErrorOutLow(new TH1D("min shape uncertainty out of plane", "min shape uncertainty out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+    relativeErrorInUp->SetYTitle("relative uncertainty");
+    relativeErrorOutUp->SetYTitle("relative uncertainty");
+    relativeErrorInLow->SetYTitle("relative uncertainty");
+    relativeErrorOutLow->SetYTitle("relative uncertainty");
+
+    // sum of squares for the total systematic error
+    Double_t aInUp(0.), bInUp(0.), cInUp(0.), dInUp(0.), eInUp(0.);
+    Double_t aOutUp(0.), bOutUp(0.), cOutUp(0.), dOutUp(0.), eOutUp(0.);
+    Double_t aInLow(0.), bInLow(0.), cInLow(0.), dInLow(0.), eInLow(0.);
+    Double_t aOutLow(0.), bOutLow(0.), cOutLow(0.), dOutLow(0.), eOutLow(0.);
+
+    for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+        // for the upper bound
+        if(relativeErrorRegularizationInUp) aInUp = relativeErrorRegularizationInUp->GetBinContent(b+1);
+        if(relativeErrorRegularizationOutUp) aOutUp = relativeErrorRegularizationOutUp->GetBinContent(b+1);
+        if(relativeErrorTrueBinInUp) bInUp = relativeErrorTrueBinInUp->GetBinContent(b+1);
+        if(relativeErrorTrueBinOutUp) bOutUp = relativeErrorTrueBinOutUp->GetBinContent(b+1);
+        if(relativeErrorRecBinInUp) cInUp = relativeErrorRecBinInUp->GetBinContent(b+1);
+        if(relativeErrorRecBinOutUp) cOutUp = relativeErrorRecBinOutUp->GetBinContent(b+1);
+        if(relativeErrorMethodInUp) dInUp = relativeErrorMethodInUp->GetBinContent(b+1);
+        if(relativeErrorMethodOutUp) dOutUp = relativeErrorMethodOutUp->GetBinContent(b+1);
+        eInUp  = aInUp*aInUp + bInUp*bInUp + cInUp*cInUp + dInUp*dInUp;
+        if(eInUp > 0) relativeErrorInUp->SetBinContent(b+1, 1.*TMath::Sqrt(eInUp));
+        eOutUp = aOutUp*aOutUp + bOutUp*bOutUp + cOutUp*cOutUp + dOutUp*dOutUp;
+        if(eOutUp > 0) relativeErrorOutUp->SetBinContent(b+1, 1.*TMath::Sqrt(eOutUp));
+        // for the lower bound
+        if(relativeErrorRegularizationInLow) aInLow = relativeErrorRegularizationInLow->GetBinContent(b+1);
+        if(relativeErrorRegularizationOutLow) aOutLow = relativeErrorRegularizationOutLow->GetBinContent(b+1);
+        if(relativeErrorTrueBinInLow) bInLow = relativeErrorTrueBinInLow->GetBinContent(b+1);
+        if(relativeErrorTrueBinOutLow) bOutLow = relativeErrorTrueBinOutLow->GetBinContent(b+1);
+        if(relativeErrorRecBinInLow) cInLow = relativeErrorRecBinInLow->GetBinContent(b+1);
+        if(relativeErrorRecBinOutLow) cOutLow = relativeErrorRecBinOutLow->GetBinContent(b+1);
+        if(relativeErrorMethodInLow) dInLow = relativeErrorMethodInLow->GetBinContent(b+1);
+        if(relativeErrorMethodOutLow) dOutLow = relativeErrorMethodOutLow->GetBinContent(b+1);
+        if(fSymmRMS) {  // take first category as symmetric
+            aInLow = aInUp;
+            aOutLow = aOutUp;
+            cInLow = cInUp;
+            cOutLow = cOutUp;   // other sources
+            if(dInLow < dInUp) dInLow = dInUp;
+            if(dOutLow < dOutUp) dOutLow = dOutUp;
+        }
+
+        eInLow  = aInLow*aInLow + bInLow*bInLow + cInLow*cInLow + dInLow*dInLow;
+        if(eInLow > 0) relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(eInLow));
+        eOutLow = aOutLow*aOutLow + bOutLow*bOutLow + cOutLow*cOutLow + dOutLow*dOutLow;
+        if(eOutLow > 0) relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(eOutLow));
+    }
+    // project the estimated errors on the nominal ratio
+    if(nominal) {
+        Double_t* ax = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ay = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* axh = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* axl = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ayh = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t* ayl = new Double_t[fBinsTrue->GetSize()-1];
+        Double_t lowErr(0.), upErr(0.);
+        for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
+            // add the in and out of plane errors in quadrature
+            // take special care here: to propagate the assymetric error, we need to correlate the
+            // InLow with OutUp (minimum value of ratio) and InUp with OutLow (maximum value of ratio)
+            lowErr = relativeErrorInLow->GetBinContent(i+1)*relativeErrorInLow->GetBinContent(i+1)+relativeErrorOutUp->GetBinContent(1+i)*relativeErrorOutUp->GetBinContent(i+1);
+            upErr = relativeErrorInUp->GetBinContent(i+1)*relativeErrorInUp->GetBinContent(i+1)+relativeErrorOutLow->GetBinContent(i+1)*relativeErrorOutLow->GetBinContent(i+1);
+            // set the errors 
+            ayl[i] = TMath::Sqrt(lowErr)*nominal->GetBinContent(i+1);
+            ayh[i] = TMath::Sqrt(upErr)*nominal->GetBinContent(i+1);
+            // get the bin width (which is the 'error' on x
+            Double_t binWidth(nominal->GetBinWidth(i+1));
+            axl[i] = binWidth/2.;
+            axh[i] = binWidth/2.;
+            // now get the coordinate for the point
+            ax[i] = nominal->GetBinCenter(i+1);
+            ay[i] = nominal->GetBinContent(i+1);
+        }
+        // save the nominal ratio
+        TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
+        shapeRatio = (TGraphAsymmErrors*)nominalError->Clone();
+        nominalError->SetName("shape uncertainty");
+        TCanvas* nominalCanvas(new TCanvas("nominalCanvas", "nominalCanvas"));
+        nominalCanvas->Divide(2);
+        nominalCanvas->cd(1);
+        Style(nominal, kBlack);
+        Style(nominalError, kCyan, kRatio);
+        nominalError->SetLineColor(kCyan);
+        nominalError->SetMarkerColor(kCyan);
+        nominalError->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+        nominalError->GetYaxis()->SetRangeUser(.7, 2.2);
+        nominalError->DrawClone("a2");
+        nominal->DrawCopy("same E1");
+        Style(AddLegend(gPad));
+        Style(gPad, "GRID");
+        Style(nominalCanvas);
+        // save nominal v2 and systematic errors
+        TGraphAsymmErrors* nominalV2Error(GetV2WithSystematicErrors(
+                    nominalIn,
+                    nominalOut,
+                    fEventPlaneRes,
+                    "v_{2} with shape uncertainty",
+                    relativeErrorInUp,
+                    relativeErrorInLow,
+                    relativeErrorOutUp,
+                    relativeErrorOutLow));
+        shapeV2 = (TGraphAsymmErrors*)nominalV2Error->Clone();
+        TGraphErrors* nominalV2(GetV2(nominalIn, nominalOut, fEventPlaneRes, "v_{2}"));
+        nominalCanvas->cd(2);
+        Style(nominalV2, kBlack);
+        Style(nominalV2Error, kCyan, kV2);
+        nominalV2Error->SetLineColor(kCyan);
+        nominalV2Error->SetMarkerColor(kCyan);
+        nominalV2Error->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+        nominalV2Error->DrawClone("a2");
+        nominalV2->DrawClone("same E1");
+        Style(AddLegend(gPad));
+        Style(gPad, "GRID");
+        Style(nominalCanvas);
+        SavePadToPDF(nominalCanvas);
+        nominalCanvas->Write();
+    }
+
+    TCanvas* relativeError(new TCanvas("relativeError"," relativeError"));
+    relativeError->Divide(2);
+    relativeError->cd(1);
+    Style(gPad, "GRID");
+    relativeErrorInUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+    Style(relativeErrorInUp, kBlue, kBar);
+    Style(relativeErrorInLow, kGreen, kBar);
+    relativeErrorInUp->DrawCopy("b");
+    relativeErrorInLow->DrawCopy("same b");
+    Style(relativeStatisticalErrorIn, kRed);
+    relativeStatisticalErrorIn->DrawCopy("same");
+    Style(AddLegend(gPad));
+    relativeError->cd(2);
+    Style(gPad, "GRID");
+    relativeErrorOutUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+    Style(relativeErrorOutUp, kBlue, kBar);
+    Style(relativeErrorOutLow, kGreen, kBar);
+    relativeErrorOutUp->DrawCopy("b");
+    relativeErrorOutLow->DrawCopy("same b");
+    Style(relativeStatisticalErrorOut, kRed);
+    relativeStatisticalErrorOut->DrawCopy("same");
+    Style(AddLegend(gPad));
+
+    // write the buffered file to disk and close the file
+    SavePadToPDF(relativeError);
+    relativeError->Write();
+    output->Write();
+//    output->Close();
+}
+//_____________________________________________________________________________
+    void AliJetFlowTools::DoIntermediateSystematics(
+            TArrayI* variationsIn,                  // variantions in plane
+            TArrayI* variationsOut,                 // variantions out of plane
+            TH1D*& relativeErrorInUp,               // pointer reference to minimum relative error histogram in plane
+            TH1D*& relativeErrorInLow,              // pointer reference to maximum relative error histogram in plane
+            TH1D*& relativeErrorOutUp,              // pointer reference to minimum relative error histogram out of plane
+            TH1D*& relativeErrorOutLow,             // pointer reference to maximum relative error histogram out of plane
+            TH1D*& relativeStatisticalErrorIn,      // relative systematic error on ratio
+            TH1D*& relativeStatisticalErrorOut,     // relative systematic error on ratio
+            TH1D*& nominal,                         // clone of the nominal ratio in / out of plane
+            TH1D*& nominalIn,                       // clone of the nominal in plane yield
+            TH1D*& nominalOut,                      // clone of the nominal out of plane yield
+            Int_t columns,                          // divide the output canvasses in this many columns
+            Float_t rangeLow,                       // lower pt range
+            Float_t rangeUp,                        // upper pt range
+            TFile* readMe,                          // input file name (created by this unfolding class)
+            TString source,                         // source of the variation
+            Bool_t RMS                              // return RMS of distribution of variations as error
+            ) const
+{
+   // intermediate systematic check function. first index of supplied array is nominal value
+   TList* listOfKeys((TList*)readMe->GetListOfKeys());
+   if(!listOfKeys) {
+       printf(" > Fatal error, couldn't retrieve list of keys. Input file might have been corrupted ! < \n");
+       return;
+   }
+   // check input params
+   if(variationsIn->GetSize() != variationsOut->GetSize()) {
+       printf(" > DoSystematics: fatal error, input arrays have different sizes ! < \n ");
+       return;
+   }
+   TDirectoryFile* defRootDirIn(dynamic_cast<TDirectoryFile*>(readMe->Get(listOfKeys->At(variationsIn->At(0))->GetName())));
+   TDirectoryFile* defRootDirOut(dynamic_cast<TDirectoryFile*>(readMe->Get(listOfKeys->At(variationsOut->At(0))->GetName())));
+   if(!(defRootDirIn && defRootDirOut)) {
+       printf(" > DoSystematics: fatal error, couldn't retrieve nominal values ! < \n ");
+       return;
+   }
+   TString defIn(defRootDirIn->GetName());
+   TString defOut(defRootDirOut->GetName());
+
+   // define lines to make the output prettier
+   TLine* lineLow(new TLine(rangeLow, 0., rangeLow, 2.));
+   TLine* lineUp(new TLine(rangeUp, 0., rangeUp, 2.));
+   lineLow->SetLineColor(11);
+   lineUp->SetLineColor(11);
+   lineLow->SetLineWidth(3);
+   lineUp->SetLineWidth(3);
+
+   // define an output histogram with the maximum relative error from this systematic constribution
+   // if the option RMS is set to false, sigma is not really a standard deviation but holds the maximum (or minimum) relative value that the data has
+   // reached in this function call.
+   // if the option RMS is set to true, sigma holds the RMS value (equal to sigma as the mean is zero for relative errors) of the distribution of variations
+   // which should correspond to a 68% confidence level
+   relativeErrorInUp = new TH1D(Form("relative error (up) from %s", source.Data()), Form("relative error (up) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorInLow = new TH1D(Form("relative error (low) from  %s", source.Data()), Form("relative error (low) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorOutUp = new TH1D(Form("relative error (up) from  %s", source.Data()), Form("relative error (up)  from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   relativeErrorOutLow = new TH1D(Form("relative error (low) from %s", source.Data()), Form("relative error (low) from %s", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+       if(!RMS) {
+           relativeErrorInUp->SetBinContent(b+1, 1.);
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, 1.);
+           relativeErrorOutUp->SetBinError(b+1, .0);
+           relativeErrorInLow->SetBinContent(b+1, 1.);
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, 1.);
+           relativeErrorOutLow->SetBinError(b+1, .0);
+       } else if(RMS) {
+           relativeErrorInUp->SetBinContent(b+1, 0.);
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, 0.);
+           relativeErrorOutUp->SetBinError(b+1, 0.);
+           relativeErrorInLow->SetBinContent(b+1, 0.);
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, 0.);
+           relativeErrorOutLow->SetBinError(b+1, 0.);
+       } 
+   }
+   Int_t relativeErrorInUpN[100] = {0};
+   Int_t relativeErrorOutUpN[100] = {0};
+   Int_t relativeErrorInLowN[100] = {0};
+   Int_t relativeErrorOutLowN[100] = {0};
+   
+   // define an output histogram with the systematic error from this systematic constribution
+   if(!relativeStatisticalErrorIn && !relativeStatisticalErrorOut) {
+       relativeStatisticalErrorIn = new TH1D("relative statistical error, in plane", "relative statistical error, in plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+       relativeStatisticalErrorOut = new TH1D("relative statistical error, out of plane", "relative statistital error, out of plane", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
+   }
+
+   // prepare necessary canvasses
+   TCanvas* canvasIn(new TCanvas(Form("SYST_%s_PearsonIn", source.Data()), Form("SYST_%s_PearsonIn", source.Data())));
+   TCanvas* canvasOut(0x0);
+   if(fDphiUnfolding) canvasOut = new TCanvas(Form("SYST_%s_PearsonOut", source.Data()), Form("SYST_%s_PearsonOut", source.Data()));
+   TCanvas* canvasRatioMeasuredRefoldedIn(new TCanvas(Form("SYST_%s_RefoldedIn", source.Data()), Form("SYST_%s_RefoldedIn", source.Data())));
+   TCanvas* canvasRatioMeasuredRefoldedOut(0x0);
+   if(fDphiUnfolding) canvasRatioMeasuredRefoldedOut = new TCanvas(Form("SYST_%s_RefoldedOut", source.Data()), Form("SYST_%s_RefoldedOut", source.Data()));
+   TCanvas* canvasSpectraIn(new TCanvas(Form("SYST_%s_SpectraIn", source.Data()), Form("SYST_%s_SpectraIn", source.Data()))); 
+   TCanvas* canvasSpectraOut(0x0);
+   if(fDphiUnfolding) canvasSpectraOut = new TCanvas(Form("SYST_%s_SpectraOut", source.Data()), Form("SYST_%s_SpectraOut", source.Data()));
+   TCanvas* canvasRatio(0x0);
+   if(fDphiUnfolding) canvasRatio = new TCanvas(Form("SYST_%s_Ratio", source.Data()), Form("SYST_%s_Ratio", source.Data()));
+   TCanvas* canvasV2(0x0);
+   if(fDphiUnfolding) canvasV2 = new TCanvas(Form("SYST_%s_V2", source.Data()), Form("SYST_%s_V2", source.Data()));
+   TCanvas* canvasMISC(new TCanvas(Form("SYST_%s_MISC", source.Data()), Form("SYST_%s_MISC", source.Data())));
+   TCanvas* canvasMasterIn(new TCanvas(Form("SYST_%s_defaultIn", source.Data()), Form("SYST_%s_defaultIn", source.Data())));
+   TCanvas* canvasMasterOut(0x0);
+   if(fDphiUnfolding) canvasMasterOut = new TCanvas(Form("SYST_%s_defaultOut", source.Data()), Form("SYST_%s_defaultOut", source.Data()));
+   (fDphiUnfolding) ? canvasMISC->Divide(4, 2) : canvasMISC->Divide(4, 1);
+
+   TCanvas* canvasProfiles(new TCanvas(Form("SYST_%s_canvasProfiles", source.Data()), Form("SYST_%s_canvasProfiles", source.Data())));
+   canvasProfiles->Divide(2);
+   TProfile* ratioProfile(new TProfile(Form("SYST_%s_ratioProfile", source.Data()), Form("SYST_%s_ratioProfile", source.Data()), fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   TProfile* v2Profile(new TProfile(Form("SYST_%s_v2Profile", source.Data()), Form("SYST_%s_v2Profile", source.Data()),fBinsTrue->GetSize()-1, fBinsTrue->GetArray()));
+   // get an estimate of the number of outputs and find the default set
+
+   Int_t rows = 1;
+   columns = variationsIn->GetSize()-1;
+   (TMath::Floor(variationsIn->GetSize()/(float)columns)+((variationsIn->GetSize()%columns)>0));
+   canvasIn->Divide(columns, rows);
+   if(canvasOut) canvasOut->Divide(columns, rows);
+   canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
+   if(canvasRatioMeasuredRefoldedOut) canvasRatioMeasuredRefoldedOut->Divide(columns, rows);
+   canvasSpectraIn->Divide(columns, rows);
+   if(canvasSpectraOut) canvasSpectraOut->Divide(columns, rows);
+   if(canvasRatio) canvasRatio->Divide(columns, rows);
+   if(canvasV2) canvasV2->Divide(columns, rows);
+   canvasMasterIn->Divide(columns, rows);
+   if(canvasMasterOut) canvasMasterOut->Divide(columns, rows);
+
+   // prepare a separate set of canvases to hold the nominal points
+   TCanvas* canvasNominalIn(new TCanvas(Form("Nominal_%s_PearsonIn", source.Data()), Form("Nominal_%s_PearsonIn", source.Data())));
+   TCanvas* canvasNominalOut(0x0);
+   if(fDphiUnfolding) canvasNominalOut = new TCanvas(Form("Nominal_%s_PearsonOut", source.Data()), Form("Nominal_%s_PearsonOut", source.Data()));
+   TCanvas* canvasNominalRatioMeasuredRefoldedIn(new TCanvas(Form("Nominal_%s_RefoldedIn", source.Data()), Form("Nominal_%s_RefoldedIn", source.Data())));
+   TCanvas* canvasNominalRatioMeasuredRefoldedOut(0x0);
+   if(fDphiUnfolding) canvasNominalRatioMeasuredRefoldedOut = new TCanvas(Form("Nominal_%s_RefoldedOut", source.Data()), Form("Nominal_%s_RefoldedOut", source.Data()));
+   TCanvas* canvasNominalSpectraIn(new TCanvas(Form("Nominal_%s_SpectraIn", source.Data()), Form("Nominal_%s_SpectraIn", source.Data()))); 
+   TCanvas* canvasNominalSpectraOut(0x0);
+   if(fDphiUnfolding) canvasNominalSpectraOut = new TCanvas(Form("Nominal_%s_SpectraOut", source.Data()),  Form("Nominal_%s_SpectraOut", source.Data()));
+   TCanvas* canvasNominalRatio(0x0);
+   if(fDphiUnfolding) canvasNominalRatio = new TCanvas(Form("Nominal_%s_Ratio", source.Data()), Form("Nominal_%s_Ratio", source.Data()));
+   TCanvas* canvasNominalV2(0x0);
+   if(fDphiUnfolding) canvasNominalV2 = new TCanvas(Form("Nominal_%s_V2", source.Data()), Form("Nominal_%s_V2", source.Data()));
+   TCanvas* canvasNominalMISC(new TCanvas(Form("Nominal_%s_MISC", source.Data()), Form("Nominal_%s_MISC", source.Data())));
+   TCanvas* canvasNominalMasterIn(new TCanvas(Form("Nominal_%s_defaultIn", source.Data()), Form("Nominal_%s_defaultIn", source.Data())));
+   TCanvas* canvasNominalMasterOut(0x0);
+   if(fDphiUnfolding) canvasNominalMasterOut = new TCanvas(Form("Nominal_%s_defaultOut", source.Data()), Form("Nominal_%s_defaultOut", source.Data()));
+   (fDphiUnfolding) ? canvasNominalMISC->Divide(4, 2) : canvasNominalMISC->Divide(4, 1);
+
+   canvasNominalSpectraIn->Divide(2);
+   if(canvasNominalSpectraOut) canvasNominalSpectraOut->Divide(2);
+
+   canvasNominalMasterIn->Divide(2);
+   if(canvasNominalMasterOut) canvasNominalMasterOut->Divide(2);
+
+   // extract the default output 
+   TH1D* defaultUnfoldedJetSpectrumIn(0x0);
+   TH1D* defaultUnfoldedJetSpectrumOut(0x0);
+   TDirectoryFile* defDirIn = (TDirectoryFile*)defRootDirIn->Get(Form("InPlane___%s", defIn.Data()));
+   TDirectoryFile* defDirOut = (TDirectoryFile*)defRootDirOut->Get(Form("OutOfPlane___%s", defOut.Data()));
+   if(defDirIn) defaultUnfoldedJetSpectrumIn = (TH1D*)defDirIn->Get(Form("UnfoldedSpectrum_in_%s", defIn.Data()));
+   if(defDirOut) defaultUnfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", defOut.Data()));
+   printf(" > succesfully extracted default results < \n");
+
+   // loop through the directories, only plot the graphs if the deconvolution converged
+   TDirectoryFile* tempDirIn(0x0); 
+   TDirectoryFile* tempDirOut(0x0);
+   TDirectoryFile* tempIn(0x0);
+   TDirectoryFile* tempOut(0x0);
+   TH1D* unfoldedSpectrumInForRatio(0x0);
+   TH1D* unfoldedSpectrumOutForRatio(0x0);
+   for(Int_t i(0), j(-1); i < variationsIn->GetSize(); i++) {
+       tempDirIn = (dynamic_cast<TDirectoryFile*>(readMe->Get(listOfKeys->At(variationsIn->At(i))->GetName())));
+       tempDirOut = (dynamic_cast<TDirectoryFile*>(readMe->Get(listOfKeys->At(variationsOut->At(i))->GetName())));
+       if(!(tempDirIn && tempDirOut)) {
+           printf(" > DoSystematics: couldn't get a set of variations < \n");
+           continue;
+       }
+       TString dirNameIn(tempDirIn->GetName());
+       TString dirNameOut(tempDirOut->GetName());
+       // try to read the in- and out of plane subdirs
+       tempIn = (TDirectoryFile*)tempDirIn->Get(Form("InPlane___%s", dirNameIn.Data()));
+       tempOut = (TDirectoryFile*)tempDirOut->Get(Form("OutOfPlane___%s", dirNameOut.Data()));
+       j++;
+       if(tempIn) { 
+           // to see if the unfolding converged try to extract the pearson coefficients
+           TH2D* pIn((TH2D*)tempIn->Get(Form("PearsonCoefficients_in_%s", dirNameIn.Data())));
+           if(pIn) {
+               printf(" - %s in plane converged \n", dirNameIn.Data());
+               canvasIn->cd(j);
+               if(i==0) canvasNominalIn->cd(j);
+               Style(gPad, "PEARSON");
+               pIn->DrawCopy("colz");
+               TGraphErrors* rIn((TGraphErrors*)tempIn->Get(Form("RatioRefoldedMeasured_%s", dirNameIn.Data())));
+               if(rIn) {
+                   Style(rIn);
+                   printf(" > found RatioRefoldedMeasured < \n");
+                   canvasRatioMeasuredRefoldedIn->cd(j);
+                   if(i==0) canvasNominalRatioMeasuredRefoldedIn->cd(j);
+                   Style(gPad, "GRID");
+                   rIn->SetFillColor(kRed);
+                   rIn->Draw("ap");
+               }
+               TH1D* dvector((TH1D*)tempIn->Get("dVector"));
+               TH1D* avalue((TH1D*)tempIn->Get("SingularValuesOfAC"));
+               TH2D* rm((TH2D*)tempIn->Get(Form("ResponseMatrixIn_%s", dirNameIn.Data())));
+               TH1D* eff((TH1D*)tempIn->Get(Form("KinematicEfficiencyIn_%s", dirNameIn.Data())));
+               if(dvector && avalue && rm && eff) {
+                   Style(dvector);
+                   Style(avalue);
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(1);
+                   if(i==0) canvasNominalMISC->cd(1);
+                   Style(gPad, "SPECTRUM");
+                   dvector->DrawCopy();
+                   canvasMISC->cd(2);
+                   if(i==0) canvasNominalMISC->cd(2);
+                   Style(gPad, "SPECTRUM");
+                   avalue->DrawCopy();
+                   canvasMISC->cd(3);
+                   if(i==0) canvasNominalMISC->cd(3);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(4);
+                   if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
+                   eff->DrawCopy();
+               } else if(rm && eff) {
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(3);
+                   if(i==0) canvasNominalMISC->cd(3);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(4);
+                   if(i==0) canvasNominalMISC->cd(4);
+                   Style(gPad, "GRID");
+                   eff->DrawCopy();
+               }
+           }
+           TH1D* inputSpectrum((TH1D*)tempIn->Get(Form("InputSpectrum_in_%s", dirNameIn.Data())));
+           TH1D* unfoldedSpectrum((TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirNameIn.Data())));
+           unfoldedSpectrumInForRatio = ProtectHeap(unfoldedSpectrum, kFALSE, TString("ForRatio"));
+           TH1D* refoldedSpectrum((TH1D*)tempIn->Get(Form("RefoldedSpectrum_in_%s", dirNameIn.Data())));
+           if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
+               if(defaultUnfoldedJetSpectrumIn) {
+                   Style(defaultUnfoldedJetSpectrumIn, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirNameIn.Data())));
+                   temp->Divide(unfoldedSpectrum);
+                   // get the absolute relative error
+                   for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+                       if(!RMS) {       // save the maximum deviation that a variation can cause
+                           // the variation is HIGHER than the nominal point, so the bar goes UP
+                           if( temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorInUp->GetBinContent(b+1)) {
+                               relativeErrorInUp->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorInUp->SetBinError(b+1, 0.);
+                           }
+                           // the variation is LOWER than the nominal point, so the bar goes DOWN
+                           else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorInLow->GetBinContent(b+1)) {
+                               relativeErrorInLow->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorInLow->SetBinError(b+1, 0.);
+                           }
+                       } else if (RMS && !fSymmRMS) { // save info necessary for evaluating the RMS of a distribution of variations
+                           printf(" oops shouldnt be here \n " );
+                           if(temp->GetBinContent(b+1) < 1) {
+                               relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorInUpN[b]++;
+                           }
+                           // the variation is LOWER than the nominal point, so the bar goes DOWN
+                           else if(temp->GetBinContent(b+1) > 1) {
+                               relativeErrorInLow->SetBinContent(b+1, relativeErrorInLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorInLowN[b]++;
+                           }
+                       } else if (fSymmRMS) {
+                           // save symmetric sum of square to get a symmetric rms
+                           relativeErrorInUp->SetBinContent(b+1, relativeErrorInUp->GetBinContent(b+1)+TMath::Power(temp->GetBinContent(b+1)-1., 2));
+                           relativeErrorInUpN[b]++;
+                       }
+                       if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorIn->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
+                   }
+                   temp->SetTitle(Form("[%s] / [%s]", defIn.Data(), dirNameIn.Data()));
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
+                   temp->GetYaxis()->SetTitle("ratio");
+                   canvasMasterIn->cd(j);
+                   temp->GetYaxis()->SetRangeUser(0., 2);
+                   Style(gPad, "GRID");
+                   temp->DrawCopy();
+                   canvasNominalMasterIn->cd(1);
+                   Style(gPad, "GRID");
+                   if(i > 0 ) {
+                       TH1D* tempSyst((TH1D*)temp->Clone(Form("%s_syst", temp->GetName())));
+                       tempSyst->SetTitle(Form("[%s] / [%s]", defIn.Data(), dirNameIn.Data()));
+                       Style(tempSyst, (EColor)(i+2));
+                       if(i==1) tempSyst->DrawCopy();
+                       else tempSyst->DrawCopy("same");
+                   }
+               }
+               TH1F* fitStatus((TH1F*)tempIn->Get(Form("fitStatus_%s_in", dirNameIn.Data())));
+               canvasSpectraIn->cd(j);
+               if(i==0) canvasNominalSpectraIn->cd(1);
+               Style(gPad);
+               Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
+               unfoldedSpectrum->DrawCopy();
+               Style(inputSpectrum, kGreen, kMeasuredSpectrum);
+               inputSpectrum->DrawCopy("same");
+               Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
+               refoldedSpectrum->DrawCopy("same");
+               TLegend* l(AddLegend(gPad));
+               Style(l);
+               if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
+                   Float_t chi(fitStatus->GetBinContent(1));
+                   Float_t pen(fitStatus->GetBinContent(2));
+                   Int_t dof((int)fitStatus->GetBinContent(3));
+                   Float_t beta(fitStatus->GetBinContent(4));
+                   l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
+               } else if (fitStatus) { // only available in SVD fit
+                   Int_t reg((int)fitStatus->GetBinContent(1));
+                   l->AddEntry((TObject*)0, Form("REG %i", reg), "");
+               }
+               canvasNominalSpectraIn->cd(2);
+               TH1D* tempSyst((TH1D*)unfoldedSpectrum->Clone(Form("%s_syst", unfoldedSpectrum->GetName())));
+               tempSyst->SetTitle(Form("[%s]", dirNameIn.Data()));
+               Style(tempSyst, (EColor)(i+2));
+               Style(gPad, "SPECTRUM");
+               if(i==0) tempSyst->DrawCopy();
+               else tempSyst->DrawCopy("same");
+           }
+       }
+       if(tempOut) {
+           TH2D* pOut((TH2D*)tempOut->Get(Form("PearsonCoefficients_out_%s", dirNameOut.Data())));
+           if(pOut) {
+               printf(" - %s out of plane converged \n", dirNameOut.Data());
+               canvasOut->cd(j);
+               if(i==0) canvasNominalOut->cd(j);
+               Style(gPad, "PEARSON");
+               pOut->DrawCopy("colz");
+               TGraphErrors* rOut((TGraphErrors*)tempOut->Get(Form("RatioRefoldedMeasured_%s", dirNameOut.Data())));
+               if(rOut) {
+                   Style(rOut);
+                   printf(" > found RatioRefoldedMeasured < \n");
+                   canvasRatioMeasuredRefoldedOut->cd(j);
+                   if(i==0) canvasNominalRatioMeasuredRefoldedOut->cd(j);
+                   Style(gPad, "GRID");
+                   rOut->SetFillColor(kRed);
+                   rOut->Draw("ap");
+               }
+               TH1D* dvector((TH1D*)tempOut->Get("dVector"));
+               TH1D* avalue((TH1D*)tempOut->Get("SingularValuesOfAC"));
+               TH2D* rm((TH2D*)tempOut->Get(Form("ResponseMatrixOut_%s", dirNameOut.Data())));
+               TH1D* eff((TH1D*)tempOut->Get(Form("KinematicEfficiencyOut_%s", dirNameOut.Data())));
+               if(dvector && avalue && rm && eff) {
+                   Style(dvector);
+                   Style(avalue);
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(5);
+                   if(i==0) canvasNominalMISC->cd(5);
+                   Style(gPad, "SPECTRUM");
+                   dvector->DrawCopy();
+                   canvasMISC->cd(6);
+                   if(i==0) canvasNominalMISC->cd(6);
+                   Style(gPad, "SPECTRUM");
+                   avalue->DrawCopy();
+                   canvasMISC->cd(7);
+                   if(i==0) canvasNominalMISC->cd(7);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(8);
+                   if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
+                   eff->DrawCopy();
+               } else if(rm && eff) {
+                   Style(rm);
+                   Style(eff);
+                   canvasMISC->cd(7);
+                   if(i==0) canvasNominalMISC->cd(7);
+                   Style(gPad, "PEARSON");
+                   rm->DrawCopy("colz");
+                   canvasMISC->cd(8);
+                   if(i==0) canvasNominalMISC->cd(8);
+                   Style(gPad, "GRID");
+                   eff->DrawCopy();
+               }
+           }
+           TH1D* inputSpectrum((TH1D*)tempOut->Get(Form("InputSpectrum_out_%s", dirNameOut.Data())));
+           TH1D* unfoldedSpectrum((TH1D*)tempOut->Get(Form("UnfoldedSpectrum_out_%s", dirNameOut.Data())));
+           unfoldedSpectrumOutForRatio = ProtectHeap(unfoldedSpectrum, kFALSE, TString("ForRatio"));
+           TH1D* refoldedSpectrum((TH1D*)tempOut->Get(Form("RefoldedSpectrum_out_%s", dirNameOut.Data())));
+           if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
+               if(defaultUnfoldedJetSpectrumOut) {
+                   Style(defaultUnfoldedJetSpectrumOut, kBlue, kUnfoldedSpectrum);
+                   TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumOut->Clone(Form("defaultUnfoldedJetSpectrumOut_%s", dirNameOut.Data())));
+                   temp->Divide(unfoldedSpectrum);
+                   // get the absolute relative error 
+                   for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+                       if(!RMS) {
+                           // check if the error is larger than the current maximum
+                           if(temp->GetBinContent(b+1) < 1 && temp->GetBinContent(b+1) < relativeErrorOutUp->GetBinContent(b+1)) {
+                               relativeErrorOutUp->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorOutUp->SetBinError(b+1, 0.);
+                           }
+                           // check if the error is smaller than the current minimum
+                           else if(temp->GetBinContent(b+1) > 1 && temp->GetBinContent(b+1) > relativeErrorOutLow->GetBinContent(b+1)) {
+                               relativeErrorOutLow->SetBinContent(b+1, temp->GetBinContent(b+1));
+                               relativeErrorOutLow->SetBinError(b+1, 0.);
+                           }
+                       } else if (RMS && !fSymmRMS) {
+                           printf(" OOps \n ");
+                           if(temp->GetBinContent(b+1) < 1) {
+                               relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorOutUpN[b]++;
+                           }
+                           else if(temp->GetBinContent(b+1) > 1) {
+                               relativeErrorOutLow->SetBinContent(b+1, relativeErrorOutLow->GetBinContent(b+1)+TMath::Power(1.-temp->GetBinContent(b+1), 2));
+                               relativeErrorOutLowN[b]++;
+                           }
+                       } else if (fSymmRMS) {
+                           // save symmetric rms value
+                           relativeErrorOutUp->SetBinContent(b+1, relativeErrorOutUp->GetBinContent(b+1)+TMath::Power(temp->GetBinContent(b+1)-1., 2));
+                           relativeErrorOutUpN[b]++;
+                       }
+                       if(temp->GetBinError(b+1) > 0) relativeStatisticalErrorOut->SetBinContent(b+1, temp->GetBinError(b+1)/temp->GetBinContent(b+1));
+                   }
+                   temp->SetTitle(Form("[%s] / [%s]", defOut.Data(), dirNameOut.Data()));
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
+                   temp->GetYaxis()->SetTitle("ratio");
+                   canvasMasterOut->cd(j);
+                   temp->GetYaxis()->SetRangeUser(0., 2);
+                   Style(gPad, "GRID");
+                   temp->DrawCopy();
+                   canvasNominalMasterOut->cd(1);
+                   Style(gPad, "GRID");
+                   if(i > 0 ) {
+                       TH1D* tempSyst((TH1D*)temp->Clone(Form("%s_syst", temp->GetName())));
+                       tempSyst->SetTitle(Form("[%s] / [%s]", defOut.Data(), dirNameOut.Data()));
+                       Style(tempSyst, (EColor)(i+2));
+                       if(i==1) tempSyst->DrawCopy();
+                       else tempSyst->DrawCopy("same");
+                   }
+               }
+               TH1F* fitStatus((TH1F*)tempOut->Get(Form("fitStatus_%s_out", dirNameOut.Data())));
+               canvasSpectraOut->cd(j);
+               if(i==0) canvasNominalSpectraOut->cd(1);
+               Style(gPad);
+               Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
+               unfoldedSpectrum->DrawCopy();
+               Style(inputSpectrum, kGreen, kMeasuredSpectrum);
+               inputSpectrum->DrawCopy("same");
+               Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
+               refoldedSpectrum->DrawCopy("same");
+               TLegend* l(AddLegend(gPad));
+               Style(l);
+               if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
+                   Float_t chi(fitStatus->GetBinContent(1));
+                   Float_t pen(fitStatus->GetBinContent(2));
+                   Int_t dof((int)fitStatus->GetBinContent(3));
+                   Float_t beta(fitStatus->GetBinContent(4));
+                   l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
+               } else if (fitStatus) { // only available in SVD fit
+                   Int_t reg((int)fitStatus->GetBinContent(1));
+                   l->AddEntry((TObject*)0, Form("REG %i", reg), "");
+               }
+               canvasNominalSpectraOut->cd(2);
+               TH1D* tempSyst((TH1D*)unfoldedSpectrum->Clone(Form("%s_syst", unfoldedSpectrum->GetName())));
+               tempSyst->SetTitle(Form("[%s]", dirNameOut.Data()));
+               Style(tempSyst, (EColor)(i+2));
+               Style(gPad, "SPECTRUM");
+               if(i==0) tempSyst->DrawCopy();
+               else tempSyst->DrawCopy("same");
+           }
+       }
+       if(canvasRatio && canvasV2) {
+           canvasRatio->cd(j);
+           if(i==0) {
+               canvasNominalRatio->cd(j);
+               if(nominal && nominalIn && nominalOut) {
+                   // if a nominal ratio is requested, delete the placeholder and update the nominal point
+                   delete nominal;
+                   delete nominalIn;
+                   delete nominalOut;
+                   nominalIn =  (TH1D*)unfoldedSpectrumInForRatio->Clone("in plane jet yield");
+                   nominalOut =  (TH1D*)unfoldedSpectrumOutForRatio->Clone("out of plane jet yield");
+                   nominal = (TH1D*)unfoldedSpectrumInForRatio->Clone("ratio in plane out of plane");
+                   nominal->Divide(nominal, unfoldedSpectrumOutForRatio);       // standard root divide for uncorrelated histos
+               }
+           }
+           TGraphErrors* ratioYield(GetRatio(unfoldedSpectrumInForRatio, unfoldedSpectrumOutForRatio, TString(Form("ratio [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           Double_t _tempx(0), _tempy(0);
+           if(ratioYield) {
+               Style(ratioYield);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioYield->GetPoint(b, _tempx, _tempy);
+                   ratioProfile->Fill(_tempx, _tempy);
+               }
+               ratioProfile->GetYaxis()->SetRangeUser(-0., 2.);
+               ratioProfile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioYield->GetYaxis()->SetRangeUser(-0., 2.);
+               ratioYield->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioYield->SetFillColor(kRed);
+               ratioYield->Draw("ap");
+           }
+           canvasV2->cd(j);
+           if(i==0) canvasNominalV2->cd(j);
+           TGraphErrors* ratioV2(GetV2(unfoldedSpectrumInForRatio,unfoldedSpectrumOutForRatio, fEventPlaneRes, TString(Form("v_{2} [in=%s, out=%s]", dirNameIn.Data(), dirNameOut.Data()))));
+           if(ratioV2) {
+               Style(ratioV2);
+               for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
+                   ratioV2->GetPoint(b, _tempx, _tempy);
+                   v2Profile->Fill(_tempx, _tempy);
+
+               }
+               v2Profile->GetYaxis()->SetRangeUser(-0., 2.);
+               v2Profile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
+               ratioV2->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
+               ratioV2->SetFillColor(kRed);
+               ratioV2->Draw("ap");
+           }
+       }
+       delete unfoldedSpectrumInForRatio;
+       delete unfoldedSpectrumOutForRatio;
+   }
+   // save the canvasses
+   canvasProfiles->cd(1);
+   Style(ratioProfile);
+   ratioProfile->DrawCopy();
+   canvasProfiles->cd(2);
+   Style(v2Profile);
+   v2Profile->DrawCopy();
+   SavePadToPDF(canvasProfiles);
+   canvasProfiles->Write(); 
+   SavePadToPDF(canvasIn);
+   canvasIn->Write();
+   if(canvasOut) {
+       SavePadToPDF(canvasOut);
+       canvasOut->Write();
+   }
+   SavePadToPDF(canvasRatioMeasuredRefoldedIn);
+   canvasRatioMeasuredRefoldedIn->Write();
+   if(canvasRatioMeasuredRefoldedOut) {
+       SavePadToPDF(canvasRatioMeasuredRefoldedOut);
+       canvasRatioMeasuredRefoldedOut->Write();
+   }
+   SavePadToPDF(canvasSpectraIn);
+   canvasSpectraIn->Write();
+   if(canvasSpectraOut) {
+       SavePadToPDF(canvasSpectraOut);
+       canvasSpectraOut->Write();
+       SavePadToPDF(canvasRatio);
+       canvasRatio->Write();
+       SavePadToPDF(canvasV2);
+       canvasV2->Write();
+   }
+   SavePadToPDF(canvasMasterIn);
+   canvasMasterIn->Write();
+   if(canvasMasterOut) {
+       SavePadToPDF(canvasMasterOut);
+       canvasMasterOut->Write();
+   }
+   SavePadToPDF(canvasMISC);
+   canvasMISC->Write();
+   // save the nomial canvasses
+   SavePadToPDF(canvasNominalIn);
+   canvasNominalIn->Write();
+   if(canvasNominalOut) {
+       SavePadToPDF(canvasNominalOut);
+       canvasNominalOut->Write();
+   }
+   SavePadToPDF(canvasNominalRatioMeasuredRefoldedIn);
+   canvasNominalRatioMeasuredRefoldedIn->Write();
+   if(canvasNominalRatioMeasuredRefoldedOut) {
+       SavePadToPDF(canvasNominalRatioMeasuredRefoldedOut);
+       canvasNominalRatioMeasuredRefoldedOut->Write();
+   }
+   canvasNominalSpectraIn->cd(2);
+   Style(AddLegend(gPad)); 
+   SavePadToPDF(canvasNominalSpectraIn);
+   canvasNominalSpectraIn->Write();
+   if(canvasNominalSpectraOut) {
+       canvasNominalSpectraOut->cd(2);
+       Style(AddLegend(gPad));
+       SavePadToPDF(canvasNominalSpectraOut);
+       canvasNominalSpectraOut->Write();
+       SavePadToPDF(canvasNominalRatio);
+       canvasNominalRatio->Write();
+       SavePadToPDF(canvasNominalV2);
+       canvasNominalV2->Write();
+   }
+   canvasNominalMasterIn->cd(1);
+   Style(AddLegend(gPad));
+   lineUp->DrawClone("same");
+   lineLow->DrawClone("same");
+   SavePadToPDF(canvasNominalMasterIn);
+   canvasNominalMasterIn->Write();
+   if(canvasNominalMasterOut) {
+       canvasNominalMasterOut->cd(1);
+       Style(AddLegend(gPad));
+       lineUp->DrawClone("same");
+       lineLow->DrawClone("same");
+       SavePadToPDF(canvasNominalMasterOut);
+       canvasNominalMasterOut->Write();
+   }
+   SavePadToPDF(canvasNominalMISC);
+   canvasNominalMISC->Write();
+
+   // save the relative errors
+   for(Int_t b(0); b < fBinsTrue->GetSize()-1; b++) {
+       // to arrive at a min and max from here, combine in up and out low
+       if(!RMS) {
+           relativeErrorInUp->SetBinContent(b+1, -1.*(relativeErrorInUp->GetBinContent(b+1)-1));
+           relativeErrorInUp->SetBinError(b+1, 0.);
+           relativeErrorOutUp->SetBinContent(b+1, -1.*(relativeErrorOutUp->GetBinContent(b+1)-1));
+           relativeErrorOutUp->SetBinError(b+1, .0);
+           relativeErrorInLow->SetBinContent(b+1, -1.*(relativeErrorInLow->GetBinContent(b+1)-1));
+           relativeErrorInLow->SetBinError(b+1, 0.);
+           relativeErrorOutLow->SetBinContent(b+1, -1.*(relativeErrorOutLow->GetBinContent(b+1)-1));
+           relativeErrorOutLow->SetBinError(b+1, .0);
+       } else if (RMS) {
+           // these guys are already stored as percentages, so no need to remove the offset of 1
+           // RMS is defined as sqrt(sum(squared))/N
+           // min is defined as negative, max is defined as positive
+           if(!fSymmRMS) {
+               if(relativeErrorInUpN[b] < 1) relativeErrorInUpN[b] = 1;
+               if(relativeErrorInLowN[b] < 1) relativeErrorInLowN[b] = 1;
+               if(relativeErrorOutUpN[b] < 1) relativeErrorOutUpN[b] = 1;
+               if(relativeErrorOutLowN[b] < 1) relativeErrorOutLowN[b] = 1;
+               relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1)/relativeErrorInUpN[b]));
+               relativeErrorInUp->SetBinError(b+1, 0.);
+               relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1)/relativeErrorOutUpN[b]));
+               relativeErrorOutUp->SetBinError(b+1, .0);
+               relativeErrorInLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorInLow->GetBinContent(b+1)/relativeErrorInLowN[b]));
+               relativeErrorInLow->SetBinError(b+1, 0.);
+               relativeErrorOutLow->SetBinContent(b+1, -1.*TMath::Sqrt(relativeErrorOutLow->GetBinContent(b+1)/relativeErrorOutLowN[b]));
+               relativeErrorOutLow->SetBinError(b+1, .0);
+           } else if (fSymmRMS) {
+               if(relativeErrorInUpN[b] < 1) relativeErrorInUpN[b] = 1;
+               if(relativeErrorOutUpN[b] < 1) relativeErrorOutUpN[b] = 1;
+               relativeErrorInUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorInUp->GetBinContent(b+1)/relativeErrorInUpN[b]));
+               relativeErrorOutUp->SetBinContent(b+1, TMath::Sqrt(relativeErrorOutUp->GetBinContent(b+1)/relativeErrorOutUpN[b]));
+           }
+       }
+   }
+   relativeErrorInUp->SetYTitle("relative uncertainty");
+   relativeErrorOutUp->SetYTitle("relative uncertainty");
+   relativeErrorInLow->SetYTitle("relative uncertainty");
+   relativeErrorOutLow->SetYTitle("relative uncertainty");
+   relativeErrorInUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+   relativeErrorInLow->GetYaxis()->SetRangeUser(-1.5, 3.);
+   relativeErrorOutUp->GetYaxis()->SetRangeUser(-1.5, 3.);
+   relativeErrorOutLow->GetYaxis()->SetRangeUser(-1.5, 3.);
+
+   canvasNominalMasterIn->cd(2);
+   Style(gPad, "GRID");
+   Style(relativeErrorInUp, kBlue, kBar);
+   Style(relativeErrorInLow, kGreen, kBar);
+   relativeErrorInUp->DrawCopy("b");
+   relativeErrorInLow->DrawCopy("same b");
+   Style(AddLegend(gPad));
+   SavePadToPDF(canvasNominalMasterIn);
+   canvasNominalMasterIn->Write();
+   canvasNominalMasterOut->cd(2);
+   Style(gPad, "GRID");
+   Style(relativeErrorOutUp, kBlue, kBar);
+   Style(relativeErrorOutLow, kGreen, kBar);
+   relativeErrorOutUp->DrawCopy("b");
+   relativeErrorOutLow->DrawCopy("same b");
+   Style(AddLegend(gPad));
+   SavePadToPDF(canvasNominalMasterOut);
+   canvasNominalMasterOut->Write();
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, Float_t rangeUp, TString in, TString out) const
@@ -1438,7 +3022,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
            cacheMe++;
        }
    }
-   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%4)>0));
+   Int_t rows(TMath::Floor(cacheMe/(float)columns)+((cacheMe%columns)>0));
    canvasIn->Divide(columns, rows);
    if(canvasOut) canvasOut->Divide(columns, rows);
    canvasRatioMeasuredRefoldedIn->Divide(columns, rows);
@@ -1460,7 +3044,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
        if(defDirOut) defaultUnfoldedJetSpectrumOut = (TH1D*)defDirOut->Get(Form("UnfoldedSpectrum_out_%s", def.Data()));
        printf(" > succesfully extracted default results < \n");
    }
- 
+
    // loop through the directories, only plot the graphs if the deconvolution converged
    TDirectoryFile* tempDir(0x0); 
    TDirectoryFile* tempIn(0x0);
@@ -1485,88 +3069,90 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
            for(Int_t q(0); q < 8; q++) {
                tempIn = (TDirectoryFile*)tempDir->Get(Form("%s___%s", stringArray[q].Data(), dirName.Data()));
                if(tempIn) {
-                    // to see if the unfolding converged try to extract the pearson coefficients
-                    TH2D* pIn((TH2D*)tempIn->Get(Form("PearsonCoefficients_in_%s", dirName.Data())));
-                    if(pIn) {
+                       // to see if the unfolding converged try to extract the pearson coefficients
+                       TH2D* pIn((TH2D*)tempIn->Get(Form("PearsonCoefficients_in_%s", dirName.Data())));
+                       if(pIn) {
                        printf(" - %s in plane converged \n", dirName.Data());
-                        tempPearson->cd(1+q);
-                        Style(gPad, "PEARSON");
-                        pIn->DrawCopy("colz");
-                        TGraphErrors* rIn((TGraphErrors*)tempIn->Get(Form("RatioRefoldedMeasured_%s", dirName.Data())));
-                        if(rIn) {
-                            Style(rIn);
-                            printf(" > found RatioRefoldedMeasured < \n");
-                            tempRatio->cd(q+1);
-                            rIn->SetFillColor(kRed);
-                            rIn->Draw("ap");
-                        }
-                        TH1D* dvector((TH1D*)tempIn->Get("dVector"));
-                        TH1D* avalue((TH1D*)tempIn->Get("SingularValuesOfAC"));
-                        TH2D* rm((TH2D*)tempIn->Get(Form("ResponseMatrixIn_%s", dirName.Data())));
-                        TH1D* eff((TH1D*)tempIn->Get(Form("KinematicEfficiencyIn_%s", dirName.Data())));
-                        if(dvector && avalue && rm && eff) {
-                            Style(dvector);
-                            Style(avalue);
-                            Style(rm);
-                            Style(eff);
-                            canvasMISC->cd(1);
-                            Style(gPad, "SPECTRUM");
-                            dvector->DrawCopy();
-                            canvasMISC->cd(2);
-                            Style(gPad, "SPECTRUM");
-                            avalue->DrawCopy();
-                            canvasMISC->cd(3);
+                           tempPearson->cd(1+q);
                             Style(gPad, "PEARSON");
-                            rm->DrawCopy("colz");
-                            canvasMISC->cd(4);
-                            eff->DrawCopy();
-                        } else if(rm && eff) {
-                            Style(rm);
-                            Style(eff);
-                            canvasMISC->cd(3);
-                            Style(gPad, "PEARSON");
-                            rm->DrawCopy("colz");
-                            canvasMISC->cd(4);
-                            eff->DrawCopy();
+                            pIn->DrawCopy("colz");
+                            TGraphErrors* rIn((TGraphErrors*)tempIn->Get(Form("RatioRefoldedMeasured_%s", dirName.Data())));
+                            if(rIn) {
+                                Style(rIn);
+                                printf(" > found RatioRefoldedMeasured < \n");
+                                tempRatio->cd(q+1);
+                                rIn->SetFillColor(kRed);
+                                rIn->Draw("ap");
+                            }
+                            TH1D* dvector((TH1D*)tempIn->Get("dVector"));
+                            TH1D* avalue((TH1D*)tempIn->Get("SingularValuesOfAC"));
+                            TH2D* rm((TH2D*)tempIn->Get(Form("ResponseMatrixIn_%s", dirName.Data())));
+                            TH1D* eff((TH1D*)tempIn->Get(Form("KinematicEfficiencyIn_%s", dirName.Data())));
+                            if(dvector && avalue && rm && eff) {
+                                Style(dvector);
+                                Style(avalue);
+                                Style(rm);
+                                Style(eff);
+                                canvasMISC->cd(1);
+                                Style(gPad, "SPECTRUM");
+                                dvector->DrawCopy();
+                                canvasMISC->cd(2);
+                                Style(gPad, "SPECTRUM");
+                                avalue->DrawCopy();
+                                canvasMISC->cd(3);
+                                Style(gPad, "PEARSON");
+                                rm->DrawCopy("colz");
+                                canvasMISC->cd(4);
+                                Style(gPad, "GRID");
+                                eff->DrawCopy();
+                            } else if(rm && eff) {
+                                Style(rm);
+                                Style(eff);
+                                canvasMISC->cd(3);
+                                Style(gPad, "PEARSON");
+                                rm->DrawCopy("colz");
+                                canvasMISC->cd(4);
+                                Style(gPad, "GRID");
+                                eff->DrawCopy();
+                            }
                         }
-                    }
-                    TH1D* inputSpectrum((TH1D*)tempIn->Get(Form("InputSpectrum_in_%s", dirName.Data())));
-                    TH1D* unfoldedSpectrum((TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirName.Data())));
-                    TH1D* refoldedSpectrum((TH1D*)tempIn->Get(Form("RefoldedSpectrum_in_%s", dirName.Data())));
-                    if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
-                        if(defaultUnfoldedJetSpectrumIn) {
-                            Style(defaultUnfoldedJetSpectrumIn, kBlue, kUnfoldedSpectrum);
-                            TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
-                            temp->Divide(unfoldedSpectrum);
-                            temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                            temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-                            temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
-                            canvasMasterIn->cd(j);
-                            temp->GetYaxis()->SetRangeUser(0., 2);
-                            temp->DrawCopy();
-                        }
-                        TH1F* fitStatus((TH1F*)tempIn->Get(Form("fitStatus_%s_in", dirName.Data())));
-                        tempResult->cd(q+1);
-                        Style(gPad);
-                        Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
-                        unfoldedSpectrum->DrawCopy();
-                        Style(inputSpectrum, kGreen, kMeasuredSpectrum);
-                        inputSpectrum->DrawCopy("same");
-                        Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
-                        refoldedSpectrum->DrawCopy("same");
-                        TLegend* l(AddLegend(gPad));
-                        Style(l);
-                        if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
-                            Float_t chi(fitStatus->GetBinContent(1));
-                            Float_t pen(fitStatus->GetBinContent(2));
-                            Int_t dof((int)fitStatus->GetBinContent(3));
-                            Float_t beta(fitStatus->GetBinContent(4));
-                            l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
-                        } else if (fitStatus) { // only available in SVD fit
-                            Int_t reg((int)fitStatus->GetBinContent(1));
-                            l->AddEntry((TObject*)0, Form("REG %i", reg), "");
-                        }
-                    }
+                       TH1D* inputSpectrum((TH1D*)tempIn->Get(Form("InputSpectrum_in_%s", dirName.Data())));
+                       TH1D* unfoldedSpectrum((TH1D*)tempIn->Get(Form("UnfoldedSpectrum_in_%s", dirName.Data())));
+                       TH1D* refoldedSpectrum((TH1D*)tempIn->Get(Form("RefoldedSpectrum_in_%s", dirName.Data())));
+                       if(inputSpectrum && unfoldedSpectrum && refoldedSpectrum) {
+                           if(defaultUnfoldedJetSpectrumIn) {
+                               Style(defaultUnfoldedJetSpectrumIn, kBlue, kUnfoldedSpectrum);
+                               TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
+                               temp->Divide(unfoldedSpectrum);
+                               temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
+                               temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
+                               temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
+                               canvasMasterIn->cd(j);
+                               temp->GetYaxis()->SetRangeUser(0., 2);
+                               temp->DrawCopy();
+                           }
+                           TH1F* fitStatus((TH1F*)tempIn->Get(Form("fitStatus_%s_in", dirName.Data())));
+                           tempResult->cd(q+1);
+                           Style(gPad);
+                           Style(unfoldedSpectrum, kRed, kUnfoldedSpectrum);
+                           unfoldedSpectrum->DrawCopy();
+                           Style(inputSpectrum, kGreen, kMeasuredSpectrum);
+                           inputSpectrum->DrawCopy("same");
+                           Style(refoldedSpectrum, kBlue, kFoldedSpectrum);
+                           refoldedSpectrum->DrawCopy("same");
+                           TLegend* l(AddLegend(gPad));
+                           Style(l);
+                           if(fitStatus && fitStatus->GetNbinsX() == 4) { // only available in chi2 fit
+                               Float_t chi(fitStatus->GetBinContent(1));
+                               Float_t pen(fitStatus->GetBinContent(2));
+                               Int_t dof((int)fitStatus->GetBinContent(3));
+                               Float_t beta(fitStatus->GetBinContent(4));
+                               l->AddEntry((TObject*)0, Form("#chi %.2f \tP %.2f \tDOF %i, #beta %.2f", chi, pen, dof, beta), "");
+                           } else if (fitStatus) { // only available in SVD fit
+                               Int_t reg((int)fitStatus->GetBinContent(1));
+                               l->AddEntry((TObject*)0, Form("REG %i", reg), "");
+                           }
+                       }
                }
            }
        }
@@ -1605,6 +3191,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -1613,6 +3200,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(4);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -1625,7 +3213,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumIn->Clone(Form("defaultUnfoldedJetSpectrumIn_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                   temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterIn->cd(j);
                    temp->GetYaxis()->SetRangeUser(0., 2);
@@ -1688,6 +3276,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                } else if(rm && eff) {
                    Style(rm);
@@ -1696,6 +3285,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    Style(gPad, "PEARSON");
                    rm->DrawCopy("colz");
                    canvasMISC->cd(8);
+                   Style(gPad, "GRID");
                    eff->DrawCopy();
                }
            }
@@ -1708,7 +3298,7 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
                    TH1D* temp((TH1D*)defaultUnfoldedJetSpectrumOut->Clone(Form("defaultUnfoldedJetSpectrumOut_%s", dirName.Data())));
                    temp->Divide(unfoldedSpectrum);
                    temp->SetTitle(Form("ratio default unfolded / %s", dirName.Data()));
-                   temp->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+                   temp->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
                    temp->GetYaxis()->SetTitle(Form("%s / %s", def.Data(), dirName.Data()));
                    canvasMasterOut->cd(j);
                    temp->GetYaxis()->SetRangeUser(0., 2.);
@@ -1744,12 +3334,12 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
            if(ratioYield) {
                Style(ratioYield);
                for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
-                   ratioYield->GetPoint(b+1, _tempx, _tempy);
+                   ratioYield->GetPoint(b, _tempx, _tempy);
                    ratioProfile->Fill(_tempx, _tempy);
                }
-               ratioProfile->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioProfile->GetYaxis()->SetRangeUser(-0., 2.);
                ratioProfile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
-               ratioYield->GetYaxis()->SetRangeUser(-1., 3.);
+               ratioYield->GetYaxis()->SetRangeUser(-0., 2.);
                ratioYield->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioYield->SetFillColor(kRed);
                ratioYield->Draw("ap");
@@ -1759,11 +3349,11 @@ void AliJetFlowTools::PostProcess(TString def, Int_t columns, Float_t rangeLow, 
            if(ratioV2) {
                Style(ratioV2);
                for(Int_t b(0); b < fBinsTrue->GetSize(); b++) {
-                   ratioV2->GetPoint(b+1, _tempx, _tempy);
+                   ratioV2->GetPoint(b, _tempx, _tempy);
                    v2Profile->Fill(_tempx, _tempy);
 
                }
-               v2Profile->GetYaxis()->SetRangeUser(-1., 3.);
+               v2Profile->GetYaxis()->SetRangeUser(-0., 2.);
                v2Profile->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
                ratioV2->GetYaxis()->SetRangeUser(-.25, .75);
                ratioV2->GetXaxis()->SetRangeUser(rangeLow, rangeUp);
@@ -1840,7 +3430,7 @@ Bool_t AliJetFlowTools::SetRawInput (
         return kFALSE;
     }
     if(!fRMSSpectrumIn) { // initialie the profiles which will hold the RMS values. if binning changes in between unfolding
-                          // procedures, these profiles will be nonsensical, user is responsible
+                        // procedures, these profiles will be nonsensical, user is responsible
         fRMSSpectrumIn = new TProfile("fRMSSpectrumIn", "fRMSSpectrumIn", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
         fRMSSpectrumOut = new TProfile("fRMSSpectrumOut", "fRMSSpectrumOut", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
         fRMSRatio = new TProfile("fRMSRatio", "fRMSRatio", fBinsTrue->GetSize()-1, fBinsTrue->GetArray());
@@ -1862,13 +3452,13 @@ Bool_t AliJetFlowTools::SetRawInput (
         fSpectrumOut->Scale(1./((double)fEventCount));
     }
     fDptIn = ConstructDPtResponseFromTH1D(fDptInDist, fAvoidRoundingError);
-    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityBin), Form("dpt_response_INPLANE_%i", fCentralityBin));
-    fDptIn->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptIn->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptIn->SetNameTitle(Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_INPLANE_%i", fCentralityArray->At(0)));
+    fDptIn->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptIn->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     fDptOut = ConstructDPtResponseFromTH1D(fDptOutDist, fAvoidRoundingError);
-    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityBin), Form("dpt_response_OUTOFPLANE_%i", fCentralityBin));
-    fDptOut->GetXaxis()->SetTitle("p_{T}^{gen} [GeV/c]");
-    fDptOut->GetYaxis()->SetTitle("p_{T}^{rec} [GeV/c]");
+    fDptOut->SetNameTitle(Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)), Form("dpt_response_OUTOFPLANE_%i", fCentralityArray->At(0)));
+    fDptOut->GetXaxis()->SetTitle("p_{T, jet}^{gen} [GeV/c]");
+    fDptOut->GetYaxis()->SetTitle("p_{T, jet}^{rec} [GeV/c]");
     
     return kTRUE;
 }
@@ -1883,7 +3473,7 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
     }
     Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
-    gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    gr->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
     Double_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     TH1* dud((TH1*)h1->Clone("dud"));
     dud->Sumw2();
@@ -1898,19 +3488,12 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
             binWidth = h1->GetXaxis()->GetBinWidth(i);
             if(h2->GetBinContent(j) > 0.) {
                 ratio = h1->GetBinContent(i)/h2->GetBinContent(j);
-            /* original propagation of uncertainty changed 08012014
-            Double_t A = 1./h2->GetBinContent(j)*h1->GetBinError(i);
-            Double_t B = 0.;
-            if(h2->GetBinError(j)>0.) {
-                B = -1.*h1->GetBinContent(i)/(h2->GetBinContent(j)*h2->GetBinContent(j))*h2->GetBinError(j);
-                error2 = A*A + B*B;
-            } else error2 = A*A;        */
                 Double_t A = h1->GetBinError(i)/h1->GetBinContent(i);
                 Double_t B = h2->GetBinError(i)/h2->GetBinContent(i);
                 error2 = ratio*ratio*A*A+ratio*ratio*B*B;
                 if(error2 > 0 ) error2 = TMath::Sqrt(error2);
-                gr->SetPoint(gr->GetN(), binCent, ratio);
-                gr->SetPointError(gr->GetN()-1, 0.5*binWidth, error2);
+                gr->SetPoint(i-1, binCent, ratio);
+                gr->SetPointError(i-1, 0.5*binWidth, error2);
             }
         }
     } else {
@@ -1919,8 +3502,8 @@ TGraphErrors* AliJetFlowTools::GetRatio(TH1 *h1, TH1* h2, TString name, Bool_t a
             binCent = dud->GetXaxis()->GetBinCenter(i);
             if(xmax > 0. && binCent > xmax) continue;
             binWidth = dud->GetXaxis()->GetBinWidth(i);
-            gr->SetPoint(gr->GetN(),binCent,dud->GetBinContent(i));
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,dud->GetBinError(i));
+            gr->SetPoint(i-1,binCent,dud->GetBinContent(i));
+            gr->SetPointError(i-1, 0.5*binWidth,dud->GetBinError(i));
         }
     }
 
@@ -1937,36 +3520,97 @@ TGraphErrors* AliJetFlowTools::GetV2(TH1 *h1, TH1* h2, Double_t r, TString name)
 {
     // get v2 from difference of in plane, out of plane yield
     // h1 must hold the in-plane yield, h2 holds the out of plane  yield
-    // different binning is allowed but will mean that the error
-    // propagation is unreliable
     // r is the event plane resolution for the chosen centrality
     if(!(h1 && h2) ) {
         printf(" GetV2 called with NULL argument(s) \n ");
         return 0x0;
     }
-    Int_t j(0);
     TGraphErrors *gr = new TGraphErrors();
-    gr->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+    gr->GetXaxis()->SetTitle("p_{T, jet} [GeV/c]");
     Float_t binCent(0.), ratio(0.), error2(0.), binWidth(0.);
     Double_t pre(TMath::Pi()/(4.*r)), in(0.), out(0.), ein(0.), eout(0.);
+
     for(Int_t i(1); i <= h1->GetNbinsX(); i++) {
         binCent = h1->GetXaxis()->GetBinCenter(i);
-        j = h2->FindBin(binCent);
         binWidth = h1->GetXaxis()->GetBinWidth(i);
-        if(h2->GetBinContent(j) > 0.) {
+        if(h2->GetBinContent(i) > 0.) {
             in = h1->GetBinContent(i);
             ein = h1->GetBinError(i);
-            out = h2->GetBinContent(j);
-            eout = h2->GetBinError(j);
+            out = h2->GetBinContent(i);
+            eout = h2->GetBinError(i);
             ratio = pre*((in-out)/(in+out));
-            error2 =((r*4.)/(TMath::Pi()))*((4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout);
+            error2 = (4.*out*out/(TMath::Power(in+out, 4)))*ein*ein+(4.*in*in/(TMath::Power(in+out, 4)))*eout*eout;
+            error2 = error2*pre*pre;
             if(error2 > 0) error2 = TMath::Sqrt(error2);
-            gr->SetPoint(gr->GetN(),binCent,ratio);
-            gr->SetPointError(gr->GetN()-1,0.5*binWidth,error2);
+            gr->SetPoint(i-1,binCent,ratio);
+            gr->SetPointError(i-1,0.5*binWidth,error2);
         }
     }
     if(strcmp(name, "")) gr->SetNameTitle(name.Data(), name.Data());
     return gr;
+}
+//_____________________________________________________________________________
+TGraphAsymmErrors* AliJetFlowTools::GetV2WithSystematicErrors(
+        TH1* h1, TH1* h2, Double_t r, TString name, 
+        TH1* relativeErrorInUp,
+        TH1* relativeErrorInLow,
+        TH1* relativeErrorOutUp,
+        TH1* relativeErrorOutLow,
+        Float_t rho) const
+{
+    // get v2 with asymmetric systematic error
+    // note that this is ONLY the systematic error, no statistical error!
+    // rho is the pearson correlation coefficient
+    TGraphErrors* tempV2(GetV2(h1, h2, r, name));
+    Double_t* ax = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t* ay = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t* axh = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t* axl = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t* ayh = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t* ayl = new Double_t[fBinsTrue->GetSize()-1];
+    Double_t in(0.), out(0.), einUp(0.), einLow(0.), eoutUp(0.), eoutLow(0.), error2Up(0.), error2Low(0.);
+    // loop through the bins and do error propagation
+    for(Int_t i(0); i < fBinsTrue->GetSize()-1; i++) {
+        // extract the absolute errors
+        in = h1->GetBinContent(i+1);
+        einUp = TMath::Abs(in*relativeErrorInUp->GetBinContent(i+1));
+        einLow = TMath::Abs(in*relativeErrorInLow->GetBinContent(1+i));
+        out = h2->GetBinContent(i+1);
+        eoutUp = TMath::Abs(out*relativeErrorOutUp->GetBinContent(1+i));
+        eoutLow = TMath::Abs(out*relativeErrorOutLow->GetBinContent(1+i));
+        // get the error squared
+        if(rho <= 0) {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp);
+        } else {
+            error2Up = TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einUp*einUp+(4.*in*in/(TMath::Power(in+out, 4)))*eoutUp*eoutUp-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einUp*eoutUp);
+            error2Low =TMath::Power(((r*4.)/(TMath::Pi())),-2.)*((4.*out*out/(TMath::Power(in+out, 4)))*einLow*einLow+(4.*in*in/(TMath::Power(in+out, 4)))*eoutLow*eoutLow-((8.*out*in)/(TMath::Power(in+out, 4)))*rho*einLow*eoutLow);
+        }
+        if(error2Up > 0) error2Up = TMath::Sqrt(error2Up);
+        if(error2Low > 0) error2Low = TMath::Sqrt(error2Low);
+        // set the errors 
+        ayh[i] = error2Up;
+        ayl[i] = error2Low;
+        // get the bin width (which is the 'error' on x)
+        Double_t binWidth(h1->GetBinWidth(i+1));
+        axl[i] = binWidth/2.;
+        axh[i] = binWidth/2.;
+        // now get the coordinate for the poin
+        tempV2->GetPoint(i, ax[i], ay[i]);
+    }
+    // save the nominal ratio
+    TGraphAsymmErrors* nominalError(new TGraphAsymmErrors(fBinsTrue->GetSize()-1, ax, ay, axl, axh, ayl, ayh));
+    nominalError->SetName("v_{2} with shape uncertainty");
+    // do some memory management
+    delete tempV2;
+    delete[] ax;
+    delete[] ay;
+    delete[] axh;
+    delete[] axl;
+    delete[] ayh;
+    delete[] ayl;
+
+    return nominalError;
 }
 //_____________________________________________________________________________
 void AliJetFlowTools::WriteObject(TObject* object, TString suffix, Bool_t kill) {
@@ -2029,8 +3673,8 @@ void AliJetFlowTools::SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut)
     summary->GetXaxis()->SetBinLabel(1, "fBetaIn");
     summary->SetBinContent(2, fBetaOut);
     summary->GetXaxis()->SetBinLabel(2, "fBetaOut");
-    summary->SetBinContent(3, fCentralityBin);
-    summary->GetXaxis()->SetBinLabel(3, "fCentralityBin");
+    summary->SetBinContent(3, fCentralityArray->At(0));
+    summary->GetXaxis()->SetBinLabel(3, "fCentralityArray[0]");
     summary->SetBinContent(4, (int)convergedIn);
     summary->GetXaxis()->SetBinLabel(4, "convergedIn");
     summary->SetBinContent(5, (int)convergedOut);
@@ -2123,7 +3767,7 @@ void AliJetFlowTools::ResetAliUnfolding() {
      AliUnfolding::SetDebug(1);
 }
 //_____________________________________________________________________________
-TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) {
+TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH1D* p = (TH1D*)protect->Clone();
@@ -2135,7 +3779,7 @@ TH1D* AliJetFlowTools::ProtectHeap(TH1D* protect, Bool_t kill, TString suffix) {
     return p;
 }
 //_____________________________________________________________________________
-TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) {
+TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TH2D* p = (TH2D*)protect->Clone();
@@ -2147,7 +3791,7 @@ TH2D* AliJetFlowTools::ProtectHeap(TH2D* protect, Bool_t kill, TString suffix) {
     return p;
 }
 //_____________________________________________________________________________
-TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) {
+TGraphErrors* AliJetFlowTools::ProtectHeap(TGraphErrors* protect, Bool_t kill, TString suffix) const {
     // protect heap by adding unique qualifier to name
     if(!protect) return 0x0;
     TGraphErrors* p = (TGraphErrors*)protect->Clone();
@@ -2175,8 +3819,8 @@ void AliJetFlowTools::MakeAU() {
     Int_t low[] = {1, 6, 11, 16, 21, 26, 31, 36};
     Int_t up[] = {5, 10, 15, 20, 25, 30, 35, 40};
     TString stringArray[] = {"a", "b", "c", "d", "e", "f", "g", "h"};
-    TH1D* dPtdPhi[6];
-    for(Int_t i(0); i < 6; i++) dPtdPhi[i] = new TH1D(Form("dPtdPhi_%i", i), Form("dPtdPhi_%i", i), 8, 0, TMath::Pi());
+    TH1D* dPtdPhi[8];
+    for(Int_t i(0); i < 8; i++) dPtdPhi[i] = new TH1D(Form("dPtdPhi_%i", i), Form("dPtdPhi_%i", i), 8, 0, TMath::Pi());
 
     for(Int_t i(0); i < 8; i++) {
         // 1) manipulation of input histograms
@@ -2228,8 +3872,8 @@ void AliJetFlowTools::MakeAU() {
             jetFindingEfficiency);
         if(i==5) {
             resizedResponseIn->SetNameTitle(Form("ResponseMatrix_%s", stringArray[i].Data()), Form("response matrix %s", stringArray[i].Data()));
-            resizedResponseIn->SetXTitle("p_{T}^{true} [GeV/c]");
-            resizedResponseIn->SetYTitle("p_{T}^{rec} [GeV/c]");
+            resizedResponseIn->SetXTitle("p_{T, jet}^{true} [GeV/c]");
+            resizedResponseIn->SetYTitle("p_{T, jet}^{rec} [GeV/c]");
             resizedResponseIn = ProtectHeap(resizedResponseIn);
             resizedResponseIn->Write();
             kinematicEfficiencyIn->SetNameTitle(Form("KinematicEfficiency_%s", stringArray[i].Data()), Form("Kinematic efficiency, %s", stringArray[i].Data()));
@@ -2258,9 +3902,9 @@ void AliJetFlowTools::MakeAU() {
         Double_t integralError(0);
         for(Int_t j(0); j < 6; j++) {
             // get the integrated 
-           Double_t integral(dud->IntegralAndError(2*j+1, 2*j+3, integralError));
-           dPtdPhi[j]->SetBinContent(i+1, integral);
-           dPtdPhi[j]->SetBinError(i+1, integralError);
+            Double_t integral(dud->IntegralAndError(2*j+1, 2*j+3, integralError));
+            dPtdPhi[j]->SetBinContent(i+1, integral);
+            dPtdPhi[j]->SetBinError(i+1, integralError);
         }
         dud->Write();
         // save the current state of the unfolding object
@@ -2275,5 +3919,390 @@ void AliJetFlowTools::MakeAU() {
         dPtdPhi[i]->Write();
     }
     v2->Write();
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphErrors* graph) {
+   // replace bins
+   Double_t x(0), y(0);
+   graph->GetPoint(0, x, y);
+   graph->SetPoint(array->At(0)-1, fBinsTrue->At(array->At(0)), y);
+   graph->SetPointError(array->At(0)-1, 10, graph->GetErrorY(0));
+   graph->SetPoint(array->At(1)-1, -5, -5);
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph) {
+   // replace bins
+   Double_t x(0), y(0);
+   graph->GetPoint(0, x, y);
+   graph->SetPoint(array->At(0)-1, fBinsTrue->At(array->At(0)), y);
+   Double_t yl = graph->GetErrorYlow(0);
+   Double_t yh = graph->GetErrorYhigh(0);
+   graph->SetPointError(array->At(0)-1, 10, 10, yl, yh);
+   graph->SetPoint(array->At(1)-1, -5, -5);
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::GetSignificance(
+        TGraphErrors* n,                // points with stat error
+        TGraphAsymmErrors* shape,       // points with shape error
+        TGraphAsymmErrors* corr,        // points with stat error
+        Int_t low,                      // lower bin (tgraph starts at 0)
+        Int_t up                        // upper bin
+        )
+{
+    // calculate some significance levels
+    Double_t statE(0), shapeE(0), corrE(0), statT(0), totalE(0), y(0), x(0), average(0), averageStat(0), chi2(0);
+
+    // print some stuff
+    for(Int_t i(low); i < up+1; i++) { 
+        n->GetPoint(i, x, y);
+        printf(" > v2 \t %.4f \n", y);
+    }
+    for(Int_t i(low); i < up+1; i++) { 
+        statE = n->GetErrorYlow(i);
+        printf(" > stat \t %.4f \n", statE);
+    }
+    for(Int_t i(low); i < up+1; i++) {    
+        shapeE = shape->GetErrorYlow(i);
+        printf(" > shape \t %.4f \n", shapeE);
+    }
+    for(Int_t i(low); i < up+1; i++) {    
+        corrE = corr->GetErrorYlow(i);
+        printf(" > corr \t %.4f \n", corrE);
+    }
+
+    for(Int_t i(low); i < up+1; i++) {
+        // set some flags to 0
+        statE = 0.;
+        shapeE = 0.;
+        corrE = 0.;
+        x = 0.;
+        y = 0.;
+        totalE = 0.;
+        // get the nominal point
+        n->GetPoint(i, x, y);
+        printf(" > v2 \t %.4f \n", y);
+        // get the uncorrelated errors. all errors are 'low' errors as all v2 points are positive in this range
+        statE = n->GetErrorYlow(i);
+        printf(" > stat \t %.4f \n", statE);
+        statT += statE;
+        shapeE = shape->GetErrorYlow(i);
+        printf(" > shape \t %.4f \n", shapeE);
+        // get the correalted error
+        corrE = corr->GetErrorYlow(i);
+        printf(" > corr \t %.4f \n", corrE);
+        // combine the errors
+        totalE = TMath::Sqrt(statE*statE+shapeE*shapeE) + TMath::Sqrt(corrE*corrE);
+        printf(" > Bin %i \t totalE %.4f \t statE %.4f \t v2 %.4f \t nSigma %.4f \t(just stat %.4f) < \n", i, totalE, statE, y, y/totalE, y/statE);
+        average += y/totalE;
+        averageStat += y/statE;
+        chi2 += TMath::Power(y/totalE, 2);
+    }
+    printf(" > Average n-sigmas: %.4f \t (stat only %.4f) <\n", average/(up-low+1), averageStat/(up-low+1));
+    printf(" > Chi2: %.4f <\n", chi2);
+    printf(" > p-value %.4f <\n", 1.-TMath::Gamma((up-low+1)/2., chi2/2.)); 
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::MinimizeChi22d()
+{
+    // Choose method upon creation between:
+    // kMigrad, kSimplex, kCombined, 
+    // kScan, kFumili
+    ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kMigrad );
+    min.SetMaxFunctionCalls(1000000);
+    min.SetMaxIterations(100000);
+    min.SetTolerance(0.001);
+ 
+    ROOT::Math::Functor f(&PhenixChi22d,2); 
+    double step[] = {0.0000001, 0.0000001};
+    double variable[] = {-1., -1.};
+        
+    min.SetFunction(f);
+    // Set the free variables to be minimized!
+    min.SetVariable(0,"epsilon_c",variable[0], step[0]);
+    min.SetVariable(1,"epsilon_b",variable[1], step[1]);
+
+
+    min.Minimize(); 
+    const double *xs = min.X();
+    cout << endl << endl <<  "Minimum: f(" << xs[0] << ", " << xs[1] <<"):"  << PhenixChi22d(xs) << endl;
+    cout << "p-value: p(" << PhenixChi22d(xs) << ", 6) " << TMath::Prob(PhenixChi22d(xs), 4) << endl;
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data is " << TMath::Prob(PhenixChi22d(xs), 4) << endl << endl << endl ; 
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::PhenixChi22d(const Double_t *xx )
+{
+    // define arrays with results and errors
+   
+
+    // very ugly, but two set of data, for 0-5  and 30-50 pct centrality
+    // this function has to be static, so this is the easiest way to implement it in the class ...
+
+    // these points are for 0-5  centrality, 30 - 100 gev (in which data is reported)
+
+ 
+  /* 
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+    };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+*/
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+  
+    // return the function value at certain epsilon
+    const Double_t epsc = xx[0];
+    const Double_t epsb = xx[1];
+    Double_t chi2(0);
+    Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
+
+    // implemtation of eq 3 of arXiv:0801.1665v2
+    // this will be minimized w.r.t. 'x', which is epsilon_B in the paper
+    for(Int_t i(1); i < counts-1; i++) {
+        // quadratic sum of statistical and uncorrelated systematic error
+        Double_t e = stat[i];
+
+        // sum of v2 plus epsilon times correlated error minus hypothesis (0)
+        // also the numerator of equation 3 of phenix paper
+        Double_t numerator = TMath::Power(v2[i]+epsc*corr[i]+epsb*shape[i], 2);
+
+        // denominator of equation 3 of phenix paper
+        Double_t denominator = e*e;//TMath::Power((e*(v2[i]+epsc*corr[i]+epsb*shape[i]))/v2[i], 2);
+
+        // add to the sum
+        chi2 += numerator/denominator;
+    }
+    // add the square of epsilon to the total chi2 as penalty
+    chi2 += epsc*epsc + epsb*epsb;
+
+    return chi2;
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::ConstructFunction2d(Double_t *x, Double_t *par)
+{
+       return AliJetFlowTools::PhenixChi22d(x);
+}
+//_____________________________________________________________________________
+TF2* AliJetFlowTools::ReturnFunction2d()
+{
+      TF2 *f1 = new TF2("2dhist",AliJetFlowTools::ConstructFunction2d, -10, 10, -10, 10, 0);
+      printf(" > locating minima < \n");
+      Double_t chi2(f1->GetMinimum());
+      f1->GetXaxis()->SetTitle("#epsilon{b}");
+      f1->GetXaxis()->SetTitle("#epsilon_{c}");
+      f1->GetZaxis()->SetTitle("#chi^{2}");
+
+      printf(" > minimal chi2 %.8f \n", chi2);
+      cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+      cout << "  observed data is " << TMath::Prob(chi2, 6) << endl; 
+
+      return f1;
+}
+//_____________________________________________________________________________
+void AliJetFlowTools::MinimizeChi2()
+{
+    // Choose method upon creation between:
+    // kMigrad, kSimplex, kCombined, 
+    // kScan, kFumili
+    ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kMigrad );
+    min.SetMaxFunctionCalls(1000000);
+    min.SetMaxIterations(100000);
+    min.SetTolerance(0.001);
+ 
+    ROOT::Math::Functor f(&PhenixChi2,1); 
+    double step[] = {0.0000001};
+    double variable[] = {-1.};
+        
+    min.SetFunction(f);
+    // Set the free variables to be minimized!
+    min.SetVariable(0,"epsilon_c",variable[0], step[0]);
+
+
+    min.Minimize(); 
+    const double *xs = min.X();
+    cout << endl << endl << "Minimum: f(" << xs[0] << "):"  << PhenixChi2(xs) << endl;
+    cout << "p-value: p(" << PhenixChi2(xs) << ", 6) " << TMath::Prob(PhenixChi2(xs), 6) << endl;
+    cout << "  so the probability of finding data at least as imcompatible with 0 as the actually" << endl;
+    cout << "  observed data is " << TMath::Prob(PhenixChi2(xs), 6) << endl << endl << endl;
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::PhenixChi2(const Double_t *xx )
+{
+    // define arrays with results and errors
+   
+
+    // very ugly, but two set of data, for 0-5  and 30-50 pct centrality
+    // this function has to be static, so this is the easiest way to implement it in the class ...
+
+    // these points are for 0-5  centrality, 30 - 100 gev (in which data is reported)
+
+    
+  /* 
+   Double_t v2[] = {
+        0.0094,
+        0.0559,
+        0.0746,
+        0.1077,
+        0.1208,
+        0.0883
+   };
+   Double_t stat[] = {
+        0.0287,
+        0.0311, 
+        0.0443, 
+        0.0600, 
+        0.0802, 
+        0.1223
+   };
+   Double_t shape[] = {
+        0.0607, 
+        0.0623, 
+        0.0397, 
+        0.0312, 
+        0.0452, 
+        0.0716
+   };
+   Double_t corr[] = { 
+        0.0402,
+        0.0460, 
+        0.0412, 
+        0.0411, 
+        0.0403, 
+        0.0402 
+ };
+ */
+    // these points are for 30 - 50 centrality, 20-90 gev (in which data is reported)
+    Double_t v2[] = {
+        0.0816,
+        0.0955, 
+        0.0808, 
+        0.0690, 
+        0.0767, 
+        0.1005 
+    };
+    Double_t stat[] = { 
+        0.0113,
+        0.0172,
+        0.0221, 
+        0.0317, 
+        0.0469, 
+        0.0694 
+    };
+    Double_t shape[] = { 
+        0.1024,
+        0.0552, 
+        0.0275, 
+        0.0231, 
+        0.0234, 
+        0.0665
+    };
+    Double_t corr[] = { 
+        0.0165,
+        0.0164, 
+        0.0165, 
+        0.0166, 
+        0.0166, 
+        0.0165
+    };
+  
+    // return the function value at certain epsilon
+    const Double_t epsc = xx[0];
+    Double_t chi2(0);
+    Int_t counts = (Int_t)(sizeof(v2)/sizeof(v2[0]));
+
+    // implemtation of eq 3 of arXiv:0801.1665v2
+    // this will be minimized w.r.t. 'x', which is epsilon_B in the paper
+    for(Int_t i(0); i < counts; i++) {
+        // quadratic sum of statistical and uncorrelated systematic error
+        Double_t e = TMath::Sqrt(stat[i]*stat[i]+shape[i]*shape[i]);
+
+        // sum of v2 plus epsilon times correlated error minus hypothesis (0)
+        // also the numerator of equation 3 of phenix paper
+        Double_t numerator = TMath::Power(v2[i]+epsc*corr[i], 2);
+
+        // denominator of equation 3 of phenix paper
+        Double_t denominator = e*e;//TMath::Power((e*(v2[i]+epsc*corr[i]))/v2[i], 2);
+
+        // add to the sum
+        chi2 += numerator/denominator;
+    }
+    // add the square of epsilon to the total chi2 as penalty
+    chi2 += epsc*epsc;
+
+    return chi2;
+}
+//_____________________________________________________________________________
+Double_t AliJetFlowTools::ConstructFunction(Double_t *x, Double_t *par)
+{
+       return AliJetFlowTools::PhenixChi2(x);
+}
+//_____________________________________________________________________________
+TF1* AliJetFlowTools::ReturnFunction()
+{
+      TF1 *f1 = new TF1("1dmyfunc",AliJetFlowTools::ConstructFunction, -10, 10, 0);
+      printf(" > locating minima < \n");
+      Double_t chi2(f1->GetMinimum());
+      f1->GetXaxis()->SetTitle("#epsilon_{c}");
+      f1->GetYaxis()->SetTitle("#chi^{2}");
+      return f1;
 }
 //_____________________________________________________________________________

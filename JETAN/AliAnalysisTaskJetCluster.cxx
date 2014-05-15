@@ -106,6 +106,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fEventSelection(kFALSE),     
   fRequireVZEROAC(kFALSE),     
   fRequireTZEROvtx(kFALSE),
+  fUseHFcuts(kFALSE),
   fFilterMask(0),
   fFilterMaskBestPt(0),
   fFilterType(0),
@@ -275,6 +276,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fEventSelection(kFALSE),
   fRequireVZEROAC(kFALSE),     
   fRequireTZEROvtx(kFALSE), 
+  fUseHFcuts(kFALSE),
   fFilterMask(0),
   fFilterMaskBestPt(0),
   fFilterType(0),
@@ -1889,6 +1891,20 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	  if(fDebug>10)Printf("%s:%d Not matching filter %d/%d %d/%d",(char*)__FILE__,__LINE__,it,aod->GetNumberOfTracks(),fFilterMask,tr->GetFilterMap());	
 	  continue;
 	}
+
+	// heavy flavor jets
+	if(fFilterMask==528 && fUseHFcuts){
+          Double_t ntpcClus = tr->GetTPCNcls();
+          Double_t trPt=tr->Pt();
+	  TFormula NTPCClsCut("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+	
+	  if (trPt <= 20. && (ntpcClus < NTPCClsCut.Eval(trPt))) continue;
+	  else if (trPt > 20. && ntpcClus < 100) continue;
+
+	  if (AvoidDoubleCountingHF(aod,tr)) continue;
+	}
+	//
+
         if(fRequireITSRefit){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
         if (fApplySharedClusterCut) {
            Double_t frac = Double_t(tr->GetTPCnclsS()) /Double_t(tr->GetTPCncls());
@@ -1929,6 +1945,12 @@ Int_t  AliAnalysisTaskJetCluster::GetListOfTracks(TList *list,Int_t type){
 	else if(fFilterType == 2)bGood = trackAOD->IsHybridGlobalConstrainedGlobal();
 	if((fFilterMask>0)&&((!trackAOD->TestFilterBit(fFilterMask)||(!bGood))))continue;
         if(fRequireITSRefit){if((trackAOD->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+         if (fApplySharedClusterCut) {
+           Double_t frac = Double_t(trackAOD->GetTPCnclsS()) /Double_t(trackAOD->GetTPCncls());
+           if (frac > 0.4) continue;
+	 }
+
+
 	if(TMath::Abs(trackAOD->Eta())>fTrackEtaWindow) continue;
 	if(trackAOD->Pt()<fTrackPtCut) continue;
 	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
@@ -2086,7 +2108,23 @@ return count;
 }
 
 
+Bool_t AliAnalysisTaskJetCluster::AvoidDoubleCountingHF(AliAODEvent *aod, AliAODTrack *tr1){
+  
+  if(!(tr1->TestFilterBit(BIT(9)))) return kFALSE;
 
+  Int_t idtr1 = tr1->GetID();
+
+  for(int jt = 0;jt < aod->GetNumberOfTracks();++jt){
+
+    const AliAODTrack *tr2 = aod->GetTrack(jt);
+    Int_t idtr2 = tr2->GetID();
+	
+    if (!(tr2->TestFilterBit(BIT(4)))) continue;
+    if (idtr1==(idtr2+1)*-1.) return kTRUE;
+  	
+  }
+  return kFALSE;
+}
 void AliAnalysisTaskJetCluster::LoadTrPtResolutionRootFileFromOADB() {
 
    if (!gGrid) {

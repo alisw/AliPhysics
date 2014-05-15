@@ -3,11 +3,12 @@
 #include "TRandom.h"
 #include "AliGenerator.h"
 #include "AliGenParam.h"
+#include "VAR_GENPARAM_INCLUDE"
 #endif
 
 AliGenerator* GenParam()
 {
-  AliGenMC* generator = new AliGenParam(1, VAR_GENPARAM_GENLIB_TYPE,VAR_GENPARAM_GENLIB_PARNAME);
+  AliGenMC* generator = new AliGenParam(VAR_GENPARAM_NPART, VAR_GENPARAM_GENLIB_TYPE,VAR_GENPARAM_GENLIB_PARNAME);
 
   generator->SetMomentumRange(0,999);
   generator->SetPtRange(0,50.);

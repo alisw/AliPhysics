@@ -30,6 +30,9 @@ set ( SRCS
     Correlations/Base/AliUEHistograms.cxx
     Correlations/Base/AliUEHist.cxx
     Correlations/Base/AliAnalyseLeadingTrackUE.cxx
+    Correlations/Base/AliCFParticle.cxx
+    Correlations/Base/AliAnalysisTaskCFTree.cxx
+    Correlations/Base/AliTwoPlusOneContainer.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

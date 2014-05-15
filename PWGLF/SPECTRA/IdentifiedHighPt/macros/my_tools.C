@@ -11,84 +11,13 @@
 using namespace std;
 
 
-class DeDxFitInfo : public TObject
-{
- public:
-  
-  DeDxFitInfo();
-  void Print(Option_t* option="") const;
-
-  Double_t MIP;
-  Double_t plateau;
-
-  Int_t optionDeDx;
-  Int_t nDeDxPar;
-  Double_t parDeDx[5];
-
-  Int_t optionSigma;
-  Int_t nSigmaPar;
-  Double_t parSigma[5];
-
-  TString calibFileName;
-
-  ClassDef(DeDxFitInfo, 1);    // Help class
-};
-
-
-//_____________________________________________________________________________
-ClassImp(DeDxFitInfo)
-
-DeDxFitInfo::DeDxFitInfo():
-TObject(),
-  MIP(0),
-  plateau(0),
-  optionDeDx(-1),
-  nDeDxPar(-1),
-  optionSigma(-1),
-  nSigmaPar(-1),
-  calibFileName("")
-{
-  // default constructor
-  for(Int_t i = 0; i < 5; i++) {
-    parDeDx[i]  = 0;
-    parSigma[i] = 0;
-  }
-}
-
-//_________________________________________________________
-void DeDxFitInfo::Print(Option_t* option) const
-{
-  if(option) 
-    cout << "Option: " << option << endl;
-
-  cout << ClassName() << " : " << GetName() << endl  
-       << "MIP: " << MIP << endl
-       << "Plateau: " << plateau << endl
-       << "OptionDeDx: " << optionDeDx << endl
-       << "nDeDxPar: " << nDeDxPar << endl;
-  for(Int_t i = 0; i < nDeDxPar; i++) {
-    
-    cout << "parDeDx[" << i << "] = " << parDeDx[i] << endl;
-  }
-  cout << "OptionSigma: " << optionSigma << endl
-       << "nSigmaPar: " << nSigmaPar << endl;
-  for(Int_t i = 0; i < nSigmaPar; i++) {
-    
-    cout << "parSigma[" << i << "] = " << parSigma[i] << endl;
-  }
-  
-  if(calibFileName.IsNull()) {
-    cout << "No eta calibration file." << endl; 
-  } else {
-    cout << "Eta calibration file: " << calibFileName.Data() << endl; 
-  }
-}
 
 //_____________________________________________________________________________
 
 
 AliHighPtDeDxBase* GetObject(TFile* file, Int_t filter, Bool_t phiCut, 
-			     Int_t run, const Char_t* baseName="filter",
+			     Int_t run, Bool_t etaAbs, 
+			     Int_t etaLow, Int_t etaHigh, const Char_t* baseName="filter",
 			     const Char_t* endName=0);
 
 TFile* FindFileFresh(const Char_t* fileName);
@@ -98,7 +27,8 @@ void SetHistError(TH1* hist, Double_t error);
 void CreateDir(const Char_t* dirName);
 
 //___________________________________________________________________________
-AliHighPtDeDxBase* GetObject(TFile* file, Int_t filter, Bool_t phiCut, Int_t run,
+AliHighPtDeDxBase* GetObject(TFile* file, Int_t filter, Bool_t phiCut, Int_t run, Bool_t etaAbs, 
+			     Int_t etaLow, Int_t etaHigh,
 			     const Char_t* baseName, const Char_t* endName)
 {
   TString objectName(baseName);
@@ -110,6 +40,12 @@ AliHighPtDeDxBase* GetObject(TFile* file, Int_t filter, Bool_t phiCut, Int_t run
     objectName += "_";
     objectName += run;
   }
+  if(etaAbs) {
+    objectName += "etaabs";
+    objectName += etaLow;
+    objectName += etaHigh;
+  }
+
   if(endName)
     objectName += endName;
 

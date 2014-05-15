@@ -1,7 +1,7 @@
 AliAnalysisTaskSEPHOSpPbPi0* AddTaskPHOSpPbPi0(UInt_t triggerTag = 0, Bool_t isMCtruth=kFALSE)
 {
 // Creates a task to analysis pi0 in p-Pb collisions with PHOS
-// Author: H. Zhu - 05/28/2013
+// Author: H. Zhu - 01/23/2014
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {

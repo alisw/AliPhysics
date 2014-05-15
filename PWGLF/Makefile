@@ -1,62 +1,110 @@
-# $Id: Makefile 50266 2011-06-24 09:37:46Z pulvir $
+PACKAGE = PWGLFresonances
 
-include $(ROOTSYS)/etc/Makefile.arch
+include Makefile.arch
 
-PACKAGE = PWGLFresonancesdev
+SRCS = 
+HDRS = 
+DHDR = 
 
-default-target: lib$(PACKAGE).so 
-
-ALICEINC      = -I.
-
-ifeq ($(PACKAGE),PWGLFresonances)
-  ALICEINC      += -IRESONANCES
+ifndef PACKCXXFLAGS
+   PACKCXXFLAGS = $(CXXFLAGS)
 endif
 
-ifeq ($(PACKAGE),PWGLFresonancesdev)
-  ALICEINC      += -IRESONANCES_DEV
-endif
+ALIARCH := $(shell $(RC) --arch)
+PARPATH := $(shell pwd)
 
-ifeq ($(PACKAGE),PWGLFforward2)
-  ALICEINC      += -IFORWARD/analysis2
-endif
-ifeq ($(PACKAGE),PWGLFforwardhit)
-  ALICEINC      += -IFORWARD/analysis2
-endif
+ALICEINC = -I.
+ALICEINC += -I$(PACKAGE) -I$(PACKAGE)/RESONANCES
 
-### define include dir for local case and par case
+# ALIPARLIBS = -L$(ROOTLIBDIR) -lMinuit -lTree -lXMLParser -lVMC -lMinuit -lEG -lGeom
+ALIPARLIBS = 
+# ALICELIBS += -L$(ALICE_ROOT)/lib/tgt_$(shell $(RC) --arch) 
+
 ifneq ($(STEERBase_INCLUDE),)
    ALICEINC += -I../$(STEERBase_INCLUDE)
-   ALICEINC += -I../$(ESD_INCLUDE)
-   ALICEINC += -I../$(AOD_INCLUDE)
-   ALICEINC += -I../$(ANALYSIS_INCLUDE)
-   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+   ALIPARLIBS += $(STEERBase_LIBS)
 else
-   ifneq ($(ALICE_ROOT),)
-      ALICEINC += -I$(ALICE_ROOT)/include
+   ifneq ($(PACKAGE),STEERBase)
+     ALICELIBS += -lSTEERBase
+   else
+     ALIPARLIBS += -L$(PARPATH) -lSTEERBase
+   endif
+endif
+
+ifneq ($(ESD_INCLUDE),)
+   ALICEINC += -I../$(ESD_INCLUDE)
+   ALIPARLIBS += $(ESD_LIBS)
+else
+   ifneq ($(PACKAGE),ESD)
+     ALICELIBS += -lESD
+   else
+     ALIPARLIBS += -L$(PARPATH) -lESD
+   endif
+endif
+
+ifneq ($(AOD_INCLUDE),)
+   ALICEINC += -I../$(AOD_INCLUDE)
+   ALIPARLIBS += $(AOD_LIBS)
+else
+   ifneq ($(PACKAGE),AOD)
+     ALICELIBS += -lAOD
+   else
+     ALIPARLIBS += -L$(PARPATH) -lAOD
+   endif
+endif
+
+ifneq ($(ANALYSIS_INCLUDE),)
+   ALICEINC += -I../$(ANALYSIS_INCLUDE)
+   ALIPARLIBS += $(ANALYSIS_LIBS)
+else
+   ifneq ($(PACKAGE),ANALYSIS)
+     ALICELIBS += -lANALYSIS
+   else
+     ALIPARLIBS += -L$(PARPATH) -lANALYSIS
+   endif
+endif
+
+ifneq ($(ANALYSISalice_INCLUDE),)
+   ALICEINC += -I../$(ANALYSISalice_INCLUDE)
+   ALIPARLIBS += $(ANALYSISalice_LIBS)
+else
+   ifneq ($(PACKAGE),ANALYSISalice)
+     ALICELIBS += -lANALYSISalice
+   else
+     ALIPARLIBS += -L$(PARPATH) -lANALYSISalice
+   endif
+endif
+
+ifneq ($(EventMixing_INCLUDE),)
+   ALICEINC += -I../$(EventMixng_INCLUDE)
+   ALIPARLIBS += $(EventMixing_LIBS)
+else
+   ifneq ($(PACKAGE),EventMixing)
+     ALICELIBS += -lEventMixing
+   else
+     ALIPARLIBS += -L$(PARPATH) -lEventMixing
    endif
 endif
 
 ifneq ($(CORRFW_INCLUDE),)
    ALICEINC += -I../$(CORRFW_INCLUDE)
-endif
-
-ifneq ($(OADB_INCLUDE),)
-   ALICEINC += -I../$(OADB_INCLUDE)
+   ALIPARLIBS += $(CORRFW_LIBS)
+else
+   ifneq ($(PACKAGE),CORRFW)
+     ALICELIBS += -lCORRFW
+   else
+     ALIPARLIBS += -L$(PARPATH) -lCORRFW
+   endif
 endif
 
 ifneq ($(PWGLFresonances_INCLUDE),)
    ALICEINC += -I../$(PWGLFresonances_INCLUDE)
+   ALIPARLIBS += $(PWGLFresonances_LIBS)
 else
-   ifneq ($(ALICE_ROOT),)
-      ALICEINC += -I$(ALICE_ROOT)/PWGLF -I$(ALICE_ROOT)/PWGLF/RESONANCES
-   endif
-endif
-
-ifneq ($(PWGLFresonancesdev_INCLUDE),)
-   ALICEINC += -I../$(PWGLFresonancesdev_INCLUDE)
-else
-   ifneq ($(ALICE_ROOT),)
-      ALICEINC += -I$(ALICE_ROOT)/PWGLF -I$(ALICE_ROOT)/PWGLF/RESONANCES_DEV
+   ifneq ($(PACKAGE),PWGLFresonances)
+     ALICELIBS += -lPWGLFresonances
+   else     
+     ALIPARLIBS += -L$(PARPATH) -lPWGLFresonances
    endif
 endif
 
@@ -64,106 +112,42 @@ endif
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
     ALICEINC += -I$(ALICE_ROOT)/include
+    ALIPARLIBS += -L$(ALICE_ROOT)/lib/tgt_$(ALIARCH) $(ALICELIBS)
   endif
 endif
 
-EINCLUDE := 
-ifneq ($(ALICE_ROOT),)
-  ALICEINC += $(EINCLUDE:%=-I$(ALICE_ROOT)/%)
-endif
+ALICEINC += -I$(ALICE_ROOT)/include
+ALIPARLIBS += -L$(ALICE_ROOT)/lib/tgt_$(ALIARCH) $(ALICELIBS)
 
-CXXFLAGS     += $(ALICEINC) -g
-F77FLAGS     += $(ALICEINC) -g -fPIC
+# ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+# ALIROOTLIBDIR  := $(ALICE_ROOT)/lib/tgt_$(shell $(RC) --arch)
 
-DHDR = 
-HDRS = 
-SRCS = 
-FSRCS = 
+PACKLDFLAGS := $(ALIPARLIBS) -L$(ROOTLIBDIR) -lMinuit -lTree -lXMLParser -lVMC -lMinuit -lEG -lGeom
 
-DHDR_PWG2 := $(DHDR)
-HDRS_PWG2 := $(HDRS)
-SRCS_PWG2 := $(SRCS) G__$(PACKAGE).cxx
-FSCRS_PWG2 := $(FSRCS)
-OBJS_PWG2 := $(SRCS_PWG2:.cxx=.o) $(FSRCS:.F=.o)
+CXXFLAGS += $(ALICEINC) -g
 
-PARFILE       = $(PACKAGE).par
+SRCS         += G__$(PACKAGE).cxx
+OBJS          = $(SRCS:.cxx=.o)
 
-lib$(PACKAGE).so: $(OBJS_PWG2)
+lib$(PACKAGE).so: $(OBJS)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
 ifeq ($(PLATFORM),macosx)
-# We need to make both the .dylib and the .so
-		$(LD) $(SOFLAGS)$@ $(LDFLAGS) $^ $(OutPutOpt) $@
-ifneq ($(subst $(MACOSX_MINOR),,1234),1234)
-ifeq ($(MACOSX_MINOR),4)
-		ln -sf $@ $(subst .$(DllSuf),.so,$@)
+	$(LD) $(SOFLAGS) -flat_namespace -undefined suppress $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
 else
-		$(LD) -bundle -undefined $(UNDEFOPT) $(LDFLAGS) $^ \
-		   $(OutPutOpt) $(subst .$(DllSuf),.so,$@)
-endif
-endif
-else
-ifeq ($(PLATFORM),win32)
-		bindexplib $* $^ > $*.def
-		lib -nologo -MACHINE:IX86 $^ -def:$*.def \
-		   $(OutPutOpt)$(EVENTLIB)
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $*.exp $(LIBS) \
-		   $(OutPutOpt)$@
-else
-		$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
-endif
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
 endif
 	@chmod a+x $@
 	@echo "done"
 
 %.o:    %.cxx %.h
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-%.o:    %.F
-	$(F77) $(F77FLAGS) -c $< -o $@
-
-G__$(PACKAGE).h:G__$(PACKAGE).cxx
-	@if test -f $@ ; then : ; else rm -f $< ; $(MAKE) $@ ; fi
-
-G__$(PACKAGE).cxx: $(HDRS_PWG2) $(DHDR_PWG2)
-	@echo "Generating dictionary ..."
-	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
+	$(CXX) $(PACKCXXFLAGS) -c $< -o $@
 
 clean:
-	@rm -f $(OBJS_PWG2) *.so G__$(PACKAGE).* $(PARFILE)
+	@rm -f $(OBJS) *.so G__$(PACKAGE).*
 
-### CREATE PAR FILE
+G__$(PACKAGE).cxx G__$(PACKAGE).h: $(HDRS) $(DHDR)
+	@echo "Generating dictionaries ..." $(ALICEINC)
+	rootcint -f $@ -c $(CINTFLAGS) $(ALICEINC) $^
 
-$(PARFILE): $(patsubst %,$(PACKAGE)/%,$(filter-out G__%, $(HDRS_PWG2) $(SRCS_PWG2) $(DHDR_PWG2) Makefile Makefile.arch PROOF-INF))
-	@echo "Creating archive" $@ ...
-	@tar cfzh $@ $(PACKAGE)
-	@rm -rf $(PACKAGE)
-	@echo "done"
-
-$(PACKAGE)/Makefile: Makefile #.$(PACKAGE)
-	@echo Copying $< to $@ with transformations
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@sed 's/include \$$(ROOTSYS)\/test\/Makefile.arch/include Makefile.arch/' < $^ > $@
-
-ROOT_MAKEFILE := $(shell root-config --etcdir)/Makefile.arch
-$(PACKAGE)/Makefile.arch: $(ROOT_MAKEFILE)
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $^ $@
-
-$(PACKAGE)/PROOF-INF: PROOF-INF.$(PACKAGE)
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a -r $^ $@
-
-$(PACKAGE)/%: %
-	@echo Copying $< to $@
-	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	@cp -a $< $@
-
-test-%.par: %.par
-	@echo "INFO: The file $< is now tested, in case of an error check in par-tmp."
-	@mkdir -p par-tmp
-	@cd par-tmp; tar xfz ../$<;	cd $(subst .par,,$<); PROOF-INF/BUILD.sh
-	@rm -rf par-tmp
-	@echo "INFO: Testing succeeded (already cleaned up)"

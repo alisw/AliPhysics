@@ -104,15 +104,105 @@ void AddTask_GammaConvV1_pp(  Int_t trainConfig = 1,  //change different set of 
       cutarray[ 0] = "0000011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , only Minbias MC
       cutarray[ 1] = "0001011002093663003800000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD, V0AND
       cutarray[ 2] = "0000011002093260003800000000"; mesonCutArray[2] = "01631031009000"; //standard cut Gamma pp 2-76TeV
-      cutarray[ 3] = "0000011002093260003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV , only boxes
+      cutarray[ 3] = "0000011002093260003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Gamma pp 2-76TeV
    } else if (trainConfig == 3) {
       cutarray[ 0] = "0002011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Minbias MC
       cutarray[ 1] = "0003011002093663003800000000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND , only Minbias MC
       cutarray[ 2] = "0002012002093663003800000000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , only Boxes MC
       cutarray[ 3] = "0003012002093663003800000000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD, V0AND, only Boxes MC
-   } else {
-      Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
-      return;
+   } else if (trainConfig == 4) {
+      cutarray[ 0] = "0000011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities
+      cutarray[ 1] = "0000011002093663003800020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1
+      cutarray[ 2] = "0000011002093663003800030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2
+      cutarray[ 3] = "0000011002093663003800040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3
+   } else if (trainConfig == 5) {
+      cutarray[ 0] = "0000011007093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , all photon qualities, min R = 35 cm
+      cutarray[ 1] = "0000011007093663003800020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 1, min R = 35 cm
+      cutarray[ 2] = "0000011007093663003800030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 2, min R = 35 cm
+	  cutarray[ 3] = "0000011007093663003800040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV without SDD , photon quality 3, min R = 35 cm
+   } else if (trainConfig == 6) {
+      cutarray[ 0] = "0000011002083663003200000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities
+      cutarray[ 1] = "0000011002083663003200020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1
+      cutarray[ 2] = "0000011002083663003200030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2
+	  cutarray[ 3] = "0000011002083663003200040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3   
+   } else if (trainConfig == 7) {
+      cutarray[ 0] = "0000011007083663003200000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, all photon qualities, min R = 35 cm
+      cutarray[ 1] = "0000011007083663003200020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 1, min R = 35 cm
+      cutarray[ 2] = "0000011007083663003200030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 2, min R = 35 cm
+	  cutarray[ 3] = "0000011007083663003200040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 7TeV, with qt cut 0.05, photon quality 3, min R = 35 cm
+   } else if (trainConfig == 8) {
+      cutarray[ 0] = "0000011002083663000200000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 7TeV, all photon qualities
+      cutarray[ 1] = "0000011002083663000200020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 1
+      cutarray[ 2] = "0000011002083663000200030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 2
+	  cutarray[ 3] = "0000011002083663000200040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 3   
+   } else if (trainConfig == 9) {
+      cutarray[ 0] = "0000011007083663000200000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 7TeV, all photon qualities, min R = 35 cm
+      cutarray[ 1] = "0000011007083663000200020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 1, min R = 35 cm
+      cutarray[ 2] = "0000011007083663000200030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 2, min R = 35 cm
+	  cutarray[ 3] = "0000011007083663000200040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 7TeV, photon quality 3, min R = 35 cm	   
+   } else if (trainConfig == 10) {
+      cutarray[ 0] = "0002011002093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities
+      cutarray[ 1] = "0002011002093663003800020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1
+      cutarray[ 2] = "0002011002093663003800030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2
+      cutarray[ 3] = "0002011002093663003800040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3
+   } else if (trainConfig == 11) {
+      cutarray[ 0] = "0002011007093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
+      cutarray[ 1] = "0002011007093663003800020000"; mesonCutArray[1] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 1, min R = 35 cm
+      cutarray[ 2] = "0002011007093663003800030000"; mesonCutArray[2] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 2, min R = 35 cm
+      cutarray[ 3] = "0002011007093663003800040000"; mesonCutArray[3] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , photon quality 3, min R = 35 cm
+   } else if (trainConfig == 12) {
+      cutarray[ 0] = "0000011002092970028250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
+      cutarray[ 1] = "0000011032092970028250400000"; mesonCutArray[1] = "01525065000000"; //variation eta 0.65
+      cutarray[ 2] = "0000011042092970028250400000"; mesonCutArray[2] = "01525065000000"; //variation eta 0.75
+      cutarray[ 3] = "0000011002092950028250400000"; mesonCutArray[3] = "01525065000000"; //variation pion p dEdx 0.3-5.
+   } else if (trainConfig == 13) { //added signals
+      cutarray[ 0] = "0000012002092970028250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
+      cutarray[ 1] = "0000012032092970028250400000"; mesonCutArray[1] = "01525065000000"; //variation eta 0.65
+      cutarray[ 2] = "0000012042092970028250400000"; mesonCutArray[2] = "01525065000000"; //variation eta 0.75
+      cutarray[ 3] = "0000012002092950028250400000"; mesonCutArray[3] = "01525065000000"; //variation pion p dEdx 0.3-5.
+	} else if (trainConfig == 14) {
+      cutarray[ 0] = "0000011002492970028250400000"; mesonCutArray[0] = "01525065000000"; //variation pt 0.075 
+      cutarray[ 1] = "0000011002192970028250400000"; mesonCutArray[1] = "01525065000000"; //variation pt 0.1
+      cutarray[ 2] = "0000011002062970028250400000"; mesonCutArray[2] = "01525065000000"; //variation TPC cls 0.7
+      cutarray[ 3] = "0000011002082970028250400000"; mesonCutArray[3] = "01525065000000"; //variation TPC cls 0.35 
+	} else if (trainConfig == 15) { //added signals
+      cutarray[ 0] = "0000012002492970028250400000"; mesonCutArray[0] = "01525065000000"; //variation pt 0.075 
+      cutarray[ 1] = "0000012002192970028250400000"; mesonCutArray[1] = "01525065000000"; //variation pt 0.1
+      cutarray[ 2] = "0000012002062970028250400000"; mesonCutArray[2] = "01525065000000"; //variation TPC cls 0.7
+      cutarray[ 3] = "0000012002082970028250400000"; mesonCutArray[3] = "01525065000000"; //variation TPC cls 0.35 
+	} else if (trainConfig == 16) {
+      cutarray[ 0] = "0000011002093970028250400000"; mesonCutArray[0] = "01525065000000"; //variation edEdx -4,5
+      cutarray[ 1] = "0000011002096970028250400000"; mesonCutArray[1] = "01525065000000"; //variation edEdx -2.5,4
+      cutarray[ 2] = "0000011002092970038250400000"; mesonCutArray[2] = "01525065000000"; //variation TOF el. PID -3,5
+      cutarray[ 3] = "0000011002092970048250400000"; mesonCutArray[3] = "01525065000000"; //variation TOF el. PID -2,3
+	} else if (trainConfig == 17) { //added signals
+      cutarray[ 0] = "0000012002093970028250400000"; mesonCutArray[0] = "01525065000000"; //variation edEdx -4,5
+      cutarray[ 1] = "0000012002096970028250400000"; mesonCutArray[1] = "01525065000000"; //variation edEdx -2.5,4
+      cutarray[ 2] = "0000012002092970038250400000"; mesonCutArray[2] = "01525065000000"; //variation TOF el. PID -3,5
+      cutarray[ 3] = "0000012002092970048250400000"; mesonCutArray[3] = "01525065000000"; //variation TOF el. PID -2,3
+	} else if (trainConfig == 18) {
+      cutarray[ 0] = "0000011002092970029250400000"; mesonCutArray[0] = "01525065000000"; //variation qt 0.03
+      cutarray[ 1] = "0000011002092970022250400000"; mesonCutArray[1] = "01525065000000"; //variation qt 0.07 no2D
+      cutarray[ 2] = "0000011002092970028150400000"; mesonCutArray[2] = "01525065000000"; //variation chi2 50.
+      cutarray[ 3] = "0000011002092970028850400000"; mesonCutArray[3] = "01525065000000"; //variation chi2 20.
+	} else if (trainConfig == 19) { //added signals
+      cutarray[ 0] = "0000012002092970029250400000"; mesonCutArray[0] = "01525065000000"; //variation qt 0.03
+      cutarray[ 1] = "0000012002092970022250400000"; mesonCutArray[1] = "01525065000000"; //variation qt 0.07 no2D
+      cutarray[ 2] = "0000012002092970028150400000"; mesonCutArray[2] = "01525065000000"; //variation chi2 50.
+      cutarray[ 3] = "0000012002092970028850400000"; mesonCutArray[3] = "01525065000000"; //variation chi2 20.
+	} else if (trainConfig == 20) {
+      cutarray[ 0] = "0000011002092970028260400000"; mesonCutArray[0] = "01525065000000"; //variation psi pair 0.05
+      cutarray[ 1] = "0000011002092970028280400000"; mesonCutArray[1] = "01525065000000"; //variation psi pair 0.2
+      cutarray[ 2] = "0000011002092970028250000000"; mesonCutArray[2] = "01525065000000"; //variation cosPA -1
+      cutarray[ 3] = "0000011002092970028250400000"; mesonCutArray[3] = "01525055000000"; //variation alpha 0.75
+	} else if (trainConfig == 21) { //added signals
+      cutarray[ 0] = "0000012002092970028260400000"; mesonCutArray[0] = "01525065000000"; //variation psi pair 0.05
+      cutarray[ 1] = "0000012002092970028280400000"; mesonCutArray[1] = "01525065000000"; //variation psi pair 0.2
+      cutarray[ 2] = "0000012002092970028250000000"; mesonCutArray[2] = "01525065000000"; //variation cosPA -1
+      cutarray[ 3] = "0000012002092970028250400000"; mesonCutArray[3] = "01525055000000"; //variation alpha 0.75
+	} else {
+		Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+		return;
    }
 
    TList *ConvCutList = new TList();

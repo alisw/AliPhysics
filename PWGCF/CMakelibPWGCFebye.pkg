@@ -39,6 +39,7 @@ set ( SRCS
     EBYE/BalanceFunctions/AliBalancePsi.cxx 
     EBYE/BalanceFunctions/AliBalanceEventMixing.cxx 
     EBYE/BalanceFunctions/AliBalanceTriggered.cxx 
+    EBYE/BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx 
     EBYE/LRC/AliLRCBase.cxx
     EBYE/LRC/AliAnalysisTaskLRC.cxx 
     EBYE/LRC/AliLRCAnalysis.cxx 
@@ -53,6 +54,7 @@ set ( SRCS
     EBYE/Fluctuations/AliEbyEHigherMomentsEffContTask.cxx    
     EBYE/Fluctuations/AliHigherMomentsToyModel.cxx    
     EBYE/Fluctuations/AliEbyEMultFluctuationTask.cxx
+    EBYE/Fluctuations/AliEbyEHigherMomentsTaskPID.cxx
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx 
     EBYE/MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
     EBYE/PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx	 

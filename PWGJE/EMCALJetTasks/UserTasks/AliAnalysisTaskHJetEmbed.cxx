@@ -610,7 +610,7 @@ void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const In
 
   AliVParticle *tt = (AliVParticle*) tracks->At(leadingIndex);
   Double_t triggerPt = tt->Pt();
-  Double_t fill1[] = {triggerPt, fCentrality, fPtHardBin };
+  Double_t fill1[] = {triggerPt, fCentrality, static_cast<Double_t>(fPtHardBin) };
   hTT->Fill(fill1);
   AliDebug(2,Form("Found a trigger with pt = %2.2f",triggerPt));
 
@@ -626,7 +626,7 @@ void  AliAnalysisTaskHJetEmbed::FillHJetCor(const TClonesArray *tracks, const In
       Double_t jetPt  = jet->Pt();
       Double_t jetArea = jet->Area();
       Double_t dPhi = CalculateDPhi(triggerPhi,jetPhi);
-      Double_t fill[] = {triggerPt,jetPt-jetArea*fRhoValue,dPhi,jetArea,fCentrality,fPtHardBin};
+      Double_t fill[] = {triggerPt,jetPt-jetArea*fRhoValue,dPhi,jetArea,fCentrality,static_cast<Double_t>(fPtHardBin)};
       if(!isBkg) fill[1] = jetPt; 
       AliDebug(10,"Fill the histograms");
       hn->Fill(fill);
@@ -662,7 +662,7 @@ void AliAnalysisTaskHJetEmbed::RunMatch(const TClonesArray *tracks, const Int_t 
 	  AliEmcalJet* jetMthEn = dynamic_cast<AliEmcalJet*>(fJetArray->At(mthJetIndexEn));
 	  if(jetMthEn)
 	    {
-	      Double_t fill[] = {tt->Pt(),jetPt,CalculateDPhi(tt->Phi(),jet->Phi()),CalculateDPhi(jetMthEn->Phi(),jet->Phi()),dR,fCentrality,fPtHardBin};
+	      Double_t fill[] = {tt->Pt(),jetPt,CalculateDPhi(tt->Phi(),jet->Phi()),CalculateDPhi(jetMthEn->Phi(),jet->Phi()),dR,fCentrality,static_cast<Double_t>(fPtHardBin)};
 	      fhJetPhiEnMatch[fTriggerType]->Fill(fill);
 	    }
 	}
@@ -791,7 +791,7 @@ void AliAnalysisTaskHJetEmbed::RunQA()
 	  if(!jet) continue;
 	  if(!IsGoodJet(jet)) continue; // eta cut
 	  Double_t jetPt = jet->Pt();
-	  Double_t fill[] = {jetPt, fCentrality, fPtHardBin};
+	  Double_t fill[] = {jetPt, fCentrality, static_cast<Double_t>(fPtHardBin)};
 	  fhPLJetPtVsCent[fTriggerType]->Fill(fill);
 	  AliDebug(5, Form("PL jet %d has (pt,eta,phi) = (%2.2f,%2.2f,%2.2f)",ij,jetPt,jet->Eta(),jet->Phi()));
 	}
@@ -810,7 +810,7 @@ void AliAnalysisTaskHJetEmbed::RunQA()
 	  if(!jet) continue;
 	  if(!IsGoodJet(jet)) continue; // eta cut
 	  Double_t jetPt = jet->Pt();
-	  Double_t fill[] = {jetPt, fCentrality, fPtHardBin};
+	  Double_t fill[] = {jetPt, fCentrality, static_cast<Double_t>(fPtHardBin)};
 	  fhDLJetPtVsCent[fTriggerType]->Fill(fill);
 	  AliDebug(5, Form("DL jet %d has pt = %2.2f",ij,jetPt));
 	}

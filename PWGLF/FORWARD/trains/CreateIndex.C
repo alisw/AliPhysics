@@ -15,7 +15,10 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   if      (tree.EqualTo("esdTree", TString::kIgnoreCase)) pat="AliESDs*";
   else if (tree.EqualTo("aodTree", TString::kIgnoreCase)) pat="AliAOD*";
   else    Warning("", "Unknown tree: %s, pattern set to *.root", tree.Data());
-  if (mc) pat.Prepend("root_archive.zip@");
+  if (mc) {
+    pat.Prepend("root_archive.zip@");
+    pat.ReplaceAll("*", ".root");
+  }
 
 
   TString opts;
@@ -25,16 +28,18 @@ CreateIndex(const TString& dir, const TString& tree="esdTree")
   opts.Append("&recursive");
   if (mc) opts.Append("&mc");
 
+  TString realDir(gSystem->ExpandPathName(dir.Data()));
+
   TUrl url;
   url.SetProtocol("local");
   url.SetPort(0);
-  url.SetFile(dir);
+  url.SetFile(realDir);
   url.SetAnchor(tree);
   url.SetOptions(opts);
   
   Printf("Running ChainBuilder::CreateCollection(\"%s/index.root\",\"%s\")",
-	 dir.Data(), url.GetUrl());
-  ChainBuilder::CreateCollection(Form("%s/index.root", dir.Data()), url);
+	 realDir.Data(), url.GetUrl());
+  ChainBuilder::CreateCollection(Form("%s/index.root", realDir.Data()), url);
 }
 
 				 

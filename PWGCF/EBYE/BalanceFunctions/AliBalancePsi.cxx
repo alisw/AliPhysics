@@ -781,9 +781,9 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram(Int_t iVariableSingle,
     hTemp3->Sumw2();
     hTemp4->Sumw2();
     hTemp1->Add(hTemp3,-1.);
-    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp1->Scale(1./hTemp5->Integral());
     hTemp2->Add(hTemp4,-1.);
-    hTemp2->Scale(1./hTemp6->GetEntries());
+    hTemp2->Scale(1./hTemp6->Integral());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
 
@@ -1140,18 +1140,18 @@ TH1D *AliBalancePsi::GetBalanceFunctionHistogram2pMethod(Int_t iVariableSingle,
       hTemp3Mix->Add(hTempPos3Mix);
       hTemp4Mix->Add(hTempPos4Mix);
 
-      hTemp1->Scale(1./hTemp5->GetEntries());
-      hTemp3->Scale(1./hTemp5->GetEntries());
-      hTemp2->Scale(1./hTemp6->GetEntries());
-      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1->Scale(1./hTemp5->Integral());
+      hTemp3->Scale(1./hTemp5->Integral());
+      hTemp2->Scale(1./hTemp6->Integral());
+      hTemp4->Scale(1./hTemp6->Integral());
 
       // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
       // does not work here, so normalize also to trigger particles 
       // --> careful: gives different integrals then as with full 2D method 
-      hTemp1Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp3Mix->Scale(1./hTemp5Mix->GetEntries());
-      hTemp2Mix->Scale(1./hTemp6Mix->GetEntries());
-      hTemp4Mix->Scale(1./hTemp6Mix->GetEntries());
+      hTemp1Mix->Scale(1./hTemp5Mix->Integral());
+      hTemp3Mix->Scale(1./hTemp5Mix->Integral());
+      hTemp2Mix->Scale(1./hTemp6Mix->Integral());
+      hTemp4Mix->Scale(1./hTemp6Mix->Integral());
 
       hTemp1->Divide(hTemp1Mix);
       hTemp2->Divide(hTemp2Mix);
@@ -1324,9 +1324,9 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi(Double_t psiMin,
     hTemp3->Sumw2();
     hTemp4->Sumw2();
     hTemp1->Add(hTemp3,-1.);
-    hTemp1->Scale(1./hTemp5->GetEntries());
+    hTemp1->Scale(1./hTemp5->Integral());
     hTemp2->Add(hTemp4,-1.);
-    hTemp2->Scale(1./hTemp6->GetEntries());
+    hTemp2->Scale(1./hTemp6->Integral());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5);
 
@@ -1530,10 +1530,10 @@ TH2D *AliBalancePsi::GetBalanceFunctionDeltaEtaDeltaPhi2pMethod(Double_t psiMin,
       hTemp3Mix->Sumw2();
       hTemp4Mix->Sumw2();
       
-      hTemp1->Scale(1./hTemp5->GetEntries());
-      hTemp3->Scale(1./hTemp5->GetEntries());
-      hTemp2->Scale(1./hTemp6->GetEntries());
-      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1->Scale(1./hTemp5->Integral());
+      hTemp3->Scale(1./hTemp5->Integral());
+      hTemp2->Scale(1./hTemp6->Integral());
+      hTemp4->Scale(1./hTemp6->Integral());
 
       // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
       Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
@@ -1789,10 +1789,10 @@ TH1D *AliBalancePsi::GetBalanceFunction1DFrom2D2pMethod(Bool_t bPhi,
       hTemp3Mix->Sumw2();
       hTemp4Mix->Sumw2();
       
-      hTemp1->Scale(1./hTemp5->GetEntries());
-      hTemp3->Scale(1./hTemp5->GetEntries());
-      hTemp2->Scale(1./hTemp6->GetEntries());
-      hTemp4->Scale(1./hTemp6->GetEntries());
+      hTemp1->Scale(1./hTemp5->Integral());
+      hTemp3->Scale(1./hTemp5->Integral());
+      hTemp2->Scale(1./hTemp6->Integral());
+      hTemp4->Scale(1./hTemp6->Integral());
 
       // normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
       Double_t mixedNorm1 = hTemp1Mix->Integral(hTemp1Mix->GetXaxis()->FindBin(0-10e-5),hTemp1Mix->GetXaxis()->FindBin(0+10e-5),1,hTemp1Mix->GetNbinsX());
@@ -1892,7 +1892,9 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 					    Double_t ptTriggerMax,
 					    Double_t ptAssociatedMin,
 					    Double_t ptAssociatedMax,
-					    AliBalancePsi *bMixed) {
+					    AliBalancePsi *bMixed,
+					    Bool_t normToTrig,
+					    Double_t normalizationRangePhi) {
 
   // Returns the 2D correlation function for "type"(PN,NP,PP,NN) pairs,
   // does the division by event mixing inside,
@@ -1913,12 +1915,12 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   TH2D *fMixed = NULL;
 
   // ranges (in bins) for vertexZ and centrality (psi)
-  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin);
+  Int_t binPsiMin    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMin+0.00001);
   Int_t binPsiMax    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(psiMax-0.00001);
   Int_t binVertexMin = 0;
   Int_t binVertexMax = 0;
   if(fVertexBinning){
-    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin);
+    binVertexMin = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMin+0.00001);
     binVertexMax = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(vertexZMax-0.00001);
   }  
   Double_t binPsiLowEdge    = 0.;
@@ -1930,14 +1932,14 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
   for(Int_t iBinPsi = binPsiMin; iBinPsi <= binPsiMax; iBinPsi++){
     for(Int_t iBinVertex = binVertexMin; iBinVertex <= binVertexMax; iBinVertex++){
 
-      cout<<"In the correlation function loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
+      //cout<<"In the correlation function loop: "<<iBinPsi<<" (psiBin), "<<iBinVertex<<" (vertexBin)  "<<endl;
 
       // determine the bin edges for this bin
-      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi);
-      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi);
+      binPsiLowEdge    = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinLowEdge(iBinPsi) + 0.00001;
+      binPsiUpEdge     = fHistPN->GetGrid(0)->GetGrid()->GetAxis(0)->GetBinUpEdge(iBinPsi) - 0.00001;
       if(fVertexBinning){
-	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex);
-	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex);
+	binVertexLowEdge = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinLowEdge(iBinVertex) + 0.00001;
+	binVertexUpEdge  = fHistPN->GetGrid(0)->GetGrid()->GetAxis(5)->GetBinUpEdge(iBinVertex) - 0.00001;
       }
 
       // get the 2D histograms for the correct type
@@ -1961,18 +1963,45 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	fSame  = GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
 	fMixed = bMixed->GetCorrelationFunctionChargeIndependent(binPsiLowEdge,binPsiUpEdge,binVertexLowEdge,binVertexUpEdge,ptTriggerMin,ptTriggerMax,ptAssociatedMin,ptAssociatedMax);
       }
+    
+      if(fMixed && normToTrig && fMixed->Integral()>0){
+	
+	// normalization of Event mixing to 1 at (0,0) --> Jan Fietes method
+	// do it only on away-side (due to two-track cuts): pi +- pi/6.
+	Int_t binXmin  = fMixed->GetXaxis()->FindBin(0-10e-5);
+	Int_t binXmax  = fMixed->GetXaxis()->FindBin(0+10e-5);
+	Double_t binsX = (Double_t)(binXmax - binXmin + 1);
+	Int_t binYmin  = fMixed->GetYaxis()->FindBin(TMath::Pi() - normalizationRangePhi);
+	Int_t binYmax  = fMixed->GetYaxis()->FindBin(TMath::Pi() + normalizationRangePhi - 0.00001);
+	Double_t binsY = (Double_t)(binYmax - binYmin + 1);
+	
+	Double_t mixedNorm = fMixed->Integral(binXmin,binXmax,binYmin,binYmax);
+	mixedNorm /= binsX * binsY;
+
+	// finite bin correction
+	Double_t binWidthEta = fMixed->GetXaxis()->GetBinWidth(fMixed->GetNbinsX());
+	Double_t maxEta      = fMixed->GetXaxis()->GetBinUpEdge(fMixed->GetNbinsX());
+	
+	Double_t finiteBinCorrection = -1.0 / (2*maxEta) * binWidthEta / 2 + 1;
+	//Printf("Finite bin correction: %f", finiteBinCorrection);
+	mixedNorm /= finiteBinCorrection;
+	
+	fMixed->Scale(1./mixedNorm);
+      }
 
       if(fSame && fMixed){
 	// then get the correlation function (divide fSame/fmixed)
 	fSame->Divide(fMixed);
 	
-	// NEW averaging:
+	// averaging with number of triggers:
 	// average over number of triggers in each sub-bin
 	Double_t NTrigSubBin = 0;
 	if(type=="PN" || type=="PP")
-	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->GetEntries());
+	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->Integral());
 	else if(type=="NP" || type=="NN")
-	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->GetEntries());
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral());
+	else if(type=="ALL")
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
 	fSame->Scale(NTrigSubBin);
 	
 	// for the first: clone
@@ -1988,28 +2017,32 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 
   if(gHist){
     
-    // OLD averaging:
-    // average over number of bins nbinsVertex * nbinsPsi
-    // gHist->Scale(1./((Double_t)(binPsiMax-binPsiMin+1)*(binVertexMax-binVertexMin+1)));
-
-    // NEW averaging:
-    // average over number of triggers in each sub-bin
+    // averaging with number of triggers:
     // first set to full range and then obtain number of all triggers 
     Double_t NTrigAll = 0;
     if(type=="PN" || type=="PP"){
       fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
       fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
       fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
-      NTrigAll = (Double_t)(fHistP->Project(0,1)->GetEntries());
+      NTrigAll = (Double_t)(fHistP->Project(0,1)->Integral());
     }
     else if(type=="NP" || type=="NN"){
       fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
       fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
       fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
-      NTrigAll = (Double_t)(fHistN->Project(0,1)->GetEntries());
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral());
+    }
+    else if(type=="ALL"){
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
     }
     gHist->Scale(1./NTrigAll);
-    
+   
   }
   
   return gHist;
@@ -2090,13 +2123,15 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPN(Double_t psiMin,
   //AliInfo(Form("Entries (test): %lf",(Double_t)(gHistTest->GetEntries())));
   //AliInfo(Form("Entries (1D): %lf",(Double_t)(fHistP->Project(0,1)->GetEntries())));
   //AliInfo(Form("Entries (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->GetEntries())));
+  //AliInfo(Form("Integral (1D): %lf",(Double_t)(fHistP->Project(0,1)->Integral())));
+  //AliInfo(Form("Integral (2D): %lf",(Double_t)(fHistPN->Project(0,1,2)->Integral())));
   
   //TCanvas *c2 = new TCanvas("c2","");
   //c2->cd();
   //fHistPN->Project(0,1,2)->DrawCopy("colz");
 
-  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
+  if((Double_t)(fHistP->Project(0,1)->Integral())>0)
+    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
@@ -2162,8 +2197,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNP(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
+  if((Double_t)(fHistN->Project(0,1)->Integral())>0)
+    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
@@ -2229,8 +2264,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionPP(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistP->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistPP->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->GetEntries()));
+  if((Double_t)(fHistP->Project(0,1)->Integral())>0)
+    gHist->Scale(1./(Double_t)(fHistP->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
@@ -2296,8 +2331,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionNN(Double_t psiMin,
 
   //Printf("Entries (1D): %lf",(Double_t)(fHistN->Project(0,2)->GetEntries()));
   //Printf("Entries (2D): %lf",(Double_t)(fHistNN->Project(0,2,3)->GetEntries()));
-  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0)
-    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries()));
+  if((Double_t)(fHistN->Project(0,1)->Integral())>0)
+    gHist->Scale(1./(Double_t)(fHistN->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHist->Scale(1./((Double_t)gHist->GetXaxis()->GetBinWidth(1)*(Double_t)gHist->GetYaxis()->GetBinWidth(1)));
@@ -2397,8 +2432,8 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
   gHistNN->Add(gHistPN);
 
   // divide by sum of + and - triggers
-  if((Double_t)(fHistN->Project(0,1)->GetEntries())!=0 && (Double_t)(fHistP->Project(0,1)->GetEntries())!=0)
-    gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->GetEntries() + fHistN->Project(0,1)->GetEntries()));
+  if((Double_t)(fHistN->Project(0,1)->Integral())>0 && (Double_t)(fHistP->Project(0,1)->Integral())>0)
+    gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHistNN->Scale(1./((Double_t)gHistNN->GetXaxis()->GetBinWidth(1)*(Double_t)gHistNN->GetYaxis()->GetBinWidth(1)));

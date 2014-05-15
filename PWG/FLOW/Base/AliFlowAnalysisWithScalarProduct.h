@@ -12,11 +12,13 @@ class AliFlowEventSimple;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 
+#include  "TList.h"
+#include "AliFlowAnalysis.h"
+
 class TH1D;
 class TH1F;
 class TH2D;
 class TProfile;
-#include  "TList.h"
 class TDirectoryFile;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -27,7 +29,7 @@ class TDirectoryFile;
 // mods:    Carlos Perez (cperez@nikhef.nl)
 /////////////////////////////////////////////////////////////////////////////
  
-class AliFlowAnalysisWithScalarProduct {
+class AliFlowAnalysisWithScalarProduct : public AliFlowAnalysis {
  public:
  
    AliFlowAnalysisWithScalarProduct();            //default constructor
@@ -96,6 +98,7 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D* fResolution; // Resolution
    TH1D* fHistQaQb; // QaQb
    TH1D* fHistQaQbCos; // QaQbCos
+   TH1I* fHistNumberOfSubtractedDaughters; //how many daughters were subtracted during Q calculation?
 
    AliFlowCommonHist*        fCommonHists;    // control histograms
    AliFlowCommonHist*        fCommonHistsuQ;  // control histograms
@@ -107,7 +110,7 @@ class AliFlowAnalysisWithScalarProduct {
    TH1D*      fHistSumOfWeightsu[2][2][3]; // holds sums of 0: Nq', 1: Nq'^2, 2: Nq'*Na*Nb
    TProfile*  fHistProNUAu[2][2][2];          // NUA related qq for RP|POI PT|ETA
 
-   ClassDef(AliFlowAnalysisWithScalarProduct,0)  // class version
+   ClassDef(AliFlowAnalysisWithScalarProduct,1)  // class version
 };
  
 

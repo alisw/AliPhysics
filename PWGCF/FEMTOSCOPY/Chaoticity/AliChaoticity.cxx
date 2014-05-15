@@ -501,7 +501,7 @@ AliChaoticity &AliChaoticity::operator=(const AliChaoticity &obj)
   fEvt = obj.fEvt;
   fTempStruct = obj.fTempStruct;
   fRandomNumber = obj.fRandomNumber;
-  fLEGO = fLEGO;
+  fLEGO = obj.fLEGO;
   fMCcase = obj.fMCcase;
   fAODcase = obj.fAODcase;
   fPbPbcase = obj.fPbPbcase; 
@@ -1654,7 +1654,7 @@ void AliChaoticity::Exec(Option_t *)
 	if(fabs(nSigmaTPC[3])<fSigmaCutTPC) fTempStruct[myTracks].fKaon = kTRUE;// Kaon candidate
 	if(fabs(nSigmaTPC[4])<fSigmaCutTPC) fTempStruct[myTracks].fProton = kTRUE;// Proton candidate
 	// asymmetric dE/dx cut to reduce muon contamination
-	if(nSigmaTPC[2] < -0.5) fTempStruct[myTracks].fPion = kFALSE;// asymmetric dE/dx cut
+	//if(nSigmaTPC[2] < -0.5) fTempStruct[myTracks].fPion = kFALSE;// asymmetric dE/dx cut
       }
                
       

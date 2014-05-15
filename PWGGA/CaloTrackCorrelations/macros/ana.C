@@ -560,7 +560,9 @@ void  LoadLibraries(Int_t mode)
   gSystem->Load("libRAWDatasim.so"); // Root + libraries to if reclusterization is done
   gSystem->Load("libVZERObase.so");  // Root + libraries to if reclusterization is done
   gSystem->Load("libVZEROrec.so");   // Root + libraries to if reclusterization is done
-  
+
+  gSystem->Load("libPHOSUtils");
+
   gSystem->Load("libEMCALUtils");
   //SetupPar("EMCALUtils");
   gSystem->Load("libEMCALraw");  // Root + libraries to if reclusterization is done
@@ -573,23 +575,23 @@ void  LoadLibraries(Int_t mode)
   //SetupPar("EMCALrec");
   
   gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libESDfilter.so");
+
   gSystem->Load("libTENDER.so");
   gSystem->Load("libTENDERSupplies.so");
-  gSystem->Load("libPHOSUtils");
+  
   gSystem->Load("libCORRFW");
   gSystem->Load("libPWGTools");
-  
-  gSystem->Load("libPHOSUtils");
-  gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPWGCaloTrackCorrBase");
-  gSystem->Load("libPWGGACaloTrackCorrelations");
+
   gSystem->Load("libPWGEMCAL");
   gSystem->Load("libPWGGAEMCALTasks");
-  //SetupPar("PWGCaloTrackCorrBase");
-  //SetupPar("PWGGACaloTrackCorrelations");
   //SetupPar("PWGEMCAL");
   //SetupPar("PWGGAEMCALTasks");
   
+  gSystem->Load("libPWGCaloTrackCorrBase");
+  gSystem->Load("libPWGGACaloTrackCorrelations");
+  //SetupPar("PWGCaloTrackCorrBase");
+  //SetupPar("PWGGACaloTrackCorrelations");
  
   //gSystem->Load("libJETAN");
   //gSystem->Load("FASTJETAN");

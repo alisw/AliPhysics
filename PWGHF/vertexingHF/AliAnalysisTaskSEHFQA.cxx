@@ -60,6 +60,7 @@
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCutsLctoV0.h"
+#include "AliVertexingHFUtils.h"
 #include "AliInputEventHandler.h"
 
 #include "AliFlowEvent.h"
@@ -516,8 +517,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hd0dau";
     TH1F* hd0dau=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of D daughter tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
+    hname="hd0dauphi";
+    TH2F* hd0dauphi=new TH2F(hname.Data(), "Impact parameter (rphi) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0rphi} [cm]",400,0,6.3,200,-0.1,0.1);
+
     hname="hd0zdau";
     TH1F* hd0zdau=new TH1F(hname.Data(),"Impact parameter (z) distribution of D daughter tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+    hname="hd0zdauphi";
+    TH2F* hd0zdauphi=new TH2F(hname.Data(), "Impact parameter (z) distribution of D daughter tracks versus #phi; #phi [rad]; d_{0z} [cm]",400,0,6.3,200,-0.1,0.1);
 
     hname="hd0TracksSPDin";
     TH1F* hd0TracksSPDin=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of AOD tracks kITSrefit, SPDinner; d_{0rphi}[cm];Entries",200,-0.5,0.5);
@@ -695,7 +702,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hd0TracksFilterBit4);
     fOutputTrack->Add(hd0TracksTPCITSSPDany);
     fOutputTrack->Add(hd0dau);
+    fOutputTrack->Add(hd0dauphi);
     fOutputTrack->Add(hd0zdau);
+    fOutputTrack->Add(hd0zdauphi);
     
 
     if(fReadMC){
@@ -766,6 +775,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hntrklvsPercentile";
     TH2F* hntrklvsPercentile=new TH2F(hname.Data(),"N tracklets vs Percentile;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
 
+    hname="hntrklvsPercentile01";
+    TH2F* hntrklvsPercentile01=new TH2F(hname.Data(),"N tracklets vs Percentile |#eta|<1;ntracklets;percentile",5000,-0.5,4999.5,240,-10.,110);
+      
     hname="hnTPCTracksvsPercentile";
     TH2F* hnTPCTracksvsPercentile=new TH2F(hname.Data(),"N TPC tracks vs Percentile;nTPCTracks;percentile",5000,-0.5,9999.5,240,-10.,110);
 
@@ -781,6 +793,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hStdEstimSignalNtrackletsIn";
     TH2F*hStdEstimSignalNtrackletsIn = new TH2F(hname.Data(),"Std estimator signal vs Number of tracklets in the CC;Std estimator signal;number of tracklets",1000,-0.5,9999.5,5000,-0.5,4999.5);
 
+    hname="hStdEstimSignal";
+    TH1F*hStdEstimSignal = new TH1F(hname.Data(),"Std estimator signal",700,0,1400);
+
     hname="hStdPercentileSecondPercentile";
     TH2F* hStdPercentileSecondPercentile = new TH2F(hname.Data(),"Std estimator Percentile Vs Second Estimator Percentile;Std estimator percentile;Second estimator percentile",120,-10.,110,120,-10.,110);
 
@@ -793,10 +808,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputCheckCentrality->Add(hMultOut);
     fOutputCheckCentrality->Add(hMultvsPercentile);
     fOutputCheckCentrality->Add(hntrklvsPercentile);
+    fOutputCheckCentrality->Add(hntrklvsPercentile01);
     fOutputCheckCentrality->Add(hnTPCTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITSTracksvsPercentile);
     fOutputCheckCentrality->Add(hnTPCITS1SPDTracksvsPercentile);
     fOutputCheckCentrality->Add(hStdEstimSignalPercentile);
+    fOutputCheckCentrality->Add(hStdEstimSignal);
     fOutputCheckCentrality->Add(hStdEstimSignalNtrackletsIn);
     fOutputCheckCentrality->Add(hStdPercentileSecondPercentile);
     fOutputCheckCentrality->Add(hStdSignalSecondSignal);
@@ -807,16 +824,22 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     if(fOnOff[0]){
       TString hname="hNtracklets";
       TH1F* hNtracklets=new TH1F(hname.Data(),"Number of tracklets;ntracklets;Entries",5000,-0.5,4999.5);
-
+      hname="hNtracklets01";
+      TH1F* hNtracklets01=new TH1F(hname.Data(),"Number of tracklets |#eta|<1;ntracklets;Entries",5000,-0.5,4999.5);
+        
       hname="hMult";
       TH1F* hMult=new TH1F(hname.Data(),"Multiplicity;multiplicity;Entries",10000,-0.5,9999.5);
+      hname="hMultFBit4";
+      TH1F* hMultFBit4=new TH1F(hname.Data(),"Multiplicity (global+tracklet) with filter bit 4;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb05";
       TH1F* hMultC05=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.5;multiplicity;Entries",10000,-0.5,9999.5);
       hname="hMultComb08";
       TH1F* hMultC08=new TH1F(hname.Data(),"Multiplicity (global+tracklet) in |#eta|<0.8;multiplicity;Entries",10000,-0.5,9999.5);
 
       fOutputTrack->Add(hNtracklets);
+      fOutputTrack->Add(hNtracklets01);
       fOutputTrack->Add(hMult);
+      fOutputTrack->Add(hMultFBit4);
       fOutputTrack->Add(hMultC05);
       fOutputTrack->Add(hMultC08);
     }
@@ -1054,23 +1077,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
     fOutputFlowObs->Add(hCentVsMultRPS);
   }
-
-  /*
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
-  AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
-  if (fCuts->GetIsUsePID() && fDecayChannel==kLambdactoV0) {
-    fCuts->GetPidHF()->SetPidResponse(pidResp);
-    AliRDHFCutsLctoV0* lccuts=dynamic_cast<AliRDHFCutsLctoV0*>(fCuts);
-    if(lccuts){
-      lccuts->GetPidV0pos()->SetPidResponse(pidResp);
-      lccuts->GetPidV0neg()->SetPidResponse(pidResp);
-      fCuts->GetPidHF()->SetOldPid(kFALSE);
-      lccuts->GetPidV0pos()->SetOldPid(kFALSE);
-      lccuts->GetPidV0neg()->SetOldPid(kFALSE);
-    }
-  }
-  */
 
   // Post the data
   PostData(1,fNEntries);
@@ -1312,6 +1318,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCOnly=0;
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
+  Int_t ntracksFBit4=0;
 
   AliTRDTriggerAnalysis trdSelection;
   trdSelection.CalcTriggers(aod);
@@ -1341,6 +1348,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	nSelTracksTPCITS++;
 	if(nclsSPD>0) nSelTracksTPCITS1SPD++;      
       }
+    }
+    if(track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)){
+      ntracksFBit4++;
     }
   }
 
@@ -1488,14 +1498,18 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       trigCount2->Count(Form("triggerType:HighMult/Run:%d",runNumber));
     }
     if(evSelMask & AliVEvent::kSPI7){
-      hTrigC->Fill(20.,centrality);
-      hTrigM->Fill(20.,multiplicity);
-      trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
+      if(trigClass.Contains("CSPI7")) {
+	hTrigC->Fill(20.,centrality);
+	hTrigM->Fill(20.,multiplicity);
+	trigCount2->Count(Form("triggerType:SPI7/Run:%d",runNumber));
+      }
     }
     if(evSelMask & AliVEvent::kSPI){
-      hTrigC->Fill(21.,centrality);
-      hTrigM->Fill(21.,multiplicity);
-      if(trigClass.Contains("CSPI8")) trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
+      if(trigClass.Contains("CSPI8")) {
+	hTrigC->Fill(21.,centrality);
+	hTrigM->Fill(21.,multiplicity);
+        trigCount2->Count(Form("triggerType:SPI8/Run:%d",runNumber));
+      }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
       hTrigC->Fill(22.,centrality);
@@ -1646,12 +1660,16 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       hTrigS->Fill(19.,centrality);
       hTrigSM->Fill(19.,multiplicity);}
     if(evSelMask & AliVEvent::kSPI7){
-      hTrigS->Fill(20.,centrality);
-      hTrigSM->Fill(20.,multiplicity);
+      if(trigClass.Contains("CSPI7")) {
+	hTrigS->Fill(20.,centrality);
+	hTrigSM->Fill(20.,multiplicity);
+      }
     }
     if(evSelMask & AliVEvent::kSPI){
-      hTrigS->Fill(21.,centrality);
-      hTrigSM->Fill(21.,multiplicity);
+      if(trigClass.Contains("CSPI8")) {
+	hTrigS->Fill(21.,centrality);
+	hTrigSM->Fill(21.,multiplicity);
+      }
     }
     if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
       hTrigS->Fill(22.,centrality);
@@ -1727,10 +1745,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       }
       ((TH2F*)fOutputCheckCentrality->FindObject("hMultvsPercentile"))->Fill(aod->GetHeader()->GetRefMultiplicity(),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile"))->Fill(aod->GetTracklets()->GetNumberOfTracklets(),stdCentf);
+      ((TH2F*)fOutputCheckCentrality->FindObject("hntrklvsPercentile01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.),stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCTracksvsPercentile"))->Fill(nSelTracksTPCOnly,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITSTracksvsPercentile"))->Fill(nSelTracksTPCITS,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hnTPCITS1SPDTracksvsPercentile"))->Fill(nSelTracksTPCITS1SPD,stdCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalPercentile"))->Fill(stdSignal,stdCentf);
+      ((TH1F*)fOutputCheckCentrality->FindObject("hStdEstimSignal"))->Fill(stdSignal);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdEstimSignalNtrackletsIn"))->Fill(stdSignal,aod->GetTracklets()->GetNumberOfTracklets());
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdPercentileSecondPercentile"))->Fill(stdCentf,secondCentf);
       ((TH2F*)fOutputCheckCentrality->FindObject("hStdSignalSecondSignal"))->Fill(stdSignal,secondSignal);
@@ -1740,7 +1760,9 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     } else{
       if(fOnOff[0]){
 	((TH1F*)fOutputTrack->FindObject("hNtracklets"))->Fill(aod->GetTracklets()->GetNumberOfTracklets());
+	((TH1F*)fOutputTrack->FindObject("hNtracklets01"))->Fill(AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod,-1.,1.));
 	((TH1F*)fOutputTrack->FindObject("hMult"))->Fill(aod->GetHeader()->GetRefMultiplicity());
+	((TH1F*)fOutputTrack->FindObject("hMultFBit4"))->Fill(ntracksFBit4);
 	((TH1F*)fOutputTrack->FindObject("hMultComb05"))->Fill(aod->GetHeader()->GetRefMultiplicityComb05());
 	((TH1F*)fOutputTrack->FindObject("hMultComb08"))->Fill(aod->GetHeader()->GetRefMultiplicityComb08());
       }
@@ -2161,9 +2183,15 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      } else {
 		((TH1F*)fOutputTrack->FindObject("hptGoodTrFromDaugh"))->Fill(track->Pt());
 		((TH1F*)fOutputTrack->FindObject("hd0dau"))->Fill(d->Getd0Prong(id));
+                Double_t phidaughter = d->PhiProng(id);
+		if(phidaughter<0) phidaughter=2.0*TMath::Pi()+phidaughter;
+		((TH2F*)fOutputTrack->FindObject("hd0dauphi"))->Fill(phidaughter, d->Getd0Prong(id));
 		Double_t d0rphiz[2],covd0[3];
 		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
-		if(isDCA) ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
+		if(isDCA){
+		  ((TH1F*)fOutputTrack->FindObject("hd0zdau"))->Fill(d0rphiz[1]);
+		  ((TH2F*)fOutputTrack->FindObject("hd0zdauphi"))->Fill(phidaughter,d0rphiz[1]);
+		}
 	      }
 	    }
 

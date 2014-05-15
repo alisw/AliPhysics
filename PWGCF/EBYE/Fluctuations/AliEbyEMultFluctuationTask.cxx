@@ -34,7 +34,7 @@ ClassImp(AliEbyEMultFluctuationTask)
 
 //________________________________________________________________________
 AliEbyEMultFluctuationTask::AliEbyEMultFluctuationTask(const char *name) 
-: AliAnalysisTaskSE(name),fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityCounter(0),fEventCounter(0),histcounter(0)
+: AliAnalysisTaskSE(name),fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityBins20(kFALSE),fCentralityCounter(0),fEventCounter(0),histcounter(0)
 
 
 {
@@ -61,11 +61,12 @@ AliEbyEMultFluctuationTask::AliEbyEMultFluctuationTask(const char *name)
 //________________________________________________________________________
 Bool_t AliEbyEMultFluctuationTask :: SelectEvent(AliAODVertex* vertex)
 {
-if(vertex) 
-  
-      if(vertex->GetNContributors() < 0) return kFALSE;
 
-	  
+  if(vertex){ 
+  
+    if(vertex->GetNContributors() < 0) return kFALSE;
+    
+    
 	  Double_t lvx = vertex->GetX();
 	  Double_t lvy = vertex->GetY();
 	  Double_t lvz = vertex->GetZ();
@@ -74,13 +75,17 @@ if(vertex)
 	  
 	  
 	  if(TMath::Abs(lvx) > 0.3)  return kFALSE;
-	    if(TMath::Abs(lvy) > 0.3) return kFALSE;
-	    if(TMath::Abs(lvz) > 10) return kFALSE;
-	    if(vertex->GetType()==AliAODVertex::kPileupSPD) return kFALSE;  
-	     
-		fEventCounter->Fill(5);
-		fHistVz->Fill(lvz);		
-return kTRUE;
+	  if(TMath::Abs(lvy) > 0.3) return kFALSE;
+	  if(TMath::Abs(lvz) > 10) return kFALSE;
+	  if(vertex->GetType()==AliAODVertex::kPileupSPD) return kFALSE;  
+	  
+	  fEventCounter->Fill(5);
+	  fHistVz->Fill(lvz);		
+	  return kTRUE;
+  }
+  else{
+    return kFALSE;
+  }
 }
 //_____________________________________________________________________________
 Int_t AliEbyEMultFluctuationTask :: SelectTrack(AliAODTrack* track)
@@ -291,13 +296,12 @@ if(!isSelected) return;
 
 // Get the event vertex.
 	fAODVertex = fAOD->GetPrimaryVertex();
+
+	if (!fAODVertex) {	
+	  return;
+	}
 	
 	if(TMath::Abs((fAODVertex->GetZ())-((fAOD->GetPrimaryVertexSPD())->GetZ())) > 0.5) return;
-
-	if (!fAODVertex) {
-		
-		return;
-	}
 
 
     if (!SelectEvent(fAODVertex)) return;

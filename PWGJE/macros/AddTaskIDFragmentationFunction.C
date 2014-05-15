@@ -389,7 +389,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
 
-   TString strList(Form("fracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass));
+   TString strList(Form("idfracfunc_%s_%s_%s_%s_cl%d", branchRecJets.Data(), branchGenJets.Data(), typeTracks.Data(), typeJets.Data(), eventClass));
    
    TString strDir(Form("%s:PWGJE_IDFragmentationFunction_%s_%s_%s_%s_cl%d", 
            AliAnalysisManager::GetCommonFileName(), branchRecJets.Data(), branchGenJets. Data(), 

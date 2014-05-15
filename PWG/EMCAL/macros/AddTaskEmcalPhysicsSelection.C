@@ -11,9 +11,13 @@ AliEmcalPhysicsSelectionTask* AddTaskEmcalPhysicsSelection(
   Double_t cmin    = -1,
   Double_t cmax    = -1,
   Double_t minCellTrackScale = -1,
-  Double_t maxCellTrackScale = -1
+  Double_t maxCellTrackScale = -1,
+  Bool_t byPassPhysSelTask = kFALSE
 )
 {
+  if(byPassPhysSelTask)
+    return 0;
+
   // Add EMCAL physics selection task.
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

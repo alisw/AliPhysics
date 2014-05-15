@@ -50,6 +50,8 @@
 #include "AliESDInputHandler.h"
 #include "AliESDMuonTrack.h"
 #include "AliESDtrack.h"
+#include "AliESDMuonGlobalTrack.h"   // AU
+#include "AliMFTAnalysisTools.h"     // AU
 #include "AliESDVertex.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
@@ -231,11 +233,11 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   // Define arrays for muons
   Double_t pos[3];
   Double_t p[3];
-  Double_t pid[10];
+  //  Double_t pid[10];
   
   // has to be changed once the muon pid is provided by the ESD
-  for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
-  pid[AliAODTrack::kMuon]=1.;
+  //  for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
+  //  pid[AliAODTrack::kMuon]=1.;
   
   AliAODHeader* header = AODEvent()->GetHeader();
   AliAODTrack *aodTrack = 0x0;
@@ -249,6 +251,8 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   AliAODVertex *primary = AODEvent()->GetPrimaryVertex();
   if (fDebug && primary) primary->Print();
   
+  // ----------------- MUON TRACKS -----------------------------------------------------
+
   // Loop on muon tracks to fill the AOD track branch
   Int_t nMuTracks = esd->GetNumberOfMuonTracks();
 
@@ -305,13 +309,14 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
                                                   0x0, // covariance matrix
                                                   esdMuTrack->Charge(), // charge
                                                   itsClusMap, // ITSClusterMap
-                                                  pid, // pid
+                                                  //pid, // pid
                                                   primary, // primary vertex
                                                   kFALSE, // used for vertex fit?
                                                   kFALSE, // used for primary vertex fit?
                                                   AliAODTrack::kPrimary,// track type
                                                   selectInfo); 
     
+    aodTrack->SetPIDForTracking(AliPID::kMuon);
     aodTrack->SetXYAtDCA(esdMuTrack->GetNonBendingCoorAtDCA(), esdMuTrack->GetBendingCoorAtDCA());
     aodTrack->SetPxPyPzAtDCA(esdMuTrack->PxAtDCA(), esdMuTrack->PyAtDCA(), esdMuTrack->PzAtDCA());
     aodTrack->SetRAtAbsorberEnd(esdMuTrack->GetRAtAbsorberEnd());
@@ -363,6 +368,124 @@ void AliAnalysisTaskESDMuonFilter::ConvertESDtoAOD()
   header->SetNumberOfMuons(nMuons);
   header->SetNumberOfDimuons(nDimuons);
   
+  // ----------------- MFT + MUON TRACKS -----------------------------------------------------
+
+  AliESDMuonGlobalTrack *esdMuGlobalTrack = 0x0;
+
+  // Loop on muon global tracks to fill the AOD track branch. 
+  // We won't update the number of total, pos and neg tracks in the event
+
+  Int_t nMuGlobalTracks = esd->GetNumberOfMuonGlobalTracks();
+
+  for (Int_t iTrack=0; iTrack<nMuGlobalTracks; ++iTrack) esd->GetMuonGlobalTrack(iTrack)->SetESDEvent(esd);
+  
+  Int_t nGlobalMuons=0;
+  Int_t nGlobalDimuons=0;
+  Int_t jGlobalDimuons=0;
+  Int_t nMuonGlobalTrack[100];
+  itsClusMap = 0;
+  
+  for (Int_t iMuon=0; iMuon<100; iMuon++) nMuonGlobalTrack[iMuon]=0;    // position of the i-th muon track in the tracks array of the AOD event  
+
+  for (Int_t nMuTrack=0; nMuTrack<nMuGlobalTracks; ++nMuTrack) {
+
+    esdMuGlobalTrack = esd->GetMuonGlobalTrack(nMuTrack);
+
+    if (!esdMuGlobalTrack->ContainTrackerData()) continue;
+    
+    UInt_t selectInfo(0);
+    
+    // Track selection
+    if (fTrackFilter) {
+      selectInfo = fTrackFilter->IsSelected(esdMuGlobalTrack);
+      if (!selectInfo) {
+	continue;
+      }  
+    }
+    
+    p[0] = esdMuGlobalTrack->Px(); 
+    p[1] = esdMuGlobalTrack->Py(); 
+    p[2] = esdMuGlobalTrack->Pz();
+    
+    esdMuGlobalTrack -> GetFirstTrackingPoint(pos);
+
+    if (mcH) mcH->SelectParticle(esdMuGlobalTrack->GetLabel()); // to insure that particle's ancestors will be in output MC branches
+
+    Double_t covTr[21] = {0};
+    AliMFTAnalysisTools::ConvertCovMatrixMUON2AOD(esdMuGlobalTrack->GetCovariances(), covTr);
+    
+    aodTrack = new(tracks[jTracks++]) AliAODTrack(esdMuGlobalTrack->GetUniqueID(), // ID
+                                                  esdMuGlobalTrack->GetLabel(),    // label
+                                                  p,                               // momentum
+                                                  kTRUE,                           // cartesian coordinate system
+                                                  pos,                             // position
+                                                  kFALSE,                          // isDCA
+                                                  covTr,                           // covariance matrix
+                                                  esdMuGlobalTrack->Charge(),      // charge
+                                                  itsClusMap,                      // ITSClusterMap
+                                                  primary,                         // origin vertex
+                                                  kFALSE,                          // used for vertex fit?
+                                                  kFALSE,                          // used for primary vertex fit?
+                                                  AliAODTrack::kPrimary,           // track type
+                                                  selectInfo);
+
+
+    aodTrack->SetPIDForTracking(AliPID::kMuon);
+
+    Double_t xyAtVertex[2] = {0};
+    esdMuGlobalTrack -> GetXYAtVertex(xyAtVertex);
+    
+    aodTrack->SetIsMuonGlobalTrack(kTRUE);
+
+    aodTrack->SetMFTClusterPattern(esdMuGlobalTrack->GetMFTClusterPattern());
+    aodTrack->SetXYAtDCA(xyAtVertex[0], xyAtVertex[1]);
+    aodTrack->SetPxPyPzAtDCA(p[0], p[1], p[2]);
+    aodTrack->SetRAtAbsorberEnd(esdMuGlobalTrack->GetRAtAbsorberEnd());
+    aodTrack->ConvertAliPIDtoAODPID();
+    aodTrack->SetChi2perNDF(esdMuGlobalTrack->GetChi2OverNdf());
+    aodTrack->SetChi2MatchTrigger(esdMuGlobalTrack->GetChi2MatchTrigger());
+    aodTrack->SetHitsPatternInTrigCh(esdMuGlobalTrack->GetHitsPatternInTrigCh());
+    UInt_t pattern = esdMuGlobalTrack->GetHitsPatternInTrigCh();
+    AliESDMuonTrack::AddEffInfo(pattern, 0, esdMuGlobalTrack->GetLoCircuit(), (AliESDMuonTrack::EAliTriggerChPatternFlag)0);
+    aodTrack->SetMUONtrigHitsMapTrg(pattern);
+    aodTrack->SetMUONtrigHitsMapTrk(esdMuGlobalTrack->GetHitsPatternInTrigChTrk());
+    aodTrack->SetMuonClusterMap(esdMuGlobalTrack->GetMuonClusterMap());
+    aodTrack->SetMatchTrigger(esdMuGlobalTrack->GetMatchTrigger());
+    aodTrack->Connected(esdMuGlobalTrack->IsConnected());
+
+    printf("Added Muon Global Track %d of %d\n",nMuTrack,nMuGlobalTracks);
+    aodTrack->Print();     // to be removed!!!
+
+    primary->AddDaughter(aodTrack);
+    
+    nMuonGlobalTrack[nGlobalMuons] = jTracks-1;
+    ++nGlobalMuons;
+  }
+
+  if (nGlobalMuons >= 2) { 
+    for (Int_t i=0; i<nGlobalMuons; i++) {
+      Int_t index0 = nMuonGlobalTrack[i];
+      for (Int_t j=i+1; j<nGlobalMuons; j++) {
+        Int_t index1 = nMuonGlobalTrack[j];
+        new (dimuons[jGlobalDimuons++]) AliAODDimuon(tracks.At(index0), tracks.At(index1));
+        ++nDimuons;
+        if (fDebug > 1) {
+          AliAODDimuon *dimuon0 = (AliAODDimuon*)dimuons.At(jGlobalDimuons-1);
+          printf("Dimuon: mass = %f, px=%f, py=%f, pz=%f\n",dimuon0->M(),dimuon0->Px(),dimuon0->Py(),dimuon0->Pz());  
+          AliAODTrack  *mu0 = (AliAODTrack*) dimuon0->GetMu(0);
+          AliAODTrack  *mu1 = (AliAODTrack*) dimuon0->GetMu(1);
+          printf("Muon0 px=%f py=%f pz=%f\n",mu0->Px(),mu0->Py(),mu0->Pz());
+          printf("Muon1 px=%f py=%f pz=%f\n",mu1->Px(),mu1->Py(),mu1->Pz());
+        }  
+      }
+    }
+  }
+  
+  header->SetNumberOfGlobalMuons(nGlobalMuons);
+  header->SetNumberOfGlobalDimuons(nGlobalDimuons);
+  
+  // -----------------------------------------------------------------------
+
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   
   if ( handler && fEnableMuonAOD && ( (nMuons>0) || fKeepAllEvents ) )

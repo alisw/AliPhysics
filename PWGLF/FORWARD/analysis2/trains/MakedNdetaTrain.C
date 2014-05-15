@@ -73,6 +73,7 @@ protected:
     Bool_t   mc      = fOptions.Has("mc");
     TString  mccorr  = fOptions.AsString("mc-corr", "");
     Bool_t   satonly = fOptions.AsBool("satellite");
+    if (!mc) mc      = fHelper->IsMC(); 
 
     // --- Form arguments --------------------------------------------
     TString args;
@@ -179,7 +180,7 @@ protected:
     o << "void Draw(const TString& title=\"" << fName << "\",\n"
       << "          UShort_t       rebin=5,\n"
       << "          UShort_t       others=0xf,\n"
-      << "          UShort_t       flags=0xCE07,\n"
+      << "          UInt_t         flags=0x1CE07,\n"
       << "          UShort_t       sNN=0,\n"
       << "          UShort_t       sys=0,\n"
       << "          UShort_t       trg=0,\n"
@@ -190,7 +191,7 @@ protected:
       << "          Float_t        vzMax=-999)\n"
       << "{\n"
       << "  const char* fwd=\"$ALICE_ROOT/PWGLF/FORWARD/analysis2\";\n"
-      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C++\",fwd));\n"
+      << "  gROOT->LoadMacro(Form(\"%s/DrawdNdeta.C+\",fwd));\n"
       << "  if (title.EqualTo(\"help\",TString::kIgnoreCase)) {\n"
       << "    DrawdNdeta(\"help\"); // Get the help\n"
       << "    return;\n"

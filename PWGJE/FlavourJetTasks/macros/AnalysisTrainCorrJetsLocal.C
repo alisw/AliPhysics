@@ -51,11 +51,13 @@ void AnalysisTrainCorrJetsLocal (
          // These two settings depend on the dataset and your quotas on the AliEN services
          Int_t          maxFilesPerWorker   = 20,
          Int_t          workerTTL           = 86000,
-	 Int_t          nfiletestmode       = 50
+	 Int_t          nfiletestmode       = 3
          )
 {
 
   // Some pre-settings and constants
+  TStopwatch watch;
+  watch.Start();
 
   enum AlgoType {kKT, kANTIKT};
   enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
@@ -186,6 +188,8 @@ void AnalysisTrainCorrJetsLocal (
     mgr->SetDebugLevel(10);
     mgr->StartAnalysis("local", chain);
   }
+  watch.Stop();
+  watch.Print();
 }
 
 //______________________________________________________________________________
@@ -212,51 +216,56 @@ void LoadLibs()
   gSystem->Load("libEVGEN");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libTOFbase");
+  //gSystem->Load("libTOFbase");
   //gSystem->Load("libTOFrec");
-  gSystem->Load("libRAWDatabase.so");
-  gSystem->Load("libRAWDatarec.so");
-  gSystem->Load("libTPCbase.so");
-  gSystem->Load("libTPCrec.so");
-  gSystem->Load("libITSbase.so");
-  gSystem->Load("libITSrec.so");
-  gSystem->Load("libTRDbase.so");
-  gSystem->Load("libTENDER.so");
-  gSystem->Load("libSTAT.so");
-  gSystem->Load("libTRDrec.so");
-  gSystem->Load("libHMPIDbase.so");
+  //gSystem->Load("libRAWDatabase.so");
+  //gSystem->Load("libRAWDatarec.so");
+  //gSystem->Load("libTPCbase.so");
+  //gSystem->Load("libTPCrec.so");
+  //gSystem->Load("libITSbase.so");
+  //gSystem->Load("libITSrec.so");
+  //gSystem->Load("libTRDbase.so");
+  //gSystem->Load("libTENDER.so");
+  //gSystem->Load("libSTAT.so");
+  //gSystem->Load("libTRDrec.so");
+  //gSystem->Load("libHMPIDbase.so");
   gSystem->Load("libPWGTools.so");
-  gSystem->Load("libPWGPP.so");
+  //gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWGHFbase");
-  gSystem->Load("libPWGDQdielectron");
-  gSystem->Load("libPWGHFhfe");
+  //gSystem->Load("libPWGDQdielectron");
+  //gSystem->Load("libPWGHFhfe");
   gSystem->Load("libPWGflowBase.so");
   gSystem->Load("libPWGflowTasks.so");
   gSystem->Load("libPWGHFvertexingHF");
   gSystem->Load("libEMCALUtils");
-  gSystem->Load("libPHOSUtils");
-  gSystem->Load("libPWGCaloTrackCorrBase");
+  //gSystem->Load("libPHOSUtils");
+  //gSystem->Load("libPWGCaloTrackCorrBase");
   gSystem->Load("libEMCALraw");
   gSystem->Load("libEMCALbase");
-  gSystem->Load("libEMCALrec");
-  gSystem->Load("libTRDbase");
-  gSystem->Load("libVZERObase");
-  gSystem->Load("libVZEROrec");
+  //gSystem->Load("libEMCALrec");
+  //gSystem->Load("libTRDbase");
+  //gSystem->Load("libVZERObase");
+  //gSystem->Load("libVZEROrec");
   gSystem->Load("libTENDER");
   gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libESDfilter");
   gSystem->Load("libPWGEMCAL");
   gSystem->Load("libPWGGAEMCALTasks");
-  gSystem->Load("libPWGTools");
-  gSystem->Load("libPWGCFCorrelationsBase");
-  gSystem->Load("libPWGCFCorrelationsDPhi");
+  //gSystem->Load("libPWGCFCorrelationsBase");
+  //gSystem->Load("libPWGCFCorrelationsDPhi");
 
   //load CGAL, Fastjet and SISCone
   //gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
   gSystem->Load("libSISConePlugin");
-
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
+  gSystem->Load("libCDFConesPlugin");
+  gSystem->Load("libPWGGAEMCALTasks");
+  gSystem->Load("libPWGTools");
+  //gSystem->Load("libPWGCFCorrelationsBase");
+  //gSystem->Load("libPWGCFCorrelationsDPhi");
+
   gSystem->Load("libPWGJEEMCALJetTasks");
   gSystem->Load("libPWGJEFlavourJetTasks");
 
@@ -286,7 +295,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   }else tmpName +="_20130412_122423";
   */
   TString tmpAdditionalLibs("");
-  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libTOFbase.so libRAWDatabase.so libRAWDatarec.so libTPCbase.so libTPCrec.so libITSbase.so libITSrec.so libTRDbase.so libTENDER.so libSTAT.so libTRDrec.so libHMPIDbase.so libPWGTools.so libPWGPP.so libPWGHFbase.so libPWGDQdielectron.so libPWGHFhfe.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libPHOSUtils.so libPWGCaloTrackCorrBase.so libEMCALraw.so libEMCALbase.so libEMCALrec.so libTRDbase.so libVZERObase.so libVZEROrec.so libTENDER.so libTENDERSupplies.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libPWGCFCorrelationsBase.so libPWGCFCorrelationsDPhi.so  libCGAL.so libJETAN.so libfastjet.so libSISConePlugin.so libFASTJETAN.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
+  tmpAdditionalLibs = Form("libTree.so libVMC.so libGeom.so libGui.so libXMLParser.so libMinuit.so libMinuit2.so libProof.so libPhysics.so libSTEERBase.so libESD.so libESDfilter.so libAOD.so libOADB.so libANALYSIS.so libCDB.so libRAWDatabase.so libSTEER.so libANALYSISalice.so libCORRFW.so libPWGTools.so libPWGHFbase.so libPWGflowBase.so libPWGflowTasks.so libPWGHFvertexingHF.so libEMCALUtils.so libEMCALraw.so libEMCALbase.so libTENDER.so libPWGEMCAL.so libPWGGAEMCALTasks.so libPWGTools.so libCGAL.so libfastjet.so libJETAN.so libFASTJETAN.so libSISConePlugin.so libCDFConesPlugin.so libPWGJE.so libPWGmuon.so libPWGJEEMCALJetTasks.so libPWGJEFlavourJetTasks.so %s %s",additionalCode.Data(),additionalHeaders.Data());
 
 
   TString macroName("");
@@ -302,8 +311,8 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
 
   // Here you can set the (Ali)ROOT version you want to use
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-08");
-  plugin->SetAliROOTVersion("v5-05-11-AN");
+  plugin->SetROOTVersion("v5-34-08-4");
+  plugin->SetAliROOTVersion("v5-05-63-AN");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory

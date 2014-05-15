@@ -57,6 +57,15 @@ void Config()
   gSystem->Load("libpythia6");     // Pythia 6.2
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
   gSystem->Load("libgeant321");
+  
+  if ( TString("VAR_GENERATOR").Contains("pythia8",TString::kIgnoreCase) )
+  {
+    std::cout << "Setting up Pythia8 required libraries and env. variables" << std::endl;
+    gSystem->Load("libpythia8.so");
+    gSystem->Load("libAliPythia8.so");
+    VAR_PYTHIA8_INCLUDES
+    VAR_PYTHIA8_SETENV
+  }
 #endif
 
   new TGeant3TGeo("C++ Interface to Geant3");
@@ -153,8 +162,12 @@ void Config()
   AliGenerator* gener = VAR_GENERATOR();
   
   gener->SetOrigin(0., 0., 0.); // Taken from OCDB
-  gener->SetSigma(0., 0., 0.);      // Sigma in (X,Y,Z) (cm) on IP position, sigmaz taken from OCDB
-//  gener->SetVertexSmear(kPerEvent);
+
+  Float_t sigmax = 0.0025;
+  Float_t sigmay = 0.0029;
+  
+  gener->SetSigma(sigmax, sigmay, 0.);      // Sigma in (X,Y,Z) (cm) on IP position, sigmaz taken from OCDB
+  gener->SetVertexSmear(kPerEvent);
   gener->Init();
   
   gener->Print();

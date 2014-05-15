@@ -5,6 +5,7 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   const char *nclusters          = "CaloClusters",
   const char *njets              = "Jets",
   const char *nrho               = "Rho",
+  Int_t       nCentBins          = 1,
   Double_t    jetradius          = 0.2,
   Double_t    jetptcut           = 1,
   Double_t    jetareacut         = 0.6,
@@ -51,12 +52,15 @@ AliAnalysisTaskEmcalJetSample* AddTaskEmcalJetSample(
   Printf("name: %s",name.Data());
 
   AliAnalysisTaskEmcalJetSample* jetTask = new AliAnalysisTaskEmcalJetSample(name);
+  jetTask->SetCentRange(0.,100.);
+  jetTask->SetNCentBins(nCentBins);
 
-  AliParticleContainer *trackCont  = task->AddParticleContainer(ntracks);
-  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
+  AliParticleContainer *trackCont  = jetTask->AddParticleContainer(ntracks);
+  trackCont->SetClassName("AliVTrack");
+  AliClusterContainer *clusterCont = jetTask->AddClusterContainer(nclusters);
 
   TString strType(type);
-  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,R);
+  AliJetContainer *jetCont = jetTask->AddJetContainer(njets,strType,jetradius);
   if(jetCont) {
     jetCont->SetRhoName(nrho);
     jetCont->ConnectParticleContainer(trackCont);

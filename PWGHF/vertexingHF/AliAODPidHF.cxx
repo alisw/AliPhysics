@@ -57,6 +57,11 @@ AliAODPidHF::AliAODPidHF():
   fMatch(0),
   fCompat(kFALSE),
   fPCompatTOF(1.5),
+  fUseAsymTOF(kFALSE),
+  fLownSigmaTOF(-3.),
+  fUpnSigmaTOF(3.),
+  fLownSigmaCompatTOF(-3.),
+  fUpnSigmaCompatTOF(3.),
   fnNSigmaCompat(2),
   fnSigmaCompat(0),
   fMC(kFALSE),
@@ -73,7 +78,8 @@ AliAODPidHF::AliAODPidHF():
   fTPCResponse(new AliTPCPIDResponse()),
   fPriorsH(),
   fCombDetectors(kTPCTOF),
-  fUseCombined(kFALSE)
+  fUseCombined(kFALSE),
+  fDefaultPriors(kTRUE)
 {
   //
   // Default constructor
@@ -139,6 +145,11 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fMatch(pid.fMatch),
   fCompat(pid.fCompat),
   fPCompatTOF(pid.fPCompatTOF),
+  fUseAsymTOF(pid.fUseAsymTOF),
+  fLownSigmaTOF(pid.fLownSigmaTOF),
+  fUpnSigmaTOF(pid.fUpnSigmaTOF),
+  fLownSigmaCompatTOF(pid.fLownSigmaCompatTOF),
+  fUpnSigmaCompatTOF(pid.fUpnSigmaCompatTOF),
   fnNSigmaCompat(pid.fnNSigmaCompat),
   fnSigmaCompat(0x0),
   fMC(pid.fMC),
@@ -154,7 +165,8 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fPidCombined(0x0),
   fTPCResponse(0x0),
   fCombDetectors(pid.fCombDetectors),
-  fUseCombined(pid.fUseCombined)
+  fUseCombined(pid.fUseCombined),
+  fDefaultPriors(pid.fDefaultPriors)  
 {
   
   fnSigmaCompat=new Double_t[fnNSigmaCompat];
@@ -333,64 +345,42 @@ Int_t AliAODPidHF::ApplyPidTOFRaw(AliAODTrack *track,Int_t specie) const{
       }
     }
   }else{ // asks only for one particle specie
+    Double_t nSigmaMin,nSigmaMax;
+    if(fUseAsymTOF){
+      nSigmaMin=fLownSigmaTOF;
+      nSigmaMax=fUpnSigmaTOF;
+    }else{
+      nSigmaMin=-fnSigma[3];
+      nSigmaMax=fnSigma[3];
+    }
     if(GetnSigmaTOF(track,specie,nsigma)==1){
-      nsigma=TMath::Abs(nsigma);
-      if (nsigma>fnSigma[3]) pid=-1; 
+      if(nsigma<nSigmaMin || nsigma>nSigmaMax) pid=-1;
       else pid=specie;
     }
   }
   return pid; 
-  /*
- Double_t time[AliPID::kSPECIESN];
- Double_t sigmaTOFPid[AliPID::kSPECIES];
- AliAODPid *pidObj = track->GetDetPid();
- pidObj->GetIntegratedTimes(time);
- Double_t sigTOF=pidObj->GetTOFsignal();
+}
+//----------------------------
+Int_t AliAODPidHF::ApplyTOFCompatibilityBand(AliAODTrack *track,Int_t specie) const{
+// n-sigma cut, TOF PID
 
- AliAODEvent *event=(AliAODEvent*)track->GetAODEvent();
- if (event) {
-   AliTOFHeader* tofH=(AliTOFHeader*)event->GetTOFHeader();
-   if (tofH && fPidResponse) { // reading new AOD with new aliroot
-     AliTOFPIDResponse TOFres = (AliTOFPIDResponse)fPidResponse->GetTOFResponse();
-     sigTOF -= TOFres.GetStartTime(track->P());
-     if (specie<0) {
-       for (Int_t ipart = 0; ipart<5; ipart++) {
-	 sigmaTOFPid[ipart]=TOFres.GetExpectedSigma(track->P(),time[ipart],AliPID::ParticleMass(ipart));
-       }
-     }
-     else sigmaTOFPid[specie]=TOFres.GetExpectedSigma(track->P(),time[specie],AliPID::ParticleMass(specie)); //fTOFResponse is set in InitialiseEvent
-   } else  pidObj->GetTOFpidResolution(sigmaTOFPid); // reading old AOD with new aliroot
- } else  pidObj->GetTOFpidResolution(sigmaTOFPid);  //reading old AOD with old aliroot
+  if(specie<0) return -1;
+  Double_t nsigma=-999.;
+  Int_t pid=-1;
 
- Int_t pid=-1;
-
-  if(specie<0){  
-   Double_t sigmaTOFtrack;
-   if (sigmaTOFPid[4]>0) sigmaTOFtrack=sigmaTOFPid[4];
-   else sigmaTOFtrack=fTOFSigma;
-   Double_t nsigmaMax=sigmaTOFtrack*fnSigma[3];
-   for(Int_t ipart=0;ipart<5;ipart++){
-    Double_t nsigma=TMath::Abs(sigTOF-time[ipart]);
-    if (sigmaTOFPid[ipart]>0) sigmaTOFtrack=sigmaTOFPid[ipart]; 
-    else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
-    if((nsigma<nsigmaMax) && (nsigma<fnSigma[3]*sigmaTOFtrack)) {
-     pid=ipart;
-     nsigmaMax=nsigma;
-    }
-   }
-  }else{ // asks only for one particle specie
-    Double_t nsigma=TMath::Abs(sigTOF-time[specie]);
-    Double_t sigmaTOFtrack;
-    if (sigmaTOFPid[specie]>0) sigmaTOFtrack=sigmaTOFPid[specie]; 
-    else sigmaTOFtrack=fTOFSigma;  // backward compatibility for old AODs
-    if (nsigma>fnSigma[3]*sigmaTOFtrack) {
-      pid=-1; 
-    }else{
-      pid=specie;
-    }
+  Double_t nSigmaMin,nSigmaMax;
+  if(fUseAsymTOF){
+    nSigmaMin=fLownSigmaCompatTOF;
+    nSigmaMax=fUpnSigmaCompatTOF;	
+  }else{
+    nSigmaMin=-fnSigmaCompat[1];
+    nSigmaMax=fnSigmaCompat[1];
   }
- return pid; 
-  */
+  if(GetnSigmaTOF(track,specie,nsigma)==1){
+    if(nsigma<nSigmaMin || nsigma>nSigmaMax) pid=-1;
+    else pid=specie;
+  }
+  return pid; 
 }
 //------------------------------
 void AliAODPidHF::CombinedProbability(AliAODTrack *track,Bool_t *type) const{
@@ -518,10 +508,7 @@ Int_t AliAODPidHF::MatchTPCTOF(AliAODTrack *track, Int_t specie){
       if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=1;
       if(fCompat && tTOFinfo>0){
 	if(ptrack>fPCompatTOF) {
-	  Double_t sig0tmp=fnSigma[3];
-	  SetSigma(3,fnSigmaCompat[1]);
-	  if(ApplyPidTOFRaw(track,specie)==specie) tTOFinfo=0;
-	  SetSigma(3,sig0tmp);
+	  if(ApplyTOFCompatibilityBand(track,specie)==specie) tTOFinfo=0;
 	}
       }
     }
@@ -963,8 +950,12 @@ void AliAODPidHF::SetUpCombinedPID(){
   // Configuration of combined Bayesian PID
 
   fPidCombined->SetSelectedSpecies(AliPID::kSPECIES);
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
-    fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  if(!fDefaultPriors){
+  	for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies) {
+    	fPidCombined->SetPriorDistribution(static_cast<AliPID::EParticleType>(ispecies),fPriorsH[ispecies]);
+  	}
+  }else{
+  	fPidCombined->SetDefaultTPCPriors(); 
   }
   switch (fCombDetectors){
   case kTPCTOF:
@@ -986,3 +977,57 @@ void AliAODPidHF::SetUpCombinedPID(){
 }
 
 
+//-----------------------------
+void AliAODPidHF::PrintAll() const {
+  // print the configuration
+  printf("Detectors used for PID: ");
+  if(fITS) printf("ITS ");
+  if(fTPC) printf("TPC ");
+  if(fTRD) printf("TRD ");
+  if(fTOF) printf("TOF ");
+  printf("\n");
+  printf("Minimum TPC PID clusters = %d\n",fMinNClustersTPCPID);
+  printf("Maximum momentum for using TPC PID = %f\n",fPtThresholdTPC);
+  printf("TOF Mismatch probablility cut = %f\n",fCutTOFmismatch);
+  printf("Maximum momentum for combined PID TPC PID = %f\n",fMaxTrackMomForCombinedPID);
+  if(fOldPid){
+    printf("Use OLD PID");
+    printf("  fMC = %d\n",fMC);
+    printf("  fPbPb = %d\n",fPbPb);
+    printf("  fOnePad = %d\n",fOnePad);
+    printf("  fMCLowEn2011 = %d\n",fMCLowEn2011);
+    printf("  fppLowEn2011 = %d\n",fppLowEn2011);
+  }
+  printf("--- Matching algorithm = %d ---\n",fMatch);
+  if(fMatch==1){
+    if(fITS) printf("nSigmaITS = %.2f\n",fnSigma[4]);
+    if(fTOF){
+      printf("nSigmaTOF = %.2f\n",fnSigma[3]);
+      if(fCompat) printf("Compatibility band at nSigmaTOF=%.2f for p>%.2f\n",fnSigmaCompat[1],fPCompatTOF);
+    }
+    if(fTPC){
+      if(fAsym){
+	printf("nSigmaTPC:\n");
+	printf("   pt<%.2f      \t nsigmaTPC= %.2f\n",fPLimit[0],fnSigma[0]);
+	printf("   %.2f<pt<%.2f \t nsigmaTPC= %.2f\n",fPLimit[0],fPLimit[1],fnSigma[1]);
+	printf("   pt>%.2f      \t nsigmaTPC= %.2f\n",fPLimit[1],fnSigma[2]); 
+      }else{
+	printf("nSigmaTPC = %.2f\n",fnSigma[0]);
+      }
+      if(fCompat) printf("Compatibility band at nSigmaTPC=%.2f\n",fnSigmaCompat[0]);
+     }
+  }else if(fMatch==4){
+    printf("Cuts on sqrt(nSigmaTPC^2+nSigmaTOF^2):\n");
+    printf(" Pions:   nSigma = %.2f\n",fMaxnSigmaCombined[0]);
+    printf(" Kaons:   nSigma = %.2f\n",fMaxnSigmaCombined[1]);
+    printf(" Protons: nSigma = %.2f\n",fMaxnSigmaCombined[2]);
+  }else if(fMatch==5){
+    printf("nSigma ranges:\n");
+    printf(" Pions:   %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[0],fMaxnSigmaTPC[0],fMinnSigmaTOF[0],fMaxnSigmaTOF[0]);
+    printf(" Kaons:   %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[1],fMaxnSigmaTPC[1],fMinnSigmaTOF[1],fMaxnSigmaTOF[1]);
+    printf(" Protons: %.2f<nSigmaTPC<%.2f   %.2f<nSigmaTOF<%.2f\n",
+	   fMinnSigmaTPC[2],fMaxnSigmaTPC[2],fMinnSigmaTOF[2],fMaxnSigmaTOF[2]);
+  }
+}

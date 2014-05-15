@@ -1,7 +1,5 @@
-
-void rec(int dset=0)
+void rec()
 {
-  
   AliReconstruction reco;
   reco.SetRunQA("MUON:ALL");
   
@@ -10,7 +8,7 @@ void rec(int dset=0)
   
   reco.SetDefaultStorage(VAR_OCDB_PATH);
 
-  if ( dset == 1 )
+  if ( VAR_USE_ITS_RECO )
   {
     reco.SetRunReconstruction("MUON ITS");
   }
@@ -28,8 +26,16 @@ void rec(int dset=0)
   reco.SetSpecificStorage("GRP/GRP/Data",Form("local://%s",gSystem->pwd()));
   
   // MUON Tracker Residual Alignment
-  reco.SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
-reco.SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
+  reco.SetSpecificStorage("MUON/Align/Data",VAR_REC_ALIGNDATA);
   
+  // ITS
+  reco.SetRunPlaneEff(kTRUE);
+  reco.SetUseTrackingErrorsForAlignment("ITS");
+
+  // ITS (2 objects)
+  
+  reco.SetSpecificStorage("ITS/Align/Data",     "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+  reco.SetSpecificStorage("ITS/Calib/SPDSparseDead", "alien://folder=/alice/simulation/2008/v4-15-Release/Residual");
+
   reco.Run();
 }

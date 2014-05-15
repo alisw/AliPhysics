@@ -25,6 +25,7 @@ class AliTOFPIDResponse;
 class AliVEvent;
 class AliVTrack;
 
+#include "TAxis.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -61,6 +62,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
+  enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
+                       kDeDxCheckNumAxes = 5 };
+  
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
   
@@ -70,6 +74,8 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum TOFpidInfo { kNoTOFinfo = -2, kNoTOFpid = -1, kTOFpion = 0, kTOFkaon = 1, kTOFproton = 2, kNumTOFspecies = 3,
                     kNumTOFpidInfoBins = 5 };
+  
+  enum EventCounterType { kTriggerSel = 0, kTriggerSelAndVtxCut = 1, kTriggerSelAndVtxCutAndZvtxCut = 2 };
   
   static Int_t PDGtoMCID(Int_t pdg);
   
@@ -104,7 +110,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t FillGenJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   Bool_t FillRecJets(Double_t centralityPercentile, Double_t jetPt, Double_t norm = -1.);
   
-  Bool_t IncrementEventsProcessed(Double_t centralityPercentile);
+  Bool_t IncrementEventCounter(Double_t centralityPercentile, EventCounterType type);
   
   void PostOutputData();
   
@@ -139,6 +145,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t GetDoPtResolution() const { return fDoPtResolution; };
   void SetDoPtResolution(Bool_t flag) { fDoPtResolution = flag; };
+  
+  Bool_t GetDoDeDxCheck() const { return fDoDeDxCheck; };
+  void SetDoDeDxCheck(Bool_t flag) { fDoDeDxCheck = flag; };
   
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
@@ -179,9 +188,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t IsInAcceptedEtaRange(Double_t etaAbs) const { return (etaAbs >= fEtaAbsCutLow && etaAbs <= fEtaAbsCutUp); };
   
-  Double_t GetSystematicScalingSplines() const { return fSystematicScalingSplines; };
-  void SetSystematicScalingSplines(Double_t scaleFactor) 
-    { fSystematicScalingSplines = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  Double_t GetSystematicScalingSplinesThreshold() const { return fSystematicScalingSplinesThreshold; };
+  void SetSystematicScalingSplinesThreshold(Double_t threshold) { fSystematicScalingSplinesThreshold = threshold; };
+  
+  Double_t GetSystematicScalingSplinesBelowThreshold() const { return fSystematicScalingSplinesBelowThreshold; };
+  void SetSystematicScalingSplinesBelowThreshold(Double_t scaleFactor) 
+    { fSystematicScalingSplinesBelowThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+    
+  Double_t GetSystematicScalingSplinesAboveThreshold() const { return fSystematicScalingSplinesAboveThreshold; };
+  void SetSystematicScalingSplinesAboveThreshold(Double_t scaleFactor) 
+    { fSystematicScalingSplinesAboveThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
   Double_t GetSystematicScalingEtaCorrectionMomentumThr() const { return fSystematicScalingEtaCorrectionMomentumThr; };
   void SetSystematicScalingEtaCorrectionMomentumThr(Double_t threshold) { fSystematicScalingEtaCorrectionMomentumThr = threshold; };
@@ -194,13 +210,23 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   void SetSystematicScalingEtaCorrectionHighMomenta(Double_t scaleFactor) 
     { fSystematicScalingEtaCorrectionHighMomenta = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
-  Double_t GetSystematicScalingEtaSigmaPara() const { return fSystematicScalingEtaSigmaPara; };
-  void SetSystematicScalingEtaSigmaPara(Double_t scaleFactor)
-    { fSystematicScalingEtaSigmaPara = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  Double_t GetSystematicScalingEtaSigmaParaThreshold() const { return fSystematicScalingEtaSigmaParaThreshold; };
+  void SetSystematicScalingEtaSigmaParaThreshold(Double_t threshold) { fSystematicScalingEtaSigmaParaThreshold = threshold; };
+  
+  Double_t GetSystematicScalingEtaSigmaParaBelowThreshold() const { return fSystematicScalingEtaSigmaParaBelowThreshold; };
+  void SetSystematicScalingEtaSigmaParaBelowThreshold(Double_t scaleFactor)
+    { fSystematicScalingEtaSigmaParaBelowThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  
+  Double_t GetSystematicScalingEtaSigmaParaAboveThreshold() const { return fSystematicScalingEtaSigmaParaAboveThreshold; };
+  void SetSystematicScalingEtaSigmaParaAboveThreshold(Double_t scaleFactor)
+    { fSystematicScalingEtaSigmaParaAboveThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
   Double_t GetSystematicScalingMultCorrection() const { return fSystematicScalingMultCorrection; };
   void SetSystematicScalingMultCorrection(Double_t scaleFactor) 
     { fSystematicScalingMultCorrection = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  
+  Double_t GetMaxEtaVariation(Double_t dEdxSplines);
+  Bool_t CalculateMaxEtaVariationMapFromPIDResponse();
   
   void CleanupParticleFractionHistos();
   Bool_t GetParticleFraction(Double_t trackPt, Double_t jetPt, Double_t multiplicity,
@@ -234,6 +260,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes; // Number of additional axes for jets
@@ -243,6 +270,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
  private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+  Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
   Bool_t fInputFromOtherTask; // If set to kTRUE, no events are processed and the input must be fed in from another task. If set to kFALSE, normal event processing
@@ -250,6 +278,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t fDoPID; // Only do PID processing (and post the output), if flag is set to kTRUE
   Bool_t fDoEfficiency; // Only do efficiency processing (and post the output), if flag is set to kTRUE
   Bool_t fDoPtResolution; // Only do pT resolution processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoDeDxCheck; // Only check dEdx, if flag set to kTRUE
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -278,11 +307,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   // For systematic studies
   Bool_t   fDoAnySystematicStudiesOnTheExpectedSignal; // Internal flag indicating whether any systematic studies are going to be performed
-  Double_t fSystematicScalingSplines;        // Systematic scale factor for the splines (1. = no systematics) 
+  Double_t fSystematicScalingSplinesThreshold;         // beta-gamma threshold for the systematic spline scale factor
+  Double_t fSystematicScalingSplinesBelowThreshold;        // Systematic scale factor for the splines (1. = no systematics) below threshold
+  Double_t fSystematicScalingSplinesAboveThreshold;        // Systematic scale factor for the splines (1. = no systematics) above threshold
   Double_t fSystematicScalingEtaCorrectionMomentumThr;  // Momentum threshold for the systematic scale factor for the eta correction (separates low-p from high-p
   Double_t fSystematicScalingEtaCorrectionLowMomenta;   // Systematic scale factor for the eta correction (1. = no systematics) at low momenta
   Double_t fSystematicScalingEtaCorrectionHighMomenta;  // Systematic scale factor for the eta correction (1. = no systematics) at high momenta
-  Double_t fSystematicScalingEtaSigmaPara;   // Systematic scale factor for the parametrisation of the relative signal width (1. = no systematics) 
+  
+  Double_t fSystematicScalingEtaSigmaParaThreshold; // dEdx threshold for the systematic scale factor for the parametrisation of the relative signal width
+  Double_t fSystematicScalingEtaSigmaParaBelowThreshold; // Systematic scale factor for the parametrisation of the relative signal width (1. = no systematics) below threshold
+  Double_t fSystematicScalingEtaSigmaParaAboveThreshold; // Systematic scale factor for the parametrisation of the relative signal width (1. = no systematics) above threshold 
   Double_t fSystematicScalingMultCorrection; // Systematic scale factor for the multiplicity correction (1. = no systematics) 
   
   TH3D* fFractionHists[AliPID::kSPECIES]; // 3D histos of particle fraction as function  with trackPt, jetPt (-1 for inclusive spectra), centralityPercentile (-1 for pp)
@@ -343,7 +377,13 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t* fGenRespPrDeltaPr; //! Generated responses for a single track
   */
   
-  TH1D* fhEventsProcessed; //! Histo holding the number of processed events
+  TAxis* fDeltaPrimeAxis; //! Axis holding the deltaPrime binning
+  TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
+  
+  TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
+  TH1D* fhEventsTriggerSel; //! Histo holding the number of events passing trigger selection
+  TH1D* fhEventsTriggerSelVtxCut; //! Histo holding the number of events passing trigger selection and vtx cut
+  
   TH2D* fhSkippedTracksForSignalGeneration; //! Number of tracks that have been skipped for the signal generation
   THnSparseD* fhMCgeneratedYieldsPrimaries; //! Histo holding the generated (no reco, no cuts) primary particle yields in considered eta range
   
@@ -357,14 +397,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
   
+  THnSparseD* fDeDxCheck; //! dEdx check
+  
   TObjArray* fOutputContainer;  //! output data container
   
-  TObjArray* fPtResolutionContainer;  //! output data container for pt resolution
+  TObjArray* fQAContainer; //! output data container for QA
   
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 14);
+  ClassDef(AliAnalysisTaskPID, 19);
 };
 
 
@@ -463,19 +505,36 @@ inline Bool_t AliAnalysisTaskPID::FillPtResolution(Int_t mcID, const Double_t* v
  
 
 //_____________________________________________________________________________
-inline Bool_t AliAnalysisTaskPID::IncrementEventsProcessed(Double_t centralityPercentile)
+inline Bool_t AliAnalysisTaskPID::IncrementEventCounter(Double_t centralityPercentile, AliAnalysisTaskPID::EventCounterType type)
 {
-  // Increment the number of processed events for the given centrality percentile
+  // Increment the number of events for the given centrality percentile and the corresponding counter type
   
-  if (!fDoPID)
-    return kFALSE;
-  
-  if (!fhEventsProcessed) {
-    AliError("Histogram for number of events not initialised -> cannot be incremented!");
-    return kFALSE;
+  if (type == kTriggerSel) {
+    if (!fhEventsTriggerSel) {
+      AliError("Histogram for number of events (kTriggerSel) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsTriggerSel->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCut) {
+    if (!fhEventsTriggerSelVtxCut) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCut) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsTriggerSelVtxCut->Fill(centralityPercentile);
+  }
+  else if (type == kTriggerSelAndVtxCutAndZvtxCut) {
+    if (!fhEventsProcessed) {
+      AliError("Histogram for number of events (kTriggerSelAndVtxCutAndZvtxCut) not initialised -> cannot be incremented!");
+      return kFALSE;
+    }
+    
+    fhEventsProcessed->Fill(centralityPercentile);
   }
   
-  fhEventsProcessed->Fill(centralityPercentile);
+  
   return kTRUE;
 };
 
@@ -559,8 +618,8 @@ inline void AliAnalysisTaskPID::PostOutputData()
   if (fDoEfficiency)
     PostData(2, fContainerEff);
   
-  if (fDoPtResolution)
-    PostData(3, fPtResolutionContainer);
+  if (fDoPtResolution || fDoDeDxCheck)
+    PostData(3, fQAContainer);
 }
 
 #endif

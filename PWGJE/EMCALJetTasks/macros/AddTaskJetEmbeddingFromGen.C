@@ -10,7 +10,8 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   const Double_t  maxEta       = 0.9,
   const Double_t  minPhi       = 0,
   const Double_t  maxPhi       = TMath::Pi() * 2,
-  const Bool_t    copyArray    = kFALSE
+  const Bool_t    copyArray    = kTRUE,
+  const Bool_t    drawQA       = kFALSE
 )
 {  
   // Get the pointer to the existing analysis manager via the static access method.
@@ -34,7 +35,7 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
   // Init the task and do settings
   //-------------------------------------------------------
 
-  AliJetEmbeddingFromGenTask *jetEmb = new AliJetEmbeddingFromGenTask(taskName);
+  AliJetEmbeddingFromGenTask *jetEmb = new AliJetEmbeddingFromGenTask(taskName,drawQA);
   jetEmb->SetGen(genGen);
   jetEmb->SetTracksName(tracksName);
   jetEmb->SetEtaRange(minEta, maxEta);
@@ -50,6 +51,17 @@ AliJetEmbeddingFromGenTask* AddTaskJetEmbeddingFromGen(
     
   // Create containers for input/output
   mgr->ConnectInput (jetEmb, 0, mgr->GetCommonInputContainer() );
+
+  if (drawQA) {
+    TString contName = taskName;
+    contName += "_histos";
+    AliAnalysisDataContainer *outc = mgr->CreateContainer(contName,
+                                                          TList::Class(),
+                                                          AliAnalysisManager::kOutputContainer,
+                                                          "AnalysisResults.root");
+    mgr->ConnectOutput(jetEmb, 1, outc);
+  }
+
 
   return jetEmb;
 }

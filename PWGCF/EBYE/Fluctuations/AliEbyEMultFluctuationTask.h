@@ -18,7 +18,7 @@ class AliAODTracklets;
 
 class AliEbyEMultFluctuationTask : public AliAnalysisTaskSE {
  public:
- AliEbyEMultFluctuationTask() : AliAnalysisTaskSE(), fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityCounter(0),fEventCounter(0),histcounter(0){
+ AliEbyEMultFluctuationTask() : AliAnalysisTaskSE(), fAOD(0), fAODVertex(0),fHistNchPt(0),fHistNchEta(0),fHistNchEtaCent(0),fHistNchPhi(0),fHistDCAxy(0),fHistDCAz(0),fHistnclus(0),fHistchi2ndf(0),fHistchi2ndfvscs(0),fHistVz(0),fHistMultV0A(0),fHistMultV0C(0),fHistMultV0total(0),My_ntuple(0),fOutputList(0),fCentralityEstimator("V0M"),fCentralityBins20(kFALSE),fCentralityCounter(0),fEventCounter(0),histcounter(0){
 		for(Int_t ibin=0;ibin<91;ibin++)
 		{
 			fMult[ibin]=NULL;

@@ -70,7 +70,14 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
    fBigOutput(kFALSE),
-   fMixPrintRefresh(-1)
+   fMixPrintRefresh(-1),
+   fMaxNDaughters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -107,7 +114,14 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
    fBigOutput(kFALSE),
-   fMixPrintRefresh(-1)
+   fMixPrintRefresh(-1),
+   fMaxNDaughters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE)
 {
 //
 // Default constructor.
@@ -149,7 +163,14 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fESDtrackCuts(copy.fESDtrackCuts),
    fMiniEvent(0x0),
    fBigOutput(copy.fBigOutput),
-   fMixPrintRefresh(copy.fMixPrintRefresh)
+   fMixPrintRefresh(copy.fMixPrintRefresh),
+   fMaxNDaughters(copy.fMaxNDaughters),
+   fCheckP(copy.fCheckP),
+   fCheckFeedDown(copy.fCheckFeedDown),   
+   fOriginDselection(copy.fOriginDselection),
+   fKeepDfromB(copy.fOriginDselection),
+   fKeepDfromBOnly(copy.fKeepDfromBOnly),
+   fRejectIfNoQuark(copy.fRejectIfNoQuark)
 {
 //
 // Copy constructor.
@@ -194,6 +215,13 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fESDtrackCuts = copy.fESDtrackCuts;
    fBigOutput = copy.fBigOutput;
    fMixPrintRefresh = copy.fMixPrintRefresh;
+   fMaxNDaughters = copy.fMaxNDaughters;
+   fCheckP = copy.fCheckP;
+   fCheckFeedDown = copy.fCheckFeedDown;
+   fOriginDselection = copy.fOriginDselection;
+   fKeepDfromB = copy.fOriginDselection;
+   fKeepDfromBOnly = copy.fKeepDfromBOnly;
+   fRejectIfNoQuark = copy.fRejectIfNoQuark;
    return (*this);
 }
 
@@ -909,7 +937,8 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
          //get mother pdg code
          if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
-         if (part->Particle()->GetNDaughters() < 2) continue;
+         if (part->Particle()->GetNDaughters() < 2) continue; 
+	 if (fMaxNDaughters > 0 && part->Particle()->GetNDaughters() > fMaxNDaughters) continue;
          label1 = part->Particle()->GetDaughter(0);
          label2 = part->Particle()->GetDaughter(1);
          daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
@@ -925,6 +954,58 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (!okMatch) continue;
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+     				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
+     				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
+	 if(fCheckFeedDown){
+		Int_t pdgGranma = 0;
+		Int_t mother = 0;
+		mother = part->GetMother();
+		Int_t istep = 0;
+		Int_t abspdgGranma =0;
+		Bool_t isFromB=kFALSE;
+		Bool_t isQuarkFound=kFALSE;
+		while (mother >=0 ){
+			istep++;
+			AliDebug(2,Form("mother at step %d = %d", istep, mother));
+			AliMCParticle* mcGranma = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(mother));
+			if (mcGranma){
+				pdgGranma = mcGranma->PdgCode();
+				AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+				abspdgGranma = TMath::Abs(pdgGranma);
+				if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+				  isFromB=kTRUE;
+				}
+				if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+				mother = mcGranma->GetMother();
+			}else{
+				AliError("Failed casting the mother particle!");
+				break;
+			}
+		}
+		if(fRejectIfNoQuark && !isQuarkFound) pdgGranma = -99999;
+		if(isFromB){
+		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
+		}
+		else{ 
+		  if (fKeepDfromBOnly) pdgGranma = -999;
+		  
+		if (pdgGranma == -99999){
+			AliDebug(2,"This particle does not have a quark in his genealogy\n");
+			continue;
+		}
+		if (pdgGranma == -9999){
+			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+			continue;
+		}	
+		
+		if (pdgGranma == -999){
+			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+			continue;
+		}	
+
+	      }
+	 }
          // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
@@ -959,6 +1040,7 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
          if (part->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
+	 if (fMaxNDaughters > 0 && part->GetNDaughters() > fMaxNDaughters) continue;
          label1 = part->GetDaughter(0);
          label2 = part->GetDaughter(1);
          daughter1 = (AliAODMCParticle *)list->At(label1);
@@ -974,7 +1056,58 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
             p2.SetXYZM(daughter2->Px(), daughter2->Py(), daughter2->Pz(), def->GetMass(0));
          }
          if (!okMatch) continue;
-         // assign momenta to computation object
+	 if(fCheckP && (TMath::Abs(part->Px()-(daughter1->Px()+daughter2->Px()))/(TMath::Abs(part->Px())+1.e-13)) > 0.00001 &&	 
+     				(TMath::Abs(part->Py()-(daughter1->Py()+daughter2->Py()))/(TMath::Abs(part->Py())+1.e-13)) > 0.00001 &&
+     				(TMath::Abs(part->Pz()-(daughter1->Pz()+daughter2->Pz()))/(TMath::Abs(part->Pz())+1.e-13)) > 0.00001 ) continue;
+	 if(fCheckFeedDown){
+		Int_t pdgGranma = 0;
+		Int_t mother = 0;
+		mother = part->GetMother();
+		Int_t istep = 0;
+		Int_t abspdgGranma =0;
+		Bool_t isFromB=kFALSE;
+		Bool_t isQuarkFound=kFALSE;
+		while (mother >=0 ){
+			istep++;
+			AliDebug(2,Form("mother at step %d = %d", istep, mother));
+			AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(list->At(mother));
+			if (mcGranma){
+				pdgGranma = mcGranma->GetPdgCode();
+				AliDebug(2,Form("Pdg mother at step %d = %d", istep, pdgGranma));
+				abspdgGranma = TMath::Abs(pdgGranma);
+				if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+				  isFromB=kTRUE;
+				}
+				if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+				mother = mcGranma->GetMother();
+			}else{
+				AliError("Failed casting the mother particle!");
+				break;
+			}
+		}
+		if(fRejectIfNoQuark && !isQuarkFound) pdgGranma = -99999;
+		if(isFromB){
+		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
+		}
+		else{ 
+		  if (fKeepDfromBOnly) pdgGranma = -999;
+		  }
+		  
+		if (pdgGranma == -99999){
+			AliDebug(2,"This particle does not have a quark in his genealogy\n");
+			continue;
+		}
+		if (pdgGranma == -9999){
+			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+			continue;
+		}	
+		
+		if (pdgGranma == -999){
+			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+			continue;
+		}	
+	 } 
+	 // assign momenta to computation object
          miniPair.Sum(0) = miniPair.Sum(1) = (p1 + p2);
          miniPair.FillRef(def->GetMotherMass());
          // do computations
@@ -982,7 +1115,33 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
       }
    }
 }
-
+//___________________________________________________________
+void AliRsnMiniAnalysisTask::SetDselection(UShort_t originDselection)
+{
+	// setting the way the D0 will be selected
+	// 0 --> only from c quarks
+	// 1 --> only from b quarks
+	// 2 --> from both c quarks and b quarks
+		
+	fOriginDselection = originDselection;
+	
+	if (fOriginDselection == 0) {
+		fKeepDfromB = kFALSE;
+		fKeepDfromBOnly = kFALSE;
+	}
+	
+	if (fOriginDselection == 1) {
+		fKeepDfromB = kTRUE;
+		fKeepDfromBOnly = kTRUE;
+	}
+	
+	if (fOriginDselection == 2) {
+		fKeepDfromB = kTRUE;
+		fKeepDfromBOnly = kFALSE;
+	}
+	
+	return;	
+}
 //__________________________________________________________________________________________________
 Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2)
 {

@@ -15,7 +15,7 @@ void DrawMCCorrSummary(const char* fname="forward_mccorr.root",
   gROOT->SetMacroPath(Form("%s:%s/scripts",
 			   gROOT->GetMacroPath(), fwd));
   gROOT->Macro(Form("%s/scripts/LoadLibs.C", fwd));
-  gROOT->LoadMacro(Form("%s/scripts/SummaryMCCorrDrawer.C++g",fwd));
+  gROOT->LoadMacro(Form("%s/scripts/SummaryMCCorrDrawer.C+g",fwd));
   
   SummaryMCCorrDrawer d;
   d.Run(fname, what);

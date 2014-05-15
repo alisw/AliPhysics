@@ -14,14 +14,19 @@ enum { kNANO=0 };
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntries();
 
-Bool_t  isESD = kTRUE;
+Bool_t  isESD     = kTRUE;
+TString periodLHC = "";
 TString list  = gSystem->Getenv("LIST");
 
-AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE)
+
+AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE, TString period="")
 {
   //
   // Setup the instance of AliDielectron
   //
+
+  periodLHC = period;
+  printf("this is -%s- filtering \n",periodLHC.Data());
 
   //ESD handler?
   isESD=(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()->IsA()==AliESDInputHandler::Class());
@@ -38,20 +43,24 @@ AliDielectron* ConfigJpsi_nano_PbPb(Int_t cutDefinition, Bool_t hasMC=kFALSE)
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   SetupEventCuts(die,cutDefinition);
   SetupTrackCuts(die,cutDefinition);
-  SetupV0Cuts(die,cutDefinition);   // switch off for nanoAODs??
-  SetupPairCuts(die,cutDefinition);
+  // SetupV0Cuts(die,cutDefinition);   // switch off for nanoAODs??
+  // SetupPairCuts(die,cutDefinition);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv MISC vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // PID eta correction
   //SetEtaCorrection(die); //no eta corrction
   // prefilter settings
-  if(hasMC) die->SetNoPairing();
-  else die->SetPreFilterUnlikeOnly();
+  //  if(hasMC)
+  die->SetNoPairing();
+  //  else die->SetPreFilterUnlikeOnly();
   //die->SetPreFilterAllSigns();
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv OUTPUT vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // histogram setup
-  //  InitHistograms(die,cutDefinition);
+  InitHistograms(die,cutDefinition);
+
+  // cut QA
+  die->SetCutQA();
 
   return die;
 }
@@ -67,7 +76,7 @@ void SetupEventCuts(AliDielectron *die, Int_t cutDefinition)
   if(!isESD) eventCuts->SetVertexType(AliDielectronEventCuts::kVtxAny);
   eventCuts->SetRequireVertex();
   eventCuts->SetMinVtxContributors(1);
-  eventCuts->SetVertexZ(-10.,+10.);
+  //  eventCuts->SetVertexZ(-10.,+10.);
   eventCuts->SetCentralityRange(0., 90.);
   eventCuts->Print();
   die->GetEventFilter().AddCuts(eventCuts);
@@ -89,8 +98,9 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv FILTER CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
   // AOD track filter (needs to be first cut to speed up)
-  //  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
-  //  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+  AliDielectronTrackCuts *trkFilter = new AliDielectronTrackCuts("TrkFilter","TrkFilter");
+  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqual);
+  //  trkFilter->SetAODFilterBit(AliDielectronTrackCuts::kTPCqualSPDany);
   //  trkFilter->SetMinNCrossedRowsOverFindable(0.6);
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv TRACK CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
@@ -99,15 +109,16 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   // specific cuts
   varCuts->AddCut(AliDielectronVarManager::kPt,           0.85, 1e30);
   varCuts->AddCut(AliDielectronVarManager::kEta,         -0.9,   0.9);
-  //  varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
+  if(periodLHC.Contains("LHC11h"))
+    varCuts->AddCut(AliDielectronVarManager::kTPCclsSegments,7.,   8.0);
   varCuts->AddCut(AliDielectronVarManager::kNclsTPC,     70.0, 160.0);
-  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
+  //  trkCuts->SetITSclusterCut(AliDielectronTrackCuts::kOneOf, 3); // SPD any
 
   // standard cuts
   varCuts->AddCut(AliDielectronVarManager::kImpactParXY, -1.0,   1.0);
   varCuts->AddCut(AliDielectronVarManager::kImpactParZ,  -3.0,   3.0);
   varCuts->AddCut(AliDielectronVarManager::kTPCchi2Cl,    0.0,   4.0);
-  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.0);
+  varCuts->AddCut(AliDielectronVarManager::kKinkIndex0,   0.);
   trkCuts->SetRequireITSRefit(kTRUE);
   trkCuts->SetRequireTPCRefit(kTRUE);
 
@@ -118,7 +129,11 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
   //  pidVarCuts->AddCut(AliDielectronVarManager::kTOFbeta,      0.2,   0.9, kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTOF,AliPID::kElectron,-3,3.,0.,0.,kFALSE, AliDielectronPID::kIfAvailable);
   // TPC inclusion
-  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF
+  if(periodLHC.Contains("LHC10h"))
+    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-2.6,4.7); // when eta correction OFF (LHC10h) [-2.0,+3.]
+  //    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-4.0,4.7); // when eta correction OFF (LHC10h) [/*-2.0*/,+3.]
+  else
+    pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kElectron,-3.0,4.3); // when eta correction OFF (LHC11h) [-1.5,+3.]
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kPion,-100.,4.0,0.,0.,kTRUE);
   //  pidCuts->AddCut(AliDielectronPID::kTPC,AliPID::kProton,-100.,3.5,0.,0.,kTRUE);
 
@@ -139,7 +154,7 @@ void SetupTrackCuts(AliDielectron *die, Int_t cutDefinition)
     //    cuts->AddCut(pidCutsMC);
   }
   else {
-    //if(!isESD) cuts->AddCut(trkFilter);
+    if(!isESD) cuts->AddCut(trkFilter);
     cuts->AddCut(varCuts);
     cuts->AddCut(trkCuts);
     cuts->AddCut(pidCuts);
@@ -199,7 +214,7 @@ void SetupPairCuts(AliDielectron *die, Int_t cutDefinition)
   Double_t gCut=0.05;
   AliDielectronVarCuts *gammaCuts = new AliDielectronVarCuts("GammaCuts","GammaCuts");
   gammaCuts->AddCut(AliDielectronVarManager::kM,            0.0,   gCut);
-  die->GetPairPreFilter().AddCuts(gammaCuts);
+  //  die->GetPairPreFilter().AddCuts(gammaCuts);
 
   // rapidity selection
   Double_t yCut=0.9;
@@ -223,6 +238,11 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to event class
   histos->AddClass("Event");
   histos->UserHistogram("Event","","", 100, 0.0, 100.0,   AliDielectronVarManager::kCentrality);
+  histos->UserHistogram("Event","","", 300,-15., +15.0,   AliDielectronVarManager::kZvPrim);
+  // candidates monitoring
+  histos->UserProfile("Event","","", AliDielectronVarManager::kTracks, 100,0,100., AliDielectronVarManager::kCentrality);
+  histos->UserProfile("Event","","", AliDielectronVarManager::kPairs,  100,0,100., AliDielectronVarManager::kCentrality);
+
   die->SetHistogramManager(histos);
 }
 

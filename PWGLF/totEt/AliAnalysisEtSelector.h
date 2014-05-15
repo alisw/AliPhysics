@@ -61,13 +61,13 @@ public:
     virtual Bool_t IsNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
     
     // Is it an EM E_T particle
-    virtual Bool_t IsEmEtParticle(const Int_t pdgCode) const;
+    virtual Bool_t IsEmEtParticle(Int_t pdgCode) const;
     
     // Does the particle come from an EM E_T primary ?
-    virtual Bool_t PrimaryIsEmEtParticle(const Int_t pIdx, AliStack &stack) const;
+    virtual Bool_t PrimaryIsEmEtParticle(Int_t pIdx, AliStack &stack) const;
 
     // Get the index of primary particle for the particle
-    Int_t GetPrimary(const Int_t partIdx, AliStack &stack) const;
+    Int_t GetPrimary(Int_t partIdx, AliStack &stack) const;
     
     // Cut on geometrical acceptance 
     virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) { return true; }
@@ -79,7 +79,12 @@ public:
     virtual Bool_t CutGeometricalAcceptance(const AliESDCaloCluster &/*part*/) { return true; }
     
     // From secondary vertex?
-    virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
+    //virtual Bool_t FromSecondaryInteraction(const TParticle& part, AliStack& stack) const;
+    virtual Bool_t FromSecondaryInteraction(Int_t partID, AliStack& stack) const;
+
+    Int_t GetMother(Int_t partID, AliStack& stack) const;
+    Bool_t IsFromDetectorCover(Int_t partID, AliStack& stack) const;
+    Int_t GetFirstMotherNotFromDetectorCover(Int_t partID, AliStack& stack) const;
     
     // Cluster is in correct detector
     virtual Bool_t IsDetectorCluster(const AliESDCaloCluster &cluster) const = 0;

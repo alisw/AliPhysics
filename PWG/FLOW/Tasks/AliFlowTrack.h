@@ -22,7 +22,8 @@ public:
                      kFromFMD=4,
                      kFromPMD=5,
                      kFromV0=6,
-                     kFromMUON=7 }; // XZhang 20120604
+                     kFromMUON=7,// XZhang 20120604
+                     kFromKink }; 
   AliFlowTrack();
   AliFlowTrack(const AliVParticle* p);
   AliFlowTrack& operator=(const AliFlowTrack& aTrack);
@@ -37,6 +38,8 @@ public:
                   { fTrackSourceBits.SetBitNumber(UInt_t(s),kTRUE); }
   Bool_t IsSource( trackSource s ) const
                  { return fTrackSourceBits.TestBitNumber(s); }
+
+  virtual void Clear(Option_t* o="") {AliFlowTrackSimple::Clear(o); fTrackSourceBits.Clear();}
 
 private:
   TBits fTrackSourceBits; //where do i come from?

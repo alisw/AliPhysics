@@ -107,18 +107,31 @@ Double_t AliAnalysisEtReconstructedPhos::GetCorrectionModification(const AliESDC
   Double_t factor = 1.0;
   if(nonLinCorr!=0){
     if(nonLinCorr==1){//high bound on nonlinearity
-      factor *=1.05;
+      Double_t a1=0.045-0.010;
+      Double_t a2=0.045+0.010;
+      Double_t b1=1.055-0.450 ;
+      Double_t b2=1.055+0.450 ;
+      Double_t y = (1+a2/(1+cluster.E()*cluster.E()/b2/b2))/(1+a1/(1+cluster.E()*cluster.E()/b1/b1)) ;
+      factor *=y*GetCorrectionModification(cluster,0,0,cent);
     }
     else{//nonLinCorr==-1
-      factor *=0.95;
+      Double_t a1=0.045-0.010;
+      Double_t a2=0.045+0.010;
+      Double_t b1=1.055-0.450 ;
+      Double_t b2=1.055+0.450 ;
+      Double_t y = (1+a1/(1+cluster.E()*cluster.E()/b1/b1))/(1+a2/(1+cluster.E()*cluster.E()/b2/b2)) ;
+      factor *=y*GetCorrectionModification(cluster,0,0,cent);
     }
+  }
+  else{//nonlinearity correction
+    factor = 0.9728*(1+0.02/(1+cluster.E()*cluster.E()/1.5));
   }
   if(effCorr!=0){
     if(effCorr==1){//high bound
-      factor *=1.005;
+      factor *=1.005*GetCorrectionModification(cluster,0,0,cent);
     }
     else{//low bound
-      factor *=0.995;
+      factor *=0.995*GetCorrectionModification(cluster,0,0,cent);
     }
     if(cent<0){//this condition will never be met but it will stop a compiler warning that results in Coverity sending me an email about once every two weeks.
       Double_t E = cluster.E();

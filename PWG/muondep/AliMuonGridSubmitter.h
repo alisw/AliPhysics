@@ -25,7 +25,7 @@ public:
     kQAMerge=1
   };
   
-  AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType);
+  AliMuonGridSubmitter(AliMuonGridSubmitter::EJobType jobType, Bool_t localOnly=kFALSE);
   virtual ~AliMuonGridSubmitter();
 
   virtual Bool_t Generate(const char* jdlname) const = 0;
@@ -111,8 +111,18 @@ public:
   
   TObjArray* TemplateFileList() const;
   
+  void AddToTemplateFileList(const char* filename);
+
+  void AddToLocalFileList(const char* filename);
+
+  void AddIncludePath(const char* pathList) const;
+
+  TString GetVar(const char* key) const;
+
 protected:
   
+  TObjArray* OrderKeys(const TMap& map) const;
+
   std::ostream* CreateJDLFile(const char* name);
 
   TString GetMapValue(const char* key) const;
@@ -127,8 +137,6 @@ protected:
   Bool_t SetRemoteDirectory(const char* type, const char* path);
 
   void UpdateLocalFileList();
-  
-  void AddToTemplateFileList(const char* filename);
   
 private:
   AliMuonGridSubmitter(const AliMuonGridSubmitter& rhs);

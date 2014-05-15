@@ -82,6 +82,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetClusterize(Bool_t b)                              { fDoClusterize                = b     ; }
   void                   SetClusterBadChannelCheck(Bool_t b)                  { fClusterBadChannelCheck      = b     ; }
   void                   SetRejectExoticClusters(Bool_t b)                    { fRejectExoticClusters        = b     ; }
+  void                   SetRejectExoticCells(Bool_t b)                       { fRejectExoticCells           = b     ; }
   void                   SetFiducial(Bool_t b)                                { fFiducial                    = b     ; }
   void                   SetDoNonLinearity(Bool_t b)                          { fDoNonLinearity              = b     ; }
   void                   SetRecalDistToBadChannels(Bool_t b)                  { fRecalDistToBadChannels      = b     ; }
@@ -95,6 +96,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 GetOverwrite()                               const   { return fCaloClustersName.IsNull()                ; }
     
  protected:
+  Bool_t                 AcceptCell(Int_t cellNumber);
   virtual void           Clusterize();
   virtual void           FillDigitsArray();
   virtual void           Init();
@@ -139,6 +141,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Bool_t                 fDoClusterize;                   // clusterize
   Bool_t                 fClusterBadChannelCheck;         // cluster bad channel check
   Bool_t                 fRejectExoticClusters;           // reject exotic cluster
+  Bool_t                 fRejectExoticCells;              // reject exotic cells on-the-fly
   Bool_t                 fFiducial;                       // fiducial cut
   Bool_t                 fDoNonLinearity;                 // non linearity calib
   Bool_t                 fRecalDistToBadChannels;         // recalculate distance to bad channel

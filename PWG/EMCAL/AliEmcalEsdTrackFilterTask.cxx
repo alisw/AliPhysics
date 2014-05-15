@@ -4,16 +4,17 @@
 //
 // Author: C.Loizides
 
+#include "AliEmcalEsdTrackFilterTask.h"
 #include <TClonesArray.h>
+#include <TRandom3.h>
 #include <TGeoGlobalMagField.h>
 #include <AliAnalysisManager.h>
+#include <AliEMCALRecoUtils.h>
 #include <AliESDEvent.h>
 #include <AliESDtrackCuts.h>
 #include <AliMagF.h>
 #include <AliTrackerBase.h>
-#include <AliEMCALRecoUtils.h>
 
-#include "AliEmcalEsdTrackFilterTask.h"
 
 ClassImp(AliEmcalEsdTrackFilterTask)
 
@@ -27,6 +28,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask() :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fEsdEv(0),
   fTracks(0)
 {
@@ -43,6 +45,7 @@ AliEmcalEsdTrackFilterTask::AliEmcalEsdTrackFilterTask(const char *name) :
   fIncludeNoITS(kTRUE),
   fDoPropagation(kFALSE),
   fDist(440),
+  fTrackEfficiency(1),
   fEsdEv(0),
   fTracks(0)
 {
@@ -72,10 +75,14 @@ void AliEmcalEsdTrackFilterTask::UserCreateOutputObjects()
   fTracks = new TClonesArray("AliESDtrack");
   fTracks->SetName(fTracksName);
 
-  if (!fEsdTrackCuts) {
-    AliInfo("No track cuts given, creating default (standard only TPC) cuts");
-    fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-    fEsdTrackCuts->SetPtRange(0.15,1e3);
+  if (fDoSpdVtxCon) {
+    if (!fEsdTrackCuts) {
+      AliInfo("No track cuts given, creating default (standard only TPC) cuts");
+      fEsdTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+      fEsdTrackCuts->SetPtRange(0.15,1e3);
+    } 
+  } else {
+    AliWarning("No track cuts given, but maybe this is indeed intended?");
   }
 }
 
@@ -101,7 +108,7 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
   if (!(InputEvent()->FindListObject(fTracksName)))
     InputEvent()->AddObject(fTracks);
 
-  if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex if fDoSpdVtxCon==kTRUE
+  if (!fHybridTrackCuts) { // constrain TPC tracks to SPD vertex if fDoSpdVtxCon==kTRUE
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
     am->LoadBranch("Tracks");
@@ -121,8 +128,16 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
+
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
+
         if (!fEsdTrackCuts->AcceptTrack(etrack))
           continue;
+
         AliESDtrack *ntrack = AliESDtrackCuts::GetTPCOnlyTrack(fEsdEv,etrack->GetID());
         if (!ntrack)
           continue;
@@ -144,6 +159,8 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
           delete ntrack;
           continue;
         }
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
         new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
         delete ntrack;
       }
@@ -153,9 +170,16 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
         AliESDtrack *etrack = fEsdEv->GetTrack(i);
         if (!etrack)
           continue;
-        if (!fEsdTrackCuts->AcceptTrack(etrack))
+	if (fTrackEfficiency < 1) {
+	  Double_t r = gRandom->Rndm();
+	  if (fTrackEfficiency < r)
+	    continue;
+	}
+	if ((fEsdTrackCuts!=0) && !fEsdTrackCuts->AcceptTrack(etrack))
           continue;
-        new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
+        AliESDtrack *ntrack = new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(ntrack,fDist);
       }
     }
 
@@ -168,37 +192,41 @@ void AliEmcalEsdTrackFilterTask::UserExec(Option_t *)
       if (!etrack) 
 	continue;
 
-      if (fEsdTrackCuts->AcceptTrack(etrack)) {
+      if (fTrackEfficiency < 1) {
+	Double_t r = gRandom->Rndm();
+	if (fTrackEfficiency < r)
+	  continue;
+      }
 
-        new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-        AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
+      if (fEsdTrackCuts->AcceptTrack(etrack)) {
+        AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
 	if (fDoPropagation) 
 	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-        newTrack->SetBit(BIT(27),0); 
-        newTrack->SetBit(BIT(28),0);
+        newTrack->SetBit(BIT(22),0); 
+        newTrack->SetBit(BIT(23),0);
         ++ntrnew;
       } else if (fHybridTrackCuts->AcceptTrack(etrack)) {
-
+	if (!etrack->GetConstrainedParam())
+	  continue;
 	UInt_t status = etrack->GetStatus();
-        if (etrack->GetConstrainedParam() && ((status&AliESDtrack::kITSrefit)!=0 || fIncludeNoITS)) {
-          new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
-          AliESDtrack *newTrack = static_cast<AliESDtrack*>(fTracks->At(ntrnew));
-          const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
-          newTrack->Set(constrainParam->GetX(),
-                        constrainParam->GetAlpha(),
-                        constrainParam->GetParameter(),
-                        constrainParam->GetCovariance());
-	  if ((status&AliESDtrack::kITSrefit)==0) {
-            newTrack->SetBit(BIT(27),0); //type 2
-            newTrack->SetBit(BIT(28),1);
-          } else {
-            newTrack->SetBit(BIT(27),1); //type 1
-            newTrack->SetBit(BIT(28),0);
-          }
-	  if (fDoPropagation) 	
-	    AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
-          ++ntrnew;
+	if (!fIncludeNoITS && ((status&AliESDtrack::kITSrefit)==0))
+	  continue;
+	AliESDtrack *newTrack = new ((*fTracks)[ntrnew]) AliESDtrack(*etrack);
+	if (fDoPropagation) 	
+	  AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(newTrack,fDist);
+	const AliExternalTrackParam* constrainParam = etrack->GetConstrainedParam();
+	newTrack->Set(constrainParam->GetX(),
+		      constrainParam->GetAlpha(),
+		      constrainParam->GetParameter(),
+		      constrainParam->GetCovariance());
+	if ((status&AliESDtrack::kITSrefit)==0) {
+	  newTrack->SetBit(BIT(22),0); //type 2
+	  newTrack->SetBit(BIT(23),1);
+	} else {
+	  newTrack->SetBit(BIT(22),1); //type 1
+	  newTrack->SetBit(BIT(23),0);
 	}
+	++ntrnew;
       }
     }
   }

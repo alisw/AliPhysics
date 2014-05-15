@@ -63,6 +63,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 	}
 	void SetDoChicAnalysis(Bool_t flag){ fDoChicAnalysis = flag; }
 	void SetDoMesonQA(Bool_t flag){ fDoMesonQA = flag; }
+	void SetProductionVertextoVGamma(Bool_t flag) { fSetProductionVertextoVGamma = flag; }
   
 
 	private:
@@ -78,6 +79,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
                 void CalculatePi0DalitzCandidates();
                 void CalculateBackground();
                 void UpdateEventByEventData();
+		void FillElectronQAHistos(AliAODConversionPhoton *Vgamma) const;
                 Double_t GetPsiPair( const AliESDtrack *trackPos, const AliESDtrack *trackNeg ) const;
 		Bool_t IsDalitz(TParticle *fMCMother) const;
                 Bool_t IsPi0DalitzDaughter( Int_t label ) const;
@@ -96,6 +98,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TList **fMotherList;
     TList **fTrueList;
     TList **fMCList;
+    TList **fQAFolder;
     TList *fOutputContainer;
     TClonesArray *fReaderGammas;
     vector<Int_t> fSelectorElectronIndex;
@@ -110,20 +113,36 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TList **fGammasPool;
     AliConversionCuts *fConversionCuts;
     TH1F **hESDConvGammaPt;
+    TH1F **hESDConvGammaEta;
+    TH2F **hESDConvGammaZR;
     TH1F **hESDDalitzElectronPt;
     TH1F **hESDDalitzPositronPt;
     TH1F **hESDDalitzElectronPhi;
     TH1F **hESDDalitzPositronPhi;
     TH1F **hESDDalitzElectronAfterPt;
     TH1F **hESDDalitzPositronAfterPt;
+    TH1F **hESDDalitzElectronAfterEta;
+    TH1F **hESDDalitzPositronAfterEta;
     TH1F **hESDDalitzElectronAfterPhi;
     TH1F **hESDDalitzPositronAfterPhi;
+    TH1F **hESDDalitzElectronAfterNClsITS;
+    TH1F **hESDDalitzPositronAfterNClsITS;
     TH2F **hESDDalitzElectronAfterNFindClsTPC;
     TH2F **hESDDalitzPositronAfterNFindClsTPC;
+    TH2F **hESDDalitzElectronAfterNClsTPC;
+    TH2F **hESDDalitzPositronAfterNClsTPC;
+    TH2F **hESDDalitzElectronAfterNCrossedRowsTPC;
+    TH2F **hESDDalitzPositronAfterNCrossedRowsTPC;
     TH2F **hESDDalitzPosEleAfterDCAxy;
     TH2F **hESDDalitzPosEleAfterDCAz;
-    TH2F **hESDDalitzPosEleAfterTPCdEdx;
-    TH2F **hESDDalitzPosEleAfterTPCdEdxSignal;
+    TH2F **hESDDalitzElectronAfterTPCdEdxVsP;
+    TH2F **hESDDalitzPositronAfterTPCdEdxVsP;
+    TH2F **hESDDalitzElectronAfterTPCdEdxSignalVsP;
+    TH2F **hESDDalitzPositronAfterTPCdEdxSignalVsP;
+    TH2F **hESDDalitzElectronAfterTPCdEdxVsEta;
+    TH2F **hESDDalitzPositronAfterTPCdEdxVsEta;
+    TH2F **hESDDalitzElectronAfterTPCdEdxVsPhi;
+    TH2F **hESDDalitzPositronAfterTPCdEdxVsPhi;
     TH1F **hESDMotherPhi;
     TH2F **hESDEposEnegPsiPairDPhi;
     TH2F **hESDEposEnegInvMassPt;
@@ -140,6 +159,9 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hMCConvGammaRSPt;
     TH1F **hMCAllPositronsPt;
     TH1F **hMCAllElectronsPt;
+    TH1F **hMCConvGammaEta;
+    TH1F **hMCAllPositronsEta;
+    TH1F **hMCAllElectronsEta;
     TH1F **hMCPi0DalitzGammaPt;
     TH1F **hMCPi0DalitzElectronPt;
     TH1F **hMCPi0DalitzPositronPt;
@@ -151,11 +173,16 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1F **hMCEtaInAccPt;
     TH1F **hMCChiCPt;
     TH1F **hMCChiCInAccPt;
+    TH2F **hMCPi0EposEnegInvMassPt;
+    TH2F **hMCEtaEposEnegInvMassPt;
     TH2F **hESDEposEnegTruePi0DalitzInvMassPt;
+    TH1F **hESDEposEnegTruePrimPi0DalitzInvMass;
     TH2F **hESDEposEnegTruePi0DalitzPsiPairDPhi;
     TH2F **hESDEposEnegTrueEtaDalitzInvMassPt;
+    TH1F **hESDEposEnegTruePrimEtaDalitzInvMass;
     TH2F **hESDEposEnegTrueEtaDalitzPsiPairDPhi;
     TH2F **hESDEposEnegTruePhotonInvMassPt;
+    TH2F **hESDEposEnegTrueInvMassPt;
     TH2F **hESDEposEnegTruePhotonPsiPairDPhi;
     TH2F **hESDEposEnegTrueJPsiInvMassPt;
     TH2F **hESDTrueMotherChiCInvMassPt;
@@ -191,6 +218,8 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
 
     TH1I **hNEvents;
     TH1I **hNGoodESDTracks;
+    TH2F **hNGoodESDTracksVsNGoodGammas;
+    TH2F **hNGoodESDTracksVsNGoodVGammas;
     TProfile **hEtaShift;
         
     TRandom3 fRandom;
@@ -201,13 +230,15 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     Int_t fnCuts;
     Int_t fiCut;
     Int_t fNumberOfESDTracks;
+    Int_t fNumberOfESDTrackskBoth;
     Bool_t fMoveParticleAccordingToVertex;
     Bool_t fIsHeavyIon;
     Bool_t fDoMesonAnalysis;
     Bool_t fDoChicAnalysis;
     Bool_t fDoMesonQA;
+    Bool_t fSetProductionVertextoVGamma;
     Bool_t fIsFromMBHeader;
-		Bool_t fIsMC;
+    Bool_t fIsMC;
 
 	private:
 		AliAnalysisTaskGammaConvDalitzV1( const AliAnalysisTaskGammaConvDalitzV1& ); // Not implemented

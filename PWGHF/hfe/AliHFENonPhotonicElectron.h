@@ -61,12 +61,14 @@ class AliHFENonPhotonicElectron : public TNamed {
   virtual ~AliHFENonPhotonicElectron();
 
   void SetAOD    		(Bool_t isAOD)     		{ fIsAOD = isAOD; };
-  void SetMCEvent		(AliMCEvent *mcEvent)		{ fMCEvent = mcEvent; };
-  void SetAODArrayMCInfo	(TClonesArray *aodArrayMCInfo) { fAODArrayMCInfo = aodArrayMCInfo; };
+  void SetMCEvent		(AliMCEvent *mcEvent);
+  void SetAODArrayMCInfo	(TClonesArray *aodArrayMCInfo);
   void SetHFEBackgroundCuts	(AliHFEcuts * const cuts)	{ fHFEBackgroundCuts = cuts; };
+  void SetWithWeights(Int_t levelBack);
 
   AliHFEpid		*GetPIDBackground()		const	{ return fPIDBackground; };
   AliHFEpidQAmanager	*GetPIDBackgroundQAManager()	const	{ return fPIDBackgroundQA; };
+  Int_t GetLevelBack()                                  const   { return fLevelBack; };
 
   void  SetMaxInvMass		(Double_t MaxInvMass)		{ fMaxInvMass		= MaxInvMass; };
   void  SetMaxOpening3D		(Double_t MaxOpening3D)		{ fMaxOpening3D		= MaxOpening3D; };
@@ -91,7 +93,7 @@ class AliHFENonPhotonicElectron : public TNamed {
   void     InitRun			(const AliVEvent *inputEvent, const AliPIDResponse *pidResponse);
   Int_t    FillPoolAssociatedTracks	(AliVEvent *inputEvent, Int_t binct=-1);
   Int_t    CountPoolAssociated		(AliVEvent *inputEvent, Int_t binct=-1);
-  Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight=1., Int_t binct=-1, Double_t deltaphi=-1, Int_t source=-1, Int_t indexmother=-1);
+  Int_t    LookAtNonHFE			(Int_t iTrack1, AliVTrack *track1, AliVEvent *vEvent, Double_t weight=1., Int_t binct=-1, Double_t deltaphi=-1, Int_t source=-1, Int_t indexmother=-1,Int_t mcQAsource=-1);
 
   Int_t    FindMother		(Int_t tr, Int_t &indexmother) const;
 
@@ -104,6 +106,7 @@ class AliHFENonPhotonicElectron : public TNamed {
  private:
   Int_t    GetMotherPDG(Int_t tr, Int_t &motherIndex) const;
   Int_t    CheckPdg		(Int_t tr) const;
+  Double_t Radius               (Int_t tr) const;
   Int_t    IsMotherGamma	(Int_t tr) const;
   Int_t    IsMotherPi0		(Int_t tr) const;
   Int_t    IsMotherC		(Int_t tr) const;
@@ -117,8 +120,9 @@ class AliHFENonPhotonicElectron : public TNamed {
   Bool_t                    fIsAOD;                         // Is AOD
   AliMCEvent                *fMCEvent;                      //! MC event ESD
   TClonesArray              *fAODArrayMCInfo;               //! MC info particle AOD
+  Int_t                     fLevelBack;                     // Level Background
   AliHFEcuts                *fHFEBackgroundCuts;            // HFE background cuts
-  AliHFEpid	                *fPIDBackground;                // PID background cuts
+  AliHFEpid                 *fPIDBackground;                // PID background cuts
   AliHFEpidQAmanager        *fPIDBackgroundQA;              // QA Manager Background
   const AliPIDResponse      *fkPIDRespons;                  // PID response
   TArrayD                   fPtBinning;                     // pt binning
@@ -144,14 +148,18 @@ class AliHFENonPhotonicElectron : public TNamed {
   THnSparseF                *fLSign;                        //! delta phi, c, pt, inv, source
   THnSparseF                *fUSmatches;                    //! number of matched tracks with oposite sign per inclusive track after inv mass cut
   THnSparseF                *fLSmatches;                    //! number of matched tracks with same sign per inclusive track after inv mass cut
-  TH2F*                     fHnsigmaITS;                    //! Control histogram for ITS pid of category 2 tracks
+  TH2F                      *fHnsigmaITS;                    //! Control histogram for ITS pid of category 2 tracks
+  TH2F                      *fWeightsSource;                 //! Control histo for sources for weights  
+
+  THnSparseF                *fIncElectronRadius;            //! For fakes
+  THnSparseF                *fRecElectronRadius;            //! For fakes                    
 //  THnSparseF              *fUSignAngle;                   //! angle, c, source
 //  THnSparseF              *fLSignAngle;                   //! angle, c, source
 
 
   AliHFENonPhotonicElectron(const AliHFENonPhotonicElectron &ref); 
 
-  ClassDef(AliHFENonPhotonicElectron, 2); //!example of analysis
+  ClassDef(AliHFENonPhotonicElectron, 4); //!example of analysis
 };
 
 #endif

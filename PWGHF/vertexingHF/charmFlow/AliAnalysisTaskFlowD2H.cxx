@@ -125,14 +125,14 @@ void AliAnalysisTaskFlowD2H::UserCreateOutputObjects(){
   fCandidates->SetOwner();
 
   AliFlowCommonConstants* cc = AliFlowCommonConstants::GetMaster();
-  cc->SetNbinsMult(1);
+  cc->SetNbinsMult(500);
   cc->SetNbinsPt(24/fPtBinWidth);
-  cc->SetNbinsPhi(1);
-  cc->SetNbinsEta(15);
-  cc->SetNbinsQ(1);
+  cc->SetNbinsPhi(360);
+  cc->SetNbinsEta(90);
+  cc->SetNbinsQ(100);
   cc->SetNbinsMass( fMassBins );
-  cc->SetMultMin(1);
-  cc->SetMultMax(2);
+  cc->SetMultMin(0);
+  cc->SetMultMax(500);
   cc->SetPtMin(0);
   cc->SetPtMax(24);
   cc->SetPhiMin(0);
@@ -223,6 +223,8 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
     cand->SetForPOISelection(kTRUE);
     fTPCEvent->InsertTrack( ((AliFlowTrack*) cand) );
     fVZEEvent->InsertTrack( ((AliFlowTrack*) cand) );
+    fTPCEvent->SetNumberOfPOIs(fTPCEvent->GetNumberOfPOIs()+1);
+    fVZEEvent->SetNumberOfPOIs(fVZEEvent->GetNumberOfPOIs()+1);
   }
   if(fDebugV2) printf("TPCevent %d | VZEevent %d\n", fTPCEvent->NumberOfTracks(), fVZEEvent->NumberOfTracks() );
 

@@ -169,8 +169,7 @@ AliAnalysisTaskCaloTrackCorrelationM *AddTaskCaloTrackCorrM(TString data, TStrin
     anapi0->SetMultiplicity(80, 120);
     anapi0->SetMultiBin(1);  
     anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
-    if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
-    else if(calorimeter=="EMCAL") anapi0->SetNumberOfModules(4); //EMCAL first year
+ 
     anapi0->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
     //anapi0->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
     //anapi0->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;

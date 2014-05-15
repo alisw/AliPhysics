@@ -66,6 +66,8 @@ public:
 
   void GetPileUpFactor(Int_t runNumber, const char* triggerClassName, Double_t purity, Double_t& value, Double_t& error);
   
+  void ShowPileUpFactors(const char* triggerClassName, Double_t purity=1.0);
+  
   const std::vector<int>& GetRunList() const { return fRunList; }
 
   Int_t GetTriggerInput(Int_t runNumber, const char* inputname);
@@ -88,7 +90,7 @@ public:
 
   static Double_t Mu(Double_t L0B, Double_t Nb);
 
-  Int_t NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber) const;
+  Int_t NumberOfInteractingBunches(const AliLHCData& lhc, Int_t runNumber, Bool_t mainSat=kFALSE) const;
 
   TGraph* PlotTrigger(const char* triggerClassName, const char* what);
   

@@ -98,7 +98,7 @@ AliAnalysisAlien* CreateAlienHandler()
 
 
 //_____________________________________________________________________________
-void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
+void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE, Bool_t runTrig = kFALSE )
 {
   //
   // Load common libraries
@@ -130,10 +130,17 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
   esdH->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH); 
 
- #ifndef COMPILEMACRO
+#ifndef COMPILEMACRO
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
-  AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
+  if ( runTrig ) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+    AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(kFALSE);
+    trigChEffTask->SetTerminateOptions("PhysSelPass","ANY","-5_105","FORCEBATCH trigChEff_ANY_Apt_allTrig.root?PhysSelPass?ANY?-5_105?NoSelMatchAptFromTrg");
+  }
+  else {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
+  }
 
 #endif
 

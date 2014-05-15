@@ -154,6 +154,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
    TList *GetCutHistograms(){return fHistograms;}
    void FillPhotonCutIndex(Int_t photoncut){if(hCutIndex)hCutIndex->Fill(photoncut);}
+   void FillV0EtaBeforedEdxCuts(Float_t v0Eta){if(hEtaDistV0s)hEtaDistV0s->Fill(v0Eta);}
+   void FillV0EtaAfterdEdxCuts(Float_t v0Eta){if(hEtaDistV0sAfterdEdxCuts)hEtaDistV0sAfterdEdxCuts->Fill(v0Eta);}
    void SetEtaShift(Double_t etaShift) {
       fEtaShift = etaShift;
       fLineCutZRSlope = tan(2*atan(exp(-fEtaCut + etaShift)));
@@ -216,6 +218,7 @@ class AliConversionCuts : public AliAnalysisCuts {
       
    }
    void  LoadReweightingHistosMCFromFile ();
+   UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
    // Event Cuts
    Bool_t IsCentralitySelected(AliVEvent *fInputEvent, AliVEvent *fMCEvent = NULL);
    Double_t GetCentrality(AliVEvent *event);
@@ -260,7 +263,7 @@ class AliConversionCuts : public AliAnalysisCuts {
    Bool_t SetDCARPhotonPrimVtxCut(Int_t DCARPhotonPrimVtx);
    Bool_t SetDCAZPhotonPrimVtxCut(Int_t DCAZPhotonPrimVtx);
    Bool_t SetInPlaneOutOfPlane(Int_t inOutPlane);
-   
+   void SetAddedSignalPDGCode(Int_t addedSignalPDGcode) {fAddedSignalPDGCode = addedSignalPDGcode;}
    // Request Flags
 
    Int_t IsHeavyIon(){return fIsHeavyIon;}
@@ -355,6 +358,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    Int_t fRejectExtraSignals;//
    Double_t fminV0Dist; //
    Bool_t fDoSharedElecCut; //
+   Bool_t fDoPhotonQualitySelectionCut; //
+   Int_t fPhotonQualityCut; //
    UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
    Bool_t fHasV0AND; // V0AND Offline Trigger
    Bool_t fIsSDDFired; // SDD FIRED to select with SDD events
@@ -386,6 +391,8 @@ class AliConversionCuts : public AliAnalysisCuts {
    TString fNameFitDataEta; //Fit name for fit to spectrum of etas in Data
    TString fNameFitDataK0s; //Fit name for fit to spectrum of k0s in Data
    // Histograms
+   TH1F* hEtaDistV0s; //eta-distribution of all V0s after Finder selection
+   TH1F* hEtaDistV0sAfterdEdxCuts; //eta-distribution of all V0s after Finder selection after dEdx cuts
    TH1F *hdEdxCuts;  // bookkeeping for dEdx cuts
    TH2F *hTPCdEdxbefore; // TPC dEdx before cuts
    TH2F *hTPCdEdxafter; // TPC dEdx after cuts
@@ -416,12 +423,13 @@ class AliConversionCuts : public AliAnalysisCuts {
    TF1  *fFitDataPi0; //fit to pi0 spectrum in Data
    TF1  *fFitDataEta; //fit to eta spectrum in Data
    TF1  *fFitDataK0s; //fit to K0s spectrum in Data
+   Int_t fAddedSignalPDGCode;
    Bool_t fPreSelCut; // Flag for preselection cut used in V0Reader
    Bool_t fTriggerSelectedManually; // Flag for manual trigger selection
    TString fSpecialTriggerName; // Name of the Special Triggers
 private:
 
-   ClassDef(AliConversionCuts,7)
+   ClassDef(AliConversionCuts,8)
 };
 
 

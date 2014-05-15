@@ -5,6 +5,9 @@
 //
 // Author: Jochen Klein <jochen.klein@cern.ch>
 
+#ifndef ALIFIGURE_H
+#define ALIFIGURE_H
+
 #include "TCanvas.h"
 #include "TColor.h"
 
@@ -95,3 +98,5 @@ class AliFigure : public TCanvas
 
   ClassDef(AliFigure, 1);
 };
+
+#endif

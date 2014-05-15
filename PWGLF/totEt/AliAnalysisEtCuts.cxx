@@ -40,7 +40,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
 				    //
   ,fGeometryEmcalEtaAccCut(0.6)
   ,fGeometryEmcalPhiAccMinCut(80.0) // rad 1.4
-  ,fGeometryEmcalPhiAccMaxCut(120.0) // rad 2.1
+  ,fGeometryEmcalPhiAccMaxCut(180.0) // rad 3.14
   ,fGeometryEmcalDetectorRadius(440.0)
 				    //
   ,fReconstructedVertexXCut(0.5)
@@ -53,14 +53,14 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fReconstructedPidCut(0.0)
 				    //
   ,fReconstructedPhosClusterType(-1)
-  ,fReconstructedPhosClusterEnergyCut(0.25)
+  ,fReconstructedPhosClusterEnergyCut(0.25)// GeV
   ,fReconstructedPhosSingleCellEnergyCut(0.5)
   ,fReconstructedPhosTrackDistanceTightCut(3.0)
   ,fReconstructedPhosTrackDistanceMediumCut(5.0)
   ,fReconstructedPhosTrackDistanceLooseCut(15.0)
 				    //
   ,fReconstructedEmcalClusterType(1)
-  ,fReconstructedEmcalClusterEnergyCut(0.3) // GeV
+  ,fReconstructedEmcalClusterEnergyCut(0.30) // GeV
   ,fReconstructedEmcalSingleCellEnergyCut(0.5)
   ,fReconstructedEmcalTrackDistanceTightCut(5.0)
   ,fReconstructedEmcalTrackDistanceMediumCut(10.0)

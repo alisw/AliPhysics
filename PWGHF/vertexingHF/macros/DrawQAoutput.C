@@ -1608,6 +1608,10 @@ void CompilationTrackSelection(Int_t n,TList** lists,TString* legend)
     TObjArray* plotseth=new TObjArray();
     TObjArray* plotsethr=new TObjArray();
     
+    Bool_t is2d=false;
+    is2d = lists[0]->At(i)->InheritsFrom("TH2");
+    if(is2d) continue;
+    
     for(Int_t j=0; j<n; j++){
       TH1F* temph=(TH1F*)lists[j]->At(i);
       TH1F * temphr=0x0;

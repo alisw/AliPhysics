@@ -342,12 +342,12 @@ TList* AliAODMuonReplicator::GetList() const
     }
 
     fTracks = new TClonesArray("AliAODTrack",30);
-		fTracks->SetName("tracks");    
+    fTracks->SetName("tracks");    
     
     fVertices = new TClonesArray("AliAODVertex",2);
-		fVertices->SetName("vertices");    
+    fVertices->SetName("vertices");    
     
-    fDimuons = new TClonesArray("AliAODDimuon",2);
+    fDimuons = new TClonesArray("AliAODDimuon",20);
     fDimuons->SetName("dimuons");
     
     fVZERO = new AliAODVZERO;
@@ -407,20 +407,18 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   fTracks->Clear("C");
   TIter next(source.GetTracks());
   AliAODTrack* t;
-  Int_t ntracks(0);
-  Int_t input(0);
+  Int_t nMuons=0;
+  Int_t inputMuons=0;
   
-  while ( ( t = static_cast<AliAODTrack*>(next()) ) )
-  {
-    if ( t->IsMuonTrack() ) 
-    {
-      ++input;
+  while (( t = static_cast<AliAODTrack*>(next()) )) {
+
+    if (t->IsMuonTrack() || t->IsMuonGlobalTrack()) ++inputMuons;    // just a counter: MUON and MUON+MFT tracks before track cuts are applied
+     
+    // MUON and MUON+MFT tracks selected                    // AU
+    if (!fTrackCut || fTrackCut->IsSelected(t)) {
+      new ((*fTracks)[nMuons++]) AliAODTrack(*t);
     }
-    
-    if ( !fTrackCut || fTrackCut->IsSelected(t) )
-    {
-      new((*fTracks)[ntracks++]) AliAODTrack(*t);
-    }
+
   }
   
   assert(fVertices!=0x0);
@@ -429,10 +427,8 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   AliAODVertex* v;
   Int_t nvertices(0);
   
-  while ( ( v = static_cast<AliAODVertex*>(nextV()) ) )
-  {
-    if ( !fVertexCut || fVertexCut->IsSelected(v) ) 
-    {
+  while ( ( v = static_cast<AliAODVertex*>(nextV()) ) ) {
+    if ( !fVertexCut || fVertexCut->IsSelected(v) ) {
       AliAODVertex* tmp = v->CloneWithoutRefs();
       AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
       // to insure the main vertex retains the ncontributors information
@@ -449,24 +445,24 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   // as there might be a track cut (different from the one of the main filtering),
   // we must recreate the dimuon completely from scratch to be 100% safe...
 
-  Int_t ndimuons(0);
+  Int_t nDimuons=0;
 
-  for ( Int_t i = 0; i < ntracks; ++i ) 
-  {
-    for ( Int_t j = i+1; j < ntracks; ++j ) 
-    {
-      new((*fDimuons)[ndimuons++]) AliAODDimuon(fTracks->At(i),fTracks->At(j));
+  // Dimuons built of 2 MUON tracks or 2 MUON+MFT tracks                   // AU
+  for (Int_t i=0; i<nMuons; ++i) {
+    for (Int_t j=i+1; j<nMuons; ++j) {
+      if ( (((AliAODTrack*) fTracks->At(i))->IsMuonTrack()       && ((AliAODTrack*) fTracks->At(j))->IsMuonTrack()) ||
+	   (((AliAODTrack*) fTracks->At(i))->IsMuonGlobalTrack() && ((AliAODTrack*) fTracks->At(j))->IsMuonGlobalTrack()) ) {
+	new((*fDimuons)[nDimuons++]) AliAODDimuon(fTracks->At(i), fTracks->At(j));
+      }
     }
   }
 
   AliDebug(1,Form("input mu tracks=%d tracks=%d vertices=%d ndimuons=%d",
-                  input,fTracks->GetEntries(),fVertices->GetEntries(),fDimuons->GetEntries()));
+                  inputMuons,fTracks->GetEntries(),fVertices->GetEntries(),fDimuons->GetEntries()));
 
   // Finally, deal with MC information, if needed
 
-  if ( fMCMode > 0 )
-  {
-    FilterMC(source);      
-  }
+  if (fMCMode>0) FilterMC(source);
+
 }
 

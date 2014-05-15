@@ -26,7 +26,7 @@
 #include <TH2I.h>
 #include <TList.h>
 #include <TChain.h>
-
+#include <TFile.h>
 #include <AliAnalysisManager.h>
 #include <AliInputEventHandler.h>
 #include <AliESDInputHandler.h>
@@ -38,6 +38,7 @@
 #include "AliConversionMesonCuts.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
+#include "TGrid.h"
 // #include "AliAnaConvCorrPhoton.h"
 // #include "AliAnaConvCorrPion.h"
 // #include "AliAnaConvIsolation.h"
@@ -68,8 +69,9 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fTracks(),
   hMEvents(NULL),
   hTrackCent(NULL),
-  // fPhotonCorr(NULL),
-  // fPionCorr(NULL), 
+  hTrigPt(NULL),
+  hTrackPt(NULL), 
+  hTrigPhi(NULL),
   fDeltaAODBranchName("AliAODGammaConversion_gamma"), 
   fAxistPt(),
   fAxiscPt(),
@@ -90,7 +92,8 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
   fTrigAxesList(), 
   fTrackAxesList(), 
   fMassAxesList(),
-  fDoPhoton(kFALSE)
+  fDoPhoton(kFALSE), 
+  fCorrectionMap(NULL)
  {
    //constructor
    SetUpBins();
@@ -100,6 +103,9 @@ AliAnalysisTaskdPhi::AliAnalysisTaskdPhi(const char *name) : AliAnalysisTaskSE(n
 
    fGammas.SetOwner(kTRUE);
    fTracks.SetOwner(kTRUE);
+
+
+
    
  }
 
@@ -210,6 +216,28 @@ void AliAnalysisTaskdPhi::SetUpBins() {
 //________________________________________________________________________
 void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   // Create histograms
+  // TGrid::Connect("alien://",0,0,"t");
+  // if(!gGrid) AliWarning("no GGrid");
+  // TFile *tfile = TFile::Open("alien:///alice/cern.ch/user/s/slindal/trackMap.root", "READ");
+  // if(tfile) {
+  //   THnF * corrmap = dynamic_cast<THnF*>(tfile->Get("hTrackCorr"));
+  //   if (corrmap) {
+  //     fCorrectionMap = dynamic_cast<THnF*>(THn::CreateHn("corr", "corr", corrmap));
+  //     for(Int_t i = 0; i < fCorrectionMap->GetNdimensions(); i++) {
+  // 	TAxis * axis = fCorrectionMap->GetAxis(i);
+  // 	axis->SetRange(1, axis->GetNbins());
+  //     }
+    
+  //     cout << "yessssssssssssssssssssssssssssssssssssssssssssssssss"<<endl;
+  //   } else {
+  //     cout << "xxxxxxxxxxxxxxxxx xxxxxxxxxxxxxxx xxxxxxxxxxxxxxxx"<<endl;
+  //   }
+  //   tfile->Close();
+  // } else {
+  //   cout << "no tfile shit shit shit "<<endl;
+  //   AliFatal("file not ther!!!");
+  // }
+
   
   fHistograms = new TList();
   fHistograms->SetName("dPhi_histograms");
@@ -243,32 +271,32 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
   for(Int_t igf = 0; igf < fV0Filters[0].GetEntriesFast(); igf ++){
     AliConversionCuts * f = dynamic_cast<AliConversionCuts*>(fV0Filters[0].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("V0Filter_%d", -(igf+1)), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fV0Filters[1].GetEntriesFast(); igf ++){
     AliConversionCuts * f = dynamic_cast<AliConversionCuts*>(fV0Filters[1].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("V0Filter_%d", igf+1), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fMesonFilters[0].GetEntriesFast(); igf ++){
     AliConversionMesonCuts * f = dynamic_cast<AliConversionMesonCuts*>(fMesonFilters[0].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("PionFilter_%d", -(igf+1)), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
   for(Int_t igf = 0; igf < fMesonFilters[1].GetEntriesFast(); igf ++){
     AliConversionMesonCuts * f = dynamic_cast<AliConversionMesonCuts*>(fMesonFilters[1].At(igf));
     if(f) {
-      f->InitCutHistograms(Form("PionFilter_%d", igf+1), kFALSE);
-      fHistograms->Add(f->GetCutHistograms());
+      TList * histograms = f->GetCutHistograms();
+      if(histograms) fHistograms->Add(f->GetCutHistograms());
     }
   }
 
@@ -311,9 +339,23 @@ void AliAnalysisTaskdPhi::UserCreateOutputObjects() {
    MEHistograms->Add(hMEvents);
 
    hTrackCent = new TH2I("hTrackCent", "N accepted tracks vs centrality",
-			 fAxisCent.GetNbins() > 2 ? 100 : 1, fAxisCent.GetBinLowEdge(1), fAxisCent.GetBinUpEdge(fAxisCent.GetNbins()),
-			 750, 0, 1500);
+			 fAxisCent.GetNbins() > 1 ? (int) (10*(fAxisCent.GetXmax() - fAxisCent.GetXmin()))  : 1, 
+			 fAxisCent.GetXmin(), fAxisCent.GetXmax(),
+			 fAxisCent.GetNbins() > 1 ? 900 : 50, 
+			 0,
+			 fAxisCent.GetNbins() > 1 ? 1800 : 50);
    MEHistograms->Add(hTrackCent);
+
+   hTrigPt = new TH3F("hTrigPt", "trigger pt", 100, 0., 10., 
+		      10, 0., 50., 
+		      5,  0.05, 0.2);
+   MEHistograms->Add(hTrigPt);
+   hTrackPt = new TH2F("hTrackPt", "track pt", 100, 0, 10, 10, 0, 50);//fAxisCent.GetNbins(), fAxisCent.GetXbins()->GetArray()); 
+   MEHistograms->Add(hTrackPt);
+   hTrigPhi = new TH1F("hTrigPhi", "trigger pt", 32, 0, 2*TMath::Pi());
+   MEHistograms->Add(hTrigPhi);
+
+
 
    Int_t ntrackfilters[2] = {fTrackFilters[0].GetEntriesFast(), fTrackFilters[1].GetEntriesFast()};
    fkTrackAxis = kTRUE;
@@ -455,6 +497,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   if(!fV0Reader->IsEventSelected()) {
     return;
   }
+
   AliDebug(5, "Processing event");
   
  
@@ -529,22 +572,37 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
     }
   }
 
+
+  ///Initialize track cuts. Delete tracks that have been constrained to vertex (copies)
   AliConversionTrackCuts * tc = dynamic_cast<AliConversionTrackCuts*>(fTrackFilter);
   if(tc) {
     tc->SetEvent(fInputEvent);
     tc->DeleteTracks();
   }
+  
+  for(Int_t i = 0; i < fTrackFilters[0].GetEntriesFast(); i++){
+    AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[0].At(i));
+    if(tct) {
+      tct->SetEvent(fInputEvent);
+      tct->DeleteTracks();
+    }
+  }
+  for(Int_t i = 0; i < fTrackFilters[1].GetEntriesFast(); i++){
+    AliConversionTrackCuts * tct = dynamic_cast<AliConversionTrackCuts*>(fTrackFilters[1].At(i));
+    if(tct) {
+      tct->SetEvent(fInputEvent);
+      tct->DeleteTracks();
+    }
+  }
+  
 
   Double_t centrality = 0.0;
-  Double_t eventPlane = 0.0;
   Double_t vertexz = fInputEvent->GetPrimaryVertex()->GetZ();
   if(isAOD) {
     AliAODHeader * header = static_cast<AliAODHeader*>(fInputEvent->GetHeader());
     centrality = header->GetCentrality();
-    eventPlane = header->GetEventplane();
   } else {
     centrality = static_cast<AliESDEvent*>(fInputEvent)->GetCentrality()->GetCentralityPercentile("V0M");
-    eventPlane = fInputEvent->GetEventplane()->GetEventplane("Q");
   }
   
   
@@ -555,7 +613,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   if(DebugLevel () > 4) {
     cout << "centrality: " << centrality <<  " " << GetBin(fAxisCent, centrality) << endl;
     cout << "vertexz: " << vertexz <<  " " << GetBin(fAxisZ, vertexz) << endl;
-    cout << "eventPlane: " << eventPlane <<  " " << endl;
   }
   
   
@@ -615,7 +672,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
   ///create track array
   const Int_t ntrackfilters[2] = { fTrackFilters[0].GetEntriesFast(), fTrackFilters[1].GetEntriesFast()};
   
-
   TObjArray * ttracks = static_cast<TObjArray*>(fTracks.At(0));
   const Double_t aetalim[2] = { fAxisAssEta.GetXmin(), fAxisAssEta.GetXmax()};
   const Double_t aptlim[2] = { fAxiscPt.GetXmin(), fAxiscPt.GetXmax()};
@@ -624,6 +680,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
     if(track->Pt() < aptlim[0] || track->Pt() > aptlim[1]) continue;
     if(track->Eta() < aetalim[0] || track->Eta() > aetalim[1]) continue;
     if(fTrackFilter->IsSelected(track)) {
+      hTrackPt->Fill(track->Pt(), centrality);
       ttracks->Add(track);
     } else {
       ///upside cuts
@@ -658,7 +715,6 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
  
   //AliAnaConvCorrBase * gCorr = fPhotonCorr; //GetCorrObject(vertexBin, centBin, fPhotonCorr);
   //  AliAnaConvCorrPion * piCorr = fPionCorr; //static_cast<AliAnaConvCorrPion*>(GetCorrObject(vertexBin, centBin, fPionCorr));
-  
   // if(!piCorr) {
   //   AliError("corr object missing");
   //   return;
@@ -829,8 +885,9 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		  
 		  
 		  ////Only mix events with pion in signal region
+		  hTrigPt->Fill(pion->Pt(), centrality, pion->M());
 		  if(pion->M() > 0.1 && pion->M() < 0.15) {
-
+		    hTrigPhi->Fill(pion->Phi());
 
 		    ///Check trigger bin
 		    if (tbin > 0 && tbin < (nbins + 1)) {
@@ -839,7 +896,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		  
 		    ///Check if trigger also in low side (both gamma present in low side!)
 		    for(Int_t ilgf = 0; ilgf < fV0Filters[0].GetEntriesFast(); ilgf++) {
-		      if(!lowgmap[ilgf][i1] && !lowgmap[ilgf][i2]) {
+		      if(!lowgmap[ilgf][i1] || !lowgmap[ilgf][i2]) {
 			lv0tmap[tbin-1][ilgf] = kTRUE;
 		      }
 		    }
@@ -916,15 +973,14 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		    dphivalues[7] = itf;
 		    dphivalues[8] = igf1;
 		    dphivalues[9] = 0;
-		    fCorrSparse->Fill(dphivalues);
+		    fCorrSparse->Fill(dphivalues, GetTrackCorrection(vertexz, track));
 	
-
 		    if(itf == 0 && igf1 == 0 && igf2 == 0) {
 		      ///Fill the low side track filters
 		      for(Int_t itlf = 0; itlf < fTrackFilters[0].GetEntriesFast(); itlf++) {
 			if(lowtrackmap[itlf][ij]){
 			  dphivalues[7] = -(itlf+1);
-			  fCorrSparse->Fill(dphivalues);
+			  fCorrSparse->Fill(dphivalues, GetTrackCorrection(vertexz, track));
 			}
 		      }
 		      ///Fill the low side v0 filters
@@ -932,7 +988,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		      for(Int_t iglf = 0; iglf < fV0Filters[0].GetEntriesFast(); iglf++) {
 			if(lowgmap[iglf][i1] || lowgmap[iglf][i2]){
 			  dphivalues[8] = -(iglf+1);
-			  fCorrSparse->Fill(dphivalues);
+			  fCorrSparse->Fill(dphivalues, GetTrackCorrection(vertexz, track));
 			}
 		      }
 
@@ -942,7 +998,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 		      for(Int_t iplf = 0; iplf < fMesonFilters[0].GetEntriesFast(); iplf ++) {
 			if(lpimap[iplf]) {
 			  dphivalues[9] = -(iplf + 1);
-			  fCorrSparse->Fill(dphivalues);
+			  fCorrSparse->Fill(dphivalues, GetTrackCorrection(vertexz, track));
 			}
 		      }
 		    }  /// end non standard filters track corr
@@ -1002,7 +1058,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 			dphivalues[7] = 0; // track filter
 			dphivalues[8] = 0; // v0 filter
 			dphivalues[9] = ipuf + 1; // pion filter
-			fCorrSparse->Fill(dphivalues);
+			fCorrSparse->Fill(dphivalues, GetTrackCorrection(vertexz, track));
 		      } /// end track corr
 		    }
 		  } // MesonIsSelected
@@ -1041,13 +1097,13 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	  trackValues[5] = itf;
 	  trackValues[6] = 0;  ///v0 filter
 	  trackValues[7] = 0; ////Pi filter
-	  fTrackSparse->Fill(trackValues);
+	  fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track));
 
 	  if(itf == 0) {
 	    for(Int_t itlf = 0; itlf < fTrackFilters[0].GetEntriesFast(); itlf++) {
 	      if(lowtrackmap[itlf][iTrack]) {
 		trackValues[5] = -(itlf + 1);
-		fTrackSparse->Fill(trackValues);
+		fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track) );
 	      }
 	    }
 	    trackValues[5] = 0;
@@ -1056,7 +1112,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	    for(Int_t iglf = 0; iglf < fV0Filters[0].GetEntriesFast(); iglf++) {
 	      if(!lv0tmap[tbin][iglf]) {
 		trackValues[6] = -(iglf + 1);
-		fTrackSparse->Fill(trackValues);
+		fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track));
 	      }
 	    }
 	    trackValues[6] = 0;
@@ -1065,7 +1121,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	    for(Int_t iplf = 0; iplf < fMesonFilters[0].GetEntriesFast(); iplf++) {
 	      if(!lpitmap[tbin][iplf]) {
 		trackValues[7] = -(iplf + 1);
-		fTrackSparse->Fill(trackValues);
+		fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track));
 	      }
 	    }
 
@@ -1089,7 +1145,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	    trackValues[5] = 0;
 	    trackValues[6] = iguf+1;  ///v0 filter
 	    trackValues[7] = 0; ////Pi filter
-	    fTrackSparse->Fill(trackValues);
+	    fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track));
 	  }
 	}
       }
@@ -1107,7 +1163,7 @@ void AliAnalysisTaskdPhi::UserExec(Option_t *) {
 	    trackValues[5] = 0;
 	    trackValues[6] = 0;  ///v0 filter
 	    trackValues[7] = ipuf+1; ////Pi filter
-	    fTrackSparse->Fill(trackValues);
+	    fTrackSparse->Fill(trackValues, GetTrackCorrection(vertexz, track));
 	  }
 	}
       }
@@ -1224,4 +1280,19 @@ void AliAnalysisTaskdPhi::FindDeltaAODBranchName(AliVEvent * event){
   }
 }
   
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskdPhi::GetTrackCorrection(Double_t vtxz, AliVTrack * track) {
+  ////Get track correction from map
+  Int_t coord[4] = {-1, -1, -1, -1};
+  if(fCorrectionMap) {
+    Double_t values[4] = { vtxz, track->Pt(), track->Eta(), track->Phi() };
+    Double_t correction = fCorrectionMap->GetBinContent(fCorrectionMap->GetBin(values, kFALSE), coord);
+    if (fCorrectionMap->IsInRange(coord)) {
+      return correction;
+    } 
+  }
+  return 1.0;
+}
+
 

@@ -35,9 +35,12 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fFlagsOn(0x0),
    fFlagsOff(0x0),
    fRejectKinkDaughters(kTRUE),
-   fDCARfixed(kTRUE),
+   fDCARmaxfixed(kTRUE),
+   fDCARminfixed(kTRUE),
    fDCARptFormula(""),
+   fDCARptFormulaMin(""),
    fDCARmax(1E20),
+   fDCARmin(0),
    fDCAZfixed(kTRUE),
    fDCAZptFormula(""),
    fDCAZmax(1E20),
@@ -47,8 +50,10 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const char *name) :
    fTPCminNClusters(0),
    fTPCmaxChi2(1E20),
    fCutMaxChi2TPCConstrainedVsGlobal(1E20),
+   fIsUseCrossedRowsCut(kFALSE),
    fTPCminNCrossedRows(0),
    fTPCminCrossedRowsOverFindableCls(0),
+   fIsUseLengthActiveVolumeTPCCut(kFALSE),
    fCutMinLengthActiveVolumeTPC(0),
    fAODTestFilterBit(-1),
    fCheckOnlyFilterBit(kTRUE),
@@ -68,9 +73,12 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fFlagsOn(copy.fFlagsOn),
    fFlagsOff(copy.fFlagsOff),
    fRejectKinkDaughters(copy.fRejectKinkDaughters),
-   fDCARfixed(copy.fDCARfixed),
+   fDCARmaxfixed(copy.fDCARmaxfixed),
+   fDCARminfixed(copy.fDCARminfixed),
    fDCARptFormula(copy.fDCARptFormula),
+   fDCARptFormulaMin(copy.fDCARptFormulaMin),
    fDCARmax(copy.fDCARmax),
+   fDCARmin(copy.fDCARmin),
    fDCAZfixed(copy.fDCAZfixed),
    fDCAZptFormula(copy.fDCAZptFormula),
    fDCAZmax(copy.fDCAZmax),
@@ -80,8 +88,10 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
    fTPCminNClusters(copy.fTPCminNClusters),
    fTPCmaxChi2(copy.fTPCmaxChi2),
    fCutMaxChi2TPCConstrainedVsGlobal(copy.fCutMaxChi2TPCConstrainedVsGlobal),
+   fIsUseCrossedRowsCut(copy.fIsUseCrossedRowsCut),
    fTPCminNCrossedRows(copy.fTPCminNCrossedRows),
    fTPCminCrossedRowsOverFindableCls(copy.fTPCminCrossedRowsOverFindableCls),
+   fIsUseLengthActiveVolumeTPCCut(copy.fIsUseLengthActiveVolumeTPCCut),
    fCutMinLengthActiveVolumeTPC(copy.fCutMinLengthActiveVolumeTPC),
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fCheckOnlyFilterBit(copy.fCheckOnlyFilterBit),
@@ -110,9 +120,12 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fFlagsOn = copy.fFlagsOn;
    fFlagsOff = copy.fFlagsOff;
    fRejectKinkDaughters = copy.fRejectKinkDaughters;
-   fDCARfixed = copy.fDCARfixed;
+   fDCARmaxfixed = copy.fDCARmaxfixed;
+   fDCARminfixed = copy.fDCARminfixed;
    fDCARptFormula = copy.fDCARptFormula;
+   fDCARptFormulaMin = copy.fDCARptFormulaMin;
    fDCARmax = copy.fDCARmax;
+   fDCARmin = copy.fDCARmin;
    fDCAZfixed = copy.fDCAZfixed;
    fDCAZptFormula = copy.fDCAZptFormula;
    fDCAZmax = copy.fDCAZmax;
@@ -122,8 +135,10 @@ AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
    fTPCminNClusters = copy.fTPCminNClusters;
    fTPCmaxChi2 = copy.fTPCmaxChi2;
    fCutMaxChi2TPCConstrainedVsGlobal = copy.fCutMaxChi2TPCConstrainedVsGlobal;
+   fIsUseCrossedRowsCut=copy.fIsUseCrossedRowsCut;
    fTPCminNCrossedRows = copy.fTPCminNCrossedRows;
    fTPCminCrossedRowsOverFindableCls = copy.fTPCminCrossedRowsOverFindableCls;
+   fIsUseLengthActiveVolumeTPCCut=copy.fIsUseLengthActiveVolumeTPCCut;
    fCutMinLengthActiveVolumeTPC = copy.fCutMinLengthActiveVolumeTPC;
    
    fAODTestFilterBit = copy.fAODTestFilterBit;
@@ -145,9 +160,12 @@ void AliRsnCutTrackQuality::DisableAll()
    fFlagsOn = 0x0;
    fFlagsOff = 0x0;
    fRejectKinkDaughters = kFALSE;
-   fDCARfixed = kTRUE;
+   fDCARmaxfixed = kTRUE;
+   fDCARminfixed = kTRUE;
    fDCARptFormula = "";
+   fDCARptFormulaMin = "";
    fDCARmax = 1E20;
+   fDCARmin = 0;
    fDCAZfixed = kTRUE;
    fDCAZptFormula = "";
    fDCAZmax = 1E20;
@@ -158,8 +176,10 @@ void AliRsnCutTrackQuality::DisableAll()
    fTPCmaxChi2 = 1E20;
    fAODTestFilterBit = -1;
    fCutMaxChi2TPCConstrainedVsGlobal = 1E20;
+   fIsUseCrossedRowsCut = 0;
    fTPCminNCrossedRows = 0;
    fTPCminCrossedRowsOverFindableCls = 0;
+   fIsUseLengthActiveVolumeTPCCut = 0;
    fCutMinLengthActiveVolumeTPC = 0.0;
  
    if (fESDtrackCuts) {
@@ -244,10 +264,15 @@ Bool_t AliRsnCutTrackQuality::CheckESD(AliESDtrack *track)
    cuts.SetEtaRange(fEta[0], fEta[1]);
 
    // transverse DCA cuts
-   if (fDCARfixed)
+   if (fDCARmaxfixed)
       cuts.SetMaxDCAToVertexXY(fDCARmax);
    else
       cuts.SetMaxDCAToVertexXYPtDep(fDCARptFormula.Data());
+      
+   if (fDCARminfixed)
+      cuts.SetMinDCAToVertexXY(fDCARmin);
+   else
+      cuts.SetMinDCAToVertexXYPtDep(fDCARptFormulaMin.Data());
 
    // longitudinal DCA cuts
    if (fDCAZfixed)
@@ -390,15 +415,26 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
       return kFALSE;
    }
    // if the DCA cut is not fixed, compute current value
-   if (!fDCARfixed) {
+   if (!fDCARmaxfixed) {
       TString str(fDCARptFormula);
       str.ReplaceAll("pt", "x");
       TFormula dcaXY(Form("%s_dcaXY", GetName()), str.Data());
       fDCARmax = dcaXY.Eval(track->Pt());
    }
+   if (!fDCARminfixed) {   
+      TString str2(fDCARptFormulaMin);
+      str2.ReplaceAll("pt", "x");
+      TFormula dcaXY_2(Form("%s_dcaXY_2", GetName()), str2.Data());
+      fDCARmin = dcaXY_2.Eval(track->Pt());
+   }
    // check the cut
    if (TMath::Abs(b[0]) > fDCARmax) {
       AliDebug(AliLog::kDebug + 2, "Too large transverse DCA");
+      return kFALSE;
+   }
+   
+   if (TMath::Abs(b[0]) < fDCARmin) {
+      AliDebug(AliLog::kDebug + 2, "Too short transverse DCA");
       return kFALSE;
    }
 
@@ -449,10 +485,16 @@ void AliRsnCutTrackQuality::Print(const Option_t *) const
 
    AliInfo(Form("ITS requirements        : min. cluster = %d (all), %d (SPD), max chi2 = %f", fITSminNClusters, fSPDminNClusters, fITSmaxChi2));
 
-   if (fDCARfixed) {
-      AliInfo(Form("DCA r cut               : fixed to %f cm", fDCARmax));
+   if (fDCARmaxfixed) {
+      AliInfo(Form("Max DCA r cut               : fixed to %f cm", fDCARmax));
    } else {
-      AliInfo(Form("DCA r cut formula       : %s", fDCARptFormula.Data()));
+      AliInfo(Form("Max DCA r cut formula       : %s", fDCARptFormula.Data()));
+   }
+   
+   if (fDCARminfixed) {
+      AliInfo(Form("Min DCA r cut               : fixed to %f cm", fDCARmin));
+   } else {
+      AliInfo(Form("Min DCA r cut formula       : %s", fDCARptFormulaMin.Data()));
    }
 
    if (fDCAZfixed) {

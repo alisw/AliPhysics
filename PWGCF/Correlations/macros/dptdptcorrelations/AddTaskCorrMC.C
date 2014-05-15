@@ -26,7 +26,7 @@ AliDptDptInMC *AddTaskCorrMC
  TString anadata               = "MCAOD",
  Bool_t NoResonances           =  kTRUE,
  Bool_t NoElectron             =  kTRUE,
- const char* taskname          = "NoWeakDecay",
+ const char* taskname          = "MCTruth",
  char *inputHistogramFileName  = "alien:///alice/cern.ch/user/p/prabhat/MCCalib/MCTruthCaalib.root")
  
 {
@@ -47,7 +47,7 @@ AliDptDptInMC *AddTaskCorrMC
       if (centralityMethod == 4)
 	{
 	  
-	  minCentrality[0] = 10.0; maxCentrality[0] = 20.0; 
+	  minCentrality[0] = 0.0; maxCentrality[0] = 10.0; 
 	  minCentrality[1] = 30.0; maxCentrality[1] = 40.0;
 	  minCentrality[2] = 60.0; maxCentrality[2] = 70.0;
 	  

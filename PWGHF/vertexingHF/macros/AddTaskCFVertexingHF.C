@@ -49,9 +49,21 @@ const Float_t multmax_80_100 = 100;
 const Float_t multmin_100_400 = 100; // Only for pPb
 const Float_t multmax_100_400 = 400; // Only for pPb
 
+//
+// useWeight : flag for Pt weights (default are pp 2010 weights, functions per MC production existing)
+// useFlatPtWeight : flag to test flat Pt weights (computed for LHC10f7a MC)
+// useZWeight : flag to use z-vtx weight (used for systematics for now)
+// useNchWeight : flag to use weights on the distribution of simulated primary particles (default pp 2010)
+// useNtrkWeight : flag to use weights on the distribution of Ntracklets
+// isFinePtBin : flag for fine pt bin (100 MeV from 0 to 30 GeV)
+// multiplicityEstimator : varying the multiplicity (and not centrality) estimator
+// isPPData : flag to switch off centrality checks when runing on pp data (reduces a lot log files)
+// isPPbData : Flag for pPb data, changes the Ntrk bining
+// estimatorFilename, refMult : Ntrk vs z-vtx multiplicity correction file name and average value
+// isFineNtrkBin : gives Ntrk bins of 1 unit from 0-100 (200 for pPb)
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t isFinePtBin=kFALSE, Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE)
+AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.root", TString cutObjectName="D0toKpiCutsStandard", TString suffix="", Int_t configuration = AliCFTaskVertexingHF::kCheetah, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 421, Char_t isSign = 2, Bool_t useWeight=kFALSE, Bool_t useFlatPtWeight=kFALSE, Bool_t useZWeight=kFALSE, Bool_t useNchWeight=kFALSE, Bool_t useNtrkWeight=kFALSE, Bool_t isFinePtBin=kFALSE, TString estimatorFilename="", Int_t multiplicityEstimator = AliCFTaskVertexingHF::kNtrk10, Bool_t isPPData=kFALSE, Bool_t isPPbData=kFALSE, Double_t refMult = 9.26, Bool_t isFineNtrkBin=kFALSE)
 {
 	printf("Adding CF task using cuts from file %s\n",cutFile);
 	if (configuration == AliCFTaskVertexingHF::kSnail){
@@ -142,7 +154,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
 	const Int_t nbinmult_50_80 = 10; //bins in multiplicity between 50 and 100
 	const Int_t nbinmult_80_100 = 4; //bins in multiplicity between 50 and 100
-	const Int_t nbinmult_100_400 = 12; // Only on pPb bins in multiplicity between 100 and 400
+	const Int_t nbinmult_100_400 = 6; // Only on pPb bins in multiplicity between 100 and 400
 	if(isPPbData) nbinmult += nbinmult_100_400;
 
 	//the sensitive variables, their indices
@@ -268,7 +280,22 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  }
 	  printf("pT: nbins fine = 300\n");
 	}
-	
+
+	// Fine Ntrk bining setting
+	Double_t *binLimmultFine;
+	Int_t nbinmultTmp=nbinmult;
+	if(isFineNtrkBin){
+	  Int_t nbinLimmultFine=100;
+	  if(isPPbData) nbinLimmultFine = 200;
+	  const UInt_t nbinMultFine = nbinLimmultFine;
+	  binLimmultFine = new Double_t[nbinMultFine+1];
+	  for (Int_t ibin0 = 0 ; ibin0<nbinMultFine+1; ibin0++){
+	    binLimmultFine[ibin0] = ibin0;
+	  }
+	  nbinmultTmp=nbinLimmultFine;
+	}
+	const Int_t nbinmultTot=nbinmultTmp;
+
 	// defining now the binning for the other variables:
 	
 	iBin[iy]=nbiny;
@@ -283,7 +310,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	iBin[ifake]=nbinfake;
 	iBin[ipointingXY]=nbinpointingXY;
 	iBin[inormDecayLXY]=nbinnormDecayLXY;
-	iBin[imult]=nbinmult;
+	iBin[imult]=nbinmultTot;
 	
 	//arrays for lower bounds :
 	Double_t *binLimy=new Double_t[iBin[iy]+1];
@@ -299,6 +326,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	Double_t *binLimpointingXY=new Double_t[iBin[ipointingXY]+1];
 	Double_t *binLimnormDecayLXY=new Double_t[iBin[inormDecayLXY]+1];
 	Double_t *binLimmult=new Double_t[iBin[imult]+1];
+
 
 	// y
 	for(Int_t i=0; i<=nbiny; i++) binLimy[i]=(Double_t)ymin  + (ymax-ymin)  /nbiny*(Double_t)i ;
@@ -427,7 +455,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		printf("normDecayLXY\n");
 		container -> SetBinLimits(inormDecayLXY,binLimnormDecayLXY);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imult,binLimmult);
+		if(isFineNtrkBin) container -> SetBinLimits(imult,binLimmultFine);
+		else              container -> SetBinLimits(imult,binLimmult);
 
 		container -> SetVarTitle(ipT,"pt");
 		container -> SetVarTitle(iy,"y");
@@ -486,7 +515,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 		printf("fake\n");
 		container -> SetBinLimits(ifakeFast,binLimfake);
 		printf("multiplicity\n");
-		container -> SetBinLimits(imultFast,binLimmult);
+		if(isFineNtrkBin) container -> SetBinLimits(imultFast,binLimmultFine);
+		else              container -> SetBinLimits(imultFast,binLimmult);
 
 		container -> SetVarTitle(ipTFast,"pt");
 		container -> SetVarTitle(iyFast,"y");
@@ -612,10 +642,12 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	  }
 	}
 
-	if(useNchWeight){
+	if(useNchWeight || useNtrkWeight){
 	  TH1F *hNchPrimaries;
+	  TH1F *hNchMeasured;
 	  if(isPPbData) hNchPrimaries = (TH1F*)fileCuts->Get("hNtrUnCorrEvWithCandWeight");
 	  else hNchPrimaries = (TH1F*)fileCuts->Get("hGenPrimaryParticlesInelGt0");
+	  hNchMeasured = (TH1F*)fileCuts->Get("hNchMeasured");
 	  if(hNchPrimaries) {
 	    task->SetUseNchWeight(kTRUE);
 	    task->SetMCNchHisto(hNchPrimaries);
@@ -624,7 +656,59 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	    AliFatal("Histogram for multiplicity weights not found");
 	    return 0x0;
 	  }
+	  if(hNchMeasured) task->SetMeasuredNchHisto(hNchMeasured);
+	  if(useNtrkWeight) task->SetUseNchTrackletsWeight();
 	}
+	
+	if(isPPbData) { 
+	  task->SetIsPPbData(kTRUE); 
+	}
+   
+	if(estimatorFilename.EqualTo("") ) {
+	  printf("Estimator file not provided, multiplicity corrected histograms will not be filled\n");
+	  task->SetUseZvtxCorrectedNtrkEstimator(kFALSE);
+	} else{
+
+	  TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+	  if(!fileEstimator)  {
+	    AliFatal("File with multiplicity estimator not found"); 
+	    return;
+	  }
+
+	  task->SetUseZvtxCorrectedNtrkEstimator(kTRUE);
+	  task->SetReferenceMultiplcity(refMult);
+
+	  if (isPPbData) {     //Use LHC13 periods for mult correction if pPb data
+            const Char_t* periodNames[2] = {"LHC13b", "LHC13c"};
+            TProfile* multEstimatorAvg[2];
+            for(Int_t ip=0; ip<2; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC13b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC13c(multEstimatorAvg[1]);
+	  }
+	  else {
+	    const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};   //else, assume pp (LHC10)
+            TProfile* multEstimatorAvg[4];
+            for(Int_t ip=0; ip<4; ip++) {
+	      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("SPDmult10_%s",periodNames[ip]))->Clone(Form("SPDmult10_%s_clone",periodNames[ip])));
+	      if (!multEstimatorAvg[ip]) {
+		AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
+		return;
+	      }
+            }
+            task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+	  }
+
+	}
+	
 
 	Printf("***************** CONTAINER SETTINGS *****************");	
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
@@ -703,32 +787,37 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="",output4name="";
+	TString output1name="", output2name="", output3name="",output4name="", output5name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
 	output4name= "Cuts";
+	output5name= "coutProf";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 		output1name="CFHFchist0";
 		output3name+="_cOnly";
 		output4name+="_cOnly";
+		output5name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
 		output1name="CFHFchist0DfromB";
 		output3name+="_bOnly";
 		output4name+="_bOnly";
+		output5name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
 		output1name="CFHFchist0allD";
 		output3name+="_all";
 		output4name+="_all";
+		output5name+="_all";
 	}
 
 	outputfile += suffix;
 	output1name += suffix;
 	output4name += suffix;
+	output5name += suffix;
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -739,6 +828,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
         AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	// cuts
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	// estimators list
+	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 
 	mgr->AddTask(task);
@@ -748,6 +839,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
+	mgr->ConnectOutput(task,5,coutput5);
 
 	return task;
 	

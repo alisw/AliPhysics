@@ -28,7 +28,7 @@ AliAnalysisMuMuCutElement::AliAnalysisMuMuCutElement()
 : TObject(), fName(""), fIsEventCutter(kFALSE), fIsEventHandlerCutter(kFALSE),
 fIsTrackCutter(kFALSE), fIsTrackPairCutter(kFALSE), fIsTriggerClassCutter(kFALSE),
 fCutObject(0x0), fCutMethodName(""), fCutMethodPrototype(""),
-fDefaultParameters(""), fNofParams(0), fCutMethod(0x0), fCallParams()
+fDefaultParameters(""), fNofParams(0), fCutMethod(0x0), fCallParams(), fDoubleParams()
 {
   /// Default ctor, leading to an invalid cut object
 }
@@ -43,7 +43,7 @@ AliAnalysisMuMuCutElement::AliAnalysisMuMuCutElement(ECutType expectedType,
 fIsTrackCutter(kFALSE), fIsTrackPairCutter(kFALSE), fIsTriggerClassCutter(kFALSE),
 fCutObject(&cutObject), fCutMethodName(cutMethodName),
 fCutMethodPrototype(cutMethodPrototype),fDefaultParameters(defaultParameters),
-fNofParams(0), fCutMethod(0x0), fCallParams()
+fNofParams(0), fCutMethod(0x0), fCallParams(), fDoubleParams()
 {
   /**
    * Construct a cut, which is a proxy to another method of (most probably) another object

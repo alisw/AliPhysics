@@ -74,6 +74,8 @@ public:
   void Fill( AliFlowTrackCuts* rpCuts,
              AliFlowTrackCuts* poiCuts );
 
+  void FindDaughters(Bool_t keepDaughtersInRPselection=kFALSE);
+
   void SetMCReactionPlaneAngle(const AliMCEvent* mcEvent);
   using AliFlowEventSimple::SetMCReactionPlaneAngle;
 
@@ -85,13 +87,15 @@ public:
   void SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts);
   void SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts);
 
+  virtual void ClearFast();
+
 protected:
   AliFlowTrack* ReuseTrack( Int_t i);
 
 private:
   Int_t         fApplyRecentering;      // apply recentering of q-vectors? 2010 is 10h style, 2011 is 11h style
   Int_t         fCachedRun;             //! cached calibration info for vzero
-  Int_t         fCurrentCentrality;     //! centrality bin for the current event 
+  Int_t         fVZEROcentralityBin;     //! centrality bin for the current event 
   Float_t       fMeanQ[9][2][2];        //! recentering
   Float_t       fWidthQ[9][2][2];       //! recentering
   Float_t       fMeanQv3[9][2][2];      //! recentering

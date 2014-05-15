@@ -35,7 +35,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        SetDeltaEtaDeltaPhiAxis(Int_t b)                                { fDeltaEtaDeltaPhiAxis= b       ; }
   void                        SetNEFAxis(Int_t b)                                             { fNEFAxis           = b         ; }
   void                        SetZAxis(Int_t b)                                               { fZAxis             = b         ; }
-  void                        SetDoJet2Histogram(Int_t b)                                     { fDoJet2Histogram   = b         ; }
 
  protected:
   void                        ExecOnce();
@@ -48,9 +47,9 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   void                        GetMCLabelMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
   void                        GetSameCollectionsMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, Double_t &d1, Double_t &d2) const;
   void                        FillMatchingHistos(Double_t Pt1, Double_t Pt2, Double_t Eta1, Double_t Eta2, Double_t Phi1, Double_t Phi2, 
-						 Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
-						 Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t Z1, Double_t Z2);
-  void                        FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t Z, Double_t CorrPt, Double_t MCPt, Int_t Set);
+					     Double_t A1, Double_t A2, Double_t d, Double_t CE1, Double_t CE2, Double_t CorrPt1, Double_t CorrPt2, 
+					     Double_t MCPt1, Double_t NEF1, Double_t NEF2, Double_t LeadingPt1, Double_t LeadingPt2);
+  void                        FillJetHisto(Double_t Phi, Double_t Eta, Double_t Pt, Double_t A, Double_t NEF, Double_t LeadingPt, Double_t CorrPt, Double_t MCPt, Int_t Set);
   void                        AllocateTH2();
   void                        AllocateTHnSparse();
 
@@ -64,23 +63,13 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   Int_t                       fDeltaEtaDeltaPhiAxis;                   // add delta eta and delta phi axes in THnSparse (default=0)
   Int_t                       fNEFAxis;                                // add NEF axis in matching THnSparse (default=0)
   Int_t                       fZAxis;                                  // add Z axis in matching THnSparse (default=0)
-  Int_t                       fDoJet2Histogram;                        // add unbiased jet2 histogram (potentially memory consuming if on particle level)
 
   Bool_t                      fIsJet1Rho;                              //!whether the jet1 collection has to be average subtracted
   Bool_t                      fIsJet2Rho;                              //!whether the jet2 collection has to be average subtracted
 
-  // General histos
-  TH2                        *fHistLeadingJets1PtArea;                 //!leading jet pt vs. area histogram 1
-  TH2                        *fHistLeadingJets1CorrPtArea;             //!leading jet corr pt vs. area histogram 1
-  TH2                        *fHistLeadingJets2PtArea;                 //!leading jet pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2CorrPtArea;             //!leading jet corr pt vs. area histogram 2
-  TH2                        *fHistLeadingJets2PtAreaAcceptance;       //!leading jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistLeadingJets2CorrPtAreaAcceptance;   //!leading jet corr pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-
   // THnSparse
   THnSparse                  *fHistJets1;                              //!jet1 THnSparse
   THnSparse                  *fHistJets2;                              //!jet2 THnSparse
-  THnSparse                  *fHistJets2Acceptance;                    //!jet2 acceptance THnSparse
   THnSparse                  *fHistMatching;                           //!matching THnSparse
 
   // Jets 1
@@ -95,9 +84,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   TH2                        *fHistJets2PhiEta;                        //!phi-eta distribution of jets 2
   TH2                        *fHistJets2PtArea;                        //!inclusive jet pt vs. area histogram 2
   TH2                        *fHistJets2CorrPtArea;                    //!inclusive jet pt vs. area histogram 2
-  TH2                        *fHistJets2PhiEtaAcceptance;              //!phi-eta distribution of jets 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2PtAreaAcceptance;              //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
-  TH2                        *fHistJets2CorrPtAreaAcceptance;          //!inclusive jet pt vs. area histogram 2 using jet 1 cuts (acceptance, leading hadron bias, ...)
   TH2                        *fHistJets2NEFvsPt;                       //!Jet neutral energy fraction vs. jet pt 2
   TH2                        *fHistJets2CEFvsCEFPt;                    //!Jet charged energy fraction vs. charged jet pt 2
   TH2                        *fHistJets2ZvsPt;                         //!Constituent Pt over Jet Pt ratio vs. jet pt 2
@@ -154,6 +140,6 @@ class AliJetResponseMaker : public AliAnalysisTaskEmcalJet {
   AliJetResponseMaker(const AliJetResponseMaker&);            // not implemented
   AliJetResponseMaker &operator=(const AliJetResponseMaker&); // not implemented
 
-  ClassDef(AliJetResponseMaker, 23) // Jet response matrix producing task
+  ClassDef(AliJetResponseMaker, 24) // Jet response matrix producing task
 };
 #endif

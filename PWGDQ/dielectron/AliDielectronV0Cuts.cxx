@@ -48,7 +48,8 @@ Example configuration:
   gammaV0Cuts->SetPdgCodes(22,11,11); // mother, daughter1 and 2
 
   // add default PID cuts (defined in AliDielectronPID)
-  gammaV0Cuts->SetDefaultPID(16);
+  // requirement can be set to at least one(kAny) of the tracks or to both(kBoth)
+  gammaV0Cuts->SetDefaultPID(16, AliDielectronV0Cuts::kAny);
 
   // add the pair cuts for V0 candidates
   gammaV0Cuts->AddCut(AliDielectronVarManager::kCosPointingAngle, TMath::Cos(0.02),   1.0, kFALSE);
@@ -88,6 +89,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts() :
   fNegPdg(0),
   fPosPdg(0),
   fPID(-1),
+  fPIDCutType(kBoth),
   fOrbit(0),
   fPeriod(0),
   fBunchCross(0)
@@ -107,6 +109,7 @@ AliDielectronV0Cuts::AliDielectronV0Cuts(const char* name, const char* title) :
   fNegPdg(0),
   fPosPdg(0),
   fPID(-1),
+  fPIDCutType(kBoth),
   fOrbit(0),
   fPeriod(0),
   fBunchCross(0)
@@ -152,6 +155,7 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
   fV0TrackArr.ResetAllBits();
 
   // basic quality cut, /*at least one*/ both of the V0 daughters has to fullfill
+  // always update ::Print accordingly
   AliDielectronVarCuts dauQAcuts1;
   dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      70.0,  160.0);
   dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,    4.0);
@@ -198,8 +202,11 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
       // PID default cuts
       if(fPID>=0) {
-	if( !dauPIDcuts.IsSelected(trNeg) ) continue;
-	if( !dauPIDcuts.IsSelected(trPos) ) continue;
+	Bool_t selected=kFALSE;
+	selected=dauPIDcuts.IsSelected(trNeg);
+	if(fPIDCutType==kBoth) selected &= dauPIDcuts.IsSelected(trPos);
+	if(fPIDCutType==kAny)  selected |= dauPIDcuts.IsSelected(trPos);
+	if(!selected) continue;
       }
 
       // basic track cuts
@@ -250,8 +257,11 @@ void AliDielectronV0Cuts::InitEvent(AliVTrack *trk)
 
       // PID default cuts
       if(fPID>=0) {
-	if( !dauPIDcuts.IsSelected(trNeg) ) continue;
-	if( !dauPIDcuts.IsSelected(trPos) ) continue;
+	Bool_t selected=kFALSE;
+	selected=dauPIDcuts.IsSelected(trNeg);
+	if(fPIDCutType==kBoth) selected &= dauPIDcuts.IsSelected(trPos);
+	if(fPIDCutType==kAny)  selected |= dauPIDcuts.IsSelected(trPos);
+	if(!selected) continue;
       }
 
       // basic track cuts
@@ -317,4 +327,38 @@ Bool_t AliDielectronV0Cuts::IsNewEvent(const AliVEvent *ev)
   fOrbit      = ev->GetOrbitNumber();
   fPeriod     = ev->GetPeriodNumber();
   return kTRUE;
+}
+
+//________________________________________________________________________
+void AliDielectronV0Cuts::Print(const Option_t* /*option*/) const
+{
+  //
+  // Print cuts and the range
+  //
+  printf(" V0 cuts:\n");
+  printf(" V0 finder mode: %s \n",(fV0finder ==kOnTheFly ? "One-The-Fly":
+				   (fV0finder==kOffline  ? "Offline":
+				    "One-The-Fly+Offline") ) );
+  AliDielectronVarCuts::Print();
+
+  printf(" V0 daughter cuts (applied to both):\n");
+  AliDielectronVarCuts dauQAcuts1;
+  dauQAcuts1.AddCut(AliDielectronVarManager::kNclsTPC,      70.0,  160.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kTPCchi2Cl,     0.0,    4.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kKinkIndex0,            0.0);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kEta,          -0.9,    0.9);
+  dauQAcuts1.AddCut(AliDielectronVarManager::kPt,            0.05, 100.0);
+  dauQAcuts1.Print();
+  AliDielectronTrackCuts dauQAcuts2;
+  //  dauQAcuts2.SetRequireITSRefit(kTRUE);
+  dauQAcuts2.SetRequireTPCRefit(kTRUE);
+  //  dauQAcuts2.Print(); //TODO activate as soon as implemented
+
+  if(fPID>=0) {
+    printf(" V0 daughter PID cuts (applied to %s):\n",(fPIDCutType==kBoth?"both":"any"));
+    AliDielectronPID dauPIDcuts;
+    dauPIDcuts.SetDefaults(fPID);
+    dauPIDcuts.Print(); //TODO activate as soon as implemented
+  }
+
 }

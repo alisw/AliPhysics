@@ -80,10 +80,12 @@ public:
   float NSigmaTPCPi() const;   
   float NSigmaTPCK() const;   
   float NSigmaTPCP() const;   
+  float NSigmaTPCE() const;   
   float VTOF() const;   
   float NSigmaTOFPi() const;   
   float NSigmaTOFK() const;   
   float NSigmaTOFP() const;   
+  float NSigmaTOFE() const;   
 
 
   float TOFpionTime() const;
@@ -136,10 +138,12 @@ public:
   void SetNSigmaTPCPi(const float& x);   
   void SetNSigmaTPCK(const float& x);   
   void SetNSigmaTPCP(const float& x);   
+  void SetNSigmaTPCE(const float& x);   
   void SetVTOF(const float& x);   
   void SetNSigmaTOFPi(const float& x);   
   void SetNSigmaTOFK(const float& x);   
-  void SetNSigmaTOFP(const float& x);  
+  void SetNSigmaTOFP(const float& x);   
+  void SetNSigmaTOFE(const float& x);  
 
   void SetTPCcluster(const short& aNBit, const Bool_t& aValue);
   void SetTPCshared(const short& aNBit, const Bool_t& aValue);
@@ -252,9 +256,11 @@ public:
   float fNSigmaTPCPi;     // nsigma TPC for pion
   float fNSigmaTPCK;     // nsigma TPC for K
   float fNSigmaTPCP;     // nsigma TPC for P
+  float fNSigmaTPCE;     // nsigma TPC for electron
   float fNSigmaTOFPi;     // nsigma TPC for pion
   float fNSigmaTOFK;     // nsigma TPC for K
   float fNSigmaTOFP;     // nsigma TPC for P
+  float fNSigmaTOFE;     // nsigma TPC for electron
 
   float fSigmaToVertex;  // Distance from track to vertex in sigmas
   TBits fClusters;       // Cluster per padrow map

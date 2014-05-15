@@ -25,7 +25,8 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   kCombinedSoft,
   kNSigmaStrong,
   kCombinedpPb,
-  kCombinedpPb2
+  kCombinedpPb2,
+  kNSigmaPbPb
  };
  enum ECutsStrategy {
   kStandard,
@@ -58,6 +59,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();
+  virtual void SetStandardCutsPPb2013(); 
 
 
   AliAODPidHF* GetPidpion() const {return fPidObjpion;}
@@ -94,6 +96,7 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Int_t IsSelectedCombinedPIDpPb(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj);
   Int_t IsSelectedPIDStrong(AliAODRecoDecayHF* obj);
+  Int_t IsSelectedNSigmaPbPb(AliAODRecoDecayHF* obj);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
 
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
@@ -120,7 +123,7 @@ private:
   ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
 
-  ClassDef(AliRDHFCutsLctopKpi,7);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,9);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif

@@ -27,7 +27,7 @@
 
 #include "AliAnalysisTaskCTauPbPbaod.h"
 
-extern TROOT *gROOT;
+//extern TROOT *gROOT;
 
 ClassImp(AliAnalysisTaskCTauPbPbaod)
 

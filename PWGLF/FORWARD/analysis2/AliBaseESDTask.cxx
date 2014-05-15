@@ -376,7 +376,9 @@ AliBaseESDTask::GetESDEvent()
 	   esd->GetCurrentL3(),
 	   esd->GetMagneticField(),
 	   esd->GetRunNumber());
-  
+
+  PreCorrections(esd);
+
   fFirstEvent = false;
   
   const   TAxis* pe = 0;

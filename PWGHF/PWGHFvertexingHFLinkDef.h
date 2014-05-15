@@ -55,12 +55,14 @@
 #pragma link C++ class AliAnalysisTaskSEMonitNorm+;
 #pragma link C++ class AliAnalysisTaskSEBkgLikeSignD0+;
 #pragma link C++ class AliAnalysisTaskSEImproveITS+;
+#pragma link C++ class AliAnalysisTaskCombinHF+;
 #pragma link C++ class AliEventPlaneResolutionHandler+;
 #pragma link C++ class AliAnalysisTaskSEHFv2+;
 #pragma link C++ class AliAnalysisTaskFlowD2H+;
 #pragma link C++ class AliHFAfterBurner+;
 #pragma link C++ class AliAnalysisTaskSELambdacUp+;
 #pragma link C++ class AliAnalysisTaskCountLcEta+;
+#pragma link C++ class AliAnalysisTaskSELc2V0bachelorTMVA+;
 
 
 #endif

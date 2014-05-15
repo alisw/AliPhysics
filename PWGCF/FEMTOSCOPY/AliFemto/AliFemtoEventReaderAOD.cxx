@@ -29,6 +29,7 @@
 #include "AliPID.h"
 
 #include "AliAODpidUtil.h"
+#include "AliAnalysisUtils.h"
 
 ClassImp(AliFemtoEventReaderAOD)
 
@@ -63,6 +64,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -95,6 +101,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fMagFieldSign(1),
   fisEPVZ(kTRUE),
   fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -117,6 +128,11 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fEstEventMult = aReader.fEstEventMult;
   fUsePreCent = aReader.fUsePreCent;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
+  fMinVtxContr = aReader.fMinVtxContr;
+  fMinPlpContribMV = aReader.fMinPlpContribMV;
+  fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
 
 }
@@ -161,6 +177,11 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fUsePreCent = aReader.fUsePreCent;
   fEstEventMult = aReader.fEstEventMult;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
+  fMinVtxContr = aReader.fMinVtxContr;
+  fMinPlpContribMV = aReader.fMinPlpContribMV;
+  fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent= aReader.fFlatCent;
 
@@ -307,38 +328,34 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
     }
   }
 
+  //AliAnalysisUtils
+  if(fisPileUp||fpA2013)
+    {
+      AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+      if(fMinVtxContr)
+	anaUtil->SetMinVtxContr(fMinVtxContr);
+      if(fpA2013)
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
+      if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
+      else anaUtil->SetUseMVPlpSelection(kFALSE);
+      if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
+      if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
+      if(fisPileUp)
+	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
+      delete anaUtil;   
+    }
+
   // Primary Vertex position
-  //  double fV1[3];
-  if(fpA2013)
-  {
-    const AliAODVertex* trkVtx = fEvent->GetPrimaryVertex();
-    if (!trkVtx || trkVtx->GetNContributors()<=0)  return;
-    TString vtxTtl = trkVtx->GetTitle();
-    if (!vtxTtl.Contains("VertexerTracks")) return;
-    Float_t zvtx = trkVtx->GetZ();
-    const AliAODVertex* spdVtx = fEvent->GetPrimaryVertexSPD();
-    if (spdVtx->GetNContributors()<=0)  return;
-    TString vtxTyp = spdVtx->GetTitle();
-    Double_t cov[6]={0};
-    spdVtx->GetCovarianceMatrix(cov);
-    Double_t zRes = TMath::Sqrt(cov[5]);
-    if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25))  return;
-    if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5)  return;
+  const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
+  if(!aodvertex || aodvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
 
-    if (TMath::Abs(zvtx) > 10)  return;
-  }
-  fEvent->GetPrimaryVertex()->GetPosition(fV1);
-
+  aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
   tEvent->SetPrimVertPos(vertex);
 
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
 
-  // Check to see whether the additional info exists
-  //   if (fPWG2AODTracks)
-  //     nofTracks=fPWG2AODTracks->GetEntries();
-  //   else
   nofTracks=fEvent->GetNumberOfTracks();
 
   AliEventplane *ep = fEvent->GetEventplane();
@@ -543,18 +560,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
     //counting particles to set multiplicity
     if(fEstEventMult==kGlobalCount){
-      double impact[2];
-      double covimpact[3];
-      AliAODTrack* trk_clone = (AliAODTrack*)aodtrack->Clone("trk_clone");
-      if (trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-        if(impact[0]<0.2 && TMath::Abs(impact[1]+fV1[2])<2.0)
-          //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
-          if (aodtrack->Chi2perNDF() < 4.0)
-            if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
-              if (aodtrack->GetTPCNcls() > 70)
-                if (aodtrack->Eta() < 0.8)
-                  tNormMult++;
-      }
+      AliAODTrack* trk_clone = (AliAODTrack*)aodtrack->Clone("trk_clone"); //no DCA cut for global count
+      //if (aodtrack->IsPrimaryCandidate()) //? instead of kinks?
+      if (aodtrack->Chi2perNDF() < 4.0)
+	if (aodtrack->Pt() > 0.15 && aodtrack->Pt() < 20)
+	  if (aodtrack->GetTPCNcls() > 70)
+	    if (aodtrack->Eta() < 0.8)
+	      tNormMult++;
       delete trk_clone;
     }
 
@@ -565,10 +577,13 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 
     AliAODTrack *aodtrackpid;
-    if((fFilterBit ==  (1 << (7))) || fFilterMask==128) //for TPC Only tracks we have to copy PID information from corresponding global tracks
+    if((fFilterBit ==  (1 << (7))) || fFilterMask == 128) {//for TPC Only tracks we have to copy PID information from corresponding global tracks
       aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
-    else
+    }
+    else {
       aodtrackpid = fEvent->GetTrack(i);
+    }
+
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 
     if (mcP) {
@@ -853,23 +868,28 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack,
   tAodTrack->GetCovMatrix(covmat);
 
   if (!fDCAglobalTrack) {
-    double impact[2];
-    double covimpact[3];
 
-    AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
-    // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-      //cout << "sth went wrong with dca propagation" << endl;
-      tFemtoTrack->SetImpactD(-1000.0);
-      tFemtoTrack->SetImpactZ(-1000.0);
+    tFemtoTrack->SetImpactD(tAodTrack->DCA());
+    tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
 
-    }
-    else {
-      tFemtoTrack->SetImpactD(impact[0]);
-      tFemtoTrack->SetImpactZ(impact[1]);
-    }
-    delete trk_clone;
+
+    // double impact[2];
+    // double covimpact[3];
+
+    // AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
+    // // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    // if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    //   //cout << "sth went wrong with dca propagation" << endl;
+    //   tFemtoTrack->SetImpactD(-1000.0);
+    //   tFemtoTrack->SetImpactZ(-1000.0);
+
+    // }
+    // else {
+    //   tFemtoTrack->SetImpactD(impact[0]);
+    //   tFemtoTrack->SetImpactZ(impact[1]);
+    // }
+    // delete trk_clone;
 
   }
 
@@ -1235,27 +1255,60 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 {
 
   if (fDCAglobalTrack) {
-    // // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
 
-    double impact[2];
-    double covimpact[3];
+    // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
+    const AliAODVertex* vertex = (AliAODVertex*) fEvent->GetPrimaryVertex();
+    float vertexX  = -999.;
+    float vertexY  = -999.;
+    float vertexZ  = -999.;
 
-    AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
-    // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
-    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-    if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    if(vertex) {
+      Double32_t fCov[6];
+      vertex->GetCovarianceMatrix(fCov);
+      if(vertex->GetNContributors() > 0) {
+        if(fCov[5] != 0) {
+          vertexX = vertex->GetX();
+          vertexY = vertex->GetY();
+          vertexZ = vertex->GetZ();
 
-    // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
-      //cout << "sth went wrong with dca propagation" << endl;
-      tFemtoTrack->SetImpactD(-1000.0);
-      tFemtoTrack->SetImpactZ(-1000.0);
-
+        }
+      }
     }
-    else {
-      tFemtoTrack->SetImpactD(impact[0]);
-      tFemtoTrack->SetImpactZ(impact[1]);
-    }
-    delete trk_clone;
+
+    Double_t pos[3];
+    tAodTrack->GetXYZ(pos);
+
+    Double_t DCAX = pos[0] - vertexX;
+    Double_t DCAY = pos[1] - vertexY;
+    Double_t DCAZ = pos[2] - vertexZ;
+
+    Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+
+    tFemtoTrack->SetImpactD(DCAXY);
+    tFemtoTrack->SetImpactZ(DCAZ);
+
+
+    // // // copying DCA information (taking it from global tracks gives better resolution than from TPC-only)
+
+    // double impact[2];
+    // double covimpact[3];
+
+    // AliAODTrack* trk_clone = (AliAODTrack*)tAodTrack->Clone("trk_clone");
+    // // if(!trk_clone->PropagateToDCA(fAODVertex,aod->GetMagneticField(),300.,dca,cov)) continue;
+    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    // if (!trk_clone->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+
+    // // if (!tAodTrack->PropagateToDCA(fEvent->GetPrimaryVertex(),fEvent->GetMagneticField(),10000,impact,covimpact)) {
+    //   //cout << "sth went wrong with dca propagation" << endl;
+    //   tFemtoTrack->SetImpactD(-1000.0);
+    //   tFemtoTrack->SetImpactZ(-1000.0);
+
+    // }
+    // else {
+    //   tFemtoTrack->SetImpactD(impact[0]);
+    //   tFemtoTrack->SetImpactZ(impact[1]);
+    // }
+    // delete trk_clone;
   }
 
   double aodpid[10];
@@ -1294,6 +1347,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTPCK=-1000.;
   float nsigmaTPCPi=-1000.;
   float nsigmaTPCP=-1000.;
+  float nsigmaTPCE=-1000.;
 
   //   cout<<"in reader fESDpid"<<fESDpid<<endl;
 
@@ -1301,11 +1355,13 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
     nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kKaon);
     nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kPion);
     nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kProton);
+    nsigmaTPCE = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kElectron);
   }
 
   tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
   tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
   tFemtoTrack->SetNSigmaTPCP(nsigmaTPCP);
+  tFemtoTrack->SetNSigmaTPCE(nsigmaTPCE);
 
   tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());
   tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());
@@ -1321,6 +1377,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   float nsigmaTOFPi=-1000.;
   float nsigmaTOFK=-1000.;
   float nsigmaTOFP=-1000.;
+  float nsigmaTOFE=-1000.;
 
   if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
       (tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
@@ -1333,6 +1390,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
 	    nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);
 	    nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon);
 	    nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kProton);
+	    nsigmaTOFE = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kElectron);
 
 	    Double_t len=200;// esdtrack->GetIntegratedLength(); !!!!!
 	    Double_t tof=tAodTrack->GetTOFsignal();
@@ -1343,6 +1401,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(AliAODTrack *tAodTrack,
   tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
   tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
   tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
+  tFemtoTrack->SetNSigmaTOFE(nsigmaTOFE);
 
 
   //////////////////////////////////////
@@ -1461,6 +1520,18 @@ void AliFemtoEventReaderAOD::SetpA2013(Bool_t pa2013)
 {
   fpA2013 = pa2013;
 }
+
+void AliFemtoEventReaderAOD::SetUseMVPlpSelection(Bool_t mvplp)
+{
+  fMVPlp = mvplp;
+}
+
+void AliFemtoEventReaderAOD::SetIsPileUpEvent(Bool_t ispileup)
+{
+  fisPileUp = ispileup;
+}
+
+
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Bool_t dcagt)
 {
