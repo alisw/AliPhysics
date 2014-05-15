@@ -108,7 +108,10 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task = new AliAnalysisTaskChargedJetsPA(Form("AnalysisPA_%s_%s", jetFinderTask->GetName(), triggerName.Data()), usedTracks, jetFinderTask->GetName(),jetFinderTaskKT->GetName());
 
   // #### Task preferences
-  task->SetAcceptanceWindows(trackEtaWindow, jetRadius, jetRadius);
+  task->SetAcceptanceEta(-trackEtaWindow,+trackEtaWindow);
+  task->SetAcceptanceJetEta(-trackEtaWindow+jetRadius,+trackEtaWindow-jetRadius);
+  task->SetSignalJetRadius(jetRadius);
+  task->SetBackgroundJetRadius(jetRadius);
   task->SetAnalyzeQA(kTRUE);
   task->SetAnalyzeBackground(kTRUE);
   task->SetAnalyzeDeprecatedBackgrounds(analyzeDeprecatedBackgrounds);
