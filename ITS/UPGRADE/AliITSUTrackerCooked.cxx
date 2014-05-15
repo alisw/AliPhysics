@@ -3,7 +3,6 @@
 //    The pattern recongintion based on the "cooked covariance" approach
 //-------------------------------------------------------------------------
 
-#include <Riostream.h>
 #include <TTree.h>
 #include <TClonesArray.h>
 
@@ -13,9 +12,6 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliITSUTrackerCooked.h"
 #include "AliITSUTrackCooked.h" 
-
-using std::cout;
-using std::endl;
 
 ClassImp(AliITSUTrackerCooked)
 
@@ -36,6 +32,11 @@ const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
 const Double_t kSigma2=0.0005*0.0005;
 // Max accepted chi2 per cluster
 const Double_t kmaxChi2PerCluster=77.;
+// Tracking "road" from layer to layer
+const Double_t kRoadY=0.7;
+const Double_t kRoadZ=0.7;
+// Minimal number of attached clusters
+const Int_t kminNumberOfClusters=3;
 
 //************************************************
 // TODO:
@@ -270,6 +271,20 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
 	 }
      }
    }
+
+   for (Int_t n1=0; n1<nClusters1; n1++) {
+     AliCluster *c1=layer1.GetCluster(n1);
+     ((AliITSUClusterPix*)c1)->GoToFrameTrk();
+   }
+   for (Int_t n2=0; n2<nClusters2; n2++) {
+     AliCluster *c2=layer2.GetCluster(n2);
+     ((AliITSUClusterPix*)c2)->GoToFrameTrk();
+   }
+   for (Int_t n3=0; n3<nClusters3; n3++) {
+     AliCluster *c3=layer3.GetCluster(n3);
+     ((AliITSUClusterPix*)c3)->GoToFrameTrk();
+   }
+
    fSeeds->Sort();
    return fSeeds->GetEntriesFast();
 }
@@ -286,37 +301,34 @@ Int_t AliITSUTrackerCooked::Clusters2Tracks(AliESDEvent *event) {
 
   // Possibly, (re)fit the found tracks 
 
-  Int_t nClusters1=fgLayers[kSeedingLayer1].GetNumberOfClusters();
-  Int_t nClusters2=fgLayers[kSeedingLayer2].GetNumberOfClusters();
-  cout<<nClusters1<<' '<<nClusters2<<endl;
+  Int_t ngood=0;
+  for (Int_t s=0; s<nSeeds; s++) {
+      const AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(s);
+      ResetTrackToFollow(*track);
+      ResetBestTrack();
+      fI=kSeedingLayer2;
+      fgLayers[fI].ResetTrack(*track);
 
-    Int_t ngood=0;
-    for (Int_t s=0; s<nSeeds; s++) {
-        const AliITSUTrackCooked *track=(AliITSUTrackCooked*)fSeeds->At(s);
-        ResetTrackToFollow(*track);
-        ResetBestTrack();
-        fI=kSeedingLayer2;
-        fgLayers[fI].ResetTrack(*track); 
+      for (FollowProlongation(); fI<kSeedingLayer2; fI++) {
+          while (TakeNextProlongation()) FollowProlongation();
+      }
 
-        for (FollowProlongation(); fI<kSeedingLayer2; fI++) {
-            while (TakeNextProlongation()) FollowProlongation();
-        }
+      if (fBestTrack->GetNumberOfClusters() < kminNumberOfClusters) continue;
 
-        if (fBestTrack->GetNumberOfClusters() < 3) continue;
+      CookLabel(fBestTrack,0.); //For comparison only
+      Int_t label=fBestTrack->GetLabel();
+      if (label>0) ngood++;
 
-        CookLabel(fBestTrack,0.);
-        Int_t label=fBestTrack->GetLabel();
-        if (label>0) {ngood++;
-            //cout<<track->label<<endl;
-        }
-        AliESDtrack iotrack;
-        iotrack.UpdateTrackParams(fBestTrack,AliESDtrack::kITSin);
-        iotrack.SetLabel(label);
-        event->AddTrack(&iotrack);
-        UseClusters(fBestTrack);
-    }
-    cout<<"Good tracks "<<ngood<<endl;
-    cout<<"Good tracks/seeds "<<Float_t(ngood)/nSeeds<<endl;
+      AliESDtrack iotrack;
+      iotrack.UpdateTrackParams(fBestTrack,AliESDtrack::kITSin);
+      iotrack.SetLabel(label);
+      event->AddTrack(&iotrack);
+      UseClusters(fBestTrack);
+  }
+
+  Info("Clusters2Tracks","Seeds: %d",nSeeds);
+  if (nSeeds)
+  Info("Clusters2Tracks","Good tracks/seeds: %f",Float_t(ngood)/nSeeds);
 
   if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
   fSeeds=0;
@@ -340,20 +352,11 @@ void AliITSUTrackerCooked::FollowProlongation() {
       return;
     }
 
-    //Calculate the road at the next layer.  FIXME
-    Double_t dr = fgLayers[fI+1].GetR() - r;
-    Double_t xx0 = (fI > 2) ? 0.008 : 0.003;  //rough layer thickness
-    Double_t p = fTrackToFollow->P();
-    Double_t m = fTrackToFollow->GetMass();
-    Double_t beta2 = p*p/(p*p + m*m); 
-    Double_t scat2 = dr*dr*0.14*0.14*xx0/(beta2*p*p); 
-    Double_t dz=7*TMath::Sqrt((scat2 + kSigma2) + kSigma2);
-    Double_t dy=dz;
     //if (TMath::Abs(fTrackToFollow.GetZ()-GetZ()) > r+dz) return;
-    Double_t zMin = z - dz; 
-    Double_t zMax = z + dz;
-    Double_t phiMin = phi - dy/r;
-    Double_t phiMax = phi + dy/r;
+    Double_t zMin = z - kRoadZ; 
+    Double_t zMax = z + kRoadZ;
+    Double_t phiMin = phi - kRoadY/r;
+    Double_t phiMax = phi + kRoadY/r;
     if (layer.SelectClusters(zMin, zMax, phiMin, phiMax)==0) return;  
 
     if (!TakeNextProlongation()) return;
@@ -384,8 +387,8 @@ Int_t AliITSUTrackerCooked::TakeNextProlongation() {
   const AliCluster *c=0; Int_t ci=-1;
   const AliCluster *cc=0; Int_t cci=-1;
   UShort_t volId=-1;
-  Double_t x, alpha;
-  Double_t z, dz, y, dy, chi2; 
+  Double_t x=0., alpha=0.;
+  Double_t z=0., dz=0., y=0., dy=0., chi2=0.; 
   while ((c=layer.GetNextCluster(ci))!=0) {
     if (c->IsClusterUsed()) continue;
     Int_t id=c->GetVolumeId();
@@ -438,14 +441,94 @@ Int_t AliITSUTrackerCooked::PropagateBack(AliESDEvent *event) {
   // Here, we implement the Kalman smoother ?
   // The clusters must already be loaded
   //--------------------------------------------------------------------
-    Int_t n=event->GetNumberOfTracks();
-    for (Int_t i=0; i<n; i++) {
-        AliESDtrack *esdTrack=event->GetTrack(i);
-        AliITSUTrackCooked track(*esdTrack);
-        esdTrack->UpdateTrackParams(&track,AliESDtrack::kITSout);
-    }
+  Int_t n=event->GetNumberOfTracks();
+  Int_t ntrk=0;
+  Int_t ngood=0;
+  for (Int_t i=0; i<n; i++) {
+      AliESDtrack *esdTrack=event->GetTrack(i);
+
+      if ((esdTrack->GetStatus()&AliESDtrack::kITSin)==0) continue;
+
+      AliITSUTrackCooked track(*esdTrack);
+
+      ResetTrackToFollow(track);
+
+      fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
+      if (RefitAt(40., fTrackToFollow, &track)) {
+
+         CookLabel(fTrackToFollow, 0.); //For comparison only
+         Int_t label=fTrackToFollow->GetLabel();
+         if (label>0) ngood++;
+
+         esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSout);
+         //UseClusters(fTrackToFollow);
+         ntrk++;
+      }
+  }
+
+  Info("PropagateBack","Back propagated tracks: %d",ntrk);
+  if (ntrk)
+  Info("PropagateBack","Good tracks/back propagated: %f",Float_t(ngood)/ntrk);
     
   return 0;
+}
+
+Bool_t AliITSUTrackerCooked::
+RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliITSUTrackCooked *c) {
+  //--------------------------------------------------------------------
+  // This function refits the track "t" at the position "x" using
+  // the clusters from "c"
+  //--------------------------------------------------------------------
+  Int_t index[kNLayers];
+  Int_t k;
+  for (k=0; k<kNLayers; k++) index[k]=-1;
+  Int_t nc=c->GetNumberOfClusters();
+  for (k=0; k<nc; k++) {
+    Int_t idx=c->GetClusterIndex(k), nl=(idx&0xf0000000)>>28;
+    index[nl]=idx;
+  }
+
+  Int_t from, to, step;
+  if (xx > t->GetX()) {
+      from=0; to=kNLayers;
+      step=+1;
+  } else {
+      from=kNLayers-1; to=-1;
+      step=-1;
+  }
+
+  for (Int_t i=from; i != to; i += step) {
+     Int_t idx=index[i];
+     if (idx>=0) {
+        const AliCluster *cl=GetCluster(idx);
+        Float_t xr,ar; cl->GetXAlphaRefPlane(xr, ar);
+        if (!t->Propagate(Double_t(ar), Double_t(xr), GetBz())) {
+           //Warning("RefitAt","propagation failed !\n");
+           return kFALSE;
+        }
+        Double_t chi2=t->GetPredictedChi2(cl);
+        if (chi2 < kmaxChi2PerCluster) t->Update(cl, chi2, idx);
+     } else {
+        Double_t r=fgLayers[i].GetR();
+        Double_t phi,z;
+        if (!t->GetPhiZat(r,phi,z)) {
+           //Warning("RefitAt","failed to estimate track !\n");
+           return kFALSE;
+        }
+        if (!t->Propagate(Double_t(phi), Double_t(r), GetBz())) {
+           //Warning("RefitAt","propagation failed !\n");
+           return kFALSE;
+        }
+     }
+     Double_t xx0 = (i > 2) ? 0.008 : 0.003;  // Rough layer thickness
+     Double_t x0  = 9.36; // Radiation length of Si [cm]
+     Double_t rho = 2.33; // Density of Si [g/cm^3]
+     Double_t mass = t->GetMass();
+     t->CorrectForMeanMaterial(xx0, -step*xx0*x0*rho, mass, kTRUE);
+  }
+
+  if (!t->PropagateTo(xx,0.,0.)) return kFALSE;
+  return kTRUE;
 }
 
 Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
@@ -453,12 +536,35 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
   // Some final refit, after the outliers get removed by the smoother ?  
   // The clusters must be loaded
   //--------------------------------------------------------------------
-    Int_t n=event->GetNumberOfTracks();
-    for (Int_t i=0; i<n; i++) {
-        AliESDtrack *esdTrack=event->GetTrack(i);
-        AliITSUTrackCooked track(*esdTrack);
-        esdTrack->UpdateTrackParams(&track,AliESDtrack::kITSrefit);
-    }
+  Int_t n=event->GetNumberOfTracks();
+  Int_t ntrk=0;
+  Int_t ngood=0;
+  for (Int_t i=0; i<n; i++) {
+      AliESDtrack *esdTrack=event->GetTrack(i);
+
+      if ((esdTrack->GetStatus()&AliESDtrack::kITSout) == 0) continue;
+
+      AliITSUTrackCooked track(*esdTrack);
+      ResetTrackToFollow(track);
+
+      fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
+      if (RefitAt(2.1, fTrackToFollow, &track)) {
+
+	 CookLabel(fTrackToFollow, 0.); //For comparison only
+         Int_t label=fTrackToFollow->GetLabel();
+         if (label>0) ngood++;
+
+	 esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
+	 //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
+         //UseClusters(fTrackToFollow);
+	 ntrk++;
+      }
+
+  }
+
+  Info("RefitInward","Refitted tracks: %d",ntrk);
+  if (ntrk)
+  Info("RefitInward","Good tracks/refitted: %f",Float_t(ngood)/ntrk);
     
   return 0;
 }
@@ -619,17 +725,19 @@ SelectClusters(Float_t zMin,Float_t zMax,Float_t phiMin, Float_t phiMax) {
   // This function selects clusters within the "road"
   //--------------------------------------------------------------------
   UShort_t volId=-1;
-  Float_t x, alpha;
+  Float_t x=0., alpha=0.;
   for (Int_t i=FindClusterIndex(zMin); i<fN; i++) {
       AliCluster *c=fClusters[i];
+      if (c->GetZ() > zMax) break;
+      if (c->IsClusterUsed()) continue;
       UShort_t id=c->GetVolumeId();
       if (id != volId) {
 	volId=id;
         c->GetXAlphaRefPlane(x,alpha); //FIXME
       }
       Double_t cPhi=alpha + c->GetY()/fR;
-      if (c->IsClusterUsed()) continue;
-      if (c->GetZ() > zMax) break;
+      if (cPhi<0.) cPhi+=2.*TMath::Pi();
+      else if (cPhi >= 2.*TMath::Pi()) cPhi-=2.*TMath::Pi();
       if (cPhi <= phiMin) continue;
       if (cPhi >  phiMax) continue;
       fIndex[fNsel++]=i;

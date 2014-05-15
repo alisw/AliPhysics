@@ -31,6 +31,9 @@ public:
   Int_t RefitInward(AliESDEvent *event);
   Int_t LoadClusters(TTree *ct);
   void UnloadClusters();
+  Bool_t 
+  RefitAt(Double_t x, AliITSUTrackCooked *seed, const AliITSUTrackCooked *t);
+
   AliCluster *GetCluster(Int_t index) const;
 
   // internal helper classes

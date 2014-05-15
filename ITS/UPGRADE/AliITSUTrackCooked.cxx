@@ -63,6 +63,15 @@ Int_t AliITSUTrackCooked::Compare(const TObject *o) const {
   return 0;
 }
 
+void AliITSUTrackCooked::ResetClusters() {
+  //------------------------------------------------------------------
+  // Reset the array of attached clusters.
+  //------------------------------------------------------------------
+  for (Int_t i=0; i<2*AliITSUTrackerCooked::kNLayers; i++) fIndex[i]=-1;
+  SetChi2(0.); 
+  SetNumberOfClusters(0);
+} 
+
 void AliITSUTrackCooked::SetClusterIndex(Int_t l, Int_t i)
 {
     //--------------------------------------------------------------------

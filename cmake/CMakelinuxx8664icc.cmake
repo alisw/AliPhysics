@@ -18,7 +18,7 @@ set(OPT)
 # ------- Setting optimization flags for default configuration -------
 
 if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
-    set(DEFAULT_CXX_FLAGS "-O1 -g")
+    set(DEFAULT_CXX_FLAGS "-O1 -ip -finline -unroll -foptimize-sibling-calls -g")
     set(OPT "${DEFAULT_CXX_FLAGS}")
     message("-- Setting compiler flags for default configuration: ${DEFAULT_CXX_FLAGS}")
 endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL "None"))
