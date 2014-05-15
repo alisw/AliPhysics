@@ -1,10 +1,12 @@
+#include "TLatex.h"
+
 void SetGraphStyle(TGraph* g, Color_t mcolor, Style_t mstyle, Size_t msize, Color_t lcolor, Style_t lstyle, Width_t lwidth);
 TGraphErrors* read_jmrt(const char* fileName, const Int_t nPoints = 147);
 TGraph* read_bsat(const char* fileName, const Int_t nPoints=15, Bool_t skipLowEnergy=1);
 TGraphErrors* read_h1(const char* fileName);
 TGraphErrors* read_zeus_ee();
 TGraphErrors* read_zeus_mm();
-TGraphAsymmErrors* read_alice(Bool_t statOnly=0);
+TGraphAsymmErrors* read_alice(Bool_t statOnly=0,Int_t option=0);
 TGraphErrors* read_lhcb(const char* fileName, const int nPoints=20);
 TGraphErrors* read_clark();
 TGraphErrors* read_slac();
@@ -13,6 +15,10 @@ TGraphErrors* read_e814();
 TGraphErrors* read_e516();
 
 void draw(){
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  gStyle->SetTickLength(0.02,"X");  
+  gStyle->SetTickLength(0.02,"Y"); 
   gStyle->SetLineScalePS(2);
   TGraphErrors* gJMRT_LO  = read_jmrt("JMRT-LO-JPSI.txt");
   TGraphErrors* gJMRT_NLO = read_jmrt("JMRT-NLO-JPSI.txt");
@@ -24,6 +30,8 @@ void draw(){
   TGraphErrors* gZeus_mm = read_zeus_mm();
   TGraphAsymmErrors* gALICEstat = read_alice(1);
   TGraphAsymmErrors* gALICEfull = read_alice(0);
+  TGraphAsymmErrors* gALICEpPb  = read_alice(0,1);
+  TGraphAsymmErrors* gALICEPbp  = read_alice(0,2);
   TGraphErrors* gLHCb = read_lhcb("lhcb_data2.txt");
   TGraphErrors* gClark     = read_clark();
   TGraphErrors* gSLAC      = read_slac();
@@ -34,8 +42,8 @@ void draw(){
   fStarlight->SetLineColor(kBlack);
   SetGraphStyle(gJMRT_LO  ,     1,kDot             ,  1,kRed   , 7,2);
   SetGraphStyle(gJMRT_NLO ,     1,kDot             ,  1,kBlue  , 5,2);
-  SetGraphStyle(gBsat_eik ,     1,kDot             ,  1,kOrange, 9,2);
-  SetGraphStyle(gBsat_pom ,     1,kDot             ,  1,kOrange,10,2);
+  SetGraphStyle(gBsat_eik ,     1,kDot             ,  1,kGreen+2, 9,2);
+  SetGraphStyle(gBsat_pom ,     1,kDot             ,  1,kGreen+2,10,2);
   SetGraphStyle(gH1       ,kBlack,kFullCircle      ,1.4,kBlack , 1,1);
   SetGraphStyle(gZeus_ee  ,kBlack,kOpenSquare      ,1.4,kBlack , 1,1);
   SetGraphStyle(gZeus_mm  ,kBlack,kOpenSquare      ,1.4,kBlack , 1,1);
@@ -46,21 +54,23 @@ void draw(){
   SetGraphStyle(gE814     ,kBlack,kFullTriangleDown,1.2,kBlack , 1,1);
   SetGraphStyle(gALICEfull,kRed  ,kFullSquare      ,1.4,kRed   , 1,2);
   SetGraphStyle(gALICEstat,kRed  ,kFullSquare      ,1.4,kRed   , 1,2);
+  SetGraphStyle(gALICEpPb ,kRed  ,kFullSquare      ,1.4,kRed   , 1,2);
+  SetGraphStyle(gALICEPbp ,kRed  ,kFullDiamond     ,2.4,kRed   , 1,2);
   
   TCanvas* c1 = new TCanvas("c1","c1",1000,700);
-  gPad->SetLeftMargin(0.077);
+  gPad->SetLeftMargin(0.09);
   gPad->SetRightMargin(0.003);
   gPad->SetTopMargin(0.02);
-  gPad->SetBottomMargin(0.113);
+  gPad->SetBottomMargin(0.12);
   gPad->SetLogx();
   gPad->SetLogy();
   TH1F* frame1 = gPad->DrawFrame(19.9999,9.99,1400,1000);
   frame1->SetTitle(";W_{#gammap} [GeV];#sigma(#gamma+p #rightarrow J/#psi+p) [nb]");
-  frame1->GetXaxis()->SetTitleOffset(1.4);
-  frame1->GetXaxis()->SetLabelSize(0.04);
-  frame1->GetYaxis()->SetLabelSize(0.04);
-  frame1->GetXaxis()->SetTitleSize(0.04);
-  frame1->GetYaxis()->SetTitleSize(0.04);
+  frame1->GetXaxis()->SetTitleOffset(1.35);
+  frame1->GetXaxis()->SetLabelSize(0.045);
+  frame1->GetYaxis()->SetLabelSize(0.045);
+  frame1->GetXaxis()->SetTitleSize(0.045);
+  frame1->GetYaxis()->SetTitleSize(0.045);
   fStarlight->Draw("same");
   gJMRT_LO->Draw("cxsame");
   gJMRT_NLO->Draw("cxsame");
@@ -72,21 +82,33 @@ void draw(){
   gLHCb->Draw("pzsame");
 //  gE814->Draw("pzsame");
   gClark->Draw("pzsame");
-  gALICEfull->Draw("pzsame");
+  gALICEpPb->Draw("pzsame");
+  gALICEPbp->Draw("pzsame");
+//  gALICEfull->Draw("pzsame");
   TF1* fAliceFit = new TF1("fAliceFit","[0]*x^[1]",0,1000);
   gALICEfull->Fit(fAliceFit,"0");
   
-  TLegend* leg1 = new TLegend(0.10,0.67,0.5,0.95);
+  TArrow* arrow = new TArrow(100,10,1000,10,0.013,"<|>");
+  arrow->SetFillColor(kRed);
+  arrow->SetLineColor(kRed);
+  arrow->SetLineWidth(2);
+  arrow->DrawArrow(21,11.2,45,11.2);
+  arrow->DrawArrow(577,11.2,952,11.2);
+  arrow->DrawArrow(25,700,32,700);
+  
+  TLegend* leg1 = new TLegend(0.10,0.60,0.6,0.93);
   leg1->SetFillStyle(0);
   leg1->SetBorderSize(0);
-  leg1->AddEntry(gALICEfull,"ALICE (p-Pb)","p");
+  leg1->AddEntry(arrow,"W_{#gammap} interval probed by ALICE","<|>");
+  leg1->AddEntry(gALICEpPb,"ALICE (p-Pb)","p");
+  leg1->AddEntry(gALICEPbp,"ALICE (Pb-p)","p");
   leg1->AddEntry(gLHCb,"LHCb solutions (pp)","p");
   leg1->AddEntry(gH1,"H1","p");
   leg1->AddEntry(gZeus_ee,"ZEUS","p");
 //  leg1->AddEntry(gE814,"Fixed target experiments","p");
   leg1->Draw("same");
 
-  TLegend* leg2 = new TLegend(0.45,0.15,1.00,0.47);
+  TLegend* leg2 = new TLegend(0.45,0.18,1.00,0.45);
   leg2->SetFillStyle(0);
   leg2->SetBorderSize(0);
   leg2->AddEntry(gJMRT_LO,"JMRT LO","l");
@@ -96,8 +118,15 @@ void draw(){
   leg2->AddEntry(fStarlight,"STARLIGHT parameterization","l");
   leg2->Draw("same");
   
+//  TLatex* l = new TLatex();
+//  l->SetTextAlign(22);
+//  l->SetTextFont(42);
+//  l->DrawLatex(160,7,"W_{#gammap} interval probed by ALICE");
+  
+
   c1->Print("fig3.eps");
   c1->Print("fig3.png");
+  
 }
 
 void SetGraphStyle(TGraph* g, Color_t mcolor, Style_t mstyle, Size_t msize, Color_t lcolor, Style_t lstyle, Width_t lwidth){
@@ -178,7 +207,7 @@ TGraphErrors* read_zeus_ee(){
   return new TGraphErrors(nZEUSee,wavgZEUSee,sigmZEUSee,NULL,dsigZEUSee);
 }
 
-TGraphAsymmErrors* read_alice(Bool_t statOnly){
+TGraphAsymmErrors* read_alice(Bool_t statOnly, Int_t option){
   const int nALICE=4;
   Double_t wavgALICE[]     = { 24.1, 30.9, 39.6,   706};
   Double_t sigmALICE[]     = { 26.6, 33.6, 36.9,   275};
@@ -186,11 +215,18 @@ TGraphAsymmErrors* read_alice(Bool_t statOnly){
   Double_t systALICEl[]    = {  2.7,  2.7,  3.9,    31};
   Double_t systALICEh[]    = {  2.7,  2.7,  4.0,    26};
   Double_t fluxALICE[]     = {  0.5,  0.7,  0.7,    25};
-  if (statOnly) return new TGraphAsymmErrors(nALICE,wavgALICE,sigmALICE,NULL,NULL,statALICE,statALICE);
+  if (statOnly) {
+    if (option==0) return new TGraphAsymmErrors(nALICE,wavgALICE,sigmALICE,NULL,NULL,statALICE,statALICE);
+    if (option==1) return new TGraphAsymmErrors(3,wavgALICE,sigmALICE,NULL,NULL,statALICE,statALICE);
+    if (option==2) return new TGraphAsymmErrors(1,&(wavgALICE[3]),&(sigmALICE[3]),NULL,NULL,&(statALICE[3]),&(statALICE[3]));
+  }
   Double_t dsigALICEl[nALICE];
   Double_t dsigALICEh[nALICE];
   for (Int_t i=0;i<nALICE;i++) dsigALICEl[i] = sqrt(pow(statALICE[i],2)+pow(systALICEl[i],2));
   for (Int_t i=0;i<nALICE;i++) dsigALICEh[i] = sqrt(pow(statALICE[i],2)+pow(systALICEh[i],2));
+  
+  if (option==1) return new TGraphAsymmErrors(3,wavgALICE,sigmALICE,NULL,NULL,dsigALICEl,dsigALICEh);
+  if (option==2) return new TGraphAsymmErrors(1,&(wavgALICE[3]),&(sigmALICE[3]),NULL,NULL,&(dsigALICEl[3]),&(dsigALICEh[3]));
   return new TGraphAsymmErrors(nALICE,wavgALICE,sigmALICE,NULL,NULL,dsigALICEl,dsigALICEh);
 }
 

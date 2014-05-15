@@ -177,10 +177,6 @@ void AliFemtoCorrFctnMinvMonitor::AddRealPair( AliFemtoPair* pair){
   }
 }
 //____________________________
-void AliFemtoCorrFctnMinvMonitor::AddMixedPair( AliFemtoPair* pair){
-
- }
-
 
 void AliFemtoCorrFctnMinvMonitor::WriteHistos()
 {
