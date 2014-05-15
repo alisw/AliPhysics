@@ -54,33 +54,31 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
 {
   // Default constructor.
 
-  for (Int_t i = 0; i < 4; i++) {
-    for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
+  fHistTrNegativeLabels = 0;
+  fHistTrZeroLabels = 0;
+  fHistTrPhiEtaZeroLab = 0;
+  fHistTrPtZeroLab = 0;
+  fHistTrEmcPhiEta = 0;
+  fHistTrEmcPt = 0;
+  fHistTrPhiEtaNonProp = 0;
+  fHistTrPtNonProp = 0;
+  fHistDeltaEtaPt = 0;
+  fHistDeltaPhiPt = 0;
+  fHistDeltaPtvsPt = 0;
 
-    fHistTrNegativeLabels[i] = 0;
-    fHistTrZeroLabels[i] = 0;
-    fHistTrPhiEtaZeroLab[i] = 0;
-    fHistTrPtZeroLab[i] = 0;
-    fHistTrEmcPhiEta[i] = 0;
-    fHistTrEmcPt[i] = 0;
-    fHistTrPhiEtaNonProp[i] = 0;
-    fHistTrPtNonProp[i] = 0;
-    fHistDeltaEtaPt[i] = 0;
-    fHistDeltaPhiPt[i] = 0;
-    fHistDeltaPtvsPt[i] = 0;
+  fHistClusPhiEtaEnergy = 0;
+  fHistClusDeltaPhiEPEnergy = 0;
+  fHistNCellsEnergy = 0;
+  fHistFcrossEnergy = 0;
+  fHistClusTimeEnergy = 0;
+  fHistClusMCEnergyFraction = 0;
 
-    fHistClusPhiEtaEnergy[i] = 0;
-    fHistClusDeltaPhiEPEnergy[i] = 0;
-    fHistNCellsEnergy[i] = 0;
-    fHistFcrossEnergy[i] = 0;
-    fHistClusTimeEnergy[i] = 0;
-    fHistClusMCEnergyFraction[i] = 0;
+  fHistCellsAbsIdEnergy = 0;
 
-    fHistCellsAbsIdEnergy[i] = 0;
+  fHistJetsPhiEta = 0;
+  fHistJetsPtArea = 0;
 
-    fHistJetsPhiEta[i] = 0;
-    fHistJetsPtArea[i] = 0;
-  }
+  fHistTrPhiEtaPt = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -104,9 +102,75 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fV0CTotMult(0),
   fHistEventQA(0)
 {
-  // Standard constructor.
+  // Standard 
 
-  for (Int_t i = 0; i < 4; i++) {
+  fHistTrNegativeLabels = 0;
+  fHistTrZeroLabels = 0;
+  fHistTrPhiEtaZeroLab = 0;
+  fHistTrPtZeroLab = 0;
+  fHistTrEmcPhiEta = 0;
+  fHistTrEmcPt = 0;
+  fHistTrPhiEtaNonProp = 0;
+  fHistTrPtNonProp = 0;
+  fHistDeltaEtaPt = 0;
+  fHistDeltaPhiPt = 0;
+  fHistDeltaPtvsPt = 0;
+
+  fHistClusPhiEtaEnergy = 0;
+  fHistClusDeltaPhiEPEnergy = 0;
+  fHistNCellsEnergy = 0;
+  fHistFcrossEnergy = 0;
+  fHistClusTimeEnergy = 0;
+  fHistClusMCEnergyFraction = 0;
+
+  fHistCellsAbsIdEnergy = 0;
+
+  fHistJetsPhiEta = 0;
+  fHistJetsPtArea = 0;
+
+  fHistTrPhiEtaPt = 0;
+
+  SetMakeGeneralHistograms(kTRUE);
+}
+
+//________________________________________________________________________
+AliAnalysisTaskSAQA::~AliAnalysisTaskSAQA()
+{
+  // Destructor
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskSAQA::AllocateHistogramArrays()
+{
+  fHistTrNegativeLabels = new TH1*[fNcentBins];
+  fHistTrZeroLabels = new TH1*[fNcentBins];
+  fHistTrPhiEtaZeroLab = new TH2*[fNcentBins];
+  fHistTrPtZeroLab = new TH1*[fNcentBins];
+  fHistTrEmcPhiEta = new TH2*[fNcentBins];
+  fHistTrEmcPt = new TH1*[fNcentBins];
+  fHistTrPhiEtaNonProp = new TH2*[fNcentBins];
+  fHistTrPtNonProp = new TH1*[fNcentBins];
+  fHistDeltaEtaPt = new TH2*[fNcentBins];
+  fHistDeltaPhiPt = new TH2*[fNcentBins];
+  fHistDeltaPtvsPt = new TH2*[fNcentBins];
+
+  fHistClusPhiEtaEnergy = new TH3*[fNcentBins];
+  fHistClusDeltaPhiEPEnergy = new TH2*[fNcentBins];
+  fHistNCellsEnergy = new TH2*[fNcentBins];
+  fHistFcrossEnergy = new TH2*[fNcentBins];
+  fHistClusTimeEnergy = new TH2*[fNcentBins];
+  fHistClusMCEnergyFraction = new TH1*[fNcentBins];
+
+  fHistCellsAbsIdEnergy = new TH2*[fNcentBins];
+
+  fHistJetsPhiEta = new TH2*[fNcentBins];
+  fHistJetsPtArea = new TH2*[fNcentBins];
+
+  fHistTrPhiEtaPt = new TH3**[fNcentBins];
+
+  for (Int_t i = 0; i < fNcentBins; i++) {
+
+    fHistTrPhiEtaPt[i] = new TH3*[4];
     for (Int_t j = 0; j < 4; j++) fHistTrPhiEtaPt[i][j] = 0;
 
     fHistTrNegativeLabels[i] = 0;
@@ -133,14 +197,6 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
     fHistJetsPhiEta[i] = 0;
     fHistJetsPtArea[i] = 0;
   }
-
-  SetMakeGeneralHistograms(kTRUE);
-}
-
-//________________________________________________________________________
-AliAnalysisTaskSAQA::~AliAnalysisTaskSAQA()
-{
-  // Destructor
 }
 
 //________________________________________________________________________
@@ -149,6 +205,8 @@ void AliAnalysisTaskSAQA::UserCreateOutputObjects()
   // Create histograms
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  AllocateHistogramArrays();
 
   TString histname;
 

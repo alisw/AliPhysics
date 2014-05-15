@@ -141,7 +141,7 @@ AliAnalysisTaskPhiFlow* AddTaskPhiFlow(Bool_t SP = kTRUE, // select flow analysi
    }
    if(VZERO_SP) { // use vzero sub analysis
        cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
-       cutsRP->SetV0gainEqualizationPerRing(kFALSE);
+       cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
        cutsRP->SetApplyRecentering(kTRUE);
 //       cutsRP->SetUseVZERORing(7, kFALSE);
        SP = kFALSE; // disable other methods
