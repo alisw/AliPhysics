@@ -2380,7 +2380,7 @@ parseConfig()
     fi
     local var="${opt%%=*}"
     local value="${opt#*=}"
-    echo "${var} = ${value}"
+    echo "${var}=${value}"
     export ${var}="${value}"
   done
 
