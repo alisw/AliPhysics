@@ -187,23 +187,30 @@ AliFMDESDFixer::FindTargetNoiseFactor(const AliESDFMD& esd, Bool_t check) const
   if (!IsUseNoiseCorrection()) 
     // If the reconstruction factor was high (4 or more), do nothing 
     return 0;
+
+  Int_t target = 0;
+  if (AliESDFMD::Class_Version() < 4) {
+    // IF we running with older STEER - we fix it here
+    target = 4;					
+  } else {
 #if 1
-  if (!esd.TestBit(1 << 14)) { 
-    // If the bit isn't set, do nothing
-    return 0;
-  }
+    if (!esd.TestBit(1 << 14)) { 
+      // If the bit isn't set, do nothing
+      return 0;
+    }
 #else 
-  // Uncommented until Peter commits patch to STEER/ESD
-  if (!esd.NeedNoiseFix()) { 
-    // If the bit isn't set, do nothing
-    return 0;
-  }
+    // Uncommented until Peter commits patch to STEER/ESD
+    if (!esd.NeedNoiseFix()) { 
+      // If the bit isn't set, do nothing
+      return 0;
+    }
 #endif
-  
+    target = esd.GetNoiseFactor();
+  }
   // Get the target factor - even thought the method below returns a
   // floating point value, we know that the noise factor is always
   // integer, so we coerce it to be the same here. 
-  Int_t target = esd.GetNoiseFactor() - fRecoFactor;
+  target -= fRecoFactor;
 
   // If the target factor is the same or smaller than the assumed
   // factor, we have nothing to do here, and we return immediately

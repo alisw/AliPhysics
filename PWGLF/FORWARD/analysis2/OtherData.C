@@ -1893,7 +1893,8 @@ struct RefData
 	  case WIP:   ret = AliceCentralInelGt900Work(); break;
 	  }
 	  break;
-	case 4:  // NSD 
+	case 4:  // NSD
+	case 0x2000: // V0-AND - same as NSD
 	  switch (which) { 
 	  case PYTHIA: ret = Pythia900NSD(); break;
 	  case UA5:    ret = UA5Nsd(false);  break;
@@ -2215,7 +2216,7 @@ struct RefData
     Bool_t  seenUA5   = false;
 
     if (sys == 1) { 
-      if (!(type & 0x7)) 
+      if (!(type & 0x2007)) 
 	Warning("GetData", "Unknown trigger mask 0x%x", type);
 
       if (TMath::Abs(energy-2750) < 11) {
@@ -2232,6 +2233,10 @@ struct RefData
       }
 
       // Substitute NSD for V0-AND
+      if (type == 0x2000) { 
+	Warning("GetData", "Using NSD for V0-AND results 0x%04x", type);
+	type = 4;
+      }
 
       for (Int_t i = 0; i < 3; i++) { 
 	UShort_t mask = (1 << i);

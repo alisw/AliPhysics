@@ -268,7 +268,9 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    mult = AliESDFMD::kInvalidMult;
 	  }
 	  
-	  if (mult != AliESDFMD::kInvalidMult) {
+	  Double_t lowCut  = GetLowCut(d, r, eta);
+	  Double_t highCut = GetHighCut(d, r, eta, false);
+	  if (mult != AliESDFMD::kInvalidMult && mult > lowCut) {
 	    // Always fill the ESD sum histogram 
 	    histos->fSumESD->Fill(eta, phi, mult);
 	  }
@@ -299,7 +301,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 
 	  Double_t mergedEnergy = mult;
 	  // it seems to me that this logic could be condensed a bit
-          if(mult > GetLowCut(d, r, eta)) {		  
+          if(mult > lowCut) {		  
 	    if(nStripsAboveCut < 1) {
 	      if(t > 0)
 		histos->fNConsecutive->Fill(nStripsAboveCut);
@@ -322,10 +324,10 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	    // Fill in neighbor information
 	    if (t < nstr-1) histos->fNeighborsBefore->Fill(mult,multNext);
 
-	    Bool_t thisValid = mult     > GetLowCut(d, r, eta);
-	    Bool_t nextValid = multNext > GetLowCut(d, r, eta);
-	    Bool_t thisSmall = mult     < GetHighCut(d, r, eta ,false);
-	    Bool_t nextSmall = multNext < GetHighCut(d, r, eta ,false);
+	    Bool_t thisValid = mult     > lowCut;
+	    Bool_t nextValid = multNext > lowCut;
+	    Bool_t thisSmall = mult     < highCut;
+	    Bool_t nextSmall = multNext < highCut;
 	  
 	    // If this strips signal is above the high cut, reset distance
 	    // if (!thisSmall) {
@@ -379,7 +381,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		// If this signal is bigger than the next, and the 
 		// one after that is below the low-cut, then update 
 		// the sum
-		if (mult>multNext && multNextNext < GetLowCut(d, r, eta)) {
+		if (mult>multNext && multNextNext < lowCut) {
 		  etot = mult + multNext;
 		  used = kTRUE;
 		  histos->fDouble->Fill(etot);
