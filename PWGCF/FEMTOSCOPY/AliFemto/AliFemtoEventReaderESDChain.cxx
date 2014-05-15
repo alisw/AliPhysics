@@ -23,6 +23,7 @@
 #include "AliFemtoEvent.h"
 #include "AliFemtoModelHiddenInfo.h"
 #include "AliPID.h"
+#include "AliAnalysisUtils.h"
 
 ClassImp(AliFemtoEventReaderESDChain)
 
@@ -49,7 +50,12 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain():
   fIsPidOwner(0),
   fReadV0(0),
   fMagFieldSign(0),
-  fpA2013(kFALSE)
+  fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0)
 {
   //constructor with 0 parameters , look at default settings 
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -80,7 +86,12 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fIsPidOwner(0),
   fReadV0(0),
   fMagFieldSign(0),
-  fpA2013(kFALSE)
+  fpA2013(kFALSE),
+  fisPileUp(kFALSE),
+  fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -97,6 +108,11 @@ AliFemtoEventReaderESDChain::AliFemtoEventReaderESDChain(const AliFemtoEventRead
   fReadV0 = aReader.fReadV0;
   fMagFieldSign = aReader.fMagFieldSign;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
+  fMinVtxContr =  aReader.fMinVtxContr;
+  fMinPlpContribMV  =  aReader.fMinPlpContribMV;
+  fMinPlpContribSPD  =  aReader.fMinPlpContribSPD;
 
   //   fEventFriend = aReader.fEventFriend;
   //   fClusterPerPadrow = (list<Int_t> **) malloc(sizeof(list<Int_t> *) * AliESDfriendTrack::kMaxTPCcluster);
@@ -156,6 +172,8 @@ AliFemtoEventReaderESDChain& AliFemtoEventReaderESDChain::operator=(const AliFem
   fReadV0 = aReader.fReadV0;
   fMagFieldSign = aReader.fMagFieldSign;
   fpA2013 = aReader.fpA2013;
+  fisPileUp = aReader.fisPileUp;
+  fMVPlp = aReader.fMVPlp;
   //  fEventFriend = aReader.fEventFriend;
   
   //   if (fClusterPerPadrow) {
@@ -299,34 +317,40 @@ void AliFemtoEventReaderESDChain::CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent)
   double fV1[3];
   double fVCov[6];
 
-  if(fpA2013)
+  //AliAnalysisUtils
+  if(fisPileUp||fpA2013)
     {
-      const AliESDVertex* trkVtx = fEvent->GetPrimaryVertex();
-      if (!trkVtx || trkVtx->GetNContributors()<=0) return;
-      TString vtxTtl = trkVtx->GetTitle();
-      if (!vtxTtl.Contains("VertexerTracks")) return;
-      Float_t zvtx = trkVtx->GetZ();
-      const AliESDVertex* spdVtx = fEvent->GetVertex();
-      if (spdVtx->GetNContributors()<=0) return;
-      TString vtxTyp = spdVtx->GetTitle();
-      Double_t cov[6]={0};
-      spdVtx->GetCovarianceMatrix(cov);
-      Double_t zRes = TMath::Sqrt(cov[5]);
-      if (vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-      if (TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-
-      if (TMath::Abs(zvtx) > 10) return;
+      AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+      if(fMinVtxContr)
+	anaUtil->SetMinVtxContr(fMinVtxContr);
+      if(fpA2013)
+	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
+      if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
+      else anaUtil->SetUseMVPlpSelection(kFALSE);
+      if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
+      if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
+      if(fisPileUp)
+	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
+      delete anaUtil;   
     }
+
+
   if (fUseTPCOnly) {
-    fEvent->GetPrimaryVertexTPC()->GetXYZ(fV1);
-    fEvent->GetPrimaryVertexTPC()->GetCovMatrix(fVCov);
-    if (!fEvent->GetPrimaryVertexTPC()->GetStatus())
+    const AliESDVertex* esdvertex = (AliESDVertex*) fEvent->GetPrimaryVertexTPC();
+    if(!esdvertex || esdvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
+
+    esdvertex->GetXYZ(fV1);
+    esdvertex->GetCovMatrix(fVCov);
+    if (!esdvertex->GetStatus())
       fVCov[4] = -1001.0;
   }
   else {
-    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
-    fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
-    if (!fEvent->GetPrimaryVertex()->GetStatus())
+    const AliESDVertex* esdvertex = (AliESDVertex*) fEvent->GetPrimaryVertex();
+    if(!esdvertex || esdvertex->GetNContributors() < 1) return; //Bad vertex, skip event.
+   
+    esdvertex->GetXYZ(fV1);
+    esdvertex->GetCovMatrix(fVCov);
+    if (!esdvertex->GetStatus())
       fVCov[4] = -1001.0;
   }
     
@@ -1281,4 +1305,14 @@ void AliFemtoEventReaderESDChain::GetGlobalPositionAtGlobalRadiiThroughTPC(AliES
 void AliFemtoEventReaderESDChain::SetpA2013(Bool_t pA2013)
 {
   fpA2013 = pA2013;
+}
+
+void AliFemtoEventReaderESDChain::SetUseMVPlpSelection(Bool_t mvplp)
+{
+  fMVPlp = mvplp;
+}
+
+void AliFemtoEventReaderESDChain::SetIsPileUpEvent(Bool_t ispileup)
+{
+  fisPileUp = ispileup;
 }

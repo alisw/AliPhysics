@@ -59,9 +59,13 @@ class AliHFEreducedTrack : public TObject{
   Int_t MCMotherPdg() const { return fMCMotherPdg; }
   Bool_t MCSignal() const { return fMCSignal; }
   Int_t MCSource() const { return fMCSource; }
+  Int_t MCElectronSource() const { return static_cast<Int_t>(fMCEleSource); }
   Double_t MCProdVtxX() const { return fMCProdVtx[0]; }
   Double_t MCProdVtxY() const { return fMCProdVtx[1]; }
   Double_t MCProdVtxZ() const { return fMCProdVtx[2]; }
+  Double_t MCMotherProdVtxX() const { return fMCMotherProdVtx[0]; }
+  Double_t MCMotherProdVtxY() const { return fMCMotherProdVtx[1]; }
+  Double_t MCMotherProdVtxZ() const { return fMCMotherProdVtx[2]; }
   Double_t MCProdRadius() const { return TMath::Sqrt(fMCProdVtx[0]*fMCProdVtx[0]+fMCProdVtx[1]*fMCProdVtx[1]); }
   
   Double_t DCAr() const { return fDCA[0]; }
@@ -111,6 +115,7 @@ class AliHFEreducedTrack : public TObject{
   Double_t GetTPCsigmaEl() const { return fTPCsigmaEl; }
   Double_t GetTPCsigmaElCorrected() const { return fTPCsigmaElCorrected; }
   Double_t GetTOFsigmaEl() const { return fTOFsigmaEl; }
+  Double_t GetTOFsigmaDeuteron() const { return fTOFsigmaDeuteron; }
   Float_t GetTOFmismatchProb() const { return fTOFmismatchProb; }
   Double_t GetITSsigmaEl() const { return fITSsigmaEl; }
   Double_t GetEMCALEoverP() const { return fEoverP; }
@@ -123,6 +128,8 @@ class AliHFEreducedTrack : public TObject{
   Bool_t IsV0pion() const { return fV0PID == kV0pion; }
   Bool_t IsV0proton() const { return fV0PID == kV0proton; }
   
+  Float_t GetV0prodR() const { return fV0ProdR; }
+  Double_t GetDCAerr() const { return fDCAerr; }
   
   // -------------- Setters ------------------------
   void SetSignedPt(Double_t abspt, Bool_t positivecharge) { 
@@ -157,10 +164,16 @@ class AliHFEreducedTrack : public TObject{
   void SetMCMotherPdg(Int_t pdg) { fMCMotherPdg = pdg; }
   void SetMCSignal() { fMCSignal = kTRUE; }
   void SetMCSource(Int_t mcsource) { fMCSource = mcsource; }
+  void SetMCElectronSource(Int_t source) { fMCEleSource = static_cast<UChar_t>(source); }
   void SetMCProdVtx(Double_t vx, Double_t vy, Double_t vz){
     fMCProdVtx[0] = vx;
     fMCProdVtx[1] = vy;
     fMCProdVtx[2] = vz;
+  }
+  void SetMCMotherProdVtx(Double_t vx, Double_t vy, Double_t vz){
+    fMCMotherProdVtx[0] = vx;
+    fMCMotherProdVtx[1] = vy;
+    fMCMotherProdVtx[2] = vz;
   }
   
   void SetDCA(Float_t dcaR, Float_t dcaZ){
@@ -203,6 +216,7 @@ class AliHFEreducedTrack : public TObject{
   void SetTPCsigmaEl(Double_t sigma) { fTPCsigmaEl = sigma; }
   void SetTPCsigmaElCorrected(Double_t sigma) { fTPCsigmaElCorrected = sigma; }
   void SetTOFsigmaEl(Double_t sigma) { fTOFsigmaEl = sigma; }
+  void SetTOFsigmaDeuteron(Double_t sigma) { fTOFsigmaDeuteron = sigma; }
   void SetTOFmismatchProbability(Float_t mismatchProb) { fTOFmismatchProb = mismatchProb; }
   void SetITSsigmaEl(Double_t sigma) { fITSsigmaEl = sigma; }
   void SetEMCALEoverP(Double_t eop) { fEoverP = eop; }
@@ -211,6 +225,8 @@ class AliHFEreducedTrack : public TObject{
     for(Int_t is = 0; is < 4; is++) fShowerShape[is] = showershape[is]; 
   }
   void SetV0PID(AliHFEreducedTrack::EV0PID_t v0pid) { fV0PID = v0pid; }
+  void SetV0prodR(Double_t v0prodR) { fV0ProdR = v0prodR; }
+  void SetDCAerr(Double_t InDCAerr) { fDCAerr = InDCAerr;}
   
  private:
   typedef enum{
@@ -238,7 +254,9 @@ class AliHFEreducedTrack : public TObject{
   Int_t    fMCMotherPdg;                  // MCMP
   Bool_t   fMCSignal;                     // MCSignal
   Int_t    fMCSource;                     // MCSource
+  UChar_t  fMCEleSource;                  // MC Electron Source (AliHFEmcQA)
   Double_t fMCProdVtx[3];                 // MC prod Vtx
+  Double_t fMCMotherProdVtx[3];           // MC prod Vtx of the mother
   TBits    fTrackStatus;                  // Track Status
   UChar_t  fNclustersITS;                 // ITS nb cls
   UChar_t  fNclustersTPC;                 // TPC nb cls
@@ -261,6 +279,7 @@ class AliHFEreducedTrack : public TObject{
   Double_t fTPCsigmaEl;                   // TPC sigma el
   Double_t fTPCsigmaElCorrected;          // TPC sigma el corrected
   Double_t fTOFsigmaEl;                   // TOF sigma el
+  Double_t fTOFsigmaDeuteron;             // TOF sigma deuteron
   Float_t  fTOFmismatchProb;              // TOF mismatch prob
   Double_t fITSsigmaEl;                   // ITS sigma el
   Double_t fEoverP;                       // Eoverp
@@ -269,7 +288,9 @@ class AliHFEreducedTrack : public TObject{
   Float_t fDCA[2];                        // dca
   Double_t fHFEImpactParam[2];            // HFE impact paramter (value, resolution) for beauty analysis
   EV0PID_t fV0PID;                        // V0pid
+  Double_t  fV0ProdR;                      // V0 doughter production vertex R in x-y plane 
+  Double_t fDCAerr;                       // New: Error on Track DCA
   
-  ClassDef(AliHFEreducedTrack, 1)
+  ClassDef(AliHFEreducedTrack, 3)
 };
 #endif

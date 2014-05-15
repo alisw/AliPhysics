@@ -28,6 +28,12 @@ void ConfigOCDB(Int_t run, const char *ocdb="raw://") {
       printf("Problem with magnetic field setup\n"); 
     }
   }
+  if ( !TGeoGlobalMagField::Instance()->GetField()){
+    AliMagF::BMap_t smag = AliMagF::k5kG;
+    Double_t bzfac = 1;
+    AliMagF* magF= new AliMagF("Maps","Maps", bzfac, 1., smag);
+    TGeoGlobalMagField::Instance()->SetField(magF);
+  }
 
   // geometry
   printf("Loading geometry...\n");
@@ -35,5 +41,10 @@ void ConfigOCDB(Int_t run, const char *ocdb="raw://") {
   if( !AliGeomManager::ApplyAlignObjsFromCDB("GRP ITS TPC") ) {
     printf("Problem with align objects\n"); 
   }
-
+  
+  if (gSystem->AccessPathName("localOCDBaccessConfig.C", kFileExists)==0) {        
+    printf("loading localOCDBaccessConfig.C\n");
+    gROOT->LoadMacro("localOCDBaccessConfig.C");
+    localOCDBaccessConfig();
+  }
 }

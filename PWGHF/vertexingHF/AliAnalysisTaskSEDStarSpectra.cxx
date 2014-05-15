@@ -252,7 +252,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     AliAODRecoDecayHF2Prong* theD0particle = (AliAODRecoDecayHF2Prong*)dstarD0pi->Get2Prong();
     if (!theD0particle) continue;
     
-    Int_t isDStar = 0;   
+    Int_t isDStar = 0;
     TClonesArray *mcArray = 0;
     AliAODMCHeader *mcHeader=0;
 
@@ -300,7 +300,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	pdgCode=-1;
       }
     }
-    
+   
     Int_t ptbin=fCuts->PtBin(dstarD0pi->Pt());
     
     // quality selction on tracks and region of interest
@@ -410,10 +410,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
     Double_t invmassDelta = dstarD0pi->DeltaInvMass();
     
     if (TMath::Abs(invmassDelta-(mPDGDstar-mPDGD0))>fPeakWindow) continue;
-    
-    
-    Int_t isSelected=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate); //selected
-    
+    Int_t isSelected=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate,aodEvent); //selected
+  
     // after cuts
     if(fDoImpParDstar && isSelected){
       fHistMassPtImpParTCDs[0]->Fill(arrayForSparse);
@@ -436,7 +434,7 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     //swich off the PID selection
     fCuts->SetUsePID(kFALSE);
-    Int_t isSelectedNoPID=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate); //selected
+    Int_t isSelectedNoPID=fCuts->IsSelected(dstarD0pi,AliRDHFCuts::kCandidate, aodEvent); //selected
     fCuts->SetUsePID(kTRUE);
 
     FillSpectrum(dstarD0pi,isDStar,fCuts,isSelectedNoPID,fOutputAll);

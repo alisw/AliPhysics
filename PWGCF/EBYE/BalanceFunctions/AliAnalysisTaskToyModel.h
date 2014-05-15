@@ -53,6 +53,17 @@ class AliAnalysisTaskToyModel : public TObject {
     fEtaMin = etamin; fEtaMax = etamax;
   }
 
+  // Additional options (for integral studies)
+  void SetSigmaGaussEta(Double_t sigmaGaussEta){
+    fSigmaGaussEta = sigmaGaussEta;
+  }
+  void SetFixPt(Double_t fixPt){
+    fFixPt = fixPt;
+  } 
+  void SetFixedPositiveRatio(Bool_t fixedPositiveRatio=kTRUE){
+    fFixedPositiveRatio = fixedPositiveRatio;
+  }
+
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
     fUseAcceptanceParameterization = kTRUE;
@@ -69,6 +80,9 @@ class AliAnalysisTaskToyModel : public TObject {
     fNumberOfDeadSectors = numberOfDeadSectors;}
   void EnableEfficiencyDropNearEtaEdges() {
     fEfficiencyDropNearEtaEdges = kTRUE;}
+  void SimulateDetectorEffectsCorrection(TString filename, 
+					 Int_t nCentralityBins, 
+					 Double_t *centralityArrayForCorrections);
 
   //All charges
   void SetSpectraTemperatureForAllCharges(Double_t temperature) {
@@ -146,10 +160,27 @@ class AliAnalysisTaskToyModel : public TObject {
 
   //Jet-like structures
   void SetUseJets() {fUseJets = kTRUE;}
+
+  // Local charge conservation (LCC)
+  void SetUseLCC() {fUseLCC = kTRUE;}//default values for sigma (pt=0.1,eta=0.5,phi=0.5)
+
+  void SetUseLCC(Double_t sigmaPt, Double_t sigmaEta, Double_t sigmaPhi) {
+    fUseLCC   = kTRUE;
+    fSigmaPt  = sigmaPt; 
+    fSigmaEta = sigmaEta; 
+    fSigmaPhi = sigmaPhi; 
+  }
+  
   //============Toy model: List of setters============//
 
  private:
-  void SetupEfficiencyMatrix();
+  void SetupEfficiencyMatrix();//setup the efficiency matrix
+
+  Double_t GetTrackbyTrackCorrectionMatrix(Double_t vEta, 
+					      Double_t vPhi, 
+					      Double_t vPt, 
+					      Short_t vCharge, 
+					      Double_t gCentrality);//efficiency factor for the track
 
   Bool_t fUseDebug; //Debug flag
 
@@ -193,6 +224,10 @@ class AliAnalysisTaskToyModel : public TObject {
   Double_t fPtMax; //pt max for acceptance
   Double_t fEtaMin; //eta min for acceptance
   Double_t fEtaMax; //eta max for acceptance
+  Double_t fSigmaGaussEta; //sigma for the Gaussian distribution of randomly produced particles (default = 4.0)
+  Double_t fFixPt; //fixed pT for unidentified particles (default = -1., i.e. randomly produced pT from fPtSpectraAllCharges)
+  Bool_t fFixedPositiveRatio; //fix ratio of produced positive to negative particles (dafult = kFALSE, i.e. randomly produced ratio)
+  
 
   //Acceptance parameterization
   Bool_t fUseAcceptanceParameterization; //flag acceptance parameterization
@@ -205,6 +240,21 @@ class AliAnalysisTaskToyModel : public TObject {
   Int_t fNumberOfDeadSectors;//number of dead sectors
   Bool_t fEfficiencyDropNearEtaEdges;//efficiency drop in eta edges
   TH3F *fEfficiencyMatrix; //efficiency matrix in eta-pt-phi
+  
+  Bool_t fSimulateDetectorEffectsCorrection;//simulate detector effects as used for correction of data
+  TH3F *fHistCorrectionPlus[101]; //correction matrix Plus
+  TH3F *fHistCorrectionMinus[101]; //correction matrix minus
+  Double_t fCentralityArrayForCorrections[101];//centrality array for correction
+  Int_t fCentralityArrayBinsForCorrections;//number of centralitry bins
+  Double_t fPtMinForCorrections;//only used for AODs
+  Double_t fPtMaxForCorrections;//only used for AODs
+  Double_t fPtBinForCorrections; //=================================correction
+  Double_t fEtaMinForCorrections;//only used for AODs
+  Double_t fEtaMaxForCorrections;//only used for AODs
+  Double_t fEtaBinForCorrections; //=================================correction
+  Double_t fPhiMinForCorrections;//only used for AODs
+  Double_t fPhiMaxForCorrections;//only used for AODs
+  Double_t fPhiBinForCorrections; //=================================correction
 
   //Kinematics
   Bool_t   fUseAllCharges; //use all charges
@@ -257,6 +307,11 @@ class AliAnalysisTaskToyModel : public TObject {
 
   Bool_t fUseJets;//Usage of jet-like structures
   TF1 *fPtAssoc;//pt of associated
+
+  Bool_t fUseLCC;//Usage of Local Charge Conservation
+  Double_t fSigmaPt;//sigma for LCC spread in pT
+  Double_t fSigmaEta;//sigma for LCC spread in Eta
+  Double_t fSigmaPhi;//sigma for LCC spread in Phi
 
   AliAnalysisTaskToyModel(const AliAnalysisTaskToyModel&); // not implemented
   AliAnalysisTaskToyModel& operator=(const AliAnalysisTaskToyModel&); // not implemented

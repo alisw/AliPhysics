@@ -53,7 +53,6 @@ void runEMCalJetAnalysis(
 {
 
   // Some pre-settings and constants
-
   enum AlgoType {kKT, kANTIKT};
   enum JetType  {kFULLJETS, kCHARGEDJETS, kNEUTRALJETS};
   gSystem->SetFPEMask();
@@ -161,20 +160,16 @@ void runEMCalJetAnalysis(
   }
 
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
-  
-  // Jet preparation
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
   AddTaskJetPreparation(dataType);
 
   // ################# Now: Add jet finders+analyzers
-
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
   AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet("PicoTracks", "CaloClustersCorr", kANTIKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
 
   // Here you can put in your AddTaskMacro for your task
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
-  AliAnalysisTaskEmcalJetSample* anaTask = AddTaskEmcalJetSample("PicoTracks", "CaloClustersCorr", jetFinderTask->GetName(), "");
-
+  AliAnalysisTaskEmcalJetSample* anaTask = AddTaskEmcalJetSample("PicoTracks", "CaloClustersCorr", jetFinderTask->GetName(), "",4);
 
   // Set the physics selection for all given tasks
   TObjArray *toptasks = mgr->GetTasks();
@@ -280,17 +275,22 @@ void LoadLibs()
   gSystem->Load("libVZEROrec");
   gSystem->Load("libTENDER");
   gSystem->Load("libTENDERSupplies");
-  gSystem->Load("libPWGEMCAL");
-  gSystem->Load("libPWGGAEMCALTasks");
   gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGEMCAL");
+  gSystem->Load("libESDfilter");
+  gSystem->Load("libPWGGAEMCALTasks");
   gSystem->Load("libPWGCFCorrelationsBase");
   gSystem->Load("libPWGCFCorrelationsDPhi");
 
   //load CGAL, Fastjet and SISCone
   gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
+    //For FastJet 3.x use siscon*,fastjetplugins for 2.x use SISConePlugin
   gSystem->Load("libSISConePlugin");
-
+  gSystem->Load("libCDFConesPlugin");
+  //  gSystem->Load("libsiscone");
+  //  gSystem->Load("libsiscone_spherical");
+  //  gSystem->Load("libfastjetplugins");
   gSystem->Load("libJETAN");
   gSystem->Load("libFASTJETAN");
   gSystem->Load("libPWGJEEMCALJetTasks");

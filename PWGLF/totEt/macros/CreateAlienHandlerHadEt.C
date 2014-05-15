@@ -1,4 +1,4 @@
-AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test, Int_t material, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE)
+AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Int_t test, Int_t material, Bool_t altV0Scale = kFALSE, bool runCompiledVersion = kFALSE, int simflag = 0)
 {
   // Check if user has a valid token, otherwise make one. This has limitations.
   // One can always follow the standard procedure of calling alien-token-init then
@@ -9,21 +9,26 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   // Overwrite all generated files, datasets and output results from a previous session
   plugin->SetOverwriteMode();
   // Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
-  if(test){
+  if(test==1){
     plugin->SetRunMode("test");  // VERY IMPORTANT - DECRIBED BELOW
   }
   else{
-    plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
+    if(test==0){
+      plugin->SetRunMode("full");  // VERY IMPORTANT - DECRIBED BELOW
+    }
+    else{
+      plugin->SetRunMode("terminate");  // VERY IMPORTANT - DECRIBED BELOW
+    }
   }
   //needed for local testing?
   //plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
   // Set versions of used packages 
    plugin->SetAPIVersion("V1.1x");
-   plugin->SetROOTVersion("v5-33-02a");
-   plugin->SetAliROOTVersion("v5-03-15-AN");
+   plugin->SetROOTVersion("v5-34-08");
+   plugin->SetAliROOTVersion("v5-05-55-AN");
   // Declare input data to be processed.
 
-   plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base");
+   plugin->AddIncludePath("-I$ALICE_ROOT/PWGUD/base  -I$ALICE_ROOT/ANALYSIS -I$ALICE_ROOT/PWGPP -I$ALICE_ROOT/PWGPP/ITS");
   // Method 1: Create automatically XML collections using alien 'find' command.
   // Define production directory LFN
   //   plugin->SetGridDataDir("/alice/sim/LHC10a18");
@@ -52,7 +57,8 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
     else{
       cout<<"Running over MC"<<endl;
       if(material==0){
-	plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");//PbPb simulation
+	  plugin->SetGridDataDir("/alice/sim/LHC11a10a_bis");
+	//plugin->SetGridDataDir("/alice/sim/LHC11a4_bis");//PbPb simulation
       }
       if(material==1){//7% more material
 	plugin->SetGridDataDir("/alice/sim/LHC10h9");//PbPb simulation
@@ -69,64 +75,90 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
       plugin->SetDataPattern("*ESDs.root");
       //plugin->SetGridWorkingDir("etPbPbSim");
     }
-    plugin->AddRunNumber(137366);
-    plugin->AddRunNumber(137161);
+    plugin->AddRunNumber(139465);
+//     plugin->AddRunNumber(137366);
+//     plugin->AddRunNumber(137161);
   }
   else{
     if(dataset==2009){//pp 900 GeV
       if(data){//only 233 jobs!
 	cout<<"Running over data"<<endl;
 	plugin->SetGridDataDir("/alice/data/2010/LHC10c");//PbPb data
+	//plugin->SetDataPattern("*ESDs/pass3/*ESDs.root");
 	plugin->SetDataPattern("*ESDs/pass3/*ESDs.root");
 	plugin->SetRunPrefix("000");   // real data
       }
       else{//sim over 1500 jobs, some get killed because it's above quota
 	cout<<"Running over MC"<<endl;
-	if(material==0){
-	  plugin->SetGridDataDir("/alice/sim/LHC11b1a");//PbPb simulation
+	if(simflag==0){
+	  if(material==0){
+	    plugin->SetGridDataDir("/alice/sim/LHC11b1a");//PbPb simulation
+	  }
+	  if(material==1){//10% more material budget
+	    plugin->SetGridDataDir("/alice/sim/LHC11b1b");//PbPb simulation
+	  }
+	  if(material==-1){//10% less material budget
+	    plugin->SetGridDataDir("/alice/sim/LHC11b1c");//PbPb simulation
+	  }
 	}
-	if(material==1){//10% more material budget
-	  plugin->SetGridDataDir("/alice/sim/LHC11b1b");//PbPb simulation
-	}
-	if(material==-1){//10% less material budget
-	  plugin->SetGridDataDir("/alice/sim/LHC11b1c");//PbPb simulation
-	}
+	if(simflag==1)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h1a");//PYTHIA
+	if(simflag==2)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h1b");//PHOJET
+	if(simflag==3)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h1c");//PYTHIA Flat
 	plugin->SetDataPattern("*ESDs.root");
       }
-      plugin->AddRunNumber(121040);
-      plugin->AddRunNumber(121039);
-      plugin->AddRunNumber(118561);
-      plugin->AddRunNumber(118560);
-      plugin->AddRunNumber(118558);
-      plugin->AddRunNumber(118557);
-      plugin->AddRunNumber(118556);
-      plugin->AddRunNumber(118518);
-      plugin->AddRunNumber(118512);
-      plugin->AddRunNumber(118507);
       plugin->AddRunNumber(118506);
-      if(data){
-	plugin->AddRunNumber(118504);
-	plugin->AddRunNumber(118503);
-      }
+//       plugin->AddRunNumber(121040);
+//       plugin->AddRunNumber(121039);
+//       plugin->AddRunNumber(118561);
+//       plugin->AddRunNumber(118560);
+//       plugin->AddRunNumber(118558);
+//       plugin->AddRunNumber(118557);
+//       plugin->AddRunNumber(118556);
+//       plugin->AddRunNumber(118518);
+//       plugin->AddRunNumber(118512);
+//       plugin->AddRunNumber(118507);
+//       plugin->AddRunNumber(118506);
+//if(data){
+// 	plugin->AddRunNumber(118504);
+// 	plugin->AddRunNumber(118503);
+//    }
     }
   
     if(dataset==20111){//pp 2.76 TeV 
       if(data){//257 jobs
 	cout<<"Running over data"<<endl;
 	plugin->SetGridDataDir("/alice/data/2011/LHC11a");//
-	plugin->SetDataPattern("*ESDs/pass3_with_SDD/*ESDs.root");
+	plugin->SetDataPattern("*ESDs/pass4_with_SDD/*ESDs.root");
 	plugin->SetRunPrefix("000");   // real data
       }
       else{//sim - 332 jobs
 	cout<<"Running over MC"<<endl;
-	plugin->SetGridDataDir("/alice/sim/LHC11b10a");//
+	if(simflag==0)	plugin->SetGridDataDir("/alice/sim/LHC11b10a");//
+	if(simflag==1)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h5a");//PYTHIA
+	if(simflag==2)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h5b");//PHOJET
+	if(simflag==3)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h5c");//PYTHIA Flat
 	plugin->SetDataPattern("*ESDs.root");
       }
-      plugin->AddRunNumber(146860);
-      plugin->AddRunNumber(146859);
-      plugin->AddRunNumber(146858);
-      plugin->AddRunNumber(146857);
-      plugin->AddRunNumber(146856);
+//       plugin->AddRunNumber(146860);
+//       plugin->AddRunNumber(146859);
+//       plugin->AddRunNumber(146856);
+//       plugin->AddRunNumber(146824);
+//       plugin->AddRunNumber(146817);
+//       plugin->AddRunNumber(146806);
+//       plugin->AddRunNumber(146805);
+//       plugin->AddRunNumber(146804);
+//       plugin->AddRunNumber(146803);
+//       plugin->AddRunNumber(146802);
+//       plugin->AddRunNumber(146801);
+//       plugin->AddRunNumber(146748);
+//       plugin->AddRunNumber(146747);
+//       plugin->AddRunNumber(146746);
+
+  //     plugin->AddRunNumber(146860);
+//       plugin->AddRunNumber(146859);
+//       plugin->AddRunNumber(146858);
+//       plugin->AddRunNumber(146857);
+//       plugin->AddRunNumber(146856);
       //        plugin->AddRunNumber(146824);
       //        if(data){//these productions are not yet done for MC
       // 	 plugin->AddRunNumber(146817);
@@ -137,6 +169,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
       // 	 plugin->AddRunNumber(146803);
       // 	 plugin->AddRunNumber(146802);
       //        }
+      plugin->AddRunNumber(146805);
 
     }
     if(dataset==2010){//pp 7 TeV
@@ -148,19 +181,51 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
 	plugin->SetRunPrefix("000");   // real data
       }
       else{//sim- 346 jobs
-	plugin->SetGridDataDir("/alice/sim/LHC10e20");
+	if(simflag==0)	plugin->SetGridDataDir("/alice/sim/LHC10e20");//
+	if(simflag==1)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h4a");//PYTHIA
+	if(simflag==2)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h4b");//PHOJET
+	if(simflag==3)	plugin->SetGridDataDir("/alice/sim/2011/LHC11h4c");//PYTHIA Flat
 	plugin->SetDataPattern("*ESDs.root");
       }
-	plugin->AddRunNumber("130840");
-	plugin->AddRunNumber("130834");
-	plugin->AddRunNumber("130833");
-	plugin->AddRunNumber("130831");
-	plugin->AddRunNumber("130804");
-	plugin->AddRunNumber("130803");
-	plugin->AddRunNumber("130802");
-	plugin->AddRunNumber("130799");
-	plugin->AddRunNumber("130798");
-	plugin->AddRunNumber("130795");
+      plugin->AddRunNumber("130795");
+// 	plugin->AddRunNumber("130840");
+// 	plugin->AddRunNumber("130834");
+// 	plugin->AddRunNumber("130833");
+// 	plugin->AddRunNumber("130831");
+// 	plugin->AddRunNumber("130804");
+// 	plugin->AddRunNumber("130803");
+// 	plugin->AddRunNumber("130802");
+// 	plugin->AddRunNumber("130799");
+// 	plugin->AddRunNumber("130798");
+// 	plugin->AddRunNumber("130795");
+    }
+
+    if(dataset==2012){//pp 8 TeV
+      if(data){//data - 569 jobs
+	cout<<"Running over 8 TeV data"<<endl;
+	plugin->SetGridDataDir("/alice/data/2012/LHC12b");//PbPb data
+	plugin->SetDataPattern("*ESDs/pass1/*ESDs.root");
+	cout<<"Setting run prefix to be 000"<<endl;
+	plugin->SetRunPrefix("000");   // real data
+      }
+      else{//sim- 346 jobs
+	plugin->SetGridDataDir("/alice/sim/2012/LHC12c1b");//
+      }
+      //plugin->AddRunNumber("177799");
+      plugin->AddRunNumber("178030");
+    }
+    if(dataset==2013){//pPb 
+      if(data){//data - 569 jobs
+	cout<<"Running over pPb data"<<endl;
+	plugin->SetGridDataDir("/alice/data/2013/LHC13b");//PbPb data
+	plugin->SetDataPattern("*ESDs/pass3/*ESDs.root");
+	cout<<"Setting run prefix to be 000"<<endl;
+	plugin->SetRunPrefix("000");   // real data
+      }
+      else{//sim- 346 jobs
+	plugin->SetGridDataDir(" /alice/sim/2013/LHC13b3");//
+      }
+      plugin->AddRunNumber("195483");
     }
   }
 
@@ -174,7 +239,7 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
       if(material==-1) plugin->SetGridWorkingDir("etPbPbSimMatBudLow");
       if(material==1) plugin->SetGridWorkingDir("etPbPbSimMatBudHigh");
       if(material==10)  plugin->SetGridWorkingDir("etPbPbSimDPMJET");
-      if(material==11)  plugin->SetGridWorkingDir("etPbPbSimAMPT");
+       if(material==11)  plugin->SetGridWorkingDir("etPbPbSimAMPT");
     }
   }
   else{
@@ -183,9 +248,14 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
 	plugin->SetGridWorkingDir("etpp900GeVData");
       }
       else{
-	if(material==0) plugin->SetGridWorkingDir("etpp900GeVSim");
-	if(material==-1) plugin->SetGridWorkingDir("etpp900GeVSimMatBudLow");
-	if(material==1) plugin->SetGridWorkingDir("etpp900GeVSimMatBudHigh");
+	if(simflag==0){
+	  if(material==0) plugin->SetGridWorkingDir("etpp900GeVSim");
+	  if(material==-1) plugin->SetGridWorkingDir("etpp900GeVSimMatBudLow");
+	  if(material==1) plugin->SetGridWorkingDir("etpp900GeVSimMatBudHigh");
+	}
+	if(simflag==1)	plugin->SetGridWorkingDir("etpp900GeVSimPYTHIA");//PYTHIA
+	if(simflag==2)	plugin->SetGridWorkingDir("etpp900GeVSimPHOJET");//PHOJET
+	if(simflag==3)	plugin->SetGridWorkingDir("etpp900GeVSimPYTHIAFLAT");//PYTHIA Flat
       }
     }
     if(dataset==20111){//pp 2.76 TeV
@@ -194,7 +264,14 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
       }
       else{
 	if(altV0Scale) plugin->SetGridWorkingDir("etpp276TeVSimAlt");
-	else{plugin->SetGridWorkingDir("etpp276TeVSim");}
+	else{
+	  // plugin->SetGridWorkingDir("etpp276TeVSim");
+	  
+	  if(simflag==0)	plugin->SetGridWorkingDir("etpp276TeVSim");//
+	  if(simflag==1)	plugin->SetGridWorkingDir("etpp276TeVSimPYTHIA");//PYTHIA
+	  if(simflag==2)	plugin->SetGridWorkingDir("etpp276TeVSimPHOJET");//PHOJET
+	  if(simflag==3)	plugin->SetGridWorkingDir("etpp276TeVSimPYTHIAFLAT");//PYTHIA Flat
+	}
       }
     }
     if(dataset==2010){//pp 7 TeV
@@ -202,7 +279,26 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
 	plugin->SetGridWorkingDir("etpp7TeVData");
       }
       else{
-	plugin->SetGridWorkingDir("etpp7TeVSim");
+	if(simflag==0)	plugin->SetGridWorkingDir("etpp7TeVSim");//
+	if(simflag==1)	plugin->SetGridWorkingDir("etpp7TeVSimPYTHIA");//PYTHIA
+	if(simflag==2)	plugin->SetGridWorkingDir("etpp7TeVSimPHOJET");//PHOJET
+	if(simflag==3)	plugin->SetGridWorkingDir("etpp7TeVSimPYTHIAFLAT");//PYTHIA Flat
+      }
+    }
+    if(dataset==2012){//pp 8 TeV
+      if(data){
+	plugin->SetGridWorkingDir("etpp8TeVData");
+      }
+      else{
+	plugin->SetGridWorkingDir("etpp8TeVSim");
+      }
+    }
+    if(dataset==2013){//pPb
+      if(data){
+	plugin->SetGridWorkingDir("etpPb5TeVData");
+      }
+      else{
+	plugin->SetGridWorkingDir("etpPb5TeVSim");
       }
     }
   }
@@ -228,8 +324,8 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   //TString additionallibs = "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h corrections.root ConfigHadEtAnalysis.C ConfigHadEtMonteCarlo.C ConfigHadEtReconstructed.C physicsSelections.root";
   //TString additionallibs = "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx  AliAnalysisEtSelectionContainer.cxx AliAnalysisEtSelectionHandler.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h  AliAnalysisEtSelectionContainer.h AliAnalysisEtSelectionHandler.h AliAnalysisTaskTransverseEnergy.h physicsSelections.root ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root";
   //plugin->SetAdditionalLibs(additionallibs.Data());
-  if(!runCompiledVersion){
-    plugin->SetAdditionalLibs( "AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h AliAnalysisTaskTransverseEnergy.h ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so");
+  if(!runCompiledVersion){//
+    plugin->SetAdditionalLibs( "libPWGUDbase.so AliAnalysisEtCuts.h AliAnalysisEtCuts.cxx AliAnalysisHadEtCorrections.h AliAnalysisHadEtCorrections.cxx AliAnalysisTaskTransverseEnergy.cxx AliAnalysisEtCommon.h AliAnalysisEtCommon.cxx AliAnalysisHadEt.cxx AliAnalysisHadEtMonteCarlo.cxx AliAnalysisHadEtReconstructed.cxx AliAnalysisTaskHadEt.cxx AliAnalysisHadEt.h AliAnalysisHadEtMonteCarlo.h AliAnalysisHadEtReconstructed.h AliAnalysisTaskHadEt.h AliAnalysisTaskTransverseEnergy.h ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root");
   }
   else{
     plugin->SetAdditionalLibs( "ConfigHadEtMonteCarlo.C  ConfigHadEtReconstructed.C corrections.root libPWGUDbase.so libPWGLFtotEt.so");
@@ -243,7 +339,10 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   plugin->SetAnalysisMacro("ChristinesEtAnalysis.C");
   // Optionally set maximum number of input files/subjob (default 100, put 0 to ignore). The optimum for an analysis
   // is correlated with the run time - count few hours TTL per job, not minutes !
-  plugin->SetSplitMaxInputFileNumber(100);
+  plugin->SetSplitMaxInputFileNumber(50);
+  if(dataset==2013){//pPb 
+    plugin->SetSplitMaxInputFileNumber(20);
+    }
   // Optionally set number of failed jobs that will trigger killing waiting sub-jobs.
   //plugin->SetMaxInitFailed(5);
   // Optionally resubmit threshold.
@@ -260,5 +359,6 @@ AliAnalysisGrid* CreateAlienHandlerHadEt(Int_t dataset, Bool_t data, Bool_t test
   plugin->SetSplitMode("se");
   plugin->SetTerminateFiles("event_stat.root") ;
   plugin->SetKeepLogs();
+  plugin->SetMergeViaJDL();
   return plugin;
 } 

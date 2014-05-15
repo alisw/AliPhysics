@@ -200,6 +200,14 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP(const char *n
 ,fV2Phivzerotot(0)
 ,fHistCentrDistr(0x0)
 ,fCentralityNoPassForFlattening(0)
+,fptminAsso(0)
+,fSparsephipsiULS(0)
+,fSparsephipsiLS(0)
+,fSparseMassULS(0)
+,fSparseMassLS(0)
+,fAssoTPCCluster(0)
+,fAssoITSRefit(0)
+,fPhiCut(0)
 {
     //Named constructor
     
@@ -311,6 +319,14 @@ AliAnalysisTaskFlowITSTPCTOFQCSP::AliAnalysisTaskFlowITSTPCTOFQCSP()
 ,fV2Phivzerotot(0)
 ,fHistCentrDistr(0x0)
 ,fCentralityNoPassForFlattening(0)
+,fptminAsso(0)
+,fSparsephipsiULS(0)
+,fSparsephipsiLS(0)
+,fSparseMassULS(0)
+,fSparseMassLS(0)
+,fAssoTPCCluster(0)
+,fAssoITSRefit(0)
+,fPhiCut(0)
 {
     //Default constructor
     fPID = new AliHFEpid("hfePid");
@@ -377,7 +393,12 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCentral)) return;
     }
     if(fTrigger==1){
-        if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kSemiCentral)) return;
+    
+        if ( !(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny) ) return;
+        
+        TString firedTriggerClasses = static_cast<const AliAODEvent*>(InputEvent())->GetFiredTriggerClasses();
+        
+        if ( ! ( firedTriggerClasses.Contains("CVLN_B2-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CVLN_R1-B-NOPF-ALLNOTRD") || firedTriggerClasses.Contains("CSEMI_R1-B-NOPF-ALLNOTRD") ) ) return;
     }
     if(fTrigger==2){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kEMCEGA)) return;
@@ -388,7 +409,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
     if(fTrigger==4){
         if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kCentral | AliVEvent::kSemiCentral))) return;
     }
+    if(fTrigger==5){
+        if(!(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & (AliVEvent::kSemiCentral))) return;
+    }
     
+ 
     
     
     //---------------CENTRALITY AND EVENT SELECTION-----------------------
@@ -565,6 +590,13 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         //==========================================================================================================
         Double_t eta = track->Eta();
         Double_t phi = track->Phi();
+        
+        if(fPhiCut){
+            if(phi<1.4 || phi >3.14)continue; //to have same EMCal phi acceptance
+        }
+
+        
+        
         Double_t pt = track->Pt();         //pt track after cuts
         if(pt<fpTCutmin || pt>fpTCutmax) continue;
         //==========================================================================================================
@@ -725,7 +757,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
         //=========================================================================================================
         //----------------------Selection and Flow of Photonic Electrons-----------------------------
         Bool_t fFlagPhotonicElec = kFALSE;
-        SelectPhotonicElectron(iTracks,track,fFlagPhotonicElec);
+        SelectPhotonicElectron(iTracks,track,fTPCnSigma,evPlAngV0,fFlagPhotonicElec);
         if(fFlagPhotonicElec){fPhotoElecPt->Fill(pt);}
               // Semi inclusive electron
         if(!fFlagPhotonicElec){fSemiInclElecPt->Fill(pt);}
@@ -739,7 +771,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserExec(Option_t*)
     //----------hfe end---------
 }
 //_________________________________________
-void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track, Bool_t &fFlagPhotonicElec)
+void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const AliAODTrack *track,Float_t fTPCnSigma,Double_t evPlAngV0, Bool_t &fFlagPhotonicElec)
 {
     
     //Identify non-heavy flavour electrons using Invariant mass method
@@ -753,7 +785,14 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         }
         //  if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;  // TESTBIT FOR AOD double Counting
         if(!trackAsso->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-        if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
+  
+	    if(fAssoITSRefit){
+            if(!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)) continue;
+        }
+        
+        if(!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)) continue;
+	
+//	if((!(trackAsso->GetStatus()&AliESDtrack::kITSrefit)|| (!(trackAsso->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
         
         
         if(jTracks == itrack) continue;
@@ -770,10 +809,11 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         nsigma = fPID->GetPIDResponse() ? fPID->GetPIDResponse()->NumberOfSigmasTPC(trackAsso, AliPID::kElectron) : 1000;
         
         
-        if(trackAsso->GetTPCNcls() < 80) continue;
+        //if(trackAsso->GetTPCNcls() < 80) continue;
+	if(trackAsso->GetTPCNcls() < fAssoTPCCluster) continue;
         if(nsigma < -3 || nsigma > 3) continue;
         if(trackAsso->Eta()<-0.9 || trackAsso->Eta()>0.9) continue;
-        // if(ptAsso <0.3) continue;
+        if(ptAsso < fptminAsso) continue;
         
         Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
         if(charge>0) fPDGe1 = -11;
@@ -801,10 +841,53 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SelectPhotonicElectron(Int_t itrack,const
         if(fFlagLS) fInvmassLS1->Fill(mass);
         if(fFlagULS) fInvmassULS1->Fill(mass);
         
+	   if(fFlagULS){
+            Double_t MassSparseULS[3] = {
+                track->Pt(),
+                mass
+            };
+            fSparseMassULS->Fill(MassSparseULS);
+        }
+        if(fFlagLS){
+            Double_t MassSparseLS[3] = {
+                track->Pt(),
+                mass
+            }; 
+            fSparseMassLS->Fill(MassSparseLS);  
+        }	
+	
+	
         if(mass<fInvmassCut){
             if(fFlagULS){fULSElecPt->Fill(track->Pt());}
             if(fFlagLS){fLSElecPt->Fill(track->Pt());}
         }
+        
+        
+        Double_t phi = track->Phi();
+	Float_t DeltaPhi_eEP = TVector2::Phi_0_2pi(phi - evPlAngV0);
+	if(DeltaPhi_eEP > TMath::Pi()) {DeltaPhi_eEP = DeltaPhi_eEP - TMath::Pi();}
+
+
+	if(mass<fInvmassCut){
+ 	if(fFlagULS){
+		Double_t ulsSparse[3] = {
+		track->Pt(),
+                fTPCnSigma,
+		DeltaPhi_eEP
+		}; 
+ 		fSparsephipsiULS->Fill(ulsSparse);  
+		}
+	if(fFlagLS){
+		Double_t lsSparse[3] = {
+		track->Pt(),
+                fTPCnSigma,
+		DeltaPhi_eEP
+		}; 
+ 		fSparsephipsiLS->Fill(lsSparse);  
+		}
+	}
+        
+        
         
         if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
             flagPhotonicElec = kTRUE;
@@ -1100,6 +1183,39 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::UserCreateOutputObjects()
     fQAPidSparse->GetAxis(2)->SetTitle("tpcnsigma");
     fOutputList->Add(fQAPidSparse);
     //===========================================================================
+    
+    
+    
+    Int_t    binsphipsi[3] = { 100, 150,           6};
+    Double_t xminphipsi[3] = { 0.,  -15,           0};
+    Double_t xmaxphipsi[3] = { 5.,   15, TMath::Pi()};
+    fSparsephipsiULS = new THnSparseF("fSparsephipsiULS", "pt:tpcnsigma:DeltaPhiULS", 3, binsphipsi, xminphipsi, xmaxphipsi);
+    fSparsephipsiULS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparsephipsiULS->GetAxis(1)->SetTitle("tpcnsigma");
+    fSparsephipsiULS->GetAxis(2)->SetTitle("DeltaPhiULS");
+    fOutputList->Add(fSparsephipsiULS);
+ 
+    fSparsephipsiLS = new THnSparseF("fSparsephipsiLS", "pt:tpcnsigma:DeltaPhiLS", 3, binsphipsi, xminphipsi, xmaxphipsi);
+    fSparsephipsiLS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparsephipsiLS->GetAxis(1)->SetTitle("tpcnsigma");
+    fSparsephipsiLS->GetAxis(2)->SetTitle("DeltaPhiLS");
+    fOutputList->Add(fSparsephipsiLS);
+    
+    
+    Int_t    binsmass[2] = { 100, 200};
+    Double_t xminmass[2] = { 0.,  0};
+    Double_t xmaxmass[2] = { 5., 1.};
+    fSparseMassULS = new THnSparseF("fSparseMassULS", "pt:mass (GeV/c^{2})", 2, binsmass, xminmass, xmaxmass);
+    fSparseMassULS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparseMassULS->GetAxis(1)->SetTitle("mass");
+    fOutputList->Add(fSparseMassULS);
+    
+    fSparseMassLS = new THnSparseF("fSparseMassLS", "pt:mass (GeV/c^{2})", 2, binsmass, xminmass, xmaxmass);
+    fSparseMassLS->GetAxis(0)->SetTitle("pt (Gev/c)");
+    fSparseMassLS->GetAxis(1)->SetTitle("mass");
+    fOutputList->Add(fSparseMassLS);
+
+    
     PostData(1,fOutputList);
     // create and post flowevent
     fFlowEvent = new AliFlowEvent(10000);
@@ -1207,7 +1323,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::CheckCentrality(AliAODEvent* event, Bool_
     }//...after centrality selectrion
     //============================================================================================================================
     if(fMultCut){
-        if(fTrigger==1 || fTrigger==4){
+        if(fTrigger==1 || fTrigger==4 || fTrigger==5){
             if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))){
                 //   cout <<" Trigger ==" <<fTrigger<< endl;
                 centralitypass = kFALSE;
@@ -1272,7 +1388,7 @@ void AliAnalysisTaskFlowITSTPCTOFQCSP::SetpTCuttrack(Double_t ptmin, Double_t pt
     //Set pt cuts
     fpTCutmin = ptmin;
     fpTCutmax = ptmax;
-    }
+}
 //_____________________________________________________________________________
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowITSTPCTOFQCSP::SetHistoForCentralityFlattening(TH1F *h,Double_t minCentr,Double_t maxCentr,Double_t centrRef,Int_t switchTRand){

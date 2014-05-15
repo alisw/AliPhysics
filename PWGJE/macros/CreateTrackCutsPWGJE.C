@@ -363,6 +363,14 @@ AliESDtrackCuts *CreateTrackCutsPWGJE(Int_t cutMode) {
 
   }
 
+  if(addCutMode == 1005) {
+
+    trackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kOff);
+ 
+    tag += " + additional: no SPD requirement (kOff)";
+
+  }
+
   Printf("Created track cuts for: %s", tag.Data());
 
   return trackCuts;

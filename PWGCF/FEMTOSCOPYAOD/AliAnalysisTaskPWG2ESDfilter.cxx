@@ -164,7 +164,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
     Double_t p[3];
     Double_t covVtx[6];
     Double_t covTr[21];
-    Double_t pid[10];
+    //    Double_t pid[10];
 
     for (Int_t i = 0; i < 6; i++)  covVtx[i] = 0.;
     for (Int_t i = 0; i < 21; i++) covTr [i] = 0.;
@@ -380,7 +380,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	    esdTrack->GetPxPyPz(p);
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	    //	    esdTrack->GetESDpid(pid);
 	    
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -392,7 +392,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   covTr, 
 									   (Short_t)esdTrack->GetSign(),
 									   esdTrack->GetITSClusterMap(), 
-									   pid,
+									   // pid,
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
@@ -415,7 +415,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	    esdTrack->GetPxPyPz(p);
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	    //	    esdTrack->GetESDpid(pid);
 	    
 	    vV0FromCascade->AddDaughter(aodTrack =
 					new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -427,7 +427,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 									   covTr, 
 									   (Short_t)esdTrack->GetSign(),
 									   esdTrack->GetITSClusterMap(), 
-									   pid,
+									   //pid,
 									   vV0FromCascade,
 									   kTRUE,  // check if this is right
 									   kFALSE, // check if this is right
@@ -452,7 +452,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	    esdTrack->GetPxPyPz(p);
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	    //	    esdTrack->GetESDpid(pid);
 	    
 	    vcascade->AddDaughter(aodTrack =
 				  new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -464,7 +464,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								     covTr, 
 								     (Short_t)esdTrack->GetSign(),
 								     esdTrack->GetITSClusterMap(), 
-								     pid,
+								     //pid,
 								     vcascade,
 								     kTRUE,  // check if this is right
 								     kFALSE, // check if this is right
@@ -520,7 +520,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	    esdTrack->GetPxPyPz(p);
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	    //esdTrack->GetESDpid(pid);
 	    
 	    vV0->AddDaughter(aodTrack =
 			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -532,7 +532,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								covTr, 
 								(Short_t)esdTrack->GetSign(),
 								esdTrack->GetITSClusterMap(), 
-								pid,
+								//pid,
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
@@ -555,7 +555,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	    esdTrack->GetPxPyPz(p);
 	    esdTrack->GetXYZ(pos);
 	    esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	    esdTrack->GetESDpid(pid);
+	    //esdTrack->GetESDpid(pid);
 	    
 	    vV0->AddDaughter(aodTrack =
 			     new(tracks[jTracks++]) AliAODTrack(esdTrack->GetID(),
@@ -567,7 +567,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								covTr, 
 								(Short_t)esdTrack->GetSign(),
 								esdTrack->GetITSClusterMap(), 
-								pid,
+								//pid,
 								vV0,
 								kTRUE,  // check if this is right
 								kFALSE, // check if this is right
@@ -641,7 +641,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 			esdTrackC->GetPxPyPz(p);
 			esdTrackC->GetXYZ(pos);
 			esdTrackC->GetCovarianceXYZPxPyPz(covTr);
-			esdTrackC->GetESDpid(pid);
+			//esdTrackC->GetESDpid(pid);
 			
 			mother = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackC->GetID(),
@@ -653,7 +653,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 							       covTr, 
 							       (Short_t)esdTrackC->GetSign(),
 							       esdTrackC->GetITSClusterMap(), 
-							       pid,
+							       //pid,
 							       primary,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
@@ -687,7 +687,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 			esdTrackC->GetPxPyPz(p);
 			esdTrackC->GetXYZ(pos);
 			esdTrackC->GetCovarianceXYZPxPyPz(covTr);
-			esdTrackC->GetESDpid(pid);
+			//esdTrackC->GetESDpid(pid);
 			
 			daughter = 
 			    new(tracks[jTracks++]) AliAODTrack(esdTrackC->GetID(),
@@ -699,7 +699,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 							       covTr, 
 							       (Short_t)esdTrackC->GetSign(),
 							       esdTrackC->GetITSClusterMap(), 
-							       pid,
+							       //pid,
 							       vkink,
 							       kTRUE, // check if this is right
 							       kTRUE, // check if this is right
@@ -745,7 +745,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	esdTrack->GetPxPyPz(p);
 	esdTrack->GetXYZ(pos);
 	esdTrack->GetCovarianceXYZPxPyPz(covTr);
-	esdTrack->GetESDpid(pid);
+	//esdTrack->GetESDpid(pid);
 	
 	Float_t impactXY, impactZ;
 	
@@ -778,7 +778,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 								    covTr, 
 								    (Short_t)esdTrack->GetSign(),
 								    esdTrack->GetITSClusterMap(), 
-								    pid,
+								    //pid,
 								    primary,
 								    kTRUE, // check if this is right
 								    kTRUE, // check if this is right
@@ -808,7 +808,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 						   covTr, 
 						   (Short_t)esdTrack->GetSign(),
 						   esdTrack->GetITSClusterMap(), 
-						   pid,
+						   //pid,
 						   NULL,
 						   kFALSE, // check if this is right
 						   kFALSE, // check if this is right
@@ -840,8 +840,8 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 	pos[2] = primary->GetZ();
 	
 	// has to be changed once the muon pid is provided by the ESD
-	for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
-	pid[AliAODTrack::kMuon]=1.;
+	//for (Int_t i = 0; i < 10; pid[i++] = 0.) {}
+	//pid[AliAODTrack::kMuon]=1.;
 	
 	primary->AddDaughter(
 	    new(tracks[jTracks++]) AliAODTrack(0, // no ID provided
@@ -853,7 +853,7 @@ void AliAnalysisTaskPWG2ESDfilter::Exec(Option_t */*option*/)
 					       NULL, // no covariance matrix provided
 					       (Short_t)-99, // no charge provided
 					       0, // no ITSClusterMap
-					       pid,
+					       //pid,
 					       primary,
 					       kTRUE,  // check if this is right
 					       kTRUE,  // not used for vertex fit

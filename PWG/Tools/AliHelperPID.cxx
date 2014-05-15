@@ -133,6 +133,16 @@ AliHelperPID::AliHelperPID() : TNamed("HelperPID", "PID object"),fisMC(0), fPIDT
       fOutputList->Add(fHistoPID);
     }
   }
+  //PID signal plot, before PID cut
+  for(Int_t idet=0;idet<kNDetectors;idet++){
+    Double_t maxy=500;
+    if(idet==kTOF)maxy=1.1;
+    TH2F *fHistoPID=new TH2F(Form("PIDAll_%d",idet),Form("%s signal",kDetectorName[idet]),200,0,10,500,-maxy,maxy);
+    fHistoPID->GetXaxis()->SetTitle("P (GeV / c)");
+    fHistoPID->GetYaxis()->SetTitle(Form("%s signal",kDetectorName[idet]));
+    fOutputList->Add(fHistoPID);
+  }
+  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +204,14 @@ Int_t AliHelperPID::GetParticleSpecies(AliVTrack * trk, Bool_t FIllQAHistos){
       if(idet==kTOF && fHasTOFPID)h->Fill(trk->P(),TOFBetaCalc(trk)*trk->Charge());
     }
   }
+  //Fill PID signal plot without cuts
+  for(Int_t idet=0;idet<kNDetectors;idet++){
+    TH2F *h=GetHistogram2D(Form("PIDAll_%d",idet));
+    if(idet==kITS)h->Fill(trk->P(),trk->GetITSsignal()*trk->Charge());
+    if(idet==kTPC)h->Fill(trk->P(),trk->GetTPCsignal()*trk->Charge());
+    if(idet==kTOF && fHasTOFPID)h->Fill(trk->P(),TOFBetaCalc(trk)*trk->Charge());
+  }
+  
   return ID;
 }
 

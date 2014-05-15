@@ -20,7 +20,7 @@
 ClassImp(AliAnalysisNonMuonTrackCuts)
 /// \endcond
 
-////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 AliAnalysisNonMuonTrackCuts::AliAnalysisNonMuonTrackCuts()
 {
@@ -31,6 +31,7 @@ Bool_t AliAnalysisNonMuonTrackCuts::IsSelected(TObject* obj)
 {
   /// Returns true if the object is a muon track
   AliAODTrack* track = dynamic_cast<AliAODTrack*>(obj);
-  if (track && track->IsMuonTrack()) return kTRUE;
+  //  if (track && track->IsMuonTrack()) return kTRUE;
+  if (track && (track->IsMuonTrack() || track->IsMuonGlobalTrack())) return kTRUE;
   return kFALSE;
 }

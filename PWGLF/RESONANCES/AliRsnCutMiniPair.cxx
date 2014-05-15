@@ -46,6 +46,9 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
       case kMomentumComparison:
          AliWarning("TODO: implement this");
          return kTRUE;
+      case kDCAproduct:
+         fCutValueD = pair->DCAProduct();
+         return OkRangeD();
       default:
          AliWarning("Undefined enum value");
          return kTRUE;

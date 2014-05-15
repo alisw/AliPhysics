@@ -10,10 +10,10 @@
 
 // root forward declarations
 class TF1;
+class TF2;
 class TH1D;
 class TH2D;
 class TCanvas;
-class TLegend;
 class TString;
 class TArrayD;
 class TGraph;
@@ -29,6 +29,9 @@ class AliUnfolding;
 #include "TFile.h"
 #include "TProfile.h"
 #include "TVirtualPad.h"
+#include "TPaveText.h"
+#include "TLegend.h"
+#include "TLatex.h"
 //_____________________________________________________________________________
 class AliJetFlowTools {
     public: 
@@ -46,14 +49,18 @@ class AliJetFlowTools {
             kNone };                    // no unfolding
         enum prior {                    // prior that is used for unfolding
             kPriorChi2,                 // prior from chi^2 method
-            kPriorMeasured };           // use measured spectrum as prior
+            kPriorMeasured,             // use measured spectrum as prior
+            kPriorPythia };             // use pythia spectrum as prior
         enum histoType {                // histogram identifier, only used internally
-            kInPlaneSpectrum,
+            kInPlaneSpectrum,           // default style for spectrum
             kOutPlaneSpectrum,
             kUnfoldedSpectrum,
             kFoldedSpectrum,
             kMeasuredSpectrum,
-            kEmpty };
+            kBar,                       // default style for bar histogram
+            kRatio,                     // default style for ratio
+            kV2,                        // default style for v2
+            kEmpty };                   // default style
         // setters, interface to the class
         void            SetSaveFull(Bool_t b)           {fSaveFull              = b;}
         void            SetInputList(TList* list)       {
@@ -73,7 +80,22 @@ class AliJetFlowTools {
             fActiveDir = new TDirectoryFile(fActiveString.Data(), fActiveString.Data());
             fActiveDir->cd();
         }
-        void            SetCentralityBin(Int_t bin)             {fCentralityBin         = bin;}
+        void            SetCentralityBin(Int_t bin)             {
+            // in case of one centraltiy
+            fCentralityArray = new TArrayI(1);
+            fCentralityArray->AddAt(bin, 0);
+            // for one centrality there's no need for weights
+            fCentralityWeights = new TArrayD(1);
+            fCentralityWeights->AddAt(1., 0);
+        }
+        void            SetMergeSpectrumBins(TArrayI* a)        {fMergeBinsArray        =       a;}
+        void            SetCentralityBin(TArrayI* bins)         {
+            fCentralityArray = bins;
+        }
+        void            SetCentralityWeight(TArrayD* weights)   {
+            fCentralityWeights = weights;
+            if(!fCentralityArray) printf(" > Warning: centrality weights set, but bins are not defined! \n");
+        }
         void            SetDetectorResponse(TH2D* dr)           {fDetectorResponse      = dr;}
         void            SetJetFindingEfficiency(TH1D* e)        {fJetFindingEff         = e;}
         void            SetBinsTrue(TArrayD* bins)              {fBinsTrue              = bins;}
@@ -92,6 +114,7 @@ class AliJetFlowTools {
         void            SetAvoidRoundingError(Bool_t r)         {fAvoidRoundingError    = r;}
         void            SetUnfoldingAlgorithm(unfoldingAlgorithm ua)    {fUnfoldingAlgorithm                    = ua;}
         void            SetPrior(prior p)                       {fPrior                 = p;}
+        void            SetPrior(prior p, TH1D* spectrum)       {fPrior                 = p; fPriorUser         = spectrum;}
         void            SetNormalizeSpectra(Bool_t b)           {fNormalizeSpectra      = b;}
         void            SetNormalizeSpectra(Int_t e)            { // use to normalize to this no of events
             fEventCount         = e;
@@ -113,6 +136,8 @@ class AliJetFlowTools {
         void            SetDphiDptUnfolding(Bool_t i)           {fDphiDptUnfolding      = i;}
         void            SetExLJDpt(Bool_t i)                    {fExLJDpt               = i;}
         void            SetWeightFunction(TF1* w)               {fResponseMaker->SetRMMergeWeightFunction(w);}
+        void            SetRMS(Bool_t r)                        {fRMS                   = r;}
+        void            SetSymmRMS(Bool_t r)                    {fSymmRMS               = r; fRMS               = r;}
         void            Make();
         void            MakeAU();       // test function, use with caution (09012014)
         void            Finish() {
@@ -128,6 +153,46 @@ class AliJetFlowTools {
                 Float_t rangeUp = 80,
                 TString in = "UnfoldedSpectra.root", 
                 TString out = "ProcessedSpectra.root") const;
+        void            GetNominalValues(
+                TH1D*& ratio,
+                TGraphErrors*& v2,
+                TArrayI* in,
+                TArrayI* out,
+                TString inFile = "UnfoldedSpectra.root",
+                TString outFile = "Nominal.root") const;
+        void            GetCorrelatedUncertainty(
+                TGraphAsymmErrors*& corrRatio,
+                TGraphAsymmErrors*& corrV2,
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                Bool_t sym,
+                TArrayI* variantions2ndIn,
+                TArrayI* variantions2ndOut,
+                Bool_t sym2nd,
+                TString type = "",
+                TString type2 = "",
+                Int_t columns = 4,
+                Float_t rangeLow = 20,
+                Float_t rangeUp = 80,
+                Float_t corr = .5,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "CorrelatedUncertainty.root") const;
+        void            GetShapeUncertainty(
+                TGraphAsymmErrors*& shapeRatio,
+                TGraphAsymmErrors*& shapeV2,
+                TArrayI* regularizationIn,
+                TArrayI* regularizationOut,
+                TArrayI* trueBinIn = 0x0,
+                TArrayI* trueBinOut = 0x0,
+                TArrayI* recBinIn = 0x0,
+                TArrayI* recBinOut = 0x0,
+                TArrayI* methodIn = 0x0,
+                TArrayI* methodOut = 0x0,
+                Int_t columns = 4,
+                Float_t rangeLow = 20,
+                Float_t rangeUp = 80,
+                TString in = "UnfoldedSpectra.root", 
+                TString out = "ShapeUncertainty.root") const;
         Bool_t          SetRawInput (
                 TH2D* detectorResponse, // detector response matrix
                 TH1D* jetPtIn,          // in plane jet spectrum
@@ -143,21 +208,108 @@ class AliJetFlowTools {
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
+        static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
-        static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = .7, TString name = "");
+        static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
+        void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
+        TGraphAsymmErrors*      GetV2WithSystematicErrors(
+                TH1* h1, TH1* h2, Double_t r, TString name, 
+                TH1* relativeErrorInUp,
+                TH1* relativeErrorInLow,
+                TH1* relativeErrorOutUp,
+                TH1* relativeErrorOutLow,
+                Float_t rho = 0.) const;
+        static void     GetSignificance(
+                TGraphErrors* n,                // points with stat error
+                TGraphAsymmErrors* shape,       // points with shape error
+                TGraphAsymmErrors* corr,        // points with stat error
+                Int_t low,                      // pt lower level
+                Int_t up                        // pt upper level
+        );
+        static void     MinimizeChi22d();
+        static Double_t PhenixChi22d(const Double_t *xx );
+        static Double_t ConstructFunction2d(Double_t *x, Double_t *par);
+        static TF2*     ReturnFunction2d();
+        static void     MinimizeChi2();
+        static Double_t PhenixChi2(const Double_t *xx );
+        static Double_t ConstructFunction(Double_t *x, Double_t *par);
+        static TF1*     ReturnFunction();
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         void            SaveConfiguration(Bool_t convergedIn, Bool_t convergedOut) const;
         static TMatrixD*        CalculatePearsonCoefficients(TMatrixD* covmat);
         static TH1D*    SmoothenPrior(TH1D* spectrum, TF1* function, Double_t min, Double_t max, Double_t start, Bool_t kill = kTRUE, Bool_t counts = kTRUE);
-        // set styles
+        // set style
+        void            SetTitleFontSize(Double_t s)    {fTitleFontSize = s;}
+        static void     Style(Bool_t legacy = kFALSE);
         static void     Style(TCanvas* c, TString style = "PEARSON");
-        static void     Style(TVirtualPad* c, TString style = "SPECTRUM");
+        static void     Style(TVirtualPad* c, TString style = "SPECTRUM", Bool_t legacy = kFALSE);
         static void     Style(TLegend* l);
-        static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty);
-        static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty);
-        static TLegend* AddLegend(TVirtualPad* p)       {return p->BuildLegend(.27, .61, .88, .88);}
+        static void     Style(TH1* h, EColor col = kBlue, histoType = kEmpty, Bool_t legacy = kFALSE);
+        static void     Style(TGraph* h, EColor col = kBlue, histoType = kEmpty, Bool_t legacy = kFALSE);
+        static TLegend* AddLegend(TVirtualPad* p, Bool_t style = kFALSE) {
+            if(!style) return p->BuildLegend(.565, .663, .882, .883);
+            else {
+                TLegend* l = AddLegend(p, kFALSE);
+                Style(l);
+                return l;
+            }
+        }
+        static TPaveText*       AddTPaveText(
+                // this text appears under the logo
+                TString text, 
+                Int_t r = 2,
+                Double_t a = .587,
+                Double_t b = .695,
+                Double_t c = .872,
+                Double_t d = .801) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
+            t->SetFillColor(0);            
+            t->SetBorderSize(0);
+            t->AddText(0.,0.,text.Data());
+            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k}_{T}, |#eta_{jet}|<%.1f", r, .9-r/10.));
+            t->SetTextColor(kBlack);
+            t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
+            t->Draw("same");
+            return t;
+        } 
+        static TPaveText*       AddText(
+                TString text, 
+                EColor col,
+                Double_t a = .2098,
+                Double_t b = .5601,
+                Double_t c = .613,
+                Double_t d = .6211) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
+            t->SetFillColor(0);            
+            t->SetBorderSize(0);
+            t->AddText(0.,0.,text.Data());
+            t->SetTextColor(col);
+            t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
+            t->Draw("same");
+            return t;
+        } 
+        static TLatex*          AddLogo(Int_t logo, Double_t xmin = .59, Double_t ymax = .81) {
+            if(logo == 0) return AddTLatex(xmin, ymax, "ALICE");
+            else if (logo == 1) return AddTLatex(xmin, ymax, "ALICE Preliminary");
+            else if (logo == 2) return AddTLatex(xmin, ymax, "ALICE Simulation");
+            return 0x0;
+        }
+        static TLatex*          AddSystem() {
+            return AddTLatex(0.55, 87, "Pb-Pb #sqrt{#it{s}}}_{NN} = 2.76 TeV");
+        }
+        static TLatex*          AddTLatex(Double_t xmin, Double_t ymax, TString string) {
+TLatex* tex = new TLatex(xmin, ymax, string.Data());
+            tex->SetNDC();
+            tex->SetTextFont(42);
+            tex->Draw("same");
+            return tex;
+        }
+
         static void     SavePadToPDF(TVirtualPad* pad)  {pad->SaveAs(Form("%s.pdf", pad->GetName()));}
         // interface to AliUnfolding, not necessary but nice to have all parameters in one place
         static void     SetMinuitStepSize(Float_t s)    {AliUnfolding::SetMinuitStepSize(s);}
@@ -204,15 +356,35 @@ class AliJetFlowTools {
                                                         const TH1D* measuredJetSpectrumTrueBins,
                                                         const TString suffix,
                                                         const TH1D* jetFindingEfficiency = 0x0);
+        void            DoIntermediateSystematics(
+                TArrayI* variationsIn,
+                TArrayI* variationsOut,
+                TH1D*& relativeErrorInUp,
+                TH1D*& relativeErrorInLow,
+                TH1D*& relativeErrorOutUp,
+                TH1D*& relativeErrorOutLow,
+                TH1D*& relativeSystematicIn,
+                TH1D*& relativeSystematicOut,
+                TH1D*& nominal,
+                TH1D*& nominalIn,
+                TH1D*& nominalOut,
+                Int_t columns,
+                Float_t rangeLow,
+                Float_t rangeUp,
+                TFile* readMe, 
+                TString source = "",
+                Bool_t RMS = kFALSE) const;
         static void     ResetAliUnfolding();
         // give object a unique name via the 'protect heap' functions. 
         // may seem redundant, but some internal functions of root (e.g.
         // ProjectionY()) check for existing objects by name and re-use them
-        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE, TString suffix = "");
-        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "");
-        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "");
+        TH1D*           ProtectHeap(TH1D* protect, Bool_t kill = kTRUE, TString suffix = "") const;
+        TH2D*           ProtectHeap(TH2D* protect, Bool_t kill = kTRUE, TString suffix = "") const;
+        TGraphErrors*   ProtectHeap(TGraphErrors* protect, Bool_t kill = kTRUE, TString suffix = "") const;
         // members, accessible via setters
         AliAnaChargedJetResponseMaker*  fResponseMaker; // utility object
+        Bool_t                  fRMS;                   // systematic method
+        Bool_t                  fSymmRMS;               // symmetric systematic method
         TF1*                    fPower;                 // smoothening fit
         Bool_t                  fSaveFull;              // save all generated histograms to file
         TString                 fActiveString;          // identifier of active output
@@ -221,7 +393,9 @@ class AliJetFlowTools {
         Bool_t                  fRefreshInput;          // re-read the input (called automatically if input list changes)
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
-        Int_t                   fCentralityBin;         // centrality bin
+        TArrayI*                fCentralityArray;       // array of centrality bins that are merged
+        TArrayI*                fMergeBinsArray;        // array of pt bins that are merged
+        TArrayD*                fCentralityWeights;     // array of centrality weights
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
         Double_t                fBetaIn;                // regularization strength, in plane unfolding
@@ -233,6 +407,7 @@ class AliJetFlowTools {
         Bool_t                  fAvoidRoundingError;    // set dpt to zero for small values far from the diagonal
         unfoldingAlgorithm      fUnfoldingAlgorithm;    // algorithm used for unfolding
         prior                   fPrior;                 // prior for unfolding
+        TH1D*                   fPriorUser;             // user supplied prior (e.g. pythia spectrum)
         TArrayD*                fBinsTrue;              // pt true bins
         TArrayD*                fBinsRec;               // pt rec bins
         TArrayD*                fBinsTruePrior;         // holds true bins for the chi2 prior for SVD. setting this is optional
@@ -259,6 +434,7 @@ class AliJetFlowTools {
         Bool_t                  fDphiUnfolding;         // do the unfolding in in and out of plane orientation
         Bool_t                  fDphiDptUnfolding;      // do the unfolding in dphi and dpt bins (to fit v2)
         Bool_t                  fExLJDpt;               // exclude randon cones with leading jet
+        Double_t                fTitleFontSize;         // title font size
         // members, set internally
         TProfile*               fRMSSpectrumIn;         // rms of in plane spectra of converged unfoldings
         TProfile*               fRMSSpectrumOut;        // rms of out of plane spectra of converged unfoldings

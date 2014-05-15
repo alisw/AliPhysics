@@ -60,6 +60,7 @@ AliDielectronHistos::AliDielectronHistos() :
   TNamed("AliDielectronHistos","Dielectron Histogram Container"),
   fHistoList(),
   fList(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fReservedWords(new TString)
 {
   //
@@ -75,6 +76,7 @@ AliDielectronHistos::AliDielectronHistos(const char* name, const char* title) :
   TNamed(name, title),
   fHistoList(),
   fList(0x0),
+  fUsedVars(new TBits(AliDielectronVarManager::kNMaxValues)),
   fReservedWords(new TString)
 {
   //
@@ -91,6 +93,7 @@ AliDielectronHistos::~AliDielectronHistos()
   // Destructor
   //
   fHistoList.Clear();
+  if (fUsedVars) delete fUsedVars;
   if (fList) fList->Clear();
   delete fReservedWords;
 }
@@ -232,8 +235,7 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
 	if(arr->GetEntriesFast()>2) pmax=(((TObjString*)arr->At(2))->GetString()).Atof();
 	delete arr;
       }
-      hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray());
-      ((TProfile*)hist)->BuildOptions(pmin,pmax,opt.Data());
+      hist=new TProfile(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),pmin,pmax,opt.Data());
       //      printf(" name %s PROFILE options: pmin %.1f pmax %.1f err %s \n",name,((TProfile*)hist)->GetYmin(),((TProfile*)hist)->GetYmax(),((TProfile*)hist)->GetErrorOption() );
     }
 
@@ -242,6 +244,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     valType[0]=valTypeX;     valType[1]=valTypeP;
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -303,6 +309,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeP;
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
@@ -370,6 +380,10 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     StoreVariables(hist, valType);
     hist->SetUniqueID(valTypeW); // store weighting variable
 
+    // store which variables are used
+    for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
     // adapt the name and title of the histogram in case they are empty
     AdaptNameTitle(hist, histClass);
 
@@ -412,6 +426,10 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, Int_t
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -464,6 +482,10 @@ void AliDielectronHistos::UserHistogram(const char* histClass, Int_t ndim, TObjA
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
 
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
       UserHistogramReservedWords(histClass, hist, 999);
@@ -498,6 +520,10 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, Int_t *b
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -547,6 +573,10 @@ void AliDielectronHistos::UserSparse(const char* histClass, Int_t ndim, TObjArra
     // store variales in axes
     StoreVariables(hist, vars);
     hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // store which variables are used
+    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
     if (isReserved)
@@ -1108,10 +1138,13 @@ void AliDielectronHistos::StoreVariables(TH1 *obj, UInt_t valType[20])
     obj->SetUniqueID(valType[3]); // Tprofile3D variable
   case 3:
     obj->GetZaxis()->SetUniqueID(valType[2]);
+    obj->GetZaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[2])));
   case 2:
     obj->GetYaxis()->SetUniqueID(valType[1]);
+    obj->GetYaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[1])));
   case 1:
     obj->GetXaxis()->SetUniqueID(valType[0]);
+    obj->GetXaxis()->SetName(Form("%s", AliDielectronVarManager::GetValueName(valType[0])));
   }
 
   return;

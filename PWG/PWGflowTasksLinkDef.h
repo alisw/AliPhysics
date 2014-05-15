@@ -12,7 +12,6 @@
 #pragma link C++ class AliFlowEventSimpleMaker+;
 
 #pragma link C++ class AliAnalysisTaskScalarProduct+;
-#pragma link C++ class AliAnalysisTaskMSP+;
 #pragma link C++ class AliAnalysisTaskMCEventPlane+;
 #pragma link C++ class AliAnalysisTaskLYZEventPlane+;
 #pragma link C++ class AliAnalysisTaskLeeYangZeros+;
@@ -35,7 +34,6 @@
 #pragma link C++ class AliFlowVZEROResults+;
 #pragma link C++ class AliFlowVZEROQA+;
 #pragma link C++ class AliAnalysisTaskFlowEPCascade+;
-#pragma link C++ class AliAnalysisTaskJetFlow+;
 #pragma link C++ class AliAnalysisTaskJetFlowMC+;
 #pragma link C++ class AliAnalysisTaskMultiparticleCorrelations+;
 

@@ -77,6 +77,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hElectronITSdEdxP(NULL),
    hElectronTOFP(NULL),
    hElectronNSigmadEdxP(NULL),
+   hElectronNSigmadEdxEta(NULL),
    hElectronNSigmaPiondEdxP(NULL),
    hElectronNSigmaITSP(NULL),
    hElectronNSigmaTOFP(NULL),
@@ -84,6 +85,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
    hPositronITSdEdxP(NULL),
    hPositronTOFP(NULL),
    hPositronNSigmadEdxP(NULL),
+   hPositronNSigmadEdxEta(NULL),
    hPositronNSigmaPiondEdxP(NULL),
    hPositronNSigmaITSP(NULL),
    hPositronNSigmaTOFP(NULL),
@@ -162,6 +164,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hElectronITSdEdxP(NULL),
    hElectronTOFP(NULL),
    hElectronNSigmadEdxP(NULL),
+   hElectronNSigmadEdxEta(NULL),
    hElectronNSigmaPiondEdxP(NULL),
    hElectronNSigmaITSP(NULL),
    hElectronNSigmaTOFP(NULL),
@@ -169,6 +172,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
    hPositronITSdEdxP(NULL),
    hPositronTOFP(NULL),
    hPositronNSigmadEdxP(NULL),
+   hPositronNSigmadEdxEta(NULL),
    hPositronNSigmaPiondEdxP(NULL),
    hPositronNSigmaITSP(NULL),
    hPositronNSigmaTOFP(NULL),
@@ -294,9 +298,13 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
       hElectronNSigmadEdxP =  new TH2F("Electron_NSigmadEdx_P","Electron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);  
       SetLogBinningXTH2(hElectronNSigmadEdxP);
       fESDList->Add(hElectronNSigmadEdxP);
+	  hElectronNSigmadEdxEta =  new TH2F("Electron_NSigmadEdx_Eta","Electron_NSigmadEdx_Eta",140, -1.4, 1.4, 200, -10, 10);  
+	  fESDList->Add(hElectronNSigmadEdxEta);
       hPositronNSigmadEdxP =  new TH2F("Positron_NSigmadEdx_P","Positron_NSigmadEdx_P",100, 0.05, 20, 200, -10, 10);
       SetLogBinningXTH2(hPositronNSigmadEdxP);
       fESDList->Add(hPositronNSigmadEdxP);
+	  hPositronNSigmadEdxEta =  new TH2F("Positron_NSigmadEdx_Eta","Positron_NSigmadEdx_Eta",140, -1.4, 1.4, 200, -10, 10);  
+	  fESDList->Add(hPositronNSigmadEdxEta);
       hElectronNSigmaPiondEdxP =  new TH2F("Electron_NSigmaPiondEdx_P","Electron_NSigmaPiondEdx_P",100, 0.05, 20, 200, -10, 10);  
       SetLogBinningXTH2(hElectronNSigmaPiondEdxP);
       fESDList->Add(hElectronNSigmaPiondEdxP);
@@ -478,9 +486,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       hNV0Tracks->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
    }
 
-    if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())
+   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
       RelabelAODPhotonCandidates(kTRUE);    // In case of AODMC relabeling MC
-   
+      fV0Reader->RelabelAODs(kTRUE);
+   }
+	  
+	  
    for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
       AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
       if (gamma==NULL) continue;
@@ -497,8 +508,11 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
       if(ffillTree) ProcessQATree(gamma);
       if(ffillHistograms) ProcessQA(gamma);
    }
-   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())
-      RelabelAODPhotonCandidates(kFALSE);    // In case of AODMC relabeling MC
+   
+   if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){
+      RelabelAODPhotonCandidates(kFALSE); // Back to ESDMC Label
+      fV0Reader->RelabelAODs(kFALSE);
+   }
       
    PostData(1, fOutputList);
 }
@@ -541,6 +555,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
       fKind = IsTruePhotonESD(gamma);
    } else if (fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
+// 	  cout << "entering IsTruePhotonAOD" << endl;
       fKind = IsTruePhotonAOD(gamma);   
    }
 
@@ -548,32 +563,6 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    fDaughterProp(7) =  negTrack->Pt();
    fDaughterProp(1) =  posTrack->Theta();
    fDaughterProp(8) =  negTrack->Theta();
-//    Double32_t signalPos[4] = {0,0,0,0};
-//    Char_t nclPos[3];
-//    Char_t nrowsPos[3];
-//    if (posTrack->GetTPCdEdxInfo()) {
-//       posTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalPos,nclPos,nrowsPos);
-//       fDaughterProp(2) =  signalPos[0];
-//       fDaughterProp(14) =  signalPos[1];
-//       fDaughterProp(16) =  signalPos[2];
-//    } else {
-//       fDaughterProp(2) =  posTrack->GetTPCsignal();
-//       fDaughterProp(14) =  0;
-//       fDaughterProp(16) =  0;
-//    }
-//    Double32_t signalNeg[4] = {0,0,0,0};
-//    Char_t nclNeg[3];
-//    Char_t nrowsNeg[3];
-//    if (negTrack->GetTPCdEdxInfo()) {
-//       negTrack->GetTPCdEdxInfo()->GetTPCSignalRegionInfo(signalNeg,nclNeg,nrowsNeg);
-//       fDaughterProp(9) =  signalNeg[0];
-//       fDaughterProp(15) =  signalNeg[1];
-//       fDaughterProp(17) =  signalNeg[2];
-//    } else {
-//       fDaughterProp(9) =  negTrack->GetTPCsignal();
-//       fDaughterProp(15) =  0;
-//       fDaughterProp(17) =  0;
-//    }
    // dEdx TPC
    fDaughterProp(2) =  posTrack->GetTPCsignal();
    fDaughterProp(3) =  pidResonse->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
@@ -613,7 +602,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    // TOF 
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
-      Double_t timesPos[5];
+      Double_t timesPos[9];
       posTrack->GetIntegratedTimes(timesPos);
       Double_t TOFsignalPos =	posTrack->GetTOFsignal();
       Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
@@ -625,7 +614,7 @@ void AliAnalysisTaskConversionQA::ProcessQATree(AliAODConversionPhoton *gamma){
    }
    if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
-      Double_t timesNeg[5];
+      Double_t timesNeg[9];
       negTrack->GetIntegratedTimes(timesNeg);
       Double_t TOFsignalNeg =	negTrack->GetTOFsignal();
       Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
@@ -680,15 +669,17 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
    //TPC dEdx
    hElectrondEdxP->Fill(negTrack->P() ,negTrack->GetTPCsignal());
    hElectronNSigmadEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
+   hElectronNSigmadEdxEta->Fill(negTrack->Eta() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kElectron));
    hElectronNSigmaPiondEdxP->Fill(negTrack->P() ,pidResonse->NumberOfSigmasTPC(negTrack, AliPID::kPion));
    hPositrondEdxP->Fill(posTrack->P() ,posTrack->GetTPCsignal());
    hPositronNSigmadEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
+   hPositronNSigmadEdxEta->Fill(posTrack->Eta() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kElectron));
    hPositronNSigmaPiondEdxP->Fill(posTrack->P() ,pidResonse->NumberOfSigmasTPC(posTrack, AliPID::kPion));
    
    //TOF signal
    if((negTrack->GetStatus() & AliESDtrack::kTOFpid) && !(negTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0neg = pidResonse->GetTOFResponse().GetStartTime(negTrack->P());
-      Double_t timesNeg[5];
+      Double_t timesNeg[9];
       negTrack->GetIntegratedTimes(timesNeg);
       Double_t TOFsignalNeg = negTrack->GetTOFsignal();
       Double_t dTneg = TOFsignalNeg - t0neg - timesNeg[0];
@@ -697,7 +688,7 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
    }
    if((posTrack->GetStatus() & AliESDtrack::kTOFpid) && !(posTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
       Double_t t0pos = pidResonse->GetTOFResponse().GetStartTime(posTrack->P());
-      Double_t timesPos[5];
+      Double_t timesPos[9];
       posTrack->GetIntegratedTimes(timesPos);
       Double_t TOFsignalPos = posTrack->GetTOFsignal();
       Double_t dTpos = TOFsignalPos - t0pos - timesPos[0];
@@ -731,94 +722,8 @@ void AliAnalysisTaskConversionQA::ProcessQA(AliAODConversionPhoton *gamma){
    }
 
    
-//    if(gamma->P()!=0){
-// 		 hElecAsymP->Fill(gamma->P(),negTrack->P()/gamma->P());
-// 	 }
-   // hElecNfindableClsTPC->Fill((Float_t)negTrack->GetNcls(1)/(Float_t)negTrack->GetTPCNclsF());
-   // hPosiNfindableClsTPC->Fill((Float_t)posTrack->GetNcls(1)/(Float_t)posTrack->GetTPCNclsF());
-//    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class()){
-//       ProcessTrueQAESD(gamma,(AliESDtrack*)negTrack,(AliESDtrack*)posTrack);
-//    } else if(fMCEvent && fInputEvent->IsA()==AliAODEvent::Class()){
-//         ProcessTrueQAAOD(gamma,(AliAODTrack*)negTrack,(AliAODTrack*)posTrack);
-//    }
 }
 
-// //________________________________________________________________________
-// void AliAnalysisTaskConversionQA::ProcessTrueQAESD(AliAODConversionPhoton *TruePhotonCandidate, AliESDtrack *elec, AliESDtrack *posi)
-// {
-// 
-//    if(IsTruePhotonESD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5  ) return;
-// 
-//    TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
-//    TParticle *mcPhoton = TruePhotonCandidate->GetMCParticle(fMCStack);
-   // True Photon
-//    hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
-//                            TruePhotonCandidate->GetConversionRadius()-negDaughter->R());
-//    hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
-//                            TruePhotonCandidate->GetConversionZ()-negDaughter->Vz());
-//    hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
-//                              TruePhotonCandidate->Phi()-mcPhoton->Phi());
-//    hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
-//    hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
-//    hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
-//    hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
-//    hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
-//    hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
-//    hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
-//    hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
-//    hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
-//    hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
-//    hTrueElecPt->Fill(elec->Pt(),posi->Pt());
-//    hTrueElecEta->Fill(elec->Eta(),posi->Eta());
-//    hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
-//    hTrueElecNfindableClsTPC
-//       ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-//    hTruePosiNfindableClsTPC
-//       ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-//    if(TruePhotonCandidate->P()!=0){
-// 		 hTrueElecAsymP->Fill(TruePhotonCandidate->P(),elec->P()/TruePhotonCandidate->P());
-// 	 }
-
-   // hTrueElecNfindableClsTPC->Fill((Float_t)elec->GetNcls(1)/(Float_t)elec->GetTPCNclsF());
-   // hTruePosiNfindableClsTPC->Fill((Float_t)posi->GetNcls(1)/(Float_t)posi->GetTPCNclsF());
-// }
-// 
-// //________________________________________________________________________
-// void AliAnalysisTaskConversionQA::ProcessTrueQAAOD(AliAODConversionPhoton *TruePhotonCandidate, AliAODTrack *elec, AliAODTrack *posi)
-// {
-// 
-//    if(IsTruePhotonAOD(TruePhotonCandidate)!=0 && IsTruePhotonESD(TruePhotonCandidate)!=5 ) return;
-// 
-//    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-//    AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
-//    AliAODMCParticle *mcPhoton = (AliAODMCParticle*) AODMCTrackArray->At(negDaughter->GetMother());
-   // True Photon
-//    hTrueResolutionR->Fill(TruePhotonCandidate->GetConversionRadius(),
-//                            TruePhotonCandidate->GetConversionRadius()-(TMath::Sqrt(negDaughter->Xv()*negDaughter->Xv()+negDaughter->Yv()*negDaughter->Yv())));
-//    hTrueResolutionZ->Fill(TruePhotonCandidate->GetConversionZ(),
-//                            TruePhotonCandidate->GetConversionZ()-negDaughter->Zv());
-//    hTrueResolutionPhi->Fill(TruePhotonCandidate->Phi(),
-//                              TruePhotonCandidate->Phi()-mcPhoton->Phi());
-//    hTrueGammaPt->Fill(TruePhotonCandidate->Pt());
-//    hTrueGammaPhi->Fill(TruePhotonCandidate->Phi());
-//    hTrueGammaEta->Fill(TruePhotonCandidate->Eta());
-//    hTrueGammaMass->Fill(TruePhotonCandidate->GetMass());
-//    hTrueGammaChi2perNDF->Fill(TruePhotonCandidate->GetChi2perNDF());
-//    hTrueGammaPsiPair->Fill(TruePhotonCandidate->GetPsiPair());
-//    hTrueGammaQt->Fill(TruePhotonCandidate->GetArmenterosQt());
-//    hTrueGammaCosinePointingAngle->Fill(fConversionCuts->GetCosineOfPointingAngle(TruePhotonCandidate,fInputEvent));
-//    hTrueGammaXY->Fill(TruePhotonCandidate->GetConversionX(),TruePhotonCandidate->GetConversionY());
-//    hTrueGammaZR->Fill(TruePhotonCandidate->GetConversionZ(),TruePhotonCandidate->GetConversionRadius());
-//    hTrueElecPt->Fill(elec->Pt(),posi->Pt());
-//    hTrueElecEta->Fill(elec->Eta(),posi->Eta());
-//    hTrueElecPhi->Fill(elec->Phi(),posi->Phi());
-//    hTrueElecNfindableClsTPC
-//       ->Fill((Float_t)elec->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-//    hTruePosiNfindableClsTPC
-//       ->Fill((Float_t)posi->GetTPCClusterInfo(2,0,fConversionCuts->GetFirstTPCRow(TruePhotonCandidate->GetConversionRadius())));
-   // hTrueElecNfindableClsTPC->Fill((Float_t)elec->GetNcls(1)/(Float_t)elec->GetTPCNclsF());
-   // hTruePosiNfindableClsTPC->Fill((Float_t)posi->GetNcls(1)/(Float_t)posi->GetTPCNclsF());
-// }
 
 //________________________________________________________________________
 void AliAnalysisTaskConversionQA::CountTracks(){
@@ -856,28 +761,7 @@ void AliAnalysisTaskConversionQA::CountTracks(){
    
    return;
 }
-//________________________________________________________________________
-/*
-Bool_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate)
-{
-   TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCStack);
-   TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
 
-   if(posDaughter == NULL || negDaughter == NULL) return kFALSE; // One particle does not exist
-   Int_t pdgCode[2] = {abs(posDaughter->GetPdgCode()),abs(negDaughter->GetPdgCode())};
-   if(posDaughter->GetMother(0) != negDaughter->GetMother(0)) return kFALSE;
-   else if(posDaughter->GetMother(0) == -1) return kFALSE;
-
-   if(pdgCode[0]!=11 || pdgCode[1]!=11) return kFALSE; //One Particle is not electron
-   if(posDaughter->GetPdgCode()==negDaughter->GetPdgCode()) return kFALSE; // Same Charge
-   if(posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() !=5) return kFALSE;// check if the daughters come from a conversion
-
-   TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
-   if(Photon->GetPdgCode() != 22) return kFALSE; // Mother is no Photon
-
-   return kTRUE;
-}
-*/
 UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate)
 {
 
@@ -938,23 +822,17 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 {   
 
  	UInt_t kind = 9;
-
-  TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 	AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
 	AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
 	AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
-	Int_t motherLabelPhoton = Photon->GetMother();
 	Int_t pdgCodePos = 0; 
 	Int_t pdgCodeNeg = 0; 
 	Int_t pdgCode = 0; 
-
 	if(posDaughter == NULL || negDaughter == NULL) {
 		kind = 9;
-		//		return kFALSE; // One particle does not exist
-   
    } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
 		kind = 1;
-
 		pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
 		pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
 		if(pdgCodePos==11 && pdgCodeNeg==11)	kind = 10; //Electron Combinatorial
@@ -977,7 +855,7 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 			if(pdgCode == 111) kind = 3; // pi0 Dalitz
 			else if (pdgCode == 221) kind = 4; // eta Dalitz
 			else if (!(negDaughter->GetMCProcessCode() != 5 || posDaughter->GetMCProcessCode() !=5)){
-				if(pdgCode == 22 && motherLabelPhoton < fMCStack->GetNprimary()){
+				if(pdgCode == 22 && Photon->IsPrimary()){
 					kind = 0; // primary photons
 				} else if (pdgCode == 22){
 					kind = 5; //secondary photons
@@ -985,7 +863,6 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 			}
 		}
 	}
-
 
 	return kind;
 

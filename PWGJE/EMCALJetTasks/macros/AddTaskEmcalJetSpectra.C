@@ -3,8 +3,9 @@
 AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
    const char *outfilename    = "AnalysisOutput.root",
    const char *nJets          = "Jets",
-   UInt_t type                = AliAnalysisTaskEmcal::kTPC,
+   UInt_t type                = 0,//AliAnalysisTaskEmcal::kTPC,
    const char *nRhosChEm      = "rhoChEm",
+   const char *lrho           = "lrho",
    const Double_t minPhi      = 1.8,
    const Double_t maxPhi      = 2.74,
    const Double_t minEta      = -0.3,
@@ -39,6 +40,7 @@ AliAnalysisTaskEmcalJetSpectra* AddTaskEmcalJetSpectra(
   spectratask->SetJetsName(nJets);
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosChEm);
+  spectratask->SetLocalRhoName(lrho);
   spectratask->SetJetPhiLimits(minPhi,maxPhi);
   spectratask->SetJetEtaLimits(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);

@@ -23,9 +23,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const char *name, Bool_t drawqa=kFALSE); 
   virtual ~AliJetModelBaseTask();
 
-  void                   UserExec(Option_t* /*option*/);
-  void                   UserCreateOutputObjects();
-
   void                   SetEtaRange(Float_t min, Float_t max) { fEtaMin       = min;  fEtaMax = max; }
   void                   SetPhiRange(Float_t min, Float_t max) { fPhiMin       = min;  fPhiMax = max; }
   void                   SetPtRange(Float_t min, Float_t max)  { fPtMin        = min;  fPtMax  = max; }
@@ -36,34 +33,36 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   void                   SetDensitySpectrum(TH1 *f)            { fDensitySpectrum = f;    }
   void                   SetDensitySpectrum(TF1 *f)            { fDensitySpectrum = new TH1F("densitypectrum","densitypectrum",1000,f->GetXmin(),f->GetXmax()); 
                                                                  fDensitySpectrum->Add(f); }
-
+  void                   SetDifferentialV2(TF1* f)             { fDifferentialV2 = f;  }
+  void                   SetAddV2(Bool_t b)                    { fAddV2 = b;           }
+  void                   SetAddFlowFluctuations(Bool_t b)      { fFlowFluctuations = b;}
   void                   SetMC(Bool_t a)                       { fIsMC         = a   ; }
-
   void                   SetCopyArray(Bool_t copy)             { fCopyArray    = copy; }
   void                   SetTracksName(const char *n)          { fTracksName   = n;    }
   void                   SetClusName(const char *n)            { fCaloName     = n;    }
   void                   SetCellsName(const char *n)           { fCellsName    = n;    }
   void                   SetMCParticlesName(const char *n)     { fMCParticlesName = n; }
   void                   SetSuffix(const char *s)              { fSuffix       = s;    }
-
   void                   SetGeometryName(const char *n)        { fGeomName     = n;    }
   void                   SetMarkMC(Int_t m)                    { fMarkMC       = m;    }
   virtual void           SetNClusters(Int_t n)                 { fNClusters    = n;    }
   virtual void           SetNCells(Int_t n)                    { fNCells       = n;    }
   virtual void           SetNTracks(Int_t n)                   { fNTracks      = n;    }
 
-
  protected:
+  void                   UserExec(Option_t* /*option*/);
+  void                   UserCreateOutputObjects();
   Int_t                  SetNumberOfOutCells(Int_t n);                                          // set the number of cells
   Int_t                  AddCell(Double_t e = -1, Double_t eta = -999, Double_t phi = -1);      // add a cell; if values are -1 generate random parameters
-  Int_t                  AddCell(Double_t e, Int_t absId, Double_t time = 0, Int_t label=0);   // add a cell with given energy, position and times
+  Int_t                  AddCell(Double_t e, Int_t absId, Double_t time = 0, Int_t label=0);    // add a cell with given energy, position and times
   AliVCluster           *AddCluster(Double_t e = -1, Double_t eta = -999, Double_t phi = -1, Int_t label=0); // add a cluster; if values are -1 generate random parameters
-  AliVCluster           *AddCluster(Double_t e, Int_t absId, Int_t label=0);                   // add a cluster with given energy and position
-  AliVCluster           *AddCluster(AliVCluster *oc);                                          // add a cluster (copy)
+  AliVCluster           *AddCluster(Double_t e, Int_t absId, Int_t label=0);                    // add a cluster with given energy and position
+  AliVCluster           *AddCluster(AliVCluster *oc);                                           // add a cluster (copy)
   AliPicoTrack          *AddTrack(Double_t pt = -1, Double_t eta = -999, Double_t phi = -1, Byte_t type=0, 
 				  Double_t etaemc=0, Double_t phiemc=0, Double_t ptemc=0, Bool_t ise=kFALSE, 
-				  Int_t label=0, Short_t charge=1, Double_t mass = 0); // add a track; if values are -1 generate random parameters
+				  Int_t label=0, Short_t charge=1, Double_t mass = 0);          // add a track; if values are -1 generate random parameters
   AliAODMCParticle      *AddMCParticle(AliAODMCParticle *part, Int_t origIndex);                // add a MC particle
+  void                   AddV2(Double_t &phi, Double_t &pt) const;
   void                   CopyCells();
   void                   CopyClusters();
   void                   CopyTracks();
@@ -101,6 +100,9 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   TH1                   *fPtSpectrum;             // pt spectrum to extract random pt values
   TF2                   *fPtPhiEvPlDistribution;  // pt vs. (phi-psi) distribution to extract random pt/phi values
   TH1                   *fDensitySpectrum;        // particle density spectrum to extract random density values
+  TF1                   *fDifferentialV2;         // v2 as function of pt
+  Bool_t                 fAddV2;                  // add v2 sampled from a tf1
+  Bool_t                 fFlowFluctuations;       // introduce gaussian flow fluctuation 
   Bool_t                 fQAhistos;               // draw QA histograms
   Double_t               fPsi;                    //!simmetry plane for the elliptic flow
   Bool_t                 fIsInit;                 //!=true if initialized
@@ -125,6 +127,6 @@ class AliJetModelBaseTask : public AliAnalysisTaskSE {
   AliJetModelBaseTask(const AliJetModelBaseTask&);            // not implemented
   AliJetModelBaseTask &operator=(const AliJetModelBaseTask&); // not implemented
 
-  ClassDef(AliJetModelBaseTask, 10) // Jet modelling task
+  ClassDef(AliJetModelBaseTask, 11) // Jet modelling task
 };
 #endif

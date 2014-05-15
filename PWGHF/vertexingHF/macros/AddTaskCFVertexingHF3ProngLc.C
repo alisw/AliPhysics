@@ -684,30 +684,35 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	// ----- output data -----
 	
 	TString outputfile = AliAnalysisManager::GetCommonFileName();
-	TString output1name="", output2name="", output3name="", output4name="";;
+	TString output1name="", output2name="", output3name="", output4name="", output5name="";
 	output2name=nameContainer;
 	output3name=nameCorr;
+	output5name= "coutProfLc";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskLctopKpi_CommonFramework";
                 outputfile+=coutName.Data();
 		output1name="CFHFchist0_3Prong_CommonFramework";
                 output1name+=coutName.Data();
+		output5name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromBOnly_CommonFramework";
                 outputfile+=coutName.Data();
 		output1name="CFHFchist0DfromB_3Prong_CommonFramework";
                 output1name+=coutName.Data();
+		output5name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskLctopKpiKeepDfromB_CommonFramework";
                 outputfile+=coutName.Data();
 		output1name="CFHFchist0allD_3Prong_CommonFramework";
                 output1name+=coutName.Data();
+		output5name+="_All";
 	}
 
 	output4name= "Cuts_3Prong_CommonFramework";
         output4name+=coutName.Data();
+        output5name+=coutName.Data();
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -717,6 +722,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	// Unfolding - correlation matrix
         AliAnalysisDataContainer *coutput3 = mgr->CreateContainer(output3name, THnSparseD::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 	AliAnalysisDataContainer *coutput4 = mgr->CreateContainer(output4name, AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
+	// estimators list
+	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 
 	mgr->AddTask(task);
 	
@@ -725,6 +732,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	mgr->ConnectOutput(task,2,coutput2);
         mgr->ConnectOutput(task,3,coutput3);
 	mgr->ConnectOutput(task,4,coutput4);
+	mgr->ConnectOutput(task,5,coutput5);
 
 	return task;
 	}

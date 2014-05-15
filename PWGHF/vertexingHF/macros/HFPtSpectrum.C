@@ -38,7 +38,8 @@
 //  9) Flag to decide if there is need to evaluate the dependence on the energy loss
 //
 
-enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k80100 };
+enum centrality{ kpp7, kpp276, k07half, kpPb0100, k010, k1020, k020, k2040, k2030, k3040, k4050, k3050, k5060, k4060, k6080, k4080, k5080, k80100, kpPb020, kpPb2040, kpPb4060, kpPb60100 };
+enum centestimator{ kV0M, kV0A, kZNA };
 enum BFDSubtrMethod { knone, kfc, kNb };
 enum RaavsEP {kPhiIntegrated, kInPlane, kOutOfPlane};
 enum rapidity{ kdefault, k08to04, k07to04, k04to01, k01to01, k01to04, k04to07, k04to08 };
@@ -48,7 +49,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 		    const char *recofilename="Reconstructed.root", const char *recohistoname="hRawSpectrumD0",
 		    const char *outfilename="HFPtSpectrum.root",
 		    Int_t fdMethod=kNb, Double_t nevents=1.0, Double_t sigma=1.0, // sigma[pb]
-		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false, 
+		    Bool_t isParticlePlusAntiParticleYield=true, Int_t cc=kpp7, Bool_t PbPbEloss=false,
+		    Int_t ccestimator = kV0M,
 		    Int_t isRaavsEP=kPhiIntegrated,const char *epResolfile="",
 		    Int_t rapiditySlice=kdefault) {
 
@@ -58,14 +60,24 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   //  Set if calculation considers asymmetric uncertainties or not 
   Bool_t asym = true;
 
-  // Set the meson and decay
-  // (only D0 -> K pi, D+--> K pi pi & D* --> D0 pi & D+s -->KKpi implemented here)
-  Bool_t isD0Kpi = false;
+  // Set the meson/baryon and decay
+  // (only D0 -> K pi, D+--> K pi pi, D* --> D0 pi, D+s -->KKpi, Lc+ --> pKpi & Lc+ --> pK0S implemented here)
+  Bool_t isD0Kpi = true;
   Bool_t isDplusKpipi = false;
   Bool_t isDstarD0pi = false;
-  Bool_t isDsKKpi = true;
+  Bool_t isDsKKpi = false;
   Bool_t isLctopKpi = false;
-  if (isD0Kpi && isDplusKpipi && isDstarD0pi && isDsKKpi) {
+  Bool_t isLcK0Sp = false;
+
+  Int_t shouldBeOne=0;
+  if(isD0Kpi) shouldBeOne++;
+  if(isDplusKpipi) shouldBeOne++;
+  if(isDstarD0pi) shouldBeOne++;
+  if(isDsKKpi) shouldBeOne++;
+  if(isLctopKpi) shouldBeOne++;
+  if(isLcK0Sp) shouldBeOne++;
+  
+  if (shouldBeOne!=1) {
     cout << "Sorry, can not deal with more than one correction at the same time"<<endl;
     return;
   }
@@ -87,41 +99,69 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/CentStudies
   //
   Double_t tab = 1., tabUnc = 0.;
-  if ( cc == k07half ) {
-    tab = 24.81; tabUnc = 0.8037;
-  } else if ( cc == k010 ) {
-    tab = 23.48; tabUnc = 0.97;
-  } else if ( cc == k1020 ) {
-    tab = 14.4318; tabUnc = 0.5733;
-  } else if ( cc == k020 ) {
-    tab = 18.93; tabUnc = 0.74;
-  } else if ( cc == k2040 ) {
-    tab = 6.86; tabUnc = 0.28;
-  } else if ( cc == k2030 ) {
-    tab = 8.73769; tabUnc = 0.370219;
-  } else if ( cc == k3040 ) {
-    tab = 5.02755; tabUnc = 0.22099;
-  } else if ( cc == k4050 ) {
-    tab = 2.68327; tabUnc = 0.137073;
-  } else if ( cc == k3050 ) {
-    tab = 3.87011; tabUnc = 0.183847;
-  } else if ( cc == k4060 ) {
-    tab = 2.00;  tabUnc= 0.11;
-  } else if ( cc == k4080 ) {
-    tab = 1.20451; tabUnc = 0.071843;
-  } else if ( cc == k5060 ) {
-    tab = 1.32884; tabUnc = 0.0929536;
-  } else if ( cc == k6080 ) {
-    tab = 0.419; tabUnc = 0.033;
-  } else if ( cc == k80100 ){
-    tab = 0.0690; tabUnc = 0.0062;
+  if( ccestimator == kV0M ) {
+    if ( cc == k07half ) {
+      tab = 24.81; tabUnc = 0.8037;
+    } else if ( cc == k010 ) {
+      tab = 23.48; tabUnc = 0.97;
+    } else if ( cc == k1020 ) {
+      tab = 14.4318; tabUnc = 0.5733;
+    } else if ( cc == k020 ) {
+      tab = 18.93; tabUnc = 0.74;
+    } else if ( cc == k2040 ) {
+      tab = 6.86; tabUnc = 0.28;
+    } else if ( cc == k2030 ) {
+      tab = 8.73769; tabUnc = 0.370219;
+    } else if ( cc == k3040 ) {
+      tab = 5.02755; tabUnc = 0.22099;
+    } else if ( cc == k4050 ) {
+      tab = 2.68327; tabUnc = 0.137073;
+    } else if ( cc == k3050 ) {
+      tab = 3.87011; tabUnc = 0.183847;
+    } else if ( cc == k4060 ) {
+      tab = 2.00;  tabUnc= 0.11;
+    } else if ( cc == k4080 ) {
+      tab = 1.20451; tabUnc = 0.071843;
+    } else if ( cc == k5060 ) {
+      tab = 1.32884; tabUnc = 0.0929536;
+    } else if ( cc == k6080 ) {
+      tab = 0.419; tabUnc = 0.033;
+    } else if ( cc == k5080 ) {
+      tab = 0.719; tabUnc = 0.054;
+    } else if ( cc == k80100 ){
+      tab = 0.0690; tabUnc = 0.0062;
+    }
   }
 
   // pPb Glauber (A. Toia)
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PACentStudies#Glauber_Calculations_with_sigma
-  else if( cc == kpPb0100 ){
+  if( cc == kpPb0100 ){
     tab = 0.098334; tabUnc = 0.0070679;
+    //    A=207.2; B=1.;
   }
+  else if( ccestimator == kV0A ){
+    if ( cc == kpPb020 ) {
+      tab = 0.183; tabUnc = 0.006245;
+    } else if ( cc == kpPb2040 ) {
+      tab = 0.134; tabUnc = 0.004899;
+    } else if ( cc == kpPb4060 ) {
+      tab = 0.092; tabUnc = 0.004796;
+    } else if ( cc == kpPb60100 ) {
+      tab = 0.041; tabUnc = 0.008832;
+    }
+  }
+  else if( ccestimator == kZNA ){
+    if ( cc == kpPb020 ) {
+      tab = 0.164; tabUnc = 0.010724;
+    } else if ( cc == kpPb2040 ) {
+      tab = 0.137; tabUnc = 0.005099;
+    } else if ( cc == kpPb4060 ) {
+      tab = 0.1011; tabUnc = 0.006;
+    } else if ( cc == kpPb60100 ) {
+      tab = 0.0459; tabUnc = 0.003162;
+    }
+  }
+
   tab *= 1e-9; // to pass from mb^{-1} to pb^{-1}
   tabUnc *= 1e-9;
 
@@ -194,6 +234,15 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcpkpifromBpred_max_corr");
     hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcpkpifromBpred_min_corr");
   }
+  else if (isLcK0Sp){
+    decay = 6;
+    hDirectMCpt = (TH1D*)mcfile->Get("hLcK0sppred_central");
+    hFeedDownMCpt = (TH1D*)mcfile->Get("hLcK0spfromBpred_central_corr");
+    hDirectMCptMax = (TH1D*)mcfile->Get("hLcK0sppred_max");
+    hDirectMCptMin = (TH1D*)mcfile->Get("hLcK0sppred_min");
+    hFeedDownMCptMax = (TH1D*)mcfile->Get("hLcK0spfromBpred_max_corr");
+    hFeedDownMCptMin = (TH1D*)mcfile->Get("hLcK0spfromBpred_min_corr");
+  }
   //
   hDirectMCpt->SetNameTitle("hDirectMCpt","direct MC spectra");
   hFeedDownMCpt->SetNameTitle("hFeedDownMCpt","feed-down MC spectra");
@@ -247,8 +296,8 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
 
   //
   // Read the file of the EP resolution correction
-  TFile *EPf;
-  TH1D *hEPresolCorr;
+  TFile *EPf=0;
+  TH1D *hEPresolCorr=0;
   if(isRaavsEP>0.){
     EPf = new TFile(epResolfile,"read");
     if(isRaavsEP==kInPlane) hEPresolCorr = (TH1D*)EPf->Get("hCorrEPresol_InPlane");
@@ -360,14 +409,30 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   cout << "   ended the calculation, getting the histograms back " << endl;
 
   // Set the systematics externally
+  
   Bool_t combineFeedDown = true;
   AliHFSystErr *systematics = new AliHFSystErr();
   if( cc==kpp276 ) {
     systematics->SetIsLowEnergy(true);
   }
-  else if ( cc == kpPb0100 ){ 
-    systematics->SetCollisionType(0); 
-    cout <<endl<<" Beware pPb systematics not yet implemented, using pp at 7 TeV !!"<<endl<<endl; 
+  else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
+    systematics->SetCollisionType(2);
+    if(ccestimator==kV0A) {
+      if(cc == kpPb020) systematics->SetCentrality("020V0A");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040V0A");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060V0A");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100V0A");
+    } else if (ccestimator==kZNA) {
+      if(cc == kpPb020) systematics->SetCentrality("020ZNA");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100ZNA");
+    } else {
+      if(!(cc == kpPb0100)) {
+	cout <<" Error on the pPb options"<<endl;
+	return;
+      }
+    }
   }
   //
   else if( cc!=kpp7 )  {

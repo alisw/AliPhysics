@@ -75,8 +75,10 @@ AliAnalysisTask *AddTask_mfigueredo_JPsi(TString prod="",ULong64_t triggers=AliV
   task->SetEventFilter(eventCuts);
 
   // pileup rejection
-  task->SetTriggerMask(triggers);
-  task->UsePhysicsSelection();
+  if(!hasMC){
+  	task->SetTriggerMask(triggers);
+  	task->UsePhysicsSelection();
+  }
    
   mgr->AddTask(task);
   

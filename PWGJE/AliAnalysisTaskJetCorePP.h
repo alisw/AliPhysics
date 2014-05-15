@@ -16,6 +16,7 @@ class TH1I;
 class TH2F;
 class TH3F;
 class TList;
+class TClonesArray;
 class THnSparse;
 class TRandom3;
 class TArrayI; 
@@ -26,6 +27,9 @@ class AliESDEvent;
 class AliAODExtension;
 class AliAODEvent;
 class AliGenPythiaEventHeader;
+class AliMCEvent;    //FK//
+class AliMCEventHandler; //FK//
+class AliGenEventHeader; //FK//
 
 #include "AliAnalysisTaskSE.h"
 #include "AliVEvent.h"
@@ -46,9 +50,11 @@ public:
  
    virtual void  SetBranchName(const TString &name){ fJetBranchName = name; } 
    virtual void  SetBranchNameChargMC(const TString &name){ fJetBranchNameChargMC = name; } 
+   virtual void  SetBranchNameKine(const TString &name){ fJetBranchNameKine = name; } 
    virtual void  SetBranchNameFullMC(const TString &name){ fJetBranchNameFullMC = name; } 
    virtual void  SetBranchNameBg(const TString &name){ fJetBranchNameBg = name; } 
    virtual void  SetBranchNameBgChargMC(const TString &name){ fJetBranchNameBgChargMC = name; } 
+   virtual void  SetBranchNameBgKine(const TString &name){ fJetBranchNameBgKine = name; } 
    virtual void  SetNonStdFile(char* c){fNonStdFile = c;} 
    virtual void  SetSystem(Int_t sys) { fSystem = sys; } 
    virtual void  SetJetR(Float_t jR) { fJetParamR = jR; }
@@ -75,6 +81,8 @@ public:
    virtual void  SetTriggerPtRangeLow(Float_t tl){ fTriggerPtRangeLow=tl;}   
    virtual void  SetTriggerPtRangeHigh(Float_t th){ fTriggerPtRangeHigh=th;}  
    virtual void  SetFillResponseMatrix(Bool_t brm){ fFillRespMx = brm;}
+   virtual void  SetBinning(Bool_t bbb) { fDoubleBinning = bbb; } 
+   virtual void  SetUseExchangeContainerInput(Bool_t b){ fUseExchContainer = b;} 
 
    Double_t RelativePhi(Double_t angle1, Double_t angle2); 
 
@@ -93,13 +101,18 @@ private:
    AliAODEvent *fAODIn;  //! AOD event for AOD input tracks
    AliAODEvent *fAODOut; //! AOD event 
    AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
+   AliMCEvent           *fMcEvent;    //! MC event                       
+   AliInputEventHandler *fMcHandler;  //! MCEventHandler                 
+
 
    // jets to compare
    TString fJetBranchName; //  name of jet branch 
-   TString fJetBranchNameChargMC; //  name of jet branch 
+   TString fJetBranchNameChargMC;   //  name of jet branch output AOD
+   TString fJetBranchNameKine; //  name of jet branch kine
    TString fJetBranchNameFullMC; //  name of jet branch 
    TString fJetBranchNameBg; //  name of bg (kt) jet branch 
    TString fJetBranchNameBgChargMC; //  name of bg (kT) jet branch 
+   TString fJetBranchNameBgKine; //  name of bg (kT) jet branch 
    TList  *fListJets;      //! jet list reconstructed level
    TList  *fListJetsGen;   //! jet list generator level 
    TList  *fListJetsGenFull; //! jet list generator level full jets 
@@ -127,7 +140,7 @@ private:
    Float_t fTriggerEtaCut; // lower bound on eta for trigger track
    Float_t fTrackEtaCut;   // upper bound on eta for trigger track 
    Float_t fTrackLowPtCut; // upper bound on eta for trigger track
-   
+   Bool_t  fUseExchContainer; //use exhange container
    
    TList *fOutputList;          //! output data container 
    TH1I  *fHistEvtSelection;    //! event selection statistic 
@@ -136,6 +149,10 @@ private:
    THnSparse *fHJetSpecSubUeMedian; //Recoil jet spectrum, jet pT corrected by kT median  
    THnSparse *fHJetSpecSubUeCone;  //Recoil jet spectrum, jet pT corrected by perp cone rho 
    
+   THnSparse *fHJetPhiCorr; // Dphi distribution jet-triger
+   THnSparse *fHJetPhiCorrSubUeMedian; // Dphi distribution jet-triger
+   THnSparse *fHJetPhiCorrSubUeCone; // Dphi distribution jet-triger
+
    //Diagnostics
    THnSparse *fHJetUeMedian;   //UE background from kT median
    THnSparse *fHJetUeCone;      //UE background from perp cone 
@@ -172,6 +189,9 @@ private:
    THnSparse *fHJetSpecGen;    //Recoil jet spectrum at generator level 
    THnSparse *fHJetSpecSubUeMedianGen;  //Recoil jet spectrum at gen level, jet pT corrected by kT median 
    THnSparse *fHJetSpecSubUeConeGen; //Recoil jet spectrum at gen level, jet pT corrected with rho from cone
+   THnSparse *fHJetPhiCorrGen; // Dphi distribution jet-triger
+   THnSparse *fHJetPhiCorrSubUeMedianGen; // Dphi distribution jet-triger
+   THnSparse *fHJetPhiCorrSubUeConeGen; // Dphi distribution jet-triger
    THnSparse *fHJetUeMedianGen;   //UE background from kT median
    THnSparse *fHJetUeConeGen;      //UE background from Perp Cone 
    TH2D      *fhPtTrkTruePrimRec; // pt spectrum of true reconstructed primary tracks    
@@ -185,8 +205,9 @@ private:
    TH1D  *fhCellAreaToMedianGen; //how many entries were used to calculate in MC
  
 
-   Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real data false
-   Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real data false
+   Bool_t fIsChargedMC;   //flag analysis on MC data with true and on the real+kine data false
+   Bool_t fIsKine;       //flag analysis on kine data with true and on the real+MC data false
+   Bool_t fIsFullMC;   //flag analysis on MC data with true and on the real+kine data false
    TArrayI faGenIndex;   // labels of particles on MC generator level  
    TArrayI faRecIndex;   // labels of particles on reconstructed track level
    const Double_t fkAcceptance; //eta times phi  Alice coverage  
@@ -220,7 +241,9 @@ private:
    const Double_t fCellArea; //cell area
    Double_t fSafetyMargin; //enlarge a bit the jet size to avoid contamination of UE
 
-   ClassDef(AliAnalysisTaskJetCorePP, 11);  //has to end with number larger than 0
+   Bool_t fDoubleBinning; //0=use 2 GeV/c bins  ; 1= use 1 GeV/c bins
+ 
+   ClassDef(AliAnalysisTaskJetCorePP, 12);  //has to end with number larger than 0
 };
 
 #endif

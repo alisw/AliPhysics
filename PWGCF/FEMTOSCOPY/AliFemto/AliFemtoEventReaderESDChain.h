@@ -69,6 +69,12 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
 
   void CopyESDtoFemtoEvent(AliFemtoEvent *hbtEvent);
   void SetpA2013(Bool_t pa2013);
+  void SetUseMVPlpSelection(Bool_t mvplp);
+  void SetIsPileUpEvent(Bool_t ispileup);
+  void SetMinVtxContr(Int_t contr=1) {fMinVtxContr=contr;}
+  void SetMinPlpContribMV(Int_t minPlpContribMV) { fMinPlpContribMV = minPlpContribMV;}
+  void SetMinPlpContribSPD(Int_t minPlpContribSPD) { fMinPlpContribSPD = minPlpContribSPD;}
+
  protected:
 
  private:
@@ -100,6 +106,11 @@ class AliFemtoEventReaderESDChain : public AliFemtoEventReader
   int    fMagFieldSign;
 
   Bool_t fpA2013;
+  Bool_t fisPileUp;
+  Bool_t fMVPlp;
+  Int_t fMinVtxContr; //no of contributors for pA 2013 data
+  Int_t fMinPlpContribMV; //no of contributors for multivertex pile-up rejection
+  Int_t fMinPlpContribSPD; //no of contributors for SPD pile-up rejection
 
 #ifdef __ROOT__
   ClassDef(AliFemtoEventReaderESDChain, 1)

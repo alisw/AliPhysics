@@ -312,6 +312,41 @@ public:
      *          - If this returns a single entry, return that.  
      *          - If not, ignore all passed values 
      *            - If this returns a single entry, return that.
+     *            - Otherwise, give up and return -1
+     *      - Otherwise, give up and return -1
+     *
+     * This allow us to specify default objects for a period, and for
+     * collision system, energy, and field setting.
+     *
+     * @param run    Run number 
+     * @param mode   Run selection mode 
+     * @param sys    Collision system (1: pp, 2: PbPb, 3: pPb)
+     * @param sNN    Center of mass energy (GeV)
+     * @param fld    L3 magnetic field (kG)
+     * @param mc     For MC only 
+     * @param sat    For satellite interactions 
+     * 
+     * @return Found entry number, or -1
+     */
+    Int_t GetEntry(ULong_t        run      = 0,
+		   ERunSelectMode mode     = kNear,
+		   UShort_t       sys      = 0,
+		   UShort_t       sNN      = 0, 
+		   Short_t        fld      = 0,
+		   Bool_t         mc       = false,
+		   Bool_t         sat      = false) const;
+    /** 
+     * Query the tree for an object.  The strategy is as follows. 
+     * 
+     *  - First query with all fields 
+     *    - If this returns a single entry, return that. 
+     *    - If not, then ignore the run number (if given)
+     *      - If this returns a single entry, return that 
+     *      - If not, and fall-back is enabled, then 
+     *        - Ignore the collision energy (if given) 
+     *          - If this returns a single entry, return that.  
+     *          - If not, ignore all passed values 
+     *            - If this returns a single entry, return that.
      *            - Otherwise, give up and return null
      *      - Otherwise, give up and return null
      *
@@ -634,6 +669,20 @@ protected:
   Table* GetTableFromFile(TFile* file, Bool_t rw, 
 			  const TString& name,
 			  const TString& mode) const;
+
+  /** 
+   * Get a table (TTree) from a file and attach
+   * 
+   * @param file   File to look in 
+   * @param rw     If true, open read/write, false read-only
+   * @param name   Name of the table 
+   * @param mode   Default mode for new table, or override mode 
+   *               for existing tables if not default
+   * 
+   * @return Table or (if rw=true) possibly newly created table
+   */
+  void OpenTable(TFile* file, Bool_t rw, const TString& name, 
+		 const TString& mode, Bool_t verb, Bool_t fallback);
   /** 
    * Helper function to append to query string 
    * 

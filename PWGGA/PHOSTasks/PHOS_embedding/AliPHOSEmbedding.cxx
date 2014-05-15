@@ -644,7 +644,7 @@ void AliPHOSEmbedding::ConvertHeader(AliESDEvent & esd){
   header->SetTPConlyRefMultiplicity(-1);
   
   //
-  Float_t diamxy[2]={esd.GetDiamondX(),esd.GetDiamondY()};
+  Float_t diamxy[2]={static_cast<Float_t>(esd.GetDiamondX()),static_cast<Float_t>(esd.GetDiamondY())};
   Float_t diamcov[3]; 
   esd.GetDiamondCovXY(diamcov);
   header->SetDiamond(diamxy,diamcov);

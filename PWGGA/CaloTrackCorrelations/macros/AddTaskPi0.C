@@ -341,13 +341,13 @@ AliCaloTrackReader * ConfigureReader()
   
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
+    reader->SwitchOnPileUpEventRejection();   // remove pileup by default
     reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
-    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPileUpEventRejection();  // remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;       // and besides v0 AND
   }
     
   if(kCollisions=="PbPb") 
@@ -444,6 +444,17 @@ AliCalorimeterUtils* ConfigureCaloUtils()
     cu->SwitchOnCorrectClusterLinearity();
   }
   
+  if(kCalorimeter=="PHOS")
+  {
+    if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(3);
+    else                cu->SetNumberOfSuperModulesUsed(4);
+  }
+  else
+  {
+    if      (kYears == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    else if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(10);
+    else                     cu->SetNumberOfSuperModulesUsed(20);
+  }
   
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
@@ -591,13 +602,6 @@ AliAnaPi0* ConfigurePi0Analysis()
   
   // Calorimeter settings
   ana->SetCalorimeter(kCalorimeter);
-  if(kCalorimeter=="PHOS") ana->SetNumberOfModules(3); //PHOS first year
-  else 
-  {                   
-    if     (kYears == 2010) ana->SetNumberOfModules( 4); // EMCAL first year
-    else if(kYears == 2011) ana->SetNumberOfModules(10); // Second year
-    else                    ana->SetNumberOfModules(12);
-  }
   
   //settings for pp collision mixing
   ana->SwitchOnOwnMix(); //Off when mixing done with general mixing frame
@@ -754,17 +758,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffStudyClustersAsymmetry();
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
-  
-  if(kCalorimeter=="EMCAL")
-  {
-    if     (kYears==2010)  ana->SetNumberOfModules(4); 
-    else if(kYears==2011)  ana->SetNumberOfModules(10);
-    else                   ana->SetNumberOfModules(12); 
-  }
-  else 
-  {//PHOS
-    ana->SetNumberOfModules(3); 
-  }
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below

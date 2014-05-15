@@ -99,9 +99,16 @@ PARFILE       = $(PACKAGE).par
 lib$(PACKAGE).so: $(OBJS_PWG)
 	@echo "Linking" $@ ...
 	@/bin/rm -f $@
-	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(EXPLLINKLIBS)
+	$(LD) $(SOFLAGS) $(LDFLAGS) $^ $(OutPutOpt) $@ $(PACKLDFLAGS) $(EXPLLINKLIBS)
 	@chmod a+x $@
 	@echo "done"
+
+ifeq ($(PLATFORM),macosx)
+ROOTLIBDIR     := $(shell $(RC) --libdir)
+ifeq ($(PACKAGE),PWGmuon)
+   PACKLDFLAGS = $(STEERBase_LIBS) $(ESD_LIBS) $(AOD_LIBS) $(ANALYSIS_LIBS) $(OADB_LIBS) $(CORRFW_LIBS) $(ANALYSISalice_LIBS) -L$(ROOTLIBDIR) -lXMLIO -lEG -lTreePlayer
+endif
+endif
 
 %.o:    %.cxx %.h
 	$(CXX) $(PACKCXXFLAGS) -c $< -o $@

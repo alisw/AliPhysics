@@ -712,8 +712,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 	    
 	    // generate random time
 	    Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+01;
-	    Double_t times[10];
-	    KpTrack->GetIntegratedTimes(times);
+	    Double_t times[AliPID::kSPECIESC];
+	    KpTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 	    nSigmaTOF = TMath::Abs(timeRandom - times[2])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[2], AliPID::kPion);
 	    nSigmaTOFRef = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KpTrack->P(), times[fSpeciesRef], fSpeciesRef);
 	  }
@@ -739,6 +739,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
     }
 
     // use sigmaTOF instead of sigmaComb
+    nSigmaTOFRef = TMath::Abs(nSigmaTOFRef);
+
     if(tofMatch1){
       nSigmaComb = nSigmaTOF;
       nSigmaCombRef = nSigmaTOFRef;
@@ -829,8 +831,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 	      
 	      // generate random time
 	      Float_t timeRandom = fHmismTOF->GetRandom() + distIP*3.35655419905265973e+00;
-	      Double_t times[10];
-	      KnTrack->GetIntegratedTimes(times);
+	      Double_t times[AliPID::kSPECIESC];
+	      KnTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
 	      nSigmaTOF2 = TMath::Abs(timeRandom - times[2])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[2], AliPID::kPion);
 	      nSigmaTOF2Ref = TMath::Abs(timeRandom - times[fSpeciesRef])/PIDResponse->GetTOFResponse().GetExpectedSigma(KnTrack->P(), times[fSpeciesRef], fSpeciesRef);
 	    }
@@ -921,8 +923,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 
       if(fPtKn > 4.299) fPtKn = 4.299;
 
-      Float_t xTOfill[] = {fPtKs,KpTrack->Eta(),fPtKp,fPtKn,probP[2],probN[2],tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
-      Float_t xTOfill2[] = {fPtKs,KpTrack->Eta(),fPtKp,fPtKn,probP[2],probN[2],tofMatch1,tofMatch2,isTrue,nSigmaComb,nSigmaComb2,deltaphi1,deltaphi2,fPsi};
+      Float_t xTOfill[] = {static_cast<Float_t>(fPtKs),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>(probP[2]),static_cast<Float_t>(probN[2]),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
+      Float_t xTOfill2[] = {static_cast<Float_t>(fPtKs),static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(fPtKn),static_cast<Float_t>(probP[2]),static_cast<Float_t>(probN[2]),static_cast<Float_t>(tofMatch1),static_cast<Float_t>(tofMatch2),static_cast<Float_t>(isTrue),static_cast<Float_t>(nSigmaComb),static_cast<Float_t>(nSigmaComb2),static_cast<Float_t>(deltaphi1),static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
       
       Int_t ipt = 0;
       while(fPtKsMin[ipt] < fPtKs && ipt < nPtBin){
@@ -946,8 +948,8 @@ void AliAnalysisTaskK0sBayes::Analyze(AliAODEvent* aodEvent)
 	fContPid2->Fill(0,fMassV0,fCentrality,xTOfill2);
 
 	if(fPIDuserCut){
-	  Float_t xUser[] = {KpTrack->Eta(),fPtKp,isTrue,0,deltaphi1,fPsi};
-	  Float_t xUser2[] = {KnTrack->Eta(),fPtKn,isTrue,0,deltaphi2,fPsi};
+	  Float_t xUser[] = {static_cast<Float_t>(KpTrack->Eta()),static_cast<Float_t>(fPtKp),static_cast<Float_t>(isTrue),0,static_cast<Float_t>(deltaphi1),static_cast<Float_t>(fPsi)};
+	  Float_t xUser2[] = {static_cast<Float_t>(KnTrack->Eta()),static_cast<Float_t>(fPtKn),static_cast<Float_t>(isTrue),0,static_cast<Float_t>(deltaphi2),static_cast<Float_t>(fPsi)};
 
 	  if(fPIDuserCut->IsSelected(KpTrack,AliPID::kPion)){ // to be filled for positive
 	    xUser[3] = 1;

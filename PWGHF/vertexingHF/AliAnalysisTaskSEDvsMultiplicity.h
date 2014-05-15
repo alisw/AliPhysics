@@ -36,7 +36,7 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
  public:
 
   AliAnalysisTaskSEDvsMultiplicity();
-  AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson, AliRDHFCuts* cuts);
+  AliAnalysisTaskSEDvsMultiplicity(const char *name, Int_t pdgMeson, AliRDHFCuts* cuts, Bool_t switchPPb);
   virtual ~AliAnalysisTaskSEDvsMultiplicity();
 
 
@@ -56,10 +56,12 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
 
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMCOption(Int_t option=0){ fMCOption = option; }
-  void SetIsPPbData(Bool_t flag=kTRUE){ fisPPbData=flag; }
+  void SetIsPPbData(Bool_t flag=kTRUE){ 
+    fisPPbData=flag;
+  }
   void SetUseBit(Bool_t use=kTRUE){fUseBit=use;}
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpPar=doImp;}
-
+  void SetKeepEstimatorCorrelationPlots(Bool_t use=kTRUE){fKeepCorrPlots=use;}
 
   void SetMultiplVsZProfileLHC10b(TProfile* hprof){
     if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
@@ -77,6 +79,16 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
     if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
     fMultEstimatorAvg[3]=new TProfile(*hprof);
   }
+  
+  void SetMultiplVsZProfileLHC13b(TProfile* hprof){
+    if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+    fMultEstimatorAvg[0]=new TProfile(*hprof);
+  }
+  void SetMultiplVsZProfileLHC13c(TProfile* hprof){
+    if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+    fMultEstimatorAvg[1]=new TProfile(*hprof);
+  }
+    
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
 
   // Nch weights on MC
@@ -89,10 +101,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   void SetSubtractTrackletsFromDaughters(Bool_t opt){fSubtractTrackletsFromDau=opt;}
   Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
 
-  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2 };
+  enum { kNtrk10=0, kNtrk10to16=1, kVZERO=2, kNtrk03=3, kNtrk05=4, kVZEROA=5 };
   void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
-  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2 };
+  enum { kEta10=0, kEta10to16=1, kEtaVZERO=2, kEta03=3, kEta05=5, kEtaVZEROA=5 };
   void SetMCPrimariesEstimator(Int_t value){ fMCPrimariesEstimator=value; }
   Int_t GetMCPrimariesEstimator(){ return fMCPrimariesEstimator; }
 
@@ -121,6 +133,10 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   TH1F *fHistNEvents;     //!hist. for No. of events
 
   TH2F* fHistNtrEta16vsNtrEta1; //!hist. for Ntracklets in eta<1.6 vs. eta<1.
+  TH2F* fHistNtrEta05vsNtrEta1; //!hist. for Ntracklets in eta<0.5 vs. eta<1.
+  TH2F* fHistNtrEta03vsNtrEta1; //!hist. for Ntracklets in eta<0.3 vs. eta<1.
+  TH2F* fHistNtrEtaV0AvsNtrEta1; //!hist. for Ntracklets in eta-V0A vs. eta<1.
+  TH2F* fHistNtrEtaV0MvsNtrEta1; //!hist. for Ntracklets in eta-V0M vs. eta<1.
   TH2F* fHistNtrCorrEta1vsNtrRawEta1; //!hist. for Ntracklets in eta<1 with and w/o corrections 
   TH2F* fHistNtrVsZvtx; //!  hist of ntracklets vs Zvertex
   TH2F* fHistNtrCorrVsZvtx; //!  hist of ntracklets vs Zvertex
@@ -169,19 +185,20 @@ class AliAnalysisTaskSEDvsMultiplicity : public AliAnalysisTaskSE
   Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
   Bool_t fUseBit;    // flag to use bitmask
   Bool_t fSubtractTrackletsFromDau; // flag for subtracting D meson daughter contribution to N of tracklets
+  Bool_t fKeepCorrPlots; // flag to look at the correlation of different estimators (eta ranges)
 
   Bool_t fUseNchWeight; // weight on the MC on the generated multiplicity
   TH1F* fHistoMCNch;    // weight histogram for the MC on the generated multiplicity
   TH1F* fHistoMeasNch;  //! weight histogram on the true measured multiplicity
   
-  TProfile* fMultEstimatorAvg[4]; // TProfile with mult vs. Z per period
+  TProfile* fMultEstimatorAvg[4]; //TProfile with mult vs. Z per period
   Double_t fRefMult;   // refrence multiplcity (period b)
   Int_t fPdgMeson;   // pdg code of analyzed meson
 
   Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
   Int_t fMCPrimariesEstimator;  // Definition of the primaries estimator eta range: |eta|<1.0=0, -1.6<|eta|<1.0=1, VZEROrange=2 
   
-  ClassDef(AliAnalysisTaskSEDvsMultiplicity,8); // D vs. mult task
+  ClassDef(AliAnalysisTaskSEDvsMultiplicity,11); // D vs. mult task
 };
 
 #endif

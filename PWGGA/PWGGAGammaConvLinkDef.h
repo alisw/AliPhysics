@@ -36,7 +36,11 @@
 #pragma link C++ class AliAnalysisTaskdPhi+;
 
 // Old tasks
-#pragma link C++ class AliAnalysisTaskCaloConv+;
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
+
+#pragma link C++ class AliPrimaryPionSelector+;
+#pragma link C++ class AliPrimaryPionCuts+;
+#pragma link C++ class AliAnalysisTaskEtaToPiPlPiMiGamma+;
+
 
 #endif

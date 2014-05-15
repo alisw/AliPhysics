@@ -68,6 +68,7 @@ fHistQbNormMb(NULL),
 fResolution(NULL),
 fHistQaQb(NULL),
 fHistQaQbCos(NULL),
+fHistNumberOfSubtractedDaughters(NULL),
 fCommonHists(NULL),
 fCommonHistsuQ(NULL),
 fCommonHistsRes(NULL)
@@ -175,7 +176,8 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   dMin[1]   = AliFlowCommonConstants::GetMaster()->GetEtaMin();
   dMax[0]   = AliFlowCommonConstants::GetMaster()->GetPtMax();
   dMax[1]   = AliFlowCommonConstants::GetMaster()->GetEtaMax();
-  for(Int_t iPOI=0; iPOI!=2; ++iPOI) for(Int_t iSpace=0; iSpace!=2; ++iSpace) {
+  for(Int_t iPOI=0; iPOI!=2; ++iPOI) 
+    for(Int_t iSpace=0; iSpace!=2; ++iSpace) {
     // uQ
     fHistProUQ[iPOI][iSpace] = new TProfile( Form( "FlowPro_UQ_%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ),
                                        Form( "FlowPro_UQ%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ),
@@ -285,6 +287,9 @@ void AliFlowAnalysisWithScalarProduct::Init() {
     fHistQaQbCos->SetYTitle("dN/d#phi");
     fHistQaQbCos->SetXTitle("#phi");
     tQARelated->Add(fHistQaQbCos);
+    
+    fHistNumberOfSubtractedDaughters = new TH1I("NumberOfSubtractedDaughtersInQ",";daughters;counts;Number of daughters subtracted from Q",5,0.,5.);
+    tQARelated->Add(fHistNumberOfSubtractedDaughters);
   }
 
   fHistList->Add(uQRelated);
@@ -396,7 +401,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     }
 
     //remove track if in subevent
-    for(Int_t inSubEvent=0; inSubEvent!=2; ++inSubEvent) {
+    for(Int_t inSubEvent=0; inSubEvent<2; ++inSubEvent) {
       if( !pTrack->InSubevent( inSubEvent ) )
         continue;
       if(inSubEvent==0)
@@ -406,17 +411,27 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
         if( fTotalQvector<2 )
           continue;
       Double_t dW=1;
-      Double_t dPhiCenter = dPhi;
+      //Double_t dPhiCenter = dPhi;
       //if phi weights are used
       if(fUsePhiWeights && fPhiWeightsSub[inSubEvent]) {
         Int_t iNBinsPhiSub = fPhiWeightsSub[inSubEvent]->GetNbinsX();
         Int_t phiBin = 1+(Int_t)(TMath::Floor(dPhi*iNBinsPhiSub/TMath::TwoPi()));
         dW = fPhiWeightsSub[inSubEvent]->GetBinContent(phiBin);
-        dPhiCenter = fPhiWeightsSub[inSubEvent]->GetBinCenter(phiBin);
+        //dPhiCenter = fPhiWeightsSub[inSubEvent]->GetBinCenter(phiBin);
       }
-      Double_t dQmX = vQm.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter);
-      Double_t dQmY = vQm.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter);
-      vQm.Set(dQmX,dQmY);
+      //Double_t dQmX = vQm.X() - dW*(pTrack->Weight())* TMath::Cos(fHarmonic*dPhiCenter);
+      //Double_t dQmY = vQm.Y() - dW*(pTrack->Weight())* TMath::Sin(fHarmonic*dPhiCenter);
+      //vQm.Set(dQmX,dQmY);
+      
+      //subtrack the track from the Q vector, but only if it was used to construct this
+      //Q vector: i.e. check wether it has the same tags and is in the same subevent
+      //this is especially important for the daughters (as for the mother it is already checked)
+      Int_t numberOfsubtractedDaughters=vQm.SubtractTrackWithDaughters(pTrack,dW);
+      
+      if(!fMinimalBook) {
+        fHistNumberOfSubtractedDaughters->Fill(numberOfsubtractedDaughters);
+      }
+
       dMq = dMq-dW*pTrack->Weight();
     }
     dNq = fNormalizationType ? dMq : vQm.Mod();
@@ -442,7 +457,7 @@ void AliFlowAnalysisWithScalarProduct::Make(AliFlowEventSimple* anEvent) {
     for(Int_t iPOI=0; iPOI!=2; ++iPOI) {
       if( (iPOI==0)&&(!pTrack->InRPSelection()) )
         continue;
-      if( (iPOI==1)&&(!pTrack->InPOISelection()) )
+      if( (iPOI==1)&&(!pTrack->InPOISelection(fPOItype)) )
         continue;
       fHistProUQ[iPOI][0]->Fill(dPt ,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')
       fHistProUQ[iPOI][1]->Fill(dEta,dUQ/dNq,dWq); //Fill (uQ/Nq') with weight (Nq')

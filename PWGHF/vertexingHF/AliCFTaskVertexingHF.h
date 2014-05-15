@@ -31,6 +31,7 @@
 #include "AliCFVertexingHFLctoV0bachelor.h"
 #include "AliCFVertexingHF.h"
 #include <TH1F.h>
+#include <TProfile.h>
 
 class TH1I;
 class TParticle ;
@@ -99,7 +100,7 @@ public:
 	// CORRECTION FRAMEWORK RELATED FUNCTIONS
 	void           SetCFManager(AliCFManager* io) {fCFManager = io;}   // global correction manager
 	AliCFManager * GetCFManager()                 {return fCFManager;} // get corr manager
-	
+
 	// Setters (and getters) for the config macro
 	void    SetFillFromGenerated(Bool_t flag) {fFillFromGenerated = flag;}
 	Bool_t  GetFillFromGenerated() const {return fFillFromGenerated;}
@@ -124,14 +125,51 @@ public:
 	  fHistoMCNch=new TH1F(*h);
 	}
 	void CreateMeasuredNchHisto();
+ 	void SetMeasuredNchHisto(TH1F* h){
+	  if(fHistoMeasNch) delete fHistoMeasNch;
+	  fHistoMeasNch=new TH1F(*h);
+	}
 	Double_t GetNchWeight(Int_t nch);
 	void SetMultiplicityEstimator(Int_t value){ fMultiplicityEstimator=value; }
 	Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
 	void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
+	void SetIsPPbData(Bool_t flag){ fIsPPbData = flag; }
 
 	void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; }
 	Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
 
+	void SetUseZvtxCorrectedNtrkEstimator(Bool_t flag) { fZvtxCorrectedNtrkEstimator=flag; }
+	Bool_t GetUseZvtxCorrectedNtrkEstimator() { return fZvtxCorrectedNtrkEstimator; }
+	void SetMultiplVsZProfileLHC10b(TProfile* hprof){
+	  if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+	  fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10c(TProfile* hprof){
+	  if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+	  fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10d(TProfile* hprof){
+	  if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
+	  fMultEstimatorAvg[2]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC10e(TProfile* hprof){
+	  if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
+	  fMultEstimatorAvg[3]=new TProfile(*hprof);
+	}
+	
+	void SetMultiplVsZProfileLHC13b(TProfile* hprof){
+	  if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
+	  fMultEstimatorAvg[0]=new TProfile(*hprof);
+	}
+	void SetMultiplVsZProfileLHC13c(TProfile* hprof){
+	  if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
+	  fMultEstimatorAvg[1]=new TProfile(*hprof);
+	}
+
+
+	TProfile* GetEstimatorHistogram(const AliVEvent* event);
+	void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
+	
 	void   SetDselection(UShort_t originDselection) {fOriginDselection=originDselection;}
 	UShort_t GetDselection (){return fOriginDselection;}
 	void SetSign(Char_t isSign) {fSign = isSign;}
@@ -171,6 +209,9 @@ public:
 	void SetPtWeightsFromFONLL276overLHC12a17b();
 	void SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b();
 	void SetPtWeightsFromFONLL5overLHC13d3();
+	void SetPtWeightsFromFONLL7overLHC10f6a();
+	void SetPtWeightsFromFONLL5overLHC10f6a();
+	void SetPtWeightsFromFONLL276overLHC10f6a();
 
         void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
         UInt_t GetResonantDecay() const {return fResonantDecay;}
@@ -192,6 +233,7 @@ protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
 	THnSparse* fCorrelation;      //  response matrix for unfolding
+	TList  *fListProfiles; //list of profile histos for z-vtx correction
 	Int_t fCountMC;               //  MC particle found
 	Int_t fCountAcc;              //  MC particle found that satisfy acceptance cuts
 	Int_t fCountVertex;       //  Reco particle found that satisfy vertex constrained
@@ -234,9 +276,13 @@ protected:
 	UInt_t fPDGcode; // PDG code
 
 	Int_t fMultiplicityEstimator; // Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
+	TProfile* fMultEstimatorAvg[4]; // TProfile with mult vas. Z per period
+	Double_t fRefMult;   // refrence multiplcity (period b)
+	Bool_t fZvtxCorrectedNtrkEstimator; // flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
 	Bool_t fIsPPData; // flag for pp data (not checking centrality)
-
-	ClassDef(AliCFTaskVertexingHF,17); // class for HF corrections as a function of many variables
+	Bool_t fIsPPbData; // flag for pPb data (used for multiplicity corrections)
+   
+	ClassDef(AliCFTaskVertexingHF,19); // class for HF corrections as a function of many variables
 };
 
 #endif

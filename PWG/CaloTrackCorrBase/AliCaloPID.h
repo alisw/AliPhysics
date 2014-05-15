@@ -204,9 +204,6 @@ class AliCaloPID : public TObject {
   
   // Cluster splitting analysis
   
-  void    SwitchOnClusterSplittingPID()        { fDoClusterSplitting = kTRUE  ; }
-  void    SwitchOffClusterplittingPID()        { fDoClusterSplitting = kFALSE ; }
-  
   void    SwitchOnSimpleSplitMassCut()         { fUseSimpleMassCut   = kTRUE  ; }
   void    SwitchOffSimpleSplitMassCut()        { fUseSimpleMassCut   = kFALSE ; }
 
@@ -304,7 +301,6 @@ private:
   Float_t   fPHOSRCut;                          // Track-Cluster distance cut for track matching in PHOS  
   
   // Cluster splitting mass ranges
-  Bool_t    fDoClusterSplitting;                // Cluster splitting analysis
   Bool_t    fUseSimpleMassCut;                  // Use simple min-max pi0 mass cut
   Bool_t    fUseSimpleM02Cut;                   // Use simple min-max M02 cut
   Bool_t    fUseSplitAsyCut ;                   // Remove splitted clusters with too large asymmetry
@@ -333,7 +329,7 @@ private:
   AliCaloPID & operator = (const AliCaloPID & cpid) ; // cpy assignment
   AliCaloPID(              const AliCaloPID & cpid) ; // cpy ctor
   
-  ClassDef(AliCaloPID,21)
+  ClassDef(AliCaloPID,22)
   
 } ;
 

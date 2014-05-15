@@ -277,17 +277,20 @@ Int_t AliSpectraBothPID::GetParticleSpecie(AliSpectraBothHistoManager * hman,Ali
 		return kSpUndefined;//if is the default value for the three
   	if( ( nsigmaKaon   < nsigmaPion ) && ( nsigmaKaon < nsigmaProton ) && (nsigmaKaon   < fNSigmaPID))
 	{
-    		hman->GetPIDHistogram(kHistPIDTPCKaonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDKaon histo
+		if(hman->GetPIDHistogram(kHistPIDTPCKaonRec))
+    			hman->GetPIDHistogram(kHistPIDTPCKaonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDKaon histo
     		return kSpKaon;
   	}
   	if( ( nsigmaPion   < nsigmaKaon ) && ( nsigmaPion < nsigmaProton ) && (nsigmaPion   < fNSigmaPID))
 	{
-    		hman->GetPIDHistogram(kHistPIDTPCPionRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDPion histo
+		if(hman->GetPIDHistogram(kHistPIDTPCPionRec))
+    			hman->GetPIDHistogram(kHistPIDTPCPionRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDPion histo
     		return kSpPion;
   	}
   	if( ( nsigmaProton < nsigmaKaon ) && ( nsigmaProton < nsigmaPion ) && (nsigmaProton < fNSigmaPID))
 	{
-    		hman->GetPIDHistogram(kHistPIDTPCProtonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDProton histo
+		if(hman->GetPIDHistogram(kHistPIDTPCProtonRec))
+    			hman->GetPIDHistogram(kHistPIDTPCProtonRec)->Fill(trk->GetTPCmomentum(), trk->GetTPCsignal()*trk->Charge()); // Reconstructed PIDProton histo
     		return kSpProton;
   	}
   	// else, return undefined

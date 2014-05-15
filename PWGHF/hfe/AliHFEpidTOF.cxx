@@ -28,6 +28,7 @@
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliTOFPIDResponse.h"
 
 #include "AliHFEdetPIDqa.h"
 #include "AliHFEpidTOF.h"
@@ -42,6 +43,8 @@ AliHFEpidTOF::AliHFEpidTOF():
   , fNsigmaTOF(3)
   , fUseOnlyIfAvailable(kFALSE)
   , fRejectMismatch(kFALSE)
+  , fGenerateTOFmismatch(kFALSE)
+  , fNmismatchTracks(0)
 {
   //
   // Constructor
@@ -57,6 +60,8 @@ AliHFEpidTOF::AliHFEpidTOF(const Char_t *name):
   , fNsigmaTOF(3)
   , fUseOnlyIfAvailable(kFALSE)
   , fRejectMismatch(kFALSE)
+  , fGenerateTOFmismatch(kFALSE)
+  , fNmismatchTracks(0)
 {
   //
   // Constructor
@@ -72,6 +77,8 @@ AliHFEpidTOF::AliHFEpidTOF(const AliHFEpidTOF &c):
   , fNsigmaTOF(3)
   , fUseOnlyIfAvailable(kFALSE)
   , fRejectMismatch(kFALSE)
+  , fGenerateTOFmismatch(c.fGenerateTOFmismatch)
+  , fNmismatchTracks(c.fNmismatchTracks)
 {  
   // 
   // Copy operator
@@ -107,6 +114,8 @@ void AliHFEpidTOF::Copy(TObject &ref) const {
   target.fNsigmaTOF = fNsigmaTOF;
   target.fUseOnlyIfAvailable = fUseOnlyIfAvailable;
   target.fRejectMismatch = fRejectMismatch;
+  target.fGenerateTOFmismatch = fGenerateTOFmismatch;
+  target.fNmismatchTracks = fNmismatchTracks;
   memcpy(target.fSigmaBordersTOFLower, fSigmaBordersTOFLower, sizeof(Float_t) * 12);
   memcpy(target.fSigmaBordersTOFUpper, fSigmaBordersTOFUpper, sizeof(Float_t) * 12);
 
@@ -207,4 +216,42 @@ Bool_t AliHFEpidTOF::IsMismatch(const AliVTrack * const track) const {
   Double_t probs[AliPID::kSPECIESC];
   AliPIDResponse::EDetPidStatus status = fkPIDResponse->ComputeTOFProbability(track, AliPID::kSPECIESC, probs);
   return status == AliPIDResponse::kDetMismatch;
+}
+
+//___________________________________________________________________
+void AliHFEpidTOF::GenerateTOFmismatch(const AliVTrack * const trk, int ntrk, TArrayD &sigmaEl){
+  //
+  // Function generate randomised TOF mismatch hits for a given input track. The number of generated
+  // mismatch tracks is steered by the parameter ntrk. For all mismatch tracks the number of sigmas
+  // to the electron time-of-flight hypothesis is calculated, and the resulting numbers of sigmas
+  // are stored in the array sigmaEl for further processing
+  //
+  if(sigmaEl.GetSize() < ntrk) sigmaEl.Set(ntrk);
+  sigmaEl.Reset();
+
+  // work on copy
+  AliVTrack *copytrk(NULL);
+  Bool_t isAOD = kFALSE;
+  if(dynamic_cast<const AliESDtrack *>(trk)){
+    copytrk = new AliESDtrack(*(static_cast<const AliESDtrack *>(trk)));
+  } else {
+    copytrk = new AliAODTrack(*(static_cast<const AliAODTrack *>(trk)));
+    isAOD = kTRUE;
+  }
+
+  // Generate mismatch values for number of sigmas to the electron hypothesis and store then in the 
+  // output array
+  for(int itrk = 0; itrk < ntrk; itrk++){
+    Double_t tofsignal = AliTOFPIDResponse::GetMismatchRandomValue(copytrk->Eta());
+    if(isAOD){
+      AliAODTrack *aodtrk = static_cast<AliAODTrack *>(copytrk);
+      AliAODPid *aodpid = aodtrk->GetDetPid();
+      if(aodpid) aodpid->SetTOFsignal(tofsignal);
+    } else {
+      AliESDtrack *esdtrk = static_cast<AliESDtrack *>(copytrk);
+      esdtrk->SetTOFsignal(tofsignal);
+    }
+    sigmaEl[itrk] = fkPIDResponse->NumberOfSigmasTOF(copytrk, AliPID::kElectron);
+  }
+  delete copytrk;
 }

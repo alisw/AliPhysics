@@ -96,7 +96,7 @@ void runJetAna(
 
   // Hadronic correction task
   TString clusNameCorr(Form("%sCorr",clusName.Data()));
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C");
   AliHadCorrTask *hcorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",clusNameCorr);
 
   if (0) {

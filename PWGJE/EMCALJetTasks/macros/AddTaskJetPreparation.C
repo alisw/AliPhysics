@@ -1,9 +1,8 @@
 // $Id$
 
 AliAnalysisTaskSE* AddTaskJetPreparation(
-  const char*    dataType           = "ESD",
   const char*    periodstr          = "LHC11h",
-  const char*    usedTracks         = "PicoTracks",
+  const char*    pTracksName        = "PicoTracks",
   const char*    usedMCParticles    = "MCParticlesSelected",
   const char*    usedClusters       = "CaloClusters",
   const char*    outClusName        = "CaloClustersCorr",
@@ -19,7 +18,8 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   const Bool_t   makeTrigger        = kTRUE,
   const Bool_t   isEmcalTrain       = kFALSE,
   const Double_t trackeff           = 1.0,
-  const Bool_t   doAODTrackProp     = kFALSE
+  const Bool_t   doAODTrackProp     = kFALSE,
+  const Bool_t   modifyMatchObjs    = kTRUE
 )
 {
   // Add task macros for all jet related helper tasks.
@@ -28,85 +28,80 @@ AliAnalysisTaskSE* AddTaskJetPreparation(
   if (!mgr)
   {
     Error("AddTaskJetPreparation","No analysis manager found.");
-    return 0;
+    return NULL;
   }
 
-  // Set trackcuts according to period. Every period used should be definied here
+  AliVEventHandler *evhand = mgr->GetInputEventHandler();
+  if (!evhand) {
+    Error("AddTaskJetPreparation", "This task requires an input event handler");
+    return NULL;
+  }
+
+  // Set trackcuts according to period. Every period used should be defined here
   TString period(periodstr);
   TString clusterColName(usedClusters);
   TString particleColName(usedMCParticles);
-  TString dType(dataType);
+  TString picoTracksName(pTracksName);
 
+  TString dType("ESD");
+  if (!evhand->InheritsFrom("AliESDInputHandler")) 
+    dType = "AOD";
   if ((dType == "AOD") && (clusterColName == "CaloClusters"))
     clusterColName = "caloClusters";
   if ((dType == "ESD") && (clusterColName == "caloClusters"))
     clusterColName = "CaloClusters";
 
-  if (makePicoTracks && (dType == "ESD" || dType == "AOD") )
-  {
-    TString inputTracks = "tracks";
-    const Double_t edist = 440;
-    if (dType == "ESD")
-    {
-      inputTracks = "HybridTracks";
-      TString trackCuts(Form("Hybrid_%s", period.Data()));
-      // Hybrid tracks maker for ESD
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalEsdTrackFilter.C");
-      AliEmcalEsdTrackFilterTask *hybTask = AddTaskEmcalEsdTrackFilter(inputTracks.Data(),trackCuts.Data());
-      hybTask->SetDoPropagation(kTRUE);
-      hybTask->SetDist(edist);
-      hybTask->SelectCollisionCandidates(pSel);
-    } else if(dType == "AOD" && doAODTrackProp) {
-      // Track propagator to extend track to the EMCal surface
-      gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagatorAOD.C");
-      AliEmcalTrackPropagatorTaskAOD *propTask = AddTaskEmcalTrackPropagatorAOD(inputTracks.Data());
-      propTask->SetDist(edist);
-      propTask->SelectCollisionCandidates(pSel);
-    }
-
-    // Produce PicoTracks 
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
-    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker("PicoTracks", inputTracks.Data(), period.Data());
-    pTrackTask->SelectCollisionCandidates(pSel);
-    pTrackTask->SetTrackEfficiency(trackeff);
+  if (0) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTrackPropagator.C");
+    AliEmcalTrackPropagatorTask *proptask = AddTaskEmcalTrackPropagator();
+    proptask->SelectCollisionCandidates(pSel);
   }
 
-  // Produce particles used for hadronic correction
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalParticleMaker.C");
-  AliEmcalParticleMaker *emcalParts = AddTaskEmcalParticleMaker(usedTracks,clusterColName.Data(),"EmcalTracks","EmcalClusters");
-  emcalParts->SelectCollisionCandidates(pSel);
-
-  // Trigger maker
+  //----------------------- Trigger Maker -----------------------------------------------------
   if (makeTrigger) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalTriggerMaker.C");
     AliEmcalTriggerMaker *emcalTriggers = AddTaskEmcalTriggerMaker("EmcalTriggers");
     emcalTriggers->SelectCollisionCandidates(pSel);
   }
 
-  // Relate tracks and clusters
-  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalClusTrackMatcher.C");
-  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskEmcalClusTrackMatcher("EmcalTracks","EmcalClusters",0.1,doHistos);
-  emcalClus->SelectCollisionCandidates(pSel);
-  if (isEmcalTrain)
-    RequestMemory(emcalClus,100*1024);
+  //----------------------- Track Matching tasks -----------------------------------------------------
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMatchingChain.C");
+  AliEmcalClusTrackMatcherTask *emcalClus =  AddTaskMatchingChain(periodstr,pSel,
+								  clusterColName,
+								  trackeff,doAODTrackProp,
+								  0.1,modifyMatchObjs,doHistos);
+  
+  //hard coded names of AliEmcalParticle strings to coincide with AddTaskClusTrackMatching
+  TString inputTracks = "AODFilterTracks";
+  if (dType == "ESD") inputTracks = "ESDFilterTracks";
+  TString emctracks = Form("EmcalTracks_%s",inputTracks.Data());
+  TString emcclusters = Form("EmcalClusters_%s",clusterColName.Data());
+  Printf("1-- inputTracks: %s, emcclusters: %s, emctracks: %s",inputTracks.Data(),emcclusters.Data(),emctracks.Data());
+  if(makePicoTracks) {
+    //----------------------- Produce PicoTracks -----------------------------------------------------
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPicoTrackMaker.C");
+    AliEmcalPicoTrackMaker *pTrackTask = AddTaskEmcalPicoTrackMaker(picoTracksName, inputTracks);
+    //    pTrackTask->SetTrackEfficiency(trackeff); //now done in Esd/AodFilter
+    pTrackTask->SelectCollisionCandidates(pSel);
+  }
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskHadCorr.C"); 
-  AliHadCorrTask *hCorr = AddTaskHadCorr("EmcalTracks","EmcalClusters",outClusName,hadcorr,minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
+  //----------------------- Hadronic Correction -----------------------------------------------------
+  gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskHadCorr.C"); 
+  AliHadCorrTask *hCorr = AddTaskHadCorr(emctracks,emcclusters,outClusName,hadcorr,
+					 minPtEt,phiMatch,etaMatch,Eexcl,trackclus,doHistos);
   hCorr->SelectCollisionCandidates(pSel);
-
   if (isEmcalTrain) {
     if (doHistos)
       RequestMemory(hCorr,500*1024);
   }
 
   // Produce MC particles
-  if(particleColName != "")
-  {
+  if(particleColName != "") {
     gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskMCTrackSelector.C");
-    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName.Data(), kFALSE, kFALSE);
+    AliEmcalMCTrackSelector *mcPartTask = AddTaskMCTrackSelector(particleColName, kFALSE, kFALSE);
     mcPartTask->SelectCollisionCandidates(pSel);
   }
 
   // Return one task that represents the jet preparation on LEGO trains
-  return emcalParts;
+  return hCorr;
 }

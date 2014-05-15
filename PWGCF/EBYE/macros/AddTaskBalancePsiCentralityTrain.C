@@ -112,6 +112,11 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     if(gRunShuffling) bfs = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
     if(gRunMixing)    bfm = GetBalanceFunctionObject("MCAODrec",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
   }
+  else if (analysisType=="AODnano"){
+    bf  = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kTRUE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+    if(gRunMixing)    bfm = GetBalanceFunctionObject("AODnano",centralityEstimator,centrMin,centrMax,kFALSE,bResonancesCut,bHBTcut,HBTCutValue,bConversionCut,invMassForConversionCut,bMomentumDifferenceCut,fQCutMin,fArgEventClass,deltaEtaMax,bVertexBinning);
+  }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");
     return NULL;
@@ -172,7 +177,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
       taskBF->SetDetectorUsedForPID(AliAnalysisTaskBFPsi::kTOFpid);
     }
   }
-  else if(analysisType == "AOD") {
+  else if(analysisType == "AOD" || analysisType == "AODnano") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);

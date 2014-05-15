@@ -69,6 +69,8 @@ class AliAnalysisTaskSEDmesonsFilterCJ : public AliAnalysisTaskSE
 
   // Array of D0 width for the Dstar
   Bool_t SetD0WidthForDStar(Int_t nptbins, Float_t *width);
+  
+  Float_t DeltaR(AliVParticle *p1, AliVParticle *p2) const;
 
  private :
   

@@ -27,6 +27,7 @@ public:
       kDipAngle,      // inverse cosine of the angle between daughter vector momenta
       kCosThetaStar,  // polarization angle
       kAngleLeading,  // angle to leading particle
+      kDCAproduct,    // product of the daughter's DCA
       kTypes
    };
 

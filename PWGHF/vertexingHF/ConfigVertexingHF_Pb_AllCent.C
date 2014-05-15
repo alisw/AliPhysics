@@ -23,7 +23,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks 
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
@@ -41,7 +41,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks for 20% mot central events 2 prongs
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
@@ -59,7 +59,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //     displaced tracks for 20% mot central events 3 prongs
   AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
   esdTrackCuts->SetRequireTPCRefit(kTRUE);
-  esdTrackCuts->SetMinNClustersTPC(70);
+  esdTrackCuts->SetMinNClustersTPC(50);
   esdTrackCuts->SetRequireITSRefit(kTRUE);
   //esdTrackCuts->SetMinNClustersITS(4);
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,

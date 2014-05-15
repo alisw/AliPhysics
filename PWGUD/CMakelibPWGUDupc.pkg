@@ -27,9 +27,15 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS
-  UPC/AliAnalysisTaskUpcPsi2s.cxx)
+  UPC/AliAnalysisTaskUpcPsi2s.cxx
+  UPC/AliAnalysisTaskUpcK0sK0s.cxx
+  UPC/AliUpcParticle.cxx
+  UPC/AliAnalysisTaskUpcTree.cxx
+)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
+
+set ( EXPORT UPC/AliUpcParticle.h )
 
 set ( EINCLUDE PWGUD/UPC STEER/AOD STEER/ESD STEER/STEERBase VZERO ANALYSIS)
 

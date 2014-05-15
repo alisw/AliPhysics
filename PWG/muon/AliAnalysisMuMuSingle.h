@@ -75,6 +75,12 @@ private:
   Double_t EAGetTrackDCA(const AliVParticle& particle) const;
      
 private:
+  
+  /// not implemented on purpose
+  AliAnalysisMuMuSingle& operator=(const AliAnalysisMuMuSingle& rhs);
+  /// not implemented on purpose
+  AliAnalysisMuMuSingle(const AliAnalysisMuMuSingle& rhs);
+  
   AliMuonTrackCuts* fMuonTrackCuts; //! common cuts for muon tracks (from Diego)
   Bool_t fShouldSeparatePlusAndMinus; // whether or not to histogram mu+ and mu- separately
   TH2F* fAccEffHisto; // dimuon acc x eff (y vs pt)

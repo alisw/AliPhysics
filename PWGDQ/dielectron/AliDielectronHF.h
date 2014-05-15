@@ -15,6 +15,8 @@
 
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <TBits.h>
+#include <THnBase.h>
 
 #include "AliDielectronVarManager.h"
 #include "AliDielectronHistos.h"
@@ -29,7 +31,12 @@ public:
     kSymBin
   };
   enum EPairType {
-    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll, kMConly
+    //    kOSonly=0,  kOSandLS, kOSandROT, kOSandMIX, kAll, kMConly
+    kAll=0, kMConly,
+    kSeAll,   kSeOnlyOS,
+    kMeAll,   kMeOnlyOS,
+    kSeMeAll, kSeMeOnlyOS,
+    kSeReAll, kSeReOnlyOS,
   };
 
   AliDielectronHF();
@@ -40,7 +47,7 @@ public:
   void Init();
   void SetSignalsMC(TObjArray* array)    {fSignalsMC = array;}
   void SetStepForMCGenerated(Bool_t switcher=kTRUE)    {fStepGenerated = switcher;}
-  void SetPairTypes(EPairType ptype=kOSonly) { fPairType=ptype; }
+  void SetPairTypes(EPairType ptype) { fPairType=ptype; }
 
   // functions to add 1-dimensional objects
   void UserProfile(const char* histClass, UInt_t valTypeP,
@@ -69,6 +76,10 @@ public:
                      UInt_t valTypeX, UInt_t valTypeY, UInt_t valTypeZ, UInt_t valTypeW=AliDielectronHistos::kNoWeights)
   { UserProfile(histClass,AliDielectronHistos::kNoProfile,binsX,binsY,binsZ,valTypeX,valTypeY,valTypeZ,"",valTypeW); }
 
+  // functions to add multidimensional stuff
+  void UserSparse(const char* histClass,
+		  Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=AliDielectronHistos::kNoWeights);
+
 
   // functions to define the grid
   void AddCutVariable(AliDielectronVarManager::ValueTypes type, Int_t nbins,
@@ -89,12 +100,15 @@ public:
   Bool_t GetStepForMCGenerated() const   { return fStepGenerated; }
 
 private:
+  TBits     *fUsedVars;             // list of used variables
+
   TObjArray fArrPairType;           //-> array of pair types
   EPairType fPairType;              // which pair combinations to include
   TObjArray* fSignalsMC;            //! array of MC signals to be studied
 
   UShort_t  fVarCuts[kMaxCuts];     // cut variables
-  Bool_t    fVarCutType[kMaxCuts];  // array to store leg booleans
+  TBits     *fVarCutType;           // array to store leg booleans
+  //  Bool_t    fVarCutType[kMaxCuts];  // array to store leg booleans
   TObjArray fAxes;                  // Axis descriptions of the cut binning
   UShort_t  fBinType[kMaxCuts];     // binning type of the axes
   
@@ -107,7 +121,7 @@ private:
   AliDielectronHF &operator=(const AliDielectronHF &c);
 
   
-  ClassDef(AliDielectronHF,3)         // Dielectron HF
+  ClassDef(AliDielectronHF,5)         // Dielectron HF
 };
 
 

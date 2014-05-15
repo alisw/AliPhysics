@@ -85,7 +85,7 @@ class AliEmcalJet : public AliVParticle
   Double_t          PtSub(Double_t rho)          const { return fPt - fArea*rho;           }
   Double_t          PtSubVect(Double_t rho)      const;
   Short_t           TrackAt(Int_t idx)           const { return fTrackIDs.At(idx);         }
-  AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)   const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
+  AliVParticle     *TrackAt(Int_t idx, TClonesArray *ta)  const { if (!ta) return 0; return dynamic_cast<AliVParticle*>(ta->At(TrackAt(idx))); } 
   AliVParticle     *GetLeadingTrack(TClonesArray *tracks) const;
   Int_t             GetFlavour()                 const { return fFlavourTagging;           } 
   
@@ -157,8 +157,8 @@ class AliEmcalJet : public AliVParticle
   Int_t             fNch;                 //           number of charged constituents
   Double32_t        fPtEmc;               //[0,0,12]   pt in EMCAL acceptance
   Int_t             fNEmc;                //           number of constituents in EMCAL acceptance
-  TArrayI           fClusterIDs;          //           array of cluster constituents  
-  TArrayI           fTrackIDs;            //           array of track constituents   
+  TArrayI           fClusterIDs;          //           array containing ids of cluster constituents  
+  TArrayI           fTrackIDs;            //           array containing ids of track constituents   
   AliEmcalJet      *fClosestJets[2];      //!          if this is MC it contains the two closest detector level jets in order of distance and viceversa
   Double32_t        fClosestJetsDist[2];  //!          distance to closest jets (see above)
   UShort_t          fMatched;             //!          0,1 if it is matched with one of the closest jets; 2 if it is not matched

@@ -29,6 +29,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         virtual                 ~AliAnalysisTaskJetMatching();
         // setting up the task and technical aspects
         void                    ExecOnce();
+        virtual Bool_t          Notify();
         virtual void            UserCreateOutputObjects();
         TH1F*                   BookTH1F(const char* name, const char* x, Int_t bins, Double_t min, Double_t max, Bool_t append = kTRUE);
         TH2F*                   BookTH2F(const char* name, const char* x, const char* y, Int_t binsx, Double_t minx, Double_t maxx, Int_t binsy, Double_t miny, Double_t maxy, Bool_t append = kTRUE);
@@ -87,7 +88,8 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         // setters - analysis details
         /* inline */    Bool_t PassesCuts(const AliVTrack* track) const {
             return (!track || TMath::Abs(track->Eta()) > 0.9 || track->Phi() < 0 || track->Phi() > TMath::TwoPi()) ? kFALSE : kTRUE; }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) const { return (jet) ? kTRUE : kFALSE; }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet, Int_t c)  { if(!fUseEmcalBaseJetCuts) return (jet) ? kTRUE : kFALSE; 
+            else return AcceptJet(jet, c);}
         /* inline */    void ClearMatchedJetsCache() {
             for (Int_t i(0); i < fNoMatchedJets; i++) {
                 fMatchedJetContainer[i][0] = 0x0; fMatchedJetContainer[i][1] = 0x0; }
@@ -124,6 +126,7 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         TH1F*                   fHistTargetJetPt;       //! pt of target jets
         TH1F*                   fHistMatchedJetPt;      //! pt of matched jets
         TH2F*                   fHistSourceMatchedJetPt;//! pt or source vs matched jets
+        TH2F*                   fHistDetectorResponseProb;      //! det prob
         TH1F*                   fHistNoConstSourceJet;  //! number of constituents of source jet
         TH1F*                   fHistNoConstTargetJet;  //! number of constituents of target jet
         TH1F*                   fHistNoConstMatchJet;   //! number of constituents of matched jets
@@ -145,11 +148,16 @@ class AliAnalysisTaskJetMatching : public AliAnalysisTaskEmcalJet
         Float_t                 fMinFracRecoveredConstituents;  // minimium fraction of constituents that needs to be found
         Float_t                 fMinFracRecoveredConstituentPt; // minimium fraction of constituent pt that needs to be recovered
         Bool_t                  fGetBijection;          // get bijection of source and matched jets
+        // pythia ntrials xsec bookkeeping
+        TH1F*                   fh1Trials;              //! sum of trails (in Notify)
+        TH1F*                   fh1AvgTrials;           //! average sum of trials (in Run)
+        TProfile*               fh1Xsec;                //! pythia cross section and trials
+        Float_t                 fAvgTrials;             // average number of trails per event
 
         AliAnalysisTaskJetMatching(const AliAnalysisTaskJetMatching&);                  // not implemented
         AliAnalysisTaskJetMatching& operator=(const AliAnalysisTaskJetMatching&);       // not implemented
 
-        ClassDef(AliAnalysisTaskJetMatching, 4);
+        ClassDef(AliAnalysisTaskJetMatching, 6);
 };
 
 #endif

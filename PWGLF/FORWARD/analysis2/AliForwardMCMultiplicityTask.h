@@ -15,6 +15,7 @@
  */
 #include "AliForwardMultiplicityBase.h"
 #include "AliFMDMCEventInspector.h"
+#include "AliFMDESDFixer.h"
 #include "AliFMDMCSharingFilter.h"
 #include "AliFMDMCDensityCalculator.h"
 #include "AliFMDMCCorrector.h"
@@ -64,6 +65,18 @@ public:
    * @name Interface methods 
    */
   /** 
+   * Book output objects. Derived class should define this to book
+   * output objects on the processing output list @c fList before the
+   * actual event processing.  This is called on the master and on
+   * each slave.
+   * 
+   * If this member function returns false, the execution is stopped
+   * with a fatal signal.
+   *
+   * @return true on success. 
+   */
+  virtual Bool_t Book();
+  /** 
    * Called before processing a single event - should not do anything
    * but clear data, etc.
    * 
@@ -77,6 +90,13 @@ public:
    */  
   virtual Bool_t Event(AliESDEvent& esd);
   /** 
+   * Called after processing a single event - should not do anything
+   * but clear data, etc.
+   * 
+   * @return true on success
+   */
+  virtual Bool_t PostEvent();
+  /* 
    * @} 
    */
   /** 
@@ -95,6 +115,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  AliFMDESDFixer& GetESDFixer() { return fESDFixer; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -125,6 +151,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  const AliFMDESDFixer& GetESDFixer() const { return fESDFixer; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -208,6 +240,7 @@ protected:
   TH2D*                  fPrimary;      // Per event primary particles 
 
   AliFMDMCEventInspector    fEventInspector;    // Algorithm
+  AliFMDESDFixer            fESDFixer;          // Algorithm
   AliFMDMCSharingFilter     fSharingFilter;     // Algorithm
   AliFMDMCDensityCalculator fDensityCalculator; // Algorithm
   AliFMDMCCorrector         fCorrections;       // Algorithm

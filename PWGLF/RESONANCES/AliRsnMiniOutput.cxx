@@ -21,6 +21,7 @@
 #include "AliRsnMiniParticle.h"
 #include "AliRsnMiniPair.h"
 #include "AliRsnMiniEvent.h"
+#include "AliAODEvent.h"
 
 #include "AliLog.h"
 #include "AliRsnCutSet.h"
@@ -45,6 +46,13 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -71,6 +79,13 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -97,6 +112,13 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fList(0x0),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE),
    fCheckHistRange(kTRUE)
 {
 //
@@ -169,6 +191,13 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fList(copy.fList),
    fSel1(0),
    fSel2(0),
+   fMaxNSisters(-1),
+   fCheckP(kFALSE),
+   fCheckFeedDown(kFALSE),   
+   fOriginDselection(kFALSE),
+   fKeepDfromB(kFALSE),
+   fKeepDfromBOnly(kFALSE),
+   fRejectIfNoQuark(kFALSE),
    fCheckHistRange(copy.fCheckHistRange)
 {
 //
@@ -210,6 +239,13 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
 
    fSel1.Set(0);
    fSel2.Set(0);
+   fMaxNSisters = copy.fMaxNSisters;
+   fCheckP = copy.fCheckP;
+   fCheckFeedDown = copy.fCheckFeedDown;
+   fOriginDselection = copy.fOriginDselection;
+   fKeepDfromB = copy.fOriginDselection;
+   fKeepDfromBOnly = copy.fKeepDfromBOnly;
+   fRejectIfNoQuark = copy.fRejectIfNoQuark;
    fCheckHistRange = copy.fCheckHistRange;
 
    return (*this);
@@ -496,6 +532,38 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
             if (p2->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[0]) && p1->PDGAbs() == AliRsnDaughter::SpeciesPDG(fDaughter[1]))
                decayMatch = kTRUE;
             if (!decayMatch) continue;
+	    if ( (fMaxNSisters>0) && (p1->NTotSisters()==p2->NTotSisters()) && (p1->NTotSisters()>fMaxNSisters)) continue;
+	    if ( fCheckP &&(TMath::Abs(fPair.PmotherX()-(p1->Px(1)+p2->Px(1)))/(TMath::Abs(fPair.PmotherX())+1.e-13)) > 0.00001 && 	  
+		          (TMath::Abs(fPair.PmotherY()-(p1->Py(1)+p2->Py(1)))/(TMath::Abs(fPair.PmotherY())+1.e-13)) > 0.00001 &&
+     			  (TMath::Abs(fPair.PmotherZ()-(p1->Pz(1)+p2->Pz(1)))/(TMath::Abs(fPair.PmotherZ())+1.e-13)) > 0.00001 ) continue;
+	    if ( fCheckFeedDown ){
+	    		Int_t pdgGranma = 0;
+	  		Bool_t isFromB=kFALSE;
+	  		Bool_t isQuarkFound=kFALSE;
+			
+			if(fPair.IsFromB() == kTRUE) isFromB = kTRUE;
+			if(fPair.IsQuarkFound() == kTRUE) isQuarkFound = kTRUE;
+	  		if(fRejectIfNoQuark && !isQuarkFound) pdgGranma = -99999;
+	  		if(isFromB){
+	  		  if (!fKeepDfromB) pdgGranma = -9999; //skip particle if come from a B meson.
+	  		}
+	  		else{ 
+	  		  if (fKeepDfromBOnly) pdgGranma = -999;
+			  } 
+	  		if (pdgGranma == -99999){
+	  			AliDebug(2,"This particle does not have a quark in his genealogy\n");
+	  			continue;
+	  		}
+	  		if (pdgGranma == -9999){
+	  			AliDebug(2,"This particle come from a B decay channel but according to the settings of the task, we keep only the prompt charm particles\n");	
+	  			continue;
+	  		}	
+	 
+	  		if (pdgGranma == -999){
+	  			AliDebug(2,"This particle come from a prompt charm particles but according to the settings of the task, we want only the ones coming from B\n");  
+	  			continue;
+	  		}	
+		    }
          }
          // check pair against cuts
          if (fPairCuts) {
@@ -511,7 +579,33 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    AliDebugClass(1, Form("Pairs added in total = %4d", nadded));
    return nadded;
 }
-
+//___________________________________________________________
+void AliRsnMiniOutput::SetDselection(UShort_t originDselection)
+{
+	// setting the way the D0 will be selected
+	// 0 --> only from c quarks
+	// 1 --> only from b quarks
+	// 2 --> from both c quarks and b quarks
+		
+	fOriginDselection = originDselection;
+	
+	if (fOriginDselection == 0) {
+		fKeepDfromB = kFALSE;
+		fKeepDfromBOnly = kFALSE;
+	}
+	
+	if (fOriginDselection == 1) {
+		fKeepDfromB = kTRUE;
+		fKeepDfromBOnly = kTRUE;
+	}
+	
+	if (fOriginDselection == 2) {
+		fKeepDfromB = kTRUE;
+		fKeepDfromBOnly = kFALSE;
+	}
+	
+	return;	
+}
 //________________________________________________________________________________________
 void AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *valueList)
 {

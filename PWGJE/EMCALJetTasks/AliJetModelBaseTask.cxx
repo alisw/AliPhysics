@@ -58,6 +58,9 @@ AliJetModelBaseTask::AliJetModelBaseTask() :
   fPtSpectrum(0),
   fPtPhiEvPlDistribution(0),
   fDensitySpectrum(0),
+  fDifferentialV2(0),
+  fAddV2(kFALSE),
+  fFlowFluctuations(kFALSE),
   fQAhistos(kFALSE),
   fPsi(0),
   fIsInit(0),
@@ -112,6 +115,9 @@ AliJetModelBaseTask::AliJetModelBaseTask(const char *name, Bool_t drawqa) :
   fPtSpectrum(0),
   fPtPhiEvPlDistribution(0),
   fDensitySpectrum(0),
+  fDifferentialV2(0),
+  fAddV2(kFALSE),
+  fFlowFluctuations(kFALSE),
   fQAhistos(drawqa),
   fPsi(0),
   fIsInit(0),
@@ -210,7 +216,7 @@ void AliJetModelBaseTask::UserExec(Option_t *)
     }
   }
 
-  if (fPtPhiEvPlDistribution)
+  if (fPtPhiEvPlDistribution || fAddV2)
     fPsi = gRandom->Rndm() * TMath::Pi();
 
   Run();
@@ -311,6 +317,10 @@ Bool_t AliJetModelBaseTask::ExecOnce()
 	fOutTracks = fTracks;
       }
     }
+  }
+
+  if(fAddV2 && (!fDifferentialV2)) {
+    AliWarning(Form("%s: Cannot add v2 without diffential v2!", GetName()));
   }
 
   if (!fCaloName.IsNull()) {
@@ -688,6 +698,8 @@ AliPicoTrack* AliJetModelBaseTask::AddTrack(Double_t pt, Double_t eta, Double_t 
   else if (label < 0)
     label -= fMarkMC+fMCLabelShift;
   
+  if(fAddV2) AddV2(phi, pt);
+
   const Int_t nTracks = fOutTracks->GetEntriesFast();
 
   AliPicoTrack *track = new ((*fOutTracks)[nTracks]) AliPicoTrack(pt, 
@@ -722,7 +734,25 @@ AliAODMCParticle* AliJetModelBaseTask::AddMCParticle(AliAODMCParticle *part, Int
   return aodpart;
 }
 
-//________________________________________________________________________
+//_____________________________________________________________________________
+void AliJetModelBaseTask::AddV2(Double_t &phi, Double_t &pt) const
+{
+    // similar to AliFlowTrackSimple::AddV2, except for the flow fluctuations
+    Double_t phi0(phi), v2(0.), f(0.), fp(0.), phiprev(0.);
+    if(fDifferentialV2) v2 = fDifferentialV2->Eval(pt);
+    if(TMath::AreEqualAbs(v2, 0, 1e-5)) return; 
+    // introduce flow fluctuations (gaussian)
+    if(fFlowFluctuations) v2 += TMath::Sqrt(2*(v2*.25)*(v2*.25))*TMath::ErfInverse(2*(gRandom->Uniform(0, fFlowFluctuations))-1);
+    for (Int_t i(0); i < 100; i++) {
+        phiprev=phi; //store last value for comparison
+        f =  phi-phi0+v2*TMath::Sin(2.*(phi-fPsi));
+        fp = 1.0+2.0*v2*TMath::Cos(2.*(phi-fPsi)); //first derivative
+        phi -= f/fp;
+        if (TMath::AreEqualAbs(phiprev, phi, 1e-10)) break; 
+    }
+}
+
+//_____________________________________________________________________________
 void AliJetModelBaseTask::CopyCells()
 {
   if (!fCaloCells)

@@ -1,4 +1,4 @@
-AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist = kTRUE){
+AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist = kTRUE,Bool_t runSyst = kFALSE){
 
   
   //--- get the current analysis manager ---//
@@ -16,11 +16,15 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   }
 	
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  Bool_t isMC;
+  if(mgr->GetMCtruthEventHandler()) isMC = kTRUE;
   
   // Create tasks
   AliAnalysisTaskUpcPsi2s *task = new AliAnalysisTaskUpcPsi2s(inputDataType.Data());
   task->SetRunTree(runTree);
   task->SetRunHist(runHist);
+  task->SetIsMC(isMC);
+  task->SetRunSyst(runSyst);
   mgr->AddTask(task);
 
 
@@ -29,7 +33,7 @@ AliAnalysisTaskUpcPsi2s *AddTaskUpcPsi2s(Bool_t runTree = kTRUE,Bool_t runHist =
   AliAnalysisDataContainer *coutput = mgr->CreateContainer("JPsiTree", TTree::Class(), AliAnalysisManager::kOutputContainer,Form("%s:Psi2sCentral", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer("Psi2sTree", TTree::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Psi2sCentral", AliAnalysisManager::GetCommonFileName()));
   AliAnalysisDataContainer *coutput3 = mgr->CreateContainer("ListTrig", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Psi2sCentral", AliAnalysisManager::GetCommonFileName()));
-  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("ListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Psi2sCentral", AliAnalysisManager::GetCommonFileName()));  
+  AliAnalysisDataContainer *coutput4 = mgr->CreateContainer("Psi2sListHist", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:Psi2sCentral", AliAnalysisManager::GetCommonFileName()));  
 
   // Connect input/output
   mgr->ConnectInput(task, 0, cinput);

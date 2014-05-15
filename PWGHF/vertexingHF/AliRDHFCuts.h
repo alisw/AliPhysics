@@ -191,6 +191,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   }
   void SetTriggerClass(TString trclass0, TString trclass1="") {fTriggerClass[0]=trclass0; fTriggerClass[1]=trclass1;} 
   void ApplySPDDeadPbPb2011(){fApplySPDDeadPbPb2011=kTRUE;}
+  void ApplySPDMisalignedCutPP2012(){fApplySPDMisalignedPP2012=kTRUE;}
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
   void SetGlobalIndex(Int_t nVars,Int_t nptBins){fnVars=nVars; fnPtBins=nptBins; SetGlobalIndex();}
@@ -414,6 +415,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
   Bool_t fApplySPDDeadPbPb2011;  // flag to apply SPD dead module map of PbPb2011
+  Bool_t fApplySPDMisalignedPP2012; // flag to apply cut on tracks crossing SPD misaligned modules for PP2012 data
   Double_t fMaxDiffTRKV0Centr;   // Max. difference between TRK and V0 centrality (remove TPC pileup for PbPb 2011)
   Bool_t fRemoveTrackletOutliers; // flag to apply cut on tracklets vs. centrality for 2011 data
   Int_t fCutOnzVertexSPD; // cut on zSPD vertex to remove outliers in centrality vs. tracklets (0=no cut, 1= cut at 12 cm, 2= cut on difference to z of vtx tracks
@@ -427,7 +429,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   TFormula *f1CutMinNCrossedRowsTPCPtDep; // pT-dep cut in TPC minimum n crossed rows
  
 
-  ClassDef(AliRDHFCuts,34);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,35);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif

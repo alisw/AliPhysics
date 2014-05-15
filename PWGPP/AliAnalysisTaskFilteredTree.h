@@ -21,6 +21,7 @@ class AliKFParticle;
 class AliESDv0; 
 class AliExternalTrackParam;
 class AliESDtrack;
+class AliESDfriendTrack;
 class AliESDVertex;
 class AliStack;
 class TList;
@@ -60,14 +61,14 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void ProcessdEdx(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessLaser(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
-  void ProcessCosmics(AliESDEvent *const esdEvent=0); 
+  void ProcessCosmics(AliESDEvent *const esdEvent=0, AliESDfriend* esdFriend=0); 
 
   void SetEventCuts(AliFilteredTreeEventCuts* const cuts)              { fFilteredTreeEventCuts = cuts; }
   void SetAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts)    { fFilteredTreeAcceptanceCuts = cuts; }
   void SetRecAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts) { fFilteredTreeRecAcceptanceCuts = cuts; }
   void SetTrackCuts(AliESDtrackCuts* const cuts)                { fEsdTrackCuts = cuts; }
   void SetTrigger(const AliTriggerAnalysis::Trigger trigger)    { fTrigger = trigger; }
-  void SetAnalysisMode(const EAnalysisMode mode) { fAnalysisMode = mode; }
+  void SetAnalysisMode(EAnalysisMode mode) { fAnalysisMode = mode; }
 
   AliFilteredTreeEventCuts* GetEventCuts() const                       { return fFilteredTreeEventCuts; }
   AliFilteredTreeAcceptanceCuts* GetAcceptanceCuts() const             { return fFilteredTreeAcceptanceCuts; }
@@ -79,9 +80,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TString GetCentralityEstimator() const {return fCentralityEstimator; }
   void SetCentralityEstimator(TString centEst="V0M") { fCentralityEstimator = centEst; }
 
-  Bool_t IsFromConversion(const Int_t label, AliStack *const stack);
-  Bool_t IsFromMaterial(const Int_t label, AliStack *const stack);
-  Bool_t IsFromStrangeness(const Int_t label, AliStack *const stack);
+  Bool_t IsFromConversion(Int_t label, AliStack *const stack);
+  Bool_t IsFromMaterial(Int_t label, AliStack *const stack);
+  Bool_t IsFromStrangeness(Int_t label, AliStack *const stack);
   TParticle *GetMother(TParticle *const particle, AliStack *const stack);
 
   Bool_t ConstrainTPCInner(AliExternalTrackParam *const tpcInnerC, const AliESDVertex* vtx, Double_t b[3]);
@@ -104,7 +105,7 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void SetFillTrees(Bool_t filltree) { fFillTree = filltree ;}
   Bool_t GetFillTrees() { return fFillTree ;}
 
-  void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, const Double_t centralityF, const Double_t chi2TPCInnerC);
+  void FillHistograms(AliESDtrack* const ptrack, AliExternalTrackParam* const ptpcInnerC, Double_t centralityF, Double_t chi2TPCInnerC);
 
  private:
 
@@ -158,6 +159,9 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   AliAnalysisTaskFilteredTree(const AliAnalysisTaskFilteredTree&); // not implemented
   AliAnalysisTaskFilteredTree& operator=(const AliAnalysisTaskFilteredTree&); // not implemented
   
+  AliESDfriendTrack* fDummyFriendTrack; //! needed for proper init of the output tree
+  AliESDtrack* fDummyTrack; //! dummy track for tree init
+
   ClassDef(AliAnalysisTaskFilteredTree, 1); // example of analysis
 };
 

@@ -29,7 +29,9 @@
 set ( SRCS  
     FEMTOSCOPY/Chaoticity/AliChaoticityEventCollection.cxx 
     FEMTOSCOPY/Chaoticity/AliChaoticity.cxx 
-    FEMTOSCOPY/Chaoticity/AliThreePionRadii.cxx 
+    FEMTOSCOPY/Chaoticity/AliThreePionRadii.cxx
+    FEMTOSCOPY/Chaoticity/AliFourPionEventCollection.cxx 
+    FEMTOSCOPY/Chaoticity/AliFourPion.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -38,7 +40,7 @@ set ( DHDR  PWGCFChaoticityLinkDef.h)
 
 set ( EXPORT )
 
-set ( EINCLUDE FEMTOSCOPY/Chaoticity STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
+set ( EINCLUDE PWGCF/FEMTOSCOPY/Chaoticity STEER/AOD STEER/ESD STEER/STEERBase ANALYSIS)
 
 install (DIRECTORY FEMTOSCOPY/macros
          DESTINATION PWGCF/FEMTOSCOPY 

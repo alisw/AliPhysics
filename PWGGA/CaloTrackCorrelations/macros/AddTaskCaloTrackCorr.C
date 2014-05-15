@@ -454,10 +454,10 @@ AliCaloTrackReader * ConfigureReader()
   //reader->SwitchOffTriggerClusterTimeRecal() ;
 
   reader->SetTriggerPatchTimeWindow(8,9); // L0
-  if     (kRunNumber < 146861) reader->SetEventTriggerThreshold(3.);
-  else if(kRunNumber < 154000) reader->SetEventTriggerThreshold(4.);
-  else if(kRunNumber < 165000) reader->SetEventTriggerThreshold(5.5);
-  else                         reader->SetEventTriggerThreshold(8); // CAREFUL!
+  if     (kRunNumber < 146861) reader->SetEventTriggerL0Threshold(3.);
+  else if(kRunNumber < 154000) reader->SetEventTriggerL0Threshold(4.);
+  else if(kRunNumber < 165000) reader->SetEventTriggerL0Threshold(5.5);
+
   //redefine for other periods, triggers
 
   //if(!kUseKinematics) reader->SetFiredTriggerClassName("CEMC7EGA-B-NOPF-CENTNOTRD"); // L1 Gamma
@@ -476,18 +476,18 @@ AliCaloTrackReader * ConfigureReader()
   else
     reader->SwitchOnEventTriggerAtSE();  
   
-  reader->SetZvertexCut(10.);                // Open cut
+  reader->SetZvertexCut(10.);               // Open cut
   reader->SwitchOnPrimaryVertexSelection(); // and besides primary vertex
 
   if(kEventSelection)
   {
-    reader->SwitchOnEventSelection();         // remove pileup by default
-    reader->SwitchOnV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOnEventPileUpRejection(); // remove pileup by default
+    reader->SwitchOnV0ANDSelection() ;      // and besides v0 AND
   }
   else 
   {
-    reader->SwitchOffEventSelection();         // remove pileup by default
-    reader->SwitchOffV0ANDSelection() ;        // and besides v0 AND
+    reader->SwitchOffPileUpEventRejection();// remove pileup by default
+    reader->SwitchOffV0ANDSelection() ;     // and besides v0 AND
   }
     
   if(kCollisions=="PbPb") 
@@ -576,7 +576,19 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
   printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
   
-    
+  
+  if(kCalorimeter=="PHOS")
+  {
+    if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(3);
+    else                cu->SetNumberOfSuperModulesUsed(4);
+  }
+  else
+  {
+    if      (kYears == 2010) cu->SetNumberOfSuperModulesUsed(4); //EMCAL first year
+    else if (kYears <  2014) cu->SetNumberOfSuperModulesUsed(10);
+    else                     cu->SetNumberOfSuperModulesUsed(20);
+  }
+  
   // PHOS 
   cu->SwitchOffLoadOwnPHOSGeometryMatrices();
     
@@ -1453,17 +1465,6 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   ana->SwitchOffStudyWeight();
   ana->SwitchOnFillAllTrackMatchingHistogram();
   ana->SwitchOnFillAllCellTimeHisto() ;
-
-  if(kCalorimeter=="EMCAL")
-  {
-    if     (kYears==2010)  ana->SetNumberOfModules(4); 
-    else if(kYears==2011)  ana->SetNumberOfModules(10);
-    else                   ana->SetNumberOfModules(12); 
-  }
-  else 
-  {//PHOS
-    ana->SetNumberOfModules(3); 
-  }
   
   ana->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(ana->GetHistogramRanges()); // see method below

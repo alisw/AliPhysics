@@ -10,8 +10,8 @@ void run(Int_t nEvent = 50, Float_t e_cms = 2760) {
   gSystem->Load("libfastjet");
   gSystem->Load("libsiscone");
   gSystem->Load("libSISConePlugin");
-  gSystem->Load("libJETANdev");
-  gSystem->Load("libFASTJETANdev");
+  gSystem->Load("libJETAN");
+  gSystem->Load("libFASTJETAN");
 
   gSystem->Load("libpythia6.so");
   gSystem->Load("libEGPythia6.so");

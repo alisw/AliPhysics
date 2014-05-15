@@ -249,7 +249,9 @@ struct Helper
     u.SetFile(path);
     u.SetAnchor("aodTree");
     TString opt(u.GetOptions());
+    // if (opt.Contains("AliESDs")) 
     opt.ReplaceAll("AliESDs", "AliAOD");
+    // else                         opt.Append("&pattern=AliAOD*.root");
     u.SetOptions(opt);
 
     return u.GetUrl();

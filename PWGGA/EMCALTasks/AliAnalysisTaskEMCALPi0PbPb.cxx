@@ -1214,8 +1214,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
       copyt.GetXYZ(pos);
       Double_t covTr[21] = { 0. };
       copyt.GetCovarianceXYZPxPyPz(covTr);
-      Double_t pid[10]   = { 0. };  
-      copyt.GetESDpid(pid);
+      //      Double_t pid[10]   = { 0. };  
+      //      copyt.GetESDpid(pid);
       AliAODTrack *aTrack = new AliAODTrack(copyt.GetID(),
                                             copyt.GetLabel(),
                                             p,
@@ -1225,10 +1225,11 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
                                             covTr, 
                                             (Short_t)copyt.GetSign(),
                                             copyt.GetITSClusterMap(), 
-                                            pid,
+                                            //pid,
                                             0,/*fPrimaryVertex,*/
                                             kTRUE, // check if this is right
                                             vtx->UsesTrack(copyt.GetID()));
+      aTrack->SetPIDForTracking(copyt.GetPIDForTracking());
       aTrack->SetTPCClusterMap(copyt.GetTPCClusterMap());
       aTrack->SetTPCSharedMap (copyt.GetTPCSharedMap());
       Float_t ndf = copyt.GetTPCNcls() + 1 - 5 ;

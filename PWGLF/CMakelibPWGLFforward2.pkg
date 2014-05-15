@@ -86,6 +86,7 @@ set ( SRCS
   FORWARD/analysis2/AliFMDEventInspector.cxx
   FORWARD/analysis2/AliFMDEventPlaneFinder.cxx
   FORWARD/analysis2/AliFMDHistCollector.cxx
+  FORWARD/analysis2/AliFMDESDFixer.cxx
   FORWARD/analysis2/AliFMDSharingFilter.cxx
   # FMD MC algorithms
   FORWARD/analysis2/AliFMDMCCorrector.cxx
@@ -115,7 +116,12 @@ set ( SRCS
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
-set ( HDRS ${HDRS} FORWARD/analysis2/AliFMDStripIndex.h )
+set ( HDRS ${HDRS} 
+  FORWARD/analysis2/AliFMDStripIndex.h 
+  FORWARD/analysis2/AliLandauGaus.h 
+  FORWARD/analysis2/AliLandauGausFitter.h 
+  FORWARD/analysis2/AliFMDCorrNoiseGain.h
+  )
 
 set ( EINCLUDE  
   ANALYSIS 
@@ -131,6 +137,8 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
              FORWARD/analysis2/AliAODCentralMult.h 
 	     FORWARD/analysis2/AliOADBForward.h
              FORWARD/analysis2/AliForwardUtil.h  
+	     FORWARD/analysis2/AliLandauGaus.h 
+	     FORWARD/analysis2/AliLandauGausFitter.h 
 	     FORWARD/analysis2/AliFMDEventInspector.h
 	     FORWARD/analysis2/AliFMDMCEventInspector.h
 	     FORWARD/analysis2/AliForwardCorrectionManager.h
@@ -139,6 +147,7 @@ set ( EXPORT FORWARD/analysis2/AliAODForwardMult.h
 	     FORWARD/analysis2/AliFMDCorrAcceptance.h
 	     FORWARD/analysis2/AliFMDCorrSecondaryMap.h
 	     FORWARD/analysis2/AliFMDCorrELossFit.h
+	     FORWARD/analysis2/AliFMDCorrNoiseGain.h
 	     FORWARD/analysis2/AliBaseESDTask.h
 	     FORWARD/analysis2/AliBaseAODTask.h
 	     FORWARD/analysis2/AliFMDEnergyFitter.h

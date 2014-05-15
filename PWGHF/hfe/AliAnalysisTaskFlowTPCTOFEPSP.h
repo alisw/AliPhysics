@@ -19,7 +19,9 @@
 #ifndef ALIANALYSISTASKFLOWTPCTOFEPSP_H
 #define ALIANALYSISTASKFLOWTPCTOFEPSP_H
 
-
+#ifndef ROOT_TArrayD
+#include <TArrayD.h>
+#endif
 
 
 #include <AliAnalysisTaskSE.h>
@@ -94,9 +96,11 @@ public:
   AliHFEpidQAmanager *GetPIDBackgroundQAManager() const { return fPIDBackgroundqa; }
   AliHFENonPhotonicElectron *GetHFEBackgroundSubtraction() const { return fBackgroundSubtraction; }
 
-
+  void SetPtBinning(const TArrayD &binning) { fPtBinning = binning; }
+  void SetPtBinning(Int_t nbins, const Double_t *const binning) { fPtBinning.Set(nbins+1, binning); }
   void SetContamination(TF1 * const function,Int_t k) { fContamination[k] = function; };
   void SetV2Contamination(TF1 * const function,Int_t k) { fv2contamination[k] = function; };
+  void SetAsFunctionOfP(Bool_t asFunctionOfP) { fAsFunctionOfP = asFunctionOfP; };
   void SetHFECuts(AliHFEcuts * const cuts) { fHFECuts = cuts; };
   void SetHFEBackgroundSubtraction(AliHFENonPhotonicElectron * const backgroundSubtraction) { fBackgroundSubtraction = backgroundSubtraction; };
   void SetHFEBackgroundCuts(AliESDtrackCuts * const cuts) { fHFEBackgroundCuts = cuts; };
@@ -161,6 +165,7 @@ private:
   Bool_t    fSubEtaGapTPC;    // bool to fill with eta gap
   Double_t  fEtaGap;          // Value of the eta gap
 
+  TArrayD   fPtBinning;                  // pt binning
   Int_t     fNbBinsCentralityQCumulant;  // Number of Bins Q Cumulant
   Double_t  fBinCentralityLess[10];      // Centrality Bin lower value
   Int_t     fNbBinsPtQCumulant;          // Nbbinspt QCumulant method
@@ -209,6 +214,7 @@ private:
   AliFlowEvent *fflowEvent;       //! Flow event 
 
   // Hadron Contamination
+  Bool_t fAsFunctionOfP;          // contamination parametrization as function of p or pt
   TF1 *fContamination[11];        // Parametrization of the contamination (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
   TF1 *fv2contamination[11];      // Parametrization of the v2 of charged pions (0-5,5-10,10-20,20-30,30-40,40-50,50-60,60-70,70-80,80-90,90-100)
 
@@ -240,6 +246,7 @@ private:
   // Contamination
   THnSparseF *fFractionContamination;    //! Fraction of contamination as function of pt
   TProfile2D *fContaminationv2;          //! v2 of contamination
+  TProfile2D *fContaminationmeanpt;      //! mean pt for contamination
 
   // Monitoring Event plane: cos2phi, sin2phi, centrality
   THnSparseF *fCosSin2phiep;        //! Cos(2phi), Sin(2phi)
@@ -308,7 +315,7 @@ private:
   Int_t IsMotherEta(Int_t tr, AliMCEvent* mcEvent);
     
   
-  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 1); // analysisclass
+  ClassDef(AliAnalysisTaskFlowTPCTOFEPSP, 2); // analysisclass
 };
 
 #endif

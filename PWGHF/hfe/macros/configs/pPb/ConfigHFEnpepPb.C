@@ -163,6 +163,16 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   Double_t paramsTPCdEdxcuthigh[12] ={3.0, 3.0, 3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0};
   if(tpcdEdxcuthigh) memcpy(paramsTPCdEdxcuthigh,tpcdEdxcuthigh,sizeof(paramsTPCdEdxcuthigh));
 
+   char *cutmodel;
+  cutmodel="min(pol1(0),pol0(2))";
+  Double_t params[3];
+  //params[0]=-0.12; params[1]=0.14; params[2]=0.09;
+  params[0]=-0.21 + paramsTPCdEdxcutlow[0];
+  params[1]=0.14;
+  params[2]=paramsTPCdEdxcutlow[0];
+  pid->ConfigureTPCdefaultCut(cutmodel, params,tpcdEdxcuthigh[0]);
+
+  /*
   char *cutmodel;
   cutmodel="pol0";
 
@@ -174,6 +184,7 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
     pid->ConfigureTPCcentralityCut(a,cutmodel,tpcparamlow,tpcparamhigh);
   }
   pid->ConfigureTPCdefaultCut(cutmodel,paramsTPCdEdxcutlow,paramsTPCdEdxcuthigh[0]); // After introducing the pPb flag, pPb is merged with pp and this line defines the cut
+  */
 
   // Configure TOF PID
   if (usetof){
@@ -193,7 +204,11 @@ AliAnalysisTaskHFE* ConfigHFEnpepPb(Bool_t useMC, Bool_t isAOD, TString appendix
   if(!useMC){
     Bool_t status = kTRUE;
     TF1 *hBackground[12];
-    status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
+    if(isAOD==1) {
+	if (usetof)  status = ReadContaminationFunctions("hadroncontamination_AOD139_TOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+	else status = ReadContaminationFunctions("hadroncontamination_AOD139_noTOFPID_pPb_eta06.root", hBackground, tpcdEdxcutlow[0]);
+    }
+  else  status = ReadContaminationFunctions("hadroncontamination_TOFTPC_pPb_eta06_newsplines_try3.root", hBackground, tpcdEdxcutlow[0]);
     for(Int_t a=0;a<12;a++) {
       //printf("back %f \n",hBackground[a]);
       if(status) task->SetBackGroundFactorsFunction(hBackground[a],a);

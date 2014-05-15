@@ -191,7 +191,7 @@ void AliEmcalJetTask::FindJets()
 
   // get primary vertex
   Double_t vertex[3] = {0, 0, 0};
-  fEvent->GetPrimaryVertex()->GetXYZ(vertex);
+  if(fEvent->GetPrimaryVertex()) fEvent->GetPrimaryVertex()->GetXYZ(vertex);
 
   AliDebug(2,Form("Jet type = %d", fJetType));
 

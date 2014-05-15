@@ -160,7 +160,7 @@ void AddTask_GammaConvV1_pPb2(  Int_t trainConfig = 1,  //change different set o
    task->SetMoveParticleAccordingToVertex(kTRUE);
    task->SetDoMesonAnalysis(kTRUE);
    task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-   task->SetDoPhotonQA(enableQAMesonTask);  //Attention new switch small for Photon QA
+   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
  
    //connect containers
    AliAnalysisDataContainer *coutput =

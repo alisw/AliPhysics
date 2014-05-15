@@ -173,10 +173,12 @@ Bool_t AliCFVertexingHF2Prong::GetGeneratedValuesFromMCParticle(Double_t* vector
 	}
 	else{
 		AliWarning("There are problems!! particle was expected to be either a D0 or a D0bar, check...");
+		delete decay;
 		return vectorMC;
 	}
 	if (cosThetaStar < -1 || cosThetaStar > 1) {
 		AliWarning("Invalid value for cosine Theta star, returning");
+		delete decay;
 		return bGenValues;
 	}
 		
@@ -337,6 +339,19 @@ Bool_t AliCFVertexingHF2Prong::CheckMCChannelDecay() const
 	      TMath::Abs(mcPartDaughter1->GetPdgCode())==321)) {
 		AliDebug(2, "The D0 MC doesn't come from a Kpi decay, skipping!!");
 		return checkCD;  
+	}
+
+	Double_t sumPxDau=mcPartDaughter0->Px()+mcPartDaughter1->Px();
+	Double_t sumPyDau=mcPartDaughter0->Py()+mcPartDaughter1->Py();
+	Double_t sumPzDau=mcPartDaughter0->Pz()+mcPartDaughter1->Pz();
+	Double_t pxMother=fmcPartCandidate->Px();
+	Double_t pyMother=fmcPartCandidate->Py();
+	Double_t pzMother=fmcPartCandidate->Pz();
+	if(TMath::Abs(pxMother-sumPxDau)/(TMath::Abs(pxMother)+1.e-13)>0.00001 ||
+	   TMath::Abs(pyMother-sumPyDau)/(TMath::Abs(pyMother)+1.e-13)>0.00001 ||
+	   TMath::Abs(pzMother-sumPzDau)/(TMath::Abs(pzMother)+1.e-13)>0.00001){
+	  AliDebug(2, "Momentum conservation violated, skipping!!");
+	  return checkCD;  
 	}
 	
 	checkCD = kTRUE;

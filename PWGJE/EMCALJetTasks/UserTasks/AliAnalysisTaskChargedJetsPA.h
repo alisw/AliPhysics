@@ -18,7 +18,7 @@ class TRandom3;
 class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
  public:
   // ######### CONTRUCTORS/DESTRUCTORS AND STD FUNCTIONS
-  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeJetProfile(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fAnalyzeMassCorrelation(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fPhysicalJetRadius(0.6), fSignalJetEtaWindow(0.5), fBackgroundJetEtaWindow(0.5), fTrackEtaWindow(0.9), fMinTrackPt(0.150), fMinJetPt(0.15), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0), fEventCounter(0)
+  AliAnalysisTaskChargedJetsPA() : AliAnalysisTaskSE(), fOutputList(0), fAnalyzeJets(1), fAnalyzeJetProfile(1), fAnalyzeQA(1), fAnalyzeBackground(1), fAnalyzeDeprecatedBackgrounds(1), fAnalyzePythia(0), fAnalyzeMassCorrelation(0), fHasTracks(0), fHasJets(0), fHasBackgroundJets(0), fIsKinematics(0), fUseDefaultVertexCut(1), fUsePileUpCut(1), fSetCentralityToOne(0), fNoExternalBackground(0), fBackgroundForJetProfile(0), fPartialAnalysisNParts(1), fPartialAnalysisIndex(0), fJetArray(0), fTrackArray(0), fBackgroundJetArray(0), fJetArrayName(0), fTrackArrayName(0), fBackgroundJetArrayName(0), fNumPtHardBins(11), fUsePtHardBin(-1), fRhoTaskName(), fNcoll(6.88348), fRandConeRadius(0.4), fSignalJetRadius(0.4), fBackgroundJetRadius(0.4), fTRBackgroundConeRadius(0.6), fNumberRandCones(8), fNumberExcludedJets(-1), fDijetMaxAngleDeviation(10.0), fBackgroundJetEtaWindow(0.5), fMinEta(-0.9), fMaxEta(0.9), fMinJetEta(-0.5), fMaxJetEta(0.5), fMinTrackPt(0.150), fMinJetPt(0.15), fMinJetArea(0.5), fMinBackgroundJetPt(0.0), fMinDijetLeadingPt(10.0), fNumberOfCentralityBins(20), fCentralityType("V0A"), fFirstLeadingJet(0), fSecondLeadingJet(0), fNumberSignalJets(0), fCrossSection(0.0), fTrials(0.0),  fRandom(0), fHelperClass(0), fInitialized(0), fTaskInstanceCounter(0), fHistList(0), fHistCount(0), fIsDEBUG(0), fEventCounter(0)
   {
     for(Int_t i=0;i<1024;i++)
       fSignalJets[i] = NULL;
@@ -43,6 +43,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetUseDefaultVertexCut (Bool_t val) {fUseDefaultVertexCut = val;}
   void        SetUsePileUpCut (Bool_t val) {fUsePileUpCut = val;}
   void        SetCentralityToOne (Bool_t val) {fSetCentralityToOne = val;}
+  void        SetNoExternalBackground (Bool_t val) {fNoExternalBackground = val;}
+  void        SetBackgroundForJetProfile (Bool_t val) {fBackgroundForJetProfile = val;}
   void        SetNumberOfCentralityBins(Int_t val) {fNumberOfCentralityBins = val;} 
   void        SetTrackMinPt(Double_t minPt) {fMinJetPt = minPt;}
   void        SetSignalJetMinPt(Double_t minPt) {fMinJetPt = minPt;}
@@ -59,7 +61,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   void        SetCentralityType(const char* type) {fCentralityType = type;}
   void        SetExternalRhoTaskName(const char* name) {fRhoTaskName = name;}
   void        SetDijetMaxAngleDeviation(Double_t degrees) {fDijetMaxAngleDeviation = degrees/360.0 * TMath::TwoPi();} // degrees are more comfortable
-  void        SetAcceptanceWindows(Double_t trackEta, Double_t signalJetRadius, Double_t bgrdJetRadius){fTrackEtaWindow = trackEta; fSignalJetRadius = signalJetRadius; fBackgroundJetRadius = bgrdJetRadius; fSignalJetEtaWindow = fTrackEtaWindow-fSignalJetRadius; fBackgroundJetEtaWindow = fTrackEtaWindow-fBackgroundJetRadius;}
+  void        SetAcceptanceEta(Double_t minEta, Double_t maxEta) {fMinEta = minEta; fMaxEta = maxEta;}
+  void        SetAcceptanceJetEta(Double_t minEta, Double_t maxEta) {fMinJetEta = minEta; fMaxJetEta = maxEta;}
   Int_t       GetInstanceCounter() {return fTaskInstanceCounter;}
 
  private:
@@ -75,8 +78,9 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoNoExclusion, Double_t& rhoConeExclusion02, Double_t& rhoConeExclusion04, Double_t& rhoConeExclusion06, Double_t& rhoConeExclusion08, Double_t& rhoExactExclusion);
   void        GetTRBackgroundDensity(Int_t numberExcludeLeadingJets, Double_t& rhoMean, Double_t& area, AliEmcalJet* excludeJet1, AliEmcalJet* excludeJet2, Bool_t doSearchPerpendicular);
-  void        GetPPBackgroundDensity(Double_t& background, AliEmcalJet* jet);
+  void        GetPPBackgroundDensity(Double_t& background);
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius);
+  Double_t    GetCorrectedConePt(Double_t eta, Double_t phi, Double_t radius, Double_t background);
   Double_t    GetPtHard();
   Double_t    GetPythiaTrials();
   Int_t       GetPtHardBin();
@@ -137,6 +141,8 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Bool_t              fUseDefaultVertexCut;   // trigger if automatic vertex cut from helper class should be done
   Bool_t              fUsePileUpCut;          // trigger if pileup cut should be done
   Bool_t              fSetCentralityToOne;    // trigger if centrality val. should be set to one for every event (failsafe)
+  Bool_t              fNoExternalBackground;  // External background is set to 0 (e.g. for PP)
+  Int_t               fBackgroundForJetProfile; // Which background will be subtracted for the profile calculation (0=External,1=Improved CMS,2=CMS,3=PP,4=TR,5=None)
   Int_t               fPartialAnalysisNParts; // take only every Nth event
   Int_t               fPartialAnalysisIndex;  // using e.g. only every 5th event, this specifies which one
   
@@ -160,11 +166,12 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
   Int_t               fNumberRandCones;       // Number of random cones to be put into one event
   Int_t               fNumberExcludedJets;    // Number of jets to be excluded from backgrounds
   Double_t            fDijetMaxAngleDeviation;// Max angle deviation from pi between two jets to be accept. as dijet
-  Double_t            fPhysicalJetRadius;     // Rough size considered for the real jet
   // ########## CUTS 
-  Double_t            fSignalJetEtaWindow;    // +- window in eta for signal jets
   Double_t            fBackgroundJetEtaWindow;// +- window in eta for background jets
-  Double_t            fTrackEtaWindow;        // +- window in eta for tracks
+  Double_t            fMinEta;                // min eta of tracks
+  Double_t            fMaxEta;                // max eta of tracks
+  Double_t            fMinJetEta;             // min eta of jets
+  Double_t            fMaxJetEta;             // max eta of jets
   Double_t            fMinTrackPt;            // Min track pt to be accepted
   Double_t            fMinJetPt;              // Min jet pt to be accepted
   Double_t            fMinJetArea;            // Min jet area to be accepted

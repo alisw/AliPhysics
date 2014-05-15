@@ -5,9 +5,11 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskDptDptCorrelations+;
+#pragma link C++ class AliAnalysisTaskDptDptQA+;
 #pragma link C++ class AliDptDptInMC+;
 #pragma link C++ class AliAnalysisTask3PCorrelations+;
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
+#pragma link C++ class AliAnalysisTaskTwoPlusOne+;
 #pragma link C++ class AliDPhiBasicParticle+;
 #pragma link C++ class AliPhiCorrelationsQATask+;
 #pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
@@ -38,4 +40,7 @@
 #pragma link C++ class AliPIDCorrParticle+;
 #pragma link C++ class AliTwoParticlePIDCorr+;
 #pragma link C++ class LRCParticlePID+;
+#pragma link C++ class AliAnalysisTaskPidPidCorrelations+;
+#pragma link C++ class AliPidPidCorrelationReducedTrack+;
+#pragma link C++ class AliAnalysisTaskPhiEffMc+;
 #endif

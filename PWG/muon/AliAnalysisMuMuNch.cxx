@@ -99,7 +99,11 @@ fEtaMin(etaMin),
 fEtaMax(etaMax),
 fZMin(zMin),
 fZMax(zMax),
-fResolution(computeResolution)
+fResolution(computeResolution),
+fSPD1LR(0x0),
+fSPD1LL(0x0),
+fSPD2LR(0x0),
+fSPD2LL(0x0)
 {
   if ( spdCorrection )
   {

@@ -11,7 +11,7 @@ enum EValue_t {
 };
 
 TH1 *
-YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max = 10., Double_t loprecision = 0.01, Double_t hiprecision = 0.1, Option_t *opt = "0q")
+YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max = 10., Double_t loprecision = 0.01, Double_t hiprecision = 0.1, Option_t *opt = "0q",TString logfilename="log.root")
 {
   /* set many iterations when fitting the data so we don't
      stop minimization with MAX_CALLS */
@@ -23,7 +23,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   TH1 *hlo, *hhi;
   
   /* create histo with stat+sys errors */
-  TH1 *htot = (TH1 *)hstat->Clone("htot");
+  TH1 *htot = (TH1 *)hstat->Clone(Form("%sfittedwith%s",hstat->GetName(),f->GetName()));
   for (Int_t ibin = 0; ibin < htot->GetNbinsX(); ibin++) {
     htot->SetBinError(ibin + 1, TMath::Sqrt(hsys->GetBinError(ibin + 1) * hsys->GetBinError(ibin + 1) + hstat->GetBinError(ibin + 1) * hstat->GetBinError(ibin + 1)));
   }
@@ -34,6 +34,11 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   
   do Int_t fitres = htot->Fit(f, opt);
   while (fitres != 0);
+  TFile* filewithfits=TFile::Open(logfilename.Data(),"UPDATE");
+  htot->Write();
+  filewithfits->Close();		
+  delete filewithfits;	 
+	
   cout<<" Fit sys+stat for " <<f->GetName()<<endl;		
   cout<<"NDF="<<f->GetNDF()<<" Chi^2="<<f->GetChisquare()<<" Chi^2/NDF="<<f->GetChisquare()/f->GetNDF()<<endl;
 

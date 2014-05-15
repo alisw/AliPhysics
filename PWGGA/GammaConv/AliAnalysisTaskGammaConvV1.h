@@ -63,6 +63,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    void MoveParticleAccordingToVertex(AliAODConversionPhoton* particle,const AliGammaConversionAODBGHandler::GammaConversionVertex *vertex);
    void UpdateEventByEventData();
    void SetLogBinningXTH2(TH2* histoRebin);
+   Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
    
  protected:
    AliV0ReaderV1 *fV0Reader;
@@ -137,6 +138,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hMCK0sPt;
    TH1F **hMCK0sWOWeightPt;
    TH2F **hMCK0sPtY;
+   TH2F **hMCSecPi0PtvsSource;
+   TH1F **hMCSecPi0Source;
+   TH1F **hMCSecEtaPt;
+   TH1F **hMCSecEtaSource;
    TH2F **hESDTrueMotherInvMassPt;
    TH2F **hESDTruePrimaryMotherInvMassPt;
    TH2F **hESDTruePrimaryMotherW0WeightingInvMassPt;
@@ -148,6 +153,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1F **hESDTrueK0sWithPi0DaughterMCPt;
    TH2F **hESDTrueSecondaryMotherFromEtaInvMassPt;
    TH1F **hESDTrueEtaWithPi0DaughterMCPt;
+   TH2F **hESDTrueSecondaryMotherFromLambdaInvMassPt;
+   TH1F **hESDTrueLambdaWithPi0DaughterMCPt;
    TH2F **hESDTrueBckGGInvMassPt;
    TH2F **hESDTrueBckContInvMassPt;
    TH2F **hESDTruePi0PtY;
@@ -158,6 +165,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH2F **hESDTrueEtaPtOpenAngle;
    TH2F **hESDTrueMotherDalitzInvMassPt;
    TH1F **hESDTrueConvGammaPt;
+   TH1F **hESDTrueConvGammaEta;
    TH2F **hESDCombinatorialPt;
    TH1F **hESDTruePrimaryConvGammaPt;
    TH2F **hESDTruePrimaryConvGammaESDPtMCPt;
@@ -169,6 +177,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
    TH1I **hNEvents;
    TH1I **hNGoodESDTracks;
    TH1I **hNGammaCandidates;
+   TH2F **hNGoodESDTracksVsNGammaCanditates;
    TH1I **hNV0Tracks;
    TProfile **hEtaShift;
    TTree **tESDMesonsInvMassPtDcazMinDcazMaxFlag;
@@ -211,7 +220,7 @@ private:
    AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
 
 
-   ClassDef(AliAnalysisTaskGammaConvV1, 10);
+   ClassDef(AliAnalysisTaskGammaConvV1, 11);
 };
 
 #endif

@@ -2,19 +2,16 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   const char* taskname  = "ClusterizerFast",
   const char* cellsName = "",
   const char* clusName  = "",
-  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData,
   UInt_t clusterizer    = AliEMCALRecParam::kClusterizerv2,
-  Bool_t nonLinearCorr  = kFALSE, 
-  UInt_t nonLinFunct    = AliEMCALRecoUtils::kBeamTestCorrected,
-  Bool_t calcDistToBC   = kFALSE, 
-  Bool_t remBC          = kFALSE,
-  Bool_t remExotic      = kFALSE,
-  Bool_t fidRegion      = kFALSE,
-  Bool_t updateCells    = kFALSE,
-  Bool_t trackMatch     = kFALSE,
-  Double_t minE         = 0.05
-) 
-{
+  Double_t cellE        = 0.05,
+  Double_t seedE        = 0.1,
+  const Float_t timeMin = -1,      //minimum time of physical signal in a cell/digit (s)
+  const Float_t timeMax = +1,      //maximum time of physical signal in a cell/digit (s)
+  const Float_t timeCut =  1,      //maximum time difference between the digits inside EMC cluster (s)
+  Bool_t remExoticCell  = kTRUE,
+  Bool_t calcDistToBC   = kFALSE,
+  UInt_t inputCellType  = AliAnalysisTaskEMCALClusterizeFast::kFEEData) {
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskClusterizerFast", "No analysis manager found.");
@@ -25,21 +22,30 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
 
   AliEMCALRecParam *recparam = task->GetRecParam();
   recparam->SetClusterizerFlag(clusterizer);
-  recparam->SetMinECut(minE);
+  recparam->SetMinECut(cellE);
+  recparam->SetClusteringThreshold(seedE);
+  recparam->SetW0(4.5);
+  recparam->SetTimeMin(timeMin);
+  recparam->SetTimeMax(timeMax);
+  recparam->SetTimeCut(timeCut);
+
+  if (clusterizer == AliEMCALRecParam::kClusterizerNxN) //MV: copied from tender. please check
+    recparam->SetNxM(3,3);
 
   AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
-  recoUtils->SetNonLinearityFunction(nonLinFunct);
+  recoUtils->SetNonLinearityFunction(0);
   task->SetEMCALRecoUtils(recoUtils);
 
   task->SetAttachClusters(kTRUE);
   task->SetCaloClustersName(clusName);
   task->SetCaloCellsName(cellsName);
   task->SetInputCellType(inputCellType);
-  task->SetUpdateCells(updateCells);
-  task->SetClusterBadChannelCheck(remBC);
-  task->SetRejectExoticClusters(remExotic);
-  task->SetFiducial(fidRegion);
-  task->SetDoNonLinearity(nonLinearCorr);
+  Printf("inputCellType: %d",inputCellType);
+
+  task->SetClusterize(kTRUE);
+
+  task->SetClusterBadChannelCheck(kTRUE);
+  task->SetRejectExoticCells(remExoticCell);
   task->SetRecalDistToBadChannels(calcDistToBC);
 
   mgr->AddTask(task);

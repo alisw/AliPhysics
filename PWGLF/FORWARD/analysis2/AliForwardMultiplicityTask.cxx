@@ -34,6 +34,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask()
   : AliForwardMultiplicityBase(),
     fESDFMD(),
     fEventInspector(),
+    fESDFixer(),
     fSharingFilter(),
     fDensityCalculator(),
     fCorrections(),
@@ -51,6 +52,7 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
   : AliForwardMultiplicityBase(name),
     fESDFMD(),
     fEventInspector("event"),
+    fESDFixer("esdFizer"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
     fCorrections("corrections"),
@@ -67,6 +69,25 @@ AliForwardMultiplicityTask::AliForwardMultiplicityTask(const char* name)
 }
 
 
+//____________________________________________________________________
+void
+AliForwardMultiplicityTask::PreCorrections(const AliESDEvent* esd)
+{
+  if (!esd) return; 
+  
+  AliESDFMD* esdFMD = esd->GetFMDData();  
+  if (!esdFMD) return;
+
+  Int_t tgt = GetESDFixer().FindTargetNoiseFactor(*esdFMD, false);
+  if (tgt <= 0) {
+    // If the target noise factor is 0 or less, disable the noise/gain
+    // correction.
+    GetESDFixer().SetRecoNoiseFactor(4);
+    fNeededCorrections ^= AliForwardCorrectionManager::kNoiseGain;
+  }
+  else 
+    AliWarning("The noise corrector has been enabled!");
+}
 //____________________________________________________________________
 Bool_t
 AliForwardMultiplicityTask::PreEvent()
@@ -130,6 +151,9 @@ AliForwardMultiplicityTask::Event(AliESDEvent& esd)
 
   // Get FMD data 
   AliESDFMD* esdFMD = esd.GetFMDData();  
+
+  // Fix up the the ESD 
+  GetESDFixer().Fix(*esdFMD, ip.Z());
 
   // Apply the sharing filter (or hit merging or clustering if you like)
   if (fDoTiming) individual.Start(true);

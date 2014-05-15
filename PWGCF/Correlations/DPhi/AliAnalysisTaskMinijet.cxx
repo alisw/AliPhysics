@@ -1236,7 +1236,10 @@ Double_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector
         
         Double_t save= track->Pt();
         Double_t d0rphiz[2],covd0[3];
-        Bool_t isDca= track->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+
+	AliAODTrack* clone = (AliAODTrack*) track->Clone("trk_clone"); //need clone, in order not to change track parameters
+        Bool_t isDca= clone->PropagateToDCA(fAODEvent->GetPrimaryVertex(),fAODEvent->GetMagneticField(),9999.,d0rphiz,covd0);
+	delete clone;
         fPropagateDca->Fill(Int_t(isDca));
         if(TMath::Abs(save - track->Pt())>1e-6) Printf("Before pt=%f, After pt=%f",save, track->Pt());
         
@@ -1791,7 +1794,7 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
                 
                 Bool_t isLikeSign = CheckLikeSign(chargeEventAxis, chargeOthers);
                 
-                Double_t prop6[6] = {ptEventAxis,ptOthers,dEta,dPhi,ntracksCharged, isLikeSign };
+                Double_t prop6[6] = {ptEventAxis,ptOthers,dEta,dPhi,ntracksCharged, static_cast<Double_t>(isLikeSign) };
                 fMapPair[step]->Fill(prop6, strangeWeightEventAxis*strangeWeightOthers);
                 
                 //thrid track loop (Andreas: three particle auto-correlations)

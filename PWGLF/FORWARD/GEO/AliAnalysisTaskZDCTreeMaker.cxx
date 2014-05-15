@@ -68,23 +68,23 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
     fCentralityTree(0x0),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
-    fxVertex(0),	 
+    /*fxVertex(0),	 
     fyVertex(0),	 
     fzVertex(0),	 
-    fVertexer3d(kFALSE),
+    fVertexer3d(kFALSE),*/
     fNTracklets(0),
     fIsV0ATriggered(0),
     fIsV0CTriggered(0),
     fMultV0A(0),	 
     fMultV0C(0), 
     fESDFlag(0),	 
-    fZNCEnergy(0), 
+    /*fZNCEnergy(0), 
     fZPCEnergy(0),  
     fZNAEnergy(0),  
-    fZPAEnergy(0),
+    fZPAEnergy(0),*/
     fZEM1Energy(0), 
     fZEM2Energy(0),
-    fCentralityV0M(0),
+    //fCentralityV0M(0),
     fCentralityV0A(0),
     fCentralityV0C(0),
     fCentralityCL1(0),
@@ -95,8 +95,9 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
 {   
    // Default constructor
 
-  for(int i=0; i<100; i++) fTrigClass[i] = 0;
+  for(int i=0; i<400; i++) fTracklEta[i] = -999.;
   fNClusters[0]=fNClusters[1]=0;
+  for(int i=0; i<8; i++) fRingMultV0[i] = 0.;
   for(Int_t itow=0; itow<5; itow++){
      fZNCtower[itow]=0.;  
      fZPCtower[itow]=0.;  
@@ -108,17 +109,9 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker():
      fZPAtowerLG[itow]=0.;
 
   }
-  /*for(Int_t ihit=0; ihit<4; ihit++) {
-     fTDCZNC[ihit] = 0;
-     fTDCZPC[ihit] = 0;
-     fTDCZNA[ihit] = 0;
-     fTDCZPA[ihit] = 0;
-     fTDCZEM1[ihit] = 0;
-     fTDCZEM2[ihit] = 0;
-  }*/
-  for(Int_t itdc=0; itdc<32; itdc++){
+  /*for(Int_t itdc=0; itdc<32; itdc++){
     for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
-  }
+  }*/
   
 }   
 
@@ -133,23 +126,23 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
     fCentralityTree(0x0),
     fIsEventSelected(kFALSE),
     fIsPileupFromSPD(kFALSE),
-    fxVertex(0),	 
+    /*fxVertex(0),	 
     fyVertex(0),	 
     fzVertex(0),	 
-    fVertexer3d(kFALSE),
+    fVertexer3d(kFALSE),*/
     fNTracklets(0),
     fIsV0ATriggered(0),
     fIsV0CTriggered(0),
     fMultV0A(0),	 
     fMultV0C(0), 
     fESDFlag(0),	 
-    fZNCEnergy(0), 
+    /*fZNCEnergy(0), 
     fZPCEnergy(0),  
     fZNAEnergy(0),  
-    fZPAEnergy(0),
+    fZPAEnergy(0),*/
     fZEM1Energy(0), 
     fZEM2Energy(0),
-    fCentralityV0M(0),
+    //fCentralityV0M(0),
     fCentralityV0A(0),
     fCentralityV0C(0),
     fCentralityCL1(0),
@@ -161,8 +154,9 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
 {
   // Default constructor
 
-  for(int i=0; i<100; i++) fTrigClass[i] = 0;
+  for(int i=0; i<400; i++) fTracklEta[i] = -999.;
   fNClusters[0]=fNClusters[1]=0;
+  for(int i=0; i<8; i++) fRingMultV0[i] = 0.;
  
   for(Int_t itow=0; itow<5; itow++){
      fZNCtower[itow]=0.;  
@@ -175,17 +169,9 @@ AliAnalysisTaskZDCTreeMaker::AliAnalysisTaskZDCTreeMaker(const char *name):
      fZPAtowerLG[itow]=0.;
 
   }
-  /*for(Int_t ihit=0; ihit<4; ihit++) {
-     fTDCZNC[ihit] = 0;
-     fTDCZPC[ihit] = 0;
-     fTDCZNA[ihit] = 0;
-     fTDCZPA[ihit] = 0;
-     fTDCZEM1[ihit] = 0;
-     fTDCZEM2[ihit] = 0;
+  /*for(Int_t itdc=0; itdc<32; itdc++){
+    for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
   }*/
-  //for(Int_t itdc=0; itdc<32; itdc++){
-  //  for(Int_t ihit=0; ihit<4; ihit++) fTDCvalues[itdc][ihit]=9999;
-  //}
   
   // Output slot #1 writes into a TList container
   DefineOutput(1, TList::Class()); 
@@ -224,23 +210,25 @@ void AliAnalysisTaskZDCTreeMaker::UserCreateOutputObjects()
     fCentralityTree->Branch("trigClass",&fTrigClass,"trigClass/C");
     fCentralityTree->Branch("eventSelected",&fIsEventSelected,"eventSelected/O");
     fCentralityTree->Branch("pileupSPD",&fIsPileupFromSPD,"pileupSPD/O");
-    fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
+    /*fCentralityTree->Branch("xVertex", &fxVertex,"xVertex/D");
     fCentralityTree->Branch("yVertex", &fyVertex,"yVertex/D");
     fCentralityTree->Branch("zVertex", &fzVertex,"zVertex/D");
-    fCentralityTree->Branch("vertexer3d", &fVertexer3d,"vertexer3d/O");
+    fCentralityTree->Branch("vertexer3d", &fVertexer3d,"vertexer3d/O");*/
     fCentralityTree->Branch("nTracklets", &fNTracklets,"nTracklets/I");
+    fCentralityTree->Branch("tracklEta", fTracklEta,"tracklEta[400]/D");
     fCentralityTree->Branch("nClusters", fNClusters,"nClusters[2]/I");
-
+    //
     fCentralityTree->Branch("isV0ATriggered", &fIsV0ATriggered,"isV0ATriggered/I");
     fCentralityTree->Branch("isV0CTriggered", &fIsV0CTriggered,"isV0CTriggered/I");
     fCentralityTree->Branch("multV0A", &fMultV0A,"multV0A/F");
     fCentralityTree->Branch("multV0C", &fMultV0C,"multV0C/F");
+    fCentralityTree->Branch("ringmultV0", fRingMultV0,"ringmultV0[8]/F");
     
     fCentralityTree->Branch("esdFlag", &fESDFlag,"esdFlag/i");
-    fCentralityTree->Branch("zncEnergy",  &fZNCEnergy,  "zncEnergy/F");
+    /*fCentralityTree->Branch("zncEnergy",  &fZNCEnergy,  "zncEnergy/F");
     fCentralityTree->Branch("zpcEnergy",  &fZPCEnergy,  "zpcEnergy/F");
     fCentralityTree->Branch("znaEnergy",  &fZNAEnergy,  "znaEnergy/F");
-    fCentralityTree->Branch("zpaEnergy",  &fZPAEnergy,  "zpaEnergy/F");
+    fCentralityTree->Branch("zpaEnergy",  &fZPAEnergy,  "zpaEnergy/F");*/
     fCentralityTree->Branch("zem1Energy", &fZEM1Energy, "zem1Energy/F");
     fCentralityTree->Branch("zem2Energy", &fZEM2Energy, "zem2Energy/F");
 
@@ -253,23 +241,17 @@ void AliAnalysisTaskZDCTreeMaker::UserCreateOutputObjects()
     fCentralityTree->Branch("znatowerLG", fZNAtowerLG, "znatowerLG[5]/F");
     fCentralityTree->Branch("zpatowerLG", fZPAtowerLG, "zpatowerLG[5]/F");
 
-    fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
+//    fCentralityTree->Branch("tdc", fTDCvalues, "tdc[32][4]/I");
 //    fCentralityTree->Branch("tdcCorr", fTDCcorr, "tdcCorr[32][4]/F");
-    /*fCentralityTree->Branch("tdcZNC", fTDCZNC, "tdcZNC[4]/I");
-    fCentralityTree->Branch("tdcZPC", fTDCZPC, "tdcZPC[4]/I");
-    fCentralityTree->Branch("tdcZNA", fTDCZNA, "tdcZNA[4]/I");
-    fCentralityTree->Branch("tdcZPA", fTDCZPA, "tdcZPA[4]/I");
-    fCentralityTree->Branch("tdcZEM1", fTDCZEM1, "tdcZEM1[4]/I");
-    fCentralityTree->Branch("tdcZEM2", fTDCZEM2, "tdcZEM2[4]/I");*/
-    
-    fCentralityTree->Branch("centrV0mult", &fCentralityV0M, "centrV0mult/F");
+     
+    //fCentralityTree->Branch("centrV0mult", &fCentralityV0M, "centrV0mult/F");
     fCentralityTree->Branch("centrV0Amult", &fCentralityV0A, "centrV0Amult/F");
     fCentralityTree->Branch("centrV0Cmult", &fCentralityV0C, "centrV0Cmult/F");
     fCentralityTree->Branch("centrSPDclu1", &fCentralityCL1, "centrSPDclu1/F");
     fCentralityTree->Branch("centrZNA", &fCentralityZNA, "centrZNA/F");
     fCentralityTree->Branch("centrZPA", &fCentralityZPA, "centrZPA/F");
-    fCentralityTree->Branch("centrZNC", &fCentralityZNA, "centrZNC/F");
-    fCentralityTree->Branch("centrZPC", &fCentralityZPA, "centrZPC/F");
+    fCentralityTree->Branch("centrZNC", &fCentralityZNC, "centrZNC/F");
+    fCentralityTree->Branch("centrZPC", &fCentralityZPC, "centrZPC/F");
   
     fOutput->Add(fCentralityTree);      
     PostData(1, fOutput);
@@ -297,18 +279,20 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       
       // Select PHYSICS events (type=7, for data)
       if(!fIsMCInput && esd->GetEventType()!=7) return; 
-      
+
+      for(int ir=0; ir<8; ir++) fRingMultV0[ir]=0.;
+            
       // ***** Trigger selection
       TString triggerClass = esd->GetFiredTriggerClasses();
       sprintf(fTrigClass,"%s",triggerClass.Data());
       
       // use response of AliPhysicsSelection
       fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAnyINT);       
-      //fIsPileupFromSPD = esd->IsPileupFromSPD(6, 0.8);
-      fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
+      fIsPileupFromSPD = esd->IsPileupFromSPD(6, 0.8);
+      //fIsPileupFromSPD = esd->IsPileupFromSPDInMultBins();
 
       AliCentrality *centrality = esd->GetCentrality();
-      fCentralityV0M = centrality->GetCentralityPercentile("V0M");
+      //fCentralityV0M = centrality->GetCentralityPercentile("V0M");
       fCentralityV0A = centrality->GetCentralityPercentile("V0A");
       fCentralityV0C = centrality->GetCentralityPercentile("V0C");
       fCentralityCL1 = centrality->GetCentralityPercentile("CL1");
@@ -317,35 +301,45 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
       fCentralityZNC = centrality->GetCentralityPercentile("ZNC");
       fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
                 
-      const AliESDVertex *vertex = esd->GetPrimaryVertexSPD();
+      /*const AliESDVertex *vertex = esd->GetPrimaryVertexSPD();
       fxVertex = vertex->GetX();
       fyVertex = vertex->GetY();
       fzVertex = vertex->GetZ();
       if(vertex->IsFromVertexer3D()) fVertexer3d = kTRUE;
-      else fVertexer3d = kFALSE;
+      else fVertexer3d = kFALSE;*/
       
       const AliMultiplicity *mult = esd->GetMultiplicity();
       fNTracklets = mult->GetNumberOfTracklets();
+      for(int itr=0; itr<fNTracklets; itr++){
+         if(itr<400) fTracklEta[itr] = mult->GetEta(itr);
+      }
       
       for(Int_t ilay=0; ilay<2; ilay++){
         fNClusters[ilay] = mult->GetNumberOfITSClusters(ilay);
       }
           
-      AliESDVZERO *vzeroAOD = esd->GetVZEROData();
-      fMultV0A = vzeroAOD->GetMTotV0A();
-      fMultV0C = vzeroAOD->GetMTotV0C();
+      AliESDVZERO *vzeroESD = esd->GetVZEROData();
+      fMultV0A = vzeroESD->GetMTotV0A();
+      fMultV0C = vzeroESD->GetMTotV0C();
       //
-      fIsV0ATriggered = vzeroAOD->GetV0ADecision();
-      fIsV0CTriggered = vzeroAOD->GetV0CDecision();
+      fIsV0ATriggered = vzeroESD->GetV0ADecision();
+      fIsV0CTriggered = vzeroESD->GetV0CDecision();
+      //
+      for(Int_t iRing = 0; iRing < 8; ++iRing) {
+    	for(Int_t i = 0; i < 8; ++i) {
+//      	   fRingMultV0[iRing] += esd->GetVZEROEqMultiplicity(8*iRing+i);
+      	   fRingMultV0[iRing] += vzeroESD->GetMultiplicity(8*iRing+i);
+    	}
+      }
         
       AliESDZDC *esdZDC = esd->GetESDZDC();
       
       fESDFlag =  esdZDC->GetESDQuality();   
       
-      fZNCEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
+      /*fZNCEnergy = (Float_t) (esdZDC->GetZDCN1Energy());
       fZPCEnergy = (Float_t) (esdZDC->GetZDCP1Energy());
       fZNAEnergy = (Float_t) (esdZDC->GetZDCN2Energy());
-      fZPAEnergy = (Float_t) (esdZDC->GetZDCP2Energy());
+      fZPAEnergy = (Float_t) (esdZDC->GetZDCP2Energy());*/
       fZEM1Energy = (Float_t) (esdZDC->GetZDCEMEnergy(0));
       fZEM2Energy = (Float_t) (esdZDC->GetZDCEMEnergy(1));
        
@@ -370,84 +364,17 @@ void AliAnalysisTaskZDCTreeMaker::UserExec(Option_t */*option*/)
          fZPAtowerLG[it] = (Float_t) (towZPALG[it]);  
       }
       
-      /*for(int itdc=0; itdc<4; itdc++){
-         int tdcL0 = 0;
-	 if(esdZDC->GetZDCTDCData(15, 0)!=0.) tdcL0 = esdZDC->GetZDCTDCData(15, 0);
-	 if(esdZDC->GetZDCTDCData(8, itdc)!=0.) fTDCZEM1[itdc] = esdZDC->GetZDCTDCData(8, itdc)-tdcL0;
-         if(esdZDC->GetZDCTDCData(9, itdc)!=0.) fTDCZEM2[itdc] = esdZDC->GetZDCTDCData(9, itdc)-tdcL0;
-         if(esdZDC->GetZDCTDCData(10, itdc)!=0.) fTDCZNC[itdc] = esdZDC->GetZDCTDCData(10, itdc)-tdcL0;
-	 if(esdZDC->GetZDCTDCData(11, itdc)!=0.) fTDCZPC[itdc] = esdZDC->GetZDCTDCData(11, itdc)-tdcL0;
-	 if(esdZDC->GetZDCTDCData(11, itdc)!=0.) fTDCZPC[itdc] = esdZDC->GetZDCTDCData(11, itdc)-tdcL0;
-	 if(esdZDC->GetZDCTDCData(13, itdc)!=0.) fTDCZPA[itdc] = esdZDC->GetZDCTDCData(13, itdc)-tdcL0;
-      }*/
-      for(Int_t itdc=0; itdc<32; itdc++){
+      /*for(Int_t itdc=0; itdc<32; itdc++){
 	 for(Int_t i=0; i<4; i++){
 	   fTDCvalues[itdc][i] = esdZDC->GetZDCTDCData(itdc, i);
 	 }
-      }      
+      }*/      
 
   }   
   else if(fAnalysisInput.CompareTo("AOD")==0){
 
-      printf("\n \t *** Running analysis on AODs\n\n");
+      printf("\n \t *** Analysis on AODs is NOT implemented\n\n");
       
-      AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
-      if(!aod) return;
-      
-      // Select PHYSICS events (type=7, for data)
-      if(!fIsMCInput && aod->GetEventType()!=7) return; 
-      
-      // use response of AliPhysicsSelection
-      fIsEventSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kCINT5);       
-      fIsPileupFromSPD = aod->IsPileupFromSPD(5);
-      
-      AliCentrality *centrality = aod->GetCentrality();
-      fCentralityV0M = centrality->GetCentralityPercentile("V0M");
-      fCentralityV0A = centrality->GetCentralityPercentile("V0A");
-      fCentralityV0C = centrality->GetCentralityPercentile("V0C");
-      fCentralityCL1 = centrality->GetCentralityPercentile("CL1");
-      fCentralityZNA = centrality->GetCentralityPercentile("ZNA");
-      fCentralityZPA = centrality->GetCentralityPercentile("ZPA");
-      fCentralityZNC = centrality->GetCentralityPercentile("ZNC");
-      fCentralityZPC = centrality->GetCentralityPercentile("ZPC");
-      
-      // ***** Trigger selection
-      //fTrigClass = aod->GetFiredTriggerClasses();
-      //TString triggerClass = aod->GetFiredTriggerClasses();
-      //sprintf(fTrigClass,"%s",triggerClass.Data());
-      
-      const AliAODVertex *vertex = aod->GetPrimaryVertexSPD();
-      fxVertex = vertex->GetX();
-      fyVertex = vertex->GetY();
-      fzVertex = vertex->GetZ();
-
-      AliAODTracklets *trackl = aod->GetTracklets();
-      fNTracklets = trackl->GetNumberOfTracklets();
-          
-      AliAODVZERO *vzeroAOD = aod->GetVZEROData();
-      fMultV0A = vzeroAOD->GetMTotV0A();
-      fMultV0C = vzeroAOD->GetMTotV0C();
-        
-      AliAODZDC *aodZDC = aod->GetZDCData();
-            
-      fZNCEnergy = (Float_t) (aodZDC->GetZNCEnergy());
-      fZPCEnergy = (Float_t) (aodZDC->GetZPCEnergy());
-      fZNAEnergy = (Float_t) (aodZDC->GetZNAEnergy());
-      fZPAEnergy = (Float_t) (aodZDC->GetZPAEnergy());
-      fZEM1Energy = (Float_t) (aodZDC->GetZEM1Energy());
-      fZEM2Energy = (Float_t) (aodZDC->GetZEM2Energy());
-      
-      const Double_t * towZNC = aodZDC->GetZNCTowerEnergy();
-      const Double_t * towZPC = aodZDC->GetZPCTowerEnergy();
-      const Double_t * towZNA = aodZDC->GetZNATowerEnergy();
-      const Double_t * towZPA = aodZDC->GetZPATowerEnergy();
-      //
-      for(Int_t it=0; it<5; it++){
-         fZNCtower[it] = (Float_t) (towZNC[it]);
-         fZPCtower[it] = (Float_t) (towZPC[it]);
-         fZNAtower[it] = (Float_t) (towZNA[it]); 
-         fZPAtower[it] = (Float_t) (towZPA[it]);  
-      }
 
   }
   

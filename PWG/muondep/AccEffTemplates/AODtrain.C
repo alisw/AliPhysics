@@ -198,7 +198,7 @@ void AddAnalysisTasks(Int_t merge){
   
   if (iESDfilter) {
     //  ESD filter task configuration.
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/ESDfilter/macros/AddTaskESDFilter.C");
     if (iMUONcopyAOD) {
       printf("Registering delta AOD file\n");
       mgr->RegisterExtraFile("AliAOD.Muons.root");
@@ -206,7 +206,20 @@ void AddAnalysisTasks(Int_t merge){
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kTRUE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,1); // others
     } else {
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(useKFILTER, kFALSE, kFALSE, kFALSE /*usePhysicsSelection*/,kFALSE,kTRUE,kTRUE,kTRUE,1100,1); // others
-    }   
+    }
+    
+    if ( 0 && VAR_USE_ITS_RECO ) /* 0 for the moment to get this macro running also with AliRoot <= .... */      
+    {
+      AliAnalysisTaskESDMuonFilter* muFilter = mgr->GetTask("ESD Muon Filter");
+      if ( !muFilter )
+      {
+        std::cout << "ERROR : got a NULL muFilter ! so I cannot ask to keep SPD tracklets !" << std::endl;
+      }
+      else
+      {
+        muFilter->SetWithSPDtracklets(kTRUE);
+      }
+    }
   }   
   
   // ********** PWG3 wagons ******************************************************           
@@ -320,6 +333,7 @@ Bool_t LoadCommonLibraries()
   success &= LoadLibrary("libOADB.so");
   success &= LoadLibrary("libANALYSISalice.so");
   success &= LoadLibrary("libCORRFW.so");
+  success &= LoadLibrary("libESDfilter.so");
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   if (success) {
     ::Info("AnalysisTrainNew.C::LoadCommodLibraries", "Load common libraries:    SUCCESS");

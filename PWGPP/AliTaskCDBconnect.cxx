@@ -87,8 +87,8 @@ void AliTaskCDBconnect::CreateOutputObjects()
   //  try to init before the analysis set
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) AliFatal("No analysis manager");
-  if ( fRun>0 && mgr->IsProofMode() ) { 
-    // in the proof mode the initialization done in the constructor is not available
+  if ( fRun>0 && !fGRPManager) {
+    // in the proof or plugin mode the initialization done in the constructor is not available
     InitGRP();
   }
   else {

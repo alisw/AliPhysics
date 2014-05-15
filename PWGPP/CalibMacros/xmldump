@@ -1,0 +1,27 @@
+xmldump(){
+#
+# Dump object from file
+#
+# Example usage:
+#       xmldump /cvmfs/alice.gsi.de/alice/data/2010/OCDB/TPC/Calib/RecoParam/Run0_999999999_v1_s0.root AliCDBEntry Run0_999999999_v1_s0.dump
+
+  fin=$1	
+  object=$2
+  fout=$3
+
+  cat > xmldump.C <<EOF
+void xmldump(){
+  printf(\"Hallo world\n\");
+  TFile* fin=TFile::Open(\"$fin\");
+  TFile* fout=TFile::Open(\"$fout.xml\",\"recreate\");
+  TObject * obj= (TObject*)fin->Get(\"$2\");
+  obj->Print();
+  obj->Write();
+  delete fout;
+}
+EOF
+  
+  aliroot -b -q xmldump.C
+}
+
+

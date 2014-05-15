@@ -3,6 +3,7 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
 						 Double_t centrMax=80.,
 						 Double_t vertexZ=10.,
 						 Int_t AODfilterBit = 128,
+						 Bool_t bUseElectronRejection = kFALSE,
 						 TString fileNameBase="AnalysisResults"
 						 ) {
 
@@ -55,6 +56,11 @@ AliAnalysisTaskEffContBF *AddTaskBalanceEffCont( TString  centralityEstimator="V
   //taskEffContBF->SetPtRange(0.1, 20.0, 100);  //acceptance cuts //5.0,49
   taskEffContBF->SetEtaRange(-0.8,0.8,100,0.0,1.6, 64); //acceptance cuts
   taskEffContBF->SetPtRange(0.0, 20.0, 100);  //acceptance cuts //5.0,49
+
+  // electron rejection
+    if(bUseElectronRejection){
+      taskEffContBF->SetElectronOnlyRejection(3.); // no other particle in nsigma (this is what we use standard in BF code)
+    }
 
   //AODs  
   taskEffContBF->SetAODtrackCutBit(AODfilterBit);

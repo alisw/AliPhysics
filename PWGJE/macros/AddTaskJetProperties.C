@@ -81,6 +81,10 @@ AliAnalysisTaskJetProperties *AddTaskJetProperties(Char_t* bJet="clustersAOD",
   else if(JetBranch.Contains("AOD"))   task->SetTrackType(AliAnalysisTaskJetProperties::kTrackAOD);
   else task->SetTrackType(AliAnalysisTaskJetProperties::kTrackUndef);//undefined track type
   
+  //setting pileup rejection
+  Bool_t IsPileupReject = kTRUE;//=kTRUE if you want to reject pileup, =kFALSE for no pileup rejection
+  task->SetPileupRejection(IsPileupReject);
+  
   //setting the jet rejection
   //two types implemented:kNoReject and kReject1Trk
   TString contName="";

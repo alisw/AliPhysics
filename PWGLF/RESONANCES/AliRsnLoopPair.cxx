@@ -36,6 +36,7 @@ AliRsnLoopPair::AliRsnLoopPair(const char *name, AliRsnPairDef *def, Bool_t isMi
    fUseMCRef(kFALSE),
    fCheckDecay(kFALSE),
    fRangeY(1E20),
+   fRangeDCAproduct(1E20),
    fPairDef(def),
    fPairCuts(0x0),
    fMother()
@@ -56,6 +57,7 @@ AliRsnLoopPair::AliRsnLoopPair(const AliRsnLoopPair &copy) :
    fUseMCRef(copy.fUseMCRef),
    fCheckDecay(copy.fCheckDecay),
    fRangeY(copy.fRangeY),
+   fRangeDCAproduct(copy.fRangeDCAproduct),
    fPairDef(copy.fPairDef),
    fPairCuts(copy.fPairCuts),
    fMother(copy.fMother)
@@ -83,6 +85,7 @@ AliRsnLoopPair &AliRsnLoopPair::operator=(const AliRsnLoopPair &copy)
    fUseMCRef = copy.fUseMCRef;
    fCheckDecay = copy.fCheckDecay;
    fRangeY = copy.fRangeY;
+   fRangeDCAproduct = copy.fRangeDCAproduct;
    fPairDef = copy.fPairDef;
    fPairCuts = copy.fPairCuts;
    fMother = copy.fMother;
@@ -203,6 +206,11 @@ Int_t AliRsnLoopPair::DoLoop
          // check rapidity range
          if (TMath::Abs(fMother.Rapidity(0)) > fRangeY) {
             AliDebugClass(2, Form("[%s]: Outside rapidity range", GetName()));
+            continue;
+         }
+	 // check daughter's DCA product range
+         if (TMath::Abs(fMother.DCAproduct()) > fRangeDCAproduct) {
+            AliDebugClass(2, Form("[%s]: Outside daughter's DCA products range", GetName()));
             continue;
          }
          // check mother
@@ -497,6 +505,10 @@ Int_t AliRsnLoopPair::LoopTrueMC(AliRsnEvent *rsn)
       fMother.ComputeSum(fPairDef->GetDef1().GetMass(), fPairDef->GetDef2().GetMass(), fPairDef->GetMotherMass());
       // check rapidity range
       if (TMath::Abs(fMother.Rapidity(0)) > fRangeY) {
+         AliDebugClass(2, Form("[%s]: Outside rapidity range", GetName()));
+         continue;
+      }
+      if (TMath::Abs(fMother.DCAproduct()) > fRangeDCAproduct) {
          AliDebugClass(2, Form("[%s]: Outside rapidity range", GetName()));
          continue;
       }

@@ -93,6 +93,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -171,6 +172,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fPtHard(0),
   fPtHardBin(0),
   fNTrials(0),
+  fXsection(0),
   fParticleCollArray(),
   fClusterCollArray(),
   fMainTriggerPatch(0x0),
@@ -351,6 +353,13 @@ Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
     fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
     fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
     fHistPtHard->Fill(fPtHard);
+    if(fPythiaHeader) {
+      fXsection = fPythiaHeader->GetXsection();
+      if(fXsection>0.) {
+	fHistXsection->Fill(fPtHardBin, fXsection);
+	fHistTrials->Fill(fPtHardBin, fPythiaHeader->Trials());
+      }
+    }
   }
 
   fHistCentrality->Fill(fCent);
@@ -413,7 +422,6 @@ Bool_t AliAnalysisTaskEmcal::AcceptCluster(AliVCluster *clus, Int_t c) const
   }
 
   return cont->AcceptCluster(clus);
-
 }
 
 //________________________________________________________________________
@@ -451,8 +459,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
     Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
     file.Replace(pos+1,pos2-pos1,"");
-  }
-  else {
+  } else {
     // not an archive take the basename....
     file.ReplaceAll(gSystem->BaseName(file.Data()),"");
   }
@@ -479,8 +486,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
     if (!fxsec) {
 	// not a severe condition but inciate that we have no information
       return kFALSE;
-    }
-    else{
+    } else {
       // find the tlist we want to be independtent of the name so use the Tkey
       TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
       if (!key) {
@@ -496,8 +502,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
       fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
       fxsec->Close();
     }
-  } // no tree pyxsec.root
-  else {
+  } else { // no tree pyxsec.root
     TTree *xtree = (TTree*)fxsec->Get("Xsection");
     if (!xtree) {
       fxsec->Close();
@@ -518,6 +523,8 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEmcal::UserNotify()
 {
+  // Called when file changes.
+
   if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
 
@@ -527,7 +534,6 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
     return kFALSE;
   }
 
-  Float_t xsection = 0;
   Float_t trials   = 0;
   Int_t   pthard   = 0;
 
@@ -543,13 +549,13 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
 
   Int_t nevents = tree->GetEntriesFast();
 
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthard);
+  PythiaInfoFromFile(curfile->GetName(), fXsection, trials, pthard);
 
   // TODO: Workaround
   if ((pthard < 0) || (pthard > 10))
     pthard = 0;
   fHistTrials->Fill(pthard, trials);
-  fHistXsection->Fill(pthard, xsection);
+  fHistXsection->Fill(pthard, fXsection);
   fHistEvents->Fill(pthard, nevents);
 
   return kTRUE;
@@ -657,13 +663,10 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType()
   } else {
     Int_t runNumber = InputEvent()->GetRunNumber();
     if ((runNumber >= 136851 && runNumber <= 139517) ||  // LHC10h
-	(runNumber >= 166529 && runNumber <= 170593))    // LHC11h
-    { 
+	(runNumber >= 166529 && runNumber <= 170593)) {  // LHC11h
       return kAA;
-    } 
-    else if ((runNumber>=188365 && runNumber <= 188366) || // LHC12g
-	     (runNumber >= 195344 && runNumber <= 196608))  // LHC13b-f
-    {
+    } else if ((runNumber>=188365 && runNumber <= 188366) ||   // LHC12g
+	       (runNumber >= 195344 && runNumber <= 196608)) { // LHC13b-f
       return kpA;
     } else {
       return kpp;
@@ -698,7 +701,6 @@ AliAnalysisTaskEmcal::TriggerType AliAnalysisTaskEmcal::GetTriggerType()
     return kJ2;
   else
     return kND;
- 
 }
 
 //________________________________________________________________________
@@ -771,12 +773,31 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
       return kFALSE;
     }
   }
-  
 
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     if (fCent<fMinCent || fCent>fMaxCent) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("Cent",1);
+      return kFALSE;
+    }
+  }
+
+  if (fUseAliAnaUtils) {
+    if (!fAliAnalysisUtils)
+      fAliAnalysisUtils = new AliAnalysisUtils();
+    fAliAnalysisUtils->SetMinVtxContr(2);
+    fAliAnalysisUtils->SetMaxVtxZ(999);
+    if(fMinVz<-10.) fMinVz = -10.; 
+    if(fMinVz>10.)  fMaxVz = 10.;
+
+    if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
+      if (fGeneralHistograms) 
+	fHistEventRejection->Fill("VtxSel2013pA",1);
+      return kFALSE;
+    }
+
+    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
+      fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
   }
@@ -841,24 +862,6 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelected()
     if (nTracksAcc<fMinNTrack) {
       if (fGeneralHistograms) 
 	fHistEventRejection->Fill("minNTrack",1);
-      return kFALSE;
-    }
-  }
-
-  if (fUseAliAnaUtils) {
-    if (!fAliAnalysisUtils)
-      fAliAnalysisUtils = new AliAnalysisUtils();
-    fAliAnalysisUtils->SetMinVtxContr(2);
-    fAliAnalysisUtils->SetMaxVtxZ(10.);
-
-    if (!fAliAnalysisUtils->IsVertexSelected2013pA(InputEvent())) {
-      if (fGeneralHistograms) 
-	fHistEventRejection->Fill("VtxSel2013pA",1);
-      return kFALSE;
-    }
-
-    if (fAliAnalysisUtils->IsPileUpEvent(InputEvent())) {
-      fHistEventRejection->Fill("PileUp",1);
       return kFALSE;
     }
   }
@@ -942,8 +945,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 	  AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
 	  fCentBin = fNcentBins-1;
 	}
-      }
-      else {
+      } else {
 	Double_t centWidth = (fMaxCent-fMinCent)/(Double_t)fNcentBins;
 	fCentBin = TMath::FloorNint(fCent/centWidth);
 	if (fCentBin>=fNcentBins) {
@@ -987,7 +989,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 
     if (fPythiaHeader) {
       fPtHard = fPythiaHeader->GetPtHard();
-    
+
       const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
       const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
       for (fPtHardBin = 0; fPtHardBin < 11; fPtHardBin++) {
@@ -1005,8 +1007,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 }
 
 //________________________________________________________________________
-AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) {
-
+AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
+{
   // Add particle container
   // will be called in AddTask macro
 
@@ -1024,8 +1026,8 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
 }
 
 //________________________________________________________________________
-AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) {
-
+AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) 
+{
   // Add cluster container
   // will be called in AddTask macro
 
@@ -1042,7 +1044,8 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) {
 }
 
 //________________________________________________________________________
-AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const {
+AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const 
+{
   // Get i^th particle container
 
   if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
@@ -1051,7 +1054,8 @@ AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const 
 }
 
 //________________________________________________________________________
-AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const {
+AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const 
+{
   // Get i^th cluster container
 
   if (i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
@@ -1060,7 +1064,8 @@ AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *name) const {
+AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *name) const 
+{
   // Get particle container with name
 
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.FindObject(name));
@@ -1068,7 +1073,8 @@ AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *nam
 }
 
 //________________________________________________________________________
-AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name) const {
+AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name) const 
+{
   // Get cluster container with name
 
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.FindObject(name));
@@ -1076,7 +1082,8 @@ AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name)
 }
 
 //________________________________________________________________________
-TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const {
+TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const 
+{
   // Get i^th TClonesArray with AliVParticle
 
   AliParticleContainer *cont = GetParticleContainer(i);
@@ -1089,7 +1096,8 @@ TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const {
 }
 
 //________________________________________________________________________
-TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const {
+TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const 
+{
   // Get i^th TClonesArray with AliVCluster
 
   AliClusterContainer *cont = GetClusterContainer(i);
@@ -1101,7 +1109,8 @@ TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c) const {
+AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c) const 
+{
   // Get particle p if accepted from  container c
   // If particle not accepted return 0
 
@@ -1116,7 +1125,8 @@ AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c)
 }
 
 //________________________________________________________________________
-AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) const {
+AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) const 
+{
   // Get particle p if accepted from  container c
   // If particle not accepted return 0
 
@@ -1131,7 +1141,8 @@ AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) 
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const {
+Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const 
+{
   // Get number of entries in particle array i
 
   AliParticleContainer *cont = GetParticleContainer(i);
@@ -1143,7 +1154,8 @@ Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const {
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const {
+Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const 
+{
   // Get number of entries in cluster array i
 
   AliClusterContainer *cont = GetClusterContainer(i);
@@ -1155,7 +1167,8 @@ Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const {
 }
 
 //________________________________________________________________________
-AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() {
+AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() 
+{
   //get main trigger match; if not known yet, look for it and cache
 
   if (fMainTriggerPatch) 
@@ -1181,4 +1194,16 @@ AliEmcalTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch() {
   }
 
   return fMainTriggerPatch;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskEmcal::AddObjectToEvent(TObject *obj)
+{
+  // Add object to event
+
+  if (!(InputEvent()->FindListObject(obj->GetName()))) {
+    InputEvent()->AddObject(obj);
+  } else {
+    AliFatal(Form("%s: Container with name %s already present. Aborting", GetName(), obj->GetName()));
+  }
 }

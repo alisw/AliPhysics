@@ -22,6 +22,7 @@ class AliFMDCorrVertexBias;
 class AliFMDCorrMergingEfficiency;
 class AliFMDCorrAcceptance;
 class AliFMDCorrSecondaryMap;
+class AliFMDCorrNoiseGain;
 class TAxis;
 
 /**
@@ -46,7 +47,8 @@ private:
     kIdVertexBias,
     kIdMergingEfficiency,
     kIdDoubleHit,
-    kIdAcceptance
+    kIdAcceptance,
+    kIdNoiseGain
   };
 public:
   /**
@@ -59,13 +61,15 @@ public:
     kMergingEfficiency         = 0x08,
     kDoubleHit                 = 0x10,
     kAcceptance                = 0x20,
+    kNoiseGain                 = 0x40,
     kDefault                   = (kSecondaryMap|kELossFits|kAcceptance),
     kAll                       = (kSecondaryMap| 
 				  kELossFits|
 				  kVertexBias|
 				  kMergingEfficiency|
 				  kDoubleHit|
-				  kAcceptance)
+				  kAcceptance|
+				  kNoiseGain)
   };
   /** 
    * Default constructor.  This is public for the sake of the ROOT I/O
@@ -247,17 +251,29 @@ public:
   /** 
    * Get the merging efficiency 
    * 
-   * 
    * @return Get the vertex efficiency correction 
    */
   const AliFMDCorrMergingEfficiency* GetMergingEfficiency() const;
   /** 
    * Get the acceptance correction due to dead channels 
    * 
-   * 
    * @return Acceptance correction due to dead channels 
    */
   const AliFMDCorrAcceptance* GetAcceptance() const;
+  /** 
+   * Get the noise calibration.  That is, the ratio 
+   *
+   * @f[ 
+   *   \frac{\sigma_{i}}{g_{i}k}
+   * @f] 
+   *
+   * where @f$ k@f$ is a constant determined by the electronics of
+   * units DAC/MIP, and @f$ \sigma_i, g_i@f$ are the noise and gain of
+   * the @f$ i @f$ strip respectively
+   * 
+   * @return Noise-gain calibration
+   */
+  const AliFMDCorrNoiseGain* GetNoiseGain() const;
 private:
   /** 
    * Non-default constructor - initializes corrections - used by
@@ -280,10 +296,11 @@ private:
   static const Char_t* fgkVertexBiasSkel;    // Name of correction object 
   static const Char_t* fgkMergingEffSkel;    // Name of correction object 
   static const Char_t* fgkAcceptanceSkel;    // Name of correction object 
+  static const Char_t* fgkNoiseGainSkel;     // Name of correction object 
   /* 
    * @} 
    */
-  ClassDef(AliForwardCorrectionManager,4) // Manager of corrections 
+  ClassDef(AliForwardCorrectionManager,5) // Manager of corrections 
 };
 
 #endif

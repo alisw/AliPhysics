@@ -60,7 +60,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskRhoVnModulation)
 
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTaskEmcalJet("AliAnalysisTaskRhoVnModulation", kTRUE), 
-    fDebug(0), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+    fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(kGrid), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fCachedRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -96,6 +96,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
         fHistJetPtArea[i] = 0;
+        fHistJetPtEta[i] = 0;
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
@@ -105,7 +106,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation() : AliAnalysisTa
 }
 //_____________________________________________________________________________
 AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name, runModeType type) : AliAnalysisTaskEmcalJet(name, kTRUE),
-  fDebug(0), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.),  fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvaluePDF(0), fHistPvalueCDF(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
+  fDebug(0), fRunToyMC(kFALSE), fLocalInit(0), fAttachToEvent(kTRUE), fSemiCentralInclusive(kFALSE), fFillHistograms(kTRUE), fFillQAHistograms(kTRUE), fReduceBinsXByFactor(-1.), fReduceBinsYByFactor(-1.), fNoEventWeightsForQC(kTRUE), fCentralityClasses(0), fPtBinsHybrids(0), fPtBinsJets(0), fExpectedRuns(0), fExpectedSemiGoodRuns(0), fUserSuppliedV2(0), fUserSuppliedV3(0), fUserSuppliedR2(0), fUserSuppliedR3(0), fTracksCont(0), fJetsCont(0), fLeadingJet(0), fUseScaledRho(0), fNAcceptedTracks(0), fNAcceptedTracksQCn(0), fFitModulationType(kNoFit), fFitGoodnessTest(kChi2Poisson), fQCRecovery(kTryFit), fUsePtWeight(kTRUE), fUsePtWeightErrorPropagation(kTRUE), fDetectorType(kTPC), fFitModulationOptions("QWLI"), fRunModeType(type), fDataType(kESD), fCollisionType(kPbPb), fRandom(0), fRunNumber(-1), fMappedRunNumber(0), fInCentralitySelection(-1), fFitModulation(0), fFitControl(0), fMinPvalue(0.01), fMaxPvalue(1), fNameJetClones(0), fNamePicoTrackClones(0), fNameRho(0), fNameSmallRho(""), fCachedRho(0), fLocalJetMinEta(-10), fLocalJetMaxEta(-10), fLocalJetMinPhi(-10), fLocalJetMaxPhi(-10), fSoftTrackMinPt(0.15), fSoftTrackMaxPt(5.), fSemiGoodJetMinPhi(0.), fSemiGoodJetMaxPhi(4.), fSemiGoodTrackMinPhi(0.), fSemiGoodTrackMaxPhi(4.), fAbsVertexZ(10), fHistCentrality(0), fHistVertexz(0), fHistRunnumbersPhi(0), fHistRunnumbersEta(0), fHistPvalueCDFROOT(0), fHistPvalueCDFROOTCent(0), fHistChi2ROOTCent(0), fHistPChi2Root(0),  fHistPvalueCDF(0), fHistPvalueCDFCent(0), fHistChi2Cent(0), fHistPChi2(0), fHistKolmogorovTest(0), fHistKolmogorovTestCent(0), fHistPKolmogorov(0), fHistRhoStatusCent(0), fHistUndeterminedRunQA(0), fMinDisanceRCtoLJ(0), fRandomConeRadius(-1.), fMaxCones(-1), fAbsVnHarmonics(kTRUE), fExcludeLeadingJetsFromFit(1.), fRebinSwapHistoOnTheFly(kTRUE), fPercentageOfFits(10.), fUseV0EventPlaneFromHeader(kTRUE), fExplicitOutlierCut(-1), fMinLeadingHadronPt(0), fSubtractJetPt(kFALSE), fOutputList(0), fOutputListGood(0), fOutputListBad(0), fHistAnalysisSummary(0), fHistSwap(0), fProfV2(0), fProfV2Cumulant(0), fProfV3(0), fProfV3Cumulant(0), fHistPsiControl(0), fHistPsiSpread(0), fHistPsiVZEROA(0), fHistPsiVZEROC(0), fHistPsiVZERO(0), fHistPsiTPC(0), fHistPsiVZEROAV0M(0), fHistPsiVZEROCV0M(0), fHistPsiVZEROVV0M(0), fHistPsiTPCiV0M(0), fHistPsiVZEROATRK(0), fHistPsiVZEROCTRK(0), fHistPsiVZEROTRK(0), fHistPsiTPCTRK(0), fHistRhoVsMult(0), fHistRhoVsCent(0), fHistRhoAVsMult(0), fHistRhoAVsCent(0) {
     for(Int_t i(0); i < 10; i++) {
         fProfV2Resolution[i] = 0;
         fProfV3Resolution[i] = 0;
@@ -141,6 +142,7 @@ AliAnalysisTaskRhoVnModulation::AliAnalysisTaskRhoVnModulation(const char* name,
         fHistJetPt[i] = 0;
         fHistJetEtaPhi[i] = 0;
         fHistJetPtArea[i] = 0;
+        fHistJetPtEta[i] = 0;
         fHistJetPtConstituents[i] = 0;
         fHistJetEtaRho[i] = 0;
         fHistJetPsi2Pt[i] = 0;
@@ -175,6 +177,9 @@ AliAnalysisTaskRhoVnModulation::~AliAnalysisTaskRhoVnModulation()
     if(fFitModulation)          delete fFitModulation;
     if(fHistSwap)               delete fHistSwap;
     if(fCentralityClasses)      delete fCentralityClasses;
+    if(fExpectedRuns)           delete fExpectedRuns;
+    if(fExpectedSemiGoodRuns)   delete fExpectedSemiGoodRuns;
+    if(fFitControl)             delete fFitControl;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::ExecOnce()
@@ -256,7 +261,7 @@ TH1F* AliAnalysisTaskRhoVnModulation::BookTH1F(const char* name, const char* x, 
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
-        title += Form("_%i-%i", fCentralityClasses->At(c), fCentralityClasses->At(1+c));
+        title += Form("_%i-%i", (int)(fCentralityClasses->At(c)), (int)(fCentralityClasses->At((1+c))));
     }
     title += Form(";%s;[counts]", x);
     TH1F* histogram = new TH1F(name, title.Data(), bins, min, max);
@@ -275,7 +280,7 @@ TH2F* AliAnalysisTaskRhoVnModulation::BookTH2F(const char* name, const char* x, 
     TString title(name);
     if(c!=-1) { // format centrality dependent histograms accordingly
         name = Form("%s_%i", name, c);
-        title += Form("_%i-%i", fCentralityClasses->At(c), fCentralityClasses->At(1+c));
+        title += Form("_%i-%i", (int)fCentralityClasses->At(c), (int)(fCentralityClasses->At((1+c))));
     }
     title += Form(";%s;%s", x, y);
     TH2F* histogram = new TH2F(name, title.Data(), binsx, minx, maxx, binsy, miny, maxy);
@@ -291,8 +296,16 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
     if(!fCentralityClasses) {   // classes must be defined at this point
-        Int_t c[] = {0, 20, 40, 60, 80, 100};
-        fCentralityClasses = new TArrayI(sizeof(c)/sizeof(c[0]), c);
+        Double_t c[] = {0., 20., 40., 60., 80., 100.};
+        fCentralityClasses = new TArrayD(sizeof(c)/sizeof(c[0]), c);
+    }
+    if(!fExpectedRuns) {        // expected runs must be defined at this point
+        Int_t r[] =  {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, /* up till here original good TPC list */169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309, /* original semi-good tpc list */169415, 169411, 169035, 168988, 168984, 168826, 168777, 168512, 168511, 168467, 168464, 168342, 168310, 168115, 168108, 168107, 167987, 167915, 167903, /*new runs, good according to RCT */ 169238, 169160, 169156, 169148, 169145, 169144 /* run swith missing OROC 8 but seem ok in QA */};
+        fExpectedRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
+    }
+    if(!fExpectedSemiGoodRuns) {
+        Int_t r[] = {169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
+        fExpectedSemiGoodRuns = new TArrayI(sizeof(r)/sizeof(r[0]), r);
     }
     // global QA
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
@@ -300,7 +313,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
 
     // pico track kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
-        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 50, i);
+        fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
         fHistPicoTrackMult[i] =        BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
         if(fFillQAHistograms) {
             fHistPicoCat1[i] =             BookTH2F("fHistPicoCat1", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
@@ -318,31 +331,41 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         /* fHistClusterCorrEta[i] =       BookTH1F("fHistClusterCorrEta", "#eta", 100, -5, 5, i); */
     }
 
-    // event plane estimates and quality
-    fHistPsiControl =           new TProfile("fHistPsiControl", "fHistPsiControl", 10, 0, 10);
-    fHistPsiControl->Sumw2();
-    fHistPsiSpread =            new TProfile("fHistPsiSpread", "fHistPsiSpread", 4, 0, 4);
-    fHistPsiSpread->Sumw2();
-    fHistPsiControl->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(3, "<#Psi_{2, TPC}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(5, "<#Psi_{2, TPC, #eta > 0}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(6, "<#Psi_{3, VZEROA}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(7, "<#Psi_{3, VZEROC}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(8, "<#Psi_{3, TPC}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(9, "<#Psi_{3, TPC, #eta < 0}>");
-    fHistPsiControl->GetXaxis()->SetBinLabel(10, "<#Psi_{3, TPC, #eta > 0}>");
-    fHistPsiSpread->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA} - #Psi_{2, VZEROC}>");
-    fHistPsiSpread->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
-    fHistPsiSpread->GetXaxis()->SetBinLabel(3, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
-    fHistPsiSpread->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0} - #Psi_{2, TPC, #eta > 0}>");
-    fOutputList->Add(fHistPsiControl);
-    fOutputList->Add(fHistPsiSpread);
-    fHistPsiVZEROA =            BookTH1F("fHistPsiVZEROA", "#Psi_{VZEROA}", 100, -.5*TMath::Pi(), .5*TMath::Pi());
-    fHistPsiVZEROC =            BookTH1F("fHistPsiVZEROC", "#Psi_{VZEROC}", 100, -.5*TMath::Pi(), .5*TMath::Pi());
-    fHistPsiVZERO =             BookTH1F("fHistPsiVZERO", "#Psi_{VZERO}", 100, -.5*TMath::Pi(), .5*TMath::Pi());
-    fHistPsiTPC =               BookTH1F("fHistPsiTPC", "#Psi_{TPC}", 100, -.5*TMath::Pi(), .5*TMath::Pi());
+    if(fFillQAHistograms) {
+        // event plane estimates and quality
+        fHistPsiControl =           new TProfile("fHistPsiControl", "fHistPsiControl", 10, 0, 10);
+        fHistPsiControl->Sumw2();
+        fHistPsiSpread =            new TProfile("fHistPsiSpread", "fHistPsiSpread", 4, 0, 4);
+        fHistPsiSpread->Sumw2();
+        fHistPsiControl->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(3, "<#Psi_{2, TPC}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(5, "<#Psi_{2, TPC, #eta > 0}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(6, "<#Psi_{3, VZEROA}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(7, "<#Psi_{3, VZEROC}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(8, "<#Psi_{3, TPC}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(9, "<#Psi_{3, TPC, #eta < 0}>");
+        fHistPsiControl->GetXaxis()->SetBinLabel(10, "<#Psi_{3, TPC, #eta > 0}>");
+        fHistPsiSpread->GetXaxis()->SetBinLabel(1, "<#Psi_{2, VZEROA} - #Psi_{2, VZEROC}>");
+        fHistPsiSpread->GetXaxis()->SetBinLabel(2, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
+        fHistPsiSpread->GetXaxis()->SetBinLabel(3, "<#Psi_{2, VZEROC} - #Psi_{2, TPC}>");
+        fHistPsiSpread->GetXaxis()->SetBinLabel(4, "<#Psi_{2, TPC, #eta < 0} - #Psi_{2, TPC, #eta > 0}>");
+        fOutputList->Add(fHistPsiControl);
+        fOutputList->Add(fHistPsiSpread);
+        fHistPsiVZEROA =            BookTH1F("fHistPsiVZEROA", "#Psi_{VZEROA}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROC =            BookTH1F("fHistPsiVZEROC", "#Psi_{VZEROC}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZERO =             BookTH1F("fHistPsiVZERO", "#Psi_{VZERO}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiTPC =               BookTH1F("fHistPsiTPC", "#Psi_{TPC}", 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROAV0M =         BookTH2F("fHistPsiVZEROAV0M", "V0M", "#Psi_{2, VZEROA}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROCV0M =         BookTH2F("fHistPsiVZEROCV0M", "V0M", "#Psi_{2, VZEROC}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROVV0M =         BookTH2F("fHistPsiVZEROV0M", "V0M", "#Psi_{2, VZERO}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiTPCiV0M =           BookTH2F("fHistPsiTPCV0M", "V0M", "#Psi_{2, TRK}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROATRK =         BookTH2F("fHistPsiVZEROATRK", "TRK", "#Psi_{2, VZEROA}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROCTRK =         BookTH2F("fHistPsiVZEROCTRK", "TRK", "#Psi_{2, VZEROC}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiVZEROTRK =          BookTH2F("fHistPsiVZEROTRK", "TRK", "#Psi_{2, VZERO}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+        fHistPsiTPCTRK =            BookTH2F("fHistPsiTPCTRK", "TRK", "#Psi_{2, TRK}", 60, 0, 60, 40, -.5*TMath::Pi(), .5*TMath::Pi());
+    }
     // background
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i ++) {
         fHistRhoPackage[i] =           BookTH1F("fHistRhoPackage",  "#rho [GeV/c]", 100, 0, 150, i);
@@ -383,15 +406,16 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         /* fHistDeltaPtDeltaPhi2Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi2Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::Pi(), 100, -50, 100, i); */
         /* fHistDeltaPtDeltaPhi3Rand[i] =  BookTH2F("fHistDeltaPtDeltaPhi3Rand", "#phi - #Psi_{TPC}", "#delta p_{t} [GeV/c]", 50, 0, TMath::TwoPi()/3., 100, -50, 100, i); */
         // jet histograms (after kinematic cuts)
-        fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t} RAW [GeV/c]", 200, -50, 150, i);
-        fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t} [GeV/c]", 350, -100, 250, i);
+        fHistJetPtRaw[i] =             BookTH1F("fHistJetPtRaw", "p_{t, jet} RAW [GeV/c]", 200, -50, 150, i);
+        fHistJetPt[i] =                BookTH1F("fHistJetPt", "p_{t, jet} [GeV/c]", 350, -100, 250, i);
         if(fFillQAHistograms)   fHistJetEtaPhi[i] =            BookTH2F("fHistJetEtaPhi", "#eta", "#phi", 100, -1, 1, 100, 0, TMath::TwoPi(), i);
-        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
-        fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
+        fHistJetPtArea[i] =            BookTH2F("fHistJetPtArea", "p_{t, jet} [GeV/c]", "Area", 175, -100, 250, 30, 0, 0.9, i);
+        fHistJetPtEta[i] =            BookTH2F("fHistJetPtEta", "p_{t, jet} [GeV/c]", "Eta", 175, -100, 250, 30, -0.9, 0.9, i);
+        fHistJetPtConstituents[i] =    BookTH2F("fHistJetPtConstituents", "p_{t, jet} [GeV/c]", "Area", 350, -100, 250, 60, 0, 150, i);
         fHistJetEtaRho[i] =            BookTH2F("fHistJetEtaRho", "#eta", "#rho", 100, -1, 1, 100, 0, 300, i);
         // in plane and out of plane spectra
-        fHistJetPsi2Pt[i] =          BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
-        fHistJetPsi3Pt[i] =          BookTH2F("fHistJetPsi3Pt", Form("#phi_{jet} - #Psi_{3, %s}", detector.Data()), "p_{t} [GeV/c]", 40, 0., TMath::TwoPi()/3., 350, -100, 250, i);
+        fHistJetPsi2Pt[i] =          BookTH2F("fHistJetPsi2Pt", Form("#phi_{jet} - #Psi_{2, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::Pi(), 350, -100, 250, i);
+        fHistJetPsi3Pt[i] =          BookTH2F("fHistJetPsi3Pt", Form("#phi_{jet} - #Psi_{3, %s}", detector.Data()), "p_{t, jet} [GeV/c]", 40, 0., TMath::TwoPi()/3., 350, -100, 250, i);
         // profiles for all correlator permutations which are necessary to calculate each second and third order event plane resolution
         fProfV2Resolution[i] = new TProfile(Form("fProfV2Resolution_%i", i), Form("fProfV2Resolution_%i", i), 11, -0.5, 10.5);
         fProfV2Resolution[i]->GetXaxis()->SetBinLabel(3, "<cos(2(#Psi_{VZEROA} - #Psi_{VZEROC}))>");
@@ -416,10 +440,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
         fProfV3Resolution[i]->GetXaxis()->SetBinLabel(11, "<cos(3(#Psi_{TPC_A} - #Psi_{TPC_B}))>");
         fOutputList->Add(fProfV3Resolution[i]); 
     }
-    // cdf and pdf of chisquare distribution
-    fHistPvaluePDF = BookTH1F("fHistPvaluePDF", "PDF #chi^{2}", 500, 0, 1);
-    fHistPvalueCDF = BookTH1F("fHistPvalueCDF", "CDF #chi^{2}", 500, 0, 1);
-    // vn profile
+   // vn profile
     Float_t temp[fCentralityClasses->GetSize()];
     for(Int_t i(0); i < fCentralityClasses->GetSize(); i++) temp[i] = fCentralityClasses->At(i);
     fProfV2 = new TProfile("fProfV2", "fProfV2", fCentralityClasses->GetSize()-1, temp);
@@ -445,14 +466,20 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fReduceBinsXByFactor = 1;
     fReduceBinsYByFactor = 1;
     if(fFillQAHistograms) {
-        fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", 100, -.5, 99.5, 100, -1.1, 1.1);
+        fHistRunnumbersEta = new TH2F("fHistRunnumbersEta", "fHistRunnumbersEta", fExpectedRuns->GetSize()+1, -.5, fExpectedRuns->GetSize()+.5, 100, -1.1, 1.1);
         fHistRunnumbersEta->Sumw2();
         fOutputList->Add(fHistRunnumbersEta);
-        fHistRunnumbersPhi = new TH2F("fHistRunnumbersPhi", "fHistRunnumbersPhi", 100, -.5, 99.5, 100, -0.2, TMath::TwoPi()+0.2);
+        fHistRunnumbersPhi = new TH2F("fHistRunnumbersPhi", "fHistRunnumbersPhi", fExpectedRuns->GetSize()+1, -.5, fExpectedRuns->GetSize()+.5, 100, -0.2, TMath::TwoPi()+0.2);
         fHistRunnumbersPhi->Sumw2();
         fOutputList->Add(fHistRunnumbersPhi);
+        for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) { 
+            fHistRunnumbersPhi->GetXaxis()->SetBinLabel(i+1, Form("%i", fExpectedRuns->At(i)));
+            fHistRunnumbersEta->GetXaxis()->SetBinLabel(i+1, Form("%i", fExpectedRuns->At(i)));
+        }
+        fHistRunnumbersPhi->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
+        fHistRunnumbersEta->GetXaxis()->SetBinLabel(fExpectedRuns->GetSize()+1, "undetermined");
     }
-    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 52, -0.5, 52.5);
+    fHistAnalysisSummary = BookTH1F("fHistAnalysisSummary", "flag", 54, -0.5, 54.5);
     fHistSwap = new TH1F("fHistSwap", "fHistSwap", 20, 0, TMath::TwoPi());
     if(fUsePtWeight) fHistSwap->Sumw2();
 
@@ -462,6 +489,21 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     if(fUserSuppliedR3) fOutputList->Add(fUserSuppliedR3);
     // increase readability of output list
     fOutputList->Sort();
+    // cdf and pdf of chisquare distribution
+    fHistPvalueCDF = BookTH1F("fHistPvalueCDF", "CDF #chi^{2}", 50, 0, 1);
+    fHistPvalueCDFCent = BookTH2F("fHistPvalueCDFCent", "centrality", "p-value", 40, 0, 100, 40, 0, 1);
+    fHistChi2Cent = BookTH2F("fHistChi2Cent", "centrality", "#tilde{#chi^{2}}", 100, 0, 100, 100, 0, 5);
+    fHistPChi2 = BookTH2F("fHistPChi2", "p-value", "#tilde{#chi^{2}}", 1000, 0, 1, 100, 0, 5);
+    fHistKolmogorovTest = BookTH1F("fHistKolmogorovTest", "KolmogorovTest", 50, 0, 1);
+    fHistKolmogorovTestCent = BookTH2F("fHistKolmogorovTestCent", "centrality", "Kolmogorov p", 40, 0, 100, 45, 0, 1); 
+    fHistPvalueCDFROOT = BookTH1F("fHistPvalueCDFROOT", "CDF #chi^{2} ROOT", 50, 0, 1);
+    fHistPvalueCDFROOTCent = BookTH2F("fHistPvalueCDFROOTCent", "centrality", "p-value ROOT", 40, 0, 100, 45, 0, 1);
+    fHistChi2ROOTCent = BookTH2F("fHistChi2ROOTCent", "centrality", "#tilde{#chi^{2}}", 40, 0, 100, 45, 0, 5);
+    fHistPChi2Root = BookTH2F("fHistPChi2Root", "p-value", "#tilde{#chi^{2}} ROOT", 1000, 0, 1, 100, 0, 5);
+    fHistPKolmogorov = BookTH2F("fHistPKolmogorov", "p-value", "kolmogorov p",40, 0, 1, 40, 0, 1);
+    fHistRhoStatusCent = BookTH2F("fHistRhoStatusCent", "centrality", "status [-1=lin was better, 0=ok, 1 = failed]", 101, -1, 100, 3, -1.5, 1.5);
+    fHistUndeterminedRunQA = BookTH1F("fHistUndeterminedRunQA", "runnumber", 10, 0, 10);
+ 
     PostData(1, fOutputList);
 
     switch (fRunModeType) {
@@ -489,7 +531,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     if(!fLocalInit) fLocalInit = InitializeAnalysis();
     // reject the event if expected data is missing
     if(!PassesCuts(InputEvent())) return kFALSE;
-    if(!fCaloClusters && fDebug > 0) printf(" > Warning: couldn't retreive calo clusters! < \n");
+    fLeadingJet = GetLeadingJet();      // store the leading jet
     // set the rho value 
     fLocalRho->SetVal(fRho->GetVal());
     // [0][0] psi2a     [1,0]   psi2c
@@ -601,9 +643,9 @@ Bool_t AliAnalysisTaskRhoVnModulation::Run()
     }
     // if all went well, update the local rho parameter
     fLocalRho->SetLocalRho(fFitModulation);
-    // fill a number of histograms 
-    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
+    // fill a number of histograms. event qa needs to be filled first as it also determines the runnumber for the track qa 
     if(fFillQAHistograms)       FillQAHistograms(InputEvent());
+    if(fFillHistograms)         FillHistogramsAfterSubtraction(psi2, psi3, vzero, vzeroComb, tpc);
     // send the output to the connected output container
     PostData(1, fOutputList);
     switch (fRunModeType) {
@@ -664,8 +706,7 @@ void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneTPC(Double_t* tpc)
    if(fTracks) {
        Float_t excludeInEta = -999;
        if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
-           AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-           if(leadingJet) excludeInEta = leadingJet->Eta();
+           if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
        }
        Int_t iTracks(fTracks->GetEntriesFast());
        for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
@@ -780,7 +821,9 @@ void AliAnalysisTaskRhoVnModulation::CalculateRandomCone(Float_t &pt, Float_t &e
         etaJet = jet->Eta();
         phiJet = jet->Phi();
     }
-    // force the random cones to at least be within detector acceptance
+    // the random cone acceptance has to equal the jet acceptance
+    // this also insures safety when runnnig on the semi-good tpc runs for 11h data,
+    // where jet acceptance is adjusted to reduced acceptance - hence random cone acceptance as well
     Float_t minPhi(GetJetContainer()->GetJetPhiMin()), maxPhi(GetJetContainer()->GetJetPhiMax());
     if(maxPhi > TMath::TwoPi()) maxPhi = TMath::TwoPi();
     if(minPhi < 0 ) minPhi = 0;
@@ -1006,6 +1049,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     //      in all cases, a cut can be made on the p-value of the chi-squared value of the fit
     //      and a check can be performed to see if rho has no negative local minimum
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    Int_t freeParams(2);                // free parameters of the fit (for NDF) 
     switch (fFitModulationType) {       // for approaches where no fitting is required
         case kQC2 : {
             fFitModulation->FixParameter(4, psi2); 
@@ -1094,41 +1138,92 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
     Double_t excludeInPt  = -999;
     if(iTracks <= 0 || fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
     if(fExcludeLeadingJetsFromFit > 0 ) {
-        AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-        if(leadingJet) {
-            excludeInEta = leadingJet->Eta();
-            excludeInPhi = leadingJet->Phi();
-            excludeInPt = leadingJet->Pt();
+        if(fLeadingJet) {
+            excludeInEta = fLeadingJet->Eta();
+            excludeInPhi = fLeadingJet->Phi();
+            excludeInPt = fLeadingJet->Pt();
         }
     }
+    // check the acceptance of the track selection that will be used
+    // if one uses e.g. semi-good tpc tracks, accepance in phi is reduced to 0 < phi < 4
+    // the defaults (-10 < phi < 10) which accept all, are then overwritten
+    Double_t lowBound(0.), upBound(TMath::TwoPi());     // bounds for fit
+    if(GetParticleContainer()->GetParticlePhiMin() > lowBound) lowBound = GetParticleContainer()->GetParticlePhiMin();
+    if(GetParticleContainer()->GetParticlePhiMax() < upBound) upBound = GetParticleContainer()->GetParticlePhiMax();
+
     fHistSwap->Reset();                 // clear the histogram
-    TH1F _tempSwap;
+    TH1F _tempSwap;     // on stack for quick access
+    TH1F _tempSwapN;    // on stack for quick access, bookkeeping histogram
     if(fRebinSwapHistoOnTheFly) {
         if(fNAcceptedTracks < 49) fNAcceptedTracks = 49;       // avoid aliasing effects
-        _tempSwap = TH1F("_tempSwap", "_tempSwap", TMath::CeilNint(TMath::Sqrt(fNAcceptedTracks)), 0, TMath::TwoPi());
+        _tempSwap = TH1F("_tempSwap", "_tempSwap", TMath::CeilNint(TMath::Sqrt(fNAcceptedTracks)), lowBound, upBound);
+        if(fUsePtWeightErrorPropagation) _tempSwapN = TH1F("_tempSwapN", "_tempSwapN", TMath::CeilNint(TMath::Sqrt(fNAcceptedTracks)), lowBound, upBound);
         if(fUsePtWeight) _tempSwap.Sumw2();
     }
     else _tempSwap = *fHistSwap;         // now _tempSwap holds the desired histo
+    // non poissonian error when using pt weights
+    Double_t totalpts(0.), totalptsquares(0.), totalns(0.);
     for(Int_t i(0); i < iTracks; i++) {
             AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(i));
             if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
             if(!PassesCuts(track) || track->Pt() > fSoftTrackMaxPt || track->Pt() < fSoftTrackMinPt) continue;
-            if(fUsePtWeight) _tempSwap.Fill(track->Phi(), track->Pt());
+            if(fUsePtWeight) {
+                _tempSwap.Fill(track->Phi(), track->Pt());
+                if(fUsePtWeightErrorPropagation) {
+                    totalpts += track->Pt();
+        	    totalptsquares += track->Pt()*track->Pt();
+		    totalns += 1;
+                    _tempSwapN.Fill(track->Phi());
+                }
+            }
             else _tempSwap.Fill(track->Phi());
     }
+    if(fUsePtWeight && fUsePtWeightErrorPropagation) {
+        // in the case of pt weights overwrite the poissonian error estimate which is assigned by root by a more sophisticated appraoch
+        // the assumption here is that the bin error will be dominated by the uncertainty in the mean pt in a bin and in the uncertainty
+        // of the number of tracks in a bin, the first of which will be estimated from the sample standard deviation of all tracks in the 
+        // event, for the latter use a poissonian estimate. the two contrubitions are assumed to be uncorrelated
+        if(totalns < 1) return kFALSE; // not one track passes the cuts
+        for(Int_t l = 0; l < _tempSwap.GetNbinsX(); l++) {
+            if(_tempSwapN.GetBinContent(l+1) == 0) {
+                _tempSwap.SetBinContent(l+1,0);
+                _tempSwap.SetBinError(l+1,0);
+            }
+            else {
+                Double_t vartimesnsq = totalptsquares*totalns - totalpts*totalpts;
+                Double_t variance = vartimesnsq/(totalns*(totalns-1.));
+                Double_t SDOMSq = variance / _tempSwapN.GetBinContent(l+1);
+                Double_t SDOMSqOverMeanSq = SDOMSq * _tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1) / (_tempSwapN.GetBinContent(l+1) * _tempSwapN.GetBinContent(l+1));
+                Double_t poissonfrac = 1./_tempSwapN.GetBinContent(l+1);
+                Double_t vartotalfrac = SDOMSqOverMeanSq + poissonfrac;
+                Double_t vartotal = vartotalfrac * _tempSwap.GetBinContent(l+1) * _tempSwap.GetBinContent(l+1);
+                if(vartotal > 0.0001) _tempSwap.SetBinError(l+1,TMath::Sqrt(vartotal));
+                else {
+                    _tempSwap.SetBinContent(l+1,0);
+                    _tempSwap.SetBinError(l+1,0);
+                }
+            }
+        }
+    }
+
     fFitModulation->SetParameter(0, fLocalRho->GetVal());
     switch (fFitModulationType) {
-        case kNoFit : { fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+        case kNoFit : { 
+            fFitModulation->FixParameter(0, fLocalRho->GetVal() ); 
+            freeParams = 0;
         } break;
         case kV2 : { 
             fFitModulation->FixParameter(4, psi2); 
+            freeParams = 1;
         } break;
         case kV3 : { 
             fFitModulation->FixParameter(4, psi3); 
+            freeParams = 1;
         } break;
         case kCombined : {
             fFitModulation->FixParameter(4, psi2); 
             fFitModulation->FixParameter(6, psi3);
+            freeParams = 2;
         } break;
         case kFourierSeries : {
             // in this approach, an explicit calculation will be made of vn = sqrt(xn^2+yn^2)
@@ -1150,11 +1245,79 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
         } break;
         default : break;
     }
-    _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", 0, TMath::TwoPi());
+    if(fRunToyMC) {
+        // toy mc, just here to check procedure, azimuthal profile is filled from hypothesis so p-value distribution should be flat
+        Int_t _bins = _tempSwap.GetXaxis()->GetNbins();
+        TF1* _tempFit = new TF1("temp_fit_kCombined", "[0]*([1]+[2]*([3]*TMath::Cos([2]*(x-[4]))+[7]*TMath::Cos([5]*(x-[6]))))", 0, TMath::TwoPi());
+        _tempFit->SetParameter(0, fFitModulation->GetParameter(0));       // normalization
+        _tempFit->SetParameter(3, 0.1);      // v2
+        _tempFit->FixParameter(1, 1.);       // constant
+        _tempFit->FixParameter(2, 2.);       // constant
+        _tempFit->FixParameter(5, 3.);       // constant
+        _tempFit->FixParameter(4, fFitModulation->GetParameter(4));
+        _tempFit->FixParameter(6, fFitModulation->GetParameter(6));
+        _tempFit->SetParameter(7, 0.1);      // v3
+        _tempSwap.Reset();                   // rese bin content
+        for(int _binsI = 0; _binsI < _bins*_bins; _binsI++)  _tempSwap.Fill(_tempFit->GetRandom());
+    }
+    _tempSwap.Fit(fFitModulation, fFitModulationOptions.Data(), "", lowBound, upBound);
     // the quality of the fit is evaluated from 1 - the cdf of the chi square distribution
-    Double_t CDF(1.-ChiSquareCDF(fFitModulation->GetNDF(), fFitModulation->GetChisquare()));
+    // three methods are available, all with their drawbacks. all are stored, one is selected to do the cut
+    Int_t NDF(_tempSwap.GetXaxis()->GetNbins()-freeParams);
+    if(NDF == 0) return kFALSE;
+    Double_t CDF(1.-ChiSquareCDF(NDF, ChiSquare(_tempSwap, fFitModulation)));
+    Double_t CDFROOT(1.-ChiSquareCDF(NDF, fFitModulation->GetChisquare()));
+    Double_t CDFKolmogorov(KolmogorovTest(_tempSwap, fFitModulation));
+    // fill the values and centrality correlation (redundant but easy on the eyes)
     fHistPvalueCDF->Fill(CDF);
-    if(CDF > fMinPvalue && CDF < fMaxPvalue && ( fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) > 0)) { // fit quality
+    fHistPvalueCDFCent->Fill(fCent, CDF);
+    fHistPvalueCDFROOT->Fill(CDFROOT);
+    fHistPvalueCDFROOTCent->Fill(fCent, CDFROOT);
+    fHistKolmogorovTest->Fill(CDFKolmogorov);
+    fHistChi2ROOTCent->Fill(fCent, fFitModulation->GetChisquare()/((float)NDF));
+    fHistChi2Cent->Fill(fCent, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
+    fHistKolmogorovTestCent->Fill(fCent, CDFKolmogorov);
+    fHistPChi2Root->Fill(CDFROOT, fFitModulation->GetChisquare()/((float)NDF));
+    fHistPChi2->Fill(CDF, ChiSquare(_tempSwap, fFitModulation)/((float)NDF));
+    fHistPKolmogorov->Fill(CDF, CDFKolmogorov);
+
+    // variable CDF is used for making cuts, so we fill it with the selected p-value
+    switch (fFitGoodnessTest) {
+        case kChi2ROOT : {
+            CDF = CDFROOT; 
+        } break;
+        case kChi2Poisson : break;      // CDF is already CDF
+        case kKolmogorov : {
+            CDF = CDFKolmogorov; 
+        } break;
+        default: break;
+    }
+
+    if(fFitControl) {
+        // as an additional quality check, see if fitting a control fit has a higher significance
+        _tempSwap.Fit(fFitControl, fFitModulationOptions.Data(), "", lowBound, upBound);
+        Double_t CDFControl(-1.);
+        switch (fFitGoodnessTest) {
+            case kChi2ROOT : {
+                CDFControl = 1.-ChiSquareCDF(fFitControl->GetNDF(), fFitModulation->GetChisquare());
+            } break;
+            case kChi2Poisson : {
+                CDFControl = 1.-ChiSquareCDF(fFitControl->GetNDF(), ChiSquare(_tempSwap, fFitModulation));
+            } break;
+            case kKolmogorov : {
+                CDFControl = KolmogorovTest(_tempSwap, fFitControl); 
+            } break;
+            default: break;
+        }
+        if(CDFControl > CDF) {
+            CDF = -1.; // control fit is more significant, so throw out the 'old' fit
+            fHistRhoStatusCent->Fill(fCent, -1);
+        }
+    }
+    if(CDF >= fMinPvalue && CDF <= fMaxPvalue && ( fAbsVnHarmonics && fFitModulation->GetMinimum(0, TMath::TwoPi()) > 0)) {       // fit quality. not that although with limited acceptance the fit is performed on just
+                       // part of phase space, the requirement that energy desntiy is larger than zero is applied
+                       // to the FULL spectrum
+        fHistRhoStatusCent->Fill(fCent, 0.);
         // for LOCAL didactic purposes, save the  best and the worst fits
         // this routine can produce a lot of output histograms (it's not memory 'safe') and will not work on GRID 
         // since the output will become unmergeable (i.e. different nodes may produce conflicting output)
@@ -1163,8 +1326,39 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                 if(fRandom->Uniform(0, 100) > fPercentageOfFits) break;
                 static Int_t didacticCounterBest(0);
                 TProfile* didacticProfile = (TProfile*)_tempSwap.Clone(Form("Fit_%i_1-CDF_%.3f_cen_%i_%s", didacticCounterBest, CDF, fInCentralitySelection, detector.Data()));
-                TF1* didactifFit = (TF1*)fFitModulation->Clone(Form("fit_%i_CDF_%.3f_cen_%i_%s", didacticCounterBest, CDF, fInCentralitySelection, detector.Data()));
-                didacticProfile->GetListOfFunctions()->Add(didactifFit);
+                TF1* didacticFit = (TF1*)fFitModulation->Clone(Form("fit_%i_CDF_%.3f_cen_%i_%s", didacticCounterBest, CDF, fInCentralitySelection, detector.Data()));
+                switch(fFitModulationType) { 
+                    case kCombined : {
+                        // to make a nice picture also plot the separate components (v2 and v3) of the fit
+                        // only done for cobined fit where there are actually components to split ...
+                        TF1* v0(new TF1("dfit_kV2", "[0]", 0, TMath::TwoPi()));
+                        v0->SetParameter(0, didacticFit->GetParameter(0));        // normalization
+                        v0->SetLineColor(kMagenta);
+                        v0->SetLineStyle(7);
+                        didacticProfile->GetListOfFunctions()->Add(v0);
+                        TF1* v2(new TF1("dfit_kV2", "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))", 0, TMath::TwoPi()));
+                        v2->SetParameter(0, didacticFit->GetParameter(0));        // normalization
+                        v2->SetParameter(3, didacticFit->GetParameter(3));        // v2
+                        v2->FixParameter(1, 1.);        // constant
+                        v2->FixParameter(2, 2.);        // constant
+                        v2->FixParameter(4, didacticFit->GetParameter(4));        // psi2
+                        v2->SetLineColor(kGreen);
+                        didacticProfile->GetListOfFunctions()->Add(v2);
+                        TF1* v3(new TF1("dfit_kV3", "[0]*([1]+[2]*[3]*TMath::Cos([5]*(x-[4])))", 0, TMath::TwoPi()));
+                        v3->SetParameter(0, didacticFit->GetParameter(0));        // normalization
+                        v3->SetParameter(3, didacticFit->GetParameter(7));        // v3
+                        v3->FixParameter(1, 1.);        // constant
+                        v3->FixParameter(2, 2.);        // constant
+                        v3->FixParameter(4, didacticFit->GetParameter(6));        // psi3
+                        v3->FixParameter(5, 3.);        // constant
+                        v3->SetLineColor(kCyan);
+                        didacticProfile->GetListOfFunctions()->Add(v3);
+                    }
+                    default : break;
+                }
+                didacticProfile->GetListOfFunctions()->Add(didacticFit);
+                didacticProfile->GetYaxis()->SetTitle("#frac{d #sum #it{p}_{T}}{d #varphi} [GeV/#it{c}]");
+                didacticProfile->GetXaxis()->SetTitle("#varphi");
                 fOutputListGood->Add(didacticProfile);
                 didacticCounterBest++;
                 TH2F* didacticSurface = BookTH2F(Form("surface_%s", didacticProfile->GetName()), "#phi", "#eta", 50, 0, TMath::TwoPi(), 50, -1, 1, -1, kFALSE);
@@ -1190,8 +1384,8 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                 static Int_t didacticCounterWorst(0);
                 if(fRandom->Uniform(0, 100) > fPercentageOfFits) break;
                 TProfile* didacticProfile = (TProfile*)_tempSwap.Clone(Form("Fit_%i_1-CDF_%.3f_cen_%i_%s", didacticCounterWorst, CDF, fInCentralitySelection, detector.Data() ));
-                TF1* didactifFit = (TF1*)fFitModulation->Clone(Form("fit_%i_p_%.3f_cen_%i_%s", didacticCounterWorst, CDF, fInCentralitySelection, detector.Data()));
-                didacticProfile->GetListOfFunctions()->Add(didactifFit);
+                TF1* didacticFit = (TF1*)fFitModulation->Clone(Form("fit_%i_p_%.3f_cen_%i_%s", didacticCounterWorst, CDF, fInCentralitySelection, detector.Data()));
+                didacticProfile->GetListOfFunctions()->Add(didacticFit);
                 fOutputListBad->Add(didacticProfile);
                 didacticCounterWorst++;
                 } break;
@@ -1206,6 +1400,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::CorrectRho(Double_t psi2, Double_t psi3)
                  fFitModulation->SetParameter(0, fLocalRho->GetVal());
             } break;
         }
+        if(CDF > -.5) fHistRhoStatusCent->Fill(fCent, 1.);
         return kFALSE;  // return false if the fit is rejected
     }
     return kTRUE;
@@ -1215,6 +1410,47 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
 {
     // event cuts
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
+    // determine the run number to see if the track and jet cuts should be refreshed for semi-good TPC runs
+    // only done if the runnumber changes, could be moved to a call to AliAnalysisTaskSE::Notify()
+    if(fRunNumber != InputEvent()->GetRunNumber()) {
+        fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
+        if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
+        // reset the cuts. should be a pointless operation except for the case where the run number changes
+        // from semi-good back to good on one node, which is not a likely scenario
+        AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
+        AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
+        if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
+            if(fDebug > 0) printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
+            fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
+        }
+        Bool_t flaggedAsSemiGood(kFALSE);       // not flagged as anything
+        for(Int_t i(0); i < fExpectedSemiGoodRuns->GetSize(); i++) {
+            if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
+               if(fDebug > 0) printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
+                flaggedAsSemiGood = kTRUE;
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
+                AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);    // only affects vn extraction, NOT jet finding
+                // for semi-good runs, also try to get the 'small rho' estimate, if it is available
+                AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
+                if(tempRho) {
+                    if(fDebug > 0) printf("__FUNC__ %s > switching to small rho, caching normal rho \n ", __func__);
+                    fHistAnalysisSummary->SetBinContent(54, 1.);        // bookkeep the fact that small rho is used
+                    fCachedRho = fRho;          // cache the original rho ...
+                    fRho = tempRho;             // ... and use the small rho
+                }
+            }
+        }
+        if(!flaggedAsSemiGood) {
+            // in case the run is not a semi-good run, check if it is recognized as another run
+            // only done to catch unexpected runs
+            for(Int_t i(0); i < fExpectedRuns->GetSize(); i++) {
+                if(fExpectedRuns->At(i) == fRunNumber) break; // run is known, break the loop else store the number in a random bin
+                fHistUndeterminedRunQA->SetBinContent(TMath::Nint(10.*gRandom->Uniform(0.,.9))+1, fRunNumber);
+            }
+            fHistAnalysisSummary->SetBinContent(53, 1.);                // bookkeep which rho estimate is used 
+        }
+    }
+    // continue with event selection 
     if(!event || !AliAnalysisTaskEmcal::IsEventSelected()) return kFALSE;
     if(fSemiCentralInclusive && ! (event->GetTriggerMask() & (ULong64_t(1)<<7))) return kFALSE;
     if(TMath::Abs(InputEvent()->GetPrimaryVertex()->GetZ()) > 10.) return kFALSE;
@@ -1243,8 +1479,8 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     if(fExplicitOutlierCut == 2010 || fExplicitOutlierCut == 2011) {
        if(!PassesCuts(fExplicitOutlierCut)) return kFALSE;
     }
-    if(fRho->GetVal() <= 0 ) return kFALSE;
     if(fTracks->GetEntries() < 1) return kFALSE;
+    if(fRho->GetVal() <= 0 ) return kFALSE;
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1286,7 +1522,7 @@ void AliAnalysisTaskRhoVnModulation::FillHistogramsAfterSubtraction(Double_t psi
     /* FillClusterHistograms(); */
     FillJetHistograms(psi2, psi3); 
     /* FillCorrectedClusterHistograms(); */
-    FillEventPlaneHistograms(vzero, vzeroComb, tpc);
+    if(fFillQAHistograms) FillEventPlaneHistograms(vzero, vzeroComb, tpc);
     FillRhoHistograms();
     FillDeltaPtHistograms(psi2, psi3);
 }
@@ -1310,17 +1546,17 @@ void AliAnalysisTaskRhoVnModulation::FillClusterHistograms() const
 {
     // fill cluster histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    /* Int_t iClusters(fCaloClusters->GetEntriesFast());
+     Int_t iClusters(fCaloClusters->GetEntriesFast());
     for(Int_t i(0); i < iClusters; i++) {
         AliVCluster* cluster = static_cast<AliVCluster*>(fCaloClusters->At(iClusters));
         if (!PassesCuts(cluster)) continue;
         TLorentzVector clusterLorentzVector;
         cluster->GetMomentum(clusterLorentzVector, const_cast<Double_t*>(fVertex));
-        fHistClusterPt[fInCentralitySelection]->Fill(clusterLorentzVector.Pt());
-        fHistClusterEta[fInCentralitySelection]->Fill(clusterLorentzVector.Eta());
-        fHistClusterPhi[fInCentralitySelection]->Fill(clusterLorentzVector.Phi());
+        //fHistClusterPt[fInCentralitySelection]->Fill(clusterLorentzVector.Pt());
+        //fHistClusterEta[fInCentralitySelection]->Fill(clusterLorentzVector.Eta());
+        //fHistClusterPhi[fInCentralitySelection]->Fill(clusterLorentzVector.Phi());
     }
-    return; */
+    return;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::FillCorrectedClusterHistograms() const
@@ -1346,6 +1582,17 @@ void AliAnalysisTaskRhoVnModulation::FillEventPlaneHistograms(Double_t vzero[2][
     fHistPsiSpread->Fill(0.5, TMath::Abs(vzero[0][0]-vzero[1][0]));
     fHistPsiSpread->Fill(1.5, TMath::Abs(vzero[0][0]-tpc[0]));
     fHistPsiSpread->Fill(2.5, TMath::Abs(vzero[1][0]-tpc[0]));
+    // event plane vs centrality QA histo's to check recentering
+    Double_t TRK(InputEvent()->GetCentrality()->GetCentralityPercentile("TRK"));
+    Double_t V0M(InputEvent()->GetCentrality()->GetCentralityPercentile("V0M"));
+    fHistPsiVZEROAV0M->Fill(V0M, vzero[0][0]);
+    fHistPsiVZEROCV0M->Fill(V0M, vzero[1][0]);
+    fHistPsiVZEROVV0M->Fill(V0M, vzeroComb[0]);
+    fHistPsiTPCiV0M->Fill(V0M, tpc[0]);
+    fHistPsiVZEROATRK->Fill(TRK, vzero[0][0]);
+    fHistPsiVZEROCTRK->Fill(TRK, vzero[1][0]);
+    fHistPsiVZEROTRK->Fill(TRK, vzeroComb[0]);
+    fHistPsiTPCTRK->Fill(TRK, tpc[0]);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::FillRhoHistograms()
@@ -1372,8 +1619,6 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
     // fill delta pt histograms
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     Int_t i(0);
-    AliEmcalJet* leadingJet(GetJetContainer()->GetLeadingJet());
-    if(!leadingJet && fDebug > 0) printf(" > failed to retrieve leading jet ! < \n");
     const Float_t areaRC = fRandomConeRadius*fRandomConeRadius*TMath::Pi();
     // we're retrieved the leading jet, now get a random cone
     for(i = 0; i < fMaxCones; i++) {
@@ -1388,7 +1633,7 @@ void AliAnalysisTaskRhoVnModulation::FillDeltaPtHistograms(Double_t psi2, Double
            fHistDeltaPtDeltaPhi3[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt - areaRC*fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal()));
        }
        // get a random cone excluding leading jet area
-       CalculateRandomCone(pt, eta, phi, leadingJet);
+       CalculateRandomCone(pt, eta, phi, fLeadingJet);
        if(pt > 0) {
            if(fFillQAHistograms) fHistRCPhiEtaExLJ[fInCentralitySelection]->Fill(phi, eta);
            fHistRhoVsRCPtExLJ[fInCentralitySelection]->Fill(pt, fLocalRho->GetLocalVal(phi, GetJetContainer()->GetJetRadius(), fLocalRho->GetVal())*areaRC);
@@ -1413,6 +1658,7 @@ void AliAnalysisTaskRhoVnModulation::FillJetHistograms(Double_t psi2, Double_t p
             fHistJetPt[fInCentralitySelection]->Fill(pt-area*rho);
             if(fFillQAHistograms) fHistJetEtaPhi[fInCentralitySelection]->Fill(eta, phi);
             fHistJetPtArea[fInCentralitySelection]->Fill(pt-area*rho, area);
+            fHistJetPtEta[fInCentralitySelection]->Fill(pt-area*rho, eta);
             fHistJetPsi2Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi2, 2.), pt-area*rho);
             fHistJetPsi3Pt[fInCentralitySelection]->Fill(PhaseShift(phi-psi3, 3.), pt-area*rho);
             fHistJetPtConstituents[fInCentralitySelection]->Fill(pt-area*rho, jet->Nch());
@@ -1451,9 +1697,8 @@ void AliAnalysisTaskRhoVnModulation::FillQAHistograms(AliVEvent* vevent)
     fHistVertexz->Fill(vevent->GetPrimaryVertex()->GetZ());
     fHistCentrality->Fill(fCent);
     Int_t runNumber(InputEvent()->GetRunNumber());
-    Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, 169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-    for(fMappedRunNumber = 0; fMappedRunNumber < 64; fMappedRunNumber++) {
-        if(runs[fMappedRunNumber]==runNumber) break;
+    for(fMappedRunNumber = 0; fExpectedRuns->GetSize()+1; fMappedRunNumber++) {
+        if(fExpectedRuns->At(fMappedRunNumber) == runNumber) break;
     }
 }
 //_____________________________________________________________________________
@@ -1523,6 +1768,8 @@ void AliAnalysisTaskRhoVnModulation::FillAnalysisSummaryHistogram() const
     fHistAnalysisSummary->SetBinContent(51, fMaxCones);
     fHistAnalysisSummary->GetXaxis()->SetBinLabel(52, "fUseScaledRho");
     fHistAnalysisSummary->SetBinContent(52, fUseScaledRho);
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(53, "used rho");
+    fHistAnalysisSummary->GetXaxis()->SetBinLabel(54, "used small rho");
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
@@ -1531,15 +1778,6 @@ void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
     switch (fRunModeType) {
         case kLocal : {
         printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-        if(fFillQAHistograms) {
-            Int_t runs[] = {167813, 167988, 168066, 168068, 168069, 168076, 168104, 168212, 168311, 168322, 168325, 168341, 168361, 168362, 168458, 168460, 168461, 168992, 169091, 169094, 169138, 169143, 169167, 169417, 169835, 169837, 169838, 169846, 169855, 169858, 169859, 169923, 169956, 170027, 170036, 170081, 169975, 169981, 170038, 170040, 170083, 170084, 170085, 170088, 170089, 170091, 170152, 170155, 170159, 170163, 170193, 170195, 170203, 170204, 170205, 170228, 170230, 170264, 170268, 170269, 170270, 170306, 170308, 170309};
-            for(Int_t i(0); i < 64; i++) { 
-                fHistRunnumbersPhi->GetXaxis()->SetBinLabel(i+1, Form("%i", runs[i]));
-                fHistRunnumbersEta->GetXaxis()->SetBinLabel(i+1, Form("%i", runs[i]));
-            }
-            fHistRunnumbersPhi->GetXaxis()->SetBinLabel(65, "undetermined");
-            fHistRunnumbersEta->GetXaxis()->SetBinLabel(65, "undetermined");
-        }
         AliAnalysisTaskRhoVnModulation::Dump();
         for(Int_t i(0); i < fHistAnalysisSummary->GetXaxis()->GetNbins(); i++) printf( " > flag: %s \t content %.2f \n", fHistAnalysisSummary->GetXaxis()->GetBinLabel(1+i), fHistAnalysisSummary->GetBinContent(1+i));
         } break;
@@ -1549,9 +1787,18 @@ void AliAnalysisTaskRhoVnModulation::Terminate(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::SetModulationFit(TF1* fit) 
 {
-// set modulation fit
+    // set modulation fit
     if (fFitModulation) delete fFitModulation;
     fFitModulation = fit; 
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskRhoVnModulation::SetUseControlFit(Bool_t c)
+{
+    // set control fit
+    if (fFitControl) delete fFitControl;
+    if (c) {
+        fFitControl = new TF1("controlFit", "pol0", 0, TMath::TwoPi());
+    } else fFitControl = 0x0;
 }
 //_____________________________________________________________________________
 TH1F* AliAnalysisTaskRhoVnModulation::GetResolutionFromOuptutFile(detectorType det, Int_t h, TArrayD* cen)

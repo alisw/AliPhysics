@@ -66,8 +66,6 @@
 #include "AliAnalysisTaskSELc2V0bachelor.h"
 #include "AliNormalizationCounter.h"
 #include "AliAODPidHF.h"
-#include "AliPIDResponse.h"
-#include "AliTOFPIDResponse.h"
 #include "AliInputEventHandler.h"
 #include "AliESDtrackCuts.h"
 #include "AliNeutralTrackParam.h"
@@ -84,7 +82,6 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor() : AliAnalysisTa
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fPIDResponse(0),
   fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(0),
@@ -111,7 +108,6 @@ AliAnalysisTaskSELc2V0bachelor::AliAnalysisTaskSELc2V0bachelor(const Char_t* nam
   fOutputAll(0),
   fOutputPIDBach(0),
   fCEvents(0),
-  fPIDResponse(0),
   fIsK0SAnalysis(kFALSE),
   fCounter(0),
   fAnalCuts(analCuts),
@@ -162,10 +158,6 @@ AliAnalysisTaskSELc2V0bachelor::~AliAnalysisTaskSELc2V0bachelor() {
   if (fOutputPIDBach) {
     delete fOutputPIDBach;
     fOutputPIDBach = 0;
-  }
-
-  if (fPIDResponse) {
-    delete  fPIDResponse;
   }
 
   if (fCounter) {
@@ -278,6 +270,14 @@ void AliAnalysisTaskSELc2V0bachelor::UserExec(Option_t *)
       return;
     }
     fCEvents->Fill(5); // in case of MC events
+
+    Double_t zMCVertex = mcHeader->GetVtxZ();
+    if (TMath::Abs(zMCVertex) > fAnalCuts->GetMaxVtxZ()) {
+      AliDebug(2,Form("Event rejected: abs(zVtxMC)=%f > fAnalCuts->GetMaxVtxZ()=%f",zMCVertex,fAnalCuts->GetMaxVtxZ()));
+      return;
+    } else {
+      fCEvents->Fill(17); // in case of MC events
+    }
   }
 
   fCounter->StoreEvent(aodEvent,fAnalCuts,fUseMCInfo); // it is very important that it stays BEFORE any other event selection
@@ -351,19 +351,6 @@ void AliAnalysisTaskSELc2V0bachelor::Terminate(Option_t*)
 void AliAnalysisTaskSELc2V0bachelor::UserCreateOutputObjects() { 
   // output
   AliInfo(Form("CreateOutputObjects of task %s\n", GetName()));
-  
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-
-  if (fAnalCuts->GetIsUsePID()){
-    fAnalCuts->GetPidHF()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidV0pos()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidV0neg()->SetPidResponse(fPIDResponse);
-    fAnalCuts->GetPidHF()->SetOldPid(kFALSE);
-    fAnalCuts->GetPidV0pos()->SetOldPid(kFALSE);
-    fAnalCuts->GetPidV0neg()->SetOldPid(kFALSE);
-  }
 
   fOutput = new TList();
   fOutput->SetOwner();
@@ -429,6 +416,12 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
       continue;
     }
 
+    Bool_t unsetvtx=kFALSE;
+    if (!lcK0Spr->GetOwnPrimaryVtx()) {
+      lcK0Spr->SetOwnPrimaryVtx(fVtx1);
+      unsetvtx=kTRUE;
+    }
+
     if (!lcK0Spr->GetSecondaryVtx()) {
       AliInfo("No secondary vertex"); // it will be done in AliRDHFCutsLctoV0::IsSelected
       continue;
@@ -488,7 +481,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 	  isLc = 1;
 	}
       } else {
-	AliDebug(2,Form("No candidate (cascade number %d -total cascade number = %d -)", iLctopK0S,nCascades));
+	AliDebug(2,Form("No MC candidate (cascade number %d -total cascade number = %d -)", iLctopK0S,nCascades));
 	pdgCode=-1;
       }
     }
@@ -496,6 +489,9 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
     FillLc2pK0Sspectrum(lcK0Spr, isLc,
 			nSelectedAnal, cutsAnal,
 			mcArray);
+
+    if (unsetvtx) lcK0Spr->UnsetOwnPrimaryVtx();
+
   }
 
   AliDebug(2, Form("Found %d Reco particles that are Lc!!", nSelectedAnal));
@@ -532,9 +528,9 @@ void AliAnalysisTaskSELc2V0bachelor::FillLc2pK0Sspectrum(AliAODRecoCascadeHF *pa
 
   if (fAdditionalChecks) CheckCandidatesAtDifferentLevels(part,cutsAnal);
 
-  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
-
   if ( !(cutsAnal->IsInFiducialAcceptance(part->Pt(),part->Y(4122))) ) return;
+
+  if ( !( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kTracks))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) return;
 
   if ( ( ( (cutsAnal->IsSelected(part,AliRDHFCuts::kAll))&(AliRDHFCutsLctoV0::kLcToK0Spr)) == (AliRDHFCutsLctoV0::kLcToK0Spr) ) ) nSelectedAnal++;
 
@@ -1532,7 +1528,24 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   Int_t isDp2K0Spi=0, isDs2K0SK=0;
   Int_t mcLabel2 = -1;
   Int_t mcLabel3 = -1;
+  Int_t isKstar12K0Spi=0, isKstar22K0Spi=0;
+  Int_t mcLabel4 = -1;
+  Int_t mcLabel5 = -1;
+  Double_t ptCandByMC = 0.;//fmcPartCandidate->Pt();
+  Double_t yCandByMC  = 0.;//fmcPartCandidate->Y() ;
   if (fUseMCInfo) {
+    if (isLc) {
+      Int_t pdgCand0 = 4122;
+      Int_t pdgDgLctoV0bachelor0[2]={2212,310};
+      Int_t pdgDgV0toDaughters0[2]={211,211};
+      Int_t mcLabelLc2pK0S = part->MatchToMC(pdgCand0,pdgDgLctoV0bachelor0[1],pdgDgLctoV0bachelor0,pdgDgV0toDaughters0,mcArray,kTRUE);
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabelLc2pK0S);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+
     Int_t pdgCand = 4122;
     Int_t pdgDgLctoV0bachelor[2]={211,3122};
     Int_t pdgDgV0toDaughters[2]={2212,211};
@@ -1540,6 +1553,11 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     if (mcLabel!=-1) {
       if (bachelor->Charge()==-1) isLc2LBarpi=1;
       if (bachelor->Charge()==+1) isLc2Lpi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
     }
 
     Int_t pdgCand2 = 411; // D+ -> pi+ K0S
@@ -1550,11 +1568,55 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     pdgDgV0toDaughters[1]=211;
     mcLabel2 = part->MatchToMC(pdgCand2,pdgDgCand2[1],pdgDgCand2,pdgDgV0toDaughters,mcArray,kTRUE);
     mcLabel3 = part->MatchToMC(pdgCand3,pdgDgCand3[1],pdgDgCand3,pdgDgV0toDaughters,mcArray,kTRUE);
-    if (mcLabel2!=-1) isDp2K0Spi=1;
-    if (mcLabel3!=-1) isDs2K0SK=1;
+    if (mcLabel2!=-1) {
+      isDp2K0Spi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel2);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+    if (mcLabel3!=-1) {
+      isDs2K0SK=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel3);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+
+    Int_t pdgCand4 = 313; // K*(892)+ -> pi+ K0S
+    Int_t pdgCand5 = 325; // K*(1430)+ -> pi+ K0S
+    Int_t pdgDgCand4[2]={211,310};
+    Int_t pdgDgCand5[2]={211,310};
+    pdgDgV0toDaughters[0]=211;
+    pdgDgV0toDaughters[1]=211;
+    mcLabel4 = part->MatchToMC(pdgCand4,pdgDgCand4[1],pdgDgCand4,pdgDgV0toDaughters,mcArray,kTRUE);
+    mcLabel5 = part->MatchToMC(pdgCand5,pdgDgCand5[1],pdgDgCand5,pdgDgV0toDaughters,mcArray,kTRUE);
+    if (mcLabel4!=-1) {
+      isKstar12K0Spi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel4);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
+    if (mcLabel5!=-1) {
+      isKstar22K0Spi=1;
+      AliAODMCParticle *lambdaCpartMC = (AliAODMCParticle*)mcArray->At(mcLabel5);
+      if (lambdaCpartMC) {
+	ptCandByMC = lambdaCpartMC->Pt();
+	yCandByMC  = lambdaCpartMC->Y() ;
+      }
+    }
   }
 
-  Int_t isLcByMC = isLc+isLc2LBarpi*2+isLc2Lpi*4+isDp2K0Spi*8+isDs2K0SK*16;
+  Int_t isLcByMC = isLc+isLc2LBarpi*2+isLc2Lpi*4+isDp2K0Spi*8+isDs2K0SK*16+isKstar12K0Spi*32+isKstar22K0Spi*64;
+
+  Bool_t isMCparticleInFiducialAcceptance = kTRUE;
+  if (isLc || isLc2LBarpi || isLc2Lpi || isDp2K0Spi || isDs2K0SK || isKstar12K0Spi || isKstar22K0Spi) {
+    isMCparticleInFiducialAcceptance = cutsAnal->IsInFiducialAcceptance(ptCandByMC,yCandByMC);
+  }
 
   Int_t isK0S = 0;
   Int_t isLambda = 0;
@@ -1759,6 +1821,14 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
     AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel3));
     AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
     xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+  } else if (isKstar12K0Spi) {
+    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel4));
+    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
+  } else if (isKstar22K0Spi) {
+    AliAODMCParticle *partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcLabel5));
+    AliAODMCParticle *partLcDaug0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(partLc->GetDaughter(0)));
+    xLcMC=partLcDaug0->Xv(), yLcMC=partLcDaug0->Yv(), zLcMC=partLcDaug0->Zv();
   }
   fCandidateVariables[55]=dcaForLc;
   fCandidateVariables[56]=part->GetSecVtxX();
@@ -1785,6 +1855,51 @@ void AliAnalysisTaskSELc2V0bachelor::FillTheTree(AliAODRecoCascadeHF *part, AliR
   fCandidateVariables[77]=v0part->Y(310);
   fCandidateVariables[78]=pzVtxBachelor;
   fCandidateVariables[79]=v0part->Pz();
+  fCandidateVariables[80]=bachelor->Charge();
+  fCandidateVariables[81]=isMCparticleInFiducialAcceptance;
+  if (fUseMCInfo) {
+    fCandidateVariables[82]=0;
+    if (bachelor->GetLabel()!=-1) {
+      AliAODMCParticle *partBachelor = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(bachelor->GetLabel())));
+      if(partBachelor) fCandidateVariables[82]=partBachelor->GetPdgCode();
+    }
+  } else {
+    fCandidateVariables[82]=-1;
+  }
+  fCandidateVariables[83] = part->InvMass2Prongs(0,1,211,310); // Kstar( 892)+ -> pi+K0S
+  fCandidateVariables[84] = part->InvMass2Prongs(0,1,321,310); // Kstar(1430)+ -> pi+K0S
+
+  fCandidateVariables[85]=0;
+  fCandidateVariables[86]=0;
+  fCandidateVariables[87]=0;
+  if (fUseMCInfo) {
+    if (bachelor->GetLabel()!=-1 &&
+	v0pos->GetLabel()!=-1 &&
+	v0neg->GetLabel()!=-1) {
+      const Int_t ndg=3;
+      Int_t dgLabels[ndg]={TMath::Abs(bachelor->GetLabel()),
+			   TMath::Abs(v0pos->GetLabel()),
+			   TMath::Abs(v0neg->GetLabel())};
+      Int_t ndgCk=0;
+      Int_t *pdgDg=0;
+      Int_t absLabelMother=-1;
+      fCandidateVariables[85]=SearchForCommonMother(mcArray,
+						    dgLabels,ndg,ndgCk,pdgDg,absLabelMother);
+      AliAODMCParticle *part1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0pos->GetLabel())));
+      AliAODMCParticle *part2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(TMath::Abs(v0neg->GetLabel())));
+      if(!part1 || !part2) {
+	AliDebug(2,"Daughter particles not found\n");
+	return;
+      }
+      fCandidateVariables[86]=part1->GetPdgCode();
+      fCandidateVariables[87]=part2->GetPdgCode();
+    }
+  }
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
+  AliPIDResponse *pidResponse=inputHandler->GetPIDResponse();
+  fCandidateVariables[88]=pidResponse->GetTOFResponse().GetStartTimeMask(bachelor->P());
 
   //fCandidateVariables[65] = bachelor->Px();
   //fCandidateVariables[66] = bachelor->Py();
@@ -1823,7 +1938,7 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
 
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
-  Int_t nVar = 80;
+  Int_t nVar = 89;
   fCandidateVariables = new Float_t [nVar];
   TString * fCandidateVariableNames = new TString[nVar];
   fCandidateVariableNames[ 0]="isLcByMC";
@@ -1906,6 +2021,15 @@ void AliAnalysisTaskSELc2V0bachelor::DefineTreeVariables() {
   fCandidateVariableNames[77]="yV0";
   fCandidateVariableNames[78]="pzVtxBachelorGood";
   fCandidateVariableNames[79]="pzVtxV0";
+  fCandidateVariableNames[80]="bachelorCharge";
+  fCandidateVariableNames[81]="isMCparticleInFiducialAcceptance";
+  fCandidateVariableNames[82]="pdgBachelor"; // pdg MC bachelor
+  fCandidateVariableNames[83]="massKstar12K0Spi"; // Kstar( 892)+ -> pi+ K0S
+  fCandidateVariableNames[84]="massKstar22K0Spi"; // Kstar(1430)+ -> pi+ K0S
+  fCandidateVariableNames[85]="pdgCandidate"; // pdg MC candidate recovered via new method
+  fCandidateVariableNames[86]="pdgV0pos"; // pdg MC V0 positive
+  fCandidateVariableNames[87]="pdgV0neg"; // pdg MC V0 negative
+  fCandidateVariableNames[88]="startTimeMask"; // start time mask
 
   //fCandidateVariableNames[65]="bachelorPx";
   //fCandidateVariableNames[66]="bachelorPy";
@@ -1944,7 +2068,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   // This is to define general histograms
   //
 
-  fCEvents = new TH1F("fCEvents","conter",17,0,17);
+  fCEvents = new TH1F("fCEvents","conter",18,0,18);
   fCEvents->SetStats(kTRUE);
   fCEvents->GetXaxis()->SetBinLabel(1,"X1");
   fCEvents->GetXaxis()->SetBinLabel(2,"Analyzed events");
@@ -1963,6 +2087,7 @@ void  AliAnalysisTaskSELc2V0bachelor::DefineGeneralHistograms() {
   fCEvents->GetXaxis()->SetBinLabel(15,Form("zVtx<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
   fCEvents->GetXaxis()->SetBinLabel(16,"!IsEventSelected");
   fCEvents->GetXaxis()->SetBinLabel(17,"triggerMask!=kAnyINT || triggerClass!=CINT1");
+  fCEvents->GetXaxis()->SetBinLabel(18,Form("zVtxMC<=%2.0fcm",fAnalCuts->GetMaxVtxZ()));
   //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 
@@ -2159,27 +2284,27 @@ void  AliAnalysisTaskSELc2V0bachelor::FillAnalysisHistograms(AliAODRecoCascadeHF
   Double_t invmassK0S = v0part->MassK0Short();
 
     fillthis="histK0SMass"+appendthis;
-    cout << fillthis << endl;
+    //    cout << fillthis << endl;
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
     if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassK0S,ptK0S);
 
     fillthis="histpK0Svsp"+appendthis;
-    cout << fillthis << endl;
+    //    cout << fillthis << endl;
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momBach,momK0S);
     if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momBach,momK0S);
 
     fillthis="histDCAtoPVvspK0S"+appendthis;
-    cout << fillthis << endl;
+    //    cout << fillthis << endl;
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
     if (isBachelorID)  ((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(momK0S,dcaV0ptp);
 
     fillthis="histArmPodK0S"+appendthis;
-    cout << fillthis << endl;
+    //    cout << fillthis << endl;
     FillArmPodDistribution(v0part,fillthis,fOutputAll);
     if (isBachelorID) FillArmPodDistribution(v0part,fillthis,fOutputPIDBach);
 
     fillthis="histLcMassByK0S"+appendthis;
-    cout << fillthis << endl;
+    //    cout << fillthis << endl;
     ((TH2F*)(fOutputAll->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
     if (isBachelorID)((TH2F*)(fOutputPIDBach->FindObject(fillthis)))->Fill(invmassLc,lambdacpt);
 
@@ -2340,3 +2465,144 @@ Double_t AliAnalysisTaskSELc2V0bachelor::Det(Double_t a00,Double_t a01,Double_t 
   return  a00*Det(a11,a12,a21,a22)-a01*Det(a10,a12,a20,a22)+a02*Det(a10,a11,a20,a21);
 }
 
+//----------------------------------------------------------------------------
+Int_t AliAnalysisTaskSELc2V0bachelor::MatchToMClabelC(AliAODRecoCascadeHF *candidate,
+						      TClonesArray *mcArray)
+{
+  //
+  // Check if this candidate is matched to a MC signal  Lc -> p K0S + X
+  // If no, return -1
+  // If yes, return label (>=0) of the AliAODMCParticle
+  // 
+
+  AliAODv0 *theV0 = dynamic_cast<AliAODv0*>(candidate->Getv0()); // the V0
+  AliVTrack *trk = dynamic_cast<AliVTrack*>(candidate->GetBachelor()); // the bachelor
+  if (!trk || !theV0) return -1;
+
+  if (trk->GetLabel()==-1) return -1;
+  Int_t bachLabels = TMath::Abs(trk->GetLabel());
+  AliAODMCParticle*bachelorMC = dynamic_cast<AliAODMCParticle*>(mcArray->At(bachLabels));
+  if (!bachelorMC) return -1;
+  if (TMath::Abs(bachelorMC->GetPdgCode())!=2212) return -1;
+  Int_t indexMotherBach = bachelorMC->GetMother();
+  if (indexMotherBach==-1) return -1;
+
+  Int_t pdgDg2prong[2] = {211,211};
+  Int_t lab2Prong = theV0->MatchToMC(310,mcArray,2,pdgDg2prong); // the V0
+  if(lab2Prong<0) return -1;
+  AliAODMCParticle*partK0S = dynamic_cast<AliAODMCParticle*>(mcArray->At(lab2Prong));
+  if (!partK0S) return -1;
+  Int_t indexMotherK0S = partK0S->GetMother();
+  if (indexMotherK0S==-1) return -1;
+  AliAODMCParticle*partK0 = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0S));
+  if (!partK0) return -1;
+  Int_t indexMotherK0 = partK0->GetMother();
+  if (indexMotherK0==-1) return -1;
+
+  if (indexMotherBach!=indexMotherK0) return -1; // p e K0S sono fratelli
+
+  AliAODMCParticle*partLc = dynamic_cast<AliAODMCParticle*>(mcArray->At(indexMotherK0));
+  if (!partLc) return -1;
+  Int_t ndg2 = partLc->GetDaughter(1)-partLc->GetDaughter(0)+1;
+  if (ndg2==2) return -1;
+
+  TString stringaCheck = Form(">>>>>>>> %d -> ",partLc->GetPdgCode());
+  for(Int_t ii=0; ii<ndg2; ii++) {
+    AliAODMCParticle* partDau=(AliAODMCParticle*)(mcArray->At(partLc->GetDaughter(0)+ii));
+    stringaCheck.Append(Form("  %d",partDau->GetPdgCode()));
+  }
+  printf("%s \n",stringaCheck.Data());
+
+  return indexMotherBach;
+
+}
+//-----------------------------------------------------------------------------
+Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArray,
+							    Int_t dgLabels[10],Int_t ndg,
+							    Int_t &ndgCk, Int_t *pdgDg, Int_t &absLabelMother) const
+{
+  //
+  // Check if this candidate is matched to a MC signal
+  // If no, return 0
+  // If yes, return pdgCode of particle
+  // 
+
+  Int_t lab=-1,labMother=-1,pdgMother=0;
+  AliAODMCParticle *part=0;
+  AliAODMCParticle *mother=0;
+
+  // loop on daughter labels
+  TArrayI **labelMother = new TArrayI*[ndg];
+  for(Int_t i=0; i<ndg; i++) labelMother[i] = new TArrayI(0);
+  for(Int_t i=0; i<ndg; i++) {
+    lab = TMath::Abs(dgLabels[i]);
+    if(lab<0) {
+      AliDebug(2,Form("daughter with negative label %d\n",lab));
+      delete [] labelMother;
+      return 0;
+    }
+    part = (AliAODMCParticle*)mcArray->At(lab);
+    if(!part) { 
+      AliDebug(2,"no MC particle\n");
+      delete [] labelMother;
+      return 0;
+    }
+
+    mother = part;
+    while(mother->GetMother()>=0) {
+      labMother=mother->GetMother();
+      mother = (AliAODMCParticle*)mcArray->At(labMother);
+      if(!mother) {
+	AliDebug(2,"no MC mother particle\n");
+	break;
+      }
+      pdgMother = TMath::Abs(mother->GetPdgCode());
+      if (pdgMother<10 || (pdgMother>18 && pdgMother<111)) {
+	break;
+      }
+      labelMother[i]->Set(labelMother[i]->GetSize()+1);
+      labelMother[i]->AddAt(labMother,labelMother[i]->GetSize()-1);
+    }
+
+  } // end loop on daughters
+
+  for(Int_t i=0; i<ndg; i++) {
+    AliAODMCParticle*part0 = (AliAODMCParticle*)mcArray->At(TMath::Abs(dgLabels[i]));
+    AliInfo(Form("part[%d]->GetLabel()=%d(%d) | ",i,dgLabels[i],part0->GetPdgCode()));
+    AliInfo(Form("labelMother[%d] = ",i));
+    for (Int_t jj=0;jj<labelMother[i]->GetSize(); jj++)
+      AliInfo(Form("%d, ",labelMother[i]->At(jj)));
+    AliInfo("\n");
+  }
+
+  Int_t pdgToBeReturned=0;
+  Bool_t found=kFALSE;
+  for (Int_t ii=0;ii<labelMother[0]->GetSize(); ii++) {
+    for (Int_t jj=0;jj<labelMother[1]->GetSize(); jj++) {
+      for (Int_t kk=0;kk<labelMother[2]->GetSize(); kk++) {
+	if (labelMother[0]->At(ii)==labelMother[1]->At(jj) &&
+	    labelMother[1]->At(jj)==labelMother[2]->At(kk) &&
+	    labelMother[0]->At(ii)!=0 && labelMother[0]->At(ii)!=1 && !found) {
+	  mother = (AliAODMCParticle*)mcArray->At(labelMother[0]->At(ii));
+	  pdgToBeReturned=mother->GetPdgCode();
+	  absLabelMother=labelMother[0]->At(ii);
+	  AliDebug(2,Form("FOUND label for the mother of this candidate: %d (PDG=%d)\n",labelMother[0]->At(ii),pdgToBeReturned));
+	  mother->Print();
+	  found = kTRUE;
+	  ndgCk=3;
+	  pdgDg = new Int_t[ndgCk];
+	  for (Int_t aa=0; aa<ndgCk; aa++) {
+	    AliAODMCParticle *partMC = (AliAODMCParticle*)mcArray->At(dgLabels[aa]);
+	    pdgDg[aa]=partMC->GetPdgCode();
+	  }
+	  break;
+	}
+      }
+    }
+  }
+
+  delete [] labelMother;
+
+  return pdgToBeReturned;
+
+}

@@ -511,7 +511,7 @@ void AliAnalysisTaskJetCore::UserCreateOutputObjects()
         const Int_t dimSpec = 5;
 	const Int_t nBinsSpec[dimSpec]     = {100,6, 140, 50, fNRPBins};
 	const Double_t lowBinSpec[dimSpec] = {0,0,-80, 0, 0};
-	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50, fNRPBins};
+	const Double_t hiBinSpec[dimSpec]  = {100,1, 200, 50,  static_cast<Double_t>(fNRPBins)};
 	fHJetSpec = new THnSparseF("fHJetSpec","Recoil jet spectrum",dimSpec,nBinsSpec,lowBinSpec,hiBinSpec);
 
              //change binning in jet area
@@ -851,7 +851,7 @@ void AliAnalysisTaskJetCore::UserExec(Option_t *)
                    if(phitt<0)phitt+=TMath::Pi()*2.; 
                    Int_t phiBintt = GetPhiBin(phitt-fRPAngle);
 
-		   Double_t fillspec[] = {centValue,jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt(),phiBintt};
+		   Double_t fillspec[] = {centValue,jetbig->EffectiveAreaCharged(),ptcorr,partback->Pt(), static_cast<Double_t>(phiBintt)};
 	  	  fHJetSpec->Fill(fillspec);
 	    
 	   

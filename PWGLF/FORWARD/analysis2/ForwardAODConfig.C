@@ -30,27 +30,21 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Whether to enable low flux specific code 
   task->SetEnableLowFlux(kFALSE);
 
-  // --- Cuts --------------------------------------------------------
+  // --- Check for MC ------------------------------------------------
   // Would like to use dynamic cast but CINT interprets that as a 
   // static cast - sigh!
-  Bool_t   mc           = (task->IsA()==AliForwardMCMultiplicityTask::Class());
-  // Double_t nXi          = 2; 
-  // Bool_t   includeSigma = false; //true;
-  // Sharing cut
-  AliFMDMultCuts cSharingLow;
-  Double_t factor = 1.;
-  cSharingLow.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
-  // Sharing cut
-  AliFMDMultCuts cSharingHigh;
-  cSharingHigh.SetMultCuts(-1);
-  cSharingHigh.SetNXi(0); // Was 2
-  cSharingHigh.SetIncludeSigma(false);
-  cSharingHigh.SetMPVFraction(0.6); 
-  // Density cut
-  AliFMDMultCuts cDensity;
-  // cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
-  cDensity.SetMultCuts(-1);
-  cDensity.SetMPVFraction(0.6); // Was .7
+  Bool_t         mc = (task->IsA()==AliForwardMCMultiplicityTask::Class());
+
+  // --- Cuts --------------------------------------------------------
+  // Note, the absolute lowest signal to consider - ever -
+  // irrespective of MC or real data, is 0.15.  Signals below this
+  // will contain remenants of the pedestal (yes, the width of the
+  // pedestal is small, but there are many _many_ channels with only
+  // pedestal value in them, so the absolute number of high-value
+  // pedestal signals is large - despite the low probablity).
+  AliFMDMultCuts cSharingLow(AliFMDMultCuts::kFixed,0.15);
+  AliFMDMultCuts cSharingHigh(AliFMDMultCuts::kLandauSigmaWidth,1);
+  AliFMDMultCuts cDensity(AliFMDMultCuts::kLandauSigmaWidth,1);
   
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -64,35 +58,26 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
   task->GetEventInspector().SetUseV0AndForNSD(false);
-  // Use primary vertex selection from 1st physics WG
-  task->GetEventInspector().SetUseFirstPhysicsVtx(false);
-  // Use satellite collisions
-  task->GetEventInspector().SetUseDisplacedVertices(false);
+  // Set the kind of vertex to look for.  Can be one of 
+  //  
+  //   - kNormal:    SPD vertex 
+  //   - kpA2012:    Selection tuned for 2012 pA data 
+  //   - kpA2013:    Selection tuned for 2013 pA data 
+  //   - kPWGUD:     Selection used by 'first physics' 
+  //   - kDisplaced: Satellite collisions, with kNormal fall-back 
+  // 
+  task->GetEventInspector().SetVertexMethod(AliFMDEventInspector::kNormal);
   // Which centrality estimator to use 
   task->GetEventInspector().SetCentralityMethod("V0M");
 
-  // --- Sharing filter ----------------------------------------------
-  // If the following is uncommented, then the merging of shared
-  // signals is disabled completely
-  // task->GetSharingFilter().SetDisableMerging(true);
-  // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
-  // Disable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
-  // Whether to use simple merging algorithm
-  task->GetSharingFilter().SetUseSimpleSharing(true);
-  // Whether to allow for 3 strip hits 
-  task->GetSharingFilter().SetAllow3Strips(!mc);
-  // Do not cut fixed/hard on multiplicity 
-  // task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
-  // Set the number of xi's (width of landau peak) to stop at 
-  // task->GetSharingFilter().GetHCuts().SetNXi(nXi);
-  // Set whether or not to include sigma in cut
-  // task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
-  // Set upper sharing cut 
-  task->GetSharingFilter().SetHCuts(cSharingHigh);
-  // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetLCuts(cSharingLow);
+  // --- ESD fixer ---------------------------------------------------
+  // Sets the noise factor that was used during reconstruction.  If
+  // this is set to 4 or more, then this correction will be disabled.
+  task->GetESDFixer().SetRecoNoiseFactor(1);
+  // IF the noise correction is bigger than this, flag strip as dead 
+  task->GetESDFixer().SetMaxNoiseCorrection(0.05);
+  // Sets whether to recalculate eta 
+  task->GetESDFixer().SetRecalculateEta(false);
   // If true, consider AliESDFMD::kInvalidMult as a zero signal.  This
   // has the unfortunate side effect, that we cannot use the
   // on-the-fly calculation of the phi acceptance.  
@@ -119,9 +104,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // LHC10c-7TeV is effected up-to and including pass2
   // LHC10c-CPass0 should be OK, but has limited statistics 
   // LHC10c_11a_FMD should be OK, but has few runs  
-  task->GetSharingFilter().SetInvalidIsEmpty(false);
+  task->GetESDFixer().SetInvalidIsEmpty(false);
   // Dead region in FMD2i
-  task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
+  task->GetESDFixer().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
   // One can add extra dead strips from a script like 
   // 
   //   void deadstrips(AliFMDSharingFilter* filter)
@@ -132,7 +117,34 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //
   // and then do here 
   // 
-  // task->GetSharingFilter().AddDead("deadstrips.C");
+  // task->GetESDFixer().AddDead("deadstrips.C");
+
+  // --- Sharing filter ----------------------------------------------
+  // If the following is set to true, then the merging of shared
+  // signals is disabled completely
+  // task->GetSharingFilter().SetMergingDisabled(false);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  // Ignore the ESD information when angle correcting.
+  // 
+  // *IMPORTANT* 
+  // 
+  // This is to counter a known issue with AliESDFMD with ClassDef 
+  // version < 4, where the angle correction flag is incorrectly set.
+  // A fix is coming to AliESDFMD to handle it directly in the class. 
+  // Only set the flag below to true if you know it to be necessary for
+  // your data set.
+  task->GetSharingFilter().SetIgnoreESDWhenAngleCorrecting(false);
+  // Disable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
+  // Whether to use simple merging algorithm
+  task->GetSharingFilter().SetUseSimpleSharing(true);
+  // Whether to allow for 3 strip hits - deprecated
+  task->GetSharingFilter().SetAllow3Strips(false);
+  // Set upper sharing cut 
+  task->GetSharingFilter().SetHCuts(cSharingHigh);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetLCuts(cSharingLow);
    
   // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 
@@ -195,11 +207,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // If this option is enabled, then the summed per-vertex, per-ring
   // d2N/detadphi histograms will be stored in the output, as well as
   // copies of the secondary maps
-  // task->GetHistCollector().SetMakeBGHitMaps(true);
+  task->GetHistCollector().SetMakeBGHitMaps(false);
   //
   // If this option is enabled, then a 3D histogram will be made for
   // each ring, summing dN/deta for each centrality bin.
-  // task->GetHistCollector().SetMakeCentralitySums(true);
+  task->GetHistCollector().SetMakeCentralitySums(false);
 
   // --- Eventplane Finder -------------------------------------------
   task->GetEventPlaneFinder().SetUsePhiWeights(false);
@@ -209,7 +221,7 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // output AOD - one for each FMD ring.  The branches each contain a
   // TH2D object of the (primary) charged particle multiplicity per
   // (eta,phi)-bin in that event 
-  // task->SetStorePerRing(true);
+  task->SetStorePerRing(false);
 
   // --- Set limits on fits the energy -------------------------------
   // DO NOT CHANGE THESE UNLESS YOU KNOW WHAT YOU ARE DOING

@@ -37,6 +37,7 @@ public:
    void           SetCheckDecay(Bool_t check = kTRUE)  {fCheckDecay = check;}
    void           SetListID(Int_t i, Int_t val)        {if (i==0||i==1) fListID[i] = val;}
    void           SetRangeY(Double_t range)            {fRangeY = range;}
+   void           SetRangeDCAproduct(Double_t range)   {fRangeDCAproduct = range;}
 
    // methods
    Bool_t         IsTrueMother();
@@ -57,6 +58,7 @@ protected:
    Bool_t            fCheckDecay;      //  is the decay channel correct in a true pair?
    Int_t             fListID[2];       //  indexes of the two entry lists to be used
    Double_t          fRangeY;          //  range in rapidity (serves always)
+   Double_t          fRangeDCAproduct; //  range in the daughters's DCA product
 
    AliRsnPairDef    *fPairDef;         //  pair definition
    AliRsnCutSet     *fPairCuts;        //  collection of all cuts
@@ -65,7 +67,7 @@ protected:
 
 private:
 
-   ClassDef(AliRsnLoopPair, 4)
+   ClassDef(AliRsnLoopPair, 5)
 };
 
 #endif

@@ -338,6 +338,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedAODMC(AliAODMCParticle *MCMother,T
    }
    return kFALSE;
 }
+
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelelectron, Int_t &labelpositron, Int_t &labelgamma, Double_t fRapidityShift){
 
@@ -391,9 +392,63 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedMCDalitz(TParticle *fMCMother,AliS
 
    if( positron && electron && gamma) return kTRUE;
    return kFALSE;
-
-
 }
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::MesonIsSelectedMCEtaPiPlPiMiGamma(TParticle *fMCMother,AliStack *fMCStack, Int_t &labelNegPion, Int_t &labelPosPion, Int_t &labelGamma, Double_t fRapidityShift){
+
+	// Returns true for all pions within acceptance cuts for decay into 2 photons
+	// If bMCDaughtersInAcceptance is selected, it requires in addition that both daughter photons are within acceptance cuts
+
+	if( !fMCStack )return kFALSE;
+
+	if( fMCMother->GetPdgCode() != 221 ) return kFALSE;
+
+	if( fMCMother->R()>fMaxR ) return kFALSE; // cuts on distance from collision point
+
+	Double_t rapidity = 10.;
+
+	if( fMCMother->Energy() - fMCMother->Pz() == 0 || fMCMother->Energy() + fMCMother->Pz() == 0 ){
+		rapidity=8.-fRapidityShift;
+	}
+	else{
+		rapidity = 0.5*(TMath::Log((fMCMother->Energy()+fMCMother->Pz()) / (fMCMother->Energy()-fMCMother->Pz())))-fRapidityShift;
+	}
+
+	// Rapidity Cut
+	if( abs(rapidity) > fRapidityCutMeson )return kFALSE;
+
+	// Select only -> Dalitz decay channel
+	if( fMCMother->GetNDaughters() != 3 )return kFALSE;
+
+	TParticle *posPion = 0x0;
+	TParticle *negPion = 0x0;
+	TParticle    *gamma = 0x0;
+
+	for(Int_t index= fMCMother->GetFirstDaughter();index<= fMCMother->GetLastDaughter();index++){
+
+		TParticle* temp = (TParticle*)fMCStack->Particle( index );
+
+		switch( temp->GetPdgCode() ) {
+		case 211:
+			posPion      =  temp;
+			labelPosPion = index;
+			break;
+		case -211:
+			negPion      =  temp;
+			labelNegPion = index;
+			break;
+		case ::kGamma:
+			gamma         =  temp;
+			labelGamma    = index;
+			break;
+		}
+	}
+
+	if( posPion && negPion && gamma) return kTRUE;
+	return kFALSE;
+}
+
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::MesonIsSelectedMCChiC(TParticle *fMCMother,AliStack *fMCStack,Int_t & labelelectronChiC, Int_t & labelpositronChiC, Int_t & labelgammaChiC, Double_t fRapidityShift){
    // Returns true for all ChiC within acceptance cuts for decay into JPsi + gamma -> e+ + e- + gamma
@@ -489,6 +544,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    if((pi0->E()+pi0->Pz())/(pi0->E()-pi0->Pz())<=0){
       if(hist)hist->Fill(cutIndex);
       cutIndex++;
+// 	  cout << "undefined rapidity" << endl;
       return kFALSE;
    }
    else{
@@ -496,6 +552,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
       cutIndex++;
       if(abs(pi0->Rapidity()-fRapidityShift)>fRapidityCutMeson){
          if(hist)hist->Fill(cutIndex);
+// 		 cout << abs(pi0->Rapidity()-fRapidityShift) << ">" << fRapidityCutMeson << endl;
          return kFALSE;
       }
    }
@@ -504,6 +561,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    // Opening Angle Cut
    //fOpeningAngle=2*TMath::ATan(0.134/pi0->P());// physical minimum opening angle
    if( pi0->GetOpeningAngle() < fOpeningAngle){
+// 	  cout << pi0->GetOpeningAngle() << "<" << fOpeningAngle << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }
@@ -517,6 +575,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    
    // Alpha Max Cut
    if(pi0->GetAlpha()>fAlphaCutMeson){
+// 	   cout << pi0->GetAlpha() << ">" << fAlphaCutMeson << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }
@@ -524,6 +583,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
 
    // Alpha Min Cut
    if(pi0->GetAlpha()<fAlphaMinCutMeson){
+// 	  cout << pi0->GetAlpha() << "<" << fAlphaMinCutMeson << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }
@@ -533,12 +593,14 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    if (hDCARMesonPrimVtxBefore)hDCARMesonPrimVtxBefore->Fill(pi0->GetDCARMotherPrimVtx());
 
    if (pi0->GetDCABetweenPhotons() > fDCAGammaGammaCut){
+// 	  cout << pi0->GetDCABetweenPhotons() << ">" << fDCAGammaGammaCut << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }
    cutIndex++;
 
    if (pi0->GetDCARMotherPrimVtx() > fDCARMesonPrimVtxCut){
+// 	   cout << pi0->GetDCARMotherPrimVtx() << ">" << fDCARMesonPrimVtxCut << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }
@@ -548,6 +610,7 @@ Bool_t AliConversionMesonCuts::MesonIsSelected(AliAODConversionMother *pi0,Bool_
    if (hDCAZMesonPrimVtxBefore)hDCAZMesonPrimVtxBefore->Fill(pi0->GetDCAZMotherPrimVtx());
 
    if (abs(pi0->GetDCAZMotherPrimVtx()) > fDCAZMesonPrimVtxCut){
+// 	  cout << pi0->GetDCAZMotherPrimVtx() << ">" << fDCAZMesonPrimVtxCut << endl; 
       if(hist)hist->Fill(cutIndex);
       return kFALSE;
    }

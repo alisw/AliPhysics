@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = kFALSE){
+AliAnalysisTask *AddTaskJPSIFilter(TString period="", Bool_t storeLS = kFALSE, Bool_t hasMC_aod = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -18,17 +18,25 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   //Do we run on AOD?
   Bool_t isAOD=mgr->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
 
+  //Allow merging of the filtered aods on grid trains
+  if(mgr->GetGridHandler()) {
+    printf(" SET MERGE FILTERED AODs \n");
+    //mgr->GetGridHandler()->SetMergeAOD(kTRUE);
+  }
+
+
+
   //gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macros/ConfigBJpsi_ff_PbPbFilter.C");
   //  gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigBJpsi_ff_PbPbFilter.C");
   gROOT->LoadMacro("$ALICE_ROOT/PWGDQ/dielectron/macrosJPSI/ConfigJpsi_nano_PbPb.C");
-  AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC);
+  AliDielectron *jpsi=ConfigJpsi_nano_PbPb(0,hasMC,period);
   
   if(isAOD) {
     //add options to AliAODHandler to duplicate input event
     AliAODHandler *aodHandler = (AliAODHandler*)mgr->GetOutputEventHandler();
     aodHandler->SetCreateNonStandardAOD();
     aodHandler->SetNeedsHeaderReplication();
-    aodHandler->SetNeedsTOFHeaderReplication();
+    if(!period.Contains("LHC10h")) aodHandler->SetNeedsTOFHeaderReplication();
     aodHandler->SetNeedsVZEROReplication();
     /*aodHandler->SetNeedsTracksBranchReplication();
     aodHandler->SetNeedsCaloClustersBranchReplication();
@@ -47,7 +55,8 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   
   //Create task and add it to the analysis manager
   AliAnalysisTaskDielectronFilter *task=new AliAnalysisTaskDielectronFilter("jpsi_DielectronFilter");
-  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);  
+  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral+AliVEvent::kEMCEGA+AliVEvent::kEMCEJE);
+  //  task->SetTriggerMask(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral);
   if (!hasMC) task->UsePhysicsSelection();
 
   //   //Add event filter
@@ -90,6 +99,7 @@ AliAnalysisTask *AddTaskJPSIFilter(Bool_t storeLS = kFALSE, Bool_t hasMC_aod = k
   
   
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(task, 0, mgr->GetCommonOutputContainer());
   mgr->ConnectOutput(task, 1, cOutputHist1);
   mgr->ConnectOutput(task, 2, cOutputHist2);
   

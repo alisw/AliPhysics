@@ -23,7 +23,7 @@ class AliHFSystErr : public TNamed
  public:
 
   AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
-  
+    
   virtual ~AliHFSystErr();
   
   void DrawErrors(TGraphAsymmErrors *grErrFeeddown=0) const; 
@@ -79,7 +79,6 @@ class AliHFSystErr : public TNamed
     fIsRapidityScan = flag; 
     AliInfo("Settings for the pPb vs y measurement");
   }
-
 
   // Function to initialize the variables/histograms
   void Init(Int_t decay);
@@ -143,6 +142,29 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2013pPb0100RapScan0101();
   void InitDstartoD0pi2013pPb0100RapScan0104();
   void InitDstartoD0pi2013pPb0100RapScan0408();
+    
+    
+  void InitD0toKpi2013pPb020V0A();
+  void InitD0toKpi2013pPb2040V0A();
+  void InitD0toKpi2013pPb4060V0A();
+  void InitD0toKpi2013pPb60100V0A();
+    
+  void InitD0toKpi2013pPb020ZNA();
+  void InitD0toKpi2013pPb2040ZNA();
+  void InitD0toKpi2013pPb4060ZNA();
+  void InitD0toKpi2013pPb60100ZNA();
+    
+  void InitDstartoD0pi2013pPb020V0A();
+  void InitDstartoD0pi2013pPb2040V0A();
+  void InitDstartoD0pi2013pPb4060V0A();
+  void InitDstartoD0pi2013pPb60100V0A();
+    
+  void InitDstartoD0pi2013pPb020ZNA();
+  void InitDstartoD0pi2013pPb2040ZNA();
+  void InitDstartoD0pi2013pPb4060ZNA();
+  void InitDstartoD0pi2013pPb60100ZNA();
+
+    
 
  private:
 
@@ -154,12 +176,14 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
+  void InitD0toKpi2011PbPb3050(); 
 
   void InitDplustoKpipi2010pp();
   void InitDplustoKpipi2010ppLowEn();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
   void InitDplustoKpipi2010PbPb4080();
+  void InitDplustoKpipi2011PbPb3050();
 
   void InitDstartoD0pi2010pp();
   void InitDstartoD0pi2010ppLowEn();
@@ -167,6 +191,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2010PbPb020();
   void InitDstartoD0pi2010PbPb2040();
   void InitDstartoD0pi2010PbPb4080();
+  void InitDstartoD0pi2011PbPb3050();
 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2011PbPb07half();
@@ -177,6 +202,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2013pPb0100();
   void InitDstartoD0pi2013pPb0100();
   void InitDstoKKpi2013pPb0100();
+  void InitLctopK0S2010pp();
 
 
   TH1F* ReflectHisto(TH1F *hin) const;
@@ -198,7 +224,7 @@ class AliHFSystErr : public TNamed
 
   Bool_t fIsLowEnergy;     // flag for the low energy (2.76TeV) run
   Bool_t fIsCentScan;      // flag fot the PbPb centrality scan
-  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement  
+  Bool_t fIsRapidityScan;  // flag for the pPb vs y measurement
  
   ClassDef(AliHFSystErr,5);  // class for systematic errors of charm hadrons
 };

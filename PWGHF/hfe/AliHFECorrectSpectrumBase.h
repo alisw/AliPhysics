@@ -69,7 +69,6 @@ class AliHFECorrectSpectrumBase : public TNamed{
     TGraphErrors *Normalize(THnSparse * const spectrum) const;
     TGraphErrors *Normalize(AliCFDataGrid * const spectrum) const;
     TGraphErrors *NormalizeTH1(TH1 *input) const;
-    void CorrectFromTheWidth(TH1D *h1) const;
     void CorrectStatErr(AliCFDataGrid *backgroundGrid) const;
     
     void SetCorrelation(THnSparseF * const correlation) {fCorrelation = correlation; };
@@ -82,9 +81,10 @@ class AliHFECorrectSpectrumBase : public TNamed{
     void SetStepToCorrect(Int_t step) { fStepData = step; };
     void SetStepBeforeCutsV0(Int_t step) { fStepBeforeCutsV0 = step; };
     void SetStepAfterCutsV0(Int_t step) { fStepAfterCutsV0 = step; };
-    void SetNbDimensions(Int_t nbDimensions) { fNbDimensions = nbDimensions; };
+    void SetNbDimensions(Int_t nbDimensions);
     void SetChargeChoosen(Chargetype_t chargechoosen) {fChargeChoosen = chargechoosen; };
     void SetEtaRange(Double_t etamin, Double_t etamax) { fEtaRange[0] = etamin; fEtaRange[1] = etamax; fEtaSelected = kTRUE; }
+    void SetDim(Int_t dim0, Int_t dim1=0, Int_t dim2=0) { fDims[0] = dim0; fDims[1] = dim1; fDims[2] = dim2; };
     void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
     void SetTestOneBinCentrality(Double_t centralitymin, Double_t centralitymax) { fTestCentralityLow = centralitymin; fTestCentralityHigh = centralitymax;}
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
@@ -119,6 +119,8 @@ class AliHFECorrectSpectrumBase : public TNamed{
     Int_t fStepGuessedUnfolding;  // Step for first guessed unfolding
     Int_t fNumberOfIterations;    // Number of iterations
     Chargetype_t fChargeChoosen;         // Select positive or negative electrons
+
+    Int_t  fDims[3];               // For 2D corrections
 
     Double_t fEtaRange[2];        // Eta range 
     Double_t fEtaRangeNorm[2];    // Eta range used in the normalization

@@ -81,6 +81,10 @@ Bool_t AliDielectronPairLegCuts::IsSelected(TObject* track)
   
   //test cuts
   Bool_t isLeg1selected=(fFilterLeg1.IsSelected(leg1)==selectedMaskLeg1);
+  if(fCutType==kBothLegs && !isLeg1selected) {
+    SetSelected(isLeg1selected);
+    return isLeg1selected;
+  }
   Bool_t isLeg2selected=(fFilterLeg2.IsSelected(leg2)==selectedMaskLeg2);
   
   Bool_t isLeg1selectedMirror=(fFilterLeg1.IsSelected(leg2)==selectedMaskLeg1);

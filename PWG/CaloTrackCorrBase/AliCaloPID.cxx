@@ -78,7 +78,6 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
-fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
@@ -114,7 +113,6 @@ fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000), fPHOSRCut(1000),
 //Split
-fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
@@ -152,7 +150,6 @@ fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
 fPHOSDispersionCut(1000),    fPHOSRCut(1000),
 //Split
-fDoClusterSplitting(kFALSE),
 fUseSimpleMassCut(kFALSE),
 fUseSimpleM02Cut(kFALSE),
 fUseSplitAsyCut(kFALSE),
@@ -867,10 +864,10 @@ Int_t AliCaloPID::GetIdentifiedParticleTypeFromClusterSplitting(AliVCluster* clu
   if(nMax > 2) energy = e1+e2; // In case of NLM>2 use mass cut for NLM=2 but for the split sum not the cluster energy that is not the pi0 E.
   
   // Check the mass, and set an ID to the splitted cluster
-  if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin     ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
-  else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin     ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
-  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
-  else                                                                                                          return kNeutralUnknown ;
+  if     ( conOK && mass < fMassPhoMax && mass > fMassPhoMin ) { if(fDebug > 0) printf("\t Split Conv \n"); return kPhoton ; }
+  else if( etaOK && mass < fMassEtaMax && mass > fMassEtaMin ) { if(fDebug > 0) printf("\t Split Eta \n");  return kEta    ; }
+  else if( pi0OK && IsInPi0SplitMassRange(energy,mass,nMax)  ) { if(fDebug > 0) printf("\t Split Pi0 \n");  return kPi0    ; }
+  else                                                                                                      return kNeutralUnknown ;
   
 }
 
@@ -884,7 +881,8 @@ TString  AliCaloPID::GetPIDParametersList()
   char onePar[buffersize] ;
   snprintf(onePar,buffersize,"--- AliCaloPID ---\n") ;
   parList+=onePar ;	
-  if(fUseBayesianWeights){
+  if(fUseBayesianWeights)
+  {
     snprintf(onePar,buffersize,"fEMCALPhotonWeight =%2.2f (EMCAL bayesian weight for photons)\n",fEMCALPhotonWeight) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"fEMCALPi0Weight =%2.2f (EMCAL bayesian weight for pi0)\n",fEMCALPi0Weight) ;
@@ -906,14 +904,16 @@ TString  AliCaloPID::GetPIDParametersList()
     snprintf(onePar,buffersize,"fPHOSNeutralWeight =%2.2f (PHOS bayesian weight for neutral hadrons)\n",fPHOSNeutralWeight) ;
     parList+=onePar ;
     
-    if(fPHOSWeightFormula){
+    if(fPHOSWeightFormula)
+    {
       snprintf(onePar,buffersize,"PHOS Photon Weight Formula: %s\n",fPHOSPhotonWeightFormulaExpression.Data() ) ;
       parList+=onePar;
       snprintf(onePar,buffersize,"PHOS Pi0    Weight Formula: %s\n",fPHOSPi0WeightFormulaExpression.Data()    ) ;
       parList+=onePar;	  
     }
   }
-  else {
+  else
+  {
     snprintf(onePar,buffersize,"EMCAL: fEMCALL0CutMin =%2.2f, fEMCALL0CutMax =%2.2f  (Cut on Shower Shape) \n",fEMCALL0CutMin, fEMCALL0CutMax) ;
     parList+=onePar ;
     snprintf(onePar,buffersize,"EMCAL: fEMCALDEtaCut =%2.2f, fEMCALDPhiCut =%2.2f  (Cut on track matching) \n",fEMCALDEtaCut, fEMCALDPhiCut) ;
@@ -925,21 +925,25 @@ TString  AliCaloPID::GetPIDParametersList()
     
   }
   
-  if(fDoClusterSplitting)
+  if(fUseSimpleM02Cut)
   {
     snprintf(onePar,buffersize,"%2.2f< M02 < %2.2f \n",    fSplitM02MinCut, fSplitM02MaxCut) ;
     parList+=onePar ;
-    snprintf(onePar,buffersize,"fMinNCells =%d \n",        fSplitMinNCells) ;
-    parList+=onePar ;    
+  }
+  snprintf(onePar,buffersize,"fMinNCells =%d \n",        fSplitMinNCells) ;
+  parList+=onePar ;
+  if(fUseSimpleMassCut)
+  {
     snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f\n", fMassPi0Min,fMassPi0Max);
     parList+=onePar ;
-    snprintf(onePar,buffersize,"eta : %2.1f < m <%2.1f\n", fMassEtaMin,fMassEtaMax);
-    parList+=onePar ;
-    snprintf(onePar,buffersize,"conv: %2.1f < m <%2.1f\n", fMassPhoMin,fMassPhoMax);
-    parList+=onePar ;
   }
+  snprintf(onePar,buffersize,"eta : %2.1f < m <%2.1f\n", fMassEtaMin,fMassEtaMax);
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"conv: %2.1f < m <%2.1f\n", fMassPhoMin,fMassPhoMax);
+  parList+=onePar ;
   
-  return parList; 
+  
+  return parList;
   
 }
 
@@ -979,14 +983,11 @@ void AliCaloPID::Print(const Option_t * opt) const
     
   }
   
-  if(fDoClusterSplitting)
-  {
-    printf("Min. N Cells =%d \n",         fSplitMinNCells) ;
-    printf("%2.2f < lambda_0^2 <%2.2f \n",fSplitM02MinCut,fSplitM02MaxCut);
-    printf("pi0 : %2.2f<m<%2.2f \n",      fMassPi0Min,fMassPi0Max);
-    printf("eta : %2.2f<m<%2.2f \n",      fMassEtaMin,fMassEtaMax);
-    printf("phot: %2.2f<m<%2.2f \n",      fMassPhoMin,fMassPhoMax);
-  }
+  printf("Min. N Cells =%d \n",         fSplitMinNCells) ;
+  if(fUseSimpleM02Cut) printf("%2.2f < lambda_0^2 <%2.2f \n",fSplitM02MinCut,fSplitM02MaxCut);
+  if(fUseSimpleMassCut)printf("pi0 : %2.2f<m<%2.2f \n",      fMassPi0Min,fMassPi0Max);
+  printf("eta : %2.2f<m<%2.2f \n",      fMassEtaMin,fMassEtaMax);
+  printf("phot: %2.2f<m<%2.2f \n",      fMassPhoMin,fMassPhoMax);
   
   printf(" \n");
   

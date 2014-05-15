@@ -95,18 +95,19 @@ AliFMDEventInspector::AliFMDEventInspector()
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(false),
+    fVtxMethod(kNormal),
+    // fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
-    fUseDisplacedVertices(false),
+// fUseDisplacedVertices(false),
     fDisplacedVertex(),
     fCollWords(),
     fBgWords(),
     fCentMethod("V0M"),
     fMinCent(-1.0),
     fMaxCent(-1.0),
-    fUsepA2012Vertex(false),
+// fUsepA2012Vertex(false),
     fRunNumber(0),
     fMC(false),
   fProdYear(-1),
@@ -146,18 +147,19 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(false),
+    fVtxMethod(kNormal),
+// fUseFirstPhysicsVertex(false),
     fUseV0AND(false),
     fMinPileupContrib(3), 
     fMinPileupDistance(0.8),
-    fUseDisplacedVertices(false),
+// fUseDisplacedVertices(false),
   fDisplacedVertex(),
   fCollWords(),
   fBgWords(),
   fCentMethod("V0M"),
   fMinCent(-1.0),
   fMaxCent(-1.0),
-  fUsepA2012Vertex(false),
+// fUsepA2012Vertex(false),
   fRunNumber(0),
   fMC(false),
   fProdYear(-1),
@@ -574,7 +576,7 @@ AliFMDEventInspector::SetupForData(const TAxis& vtxAxis)
   xAxis->SetBinLabel(kOther,	        "Other");
   fList->Add(fHTrgStatus);
 
-  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList, "", false);
+  if (AllowDisplaced()) fDisplacedVertex.SetupForData(fList, "", false);
 }
 
 //____________________________________________________________________
@@ -592,11 +594,12 @@ AliFMDEventInspector::StoreInformation()
   fList->Add(AliForwardUtil::MakeParameter("field", fField));
   fList->Add(AliForwardUtil::MakeParameter("runNo", fRunNumber));
   fList->Add(AliForwardUtil::MakeParameter("lowFlux", fLowFluxCut));
-  fList->Add(AliForwardUtil::MakeParameter("fpVtx",fUseFirstPhysicsVertex));
+  fList->Add(AliForwardUtil::MakeParameter("ipMethod", fVtxMethod));
+  //fList->Add(AliForwardUtil::MakeParameter("fpVtx",fUseFirstPhysicsVertex));
   fList->Add(AliForwardUtil::MakeParameter("v0and",fUseV0AND));
   fList->Add(AliForwardUtil::MakeParameter("nPileUp", fMinPileupContrib));
   fList->Add(AliForwardUtil::MakeParameter("dPileup", fMinPileupDistance));
-  fList->Add(AliForwardUtil::MakeParameter("satellite", fUseDisplacedVertices));
+  fList->Add(AliForwardUtil::MakeParameter("satellite", AllowDisplaced()));
   fList->Add(AliForwardUtil::MakeParameter("alirootRev", 
 					   AliForwardUtil::AliROOTRevision()));
   fList->Add(AliForwardUtil::MakeParameter("alirootBranch", 
@@ -713,7 +716,7 @@ AliFMDEventInspector::Process(const AliESDEvent* event,
   }
 
   // --- Process satellite event information is requested ------------
-  if (fUseDisplacedVertices) { 
+  if (AllowDisplaced()) { 
     if (!fDisplacedVertex.Process(event)) 
       AliWarning("Failed to process satellite event");
   }
@@ -823,7 +826,7 @@ AliFMDEventInspector::ReadCentrality(const AliESDEvent& esd,
 
   // We overwrite with satellite events, so we can be sure to get the
   // centrality determination from the satellite vertex selection
-  if (fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+  if (AllowDisplaced() && fDisplacedVertex.IsSatellite()) {
     cent = fDisplacedVertex.GetCentralityPercentile();
     qual = 0;
   }
@@ -893,7 +896,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent& esd, UInt_t& triggers,
   if (trigStr.IsNull()) fHTrgStatus->Fill(kNoTrgWords);
   if (fHWords) fHWords->Fill(trigStr.Data(), 1);
   
-  if(fUseDisplacedVertices) {
+  if(AllowDisplaced()) {
     DMSG(fDebug,3,"Using displaced vertex stuff");
     // if (TMath::Abs(fDisplacedVertex.GetVertexZ()) >= 999) offline = false;
     if (fDisplacedVertex.IsSatellite()) 
@@ -1227,14 +1230,16 @@ AliFMDEventInspector::ReadVertex(const AliESDEvent& esd, TVector3& ip)
   ip.SetXYZ(1024, 1024, 0);
   
   EVtxStatus s = kNoVtx;
-  if (fUseDisplacedVertices && fDisplacedVertex.IsSatellite()) {
+  if (AllowDisplaced() && fDisplacedVertex.IsSatellite()) {
     s = kVtxOK;
     ip.SetZ(fDisplacedVertex.GetVertexZ());
   }
-  else if (fUseFirstPhysicsVertex) 
+  else if (fVtxMethod == kPWGUD) 
     s = CheckPWGUDVertex(esd, ip);
-  else if (fUsepA2012Vertex) 
+  else if (fVtxMethod == kpA2012) 
     s = CheckpA2012Vertex(esd,ip);	
+  else if (fVtxMethod == kpA2013) 
+    s = CheckpA2013Vertex(esd,ip);	
   else 
     s = CheckVertex(esd, ip);
   
@@ -1285,9 +1290,10 @@ AliFMDEventInspector::EVtxStatus
 AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd, 
 					TVector3& ip)  const
 {      
+  const Int_t nMinContrib = 0;
   const AliESDVertex *vertex = esd.GetPrimaryVertexSPD();
   if (!vertex) return kNoSPDVtx;
-  if (vertex->GetNContributors() <= 0) return kFewContrib;
+  if (vertex->GetNContributors() <= nMinContrib) return kFewContrib;
   
   TString vtxTyp = vertex->GetTitle();
   if (vtxTyp.Contains("vertexer: Z")) return kNotVtxZ;
@@ -1298,6 +1304,39 @@ AliFMDEventInspector::CheckpA2012Vertex(const AliESDEvent& esd,
   ip.SetX(vertex->GetX());
   ip.SetY(vertex->GetY());
   ip.SetZ(vertex->GetZ());		
+
+  return kVtxOK;
+}
+//____________________________________________________________________
+AliFMDEventInspector::EVtxStatus
+AliFMDEventInspector::CheckpA2013Vertex(const AliESDEvent& esd, 
+					TVector3& ip)  const
+{      
+  // This code is adopted from 
+  // 
+  //   AliAnalysisUtils::IsVertexSelected2013pA(AliVEvent *event)
+  // 
+  const Int_t nMinContrib = 0;
+  const AliESDVertex* primVtx = esd.GetPrimaryVertex();
+  if (!primVtx) return kNoVtx;
+  if (primVtx->GetNContributors() <= nMinContrib) return kFewContrib;
+  
+  const AliESDVertex* spdVtx = esd.GetPrimaryVertex();
+  if (!spdVtx) return kNoSPDVtx;
+  if (spdVtx->GetNContributors() <= nMinContrib) return kFewContrib;
+  
+  TString vtxTyp = spdVtx->GetTitle();
+  if (vtxTyp.Contains("vertexer: Z")) {
+    if (spdVtx->GetZRes()>0.25) return kUncertain;
+  }
+  Bool_t correlateVtx = true;
+  if (correlateVtx) { 
+    if (TMath::Abs(spdVtx->GetZ() - primVtx->GetZ()) > 0.5) return kUncertain;
+  }
+
+  ip.SetX(primVtx->GetX());
+  ip.SetY(primVtx->GetY());
+  ip.SetZ(primVtx->GetZ());		
 
   return kVtxOK;
 }
@@ -1450,9 +1489,18 @@ AliFMDEventInspector::Print(Option_t*) const
   PFV("System", AliForwardUtil::CollisionSystemString(fCollisionSystem));
   PFV("CMS energy per nucleon",	sNN);
   PFV("Field",			field);
-  PFB("Satellite events",	fUseDisplacedVertices);
-  PFB("Use 2012 pA vertex",	fUsepA2012Vertex );
-  PFB("Use PWG-UD vertex",	fUseFirstPhysicsVertex);
+  PFB("Satellite events",	AllowDisplaced());
+  // PFB("Use 2012 pA vertex",	fUsepA2012Vertex );
+  // PFB("Use PWG-UD vertex",	fUseFirstPhysicsVertex);
+  TString vtxMethod("normal");
+  switch(fVtxMethod) { 
+  case kNormal:    vtxMethod = "normal" ;    break;
+  case kpA2012:    vtxMethod = "pA 2012";    break;
+  case kpA2013:    vtxMethod = "pA 2013";    break;
+  case kPWGUD:     vtxMethod = "PWG-UD";     break;
+  case kDisplaced: vtxMethod = "Satellite";  break;
+  }
+  PFV("IP method",              vtxMethod);
   PFB("Simulation input",	fMC );
   PFV("Centrality method",	fCentMethod);
   PFV("Centrality axis",        (!fCentAxis ? "none" : ""));

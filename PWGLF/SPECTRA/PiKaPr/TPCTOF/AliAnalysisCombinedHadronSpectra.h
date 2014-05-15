@@ -52,7 +52,7 @@ class AliAnalysisCombinedHadronSpectra : public AliAnalysisTaskSE {
  private:
   //
   void  BinLogAxis(const TH1 *h);
-  Int_t GetPythiaEventProcessType(const AliHeader* aHeader, const Bool_t adebug = kFALSE) const;
+  Int_t GetPythiaEventProcessType(const AliHeader* aHeader, Bool_t adebug = kFALSE) const;
   //
   AliESDEvent *fESD;                   //! ESD object
   TList       *fListHist;              //! list for histograms

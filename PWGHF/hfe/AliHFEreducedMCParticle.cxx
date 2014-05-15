@@ -36,12 +36,14 @@ TObject(),
   fPdg(0),
   fMotherPdg(0),
   fSource(5),
-  fSignal(kFALSE)
+  fSignal(kFALSE),
+  fEleSource(0)
 {
   //
   // Default constructor
   //
-        memset(fProductionVertex, 0, sizeof(Double_t) *3);      // Initialise production vertex array
+  memset(fProductionVertex, 0, sizeof(Double_t) *3);      // Initialise production vertex array
+  memset(fMotherProductionVertex, 0, sizeof(Double_t) *3);      // Initialise mother production vertex array
 }
 
 //_______________________________________
@@ -54,12 +56,14 @@ AliHFEreducedMCParticle::AliHFEreducedMCParticle(const AliHFEreducedMCParticle &
   fPdg(ref.fPdg),
   fMotherPdg(ref.fMotherPdg),
   fSource(ref.fSource),
-  fSignal(ref.fSignal)
+  fSignal(ref.fSignal),
+  fEleSource(ref.fEleSource)
 {
   //
   // Copy constructor
   //
   memcpy(fProductionVertex, ref.fProductionVertex, sizeof(Double_t) *3);      // Port production vertex array
+  memcpy(fMotherProductionVertex, ref.fMotherProductionVertex, sizeof(Double_t) *3);      // Port mother production vertex array
 }
 
 //_______________________________________
@@ -77,7 +81,9 @@ AliHFEreducedMCParticle &AliHFEreducedMCParticle::operator=(const AliHFEreducedM
     fMotherPdg = ref.fMotherPdg;
     fSource = ref.fSource;
     fSignal = ref.fSignal;
+    fEleSource = ref.fEleSource;
     memcpy(fProductionVertex, ref.fProductionVertex, sizeof(Double_t) *3); 
+    memcpy(fMotherProductionVertex, ref.fMotherProductionVertex, sizeof(Double_t) *3); 
   }
   return *this;
 }

@@ -24,7 +24,7 @@
 #define kPtDim 20           // 
 #define kMaxNoRuns 100      // Maximum no of runs in a nanoDST file
 
-
+namespace AliJConst {
 const double kJPi           = 3.14159265358979; //TMath::Pi();
 const double kJTwoPi        = 2*kJPi;
 const double kJToRadian     = kJPi/180.;
@@ -73,5 +73,5 @@ char const * const kJetAlgStrName[NJetAlg] =
 
 // PHENIX  constants
 enum TEMC {kPbSc, kPbGl}; 
-
+}
 #endif

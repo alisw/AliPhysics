@@ -20,7 +20,7 @@ class AliRsnEvent;
 class AliRsnMother : public TObject {
 public:
 
-   AliRsnMother() : fRefEvent(0), fSum(), fSumMC(), fRef(), fRefMC() {fDaughter[0] = fDaughter[1] = 0;}
+   AliRsnMother() : fRefEvent(0), fSum(), fSumMC(), fRef(), fRefMC(), fDCAproduct(0) {fDaughter[0] = fDaughter[1] = 0;}
    AliRsnMother(const AliRsnMother &obj);
    AliRsnMother &operator=(const AliRsnMother &obj);
    virtual ~AliRsnMother();
@@ -37,6 +37,7 @@ public:
    TLorentzVector   &Ref(Bool_t mc)              {return (mc ? fRefMC : fRef);}
    Bool_t            GetResolution(Double_t &value);
    Double_t          Rapidity(Bool_t mc)         {if (mc) return fRefMC.Rapidity(); else return fRef.Rapidity();}
+   Double_t          DCAproduct();
 
    // checks
    Bool_t    IsLabelEqual()  const {return TMath::Abs(fDaughter[0]->GetLabel()) == TMath::Abs(fDaughter[1]->GetLabel());}
@@ -64,8 +65,9 @@ private:
    TLorentzVector   fSumMC;            // sum computed from the two daughters (sim)
    TLorentzVector   fRef;              // same to sum, but with fixed mass hypothesis (rec)
    TLorentzVector   fRefMC;            // same to sum, but with fixed mass hypothesis (sim)
+   Double_t         fDCAproduct;       // product of the daughter's DCA to Primary Vertex
 
-   ClassDef(AliRsnMother, 1)
+   ClassDef(AliRsnMother, 2)
 };
 
 #endif

@@ -27,16 +27,24 @@ endif(NOT ALICE_ROOT)
 
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 # Set AliRoot Installation directory 
-if(NOT ALICE_INSTALL)
-  message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You can specify a different location by setting ALICE_INSTALL environment variable")
-  set(ALICE_INSTALL ${ALICE_ROOT})
-else()
-  message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
-endif(NOT ALICE_INSTALL)
-if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "Install dir should be different from build dir")
+# If CMAKE_INSTALL_PREFIX was not set than we set it to ALICE_INSTALL. 
+# If ALICE_INSTALL was not defined than it will default to source directory
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    if(ALICE_INSTALL)
+	message(STATUS "AliRoot files will be installed in ${ALICE_INSTALL}")
+    else()
+	message(STATUS "AliRoot files will be installed in ${ALICE_ROOT}. You
+	can specify a different location by passing -DCMAKE_INSTALL_PREFIX or
+	by setting ALICE_INSTALL environment variable")
+	set(ALICE_INSTALL ${ALICE_ROOT})
+	if(${ALICE_INSTALL} STREQUAL ${CMAKE_BINARY_DIR})
+	    message(FATAL_ERROR "The install directory must differ from the
+	    build directory")
+	endif()
+    endif()
+    set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL} CACHE STRING "Install dir" FORCE)
 endif()
-set(CMAKE_INSTALL_PREFIX ${ALICE_INSTALL})
+
 
 # Environment for SHUTTLE
 set(DIMDIR $ENV{DIMDIR})
@@ -91,6 +99,10 @@ find_package(CPack)
 # ------------------------------
 find_package(ZeroMQ)
 
+# fastjet
+# ------------------------------
+find_package(FASTJET)
+
 #--------------------------------------------------------------------------------#
 # Environment/Compiler Configuration                                             #
 #--------------------------------------------------------------------------------#
@@ -129,7 +141,7 @@ set(BINLIBDIRS "-L${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 # Standard Modules
 # ------------------------------
-set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen)
+set(ALIROOTMODULES STEER PHOS TRD TPC ZDC MUON PMD FMD TOF ITS AD ACORDE HMPID T0 BCM STRUCT VZERO THijing THbtp EMCAL THerwig TEPEMGEN FASTSIM TPHIC RAW MONITOR ANALYSIS JETAN HLT STAT TTherminator CORRFW DPMJET TDPMjet STARLIGHT PWGPP PWG PWGCF PWGGA PWGHF PWGDQ PWGJE PWGLF PWGUD TRIGGER PYTHIA8 TAmpt OADB MFT TEvtGen FIT)
 
 if(THydjet)
   list(APPEND ALIROOTMODULES THydjet)
@@ -311,7 +323,7 @@ set(AEXT a)
 set(LIBPATH ${CMAKE_BINARY_DIR}/lib/tgt_${ALICE_TARGET})
 set(BINPATH ${CMAKE_BINARY_DIR}/bin/tgt_${ALICE_TARGET})
 set(EXPORTDIR ${ALICE_ROOT}/include)
-set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
+#set(BINLIBDIRS -L${ALICE_ROOT}/${LIBPATH})
 set(RAWDIRO ${CMAKE_BINARY_DIR}/RAW)
 set(ALIMDCSPECFILE ${RAWDIRO}/alimdc.spec)
 set(RAWDatabaseALIB ${LIBPATH}/libRAWDatabase.${AEXT})
@@ -334,93 +346,38 @@ message("alimdc-rpm: Unknown architecture" )
 endif( ${ARCHITECTURE} MATCHES "linuxx8664gcc" )
 
 
+# Module version will be written in the generated header
+configure_file ("RAW/alimdc.spec.in" "${CMAKE_CURRENT_BINARY_DIR}/RAW/alimdc.spec" @ONLY)
+
 add_custom_target( alimdc-rpm
-DEPENDS alimdc-static alimdc-specfile
+DEPENDS alimdc-static
 )
 
 add_custom_command(
 TARGET alimdc-rpm
 POST_BUILD 
-COMMAND rm -rf ${ALICE_ROOT}/alimdc-root
-COMMAND mkdir -p ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND mkdir -p ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
-COMMAND cp ${ALICE_ROOT}/RAW/mdc.h ${ALICE_ROOT}/alimdc-root/opt/alimdc/include
-COMMAND cp ${LIBPATH}/libAliMDC.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libRoot.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/liblzma.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libpcre.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libfreetype.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND cp ${ROOTALIBDIR}/libpcre.a ${ALICE_ROOT}/alimdc-root/opt/alimdc/lib
-COMMAND rm -rf ${ALICE_ROOT}/RPMS
-COMMAND mkdir -p ${ALICE_ROOT}/RPMS/${ALIMDCARCHDIR}/
-COMMAND rpmbuild --verbose --define "_topdir ${ALICE_ROOT}" --define "_tmppath ${ALICE_ROOT}" -bb ${ALIMDCSPECFILE} 
-COMMAND cp -p ${ALICE_ROOT}/RPMS/${ALIMDCARCHDIR}/alimdc-*.rpm .
-COMMAND rm -rf ${ALICE_ROOT}/alimdc-root
-COMMAND rm -rf ${ALICE_ROOT}/RPMS
+COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root
+COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/include
+COMMAND cp ${ALICE_ROOT}/RAW/mdc.h ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/include
+COMMAND cp ${LIBPATH}/libAliMDC.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libRoot.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/liblzma.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libpcre.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libfreetype.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND cp ${ROOTALIBDIR}/libpcre.a ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root/opt/alimdc/lib
+COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/RPMS
+COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/RPMS/${ALIMDCARCHDIR}/
+COMMAND rpmbuild --verbose --define "_topdir ${CMAKE_CURRENT_BINARY_DIR}" --define "%buildroot ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root" -bb ${ALIMDCSPECFILE} 
+COMMAND cp -p ${CMAKE_CURRENT_BINARY_DIR}/RPMS/${ALIMDCARCHDIR}/alimdc-*.rpm .
+COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/alimdc-root
+COMMAND rm -rf ${CMAKE_CURRENT_BINARY_DIR}/RPMS
 COMMAND echo "***** alimdc RPM created and put in ${CMAKE_BINARY_DIR} folder *****"
 )
 
 add_custom_command(
 TARGET ${RAWDIRO}
 COMMAND mkdir-p ${RAWDIRO}
-)
-
-
-add_custom_target( alimdc-specfile
-DEPENDS ${RAWDIRO}
-)
-
-add_custom_command( 
-TARGET alimdc-specfile
-POST_BUILD
-COMMAND rm -rf ${ALIMDCSPECFILE}
-COMMAND @echo "***** Making alimdc RPM spec-file ${ALIMDCSPECFILE} *****"
-COMMAND @echo '\# RPM specfile for alimdc static libs' >> ${ALIMDCSPECFILE} 
-COMMAND @echo '\# Package contains both ROOT and AliRoot' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# static libs needed by mStreamRecorder' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# in order to ROOT-ify the incoming raw' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# data' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# Example how-to build alimdc RPM:' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# cd ${ALICE_ROOT}' >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# make alimdc-rpm' >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Summary: AliMDC static libraries" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Name: alimdc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Version:  ${ALIROOT_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Release: ${ALIROOT_REVISION}" >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# Copyright: CERN Alice Off-line' >> ${ALIMDCSPECFILE}
-COMMAND @echo "License: CERN Alice Off-line" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Vendor: ALICE Core Off-line Group" >> ${ALIMDCSPECFILE}
-COMMAND @echo "URL: http://aliceinfo.cern.ch" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Group: Applications/Alice" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Prefix: /opt/%{name}" >> ${ALIMDCSPECFILE}
-COMMAND @echo "BuildRoot: %{_tmppath}/%{name}-root" >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# automatic dependencies' >> ${ALIMDCSPECFILE}
-COMMAND @echo "AutoReqProv: yes" >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# list here required RPM packages for runtime' >> ${ALIMDCSPECFILE}
-COMMAND @echo "Requires: glibc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Provides: alimdc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# description of the package' >> ${ALIMDCSPECFILE}
-COMMAND @echo "%description" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Package contains both ROOT and AliRoot" >> ${ALIMDCSPECFILE}
-COMMAND @echo "static libs needed by mStreamRecorder" >> ${ALIMDCSPECFILE}
-COMMAND @echo "in order to ROOT-ify the incoming raw" >> ${ALIMDCSPECFILE}
-COMMAND @echo "data. The package version correspond to" >> ${ALIMDCSPECFILE}
-COMMAND @echo "the AliRoot one." >> ${ALIMDCSPECFILE}
-COMMAND @echo "" >> ${ALIMDCSPECFILE}
-COMMAND @echo '\# list of files to be installed' >> ${ALIMDCSPECFILE}
-COMMAND @echo "%files" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%defattr (-,root,root)" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/lib/libAliMDC.a" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/lib/libRoot.a" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/lib/libpcre.a" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/lib/liblzma.a" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/lib/libfreetype.a" >> ${ALIMDCSPECFILE}
-COMMAND @echo "%{prefix}/include/mdc.h" >> ${ALIMDCSPECFILE}
 )
 
 
@@ -441,7 +398,7 @@ COMMAND ar t ${RAWDatabaseALIB} | xargs rm
 COMMAND ar t ${MDCALIB} | xargs rm 
 COMMAND ar t ${ESDALIB} | xargs rm 
 COMMAND ar t ${STEERBaseALIB} | xargs rm 
-COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -ldl -lz
+COMMAND ${CMAKE_CXX_COMPILER} ${LDFLAGS} -o ${BINPATH}/alimdca ${LIBPATH}/alimdccxxo.a ${LIBPATH}/libAliMDC.a ${ROOTALIBDIR}/libRoot.a ${ROOTALIBDIR}/libfreetype.a ${ROOTALIBDIR}/libpcre.a ${ROOTALIBDIR}/liblzma.a -pthread -lssl -ldl -lz
 COMMAND @echo "Target alimdc-static made"
 )
 

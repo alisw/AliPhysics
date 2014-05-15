@@ -345,8 +345,15 @@ public:
    * @return New style 
    */
   static Int_t FlipHollowStyle(Int_t style);
-  /*Setter of empirical correction*/
-   void SetGlobalEmpiricalcorrection(TH2D* globalempiricalcorrection){fglobalempiricalcorrection=globalempiricalcorrection;}
+  /**
+   * Setter of empirical correction
+   *
+   * @param h 2D histogram of ratio of nominal @f$ 1/N
+   * dN_{ch}/d\eta@f$ to satellite @f$ 1/N dN_{ch}/d\eta@f$ in PbPb
+   * collisions as a function of @f$\eta@f$ and interaction point
+   * Z-coordinate @f$ IP_{z}@f$
+   */
+   void SetGlobalEmpiricalcorrection(TH2D* h){fEmpiricalCorrection=h;}
 protected:
   /** 
    * Copy contructor - not defined
@@ -902,8 +909,8 @@ protected:
   UShort_t        fNormalizationScheme; // Normalization scheme
   TString         fFinalMCCorrFile; //Filename for final MC corr
   Bool_t          fSatelliteVertices; // satellite vertex flag
-  TH2D*           fglobalempiricalcorrection; // the ratio of PbPb analysis normal displace vertex
-  TH2D* 	  fmeabsignalvscentr; //mean signal per event vs cent	 	  
+  TH2D*           fEmpiricalCorrection; // Empirical correction 
+  TH2D* 	  fMeanVsC;         //mean signal per event vs cent
   ClassDef(AliBasedNdetaTask,14); // Determine charged particle density
 };
 

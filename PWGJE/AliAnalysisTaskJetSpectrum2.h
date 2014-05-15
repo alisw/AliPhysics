@@ -35,7 +35,6 @@ class TProfile;
 class TProfile2D;
 class TSTring;
 
-
 class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
 {
  public:
@@ -93,6 +92,14 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     virtual void SetNAcceptance(Int_t n);
     virtual void SetAcceptance(Int_t i,Float_t phiMin,Float_t phiMax,Float_t etaMin,Float_t etaMax);// non overlapping regions
     virtual Int_t CheckAcceptance(Float_t phi,Float_t eta);
+
+
+    void    SetMaxVertexZ(Float_t a)      {fMaxVertexZ = a;}
+    void    SetMinNcontributors(Int_t i)  {fMinNcontributors = i;}
+    void    SetPileupRejection(Bool_t a)  {fRejectPileup = a;}
+
+
+
     // Helper
     //
 
@@ -148,7 +155,6 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     Int_t MultFromJetRefs(TClonesArray *jets);
     AliVParticle *LeadingTrackFromJetRefs(AliAODJet* jet);
     AliVParticle *LeadingTrackInCone(AliAODJet* jet,TList *list,Float_t r = 0.4);
-
 
     AliJetHeader *fJetHeaderRec;//! The jet header that can be fetched from the userinfo
     AliJetHeader *fJetHeaderGen;//! The jet header that can fetched from the userinfo
@@ -263,6 +269,11 @@ class AliAnalysisTaskJetSpectrum2 : public AliAnalysisTaskSE
     TH2F*   fh2DijetAsymPt[kJetTypes];          //! dijet asym vs pt after delta phi cut
     TH2F*   fh2DijetPt2vsPt1[kJetTypes];        //! dijet pt2 vs pt1
     TH2F*   fh2DijetDifvsSum[kJetTypes];        //! dijet dif vs sum
+
+    TH1F*   fh1EvtSelection;
+    Float_t fMaxVertexZ;
+    Int_t   fMinNcontributors;
+    Bool_t  fRejectPileup;
 
 
     TList *fHistList;                  //! Output list

@@ -8,6 +8,7 @@
 #include "TList.h"
 #include "TClonesArray.h"
 #include "TArrayI.h"
+#include "TRandom3.h"
 // aliroot includes
 #include "AliAODEvent.h"
 #include "AliAnalysisManager.h"
@@ -21,7 +22,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskJetFlowMC)
 
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAnalysisTaskJetFlowMC"), fTracksOutName("JetFlowMC"),  fTracksInName("PicoTrack"), fTracksIn(0),  fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
     // default constructor for root IO
     for(Int_t i(0); i < 10; i++) {
         fFuncDiffV2[i]                  = 0x0;
@@ -38,7 +39,7 @@ AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC() : AliAnalysisTaskSE("AliAna
     }
 }
 //_____________________________________________________________________________
-AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
+AliAnalysisTaskJetFlowMC::AliAnalysisTaskJetFlowMC(const char *name) : AliAnalysisTaskSE(name), fTracksOutName("JetFlowMC"), fTracksInName("PicoTrack"), fTracksIn(0), fTracksOut(0), fReuseTracks(kFALSE), fMult(2200), fCenBin(-1), fCentralityClasses(0), fFuncVn(0), fOutputList(0), fTrackSpectrum(0), fRandomizeEta(kTRUE), fJetSpectrumSF(0), fNoOfSFJets(0), fHistIntV2(0), fHistIntV3(0), fFlowFluctuations(-10), fMaxNumberOfIterations(100), fPsi2(-10), fPsi3(-10), fPrecisionPhi(1e-10), fDetectorType(kVZEROC), fHistSFJetSpectrum(0), fHistSFJetEtaPhi(0) {
     // constructor
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -106,13 +107,13 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
     if(fHistIntV3)      fOutputList->Add(fHistIntV3);
     // create the QA histos
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) {
-        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistOriginalSpectrum[i] = BookTH1F("fHistOriginalSpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistOriginalEtaPhi[i] = BookTH2F("fHistOriginalEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 100, 0, 100, i);
+        fHistToySpectrum[i] = BookTH1F("fHistToySpectrum", "p_{t} [GeV/c]", 200, 0, 200, i);
         fHistToyEtaPhi[i] = BookTH2F("fHistToyEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
         fHistOriginalDeltaPhi[i] = BookTH1F("fHistOriginalDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
         fHistToyDeltaPhi[i] = BookTH1F("fHistToyDeltaPhi", "#varphi - #Psi", 100, 0., TMath::Pi(), i);
-        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 100, 0, 20, 80, 0, .8, i);
+        fHistToyVn[i] = BookTH2F("fHistToyVn", "p_{t} [GeV/c]", "v_{n}", 1000, 0, 200, 200, 0, .2, i);
         // add to outputlist
         if(fFuncDiffV2[i]) fOutputList->Add(fFuncDiffV2[i]);
         if(fFuncDiffV3[i]) fOutputList->Add(fFuncDiffV3[i]);
@@ -123,6 +124,12 @@ void AliAnalysisTaskJetFlowMC::UserCreateOutputObjects()
         fHistSFJetSpectrum = BookTH1F("fHistSFJetSpectrum", "p_{t} SF jets [GeV/c]", 100, 0, 200);
         fHistSFJetEtaPhi = BookTH2F("fHistSFJetEtaPhi", "#eta", "#varphi", 100, -1., 1., 100, 0, TMath::TwoPi());
     }
+    // reset the random seed
+    if(gRandom) {
+        delete gRandom;
+        gRandom = new TRandom3(0);
+    }
+
     fOutputList->Sort();
     PostData(1, fOutputList);
 }
@@ -189,19 +196,35 @@ void AliAnalysisTaskJetFlowMC::UserExec(Option_t *)
     fTracksOut->Clear();
     // get the event plane
     CalculateEventPlane();
-    const Int_t Ntracks = fTracksIn->GetEntriesFast();
     Int_t nacc(0);
-    for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
-        AliPicoTrack* track = static_cast<AliPicoTrack*>(fTracksIn->At(iTracks));
-        if(!track) continue;
-        Double_t phi(track->Phi()), pt((fTrackSpectrum) ? GetTrackPt() : track->Pt()), eta(track->Eta());
-        // fill qa histo's before applying any (possible) afterburner
-        FillHistogramsOriginalData(pt, eta, phi);
-        if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
-        else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
-        else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
-        /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
-        nacc++;
+    if(fReuseTracks) {
+        const Int_t Ntracks = fTracksIn->GetEntriesFast();
+        for (Int_t iTracks = 0; iTracks < Ntracks; ++iTracks) {
+            AliPicoTrack* track = static_cast<AliPicoTrack*>(fTracksIn->At(iTracks));
+            if(!track) continue;
+            Double_t phi(track->Phi()), pt((fTrackSpectrum) ? GetTrackPt() : track->Pt()), eta(fRandomizeEta ? GetTrackEta() : track->Eta());
+            // fill qa histo's before applying any (possible) afterburner
+            FillHistogramsOriginalData(pt, eta, phi);
+            if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
+            else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
+            else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
+            /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, track->Charge(), track->GetLabel(), 4, track->GetTrackEtaOnEMCal(), track->GetTrackPhiOnEMCal(), track->GetTrackPtOnEMCal(), 1); 
+            nacc++;
+        }
+    } else {
+        Double_t pt(0), eta(0), phi(0);
+        for (Int_t iTracks = 0; iTracks < fMult; ++iTracks) {
+            pt = GetTrackPt();
+            eta = gRandom->Uniform(-.9, .9);
+            phi = gRandom->Uniform(0., TMath::TwoPi());
+            // fill qa histo's before applying any (possible) afterburner
+            FillHistogramsOriginalData(pt, eta, phi);
+            if(fHistDiffV2[fCenBin] || fFuncDiffV2[fCenBin])        V2AfterBurner(phi, eta, pt);
+            else if(fHistDiffV3[fCenBin] || fFuncDiffV3[fCenBin])   V3AfterBurner(phi, eta, pt);
+            else if(fHistIntV2 || fHistIntV3)                       SampleVnFromTF1(phi);        
+            /*AliPicoTrack *picotrack =*/ new ((*fTracksOut)[nacc]) AliPicoTrack(pt, eta, phi, 1, 0, 4, eta, phi, pt, 1); 
+            nacc++;
+        }
     }
     if(fJetSpectrumSF && fNoOfSFJets > 0) InjectSingleFragmentationJetSpectrum(nacc);
     PostData(1, fOutputList);

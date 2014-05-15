@@ -177,7 +177,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   // Alignment matrices
   //-------------------------------------------------------
 
-  clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"); // change only in case 2010 to geometry_2010.root
+  //clusterize->SetImportGeometryFromFile(kTRUE,"$ALICE_ROOT/OADB/EMCAL/geometry_2011.root"); // done automatically, set here to force
 
   clusterize->SwitchOnLoadOwnGeometryMatrices();
   

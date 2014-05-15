@@ -76,7 +76,7 @@ AliFlowEventStar::AliFlowEventStar( const AliStarEvent* starevent,
     {
       Bool_t pass = rpCuts->PassesCuts(startrack);
       flowtrack->TagRP(pass); //tag RPs
-      if (pass) fNumberOfRPs++;
+      if (pass) IncrementNumberOfPOIs(0);
     }
     if (poiCuts)
     {

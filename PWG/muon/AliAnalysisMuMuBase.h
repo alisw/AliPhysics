@@ -153,6 +153,11 @@ protected:
   
 private:
   
+  /// not implemented on purpose
+  AliAnalysisMuMuBase& operator=(const AliAnalysisMuMuBase& rhs);
+  /// not implemented on purpose
+  AliAnalysisMuMuBase(const AliAnalysisMuMuBase& rhs);
+  
   AliCounterCollection* fEventCounters; //! event counters
   AliMergeableCollection* fHistogramCollection; //! collection of histograms
   const AliAnalysisMuMuBinning* fBinning; //! binning for particles

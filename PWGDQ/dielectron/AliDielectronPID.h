@@ -19,6 +19,8 @@
 //#                                                           #
 //#############################################################
 
+#include <TBits.h>
+
 #include <AliPID.h>
 #include <AliAnalysisCuts.h>
 #include <AliTRDPIDResponse.h>
@@ -27,6 +29,7 @@ class TF1;
 class TList;
 class AliVTrack;
 class TGraph;
+class THnBase;
 class AliPIDResponse;
 class AliDielectronVarManager;
 class AliDielectronVarCuts;
@@ -59,7 +62,11 @@ public:
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp, Double_t min, Double_t max, Bool_t exclude, UInt_t pidBitType,              TF1 * const funSigma);
   void AddCut(DetType det, AliPID::EParticleType type, Double_t nSigmaLow, Double_t nSigmaUp,
   	      AliDielectronVarCuts *varcuts, Bool_t exclude=kFALSE, UInt_t pidBitType=AliDielectronPID::kRequire );
-  
+
+  void AddCut(DetType det, AliPID::EParticleType type, THnBase * const histLow, Double_t nSigmaUp,
+	       Double_t min=0, Double_t max=0, Bool_t exclude=kFALSE,
+	       UInt_t pidBitType=AliDielectronPID::kRequire, Int_t var=-1);
+
   void SetDefaults(Int_t def);
 
   //
@@ -79,11 +86,9 @@ public:
   static TGraph *GetCorrGraphdEdx()  { return fgdEdxRunCorr; }
 
   static void SetEtaCorrFunction(TF1 *fun) {fgFunEtaCorr=fun;}
-  static void SetCentroidCorrFunction(TF1 *fun) { fgFunCntrdCorr=fun; }
-  static void SetWidthCorrFunction(TF1 *fun) { fgFunWdthCorr=fun; }
+  static void SetCentroidCorrFunction(TH1 *fun) { fgFunCntrdCorr=fun; }
+  static void SetWidthCorrFunction(TH1 *fun) { fgFunWdthCorr=fun; }
   static TF1* GetEtaCorrFunction() { return fgFunEtaCorr; }
-  static TF1* GetCentroidCorrFunction() { return fgFunCntrdCorr; }
-  static TF1* GetWidthCorrFunction() { return fgFunWdthCorr; }
 
   static Double_t GetEtaCorr(const AliVTrack *track);
   static Double_t GetCntrdCorr(const AliVTrack *track) { return (fgFunCntrdCorr ? GetPIDCorr(track,fgFunCntrdCorr) : 0.0); }
@@ -92,6 +97,7 @@ public:
 private:
   enum {kNmaxPID=30};
 
+  TBits     *fUsedVars;            // list of used variables
   DetType  fDetType[kNmaxPID];    //detector type of nsigma cut
   AliPID::EParticleType fPartType[kNmaxPID]; //particle type
   Float_t  fNsigmaLow[kNmaxPID];  //lower nsigma bound
@@ -117,14 +123,15 @@ private:
   static Double_t fgCorrdEdx;     //!dEdx correction value for current run. Set if fgFitCorr is set and SetCorrVal(run)
                                   // was called
   static TF1    *fgFunEtaCorr;    //function for eta correction of electron sigma
-  static TF1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
-  static TF1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
+  static TH1    *fgFunCntrdCorr;  //function for correction of electron sigma (centroid)
+  static TH1    *fgFunWdthCorr;   //function for correction of electron sigma (width)
   static TGraph *fgdEdxRunCorr;   //run by run correction for dEdx
 
-  static Double_t GetPIDCorr(const AliVTrack *track, TF1 *fun);
+  static Double_t GetPIDCorr(const AliVTrack *track, TH1 *hist);
   
+  THnBase* fMapElectronCutLow[kNmaxPID];  //map for the electron lower cut in units of n-sigma widths 1 centered to zero
   Bool_t IsSelectedITS(AliVTrack * const part, Int_t icut);
-  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut);
+  Bool_t IsSelectedTPC(AliVTrack * const part, Int_t icut, Double_t *values);
   Bool_t IsSelectedTRD(AliVTrack * const part, Int_t icut);
   Bool_t IsSelectedTRDeleEff(AliVTrack * const part, Int_t icut, AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D);
   Bool_t IsSelectedTOF(AliVTrack * const part, Int_t icut);
@@ -133,7 +140,7 @@ private:
   AliDielectronPID(const AliDielectronPID &c);
   AliDielectronPID &operator=(const AliDielectronPID &c);
 
-  ClassDef(AliDielectronPID,5)         // Dielectron PID
+  ClassDef(AliDielectronPID,7)         // Dielectron PID
 };
 
 #endif
