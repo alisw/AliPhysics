@@ -1250,9 +1250,9 @@ AliFMDEnergyFitter::RingHistos::FitHist(TH1*      dist,
   DMSG(fDebug,5,"max(%s) -> %f", dist->GetName(), max);
 
   // Check that we have enough entries 
-  Int_t nEntries = Int_t(dist->GetEntries());
+  Double_t nEntries = dist->GetEntries();
   if (nEntries <= minEntries) { 
-    AliWarning(Form("Histogram at %s has too few entries (%d <= %d)",
+    AliWarning(Form("Histogram at %s has too few entries (%f <= %d)",
 		    dist->GetName(), nEntries, minEntries));
     status = 2;
     return 0;
