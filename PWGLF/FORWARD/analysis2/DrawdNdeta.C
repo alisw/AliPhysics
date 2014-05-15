@@ -75,6 +75,8 @@ struct dNdetaDrawer
     kHiRes         = 0x04000,
     kExtraWhite    = 0x08000,
     kLogo          = 0x10000,
+    kNoCentral     = 0x20000,
+    kNoLabels      = 0x40000,
     kDefaultOptions = 0x1CE07
   };
   enum EOutFormat { 
@@ -207,7 +209,8 @@ struct dNdetaDrawer
       fOthers(0),            // Older data 
       fTriggers(0),          // Number of triggers
       fTruth(0),             // Pointer to truth 
-      fRangeParam(0)         // Parameter object for range zoom 
+    fRangeParam(0),        // Parameter object for range zoom 
+    fEmpCorr(0)
   {
     fRangeParam = new RangeParam;
     fRangeParam->fMasterAxis = 0;
@@ -371,7 +374,8 @@ struct dNdetaDrawer
   {
     fTrigString = new TNamed("trigString", (trig & 0x1 ? "INEL" : 
 					    trig & 0x2 ? "INEL>0" : 
-					    trig & 0x4 ? "NSD" : 
+					    trig & 0x4 ? "NSD" :
+					    trig & 0x2000 ? "V0-AND" :
 					    "unknown"));
     fTrigString->SetUniqueID(trig);
   }
@@ -405,7 +409,8 @@ struct dNdetaDrawer
     fFormats          = formats;
     SetForwardSysError(flags & kShowSysError ? 0.076 : 0);
     SetFinalMC        (flags & kUseFinalMC ? "forward_dndetamc.root" : "");
-    SetEmpirical      (flags & kUseEmpirical ? "EmpiricalCorrection.root" : "");
+    // "EmpiricalCorrection.root"
+    SetEmpirical      (flags & kUseEmpirical ? fEmpirical.Data() : "");
     // SetBase(base);
 
     Double_t max = 0, rmax=0, amax=0;
@@ -450,10 +455,12 @@ struct dNdetaDrawer
 	 "   Remove outer rings:               %5s\n"
 	 "   Mirror to un-covered regions:     %5s\n"
 	 "   Force minimum bias:               %5s\n"
+	 "   Show clusters:                    %5s\n"
 	 "   Show other results:               0x%03x\n"
 	 "   Rebinning factor:                 %5d\n"
 	 "   Forward systematic error:         %5.1f%%\n"
 	 "   Central systematic error:         %5.1f%%\n"
+	 "   Trigger efficiency:               %5.1f%%\n"
 	 "   Title on plot:                    %s\n"
 	 "   Scaling of clusters to tracklets: %s\n"
 	 "   Final MC correction file:         %s\n"
@@ -466,7 +473,9 @@ struct dNdetaDrawer
 	 ((fOptions & kRemoveOuters)  ? "yes" : "no"),
 	 ((fOptions & kMirror)        ? "yes" : "no"),
 	 ((fOptions & kForceMB)       ? "yes" : "no"),
+	 ((fOptions & kNoCentral)     ? "no"  : "yes"),
 	 fShowOthers, fRebin, (100*fFwdSysErr), (100*fCenSysErr), 
+	 (100*fTriggerEff),
 	 fTitle.Data(), fClusterScale.Data(), fFinalMC.Data(), 
 	 fEmpirical.Data());
 
@@ -479,9 +488,13 @@ struct dNdetaDrawer
       gROOT->LoadMacro("OtherData.C+");
     gROOT->SetMacroPath(savPath);
 
+    Bool_t useCen = !(fOptions & kNoCentral);
     // --- Get the central results -----------------------------------
-    TList* clusters = static_cast<TList*>(file->Get("CentraldNdetaResults"));
-    if (!clusters) Warning("Run", "Couldn't find list CentraldNdetaResults");
+    TList* clusters = 0;
+    if (useCen) {
+      clusters = static_cast<TList*>(file->Get("CentraldNdetaResults"));
+      if (!clusters) Warning("Run", "Couldn't find list CentraldNdetaResults");
+    }
 
     // --- Get the central results -----------------------------------
     TList* mcTruth = static_cast<TList*>(file->Get("MCTruthdNdetaResults"));
@@ -516,42 +529,47 @@ struct dNdetaDrawer
     if (!forwardMC) fFinalMC = "";
 
     // --- Try to get the emperical correction -----------------------
-    TGraphErrors* empCorr = 0;
+    TObject* fwdEmp = 0;
+    TObject* cenEmp = 0;
     if (!fEmpirical.IsNull() && !fEmpirical.EqualTo("__task__")) {
-      if (gSystem->AccessPathName(fEmpirical.Data())) { // Not found here
-	fEmpirical = 
-	  gSystem->ExpandPathName(Form("$ALICE_ROOT/PWGLF/FORWARD/"
-				       "corrections/Empirical/%s", 
-				       fEmpirical.Data()));
-	if (gSystem->AccessPathName(fEmpirical.Data())) { // Not found here
-	  Warning("Run", "Couldn't get empirical correction file");
-	  fEmpirical = "";
-	}
+      TUrl empUrl(fEmpirical);
+      TFile* empirical = TFile::Open(empUrl.GetUrl(), "READ");
+      if (!empirical) { 
+	Warning("Run", "couldn't open empirical correction file: %s",
+		empUrl.GetUrl());
+	fEmpirical = "";
       }
-      if (!fEmpirical.IsNull()) {
-	TFile* empirical = TFile::Open(fEmpirical, "READ");
-	if (!empirical) { 
-	  Warning("Run", "couldn't open empirical correction file: %s",
-		  fEmpirical.Data());
-	  fEmpirical = "";
-	}
-	const char* empPath = "fmdfull/average";
-	empCorr = static_cast<TGraphErrors*>(empirical->Get(empPath));
-	if (!empCorr) {
-	  Warning("Run", "Didn't find the graph %s in %s", 
-		  empPath, fEmpirical.Data());
-	  fEmpirical = "";
-	}
+      const char* empPath = empUrl.GetAnchor();
+      TObject*    fwdObj  = empirical->Get(Form("Forward/%s", empPath));
+      TObject*    cenObj  = empirical->Get(Form("Central/%s", empPath));
+      if (!(fwdObj &&
+	    (fwdObj->IsA()->InheritsFrom(TH1::Class()) || 
+	     fwdObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	Warning("Run", "Didn't get the object Forward/%s from %s", 
+		empPath, empUrl.GetUrl());
+	fEmpirical = "";
+      }
+      if (useCen && !(cenObj &&
+	  (cenObj->IsA()->InheritsFrom(TH1::Class()) || 
+	   cenObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())))) { 
+	Warning("Run", "Didn't get the object Central/%s from %s", 
+		empPath, empUrl.GetUrl());
+	fEmpirical = "";
+      }
+      else {
+	fwdEmp = fwdObj;
+	cenEmp = fwdObj;
       }
     }
-    if (!empCorr && !fEmpirical.EqualTo("__task__")) fEmpirical = "";
+    if (!fEmpCorr && !fEmpirical.EqualTo("__task__")) 
+      fEmpirical = "";
 
     // --- Loop over input data --------------------------------------
     TObjArray truths;
     FetchTopResults(mcTruth,  0, 0, "MCTruth", max, rmax, amax,truths);
-    TObjArray* fwdA = FetchTopResults(forward,  forwardMC, empCorr, "Forward", 
+    TObjArray* fwdA = FetchTopResults(forward, forwardMC, fwdEmp, "Forward", 
 				   max, rmax, amax,truths);
-    TObjArray* cenA = FetchTopResults(clusters, 0, 0, "Central", 
+    TObjArray* cenA = FetchTopResults(clusters, 0, cenEmp, "Central", 
 				   max, rmax, amax,truths);
 
     // --- Get trigger information -----------------------------------
@@ -600,7 +618,7 @@ struct dNdetaDrawer
       if (fCenSysErr <= 0) fCenSysErr = fFwdSysErr;
       for (Int_t i = 0; i < fwdA->GetEntriesFast(); i++) {
 	TH1* fwd = static_cast<TH1*>(fwdA->At(i));
-	TH1* cen = static_cast<TH1*>(cenA->At(i));
+	TH1* cen = (cenA ? static_cast<TH1*>(cenA->At(i)) : 0);
 	CorrectForward(fwd);
 	CorrectCentral(cen);
 	Double_t low, high;
@@ -655,12 +673,18 @@ struct dNdetaDrawer
       fVtxAxis    = static_cast<TAxis*>(results->FindObject("vtxAxis"));
     if (!fCentAxis) 
       fCentAxis   = static_cast<TAxis*>(results->FindObject("centAxis"));
-    if (fTriggerEff <= 0 || (1-fTriggerEff)<1e-6) {
+    if (fTriggerEff < 0) { 
+      // Allow complete overwrite by passing negative number 
+      SetTriggerEfficiency(TMath::Abs(fTriggerEff));
+    }
+    else if (fTriggerEff <= 0 || TMath::Abs(1-fTriggerEff)<1e-6) {
       TParameter<double>* eff = 
 	static_cast<TParameter<double>*>(results->FindObject("triggerEff"));
       if (eff) {
 	fTriggerEff = eff->GetVal();
 	fExtTriggerEff = true;
+	Info("FetchInformation", "External trigger efficicency: %5.3f",
+	     fTriggerEff);
       }
       if (fTriggerEff <= 0) SetTriggerEfficiency(1);
     }
@@ -693,7 +717,7 @@ struct dNdetaDrawer
     }
 	
 
-    if (fOptions & kVerbose) {
+    if (true /*fOptions & kVerbose*/) {
       TString centTxt("none");
       if (fCentAxis) { 
 	Int_t nCent = fCentAxis->GetNbins();
@@ -721,7 +745,7 @@ struct dNdetaDrawer
 	   centTxt.Data(), (options ? options->GetTitle() : "none"));
     }
     if (fSysString->GetUniqueID() == 3) {
-      Info("FetchTopResults", "Left/Right assymmetry, mirror, and systematic "
+      Info("FetchInformation", "Left/Right assymmetry, mirror, and systematic "
 	   "errors explicitly disabled for pPb");
       fOptions   &= ~kShowLeftRight;
       fOptions   &= ~kMirror;
@@ -772,7 +796,7 @@ struct dNdetaDrawer
   TObjArray* 
   FetchTopResults(const TList*  list, 
 		  const TList*  mcList,
-		  TGraphErrors* empCorr,
+		  TObject*      empCorr,
 		  const char*   name, 
 		  Double_t&     max,
 		  Double_t&     rmax,
@@ -848,7 +872,7 @@ struct dNdetaDrawer
    */
   TH1* FetchOne(const TList*  list, 
 		const TList*  mcList,
-		TGraphErrors* empCorr,
+		TObject*      empCorr,
 		const char*   name, 
 		const char*   folderName,
 		TMultiGraph*  others, 
@@ -862,7 +886,7 @@ struct dNdetaDrawer
     TList* folder = (fOptions & kOldFormat ? const_cast<TList*>(list) :
 		     static_cast<TList*>(list->FindObject(folderName)));
     if (!folder) {
-      Error("FetchResults", "Couldn't find list '%s' in %s", 
+      Error("FetchOne", "Couldn't find list '%s' in %s", 
 	    folderName, list->GetName());
       return 0;
     }
@@ -870,14 +894,15 @@ struct dNdetaDrawer
     if (mcList) {
       mcFolder = static_cast<TList*>(mcList->FindObject(folderName));
       if (!mcFolder) 
-	Warning("FetchResults", 
+	Warning("FetchOne", 
 		"Didn't find the list '%s' in %s for final MC correction", 
 		folderName, mcList->GetName());
     }
     if (fOptions & kVerbose) {
       TObject* normCalc = folder->FindObject("normCalc");
-      if (normCalc) Info("FetchOne", "%s:\n%s", 
-			 folderName, normCalc->GetTitle());
+      if (normCalc) 
+	Info("FetchOne", "%s:\n%s", 
+	     folderName, normCalc->GetTitle());
     }
     TH1* h = FetchCentResults(folder, mcFolder, empCorr, name, 
 			      others, col, folderName, max, rmax, amax, truth);
@@ -903,7 +928,7 @@ struct dNdetaDrawer
    */
   TH1* FetchCentResults(const TList*  list, 
 			const TList*  mcList, 
-			TGraphErrors* empCorr,
+			TObject*      empCorr,
 			const char*   name, 
 			TMultiGraph*  thisOther,
 			Int_t         color,
@@ -917,8 +942,8 @@ struct dNdetaDrawer
     TH1* dndeta      = FetchHistogram(list, Form("dndeta%s", name));
     TH1* dndetaMC    = FetchHistogram(list, Form("dndeta%sMC", name));
     TH1* dndetaTruth = FetchHistogram(list, "dndetaTruth");
-    Info("", "dN/deta truth from %s: %p", list->GetName(), dndetaTruth);
-    Info("", "dN/deta truth from external: %p", truth);
+    // Info("", "dN/deta truth from %s: %p", list->GetName(), dndetaTruth);
+    // Info("", "dN/deta truth from external: %p", truth);
 
     if (mcList && FetchHistogram(mcList, "finalMCCorr")) 
       Warning("FetchCentResults", "dNdeta already corrected for final MC");
@@ -1029,18 +1054,32 @@ struct dNdetaDrawer
     dndeta->Divide(corr);
   }
   //__________________________________________________________________
-  void CorrectEmpirical(TH1* dndeta, const TGraphErrors* empCorr) 
+  void CorrectEmpirical(TH1* dndeta, TObject* empObj) 
   {
     if (!dndeta) return;
-    if (!empCorr) return;
+    if (!empObj) return;
    
-    Info("CorrectEmpirical", "Doing empirical correction of dN/deta");
-    TAxis* xAxis = dndeta->GetXaxis();
-    for (Int_t i = 1; i <= xAxis->GetNbins(); i++) {
-      Double_t x = xAxis->GetBinCenter(i);
-      Double_t y = dndeta->GetBinContent(i);
-      Double_t c = empCorr->Eval(x);
-      dndeta->SetBinContent(i, y / c);
+    
+    if (empObj->IsA()->InheritsFrom(TGraphAsymmErrors::Class())) {
+      Info("CorrectEmpirical", "Doing empirical correction of dN/deta");
+      TGraphAsymmErrors* empCorr = static_cast<TGraphAsymmErrors*>(empObj);
+      TAxis* xAxis = dndeta->GetXaxis();
+      for (Int_t i = 1; i <= xAxis->GetNbins(); i++) {
+	Double_t x = xAxis->GetBinCenter(i);
+	Double_t y = dndeta->GetBinContent(i);
+	Double_t c = empCorr->Eval(x);
+	dndeta->SetBinContent(i, y / c);
+      }
+    }
+    else if (empObj->IsA()->InheritsFrom(TH1::Class())) {
+      Info("CorrectEmpirical", "Doing empirical correction of dN/deta");
+      TH1* empCorr = static_cast<TH1*>(empObj);
+      dndeta->Divide(empCorr);
+    }
+    else { 
+      Warning("CorrectEmpirical", 
+	      "Don't know how to apply a %s as an empirical correction",
+	      empObj->IsA()->GetName());
     }
   }
   //__________________________________________________________________
@@ -1048,7 +1087,9 @@ struct dNdetaDrawer
   {
     if (fExtTriggerEff) return;
     if (!dndeta) return;
-    if (fTriggerEff <= 0 || fTriggerEff >= 1) return;
+    if (fTriggerEff <= 0) return; //  || fTriggerEff >= 1) return;
+    Info("CorrectTriggerEff", "Correcting with trigger efficiency %5.3f",
+	 fTriggerEff);
     dndeta->Scale(fTriggerEff);
   }
   //__________________________________________________________________
@@ -1079,7 +1120,7 @@ struct dNdetaDrawer
     else { 
       Double_t y11 = y1;
       y1 = (y11 > 0.0001 ? 0.4 : 0.2);
-      y2 = (y11 > 0.0001 ? 0.2 : 0.3);
+      y2 = (y11 > 0.0001 ? 0.2 : 0.2);
     }
     TCanvas* c = new TCanvas("Results", "Results", w, h);
     c->SetFillColor(0);
@@ -1581,8 +1622,8 @@ struct dNdetaDrawer
     TGraphErrors* band = new TGraphErrors(2);
     band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
     band->SetPoint(1, fResults->GetXaxis()->GetXmax(), 1);
-    band->SetPointError(0, 0, .1);
-    band->SetPointError(1, 0, .1);
+    band->SetPointError(0, 0, (fFwdSysErr > 0 ? fFwdSysErr : .1));
+    band->SetPointError(1, 0, (fFwdSysErr > 0 ? fFwdSysErr : .1));
     band->SetFillColor(kYellow+2);
     band->SetFillStyle(3002);
     band->SetLineStyle(2);
@@ -1645,8 +1686,8 @@ struct dNdetaDrawer
     TGraphErrors* band = new TGraphErrors(2);
     band->SetPoint(0, fResults->GetXaxis()->GetXmin(), 1);
     band->SetPoint(1, fResults->GetXaxis()->GetXmax(), 1);
-    band->SetPointError(0, 0, .05);
-    band->SetPointError(1, 0, .05);
+    band->SetPointError(0, 0, (fFwdSysErr > 0 ? fFwdSysErr : .05));
+    band->SetPointError(1, 0, (fFwdSysErr > 0 ? fFwdSysErr : .05));
     band->SetFillColor(kYellow+2);
     band->SetFillStyle(3002);
     band->SetLineStyle(2);
@@ -2144,8 +2185,19 @@ struct dNdetaDrawer
 
     TH1* ret = static_cast<TH1*>(h->Clone("tmp"));
     ret->Reset();
+    Int_t    n     = g->GetN();
     Double_t xlow  = g->GetX()[0];
-    Double_t xhigh = g->GetX()[g->GetN()-1];
+    Double_t xhigh = g->GetX()[n-1];
+    if (g->IsA()->InheritsFrom(TGraphErrors::Class())) { 
+      const TGraphErrors* ge = static_cast<const TGraphErrors*>(g);
+      xlow  -= ge->GetErrorXlow(0);
+      xhigh += ge->GetErrorXhigh(n-1);
+    }
+    if (g->IsA()->InheritsFrom(TGraphAsymmErrors::Class())) { 
+      const TGraphAsymmErrors* ge = static_cast<const TGraphAsymmErrors*>(g);
+      xlow  -= ge->GetErrorXlow(0);
+      xhigh += ge->GetErrorXhigh(n-1);
+    }
     if (xlow > xhigh) { Double_t t = xhigh; xhigh = xlow; xlow = t; }
 
     for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
@@ -2333,7 +2385,7 @@ struct dNdetaDrawer
       ya->SetNdivisions(ynDiv);
       ya->SetTitleSize(s*ya->GetTitleSize());
       ya->SetTitleOffset(/*1.15*/1.4*ya->GetTitleOffset()/s);
-      ya->SetLabelSize(s*ya->GetLabelSize());
+      ya->SetLabelSize((fOptions & kNoLabels) ? 0 : s*ya->GetLabelSize());
     }
   }
   //__________________________________________________________________
@@ -2358,6 +2410,8 @@ struct dNdetaDrawer
     // tmp->SetMarkerStyle(28);
     // tmp->SetMarkerColor(kBlack);
     tmp->SetDirectory(0);
+    if (!cen) return tmp;
+
     xlow  = 100;
     xhigh = -100;
     for (Int_t i = 1; i <= tmp->GetNbinsX(); i++) {
@@ -2430,7 +2484,7 @@ struct dNdetaDrawer
       Double_t tc = tmp->GetBinContent(i);
       if (tc < 0.01) continue;
       Double_t fc = fwd->GetBinContent(i);
-      Double_t cc = cen->GetBinContent(i);
+      Double_t cc = cen ? cen->GetBinContent(i) : 0;
       Double_t sysErr = fFwdSysErr;
       if (cc > .01 && fc > 0.01) 
 	sysErr = (fFwdSysErr+fCenSysErr) / 2;
@@ -2465,6 +2519,7 @@ struct dNdetaDrawer
   }
   void CorrectCentral(TH1* h) const 
   {
+    if (!h) return;
     if (fClusterScale.IsNull()) return;
     TString t(h->GetTitle());
     Info("CorrectCentral", "Replacing Central with Tracklets in %s", t.Data());
@@ -2600,6 +2655,7 @@ struct dNdetaDrawer
   TH1*         fTruth;        // Pointer to truth 
   /* @} */
   RangeParam*  fRangeParam;   // Parameter object for range zoom 
+  TObject*     fEmpCorr;      // Empirical correction 
 
   static const Float_t kRightMargin;
   static const Int_t   kFont;
@@ -2823,6 +2879,7 @@ DrawdNdeta(const char* filename="forward_dndeta.root",
   d.SetTitle(title);
   d.SetShowOthers(others);
   d.SetBase(base);
+  d.SetEmpirical("file://../empirical.root#default");
   // d.fClusterScale = "1.06 -0.003*x +0.0119*x*x";
   // Do the below if your input data does not contain these settings 
   if (sNN > 0) d.SetSNN(sNN);     // Collision energy per nucleon pair (GeV)
