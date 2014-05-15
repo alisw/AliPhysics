@@ -88,28 +88,28 @@ void FitNPartDependence() {
   // const char * centrToExtrapolate = "V0M0010";
   // Int_t pdg = 1000010020;
   // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("PbPb_2760_DeuHelium3.txt");
-  // Deuteron pPb
-  // centrFile = "dndeta_pPb.txt";
-  // const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
-  // //  const char * centrToExtrapolate = "V0A0005";
-  // const char * centrToExtrapolate = "V0A6080";
-  // Int_t pdg = 1000010020;
-  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
-  // maxy = 0.01;
-  // systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
-  // energy = 5020;
-  // collSystem = 1;
-  // K* pPb
-  centrFile =  "dndeta_pPb.txt";
-  //  centrFile = "dndeta_PbPb.txt";
-  maxy = 1;
-  systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
-  const char * centralityToPlot[] = {   "V0A0020" ,  "V0A2040" ,  "V0A4060" ,  "V0A6080", "V0A8000" , 0};
+  //  Deuteron pPb
+  centrFile = "dndeta_pPb.txt";
+  const char * centralityToPlot[] = {   "V0A0010", "V0A1020", "V0A2040", "V0A4060", "V0A6000" ,0};
   const char * centrToExtrapolate = "V0A0005";
-  Int_t pdg = 313;
-  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./pPb_5020_Kstar.txt");  
+  //const char * centrToExtrapolate = "V0A6080";
+  Int_t pdg = -1000010020;
+  TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("pPb_5020_deuteron.txt");
+  maxy = 0.01;
+  systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
   energy = 5020;
   collSystem = 1;
+  // K* pPb
+  // centrFile =  "dndeta_pPb.txt";
+  // //  centrFile = "dndeta_PbPb.txt";
+  // maxy = 1;
+  // systemAndEnergy = "p-Pb #sqrt{#it{s}}_{NN} = 5.02 TeV";
+  // const char * centralityToPlot[] = {   "V0A0020" ,  "V0A2040" ,  "V0A4060" ,  "V0A6080", "V0A8000" , 0};
+  // const char * centrToExtrapolate = "V0A0005";
+  // Int_t pdg = 313;
+  // TClonesArray * arr = AliParticleYield::ReadFromASCIIFile("./pPb_5020_Kstar.txt");  
+  // energy = 5020;
+  // collSystem = 1;
 
 
   // Helium3
@@ -181,8 +181,6 @@ void FitNPartDependence() {
   Double_t errorSystPlus  = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftHarder, f1, centrToExtrapolate, kRed)-yield);
   Double_t errorSystMinus = TMath::Abs(FitShiftedGraphAndExtrapolate(grSyst, kShiftSofter, f1, centrToExtrapolate, kRed)-yield);
 
-  // Double_t errorStatPlus  = FitShiftedGraphAndExtrapolate(grStat, kShiftUp  , f1, centrToExtrapolate, kBlue) -yield;
-  // Double_t errorStatMinus = FitShiftedGraphAndExtrapolate(grStat, kShiftDown, f1, centrToExtrapolate, kBlue) -yield;
 
   Double_t errorStat = fError->Eval(npartPbPb[centrToExtrapolate]);
 
