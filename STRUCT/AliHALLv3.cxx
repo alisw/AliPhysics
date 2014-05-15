@@ -513,7 +513,7 @@ void AliHALLv3::Init()
     }
 //
 // The reference volume id
-    fRefVolumeId = gMC->VolId("RB24Scoring");
+    fRefVolumeId = TVirtualMC::GetMC()->VolId("RB24Scoring");
 }
 
 void AliHALLv3::StepManager()
@@ -527,15 +527,15 @@ void AliHALLv3::StepManager()
   
   //
   // Only charged tracks
-  if( !(gMC->TrackCharge()) ) return; 
+  if( !(TVirtualMC::GetMC()->TrackCharge()) ) return; 
   //
   // Only tracks entering mother volume
   // 
 
-  id=gMC->CurrentVolID(copy);
+  id=TVirtualMC::GetMC()->CurrentVolID(copy);
 
   if ((id != fRefVolumeId))   return;
-  if(!gMC->IsTrackEntering()) return;
+  if(!TVirtualMC::GetMC()->IsTrackEntering()) return;
   //
   // Add the reference track
   //

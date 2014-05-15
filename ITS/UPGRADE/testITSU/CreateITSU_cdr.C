@@ -86,7 +86,7 @@ void CreateITSU()
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 1;
@@ -95,7 +95,7 @@ void CreateITSU()
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 2;
@@ -104,7 +104,7 @@ void CreateITSU()
   seg = seg0;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick03, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   // 
@@ -115,7 +115,7 @@ void CreateITSU()
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 4;
@@ -124,7 +124,7 @@ void CreateITSU()
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   // 
@@ -135,7 +135,7 @@ void CreateITSU()
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //
   idLr = 6;
@@ -144,7 +144,7 @@ void CreateITSU()
   seg = seg1;
   nModPerStaveLr = 1+dzLr/seg->Dz();
   nStaveLr = getNStaves(seg,kTilt,rLr,kMinOvl);
-  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetDetTypeID());
+  ITS->DefineLayerTurbo(idLr, kPhi0, rLr, nModPerStaveLr*seg->Dz(), nStaveLr, nModPerStaveLr, seg->Dx(), kTilt, kLrTick08, seg->Dy(), seg->GetChipTypeID());
   printf("Add Lr%d: R=%.1f DZ:%.1f Staves:%3d NMod/Stave:%3d\n",idLr,rLr,nModPerStaveLr*seg->Dz()/2,nStaveLr,nModPerStaveLr);
   //  
 }

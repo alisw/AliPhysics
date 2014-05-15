@@ -559,14 +559,14 @@ Bool_t  AliESDv0KineCuts::CaseLambda(AliESDv0* const v0, Int_t &pdgV0, Int_t &pd
   kfMother[1] = CreateMotherParticle(daughter[0], daughter[1], TMath::Abs(kPiPlus), TMath::Abs(kProton));
   if(!kfMother[1]) return kFALSE;
 
-  Float_t dMass[2] = {TMath::Abs(mMass[0] - cL0mass), TMath::Abs(mMass[1] - cL0mass)};
+  Float_t dMass[2] = {static_cast<Float_t>(TMath::Abs(mMass[0] - cL0mass)), static_cast<Float_t>(TMath::Abs(mMass[1] - cL0mass))};
   
   AliESDtrack* d[2];
   d[0] = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(pIndex));
   d[1] = dynamic_cast<AliESDtrack*>(fEvent->GetTrack(nIndex));
   if(!d[0] || !d[1])    return kFALSE;
   
-  Float_t p[2] = {d[0]->GetP(), d[1]->GetP()}; 
+  Float_t p[2] = {static_cast<Float_t>(d[0]->GetP()), static_cast<Float_t>(d[1]->GetP())}; 
 
   // check the 3 lambda - antilambda variables
   Int_t check[2] = {-1, -1};   // 0 : lambda, 1 : antilambda

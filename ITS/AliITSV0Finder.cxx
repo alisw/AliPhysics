@@ -273,7 +273,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   dummy->SetLabel(0);
   AliITStrackMI  trackat0;    //temporary track for DCA calculation
   //
-  Float_t primvertex[3]={tracker->GetX(),tracker->GetY(),tracker->GetZ()};
+  Float_t primvertex[3]={static_cast<Float_t>(tracker->GetX()),static_cast<Float_t>(tracker->GetY()),static_cast<Float_t>(tracker->GetZ())};
   //
   // make ITS -  ESD map
   //
@@ -1052,7 +1052,7 @@ void AliITSV0Finder::RefitV02(const AliESDEvent *event,
   TTreeSRedirector &cstream = *(tracker->GetDebugStreamer());
   //
   Int_t  nv0s = event->GetNumberOfV0s();
-  Float_t primvertex[3]={tracker->GetX(),tracker->GetY(),tracker->GetZ()};
+  Float_t primvertex[3]={static_cast<Float_t>(tracker->GetX()),static_cast<Float_t>(tracker->GetY()),static_cast<Float_t>(tracker->GetZ())};
   AliV0 v0temp;
   for (Int_t iv0 = 0; iv0<nv0s;iv0++){
     AliV0 * v0mi = (AliV0*)event->GetV0(iv0);

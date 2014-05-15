@@ -51,7 +51,7 @@
 #include "AliTrackReference.h"
 #include "AliMC.h"
 #include "AliSimulation.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliDigitizationInput.h"
 
 #include "AliDAQ.h"
@@ -172,7 +172,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
   }else{
     if (fgDensityFactor != 1.0)
       AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
-    gMC->Material(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, radl, absl, buf, nwbuf);
+    TVirtualMC::GetMC()->Material(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, radl, absl, buf, nwbuf);
     (*fIdmate)[imat]=kmat;
   }
 }
@@ -200,7 +200,7 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
   TString sname;
   TArrayD par;
   Double_t da, dz, ddens, dradl, dabsl;
-  gMC->GetMaterial(kmat, sname, da, dz, ddens, dradl, dabsl, par);
+  TVirtualMC::GetMC()->GetMaterial(kmat, sname, da, dz, ddens, dradl, dabsl, par);
 
   const char* chname = sname.Data();
   strncpy(name, chname, strlen(chname)+1);
@@ -248,7 +248,7 @@ void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
   }else{
     if (fgDensityFactor != 1.0)
       AliWarning(Form("Material density multiplied by %.2f!", fgDensityFactor));
-    gMC->Mixture(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, nlmat, wmat);
+    TVirtualMC::GetMC()->Mixture(kmat, uniquename.Data(), a, z, dens * fgDensityFactor, nlmat, wmat);
     (*fIdmate)[imat]=kmat;
   }
 } 
@@ -292,7 +292,7 @@ void AliModule::AliMedium(Int_t numed, const char *name, Int_t nmat,
     kmed = med->GetId();
     (*fIdtmed)[numed]=kmed;
   }else{
-    gMC->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat], isvol, ifield,
+    TVirtualMC::GetMC()->Medium(kmed, uniquename.Data(), (*fIdmate)[nmat], isvol, ifield,
                 fieldm, tmaxfd, stemax, deemax, epsil, stmin, ubuf, nbuf);
     (*fIdtmed)[numed]=kmed;
   }
@@ -314,7 +314,7 @@ void AliModule::AliMatrix(Int_t &nmat, Float_t theta1, Float_t phi1,
   // theta3      polar angle for axis III
   // phi3        azimuthal angle for axis III
   //
-  gMC->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
+  TVirtualMC::GetMC()->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3); 
 } 
 
 //_______________________________________________________________________
@@ -394,7 +394,7 @@ void AliModule::Digits2Raw()
     fstream rawFile(fileName, ios::out);
     if (!rawFile) break;
 
-    AliRawDataHeader header;
+    AliRawDataHeaderV3 header;
     header.fSize = ddlSize + sizeof(header);
     rawFile.write((char*) &header, sizeof(header));
 

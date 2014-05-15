@@ -1062,19 +1062,19 @@ TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
         Int_t i,j;
         const Float_t kScale=0.5,kLw=0.2;
         Float_t xchar[13][2]={
-            {0.5*kLw,1.},{0.,0.5*kLw},{0.5-0.5*kLw,0.5},
-            {0.,0.5*kLw},{0.5*kLw,0.},{0.5,0.5-0.5*kLw},
-            {1-0.5*kLw,0.},{1.,0.5*kLw},{0.5+0.5*kLw,0.5},
-            {1.,1.-0.5*kLw},{1.-0.5*kLw,1.},{0.5,0.5+0.5*kLw},
-            {0.5*kLw,1.}};
+	  {static_cast<Float_t>(0.5*kLw),1.},{0.,static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5-0.5*kLw),0.5},
+	  {0.,static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5*kLw),0.},{0.5,static_cast<Float_t>(0.5-0.5*kLw)},
+	  {static_cast<Float_t>(1-0.5*kLw),0.},{1.,static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5+0.5*kLw),0.5},
+	  {1.,static_cast<Float_t>(1.-0.5*kLw)},{static_cast<Float_t>(1.-0.5*kLw),1.},{0.5,static_cast<Float_t>(0.5+0.5*kLw)},
+	  {static_cast<Float_t>(0.5*kLw),1.}};
         Float_t ychar[10][2]={
-            {.5-0.5*kLw,0.},{.5+0.5*kLw,0.},{.5+0.5*kLw,0.5-0.5*kLw},
-            {1.,1.-0.5*kLw},{1.-0.5*kLw,1.},{0.5+0.5*kLw,0.5},
-            {0.5*kLw,1.}   ,{0.,1-0.5*kLw} ,{0.5-0.5*kLw,0.5},
-            {.5-0.5*kLw,0.}};
+	  {static_cast<Float_t>(.5-0.5*kLw),0.},{static_cast<Float_t>(.5+0.5*kLw),0.},{static_cast<Float_t>(.5+0.5*kLw),static_cast<Float_t>(0.5-0.5*kLw)},
+	  {1.,static_cast<Float_t>(1.-0.5*kLw)},{static_cast<Float_t>(1.-0.5*kLw),1.},{static_cast<Float_t>(0.5+0.5*kLw),0.5},
+	  {static_cast<Float_t>(0.5*kLw),1.}   ,{0.,static_cast<Float_t>(1-0.5*kLw)} ,{static_cast<Float_t>(0.5-0.5*kLw),0.5},
+	  {static_cast<Float_t>(.5-0.5*kLw),0.}};
         Float_t zchar[11][2]={
-            {0.,1.},{0,1.-kLw},{1.-kLw,1.-kLw},{0.,kLw}   ,{0.,0.},
-            {1.,0.},{1.,kLw}  ,{kLw,kLw}      ,{1.,1.-kLw},{1.,1.},
+	  {0.,1.},{0,static_cast<Float_t>(1.-kLw)},{static_cast<Float_t>(1.-kLw),static_cast<Float_t>(1.-kLw)},{0.,kLw}   ,{0.,0.},
+	  {1.,0.},{1.,kLw}  ,{kLw,kLw}      ,{1.,static_cast<Float_t>(1.-kLw)},{1.,1.},
             {0.,1.}};
         for(i=0;i<13;i++)for(j=0;j<2;j++){
             if(i<13) xchar[i][j] = kScale*xchar[i][j];
@@ -1091,17 +1091,17 @@ TNode* AliITSgeomMatrix::CreateNode(const Char_t *nodeName,
         for(i=0;i<10;i++) axiszl->DefineVertex(i,zchar[i][0],zchar[i][1]);
         axiszl->DefineSection(0,-0.5*kLw);axiszl->DefineSection(1,0.5*kLw);
         Float_t lxy[13][2]={
-            {-0.5*kLw,-0.5*kLw},{0.8,-0.5*kLw},{0.8,-0.1},{1.0,0.0},
-            {0.8,0.1},{0.8,0.5*kLw},{0.5*kLw,0.5*kLw},{0.5*kLw,0.8},
-            {0.1,0.8},{0.0,1.0},{-0.1,0.8},{-0.5*kLw,0.8},
-            {-0.5*kLw,-0.5*kLw}};
+	  {static_cast<Float_t>(-0.5*kLw),static_cast<Float_t>(-0.5*kLw)},{0.8,static_cast<Float_t>(-0.5*kLw)},{0.8,-0.1},{1.0,0.0},
+	  {0.8,0.1},{0.8,static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5*kLw),static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5*kLw),0.8},
+	  {0.1,0.8},{0.0,1.0},{-0.1,0.8},{static_cast<Float_t>(-0.5*kLw),0.8},
+	  {static_cast<Float_t>(-0.5*kLw),static_cast<Float_t>(-0.5*kLw)}};
         TXTRU *axisxy = new TXTRU("axisxy","axisxy","text",13,2);
         for(i=0;i<13;i++) axisxy->DefineVertex(i,lxy[i][0],lxy[i][1]);
         axisxy->DefineSection(0,-0.5*kLw);axisxy->DefineSection(1,0.5*kLw);
         Float_t lz[8][2]={
-            {0.5*kLw,-0.5*kLw},{0.8,-0.5*kLw},{0.8,-0.1},{1.0,0.0},
-            {0.8,0.1},{0.8,0.5*kLw},{0.5*kLw,0.5*kLw},
-            {0.5*kLw,-0.5*kLw}};
+	  {static_cast<Float_t>(0.5*kLw),static_cast<Float_t>(-0.5*kLw)},{0.8,static_cast<Float_t>(-0.5*kLw)},{0.8,-0.1},{1.0,0.0},
+	  {0.8,0.1},{0.8,static_cast<Float_t>(0.5*kLw)},{static_cast<Float_t>(0.5*kLw),static_cast<Float_t>(0.5*kLw)},
+	  {static_cast<Float_t>(0.5*kLw),static_cast<Float_t>(-0.5*kLw)}};
         TXTRU *axisz = new TXTRU("axisz","axisz","text",8,2);
         for(i=0;i<8;i++) axisz->DefineVertex(i,lz[i][0],lz[i][1]);
         axisz->DefineSection(0,-0.5*kLw);axisz->DefineSection(1,0.5*kLw);

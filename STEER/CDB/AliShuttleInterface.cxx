@@ -28,16 +28,16 @@
 
 ClassImp(AliShuttleInterface)
 
-	const char* AliShuttleInterface::fkSystemNames[4] = { "DAQ", "DCS", "HLT", "DQM" };
+const char* AliShuttleInterface::fkSystemNames[4] = { "DAQ", "DCS", "HLT", "DQM" };
 
 // names of the detectors preprocessors
 const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
-       "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00", "GRP", "HLT", "ACO", "TRI"
+  "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00", "GRP", "HLT", "ACO", "TRI"
 };
 
 // names of the detectors in OCDB
 const char* AliShuttleInterface::fgkOfflineDetName[kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF",
-       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "GRP", "HLT", "ACORDE", "TRIGGER"
+  "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "GRP", "HLT", "ACORDE", "TRIGGER"
 };
 
 TString AliShuttleInterface::fgkMainCDB("alien://folder=ShuttleCDB");
@@ -51,35 +51,35 @@ TString AliShuttleInterface::fgkShuttleLogDir("/tmp/log");
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetOfflineDetName(const char* detName){
-// Return "offline" detector name
+  // Return "offline" detector name
 
-	Int_t detPos = GetDetPos(detName);
-	if(detPos < 0) {
-		AliErrorClass(Form("Unknown detector: %s",detName));
-		return 0;
-	}
+  Int_t detPos = GetDetPos(detName);
+  if(detPos < 0) {
+    AliErrorClass(Form("Unknown detector: %s",detName));
+    return 0;
+  }
 
-	return fgkOfflineDetName[detPos];
+  return fgkOfflineDetName[detPos];
 }
 
 //______________________________________________________________________________________________
 const char* AliShuttleInterface::GetDetName(UInt_t detPos){
-// Return detector code
+  // Return detector code
 
-	if(detPos >= kNDetectors) {
-		AliErrorClass(Form("Parameter out of bound: %d", detPos));
-		return 0;
-	}
+  if(detPos >= kNDetectors) {
+    AliErrorClass(Form("Parameter out of bound: %d", detPos));
+    return 0;
+  }
 
-	return fgkDetName[detPos];
+  return fgkDetName[detPos];
 }
 
 //______________________________________________________________________________________________
 Int_t AliShuttleInterface::GetDetPos(const char* detName){
-// Return detector position in the detector code array
+  // Return detector position in the detector code array
 
-	for(UInt_t iDet=0; iDet < kNDetectors; iDet++){
-		if(!strcmp(fgkDetName[iDet], detName)) return iDet;
-	}
-	return -1;
+  for(UInt_t iDet=0; iDet < kNDetectors; iDet++){
+    if(!strcmp(fgkDetName[iDet], detName)) return iDet;
+  }
+  return -1;
 }

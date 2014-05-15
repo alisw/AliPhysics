@@ -166,6 +166,7 @@ void AliPHOSTenderSupply::InitTender()
       if(!matrixes->At(mod)) continue;
       fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
       printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+      ((TGeoHMatrix*)matrixes->At(mod))->Print() ;
     }
   }
   
@@ -308,12 +309,15 @@ void AliPHOSTenderSupply::ProcessEvent()
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
       cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
+      Double_t ecore=CoreEnergy(&cluPHOS) ; 
+      ecore=CorrectNonlinearity(ecore) ;
+      
       //Correct Misalignment
-      CorrectPHOSMisalignment(global,mod) ;
-      position[0]=global.X() ;
-      position[1]=global.Y() ;
-      position[2]=global.Z() ;
-      cluPHOS.SetPosition(position) ; 
+//      CorrectPHOSMisalignment(global,mod) ;
+//      position[0]=global.X() ;
+//      position[1]=global.Y() ;
+//      position[2]=global.Z() ;
+//      cluPHOS.GetPosition(position) ; 
 
       //Eval CoreDispersion
       Double_t m02=0.,m20=0.;
@@ -323,7 +327,9 @@ void AliPHOSTenderSupply::ProcessEvent()
       Float_t  xyz[3];
       cluPHOS.GetPosition(xyz);
       clu->SetPosition(xyz);                       //rec.point position in MARS
-      clu->SetE(cluPHOS.E());                           //total or core particle energy
+      clu->SetE(cluPHOS.E());                      //total particle energy
+      clu->SetMCEnergyFraction(ecore);                            //core particle energy
+      
       //    clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
       //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
       clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
@@ -341,7 +347,10 @@ void AliPHOSTenderSupply::ProcessEvent()
      
       clu->SetEmcCpvDistance(r);    
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t tof=EvalTOF(&cluPHOS,cells); 
+      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
+	tof=clu->GetTOF() ;
+      clu->SetTOF(tof);       
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -377,16 +386,21 @@ void AliPHOSTenderSupply::ProcessEvent()
       cluPHOS.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
       cluPHOS.SetE(CorrectNonlinearity(cluPHOS.E()));// Users's nonlinearity
 
+      Double_t ecore=CoreEnergy(&cluPHOS) ; 
+      ecore=CorrectNonlinearity(ecore) ;
+
+      
       //Correct Misalignment
-      cluPHOS.GetPosition(position);
-      global.SetXYZ(position[0],position[1],position[2]);
-      CorrectPHOSMisalignment(global,mod) ;
-      position[0]=global.X() ;
-      position[1]=global.Y() ;
-      position[2]=global.Z() ;
+//      cluPHOS.GetPosition(position);
+//      global.SetXYZ(position[0],position[1],position[2]);
+//      CorrectPHOSMisalignment(global,mod) ;
+//      position[0]=global.X() ;
+//      position[1]=global.Y() ;
+//      position[2]=global.Z() ;
 
       clu->SetPosition(position);                       //rec.point position in MARS
-      clu->SetE(cluPHOS.E());                           //total or core particle energy
+      clu->SetE(cluPHOS.E());                           //total particle energy
+      clu->SetMCEnergyFraction(ecore);                  //core particle energy
       clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
       //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
       clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
@@ -414,7 +428,10 @@ void AliPHOSTenderSupply::ProcessEvent()
       clu->SetEmcCpvDistance(r); //Distance in sigmas
      
       clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
-      clu->SetTOF(EvalTOF(&cluPHOS,cells));       
+      Double_t tof=EvalTOF(&cluPHOS,cells); 
+      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
+	tof=clu->GetTOF() ;
+      clu->SetTOF(tof);       
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -747,6 +764,51 @@ void AliPHOSTenderSupply::EvalLambdas(AliVCluster * clu, Double_t &m02, Double_t
   }
 
 }
+//____________________________________________________________________________
+Double_t  AliPHOSTenderSupply::CoreEnergy(AliVCluster * clu){  
+  //calculate energy of the cluster in the circle with radius distanceCut around the maximum
+  
+  //Can not use already calculated coordinates?
+  //They have incidence correction...
+  const Double_t distanceCut =3.5 ;
+  const Double_t logWeight=4.5 ;
+  
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+// Calculates the center of gravity in the local PHOS-module coordinates
+  Float_t wtot = 0;
+  Double_t xc[100]={0} ;
+  Double_t zc[100]={0} ;
+  Double_t x = 0 ;
+  Double_t z = 0 ;
+  Int_t mulDigit=TMath::Min(100,clu->GetNCells()) ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    Int_t relid[4] ;
+    Float_t xi ;
+    Float_t zi ;
+    fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(iDigit), relid) ;
+    fPHOSGeo->RelPosInModule(relid, xi, zi);
+    xc[iDigit]=xi ;
+    zc[iDigit]=zi ;
+    if (clu->E()>0 && elist[iDigit]>0) {
+      Float_t w = TMath::Max( 0., logWeight + TMath::Log( elist[iDigit] / clu->E() ) ) ;
+      x    += xc[iDigit] * w ;
+      z    += zc[iDigit] * w ;
+      wtot += w ;
+    }
+  }
+  if (wtot>0) {
+    x /= wtot ;
+    z /= wtot ;
+  }
+  Double_t coreE=0. ;
+  for(Int_t iDigit=0; iDigit < mulDigit; iDigit++) {
+    Double_t distance = TMath::Sqrt((xc[iDigit]-x)*(xc[iDigit]-x)+(zc[iDigit]-z)*(zc[iDigit]-z)) ;
+    if(distance < distanceCut)
+      coreE += elist[iDigit] ;
+  }
+  //Apply non-linearity correction
+  return coreE ;
+}
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){ 
   //Evaluate TOF of the cluster after re-calibration
@@ -770,7 +832,6 @@ Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){
       eMax=elist[iDigit] ;
     }
   }
-
   
    //Try to improve accuracy 
   //Do not account time of soft cells:
@@ -854,4 +915,5 @@ void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Dou
   }
   
 }
+
 

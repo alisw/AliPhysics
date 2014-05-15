@@ -12,17 +12,14 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-//////////////////////////////////////////////////////////////////////////////
-// This is the base class for ITS detector signal simulations. Data members //
-// include are a pointer to the AliITSDetTypeSim clas in order to access    //
-// segmentation and response objects                                        // 
-// classes. See the detector specific implementations for the propper code. //
-//////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+// This is the base class for ITSU detector signal simulations. Data members //
+///////////////////////////////////////////////////////////////////////////////
 #include <TRandom.h>
 #include "TSeqCollection.h"
 #include "AliITSUSimulation.h"
 #include "AliITSUSDigit.h"
-#include "AliITSUModule.h"
+#include "AliITSUChip.h"
 #include "AliITSUParamList.h"
 using namespace TMath;
 
@@ -36,7 +33,7 @@ AliITSUSimulation::AliITSUSimulation()
   ,fSensMap(0)
   ,fSimuParam(0)
   ,fResponseParam(0)
-  ,fModule(0)
+  ,fChip(0)
   ,fReadOutCycleOffset(0)
   ,fReadOutCycleLength(25e-6)  
   ,fEvent(0)
@@ -52,7 +49,7 @@ AliITSUSimulation::AliITSUSimulation(AliITSUSimuParam* sim,AliITSUSensMap* map)
   ,fSensMap(map)
   ,fSimuParam(sim)
   ,fResponseParam(0)
-  ,fModule(0)
+  ,fChip(0)
   ,fReadOutCycleOffset(0)
   ,fReadOutCycleLength(25e-6)
   ,fEvent(0)
@@ -70,7 +67,7 @@ AliITSUSimulation::AliITSUSimulation(const AliITSUSimulation &s)
   ,fSensMap(s.fSensMap)
   ,fSimuParam(s.fSimuParam)   
   ,fResponseParam(s.fResponseParam)
-  ,fModule(s.fModule)
+  ,fChip(s.fChip)
   ,fReadOutCycleOffset(s.fReadOutCycleOffset)
   ,fReadOutCycleLength(s.fReadOutCycleLength)
   ,fEvent(s.fEvent)
@@ -90,7 +87,7 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
   fSensMap   = s.fSensMap;
   fSimuParam = s.fSimuParam;
   fResponseParam = s.fResponseParam;
-  fModule    = s.fModule;
+  fChip    = s.fChip;
   fReadOutCycleOffset = s.fReadOutCycleOffset;
   fReadOutCycleLength = s.fReadOutCycleLength;
   fEvent     = s.fEvent;
@@ -98,12 +95,12 @@ AliITSUSimulation&  AliITSUSimulation::operator=(const AliITSUSimulation &s)
 }
 
 //______________________________________________________________________
-void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, AliITSsegmentation* seg, AliITSUParamList* resp)
+void AliITSUSimulation::InitSimulationChip(AliITSUChip* mod, Int_t event, AliITSsegmentation* seg, AliITSUParamList* resp)
 {
   //  This function creates maps to build the list of tracks for each
   //  summable digit. Inputs defined by base class.
   //
-  SetModule(mod);
+  SetChip(mod);
   SetSegmentation(seg);
   SetResponseParam(resp);
   ClearMap();
@@ -114,9 +111,9 @@ void AliITSUSimulation::InitSimulationModule(AliITSUModule* mod, Int_t event, Al
 }
 
 //______________________________________________________________________
-Bool_t AliITSUSimulation::AddSDigitsToModule(TSeqCollection *pItemArr,Int_t mask )
+Bool_t AliITSUSimulation::AddSDigitsToChip(TSeqCollection *pItemArr,Int_t mask )
 {
-  // Add Summable digits to module maps.
+  // Add Summable digits to chip maps.
   // Inputs:
   //    pItemArr  Array of AliITSpListItems (SDigits).
   //    mask    Track number off set value 
@@ -126,7 +123,7 @@ Bool_t AliITSUSimulation::AddSDigitsToModule(TSeqCollection *pItemArr,Int_t mask
   // 
   for( Int_t i=0; i<nItems; i++ ) {
     AliITSUSDigit * pItem = (AliITSUSDigit *)(pItemArr->At( i ));
-    if(pItem->GetModule() != int(fModule->GetIndex()) ) AliFatal(Form("SDigits module %d != current module %d: exit", pItem->GetModule(),fModule->GetIndex()));
+    if(pItem->GetChip() != int(fChip->GetIndex()) ) AliFatal(Form("SDigits chip %d != current chip %d: exit", pItem->GetChip(),fChip->GetIndex()));
     if(pItem->GetSumSignal()>0.0 ) sig = kTRUE;
     AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(pItem);
     if (!oldItem) {
@@ -150,7 +147,7 @@ void AliITSUSimulation::UpdateMapSignal(UInt_t col,UInt_t row,Int_t trk,Int_t ht
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);  
   if (!oldItem) {    
-    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fModule->GetIndex(),ind,signal,roCycle) );
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(trk,ht,fChip->GetIndex(),ind,signal,roCycle) );
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
   else oldItem->AddSignal(trk,ht,signal);
@@ -168,7 +165,7 @@ void AliITSUSimulation::UpdateMapNoise(UInt_t col,UInt_t row,Double_t noise, Int
   UInt_t ind = fSensMap->GetIndex(col,row,roCycle);
   AliITSUSDigit* oldItem = (AliITSUSDigit*)fSensMap->GetItem(ind);
   if (!oldItem) {
-    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fModule->GetIndex(),ind,noise,roCycle) );
+    fSensMap->RegisterItem( new(fSensMap->GetFree()) AliITSUSDigit(fChip->GetIndex(),ind,noise,roCycle) );
     fCyclesID[roCycle+kMaxROCycleAccept] = kTRUE;
   }
   else oldItem->AddNoise(noise);

@@ -868,7 +868,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   }else{
     if(nTimeOCDB == -1){
       AliDebug(1, "Undefined number of timebins in OCDB, using value from raw data.");
-      if(!fTimeTotal>0){
+      if(!(fTimeTotal>0)){
         AliError(Form("Number of timebins in raw data is negative, skipping chamber[%3d]!", fDet));
         return kFALSE;
       }

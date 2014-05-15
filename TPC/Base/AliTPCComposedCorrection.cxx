@@ -28,6 +28,10 @@
 //    the corrected position (x+dx1) resulting in dx2, the third one          //
 //    is then called at position (x+dx1+dx2) and so forth. dx=dx1+dx2+...     //
 //    is returned.                                                            //
+// 3. kQueueResidual: like kQueue with the exception that in case of          //
+//    a positive weight the 'Distortion' is called and in case of a negative  //
+//    weight the 'Correction' is called, where the absolute of the weight     //
+//    will be applied to the correction
 // For the inverse of the correction this is taken into account by reversing  //
 // the order the corrections are applied in the kQueue case (no issue for     //
 // kParallel).                                                                //
@@ -57,6 +61,7 @@
 #include <TCollection.h>
 #include <TTimeStamp.h>
 #include <TIterator.h>
+#include <TMath.h>
 #include "AliLog.h"
 
 #include "AliTPCComposedCorrection.h"
@@ -157,6 +162,12 @@ void AliTPCComposedCorrection::GetCorrection(const Float_t x[],const Short_t roc
     }
     for (Int_t j=0;j<3;++j) dx[j]=xi[j]-x[j];
     break;
+  case kQueueResidual:
+    //TODO: for the moment assume inverse of distortion
+    //      check if this is what is desired
+    GetDistortion(x,roc,dx);
+    for (Int_t j=0;j<3;++j) dx[j]*=-1.;
+    break;
   }
   delete i;
 }
@@ -171,6 +182,12 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
     AliInfo("No Corrections-models were set: can not calculate distortions");
     return;
   }
+  
+  if (fMode==kQueueResidual && !fWeights) {
+    AliInfo("kQueueResidual mode was selected but no weights were given. Switching to kQueue instead.");
+    fMode=kQueue;
+  }
+  
   TIterator *i=fCorrections->MakeReverseIterator();
   AliTPCCorrection *c;
   Int_t weightIndex=0;
@@ -195,6 +212,17 @@ void AliTPCComposedCorrection::GetDistortion(const Float_t x[],const Short_t roc
       for (Int_t j=0;j<3;++j) xi[j]+=w*dx[j];
     }
     for (Int_t j=0;j<3;++j) dx[j]=xi[j]-x[j];
+    break;
+  case kQueueResidual:
+    Float_t xi2[3];
+    for (Int_t j=0;j<3;++j) xi2[j]=x[j];
+    while (0!=(c=dynamic_cast<AliTPCCorrection*>(i->Next()))) {
+      Double_t w=(*fWeights)[weightIndex++];
+      if (w>0) c->GetDistortion(xi2,roc,dx);
+      else c->GetCorrection(xi2,roc,dx);
+      for (Int_t j=0;j<3;++j) xi2[j]+=TMath::Abs(w)*dx[j];
+    }
+    for (Int_t j=0;j<3;++j) dx[j]=xi2[j]-x[j];
     break;
   }
   delete i;

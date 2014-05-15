@@ -25,16 +25,19 @@ class AliGenEventHeaderTunedPbPb : public AliGenEventHeader
   Float_t GetCentrality() const {return fCentrality;};
   Float_t GetPsi2() const {return fPsi2;};
   Float_t GetPsi3() const {return fPsi3;};
+  Float_t GetPsi4() const {return fPsi4;};
   // Setters
   void SetCentrality(Float_t centrality){fCentrality = centrality;};
   void SetPsi2(Float_t psi){fPsi2 = psi;};
   void SetPsi3(Float_t psi){fPsi3 = psi;};
+  void SetPsi4(Float_t psi){fPsi4 = psi;};
 	  
 protected:
   Float_t fCentrality;// centrality
   Float_t fPsi2;     // psi_2 EP
   Float_t fPsi3;     // psi_3 EP
-  ClassDef(AliGenEventHeaderTunedPbPb, 1)        // Event header for primary event
+  Float_t fPsi4;     // psi_4 EP
+  ClassDef(AliGenEventHeaderTunedPbPb, 2)        // Event header for primary event
 };
 
 #endif

@@ -13,8 +13,8 @@ class AliITSUSDigit: public TObject
   enum {kBuffSize=10};
   //
   AliITSUSDigit();
-  AliITSUSDigit(Int_t track,Int_t hit,UInt_t module,UInt_t index,Double_t signal,Int_t roCycle=0);
-  AliITSUSDigit(UInt_t module,UInt_t index,Double_t noise,Int_t roCycle=0);
+  AliITSUSDigit(Int_t track,Int_t hit,UInt_t chip,UInt_t index,Double_t signal,Int_t roCycle=0);
+  AliITSUSDigit(UInt_t chip,UInt_t index,Double_t noise,Int_t roCycle=0);
   AliITSUSDigit(const AliITSUSDigit &source);
   AliITSUSDigit& operator=(const AliITSUSDigit &source);
   virtual ~AliITSUSDigit() {}
@@ -32,7 +32,7 @@ class AliITSUSDigit: public TObject
   //
   Int_t GetTrack(Int_t i)        const {return ((i>=0&&i<kBuffSize) ? fTrack[i] : 0);}
   Int_t GetHit(Int_t i)          const {return ((i>=0&&i<kBuffSize) ? fHits[i] : 0);}
-  Int_t GetModule()              const {return fModule;}
+  Int_t GetChip()              const {return fChip;}
   Int_t GetNTracks()             const {return fNTracks;}
   Int_t GetROCycle()             const {return fROCycle;}
   //
@@ -49,7 +49,7 @@ class AliITSUSDigit: public TObject
   static Int_t GetBuffSize() {return kBuffSize;};
   //
  private:
-  UShort_t fModule;            // module number
+  UShort_t fChip;            // chip number
   UShort_t fNTracks;           // number of tracks contributing
   Int_t    fROCycle;           // readOut cycle
   Int_t    fTrack[kBuffSize];  // track Number

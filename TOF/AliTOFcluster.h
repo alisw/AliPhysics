@@ -55,7 +55,10 @@ class AliTOFcluster : public AliCluster3D {
   void  SetTDCRAW(Int_t Tdc) {fTdcRAW = Tdc;} // Cluster ToF-raw setter
   void SetDeltaBC(Int_t value) {fDeltaBC = value;}; // deltaBC
   void SetL0L1Latency(Int_t value) {fL0L1Latency = value;}; // L0-L1 latency
-
+  //
+  void  SetESDID(Int_t id) {fESDID = id;}
+  Int_t GetESDID()  const  {return fESDID;}  
+  //
  private:
 
   Int_t fIdx;         // index of the digit related to this cluster
@@ -77,8 +80,10 @@ class AliTOFcluster : public AliCluster3D {
   Bool_t fStatus;     // cluster online status 
   Int_t fDeltaBC; // deltaBC
   Int_t fL0L1Latency; // L0L1 latency
+  //
+  Int_t fESDID;      //! id in ESD clusters list (if stored)
 
-  ClassDef(AliTOFcluster, 7) // TOF cluster
+  ClassDef(AliTOFcluster, 8) // TOF cluster
 };
 
 #endif

@@ -32,6 +32,8 @@ class AliDCSSensorArray : public TNamed {
   AliDCSSensorArray(const AliDCSSensorArray &c);
   virtual ~AliDCSSensorArray();
   AliDCSSensorArray &operator=(const AliDCSSensorArray &c);
+  virtual void Print(const Option_t* option="") const;
+
   void SetStartTime (const TTimeStamp& start) { fStartTime = start; }
   void SetEndTime   (const TTimeStamp& end) { fEndTime = end; }
   TTimeStamp GetStartTime () const { return fStartTime; }
@@ -75,9 +77,9 @@ class AliDCSSensorArray : public TNamed {
 
   Int_t GetFirstIdDCS() const;
   Int_t GetLastIdDCS()  const;
+  const TClonesArray * GetArray(){return fSensors;}
 
-
- protected:
+ protected: 
   Int_t  fMinGraph;              // minimum #points of graph to be fitted
   Int_t  fMinPoints;             // minimum number of points per knot in fit
   Int_t  fIter;                  // number of iterations for spline fit

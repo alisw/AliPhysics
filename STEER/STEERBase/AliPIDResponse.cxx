@@ -52,6 +52,8 @@
 
 ClassImp(AliPIDResponse);
 
+Float_t AliPIDResponse::fgTOFmismatchProb = 0.0;
+
 AliPIDResponse::AliPIDResponse(Bool_t isMC/*=kFALSE*/) :
 TNamed("PIDResponse","PIDResponse"),
 fITSResponse(isMC),
@@ -92,7 +94,8 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fBeamTypeNum(kPP)
 {
   //
   // default ctor
@@ -155,7 +158,8 @@ fTOFPIDParams(NULL),
 fHMPIDPIDParams(NULL),
 fEMCALPIDParams(NULL),
 fCurrentEvent(NULL),
-fCurrCentrality(0.0)
+fCurrCentrality(0.0),
+fBeamTypeNum(kPP)
 {
   //
   // copy ctor
@@ -186,6 +190,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fIsMC=other.fIsMC;
     fCachePID=other.fCachePID;
     fBeamType="PP";
+    fBeamTypeNum=kPP;
     fLHCperiod="";
     fMCperiodTPC="";
     fMCperiodUser=other.fMCperiodUser;
@@ -654,6 +659,7 @@ void AliPIDResponse::SetRecoInfo()
   fBeamType="";
     
   fBeamType="PP";
+  fBeamTypeNum=kPP;
 
   Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
   
@@ -675,6 +681,7 @@ void AliPIDResponse::SetRecoInfo()
     // exception for 13d2 and later
     if (fCurrentAliRootRev >= 62714) fMCperiodTPC="LHC13D2";
     fBeamType="PBPB";
+    fBeamTypeNum=kPBPB;
   }
   else if (fRun>=139847&&fRun<=146974) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
   //TODO: periods 11B (146975-150721), 11C (150722-155837) are not yet treated assume 11d for the moment
@@ -688,25 +695,27 @@ void AliPIDResponse::SetRecoInfo()
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
     fBeamType="PBPB";
+    fBeamTypeNum=kPBPB;
     if (reg12a17.MatchB(fCurrentFile)) fMCperiodTPC="LHC12A17";
   }
-  if (fRun>=170719 && fRun<=177311) { fLHCperiod="LHC12A"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
+  if (fRun>=170719 && fRun<=177311) { fLHCperiod="LHC12A"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
   // for the moment use LHC12b parameters up to LHC12d
-  if (fRun>=177312 /*&& fRun<=179356*/) { fLHCperiod="LHC12B"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun>=186346 && fRun<=186635) { fLHCperiod="LHC12E"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
+  if (fRun>=177312 /*&& fRun<=179356*/) { fLHCperiod="LHC12B"; fBeamType="PP";fBeamTypeNum=kPP; /*fMCperiodTPC="";*/ }
+//   if (fRun>=179357 && fRun<=183173) { fLHCperiod="LHC12C"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun>=183174 && fRun<=186345) { fLHCperiod="LHC12D"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun>=186346 && fRun<=186635) { fLHCperiod="LHC12E"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
 
-//   if (fRun>=186636 && fRun<=188166) { fLHCperiod="LHC12F"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; /*fMCperiodTPC="";*/ }
-//   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; /*fMCperiodTPC="";*/ }
+//   if (fRun>=186636 && fRun<=188166) { fLHCperiod="LHC12F"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun >= 188167 && fRun <= 188355 ) { fLHCperiod="LHC12G"; fBeamType="PP"; fBeamTypeNum=kPP;/*fMCperiodTPC="";*/ }
+//   if (fRun >= 188356 && fRun <= 188503 ) { fLHCperiod="LHC12G"; fBeamType="PPB"; fBeamTypeNum=kPPB;/*fMCperiodTPC="";*/ }
 // for the moment use 12g parametrisation for all full gain runs (LHC12e+)
-  if (fRun >= 186346 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB"; fMCperiodTPC="LHC12G"; }
+  if (fRun >= 186346 && fRun < 194480) { fLHCperiod="LHC12G"; fBeamType="PPB";fBeamTypeNum=kPPB; fMCperiodTPC="LHC12G"; }
 
   // New parametrisation for 2013 pPb runs
   if (fRun >= 194480) { 
     fLHCperiod="LHC13B"; 
     fBeamType="PPB";
+    fBeamTypeNum=kPPB;
     fMCperiodTPC="LHC12G";
   
     if (fCurrentAliRootRev >= 61605)
@@ -721,7 +730,7 @@ void AliPIDResponse::SetRecoInfo()
   }
 
   //exception new pp MC productions from 2011 (11a periods have 10f6a splines!)
-  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP"; }
+  if (fBeamType=="PP" && reg.MatchB(fCurrentFile) && !fCurrentFile.Contains("LHC11a")) { fMCperiodTPC="LHC11B2"; fBeamType="PP";fBeamTypeNum=kPP; }
   // exception for 11f1
   if (fCurrentFile.Contains("LHC11f1")) fMCperiodTPC="LHC11F1";
   // exception for 12f1a, 12f1b and 12i3
@@ -1611,7 +1620,9 @@ void AliPIDResponse::SetHMPIDPidResponseMaster()
   if (fHMPIDPIDParams) delete fHMPIDPIDParams;
   fHMPIDPIDParams=NULL;
 
-  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
+  TFile *oadbf; 
+  if(!fIsMC) oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
+  else       oadbf = new TFile(Form("%s/COMMON/PID/MC/HMPIDPIDParams.root",fOADBPath.Data()));
   if (oadbf && oadbf->IsOpen()) {
     AliInfo(Form("Loading HMPID Params from %s/COMMON/PID/data/HMPIDPIDParams.root", fOADBPath.Data()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("HMPoadb");
@@ -1634,15 +1645,23 @@ void AliPIDResponse::InitializeHMPIDResponse(){
 }
 
 //______________________________________________________________________________
-Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack,Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
+    // old function for compatibility
+    Int_t ntracklets=0;
+    return IdentifiedAsElectronTRD(vtrack,ntracklets,efficiencyLevel,centrality,PIDmethod);
+}
+
+//______________________________________________________________________________
+Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Int_t &ntracklets,Double_t efficiencyLevel,Double_t centrality,AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const {
   //
   // Check whether track is identified as electron under a given electron efficiency hypothesis
     //
+    // ntracklets is the number of tracklets that has been used to calculate the PID signal
 
   Double_t probs[AliPID::kSPECIES];
-  ComputeTRDProbability(vtrack, AliPID::kSPECIES, probs,PIDmethod);
 
-  Int_t ntracklets = vtrack->GetTRDntrackletsPID();
+  ntracklets =CalculateTRDResponse(vtrack,probs,PIDmethod);
+
   // Take mean of the TRD momenta in the given tracklets
   Float_t p = 0, trdmomenta[AliVTrack::kTRDnPlanes];
   Int_t nmomenta = 0;
@@ -2277,7 +2296,32 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
   // Compute PID probabilities for TOF
   //
 
-  Double_t mismprob = 1E-8;
+  fgTOFmismatchProb = 1E-8;
+
+  // centrality --> fCurrCentrality
+  // Beam type --> fBeamTypeNum
+  // N TOF cluster --> TOF header --> to get the TOF header we need to add a virtual method in AliVTrack extended to ESD and AOD tracks
+  // isMC --> fIsMC
+
+  Int_t nTOFcluster = 0;
+  if(track->GetTOFHeader() && track->GetTOFHeader()->GetTriggerMask()){ // N TOF clusters available
+    nTOFcluster = track->GetTOFHeader()->GetNumberOfTOFclusters();
+    if(fIsMC) nTOFcluster *= 1.5; // +50% in MC
+  }
+  else{
+    switch(fBeamTypeNum){
+    case kPP: // pp 7 TeV
+      nTOFcluster = 50;
+      break;
+    case kPPB: // pPb 5.05 ATeV
+      nTOFcluster = 50 + (100-fCurrCentrality)*50;
+      break;
+    case kPBPB: // PbPb 2.76 ATeV
+      nTOFcluster = 50 + (100-fCurrCentrality)*150;
+      break;
+    }
+  }
+
   //fTOFResponse.GetMismatchProbability(track->GetTOFsignal(),track->Eta()) * 0.01; // for future implementation of mismatch (i.e. 1% mismatch that should be extended for PbPb, pPb)
 
   // set flat distribution (no decision)
@@ -2300,13 +2344,36 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTOFProbability  (const A
     else
       p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
     
-    p[j] += mismprob;
+    p[j] += fgTOFmismatchProb;
   }
   
   return kDetPidOk;
 }
+
+Int_t AliPIDResponse::CalculateTRDResponse(const AliVTrack *track,Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
+{
+    // new function for backward compatibility
+    // returns number of tracklets PID
+
+    UInt_t TRDslicesForPID[2];
+    SetTRDSlices(TRDslicesForPID,PIDmethod);
+
+    Float_t mom[6]={0.};
+    Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
+    Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
+    AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
+    for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
+	mom[ilayer] = track->GetTRDmomentum(ilayer);
+	for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
+	    dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
+	}
+    }
+
+    return fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+
+}
 //______________________________________________________________________________
-AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod/*=AliTRDPIDResponse::kLQ1D*/) const
+AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const
 {
   //
   // Compute PID probabilities for the TRD
@@ -2318,21 +2385,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::GetComputeTRDProbability  (const A
   const EDetPidStatus pidStatus=GetTRDPIDStatus(track);
   if (pidStatus!=kDetPidOk) return pidStatus;
 
-  UInt_t TRDslicesForPID[2];
-  SetTRDSlices(TRDslicesForPID,PIDmethod);
-  
-  Float_t mom[6]={0.};
-  Double_t dedx[48]={0.};  // Allocate space for the maximum number of TRD slices
-  Int_t nslices = TRDslicesForPID[1] - TRDslicesForPID[0] + 1;
-  AliDebug(1, Form("First Slice: %d, Last Slice: %d, Number of slices: %d",  TRDslicesForPID[0], TRDslicesForPID[1], nslices));
-  for(UInt_t ilayer = 0; ilayer < 6; ilayer++){
-    mom[ilayer] = track->GetTRDmomentum(ilayer);
-    for(UInt_t islice = TRDslicesForPID[0]; islice <= TRDslicesForPID[1]; islice++){
-      dedx[ilayer*nslices+islice-TRDslicesForPID[0]] = track->GetTRDslice(ilayer, islice);
-    }
-  }
-  
-  fTRDResponse.GetResponse(nslices, dedx, mom, p,PIDmethod);
+  CalculateTRDResponse(track,p,PIDmethod);
+
   return kDetPidOk;
 }
 
@@ -2461,6 +2515,8 @@ Float_t AliPIDResponse::GetTOFMismatchProbability(const AliVTrack *track) const
 {
   // compute mismatch probability cross-checking at 5 sigmas with TPC
   // currently just implemented as a 5 sigma compatibility cut
+
+  if(!track) return fgTOFmismatchProb;
 
   // check pid status
   const EDetPidStatus tofStatus=GetTOFPIDStatus(track);

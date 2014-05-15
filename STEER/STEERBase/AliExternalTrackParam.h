@@ -59,6 +59,14 @@ class AliExternalTrackParam: public AliVTrack {
 
   }
 
+  void SetParamOnly(double x, double alpha, const double param[5]) {
+    //  Sets the parameters, neglect cov matrix
+    if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+    else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+    fX=x; fAlpha=alpha;
+    for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
+  }
+
   void Set(Double_t xyz[3],Double_t pxpypz[3],Double_t cv[21],Short_t sign);
 
   static void SetMostProbablePt(Double_t pt) { fgMostProbablePt=pt; }
@@ -186,11 +194,13 @@ class AliExternalTrackParam: public AliVTrack {
   Double_t *GetResiduals(Double_t *p,Double_t *cov,Bool_t updated=kTRUE) const;
   Bool_t Update(Double_t p[2],Double_t cov[3]);
   Bool_t Rotate(Double_t alpha);
+  Bool_t RotateParamOnly(Double_t alpha);
   Bool_t Invert();
   Bool_t PropagateTo(Double_t x, Double_t b);
   Bool_t PropagateParamOnlyTo(Double_t xk, Double_t b);
   Bool_t Propagate(Double_t alpha, Double_t x, Double_t b);
   Bool_t PropagateBxByBz(Double_t alpha, Double_t x, Double_t b[3]);
+  Bool_t PropagateParamOnlyBxByBzTo(Double_t xk, const Double_t b[3]);
   void   Propagate(Double_t len,Double_t x[3],Double_t p[3],Double_t bz) const;
   Bool_t Intersect(Double_t pnt[3], Double_t norm[3], Double_t bz) const;
 
@@ -213,11 +223,14 @@ class AliExternalTrackParam: public AliVTrack {
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const;
   Bool_t GetPxPyPzAt(Double_t x, Double_t b, Double_t p[3]) const;
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t r[3]) const;
+  Double_t GetParameterAtRadius(Double_t r, Double_t bz, Int_t parType) const;
+
   Bool_t GetYAt(Double_t x,  Double_t b,  Double_t &y) const;
   Bool_t GetZAt(Double_t x,  Double_t b,  Double_t &z) const;
   void Print(Option_t* option = "") const;
   Double_t GetSnpAt(Double_t x,Double_t b) const;
   Bool_t GetXatLabR(Double_t r,Double_t &x, Double_t bz, Int_t dir=0) const;
+  Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;
 
   //Deprecated
   Bool_t CorrectForMaterial(Double_t d, Double_t x0, Double_t mass,

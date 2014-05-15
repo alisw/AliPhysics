@@ -44,6 +44,10 @@ class AliPID : public TObject {
     kUnknown = 14
   };
   
+  static Int_t         ParticleCharge(Int_t iType) {
+     if(!fgkParticleMass[0]) Init(); 
+     return fgkParticleCharge[iType];
+  }
   static Float_t       ParticleMass(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleMass[iType];
@@ -51,11 +55,6 @@ class AliPID : public TObject {
   static Float_t       ParticleMassZ(Int_t iType) {
      if(!fgkParticleMass[0]) Init(); 
      return fgkParticleMassZ[iType];
-  }
-  static Int_t         ParticleCharge(Int_t iType){
-    if(!fgkParticleMass[0]) Init();
-    if (iType<0||iType>=kSPECIESC) return 0;
-    return TMath::Nint(fgkParticleMass[iType]/fgkParticleMassZ[iType]);
   }
   static const char*   ParticleName(Int_t iType) 
     {return fgkParticleName[iType];};
@@ -100,12 +99,13 @@ class AliPID : public TObject {
 
   static /*const*/ Float_t fgkParticleMass[kSPECIESCN+1];  // particle masses
   static /*const*/ Float_t fgkParticleMassZ[kSPECIESCN+1]; // particle masses/charge
+  static /*const*/ Char_t  fgkParticleCharge[kSPECIESCN+1]; // particle charge (in e units!)
   static const char*   fgkParticleName[kSPECIESCN+1];      // particle names
   static const char*   fgkParticleShortName[kSPECIESCN+1]; // particle names
   static const char*   fgkParticleLatexName[kSPECIESCN+1]; // particle names
   static const Int_t   fgkParticleCode[kSPECIESCN+1];      // particle codes
 
-  ClassDef(AliPID, 3)                                      // particle id probability densities
+  ClassDef(AliPID, 4)                                      // particle id probability densities
 };
 
 

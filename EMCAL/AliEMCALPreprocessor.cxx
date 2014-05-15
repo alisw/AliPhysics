@@ -61,7 +61,7 @@ const int kReturnCodeNoInfo = 9;
 const int kReturnCodeNoObject = 2;
 const int kReturnCodeNoEntries = 1;
 
-const int kNTRU = 32; // From 2012; 10 + 2/3 SuperModules (SM) * 3 TRU per SM
+const int kNTRU = 62; // EMCAL  (10 SM + 2/3) + (DCAL 10 SM) * 3 TRU per SM
 
 ClassImp(AliEMCALPreprocessor)
   

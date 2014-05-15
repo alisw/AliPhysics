@@ -363,7 +363,7 @@ int AliHLTMiscImplementation::InitStreamerInfos(TObjArray* pSchemas) const
 	    AliDebug(0,Form("skipping schema definition %d version %d to class %s as this is the native version", i, version, pSchema->GetName()));
 	    continue;
 	  }
-	  TObjArray* pInfos=pClass->GetStreamerInfos();
+	  TObjArray* pInfos=const_cast<TObjArray*>(pClass->GetStreamerInfos());
 	  if (pInfos /*&& version<pInfos->GetEntriesFast()*/) {
 	    if (pInfos->At(version)==NULL) {
 	      TStreamerInfo* pClone=(TStreamerInfo*)pSchema->Clone();

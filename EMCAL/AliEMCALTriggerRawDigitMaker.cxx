@@ -39,7 +39,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
 
-#include "AliRawDataHeader.h"
 #include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliRawEvent.h"
@@ -87,8 +86,9 @@ fTriggerData(0x0)
   fRawAnalyzer =  (AliCaloRawAnalyzerFakeALTRO*)AliCaloRawAnalyzerFactory::CreateAnalyzer(kFakeAltro);
 
   fDCSConfig = AliEMCALTriggerDCSConfigDB::Instance();
-  
-  for (Int_t i=0; i<3072; i++) fRawDigitIndex[i] = -1;
+
+  Int_t nRawDigits = fGeometry->GetNTotalTRU() * 96;  
+  for (Int_t i=0; i<nRawDigits; i++) fRawDigitIndex[i] = -1;
 }	
 
 //_______________
@@ -324,25 +324,25 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			fTriggerData->SetL1JetThreshold(  i, fSTURawStream->GetL1JetThreshold(i)  );
 		}
 		
-		Int_t v0[2] = {fSTURawStream->GetV0A(), fSTURawStream->GetV0C()};
+		Int_t v0[2] = { static_cast<Int_t>(fSTURawStream->GetV0A()),  static_cast<Int_t>(fSTURawStream->GetV0C())};
 		
 		Int_t type[15] = 
 		{
-			fSTURawStream->GetG(0, 0),
-			fSTURawStream->GetG(1, 0),
-			fSTURawStream->GetG(2, 0),
-			fSTURawStream->GetJ(0, 0),
-			fSTURawStream->GetJ(1, 0),
-			fSTURawStream->GetJ(2, 0),
-			fSTURawStream->GetG(0, 1),
-			fSTURawStream->GetG(1, 1),
-			fSTURawStream->GetG(2, 1),
-			fSTURawStream->GetJ(0, 1),
-			fSTURawStream->GetJ(1, 1),
-			fSTURawStream->GetJ(2, 1),
-			fSTURawStream->GetRawData(), 
-			fSTURawStream->GetRegionEnable(), 
-			fSTURawStream->GetFwVersion()
+		  static_cast<Int_t>(fSTURawStream->GetG(0, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(1, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(2, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(0, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(1, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(2, 0)),
+		  static_cast<Int_t>(fSTURawStream->GetG(0, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetG(1, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetG(2, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(0, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(1, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetJ(2, 1)),
+		  static_cast<Int_t>(fSTURawStream->GetRawData()), 
+		  static_cast<Int_t>(fSTURawStream->GetRegionEnable()), 
+		  static_cast<Int_t>(fSTURawStream->GetFwVersion())
 		};		
 
 		// Modify DCS config from STU payload content
@@ -374,7 +374,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		{
 			if (AliDebugLevel()) printf("| STU => TRU raw data are there!\n");
 			
-			for (Int_t i = 0; i < 32; i++)
+			Int_t nTRU = fGeometry->GetNTotalTRU();
+			for (Int_t i = 0; i < nTRU; i++)
 			{
 				iTRU = fGeometry->GetTRUIndexFromSTUIndex(i);
 				
@@ -537,7 +538,8 @@ void AliEMCALTriggerRawDigitMaker::Reset()
 {
 	// Reset
 	
-	for (Int_t i = 0; i < 3072; i++) fRawDigitIndex[i] = -1;
+	Int_t nRawDigits = fGeometry->GetNTotalTRU() * 96;  
+	for (Int_t i = 0; i < nRawDigits; i++) fRawDigitIndex[i] = -1;
 }
 
 

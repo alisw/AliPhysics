@@ -9,7 +9,7 @@
 // Implementation version v0 of EMCAL Manager class 
 // An object of this class does not produce hits nor digits
 // It is the one to use if you do not want to produce outputs in TREEH or TREED
-// This class places a Geometry of the EMCAL in the ALICE Detector as defined in AliEMCALGeometry.cxx                      
+// This class places a Geometry of the EMCAL in the ALICE Detector as defined in AliEMCALGeometry.cxx
 //*-- Author: Yves Schutz (SUBATECH)
 //*-- and   : Sahal Yacoob (LBL / UCT) 
 //          : Aleksei Pavlinov (WSU)     SHASHLYK
@@ -83,6 +83,7 @@ class AliEMCALv0 : public AliEMCAL {
   Double_t fSmodPar0;          //! x size of super module  
   Double_t fSmodPar1;          //! y size of super module  
   Double_t fSmodPar2;          //! z size of super module  
+  Double_t fInnerEdge;         //! Inner edge of DCAL super module 
   Double_t fParEMOD[5];        //! parameters of EMCAL module (TRD1,2)
   AliEMCALSpaceFrame* fCalFrame; //EMCAL Space frame object
   

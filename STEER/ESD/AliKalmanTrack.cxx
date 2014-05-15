@@ -124,21 +124,18 @@ void AliKalmanTrack:: AddTimeStep(Double_t length)
   fIntegratedLength += length;
 
   Double_t xr, param[5];
-  Double_t pt, tgl;
   
   GetExternalParameters(xr, param);
-  pt =  1/param[4] ;
-  tgl = param[3];
+  double tgl = param[3];
 
-  Double_t p = TMath::Abs(pt * TMath::Sqrt(1+tgl*tgl));
+  Double_t p2inv = param[4]*param[4]/(1+tgl*tgl);
 
   //  if (length > 100) return;
 
   for (Int_t i=0; i<AliPID::kSPECIESC; i++) {
     
-    Double_t mass = AliPID::ParticleMass(i);
-    Double_t pCharge = p * AliPID::ParticleCharge(i);
-    Double_t correction = TMath::Sqrt( pCharge * pCharge + mass * mass ) / pCharge;
+    Double_t massz = AliPID::ParticleMassZ(i);
+    Double_t correction = TMath::Sqrt( 1. + massz*massz*p2inv ); // 1/beta
     Double_t time = length * correction / kcc;
 
     fIntegratedTime[i] += time;
@@ -171,11 +168,11 @@ Double_t AliKalmanTrack::GetIntegratedTime(Int_t pdg) const
   return 0;
 }
 
-void AliKalmanTrack::GetIntegratedTimes(Double_t *times) const {
-  for (Int_t i=0; i<AliPID::kSPECIESC; i++) times[i]=fIntegratedTime[i];
+void AliKalmanTrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const {
+  for (Int_t i=nspec; i--;) times[i]=fIntegratedTime[i];
 }
 
 void AliKalmanTrack::SetIntegratedTimes(const Double_t *times) {
-  for (Int_t i=0; i<AliPID::kSPECIESC; i++) fIntegratedTime[i]=times[i];
+  for (Int_t i=AliPID::kSPECIESC; i--;) fIntegratedTime[i]=times[i];
 }
 

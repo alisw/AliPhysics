@@ -69,7 +69,7 @@ public:
 
   virtual Bool_t IsStartedTimeIntegral() const {return fStartTimeIntegral;}
   virtual void AddTimeStep(Double_t length);
-  void GetIntegratedTimes(Double_t *times) const;
+  void GetIntegratedTimes(Double_t *times, Int_t nspec=AliPID::kSPECIESC) const;
   Double_t GetIntegratedTime(Int_t pdg) const;
   Double_t GetIntegratedLength() const {return fIntegratedLength;}
 

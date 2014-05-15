@@ -68,9 +68,9 @@ void readHit(int nev=-1,int evStart=0)
       for(Int_t iHit=0; iHit<hitList->GetEntries();iHit++){
 	      
 	AliITSUHit *pHit = (AliITSUHit*)hitList->At(iHit);
-	int id = pHit->GetModule();
+	int id = pHit->GetChip();
 	int lr = gm->GetLayer(id);
-	int ld = gm->GetLadder(id);
+	int ld = gm->GetStave(id);
 	//
 	//	if(pHit->GetParticle()->IsPrimary()){
 	Double_t xg,yg,zg=0.;
@@ -79,7 +79,7 @@ void readHit(int nev=-1,int evStart=0)
 	pHit->GetPositionG0(xg0,yg0,zg0,tg0);
 	xyGlob->Fill(xg,yg);
 	zGlob->Fill(zg);
-	printf("Module %5d | Lr:%2d Ladder: %3d, X:[%+.5e:%+.5e] Y:[%+.5e:%+.5e] Z:[%+.5e %+.5e] DE: %.5e TrackID: %d\n",id,lr,ld,
+	printf("Chip %5d | Lr:%2d Stave: %3d, X:[%+.5e:%+.5e] Y:[%+.5e:%+.5e] Z:[%+.5e %+.5e] DE: %.5e TrackID: %d\n",id,lr,ld,
 	       xg0,xg,yg0,yg,zg0,zg,pHit->GetIonization(),pHit->GetTrack());
 	hDeLoss[lr]->Fill(pHit->GetIonization());
 	//	} // is primary

@@ -1799,7 +1799,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
          if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
             outputArchive = "log_archive.zip:std*@disk=1 ";
             // Add normal output files, extra files + terminate files
-            TString files = GetListOfFiles("outextter");
+            TString files;
+            if (IsMergeAOD()) files = GetListOfFiles("outaodextter");
+            else files = GetListOfFiles("outextter");
             // Do not register files in fRegisterExcludes
             if (!fRegisterExcludes.IsNull()) {
                arr = fRegisterExcludes.Tokenize(" ");
@@ -1985,7 +1987,7 @@ Bool_t AliAnalysisAlien::WriteJDL(Bool_t copy)
             fGridJDL->SetOutputDirectory(Form("#alienfulldir#/../%s",fOutputSingle.Data()), "Output directory");
          else {
             fGridJDL->SetOutputDirectory(Form("%s/#alien_counter_03i#", fGridOutputDir.Data()), "Output directory");
-            fMergingJDL->SetOutputDirectory(fGridOutputDir);         
+//            fMergingJDL->SetOutputDirectory(fGridOutputDir);         
          }   
       } else {
          // One jdl to be submitted with 2 input parameters: data collection name and output dir prefix
@@ -2198,30 +2200,31 @@ Bool_t AliAnalysisAlien::FileExists(const char *lfn)
 Bool_t AliAnalysisAlien::DirectoryExists(const char *dirname)
 {
 // Returns true if directory exists. Can be also a path.
+// Since there is not API in TAlien, we use the Cd trick:
    if (!gGrid) return kFALSE;
-   // Check if dirname is a path
-   TString dirstripped = dirname;
-   dirstripped = dirstripped.Strip();
-   dirstripped = dirstripped.Strip(TString::kTrailing, '/');
-   TString dir = gSystem->BaseName(dirstripped);
-   dir += "/";
-   TString path = gSystem->DirName(dirstripped);
-   TGridResult *res = gGrid->Ls(path, "-F");
-   if (!res) return kFALSE;
-   TIter next(res);
-   TMap *map;
-   TObject *obj;
-   while ((map=dynamic_cast<TMap*>(next()))) {
-      obj = map->GetValue("name");
-      if (!obj) break;
-      if (dir == obj->GetName()) {
-         delete res;
-         return kTRUE;
-      }
+   // Backup current path
+   TString cpath = gGrid->Pwd();
+   TString command = "cd ";
+   TString sdir(dirname);
+   sdir.ReplaceAll("alien://", "");
+   command += sdir;
+   TGridResult *res = gGrid->Command(command);
+   if (!res) {
+      gGrid->Cd(cpath);
+      return kFALSE;
+   }   
+   TMap *map = (TMap*)res->At(0);
+   if (!map) {
+      gGrid->Cd(cpath);
+      delete res;
+      return kFALSE;
    }
+   TString sval = map->GetValue("__result__")->GetName();
+   Bool_t retval = (Bool_t)sval.Atoi();
+   gGrid->Cd(cpath);
    delete res;
-   return kFALSE;
-}      
+   return retval;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool_t &isXml, Bool_t &useTags)
@@ -3698,10 +3701,12 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       return files.Data();
    }
    if (mgr->GetOutputEventHandler()) {
-      aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
-      TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs();
-      if (!extraaod.IsNull()) {
-         aodfiles += ",";
+      aodfiles = "";
+      if (mgr->GetOutputEventHandler()->GetFillAOD())
+         aodfiles = mgr->GetOutputEventHandler()->GetOutputFileName();
+      TString extraaod = mgr->GetOutputEventHandler()->GetExtraOutputs(kTRUE);
+      if (!extraaod.IsNull() && mgr->GetOutputEventHandler()->GetFillExtension()) {
+         if (!aodfiles.IsNull()) aodfiles += ",";
          aodfiles += extraaod;
       }
    }
@@ -3719,11 +3724,11 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       if (!(strcmp(filename, "default"))) continue;
       if (outputfiles.Contains(filename)) continue;
       if (aodfiles.Contains(filename))    continue;
-      if (!outputfiles.IsNull()) outputfiles += ",";
+      if (!outputfiles.IsNull() && strlen(filename)) outputfiles += ",";
       outputfiles += filename;
    }
    if (stype.Contains("out")) {
-      if (!files.IsNull()) files += ",";
+      if (!files.IsNull() && !outputfiles.IsNull()) files += ",";
       files += outputfiles;
       if (stype == "out") return files.Data();
    }   
@@ -3745,7 +3750,7 @@ const char *AliAnalysisAlien::GetListOfFiles(const char *type)
       }
       delete fextra;
       if (stype.Contains("ext")) {
-         if (!files.IsNull()) files += ",";
+         if (!files.IsNull() && !sextra.IsNull()) files += ",";
          files += sextra;
       }
    }   
@@ -4615,7 +4620,10 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "// Set temporary compilation directory to current one" << endl;
       out << "   gSystem->SetBuildDir(gSystem->pwd(), kTRUE);" << endl << endl;   
       out << "   TString outputDir = dir;" << endl;  
-      out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
+      if (IsMergeAOD())
+         out << "   TString outputFiles = \"" << GetListOfFiles("outaod") << "\";" << endl;
+      else   
+         out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
       out << "   TString mergeExcludes = \"" << fMergeExcludes << " " << fRegisterExcludes << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
@@ -4631,9 +4639,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "      return;" << endl;
       out << "   }" << endl;
       if (IsLocalTest()) {
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
          out << "   printf(\"Testing merging...\\n\");" << endl;
-         out << "   printf(\"===================================\n\");" << endl;
+         out << "   printf(\"===================================\\n\");" << endl;
       }        
       out << "   while((str=(TObjString*)iter->Next())) {" << endl;
       out << "      outputFile = str->GetString();" << endl;
@@ -4662,9 +4670,9 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   out.close();" << endl;
       out << "   // read the analysis manager from file" << endl;
       if (IsLocalTest()) {
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
          out << "   printf(\"Testing Terminate()...\\n\");" << endl;
-         out << "   printf(\"===================================\n\");" << endl;      
+         out << "   printf(\"===================================\\n\");" << endl;      
       } else {   
          out << "   if (!outputDir.Contains(\"Stage\")) return;" << endl;
       }   
@@ -5057,7 +5065,7 @@ void AliAnalysisAlien::WriteValidationScript(Bool_t merge)
 
       TString outputFiles = fOutputFiles;
       if (merge && !fTerminateFiles.IsNull()) {
-         outputFiles += ",";
+         if (!outputFiles.IsNull()) outputFiles += ",";
          outputFiles += fTerminateFiles;
       }
       TObjArray *arr = outputFiles.Tokenize(",");

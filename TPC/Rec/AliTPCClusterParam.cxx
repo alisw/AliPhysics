@@ -1952,7 +1952,7 @@ Float_t AliTPCClusterParam::GetWaveCorrection(Int_t Type, Float_t Z, Int_t QMax,
   if( fWaveCorrectionMirroredAngle && (angleY<0) ){ // Angle axis is mirrored at 0
     angleY = -angleY;
   }  
-  double var[5] = { Type, Z, QMax, Pad, angleY };
+  double var[5] = { static_cast<double>(Type), Z, static_cast<double>(QMax), Pad, angleY };
   Long64_t bin = fWaveCorrectionMap->GetBin(var, kFALSE );
   if( bin<0 ) return 0;
   Double_t dY = fWaveCorrectionMap->GetBinContent(bin);

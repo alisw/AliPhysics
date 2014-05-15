@@ -63,7 +63,7 @@ void AliADReconstructor::Init()
     fESDAD  = new AliESDAD;
 }
 
-void AliADReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digitsTree) const
+void AliADReconstructor::ConvertDigits(AliRawReader* /*rawReader*/, TTree* /*digitsTree*/) const
 {
 
   printf("Converting digits for AD .. not implemented \n");

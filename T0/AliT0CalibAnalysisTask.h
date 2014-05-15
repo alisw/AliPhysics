@@ -97,6 +97,10 @@ class AliT0CalibAnalysisTask : public AliAnalysisTaskSE {
   Float_t fT0tofTrack;
   AliESDpid* fESDpid;  //! esd pid
 
+  Double_t  fampfriend[24];  //from ESDfriend
+  Double_t ftimefriend[24]; //from ESDfriend
+  Double_t  fampledfriend[24]; //from ESDfriend
+  
   AliT0CalibAnalysisTask(const AliT0CalibAnalysisTask&); // not implemented
   AliT0CalibAnalysisTask& operator=(const AliT0CalibAnalysisTask&); // not implemented
   

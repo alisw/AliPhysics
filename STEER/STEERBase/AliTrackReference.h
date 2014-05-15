@@ -31,7 +31,8 @@ public:
 		    kFMD   = 12,
 		    kVZERO = 14,
 		    kMFT   = 16,
-		    kHALL  = 17
+		    kHALL  = 17,
+		    kFIT  = 18 //alla
     };
   AliTrackReference();
   AliTrackReference(Int_t label, Int_t id = -999);

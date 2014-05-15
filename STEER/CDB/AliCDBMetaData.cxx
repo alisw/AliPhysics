@@ -31,110 +31,110 @@ ClassImp(AliCDBMetaData)
 
 //_____________________________________________________________________________
 AliCDBMetaData::AliCDBMetaData() :
-TObject(),
-fObjectClassName(""),
-fResponsible(""),
-fBeamPeriod(0),
-fAliRootVersion(""),
-fComment(""),
-fProperties()	
+  TObject(),
+  fObjectClassName(""),
+  fResponsible(""),
+  fBeamPeriod(0),
+  fAliRootVersion(""),
+  fComment(""),
+  fProperties()	
 {
-// default constructor
+  // default constructor
 
-	fProperties.SetOwner(1);
+  fProperties.SetOwner(1);
 }
 
 //_____________________________________________________________________________
 AliCDBMetaData::AliCDBMetaData(const char *responsible, UInt_t beamPeriod,
-				const char* alirootVersion, const char* comment) :
-TObject(),
-fObjectClassName(""),
-fResponsible(responsible),
-fBeamPeriod(beamPeriod),
-fAliRootVersion(alirootVersion),
-fComment(comment),
-fProperties()	
+    const char* alirootVersion, const char* comment) :
+  TObject(),
+  fObjectClassName(""),
+  fResponsible(responsible),
+  fBeamPeriod(beamPeriod),
+  fAliRootVersion(alirootVersion),
+  fComment(comment),
+  fProperties()	
 {
-// constructor
+  // constructor
 
-	fProperties.SetOwner(1);
+  fProperties.SetOwner(1);
 }
 
 //_____________________________________________________________________________
 AliCDBMetaData::~AliCDBMetaData() {
-// destructor
+  // destructor
 
 }
 
 //_____________________________________________________________________________
 void AliCDBMetaData::SetProperty(const char* property, TObject* object) {
-// add something to the list of properties
+  // add something to the list of properties
 
-	fProperties.Add(new TObjString(property), object);
+  fProperties.Add(new TObjString(property), object);
 }
 
 //_____________________________________________________________________________
 TObject* AliCDBMetaData::GetProperty(const char* property) const {
-// get a property specified by its name (property)
+  // get a property specified by its name (property)
 
-	return fProperties.GetValue(property);
+  return fProperties.GetValue(property);
 }
 
 //_____________________________________________________________________________
 Bool_t AliCDBMetaData::RemoveProperty(const char* property) {
-// removes a property
+  // removes a property
 
-	TObjString objStrProperty(property);
-	TObjString* aKey = (TObjString*) fProperties.Remove(&objStrProperty);	
+  TObjString objStrProperty(property);
+  TObjString* aKey = (TObjString*) fProperties.Remove(&objStrProperty);	
 
-	if (aKey) {
-		delete aKey;
-		return kTRUE;
-	} else {
-		return kFALSE;
-	}
+  if (aKey) {
+    delete aKey;
+    return kTRUE;
+  } else {
+    return kFALSE;
+  }
 }
 
 //_____________________________________________________________________________
 void AliCDBMetaData::AddDateToComment() {
-// add the date to the comment.
-// This method is supposed to be useful if called at the time when the object
-// is created, so that later it can more easily be tracked, in particular
-// when the date of the file can be lost or when one is interested in the
-// date of creation, irrespective of a later copy of it
+  // add the date to the comment.
+  // This method is supposed to be useful if called at the time when the object
+  // is created, so that later it can more easily be tracked, in particular
+  // when the date of the file can be lost or when one is interested in the
+  // date of creation, irrespective of a later copy of it
 
-	TTimeStamp ts(time(0));
-	TString comment(GetComment());
-	comment += Form("\tDate of production: %s\n", ts.AsString());
-	comment.Remove(comment.Last('+'));
-	SetComment(comment);
+  TTimeStamp ts(time(0));
+  TString comment(GetComment());
+  comment += Form("\tDate of production: %s\n", ts.AsString());
+  comment.Remove(comment.Last('+'));
+  SetComment(comment);
 
 }
 
 //_____________________________________________________________________________
 void AliCDBMetaData::PrintMetaData() {
-// print the object's metaData
+  // print the object's metaData
 
-	TString message;
-	if(fObjectClassName != "")
-		message += TString::Format("\tObject's class name:	%s\n", fObjectClassName.Data());
-	if(fResponsible != "")
-		message += TString::Format("\tResponsible:		%s\n", fResponsible.Data());
-	if(fBeamPeriod != 0)
-		message += TString::Format("\tBeam period:		%d\n", fBeamPeriod);
-	if(fAliRootVersion != "")
-		message += TString::Format("\tAliRoot version:	%s\n", fAliRootVersion.Data());
-	if(fComment != "")
-		message += TString::Format("\tComment:		%s\n", fComment.Data());
-	if(fProperties.GetEntries() > 0){
-		message += "\tProperties key names:";
+  TString message;
+  if(fObjectClassName != "")
+    message += TString::Format("\tObject's class name:	%s\n", fObjectClassName.Data());
+  if(fResponsible != "")
+    message += TString::Format("\tResponsible:		%s\n", fResponsible.Data());
+  if(fBeamPeriod != 0)
+    message += TString::Format("\tBeam period:		%d\n", fBeamPeriod);
+  if(fAliRootVersion != "")
+    message += TString::Format("\tAliRoot version:	%s\n", fAliRootVersion.Data());
+  if(fComment != "")
+    message += TString::Format("\tComment:		%s\n", fComment.Data());
+  if(fProperties.GetEntries() > 0){
+    message += "\tProperties key names:";
 
-		TIter iter(fProperties.GetTable());
-		TPair* aPair;
-		while ((aPair = (TPair*) iter.Next())) {
-			message += TString::Format("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
-		}
-	}
-	message += '\n';
-	Printf("**** Object's MetaData parameters **** \n%s", message.Data());
+    TIter iter(fProperties.GetTable());
+    TPair* aPair;
+    while ((aPair = (TPair*) iter.Next())) {
+      message += TString::Format("\t\t%s\n", ((TObjString* ) aPair->Key())->String().Data());
+    }
+  }
+  message += '\n';
+  Printf("**** Object's MetaData parameters **** \n%s", message.Data());
 }

@@ -1029,13 +1029,13 @@ void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts)
   if (ncuts>17) if (cuts[17]>0.5)  SetMVScanStep(cuts[17]);
   if (ncuts>18) SetMVMaxWghNtr(cuts[18]);
   if (ncuts>19) SetMVFinalWBinary(cuts[19]>0);
-  if (ncuts>20) if (cuts[20]>20.)  SetBCSpacing(int(cuts[20]));
+  if (ncuts>20) SetBCSpacing(int(cuts[20]));
   //
   if (ncuts>21) if (cuts[21]>0.5)  SetUseTrackClusterization(kTRUE);
   if (ncuts>22) SetDeltaZCutForCluster(cuts[22]);
   if (ncuts>23) SetnSigmaZCutForCluster(cuts[23]);  
   //
-  if (fAlgo==kMultiVertexer || fClusterize) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
+  if ( (fAlgo==kMultiVertexer || fClusterize) && fBCSpacing>0) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
   else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
   //
   return;

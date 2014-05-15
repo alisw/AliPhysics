@@ -104,7 +104,7 @@ class AliITSUSimuParam : public TObject {
   static const Float_t fgkGeVtoChargeDefault;        // default energy to ionize (free an electron) in GeV
   static const Float_t fgkTDefault;                  // default temperature
   static const Float_t fgkPixFakeRateDefault;        // default monopix fake rate
-  static const Bool_t  fgkPixNoiseInAllMod;          // default switch to add digital noise to every module
+  static const Bool_t  fgkPixNoiseInAllMod;          // default switch to add digital noise to every chip
   
   static const Float_t fgkNsigmasDefault; //default for fNsigmas
   static const Int_t   fgkNcompsDefault; //default for fNcomps
@@ -133,10 +133,10 @@ class AliITSUSimuParam : public TObject {
   Float_t    fPixBaselineDef;      // Pix electronic noise: baseline
   Float_t    fPixMinElToAddDef;    // min number of electrons to add
   Float_t    fPixFakeRateDef;      // Fake rate for the monopix
-  Bool_t     fPixNoiseInAllMod;    // Add digital noise to every module
+  Bool_t     fPixNoiseInAllMod;    // Add digital noise to every chip
   //
   Float_t*   fLrROCycleShift; //[fNLayers] optional RO cycle shift for each layer (in fraction of RO cycle length if abs<1)
-                              // if abs>1, then each module will have random phase
+                              // if abs>1, then each chip will have random phase
   Float_t*   fPixThresh;      //[fNPix] Pix Threshold value
   Float_t*   fPixThrSigma;    //[fNPix] Pix Threshold fluctuation
   Float_t*   fPixBiasVoltage; //[fNPix] Bias Voltage for the Pix

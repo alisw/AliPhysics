@@ -65,17 +65,18 @@ AliITSUv0::AliITSUv0()
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
-  ,fLaddPerLay(0)
-  ,fModPerLadd(0)
-  ,fLadThick(0)
-  ,fLadWidth(0)
-  ,fLadTilt(0)
+  ,fStavPerLay(0)
+  ,fModPerStav(0)
+  ,fStaThick(0)
+  ,fStaWidth(0)
+  ,fStaTilt(0)
   ,fDetThick(0)
-  ,fDetTypeID(0)
+  ,fChipTypeID(0)
   ,fBuildLevel(0)
   ,fUpGeom(0)
   ,fStaveModel(kModel0)
@@ -90,23 +91,24 @@ AliITSUv0::AliITSUv0()
 }
 
 //______________________________________________________________________
-AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
+AliITSUv0::AliITSUv0(const char *title, Int_t nlay)
   :AliITSU(title,nlay)
   ,fNWrapVol(0)
   ,fWrapRMin(0)
   ,fWrapRMax(0)
   ,fWrapZSpan(0)
+  ,fLay2WrapV(0)
   ,fLayTurbo(0)
   ,fLayPhi0(0)
   ,fLayRadii(0)
   ,fLayZLength(0)
-  ,fLaddPerLay(0)
-  ,fModPerLadd(0)
-  ,fLadThick(0)
-  ,fLadWidth(0)
-  ,fLadTilt(0)
+  ,fStavPerLay(0)
+  ,fModPerStav(0)
+  ,fStaThick(0)
+  ,fStaWidth(0)
+  ,fStaTilt(0)
   ,fDetThick(0)
-  ,fDetTypeID(0)
+  ,fChipTypeID(0)
   ,fBuildLevel(0)
   ,fUpGeom(0)
   ,fStaveModel(kModel0)
@@ -126,13 +128,13 @@ AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
   fLayPhi0    = new Double_t[fNLayers];
   fLayRadii   = new Double_t[fNLayers];
   fLayZLength = new Double_t[fNLayers];
-  fLaddPerLay = new Int_t[fNLayers];
-  fModPerLadd = new Int_t[fNLayers];
-  fLadThick   = new Double_t[fNLayers];
-  fLadWidth   = new Double_t[fNLayers];
-  fLadTilt    = new Double_t[fNLayers];
+  fStavPerLay = new Int_t[fNLayers];
+  fModPerStav = new Int_t[fNLayers];
+  fStaThick   = new Double_t[fNLayers];
+  fStaWidth   = new Double_t[fNLayers];
+  fStaTilt    = new Double_t[fNLayers];
   fDetThick   = new Double_t[fNLayers];
-  fDetTypeID  = new UInt_t[fNLayers];
+  fChipTypeID  = new UInt_t[fNLayers];
   fBuildLevel = new Int_t[fNLayers];
 
 
@@ -143,11 +145,11 @@ AliITSUv0::AliITSUv0(const char *title,const Int_t nlay)
       fLayPhi0[j] = 0;
       fLayRadii[j] = 0.;
       fLayZLength[j] = 0.;
-      fLaddPerLay[j] = 0;
-      fModPerLadd[j] = 0;
-      fLadWidth[j] = 0.;
+      fStavPerLay[j] = 0;
+      fModPerStav[j] = 0;
+      fStaWidth[j] = 0.;
       fDetThick[j] = 0.;
-      fDetTypeID[j] = 0;
+      fChipTypeID[j] = 0;
       fBuildLevel[j] = 0;
       fUpGeom[j] = 0;     
     }
@@ -167,18 +169,20 @@ AliITSUv0::~AliITSUv0() {
   delete [] fLayPhi0;
   delete [] fLayRadii;
   delete [] fLayZLength;
-  delete [] fLaddPerLay;
-  delete [] fModPerLadd;
-  delete [] fLadThick;
-  delete [] fLadWidth;
-  delete [] fLadTilt;
+  delete [] fStavPerLay;
+  delete [] fModPerStav;
+  delete [] fStaThick;
+  delete [] fStaWidth;
+  delete [] fStaTilt;
   delete [] fDetThick;
-  delete [] fDetTypeID;
+  delete [] fChipTypeID;
   delete [] fBuildLevel;
   delete [] fUpGeom;
   delete [] fWrapRMin;
   delete [] fWrapRMax;
   delete [] fWrapZSpan;
+  delete [] fLay2WrapV;
+  //
 }
 
 //______________________________________________________________________
@@ -208,30 +212,37 @@ void AliITSUv0::AddAlignableVolumes() const{
   if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameITS(),pth.Data()) )
     AliFatal(Form("Unable to set alignable entry ! %s :: %s","ITS",pth.Data()));    
   //
-  int modNum = 0;
+  int chipNum = 0;
   //
   for (int lr=0; lr<fNLayers; lr++) {
     //
-    pth = Form("ALIC_1/%s_2/%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
+    TString wrpV = fLay2WrapV[lr]!=-1 ? Form("%s%d_1/",AliITSUGeomTGeo::GetITSWrapVolPattern(),fLay2WrapV[lr]) : "";
+    pth = Form("ALIC_1/%s_2/%s%s%d_1",AliITSUGeomTGeo::GetITSVolPattern(),wrpV.Data(),AliITSUGeomTGeo::GetITSLayerPattern(),lr);
     //printf("SetAlignable: %s %s\n",snm.Data(),pth.Data());
-    gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data());
+    if( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data()) ) {
+      AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameLayer(lr),pth.Data()));
+    }
     //
-    for (int ld=0; ld<fLaddPerLay[lr]; ld++) {
+    for (int ld=0; ld<fStavPerLay[lr]; ld++) {
       //
-      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSLadderPattern(),lr,ld);
+      TString pthL = Form("%s/%s%d_%d",pth.Data(),AliITSUGeomTGeo::GetITSStavePattern(),lr,ld);
       //printf("SetAlignable: %s %s\n",snmL.Data(),pthL.Data());
-      gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameLadder(lr,ld),pthL.Data());
+      if ( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data()) ) {
+	AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameStave(lr,ld),pthL.Data()));
+      }
       //
-      for (int md=0; md<fModPerLadd[lr]; md++) {
+      for (int md=0; md<fModPerStav[lr]; md++) {
 	//
-	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSModulePattern(),lr,md);
+	TString pthM = Form("%s/%s%d_%d",pthL.Data(),AliITSUGeomTGeo::GetITSChipPattern(),lr,md);
 	//
-	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU modules w/o
-	// conflicts with TPC. For this reason we define the UID of the module to be simply its ID
-	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,modNum++); // here modNum would be module within the layer
-	int modUID = AliITSUGeomTGeo::ModuleVolUID( modNum++ );
+	// RS: Attention, this is a hack: AliGeomManager cannot accomodate all ITSU chips w/o
+	// conflicts with TPC. For this reason we define the UID of the chip to be simply its ID
+	//	int modUID = AliGeomManager::LayerToVolUID(lr+1,chipNum++); // here chipNum would be chip within the layer
+	int modUID = AliITSUGeomTGeo::ChipVolUID( chipNum++ );
 	// 
-	gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameModule(lr,ld,md),pthM.Data(),modUID);
+	if ( !gGeoManager->SetAlignableEntry(AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,-1,-1,md),pthM.Data(),modUID) ) {
+	  AliFatal(Form("Unable to set alignable entry ! %s :: %s",AliITSUGeomTGeo::ComposeSymNameChip(lr,ld,-1,-1,md),pthM.Data()));
+	}
 	//
       }
     }
@@ -286,19 +297,19 @@ void AliITSUv0::CreateGeometry() {
   for (Int_t j=0; j<fNLayers; j++) {
     if (fLayRadii[j] <= 0)                 AliFatal(Form("Wrong layer radius for layer %d (%f)",j,fLayRadii[j]));
     if (fLayZLength[j] <= 0)               AliFatal(Form("Wrong layer length for layer %d (%f)",j,fLayZLength[j]));
-    if (fLaddPerLay[j] <= 0)               AliFatal(Form("Wrong number of ladders for layer %d (%d)",j,fLaddPerLay[j]));
-    if (fModPerLadd[j] <= 0)               AliFatal(Form("Wrong number of modules for layer %d (%d)",j,fModPerLadd[j]));
-    if (fLadThick[j] < 0)                  AliFatal(Form("Wrong ladder thickness for layer %d (%f)",j,fLadThick[j]));
-    if (fLayTurbo[j] && fLadWidth[j] <= 0) AliFatal(Form("Wrong ladder width for layer %d (%f)",j,fLadWidth[j]));
-    if (fDetThick[j] < 0)                  AliFatal(Form("Wrong module thickness for layer %d (%f)",j,fDetThick[j]));
+    if (fStavPerLay[j] <= 0)               AliFatal(Form("Wrong number of staves for layer %d (%d)",j,fStavPerLay[j]));
+    if (fModPerStav[j] <= 0)               AliFatal(Form("Wrong number of chips for layer %d (%d)",j,fModPerStav[j]));
+    if (fStaThick[j] < 0)                  AliFatal(Form("Wrong stave thickness for layer %d (%f)",j,fStaThick[j]));
+    if (fLayTurbo[j] && fStaWidth[j] <= 0) AliFatal(Form("Wrong stave width for layer %d (%f)",j,fStaWidth[j]));
+    if (fDetThick[j] < 0)                  AliFatal(Form("Wrong chip thickness for layer %d (%f)",j,fDetThick[j]));
     //
     if (j > 0) {
       if (fLayRadii[j]<=fLayRadii[j-1])    AliFatal(Form("Layer %d radius (%f) is smaller than layer %d radius (%f)",
 							 j,fLayRadii[j],j-1,fLayRadii[j-1]));
     } // if (j > 0)
 
-    if (fLadThick[j] == 0) AliInfo(Form("Ladder thickness for layer %d not set, using default",j));
-    if (fDetThick[j] == 0) AliInfo(Form("Module thickness for layer %d not set, using default",j));
+    if (fStaThick[j] == 0) AliInfo(Form("Stave thickness for layer %d not set, using default",j));
+    if (fDetThick[j] == 0) AliInfo(Form("Chip thickness for layer %d not set, using default",j));
 
   } // for (Int_t j=0; j<fNLayers; j++)
 
@@ -312,28 +323,30 @@ void AliITSUv0::CreateGeometry() {
     }
   }
   //
+  fLay2WrapV = new Int_t[fNLayers];
+
   // Now create the actual geometry
   for (Int_t j=0; j<fNLayers; j++) {
     TGeoVolume* dest = vITSV;
     //
     if (fLayTurbo[j]) {
       fUpGeom[j] = new AliITSUv0Layer(j,kTRUE,kFALSE);
-      fUpGeom[j]->SetLadderWidth(fLadWidth[j]);
-      fUpGeom[j]->SetLadderTilt(fLadTilt[j]);
+      fUpGeom[j]->SetStaveWidth(fStaWidth[j]);
+      fUpGeom[j]->SetStaveTilt(fStaTilt[j]);
     }
     else fUpGeom[j] = new AliITSUv0Layer(j,kFALSE);
     //
     fUpGeom[j]->SetPhi0(fLayPhi0[j]);
     fUpGeom[j]->SetRadius(fLayRadii[j]);
     fUpGeom[j]->SetZLength(fLayZLength[j]);
-    fUpGeom[j]->SetNLadders(fLaddPerLay[j]);
-    fUpGeom[j]->SetNModules(fModPerLadd[j]);
-    fUpGeom[j]->SetDetType(fDetTypeID[j]);
+    fUpGeom[j]->SetNStaves(fStavPerLay[j]);
+    fUpGeom[j]->SetNChips(fModPerStav[j]);
+    fUpGeom[j]->SetChipType(fChipTypeID[j]);
     fUpGeom[j]->SetBuildLevel(fBuildLevel[j]);
     fUpGeom[j]->SetStaveModel(fStaveModel);
     AliDebug(1,Form("fBuildLevel: %d\n",fBuildLevel[j]));
     //
-    if (fLadThick[j] != 0) fUpGeom[j]->SetLadderThick(fLadThick[j]);
+    if (fStaThick[j] != 0) fUpGeom[j]->SetStaveThick(fStaThick[j]);
     if (fDetThick[j] != 0) fUpGeom[j]->SetSensorThick(fDetThick[j]);
     //
     for (int iw=0;iw<fNWrapVol;iw++) {
@@ -342,12 +355,13 @@ void AliITSUv0::CreateGeometry() {
 	if (fLayZLength[j]>=fWrapZSpan[iw]) AliFatal(Form("ZSpan %.3f of wrapper volume %d is less than ZSpan %.3f of layer %d",
 							  fWrapZSpan[iw],iw,fLayZLength[j],j));
 	dest = wrapVols[iw];
+	fLay2WrapV[j] = iw;
 	break;
       }
     }
     fUpGeom[j]->CreateLayer(dest);
   }
-  delete wrapVols; // delete pointer only, not the volumes
+  delete[] wrapVols; // delete pointer only, not the volumes
   //
 }
 
@@ -476,10 +490,10 @@ void AliITSUv0::CreateMaterials() {
 }
 
 //______________________________________________________________________
-void AliITSUv0::DefineLayer(const Int_t nlay, const double phi0, const Double_t r,
-			    const Double_t zlen, const Int_t nladd,
-			    const Int_t nmod, const Double_t lthick,
-			    const Double_t dthick, const UInt_t dettypeID)
+void AliITSUv0::DefineLayer(Int_t nlay, double phi0, Double_t r,
+			    Double_t zlen, Int_t nstav,
+			    Int_t nmod, Double_t lthick,
+			    Double_t dthick, UInt_t dettypeID)
 {
   //     Sets the layer parameters
   // Inputs:
@@ -487,9 +501,9 @@ void AliITSUv0::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
   //          phi0    layer phi0
   //          r       layer radius
   //          zlen    layer length
-  //          nladd   number of ladders
-  //          nmod    number of modules per ladder
-  //          lthick  ladder thickness (if omitted, defaults to 0)
+  //          nstav   number of staves
+  //          nmod    number of chips per stave
+  //          lthick  stave thickness (if omitted, defaults to 0)
   //          dthick  detector thickness (if omitted, defaults to 0)
   // Outputs:
   //   none.
@@ -505,32 +519,32 @@ void AliITSUv0::DefineLayer(const Int_t nlay, const double phi0, const Double_t 
   fLayPhi0[nlay] = phi0;
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
-  fLaddPerLay[nlay] = nladd;
-  fModPerLadd[nlay] = nmod;
-  fLadThick[nlay] = lthick;
+  fStavPerLay[nlay] = nstav;
+  fModPerStav[nlay] = nmod;
+  fStaThick[nlay] = lthick;
   fDetThick[nlay] = dthick;
-  fDetTypeID[nlay] = dettypeID;
+  fChipTypeID[nlay] = dettypeID;
     
 }
 
 //______________________________________________________________________
-void AliITSUv0::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t zlen, Int_t nladd,
+void AliITSUv0::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t zlen, Int_t nstav,
 				 Int_t nmod, Double_t width, Double_t tilt,
 				 Double_t lthick,Double_t dthick,
 				 UInt_t dettypeID, Int_t buildLevel)
 {
   //     Sets the layer parameters for a "turbo" layer
-  //     (i.e. a layer whose ladders overlap in phi)
+  //     (i.e. a layer whose staves overlap in phi)
   // Inputs:
   //          nlay    layer number
-  //          phi0    phi of 1st ladder
+  //          phi0    phi of 1st stave
   //          r       layer radius
   //          zlen    layer length
-  //          nladd   number of ladders
-  //          nmod    number of modules per ladder
-  //          width   ladder width
+  //          nstav   number of staves
+  //          nmod    number of chips per stave
+  //          width   stave width
   //          tilt    layer tilt angle (degrees)
-  //          lthick  ladder thickness (if omitted, defaults to 0)
+  //          lthick  stave thickness (if omitted, defaults to 0)
   //          dthick  detector thickness (if omitted, defaults to 0)
   //          dettypeID  ??
   //          buildLevel (if 0, all geometry is build, used for material budget studies)
@@ -548,13 +562,13 @@ void AliITSUv0::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
   fLayPhi0[nlay] = phi0;
   fLayRadii[nlay] = r;
   fLayZLength[nlay] = zlen;
-  fLaddPerLay[nlay] = nladd;
-  fModPerLadd[nlay] = nmod;
-  fLadThick[nlay] = lthick;
-  fLadWidth[nlay] = width;
-  fLadTilt[nlay] = tilt;
+  fStavPerLay[nlay] = nstav;
+  fModPerStav[nlay] = nmod;
+  fStaThick[nlay] = lthick;
+  fStaWidth[nlay] = width;
+  fStaTilt[nlay] = tilt;
   fDetThick[nlay] = dthick;
-  fDetTypeID[nlay] = dettypeID;
+  fChipTypeID[nlay] = dettypeID;
   fBuildLevel[nlay] = buildLevel;
 
 }
@@ -562,7 +576,7 @@ void AliITSUv0::DefineLayerTurbo(Int_t nlay, Double_t phi0, Double_t r, Double_t
 //______________________________________________________________________
 void AliITSUv0::GetLayerParameters(Int_t nlay, Double_t &phi0,
 				   Double_t &r, Double_t &zlen,
-				   Int_t &nladd, Int_t &nmod,
+				   Int_t &nstav, Int_t &nmod,
 				   Double_t &width, Double_t &tilt,
 				   Double_t &lthick, Double_t &dthick,
 				   UInt_t &dettype) const
@@ -571,14 +585,14 @@ void AliITSUv0::GetLayerParameters(Int_t nlay, Double_t &phi0,
   // Inputs:
   //          nlay    layer number
   // Outputs:
-  //          phi0    phi of 1st ladder
+  //          phi0    phi of 1st stave
   //          r       layer radius
   //          zlen    layer length
-  //          nladd   number of ladders
-  //          nmod    number of modules per ladder
-  //          width   ladder width
-  //          tilt    ladder tilt angle
-  //          lthick  ladder thickness
+  //          nstav   number of staves
+  //          nmod    number of chips per stave
+  //          width   stave width
+  //          tilt    stave tilt angle
+  //          lthick  stave thickness
   //          dthick  detector thickness
   //          dettype detector type
   // Return:
@@ -592,13 +606,13 @@ void AliITSUv0::GetLayerParameters(Int_t nlay, Double_t &phi0,
   phi0   = fLayPhi0[nlay];
   r      = fLayRadii[nlay];
   zlen   = fLayZLength[nlay];
-  nladd  = fLaddPerLay[nlay];
-  nmod   = fModPerLadd[nlay];
-  width  = fLadWidth[nlay];
-  tilt   = fLadTilt[nlay];
-  lthick = fLadThick[nlay];
+  nstav  = fStavPerLay[nlay];
+  nmod   = fModPerStav[nlay];
+  width  = fStaWidth[nlay];
+  tilt   = fStaTilt[nlay];
+  lthick = fStaThick[nlay];
   dthick = fDetThick[nlay];
-  dettype= fDetTypeID[nlay];
+  dettype= fChipTypeID[nlay];
 }
 
 //______________________________________________________________________
@@ -668,10 +682,10 @@ void AliITSUv0::StepManager()
   // Return:
   //   none.
   if(!(this->IsActive())) return;
-  if(!(gMC->TrackCharge())) return;
+  if(!(TVirtualMC::GetMC()->TrackCharge())) return;
   //
   Int_t copy, lay = 0;
-  Int_t id = gMC->CurrentVolID(copy);
+  Int_t id = TVirtualMC::GetMC()->CurrentVolID(copy);
 
   Bool_t notSens = kFALSE;
   while ((lay<fNLayers)  && (notSens = (id!=fIdSens[lay]))) ++lay;
@@ -679,7 +693,7 @@ void AliITSUv0::StepManager()
 	   
   if (notSens) return;
 
-  if(gMC->IsTrackExiting()) {
+  if(TVirtualMC::GetMC()->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kITS);
   } // if Outer ITS mother Volume
 
@@ -690,13 +704,13 @@ void AliITSUv0::StepManager()
   Int_t   cpn0, cpn1, mod, status = 0;
   //
   // Track status
-  if(gMC->IsTrackInside())      status +=  1;
-  if(gMC->IsTrackEntering())    status +=  2;
-  if(gMC->IsTrackExiting())     status +=  4;
-  if(gMC->IsTrackOut())         status +=  8;
-  if(gMC->IsTrackDisappeared()) status += 16;
-  if(gMC->IsTrackStop())        status += 32;
-  if(gMC->IsTrackAlive())       status += 64;
+  if(TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
+  if(TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
+  if(TVirtualMC::GetMC()->IsTrackExiting())     status +=  4;
+  if(TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
+  if(TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
+  if(TVirtualMC::GetMC()->IsTrackStop())        status += 32;
+  if(TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
 
   //
   // retrieve the indices with the volume path
@@ -706,28 +720,28 @@ void AliITSUv0::StepManager()
     return; // not an ITS sensitive volume.
   } else {
     copy = 1;
-    gMC->CurrentVolOffID(1,cpn1);
-    gMC->CurrentVolOffID(2,cpn0);
+    TVirtualMC::GetMC()->CurrentVolOffID(1,cpn1);
+    TVirtualMC::GetMC()->CurrentVolOffID(2,cpn0);
   } //
 
-  mod = fGeomTGeo->GetModuleIndex(lay,cpn0,cpn1);
+  mod = fGeomTGeo->GetChipIndex(lay,cpn0,cpn1);
   //RS2DEL  fInitGeom.DecodeDetector(mod,lay+1,cpn0,cpn1,copy);
   //
   // Fill hit structure.
   //
-  hit.SetModule(mod);
+  hit.SetChip(mod);
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
+  TVirtualMC::GetMC()->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackMomentum(momentum);
   hit.SetPosition(position);
-  hit.SetTime(gMC->TrackTime());
+  hit.SetTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
-  hit.SetEdep(gMC->Edep());
+  hit.SetEdep(TVirtualMC::GetMC()->Edep());
   hit.SetShunt(GetIshunt());
-  if(gMC->IsTrackEntering()){
+  if(TVirtualMC::GetMC()->IsTrackEntering()){
     hit.SetStartPosition(position);
-    hit.SetStartTime(gMC->TrackTime());
+    hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
     hit.SetStartStatus(status);
     return; // don't save entering hit.
   } // end if IsEntering
@@ -736,24 +750,24 @@ void AliITSUv0::StepManager()
   new(lhits[fNhits++]) AliITSUHit(hit); // Use Copy Construtor.
   // Save old position... for next hit.
   hit.SetStartPosition(position);
-  hit.SetStartTime(gMC->TrackTime());
+  hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
   hit.SetStartStatus(status);
 
   return;
 }
 
 //______________________________________________________________________
-void AliITSUv0::SetLayerDetTypeID(Int_t lr, UInt_t id)
+void AliITSUv0::SetLayerChipTypeID(Int_t lr, UInt_t id)
 {
   // set det type
-  if (!fDetTypeID || fNLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNLayers,lr));
-  fDetTypeID[lr] = id;
+  if (!fChipTypeID || fNLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNLayers,lr));
+  fChipTypeID[lr] = id;
 }
 
 //______________________________________________________________________
-Int_t AliITSUv0::GetLayerDetTypeID(Int_t lr)
+Int_t AliITSUv0::GetLayerChipTypeID(Int_t lr)
 {
   // set det type
-  if (!fDetTypeID || fNLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNLayers,lr));
-  return fDetTypeID[lr];
+  if (!fChipTypeID || fNLayers<=lr) AliFatal(Form("Number of layers %d, %d is manipulated",fNLayers,lr));
+  return fChipTypeID[lr];
 }

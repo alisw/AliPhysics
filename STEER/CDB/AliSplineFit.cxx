@@ -100,6 +100,7 @@ AliSplineFit::AliSplineFit(const AliSplineFit& source) :
     fChi2I[i] = source.fChi2I[i];
   }
 }
+
 AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
 //
 //  assignment operator
@@ -135,7 +136,6 @@ AliSplineFit& AliSplineFit::operator=(const AliSplineFit& source){
   }
 
 // use copy constructor (without reassigning memory) to copy values
-
 
   return *this;
 }

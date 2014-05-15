@@ -16,6 +16,9 @@
 #include "TTree.h"
 #include "AliMFTSegmentation.h"
 #include "AliReconstructor.h"
+#include "AliTracker.h"
+#include "AliVertexer.h"
+#include "AliMFTTrackerMU.h"
 #include "AliMFTClusterFinder.h"
 
 //====================================================================================================================================================
@@ -36,6 +39,9 @@ public:
   
   virtual void  Reconstruct(TTree *digitsTree, TTree *clustersTree) const; 
   virtual void  Reconstruct(AliRawReader* /*rawdata*/, TTree* /*clustersTree*/) const { AliInfo("Not implemented"); } 
+
+  virtual AliTracker* CreateTracker()  const;
+  virtual AliTracker* CreateTrackleter()  const;
 
   //  static const AliMFTRecoParam* GetRecoParam() { return dynamic_cast<const AliMFTRecoParam*>(AliReconstructor::GetRecoParam(0)); }
 

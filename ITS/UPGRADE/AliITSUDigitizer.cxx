@@ -98,7 +98,7 @@ Bool_t AliITSUDigitizer::Init()
     AliFatal("ITS not found");
   } 
   if (!fITS->IsSimInitDone()) fITS->InitSimulation();
-  int nm = fITS->GetITSGeomTGeo()->GetNModules();
+  int nm = fITS->GetITSGeomTGeo()->GetNChips();
   fModActive = new Bool_t[nm];
   for (Int_t i=nm;i--;) fModActive[i] = kTRUE;
 
@@ -118,7 +118,7 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
   TString loadname = Form("%sLoader",fITS->GetName());
   //
   AliITSUGeomTGeo* geom = fITS->GetITSGeomTGeo();
-  Int_t nModules  = geom->GetNModules();
+  Int_t nChips  = geom->GetNChips();
   Bool_t lmod;
   Int_t *fl = new Int_t[nfiles];
   fl[0] = fRoiifile;
@@ -151,19 +151,19 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
     if (ingime->TreeS() == 0x0) ingime->LoadSDigits();
   }
   //
-  for (int module=0; module<nModules; module++ ) {
+  for (int chip=0; chip<nChips; chip++ ) {
     //
-    if (!fRoif && !fModActive[module]) continue;
-    int lr = geom->GetLayer(module);
+    if (!fRoif && !fModActive[chip]) continue;
+    int lr = geom->GetLayer(chip);
     AliITSUSimulation *sim = fITS->GetSimulationModel(lr);
     if (!sim) AliFatal(Form("The simulation model for layer %d is not available",lr));
     //
-    // Fill the module with the sum of SDigits
-    sim->InitSimulationModule(fITS->GetModule(module), event, fITS->GetSegmentation(lr), fITS->GetResponseParam(lr));
+    // Fill the chip with the sum of SDigits
+    sim->InitSimulationChip(fITS->GetChip(chip), event, fITS->GetSegmentation(lr), fITS->GetResponseParam(lr));
     //
     for (int ifiles=0; ifiles<nfiles; ifiles++ ) {
       //
-      if (!fRoif && !fModActive[module]) continue;
+      if (!fRoif && !fModActive[chip]) continue;
       inRL =  AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(fl[ifiles]));
       ingime = inRL->GetLoader(loadname);
       //
@@ -181,17 +181,17 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
       //
       sdig->Clear();
       mask = GetDigInput()->GetMask(ifiles);
-      brchSDigits->GetEvent( module );
-      lmod = sim->AddSDigitsToModule(sdig,mask);
-      if(GetRegionOfInterest() && !ifiles) fModActive[module] = lmod;
+      brchSDigits->GetEvent( chip );
+      lmod = sim->AddSDigitsToChip(sdig,mask);
+      if(GetRegionOfInterest() && !ifiles) fModActive[chip] = lmod;
       //
     } 
-    // Digitize current module sum(SDigits)->Digits
-    sim->FinishSDigitiseModule();
+    // Digitize current chip sum(SDigits)->Digits
+    sim->FinishSDigitiseChip();
     //
     outgime->TreeD()->Fill();       // fills all branches - wasted disk space
     fITS->ResetDigits();
-  } // end for module
+  } // end for chip
   //
   //  fITS->WriteFOSignals(); 
   outgime->TreeD()->AutoSave();
@@ -206,7 +206,7 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
   delete[] fl;
   sdig->Clear();
   delete sdig;
-  for (Int_t i=nModules;i--;) fModActive[i] = kTRUE;
+  for (Int_t i=nChips;i--;) fModActive[i] = kTRUE;
   //
   return;
 }
@@ -214,12 +214,12 @@ void AliITSUDigitizer::Digitize(Option_t* /*opt*/)
 //______________________________________________________________________
 void AliITSUDigitizer::SetByRegionOfInterest(TTree *ts)
 {
-  // Scans through the ITS branch of the SDigits tree, ts, for modules
-  // which have SDigits in them. For these modules, a flag is set to
-  // digitize only these modules. The value of fRoif determines how many
-  // neighboring modules will also be turned on. fRoif=0 will turn on only
-  // those modules with SDigits in them. fRoif=1 will turn on, in addition,
-  // those modules that are +-1 module from the one with the SDigits. And
+  // Scans through the ITS branch of the SDigits tree, ts, for chips
+  // which have SDigits in them. For these chips, a flag is set to
+  // digitize only these chips. The value of fRoif determines how many
+  // neighboring chips will also be turned on. fRoif=0 will turn on only
+  // those chips with SDigits in them. fRoif=1 will turn on, in addition,
+  // those chips that are +-1 chip from the one with the SDigits. And
   // So on. This last feature is not supported yet.
   // Inputs:
   //      TTree *ts  The tree in which the existing SDigits will define the
@@ -232,14 +232,14 @@ void AliITSUDigitizer::SetByRegionOfInterest(TTree *ts)
   if( brchSDigits ) brchSDigits->SetAddress( &sdig );
   else  {AliError("Branch ITS not found in TreeS"); return;}
   //
-  int nm = fITS->GetITSGeomTGeo()->GetNModules();
+  int nm = fITS->GetITSGeomTGeo()->GetNChips();
   for (int m=0;m<nm;m++) {
     fModActive[m] = kFALSE; // Not active by default
     sdig->Clear();
     brchSDigits->GetEvent(m);
     int ndig = sdig->GetEntries();
     for(int i=0;i<ndig;i++) {
-      // activate the necessary modules
+      // activate the necessary chips
       if ( ((AliITSUSDigit*)sdig->At(m))->GetSumSignal()>0.0 ) { // Must have non zero signal.
 	fModActive[m] = kTRUE;
 	break;

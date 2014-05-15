@@ -263,7 +263,7 @@ Int_t AliITSUTrackerGlo::Clusters2Tracks(AliESDEvent *esdEv)
       AliLog::SetClassDebugLevel("AliITSUTrackerGlo",dbg ? 10:0);
       */
 #ifdef _ITSU_DEBUG_
-      AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMass(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
+      AliDebug(1,Form("Processing track %d(esd%d) | M=%.3f Pt=%.3f | MCLabel: %d",itr,trID,fCurrESDtrack->GetMassForTracking(kTRUE),fCurrESDtrack->Pt(),fCurrESDtrMClb));//RS
 #endif
       FindTrack(fCurrESDtrack, trID);
     }   
@@ -305,7 +305,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
   Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
   AliITSUTrackHyp dummyTr;
   const double kWatchStep=10.; // for larger steps watch arc vs segment difference
-  Double_t times[AliPID::kSPECIES];
+  Double_t times[AliPID::kSPECIESC];
   //
   for (int itr=0;itr<fNTracksESD;itr++) {
     fCurrESDtrack = esdEv->GetTrack(itr);
@@ -341,7 +341,7 @@ Int_t AliITSUTrackerGlo::PropagateBack(AliESDEvent *esdEv)
       dummyTr.AliExternalTrackParam::operator=(*fCurrESDtrack);
       dummyTr.StartTimeIntegral();
       dummyTr.AddTimeStep(dst);
-      dummyTr.GetIntegratedTimes(times); 
+      dummyTr.GetIntegratedTimes(times,AliPID::kSPECIESC); 
       fCurrESDtrack->SetIntegratedTimes(times);
       fCurrESDtrack->SetIntegratedLength(dummyTr.GetIntegratedLength());
       continue;
@@ -507,7 +507,7 @@ void AliITSUTrackerGlo::FindTrack(AliESDtrack* esdTr, Int_t esdID)
   fCurrHyp = fWorkHyp;
   fCurrHyp->InitFrom(hypTr);
   //
-  AliITSURecoSens *hitSens[AliITSURecoSens::kNNeighbors+1];
+  AliITSURecoSens *hitSens[AliITSURecoLayer::kMaxSensMatching];
   //
   int ilaUp = fNLrActive;     // previous active layer really checked (some may be excluded!)
   //
@@ -680,8 +680,7 @@ AliITSUTrackHyp* AliITSUTrackerGlo::InitHypothesis(AliESDtrack *esdTr, Int_t esd
   //
   fCountProlongationTrials++;
   //
-  fCurrMass = esdTr->GetMass();
-  if (fCurrMass<kPionMass*0.9) fCurrMass = kPionMass; // don't trust to mu, e identification from TPCin
+  fCurrMass = esdTr->GetMassForTracking();
   //
   hyp = new AliITSUTrackHyp(fNLrActive);
   hyp->SetESDTrack(esdTr);
@@ -937,6 +936,7 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   //
   fTrImpData[kTrPhiIn] = ATan2(fTrImpData[kTrYIn],fTrImpData[kTrXIn]);
   if (!sc.Rotate(fTrImpData[kTrPhiIn])) return kFALSE; // go to the frame of the entry point into the layer
+  BringTo02Pi(fTrImpData[kTrPhiIn]);
   double dr  = lrA->GetDR();                              // approximate X dist at the inner radius
   if (!sc.GetXYZAt(sc.GetX()-dr, bz, fTrImpData + kTrXOut)) {
     // special case: track does not reach inner radius, might be tangential
@@ -948,18 +948,14 @@ Bool_t AliITSUTrackerGlo::GetRoadWidth(AliITSUSeed* seed, int ilrA)
   }
   //
   fTrImpData[kTrPhiOut] = ATan2(fTrImpData[kTrYOut],fTrImpData[kTrXOut]);
+  BringTo02Pi(fTrImpData[kTrPhiOut]);
   double sgy = sc.GetSigmaY2() + dr*dr*sc.GetSigmaSnp2() + AliITSUReconstructor::GetRecoParam()->GetSigmaY2(ilrA);
   double sgz = sc.GetSigmaZ2() + dr*dr*sc.GetSigmaTgl2() + AliITSUReconstructor::GetRecoParam()->GetSigmaZ2(ilrA);
   sgy = Sqrt(sgy)*fCurrTrackCond->GetNSigmaRoadY(ilrA);
   sgz = Sqrt(sgz)*fCurrTrackCond->GetNSigmaRoadZ(ilrA);
-  double dphi0 = 0.5*Abs(fTrImpData[kTrPhiOut]-fTrImpData[kTrPhiIn]);
-  double phi0  = 0.5*(fTrImpData[kTrPhiOut]+fTrImpData[kTrPhiIn]);
-  if ( dphi0>(0.5*Pi()) ) {
-    // special case of angles around pi 
-    dphi0 = Abs(phi0);    
-    phi0  += Pi();
-  }
-
+  double phi0  = MeanPhiSmall(fTrImpData[kTrPhiOut],fTrImpData[kTrPhiIn]);
+  double dphi0 = DeltaPhiSmall(fTrImpData[kTrPhiOut],fTrImpData[kTrPhiIn]);
+  //
   fTrImpData[kTrPhi0] = phi0;
   fTrImpData[kTrZ0]   = 0.5*(fTrImpData[kTrZOut]+fTrImpData[kTrZIn]);
   dphi0 += sgy/lrA->GetR();
@@ -1445,7 +1441,7 @@ void AliITSUTrackerGlo::UpdateESDTrack(AliITSUTrackHyp* hyp,Int_t flag)
   }
   //
   esdTr->SetITSLabel(hyp->GetITSLabel());
-  // transfer module indices
+  // transfer chip indices
   // TODO
 }
 

@@ -164,7 +164,7 @@ void  AliMC::ConstructGeometry()
 	return;
       }
     }
-    gMC->SetRootGeometry();
+    TVirtualMC::GetMC()->SetRootGeometry();
   }else{
     // Create modules, materials, geometry
     if (!gGeoManager) new TGeoManager("ALICE", "ALICE geometry");
@@ -235,32 +235,44 @@ void  AliMC::AddParticles()
   cout << "########## AliMC::AddParticles"  << endl;
 
   //Hypertriton
-  gMC->DefineParticle(1010010030, "HyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1010010030, "HyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
   //Anti-Hypertriton
-  gMC->DefineParticle(-1010010030, "AntiHyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1010010030, "AntiHyperTriton", kPTHadron, 2.99131 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 3, kFALSE);
 
 //Hyper hydrogen 4
-  gMC->DefineParticle(1010010040, "Hyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1010010040, "Hyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
   //Anti-Hyper hydrogen 4
-  gMC->DefineParticle(-1010010040, "AntiHyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1010010040, "AntiHyperhydrog4", kPTHadron, 3.931 , 1.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
 
 //Hyper helium 4
-  gMC->DefineParticle(1010020040, "Hyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1010020040, "Hyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
   //Anti-Hyper helium 4
-  gMC->DefineParticle(-1010020040, "AntiHyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1010020040, "AntiHyperhelium4", kPTHadron, 3.929 , 2.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 4, kFALSE);
 
 
   //Lambda-Neutron 
-  gMC->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1010000020, "LambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //Anti-Lambda-Neutron
-  gMC->DefineParticle(-1010000020, "AntiLambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1010000020, "AntiLambdaNeutron", kPTNeutron, 2.054 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
   //H-Dibaryon
-  gMC->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.21, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(1020000020, "Hdibaryon", kPTNeutron, 2.21, 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
   //Anti-H-Dibaryon
-  gMC->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.21  , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  TVirtualMC::GetMC()->DefineParticle(-1020000020, "AntiHdibaryon", kPTNeutron, 2.21  , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
 
+  //Xi-Proton
+  TVirtualMC::GetMC()->DefineParticle(1030000020, "Xi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+
+  //Anti-Xi-Proton
+  TVirtualMC::GetMC()->DefineParticle(-1030000020, "AntiXi0Proton", kPTHadron, 2.248 , 1.0, 1.333e-10,"Ion", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
+  //Lambda-Neutron-Neutron
+  TVirtualMC::GetMC()->DefineParticle(1010000030, "LambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
+  //Anti-Lambda-Neutron-Neutron
+  TVirtualMC::GetMC()->DefineParticle(-1010000030, "AntiLambdaNeutronNeutron", kPTNeutron, 2.982 , 0.0, 2.632e-10,"Hadron", 0.0, 0, 1, 0, 0, 0, 0, 0, 2, kFALSE);
+  
   
   // Define the 2- and 3-body phase space decay for the Hyper-Triton
   Int_t mode[6][3];                  
@@ -281,7 +293,7 @@ void  AliMC::AddParticles()
   mode[1][1] = 2212; // proton
   mode[1][2] = -211; // negative pion
 
-  gMC->SetDecayMode(1010010030,bratio,mode);
+  TVirtualMC::GetMC()->SetDecayMode(1010010030,bratio,mode);
 
 
 
@@ -303,7 +315,7 @@ void  AliMC::AddParticles()
   amode[1][1] = -2212; // anti-proton
   amode[1][2] = 211; // positive pion
 
-  gMC->SetDecayMode(-1010010030,abratio,amode);
+  TVirtualMC::GetMC()->SetDecayMode(-1010010030,abratio,amode);
   
   ////// ----------Hypernuclei with Mass=4 ----------- //////////
   
@@ -327,7 +339,7 @@ void  AliMC::AddParticles()
   mode3[1][1] = 2212; // proton
   mode3[1][2] = -211; // negative pion
 
-  gMC->SetDecayMode(1010010040,bratio3,mode3);
+  TVirtualMC::GetMC()->SetDecayMode(1010010040,bratio3,mode3);
 
 
   // Define the 2- and 3-body phase space decay for the Hyper Hydrogen 4
@@ -348,7 +360,7 @@ void  AliMC::AddParticles()
   amode3[1][1] = -2212; // anti-proton
   amode3[1][2] = 211; // positive pion
 
-  gMC->SetDecayMode(-1010010040,abratio3,amode3);
+  TVirtualMC::GetMC()->SetDecayMode(-1010010040,abratio3,amode3);
   
   
    // Define the 3-body phase space decay for the Hyper Helium 4
@@ -366,7 +378,7 @@ void  AliMC::AddParticles()
   mode4[0][1] = -211; // negative pion
   mode4[0][2] = 2212; // proton
   
-  gMC->SetDecayMode(1010020040,bratio4,mode4);
+  TVirtualMC::GetMC()->SetDecayMode(1010020040,bratio4,mode4);
 
 
   // Define the 2-body phase space decay for the Anti-Hyper Helium 4
@@ -384,7 +396,7 @@ void  AliMC::AddParticles()
   amode4[0][1] = 211; // positive pion
   amode4[0][2] = -2212; // anti proton
 
-  gMC->SetDecayMode(-1010020040,abratio4,amode4);
+  TVirtualMC::GetMC()->SetDecayMode(-1010020040,abratio4,amode4);
 
   
   // Define the 2-body phase space decay for the Lambda-neutron boundstate
@@ -401,7 +413,7 @@ void  AliMC::AddParticles()
   mode1[0][0] = 1000010020; // deuteron 
   mode1[0][1] = -211; // negative pion
 
-  gMC->SetDecayMode(1010000020,bratio1,mode1);
+  TVirtualMC::GetMC()->SetDecayMode(1010000020,bratio1,mode1);
 
 
   // Define the 2-body phase space decay for the Anti-Lambda-neutron boundstate
@@ -418,7 +430,7 @@ void  AliMC::AddParticles()
   amode1[0][0] = -1000010020; // anti-deuteron 
   amode1[0][1] = 211; // positive pion
 
-  gMC->SetDecayMode(-1010000020,abratio1,amode1);
+  TVirtualMC::GetMC()->SetDecayMode(-1010000020,abratio1,amode1);
 
   // Define the 2-body phase space decay for the H-Dibaryon
   Int_t mode2[6][3];                  
@@ -435,7 +447,7 @@ void  AliMC::AddParticles()
   mode2[0][1] = 2212; // proton
   mode2[0][2] = -211; // negative pion
 
-  gMC->SetDecayMode(1020000020,bratio2,mode2);
+  TVirtualMC::GetMC()->SetDecayMode(1020000020,bratio2,mode2);
 
   // Define the 2-body phase space decay for the Anti-H-Dibaryon
   Int_t amode2[6][3];                  
@@ -452,7 +464,71 @@ void  AliMC::AddParticles()
   amode2[0][1] = -2212; // anti-proton
   amode2[0][2] = 211; // positive pion
 
-  gMC->SetDecayMode(-1020000020,abratio2,amode2);
+  TVirtualMC::GetMC()->SetDecayMode(-1020000020,abratio2,amode2);
+
+  // Define the 2-body phase space decay for the Xi0P
+  Int_t mode5[6][3];
+  Float_t bratio5[6];
+  
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio5[kz] = 0.;
+    mode5[kz][0] = 0;
+    mode5[kz][1] = 0;
+    mode5[kz][2] = 0;
+  }
+  bratio5[0] = 100.;
+  mode5[0][0] = 3122; // Lambda
+  mode5[0][1] = 2212; // proton
+  
+  TVirtualMC::GetMC()->SetDecayMode(1030000020,bratio5,mode5);
+  
+  // Define the 2-body phase space decay for the Anti-Xi0P
+  Int_t amode5[6][3];
+  Float_t abratio5[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    abratio5[kz] = 0.;
+    amode5[kz][0] = 0;
+    amode5[kz][1] = 0;
+    amode5[kz][2] = 0;
+  }
+  abratio5[0] = 100.;
+  amode5[0][0] = -3122; // anti-Lambda
+  amode5[0][1] = -2212; // anti-proton
+  
+  TVirtualMC::GetMC()->SetDecayMode(-1030000020,abratio5,amode5);
+  
+  // Define the 2-body phase space decay for the Lambda-Neutron-Neutron
+  Int_t mode6[6][3];
+  Float_t bratio6[6];
+
+  for (Int_t kz = 0; kz < 6; kz++) {
+    bratio6[kz] = 0.;
+    mode6[kz][0] = 0;
+    mode6[kz][1] = 0;
+    mode6[kz][2] = 0;
+  }
+  bratio6[0] = 100.;
+  mode6[0][0] = 1000010030; // triton
+  mode6[0][1] = -211; // pion
+  
+  TVirtualMC::GetMC()->SetDecayMode(1010000030,bratio6,mode6);
+  
+  // Define the 2-body phase space decay for the Anti-Lambda-Neutron-Neutron
+  Int_t amode6[6][3];
+  Float_t abratio6[6];
+  
+  for (Int_t kz = 0; kz < 6; kz++) {
+    abratio6[kz] = 0.;
+    amode6[kz][0] = 0;
+    amode6[kz][1] = 0;
+    amode6[kz][2] = 0;
+  }
+  abratio6[0] = 100.;
+  amode6[0][0] = -1000010030; // anti-triton
+  amode6[0][1] = 211; // pion
+  
+  TVirtualMC::GetMC()->SetDecayMode(-1010000030,abratio6,amode6);
 
   // end of the example
   // --------------------------------------------------------------------
@@ -602,15 +678,15 @@ void AliMC::Stepping()
   //
   //verbose.Stepping();
 
-  Int_t id = DetFromMate(gMC->CurrentMedium());
+  Int_t id = DetFromMate(TVirtualMC::GetMC()->CurrentMedium());
   if (id < 0) return;
 
 
-  if ( gMC->IsNewTrack()            && 
-       gMC->TrackTime() == 0.       &&
+  if ( TVirtualMC::GetMC()->IsNewTrack()            && 
+       TVirtualMC::GetMC()->TrackTime() == 0.       &&
        fRDecayMin >= 0.             &&  
        fRDecayMax > fRDecayMin      &&
-       gMC->TrackPid() == fDecayPdg ) 
+       TVirtualMC::GetMC()->TrackPid() == fDecayPdg ) 
   {
       FixParticleDecaytime();
   } 
@@ -618,19 +694,19 @@ void AliMC::Stepping()
   // --- If monitoring timing was requested, monitor the step
   if (fUseMonitoring) {
     if (!fMonitor) {
-      fMonitor = new AliTransportMonitor(gMC->NofVolumes()+1);
+      fMonitor = new AliTransportMonitor(TVirtualMC::GetMC()->NofVolumes()+1);
       fMonitor->Start();
     }  
-    if (gMC->IsNewTrack() || gMC->TrackTime() == 0. || gMC->TrackStep()<1.1E-10) {
+    if (TVirtualMC::GetMC()->IsNewTrack() || TVirtualMC::GetMC()->TrackTime() == 0. || TVirtualMC::GetMC()->TrackStep()<1.1E-10) {
       fMonitor->DummyStep();
     } else {
     // Normal stepping
       Int_t copy;
-      Int_t volId = gMC->CurrentVolID(copy);
-      Int_t pdg = gMC->TrackPid();
+      Int_t volId = TVirtualMC::GetMC()->CurrentVolID(copy);
+      Int_t pdg = TVirtualMC::GetMC()->TrackPid();
       TLorentzVector xyz, pxpypz;
-      gMC->TrackPosition(xyz);
-      gMC->TrackMomentum(pxpypz);
+      TVirtualMC::GetMC()->TrackPosition(xyz);
+      TVirtualMC::GetMC()->TrackMomentum(pxpypz);
       fMonitor->StepInfo(volId, pdg, pxpypz.E(), xyz.X(), xyz.Y(), xyz.Z());
     }  
   }
@@ -641,12 +717,12 @@ void AliMC::Stepping()
   else {
     Int_t copy;
     //Update energy deposition tables
-    AddEnergyDeposit(gMC->CurrentVolID(copy),gMC->Edep());
+    AddEnergyDeposit(TVirtualMC::GetMC()->CurrentVolID(copy),TVirtualMC::GetMC()->Edep());
     //
     // write tracke reference for track which is dissapearing - MI
 
-    if (gMC->IsTrackDisappeared() && !(gMC->IsTrackAlive())) {      
-	if (gMC->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(), 
+    if (TVirtualMC::GetMC()->IsTrackDisappeared() && !(TVirtualMC::GetMC()->IsTrackAlive())) {      
+	if (TVirtualMC::GetMC()->Etot() > 0.05) AddTrackReference(GetCurrentTrackNumber(), 
 						AliTrackReference::kDisappeared);
 	
 
@@ -699,7 +775,7 @@ void AliMC::EnergySummary()
       for(i=0;i<(3<left?3:left);i++) {
 	j=kn*3+i;
         id=Int_t (fEventEnergy[j]+0.1);
-	printf(" %s %10.3f +- %10.3f%%;",gMC->VolName(id),fSummEnergy[j],fSum2Energy[j]);
+	printf(" %s %10.3f +- %10.3f%%;",TVirtualMC::GetMC()->VolName(id),fSummEnergy[j],fSum2Energy[j]);
       }
       printf("\n");
     }
@@ -712,7 +788,7 @@ void AliMC::EnergySummary()
       for(i=0;i<(5<left?5:left);i++) {
 	j=kn*5+i;
         id=Int_t (fEventEnergy[j]+0.1);
-	printf(" %s %10.3f%%;",gMC->VolName(id),100*fSummEnergy[j]/edtot);
+	printf(" %s %10.3f%%;",TVirtualMC::GetMC()->VolName(id),100*fSummEnergy[j]/edtot);
       }
       printf("\n");
     }
@@ -791,8 +867,8 @@ void AliMC::BeginEvent()
       runloader->MakeTree("K");
   }
   
-  AliDebug(1, "gMC->SetStack(fRunLoader->Stack())");
-  gMC->SetStack(runloader->Stack());//Was in InitMC - but was moved here 
+  AliDebug(1, "TVirtualMC::GetMC()->SetStack(fRunLoader->Stack())");
+  TVirtualMC::GetMC()->SetStack(runloader->Stack());//Was in InitMC - but was moved here 
                                      //because we don't have guarantee that 
                                      //stack pointer is not going to change from event to event
 	                 //since it bellobgs to header and is obtained via RunLoader
@@ -894,7 +970,7 @@ void AliMC::FinishPrimary()
   //  const Int_t times=10;
   // This primary is finished, purify stack
 #if ROOT_VERSION_CODE > 262152
-  if (!(gMC->SecondariesAreOrdered())) {
+  if (!(TVirtualMC::GetMC()->SecondariesAreOrdered())) {
       if (runloader->Stack()->ReorderKine()) RemapHits();
   }
 #endif
@@ -1029,7 +1105,7 @@ void AliMC::Init()
 
 
    //=================Create Materials and geometry
-   gMC->Init();
+   TVirtualMC::GetMC()->Init();
   // Set alignable volumes for the whole geometry (with old root)
 #if ROOT_VERSION_CODE < 331527
   SetAllAlignableVolumes();
@@ -1040,15 +1116,15 @@ void AliMC::Init()
    MediaTable();
 
    //Compute cross-sections
-   gMC->BuildPhysics();
+   TVirtualMC::GetMC()->BuildPhysics();
    
    //Initialise geometry deposition table
-   fEventEnergy.Set(gMC->NofVolumes()+1);
-   fSummEnergy.Set(gMC->NofVolumes()+1);
-   fSum2Energy.Set(gMC->NofVolumes()+1);
+   fEventEnergy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
+   fSummEnergy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
+   fSum2Energy.Set(TVirtualMC::GetMC()->NofVolumes()+1);
 
    // Register MC in configuration 
-   AliConfig::Instance()->Add(gMC);
+   AliConfig::Instance()->Add(TVirtualMC::GetMC());
 }
 
 //_______________________________________________________________________
@@ -1190,7 +1266,7 @@ void AliMC::ReadTransPar()
 	  if(cut[kz]>=0) {
 	    AliDebug(2, Form("%-6s set to %10.3E for tracking medium code %4d for %s",
 			     kpars[kz],cut[kz],itmed,mod->GetName()));
-	    gMC->Gstpar(ktmed,kpars[kz],cut[kz]);
+	    TVirtualMC::GetMC()->Gstpar(ktmed,kpars[kz],cut[kz]);
 	  }
 	}
 	// Set transport mechanisms
@@ -1198,7 +1274,7 @@ void AliMC::ReadTransPar()
 	  if(flag[kz]>=0) {
 	    AliDebug(2, Form("%-6s set to %10d for tracking medium code %4d for %s",
 			     kpars[kncuts+kz],flag[kz],itmed,mod->GetName()));
-	    gMC->Gstpar(ktmed,kpars[kncuts+kz],Float_t(flag[kz]));
+	    TVirtualMC::GetMC()->Gstpar(ktmed,kpars[kncuts+kz],Float_t(flag[kz]));
 	  }
 	}
       } else {
@@ -1450,7 +1526,7 @@ void AliMC::FixParticleDecaytime()
     //
 
     TLorentzVector p;
-    gMC->TrackMomentum(p);
+    TVirtualMC::GetMC()->TrackMomentum(p);
     Double_t tmin, tmax;
     Double_t b;
 
@@ -1489,7 +1565,7 @@ void AliMC::FixParticleDecaytime()
     //
     // Force decay time in transport code
     //
-    gMC->ForceDecayTime(t / 2.99792458e10);
+    TVirtualMC::GetMC()->ForceDecayTime(t / 2.99792458e10);
 }
 
 void AliMC::MakeTmpTrackRefsTree()

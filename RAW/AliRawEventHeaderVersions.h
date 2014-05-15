@@ -4,7 +4,7 @@
 #include "AliRawEventHeaderBase.h"
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0) 
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0) 
 START_EVENT_HEADER(3,1)
 
    UInt_t fType;          // event type
@@ -45,7 +45,7 @@ START_EVENT_HEADER(3,3)
 END_EVENT_HEADER(3,3)
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimestamp(0)
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0), fTimestamp(0)
 START_EVENT_HEADER(3,4)
 
    UInt_t fType;          // event type
@@ -131,7 +131,7 @@ START_EVENT_HEADER(3,9)
 END_EVENT_HEADER(3,9)
 
 #undef INIT_HEADER_VARS
-#define INIT_HEADER_VARS fType(0), fRunNb(0), fDetectorPattern(0), fLdcId(0), fGdcId(0), fTimestamp(0), fTimestampUsec(0)
+#define INIT_HEADER_VARS fType(0), fRunNb(0), fId(), fTriggerPattern(), fDetectorPattern(0), fTypeAttribute(), fLdcId(0), fGdcId(0), fTimestamp(0), fTimestampUsec(0)
 START_EVENT_HEADER(3,11)
 
    UInt_t fType;          // event type
@@ -176,5 +176,20 @@ START_EVENT_HEADER(3,13)
    UInt_t fTimestampUsec; // event timestamp (microseconds)
 
 END_EVENT_HEADER(3,13)
+
+START_EVENT_HEADER(3,14)
+
+   UInt_t fType;          // event type
+   UInt_t fRunNb;     // run number
+   UInt_t fId[2];  // id field
+   UInt_t fTriggerPattern[4];   // trigger pattern
+   UInt_t fDetectorPattern; // detector pattern
+   UInt_t fTypeAttribute[3];  // system (0,1) and user (2) attributes
+   UInt_t fLdcId;         // LDC id
+   UInt_t fGdcId;         // GDC id
+   UInt_t fTimestamp;     // event timestamp
+   UInt_t fTimestampUsec; // event timestamp (microseconds)
+
+END_EVENT_HEADER(3,14)
 
 #endif

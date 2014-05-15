@@ -12,11 +12,15 @@
 #include <TBits.h>
 
 #include "AliVParticle.h"
+#include "AliPID.h"
 
+class AliVEvent;
 class AliVVertex;
 class AliExternalTrackParam;
 class AliTPCdEdxInfo;
 class AliDetectorPID;
+class AliTOFHeader;
+
  
 class AliVTrack: public AliVParticle {
 
@@ -67,6 +71,7 @@ public:
   AliVTrack(const AliVTrack& vTrack); 
   AliVTrack& operator=(const AliVTrack& vTrack);
 
+  virtual const AliVEvent* GetEvent() const {return 0;}
   virtual Int_t    GetID() const = 0;
   virtual UChar_t  GetITSClusterMap() const = 0;
   virtual void     GetITSdEdxSamples(Double_t s[4]) const {for (int i=4;i--;) s[i]=0;};
@@ -99,6 +104,8 @@ public:
   virtual Int_t GetPHOScluster()      const {return -1;}
   virtual void SetPHOScluster(Int_t)        {;}
   virtual Bool_t IsPHOS()             const {return kFALSE;}
+  virtual void   SetPIDForTracking(Int_t ) {}
+  virtual Int_t  GetPIDForTracking() const {return -999;}
   
   //pid info
   virtual void     SetStatus(ULong_t /*flags*/) {;}
@@ -124,7 +131,7 @@ public:
   
   virtual Bool_t GetOuterHmpPxPyPz(Double_t */*p*/) const {return kFALSE;}
   
-  virtual void      GetIntegratedTimes(Double_t */*times*/) const { return; }
+  virtual void      GetIntegratedTimes(Double_t */*times*/, Int_t nspec=AliPID::kSPECIESC) const;
   virtual Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {return 0.;}
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
   virtual Double_t  GetIntegratedLength() const { return 0.;}
@@ -142,6 +149,7 @@ public:
   virtual Bool_t   GetPxPyPz(Double_t */*p*/) const { return kFALSE; }
   virtual void     SetID(Short_t /*id*/) {;}
   virtual Int_t    GetTOFBunchCrossing(Double_t = 0, Bool_t = kFALSE) const { return kTOFBCNA;}
+  virtual const AliTOFHeader *GetTOFHeader() const {return NULL;};
 
   ClassDef(AliVTrack,1)  // base class for tracks
 };

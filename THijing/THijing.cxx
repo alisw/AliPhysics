@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id$ */
+/* $Id: THijing.cxx 64005 2013-08-28 12:23:17Z hristov $ */
 
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
@@ -574,6 +574,8 @@ Int_t  THijing::GetN0() const
    return HIMAIN1.n0;
 
 }
+
+
 //______________________________________________________________________________
 Int_t  THijing::GetN01() const
 {
@@ -609,6 +611,7 @@ Float_t  THijing::GetBB() const
    return HIMAIN1.bb;
 
 }
+
 
 //====================== access to common HIMAIN2 ===============================
 
@@ -1200,6 +1203,18 @@ void  THijing::SetMDME(Int_t key1, Int_t key2, Int_t   parm)
     printf("      key2=%i is out of range [1..3]\n", key2);
   } else {
     LUDAT3_HIJING.mdme[key2-1][key1-1] = parm;
+  }
+  
+}
+
+void  THijing::SetBRAT(Int_t key, Float_t   parm)
+{
+  // Set value of array MDME
+  if ( key < 1 || key > 2000) {
+    printf("ERROR in THijing::SetBRAT(key, parm):\n");
+    printf("      key=%i is out of range [1..2000]\n", key);
+  } else {
+    LUDAT3_HIJING.brat[key-1] = parm;
   }
   
 }

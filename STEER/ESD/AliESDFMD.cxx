@@ -136,11 +136,16 @@ AliESDFMD&
 AliESDFMD::operator=(const AliESDFMD& other)
 {
   // Default CTOR
-  if(this!=&other){
-    TObject::operator=(other);
-    fMultiplicity = other.fMultiplicity;
-    fEta          = other.fEta;
-  }
+  if(this == &other) return *this;
+
+  TObject::operator=(other);
+  fMultiplicity   = other.fMultiplicity;
+  fEta            = other.fEta;
+
+  // These two lines were missing prior to version 4 of this class 
+  fNoiseFactor    = other.fNoiseFactor;
+  fAngleCorrected = other.fAngleCorrected;
+
   return *this;
 }
 
@@ -292,7 +297,6 @@ AliESDFMD::ForEach(AliESDFMD::ForOne& a) const
   ForMultiplicity i(*this, a);
   return fMultiplicity.ForEach(i);
 }
-
 //____________________________________________________________________
 void
 AliESDFMD::Print(Option_t* /* option*/) const

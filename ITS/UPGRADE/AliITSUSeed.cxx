@@ -25,6 +25,13 @@ AliITSUSeed::AliITSUSeed()
 {
   // def c-tor
   ResetFMatrix();
+  for (int i=kNKElem;i--;) fKMatrix[i] = 0.;
+  for (int i=kNRElem;i--;) fRMatrix[i] = 0.;
+  fResid[0]=0.;
+  fResid[1]=0.;  
+  fCovIYZ[0]=0.;
+  fCovIYZ[1]=0.;
+  fCovIYZ[2]=0.;
 }
 
 //_________________________________________________________________________

@@ -130,12 +130,12 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
      tpar[1] = (AliMUONConstants::Rmax(0)+dframep)/TMath::Cos(phi);
      tpar[2] = dstation/5;
 
-     gMC->Gsvolu("S01M", "TUBE", idAir, tpar, 3);
-     gMC->Gsvolu("S02M", "TUBE", idAir, tpar, 3);
+     TVirtualMC::GetMC()->Gsvolu("S01M", "TUBE", idAir, tpar, 3);
+     TVirtualMC::GetMC()->Gsvolu("S02M", "TUBE", idAir, tpar, 3);
 
      // CHANGED
-     //gMC->Gspos("S01M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
-     //gMC->Gspos("S02M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
+     //TVirtualMC::GetMC()->Gspos("S01M", 1, "ALIC", 0., 0., zpos1 , 0, "ONLY");
+     //TVirtualMC::GetMC()->Gspos("S02M", 1, "ALIC", 0., 0., zpos2 , 0, "ONLY");
      
      GetEnvelopes(0)->AddEnvelope("S01M", 100, false);
      GetEnvelopes(1)->AddEnvelope("S02M", 200, false);
@@ -153,24 +153,24 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 //      pgpar[7] = +dframez/2;
 //      pgpar[8] = pgpar[5];
 //      pgpar[9] = pgpar[6];
-//      gMC->Gsvolu("S01O", "PGON", idAlu1, pgpar, 10);
-//      gMC->Gsvolu("S02O", "PGON", idAlu1, pgpar, 10);
-//      gMC->Gspos("S01O",1,"S01M", 0.,0.,-zfpos,  0,"ONLY");
-//      gMC->Gspos("S01O",2,"S01M", 0.,0.,+zfpos,  0,"ONLY");
-//      gMC->Gspos("S02O",1,"S02M", 0.,0.,-zfpos,  0,"ONLY");
-//      gMC->Gspos("S02O",2,"S02M", 0.,0.,+zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gsvolu("S01O", "PGON", idAlu1, pgpar, 10);
+//      TVirtualMC::GetMC()->Gsvolu("S02O", "PGON", idAlu1, pgpar, 10);
+//      TVirtualMC::GetMC()->Gspos("S01O",1,"S01M", 0.,0.,-zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S01O",2,"S01M", 0.,0.,+zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S02O",1,"S02M", 0.,0.,-zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S02O",2,"S02M", 0.,0.,+zfpos,  0,"ONLY");
 // //
 // // Inner frame
 //      tpar[0]= AliMUONConstants::Rmin(0)-dframep1;
 //      tpar[1]= AliMUONConstants::Rmin(0);
 //      tpar[2]= dframez/2;
-//      gMC->Gsvolu("S01I", "TUBE", idAlu1, tpar, 3);
-//      gMC->Gsvolu("S02I", "TUBE", idAlu1, tpar, 3);
+//      TVirtualMC::GetMC()->Gsvolu("S01I", "TUBE", idAlu1, tpar, 3);
+//      TVirtualMC::GetMC()->Gsvolu("S02I", "TUBE", idAlu1, tpar, 3);
 
-//      gMC->Gspos("S01I",1,"S01M", 0.,0.,-zfpos,  0,"ONLY");
-//      gMC->Gspos("S01I",2,"S01M", 0.,0.,+zfpos,  0,"ONLY");
-//      gMC->Gspos("S02I",1,"S02M", 0.,0.,-zfpos,  0,"ONLY");
-//      gMC->Gspos("S02I",2,"S02M", 0.,0.,+zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S01I",1,"S01M", 0.,0.,-zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S01I",2,"S01M", 0.,0.,+zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S02I",1,"S02M", 0.,0.,-zfpos,  0,"ONLY");
+//      TVirtualMC::GetMC()->Gspos("S02I",2,"S02M", 0.,0.,+zfpos,  0,"ONLY");
 //
 // Frame Crosses
      if (frameCrosses) {
@@ -185,41 +185,41 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 	 // total thickness will be (4 * bpar[2]) for each chamber,
 	 // which has to be equal to (2 * dframez) - DAlu
 	 bpar[2] = (2.0 * dframez - kDAlu) / 4.0;
-	 gMC->Gsvolu("S01B", "BOX", idAlu1, bpar, 3);
-	 gMC->Gsvolu("S02B", "BOX", idAlu1, bpar, 3);
+	 TVirtualMC::GetMC()->Gsvolu("S01B", "BOX", idAlu1, bpar, 3);
+	 TVirtualMC::GetMC()->Gsvolu("S02B", "BOX", idAlu1, bpar, 3);
 	 
-	 gMC->Gspos("S01B",1,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",1,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",2,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",2,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",3,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",3,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",4,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",4,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",5,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",5,"S01M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",6,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",6,"S01M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S01B",7,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",7,"S01M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S01B",8,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S01B",8,"S01M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
 	 
-	 gMC->Gspos("S02B",1,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",1,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",2,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",2,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,-zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",3,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",3,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",4,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",4,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,-zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",5,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",5,"S02M", +AliMUONConstants::Rmin(0)+bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",6,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",6,"S02M", -AliMUONConstants::Rmin(0)-bpar[0] , 0,+zfpos, 
 		    irot1,"ONLY");
-	 gMC->Gspos("S02B",7,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",7,"S02M", 0, +AliMUONConstants::Rmin(0)+bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
-	 gMC->Gspos("S02B",8,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
+	 TVirtualMC::GetMC()->Gspos("S02B",8,"S02M", 0, -AliMUONConstants::Rmin(0)-bpar[0] ,+zfpos, 
 		    irot2,"ONLY");
      }
 //
@@ -227,18 +227,18 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
      tpar[0]= AliMUONConstants::Rmin(0);
      tpar[1]= AliMUONConstants::Rmax(0);
      tpar[2] = (kDGas+kDAlu)/2;
-     gMC->Gsvolu("S01A", "TUBE",  idAlu2, tpar, 3);
-     gMC->Gsvolu("S02A", "TUBE",idAlu2, tpar, 3);
-     gMC->Gspos("S01A", 1, "S01M", 0., 0., 0.,  0, "ONLY");
-     gMC->Gspos("S02A", 1, "S02M", 0., 0., 0.,  0, "ONLY");
+     TVirtualMC::GetMC()->Gsvolu("S01A", "TUBE",  idAlu2, tpar, 3);
+     TVirtualMC::GetMC()->Gsvolu("S02A", "TUBE",idAlu2, tpar, 3);
+     TVirtualMC::GetMC()->Gspos("S01A", 1, "S01M", 0., 0., 0.,  0, "ONLY");
+     TVirtualMC::GetMC()->Gspos("S02A", 1, "S02M", 0., 0., 0.,  0, "ONLY");
 //     
 //   Sensitive volumes
      // tpar[2] = kDGas;
      tpar[2] = kDGas/2;
-     gMC->Gsvolu("S01G", "TUBE", idGas, tpar, 3);
-     gMC->Gsvolu("S02G", "TUBE", idGas, tpar, 3);
-     gMC->Gspos("S01G", 1, "S01A", 0., 0., 0.,  0, "ONLY");
-     gMC->Gspos("S02G", 1, "S02A", 0., 0., 0.,  0, "ONLY");
+     TVirtualMC::GetMC()->Gsvolu("S01G", "TUBE", idGas, tpar, 3);
+     TVirtualMC::GetMC()->Gsvolu("S02G", "TUBE", idGas, tpar, 3);
+     TVirtualMC::GetMC()->Gspos("S01G", 1, "S01A", 0., 0., 0.,  0, "ONLY");
+     TVirtualMC::GetMC()->Gspos("S02G", 1, "S02A", 0., 0., 0.,  0, "ONLY");
 //
 // Frame Crosses to be placed inside gas
      // NONE: chambers are sensitive everywhere
@@ -248,25 +248,25 @@ void AliMUONSt1GeometryBuilder::CreateGeometry()
 // 	 bpar[0] = TMath::Sqrt(dr*dr-dframep1*dframep1/4)/2;
 // 	 bpar[1] = dframep1/2;
 // 	 bpar[2] = kDGas/2;
-// 	 gMC->Gsvolu("S01F", "BOX", idAlu1, bpar, 3);
-// 	 gMC->Gsvolu("S02F", "BOX", idAlu1, bpar, 3);
+// 	 TVirtualMC::GetMC()->Gsvolu("S01F", "BOX", idAlu1, bpar, 3);
+// 	 TVirtualMC::GetMC()->Gsvolu("S02F", "BOX", idAlu1, bpar, 3);
 	 
-// 	 gMC->Gspos("S01F",1,"S01G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S01F",1,"S01G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S01F",2,"S01G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S01F",2,"S01G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S01F",3,"S01G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S01F",3,"S01G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
 // 		    irot2,"ONLY");
-// 	 gMC->Gspos("S01F",4,"S01G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S01F",4,"S01G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
 // 		    irot2,"ONLY");
 	 
-// 	 gMC->Gspos("S02F",1,"S02G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S02F",1,"S02G", +AliMUONConstants::Rmin(0)+bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S02F",2,"S02G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S02F",2,"S02G", -AliMUONConstants::Rmin(0)-bpar[0] , 0, 0, 
 // 		    irot1,"ONLY");
-// 	 gMC->Gspos("S02F",3,"S02G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S02F",3,"S02G", 0, +AliMUONConstants::Rmin(0)+bpar[0] , 0, 
 // 		    irot2,"ONLY");
-// 	 gMC->Gspos("S02F",4,"S02G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
+// 	 TVirtualMC::GetMC()->Gspos("S02F",4,"S02G", 0, -AliMUONConstants::Rmin(0)-bpar[0] , 0, 
 // 		    irot2,"ONLY");
 //      }
 }

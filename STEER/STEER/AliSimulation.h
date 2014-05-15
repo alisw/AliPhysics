@@ -122,6 +122,8 @@ public:
   virtual  Bool_t IsLegoRun() const {return (fLego!=0);}
   AliLego* Lego() const {return fLego;}
   virtual  void  FinishRun();
+  //
+  void StoreUsedCDBMaps() const; 
 
   //Quality Assurance
   Int_t       GetDetIndex(const char * detector);
@@ -206,13 +208,7 @@ private:
   time_t          fTimeEnd;            // EOR time-stamp
   
   //QA stuff
-//   #ifdef MFT_UPGRADE
-//   static const Int_t   fgkNDetectors = 16 ;             // number of detectors
-//   #else
-//   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
-//   #endif
-  //static const Int_t   fgkNDetectors = 16 ;             // number of detectors    // AU
-  static const Int_t   fgkNDetectors = 17 ;             // number of detectors    + AD
+  static const Int_t   fgkNDetectors = 18 ;             // number of detectors   +FIT // alla
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	

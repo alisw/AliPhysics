@@ -33,6 +33,7 @@ public:
   virtual void Copy(TObject &obj) const;
 
   void      SetTriggerMask(ULong64_t n) {fTriggerMask=n;}
+  void      SetTriggerMaskNext50(ULong64_t n) {fTriggerMaskNext50=n;}
   void      SetOrbitNumber(UInt_t n) {fOrbitNumber=n;}
   void      SetTimeStamp(UInt_t timeStamp){fTimeStamp = timeStamp;}
   void      SetEventType(UInt_t eventType){fEventType = eventType;}
@@ -72,6 +73,8 @@ public:
 //**************************************************************************
 
   ULong64_t GetTriggerMask() const {return fTriggerMask;}
+  ULong64_t GetTriggerMaskNext50() const {return fTriggerMaskNext50;}
+  void      GetTriggerMaskAll(ULong64_t& low,ULong64_t& high) const {low=fTriggerMask;high=fTriggerMaskNext50;}
   UInt_t    GetOrbitNumber() const {return fOrbitNumber;}
   UInt_t    GetTimeStamp()  const { return fTimeStamp;}
   UInt_t    GetEventType()  const { return fEventType;}
@@ -94,7 +97,8 @@ private:
 private:
 
   // Event Identification
-  ULong64_t    fTriggerMask;       // Trigger Type (mask)
+  ULong64_t    fTriggerMask;       // Trigger Type (mask) 1-50 bits
+  ULong64_t    fTriggerMaskNext50; // Trigger Type (mask) 51-100 bits
   UInt_t       fOrbitNumber;       // Orbit Number
   UInt_t       fTimeStamp;         // Time stamp
   UInt_t       fEventType;         // Type of Event
@@ -118,7 +122,7 @@ private:
   mutable TBits   fIRInt1InteractionsMap;  // map of the Int1 events (normally V0A&V0C) near the event, that's Int1Id-EventId within -90 +90 BXs
 
 
-  ClassDef(AliESDHeader,11)
+  ClassDef(AliESDHeader,12)
 };
 
 #endif

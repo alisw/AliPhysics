@@ -154,7 +154,7 @@ Char_t AliMUONLocalTrigger::GetLoDecision() const
 void AliMUONLocalTrigger::GetXPattern(TArrayS& array) const
 {
     /// return array of X pattern
-    Short_t vec[4] = {GetX1Pattern(), GetX2Pattern(), GetX3Pattern(), GetX4Pattern()};
+  Short_t vec[4] = {static_cast<Short_t>(GetX1Pattern()), static_cast<Short_t>(GetX2Pattern()), static_cast<Short_t>(GetX3Pattern()), static_cast<Short_t>(GetX4Pattern())};
     array.Set(4, vec);
 }
 
@@ -162,7 +162,7 @@ void AliMUONLocalTrigger::GetXPattern(TArrayS& array) const
 void AliMUONLocalTrigger::GetYPattern(TArrayS& array) const
 {
     /// return array of Y pattern
-    Short_t vec[4] = {GetY1Pattern(), GetY2Pattern(), GetY3Pattern(), GetY4Pattern()};
+  Short_t vec[4] = {static_cast<Short_t>(GetY1Pattern()), static_cast<Short_t>(GetY2Pattern()), static_cast<Short_t>(GetY3Pattern()), static_cast<Short_t>(GetY4Pattern())};
     array.Set(4, vec);
 }
 

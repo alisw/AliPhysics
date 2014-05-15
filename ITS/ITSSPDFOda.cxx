@@ -47,6 +47,7 @@ extern "C" {
 #include <TString.h>
 #include <TFitter.h>
 #include <TFile.h>
+#include <cstdlib>
 
 int main(int argc, char **argv) {
   if (argc<2) {

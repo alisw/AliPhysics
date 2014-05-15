@@ -16,43 +16,43 @@
 
 class AliCDBRunRange: public TObject {
 
-public:
-	AliCDBRunRange();
-	AliCDBRunRange(Int_t firstRun, Int_t lastRun);
+  public:
+    AliCDBRunRange();
+    AliCDBRunRange(Int_t firstRun, Int_t lastRun);
 
-	virtual ~AliCDBRunRange();
-
-	
-	Int_t 	GetFirstRun() const {return fFirstRun;};
-	Int_t 	GetLastRun() const {return fLastRun;};
-
-	void 	SetFirstRun(Int_t firstRun) {fFirstRun = firstRun;};
-	void 	SetLastRun(Int_t lastRun) {fLastRun = lastRun;};
-
-	void 	SetRunRange(Int_t firstRun, Int_t lastRun) 
-	                {fFirstRun=firstRun; fLastRun = lastRun;};
+    virtual ~AliCDBRunRange();
 
 
-	Bool_t IsValid() const;
-	
-	Bool_t IsAnyRange() const {return fFirstRun < 0 && fLastRun < 0;};
+    Int_t 	GetFirstRun() const {return fFirstRun;};
+    Int_t 	GetLastRun() const {return fLastRun;};
 
-	Bool_t Overlaps(const AliCDBRunRange& other) const;
+    void 	SetFirstRun(Int_t firstRun) {fFirstRun = firstRun;};
+    void 	SetLastRun(Int_t lastRun) {fLastRun = lastRun;};
 
-	Bool_t Comprises(const AliCDBRunRange& other) const;
+    void 	SetRunRange(Int_t firstRun, Int_t lastRun) 
+    {fFirstRun=firstRun; fLastRun = lastRun;};
 
-	virtual Bool_t IsEqual(const TObject *obj) const;
 
-	static Int_t Infinity() {return fgkInfinity;}
-	
-private:
+    Bool_t IsValid() const;
 
-	Int_t fFirstRun;	// first valid run
-	Int_t fLastRun;		// last valid run	
+    Bool_t IsAnyRange() const {return fFirstRun < 0 && fLastRun < 0;};
 
-	static const Int_t fgkInfinity = 999999999; 	 //! Flag for "infinity"
+    Bool_t Overlaps(const AliCDBRunRange& other) const;
 
-	ClassDef(AliCDBRunRange, 1);	
+    Bool_t Comprises(const AliCDBRunRange& other) const;
+
+    virtual Bool_t IsEqual(const TObject *obj) const;
+
+    static Int_t Infinity() {return fgkInfinity;}
+
+  private:
+
+    Int_t fFirstRun;	// first valid run
+    Int_t fLastRun;		// last valid run	
+
+    static const Int_t fgkInfinity = 999999999; 	 //! Flag for "infinity"
+
+    ClassDef(AliCDBRunRange, 1);	
 };
 
 

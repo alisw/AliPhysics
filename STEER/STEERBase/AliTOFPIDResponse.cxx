@@ -182,13 +182,15 @@ Double_t AliTOFPIDResponse::GetExpectedSignal(const AliVTrack* track,AliPID::EPa
   // Return the expected signal of the PID signal for the particle type
   // If the operation is not possible, return a negative value.
   //
-  Double_t expt[5];
-  track->GetIntegratedTimes(expt);
+  Double_t expt[AliPID::kSPECIESC];
+  track->GetIntegratedTimes(expt,AliPID::kSPECIESC);
   if (type<=AliPID::kProton) return expt[type];
   else {
-    Double_t p = track->P();
-    Double_t massZ = AliPID::ParticleMassZ(type);
-    return expt[0]/p*massZ*TMath::Sqrt(1.+p*p/massZ/massZ);
+    if (expt[type]<1.E-1) {
+      Double_t p = track->P();
+      Double_t massZ = AliPID::ParticleMassZ(type);
+      return expt[0]/p*massZ*TMath::Sqrt(1.+p*p/massZ/massZ);
+    } else return expt[type];
   }
 }
 //_________________________________________________________________________

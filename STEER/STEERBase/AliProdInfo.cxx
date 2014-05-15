@@ -110,13 +110,25 @@ void AliProdInfo::ParseProdInfo(TNamed *prodInfoData) {
     if (stObj->GetString().Contains("aliroot") && (i==0) ) {  // aliroot version
       TObjArray *tali = (TObjArray *)stObj->GetString().Tokenize(":");
       TObjString *tos = (TObjString *)tali->At(0);
-      TObjArray *tali2 = (TObjArray *)tos->GetString().Tokenize(" ");
-      TObjString *av = (TObjString *)tali2->At(1);
-      fAlirootVersion=av->GetString().Data();
-      TObjString *ts = (TObjString*)tali->At(1); 
-      fAlirootSvnVersion = ts->GetString().Atoi();
+      fAlirootVersion="";
+      if (tos) {
+        TObjArray *tali2 = (TObjArray *)tos->GetString().Tokenize(" ");
+        TObjString *av = (TObjString *)tali2->At(1);
+        if (av) fAlirootVersion=av->GetString().Data();
+        else AliWarning("Cannot extract AliROOT version string. Might be git related.");
+        delete tali2;
+      }
+      
+      TObjString *ts = (TObjString*)tali->At(1);
+      if (ts){
+        if (ts->GetString().IsDigit()){
+          fAlirootSvnVersion = ts->GetString().Atoi();
+        } else {
+          AliWarning("Version number not numeric, might be on git. Using last svn rev number (65263) instead.");
+          fAlirootSvnVersion=65263;
+        }
+      }
       delete tali;
-      delete tali2;
     }
     else if (stObj->GetString().Contains("root") && (i==1) ) {  // root version
       TObjArray *tali = (TObjArray *)stObj->GetString().Tokenize(":");

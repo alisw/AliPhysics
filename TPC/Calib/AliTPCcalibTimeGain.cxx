@@ -189,6 +189,14 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain()
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -213,6 +221,14 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
    fHistDeDxTotal(0),
    fIntegrationTimeDeDx(0),
    fMIP(0),
+   fCutCrossRows(0),
+   fCutEtaWindow(0),
+   fCutRequireITSrefit(0),
+   fCutMaxDcaXY(0),
+   fCutMaxDcaZ(0),
+   fMinMomentumMIP(0),
+   fMaxMomentumMIP(0),
+   fAlephParameters(),
    fUseMax(0),
    fLowerTrunc(0),
    fUpperTrunc(0),
@@ -238,15 +254,32 @@ AliTPCcalibTimeGain::AliTPCcalibTimeGain(const Text_t *name, const Text_t *title
   
   // main histogram for time dependence: dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 - proton points at higher dE/dx), meanDriftlength, momenta (only filled if enough space is available), run number, eta
   Int_t timeBins = TMath::Nint(deltaTime/deltaIntegrationTimeGain);
-  Int_t binsGainTime[7]    = {150,  timeBins,    4,  25, 200, 10000000, 20};
-  Double_t xminGainTime[7] = {0.5, StartTime,  0.5,   0, 0.1,    -0.5,  -1};
-  Double_t xmaxGainTime[7] = {  8,   EndTime,  4.5, 250,  50, 9999999.5, 1};
+  Int_t binsGainTime[7]    = {150,  static_cast<Int_t>(timeBins),    4,  25, 200, 10000000, 20};
+  Double_t xminGainTime[7] = {0.5, static_cast<Double_t>(StartTime),  0.5,   0, 0.1,    -0.5,  -1};
+  Double_t xmaxGainTime[7] = {  8,   static_cast<Double_t>(EndTime),  4.5, 250,  50, 9999999.5, 1};
   fHistGainTime = new THnSparseF("HistGainTime","dEdx time dep.;dEdx,time,type,driftlength,momenta,run number, eta;dEdx",7,binsGainTime,xminGainTime,xmaxGainTime);
   BinLogX(fHistGainTime, 4);
   //
   fHistDeDxTotal = new TH2F("DeDx","dEdx; momentum p (GeV); TPC signal (a.u.)",250,0.01,100.,1000,0.,8);
   BinLogX(fHistDeDxTotal);
   
+  
+  // default track selection cuts
+  fCutCrossRows = 80;
+  fCutEtaWindow = 0.8;
+  fCutRequireITSrefit = kFALSE;
+  fCutMaxDcaXY = 3.5;
+  fCutMaxDcaZ  = 25.;
+
+  // default values for MIP window selection
+  fMinMomentumMIP = 0.4;
+  fMaxMomentumMIP = 0.6;
+  fAlephParameters[0] = 0.07657; // the following parameters work for most of the periods and are therefore default
+  fAlephParameters[1] = 10.6654; // but they can be overwritten in the train setup of cpass0
+  fAlephParameters[2] = 2.51466e-14;
+  fAlephParameters[3] = 2.05379;
+  fAlephParameters[4] = 1.84288;
+
   // default values for dE/dx
   fMIP = 50.;
   fUseMax = kTRUE;
@@ -354,7 +387,7 @@ void AliTPCcalibTimeGain::ProcessCosmicEvent(AliESDEvent *event) {
 	meanP = 30; // set all momenta to one in order to save memory
       }
       //dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-      Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
+      Double_t vec[6] = {tpcSignal,static_cast<Double_t>(time),1,meanDrift,meanP,static_cast<Double_t>(runNumber)};
       fHistGainTime->Fill(vec);
     }
     
@@ -395,19 +428,24 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     // calculate necessary track parameters
     Double_t meanP = trackIn->GetP();
     Double_t meanDrift = 250 - 0.5*TMath::Abs(trackIn->GetZ() + trackOut->GetZ());
-    Int_t nclsDeDx = track->GetTPCNcls();
+    Int_t nCrossedRows = track->GetTPCCrossedRows();
 
+    //
     // exclude tracks which do not look like primaries or are simply too short or on wrong sectors
-    if (nclsDeDx < 60) continue;     
-    //if (TMath::Abs(trackIn->GetTgl()) > 1) continue;
-    //if (TMath::Abs(trackIn->GetSnp()) > 0.6) continue;
-    if (TMath::Abs(trackIn->Eta()) > 1) continue;
+    // fCutCrossRows = 80, fCutEtaWindow = 0.8, fCutRequireITSrefit, fCutMaxDcaXY = 3.5, fCutMaxDcaZ = 25
+    //
+    if (nCrossedRows < fCutCrossRows) continue;     
+    if (TMath::Abs(trackIn->Eta()) > fCutEtaWindow) continue;
+    //
     UInt_t status = track->GetStatus();
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
-    //if (track->GetNcls(0) < 3) continue; // ITS clusters
+    if ((status&AliESDtrack::kITSrefit)==0 && fCutRequireITSrefit) continue; // ITS cluster
+    //
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
-    if (TMath::Abs(dca[0]) > 7 || TMath::Abs(dca[0]) < 0.0000001 || TMath::Abs(dca[1]) > 25 ) continue; // cut in xy
+    if (TMath::Abs(dca[0]) > fCutMaxDcaXY || TMath::Abs(dca[0]) < 0.0000001) continue;  // cut in xy
+    if (((status&AliESDtrack::kITSrefit) == 1 && TMath::Abs(dca[1]) > 3.) || TMath::Abs(dca[1]) > fCutMaxDcaZ ) continue;
+    //
     Double_t eta = trackIn->Eta();
     
     // Get seeds
@@ -419,17 +457,29 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
 
     if (seed) {
       Int_t particleCase = 0;
-      if (meanP < 0.5  && meanP > 0.4)  particleCase = 2; // MIP pions
+      if (meanP < fMaxMomentumMIP && meanP > fMinMomentumMIP)  particleCase = 2; // MIP pions
       if (meanP < 0.57 && meanP > 0.56) particleCase = 3; // protons 1
       if (meanP < 0.66 && meanP > 0.65) particleCase = 4; // protons 2
       //
       if (fLowMemoryConsumption && particleCase == 0) continue;
       //
       Double_t tpcSignal = GetTPCdEdx(seed);
+      //
+      // flattens signal in MIP window
+      //
+      if (particleCase == 2) {
+	Float_t corrFactor = AliExternalTrackParam::BetheBlochAleph(meanP/0.13957, 
+								    fAlephParameters[0], 
+								    fAlephParameters[1], 
+								    fAlephParameters[2], 
+								    fAlephParameters[3],
+								    fAlephParameters[4]);
+	tpcSignal /= corrFactor; 
+      }	
       fHistDeDxTotal->Fill(meanP, tpcSignal);
       //
       //dE/dx, time, type (1-muon cosmic,2-pion beam data, 3&4 protons), momenta, runNumner, eta
-      Double_t vec[7] = {tpcSignal,time,particleCase,meanDrift,meanP,runNumber, eta};
+      Double_t vec[7] = {tpcSignal,static_cast<Double_t>(time),static_cast<Double_t>(particleCase),meanDrift,meanP,static_cast<Double_t>(runNumber), eta};
       fHistGainTime->Fill(vec);
     }
     
@@ -471,12 +521,12 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
       }    
       if (seed) { 
 	if (fLowMemoryConsumption) {
-	  if (meanP > 0.5 || meanP < 0.4) continue;
+	  if (meanP > fMaxMomentumMIP || meanP < fMinMomentumMIP) continue;
 	  meanP = 0.45; // set all momenta to one in order to save memory
       }
 	Double_t tpcSignal = GetTPCdEdx(seed);
 	//dE/dx, time, type (1-muon cosmic,2-pion beam data), momenta
-	Double_t vec[6] = {tpcSignal,time,1,meanDrift,meanP,runNumber};
+	Double_t vec[6] = {tpcSignal,static_cast<Double_t>(time),1,meanDrift,meanP,static_cast<Double_t>(runNumber)};
 	fHistGainTime->Fill(vec);
       }
     }

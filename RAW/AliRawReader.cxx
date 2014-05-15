@@ -62,6 +62,7 @@ AliRawReader::AliRawReader() :
   fEquipmentIdsOut(NULL),
   fRequireHeader(kTRUE),
   fHeader(NULL),
+  fHeaderV3(NULL),
   fCount(0),
   fSelectEquipmentType(-1),
   fSelectMinEquipmentId(-1),
@@ -74,6 +75,7 @@ AliRawReader::AliRawReader() :
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
   fHeaderSwapped(NULL),
+  fHeaderSwappedV3(NULL),
   fIsValid(kTRUE),
   fIsTriggerClassLoaded(kFALSE)
 {
@@ -81,6 +83,7 @@ AliRawReader::AliRawReader() :
 // Allocate the swapped header in case of Mac
 #ifndef R__BYTESWAP
   fHeaderSwapped=new AliRawDataHeader();
+  fHeaderSwappedV3=new AliRawDataHeaderV3();
 #endif
 }
 
@@ -122,6 +125,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fEquipmentIdsOut(rawReader.fEquipmentIdsOut),
   fRequireHeader(rawReader.fRequireHeader),
   fHeader(rawReader.fHeader),
+  fHeaderV3(rawReader.fHeaderV3),
   fCount(rawReader.fCount),
   fSelectEquipmentType(rawReader.fSelectEquipmentType),
   fSelectMinEquipmentId(rawReader.fSelectMinEquipmentId),
@@ -134,6 +138,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
   fEventNumber(-1),
   fErrorLogs("AliRawDataErrorLog",100),
   fHeaderSwapped(NULL),
+  fHeaderSwappedV3(NULL),
   fIsValid(rawReader.fIsValid),
   fIsTriggerClassLoaded(rawReader.fIsTriggerClassLoaded)
 {
@@ -141,6 +146,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
 // Allocate the swapped header in case of Mac
 #ifndef R__BYTESWAP
   fHeaderSwapped=new AliRawDataHeader(*rawReader.fHeaderSwapped);
+  fHeaderSwappedV3=new AliRawDataHeader(*rawReader.fHeaderSwappedV3);
 #endif
 }
 
@@ -152,6 +158,7 @@ AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
   fEquipmentIdsOut = rawReader.fEquipmentIdsOut;
 
   fHeader = rawReader.fHeader;
+  fHeaderV3 = rawReader.fHeaderV3;
   fCount = rawReader.fCount;
 
   fSelectEquipmentType = rawReader.fSelectEquipmentType;
@@ -182,6 +189,7 @@ AliRawReader::~AliRawReader()
   if (fEquipmentIdsOut) delete fEquipmentIdsOut;
   fErrorLogs.Delete();
   if (fHeaderSwapped) delete fHeaderSwapped;
+  if (fHeaderSwappedV3) delete fHeaderSwappedV3;
 }
 
 AliRawReader* AliRawReader::Create(const char *uri)

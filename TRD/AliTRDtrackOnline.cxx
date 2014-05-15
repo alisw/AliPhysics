@@ -46,6 +46,8 @@ Bool_t AliTRDtrackOnline::Fit(ROOT::Math::Minimizer *minim)
   Bool_t minSuccess = kFALSE;
 
   if (minim) {
+    minSuccess = kTRUE;
+
     TIter param(&fTrackParametrizations);
 
     while (AliTRDtrackParametrization *par = (AliTRDtrackParametrization*) param()) {
@@ -54,7 +56,7 @@ Bool_t AliTRDtrackOnline::Fit(ROOT::Math::Minimizer *minim)
       minim->Clear();
       minim->SetFunction(res);
       par->SetParams(minim);
-      minSuccess = minim->Minimize();
+      minSuccess &= minim->Minimize();
       par->GetParams(minim);
     }
   }
@@ -300,9 +302,11 @@ AliTRDtrackResiduals::AliTRDtrackResiduals(const AliTRDtrackResiduals &rhs) :
 
 AliTRDtrackResiduals& AliTRDtrackResiduals::operator=(const AliTRDtrackResiduals &rhs)
 {
-  ROOT::Math::IBaseFunctionMultiDim::operator=(rhs);
-  fTrack = rhs.fTrack;
-  fParam = rhs.fParam;
+  if (&rhs != this) {
+    ROOT::Math::IBaseFunctionMultiDim::operator=(rhs);
+    fTrack = rhs.fTrack;
+    fParam = rhs.fParam;
+  }
 
   return *this;
 }
@@ -336,8 +340,7 @@ Double_t AliTRDtrackResiduals::DoEval(const Double_t *par) const
 
     AliTRDpadPlane *pp = fgGeometry->GetPadPlane(trkl->GetDetector());
     Float_t zlen = 0.5 * pp->GetRowSize(trkl->GetBinZ());
-    Float_t zpad = pp->GetRowPos(trkl->GetBinZ()) - zlen;
-    zpad = AliTRDtrackOnline::GetZ(trkl);
+    Float_t zpad = AliTRDtrackOnline::GetZ(trkl);
     Float_t zrel = zext - zpad;
     if (zrel > zlen)
       zrel = zlen;
@@ -346,11 +349,11 @@ Double_t AliTRDtrackResiduals::DoEval(const Double_t *par) const
 
     Float_t ycorr = trkl->GetLocalY() + TMath::Tan(TMath::Pi()/180.*pp->GetTiltingAngle()) * zrel;
 
-    deltaY = ycorr        - yext;
-    deltaZ = AliTRDtrackOnline::GetZ(trkl) - zext;
-    deltaY /= 0.3;
-    deltaZ /= 3.;
-//     printf("in layer %i: deltaY = %f, deltaZ = %f\n", layer, deltaY, deltaZ);
+    deltaY = ycorr - yext;
+    deltaZ = zpad  - zext;
+    deltaY /= 0.05;
+    deltaZ /= pp->GetRowSize(trkl->GetBinZ()) / TMath::Sqrt(12.);
+    // printf("for tracklet %i: deltaY = %f, deltaZ = %f\n", iTracklet, deltaY, deltaZ);
 
     chi2 += deltaY*deltaY + deltaZ*deltaZ;
   }

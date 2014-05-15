@@ -143,6 +143,9 @@ class AliESDCaloCluster : public AliVCluster
 
   Double_t    GetMCEnergyFraction() const           { return fMCEnergyFraction ; }
   void        SetMCEnergyFraction(Double_t e)       { fMCEnergyFraction = e    ; }
+
+  virtual Double_t    GetCoreEnergy() const           {return fCoreEnergy ; }
+  virtual void        SetCoreEnergy(Double_t e)         { fCoreEnergy=e; }
   
  protected:
   
@@ -172,8 +175,9 @@ class AliESDCaloCluster : public AliVCluster
   Double_t     fTOF;               //[0,0,12] time-of-flight
   
   Double_t     fMCEnergyFraction;          //!MC energy (embedding)
+  Double32_t   fCoreEnergy;          // energy of the core of cluster
   
-  ClassDef(AliESDCaloCluster,11)  //ESDCaloCluster 
+  ClassDef(AliESDCaloCluster,12)  //ESDCaloCluster 
 
     };
 

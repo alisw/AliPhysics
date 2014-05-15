@@ -5,6 +5,8 @@
 #include <TObject.h>
 #include <TClonesArray.h>
 #include <TExMap.h>
+#include <TVectorFfwd.h>
+#include <THn.h>
 
 class TTree;
 
@@ -39,6 +41,19 @@ public:
     kTPC,
     kTRD
   };
+
+  enum ERecoFill {
+    kFillSeed = 0x01,
+    kFillOrig = 0x02,
+    kFillTrack= 0x04,
+    
+    kFillITS  = 0x08,
+    kFillITS1 = 0x10,
+    kFillITS2 = 0x20,
+
+    kFillDeltas = 0x40,
+    kFillNoTrackInfo= 0x80
+  };
   
   void RunReco(const char* file, Int_t nmaxEv=-1);
   void RunRecoAllClusters(const char* file, Int_t nmaxEv=-1);
@@ -67,13 +82,28 @@ public:
 
   void   SetIdealTracking(Bool_t tr)    { fIdealTracking = tr;    }
   Bool_t GetIdealTracking()  const      { return fIdealTracking;  }
+
+  void   SetFillClusterRes(Bool_t res)  { fFillClusterRes=res;    }
+  Bool_t GetFillClusterRes()  const     { return fFillClusterRes; }
+
+  void   SetUseT0list(Bool_t use)       { fUseT0list=use;    }
+  Bool_t GetUseT0list()  const          { return fUseT0list; }
+  
+  void   SetUseZ0list(Bool_t use)       { fUseZ0list=use;    }
+  Bool_t GetUseZ0list()  const          { return fUseZ0list; }
+  
+  void   SetForceAlpha(Bool_t use)       { fForceAlpha=use;    }
+  Bool_t GetForceAlpha()  const          { return fForceAlpha; }
+
+  void SetRecoInfo(Long64_t val) { fRecoInfo = val; }
+  Long64_t GetRecoInfo() const { return fRecoInfo; }
   
   void   SetTree(TTree *tree) { fTree=tree; }
   TTree* GetTree() const { return fTree; }
 
   AliExternalTrackParam* GetSeedFromTrack(const AliToyMCTrack * const tr, Bool_t forceSeed=kFALSE);
   AliExternalTrackParam* GetSeedFromTrackIdeal(const AliToyMCTrack * const tr, EDet det );
-  AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed);
+  AliExternalTrackParam* GetFittedTrackFromSeed(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, TClonesArray *arrClustRes=0x0);
   AliExternalTrackParam* GetFittedTrackFromSeedAllClusters(const AliToyMCTrack *tr, const AliExternalTrackParam *seed, Int_t &nClus);
   AliExternalTrackParam* GetTrackRefit(const AliToyMCTrack * const tr, EDet det);
 
@@ -140,6 +170,8 @@ public:
 
   void MarkClustersUsed(AliTPCseed *seed);
   void ResetClustersZtoTime(AliTPCseed *seed);
+
+  Float_t FindClosestT0(const TVectorF &t0list, const TVectorF &z0list, AliExternalTrackParam &t0seed);
   
   // reco settings
   Int_t  fSeedingRow;            // first row used for seeding
@@ -156,6 +188,11 @@ public:
   Double_t fTime0;               // current time0 used for reconstruction
   Bool_t   fCreateT0seed;        // if current seed is the T0 seed
   Bool_t   fLongT0seed;          // if we should use a t0 seed including all clusters in the seed range
+  Bool_t   fFillClusterRes;      // fill cluster residuals?
+  Bool_t   fUseT0list;           // if the list of T0 information should be used to guess the T0
+  Bool_t   fUseZ0list;           // if the list of Z vertex information should be used to guess the T0
+  Bool_t   fForceAlpha;          // force the correct alpha for the t0 seed extrapolation
+  Long64_t fRecoInfo;            // what information to fill in the output trees
   
   TTreeSRedirector *fStreamer;   // debug streamer
   TFile *fInputFile;             // input file
@@ -174,6 +211,8 @@ public:
 
   TExMap fMapTrackEvent;          // map global track number -> event number
   TExMap fMapTrackTrackInEvent;   // map global track number -> track in event
+
+  THn    *fHnDelta;               // histogram with residuals
 
   Bool_t fIsAC;                     // if we are tracking with sector arrays running from 0-36 rather than 0-18
    

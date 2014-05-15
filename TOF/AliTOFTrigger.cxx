@@ -1093,7 +1093,7 @@ Bool_t AliTOFTrigger::GetBit(Int_t nDDL, Int_t nTRM, Int_t iChain,
   if (nDDL>=36)
     iLTMindex++;
   iChannelindex=iCH+iTDC*AliTOFGeometry::NCh()-12*AliTOFGeometry::NCh();
-  Int_t index[2]={iLTMindex,iChannelindex};
+  Int_t index[2]={static_cast<Int_t>(iLTMindex),static_cast<Int_t>(iChannelindex)};
   return (index[0]<36)?fCTTMmatrixFront[index[0]][index[1]]:fCTTMmatrixBack[index[0]-36][index[1]];
 
 }

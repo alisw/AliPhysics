@@ -21,7 +21,8 @@
 #include "AliTracker.h"
 
 #include "TObject.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
+#include "AliESDTOFHit.h"
 
 class TClonesArray;
 class TObjArray;
@@ -107,8 +108,11 @@ class AliTOFtracker : public AliTracker {
  void InitCheckHists();
  void SaveCheckHists();
  void FillClusterArray(TObjArray* arr) const;
+ 
+ protected:
+ AliESDTOFCluster* GetESDTOFCluster(int clID);
 
-private:
+ private:
 
  enum {kMaxCluster=77777}; //maximal number of the TOF clusters
 
@@ -131,6 +135,8 @@ private:
  Int_t fnbadmatch;      // Wrongly matched tracks
  Int_t fnunmatch;       // Unmatched tracks
  Int_t fnmatch;         // Total matched tracks
+
+ AliESDEvent*  fESDEv;  //! pointer on the esd event
  
  TClonesArray* fTracks; //! pointer to the TClonesArray with TOF tracks
  TObjArray* fSeeds;  //! pointer to the TObjArray with ESD tracks
@@ -159,9 +165,10 @@ private:
  Float_t fExpTimePr; // exp time, Protons
 
  Int_t fNTOFmatched;                   // number of matched TOF cluster
- AliESDTOFcluster *fClusterESD[20000]; // pointers to the TOF clusters for ESD
+ // AliESDTOFCluster *fClusterESD[20000]; // pointers to the TOF clusters for ESD
+ // AliESDTOFHit *fHit[20000];            // pointers to the TOF hits for ESD
 
- ClassDef(AliTOFtracker, 7) // TOF tracker 
+ ClassDef(AliTOFtracker, 9) // TOF tracker 
 };
 
 #endif

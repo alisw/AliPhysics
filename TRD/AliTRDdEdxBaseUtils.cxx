@@ -88,7 +88,7 @@ void AliTRDdEdxBaseUtils::BinLogX(TAxis *axis)
   delete [] new_bins;
 }
 
-void AliTRDdEdxBaseUtils::GetCDFCuts(const TH1D *hh, const Int_t ncut, Double_t cuts[], const Double_t cdfs[], const Double_t thres)
+void AliTRDdEdxBaseUtils::GetCDFCuts(const TH1D *hh, Int_t ncut, Double_t cuts[], const Double_t cdfs[], Double_t thres)
 {
   //
   //counts of hh is sorted
@@ -125,7 +125,7 @@ void AliTRDdEdxBaseUtils::GetCDFCuts(const TH1D *hh, const Int_t ncut, Double_t 
   }
 }
 
-Double_t AliTRDdEdxBaseUtils::GetMeanRMS(const Double_t nn, const Double_t sum, const Double_t w2s, Double_t * grms, Double_t * gerr)
+Double_t AliTRDdEdxBaseUtils::GetMeanRMS(Double_t nn, Double_t sum, Double_t w2s, Double_t * grms, Double_t * gerr)
 {
   //
   //calculate mean (with error) and rms from sum, w2s, nn
@@ -163,7 +163,7 @@ Double_t AliTRDdEdxBaseUtils::GetMeanRMS(const Double_t nn, const Double_t sum, 
   return tmean;
 }
 
-Double_t AliTRDdEdxBaseUtils::TruncatedMean(const Int_t nx, const Double_t xdata[], const Double_t lowfrac, const Double_t highfrac, Double_t * grms, Double_t * gerr, Double_t *wws)
+Double_t AliTRDdEdxBaseUtils::TruncatedMean(Int_t nx, const Double_t xdata[], Double_t lowfrac, Double_t highfrac, Double_t * grms, Double_t * gerr, Double_t *wws)
 {
   //
   //calculate truncated mean
@@ -206,7 +206,7 @@ Double_t AliTRDdEdxBaseUtils::TruncatedMean(const Int_t nx, const Double_t xdata
   return GetMeanRMS(nused, sum, w2s, grms, gerr);
 }
 
-Double_t AliTRDdEdxBaseUtils::TruncatedMean(const TH1 *hh, const Double_t lowfrac, const Double_t highfrac, Double_t * grms, Double_t * gerr)
+Double_t AliTRDdEdxBaseUtils::TruncatedMean(const TH1 *hh, Double_t lowfrac, Double_t highfrac, Double_t * grms, Double_t * gerr)
 {
   //
   //do truncation on histogram
@@ -270,7 +270,7 @@ Double_t AliTRDdEdxBaseUtils::TruncatedMean(const TH1 *hh, const Double_t lowfra
   return GetMeanRMS(nused, sum, w2s, grms, gerr);
 }
 
-void AliTRDdEdxBaseUtils::FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, TH1D *&hwid, TH1D *&hres, const Double_t thres, const Double_t lowfrac, const Double_t highfrac)
+void AliTRDdEdxBaseUtils::FitSlicesY(const TH2D *hh, TH1D *&hnor, TH1D *&hmpv, TH1D *&hwid, TH1D *&hres, Double_t thres, Double_t lowfrac, Double_t highfrac)
 {
   //
   //fit slices of hh using truncation
@@ -535,7 +535,7 @@ void AliTRDdEdxBaseUtils::GetFirstSectorStackMomentum(const AliTRDtrackV1 *trdtr
 //===================================================================================
 //                                Detector and Data Constant 
 //===================================================================================
-Int_t  AliTRDdEdxBaseUtils::ToDetector(const Int_t gtb)
+Int_t  AliTRDdEdxBaseUtils::ToDetector(Int_t gtb)
 {
   //
   //gtb = det*Ntb+itb
@@ -543,7 +543,7 @@ Int_t  AliTRDdEdxBaseUtils::ToDetector(const Int_t gtb)
   return gtb/AliTRDseedV1::kNtb;
 }
 
-Int_t  AliTRDdEdxBaseUtils::ToTimeBin(const Int_t gtb)
+Int_t  AliTRDdEdxBaseUtils::ToTimeBin(Int_t gtb)
 { 
   //
   //gtb = det*Ntb+itb
@@ -551,7 +551,7 @@ Int_t  AliTRDdEdxBaseUtils::ToTimeBin(const Int_t gtb)
   return gtb%AliTRDseedV1::kNtb;
 }
 
-Int_t  AliTRDdEdxBaseUtils::ToSector(const Int_t gtb)
+Int_t  AliTRDdEdxBaseUtils::ToSector(Int_t gtb)
 {
   //
   //return sector
@@ -559,7 +559,7 @@ Int_t  AliTRDdEdxBaseUtils::ToSector(const Int_t gtb)
   return AliTRDgeometry::GetSector(ToDetector(gtb));
 }
 
-Int_t  AliTRDdEdxBaseUtils::ToStack(const Int_t gtb)
+Int_t  AliTRDdEdxBaseUtils::ToStack(Int_t gtb)
 {
   //
   //return stack
@@ -567,7 +567,7 @@ Int_t  AliTRDdEdxBaseUtils::ToStack(const Int_t gtb)
   return AliTRDgeometry::GetStack(ToDetector(gtb));
 }
 
-Int_t  AliTRDdEdxBaseUtils::ToLayer(const Int_t gtb)
+Int_t  AliTRDdEdxBaseUtils::ToLayer(Int_t gtb)
 {
   //
   //return layer
@@ -575,7 +575,7 @@ Int_t  AliTRDdEdxBaseUtils::ToLayer(const Int_t gtb)
   return AliTRDgeometry::GetLayer(ToDetector(gtb));
 }
 
-void AliTRDdEdxBaseUtils::CheckRunB(const TString listrun1kg, const Int_t run, TString & type)
+void AliTRDdEdxBaseUtils::CheckRunB(TString listrun1kg, Int_t run, TString & type)
 {
   //
   //check run b field
@@ -588,7 +588,7 @@ void AliTRDdEdxBaseUtils::CheckRunB(const TString listrun1kg, const Int_t run, T
   }
 }
 
-TString AliTRDdEdxBaseUtils::GetRunType(const Int_t run)
+TString AliTRDdEdxBaseUtils::GetRunType(Int_t run)
 {
   //
   //return run type
@@ -666,7 +666,7 @@ void AliTRDdEdxBaseUtils::FastFitdEdxTR(TH1 * hh)
   delete ff;
 }
 
-Double_t AliTRDdEdxBaseUtils::Q0MeanTRDpp(const Double_t bg)
+Double_t AliTRDdEdxBaseUtils::Q0MeanTRDpp(Double_t bg)
 {
   //
   //truncated Mean Q_{xx} in TRD
@@ -689,7 +689,7 @@ par[7]=3.416031e+00;
   return   scale*MeandEdxTR(&bg, par);
 }
 
-Double_t AliTRDdEdxBaseUtils::Q0MeanTRDPbPb(const Double_t bg)
+Double_t AliTRDdEdxBaseUtils::Q0MeanTRDPbPb(Double_t bg)
 {
   //
   //truncated Mean Q_{xx} in TRD
@@ -712,7 +712,7 @@ par[7]=   1.611366e+00;
   return   0.460994*MeandEdxTR(&bg, par);
 }
 
-Double_t AliTRDdEdxBaseUtils::Q1MeanTRDpp(const Double_t bg)
+Double_t AliTRDdEdxBaseUtils::Q1MeanTRDpp(Double_t bg)
 {
   //
   //truncated Mean 1/(1/Q)_{xx} in TRD
@@ -736,7 +736,7 @@ Double_t AliTRDdEdxBaseUtils::Q1MeanTRDpp(const Double_t bg)
   return  0.418629*MeandEdxTR(&bg, par);
 }
 
-Double_t AliTRDdEdxBaseUtils::Q1MeanTRDPbPb(const Double_t bg)
+Double_t AliTRDdEdxBaseUtils::Q1MeanTRDPbPb(Double_t bg)
 {
   //
   //truncated Mean 1/(1/Q)_{xx} in TRD
@@ -760,7 +760,7 @@ Double_t AliTRDdEdxBaseUtils::Q1MeanTRDPbPb(const Double_t bg)
   return  0.457988*MeandEdxTR(&bg, par);
 }
 
-Double_t AliTRDdEdxBaseUtils::QMeanTPC(const Double_t bg)
+Double_t AliTRDdEdxBaseUtils::QMeanTPC(Double_t bg)
 {
   //
   //bethe bloch in TPC

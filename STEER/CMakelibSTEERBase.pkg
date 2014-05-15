@@ -63,6 +63,7 @@ set ( SRCS
     STEERBase/AliTRDPIDReference.cxx 
     STEERBase/AliTRDPIDParams.cxx 
     STEERBase/AliTRDPIDResponseObject.cxx
+    STEERBase/AliTRDNDFast.cxx
     STEERBase/AliTRDTKDInterpolator.cxx
     STEERBase/AliPIDResponse.cxx 
     STEERBase/AliITSPIDResponse.cxx 
@@ -92,6 +93,8 @@ set ( SRCS
     STEERBase/AliVTrdTracklet.cxx
     STEERBase/AliGenEventHeaderTunedPbPb.cxx
     STEERBase/AliDummyHandler.cxx
+    STEERBase/AliVTOFHit.cxx
+    STEERBase/AliVTOFMatch.cxx
     STEERBase/AliVTOFcluster.cxx
   )
 

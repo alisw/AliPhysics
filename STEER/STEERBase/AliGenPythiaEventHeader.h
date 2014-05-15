@@ -38,7 +38,8 @@ class AliGenPythiaEventHeader : public AliGenEventHeader
     void     GetZQuench(Double_t z[4]) const;
     void     SetPtHard(Float_t pthard) {fPtHard = pthard;}
     Float_t  GetPtHard() const {return fPtHard;}    
-	
+    void     SetXsection(Float_t xsec) {fXsection = xsec;}
+    Float_t  GetXsection() const {return fXsection;}
 	    
 protected:
     Int_t    fProcessType;               // PYTHIA process id for this event 
@@ -53,7 +54,9 @@ protected:
     Float_t  fUQJets[4][10];             // Unquenched trigger jets
     Double_t fZquench[4];                // Quenching fraction
     Float_t  fPtHard;                    // pT hard
-    ClassDef(AliGenPythiaEventHeader,6)  // Event header for Pythia event
+    Float_t  fXsection;                  //Cross-section
+
+    ClassDef(AliGenPythiaEventHeader,7)  // Event header for Pythia event
 };
 	
 	

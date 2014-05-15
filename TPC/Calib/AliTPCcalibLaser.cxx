@@ -825,7 +825,7 @@ void AliTPCcalibLaser::FitDriftV(){
       }else{
 	fdriftC.AddPoint(xxx,mdrift,1);
       }
-      Double_t xxx2[3] = {ltrp->GetSide(), ldrift,lxyz[1]*ldrift/(zlength*250.)};
+      Double_t xxx2[3] = { static_cast<Double_t>(ltrp->GetSide()), ldrift,lxyz[1]*ldrift/(zlength*250.)};
       fdriftAC.AddPoint(xxx2,mdrift,1);
     }
     //
@@ -1134,7 +1134,7 @@ Bool_t  AliTPCcalibLaser::FitDriftV(Float_t minFraction){
       }else{
 	fdriftC.AddPoint(xxx,mdrift,1);
       }
-      Double_t xxx2[3] = {ltrp->GetSide(), ldrift,lxyz[1]*ldrift/(zlength*250.)};
+      Double_t xxx2[3] = { static_cast<Double_t>(ltrp->GetSide()), ldrift,lxyz[1]*ldrift/(zlength*250.)};
       fdriftAC.AddPoint(xxx2,mdrift,1);
     }
     //
@@ -2279,7 +2279,7 @@ void AliTPCcalibLaser::RefitLaserJW(Int_t id){
     Double_t deltaY=c->GetY()-(*ltrp->GetVecLY())[irow];
     Double_t deltaZ=c->GetZ()-(*ltrp->GetVecLZ())[irow];
     //TString axisName[6]={"Delta","bin", "rms shape", "Q", "row","trackID"}
-    Double_t xyz[6]={0, 0, 0,TMath::Sqrt(c->GetMax()),irow,id};
+    Double_t xyz[6]={0, 0, 0,TMath::Sqrt(c->GetMax()), static_cast<Double_t>(irow), static_cast<Double_t>(id)};
     xyz[0]=deltaY;
     xyz[1]=c->GetPad();
     xyz[2]=TMath::Sqrt(TMath::Abs(c->GetSigmaY2()));

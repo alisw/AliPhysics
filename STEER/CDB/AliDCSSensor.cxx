@@ -25,6 +25,7 @@
 
 #include "AliDCSSensor.h"
 #include "TDatime.h"
+#include "TCanvas.h"
 ClassImp(AliDCSSensor)
 
 const Double_t kSecInHour = 3600.; // seconds in one hour
@@ -78,10 +79,44 @@ AliDCSSensor& AliDCSSensor::operator=(const AliDCSSensor& source){
   return *this;
 }
 
+
+void AliDCSSensor::Print(const Option_t* option) const{
+  //
+  // print function
+  //  
+  TString opt = option; opt.ToLower();
+  printf("%s:%s\n",GetTitle(), GetName());
+  printf("%s\n",fStringID.Data());
+
+}
+
+void AliDCSSensor::Draw(Option_t* option) {
+  //
+  // draw function - to viusalize sensor
+  // Unfortuantelly - it  make a memory leak as function Draw does not return the object pointer
+  //
+  TCanvas * canvas = new TCanvas((fStringID+option).Data(), (fStringID+option).Data()); 
+  if (fGraph){
+    // transform points to time in s
+    Int_t npoints = fGraph->GetN();
+    for (Int_t i=0; i<npoints; i++){
+      fGraph->GetX()[i]=fGraph->GetX()[i]*3600+fStartTime;
+    }
+    fGraph->Draw("alp");
+    return;
+  }
+  canvas->cd();
+  TGraph * graph = MakeGraph(100);  // memory leak - we can not modify the content - const method
+  graph->Draw(option);              // 
+  //
+}
+
+
+
 //_____________________________________________________________________________
 Double_t AliDCSSensor::GetValue(UInt_t timeSec)
 {
- //
+ // 
  // Get DCS value for actual sensor
  //  timeSec given as offset from start-of-map measured in seconds
  //  *NOTE* In the current TPC setup, start-of-map is defined as the 

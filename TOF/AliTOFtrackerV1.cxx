@@ -171,8 +171,10 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
   fNseeds = ntrk;
 
   //Load ESD tracks into a local Array of ESD Seeds
-  for (Int_t i=0; i<fNseeds; i++)
+  for (Int_t i=0; i<fNseeds; i++){
     fSeeds->AddLast(event->GetTrack(i));
+    event->GetTrack(i)->SetESDEvent(event);
+  }
 
   //Prepare ESD tracks candidates for TOF Matching
   CollectESD();
@@ -243,7 +245,7 @@ Int_t AliTOFtrackerV1::PropagateBack(AliESDEvent * const event) {
 	  Double_t time[AliPID::kSPECIESC]; t->GetIntegratedTimes(time);
 	*/
 
-	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time);
+	Double_t time[AliPID::kSPECIESC]; seed->GetIntegratedTimes(time,AliPID::kSPECIESC);
 	t->SetIntegratedTimes(time);
 
 	Double_t length =  seed->GetIntegratedLength();
@@ -534,7 +536,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     }
 
     fnmatch++;
-    AliDebug(1,Form(" Matched TOF cluster %d for the track number %d: %d",idclus,iseed));
+    AliDebug(1,Form(" Matched TOF cluster %d for the track number %d",idclus,iseed));
 
     AliDebug(3, Form("%7i     %7i     %10i     %10i  %10i  %10i      %7i",
 		     iseed,
@@ -613,7 +615,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     distR+=deltaY*deltaY;
     distR+=dzTW*dzTW;
     distR = TMath::Sqrt(distR);
-    Float_t info[10] = {distR, deltaY, dzTW,
+    Float_t info[10] = {distR, deltaY, static_cast<Float_t>(dzTW),
 			0.,0.,0.,0.,0.,0.,0.};
     t->SetTOFInfo(info);
 

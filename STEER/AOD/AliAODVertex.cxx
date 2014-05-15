@@ -205,6 +205,14 @@ AliAODVertex* AliAODVertex::CloneWithoutRefs() const
                                      fType,
                                      0);
   
+  v->SetName(GetName());
+  // NOTE title is not allowed to be set, as GetNContributors 
+  // relies on the title to use the references which are not copied here
+  
+  // to insure the main vertex retains the ncontributors information
+  // (which is otherwise computed dynamically from
+  // references to tracks, which is not kept in the returned object)
+  // we set it here
   v->SetNContributors(fNContributors);  
   
   return v;

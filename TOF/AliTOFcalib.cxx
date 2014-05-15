@@ -2386,7 +2386,7 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
   /* loop over tracks */
   AliESDtrack *track = NULL;
   Int_t index, l0l1, deltaBC;
-  Double_t time, tot, corr, texp[AliPID::kSPECIES];
+  Double_t time, tot, corr, texp[AliPID::kSPECIESC];
   UInt_t timestamp = event->GetTimeStamp();
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
 
@@ -2413,7 +2413,7 @@ AliTOFcalib::CalibrateESD(AliESDEvent *event)
     /* correct expected time */
     if (fCorrectTExp) {
       /* get integrated times */
-      track->GetIntegratedTimes(texp);
+      track->GetIntegratedTimes(texp,AliPID::kSPECIESC);
       /* loop over particle types and correct expected time */
       for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
 	texp[ipart] += fResponseParams->EvalTExpCorr(ipart, track->P());
@@ -2507,7 +2507,7 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
 
   /* loop over tracks */
   AliESDtrack *track = NULL;
-  Double_t texp[AliPID::kSPECIES];
+  Double_t texp[AliPID::kSPECIESC];
   for (Int_t itrk = 0; itrk < event->GetNumberOfTracks(); itrk++) {
 
     /* get track */
@@ -2515,7 +2515,7 @@ AliTOFcalib::CalibrateTExp(AliESDEvent *event) const
     if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) continue;
 
     /* get integrated times */
-    track->GetIntegratedTimes(texp);
+    track->GetIntegratedTimes(texp,AliPID::kSPECIESC);
     /* loop over particle types and correct expected time */
     for (Int_t ipart = 0; ipart < AliPID::kSPECIES; ipart++)
       texp[ipart] += fResponseParams->EvalTExpCorr(ipart, track->P());

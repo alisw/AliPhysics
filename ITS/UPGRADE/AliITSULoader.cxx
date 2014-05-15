@@ -250,23 +250,23 @@ void AliITSULoader::SetupDigits(TObjArray *digPerDet,Int_t n,
     } // end for i
 }
 //---------------------------------------------------------------------
-AliITSdigit * AliITSULoader::GetDigit(TObjArray *digPerDet,Int_t module,
+AliITSdigit * AliITSULoader::GetDigit(TObjArray *digPerDet,Int_t chip,
 					Int_t digit){
-    // Gets the digit for for a specific detector type and module.
+    // Gets the digit for for a specific detector type and chip.
     // To be used in conjustion with Setupdigits(AliITS *its).
     // Inputs:
     //   TObjArray *digPereDet    Pointer to the Array of digits
-    //   Int_t      module        Module number
+    //   Int_t      chip        Chip number
     //   Int_t      digit         Digit number
     // Outputs:
     //   none.
     // Return:
     //   returns the pointer to the digit. if zero then last digit for that
-    //   module.
+    //   chip.
 
     if(digPerDet==0){
-        Error("GetDigit","digPerDet=%p, module=%d, digit=%d",
-              digPerDet,module,digit);
+        Error("GetDigit","digPerDet=%p, chip=%d, digit=%d",
+              digPerDet,chip,digit);
         return 0;
     } // end if
     return 0;

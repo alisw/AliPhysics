@@ -40,6 +40,7 @@ ClassImp(AliTriggerClass)
 AliTriggerClass::AliTriggerClass():
   TNamed(),
   fClassMask(0),
+  fClassMaskNext50(0),
   fIndex(0),
   fDescriptor(NULL),
   fCluster(NULL),
@@ -60,7 +61,8 @@ AliTriggerClass::AliTriggerClass( TString & name, UChar_t index,
 				  AliTriggerPFProtection *pfp, AliTriggerBCMask *mask,
 				  UInt_t prescaler, Bool_t allrare) :
   TNamed( name, name ),
-  fClassMask( 1ull << ULong64_t(index-1)),
+  fClassMask((index<51) ? (1ull << ULong64_t(index-1)): 0),
+  fClassMaskNext50((index<51) ? 0 :(1ull << ULong64_t(index-51))),
   fIndex(index),
   fDescriptor( desc ),
   fCluster( clus ),
@@ -84,7 +86,8 @@ AliTriggerClass::AliTriggerClass( AliTriggerConfiguration *config,
 				  TString &pfp, TString &mask,
 				  UInt_t prescaler, Bool_t allrare) :
   TNamed( name, name ),
-  fClassMask( 1ull << ULong64_t(index-1)),
+  fClassMask((index<51) ? (1ull << ULong64_t(index-1)): 0),
+  fClassMaskNext50((index<51) ? 0 :(1ull << ULong64_t(index-51))),
   fIndex(index),
   fDescriptor( NULL ),
   fCluster( NULL ),
@@ -115,7 +118,8 @@ AliTriggerClass::AliTriggerClass( AliTriggerConfiguration *config,
 				  UInt_t prescaler, Bool_t allrare,
 				  UInt_t timegroup,UInt_t timewindow) :
   TNamed( name, name ),
-  fClassMask( 1ull << ULong64_t(index-1)),
+  fClassMask((index<51) ? (1ull << ULong64_t(index-1)): 0),
+  fClassMaskNext50((index<51) ? 0 :(1ull << ULong64_t(index-51))),
   fIndex(index),
   fDescriptor( NULL ),
   fCluster( NULL ),
@@ -143,6 +147,7 @@ AliTriggerClass::~AliTriggerClass()
 AliTriggerClass::AliTriggerClass( const AliTriggerClass& trclass ):
   TNamed( trclass ),
   fClassMask(trclass.fClassMask),
+  fClassMaskNext50(trclass.fClassMaskNext50),
   fIndex(trclass.fIndex),
   fDescriptor(trclass.fDescriptor),
   fCluster(trclass.fCluster),
@@ -164,6 +169,7 @@ AliTriggerClass& AliTriggerClass::operator=(const AliTriggerClass& trclass)
    if (this != &trclass) {
       TNamed::operator=(trclass);
       fClassMask = trclass.fClassMask;
+      fClassMaskNext50 = trclass.fClassMaskNext50;
       fIndex=trclass.fIndex;
       fDescriptor = trclass.fDescriptor;
       fCluster = trclass.fCluster;
@@ -216,12 +222,12 @@ Bool_t AliTriggerClass::CheckClass(AliTriggerConfiguration* config) const
   // Return false in case of wrong class
   // definition.
 
-  if (!fClassMask) {
+  if (!fClassMask && !fClassMaskNext50) {
     AliError(Form("The class (%s) has invalid mask pattern !",GetName()));
     return kFALSE;
   }
 
-  // check comsistency of index and mask
+  // check consistency of index and mask
 
   if (!config->GetDescriptors().FindObject(fDescriptor)) {
     AliError(Form("The class (%s) contains invalid descriptor !",GetName()));
@@ -278,7 +284,7 @@ void AliTriggerClass::Print( const Option_t* ) const
    // Print
   cout << "Trigger Class:" << endl;
   cout << "  Name:         " << GetName() << endl;
-  cout << "  ClassBit:     0x" << hex << fClassMask << dec << endl;
+  cout << "  ClassBit:    1..50 0x" << hex << fClassMask << " 51..10 0x" << fClassMaskNext50 << dec << endl;
   cout << "  Index:        " <<  (UInt_t)fIndex <<  endl;
   cout << "  Descriptor:   " << fDescriptor->GetName() << endl;
   cout << "  Cluster:      " << fCluster->GetName() << endl;

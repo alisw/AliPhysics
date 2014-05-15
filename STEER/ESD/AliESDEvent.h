@@ -43,11 +43,11 @@
 
 #include "AliESDVZERO.h"
 #include "AliESDTrdTrack.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
+#include "AliESDTOFHit.h"
+#include "AliESDTOFMatch.h"
 
-#ifdef MFT_UPGRADE
-//#include "AliESDMFT.h"
-#endif
+
 
 class AliESDfriend;
 class AliESDHLTtrack;
@@ -64,6 +64,7 @@ class AliESDTrdTracklet;
 class AliESDMuonTrack;
 class AliESDMuonCluster;
 class AliESDMuonPad;
+class AliESDMuonGlobalTrack;    // AU
 class AliESD;
 class AliESDcascade;
 class AliCentrality;
@@ -100,6 +101,7 @@ public:
 		       kMuonTracks,
 		       kMuonClusters,
 		       kMuonPads,
+		       kMuonGlobalTracks,   // AU
 		       kPmdTracks,
 		       kTrdTrigger,
 		       kTrdTracks,
@@ -115,10 +117,10 @@ public:
                        kESDAD,
 		       kTOFHeader,
                        kCosmicTracks,
+		       kTOFclusters,
+		       kTOFhit,
+		       kTOFmatch,
 		       kESDListN
-	           #ifdef MFT_UPGRADE
-	//           , kESDMFT
-	           #endif
   };
 
   AliESDEvent();
@@ -261,12 +263,6 @@ public:
   AliESDVZERO *GetVZEROData() const { return fESDVZERO; }
   void SetVZEROData(const AliESDVZERO * obj);
 	
-  #ifdef MFT_UPGRADE
-  // MFT 
-//  AliESDMFT *GetMFTData() const { return fESDMFT; }
-//  void SetMFTData(AliESDMFT * obj);
-  #endif
-	
  // ACORDE
   AliESDACORDE *GetACORDEData() const { return fESDACORDE;}
   void SetACORDEData(AliESDACORDE * obj);
@@ -305,10 +301,14 @@ public:
   AliTOFHeader *GetTOFHeader() const {return fTOFHeader;}
   Float_t GetEventTimeSpread() const {if (fTOFHeader) return fTOFHeader->GetT0spread(); else return 0.;}
   Float_t GetTOFTimeResolution() const {if (fTOFHeader) return fTOFHeader->GetTOFResolution(); else return 0.;}
-  TObjArray *GetTOFcluster() const {return fTOFcluster;}
-  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster,Int_t *mapping=NULL);
-  void SetTOFcluster(Int_t ntofclusters,AliESDTOFcluster *cluster[],Int_t *mapping=NULL);
-  Int_t GetNTOFclusters() const {return fNTOFclusters;}
+
+  TClonesArray *GetESDTOFClusters() const {return fESDTOFClusters;}
+  TClonesArray *GetESDTOFHits() const {return fESDTOFHits;}
+  TClonesArray *GetESDTOFMatches() const {return fESDTOFMatchess;}
+
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster,Int_t *mapping=NULL);
+  void SetTOFcluster(Int_t ntofclusters,AliESDTOFCluster *cluster[],Int_t *mapping=NULL);
+  Int_t GetNTOFclusters() const {return fESDTOFClusters ? fESDTOFClusters->GetEntriesFast() : 0;}
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
@@ -340,12 +340,10 @@ public:
   
   virtual Bool_t IsPileupFromSPDInMultBins() const;
 
-  AliESDtrack *GetTrack(Int_t i) const {
-    if (!fTracks) return 0;
-    AliESDtrack* track = (AliESDtrack*) fTracks->At(i);
-    if (track) track->SetESDEvent(this);
-    return track;
-  }
+  void ConnectTracks();
+  Bool_t        AreTracksConnected() const {return fTracksConnected;}
+
+  AliESDtrack *GetTrack(Int_t i) const {return (fTracks)?(AliESDtrack*)fTracks->At(i) : 0;}
   Int_t  AddTrack(const AliESDtrack *t);
 
   /// add new track at the end of tracks array and return instance
@@ -384,6 +382,9 @@ public:
   AliESDMuonPad* GetMuonPad(Int_t i);
   AliESDMuonPad* FindMuonPad(UInt_t padId);
   AliESDMuonPad* NewMuonPad();
+  
+  AliESDMuonGlobalTrack* GetMuonGlobalTrack(Int_t i);      // AU
+  AliESDMuonGlobalTrack* NewMuonGlobalTrack();             // AU
   
   AliESDPmdTrack *GetPmdTrack(Int_t i) const {
     return (AliESDPmdTrack *)(fPmdTracks?fPmdTracks->At(i):0x0);
@@ -474,6 +475,7 @@ public:
   Int_t GetNumberOfMuonTracks() const {return fMuonTracks?fMuonTracks->GetEntriesFast():0;}
   Int_t GetNumberOfMuonClusters();
   Int_t GetNumberOfMuonPads();
+  Int_t GetNumberOfMuonGlobalTracks() const {return fMuonGlobalTracks?fMuonGlobalTracks->GetEntriesFast():0;}    // AU
   Int_t GetNumberOfPmdTracks() const {return fPmdTracks?fPmdTracks->GetEntriesFast():0;}
   Int_t GetNumberOfTrdTracks() const {return fTrdTracks?fTrdTracks->GetEntriesFast():0;}
   Int_t GetNumberOfTrdTracklets() const {return fTrdTracklets?fTrdTracklets->GetEntriesFast():0;}
@@ -530,6 +532,7 @@ protected:
   static Bool_t ResetWithPlacementNew(TObject *pObject);
 
   void AddMuonTrack(const AliESDMuonTrack *t);
+  void AddMuonGlobalTrack(const AliESDMuonGlobalTrack *t);     // AU
   
   TList *fESDObjects;             // List of esd Objects
 
@@ -555,6 +558,7 @@ protected:
   TClonesArray *fMuonTracks;       //! MUON ESD tracks
   TClonesArray *fMuonClusters;     //! MUON ESD clusters
   TClonesArray *fMuonPads;         //! MUON ESD pads
+  TClonesArray *fMuonGlobalTracks; //! MUON+MFT ESD tracks      // AU
   TClonesArray *fPmdTracks;        //! PMD ESD tracks
   TClonesArray *fTrdTracks;        //! TRD ESD tracks (triggered)
   TClonesArray *fTrdTracklets;     //! TRD tracklets (for trigger)
@@ -565,6 +569,9 @@ protected:
   AliESDCaloCells *fEMCALCells;     //! EMCAL cell info
   AliESDCaloCells *fPHOSCells;     //! PHOS cell info
   TClonesArray *fCosmicTracks;     //! Tracks created by cosmics finder
+  TClonesArray *fESDTOFClusters;    //! TOF clusters
+  TClonesArray *fESDTOFHits;        //! TOF hits (used for clusters)
+  TClonesArray *fESDTOFMatchess;      //! TOF matching info (with the reference to tracks)
   TClonesArray *fErrorLogs;        //! Raw-data reading error messages
  
   Bool_t fOldMuonStructure;        //! Flag if reading ESD with old MUON structure
@@ -573,6 +580,7 @@ protected:
   AliESDfriend *fESDFriendOld;     //! Old friend esd Structure
   Bool_t    fConnected;            //! flag if leaves are alreday connected
   Bool_t    fUseOwnList;           //! Do not use the list from the esdTree but use the one created by this class 
+  Bool_t    fTracksConnected;      //! flag if tracks have already pointer to event set
 
   static const char* fgkESDListName[kESDListN]; //!
 
@@ -587,10 +595,7 @@ protected:
   UInt_t fDAQDetectorPattern; // Detector pattern from DAQ: bit 0 is SPD, bit 4 is TPC, etc. See event.h
   UInt_t fDAQAttributes; // Third word of attributes from DAQ: bit 7 corresponds to HLT decision 
 
-  Int_t fNTOFclusters;     //! N TOF clusters matchable
-  TObjArray *fTOFcluster; //! TOF clusters
-
-  ClassDef(AliESDEvent,20)  //ESDEvent class 
+  ClassDef(AliESDEvent,22)  //ESDEvent class 
 };
 #endif 
 

@@ -46,11 +46,23 @@ public:
     virtual void SetWeighting(Weighting_t flag = kAnalog) {fAnalog = flag;}	
     virtual void SetDeltaPt(Float_t delta=0.01) {fDeltaPt = delta;}
     virtual void SetDecayer(AliDecayer* decayer) {fDecayer = decayer;}
+    virtual void SetForceGammaConversion(Bool_t force=kTRUE) {fForceConv = force;}
     virtual void Draw(const char * opt);
     TF1 *  GetPt() { return fPtPara;}
     TF1 *  GetY() {return fYPara;}
     Float_t GetRelativeArea(Float_t ptMin, Float_t ptMax, Float_t yMin, Float_t yMax, Float_t phiMin, Float_t phiMax);
 
+    static TVector3 OrthogonalVector(TVector3 &inVec);
+    static void RotateVector(Double_t *pin, Double_t *pout, Double_t costheta, Double_t sintheta,
+			   Double_t cosphi, Double_t sinphi);
+    static double ScreenFunction1(double d);
+    static double ScreenFunction2(double d);
+    double RandomEnergyFraction(double Z, double E);
+    double RandomPolarAngle();
+    double RandomMass(Double_t mh);
+    Int_t VirtualGammaPairProduction(TClonesArray *particles, Int_t nPart);
+    Int_t ForceGammaConversion(TClonesArray *particles, Int_t nPart);
+  
 protected:
     Double_t (*fPtParaFunc)(const Double_t*, const Double_t*); //! Pointer to Pt parametrisation function
     Double_t (*fYParaFunc )(const Double_t*, const Double_t*); //! Pointer to Y parametrisation function
@@ -69,6 +81,7 @@ protected:
     Float_t     fDeltaPt;      // pT sampling in steps of fDeltaPt
     Bool_t      fSelectAll;    // Flag for transportation of Background while using SetForceDecay()
     AliDecayer  *fDecayer;     // ! Pointer to pythia object for decays
+    Bool_t      fForceConv;    //
 
 private:
     AliGenParam(const AliGenParam &Param);

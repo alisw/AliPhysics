@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include <TROOT.h>
 #include <TDatabasePDG.h>
 #include <TRandom.h>
 #include <TF1.h>
@@ -80,11 +81,14 @@ AliToyMCEventGeneratorSimple& AliToyMCEventGeneratorSimple::operator = (const Al
 void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename/*="files/params.root*/, Double_t vertexMean/*=0*/, Double_t vertexSigma/*=7.*/) {
   fVertexMean = vertexMean;
   fVertexSigma = vertexSigma;
-  fParamFile = new TFile(parfilename, "read");
-  fHPt = (TH1F*) fParamFile->Get("hPt");
-  fHEta = (TH1F*) fParamFile->Get("hEta"); 
-  fHMult = (TH1I*) fParamFile->Get("hMult") ;
+//   fParamFile = new TFile(parfilename, "read");
+  TFile f(parfilename);
+  gROOT->cd();
+  fHPt = (TH1F*) f.Get("hPt");
+  fHEta = (TH1F*) f.Get("hEta");
+  fHMult = (TH1I*) f.Get("hMult") ;
   fHistosSet = kTRUE;
+  f.Close();
  
   
 }
@@ -92,8 +96,11 @@ void AliToyMCEventGeneratorSimple::SetParametersToyGen(const Char_t* parfilename
 AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 {
   //
+  // Generate an event at 'time'
   //
-  //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetT0(time);
@@ -160,7 +167,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::Generate(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/, const Int_t rate/*=50*/)
+void AliToyMCEventGeneratorSimple::RunSimulation(Int_t nevents/*=10*/, Int_t ntracks/*=400*/, Int_t rate/*=50*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -183,6 +190,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
   for (Int_t ievent=0; ievent<nevents; ++ievent){
     printf("Generating event %3d (%.3g)\n",ievent,eventTime);
     fEvent = Generate(eventTime);
+    SetSCScalingFactor();
     FillTree();
     delete fEvent;
     fEvent=0x0;
@@ -195,7 +203,7 @@ void AliToyMCEventGeneratorSimple::RunSimulation(const Int_t nevents/*=10*/, con
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationLaser(const Int_t nevents/*=1*/)
+void AliToyMCEventGeneratorSimple::RunSimulationLaser(Int_t nevents/*=1*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -267,7 +275,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD(AliESDEvent &esdEvent, 
   return retEvent;
 }
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulationESD(Int_t nevents/*=10*/, Int_t ntracks/*=400*/)
 {
   //
   // run simulation using esd input with equal event spacing
@@ -327,7 +335,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationESD(const Int_t nevents/*=10*/, 
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*=10*/, const Int_t ntracks/*=400*/)
+void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(Int_t nevents/*=10*/, Int_t ntracks/*=400*/)
 {
   //
   // run simple simulation with equal event spacing
@@ -371,6 +379,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
     if(equalSpacing)  {
       printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
       fEvent = Generate(eventTime);
+      SetSCScalingFactor();
       nGeneratedEvents++;
       FillTree();
       delete fEvent;
@@ -382,6 +391,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
       for(Int_t iColl = 0; iColl<nCollsInCrossing; iColl++){
 	printf("Generating event %3d (%.3g)\n",nGeneratedEvents,eventTime);
 	fEvent = Generate(eventTime);
+        SetSCScalingFactor();
 	nGeneratedEvents++;
 	FillTree();
 	delete fEvent;
@@ -418,7 +428,7 @@ void AliToyMCEventGeneratorSimple::RunSimulationBunchTrain(const Int_t nevents/*
 
 
 //________________________________________________________________
-Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, const Int_t nevents) {
+Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(Int_t type, Int_t nevents) {
 
   
 
@@ -442,8 +452,8 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
 
     fInputIndex = 0;
 
-    return fESDTree->GetEntries();
     gRandom->SetSeed();
+    return fESDTree->GetEntries();
    }
 
  
@@ -455,7 +465,7 @@ Int_t AliToyMCEventGeneratorSimple::OpenInputAndGetMaxEvents(const Int_t type, c
 
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::RunSimulation2(const Bool_t equalspacing, const Int_t type, const Int_t nevents, const Int_t ntracks) {
+void AliToyMCEventGeneratorSimple::RunSimulation2(Bool_t equalspacing, Int_t type, Int_t nevents, Int_t ntracks) {
 
   //type==0 simple toy
   //type==1 esd input
@@ -509,6 +519,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateESD2(Double_t time) {
 
   //test that enough tracks will pass cuts (and that there is tracks at all)
   Bool_t testEvent = kTRUE;
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   while(fESDTree->GetEvent(fInputIndex) && testEvent) {  
     
     Int_t nPassedCuts = 0;
@@ -569,6 +582,9 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
   //
   // Generate an Event with laser tracks
   //
+
+  // iterate over space charge maps in case they are set
+  IterateSC();
   
   AliToyMCEvent *retEvent = new AliToyMCEvent();
   retEvent->SetEventType(AliToyMCEvent::kLaser);
@@ -606,7 +622,7 @@ AliToyMCEvent* AliToyMCEventGeneratorSimple::GenerateLaser(Double_t time)
 }
 
 //________________________________________________________________
-void AliToyMCEventGeneratorSimple::GetNGeneratedEventsAndSpacing(const Bool_t equalSpacing, Int_t &ngen, Double_t &spacing)
+void AliToyMCEventGeneratorSimple::GetNGeneratedEventsAndSpacing(Bool_t equalSpacing, Int_t &ngen, Double_t &spacing)
 {
 
   static Int_t bunchCounter = 0;

@@ -476,7 +476,7 @@ void AliTOFTenderSupply::RecomputeTExp(AliESDtrack *track) const
        WHERE A WRONG GEOMETRY (FULL TRD) WAS INSERTED
   ***/
 
-  Double_t texp[AliPID::kSPECIES];
+  Double_t texp[AliPID::kSPECIESC];
   if (!track || !(track->GetStatus() & AliESDtrack::kTOFout)) return;
 
 
@@ -493,6 +493,10 @@ void AliTOFTenderSupply::RecomputeTExp(AliESDtrack *track) const
     texp[ipart] = GetExpTimeTh(AliPID::ParticleMass(ipart), p, l) - 37.; 
   // 37 is a final semiempirical offset to further adjust (calibrations were
   // done with "standard" integratedTimes)
+
+  // in old ESDs like this horridous LHC10d pass2 light nuclei were not supported...
+  for (Int_t ipart = AliPID::kProton+1; ipart < AliPID::kSPECIESC; ipart++) texp[ipart]=0.;
+
   /* set integrated times */
   track->SetIntegratedTimes(texp);
 
@@ -610,15 +614,18 @@ void AliTOFTenderSupply::FixTRDBug(AliESDtrack *track)
     fOutTRD=kFALSE;
 
     //    Printf("Track reached TOF %f",track->P());
-    Double_t correctionTimes[5] = {0.,0.,0.,0.,0.}; // to be added to the expected times
+    Double_t correctionTimes[AliPID::kSPECIES] = {0.,0.,0.,0.,0.}; // to be added to the expected times
     FindTRDFix(track, correctionTimes);
-    Double_t expectedTimes[5] = {0.,0.,0.,0.,0.}; track->GetIntegratedTimes(expectedTimes);
+    Double_t expectedTimes[AliPID::kSPECIESC] = {0.,0.,0.,0.,0.,0.,0.,0.,0.}; 
+    track->GetIntegratedTimes(expectedTimes,AliPID::kSPECIESC);
     //    Printf("Exp. times: %f %f %f %f %f",
     //	   expectedTimes[0],expectedTimes[1],expectedTimes[2],expectedTimes[3],expectedTimes[4]);
     //    Printf("Corr. times: %f %f %f %f %f",
     //	   correctionTimes[0],correctionTimes[1],correctionTimes[2],correctionTimes[3],correctionTimes[4]);
 
-    for (Int_t jj=0; jj<5; jj++) expectedTimes[jj]+=correctionTimes[jj];
+    for (Int_t jj=0; jj<AliPID::kSPECIES; jj++) expectedTimes[jj]+=correctionTimes[jj];
+    // we only correct up to protons, for this horridous LHC10d pass2 light nuclei were not supported
+    // so expected times will remain zero
     track->SetIntegratedTimes(expectedTimes);
   
 }

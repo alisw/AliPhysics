@@ -70,6 +70,9 @@ public:
     virtual bool operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
 			      Float_t m, Float_t e) = 0;
   };
+  enum { 
+    kNeedNoiseFix = (1 << 14)
+  };
   /** 
    * Default constructor 
    */
@@ -247,6 +250,12 @@ public:
    */
   void CheckNeedUShort(TFile* file);
   /** 
+   * Check if we need the noise fix 
+   * 
+   * @return true if class version of read object is 3 or smaller 
+   */
+  Bool_t NeedNoiseFix() const { return TestBit(kNeedNoiseFix); }
+  /** 
    * Call the function operator of the passed object @a algo for each
    * entry in this object
    * 
@@ -277,7 +286,7 @@ protected:
   AliFMDFloatMap fEta;            // Psuedo-rapidity per strip
   Float_t        fNoiseFactor;    // Factor used for noise suppresion
   Bool_t         fAngleCorrected; // Whether we've done angle correction
-  ClassDef(AliESDFMD,3)           // ESD info from FMD
+  ClassDef(AliESDFMD,4)           // ESD info from FMD
 };
 #endif
 //____________________________________________________________________

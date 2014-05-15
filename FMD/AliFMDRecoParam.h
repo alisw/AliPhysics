@@ -13,7 +13,7 @@
 class AliFMDRecoParam : public AliDetectorRecoParam
 {
 public: 
-  AliFMDRecoParam(Float_t noiseFactor=3, 
+  AliFMDRecoParam(Float_t noiseFactor=4, 
 		  Bool_t angleCorrect=kTRUE,
 		  Bool_t sharingCorrect=kFALSE);
   virtual ~AliFMDRecoParam() {}

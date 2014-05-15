@@ -23,6 +23,7 @@ class AliTRDtrapConfig;
 class AliTRDarrayADC;
 class AliTRDarrayDictionary;
 class AliTRDdigitsManager;
+class TTreeSRedirector;
 
 class AliTRDmcmSim : public TObject {
  public:
@@ -34,6 +35,9 @@ class AliTRDmcmSim : public TObject {
 
 	  void      Reset();
 	  // clears filter registers and internal data
+
+          void      SetDebugStream(TTreeSRedirector *stream) { fDebugStream = stream; }
+  TTreeSRedirector* GetDebugStream() const { return fDebugStream; }
 
 	  Bool_t    LoadMCM(AliRunLoader* const runloader, Int_t det, Int_t rob, Int_t mcm);
 
@@ -240,6 +244,8 @@ class AliTRDmcmSim : public TObject {
 
 	  UInt_t AddUintClipping(UInt_t a, UInt_t b, UInt_t nbits) const;
 	  // Add a and b (unsigned) with clipping to the maximum value representable by nbits
+
+  TTreeSRedirector *fDebugStream;
 
  private:
 	  AliTRDmcmSim(const AliTRDmcmSim &m);             // not implemented

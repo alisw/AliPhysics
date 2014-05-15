@@ -51,6 +51,7 @@ class AliTPCseed : public AliTPCtrack {
      virtual Bool_t Update(const AliCluster* c2, Double_t chi2, Int_t i);
      AliTPCTrackerPoint * GetTrackPoint(Int_t i);
      AliTPCclusterMI * GetClusterFast(Int_t irow){ return fClusterPointer[irow];}
+     AliTPCclusterMI * GetClusterFast(Int_t irow) const { return fClusterPointer[irow];}
      void SetClusterPointer(Int_t irow, AliTPCclusterMI* cl) {fClusterPointer[irow]=cl;}
      Double_t GetDensityFirst(Int_t n);
      Double_t GetSigma2C() const {
@@ -178,7 +179,7 @@ class AliTPCseed : public AliTPCtrack {
      Bool_t  fBSigned;        //indicates that clusters of this trackes are signed to be used
      //
      //
-     Float_t fDEDX[5];            // dedx according padrows
+     Float_t fDEDX[9];            // dedx according padrows
      Float_t fSDEDX[4];           // sdedx according padrows
      Int_t   fNCDEDX[4];          // number of clusters for dedx measurment
      Int_t   fNCDEDXInclThres[4]; // number of clusters for dedx measurment including sub-threshold clusters
@@ -192,7 +193,7 @@ class AliTPCseed : public AliTPCtrack {
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
      Int_t   fPoolID;              //! id in the pool
-     ClassDef(AliTPCseed,6)  
+     ClassDef(AliTPCseed,7)  
 };
 
 

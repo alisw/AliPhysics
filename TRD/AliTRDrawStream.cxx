@@ -1360,6 +1360,9 @@ Int_t AliTRDrawStream::ReadLinkData()
     fStats.fBytesRead                                            += count * sizeof(UInt_t);
   }
 
+  if ((fErrorFlags & kDiscardHC) && fAdcArray)
+    fAdcArray->SetDataInvalid(); // invalidate the data
+
   return count;
 }
 

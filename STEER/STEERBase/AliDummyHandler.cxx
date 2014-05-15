@@ -27,14 +27,16 @@ ClassImp(AliDummyHandler)
 
 //______________________________________________________________________________
 AliDummyHandler::AliDummyHandler() :
-    AliInputEventHandler()
+  AliInputEventHandler(),
+  fEvent(0)
 {
   // Default constructor
 }
 
 //______________________________________________________________________________
 AliDummyHandler::AliDummyHandler(const char* name, const char* title):
-  AliInputEventHandler(name, title)
+  AliInputEventHandler(name, title),
+  fEvent(0)
 {
    // Constructor
 }

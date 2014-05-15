@@ -39,7 +39,7 @@ class AliTRDPIDResponse : public TObject {
     };
     enum ETRDPIDResponseDef {
 	kNlayer = 6
-	,kNPBins = 6
+       ,kNPBins = 6
     };
     enum ETRDPIDMethod {
 	kNN   = 0,
@@ -51,15 +51,15 @@ class AliTRDPIDResponse : public TObject {
     };
     enum ETRDNslices {
 	kNslicesLQ1D = 1,
-      kNslicesLQ2D = 2,
-      kNslicesNN = 7
+	kNslicesLQ2D = 2,
+	kNslicesNN = 7
     };
     AliTRDPIDResponse();
     AliTRDPIDResponse(const AliTRDPIDResponse &ref);
     AliTRDPIDResponse& operator=(const AliTRDPIDResponse &ref);
     ~AliTRDPIDResponse();
     
-    Bool_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
+    Int_t    GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod=kLQ1D, Bool_t kNorm=kTRUE) const;
     inline ETRDNslices  GetNumberOfSlices(ETRDPIDMethod PIDmethod=kLQ1D) const;
     
     Bool_t    IsOwner() const {return TestBit(kIsOwner);}

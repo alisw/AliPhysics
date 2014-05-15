@@ -41,7 +41,7 @@
   AliTPCPreprocessorOffline proces;
   proces.CalibTimeGain("TPCMultObjects.root",114000,140040,0);
   TFile oo("OCDB/TPC/Calib/TimeGain/Run114000_121040_v0_s0.root")
-  TObjArray * arr = AliCDBEntry->GetObject()
+ TObjArray * arr = AliCDBEntry->GetObject()
   arr->At(4)->Draw("alp")
 
 */
@@ -89,8 +89,12 @@
 #include "AliTPCPreprocessorOffline.h"
 #include "AliTPCCorrectionFit.h"
 
+#include "AliTPCClusterParam.h"
+#include "AliTPCRecoParam.h"
+
 using std::endl;
 using std::cout;
+
 ClassImp(AliTPCPreprocessorOffline)
 
 AliTPCPreprocessorOffline::AliTPCPreprocessorOffline():
@@ -253,8 +257,16 @@ void AliTPCPreprocessorOffline::CalibTimeVdrift(const Char_t* file, Int_t ustart
     if (alignmentTime) fVdriftArray->AddLast(alignmentTime);
   }
   //
+  // 5.) Add the RecoParam and ClusterParam - for compatibility checks -different sets of parameters can invalidate calibration 
   //
-  // 5. update of OCDB
+  AliTPCClusterParam *clParam =   AliTPCcalibDB::Instance()->GetClusterParam();
+  TObjArray *recoParams = new TObjArray(4) ;
+  for (Int_t i=0;i<4;i++) recoParams->AddAt(AliTPCcalibDB::Instance()->GetRecoParam(i),i);
+  fVdriftArray->AddLast(clParam);
+  fVdriftArray->AddLast(recoParams);
+  //
+  //
+  // 6. update of OCDB
   //
   //
   UpdateOCDBDrift(ustartRun,uendRun,fOCDBstorage);
@@ -901,6 +913,11 @@ void AliTPCPreprocessorOffline::CalibTimeGain(const Char_t* fileName, Int_t star
   AnalyzeGainMultiplicity();
   AnalyzeGainChamberByChamber();
   //
+  AnalyzeGainDipAngle(0); // short pads
+  AnalyzeGainDipAngle(1); // medium pads
+  AnalyzeGainDipAngle(2); // long pads
+  AnalyzeGainDipAngle(3); // absolute calibration on full track
+  //
   // 3. Make control plots
   //
   MakeQAPlot(1.43);  
@@ -969,7 +986,7 @@ void AliTPCPreprocessorOffline::ReadGainGlobal(const Char_t* fileName){
 Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRunNumber, Int_t minEntriesGaussFit,  Float_t FPtoMIPratio){
   //
   // Analyze gain - produce the calibration graphs
-  //
+ //
 
   // 1.) try to create MIP spline
   if (fGainMIP) 
@@ -1008,6 +1025,21 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGain(Int_t startRunNumber, Int_t endRun
   // with naming convention and backward compatibility
   fGainArray->AddAt(fGraphMIP,2);
   fGainArray->AddAt(fGraphCosmic,3);
+  //
+  // 3.) Add HV and PT correction parameterization which was used
+  //
+  AliTPCParam *param= AliTPCcalibDB::Instance()->GetParameters();
+  if (param->GetGainSlopesHV())  fGainArray->AddLast(param->GetGainSlopesHV());
+  if (param->GetGainSlopesPT())  fGainArray->AddLast(param->GetGainSlopesPT());
+  //
+  // 4.) Add the RecoParam and ClusterParam - for compatibility checks -deffrent sets of paramters can invalidate calibration 
+  //
+  AliTPCClusterParam *clParam =   AliTPCcalibDB::Instance()->GetClusterParam();
+  TObjArray *recoParams = new TObjArray(4) ;
+  for (Int_t i=0;i<4;i++) recoParams->AddAt(AliTPCcalibDB::Instance()->GetRecoParam(i),i);
+  fGainArray->AddLast(clParam);
+  fGainArray->AddLast(recoParams);
+  //
   cout << "fGraphCosmic: " << fGraphCosmic << " fGraphMIP " << fGraphMIP << endl;
   return kTRUE;
 
@@ -1133,6 +1165,80 @@ Bool_t AliTPCPreprocessorOffline::AnalyzePadRegionGain(){
 }
 
 
+Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
+  //
+  // Analyze gain as a function of multiplicity and produce calibration graphs
+  // padRegion -- 0: short, 1: medium, 2: long, 3: absolute calibration of full track
+  //
+  if (!fGainMult) return kFALSE;
+  if (!(fGainMult->GetHistTopology())) return kFALSE;
+  //
+  // "dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"
+  TObjArray arrMax;
+  TObjArray arrTot;
+  //
+  TH2D * histQmax = 0x0;
+  TH2D * histQtot = 0x0;
+  fGainMult->GetHistPadEqual()->GetAxis(4)->SetRangeUser(-0.85,0.85);
+  fGainMult->GetHistTopology()->GetAxis(2)->SetRangeUser(-0.85,0.85);
+  if (padRegion < 3) {
+    fGainMult->GetHistPadEqual()->GetAxis(2)->SetRangeUser(padRegion,padRegion); // short,medium,long
+    histQmax = (TH2D*) fGainMult->GetHistPadEqual()->Projection(0,4);
+    histQtot = (TH2D*) fGainMult->GetHistPadEqual()->Projection(1,4);
+  } else {
+    fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(1,1); //Qmax
+    histQmax = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+    histQmax->SetName("fGainMult_GetHistPadEqual_11");
+    fGainMult->GetHistTopology()->GetAxis(1)->SetRangeUser(0,0); //Qtot
+    histQtot = (TH2D*) fGainMult->GetHistTopology()->Projection(0,2);
+    histQtot->SetName("fGainMult_GetHistPadEqual_00");
+  }
+  //  
+  histQmax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
+  TH1D * corrMax = (TH1D*)arrMax.At(1)->Clone();
+  histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  TH1D * corrTot = (TH1D*)arrTot.At(1)->Clone();
+  corrMax->Scale(1./histQmax->GetMean(2));
+  corrTot->Scale(1./histQtot->GetMean(2));
+  //
+  const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
+  //
+  TGraphErrors * graphMax = new TGraphErrors(corrMax);
+  TGraphErrors * graphTot = new TGraphErrors(corrTot);
+  Double_t meanMax = TMath::Mean(graphMax->GetN(), graphMax->GetY());
+  Double_t meanTot = TMath::Mean(graphTot->GetN(), graphTot->GetY());
+  //
+  for (Int_t ipoint=0; ipoint<graphMax->GetN(); ipoint++) {graphMax->GetY()[ipoint]/=meanMax;}
+  for (Int_t ipoint=0; ipoint<graphTot->GetN(); ipoint++) {graphTot->GetY()[ipoint]/=meanTot;}
+
+  //
+  graphMax->SetNameTitle(Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TGRAPHERRORS_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  graphTot->SetNameTitle(Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TGRAPHERRORS_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  //
+  fGainArray->AddLast(graphMax);
+  fGainArray->AddLast(graphTot);
+  //
+  // Normalization to 1 (mean of the graph.fY --> 1)
+  //
+  TF1 * funMax= new TF1("","1++abs(x)++abs(x*x)");
+  TF1 * funTot= new TF1("","1++abs(x)++abs(x*x)");
+  graphMax->Fit(funMax,"w","rob=0.9",-0.8,0.8);
+  graphTot->Fit(funTot,"w","rob=0.9",-0.8,0.8);
+  funMax->SetNameTitle(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+  funTot->SetNameTitle(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]),
+			Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[padRegion]));
+
+  //
+  fGainArray->AddLast(funMax);
+  fGainArray->AddLast(funTot);
+  //
+  return kTRUE;
+}
+
+
 Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   //
   // Analyze gain as a function of multiplicity and produce calibration graphs
@@ -1146,8 +1252,11 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainMultiplicity() {
   //
   TObjArray arrMax;
   TObjArray arrTot;
-  histMultMax->FitSlicesY(0,0,-1,0,"QNR",&arrMax);
-  histMultTot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
+  TF1 fitGaus("fitGaus","gaus(0)",histMultMax->GetYaxis()->GetXmin(),histMultMax->GetYaxis()->GetXmax());
+  fitGaus.SetParameters(histMultMax->GetEntries()/10., histMultMax->GetMean(2), TMath::Sqrt(TMath::Abs(histMultMax->GetMean(2))));
+  histMultMax->FitSlicesY(&fitGaus,0,-1,1,"QNRB",&arrMax);
+  fitGaus.SetParameters(histMultTot->GetEntries()/10., histMultTot->GetMean(2), TMath::Sqrt(TMath::Abs(histMultTot->GetMean(2))));
+  histMultTot->FitSlicesY(&fitGaus,0,-1,1,"QNRB",&arrTot);
   //
   TH1D * meanMax = (TH1D*)arrMax.At(1);
   TH1D * meanTot = (TH1D*)arrTot.At(1);
@@ -1215,9 +1324,9 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainChamberByChamber(){
   // get chamber by chamber gain
   //
   if (!fGainMult) return kFALSE;
-  TGraphErrors *grShort  = fGainMult->GetGainPerChamber(0);
-  TGraphErrors *grMedium = fGainMult->GetGainPerChamber(1);
-  TGraphErrors *grLong   = fGainMult->GetGainPerChamber(2);
+  TGraphErrors *grShort  = fGainMult->GetGainPerChamberRobust(0);
+  TGraphErrors *grMedium = fGainMult->GetGainPerChamberRobust(1);
+  TGraphErrors *grLong   = fGainMult->GetGainPerChamberRobust(2);
   if (grShort==0x0 || grMedium==0x0 || grLong==0x0) {
     delete grShort;
     delete grMedium;
@@ -1728,3 +1837,11 @@ Int_t AliTPCPreprocessorOffline::GetStatus()
 
   return fCalibrationStatus;
 }
+
+/*
+  Short sequence to acces the calbration entry:
+  TFile *f = TFile::Open("CalibObjects.root");
+  AliTPCcalibGainMult      * fGainMult = (AliTPCcalibGainMult      *)f->Get("TPCCalib/calibGainMult");
+  
+ 
+*/

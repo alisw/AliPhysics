@@ -29,6 +29,7 @@
 #include <TBrowser.h>
 #include <TSystem.h>
 #include <TError.h>
+#include <TROOT.h>
 
 ClassImp(AliOADBContainer);
 
@@ -263,9 +264,38 @@ void AliOADBContainer::WriteToFile(const char* fname) const
 
 Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
 {
+  //
+  // Hans: See whether the file is already open
+  //
+  // For now print info
+  printf("-----------------------------------------------\n");
+  printf("D-InitFromFile for file: %s and key %s\n",fname,key);
+  printf("D-List of already open files:\n");
+  TIter nextFile(gROOT->GetListOfFiles());
+  while (1) {
+    TObject *obj = nextFile();
+    if(!obj)break;
+    printf("%s\n",obj->GetName());
+  }
+  printf("-----------------------------------------------\n");
+
+  // Declare the file
+  TFile* file(0);
+  // Try to get the file from the list of already open files
+  const TSeqCollection *listOfFiles(gROOT->GetListOfFiles());
+  if(listOfFiles){
+    file =dynamic_cast<TFile*> (listOfFiles->FindObject(fname));
+  }
+  if(file){
+    printf("Success! File was already open!\n");
+  }
+  else{
+    printf("Couldn't find file, opening it\n");
+    file = TFile::Open(fname);
+  }
+
     // 
     // Initialize object from file
-    TFile* file = TFile::Open(fname);
     if (!file) return (1);
     AliOADBContainer* cont  = 0;
     file->GetObject(key, cont);

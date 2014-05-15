@@ -37,6 +37,7 @@
 #include "AliSplineFit.h"
 #include "AliCDBManager.h"
 #include "AliTPCcalibDButil.h"
+#include <AliCTPTimeParams.h>
 
 
 ClassImp(AliTPCseed)
@@ -84,7 +85,7 @@ AliTPCseed::AliTPCseed():
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-  fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -138,7 +139,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
     fNCDEDX[i] = s.fNCDEDX[i];
     fNCDEDXInclThres[i] = s.fNCDEDXInclThres[i];
   }
-  fDEDX[4] = s.fDEDX[4];
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = s.fOverlapLabels[i];
 
 }
@@ -194,7 +196,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-    fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = fDEDX[i];
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -241,7 +244,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
     fNCDEDX[i] = 0;
     fNCDEDXInclThres[i] = 0;
   }
-    fDEDX[4] = 0;
+  for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
   for (Int_t i=0;i<12;i++) fOverlapLabels[i] = -1;
 }
 
@@ -294,7 +298,8 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
       fNCDEDX[i] = param.fNCDEDX[i];
       fNCDEDXInclThres[i] = param.fNCDEDXInclThres[i];
     }
-      fDEDX[4]   = param.fDEDX[4];
+    for (Int_t i=0;i<9;i++) fDEDX[i] = 0;
+
     for(Int_t i = 0;i<AliPID::kSPECIES;++i)fTPCr[i] = param.fTPCr[i];
     
     fSeedType = param.fSeedType;
@@ -608,37 +613,54 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   //
   //
   TVectorF i1i2;
-  TVectorF  iro;
-  TVectorF oro1;
-  TVectorF oro2;
-  TVectorF foro;
+  TVectorF  irocTot;
+  TVectorF oroc1Tot;
+  TVectorF oroc2Tot;
+  TVectorF forocTot;
+  //
+  TVectorF  irocMax;
+  TVectorF oroc1Max;
+  TVectorF oroc2Max;
+  TVectorF forocMax;
 
   CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   0, 2, 0, &i1i2);
-  CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0, 2, 0, &iro);
-  CookdEdxAnalytical(low,up,useTot ,row0,row1, 0, 2, 0, &oro1);
-  CookdEdxAnalytical(low,up,useTot ,row1,row2, 0, 2, 0, &oro2);
-  CookdEdxAnalytical(low,up,useTot ,row0,row2, 0, 2, 0, &foro); // full OROC truncated mean
+  //
+  CookdEdxAnalytical(low,up,kTRUE ,0   ,row0, 0, 2, 0, &irocTot);
+  CookdEdxAnalytical(low,up,kTRUE ,row0,row1, 0, 2, 0, &oroc1Tot);
+  CookdEdxAnalytical(low,up,kTRUE ,row1,row2, 0, 2, 0, &oroc2Tot);
+  CookdEdxAnalytical(low,up,kTRUE ,row0,row2, 0, 2, 0, &forocTot); // full OROC truncated mean
+  //
+  CookdEdxAnalytical(low,up,kFALSE ,0   ,row0, 0, 2, 0, &irocMax);
+  CookdEdxAnalytical(low,up,kFALSE ,row0,row1, 0, 2, 0, &oroc1Max);
+  CookdEdxAnalytical(low,up,kFALSE ,row1,row2, 0, 2, 0, &oroc2Max);
+  CookdEdxAnalytical(low,up,kFALSE ,row0,row2, 0, 2, 0, &forocMax); // full OROC truncated mean
 
   fDEDX[0]      = i1i2(0);
-  fDEDX[1]      =  iro(0);
-  fDEDX[2]      = oro1(0);
-  fDEDX[3]      = oro2(0);
-  fDEDX[4]      = foro(0); // full OROC truncated mean
+  //
+  fDEDX[1]      =  irocTot(0);
+  fDEDX[2]      = oroc1Tot(0);
+  fDEDX[3]      = oroc2Tot(0);
+  fDEDX[4]      = forocTot(0); // full OROC truncated mean
+  fDEDX[5]      =  irocMax(0);
+  fDEDX[6]      = oroc1Max(0);
+  fDEDX[7]      = oroc2Max(0);
+  fDEDX[8]      = forocMax(0); // full OROC truncated mean
   //
   fSDEDX[0]     = i1i2(1);
-  fSDEDX[1]     =  iro(1);
-  fSDEDX[2]     = oro1(1);
-  fSDEDX[3]     = oro2(1);
+  fSDEDX[1]     =  irocTot(1);
+  fSDEDX[2]     = oroc1Tot(1);
+  fSDEDX[3]     = oroc2Tot(1);
   //
   fNCDEDX[0]    = TMath::Nint(i1i2(2));
-  fNCDEDX[1]    = TMath::Nint( iro(2));
-  fNCDEDX[2]    = TMath::Nint(oro1(2));
-  fNCDEDX[3]    = TMath::Nint(oro2(2));
+
+  fNCDEDX[1]    = TMath::Nint( irocTot(2));
+  fNCDEDX[2]    = TMath::Nint(oroc1Tot(2));
+  fNCDEDX[3]    = TMath::Nint(oroc2Tot(2));
   //
   fNCDEDXInclThres[0]    = TMath::Nint(i1i2(2)+i1i2(9));
-  fNCDEDXInclThres[1]    = TMath::Nint( iro(2)+ iro(9));
-  fNCDEDXInclThres[2]    = TMath::Nint(oro1(2)+oro1(9));
-  fNCDEDXInclThres[3]    = TMath::Nint(oro2(2)+oro2(9));
+  fNCDEDXInclThres[1]    = TMath::Nint( irocTot(2)+ irocTot(9));
+  fNCDEDXInclThres[2]    = TMath::Nint(oroc1Tot(2)+oroc1Tot(9));
+  fNCDEDXInclThres[3]    = TMath::Nint(oroc2Tot(2)+oroc2Tot(9));
   //
   SetdEdx(fDEDX[0]);
   return fDEDX[0];
@@ -968,6 +990,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   //
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
+    gainGG *= AliTPCcalibDB::Instance()->GetParameters()->GetNtot()/36.82;//correction for the ionisation
   }
 
   const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
@@ -1061,9 +1084,10 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
       if (type==1) corrNorm=1.;
     }
     //
+    //
     amp[ncl]=charge;
-    amp[ncl]/=gainGG;
-    amp[ncl]/=gainPad;
+    amp[ncl]/=gainGG;                 // normalized gas gain
+    amp[ncl]/=gainPad;                // 
     amp[ncl]/=corrShape;
     amp[ncl]/=corrPadType;
     amp[ncl]/=corrPos;
@@ -1145,6 +1169,8 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 
   AliTPCClusterParam * parcl = AliTPCcalibDB::Instance()->GetClusterParam();
   AliTPCParam * param = AliTPCcalibDB::Instance()->GetParameters();
+  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
+  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   if (!parcl)  return 0;
   if (!param) return 0;
   Int_t row0 = param->GetNRowLow();
@@ -1164,7 +1190,18 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   if (AliTPCcalibDB::Instance()->GetParameters()){
     gainGG= AliTPCcalibDB::Instance()->GetParameters()->GetGasGain()/20000;  //relative gas gain
+    gainGG *= AliTPCcalibDB::Instance()->GetParameters()->GetNtot()/36.82;//correction for the ionisation
   }
+  Double_t timeCut=0;
+  if (AliTPCcalibDB::Instance()->IsTrgL0()){
+    // by defualt we assume L1 trigger is used - make a correction in case of  L0
+    AliCTPTimeParams* ctp = AliTPCcalibDB::Instance()->GetCTPTimeParams();
+    Double_t delay = ctp->GetDelayL1L0()*0.000000025;
+    delay/=param->GetTSample();    
+    timeCut=delay;
+  }
+  timeCut += recoParam->GetSkipTimeBins();
+
   //
   // extract time-dependent correction for pressure and temperature variations
   //
@@ -1172,19 +1209,19 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t corrTimeGain = 1;
   TObjArray * timeGainSplines = 0x0;
   TGraphErrors * grPadEqual = 0x0;
-  TGraphErrors*  grChamberGain[3]={0x0,0x0,0x0};
+  TGraphErrors*  grChamberGain[4]={0x0,0x0,0x0,0x0};
+  TF1*  funDipAngle[4]={0x0,0x0,0x0,0x0};
   //
-  AliTPCTransform * trans = AliTPCcalibDB::Instance()->GetTransform();
-  const AliTPCRecoParam * recoParam = AliTPCcalibDB::Instance()->GetTransform()->GetCurrentRecoParam();
   //
-  if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;
+  if (recoParam->GetNeighborRowsDedx() == 0) rowThres = 0;	
+  UInt_t time = 1;//
   //
   if (trans) {
       runNumber = trans->GetCurrentRunNumber();
+      time = trans->GetCurrentTimeStamp();
       //AliTPCcalibDB::Instance()->SetRun(runNumber);
       timeGainSplines = AliTPCcalibDB::Instance()->GetTimeGainSplinesRun(runNumber);
       if (timeGainSplines && recoParam->GetUseGainCorrectionTime()>0) {
-	UInt_t time = trans->GetCurrentTimeStamp();
 	AliSplineFit * fitMIP = (AliSplineFit *) timeGainSplines->At(0);
 	AliSplineFit * fitFPcosmic = (AliSplineFit *) timeGainSplines->At(1);
 	if (fitMIP) {
@@ -1195,9 +1232,12 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
 	//
 	if (type==1) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQMAX_PADREGIONGAIN_BEAM_ALL");
 	if (type==0) grPadEqual = (TGraphErrors * ) timeGainSplines->FindObject("TGRAPHERRORS_MEANQTOT_PADREGIONGAIN_BEAM_ALL");
-        const char* names[3]={"SHORT","MEDIUM","LONG"};
-        for (Int_t iPadRegion=0; iPadRegion<3; ++iPadRegion)
+        const char* names[4]={"SHORT","MEDIUM","LONG","ABSOLUTE"};
+        for (Int_t iPadRegion=0; iPadRegion<4; ++iPadRegion) {
           grChamberGain[iPadRegion]=(TGraphErrors*)timeGainSplines->FindObject(Form("TGRAPHERRORS_MEAN_CHAMBERGAIN_%s_BEAM_ALL",names[iPadRegion]));
+	  if (type==1) funDipAngle[iPadRegion]=(TF1*)timeGainSplines->FindObject(Form("TF1_QMAX_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+	  if (type==0) funDipAngle[iPadRegion]=(TF1*)timeGainSplines->FindObject(Form("TF1_QTOT_DIPANGLE_%s_BEAM_ALL",names[iPadRegion]));
+	}
       }
   }
   
@@ -1220,6 +1260,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       if (isClBefore && isClAfter) nclBelowThr++;
     }
     if (!cluster) continue;
+    if (cluster->GetTimeBin()<timeCut) continue; //reject  clusters at the gating grid opening
     //
     //
     if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
@@ -1296,14 +1337,33 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     // chamber-by-chamber equalization outside gain map
     //
     Float_t gainChamber = 1;
-    if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
+    if (grChamberGain[ipad] && recoParam->GetUseGainCorrectionTime()>0) {
+      gainChamber = grChamberGain[ipad]->Eval(cluster->GetDetector());
+      if (gainChamber==0) gainChamber=1; // in case old calibation was used before use no correction
+    }
+    //
+    // dip angle correction
+    //
+    Float_t corrDipAngle = 1;
+    Float_t corrDipAngleAbs = 1;
+    //    if (grDipAngle[ipad]) corrDipAngle = grDipAngle[ipad]->Eval(GetTgl());
+    Double_t tgl=GetTgl();
+    if (funDipAngle[ipad]) corrDipAngle = funDipAngle[ipad]->Eval(tgl);
+    if (funDipAngle[3]) corrDipAngleAbs = funDipAngle[3]->Eval(tgl);
+    //
+    // pressure temperature and high voltage correction
+    //
+    Double_t correctionHVandPT = AliTPCcalibDB::Instance()->GetGainCorrectionHVandPT(time, runNumber,cluster->GetDetector(), 5 , recoParam->GetGainCorrectionHVandPTMode());
     //
     amp[ncl]=charge;
-    amp[ncl]/=gainGG;
-    amp[ncl]/=gainPad;
+    amp[ncl]/=gainGG;               // nominal gas gain
+    amp[ncl]/=correctionHVandPT;    // correction for the HV and P/T - time dependent
+    amp[ncl]/=gainPad;              // 
     amp[ncl]/=corrPos;
     amp[ncl]/=gainEqualPadRegion;
     amp[ncl]/=gainChamber;
+    amp[ncl]/=corrDipAngle;
+    amp[ncl]/=corrDipAngleAbs;
     //
     ncl++;
   }

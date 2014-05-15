@@ -611,7 +611,7 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
     return;
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)fRecoParam);
-  Double_t x[3]={c.GetRow(),c.GetPad(),c.GetTimeBin()};
+  Double_t x[3]={static_cast<Double_t>(c.GetRow()),static_cast<Double_t>(c.GetPad()),static_cast<Double_t>(c.GetTimeBin())};
   Int_t i[1]={fSector};
   transform->Transform(x,i,0,1);
   c.SetX(x[0]);
@@ -648,8 +648,8 @@ void AliTPCclusterer::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int_t
   if (!fRecoParam->DumpSignal()) {
     cl->SetInfo(0);
   }
-  
-  if (AliTPCReconstructor::StreamLevel()>1) {
+  const Int_t kClusterStream=128; // stream level should be per action - to be added to the AliTPCReconstructor
+  if ( (AliTPCReconstructor::StreamLevel()&kClusterStream)==kClusterStream) {
     Float_t xyz[3];
     cl->GetGlobalXYZ(xyz);
      (*fDebugStreamer)<<"Clusters"<<
@@ -873,7 +873,7 @@ void AliTPCclusterer::ProcessSectorData(){
           Int_t bin = iPad*fMaxTime+iTimeBin;
           Float_t signal = fAllBins[iRow][bin];
           if (AliTPCReconstructor::StreamLevel()>3 && signal>3) {
-            Double_t x[]={iRow,iPad-3,iTimeBin-3};
+            Double_t x[]={static_cast<Double_t>(iRow),static_cast<Double_t>(iPad-3),static_cast<Double_t>(iTimeBin-3)};
             Int_t i[]={fSector};
             AliTPCTransform trafo;
             trafo.Transform(x,i,0,1);

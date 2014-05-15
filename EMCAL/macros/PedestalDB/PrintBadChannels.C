@@ -1,35 +1,49 @@
-// Example to check the contents of a bad channels OCDB file locally
+// Example to check the contents of a bad channels OCDB file
+// either local file or alien file
 // Author: Gustavo Conesa Balbastre (LPSC-Grenoble)
 
-void PrintBadChannels(char * file = "$ALICE_ROOT/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v0_s0.root") 
+void PrintBadChannels(TString file = 
+		      "$ALICE_ROOT/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v0_s0.root"
+		      "alien:///alice/data/2014/OCDB/EMCAL/Calib/Pedestals/Run0_999999999_v1_s0.root"
+		      ) 
 {
   // Read status map
-  TFile * f = new TFile(file,"READ");
+ 
+  if(file.Contains("alien:///"))
+    TGrid::Connect("alien://");
+
+  TFile * f = TFile::Open(file,"READ");
   
   AliCDBEntry * cdb = (AliCDBEntry*) f->Get("AliCDBEntry");
   
   AliCaloCalibPedestal * caloped = (AliCaloCalibPedestal *) cdb->GetObject();
   
   TObjArray map = caloped->GetDeadMap();
+  Int_t nHisto = map.GetEntries();
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM");
   
-  printf("MAP entries %d\n",map.GetEntries());
-  
-  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1");
-  
+  printf ("N SM %d, array size %d\n",geom->GetNumberOfSuperModules(),nHisto);
+
   Int_t nbadTotal  = 0;
   Int_t nhotTotal  = 0;
   Int_t nwarmTotal = 0;
   Int_t ndeadTotal = 0;
   
   for(Int_t iSM = 0; iSM < geom->GetNumberOfSuperModules(); iSM ++)
-  { 
+  {     
+    if(iSM >=nHisto || !(TH2D*)map[iSM]))
+    {
+      printf("No entry for SM %d, skip it!\n",iSM);
+      continue;
+    }
+
+    printf(">>> SM %d <<< Entries %d \n",iSM,((TH2D*)map[iSM])->GetEntries());
+
     Int_t nbad  = 0;
     Int_t nhot  = 0;
     Int_t nwarm = 0;
     Int_t ndead = 0;
-    
-    printf(">>> SM %d <<< Entries %d \n",iSM,((TH2D*)map[iSM])->GetEntries());
-    
+
     for(Int_t i = 0; i < ((TH2D*)map[iSM])->GetNbinsX() ; i++)
     {
       for(Int_t j = 0; j < ((TH2D*)map[iSM])->GetNbinsY() ; j++)

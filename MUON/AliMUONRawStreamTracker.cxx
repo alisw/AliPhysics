@@ -35,7 +35,6 @@
 
 #include "AliMUONLogger.h"
 #include "AliRawReader.h"
-#include "AliRawDataHeader.h"
 #include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUONPayloadTracker.h"

@@ -11,8 +11,8 @@ dn: det=ACO,o=shuttle_prod,dc=cern,dc=ch
 objectClass: detectorConfig
 det: ACO
 strictRunOrder: 0
-responsible: pedro.gonzalez@fcfm.buap.mx
-responsible: irais@fcfm.buap.mx
+responsible: mario.rodriguez.cahuantzi@cern.ch
+responsible: Arturo.Fernandez.Tellez@cern.ch
 
 dn: dcsHost=alidcsamanda.cern.ch,det=ACO,o=shuttle_prod,dc=cern,dc=ch
 objectClass: dcsConfig

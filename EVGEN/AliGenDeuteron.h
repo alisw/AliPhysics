@@ -17,7 +17,7 @@ class AliGenDeuteron: public AliGenerator
 
  public:
 
-	AliGenDeuteron(Int_t sign=1, Double_t pmax=0.3, Double_t rmax=2.1, Int_t cluster=0 );
+	AliGenDeuteron(Int_t sign=1, Double_t pmax=0.2, Double_t rmax=2.1, Int_t cluster=0 );
 	virtual ~AliGenDeuteron();
 
 	virtual void Init();
@@ -27,7 +27,6 @@ class AliGenDeuteron: public AliGenerator
 	Double_t GetCoalescenceMomentum() const { return fPmax; }
 	Double_t GetCoalescenceDistance() const { return fRmax; }
 	Double_t GetSpinProbability() const { return fSpinProb; }
-	Double_t GetFreezeOutRadius() const { return fMaxRadius; }
 	Double_t GetCoalescenceProbability(const TParticle* nucleon1, const TParticle* nucleon2) const;
 	Int_t GetClusterType() const { return fClusterType; }
 	Int_t GetFreezeOutModel() const { return fModel; }
@@ -37,14 +36,13 @@ class AliGenDeuteron: public AliGenerator
 	void SetCoalescenceMomentum(Double_t p) { fPmax = p; }
 	void SetCoalescenceDistance(Double_t r) { fRmax = r; }
 	void SetSpinProbability(Double_t s) { fSpinProb = s; }
-	void SetFreezeOutRadius(Double_t r) { fMaxRadius = r; }
 	void SetClusterType(Int_t cluster) { fClusterType = cluster; }
 	void SetFreezeOutModel(Int_t model, Double_t timeLength=2.5) { fModel = model; fTimeLength=timeLength;}
 	
  public:
 
-	enum { kFirstPartner, kLowestMomentum, kLowestDistance, kBoth };
-	enum { kNone, kThermal, kExpansion };
+	enum { kFirstPartner=0, kLowestMomentum, kLowestDistance, kBoth };
+	enum { kNone=0, kThermal, kExpansion };
 	
  private:
  
@@ -56,13 +54,16 @@ class AliGenDeuteron: public AliGenerator
 	void WeightMatrix(const TList* protons, const TList* neutrons);
 	void PushDeuteron(TParticle* parent1, TParticle* parent2);
 	
+	Double_t GetS(Double_t p1x, Double_t p1y, Double_t p1z, Double_t m1, Double_t p2x, Double_t p2y, Double_t p2z, Double_t m2) const;
+	Double_t GetPcm(Double_t p1x, Double_t p1y, Double_t p1z, Double_t m1, Double_t p2x, Double_t p2y, Double_t p2z, Double_t m2) const;
+	Double_t GetPcm(const TVector3& p1, Double_t m1, const TVector3& p2, Double_t m2) const;
+	
  private:
 	
 	Int_t fSign;          // +1 for deuterons, -1 for antideuterons
 	Double_t fPmax;       // Maximum p-n momentum difference (GeV/c)
 	Double_t fRmax;       // Maximum p-n distance (fm)
 	Double_t fSpinProb;   // cluster formation probability due to spin
-	Double_t fMaxRadius;  // Maximum freeze-out radius (fm)
 	Int_t fClusterType;   // Probability criteria to find clusters
 	Int_t fModel;         // Model to override generator source
 	Double_t fTimeLength; // Thermal and chemical freeze-out time (fm/c)
@@ -72,7 +73,7 @@ class AliGenDeuteron: public AliGenerator
 	AliStack* fCurStack;  //! current event stack
 	Int_t fNtrk;          //! number of the stored track
 	
-	ClassDef(AliGenDeuteron,1)
+	ClassDef(AliGenDeuteron,2)
 };
 
 #endif // ALIGENDEUTERON_H

@@ -129,6 +129,8 @@ public:
     virtual Int_t     BgLabelToIndex(Int_t label);
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
     virtual Bool_t    IsFromBGEvent(Int_t index);
+        TString  GetGenerator(Int_t index); 
+  Bool_t GetCocktailGenerator(Int_t index,TClonesArray *arrayMC,TString &nameGen);
     virtual Bool_t    IsSecondaryFromWeakDecay(Int_t index);
     virtual Bool_t    IsSecondaryFromMaterial(Int_t index);
     // External particle array
@@ -147,11 +149,7 @@ public:
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
     
-//   #ifdef MFT_UPGRADE
-//   virtual AliVMFT *GetMFTData() const {return 0;}
-//   #endif
-  virtual AliVMFT *GetMFTData() const {return 0;}    // AU
-	
+
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;

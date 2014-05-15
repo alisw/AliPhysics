@@ -429,8 +429,8 @@ void AliTOFCalibTask::UserExec(Option_t * /*opt*/)
     Float_t tot = t->GetTOFsignalToT();
     Float_t time = t->GetTOFsignalRaw();
     AliDebug(2,Form(" track # %i in channel %i, time = %f \n",ntrk,ich,time)); 
-    Double_t expTime[10]; 
-    t->GetIntegratedTimes(expTime);
+    Double_t expTime[AliPID::kSPECIESC]; 
+    t->GetIntegratedTimes(expTime,AliPID::kSPECIESC);
     Float_t expTimePi = expTime[2]*1.E-3;
     Float_t expTimeKa = expTime[3]*1.E-3;
     Float_t expTimePr = expTime[4]*1.E-3;

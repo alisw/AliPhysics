@@ -33,14 +33,10 @@ class AliPIPEv4 : public AliPIPE {
   virtual TGeoPcon*   MakeMotherFromTemplate(TGeoPcon* shape, Int_t imin = -1, Int_t imax = -1, Float_t r0 = 0., Int_t nz =-1);
   virtual TGeoPcon*   MakeInsulationFromTemplate(TGeoPcon* shape);
   virtual TGeoVolume* MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie);
-  virtual TGeoVolume* MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie);
+  virtual TGeoVolume* MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t rPlie, Float_t dPlie);
 
-  Float_t   fRmax;       // outer radius of Be beam pipe
-  Float_t   fBe;         // width of Be beam pipe
-  Float_t   fZ1;         // beginning of Be beam pipe z location (A side)
-  Float_t   fZ2;         // end of Be beam pipe z location (C side)
  protected:
-  ClassDef(AliPIPEv4,1)  //Class for PIPE version using TGeo
+  ClassDef(AliPIPEv4,2)  //Class for PIPE version using TGeo
 };
  
 #endif

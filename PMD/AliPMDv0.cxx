@@ -200,7 +200,7 @@ void AliPMDv0::CreateSupermodule()
   
   // Gas replaced by vacuum for v0(insensitive) version of PMD.
 
-  gMC->Gsvolu("ECAR", "PGON", idtmed[697], hexd2,10);
+  TVirtualMC::GetMC()->Gsvolu("ECAR", "PGON", idtmed[697], hexd2,10);
   gGeoManager->SetVolumeAttribute("ECAR", "SEEN", 0);
   
   // Outer hexagon made of Copper
@@ -212,12 +212,12 @@ void AliPMDv0::CreateSupermodule()
   hexd1[6]=   fgkCellRadius;
   hexd1[9]=   fgkCellRadius;
 
-  gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
+  TVirtualMC::GetMC()->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
   gGeoManager->SetVolumeAttribute("ECCU", "SEEN", 1);
 
   // --- place  inner hex inside outer hex 
 
-  gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
 
   // Rhombus shaped supermodules (defined by PARA) 
   
@@ -229,10 +229,10 @@ void AliPMDv0::CreateSupermodule()
   dparasm1[2] = fSMthick/2.;
   
   //
-  gMC->Gsvolu("ESMA","PARA", idtmed[607], dparasm1, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMA","PARA", idtmed[607], dparasm1, 6);
   gGeoManager->SetVolumeAttribute("ESMA", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMB","PARA", idtmed[607], dparasm1, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMB","PARA", idtmed[607], dparasm1, 6);
   gGeoManager->SetVolumeAttribute("ESMB", "SEEN", 0);
   
   // Air residing between the PCB and the base
@@ -242,7 +242,7 @@ void AliPMDv0::CreateSupermodule()
   dparaair[1]= dparasm1[1];
   dparaair[2]= fgkThAir/2.;
   
-  gMC->Gsvolu("EAIR","PARA", idtmed[698], dparaair, 6);
+  TVirtualMC::GetMC()->Gsvolu("EAIR","PARA", idtmed[698], dparaair, 6);
   gGeoManager->SetVolumeAttribute("EAIR", "SEEN", 0);
   
   // volume for honeycomb chamber EHC1 
@@ -252,7 +252,7 @@ void AliPMDv0::CreateSupermodule()
   dpara1[1] = dparasm1[1];
   dpara1[2] = fgkCellDepth/2.;
 
-  gMC->Gsvolu("EHC1","PARA", idtmed[698], dpara1, 6);
+  TVirtualMC::GetMC()->Gsvolu("EHC1","PARA", idtmed[698], dpara1, 6);
   gGeoManager->SetVolumeAttribute("EHC1", "SEEN", 1);
   
   // Place hexagonal cells ECCU cells  inside EHC1 (72 X 72)
@@ -269,7 +269,7 @@ void AliPMDv0::CreateSupermodule()
     }
     for (i = 1; i <= fNcellSM; ++i) {
       number = i+(j-1)*fNcellSM;
-      gMC->Gspos("ECCU", number, "EHC1", xb,yb,zb, ihrotm, "ONLY");
+      TVirtualMC::GetMC()->Gspos("ECCU", number, "EHC1", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -283,22 +283,22 @@ void AliPMDv0::CreateSupermodule()
 
   //ESMA is normal supermodule with base at bottom, with EHC1
   zAir1= -dparasm1[2] + fgkThBase + dparaair[2]; 
-  gMC->Gspos("EAIR", 1, "ESMA", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIR", 1, "ESMA", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dparaair[2]+ fgkThPCB + dpara1[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC1", 1, "ESMA", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC1", 1, "ESMA", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara1[2]+ fgkThPCB + dparaair[2]; 
-  gMC->Gspos("EAIR", 2, "ESMA", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIR", 2, "ESMA", 0., 0., zAir2, 0, "ONLY");
 
   // ESMB is mirror image of ESMA, with base at top, with EHC1
 
   zAir1= -dparasm1[2] + fgkThPCB + dparaair[2]; 
-  gMC->Gspos("EAIR", 3, "ESMB", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIR", 3, "ESMB", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dparaair[2]+ fgkThPCB + dpara1[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC1", 2, "ESMB", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC1", 2, "ESMB", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara1[2]+ fgkThPCB + dparaair[2]; 
-  gMC->Gspos("EAIR", 4, "ESMB", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIR", 4, "ESMB", 0., 0., zAir2, 0, "ONLY");
 
 
   // special supermodule EMM2(GEANT only) containing 6 unit modules
@@ -309,10 +309,10 @@ void AliPMDv0::CreateSupermodule()
   dparasm2[1] = (fNcellSM - fgkNcellHole + 0.25) * fgkSqroot3by2 * hexd1[6];
   dparasm2[2] = fSMthick/2.;
 
-  gMC->Gsvolu("ESMX","PARA", idtmed[607], dparasm2, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMX","PARA", idtmed[607], dparasm2, 6);
   gGeoManager->SetVolumeAttribute("ESMX", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMY","PARA", idtmed[607], dparasm2, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMY","PARA", idtmed[607], dparasm2, 6);
   gGeoManager->SetVolumeAttribute("ESMY", "SEEN", 0);
 
   Float_t dpara2[6] = {12.5,12.5,0.4,30.,0.,0.};
@@ -320,7 +320,7 @@ void AliPMDv0::CreateSupermodule()
   dpara2[1] = dparasm2[1];
   dpara2[2] = fgkCellDepth/2.;
 
-  gMC->Gsvolu("EHC2","PARA", idtmed[698], dpara2, 6);
+  TVirtualMC::GetMC()->Gsvolu("EHC2","PARA", idtmed[698], dpara2, 6);
   gGeoManager->SetVolumeAttribute("EHC2", "SEEN", 1);
 
 
@@ -331,7 +331,7 @@ void AliPMDv0::CreateSupermodule()
   dpara2Air[1]= dparasm2[1];
   dpara2Air[2]= fgkThAir/2.;
 
-  gMC->Gsvolu("EAIX","PARA", idtmed[698], dpara2Air, 6);
+  TVirtualMC::GetMC()->Gsvolu("EAIX","PARA", idtmed[698], dpara2Air, 6);
   gGeoManager->SetVolumeAttribute("EAIX", "SEEN", 0);
 
   // Place hexagonal single cells ECCU inside EHC2
@@ -347,7 +347,7 @@ void AliPMDv0::CreateSupermodule()
     }
     for (i = 1; i <= fNcellSM; ++i) {
       number = i+(j-1)*fNcellSM;
- 	    gMC->Gspos("ECCU", number, "EHC2", xb,yb,zb, ihrotm, "ONLY");
+ 	    TVirtualMC::GetMC()->Gspos("ECCU", number, "EHC2", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -358,22 +358,22 @@ void AliPMDv0::CreateSupermodule()
   // ESMX is normal supermodule with base at bottom, with EHC2
   
   zAir1= -dparasm2[2] + fgkThBase + dpara2Air[2]; 
-  gMC->Gspos("EAIX", 1, "ESMX", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIX", 1, "ESMX", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dpara2Air[2]+ fgkThPCB + dpara2[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC2", 1, "ESMX", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC2", 1, "ESMX", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara2[2]+ fgkThPCB + dpara2Air[2]; 
-  gMC->Gspos("EAIX", 2, "ESMX", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIX", 2, "ESMX", 0., 0., zAir2, 0, "ONLY");
 
   // ESMY is mirror image of ESMX with base at bottom, with EHC2
   
   zAir1= -dparasm2[2] + fgkThPCB + dpara2Air[2]; 
-  gMC->Gspos("EAIX", 3, "ESMY", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIX", 3, "ESMY", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dpara2Air[2]+ fgkThPCB + dpara2[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC2", 2, "ESMY", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC2", 2, "ESMY", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara2[2]+ fgkThPCB + dpara2Air[2]; 
-  gMC->Gspos("EAIX", 4, "ESMY", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIX", 4, "ESMY", 0., 0., zAir2, 0, "ONLY");
 
   //
   // special supermodule EMM3 (GEANT only) containing 2 unit modules
@@ -384,10 +384,10 @@ void AliPMDv0::CreateSupermodule()
   dparaSM3[1] = (fgkNcellHole + 0.25) * hexd1[6] * fgkSqroot3by2;
   dparaSM3[2] = fSMthick/2.;
 
-  gMC->Gsvolu("ESMP","PARA", idtmed[607], dparaSM3, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMP","PARA", idtmed[607], dparaSM3, 6);
   gGeoManager->SetVolumeAttribute("ESMP", "SEEN", 0);
   //
-  gMC->Gsvolu("ESMQ","PARA", idtmed[607], dparaSM3, 6);
+  TVirtualMC::GetMC()->Gsvolu("ESMQ","PARA", idtmed[607], dparaSM3, 6);
   gGeoManager->SetVolumeAttribute("ESMQ", "SEEN", 0);
 
   Float_t dpara3[6] = {12.5,12.5,0.4,30.,0.,0.};
@@ -395,7 +395,7 @@ void AliPMDv0::CreateSupermodule()
   dpara3[1] = dparaSM3[1];
   dpara3[2] = fgkCellDepth/2.;
 
-  gMC->Gsvolu("EHC3","PARA", idtmed[698], dpara3, 6);
+  TVirtualMC::GetMC()->Gsvolu("EHC3","PARA", idtmed[698], dpara3, 6);
   gGeoManager->SetVolumeAttribute("EHC3", "SEEN", 1);
 
   // Air residing between the PCB and the base
@@ -405,7 +405,7 @@ void AliPMDv0::CreateSupermodule()
   dpara3Air[1]= dparaSM3[1];
   dpara3Air[2]= fgkThAir/2.;
 
-  gMC->Gsvolu("EAIP","PARA", idtmed[698], dpara3Air, 6);
+  TVirtualMC::GetMC()->Gsvolu("EAIP","PARA", idtmed[698], dpara3Air, 6);
   gGeoManager->SetVolumeAttribute("EAIP", "SEEN", 0);
 
 
@@ -422,7 +422,7 @@ void AliPMDv0::CreateSupermodule()
     }
     for (i = 1; i <= (fNcellSM - fgkNcellHole); ++i) {
       number = i+(j-1)*(fNcellSM - fgkNcellHole);
-      gMC->Gspos("ECCU", number, "EHC3", xb,yb,zb, ihrotm, "ONLY");
+      TVirtualMC::GetMC()->Gspos("ECCU", number, "EHC3", xb,yb,zb, ihrotm, "ONLY");
       xb += (hexd1[6]*2.);
     }
     xrow = xrow+1;
@@ -432,22 +432,22 @@ void AliPMDv0::CreateSupermodule()
   // ESMP is normal supermodule with base at bottom, with EHC3
   
   zAir1= -dparaSM3[2] + fgkThBase + dpara3Air[2]; 
-  gMC->Gspos("EAIP", 1, "ESMP", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIP", 1, "ESMP", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dpara3Air[2]+ fgkThPCB + dpara3[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC3", 1, "ESMP", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC3", 1, "ESMP", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara3[2]+ fgkThPCB + dpara3Air[2]; 
-  gMC->Gspos("EAIP", 2, "ESMP", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIP", 2, "ESMP", 0., 0., zAir2, 0, "ONLY");
   
   // ESMQ is mirror image of ESMP with base at bottom, with EHC3
   
   zAir1= -dparaSM3[2] + fgkThPCB + dpara3Air[2]; 
-  gMC->Gspos("EAIP", 3, "ESMQ", 0., 0., zAir1, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIP", 3, "ESMQ", 0., 0., zAir1, 0, "ONLY");
   zGas=zAir1+dpara3Air[2]+ fgkThPCB + dpara3[2]; 
   //Line below Commented for version 0 of PMD routine
-  //  gMC->Gspos("EHC3", 2, "ESMQ", 0., 0., zGas, 0, "ONLY");
+  //  TVirtualMC::GetMC()->Gspos("EHC3", 2, "ESMQ", 0., 0., zGas, 0, "ONLY");
   zAir2=zGas+dpara3[2]+ fgkThPCB + dpara3Air[2]; 
-  gMC->Gspos("EAIP", 4, "ESMQ", 0., 0., zAir2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EAIP", 4, "ESMQ", 0., 0., zAir2, 0, "ONLY");
   
 }
 
@@ -483,7 +483,7 @@ void AliPMDv0::CreatePMD()
   gaspmd[5] = fgkNcellHole * fgkCellRadius * 2. * fgkSqroot3by2;
   gaspmd[8] = gaspmd[5];
 
-  gMC->Gsvolu("EPMD", "PGON", idtmed[698], gaspmd, 10);
+  TVirtualMC::GetMC()->Gsvolu("EPMD", "PGON", idtmed[698], gaspmd, 10);
   gGeoManager->SetVolumeAttribute("EPMD", "SEEN", 0);
 
   AliMatrix(irotdm, 90., 0.,  90.,  90., 180., 0.);
@@ -504,7 +504,7 @@ void AliPMDv0::CreatePMD()
   dparaemm1[1] = dparaemm1[0] *fgkSqroot3by2;
   dparaemm1[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM1","PARA", idtmed[698], dparaemm1, 6);
+  TVirtualMC::GetMC()->Gsvolu("EMM1","PARA", idtmed[698], dparaemm1, 6);
   gGeoManager->SetVolumeAttribute("EMM1", "SEEN", 1);
 
   //
@@ -516,7 +516,7 @@ void AliPMDv0::CreatePMD()
   dparapb1[1] = dparapb1[0] * fgkSqroot3by2;
   dparapb1[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("EPB1","PARA", idtmed[600], dparapb1, 6);
+  TVirtualMC::GetMC()->Gsvolu("EPB1","PARA", idtmed[600], dparapb1, 6);
   gGeoManager->SetVolumeAttribute ("EPB1", "SEEN", 0);
 
   //   Fe Support for EMM1
@@ -525,7 +525,7 @@ void AliPMDv0::CreatePMD()
   dparafe1[1] = dparapb1[1];
   dparafe1[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE1","PARA", idtmed[618], dparafe1, 6);
+  TVirtualMC::GetMC()->Gsvolu("EFE1","PARA", idtmed[618], dparafe1, 6);
   gGeoManager->SetVolumeAttribute ("EFE1", "SEEN", 0);
 
   //  
@@ -534,13 +534,13 @@ void AliPMDv0::CreatePMD()
   Float_t zps,zpb,zfe,zcv; 
   
   zps = -dparaemm1[2] + fSMthick/2.;
-  gMC->Gspos("ESMB", 1, "EMM1", 0., 0., zps, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMB", 1, "EMM1", 0., 0., zps, 0, "ONLY");
   zpb = zps+fSMthick/2.+dparapb1[2];
-  gMC->Gspos("EPB1", 1, "EMM1", 0., 0., zpb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 1, "EMM1", 0., 0., zpb, 0, "ONLY");
   zfe = zpb+dparapb1[2]+dparafe1[2];
-  gMC->Gspos("EFE1", 1, "EMM1", 0., 0., zfe, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFE1", 1, "EMM1", 0., 0., zfe, 0, "ONLY");
   zcv = zfe+dparafe1[2]+fSMthick/2.;
-  gMC->Gspos("ESMA", 1, "EMM1", 0., 0., zcv, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMA", 1, "EMM1", 0., 0., zcv, 0, "ONLY");
 
   // EMM2 : special master module having full row of cells but the number
   //        of rows limited by hole.
@@ -550,7 +550,7 @@ void AliPMDv0::CreatePMD()
   dparaemm2[1] = (fNcellSM - fgkNcellHole + 0.25)*fgkCellRadius*fgkSqroot3by2;
   dparaemm2[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM2","PARA", idtmed[698], dparaemm2, 6);
+  TVirtualMC::GetMC()->Gsvolu("EMM2","PARA", idtmed[698], dparaemm2, 6);
   gGeoManager->SetVolumeAttribute("EMM2", "SEEN", 1);
 
   //   Pb Convertor for EMM2
@@ -559,7 +559,7 @@ void AliPMDv0::CreatePMD()
   dparapb2[1] = dparaemm2[1];
   dparapb2[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("EPB2","PARA", idtmed[600], dparapb2, 6);
+  TVirtualMC::GetMC()->Gsvolu("EPB2","PARA", idtmed[600], dparapb2, 6);
   gGeoManager->SetVolumeAttribute ("EPB2", "SEEN", 0);
 
   //   Fe Support for EMM2
@@ -568,19 +568,19 @@ void AliPMDv0::CreatePMD()
   dparafe2[1] = dparapb2[1];
   dparafe2[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE2","PARA", idtmed[618], dparafe2, 6);
+  TVirtualMC::GetMC()->Gsvolu("EFE2","PARA", idtmed[618], dparafe2, 6);
   gGeoManager->SetVolumeAttribute ("EFE2", "SEEN", 0);
 
   // position supermodule  ESMX, ESMY inside EMM2
 
   zps = -dparaemm2[2] + fSMthick/2.;
-  gMC->Gspos("ESMY", 1, "EMM2", 0., 0., zps, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMY", 1, "EMM2", 0., 0., zps, 0, "ONLY");
   zpb = zps + fSMthick/2.+dparapb2[2];
-  gMC->Gspos("EPB2", 1, "EMM2", 0., 0., zpb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 1, "EMM2", 0., 0., zpb, 0, "ONLY");
   zfe = zpb + dparapb2[2]+dparafe2[2];
-  gMC->Gspos("EFE2", 1, "EMM2", 0., 0., zfe, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFE2", 1, "EMM2", 0., 0., zfe, 0, "ONLY");
   zcv = zfe + dparafe2[2]+fSMthick/2.;
-  gMC->Gspos("ESMX", 1, "EMM2", 0., 0., zcv, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMX", 1, "EMM2", 0., 0., zcv, 0, "ONLY");
   // 
   // EMM3 : special master module having truncated rows and columns of cells 
   //        limited by hole.
@@ -590,7 +590,7 @@ void AliPMDv0::CreatePMD()
   dparaemm3[1] = (fgkNcellHole + 0.25) * fgkCellRadius *fgkSqroot3by2;
   dparaemm3[2] = dmthick/2.;
 
-  gMC->Gsvolu("EMM3","PARA", idtmed[698], dparaemm3, 6);
+  TVirtualMC::GetMC()->Gsvolu("EMM3","PARA", idtmed[698], dparaemm3, 6);
   gGeoManager->SetVolumeAttribute("EMM3", "SEEN", 1);
 
   //   Pb Convertor for EMM3
@@ -599,7 +599,7 @@ void AliPMDv0::CreatePMD()
   dparapb3[1] = dparaemm3[1];
   dparapb3[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("EPB3","PARA", idtmed[600], dparapb3, 6);
+  TVirtualMC::GetMC()->Gsvolu("EPB3","PARA", idtmed[600], dparapb3, 6);
   gGeoManager->SetVolumeAttribute ("EPB3", "SEEN", 0);
 
   //   Fe Support for EMM3
@@ -608,19 +608,19 @@ void AliPMDv0::CreatePMD()
   dparafe3[1] = dparapb3[1];
   dparafe3[2] = fgkThSteel/2.;
 
-  gMC->Gsvolu("EFE3","PARA", idtmed[618], dparafe3, 6);
+  TVirtualMC::GetMC()->Gsvolu("EFE3","PARA", idtmed[618], dparafe3, 6);
   gGeoManager->SetVolumeAttribute ("EFE3", "SEEN", 0);
 
   // position supermodule  ESMP, ESMQ inside EMM3
 
   zps = -dparaemm3[2] + fSMthick/2.;
-  gMC->Gspos("ESMQ", 1, "EMM3", 0., 0., zps, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMQ", 1, "EMM3", 0., 0., zps, 0, "ONLY");
   zpb = zps + fSMthick/2.+dparapb3[2];
-  gMC->Gspos("EPB3", 1, "EMM3", 0., 0., zpb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB3", 1, "EMM3", 0., 0., zpb, 0, "ONLY");
   zfe = zpb + dparapb3[2]+dparafe3[2];
-  gMC->Gspos("EFE3", 1, "EMM3", 0., 0., zfe, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFE3", 1, "EMM3", 0., 0., zfe, 0, "ONLY");
   zcv = zfe + dparafe3[2] + fSMthick/2.;
-  gMC->Gspos("ESMP", 1, "EMM3", 0., 0., zcv, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMP", 1, "EMM3", 0., 0., zcv, 0, "ONLY");
   // 
 
   // EHOL is a tube structure made of air
@@ -630,7 +630,7 @@ void AliPMDv0::CreatePMD()
   //d_hole[1] = fgkNcellHole * fgkCellRadius *2. * fgkSqroot3by2 + boundary;
   //d_hole[2] = dmthick/2.;
   //
-  //gMC->Gsvolu("EHOL", "TUBE", idtmed[698], d_hole, 3);
+  //TVirtualMC::GetMC()->Gsvolu("EHOL", "TUBE", idtmed[698], d_hole, 3);
   //gGeoManager->SetVolumeAttribute("EHOL", "SEEN", 1);
 
   //Al-rod as boundary of the supermodules
@@ -640,7 +640,7 @@ void AliPMDv0::CreatePMD()
   alRod[1] = fgkBoundary;
   alRod[2] = dmthick/2.;
 
-  gMC->Gsvolu("EALM","BOX ", idtmed[698], alRod, 3);
+  TVirtualMC::GetMC()->Gsvolu("EALM","BOX ", idtmed[698], alRod, 3);
   gGeoManager->SetVolumeAttribute ("EALM", "SEEN", 1);
   Float_t xalm[3];
   xalm[0]=alRod[0] + gaspmd[5] + 3.0*fgkBoundary;
@@ -661,9 +661,9 @@ void AliPMDv0::CreatePMD()
 
   Float_t dx = fSMLength;
   Float_t dy = dx * fgkSqroot3by2;
-  Float_t xsup[9] = {-dx/2., dx/2., 3.*dx/2., 
+  Float_t xsup[9] = {static_cast<Float_t>(-dx/2.), static_cast<Float_t>(dx/2.), static_cast<Float_t>(3.*dx/2.), 
 		     -dx,    0.,       dx,
-		     -3.*dx/2., -dx/2., dx/2.};
+		     static_cast<Float_t>(-3.*dx/2.), static_cast<Float_t>(-dx/2.), static_cast<Float_t>(dx/2.)};
 
   Float_t ysup[9] = {dy,  dy,  dy, 
                      0.,  0.,  0., 
@@ -672,7 +672,7 @@ void AliPMDv0::CreatePMD()
   // xpos and ypos are the x & y coordinates of the centres of EMM1 volumes
 
   Float_t xoff = fgkBoundary * TMath::Tan(fgkPi/6.);
-  Float_t xmod[3]={x4 + xoff , x4 + xoff, -2.*x4-fgkBoundary/fgkSqroot3by2};
+  Float_t xmod[3]={x4 + xoff , x4 + xoff, static_cast<Float_t>(-2.*x4-fgkBoundary/fgkSqroot3by2)};
   Float_t ymod[3] = {-x1 - fgkBoundary, x1 + fgkBoundary, 0.};
   Float_t xpos[9], ypos[9], x2, y2, x3, y3;
 
@@ -687,21 +687,21 @@ void AliPMDv0::CreatePMD()
   Float_t yemm3 = - (fgkNcellHole - 0.25) * fgkCellRadius * fgkSqroot3by2 -
     fgkBoundary;
 
-  Float_t theta[3] = {0., 2.*fgkPi/3., 4.*fgkPi/3.};
+  Float_t theta[3] = {0., static_cast<Float_t>(2.*fgkPi/3.), static_cast<Float_t>(4.*fgkPi/3.)};
   Int_t irotate[3] = {0, jhrot12, jhrot13};
   
   nummod=0;
   for (j=0; j<3; ++j) {
-     gMC->Gspos("EALM", j+1, "EPMD", xalm[j],yalm[j], 0., irotate[j], "ONLY");
+     TVirtualMC::GetMC()->Gspos("EALM", j+1, "EPMD", xalm[j],yalm[j], 0., irotate[j], "ONLY");
      x2=xemm2*TMath::Cos(theta[j]) - yemm2*TMath::Sin(theta[j]);
      y2=xemm2*TMath::Sin(theta[j]) + yemm2*TMath::Cos(theta[j]);
 
-     gMC->Gspos("EMM2", j+1, "EPMD", x2,y2, 0., irotate[j], "ONLY");
+     TVirtualMC::GetMC()->Gspos("EMM2", j+1, "EPMD", x2,y2, 0., irotate[j], "ONLY");
 
      x3=xemm3*TMath::Cos(theta[j]) - yemm3*TMath::Sin(theta[j]);
      y3=xemm3*TMath::Sin(theta[j]) + yemm3*TMath::Cos(theta[j]);
 
-     gMC->Gspos("EMM3", j+4, "EPMD", x3,y3, 0., irotate[j], "ONLY");
+     TVirtualMC::GetMC()->Gspos("EMM3", j+4, "EPMD", x3,y3, 0., irotate[j], "ONLY");
 
      for (i=1; i<9; ++i) {
        xpos[i]=xmod[j] + xsup[i]*TMath::Cos(theta[j]) -
@@ -715,21 +715,21 @@ void AliPMDv0::CreatePMD()
        
        AliDebugClass(1,Form("nummod %d",nummod));
        
-       gMC->Gspos("EMM1", nummod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
+       TVirtualMC::GetMC()->Gspos("EMM1", nummod + 6, "EPMD", xpos[i],ypos[i], 0., irotate[j], "ONLY");
        
      }
   }
   
   
   // place EHOL in the centre of EPMD
-  // gMC->Gspos("EHOL", 1, "EPMD", 0.,0.,0., 0, "ONLY");
+  // TVirtualMC::GetMC()->Gspos("EHOL", 1, "EPMD", 0.,0.,0., 0, "ONLY");
   
   // --- Place the EPMD in ALICE 
   xp = 0.;
   yp = 0.;
   zp = fgkZdist;
   
-  gMC->Gspos("EPMD", 1, "ALIC", xp,yp,zp, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPMD", 1, "ALIC", xp,yp,zp, 0, "ONLY");
     
 }
 
@@ -859,26 +859,26 @@ void AliPMDv0::StepManager()
   Int_t   vol[6];
   //char *namep;
   
-  if(gMC->CurrentMedium() == fMedSens && (destep = gMC->Edep())) {
+  if(TVirtualMC::GetMC()->CurrentMedium() == fMedSens && (destep = TVirtualMC::GetMC()->Edep())) {
   
-    gMC->CurrentVolID(copy);
+    TVirtualMC::GetMC()->CurrentVolID(copy);
     vol[0] = copy;
-    gMC->CurrentVolOffID(1,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
     vol[1] = copy;
-    gMC->CurrentVolOffID(2,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
     vol[2] = copy;
-    gMC->CurrentVolOffID(3,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(3,copy);
     vol[3] = copy;
-    gMC->CurrentVolOffID(4,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
     vol[4] = copy;
-    gMC->CurrentVolOffID(5,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(5,copy);
     vol[5] = copy;
 
-    gMC->Gdtom(center,hits,1);
+    TVirtualMC::GetMC()->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
 
    // this is for pile-up events
-    hits[4] = gMC->TrackTime();
+    hits[4] = TVirtualMC::GetMC()->TrackTime();
 
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
   }

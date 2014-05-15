@@ -135,7 +135,9 @@ AliEMCALReconstructor::AliEMCALReconstructor()
   //Init temporary list of digits
   fgDigitsArr     = new TClonesArray("AliEMCALDigit",1000);
   fgClustersArr   = new TObjArray(1000);
-  fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);	
+
+  const int kNTRU = fGeom->GetNTotalTRU();
+  fgTriggerDigits = new TClonesArray("AliEMCALTriggerRawDigit", kNTRU * 96);	
 	
   //Track matching
   fMatches = new TList();
@@ -289,7 +291,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   
   if(fgDigitsArr) fgDigitsArr->Clear("C");
   
-  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);
+  const int kNTRU = fGeom->GetNTotalTRU();
+  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", kNTRU * 96);
   
   Int_t bufsize = 32000;
   digitsTree->Branch("EMCAL", &fgDigitsArr, bufsize);
@@ -311,7 +314,8 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
     if (!fgRawUtils->GetFittingAlgorithm()) fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
     fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
-    
+    //  fgRawUtils->SetFALTROUsage(0);
+ 
     //fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());
     //fgRawUtils->SetTimeMax(GetRecParam()->GetTimeMax());
     
@@ -672,11 +676,25 @@ void AliEMCALReconstructor::FillMisalMatrixes(AliESDEvent* esd)const{
   const Int_t bufsize = 255;
   char path[bufsize] ;
   TGeoHMatrix * m = 0x0;
+  Int_t tmpType = -1;
+  Int_t SMOrder = 0;
+  TString SMName;
   for(Int_t sm = 0; sm < fGeom->GetNumberOfSuperModules(); sm++){
-    snprintf(path,bufsize,"/ALIC_1/XEN1_1/SMOD_%d",sm+1) ; //In Geometry modules numbered 1,2,.,5
-    if(sm >= 10 && !((fGeom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM10_%d",sm-10+1) ;
-    if(sm >= 10 &&  ((fGeom->GetEMCGeometry()->GetGeoName()).Contains("12SMV1"))) snprintf(path,bufsize,"/ALIC_1/XEN1_1/SM3rd_%d",sm-10+1) ;
-    
+    if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_Standard )      SMName = "SMOD";
+    else if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_Half )     SMName = "SM10";
+    else if(fGeom->GetSMType(sm) == AliEMCALGeometry::kEMCAL_3rd )      SMName = "SM3rd";
+    else if( fGeom->GetSMType(sm) == AliEMCALGeometry::kDCAL_Standard ) SMName = "DCSM";
+    else if( fGeom->GetSMType(sm) == AliEMCALGeometry::kDCAL_Ext )      SMName = "DCEXT";
+    else AliError("Unkown SM Type!!");
+
+    if(fGeom->GetSMType(sm) == tmpType) {
+      SMOrder++;
+    } else {
+      tmpType = fGeom->GetSMType(sm);
+      SMOrder = 1;
+    }
+    snprintf(path,bufsize,"/ALIC_1/XEN1_1/%s_%d", SMName.Data(), SMOrder) ;
+
     if (gGeoManager->CheckPath(path)){
       gGeoManager->cd(path);
       m = gGeoManager->GetCurrentMatrix() ;

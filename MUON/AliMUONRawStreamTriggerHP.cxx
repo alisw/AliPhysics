@@ -242,7 +242,15 @@ Bool_t AliMUONRawStreamTriggerHP::NextDDL()
 	        // use AliMUONRawStreamTriggerHP::GetDDL()
 	
 	// Check if this is a scalar event.
-	bool scalerEvent = (GetReader()->GetDataHeader()->GetL1TriggerMessage() & 0x1) == 0x1;
+	AliRawReader * reader = GetReader();
+	if (!reader) return kFALSE;
+
+	const AliRawDataHeader * cdh = reader->GetDataHeader();
+	const AliRawDataHeaderV3 * cdh3 = reader->GetDataHeaderV3();
+
+	if (!cdh && !cdh3) return kFALSE;
+
+	bool scalerEvent = ((cdh ?  cdh->GetL1TriggerMessage() : cdh3->GetL1TriggerMessage()) & 0x1) == 0x1;
 	
 	bool result = false;
 	try
@@ -728,7 +736,7 @@ void AliMUONRawStreamTriggerHP::AliDecoderEventHandler::OnError(
 		message = Form(
 			"%s (At byte %lu in DDL.)",
 			ErrorCodeToMessage(error),
-			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeader)
+			(unsigned long)location - (unsigned long)fBufferStart + sizeof(AliRawDataHeaderV3)
 		);
 		fRawStream->GetReader()->AddMajorErrorLog(error, message);
 		break;

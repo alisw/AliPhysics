@@ -55,6 +55,8 @@
 #include <TParameter.h>
 
 #include "AliDigits.h"
+#include "AliHeader.h"
+
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -247,9 +249,9 @@ void AliTPC::CreateMaterials()
    Int_t iSXFLD=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
   Float_t sXMGMX=((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
 
-  Float_t amat[5]; // atomic numbers
-  Float_t zmat[5]; // z
-  Float_t wmat[5]; // proportions
+  Float_t amat[7]; // atomic numbers
+  Float_t zmat[7]; // z
+  Float_t wmat[7]; // proportions
 
   Float_t density;
  
@@ -273,7 +275,7 @@ void AliTPC::CreateMaterials()
   wmat[0]=0.2729;
   wmat[1]=0.7271;
 
-  density=0.001754609;
+  density=1.842e-3;
 
 
   AliMixture(10,"CO2",amat,zmat,density,2,wmat);
@@ -294,52 +296,107 @@ void AliTPC::CreateMaterials()
   AliMixture(11,"Air",amat,zmat,density,2,wmat);
   
   //----------------------------------------------------------------
-  // drift gases 
+  // drift gases 5 mixtures, 5 materials
   //----------------------------------------------------------------
-
   //
   // Drift gases 1 - nonsensitive, 2 - sensitive, 3 - for Kr
   //  Composition by % of volume, values at 20deg and 1 atm.
   //
   //  get the geometry title - defined in Config.C
   //
-
-  TString title(GetTitle());
-  
+  //--------------------------------------------------------------
+  //  predefined gases, composition taken from param file
+  //--------------------------------------------------------------
+  TString names[6]={"Ne","Ar","CO2","N","CF4","CH4"};
+  TString gname;
+  Float_t *comp = fTPCParam->GetComposition();
+  // indices:
+  // 0-Ne, 1-Ar, 2-CO2, 3-N, 4-CF4, 5-CH4
   //
-  amat[0]= 20.18;
-  amat[1]=12.011;
-  amat[2]=15.9994;
-
-
-  zmat[0]= 10.; 
-  zmat[1]=6.;
-  zmat[2]=8.;
-
-  if(title == TString("Ne-CO2") || title == TString("Default")){
-    wmat[0]=0.8038965;
-    wmat[1]= 0.053519;
-    wmat[2]= 0.1425743;
-    density=0.0009393;
-    //
-    AliMixture(12,"Ne-CO2-1",amat,zmat,density,3,wmat);
-    AliMixture(13,"Ne-CO2-2",amat,zmat,density,3,wmat);
-    AliMixture(40,"Ne-CO2-3",amat,zmat,density,3,wmat);
+  // elements' masses
+  // 
+  amat[0]=20.18; //Ne
+  amat[1]=39.95; //Ar
+  amat[2]=12.011; //C
+  amat[3]=15.9994; //O
+  amat[4]=14.007; //N
+  amat[5]=18.998; //F
+  amat[6]=1.; //H
+  //
+  // elements' atomic numbers
+  //
+  // 
+  zmat[0]=10.; //Ne
+  zmat[1]=18.; //Ar
+  zmat[2]=6.;  //C
+  zmat[3]=8.;  //O
+  zmat[4]=7.;  //N
+  zmat[5]=9.;  //F
+  zmat[6]=1.;  //H
+  //
+  // Mol masses
+  //
+  Float_t wmol[6];
+  wmol[0]=20.18; //Ne
+  wmol[1]=39.948; //Ar
+  wmol[2]=44.0098; //CO2
+  wmol[3]=2.*14.0067; //N2
+  wmol[4]=88.0046; //CF4
+  wmol[5]=16.011; //CH4
+  //
+  Float_t wtot=0.; //total mass of the mixture
+  for(Int_t i =0;i<6;i++){
+    wtot += *(comp+i)*wmol[i]; 
   }
-  else if (title == TString("Ne-CO2-N")){
-     amat[3]=14.007;
-     zmat[3]=7.; 
-     wmat[0]=0.756992632;
-     wmat[1]=0.056235789; 
-     wmat[2]=0.128469474; 
-     wmat[3]=0.058395789;
-     density=0.000904929;
-     //
-     AliMixture(12,"Ne-CO2-N-1",amat,zmat,density,4,wmat);
-     AliMixture(13,"Ne-CO2-N-2",amat,zmat,density,4,wmat);
-     AliMixture(40,"Ne-CO2-N-3",amat,zmat,density,4,wmat);
-  
+  wmat[0]=comp[0]*amat[0]/wtot; //Ne
+  wmat[1]=comp[1]*amat[1]/wtot; //Ar
+  wmat[2]=(comp[2]*amat[2]+comp[4]*amat[2]+comp[5]*amat[2])/wtot; //C
+  wmat[3]=comp[2]*amat[3]*2./wtot; //O
+  wmat[4]=comp[3]*amat[4]*2./wtot; //N
+  wmat[5]=comp[4]*amat[5]*4./wtot; //F
+  wmat[6]=comp[5]*amat[6]*4./wtot; //H
+  //
+  // densities (NTP)
+  //
+  Float_t dens[6]={0.839e-3,1.661e-3,1.842e-3,1.251e-3,3.466e-3,0.668e-3};
+ //
+  density=0.;
+  for(Int_t i=0;i<6;i++){
+    density += comp[i]*dens[i];
   }
+  //
+  // names
+  //
+  Int_t cnt=0;
+  for(Int_t i =0;i<6;i++){
+    if(comp[i]){
+     if(cnt)gname+="-"; 
+      gname+=names[i];
+      cnt++;   
+    } 
+  }
+TString gname1,gname2,gname3;
+gname1 = gname + "-1";
+gname2 = gname + "-2";
+gname3 = gname + "-3";
+//
+// take only elements with nonzero weights
+//
+ Float_t amat1[6],zmat1[6],wmat1[6];
+ cnt=0;
+ for(Int_t i=0;i<7;i++){
+   if(wmat[i]){
+     zmat1[cnt]=zmat[i];
+     amat1[cnt]=amat[i];
+     wmat1[cnt]=wmat[i];
+     cnt++;
+   }
+ }
+   
+//
+AliMixture(12,gname1.Data(),amat1,zmat1,density,cnt,wmat1); // nonsensitive
+AliMixture(13,gname2.Data(),amat1,zmat1,density,cnt,wmat1); // sensitive
+AliMixture(40,gname3.Data(),amat1,zmat1,density,cnt,wmat1); //sensitive Kr
 
 
 
@@ -2053,8 +2110,13 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
 
   Float_t gasgain = fTPCParam->GetGasGain();
   gasgain = gasgain/fGainFactor;
+  //  const Int_t timeStamp = 1; //where to get it? runloader->GetHeader()->GetTimeStamp(). https://savannah.cern.ch/bugs/?53025
+  const Int_t timeStamp = fLoader->GetRunLoader()->GetHeader()->GetTimeStamp(); //?
+  Double_t correctionHVandPT = calib->GetGainCorrectionHVandPT(timeStamp, calib->GetRun(), isec, 5 ,tpcrecoparam->GetGainCorrectionHVandPTMode());
+  gasgain*=correctionHVandPT;
+
   Int_t i;
-  Float_t xyz[5]; 
+  Float_t xyz[5]={0,0,0,0,0};
 
   AliTPChit *tpcHit; // pointer to a sigle TPC hit    
   //MI change
@@ -2168,9 +2230,12 @@ void AliTPC::MakeSector(Int_t isec,Int_t nrows,TTree *TH,
       for(Int_t nel=0;nel<qI;nel++){
 	// skip if electron lost due to the attachment
 	if((gRandom->Rndm(0)) < attProb) continue; // electron lost!
-	
+	// use default hit position
+	xyz[0]=tpcHit->X();
+	xyz[1]=tpcHit->Y();
+	xyz[2]=tpcHit->Z(); 
 	//
-	// ExB effect
+	// ExB effect - distort hig if specifiend in the RecoParam
 	//
         if (tpcrecoparam->GetUseExBCorrection()) {
 	  Double_t dxyz0[3],dxyz1[3];

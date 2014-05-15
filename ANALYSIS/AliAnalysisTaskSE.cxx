@@ -341,16 +341,19 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 {
 //
 // Exec analysis of one event
-
+    
     ConnectMultiHandler();
-
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (mgr->GetDebugLevel() > 1) {
+       if (!mgr->GetTopTasks()->FindObject(this))
+          printf("    -> Executing sub-task %s\n", GetName());
+    }   
     if ( fDebug >= 10)
       printf("Task is active %5d\n", IsActive());
     
     if (fDebug > 1) AliInfo("AliAnalysisTaskSE::Exec() \n");
 //
-    AliAODHandler* handler = dynamic_cast<AliAODHandler*> 
-      ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler());
+    AliAODHandler* handler = dynamic_cast<AliAODHandler*>(mgr->GetOutputEventHandler());
 
     AliAODInputHandler* aodH = dynamic_cast<AliAODInputHandler*>(fInputHandler);
 //
@@ -408,9 +411,9 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 	    }
             if ((handler->NeedsTOFHeaderReplication() || merging) && (fgTOFHeader))
             {
-              *fgTOFHeader =  *(aod->GetTOFHeader());
+              if (aod->GetTOFHeader()) *fgTOFHeader =  *(aod->GetTOFHeader());
             }
-            if ((handler->NeedsVZEROReplication() || merging) && (fgAODVZERO))
+            if ((handler->NeedsVZEROReplication() || merging) && (fgAODVZERO) && aod->GetVZEROData())
             {
               *fgAODVZERO = *(aod->GetVZEROData());
             }
@@ -578,25 +581,25 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				Double_t amp = cellsA->GetAmplitude(i) + fgAODEmcalCells->GetAmplitude(pos);
 				
 				//Check if it is MC, depending on that assing the mc lable, time and e fraction
-				Double_t time    = 0;
+//				Double_t time    = 0;
 				Int_t    mclabel =-1;
 			        Double_t efrac   = 0;
 				if(cellsA->GetMCLabel(i) >= 0 && fgAODEmcalCells->GetMCLabel(pos) < 0)
 				  {
 				    mclabel = cellsA->GetMCLabel(i) ;
-				    time    = fgAODEmcalCells->GetTime(pos) ; // Time from data
+//				    time    = fgAODEmcalCells->GetTime(pos) ; // Time from data
 				    if(amp > 0) efrac = cellsA->GetAmplitude(i) / amp;
 				  }
 				else if(fgAODEmcalCells->GetMCLabel(pos) >= 0 &&  cellsA->GetMCLabel(i) < 0)
 				  {
 				    mclabel = fgAODEmcalCells->GetMCLabel(pos) ;
-				    time    = cellsA->GetTime(i) ; // Time from data
+//				    time    = cellsA->GetTime(i) ; // Time from data
 				    if(amp > 0) efrac = fgAODEmcalCells->GetAmplitude(pos) / amp;
 				  }
 				else 
 				  { // take all from input
 				    mclabel = cellsA->GetMCLabel(i) ;
-				    time    = cellsA->GetTime(i) ; 
+//				    time    = cellsA->GetTime(i) ; 
 				    if(amp > 0) efrac = cellsA->GetAmplitude(i) / amp;  
 				  }
 				
@@ -648,25 +651,25 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 				Double_t amp = cellsP->GetAmplitude(i) + fgAODPhosCells->GetAmplitude(pos);
 				
 				//Check if it is MC, depending on that assing the mc lable, time and e fraction
-				Double_t time    = 0;
+//				Double_t time    = 0;
 				Int_t    mclabel =-1;
 				Double_t    efrac   = 0;
 				if(cellsP->GetMCLabel(i) >= 0 && fgAODPhosCells->GetMCLabel(pos) < 0)
 				  {
 				    mclabel = cellsP->GetMCLabel(i) ;
-				    time    = fgAODPhosCells->GetTime(pos) ; // Time from data
+//				    time    = fgAODPhosCells->GetTime(pos) ; // Time from data
 				    if(amp > 0) efrac = cellsP->GetAmplitude(i) / amp;
 				  }
 				else if(fgAODPhosCells->GetMCLabel(pos) >= 0 &&  cellsP->GetMCLabel(i) < 0)
 				  {
 				    mclabel = fgAODPhosCells->GetMCLabel(pos) ;
-				    time    = cellsP->GetTime(i) ; // Time from data
+//				    time    = cellsP->GetTime(i) ; // Time from data
 				    if(amp > 0) efrac = fgAODPhosCells->GetAmplitude(pos) / amp;
 				  }
 				else 
 				  { // take all from input
 				    mclabel = cellsP->GetMCLabel(i) ;
-				    time    = cellsP->GetTime(i) ; 
+//				    time    = cellsP->GetTime(i) ; 
 				    if(amp > 0) efrac = cellsP->GetAmplitude(i) / amp;  
 				  }
 				

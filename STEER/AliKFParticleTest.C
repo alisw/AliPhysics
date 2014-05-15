@@ -255,7 +255,7 @@ void RunV0(  AliESDEvent *event )
 
       //* Check chi^2 for a case
 
-      if( TMath::Sqrt( TMath::Abs(V0.GetChi2()/V0.GetNDF()) >3. )) continue;
+      if( TMath::Sqrt( TMath::Abs(V0.GetChi2()/V0.GetNDF())) >3. ) continue;
 
       //* Get V0 decay length with estimated error
 
@@ -306,6 +306,10 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     
     cout <<"  Opening "<<filename<<"\nand ESD "<<esdfile<<endl;
     
+    TFile* ftemp = TFile::Open(filename);
+    Printf("ftemp = %p", ftemp);
+    if (!ftemp) continue;
+
     if (gAlice) {
       delete AliRunLoader::Instance();
       delete gAlice;
@@ -328,8 +332,6 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
       continue;
     }
     rl->LoadKinematics();
-    AliTracker::SetFieldMap(gAlice->Field(),1);
-    AliKFParticle::SetField( AliTracker::GetBz() );
 
     //---------------------------------------//
     //                                       //
@@ -344,7 +346,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     if (!ef || !ef->IsOpen()) {cerr<<"Error open AliESDs.root !\n"; continue ;}
 
     //create event object
-    AliESD *event = new AliESDEvent;
+    AliESDEvent *event = new AliESDEvent;
 
     //Set pointer to the esd tree in the file
     TTree* tree = (TTree*) ef->Get("esdTree");
@@ -353,7 +355,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     if (!tree) {cerr<<"no ESD tree found\n"; continue;};
     
     //Set pointer to the esd object in the tree
-    event->ReadFromTree(event);
+    event->ReadFromTree(tree);
     
     //Number of events
     Int_t nevents=tree->GetEntriesFast();
@@ -363,6 +365,7 @@ Int_t AliKFParticleTest(Int_t n1=0,Int_t n2=1000,char *dire="/d/alice10/sma/my_v
     for (Int_t iev=0; iev<nevents; iev++){
       tree->GetEvent(iev);
       rl->GetEvent(iev);
+      AliKFParticle::SetField(event->GetMagneticField());
       RunV0(event);
     }
     EndV0();

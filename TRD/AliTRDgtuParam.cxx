@@ -39,7 +39,6 @@
 
 ClassImp(AliTRDgtuParam)
 
-AliTRDgtuParam *AliTRDgtuParam::fgInstance = 0;
 Bool_t AliTRDgtuParam::fgUseGTUconst = kTRUE;
 Bool_t AliTRDgtuParam::fgUseGTUmerge = kTRUE;
 Bool_t AliTRDgtuParam::fgLimitNoTracklets = kTRUE;
@@ -1281,20 +1280,8 @@ AliTRDgtuParam* AliTRDgtuParam::Instance()
 {
   // get (or create) the single instance
 
-  if (fgInstance == 0)
-    fgInstance = new AliTRDgtuParam();
-
-  return fgInstance;
-}
-
-void AliTRDgtuParam::Terminate()
-{
-  // destruct the instance
-
-  if (fgInstance != 0) {
-    delete fgInstance;
-    fgInstance = 0x0;
-  }
+  static AliTRDgtuParam instance;
+  return &instance;
 }
 
 Bool_t AliTRDgtuParam::IsInZChannel(Int_t stack, Int_t layer, Int_t zchannel, Int_t zpos) const

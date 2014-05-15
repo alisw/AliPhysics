@@ -199,13 +199,13 @@ void AliTPCTransform::Transform(Double_t *x,Int_t *i,UInt_t /*time*/,
   // new composed  correction  - will replace soon ExB correction
   //
   if(fCurrentRecoParam->GetUseComposedCorrection()&&correction) {
-    Float_t distPoint[3]={xx[0],xx[1],xx[2]};
+    Float_t distPoint[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
     correction->CorrectPoint(distPoint, sector);
     xx[0]=distPoint[0];
     xx[1]=distPoint[1];
     xx[2]=distPoint[2];
     if (correctionDelta&&fCurrentRecoParam->GetUseAlignmentTime()){  // appply time dependent correction if available and enabled
-      Float_t distPointDelta[3]={xx[0],xx[1],xx[2]};
+      Float_t distPointDelta[3]={static_cast<Float_t>(xx[0]),static_cast<Float_t>(xx[1]),static_cast<Float_t>(xx[2])};
       correctionDelta->CorrectPoint(distPointDelta, sector);
       xx[0]=distPointDelta[0];
       xx[1]=distPointDelta[1];
@@ -319,6 +319,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   static Double_t vdcorrectionTime=1;
   static Double_t vdcorrectionTimeGY=0;
   static Double_t time0corrTime=0;
+  static Double_t deltaZcorrTime=0;
   static Int_t    lastStampT=-1;
   //
   if (lastStampT!=(Int_t)fCurrentTimeStamp){
@@ -334,6 +335,13 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
 			       fCurrentRun,
 			       sector%36>=18,
 			       fCurrentRecoParam->GetUseDriftCorrectionTime());	
+      //
+      deltaZcorrTime= AliTPCcalibDB::Instance()->
+	GetVDriftCorrectionDeltaZ(fCurrentTimeStamp, 
+			       fCurrentRun,
+			       sector%36>=18,
+			       0);	
+      
     }
     //
     if(fCurrentRecoParam->GetUseDriftCorrectionGY()>0) {
@@ -407,6 +415,7 @@ void AliTPCTransform::Local2RotatedGlobal(Int_t sector, Double_t *x) const {
   x[2]-= 3.*param->GetZSigma() + time0corrTime;
   // subtract the time offsets
   x[2] = sign*( param->GetZLength(sector) - x[2]);
+  x[2]-=deltaZcorrTime;   // subtrack time dependent z shift (calibrated together with the drift velocity and T0)
 }
 
 void AliTPCTransform::RotatedGlobal2Global(Int_t sector,Double_t *x) const {

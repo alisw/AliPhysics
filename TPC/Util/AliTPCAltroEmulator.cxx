@@ -40,7 +40,8 @@
 #include <AliRawEquipmentHeader.h>
 #include <AliTPCRawStreamV3.h>
 #include <TCanvas.h>
-
+#include <AliRawDataHeader.h>
+#include <AliRawDataHeaderV3.h>
 
 /**	@brief Consturctor of Altro Class
  *
@@ -1317,10 +1318,15 @@ void AliTPCAltroEmulator::RunEmulationOnRAWdata(AliRawReader *reader, Int_t plot
       UInt_t  *trailerDDL =fTrailers+ddlID*9         ;
       
       // CDH 
-      for (Int_t i=0;i<8;++i)
+      const AliRawDataHeader * cdh = fReader->GetDataHeader();
+      const AliRawDataHeaderV3 * cdhV3 = fReader->GetDataHeaderV3();
+      for (Int_t i=0;i<8;++i) {
       	// just to show how ugly it is...
-      	cdhDDL[i]=reinterpret_cast<UInt_t*>(const_cast<AliRawDataHeader*>(fReader->GetDataHeader()))[i]; 
-      
+	if (cdh)
+	  cdhDDL[i]=reinterpret_cast<UInt_t*>(const_cast<AliRawDataHeader*>(cdh))[i]; 
+	if (cdhV3)
+	  cdhDDL[i]=reinterpret_cast<UInt_t*>(const_cast<AliRawDataHeaderV3*>(cdhV3))[i]; 
+      }
       // PAYLOAD
       while (fDecoder->NextChannel()) {
 	Int_t hwaddr=fDecoder->GetHWAddress();

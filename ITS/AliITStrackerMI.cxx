@@ -58,6 +58,7 @@
 #include "AliITSV0Finder.h"
 #include "AliITStrackerMI.h"
 #include "AliMathBase.h"
+#include "AliPID.h"
 
 
 ClassImp(AliITStrackerMI)
@@ -269,7 +270,7 @@ fITSPid(0) {
   if (AliITSReconstructor::GetRecoParam()->GetComputePlaneEff() &&
       AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff()>=0) {
     Int_t iplane=AliITSReconstructor::GetRecoParam()->GetIPlanePlaneEff();
-    if(!AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane)==1)
+    if(AliITSReconstructor::GetRecoParam()->GetLayersToSkip(iplane)!=1)
       AliWarning(Form("Evaluation of Plane Eff for layer %d will be attempted without removing it from tracker",iplane));
     if (iplane<2) {
       fPlaneEff = new AliITSPlaneEffSPD();
@@ -448,8 +449,8 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 	  Float_t q      = 0.; // this identifies virtual clusters
 	  Float_t hit[6] = {xdead,
 			    0.,
-			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
-			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
+			    static_cast<Float_t>(AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2()),
+			    static_cast<Float_t>(AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2()),
 			    q,
 			    0.};
 	  Bool_t local   = kTRUE;
@@ -563,7 +564,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
   // temporary
   Int_t noesd = 0;
   {/* Read ESD tracks */
-    Double_t pimass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
     Int_t nentr=event->GetNumberOfTracks();
     noesd=nentr;
     //    Info("Clusters2Tracks", "Number of ESD tracks: %d\n", nentr);
@@ -580,9 +580,6 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
       t->GetDZ(GetX(),GetY(),GetZ(),t->GetDP());              //I.B.
       Double_t vdist = TMath::Sqrt(t->GetD(0)*t->GetD(0)+t->GetD(1)*t->GetD(1));
 
-
-      // look at the ESD mass hypothesys !
-      if (t->GetMass()<0.9*pimass) t->SetMass(pimass); 
       // write expected q
       t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
 
@@ -741,7 +738,9 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
      //
      // transfer the time integral to ESD track
      esd->SetStatus(AliESDtrack::kTIME);
-     Double_t times[10];t.GetIntegratedTimes(times); esd->SetIntegratedTimes(times);
+     Double_t times[AliPID::kSPECIESC];
+     t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
+     esd->SetIntegratedTimes(times);
      esd->SetIntegratedLength(t.GetIntegratedLength());
      //
      if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
@@ -1448,7 +1447,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   // update TPC V0 information
   //
   if (otrack->GetESDtrack()->GetV0Index(0)>0){    
-    Float_t fprimvertex[3]={GetX(),GetY(),GetZ()};
+    Float_t fprimvertex[3]={static_cast<Float_t>(GetX()),static_cast<Float_t>(GetY()),static_cast<Float_t>(GetZ())};
     for (Int_t i=0;i<3;i++){
       Int_t  index = otrack->GetESDtrack()->GetV0Index(i); 
       if (index==0) break;

@@ -9,6 +9,7 @@
 #include "TH3F.h"
 #include "TF1.h"
 #include "THnSparse.h"
+#include "THn.h"
 #include "TMatrixD.h"
 #include "TVectorD.h"
 class TH1F;
@@ -45,17 +46,30 @@ public:
   THnSparseF *      GetHistGainSector() const {return fHistGainSector;};
   THnSparseF *      GetHistPadEqual() const {return fHistPadEqual;};
   THnSparseF *      GetHistGainMult() const {return fHistGainMult;};  
+  THnF       *      GetHistTopology() const {return fHistTopology;};
+  //
   THnSparseF * GetHistdEdxMap() const { return fHistdEdxMap;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxMax() const { return fHistdEdxMax;}      // 4D dedx histogram
   THnSparseF * GetHistdEdxTot() const { return fHistdEdxTot;}      // 4D dedx histogram
   TTree *      GetdEdxTree() const {return fdEdxTree;}         // tree for the later minimization
 
   TGraphErrors* GetGainPerChamber(Int_t padRegion=1, Bool_t plotQA=kFALSE);
+  TGraphErrors* GetGainPerChamberRobust(Int_t padRegion=1, Bool_t plotQA=kFALSE);
   //
   void SetMIPvalue(Float_t mip){fMIP = mip;};
   void SetLowerTrunc(Float_t lowerTrunc){fLowerTrunc = lowerTrunc;};
   void SetUpperTrunc(Float_t upperTrunc){fUpperTrunc = upperTrunc;};
   void SetUseMax(Bool_t useMax){fUseMax = useMax;};
+  //
+  void SetCutMinCrossRows(Int_t crossRows){fCutCrossRows = crossRows;};
+  void SetCutMaxEta(Float_t maxEta){fCutEtaWindow = maxEta;};
+  void SetCutRequireITSrefit(Bool_t requireItsRefit = kFALSE){fCutRequireITSrefit = requireItsRefit;};
+  void SetCutMaxDcaXY(Float_t maxXY){fCutMaxDcaXY = maxXY;}; 
+  void SetCutMaxDcaZ(Float_t maxZ){fCutMaxDcaZ = maxZ;}; 
+  //
+  void SetMinMomentumMIP(Float_t minMom = 0.4){fMinMomentumMIP = minMom;};
+  void SetMaxMomentumMIP(Float_t maxMom = 0.6){fMaxMomentumMIP = maxMom;};
+  void SetAlephParameters(Float_t * parameters){for(Int_t j=0;j<5;j++) fAlephParameters[j] = parameters[j];};
   //
   //
   void     Process(AliESDtrack *track, Int_t runNo=-1){AliTPCcalibBase::Process(track,runNo);};
@@ -82,15 +96,31 @@ private:
   //
   Bool_t fUseMax;                 // flag if Qmax or Qtot should be used
   //
+  // track cuts
+  //
+  Int_t   fCutCrossRows;                // minimum number of crossed rows 
+  Float_t fCutEtaWindow;                // maximum eta of tracks
+  Bool_t  fCutRequireITSrefit;          // if ITSrefit should be required (dangerous in cpass0)
+  Float_t fCutMaxDcaXY;                 // max dca_xy (only TPConly resolution is guaranteed!)
+  Float_t fCutMaxDcaZ;                  // max dca_z  (dangerous if vDrift is not calibrated)
+  //
+  // definition of MIP window
+  //
+  Float_t fMinMomentumMIP;              // minimum momentum of MIP region, e.g. 400 MeV
+  Float_t fMaxMomentumMIP;              // maximum momentum of MIP region, e.g. 600 MeV
+  Float_t fAlephParameters[5];          // parameters for equalization in MIP window, parameter set should be =1 at MIP
+  //
   // histograms
   //
   TH1F  *fHistNTracks;            //  histogram showing number of ESD tracks per event
   TH1F  *fHistClusterShape;       //  histogram to check the cluster shape
   TH3F  *fHistQA;                 //  dE/dx histogram showing the final spectrum
   //
+  //
   THnSparseF * fHistGainSector;   //  histogram which shows MIP peak for each of the 3x36 sectors (pad region)
   THnSparseF * fHistPadEqual;     //  histogram for the equalization of the gain in the different pad regions -> pass0
   THnSparseF * fHistGainMult;     //  histogram which shows decrease of MIP signal as a function
+  THnF       * fHistTopology;     //  histogram for topological corrections of signal - dip angle theta and curvature (1/pT)
   TMatrixD *fPIDMatrix;           //! custom PID matrix
   //
   THnSparseF * fHistdEdxMap;      // 4D dedx histogram - per sector/phi
@@ -102,7 +132,7 @@ private:
   AliTPCcalibGainMult(const AliTPCcalibGainMult&); 
   AliTPCcalibGainMult& operator=(const AliTPCcalibGainMult&); 
 
-  ClassDef(AliTPCcalibGainMult, 2); 
+  ClassDef(AliTPCcalibGainMult, 4); 
 };
 
 #endif

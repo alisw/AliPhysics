@@ -235,7 +235,7 @@ Bool_t  AliESDUtils::RefitESDVertexTracks(AliESDEvent* esdEv, Int_t algo, const 
 Float_t AliESDUtils::GetCorrV0A(Float_t  v0araw, Float_t zv)
 {
   // renormalize v0A signal at given Zv to acceptance at Zv=0
-  const Double_t pars[] = {1.03075,-0.00347109,-4.93343e-05};
+  const Double_t pars[] = {0.998864,-0.00407311,-2.47408e-06};
   zv -= pars[0];
   Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
   return corr>0 ? v0araw/corr : -1;
@@ -244,8 +244,17 @@ Float_t AliESDUtils::GetCorrV0A(Float_t  v0araw, Float_t zv)
 Float_t AliESDUtils::GetCorrV0C(Float_t  v0craw, Float_t zv)
 {
   // renormalize v0C signal at given Zv to acceptance at Zv=0
-  const Double_t pars[] = {1.01941,0.00409037,-8.55458e-05};
+  const Double_t pars[] = {1.00083,0.00427623,-2.69047e-05};
   zv -= pars[0];
   Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
   return corr>0 ? v0craw/corr : -1;
+}
+//________________________________________________________________________
+Float_t AliESDUtils::GetCorrV0A0(Float_t  v0a0raw, Float_t zv)
+{
+  // renormalize v0A-0 signal at given Zv to acceptance at Zv=0
+  const Double_t pars[] = {0.998243,-0.00209013,-6.97686e-06};
+  zv -= pars[0];
+  Float_t corr = 1 + zv*(pars[1] + zv*pars[2]);
+  return corr>0 ? v0a0raw/corr : -1;
 }

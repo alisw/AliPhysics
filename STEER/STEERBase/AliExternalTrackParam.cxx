@@ -181,6 +181,7 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
   Set(xyz,pxpypz,cv,sign);
 }
 
+/*
 //_____________________________________________________________________________
 void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
 				Double_t cv[21],Short_t sign) 
@@ -236,6 +237,7 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   ver.RotateZ(-fAlpha);
   mom.RotateZ(-fAlpha);
 
+  //
   // x of the reference plane
   fX = ver.X();
 
@@ -246,18 +248,19 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   fP[2] = TMath::Sin(mom.Phi());
   fP[3] = mom.Pz()/mom.Pt();
   fP[4] = TMath::Sign(1/mom.Pt(),charge);
-
+  //
+  if      (TMath::Abs( 1-fP[2]) < 3*kSafe) fP[2] = 1.- 3*kSafe; //Protection
+  else if (TMath::Abs(-1-fP[2]) < 3*kSafe) fP[2] =-1.+ 3*kSafe; //Protection
+  //
   // Covariance matrix (formulas to be simplified)
-
-  if      (TMath::Abs( 1-fP[2]) < kSafe) fP[2] = 1.- kSafe; //Protection
-  else if (TMath::Abs(-1-fP[2]) < kSafe) fP[2] =-1.+ kSafe; //Protection
-
   Double_t pt=1./TMath::Abs(fP[4]);
-  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
-
+  // avoid alpha+phi being to close to +-pi/2 in the cov.matrix evaluation
+  double fp2 = fP[2];
+  Double_t r=TMath::Sqrt((1.-fp2)*(1.+fp2));
+  //
   Double_t m00=-sn;// m10=cs;
-  Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
-  Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+  Double_t m23=-pt*(sn + fp2*cs/r), m43=-pt*pt*(r*cs - fp2*sn);
+  Double_t m24= pt*(cs - fp2*sn/r), m44=-pt*pt*(r*sn + fp2*cs);
   Double_t m35=pt, m45=-pt*pt*fP[3];
 
   m43*=GetSign();
@@ -268,7 +271,7 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   Double_t a1=cv[13]-cv[9]*(m23*m44+m43*m24)/m23/m43;
   Double_t a2=m23*m24-m23*(m23*m44+m43*m24)/m43;
   Double_t a3=m43*m44-m43*(m23*m44+m43*m24)/m23;
-  Double_t a4=cv[14]-2.*cv[9]*m24*m44/m23/m43;
+  Double_t a4=cv[14]+2.*cv[9]; //cv[14]-2.*cv[9]*m24*m44/m23/m43;
   Double_t a5=m24*m24-2.*m24*m44*m23/m43;
   Double_t a6=m44*m44-2.*m24*m44*m43/m23;
 
@@ -294,6 +297,168 @@ void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
   fC[13] = b1/b3-b2*fC[8]/b3;
   fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
 
+  CheckCovariance();
+
+  return;
+}
+*/
+
+//_____________________________________________________________________________
+void AliExternalTrackParam::Set(Double_t xyz[3],Double_t pxpypz[3],
+				Double_t cv[21],Short_t sign) 
+{
+  //
+  // create external track parameters from the global parameters
+  // x,y,z,px,py,pz and their 6x6 covariance matrix
+  // A.Dainese 10.10.08
+
+  // Calculate alpha: the rotation angle of the corresponding local system.
+  //
+  // For global radial position inside the beam pipe, alpha is the
+  // azimuthal angle of the momentum projected on (x,y).
+  //
+  // For global radial position outside the ITS, alpha is the
+  // azimuthal angle of the centre of the TPC sector in which the point
+  // xyz lies
+  //
+  const double kSafe = 1e-5;
+  Double_t radPos2 = xyz[0]*xyz[0]+xyz[1]*xyz[1];  
+  Double_t radMax  = 45.; // approximately ITS outer radius
+  if (radPos2 < radMax*radMax) { // inside the ITS     
+     fAlpha = TMath::ATan2(pxpypz[1],pxpypz[0]);
+  } else { // outside the ITS
+     Float_t phiPos = TMath::Pi()+TMath::ATan2(-xyz[1], -xyz[0]);
+     fAlpha = 
+     TMath::DegToRad()*(20*((((Int_t)(phiPos*TMath::RadToDeg()))/20))+10);
+  }
+  //
+  Double_t cs=TMath::Cos(fAlpha), sn=TMath::Sin(fAlpha);
+  // protection:  avoid alpha being too close to 0 or +-pi/2
+  if (TMath::Abs(sn)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha< TMath::Pi()/2. ?  2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? -2*kSafe :  2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  else if (TMath::Abs(cs)<2*kSafe) {
+    if (fAlpha>0) fAlpha += fAlpha> TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    else          fAlpha += fAlpha>-TMath::Pi()/2. ? 2*kSafe : -2*kSafe;
+    cs=TMath::Cos(fAlpha);
+    sn=TMath::Sin(fAlpha);
+  }
+  // Get the vertex of origin and the momentum
+  TVector3 ver(xyz[0],xyz[1],xyz[2]);
+  TVector3 mom(pxpypz[0],pxpypz[1],pxpypz[2]);
+  //
+  // Rotate to the local coordinate system
+  ver.RotateZ(-fAlpha);
+  mom.RotateZ(-fAlpha);
+
+  //
+  // x of the reference plane
+  fX = ver.X();
+
+  Double_t charge = (Double_t)sign;
+
+  fP[0] = ver.Y();
+  fP[1] = ver.Z();
+  fP[2] = TMath::Sin(mom.Phi());
+  fP[3] = mom.Pz()/mom.Pt();
+  fP[4] = TMath::Sign(1/mom.Pt(),charge);
+  //
+  if      (TMath::Abs( 1-fP[2]) < kSafe) fP[2] = 1.- kSafe; //Protection
+  else if (TMath::Abs(-1-fP[2]) < kSafe) fP[2] =-1.+ kSafe; //Protection
+  //
+  // Covariance matrix (formulas to be simplified)
+  Double_t pt=1./TMath::Abs(fP[4]);
+  Double_t r=TMath::Sqrt((1.-fP[2])*(1.+fP[2]));
+  //
+  Double_t cv34 = TMath::Sqrt(cv[3 ]*cv[3 ]+cv[4 ]*cv[4 ]);
+  //
+  Int_t special = 0;
+  double sgcheck = r*sn + fP[2]*cs;
+  if (TMath::Abs(sgcheck)>=1-kSafe) { // special case: lab phi is +-pi/2
+    special = 1;
+    sgcheck = TMath::Sign(1.0,sgcheck);
+  }
+  else if (TMath::Abs(sgcheck)<kSafe) {
+    sgcheck = TMath::Sign(1.0,cs);
+    special = 2;   // special case: lab phi is 0
+  }
+  //
+  fC[0 ] = cv[0 ]+cv[2 ];  
+  fC[1 ] = TMath::Sign(cv34,-cv[3 ]*sn); 
+  fC[2 ] = cv[5 ]; 
+  //
+  if (special==1) {
+    double pti = 1./pt;
+    double pti2 = pti*pti;
+    int q = GetSign();
+    fC[3 ] = cv[6]*pti;
+    fC[4 ] = -sgcheck*cv[8]*r*pti;
+    fC[5 ] = TMath::Abs(cv[9]*r*r*pti2);
+    fC[6 ] = (cv[10]*fP[3]-sgcheck*cv[15])*pti/r;
+    fC[7 ] = (cv[17]-sgcheck*cv[12]*fP[3])*pti;
+    fC[8 ] = (-sgcheck*cv[18]+cv[13]*fP[3])*r*pti2;
+    fC[9 ] = TMath::Abs( cv[20]-2*sgcheck*cv[19]*fP[3]+cv[14]*fP[3]*fP[3])*pti2;
+    fC[10] = cv[10]*pti2/r*q;
+    fC[11] = -sgcheck*cv[12]*pti2*q;
+    fC[12] = cv[13]*r*pti*pti2*q;
+    fC[13] = (-sgcheck*cv[19]+cv[14]*fP[3])*r*pti2*pti;
+    fC[14] = TMath::Abs(cv[14]*pti2*pti2);
+  } else if (special==2) {
+    double pti = 1./pt;
+    double pti2 = pti*pti;
+    int q = GetSign();
+    fC[3 ] = -cv[10]*pti*cs/sn;
+    fC[4 ] = cv[12]*cs*pti;
+    fC[5 ] = TMath::Abs(cv[14]*cs*cs*pti2);
+    fC[6 ] = (sgcheck*cv[6]*fP[3]-cv[15])*pti/sn;
+    fC[7 ] = (cv[17]-sgcheck*cv[8]*fP[3])*pti;
+    fC[8 ] = (cv[19]-sgcheck*cv[13]*fP[3])*cs*pti2;
+    fC[9 ] = TMath::Abs( cv[20]-2*sgcheck*cv[18]*fP[3]+cv[9]*fP[3]*fP[3])*pti2;
+    fC[10] = sgcheck*cv[6]*pti2/sn*q;
+    fC[11] = -sgcheck*cv[8]*pti2*q;
+    fC[12] = -sgcheck*cv[13]*cs*pti*pti2*q;
+    fC[13] = (-sgcheck*cv[18]+cv[9]*fP[3])*pti2*pti*q;
+    fC[14] = TMath::Abs(cv[9]*pti2*pti2);
+  }
+  else {
+    Double_t m00=-sn;// m10=cs;
+    Double_t m23=-pt*(sn + fP[2]*cs/r), m43=-pt*pt*(r*cs - fP[2]*sn);
+    Double_t m24= pt*(cs - fP[2]*sn/r), m44=-pt*pt*(r*sn + fP[2]*cs);
+    Double_t m35=pt, m45=-pt*pt*fP[3];
+    //
+    m43*=GetSign();
+    m44*=GetSign();
+    m45*=GetSign();
+    //
+    Double_t a1=cv[13]-cv[9]*(m23*m44+m43*m24)/m23/m43;
+    Double_t a2=m23*m24-m23*(m23*m44+m43*m24)/m43;
+    Double_t a3=m43*m44-m43*(m23*m44+m43*m24)/m23;
+    Double_t a4=cv[14]+2.*cv[9]; //cv[14]-2.*cv[9]*m24*m44/m23/m43;
+    Double_t a5=m24*m24-2.*m24*m44*m23/m43;
+    Double_t a6=m44*m44-2.*m24*m44*m43/m23;
+    //    
+    fC[3 ] = (cv[10]*m43-cv[6]*m44)/(m24*m43-m23*m44)/m00; 
+    fC[10] = (cv[6]/m00-fC[3 ]*m23)/m43; 
+    fC[6 ] = (cv[15]/m00-fC[10]*m45)/m35; 
+    fC[4 ] = (cv[12]*m43-cv[8]*m44)/(m24*m43-m23*m44); 
+    fC[11] = (cv[8]-fC[4]*m23)/m43; 
+    fC[7 ] = cv[17]/m35-fC[11]*m45/m35; 
+    fC[5 ] = TMath::Abs((a4*a3-a6*a1)/(a5*a3-a6*a2));
+    fC[14] = TMath::Abs((a1-a2*fC[5])/a3);
+    fC[12] = (cv[9]-fC[5]*m23*m23-fC[14]*m43*m43)/m23/m43;
+    Double_t b1=cv[18]-fC[12]*m23*m45-fC[14]*m43*m45;
+    Double_t b2=m23*m35;
+    Double_t b3=m43*m35;
+    Double_t b4=cv[19]-fC[12]*m24*m45-fC[14]*m44*m45;
+    Double_t b5=m24*m35;
+    Double_t b6=m44*m35;
+    fC[8 ] = (b4-b6*b1/b3)/(b5-b6*b2/b3);
+    fC[13] = b1/b3-b2*fC[8]/b3;
+    fC[9 ] = TMath::Abs((cv[20]-fC[14]*(m45*m45)-fC[13]*2.*m35*m45)/(m35*m35));
+  }
   CheckCovariance();
 
   return;
@@ -418,7 +583,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   // "xTimesRho" - is the product length*density (g/cm^2).
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). Negative mass means charge=2 particle
   // "dEdx" - mean enery loss (GeV/(g/cm^2)
   // "anglecorr" - switch for the angular correction
   //------------------------------------------------------------------
@@ -439,6 +604,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
   } 
 
   Double_t p=GetP();
+  if (mass<0) p += p; // q=2 particle 
   Double_t p2=p*p;
   Double_t beta2=p2/(p2 + mass*mass);
 
@@ -454,6 +620,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
       double lt = 1+0.038*TMath::Log(TMath::Abs(xOverX0));
       if (lt>0) theta2 *= lt*lt;
     }
+    if (mass<0) theta2 *= 4; // q=2 particle
     if(theta2>TMath::Pi()*TMath::Pi()) return kFALSE;
     cC22 = theta2*((1.-fP2)*(1.+fP2))*(1. + fP3*fP3);
     cC33 = theta2*(1. + fP3*fP3)*(1. + fP3*fP3);
@@ -467,7 +634,6 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialdEdx
      Double_t dE=dEdx*xTimesRho;
      Double_t e=TMath::Sqrt(p2 + mass*mass);
      if ( TMath::Abs(dE) > 0.3*e ) return kFALSE; //30% energy loss is too much!
-     //cP4 = (1.- e/p2*dE);
      if ( (1.+ dE/p2*(dE + 2*e)) < 0. ) return kFALSE;
      cP4 = 1./TMath::Sqrt(1.+ dE/p2*(dE + 2*e));  //A precise formula by Ruben !
      if (TMath::Abs(fP4*cP4)>100.) return kFALSE; //Do not track below 10 MeV/c
@@ -502,16 +668,21 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterial
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2
   // "anglecorr" - switch for the angular correction
   // "Bethe" - function calculating the energy loss (GeV/(g/cm^2)) 
   //------------------------------------------------------------------
+
   Double_t bg=GetP()/mass;
-  if (bg<kAlmost0) {
-    AliDebug(2,Form("Non-positive beta*gamma = %e, mass = %e",bg,mass));
-    return kFALSE;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
   }
   Double_t dEdx=Bethe(bg);
+  if (mass<0) dEdx *= 4;
 
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
@@ -531,7 +702,7 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   // "xTimesRho" - is the product length*density (g/cm^2). 
   //     It should be passed as negative when propagating tracks 
   //     from the intreaction point to the outside of the central barrel. 
-  // "mass" - the mass of this particle (GeV/c^2).
+  // "mass" - the mass of this particle (GeV/c^2). mass<0 means charge=2 particle
   // "density"  - mean density (g/cm^3)
   // "zOverA"   - mean Z/A
   // "exEnergy" - mean exitation energy (GeV)
@@ -544,8 +715,16 @@ Bool_t AliExternalTrackParam::CorrectForMeanMaterialZA
   //------------------------------------------------------------------
 
   Double_t bg=GetP()/mass;
+  if (mass<0) {
+    if (mass<-990) {
+      AliDebug(2,Form("Mass %f corresponds to unknown PID particle",mass));
+      return kFALSE;
+    }
+    bg = -2*bg;
+  }
   Double_t dEdx=BetheBlochGeant(bg,density,jp1,jp2,exEnergy,zOverA);
 
+  if (mass<0) dEdx *= 4;
   return CorrectForMeanMaterialdEdx(xOverX0,xTimesRho,mass,dEdx,anglecorr);
 }
 
@@ -737,6 +916,45 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   return kTRUE;
 }
 
+//______________________________________________________
+Bool_t AliExternalTrackParam::RotateParamOnly(Double_t alpha)
+{
+  // rotate to new frame, ignore covariance
+  if (TMath::Abs(fP[2]) >= kAlmost1) {
+    AliError(Form("Precondition is not satisfied: |sin(phi)|>1 ! %f",fP[2])); 
+    return kFALSE;
+  }
+  //
+  if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+  else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
+  //
+  Double_t &fP0=fP[0];
+  Double_t &fP2=fP[2];
+  //
+  Double_t x=fX;
+  Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
+  Double_t sf=fP2, cf=TMath::Sqrt((1.- fP2)*(1.+fP2)); // Improve precision
+  // RS: check if rotation does no invalidate track model (cos(local_phi)>=0, i.e. particle
+  // direction in local frame is along the X axis
+  if ((cf*ca+sf*sa)<0) {
+    AliDebug(1,Form("Rotation failed: local cos(phi) would become %.2f",cf*ca+sf*sa));
+    return kFALSE;
+  }
+  //
+  Double_t tmp=sf*ca - cf*sa;
+
+  if (TMath::Abs(tmp) >= kAlmost1) {
+     if (TMath::Abs(tmp) > 1.+ Double_t(FLT_EPSILON))  
+        AliWarning(Form("Rotation failed ! %.10e",tmp));
+     return kFALSE;
+  }
+  fAlpha = alpha;
+  fX =  x*ca + fP0*sa;
+  fP0= -x*sa + fP0*ca;
+  fP2=  tmp;
+  return kTRUE;
+}
+
 Bool_t AliExternalTrackParam::Invert() {
   //------------------------------------------------------------------
   // Transform this track to the local coord. system rotated by 180 deg. 
@@ -792,20 +1010,18 @@ Bool_t AliExternalTrackParam::PropagateTo(Double_t xk, Double_t b) {
   fX=xk;
   double dy2dx = (f1+f2)/(r1+r2);
   fP0 += dx*dy2dx;
-  if (TMath::Abs(x2r)<0.05) {
-    fP1 += dx*(r2 + f2*dy2dx)*fP3;  // Many thanks to P.Hristov !
-    fP2 += x2r;
-  }
+  fP2 += x2r;
+  if (TMath::Abs(x2r)<0.05) fP1 += dx*(r2 + f2*dy2dx)*fP3;  // Many thanks to P.Hristov !
   else { 
     // for small dx/R the linear apporximation of the arc by the segment is OK,
     // but at large dx/R the error is very large and leads to incorrect Z propagation
     // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
     // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
-    // Similarly, the rotation angle in linear in dx only for dx<<R
-    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
-    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
-    fP1 += rot/crv*fP3;
-    fP2  = TMath::Sin(rot + TMath::ASin(fP2));
+    //    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    //    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    //    fP1 += rot/crv*fP3;
+    // 
+    fP1 += fP3/crv*TMath::ASin(r1*f2 - r2*f1); // more economic version from Yura.
   }
 
   //f = F - 1
@@ -1799,13 +2015,28 @@ AliExternalTrackParam::GetZAt(Double_t x, Double_t b, Double_t &z) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) {z=fP[1]; return kTRUE;}
 
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=sqrt((1.-f1)*(1.+f1)), r2=sqrt((1.-f2)*(1.+f2));
-  z = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3]; // Many thanks to P.Hristov !
+  double dy2dx = (f1+f2)/(r1+r2);
+  if (TMath::Abs(x2r)<0.05) {
+    z = fP[1] + dx*(r2 + f2*dy2dx)*fP[3]; // Many thanks to P.Hristov !    
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    z = fP[1] + rot/crv*fP[3];    
+  }
   return kTRUE;
 }
 
@@ -1818,15 +2049,30 @@ AliExternalTrackParam::GetXYZAt(Double_t x, Double_t b, Double_t *r) const {
   Double_t dx=x-fX;
   if(TMath::Abs(dx)<=kAlmost0) return GetXYZ(r);
 
-  Double_t f1=fP[2], f2=f1 + dx*GetC(b);
+  Double_t crv=GetC(b);
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + dx*crv;
 
   if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
   if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
   
   Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  double dy2dx = (f1+f2)/(r1+r2);
   r[0] = x;
-  r[1] = fP[0] + dx*(f1+f2)/(r1+r2);
-  r[2] = fP[1] + dx*(r2 + f2*(f1+f2)/(r1+r2))*fP[3];//Thanks to Andrea & Peter
+  r[1] = fP[0] + dx*dy2dx;
+  if (TMath::Abs(x2r)<0.05) {
+    r[2] = fP[1] + dx*(r2 + f2*dy2dx)*fP[3];//Thanks to Andrea & Peter
+  }
+  else {
+    // for small dx/R the linear apporximation of the arc by the segment is OK,
+    // but at large dx/R the error is very large and leads to incorrect Z propagation
+    // angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+    // The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+    // Similarly, the rotation angle in linear in dx only for dx<<R
+    double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+    double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+    r[2] = fP[1] + rot/crv*fP[3];
+  }
 
   return Local2GlobalPosition(r,fAlpha);
 }
@@ -2176,6 +2422,118 @@ Bool_t AliExternalTrackParam::PropagateToBxByBz(Double_t xk, const Double_t b[3]
   return kTRUE;
 }
 
+Bool_t AliExternalTrackParam::PropagateParamOnlyBxByBzTo(Double_t xk, const Double_t b[3]) {
+  //----------------------------------------------------------------
+  // Extrapolate this track params (w/o cov matrix) to the plane X=xk in the field b[].
+  //
+  // X [cm] is in the "tracking coordinate system" of this track.
+  // b[]={Bx,By,Bz} [kG] is in the Global coordidate system.
+  //----------------------------------------------------------------
+
+  Double_t dx=xk-fX;
+  if (TMath::Abs(dx)<=kAlmost0)  return kTRUE;
+  if (TMath::Abs(fP[4])<=kAlmost0) return kFALSE;
+  // Do not propagate tracks outside the ALICE detector
+  if (TMath::Abs(dx)>1e5 ||
+      TMath::Abs(GetY())>1e5 ||
+      TMath::Abs(GetZ())>1e5) {
+    AliWarning(Form("Anomalous track, target X:%f",xk));
+    Print();
+    return kFALSE;
+  }
+
+  Double_t crv=GetC(b[2]);
+  if (TMath::Abs(b[2]) < kAlmost0Field) crv=0.;
+
+  Double_t x2r = crv*dx;
+  Double_t f1=fP[2], f2=f1 + x2r;
+  if (TMath::Abs(f1) >= kAlmost1) return kFALSE;
+  if (TMath::Abs(f2) >= kAlmost1) return kFALSE;
+  //
+  Double_t r1=TMath::Sqrt((1.-f1)*(1.+f1)), r2=TMath::Sqrt((1.-f2)*(1.+f2));
+  //
+  // Appoximate step length
+  double dy2dx = (f1+f2)/(r1+r2);
+  Double_t step = (TMath::Abs(x2r)<0.05) ? dx*TMath::Abs(r2 + f2*dy2dx)  // chord
+    : 2.*TMath::ASin(0.5*dx*TMath::Sqrt(1.+dy2dx*dy2dx)*crv)/crv;        // arc
+  step *= TMath::Sqrt(1.+ GetTgl()*GetTgl());
+  
+  // Get the track's (x,y,z) and (px,py,pz) in the Global System
+  Double_t r[3]; GetXYZ(r);
+  Double_t p[3]; GetPxPyPz(p);
+  Double_t pp=GetP();
+  p[0] /= pp;
+  p[1] /= pp;
+  p[2] /= pp;
+
+  // Rotate to the system where Bx=By=0.
+  Double_t bt=TMath::Sqrt(b[0]*b[0] + b[1]*b[1]);
+  Double_t cosphi=1., sinphi=0.;
+  if (bt > kAlmost0) {cosphi=b[0]/bt; sinphi=b[1]/bt;}
+  Double_t bb=TMath::Sqrt(b[0]*b[0] + b[1]*b[1] + b[2]*b[2]);
+  Double_t costet=1., sintet=0.;
+  if (bb > kAlmost0) {costet=b[2]/bb; sintet=bt/bb;}
+  Double_t vect[7];
+
+  vect[0] = costet*cosphi*r[0] + costet*sinphi*r[1] - sintet*r[2];
+  vect[1] = -sinphi*r[0] + cosphi*r[1];
+  vect[2] = sintet*cosphi*r[0] + sintet*sinphi*r[1] + costet*r[2];
+
+  vect[3] = costet*cosphi*p[0] + costet*sinphi*p[1] - sintet*p[2];
+  vect[4] = -sinphi*p[0] + cosphi*p[1];
+  vect[5] = sintet*cosphi*p[0] + sintet*sinphi*p[1] + costet*p[2];
+
+  vect[6] = pp;
+
+  // Do the helix step
+  g3helx3(GetSign()*bb,step,vect);
+
+  // Rotate back to the Global System
+  r[0] = cosphi*costet*vect[0] - sinphi*vect[1] + cosphi*sintet*vect[2];
+  r[1] = sinphi*costet*vect[0] + cosphi*vect[1] + sinphi*sintet*vect[2];
+  r[2] = -sintet*vect[0] + costet*vect[2];
+
+  p[0] = cosphi*costet*vect[3] - sinphi*vect[4] + cosphi*sintet*vect[5];
+  p[1] = sinphi*costet*vect[3] + cosphi*vect[4] + sinphi*sintet*vect[5];
+  p[2] = -sintet*vect[3] + costet*vect[5];
+
+  // Rotate back to the Tracking System
+  Double_t cosalp = TMath::Cos(fAlpha);
+  Double_t sinalp =-TMath::Sin(fAlpha);
+
+  Double_t 
+  t    = cosalp*r[0] - sinalp*r[1];
+  r[1] = sinalp*r[0] + cosalp*r[1];  
+  r[0] = t;
+
+  t    = cosalp*p[0] - sinalp*p[1]; 
+  p[1] = sinalp*p[0] + cosalp*p[1];
+  p[0] = t; 
+
+  // Do the final correcting step to the target plane (linear approximation)
+  Double_t x=r[0], y=r[1], z=r[2];
+  if (TMath::Abs(dx) > kAlmost0) {
+     if (TMath::Abs(p[0]) < kAlmost0) return kFALSE;
+     dx = xk - r[0];
+     x += dx;
+     y += p[1]/p[0]*dx;
+     z += p[2]/p[0]*dx;  
+  }
+
+
+  // Calculate the track parameters
+  t=TMath::Sqrt(p[0]*p[0] + p[1]*p[1]);
+  fX    = x;
+  fP[0] = y;
+  fP[1] = z;
+  fP[2] = p[1]/t;
+  fP[3] = p[2]/t; 
+  fP[4] = GetSign()/(t*pp);
+
+  return kTRUE;
+}
+
+
 Bool_t AliExternalTrackParam::Translate(Double_t *vTrasl,Double_t *covV){
   //
   //Translation: in the event mixing, the tracks can be shifted 
@@ -2261,6 +2619,7 @@ void AliExternalTrackParam::CheckCovariance() {
   // This function forces the diagonal elements of the covariance matrix to be positive.
   // In case the diagonal element is bigger than the maximal allowed value, it is set to
   // the limit and the off-diagonal elements that correspond to it are set to zero.
+
   fC[0] = TMath::Abs(fC[0]);
   if (fC[0]>kC0max) {
     double scl = TMath::Sqrt(kC0max/fC[0]);
@@ -2474,4 +2833,207 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
   }
   //
   return kTRUE;
+}
+//_________________________________________________________
+Bool_t AliExternalTrackParam::GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz, Double_t* alpSect) const
+{
+  // This method has 3 modes of behaviour
+  // 1) xyz[3] array is provided but alpSect pointer is 0: calculate the position of track intersection 
+  //    with circle of radius xr and fill it in xyz array
+  // 2) alpSect pointer is provided: find alpha of the sector where the track reaches local coordinate xr
+  //    Note that in this case xr is NOT the radius but the local coordinate.
+  //    If the xyz array is provided, it will be filled by track lab coordinates at local X in this sector
+  // 3) Neither alpSect nor xyz pointers are provided: just check if the track reaches radius xr
+  //
+  //
+  double crv = GetC(bz);
+  if ( (TMath::Abs(bz))<kAlmost0Field ) crv=0.;
+  const double &fy = fP[0];
+  const double &fz = fP[1];
+  const double &sn = fP[2];
+  const double &tgl = fP[3];
+  //
+  // general circle parameterization:
+  // x = (r0+tR)cos(phi0) - tR cos(t+phi0)
+  // y = (r0+tR)sin(phi0) - tR sin(t+phi0)
+  // where qb is the sign of the curvature, tR is the track's signed radius and r0 
+  // is the DCA of helix to origin
+  //
+  double tR = 1./crv;            // track radius signed
+  double cs = TMath::Sqrt((1-sn)*(1+sn));
+  double x0 = fX - sn*tR;        // helix center coordinates
+  double y0 = fy + cs*tR;
+  double phi0 = TMath::ATan2(y0,x0);  // angle of PCA wrt to the origin
+  if (tR<0) phi0 += TMath::Pi();
+  if      (phi0 > TMath::Pi()) phi0 -= 2.*TMath::Pi();
+  else if (phi0 <-TMath::Pi()) phi0 += 2.*TMath::Pi();
+  double cs0 = TMath::Cos(phi0);
+  double sn0 = TMath::Sin(phi0);
+  double r0 = x0*cs0 + y0*sn0 - tR; // DCA to origin
+  double r2R = 1.+r0/tR;
+  //
+  //
+  if (r2R<kAlmost0) return kFALSE;  // helix is centered at the origin, no specific intersection with other concetric circle
+  if (!xyz && !alpSect) return kTRUE;
+  double xr2R = xr/tR;
+  double r2Ri = 1./r2R;
+  // the intersection cos(t) = [1 + (r0/tR+1)^2 - (r0/tR)^2]/[2(1+r0/tR)]
+  double cosT = 0.5*(r2R + (1-xr2R*xr2R)*r2Ri);
+  if ( TMath::Abs(cosT)>kAlmost1 ) {
+    //    printf("Does not reach : %f %f\n",r0,tR);
+    return kFALSE; // track does not reach the radius xr
+  }
+  //
+  double t = TMath::ACos(cosT);
+  if (tR<0) t = -t;
+  // intersection point
+  double xyzi[3];
+  xyzi[0] = x0 - tR*TMath::Cos(t+phi0);
+  xyzi[1] = y0 - tR*TMath::Sin(t+phi0);
+  if (xyz) { // if postition is requested, then z is needed:
+    double t0 = TMath::ATan2(cs,-sn) - phi0;
+    double z0 = fz - t0*tR*tgl;    
+    xyzi[2] = z0 + tR*t*tgl;
+  }
+  else xyzi[2] = 0;
+  //
+  Local2GlobalPosition(xyzi,fAlpha);
+  //
+  if (xyz) {
+    xyz[0] = xyzi[0];
+    xyz[1] = xyzi[1];
+    xyz[2] = xyzi[2];
+  }
+  //
+  if (alpSect) {
+    double &alp = *alpSect;
+    // determine the sector of crossing
+    double phiPos = TMath::Pi()+TMath::ATan2(-xyzi[1],-xyzi[0]);
+    int sect = ((Int_t)(phiPos*TMath::RadToDeg()))/20;
+    alp = TMath::DegToRad()*(20*sect+10);
+    double x2r,f1,f2,r1,r2,dx,dy2dx,yloc=0, ylocMax = xr*TMath::Tan(TMath::Pi()/18); // min max Y within sector at given X
+    //
+    while(1) {
+      Double_t ca=TMath::Cos(alp-fAlpha), sa=TMath::Sin(alp-fAlpha);
+      if ((cs*ca+sn*sa)<0) {
+	AliDebug(1,Form("Rotation to target sector impossible: local cos(phi) would become %.2f",cs*ca+sn*sa));
+	return kFALSE;
+      }
+      //
+      f1 = sn*ca - cs*sa;
+      if (TMath::Abs(f1) >= kAlmost1) {
+	AliDebug(1,Form("Rotation to target sector impossible: local sin(phi) would become %.2f",f1));
+	return kFALSE;
+      }
+      //
+      double tmpX =  fX*ca + fy*sa;
+      double tmpY = -fX*sa + fy*ca;
+      //
+      // estimate Y at X=xr
+      dx=xr-tmpX;
+      x2r = crv*dx;
+      f2=f1 + x2r;
+      if (TMath::Abs(f2) >= kAlmost1) {
+	AliDebug(1,Form("Propagation in target sector failed ! %.10e",f2));
+	return kFALSE;
+      }
+      r1 = TMath::Sqrt((1.-f1)*(1.+f1));
+      r2 = TMath::Sqrt((1.-f2)*(1.+f2));
+      dy2dx = (f1+f2)/(r1+r2);
+      yloc = tmpY + dx*dy2dx;
+      if      (yloc>ylocMax)  {alp += 2*TMath::Pi()/18; sect++;}
+      else if (yloc<-ylocMax) {alp -= 2*TMath::Pi()/18; sect--;}
+      else break;
+      if      (alp >= TMath::Pi()) alp -= 2*TMath::Pi();
+      else if (alp < -TMath::Pi()) alp += 2*TMath::Pi();
+      //      if (sect>=18) sect = 0;
+      //      if (sect<=0) sect = 17;
+    }
+    //
+    // if alpha was requested, then recalculate the position at intersection in sector
+    if (xyz) {
+      xyz[0] = xr;
+      xyz[1] = yloc;
+      if (TMath::Abs(x2r)<0.05) xyz[2] = fz + dx*(r2 + f2*dy2dx)*tgl;
+      else {
+	// for small dx/R the linear apporximation of the arc by the segment is OK,
+	// but at large dx/R the error is very large and leads to incorrect Z propagation
+	// angle traversed delta = 2*asin(dist_start_end / R / 2), hence the arc is: R*deltaPhi
+	// The dist_start_end is obtained from sqrt(dx^2+dy^2) = x/(r1+r2)*sqrt(2+f1*f2+r1*r2)
+	// Similarly, the rotation angle in linear in dx only for dx<<R
+	double chord = dx*TMath::Sqrt(1+dy2dx*dy2dx);   // distance from old position to new one
+	double rot = 2*TMath::ASin(0.5*chord*crv); // angular difference seen from the circle center
+	xyz[2] = fz + rot/crv*tgl;
+      }
+      Local2GlobalPosition(xyz,alp);
+    }
+  }
+  return kTRUE;  
+  //
+}
+
+
+Double_t  AliExternalTrackParam::GetParameterAtRadius(Double_t r, Double_t bz, Int_t parType) const
+{
+  //
+  // Get track parameters at the radius of interest.
+  // Given function is aimed to be used to interactivelly (tree->Draw())
+  // access track properties at different radii
+  //
+  // TO BE USED WITH SPECICAL CARE - 
+  //     it is aimed to be used for rough calculation as constant field and  
+  //     no correction for material is used
+  //  
+  // r  - radius of interest
+  // bz - magentic field 
+  // retun values dependens on parType:
+  //    parType = 0  -gx 
+  //    parType = 1  -gy 
+  //    parType = 2  -gz 
+  //
+  //    parType = 3  -pgx 
+  //    parType = 4  -pgy 
+  //    parType = 5  -pgz
+  //
+  //    parType = 6  - r
+  //    parType = 7  - global position phi
+  //    parType = 8  - global direction phi
+  //    parType = 9  - direction phi- positionphi
+  if (parType<0) {
+    parType=-1;
+     return 0;
+  }
+  Double_t xyz[3];
+  Double_t pxyz[3];  
+  Double_t localX=0;
+  Bool_t res = GetXatLabR(r,localX,bz,1);
+  if (!res) {
+    parType=-1;
+    return 0;
+  }
+  //
+  // position parameters
+  // 
+  GetXYZAt(localX,bz,xyz); 
+  if (parType<3)   {
+    return xyz[parType];
+  }
+
+  if (parType==6) return TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+  if (parType==7) return TMath::ATan2(xyz[1],xyz[0]);
+  //
+  // momenta parameters
+  //
+  GetPxPyPzAt(localX,bz,pxyz); 
+  if (parType==8) return TMath::ATan2(pxyz[1],pxyz[0]);
+  if (parType==9) {
+    Double_t diff = TMath::ATan2(pxyz[1],pxyz[0])-TMath::ATan2(xyz[1],xyz[0]);
+    if (diff>TMath::Pi()) diff-=TMath::TwoPi();
+    if (diff<-TMath::Pi()) diff+=TMath::TwoPi();
+    return diff;
+  }
+  if (parType>=3&&parType<6) {
+    return pxyz[parType%3];
+  }
+  return 0;
 }

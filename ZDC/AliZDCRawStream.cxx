@@ -268,15 +268,16 @@ void AliZDCRawStream::ReadCDHHeader()
 {
   // Reading CDH 
   const AliRawDataHeader* header = fRawReader->GetDataHeader();
-  if(!header) {
+  const AliRawDataHeaderV3* headerV3 = fRawReader->GetDataHeaderV3();
+  if(!header && !headerV3) {
       AliError(" No CDH in raw data streaming");
       fRawReader->AddMajorErrorLog(kCDHError);
       return;
   }
-  else{
+
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Data Size = %x\n",fRawReader->GetDataSize());
 
-    UChar_t message = header->GetAttributes();
+  UChar_t message = header ? header->GetAttributes() : headerV3->GetAttributes();
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Attributes %x\n",message);
     
     if((message & 0xf0) == 0x0){ // PHYSICS RUN
@@ -315,9 +316,8 @@ void AliZDCRawStream::ReadCDHHeader()
        //AliInfo("\t ZDC readout card used: ZRC");
     }
 
-    if(header->GetL1TriggerMessage() & 0x1){ // Calibration bit set in CDH
-      fIsCalib = kTRUE;
-    }
+    fIsCalib = (header ? header->GetL1TriggerMessage() : headerV3->GetL1TriggerMessage()) & 0x1;
+
     //printf("\t AliZDCRawStream::ReadCDHHeader -> L1TriggerMessage %x\n",header->GetL1TriggerMessage());
     //printf("\t AliZDCRawStream::ReadCDHHeader -> Calibration bit = %d\n",fIsCalib);    
     
@@ -367,7 +367,6 @@ void AliZDCRawStream::ReadCDHHeader()
       fRawReader->AddMajorErrorLog(kDARCError);
     }
     */
-  }
   
 }
 

@@ -68,6 +68,7 @@ ClassImp( AliCentralTrigger )
 AliCentralTrigger::AliCentralTrigger() :
    TObject(),
    fClassMask(0),
+   fClassMaskNext50(0),
    fClusterMask(0),
    fL0TriggerInputs(0),
    fL1TriggerInputs(0),
@@ -82,6 +83,7 @@ AliCentralTrigger::AliCentralTrigger() :
 AliCentralTrigger::AliCentralTrigger( TString & config ) :
    TObject(),
    fClassMask(0),
+   fClassMaskNext50(0),
    fClusterMask(0),
    fL0TriggerInputs(0),
    fL1TriggerInputs(0),
@@ -104,6 +106,7 @@ void AliCentralTrigger::DeleteConfiguration()
 {
   // Delete the active configuration
   fClassMask = 0;
+  fClassMaskNext50 = 0;
   fClusterMask = 0;
   fL0TriggerInputs = 0;
   fL1TriggerInputs = 0;
@@ -119,6 +122,7 @@ void AliCentralTrigger::Reset()
 {
    // Reset Class Mask and classes
    fClassMask = 0;
+   fClassMaskNext50 = 0;
    fClusterMask = 0;
    fL0TriggerInputs = 0;
    fL1TriggerInputs = 0;
@@ -133,18 +137,19 @@ void AliCentralTrigger::Reset()
      }
    }
 }
-
 //_____________________________________________________________________________
 void AliCentralTrigger::MakeBranch( TString name, TTree * tree )
 {
    // Make a branch to store only trigger class mask event by event
+   // Run2 payload
 
    if( tree )  {
       AliDebug( 1, "Got Tree from folder." );
       TBranch* branch = tree->GetBranch( name );
       if( branch == 0x0 ) {
+         //branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClusterMask/i:fL0TriggerInputs/i:fL1TriggerInputs/i:fL2TriggerInputs/s" );
          AliDebug( 1, "Creating new branch" );
-         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClusterMask/i:fL0TriggerInputs/i:fL1TriggerInputs/i:fL2TriggerInputs/s" );
+         branch = tree->Branch( name, &(this->fClassMask), "fClassMask/l:fClassMaskNext50/l:fClusterMask/i:fL0TriggerInputs/i:fL1TriggerInputs/i:fL2TriggerInputs/s" );
          branch->SetAutoDelete( kFALSE );
       }
       else {
@@ -153,7 +158,6 @@ void AliCentralTrigger::MakeBranch( TString name, TTree * tree )
       }
    }
 }
-
 //_____________________________________________________________________________
 Bool_t AliCentralTrigger::LoadConfiguration( TString & config )
 {
@@ -239,6 +243,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
       TObjArray* detArray = runLoader->GetAliRun()->Detectors();
       // Reset Mask
       fClassMask = 0;
+      fClassMaskNext50 = 0;
       fClusterMask = 0;
       // Reset configuration object (inputs and classes)
       fConfiguration->Reset();
@@ -300,7 +305,7 @@ Bool_t AliCentralTrigger::RunTrigger( AliRunLoader* runLoader, const char *detec
 
       // Save trigger mask
       tree->Fill();
-      AliDebug(1, Form("Event:%d  Class Mask:0x%llX", iEvent,fClassMask ) );
+      AliDebug(1, Form("Event:%d  Class Mask:0x%llX 0x%llX", iEvent,fClassMask,fClassMaskNext50 ) );
    } // end event loop
 
    Reset();
@@ -338,11 +343,14 @@ void AliCentralTrigger::TriggerInputs()
  }
 }
 //_____________________________________________________________________________
-ULong64_t AliCentralTrigger::TriggerClasses()
+ULong64_t  AliCentralTrigger::TriggerClasses()
 {
   // Check trigger conditions and create the trigger class
   // and trigger cluster masks
+  // Updated to 100 classes
+  // It seems nobody uses return value
   fClassMask = 0;
+  fClassMaskNext50 = 0;
   fClusterMask = 0;
   if (fConfiguration) {
     const TObjArray& classesArray = fConfiguration->GetClasses();
@@ -351,13 +359,14 @@ ULong64_t AliCentralTrigger::TriggerClasses()
       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
       trclass->Trigger( fConfiguration->GetInputs(), fConfiguration->GetFunctions() );
       fClassMask |= trclass->GetValue();
+      fClassMaskNext50 |= trclass->GetValueNext50();
       if (trclass->GetStatus()) {
 	AliTriggerCluster *trclust = trclass->GetCluster();
 	fClusterMask |= AliDAQ::DetectorPattern(trclust->GetDetectorsInCluster());
       }
     }
   }
-  return fClassMask;
+  return 0;
 }
 //_____________________________________________________________________________
 TObjArray* AliCentralTrigger::GetFiredClasses() const
@@ -383,7 +392,7 @@ void AliCentralTrigger::Print( const Option_t*  ) const
 {
    // Print
    cout << "Central Trigger: " << endl;
-   cout << "  Trigger Class Mask: 0x" << hex << fClassMask << dec << endl;
+   cout << "  Trigger Class Mask: 1..50 0x" << hex << fClassMask << " 51-100 0x"<< fClassMaskNext50 << dec << endl;
    if (fConfiguration) fConfiguration->Print();
    cout << endl;
 }
@@ -451,6 +460,10 @@ Bool_t AliCentralTrigger::CheckTriggeredDetectors() const
     for( Int_t j=0; j<nclasses; j++ ) {
       AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At( j );
       if (trclass->GetMask() & fClassMask) { // class was fired
+	AliTriggerCluster *trclust = trclass->GetCluster();
+	clusterMask |= AliDAQ::DetectorPattern(trclust->GetDetectorsInCluster());
+      }
+      if (trclass->GetMaskNext50() & fClassMaskNext50) { // class was fired
 	AliTriggerCluster *trclust = trclass->GetCluster();
 	clusterMask |= AliDAQ::DetectorPattern(trclust->GetDetectorsInCluster());
       }

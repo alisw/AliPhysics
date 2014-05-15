@@ -624,6 +624,24 @@ Int_t AliTRDtrackerV1::FollowProlongation(AliTRDtrackV1 &t)
     Double_t cov[3]; tracklet->GetCovAt(x, cov);
     Double_t p[2] = { tracklet->GetY(), tracklet->GetZ()};
     Double_t chi2 = ((AliExternalTrackParam)t).GetPredictedChi2(p, cov);
+    if(fkReconstructor->IsDebugStreaming()){
+      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+      AliExternalTrackParam param0(t);
+      AliExternalTrackParam param1(t);
+      param1.Update(p, cov);
+      TVectorD vcov(3,cov);
+      TVectorD vpar(3,p);
+      cstreamer << "FollowProlongationInfo"
+		<< "EventNumber="	<< eventNumber
+		<< "iplane="<<iplane
+		<< "vcov.="<<&vcov
+	        << "vpar.="<<&vpar
+		<< "tracklet.="      << tracklet
+		<< "param0.="		<< &param0
+		<< "param1.="		<< &param1
+		<< "\n";
+    }
     if (chi2 < 1e+10 && ((AliExternalTrackParam&)t).Update(p, cov)){ 
       // Register info to track
       t.SetNumberOfClusters();
@@ -970,6 +988,26 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       AliDebug(4, Form("Failed Chi2[%f]", chi2));
       continue; 
     }
+     if(fkReconstructor->IsDebugStreaming()){
+      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
+      //      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
+      AliExternalTrackParam param0(t);
+      AliExternalTrackParam param1(t);
+      param1.Update(p, cov);
+      TVectorD vcov(3,cov);
+      TVectorD vpar(3,p);
+      (*cstreamer) << "FollowBackProlongationInfo"
+		<< "EventNumber="	<< eventNumber
+		<< "chi2="<<chi2
+		<< "iplane="<<ily
+		<< "vcov.="<<&vcov
+	        << "vpar.="<<&vpar
+		<< "tracklet.="      << ptrTracklet
+		<< "param0.="		<< &param0
+		<< "param1.="		<< &param1
+		<< "\n";
+    }
+
     // mark track as entering the FIDUCIAL volume of TRD
     if(kStoreIn){
       t.SetTrackIn();
@@ -1867,7 +1905,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
 
 /*    // Correct for mean material budget
     Double_t dEdx(0.),
-             bg(t.GetP()/mass);
+             bg(TMath::Abs(t.GetP()/mass));
     if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=3){
       const char *pn[] = {"rho", "x/X0", "<A>", "<Z>", "L", "<Z/A>", "Nb"};
       printf("D-AliTRDtrackerV1::PropagateTo(): x[%6.2f] bg[%6.2f]\n", xpos, bg);

@@ -265,7 +265,7 @@ UChar_t AliAltroBuffer::WriteRCUTrailer(Int_t rcuId)
 
   UInt_t currentFilePos = fFile->Tellp();
   UInt_t size = currentFilePos-fDataHeaderPos;
-  size -= sizeof(AliRawDataHeader);
+  size -= sizeof(AliRawDataHeaderV3);
   
   if ((size % 5) != 0) {
     AliFatal(Form("The current raw data payload is not a mutiple of 5 (%d) ! Can not write the RCU trailer !",size));

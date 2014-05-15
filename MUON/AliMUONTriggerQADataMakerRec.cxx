@@ -603,13 +603,19 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     Int_t countAllBoards = 0;
 
     Bool_t containTriggerData = kFALSE;
-  Bool_t hasReadoutErrors = kFALSE;
+    Bool_t hasReadoutErrors = kFALSE;
     AliMUONRawStreamTriggerHP rawStreamTrig(rawReader);
     while (rawStreamTrig.NextDDL()) 
       {
        containTriggerData = kTRUE;
 
-        Bool_t scalerEvent =  rawReader->GetDataHeader()->GetL1TriggerMessage() & 0x1;
+       const AliRawDataHeader * cdh = rawReader->GetDataHeader();
+       const AliRawDataHeaderV3 * cdh3 = rawReader->GetDataHeaderV3();
+       
+       if (!cdh && !cdh3) continue;
+
+       Bool_t scalerEvent = ((cdh ?  cdh->GetL1TriggerMessage() : cdh3->GetL1TriggerMessage()) & 0x1) == 0x1;
+
         if ( scalerEvent ) AliDebug(1,Form("Scaler event: evtSpecie recoParam %s  QA %s\n",
                                            AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(GetRecoParam()->GetEventSpecie())),
                                            AliRecoParam::GetEventSpecieName(CurrentEventSpecie())));
@@ -783,9 +789,9 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 
       Float_t readoutErrors[AliMUONQAIndices::kNtrigStructErrorBins] = {
 	countAllBoards>0?((Float_t)rawStreamTrig.GetLocalEoWErrors())/((Float_t)countAllBoards):0,
-	((Float_t)rawStreamTrig.GetRegEoWErrors())/16.,
-	((Float_t)rawStreamTrig.GetGlobalEoWErrors())/6.,
-	((Float_t)rawStreamTrig.GetDarcEoWErrors())/2.
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetRegEoWErrors())/16.),
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetGlobalEoWErrors())/6.),
+	static_cast<Float_t>(((Float_t)rawStreamTrig.GetDarcEoWErrors())/2.)
       };
     
       for (Int_t ibin=0; ibin<AliMUONQAIndices::kNtrigStructErrorBins; ibin++){
@@ -809,8 +815,8 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
       Float_t fraction[AliMUONQAIndices::kNtrigCalibSummaryBins] = {
 	((Float_t)(nStripsTot - nFiredStrips)) / ((Float_t)nStripsTot),
         (Float_t)nDeadLocal / ((Float_t)AliMUONConstants::NTriggerCircuit()),
-	(Float_t)nDeadRegional / 16.,
-	(Float_t)nDeadGlobal / 6., // Number of bits of global response
+	static_cast<Float_t>((Float_t)nDeadRegional / 16.),
+	static_cast<Float_t>((Float_t)nDeadGlobal / 6.), // Number of bits of global response
 	(Float_t)nNoisyStrips / ((Float_t)nStripsTot),
       };
 

@@ -127,7 +127,12 @@ public:
   void SetDefaultStorage(const char* uri);
   void SetSpecificStorage(const char* calibType, const char* uri);
   void SetCDBSnapshotMode(const char* snapshotFileName);
-
+  void AddCheckRecoCDBvsSimuCDB(const char* cdbpath,const char* comment="");
+  void RemCheckRecoCDBvsSimuCDB(const char* cdbpath);
+  void ResetCheckRecoCDBvsSimuCDB() {fCheckRecoCDBvsSimuCDB.Delete();}
+  void RectifyCDBurl(TString& url);
+  const TObjArray* GetCheckRecoCDBvsSimuCDB() const {return &fCheckRecoCDBvsSimuCDB;}
+  void CheckRecoCDBvsSimuCDB();
   Bool_t MisalignGeometry(const TString& detectors);
 
   void           SetAlignObjArray(TObjArray *array)
@@ -170,13 +175,7 @@ public:
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
   enum {
-// #ifdef MFT_UPGRADE 
-//     kNDetectors = 16   // number of detectors
-// #else
-//     kNDetectors = 15   // number of detectors
-// #endif 
-    //kNDetectors = 16   // number of detectors    // AU
-    kNDetectors = 17   // number of detectors    + AD
+    kNDetectors = 18   // number of detectors    + AD +FIT //alla
   };
   static Int_t   GetDetIndex(const char * detector);
   static const char** GetDetectorNames() { return fgkDetectorName; }
@@ -235,6 +234,7 @@ private:
   Bool_t         RunLocalEventReconstruction(const TString& detectors);
   Bool_t         RunVertexFinder(AliESDEvent*& esd);
   Bool_t         RunMuonTracking(AliESDEvent*& esd);
+  Bool_t         RunMFTTrackingMU(AliESDEvent*& esd);      // AU
   Bool_t         RunSPDTrackleting(AliESDEvent*& esd);
   Bool_t         RunMultFinder(AliESDEvent*& esd);
   Bool_t         RunTracking(AliESDEvent*& esd, AliESDpid &PID);
@@ -279,6 +279,7 @@ private:
   Bool_t         fRunVertexFinder;    // run the vertex finder
   Bool_t         fRunVertexFinderTracks;    // run the vertex finder with tracks
   Bool_t         fRunMuonTracking;    // run the MUON tracking
+  Bool_t         fRunMFTTrackingMU;   // run the MFT+MUON tracking      // AU
   Bool_t         fRunV0Finder;        // run the ESD V0 finder
   Bool_t         fRunCascadeFinder;   // run the ESD cascade finder
   Bool_t         fRunMultFinder;      // run the trackleter for ITS clusters
@@ -345,6 +346,7 @@ private:
   TString	 fCDBUri;	      //! Uri of the default CDB storage
   TString	 fQARefUri;	    //! Uri of the default QA reference storage
   TObjArray      fSpecCDBUri;         //! Array with detector specific CDB storages
+  TObjArray      fCheckRecoCDBvsSimuCDB; // Array for CDB items which must be the same in the sim and rec
   Bool_t 	 fInitCDBCalled;               //! flag to check if CDB storages are already initialized
   Bool_t         fCDBSnapshotMode;             //! flag true if we are setting the CDB Manager in snapshot mode
   Bool_t 	 fSetRunNumberFromDataCalled;  //! flag to check if run number is already loaded from run loader
@@ -362,6 +364,9 @@ private:
 
   // Plane Efficiency Evaluation
   Bool_t         fRunPlaneEff ;      // Evaluate Plane Efficiency
+
+  // PID
+  AliESDpid*     fESDpid;                      // PID object
 
   // New members needed in order to split Run method
   // into InitRun,RunEvent,FinishRun methods
@@ -407,7 +412,7 @@ private:
   Int_t                fMaxVMEM;        //  max VMEM memory, MB
   static const char*   fgkStopEvFName;  //  filename for stop.event stamp
   //
-  ClassDef(AliReconstruction, 46)      // class for running the reconstruction
+  ClassDef(AliReconstruction, 49)      // class for running the reconstruction
 };
 
 #endif

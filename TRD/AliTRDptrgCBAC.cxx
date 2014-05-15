@@ -44,8 +44,8 @@ AliTRDptrgCBAC::AliTRDptrgCBAC(AliRunLoader *rl)
   fRunLoader(rl),
   fLUTArray(),
   fFEBArray(),
-  fPosition(kUnknown),
-  fOperatingMode(kDigits),
+  fPosition(AliTRDptrgParam::kUnknown),
+  fOperatingMode(AliTRDptrgParam::kDigits),
   fParam(0x0)
 {
   //
@@ -58,8 +58,8 @@ AliTRDptrgCBAC::AliTRDptrgCBAC(AliRunLoader *rl)
 
 //______________________________________________________________________________
 AliTRDptrgCBAC::AliTRDptrgCBAC(AliRunLoader *rl, 
-                               AliTRDptrgFEBPosition_t position,
-                               AliTRDptrgOperatingMode_t operatingMode,
+                               AliTRDptrgParam::AliTRDptrgFEBPosition_t position,
+                               AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode,
                                AliTRDptrgParam *param) 
   : TObject(),
   fRunLoader(rl),
@@ -76,28 +76,28 @@ AliTRDptrgCBAC::AliTRDptrgCBAC(AliRunLoader *rl,
   this->LoadParams(); // load parameters
  
   // T0
-  AliTRDptrgFEB *FEB = new AliTRDptrgFEB(this->fRunLoader, kTZERO, 
+  AliTRDptrgFEB *FEB = new AliTRDptrgFEB(this->fRunLoader, AliTRDptrgParam::kTZERO, 
                                          this->fOperatingMode, this->fPosition,
                                          0, this->fParam);
   this->fFEBArray.AddLast(FEB);
 
   // V0-1
-  FEB = new AliTRDptrgFEB(this->fRunLoader, kVZERO, this->fOperatingMode, 
+  FEB = new AliTRDptrgFEB(this->fRunLoader, AliTRDptrgParam::kVZERO, this->fOperatingMode, 
                           this->fPosition, 1, this->fParam);
   this->fFEBArray.AddLast(FEB);
 
   // V0-2
-  FEB = new AliTRDptrgFEB(this->fRunLoader, kVZERO, this->fOperatingMode, 
+  FEB = new AliTRDptrgFEB(this->fRunLoader, AliTRDptrgParam::kVZERO, this->fOperatingMode, 
                           this->fPosition, 2, this->fParam);
   this->fFEBArray.AddLast(FEB);
 
   // V0-3
-  FEB = new AliTRDptrgFEB(this->fRunLoader, kVZERO, this->fOperatingMode, 
+  FEB = new AliTRDptrgFEB(this->fRunLoader, AliTRDptrgParam::kVZERO, this->fOperatingMode, 
                           this->fPosition, 3, this->fParam);
   this->fFEBArray.AddLast(FEB);
 
   // V0-4
-  FEB = new AliTRDptrgFEB(this->fRunLoader, kVZERO, this->fOperatingMode, 
+  FEB = new AliTRDptrgFEB(this->fRunLoader, AliTRDptrgParam::kVZERO, this->fOperatingMode, 
                           this->fPosition, 4, this->fParam);
   this->fFEBArray.AddLast(FEB);
 

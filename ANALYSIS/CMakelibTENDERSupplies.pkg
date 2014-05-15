@@ -38,10 +38,11 @@ set ( SRCS
       TenderSupplies/AliHMPIDTenderSupply.cxx
       TenderSupplies/AliT0TenderSupply.cxx 
       TenderSupplies/AliTrackFixTenderSupply.cxx 
+      TenderSupplies/AliAnalysisTaskVZEROEqFactorTask.cxx 
 )
 
 string ( REPLACE ".cxx" ".h"  HDRS "${SRCS}")
 
 set ( DHDR  TenderSuppliesLinkDef.h)
 
-set ( EINCLUDE  ANALYSIS ANALYSIS/Tender TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC TRD T0 OADB EMCAL STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase TPC/Base)
+set ( EINCLUDE  ANALYSIS ANALYSIS/Tender TOF TRD/Cal VZERO ANALYSIS/TenderSupplies TPC TRD T0 OADB EMCAL STEER/STEER STEER/CDB STEER/ESD STEER/AOD STEER/STEERBase TPC/Base)

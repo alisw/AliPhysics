@@ -556,6 +556,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
   Double_t yEndOfAbsorber = trackParamEndOfAbsorber.GetBendingCoor();
   Double_t rAbsorber      = TMath::Sqrt(xEndOfAbsorber*xEndOfAbsorber + yEndOfAbsorber*yEndOfAbsorber);
   fHistRadiusEndOfAbsorber -> Fill(rAbsorber);
+  track -> SetRAtAbsorberEnd(rAbsorber);
   
   // if the radial distance of the track at the end of the absorber is smaller than a given radius, skip to the next track
   if (rAbsorber < fRAbsorberCut) return 4;
@@ -576,7 +577,7 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 	fCurrentTrack = (AliMuonForwardTrack*) fCandidateTracks->UncheckedAt(iTrack);
 	// if the old track is compatible with the new cluster, the track is updated and inserted as new track in the array 
 	// (several new tracks can be created for one old track)
-	if (FindClusterInPlane(iPlane) == 2) {
+	if (FindClusterInPlane(iPlane) == kDiverged) {
 	  fGlobalTrackingDiverged = kTRUE;
 	  if (fScaleSigmaClusterCut>0) fScaleSigmaClusterCut -= 0.1;
 	  return 6;
@@ -700,26 +701,26 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
     //    fOutputQAFile->cd();
 
-    Float_t finalCandidatesInfo[] = {Double_t(fRun),
-				     Double_t(fEv),
-				     Double_t(fCountRealTracksAnalyzedOfEvent),
-				     Double_t(nFinalTracks),
-				     Double_t(fLabelMC>=0),
-				     xVtx, yVtx, zVtx,
-				     motherPdg,
-				     Double_t(fMuonTrackReco->GetMatchTrigger()),
-				     Double_t(nClustersMC),
-				     Double_t(nGoodClusters),
-				     pt, theta, eta, 
-				     chi2AtPlane[0],
-				     chi2AtPlane[1],
-				     chi2AtPlane[2],
-				     chi2AtPlane[3],
-				     chi2AtPlane[4],
-				     chi2AtPlane[5],
-				     chi2AtPlane[6],
-				     chi2AtPlane[7],
-				     chi2AtPlane[8]};
+    Float_t finalCandidatesInfo[] = {static_cast<Float_t>(fRun),
+				     static_cast<Float_t>(fEv),
+				     static_cast<Float_t>(fCountRealTracksAnalyzedOfEvent),
+				     static_cast<Float_t>(nFinalTracks),
+				     static_cast<Float_t>(fLabelMC>=0),
+				     static_cast<Float_t>(xVtx), static_cast<Float_t>(yVtx), static_cast<Float_t>(zVtx),
+				     static_cast<Float_t>(motherPdg),
+				     static_cast<Float_t>(fMuonTrackReco->GetMatchTrigger()),
+				     static_cast<Float_t>(nClustersMC),
+				     static_cast<Float_t>(nGoodClusters),
+				     static_cast<Float_t>(pt), static_cast<Float_t>(theta), static_cast<Float_t>(eta), 
+				     static_cast<Float_t>(chi2AtPlane[0]),
+				     static_cast<Float_t>(chi2AtPlane[1]),
+				     static_cast<Float_t>(chi2AtPlane[2]),
+				     static_cast<Float_t>(chi2AtPlane[3]),
+				     static_cast<Float_t>(chi2AtPlane[4]),
+				     static_cast<Float_t>(chi2AtPlane[5]),
+				     static_cast<Float_t>(chi2AtPlane[6]),
+				     static_cast<Float_t>(chi2AtPlane[7]),
+				     static_cast<Float_t>(chi2AtPlane[8])};
     
     fNtuFinalCandidates -> Fill(finalCandidatesInfo);
 
@@ -762,35 +763,35 @@ Int_t AliMuonForwardTrackFinder::LoadNextTrack() {
 
   //  fOutputQAFile->cd();
   
-  Float_t finalBestCandidatesInfo[] = {Double_t(fRun),
-				       Double_t(fEv),
-				       Double_t(fCountRealTracksAnalyzedOfEvent),
-				       Double_t(nFinalTracks),
-				       Double_t(fLabelMC>=0),
-				       xVtx, yVtx, zVtx,
-				       motherPdg,
-				       Double_t(fMuonTrackReco->GetMatchTrigger()),
-				       Double_t(nClustersMC),
-				       Double_t(nGoodClustersBestCandidate),
-				       pt, theta, eta,
-				       chi2HistoryForBestCandidate[0],
-				       chi2HistoryForBestCandidate[1],
-				       chi2HistoryForBestCandidate[2],
-				       chi2HistoryForBestCandidate[3],
-				       chi2HistoryForBestCandidate[4],
-				       chi2HistoryForBestCandidate[5],
-				       chi2HistoryForBestCandidate[6],
-				       chi2HistoryForBestCandidate[7],
-				       chi2HistoryForBestCandidate[8],
-				       nClustersPerPlane[0],
-				       nClustersPerPlane[1],
-				       nClustersPerPlane[2],
-				       nClustersPerPlane[3],
-				       nClustersPerPlane[4],
-				       nClustersPerPlane[5],
-				       nClustersPerPlane[6],
-				       nClustersPerPlane[7],
-				       nClustersPerPlane[8]};
+  Float_t finalBestCandidatesInfo[] = {static_cast<Float_t>(fRun),
+				       static_cast<Float_t>(fEv),
+				       static_cast<Float_t>(fCountRealTracksAnalyzedOfEvent),
+				       static_cast<Float_t>(nFinalTracks),
+				       static_cast<Float_t>(fLabelMC>=0),
+				       static_cast<Float_t>(xVtx), static_cast<Float_t>(yVtx), static_cast<Float_t>(zVtx),
+				       static_cast<Float_t>(motherPdg),
+				       static_cast<Float_t>(fMuonTrackReco->GetMatchTrigger()),
+				       static_cast<Float_t>(nClustersMC),
+				       static_cast<Float_t>(nGoodClustersBestCandidate),
+				       static_cast<Float_t>(pt), static_cast<Float_t>(theta), static_cast<Float_t>(eta),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[0]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[1]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[2]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[3]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[4]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[5]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[6]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[7]),
+				       static_cast<Float_t>(chi2HistoryForBestCandidate[8]),
+				       static_cast<Float_t>(nClustersPerPlane[0]),
+				       static_cast<Float_t>(nClustersPerPlane[1]),
+				       static_cast<Float_t>(nClustersPerPlane[2]),
+				       static_cast<Float_t>(nClustersPerPlane[3]),
+				       static_cast<Float_t>(nClustersPerPlane[4]),
+				       static_cast<Float_t>(nClustersPerPlane[5]),
+				       static_cast<Float_t>(nClustersPerPlane[6]),
+				       static_cast<Float_t>(nClustersPerPlane[7]),
+				       static_cast<Float_t>(nClustersPerPlane[8])};
   
   fNtuFinalBestCandidates -> Fill(finalBestCandidatesInfo);
   
@@ -927,7 +928,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3, Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
-      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return kDiverged;
       newTrack->AddTrackParamAtMFTCluster(currentParamFront, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -981,7 +982,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     if (isGoodChi2) {
       AliDebug(3,Form("accepting cluster: chi2=%f (cut = %f)\n", chi2, chi2cut));
       AliMuonForwardTrack *newTrack = new ((*fCandidateTracks)[fCandidateTracks->GetEntriesFast()]) AliMuonForwardTrack(*fCurrentTrack);
-      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return 2;
+      if (fCandidateTracks->GetEntriesFast() > fMaxNCandidates) return kDiverged;
       newTrack->AddTrackParamAtMFTCluster(currentParamBack, *cluster);    // creating new track param and attaching the cluster
       AliDebug(2, Form("After plane %02d: newTrack->GetNMFTClusters() = %d (fCurrentTrack->GetNMFTClusters() = %d)", 
 		       planeId, newTrack->GetNMFTClusters(), fCurrentTrack->GetNMFTClusters()));
@@ -1013,7 +1014,7 @@ Int_t AliMuonForwardTrackFinder::FindClusterInPlane(Int_t planeId) {
     }
   }
 
-  return 0;
+  return kConverged;
   
 }
 
@@ -1183,6 +1184,7 @@ Double_t AliMuonForwardTrackFinder::TryOneCluster(const AliMUONTrackParam &track
 void AliMuonForwardTrackFinder::SeparateFrontBackClusters() {
 
   for (Int_t iPlane=0; iPlane<fNPlanesMFT; iPlane++) {
+    printf("Separating front/back clusters\n");
     fMFTClusterArrayFront[iPlane]->Delete();
     fMFTClusterArrayBack[iPlane] ->Delete();
     for (Int_t iCluster=0; iCluster<fMFTClusterArray[iPlane]->GetEntries(); iCluster++) {

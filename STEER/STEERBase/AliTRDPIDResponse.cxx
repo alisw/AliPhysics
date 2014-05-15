@@ -38,7 +38,8 @@
 
 #include "AliTRDPIDResponseObject.h"
 #include "AliTRDPIDResponse.h"
-#include "AliTRDTKDInterpolator.h"
+//#include "AliTRDTKDInterpolator.h"
+#include "AliTRDNDFast.h"
 
 ClassImp(AliTRDPIDResponse)
 
@@ -113,7 +114,7 @@ Bool_t AliTRDPIDResponse::Load(const Char_t * filename){
 }
 
 //____________________________________________________________
-Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod,Bool_t kNorm) const
+Int_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, const Float_t * const p, Double_t prob[AliPID::kSPECIES],ETRDPIDMethod PIDmethod,Bool_t kNorm) const
 {
   //
   // Calculate TRD likelihood values for the track based on dedx and 
@@ -130,27 +131,27 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
   //   kNorm - switch to normalize probabilities to 1. By default true. If false return not normalized prob.
   // 
   // Return value
-  //   true if calculation success
+  //   number of tracklets used for PID, 0 if no PID
     //
     AliDebug(3,Form(" Response for PID method: %d",PIDmethod));
 
 
     if(!fkPIDResponseObject){
 	AliDebug(3,"Missing reference data. PID calculation not possible.");
-	return kFALSE;
+	return 0;
     }
 
     for(Int_t is(AliPID::kSPECIES); is--;) prob[is]=.2;
     Double_t prLayer[AliPID::kSPECIES];
     Double_t dE[10], s(0.);
+    Int_t ntrackletsPID=0;
     for(Int_t il(kNlayer); il--;){
 	memset(prLayer, 0, AliPID::kSPECIES*sizeof(Double_t));
 	if(!CookdEdx(n, &dedx[il*n], &dE[0],PIDmethod)) continue;
-
-	s=0.;
+        s=0.;
         Bool_t filled=kTRUE;
 	for(Int_t is(AliPID::kSPECIES); is--;){
-	    if((PIDmethod==kLQ2D)&&(!(is==0||is==2)))continue;
+	    //if((PIDmethod==kLQ2D)&&(!(is==0||is==2)))continue;
 	    if((dE[0] > 0.) && (p[il] > 0.)) prLayer[is] = GetProbabilitySingleLayer(is, p[il], &dE[0],PIDmethod);
 	    AliDebug(3, Form("Probability for Species %d in Layer %d: %e", is, il, prLayer[is]));
 	    if(prLayer[is]<1.e-30){
@@ -171,17 +172,18 @@ Bool_t AliTRDPIDResponse::GetResponse(Int_t n, const Double_t * const dedx, cons
 	    if(kNorm) prLayer[is] /= s;
 	    prob[is] *= prLayer[is];
 	}
+	ntrackletsPID++;
     }
-    if(!kNorm) return kTRUE;
+    if(!kNorm) return ntrackletsPID;
 
     s=0.;
     for(Int_t is(AliPID::kSPECIES); is--;) s+=prob[is];
     if(s<1.e-30){
 	AliDebug(2, "Null total prob.");
-	return kFALSE;
+	return 0;
     }
     for(Int_t is(AliPID::kSPECIES); is--;) prob[is]/=s;
-    return kTRUE;
+    return ntrackletsPID;
 }
 
 //____________________________________________________________
@@ -194,10 +196,35 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
   AliDebug(1, Form("Make Probability for Species %d with Momentum %f", species, plocal));
 
   Double_t probLayer = 0.;
+
   Float_t pLower, pUpper;
 	
-  switch(PIDmethod){
-  case kNN: // NN
+  AliTRDNDFast *refUpper = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper,PIDmethod)),
+      *refLower = dynamic_cast<AliTRDNDFast *>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,PIDmethod));
+
+  // Do Interpolation exept for underflow and overflow
+  if(refLower && refUpper){
+      Double_t probLower = refLower->Eval(dEdx);
+      Double_t probUpper = refUpper->Eval(dEdx);
+
+      probLayer = probLower + (probUpper - probLower)/(pUpper-pLower) * (plocal - pLower);
+  } else if(refLower){
+     // underflow
+      probLayer = refLower->Eval(dEdx);
+  } else if(refUpper){
+      // overflow
+      probLayer = refUpper->Eval(dEdx);
+  } else {
+      AliError("No references available");
+  }
+  AliDebug(1, Form("Eval 1D dEdx %f Probability %e", dEdx[0],probLayer));
+
+  return probLayer;
+
+/* old implementation
+
+switch(PIDmethod){
+case kNN: // NN
       break;
   case kLQ2D: // 2D LQ
       {
@@ -206,12 +233,21 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
 	      Double_t point[kNslicesLQ2D];
 	      for(Int_t idim=0;idim<kNslicesLQ2D;idim++){point[idim]=dEdx[idim];}
 
-	      AliTRDTKDInterpolator *refLower = dynamic_cast<AliTRDTKDInterpolator*>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,kLQ2D));
-
-	      if(refLower){
+	      AliTRDTKDInterpolator *refUpper = dynamic_cast<AliTRDTKDInterpolator *>(fkPIDResponseObject->GetUpperReference((AliPID::EParticleType)species, plocal, pUpper,kLQ2D)),
+	      *refLower = dynamic_cast<AliTRDTKDInterpolator *>(fkPIDResponseObject->GetLowerReference((AliPID::EParticleType)species, plocal, pLower,kLQ2D));
+	      // Do Interpolation exept for underflow and overflow
+	      if(refLower && refUpper){
+                  Double_t probLower=0,probUpper=0;
+		  refLower->Eval(point,probLower,error);
+                  refUpper->Eval(point,probUpper,error);
+		  probLayer = probLower + (probUpper - probLower)/(pUpper-pLower) * (plocal - pLower);
+	      } else if(refLower){
+		  // underflow
 		  refLower->Eval(point,probLayer,error);
-	      }
-	      else {
+		  } else if(refUpper){
+		  // overflow
+		  refUpper->Eval(point,probLayer,error);
+	      } else {
 		  AliError("No references available");
 	      }
 	      AliDebug(2,Form("Eval 2D Q0 %f Q1 %f P %e Err %e",point[0],point[1],probLayer,error));
@@ -242,8 +278,10 @@ Double_t AliTRDPIDResponse::GetProbabilitySingleLayer(Int_t species, Double_t pl
       break;
   default:
       break;
-  }
-  return probLayer;
+      }
+      return probLayer;
+      */
+
 }
 
 //____________________________________________________________
@@ -270,9 +308,13 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[0]=0;
       out[1]=0;
       for(Int_t islice = 0; islice < nSlice; islice++){
+	  if(in[islice]<=0){out[0]=0;out[1]=0;return kFALSE;}  // Require that all slices are filled
 	  if(islice<fkPIDResponseObject->GetNSlicesQ0())out[0]+= in[islice];
 	  else out[1]+= in[islice];
       }
+      // normalize signal to number of slices
+      out[0]*=1./Double_t(fkPIDResponseObject->GetNSlicesQ0());
+      out[1]*=1./Double_t(nSlice-fkPIDResponseObject->GetNSlicesQ0());
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx Q0 %f Q1 %f",out[0],out[1]));
       break;
@@ -280,6 +322,7 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
       out[0]= 0.;
       for(Int_t islice = 0; islice < nSlice; islice++)
 	  if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
+      out[0]*=1./Double_t(nSlice);
       if(out[0] < 1e-6) return kFALSE;
       AliDebug(3,Form("CookdEdx dEdx %f",out[0]));
       break;

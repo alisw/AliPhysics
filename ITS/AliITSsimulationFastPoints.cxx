@@ -132,7 +132,7 @@ void AliITSsimulationFastPoints::CreateFastRecPoints(AliITSmodule *mod,
 	  Int_t lab[4] = {hit->GetTrack(),-3,-3,ind};
 	  Float_t q=kdEdXtoQ*(hitdestep+deltaDe);
 	  if(hitlay<3) q=1.; // SPD binary readout
-	  Float_t hitv[6] = {locals[0],locals[2],sigmarphi*sigmarphi,sigmaz*sigmaz,q,q};
+	  Float_t hitv[6] = {locals[0],locals[2],static_cast<Float_t>(sigmarphi*sigmarphi),static_cast<Float_t>(sigmaz*sigmaz),q,q};
 	  Int_t info[3] = {0,0,lyr};
 	  AliITSRecPoint rp(lab,hitv,info,kTRUE);
 

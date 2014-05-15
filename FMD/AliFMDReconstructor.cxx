@@ -188,7 +188,8 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
     AliError("No digits tree passed");
     return;
   }
-  static TClonesArray* array = new TClonesArray("AliFMDDigit");
+  static TClonesArray* array = 0;
+  if (!array) array = new TClonesArray("AliFMDDigit");
   digitsTree->Branch("FMD", &array);
   array->Clear();
   
@@ -198,14 +199,15 @@ AliFMDReconstructor::ConvertDigits(AliRawReader* reader,
   rawRead.ReadAdcs(array);
 
   Int_t nWrite = digitsTree->Fill();
-  AliFMDDebug(1, ("Got a grand total of %d digits, wrote %d bytes to tree", 
-		   array->GetEntriesFast(), nWrite));
+  AliDebugF(1, "Got a grand total of %d digits, wrote %d bytes to tree", 
+	    array->GetEntriesFast(), nWrite);
 
   
   AliFMDAltroMapping* map = AliFMDParameters::Instance()->GetAltroMap();
-  for (size_t i = 1; i <= 3; i++) { 
+  for (UShort_t i = 1; i <= 3; i++) { 
     fZS[i-1]       = rawRead.IsZeroSuppressed(map->Detector2DDL(i));
     fZSFactor[i-1] = rawRead.NoiseFactor(map->Detector2DDL(i));
+    AliDebugF(2, "Noise factor for FMD%hu: %d", i, fZSFactor[i-1]);
   }
 }
 
@@ -312,19 +314,30 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 
       for (UShort_t s = 0; s < nS; s++) { 
 	for (UShort_t t = 0; t < nT; t++) {
+	  // A strip can be marked `bad' for two reasons: 
+	  // 
+	  // - The raw reader fails to read the value 
+	  // - The strip is marked in OCDB as bad (IsDead) 
+	  // 
+	  // Hence, a dead strip will always be marked kInvalid here, 
+	  // while a non-dead bad-read strip will be filled with 0. 
 	  if (fBad(d, r, s, t)) { 
-	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as bad", d, r, s, t));
+	    AliDebugF(5, "Marking FMD%d%c[%2d,%3d] as bad", d, r, s, t);
 	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
 	  }	    
 	  if (param->IsDead(d, r, s, t)) { 
-	    AliDebug(5, Form("Marking FMD%d%c[%2d,%3d] as dead", d, r, s, t));
+	    AliDebugF(5, "Marking FMD%d%c[%2d,%3d] as dead", d, r, s, t);
 	    esd->SetMultiplicity(d, r, s, t, AliESDFMD::kInvalidMult);
 	    // esd->SetEta(d, r, s, t, AliESDFMD::kInvalidEta);
 	  }
 	  else if (esd->Multiplicity(d, r, s, t) == AliESDFMD::kInvalidMult) {
-	    AliDebug(10, Form("Setting null signal in FMD%d%c[%2d,%3d]", 
-			      d, r, s, t));
+	    AliDebugF(20, "Setting null signal in FMD%d%c[%2d,%3d]", 
+		      d, r, s, t);
 	    esd->SetMultiplicity(d, r, s, t, 0);
+	  }
+	  else {
+	    AliDebugF(10, "Setting FMD%d%c[%2d,%3d]=%f",d,r,s,t,
+		      esd->Multiplicity(d, r, s, t));
 	  }
 	}
       }
@@ -333,15 +346,58 @@ AliFMDReconstructor::MarkDeadChannels(AliESDFMD* esd) const
 }
 
 //____________________________________________________________________
+Bool_t
+AliFMDReconstructor::PreReconstruct() const
+{
+  AliFMDDebug(1, ("Before reoconstructing"));
+  if (fZombie) { 
+    AliWarning("I'm a zombie - cannot do anything");
+    return false;
+  }
+
+  // Get our vertex
+  GetVertex(fESD);
+
+  // Reset bad flags 
+  fBad.Reset(false);
+
+  // Reset the output ESD 
+  if (fESDObj) {
+    fESDObj->Clear();
+    
+    // Pre-set eta values 
+    for (UShort_t d=1; d<=3; d++) { 
+      UShort_t nQ = (d == 1 ? 1 : 2);
+      for (UShort_t q=0; q<nQ; q++) { 
+	UShort_t nStr = (q == 0 ? 512 : 256);
+	Char_t   r    = (q == 0 ? 'I' : 'O');
+	
+	for (UShort_t t = 0; t < nStr; t++) { 
+	  Float_t eta, phi;
+	  // Always use sector 0
+	  PhysicalCoordinates(d, r, 0, t, eta, phi);
+	  fESDObj->SetEta(d, r, 0, t, eta);
+	}
+      }
+    }
+  }
+
+
+  return true;
+}
+
+//____________________________________________________________________
 void 
 AliFMDReconstructor::Reconstruct(AliFMDRawReader& rawReader) const
 {
+  // Reconstruct directly from raw data (no intermediate output on
+  // digit tree or rec point tree).  
+  // 
+  // Parameters: 
+  //   rawReader	FMD Raw event reader 
   AliFMDDebug(1, ("Reconstructing from FMD raw reader"));
-  if (fZombie) { 
-    AliWarning("I'm a zombie - cannot do anything");
-    return;
-  }
-  fBad.Reset(false);
+  if (!PreReconstruct()) return;
+
   UShort_t det, sec, str, fac;
   Short_t  adc, oldDet = -1;
   Bool_t   zs;
@@ -427,19 +483,15 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
   //   digitsTree	Pointer to a tree containing digits 
   //   clusterTree	Pointer to output tree 
   // 
-  if (fZombie) { 
-    AliWarning("I'm a zombie - cannot do anything");
-    return;
-  }
+  if (!PreReconstruct()) return;
+
   if (!fMult) fMult = new TClonesArray("AliFMDRecPoint");
 
   AliFMDDebug(1, ("Reconstructing from digits in a tree"));
-  GetVertex(fESD);
 
-
-
-  static TClonesArray* digits = new TClonesArray("AliFMDDigit");
-  TBranch*      digitBranch   = digitsTree->GetBranch("FMD");
+  // Get the digitis array 
+  static TClonesArray* digits      = new TClonesArray("AliFMDDigit");
+  TBranch*             digitBranch = digitsTree->GetBranch("FMD");
   if (!digitBranch) {
     Error("Exec", "No digit branch for the FMD found");
     return;
@@ -448,16 +500,16 @@ AliFMDReconstructor::Reconstruct(TTree* digitsTree,
 
   if (digits)  digits->Clear();
   if (fMult)   fMult->Clear();
-  if (fESDObj) fESDObj->Clear();
-  
+
+  // Create rec-point output branch 
   fNMult = 0;
   fTreeR = clusterTree;
   fTreeR->Branch("FMD", &fMult);
   
-  AliFMDDebug(5, ("Getting entry 0 from digit branch"));
+  AliDebug(5, "Getting entry 0 from digit branch");
   digitBranch->GetEntry(0);
   
-  AliFMDDebug(5, ("Processing digits"));
+  AliDebugF(5, "Processing %d digits", digits->GetEntriesFast());
   UseRecoParam(kTRUE);
   ProcessDigits(digits);
   UseRecoParam(kFALSE);
@@ -533,7 +585,7 @@ AliFMDReconstructor::ProcessDigit(AliFMDDigit* digit) const
   UShort_t sec = digit->Sector();
   UShort_t str = digit->Strip();
   Short_t  adc = digit->Counts();
- 
+  // if (AliLog::GetDebugLevel("FMD","")>3) digit->Print();
   ProcessSignal(det, rng, sec, str, adc);
 }
 
@@ -554,8 +606,13 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   //    rng	Strip ID
   //    adc     ADC counts
   // 
+  Int_t  dbg = AliLog::GetDebugLevel("FMD","");
+  Bool_t dhr = dbg > 3 && dbg < 10;
+  if (dhr) printf("FMD%d%c[%2d,%3d] adc=%4d ", det, rng, sec, str, adc);
+  
   if (adc >= AliFMDRawReader::kBadSignal) { 
-    AliFMDDebug(3, ("FMD%d%c[%2d,%3d] is marked bad", det, rng, sec, str));
+    AliFMDDebug(10, ("FMD%d%c[%2d,%3d] is marked bad", det, rng, sec, str));
+    if (dhr) Printf("bad");
     fBad(det,rng,sec,str) = true;
     return;
   }
@@ -563,24 +620,32 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   // Check that the strip is not marked as dead 
   AliFMDParameters* param  = AliFMDParameters::Instance();
   if (param->IsDead(det, rng, sec, str)) {
-    AliFMDDebug(3, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    AliFMDDebug(10, ("FMD%d%c[%2d,%3d] is dead", det, rng, sec, str));
+    if (dhr) Printf("dead");
     fBad(det,rng,sec,str) = true;
     return;
   }
   
   // digit->Print();
   // Get eta and phi 
-  Float_t eta, phi;
-  PhysicalCoordinates(det, rng, sec, str, eta, phi);
+  Float_t eta = fESDObj->Eta(det, rng, 0, str);
     
   // Substract pedestal. 
   UShort_t counts   = SubtractPedestal(det, rng, sec, str, adc);
-  if(counts == USHRT_MAX) return;
+  if(counts == USHRT_MAX)  { 
+    if (dhr) Printf("invalid");
+    return;
+  }
+  if (dhr) printf("counts=%4d ", counts);
   
     // Gain match digits. 
   Double_t edep     = Adc2Energy(det, rng, sec, str, eta, counts);
   // Get rid of nonsense energy
-  if(edep < 0)  return;
+  if(edep < 0)  { 
+    if (dhr) Printf("zero");
+    return;
+  }
+  if (dhr) printf("edep=%f ", edep);
   
   // Make rough multiplicity 
   Double_t mult     = Energy2Multiplicity(det, rng, sec, str, edep);
@@ -590,13 +655,21 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   //		    "(ADC: %d, Energy: %f)", det, rng, sec, str, mult, 
   //		    counts, edep));
   // }
-  if (mult < 0)  return; 
+  if (mult < 0)  {
+    if (dhr) Printf("not hit");
+    return; 
+  }
+
+  if (dhr) Printf("mult=%f ", mult);
   AliFMDDebug(10, ("FMD%d%c[%2d,%3d]: "
 		    "ADC: %d, Counts: %d, Energy: %f, Mult: %f",
 		  det, rng, sec, str, adc, counts, edep, mult));
   
   // Create a `RecPoint' on the output branch. 
   if (fMult) {
+    Float_t phi;
+    PhysicalCoordinates(det, rng, sec, str, eta, phi);
+
     AliFMDRecPoint* m = 
       new ((*fMult)[fNMult]) AliFMDRecPoint(det, rng, sec, str, 
 					    eta, phi, edep, mult);
@@ -605,7 +678,7 @@ AliFMDReconstructor::ProcessSignal(UShort_t det,
   }
   
   fESDObj->SetMultiplicity(det, rng, sec, str, mult);
-  fESDObj->SetEta(det, rng, sec, str, eta);
+  // fESDObj->SetEta(det, rng, sec, str, eta);
   
   if (fDiagAll) fDiagAll->Fill(adc, mult);  
 
@@ -685,15 +758,15 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
   //  
   AliFMDParameters* param  = AliFMDParameters::Instance();
   Float_t           ped    = (zsEnabled ? 0 : 
-				param->GetPedestal(det, rng, sec, str));
+			      param->GetPedestal(det, rng, sec, str));
   Float_t           noise  = param->GetPedestalWidth(det, rng, sec, str);
-  if(ped < 0 || noise < 0) { 
+  if (ped < 0 || noise < 0) { 
     AliWarningClass(Form("Invalid pedestal (%f) or noise (%f) "
 			 "for FMD%d%c[%02d,%03d]", 
 		    ped, noise, det, rng, sec, str));
     return USHRT_MAX;
   }
-  AliDebugClass(15, Form("Subtracting pedestal for FMD%d%c[%2d,%3d]=%4d "
+  AliDebugClass(10, Form("Subtracting pedestal for FMD%d%c[%2d,%3d]=%4d "
 			 "(%s w/factor %d, noise factor %f, "
 			 "pedestal %8.2f+/-%8.2f)",
 			 det, rng, sec, str, adc, 
@@ -717,8 +790,8 @@ AliFMDReconstructor::SubtractPedestal(UShort_t det,
   //
   // In this way, we make sure that we do not suppress away too much
   // data, and that the read-factor is the most stringent cut. 
-  Float_t nf = TMath::Max(0.F, noiseFactor - (zsEnabled ? zsNoiseFactor : 0));
-  if (counts < noise * nf) counts = 0;
+  Float_t nf = zsNoiseFactor; // TMath::Max(0.F, noiseFactor - (zsEnabled ? zsNoiseFactor : 0));
+  if (counts <= noise * nf) counts = 0;
   if (counts > 0) AliDebugClass(15, "Got a hit strip");
 
   UShort_t ret = counts < 0 ? 0 : counts;
@@ -801,12 +874,12 @@ AliFMDReconstructor::Adc2Energy(UShort_t det,
   Float_t           gain  = param->GetPulseGain(det, rng, sec, str);
   // 'Tagging' bad gains as bad energy
   if (gain < 0) { 
-    AliWarning(Form("Invalid gain (%f) for FMD%d%c[%02d,%03d]", 
-		    gain, det, rng, sec, str));
+    AliDebugF(10, "Invalid gain (%f) for FMD%d%c[%02d,%03d]", 
+		gain, det, rng, sec, str);
     return -1;
   }
-  AliFMDDebug(5, ("Converting counts %d to energy (factor=%f, DAC2MIP=%f)", 
-		  count, gain,param->GetDACPerMIP()));
+  AliDebugF(10, "Converting counts %d to energy (factor=%f, DAC2MIP=%f)", 
+	    count, gain,param->GetDACPerMIP());
 
   Double_t edep  = ((count * param->GetEdepMip()) 
 		    / (gain * param->GetDACPerMIP()));
@@ -865,8 +938,8 @@ AliFMDReconstructor::Adc2Energy(UShort_t det,
     Double_t theta = 2 * TMath::ATan(TMath::Exp(-eta));
     Double_t corr  = TMath::Abs(TMath::Cos(theta));
     Double_t cedep = corr * edep;
-    AliFMDDebug(10, ("correcting for path %f * %f = %f (eta=%f, theta=%f)",
-		      edep, corr, cedep, eta, theta));
+    AliDebugF(10, "correcting for path %f * %f = %f (eta=%f, theta=%f)",
+	      edep, corr, cedep, eta, theta);
     if (fDiagStep3) fDiagStep3->Fill(edep, cedep);  
     edep = cedep;
   }

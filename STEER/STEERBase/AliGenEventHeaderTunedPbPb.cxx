@@ -20,7 +20,7 @@
 // Stores as a minimum the date, run number, event number,
 // number of particles produced  
 // and the impact parameter.
-// + Psi_2 Psi_3
+// + Psi_2 Psi_3 Psi4
 // Author: fnoferin@cern.ch
 //---------------------------------------------------------------------
 
@@ -33,7 +33,8 @@ AliGenEventHeaderTunedPbPb::AliGenEventHeaderTunedPbPb():
   AliGenEventHeader(),
   fCentrality(0.),
   fPsi2(0.),
-  fPsi3(0.)
+  fPsi3(0.),
+  fPsi4(0.)
 {
   //
   // Constructor
@@ -45,7 +46,8 @@ AliGenEventHeaderTunedPbPb::AliGenEventHeaderTunedPbPb(const char * name):
   AliGenEventHeader(name),
   fCentrality(0.),
   fPsi2(0.),
-  fPsi3(0.)
+  fPsi3(0.),
+  fPsi4(0.)
 {
   //
   // Constructor

@@ -154,8 +154,10 @@ void Config()
     gener->SetPhiRange(80.0,120.0);
   else if(year == 2011)
     gener->SetPhiRange(80.0,180.0);
-  else
+  else if(year == 2012 || year == 2013)
     gener->SetPhiRange(80.0,190.0);
+  else
+    gener->SetPhiRange(80.0,330.0); // Include DCal
   
   gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
   
@@ -378,14 +380,15 @@ void Config()
   if (iEMCAL)
   {
     //=================== EMCAL parameters ============================
+    AliEMCAL *EMCAL = 0;
     if      (year == 2010)  // d phi = 40 degrees
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1",    checkGeoAndRun);
+      EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1",    checkGeoAndRun);
     else if (year == 2011)  // d phi = 100 degrees
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1",     checkGeoAndRun);
-    else if (year > 2011)   // d phi = 110 degrees
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1", checkGeoAndRun);
-    else // Old configuration with 110 degrees but not perfect geometry
-      AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE",       checkGeoAndRun);
+      EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1",     checkGeoAndRun);
+    else if (year == 2012 || year == 2013)   // d phi = 107 degrees
+      EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1", checkGeoAndRun);
+    else
+      EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1_DCAL_8SM", checkGeoAndRun); // EMCAL+DCAL dphi = 107 (EMCAL) + 33 (gap) + 67 (DCAL)
   }
   
   if (iACORDE)

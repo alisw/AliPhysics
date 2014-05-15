@@ -92,6 +92,7 @@
 
 class AliTOFHitDataBuffer;
 struct AliRawDataHeader;
+struct AliRawDataHeaderV3;
 
 class AliTOFDecoder : public TObject
 {
@@ -102,14 +103,14 @@ class AliTOFDecoder : public TObject
   AliTOFDecoder &operator = (const AliTOFDecoder &source); //operator =
   ~AliTOFDecoder(); //distructor
   
-  Bool_t Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh); //main decode function
+  Bool_t Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh, const AliRawDataHeaderV3 *cdhV3=0); //main decode function
   void   SetVerbose(Int_t Verbose = 1) {fVerbose = Verbose;}; //set verbose level
   void   SetV2718Patch(Bool_t V2718Patch = kTRUE) {fV2718Patch = V2718Patch;}; //set V2718 patch (no DRM)
   void   SetDataBuffer(AliTOFHitDataBuffer *DB) {fDataBuffer = DB;}; //set up data buffer
   void   SetPackedDataBuffer(AliTOFHitDataBuffer *PDB) {fPackedDataBuffer = PDB;}; //set up packed data buffer
 
   void GetArrayDDL(Int_t* array, Int_t iDDL); // method to return array of TOFchannels corresponding to a given DDL id 
-  void PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh);
+  void PrintStack(const UInt_t *rawData, Int_t nWords, const AliRawDataHeader *cdh, const AliRawDataHeaderV3 *cdhV3=0);
 
 enum {
   kMinPlate0=0,kMaxPlate0=2,

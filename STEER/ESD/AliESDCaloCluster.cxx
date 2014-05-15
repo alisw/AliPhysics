@@ -49,7 +49,8 @@ AliESDCaloCluster::AliESDCaloCluster() :
   fNExMax(0),
   fClusterType(kUndef), 
   fTOF(0.),
-  fMCEnergyFraction(0.)
+  fMCEnergyFraction(0.),
+  fCoreEnergy(0.)
 {
   //
   // The default ESD constructor 
@@ -79,7 +80,8 @@ AliESDCaloCluster::AliESDCaloCluster(const AliESDCaloCluster& clus) :
   fNExMax(clus.fNExMax),
   fClusterType(clus.fClusterType),
   fTOF(clus.fTOF),
-  fMCEnergyFraction(clus.fMCEnergyFraction)
+  fMCEnergyFraction(clus.fMCEnergyFraction),
+  fCoreEnergy(clus.fCoreEnergy)
 {
   //
   // The copy constructor 
@@ -184,6 +186,8 @@ AliESDCaloCluster &AliESDCaloCluster::operator=(const AliESDCaloCluster& source)
   }
 
   fMCEnergyFraction = source.fMCEnergyFraction;
+
+  fCoreEnergy = source.fCoreEnergy;
   
   return *this;
 

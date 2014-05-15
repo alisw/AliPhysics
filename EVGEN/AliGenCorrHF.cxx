@@ -273,7 +273,7 @@ void AliGenCorrHF::Init()
 
 // particle decay related initialization
 
-    if (gMC) fDecayer = gMC->GetDecayer();
+    if (TVirtualMC::GetMC()) fDecayer = TVirtualMC::GetMC()->GetDecayer();
     fDecayer->SetForceDecay(fForceDecay);
     fDecayer->Init();
 

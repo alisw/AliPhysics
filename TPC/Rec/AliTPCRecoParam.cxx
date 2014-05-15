@@ -105,6 +105,8 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMinFraction(0.01),           // truncated mean - lower threshold
   fMaxFaction(0.7),            // truncated mean - upper threshold
   fNeighborRowsDedx(2),           // neighbour rows for below threshold dEdx calculation
+  fGainCorrectionHVandPTMode(0), // switch for the usage of GainCorrectionHVandPT (see AliTPCcalibDB::GetGainCorrectionHVandPT   
+  fSkipTimeBins(5),              // number of time bins to be skiiped (corrupted signal druing gating opening)
   fUseTOFCorrection(kTRUE),
   fUseSystematicCorrelation(kTRUE)
 {

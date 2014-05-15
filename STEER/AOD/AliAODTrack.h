@@ -23,6 +23,7 @@ class AliVVertex;
 class AliDetectorPID;
 class AliTPCdEdxInfo;
 class AliAODEvent;
+class AliTOFHeader;
 
 class AliAODTrack : public AliVTrack {
 
@@ -80,13 +81,13 @@ class AliAODTrack : public AliVTrack {
 	      Double_t covMatrix[21],
 	      Short_t q,
 	      UChar_t itsClusMap,
-	      Double_t pid[10],
 	      AliAODVertex *prodVertex,
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
 	      AODTrk_t ttype=kUndef,
 	      UInt_t selectInfo=0,
 	      Float_t chi2perNDF = -999.);
+
 
   AliAODTrack(Short_t id,
 	      Int_t label,
@@ -97,7 +98,6 @@ class AliAODTrack : public AliVTrack {
 	      Float_t covMatrix[21],
 	      Short_t q,
 	      UChar_t itsClusMap,
-	      Float_t pid[10],
 	      AliAODVertex *prodVertex,
 	      Bool_t usedForVtxFit,
 	      Bool_t usedForPrimVtxFit,
@@ -163,13 +163,21 @@ class AliAODTrack : public AliVTrack {
   void ConvertAliPIDtoAODPID();
   void SetDetPID(AliAODPid *aodpid) {fDetPid = aodpid;}
 
+  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
+  Int_t    GetPIDForTracking()  const   {return fPIDForTracking;}
+  Double_t GetMassForTracking() const;
+
   template <typename T> void GetPID(T *pid) const {
-    for(Int_t i=0; i<10; ++i) pid[i]=fPID[i];}
+    for(Int_t i=0; i<10; ++i) pid[i] = fPID ? fPID[i]:0;}
  
   template <typename T> void SetPID(const T *pid) {
-    if(pid) for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
-    else {  for(Int_t i=0; i<10; i++) fPID[i]=0.; fPID[AliAODTrack::kUnknown]=1.;}}
-
+    if (pid) {
+      if (!fPID) fPID = new Double32_t[10];
+      for(Int_t i=0; i<10; ++i) fPID[i]=pid[i];
+    }
+    else {delete[] fPID; fPID = 0;}
+  }
+  
   Bool_t IsOn(Int_t mask) const {return (fFlags&mask)>0;}
   ULong_t GetStatus() const { return GetFlags(); }
   ULong_t GetFlags() const { return fFlags; }
@@ -215,7 +223,8 @@ class AliAODTrack : public AliVTrack {
     return GetPosition(p); }
   
   Bool_t GetXYZAt(Double_t x, Double_t b, Double_t *r) const;
-  
+  Bool_t GetXYZatR(Double_t xr,Double_t bz, Double_t *xyz=0, Double_t* alpSect=0) const;  
+
   Bool_t GetCovarianceXYZPxPyPz(Double_t cv[21]) const {
     return GetCovMatrix(cv);}
 
@@ -312,7 +321,7 @@ class AliAODTrack : public AliVTrack {
   
   Bool_t GetOuterHmpPxPyPz(Double_t *p) const;
   
-  void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
+  void      GetIntegratedTimes(Double_t *times, Int_t nspec=AliPID::kSPECIESC) const {if (fDetPid) fDetPid->GetIntegratedTimes(times, nspec);}
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
   Double_t  GetTRDsignal()                        const {return fDetPid ? fDetPid->GetTRDsignal() : 0;}
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
@@ -323,8 +332,13 @@ class AliAODTrack : public AliVTrack {
   Int_t     GetNumberOfTRDslices() const { return fDetPid?fDetPid->GetTRDnSlices():0; }
   void      GetHMPIDpid(Double_t */*p*/) const { return; } // TODO: To be implemented properly with the new HMPID object
 
+  void SetMFTClusterPattern(ULong_t mftClusterPattern) { fMFTClusterPattern = mftClusterPattern; }   // AU
+  ULong_t GetMFTClusterPattern() { return fMFTClusterPattern; }                                      // AU
+
   const AliAODEvent* GetAODEvent() const {return fAODEvent;}
+  virtual const AliVEvent* GetEvent() const {return (AliVEvent*)fAODEvent;}
   void SetAODEvent(const AliAODEvent* ptr){fAODEvent = ptr;}
+  const AliTOFHeader* GetTOFHeader() const;
 
   AliAODPid    *GetDetPid() const { return fDetPid; }
   AliAODVertex *GetProdVertex() const { return (AliAODVertex*)fProdVertex.GetObject(); }
@@ -392,8 +406,11 @@ class AliAODTrack : public AliVTrack {
   Double_t GetChi2MatchTrigger() const  { return fChi2MatchTrigger;}
   void     SetChi2MatchTrigger(Double_t Chi2MatchTrigger) {fChi2MatchTrigger = Chi2MatchTrigger; }
   Bool_t   HitsMuonChamber(Int_t MuonChamber, Int_t cathode = -1) const;  // Check if track hits Muon chambers
-  Bool_t   IsMuonTrack() const { return (GetMUONClusterMap()>0) ? kTRUE : kFALSE; }
+  Bool_t   IsMuonTrack() const { return ( (GetMUONClusterMap()>0) && !fIsMuonGlobalTrack ) ? kTRUE : kFALSE; }
   
+  Bool_t   IsMuonGlobalTrack() const { return fIsMuonGlobalTrack; }                                     // AU
+  void     SetIsMuonGlobalTrack(Bool_t isMuonGlobalTrack) { fIsMuonGlobalTrack = isMuonGlobalTrack; }   // AU
+
   void     Connected(Bool_t flag) {flag ? SETBIT(fITSMuonClusterMap,26) : CLRBIT(fITSMuonClusterMap,26);}
   Bool_t   IsConnected() const {return TESTBIT(fITSMuonClusterMap,26);}
 
@@ -420,7 +437,7 @@ class AliAODTrack : public AliVTrack {
   
   Double32_t    fChi2perNDF;        // chi2/NDF of momentum fit
   Double32_t    fChi2MatchTrigger;  // chi2 of trigger/track matching
-  Double32_t    fPID[10];           // [0.,1.,8] pointer to PID object
+  Double32_t*   fPID;               //! [0.,1.,8] pointer to PID object
 
   ULong_t       fFlags;             // reconstruction status flags 
   Int_t         fLabel;             // track label, points back to MC track
@@ -444,6 +461,8 @@ class AliAODTrack : public AliVTrack {
   Char_t        fCharge;            // particle charge
   Char_t        fType;              // Track Type
 
+  Char_t        fPIDForTracking;    // pid using for tracking of ESD track
+
   Int_t         fCaloIndex;         // index of associated EMCAL/PHOS cluster (AliAODCaloCluster)
 
   
@@ -456,12 +475,16 @@ class AliAODTrack : public AliVTrack {
   Double_t      fTrackEtaOnEMCal;   // eta of track after being propagated to the EMCal surface (default r = 440 cm)
   Double_t      fTrackPtOnEMCal;    // pt of track after being propagated to the EMCal surface (default r = 440 cm)
 
+  Bool_t fIsMuonGlobalTrack;        // True if the track is built from the combination of MUON and MFT clusters     // AU
+
   Double_t      fTPCsignalTuned;    //! TPC signal tuned on data when using MC
   Double_t      fTOFsignalTuned;    //! TOF signal tuned on data when using MC
 
-  const AliAODEvent* fAODEvent;     //! 
+  ULong_t fMFTClusterPattern;       // Tells us which MFT clusters are contained in the track, and which one is a good one (if MC)  // AU
 
-  ClassDef(AliAODTrack, 22);
+  const AliAODEvent* fAODEvent;     //! pointer back to the event the track belongs to
+
+  ClassDef(AliAODTrack, 24);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const

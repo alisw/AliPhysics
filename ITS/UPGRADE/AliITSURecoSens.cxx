@@ -2,6 +2,11 @@
 #include "AliITSUGeomTGeo.h"
 #include "AliITSsegmentation.h"
 #include "AliExternalTrackParam.h"
+#include "AliITSUAux.h"
+#include "AliLog.h"
+
+using namespace AliITSUAux;
+using namespace TMath;
 
 ClassImp(AliITSURecoSens)
 
@@ -18,7 +23,6 @@ AliITSURecoSens::AliITSURecoSens(Int_t id)
 {
   // def. c-tor
   SetID(id);
-  for (int i=kNNeighbors;i--;) fNeighbors[i] = -1;
 }
 
 //______________________________________________________
@@ -34,7 +38,6 @@ AliITSURecoSens::AliITSURecoSens(const AliITSURecoSens &source)
   ,fZMax(source.fZMax)
 {
   // copy c-tor
-  for (int i=kNNeighbors;i--;) fNeighbors[i] = source.fNeighbors[i];
 }
 
 //______________________________________________________
@@ -52,7 +55,6 @@ AliITSURecoSens& AliITSURecoSens::operator=(const AliITSURecoSens &source)
   fZMin   = source.fZMin;
   fZMax   = source.fZMax;
   //
-  for (int i=kNNeighbors;i--;) fNeighbors[i] = source.fNeighbors[i];
   return *this;
 }
 
@@ -70,9 +72,8 @@ void AliITSURecoSens::SetBoundaries(double phiMn,double phiMx, double zMn, doubl
 void AliITSURecoSens::Print(Option_t*) const			      
 {
   //print 
-  printf("Sensor%4d xTF=%+.3e phiTF=%+.3e | Phi:[%5.3f:%5.3f] Z:[%+7.3f:%+7.3f]| Neighb.:",
+  printf("Sensor%4d xTF=%+.3e phiTF=%+.3e | Phi:[%5.3f:%5.3f] Z:[%+7.3f:%+7.3f]\n",
 	 GetID(),GetXTF(),GetPhiTF(), fPhiMin,fPhiMax, fZMin,fZMax);
-  for (int i=0;i<kNNeighbors;i++) printf(" %4d",fNeighbors[i]); printf("\n");
 }
 
 //______________________________________________________
@@ -89,4 +90,53 @@ void AliITSURecoSens::ProcessClusters(Int_t)
   // create structures for fast finding
   //
   // to do
+}
+
+//______________________________________________________________________________
+Int_t AliITSURecoSens::Compare(const TObject* obj)  const
+{
+  // compare sensor positions
+  AliITSURecoSens* copy = (AliITSURecoSens*)obj;
+  double phi  = MeanPhiSmall(fPhiMin,fPhiMax);
+  double phiC = MeanPhiSmall(copy->fPhiMin,copy->fPhiMax);
+  double span = DeltaPhiSmall(fPhiMin,fPhiMax)/2;
+  double dPhi = DeltaPhiSmall(phi,phiC);
+  //
+  // special case to well define 1st raw (closest to 0 from above): wrap around 0/2pi
+  if (dPhi>span) return phi<phiC ? -1 : 1;
+  //
+  double phiT = phi+span;
+  BringTo02Pi(phiT);
+  //  if (phiT<phiC && OKforPhiMin(phiT,phiC)) return -1;
+  if (OKforPhiMin(phiT,phiC)) return -1;
+  phiT = phi-span;
+  BringTo02Pi(phiT);
+  //if (phiT>phiC && OKforPhiMax( phiT,phiC)) return 1;
+  if (OKforPhiMax( phiT,phiC)) return 1;
+  //
+  // sane phi range, check Z
+  double dz = (fZMax-fZMin)/2;
+  if (fZMax+dz < copy->fZMax) return -1;
+  if (fZMin-dz > copy->fZMin) return 1;
+  AliError(Form("Same chip compared? %d %d",GetID(),copy->GetID()));
+  Print();
+  copy->Print();
+  return 0;
+  //
+}
+
+//______________________________________________________________________________
+Int_t AliITSURecoSens::CheckCoverage(double phi, double z) const
+{
+  // check if the sensor contains the impact point phi, z
+  // if not, tell in which direction to move. 
+  // kLeft, kRight are for smaller/larger angles, kUp,kDown for larger/smaller Z
+  //
+  int res = 0;
+  if      (z<fZMin) res |= kDown;
+  else if (z>fZMax) res |= kUp;
+  //
+  if      (!OKforPhiMin(fPhiMin,phi)) res |= kLeft;
+  else if (!OKforPhiMax(fPhiMax,phi)) res |= kRight;
+  return res;
 }

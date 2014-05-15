@@ -34,9 +34,6 @@
 #include "AliRawDataErrorLog.h"
 #include "AliESDACORDE.h"
 #include "AliESDAD.h"
-#ifdef MFT_UPGRADE
-//#include "AliESDMFT.h"
-#endif
 
 class AliESDfriend;
 
@@ -241,10 +238,6 @@ public:
    
   void SetVZEROData(AliESDVZERO * obj) { fESDVZERO = new AliESDVZERO(*obj); }
   AliESDVZERO *GetVZEROData(){ return fESDVZERO; }
-  #ifdef MFT_UPGRADE
-  //void SetMFTData(AliESDMFT * obj) { fESDMFT = new AliESDMFT(*obj); }
- //AliESDMFT *GetMFTData(){ return fESDMFT; }
-  #endif
   void SetACORDEData(AliESDACORDE * obj){ fESDACORDE = new AliESDACORDE(*obj); } 
   AliESDACORDE *GetACORDEDAta(){ return fESDACORDE; }
   void SetADData(AliESDAD * obj){ fESDAD = new AliESDAD(*obj); } 
@@ -324,9 +317,6 @@ protected:
   AliESDVZERO *fESDVZERO; // VZERO object containing rough multiplicity
   AliESDACORDE *fESDACORDE; // ACORDE ESD object containing bit pattern
   AliESDAD *fESDAD; // AD ESD object containing bit pattern
-  #ifdef MFT_UPGRADE
-  //AliESDMFT *fESDMFT; // MFT object containing rough multiplicity
-  #endif
   TClonesArray fErrorLogs;        // Raw-data reading error messages
 
   ClassDef(AliESD,23)  //ESD class 

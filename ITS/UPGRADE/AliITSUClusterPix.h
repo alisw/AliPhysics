@@ -66,6 +66,7 @@ class AliITSUClusterPix : public AliCluster
   virtual const TGeoHMatrix*   GetTracking2LocalMatrix()           const;
   virtual TGeoHMatrix*         GetMatrix(Bool_t original = kFALSE) const;
   virtual Bool_t               GetGlobalXYZ(Float_t xyz[3]) const;
+  virtual Bool_t               GetGlobalXYZ(Double_t xyz[3]) const;
   virtual Bool_t               GetGlobalCov(Float_t cov[6]) const;
   virtual Bool_t               GetXRefPlane(Float_t &xref)  const;
   //

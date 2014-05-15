@@ -710,7 +710,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 		//insert maximum, default values and set flags
 		//Double_t xCord,yCord;
 		//GetXY(iSec,iRow,iPad,xCord,yCord);
-		Double_t x[]={iRow,iPad,iTimeBin};
+		Double_t x[]={static_cast<Double_t>(iRow),static_cast<Double_t>(iPad),static_cast<Double_t>(iTimeBin)};
 		Int_t i[]={iSec};
 		AliTPCTransform *transform     = AliTPCcalibDB::Instance()->GetTransform() ;
 
@@ -759,7 +759,7 @@ Int_t AliTPCclustererKr::FindClusterKrIO()
 	      //insert maximum, default values and set flags
 	      //Double_t xCord,yCord;
 	      //GetXY(iSec,iRow,iPad,xCord,yCord);
-	      Double_t x[]={iRow,iPad,iTimeBin};
+	      Double_t x[]={static_cast<Double_t>(iRow),static_cast<Double_t>(iPad),static_cast<Double_t>(iTimeBin)};
 	      Int_t i[]={iSec};
 	      //AliTPCTransform trafo;
 	      //trafo.Transform(x,i,0,1);

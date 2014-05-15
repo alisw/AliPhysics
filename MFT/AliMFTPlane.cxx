@@ -34,7 +34,6 @@
 #include "AliMFTConstants.h"
 #include "AliMFTPlane.h"
 
-const Double_t AliMFTPlane::fRadiusMin           = AliMFTConstants::fRadiusMin;
 const Double_t AliMFTPlane::fActiveSuperposition = AliMFTConstants::fActiveSuperposition;
 const Double_t AliMFTPlane::fHeightActive        = AliMFTConstants::fHeightActive;
 const Double_t AliMFTPlane::fHeightReadout       = AliMFTConstants::fHeightReadout;
@@ -248,11 +247,6 @@ Bool_t AliMFTPlane::Init(Int_t    planeNumber,
   fZCenterActiveFront = fZCenter - 0.5*fThicknessSupport - 0.5*fThicknessActive;
   fZCenterActiveBack  = fZCenter + 0.5*fThicknessSupport + 0.5*fThicknessActive;
 
-//   if (fRMinSupport <= fRadiusMin) fRMinSupport = fRadiusMin;
-//   else {
-//     fRMinSupport = fRadiusMin + (fHeightActive-fActiveSuperposition) * Int_t((fRMinSupport-fRadiusMin)/(fHeightActive-fActiveSuperposition));
-//   }
-  
   if (fRMax < fRMinSupport+fHeightActive) fRMax = fRMinSupport + fHeightActive;
 
   Int_t nLaddersWithinPipe = Int_t(fRMinSupport/(fHeightActive-fActiveSuperposition));
@@ -276,8 +270,6 @@ Bool_t AliMFTPlane::CreateStructure() {
   Double_t minPosition[3]={0}, maxPosition[3]={0};
   
   // ------------------- det elements: active + readout ----------------------------------
-
-  // 1st Section : below and above the beam pipe
 
   Double_t lowEdgeActive = -1.*fRMax;
   Double_t supEdgeActive = lowEdgeActive + fHeightActive;
@@ -364,7 +356,7 @@ Bool_t AliMFTPlane::CreateStructure() {
       nBins[1] = TMath::Nint(fHeightActive/fPixelSizeY);
       nBins[2] = 1;
       
-      // left element: below the beam pipe
+      // left element: y < 0
       
       if (isFront) zMin = zMinFront;
       else         zMin = zMinBack;
@@ -388,7 +380,7 @@ Bool_t AliMFTPlane::CreateStructure() {
 									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
 									   3, nBins, minPosition, maxPosition);
 
-      // left element: above the beam pipe
+      // left element: y > 0
       
       if (supEdgeActive < 0.5*fHeightActive) {
 	
@@ -418,7 +410,7 @@ Bool_t AliMFTPlane::CreateStructure() {
       
       }
 
-      // right element: below the beam pipe
+      // right element: y < 0
       
       if (isFront) zMin = zMinFront;
       else         zMin = zMinBack;
@@ -442,7 +434,7 @@ Bool_t AliMFTPlane::CreateStructure() {
 									   Form("MFTReadoutElemHist_%02d%03d", fPlaneNumber, fReadoutElements->GetEntries()), 
 									   3, nBins, minPosition, maxPosition);
 
-      // right element: above the beam pipe
+      // right element: y > 0
       
       if (supEdgeActive < 0.5*fHeightActive) {
 

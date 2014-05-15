@@ -140,53 +140,53 @@ void AliEMCAL::InitConstants()
 //     cutele = cutgam = 5.e-4;
 //   }
 
-//   gMC->Gstpar(idtmed[1600],"CUTGAM", cutgam);
-//   gMC->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
-//   gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"CUTGAM", cutgam);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
 //   // --- Generate explicitly delta rays in Lead ---
-//   gMC->Gstpar(idtmed[1600], "LOSS", 3) ;
-//   gMC->Gstpar(idtmed[1600], "DRAY", 1) ;
-//   gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "LOSS", 3) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DRAY", 1) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DCUTM", cutele) ;
 
 // // --- in aluminium parts ---
-//   gMC->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
-//   gMC->Gstpar(idtmed[1602],"CUTELE", cutele) ;
-//   gMC->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
-//   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
-//   gMC->Gstpar(idtmed[1602], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1602], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"CUTELE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "LOSS",3.) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DRAY",1.) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DCUTM", cutele) ;
 
 // // --- and finally thresholds for photons and electrons in the scintillator ---
-//   gMC->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
-//   gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
-//   gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
-//   gMC->Gstpar(idtmed[1601], "DRAY",1) ;
-//   gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DRAY",1) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DCUTM", cutele) ;
 
 //   // S steel - 
-//   gMC->Gstpar(idtmed[1603],"CUTGAM", cutgam);
-//   gMC->Gstpar(idtmed[1603],"CUTELE", cutele);
-//   gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"CUTGAM", cutgam);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"CUTELE", cutele);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
 //   // --- Generate explicitly delta rays 
-//   gMC->Gstpar(idtmed[1603], "LOSS",3);
-//   gMC->Gstpar(idtmed[1603], "DRAY",1);
-//   gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "LOSS",3);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DRAY",1);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DCUTM", cutele) ;
 
 //   AliEMCALGeometry* geom = GetGeometry();
 //   if(geom->GetILOSS()>=0) {
-//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
+//     for(int i=1600; i<=1603; i++) TVirtualMC::GetMC()->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
 //   } 
 //   if(geom->GetIHADR()>=0) {
-//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
+//     for(int i=1600; i<=1603; i++) TVirtualMC::GetMC()->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
 //   }
 // }
 
@@ -351,7 +351,8 @@ Bool_t AliEMCAL::Raw2SDigits(AliRawReader* rawReader){
   //Trigger sdigits
   if(!fTriggerData)fTriggerData = new AliEMCALTriggerData();
   fTriggerData->SetMode(1);	
-  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", 32 * 96);    
+  const Int_t nTRU = GetGeometry()->GetNTotalTRU();
+  TClonesArray *digitsTrg = new TClonesArray("AliEMCALTriggerRawDigit", nTRU * 96);    
   Int_t bufsize = 32000;
   treeS->Branch("EMTRG", &digitsTrg, bufsize);
   
@@ -438,9 +439,9 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   // Pass the transpor model name (Geant3, Geant4, Fluka) and title to the geometry
   TString mcname   = "";
   TString mctitle  = "";
-  if(gMC){
-    mcname  = gMC->GetName()  ;
-    mctitle = gMC->GetTitle() ;
+  if(TVirtualMC::GetMC()){
+    mcname  = TVirtualMC::GetMC()->GetName()  ;
+    mctitle = TVirtualMC::GetMC()->GetTitle() ;
   }
  
   TString geoName(GetTitle());
@@ -495,21 +496,44 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         
         return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
-      else{ 
-        //Default geometry
+      else if(runNumber > 176000 && runNumber <= 197692)
+      {
         //Complete EMCAL geometry, 12 SM. Year 2012 and on
-        
         if(!geoName.Contains("COMPLETE12SMV1"))
         {
-          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ",
-                       geoName.Data(),runNumber));
+          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ", geoName.Data(),runNumber));
+        } else {
+          AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
         }
-        else 
+      
+        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
+
+      }
+      else
+      {
+        //EMCAL + DCAL geometry, 20 SM. Year 2014 and on
+        
+        if(geoName.Contains("DCAL_DEV"))
+        {
+          AliInfo("*** ATTENTION *** \n \t Set geometry name <<EMCAL_COMPLETE12SMV1_DCAL_DEV>> \n ");
+          return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_DEV","EMCAL",mcname,mctitle) ;
+        }
+        else if(geoName.Contains("DCAL_8SM"))
+        {
+          AliInfo("*** ATTENTION *** \n \t Set geometry name <<EMCAL_COMPLETE12SMV1_DCAL_8SM>> \n ");
+          return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL_8SM","EMCAL",mcname,mctitle) ;
+        }
+      
+        if(!geoName.Contains("COMPLETE12SMV1"))
+        {
+          AliInfo(Form("*** ATTENTION *** \n \t Specified geometry name <<%s>>  for run %d is  not considered! \n \t In use <<EMCAL_COMPLETE12SMV1>>, check run number and year \n ", geoName.Data(),runNumber));
+        }
+        else
         {
           AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
         }
                 
-        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
+        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1_DCAL","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
     }
   }// Init geometry for the first time

@@ -90,6 +90,7 @@
 
 class TParticle;
 
+using std::istream;
 class AliITShit : public AliHit {
 
  public:

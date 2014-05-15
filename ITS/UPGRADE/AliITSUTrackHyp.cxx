@@ -81,12 +81,12 @@ AliITSUTrackHyp::AliITSUTrackHyp(const AliESDtrack &src)
 {
   // copy c-tor. from ESD track: take only kinematics, mass and time integral
   AliExternalTrackParam::operator=((const AliExternalTrackParam&)src);
-  SetMass(src.GetMass());
+  SetMass(src.GetMassForTracking());
   if (src.IsOn(AliESDtrack::kTIME)) {
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
-    double times[AliPID::kSPECIES];
-    src.GetIntegratedTimes(times);
+    double times[AliPID::kSPECIESC];
+    src.GetIntegratedTimes(times,AliPID::kSPECIESC);
     SetIntegratedTimes(times);
   }
   //
@@ -130,12 +130,12 @@ AliITSUTrackHyp &AliITSUTrackHyp::operator=(const AliESDtrack &src)
 {
   // copy oparator from ESD track: take only kinematics, mass and time integral
   AliExternalTrackParam::operator=((const AliExternalTrackParam&)src);
-  SetMass(src.GetMass());
+  SetMass(src.GetMassForTracking());
   if (src.IsOn(AliESDtrack::kTIME)) {
     StartTimeIntegral();
     SetIntegratedLength(src.GetIntegratedLength());
-    double times[AliPID::kSPECIES];
-    src.GetIntegratedTimes(times);
+    double times[AliPID::kSPECIESC];
+    src.GetIntegratedTimes(times,AliPID::kSPECIESC);
     SetIntegratedTimes(times);
   }
   //

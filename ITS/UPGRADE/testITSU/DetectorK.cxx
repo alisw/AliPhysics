@@ -191,7 +191,7 @@ void DetectorK::AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRe
     if (!(newLayer->isDead)) {
       fNumberOfActiveLayers += 1;
       TString lname(newLayer->GetName());
-      if (!lname.Contains("tpc")) fNumberOfActiveITSLayers += 1;
+      if ( IsITSLayer(lname) ) fNumberOfActiveITSLayers += 1;
     }
 
 
@@ -217,7 +217,7 @@ void DetectorK::KillLayer(char *name) {
        tmp->isDead = kTRUE;
        fNumberOfActiveLayers -= 1; 
        TString lname(tmp->GetName());
-       if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
+       if ( IsITSLayer(lname) ) fNumberOfActiveITSLayers -= 1;
      }     
   }
 }
@@ -305,13 +305,13 @@ void DetectorK::SetResolution(char *name, Float_t phiRes, Float_t zRes) {
       tmp->isDead = kTRUE;
       if (!wasDead) {
 	fNumberOfActiveLayers -= 1;
-	if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
+	if ( IsITSLayer(lname) ) fNumberOfActiveITSLayers -= 1;
       }
     } else {
       tmp->isDead = kFALSE;
       if (wasDead) {
 	fNumberOfActiveLayers += 1;
-	if (!lname.Contains("tpc")) fNumberOfActiveITSLayers += 1;
+	if ( IsITSLayer(lname) ) fNumberOfActiveITSLayers += 1;
       }
     }
 
@@ -380,14 +380,14 @@ void DetectorK::RemoveLayer(char *name) {
     if (!wasDead) {
       fNumberOfActiveLayers -= 1;
       TString lname(tmp->GetName());
-      if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
+      if ( IsITSLayer(lname) ) fNumberOfActiveITSLayers -= 1;
       
     }
   }
 }
 
 
-void DetectorK::PrintLayout() {
+void DetectorK::PrintLayout(Bool_t full) {
   //
   // Prints the detector layout
   //
@@ -403,7 +403,7 @@ void DetectorK::PrintLayout() {
   
     // don't print all the tpc layers
     TString name(tmp->GetName());
-    if (name.Contains("tpc") && (!name.Contains("tpc_0")) ) continue;
+    if (!full && !IsITSLayer(name) && !name.Contains("_0")) continue;
 
     printf("%d. %s \t %03.2f   \t%1.4f\t  ",i,
  	   tmp->GetName(), tmp->radius, tmp->radL);
@@ -457,6 +457,7 @@ void DetectorK::PlotLayout(Int_t plotDead) {
     TString name(tmp->GetName());
     if (!tmp->isDead) layEl->SetLineWidth(2);
     if (name.Contains("tpc") )  layEl->SetLineColor(29);
+    if (name.Contains("trd") )  layEl->SetLineColor(30);
 
     if (!tmp->isDead || plotDead) layEl->Draw();
   
@@ -473,12 +474,13 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   // skip=1: Use every padrow, skip=2: Signal in every 2nd padrow 
 
 
-  AddLayer((char*)"IFC",   77.8,0.01367); // Inner Field cage
-  AddLayer((char*)"OFC",   254.0,0.01367); // Outer Field cage
+  AddLayer((char*)"tpcIFC",   77.8,0.01367); // Inner Field cage
+  AddLayer((char*)"tpcOFC",   254.0,0.01367); // Outer Field cage
 
   // % Radiation Lengths ... Average per TPC row  (i.e. total/159 )
-  Float_t radLBoubdary = 0.0165;
-  Float_t rBoundary = 70.0; // cm
+  const int kNPassiveBound = 2;
+  const Float_t radLBoubdary[kNPassiveBound] = {0.05, 0.0165};
+  const Float_t rBoundary[kNPassiveBound] = {50, 70.0}; // cm
 
   Float_t radLPerRow = 0.000036;
   
@@ -496,8 +498,10 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
   Float_t row64Radius          =  135.1  ;    // cm
   Float_t row128Radius         =  199.2  ;    // cm                       
  
-  // add boundary between ITS and TPC
-  AddLayer("tpc_boundary",rBoundary,radLBoubdary); // dummy errors
+  // add boundaries between ITS and TPC
+  for (int i=0;i<kNPassiveBound;i++) {
+    AddLayer(Form("tpc_boundary%d",i),rBoundary[i],radLBoubdary[i]); // dummy errors
+  }
 
   for ( Int_t k = 0 ; k < tpcRows ; k++ ) {
     
@@ -519,6 +523,16 @@ void DetectorK::AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip) {
  
 }
 
+void DetectorK::AddTRD(Float_t phiResMean, Float_t zResMean, Float_t lrEff) {
+  //
+  // Emulates the TRD
+  // 
+  const double trdX2X0=3.3e-2;
+  for (int i=0;i<6;i++) AddLayer((char*)Form("trd_%d",i), 300.0+13*i ,trdX2X0, phiResMean, zResMean,
+				 lrEff<1 ? lrEff : 1.0); 
+ 
+}
+
 void DetectorK::RemoveTPC() {
 
   // flag as dead, although resolution is ok ... makes live easier in the prints ... ;-)
@@ -528,7 +542,6 @@ void DetectorK::RemoveTPC() {
     TString name(tmp->GetName());
     if (name.Contains("tpc")) { RemoveLayer((char*)name.Data()); i--; }
   }
-  RemoveLayer((char*)"IFC");
   
 }
 
@@ -802,6 +815,8 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
   Int_t komb = (Int_t) TMath::Power(base,nLayer);
 
+  printf("N ITS Layers: %d\n",fNumberOfActiveITSLayers);
+
   TMatrixD probLay(base,fNumberOfActiveITSLayers);
   TMatrixD probKomb(komb,nLayer);
   for (Int_t num=0; num<komb; num++) {
@@ -1049,13 +1064,13 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	      layerEfficiency =  ProbGoodChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ;
 	      
 	    TString name(layer->GetName());
-	    if (!name.Contains("tpc")) {
+	    if ( IsITSLayer(name) ) {
 	      probLay(2,iLayActive)= layerEfficiency ; // Pcorr
 	      probLay(0,iLayActive)= ProbNullChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ; // Pnull
 	      probLay(1,iLayActive)= 1 - probLay(2,iLayActive) - probLay(0,iLayActive);                 // Pfake
 	      iLayActive++;    
 	    }
-	    if (name.Contains("tpc") && (!name.Contains("tpc_0")) ) continue;
+	    if (!IsITSLayer(name) && (!name.Contains("tpc_0")) ) continue;
 
 	    if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) 
 	    {
@@ -1070,7 +1085,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		printf("        -  \n");
 	    }
 	    
-	    if (!name.Contains("tpc") && !name.Contains("trd"))   fEfficiency[massloop][i] *= layerEfficiency;
+	    if (IsITSLayer(name))   fEfficiency[massloop][i] *= layerEfficiency;
 	    
 	    
 	}
@@ -1244,7 +1259,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	    layer = (CylLayerK*)fLayers.At(j);
 	    
 	    TString name(layer->GetName());
-	    if ( (name.Contains("tpc") && (!name.Contains("tpc_0"))) || layer->isDead) continue;
+	    if ( layer->isDead || ( !IsITSLayer(name) && (!name.Contains("tpc_0"))) ) continue;
 	    
 	    if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) 
 	    {
@@ -1273,7 +1288,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		     detPointResBwd[j][i]*1.e6, detPointZResBwd[j][i]*1.e6,
 		     phiRes*1.e6, zRes*1.e6,
 		     HitDensity(radius*100)) ;
-	      if (!name.Contains("tpc")) 
+	      if (IsITSLayer(name)) 
 		printf("%10.3f\n", layerEfficiency);
 	      else
 		printf("        -  \n");	    	      
@@ -1313,13 +1328,13 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	      layerEfficiency =  ProbGoodChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ;
 	      
 	    TString name(layer->GetName());
-	    if (!name.Contains("tpc")) {
+	    if (IsITSLayer(name)) {
 	      probLay(2,iLayActive)= layerEfficiency ; // Pcorr
 	      probLay(0,iLayActive)= ProbNullChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ; // Pnull
 	      probLay(1,iLayActive)= 1 - probLay(2,iLayActive) - probLay(0,iLayActive);                 // Pfake
 	      iLayActive++;    
 	    }
-	    if (name.Contains("tpc") && (!name.Contains("tpc_0")) ) continue;
+	    if (!IsITSLayer(name) && (!name.Contains("tpc_0")) ) continue;
 
 	    if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) 
 	    {
@@ -1328,7 +1343,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		     fDetPointRes[j][i]*1.e6, fDetPointZRes[j][i]*1.e6,
 		     phiRes*1.e6, zRes*1.e6,
 		     HitDensity(radius*100)) ;
-	      if (!name.Contains("tpc")) 
+	      if (IsITSLayer(name)) 
 		printf("%10.3f\n", layerEfficiency);
 	      else
 		printf("        -  \n");
@@ -1338,7 +1353,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	      fEfficProlongLay[i] = layerEfficiency;
 	    }
 
-	    if (!name.Contains("tpc") && !name.Contains("trd"))   fEfficiency[massloop][i] *= layerEfficiency;
+	    if (IsITSLayer(name))   fEfficiency[massloop][i] *= layerEfficiency;
 
 
 
@@ -1571,8 +1586,8 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
   Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
   
   Double_t particleEfficiency[kNptBins]; // with chosen particle mass
-  Double_t kaonEfficiency[kNptBins], pionEfficiency[kNptBins], d0efficiency[kNptBins]; 
-  Double_t partEfficiency[2][400];
+  Double_t kaonEfficiency[kNptBins]={0}, pionEfficiency[kNptBins]={0}, d0efficiency[kNptBins]={0}; 
+  Double_t partEfficiency[2][400]={{0}};
   
   if (particle != 0) {
     // resulting Pion and Kaon efficiency scaled with overall efficiency
@@ -2253,7 +2268,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     }
 
   }
-  Double_t *probs = new Double_t(2);
+  Double_t *probs = new Double_t[2];
   probs[0] = probEff; probs[1] = probFake;
   return probs;
 
@@ -2289,3 +2304,10 @@ Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, i
   return kTRUE;
 }
 
+
+//_________________________________________
+Bool_t DetectorK::IsITSLayer(const TString &lname)
+{
+  // return true for ITS layers
+  return !(lname.Contains("tpc") || lname.Contains("trd"));
+}

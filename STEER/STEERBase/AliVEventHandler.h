@@ -26,6 +26,8 @@ enum EEventHandlerFlags {
     // Handled tree
     virtual TTree       *GetTree() const { return NULL; }
     virtual Option_t    *GetDataType() const { return NULL; }
+    virtual Bool_t       GetFillAOD() const {return kTRUE;}
+    virtual Bool_t       GetFillExtension() const {return kTRUE;}
     virtual void         SetFillAOD(Bool_t) {}
     virtual void         SetFillExtension(Bool_t) {}
     // Input
@@ -35,7 +37,7 @@ enum EEventHandlerFlags {
     virtual void         SetOutputFileName(const char* fname)   = 0;
     virtual const char*  GetOutputFileName() const        = 0;
     // Extra outputs as a string separated by commas
-    virtual const char*  GetExtraOutputs() const {return NULL;}
+    virtual const char*  GetExtraOutputs(Bool_t merge=kFALSE) const;
     // Input
     virtual void         SetInputTree(TTree* tree)        = 0;
     // Steering 

@@ -107,6 +107,8 @@ public:
   Bool_t                    CheckCircularDeps();
   virtual Bool_t            CheckPostData() const;
   virtual Bool_t            CheckOwnership() const;
+  // Reset task
+  virtual void              Reset();
   // Getters
   void                      GetBranches(const char *type, TString &result) const;
   Int_t                     GetNinputs() const  {return fNinputs;}
@@ -129,6 +131,7 @@ public:
   Bool_t                    HasBranches() const {return !fBranchNames.IsNull();}
   virtual void                      PrintTask(Option_t *option="all", Int_t indent=0) const;
   void                      PrintContainers(Option_t *option="all", Int_t indent=0) const;
+  Bool_t                    ProducersTouched() const;
   void                      SetBranches(const char *names) {fBranchNames = names;}
   void                      SetChecked(Bool_t flag=kTRUE) {TObject::SetBit(kTaskChecked,flag);}
   void                      SetPostEventLoop(Bool_t flag=kTRUE);

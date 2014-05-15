@@ -43,7 +43,7 @@ ClassImp(AliHLTCaloClusterizerComponent);
 AliHLTCaloClusterizerComponent::AliHLTCaloClusterizerComponent(TString det):
         AliHLTCaloProcessor(),
         AliHLTCaloConstantsHandler(det),
-        fDataOrigin('\0'),
+        fDataOrigin(0),
         fAnalyserPtr(0),
         fRecoParamsPtr(0),
         fClusterizerPtr(0),

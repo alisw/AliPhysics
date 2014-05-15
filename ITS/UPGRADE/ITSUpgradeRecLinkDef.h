@@ -16,12 +16,16 @@
 #pragma link C++ class AliITSURecoParam+;
 #pragma link C++ class AliITSUReconstructor+;
 #pragma link C++ class AliITSUClusterizer+;
+#pragma link C++ class AliITSUClusterLines+;
 #pragma link C++ class AliITSURecoSens+;
 #pragma link C++ class AliITSURecoLayer+;
 #pragma link C++ class AliITSURecoDet+;
 #pragma link C++ class AliITSUClusterPix+;
 #pragma link C++ class AliITSUSeed+;
 #pragma link C++ class AliITSUTrackerGlo+;
+#pragma link C++ class AliITSUTrackerSA+;
+#pragma link C++ class AliITSUTrackerCooked+;
+#pragma link C++ class AliITSUTrackCooked+;
 #pragma link C++ class AliITSUTrackCond+;
 #pragma link C++ class AliITSUTrackHyp+;
 #pragma link C++ class AliITSUMatLUT+;
@@ -37,7 +41,7 @@
 #pragma link C++ class AliITSUpgradeReconstructor+;
 #pragma link C++ class AliITSUpgradeClusterList+;
 #pragma link C++ class AliITSUpgradeClusterListNode+;
-#pragma link C++ class AliITSUPixelModule+;
+#pragma link C++ class AliITSUPixelChip+;
 #pragma link C++ class AliITSUpgradeClusterFinder+;
 */
 

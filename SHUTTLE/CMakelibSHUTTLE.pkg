@@ -39,7 +39,7 @@ set ( ELIBS  dim)
 
 set ( ELIBSDIR  ${DIMDIR}/${ODIR})
 
-set ( EINCLUDE ${EINCLUDE}  ${ALIEN_ROOT}/api/include)
+set ( EINCLUDE ${EINCLUDE}  $ENV{ALIEN_ROOT}/api/include)
 
 set ( DHDR  SHUTTLELinkDef.h)
 

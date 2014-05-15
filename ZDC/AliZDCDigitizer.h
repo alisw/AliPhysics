@@ -14,6 +14,7 @@
 #include "AliCDBStorage.h"
 #include "AliZDCPedestals.h"
 
+class TFile;
 class AliDigitizationInput;
 
 class AliZDC;
@@ -54,6 +55,9 @@ public:
   // Added for RELDIS
   void    SetRELDISGenerator() {fIsRELDISgen=kTRUE;}
 
+  void    SpectatorSignal(Int_t SpecType, Int_t numEvents, Float_t pm[3][5]);
+
+
 private:
 
   AliZDCDigitizer(const AliZDCDigitizer&);
@@ -64,8 +68,6 @@ private:
 
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
                         Int_t &freeSpecN, Int_t &freeSpecP) const;
-  void    SpectatorSignal(Int_t SpecType, Int_t numEvents, 
-                          Float_t pm[3][5]) const;
 
   Int_t   Phe2ADCch(Int_t Detector, Int_t Quadrant, Float_t Light, 
                     Int_t Res) const;
@@ -77,7 +79,7 @@ private:
   Bool_t  fIsSignalInADCGate;   // true if signal in ADC gate
   Float_t fFracLostSignal;      // fraction of lost signal
   
-  AliZDCPedestals  *fPedData; 	   //! pedestal calibration data
+  AliZDCPedestals  *fPedData; 	//! pedestal calibration data
   
   Bool_t  fSpectators2Track;    // should digitizer track spectators
   Float_t fBeamEnergy;          // beam energy
@@ -87,8 +89,10 @@ private:
   Bool_t  fIspASystem;       	// true if collision system is p-A
 
   // Added for RELDIS
-  Bool_t  fIsRELDISgen;  	// treu if generator is RELDIS
+  Bool_t  fIsRELDISgen;  	// true if generator is RELDIS
+  
+  TFile  *fSpectatorData;	// pointer to stored spectator data files
        
-  ClassDef(AliZDCDigitizer, 14)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 15)     // digitizer for ZDC
 };    
 #endif

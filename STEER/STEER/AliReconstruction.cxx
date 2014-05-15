@@ -211,13 +211,9 @@ using std::endl;
 
 //_____________________________________________________________________________
 const char* AliReconstruction::fgkStopEvFName = "_stopEvent_";
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD"
-// #ifdef MFT_UPGRADE
-//                                                                                   , "MFT"
-// #endif 
-                                                                                  , "MFT"    // AU
-										  , "HLT"
-};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD",
+"TOF", "PHOS", 
+"HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD","FIT","MFT", "HLT"};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
@@ -225,6 +221,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunVertexFinder(kTRUE),
   fRunVertexFinderTracks(kTRUE),
   fRunMuonTracking(kFALSE),
+  fRunMFTTrackingMU(kFALSE),
   fRunV0Finder(kTRUE),
   fRunCascadeFinder(kTRUE),
   fRunMultFinder(kTRUE),
@@ -288,6 +285,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fCDBUri(),
   fQARefUri(),
   fSpecCDBUri(), 
+  fCheckRecoCDBvsSimuCDB(),
   fInitCDBCalled(kFALSE),
   fCDBSnapshotMode(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
@@ -299,6 +297,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fInitQACalled(kFALSE), 
   fWriteQAExpertData(kTRUE), 
   fRunPlaneEff(kFALSE),
+
+  fESDpid(NULL),
 
   fesd(NULL),
   fhltesd(NULL),
@@ -346,7 +346,9 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
     fQAWriteExpert[iDet] = kFALSE ; 
   }
   fBeamInt[0][0]=fBeamInt[0][1]=fBeamInt[1][0]=fBeamInt[1][1] = -1;
-
+  //
+  AddCheckRecoCDBvsSimuCDB("TPC/Calib/RecoParam"); // check for similarity in the sim and rec
+  //
   AliPID pid;
 }
 
@@ -356,6 +358,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunVertexFinder(rec.fRunVertexFinder),
   fRunVertexFinderTracks(rec.fRunVertexFinderTracks),
   fRunMuonTracking(rec.fRunMuonTracking),
+  fRunMFTTrackingMU(rec.fRunMFTTrackingMU),
   fRunV0Finder(rec.fRunV0Finder),
   fRunCascadeFinder(rec.fRunCascadeFinder),
   fRunMultFinder(rec.fRunMultFinder),
@@ -419,6 +422,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fCDBUri(rec.fCDBUri),
   fQARefUri(rec.fQARefUri),
   fSpecCDBUri(), 
+  fCheckRecoCDBvsSimuCDB(),
   fInitCDBCalled(rec.fInitCDBCalled),
   fCDBSnapshotMode(rec.fCDBSnapshotMode),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
@@ -430,6 +434,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fInitQACalled(rec.fInitQACalled),
   fWriteQAExpertData(rec.fWriteQAExpertData), 
   fRunPlaneEff(rec.fRunPlaneEff),
+
+  fESDpid(NULL),
 
   fesd(NULL),
   fhltesd(NULL),
@@ -484,6 +490,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
     if (rec.fSpecCDBUri[i]) fSpecCDBUri.Add(rec.fSpecCDBUri[i]->Clone());
   }
 
+  for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
+    if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
+  }
+
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
 
 }
@@ -503,6 +513,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunVertexFinder       = rec.fRunVertexFinder;
   fRunVertexFinderTracks = rec.fRunVertexFinderTracks;
   fRunMuonTracking       = rec.fRunMuonTracking;
+  fRunMFTTrackingMU      = rec.fRunMFTTrackingMU;
   fRunV0Finder           = rec.fRunV0Finder;
   fRunCascadeFinder      = rec.fRunCascadeFinder;
   fRunMultFinder         = rec.fRunMultFinder;
@@ -598,6 +609,12 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fCDBUri        = "";
   fQARefUri      = rec.fQARefUri;
   fSpecCDBUri.Delete();
+  fCheckRecoCDBvsSimuCDB.Delete();
+  //
+  for (Int_t i = 0; i < rec.fCheckRecoCDBvsSimuCDB.GetEntriesFast(); i++) {
+    if (rec.fCheckRecoCDBvsSimuCDB[i]) fCheckRecoCDBvsSimuCDB.AddLast(rec.fCheckRecoCDBvsSimuCDB[i]->Clone());
+  }
+  //
   fInitCDBCalled               = rec.fInitCDBCalled;
   fCDBSnapshotMode             = rec.fCDBSnapshotMode;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
@@ -610,6 +627,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fWriteQAExpertData           = rec.fWriteQAExpertData;
   fRunPlaneEff                 = rec.fRunPlaneEff;
   for (int i=2;i--;) for (int j=2;j--;) fBeamInt[i][j] = rec.fBeamInt[i][j];
+  fESDpid  = NULL;
   fesd     = NULL;
   fhltesd  = NULL;
   fesdf    = NULL;
@@ -662,7 +680,7 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-
+  fCheckRecoCDBvsSimuCDB.Delete();
   AliCodeTimer::Instance()->Print();
 }
 
@@ -825,6 +843,7 @@ void AliReconstruction::SetQARefDefaultStorage(const char* uri) {
   AliQAv1::SetQARefStorage(fQARefUri.Data()) ;
   
 }
+
 //_____________________________________________________________________________
 void AliReconstruction::SetSpecificStorage(const char* calibType, const char* uri) {
 // Store a detector-specific CDB storage location
@@ -865,6 +884,48 @@ void AliReconstruction::SetSpecificStorage(const char* calibType, const char* ur
   if (obj) fSpecCDBUri.Remove(obj);
   fSpecCDBUri.Add(new TNamed(aPath.GetPath().Data(), uri));
 
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::AddCheckRecoCDBvsSimuCDB(const char* cdbpath,const char* comment) 
+{
+  // require the cdb item to be the same in the rec as in the sim
+  // Activate it later within the Run() method
+  TString newent = cdbpath;
+  if (newent.IsNull()) return;
+  TIter nextit(&fCheckRecoCDBvsSimuCDB);
+  TNamed* cdbent=0;
+  while ((cdbent=(TNamed*)nextit())) {
+    TString str = cdbent->GetName();
+    if (str==newent) {
+      AliInfo(Form("%s is already in the list to check",cdbpath));
+      return;
+    }
+  }
+  fCheckRecoCDBvsSimuCDB.AddLast(new TNamed(cdbpath,comment));
+  //
+}
+
+//_____________________________________________________________________________
+void AliReconstruction::RemCheckRecoCDBvsSimuCDB(const char* cdbpath) 
+{
+  // require the cdb item to be the same in the rec as in the sim
+  // Activate it later within the Run() method
+  TString newent = cdbpath;
+  if (newent.IsNull()) return;
+  TIter nextit(&fCheckRecoCDBvsSimuCDB);
+  TNamed* cdbent=0;
+  while ((cdbent=(TNamed*)nextit())) {
+    TString str = cdbent->GetName();
+    if (str==newent) {
+      AliInfo(Form("Removing %s from the list to check",cdbpath));
+      delete fCheckRecoCDBvsSimuCDB.Remove(cdbent);
+      fCheckRecoCDBvsSimuCDB.Compress();
+      return;
+    }
+  }
+  AliInfo(Form("%s is not in the list to check",cdbpath));
+  //
 }
 
 //_____________________________________________________________________________
@@ -1746,6 +1807,8 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
   AliSysInfo::AddStamp("LoadLoader");
  
+  CheckRecoCDBvsSimuCDB();
+
   ftVertexer = new AliVertexerTracks(AliTracker::GetBz());
 
   // get trackers
@@ -1826,6 +1889,9 @@ void AliReconstruction::SlaveBegin(TTree*)
   gSystem->GetProcInfo(&procInfo);
   AliInfo(Form("Current memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
   
+  // PID
+  fESDpid = new AliESDpid();
+
   //QA
   //Initialize the QA and start of cycle 
   if (fRunQA || fRunGlobalQA) 
@@ -1909,13 +1975,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   static Long_t oldMres=0;
   static Long_t oldMvir=0;
   static Float_t oldCPU=0;
-  static Long_t aveDMres=0;
-  static Long_t aveDMvir=0;
-  static Float_t aveDCPU=0;
+  // static Long_t aveDMres=0;
+  // static Long_t aveDMvir=0;
+  // static Float_t aveDCPU=0;
 
   AliCodeTimerAuto("",0);
-
-  AliESDpid pid;
 
   AliSysInfo::AddStamp(Form("StartEv_%d",iEvent), 0,0,iEvent);
 
@@ -1961,7 +2025,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (reconstructor && fRecoParam.GetDetRecoParamArray(iDet)) {
         const AliDetectorRecoParam *par = fRecoParam.GetDetRecoParam(iDet);
         reconstructor->SetRecoParam(par);
-	reconstructor->GetPidSettings(&pid);
+	reconstructor->GetPidSettings(fESDpid);
 	reconstructor->SetEventInfo(&fEventInfo);
         if (fRunQA) {
           AliQAManager::QAManager()->SetEventInfo(&fEventInfo) ;
@@ -2120,9 +2184,23 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       AliSysInfo::AddStamp(Form("TrackingMUON_%d",iEvent), 0,0,iEvent);      
     }
 
+    //---------------- AU From here...
+
+    // MFT tracking of MUON tracks
+    if (!fRunTracking.IsNull()) {
+      if (fRunMFTTrackingMU && fRunMuonTracking) {
+	if (!RunMFTTrackingMU(fesd)) {
+	  if (fStopOnError) {CleanUp(); return kFALSE;}
+	}
+      }
+      AliSysInfo::AddStamp(Form("TrackingMFT_MUON_%d",iEvent), 0,0,iEvent);      
+    }
+
+    //---------------- ...to here
+
     // barrel tracking
     if (!fRunTracking.IsNull()) {
-      if (!RunTracking(fesd,pid)) {
+      if (!RunTracking(fesd,*fESDpid)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
     }
@@ -2166,7 +2244,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       ok = kFALSE;
       if (tpcTrack)
 	ok = AliTracker::
-	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMass(),kMaxStep,kFALSE);
+	  PropagateTrackToBxByBz(tpcTrack,kRadius,track->GetMassForTracking(),kMaxStep,kFALSE);
 
       if (ok) {
 	Int_t n=trkArray.GetEntriesFast();
@@ -2178,7 +2256,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (track->IsOn(AliESDtrack::kITSrefit)) continue;
 
       AliTracker::
-         PropagateTrackToBxByBz(track,kRadius,track->GetMass(),kMaxStep,kFALSE);
+         PropagateTrackToBxByBz(track,kRadius,track->GetMassForTracking(),kMaxStep,kFALSE);
       Double_t x[3]; track->GetXYZ(x);
       Double_t b[3]; AliTracker::GetBxByBz(x,b);
       track->RelateToVertexBxByBz(fesd->GetPrimaryVertexSPD(), b, kVeryBig);
@@ -2303,10 +2381,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // AdC+FN
     if (fReconstructor[3])
-      GetReconstructor(3)->FillEventTimeWithTOF(fesd,&pid);
+      GetReconstructor(3)->FillEventTimeWithTOF(fesd,fESDpid);
 
     // combined PID
-    pid.MakePID(fesd);
+    //    fESDpid->MakePID(fesd);
 
     if (fFillTriggerESD) {
       if (!FillTriggerESD(fesd)) {
@@ -2921,6 +2999,53 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
 
 
 //_____________________________________________________________________________
+Bool_t AliReconstruction::RunMFTTrackingMU(AliESDEvent*& esd) {
+
+  // AU
+
+  // run the global muon tracking: matching the MUON tracks with the MFT clusters
+
+  AliCodeTimerAuto("",0)
+
+  if (!fRunLoader) {
+    AliError("Missing runLoader!");
+    return kFALSE;
+  }
+  Int_t iDet = GetDetIndex("MFT"); // for MFT
+
+  // Get a pointer to the MFT reconstructor
+  AliReconstructor *reconstructor = GetReconstructor(iDet);
+  if (!reconstructor) return kFALSE;
+  
+  TString detName = fgkDetectorName[iDet];
+  AliDebug(1, Form("%s tracking for muon tracks", detName.Data()));
+  AliTracker *tracker = reconstructor->CreateTracker();
+  if (!tracker) {
+    AliWarning(Form("couldn't create a Muon tracker for %s", detName.Data()));
+    return kFALSE;
+  }
+     
+  // read RecPoints
+  fLoader[iDet]->LoadRecPoints("read");  
+
+  tracker->LoadClusters(fLoader[iDet]->TreeR());
+  
+  Int_t rv = tracker->Clusters2Tracks(esd);
+  
+  fLoader[iDet]->UnloadRecPoints();
+
+  tracker->UnloadClusters();
+  
+  if (rv) {
+    AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
+    return kFALSE;
+  }
+  
+  return kTRUE;
+
+}
+
+//_____________________________________________________________________________
 Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 {
 // run the barrel tracking
@@ -2972,7 +3097,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
-      PID.MakePID(esd,kTRUE);
+      PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID0%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     } 
   }
@@ -3027,7 +3152,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
     if (iDet == 1) {
       //GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       //AliESDpid::MakePID(esd);
-      PID.MakePID(esd,kTRUE);
+      PID.MakePIDForTracking(esd);
       AliSysInfo::AddStamp(Form("MakePID1%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     }
 
@@ -3519,6 +3644,10 @@ Bool_t AliReconstruction::CreateTrackers(const TString& detectors)
       fRunMuonTracking = kTRUE;
       continue;
     }
+    if (detName == "MFT") {           // AU    
+      fRunMFTTrackingMU = kTRUE;      // AU
+      continue;			      // AU
+    }                                 // AU
 
     fTracker[iDet] = reconstructor->CreateTracker();
     if (!fTracker[iDet] && (iDet < 7)) {
@@ -3558,6 +3687,9 @@ void AliReconstruction::CleanUp()
   fRawReader = NULL;
   delete fParentRawReader;
   fParentRawReader=NULL;
+
+  delete fESDpid;
+  fESDpid = NULL;
 
   if (ffile) {
     ffile->Close();
@@ -4512,4 +4644,120 @@ Bool_t AliReconstruction::HasNextEventAfter(Int_t eventId)
 {
 	 return ( (eventId < fRunLoader->GetNumberOfEvents()) ||
 	   (fRawReader && fRawReader->NextEvent()) );
+}
+
+//_________________________________________________________________
+void AliReconstruction::CheckRecoCDBvsSimuCDB()
+{
+  // if some CDB entries must be the same in the simulation
+  // and reconstruction, check here
+  int nent = fCheckRecoCDBvsSimuCDB.GetEntriesFast();
+  AliInfo(Form("Check %d entries for matching between sim and rec",nent));
+  //
+  // get simulation CDB
+  fRunLoader->CdGAFile();
+  TMap*  cdbMapSim  = (TMap*)gDirectory->Get("cdbMap");
+  TList* cdbListSim = (TList*)gDirectory->Get("cdbList");
+  if (!(cdbMapSim && cdbListSim)) {
+    AliInfo(Form("No CDBMap/List found in %s, nothing to check",fGAliceFileName.Data()));
+    return;
+  }
+  // read the requested objects to make sure they will appear in the reco list
+  for (Int_t i=0;i<nent;i++) {
+    TNamed* cdbent = (TNamed*) fCheckRecoCDBvsSimuCDB[i];
+    if (!cdbent) continue;
+    AliCDBManager::Instance()->Get(cdbent->GetName());
+  }
+  // get default path for simulation
+  TPair* pair;
+  TObjString* stro;
+  pair = (TPair*)cdbMapSim->FindObject("default");
+  if (!pair) {AliFatal("Did not find default storage used for simulations"); return;}
+  TString defSimStore = ((TObjString*)pair->Value())->GetString();
+  RectifyCDBurl(defSimStore);
+  //
+  // get reconstruction CDB
+  const TMap *cdbMapRec = AliCDBManager::Instance()->GetStorageMap();	 
+  const TList *cdbListRec = AliCDBManager::Instance()->GetRetrievedIds();
+  //
+  // get default path for reconstruction
+  pair = (TPair*)cdbMapRec->FindObject("default");
+  if (!pair) {AliFatal("Did not find default storage used for reconstruction"); return;}
+  TString defRecStore = ((TObjString*)pair->Value())->GetString();
+  RectifyCDBurl(defRecStore);
+  //
+  for (Int_t i=0;i<nent;i++) {
+    TNamed* cdbent = (TNamed*) fCheckRecoCDBvsSimuCDB[i];
+    if (!cdbent) continue;
+    //
+    AliInfo(Form("#%d Checking %s",i,cdbent->GetName()));
+    //
+    // find cdbID used for sim
+    TString idSim="",storSim="";
+    TIter nextSim(cdbListSim);
+    while ((stro=(TObjString*)nextSim())) {
+      if (stro->GetString().Contains(cdbent->GetName())) {
+	idSim = stro->GetString();
+	break;
+      }
+    }    
+    // find the storage used for sim
+    // check in the simuCDB special paths
+    pair = (TPair*)cdbMapSim->FindObject(cdbent->GetName());
+    if (pair) { // specific path is used
+      storSim = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storSim);
+    }
+    else storSim = defSimStore;  // default storage list is used
+    //
+    if (!idSim.IsNull()) AliInfo(Form("Sim. used %s from %s",idSim.Data(), storSim.Data()));
+    else                 AliInfo("Sim. did not use this object");
+    //
+    // find cdbID used for rec
+    TString idRec="",storRec="";
+    TIter nextRec(cdbListRec);
+    AliCDBId* id=0;
+    while ((id=(AliCDBId*)nextRec())) {
+      idRec = id->ToString();
+      if (idRec.Contains(cdbent->GetName())) break;
+      idRec="";
+    }
+    //
+    // find storage used for the rec
+    pair = (TPair*)cdbMapRec->FindObject(cdbent->GetName());
+    if (pair) {  // specific path is used
+      storRec = ((TObjString*)pair->Value())->GetString();
+      RectifyCDBurl(storRec);
+    }
+    else storRec = defRecStore; // default storage list is used
+    //
+    if (!idRec.IsNull()) AliInfo(Form("Rec. used %s from %s",idRec.Data(), storRec.Data()));
+    else                 AliInfo("Rec. did not use this object");
+    //
+    if (!idSim.IsNull() && !idRec.IsNull() && ((idSim!=idRec) || (storSim!=storRec)) ) 
+      AliFatal("Different objects were used in sim and rec");
+  }
+  
+}
+
+//_________________________________________________________
+void AliReconstruction::RectifyCDBurl(TString& url)
+{
+  // TBD RS
+  // remove everything but the url
+  TString sbs;
+  if (!(sbs=url("\\?User=[^?]*")).IsNull())                url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?DBFolder=[^?]*")).IsNull())            url.ReplaceAll("?DB","");
+  if (!(sbs=url("\\?SE=[^?]*")).IsNull())                  url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheFolder=[^?]*")).IsNull())         url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?OperateDisconnected=[^?]*")).IsNull()) url.ReplaceAll(sbs,"");
+  if (!(sbs=url("\\?CacheSize=[^?]*")).IsNull())           url.ReplaceAll(sbs,"");  
+  if (!(sbs=url("\\?CleanupInterval=[^?]*")).IsNull())     url.ReplaceAll(sbs,"");  
+  Bool_t slash=kFALSE,space=kFALSE;
+  while ( (slash=url.EndsWith("/")) || (space=url.EndsWith(" ")) ) {
+    if (slash) url = url.Strip(TString::kTrailing,'/');
+    if (space) url = url.Strip(TString::kTrailing,' ');
+  }
+  //url.ToLower();
+  //
 }

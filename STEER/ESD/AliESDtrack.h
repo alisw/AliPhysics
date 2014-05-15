@@ -30,19 +30,19 @@
 #include <TBits.h>
 #include "AliExternalTrackParam.h"
 #include "AliVTrack.h"
-#include "AliESDTOFcluster.h"
+#include "AliESDTOFCluster.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
 #include "AliTPCdEdxInfo.h"
 
 class TParticle;
 class AliESDVertex;
-class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
 class AliDetectorPID;
 class TTreeSRedirector;
+class AliESDEvent;
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -63,7 +63,7 @@ public:
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();
-  void SetID(Short_t id) { fID =id;}
+  void SetID(Short_t id);
   Int_t GetID() const { return fID;}
   void SetVertexID(Char_t id) { fVertexID=id;}
   Char_t GetVertexID() const { return fVertexID;}
@@ -86,11 +86,14 @@ public:
 
   Double_t GetIntegratedLength() const;
   Double_t GetIntegratedLengthOld() const {return fTrackLength;}
-  void GetIntegratedTimes(Double_t *times) const;
+  void GetIntegratedTimes(Double_t *times, Int_t nspec=AliPID::kSPECIES) const;
   Double_t GetIntegratedTimesOld(Int_t i) const {if(fTrackTime) return fTrackTime[i]; else return 0;};
   Int_t    GetPID(Bool_t tpcOnly=kFALSE)  const;
   Int_t    GetTOFBunchCrossing(Double_t b=0, Bool_t pidTPConly=kTRUE) const;
   Double_t GetMass(Bool_t tpcOnly=kFALSE) const {return AliPID::ParticleMass(GetPID(tpcOnly));}
+  Double_t GetMassForTracking() const;
+  void     SetPIDForTracking(Int_t pid) {fPIDForTracking = pid;}
+  Int_t    GetPIDForTracking() const    {return fPIDForTracking;}
   Double_t M() const;
   Double_t E() const;
   Double_t Y() const;
@@ -180,6 +183,8 @@ public:
   void     SetITSchi2Std(Double_t chi2, Int_t step)  { if (step>-1&&step<kNITSchi2Std) fITSchi2Std[step] = chi2;}
   Char_t   GetITSclusters(Int_t *idx) const;
   UChar_t GetITSClusterMap() const {return fITSClusterMap;}
+  void     SetITSClusterMap(UChar_t amap) {fITSClusterMap = amap;}
+
   UChar_t GetITSSharedMap() const {return fITSSharedMap;}
   void    SetITSSharedFlag(int lr) {fITSSharedMap |= 0x1<<lr;}
   Bool_t  GetITSFakeFlag()   const {return (fITSSharedMap&BIT(7))!=0;}
@@ -227,6 +232,7 @@ public:
       fTPCsignalTuned = signal;
   }
   void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
+  Double_t  GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID,Int_t valueID);
 
   AliTPCdEdxInfo * GetTPCdEdxInfo() const {return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
@@ -306,12 +312,17 @@ public:
     return fFriendTrack!=NULL?fFriendTrack->GetTRDtrack():NULL;
   }
 
+  // this are methods for manipulating with TOF clusters/matches
   void    SetTOFclusterArray(Int_t ncluster,Int_t *TOFcluster);
   Int_t   *GetTOFclusterArray() const {return fTOFcluster;}
   Int_t   GetNTOFclusters() const {return fNtofClusters;}
+  void    SuppressTOFMatches();
+  void    ReplaceTOFTrackID(int oldID, int newID);
+  void    ReplaceTOFClusterID(int oldID, int newID);
+  void    ReplaceTOFMatchID(int oldID, int newID);
   void    AddTOFcluster(Int_t icl);
-  void    SortTOFcluster();
-  void    ReMapTOFcluster(Int_t ncl,Int_t *mapping);
+  void    SortTOFcluster(); // RS? Not to be used?
+  void    ReMapTOFcluster(Int_t ncl,Int_t *mapping);  // RS? Not to be used?
 
   void    SetTOFsignal(Double_t tof) {fTOFsignal=tof;}
   Double_t GetTOFsignal() const;
@@ -416,6 +427,8 @@ public:
   }
   virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  const AliTOFHeader* GetTOFHeader() const;
+  const AliVEvent* GetEvent() const {return (AliVEvent*)fESDEvent;}
   void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}
 
   // Trasient PID object, is owned by the track
@@ -435,7 +448,7 @@ public:
   // - set lengt of bit fields fTPCClusterMap and fTPCSharedMap to 0
   static void OnlineMode(bool mode) {fgkOnlineMode=mode;}
   static bool OnlineMode() {return fgkOnlineMode;}
-  Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
+  static Double_t GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 );
   Double_t GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi =0 , TTreeSRedirector * pcstream =0 ) const;
 protected:
   
@@ -470,12 +483,12 @@ protected:
   Int_t     fKinkIndexes[3]; // array of indexes of posible kink candidates 
   Int_t     fV0Indexes[3];   // array of indexes of posible kink candidates 
 
-  Double32_t   fR[AliPID::kSPECIES]; //[0.,0.,8] combined "detector response probability"
-  Double32_t   fITSr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTPCr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fTRDr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)  
-  Double32_t   fTOFr[AliPID::kSPECIES]; //[0.,0.,8] "detector response probabilities" (for the PID)
-  Double32_t   fHMPIDr[AliPID::kSPECIES];//[0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fR; //! [0.,0.,8] combined "detector response probability"
+  Double32_t   *fITSr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTPCr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fTRDr; //! [0.,0.,8] "detector response probabilities" (for the PID)  
+  Double32_t   *fTOFr; //! [0.,0.,8] "detector response probabilities" (for the PID)
+  Double32_t   *fHMPIDr; //! [0.,0.,8] "detector response probabilities" (for the PID)
 
   Double32_t fHMPIDtrkTheta;//[-2*pi,2*pi,16] theta of the track extrapolated to the HMPID, LORS
   // how much of this is needed?
@@ -557,6 +570,8 @@ protected:
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
+  Char_t  fPIDForTracking;           // mass used for tracking
+
   mutable const AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
@@ -579,7 +594,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,69)  //ESDtrack 
+  ClassDef(AliESDtrack,71)  //ESDtrack 
 };
 
 

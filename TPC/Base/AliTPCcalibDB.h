@@ -22,6 +22,7 @@ class AliTPCExB;
 #include "AliSplineFit.h"
 #include "TMap.h"
 
+class TGraphErrors;
 class AliTPCSensorTempArray;
 class AliDCSSensorArray;
 class AliCDBEntry;
@@ -52,6 +53,7 @@ class AliTPCcalibDB : public TObject
   void   Update();  //update entries
   void   UpdateRunInformations(Int_t run, Bool_t force=kFALSE);
   void   UpdateNonRec();
+  Bool_t   GetTailcancelationGraphs(Int_t sector, TGraphErrors ** graphRes, Float_t * indexAmpGraphs);
   //
   Long64_t GetRun() const {return fRun;}
   //
@@ -147,6 +149,7 @@ class AliTPCcalibDB : public TObject
   Float_t GetChamberCurrentNominalHighVoltage(UInt_t roc) const { return (roc<72)?fCurrentNominalVoltage[roc]:0.; }
   Float_t GetChamberGoodHighVoltageFraction(UInt_t roc)   const { return (roc<72)?fChamberHVgoodFraction[roc]:0.; }
   AliDCSSensor* GetChamberHVSensor(UInt_t roc)            const { return (roc<72)?fHVsensors[roc]:0x0;            }
+  Double_t GetGainCorrectionHVandPT(Int_t timeStamp, Int_t run, Int_t sector, Int_t deltaCache, Int_t mode);
   Bool_t  IsDataTakingActive(time_t timeStamp);
   //
   //Goofie Values
@@ -171,6 +174,7 @@ class AliTPCcalibDB : public TObject
   Double_t      GetVDriftCorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
   Double_t      GetTime0CorrectionTime(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
   Double_t      GetVDriftCorrectionGy(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
+  Double_t      GetVDriftCorrectionDeltaZ(Int_t timeStamp, Int_t run, Int_t side, Int_t mode);
   //
   AliSplineFit* GetVdriftSplineFit(const char* name, Int_t run);
   AliSplineFit* CreateVdriftSplineFit(const char* graphName, Int_t run);

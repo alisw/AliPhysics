@@ -103,7 +103,7 @@ void AliBODY::CreateGeometry()
     dALIC[0]=2500.;
     dALIC[1]=2500.;
     dALIC[2]=15000.;
-    gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
+    TVirtualMC::GetMC()->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
   } else if ( gAlice->GetModule("ACORDE")) {
     //
     // If the Cosmic Ray Trigger  is present we need a large box
@@ -112,7 +112,7 @@ void AliBODY::CreateGeometry()
     dALIC[0]=13000.;
     dALIC[1]=5000.;
     dALIC[2]=13000.;
-    gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
+    TVirtualMC::GetMC()->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
       
   } else {
     //
@@ -121,7 +121,7 @@ void AliBODY::CreateGeometry()
     dALIC[0]=2000;
     dALIC[1]=2000;
     dALIC[2]=3000;
-    gMC->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
+    TVirtualMC::GetMC()->Gsvolu("ALIC","BOX ",idtmed[1],dALIC,3);
   }
 }
  

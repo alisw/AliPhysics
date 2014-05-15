@@ -36,9 +36,6 @@
 #include "AliAODHMPIDrings.h"
 #include "AliAODZDC.h"
 #include "AliAODTrdTrack.h"
-#ifdef MFT_UPGRADE
-#include "AliAODMFT.h"
-#endif
 
 class TTree;
 class TFolder;
@@ -69,9 +66,6 @@ class AliAODEvent : public AliVEvent {
 		       kAODZDC,
 		       kTOFHeader,                       
 		       kAODTrdTracks,
-#ifdef MFT_UPGRADE
-	           kAODVZERO,
-#endif
 		       kAODListN
   };
 
@@ -87,6 +81,7 @@ class AliAODEvent : public AliVEvent {
   TList        *GetList()                const { return fAODObjects; }
   void          SetConnected(Bool_t conn=kTRUE) {fConnected=conn;}
   Bool_t        GetConnected() const {return fConnected;}
+  Bool_t        AreTracksConnected() const {return fTracksConnected;}
 
   // -- Header
   AliAODHeader *GetHeader()              const { return fHeader; }
@@ -145,13 +140,15 @@ class AliAODEvent : public AliVEvent {
 
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
+  void          ConnectTracks();
   Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
   Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
-  AliAODTrack  *GetTrack(Int_t nTrack)   const { if(fTracks && fTracks->UncheckedAt(nTrack)) ((AliAODTrack*)fTracks->UncheckedAt(nTrack))->SetAODEvent(this);return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
-  Int_t         AddTrack(const AliAODTrack* trk)
-    {new((*fTracks)[fTracks->GetEntriesFast()]) AliAODTrack(*trk); return fTracks->GetEntriesFast()-1;}
+  AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
+  Int_t         AddTrack(const AliAODTrack* trk);
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;
   Int_t         GetNumberOfMuonTracks() const;
+  Int_t         GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const;    // AU
+  Int_t         GetNumberOfMuonGlobalTracks() const;                       // AU
 
   // -- Vertex
   TClonesArray *GetVertices()            const { return fVertices; }
@@ -312,16 +309,13 @@ class AliAODEvent : public AliVEvent {
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
 
-#ifdef MFT_UPGRADE
-  // MFT 
-  AliAODMFT *GetMFTData() const { return fAODMFT; }
-#endif
 
   private :
 
   TList   *fAODObjects; //  list of AODObjects
   TFolder *fAODFolder;  //  folder structure of branches
   Bool_t   fConnected;  //! flag if leaves are alreday connected 
+  Bool_t   fTracksConnected;      //! flag if tracks have already pointer to event set
   // standard content
   AliAODHeader    *fHeader;       //! event information
   TClonesArray    *fTracks;       //! charged tracks
@@ -347,9 +341,6 @@ class AliAODEvent : public AliVEvent {
                              //  It contains also TOF time resolution
                              //  and T0spread as written in OCDB
   TClonesArray    *fTrdTracks;    //! TRD AOD tracks (triggered)
-#ifdef MFT_UPGRADE
-  AliAODMFT       *fAODMFT;       //! VZERO AOD
-#endif
   
   static const char* fAODListName[kAODListN]; //!
 

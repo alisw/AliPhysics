@@ -15,7 +15,7 @@
 
 /* $Id: AliGenEMCocktail.cxx 40702 2010-04-26 13:09:52Z morsch $ */
 
-// Class to create cocktails for physics with electrons, di-electrons,
+// Class to create the cocktail for physics with electrons, di-electrons,
 // and photons from the decay of the following sources:
 // pizero, eta, rho, omega, etaprime, phi
 // Kinematic distributions of the sources are taken from AliGenEMlib.
@@ -25,11 +25,13 @@
 // or they are generated according to the pT distributions themselves
 // (weighting mode: kAnalog)  
  
+ 
 #include <TObjArray.h>
 #include <TParticle.h>
 #include <TF1.h>
 #include <TVirtualMC.h>
 #include <TPDGCode.h>
+#include <TDatabasePDG.h>
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliGenCocktailEntry.h"
@@ -49,33 +51,38 @@ ClassImp(AliGenEMCocktail)
   
 //________________________________________________________________________
 AliGenEMCocktail::AliGenEMCocktail()
-  :AliGenCocktail(),
+:AliGenCocktail(),
    fDecayer(0),
    fDecayMode(kAll),
    fWeightingMode(kNonAnalog),
    fNPart(1000),
-   fYieldArray()
+  fYieldArray(),
+  fPtSelect(0),
+  fCentrality(0),
+  fV2Systematic(0),
+  fForceConv(kFALSE),
+  fSelectedParticles(kGenHadrons)
 {
-// Constructor
+  // Constructor
 
 }
 
 //_________________________________________________________________________
 AliGenEMCocktail::~AliGenEMCocktail()
 {
-// Destructor
+  // Destructor
 
 }
 
 //_________________________________________________________________________
 void AliGenEMCocktail::CreateCocktail()
 {
-// create and add sources to the cocktail
+  // create and add sources to the cocktail
 
   fDecayer->SetForceDecay(fDecayMode);
   fDecayer->ForceDecay();
 
-// Set kinematic limits
+  // Set kinematic limits
   Double_t ptMin  = fPtMin;
   Double_t ptMax  = fPtMax;
   Double_t yMin   = fYMin;;
@@ -85,80 +92,154 @@ void AliGenEMCocktail::CreateCocktail()
   AliInfo(Form("Ranges pT:%4.1f : %4.1f GeV/c, y:%4.2f : %4.2f, Phi:%5.1f : %5.1f degres",ptMin,ptMax,yMin,yMax,phiMin,phiMax));
   AliInfo(Form("the parametrised sources uses the decay mode %d",fDecayMode));
 
-// Create and add electron sources to the generator
+  //Initialize user selection for Pt Parameterization and centrality:
+  AliGenEMlib::SelectParams(fPtSelect,fCentrality,fV2Systematic);
 
-// pizero
-  AliGenParam * genpizero=0;
+  // Create and add electron sources to the generator
+  // pizero
+  if(fSelectedParticles&kGenPizero){
+  AliGenParam *genpizero=0;
   Char_t namePizero[10];    
-  snprintf(namePizero,10, "Pizero");    
-  genpizero = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kPizero, "DUMMY");
+  snprintf(namePizero,10,"Pizero");    
+  genpizero = new AliGenParam(fNPart/0.925, new AliGenEMlib(), AliGenEMlib::kPizero, "DUMMY");
+  genpizero->SetYRange(fYMin/0.925, fYMax/0.925);
   AddSource2Generator(namePizero,genpizero);
   TF1 *fPtPizero = genpizero->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenPizero] = fPtPizero->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kPizero] = fPtPizero->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenPizero] = fPtPizero->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+    fYieldArray[kPizero] = fPtPizero->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
-// eta  
-  AliGenParam * geneta=0;
+  }
+
+  // eta  
+  if(fSelectedParticles&kGenEta){
+  AliGenParam *geneta=0;
   Char_t nameEta[10];    
-  snprintf(nameEta,10, "Eta");    
-  geneta = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kEta, "DUMMY");
+  snprintf(nameEta,10,"Eta");    
+  geneta = new AliGenParam(fNPart/0.825, new AliGenEMlib(), AliGenEMlib::kEta, "DUMMY");
+  geneta->SetYRange(fYMin/0.825, fYMax/0.825);
   AddSource2Generator(nameEta,geneta);
   TF1 *fPtEta = geneta->GetPt();
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,99,0)
-  fYieldArray[kGenEta] = fPtEta->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kEta] = fPtEta->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenEta] = fPtEta->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kEta] = fPtEta->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
-// rho  
-  AliGenParam * genrho=0;
+  }
+
+  // rho  
+  if(fSelectedParticles&kGenRho){
+  AliGenParam *genrho=0;
   Char_t nameRho[10];    
-  snprintf(nameRho,10, "Rho");    
-  genrho = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kRho, "DUMMY");
+  snprintf(nameRho,10,"Rho");    
+  genrho = new AliGenParam(fNPart/0.775, new AliGenEMlib(), AliGenEMlib::kRho, "DUMMY");
+  genrho->SetYRange(fYMin/0.775, fYMax/0.775);
   AddSource2Generator(nameRho,genrho);
   TF1 *fPtRho = genrho->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenRho] = fPtRho->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kRho] = fPtRho->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenRho] = fPtRho->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+    fYieldArray[kRho] = fPtRho->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
-// omega
-  AliGenParam * genomega=0;
+  }
+  
+  // omega
+  if(fSelectedParticles&kGenOmega){
+  AliGenParam *genomega=0;
   Char_t nameOmega[10];    
-  snprintf(nameOmega,10, "Omega");    
-  genomega = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kOmega, "DUMMY");
+  snprintf(nameOmega,10,"Omega");    
+  genomega = new AliGenParam(fNPart/0.775, new AliGenEMlib(), AliGenEMlib::kOmega, "DUMMY");
+  genomega->SetYRange(fYMin/0.775, fYMax/0.775);
   AddSource2Generator(nameOmega,genomega);
   TF1 *fPtOmega = genomega->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenOmega] = fPtOmega->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kOmega] = fPtOmega->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenOmega] = fPtOmega->Integral(fPtMin,fPtMax,(double*)0,1.e-6);
+    fYieldArray[kOmega] = fPtOmega->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
-// etaprime
-  AliGenParam * genetaprime=0;
+  }
+
+  // etaprime
+  if(fSelectedParticles&kGenEtaprime){
+  AliGenParam *genetaprime=0;
   Char_t nameEtaprime[10];    
-  snprintf(nameEtaprime,10, "Etaprime");    
-  genetaprime = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kEtaprime, "DUMMY");
+  snprintf(nameEtaprime,10,"Etaprime");    
+  genetaprime = new AliGenParam(fNPart/0.725, new AliGenEMlib(), AliGenEMlib::kEtaprime, "DUMMY");
+  genetaprime->SetYRange(fYMin/0.725, fYMax/0.725);
   AddSource2Generator(nameEtaprime,genetaprime);
   TF1 *fPtEtaprime = genetaprime->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+    fYieldArray[kEtaprime] = fPtEtaprime->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
-// phi  
-  AliGenParam * genphi=0;
+  }
+
+  // phi  
+  if(fSelectedParticles&kGenPhi){
+  AliGenParam *genphi=0;
   Char_t namePhi[10];    
-  snprintf(namePhi, 10, "Phi");    
-  genphi = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kPhi, "DUMMY");
+  snprintf(namePhi,10,"Phi");    
+  genphi = new AliGenParam(fNPart/0.725, new AliGenEMlib(), AliGenEMlib::kPhi, "DUMMY");
+  genphi->SetYRange(fYMin/0.725, fYMax/0.725);
   AddSource2Generator(namePhi,genphi);
   TF1 *fPtPhi = genphi->GetPt();
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
-  fYieldArray[kGenPhi] = fPtPhi->Integral(fPtMin,fPtMax,1.e-6);
+    fYieldArray[kPhi] = fPtPhi->Integral(fPtMin,fPtMax,1.e-6);
 #else
-  fYieldArray[kGenPhi] = fPtPhi->Integral(fPtMin,fPtMax,(Double_t*)0,1.e-6);
+    fYieldArray[kPhi] = fPtPhi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
 #endif
+  }
+
+  // jpsi  
+  if(fSelectedParticles&kGenJpsi){
+  AliGenParam *genjpsi=0;
+  Char_t nameJpsi[10];    
+  snprintf(nameJpsi,10,"Jpsi");    
+  genjpsi = new AliGenParam(fNPart/0.525, new AliGenEMlib(), AliGenEMlib::kJpsi, "DUMMY");
+  genjpsi->SetYRange(fYMin/0.525, fYMax/0.525);
+  AddSource2Generator(nameJpsi,genjpsi);
+  TF1 *fPtJpsi = genjpsi->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kJpsi] = fPtJpsi->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+#endif
+  }
+
+  // direct gamma
+  if(fDecayMode!=kGammaEM) return;
+  if(fSelectedParticles&kGenDirectRealGamma){
+    AliGenParam *genDirectRealG=0;
+    Char_t nameDirectRealG[10];    
+    snprintf(nameDirectRealG,10,"DirectRealGamma");    
+    genDirectRealG = new AliGenParam(fNPart, new AliGenEMlib(), AliGenEMlib::kDirectRealGamma, "DUMMY");
+    genDirectRealG->SetYRange(fYMin, fYMax);
+    AddSource2Generator(nameDirectRealG,genDirectRealG);
+    TF1 *fPtDirectRealG = genDirectRealG->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kDirectRealGamma] = fPtDirectRealG->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kDirectRealGamma] = fPtDirectRealG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+#endif
+  }
+
+  if(fSelectedParticles&kGenDirectVirtGamma){
+    TDatabasePDG::Instance()->AddParticle("DirectVirtGamma","DirectVirtGamma",0,true,0,0,"GaugeBoson",220000);
+    AliGenParam *genDirectVirtG=0;
+    Char_t nameDirectVirtG[10];    
+    snprintf(nameDirectVirtG,10,"DirectVirtGamma");    
+    genDirectVirtG = new AliGenParam(fNPart/0.775, new AliGenEMlib(), AliGenEMlib::kDirectVirtGamma, "DUMMY");
+    genDirectVirtG->SetYRange(fYMin/0.775, fYMax/0.775);
+    AddSource2Generator(nameDirectVirtG,genDirectVirtG);
+    TF1 *fPtDirectVirtG = genDirectVirtG->GetPt();
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,99,0)
+    fYieldArray[kDirectVirtGamma] = fPtDirectVirtG->Integral(fPtMin,fPtMax,1.e-6);
+#else
+    fYieldArray[kDirectVirtGamma] = fPtDirectVirtG->Integral(fPtMin,fPtMax,(Double_t *)0,1.e-6);
+#endif
+  }
 }
 
 //-------------------------------------------------------------------
@@ -170,10 +251,10 @@ void AliGenEMCocktail::AddSource2Generator(Char_t* nameSource,
   Double_t phiMax = fPhiMax*180./TMath::Pi();
 
   genSource->SetPtRange(fPtMin, fPtMax);  
-  genSource->SetYRange(fYMin, fYMax);
   genSource->SetPhiRange(phiMin, phiMax);
   genSource->SetWeighting(fWeightingMode);
-  if (!gMC) genSource->SetDecayer(fDecayer);  
+  genSource->SetForceGammaConversion(fForceConv);
+  if (!TVirtualMC::GetMC()) genSource->SetDecayer(fDecayer);  
   genSource->Init();
     
   AddGenerator(genSource,nameSource,1.); // Adding Generator    
@@ -182,7 +263,7 @@ void AliGenEMCocktail::AddSource2Generator(Char_t* nameSource,
 //-------------------------------------------------------------------
 void AliGenEMCocktail::Init()
 {
-// Initialisation
+  // Initialisation
   TIter next(fEntries);
   AliGenCocktailEntry *entry;
   if (fStack) {
@@ -195,7 +276,7 @@ void AliGenEMCocktail::Init()
 //_________________________________________________________________________
 void AliGenEMCocktail::Generate()
 {
-// Generate event 
+  // Generate event 
   TIter next(fEntries);
   AliGenCocktailEntry *entry = 0;
   AliGenCocktailEntry *preventry = 0;
@@ -206,16 +287,16 @@ void AliGenEMCocktail::Generate()
 
   const TObjArray *partArray = gAlice->GetMCApp()->Particles();
     
-// Generate the vertex position used by all generators    
+  // Generate the vertex position used by all generators    
   if(fVertexSmear == kPerEvent) Vertex();
 
-//Reseting stack
+  //Reseting stack
   AliRunLoader * runloader = AliRunLoader::Instance();
   if (runloader)
     if (runloader->Stack())
       runloader->Stack()->Clean();
   
-// Loop over generators and generate events
+  // Loop over generators and generate events
   Int_t igen = 0;
   Float_t evPlane;
   Rndm(&evPlane,1);
@@ -223,14 +304,12 @@ void AliGenEMCocktail::Generate()
   while((entry = (AliGenCocktailEntry*)next())) {
     gen = entry->Generator();
     gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
-    gen->SetTime(fTime);
     
     if (fNPart > 0) {
       igen++;	
       if (igen == 1) entry->SetFirst(0);		
       else  entry->SetFirst((partArray->GetEntriesFast())+1);
       gen->SetEventPlane(evPlane);
-      gen->SetNumberParticles(fNPart);		
       gen->Generate();
       entry->SetLast(partArray->GetEntriesFast());
       preventry = entry;
@@ -238,7 +317,7 @@ void AliGenEMCocktail::Generate()
   }  
   next.Reset();
 
-// Setting weights for proper absolute normalization
+  // Setting weights for proper absolute normalization
   Int_t iPart, iMother;
   Int_t pdgMother = 0;
   Double_t weight = 0.;
@@ -254,30 +333,40 @@ void AliGenEMCocktail::Generate()
     }
     else
       pdgMother = part->GetPdgCode();
+
     switch (pdgMother){
     case 111:
-      dNdy = fYieldArray[kGenPizero];
+      dNdy = fYieldArray[kPizero];
       break;
     case 221:
-      dNdy = fYieldArray[kGenEta];
+      dNdy = fYieldArray[kEta];
       break;
     case 113:
-      dNdy = fYieldArray[kGenRho];
+      dNdy = fYieldArray[kRho];
       break;
     case 223:
-      dNdy = fYieldArray[kGenOmega];
+      dNdy = fYieldArray[kOmega];
       break;
     case 331:
-      dNdy = fYieldArray[kGenEtaprime];
+      dNdy = fYieldArray[kEtaprime];
       break;
     case 333:
-      dNdy = fYieldArray[kGenPhi];
+      dNdy = fYieldArray[kPhi];
+      break;
+    case 443:
+      dNdy = fYieldArray[kJpsi];
+      break;
+    case 22:
+      dNdy = fYieldArray[kDirectRealGamma];
+      break;
+    case 220000:
+      dNdy = fYieldArray[kDirectVirtGamma];
       break;
       
     default:
       dNdy = 0.;
     }
-    
+
     weight = dNdy*part->GetWeight();
     part->SetWeight(weight);
   }	
@@ -290,9 +379,6 @@ void AliGenEMCocktail::Generate()
   for (Int_t j=0; j < 3; j++) eventVertex[j] = fVertex[j];
   
   fHeader->SetPrimaryVertex(eventVertex);
-  fHeader->SetInteractionTime(fTime);
 
   gAlice->SetGenEventHeader(fHeader);
 }
-
-    

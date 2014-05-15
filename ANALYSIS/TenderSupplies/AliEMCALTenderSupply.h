@@ -168,6 +168,16 @@ public:
   void     SwitchOnUseClusterMCLabelForCell(Int_t opt = 2) { fSetCellMCLabelFromCluster = opt ; }
   void     SwitchOffUseClusterMCLabelForCell()             { fSetCellMCLabelFromCluster = 0   ; }
 
+  // Switch on/off the automatic setting of different calibrations, only experts
+  void     SwitchOnUseAutomaticRecalibParam()              { fUseAutomaticRecalib       = kTRUE  ; }
+  void     SwitchOnUseAutomaticRunDepRecalibParam()        { fUseAutomaticRunDepRecalib = kTRUE  ; }
+  void     SwitchOnUseAutomaticTimeCalibParam()            { fUseAutomaticTimeCalib     = kTRUE  ; }
+  void     SwitchOnUseAutomaticRecParam()                  { fUseAutomaticRecParam      = kTRUE  ; }
+  
+  void     SwitchOffUseAutomaticRecalibParam()             { fUseAutomaticRecalib       = kFALSE ; }
+  void     SwitchOffUseAutomaticRunDepRecalibParam()       { fUseAutomaticRunDepRecalib = kFALSE ; }
+  void     SwitchOffUseAutomaticTimeCalibParam()           { fUseAutomaticTimeCalib     = kFALSE ; }
+  void     SwitchOffUseAutomaticRecParam()                 { fUseAutomaticRecParam      = kFALSE ; }
   
 private:
 
@@ -251,9 +261,15 @@ private:
   TClonesArray *         fTempClusterArr      ;      //! Temporal clusters array to recover the MC of original cluster if fSetCellMCLabelFromCluster=2
   Bool_t                 fRemapMCLabelForAODs ;      // Remap AOD cells MC label
   
+  // Change to false if experts
+  Bool_t                 fUseAutomaticRecalib;       // On by default the check in the OADB of the energy recalibration
+  Bool_t                 fUseAutomaticRunDepRecalib; // On by default the check in the OADB of the run dependent energy recalibration
+  Bool_t                 fUseAutomaticTimeCalib;     // On by default the check in the OADB of the time recalibration
+  Bool_t                 fUseAutomaticRecParam;      // On the auto setting of the rec param
+  
   AliEMCALTenderSupply(            const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 16); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 17); // EMCAL tender task
 };
 #endif

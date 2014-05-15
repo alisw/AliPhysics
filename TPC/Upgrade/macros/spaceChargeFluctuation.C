@@ -49,6 +49,11 @@
 #include "TStyle.h"
 #include "AliTPCSpaceCharge3D.h"
 #include "AliExternalTrackParam.h"
+#include "AliTrackerBase.h"
+#include "TDatabasePDG.h"
+#include "TROOT.h"
+#include "AliMathBase.h"
+#include "TLatex.h"
 //
 // constants
 //
@@ -76,6 +81,9 @@ TH3D *  PermutationHistoLocalPhi(TH3D * hisInput, Int_t deltaPhi);
 void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfiles, Int_t sign);
 void DrawFluctuationdeltaZ(Int_t stat=0, Double_t norm=10000);
 void DrawFluctuationSector(Int_t stat=0, Double_t norm=10000);
+void MakeLocalDistortionPlotsGlobalFitPolDrift(Float_t xmin, Float_t xmax);
+void MakeLocalDistortionPlots(Int_t npoints=20000, Int_t npointsZ=10000);
+
 
 void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0, Float_t arg2=0){
   //
@@ -91,8 +99,23 @@ void spaceChargeFluctuation(Int_t mode=0, Float_t arg0=0, Float_t arg1=0, Float_
     DrawFluctuationdeltaZ(arg0,arg1);
     DrawFluctuationSector(arg0,arg1);
   }
+  if (mode==6) { 
+    MakeLocalDistortionPlotsGlobalFitPolDrift(arg0,arg1);
+  }
+  if (mode==7) { 
+    MakeLocalDistortionPlots(arg0,arg1);
+    
+  }
 }
 
+void SetGraphTDRStyle(TGraph * graph){
+  graph->GetXaxis()->SetLabelSize(0.08);
+  graph->GetXaxis()->SetTitleSize(0.08);
+  graph->GetYaxis()->SetLabelSize(0.08);
+  graph->GetYaxis()->SetTitleSize(0.08);
+  graph->GetXaxis()->SetNdivisions(505);
+  graph->GetYaxis()->SetNdivisions(510);
+}
 
 Double_t RndmdNchdY(Double_t s){
   //
@@ -1170,21 +1193,23 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   //
   // Input:
-  //   scale           - scaling of the space charge
+  //   scale           - scaling of the space charge (defaul 1 corrsponds to the epsilon ~ 5)
   //   nfilesMerge     - amount of chunks to merge
   //                   - =0  all chunks used
   //                     <0  subset form full statistic
-  //                     >0  subset from the  limited (1000 mean) stistic
+  //                     >0  subset from the  limited (1000 mean) statistic
+  // Output"  
+  // For given SC setups the distortion on the space point and track level characterezed
+  //    SpaceChargeFluc%d_%d.root        - space point distortion maps       
+  //    SpaceChargeTrackFluc%d%d.root    - tracks distortion caused by  space point distortion 
+  //
+
   // Make fluctuation scan:
   //   1.) Shift of z disk - to show which granularity in time needed
   //   2.) Shift in sector - to show influence of the gass gain and epsilon
   //   3.) Smearing in phi - to define phi granularity needed
-  //   4.) Rebin z
-  //   5.) Rebin phi
-  // For given SC setups the distortion on the space point and track level characterezed
-  //    SpaceChargeFluc%d_%d.root
-  //    SpaceChargeTrackFluc%d%d.root
-  //
+  //   4.) Rebin z         - commented out (not delete it for the moment)
+  //   5.) Rebin phi       - commented out 
   
 
   //
@@ -1192,7 +1217,7 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
   //
   Int_t nitteration=100;    // number of itteration in the lookup
   Int_t fullNorm  =10000;  // normalization  fro the full statistic
-
+  gROOT->ProcessLine(".x $ALICE_ROOT/TPC/Upgrade/macros/ConfigOCDB.C\(1\)");
   //
   // Init magnetic field and OCDB
   //
@@ -1467,10 +1492,19 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
       }
     }
   }
+  pcstream->GetFile()->cd();
+  for (Int_t idist=0; idist<ndist; idist++){
+    AliTPCCorrection * corr  = (AliTPCCorrection *)distortionArray->At(idist);
+    corr->Write(corr->GetName());
+  }
   delete pcstream;
   //
   // generate track distortions
   //
+  const Double_t xITSlayer[7]={2.2, 2.8 ,3.6 , 20, 22,41,43 };  // ITS layers R poition (http://arxiv.org/pdf/1304.1306v3.pdf)
+  const Double_t resITSlayer[7]={0.0004, 0.0004 ,0.0004 , 0.0004, 0.0004, 0.0004, 0.0004 };  // ITS layers R poition (http://arxiv.org/pdf/1304.1306v3.pdf - pixel scenario) 
+  const Double_t kMaxSnp = 0.85;   
+  const Double_t kMass = TDatabasePDG::Instance()->GetParticle("pi+")->Mass();
   if (nTracks>0){
     for(Int_t nt=1; nt<=nTracks; nt++){
       gRandom->SetSeed(nt);
@@ -1496,36 +1530,110 @@ void MakeSpaceChargeFluctuationScan(Double_t scale, Int_t nfilesMerge, Int_t sig
       Double_t refX1=1.;
       Int_t dir=-1;
       (*pcstreamTrack)<<"trackFit"<<
+	"bsign="<<bsign<<
 	"neventsAll="<<neventsAll<<         // total number of events used for the Q reference
 	"nfiles="<<nfiles<<                 // number of files to define properties
 	"nfilesMerge="<<nfilesMerge<<       // number of files to define propertiesneventsCorr
 	"neventsCorr="<<neventsCorr<<       // number of events used to define the corection
 	"fullNorm="<<fullNorm<<             // in case full statistic used this is the normalization coeficient
-	"itrack="<<nt<<
-	"input.="<<t;
+	"itrack="<<nt<<                     //
+	"input.="<<t;                       // 
+      
+      Bool_t isOK0=kTRUE;
+      Bool_t isOK1=kTRUE;
+      Bool_t itsOK=kTRUE;
+      Bool_t itsUpdateOK=kTRUE;
+
       for (Int_t idist=0; idist<ndist; idist++){
 	AliTPCCorrection * corr   = (AliTPCCorrection *)distortionArray->At(idist);
+	// 0. TPC only information at the entrance
+	// 1. TPC only information close to vertex ( refX=1 cm) 
+	// 2. TPC constrained information close to the primary vertex
+	// 3. TPC +ITS
 	AliExternalTrackParam *ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
 	AliExternalTrackParam *ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);   
 	AliExternalTrackParam *td0 =  corr->FitDistortedTrack(*ot0, refX0, dir,  0);
 	AliExternalTrackParam *td1 =  corr->FitDistortedTrack(*ot1, refX1, dir,  0);
+	if (td0==0) { // if fit fail use dummy values
+	  ot0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  td0= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  printf("Propagation0 failed: track\t%d\tdistortion\t%d\n",nt,idist);
+	  isOK0=kFALSE;
+	}
+	if (td1==0) {
+	  ot1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  td1= new AliExternalTrackParam(vertex, pxyz, cv, psign);
+	  printf("Propagation1 failed: track\t%d\tdistortion\t%d\n",nt,idist);
+	  isOK1=kFALSE;
+	}
+	// 2. TPC constrained emulation
+	AliExternalTrackParam *tdConstrained =  new  AliExternalTrackParam(*td1);
+	tdConstrained->Rotate(ot1->GetAlpha());
+	tdConstrained->PropagateTo(ot1->GetX(), AliTrackerBase::GetBz());
+	Double_t pointPos[2]={ot1->GetY(),ot1->GetZ()};  // local y and local z of point
+	Double_t pointCov[3]={0.0001,0,0.0001};                    // 
+	tdConstrained->Update(pointPos,pointCov);
+	// 3. TPC+ITS  constrained umulation
+	AliExternalTrackParam *tdITS     =  new  AliExternalTrackParam(*td0); 
+	AliExternalTrackParam *tdITSOrig =  new  AliExternalTrackParam(*ot0); 
+	//
+	if ( isOK0 && isOK1 ) {
+	  for (Int_t ilayer=6; ilayer>=0; ilayer--){
+	    if (!AliTrackerBase::PropagateTrackTo(tdITSOrig,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) itsOK=kFALSE;
+	    if (!AliTrackerBase::PropagateTrackTo(tdITS,xITSlayer[ilayer],kMass,5.,kTRUE,kMaxSnp)) {
+	      itsOK=kFALSE;
+	      printf("PropagationITS failed: track\t%d\tdistortion\t%d\t%d\n",nt,idist,ilayer);
+	    }
+	    //
+	    tdITS->Rotate(tdITSOrig->GetAlpha());
+	    if (tdITS->PropagateTo(tdITSOrig->GetX(), AliTrackerBase::GetBz())){
+	      Double_t itspointPos[2]={tdITSOrig->GetY(),tdITSOrig->GetZ()};  // local y and local z of point
+	      Double_t itspointCov[3]={resITSlayer[ilayer]*resITSlayer[ilayer],0,resITSlayer[ilayer]*resITSlayer[ilayer]};   
+	      if (!tdITS->Update(itspointPos,itspointCov)){
+		itsUpdateOK=kFALSE;
+	      }
+	    }
+	  } 
+	}else{
+	  itsOK=kFALSE;
+	}
+	//
 	trackArray.AddLast(td0);
 	trackArray.AddLast(td1);
+	trackArray.AddLast(tdConstrained);
+	trackArray.AddLast(tdITS);
+	trackArray.AddLast(tdITSOrig);
+	//
 	trackArray.AddLast(ot0);
 	trackArray.AddLast(ot1);
-	char name0[100], name1[1000];
-	char oname0[100], oname1[1000];
+	char name0[100], name1[1000], nameITS[1000];
+	char oname0[100], oname1[1000], onameConstrained[1000], onameITS[1000];
 	snprintf(name0, 100, "T_%s_0.=",corr->GetName());
 	snprintf(name1, 100, "T_%s_1.=",corr->GetName());
 	snprintf(oname0, 100, "OT_%s_0.=",corr->GetName());
 	snprintf(oname1, 100, "OT_%s_1.=",corr->GetName());
+	snprintf(onameConstrained, 100, "OConst_%s_1.=",corr->GetName());
+	//
+	snprintf(nameITS, 100, "TPCITS_%s_1.=",corr->GetName());
+	snprintf(onameITS, 100, "OTPCITS_%s_1.=",corr->GetName());
 	(*pcstreamTrack)<<"trackFit"<<
-	  name0<<td0<< 
-	  name1<<td1<< 
-	  oname0<<ot0<< 
-	  oname1<<ot1; 
+	  name0<<td0<<                       // distorted TPC track only at the refX=85
+	  name1<<td1<<                       // distorted TPC track only at the refX=1
+	  onameConstrained<<tdConstrained<<  // distorted TPC constrained track only at the refX=1 
+	  //
+	  onameITS<<tdITSOrig<<              //  original TPC+ITS track
+	  nameITS<<tdITS<<                   //  distorted TPC+ (indistrted)ITS track fit
+	  //
+	  oname0<<ot0<<                      // original track at the entrance refX=85
+	  oname1<<ot1;                       // original track at the refX=1 cm (to be used for TPC only and also for the constrained
+	
       }
-      (*pcstreamTrack)<<"trackFit"<<"\n";
+      (*pcstreamTrack)<<"trackFit"<<
+	"isOK0="<<isOK0<<  // propagation good at the inner field cage
+	"isOK1="<<isOK1<<  // god at 1 cm (close to vertex)
+	"itsOK="<<itsOK<<  // 
+	"itsUpdateOK="<<itsOK<<  // 
+	"\n";
     }
   }
   delete pcstreamTrack;
@@ -1944,9 +2052,9 @@ void DrawTrackFluctuation(){
   TCut cutOut="abs(T_DistRef_0.fX-OT_DistRef_0.fX)<0.1&&T_DistRef_0.fX>1&&abs(OT_DistRef_0.fP[4])<4";
   TCut cutOutF="abs(R.T_DistRef_0.fX-R.OT_DistRef_0.fX)<0.1&&R.T_DistRef_0.fX>1&&abs(R.OT_DistRef_0.fP[4])<4";
   TChain * chains[5]={0};
-  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);
+  TChain * chainR = AliXRDPROOFtoolkit::MakeChain("track0_1.list","trackFit",0,1000);  // list of the reference data (full stat used)
   chainR->SetCacheSize(1000000000);
-  for (Int_t ichain=0; ichain<5; ichain++){
+  for (Int_t ichain=0; ichain<5; ichain++){ // create the chain for given mulitplicity bin 
     chains[ichain] = AliXRDPROOFtoolkit::MakeChain(Form("track%d_1.list",2*(ichain+1)),"trackFit",0,1000);
     chains[ichain]->AddFriend(chainR,"R");
     chains[ichain]->SetCacheSize(1000000000);
@@ -2201,7 +2309,7 @@ void DrawTrackFluctuationFrame(){
       ftrackFit->Flush();
     }
   }
-
+ 
   for (Int_t ihis=0; ihis<7; ihis++){
     printf("\n\nProcessing frames\t%d\nnn",(ihis+1)*2000);
     hisM = (TH2F*)ftrackFit->Get(Form("hisMean_%d",(ihis+1)*2000));
@@ -2274,3 +2382,807 @@ void DrawTrackFluctuationFrame(){
   canvasFit->SaveAs("canvasFrameFitRPhiVersion0.png");
   //
 }
+
+
+
+void MakeLocalDistortionPlotsGlobalFitPolDrift(Float_t xmin, Float_t xmax){
+  //
+  // Make local distortion plots correcting using global z fits of order 0,2,4,6,8,10,12
+  // Currently polynomial correction as an multiplicative factor of the mean distortion map used
+  // To be done - calculate numerical derivative of distortion maps 
+  //              corresponding  the local change of densities - after TDR?  
+  //
+  // As input:
+  //    1.) distortion file with the setup 10000 pileup events used
+  //    2.) mean distortion file
+  // distortions are fitted rescaling (z dependent) mean distortion file
+  //
+  TTreeSRedirector *pcstream = new TTreeSRedirector("localFit.root","update");
+  TFile *fRef = TFile::Open("SpaceChargeFluc0_1.root");
+  TFile *fCurrent = TFile::Open("SpaceChargeFluc10_1.root");
+  TTree * treeRef = (TTree*)fRef->Get("hisDump");  
+  TTree * treeCurrent = (TTree*)fCurrent->Get("hisDump");  
+  treeCurrent->AddFriend(treeRef,"R");
+  treeCurrent->SetAlias("refR","(neventsCorr*R.DistRefDR/10000)");
+  treeCurrent->SetAlias("refRPhi","(neventsCorr*R.DistRefDRPhi/10000)");
+  treeCurrent->SetCacheSize(1000000000);
+  treeCurrent->SetAlias("drift","1.-abs(z/250.)");
+  TStatToolkit toolkit;
+  Double_t chi2=0;
+  Int_t    npoints=0;
+  TVectorD param;
+  TMatrixD covar;  
+  //
+  TCut cut="z>0";
+  TString  fstringG0="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG1="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG2="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG3="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG4="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG5="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG6="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG7="refR++";              // global part - for z dependence we should use the Chebischev
+  TString  fstringG8="refR++";              // global part - for z dependence we should use the Chebischev
+  //
+  for (Int_t i=1; i<=1; i++) fstringG1+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=2; i++) fstringG2+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=3; i++) fstringG3+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=4; i++) fstringG4+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=5; i++) fstringG5+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=6; i++) fstringG6+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=7; i++) fstringG7+=TString::Format("refR*pow(drift,%d)++",i);
+  for (Int_t i=1; i<=8; i++) fstringG8+=TString::Format("refR*pow(drift,%d)++",i);
+
+
+  TString * fitResultG0 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG0.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG1 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG1.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG2 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG2.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG3 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG3.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG4 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG4.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG5 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG5.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG6 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG6.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG7 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG7.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  TString * fitResultG8 = TStatToolkit::FitPlane(treeCurrent,"DistRefDR-refR", fstringG8.Data(),cut+"Entry$%7==0", chi2,npoints,param,covar,-1,0,180000 , kFALSE);
+  //
+  treeCurrent->SetAlias("fitG0",fitResultG0->Data());  
+  treeCurrent->SetAlias("fitG1",fitResultG1->Data());  
+  treeCurrent->SetAlias("fitG2",fitResultG2->Data());  
+  treeCurrent->SetAlias("fitG3",fitResultG3->Data());  
+  treeCurrent->SetAlias("fitG4",fitResultG4->Data());  
+  treeCurrent->SetAlias("fitG5",fitResultG5->Data());  
+  treeCurrent->SetAlias("fitG6",fitResultG6->Data());  
+  treeCurrent->SetAlias("fitG7",fitResultG7->Data());  
+  treeCurrent->SetAlias("fitG8",fitResultG8->Data());  
+  treeCurrent->SetMarkerStyle(25);
+  treeCurrent->SetMarkerSize(0.2);
+  //
+  gStyle->SetOptFit(1);
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(1);
+
+  TCut cutDrawGraph="z>0&&abs(z-30)<5&&abs(r-90)<10";
+  TCut cutDrawHisto="z>0&&abs(z)<125&&abs(r-90)<10";
+  TH1F *hisFull=new TH1F("hisFull","hisFull",100,xmin,xmax);
+  TH1F *hisG0=new TH1F("hisG0","hisG0",100,xmin,xmax);
+  TH1F *hisG1=new TH1F("hisG1","hisG1",100,xmin,xmax);
+  TH1F *hisG2=new TH1F("hisG2","hisG2",100,xmin,xmax);
+  TH1F *hisG3=new TH1F("hisG3","hisG3",100,xmin,xmax);
+  TH1F *hisG4=new TH1F("hisG4","hisG4",100,xmin,xmax);
+  TH1F *hisG5=new TH1F("hisG5","hisG5",100,xmin,xmax);
+  TH1F *hisG6=new TH1F("hisG6","hisG6",100,xmin,xmax);
+  TH1F *hisG7=new TH1F("hisG7","hisG7",100,xmin,xmax);
+  TH1F *hisG8=new TH1F("hisG8","hisG8",100,xmin,xmax);
+  TH1F * hisResG[10]={hisFull, hisG0, hisG1,hisG2, hisG3,hisG4, hisG5,hisG6, hisG7,hisG8};
+  treeCurrent->Draw("DistRefDR-refR>>hisFull",cutDrawHisto,"");
+  for (Int_t ihis=0; ihis<9; ihis++){
+    treeCurrent->Draw(TString::Format("DistRefDR-refR-fitG%d>>hisG%d",ihis,ihis),cutDrawHisto,"");        
+  }
+  //
+  TF1 *fg = new TF1("fg","gaus");
+  TVectorD vecP(10), vecRes(10), vecResE(10);
+  for (Int_t ihis=0; ihis<10; ihis++){
+    hisResG[ihis]->Fit(fg);
+    vecP[ihis]=ihis-1;
+    vecRes[ihis]=fg->GetParameter(2);
+    vecResE[ihis]=fg->GetParError(2);
+    hisResG[ihis]->GetXaxis()->SetTitle("#Delta_{R} (cm)");
+    pcstream->GetFile()->cd();
+    hisResG[ihis]->Write();
+    (*pcstream)<<"residuals"<<
+      TString::Format("diffHis%d.=",ihis)<<hisResG[ihis];
+  }
+  TGraphErrors *gr = new TGraphErrors(10,vecP.GetMatrixArray(), vecRes.GetMatrixArray(),0, vecResE.GetMatrixArray());
+  gr->SetMarkerStyle(25);
+  gr->Draw("alp");
+  (*pcstream)<<"residuals"<<
+    "graph.="<<gr<<
+    "\n";
+
+  TCanvas *canvasRes = new TCanvas("canvasRes","canvasRes",900,900);
+  canvasRes->Divide(2,4);
+  TH2* htemp=0;
+  for (Int_t  ihis=0; ihis<4; ihis++){
+    canvasRes->cd(ihis*2+1);
+    if (ihis==0) {
+      treeCurrent->Draw("DistRefDR-refR:phi:r",cutDrawGraph,"colz");      
+    }
+    if (ihis>0) {
+      treeCurrent->Draw(TString::Format("DistRefDR-refR-fitG%d:phi:r",(ihis-1)*2),cutDrawGraph,"colz"); 
+    }
+    htemp = (TH2F*)gPad->GetPrimitive("htemp");
+    htemp->GetXaxis()->SetTitle("#phi");
+    htemp->GetYaxis()->SetTitle("#Delta_{R} (cm)");
+    htemp->GetZaxis()->SetTitle("r (cm)");
+    //    htemp->SetTitle("1/pT difference");
+    //htemp->GetYaxis()->SetRangeUser(xmin,xmax);
+    canvasRes->cd(ihis*2+2);
+    if (ihis>0) hisResG[(ihis-1)*2+1]->Draw();
+    if (ihis==0)  hisResG[0]->Draw();
+  }
+  delete pcstream;
+
+  canvasRes->SaveAs("locaFluctuationR.pdf");
+  canvasRes->SaveAs("locaFluctuationR.png");
+}
+
+void MakeLocalDistortionPlotsGlobalFitPolDriftSummary(Float_t xmin, Float_t xmax){
+  //
+  // Make local distortion plots correcting using global z fits of order 0,2,4,6,8,10,12
+  // Currently polynomial correction as an multiplicative factor of the mean distortion map used
+  // To be done - calculate numerical derivative of distortion maps 
+  //              corresponding  the local change of densities - after TDR?  
+  //
+  // As input:
+  //    1.) distortion file with the setup 10000 pileup events used
+  //    2.) mean distortion file
+  // distortions are fitted rescaling (z dependent) mean distortion file
+  //
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(1);
+  gStyle->SetOptTitle(1);
+  TTreeSRedirector *pcstream = new TTreeSRedirector("localFit.root","update");
+  TH1 *hisResG[10] = {0};
+  hisResG[0]=(TH1*)(pcstream->GetFile()->Get("hisFull"));
+  TF1 *fg = new TF1("fg","gaus");
+  TVectorD vecP(10), vecRes(10), vecResE(10);
+  for (Int_t ihis=0; ihis<10; ihis++){
+    hisResG[ihis+1]=(TH1*)(pcstream->GetFile()->Get(TString::Format("hisG%d",ihis)));
+    hisResG[ihis]->Fit(fg);
+    vecP[ihis]=ihis-1;
+    vecRes[ihis]=fg->GetParameter(2);
+    vecResE[ihis]=fg->GetParError(2);
+  }
+  //
+  TCanvas *canvasRes = new TCanvas("canvasRes","canvasRes",800,800);
+  canvasRes->Divide(2,3,0,0);
+  for (Int_t ihis=0; ihis<6; ihis++){
+    canvasRes->cd(ihis+1);
+    hisResG[ihis]->GetXaxis()->SetTitle("#Delta_{R} (cm)");
+    hisResG[ihis]->Draw();
+  }
+  canvasRes->SaveAs("fluctuationTableSummaryHist.pdf");
+  canvasRes->SaveAs("fluctuationTableSummaryHist.png");
+
+  TCanvas *canvasFluctuationGraph = new TCanvas("canvasGraph","canvasGraph",600,500);
+  TGraphErrors *gr = new TGraphErrors(10,vecP.GetMatrixArray(), vecRes.GetMatrixArray(),0, vecResE.GetMatrixArray());
+  gr->SetMarkerStyle(25);
+  gr->SetMinimum(0);
+  gr->GetXaxis()->SetTitle("#Fit parameters");
+  gr->GetYaxis()->SetTitle("#sigma_{R} (cm)");
+  gr->Draw("alp");
+  //  
+  canvasFluctuationGraph->SaveAs("canvasFluctuationGraphR.pdf");
+  canvasFluctuationGraph->SaveAs("canvasFluctuationGraphR.png");
+
+}
+
+
+
+void MakeLocalDistortionPlots(Int_t npoints, Int_t npointsZ){
+  //
+  // Macro to make trees with local distortions 
+  // Results are later visualized in the function DrawLocalDistortionPlots()
+  //
+  TTreeSRedirector *pcstream = new TTreeSRedirector("localBins.root","update");
+  TFile *fCurrent = TFile::Open("SpaceChargeFluc10_1.root");
+  TFile *fRef = TFile::Open("SpaceChargeFluc0_1.root");
+  //
+  AliTPCSpaceCharge3D* distortion = ( AliTPCSpaceCharge3D*)fCurrent->Get("DistRef"); 
+  AliTPCSpaceCharge3D* distortionRef = ( AliTPCSpaceCharge3D*)fRef->Get("DistRef"); 
+  distortion->AddVisualCorrection(distortion,1);
+  distortionRef->AddVisualCorrection(distortionRef,2);
+  //
+  //
+  //
+  TVectorD normZR(125), normZRPhi(125), normZZ(125), normZPos(125);
+  TVectorD normZRChi2(125), normZRPhiChi2(125), normZZChi2(125);
+  //
+  for (Int_t iz =0; iz<125; iz++){
+    Double_t z0 = -250+iz*4;
+    TLinearFitter fitterR(2,"pol1");
+    TLinearFitter fitterRPhi(2,"pol1");
+    TLinearFitter fitterZ(2,"pol1");
+    Double_t xvalue[10]={0};
+    //fitterR.AddPoint(xvalue,0,0.001/npointsZ);
+    //fitterRPhi.AddPoint(xvalue,0,0.000001/npointsZ);
+    //fitterZ.AddPoint(xvalue,0,0.001/npointsZ);    
+    for (Int_t ipoint =0; ipoint<npointsZ; ipoint++){      
+      Double_t r0   = 85+gRandom->Rndm()*(245-85.);
+      Double_t phi0 = gRandom->Rndm()*TMath::TwoPi();
+      // some problematic parts to be skipped  - investigated later
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,1))>50) continue;
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,2))>50) continue;
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,1))>20) continue;
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,2))>20) continue;
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,1))>50) continue;
+      if (TMath::Abs(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,2))>50) continue;
+      //
+      //
+      xvalue[0]=distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,2);
+      fitterR.AddPoint(xvalue,distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,1));
+      xvalue[0]=distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,2);
+      fitterRPhi.AddPoint(xvalue,distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,1));
+      xvalue[0]=distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,2);
+      fitterZ.AddPoint(xvalue,distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,1));
+    }    
+    fitterR.Eval();
+    fitterRPhi.Eval();
+    fitterZ.Eval();    
+    normZR[iz]=fitterR.GetParameter(1);
+    normZRPhi[iz]=fitterRPhi.GetParameter(1);
+    normZZ[iz]=fitterZ.GetParameter(1);
+    normZRChi2[iz]=TMath::Sqrt(fitterR.GetChisquare()/fitterR.GetNpoints());    
+    normZRPhiChi2[iz]=TMath::Sqrt(fitterRPhi.GetChisquare()/fitterRPhi.GetNpoints());    
+    normZZChi2[iz]=TMath::Sqrt(fitterZ.GetChisquare()/fitterZ.GetNpoints());
+    
+    normZPos[iz]=z0;    
+  }
+  
+  {    
+  (*pcstream)<<"meanNormZ"<<
+    "normZPos.="<<&normZPos<<
+    //
+    "normZR.="<<&normZR<<            // mult. scaling to minimize R distortions
+    "normZRPhi.="<<&normZRPhi<<      // mult. scaling 
+    "normZZ.="<<&normZZ<<
+    //
+    "normZRChi2.="<<&normZRChi2<<            // mult. scaling to minimize R distortions
+    "normZRPhiChi2.="<<&normZRPhiChi2<<      // mult. scaling 
+    "normZZChi2.="<<&normZZChi2<<
+    "\n";
+  }
+  delete pcstream;
+  pcstream = new TTreeSRedirector("localBins.root","update");
+  //
+  TTree * treeNormZ= (TTree*)pcstream->GetFile()->Get("meanNormZ");
+  TGraphErrors * grZRfit= TStatToolkit::MakeGraphErrors( treeNormZ, "normZR.fElements:normZPos.fElements","",25,2,0.5);
+  TGraphErrors * grZRPhifit= TStatToolkit::MakeGraphErrors( treeNormZ, "normZRPhi.fElements:normZPos.fElements","",25,4,0.5);
+  grZRfit->Draw("alp");
+  grZRPhifit->Draw("lp");
+
+  //
+  for (Int_t ipoint=0; ipoint<npoints; ipoint++){
+    //
+    for (Int_t izNorm=0; izNorm<2; izNorm++){      
+      Double_t r0   = 85+gRandom->Rndm()*(245-85.);
+      Double_t z0   = gRandom->Rndm()*250;
+      Double_t phi0 = gRandom->Rndm()*TMath::TwoPi();
+      Double_t fSector=18.*phi0/TMath::TwoPi();
+      Double_t dSector=fSector-Int_t(fSector);
+      
+
+      Int_t    iz0  =  TMath::Nint(125.*(z0+250.)/500.);
+      if (iz0<0) iz0=0;
+      if (iz0>=125) iz0=124;
+      Double_t rNorm=1,rphiNorm=1,zNorm=1;      
+      if (izNorm==1){
+	rNorm=normZR[iz0];
+	rphiNorm=normZRPhi[iz0];
+	zNorm=normZZ[iz0];	
+      }
+    
+      Double_t deltaR0  =distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,1);
+      Double_t deltaRPhi0=distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,1);
+      Double_t deltaZ0  =distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,1);
+      //
+      Double_t ddeltaR0  =distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,1)-rNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,0,2);
+      Double_t ddeltaRPhi0=distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,1)-rphiNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,1,2);
+      Double_t ddeltaZ0  =distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,1)-zNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z0,2,2);
+      //
+      //
+      TVectorD vecDMeanRPhi(20), vecDMeanR(20), vecDMeanZ(20), vecDPhi(20);
+      TVectorD vecDMeanRPhiBinR(20), vecDMeanRBinR(20), vecDMeanZBinR(20), vecDBinR(20);
+      TVectorD vecDMeanRPhiBinZ(20), vecDMeanRBinZ(20), vecDMeanZBinZ(20), vecDBinZ(20);
+      
+      for (Int_t  ideltaBin=0; ideltaBin<20; ideltaBin++){
+	Double_t  deltaPhi=ideltaBin*TMath::TwoPi()/360.;
+	Double_t  deltaZ=ideltaBin*2;
+	Double_t  deltaR=ideltaBin*2;
+	//
+	vecDPhi[ideltaBin]=deltaPhi;
+	vecDMeanRPhi[ideltaBin]=0;
+	vecDMeanR[ideltaBin]=0;
+	vecDMeanZ[ideltaBin]=0;  
+	//
+	vecDBinR[ideltaBin]=deltaR;
+	vecDMeanRPhiBinR[ideltaBin]=0;
+	vecDMeanRBinR[ideltaBin]=0;
+	vecDMeanZBinR[ideltaBin]=0;  
+	//
+	//
+	vecDBinZ[ideltaBin]=deltaZ;
+	vecDMeanRPhiBinZ[ideltaBin]=0;
+	vecDMeanRBinZ[ideltaBin]=0;
+	vecDMeanZBinZ[ideltaBin]=0;  
+	//
+	Double_t norm=1./9.;
+	for (Int_t idelta=-4; idelta<=4; idelta++){
+	  Double_t i=(idelta/4.);
+	  Double_t phi1= phi0+deltaPhi*i;
+	  Double_t r1= r0+deltaR*i;
+	  Double_t z1= z0+deltaZ*i;
+	  if (z1*z0<0) z1=z0;
+	  if (z1>245) z1=245;
+	  if (z1<-245) z1=-245;
+	  if (r1<85) r1=85;
+	  if (r1>245) r1=245;
+	  //
+	  //
+	  vecDMeanR[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,0,1)-rNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,0,2));
+	  vecDMeanRPhi[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,1,1)-rphiNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,1,2));
+	  vecDMeanZ[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,2,1)-zNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi1), r0*TMath::Sin(phi1), z0,2,2));      
+	  //
+	  //
+	  //
+	  vecDMeanRBinR[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,0,1)-rNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,0,2));
+	  vecDMeanRPhiBinR[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,1,1)-rphiNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,1,2));
+	  vecDMeanZBinR[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,2,1)-zNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi0), r1*TMath::Sin(phi0), z0,2,2));      
+	  //
+	  //
+	  vecDMeanRBinZ[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,0,1)-rNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,0,2));
+	  vecDMeanRPhiBinZ[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,1,1)-rphiNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,1,2));
+	  vecDMeanZBinZ[ideltaBin]+=norm*(distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,2,1)-zNorm*distortion->GetCorrXYZ(r0*TMath::Cos(phi0), r0*TMath::Sin(phi0), z1,2,2));      
+	  
+	}      
+      }
+
+      TVectorD vecDMeanRPhiRND(40), vecDMeanRRND(40), vecDMeanZRND(40), vecPhiRND(40), vecZRND(40), vecRRND(40);
+      Int_t nintegral=25;
+      Double_t norm=1./Double_t(nintegral);
+      for (Int_t  ideltaBin=0; ideltaBin<40; ideltaBin++){
+	vecDMeanRPhiRND[ideltaBin]=0;
+	vecDMeanRRND[ideltaBin]=0;
+	vecDMeanZRND[ideltaBin]=0; 
+	vecPhiRND[ideltaBin]=gRandom->Rndm()*0.3; 
+	vecZRND[ideltaBin]  =gRandom->Rndm()*30;
+	vecRRND[ideltaBin]  =gRandom->Rndm()*30;
+	for (Int_t ipoint=0; ipoint<nintegral; ipoint++){
+	  Double_t phi1=phi0+2*(gRandom->Rndm()-0.5)*vecPhiRND[ideltaBin];
+	  Double_t z1=z0+2*(gRandom->Rndm()-0.5)*vecZRND[ideltaBin];
+	  Double_t r1=r0+2*(gRandom->Rndm()-0.5)*vecRRND[ideltaBin];
+	  vecDMeanRRND[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,0,1)-rNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,0,2));
+	  vecDMeanRPhiRND[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,1,1)-rphiNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,1,2));
+	  vecDMeanZRND[ideltaBin]+=norm*(distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,2,1)-zNorm*distortion->GetCorrXYZ(r1*TMath::Cos(phi1), r1*TMath::Sin(phi1), z1,2,2));      
+	}
+      }
+
+
+
+
+      (*pcstream)<<"meanDistortion"<<
+	"npoints="<<npoints<<            // number of points genrated per file
+	"npointsZ="<<npointsZ<<            // number of points generated to fit z bin
+	"izNorm="<<izNorm<<              // z normalizatio flag
+	"fSector="<<fSector<<            // sector position
+	"dSector="<<dSector<<            // distance to the sector boundary
+	//
+	"r0="<<r0<<                      // r0 at center
+	"z0="<<z0<<
+	"phi0="<<phi0<<
+	//
+	"rNorm="<<rNorm<<
+	"rphiNorm="<<rphiNorm<<
+	"zNorm="<<zNorm<<
+	//
+	"deltaR0="<<deltaR0<<
+	"deltaZ0="<<deltaZ0<<
+	"deltaRPhi0="<<deltaRPhi0<<
+	//
+	"ddeltaR0="<<ddeltaR0<<
+	"ddeltaZ0="<<ddeltaZ0<<
+	"ddeltaRPhi0="<<ddeltaRPhi0<<
+	//
+	"vecDMeanRPhi.="<<&vecDMeanRPhi<<   
+	"vecDMeanR.="<<&vecDMeanR<<   
+	"vecDMeanZ.="<<&vecDMeanZ<<   
+	"vecDPhi.="<<&vecDPhi<<
+	//
+	"vecDMeanRPhiBinZ.="<<&vecDMeanRPhiBinZ<<   
+	"vecDMeanRBinZ.="<<&vecDMeanRBinZ<<   
+	"vecDMeanZBinZ.="<<&vecDMeanZBinZ<<   
+	"vecDBinZ.="<<&vecDBinZ<<
+	//
+	"vecDMeanRPhiBinR.="<<&vecDMeanRPhiBinR<<   
+	"vecDMeanRBinR.="<<&vecDMeanRBinR<<   
+	"vecDMeanZBinR.="<<&vecDMeanZBinR<<   
+	"vecDBinR.="<<&vecDBinR<<
+	//
+	"vecDMeanRPhiRND.="<<&vecDMeanRPhiRND<<   
+	"vecDMeanRRND.="<<&vecDMeanRRND<<   
+	"vecDMeanZRND.="<<&vecDMeanZRND<<   
+	"vecPhiRND.="<<&vecPhiRND<<
+	"vecZRND.="<<&vecZRND<<
+	"vecRRND.="<<&vecRRND<<
+	"\n";
+      //TVectorD vecDMeanRPhiRND(10), vecDMeanRRND(10), vecDMeanZRND(10), vecPhiRND(10), vecZRND(10), vecRRND(10);
+    }
+  }  
+  delete pcstream;
+  pcstream = new TTreeSRedirector("localBins.root","update");
+  /*
+    meanDistortion->Draw("vecDMeanR.fElements-ddeltaR0:vecDPhi.fElements","izNorm==1&&abs(phi0-pi)>0.2&&abs(ddeltaRPhi0)<10","")
+
+   */
+}
+
+
+void DrawLocalDistortionPlots(){
+  //
+  // Draw summary residuals plots after applying z dependent q normalization.
+  // Plots used for the TPC TDR and internal note
+  //
+  // Two input trees are used:
+  //    meanNormZ        - here we store the result of the q ze dependent fits for Radial, RPhi and Z distortions
+  //    meanDistortion   - phi averaged residual distortion before and after applying q(z) dependent correction
+  //
+  // It is assumed that the correction table for randomly selected pile-up setup
+  // can be approximated rescaling the mean correction table.
+  //   Rescaling coeficients are fitted separatelly in 125 z bins
+  //
+
+  TTreeSRedirector *pcstream = new TTreeSRedirector("localBins.root","update"); 
+  TTree * meanNormZ  = (TTree*) pcstream->GetFile()->Get("meanNormZ");
+  TTree * meanDistortion  = (TTree*) pcstream->GetFile()->Get("meanDistortion");
+  meanNormZ->SetMarkerStyle(25);   meanNormZ->SetMarkerSize(0.5);  
+  meanDistortion->SetMarkerStyle(25);   meanDistortion->SetMarkerSize(0.5);  
+  Int_t colors[5]={1,2,3,4,6};
+  Int_t markers[5]={21,20,23,24,25};
+  TH2 * his2D;
+  TObjArray arrFit(3);
+  //
+  // 1. Z dependence of the normalization is smooth function - about 10 bins to represent 
+  //
+  TGraphErrors *graphZRnorm[100]= {0};
+  TGraphErrors *graphZRRPhinorm[100]= {0};
+  TCanvas * canvasRFit = new TCanvas("canvasRFit","canvasRFit",600,500);
+  TLegend * legendRFit = new TLegend(0.12,0.12,0.88,0.4,"Q normalization fit. #DeltaR=c(z)#DeltaR_{ref}"); 
+  legendRFit->SetBorderSize(0);  
+  for (Int_t igraph=0; igraph<5; igraph++){    
+    Int_t color = colors[igraph];
+    Int_t marker = markers[igraph];
+    Int_t event=gRandom->Rndm()*meanNormZ->GetEntries();
+    graphZRnorm[igraph] = TStatToolkit::MakeGraphErrors( meanNormZ, "normZR.fElements:normZPos.fElements",TString::Format("Entry$==%d&&abs(normZPos.fElements)<220",event),marker,color,0.7);
+    graphZRnorm[igraph]->SetTitle(TString::Format("Pile-up setup=%d",igraph));   
+    graphZRnorm[igraph]->SetMinimum(0.60);
+    graphZRnorm[igraph]->SetMaximum(1.2);   
+    graphZRnorm[igraph]->GetXaxis()->SetTitle("z (cm)");    
+    graphZRnorm[igraph]->GetYaxis()->SetTitle("c(z)");    
+    if (igraph==0) graphZRnorm[igraph]->Draw("alp");
+    graphZRnorm[igraph]->Draw("lp");    
+    legendRFit->AddEntry( graphZRnorm[igraph],TString::Format("Pile-up setup=%d",event),"p");
+  }
+  legendRFit->Draw(); 
+  canvasRFit->SaveAs("canvasZRFit5Random.pdf");   // ~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasZRRPhiFit5Random.png
+  canvasRFit->SaveAs("canvasZRFit5Random.png");  
+  //
+  // 2. 
+  //
+  TCanvas * canvasRRPhiFit = new TCanvas("canvasRRPhiFit","canvasRRPhiFit",600,500);
+  TLegend * legendRRPhiFit = new TLegend(0.12,0.12,0.88,0.4,"Q normalization fit. #DeltaR=c_{R}(z)#DeltaR_{ref} #DeltaR#phi=c_{R#phi}(z)#Delta_{R#phi}_{ref}"); 
+  legendRRPhiFit->SetBorderSize(0);  
+  for (Int_t igraph=0; igraph<5; igraph++){    
+    Int_t color = colors[igraph];
+    Int_t marker = markers[igraph];
+    Int_t event=gRandom->Rndm()*meanNormZ->GetEntries();
+    graphZRRPhinorm[igraph] = TStatToolkit::MakeGraphErrors( meanNormZ, "normZR.fElements:normZRPhi.fElements",TString::Format("Entry$==%d&&abs(normZPos.fElements)<220",event),marker,color,0.7);
+    graphZRRPhinorm[igraph]->GetXaxis()->SetLimits(0.6,1.2);    
+    graphZRRPhinorm[igraph]->SetTitle(TString::Format("Pile-up setup=%d",igraph));   
+    graphZRRPhinorm[igraph]->SetMinimum(0.6);
+    graphZRRPhinorm[igraph]->SetMaximum(1.2);   
+    graphZRRPhinorm[igraph]->GetXaxis()->SetTitle("c_{R#phi}");    
+    graphZRRPhinorm[igraph]->GetYaxis()->SetTitle("c_{R}");    
+    if (igraph==0) graphZRRPhinorm[igraph]->Draw("alp");
+    graphZRRPhinorm[igraph]->Draw("lp");    
+    legendRRPhiFit->AddEntry( graphZRRPhinorm[igraph],TString::Format("Pile-up setup=%d",event),"p");
+  }
+  legendRRPhiFit->Draw(); 
+  canvasRRPhiFit->SaveAs("canvasZRRPhiFit5Random.pdf");   // ~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasZRRPhiFit5Random.png
+  canvasRRPhiFit->SaveAs("canvasZRRPhiFit5Random.png");  
+  //
+
+  //
+  // 3. Residual distortion after z dependent q distortion 
+  //
+  gStyle->SetOptStat(0);
+  TH1D * hisRRes, *hisRRphiRes=0;
+  meanDistortion->Draw("ddeltaRPhi0:r0>>hisdRPhi0(40,85,245,100,-0.25,0.25)","abs(z0)<85.&&izNorm==1","colz");
+  his2D = (TH2D*)meanDistortion->GetHistogram();
+  his2D->FitSlicesY(0,0,-1,0,"QNR",&arrFit);
+  hisRRphiRes=(TH1D*)arrFit.At(2)->Clone();
+  meanDistortion->Draw("ddeltaR0:r0>>hisdR(40,85,245,100,-0.25,0.25)","abs(z0)<85.&&izNorm==1","colz");
+  his2D = (TH2D*)meanDistortion->GetHistogram();
+  his2D->FitSlicesY(0,0,-1,0,"QNR",&arrFit);
+  hisRRes=(TH1D*)arrFit.At(2)->Clone();
+  hisRRphiRes->SetMarkerStyle(25);
+  hisRRes->SetMarkerStyle(21);
+  hisRRphiRes->SetMarkerColor(2);
+  hisRRes->SetMarkerColor(4);  
+
+  hisRRes->GetXaxis()->SetTitle("R (cm)");
+  hisRRes->GetYaxis()->SetTitle("#sigma_{res} (cm)");  
+  hisRRes->SetMinimum(0); 
+  TCanvas * canvasResidualsFit = new TCanvas("canvasResidualsFit","canvasResidualsFit",600,500);
+  TLegend * legendRRPhiFitSigma = new TLegend(0.2,0.6,0.88,0.88,"Distortion residuals. RMS(#Delta-c(z)#Delta_{ref}) (|z|<85)"); 
+  legendRRPhiFit->SetBorderSize(0);  
+  hisRRes->Draw("");
+  hisRRphiRes->Draw("same");
+  legendRRPhiFitSigma->AddEntry(hisRRes,"Radial");
+  legendRRPhiFitSigma->AddEntry(hisRRphiRes,"R#phi");
+  legendRRPhiFitSigma->Draw();
+  canvasResidualsFit->SaveAs("canvasResidualsFit.pdf"); //~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasResidualsFit.png
+  canvasResidualsFit->SaveAs("canvasResidualsFit.png");
+  //
+  //  4. Residual distortion after z dependent q distortion - local phi average 
+  //
+  TH1D * hisRResPhi, *hisRRphiResPhi=0;
+  meanDistortion->Draw("ddeltaR0-vecDMeanR.fElements:vecDPhi.fElements>>hisRResPhi(18,0.0,0.32,100,-0.3,0.3)","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000);
+  his2D = (TH2D*)meanDistortion->GetHistogram()->Clone();
+  his2D->FitSlicesY(0,0,-1,0,"QNR",&arrFit);
+  hisRResPhi=(TH1D*)arrFit.At(2)->Clone();
+  //
+  meanDistortion->Draw("ddeltaRPhi0-vecDMeanRPhi.fElements:vecDPhi.fElements>>hisRRphResPhi(18,0.0,0.32,100,-0.3,0.3)","abs(z0)<85.&&izNorm==1","colz",100000);
+  his2D = (TH2D*)meanDistortion->GetHistogram()->Clone();
+  his2D->FitSlicesY(0,0,-1,0,"QNR",&arrFit);
+  hisRRphiResPhi=(TH1D*)arrFit.At(2)->Clone();
+  //
+  hisRRphiResPhi->SetMarkerStyle(25);
+  hisRResPhi->SetMarkerStyle(21);
+  hisRRphiResPhi->SetMarkerColor(2);
+  hisRResPhi->SetMarkerColor(4);  
+  hisRResPhi->GetXaxis()->SetTitle("#Delta#phi bin width");
+  hisRResPhi->GetYaxis()->SetTitle("#sigma_{res} (cm)");  
+  hisRResPhi->SetMinimum(0); 
+  hisRResPhi->SetMaximum(2.*hisRResPhi->GetMaximum()); 
+  gStyle->SetOptStat(0);
+  TCanvas * canvasResidualsFitPhi = new TCanvas("canvasResidualsFitPhi","canvasResidualsFitPhi",600,500);
+  TLegend * legendRRPhiFitSigmaPhi = new TLegend(0.2,0.6,0.88,0.88,"Distortion residuals-mean in bin. RMS((#Delta-c(z)#Delta_{ref})) (|z|<85)"); 
+  {  
+    hisRResPhi->Draw("");
+    hisRRphiResPhi->Draw("same");
+    legendRRPhiFitSigmaPhi->AddEntry(hisRResPhi,"Radial");
+    legendRRPhiFitSigmaPhi->SetBorderSize(0);  
+    legendRRPhiFitSigmaPhi->AddEntry(hisRRphiResPhi,"R#phi");
+    legendRRPhiFitSigmaPhi->Draw();
+  }
+  
+  canvasResidualsFitPhi->SaveAs("canvasResidualsFitPhi.pdf"); //~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasResidualsFitPhi.png
+  canvasResidualsFitPhi->SaveAs("canvasResidualsFitPhi.png");
+  //
+  // 5.) Draw mean residuals 
+  //
+  TCanvas *canvasResDist = new TCanvas("canvasResDist","canvasResDist",800,800);
+  canvasResDist->Divide(2,3,0,0);
+  {    
+    canvasResDist->cd(1);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,0);
+    canvasResDist->cd(2);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,200000);
+    canvasResDist->cd(3);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,400000);
+    canvasResDist->cd(4);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,600000);
+    canvasResDist->cd(5);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,800000);
+    canvasResDist->cd(6);    
+    meanDistortion->Draw("vecDMeanR.fElements[2]:phi0:r0","abs(z0)<85.&&izNorm==1&&r0<120","colz",100000,1000000);
+  }
+  canvasResDist->SaveAs("canvasResidualsFitGraph.pdf");  //~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasResidualsFitGraph.png
+  canvasResDist->SaveAs("canvasResidualsFitGraph.png");
+}
+
+void BinScan(Int_t npoints){
+
+  
+  TTreeSRedirector *pcstream = new TTreeSRedirector("localBins.root","update"); 
+  TTree * resolScan = (TTree*)pcstream->GetFile()->Get("resolScan");
+  if (!resolScan){
+    TTree * meanNormZ  = (TTree*) pcstream->GetFile()->Get("meanNormZ");
+    TTree * meanDistortion  = (TTree*) pcstream->GetFile()->Get("meanDistortion");
+    //  meanNormZ->SetMarkerStyle(25);   meanNormZ->SetMarkerSize(0.5);  
+    //   meanDistortion->SetMarkerStyle(25);   meanDistortion->SetMarkerSize(0.5);  
+    //   Int_t colors[5]={1,2,3,4,6};
+    //   Int_t markers[5]={21,20,23,24,25};
+    //   TH2 * his2D;
+    //   TObjArray arrFit(3);
+    
+    {
+      //Int_t npoints=50000;
+      TCut cutDist="abs(ddeltaR0-vecDMeanRRND.fElements)<1&&abs(ddeltaRPhi0-vecDMeanRPhiRND.fElements)<1";
+      TCut cutGeom="abs(z0)<85&&r0<120.";
+      //
+      Int_t entries1 = meanDistortion->Draw("vecZRND.fElements:vecRRND.fElements:vecPhiRND.fElements","izNorm==1"+cutGeom+cutDist,"goff",npoints);
+      TVectorD vecBR1(entries1,meanDistortion->GetV1());
+      TVectorD vecBZ1(entries1,meanDistortion->GetV2());
+      TVectorD vecBPhi1(entries1,meanDistortion->GetV3());
+      meanDistortion->Draw("ddeltaR0-vecDMeanRRND.fElements:ddeltaRPhi0-vecDMeanRPhiRND.fElements","izNorm==1"+cutGeom+cutDist,"goff",npoints);
+      TVectorD vecDR1(entries1,meanDistortion->GetV1());
+      TVectorD vecDRPhi1(entries1,meanDistortion->GetV2());
+      //
+      Int_t entries0 = meanDistortion->Draw("vecZRND.fElements:vecRRND.fElements:vecPhiRND.fElements","izNorm==0"+cutGeom+cutDist,"goff",npoints);
+      TVectorD vecBR0(entries0,meanDistortion->GetV1());
+      TVectorD vecBZ0(entries0,meanDistortion->GetV2());
+      TVectorD vecBPhi0(entries0,meanDistortion->GetV3());
+      meanDistortion->Draw("ddeltaR0-vecDMeanRRND.fElements:ddeltaRPhi0-vecDMeanRPhiRND.fElements","izNorm==0"+cutGeom+cutDist,"goff",npoints);
+      TVectorD vecDR0(entries0,meanDistortion->GetV1());
+      TVectorD vecDRPhi0(entries0,meanDistortion->GetV2());
+      //
+      TVectorD vecSelR(TMath::Max(entries0,entries1));
+      TVectorD vecSelRPhi(TMath::Max(entries0,entries1));
+      //
+      for (Int_t iz=1; iz<10; iz+=1){
+	for (Int_t ir=1; ir<10; ir+=1){
+	  for (Int_t iphi=1; iphi<10; iphi++){
+	    Double_t zbin=3*iz;
+	    Double_t rbin=3*ir;
+	    Double_t phibin=0.025*iphi;
+	    Int_t counter=0;
+	    //
+	    counter=0;
+	    for (Int_t ipoint=0; ipoint<entries1; ipoint++){
+	      Bool_t isOK=TMath::Abs(vecBZ1[ipoint]/zbin-1)<0.2;
+	      isOK&=TMath::Abs(vecBR1[ipoint]/rbin-1.)<0.2;
+	      isOK&=TMath::Abs(vecBPhi1[ipoint]/phibin-1.)<0.2;
+	      if (isOK) {
+		vecSelRPhi[counter]=vecDRPhi1[ipoint];
+		vecSelR[counter]=vecDR1[ipoint];
+		counter++;
+	      }
+	    }
+	    Double_t meanR1=0,rmsR1=0;
+	    Double_t meanRPhi1=0,rmsRPhi1=0;
+	    if (counter>3) AliMathBase::EvaluateUni(counter,vecSelR.GetMatrixArray(),meanR1,rmsR1,0.9*counter);
+	    if (counter>3) AliMathBase::EvaluateUni(counter,vecSelRPhi.GetMatrixArray(),meanRPhi1,rmsRPhi1,0.9*counter);
+	    //
+	    counter=0;
+	    for (Int_t ipoint=0; ipoint<entries0; ipoint++){
+	      Bool_t isOK=TMath::Abs(vecBZ0[ipoint]/zbin-1)<0.2;
+	      isOK&=TMath::Abs(vecBR0[ipoint]/rbin-1.)<0.2;
+	      isOK&=TMath::Abs(vecBPhi0[ipoint]/phibin-1.)<0.2;
+	      if (isOK) {
+		vecSelRPhi[counter]=vecDRPhi0[ipoint];
+		vecSelR[counter]=vecDR0[ipoint];
+		counter++;
+	      }
+	    }
+	    Double_t meanR0=0, rmsR0=0;
+	    Double_t meanRPhi0=0, rmsRPhi0=0;
+	    if (counter>3) AliMathBase::EvaluateUni(counter,vecSelR.GetMatrixArray(),meanR0,rmsR0,0.9*counter);
+	    if (counter>3) AliMathBase::EvaluateUni(counter,vecSelRPhi.GetMatrixArray(),meanRPhi0,rmsRPhi0,0.9*counter);
+	    //
+	    printf("%f\t%f\t%f\t%f\t%f\n",zbin,rbin,phibin,rmsR0/(rmsR1+0.0001), rmsRPhi0/(rmsRPhi1+0.00001));
+	    (*pcstream)<<"resolScan"<<
+	      "counter="<<counter<<
+	      //
+	      "iz="<<iz<<
+	      "ir="<<ir<<
+	      "iphi="<<iphi<<
+	      //
+	      "zbin="<<zbin<<
+	      "rbin="<<rbin<<
+	      "phibin="<<phibin<<
+	      //
+	      "meanR0="<<meanR0<<
+	      "rmsR0="<<rmsR0<<
+	      "meanRPhi0="<<meanRPhi0<<
+	      "rmsRPhi0="<<rmsRPhi0<<
+	      //
+	      "meanR1="<<meanR1<<
+	      "rmsR1="<<rmsR1<<
+	      "meanRPhi1="<<meanRPhi1<<
+	      "rmsRPhi1="<<rmsRPhi1<<
+	      "\n";
+	  } 
+	}
+      }
+    }
+    delete pcstream;
+  }
+  //
+  pcstream = new TTreeSRedirector("localBins.root","update"); 
+  resolScan = (TTree*)pcstream->GetFile()->Get("resolScan");
+  resolScan->SetMarkerStyle(25);
+  //
+  Int_t colors[5]={1,2,3,4,6};
+  Int_t markers[5]={21,20,23,24,25};
+  gStyle->SetTitleFontSize(32);
+  gStyle->SetTitleFontSize(35);
+  //
+  //
+  //
+  for (Int_t itype=0; itype<2; itype++){
+    TCanvas * canvasRes = new TCanvas(TString::Format("canvasRes%d",itype),"canvasRes",800,800);
+    canvasRes->SetRightMargin(0.05);
+    canvasRes->SetLeftMargin(0.2);
+    canvasRes->SetBottomMargin(0.18);
+    canvasRes->Divide(2,3,0,0);
+    TLatex  latexDraw;
+    latexDraw.SetTextSize(0.08);
+    //
+    for (Int_t iz=1; iz<6; iz+=2){
+      TLegend * legend0 = new TLegend(0.17,0.3,0.80,0.6,TString::Format("Residuals after mean correction"));
+      TLegend * legend1 = new TLegend(0.07,0.3,0.90,0.6,TString::Format("Residual after applying #it{q(z)} correction"));
+      legend0->SetBorderSize(0);
+      legend1->SetBorderSize(0);
+      for (Int_t ir=1; ir<8; ir+=2){
+	TCut cutR(TString::Format("ir==%d",ir));
+	TCut cutZ(TString::Format("iz==%d",iz));
+	TGraphErrors * gr0=0, *gr1=0;
+	if (itype==0){
+	  gr0=TStatToolkit::MakeGraphErrors(resolScan,"10*rmsR0:phibin:10*rmsR0/sqrt(counter)",cutR+cutZ,markers[ir/2],colors[ir/2],0.75);
+	  gr1=TStatToolkit::MakeGraphErrors(resolScan,"10*rmsR1:phibin:10*rmsR1/sqrt(counter)",cutR+cutZ,markers[ir/2],colors[ir/2],0.75);
+	  gr0->GetYaxis()->SetTitle("#it{#sigma(#Delta_{R}-#bar{#Delta_{R}})} (mm)"); 
+	}
+	if (itype==1){
+	  gr0=TStatToolkit::MakeGraphErrors(resolScan,"10*rmsRPhi0:phibin:10*rmsRPhi0/sqrt(counter)",cutR+cutZ,markers[ir/2],colors[ir/2],0.75);
+	  gr1=TStatToolkit::MakeGraphErrors(resolScan,"10*rmsPhi1:phibin:10*rmsPhi1/sqrt(counter)",cutR+cutZ,markers[ir/2],colors[ir/2],0.75);
+	  gr0->GetYaxis()->SetTitle("#it{#sigma(#Delta_{R#phi}-#bar{#Delta_{R#phi}})} (mm)"); 
+	}
+	gr0->GetXaxis()->SetTitle("#Delta#phi bin width");
+	gr1->GetXaxis()->SetTitle("#Delta#phi bin width");
+	SetGraphTDRStyle(gr0);
+	SetGraphTDRStyle(gr1);
+	gr0->GetXaxis()->SetLimits(0,0.25);
+	gr1->GetXaxis()->SetLimits(0,0.25);
+	gr0->SetMinimum(-0.5);
+	gr0->SetMaximum(0.7);
+	gr1->SetMinimum(-0.5);
+	gr1->SetMaximum(0.7);
+	canvasRes->cd(iz)->SetTicks(3,3);
+	canvasRes->cd(iz)->SetGrid(0,3);
+	canvasRes->cd(iz)->SetLeftMargin(0.15);
+	if (ir==1) gr0->Draw("alp");
+	gr0->Draw("lp");
+	canvasRes->cd(iz+1)->SetTicks(3,3);
+	canvasRes->cd(iz+1)->SetGrid(0,3);
+	if (ir==1) gr1->Draw("alp");
+	gr1->Draw("lp");
+	legend0->AddEntry(gr0,TString::Format("#it{#Delta_{R}}=%1.1f (cm)",ir*3.),"p");
+	legend1->AddEntry(gr1,TString::Format("#it{#Delta_{R}}=%1.1f (cm)",ir*3.),"p");
+	//
+	canvasRes->cd(iz);
+	latexDraw.DrawLatex(0.01,-0.45,TString::Format("#Delta_{Z}=%1.0f cm, R<120 cm, |Z|<85 cm ",iz*3.));
+	canvasRes->cd(iz+1);
+	latexDraw.DrawLatex(0.01,-0.45,TString::Format("#Delta_{Z}=%1.0f cm, R<120 cm, |Z|<85 cm ",iz*3.));
+      }
+      if (iz==5){
+	legend0->SetTextSize(0.06);
+	legend1->SetTextSize(0.06);
+	canvasRes->cd(iz);
+	legend0->Draw();
+	canvasRes->cd(iz+1);
+	legend1->Draw();
+      }
+    }
+    if (itype==0){
+       canvasRes->SaveAs("canvasSpaceChargeBinFlucR.pdf");
+       canvasRes->SaveAs("canvasSpaceChargeBinFlucR.png");
+    }
+    if (itype==1){
+      canvasRes->SaveAs("canvasSpaceChargeBinFlucRPhi.pdf");
+      canvasRes->SaveAs("canvasSpaceChargeBinFlucRPhi.png"); //~/hera/alice/miranov/SpaceCharge/Fluctuations/PbPbWithGain/dirmergeAll/dEpsilon20/canvasSpaceChargeBinFlucRPhi.pdf
+    }
+  }
+
+}
+
+  

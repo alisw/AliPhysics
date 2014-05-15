@@ -109,10 +109,12 @@ Bool_t AliTRDPIDParams::GetThresholdParameters(Int_t ntracklets, Double_t effici
   // Use IsEqual definition
   //
   AliTRDPIDCentrality *cent = FindCentrality(centrality);
+  if(!cent)cent = FindCentrality(-1);// try default class
   if(!cent){
-    AliDebug(1, "Centrality class not available");
-    return kFALSE;
+      AliDebug(1, "Centrality class not available");
+      return kFALSE;
   }
+  
   cent->GetThresholdParameters(ntracklets, efficiency, params);
   return kTRUE;
 }

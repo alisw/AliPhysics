@@ -32,7 +32,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetOutputFileName(const char* fname);
     virtual const char*  GetOutputFileName() const;
     // Extra outputs as a string separated by commas
-    virtual const char*  GetExtraOutputs() const;
+    virtual const char*  GetExtraOutputs(Bool_t merge=kTRUE) const;
     virtual Bool_t       Init(Option_t* option);
     virtual Bool_t       Init(TTree* /*tree*/, Option_t* /*option*/)  {return kTRUE;}
     virtual Bool_t       GetEntry() {return kTRUE;}
@@ -78,11 +78,12 @@ class AliAODHandler : public AliVEventHandler {
     void                 AddAODtoTreeUserInfo();
     void                 AddBranch(const char* cname, void* addobj, const char *fname="");
   
-    AliAODExtension*     AddExtension(const char *filename, const char *title="");                 
-    AliAODExtension*     AddFilteredAOD(const char *filename, const char *filtername);
+    AliAODExtension*     AddExtension(const char *filename, const char *title="", Bool_t tomerge=kFALSE);
+    AliAODExtension*     AddFilteredAOD(const char *filename, const char *filtername, Bool_t tomerge=kFALSE);
 //    AliAODExtension*     FindExtensionContainingBranch(const char* bname) const;
     Bool_t               IsStandard()                         const {return fIsStandard;}
     Bool_t               GetFillAOD()                         const {return fFillAOD;} 
+    Bool_t               GetFillExtension()                   const {return fFillExtension;} 
     Bool_t               NeedsHeaderReplication()             const {return  fNeedsHeaderReplication;}
     Bool_t               NeedsTOFHeaderReplication()          const {return  fNeedsTOFHeaderReplication;}
     Bool_t               NeedsVZEROReplication()              const {return  fNeedsVZEROReplication;}

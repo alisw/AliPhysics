@@ -16,6 +16,7 @@ class AliCTPRawData:public TObject{
   AliCTPRawData(const AliCTPRawData &source);            // copy constructor
   AliCTPRawData& operator=(const AliCTPRawData &source); // assignment operator
   void  RawData();  //This method is used to create the slides (sequence of files)
+  void  RawDataRun2();  //This method is used to create the slides (sequence of files) in run2 format
 
   ClassDef(AliCTPRawData,1)
 };

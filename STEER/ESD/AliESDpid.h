@@ -32,6 +32,8 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
   virtual ~AliESDpid() {}
   
   Int_t MakePID(AliESDEvent *event, Bool_t TPCOnly = kFALSE, Float_t timeZeroTOF=9999) const;
+  void  MakePIDForTracking(AliESDEvent *event) const;
+
   void MakeTPCPID(AliESDtrack *track) const;
   void MakeITSPID(AliESDtrack *track) const;
   void MakeTOFPID(AliESDtrack *track, Float_t /*timeZeroTOF*/) const;
@@ -39,6 +41,8 @@ AliESDpid& operator=(const AliESDpid& a){if (this==&a) return *this; AliPIDRespo
   //  void MakeHMPIDPID(AliESDtrack *track);
   void MakeTRDPID(AliESDtrack *track) const;
   void CombinePID(AliESDtrack *track) const;
+
+  void SetPIDForTracking(AliESDtrack *track) const;
 
 //   Float_t NumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type) const {return AliPIDResponse::NumberOfSigmasTOF(track,type);}
 //   Float_t GetNumberOfSigmasTOF(const AliVParticle *track, AliPID::EParticleType type, const Float_t timeZeroTOF) const;

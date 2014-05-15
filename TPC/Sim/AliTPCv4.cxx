@@ -60,6 +60,10 @@ TPC version for the krypton runs (Marek)
 
 using std::ifstream;
 using std::ios_base;
+
+extern "C"{
+  Gas gaspar1_;
+};
 ClassImp(AliTPCv4)
  
 //_____________________________________________________________________________
@@ -76,9 +80,15 @@ AliTPCv4::AliTPCv4(const char *name, const char *title) :
 
   SetBufferSize(128000);
 
+  if(!fTPCParam) {AliFatal("TPC parameters not set");
+      return;
+  }
 
-  if (fTPCParam)
-     fTPCParam->Write(fTPCParam->GetTitle());
+
+  gaspar1_.fpot=fTPCParam->GetFpot();
+  gaspar1_.eend=1.e-6;
+  gaspar1_.eexpo=fTPCParam->GetExp();
+
 }
  
 //_____________________________________________________________________________
@@ -1961,17 +1971,17 @@ void AliTPCv4::Init()
   AliTPC::Init();
 
  
-  fIdSens=gMC->VolId("TPC_Strip");  // one strip is always selected...
+  fIdSens=TVirtualMC::GetMC()->VolId("TPC_Strip");  // one strip is always selected...
 
-  fIDrift=gMC->VolId("TPC_Drift");
+  fIDrift=TVirtualMC::GetMC()->VolId("TPC_Drift");
   fSecOld=-100; // fake number 
 
-  gMC->SetMaxNStep(-30000); // max. number of steps increased
+  TVirtualMC::GetMC()->SetMaxNStep(-30000); // max. number of steps increased
 
   // specific energy loss set in galice.cuts
 
   AliInfo("*** TPC version 4 initialized ***");
-  AliInfo(Form("Maximum number of steps = %d",gMC->GetMaxNStep()));
+  AliInfo(Form("Maximum number of steps = %d",TVirtualMC::GetMC()->GetMaxNStep()));
 
   //
   
@@ -1987,9 +1997,9 @@ void AliTPCv4::StepManager()
   //
   // parameters used for the energy loss calculations
   //
-  const Float_t kprim = 14.35; // number of primary collisions per 1 cm
-  const Float_t kpoti = 20.77e-9; // first ionization potential for Ne/CO2
-  const Float_t kwIon = 35.97e-9; // energy for the ion-electron pair creation 
+   Float_t prim = fTPCParam->GetNprim();
+  Float_t poti = fTPCParam->GetFpot();
+  Float_t wIon = fTPCParam->GetWmean(); 
  
  
   const Float_t kbig = 1.e10;
@@ -2001,20 +2011,20 @@ void AliTPCv4::StepManager()
   
   vol[1]=0; // preset row number to 0
   //
-  gMC->SetMaxStep(kbig);
+  TVirtualMC::GetMC()->SetMaxStep(kbig);
   
   
   
-  Float_t charge = gMC->TrackCharge();
+  Float_t charge = TVirtualMC::GetMC()->TrackCharge();
   
   if(TMath::Abs(charge)<=0.) return; // take only charged particles
   
   // check the sensitive volume
 
-  id = gMC->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
+  id = TVirtualMC::GetMC()->CurrentVolID(copy); // vol ID and copy number (starts from 1!)
   if(id != fIDrift && id != fIdSens) return; // not in the sensitive folume 
 
-  gMC->TrackPosition(p);
+  TVirtualMC::GetMC()->TrackPosition(p);
   Double_t r = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
   //
   
@@ -2055,7 +2065,7 @@ void AliTPCv4::StepManager()
   // track is in the sensitive strip
   if(id == fIdSens){
     // track is entering the strip
-    if (gMC->IsTrackEntering()){
+    if (TVirtualMC::GetMC()->IsTrackEntering()){
       Int_t totrows = fTPCParam->GetNRowLow()+fTPCParam->GetNRowUp();
       vol[1] = (copy<=totrows) ? copy-1 : copy-1-totrows;
       // row numbers are autonomous for lower and upper sectors
@@ -2067,25 +2077,25 @@ void AliTPCv4::StepManager()
   
         // lower sector, row 0, because Jouri wants to have this
 
-        gMC->TrackMomentum(p);
+        TVirtualMC::GetMC()->TrackMomentum(p);
         hits[0]=p[0];
         hits[1]=p[1];
         hits[2]=p[2];
         hits[3]=0.; // this hit has no energy loss
         // Get also the track time for pileup simulation
-        hits[4]=gMC->TrackTime();
+        hits[4]=TVirtualMC::GetMC()->TrackTime();
 
         AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  
       }
     //
 
-       gMC->TrackPosition(p);
+       TVirtualMC::GetMC()->TrackPosition(p);
        hits[0]=p[0];
        hits[1]=p[1];
        hits[2]=p[2];
        hits[3]=0.; // this hit has no energy loss
        // Get also the track time for pileup simulation
-       hits[4]=gMC->TrackTime();
+       hits[4]=TVirtualMC::GetMC()->TrackTime();
 
        AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);  
     
@@ -2096,12 +2106,12 @@ void AliTPCv4::StepManager()
   //  charged particle is in the sensitive drift volume
   //-----------------------------------------------------------------
 
-  if(gMC->TrackStep() > 0){ 
+  if(TVirtualMC::GetMC()->TrackStep() > 0){ 
 
-    Int_t nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+    Int_t nel = (Int_t)(((TVirtualMC::GetMC()->Edep())-poti)/wIon) + 1;
     nel=TMath::Min(nel,30); // 30 electrons corresponds to 1 keV
     //
-    gMC->TrackPosition(p);
+    TVirtualMC::GetMC()->TrackPosition(p);
     hits[0]=p[0];
     hits[1]=p[1];
     hits[2]=p[2];
@@ -2111,44 +2121,44 @@ void AliTPCv4::StepManager()
 
     //if (fHitType&&2){
     if(fHitType){
-      gMC->TrackMomentum(p);
+      TVirtualMC::GetMC()->TrackMomentum(p);
       Float_t momentum = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;
       fTrackHits->SetHitPrecision(precision);
     }
 
     // Get also the track time for pileup simulation
-    hits[4]=gMC->TrackTime();
+    hits[4]=TVirtualMC::GetMC()->TrackTime();
  
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
 
   } // step>0 
   } //within sector's limits
   // Stemax calculation for the next step
-  if(!gMC->IsTrackAlive()) return; // particle has disappeared
+  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
   Float_t pp;
   TLorentzVector mom;
-  gMC->TrackMomentum(mom);
+  TVirtualMC::GetMC()->TrackMomentum(mom);
   Float_t ptot=mom.Rho();
-  Float_t betaGamma = ptot/gMC->TrackMass();
+  Float_t betaGamma = ptot/TVirtualMC::GetMC()->TrackMass();
   
-  Int_t pid=gMC->TrackPid();
-  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
-    { 
-      pp = kprim*1.58; // electrons above 20 MeV/c are on the plateau!
-    }
-  else
-    {
-
-      betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
-      pp=kprim*AliMathBase::BetheBlochAleph(betaGamma); 
-   
-      if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
-    }
+  Int_t pid=TVirtualMC::GetMC()->TrackPid();
+  //  if((pid==kElectron || pid==kPositron) && ptot > 0.002)
+  //     { 
+  //       pp = prim*1.58; // electrons above 20 MeV/c are on the plateau!
+  //     }
+  //   else
+  //     {
   
-  Double_t rnd = gMC->GetRandom()->Rndm();
+  betaGamma = TMath::Max(betaGamma,(Float_t)7.e-3); // protection against too small bg
+  TVectorD* bbpar = fTPCParam->GetBetheBlochParameters(); //get parametrization from OCDB
+  pp=prim*AliMathBase::BetheBlochAleph(betaGamma,(*bbpar)(0),(*bbpar)(1),(*bbpar)(2),(*bbpar)(3),(*bbpar)(4));    
+  if(TMath::Abs(charge) > 1.) pp *= (charge*charge);
+  //    }
   
-  gMC->SetMaxStep(-TMath::Log(rnd)/pp);
+  Double_t rnd = TVirtualMC::GetMC()->GetRandom()->Rndm();
+  
+  TVirtualMC::GetMC()->SetMaxStep(-TMath::Log(rnd)/pp);
   
   
 }

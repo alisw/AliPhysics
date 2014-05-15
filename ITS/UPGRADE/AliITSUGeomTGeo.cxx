@@ -31,6 +31,8 @@
 #include <TString.h>
 #include <TGeoManager.h>
 #include <TGeoPhysicalNode.h>
+#include <TGeoShape.h>
+#include <TGeoBBox.h>
 #include <TDatime.h>
 #include <TMath.h>
 #include <TSystem.h>
@@ -45,25 +47,33 @@ using namespace TMath;
 ClassImp(AliITSUGeomTGeo)
 
 UInt_t AliITSUGeomTGeo::fgUIDShift = 16;                // bit shift to go from mod.id to modUUID for TGeo
-const char* AliITSUGeomTGeo::fgkITSVolName = "ITSV";
-const char* AliITSUGeomTGeo::fgkITSLrName  = "ITSULayer";
-const char* AliITSUGeomTGeo::fgkITSLadName = "ITSULadder";
-const char* AliITSUGeomTGeo::fgkITSModName = "ITSUModule";
-const char* AliITSUGeomTGeo::fgkITSSensName ="ITSUSensor";
-const char* AliITSUGeomTGeo::fgkITSWrapVolName = "ITSUWrapVol";
-const char* AliITSUGeomTGeo::fgkITSDetTypeName[AliITSUGeomTGeo::kNDetTypes] = {"Pix"};
+TString AliITSUGeomTGeo::fgITSVolName = "ITSV";
+TString AliITSUGeomTGeo::fgITSLrName  = "ITSULayer";
+TString AliITSUGeomTGeo::fgITSStaveName = "ITSUStave";
+TString AliITSUGeomTGeo::fgITSHalfStaveName = "ITSUHalfStave";
+TString AliITSUGeomTGeo::fgITSModuleName = "ITSUModule";
+TString AliITSUGeomTGeo::fgITSChipName = "ITSUChip";
+TString AliITSUGeomTGeo::fgITSSensName = "ITSUSensor";
+TString AliITSUGeomTGeo::fgITSWrapVolName = "ITSUWrapVol";
+TString AliITSUGeomTGeo::fgITSChipTypeName[AliITSUGeomTGeo::kNChipTypes] = {"Pix"};
 //
-TString     AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
+TString AliITSUGeomTGeo::fgITSsegmFileName = "itsSegmentations.root";
 
 //______________________________________________________________________
 AliITSUGeomTGeo::AliITSUGeomTGeo(Bool_t build, Bool_t loadSegm)
   :fVersion(kITSVNA)
   ,fNLayers(0)
+  ,fNChips(0)
+  ,fNStaves(0)
+  ,fNHalfStaves(0)
   ,fNModules(0)
-  ,fNLadders(0)
-  ,fLrDetType(0)
-  ,fNDetectors(0)
-  ,fLastModIndex(0)
+  ,fNChipsPerModule(0)
+  ,fNChipRowsPerModule(0)
+  ,fNChipsPerHalfStave(0)
+  ,fNChipsPerStave(0)
+  ,fNChipsPerLayer(0)
+  ,fLrChipType(0)
+  ,fLastChipIndex(0)
   ,fMatSens(0)
   ,fMatT2L(0)
   ,fSegm(0)
@@ -78,39 +88,56 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
   :TObject(src)
   ,fVersion(src.fVersion)
   ,fNLayers(src.fNLayers)
-  ,fNModules(src.fNModules)
-  ,fNLadders(0)
-  ,fLrDetType(0)
-  ,fNDetectors(0)
-  ,fLastModIndex(0)
+  ,fNChips(src.fNChips)
+  ,fNStaves(0)
+  ,fNHalfStaves(0)
+  ,fNModules(0)
+  ,fNChipsPerModule(0)
+  ,fNChipRowsPerModule(0)
+  ,fNChipsPerHalfStave(0)
+  ,fNChipsPerStave(0)
+  ,fNChipsPerLayer(0)
+  ,fLrChipType(0)
+  ,fLastChipIndex(0)
   ,fMatSens(0)
   ,fMatT2L(0)
   ,fSegm(0)
 {
   // copy c-tor
   if (fNLayers) {
-    fNLadders   = new Int_t[fNLayers];
-    fNDetectors = new Int_t[fNLayers];
-    fLrDetType  = new Int_t[fNLayers];
-    fLastModIndex   = new Int_t[fNLayers];
+    fNStaves   = new Int_t[fNLayers];
+    fNChipsPerModule = new Int_t[fNLayers];
+    fNChipRowsPerModule = new Int_t[fNLayers];
+    fLrChipType  = new Int_t[fNLayers];
+    fLastChipIndex   = new Int_t[fNLayers];
+    fNChipsPerHalfStave = new Int_t[fNLayers];
+    fNChipsPerStave = new Int_t[fNLayers];
+    fNChipsPerLayer = new Int_t[fNLayers];
+    //
     for (int i=fNLayers;i--;) {
-      fNLadders[i] = src.fNLadders[i];
-      fNDetectors[i] = src.fNDetectors[i];
-      fLrDetType[i]  = src.fLrDetType[i];
-      fLastModIndex[i] = src.fLastModIndex[i];
+      fNStaves[i] = src.fNStaves[i];
+      fNHalfStaves[i] = src.fNHalfStaves[i];
+      fNModules[i] = src.fNModules[i];
+      fNChipsPerModule[i] = src.fNChipsPerModule[i];
+      fNChipRowsPerModule[i] = src.fNChipRowsPerModule[i];
+      fNChipsPerHalfStave[i] = src.fNChipsPerHalfStave[i];
+      fNChipsPerStave[i] = src.fNChipsPerStave[i];
+      fNChipsPerLayer[i] = src.fNChipsPerLayer[i];
+      fLrChipType[i]  = src.fLrChipType[i];
+      fLastChipIndex[i] = src.fLastChipIndex[i];
     }
     if (src.fMatSens) {
-      fMatSens = new TObjArray(fNModules);
+      fMatSens = new TObjArray(fNChips);
       fMatSens->SetOwner(kTRUE);
-      for (int i=0;i<fNModules;i++) {
+      for (int i=0;i<fNChips;i++) {
 	const TGeoHMatrix* mat = (TGeoHMatrix*)src.fMatSens->At(i);
 	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
       }
     }
     if (src.fMatT2L) {
-      fMatT2L = new TObjArray(fNModules);
+      fMatT2L = new TObjArray(fNChips);
       fMatT2L->SetOwner(kTRUE);
-      for (int i=0;i<fNModules;i++) {
+      for (int i=0;i<fNChips;i++) {
 	const TGeoHMatrix* mat =(TGeoHMatrix*) src.fMatT2L->At(i);
 	fMatT2L->AddAt(new TGeoHMatrix(*mat),i);
       }
@@ -133,10 +160,16 @@ AliITSUGeomTGeo::AliITSUGeomTGeo(const AliITSUGeomTGeo &src)
 AliITSUGeomTGeo::~AliITSUGeomTGeo()
 {
   //d-tor
-  delete[] fNLadders;
-  delete[] fLrDetType;
-  delete[] fNDetectors;
-  delete[] fLastModIndex;
+  delete[] fNStaves;
+  delete[] fNHalfStaves;
+  delete[] fNModules;
+  delete[] fLrChipType;
+  delete[] fNChipsPerModule;
+  delete[] fNChipRowsPerModule;
+  delete[] fNChipsPerHalfStave;
+  delete[] fNChipsPerStave;
+  delete[] fNChipsPerLayer;
+  delete[] fLastChipIndex;
   delete fMatT2L;
   delete fMatSens;
   delete fSegm;
@@ -148,28 +181,34 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
 {
   // cp op.
   if (this!=&src) {
-    delete[] fNLadders;
-    delete[] fLrDetType;
-    delete[] fNDetectors;
-    delete[] fLastModIndex;
-    fNLadders = fLrDetType = fNDetectors = fLastModIndex = 0;
+    delete[] fNStaves;
+    delete[] fNHalfStaves;
+    delete[] fNModules;
+    delete[] fLrChipType;
+    delete[] fNChipsPerModule;
+    delete[] fNChipRowsPerModule;
+    delete[] fNChipsPerHalfStave;
+    delete[] fNChipsPerStave;
+    delete[] fNChipsPerLayer;
+    delete[] fLastChipIndex;
+    fNStaves = fNHalfStaves = fNModules = fLrChipType = fNChipsPerModule = fLastChipIndex = 0;
     fVersion = src.fVersion;
     fNLayers = src.fNLayers;
-    fNModules = src.fNModules;
+    fNChips = src.fNChips;
     if (src.fMatSens) {
       delete fMatSens; 
-      fMatSens = new TObjArray(fNModules);
+      fMatSens = new TObjArray(fNChips);
       fMatSens->SetOwner(kTRUE);
-      for (int i=0;i<fNModules;i++) {
+      for (int i=0;i<fNChips;i++) {
 	const TGeoHMatrix* mat = (TGeoHMatrix*) src.fMatSens->At(i);
 	fMatSens->AddAt(new TGeoHMatrix(*mat),i);
       }
     }
     if (src.fMatT2L) {
       delete fMatT2L; 
-      fMatT2L = new TObjArray(fNModules);
+      fMatT2L = new TObjArray(fNChips);
       fMatT2L->SetOwner(kTRUE);
-      for (int i=0;i<fNModules;i++) {
+      for (int i=0;i<fNChips;i++) {
 	const TGeoHMatrix* mat = (TGeoHMatrix*) src.fMatT2L->At(i);
 	fMatT2L->AddAt(new TGeoHMatrix(*mat),i);
       }
@@ -186,15 +225,27 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
     }
     //
     if (fNLayers) {
-      fNLadders   = new Int_t[fNLayers];
-      fNDetectors = new Int_t[fNLayers];
-      fLrDetType  = new Int_t[fNLayers];
-      fLastModIndex   = new Int_t[fNLayers];
+      fNStaves   = new Int_t[fNLayers];
+      fNHalfStaves   = new Int_t[fNLayers];
+      fNModules     = new Int_t[fNLayers];
+      fNChipsPerModule = new Int_t[fNLayers];
+      fNChipRowsPerModule = new Int_t[fNLayers];
+      fNChipsPerHalfStave = new Int_t[fNLayers];
+      fNChipsPerStave = new Int_t[fNLayers];
+      fNChipsPerLayer = new Int_t[fNLayers];
+      fLrChipType  = new Int_t[fNLayers];
+      fLastChipIndex   = new Int_t[fNLayers];
       for (int i=fNLayers;i--;) {
-	fNLadders[i] = src.fNLadders[i];
-	fNDetectors[i] = src.fNDetectors[i];
-	fLrDetType[i]  = src.fLrDetType[i];
-	fLastModIndex[i] = src.fLastModIndex[i];
+	fNStaves[i] = src.fNStaves[i];
+	fNHalfStaves[i] = src.fNHalfStaves[i];
+	fNModules[i]   = src.fNModules[i];
+	fNChipsPerModule[i] = src.fNChipsPerModule[i];
+	fNChipRowsPerModule[i] = src.fNChipRowsPerModule[i];
+	fNChipsPerHalfStave[i] = src.fNChipsPerHalfStave[i];
+	fNChipsPerStave[i] = src.fNChipsPerStave[i];
+	fNChipsPerLayer[i] = src.fNChipsPerLayer[i];
+	fLrChipType[i]  = src.fLrChipType[i];
+	fLastChipIndex[i] = src.fLastChipIndex[i];
       }
     }    
   }
@@ -202,33 +253,65 @@ AliITSUGeomTGeo& AliITSUGeomTGeo::operator=(const AliITSUGeomTGeo &src)
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::GetModuleIndex(Int_t lay,Int_t lad,Int_t det) const
+Int_t AliITSUGeomTGeo::GetChipIndex(Int_t lay,Int_t sta,Int_t chipInStave) const
 {
-  // This routine computes the module index number from the layer,
-  // ladder, and detector numbers. The number of ladders and detectors
-  // per layer is set statically
-  // see above for details.
+  // This routine computes the chip index number from the layer,
+  // stave, and chip number in stave. 
   // Inputs:
   //    Int_t lay  The layer number. Starting from 0.
-  //    Int_t lad  The ladder number. Starting from 0
-  //    Int_t det  The detector number in the ladder. Starting from 0
+  //    Int_t sta  The stave number. Starting from 0
+  //    Int_t chipInStave  The chip number in the stave. Starting from 0
   //
-  return GetFirstModIndex(lay) + fNDetectors[lay]*lad + det;
+  return GetFirstChipIndex(lay) + fNChipsPerStave[lay]*sta + chipInStave;
 }
 
 //______________________________________________________________________
-Bool_t AliITSUGeomTGeo::GetLayer(Int_t index,Int_t &lay,Int_t &index2)  const
+Int_t AliITSUGeomTGeo::GetChipIndex(Int_t lay,Int_t sta, Int_t substa, Int_t chipInSStave) const
 {
-  // This routine computes the layer number for a
-  // given the module index. The 
+  // This routine computes the chip index number from the layer,
+  // stave, substave and chip number in substave. 
   // Inputs:
-  //     Int_t index  The module index number, starting from zero.
+  //    Int_t lay  The layer number. Starting from 0.
+  //    Int_t sta  The stave number. Starting from 0
+  //    Int_t substa  The substave number. Starting from 0
+  //    Int_t chipInSStave  The chip number in the sub stave. Starting from 0
+  //
+  int n = GetFirstChipIndex(lay) + fNChipsPerStave[lay]*sta + chipInSStave;
+  if (fNHalfStaves[lay] && substa>0) n += fNChipsPerHalfStave[lay]*substa;
+  return n;
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::GetChipIndex(Int_t lay,Int_t sta, Int_t substa, Int_t md, Int_t chipInMod) const
+{
+  // This routine computes the chip index number from the layer,
+  // stave, substave module and chip number in module. 
+  // Inputs:
+  //    Int_t lay  The layer number. Starting from 0.
+  //    Int_t sta  The stave number. Starting from 0
+  //    Int_t substa  The substave number. Starting from 0
+  //    Int_t module  The module number ...
+  //    Int_t chipInSStave  The chip number in the module. Starting from 0
+  //
+  int n = GetFirstChipIndex(lay) + fNChipsPerStave[lay]*sta + chipInMod;
+  if (fNHalfStaves[lay] && substa>0) n += fNChipsPerHalfStave[lay]*substa;
+  if (fNModules[lay] && md>0)       n += fNChipsPerModule[lay]*md;
+  return n;
+}
+
+//______________________________________________________________________
+Bool_t AliITSUGeomTGeo::GetLayer(Int_t index,Int_t &lay,Int_t &indexInLr)  const
+{
+  // This routine computes the layer number a
+  // given the chip index. The 
+  // Inputs:
+  //     Int_t index  The chip index number, starting from zero.
   // Outputs:
-  //     Int_t index2 The module index inside a layer, starting from zero.
+  //     Int_t indexInLr The chip index inside a layer, starting from zero.
   //     Int_t lay    The layer number. Starting from 0.
   //
   lay = GetLayer(index);
-  index2 = index - GetFirstModIndex(lay);
+  indexInLr = index - GetFirstChipIndex(lay);
   return kTRUE;
   //
 }
@@ -236,64 +319,119 @@ Bool_t AliITSUGeomTGeo::GetLayer(Int_t index,Int_t &lay,Int_t &index2)  const
 //______________________________________________________________________
 Int_t AliITSUGeomTGeo::GetLayer(Int_t index) const
 {
-  // Get module layer, from 0
+  // Get chip layer, from 0
   //
   int lay = 0;
-  while(index>fLastModIndex[lay]) lay++;
+  while(index>fLastChipIndex[lay]) lay++;
   return lay;
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::GetLadder(Int_t index) const
+Int_t AliITSUGeomTGeo::GetStave(Int_t index) const
 {
-  // Get module ladder, from 0
+  // Get chip stave, from 0
   //
   int lay = 0;
-  while(index>fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(lay);
-  return index/fNDetectors[lay];
+  while(index>fLastChipIndex[lay]) lay++;
+  index -= GetFirstChipIndex(lay);
+  return index/fNChipsPerStave[lay];
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::GetModIdInLayer(Int_t index) const
+Int_t AliITSUGeomTGeo::GetHalfStave(Int_t index) const
 {
-  // Get module number within layer, from 0
+  // Get chip substave id in stave, from 0
   //
   int lay = 0;
-  while(index>fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(lay);
+  while(index>fLastChipIndex[lay]) lay++;
+  if (fNHalfStaves[lay]<0) return -1;
+  index -= GetFirstChipIndex(lay);
+  index %= fNChipsPerStave[lay];
+  return index/fNChipsPerHalfStave[lay];
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::GetModule(Int_t index) const
+{
+  // Get chip module id in substave, from 0
+  //
+  int lay = 0;
+  while(index>fLastChipIndex[lay]) lay++;
+  if (fNModules[lay]<0) return 0;
+  index -= GetFirstChipIndex(lay);
+  index %= fNChipsPerStave[lay];
+  if (fNHalfStaves[lay]) index %= fNChipsPerHalfStave[lay];
+  return index/fNChipsPerModule[lay];
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::GetChipIdInLayer(Int_t index) const
+{
+  // Get chip number within layer, from 0
+  //
+  int lay = 0;
+  while(index>fLastChipIndex[lay]) lay++;
+  index -= GetFirstChipIndex(lay);
   return index;
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::GetModIdInLadder(Int_t index) const
+Int_t AliITSUGeomTGeo::GetChipIdInStave(Int_t index) const
 {
-  // Get module number within ladder, from 0
+  // Get chip number within stave, from 0
   //
   int lay = 0;
-  while(index>fLastModIndex[lay]) lay++;
-  index -= GetFirstModIndex(lay);
-  return index%fNDetectors[lay];
+  while(index>fLastChipIndex[lay]) lay++;
+  index -= GetFirstChipIndex(lay);
+  return index%fNChipsPerStave[lay];
 }
 
 //______________________________________________________________________
-Bool_t AliITSUGeomTGeo::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det)  const
+Int_t AliITSUGeomTGeo::GetChipIdInHalfStave(Int_t index) const
 {
-  // The method is taken from the old AliITSgeom class by Bjorn Nilsen
+  // Get chip number within stave, from 0
   //
-  // This routine computes the layer, ladder and detector number 
-  // given the module index number. 
+  int lay = 0;
+  while(index>fLastChipIndex[lay]) lay++;
+  index -= GetFirstChipIndex(lay);
+  return index%fNChipsPerHalfStave[lay];
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::GetChipIdInModule(Int_t index) const
+{
+  // Get chip number within module, from 0
+  //
+  int lay = 0;
+  while(index>fLastChipIndex[lay]) lay++;
+  index -= GetFirstChipIndex(lay);
+  return index%fNChipsPerModule[lay];
+}
+
+//______________________________________________________________________
+Bool_t AliITSUGeomTGeo::GetChipId(Int_t index,Int_t &lay,Int_t &sta,Int_t &hsta, Int_t &mod, Int_t &chip)  const
+{
+  //
+  // This routine computes the layer, stave, substave, module and chip number 
+  // given the chip index number. 
   // Inputs:
-  //     Int_t index  The module index number, starting from zero.
+  //     Int_t index  The chip index number, starting from zero.
   // Outputs:
   //     Int_t lay    The layer number. Starting from 0
-  //     Int_t lad    The ladder number. Starting from 0
-  //     Int_t det    The detector number. Starting from 0
+  //     Int_t sta    The stave number. Starting from 0
+  //     Int_t ssta   The halfstave number. Starting from 0
+  //     Int_t mod    The module number. Starting from 0
+  //     Int_t chip   The detector number. Starting from 0
   //
   lay  = GetLayer(index);
-  index -= GetFirstModIndex(lay);
-  lad  = index/fNDetectors[lay];
-  det  = index%fNDetectors[lay];
+  index -= GetFirstChipIndex(lay);
+  sta  = index/fNChipsPerStave[lay];
+  index %= fNChipsPerStave[lay];
+  hsta = fNHalfStaves[lay]>0 ? index/fNChipsPerHalfStave[lay] : -1;
+  index %= fNChipsPerHalfStave[lay];
+  mod  = fNModules[lay]>0 ? index/fNChipsPerModule[lay] : -1;
+  chip = index%fNChipsPerModule[lay];
+  //
   return kTRUE;
 }
 
@@ -301,16 +439,16 @@ Bool_t AliITSUGeomTGeo::GetModuleId(Int_t index,Int_t &lay,Int_t &lad,Int_t &det
 const char* AliITSUGeomTGeo::GetSymName(Int_t index)  const
 {
   // Get the TGeoPNEntry symbolic name
-  // for a given module identified by 'index'
+  // for a given chip identified by 'index'
   //
   Int_t lay, index2;
   if (!GetLayer(index,lay,index2)) return NULL;
   // return AliGeomManager::SymName((AliGeomManager::ELayerID)((lay-1)+AliGeomManager::kSPD1),index2);
   // RS: this is not optimal, but we cannod access directly AliGeomManager, since the latter has hardwired layers 
   //  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( AliGeomManager::LayerToVolUID(lay+1,index2) );
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ModuleVolUID(index) );
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ChipVolUID(index) );
   if (!pne) {
-    AliError(Form("Failed to find alignable entry with index %d: (Lr%d Mod:%d) !",index,lay,index2));
+    AliError(Form("Failed to find alignable entry with index %d: (Lr%d Chip:%d) !",index,lay,index2));
     return NULL;
   }
   return pne->GetName();
@@ -331,23 +469,41 @@ const char* AliITSUGeomTGeo::ComposeSymNameLayer(Int_t lr)
 }
 
 //______________________________________________________________________
-const char* AliITSUGeomTGeo::ComposeSymNameLadder(Int_t lr, Int_t ladder)
+const char* AliITSUGeomTGeo::ComposeSymNameStave(Int_t lr, Int_t stave)
 {
-  // sym name of the ladder at given layer
-  return Form("%s/%s%d",ComposeSymNameLayer(lr),GetITSLadderPattern(),ladder);
+  // sym name of the stave at given layer
+  return Form("%s/%s%d",ComposeSymNameLayer(lr),GetITSStavePattern(),stave);
 }
 
 //______________________________________________________________________
-const char* AliITSUGeomTGeo::ComposeSymNameModule(Int_t lr, Int_t lad, int det)
+const char* AliITSUGeomTGeo::ComposeSymNameHalfStave(Int_t lr, Int_t stave, Int_t substave)
 {
-  // sym name of the module
-  return Form("%s/%s%d",ComposeSymNameLadder(lr,lad),GetITSModulePattern(),det);
+  // sym name of the stave at given layer
+  return substave>=0 ? 
+    Form("%s/%s%d",ComposeSymNameStave(lr,stave),GetITSHalfStavePattern(),substave) :
+    ComposeSymNameStave(lr,stave);
+}
+
+//______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameModule(Int_t lr, Int_t stave, Int_t substave, Int_t mod)
+{
+  // sym name of the substave at given layer/stave
+  return mod>=0 ? 
+    Form("%s/%s%d",ComposeSymNameHalfStave(lr,stave,substave),GetITSModulePattern(),mod) :
+    ComposeSymNameHalfStave(lr,stave,substave);    
+}
+
+//______________________________________________________________________
+const char* AliITSUGeomTGeo::ComposeSymNameChip(Int_t lr, Int_t sta, Int_t substave, Int_t mod, Int_t chip)
+{
+  // sym name of the chip in the given layer/stave/substave/module
+  return Form("%s/%s%d",ComposeSymNameModule(lr,sta,substave,mod),GetITSChipPattern(),chip);
 }
 
 //______________________________________________________________________
 TGeoHMatrix* AliITSUGeomTGeo::GetMatrix(Int_t index)  const
 {
-  // Get the transformation matrix for a given module 'index'
+  // Get the transformation matrix for a given chip 'index'
   // by quering the TGeoManager
   static TGeoHMatrix matTmp;
   TGeoPNEntry *pne = GetPNEntry(index);
@@ -371,7 +527,7 @@ TGeoHMatrix* AliITSUGeomTGeo::GetMatrix(Int_t index)  const
 //______________________________________________________________________
 Bool_t AliITSUGeomTGeo::GetTranslation(Int_t index, Double_t t[3])  const
 {
-  // Get the translation vector for a given module 'index'
+  // Get the translation vector for a given chip 'index'
   // by quering the TGeoManager
   TGeoHMatrix *m = GetMatrix(index);
   if (!m) return kFALSE;
@@ -385,7 +541,7 @@ Bool_t AliITSUGeomTGeo::GetTranslation(Int_t index, Double_t t[3])  const
 //______________________________________________________________________
 Bool_t AliITSUGeomTGeo::GetRotation(Int_t index, Double_t r[9])  const
 {
-  // Get the rotation matrix for a given module 'index'
+  // Get the rotation matrix for a given chip 'index'
   // by quering the TGeoManager
   TGeoHMatrix *m = GetMatrix(index);
   if (!m) return kFALSE;
@@ -400,7 +556,7 @@ Bool_t AliITSUGeomTGeo::GetRotation(Int_t index, Double_t r[9])  const
 Bool_t AliITSUGeomTGeo::GetOrigMatrix(Int_t index, TGeoHMatrix &m) const
 {
   // Get the original (ideal geometry) TGeo matrix for
-  // a given module identified by 'index'.
+  // a given chip identified by 'index'.
   // The method is slow, so it should be used
   // with great care.
   m.Clear();
@@ -415,7 +571,7 @@ Bool_t AliITSUGeomTGeo::GetOrigMatrix(Int_t index, TGeoHMatrix &m) const
 Bool_t AliITSUGeomTGeo::GetOrigTranslation(Int_t index, Double_t t[3])  const
 {
   // Get the original translation vector (ideal geometry)
-  // for a given module 'index' by quering the TGeoManager
+  // for a given chip 'index' by quering the TGeoManager
   TGeoHMatrix m;
   if (!GetOrigMatrix(index,m)) return kFALSE;
 
@@ -429,7 +585,7 @@ Bool_t AliITSUGeomTGeo::GetOrigTranslation(Int_t index, Double_t t[3])  const
 Bool_t AliITSUGeomTGeo::GetOrigRotation(Int_t index, Double_t r[9])  const
 {
   // Get the original rotation matrix (ideal geometry)
-  // for a given module 'index' by quering the TGeoManager
+  // for a given chip 'index' by quering the TGeoManager
   TGeoHMatrix m;
   if (!GetOrigMatrix(index,m)) return kFALSE;
 
@@ -476,22 +632,18 @@ Bool_t AliITSUGeomTGeo::GetTrackingMatrix(Int_t index, TGeoHMatrix &m)
 //______________________________________________________________________
 TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
 {
-  // Get the transformation matrix of the SENSOR (not ncessary the same as the module) 
-  // for a given module 'index' by quering the TGeoManager
-  static TGeoHMatrix matTmp;
-  const TString kPathBase = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
-  const TString kNames = Form("%%s%%s%s%%d_1/%s%%d_%%d/%s%%d_%%d/%s%%d_%%d"
-			      ,AliITSUGeomTGeo::GetITSLayerPattern()
-			      ,AliITSUGeomTGeo::GetITSLadderPattern()
-			      ,AliITSUGeomTGeo::GetITSModulePattern()
-			      ,AliITSUGeomTGeo::GetITSSensorPattern());
-  TString path;
-  Int_t lay,ladd,detInLad;
-  GetModuleId(index,lay,ladd,detInLad);
-  //
+  // Get the transformation matrix of the SENSOR (not ncessary the same as the chip) 
+  // for a given chip 'index' by quering the TGeoManager
+  Int_t lay,stav,sstav,mod,chipInMod;
+  GetChipId(index,lay,stav,sstav,mod,chipInMod);
   int wrID = fLr2Wrapper[lay];
-  path.Form(kNames.Data(),kPathBase.Data(),wrID>=0 ? Form("%s%d_1/",GetITSWrapVolPattern(),wrID) : "",
-	    lay,lay,ladd,lay,detInLad,lay,1);
+  TString path = Form("/ALIC_1/%s_2/",AliITSUGeomTGeo::GetITSVolPattern());
+  if (wrID>=0) path += Form("%s%d_1/",GetITSWrapVolPattern(),wrID);
+  path += Form("%s%d_1/%s%d_%d/",AliITSUGeomTGeo::GetITSLayerPattern(),lay,AliITSUGeomTGeo::GetITSStavePattern(),lay,stav);
+  if (fNHalfStaves[lay]>0) path += Form("%s%d_%d/",AliITSUGeomTGeo::GetITSHalfStavePattern(),lay,sstav);
+  if (fNModules[lay]>0)   path += Form("%s%d_%d/",AliITSUGeomTGeo::GetITSModulePattern(),lay,mod);
+  path += Form("%s%d_%d/%s%d_1",AliITSUGeomTGeo::GetITSChipPattern(),lay,chipInMod,AliITSUGeomTGeo::GetITSSensorPattern(),lay);
+  static TGeoHMatrix matTmp;
   gGeoManager->PushPath();
   if (!gGeoManager->cd(path.Data())) {
     gGeoManager->PopPath();
@@ -500,7 +652,7 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
   } // end if !gGeoManager
   matTmp = *gGeoManager->GetCurrentMatrix(); // matrix may change after cd
   //RSS
-  //  printf("%d/%d/%d %s\n",lay,ladd,detInLad,path.Data());
+  //  printf("%d/%d/%d %s\n",lay,stav,detInSta,path.Data());
   //  mat->Print();
   // Retstore the modeler state.
   gGeoManager->PopPath();
@@ -511,13 +663,13 @@ TGeoHMatrix* AliITSUGeomTGeo::ExtractMatrixSens(Int_t index) const
 //______________________________________________________________________
 TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
 {
-  // Get a pointer to the TGeoPNEntry of a module
+  // Get a pointer to the TGeoPNEntry of a chip
   // identified by 'index'
   // Returns NULL in case of invalid index,
   // missing TGeoManager or invalid symbolic name
   //
-  if (index >= fNModules) {
-    AliError(Form("Invalid ITS module index: %d (0 -> %d) !",index,fNModules));
+  if (index >= fNChips) {
+    AliError(Form("Invalid ITS chip index: %d (0 -> %d) !",index,fNChips));
     return NULL;
   }
   
@@ -525,7 +677,7 @@ TGeoPNEntry* AliITSUGeomTGeo::GetPNEntry(Int_t index) const
     AliError("Can't get the matrix! gGeoManager doesn't exist or it is still opened!");
     return NULL;
   }
-  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ModuleVolUID(index) );
+  TGeoPNEntry* pne = gGeoManager->GetAlignableEntryByUID( ChipVolUID(index) );
   //  TGeoPNEntry* pne = gGeoManager->GetAlignableEntry(GetSymName(index));
   if (!pne) AliError(Form("The index %d does not correspond to a physical entry!",index));
   //
@@ -542,17 +694,29 @@ void AliITSUGeomTGeo::BuildITS(Bool_t loadSegm)
   fNLayers    = ExtractNumberOfLayers();
   if (!fNLayers) return;
   //
-  fNLadders   = new Int_t[fNLayers];
-  fNDetectors = new Int_t[fNLayers];
-  fLrDetType  = new Int_t[fNLayers];
-  fLastModIndex   = new Int_t[fNLayers];
-  fNModules = 0;
+  fNStaves         = new Int_t[fNLayers];
+  fNHalfStaves     = new Int_t[fNLayers];
+  fNModules        = new Int_t[fNLayers];
+  fNChipsPerModule = new Int_t[fNLayers];
+  fNChipRowsPerModule = new Int_t[fNLayers];
+  fNChipsPerHalfStave = new Int_t[fNLayers];
+  fNChipsPerStave  = new Int_t[fNLayers];
+  fNChipsPerLayer  = new Int_t[fNLayers];
+  fLrChipType      = new Int_t[fNLayers];
+  fLastChipIndex   = new Int_t[fNLayers];
+  fNChips = 0;
+  
   for (int i=0;i<fNLayers;i++) {
-    fNLadders[i]   = ExtractNumberOfLadders(i);
-    fNDetectors[i] = ExtractNumberOfDetectors(i);
-    fLrDetType[i]  = ExtractLayerDetType(i);
-    fNModules     += fNLadders[i]*fNDetectors[i];
-    fLastModIndex[i]   = fNModules-1;
+    fLrChipType[i]      = ExtractLayerChipType(i);
+    fNStaves[i]         = ExtractNumberOfStaves(i);
+    fNHalfStaves[i]     = ExtractNumberOfHalfStaves(i);
+    fNModules[i]        = ExtractNumberOfModules(i);
+    fNChipsPerModule[i] = ExtractNChipsPerModule(i,fNChipRowsPerModule[i]);
+    fNChipsPerHalfStave[i]= fNChipsPerModule[i]*Max(1,fNModules[i]);
+    fNChipsPerStave[i]    = fNChipsPerHalfStave[i]*Max(1,fNHalfStaves[i]);
+    fNChipsPerLayer[i]    = fNChipsPerStave[i]*fNStaves[i];
+    fNChips              += fNChipsPerLayer[i];
+    fLastChipIndex[i]     = fNChips-1;
   }
   //
   FetchMatrices();
@@ -572,8 +736,8 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
   //
   Int_t numberOfLayers = 0;
   //
-  TGeoVolume *itsV = gGeoManager->GetVolume(fgkITSVolName);
-  if (!itsV) AliFatal(Form("ITS volume %s is not in the geometry",fgkITSVolName));
+  TGeoVolume *itsV = gGeoManager->GetVolume(GetITSVolPattern());
+  if (!itsV) AliFatal(Form("ITS volume %s is not in the geometry",GetITSVolPattern()));
   SetUIDShift(itsV->GetUniqueID());
   //
   // Loop on all ITSV nodes, count Layer volumes by checking names
@@ -581,19 +745,39 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
   TObjArray* nodes = itsV->GetNodes();
   Int_t nNodes = nodes->GetEntriesFast();
   //
-  int nWrp = 0;
   for (Int_t j=0; j<nNodes; j++) {
+    int lrID = -1;
     TGeoNode* nd = (TGeoNode*)nodes->At(j);
     const char* name = nd->GetName();
-    if      (strstr(name,fgkITSLrName)) numberOfLayers++;
-    else if (strstr(name,fgkITSWrapVolName)) { // this is a wrapper volume, may cointain layers
+    if (strstr(name,GetITSLayerPattern())) {
+      numberOfLayers++;
+      if ( (lrID=ExtractVolumeCopy(name,AliITSUGeomTGeo::GetITSLayerPattern()))<0 ) {
+	AliFatal(Form("Failed to extract layer ID from the %s",name));
+	exit(1);
+      }
+      //
+      fLr2Wrapper[lrID] = -1; // not wrapped
+    }
+    else if (strstr(name,GetITSWrapVolPattern())) { // this is a wrapper volume, may cointain layers
+      int wrID = -1;
+      if ( (wrID=ExtractVolumeCopy(name,AliITSUGeomTGeo::GetITSWrapVolPattern()))<0 ) {
+	AliFatal(Form("Failed to extract wrapper ID from the %s",name));
+	exit(1);
+      }
+      //
       TObjArray* nodesW = nd->GetNodes();
       int nNodesW = nodesW->GetEntriesFast();
       for (Int_t jw=0; jw<nNodesW; jw++) {
 	TGeoNode* ndW = (TGeoNode*)nodesW->At(jw);
-	if (strstr(ndW->GetName(),fgkITSLrName)) fLr2Wrapper[numberOfLayers++] = nWrp;
+	if (strstr(ndW->GetName(),GetITSLayerPattern())) {
+	  if ( (lrID=ExtractVolumeCopy(ndW->GetName(),AliITSUGeomTGeo::GetITSLayerPattern()))<0 ) {
+	    AliFatal(Form("Failed to extract layer ID from the %s",name));
+	    exit(1);
+	  }
+	  numberOfLayers++;
+	  fLr2Wrapper[lrID] = wrID;
+	}
       }
-      nWrp++;
     }
   }
   //  
@@ -601,7 +785,7 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLayers()
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::ExtractNumberOfLadders(Int_t lay) const
+Int_t AliITSUGeomTGeo::ExtractNumberOfStaves(Int_t lay) const
 {
   // Determines the number of layers in the Upgrade Geometry
   //
@@ -609,44 +793,151 @@ Int_t AliITSUGeomTGeo::ExtractNumberOfLadders(Int_t lay) const
   //   lay: layer number, starting from 0
   //
   // MS
-  Int_t numberOfLadders = 0;
+  Int_t numberOfStaves = 0;
   char laynam[30];
-  snprintf(laynam, 30, "%s%d",fgkITSLrName,lay);
+  snprintf(laynam, 30, "%s%d",GetITSLayerPattern(),lay);
   TGeoVolume* volLr = gGeoManager->GetVolume(laynam);
   if (!volLr) AliFatal(Form("can't find %s volume",laynam));
   //
-  // Loop on all layer nodes, count Ladder volumes by checking names
+  // Loop on all layer nodes, count Stave volumes by checking names
   Int_t nNodes = volLr->GetNodes()->GetEntries();
-  for (Int_t j=0; j<nNodes; j++) if (strstr(volLr->GetNodes()->At(j)->GetName(),fgkITSLadName)) numberOfLadders++;
+  for (Int_t j=0; j<nNodes; j++) {
+    //    AliInfo(Form("L%d %d of %d %s %s -> %d",lay,j,nNodes,volLr->GetNodes()->At(j)->GetName(),GetITSStavePattern(),numberOfStaves));
+    if (strstr(volLr->GetNodes()->At(j)->GetName(),GetITSStavePattern())) numberOfStaves++;
+  }
   //
-  return numberOfLadders;
+  return numberOfStaves;
   //
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::ExtractNumberOfDetectors(Int_t lay)  const
+Int_t AliITSUGeomTGeo::ExtractNumberOfHalfStaves(Int_t lay) const
 {
-  // Determines the number of detectors per ladder in the Upgrade Geometry
+  // Determines the number of substaves in the stave of the layer
   //
+  // Inputs:
+  //   lay: layer number, starting from 0
+  //
+  // MS
+  if (fgITSHalfStaveName.IsNull()) return 0; // for the setup w/o substave defined the stave and the substave is the same thing
+  Int_t nSS = 0;
+  char stavnam[30];
+  snprintf(stavnam, 30, "%s%d", GetITSStavePattern(),lay);
+  TGeoVolume* volLd = gGeoManager->GetVolume(stavnam);
+  if (!volLd) AliFatal(Form("can't find %s volume",stavnam));
+  //
+  // Loop on all stave nodes, count Chip volumes by checking names
+  Int_t nNodes = volLd->GetNodes()->GetEntries();
+  for (Int_t j=0; j<nNodes; j++) if (strstr(volLd->GetNodes()->At(j)->GetName(),GetITSHalfStavePattern())) nSS++;
+  //
+  return nSS;
+  //
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::ExtractNumberOfModules(Int_t lay) const
+{
+  // Determines the number of modules in substave in the stave of the layer
+  //
+  // Inputs:
+  //   lay: layer number, starting from 0
+  //
+  // for the setup w/o modules defined the module and the stave or the substave is the same thing
+  if (fgITSModuleName.IsNull()) return 0;
+  char stavnam[30];
+  TGeoVolume* volLd = 0;
+  if (!fgITSHalfStaveName.IsNull()) {
+    snprintf(stavnam, 30, "%s%d", GetITSHalfStavePattern(),lay); 
+    volLd = gGeoManager->GetVolume(stavnam);
+  }
+  if (!volLd) { // no substaves, check staves
+    snprintf(stavnam, 30, "%s%d", GetITSStavePattern(),lay); 
+    volLd = gGeoManager->GetVolume(stavnam);
+  }
+  if (!volLd) return 0;
+  Int_t nMod = 0;
+  //
+  // Loop on all substave nodes, count module volumes by checking names
+  Int_t nNodes = volLd->GetNodes()->GetEntries();
+  for (Int_t j=0; j<nNodes; j++) if (strstr(volLd->GetNodes()->At(j)->GetName(),GetITSModulePattern())) nMod++;
+  //
+  return nMod;
+  //
+}
+
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::ExtractNChipsPerModule(Int_t lay, int &nrow)  const
+{
+  // Determines the number of chips per module on the (sub)stave in the Upgrade Geometry
+  // Also extract the layout: span of module centers in Z and X
   // Inputs:
   //   lay: layer number from 0
   // MS
-  Int_t numberOfModules = 0;
-  char laddnam[30];
-  snprintf(laddnam, 30, "%s%d", fgkITSLadName,lay);
-  TGeoVolume* volLd = gGeoManager->GetVolume(laddnam);
-  if (!volLd) AliFatal(Form("can't find %s volume",laddnam));
+  Int_t numberOfChips = 0;
+  char stavnam[30];
+  TGeoVolume* volLd = 0;
+  if (!fgITSModuleName.IsNull()) {
+    snprintf(stavnam, 30, "%s%d", GetITSModulePattern(),lay); 
+    volLd = gGeoManager->GetVolume(stavnam);
+  }
+  if (!volLd) { // no modules on this layer, check substaves
+    if (!fgITSHalfStaveName.IsNull()) {
+      snprintf(stavnam, 30, "%s%d", GetITSHalfStavePattern(),lay); 
+      volLd = gGeoManager->GetVolume(stavnam);
+    }
+  }
+  if (!volLd) { // no substaves on this layer, check staves
+    snprintf(stavnam, 30, "%s%d", GetITSStavePattern(),lay);
+    volLd = gGeoManager->GetVolume(stavnam);
+  }
+  if (!volLd) AliFatal(Form("can't find volume containing chips on layer %d",lay));
   //
-  // Loop on all ladder nodes, count Module volumes by checking names
+  // Loop on all stave nodes, count Chip volumes by checking names
   Int_t nNodes = volLd->GetNodes()->GetEntries();
-  for (Int_t j=0; j<nNodes; j++) if (strstr(volLd->GetNodes()->At(j)->GetName(),fgkITSModName)) numberOfModules++;
   //
-  return numberOfModules;
+  double xmin=1e9,xmax=-1e9, zmin=1e9,zmax=-1e9;
+  double lab[3],loc[3]={0,0,0};
+  double dx=-1,dz=-1;
+  for (Int_t j=0; j<nNodes; j++) {
+    //    AliInfo(Form("L%d %d of %d %s %s -> %d",lay,j,nNodes,volLd->GetNodes()->At(j)->GetName(),GetITSChipPattern(),numberOfChips));
+    TGeoNodeMatrix* node = (TGeoNodeMatrix*)volLd->GetNodes()->At(j);
+    if (!strstr(node->GetName(),GetITSChipPattern())) continue;
+    node->LocalToMaster(loc,lab);
+    if (lab[0]>xmax) xmax=lab[0];
+    if (lab[0]<xmin) xmin=lab[0];    
+    if (lab[2]>zmax) zmax=lab[2];
+    if (lab[2]<zmin) zmin=lab[2];    
+    //
+    numberOfChips++;
+    //
+    if (dx<0) {
+      TGeoShape* chShape = node->GetVolume()->GetShape();
+      TGeoBBox* bbox = dynamic_cast<TGeoBBox*>(chShape);
+      if (!bbox) {
+	AliFatal(Form("Chip %s volume is of unprocessed shape %s",node->GetName(),chShape->IsA()->GetName()));
+      }
+      else {
+	dx = 2*bbox->GetDX();
+	dz = 2*bbox->GetDZ();
+      }
+    }
+  }
+  //
+  double spanX = xmax-xmin;
+  double spanZ = zmax-zmin;  
+  nrow = TMath::Nint(spanX/dx + 1);
+  int ncol = TMath::Nint(spanZ/dz + 1);
+  if (nrow*ncol != numberOfChips) 
+    AliError(Form("Inconsistency between Nchips=%d and Nrow*Ncol=%d*%d->%d\n"
+		  "Extracted chip dimensions (x,z): %.4f %.4f, Module Span: %.4f %.4f",
+		  numberOfChips,nrow,ncol,nrow*ncol,
+		  dx,dz,spanX,spanZ));
+  return numberOfChips;
   //
 }
 
 //______________________________________________________________________
-Int_t AliITSUGeomTGeo::ExtractLayerDetType(Int_t lay)  const
+Int_t AliITSUGeomTGeo::ExtractLayerChipType(Int_t lay)  const
 {
   // Determines the layer detector type the Upgrade Geometry
   //
@@ -657,31 +948,34 @@ Int_t AliITSUGeomTGeo::ExtractLayerDetType(Int_t lay)  const
   // Return:
   //   detector type id for the layer
   // MS
-  char laddnam[30];
-  snprintf(laddnam, 30, "%s%d", fgkITSLrName,lay);
-  TGeoVolume* volLd = gGeoManager->GetVolume(laddnam);
-  if (!volLd) {AliFatal(Form("can't find %s volume",laddnam)); return -1;}
+  char stavnam[30];
+  snprintf(stavnam, 30, "%s%d", GetITSLayerPattern(),lay);
+  TGeoVolume* volLd = gGeoManager->GetVolume(stavnam);
+  if (!volLd) {AliFatal(Form("can't find %s volume",stavnam)); return -1;}
   //
   return volLd->GetUniqueID();
   //
 }
 
 //______________________________________________________________________
-UInt_t AliITSUGeomTGeo::ComposeDetTypeID(UInt_t segmId)
+UInt_t AliITSUGeomTGeo::ComposeChipTypeID(UInt_t segmId)
 {
-  if (segmId>=kMaxSegmPerDetType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,kMaxSegmPerDetType));
-  return segmId + kDetTypePix*kMaxSegmPerDetType;
+  if (segmId>=kMaxSegmPerChipType) AliFatalClass(Form("Id=%d is >= max.allowed %d",segmId,kMaxSegmPerChipType));
+  return segmId + kChipTypePix*kMaxSegmPerChipType;
 }
 
 //______________________________________________________________________
 void AliITSUGeomTGeo::Print(Option_t *) const
 {
   // print
-  printf("Geometry version %d, NLayers:%d NModules:%d\n",fVersion,fNLayers,fNModules);
+  printf("Geometry version %d, NLayers:%d NChips:%d\n",fVersion,fNLayers,fNChips);
   if (fVersion==kITSVNA) return;
   for (int i=0;i<fNLayers;i++) {
-    printf("Lr%2d\tNLadd:%2d\tNDet:%2d\tDetType:%3d\tMod#:%4d:%4d\tWrapVol:%d\n",
-	   i,fNLadders[i],fNDetectors[i],fLrDetType[i],GetFirstModIndex(i),GetLastModIndex(i),fLr2Wrapper[i]);
+    printf("Lr%2d\tNStav:%2d\tNChips:%2d (%dx%-2d)\tNMod:%d\tNSubSt:%d\tNSt:%3d\tChipType:%3d\tChip#:%5d:%-5d\tWrapVol:%d\n",
+	   i,fNStaves[i],fNChipsPerModule[i],fNChipRowsPerModule[i],
+	   fNChipRowsPerModule[i] ? fNChipsPerModule[i]/fNChipRowsPerModule[i] : 0,
+	   fNModules[i],fNHalfStaves[i],fNStaves[i],
+	   fLrChipType[i],GetFirstChipIndex(i),GetLastChipIndex(i),fLr2Wrapper[i]);
   }
 }
 
@@ -690,9 +984,9 @@ void AliITSUGeomTGeo::FetchMatrices()
 {
   // store pointer on often used matrices for faster access
   if (!gGeoManager) AliFatal("Geometry is not loaded");
-  fMatSens = new TObjArray(fNModules);
+  fMatSens = new TObjArray(fNChips);
   fMatSens->SetOwner(kTRUE);
-  for (int i=0;i<fNModules;i++) fMatSens->AddAt(new TGeoHMatrix(*ExtractMatrixSens(i)),i);
+  for (int i=0;i<fNChips;i++) fMatSens->AddAt(new TGeoHMatrix(*ExtractMatrixSens(i)),i);
   CreateT2LMatrices();
 }
 
@@ -700,12 +994,12 @@ void AliITSUGeomTGeo::FetchMatrices()
 void AliITSUGeomTGeo::CreateT2LMatrices()
 {
   // create tracking to local (Sensor!) matrices
-  fMatT2L  = new TObjArray(fNModules);  
+  fMatT2L  = new TObjArray(fNChips);  
   fMatT2L->SetOwner(kTRUE);
   TGeoHMatrix matLtoT;
   double loc[3]={0,0,0},glo[3];
   const double *rotm;
-  for (int isn=0;isn<fNModules;isn++) {
+  for (int isn=0;isn<fNChips;isn++) {
     const TGeoHMatrix* matSens = GetMatrixSens(isn);
     if (!matSens) {AliFatal(Form("Failed to get matrix for sensor %d",isn)); return;}
     matSens->LocalToMaster(loc,glo);
@@ -753,3 +1047,14 @@ void AliITSUGeomTGeo::CreateT2LMatrices()
   //
 }
 
+//______________________________________________________________________
+Int_t AliITSUGeomTGeo::ExtractVolumeCopy(const char* name, const char* prefix) const
+{
+  // extract Number following the prefix in the name string
+  TString nms = name;
+  if (!nms.BeginsWith(prefix)) return -1;
+  nms.Remove(0,strlen(prefix));
+  if (!isdigit(nms.Data()[0])) return -1;
+  return nms.Atoi();
+  //
+}

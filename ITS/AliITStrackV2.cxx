@@ -29,6 +29,7 @@
 #include "AliITStrackV2.h"
 #include "AliTracker.h"
 #include "AliLog.h"
+#include "AliPID.h"
 
 const Int_t AliITStrackV2::fgkWARN = 5;
 
@@ -66,12 +67,14 @@ AliITStrackV2::AliITStrackV2(AliESDtrack& t,Bool_t c):
   Set(par->GetX(),par->GetAlpha(),par->GetParameter(),par->GetCovariance());
 
   SetLabel(t.GetITSLabel());
-  SetMass(t.GetMass());
+  SetMass(t.GetMassForTracking());
   SetNumberOfClusters(t.GetITSclusters(fIndex));
 
   if (t.GetStatus()&AliESDtrack::kTIME) {
     StartTimeIntegral();
-    Double_t times[10]; t.GetIntegratedTimes(times); SetIntegratedTimes(times);
+    Double_t times[AliPID::kSPECIESC]; 
+    t.GetIntegratedTimes(times,AliPID::kSPECIESC); 
+    SetIntegratedTimes(times);
     SetIntegratedLength(t.GetIntegratedLength());
   }
 
@@ -456,6 +459,7 @@ Bool_t AliITStrackV2::Improve(Double_t x0,Double_t xyz[3],Double_t ers[3]) {
   Double_t dx = x - xv, dy = par[0] - yv, dz = par[1] - zv;
   Double_t r2=dx*dx + dy*dy;
   Double_t p2=(1.+ GetTgl()*GetTgl())/(GetSigned1Pt()*GetSigned1Pt());
+  if (GetMass()<0) p2 *= 4; // q=2
   Double_t beta2=p2/(p2 + GetMass()*GetMass());
   x0*=TMath::Sqrt((1.+ GetTgl()*GetTgl())/(1.- GetSnp()*GetSnp()));
   Double_t theta2=14.1*14.1/(beta2*p2*1e6)*x0;
@@ -690,6 +694,7 @@ Bool_t AliITStrackV2::ImproveKalman(Double_t xyz[3],Double_t ers[3], const Doubl
   double ms44t = p34*p34;
   //
   double p2=(1.+ par[3]*par[3])/(par[4]*par[4]);
+  if (GetMass()<0) p2 *= 4; // q=2
   double beta2 = p2/(p2+GetMass()*GetMass());
   double theta2t = 14.1*14.1/(beta2*p2*1e6) * (1. + par[3]*par[3]);
   //

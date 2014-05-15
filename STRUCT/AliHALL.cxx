@@ -132,9 +132,9 @@ void AliHALL::CreateGeometry()
   trdpar[3] = dh / 2.;
   AliMatrix(idrotm[1900], 90., 0., 0., 0., 90., 90.);
   AliMatrix(idrotm[1901], 270., 0., 90., 90., 0., 0.);
-  gMC->Gsvolu("HUFL", "TRD1", idtmed[1956], trdpar, 4);
+  TVirtualMC::GetMC()->Gsvolu("HUFL", "TRD1", idtmed[1956], trdpar, 4);
   r2 = hullen + 1900.;
-  gMC->Gspos("HUFL", 1, "ALIC", 70.,-100-trdpar[3] , -r2, idrotm[1900], "ONLY");
+  TVirtualMC::GetMC()->Gspos("HUFL", 1, "ALIC", 70.,-100-trdpar[3] , -r2, idrotm[1900], "ONLY");
   
   //     RB24/26 wall 
   
@@ -144,8 +144,8 @@ void AliHALL::CreateGeometry()
   tspar[2] = hullen;
   tspar[3] = phid - 90.;
   tspar[4] = 270. - phid;
-  gMC->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
-  gMC->Gspos("HUWA", 1, "ALIC", 70., 40., -1900 - hullen , 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HUWA", "TUBS", idtmed[1956], tspar, 5);
+  TVirtualMC::GetMC()->Gspos("HUWA", 1, "ALIC", 70., 40., -1900 - hullen , 0, "ONLY");
   
 
   //     Hall floor 
@@ -155,9 +155,9 @@ void AliHALL::CreateGeometry()
   trdpar[1] = TMath::Tan(phid * kDegrad) * 190. + 700.;
   trdpar[2] = 550.;
   trdpar[3] = 95.;
-  gMC->Gsvolu("HHF1", "TRD1", idtmed[1956], trdpar, 4);
-  gMC->Gspos("HHF1", 1, "ALIC", 0., -801., 1350., idrotm[1900], "ONLY");
-  gMC->Gspos("HHF1", 2, "ALIC", 0., -801.,-1350., idrotm[1900], "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HHF1", "TRD1", idtmed[1956], trdpar, 4);
+  TVirtualMC::GetMC()->Gspos("HHF1", 1, "ALIC", 0., -801., 1350., idrotm[1900], "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHF1", 2, "ALIC", 0., -801.,-1350., idrotm[1900], "ONLY");
   
   //     Hall side walls 
   
@@ -173,17 +173,17 @@ void AliHALL::CreateGeometry()
   trapar[9] = trapar[5];
   trapar[10] = trapar[6];
   dx = trapar[4] * 1.5 + 700. - trapar[5] * .5;
-  gMC->Gsvolu("HHW1", "TRAP", idtmed[1956], trapar, 11);
-  gMC->Gspos("HHW1", 1, "ALIC", dx, -896+trapar[3],  1350., 0, "ONLY");
-  gMC->Gspos("HHW1", 2, "ALIC",-dx, -896+trapar[3],  1350., idrotm[1901], "ONLY");
-  gMC->Gspos("HHW1", 3, "ALIC", dx, -896+trapar[3], -1350., 0, "ONLY");
-  gMC->Gspos("HHW1", 4, "ALIC",-dx, -896+trapar[3], -1350., idrotm[1901], "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HHW1", "TRAP", idtmed[1956], trapar, 11);
+  TVirtualMC::GetMC()->Gspos("HHW1", 1, "ALIC", dx, -896+trapar[3],  1350., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW1", 2, "ALIC",-dx, -896+trapar[3],  1350., idrotm[1901], "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW1", 3, "ALIC", dx, -896+trapar[3], -1350., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW1", 4, "ALIC",-dx, -896+trapar[3], -1350., idrotm[1901], "ONLY");
   pbox[0] = 50.;
   pbox[1] = (500. - (trapar[3] * 2. - 896.)) / 2.;
   pbox[2] = 1900.;
-  gMC->Gsvolu("HBW1", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HBW1", 1, "ALIC",  1120., 500-pbox[1], 0., 0, "ONLY");
-  gMC->Gspos("HBW1", 2, "ALIC", -1120., 500-pbox[1], 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HBW1", "BOX ", idtmed[1956], pbox, 3);
+  TVirtualMC::GetMC()->Gspos("HBW1", 1, "ALIC",  1120., 500-pbox[1], 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HBW1", 2, "ALIC", -1120., 500-pbox[1], 0., 0, "ONLY");
   
   //     slanted wall close to L3 magnet 
   
@@ -206,10 +206,10 @@ void AliHALL::CreateGeometry()
   trapar[10] = trapar[6];
   w1 = trapar[4];
   dx = cm*TMath::Tan(phid * kDegrad) + 700. + trapar[4] * 1.5 - trapar[5] * .5;
-  gMC->Gsvolu("HHW2", "TRAP", idtmed[1956], trapar, 11);
+  TVirtualMC::GetMC()->Gsvolu("HHW2", "TRAP", idtmed[1956], trapar, 11);
   r2 = cm - 896. + trapar[3];
-  gMC->Gspos("HHW2", 1, "ALIC", dx, r2, 0., 0, "ONLY");
-  gMC->Gspos("HHW2", 2, "ALIC",-dx, r2, 0., idrotm[1901], "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW2", 1, "ALIC", dx, r2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW2", 2, "ALIC",-dx, r2, 0., idrotm[1901], "ONLY");
   trapar[3]  = cm / 2.;
   trapar[4]  = w1 + cm / 2.;
   trapar[5]  = w1;
@@ -219,10 +219,10 @@ void AliHALL::CreateGeometry()
   trapar[9]  = trapar[5];
   trapar[10] = trapar[6];
   dx = 1170. - trapar[4] * .5 - trapar[5] * .5;
-  gMC->Gsvolu("HHW3", "TRAP", idtmed[1956], trapar, 11);
+  TVirtualMC::GetMC()->Gsvolu("HHW3", "TRAP", idtmed[1956], trapar, 11);
   r2 = trapar[3] - 896.;
-  gMC->Gspos("HHW3", 1, "ALIC", dx, r2, 0., 0, "ONLY");
-  gMC->Gspos("HHW3", 2, "ALIC",-dx, r2, 0., idrotm[1901], "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW3", 1, "ALIC", dx, r2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HHW3", 2, "ALIC",-dx, r2, 0., idrotm[1901], "ONLY");
   
 
   tspar[0] = 1070.;
@@ -230,23 +230,23 @@ void AliHALL::CreateGeometry()
   tspar[2] = 1900.;
   tspar[3] = 0.;
   tspar[4] = 180.;
-  gMC->Gsvolu("HHC1", "TUBS", idtmed[1956], tspar, 5);
-  gMC->Gspos("HHC1", 1, "ALIC", 0., 500., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HHC1", "TUBS", idtmed[1956], tspar, 5);
+  TVirtualMC::GetMC()->Gspos("HHC1", 1, "ALIC", 0., 500., 0., 0, "ONLY");
   trdpar[0] = 1170 - trapar[4] * 2.;
   trdpar[1] = trdpar[0] + TMath::Tan(phim * kDegrad) * 76.;
   trdpar[2] = 800.;
   trdpar[3] = 38.;
-  gMC->Gsvolu("HHF2", "TRD1", idtmed[1956], trdpar, 4);
-  gMC->Gspos("HHF2", 1, "ALIC", 0., -858., 0., idrotm[1900], "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HHF2", "TRD1", idtmed[1956], trdpar, 4);
+  TVirtualMC::GetMC()->Gspos("HHF2", 1, "ALIC", 0., -858., 0., idrotm[1900], "ONLY");
   
   //     pillars for working platform 
   
   pbox[0] = 40.;
   pbox[1] = 96.;
   pbox[2] = 550.;
-  gMC->Gsvolu("HPIL", "BOX ", idtmed[1956], pbox, 3);
-  gMC->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , -1350., 0, "ONLY");
-  gMC->Gspos("HPIL", 2, "ALIC",-165.,-706+pbox[1] , -1350., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HPIL", "BOX ", idtmed[1956], pbox, 3);
+  TVirtualMC::GetMC()->Gspos("HPIL", 1, "ALIC", 165.,-706+pbox[1] , -1350., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("HPIL", 2, "ALIC",-165.,-706+pbox[1] , -1350., 0, "ONLY");
   
   //     simple concrete beam shield 
   
@@ -262,8 +262,8 @@ void AliHALL::CreateGeometry()
   ppgon[5] =   150.;
   ppgon[6] =   250.;
 
-  gMC->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
-  gMC->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("HMBS", "PGON", idtmed[1956], ppgon, 10);
+  TVirtualMC::GetMC()->Gspos("HMBS", 1, "ALIC", 0., 70., 0., 0, "ONLY");
 }
 
 //_____________________________________________________________________________

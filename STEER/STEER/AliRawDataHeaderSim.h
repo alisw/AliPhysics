@@ -5,14 +5,14 @@
 
 #include <TError.h>
 
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliRunLoader.h"
 #include "AliCentralTrigger.h"
 
-class AliRawDataHeaderSim : public AliRawDataHeader {
+class AliRawDataHeaderSim : public AliRawDataHeaderV3 {
 
 public:
-  AliRawDataHeaderSim() : AliRawDataHeader() {
+  AliRawDataHeaderSim() : AliRawDataHeaderV3() {
     // Takes the trigger mask and
     // stores it in the data header
     AliRunLoader *runloader = AliRunLoader::Instance();

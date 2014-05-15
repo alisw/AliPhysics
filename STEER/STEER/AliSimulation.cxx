@@ -13,7 +13,7 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/* $Id: AliSimulation.cxx 63204 2013-06-26 13:33:28Z rgrosso $ */
+/* $Id: AliSimulation.cxx 64623 2013-10-21 13:38:58Z rgrosso $ */
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
@@ -156,13 +156,9 @@ using std::ofstream;
 ClassImp(AliSimulation)
 
 AliSimulation *AliSimulation::fgInstance = 0;
-const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
-// #ifdef MFT_UPGRADE
-//                                                                             ,"MFT"
-// #endif 
-                                                                            "MFT"    // AU
-									    ,"HLT"
-};
+ const char* AliSimulation::fgkDetectorName[AliSimulation::fgkNDetectors] = {"ITS", "TPC", "TRD", 
+ "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE","AD",
+ "FIT","MFT","HLT"};
 
 //_____________________________________________________________________________
 AliSimulation::AliSimulation(const char* configFileName,
@@ -772,7 +768,9 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
 
   AliSysInfo::AddStamp("RunQA");
-
+  //
+  StoreUsedCDBMaps();
+  //  
   TString snapshotFileOut("");
   if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){ 
       AliInfo(" ******** Creating the snapshot! *********");
@@ -892,7 +890,7 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   
   AliPDG::AddParticlesToPdgDataBase();  
   
-  gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+  TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
 
   gAlice->GetMCApp()->Init();
   
@@ -910,13 +908,13 @@ Bool_t AliSimulation::RunLego(const char *setup, Int_t nc1, Float_t c1min,
   AliGenerator *gen=gAlice->GetMCApp()->Generator();
   gAlice->GetMCApp()->ResetGenerator(gener);
   //Prepare MC for Lego Run
-  gMC->InitLego();
+  TVirtualMC::GetMC()->InitLego();
   
   //Run Lego Object
   
   
   AliRunLoader::Instance()->SetNumberOfEventsPerFile(nev);
-  gMC->ProcessRun(nev);
+  TVirtualMC::GetMC()->ProcessRun(nev);
   
   // End of this run, close files
   FinishRun();
@@ -986,7 +984,8 @@ Bool_t AliSimulation::WriteTriggerRawData()
   // Details of the format are given in the
   // trigger TDR - pages 134 and 135.
   AliCTPRawData writer;
-  writer.RawData();
+  //writer.RawData();
+  writer.RawDataRun2();
 
   return kTRUE;
 }
@@ -1105,7 +1104,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+   TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    AliSysInfo::AddStamp("RunSimulation_GetField");
    gAlice->GetMCApp()->Init();
    AliSysInfo::AddStamp("RunSimulation_InitMCApp");
@@ -1226,7 +1225,7 @@ Bool_t AliSimulation::RunSimulation(Int_t nEvents)
 
   // Create the Root Tree with one branch per detector
   //Hits moved to begin event -> now we are crating separate tree for each event
-  gMC->ProcessRun(nEvents);
+  TVirtualMC::GetMC()->ProcessRun(nEvents);
 
   // End of this run, close files
   if(nEvents>0) FinishRun();
@@ -1962,7 +1961,7 @@ Int_t AliSimulation::ConvertRaw2SDigits(const char* rawDirectory, const char* es
     
    AliPDG::AddParticlesToPdgDataBase();  
 
-   gMC->SetMagField(TGeoGlobalMagField::Instance()->GetField());
+   TVirtualMC::GetMC()->SetMagField(TGeoGlobalMagField::Instance()->GetField());
    
    gAlice->GetMCApp()->Init();
 
@@ -2110,7 +2109,7 @@ void AliSimulation::FinishRun()
   AliRunLoader::Instance()->CdGAFile();
   gAlice->Write(0,TObject::kOverwrite);//write AliRun
   AliRunLoader::Instance()->Write(0,TObject::kOverwrite);//write RunLoader itself
-  
+  //
   if(gAlice->GetMCApp()) gAlice->GetMCApp()->FinishRun();  
   AliRunLoader::Instance()->Synchronize();
 }
@@ -2516,4 +2515,55 @@ time_t AliSimulation::GenerateTimeStamp() const
     return fTimeStart + gRandom->Integer(fTimeEnd-fTimeStart);
   else
     return 0;
+}
+
+//_____________________________________________________________________________
+void AliSimulation::StoreUsedCDBMaps() const
+{
+  // write in galice.root maps with used CDB paths
+  //
+  //
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) {
+    AliError("Failed to open gAlice.root in write mode");
+    return;
+  }
+  //
+  const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
+  const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
+  //
+  TMap *cdbMapCopy = new TMap(cdbMap->GetEntries());	 
+  cdbMapCopy->SetOwner(1);	 
+  //  cdbMapCopy->SetName("cdbMap");	 
+  TIter iter(cdbMap->GetTable());	 
+  //	 
+  TPair* pair = 0;	 
+  while((pair = dynamic_cast<TPair*> (iter.Next()))){	 
+    TObjString* keyStr = dynamic_cast<TObjString*> (pair->Key());	 
+    TObjString* valStr = dynamic_cast<TObjString*> (pair->Value());
+    if (keyStr && valStr)
+      cdbMapCopy->Add(new TObjString(keyStr->GetName()), new TObjString(valStr->GetName()));	 
+  }	 
+  //	 
+  TList *cdbListCopy = new TList();	 
+  cdbListCopy->SetOwner(1);	 
+  //  cdbListCopy->SetName("cdbList");	 
+  //
+  TIter iter2(cdbList);	 
+  
+  AliCDBId* id=0;
+  while((id = dynamic_cast<AliCDBId*> (iter2.Next()))){	 
+    cdbListCopy->Add(new TObjString(id->ToString().Data()));	 
+  }	 
+  //
+  AliRunLoader::Instance()->CdGAFile();
+  gDirectory->WriteObject(cdbMapCopy,"cdbMap","kSingleKey");
+  gDirectory->WriteObject(cdbListCopy,"cdbList","kSingleKey");  
+  delete runLoader;
+  //
+  AliInfo(Form("Stored used OCDB entries as TMap %s and TList %s in %s",
+	       cdbMapCopy->GetName(),
+	       cdbListCopy->GetName(),
+	       fGAliceFileName.Data()));
+  //
 }

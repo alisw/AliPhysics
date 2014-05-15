@@ -30,15 +30,16 @@ class AliT0CalibWalk: public TNamed {
   Bool_t MakeWalkCorrGraph(const char *laserFile);
   TGraph *  GetAmpLEDRec(Int_t ipmt) const   {return (TGraph*)fAmpLEDRec.At(ipmt);}
   void    GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma);
+  void SetCalibByData(Bool_t calib) {fCalibByData=calib;}
  protected:
    
    TObjArray   fWalk;  //time - amp. walk
    TObjArray   fAmpLEDRec;  //time - amp. LED-CFD for reconstruction
    TObjArray   fQTC;  //time - amp. walk
    TObjArray   fAmpLED;  //time - amp. LED-CFD for reconstruction
-  
+   Bool_t fCalibByData;
    //
-   ClassDef(AliT0CalibWalk,5)    // T0 Amplitude Calibration data
+   ClassDef(AliT0CalibWalk,6)    // T0 Amplitude Calibration data
      };
 
      typedef AliT0CalibWalk AliSTARTCalibWalk; // for backward compatibility

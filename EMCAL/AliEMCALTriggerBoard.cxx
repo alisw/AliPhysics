@@ -130,17 +130,19 @@ void AliEMCALTriggerBoard::SlidingWindow(Int_t thres)
 	for (int i = 0; i <= int(fRegionSize->X() - fPatchSize->X() * fSubRegionSize->X()); i += int(fSubRegionSize->X())) {
 		for (int j = 0; j <= int(fRegionSize->Y() - fPatchSize->Y() * fSubRegionSize->Y()); j += int(fSubRegionSize->Y())) {
 			//
+		        AliDebug(999, Form("--- Current window at (%2d,%2d) ---",i,j));
 			int sum = 0;
 			
 			for (int k = 0; k < int(fPatchSize->X() * fSubRegionSize->X()); k++) {
 				for (int l = 0; l < int(fPatchSize->Y() * fSubRegionSize->Y()); l++) {
 					//
-					sum += fRegion[i + k][j + l];
+					sum += fRegion[i + k][j + l]; 
+					AliDebug(999, Form("Adding fRegion[%2d + %2d][%2d + %2d]: %d and sum is %d",i,k,j,l,fRegion[i + k][j + l],sum));
 				}
 			}
 			
 			if (sum > thres) {
-				AliDebug(999, Form("Adding new patch at (%2d,%2d)", i, j));
+			  AliDebug(999, Form("Adding new patch at (%2d,%2d) w/ amplitude %d", i, j, sum));
 				new((*fPatches)[fPatches->GetEntriesFast()]) AliEMCALTriggerPatch(i, j, sum);
 			}
 		}

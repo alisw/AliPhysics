@@ -1,0 +1,34 @@
+# AliRoot MDC rpm creation using static libraries
+
+# RPM Naming Tags
+Name: alimdc
+Version:  @ALIROOT_BRANCH_SPEC@
+Release: @GIT_SHA1@
+Summary: AliRoot MDC static libraries
+License: CERN Alice Offline
+Vendor: ALICE Core Offline Group
+URL: http://aliceinfo.cern.ch
+Group: Applications/Alice
+Packager: Alina Grigoras <alina.gabriela.grigoras@cern.ch>
+
+# RPM Dependencies tags
+AutoReqProv: yes
+Provides: alimdc
+
+# PRM Directory-related Tags
+Prefix: /opt/%{name}
+BuildRoot: /@CMAKE_CURRENT_BINARY_DIR@/%{name}-root
+
+%description
+Package contains both ROOT and AliRoot static libs needed by mStreamRecorder
+in order to ROOT-ify the incoming raw data. The package version correspond to
+the AliRoot one.
+
+%files
+%defattr ( -,root,root ) 
+%{prefix}/lib/libAliMDC.a
+%{prefix}/lib/libRoot.a
+%{prefix}/lib/libpcre.a
+%{prefix}/lib/liblzma.a
+%{prefix}/lib/libfreetype.a
+%{prefix}/include/mdc.h

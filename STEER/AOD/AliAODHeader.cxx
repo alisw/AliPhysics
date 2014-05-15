@@ -54,6 +54,8 @@ AliAODHeader::AliAODHeader() :
   fRefMultNeg(-999),
   fNMuons(0),
   fNDimuons(0),
+  fNGlobalMuons(0),               // AU
+  fNGlobalDimuons(0),             // AU
   fEventType(0),
   fOrbitNumber(0),
   fPeriodNumber(0),
@@ -118,6 +120,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fRefMultNeg(-999),
   fNMuons(0),
   fNDimuons(0),
+  fNGlobalMuons(0),               // AU
+  fNGlobalDimuons(0),             // AU
   fEventType(0),
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
@@ -179,7 +183,9 @@ AliAODHeader::AliAODHeader(Int_t nRun,
 			   const Float_t *vzeroEqFactors,
 			   const Char_t *title,
 			   Int_t nMuons,
-			   Int_t nDimuons) :
+			   Int_t nDimuons,
+			   Int_t nGlobalMuons,                 // AU
+			   Int_t nGlobalDimuons) :             // AU
   AliVHeader(),
   fMagneticField(magField),
   fMuonMagFieldScale(muonMagFieldScale),
@@ -202,6 +208,8 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fRefMultNeg(refMultNeg),
   fNMuons(nMuons),
   fNDimuons(nDimuons),
+  fNGlobalMuons(nGlobalMuons),               // AU
+  fNGlobalDimuons(nGlobalDimuons),           // AU
   fEventType(evttype),
   fOrbitNumber(nOrbit),
   fPeriodNumber(nPeriod),
@@ -272,6 +280,8 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
   fRefMultNeg(hdr.fRefMultNeg),
   fNMuons(hdr.fNMuons),
   fNDimuons(hdr.fNDimuons),
+  fNGlobalMuons(hdr.fNGlobalMuons),           // AU
+  fNGlobalDimuons(hdr.fNGlobalDimuons),       // AU
   fEventType(hdr.fEventType),
   fOrbitNumber(hdr.fOrbitNumber),
   fPeriodNumber(hdr.fPeriodNumber),
@@ -358,6 +368,8 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
     fTriggerCluster   = hdr.fTriggerCluster;
     fNMuons           = hdr.fNMuons;
     fNDimuons         = hdr.fNDimuons;
+    fNGlobalMuons     = hdr.fNGlobalMuons;           // AU
+    fNGlobalDimuons   = hdr.fNGlobalDimuons;         // AU
     fDiamondZ         = hdr.fDiamondZ;
     fDiamondSig2Z     = hdr.fDiamondSig2Z;
     fOfflineTrigger   = hdr.fOfflineTrigger;

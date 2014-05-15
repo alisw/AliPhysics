@@ -19,7 +19,7 @@
 ///////////////////////////////////////////////////////////////
 
 template <typename Value> class TVectorT;
-typedef struct TVectorT<Double_t> TVectorD;
+typedef class TVectorT<Double_t> TVectorD;
 template <typename Value> class TMatrixT;
 typedef class TMatrixT<Double_t> TMatrixD;
 template <typename Index, typename Value> class TKDTree;

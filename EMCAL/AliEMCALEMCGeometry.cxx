@@ -47,6 +47,9 @@
 //                   drawing (end of October 2010). 
 //                3. COMPLETEV1 contains now only 10 SM for runs for year 2011
 //                4. COMPLETE12SMV1 contains 12 SM for runs from year 2012 and on
+//                5. COMPLETE12SMV1_DCAL contains 12 SM and 6 DCal SM
+//                6. COMPLETE12SMV1_DCAL_DEV contains 12 SM and 10 DCal SM
+//		  7. COMPLETE12SMV1_DCAL_8SM contains 12 SM and 6 DCal SM and 2 extentions
 //
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
@@ -61,6 +64,7 @@
 //     and  : Jennifer Klay (LBL)
 //     and  : Aleksei Pavlinov (WSU) 
 //     and  : Magali Estienne (SUBATECH)
+//     and  : Adapted for DCAL by M.L. Wang CCNU Wuhan & Subatech Oct-23-2009
 
 // --- Root header files ---
 #include <TObjArray.h>
@@ -83,18 +87,18 @@ const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12S
 
 AliEMCALEMCGeometry::AliEMCALEMCGeometry() 
   : TNamed(),
-    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fEMCSMSystem(0x0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
-    fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fShellThickness(0.),fZLength(0.),fDCALInnerEdge(0.),fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),
+    fDCALStandardPhiMax(0),fDCALInnerExtandedEta(0),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
-    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
     // Trigger staff
-    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0),
+    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0), fNTotalTRU(0),
     // 
-    fTrd1Angle(0.),f2Trd1Dx2(0.),
-    fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0),fEtaMaxOfTRD1(0),
-    fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
+    fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
+    fPhiCentersOfSM(0),fPhiCentersOfSMSec(0),fEtaMaxOfTRD1(0),fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0), fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(), fILOSS(-1), fIHADR(-1),
@@ -115,18 +119,18 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title,
                                          const Text_t* mcname, const Text_t* mctitle ) :
   TNamed(name,title),
-    fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
+    fGeoName(0),fEMCSMSystem(0x0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
-    fShellThickness(0.),fZLength(0.),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
+    fShellThickness(0.),fZLength(0.),fDCALInnerEdge(0.),fDCALPhiMin(0),fDCALPhiMax(0),fEMCALPhiMax(0),
+    fDCALStandardPhiMax(0),fDCALInnerExtandedEta(0),fNZ(0),fNPhi(0),fSampling(0.),fNumberOfSuperModules(0),
     fFrontSteelStrip(0.),fLateralSteelStrip(0.),fPassiveScintThick(0.),fPhiModuleSize(0.),
-    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fNPhiSuperModule(0),
+    fEtaModuleSize(0.),fPhiTileSize(0.),fEtaTileSize(0.),fLongModuleSize(0.),fPhiSuperModule(0),fNPhiSuperModule(0),
     fNPHIdiv(0),fNETAdiv(0), fNCells(0),fNCellsInSupMod(0),fNCellsInModule(0),
     // Trigger staff
-    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0),
+    fNTRUEta(0), fNTRUPhi(0), fNModulesInTRUEta(0), fNModulesInTRUPhi(0), fNEtaSubOfTRU(0), fNTotalTRU(0),
     // 
-    fTrd1Angle(0.),f2Trd1Dx2(0.),
-    fPhiGapForSM(0.),fKey110DEG(0),fPhiBoundariesOfSM(0), fPhiCentersOfSM(0), fEtaMaxOfTRD1(0),
-    fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
+    fTrd1Angle(0.),f2Trd1Dx2(0.),fPhiGapForSM(0.),fKey110DEG(0),fnSupModInDCAL(0),fPhiBoundariesOfSM(0),
+    fPhiCentersOfSM(0),fPhiCentersOfSMSec(0),fEtaMaxOfTRD1(0),fTrd1AlFrontThick(0.0), fTrd1BondPaperThick(0.),
     fCentersOfCellsEtaDir(0),fCentersOfCellsXDir(0),fCentersOfCellsPhiDir(0),
     fEtaCentersOfCells(0),fPhiCentersOfCells(0),fShishKebabTrd1Modules(0),
     fParSM(),fILOSS(-1), fIHADR(-1), 
@@ -150,6 +154,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
 AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
   : TNamed(geom),
     fGeoName(geom.fGeoName),
+    fEMCSMSystem(geom.fEMCSMSystem),
     fArrayOpts(geom.fArrayOpts),
     fNAdditionalOpts(geom.fNAdditionalOpts),
     fECPbRadThickness(geom.fECPbRadThickness),
@@ -162,6 +167,12 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fIPDistance(geom.fIPDistance),
     fShellThickness(geom.fShellThickness),
     fZLength(geom.fZLength),
+    fDCALInnerEdge(geom.fDCALInnerEdge),
+    fDCALPhiMin(geom.fDCALPhiMin),
+    fDCALPhiMax(geom.fDCALPhiMax),
+    fEMCALPhiMax(geom.fEMCALPhiMax),
+    fDCALStandardPhiMax(geom.fDCALStandardPhiMax),
+    fDCALInnerExtandedEta(geom.fDCALInnerExtandedEta),
     fNZ(geom.fNZ),
     fNPhi(geom.fNPhi),
     fSampling(geom.fSampling),
@@ -174,6 +185,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fPhiTileSize(geom.fPhiTileSize),
     fEtaTileSize(geom.fEtaTileSize),
     fLongModuleSize(geom.fLongModuleSize),
+    fPhiSuperModule(geom.fPhiSuperModule),
     fNPhiSuperModule(geom.fNPhiSuperModule),
     fNPHIdiv(geom.fNPHIdiv),
     fNETAdiv(geom.fNETAdiv),
@@ -186,13 +198,16 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
     fNModulesInTRUEta(geom.fNModulesInTRUEta),
     fNModulesInTRUPhi(geom.fNModulesInTRUPhi),
     fNEtaSubOfTRU(geom.fNEtaSubOfTRU),
+    fNTotalTRU(geom.fNTotalTRU),
     //
     fTrd1Angle(geom.fTrd1Angle),
     f2Trd1Dx2(geom.f2Trd1Dx2),
     fPhiGapForSM(geom.fPhiGapForSM),
     fKey110DEG(geom.fKey110DEG),
+    fnSupModInDCAL(geom.fnSupModInDCAL),
     fPhiBoundariesOfSM(geom.fPhiBoundariesOfSM),
     fPhiCentersOfSM(geom.fPhiCentersOfSM),
+    fPhiCentersOfSMSec(geom.fPhiCentersOfSMSec),
     fEtaMaxOfTRD1(geom.fEtaMaxOfTRD1),
     fTrd1AlFrontThick(geom.fTrd1AlFrontThick),
     fTrd1BondPaperThick(geom.fTrd1BondPaperThick),
@@ -226,6 +241,7 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom)
 //______________________________________________________________________
 AliEMCALEMCGeometry::~AliEMCALEMCGeometry(void){
     // dtor
+ delete fEMCSMSystem;
 }
 
 //______________________________________________________________________
@@ -263,17 +279,32 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
 
   //check that we have a valid geometry name
-  if(!(   fGeoName.Contains("EMCAL_PDC06")     || fGeoName.Contains("EMCAL_WSUC")  
-       || fGeoName.Contains("EMCAL_COMPLETE")  || fGeoName.Contains("EMCAL_COMPLETEV1")  || fGeoName.Contains("EMCAL_COMPLETE12SMV1") 
-       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1") )) {
+  if(!( fGeoName.Contains("EMCAL_PDC06")
+     || fGeoName.Contains("EMCAL_WSUC")  
+     || fGeoName.Contains("EMCAL_COMPLETE")
+     || fGeoName.Contains("EMCAL_COMPLETEV1")
+     || fGeoName.Contains("EMCAL_COMPLETE12SMV1") 
+     || fGeoName.Contains("EMCAL_FIRSTYEAR")
+     || fGeoName.Contains("EMCAL_FIRSTYEARV1") )) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
   // Option to know whether we have the "half" supermodule(s) or not
   fKey110DEG = 0;
-  if(fGeoName.Contains("COMPLETE") || fGeoName.Contains("PDC06") || fGeoName.Contains("12SM")) fKey110DEG = 1; // for GetAbsCellId
+  if(  fGeoName.Contains("COMPLETE")
+    || fGeoName.Contains("PDC06") 
+    || fGeoName.Contains("12SM")) fKey110DEG = 1; // for GetAbsCellId
   if(fGeoName.Contains("COMPLETEV1"))  fKey110DEG = 0; 
   fShishKebabTrd1Modules = 0;
+
+  fnSupModInDCAL = 0;
+  if(fGeoName.Contains("DCAL_DEV")){
+    fnSupModInDCAL = 10;  
+  } else if(fGeoName.Contains("DCAL_8SM")){
+    fnSupModInDCAL = 8;
+  } else if(fGeoName.Contains("DCAL")){
+    fnSupModInDCAL = 6;
+  }
 
   // JLK 13-Apr-2008
   //default parameters are those of EMCAL_COMPLETE geometry
@@ -281,7 +312,7 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   //geometry-name specific options
 
   fNumberOfSuperModules = 12;       // 12 = 6 * 2 (6 in phi, 2 in Z)
-  fNPhi                 = 12;	      // module granularity in phi within smod (azimuth)
+  fNPhi                 = 12;       // module granularity in phi within smod (azimuth)
   fNZ                   = 24;       // module granularity along Z within smod (eta)
   fNPHIdiv = fNETAdiv   = 2;        // tower granularity within module
   fArm1PhiMin           = 80.0;	    // degrees, Starting EMCAL Phi position
@@ -304,7 +335,8 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fEtaModuleSize = fPhiModuleSize;
 
   fZLength              = 700.;     // Z coverage (cm)
-
+  fPhiSuperModule       = 20. ;     // phi in degree
+  fDCALInnerEdge        = fIPDistance * TMath::Tan( fTrd1Angle * 8.* TMath::DegToRad());
 
   //needs to be called for each geometry and before setting geometry
   //parameters which can depend on the outcome
@@ -334,9 +366,9 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   //In 2009-2010 data taking runs only 4 SM, in the upper position.
   if(fGeoName.Contains("FIRSTYEAR")){	
     fNumberOfSuperModules = 4;	
-    fArm1PhiMax           = 120.0; 
+    fArm1PhiMax           = 120.0;
     CheckAdditionalOptions();	
-  }	
+  }
   
   if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") || fGeoName.Contains("COMPLETE12SMV1") ){
     // Oct 26,2010 : First module has tilt = 0.75 degree : 
@@ -356,22 +388,86 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     if(fGeoName.Contains("COMPLETEV1"))
     {
       fNumberOfSuperModules = 10;	
-      fArm1PhiMax           = 180.0; 
+      fArm1PhiMax           = 180.0;
     }
     else if (fGeoName.Contains("COMPLETE12SMV1"))
     {
       fNumberOfSuperModules = 12;	
       fArm1PhiMax           = 200.0; 
     }
+    if (fGeoName.Contains("DCAL"))
+    {
+      fNumberOfSuperModules = 12 + fnSupModInDCAL;
+      fArm1PhiMax           = 320.0; 
+      if(fGeoName.Contains("DCAL_8SM"))      fArm1PhiMax      = 340.0;	    // degrees, End of DCAL Phi position
+      else if(fGeoName.Contains("DCAL_DEV")) fArm1PhiMin      = 40.0;	    // degrees, Starting EMCAL(shifted) Phi position
+      fDCALPhiMin           = fArm1PhiMax - 10.*fnSupModInDCAL; 
+    }
     CheckAdditionalOptions();	
   }
+
+   fEMCSMSystem = new Int_t[fNumberOfSuperModules];
+   Int_t iSM = 0;
+
+ // BASIC EMCAL SM
+   if(fGeoName.Contains("WSUC") ){
+     for(int i = 0; i<2; i++){
+       fEMCSMSystem[iSM] = kEMCAL_Standard;
+       iSM++;
+     }
+   } else if(fGeoName.Contains("FIRSTYEAR") ){
+     for(int i = 0; i<4; i++){
+       fEMCSMSystem[iSM] = kEMCAL_Standard;
+       iSM++;
+     }
+   } else if( fGeoName.Contains("PDC06")
+           || fGeoName.Contains("COMPLETE") ){
+     for(int i = 0; i<10; i++){
+       fEMCSMSystem[iSM] = kEMCAL_Standard;
+       iSM++;
+     }
+   }
+ // EMCAL 110SM
+   if(fKey110DEG && fGeoName.Contains("12SM") ){
+     for(int i = 0; i<2; i++){
+       fEMCSMSystem[iSM] = kEMCAL_Half;
+       if(fGeoName.Contains("12SMV1") ){
+         fEMCSMSystem[iSM] = kEMCAL_3rd;
+       }
+       iSM++;
+     }
+   }
+ // DCAL SM
+   if(fnSupModInDCAL && fGeoName.Contains("DCAL")){
+     if(fGeoName.Contains("8SM")) {
+       for(int i = 0; i<fnSupModInDCAL-2; i++){
+         fEMCSMSystem[iSM] = kDCAL_Standard;
+         iSM++;
+       }
+       for(int i = 0; i<2; i++){
+         fEMCSMSystem[iSM] = kDCAL_Ext;
+         iSM++;
+       }
+     } else {
+       for(int i = 0; i<fnSupModInDCAL; i++){
+         fEMCSMSystem[iSM] = kDCAL_Standard;
+         iSM++;
+       }
+     }
+   }
 
   // constant for transition absid <--> indexes
   fNCellsInModule = fNPHIdiv*fNETAdiv;
   fNCellsInSupMod = fNCellsInModule*fNPhi*fNZ;
-  fNCells         = fNCellsInSupMod*fNumberOfSuperModules;
-  if(GetKey110DEG() && !fGeoName.Contains("12SMV1")) fNCells -= fNCellsInSupMod; // SM 10 and 11 are 1/2 size on phi
-  if(GetKey110DEG() && fGeoName.Contains("12SMV1") ) fNCells -=2*(2 * fNCellsInSupMod / 3); // SM 10 and 11 are 1/3 size on phi
+  fNCells = 0;
+   for( int i=0; i<fNumberOfSuperModules; i++) {
+     if(      GetSMType(i) == kEMCAL_Standard) fNCells +=   fNCellsInSupMod   ;
+     else if( GetSMType(i) == kEMCAL_Half)     fNCells +=   fNCellsInSupMod/2 ;
+     else if( GetSMType(i) == kEMCAL_3rd)      fNCells +=   fNCellsInSupMod/3 ;
+     else if( GetSMType(i) == kDCAL_Standard)  fNCells += 2*fNCellsInSupMod/3 ;
+     else if( GetSMType(i) == kDCAL_Ext)       fNCells +=   fNCellsInSupMod/3 ;
+     else AliError(Form("Uknown SuperModule Type !!"));
+   }
 
   fNPhiSuperModule = fNumberOfSuperModules/2;
   if(fNPhiSuperModule < 1) fNPhiSuperModule = 1;
@@ -400,28 +496,60 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   fParSM[1] = GetPhiModuleSize() * GetNPhi()/2.;
   fParSM[2] = fZLength/4.;  //divide by 4 to get half-length of SM
 
-  // SM phi boundaries - (0,1),(2,3) .. (10,11) - has the same boundaries; Nov 7, 2006 
+  // SM phi boundaries - (0,1),(2,3) ... - has the same boundaries;
   fPhiBoundariesOfSM.Set(fNumberOfSuperModules);
   fPhiCentersOfSM.Set(fNumberOfSuperModules/2);
-  fPhiBoundariesOfSM[0] = TMath::PiOver2() - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
-  fPhiCentersOfSM[0]     = TMath::PiOver2();
-  if(fNumberOfSuperModules > 1) 
-    fPhiBoundariesOfSM[1] = TMath::PiOver2() + TMath::ATan2(fParSM[1] , fIPDistance);
-  if(fNumberOfSuperModules > 2) {
-	Int_t maxPhiBlock =fNumberOfSuperModules/2-1;
-	if(fNumberOfSuperModules > 10) maxPhiBlock = 4;
-    for(int i=1; i<=maxPhiBlock; i++) { // from 2th ro 9th
-      fPhiBoundariesOfSM[2*i]   = fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*i;
-      fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[1] + 20.*TMath::DegToRad()*i;
-      fPhiCentersOfSM[i]        = fPhiCentersOfSM[0]     + 20.*TMath::DegToRad()*i;
+  fPhiCentersOfSMSec.Set(fNumberOfSuperModules/2);
+  Double_t kfSupermodulePhiWidth = fPhiSuperModule*TMath::DegToRad();
+  fPhiCentersOfSM[0]    = (fArm1PhiMin + fPhiSuperModule/2.) * TMath::DegToRad(); // Define from First SM
+  fPhiCentersOfSMSec[0] = fPhiCentersOfSM[0];  // the same in the First SM
+  fPhiBoundariesOfSM[0] = fPhiCentersOfSM[0] - TMath::ATan2(fParSM[1] , fIPDistance); // 1th and 2th modules)
+  fPhiBoundariesOfSM[1] = fPhiCentersOfSM[0] + TMath::ATan2(fParSM[1] , fIPDistance);
+  if(fNumberOfSuperModules > 2) { // 2 to Max
+    Int_t tmpSMType = GetSMType(2);
+     for(int i = 1; i<fNPhiSuperModule; i++) {
+       fPhiBoundariesOfSM[2*i]   += fPhiBoundariesOfSM[2*i-2] + kfSupermodulePhiWidth;
+       if(tmpSMType == GetSMType(2*i)) {
+         fPhiBoundariesOfSM[2*i+1]  += fPhiBoundariesOfSM[2*i-1] + kfSupermodulePhiWidth;
+       } else { 
+         //changed SM Type, redefine the [2*i+1] Boundaries
+         tmpSMType = GetSMType(2*i);
+         if(        GetSMType(2*i)  == kEMCAL_Standard) {
+           fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[2*i] + kfSupermodulePhiWidth;
+         } else if( GetSMType(2*i)  == kEMCAL_Half)     {
+           fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[2*i] + 2.*TMath::ATan2((fParSM[1])/2, fIPDistance);
+         } else if( GetSMType(2*i)  == kEMCAL_3rd )     {
+           fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[2*i] + 2.*TMath::ATan2((fParSM[1])/3, fIPDistance);
+         } else if( GetSMType(2*i)  == kDCAL_Standard ) {      // jump the gap
+           fPhiBoundariesOfSM[2*i]   = (fDCALPhiMin - fArm1PhiMin)*TMath::DegToRad() + fPhiBoundariesOfSM[0];
+           fPhiBoundariesOfSM[2*i+1] = (fDCALPhiMin - fArm1PhiMin)*TMath::DegToRad() + fPhiBoundariesOfSM[1];
+         } else if( GetSMType(2*i)  == kDCAL_Ext)       {
+           fPhiBoundariesOfSM[2*i+1] = fPhiBoundariesOfSM[2*i] + 2.*TMath::ATan2((fParSM[1])/3, fIPDistance); 
+         }
+      }
+      fPhiCentersOfSM[i]    = (fPhiBoundariesOfSM[2*i]+fPhiBoundariesOfSM[2*i+1])/2.;
+      fPhiCentersOfSMSec[i] = fPhiBoundariesOfSM[2*i] + TMath::ATan2(fParSM[1] , fIPDistance);
     }
   }
-  if(fNumberOfSuperModules > 10) {
-    fPhiBoundariesOfSM[10] =  fPhiBoundariesOfSM[0] + 20.*TMath::DegToRad()*5; // in the ideal case the phi-gap is constant
-    fPhiBoundariesOfSM[11] =  fPhiBoundariesOfSM[10] + 2.*TMath::ATan2((fParSM[1])/3., fIPDistance); // one_third SMs
-    fPhiCentersOfSM[5]     = (fPhiBoundariesOfSM[10]+fPhiBoundariesOfSM[11])/2.; 
-  }
 
+  //inner extend in eta (same as outer part) for DCal (0.189917), //calculated from the smallest gap (1# cell to the 80-degree-edge),
+  Double_t fInnerExtandedPhi = 1.102840997; //calculated from the smallest gap (1# cell to the 80-degree-edge), too complicatd to explain...
+  fDCALInnerExtandedEta = -TMath::Log(TMath::Tan( (TMath::Pi()/2. - 8*fTrd1Angle*TMath::DegToRad() + (TMath::Pi()/2 - fNZ*fTrd1Angle*TMath::DegToRad() - TMath::ATan(TMath::Exp(fArm1EtaMin))*2))/2.));
+
+  fEMCALPhiMax  = fArm1PhiMin;    
+  fDCALPhiMax   = fDCALPhiMin;// DCAl extention will not be included
+  for( Int_t i = 0; i < fNumberOfSuperModules; i+=2) {
+    if(      GetSMType(i) == kEMCAL_Standard ) fEMCALPhiMax += 20.;
+    else if( GetSMType(i) == kEMCAL_Half     ) fEMCALPhiMax += fPhiSuperModule/2. + fInnerExtandedPhi;
+    else if( GetSMType(i) == kEMCAL_3rd      ) fEMCALPhiMax += fPhiSuperModule/3. + 4.0*fInnerExtandedPhi/3.0;
+    else if( GetSMType(i) == kDCAL_Standard  ) {fDCALPhiMax  += 20.; fDCALStandardPhiMax = fDCALPhiMax;}
+    else if( GetSMType(i) == kDCAL_Ext       ) fDCALPhiMax  += fPhiSuperModule/3. + 4.0*fInnerExtandedPhi/3.0;
+    else AliError("Unkown SM Type!!");
+  }
+// for compatible reason
+// if(fNumberOfSuperModules == 4) {fEMCALPhiMax = fArm1PhiMax ;}
+ if(fNumberOfSuperModules == 12) {fEMCALPhiMax = fArm1PhiMax ;}  
+  
   //called after setting of scintillator and lead layer parameters
   DefineSamplingFraction(mcname,mctitle);
 
@@ -438,6 +566,18 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   // 3*6*10 + 2*6*2 = 204 -> matrix (nphi(17), neta(12))
   fNEtaSubOfTRU     = 6;  
 
+  fNTotalTRU = 0;
+  for(Int_t i = 0; i < GetNumberOfSuperModules(); i++){
+    if(      GetSMType(i) == kEMCAL_Standard)  fNTotalTRU += 3;
+    else if( GetSMType(i) == kEMCAL_Half)      fNTotalTRU += 1;
+    else if( GetSMType(i) == kEMCAL_3rd)       fNTotalTRU += 1;
+    else if( GetSMType(i) == kDCAL_Standard)   fNTotalTRU += 3;
+    else if( GetSMType(i) == kDCAL_Ext)        fNTotalTRU += 1;
+    else {
+      AliError(Form("Uknown SuperModule Type !!"));
+    }
+  }
+
   fgInit = kTRUE; 
 }
 
@@ -451,6 +591,11 @@ void AliEMCALEMCGeometry::PrintGeometry()
       TObjString *o = (TObjString*)fArrayOpts->At(i);
       printf(" %i : %s \n", i, o->String().Data());
     }
+  }
+  if(fGeoName.Contains("DCAL")) {
+   printf("Phi min of DCAL SuperModule: %7.1f, DCAL has %d SuperModule\n", fDCALPhiMin, fnSupModInDCAL);
+   printf("The DCAL inner edge is +- %7.1f\n", fDCALInnerEdge);
+    if(fGeoName.Contains("DCAL_8SM")) printf("DCAL has its 2 EXTENTION SM\n");
   }
   printf("Granularity: %d in eta and %d in phi\n", GetNZ(), GetNPhi()) ;
   printf("Layout: phi = (%7.1f, %7.1f), eta = (%5.2f, %5.2f), IP = %7.2f -> for EMCAL envelope only\n",  
@@ -467,6 +612,7 @@ void AliEMCALEMCGeometry::PrintGeometry()
   printf(" #of sampling layers %i(fNECLayers) \n", fNECLayers);
   printf(" fLongModuleSize     %6.3f cm \n", fLongModuleSize);
   printf(" #supermodule in phi direction %i \n", fNPhiSuperModule );
+  printf(" supermodule width in phi direction %f \n", fPhiSuperModule );
   printf(" fILOSS %i : fIHADR %i \n", fILOSS, fIHADR);
   printf(" fTrd1Angle %7.4f\n", fTrd1Angle);
   printf(" f2Trd1Dx2  %7.4f\n",  f2Trd1Dx2);
@@ -476,11 +622,11 @@ void AliEMCALEMCGeometry::PrintGeometry()
 	 fParSM[0],fParSM[1],fParSM[2]);
   printf(" fPhiGapForSM  %7.4f cm (%7.4f <- phi size in degree)\n",  
 	 fPhiGapForSM, TMath::ATan2(fPhiGapForSM,fIPDistance)*TMath::RadToDeg());
-  if(GetKey110DEG() && !fGeoName.Contains("12SMV1") ) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
-  if(GetKey110DEG() && fGeoName.Contains("12SMV1")) printf(" Last two modules have size 6.6 degree in  phi (180<phi<186.6)\n");
+  if( fKey110DEG && !fGeoName.Contains("12SMV1") ) printf(" Last two modules have size 10 degree in  phi (180<phi<190)\n");
+  if( fKey110DEG && fGeoName.Contains("12SMV1")) printf(" Last two modules have size 6.6 degree in  phi (180<phi<186.6)\n");
   printf(" phi SM boundaries \n"); 
   for(int i=0; i<fPhiBoundariesOfSM.GetSize()/2.; i++) {
-    printf(" %i : %7.5f(%7.2f) -> %7.5f(%7.2f) : center %7.5f(%7.2f) \n", i, 
+    printf(" %i : %7.15f(%7.12f) -> %7.15f(%7.12f) : center %7.15f(%7.12f) \n", i, 
 	   fPhiBoundariesOfSM[2*i], fPhiBoundariesOfSM[2*i]*TMath::RadToDeg(),
 	   fPhiBoundariesOfSM[2*i+1], fPhiBoundariesOfSM[2*i+1]*TMath::RadToDeg(),
 	   fPhiCentersOfSM[i], fPhiCentersOfSM[i]*TMath::RadToDeg());
@@ -593,6 +739,15 @@ void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Tex
 }
 
 //________________________________________________________________________________________________
+Double_t AliEMCALEMCGeometry::GetPhiCenterOfSMSec(Int_t nsupmod) const
+{
+  //returns center of supermodule in phi
+  int i = nsupmod/2;
+  return fPhiCentersOfSMSec[i];
+
+}
+
+//________________________________________________________________________________________________
 Double_t AliEMCALEMCGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 {
   //returns center of supermodule in phi
@@ -604,9 +759,9 @@ Double_t AliEMCALEMCGeometry::GetPhiCenterOfSM(Int_t nsupmod) const
 //________________________________________________________________________________________________
 Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const
 {
-  // 0<= nSupMod <=11; phi in rad
-    static int i;
-  if(nSupMod<0 || nSupMod >11) return kFALSE;
+  // 0<= nSupMod <=17; phi in rad
+  static int i;
+  if(nSupMod<0 || nSupMod >12+fnSupModInDCAL-1) return kFALSE;
   i = nSupMod/2;
   phiMin = (Double_t)fPhiBoundariesOfSM[2*i];
   phiMax = (Double_t)fPhiBoundariesOfSM[2*i+1];
@@ -616,13 +771,15 @@ Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSM(Int_t nSupMod, Double_t &phiMin
 //________________________________________________________________________________________________
 Bool_t AliEMCALEMCGeometry::GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const
 {
-  // 0<= nPhiSec <=4; phi in rad
+  // 0<= nPhiSec <=max; phi in rad
   // 0;  gap boundaries between  0th&2th  | 1th&3th SM
   // 1;  gap boundaries between  2th&4th  | 3th&5th SM
   // 2;  gap boundaries between  4th&6th  | 5th&7th SM
   // 3;  gap boundaries between  6th&8th  | 7th&9th SM
   // 4;  gap boundaries between  8th&10th | 9th&11th SM
-  if(nPhiSec<0 || nPhiSec >4) return kFALSE;
+  // 5;  gap boundaries between 10th&12th | 11h&13th SM
+  //             ...
+  if(nPhiSec<0 || nPhiSec >5+fnSupModInDCAL/2-1) return kFALSE;
   phiMin = fPhiBoundariesOfSM[2*nPhiSec+1];
   phiMax = fPhiBoundariesOfSM[2*nPhiSec+2];
   return kTRUE;

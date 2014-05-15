@@ -78,10 +78,10 @@ Bool_t AliITSURecoDet::Build()
   //
   // build active ITS layers
   for (int ilr=0;ilr<nlr;ilr++) {
-    int lrTyp = fGeom->GetLayerDetTypeID(ilr);
+    int lrTyp = fGeom->GetLayerChipTypeID(ilr);
     // name layer according its active id, detector type and segmentation tyoe
-    AliITSURecoLayer* lra = new AliITSURecoLayer(Form("Lr%d%s%d",ilr,fGeom->GetDetTypeName(lrTyp),
-						      lrTyp%AliITSUGeomTGeo::kMaxSegmPerDetType),
+    AliITSURecoLayer* lra = new AliITSURecoLayer(Form("Lr%d%s%d",ilr,fGeom->GetChipTypeName(lrTyp),
+						      lrTyp%AliITSUGeomTGeo::kMaxSegmPerChipType),
 						 ilr,fGeom);
     lra->SetPassive(kFALSE);
     AddLayer(lra);
@@ -220,9 +220,9 @@ void AliITSURecoDet::CreateClusterArrays()
   for (int ilr=0;ilr<fNLayersActive;ilr++) {
     AliITSURecoLayer*  lr = GetLayerActive(ilr);
     lr->SetOwnsClusterArray(kTRUE);
-    int tpDet = fGeom->GetLayerDetTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerDetType;
+    int tpDet = fGeom->GetLayerChipTypeID(ilr)/AliITSUGeomTGeo::kMaxSegmPerChipType;
     //
-    if (tpDet == AliITSUGeomTGeo::kDetTypePix) {
+    if (tpDet == AliITSUGeomTGeo::kChipTypePix) {
       lr->SetClusters(new TClonesArray(AliITSUClusterPix::Class()));
     }
     else {

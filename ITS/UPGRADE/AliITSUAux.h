@@ -24,6 +24,8 @@ namespace AliITSUAux {
   void   BringTo02Pi(double &phi);
   Bool_t OKforPhiMin(double phiMin,double phi);
   Bool_t OKforPhiMax(double phiMax,double phi);
+  Double_t MeanPhiSmall(double phi0, double phi1);
+  Double_t DeltaPhiSmall(double phi0, double phi1);
   UInt_t PackCluster(Int_t lr, Int_t clID);
   Int_t  UnpackCluster(UInt_t p, Int_t &lr);
   Int_t  UnpackLayer(UInt_t p);
@@ -100,6 +102,27 @@ inline Int_t AliITSUAux::NumberOfBitsSet(UInt_t x) {
   x = x - ((x >> 1) & 0x55555555);
   x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
   return (((x + (x >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+}
+
+//_________________________________________________________________________________
+inline Double_t AliITSUAux::MeanPhiSmall(double phi0, double phi1) {
+  // return mean phi, assume phis in 0:2pi
+  double phi;
+  if (!OKforPhiMin(phi0,phi1)) {phi=phi0; phi0=phi1; phi1=phi;}
+  if (phi0>phi1) phi = (phi1 - (TwoPi()-phi0))/2; // wrap
+  else           phi = (phi0+phi1)/2;
+  BringTo02Pi(phi);
+  return phi;
+}
+
+//_________________________________________________________________________________
+inline Double_t AliITSUAux::DeltaPhiSmall(double phi0, double phi1) {
+  // return delta phi, assume phis in 0:2pi
+  double del;
+  if (!OKforPhiMin(phi0,phi1)) {del=phi0; phi0=phi1; phi1=del;}
+  del = phi1 - phi0;
+  if (del<0) del += TwoPi();
+  return del;
 }
 
 

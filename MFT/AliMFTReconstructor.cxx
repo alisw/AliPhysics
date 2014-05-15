@@ -91,7 +91,7 @@ void AliMFTReconstructor::Init() {
     ((TClonesArray*)fDigits->At(iPlane))->SetOwner(kTRUE);
   }
   
-  AliInfo("    ************* Using the MFT reconstructor! ****** ");
+  AliInfo(" ************* Using the MFT reconstructor! ************ ");
   
   return;
 
@@ -128,8 +128,6 @@ void AliMFTReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 
   // Clusterization
 
-  AliDebug(1, Form("nPlanes = %d",fNPlanes));
-
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
     AliDebug(1, Form("Setting Address for Branch Plane_%02d", iPlane)); 
     digitsTree->SetBranchAddress(Form("Plane_%02d",iPlane), &(*fDigits)[iPlane]);
@@ -139,16 +137,12 @@ void AliMFTReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 
   AliDebug(1, "Creating clusterFinder");
   AliMFTClusterFinder *clusterFinder = new AliMFTClusterFinder();
+  clusterFinder->ApplyMisalignment(kTRUE);    // only in case of MC !!!
   clusterFinder->Init("AliMFTGeometry.root");
-  AliDebug(1, "clusterFinder->MakeClusterBranch(clustersTree)");
   clusterFinder->MakeClusterBranch(clustersTree);
-  AliDebug(1, "clusterFinder->SetClusterTreeAddress(clustersTree)");
   clusterFinder->SetClusterTreeAddress(clustersTree);
-  AliDebug(1, "clusterFinder->DigitsToClusters(fDigits)");
   clusterFinder->DigitsToClusters(fDigits);
-  AliDebug(1, "clustersTree->Fill()");
   clustersTree->Fill();                         // fill tree for current event
-  AliDebug(1, "delete clusterFinder");
   delete clusterFinder;
 
   for (Int_t iPlane=0; iPlane<fNPlanes; iPlane++) {
@@ -159,3 +153,30 @@ void AliMFTReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 }
 
 //====================================================================================================================================================
+
+AliTracker* AliMFTReconstructor::CreateTracker() const {
+
+  // Create a MFT tracker: global MUON+MFT tracks
+
+  AliMFTTrackerMU *tracker = new AliMFTTrackerMU();   // tracker for muon tracks (MFT + MUON) 
+
+  return tracker;
+  
+}
+
+//====================================================================================================================================================
+
+AliTracker* AliMFTReconstructor::CreateTrackleter() const {
+
+  AliInfo("Not implemented");
+
+  // Create a MFT tracker: standalone MFT tracks
+
+  //  AliMFTTrackerSA *tracker = new AliMFTTrackerSA();   // tracker for MFT tracks
+
+  return NULL;
+  
+}
+
+//====================================================================================================================================================
+

@@ -83,8 +83,11 @@ public:
    * AliFMDAltroReader.  The digits are put in the passed TTree @a
    * digitsTree. 
    *
-   * @param reader     Raw reader. 
-   * @param digitsTree Tree to store read digits in. 
+   * @note This is the first part of the reconstruction as done by the
+   * offical steering class AliReconstruction.
+   *
+   * @param reader Raw reader.  @param digitsTree Tree to store read
+   * digits in.
    */
   virtual void   ConvertDigits(AliRawReader* reader, TTree* digitsTree) const;
   /** 
@@ -92,6 +95,9 @@ public:
    * The member function creates AliFMDRecPoint objects and stores
    * them on the output tree @a clusterTree.  An FMD ESD object is
    * created in parallel. 
+   *
+   * @note This is the second part of the reconstruction as done by
+   * the offical steering class AliReconstruction.
    *
    * @param digitsTree  Tree holding the digits of this event
    * @param clusterTree Tree to store AliFMDRecPoint objects in. 
@@ -104,10 +110,21 @@ public:
    *       TClonesArray of AliFMDDigits
    */
   virtual void   Reconstruct(AliRawReader *, TTree*) const;
+  /** 
+   * Not used.
+   *
+   * @todo This is called by the above same member function but with a
+   * pointer to a AliRawReader object and a pointer to a TTree object.
+   *
+   * @param reader Reader object 
+   */
   virtual void Reconstruct(AliFMDRawReader& reader) const;
   /** 
    * Put in the ESD data, the FMD ESD data.  The object created by
    * the Reconstruct member function is copied to the ESD object. 
+   *
+   * @note This is the third part of the reconstruction as done by
+   * the offical steering class AliReconstruction.
    *
    * @param digitsTree   Tree of digits for this event - not used
    * @param clusterTree  Tree of reconstructed points for this event -
@@ -195,6 +212,12 @@ protected:
    * @return reference to this object 
    */
   AliFMDReconstructor& operator=(const AliFMDReconstructor&); //Not implemented
+  /** 
+   * Run some checks before reconstruction, clear internal arrays, etc. 
+   * 
+   * @return true on success 
+   */
+  Bool_t PreReconstruct() const;
   /** 
    * Try to get the vertex from either ESD or generator header.  Sets
    * @c fCurrentVertex to the found Z posistion of the vertex (if 

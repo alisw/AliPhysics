@@ -60,6 +60,12 @@ public:
     kDetPHOS = 0x40
   };
 
+  enum EBeamType {
+    kPP = 0,
+    kPPB,
+    kPBPB
+  };
+ 
   enum EStartTimeType_t {kFILL_T0,kTOF_T0, kT0_T0, kBest_T0};
 
   enum ITSPIDmethod { kITSTruncMean, kITSLikelihood };
@@ -96,6 +102,8 @@ public:
   virtual Float_t NumberOfSigmasEMCAL(const AliVParticle *track, AliPID::EParticleType type) const;
 
   Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  Bool_t IdentifiedAsElectronTRD(const AliVTrack *track, Int_t &ntracklets, Double_t efficiencyLevel,Double_t centrality=-1,AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
+  
 
   // Signal delta
   EDetPidStatus GetSignalDelta(EDetector detCode, const AliVParticle *track, AliPID::EParticleType type, Double_t &val, Bool_t ratio=kFALSE) const;
@@ -119,8 +127,8 @@ public:
   EDetPidStatus CheckPIDStatus(EDetector detCode, const AliVTrack *track)  const;
 
   AliTOFPIDParams *GetTOFPIDParams() const {return fTOFPIDParams;}
-  Float_t GetTOFMismatchProbability(const AliVTrack *track) const;
-  
+  Float_t GetTOFMismatchProbability(const AliVTrack *track = NULL) const; // if empty argument return the value stored during TOF probability computation
+
   void SetITSPIDmethod(ITSPIDmethod pmeth) { fITSPIDmethod = pmeth; }
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
@@ -189,7 +197,8 @@ protected:
   //unbuffered PID calculation
   virtual Float_t GetNumberOfSigmasTOFold  (const AliVParticle */*track*/, AliPID::EParticleType /*type*/) const {return 0;}
   virtual Float_t GetSignalDeltaTOFold(const AliVParticle */*track*/, AliPID::EParticleType /*type*/, Bool_t /*ratio*/=kFALSE) const {return -9999.;}
-  
+
+  Int_t CalculateTRDResponse(const AliVTrack *track, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod) const;
   EDetPidStatus GetComputeTRDProbability  (const AliVTrack *track, Int_t nSpecies, Double_t p[],AliTRDPIDResponse::ETRDPIDMethod PIDmethod=AliTRDPIDResponse::kLQ1D) const;
   EDetPidStatus GetTOFPIDStatus(const AliVTrack *track) const;
 
@@ -198,6 +207,8 @@ protected:
 
 
 private:
+  static Float_t fgTOFmismatchProb;    // TOF mismatch probability (Bayesian)
+
   Bool_t fIsMC;                        //  If we run on MC data
   Bool_t fCachePID;
 
@@ -236,7 +247,8 @@ private:
   AliVEvent *fCurrentEvent;            //! event currently being processed
 
   Float_t fCurrCentrality;             //! current centrality
-  
+
+  EBeamType fBeamTypeNum;              //! beam type enum 
   
   void ExecNewRun();
   
@@ -317,7 +329,7 @@ private:
   EDetPidStatus GetPHOSPIDStatus(const AliVTrack *track) const;
   EDetPidStatus GetEMCALPIDStatus(const AliVTrack *track) const;
 
-  ClassDef(AliPIDResponse, 12);  //PID response handling
+  ClassDef(AliPIDResponse, 13);  //PID response handling
 };
 
 #endif

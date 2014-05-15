@@ -151,8 +151,7 @@ Bool_t AliTRDgtuSim::RunGTUFromTrackletFile(TString filename, Int_t event, Int_t
 		       iLink, i-4, ((TObjString*) tokens->At(i))->GetString().Data(), trackletWord));
       AliTRDtrackletWord *tracklet = new (trklArray[trklArray.GetEntriesFast()])       AliTRDtrackletWord(trackletWord);
       AliTRDtrackletGTU   *trkl    = new (trklArrayGTU[trklArrayGTU.GetEntriesFast()]) AliTRDtrackletGTU(tracklet);
-      if (fTMU)
-	fTMU->AddTracklet(trkl, iLink);
+      fTMU->AddTracklet(trkl, iLink);
     }
     //
     delete tokens;
@@ -230,9 +229,7 @@ Bool_t AliTRDgtuSim::RunGTU(AliLoader *loader, AliESDEvent *esd, Int_t label, In
 	}
 	AliDebug(1, Form("adding tracklet: 0x%08x in sec %i stack %i link %i",
 			 trkl->GetTrackletWord(), trkl->GetDetector() / 30, (trkl->GetDetector() % 30) / 6, trkl->GetHCId() % 12));
-	if (fTMU) {
-	  fTMU->AddTracklet(trkl, iLink);
-	}
+	fTMU->AddTracklet(trkl, iLink);
     }
 
     if (pendingTracklets) {

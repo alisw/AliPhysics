@@ -45,7 +45,7 @@
 using namespace TMath;
 
 const Double_t AliITSUv0Layer::fgkDefaultSensorThick = 300*fgkmicron;
-const Double_t AliITSUv0Layer::fgkDefaultLadderThick =   1*fgkcm;
+const Double_t AliITSUv0Layer::fgkDefaultStaveThick =   1*fgkcm;
 
 ClassImp(AliITSUv0Layer)
 
@@ -59,12 +59,12 @@ AliITSUv0Layer::AliITSUv0Layer():
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fLadderThick(0),
-  fLadderWidth(0),
-  fLadderTilt(0),
-  fNLadders(0),
-  fNModules(0),
-  fDetTypeID(0),
+  fStaveThick(0),
+  fStaveWidth(0),
+  fStaveTilt(0),
+  fNStaves(0),
+  fNChips(0),
+  fChipTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv0::kModelDummy)
@@ -82,12 +82,12 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fLadderThick(0),
-  fLadderWidth(0),
-  fLadderTilt(0),
-  fNLadders(0),
-  fNModules(0),
-  fDetTypeID(0),
+  fStaveThick(0),
+  fStaveWidth(0),
+  fStaveTilt(0),
+  fNStaves(0),
+  fNChips(0),
+  fChipTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv0::kModelDummy)
@@ -105,12 +105,12 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t lay, Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fLadderThick(0),
-  fLadderWidth(0),
-  fLadderTilt(0),
-  fNLadders(0),
-  fNModules(0),
-  fDetTypeID(0),
+  fStaveThick(0),
+  fStaveWidth(0),
+  fStaveTilt(0),
+  fNStaves(0),
+  fNChips(0),
+  fChipTypeID(0),
   fIsTurbo(0),
   fBuildLevel(0),
   fStaveModel(AliITSUv0::kModelDummy)
@@ -128,19 +128,19 @@ AliITSUv0Layer::AliITSUv0Layer(Int_t lay, Bool_t turbo, Int_t debug):
   fLayRadius(0),
   fZLength(0),
   fSensorThick(0),
-  fLadderThick(0),
-  fLadderWidth(0),
-  fLadderTilt(0),
-  fNLadders(0),
-  fNModules(0),
-  fDetTypeID(0),
+  fStaveThick(0),
+  fStaveWidth(0),
+  fStaveTilt(0),
+  fNStaves(0),
+  fNChips(0),
+  fChipTypeID(0),
   fIsTurbo(turbo),
   fBuildLevel(0),
   fStaveModel(AliITSUv0::kModelDummy)
 {
   //
   // Constructor setting layer number and debugging level
-  // for a "turbo" layer (i.e. where ladders overlap in phi)
+  // for a "turbo" layer (i.e. where staves overlap in phi)
   //
 }
 
@@ -152,12 +152,12 @@ AliITSUv0Layer::AliITSUv0Layer(const AliITSUv0Layer &s):
   fLayRadius(s.fLayRadius),
   fZLength(s.fZLength),
   fSensorThick(s.fSensorThick),
-  fLadderThick(s.fLadderThick),
-  fLadderWidth(s.fLadderWidth),
-  fLadderTilt(s.fLadderTilt),
-  fNLadders(s.fNLadders),
-  fNModules(s.fNModules),
-  fDetTypeID(s.fDetTypeID),
+  fStaveThick(s.fStaveThick),
+  fStaveWidth(s.fStaveWidth),
+  fStaveTilt(s.fStaveTilt),
+  fNStaves(s.fNStaves),
+  fNChips(s.fNChips),
+  fChipTypeID(s.fChipTypeID),
   fIsTurbo(s.fIsTurbo),
   fBuildLevel(s.fBuildLevel),
   fStaveModel(s.fStaveModel)
@@ -180,13 +180,13 @@ AliITSUv0Layer& AliITSUv0Layer::operator=(const AliITSUv0Layer &s)
   fLayRadius   = s.fLayRadius;
   fZLength     = s.fZLength;
   fSensorThick = s.fSensorThick;
-  fLadderThick = s.fLadderThick;
-  fLadderWidth = s.fLadderWidth;
-  fLadderTilt  = s.fLadderTilt;
-  fNLadders    = s.fNLadders;
-  fNModules    = s.fNModules;
+  fStaveThick = s.fStaveThick;
+  fStaveWidth = s.fStaveWidth;
+  fStaveTilt  = s.fStaveTilt;
+  fNStaves    = s.fNStaves;
+  fNChips    = s.fNChips;
   fIsTurbo     = s.fIsTurbo;
-  fDetTypeID   = s.fDetTypeID;
+  fChipTypeID   = s.fChipTypeID;
   fBuildLevel  = s.fBuildLevel;
   fStaveModel  = s.fStaveModel;
 
@@ -225,13 +225,13 @@ void AliITSUv0Layer::CreateLayer(TGeoVolume *moth){
   // Check if the user set the proper parameters
   if (fLayRadius <= 0) AliFatal(Form("Wrong layer radius (%f)",fLayRadius));
   if (fZLength   <= 0) AliFatal(Form("Wrong layer length (%f)",fZLength));
-  if (fNLadders  <= 0) AliFatal(Form("Wrong number of ladders (%d)",fNLadders));
-  if (fNModules  <= 0) AliFatal(Form("Wrong number of modules (%d)",fNModules));
+  if (fNStaves  <= 0) AliFatal(Form("Wrong number of staves (%d)",fNStaves));
+  if (fNChips  <= 0) AliFatal(Form("Wrong number of chips (%d)",fNChips));
 
-  if (fLadderThick <= 0) {
-    AliInfo(Form("Ladder thickness wrong or not set (%f), using default (%f)",
-		 fLadderThick,fgkDefaultLadderThick));
-    fLadderThick = fgkDefaultLadderThick;
+  if (fStaveThick <= 0) {
+    AliInfo(Form("Stave thickness wrong or not set (%f), using default (%f)",
+		 fStaveThick,fgkDefaultStaveThick));
+    fStaveThick = fgkDefaultStaveThick;
   }
 
   if (fSensorThick <= 0) {
@@ -240,10 +240,10 @@ void AliITSUv0Layer::CreateLayer(TGeoVolume *moth){
     fSensorThick = fgkDefaultSensorThick;
   }
 
-  if (fSensorThick > fLadderThick) {
-    AliWarning(Form("Sensor thickness (%f) is greater than ladder thickness (%f), fixing",
-		 fSensorThick,fLadderThick));
-    fSensorThick = fLadderThick;
+  if (fSensorThick > fStaveThick) {
+    AliWarning(Form("Sensor thickness (%f) is greater than stave thickness (%f), fixing",
+		 fSensorThick,fStaveThick));
+    fSensorThick = fStaveThick;
   }
 
 
@@ -254,32 +254,32 @@ void AliITSUv0Layer::CreateLayer(TGeoVolume *moth){
   }
 
 
-  // First create the ladder container
-  alpha = (360./(2*fNLadders))*DegToRad();
+  // First create the stave container
+  alpha = (360./(2*fNStaves))*DegToRad();
 
-  //  fLadderWidth = fLayRadius*Tan(alpha);
+  //  fStaveWidth = fLayRadius*Tan(alpha);
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(),fLayerNumber);
   TGeoVolume *layVol = new TGeoVolumeAssembly(volname);
-  layVol->SetUniqueID(fDetTypeID);
+  layVol->SetUniqueID(fChipTypeID);
 
 //  layVol->SetVisibility(kFALSE);
   layVol->SetVisibility(kTRUE);
   layVol->SetLineColor(1);
 
-  TGeoVolume *laddVol = CreateLadder();
+  TGeoVolume *stavVol = CreateStave();
 
 
   // Now build up the layer
-  alpha = 360./fNLadders;
-  Double_t r = fLayRadius + ((TGeoBBox*)laddVol->GetShape())->GetDY();
-  for (Int_t j=0; j<fNLadders; j++) {
+  alpha = 360./fNStaves;
+  Double_t r = fLayRadius + ((TGeoBBox*)stavVol->GetShape())->GetDY();
+  for (Int_t j=0; j<fNStaves; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);
     ypos = r*SinD(phi);// r*CosD(-phi);
     zpos = 0.;
     phi += 90;
-    layVol->AddNode(laddVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
+    layVol->AddNode(stavVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
 						    new TGeoRotation("",phi,0,0)));
   }
 
@@ -296,7 +296,7 @@ void AliITSUv0Layer::CreateLayer(TGeoVolume *moth){
 void AliITSUv0Layer::CreateLayerTurbo(TGeoVolume *moth){
 //
 // Creates the actual Layer and places inside its mother volume
-// A so-called "turbo" layer is a layer where ladders overlap in phi
+// A so-called "turbo" layer is a layer where staves overlap in phi
 // User can set width and tilt angle, no check is performed here
 // to avoid volume overlaps
 //
@@ -320,31 +320,31 @@ void AliITSUv0Layer::CreateLayerTurbo(TGeoVolume *moth){
 
 
   // Check if the user set the proper (remaining) parameters
-  if (fLadderWidth <= 0)
-    AliFatal(Form("Wrong ladder width (%f)",fLadderWidth));
-  if (Abs(fLadderTilt) > 45)
-    AliWarning(Form("Ladder tilt angle (%f) greater than 45deg",fLadderTilt));
+  if (fStaveWidth <= 0)
+    AliFatal(Form("Wrong stave width (%f)",fStaveWidth));
+  if (Abs(fStaveTilt) > 45)
+    AliWarning(Form("Stave tilt angle (%f) greater than 45deg",fStaveTilt));
 
 
   snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLayerPattern(), fLayerNumber);
   TGeoVolume *layVol = new TGeoVolumeAssembly(volname);
-  layVol->SetUniqueID(fDetTypeID);
+  layVol->SetUniqueID(fChipTypeID);
   layVol->SetVisibility(kTRUE);
   layVol->SetLineColor(1);
-  TGeoVolume *laddVol = CreateLadder();
+  TGeoVolume *stavVol = CreateStave();
 
 
   // Now build up the layer
-  alpha = 360./fNLadders;
-  Double_t r = fLayRadius /* +module thick ?! */;
-  for (Int_t j=0; j<fNLadders; j++) {
+  alpha = 360./fNStaves;
+  Double_t r = fLayRadius /* +chip thick ?! */;
+  for (Int_t j=0; j<fNStaves; j++) {
     Double_t phi = j*alpha + fPhi0;
     xpos = r*CosD(phi);// r*SinD(-phi);
     ypos = r*SinD(phi);// r*CosD(-phi);
     zpos = 0.;
     phi += 90;
-    layVol->AddNode(laddVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
-						    new TGeoRotation("", phi-fLadderTilt,0,0)));
+    layVol->AddNode(stavVol, j, new TGeoCombiTrans( xpos, ypos, zpos,
+						    new TGeoRotation("", phi-fStaveTilt,0,0)));
   }
 
 
@@ -355,9 +355,9 @@ void AliITSUv0Layer::CreateLayerTurbo(TGeoVolume *moth){
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager * /*mgr*/){
+TGeoVolume* AliITSUv0Layer::CreateStave(const TGeoManager * /*mgr*/){
 //
-// Creates the actual Ladder
+// Creates the actual Stave
 //
 // Input:
 //         mgr  : the GeoManager (used only to get the proper material)
@@ -376,70 +376,70 @@ TGeoVolume* AliITSUv0Layer::CreateLadder(const TGeoManager * /*mgr*/){
 
 
   // First create all needed shapes
-  alpha = (360./(2*fNLadders))*DegToRad();
+  alpha = (360./(2*fNStaves))*DegToRad();
 
-  // The ladder
+  // The stave
   xlen = fLayRadius*Tan(alpha);
-  if (fIsTurbo) xlen = 0.5*fLadderWidth;
-  ylen = 0.5*fLadderThick;
+  if (fIsTurbo) xlen = 0.5*fStaveWidth;
+  ylen = 0.5*fStaveThick;
   zlen = 0.5*fZLength;
 
   Double_t yplus = 0.46;
   //  Double_t origin[]={0,-yplus/2,0};
-  //  TGeoBBox *ladder = new TGeoBBox(xlen, ylen+yplus/2, zlen, origin);
-  TGeoXtru *ladder = new TGeoXtru(2); //z sections
+  //  TGeoBBox *stave = new TGeoBBox(xlen, ylen+yplus/2, zlen, origin);
+  TGeoXtru *stave = new TGeoXtru(2); //z sections
   Double_t xv[5] = {xlen,xlen,0,-xlen,-xlen};
   Double_t yv[5] = {ylen+0.09,-0.15,-yplus-fSensorThick,-0.15,ylen+0.09};    
-  ladder->DefinePolygon(5,xv,yv);
-  ladder->DefineSection(0,-zlen,0,0,1.);
-  ladder->DefineSection(1,+zlen,0,0,1.);
+  stave->DefinePolygon(5,xv,yv);
+  stave->DefineSection(0,-zlen,0,0,1.);
+  stave->DefineSection(1,+zlen,0,0,1.);
   
 
   // We have all shapes: now create the real volumes
 //  TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
 
-  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
-//  TGeoVolume *laddVol = new TGeoVolume(volname, ladder, medAir);
-  TGeoVolume *laddVol = new TGeoVolumeAssembly(volname);
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
+//  TGeoVolume *stavVol = new TGeoVolume(volname, stave, medAir);
+  TGeoVolume *stavVol = new TGeoVolumeAssembly(volname);
 
-  //  laddVol->SetVisibility(kFALSE);
-  laddVol->SetVisibility(kTRUE);
-  laddVol->SetLineColor(2);
-  TGeoVolume *modVol = CreateModule(xlen,ylen, zlen);
+  //  stavVol->SetVisibility(kFALSE);
+  stavVol->SetVisibility(kTRUE);
+  stavVol->SetLineColor(2);
+  TGeoVolume *modVol = CreateChip(xlen,ylen, zlen);
 
 
-  // Now build up the ladder
+  // Now build up the stave
   zmod = ((TGeoBBox*)modVol->GetShape())->GetDZ();
-  for (Int_t j=0; j<fNModules; j++) {
+  for (Int_t j=0; j<fNChips; j++) {
     xpos = 0.;
     ypos = 0.021;  // Remove small overlap - M.S: 21may13
-    zpos = -ladder->GetDZ() + j*2*zmod + zmod;
-    laddVol->AddNode(modVol, j, new TGeoTranslation(xpos, ypos, zpos));
+    zpos = -stave->GetDZ() + j*2*zmod + zmod;
+    stavVol->AddNode(modVol, j, new TGeoTranslation(xpos, ypos, zpos));
   }
  
 
   // put mechanical stave structure, only inner barrel up to now
   if (fLayerNumber<3) {
-    TGeoVolume *mechLaddVol = CreateStaveStruct(xlen,zlen); 
-    if (mechLaddVol)
-      laddVol->AddNode(mechLaddVol, fNModules, new TGeoCombiTrans(0, -0.15-ylen, 0, new TGeoRotation("",0, 0, 180)));
+    TGeoVolume *mechStavVol = CreateStaveStruct(xlen,zlen); 
+    if (mechStavVol)
+      stavVol->AddNode(mechStavVol, fNChips, new TGeoCombiTrans(0, -0.15-ylen, 0, new TGeoRotation("",0, 0, 180)));
   }
   
 
-  // Done, return the ladder
-  return laddVol;
+  // Done, return the stave
+  return stavVol;
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveStruct(const Double_t xlad,
-					      const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveStruct(const Double_t xsta,
+					      const Double_t zsta,
 					      const TGeoManager *mgr){
 //
 // Create the mechanical stave structure
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -450,33 +450,33 @@ TGeoVolume* AliITSUv0Layer::CreateStaveStruct(const Double_t xlad,
 // Updated:      26 Apr 2013  Mario Sitta
 //
 
-  TGeoVolume *mechLaddVol = 0;
+  TGeoVolume *mechStavVol = 0;
 
   switch (fStaveModel) {
     case AliITSUv0::kModelDummy:
-      mechLaddVol = CreateStaveModelDummy(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModelDummy(xsta,zsta,mgr);
       break;
     case AliITSUv0::kModel0:
-      mechLaddVol = CreateStaveModel0(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModel0(xsta,zsta,mgr);
       break;
     case AliITSUv0::kModel1:
-      mechLaddVol = CreateStaveModel1(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModel1(xsta,zsta,mgr);
       break;
     case AliITSUv0::kModel21:
-      mechLaddVol = CreateStaveModel21(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModel21(xsta,zsta,mgr);
       break;
     case AliITSUv0::kModel22:
-      mechLaddVol = CreateStaveModel22(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModel22(xsta,zsta,mgr);
       break;
     case AliITSUv0::kModel3:
-      mechLaddVol = CreateStaveModel3(xlad,zlad,mgr);
+      mechStavVol = CreateStaveModel3(xsta,zsta,mgr);
       break;
     default:
       AliFatal(Form("Unknown stave model %d",fStaveModel));
       break;
   }
 
-  return mechLaddVol; 
+  return mechStavVol; 
 }
 
 
@@ -488,8 +488,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModelDummy(const Double_t ,
 // Create dummy stave
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -505,15 +505,15 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModelDummy(const Double_t ,
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
-					      const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xsta,
+					      const Double_t zsta,
 					      const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 0 of TDR
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -536,8 +536,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
   // Local parameters
   Double_t kConeOutRadius = 0.15/2;
   Double_t kConeInRadius = 0.1430/2;
-  Double_t kStaveLength = zlad*2;
-  Double_t kStaveWidth = xlad*2-kConeOutRadius*2;
+  Double_t kStaveLength = zsta*2;
+  Double_t kStaveWidth = xsta*2-kConeOutRadius*2;
   Double_t kWidth = kStaveWidth/4;//1/2 of kWidth
   Double_t kStaveHeight = 0.3;
   Double_t kHeight = kStaveHeight/2;
@@ -555,11 +555,11 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
   AliDebug(1, Form("BuildLevel %d\n",fBuildLevel));
 
   char volname[30];
-  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
+  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
 
   Double_t z=0, y=-0.011+0.0150, x=0;
 
-   TGeoVolume *mechLaddVol = 0;
+   TGeoVolume *mechStavVol = 0;
 
   if (fBuildLevel < 5) {
 
@@ -571,10 +571,10 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     mechStruct->DefineSection(0,-kStaveLength-0.1,0,0,1.);
     mechStruct->DefineSection(1,kStaveLength+0.1,0,0,1.);
 
-    mechLaddVol = new TGeoVolume(volname, mechStruct, medAir);
-    mechLaddVol->SetLineColor(12);
-    mechLaddVol->SetFillColor(12); 
-    mechLaddVol->SetVisibility(kTRUE);
+    mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+    mechStavVol->SetLineColor(12);
+    mechStavVol->SetFillColor(12); 
+    mechStavVol->SetVisibility(kTRUE);
       
     // detailed structure ++++++++++++++
     //Pipe Kapton grey-35
@@ -582,8 +582,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     TGeoVolume *volCoolTube= new TGeoVolume("pipe", coolTube, medKapton);
     volCoolTube->SetFillColor(35);
     volCoolTube->SetLineColor(35);
-    mechLaddVol->AddNode(volCoolTube,0,new TGeoTranslation(x+(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
-    mechLaddVol->AddNode(volCoolTube,1,new TGeoTranslation(x-(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
+    mechStavVol->AddNode(volCoolTube,0,new TGeoTranslation(x+(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
+    mechStavVol->AddNode(volCoolTube,1,new TGeoTranslation(x-(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
   }
 
   if (fBuildLevel < 4) {
@@ -591,8 +591,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     TGeoVolume *volCoolTubeW= new TGeoVolume("pipeWater", coolTubeW, medWater);
     volCoolTubeW->SetFillColor(4);
     volCoolTubeW->SetLineColor(4);
-    mechLaddVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x+(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
-    mechLaddVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x-(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
+    mechStavVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x+(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
+    mechStavVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x-(kStaveWidth/2),y-(kHeight-kConeOutRadius),0));
   }
 
   //frequency of filament
@@ -608,16 +608,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     volT2->SetFillColor(12); 
 
     for(int i=1;i<loop;i++){  //i<60;i++){
-      mechLaddVol->AddNode(volT2,4*i+0,
+      mechStavVol->AddNode(volT2,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y+(2*kConeOutRadius),z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2,//z-14.25+(i*2*kL1),
 						     new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+1,
+      mechStavVol->AddNode(volT2,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y+(2*kConeOutRadius),z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2,//z-14.25+(i*2*kL1),
 						     new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+2,
+      mechStavVol->AddNode(volT2,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y+(2*kConeOutRadius),z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2,//z-14.25+(i*2*kL1),
 						     new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+3,
+      mechStavVol->AddNode(volT2,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y+(2*kConeOutRadius),z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2,//z-14.25+(i*2*kL1),  
 						     new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
     }
@@ -630,16 +630,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     volT1->SetFillColor(12); 
 
     for(int i=1;i<loop;i++){
-      mechLaddVol->AddNode(volT1,4*i+0,
+      mechStavVol->AddNode(volT1,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight,z-kStaveLength/2+((4/n)*kL1*i)+kS1/2, //z-14.25+(i*2*kL1),  
 						     new TGeoRotation("volT1",-90,kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+1,
+      mechStavVol->AddNode(volT1,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight,z-kStaveLength/2+((4/n)*kL1*i)+kS1/2,  //z-14.25+(i*2*kL1), 
 						     new TGeoRotation("volT1",90,kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+2,
+      mechStavVol->AddNode(volT1,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight,z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2, //z-14.25+(i*2*kL1), 
 						     new TGeoRotation("volT1",-90,-kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+3,
+      mechStavVol->AddNode(volT1,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight,z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2, //z-14.25+(i*2*kL1), 
 						     new TGeoRotation("volT1",-90,+kAlpha,0)));
     }
@@ -653,52 +653,52 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel0(const Double_t xlad,
     volTG->SetFillColor(5); 
 
     for(int i=1;i<loop;i++){ //i<60;i++){
-      mechLaddVol->AddNode(volTG,4*i+0,
+      mechStavVol->AddNode(volTG,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y-0.16,z-kStaveLength/2+((4/n)*kL1*i)+kS1/2, //z-14.25+(2*kL1*i), 
 						     new TGeoRotation("volTG",-90,kAlpha,0)));
-      mechLaddVol->AddNode(volTG,4*i+1,
+      mechStavVol->AddNode(volTG,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y-0.16,z-kStaveLength/2+((4/n)*kL1*i)+kS1/2, //z-14.25+(2*kL1*i), 
 						     new TGeoRotation("volTG",90,kAlpha,0)));
-      mechLaddVol->AddNode(volTG,4*i+2,
+      mechStavVol->AddNode(volTG,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y-0.16,z-kStaveLength/2+((4/n)*i*kL1)+kS1/2, //z-14.25+(i*2*kL1), 
 						     new TGeoRotation("volTG",-90,-kAlpha,0)));
-      mechLaddVol->AddNode(volTG,4*i+3,
+      mechStavVol->AddNode(volTG,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y-0.16,z-kStaveLength/2+(i*(4/n)*kL1)+kS1/2, //z-14.25+(i*2*kL1), 
 						     new TGeoRotation("volTG",-90,+kAlpha,0)));
     }
 
-    TGeoBBox *glue = new TGeoBBox(xlad, 0.005/2, zlad);
+    TGeoBBox *glue = new TGeoBBox(xsta, 0.005/2, zsta);
     TGeoVolume *volGlue=new TGeoVolume("Glue2", glue, medGlue);
     volGlue->SetLineColor(5);
     volGlue->SetFillColor(5); 
-    //mechLaddVol->AddNode(volGlue, 0, new TGeoCombiTrans(x, y-0.16, z, new TGeoRotation("",0, 0, 0)));
-    mechLaddVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005, z, new TGeoRotation("",0, 0, 0)));
+    //mechStavVol->AddNode(volGlue, 0, new TGeoCombiTrans(x, y-0.16, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005, z, new TGeoRotation("",0, 0, 0)));
   }
 
   if (fBuildLevel < 1) {
     //Flex cable brown-28 TGeoBBox(width,thickness,length); 
-    TGeoBBox *kapCable = new TGeoBBox(xlad, 0.01/2, zlad);
+    TGeoBBox *kapCable = new TGeoBBox(xsta, 0.01/2, zsta);
     TGeoVolume *volCable=new TGeoVolume("FlexCable", kapCable, medFlexCable);
     volCable->SetLineColor(28);
     volCable->SetFillColor(28); 
-    mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005-0.01, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005-0.01, z, new TGeoRotation("",0, 0, 0)));
  }
 
   // Done, return the stave structur
-  return mechLaddVol;
+  return mechStavVol;
 }
 
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
-					      const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xsta,
+					      const Double_t zsta,
 					      const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 1 of TDR
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -721,9 +721,9 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
   // Local parameters
   Double_t kConeOutRadius = 0.15/2;
   //    Double_t kConeInRadius = 0.1430/2;
-  Double_t kStaveLength = zlad*2;
-  //    Double_t kStaveWidth = xlad*2-kConeOutRadius*2;
-  Double_t kStaveWidth = xlad*2;
+  Double_t kStaveLength = zsta*2;
+  //    Double_t kStaveWidth = xsta*2-kConeOutRadius*2;
+  Double_t kStaveWidth = xsta*2;
   Double_t kWidth = kStaveWidth/4;//1/2 of kWidth
   Double_t kStaveHeight = 0.3;
   Double_t kHeight = kStaveHeight/2;
@@ -737,10 +737,10 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
   Int_t  loop = (Int_t)((kStaveLength/(2*kL1))/2);
   
 
-  TGeoVolume *mechLaddVol = 0;
+  TGeoVolume *mechStavVol = 0;
 
   char volname[30];
-  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
+  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
     
 
   // detailed structure ++++++++++++++
@@ -749,7 +749,7 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
   // Polimide micro channels numbers
   Double_t yMC = y-kHeight+0.01;
   Int_t nb = (Int_t)(kStaveWidth/0.1)+1;
-  Double_t xladMC = (nb*0.1-0.08)/2;
+  Double_t xstaMC = (nb*0.1-0.08)/2;
 
 
   if (fBuildLevel < 5) {
@@ -761,37 +761,37 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
     mechStruct->DefineSection(0,-kStaveLength-0.1,0,0,1.);
     mechStruct->DefineSection(1,kStaveLength+0.1,0,0,1.);
 
-    mechLaddVol = new TGeoVolume(volname, mechStruct, medAir);
-    mechLaddVol->SetLineColor(12);
-    mechLaddVol->SetFillColor(12); 
-    mechLaddVol->SetVisibility(kTRUE);
+    mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+    mechStavVol->SetLineColor(12);
+    mechStavVol->SetFillColor(12); 
+    mechStavVol->SetVisibility(kTRUE);
       
     // Polimide micro channels numbers
-    TGeoBBox *tM0=new TGeoBBox(xladMC, 0.005/2, zlad);
+    TGeoBBox *tM0=new TGeoBBox(xstaMC, 0.005/2, zsta);
     TGeoVolume *volTM0=new TGeoVolume("MicroChanCover", tM0, medKapton);
     volTM0->SetLineColor(35);
     volTM0->SetFillColor(35); 
-    mechLaddVol->AddNode(volTM0, 0, new TGeoCombiTrans(x,-0.0125+yMC, z, new TGeoRotation("",0, 0, 0)));
-    mechLaddVol->AddNode(volTM0, 1, new TGeoCombiTrans(x,+0.0125+yMC, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volTM0, 0, new TGeoCombiTrans(x,-0.0125+yMC, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volTM0, 1, new TGeoCombiTrans(x,+0.0125+yMC, z, new TGeoRotation("",0, 0, 0)));
       
-    TGeoBBox *tM0b=new TGeoBBox(0.02/2, 0.02/2, zlad);
+    TGeoBBox *tM0b=new TGeoBBox(0.02/2, 0.02/2, zsta);
     TGeoVolume *volTM0b=new TGeoVolume("MicroChanWalls", tM0b, medKapton);
     volTM0b->SetLineColor(35);
     volTM0b->SetFillColor(35); 
     for (Int_t ib=0;ib<nb;ib++) {
-      mechLaddVol->AddNode(volTM0b, ib, new TGeoCombiTrans(x+ib*0.1-xladMC+0.01,yMC, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0b, ib, new TGeoCombiTrans(x+ib*0.1-xstaMC+0.01,yMC, z, new TGeoRotation("",0, 0, 0)));
     }
       
   }
     
   if (fBuildLevel < 4) {
     // Water in Polimide micro channels
-    TGeoBBox *water=new TGeoBBox(0.08/2, 0.02/2, zlad+0.1);
+    TGeoBBox *water=new TGeoBBox(0.08/2, 0.02/2, zsta+0.1);
     TGeoVolume *volWater=new TGeoVolume("Water", water, medWater);
     volWater->SetLineColor(4);
     volWater->SetFillColor(4); 
     for (Int_t ib=0;ib<(nb-1);ib++) {
-      mechLaddVol->AddNode(volWater, ib, new TGeoCombiTrans(x+ib*0.1-xladMC+0.06,yMC, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volWater, ib, new TGeoCombiTrans(x+ib*0.1-xstaMC+0.06,yMC, z, new TGeoRotation("",0, 0, 0)));
     }
   }
     
@@ -804,16 +804,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
     volT1->SetLineColor(12);
     volT1->SetFillColor(12); 
     for(int i=0;i<loop;i++){//i<30;i++){
-      mechLaddVol->AddNode(volT1,4*i+0,
+      mechStavVol->AddNode(volT1,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight+0.04+filHeight/2,z-kStaveLength/2+(4*kL1)+kS1/2, 
 						     new TGeoRotation("volT1",-90,kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+1,
+      mechStavVol->AddNode(volT1,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight+0.04+filHeight/2,z-kStaveLength/2+(4*kL1*i)+kS1/2, 
 						     new TGeoRotation("volT1",90,kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+2,
+      mechStavVol->AddNode(volT1,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight+0.04+filHeight/2,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2, 
 						     new TGeoRotation("volT1",-90,-kAlpha,0)));
-      mechLaddVol->AddNode(volT1,4*i+3,
+      mechStavVol->AddNode(volT1,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight+0.04+filHeight/2,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2, 
 						     new TGeoRotation("volT1",-90,+kAlpha,0)));
     }
@@ -824,16 +824,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
     volT2->SetLineColor(12);
     volT2->SetFillColor(12); 
     for(int i=0;i<loop;i++){ //i<30;i++){
-      mechLaddVol->AddNode(volT2,4*i+0,
+      mechStavVol->AddNode(volT2,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y+0.04+filHeight/2,z-kStaveLength/2+(i*4*kL1)+kS1/2,
 						     new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+1,
+      mechStavVol->AddNode(volT2,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y+0.04+filHeight/2,z-kStaveLength/2+(i*4*kL1)+kS1/2,
 						     new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+2,
+      mechStavVol->AddNode(volT2,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y+0.04+filHeight/2,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2,
 						     new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,4*i+3,
+      mechStavVol->AddNode(volT2,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y+0.04+filHeight/2,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2, 
 						     new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
     }
@@ -846,58 +846,58 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel1(const Double_t xlad,
     volT3->SetLineColor(5);
     volT3->SetFillColor(5); 
     for(int i=0;i<loop;i++){//i<30;i++){
-      mechLaddVol->AddNode(volT3,4*i+0,
+      mechStavVol->AddNode(volT3,4*i+0,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight+0.0325,z-kStaveLength/2+(4*kL1*i)+kS1/2, 
 						     new TGeoRotation("volT1",-90,kAlpha,0)));
-      mechLaddVol->AddNode(volT3,4*i+1,
+      mechStavVol->AddNode(volT3,4*i+1,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight+0.0325,z-kStaveLength/2+(4*kL1*i)+kS1/2, 
 						     new TGeoRotation("volT1",90,kAlpha,0)));
-      mechLaddVol->AddNode(volT3,4*i+2,
+      mechStavVol->AddNode(volT3,4*i+2,
 				  new TGeoCombiTrans(x+kWidth,y-kHeight+0.0325,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2, 
 						     new TGeoRotation("volT1",-90,-kAlpha,0)));
-      mechLaddVol->AddNode(volT3,4*i+3,
+      mechStavVol->AddNode(volT3,4*i+3,
 				  new TGeoCombiTrans(x-kWidth,y-kHeight+0.0325,z-kStaveLength/2+2*kL1+(i*4*kL1)+kS1/2, 
 						     new TGeoRotation("volT1",-90,+kAlpha,0)));
     }
       
     // Glue microchannel and sensor
-    TGeoBBox *glueM = new TGeoBBox(xlad, 0.01/2, zlad);
+    TGeoBBox *glueM = new TGeoBBox(xsta, 0.01/2, zsta);
     TGeoVolume *volGlueM=new TGeoVolume("MicroChanGlue", glueM, medGlue);
     volGlueM->SetLineColor(5);
     volGlueM->SetFillColor(5); 
-    mechLaddVol->AddNode(volGlueM, 0, new TGeoCombiTrans(x, y-0.16, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volGlueM, 0, new TGeoCombiTrans(x, y-0.16, z, new TGeoRotation("",0, 0, 0)));
 
     // Glue sensor and kapton
-    TGeoBBox *glue = new TGeoBBox(xlad, 0.005/2, zlad);
+    TGeoBBox *glue = new TGeoBBox(xsta, 0.005/2, zsta);
     TGeoVolume *volGlue=new TGeoVolume("SensorGlue", glue, medGlue);
     volGlue->SetLineColor(5);
     volGlue->SetFillColor(5); 
-    mechLaddVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005, z, new TGeoRotation("",0, 0, 0)));
   }
 
   if (fBuildLevel < 1) {
-    TGeoBBox *kapCable = new TGeoBBox(xlad, 0.01/2, zlad);
+    TGeoBBox *kapCable = new TGeoBBox(xsta, 0.01/2, zsta);
     TGeoVolume *volCable=new TGeoVolume("FlexCable", kapCable, medFlexCable);
     volCable->SetLineColor(28);
     volCable->SetFillColor(28); 
-    mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005-0.01, z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.165-fSensorThick-0.005-0.01, z, new TGeoRotation("",0, 0, 0)));
   }
     
   // Done, return the stave structur
-  return mechLaddVol;
+  return mechStavVol;
 
 }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
-					       const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xsta,
+					       const Double_t zsta,
 					       const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 2.1 of TDR
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -923,8 +923,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
   // Local parameters
   Double_t kConeOutRadius =0.151384/2;
   Double_t kConeInRadius = 0.145034/2;
-  Double_t kStaveLength = zlad;
-  Double_t kStaveWidth = xlad*2;
+  Double_t kStaveLength = zsta;
+  Double_t kStaveWidth = xsta*2;
   Double_t kWidth = (kStaveWidth+0.005)/4;
   Double_t kStaveHeigth = 0.33;//0.33;
   Double_t kHeight = (kStaveHeigth+0.025)/2;
@@ -944,11 +944,11 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
 
 
   char volname[30];
-  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
+  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
 
   Double_t z=0, y=-(kConeOutRadius+0.03)+0.0385, x=0;
 
-  TGeoVolume *mechLaddVol = 0;
+  TGeoVolume *mechStavVol = 0;
 
   if (fBuildLevel < 5) {
     // world (trapezoid)
@@ -959,18 +959,18 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
     mechStruct->DefineSection(0,-kStaveLength-0.1,0,0,1.);
     mechStruct->DefineSection(1,kStaveLength+0.1,0,0,1.);
 
-    mechLaddVol = new TGeoVolume(volname, mechStruct, medAir);
-    mechLaddVol->SetLineColor(12);
-    mechLaddVol->SetFillColor(12); 
-    mechLaddVol->SetVisibility(kTRUE);  
+    mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+    mechStavVol->SetLineColor(12);
+    mechStavVol->SetFillColor(12); 
+    mechStavVol->SetVisibility(kTRUE);  
       
     //Pipe Kapton grey-35 
     TGeoCone *cone1 = new TGeoCone(kStaveLength,kConeInRadius,kConeOutRadius,kConeInRadius,kConeOutRadius);
     TGeoVolume *volCone1= new TGeoVolume("PolyimidePipe", cone1, medKapton);
     volCone1->SetFillColor(35);
     volCone1->SetLineColor(35);
-    mechLaddVol->AddNode(volCone1,1,new TGeoTranslation(x+0.25,y,z));
-    mechLaddVol->AddNode(volCone1,2,new TGeoTranslation(x-0.25,y,z));
+    mechStavVol->AddNode(volCone1,1,new TGeoTranslation(x+0.25,y,z));
+    mechStavVol->AddNode(volCone1,2,new TGeoTranslation(x-0.25,y,z));
   }
 
   if (fBuildLevel < 4) {
@@ -979,8 +979,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
     TGeoVolume *volCoolTubeW= new TGeoVolume("Water", coolTubeW, medWater);
     volCoolTubeW->SetFillColor(4);
     volCoolTubeW->SetLineColor(4);
-    mechLaddVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x-0.25,y,z));
-    mechLaddVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x+0.25,y,z));
+    mechStavVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x-0.25,y,z));
+    mechStavVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x+0.25,y,z));
   }
 
   if (fBuildLevel < 3) {
@@ -991,11 +991,11 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
     volT2->SetLineColor(12);
     volT2->SetFillColor(12); 
     for(int i=0;i<loop;i++){// i<28;i++){
-      mechLaddVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,i*4+2,new TGeoCombiTrans(x-kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
-      mechLaddVol->AddNode(volT2,i*4+3,new TGeoCombiTrans(x+kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
-      mechLaddVol->AddNode(volT2,i*4+4,new TGeoCombiTrans(x-kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
-//    mechLaddVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight-(0.12/2)+0.072,z+kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
+      mechStavVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
+      mechStavVol->AddNode(volT2,i*4+2,new TGeoCombiTrans(x-kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
+      mechStavVol->AddNode(volT2,i*4+3,new TGeoCombiTrans(x+kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
+      mechStavVol->AddNode(volT2,i*4+4,new TGeoCombiTrans(x-kWidth,y+kHeight+(0.12/2)-0.014+0.007,z-kStaveLength+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
+//    mechStavVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight-(0.12/2)+0.072,z+kStaveLength+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
 
  }
  
@@ -1004,75 +1004,75 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
     TGeoVolume *plate4 = new TGeoVolume("WallOut",box4,medM60J3K);
     plate4->SetFillColor(35);
     plate4->SetLineColor(35);
-    mechLaddVol->AddNode(plate4,1,new TGeoCombiTrans(x+(2*kStaveWidth/4)-(0.03/2),y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate4",0,0,0)));
-    mechLaddVol->AddNode(plate4,2,new TGeoCombiTrans(x-(2*kStaveWidth/4)+(0.03/2),y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate4",0,0,0)));
+    mechStavVol->AddNode(plate4,1,new TGeoCombiTrans(x+(2*kStaveWidth/4)-(0.03/2),y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate4",0,0,0)));
+    mechStavVol->AddNode(plate4,2,new TGeoCombiTrans(x-(2*kStaveWidth/4)+(0.03/2),y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate4",0,0,0)));
     //wall side in
     TGeoBBox *box5 = new TGeoBBox(0.015/2,0.12/2,kStaveLength-0.50);
     TGeoVolume *plate5 = new TGeoVolume("WallIn",box5,medM60J3K);
     plate5->SetFillColor(12);
     plate5->SetLineColor(12);
-    mechLaddVol->AddNode(plate5,1,new TGeoCombiTrans(x+(2*kStaveWidth/4)-0.03-0.015/2,y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate5",0,0,0)));
-    mechLaddVol->AddNode(plate5,2,new TGeoCombiTrans(x-(2*kStaveWidth/4)+0.03+0.015/2,y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate5",0,0,0)));
+    mechStavVol->AddNode(plate5,1,new TGeoCombiTrans(x+(2*kStaveWidth/4)-0.03-0.015/2,y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate5",0,0,0)));
+    mechStavVol->AddNode(plate5,2,new TGeoCombiTrans(x-(2*kStaveWidth/4)+0.03+0.015/2,y-0.0022-kConeOutRadius+0.12/2+0.007,z,new TGeoRotation("plate5",0,0,0)));
 
      //Amec Thermasol red-2 cover tube FGS300
     TGeoConeSeg *cons1 = new TGeoConeSeg(kStaveLength-0.50,kConeOutRadius,kConeOutRadius+kLay1,kConeOutRadius,kConeOutRadius+kLay1,0,180);
     TGeoVolume *cone11 = new TGeoVolume("ThermasolPipeCover",cons1,medFGS003);
     cone11->SetFillColor(2);
     cone11->SetLineColor(2);
-    mechLaddVol->AddNode(cone11,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("Cone11",0,0,0)));
-    mechLaddVol->AddNode(cone11,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("Cone11",0,0,0)));
+    mechStavVol->AddNode(cone11,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("Cone11",0,0,0)));
+    mechStavVol->AddNode(cone11,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("Cone11",0,0,0)));
 
     TGeoBBox *box2 = new TGeoBBox((0.50-(2*kConeOutRadius))/2,kLay1/2,kStaveLength-0.50);
     TGeoVolume *plate2 = new TGeoVolume("ThermasolMiddle",box2,medFGS003);
     plate2->SetFillColor(2);
     plate2->SetLineColor(2);
-    mechLaddVol->AddNode(plate2,1,new TGeoCombiTrans(x,y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate2",0,0,0)));
+    mechStavVol->AddNode(plate2,1,new TGeoCombiTrans(x,y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate2",0,0,0)));
 
     TGeoBBox *box21 = new TGeoBBox((0.75-0.25-kConeOutRadius-kLay1)/2,kLay1/2,kStaveLength-0.50);
     TGeoVolume *plate21 = new TGeoVolume("ThermasolLeftRight",box21,medFGS003);
     plate21->SetFillColor(2);
     plate21->SetLineColor(2);
-    mechLaddVol->AddNode(plate21,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(0.75-0.25-kConeOutRadius)/2-(kLay1/2),y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate21",0,0,0)));
-    mechLaddVol->AddNode(plate21,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-(0.75-0.25-kConeOutRadius)/2+(kLay1/2),y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate21",0,0,0)));
+    mechStavVol->AddNode(plate21,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(0.75-0.25-kConeOutRadius)/2-(kLay1/2),y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate21",0,0,0)));
+    mechStavVol->AddNode(plate21,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-(0.75-0.25-kConeOutRadius)/2+(kLay1/2),y-kConeOutRadius+(kLay1/2),z,new TGeoRotation("plate21",0,0,0)));
 
     TGeoBBox *box22 = new TGeoBBox((kLay1/2),kConeOutRadius/2,kStaveLength-0.50);
     TGeoVolume *plate22 = new TGeoVolume("ThermasolVertical",box22,medFGS003);
     plate22->SetFillColor(2);
     plate22->SetLineColor(2);
-    mechLaddVol->AddNode(plate22,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-    mechLaddVol->AddNode(plate22,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-    mechLaddVol->AddNode(plate22,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-    mechLaddVol->AddNode(plate22,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+    mechStavVol->AddNode(plate22,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+    mechStavVol->AddNode(plate22,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+    mechStavVol->AddNode(plate22,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+    mechStavVol->AddNode(plate22,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-(kLay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
 
     //C Fleece
     TGeoConeSeg *cons2 = new TGeoConeSeg(kStaveLength-0.50,kConeOutRadius+kLay1,kConeOutRadius+kLay1+kLay2,kConeOutRadius+kLay1,kConeOutRadius+kLay1+kLay2,0,180); 
     TGeoVolume *cone12 = new TGeoVolume("CFleecePipeCover",cons2,medCarbonFleece);
     cone12->SetFillColor(28);
     cone12->SetLineColor(28);
-    mechLaddVol->AddNode(cone12,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("Cone12",0,0,0)));
-    mechLaddVol->AddNode(cone12,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("Cone12",0,0,0)));
+    mechStavVol->AddNode(cone12,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("Cone12",0,0,0)));
+    mechStavVol->AddNode(cone12,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("Cone12",0,0,0)));
 
     TGeoBBox *box3 = new TGeoBBox((0.50-(2*(kConeOutRadius+kLay1)))/2,kLay2/2,kStaveLength-0.50);
     TGeoVolume *plate3 = new TGeoVolume("CFleeceMiddle",box3,medCarbonFleece);
     plate3->SetFillColor(28);
     plate3->SetLineColor(28);
-    mechLaddVol->AddNode(plate3,1,new TGeoCombiTrans(x,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate3",0,0,0)));
+    mechStavVol->AddNode(plate3,1,new TGeoCombiTrans(x,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate3",0,0,0)));
 
     TGeoBBox *box31 = new TGeoBBox((0.75-0.25-kConeOutRadius-kLay1)/2,kLay2/2,kStaveLength-0.50);
     TGeoVolume *plate31 = new TGeoVolume("CFleeceLeftRight",box31,medCarbonFleece);
     plate31->SetFillColor(28);
     plate31->SetLineColor(28);
-    mechLaddVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+kLay1+(0.75-0.25-kConeOutRadius-kLay1)/2,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate31",0,0,0)));
-    mechLaddVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-kLay1-(0.75-0.25-kConeOutRadius-kLay1)/2,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate31",0,0,0)));
+    mechStavVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+kLay1+(0.75-0.25-kConeOutRadius-kLay1)/2,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate31",0,0,0)));
+    mechStavVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-kLay1-(0.75-0.25-kConeOutRadius-kLay1)/2,y-kConeOutRadius+kLay1+(kLay2/2),z,new TGeoRotation("plate31",0,0,0)));
 
     TGeoBBox *box32 = new TGeoBBox((kLay2/2),(kConeOutRadius-kLay1)/2,kStaveLength-0.50);
     TGeoVolume *plate32 = new TGeoVolume("CFleeceVertical",box32,medCarbonFleece);
     plate32->SetFillColor(28);
     plate32->SetLineColor(28);
-    mechLaddVol->AddNode(plate32,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+kLay1+(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-    mechLaddVol->AddNode(plate32,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-kLay1-(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-    mechLaddVol->AddNode(plate32,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+kLay1+(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-    mechLaddVol->AddNode(plate32,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-kLay1-(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+    mechStavVol->AddNode(plate32,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+kLay1+(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+    mechStavVol->AddNode(plate32,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-kLay1-(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+    mechStavVol->AddNode(plate32,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+kLay1+(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+    mechStavVol->AddNode(plate32,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-kLay1-(kLay2/2),y+(kLay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
 
 
     //K13D2U carbon plate
@@ -1080,52 +1080,52 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel21(const Double_t xlad,
     TGeoVolume *plate1 = new TGeoVolume("CarbonPlate",box1,medK13D2U2k);
     plate1->SetFillColor(5);
     plate1->SetLineColor(5);
-    mechLaddVol->AddNode(plate1,1,new TGeoCombiTrans(x,y-(kConeOutRadius+(kLay3/2)),z,new TGeoRotation("plate1",0,0,0)));
+    mechStavVol->AddNode(plate1,1,new TGeoCombiTrans(x,y-(kConeOutRadius+(kLay3/2)),z,new TGeoRotation("plate1",0,0,0)));
 
     //C Fleece bottom plate 
     TGeoBBox *box6 = new TGeoBBox(2*kWidth,kLay2/2,kStaveLength-0.50);
     TGeoVolume *plate6 = new TGeoVolume("CFleeceBottom",box6,medCarbonFleece);
     plate6->SetFillColor(2);
     plate6->SetLineColor(2);
-    mechLaddVol->AddNode(plate6,1,new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)),z,new TGeoRotation("plate1",0,0,0)));
+    mechStavVol->AddNode(plate6,1,new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)),z,new TGeoRotation("plate1",0,0,0)));
       
       
   }
 
   if (fBuildLevel < 2) {
     //Glue layers and kapton
-    TGeoBBox *glue = new TGeoBBox(kStaveWidth/2, 0.005/2, zlad);
+    TGeoBBox *glue = new TGeoBBox(kStaveWidth/2, 0.005/2, zsta);
     TGeoVolume *volGlue=new TGeoVolume("Glue", glue, medGlue);
     volGlue->SetLineColor(5);
     volGlue->SetFillColor(5); 
-    mechLaddVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
-    mechLaddVol->AddNode(volGlue, 1, new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)+0.01+fSensorThick+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volGlue, 1, new TGeoCombiTrans(x,y-(kConeOutRadius+kLay3+(kLay2/2)+0.01+fSensorThick+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
   }
 
   if (fBuildLevel < 1) {
-    TGeoBBox *kapCable = new TGeoBBox(kStaveWidth/2, 0.01/2, zlad);
+    TGeoBBox *kapCable = new TGeoBBox(kStaveWidth/2, 0.01/2, zsta);
     TGeoVolume *volCable=new TGeoVolume("FlexCable", kapCable, medFlexCable);
     volCable->SetLineColor(28);
     volCable->SetFillColor(28); 
-    mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+kLay3+(kLay2/2)+0.01+fSensorThick+0.01+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
+    mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+kLay3+(kLay2/2)+0.01+fSensorThick+0.01+(0.01/2)), z, new TGeoRotation("",0, 0, 0)));
   }
     
 
   // Done, return the stave structure
-  return mechLaddVol;
+  return mechStavVol;
   
 }
 // new model22
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
-					       const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xsta,
+					       const Double_t zsta,
 					       const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 2.2 of TDR
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1152,8 +1152,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
   // Local parameters
   Double_t kConeOutRadius =0.107/2;//0.107/2;
   Double_t kConeInRadius = 0.1015/2;//0.10105/2
-  Double_t kStaveLength = zlad;
-  Double_t kStaveWidth = xlad*2;
+  Double_t kStaveLength = zsta;
+  Double_t kStaveWidth = xsta*2;
   Double_t kWidth = (kStaveWidth)/4;
   Double_t kStaveHeight = 0.283;//0.33;
   Double_t kHeight = (kStaveHeight)/2;
@@ -1178,11 +1178,11 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
   Int_t  loop = (Int_t)(kStaveLength/(2*kL1));
 
   char volname[30];
-  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
+  snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
 
   Double_t z=0, y=-(2*kConeOutRadius)+klay1+klay2+fSensorThick/2-0.0004, x=0;
 
-  TGeoVolume *mechLaddVol = 0;
+  TGeoVolume *mechStavVol = 0;
 
   if (fBuildLevel < 5) {
     // world (trapezoid)
@@ -1196,18 +1196,18 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
     mechStruct->DefineSection(0,-kStaveLength,0,0,1.);
     mechStruct->DefineSection(1,kStaveLength,0,0,1.);
 
-    mechLaddVol = new TGeoVolume(volname, mechStruct, medAir);
-    mechLaddVol->SetLineColor(12);
-    mechLaddVol->SetFillColor(12); 
-    mechLaddVol->SetVisibility(kTRUE);  
+    mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+    mechStavVol->SetLineColor(12);
+    mechStavVol->SetFillColor(12); 
+    mechStavVol->SetVisibility(kTRUE);  
       
     //Polyimide Pipe Kapton grey-35 
     TGeoCone *cone1 = new TGeoCone(kStaveLength,kConeInRadius,kConeOutRadius-0.0001,kConeInRadius,kConeOutRadius-0.0001);
     TGeoVolume *volCone1= new TGeoVolume("PolyimidePipe", cone1, medKapton);
     volCone1->SetFillColor(35);
     volCone1->SetLineColor(35);
-    mechLaddVol->AddNode(volCone1,1,new TGeoTranslation(x+0.25,y,z));
-    mechLaddVol->AddNode(volCone1,2,new TGeoTranslation(x-0.25,y,z));
+    mechStavVol->AddNode(volCone1,1,new TGeoTranslation(x+0.25,y,z));
+    mechStavVol->AddNode(volCone1,2,new TGeoTranslation(x-0.25,y,z));
     }
 
   if (fBuildLevel < 4) {
@@ -1215,8 +1215,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
     TGeoVolume *volCoolTubeW= new TGeoVolume("Water", coolTubeW, medWater);
     volCoolTubeW->SetFillColor(4);
     volCoolTubeW->SetLineColor(4);
-    mechLaddVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x-0.25,y,z));
-    mechLaddVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x+0.25,y,z));
+    mechStavVol->AddNode(volCoolTubeW,0,new TGeoTranslation(x-0.25,y,z));
+    mechStavVol->AddNode(volCoolTubeW,1,new TGeoTranslation(x+0.25,y,z));
   }
 
   if (fBuildLevel < 3) {
@@ -1228,13 +1228,13 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
     volT2->SetFillColor(12); 
     for(int i=0;i<loop;i++){// i<28;i++){
       // 1) Front Left Top Filament
-       mechLaddVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight+0.01,z-kStaveLength+0.1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
+       mechStavVol->AddNode(volT2,i*4+1,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight+0.01,z-kStaveLength+0.1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,90-kBeta)));
       // 2) Front Right Top Filament
-      mechLaddVol->AddNode(volT2,i*4+2,new TGeoCombiTrans(x-kWidth-0.0036,y+kHeight+0.01,z-kStaveLength+0.1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
+      mechStavVol->AddNode(volT2,i*4+2,new TGeoCombiTrans(x-kWidth-0.0036,y+kHeight+0.01,z-kStaveLength+0.1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,-90+kBeta)));
       // 3) Back Left  Top Filament
-      mechLaddVol->AddNode(volT2,i*4+3,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight+0.01,z-kStaveLength+0.1+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
+      mechStavVol->AddNode(volT2,i*4+3,new TGeoCombiTrans(x+kWidth+0.0036,y+kHeight+0.01,z-kStaveLength+0.1+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,-90+kAlpha,90-kBeta)));
       // 4) Back Right Top Filament
-      mechLaddVol->AddNode(volT2,i*4+4,new TGeoCombiTrans(x-kWidth-0.0036,y+kHeight+0.01,z-kStaveLength+0.1+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
+      mechStavVol->AddNode(volT2,i*4+4,new TGeoCombiTrans(x-kWidth-0.0036,y+kHeight+0.01,z-kStaveLength+0.1+2*kL1+(i*4*kL1)+kS1/2, new TGeoRotation("volT2",90,90-kAlpha,-90+kBeta)));
    }
  
      //Vertex  structure 
@@ -1244,131 +1244,131 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel22(const Double_t xlad,
       TGeoVolume *ibdv = new TGeoVolume("TopVertex",trd1,medM60J3K);
       ibdv->SetFillColor(12);
       ibdv->SetLineColor(12);
-      mechLaddVol->AddNode(ibdv,1,new TGeoCombiTrans(x,y+kStaveHeight+0.03,z,new TGeoRotation("ibdv",0.,-90,0)));//y+kStaveHeight+0.056
+      mechStavVol->AddNode(ibdv,1,new TGeoCombiTrans(x,y+kStaveHeight+0.03,z,new TGeoRotation("ibdv",0.,-90,0)));//y+kStaveHeight+0.056
 
       //left trd2
       TGeoTrd1 *trd2 = new TGeoTrd1(0,kSideVertexMWidth/2,kStaveLength, kSideVertexHeight/2);
       TGeoVolume *ibdv2 = new TGeoVolume("LeftVertex",trd2,medM60J3K);
       ibdv2->SetFillColor(12);
       ibdv2->SetLineColor(12);
-      mechLaddVol->AddNode(ibdv2,1,new TGeoCombiTrans(x+kStaveWidth/2-0.06,y-0.0355,z,new TGeoRotation("ibdv2",-103.3,90,0))); //x-kStaveWidth/2-0.09 old Config.C y-0.0355,
+      mechStavVol->AddNode(ibdv2,1,new TGeoCombiTrans(x+kStaveWidth/2-0.06,y-0.0355,z,new TGeoRotation("ibdv2",-103.3,90,0))); //x-kStaveWidth/2-0.09 old Config.C y-0.0355,
 
       //right trd3
       TGeoTrd1 *trd3 = new TGeoTrd1(0,kSideVertexMWidth/2,kStaveLength, kSideVertexHeight/2);
       TGeoVolume *ibdv3 = new TGeoVolume("RightVertex",trd3,medM60J3K);
       ibdv3->SetFillColor(12);
       ibdv3->SetLineColor(12);
-      mechLaddVol->AddNode(ibdv3,1,new TGeoCombiTrans(x-kStaveWidth/2+0.06,y-0.0355,z,new TGeoRotation("ibdv3",103.3,90,0))); //x-kStaveWidth/2+0.09 old Config.C
+      mechStavVol->AddNode(ibdv3,1,new TGeoCombiTrans(x-kStaveWidth/2+0.06,y-0.0355,z,new TGeoRotation("ibdv3",103.3,90,0))); //x-kStaveWidth/2+0.09 old Config.C
       
      //Carbon Fleece
-      TGeoConeSeg *cons2 = new TGeoConeSeg(zlad,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,0,180); 
+      TGeoConeSeg *cons2 = new TGeoConeSeg(zsta,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,kConeOutRadius+klay1,kConeOutRadius+klay1+klay2,0,180); 
       TGeoVolume *cone12 = new TGeoVolume("CarbonFleecePipeCover",cons2,medCarbonFleece);
       cone12->SetFillColor(28);
       cone12->SetLineColor(28);
-      mechLaddVol->AddNode(cone12,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("cone12",0,0,0)));
-      mechLaddVol->AddNode(cone12,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("cone12",0,0,0)));
+      mechStavVol->AddNode(cone12,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("cone12",0,0,0)));
+      mechStavVol->AddNode(cone12,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("cone12",0,0,0)));
 
-      TGeoBBox *box3 = new TGeoBBox((0.50-(2*(kConeOutRadius+klay1)))/2,klay2/2,zlad);//kStaveLength-0.50);
+      TGeoBBox *box3 = new TGeoBBox((0.50-(2*(kConeOutRadius+klay1)))/2,klay2/2,zsta);//kStaveLength-0.50);
       TGeoVolume *plate3 = new TGeoVolume("CarbonFleeceMiddle",box3,medCarbonFleece);
       plate3->SetFillColor(28);
       plate3->SetLineColor(28);
-      mechLaddVol->AddNode(plate3,1,new TGeoCombiTrans(x,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate3",0,0,0)));
+      mechStavVol->AddNode(plate3,1,new TGeoCombiTrans(x,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate3",0,0,0)));
 
-      TGeoBBox *box31 = new TGeoBBox((0.75-0.25-kConeOutRadius-klay1)/2+0.0025,klay2/2,zlad);
+      TGeoBBox *box31 = new TGeoBBox((0.75-0.25-kConeOutRadius-klay1)/2+0.0025,klay2/2,zsta);
       TGeoVolume *plate31 = new TGeoVolume("CarbonFleeceLeftRight",box31,medCarbonFleece);
       plate31->SetFillColor(28);
       plate31->SetLineColor(28);
-      mechLaddVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
-      mechLaddVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
+      mechStavVol->AddNode(plate31,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
+      mechStavVol->AddNode(plate31,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(0.75-0.25-kConeOutRadius-klay1)/2,y-kConeOutRadius+klay1+(klay2/2),z,new TGeoRotation("plate31",0,0,0)));
 
-      TGeoBBox *box32 = new TGeoBBox((klay2/2),(kConeOutRadius-klay1)/2,zlad);
+      TGeoBBox *box32 = new TGeoBBox((klay2/2),(kConeOutRadius-klay1)/2,zsta);
       TGeoVolume *plate32 = new TGeoVolume("CarbonFleeceVertical",box32,medCarbonFleece);
       plate32->SetFillColor(28);
       plate32->SetLineColor(28);
-      mechLaddVol->AddNode(plate32,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-      mechLaddVol->AddNode(plate32,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-klay1-(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-      mechLaddVol->AddNode(plate32,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+klay1+(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
-      mechLaddVol->AddNode(plate32,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+      mechStavVol->AddNode(plate32,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+klay1+(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+      mechStavVol->AddNode(plate32,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-klay1-(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+      mechStavVol->AddNode(plate32,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+klay1+(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
+      mechStavVol->AddNode(plate32,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-klay1-(klay2/2),y+(klay1-kConeOutRadius)/2,z,new TGeoRotation("plate32",0,0,0)));
 
      //Amec Thermasol red-2 cover tube FGS300 or Carbon Paper
-      TGeoConeSeg *cons1 = new TGeoConeSeg(zlad,kConeOutRadius,kConeOutRadius+klay1-0.0001,kConeOutRadius,kConeOutRadius+klay1-0.0001,0,180);//kConeOutRadius+klay1-0.0001
+      TGeoConeSeg *cons1 = new TGeoConeSeg(zsta,kConeOutRadius,kConeOutRadius+klay1-0.0001,kConeOutRadius,kConeOutRadius+klay1-0.0001,0,180);//kConeOutRadius+klay1-0.0001
       TGeoVolume *cone11 = new TGeoVolume("ThermasolPipeCover",cons1,medFGS003);
       cone11->SetFillColor(2);
       cone11->SetLineColor(2);
-      mechLaddVol->AddNode(cone11,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("cone11",0,0,0)));
-      mechLaddVol->AddNode(cone11,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("cone11",0,0,0)));
+      mechStavVol->AddNode(cone11,1,new TGeoCombiTrans(x+0.25,y,z,new TGeoRotation("cone11",0,0,0)));
+      mechStavVol->AddNode(cone11,2,new TGeoCombiTrans(x-0.25,y,z,new TGeoRotation("cone11",0,0,0)));
 
-      TGeoBBox *box2 = new TGeoBBox((0.50-(2*kConeOutRadius))/2,(klay1/2),zlad);//kStaveLength-0.50);
+      TGeoBBox *box2 = new TGeoBBox((0.50-(2*kConeOutRadius))/2,(klay1/2),zsta);//kStaveLength-0.50);
       TGeoVolume *plate2 = new TGeoVolume("ThermasolMiddle",box2,medFGS003);
       plate2->SetFillColor(2);
       plate2->SetLineColor(2);
-      mechLaddVol->AddNode(plate2,1,new TGeoCombiTrans(x,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate2",0,0,0)));
+      mechStavVol->AddNode(plate2,1,new TGeoCombiTrans(x,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate2",0,0,0)));
 
-      TGeoBBox *box21 = new TGeoBBox((0.75-0.25-kConeOutRadius-klay1)/2+0.0025,(klay1/2),zlad);
+      TGeoBBox *box21 = new TGeoBBox((0.75-0.25-kConeOutRadius-klay1)/2+0.0025,(klay1/2),zsta);
       TGeoVolume *plate21 = new TGeoVolume("ThermasolLeftRight",box21,medFGS003);
       plate21->SetFillColor(2);
       plate21->SetLineColor(2);
-      mechLaddVol->AddNode(plate21,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(0.75-0.25-kConeOutRadius)/2-(klay1/2)+0.0025,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate21",0,0,0)));
-      mechLaddVol->AddNode(plate21,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-(0.75-0.25-kConeOutRadius)/2+(klay1/2)-0.0025,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate21",0,0,0)));
+      mechStavVol->AddNode(plate21,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(0.75-0.25-kConeOutRadius)/2-(klay1/2)+0.0025,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate21",0,0,0)));
+      mechStavVol->AddNode(plate21,2,new TGeoCombiTrans(x-0.25-kConeOutRadius-(0.75-0.25-kConeOutRadius)/2+(klay1/2)-0.0025,y-kConeOutRadius+(klay1/2),z,new TGeoRotation("plate21",0,0,0)));
 
-      TGeoBBox *box22 = new TGeoBBox((klay1/2),kConeOutRadius/2,zlad);
+      TGeoBBox *box22 = new TGeoBBox((klay1/2),kConeOutRadius/2,zsta);
       TGeoVolume *plate22 = new TGeoVolume("ThermasolVertical",box22,medFGS003);
       plate22->SetFillColor(2);
       plate22->SetLineColor(2);
-      mechLaddVol->AddNode(plate22,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-      mechLaddVol->AddNode(plate22,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-      mechLaddVol->AddNode(plate22,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
-      mechLaddVol->AddNode(plate22,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+      mechStavVol->AddNode(plate22,1,new TGeoCombiTrans(x+0.25+kConeOutRadius+(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+      mechStavVol->AddNode(plate22,2,new TGeoCombiTrans(x+0.25-kConeOutRadius-(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+      mechStavVol->AddNode(plate22,3,new TGeoCombiTrans(x-0.25+kConeOutRadius+(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
+      mechStavVol->AddNode(plate22,4,new TGeoCombiTrans(x-0.25-kConeOutRadius-(klay1/2),y-kConeOutRadius/2,z,new TGeoRotation("plate22",0,0,0)));
 
      //K13D2U CF plate
-      TGeoBBox *box1 = new TGeoBBox(2*kWidth,(klay3)/2,zlad);
+      TGeoBBox *box1 = new TGeoBBox(2*kWidth,(klay3)/2,zsta);
       TGeoVolume *plate1 = new TGeoVolume("CFPlate",box1,medK13D2U2k);
       plate1->SetFillColor(5);
       plate1->SetLineColor(5);
-      mechLaddVol->AddNode(plate1,1,new TGeoCombiTrans(x,y-(kConeOutRadius+(klay3/2)),z,new TGeoRotation("plate1",0,0,0)));
+      mechStavVol->AddNode(plate1,1,new TGeoCombiTrans(x,y-(kConeOutRadius+(klay3/2)),z,new TGeoRotation("plate1",0,0,0)));
 
      //C Fleece bottom plate 
-      TGeoBBox *box6 = new TGeoBBox(2*kWidth,(klay2)/2,zlad);
+      TGeoBBox *box6 = new TGeoBBox(2*kWidth,(klay2)/2,zsta);
       TGeoVolume *plate6 = new TGeoVolume("CarbonFleeceBottom",box6,medCarbonFleece);
       plate6->SetFillColor(2);
       plate6->SetLineColor(2);
-      mechLaddVol->AddNode(plate6,1,new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+(klay2/2)),z,new TGeoRotation("plate6",0,0,0)));
+      mechStavVol->AddNode(plate6,1,new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+(klay2/2)),z,new TGeoRotation("plate6",0,0,0)));
 
     }
    if (fBuildLevel < 2) {
       //Glue klayers and kapton
-     TGeoBBox *glue = new TGeoBBox(kStaveWidth/2, (klay4)/2, zlad);
+     TGeoBBox *glue = new TGeoBBox(kStaveWidth/2, (klay4)/2, zsta);
       TGeoVolume *volGlue=new TGeoVolume("Glue", glue, medGlue);
       volGlue->SetLineColor(5);
       volGlue->SetFillColor(5); 
-      // mechLaddVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+klay2+(klay4/2)), z, new TGeoRotation("",0, 0, 0)));
-      mechLaddVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+klay2+(klay4)/2)+0.00005, z, new TGeoRotation("",0, 0, 0)));
+      // mechStavVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+klay2+(klay4/2)), z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volGlue, 0, new TGeoCombiTrans(x,y-(kConeOutRadius+klay3+klay2+(klay4)/2)+0.00005, z, new TGeoRotation("",0, 0, 0)));
     }
 
      if (fBuildLevel < 1) {
      //Flex Cable or Bus
-      TGeoBBox *kapCable = new TGeoBBox(kStaveWidth/2, klay5/2, zlad);//klay5/2
+      TGeoBBox *kapCable = new TGeoBBox(kStaveWidth/2, klay5/2, zsta);//klay5/2
       TGeoVolume *volCable=new TGeoVolume("FlexCable", kapCable, medFlexCable);
       volCable->SetLineColor(28);
       volCable->SetFillColor(28); 
-      //      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.0002, z, new TGeoRotation("",0, 0, 0)));
-      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.01185, z, new TGeoRotation("",0, 0, 0)));
+      //      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.0002, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-(kConeOutRadius+klay3+klay2+klay4+fSensorThick+(klay5)/2)+0.01185, z, new TGeoRotation("",0, 0, 0)));
       }
     // Done, return the stave structe
-    return mechLaddVol;
+    return mechStavVol;
 }
 
 // model3
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
-					       const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xsta,
+					       const Double_t zsta,
 					       const TGeoManager *mgr){
 //
 // Create the mechanical stave structure for Model 3 of TDR
 //
 // Input:
-//         xlad : X length
-//         zlad : Z length
+//         xsta : X length
+//         zsta : Z length
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1394,8 +1394,8 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
 
   // Local parameters
     Double_t kConeOutRadius = 0.15/2;
-    Double_t kStaveLength = zlad*2;
-    Double_t kStaveWidth = xlad*2;
+    Double_t kStaveLength = zsta*2;
+    Double_t kStaveWidth = xsta*2;
     Double_t w = kStaveWidth/4;//1/2 of W
     Double_t staveHeight = 0.3;
     Double_t h = staveHeight/2;
@@ -1413,9 +1413,9 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
        Double_t ang1 = 0*TMath::DegToRad();
        Double_t ang2 = 0*TMath::DegToRad();
        Double_t ang3 = 0*TMath::DegToRad();
-       Int_t modules = 4;
+       Int_t chips = 4;
        Double_t headWidth=0.25;
-       Double_t smcLength=kStaveLength/modules-2*headWidth;//6.25;
+       Double_t smcLength=kStaveLength/chips-2*headWidth;//6.25;
        Double_t smcWidth=kStaveWidth;
        Double_t smcSide1Thick=0.03;
        Double_t vaporThick=0.032;
@@ -1428,7 +1428,7 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
 
 
     char volname[30];
-    snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSLadderPattern(), fLayerNumber);
+    snprintf(volname, 30, "%s%d_StaveStruct", AliITSUGeomTGeo::GetITSStavePattern(), fLayerNumber);
     
     // detailed structure ++++++++++++++
     Double_t z=0, y=0-0.007, x=0;
@@ -1436,10 +1436,10 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
     // Polimide micro channels numbers
     Double_t yMC = y-h+0.01;
     Int_t nb = (Int_t)(kStaveWidth/0.1)+1;
-    Double_t xladMC = (nb*0.1-0.08)/2;
+    Double_t xstaMC = (nb*0.1-0.08)/2;
 
 
-    TGeoVolume *mechLaddVol = 0;
+    TGeoVolume *mechStavVol = 0;
     if (fBuildLevel < 5) {
       // world (trapezoid)
       TGeoXtru *mechStruct = new TGeoXtru(2); //z sections
@@ -1448,10 +1448,10 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       mechStruct->DefinePolygon(5,xv,yv);
       mechStruct->DefineSection(0,-kStaveLength-0.1,0,0,1.);
       mechStruct->DefineSection(1,kStaveLength+0.1,0,0,1.);
-      mechLaddVol = new TGeoVolume(volname, mechStruct, medAir);
-      mechLaddVol->SetLineColor(12);
-      mechLaddVol->SetFillColor(12); 
-      mechLaddVol->SetVisibility(kTRUE);
+      mechStavVol = new TGeoVolume(volname, mechStruct, medAir);
+      mechStavVol->SetLineColor(12);
+      mechStavVol->SetFillColor(12); 
+      mechStavVol->SetVisibility(kTRUE);
 
        // Silicon micro channels numbers
       
@@ -1460,79 +1460,79 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       volTM0a->SetLineColor(35);
       volTM0a->SetFillColor(35); 
 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0a, 0, new TGeoCombiTrans(x,yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));
-      mechLaddVol->AddNode(volTM0a, 1, new TGeoCombiTrans(x,yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0a, 0, new TGeoCombiTrans(x,yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));
+      mechStavVol->AddNode(volTM0a, 1, new TGeoCombiTrans(x,yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));
       }
       TGeoBBox *tM0c=new TGeoBBox(0.3/2, 0.003/2,smcLength/2);
       TGeoVolume *volTM0c=new TGeoVolume("microChanTop2", tM0c, medKapton);
       volTM0c->SetLineColor(35);
       volTM0c->SetFillColor(35); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0c, 0, new TGeoCombiTrans(x+(smcWidth/2)-(0.3/2),yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));
-      mechLaddVol->AddNode(volTM0c, 1, new TGeoCombiTrans(x-(smcWidth/2)+(0.3/2),yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0c, 0, new TGeoCombiTrans(x+(smcWidth/2)-(0.3/2),yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));
+      mechStavVol->AddNode(volTM0c, 1, new TGeoCombiTrans(x-(smcWidth/2)+(0.3/2),yMC+0.03, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0c1=new TGeoBBox(0.2225/2, 0.003/2,smcLength/2);
       TGeoVolume *volTM0c1=new TGeoVolume("microChanBot1", tM0c1, medKapton);
       volTM0c1->SetLineColor(6);
       volTM0c1->SetFillColor(6); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0c1, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-(0.2225/2),yMC+0.03-hh-(0.003), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-      mechLaddVol->AddNode(volTM0c1, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick)+(0.2225/2),yMC+0.03-hh-(0.003), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0c1, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-(0.2225/2),yMC+0.03-hh-(0.003), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0c1, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick)+(0.2225/2),yMC+0.03-hh-(0.003), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0c2=new TGeoBBox(0.072/2, 0.003/2,smcLength/2);
       TGeoVolume *volTM0c2=new TGeoVolume("microChanBot2", tM0c2, medKapton);
       volTM0c2->SetLineColor(35);
       volTM0c2->SetFillColor(35); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0c2, 0, new TGeoCombiTrans(x+smcWidth/2-(0.072/2),yMC+0.03-(0.035+0.0015)-(0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0c2, 0, new TGeoCombiTrans(x+smcWidth/2-(0.072/2),yMC+0.03-(0.035+0.0015)-(0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0c2r=new TGeoBBox(0.068/2, 0.003/2,smcLength/2);
       TGeoVolume *volTM0c2r=new TGeoVolume("microChanBot3", tM0c2r, medKapton);
       volTM0c2r->SetLineColor(35);
       volTM0c2r->SetFillColor(35); 
-      for(Int_t  mo=1; mo<=modules; mo++) {      
-      mechLaddVol->AddNode(volTM0c2r, 0, new TGeoCombiTrans(x-smcWidth/2+(0.068/2),yMC+0.03-(0.035+0.0015)-(0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {      
+      mechStavVol->AddNode(volTM0c2r, 0, new TGeoCombiTrans(x-smcWidth/2+(0.068/2),yMC+0.03-(0.035+0.0015)-(0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0d=new TGeoBBox(smcSide1Thick/2, 0.035/2,smcLength/2);
       TGeoVolume *volTM0d=new TGeoVolume("microChanSide1", tM0d, medKapton);
       volTM0d->SetLineColor(12);
       volTM0d->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0d, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-      mechLaddVol->AddNode(volTM0d, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0d, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0d, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
 
       TGeoBBox *tM0d1=new TGeoBBox(smcSide2Thick/2, 0.035/2,smcLength/2);
       TGeoVolume *volTM0d1=new TGeoVolume("microChanSide2", tM0d1, medKapton);
       volTM0d1->SetLineColor(12);
       volTM0d1->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0d1, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick/2),yMC+0.03-(0.003+0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-      mechLaddVol->AddNode(volTM0d1, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick/2),yMC+0.03-(0.003+0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0d1, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick/2),yMC+0.03-(0.003+0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0d1, 1, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick/2),yMC+0.03-(0.003+0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0d2=new TGeoBBox(smcSide3Thick/2, (hh+0.003)/2, smcLength/2);
       TGeoVolume *volTM0d2=new TGeoVolume("microChanSide3", tM0d2, medKapton);
       volTM0d2->SetLineColor(12);
       volTM0d2->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0d2, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick/2),yMC+0.03-(0.003+hh+0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0d2, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick/2),yMC+0.03-(0.003+hh+0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0d2r=new TGeoBBox(smcSide4Thick/2, (hh+0.003)/2, smcLength/2);
       TGeoVolume *volTM0d2r=new TGeoVolume("microChanSide4", tM0d2r, medKapton);
       volTM0d2r->SetLineColor(12);
       volTM0d2r->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0d2r, 0, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick/2),yMC+0.03-(0.003+hh+0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0d2r, 0, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick/2),yMC+0.03-(0.003+hh+0.003)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0e=new TGeoBBox(smcSide5Thick/2, hh/2,smcLength/2);
       TGeoVolume *volTM0e=new TGeoVolume("microChanSide5", tM0e, medKapton);    
       volTM0e->SetLineColor(12);
       volTM0e->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
+      for(Int_t  mo=1; mo<=chips; mo++) {
       for (Int_t ie=0;ie<11;ie++) {
-	mechLaddVol->AddNode(volTM0e, 0, new TGeoCombiTrans(x-(ie*(smcSpace+smcSide5Thick))+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-smcSpace-(smcSide5Thick/2),yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-	mechLaddVol->AddNode(volTM0e, 1, new TGeoCombiTrans(x+(ie*(smcSpace+smcSide5Thick))-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick)+smcSpace+(smcSide5Thick/2),yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+	mechStavVol->AddNode(volTM0e, 0, new TGeoCombiTrans(x-(ie*(smcSpace+smcSide5Thick))+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-smcSpace-(smcSide5Thick/2),yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+	mechStavVol->AddNode(volTM0e, 1, new TGeoCombiTrans(x+(ie*(smcSpace+smcSide5Thick))-smcWidth/2+(smcSide1Thick)+(liquidThick)+(smcSide2Thick)+(smcSide4Thick)+smcSpace+(smcSide5Thick/2),yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
          }
       }
       
@@ -1543,9 +1543,9 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       Double_t smcCloseWallliquid=smcWidth/2-smcSide1Thick-liquidThick-smcSide2Thick-smcSide4Thick-12*smcSpace-11*smcSide5Thick;
       volTM0f->SetLineColor(12);
       volTM0f->SetFillColor(12); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-       mechLaddVol->AddNode(volTM0f, 0, new TGeoCombiTrans(x+smcCloseWallvapor-(0.02)/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-       mechLaddVol->AddNode(volTM0f, 1, new TGeoCombiTrans(x-smcCloseWallliquid+(0.02)/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+       mechStavVol->AddNode(volTM0f, 0, new TGeoCombiTrans(x+smcCloseWallvapor-(0.02)/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+       mechStavVol->AddNode(volTM0f, 1, new TGeoCombiTrans(x-smcCloseWallliquid+(0.02)/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       //Head(back) microchannel
 
@@ -1553,59 +1553,59 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       TGeoVolume *volTM0hb=new TGeoVolume("microChanHeadBackBottom1", tM0hb, medKapton);
       volTM0hb->SetLineColor(4);
       volTM0hb->SetFillColor(4); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0hb, 0, new TGeoCombiTrans(x,yMC+0.03-0.0145-(0.025/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-      mechLaddVol->AddNode(volTM0hb, 1, new TGeoCombiTrans(x,yMC+0.03-0.0145-(0.025)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0hb, 0, new TGeoCombiTrans(x,yMC+0.03-0.0145-(0.025/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0hb, 1, new TGeoCombiTrans(x,yMC+0.03-0.0145-(0.025)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(headWidth/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0h1=new TGeoBBox(smcWidth/2, 0.013/2, 0.05/2);
       TGeoVolume *volTM0h1=new TGeoVolume("microChanHeadBackBottom2", tM0h1, medKapton);
       volTM0h1->SetLineColor(5);
       volTM0h1->SetFillColor(5); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0h1, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-headWidth+(0.05/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0h1, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-headWidth+(0.05/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0h2=new TGeoBBox(smcWidth/2, 0.003/2, 0.18/2);
       TGeoVolume *volTM0h2=new TGeoVolume("microChanHeadBackBottom7", tM0h2, medKapton);
       volTM0h2->SetLineColor(6);
       volTM0h2->SetFillColor(6);
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0h2, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-0.01-(0.003/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-0.02-(0.18/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0h2, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-0.01-(0.003/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-0.02-(0.18/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0h3=new TGeoBBox(smcWidth/2, 0.013/2, 0.02/2);
       TGeoVolume *volTM0h3=new TGeoVolume("microChanHeadBackBottom3", tM0h3, medKapton);
       volTM0h3->SetLineColor(5);
       volTM0h3->SetFillColor(5); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0h3, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(0.02/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0h3, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth-smcLength/2-(0.02/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0b1=new TGeoBBox(smcWidth/2, 0.013/2, 0.03/2);
       TGeoVolume *volTM0b1=new TGeoVolume("microChanHeadBackBottom4", tM0b1, medKapton);
       volTM0b1->SetLineColor(5);
       volTM0b1->SetFillColor(5); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0b1, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+headWidth-(0.03/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0b1, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+headWidth-(0.03/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0b2=new TGeoBBox(smcWidth/2, 0.003/2, 0.2/2);
       TGeoVolume *volTM0b2=new TGeoVolume("microChanHeadBackBottom5", tM0b2, medKapton);
       volTM0b2->SetLineColor(6);
       volTM0b2->SetFillColor(6); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0b2, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-0.01-(0.003/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+0.02+(0.2/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0b2, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-0.01-(0.003/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+0.02+(0.2/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0b3=new TGeoBBox(smcWidth/2, 0.013/2, 0.02/2);
       TGeoVolume *volTM0b3=new TGeoVolume("microChanHeadBackBottom6", tM0b3, medKapton);
       volTM0b3->SetLineColor(5);
       volTM0b3->SetFillColor(5); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0b3, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(0.02/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0b3, 0, new TGeoCombiTrans(x,yMC+0.03-0.0015-(0.013/2), z+(mo-3)*kStaveLength/4+smcLength/2+headWidth+smcLength/2+(0.02/2), new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
      
-      TGeoBBox *tM0b=new TGeoBBox(0.02/2, 0.02/2, zlad);
+      TGeoBBox *tM0b=new TGeoBBox(0.02/2, 0.02/2, zsta);
       TGeoVolume *volTM0b=new TGeoVolume("microChanWalls", tM0b, medKapton);
       volTM0b->SetLineColor(35);
       volTM0b->SetFillColor(35); 
       for (Int_t ib=0;ib<nb;ib++) {
-	//mechLaddVol->AddNode(volTM0b, ib, new TGeoCombiTrans(x+ib*0.1-xladMC+0.01,yMC, z, new TGeoRotation("",0, 0, 0)));
+	//mechStavVol->AddNode(volTM0b, ib, new TGeoCombiTrans(x+ib*0.1-xstaMC+0.01,yMC, z, new TGeoRotation("",0, 0, 0)));
       }
       
       } 
@@ -1618,15 +1618,15 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       TGeoVolume *volTM0dv=new TGeoVolume("microChanVapor", tM0dv, medWater);
       volTM0dv->SetLineColor(2);
       volTM0dv->SetFillColor(2);
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0dv, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0dv, 0, new TGeoCombiTrans(x+smcWidth/2-(smcSide1Thick)-(vaporThick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       TGeoBBox *tM0dl=new TGeoBBox(liquidThick/2, 0.035/2,smcLength/2);
       TGeoVolume *volTM0dl=new TGeoVolume("microChanLiquid", tM0dl, medWater);
       volTM0dl->SetLineColor(3);
       volTM0dl->SetFillColor(3); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
-      mechLaddVol->AddNode(volTM0dl, 0, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+      for(Int_t  mo=1; mo<=chips; mo++) {
+      mechStavVol->AddNode(volTM0dl, 0, new TGeoCombiTrans(x-smcWidth/2+(smcSide1Thick)+(liquidThick/2),yMC+0.03-0.0015-(0.035)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       // small cooling fluid now using water wait for freeon value  
       TGeoBBox *tM0dlq=new TGeoBBox(smcSpace/2, hh/2,smcLength/2);
@@ -1637,10 +1637,10 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       TGeoVolume *volTM0dvp=new TGeoVolume("microChanVapor", tM0dvp, medWater);
       volTM0dvp->SetLineColor(2);
       volTM0dvp->SetFillColor(2); 
-      for(Int_t  mo=1; mo<=modules; mo++) {
+      for(Int_t  mo=1; mo<=chips; mo++) {
       for (Int_t is=0;is<12;is++) {
-	mechLaddVol->AddNode(volTM0dlq, 0, new TGeoCombiTrans(x+(is*(smcSpace+smcSide5Thick))-smcWidth/2+(smcSide1Thick)+(vaporThick)+(smcSide2Thick)+(smcSide3Thick)+smcSpace/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
-	mechLaddVol->AddNode(volTM0dvp, 1, new TGeoCombiTrans(x-(is*(smcSpace+smcSide5Thick))+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-smcSpace/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+	mechStavVol->AddNode(volTM0dlq, 0, new TGeoCombiTrans(x+(is*(smcSpace+smcSide5Thick))-smcWidth/2+(smcSide1Thick)+(vaporThick)+(smcSide2Thick)+(smcSide3Thick)+smcSpace/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
+	mechStavVol->AddNode(volTM0dvp, 1, new TGeoCombiTrans(x-(is*(smcSpace+smcSide5Thick))+smcWidth/2-(smcSide1Thick)-(vaporThick)-(smcSide2Thick)-(smcSide3Thick)-smcSpace/2,yMC+0.03-(0.003+hh)/2, z+(mo-3)*kStaveLength/4+smcLength/2+headWidth, new TGeoRotation("",ang1, ang2, ang3)));//("",0, 0, 0)));
       }
       }
 
@@ -1659,16 +1659,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       volT1->SetLineColor(12);
       volT1->SetFillColor(12); 
       for(int i=0;i<loop;i++){//i<30;i++){
-       	mechLaddVol->AddNode(volT1,4*i+0,
+       	mechStavVol->AddNode(volT1,4*i+0,
 				    new TGeoCombiTrans(x+w,y-h+0.04+filHeight/2,z-kStaveLength/2+(4*l*i)+s1/2, 
 						       new TGeoRotation("volT1",-90,alpha,0)));
-	mechLaddVol->AddNode(volT1,4*i+1,
+	mechStavVol->AddNode(volT1,4*i+1,
 				    new TGeoCombiTrans(x-w,y-h+0.04+filHeight/2,z-kStaveLength/2+(4*l*i)+s1/2, 
 						       new TGeoRotation("volT1",90,alpha,0)));
-	mechLaddVol->AddNode(volT1,4*i+2,
+	mechStavVol->AddNode(volT1,4*i+2,
 				    new TGeoCombiTrans(x+w,y-h+0.04+filHeight/2,z-kStaveLength/2+2*l+(i*4*l)+s1/2, 
 						       new TGeoRotation("volT1",-90,-alpha,0)));
-	mechLaddVol->AddNode(volT1,4*i+3,
+	mechStavVol->AddNode(volT1,4*i+3,
 				    new TGeoCombiTrans(x-w,y-h+0.04+filHeight/2,z-kStaveLength/2+2*l+(i*4*l)+s1/2, 
 						       new TGeoRotation("volT1",-90,+alpha,0)));
 	}
@@ -1680,16 +1680,16 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
       volT2->SetLineColor(12);
       volT2->SetFillColor(12); 
       for(int i=0;i<loop;i++){ //i<30;i++){
-       	mechLaddVol->AddNode(volT2,4*i+0,
+       	mechStavVol->AddNode(volT2,4*i+0,
 				    new TGeoCombiTrans(x+w,y+0.04+filHeight/2,z-kStaveLength/2+(i*4*l)+s1/2,
 						       new TGeoRotation("volT2",90,90-alpha,90-beta)));
-	mechLaddVol->AddNode(volT2,4*i+1,
+	mechStavVol->AddNode(volT2,4*i+1,
 				    new TGeoCombiTrans(x-w,y+0.04+filHeight/2,z-kStaveLength/2+(i*4*l)+s1/2,
 						       new TGeoRotation("volT2",90,-90+alpha,-90+beta)));
-	mechLaddVol->AddNode(volT2,4*i+2,
+	mechStavVol->AddNode(volT2,4*i+2,
 				    new TGeoCombiTrans(x+w,y+0.04+filHeight/2,z-kStaveLength/2+2*l+(i*4*l)+s1/2,
 						       new TGeoRotation("volT2",90,-90+alpha,90-beta)));
-	mechLaddVol->AddNode(volT2,4*i+3,
+	mechStavVol->AddNode(volT2,4*i+3,
 				    new TGeoCombiTrans(x-w,y+0.04+filHeight/2,z-kStaveLength/2+2*l+(i*4*l)+s1/2, 
 						       new TGeoRotation("volT2",90,90-alpha,-90+beta)));
 	}
@@ -1698,52 +1698,52 @@ TGeoVolume* AliITSUv0Layer::CreateStaveModel3(const Double_t xlad,
     if (fBuildLevel < 2) {
 
       // Glue Filament and Silicon MicroChannel
-      TGeoBBox *tM0=new TGeoBBox(xladMC/5, klay4/2, zlad);
+      TGeoBBox *tM0=new TGeoBBox(xstaMC/5, klay4/2, zsta);
       TGeoVolume *volTM0=new TGeoVolume("glueFM", tM0,medGlue );
       volTM0->SetLineColor(5);
       volTM0->SetFillColor(5); 
-      mechLaddVol->AddNode(volTM0, 0, new TGeoCombiTrans(x-xlad/2-0.25,0.03+yMC, z, new TGeoRotation("",0, 0, 0)));
-      mechLaddVol->AddNode(volTM0, 1, new TGeoCombiTrans(x+xlad/2+0.25,0.03+yMC, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0, 0, new TGeoCombiTrans(x-xsta/2-0.25,0.03+yMC, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volTM0, 1, new TGeoCombiTrans(x+xsta/2+0.25,0.03+yMC, z, new TGeoRotation("",0, 0, 0)));
 
             
       // Glue microchannel and sensor
-      TGeoBBox *glueM = new TGeoBBox(xladMC/5, klay4/2, zlad);
+      TGeoBBox *glueM = new TGeoBBox(xstaMC/5, klay4/2, zsta);
       TGeoVolume *volGlueM=new TGeoVolume("glueMS", glueM, medGlue);
       volGlueM->SetLineColor(5);
       volGlueM->SetFillColor(5); 
-      mechLaddVol->AddNode(volGlueM, 0, new TGeoCombiTrans(x-xlad/2-0.25,yMC-0.01, z, new TGeoRotation("",0, 0, 0)));
-      mechLaddVol->AddNode(volGlueM, 1, new TGeoCombiTrans(x+xlad/2+0.25,yMC-0.01, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volGlueM, 0, new TGeoCombiTrans(x-xsta/2-0.25,yMC-0.01, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volGlueM, 1, new TGeoCombiTrans(x+xsta/2+0.25,yMC-0.01, z, new TGeoRotation("",0, 0, 0)));
      
        // Glue sensor and kapton
-      TGeoBBox *glue = new TGeoBBox(xlad, klay4/2, zlad);
+      TGeoBBox *glue = new TGeoBBox(xsta, klay4/2, zsta);
       TGeoVolume *volGlue=new TGeoVolume("glueSensorBus", glue, medGlue);
       volGlue->SetLineColor(5);
       volGlue->SetFillColor(5); 
-       mechLaddVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.154-fSensorThick-klay4/2, z, new TGeoRotation("",0, 0, 0)));
+       mechStavVol->AddNode(volGlue, 1, new TGeoCombiTrans(x, y-0.154-fSensorThick-klay4/2, z, new TGeoRotation("",0, 0, 0)));
     }      
 
     if (fBuildLevel < 1) {
-      TGeoBBox *kapCable = new TGeoBBox(xlad, klay5/2, zlad);
+      TGeoBBox *kapCable = new TGeoBBox(xsta, klay5/2, zsta);
       TGeoVolume *volCable=new TGeoVolume("Flexcable", kapCable, medFlexCable);
       volCable->SetLineColor(28);
       volCable->SetFillColor(28); 
-      mechLaddVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.154-fSensorThick-klay4-klay5/2, z, new TGeoRotation("",0, 0, 0)));
+      mechStavVol->AddNode(volCable, 0, new TGeoCombiTrans(x, y-0.154-fSensorThick-klay4-klay5/2, z, new TGeoRotation("",0, 0, 0)));
     }
 
   // Done, return the stave structur
-    return mechLaddVol;
+    return mechStavVol;
  }
 
 //________________________________________________________________________
-TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
-                                         const Double_t ylad,   
-					 const Double_t zlad,
+TGeoVolume* AliITSUv0Layer::CreateChip(const Double_t xsta,
+                                         const Double_t ysta,   
+					 const Double_t zsta,
 					 const TGeoManager *mgr){
 //
-// Creates the actual Module
+// Creates the actual Chip
 //
 // Input:
-//         xlad,zlad : the ladder dimensions
+//         xsta,zsta : the stave dimensions
 //         mgr  : the GeoManager (used only to get the proper material)
 //
 // Output:
@@ -1760,13 +1760,13 @@ TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
 
   // First create all needed shapes
 
-  // The module
-  TGeoBBox *module = new TGeoBBox(xlad,  ylad, zlad/fNModules);
+  // The chip
+  TGeoBBox *chip = new TGeoBBox(xsta,  ysta, zsta/fNChips);
 
   // The sensor
-  xlen = module->GetDX();
+  xlen = chip->GetDX();
   ylen = 0.5*fSensorThick;
-  zlen = module->GetDZ();
+  zlen = chip->GetDZ();
   TGeoBBox *sensor = new TGeoBBox(xlen, ylen, zlen);
 
 
@@ -1774,9 +1774,9 @@ TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
   //TGeoMedium *medAir = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medSi  = mgr->GetMedium("ITS_SI$");
 
-  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSModulePattern(), fLayerNumber);
-  // TGeoVolume *modVol = new TGeoVolume(volname, module, medAir);
-  TGeoVolume *modVol = new TGeoVolume(volname, module, medSi);
+  snprintf(volname, 30, "%s%d", AliITSUGeomTGeo::GetITSChipPattern(), fLayerNumber);
+  // TGeoVolume *modVol = new TGeoVolume(volname, chip, medAir);
+  TGeoVolume *modVol = new TGeoVolume(volname, chip, medSi);
   modVol->SetVisibility(kTRUE);
   modVol->SetLineColor(1);
 
@@ -1789,14 +1789,14 @@ TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
   sensVol->SetFillStyle(4000); // 0% transparent
 
 
-  // Now build up the module
+  // Now build up the chip
   xpos = 0.;
-  ypos = -module->GetDY() + sensor->GetDY();
+  ypos = -chip->GetDY() + sensor->GetDY();
   zpos = 0.;
 
   modVol->AddNode(sensVol, 1, new TGeoTranslation(xpos, ypos, zpos));
 
-  // Done, return the module
+  // Done, return the chip
   return modVol;
 }
 
@@ -1804,8 +1804,8 @@ TGeoVolume* AliITSUv0Layer::CreateModule(const Double_t xlad,
 Double_t AliITSUv0Layer::RadiusOfTurboContainer(){
 //
 // Computes the inner radius of the air container for the Turbo configuration
-// as the radius of either the circle tangent to the ladder or the circle
-// passing for the ladder's lower vertex
+// as the radius of either the circle tangent to the stave or the circle
+// passing for the stave's lower vertex
 //
 // Input:
 //         none (all needed parameters are class members)
@@ -1818,32 +1818,32 @@ Double_t AliITSUv0Layer::RadiusOfTurboContainer(){
 // Created:      08 Mar 2012  Mario Sitta
 //
 
-  Double_t rr, delta, z, lladd, rladd;
+  Double_t rr, delta, z, lstav, rstav;
 
-  if (fLadderThick > 89.) // Very big angle: avoid overflows since surely
+  if (fStaveThick > 89.) // Very big angle: avoid overflows since surely
     return -1;            // the radius from lower vertex is the right value
 
-  rladd = fLayRadius + 0.5*fLadderThick;
-  delta = (0.5*fLadderThick)/CosD(fLadderTilt);
-  z     = (0.5*fLadderThick)*TanD(fLadderTilt);
+  rstav = fLayRadius + 0.5*fStaveThick;
+  delta = (0.5*fStaveThick)/CosD(fStaveTilt);
+  z     = (0.5*fStaveThick)*TanD(fStaveTilt);
 
-  rr = rladd - delta;
-  lladd = (0.5*fLadderWidth) - z;
+  rr = rstav - delta;
+  lstav = (0.5*fStaveWidth) - z;
 
-  if ( (rr*SinD(fLadderTilt) < lladd) )
-    return (rr*CosD(fLadderTilt));
+  if ( (rr*SinD(fStaveTilt) < lstav) )
+    return (rr*CosD(fStaveTilt));
   else
     return -1;
 }
 
 //________________________________________________________________________
-void AliITSUv0Layer::SetLadderTilt(const Double_t t)
+void AliITSUv0Layer::SetStaveTilt(const Double_t t)
 {
 //
-// Sets the Ladder tilt angle (for turbo layers only)
+// Sets the Stave tilt angle (for turbo layers only)
 //
 // Input:
-//         t :  the ladder tilt angle
+//         t :  the stave tilt angle
 //
 // Output:
 //
@@ -1853,19 +1853,19 @@ void AliITSUv0Layer::SetLadderTilt(const Double_t t)
 //
 
   if (fIsTurbo)
-    fLadderTilt = t;
+    fStaveTilt = t;
   else
     AliError("Not a Turbo layer");
 
 }
 
 //________________________________________________________________________
-void AliITSUv0Layer::SetLadderWidth(const Double_t w){
+void AliITSUv0Layer::SetStaveWidth(const Double_t w){
 //
-// Sets the Ladder width (for turbo layers only)
+// Sets the Stave width (for turbo layers only)
 //
 // Input:
-//         w :  the ladder width
+//         w :  the stave width
 //
 // Output:
 //
@@ -1875,7 +1875,7 @@ void AliITSUv0Layer::SetLadderWidth(const Double_t w){
 //
 
   if (fIsTurbo)
-    fLadderWidth = w;
+    fStaveWidth = w;
   else
     AliError("Not a Turbo layer");
 

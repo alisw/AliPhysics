@@ -393,7 +393,7 @@ Float_t AliTOFGeometry::DistanceToPadPar(Int_t *det, const Float_t * pos, Float_
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos) const
+Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos)
 {
 //
 // Returns true if space point with coor pos (x,y,z) (cm) falls 
@@ -464,7 +464,7 @@ Bool_t AliTOFGeometry::IsInsideThePadPar(Int_t *det, const Float_t * pos) const
 
 }
 //_____________________________________________________________________________
-Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d) const
+Bool_t AliTOFGeometry::IsInsideThePad(TGeoHMatrix *mat, const Float_t * pos, Float_t *dist3d)
 {
   //
   // Returns true if space point with coor pos (x,y,z) [cm] falls inside
@@ -665,7 +665,7 @@ Int_t AliTOFGeometry::GetPlate(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA = FLTA reference frame
@@ -809,7 +809,7 @@ Int_t AliTOFGeometry::GetStrip(const Float_t * pos)
   //  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
   //		  posLocal[0],posLocal[1],posLocal[2]));
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
   //  AliDebug(1,Form("  posLocal[0] = %f, posLocal[1] = %f, posLocal[2] = %f ",
   //		  posLocal[0],posLocal[1],posLocal[2]));
@@ -922,7 +922,7 @@ Int_t AliTOFGeometry::GetPadZ(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA = FLTA reference frame
@@ -1015,7 +1015,7 @@ Int_t AliTOFGeometry::GetPadX(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA/B/C = FLTA/B/C reference frame
@@ -1107,7 +1107,7 @@ Float_t AliTOFGeometry::GetX(const Int_t * det)
 
   // Pad reference frame -> FSTR reference frame
   Float_t posLocal[3] = {0., 0., 0.};
-  Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
+  Float_t step[3] = {static_cast<Float_t>(-(ipadx+0.5)*fgkXPad), 0., static_cast<Float_t>(-(ipadz+0.5)*fgkZPad)};
   Translation(posLocal,step);
 
   step[0] = kNpadX*0.5*fgkXPad;
@@ -1218,7 +1218,7 @@ Float_t AliTOFGeometry::GetY(const Int_t * det)
 
   // Pad reference frame -> FSTR reference frame
   Float_t posLocal[3] = {0., 0., 0.};
-  Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
+  Float_t step[3] = {static_cast<Float_t>(-(ipadx+0.5)*fgkXPad), 0., static_cast<Float_t>(-(ipadz+0.5)*fgkZPad)};
   Translation(posLocal,step);
 
   step[0] = kNpadX*0.5*fgkXPad;
@@ -1316,7 +1316,7 @@ Float_t AliTOFGeometry::GetZ(const Int_t * det)
 
   // Pad reference frame -> FSTR reference frame
   Float_t posLocal[3] = {0., 0., 0.};
-  Float_t step[3] = {-(ipadx+0.5)*fgkXPad, 0., -(ipadz+0.5)*fgkZPad};
+  Float_t step[3] = {static_cast<Float_t>(-(ipadx+0.5)*fgkXPad), 0., static_cast<Float_t>(-(ipadz+0.5)*fgkZPad)};
   Translation(posLocal,step);
 
   step[0] = kNpadX*0.5*fgkXPad;
@@ -1499,7 +1499,7 @@ Float_t AliTOFGeometry::GetPadDx(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA/B/C = FLTA/B/C reference frame
@@ -1600,7 +1600,7 @@ Float_t AliTOFGeometry::GetPadDy(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA/B/C = FLTA/B/C reference frame
@@ -1701,7 +1701,7 @@ Float_t AliTOFGeometry::GetPadDz(const Float_t * pos)
     };
   Rotation(posLocal,angles);
 
-  Float_t step[3] = {0., 0., (fgkRmax+fgkRmin)*0.5};
+  Float_t step[3] = {0., 0., static_cast<Float_t>((fgkRmax+fgkRmin)*0.5)};
   Translation(posLocal,step);
 
   // B071/B074/B075 = BTO1/2/3 reference frame -> FTOA/B/C = FLTA/B/C reference frame

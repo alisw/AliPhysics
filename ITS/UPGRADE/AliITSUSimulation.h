@@ -23,7 +23,7 @@
 
 class AliITSCalibration;
 class AliITSUSimuParam;
-class AliITSUModule;
+class AliITSUChip;
 class TRandom;
 class TSegCollection;
 class AliITSUParamList;
@@ -50,16 +50,16 @@ class AliITSUSimulation : public TObject
   //
   void UpdateMapSignal(UInt_t col,UInt_t row, Int_t trk,Int_t ht,Double_t signal, Int_t roCycle=0);
   void UpdateMapNoise(UInt_t col,UInt_t row, Double_t noise, Int_t roCycle=0);
-  virtual void InitSimulationModule(AliITSUModule* mod, Int_t ev, AliITSsegmentation* seg, AliITSUParamList* resp);
+  virtual void InitSimulationChip(AliITSUChip* mod, Int_t ev, AliITSsegmentation* seg, AliITSUParamList* resp);
   //
   // Hits -> SDigits
-  virtual void SDigitiseModule() = 0;
-  virtual void FinishSDigitiseModule() = 0;
-  virtual Bool_t AddSDigitsToModule( TSeqCollection *pItemArray, Int_t mask );
+  virtual void SDigitiseChip() = 0;
+  virtual void FinishSDigitiseChip() = 0;
+  virtual Bool_t AddSDigitsToChip( TSeqCollection *pItemArray, Int_t mask );
   //
   // Hits -> Digits
-  virtual void DigitiseModule() = 0;
-  virtual void CreateFastRecPoints(AliITSUModule *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
+  virtual void DigitiseChip() = 0;
+  virtual void CreateFastRecPoints(AliITSUChip *,Int_t,TRandom *,TClonesArray* /*recp*/) {}
   //
   // readout phase (strobe, timing etc) generation
   virtual Double_t GenerateReadOutCycleOffset();
@@ -69,7 +69,7 @@ class AliITSUSimulation : public TObject
   AliITSsegmentation* GetSegmentation()                const {return fSeg;}
   AliITSUSimuParam*   GetSimuParam()                   const {return fSimuParam;}
   AliITSUSensMap*     GetMap()                         const {return fSensMap;}
-  AliITSUModule*      GetModule()                      const {return fModule;}
+  AliITSUChip*      GetChip()                      const {return fChip;}
   AliITSUParamList*   GetResponseParam()               const {return fResponseParam;}
   Int_t               GetEvent()                       const {return fEvent;}
   Bool_t              GetDebug(Int_t level=1)          const {return fDebug>=level;}
@@ -81,7 +81,7 @@ class AliITSUSimulation : public TObject
   void SetSimuParam(AliITSUSimuParam *sp)                  {fSimuParam = sp;}
   virtual void SetResponseParam(AliITSUParamList* resp)    {fResponseParam = resp;}
   void SetMap(AliITSUSensMap *p)                           {fSensMap = p;}
-  void SetModule(AliITSUModule* mod)                       {fModule=mod;} 
+  void SetChip(AliITSUChip* mod)                       {fChip=mod;} 
   void SetEvent(Int_t evnt)                                {fEvent=evnt;} 
   void SetDebug(Int_t level=5)                             {fDebug=level;}
   void SetNoDebug()                                        {fDebug=0;}
@@ -106,7 +106,7 @@ class AliITSUSimulation : public TObject
   AliITSUSensMap      *fSensMap;        //! sensor map for hits manipulations
   AliITSUSimuParam    *fSimuParam;      //! simulation parameters
   AliITSUParamList    *fResponseParam;  //! response parameterization data
-  AliITSUModule       *fModule;         //! module being processed
+  AliITSUChip       *fChip;         //! chip being processed
   Float_t              fReadOutCycleOffset; //! The phase of the RO with respect to the trigger
   Float_t              fReadOutCycleLength; //! readout cycle lenght in s
 

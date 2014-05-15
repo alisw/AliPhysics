@@ -490,32 +490,35 @@ void AliAODTagCreator::FillEventTag(AliAODEvent* aod, AliEventTag* evTag)
 	if(track->Charge() == 0) nNeutr++;
 	//PID
 	const Double32_t *prob = track->PID();
-	Double_t rcc = 0.0;
-	for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
-	if(rcc == 0.0) continue;
-	//Bayes' formula  
-	Double_t w[10];
-	for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
-	
-	//protons
-	if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
-	//kaons
-	if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
-	//pions
-	if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++;
-	//muons 
-	if ((w[1]>w[4])&&(w[1]>w[3])&&(w[1]>w[2])&&(w[1]>w[0])) {
-	    nMuons++;
-	    if(fPt > fLowPtCut)      nMu1GeV++;
-	    if(fPt > fHighPtCut)     nMu3GeV++;
-	    if(fPt > fVeryHighPtCut) nMu10GeV++;
-	}
-	//electrons  
-	if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
-	    nElectrons++;
-	    if(fPt > fLowPtCut) nEl1GeV++;
-	    if(fPt > fHighPtCut) nEl3GeV++;
-	    if(fPt > fVeryHighPtCut) nEl10GeV++;
+	if (prob) {
+	  Double_t rcc = 0.0;
+	  for(Int_t i = 0; i < AliPID::kSPECIES; i++) rcc += prob[i]*partFrac[i];
+	  if(rcc > 0.0) {
+	    //Bayes' formula  
+	    Double_t w[10];
+	    for(Int_t i = 0; i < AliPID::kSPECIES; i++) w[i] = prob[i]*partFrac[i]/rcc;
+	    
+	    //protons
+	    if ((w[4]>w[3])&&(w[4]>w[2])&&(w[4]>w[1])&&(w[4]>w[0])) nProtons++;
+	    //kaons
+	    if ((w[3]>w[4])&&(w[3]>w[2])&&(w[3]>w[1])&&(w[3]>w[0])) nKaons++;
+	    //pions
+	    if ((w[2]>w[4])&&(w[2]>w[3])&&(w[2]>w[1])&&(w[2]>w[0])) nPions++;
+	    //muons 
+	    if ((w[1]>w[4])&&(w[1]>w[3])&&(w[1]>w[2])&&(w[1]>w[0])) {
+	      nMuons++;
+	      if(fPt > fLowPtCut)      nMu1GeV++;
+	      if(fPt > fHighPtCut)     nMu3GeV++;
+	      if(fPt > fVeryHighPtCut) nMu10GeV++;
+	    }
+	    //electrons  
+	    if ((w[0]>w[4])&&(w[0]>w[3])&&(w[0]>w[2])&&(w[0]>w[1])) {
+	      nElectrons++;
+	      if(fPt > fLowPtCut) nEl1GeV++;
+	      if(fPt > fHighPtCut) nEl3GeV++;
+	      if(fPt > fVeryHighPtCut) nEl10GeV++;
+	    }
+	  }
 	}
 	totalP += track->P();
 	meanPt += fPt;

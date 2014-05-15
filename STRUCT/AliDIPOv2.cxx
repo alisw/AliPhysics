@@ -118,7 +118,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
   tpar[12] = 260.55 + kZDipole;
   tpar[13] = tpar[12] * TMath::Tan(2. * TMath::Pi() / 180.);
   tpar[14] = 527.34;
-  gMC->Gsvolu("DDIP", "PCON", idtmed[1874], tpar, 15);
+  TVirtualMC::GetMC()->Gsvolu("DDIP", "PCON", idtmed[1874], tpar, 15);
   //
   //       Coils 
   // air - m.f. 
@@ -128,10 +128,10 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 119.;
   cpar[4] = 241.; 
   //   coil - high cuts
-  gMC->Gsvolu("DC1 ", "TUBS", idtmed[kCoil+40], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC1 ", "TUBS", idtmed[kCoil+40], cpar, 5);
   cpar[3] = -61.;
   cpar[4] = 61.;
-  gMC->Gsvolu("DC2 ", "TUBS", idtmed[kCoil+40], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC2 ", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   //  coil - low cuts cuts
   cpar[0] = 207.;
@@ -140,23 +140,23 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 119.;
   cpar[4] = 241.;
 
-  gMC->Gsvolu("DC3 ", "TUBS", idtmed[kCoil], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC3 ", "TUBS", idtmed[kCoil], cpar, 5);
   cpar[0] = 207.; 
   cpar[1] = 217; 
   cpar[3] = -61.;
   cpar[4] = 61.;
-  gMC->Gsvolu("DC4 ", "TUBS", idtmed[kCoil], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC4 ", "TUBS", idtmed[kCoil], cpar, 5);
 
-  gMC->Gspos("DC3 ", 1, "DC1 ", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("DC4 ", 1, "DC2 ", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC3 ", 1, "DC1 ", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC4 ", 1, "DC2 ", 0., 0., 0., 0, "ONLY");
 
 //  dz =  37.65 - 243.55
   dz = -205.9-2.45;
   dx = 5.;
-  gMC->Gspos("DC1 ", 1, "DDIP",  dx, 0.,  dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DC1 ", 2, "DDIP",  dx, 0., -dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DC2 ", 1, "DDIP", -dx, 0.,  dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DC2 ", 2, "DDIP", -dx, 0., -dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC1 ", 1, "DDIP",  dx, 0.,  dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC1 ", 2, "DDIP",  dx, 0., -dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC2 ", 1, "DDIP", -dx, 0.,  dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC2 ", 2, "DDIP", -dx, 0., -dz+kZDipole, 0, "ONLY");
   the1 = 180.;
   phi1 = 0.;
   the2 = 90.;
@@ -186,15 +186,15 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 270.;
   cpar[4] = 360.;
 //*  coil high cuts
-  gMC->Gsvolu("DC11", "TUBS", idtmed[kCoil+40], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC11", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad); 
   dy = TMath::Cos(30.5*kDegrad) * -(207.+33.5);  
   dz = cpar[1] - 243.55-2.45;
-  gMC->Gspos("DC11", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
-  gMC->Gspos("DC11", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
-  gMC->Gspos("DC11", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
-  gMC->Gspos("DC11", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC11", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC11", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC11", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC11", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
 
 
 
@@ -205,15 +205,15 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 0.;
   cpar[4] = 90.;
 //*  coil high cuts
-  gMC->Gsvolu("DC12", "TUBS", idtmed[kCoil+40], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DC12", "TUBS", idtmed[kCoil+40], cpar, 5);
 
   dx = TMath::Sin(30.5*kDegrad) * -(207.+33.5)+5./TMath::Sin(30.5*kDegrad); 
   dy = TMath::Cos(30.5*kDegrad) *(207.+33.5);  
   dz = cpar[1] - 243.55-2.45;
-  gMC->Gspos("DC12", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
-  gMC->Gspos("DC12", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
-  gMC->Gspos("DC12", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
-  gMC->Gspos("DC12", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC12", 1, "DDIP",  dx, dy,  dz+kZDipole, idrotm[1801], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC12", 2, "DDIP",  dx, dy, -dz+kZDipole, idrotm[1803], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC12", 3, "DDIP", -dx, dy,  dz+kZDipole, idrotm[1800], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DC12", 4, "DDIP", -dx, dy, -dz+kZDipole, idrotm[1802], "ONLY");
 
   the1 = 90.;
   phi1 = 61.;
@@ -243,22 +243,22 @@ void AliDIPOv2::CreateSpectrometerDipole()
   tpar[0] = 37.65;
   tpar[1] = 33.5;
   tpar[2] = 145.5;
-  gMC->Gsvolu("DL1 ", "BOX ", idtmed[kCoil+40], tpar, 3);
+  TVirtualMC::GetMC()->Gsvolu("DL1 ", "BOX ", idtmed[kCoil+40], tpar, 3);
 
 // coil - low cuts
 
   tpar[0] = 5.;
   dx = 37.65  - 5.;  
-  gMC->Gsvolu("DL2 ", "BOX ", idtmed[kCoil], tpar, 3);
-  gMC->Gspos("DL2 ", 1, "DL1 ", dx, 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("DL2 ", "BOX ", idtmed[kCoil], tpar, 3);
+  TVirtualMC::GetMC()->Gspos("DL2 ", 1, "DL1 ", dx, 0., 0., 0, "ONLY");
 
   dx =-53.62;
   dy =-241.26819;
   dz = 0.; 
-  gMC->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz+kZDipole, idrotm[1804], "ONLY");
-  gMC->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz+kZDipole, idrotm[1805], "ONLY");
-  gMC->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz+kZDipole, idrotm[1806], "ONLY");
-  gMC->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz+kZDipole, idrotm[1807], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DL1 ", 1, "DDIP", dx,  dy, dz+kZDipole, idrotm[1804], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DL1 ", 2, "DDIP", dx, -dy, dz+kZDipole, idrotm[1805], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DL1 ", 3, "DDIP",-dx,  dy, dz+kZDipole, idrotm[1806], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DL1 ", 4, "DDIP",-dx, -dy, dz+kZDipole, idrotm[1807], "ONLY");
 
   // Contactor
 
@@ -272,12 +272,12 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
  
-  gMC->Gsvolu("DCO1", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO1", "TUBS", idtmed[1818], cpar, 5);
   dx = -5.;
   dz = 168.25-1.5-1.;
-  gMC->Gspos("DCO1", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO1", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+1.5+1.;
-  gMC->Gspos("DCO1", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO1", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   
   // 9.06.2000
 
@@ -287,12 +287,12 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
  
-  gMC->Gsvolu("DCO2", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO2", "TUBS", idtmed[1818], cpar, 5);
   dx = +5.;
   dz = 168.25-1.5-1.;
-  gMC->Gspos("DCO2", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO2", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+1.5+1.;
-  gMC->Gspos("DCO2", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO2", 2, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
  
 
 
@@ -304,23 +304,23 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
  
-  gMC->Gsvolu("DCO3", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO3", "TUBS", idtmed[1812], cpar, 5);
   dx = -5;
   dz = 168.25-0.75;
-  gMC->Gspos("DCO3", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO3", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+0.75;
-  gMC->Gspos("DCO3", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO3", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
-  gMC->Gsvolu("DCO4", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO4", "TUBS", idtmed[1812], cpar, 5);
   dx = +5;
   dz = 168.25-0.75;
-  gMC->Gspos("DCO4", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO4", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
   dz = 243.55+4.5+0.75 ;
-  gMC->Gspos("DCO4", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO4", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
  
   // G10 face plane
@@ -331,22 +331,22 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
  
-  gMC->Gsvolu("DCO5", "TUBS", idtmed[1810], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO5", "TUBS", idtmed[1810], cpar, 5);
 
   dx = -5;
   dz = 243.55+2.25;
-  gMC->Gspos("DCO5", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO5", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
 
-  gMC->Gsvolu("DCO6", "TUBS", idtmed[1810], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO6", "TUBS", idtmed[1810], cpar, 5);
 
   dx = +5;
   dz = 243.55+2.25;
-  gMC->Gspos("DCO6", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO6", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   //Steel supported planes
 
@@ -356,11 +356,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.;  
  
-  gMC->Gsvolu("DCO7", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO7", "TUBS", idtmed[1818], cpar, 5);
 
   dx = -5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO7", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO7", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
   cpar[0] = 274.+1.5+2.;
@@ -370,11 +370,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[4] = 180.+50.; 
 
  
-  gMC->Gsvolu("DCO8", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO8", "TUBS", idtmed[1818], cpar, 5);
 
   dx = +5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO8", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO8", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   //
 
@@ -384,11 +384,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
 
-  gMC->Gsvolu("DCO9", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCO9", "TUBS", idtmed[1818], cpar, 5);
 
   dx = -5;
   dz = 168.25+1.;
-  gMC->Gspos("DCO9", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCO9", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -398,11 +398,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
 
-  gMC->Gsvolu("DCOA", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOA", "TUBS", idtmed[1818], cpar, 5);
 
   dx = +5;
   dz = 168.25+1.;
-  gMC->Gspos("DCOA", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOA", 1, "DDIP", dx, 0, dz+kZDipole, 0, "ONLY");
 
 
   // Sides steel planes
@@ -413,17 +413,17 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
  
-  gMC->Gsvolu("DCOB", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOB", "TUBS", idtmed[1818], cpar, 5);
 
   cpar[0] = 274. + 1.5;
   cpar[1] = 274. + 1.5 +2.;
 
-  gMC->Gsvolu("DCOC", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOC", "TUBS", idtmed[1818], cpar, 5);
 
   dx=-5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOB", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DCOC", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOB", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOC", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
@@ -433,17 +433,17 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
 
-  gMC->Gsvolu("DCOD", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOD", "TUBS", idtmed[1818], cpar, 5);
 
   cpar[0] = 274. + 1.5;
   cpar[1] = 274. + 1.5 +2.;
 
-  gMC->Gsvolu("DCOE", "TUBS", idtmed[1818], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOE", "TUBS", idtmed[1818], cpar, 5);
 
   dx=+5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOD", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DCOE", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOD", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOE", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
 
   // Top and bottom resin  planes
@@ -454,18 +454,18 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -50.;
   cpar[4] = 50.; 
  
-  gMC->Gsvolu("DCOF", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOF", "TUBS", idtmed[1812], cpar, 5);
 
   cpar[0] = 274.;
   cpar[1] = 274. + 1.5;
 
-  gMC->Gsvolu("DCOG", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOG", "TUBS", idtmed[1812], cpar, 5);
 
 
   dx=-5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOF", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DCOG", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOF", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOG", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
   cpar[0] = 207. - 1.5;
@@ -475,18 +475,18 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = 180.-50.;
   cpar[4] = 180.+50.; 
 
-  gMC->Gsvolu("DCOH", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOH", "TUBS", idtmed[1812], cpar, 5);
 
   cpar[0] = 274.;
   cpar[1] = 274. + 1.5;
 
-  gMC->Gsvolu("DCOI", "TUBS", idtmed[1812], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOI", "TUBS", idtmed[1812], cpar, 5);
 
 
   dx=+5.;
   dz = ((243.55+4.5+1.5)+168.25)/2;
-  gMC->Gspos("DCOH", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
-  gMC->Gspos("DCOI", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOH", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOI", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
 
   // Aluminum cabels
@@ -497,34 +497,34 @@ void AliDIPOv2::CreateSpectrometerDipole()
   cpar[3] = -24.;
   cpar[4] = 24.; 
  
-  gMC->Gsvolu("DCOJ", "TUBS", idtmed[kCable], cpar, 5);
+  TVirtualMC::GetMC()->Gsvolu("DCOJ", "TUBS", idtmed[kCable], cpar, 5);
 
   //  dx = 274. + 1.5  +2. +40.;
   //  dx = 5. + 1.5 +2. +40.;
   //  dx = 5. + 1.5 +2.;
   dx=-5.;
   dz = 168.25 + 5.05 + 5.05/2;
-  gMC->Gspos("DCOJ", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOJ", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   dz = 243.55 - 5.05/2;
-  gMC->Gspos("DCOJ", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOJ", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   // 9.06.2000
 
   cpar[3] = 180.-24.;
   cpar[4] = 180.+24.; 
 
-   gMC->Gsvolu("DCOK", "TUBS", idtmed[kCable], cpar, 5);
+   TVirtualMC::GetMC()->Gsvolu("DCOK", "TUBS", idtmed[kCable], cpar, 5);
 
   //  dx = 274. + 1.5  +2. +40.;
   //  dx = 5. + 1.5 +2. +40.;
   //  dx = 5. + 1.5 +2.;
   dx=+5.;
   dz = 168.25 + 5.05 + 5.05/2;
-  gMC->Gspos("DCOK", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOK", 1, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
   dz = 243.55 - 5.05/2;
-  gMC->Gspos("DCOK", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DCOK", 2, "DDIP", dx,  0, dz+kZDipole, 0, "ONLY");
 
  
   //   YOKE 
@@ -535,19 +535,19 @@ void AliDIPOv2::CreateSpectrometerDipole()
   ypar[2] = 155.75;
 
 // iron- high cuts
-  gMC->Gsvolu("DY1 ", "BOX ", idtmed[1858], ypar, 3);
+  TVirtualMC::GetMC()->Gsvolu("DY1 ", "BOX ", idtmed[1858], ypar, 3);
   ypar[0] = 144.+10.; 
   ypar[1] = 193.3+10.;
   ypar[2] = 5.;
   ypar[3] = 155.75;
   dy = -69.5 + 5.;
 // iron- low cuts
-  gMC->Gsvolu("DY11", "TRD1", idtmed[1818], ypar, 4);
-  gMC->Gspos("DY11", 1, "DY1 ", 0.,  dy, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("DY11", "TRD1", idtmed[1818], ypar, 4);
+  TVirtualMC::GetMC()->Gspos("DY11", 1, "DY1 ", 0.,  dy, 0., 0, "ONLY");
 
   dy = 365.5;
   dz = 4.95;
-  gMC->Gspos("DY1 ", 1, "DDIP", 0.,  dy, -dz+kZDipole, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DY1 ", 1, "DDIP", 0.,  dy, -dz+kZDipole, 0, "ONLY");
 
   the1 = 270.;
   phi1 = 0.;
@@ -556,7 +556,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
   the3 = 0.;
   phi3 = 0.;
   AliMatrix(idrotm[1808], the1, phi1, the2, phi2, the3, phi3);
-  gMC->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz+kZDipole, idrotm[1808] , "ONLY");
+  TVirtualMC::GetMC()->Gspos("DY1 ", 2, "DDIP", 0., -dy, -dz+kZDipole, idrotm[1808] , "ONLY");
 
 // side walls
   //  ypar[0] = 579./2.; 
@@ -575,7 +575,7 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
 // iron - high cuts
 
-  gMC->Gsvolu("DY2 ", "TRAP", idtmed[1858], ypar,11);
+  TVirtualMC::GetMC()->Gsvolu("DY2 ", "TRAP", idtmed[1858], ypar,11);
 
   ypar[4] = 47.9 -5.;
   ypar[5] = 72.55 -5.;
@@ -586,12 +586,12 @@ void AliDIPOv2::CreateSpectrometerDipole()
 
 // iron - low cuts
 
-  gMC->Gsvolu("DY22", "TRAP", idtmed[1818], ypar,11);
+  TVirtualMC::GetMC()->Gsvolu("DY22", "TRAP", idtmed[1818], ypar,11);
 
   dy = 0.;
   dx = -5.;
 
-  gMC->Gspos("DY22", 1, "DY2 ", dx,  dy, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("DY22", 1, "DY2 ", dx,  dy, 0., 0, "ONLY");
 
   the1 = 90.;
   phi1 = 180.;
@@ -612,11 +612,11 @@ void AliDIPOv2::CreateSpectrometerDipole()
   dx = 228.875;
   dz = - 4.95;
   
-  gMC->Gspos("DY2 ", 1, "DDIP",  dx, 0.0,  dz+kZDipole, idrotm[1809], "ONLY");
-  gMC->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz+kZDipole, idrotm[1810], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DY2 ", 1, "DDIP",  dx, 0.0,  dz+kZDipole, idrotm[1809], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DY2 ", 2, "DDIP", -dx, 0.0,  dz+kZDipole, idrotm[1810], "ONLY");
   
   AliMatrix(idrotm[1811], 270., 0., 90., 90., 180., 0.);
-  gMC->Gspos("DDIP", 1, "ALIC", 0., 0., 0., idrotm[1811], "ONLY");
+  TVirtualMC::GetMC()->Gspos("DDIP", 1, "ALIC", 0., 0., 0., idrotm[1811], "ONLY");
   gGeoManager->SetVolumeAttribute("DDIP", "SEEN", 0);
 }
 
@@ -661,31 +661,31 @@ void AliDIPOv2::CreateCompensatorDipole()
     pbox[1] = kHLYoke / 2.;
     pbox[2] = kLLYoke / 2.;
     
-    gMC->Gsvolu("DCML", "BOX", idtmed[1809 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCML", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Base
     pbox[0] = kWBase / 2.;
     pbox[1] = kHBase / 2.;
-    gMC->Gsvolu("DCBA", "BOX", idtmed[1809 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCBA", "BOX", idtmed[1809 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
     pbox[0] = kWCoil  / 2.;
     pbox[1] = kHCoil  / 2.;
     pbox[2] = kLCoilH / 2.;
-    gMC->Gsvolu("DCH1", "BOX", idtmed[1816 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCH1", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: straight sections, horizontal
     pbox[0] = kWCoil  / 2.;
     pbox[1] = kHCoil  / 2.;
     pbox[2] = kLCoilH / 2.;
-    gMC->Gsvolu("DCH2", "BOX", idtmed[1816 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCH2", "BOX", idtmed[1816 + 40], pbox, 3);
 
 //
 // Mother volume containing upper coil
     pbox[0] =  kWUYoke / 2.;
     pbox[1] =  kHUYoke / 2.;
     pbox[2] =  kLCoilH / 2.;
-    gMC->Gsvolu("DCMU", "BOX", idtmed[1809 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCMU", "BOX", idtmed[1809 + 40], pbox, 3);
 
 //
 // Coil: straight sections, vertical
@@ -693,7 +693,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     pbox[1] = kDCoil / 2.;
     pbox[2] = kHCoil / 2.;
     
-    gMC->Gsvolu("DCCV", "BOX", idtmed[1816 + 40], pbox, 3);
+    TVirtualMC::GetMC()->Gsvolu("DCCV", "BOX", idtmed[1816 + 40], pbox, 3);
 //
 // Coil: circular section 
 
@@ -703,7 +703,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     ptubs[2] = kWCoil / 2.;
     ptubs[3] =  0.;
     ptubs[4] = 90.;
-    gMC->Gsvolu("DCC1", "TUBS", idtmed[1816 + 40], ptubs, 5);
+    TVirtualMC::GetMC()->Gsvolu("DCC1", "TUBS", idtmed[1816 + 40], ptubs, 5);
 //
 // Clamps
     Float_t ppgon[10];
@@ -717,7 +717,7 @@ void AliDIPOv2::CreateCompensatorDipole()
     ppgon[7] =  1.;
     ppgon[8] =  0.;
     ppgon[9] = 24.75;
-    gMC->Gsvolu("DCLA", "PGON", idtmed[1809 + 40], ppgon, 10);
+    TVirtualMC::GetMC()->Gsvolu("DCLA", "PGON", idtmed[1809 + 40], ppgon, 10);
 //
 // Assemble all
 //
@@ -731,40 +731,40 @@ void AliDIPOv2::CreateCompensatorDipole()
     Float_t dy0 = 0.;
 
     dy0 = -kH / 2. + kHBase/2.;
-    gMC->Gspos("DCBA", 1, "DCM0",  0., dy0, 15.0, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCBA", 1, "DCM0",  0., dy0, 15.0, 0, "ONLY");
     
     // Lower coil
     dx = ( kWLYoke - kWCoil) / 2.;
     dy = (-kHLYoke + kHCoil) / 2. + 6.;
-    gMC->Gspos("DCH1", 1, "DCML",  dx, dy,  -kRCoilC / 2., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCH1", 1, "DCML",  dx, dy,  -kRCoilC / 2., 0, "ONLY");
     // Lower mother volume
     dx = (kWLYoke + kWApperture) / 2.;
     dy0 += (kHBase +  kHLYoke) / 2.;
-    gMC->Gspos("DCML", 1, "DCM0", -dx, dy0, kRCoilC / 2., 0, "ONLY");
-    gMC->Gspos("DCML", 2, "DCM0", +dx, dy0, kRCoilC / 2., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCML", 1, "DCM0", -dx, dy0, kRCoilC / 2., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCML", 2, "DCM0", +dx, dy0, kRCoilC / 2., idrotm[1811], "ONLY");
     
     dx = (kWUYoke - kWCoil) / 2.;
     dy = (kHUYoke - kHCoil) / 2;
     // Upper coil
-    gMC->Gspos("DCH2", 1, "DCMU",   dx,  dy, 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCH2", 1, "DCMU",   dx,  dy, 0., 0, "ONLY");
     // Upper mother volume
     dx = (kWUYoke + kWApperture) / 2.;
     dy0 +=  (kHLYoke + kHUYoke) / 2.;
-    gMC->Gspos("DCMU", 1, "DCM0", -dx, dy0, 0., 0, "ONLY");
-    gMC->Gspos("DCMU", 2, "DCM0", +dx, dy0, 0., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCMU", 1, "DCM0", -dx, dy0, 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCMU", 2, "DCM0", +dx, dy0, 0., idrotm[1811], "ONLY");
 
     // Vertical coils
     dx =  (kWCoil +  kWApperture) / 2.;
     dy =  kH / 2. - kDCoil / 2. - kRCoilC;
     dz =  (kLCoilH - kHCoil) / 2. + kRCoilC;
-    gMC->Gspos("DCCV", 1, "DCM0",  dx,  dy, -dz, 0, "ONLY");
-    gMC->Gspos("DCCV", 2, "DCM0", -dx,  dy, -dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCCV", 1, "DCM0",  dx,  dy, -dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCCV", 2, "DCM0", -dx,  dy, -dz, 0, "ONLY");
 
     dx = (kWLYoke - kWCoil) / 2.;
     dy = -kHLYoke / 2. + kDCoil / 2. + 6. + kRCoilC;
     dz =  kLLYoke / 2. - kHCoil / 2.;
     
-    gMC->Gspos("DCCV", 3, "DCML", dx, dy,  dz, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCCV", 3, "DCML", dx, dy,  dz, 0, "ONLY");
 
 
 
@@ -772,37 +772,37 @@ void AliDIPOv2::CreateCompensatorDipole()
     dx =  (kWCoil +  kWApperture) / 2.;
     dy = dy0 + kHUYoke / 2. - kRCoilC;
     dz =  kLCoilH / 2.;
-    gMC->Gspos("DCC1", 1, "DCM0", -dx, dy,  dz, idrotm[1812], "ONLY");
-    gMC->Gspos("DCC1", 2, "DCM0", +dx, dy,  dz, idrotm[1812], "ONLY");
-    gMC->Gspos("DCC1", 3, "DCM0", +dx, dy, -dz, idrotm[1813], "ONLY");
-    gMC->Gspos("DCC1", 4, "DCM0", -dx, dy, -dz, idrotm[1813], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 1, "DCM0", -dx, dy,  dz, idrotm[1812], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 2, "DCM0", +dx, dy,  dz, idrotm[1812], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 3, "DCM0", +dx, dy, -dz, idrotm[1813], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 4, "DCM0", -dx, dy, -dz, idrotm[1813], "ONLY");
     dy = -kH / 2. + kHBase + 6. + kRCoilC;
-    gMC->Gspos("DCC1", 5, "DCM0", +dx, dy, -dz, idrotm[1815], "ONLY");
-    gMC->Gspos("DCC1", 6, "DCM0", -dx, dy, -dz, idrotm[1815], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 5, "DCM0", +dx, dy, -dz, idrotm[1815], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 6, "DCM0", -dx, dy, -dz, idrotm[1815], "ONLY");
 
     dx = ( kWLYoke - kWCoil) / 2.;
     dy =  -kHLYoke / 2. + 6. + kRCoilC;
     dz =  kLLYoke / 2. - kRCoilC;
-    gMC->Gspos("DCC1", 7, "DCML", dx, dy, dz, idrotm[1814], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCC1", 7, "DCML", dx, dy, dz, idrotm[1814], "ONLY");
 
 //  Clamps
     dx = kWApperture / 2. + kWUYoke;
     dy = -kH / 2. + kHLYoke + kHBase;
     
 
-    gMC->Gspos("DCLA", 1, "DCM0",  dx, dy, -119., 0, "ONLY");
-    gMC->Gspos("DCLA", 2, "DCM0",  dx, dy,  -44., 0, "ONLY");
-    gMC->Gspos("DCLA", 3, "DCM0",  dx, dy,   46., 0, "ONLY");
-    gMC->Gspos("DCLA", 4, "DCM0",  dx, dy,  119., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 1, "DCM0",  dx, dy, -119., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 2, "DCM0",  dx, dy,  -44., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 3, "DCM0",  dx, dy,   46., 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 4, "DCM0",  dx, dy,  119., 0, "ONLY");
 
-    gMC->Gspos("DCLA", 5, "DCM0",  -dx, dy, -119., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 6, "DCM0",  -dx, dy,  -44., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 7, "DCM0",  -dx, dy,   46., idrotm[1811], "ONLY");
-    gMC->Gspos("DCLA", 8, "DCM0",  -dx, dy,  119., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 5, "DCM0",  -dx, dy, -119., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 6, "DCM0",  -dx, dy,  -44., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 7, "DCM0",  -dx, dy,   46., idrotm[1811], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCLA", 8, "DCM0",  -dx, dy,  119., idrotm[1811], "ONLY");
 
 
     AliMatrix(idrotm[1816], 270., 0., 90., 90.,  180., 0.);  
-    gMC->Gspos("DCM0", 1, "ALIC",  0., -12.,  1075., idrotm[1816], "ONLY");
+    TVirtualMC::GetMC()->Gspos("DCM0", 1, "ALIC",  0., -12.,  1075., idrotm[1816], "ONLY");
 }
 
 

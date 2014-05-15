@@ -50,22 +50,15 @@
 ClassImp(AliPIPEv4)
 
 //_____________________________________________________________________________
-AliPIPEv4::AliPIPEv4():
-  fRmax(1.8),              // outer radius of Be beam pipe
-  fBe(0.08),               // width of Be beam pipe
-  fZ1(44.4),               // beginning of Be beam pipe z location (A side)
-  fZ2(-44.4)               // end of Be beam pipe z location (C side)
+AliPIPEv4::AliPIPEv4(): AliPIPE()              
+
 {
   // Constructor
 }
 
 //_____________________________________________________________________________
 AliPIPEv4::AliPIPEv4(const char *name, const char *title)
-  : AliPIPE(name,title),
-    fRmax(1.8),              // outer radius of Be beam pipe
-    fBe(0.08),               // width of Be beam pipe
-    fZ1(44.4),               // beginning of beam pipe z location (A side)
-    fZ2(-44.4)               // end of Be beam pipe z location (C side)
+  : AliPIPE(name,title)
 {
   // Constructor
 }
@@ -107,8 +100,10 @@ void AliPIPEv4::CreateGeometry()
   //const TGeoMedium* kMedNEG     =  gGeoManager->GetMedium("PIPE_NEG COATING"); 
   //const TGeoMedium* kMedAlu     =  gGeoManager->GetMedium("PIPE_ALU");    // fm       
   const TGeoMedium* kMedAlu2219 =  gGeoManager->GetMedium("PIPE_AA2219");   // fm     
-  const TGeoMedium* kMedAlu5083 =  gGeoManager->GetMedium("PIPE_AA5083");   // fm    
-    
+  const TGeoMedium* kMedRohacell =  gGeoManager->GetMedium("PIPE_ROHACELL");
+  const TGeoMedium* kMedPolyimide =  gGeoManager->GetMedium("PIPE_POLYIMIDE");
+  const TGeoMedium* kMedCarbonFiber =  gGeoManager->GetMedium("PIPE_M55J6K");
+
   // Top volume
   TGeoVolume* top    = gGeoManager->GetVolume("ALIC");
   //
@@ -151,758 +146,357 @@ void AliPIPEv4::CreateGeometry()
   */
 
 
-  //////////////////// NEW BEAM PIPE GEOMETRY FOR MuonForwardTracker , Author: F. Manso /////////////////////////
-  // from https://twiki.cern.ch/twiki/pub/ALICE/MinutesMecanicsIntegration/Minutes_MFT_meeting_BeamPipe_2013_05_13.pdf
-  //------------------------------------------------ Pipe version 4.6 june 2013 -------------------------------------
+  //////////////////// NEW BEAM PIPE GEOMETRY FOR MuonForwardTracker ,
+  // Authors: F. Manso, R. Tieulent 
+  // Drawings from C. Gargiulo :
+  // \\cern.ch\dfs\Workspaces\c\cgargiul\EXPERIMENT\ALICE\ALICE_MECHANICS\ALICE_DATA_PACKAGE\IN\DETECTORS\ITS_UPGRADE\1-DESIGN\3D_cad_model\R14_20140311_ALI\
+  //
+  //------------------- Pipe version 4.7 March 2014 -----------------------------
 
-  Float_t fBellowLength = 3.72;
-  Float_t fFirstConeLength = 1.3;
-  Float_t fCylinderBeforeAfterBellowsLength = 1.34;
-  Float_t fDistanceBetweenBellows = 4.08;
-  Float_t fAluSmallDiamLength = 15.53 + 2.0;
-  Float_t fBellowSectionOuterRadius = 2.15;
-  Float_t fBellowOuterRadius = 3.0;
+  TGeoVolumeAssembly * beamPipeCsideSection = new TGeoVolumeAssembly("BeamPipeCsideSection");
+  
+  Float_t fBeryliumSectionOuterRadius = 1.9;
+  Float_t fBeryliumSectionZmax        =  44.4;
+  Float_t fBeryliumSectionZmin        = -44.4;
+  Float_t fBeryliumSectionThickness   = 0.08;
 
+  Float_t fBellowSectionOuterRadius   = 2.15;
+  Float_t fCSideBPSOuterRadius        = 2.22;
+  Float_t fCSideBPSWallThickness      = 0.15;
+  Float_t fBellowSectionZmax          = -55.35;
+  Float_t fBellowOuterRadius          = 2.8;
+  Float_t fFirstConeAngle             = 15. * TMath::DegToRad();
+  Float_t fChangeThicknessAngle       = 45. * TMath::DegToRad();
+  //  Float_t fCSideBPSLength             = 3.53;
+  Float_t fCSideBPSLength             = 3.53+1.52;
+  Float_t fDzFirstCone = (fCSideBPSOuterRadius - fBeryliumSectionOuterRadius) / TMath::Tan(fFirstConeAngle);
+  //  Float_t fReduceThicknessPartAfterBPSLength = 1.52;
+  Float_t fReduceThicknessPartAfterBPSLength = 0.;
+  Float_t fThinPartBeforeBellowLength = 1.025;
 
-  Float_t fztube1=fZ2;                  // z of Be - Al jonction on the C-side
-  Float_t fztube2=fZ2-fAluSmallDiamLength;     // z of end of small diameter part (beginning of first cone before the bellow
-  Float_t fztube3=fztube2+(-fFirstConeLength);       // z of end of conical section
-  Float_t fztube4=fztube3+(-fCylinderBeforeAfterBellowsLength-fBellowLength);
-  Float_t fztube5=fztube4+(-fDistanceBetweenBellows-fBellowLength);
-  Float_t fzadapt=fztube5+(-fCylinderBeforeAfterBellowsLength);
+  
+  Float_t fDistanceBetweenBellows = 2.5;
+  
+  
+  Float_t fAdaptConeZmax = -77.43;
+  Float_t fAdaptConeZmin = -80.6;
+  Float_t fAdaptConeRmax = 3.0;
+  Float_t fFlangeRmax = 4.3;
+  Float_t fFlangeLength = 1.4;
+  
+  Float_t fBellowPlieRadius = 0.17;  // radius of bellow plies
+  Float_t fBellowPlieThickness = 0.03;  // Thickness of bellow plies 300 microns
+  Int_t fNBellowConvolutions = 7;
+  
+  
 
+  Float_t fZ1 = fBeryliumSectionZmin; // z of Be - Al jonction on the C-side
+  Float_t fZ2 = fBellowSectionZmax +fDzFirstCone ; // z of end of small diameter part (beginning of first cone before the bellow
+  Float_t fZ3 = fBellowSectionZmax +(fCSideBPSOuterRadius - fBellowSectionOuterRadius) / TMath::Tan(fFirstConeAngle); // z of End of first cone part with 0.8mm thickness
+  Float_t fZ4 = fBellowSectionZmax; // z of End of first Cone
+  Float_t fZ5 = fBellowSectionZmax - fCSideBPSLength; // z of End of Beam Pipe support section
+  Float_t fZ6 = fBellowSectionZmax - fCSideBPSLength - (fCSideBPSOuterRadius-fBellowSectionOuterRadius) / TMath::Tan(fChangeThicknessAngle); // z of End of Beam Pipe support section after reduction of thickness
+  Float_t fZ7 = fZ6 - fReduceThicknessPartAfterBPSLength ; // Z of end of 800 microns section after Beam Pipe Support
+  Float_t fZ8 = fZ7 - (fBeryliumSectionThickness-fBellowPlieThickness) / TMath::Tan(fChangeThicknessAngle);
+  Float_t fZ9 = fZ7 - fThinPartBeforeBellowLength; // Z of the start of first bellow
+  Float_t fFirstBellowZmax = fZ9;
+  
   //---------------- Be pipe around the IP ----------
-  TGeoPcon* tube0 = new TGeoPcon(0., 360., 2);
-  tube0->DefineSection(0,fZ1,fRmax-fBe,fRmax);
-  tube0->DefineSection(1,fZ2,fRmax-fBe,fRmax);
-  TGeoVolume* votube0 = new TGeoVolume("votube0",tube0,kMedBe);
-  votube0->SetLineColor(kRed);
-  top->AddNode(votube0,1,new TGeoTranslation(0., 0., 0.));
+  TGeoPcon* berylliumTube = new TGeoPcon(0., 360., 2);
+  berylliumTube->DefineSection(0,fBeryliumSectionZmax,fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  berylliumTube->DefineSection(1,fBeryliumSectionZmin,fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  TGeoVolume* voberylliumTube = new TGeoVolume("berylliumTube",berylliumTube,kMedBe);
+  voberylliumTube->SetLineColor(kRed);
+  beamPipeCsideSection->AddNode(voberylliumTube,1,new TGeoTranslation(0., 0., 0.));
 
-  TGeoPcon* tube0vide = new TGeoPcon(0., 360., 2);
-  tube0vide->DefineSection(0,fZ1, 0.,fRmax-fBe);
-  tube0vide->DefineSection(1,fZ2, 0.,fRmax-fBe);
-  TGeoVolume* votube0vide = new TGeoVolume("votube0vide",tube0vide,kMedVac);
-  votube0vide->SetVisibility(0);votube0vide->SetLineColor(kGreen);
-  top->AddNode(votube0vide,1,new TGeoTranslation(0., 0., 0.));
+  TGeoPcon* berylliumTubeVacuum = new TGeoPcon(0., 360., 2);
+  berylliumTubeVacuum->DefineSection(0,fBeryliumSectionZmax, 0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  berylliumTubeVacuum->DefineSection(1,fBeryliumSectionZmin, 0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  TGeoVolume* voberylliumTubeVacuum = new TGeoVolume("berylliumTubeVacuum",berylliumTubeVacuum,kMedVac);
+  voberylliumTubeVacuum->SetVisibility(0);voberylliumTubeVacuum->SetLineColor(kGreen);
+  beamPipeCsideSection->AddNode(voberylliumTubeVacuum,1,new TGeoTranslation(0., 0., 0.));
   //-------------------------------------------------
 
 
-  //---------------- First Al tube ------------------
-  TGeoPcon* tube1 = new TGeoPcon(0., 360., 2);
-  tube1->DefineSection(0,fztube1, fRmax-fBe,fRmax);
-  tube1->DefineSection(1,fztube1-fAluSmallDiamLength,fRmax-fBe,fRmax);
-  TGeoVolume* votube1 = new TGeoVolume("votube1",tube1,kMedAlu2219);
-  votube1->SetLineColor(kBlue);
-  top->AddNode(votube1,1,new TGeoTranslation(0., 0., 0.));
+  //----------------  Al tube ------------------
+  TGeoPcon* aluBeforeBellows = new TGeoPcon(0., 360., 9);
+  aluBeforeBellows->DefineSection(0,fZ1, fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  aluBeforeBellows->DefineSection(1,fZ2,fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  aluBeforeBellows->DefineSection(2,fZ3,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  aluBeforeBellows->DefineSection(3,fZ4,fCSideBPSOuterRadius-fCSideBPSWallThickness,fCSideBPSOuterRadius);
+  aluBeforeBellows->DefineSection(4,fZ5,fCSideBPSOuterRadius-fCSideBPSWallThickness,fCSideBPSOuterRadius);
+  aluBeforeBellows->DefineSection(5,fZ6,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  aluBeforeBellows->DefineSection(6,fZ7,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  aluBeforeBellows->DefineSection(7,fZ8,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  aluBeforeBellows->DefineSection(8,fZ9,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  TGeoVolume* voaluBeforeBellows = new TGeoVolume("aluBeforeBellows",aluBeforeBellows,kMedAlu2219);
+  voaluBeforeBellows->SetLineColor(kBlue);
+  beamPipeCsideSection->AddNode(voaluBeforeBellows,1,new TGeoTranslation(0., 0., 0.));
 
-  TGeoPcon* tube1vide = new TGeoPcon(0., 360., 2);
-  tube1vide->DefineSection(0,fZ2, 0.,fRmax-fBe);
-  tube1vide->DefineSection(1,fZ2-fAluSmallDiamLength, 0.,fRmax-fBe);
-  TGeoVolume* votube1vide = new TGeoVolume("votube1vide",tube1vide,kMedVac);
-  votube1vide->SetVisibility(0);votube1vide->SetLineColor(kGreen);
-  top->AddNode(votube1vide,1,new TGeoTranslation(0., 0., 0.));
+  TGeoPcon* aluBeforeBellowsVacuum = new TGeoPcon(0., 360., 7);
+  aluBeforeBellowsVacuum->DefineSection(0,fZ1,0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  aluBeforeBellowsVacuum->DefineSection(1,fZ2,0.,fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  aluBeforeBellowsVacuum->DefineSection(2,fZ3,0.,fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  aluBeforeBellowsVacuum->DefineSection(3,fZ4,0.,fCSideBPSOuterRadius-fCSideBPSWallThickness);
+  aluBeforeBellowsVacuum->DefineSection(4,fZ5,0.,fCSideBPSOuterRadius-fCSideBPSWallThickness);
+  aluBeforeBellowsVacuum->DefineSection(5,fZ6,0.,fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  aluBeforeBellowsVacuum->DefineSection(6,fZ9,0.,fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  TGeoVolume* voaluBeforeBellowsVacuum = new TGeoVolume("aluBeforeBellowsVacuum",aluBeforeBellowsVacuum,kMedVac);
+  voaluBeforeBellowsVacuum->SetVisibility(0);voaluBeforeBellowsVacuum->SetLineColor(kGreen);
+  beamPipeCsideSection->AddNode(voaluBeforeBellowsVacuum,1,new TGeoTranslation(0., 0., 0.));
   //-------------------------------------------------
 
+  
+  Float_t fBellowLength = fNBellowConvolutions * (4.*fBellowPlieRadius - 2. *fBellowPlieThickness);
+  // ------------------ First Bellow  --------------------
+  TGeoVolume* vobellows1 = MakeBellowCside("bellows1", fNBellowConvolutions, fBellowSectionOuterRadius-fBeryliumSectionThickness, fBellowOuterRadius, fBellowPlieRadius ,fBellowPlieThickness);
+  beamPipeCsideSection->AddNode(vobellows1, 1, new TGeoTranslation(0., 0., fFirstBellowZmax-fBellowLength/2. - 2.*fBellowPlieRadius));
+  //------------------------------------------------------
 
-  //----------- Conical Al tube before bellows ----------
-  TGeoPcon* tube2 = new TGeoPcon(0., 360., 2);
-  tube2->DefineSection(0,fztube2, fRmax-fBe,fRmax);
-  tube2->DefineSection(1,fztube2-fFirstConeLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  TGeoVolume* votube2 = new TGeoVolume("votube2",tube2,kMedAlu2219);
-  votube2->SetLineColor(kBlue);
-  top->AddNode(votube2,1,new TGeoTranslation(0., 0., 0.));
+  Float_t fZ10 = fFirstBellowZmax - fBellowLength; // End of First bellow
+  Float_t fZ12 = fZ10 - fThinPartBeforeBellowLength;
+  Float_t fZ11 = fZ12 +  (fBeryliumSectionThickness-fBellowPlieThickness) / TMath::Tan(fChangeThicknessAngle); // End of 300 microns thickness part after first bellow
+  Float_t fZ13 = fZ12  - fDistanceBetweenBellows;
+  Float_t fZ14 = fZ13 -(fBeryliumSectionThickness-fBellowPlieThickness) / TMath::Tan(fChangeThicknessAngle);
+  Float_t fZ15 = fZ14 -fThinPartBeforeBellowLength;
+  Float_t fSecondBellowZmax = fZ15;
 
-  TGeoPcon* tube2vide = new TGeoPcon(0., 360., 2);
-  tube2vide->DefineSection(0,fztube2, 0., fRmax-fBe);
-  tube2vide->DefineSection(1,fztube2-fFirstConeLength, 0., fBellowSectionOuterRadius-fBe);
-  TGeoVolume* votube2vide = new TGeoVolume("votube2vide",tube2vide,kMedVac);
-  votube2vide->SetVisibility(0);votube2vide->SetLineColor(kGreen); 
-  top->AddNode(votube2vide,1,new TGeoTranslation(0., 0., 0.));
-  //-------------------------------------------------
-
-
-  //---------- Al tube before first bellow ----------
-  TGeoPcon* tube3 = new TGeoPcon(0., 360., 2);
-  tube3->DefineSection(0,fztube3, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  tube3->DefineSection(1,fztube3-fCylinderBeforeAfterBellowsLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  TGeoVolume* votube3 = new TGeoVolume("votube3",tube3,kMedAlu2219);
-  votube3->SetLineColor(kBlue);
-  top->AddNode(votube3,1,new TGeoTranslation(0., 0., 0.));
-  //-------------------------------------------------
+  
   //---------- Al tube between the bellows ----------
-  TGeoPcon* tube4 = new TGeoPcon(0., 360., 2);
-  tube4->DefineSection(0,fztube4, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  tube4->DefineSection(1,fztube4-fDistanceBetweenBellows,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
+  TGeoPcon* tube4 = new TGeoPcon(0., 360., 6);
+  tube4->DefineSection(0,fZ10, fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  tube4->DefineSection(1,fZ11,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  tube4->DefineSection(2,fZ12,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  tube4->DefineSection(3,fZ13,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  tube4->DefineSection(4,fZ14,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  tube4->DefineSection(5,fZ15,fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
   TGeoVolume* votube4 = new TGeoVolume("votube4",tube4,kMedAlu2219);
   votube4->SetLineColor(kBlue);
-  top->AddNode(votube4,1,new TGeoTranslation(0., 0., 0.));
-  //-------------------------------------------------
-  //-------- Al tube after the second bellow --------
-  TGeoPcon* tube5 = new TGeoPcon(0., 360., 2);
-  tube5->DefineSection(0,fztube5, fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  tube5->DefineSection(1,fztube5-fCylinderBeforeAfterBellowsLength,fBellowSectionOuterRadius-fBe,fBellowSectionOuterRadius);
-  TGeoVolume* votube5 = new TGeoVolume("votube5",tube5,kMedAlu2219);
-  votube5->SetLineColor(kBlue);
-  top->AddNode(votube5,1,new TGeoTranslation(0., 0., 0.));
-  //-------------------------------------------------
-  //---- One empty tube inside tube3, tube4, tube5 and bellows -----
-  TGeoPcon* tube345vide = new TGeoPcon(0., 360., 2);
-  tube345vide->DefineSection(0,fztube3, 0., fBellowSectionOuterRadius-fBe);
-  tube345vide->DefineSection(1,fztube5-fCylinderBeforeAfterBellowsLength, 0., fBellowSectionOuterRadius-fBe);
-  TGeoVolume* votube345vide = new TGeoVolume("votube345vide",tube345vide,kMedVac);
-  votube345vide->SetVisibility(0);votube345vide->SetLineColor(kGreen);
-  top->AddNode(votube345vide,1,new TGeoTranslation(0., 0., 0.));
-  //----------------------------------------------------------------
+  beamPipeCsideSection->AddNode(votube4,1,new TGeoTranslation(0., 0., 0.));
+  
+  TGeoPcon* tube4Vacuum = new TGeoPcon(0., 360., 2);
+  tube4Vacuum->DefineSection(0,fZ10,0., fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  tube4Vacuum->DefineSection(1,fZ15,0.,fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  TGeoVolume* votube4Vacuum = new TGeoVolume("tube4Vacuum",tube4Vacuum,kMedVac);
+  votube4Vacuum->SetVisibility(0);
 
-
-  //----------- 15?? Conical adaptator + flange ----------
-  TGeoPcon* adaptator = new TGeoPcon(0., 360., 4);
-  adaptator->DefineSection(0,fzadapt, fBellowSectionOuterRadius-fBe, fBellowSectionOuterRadius);
-  adaptator->DefineSection(1,fzadapt+(-3.17), 3.0-fBe, 3.0);
-  adaptator->DefineSection(2,fzadapt+(-3.17), 3.0-fBe, 4.3);
-  adaptator->DefineSection(3,fzadapt+(-3.17-1.4), 3.0-fBe ,4.3);
+  beamPipeCsideSection->AddNode(votube4Vacuum,1,new TGeoTranslation(0., 0., 0.));
+  
+  
+  // ------------------ Second Bellow --------------------
+  TGeoVolume* vobellows2 = MakeBellowCside("bellows2", fNBellowConvolutions, fBellowSectionOuterRadius-fBeryliumSectionThickness, fBellowOuterRadius, fBellowPlieRadius ,fBellowPlieThickness);
+  beamPipeCsideSection->AddNode(vobellows2, 1, new TGeoTranslation(0., 0., fSecondBellowZmax-fBellowLength/2. - 2.*fBellowPlieRadius));
+  // -----------------------------------------------------
+ 
+  Float_t fZ16 = fSecondBellowZmax - fBellowLength; // End of Second bellow
+  Float_t fZ18 = fZ16 - fThinPartBeforeBellowLength;
+  Float_t fZ17 = fZ18 +  (fBeryliumSectionThickness-fBellowPlieThickness) / TMath::Tan(fChangeThicknessAngle); // End of 300 microns thickness part after first bellow
+  Float_t fZ19 = fAdaptConeZmax; // Start of the Adpation Cone
+  Float_t fZ20 = fAdaptConeZmin; // End of the Adpation Cone
+  Float_t fZ21 = fAdaptConeZmin - fFlangeLength; // End of the Flange
+  
+  
+  //----------- 15 deg Conical adaptator + flange ----------
+  TGeoPcon* adaptator = new TGeoPcon(0., 360., 7);
+  adaptator->DefineSection(0,fZ16, fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  adaptator->DefineSection(1,fZ17, fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius-fBeryliumSectionThickness+fBellowPlieThickness);
+  adaptator->DefineSection(2,fZ18, fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  adaptator->DefineSection(3,fZ19, fBellowSectionOuterRadius-fBeryliumSectionThickness,fBellowSectionOuterRadius);
+  adaptator->DefineSection(4,fZ20, fAdaptConeRmax-fBeryliumSectionThickness,fAdaptConeRmax);
+  adaptator->DefineSection(5,fZ20, fAdaptConeRmax-fBeryliumSectionThickness,fFlangeRmax);
+  adaptator->DefineSection(6,fZ21, fAdaptConeRmax-fBeryliumSectionThickness,fFlangeRmax);
   TGeoVolume* voadaptator = new TGeoVolume("voadaptator",adaptator,kMedAlu2219);
-  voadaptator->SetLineColor(kBlue);    
-  top->AddNode(voadaptator,1,new TGeoTranslation(0., 0., 0.));
+  voadaptator->SetLineColor(kBlue);
+  beamPipeCsideSection->AddNode(voadaptator,1,new TGeoTranslation(0., 0., 0.));
 
   TGeoPcon* adaptatorvide = new TGeoPcon(0., 360., 4);
-  adaptatorvide->DefineSection(0,fzadapt, 0., 2.15-fBe);
-  adaptatorvide->DefineSection(1,fzadapt+(-3.17), 0., 3.0-fBe);
-  adaptatorvide->DefineSection(2,fzadapt+(-3.17), 0., 3.0-fBe);
-  adaptatorvide->DefineSection(3,fzadapt+(-3.17-1.4), 0., 3.0-fBe);
+  adaptatorvide->DefineSection(0,fZ16, 0., fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  adaptatorvide->DefineSection(1,fZ19, 0., fBellowSectionOuterRadius-fBeryliumSectionThickness);
+  adaptatorvide->DefineSection(2,fZ20, 0., fAdaptConeRmax-fBeryliumSectionThickness);
+  adaptatorvide->DefineSection(3,fZ21, 0., fAdaptConeRmax-fBeryliumSectionThickness);
   TGeoVolume* voadaptatorvide = new TGeoVolume("voadaptatorvide",adaptatorvide,kMedVac);
-  voadaptatorvide->SetVisibility(0);voadaptatorvide->SetLineColor(kGreen);    
-  top->AddNode(voadaptatorvide,1,new TGeoTranslation(0., 0., 0.));
+  voadaptatorvide->SetVisibility(0);
+//  voadaptatorvide->SetLineColor(kGreen);
+  beamPipeCsideSection->AddNode(voadaptatorvide,1,new TGeoTranslation(0., 0., 0.));
   //------------------------------------------------------
 
-
-
-  // ------------------------- Bellows ----------------------------
-
-  //Float_t plieradius = (3.72 + (2. *  7 - 2.) * 0.03) / (4. * 7);  // radius of bellows "plis"
-  Float_t plieradius = 0.17;  // radius of bellow plies
-
-  
-  // ------------------ First Bellow  -------------------- 
-  TGeoVolume* vobellows1 = MakeBellowCside("bellows1", 6, fBellowSectionOuterRadius-fBe, fBellowOuterRadius, fBellowLength, plieradius ,0.03);
-  top->AddNode(vobellows1, 1, new TGeoTranslation(0., 0., fztube3+(-fCylinderBeforeAfterBellowsLength-fBellowLength/2.-2.*plieradius)));
-  //------------------------------------------------------
-   
-  // ------------------ Second Bellow --------------------
-  TGeoVolume* vobellows2 = MakeBellowCside("bellows2", 6, fBellowSectionOuterRadius-fBe, fBellowOuterRadius, fBellowLength, plieradius ,0.03);
-  top->AddNode(vobellows2, 1, new TGeoTranslation(0., 0., fztube4+(-fDistanceBetweenBellows-fBellowLength/2. -2.*plieradius)));
-  //-----------------------------------------------------
-  
-  
+  top->AddNode(beamPipeCsideSection,1);
  
   ///////////////////////////////////
   //    Beam Pipe support          //
-  //     version 4.6               //
   ///////////////////////////////////
 
-  TGeoBBox * carbonSkinVert = new TGeoBBox(13.375/2.,0.45/2.,0.05/2.);
+  
+  // Beam Pipe Support
+  TGeoVolume *beamPipeSupport = new TGeoVolumeAssembly("BeamPipeSupport");
+  Float_t beamPipesupportZpos = fZ5;
+  
+  // Dimensions :
+  
+  Float_t supportXdim= 20.67;
+  Float_t beamPipeRingZdim = 4.0;
+  Float_t vespelRmax = 2.3;
+  Float_t vespelRmin = 2.22;
+  Float_t beampipeCarbonCollarRmin = 2.4;
+  Float_t beampipeCarbonCollarRmax = 2.7;
+  
+  Float_t fixationCarbonCollarRmin = 1.5;
+  Float_t fixationCarbonCollarRmax = 1.7;
+  Float_t fixationCarbonCollarDZ = 2.5;
+  
+  
+  Float_t skinThickness = 0.1;
+  Float_t skinXdim = 14.25;
+  Float_t skinYdim = 1.;
+  Float_t skinZdim = fixationCarbonCollarDZ;
+  Float_t carbonEarsXdim = 1.01;
+  Float_t carbonEarsYdim = 0.2;
+  Float_t carbonEarsZdim = fixationCarbonCollarDZ;
+  
+  // Support Bar
+  TGeoVolumeAssembly *supportBar = new TGeoVolumeAssembly("BPS_SupportBar");
+  
+  TGeoBBox * carbonSkinBPS = new TGeoBBox(skinXdim/2.,skinYdim/2.,skinZdim/2.);
+  carbonSkinBPS->SetName("carbonSkinBPS");
+  
+  TGeoBBox * foambarBPS = new TGeoBBox("foambarBPS",skinXdim/2.-skinThickness,skinYdim/2.-skinThickness,skinZdim/2.-skinThickness/2.);
+  TGeoBBox * carbonEarsBPS = new TGeoBBox(carbonEarsXdim/2.,carbonEarsYdim/2.,carbonEarsZdim/2.);
+  carbonEarsBPS->SetName("carbonEarsBPS");
+  
+  TGeoTranslation * transBP1 = new TGeoTranslation("transBP1",(skinXdim+carbonEarsXdim)/2.,0.,0.);
+  transBP1->RegisterYourself();
+  TGeoTranslation * transBP2 = new TGeoTranslation("transBP2",-(skinXdim+carbonEarsXdim)/2.,0.,0.);
+  transBP2->RegisterYourself();
+  TGeoCompositeShape *supportBarCarbon = new TGeoCompositeShape("BPS_supportBarCarbon", "(carbonSkinBPS-foambarBPS)+carbonEarsBPS:transBP1+carbonEarsBPS:transBP2");
+  
+  TGeoVolume *supportBarCarbonVol = new TGeoVolume("BPS_supportBarCarbon",supportBarCarbon,kMedCarbonFiber);
+  supportBarCarbonVol->SetLineColor(kGray+3);
+  
+  supportBar->AddNode(supportBarCarbonVol, 1, new TGeoTranslation(skinXdim/2.+carbonEarsXdim+beampipeCarbonCollarRmax,0,0));
+  supportBar->AddNode(supportBarCarbonVol, 2, new TGeoTranslation(-(skinXdim/2.+carbonEarsXdim+beampipeCarbonCollarRmax),0,0));
+  
+  TGeoVolume *foamVol = new TGeoVolume("supportBarFoam",foambarBPS,kMedRohacell);
+  foamVol->SetLineColor(kGray);
+  supportBar->AddNode(foamVol, 1, new TGeoTranslation(skinXdim/2.+carbonEarsXdim+beampipeCarbonCollarRmax,0,0));
+  supportBar->AddNode(foamVol, 2, new TGeoTranslation(-(skinXdim/2.+carbonEarsXdim+beampipeCarbonCollarRmax),0,0));
+  
+  beamPipeSupport->AddNode(supportBar,1);
+  
+  
+  // Fixation to wings
+  
+  TGeoVolumeAssembly *fixationToWings = new TGeoVolumeAssembly("BPS_fixationToWings");
+  
+  Float_t delatX = 0.1;
+  
+  TGeoTubeSeg * fixationTube = new TGeoTubeSeg(fixationCarbonCollarRmin,fixationCarbonCollarRmax,fixationCarbonCollarDZ/2.,-90.,90.);
+  fixationTube->SetName("fixationTube");
+  TGeoBBox * fixationToBar = new TGeoBBox(carbonEarsXdim/2.+delatX,carbonEarsYdim/2.,carbonEarsZdim/2.);
+  fixationToBar->SetName("fixationToBar");
+  
+  TGeoTranslation * transBP3 = new TGeoTranslation("transBP3",fixationCarbonCollarRmax+carbonEarsXdim/2.-delatX,carbonEarsYdim,0.);
+  transBP3->RegisterYourself();
+  TGeoTranslation * transBP4 = new TGeoTranslation("transBP4",fixationCarbonCollarRmax+carbonEarsXdim/2.-delatX,-carbonEarsYdim,0.);
+  transBP4->RegisterYourself();
+  TGeoCompositeShape *fixationToWing = new TGeoCompositeShape("fixationToWing", "fixationTube+fixationToBar:transBP3+fixationToBar:transBP4");
+  
+  TGeoVolume *fixationToWingVol = new TGeoVolume("fixationToWing",fixationToWing,kMedCarbonFiber);
+  fixationToWingVol->SetLineColor(kGray+2);
+  
+  
+  fixationToWings->AddNode(fixationToWingVol,1, new TGeoTranslation(-supportXdim,0,0));
+  fixationToWings->AddNode(fixationToWingVol,2, new TGeoCombiTrans(+supportXdim,0,0,new TGeoRotation("rot",0.,0.,180.)));
+  
+  
+  beamPipeSupport->AddNode(fixationToWings,1);
+  
+  
+  // Fixation to pipe
+  
+  TGeoVolumeAssembly *fixationToPipe = new TGeoVolumeAssembly("fixationToPipe");
+  
+  TGeoTubeSeg * pipeSupportTubeCarbon = new TGeoTubeSeg(beampipeCarbonCollarRmin,beampipeCarbonCollarRmax,fixationCarbonCollarDZ/2.,0.,180.);
+  pipeSupportTubeCarbon->SetName("pipeSupportTubeCarbon");
+  
+  TGeoBBox * fixationTubeToBar = new TGeoBBox(carbonEarsXdim/2.+delatX,carbonEarsYdim/2.,carbonEarsZdim/2.);
+  fixationTubeToBar->SetName("fixationTubeToBar");
+  TGeoBBox * hole = new TGeoBBox((beampipeCarbonCollarRmax-vespelRmin)/2.,carbonEarsYdim/2.,carbonEarsZdim/2.+1e-3);
+  hole->SetName("hole");
+  
+  TGeoTranslation * transBP5 = new TGeoTranslation("transBP5",beampipeCarbonCollarRmax+carbonEarsXdim/2.-delatX,carbonEarsYdim,0.);
+  transBP5->RegisterYourself();
+  TGeoTranslation * transBP6 = new TGeoTranslation("transBP6",-(beampipeCarbonCollarRmax+carbonEarsXdim/2.-delatX),carbonEarsYdim,0.);
+  transBP6->RegisterYourself();
+  TGeoTranslation * transBP7 = new TGeoTranslation("transBP7",(beampipeCarbonCollarRmax+vespelRmin)/2.,0.,0.);
+  transBP7->RegisterYourself();
+  TGeoTranslation * transBP8 = new TGeoTranslation("transBP8",-((beampipeCarbonCollarRmax+vespelRmin)/2.),0.,0.);
+  transBP8->RegisterYourself();
+  TGeoCompositeShape *halfFixationToPipe = new TGeoCompositeShape("halfFixationToPipe", "(pipeSupportTubeCarbon-hole:transBP7-hole:transBP8)+fixationTubeToBar:transBP5+fixationTubeToBar:transBP6");
+  
+  TGeoVolume *halfFixationToPipeVol = new TGeoVolume("halfFixationToPipe",halfFixationToPipe,kMedCarbonFiber);
+  halfFixationToPipeVol->SetLineColor(kRed+2);
+  
+  fixationToPipe->AddNode(halfFixationToPipeVol,1);
+  fixationToPipe->AddNode(halfFixationToPipeVol,2, new TGeoCombiTrans(0,0,0,new TGeoRotation("rot",0.,0.,180.)));
+  
+  beamPipeSupport->AddNode(fixationToPipe,1);
+  
+  
+  // Beam Pipe Ring
+  
+  TGeoVolumeAssembly *beamPipeRing = new TGeoVolumeAssembly("beamPipeRing");
+  
+  TGeoTube * beamPipeRingCarbon = new TGeoTube(vespelRmax,beampipeCarbonCollarRmin,beamPipeRingZdim/2.);
+  TGeoVolume *beamPipeRingCarbonVol = new TGeoVolume("beamPipeRingCarbon",beamPipeRingCarbon,kMedCarbonFiber);
+  beamPipeRingCarbonVol->SetLineColor(kGreen+2);
+  beamPipeRing->AddNode(beamPipeRingCarbonVol,1, new TGeoTranslation(0.,0,(beamPipeRingZdim-fixationCarbonCollarDZ)/2.));
+  
+  TGeoTube * beamPipeRingVespel = new TGeoTube(vespelRmin,vespelRmax,beamPipeRingZdim/2.);
+  TGeoVolume *beamPipeRingVespelVol = new TGeoVolume("beamPipeRingVespel",beamPipeRingVespel,kMedPolyimide);
+  beamPipeRingVespelVol->SetLineColor(kGreen+4);
+  beamPipeRing->AddNode(beamPipeRingVespelVol,1, new TGeoTranslation(0.,0,(beamPipeRingZdim-fixationCarbonCollarDZ)/2.));
+  
+  beamPipeSupport->AddNode(beamPipeRing,1);
+  beamPipeSupport->SetVisibility(0);
+  
+  top->AddNode(beamPipeSupport,1,new TGeoTranslation(0.,0,beamPipesupportZpos+fixationCarbonCollarDZ/2.));
   
   
   
   ///////////// END NEW BEAM PIPE GEOMETRY fOR MFT ////////////////////
-    
-
-
-  /*  
-  //
-  ///////////////////
-  //      CP/2     //
-  ///////////////////
-  //
-  // Fixed Point tube [Pos 5]
-  //
-  // Inner and outer radii of the Stainless Steel pipe    
-  const Float_t kCP2StRi               =      2.90;
-  const Float_t kCP2StRo               =      2.98;
-  //  
-  // Transition to central Be-pipe (Bulge)   
-  // Length
-  const Float_t kCP2BulgeLength        =      0.80;
-  //     
-  // Bulge outer radius
-  const Float_t kCP2BulgeRo            =      3.05;
-  //
-  // Fixed Point at z = 391.7 (IP)
-  //
-  // Position of fixed point
-  const Float_t kCP2FixedPointZ        =      8.30;
-  //
-  // Outer radius of fixed point
-  const Float_t kCP2FixedPointRo       =      3.50;
-  //
-  // Length of fixed point
-  const Float_t kCP2FixedPointLength   =      0.60;
-  //
-  // Fixed Flange [Pos 6]    
-  //
-  // Fixed flange outer radius
-  const Float_t kCP2FixedFlangeRo      =      7.60;
-  //
-  // Fixed flange inner radius
-  const Float_t kCP2FixedFlangeRi      =      3.00;
-  // Fixed flange inner radius bulge
-  const Float_t kCP2FixedFlangeBulgeRi =      2.90;
-  // Fixed flange lengths of sections at inner radius
-  const Float_t kCP2FixedFlangeRecessLengths[3] ={1., 0.08, 0.9};
-  // Fixed flange length
-  const Float_t kCP2FixedFlangeLength =       1.98;
-  //
-  // Fixed flange bulge
-  // Outer radius
-  const Float_t kCP2FixedFlangeBulgeRo =     3.00;
-  //
-  // Length    
-  const Float_t kCP2FixedFlangeBulgeLength = 2.00;
-
-  //
-  // CP/2 Mother Volume
-  //
-  TGeoPcon* shCp2Mo = new TGeoPcon(0., 360., 14);
-  //  Flange
-  z = - kCP2Length / 2.;
-  shCp2Mo->DefineSection( 0, z, kCP2FixedFlangeRi, kCP2FixedFlangeRo);
-  z +=  kCP2FixedFlangeRecessLengths[0];
-  shCp2Mo->DefineSection( 1, z, kCP2FixedFlangeRi, kCP2FixedFlangeRo);
-  shCp2Mo->DefineSection( 2, z, 0.,                kCP2FixedFlangeRo);
-  z +=  (kCP2FixedFlangeRecessLengths[1] + kCP2FixedFlangeRecessLengths[2]) ;
-  shCp2Mo->DefineSection( 3, z, 0., kCP2FixedFlangeRo);
-  //  Straight section between Flange and Fixed Point
-  shCp2Mo->DefineSection( 4, z, 0., kCP2FixedFlangeBulgeRo);
-  z += kCP2FixedFlangeBulgeLength;
-  shCp2Mo->DefineSection( 5, z, 0., kCP2FixedFlangeBulgeRo);
-  shCp2Mo->DefineSection( 6, z, 0., kCP2StRo);
-  z =  - kCP2Length / 2 +  kCP2FixedPointZ - kCP2FixedPointLength / 2.;
-  shCp2Mo->DefineSection( 7, z, 0., kCP2StRo);
-  //  Fixed Point
-  shCp2Mo->DefineSection( 8, z, 0., kCP2FixedPointRo);
-  z +=  kCP2FixedPointLength;
-  shCp2Mo->DefineSection( 9, z, 0., kCP2FixedPointRo);
-  //  Straight section between Fixed Point and transition bulge
-  shCp2Mo->DefineSection(10, z, 0., kCP2StRo);
-  z  =  kCP2Length / 2. - kCP2BulgeLength;
-  shCp2Mo->DefineSection(11, z, 0., kCP2StRo);
-  shCp2Mo->DefineSection(12, z, 0., kCP2BulgeRo);
-  z = kCP2Length / 2.;
-  shCp2Mo->DefineSection(13, z, 0., kCP2BulgeRo);
-    
-  TGeoVolume* voCp2Mo = new TGeoVolume("CP2MO", shCp2Mo, kMedAir);
-  //FM voCp2Mo->SetVisibility(0);
-  //
-  // CP/1 Vacuum
-  TGeoTube*   shCp2Va = new TGeoTube(0., kCP2StRi, (kCP2Length - kCP2FixedFlangeRecessLengths[0])/2.);
-  TGeoVolume* voCp2Va = new TGeoVolume("CP2VA", shCp2Va, kMedVac);
-    
-  //FM voCp2Mo->AddNode(voCp2Va, 1, new TGeoTranslation(0., 0., kCP2FixedFlangeRecessLengths[0]/2.));
-    
-  /////////////////////////////////////////////
-  //  CP/2 Fixed Flange [Pos 6]              //
-  /////////////////////////////////////////////
-
-  TGeoPcon* shCp2Fl = new TGeoPcon(0., 360., 6);
-  z = - kCP2FixedFlangeLength / 2.;
-  shCp2Fl->DefineSection(0, z, kCP2FixedFlangeRi,      kCP2FixedFlangeRo);
-  z +=  kCP2FixedFlangeRecessLengths[0];
-  shCp2Fl->DefineSection(1, z, kCP2FixedFlangeRi,      kCP2FixedFlangeRo);
-  shCp2Fl->DefineSection(2, z, kCP2FixedFlangeBulgeRi, kCP2FixedFlangeRo);
-  z +=  kCP2FixedFlangeRecessLengths[1];
-  shCp2Fl->DefineSection(3, z, kCP2FixedFlangeBulgeRi, kCP2FixedFlangeRo);
-  shCp2Fl->DefineSection(4, z, kCP2FixedFlangeRi,      kCP2FixedFlangeRo);
-  z = kCP2FixedFlangeLength / 2.;
-  shCp2Fl->DefineSection(5, z, kCP2FixedFlangeRi,      kCP2FixedFlangeRo);
-  TGeoVolume* voCp2Fl = new TGeoVolume("CP2FL", shCp2Fl, kMedSteel);
-  // 
-  dz =  - kCP2Length / 2. +  kCP2FixedFlangeLength / 2.;
-  //FM voCp2Mo->AddNode(voCp2Fl, 1, new TGeoTranslation(0., 0., dz));
-
-
-  /////////////////////////////////////////////////////////////
-  //  CP/2 Beam pipe with fixed point and transition bulges  //
-  /////////////////////////////////////////////////////////////
-  TGeoPcon* shCp2Pi = new TGeoPcon(0., 360., 10);
-  //  Bulge at transition to flange 
-  z =  - (kCP2Length -  kCP2FixedFlangeRecessLengths[0] - kCP2FixedFlangeRecessLengths[1]) / 2.;
-  z0 = z;
-  shCp2Pi->DefineSection(0, z, kCP2StRi, kCP2FixedFlangeBulgeRo);
-  z += kCP2FixedFlangeBulgeLength;
-  shCp2Pi->DefineSection(1, z, kCP2StRi, kCP2FixedFlangeBulgeRo);
-  //  Straight section between Bulge and Fixed Point
-  shCp2Pi->DefineSection(2, z, kCP2StRi, kCP2StRo);
-  z  += (kCP2FixedPointZ - kCP2FixedPointLength / 2. - kCP2FixedFlangeRecessLengths[0]
-	 - kCP2FixedFlangeRecessLengths[1] - 
-	 kCP2FixedFlangeBulgeLength);
-  shCp2Pi->DefineSection(3, z, kCP2StRi, kCP2StRo);
-  //  Fixed Point
-  shCp2Pi->DefineSection(4, z, kCP2StRi, kCP2FixedPointRo);
-  z +=  kCP2FixedPointLength;
-  shCp2Pi->DefineSection(5, z, kCP2StRi, kCP2FixedPointRo);
-  //  Straight section between Fixed Point and transition bulge
-  shCp2Pi->DefineSection(6, z, kCP2StRi, kCP2StRo);
-  z = - shCp2Pi->GetZ(0) - kCP2BulgeLength;
-  shCp2Pi->DefineSection(7, z, kCP2StRi, kCP2StRo);
-  //  Bulge at transition to Be pipe
-  shCp2Pi->DefineSection(8, z, kCP2StRi, kCP2BulgeRo);
-  z = - shCp2Pi->GetZ(0);
-  shCp2Pi->DefineSection(9, z, kCP2StRi, kCP2BulgeRo);
-
-  TGeoVolume* voCp2Pi = new TGeoVolume("CP2PI", shCp2Pi, kMedSteel);
-  dz = (kCP2FixedFlangeRecessLengths[0] + kCP2FixedFlangeRecessLengths[1]) / 2.;
-  //FM voCp2Mo->AddNode(voCp2Pi, 1, new TGeoTranslation(0., 0., dz));
-
-  //
-  //  Central beam pipe support collars
-  //  LHCVC2C_0019
-  //  Position at z = -46., 40., 150.
-  TGeoVolume* voCpSupC = new TGeoVolume("CpSupC", new TGeoTube(3.051, 4.00, 0.35), kMedAco);
-  //voCp1->AddNode(voCpSupC, 1, new TGeoTranslation(0., 0.,  kCP1Length / 2. - 98.2)); 
-  //voCp1->AddNode(voCpSupC, 2, new TGeoTranslation(0., 0.,  kCP1Length / 2.- 191.5)); 
-
-  //  Beam Pipe Protection Tube
-  //
-  //  ALIFWDA_0025
-  //    
-  //  Plaque de Centrage  ALIFWDA_0019
-  const Float_t kFwdaBPPTXL = 3.;
-  TGeoXtru* shFwdaBPPTX = new TGeoXtru(2);
-  Double_t xBPPTX[8] = {12.5,  7.5, -7.5, -12.5, -12.5,  -7.5,   7.5, 12.5};
-  Double_t yBPPTX[8] = { 7.0, 12.0, 12.0,  7.0, -7.0, -12.0, -12.0,  -7.0};
-  shFwdaBPPTX->DefinePolygon(8, xBPPTX, yBPPTX);
-  shFwdaBPPTX->DefineSection(0, 0.,         0., 0., 1.);
-  shFwdaBPPTX->DefineSection(1, kFwdaBPPTXL, 0., 0., 1.);
-  shFwdaBPPTX->SetName("FwdaBPPTX");
-  TGeoTube* shFwdaBPPTY = new TGeoTube(0., 8.5, 3.2);
-  shFwdaBPPTY->SetName("FwdaBPPTY");
-  TGeoCompositeShape*  shFwdaBPPTPC = new TGeoCompositeShape("shFwdaBPPTPC", "FwdaBPPTX-FwdaBPPTY");
-  TGeoVolume* voFwdaBPPTPC =  new TGeoVolume("FwdaBPPTPC", shFwdaBPPTPC, kMedAco);
-  //    
-  //  Tube  ALIFWDA_0020  
-  //    const Float_t kFwdaBPPTTL = 48.;
-  const Float_t kFwdaBPPTTL = 35.;
-  TGeoVolume* voFwdaBPPTT =  new TGeoVolume("FwdaBPPTT", new TGeoTube(8.85, 9.0, kFwdaBPPTTL/2.), kMedAco);
-  TGeoVolumeAssembly* voFwdaBPPT = new TGeoVolumeAssembly("FwdaBPPT");
-  voFwdaBPPT->AddNode(voFwdaBPPTPC, 1, gGeoIdentity);
-  voFwdaBPPT->AddNode(voFwdaBPPTT,  1, new TGeoTranslation(0., 0., kFwdaBPPTTL/2. + kFwdaBPPTXL));
-
-    
-  //  BeamPipe and T0A Support
-  //
-  //  ALIFWDA_0033
-  //    
-  //  Support  Plate ALIFWDA_0026
-  const Float_t kFwdaBPSPL = 4.0;
-  TGeoXtru* shFwdaBPSPX = new TGeoXtru(2);
-  Double_t xBPSPX[8] = {10.0,  6.0 , -6.0, -10.0, -10.0,  -6.0,   6.0, 10.0};
-  Double_t yBPSPX[8] = { 6.0, 10.0,  10.0,   6.0, - 6.0, -10.0, -10.0, -6.0};
-  shFwdaBPSPX->DefinePolygon(8, xBPSPX, yBPSPX);
-  shFwdaBPSPX->DefineSection(0, 0.,         0., 0., 1.);
-  shFwdaBPSPX->DefineSection(1, kFwdaBPSPL, 0., 0., 1.);
-  shFwdaBPSPX->SetName("FwdaBPSPX");
-  TGeoPcon* shFwdaBPSPY = new TGeoPcon(0., 360., 6);
-  shFwdaBPSPY->DefineSection(0, -1.00, 0., 5.5);
-  shFwdaBPSPY->DefineSection(1,  3.50, 0., 5.5);    
-  shFwdaBPSPY->DefineSection(2,  3.50, 0., 5.0);    
-  shFwdaBPSPY->DefineSection(3,  3.86, 0., 5.0);    
-  shFwdaBPSPY->DefineSection(4,  3.86, 0., 5.5);    
-  shFwdaBPSPY->DefineSection(5,  5.00, 0., 5.5);    
-  shFwdaBPSPY->SetName("FwdaBPSPY");
-  TGeoCompositeShape*  shFwdaBPSP = new TGeoCompositeShape("shFwdaBPSP", "FwdaBPSPX-FwdaBPSPY");
-  TGeoVolume* voFwdaBPSP =  new TGeoVolume("FwdaBPSP", shFwdaBPSP, kMedAco);
-  //    
-  //  Flasque  ALIFWDA_00027
-
-
-  const Float_t kFwdaBPSTTRi  =  7.6/2.;
-  const Float_t kFwdaBPSTTRo1 = 13.9/2.;
-  const Float_t kFwdaBPSTTRo2 =  8.2/2.;
-  const Float_t kFwdaBPSTTRo3 =  9.4/2.;
-    
-  TGeoPcon* shFwdaBPSFL = new TGeoPcon(0., 360., 8);
-  z = 0., 
-    shFwdaBPSFL->DefineSection(0, z, kFwdaBPSTTRi, kFwdaBPSTTRo1);
-  z += 0.64;
-  shFwdaBPSFL->DefineSection(1, z, kFwdaBPSTTRi, kFwdaBPSTTRo1);
-  shFwdaBPSFL->DefineSection(2, z, kFwdaBPSTTRi, kFwdaBPSTTRo2);
-  z += 2.55;
-  shFwdaBPSFL->DefineSection(3, z, kFwdaBPSTTRi, kFwdaBPSTTRo2);
-  shFwdaBPSFL->DefineSection(4, z, kFwdaBPSTTRi, kFwdaBPSTTRo3);
-  z += 0.4;
-  shFwdaBPSFL->DefineSection(5, z, kFwdaBPSTTRi, kFwdaBPSTTRo3);
-  shFwdaBPSFL->DefineSection(6, z, kFwdaBPSTTRi, kFwdaBPSTTRo2);
-  z += 1.2;
-  shFwdaBPSFL->DefineSection(7, z, kFwdaBPSTTRi, kFwdaBPSTTRo2);
-
-  TGeoVolume* voFwdaBPSFL =  new TGeoVolume("FwdaBPSFL", shFwdaBPSFL, kMedAco);
-
-    
-  //
-  // Cable support 
-  TGeoBBox* shFwdaBPSCSa = new TGeoBBox(3.0, 8.75, 0.5);
-  shFwdaBPSCSa->SetName("FwdaBPSCSa");
-  TGeoBBox* shFwdaBPSCSb = new TGeoBBox(1.25, 4.00, 1.0);
-  shFwdaBPSCSb->SetName("FwdaBPSCSb");   
-  TGeoTranslation* tFwdaBPSCSb = new TGeoTranslation(0., 5.25 - 8.75, 0.);
-  tFwdaBPSCSb->SetName("tFwdaBPSCSb");
-  tFwdaBPSCSb->RegisterYourself();
-  TGeoBBox* shFwdaBPSCSc = new TGeoBBox(3.0, 0.50, 0.70);
-  shFwdaBPSCSc->SetName("FwdaBPSCSc");
-  TGeoTranslation* tFwdaBPSCSc = new TGeoTranslation(0., 0.5 - 8.75, 1.2);
-  tFwdaBPSCSc->SetName("tFwdaBPSCSc");
-  tFwdaBPSCSc->RegisterYourself();
-  TGeoCompositeShape* shFwdaBPSCS = new TGeoCompositeShape("shFwdaBPSCS", "(FwdaBPSCSa-FwdaBPSCSb:tFwdaBPSCSb)+FwdaBPSCSc:tFwdaBPSCSc");
-  TGeoVolume* voFwdaBPSCS = new TGeoVolume("FwdaBPSCS", shFwdaBPSCS, kMedAco);
-    
-    
-  // Assembling the beam pipe support	
-  TGeoVolumeAssembly* voFwdaBPS = new TGeoVolumeAssembly("FwdaBPS");
-  voFwdaBPS->AddNode(voFwdaBPSP,   1,  new TGeoCombiTrans(0., 0., 0., rot045));
-  voFwdaBPS->AddNode(voFwdaBPSFL,  1,  new TGeoTranslation(0., 0., kFwdaBPSPL));
-  const Float_t kFwdaBPSCSdy = 18.75/TMath::Sqrt(2.);
-    
-  voFwdaBPS->AddNode(voFwdaBPSCS,  1,  new TGeoCombiTrans(- kFwdaBPSCSdy,   kFwdaBPSCSdy, 2., rot045));
-  voFwdaBPS->AddNode(voFwdaBPSCS,  2,  new TGeoCombiTrans(- kFwdaBPSCSdy, - kFwdaBPSCSdy, 2., rot135));
-  voFwdaBPS->AddNode(voFwdaBPSCS,  3,  new TGeoCombiTrans(  kFwdaBPSCSdy, - kFwdaBPSCSdy, 2., rot225));
-  voFwdaBPS->AddNode(voFwdaBPSCS,  4,  new TGeoCombiTrans(  kFwdaBPSCSdy,   kFwdaBPSCSdy, 2., rot315));
-
-  TGeoVolumeAssembly* voCp2 = new TGeoVolumeAssembly("CP2");
-  //FM voCp2->AddNode(voCp2Mo, 1, gGeoIdentity);
-  //FM voCp2->AddNode(voFwdaBPPT, 1, new TGeoTranslation(0., 0., -kCP2Length / 2. + 13.8));
-  //FM voCp2->AddNode(voFwdaBPS,  1, new TGeoTranslation(0., 0., -kCP2Length / 2. +  5.1));
-
-  */
-
-  /*
-
-  //
-  ///////////////////
-  //      CP/3     //
-  ///////////////////
-  //
-  // Adaptor tube [Pos 4]
-  // 
-  // Adaptor tube length 
-  const Float_t  kCP3AdaptorTubeLength            =  5.50;
-  //
-  // Inner and outer radii
-  const Float_t kCP3AdaptorTubeRi                =  2.92;
-  const Float_t kCP3AdaptorTubeRo                =  3.00;
-  //
-  // Bulge at transition point
-  // Inner and outer radii
-  const Float_t kCP3AdaptorTubeBulgeRi           =  2.90;
-  const Float_t kCP3AdaptorTubeBulgeRo           =  3.05;    
-  //
-  // Length of bulge
-  const Float_t  kCP3AdaptorTubeBulgeLength       =  0.80;
-  //
-  // Bellow [Pos 8]
-  //
-  //  Total length    
-  const Float_t kCP3BellowLength                  = 13.00;
-  //  Outer Radius
-  const Float_t kCP3BellowRo                      =  3.6;
-  //  Inner Radius 
-  const Float_t kCP3BellowRi                      =  2.8;
-  //  Number of plies
-  const Int_t   kCP3NumberOfPlies                 = 18;
-  //  Length of undulated region
-  const Float_t kCP3BellowUndulatedLength         =  8.30; 
-  //  Plie thickness
-  const Float_t kCP3PlieThickness                 =  0.02;   
-  //  Connection Plie radies (at transition been undulated region and beam pipe)
-  const Float_t kCP3ConnectionPlieR               =  0.21;
-  //  Plie radius
-  //  const Float_t kCP3PlieR = 0.118286;
-  const Float_t kCP3PlieR = 
-    (kCP3BellowUndulatedLength - 4. *  kCP3ConnectionPlieR + 2. * kCP3PlieThickness + 
-     (2. *  kCP3NumberOfPlies - 2.) * kCP3PlieThickness) / (4. * kCP3NumberOfPlies - 2.);
-  //  Length of connection pipe
-  const Float_t kCP3BellowConnectionLength        =  2.35;
-  //
-  //  Tube between bellows [Pos 3]  
-  //    
-  //  Length of tube
-  const Float_t kCP3TubeLength                    =  4.00;
-  //
-  //  Minimised fixed flange [Pos 7]
-  //  
-  //  Length of flange connection tube
-  const Float_t kCP3FlangeConnectorLength         =  5.0 - 1.4;
-  //  Length of Flange
-  const Float_t kCP3FlangeLength                  =  1.40;
-  //  Outer radius    
-  const Float_t kCP3FlangeRo                      =  4.30-1.;  // -1 ?? FM
-
-  //
-  // CP/3 Mother volume
-  //
-  TGeoPcon* shCp3Mo = new TGeoPcon(0., 360., 12);
-  //  From transition to first bellow
-  z = - kCP3Length / 2.;
-  shCp3Mo->DefineSection( 0, z, 0., kCP3AdaptorTubeBulgeRo);
-  z += kCP3BellowConnectionLength + kCP3AdaptorTubeLength;
-  shCp3Mo->DefineSection( 1, z, 0., kCP3AdaptorTubeBulgeRo);
-  //  First Bellow
-  shCp3Mo->DefineSection( 2, z, 0., kCP3BellowRo);
-  z +=  kCP3BellowUndulatedLength;
-  shCp3Mo->DefineSection( 3, z, 0., kCP3BellowRo);
-  //  Connection between the two bellows
-  shCp3Mo->DefineSection( 4, z, 0., kCP3AdaptorTubeBulgeRo);
-  z +=  2. * kCP3BellowConnectionLength + kCP3TubeLength;
-  shCp3Mo->DefineSection( 5, z, 0., kCP3AdaptorTubeBulgeRo);
-  //  Second bellow
-  shCp3Mo->DefineSection( 6, z, 0., kCP3BellowRo);
-  z += kCP3BellowUndulatedLength;
-  shCp3Mo->DefineSection( 7, z, 0., kCP3BellowRo);
-  //  Pipe between second Bellow and Flange
-  shCp3Mo->DefineSection( 8, z, 0., kCP3AdaptorTubeBulgeRo);
-  z +=  kCP3BellowConnectionLength +  kCP3FlangeConnectorLength;
-  shCp3Mo->DefineSection( 9, z, 0., kCP3AdaptorTubeBulgeRo);
-  //  Flange 
-  shCp3Mo->DefineSection(10, z, 0., kCP3FlangeRo);
-  z = -shCp3Mo->GetZ(0);
-  shCp3Mo->DefineSection(11, z, 0., kCP3FlangeRo);
-  //
-  TGeoVolume* voCp3Mo = new TGeoVolume("CP3MO", shCp3Mo, kMedAir);
-  voCp3Mo->SetVisibility(0);
-  TGeoVolumeAssembly* voCp3 = new TGeoVolumeAssembly("Cp3");
-  voCp3->AddNode(voCp3Mo,  1, gGeoIdentity);
-  voCp3->AddNode(voCpSupC, 3, new TGeoTranslation(0., 0., - kCP3Length / 2. + 4.6));
-  dz = kCP3pos;
-
-  //////////////////////////////////////////////
-  // CP/3 Adaptor tube                        // 
-  //////////////////////////////////////////////
-  TGeoPcon* shCp3AtV = new TGeoPcon(0., 360., 4);
-  //  Bulge at transition
-  z =  - kCP3AdaptorTubeLength / 2.;
-  shCp3AtV->DefineSection(0, z, 0., kCP3AdaptorTubeBulgeRo);
-  z += kCP3AdaptorTubeBulgeLength;
-  shCp3AtV->DefineSection(1, z, 0., kCP3AdaptorTubeBulgeRo);
-  //  Tube
-  shCp3AtV->DefineSection(2, z, 0., kCP3AdaptorTubeRo);
-  z =  + kCP3AdaptorTubeLength / 2.;
-  shCp3AtV->DefineSection(3, z, 0., kCP3AdaptorTubeRo);
-
-  TGeoVolume* voCp3AtV = new TGeoVolume("CP3ATV", shCp3AtV, kMedVac);
-
-  TGeoPcon* shCp3AtS = new TGeoPcon(0., 360., 4);
-  //  Bulge at transition
-  shCp3AtS->DefineSection(0, shCp3AtV->GetZ(0), kCP3AdaptorTubeBulgeRi, kCP3AdaptorTubeBulgeRo);
-  shCp3AtS->DefineSection(1, shCp3AtV->GetZ(1), kCP3AdaptorTubeBulgeRi, kCP3AdaptorTubeBulgeRo);
-  //  Tube
-  shCp3AtS->DefineSection(2, shCp3AtV->GetZ(2), kCP3AdaptorTubeRi,      kCP3AdaptorTubeRo);
-  shCp3AtS->DefineSection(3, shCp3AtV->GetZ(3), kCP3AdaptorTubeRi ,     kCP3AdaptorTubeRo);
-  TGeoVolume* voCp3AtS = new TGeoVolume("CP3ATS", shCp3AtS, kMedSteel);
-
-  voCp3AtV->AddNode(voCp3AtS, 1, gGeoIdentity);
-  dz = - kCP3Length / 2. +  kCP3AdaptorTubeLength / 2.;
-  //FM voCp3Mo->AddNode(voCp3AtV, 1, new TGeoTranslation(0., 0., dz));
-
-  /////////////////////////////////
-  // CP/3 Bellow section         //
-  /////////////////////////////////
-
-  //
-  //  Upper part of the undulation
-  TGeoTorus* plieTorusUO =  new TGeoTorus(kCP3BellowRo - kCP3PlieR, 0. , kCP3PlieR);
-  plieTorusUO->SetName("TorusUO");
-  TGeoTorus* plieTorusUI =  new TGeoTorus(kCP3BellowRo - kCP3PlieR, kCP3PlieR - kCP3PlieThickness, kCP3PlieR);
-  plieTorusUI->SetName("TorusUI");
-  TGeoTube*  plieTubeU   =  new TGeoTube (kCP3BellowRo - kCP3PlieR, kCP3BellowRo, kCP3PlieR);
-  plieTubeU->SetName("TubeU");
-    
-  TGeoCompositeShape*  shUpperPlieO = new TGeoCompositeShape("upperPlieO", "TorusUO*TubeU");
-  TGeoCompositeShape*  shUpperPlieI = new TGeoCompositeShape("upperPlieI", "TorusUI*TubeU");
- 
-  TGeoVolume* voWiggleUO = new TGeoVolume("CP3WUO", shUpperPlieO, kMedVac);
-  TGeoVolume* voWiggleUI = new TGeoVolume("CP3WUI", shUpperPlieI, kMedSteel);
-  voWiggleUO->AddNode(voWiggleUI, 1,  gGeoIdentity);    
-  //
-  // Lower part of the undulation
-  TGeoTorus* plieTorusLO =  new TGeoTorus(kCP3BellowRi + kCP3PlieR, 0. , kCP3PlieR);
-  plieTorusLO->SetName("TorusLO");
-  TGeoTorus* plieTorusLI =  new TGeoTorus(kCP3BellowRi + kCP3PlieR, kCP3PlieR - kCP3PlieThickness, kCP3PlieR);
-  plieTorusLI->SetName("TorusLI");
-  TGeoTube*  plieTubeL   =  new TGeoTube (kCP3BellowRi, kCP3BellowRi + kCP3PlieR, kCP3PlieR);
-  plieTubeL->SetName("TubeL");
-
-  TGeoCompositeShape*  shLowerPlieO = new TGeoCompositeShape("lowerPlieO", "TorusLO*TubeL");
-  TGeoCompositeShape*  shLowerPlieI = new TGeoCompositeShape("lowerPlieI", "TorusLI*TubeL");
-
-  TGeoVolume* voWiggleLO = new TGeoVolume("CP3WLO", shLowerPlieO, kMedVac);
-  TGeoVolume* voWiggleLI = new TGeoVolume("CP3WLI", shLowerPlieI, kMedSteel);
-  voWiggleLO->AddNode(voWiggleLI, 1,  gGeoIdentity);    
-
-  //
-  // Connection between upper and lower part of undulation
-  TGeoVolume* voWiggleC1 = new TGeoVolume("Q3WCO1",  
-					  new TGeoTube(kCP3BellowRi + kCP3PlieR, kCP3BellowRo - kCP3PlieR, kCP3PlieThickness / 2.),
-					  kMedSteel);
-  TGeoVolume* voWiggleC2 = new TGeoVolume("Q3WCO2",  
-					  new TGeoTube(kCP3BellowRi + kCP3ConnectionPlieR, kCP3BellowRo - kCP3PlieR, kCP3PlieThickness / 2.),
-					  kMedSteel);
-  //
-  // Conncetion between undulated section and beam pipe
-  TGeoTorus* plieTorusCO =  new TGeoTorus(kCP3BellowRi + kCP3ConnectionPlieR, 0. , kCP3ConnectionPlieR);
-  plieTorusCO->SetName("TorusCO");
-  TGeoTorus* plieTorusCI =  new TGeoTorus(kCP3BellowRi + kCP3ConnectionPlieR, kCP3ConnectionPlieR - kCP3PlieThickness, kCP3ConnectionPlieR);
-  plieTorusCI->SetName("TorusCI");
-  TGeoTube*  plieTubeC   =  new TGeoTube (kCP3BellowRi, kCP3BellowRi + kCP3ConnectionPlieR, kCP3ConnectionPlieR);
-  plieTubeC->SetName("TubeC");
-
-  TGeoCompositeShape*  shConnectionPlieO = new TGeoCompositeShape("connectionPlieO", "TorusCO*TubeC");
-  TGeoCompositeShape*  shConnectionPlieI = new TGeoCompositeShape("connectionPlieI", "TorusCI*TubeC");
-
-  TGeoVolume* voConnectionPO = new TGeoVolume("CP3CPO", shConnectionPlieO, kMedVac);
-  TGeoVolume* voConnectionPI = new TGeoVolume("CP3CPI", shConnectionPlieI, kMedSteel);
-  voConnectionPO->AddNode(voConnectionPI, 1,  gGeoIdentity);    
-  //
-  // Connecting pipes
-  TGeoVolume* voConnectionPipeO = new TGeoVolume("CP3BECO",  
-						 new TGeoTube(0., kCP3AdaptorTubeRo, kCP3BellowConnectionLength / 2.),
-						 kMedVac);
-  TGeoVolume* voConnectionPipeI = new TGeoVolume("CP3BECI",  
-						 new TGeoTube(kCP3AdaptorTubeRi, kCP3AdaptorTubeRo, kCP3BellowConnectionLength / 2.),
-						 kMedSteel);
-    
-  voConnectionPipeO->AddNode(voConnectionPipeI, 1,  gGeoIdentity);
-    
-  //
-  // Bellow mother
-  TGeoPcon* shBellowMotherPC = new TGeoPcon(0., 360., 6);
-  dz =  - kCP3BellowLength / 2;
-  shBellowMotherPC->DefineSection(0, dz, 0.,  kCP3AdaptorTubeRo);
-  dz +=  kCP3BellowConnectionLength;
-  shBellowMotherPC->DefineSection(1, dz, 0.,  kCP3AdaptorTubeRo);
-  shBellowMotherPC->DefineSection(2, dz, 0.,  kCP3BellowRo);
-  dz =  kCP3BellowLength /2. -  kCP3BellowConnectionLength;;
-  shBellowMotherPC->DefineSection(3, dz, 0.,  kCP3BellowRo);
-  shBellowMotherPC->DefineSection(4, dz, 0.,  kCP3AdaptorTubeRo);
-  dz +=  kCP3BellowConnectionLength;
-  shBellowMotherPC->DefineSection(5, dz, 0.,  kCP3AdaptorTubeRo);
-
-  TGeoVolume* voBellowMother = new TGeoVolume("CP3BeMO", shBellowMotherPC, kMedVac);
-  voBellowMother->SetVisibility(0);
-    
-  //
-  // Add undulations
-  z0   =  - kCP3BellowLength / 2. +  kCP3BellowConnectionLength + 2. * kCP3ConnectionPlieR - kCP3PlieThickness;
-  zsh  = 4. *  kCP3PlieR -  2. * kCP3PlieThickness;
-  for (Int_t iw = 0; iw < 18; iw++) {
-    Float_t zpos =  z0 + iw * zsh;	
-    if (iw > 0) 
-      voBellowMother->AddNode(voWiggleC1,  iw + 1 , new TGeoTranslation(0., 0., zpos + kCP3PlieThickness / 2.));	
-    else
-      voBellowMother->AddNode(voWiggleC2,  iw + 1 , new TGeoTranslation(0., 0., zpos + kCP3PlieThickness / 2.));	
-
-    zpos += kCP3PlieR;
-    voBellowMother->AddNode(voWiggleUO, iw + 1,  new TGeoTranslation(0., 0., zpos));	
-
-    zpos += kCP3PlieR;
-    if (iw < 17) 
-      voBellowMother->AddNode(voWiggleC1,  iw + 19, new TGeoTranslation(0., 0., zpos - kCP3PlieThickness / 2.));
-    else
-      voBellowMother->AddNode(voWiggleC2,  iw + 19, new TGeoTranslation(0., 0., zpos - kCP3PlieThickness / 2.));
-
-    if (iw < 17) {
-      zpos += kCP3PlieR;
-      voBellowMother->AddNode(voWiggleLO, iw + 1, new TGeoTranslation(0., 0., zpos -  kCP3PlieThickness));
-    }
-  }
-  //
-  // Add connecting undulation between bellow and connecting pipe
-  dz = - kCP3BellowUndulatedLength / 2. + kCP3ConnectionPlieR;
-  voBellowMother->AddNode(voConnectionPO, 1,  new TGeoTranslation(0., 0.,  dz));
-  voBellowMother->AddNode(voConnectionPO, 2,  new TGeoTranslation(0., 0., -dz));
-  //
-  // Add connecting pipe
-  dz =  - kCP3BellowLength / 2. +  kCP3BellowConnectionLength / 2.;
-  voBellowMother->AddNode(voConnectionPipeO, 1,  new TGeoTranslation(0., 0.,   dz));
-  voBellowMother->AddNode(voConnectionPipeO, 2,  new TGeoTranslation(0., 0.,  -dz));
-  //
-  // Add bellow to CP/3 mother    
-  dz = - kCP3Length / 2. +  kCP3AdaptorTubeLength +  kCP3BellowLength / 2.;
-  //FM voCp3Mo->AddNode(voBellowMother, 1,  new TGeoTranslation(0., 0., dz));
-  dz += (kCP3BellowLength +  kCP3TubeLength);
-  //FM voCp3Mo->AddNode(voBellowMother, 2,  new TGeoTranslation(0., 0., dz));
-
-
-  ///////////////////////////////////////////
-  // Beam pipe section between bellows     //
-  ///////////////////////////////////////////
-
-  TGeoVolume* voCp3Bco = new TGeoVolume("CP3BCO",
-					new TGeoTube(0.,  kCP3AdaptorTubeRo,  kCP3TubeLength / 2.),
-					kMedVac);
-   
-  TGeoVolume* voCp3Bci = new TGeoVolume("CP3BCI",
-					new TGeoTube(kCP3AdaptorTubeRi, kCP3AdaptorTubeRo, kCP3TubeLength / 2.), 
-					kMedSteel);
-    
-  voCp3Bco->AddNode(voCp3Bci, 1, gGeoIdentity);
-  dz = - kCP3Length / 2. +   kCP3AdaptorTubeLength +  kCP3BellowLength +  kCP3TubeLength / 2.;
-  //FM voCp3Mo->AddNode(voCp3Bco, 1, new TGeoTranslation(0., 0., dz));
-
-
-  ///////////////////////////////////////////		  
-  // CP3 Minimised Flange                  //
-  ///////////////////////////////////////////
-
-  TGeoPcon* shCp3mfo = new TGeoPcon(0., 360., 4);
-  z = - (kCP3FlangeConnectorLength + kCP3FlangeLength) / 2.;
-  //  Connection Tube
-  shCp3mfo->DefineSection(0, z, 0., kCP3AdaptorTubeRo);
-  z +=  kCP3FlangeConnectorLength;
-  shCp3mfo->DefineSection(1, z, 0., kCP3AdaptorTubeRo);
-  //  Flange
-  shCp3mfo->DefineSection(2, z, 0., kCP3FlangeRo);
-  z = - shCp3mfo->GetZ(0);
-  shCp3mfo->DefineSection(3, z, 0., kCP3FlangeRo);
-
-  TGeoVolume* voCp3mfo = new TGeoVolume("CP3MFO", shCp3mfo, kMedVac);
-
-
-  TGeoPcon* shCp3mfi = new TGeoPcon(0., 360., 4);
-  //  Connection Tube
-  shCp3mfi->DefineSection(0, shCp3mfo->GetZ(0), kCP3AdaptorTubeRi, kCP3AdaptorTubeRo);
-  shCp3mfi->DefineSection(1, shCp3mfo->GetZ(1), kCP3AdaptorTubeRi, kCP3AdaptorTubeRo);
-  //  Flange
-  shCp3mfi->DefineSection(2, shCp3mfo->GetZ(2), kCP3AdaptorTubeRi, kCP3FlangeRo);
-  shCp3mfi->DefineSection(3, shCp3mfo->GetZ(3), kCP3AdaptorTubeRi, kCP3FlangeRo);
-
-  TGeoVolume* voCp3mfi = new TGeoVolume("CP3MFI", shCp3mfi, kMedSteel);
-
-  voCp3mfo->AddNode(voCp3mfi, 1, gGeoIdentity);
-  dz =  kCP3Length / 2. - (kCP3FlangeConnectorLength + kCP3FlangeLength) / 2.;
-  //FM voCp3Mo->AddNode(voCp3mfo, 1, new TGeoTranslation(0., 0., dz));
-
-  */
-
-
-  /*
-  //
-  //  Assemble the central beam pipe
-  //
-  TGeoVolumeAssembly* asCP = new TGeoVolumeAssembly("CP");
-  z = 0.;
-  // asCP->AddNode(voCp2,   1, gGeoIdentity);
-  z +=  kCP2Length / 2. + kCP1Length / 2.;
-  //asCP->AddNode(voCp1, 1, new TGeoTranslation(0., 0., z));
   
-  asCP->AddNode(voCp1, 1, new TGeoTranslation(0., 0., 0.));
-    
-  z +=  kCP1Length / 2.  + kCP3Length / 2.;
-  // asCP->AddNode(voCp3, 1, new TGeoTranslation(0., 0., z));
-  top->AddNode(asCP, 1,  new TGeoCombiTrans(0., 0., 400. -  kCP2Length / 2, rot180));
+  ////////////////////////////////////////////////////////////////////////////////
+  // Side A section after Beryllium
+  // !!!!!! THIS PART NEED TO BE WORKED OUT !!!!!
+  ////////////////////////////////////////////////////////////////////////////////
 
-  */
+  //----------------  Al tube ------------------
+  Float_t fSmallRadiusZmax =fBeryliumSectionZmax + 20.43;
+  Float_t fLargeRadiusZmin =fSmallRadiusZmax + 2.61;
+  Float_t fAdaptConeSideAZmin =fLargeRadiusZmin + 200.; // THIS PART NEED TO BE WORKED OUT
+  Float_t fAluSideARmax = 2.5;
 
+  TGeoPcon* aluSideA = new TGeoPcon(0., 360., 4);
+  aluSideA->DefineSection(0,fBeryliumSectionZmax, fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  aluSideA->DefineSection(1,fSmallRadiusZmax, fBeryliumSectionOuterRadius-fBeryliumSectionThickness,fBeryliumSectionOuterRadius);
+  aluSideA->DefineSection(2,fLargeRadiusZmin, fAluSideARmax-fBeryliumSectionThickness,fAluSideARmax);
+  aluSideA->DefineSection(3,fAdaptConeSideAZmin, fAluSideARmax-fBeryliumSectionThickness,fAluSideARmax);
+  TGeoVolume* voaluSideA = new TGeoVolume("aluSideA",aluSideA,kMedAlu2219);
+  voaluSideA->SetLineColor(kBlue);
+  top->AddNode(voaluSideA,1,new TGeoTranslation(0., 0., 0.));
+  
+  TGeoPcon* aluSideAVac = new TGeoPcon(0., 360., 4);
+  aluSideAVac->DefineSection(0,fBeryliumSectionZmax, 0., fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  aluSideAVac->DefineSection(1,fSmallRadiusZmax, 0., fBeryliumSectionOuterRadius-fBeryliumSectionThickness);
+  aluSideAVac->DefineSection(2,fLargeRadiusZmin, 0., fAluSideARmax-fBeryliumSectionThickness);
+  aluSideAVac->DefineSection(3,fAdaptConeSideAZmin, 0., fAluSideARmax-fBeryliumSectionThickness);
+  TGeoVolume* voaluSideAVac = new TGeoVolume("aluSideAVac",aluSideAVac,kMedVac);
+  voaluSideAVac->SetLineColor(kGreen);
+  voaluSideAVac->SetVisibility(0);
+  top->AddNode(voaluSideAVac,1,new TGeoTranslation(0., 0., 0.));
+  //-------------------------------------------------
 
+  
   ////////////////////////////////////////////////////////////////////////////////     
   //                                                                            //
   //                                  RB24/1                                    // 
@@ -2808,6 +2402,15 @@ void AliPIPEv4::CreateMaterials()
   Float_t zPA[4] = { 8.,  7.,  6.,  1.};
   Float_t wPA[4] = { 1.,  1.,  6., 11.};
   //
+  // Polyimide film
+  Float_t aPI[4] = {16., 14., 12.,  1.};
+  Float_t zPI[4] = { 8.,  7.,  6.,  1.};
+  Float_t wPI[4] = { 5.,  2.,  22., 10.};
+  // Rohacell
+  Float_t aRohacell[4] = {16., 14., 12.,  1.};
+  Float_t zRohacell[4] = { 8.,  7.,  6.,  1.};
+  Float_t wRohacell[4] = { 2.,  1.,  9., 13.};
+  //
   // Air 
   //
   Float_t aAir[4]={12.0107,14.0067,15.9994,39.948};
@@ -2910,8 +2513,16 @@ void AliPIPEv4::CreateMaterials()
   // Aluminium AA2219 for MFT
   AliMixture(64, "ALUMINIUM2219$",aALU2219,zALU2219, 2.84 ,6,wALU2219); // from aubertduval.fr
   //---------------------------------
-   
-  // **************** 
+  //     Polyimide Film
+  //
+  AliMixture(65, "PI$", aPI, zPI, 1.42, -4, wPI);
+  //---------------------------------
+  //     Carbon Fiber M55J
+  AliMaterial(66,"M55J6K$",12.0107,6,1.92,999,999);
+  // Rohacell  C9 H13 N1 O2  0.03 g/cm^3
+  AliMixture(67,"Rohacell$", aRohacell, zRohacell, 0.03, -4, wRohacell);
+
+  // ****************
   //     Defines tracking media parameters. 
   //
   Float_t epsil  = .001;    // Tracking precision, 
@@ -2973,6 +2584,12 @@ void AliPIPEv4::CreateMaterials()
   AliMedium(63,"AA5083", 63, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   AliMedium(64,"AA2219", 64, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
   //----------------------------------------------------
+  AliMedium(65,"POLYIMIDE", 65, 0, isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  //---------------------------------
+  //     Carbon Fiber M55J
+  AliMedium(66,  "M55J6K",66,0,isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
+  // Rohacell
+  AliMedium(67,"ROHACELL",67,0,isxfld, sxmgmx, tmaxfd, stemax, deemax, epsil, stmin);
 
 
 }
@@ -3107,7 +2724,7 @@ TGeoVolume* AliPIPEv4::MakeBellow(const char* ext, Int_t nc, Float_t rMin, Float
   return voBellow;
 }
 
-TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie)
+TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t rPlie, Float_t dPlie)
 {
   // nc     Number of convolution
   // rMin   Inner radius of the bellow
@@ -3119,12 +2736,16 @@ TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, 
   //const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");
   const TGeoMedium* kMedAlu5083 =  gGeoManager->GetMedium("PIPE_AA5083"); //fm
   
+  Float_t dU = nc * (4.*rPlie - 2. *dPlie);
+  
   char name[64], nameA[64], nameB[64], bools[64];
   snprintf(name, 64, "%sBellowUS", ext);
-  TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
+//  TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
+  TGeoVolumeAssembly *voBellow = new TGeoVolumeAssembly(name);
   //
   //  Upper part of the undulation
   //
+  
   TGeoTorus* shPlieTorusU  =  new TGeoTorus(rMax - rPlie, rPlie - dPlie, rPlie);
   snprintf(nameA, 64, "%sTorusU", ext);
   shPlieTorusU->SetName(nameA);
@@ -3138,7 +2759,7 @@ TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, 
   TGeoVolume* voWiggleU = new TGeoVolume(name, shUpperPlie, kMedAlu5083);
   voWiggleU->SetLineColor(kOrange); // fm
   
-  // First Lower part of the undulation
+  // First Lower part of the ondulation
   TGeoTorus* shPlieTorusL =  new TGeoTorus(rMin + rPlie, rPlie - dPlie, rPlie);
   snprintf(nameA, 64, "%sTorusL", ext);
   shPlieTorusL->SetName(nameA);
@@ -3169,6 +2790,51 @@ TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, 
   snprintf(name, 64, "%sPlieConn1", ext);
   TGeoVolume* voWiggleC1 = new TGeoVolume(name, new TGeoTube(rMin + rPlie, rMax - rPlie, dPlie/2.), kMedAlu5083);
   voWiggleC1->SetLineColor(kOrange); // fm
+
+  //
+  // Vacuum Part
+  //
+  
+  //--Upper part of the ondulation
+  
+  TGeoTorus* vacPlieTorusU  =  new TGeoTorus(rMax - rPlie, 0., rPlie- dPlie);
+  snprintf(nameA, 64, "%svacTorusU", ext);
+  vacPlieTorusU->SetName(nameA);
+  TGeoTube*  vacPlieTubeU   =  new TGeoTube (0., rMax- rPlie, rPlie-dPlie);
+  snprintf(nameB, 64, "%svacTubeU", ext);
+  vacPlieTubeU->SetName(nameB);
+  snprintf(name, 64, "%svacUpperPlie", ext);
+  snprintf(bools, 64, "%s+%s", nameA, nameB);
+  TGeoCompositeShape*  vacUpperPlie = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voVacWiggleU = new TGeoVolume(name, vacUpperPlie, kMedVac);
+  voVacWiggleU->SetVisibility(0);
+
+  
+  // First Lower part of the undulation
+  TGeoTorus* vacPlieTorusL =  new TGeoTorus(rMin + rPlie, 0., rPlie);
+  snprintf(nameA, 64, "%svacTorusL", ext);
+  vacPlieTorusL->SetName(nameA);
+  
+  TGeoTube*  vacPlieTubeL  =  new TGeoTube (0., rMin + rPlie, rPlie/2.);
+  snprintf(nameB, 64, "%svacTubeL", ext);
+  vacPlieTubeL->SetName(nameB);
+  snprintf(name, 64, "%svacLowerPlie", ext);
+  snprintf(bools, 64, "%s:t1-%s", nameB, nameA);
+  TGeoCompositeShape*  vacLowerPlie1 = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voVacWiggleL1 = new TGeoVolume(name, vacLowerPlie1, kMedVac);
+  voVacWiggleL1->SetVisibility(0);
+  
+  
+  // Second Lower part of the undulation
+  
+  snprintf(bools, 64, "%s:t2-%s", nameB, nameA);
+  TGeoCompositeShape*  vacLowerPlie2 = new TGeoCompositeShape(name, bools);
+  
+  TGeoVolume* voVacWiggleL2 = new TGeoVolume(name, vacLowerPlie2, kMedVac);
+  voVacWiggleL2->SetVisibility(0);
+
   
   // One wiggle
   Float_t dz = rPlie -  dPlie / 2.;
@@ -3177,23 +2843,121 @@ TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, 
   TGeoVolumeAssembly* asWiggle = new TGeoVolumeAssembly(name);
   
   asWiggle->AddNode(voWiggleL1 ,  1 , new TGeoTranslation(0., 0., z0));
+  asWiggle->AddNode(voVacWiggleL1 ,  1 , new TGeoTranslation(0., 0., z0));
   z0 -= dz;
   asWiggle->AddNode(voWiggleC1,  1 , new TGeoTranslation(0., 0., z0));
   z0 -= dz;
   asWiggle->AddNode(voWiggleU,   1 , new TGeoTranslation(0., 0., z0));
+  asWiggle->AddNode(voVacWiggleU,   1 , new TGeoTranslation(0., 0., z0));
   z0 -= dz;
   asWiggle->AddNode(voWiggleC1,  2 , new TGeoTranslation(0., 0., z0));
   z0 -= dz;
   asWiggle->AddNode(voWiggleL2 ,  1 , new TGeoTranslation(0., 0., z0));
+  asWiggle->AddNode(voVacWiggleL2 ,  1 , new TGeoTranslation(0., 0., z0));
+
+
+  
+  
   // Positioning of the volumes
   z0   = + dU / 2.;
   Float_t zsh  = 4. *  dz;
-  for (Int_t iw = 0; iw < nc; iw++) {
+  //for (Int_t iw = 0; iw < 1; iw++) {
+     for (Int_t iw = 0; iw < nc; iw++) {
     Float_t zpos =  z0 - iw * zsh;
     voBellow->AddNode(asWiggle,  iw + 1, new TGeoTranslation(0., 0., zpos));
     
   }
   return voBellow;
 }
+//TGeoVolume* AliPIPEv4::MakeBellowCside(const char* ext, Int_t nc, Float_t rMin, Float_t rMax, Float_t dU, Float_t rPlie, Float_t dPlie)
+//{
+//  // nc     Number of convolution
+//  // rMin   Inner radius of the bellow
+//  // rMax   Outer radius of the bellow
+//  // dU     Undulation length
+//  // rPlie  Plie radius
+//  // dPlie  Plie thickness
+//  const TGeoMedium* kMedVac    =  gGeoManager->GetMedium("PIPE_VACUUM");
+//  //const TGeoMedium* kMedSteel  =  gGeoManager->GetMedium("PIPE_INOX");
+//  const TGeoMedium* kMedAlu5083 =  gGeoManager->GetMedium("PIPE_AA5083"); //fm
+//  
+//  char name[64], nameA[64], nameB[64], bools[64];
+//  snprintf(name, 64, "%sBellowUS", ext);
+//  TGeoVolume* voBellow = new TGeoVolume(name, new TGeoTube(rMin, rMax, dU/2.), kMedVac);
+//  //
+//  //  Upper part of the undulation
+//  //
+//  
+//  TGeoTorus* shPlieTorusU  =  new TGeoTorus(rMax - rPlie, rPlie - dPlie, rPlie);
+//  snprintf(nameA, 64, "%sTorusU", ext);
+//  shPlieTorusU->SetName(nameA);
+//  TGeoTube*  shPlieTubeU   =  new TGeoTube (rMax - rPlie, rMax, rPlie);
+//  snprintf(nameB, 64, "%sTubeU", ext);
+//  shPlieTubeU->SetName(nameB);
+//  snprintf(name, 64, "%sUpperPlie", ext);
+//  snprintf(bools, 64, "%s*%s", nameA, nameB);
+//  TGeoCompositeShape*  shUpperPlie = new TGeoCompositeShape(name, bools);
+//  
+//  TGeoVolume* voWiggleU = new TGeoVolume(name, shUpperPlie, kMedAlu5083);
+//  voWiggleU->SetLineColor(kOrange); // fm
+//  
+//  // First Lower part of the undulation
+//  TGeoTorus* shPlieTorusL =  new TGeoTorus(rMin + rPlie, rPlie - dPlie, rPlie);
+//  snprintf(nameA, 64, "%sTorusL", ext);
+//  shPlieTorusL->SetName(nameA);
+//  TGeoTranslation *t1 = new TGeoTranslation("t1",0,0,-rPlie/2.);
+//  t1->RegisterYourself();
+//  
+//  TGeoTube*  shPlieTubeL  =  new TGeoTube (rMin, rMin + rPlie, rPlie/2.);
+//  snprintf(nameB, 64, "%sTubeL", ext);
+//  shPlieTubeL->SetName(nameB);
+//  snprintf(name, 64, "%sLowerPlie", ext);
+//  snprintf(bools, 64, "%s*%s:t1", nameA, nameB);
+//  TGeoCompositeShape*  shLowerPlie1 = new TGeoCompositeShape(name, bools);
+//  
+//  TGeoVolume* voWiggleL1 = new TGeoVolume(name, shLowerPlie1, kMedAlu5083);
+//  voWiggleL1->SetLineColor(kOrange); // fm
+//  
+//  // Second Lower part of the undulation
+//  TGeoTranslation *t2 = new TGeoTranslation("t2",0,0,rPlie/2.);
+//  t2->RegisterYourself();
+//  
+//  snprintf(bools, 64, "%s*%s:t2", nameA, nameB);
+//  TGeoCompositeShape*  shLowerPlie2 = new TGeoCompositeShape(name, bools);
+//  
+//  TGeoVolume* voWiggleL2 = new TGeoVolume(name, shLowerPlie2, kMedAlu5083);
+//  voWiggleL2->SetLineColor(kOrange); // fm
+//  
+//  // Connection between upper and lower part of undulation
+//  snprintf(name, 64, "%sPlieConn1", ext);
+//  TGeoVolume* voWiggleC1 = new TGeoVolume(name, new TGeoTube(rMin + rPlie, rMax - rPlie, dPlie/2.), kMedAlu5083);
+//  voWiggleC1->SetLineColor(kOrange); // fm
+//  
+//  // One wiggle
+//  Float_t dz = rPlie -  dPlie / 2.;
+//  Float_t z0 = 2.*rPlie;
+//  snprintf(name, 64, "%sWiggle", ext);
+//  TGeoVolumeAssembly* asWiggle = new TGeoVolumeAssembly(name);
+//  
+//  asWiggle->AddNode(voWiggleL1 ,  1 , new TGeoTranslation(0., 0., z0));
+//  //  z0 -= dz;
+//  //  asWiggle->AddNode(voWiggleC1,  1 , new TGeoTranslation(0., 0., z0));
+//  //  z0 -= dz;
+//  //  asWiggle->AddNode(voWiggleU,   1 , new TGeoTranslation(0., 0., z0));
+//  //  z0 -= dz;
+//  //  asWiggle->AddNode(voWiggleC1,  2 , new TGeoTranslation(0., 0., z0));
+//  //  z0 -= dz;
+//  //  asWiggle->AddNode(voWiggleL2 ,  1 , new TGeoTranslation(0., 0., z0));
+//  // Positioning of the volumes
+//  z0   = + dU / 2.;
+//  Float_t zsh  = 4. *  dz;
+//  for (Int_t iw = 0; iw < 1; iw++) {
+//    // for (Int_t iw = 0; iw < nc; iw++) {
+//    Float_t zpos =  z0 - iw * zsh;
+//    voBellow->AddNode(asWiggle,  iw + 1, new TGeoTranslation(0., 0., zpos));
+//    
+//  }
+//  return voBellow;
+//}
 
 

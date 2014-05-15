@@ -38,8 +38,13 @@
 #include "AliVTrack.h"
 #include "AliTPCPIDResponse.h"
 #include "AliTPCdEdxInfo.h"
+#include "TFile.h"
+#include "TSpline.h"
 
 ClassImp(AliTPCPIDResponse);
+
+
+AliTPCPIDResponse *AliTPCPIDResponse::fgInstance =0;
 
 const char* AliTPCPIDResponse::fgkGainScenarioName[fgkNumberOfGainScenarios+1]=
 {
@@ -94,6 +99,7 @@ AliTPCPIDResponse::AliTPCPIDResponse():
 
   
   ResetMultiplicityCorrectionFunctions();
+  fgInstance=this;
 }
 /*TODO remove?
 //_________________________________________________________________________
@@ -148,6 +154,7 @@ AliTPCPIDResponse::~AliTPCPIDResponse()
   
   delete fCorrFuncSigmaMultiplicity;
   fCorrFuncSigmaMultiplicity = 0x0;
+  if (fgInstance==this) fgInstance=0;
 }
 
 
@@ -1550,4 +1557,31 @@ Bool_t AliTPCPIDResponse::TrackApex(const AliVTrack* track, Float_t magField, Do
   position[1]=b[1]+b[1]*TMath::Abs(r)/norm;
   position[2]=0.;
   return kTRUE;
+}
+
+Double_t AliTPCPIDResponse::EvaldEdxSpline(Double_t bg,Int_t entry){
+  //
+  // Evaluate the dEdx response for given entry
+  //
+  TSpline * spline = (TSpline*)fSplineArray.At(entry);
+  if (spline) return spline->Eval(bg);
+  return 0;
+}
+
+
+Bool_t   AliTPCPIDResponse::RegisterSpline(const char * name, Int_t index){
+  //
+  // register spline to be used for drawing comparisons
+  // 
+  TFile * fTPCBB = TFile::Open("$ALICE_ROOT/OADB/COMMON/PID/data/TPCPIDResponse.root");
+  TObjArray  *arrayTPCPID= (TObjArray*)  fTPCBB->Get("TPCPIDResponse");
+  if (fSplineArray.GetEntriesFast()<index) fSplineArray.Expand(index*2);
+  TSpline3 *spline=0;
+  if (arrayTPCPID){
+    spline = (TSpline3*)arrayTPCPID->FindObject(name);
+    if (spline) fSplineArray.AddAt(spline->Clone(),index);    
+  }
+  delete arrayTPCPID;
+  delete fTPCBB;
+  return (spline!=0);
 }
