@@ -1090,7 +1090,7 @@ Double_t AliEMCALTrigger::GetEmcalSumAmp() const
 { 
   // Return sum of amplidutes from EMCal
   // Used calibration coefficeint for transition to energy
-  return fAmpJetMatrix >0 ?fAmpJetMatrix->Sum() :0.0;
+  return fAmpJetMatrix ?fAmpJetMatrix->Sum() :0.0;
 }
 
 //____________________________________________________________________________

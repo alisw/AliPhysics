@@ -31,6 +31,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TTreeIndex.h>
+#include <TGrid.h>
 #include "AliRawReaderRoot.h"
 #include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
@@ -81,6 +82,8 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
 // event with the given number
 
   TDirectory* dir = gDirectory;
+  TString flStr = fileName;
+  if (flStr.BeginsWith("alien://") && !gGrid) TGrid::Connect("alien://");
   fFile = TFile::Open(fileName);
   dir->cd();
   if (!fFile || !fFile->IsOpen()) {
@@ -150,7 +153,7 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
 // copy constructor
 
   if (rawReader.fFile) {
-    TDirectory* dir = gDirectory;
+    TDirectory* dir = gDirectory;    
     fFile = TFile::Open(rawReader.fFile->GetName());
     dir->cd();
     if (!fFile || !fFile->IsOpen()) {

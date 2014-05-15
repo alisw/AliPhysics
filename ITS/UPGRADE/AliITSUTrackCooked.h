@@ -16,6 +16,7 @@ class AliESDtrack;
 class AliITSUTrackCooked : public AliKalmanTrack {
 public:
     AliITSUTrackCooked();
+    AliITSUTrackCooked(const AliITSUTrackCooked &t);
     AliITSUTrackCooked(const AliESDtrack &t);
     virtual ~AliITSUTrackCooked();
     
@@ -28,11 +29,13 @@ public:
     Int_t GetClusterIndex(Int_t i) const { return fIndex[i]; }
     Double_t GetPIDsignal() const { return 0; }
     Int_t Compare(const TObject *o) const;
+    Bool_t GetPhiZat(Double_t r,Double_t &phi,Double_t &z) const;
 
     void SetClusterIndex(Int_t layer, Int_t index);
-    Bool_t Propagate(const AliCluster *c, Double_t thick, Double_t x0rho);
+    void ResetClusters();
     
 private:
+    AliITSUTrackCooked &operator=(const AliITSUTrackCooked &tr);
     Int_t fIndex[2*AliITSUTrackerCooked::kNLayers]; // indices of associated clusters
   
     ClassDef(AliITSUTrackCooked,1)   //ITSU stand-alone track

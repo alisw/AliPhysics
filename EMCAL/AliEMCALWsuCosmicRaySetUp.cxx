@@ -259,12 +259,12 @@ TList* AliEMCALWsuCosmicRaySetUp::BookKineHists(const Double_t p , const Char_t 
   gROOT->cd();
   TH1::AddDirectory(1);
 
-  TH1 *h = 0, *hgid=0;
+  TH1 * hgid=0;
   Int_t nphi=180, nmax=1100;
   Double_t phimin=0.0, phimax=360.;
   Double_t pmax=110.;
   if(p>0.1) pmax = 1.1*p;
-  h = new TH1F("00_hNPrim"," number of primary particles ", 10, 0.5, 10.5);
+  new TH1F("00_hNPrim"," number of primary particles ", 10, 0.5, 10.5);
   hgid = new TH1F("01_hGidprim","Geant Id of primary particles", 16, 0.5, 16.5);
   new TH1F("02_hPmomPrim","p of primary particles", nmax, 0.0, pmax);
   new TH1F("03_hEtaPrim","#eta primary particles", 80, 0.0, 8.0);

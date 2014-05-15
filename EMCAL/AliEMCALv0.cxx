@@ -510,8 +510,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
     if(!gn.Contains("WSUC")) { // ALICE 
       AliMatrix(fIdRotm, 90.-angle,180., 90.0,90.0, angle, 0.);
       phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-      //          printf(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
-      //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+      AliDebug(4,Form(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
+                      iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule()));
       xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - fSmodPar0;
       zpos = mod->GetPosZ() - fSmodPar2;
       
@@ -539,8 +539,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       if(iz == 0) AliMatrix(fIdRotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
       else        AliMatrix(fIdRotm, 90-angle,270., 90.0,0.0, angle,90.);
       phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-      //printf(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
-      //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+      AliDebug(4,Form(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
+                      iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule()));
       zpos = mod->GetPosZ()      - fSmodPar2;
       ypos = mod->GetPosXfromR() - fSmodPar1;
       //printf(" zpos %7.2f ypos %7.2f fIdRotm %i\n xpos ", zpos, xpos, fIdRotm);
@@ -548,9 +548,9 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       { // flat in phi
         xpos = g->GetPhiModuleSize()*(2*ix+1 - g->GetNPhi())/2.;
         TVirtualMC::GetMC()->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
-        printf(" %7.2f ", xpos);
+        //printf(" %7.2f ", xpos);
       }
-      printf("\n");
+      //printf("\n");
     }
   }
   AliDebug(2,Form(" Number of modules in Super Module(%s) %i \n", mother, nr));
@@ -850,7 +850,7 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
   name.Data(), pbShape.Data(), pbtiChonly.Data(), nr);
   AliEMCALGeometry * g = GetGeometry(); 
 
-  double par[5], parPB[5], parSC[5];
+  double par[5], parPB[5];//, parSC[5];
   double xpos = 0.0, ypos = 0.0;
   double zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
   if(name == "SCMX") { // common trapezoid - 11 parameters
@@ -879,7 +879,7 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
     double tanx = (parTRAP[1] -  parTRAP[0]) / (2.*parTRAP[4]); //  tanx =  tany now
     double tany = (parTRAP[3] -  parTRAP[2]) / (2.*parTRAP[4]), ztmp=0.;
     parPB[4] = g->GetECPbRadThick()/2.;
-    parSC[2] = g->GetECScintThick()/2.;
+    //parSC[2] = g->GetECScintThick()/2.;
     for(int iz=0; iz<g->GetNECLayers(); iz++){
       ztmp     = fSampleWidth*double(iz);
       parPB[0] = parTRAP[0] + tanx*ztmp;

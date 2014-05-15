@@ -133,7 +133,7 @@ void AliEMCALHistoUtilities::FillHProf(TList *l, Int_t ind, Double_t x, Double_t
   if(l == 0) return;
   if(ind>=0 && ind < l->GetSize()){
     h = dynamic_cast<TProfile *>(l->At(ind));
-    if(h>0) h->Fill(x,y,w);
+    if(h) h->Fill(x,y,w);
   }
 }
 
