@@ -923,6 +923,15 @@ void AliUEHist::GetHistsZVtxMult(AliUEHist::CFStep step, AliUEHist::Region regio
   Printf("Using leading pT range %d --> %d", firstBin, lastBin);
   sparse->GetAxis(2)->SetRange(firstBin, lastBin);
   fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+
+  // cut on the second trigger particle if there is a minimum set
+  if (fPt2Min > 0)
+  {
+    Int_t firstBinPt2 = sparse->GetAxis(6)->FindBin(fPt2Min);
+    Int_t lastBinPt2 = sparse->GetAxis(6)->GetNbins();
+
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(firstBinPt2, lastBinPt2);
+  }
     
   Int_t dimensions[] = { 4, 0, 5, 3 };
   THnBase* tmpTrackHist = sparse->ProjectionND(4, dimensions, "E");
