@@ -86,10 +86,15 @@ goCPass0()
   if [[ -z ${jobindex} || ${jobindex} -lt 0 ]]; then
     [[ -n "${LSB_JOBINDEX}" ]] && jobindex=${LSB_JOBINDEX}
     [[ -n "${SGE_TASK_ID}" ]] && jobindex=${SGE_TASK_ID}
+    if [[ -z ${jobindex} ]]; then 
+      echo "no jobindex!"
+      return 1
+    fi
   fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
+  [[ -n ${useProfilingCommand} ]] && doneFile="${commonOutputPath}/meta/profiling.cpass0.job${jobindex}.run${runNumber}.done"
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   
@@ -283,10 +288,15 @@ goCPass1()
   if [[ -z ${jobindex} || ${jobindex} -lt 0 ]]; then
     [[ -n "${LSB_JOBINDEX}" ]] && jobindex=${LSB_JOBINDEX}
     [[ -n "${SGE_TASK_ID}" ]] && jobindex=${SGE_TASK_ID}
+    if [[ -z ${jobindex} ]]; then 
+      echo "no jobindex!"
+      return 1
+    fi
   fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
   doneFile="${commonOutputPath}/meta/cpass1.job${jobindex}.run${runNumber}.done"
+  [[ -n ${useProfilingCommand} ]] && doneFile="${commonOutputPath}/meta/profiling.cpass1.job${jobindex}.run${runNumber}.done"
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   
@@ -1666,7 +1676,7 @@ goSubmitBatch()
     if [[ -n ${profilingCommand} ]]; then
       [[ -z ${nEventsProfiling} ]] && nEventsProfiling=2
       [[ -z ${profilingCommand} ]] && profilingCommand="/usr/bin/valgrind --tool=callgrind --num-callers=40 -v --trace-children=yes"
-      submit "valgrind" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand=$(encSpaces "${profilingCommand}") "${extraOpts[@]}"
+      submit "profile-${JOBpostfix}" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand=$(encSpaces "${profilingCommand}") "${extraOpts[@]}"
     fi 
 
     ################################################################################
