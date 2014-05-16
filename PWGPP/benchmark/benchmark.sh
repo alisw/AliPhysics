@@ -1074,7 +1074,7 @@ goGenerateMakeflow()
       currentDefaultOCDB=$(setYear ${inputFile} ${defaultOCDB})
       jobindex="profiling"
 
-      arr_cpass0_profiled_outputs[${runNumber}]="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
+      arr_cpass0_profiled_outputs[${runNumber}]="${commonOutputPath}/meta/profiling.cpass0.job${jobindex}.run${runNumber}.done"
       echo "${arr_cpass0_profiled_outputs[${runNumber}]} : benchmark.sh ${configFile} ${copyFiles[@]}"
       profilingCommand=$(encSpaces "${profilingCommand}")
       echo " ${alirootEnv} ./benchmark.sh CPass0 ${commonOutputPath}/000${runNumber}/${jobindex} ${inputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} ${extraOpts[@]} useProfilingCommand=${profilingCommand}"
@@ -1114,7 +1114,7 @@ goCreateQAplots()
   outputDir=${3}
   configFile=${4}
   shift 4
-  if ! parseConfig ${configFile} ${@}; then return 1; fi
+  if ! parseConfig ${configFile} "$@"; then return 1; fi
   
   #record the working directory provided by the batch system
   batchWorkingDirectory=${PWD}
@@ -1676,7 +1676,7 @@ goSubmitBatch()
     if [[ -n ${profilingCommand} ]]; then
       [[ -z ${nEventsProfiling} ]] && nEventsProfiling=2
       [[ -z ${profilingCommand} ]] && profilingCommand="/usr/bin/valgrind --tool=callgrind --num-callers=40 -v --trace-children=yes"
-      submit "profile-${JOBpostfix}" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/valgrind ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} valgrind useProfilingCommand=$(encSpaces "${profilingCommand}") "${extraOpts[@]}"
+      submit "profile-${JOBpostfix}" 1 1 000 "${alirootEnv} ${self}" CPass0 ${commonOutputPath}/000${runNumber}/${jobindex} ${oneInputFile} ${nEventsProfiling} ${currentDefaultOCDB} ${configFile} ${runNumber} ${jobindex} useProfilingCommand=$(encSpaces "${profilingCommand}") "${extraOpts[@]}"
     fi 
 
     ################################################################################
@@ -2405,19 +2405,18 @@ parseConfig()
 
 aliroot()
 {
-  args="$@"
+  args=("$@")
   if [[ -n ${useProfilingCommand} ]]; then
-    valgrindLogFile="cpu.txt"
-    [[ "${args}" =~ rec ]] && valgrindLogFile="cpu_rec.txt"
-    [[ "${args}}" =~ Calib ]] && valgrindLogFile="cpu_calib.txt"
-    [[ -n ${useProfilingCommand} ]] && useProfilingCommand="${useProfilingCommand} --log-file=${valgrindLogFile}"
-    echo running ${useProfilingCommand} aliroot ${args}
-    ${useProfilingCommand} aliroot ${args}
+    profilerLogFile="cpu.txt"
+    [[ "${args}" =~ rec ]] && profilerLogFile="cpu_rec.txt"
+    [[ "${args}}" =~ Calib ]] && profilerLogFile="cpu_calib.txt"
+    echo running "${useProfilingCommand} aliroot ${args} &> ${profilerLogFile}"
+    ${useProfilingCommand} aliroot "${args[@]}" &> ${profilerLogFile}
   else
     #to prevent an infinite recursion use "command aliroot" to disable
     #aliases and functions
-    echo running command aliroot ${args}
-    command aliroot "$@"
+    echo running command aliroot "${args[@]}"
+    command aliroot "${args[@]}"
   fi
   return 0
 }
