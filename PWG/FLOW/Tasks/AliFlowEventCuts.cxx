@@ -81,6 +81,7 @@ AliFlowEventCuts::AliFlowEventCuts():
   fCutSPDvertexerAnomaly(kFALSE),
   fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
+  fCutTPCmultiplicityOutliersAOD(kFALSE),
   fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCutZDCtiming(kFALSE),
@@ -129,6 +130,7 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fCutSPDvertexerAnomaly(kFALSE),
   fCutSPDTRKVtxZ(kFALSE),
   fCutTPCmultiplicityOutliers(kFALSE),
+  fCutTPCmultiplicityOutliersAOD(kFALSE),
   fUseCentralityUnchecked(kFALSE),
   fCentralityPercentileMethod(kTPConly),
   fCutZDCtiming(kFALSE),
@@ -177,6 +179,7 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fCutSPDvertexerAnomaly(that.fCutSPDvertexerAnomaly),
   fCutSPDTRKVtxZ(that.fCutSPDTRKVtxZ),
   fCutTPCmultiplicityOutliers(that.fCutTPCmultiplicityOutliers),
+  fCutTPCmultiplicityOutliersAOD(that.fCutTPCmultiplicityOutliersAOD),
   fUseCentralityUnchecked(that.fUseCentralityUnchecked),
   fCentralityPercentileMethod(that.fCentralityPercentileMethod),
   fCutZDCtiming(that.fCutZDCtiming),
@@ -261,6 +264,7 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fCutSPDvertexerAnomaly=that.fCutSPDvertexerAnomaly;
   fCutSPDTRKVtxZ=that.fCutSPDTRKVtxZ;
   fCutTPCmultiplicityOutliers=that.fCutTPCmultiplicityOutliers;
+  fCutTPCmultiplicityOutliersAOD=that.fCutTPCmultiplicityOutliersAOD;
   fUseCentralityUnchecked=that.fUseCentralityUnchecked;
   fCentralityPercentileMethod=that.fCentralityPercentileMethod;
   fCutZDCtiming=that.fCutZDCtiming;
@@ -299,7 +303,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
     QAbefore(0)->Fill(pvtxz);
     QAbefore(1)->Fill(multGlobal,multTPC);
   }
-  if (  (fCutTPCmultiplicityOutliers && esdevent) ||  (fCutTPCmultiplicityOutliers && aodevent)  )
+  if ( fCutTPCmultiplicityOutliers && esdevent )
   {
     //this is pretty slow as we check the event track by track twice
     //this cut will work for 2010 PbPb data and is dependent on
@@ -308,18 +312,60 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
       if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
       if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
     }
-    
-    /* commenting conflicting code, fix is pending
-    if(aodevent && fData2011){
-        if (multTPC > ( 62.87+1.78*multGlobal)) {pass=kFALSE;}
-        if (multTPC < (-36.73+1.48*multGlobal)) {pass=kFALSE;}
-      }
-    if(aodevent && !fData2011){
-        if (multTPC > ( 32.1+1.59*multGlobal)) {pass=kFALSE;}
-        if (multTPC < (-40.3+1.22*multGlobal)) {pass=kFALSE;}
-      }
-      */
   }
+   
+
+  if(fCutTPCmultiplicityOutliersAOD && aodevent) {
+      // the AliFlowTrackCuts::Count() function will not work here, since the correlation cut uses different
+      // track cuts 
+      multTPC = 0; // tpc mult estimate
+      Int_t multGlob = 0; // global multiplicity
+      Int_t nGoodTracks(aodevent->GetNumberOfTracks());
+      if(!fData2011) { // cut on outliers
+          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
+              if (!trackAOD) continue;
+              if (!(trackAOD->TestFilterBit(1))) continue;
+              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+              multTPC++;
+          }
+          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
+              if (!trackAOD) continue;
+              if (!(trackAOD->TestFilterBit(16))) continue;
+              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+              Double_t b[2] = {-99., -99.};
+              Double_t bCov[3] = {-99., -99., -99.};
+              if (!(trackAOD->PropagateToDCA(aodevent->GetPrimaryVertex(), aodevent->GetMagneticField(), 100., b, bCov))) continue;
+              if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+              multGlob++;
+          } //track loop
+          if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) return kFALSE;
+      }
+      if(fData2011) { // cut on outliers
+          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
+              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
+              if (!trackAOD) continue;
+              if (!(trackAOD->TestFilterBit(1))) continue;
+              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
+              multTPC++;
+          }
+          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
+              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
+              if (!trackAOD) continue;
+              if (!(trackAOD->TestFilterBit(16))) continue;
+              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
+              Double_t b[2] = {-99., -99.};
+              Double_t bCov[3] = {-99., -99., -99.};
+              if (!(trackAOD->PropagateToDCA(aodevent->GetPrimaryVertex(), aodevent->GetMagneticField(), 100., b, bCov))) continue;
+              if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
+              multGlob++;
+          } //track loop
+          if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))) return kFALSE;
+      }
+  }
+
+
   if (fCutNContributors)
   {
     if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
