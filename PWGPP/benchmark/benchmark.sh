@@ -191,10 +191,11 @@ goCPass0()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
+  echo batchWorkingDirectory=${batchWorkingDirectory}
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
-  echo ALICE_ROOT         ${ALICE_ROOT}
   echo PWD                ${PWD}
+  echo ALICE_ROOT         ${ALICE_ROOT}
   echo "########## ###########"
 
   alirootInfo > ALICE_ROOT.log
@@ -365,11 +366,11 @@ goCPass1()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
+  echo batchWorkingDirectory=${batchWorkingDirectory}
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
-  echo batchWorkingDirectory ${batchWorkingDirectory}
-  echo ALICE_ROOT         ${ALICE_ROOT}
   echo PWD                ${PWD}
+  echo ALICE_ROOT         ${ALICE_ROOT}
   echo "########## ###########"
 
   alirootInfo > ALICE_ROOT.log
@@ -924,11 +925,19 @@ goSubmitMakeflow()
   
   self=${0}
   #if which greadlink; then self=$(greadlink -f "${0}"); fi
+
+  #print some info:
+  echo self=$self
+  echo batchWorkingDirectory=$batchWorkingDirectory
+  echo PWD=$PWD
+  echo commonOutputPath=$commonOutputPath
+  echo configFile=$configFile
+  echo 
   
   #for reference copy the setup to the output dir
   cp ${self} ${commonOutputPath}
   cp ${configFile} ${commonOutputPath}
-  cp ${inputList} ${commonOutputPath}
+  cp ${inputFileList} ${commonOutputPath}
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
