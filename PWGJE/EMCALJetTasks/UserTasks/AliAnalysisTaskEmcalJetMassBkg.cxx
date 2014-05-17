@@ -462,11 +462,10 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
     jet = fJetsCont->GetLeadingJet("rho");
   
   TLorentzVector lvRC(0.,0.,0.,0.);
+  TLorentzVector lvRCS(0.,0.,0.,0.);
   Float_t RCpt = 0;
   Float_t RCeta = 0;
   Float_t RCphi = 0;
-  Float_t RCmass = 0.;  
-  Float_t RCE = 0.;  
 
   static Double_t massvecRC[999];
   static Double_t massPerAreavecRC[999];
@@ -484,18 +483,17 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
     RCeta = 0;
     RCphi = 0;
     GetRandomCone(lvRC,RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, 0);
-    RCmass = lvRC.M();
-    RCE = lvRC.E();
     if (RCpt > 0) {
-      fh2PtVsMassRC[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
-      fh2PtVsERC[fCentBin]->Fill(RCpt - rho*rcArea,RCE);
-      fpPtVsMassRC[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
-      fh2EtaVsMassRC[fCentBin]->Fill(RCeta,RCmass);
-      fh2CentVsMassRC->Fill(fCent,RCmass);
-      fh2MultVsMassRC->Fill(trackMult,RCmass);
+      lvRCS = GetSubtractedVector(lvRC.Pt(),lvRC.Eta(),lvRC.Phi(),lvRC.E());
+      fh2PtVsMassRC[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.M());
+      fh2PtVsERC[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.E());
+      fpPtVsMassRC[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.M());
+      fh2EtaVsMassRC[fCentBin]->Fill(lvRCS.Eta(),lvRCS.M());
+      fh2CentVsMassRC->Fill(fCent,lvRCS.M());
+      fh2MultVsMassRC->Fill(trackMult,lvRCS.M());
 
-      massvecRC[nRCAcc] = RCmass;
-      massPerAreavecRC[nRCAcc] = RCmass/rcArea;
+      massvecRC[nRCAcc] = lvRCS.M();
+      massPerAreavecRC[nRCAcc] = massvecRC[nRCAcc]/rcArea;
       ++nRCAcc;
     }
 
@@ -506,21 +504,20 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       RCeta = 0;
       RCphi = 0;
       GetRandomCone(lvRC,RCpt, RCeta, RCphi, fTracksCont, fCaloClustersCont, jet);
-      RCmass = lvRC.M();
-      RCE = lvRC.E();
       if (RCpt > 0 && jet) {
+	lvRCS = GetSubtractedVector(lvRC.Pt(),lvRC.Eta(),lvRC.Phi(),lvRC.E());
 	Float_t dphi = RCphi - jet->Phi();
 	if (dphi > 1.5*TMath::Pi()) dphi -= TMath::Pi() * 2;
 	if (dphi < -0.5*TMath::Pi()) dphi += TMath::Pi() * 2;
-	fh2PtVsMassRCExLJDPhi[fCentBin]->Fill(RCpt - rho*rcArea,RCmass,dphi);
-	fh2PtVsERCExLJDPhi[fCentBin]->Fill(RCpt - rho*rcArea,RCE,dphi);
-	fpPtVsMassRCExLJ[fCentBin]->Fill(RCpt - rho*rcArea,RCmass);
-	fh2EtaVsMassRCExLJ[fCentBin]->Fill(RCeta,RCmass);
-	fh2CentVsMassRCExLJ->Fill(fCent,RCmass);
-	fh2MultVsMassRCExLJ->Fill(trackMult,RCmass);
+	fh2PtVsMassRCExLJDPhi[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.M(),dphi);
+	fh2PtVsERCExLJDPhi[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.E(),dphi);
+	fpPtVsMassRCExLJ[fCentBin]->Fill(RCpt-rho*rcArea,lvRCS.M());
+	fh2EtaVsMassRCExLJ[fCentBin]->Fill(lvRCS.Eta(),lvRCS.M());
+	fh2CentVsMassRCExLJ->Fill(fCent,lvRCS.M());
+	fh2MultVsMassRCExLJ->Fill(trackMult,lvRCS.M());
 
-	massvecRCExLJ[nRCExLJAcc] = RCmass;
-	massPerAreavecRCExLJ[nRCExLJAcc] = RCmass/rcArea;
+	massvecRCExLJ[nRCExLJAcc] = lvRCS.M();
+	massPerAreavecRCExLJ[nRCExLJAcc] = lvRCS.M()/rcArea;
 	++nRCExLJAcc;
       }
     }
@@ -560,22 +557,20 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
   if(fJetsCont && jet) {
     //cone perpendicular to leading jet
     TLorentzVector lvPC(0.,0.,0.,0.);
+    TLorentzVector lvPCS(0.,0.,0.,0.);
     Float_t PCpt = 0;
     Float_t PCeta = 0;
     Float_t PCphi = 0;
-    Float_t PCmass = 0.;
-    Float_t PCE = 0.;
     if(jet) {
       GetPerpCone(lvPC,PCpt, PCeta, PCphi, fTracksCont, fCaloClustersCont, jet);
-      PCmass = lvPC.M();
-      PCE = lvPC.E();
       if(PCpt>0.) {
-	fh2PtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
-	fh2PtVsEPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCE);
-	fpPtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
-	fh2EtaVsMassPerpConeLJ[fCentBin]->Fill(PCeta,PCmass);
-	fh2CentVsMassPerpConeLJ->Fill(fCent,PCmass);
-	fh2MultVsMassPerpConeLJ->Fill(trackMult,PCmass);
+	lvPCS = GetSubtractedVector(lvPC.Pt(),lvPC.Eta(),lvPC.Phi(),lvPC.E());
+	fh2PtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.M());
+	fh2PtVsEPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.E());
+	fpPtVsMassPerpConeLJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.M());
+	fh2EtaVsMassPerpConeLJ[fCentBin]->Fill(lvPCS.Eta(),lvPCS.M());
+	fh2CentVsMassPerpConeLJ->Fill(fCent,lvPCS.M());
+	fh2MultVsMassPerpConeLJ->Fill(trackMult,lvPCS.M());
       }
     }
     //cone perpendicular to all tagged jets
@@ -591,15 +586,14 @@ Bool_t AliAnalysisTaskEmcalJetMassBkg::FillHistograms()
       PCeta = 0;
       PCphi = 0;
       GetPerpCone(lvPC,PCpt, PCeta, PCphi, fTracksCont, fCaloClustersCont, jet);
-      PCmass = lvPC.M();
-      PCE = lvPC.E();
       if(PCpt>0.) {
-	fh2PtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
-	fh2PtVsEPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCE);
-	fpPtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,PCmass);
-	fh2EtaVsMassPerpConeTJ[fCentBin]->Fill(PCeta,PCmass);
-	fh2CentVsMassPerpConeTJ->Fill(fCent,PCmass);
-	fh2MultVsMassPerpConeTJ->Fill(trackMult,PCmass);
+	lvPCS = GetSubtractedVector(lvPC.Pt(),lvPC.Eta(),lvPC.Phi(),lvPC.E());
+	fh2PtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.M());
+	fh2PtVsEPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.E());
+	fpPtVsMassPerpConeTJ[fCentBin]->Fill(PCpt-rho*rcArea,lvPCS.M());
+	fh2EtaVsMassPerpConeTJ[fCentBin]->Fill(lvPCS.Eta(),lvPCS.M());
+	fh2CentVsMassPerpConeTJ->Fill(fCent,lvPCS.M());
+	fh2MultVsMassPerpConeTJ->Fill(trackMult,lvPCS.M());
       }
     }//jet loop
   }
@@ -786,6 +780,28 @@ void AliAnalysisTaskEmcalJetMassBkg::ExecOnce() {
     fMinRC2LJ = maxDist;
   }
 
+}
+
+  //________________________________________________________________________
+TLorentzVector AliAnalysisTaskEmcalJetMassBkg::GetBkgVector(Double_t eta, Double_t phi, AliJetContainer *cont) {
+  //get background vector
+
+  Double_t rho  = cont->GetRhoVal();
+  Double_t rhom = cont->GetRhoMassVal();
+  TLorentzVector vpB(0.,0.,0.,0.);
+  Double_t aRC = TMath::Pi()*fConeRadius*fConeRadius;
+  vpB.SetPxPyPzE(rho*TMath::Cos(phi)*aRC,rho*TMath::Sin(phi)*aRC,(rho+rhom)*TMath::SinH(eta)*aRC,(rho+rhom)*TMath::CosH(eta)*aRC);
+  return vpB;
+}
+
+//________________________________________________________________________
+TLorentzVector AliAnalysisTaskEmcalJetMassBkg::GetSubtractedVector(Double_t pt, Double_t eta, Double_t phi, Double_t e) {
+  //get subtracted vector
+  TLorentzVector vpS;
+  AliJetContainer *jetCont = GetJetContainer(fContainerBase);
+  TLorentzVector vpBkg = GetBkgVector(eta,phi,jetCont);
+  vpS.SetPxPyPzE(pt*TMath::Cos(phi)-vpBkg.Px(),pt*TMath::Sin(phi)-vpBkg.Py(),pt*TMath::SinH(eta)-vpBkg.Pz(),e-vpBkg.E());
+  return vpS;
 }
 
 //________________________________________________________________________

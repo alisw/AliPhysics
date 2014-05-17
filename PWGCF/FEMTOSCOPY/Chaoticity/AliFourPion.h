@@ -292,8 +292,8 @@ class AliFourPion : public AliAnalysisTaskSE {
   Float_t fKT3transition;
   Float_t fKT4transition;
   
-
-  bool LowQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
+  
+  /* bool LowQPairSwitch_E0E0[kMultLimitPbPb][kMultLimitPbPb];//!
   bool LowQPairSwitch_E0E1[kMultLimitPbPb][kMultLimitPbPb];//!
   bool LowQPairSwitch_E0E2[kMultLimitPbPb][kMultLimitPbPb];//!
   bool LowQPairSwitch_E0E3[kMultLimitPbPb][kMultLimitPbPb];//!
@@ -308,6 +308,25 @@ class AliFourPion : public AliAnalysisTaskSE {
   bool NormQPairSwitch_E1E2[kMultLimitPbPb][kMultLimitPbPb];//!
   bool NormQPairSwitch_E1E3[kMultLimitPbPb][kMultLimitPbPb];//!
   bool NormQPairSwitch_E2E3[kMultLimitPbPb][kMultLimitPbPb];//!
+  */
+  //
+  Char_t fDefaultsCharSwitch[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E0E0[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E0E1[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E0E2[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E0E3[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E1E2[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E1E3[kMultLimitPbPb];//!
+  TArrayC *fLowQPairSwitch_E2E3[kMultLimitPbPb];//!
+  //
+  TArrayC *fNormQPairSwitch_E0E0[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E0E1[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E0E2[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E0E3[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E1E2[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E1E3[kMultLimitPbPb];//!
+  TArrayC *fNormQPairSwitch_E2E3[kMultLimitPbPb];//!
+
 
  public:
   TH2D *fMomResC2;

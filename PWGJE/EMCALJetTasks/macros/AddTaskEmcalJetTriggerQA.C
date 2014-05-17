@@ -153,7 +153,7 @@ AliAnalysisTaskRhoBase *AttachRhoTask(TString     kBeamType           = "pp",
     jetFinderKt->SetMinJetPt(0.);
 
     gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRhoSparse.C");  
-    TF1 *fScale = new TF1("fScale","1.42",0.,100.); //scale factor for pPb
+    TF1 *fScale = new TF1("fScale","1.28",0.,100.); //scale factor for pPb
     AliAnalysisTaskRhoSparse *rhoTaskSparse = AddTaskRhoSparse(
 			       jetFinderKt->GetName(),
 			       jetFinderAKt->GetName(),

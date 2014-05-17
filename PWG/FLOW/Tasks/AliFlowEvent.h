@@ -88,6 +88,7 @@ public:
   void SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts);
 
   virtual void ClearFast();
+  virtual void ClearCachedRun();
 
 protected:
   AliFlowTrack* ReuseTrack( Int_t i);
