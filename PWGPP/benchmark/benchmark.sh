@@ -118,17 +118,25 @@ goCPass0()
 
   outputDir=${targetDirectory}/${jobindex}_${chunkName%.*}
   mkdir -p ${outputDir}
-  [[ ! -d ${outputDir} ]] && echo "cannot make ${outputDir}" && touch ${doneFile} && return 1  
+  if [[ ! -d ${outputDir} ]]; then 
+    touch ${doneFile} 
+    echo "cannot make ${outputDir}" >> ${doneFile}
+    return 1  
+  fi
   
   #runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   runpath=${outputDir}
   #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass0.XXXXXX)
   mkdir -p ${runpath}
-  [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
+  if [[ ! -d ${runpath} ]]; then
+    touch ${doneFile} 
+    echo "cannot make runpath ${runpath}" >> ${doneFile}
+    return 1
+  fi
   if ! cd ${runpath}; then
-    echo "PWD=$PWD is not the runpath=${runpath}"
     touch ${doneFile}
+    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
     return 1
   fi
 
@@ -170,7 +178,11 @@ goCPass0()
   fi
   ######
   
-  [[ ! -f ${inputList} && -z ${pretend} ]] && echo "input file ${inputList} not found, exiting..." && touch ${doneFile} && return 1
+  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+    touch ${doneFile} 
+    echo "input file ${inputList} not found, exiting..." >> ${doneFile}
+    return 1
+  fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
@@ -191,7 +203,7 @@ goCPass0()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
-  echo batchWorkingDirectory=${batchWorkingDirectory}
+  echo batchWorkingDirectory=$batchWorkingDirectory
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
   echo PWD                ${PWD}
@@ -312,7 +324,11 @@ goCPass1()
   #Packages= ;OutputDir= ;LPMPass= ;TriggerAlias= ;LPMRunNumber= ;LPMProductionType= ;LPMInteractionType= ;LPMProductionTag= ;LPMAnchorRun= ;LPMAnchorProduction= ;LPMAnchorYear= 
   export PRODUCTION_METADATA="OutputDir=cpass1"
 
-  [[ ! -f ${inputList} && -z ${pretend} ]] && echo "input file ${inputList} not found, exiting..." && touch ${doneFile} && return 1
+  if [[ ! -f ${inputList} && -z ${pretend} ]]; then
+    touch ${doneFile}
+    echo "input file ${inputList} not found, exiting..." >> ${doneFile}
+    return 1
+  fi
   if [[ "${inputList}" =~ \.root$ ]]; then
     infile=${inputList}
   else
@@ -322,7 +338,11 @@ goCPass1()
 
   outputDir=${targetDirectory}/${jobindex}_${chunkName%.*}
   mkdir -p ${outputDir}
-  [[ ! -d ${outputDir} ]] && echo "cannot make ${outputDir}" && touch ${doneFile} && return 1
+  if [[ ! -d ${outputDir} ]];then
+    touch ${doneFile}
+    echo "cannot make ${outputDir}" >> ${doneFile}
+    return 1
+  fi
   
   #runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
   runpath=${outputDir}
@@ -337,10 +357,14 @@ goCPass1()
 
   #init the running path
   mkdir -p ${runpath}
-  [[ ! -d ${runpath} ]] && echo "cannot make runpath ${runpath}" && touch ${doneFile} && return 1
+  if [[ ! -d ${runpath} ]]; then
+   touch ${doneFile}
+   echo "cannot make runpath ${runpath}" >> ${doneFile}
+   return 1
+ fi
   if ! cd ${runpath}; then
-    echo "PWD=$PWD is not the runpath=${runpath}"
     touch ${doneFile}
+    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
     return 1
   fi
 
@@ -366,11 +390,11 @@ goCPass1()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
-  echo batchWorkingDirectory=${batchWorkingDirectory}
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
-  echo PWD                ${PWD}
+  echo batchWorkingDirectory ${batchWorkingDirectory}
   echo ALICE_ROOT         ${ALICE_ROOT}
+  echo PWD                ${PWD}
   echo "########## ###########"
 
   alirootInfo > ALICE_ROOT.log
@@ -420,8 +444,8 @@ goCPass1()
   fi
 
   if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
-    echo "cpass0 produced no calibration! exiting..."
     touch ${doneFile}
+    echo "cpass0 produced no calibration! exiting..." >> ${doneFile}
     return 1
   fi
 
@@ -579,16 +603,20 @@ goMergeCPass0()
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass0.XXXXXX)
 
   mkdir -p ${runpath}
-  [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
-  if ! cd ${runpath}; then 
-    echo "PWD=$PWD is not the runpath=${runpath}"
+  if [[ ! -d ${runpath} ]]; then
     touch ${doneFile}
+    echo "not able to make the runpath ${runpath}" >> ${doneFile}
+    return 1
+  fi
+  if ! cd ${runpath}; then 
+    touch ${doneFile}
+    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
     return 1
   fi
 
   logOutputDir=${runpath}
   [[ -n ${logToFinalDestination} ]] && logOutputDir=${outputDir}
-  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/mergeMakeOCDB.log
+  [[ -z ${dontRedirectStdOutToLog} ]] && exec &> ${logOutputDir}/stdout
   echo "${0} $*"
 
   mergingScript="mergeMakeOCDB.byComponent.sh"
@@ -646,10 +674,10 @@ goMergeCPass0()
     touch dcsTime.root
     mkdir -p ./OCDB/TPC/Calib/TimeGain/
     mkdir -p ./OCDB/TPC/Calib/TimeDrift/
-    touch ./OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
-    touch ./OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
+    echo "some calibration" >> ./OCDB/TPC/Calib/TimeGain/someCalibObject_0-999999_cpass0.root
+    echo "some calibration" >> ./OCDB/TPC/Calib/TimeDrift/otherCalibObject_0-999999_cpass0.root
   else
-    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage}
+    ./${mergingScript} ${calibrationFilesToMerge} ${runNumber} "local://./OCDB" ${ocdbStorage} >> "mergeMakeOCDB.log"
 
     #produce the calib trees for expert QA (dcsTime.root)
     goMakeLocalOCDBaccessConfig ./OCDB
@@ -721,10 +749,14 @@ goMergeCPass1()
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass1.XXXXXX)
 
   mkdir -p ${runpath}
-  [[ ! -d ${runpath} ]] && echo "not able to make the runpath ${runpath}" && touch ${doneFile} && return 1
-  if ! cd ${runpath}; then 
-    echo "PWD=$PWD is not the runpath=${runpath}"
+  if [[ ! -d ${runpath} ]]; then
     touch ${doneFile}
+    echo "not able to make the runpath ${runpath}" >> ${doneFile}
+    return 1
+  fi
+  if ! cd ${runpath}; then 
+    touch ${doneFile}
+    echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
     return 1
   fi
 
@@ -925,14 +957,6 @@ goSubmitMakeflow()
   
   self=${0}
   #if which greadlink; then self=$(greadlink -f "${0}"); fi
-
-  #print some info:
-  echo self=$self
-  echo batchWorkingDirectory=$batchWorkingDirectory
-  echo PWD=$PWD
-  echo commonOutputPath=$commonOutputPath
-  echo configFile=$configFile
-  echo 
   
   #for reference copy the setup to the output dir
   cp ${self} ${commonOutputPath}
@@ -941,11 +965,9 @@ goSubmitMakeflow()
 
   #submit - use makeflow if available, fall back to old stuff when makeflow not there
   if which makeflow; then
-    
     goGenerateMakeflow ${productionID} ${inputFileList} ${configFile} "${extraOpts[@]}" commonOutputPath=${commonOutputPath} > benchmark.makeflow
-
+    cp benchmark.makeflow ${commonOutputPath}
     makeflow ${makeflowOptions} benchmark.makeflow
-    cd ../
   else 
     echo "no makeflow!"
   fi
@@ -1139,8 +1161,11 @@ goCreateQAplots()
   cd ${outputDir}
   [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${olddir} && return 1
 
-  ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
-
+  if [[ -z ${pretend} ]]; then
+    ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
+  else
+    touch pretendCreateQAplots.done
+  fi
   cd ${olddir}
   return 0
 )
