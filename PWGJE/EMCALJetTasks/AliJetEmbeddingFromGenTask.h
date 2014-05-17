@@ -19,13 +19,15 @@ class AliJetEmbeddingFromGenTask : public AliJetModelBaseTask {
   void           UserCreateOutputObjects();
   void           FillPythiaHistograms();
 
-  void           SetGen(AliGenerator *gen) { fGen = gen; }
+  void           SetGen(AliGenerator *gen)      { fGen = gen    ; }
+  void           SetMasslessParticles(Bool_t b) { fMassless = b ; }
 
  protected:
   Bool_t         ExecOnce();
   void           Run();
 
   AliGenerator  *fGen;                    //generator
+  Bool_t         fMassless;               //make particles massless
 
   TH1F          *fHistTrials;             //!trials from generator
   TProfile      *fHistXsection;           //!x-section from generator

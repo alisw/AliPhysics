@@ -1,6 +1,7 @@
 AliAnalysisTaskEmcalJetMassBkg* AddTaskEmcalJetMassBkg(const char * njetsBase, 
 						       const Double_t R,
 						       const char * nrhoBase, 
+						       const char * nrhoMass,
 						       const char * ntracks, 
 						       const char * nclusters,	
 						       const char *type,					     
@@ -54,10 +55,11 @@ AliAnalysisTaskEmcalJetMassBkg* AddTaskEmcalJetMassBkg(const char * njetsBase,
   AliJetContainer *jetContBase = task->AddJetContainer(njetsBase,strType,R);
   if(jetContBase) {
     jetContBase->SetRhoName(nrhoBase);
+    jetContBase->SetRhoMassName(nrhoMass);
     jetContBase->ConnectParticleContainer(trackCont);
     jetContBase->ConnectClusterContainer(clusterCont);
-    jetContBase->SetZLeadingCut(0.98,0.98);
-    task->SetPercAreaCut(0.6, 0);
+    //  jetContBase->SetZLeadingCut(0.98,0.98);
+    jetContBase->SetPercAreaCut(0.6);
   }
 
   task->SetCaloTriggerPatchInfoName(kEmcalTriggers.Data());

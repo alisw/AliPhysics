@@ -48,7 +48,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fFoundFractionCut(-1),
   fFilterBit(0xFF),
   fTrackStatus(0),
-  fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
+  fThreeParticleMixed(0),
   fCustomBinning(),
   fAlpha(0.2)
 {
@@ -76,7 +76,6 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
-  fAnalyseUE->SetEventSelection(fSelectBit);
 
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE); 
@@ -203,8 +202,27 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     for (Int_t jMix=0; jMix<nMix; jMix++){
       TObjArray* bgTracks = pool->GetEvent(jMix);
       
-      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix);
+      //standard mixed event
+      if(!fThreeParticleMixed)
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix);
+
+      //mixed combinatorics
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / nMix);
     }
+    
+    
+    // use 3 particle mixed event
+    if(fThreeParticleMixed && nMix>1){
+      TObjArray* tracks_t2 = pool->GetEvent(0);
+      for (Int_t jMix=1; jMix<nMix; jMix++){
+
+	TObjArray* bgTracks = pool->GetEvent(jMix);
+
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracks_t2, bgTracks, bgTracks, 1.0 / (nMix-1));
+      }
+    }
+    
+    
   }
 
   // ownership is with the pool now
@@ -256,7 +274,7 @@ void  AliAnalysisTaskTwoPlusOne::AddSettingsTree()
   settingsTree->Branch("fCrossedRowsCut", &fCrossedRowsCut,"CrossedRowsCut/I");
   settingsTree->Branch("fFoundFractionCut", &fFoundFractionCut,"FoundFractionCut/D");
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
-  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
+  settingsTree->Branch("fThreeParticleMixed", &fThreeParticleMixed,"fThreeParticleMixed/I");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   
   settingsTree->Fill();
