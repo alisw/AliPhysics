@@ -1162,7 +1162,7 @@ goCreateQAplots()
   [[ ! "${PWD}" =~ "${outputDir}" ]] && echo "PWD is not equal to outputDir=${outputDir}" && cd ${olddir} && return 1
 
   if [[ -z ${pretend} ]]; then
-    ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}"
+    ${ALICE_ROOT}/PWGPP/QA/scripts/runQA.sh inputList="${mergedQAfileList}" inputListHighPtTrees="${filteringList}" ocdbStorage=${defaultOCDB}
   else
     touch pretendCreateQAplots.done
   fi
