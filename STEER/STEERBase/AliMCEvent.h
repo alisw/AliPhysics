@@ -130,7 +130,7 @@ public:
     static  Int_t     BgLabelOffset() {return fgkBgLabelOffset;}
     virtual Bool_t    IsFromBGEvent(Int_t index);
         TString  GetGenerator(Int_t index); 
-  Bool_t GetCocktailGenerator(Int_t index,TClonesArray *arrayMC,TString &nameGen);
+  Bool_t GetCocktailGenerator(Int_t index,TString &nameGen);
     virtual Bool_t    IsSecondaryFromWeakDecay(Int_t index);
     virtual Bool_t    IsSecondaryFromMaterial(Int_t index);
     // External particle array
