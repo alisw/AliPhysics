@@ -804,7 +804,7 @@ void AliAnalysisTaskHJetDphi::RunSingleInclHJetCorr(Double_t trigPt, Double_t tr
       Double_t jetPtCorr = jetPt-rho*jetArea;
       if(jetPtCorr>fJetPtMin)
 	{
-	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin,Entry()%10};
+	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin,static_cast<Double_t>(Entry()%10)};
 	  hn->Fill(fill);
 	}
     }
