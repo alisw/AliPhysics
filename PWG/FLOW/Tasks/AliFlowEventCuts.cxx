@@ -296,76 +296,45 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event, AliMCEvent *mcevent)
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*>(event);
   Int_t multTPC = 0;
   Int_t multGlobal = 0; 
+  // these estimates only work for esd's
   multTPC = fStandardTPCcuts->Count(event);
   multGlobal = fStandardGlobalCuts->Count(event);
-  if (fQA)
-  {
-    QAbefore(0)->Fill(pvtxz);
-    QAbefore(1)->Fill(multGlobal,multTPC);
-  }
+
   if ( fCutTPCmultiplicityOutliers && esdevent )
   {
     //this is pretty slow as we check the event track by track twice
     //this cut will work for 2010 PbPb data and is dependent on
     //TPC and ITS reco efficiency (e.g. geometry, calibration etc)
-    if(esdevent){
-      if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
-      if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
-    }
+    if (multTPC > ( 23+1.216*multGlobal)) {pass=kFALSE;}
+    if (multTPC < (-20+1.087*multGlobal)) {pass=kFALSE;}
   }
-   
 
   if(fCutTPCmultiplicityOutliersAOD && aodevent) {
-      // the AliFlowTrackCuts::Count() function will not work here, since the correlation cut uses different
-      // track cuts 
-      multTPC = 0; // tpc mult estimate
-      Int_t multGlob = 0; // global multiplicity
-      Int_t nGoodTracks(aodevent->GetNumberOfTracks());
-      if(!fData2011) { // cut on outliers
-          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
-              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
-              if (!trackAOD) continue;
-              if (!(trackAOD->TestFilterBit(1))) continue;
-              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
-              multTPC++;
-          }
-          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
-              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
-              if (!trackAOD) continue;
-              if (!(trackAOD->TestFilterBit(16))) continue;
-              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
-              Double_t b[2] = {-99., -99.};
-              Double_t bCov[3] = {-99., -99., -99.};
-              if (!(trackAOD->PropagateToDCA(aodevent->GetPrimaryVertex(), aodevent->GetMagneticField(), 100., b, bCov))) continue;
-              if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
-              multGlob++;
-          } //track loop
-          if(! (multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob))) return kFALSE;
-      }
-      if(fData2011) { // cut on outliers
-          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill tpc mult
-              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
-              if (!trackAOD) continue;
-              if (!(trackAOD->TestFilterBit(1))) continue;
-              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70)  || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.2)) continue;
-              multTPC++;
-          }
-          for(Int_t iTracks = 0; iTracks < nGoodTracks; iTracks++) { // fill global mult
-              AliAODTrack* trackAOD = aodevent->GetTrack(iTracks);
-              if (!trackAOD) continue;
-              if (!(trackAOD->TestFilterBit(16))) continue;
-              if ((trackAOD->Pt() < .2) || (trackAOD->Pt() > 5.0) || (TMath::Abs(trackAOD->Eta()) > .8) || (trackAOD->GetTPCNcls() < 70) || (trackAOD->GetDetPid()->GetTPCsignal() < 10.0) || (trackAOD->Chi2perNDF() < 0.1)) continue;
-              Double_t b[2] = {-99., -99.};
-              Double_t bCov[3] = {-99., -99., -99.};
-              if (!(trackAOD->PropagateToDCA(aodevent->GetPrimaryVertex(), aodevent->GetMagneticField(), 100., b, bCov))) continue;
-              if ((TMath::Abs(b[0]) > 0.3) || (TMath::Abs(b[1]) > 0.3)) continue;
-              multGlob++;
-          } //track loop
-          if(! (multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob))) return kFALSE;
-      }
+    //similar (slow) cut for aod's. will work for both 2010 and 2010 pbpb data. 
+    //this should be moved to AliFlowTrackCuts::Count()
+    //but at this moment the flow track cuts does not know the data that is passed
+    Int_t nTracks(aodevent->GetNumberOfTracks());
+    for(Int_t iTracks = 0; iTracks < nTracks; iTracks++) { 
+        AliAODTrack* track = aodevent->GetTrack(iTracks);
+        if(!track) continue;
+        if (!track || track->Pt() < .2 || track->Pt() > 5.0 || TMath::Abs(track->Eta()) > .8 || track->GetTPCNcls() < 70 || !track->GetDetPid() || track->GetDetPid()->GetTPCsignal() < 10.0)  continue;  // general quality cut
+        if (track->TestFilterBit(1) && track->Chi2perNDF() > 0.2) multTPC++;
+        if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
+        Double_t b[2] = {-99., -99.};
+        Double_t bCov[3] = {-99., -99., -99.};
+        AliAODTrack copy(*track);
+        if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlobal++;
+    }
+    if(!fData2011 && (multTPC < (-40.3+1.22*multGlobal) || multTPC > (32.1+1.59*multGlobal))) pass = kFALSE;
+    if(fData2011  && (multTPC < (-36.73 + 1.48*multGlobal) || multTPC > (62.87 + 1.78*multGlobal))) pass = kFALSE;
   }
 
-
+  if (fQA)
+  {
+    QAbefore(0)->Fill(pvtxz);
+    QAbefore(1)->Fill(multGlobal,multTPC);
+  }
+ 
   if (fCutNContributors)
   {
     if (ncontrib < fNContributorsMin || ncontrib >= fNContributorsMax) pass=kFALSE;
