@@ -61,6 +61,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   void SetCutZDCtiming(Bool_t c=kTRUE) {fCutZDCtiming=c;}
   void SetCutSPDTRKVtxZ(Bool_t b=kTRUE) {fCutSPDTRKVtxZ=b;}
   void SetCutTPCmultiplicityOutliers(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliers=b;}  
+  void SetCutTPCmultiplicityOutliersAOD(Bool_t b=kTRUE) {fCutTPCmultiplicityOutliersAOD=b;}
 
   Int_t GetNumberOfTracksMax() const {return fNumberOfTracksMax;}
   Int_t GetNumberOfTracksMin() const {return fNumberOfTracksMin;}
@@ -87,7 +88,10 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   void SetUseCentralityUnchecked(Bool_t b=kTRUE) {fUseCentralityUnchecked=b;}
 
   Float_t GetCentrality(AliVEvent* event, AliMCEvent* mcEvent);
-  void SetUsedDataset(Bool_t b=kTRUE) {fData2011=b;}
+  void SetUsedDataset(Bool_t b=kTRUE) {fData2011=b;}    // confusing name, better use different interface
+  void SetLHC10h(Bool_t b=kTRUE) {fData2011=(!b);}      // TODO let cut object determine runnumber and period
+  void SetLHC11h(Bool_t b=kTRUE) {fData2011=b;}         // use this only as 'manual override'
+  
 
   void Browse(TBrowser* b);
   Long64_t Merge(TCollection* list);  
@@ -127,6 +131,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   Bool_t fCutSPDvertexerAnomaly; //cut on the spd vertexer anomaly
   Bool_t fCutSPDTRKVtxZ; //require compatibility between SPDvertexz TRKvertexz
   Bool_t fCutTPCmultiplicityOutliers; //cut TPC multiplicity outliers
+  Bool_t fCutTPCmultiplicityOutliersAOD; // cut TPC outliers in 10h or 11h aod
   Bool_t fUseCentralityUnchecked; //use the unchecked method
   refMultMethod fCentralityPercentileMethod; //where to get the percentile from
   Bool_t fCutZDCtiming;   //cut on ZDC timing
@@ -137,7 +142,7 @@ class AliFlowEventCuts : public AliFlowEventSimpleCuts {
   TH2F *fhistTPCvsGlobalMult; //!correlation between TPCMult and GlobalMult
   Bool_t fData2011; //2011 data is used
 
-  ClassDef(AliFlowEventCuts,5)
+  ClassDef(AliFlowEventCuts,6)
 };
 
 #endif

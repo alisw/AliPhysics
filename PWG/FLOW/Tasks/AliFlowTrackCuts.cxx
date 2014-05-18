@@ -600,13 +600,13 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (trkletAOD) return PassesCuts(trkletAOD,id);                    // XZhang 20120615
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
-  AliVEvent* vvzero = dynamic_cast<AliVEvent*>(obj); // should be removed; left for protection only
+  AliVVZERO* vvzero = dynamic_cast<AliVVZERO*>(obj);    // downcast to base class
   if (vvzero) return PassesVZEROcuts(id);
   AliESDkink* kink = dynamic_cast<AliESDkink*>(obj);
   if (kink) return PassesCuts(kink);
   //AliESDv0* v0 = dynamic_cast<AliESDv0*>(obj);
   //if (v0) return PassesCuts(v0);
-  
+ 
   return kFALSE;  //default when passed wrong type of object
 }
 

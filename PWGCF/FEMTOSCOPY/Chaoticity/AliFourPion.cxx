@@ -125,6 +125,23 @@ AliAnalysisTaskSE(),
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  fDefaultsCharSwitch(),
+  fLowQPairSwitch_E0E0(),
+  fLowQPairSwitch_E0E1(),
+  fLowQPairSwitch_E0E2(),
+  fLowQPairSwitch_E0E3(),
+  fLowQPairSwitch_E1E1(),
+  fLowQPairSwitch_E1E2(),
+  fLowQPairSwitch_E1E3(),
+  fLowQPairSwitch_E2E3(),
+  fNormQPairSwitch_E0E0(),
+  fNormQPairSwitch_E0E1(),
+  fNormQPairSwitch_E0E2(),
+  fNormQPairSwitch_E0E3(),
+  fNormQPairSwitch_E1E1(),
+  fNormQPairSwitch_E1E2(),
+  fNormQPairSwitch_E1E3(),
+  fNormQPairSwitch_E2E3(),
   fMomResC2(0x0)
 {
   // Default constructor
@@ -151,9 +168,22 @@ AliAnalysisTaskSE(),
 	      
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3 = 0x0;
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3 = 0x0;
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor = 0x0;
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm = 0x0;
 	      	      
 	    }// term_3
+
+	    for(Int_t c4=0; c4<2; c4++){
+	      for(Int_t term=0; term<13; term++){
+		
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = 0x0;
+		
+	      }// term_4
+
+	    }// c4
 	  }//c3
 	}//c2
       }//c1
@@ -266,6 +296,23 @@ AliFourPion::AliFourPion(const Char_t *name)
   fDummyB(0),
   fKT3transition(0.3),
   fKT4transition(0.3),
+  fDefaultsCharSwitch(),
+  fLowQPairSwitch_E0E0(),
+  fLowQPairSwitch_E0E1(),
+  fLowQPairSwitch_E0E2(),
+  fLowQPairSwitch_E0E3(),
+  fLowQPairSwitch_E1E1(),
+  fLowQPairSwitch_E1E2(),
+  fLowQPairSwitch_E1E3(),
+  fLowQPairSwitch_E2E3(),
+  fNormQPairSwitch_E0E0(),
+  fNormQPairSwitch_E0E1(),
+  fNormQPairSwitch_E0E2(),
+  fNormQPairSwitch_E0E3(),
+  fNormQPairSwitch_E1E1(),
+  fNormQPairSwitch_E1E2(),
+  fNormQPairSwitch_E1E3(),
+  fNormQPairSwitch_E2E3(),
   fMomResC2(0x0)
 {
   // Main constructor
@@ -295,9 +342,21 @@ AliFourPion::AliFourPion(const Char_t *name)
 	      
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3 = 0x0;
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3 = 0x0;
+	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor = 0x0;
 	      Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm = 0x0;
 	      
 	    }// term_3
+
+	    for(Int_t c4=0; c4<2; c4++){
+	      for(Int_t term=0; term<13; term++){
+		
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4 = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = 0x0;
+		Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = 0x0;
+		
+	      }// term_4
+	    }// c4
 	  }//c3
 	}//c2
       }//c1
@@ -412,6 +471,23 @@ AliFourPion::AliFourPion(const AliFourPion &obj)
     fDummyB(obj.fDummyB),
     fKT3transition(obj.fKT3transition),
     fKT4transition(obj.fKT4transition),
+    fDefaultsCharSwitch(),
+    fLowQPairSwitch_E0E0(),
+    fLowQPairSwitch_E0E1(),
+    fLowQPairSwitch_E0E2(),
+    fLowQPairSwitch_E0E3(),
+    fLowQPairSwitch_E1E1(),
+    fLowQPairSwitch_E1E2(),
+    fLowQPairSwitch_E1E3(),
+    fLowQPairSwitch_E2E3(),
+    fNormQPairSwitch_E0E0(),
+    fNormQPairSwitch_E0E1(),
+    fNormQPairSwitch_E0E2(),
+    fNormQPairSwitch_E0E3(),
+    fNormQPairSwitch_E1E1(),
+    fNormQPairSwitch_E1E2(),
+    fNormQPairSwitch_E1E3(),
+    fNormQPairSwitch_E2E3(),
     fMomResC2(obj.fMomResC2)
 {
   // Copy Constructor
@@ -534,6 +610,25 @@ AliFourPion::~AliFourPion()
   if(fRandomNumber) delete fRandomNumber;
   if(fMomResC2) delete fMomResC2;
  
+  for(Int_t j=0; j<kMultLimitPbPb; j++){
+    if(fLowQPairSwitch_E0E0[j]) delete [] fLowQPairSwitch_E0E0[j];
+    if(fLowQPairSwitch_E0E1[j]) delete [] fLowQPairSwitch_E0E1[j];
+    if(fLowQPairSwitch_E0E2[j]) delete [] fLowQPairSwitch_E0E2[j];
+    if(fLowQPairSwitch_E0E3[j]) delete [] fLowQPairSwitch_E0E3[j];
+    if(fLowQPairSwitch_E1E1[j]) delete [] fLowQPairSwitch_E1E1[j];
+    if(fLowQPairSwitch_E1E2[j]) delete [] fLowQPairSwitch_E1E2[j];
+    if(fLowQPairSwitch_E1E3[j]) delete [] fLowQPairSwitch_E1E3[j];
+    if(fLowQPairSwitch_E2E3[j]) delete [] fLowQPairSwitch_E2E3[j];
+    //
+    if(fNormQPairSwitch_E0E0[j]) delete [] fNormQPairSwitch_E0E0[j];
+    if(fNormQPairSwitch_E0E1[j]) delete [] fNormQPairSwitch_E0E1[j];
+    if(fNormQPairSwitch_E0E2[j]) delete [] fNormQPairSwitch_E0E2[j];
+    if(fNormQPairSwitch_E0E3[j]) delete [] fNormQPairSwitch_E0E3[j];
+    if(fNormQPairSwitch_E1E1[j]) delete [] fNormQPairSwitch_E1E1[j];
+    if(fNormQPairSwitch_E1E2[j]) delete [] fNormQPairSwitch_E1E2[j];
+    if(fNormQPairSwitch_E1E3[j]) delete [] fNormQPairSwitch_E1E3[j];
+    if(fNormQPairSwitch_E2E3[j]) delete [] fNormQPairSwitch_E2E3[j];
+  }
   
   //
   for(Int_t mb=0; mb<fMbins; mb++){
@@ -560,10 +655,23 @@ AliFourPion::~AliFourPion()
 		
 	      if(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3) delete Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fNorm3;
 	      if(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3) delete Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTerms3;
+	      if(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor) delete Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fKfactor;
 	      //
 	      if(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm;
 		
 	    }// term_3
+
+	    for(Int_t c4=0; c4<2; c4++){
+	      for(Int_t term=0; term<13; term++){
+		
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fNorm4;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTerms4;
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor;
+		//
+		if(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm) delete Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm;
+	      }// term_4
+
+	    }//c4
 	  }//c3
 	}//c2
       }//c1
@@ -622,8 +730,8 @@ void AliFourPion::ParInit()
     fMultLimit=kMultLimitPbPb;
     fMbins=fCentBins;
     fQcut=0.1;
-    fNormQcutLow = 0.15;
-    fNormQcutHigh = 0.175;
+    fNormQcutLow = 0.15;// 0.15
+    fNormQcutHigh = 0.2;// 0.175
   }else {// pp
     fMultLimit=kMultLimitpp; 
     fMbins=kMultBinspp; 
@@ -687,10 +795,30 @@ void AliFourPion::ParInit()
     }
   }
   
+  for(Int_t i=0; i<kMultLimitPbPb; i++) fDefaultsCharSwitch[i]='0';
+  for(Int_t i=0; i<kMultLimitPbPb; i++) {
+    fLowQPairSwitch_E0E0[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E1[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E2[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E1[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E2[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E2E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    //
+    fNormQPairSwitch_E0E0[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E1[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E2[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E1[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E2[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E2E3[i] = new TArrayC(kMultLimitPbPb,fDefaultsCharSwitch);
+  }
   
   fTempStruct = new AliFourPionTrackStruct[fMultLimit];
-   
-   
+  
+  
   fTrueMassP=0.93827, fTrueMassPi=0.13957, fTrueMassK=0.493677, fTrueMassKs=0.497614, fTrueMassLam=1.11568;
 
   
@@ -834,9 +962,9 @@ void AliFourPion::UserCreateOutputObjects()
   fOutputList->Add(fKT3DistTerm1);
   fOutputList->Add(fKT3DistTerm5);
   TH3D *fKT4DistTerm1 = new TH3D("fKT4DistTerm1","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
-  TH3D *fKT4DistTerm12 = new TH3D("fKT4DistTerm12","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
+  TH3D *fKT4DistTerm13 = new TH3D("fKT4DistTerm13","",fMbins,.5,fMbins+.5, 20,0,1, 20,0,0.2);
   fOutputList->Add(fKT4DistTerm1);
-  fOutputList->Add(fKT4DistTerm12);
+  fOutputList->Add(fKT4DistTerm13);
 
 
   TProfile2D *fKT3AvgpT = new TProfile2D("fKT3AvgpT","",fMbins,.5,fMbins+.5, 2,-0.5,1.5, 0.,1.0,"");
@@ -1070,7 +1198,7 @@ void AliFourPion::UserCreateOutputObjects()
 	      }// term_3
 	      
 	      for(Int_t c4=0; c4<2; c4++){
-		for(Int_t term=0; term<12; term++){
+		for(Int_t term=0; term<13; term++){
 				
 		  TString *namePC4 = new TString("FourParticle_Charge1_");
 		  *namePC4 += c1;
@@ -1109,7 +1237,7 @@ void AliFourPion::UserCreateOutputObjects()
 		  Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor = new TProfile(nameKfactor->Data(),"", fQbinsQ4,0,fQupperBoundQ4, 0,100, "");
 		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fKfactor);
 		  //
-		  if(c1==c2 && c1==c3 && c1==c4 && term==11 ){
+		  if(c1==c2 && c1==c3 && c1==c4 && term==12 ){
 		    TString *nameTwoPartNorm=new TString(namePC4->Data());
 		    nameTwoPartNorm->Append("_TwoPartNorm");
 		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
@@ -1300,7 +1428,7 @@ void AliFourPion::UserExec(Option_t *)
       cout<<"Centrality % = "<<centralityPercentile<<endl;
     }
     
-
+    
     ((TH1F*)fOutputList->FindObject("fMultDist0"))->Fill(fAOD->GetNumberOfTracks());
 
     // Pile-up rejection
@@ -1638,7 +1766,7 @@ void AliFourPion::UserExec(Option_t *)
       }
     }
   }
-
+  
   if(fMbin==-1) {cout<<"Bad Mbin+++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; return;}
   
   ///////////////////
@@ -1723,12 +1851,31 @@ void AliFourPion::UserExec(Option_t *)
   
 
   ////////////////////
-  Int_t PairCount[7]={0};
-  Int_t NormPairCount[7]={0};
+  //Int_t PairCount[7]={0};
+  //Int_t NormPairCount[7]={0};
   Int_t KT3index=0, KT4index=0;
 
-    // reset to defaults
-    for(Int_t i=0; i<fMultLimit; i++) {
+  // reset to defaults
+  for(Int_t i=0; i<kMultLimitPbPb; i++) {
+    fLowQPairSwitch_E0E0[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E1[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E2[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E0E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E1[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E2[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E1E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fLowQPairSwitch_E2E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    //
+    fNormQPairSwitch_E0E0[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E1[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E2[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E0E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E1[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E2[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E1E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+    fNormQPairSwitch_E2E3[i]->Set(kMultLimitPbPb,fDefaultsCharSwitch);
+  }
+  /*for(Int_t i=0; i<fMultLimit; i++) {
       for(Int_t j=0; j<fMultLimit; j++) {
 	LowQPairSwitch_E0E0[i][j] = kFALSE;
 	LowQPairSwitch_E0E1[i][j] = kFALSE;
@@ -1746,243 +1893,292 @@ void AliFourPion::UserExec(Option_t *)
 	NormQPairSwitch_E1E3[i][j] = kFALSE;
 	NormQPairSwitch_E2E3[i][j] = kFALSE;
       }
+      }
+    */
+  
+  //////////////////////////////////////////
+  // make low-q pair storage and normalization-pair storage
+  // 
+  for(Int_t en1=0; en1<=2; en1++){// 1st event number (en1=0 is the same event as current event)
+    for(Int_t en2=en1; en2<=3; en2++){// 2nd event number (en2=0 is the same event as current event)
+      if(en1>1 && en1==en2) continue;
       
-    
-    }
-
-   
-    //////////////////////////////////////////
-    // make low-q pair storage and normalization-pair storage
-    // 
-    for(Int_t en1=0; en1<=2; en1++){// 1st event number (en1=0 is the same event as current event)
-      for(Int_t en2=en1; en2<=3; en2++){// 2nd event number (en2=0 is the same event as current event)
-	if(en1>0 && en1==en2) continue;
-	for (Int_t i=0; i<(fEvt+en1)->fNtracks; i++) {// 1st particle
-	  for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
-	    
-	    //if(pairCount[en2] >= kPairLimit) {exitCode=kTRUE; continue;}// Too many SE pairs
-	    
-	    
-	    pVect1[0]=(fEvt+en1)->fTracks[i].fEaccepted; pVect2[0]=(fEvt+en2)->fTracks[j].fEaccepted;
-	    pVect1[1]=(fEvt+en1)->fTracks[i].fP[0];      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
-	    pVect1[2]=(fEvt+en1)->fTracks[i].fP[1];      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
-	    pVect1[3]=(fEvt+en1)->fTracks[i].fP[2];      pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
-	    ch1 = Int_t(((fEvt+en1)->fTracks[i].fCharge + 1)/2.);
-	    ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
-
-	    qinv12 = GetQinv(pVect1, pVect2);
-	    kT12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
-	    SetFillBins2(ch1, ch2, bin1, bin2);
-	      
-	    if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
-	    if(ch1 == ch2 && !fGeneratorOnly){
-	      if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
-		if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
-		continue;
-	      }
+      for (Int_t i=0; i<(fEvt+en1)->fNtracks; i++) {// 1st particle
+	for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
+	  
+	  	  
+	  pVect1[0]=(fEvt+en1)->fTracks[i].fEaccepted; pVect2[0]=(fEvt+en2)->fTracks[j].fEaccepted;
+	  pVect1[1]=(fEvt+en1)->fTracks[i].fP[0];      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
+	  pVect1[2]=(fEvt+en1)->fTracks[i].fP[1];      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
+	  pVect1[3]=(fEvt+en1)->fTracks[i].fP[2];      pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
+	  ch1 = Int_t(((fEvt+en1)->fTracks[i].fCharge + 1)/2.);
+	  ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
+	  
+	  qinv12 = GetQinv(pVect1, pVect2);
+	  kT12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
+	  SetFillBins2(ch1, ch2, bin1, bin2);
+	  
+	  if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
+	  if(ch1 == ch2 && !fGeneratorOnly){
+	    if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
+	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
+	      continue;
 	    }
-	    
-	    GetQosl(pVect1, pVect2, qout, qside, qlong);
-	    if( (en1+en2==0)) {
-	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12);
-	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2QW->Fill(kT12, qinv12, qinv12);
-	      // osl frame
-	      if((kT12 > 0.2) && (kT12 < 0.3)){
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[0].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[0].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
-	      }
-	      if((kT12 > 0.6) && (kT12 < 0.7)){  
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[1].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[1].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
-	      }
-	      // unit mult bins
-	      if( (fEvt+en1)->fNtracks%100==0){
-		Int_t kTindex=0;
-		if(kT12>0.3) kTindex=1;
-		Int_t UnitMultBin = int((fEvt+en1)->fNtracks / 100.) + 1;
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[0].fUnitMultBin->Fill(UnitMultBin, qinv12);
-	      }
-
+	  }
+	  
+	  GetQosl(pVect1, pVect2, qout, qside, qlong);
+	  if( (en1+en2==0)) {
+	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2->Fill(kT12, qinv12);
+	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[0].fTerms2QW->Fill(kT12, qinv12, qinv12);
+	    // osl frame
+	    if((kT12 > 0.2) && (kT12 < 0.3)){
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[0].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[0].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
 	    }
-	    if( (en1+en2==1)) {
-	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
-	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2QW->Fill(kT12, qinv12, qinv12);
-	      // osl frame
-	      if((kT12 > 0.2) && (kT12 < 0.3)){  
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
-	      }
-	      if((kT12 > 0.6) && (kT12 < 0.7)){  
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[1].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[1].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
-	      }
-	      // unit mult bins
-	      if( (fEvt+en1)->fNtracks%100==0){
-		Int_t kTindex=0;
-		if(kT12>0.3) kTindex=1;
-		Int_t UnitMultBin = int((fEvt+en1)->fNtracks / 100.) + 1;
-		Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[1].fUnitMultBin->Fill(UnitMultBin, qinv12);
-	      }
+	    if((kT12 > 0.6) && (kT12 < 0.7)){  
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[1].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[en2].OSL_ktbin[1].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
 	    }
-	    //////////////////////////////////////////
-	    if(fTabulatePairs && en2<=1 && bin1==bin2){
-	      Float_t kY = 0;
-	      Int_t kTbin=-1, kYbin=-1;
-	      
-	      for(Int_t kIt=0; kIt<fKbinsT; kIt++) {if(kT12 < (fKmiddleT[kIt] + fKstepT[kIt]/2.)) {kTbin = kIt; break;}} 
-	      for(Int_t kIt=0; kIt<fKbinsY; kIt++) {if(kY < (fKmiddleY[kIt] + fKstepY[kIt]/2.)) {kYbin = kIt; break;}}
-	      if((kTbin<0) || (kYbin<0)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
-	      if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
-	      if(fGenerateSignal && en2==0) {
-		Int_t chGroup2[2]={ch1,ch2};
-		Float_t WInput = MCWeight(chGroup2, fRMax, 0.7, qinv12, kT12);
-		KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
-		}else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
-	    }
-	    
-	    //////////////////////////////////////////////////////////////////////////////
-
-	    if(qinv12 <= fQcut) {
-	      if(en1==0 && en2==0) {LowQPairSwitch_E0E0[i][j] = kTRUE; PairCount[0]++;}
-	      if(en1==0 && en2==1) {LowQPairSwitch_E0E1[i][j] = kTRUE; PairCount[1]++;}
-	      if(en1==0 && en2==2) {LowQPairSwitch_E0E2[i][j] = kTRUE; PairCount[2]++;}
-	      if(en1==0 && en2==3) {LowQPairSwitch_E0E3[i][j] = kTRUE; PairCount[3]++;}
-	      if(en1==1 && en2==2) {LowQPairSwitch_E1E2[i][j] = kTRUE; PairCount[4]++;}
-	      if(en1==1 && en2==3) {LowQPairSwitch_E1E3[i][j] = kTRUE; PairCount[5]++;}
-	      if(en1==2 && en2==3) {LowQPairSwitch_E2E3[i][j] = kTRUE; PairCount[6]++;}
-	    }
-	    if((qinv12 >= fNormQcutLow) && (qinv12 < fNormQcutHigh)) {
-	      if(en1==0 && en2==0) {NormQPairSwitch_E0E0[i][j] = kTRUE; NormPairCount[0]++;}
-	      if(en1==0 && en2==1) {NormQPairSwitch_E0E1[i][j] = kTRUE; NormPairCount[1]++;}
-	      if(en1==0 && en2==2) {NormQPairSwitch_E0E2[i][j] = kTRUE; NormPairCount[2]++;}
-	      if(en1==0 && en2==3) {NormQPairSwitch_E0E3[i][j] = kTRUE; NormPairCount[3]++;}
-	      if(en1==1 && en2==2) {NormQPairSwitch_E1E2[i][j] = kTRUE; NormPairCount[4]++;}
-	      if(en1==1 && en2==3) {NormQPairSwitch_E1E3[i][j] = kTRUE; NormPairCount[5]++;}
-	      if(en1==2 && en2==3) {NormQPairSwitch_E2E3[i][j] = kTRUE; NormPairCount[6]++;}
+	    // unit mult bins
+	    if( (fEvt+en1)->fNtracks%100==0){
+	      Int_t kTindex=0;
+	      if(kT12>0.3) kTindex=1;
+	      Int_t UnitMultBin = int((fEvt+en1)->fNtracks / 100.) + 1;
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[0].fUnitMultBin->Fill(UnitMultBin, qinv12);
 	    }
 	    
 	  }
-	}
-      }
-    }
-    
-    //cout<<PairCount[0]<<"  "<<PairCount[1]<<"  "<<PairCount[2]<<"  "<<PairCount[3]<<"  "<<PairCount[4]<<"  "<<PairCount[5]<<"  "<<PairCount[6]<<endl;
-    //cout<<NormPairCount[0]<<"  "<<NormPairCount[1]<<"  "<<NormPairCount[2]<<"  "<<NormPairCount[3]<<"  "<<NormPairCount[4]<<"  "<<NormPairCount[5]<<"  "<<NormPairCount[6]<<endl;
-    ///////////////////////////////////////////////////  
-    // Do not use pairs from events with too many pairs
-    
-    ((TH1F*)fOutputList->FindObject("fEvents2"))->Fill(fMbin+1);
-    
-    ///////////////////////////////////////////////////
-
-    
-    if(fTabulatePairs) return;
-
-
-
-    ////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////
-    // Normalization counting of 3- and 4-particle terms
-    for(Int_t en2=0; en2<=1; en2++){// 2nd event number (en2=0 is the same event as current event)
-      for(Int_t en3=en2; en3<=2; en3++){// 3rd event number
-	if(en2==0 && en3>1) continue;// not needed config
-	if(en2==1 && en3==en2) continue;// not needed config
-	for(Int_t en4=en3; en4<=3; en4++){// 4th event number
-	  if(en3==0 && en4>1) continue;// not needed config
-	  if(en3==1 && en4!=2) continue;// not needed configs
-	  if(en3==2 && en4!=3) continue;// not needed configs
-	  
-	  for (Int_t i=0; i<myTracks; i++) {// 1st particle
-	    pVect1[1]=(fEvt)->fTracks[i].fP[0];
-	    pVect1[2]=(fEvt)->fTracks[i].fP[1];
-	    pVect1[3]=(fEvt)->fTracks[i].fP[2];
-	    ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
-
-	    for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
-	      if(en2==0) {if(!NormQPairSwitch_E0E0[i][j]) continue;}
-	      else {if(!NormQPairSwitch_E0E1[i][j]) continue;}
-	      
-	      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
-	      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
-	      pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
-	      ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
-
-	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
-		if(en3==0) {
-		  if(!NormQPairSwitch_E0E0[i][k]) continue;
-		  if(!NormQPairSwitch_E0E0[j][k]) continue;
-		}else if(en3==1){
-		  if(!NormQPairSwitch_E0E1[i][k]) continue;
-		  if(!NormQPairSwitch_E0E1[j][k]) continue;
-		}else{
-		  if(!NormQPairSwitch_E0E2[i][k]) continue;
-		  if(!NormQPairSwitch_E1E2[j][k]) continue;
-		}
-		pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
-		pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
-		pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
-		ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
-		Bool_t fill2=kFALSE, fill3=kFALSE, fill4=kFALSE;
-		SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
-
-		Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
-		if(KT3<=fKT3transition) KT3index=0;
-		else KT3index=1;
-		
-		if(en2==0 && en3==0 && en4==0) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fNorm3->Fill(0);
-		if(en2==1 && en3==2 && en4==3) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fNorm3->Fill(0);
-		if(en2==0 && en3==1 && en4==2) {
-		  if(fill2) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fNorm3->Fill(0);
-		  if(fill3) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fNorm3->Fill(0);
-		  if(fill4) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fNorm3->Fill(0);
-		}
-		  
-		
-		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
-		  if(en4==0){
-		    if(!NormQPairSwitch_E0E0[i][l]) continue;
-		    if(!NormQPairSwitch_E0E0[j][l]) continue;
-		    if(!NormQPairSwitch_E0E0[k][l]) continue;
-		  }else if(en4==1){
-		    if(!NormQPairSwitch_E0E1[i][l]) continue;
-		    if(!NormQPairSwitch_E0E1[j][l]) continue;
-		    if(!NormQPairSwitch_E0E1[k][l]) continue;
-		  }else if(en4==2){
-		    if(!NormQPairSwitch_E0E2[i][l]) continue;
-		    if(!NormQPairSwitch_E0E2[j][l]) continue;
-		    if(!NormQPairSwitch_E1E2[k][l]) continue;
-		  }else{
-		    if(!NormQPairSwitch_E0E3[i][l]) continue;
-		    if(!NormQPairSwitch_E1E3[j][l]) continue;
-		    if(!NormQPairSwitch_E2E3[k][l]) continue;
-		  }
-		  
-		  pVect4[1]=(fEvt+en4)->fTracks[l].fP[0];
-		  pVect4[2]=(fEvt+en4)->fTracks[l].fP[1];
-		  pVect4[3]=(fEvt+en4)->fTracks[l].fP[2];
-		  ch4 = Int_t(((fEvt+en4)->fTracks[l].fCharge + 1)/2.);
-		  Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
-		  if(KT4<=fKT4transition) KT4index=0;
-		  else KT4index=1;
-
-		  Bool_t FillTerms[12]={kFALSE};
-		  SetFillBins4(ch1, ch2, ch3, ch4, bin1, bin2, bin3, bin4, en2+en3+en4, FillTerms);
-		  //
-		  for(int ft=0; ft<12; ft++) {
-		    if(FillTerms[ft]) Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fNorm4->Fill(0.); 
-		  }
-	
-		  
-		}
-	      }
+	  if( (en1+en2==1)) {
+	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2->Fill(kT12, qinv12);
+	    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fTerms2QW->Fill(kT12, qinv12, qinv12);
+	    // osl frame
+	    if((kT12 > 0.2) && (kT12 < 0.3)){  
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[0].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
 	    }
-	  }  
+	    if((kT12 > 0.6) && (kT12 < 0.7)){  
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[1].fTerms2OSL->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[fEDbin].TwoPT[en2].OSL_ktbin[1].fTerms2OSLQW->Fill(fabs(qout), fabs(qside), fabs(qlong), qinv12);
+	    }
+	    // unit mult bins
+	    if( (fEvt+en1)->fNtracks%100==0){
+	      Int_t kTindex=0;
+	      if(kT12>0.3) kTindex=1;
+	      Int_t UnitMultBin = int((fEvt+en1)->fNtracks / 100.) + 1;
+	      Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[kTindex].TwoPT[1].fUnitMultBin->Fill(UnitMultBin, qinv12);
+	    }
+	  }
+	  //////////////////////////////////////////
+	  if(fTabulatePairs && en1==0 && en2<=1 && bin1==bin2){
+	    Float_t kY = 0;
+	    Int_t kTbin=-1, kYbin=-1;
+	    
+	    for(Int_t kIt=0; kIt<fKbinsT; kIt++) {if(kT12 < (fKmiddleT[kIt] + fKstepT[kIt]/2.)) {kTbin = kIt; break;}} 
+	    for(Int_t kIt=0; kIt<fKbinsY; kIt++) {if(kY < (fKmiddleY[kIt] + fKstepY[kIt]/2.)) {kYbin = kIt; break;}}
+	    if((kTbin<0) || (kYbin<0)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
+	    if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
+	    if(fGenerateSignal && en2==0) {
+	      Int_t chGroup2[2]={ch1,ch2};
+	      Float_t WInput = MCWeight(chGroup2, fRMax, 0.7, qinv12, kT12);
+	      KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
+	    }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
+	  }
+	  
+	  //////////////////////////////////////////////////////////////////////////////
+	  
+	  if(qinv12 <= fQcut) {
+	    /*if(en1==0 && en2==0) {LowQPairSwitch_E0E0[i][j] = kTRUE; PairCount[0]++;}
+	    if(en1==0 && en2==1) {LowQPairSwitch_E0E1[i][j] = kTRUE; PairCount[1]++;}
+	    if(en1==0 && en2==2) {LowQPairSwitch_E0E2[i][j] = kTRUE; PairCount[2]++;}
+	    if(en1==0 && en2==3) {LowQPairSwitch_E0E3[i][j] = kTRUE; PairCount[3]++;}
+	    if(en1==1 && en2==2) {LowQPairSwitch_E1E2[i][j] = kTRUE; PairCount[4]++;}
+	    if(en1==1 && en2==3) {LowQPairSwitch_E1E3[i][j] = kTRUE; PairCount[5]++;}
+	    if(en1==2 && en2==3) {LowQPairSwitch_E2E3[i][j] = kTRUE; PairCount[6]++;}*/
+	    if(en1==0 && en2==0) {fLowQPairSwitch_E0E0[i]->AddAt('1',j);}
+	    if(en1==0 && en2==1) {fLowQPairSwitch_E0E1[i]->AddAt('1',j);}
+	    if(en1==0 && en2==2) {fLowQPairSwitch_E0E2[i]->AddAt('1',j);}
+	    if(en1==0 && en2==3) {fLowQPairSwitch_E0E3[i]->AddAt('1',j);}
+	    if(en1==1 && en2==1) {fLowQPairSwitch_E1E1[i]->AddAt('1',j);}
+	    if(en1==1 && en2==2) {fLowQPairSwitch_E1E2[i]->AddAt('1',j);}
+	    if(en1==1 && en2==3) {fLowQPairSwitch_E1E3[i]->AddAt('1',j);}
+	    if(en1==2 && en2==3) {fLowQPairSwitch_E2E3[i]->AddAt('1',j);}
+	  }
+	  if((qinv12 >= fNormQcutLow) && (qinv12 < fNormQcutHigh)) {
+	    /*if(en1==0 && en2==0) {NormQPairSwitch_E0E0[i][j] = kTRUE; NormPairCount[0]++;}
+	    if(en1==0 && en2==1) {NormQPairSwitch_E0E1[i][j] = kTRUE; NormPairCount[1]++;}
+	    if(en1==0 && en2==2) {NormQPairSwitch_E0E2[i][j] = kTRUE; NormPairCount[2]++;}
+	    if(en1==0 && en2==3) {NormQPairSwitch_E0E3[i][j] = kTRUE; NormPairCount[3]++;}
+	    if(en1==1 && en2==2) {NormQPairSwitch_E1E2[i][j] = kTRUE; NormPairCount[4]++;}
+	    if(en1==1 && en2==3) {NormQPairSwitch_E1E3[i][j] = kTRUE; NormPairCount[5]++;}
+	    if(en1==2 && en2==3) {NormQPairSwitch_E2E3[i][j] = kTRUE; NormPairCount[6]++;}*/
+	    if(en1==0 && en2==0) {fNormQPairSwitch_E0E0[i]->AddAt('1',j);}
+	    if(en1==0 && en2==1) {fNormQPairSwitch_E0E1[i]->AddAt('1',j);}
+	    if(en1==0 && en2==2) {fNormQPairSwitch_E0E2[i]->AddAt('1',j);}
+	    if(en1==0 && en2==3) {fNormQPairSwitch_E0E3[i]->AddAt('1',j);}
+	    if(en1==1 && en2==1) {fNormQPairSwitch_E1E1[i]->AddAt('1',j);}
+	    if(en1==1 && en2==2) {fNormQPairSwitch_E1E2[i]->AddAt('1',j);}
+	    if(en1==1 && en2==3) {fNormQPairSwitch_E1E3[i]->AddAt('1',j);}
+	    if(en1==2 && en2==3) {fNormQPairSwitch_E2E3[i]->AddAt('1',j);}
+	  }
 	  
 	}
       }
     }
+  }
+    
+  //cout<<PairCount[0]<<"  "<<PairCount[1]<<"  "<<PairCount[2]<<"  "<<PairCount[3]<<"  "<<PairCount[4]<<"  "<<PairCount[5]<<"  "<<PairCount[6]<<endl;
+  //cout<<NormPairCount[0]<<"  "<<NormPairCount[1]<<"  "<<NormPairCount[2]<<"  "<<NormPairCount[3]<<"  "<<NormPairCount[4]<<"  "<<NormPairCount[5]<<"  "<<NormPairCount[6]<<endl;
+  ///////////////////////////////////////////////////  
+  // Do not use pairs from events with too many pairs
+  
+  ((TH1F*)fOutputList->FindObject("fEvents2"))->Fill(fMbin+1);
+  
+  ///////////////////////////////////////////////////
+  
+  
+  if(fTabulatePairs) return;
+
     
   
+  ////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////
+  // Normalization counting of 3- and 4-particle terms
+  for(Int_t en2=0; en2<=1; en2++){// 2nd event number (en2=0 is the same event as current event)
+    for(Int_t en3=en2; en3<=2; en3++){// 3rd event number
+      if(en2==0 && en3>2) continue;// not needed config
+      if(en2==1 && en3==en2) continue;// not needed config
+      for(Int_t en4=en3; en4<=3; en4++){// 4th event number
+	if(en3==0 && en4>1) continue;// not needed config
+	if(en3==1 && en4==3) continue;// not needed configs
+	if(en3==2 && (en2+en3+en4)!=6) continue;// not needed configs
+	
+	for (Int_t i=0; i<myTracks; i++) {// 1st particle
+	  pVect1[1]=(fEvt)->fTracks[i].fP[0];
+	  pVect1[2]=(fEvt)->fTracks[i].fP[1];
+	  pVect1[3]=(fEvt)->fTracks[i].fP[2];
+	  ch1 = Int_t(((fEvt)->fTracks[i].fCharge + 1)/2.);
+	  
+	  for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
+	    //if(en2==0) {if(!NormQPairSwitch_E0E0[i][j]) continue;}
+	    //else {if(!NormQPairSwitch_E0E1[i][j]) continue;}
+	    if(en2==0) {if(fNormQPairSwitch_E0E0[i]->At(j)=='0') continue;}
+	    else {if(fNormQPairSwitch_E0E1[i]->At(j)=='0') continue;}
+	    
+	    pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
+	    pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
+	    pVect2[3]=(fEvt+en2)->fTracks[j].fP[2];
+	    ch2 = Int_t(((fEvt+en2)->fTracks[j].fCharge + 1)/2.);
+	    
+	    for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
+	      /*if(en3==0) {
+		if(!NormQPairSwitch_E0E0[i][k]) continue;
+		if(!NormQPairSwitch_E0E0[j][k]) continue;
+	      }else if(en3==1){
+		if(!NormQPairSwitch_E0E1[i][k]) continue;
+		if(!NormQPairSwitch_E0E1[j][k]) continue;
+	      }else{
+		if(!NormQPairSwitch_E0E2[i][k]) continue;
+		if(!NormQPairSwitch_E1E2[j][k]) continue;
+		}*/
+	      if(en3==0) {
+		if(fNormQPairSwitch_E0E0[i]->At(k)=='0') continue;
+		if(fNormQPairSwitch_E0E0[j]->At(k)=='0') continue;
+	      }else if(en3==1){
+		if(fNormQPairSwitch_E0E1[i]->At(k)=='0') continue;
+		if(fNormQPairSwitch_E0E1[j]->At(k)=='0') continue;
+	      }else{
+		if(fNormQPairSwitch_E0E2[i]->At(k)=='0') continue;
+		if(fNormQPairSwitch_E1E2[j]->At(k)=='0') continue;
+	      }
+	      
+	      pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
+	      pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
+	      pVect3[3]=(fEvt+en3)->fTracks[k].fP[2];
+	      ch3 = Int_t(((fEvt+en3)->fTracks[k].fCharge + 1)/2.);
+	      Bool_t fill2=kFALSE, fill3=kFALSE, fill4=kFALSE;
+	      SetFillBins3(ch1, ch2, ch3, 1, bin1, bin2, bin3, fill2, fill3, fill4);
+	      
+	      Float_t KT3 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2],2))/3.;
+	      if(KT3<=fKT3transition) KT3index=0;
+	      else KT3index=1;
+	      
+	      if(en2==0 && en3==0 && en4==0) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fNorm3->Fill(0);
+	      if(en2==1 && en3==2 && en4==3) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fNorm3->Fill(0);
+	      if(en2==0 && en3==1 && en4==2) {
+		if(fill2) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[1].fNorm3->Fill(0);
+		if(fill3) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[2].fNorm3->Fill(0);
+		if(fill4) Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[3].fNorm3->Fill(0);
+	      }
+	      
+	      
+	      for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
+		/*if(en4==0){
+		  if(!NormQPairSwitch_E0E0[i][l]) continue;
+		  if(!NormQPairSwitch_E0E0[j][l]) continue;
+		  if(!NormQPairSwitch_E0E0[k][l]) continue;
+		}else if(en4==1){
+		  if(!NormQPairSwitch_E0E1[i][l]) continue;
+		  if(!NormQPairSwitch_E0E1[j][l]) continue;
+		  if(!NormQPairSwitch_E0E1[k][l]) continue;
+		}else if(en4==2){
+		  if(!NormQPairSwitch_E0E2[i][l]) continue;
+		  if(!NormQPairSwitch_E0E2[j][l]) continue;
+		  if(!NormQPairSwitch_E1E2[k][l]) continue;
+		}else{
+		  if(!NormQPairSwitch_E0E3[i][l]) continue;
+		  if(!NormQPairSwitch_E1E3[j][l]) continue;
+		  if(!NormQPairSwitch_E2E3[k][l]) continue;
+		  }*/
+		if(en4==0){
+		  if(fNormQPairSwitch_E0E0[i]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E0E0[j]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E0E0[k]->At(l)=='0') continue;
+		}else if(en4==1){
+		  if(en3==0){
+		    if(fNormQPairSwitch_E0E1[i]->At(l)=='0') continue;
+		    if(fNormQPairSwitch_E0E1[j]->At(l)=='0') continue;
+		    if(fNormQPairSwitch_E0E1[k]->At(l)=='0') continue;
+		  }else{
+		    if(fNormQPairSwitch_E0E1[i]->At(l)=='0') continue;
+		    if(fNormQPairSwitch_E0E1[j]->At(l)=='0') continue;
+		    if(fNormQPairSwitch_E1E1[k]->At(l)=='0') continue;
+		  }
+		}else if(en4==2){
+		  if(fNormQPairSwitch_E0E2[i]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E0E2[j]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E1E2[k]->At(l)=='0') continue;
+		}else{
+		  if(fNormQPairSwitch_E0E3[i]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E1E3[j]->At(l)=='0') continue;
+		  if(fNormQPairSwitch_E2E3[k]->At(l)=='0') continue;
+		}
+
+		pVect4[1]=(fEvt+en4)->fTracks[l].fP[0];
+		pVect4[2]=(fEvt+en4)->fTracks[l].fP[1];
+		pVect4[3]=(fEvt+en4)->fTracks[l].fP[2];
+		ch4 = Int_t(((fEvt+en4)->fTracks[l].fCharge + 1)/2.);
+		Float_t KT4 = sqrt(pow(pVect1[1]+pVect2[1]+pVect3[1]+pVect4[1],2) + pow(pVect1[2]+pVect2[2]+pVect3[2]+pVect4[2],2))/4.;
+		if(KT4<=fKT4transition) KT4index=0;
+		else KT4index=1;
+		
+		Bool_t FillTerms[13]={kFALSE};
+		SetFillBins4(ch1, ch2, ch3, ch4, bin1, bin2, bin3, bin4, en2+en3+en4, FillTerms);
+		//
+		for(int ft=0; ft<13; ft++) {
+		  if(FillTerms[ft]) Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fNorm4->Fill(0.); 
+		}
+		
+		
+	      }
+	    }
+	  }
+	}  
+	
+      }
+    }
+  }
+    
+
    
 
     ///////////////////////////////////////////////////////////////////////
@@ -1994,20 +2190,22 @@ void AliFourPion::UserExec(Option_t *)
     //
     //
     ///////////////////////////////////////////////////////////////////////
-
+  
 
 
     ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////
     for(Int_t en2=0; en2<=1; en2++){// 2nd event number (en2=0 is the same event as current event)
       for(Int_t en3=en2; en3<=2; en3++){// 3rd event number
-	if(en2==0 && en3>1) continue;// not needed config
+	if(en2==0 && en3>2) continue;// not needed config
 	if(en2==1 && en3==en2) continue;// not needed config
 	for(Int_t en4=en3; en4<=3; en4++){// 4th event number
 	  if(en3==0 && en4>1) continue;// not needed config
-	  if(en3==1 && en4!=2) continue;// not needed configs
-	  if(en3==2 && en4!=3) continue;// not needed configs
+	  if(en3==1 && en4==3) continue;// not needed configs
+	  if(en3==2 && (en2+en3+en4)!=6) continue;// not needed configs
+	  
 	  Int_t ENsum=en2+en3+en4;// 0 or 1 or 3 or 6
+	  
 	  /////////////////////////////////////////////////////////////
 	  for (Int_t i=0; i<myTracks; i++) {// 1st particle
 	    pVect1[0]=(fEvt)->fTracks[i].fEaccepted;
@@ -2018,9 +2216,11 @@ void AliFourPion::UserExec(Option_t *)
 
 	    /////////////////////////////////////////////////////////////
 	    for (Int_t j=i+1; j<(fEvt+en2)->fNtracks; j++) {// 2nd particle
-	      if(en2==0) {if(!LowQPairSwitch_E0E0[i][j]) continue;}
-	      else {if(!LowQPairSwitch_E0E1[i][j]) continue;}
-	      
+	      //if(en2==0) {if(!LowQPairSwitch_E0E0[i][j]) continue;}
+	      //else {if(!LowQPairSwitch_E0E1[i][j]) continue;}
+	      if(en2==0) {if(fLowQPairSwitch_E0E0[i]->At(j)=='0') continue;}
+	      else {if(fLowQPairSwitch_E0E1[i]->At(j)=='0') continue;}
+
 	      pVect2[0]=(fEvt+en2)->fTracks[j].fEaccepted;
 	      pVect2[1]=(fEvt+en2)->fTracks[j].fP[0];
 	      pVect2[2]=(fEvt+en2)->fTracks[j].fP[1];
@@ -2041,7 +2241,7 @@ void AliFourPion::UserExec(Option_t *)
 	      if(fMCcase){
 		FilledMCpair12=kFALSE;
 
-		if(ch1==ch2 && fMbin==0 && qinv12<0.2 && ENsum!=3 && ENsum!=6){
+		if(ch1==ch2 && fMbin==0 && qinv12<0.2 && ENsum!=2 && ENsum!=3 && ENsum!=6){
 		  for(Int_t rstep=0; rstep<10; rstep++){
 		    Float_t coeff = (rstep)*0.2*(0.18/1.2);
 		    Float_t phi1 = (fEvt)->fTracks[i].fPhi - asin((fEvt)->fTracks[i].fCharge*(0.1*fBfield)*coeff/(fEvt)->fTracks[i].fPt);
@@ -2203,10 +2403,10 @@ void AliFourPion::UserExec(Option_t *)
 	      }// MC case
 	      
 		
-	  
+
 	      /////////////////////////////////////////////////////////////
 	      for (Int_t k=j+1; k<(fEvt+en3)->fNtracks; k++) {// 3rd particle
-		if(en3==0) {
+		/*if(en3==0) {
 		  if(!LowQPairSwitch_E0E0[i][k]) continue;
 		  if(!LowQPairSwitch_E0E0[j][k]) continue;
 		}else if(en3==1){
@@ -2215,7 +2415,18 @@ void AliFourPion::UserExec(Option_t *)
 		}else{
 		  if(!LowQPairSwitch_E0E2[i][k]) continue;
 		  if(!LowQPairSwitch_E1E2[j][k]) continue;
+		  }*/
+		if(en3==0) {
+		  if(fLowQPairSwitch_E0E0[i]->At(k)=='0') continue;
+		  if(fLowQPairSwitch_E0E0[j]->At(k)=='0') continue;
+		}else if(en3==1){
+		  if(fLowQPairSwitch_E0E1[i]->At(k)=='0') continue;
+		  if(fLowQPairSwitch_E0E1[j]->At(k)=='0') continue;
+		}else{
+		  if(fLowQPairSwitch_E0E2[i]->At(k)=='0') continue;
+		  if(fLowQPairSwitch_E1E2[j]->At(k)=='0') continue;
 		}
+		
 		pVect3[0]=(fEvt+en3)->fTracks[k].fEaccepted;
 		pVect3[1]=(fEvt+en3)->fTracks[k].fP[0];
 		pVect3[2]=(fEvt+en3)->fTracks[k].fP[1];
@@ -2239,7 +2450,7 @@ void AliFourPion::UserExec(Option_t *)
 
 		if(ENsum==0) {
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fTerms3->Fill(q3); 
-		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactor->Fill(q3, 1/(FSICorr12*FSICorr12*FSICorr12));
+		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fKfactor->Fill(q3, 1/(FSICorr12*FSICorr13*FSICorr23));
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv12);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv13);
 		  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[0].fMeanQinv->Fill(q3, qinv23);
@@ -2420,9 +2631,9 @@ void AliFourPion::UserExec(Option_t *)
 
 		
 
-		/////////////////////////////////////////////////////////////
+		  /////////////////////////////////////////////////////////////
 		for (Int_t l=k+1; l<(fEvt+en4)->fNtracks; l++) {// 4th particle
-		  if(en4==0){
+		  /*if(en4==0){
 		    if(!LowQPairSwitch_E0E0[i][l]) continue;
 		    if(!LowQPairSwitch_E0E0[j][l]) continue;
 		    if(!LowQPairSwitch_E0E0[k][l]) continue;
@@ -2438,8 +2649,31 @@ void AliFourPion::UserExec(Option_t *)
 		    if(!LowQPairSwitch_E0E3[i][l]) continue;
 		    if(!LowQPairSwitch_E1E3[j][l]) continue;
 		    if(!LowQPairSwitch_E2E3[k][l]) continue;
+		    }*/
+		  if(en4==0){
+		    if(fLowQPairSwitch_E0E0[i]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E0E0[j]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E0E0[k]->At(l)=='0') continue;
+		  }else if(en4==1){
+		    if(en3==0){
+		      if(fLowQPairSwitch_E0E1[i]->At(l)=='0') continue;
+		      if(fLowQPairSwitch_E0E1[j]->At(l)=='0') continue;
+		      if(fLowQPairSwitch_E0E1[k]->At(l)=='0') continue;
+		    }else{ 
+		      if(fLowQPairSwitch_E0E1[i]->At(l)=='0') continue;
+		      if(fLowQPairSwitch_E0E1[j]->At(l)=='0') continue;
+		      if(fLowQPairSwitch_E1E1[k]->At(l)=='0') continue;
+		    }
+		  }else if(en4==2){
+		    if(fLowQPairSwitch_E0E2[i]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E0E2[j]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E1E2[k]->At(l)=='0') continue;
+		  }else{
+		    if(fLowQPairSwitch_E0E3[i]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E1E3[j]->At(l)=='0') continue;
+		    if(fLowQPairSwitch_E2E3[k]->At(l)=='0') continue;
 		  }
-		  
+
 		  pVect4[0]=(fEvt+en4)->fTracks[l].fEaccepted;
 		  pVect4[1]=(fEvt+en4)->fTracks[l].fP[0];
 		  pVect4[2]=(fEvt+en4)->fTracks[l].fP[1];
@@ -2464,14 +2698,15 @@ void AliFourPion::UserExec(Option_t *)
 		  FSICorr24 = FSICorrelation(ch2,ch4, qinv24);
 		  FSICorr34 = FSICorrelation(ch3,ch4, qinv34);
 
-		  Bool_t FillTerms[12]={kFALSE};
+		  Bool_t FillTerms[13]={kFALSE};
 		  SetFillBins4(ch1, ch2, ch3, ch4, bin1, bin2, bin3, bin4, ENsum, FillTerms);
 		  //
-		  for(int ft=0; ft<12; ft++) {
+		  for(int ft=0; ft<13; ft++) {
 		    Float_t FSIfactor = 1.0;
 		    if(ft==0) FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr14 * FSICorr23 * FSICorr24 * FSICorr34);
 		    else if(ft<=4) FSIfactor = 1/(FSICorr12 * FSICorr13 * FSICorr23);
 		    else if(ft<=10) FSIfactor = 1/(FSICorr12);
+		    else if(ft==11) FSIfactor = 1/(FSICorr12 * FSICorr34);
 		    else FSIfactor = 1.0;
 		    if(FillTerms[ft]) {
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[ft].fTerms4->Fill(q4);
@@ -2515,11 +2750,11 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotal += sqrt(weight13CC*weight14CC*weight23CC*weight24CC);
 		      weightTotal /= 3.;
 		      /////////////////////////////////////////////////////
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT3index].FourPT[11].fTwoPartNorm->Fill(1, q4, weightTotal);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT3index].FourPT[12].fTwoPartNorm->Fill(1, q4, weightTotal);
 		    }
 		  }
 		  /////////////////////////////////////////////////////////////
-
+		  
 		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==0){
 		    ((TH3D*)fOutputList->FindObject("fKT4DistTerm1"))->Fill(fMbin+1, KT4, q4);
 		    if(q4<0.085){
@@ -2533,8 +2768,8 @@ void AliFourPion::UserExec(Option_t *)
 		      ((TProfile2D*)fOutputList->FindObject("fKT4AvgpT"))->Fill(fMbin+1, KT4index, pt4);
 		    }
 		  }
-		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6) ((TH3D*)fOutputList->FindObject("fKT4DistTerm12"))->Fill(fMbin+1, KT4, q4);
-	      	
+		  if(ch1==ch2 && ch1==ch3 && ch1==ch4 && ENsum==6) ((TH3D*)fOutputList->FindObject("fKT4DistTerm13"))->Fill(fMbin+1, KT4, q4);
+
 
 		  // momenumtum resolution and muon corrections
 		  if(fMCcase && ENsum==6 && FilledMCtriplet123){// for momentum resolution and muon correction
@@ -2581,7 +2816,7 @@ void AliFourPion::UserExec(Option_t *)
 			  Float_t parentQinvGroup4[6]={parentQinv12, parentQinv13, parentQinv14, parentQinv23, parentQinv24, parentQinv34};
 			  Float_t parentkTGroup4[6]={0};
 			  
-			  for(Int_t term=1; term<=12; term++){
+			  for(Int_t term=1; term<=13; term++){
 			    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			      Float_t Rvalue = 5+Riter;
 			      Float_t WInput = MCWeight4(term, Rvalue, 1.0, chGroup4, parentQinvGroup4, parentkTGroup4);
@@ -2598,7 +2833,7 @@ void AliFourPion::UserExec(Option_t *)
 		      }// parentQ check (muon correction)
 		      
 		      // 4-pion momentum resolution
-		      for(Int_t term=1; term<=12; term++){
+		      for(Int_t term=1; term<=13; term++){
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			  Float_t Rvalue = 5+Riter;
 			  Float_t WInput = MCWeight4(term, Rvalue, 0.7, chGroup4, QinvMCGroup4, kTGroup4);
@@ -3068,7 +3303,7 @@ Float_t AliFourPion::MCWeightFSI3(Int_t term, Float_t R, Float_t fcSq, Int_t c[3
 }
 //________________________________________________________________________
 Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], Float_t qinv[6], Float_t kT[6]){
-  if(term==12) return 1.0;
+  if(term==13) return 1.0;
 
   // Charge ordering:
   // ----, ---+, --++, -+++, ++++
@@ -3157,6 +3392,10 @@ Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], 
       else if(term==9)  return ((1-fcSq) + fcSq*(1 + pow(EA23,2))*Kfactor23);
       else if(term==10) return ((1-fcSq) + fcSq*(1 + pow(EA24,2))*Kfactor24);
       else              return ((1-fcSq) + fcSq*(1 + pow(EA34,2))*Kfactor34);
+    }else if(term==12){
+      Float_t C22 = ((1-fcSq) + fcSq*(1 + pow(EA12,2))*Kfactor12) - 1.0;
+      C22 *= ((1-fcSq) + fcSq*(1 + pow(EA34,2))*Kfactor34) - 1.0;
+      return C22;
     }else return 1.0;
     
   }else{// mixed charge case
@@ -3201,10 +3440,10 @@ Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], 
 	return ((1-fcSq) + fcSq*Kpair4);// any MC pair will do
       }else if(term==9){
 	return ((1-fcSq) + fcSq*(1 + pow(EA1,2))*Kpair1);// any SC pair will do
-      }else if(term==10 || term==1){
+      }else if(term==10 || term==11){
 	if(ChargeSum==3) return ((1-fcSq) + fcSq*(1 + pow(EA1,2))*Kpair1);// any SC pair will do
 	else return ((1-fcSq) + fcSq*Kpair4);// any MC pair will do
-      }else return 1.0;
+      }else return 1.0;// for 12 and 13
     }else{// --++ configuration
       Float_t EA1=0, EA2=0, Kpair1=0, Kpair2=0, Kpair3=0, Kpair4=0, Kpair5=0, Kpair6=0;
       if(c[0]==c[1]) {EA1=EA12; EA2=EA34; Kpair1=Kfactor12; Kpair2=Kfactor34;    Kpair3=Kfactor13; Kpair4=Kfactor14; Kpair5=Kfactor23; Kpair6=Kfactor24;}
@@ -3229,7 +3468,7 @@ Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], 
 	return C3;
       }else if(term==6 || term==11){
 	return ((1-fcSq) + fcSq*(1 + pow(EA1,2))*Kpair1);// any SC pair will do
-      }else if(term !=12){
+      }else if(term !=12 && term !=13){
 	return ((1-fcSq) + fcSq*Kpair3);// any MC pair will do
       }else return 1.0;
     }
@@ -3238,7 +3477,7 @@ Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], 
 }
 //________________________________________________________________________
 Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], Float_t qinv[6]){
-  if(term==12) return 1.0;
+  if(term==13) return 1.0;
     
   Int_t ChargeSum=c[0]+c[1]+c[2]+c[3];
  
@@ -3280,6 +3519,10 @@ Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4
       else if(term==9) return ((1-fcSq) + fcSq*Kfactor23);
       else if(term==10) return ((1-fcSq) + fcSq*Kfactor24);
       else return ((1-fcSq) + fcSq*Kfactor34);
+    }else if(term==12){
+      Float_t C22 = ((1-fcSq) + fcSq*Kfactor12) - 1.0;
+      C22 *= ((1-fcSq) + fcSq*Kfactor34) - 1.0;
+      return C22;
     }else return 1.0;
     
   }else{// mixed charge case
@@ -3322,10 +3565,10 @@ Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4
 	return ((1-fcSq) + fcSq*Kpair4);// any MC pair will do
       }else if(term==9){
 	return ((1-fcSq) + fcSq*Kpair1);// any SC pair will do
-      }else if(term==10 || term==1){
+      }else if(term==10 || term==11){
 	if(ChargeSum==3) return ((1-fcSq) + fcSq*Kpair1);// any SC pair will do
 	else return ((1-fcSq) + fcSq*Kpair4);// any MC pair will do
-      }else return 1.0;
+      }else return 1.0;// 12 and 13
     }else{// --++ configuration
       Float_t Kpair1=0, Kpair2=0, Kpair3=0, Kpair4=0, Kpair5=0, Kpair6=0;
       if(c[0]==c[1]) {Kpair1=Kfactor12; Kpair2=Kfactor34;    Kpair3=Kfactor13; Kpair4=Kfactor14; Kpair5=Kfactor23; Kpair6=Kfactor24;}
@@ -3347,7 +3590,7 @@ Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4
 	return C3;
       }else if(term==6 || term==11){
 	return ((1-fcSq) + fcSq*Kpair1);// any SC pair will do
-      }else if(term !=12){
+      }else if(term !=12 && term !=13){
 	return ((1-fcSq) + fcSq*Kpair3);// any MC pair will do
       }else return 1.0;
     }
@@ -3487,7 +3730,7 @@ void AliFourPion::SetFillBins3(Int_t c1, Int_t c2, Int_t c3, Short_t part, Int_t
   
 }
 //________________________________________________________________________
-void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1, Int_t &b2, Int_t &b3, Int_t &b4, Int_t ENsum, Bool_t fillTerm[12]){
+void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1, Int_t &b2, Int_t &b3, Int_t &b4, Int_t ENsum, Bool_t fillTerm[13]){
   
   // fill2, fill3, fill4 are only used for Cumulant Terms 2,3,4
   if( (c1+c2+c3+c4)==0 || (c1+c2+c3+c4)==4) {// all of the same charge: ---- or ++++
@@ -3495,8 +3738,9 @@ void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1
     b1=c1; b2=c2; b3=c3; b4=c4;
     if(ENsum==0) fillTerm[0]=kTRUE;
     else if(ENsum==1) {fillTerm[1]=kTRUE; fillTerm[2]=kTRUE; fillTerm[3]=kTRUE; fillTerm[4]=kTRUE;}
+    else if(ENsum==2) {fillTerm[11]=kTRUE;}
     else if(ENsum==3) {fillTerm[5]=kTRUE; fillTerm[6]=kTRUE; fillTerm[7]=kTRUE; fillTerm[8]=kTRUE; fillTerm[9]=kTRUE; fillTerm[10]=kTRUE;}
-    else fillTerm[11]=kTRUE;
+    else fillTerm[12]=kTRUE;
   
   }else if( (c1+c2+c3+c4)==1) {// one positive charge: ---+
   
@@ -3505,10 +3749,12 @@ void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1
     else if(ENsum==1){
       if(c4==1) fillTerm[1]=kTRUE;
       else {fillTerm[2]=kTRUE; fillTerm[3]=kTRUE; fillTerm[4]=kTRUE;}
+    }else if(ENsum==2){
+      fillTerm[11]=kTRUE;
     }else if(ENsum==3){
       if(c3==1 || c4==1) {fillTerm[5]=kTRUE; fillTerm[6]=kTRUE; fillTerm[8]=kTRUE;} 
       else {fillTerm[7]=kTRUE; fillTerm[9]=kTRUE; fillTerm[10]=kTRUE;}
-    }else fillTerm[11]=kTRUE;
+    }else fillTerm[12]=kTRUE;
   
   }else if( (c1+c2+c3+c4)==2) {// two positive charges: --++
     
@@ -3517,11 +3763,13 @@ void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1
     else if(ENsum==1){
       if(c4==1) {fillTerm[1]=kTRUE; fillTerm[2]=kTRUE;}
       else {fillTerm[3]=kTRUE; fillTerm[4]=kTRUE;}
+    }else if(ENsum==2){
+      if( (c1+c2)==0) fillTerm[11]=kTRUE;
     }else if(ENsum==3){
       if( (c1+c2)==0) fillTerm[5]=kTRUE;
       else if( (c1+c2)==1) {fillTerm[6]=kTRUE; fillTerm[7]=kTRUE; fillTerm[8]=kTRUE; fillTerm[9]=kTRUE;}
       else fillTerm[10]=kTRUE;
-    }else fillTerm[11]=kTRUE;
+    }else fillTerm[12]=kTRUE;
 
   }else{// three positive charges
     
@@ -3530,10 +3778,12 @@ void AliFourPion::SetFillBins4(Int_t c1, Int_t c2, Int_t c3, Int_t c4, Int_t &b1
     else if(ENsum==1){
       if(c4==0) fillTerm[4]=kTRUE;
       else {fillTerm[1]=kTRUE; fillTerm[2]=kTRUE; fillTerm[3]=kTRUE;}
+    }else if(ENsum==2){
+      fillTerm[11]=kTRUE;
     }else if(ENsum==3){
       if(c3==0 || c4==0) {fillTerm[8]=kTRUE; fillTerm[9]=kTRUE; fillTerm[10]=kTRUE;}
       else {fillTerm[5]=kTRUE; fillTerm[6]=kTRUE; fillTerm[7]=kTRUE;}
-    }else fillTerm[11]=kTRUE;
+    }else fillTerm[12]=kTRUE;
   
   }
   
