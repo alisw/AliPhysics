@@ -1620,7 +1620,9 @@ void AliPIDResponse::SetHMPIDPidResponseMaster()
   if (fHMPIDPIDParams) delete fHMPIDPIDParams;
   fHMPIDPIDParams=NULL;
 
-  TFile *oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
+  TFile *oadbf; 
+  if(!fIsMC) oadbf = new TFile(Form("%s/COMMON/PID/data/HMPIDPIDParams.root",fOADBPath.Data()));
+  else       oadbf = new TFile(Form("%s/COMMON/PID/MC/HMPIDPIDParams.root",fOADBPath.Data()));
   if (oadbf && oadbf->IsOpen()) {
     AliInfo(Form("Loading HMPID Params from %s/COMMON/PID/data/HMPIDPIDParams.root", fOADBPath.Data()));
     AliOADBContainer *oadbc = (AliOADBContainer *)oadbf->Get("HMPoadb");

@@ -333,7 +333,8 @@ AliFMDRawWriter::WriteRCUTrailer(AliAltroBufferV3* altro,
   // WARNING: We store the noise factor in the 2nd baseline
   // filters excluded post samples, since we'll never use that
   // mode. 
-  altro->SetNPostsamples(factor); // 
+  // altro->SetNPostsamples(factor); // 
+  altro->SetNNonZSPostsamples(factor);
   // WARNING: We store the sample rate in the number of pre-trigger
   // samples, since we'll never use that mode.
   altro->SetNPretriggerSamples(rate); // fSampleRate[ddl]

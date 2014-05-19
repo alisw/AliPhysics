@@ -77,21 +77,21 @@ void SetCC(Int_t flag=0)
   {
     DBFolder  ="local://InitCalibDB";
     firstRun  =  0;
-    lastRun   =  999999999;
+    lastRun   =  AliCDBRunRange::Infinity();
     objFormat = "EMCAL initial gain factors and pedestals";
   }
   else if (flag == 1)
   {
     DBFolder  ="local://DeCalibDB";
     firstRun  =  0;
-    lastRun   = 12;
+    lastRun   = AliCDBRunRange::Infinity();
     objFormat = "EMCAL random pedestals and ADC gain factors (12x48x24)";
   }
   else if (flag == 2)
   {
     DBFolder  ="local://DeCalibDB"; // create directory DeCalibDB in current directory
     firstRun  =  0;
-    lastRun   = 12; // Why 12 ?
+    lastRun   = AliCDBRunRange::Infinity();
     objFormat = "EMCAL random pedestals and gausian ADC gain factors (12x48x24)";
   }
   
@@ -109,11 +109,8 @@ void SetCC(Int_t flag=0)
   {
     Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;
     Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;
-    if(supermodule /2 == 5)
-      nRow = nRow/2;
-    if(supermodule > 11)//not good solution
-      nCol  = nCol*2/3;
     
+    // Set all the channels even the known to not exist in 1/3 sm and DCAL
     for(Int_t column=0; column< nCol; column++)
     {
       for(Int_t row=0; row< nRow; row++)
@@ -247,10 +244,10 @@ void GetCC(Int_t flag=0)
     Int_t nCol  = AliEMCALGeoParams::fgkEMCALCols;
     Int_t nRow  = AliEMCALGeoParams::fgkEMCALRows;
     
-    if(supermodule /2 == 5)
-    nRow = nRow/2;
-    if(supermodule > 11)
-    nCol  = nCol*2/3;
+//    if(supermodule /2 == 5)
+//    nRow = nRow/2;
+//    if(supermodule > 11)
+//    nCol  = nCol*2/3;
     
     TString namePed="hPed";
     namePed+=supermodule;

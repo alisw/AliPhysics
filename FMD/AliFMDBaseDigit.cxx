@@ -145,7 +145,9 @@ void
 AliFMDBaseDigit::Print(Option_t* /* option*/) const 
 {
   // Print digit to standard out 
-  cout << ClassName() << ": " << GetName() << flush;
+  cout << ClassName() << ": FMD" << fDetector << fRing 
+       << '[' << std::setw(2) << fSector 
+       << ',' << std::setw(3) << fStrip << ']' << flush;
 }
 
 //____________________________________________________________________

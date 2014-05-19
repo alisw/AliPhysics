@@ -62,6 +62,8 @@
 //     ::max_align_t was introduced with GCC 4.7. std::max_align_t took a bit longer.
 #      define VC_HAVE_MAX_ALIGN_T 1
 #    endif
+#  elif defined(VC_ICC)
+#      define VC_HAVE_MAX_ALIGN_T 1
 #  elif !defined(VC_CLANG)
 //   Clang doesn't provide max_align_t at all
 #    define VC_HAVE_STD_MAX_ALIGN_T 1
@@ -345,13 +347,13 @@ enum MallocAlignment {
 };
 
 #if __cplusplus >= 201103 /*C++11*/
-#define Vc_CONSTEXPR static constexpr
+#define Vc_CONSTEXPR constexpr
 #elif defined(__GNUC__)
-#define Vc_CONSTEXPR static inline __attribute__((__always_inline__, __const__))
+#define Vc_CONSTEXPR inline __attribute__((__always_inline__, __const__))
 #elif defined(VC_MSVC)
-#define Vc_CONSTEXPR static inline __forceinline
+#define Vc_CONSTEXPR inline __forceinline
 #else
-#define Vc_CONSTEXPR static inline
+#define Vc_CONSTEXPR inline
 #endif
 Vc_CONSTEXPR StreamingAndUnalignedFlag operator|(UnalignedFlag, StreamingAndAlignedFlag) { return StreamingAndUnaligned; }
 Vc_CONSTEXPR StreamingAndUnalignedFlag operator|(StreamingAndAlignedFlag, UnalignedFlag) { return StreamingAndUnaligned; }
@@ -477,10 +479,10 @@ namespace Internal {
     typedef HelperImpl<VC_IMPL> Helper;
 
     template<typename A> struct FlagObject;
-    template<> struct FlagObject<AlignedFlag> { Vc_CONSTEXPR AlignedFlag the() { return Aligned; } };
-    template<> struct FlagObject<UnalignedFlag> { Vc_CONSTEXPR UnalignedFlag the() { return Unaligned; } };
-    template<> struct FlagObject<StreamingAndAlignedFlag> { Vc_CONSTEXPR StreamingAndAlignedFlag the() { return Streaming; } };
-    template<> struct FlagObject<StreamingAndUnalignedFlag> { Vc_CONSTEXPR StreamingAndUnalignedFlag the() { return StreamingAndUnaligned; } };
+    template<> struct FlagObject<AlignedFlag> { static Vc_CONSTEXPR AlignedFlag the() { return Aligned; } };
+    template<> struct FlagObject<UnalignedFlag> { static Vc_CONSTEXPR UnalignedFlag the() { return Unaligned; } };
+    template<> struct FlagObject<StreamingAndAlignedFlag> { static Vc_CONSTEXPR StreamingAndAlignedFlag the() { return Streaming; } };
+    template<> struct FlagObject<StreamingAndUnalignedFlag> { static Vc_CONSTEXPR StreamingAndUnalignedFlag the() { return StreamingAndUnaligned; } };
 } // namespace Internal
 
 namespace Warnings

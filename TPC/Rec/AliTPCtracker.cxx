@@ -302,7 +302,7 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     //  new(larr[ihelix]) AliHelix(*track) ;    
     //}
   }
-  if (AliTPCReconstructor::StreamLevel()>0) {
+  if (AliTPCReconstructor::StreamLevel()>5) {
     Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
     AliExternalTrackParam param(*track);
     TTreeSRedirector &cstream = *fDebugStreamer;
@@ -1608,7 +1608,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
               qMaxArray[icl0]+=ionTailMax;
 
               // Dump some info for debugging while clusters are being corrected
-              if (AliTPCReconstructor::StreamLevel()==1) {
+              if (AliTPCReconstructor::StreamLevel()>2) {
                 TTreeSRedirector &cstream = *fDebugStreamer;
                 if (gRandom->Rndm() > 0.999){
                   cstream<<"IonTail"<<
@@ -1627,7 +1627,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             cl0->SetMax(TMath::Nint(Float_t(cl0->GetMax())+qMaxArray[icl0]));
           
             // Dump some info for debugging after clusters are corrected 
-            if (AliTPCReconstructor::StreamLevel()==1) {
+            if (AliTPCReconstructor::StreamLevel()>2) {
               TTreeSRedirector &cstream = *fDebugStreamer;
               if (gRandom->Rndm() > 0.999){
               cstream<<"IonTailCorrected"<<

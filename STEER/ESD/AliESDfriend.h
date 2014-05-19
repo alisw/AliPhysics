@@ -45,6 +45,7 @@ public:
 	  return fTracks.ls();
   }
 
+  void Reset();
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}

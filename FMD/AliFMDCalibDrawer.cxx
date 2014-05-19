@@ -16,7 +16,11 @@ AliFMDCalibDrawer::Init(Int_t runNo, const char* ocdb)
 {
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runNo);
-  if (ocdb && ocdb[0] != '\0') cdb->SetDefaultStorage(ocdb);
+  TString db(ocdb);
+  if (db.EqualTo("run", TString::kIgnoreCase) || db.IsNull())
+    cdb->SetDefaultStorageFromRun(runNo);
+  else 
+    cdb->SetDefaultStorage(db);
 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   pars->Init(kTRUE);

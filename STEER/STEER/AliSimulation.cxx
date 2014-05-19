@@ -768,7 +768,9 @@ Bool_t AliSimulation::Run(Int_t nEvents)
   }
 
   AliSysInfo::AddStamp("RunQA");
-
+  //
+  StoreUsedCDBMaps();
+  //  
   TString snapshotFileOut("");
   if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){ 
       AliInfo(" ******** Creating the snapshot! *********");
@@ -2108,8 +2110,6 @@ void AliSimulation::FinishRun()
   gAlice->Write(0,TObject::kOverwrite);//write AliRun
   AliRunLoader::Instance()->Write(0,TObject::kOverwrite);//write RunLoader itself
   //
-  StoreUsedCDBMaps();
-  //  
   if(gAlice->GetMCApp()) gAlice->GetMCApp()->FinishRun();  
   AliRunLoader::Instance()->Synchronize();
 }
@@ -2522,6 +2522,13 @@ void AliSimulation::StoreUsedCDBMaps() const
 {
   // write in galice.root maps with used CDB paths
   //
+  //
+  AliRunLoader* runLoader = LoadRun();
+  if (!runLoader) {
+    AliError("Failed to open gAlice.root in write mode");
+    return;
+  }
+  //
   const TMap *cdbMap = AliCDBManager::Instance()->GetStorageMap();	 
   const TList *cdbList = AliCDBManager::Instance()->GetRetrievedIds();	 
   //
@@ -2552,6 +2559,7 @@ void AliSimulation::StoreUsedCDBMaps() const
   AliRunLoader::Instance()->CdGAFile();
   gDirectory->WriteObject(cdbMapCopy,"cdbMap","kSingleKey");
   gDirectory->WriteObject(cdbListCopy,"cdbList","kSingleKey");  
+  delete runLoader;
   //
   AliInfo(Form("Stored used OCDB entries as TMap %s and TList %s in %s",
 	       cdbMapCopy->GetName(),

@@ -53,7 +53,7 @@ class AliCluster : public TObject {
   Bool_t IsClusterUsed()   const { return TestBit(kUsed);   }
   Bool_t IsClusterShared() const { return TestBit(kShared); }
 
-  virtual void Use(Int_t = 0) {;}
+  virtual void Use(Int_t = 0) {SetBit(kUsed);}
 
   virtual  Bool_t   GetGlobalXYZ(Float_t xyz[3]) const;
   virtual  Bool_t   GetGlobalCov(Float_t cov[6]) const;

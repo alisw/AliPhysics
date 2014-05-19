@@ -830,15 +830,17 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
  
 }
 
-Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TClonesArray *arrayMC, TString &nameGen){
+Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){
   //method that gives the generator for a given particle with label index (or that of the corresponding primary)
    nameGen=GetGenerator(index);
    if(nameGen.Contains("nococktailheader") )return 0;
-
+   
    while(nameGen.IsWhitespace()){
-    AliMCParticle *mcpart= (AliMCParticle*)arrayMC->At(index);
+     
+     AliMCParticle* mcpart = (AliMCParticle*) (GetTrack(index));
+   
     if(!mcpart){
-      printf("AliMCEvent-BREAK: No valid AliAODMCParticle at label %i\n",index);
+      printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
       break;
     }
     Int_t mother = mcpart->GetMother();

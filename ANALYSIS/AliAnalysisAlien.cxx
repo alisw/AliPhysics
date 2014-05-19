@@ -2200,30 +2200,31 @@ Bool_t AliAnalysisAlien::FileExists(const char *lfn)
 Bool_t AliAnalysisAlien::DirectoryExists(const char *dirname)
 {
 // Returns true if directory exists. Can be also a path.
+// Since there is not API in TAlien, we use the Cd trick:
    if (!gGrid) return kFALSE;
-   // Check if dirname is a path
-   TString dirstripped = dirname;
-   dirstripped = dirstripped.Strip();
-   dirstripped = dirstripped.Strip(TString::kTrailing, '/');
-   TString dir = gSystem->BaseName(dirstripped);
-   dir += "/";
-   TString path = gSystem->DirName(dirstripped);
-   TGridResult *res = gGrid->Ls(path, "-F");
-   if (!res) return kFALSE;
-   TIter next(res);
-   TMap *map;
-   TObject *obj;
-   while ((map=dynamic_cast<TMap*>(next()))) {
-      obj = map->GetValue("name");
-      if (!obj) break;
-      if (dir == obj->GetName()) {
-         delete res;
-         return kTRUE;
-      }
+   // Backup current path
+   TString cpath = gGrid->Pwd();
+   TString command = "cd ";
+   TString sdir(dirname);
+   sdir.ReplaceAll("alien://", "");
+   command += sdir;
+   TGridResult *res = gGrid->Command(command);
+   if (!res) {
+      gGrid->Cd(cpath);
+      return kFALSE;
+   }   
+   TMap *map = (TMap*)res->At(0);
+   if (!map) {
+      gGrid->Cd(cpath);
+      delete res;
+      return kFALSE;
    }
+   TString sval = map->GetValue("__result__")->GetName();
+   Bool_t retval = (Bool_t)sval.Atoi();
+   gGrid->Cd(cpath);
    delete res;
-   return kFALSE;
-}      
+   return retval;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisAlien::CheckDataType(const char *lfn, Bool_t &isCollection, Bool_t &isXml, Bool_t &useTags)

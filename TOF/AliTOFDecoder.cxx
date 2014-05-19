@@ -217,9 +217,9 @@ AliTOFDecoder::Decode(const UInt_t *rawData, Int_t nWords, const AliRawDataHeade
   Short_t  currentBunchID = -1;
   Short_t  currentL0BCID = -1;
   Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)(-1);
-  currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : (Short_t)(-1);
+  currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : currentMiniEventID;
   Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
-  currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : (Short_t)(-1);
+  currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : currentEventID1;
   if (!cdh && !cdhV3)
     AliWarning("CDH not valid: deltaBunchID not reliable ");
   else
@@ -946,9 +946,9 @@ void AliTOFDecoder::PrintStack(const UInt_t *rawData, Int_t nWords, const AliRaw
    */
 
  Short_t  currentMiniEventID = cdh ? cdh->GetMiniEventID() : (Short_t)(-1);
- currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : (Short_t)(-1);
+ currentMiniEventID = cdhV3 ? cdhV3->GetMiniEventID() : currentMiniEventID;
  Short_t  currentEventID1 = cdh ? cdh->GetEventID1() : (Short_t)(-1);
- currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : (Short_t)(-1);
+ currentEventID1 = cdhV3 ? cdhV3->GetEventID1() : currentEventID1;
  if (!cdh && !cdhV3)
    AliWarning("CDH not valid: deltaBunchID not reliable ");
  else
