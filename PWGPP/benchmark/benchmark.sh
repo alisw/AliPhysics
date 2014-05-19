@@ -2067,13 +2067,16 @@ EOF
 
 stackTraceTree()
 (
-  awk '
+  gawk '
        BEGIN { 
                print "frame/I:method/C:line/C:cpass/I:aliroot/I";
                RS="#[0-9]*";
                aliroot=0;
+               read=1;
              } 
-             { 
+      /There was a crash/ {read=1;}
+      /The lines below might hint at the cause of the crash/ {read=0;}
+      read==1 { 
                if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
                gsub("#","",RT); 
                if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot
