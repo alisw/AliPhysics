@@ -1,5 +1,5 @@
 void
-testF(UShort_t single=0, Bool_t old=false)
+RunTestF(UShort_t single=0, Bool_t old=false)
 {
   gSystem->AddIncludePath(Form("%s-DTEST_SHIFT -DTEST_FITTER -I$ANA_SRC -I.", 
 			       (old ? "-DNO_SIGMA_SHIFT " : "")));

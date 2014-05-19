@@ -21,6 +21,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    Bool_t   QAhistos		  = 0, //kFALSE,
    Bool_t   BIAShistos        = 0, //kFALSE,
    Bool_t   extraCORRhistos   = 0, //kFALSE,
+   Bool_t   oldJEThadhistos   = 0, //kFALSE,
    const Double_t JetPtcut    = 15.0,
    const Double_t JetRadius   = 0.4,
    const Double_t constitCut  = 0.15,
@@ -73,6 +74,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetmakeQAhistos(QAhistos);
   correlationtask->SetmakeBIAShistos(BIAShistos);  
   correlationtask->SetmakeextraCORRhistos(extraCORRhistos);
+  correlationtask->SetoldJEThadhistos(oldJEThadhistos);
   correlationtask->SetJetPtcut(JetPtcut);
   correlationtask->SetJetRad(JetRadius);
   correlationtask->SetConstituentCut(constitCut);

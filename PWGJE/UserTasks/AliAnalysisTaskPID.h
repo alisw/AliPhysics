@@ -25,6 +25,7 @@ class AliTOFPIDResponse;
 class AliVEvent;
 class AliVTrack;
 
+#include "TAxis.h"
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
@@ -60,6 +61,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
                       kGenYieldCharge = 6, kGenYieldNumAxes = 7 };
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
+  
+  enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
+                       kDeDxCheckNumAxes = 5 };
   
   enum efficiencyAxes { kEffMCID = 0, kEffTrackPt = 1, kEffTrackEta = 2, kEffTrackCharge = 3, kEffCentrality = 4, kEffJetPt = 5,
                         kEffZ = 6, kEffXi = 7, kEffNumAxes = 8 };
@@ -141,6 +145,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   Bool_t GetDoPtResolution() const { return fDoPtResolution; };
   void SetDoPtResolution(Bool_t flag) { fDoPtResolution = flag; };
+  
+  Bool_t GetDoDeDxCheck() const { return fDoDeDxCheck; };
+  void SetDoDeDxCheck(Bool_t flag) { fDoDeDxCheck = flag; };
   
   Bool_t GetStoreCentralityPercentile() const { return fStoreCentralityPercentile; };
   void SetStoreCentralityPercentile(Bool_t flag) { fStoreCentralityPercentile = flag; };
@@ -253,6 +260,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
   virtual void SetUpPIDcombined();
   
   static const Int_t fgkNumJetAxes; // Number of additional axes for jets
@@ -270,6 +278,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Bool_t fDoPID; // Only do PID processing (and post the output), if flag is set to kTRUE
   Bool_t fDoEfficiency; // Only do efficiency processing (and post the output), if flag is set to kTRUE
   Bool_t fDoPtResolution; // Only do pT resolution processing (and post the output), if flag is set to kTRUE
+  Bool_t fDoDeDxCheck; // Only check dEdx, if flag set to kTRUE
   
   Bool_t fStoreCentralityPercentile; // If set to kTRUE, store centrality percentile for each event. In case of kFALSE (appropriate for pp), centrality percentile will be set to -1 for every event
   Bool_t fStoreAdditionalJetInformation; // If set to kTRUE, additional jet information like jetPt, z, xi will be stored in the THnSparses
@@ -368,6 +377,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   Double_t* fGenRespPrDeltaPr; //! Generated responses for a single track
   */
   
+  TAxis* fDeltaPrimeAxis; //! Axis holding the deltaPrime binning
   TH1D* fhMaxEtaVariation; //! Histo holding the maximum deviation of the eta correction factor from unity vs. 1/dEdx(splines)
   
   TH1D* fhEventsProcessed; //! Histo holding the number of processed events (i.e. passing trigger selection, vtx and zvtx cuts
@@ -387,14 +397,16 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
   
+  THnSparseD* fDeDxCheck; //! dEdx check
+  
   TObjArray* fOutputContainer;  //! output data container
   
-  TObjArray* fPtResolutionContainer;  //! output data container for pt resolution
+  TObjArray* fQAContainer; //! output data container for QA
   
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 18);
+  ClassDef(AliAnalysisTaskPID, 19);
 };
 
 
@@ -606,8 +618,8 @@ inline void AliAnalysisTaskPID::PostOutputData()
   if (fDoEfficiency)
     PostData(2, fContainerEff);
   
-  if (fDoPtResolution)
-    PostData(3, fPtResolutionContainer);
+  if (fDoPtResolution || fDoDeDxCheck)
+    PostData(3, fQAContainer);
 }
 
 #endif

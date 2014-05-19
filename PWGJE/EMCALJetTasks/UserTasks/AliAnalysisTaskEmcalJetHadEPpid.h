@@ -55,10 +55,14 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual ~AliAnalysisTaskEmcalJetHadEPpid();
 
   virtual void            UserCreateOutputObjects();
-  virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
+  // THnSparse Setup
+  virtual THnSparse*      NewTHnSparseD(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
-  virtual THnSparse*      NewTHnSparseFPID(const char* name, UInt_t entries);
+  virtual THnSparse*      NewTHnSparseDPID(const char* name, UInt_t entries);
   virtual void            GetDimParamsPID(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+  virtual THnSparse*      NewTHnSparseDCorr(const char* name, UInt_t entries);
+  virtual void            GetDimParamsCorr(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+
   // set a bun of histogram switches up
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
   void                    SetVariableBinning(Bool_t v)          { doVariableBinning = v; } // do variable binning switch
@@ -66,6 +70,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void					  SetmakeQAhistos(Bool_t QAhist)        { makeQAhistos = QAhist; } // make QA histos  
   void					  SetmakeBIAShistos(Bool_t BIAShist)    { makeBIAShistos = BIAShist; } // make bias histos
   void			          SetmakeextraCORRhistos(Bool_t Xhist)  { makeextraCORRhistos = Xhist; } // make extra correlations histos
+  void					  SetoldJEThadhistos(Bool_t oldJH)      { makeoldJEThadhistos = oldJH; } // make older JH histos for comparison
 
   // set data, detectors type, and PID and PID w bias switches
   void		              SetDataType(Bool_t data)		        { useAOD = data; }    // data type switch
@@ -91,7 +96,7 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   virtual void            SetTrkEta(Double_t e)                 { fTrkEta   = e; }  //eta range of the associated tracks
   virtual void            SetJetPtcut(Double_t jpt)             { fJetPtcut = jpt; } // jet pt cut
   virtual void			  SetJetRad(Double_t jrad)				{ fJetRad = jrad; } // jet radius 
-  virtual void 			  SetConstituentCut(Double_t constCut)   { fConstituentCut = constCut; } // constituent Cut
+  virtual void 			  SetConstituentCut(Double_t constCut)  { fConstituentCut = constCut; } // constituent Cut
 
   // eta and phi limits of jets - setters
   virtual void            SetJetEta(Double_t emin, Double_t emax)  { fEtamin = emin; fEtamax = emax; }
@@ -112,8 +117,8 @@ protected:
   virtual void           Terminate(Option_t *); 
   virtual Int_t          AcceptMyJet(AliEmcalJet *jet);   // applies basic jet tests/cuts before accepting
   virtual Int_t          GetCentBin(Double_t cent) const; // centrality bin of event
-  Double_t                RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
-  Double_t                RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
+  Double_t               RelativePhi(Double_t mphi,Double_t vphi) const; // relative jet track angle
+  Double_t               RelativeEPJET(Double_t jetAng, Double_t EPAng) const;  // relative jet event plane angle
   virtual Int_t          GetEtaBin(Double_t eta) const;      // eta bins
   virtual Int_t          GetpTjetBin(Double_t pt) const;     // jet pt bins
   virtual Int_t          GetpTtrackBin(Double_t pt) const;   // track pt bins
@@ -144,6 +149,7 @@ protected:
   Bool_t		 makeQAhistos;
   Bool_t		 makeBIAShistos;
   Bool_t		 makeextraCORRhistos; 
+  Bool_t		 makeoldJEThadhistos;
 
   // data type switch
   Bool_t	     useAOD;
@@ -245,9 +251,9 @@ protected:
   TH1                   *fHistJetPtBias[6];
   TH1                   *fHistJetPtTT[6];
   TH2                   *fHistAreavsRawPt[6];
-  TH2                   *fHistJetH[2][5][3];
-  TH2                   *fHistJetHBias[2][5][3];
-  TH2                   *fHistJetHTT[2][5][3];
+  TH2                   *fHistJetH[6][5][3];
+  TH2                   *fHistJetHBias[6][5][3];
+  TH2                   *fHistJetHTT[6][5][3];
   TH1F					*fHistJetHdPHI[11];
   TH2F					*fHistJetHdETAdPHI[11];
   TH2F                  *fHistSEphieta; // single events phi-eta distributions
@@ -261,6 +267,7 @@ protected:
   THnSparse             *fhnPID;          // PID sparse
   THnSparse             *fhnMixedEvents;  // mixed events matrix
   THnSparse             *fhnJH;           // jet hadron events matrix
+  THnSparse				*fhnCorr;		  // sparse to get # jet triggers
 
   // container objects
   AliJetContainer            *fJetsCont;                   //!Jets

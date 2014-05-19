@@ -185,11 +185,15 @@ struct QABase
 
     fTeX = new std::ofstream(Form("%s.tex", base));
     fHtml = new std::ofstream(Form("%s.html", base));
+    
+    TString texTitle(title);
+    texTitle.ReplaceAll("_", "-");
 
     *fTeX << "\\documentclass[landscape,a4paper,12pt]{article}\n"
+	  << "\\nonstopmode\n"
 	  << "\\usepackage[margin=2cm,a4paper]{geometry}\n"
 	  << "\\usepackage{graphicx}\n"
-	  << "\\title{{\\Huge\\bf " << title << "}}\n"
+	  << "\\title{{\\Huge\\bf " << texTitle << "}}\n"
 	  << "\\author{{\\LARGE FMD Team}}\n"
 	  << "\\date{{\\Large \\today}}\n"
 	  << "\\begin{document}\n"

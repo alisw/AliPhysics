@@ -338,6 +338,8 @@ struct Trend : public SummaryDrawer
     TCollection* results = GetCollection(file, "ForwarddNdetaResults");
     if (!results) return false;
 
+    TCollection* mcResults = GetCollection(file, "MCTruthdNdetaResults");
+
     THStack* all = new THStack("all",    "All");
     THStack* rat = new THStack("ratios", "Ratios");
     
@@ -345,18 +347,24 @@ struct Trend : public SummaryDrawer
     TObject* pCent = 0;
     Int_t    jCent = 0;
     while ((pCent = iCent())) {
-      TGraph*  graph = static_cast<TGraph*>(fOthers.At(jCent));
-      if (!graph) break;
-
       TString folderName(pCent->GetName());
       TCollection* centFolder = GetCollection(results, folderName);
-      if (!centFolder) break;
+      if (!centFolder) {
+	Warning("", "Didn't get the centrality %s folder from %s",
+		folderName.Data(), results->GetName());
+	// results->ls();
+	break;
+      }
 
+      TCollection* mcCentFolder = 0;
+      if (mcResults) mcCentFolder = GetCollection(mcResults, folderName);
+      
       TH1* dNdeta = GetH1(centFolder, Form("dndetaForward%s", 
 					   fRebinned ? "_rebin05" : ""));
       if (!dNdeta) {
 	Warning("", "Didn't get histogram for jCent=%d in %s", 
 		jCent, path.Data());
+	// results->ls();
 	break;
       }
       dNdeta->SetDirectory(out);
@@ -364,7 +372,22 @@ struct Trend : public SummaryDrawer
       dNdeta->SetMarkerColor(jCent+1);
       dNdeta->SetLineColor(jCent+1);
 
-      TH1* other = G2H(graph, *(dNdeta->GetXaxis()));
+      TH1* other = 0; 
+      if (mcCentFolder) 
+	other = GetH1(mcCentFolder, Form("dndetaMCTruth%s", 
+					 fRebinned ? "_rebin05" : ""));
+      if (!other) {
+	TGraph*  graph = static_cast<TGraph*>(fOthers.At(jCent));
+	if (!graph) break;
+
+	other = G2H(graph, *(dNdeta->GetXaxis()));
+      }
+
+      if (!other) {
+	Warning("", "No other data found for %s", path.Data());
+	break;
+      }
+
       other->SetMarkerColor(dNdeta->GetMarkerColor());
       other->SetMarkerSize(dNdeta->GetMarkerSize());
       other->SetLineColor(dNdeta->GetLineColor());
@@ -598,6 +621,10 @@ struct Trend : public SummaryDrawer
   {
     if (!stack) {
       Warning("DrawStacks", "Stack is missing!");
+      return;
+    }
+    if (!stack->GetHists() || stack->GetHists()->GetEntries() <= 0) { 
+      Warning("DrawStacks", "Stack is empty");
       return;
     }
     TH1*    first = static_cast<TH1*>(stack->GetHists()->At(0));

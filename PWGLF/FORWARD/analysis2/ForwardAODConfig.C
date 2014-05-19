@@ -43,8 +43,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // pedestal value in them, so the absolute number of high-value
   // pedestal signals is large - despite the low probablity).
   AliFMDMultCuts cSharingLow(AliFMDMultCuts::kFixed,0.15);
-  AliFMDMultCuts cSharingHigh(AliFMDMultCuts::kMPVFraction,0.8,0.8,0.8,0.8,0.8);
-  AliFMDMultCuts cDensity(AliFMDMultCuts::kMPVFraction,0.7);
+  AliFMDMultCuts cSharingHigh(AliFMDMultCuts::kLandauSigmaWidth,1);
+  AliFMDMultCuts cDensity(AliFMDMultCuts::kLandauSigmaWidth,1);
   
   // --- Event inspector ---------------------------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -58,39 +58,26 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetMinPileupDistance(.8);
   // V0-AND triggered events flagged as NSD 
   task->GetEventInspector().SetUseV0AndForNSD(false);
-  // Use primary vertex selection from 1st physics WG
-  task->GetEventInspector().SetUseFirstPhysicsVtx(false);
-  // Use satellite collisions
-  task->GetEventInspector().SetUseDisplacedVertices(false);
+  // Set the kind of vertex to look for.  Can be one of 
+  //  
+  //   - kNormal:    SPD vertex 
+  //   - kpA2012:    Selection tuned for 2012 pA data 
+  //   - kpA2013:    Selection tuned for 2013 pA data 
+  //   - kPWGUD:     Selection used by 'first physics' 
+  //   - kDisplaced: Satellite collisions, with kNormal fall-back 
+  // 
+  task->GetEventInspector().SetVertexMethod(AliFMDEventInspector::kNormal);
   // Which centrality estimator to use 
   task->GetEventInspector().SetCentralityMethod("V0M");
 
-  // --- Sharing filter ----------------------------------------------
-  // If the following is set to true, then the merging of shared
-  // signals is disabled completely
-  task->GetSharingFilter().SetDisableMerging(false);
-  // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
-  // Ignore the ESD information when angle correcting.
-  // 
-  // *IMPORTANT* 
-  // 
-  // This is to counter a known issue with AliESDFMD with ClassDef 
-  // version < 4, where the angle correction flag is incorrectly set.
-  // A fix is coming to AliESDFMD to handle it directly in the class. 
-  // Only set the flag below to true if you know it to be necessary for
-  // your data set.
-  task->GetSharingFilter().SetIgnoreESDWhenAngleCorrecting(false);
-  // Disable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
-  // Whether to use simple merging algorithm
-  task->GetSharingFilter().SetUseSimpleSharing(true);
-  // Whether to allow for 3 strip hits - deprecated
-  task->GetSharingFilter().SetAllow3Strips(false);
-  // Set upper sharing cut 
-  task->GetSharingFilter().SetHCuts(cSharingHigh);
-  // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetLCuts(cSharingLow);
+  // --- ESD fixer ---------------------------------------------------
+  // Sets the noise factor that was used during reconstruction.  If
+  // this is set to 4 or more, then this correction will be disabled.
+  task->GetESDFixer().SetRecoNoiseFactor(1);
+  // IF the noise correction is bigger than this, flag strip as dead 
+  task->GetESDFixer().SetMaxNoiseCorrection(0.05);
+  // Sets whether to recalculate eta 
+  task->GetESDFixer().SetRecalculateEta(false);
   // If true, consider AliESDFMD::kInvalidMult as a zero signal.  This
   // has the unfortunate side effect, that we cannot use the
   // on-the-fly calculation of the phi acceptance.  
@@ -117,9 +104,9 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // LHC10c-7TeV is effected up-to and including pass2
   // LHC10c-CPass0 should be OK, but has limited statistics 
   // LHC10c_11a_FMD should be OK, but has few runs  
-  task->GetSharingFilter().SetInvalidIsEmpty(false);
+  task->GetESDFixer().SetInvalidIsEmpty(false);
   // Dead region in FMD2i
-  task->GetSharingFilter().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
+  task->GetESDFixer().AddDeadRegion(2, 'I', 16, 17, 256, 511);  
   // One can add extra dead strips from a script like 
   // 
   //   void deadstrips(AliFMDSharingFilter* filter)
@@ -130,7 +117,34 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //
   // and then do here 
   // 
-  // task->GetSharingFilter().AddDead("deadstrips.C");
+  // task->GetESDFixer().AddDead("deadstrips.C");
+
+  // --- Sharing filter ----------------------------------------------
+  // If the following is set to true, then the merging of shared
+  // signals is disabled completely
+  // task->GetSharingFilter().SetMergingDisabled(false);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
+  // Ignore the ESD information when angle correcting.
+  // 
+  // *IMPORTANT* 
+  // 
+  // This is to counter a known issue with AliESDFMD with ClassDef 
+  // version < 4, where the angle correction flag is incorrectly set.
+  // A fix is coming to AliESDFMD to handle it directly in the class. 
+  // Only set the flag below to true if you know it to be necessary for
+  // your data set.
+  task->GetSharingFilter().SetIgnoreESDWhenAngleCorrecting(false);
+  // Disable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
+  // Whether to use simple merging algorithm
+  task->GetSharingFilter().SetUseSimpleSharing(true);
+  // Whether to allow for 3 strip hits - deprecated
+  task->GetSharingFilter().SetAllow3Strips(false);
+  // Set upper sharing cut 
+  task->GetSharingFilter().SetHCuts(cSharingHigh);
+  // Enable use of angle corrected signals in the algorithm 
+  task->GetSharingFilter().SetLCuts(cSharingLow);
    
   // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 

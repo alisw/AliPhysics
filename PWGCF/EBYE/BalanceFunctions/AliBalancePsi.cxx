@@ -2000,6 +2000,8 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
 	  NTrigSubBin = (Double_t)(fHistP->Project(0,1)->Integral());
 	else if(type=="NP" || type=="NN")
 	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral());
+	else if(type=="ALL")
+	  NTrigSubBin = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
 	fSame->Scale(NTrigSubBin);
 	
 	// for the first: clone
@@ -2029,6 +2031,15 @@ TH2D *AliBalancePsi::GetCorrelationFunction(TString type,
       fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
       fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
       NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral());
+    }
+    else if(type=="ALL"){
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistN->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(0)->SetRangeUser(psiMin,psiMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(2)->SetRangeUser(vertexZMin,vertexZMax-0.00001); 
+      fHistP->GetGrid(0)->GetGrid()->GetAxis(1)->SetRangeUser(ptTriggerMin,ptTriggerMax-0.00001);
+      NTrigAll = (Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral());
     }
     gHist->Scale(1./NTrigAll);
    
@@ -2422,7 +2433,7 @@ TH2D *AliBalancePsi::GetCorrelationFunctionChargeIndependent(Double_t psiMin,
 
   // divide by sum of + and - triggers
   if((Double_t)(fHistN->Project(0,1)->Integral())>0 && (Double_t)(fHistP->Project(0,1)->Integral())>0)
-    gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->Integral() + fHistN->Project(0,1)->Integral()));
+    gHistNN->Scale(1./(Double_t)(fHistN->Project(0,1)->Integral() + fHistP->Project(0,1)->Integral()));
 
   //normalize to bin width
   gHistNN->Scale(1./((Double_t)gHistNN->GetXaxis()->GetBinWidth(1)*(Double_t)gHistNN->GetYaxis()->GetBinWidth(1)));

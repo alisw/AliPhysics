@@ -388,6 +388,12 @@ class AliAnalysisTaskJetChem : public AliAnalysisTaskFragmentationFunction {
   TH3F* fh3MCrecALaConeSmear;
   TH3F* fh3SecContinCone;
   TH3F* fh3StrContinCone;
+  THnSparse* fhnK0sIncl;
+  THnSparse* fhnK0sCone;
+  THnSparse* fhnLaIncl;
+  THnSparse* fhnLaCone;
+  THnSparse* fhnALaIncl;
+  THnSparse* fhnALaCone;
   TH3F* fh3IMK0PerpCone;
   TH3F* fh3IMLaPerpCone;
   TH3F* fh3IMALaPerpCone;

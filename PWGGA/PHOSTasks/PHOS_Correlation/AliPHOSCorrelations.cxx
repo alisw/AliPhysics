@@ -66,6 +66,7 @@ ClassImp(AliPHOSCorrelations)
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations()
 :AliAnalysisTaskSE(),
+        fPHOSGeo(0x0),
 	fOutputContainer(0x0),
 	fMinClusterEnergy(0.3),
 	fMinBCDistance(0),
@@ -116,6 +117,7 @@ AliPHOSCorrelations::AliPHOSCorrelations()
 //_______________________________________________________________________________
 AliPHOSCorrelations::AliPHOSCorrelations(const char *name, Period period)
 :AliAnalysisTaskSE(name),
+        fPHOSGeo(0x0),
 	fOutputContainer(0x0),
 	fMinClusterEnergy(0.3),
 	fMinBCDistance(0),
@@ -1662,4 +1664,28 @@ void AliPHOSCorrelations::FillHistogram(const char * key,Double_t x, Double_t y,
  
   AliError(Form("can not find histogram (of instance TH3) <%s> ",key)) ;
 }
-//_______________________________________________________________________________
+//_____________________________________________________________________________
+void AliPHOSCorrelations::SetGeometry()
+{
+  // Initialize the PHOS geometry
+  //Init geometry
+  if(!fPHOSGeo){
+     AliOADBContainer geomContainer("phosGeo");
+     geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+     fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+     for(Int_t mod=0; mod<5; mod++) {
+        if(!matrixes->At(mod)) {
+          if( fDebug )
+            AliInfo(Form("No PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+          continue;
+        }
+        else {
+             fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+             if( fDebug >1 )
+               AliInfo(Form("Adding PHOS Matrix for mod:%d, geo=%p\n", mod, fPHOSGeo));
+        }
+     }
+  } 
+}
+ 

@@ -735,7 +735,7 @@ protected:
   UShort_t        fSkips;             // Rings to skip when fitting 
   Double_t        fRegularizationCut; // When to regularize the chi^2
 
-  ClassDef(AliFMDEnergyFitter,6); //
+  ClassDef(AliFMDEnergyFitter,8); //
 };
 
 #endif

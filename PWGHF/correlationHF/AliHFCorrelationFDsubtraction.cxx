@@ -67,7 +67,8 @@ AliHFCorrelationFDsubtraction::AliHFCorrelationFDsubtraction() : TNamed(),
   fhEnvelopeMaxRatio(0x0),
   fhEnvelopeMinRatio(0x0),
   fgrEnvelope(0x0),
-  fgrEnvelopeRatio(0x0)
+  fgrEnvelopeRatio(0x0),
+  fSystUseRMSfromFlatDistr(1)
 { // DEFAULT CONSTRUCTOR
   
 }
@@ -96,7 +97,8 @@ AliHFCorrelationFDsubtraction::AliHFCorrelationFDsubtraction(const char* name, c
   fhEnvelopeMaxRatio(0x0),
   fhEnvelopeMinRatio(0x0),
   fgrEnvelope(0x0),
-  fgrEnvelopeRatio(0x0)
+  fgrEnvelopeRatio(0x0),
+  fSystUseRMSfromFlatDistr(1)
 {// default constructor
   
 }
@@ -352,16 +354,220 @@ TGraphAsymmErrors* AliHFCorrelationFDsubtraction::GetUncGraphFromHistos(TH1D *hR
 }
 
 
-TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){
+TH1D* AliHFCorrelationFDsubtraction::ReflectHisto(TH1D *h,Double_t scale){
+  
+  TH1D *h2=new TH1D(Form("%sReflected",h->GetName()),Form("%sReflected",h->GetName()),h->GetNbinsX()/2.,0.,TMath::Pi());
+  for(Int_t j=1;j<=h->GetNbinsX();j++){
+    Double_t x=h->GetBinCenter(j);
+    Double_t y0=h->GetBinContent(j);
+    Double_t ey0=h->GetBinError(j);
+    Int_t j2;
+    if(x>0&&x<TMath::Pi())j2=h2->FindBin(x);
+    else if(x<0)j2=h2->FindBin(-1.*x);
+    else if(x>TMath::Pi())j2=h2->FindBin(2.*TMath::Pi()-x);
+    else printf("Point %d excluded \n",j);
+    Double_t y=h2->GetBinContent(j2);
+    Double_t ey=h2->GetBinError(j2);
+    h2->SetBinContent(j2,scale*(y+y0));
+    h2->SetBinError(j2,scale*TMath::Sqrt(ey0*ey0+ey*ey));
+  }
+  
+  return h2;
+}
+
+TH1D* AliHFCorrelationFDsubtraction::DuplicateHistoTo2piRange(TH1D *h,Double_t scale){
+  if(h->GetBinLowEdge(h->GetNbinsX())+h->GetBinWidth(h->GetNbinsX())-h->GetBinLowEdge(1)>1.01*TMath::Pi()){
+    Printf("AliHFCorrelationFDsubtraction: DuplicateHistoTo2PiRange works for histos with x range between 0 and pi");
+    return 0x0;
+  }
+
+  if(h->GetBinLowEdge(h->GetNbinsX())>1.01*TMath::Pi()){
+    Printf("AliHFCorrelationFDsubtraction: DuplicateHistoTo2PiRange works for histos with x range between 0 and pi");
+    return 0x0;
+  }
+  if(h->GetBinLowEdge(1)<-0.01){
+    Printf("AliHFCorrelationFDsubtraction: DuplicateHistoTo2PiRange works for histos with x range between 0 and pi");
+    return 0x0;
+  }
+
+
+  TH1D *h2=new TH1D(Form("%sTwoPiRange",h->GetName()),Form("%sTwoPiRange",h->GetName()),h->GetNbinsX()*2.,-TMath::Pi()/2.,1.5*TMath::Pi());
+  for(Int_t j=1;j<=h2->GetNbinsX();j++){
+    Double_t x=h2->GetBinCenter(j);
+    Int_t j2;
+    if(x>0&&x<TMath::Pi())j2=h->FindBin(x);
+    else if(x<0)j2=h->FindBin(-1.*x);
+    else if(x>TMath::Pi())j2=h->FindBin(2.*TMath::Pi()-x);
+    else printf("Point %d excluded \n",j);
+    Double_t y=h->GetBinContent(j2);
+    Double_t ey=h->GetBinError(j2);
+    h2->SetBinContent(j,y*scale);
+    h2->SetBinError(j,ey*scale);
+  }
+  
+  return h2;
+}
+
+
+TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMin(){// Method to extrac the rel syst unc to be used later on in the analysis from the envelopes. IMPORTANT: remember
+  // that with our procedure the rel. unc. is variation/distribution, and thus its value is strongly dependent on the baseline: only the absolute unc (->variation) is really meaningful
+  // Options: if fSystUseRMSfromFlatDistr
+  // =0 the full spread (->DeltaMax, DeltaMin) of the envelopes is used to define the syst unc, 
+  // =1 (default) DeltaMax/sqrt(3) and DeltaMin/sqrt(3) is used; 
+  // =2: as 1 but then the result is reflected to the range (0,pi), to decrease stat unc; 
+  // =3 as 1 then a smoothing is done (pol0 fit over 3 points), then the result is refelcted; other values not implemented yet (e.g. =2 could be taking the RMS)
+  // =4 as 1 then a smoothing is done (linear fit over 3 points), then the result is refelcted; other values not implemented yet (e.g. =2 could be taking the RMS)
   if(!fhEnvelopeMinRatio){
     Printf("Cannot produce Rel syst unc histo: you first need to calculate the envelope");
     return 0x0;
   }
   TH1D *h=(TH1D*)fhEnvelopeMinRatio->Clone("hRelSystFeedDownMin");
-  for(Int_t j=1;j<=h->GetNbinsX();j++){
-    h->SetBinContent(j,fhEnvelopeMinRatio->GetBinContent(j)-1.);
+
+  if(fSystUseRMSfromFlatDistr==0){
+    for(Int_t j=1;j<=h->GetNbinsX();j++){
+      h->SetBinContent(j,fhEnvelopeMinRatio->GetBinContent(j)-1.);
+    }
+    return h;
   }
-  return h;
+
+  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4){
+    Double_t sqrtThree=TMath::Sqrt(3.);
+    for(Int_t j=1;j<=h->GetNbinsX();j++){
+      h->SetBinContent(j,fhEnvelopeMinRatio->GetBinContent(j)/sqrtThree-1./sqrtThree);
+    }
+    if(fSystUseRMSfromFlatDistr==1)return h;
+  
+    if(fSystUseRMSfromFlatDistr==2){
+      TH1D *hRefl=ReflectHisto(h);
+      TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+      delete h;
+      delete hRefl;      
+      hBackTo2Pi->SetName("hRelSystFeedDownMin");
+      return hBackTo2Pi;
+    }
+
+    // case fSystUseRMSfromFlatDistr==3 or 4
+    // Do smoothing and then symmetrize
+    // For the smoothing, assume linear trend every 3 points, starting from transverse region
+    Int_t jstart=h->FindBin(TMath::Pi()*0.5)-1;
+    TF1 *f;
+    if(fSystUseRMSfromFlatDistr==3){
+      f=new TF1("mypol0","[0]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
+    }
+    else if(fSystUseRMSfromFlatDistr==4){
+      f=new TF1("mypol1","[0]+x*[1]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
+    }
+
+    TH1D *hOut=(TH1D*)h->Clone("hOut");
+    for(Int_t j=jstart;j>=1;j--){// going towards 0
+
+      if(j>=3){
+	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
+	Double_t xmin=h->GetBinLowEdge(j-1);
+	f->SetParameter(0,h->GetBinContent(j));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
+      }
+      else if(j==2){
+	Double_t xmax=h->GetBinLowEdge(3)+h->GetBinWidth(3);
+	Double_t xmin=h->GetBinLowEdge(1);
+	Double_t y1=h->GetBinContent(1);
+	Double_t y2=h->GetBinContent(2);
+	Double_t y3=h->GetBinContent(3);
+	h->SetBinContent(3,y2);
+	h->SetBinContent(2,y1);
+	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+	f->SetParameter(0,h->GetBinContent(2));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
+	h->SetBinContent(3,y3);
+	h->SetBinContent(2,y2);
+	h->SetBinContent(1,y1);
+      }
+      else if(j==1){
+	Double_t xmax=h->GetBinLowEdge(3)+h->GetBinWidth(3);
+	Double_t xmin=h->GetBinLowEdge(1);
+	Double_t y1=h->GetBinContent(1);
+	Double_t y2=h->GetBinContent(2);
+	Double_t y3=h->GetBinContent(3);
+	h->SetBinContent(3,y1);
+	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+	f->SetParameter(0,h->GetBinContent(2));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
+	h->SetBinContent(3,y3);
+	h->SetBinContent(2,y2);
+	h->SetBinContent(1,y1);
+      }
+
+    }
+    for(Int_t j=jstart+1;j<=hOut->GetNbinsX();j++){// now going towards 2pi
+      
+      if(j<=hOut->GetNbinsX()-2){
+	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
+	Double_t xmin=h->GetBinLowEdge(j-1);
+	f->SetParameter(0,h->GetBinContent(j));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
+      }
+      else if(j==hOut->GetNbinsX()-1){
+	Double_t xmax=h->GetBinLowEdge(hOut->GetNbinsX())+h->GetBinWidth(hOut->GetNbinsX());
+	Double_t xmin=h->GetBinLowEdge(hOut->GetNbinsX()-2);
+	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
+	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
+	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+	h->SetBinContent(hOut->GetNbinsX()-2,y2);
+	h->SetBinContent(hOut->GetNbinsX()-1,y3);
+	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
+	h->SetBinContent(hOut->GetNbinsX()-2,y1);
+	h->SetBinContent(hOut->GetNbinsX()-1,y2);
+	h->SetBinContent(hOut->GetNbinsX(),y3);
+      }
+      else if(j==hOut->GetNbinsX()){
+	Double_t xmax=h->GetBinLowEdge(hOut->GetNbinsX())+h->GetBinWidth(hOut->GetNbinsX());
+	Double_t xmin=h->GetBinLowEdge(hOut->GetNbinsX()-2);
+	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
+	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
+	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+	h->SetBinContent(hOut->GetNbinsX()-2,y3);
+	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
+	h->SetBinContent(hOut->GetNbinsX()-2,y1);
+	h->SetBinContent(hOut->GetNbinsX()-1,y2);
+	h->SetBinContent(hOut->GetNbinsX(),y3);
+      }
+      
+    }
+    // Smoothing done, now simmetrize
+    TH1D *hRefl=ReflectHisto(hOut);
+    TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+    delete h;
+    delete hRefl;      
+    delete hOut;
+    delete f;
+    hBackTo2Pi->SetName("hRelSystFeedDownMin");
+    return hBackTo2Pi;
+    
+    
+  }
+  
+  Printf("AliHFCorrelationFDsubtraction: wrong option for getting syst unc");
+  return 0x0;
+  
+  
 }
 
 TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
@@ -370,10 +576,151 @@ TH1D* AliHFCorrelationFDsubtraction::GetHistoRelSystUncMax(){
     return 0x0;
   }
   TH1D *h=(TH1D*)fhEnvelopeMaxRatio->Clone("hRelSystFeedDownMax");
-  for(Int_t j=1;j<=h->GetNbinsX();j++){
-    h->SetBinContent(j,fhEnvelopeMaxRatio->GetBinContent(j)-1);
+  if(fSystUseRMSfromFlatDistr==0){
+    for(Int_t j=1;j<=h->GetNbinsX();j++){
+      h->SetBinContent(j,fhEnvelopeMaxRatio->GetBinContent(j)-1);
+    }
+    return h;
   }
-  return h;
+  
+  if(fSystUseRMSfromFlatDistr==1||fSystUseRMSfromFlatDistr==2||fSystUseRMSfromFlatDistr==3||fSystUseRMSfromFlatDistr==4){
+    Double_t sqrtThree=TMath::Sqrt(3.);
+    for(Int_t j=1;j<=h->GetNbinsX();j++){
+      h->SetBinContent(j,fhEnvelopeMaxRatio->GetBinContent(j)/sqrtThree-1./sqrtThree);
+    }
+    if(fSystUseRMSfromFlatDistr==1)return h;
+  
+    if(fSystUseRMSfromFlatDistr==2){
+      TH1D *hRefl=ReflectHisto(h);
+      TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+      delete h;
+      delete hRefl;      
+      hBackTo2Pi->SetName("hRelSystFeedDownMin");
+      return hBackTo2Pi;
+    }
+    
+    // case fSystUseRMSfromFlatDistr==3 || ==4
+    // Do smoothing and then symmetrize
+    // For the smoothing, assume linear trend every 3 points, starting from transverse region
+    Int_t jstart=h->FindBin(TMath::Pi()*0.5)-1;
+    TF1 *f;
+    if(fSystUseRMSfromFlatDistr==3){
+      f=new TF1("mypol0","[0]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
+    }
+    else if(fSystUseRMSfromFlatDistr==4){
+      f=new TF1("mypol1","[0]+x*[1]",-TMath::Pi()*0.5,TMath::Pi()*1.5);
+    }
+    TH1D *hOut=(TH1D*)h->Clone("hOut");
+    for(Int_t j=jstart;j>=1;j--){// going towards 0
+
+      if(j>=3){
+	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
+	Double_t xmin=h->GetBinLowEdge(j-1);
+	f->SetParameter(0,h->GetBinContent(j));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
+      }
+      else if(j==2){
+	Double_t xmax=h->GetBinLowEdge(3)+h->GetBinWidth(3);
+	Double_t xmin=h->GetBinLowEdge(1);
+	Double_t y1=h->GetBinContent(1);
+	Double_t y2=h->GetBinContent(2);
+	Double_t y3=h->GetBinContent(3);
+	h->SetBinContent(3,y2);
+	h->SetBinContent(2,y1);
+	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()));
+	f->SetParameter(0,h->GetBinContent(2));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
+	h->SetBinContent(3,y3);
+	h->SetBinContent(2,y2);
+	h->SetBinContent(1,y1);
+      }
+      else if(j==1){
+	Double_t xmax=h->GetBinLowEdge(3)+h->GetBinWidth(3);
+	Double_t xmin=h->GetBinLowEdge(1);
+	Double_t y1=h->GetBinContent(1);
+	Double_t y2=h->GetBinContent(2);
+	Double_t y3=h->GetBinContent(3);
+	h->SetBinContent(3,y1);
+	h->SetBinContent(2,h->GetBinContent(h->GetNbinsX()));
+	h->SetBinContent(1,h->GetBinContent(h->GetNbinsX()-1));
+	f->SetParameter(0,h->GetBinContent(2));
+	if(fSystUseRMSfromFlatDistr==4)	f->SetParameter(1,(h->GetBinContent(3)-h->GetBinContent(1))/(h->GetBinCenter(3)-h->GetBinCenter(1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(2)));
+	h->SetBinContent(3,y3);
+	h->SetBinContent(2,y2);
+	h->SetBinContent(1,y1);
+      }
+
+    }
+    for(Int_t j=jstart+1;j<=hOut->GetNbinsX();j++){// now going towards 2pi
+      
+      if(j<=hOut->GetNbinsX()-2){
+	Double_t xmax=h->GetBinLowEdge(j+1)+h->GetBinWidth(j+1);
+	Double_t xmin=h->GetBinLowEdge(j-1);
+	f->SetParameter(0,h->GetBinContent(j));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(j)-h->GetBinContent(j-1))/(h->GetBinCenter(j+1)-h->GetBinCenter(j-1)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(hOut->GetBinCenter(j)));
+      }
+      else if(j==hOut->GetNbinsX()-1){
+	Double_t xmax=h->GetBinLowEdge(hOut->GetNbinsX())+h->GetBinWidth(hOut->GetNbinsX());
+	Double_t xmin=h->GetBinLowEdge(hOut->GetNbinsX()-2);
+	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
+	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
+	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+	h->SetBinContent(hOut->GetNbinsX()-2,y2);
+	h->SetBinContent(hOut->GetNbinsX()-1,y3);
+	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(1));
+	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
+	if(fSystUseRMSfromFlatDistr==4)f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
+	h->SetBinContent(hOut->GetNbinsX()-2,y1);
+	h->SetBinContent(hOut->GetNbinsX()-1,y2);
+	h->SetBinContent(hOut->GetNbinsX(),y3);
+      }
+      else if(j==hOut->GetNbinsX()){
+	Double_t xmax=h->GetBinLowEdge(hOut->GetNbinsX())+h->GetBinWidth(hOut->GetNbinsX());
+	Double_t xmin=h->GetBinLowEdge(hOut->GetNbinsX()-2);
+	Double_t y1=h->GetBinContent(hOut->GetNbinsX()-2);
+	Double_t y2=h->GetBinContent(hOut->GetNbinsX()-1);
+	Double_t y3=h->GetBinContent(hOut->GetNbinsX());
+	h->SetBinContent(hOut->GetNbinsX()-2,y3);
+	h->SetBinContent(hOut->GetNbinsX()-1,h->GetBinContent(1));
+	h->SetBinContent(hOut->GetNbinsX(),h->GetBinContent(2));
+	f->SetParameter(0,h->GetBinContent(hOut->GetNbinsX()-1));
+	if(fSystUseRMSfromFlatDistr==4)	f->SetParameter(1,(h->GetBinContent(hOut->GetNbinsX())-h->GetBinContent(hOut->GetNbinsX()-2))/(h->GetBinCenter(hOut->GetNbinsX())-h->GetBinCenter(hOut->GetNbinsX()-2)));
+	h->Fit(f,"RLEM","N",xmin,xmax);
+	hOut->SetBinContent(j,f->Eval(h->GetBinCenter(hOut->GetNbinsX()-1)));
+	h->SetBinContent(hOut->GetNbinsX()-2,y1);
+	h->SetBinContent(hOut->GetNbinsX()-1,y2);
+	h->SetBinContent(hOut->GetNbinsX(),y3);
+      }
+      
+    }
+    // Smoothing done, now simmetrize
+    TH1D *hRefl=ReflectHisto(hOut);
+    TH1D *hBackTo2Pi=DuplicateHistoTo2piRange(hRefl); // In this way we symmetrized to 0-pi    
+    delete h;
+    delete hRefl;      
+    delete hOut;
+    delete f;
+    hBackTo2Pi->SetName("hRelSystFeedDownMin");
+    return hBackTo2Pi;
+    
+    
+  }
+
+  Printf("AliHFCorrelationFDsubtraction: wrong option for getting syst unc");
+  return 0x0;
+  
+  
+ 
 }
 
 

@@ -1,4 +1,4 @@
-void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set of cuts
+void AddTask_GammaConvV1_pp2(  Int_t trainConfig = 1,  //change different set of cuts
                               Bool_t isMC   = kFALSE, //run MC 
                               Int_t enableQAMesonTask = 0, //enable QA in AliAnalysisTaskGammaConvV1
                               Int_t enableQAPhotonTask = 0, // enable additional QA task
@@ -124,7 +124,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
    } else if (trainConfig == 14) { 
       cutarray[ 0] = "0002011007093663003800000000"; mesonCutArray[0] = "01631031009000"; //standard cut Pi0 pp 2.76TeV with SDD , all photon qualities, min R = 35 cm
    } else if (trainConfig == 15) { 
-      cutarray[ 0] = "00000010020929700282504000000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
+      cutarray[ 0] = "0000011002092970028250400000"; mesonCutArray[0] = "01525065000000"; //standard cut LHC11h pp 2.76TeV 
    } else {
       Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
@@ -135,7 +135,7 @@ void AddTask_GammaConvV1_PbPb2(  Int_t trainConfig = 1,  //change different set 
 
    TList *HeaderList = new TList();
    TObjString *Header1 = new TObjString("BOX");
-   HeaderList->Add(Header2); 
+   HeaderList->Add(Header1); 
 
    ConvCutList->SetOwner(kTRUE);
    AliConversionCuts **analysisCuts = new AliConversionCuts*[numberOfCuts];

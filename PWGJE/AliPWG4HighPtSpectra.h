@@ -113,8 +113,8 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
  protected:
   Bool_t              fReadAODData      ;  // flag for AOD/ESD input files
   Bool_t              fNoPythiaInfo     ;  // flag to skip reading pyxsec.root and plotting output
-  const AliCFManager  *fCFManagerPos    ;  //! pointer to the CF manager for positive charged particles
-  const AliCFManager  *fCFManagerNeg    ;  //! pointer to the CF manager for negative charged particles
+  const AliCFManager  *fCFManagerPos    ;  // pointer to the CF manager for positive charged particles
+  const AliCFManager  *fCFManagerNeg    ;  // pointer to the CF manager for negative charged particles
  
   AliESDEvent *fESD;      //! ESD object
   AliAODEvent *fAOD;      //! AOD object
@@ -161,7 +161,7 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH2F *fPtRelUncertainty1PtPrim;              //! Pt vs relUncertainty1Pt for primary particles
   TH2F *fPtRelUncertainty1PtSec;               //! Pt vs relUncertainty1Pt for secondary particles
 
-  ClassDef(AliPWG4HighPtSpectra,4);
+  ClassDef(AliPWG4HighPtSpectra,5);
 };
 
 #endif

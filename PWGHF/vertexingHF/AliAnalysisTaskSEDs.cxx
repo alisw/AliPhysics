@@ -60,6 +60,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fNtupleDs(0),
   fFillNtuple(0),
   fReadMC(kFALSE),
+  fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
   fUseSelectionBit(kFALSE),
   fNPtBins(0),
@@ -124,6 +125,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name,AliRDHFCutsDstoKKpi* a
   fNtupleDs(0),
   fFillNtuple(fillNtuple),
   fReadMC(kFALSE),
+  fWriteOnlySignal(kFALSE),
   fDoCutVarHistos(kTRUE),
   fUseSelectionBit(kFALSE),
   fNPtBins(0),
@@ -609,7 +611,8 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
     Int_t indexMCpiKK=-1;
     Int_t labDs=-1;
     Int_t pdgCode0=-999;
-    
+    Int_t isMCSignal=-1;
+
     if(fReadMC){
       labDs = d->MatchToMC(431,arrayMC,3,pdgDstoKKpi);
       if(labDs>=0){
@@ -622,9 +625,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    indexMCKKpi=GetSignalHistoIndex(iPtBin);
 	    fYVsPtSig->Fill(ptCand,rapid);
 	    fChanHist[1]->Fill(retCodeAnalysisCuts);
+	    isMCSignal=1;
 	  }else{
 	    indexMCKKpi=GetReflSignalHistoIndex(iPtBin);
 	    fChanHist[3]->Fill(retCodeAnalysisCuts);
+	    isMCSignal=0;
 	  }
 	}
 	if(ispiKK){
@@ -632,9 +637,11 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    indexMCpiKK=GetSignalHistoIndex(iPtBin);
 	    fYVsPtSig->Fill(ptCand,rapid);
 	    fChanHist[1]->Fill(retCodeAnalysisCuts);
+	    isMCSignal=1;
 	  }else{
 	    indexMCpiKK=GetReflSignalHistoIndex(iPtBin);
 	    fChanHist[3]->Fill(retCodeAnalysisCuts);
+	    isMCSignal=0;
 	  }
 	}
       }else{
@@ -767,6 +774,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
         UInt_t BitMapPIDTrack2=fAnalysisCuts->GetPIDTrackTPCTOFBitMap(track2);
    
 	    tmp[0]=Float_t(labDs);
+	    if(fReadMC && fWriteOnlySignal) tmp[0]=Float_t(isMCSignal);
 	    tmp[1]=Float_t(retCodeAnalysisCuts);
 	    tmp[2]=Float_t(pdgCode0);  
 	    tmp[3]=d->PtProng(0);
@@ -804,9 +812,13 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	    tmp[35]=(Float_t)(centrality);
 	    tmp[36]=(Float_t)(runNumber);	
 	
-	    fNtupleDs->Fill(tmp);
+	    if(fReadMC && fWriteOnlySignal){
+	      if(isMCSignal>=0) fNtupleDs->Fill(tmp);
+	    }else{
+	      fNtupleDs->Fill(tmp);
+	    }
 	    PostData(4,fNtupleDs);
-      }  
+      }
     }
     
     if(unsetvtx) d->UnsetOwnPrimaryVtx();

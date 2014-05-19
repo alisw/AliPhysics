@@ -24,7 +24,6 @@ public:
 
   virtual AliFemtoString Report();
   virtual void AddRealPair(AliFemtoPair* aPair);
-  virtual void AddMixedPair(AliFemtoPair* aPair);
 
   virtual void Finish();
 

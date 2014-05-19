@@ -121,6 +121,14 @@ public:
    */
   virtual Bool_t Book() = 0;
   /** 
+   * Called on first event _before_ reading corrections.  Here, the
+   * user class can do additional checking to see if the some (more or
+   * less) corrections are needed.
+   * 
+   * @param esd Event 
+   */
+  virtual void PreCorrections(const AliESDEvent* esd);
+  /** 
    * Called after reading in the first event. Here we can setup stuff
    * depending on the conditions we're running under.
    * 
@@ -354,6 +362,7 @@ private:
 
   ClassDef(AliBaseESDTask,1);
 };
+inline void AliBaseESDTask::PreCorrections(const AliESDEvent*) {}
 #endif
 // Local Variables:
 //   mode: C++

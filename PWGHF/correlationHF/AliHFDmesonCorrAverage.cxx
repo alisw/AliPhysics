@@ -67,7 +67,8 @@ TNamed(),
   fweightsDplusSystBkg(0x0),
   fnbinsphi(),  
   fsys(-2),
-  fyear(-2)
+  fyear(-2),
+  fSystAlreadySet(kFALSE)
 {// standard constructor 
 
 }
@@ -105,7 +106,8 @@ AliHFDmesonCorrAverage::AliHFDmesonCorrAverage(const char* name) :
   fweightsDplusSystBkg(0x0),
   fnbinsphi(),
   fsys(-2),
-  fyear(-2)
+  fyear(-2),
+  fSystAlreadySet(kFALSE)
 {// default constructor 
 
 }
@@ -138,95 +140,97 @@ AliHFDmesonCorrAverage::~AliHFDmesonCorrAverage(){
 
 
 Bool_t AliHFDmesonCorrAverage::InitSystematicUncertainty(Int_t system,Int_t year){
-  if(system!=-1){
-    if(system==0){ //pp
-      if(fincludeDzero){
-	if(year==2010){
-	  fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
-	  fSystDzero->InitStandardUncertaintiesPP2010(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDzero->BuildTotalUncHisto();
-	  fSystDzero->BuildTotalNonFDUncHisto();
-	  fSystDzero->BuildGraphsUnc(fhDzero);
-	  fSystDzero->BuildGraphsRelUnc();
+  if(!fSystAlreadySet){
+    if(system!=-1){
+      if(system==0){ //pp
+	if(fincludeDzero){
+	  if(year==2010){
+	    fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+	    fSystDzero->InitStandardUncertaintiesPP2010(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDzero->BuildTotalUncHisto();
+	    fSystDzero->BuildTotalNonFDUncHisto();
+	    fSystDzero->BuildGraphsUnc(fhDzero);
+	    fSystDzero->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
 	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
+	
+	if(fincludeDstar){
+	  if(year==2010){
+	    fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+	    fSystDstar->InitStandardUncertaintiesPP2010(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDstar->BuildTotalUncHisto();
+	    fSystDstar->BuildTotalNonFDUncHisto();
+	    fSystDstar->BuildGraphsUnc(fhDstar);
+	    fSystDstar->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
 	}
-      }
-      
-      if(fincludeDstar){
-	if(year==2010){
-	  fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
-	  fSystDstar->InitStandardUncertaintiesPP2010(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDstar->BuildTotalUncHisto();
-	  fSystDstar->BuildTotalNonFDUncHisto();
-	  fSystDstar->BuildGraphsUnc(fhDstar);
-	  fSystDstar->BuildGraphsRelUnc();
-	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
-	}
-      }
-      
-      if(fincludeDplus){
-	if(year==2010){
-	  fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
-	  fSystDplus->InitStandardUncertaintiesPP2010(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDplus->BuildTotalUncHisto();
-	  fSystDplus->BuildTotalNonFDUncHisto();
-	  fSystDplus->BuildGraphsUnc(fhDplus);
-	  fSystDplus->BuildGraphsRelUnc();
-	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
-	}
-      }
-    }
-    else if(system==1){ //p-Pb
-      if(fincludeDzero){
-	if(year==2013){
-	  fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
-	  fSystDzero->InitStandardUncertaintiesPPb2013(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDzero->BuildTotalUncHisto();
-	  fSystDzero->BuildTotalNonFDUncHisto();
-	  fSystDzero->BuildGraphsUnc(fhDzero);
-	  fSystDzero->BuildGraphsRelUnc();
-	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
+	
+	if(fincludeDplus){
+	  if(year==2010){
+	    fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+	    fSystDplus->InitStandardUncertaintiesPP2010(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDplus->BuildTotalUncHisto();
+	    fSystDplus->BuildTotalNonFDUncHisto();
+	    fSystDplus->BuildGraphsUnc(fhDplus);
+	    fSystDplus->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
 	}
       }
-      if(fincludeDstar){
-	if(year==2013){
-	  fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
-	  fSystDstar->InitStandardUncertaintiesPPb2013(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDstar->BuildTotalUncHisto();
-	  fSystDstar->BuildTotalNonFDUncHisto();
-	  fSystDstar->BuildGraphsUnc(fhDstar);
-	  fSystDstar->BuildGraphsRelUnc();
+      else if(system==1){ //p-Pb
+	if(fincludeDzero){
+	  if(year==2013){
+	    fSystDzero=new AliHFDhadronCorrSystUnc("fSystDzero");
+	    fSystDzero->InitStandardUncertaintiesPPb2013(0,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDzero->BuildTotalUncHisto();
+	    fSystDzero->BuildTotalNonFDUncHisto();
+	    fSystDzero->BuildGraphsUnc(fhDzero);
+	    fSystDzero->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
 	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
+	if(fincludeDstar){
+	  if(year==2013){
+	    fSystDstar=new AliHFDhadronCorrSystUnc("fSystDstar");
+	    fSystDstar->InitStandardUncertaintiesPPb2013(1,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDstar->BuildTotalUncHisto();
+	    fSystDstar->BuildTotalNonFDUncHisto();
+	    fSystDstar->BuildGraphsUnc(fhDstar);
+	    fSystDstar->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
+	}
+	
+	if(fincludeDplus){
+	  if(year==2013){
+	    fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
+	    fSystDplus->InitStandardUncertaintiesPPb2013(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
+	    fSystDplus->BuildTotalUncHisto();
+	    fSystDplus->BuildTotalNonFDUncHisto();
+	    fSystDplus->BuildGraphsUnc(fhDplus);
+	    fSystDplus->BuildGraphsRelUnc();
+	  }
+	  else {
+	    Printf("No values for syst unc foreseen for this dataset");
+	  }
 	}
       }
-      
-      if(fincludeDplus){
-	if(year==2013){
-	  fSystDplus=new AliHFDhadronCorrSystUnc("fSystDplus");
-	  fSystDplus->InitStandardUncertaintiesPPb2013(2,(fptminD+fptmaxD)*0.5,fptminAsso);  
-	  fSystDplus->BuildTotalUncHisto();
-	  fSystDplus->BuildTotalNonFDUncHisto();
-	  fSystDplus->BuildGraphsUnc(fhDplus);
-	  fSystDplus->BuildGraphsRelUnc();
-	}
-	else {
-	  Printf("No values for syst unc foreseen for this dataset");
-	}
+      else {
+	Printf("Cannot initiate syst uncertainties: wrong system selected");
+	return kFALSE;
       }
-    }
-    else {
-      Printf("Cannot initiate syst uncertainties: wrong system selected");
-      return kFALSE;
     }
   }
   
@@ -331,11 +335,11 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
   if(fincludeDplus)nmeson++;
   
   printf("Settin syst \n");
+
   if(!InitSystematicUncertainty(fsys,fyear)){
     Printf("Cannot init syst uncertainties \n");
     return;
   }
-
   
   SetWeights();
   printf("Weights set \n");
@@ -351,9 +355,9 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // stat error + yield unc + bkg subtr
       weight=1./(1./fweightsDzeroStat[j-1]+1./fweightsDzeroSystYield[j-1]+1./fweightsDzeroSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
       value+=fhDzero->GetBinContent(j)*weight;
-      errStatValue+=1./fweightsDzeroStat[j-1]*weight;
-      errSystYieldValue+=1./fweightsDzeroSystYield[j-1]*weight;
-      errSystBkgValue+=1./fweightsDzeroSystBkg[j-1]*weight;
+      errStatValue+=1./fweightsDzeroStat[j-1]*weight*weight;
+      errSystYieldValue+=1./fweightsDzeroSystYield[j-1]*weight*weight;
+      errSystBkgValue+=1./fweightsDzeroSystBkg[j-1]*weight*weight;
       sumweights+=weight;
       
       printf("Dzero the value is: %f, weight: %f \n",value, weight);
@@ -402,9 +406,9 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // stat error + yield unc + bkg subtr
       weight=1./(1./fweightsDstarStat[j-1]+1./fweightsDstarSystYield[j-1]+1./fweightsDstarSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
       value+=fhDstar->GetBinContent(j)*weight;
-      errStatValue+=1./fweightsDstarStat[j-1]*weight;
-      errSystYieldValue+=1./fweightsDstarSystYield[j-1]*weight;
-      errSystBkgValue+=1./fweightsDstarSystBkg[j-1]*weight;
+      errStatValue+=1./fweightsDstarStat[j-1]*weight*weight;
+      errSystYieldValue+=1./fweightsDstarSystYield[j-1]*weight*weight;
+      errSystBkgValue+=1./fweightsDstarSystBkg[j-1]*weight*weight;
       sumweights+=weight;
 
       printf("Dstar the value is: %f, weight: %f \n",value, weight);
@@ -455,9 +459,9 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
       // stat error + yield unc + bkg subtr
       weight=1./(1./fweightsDplusStat[j-1]+1./fweightsDplusSystYield[j-1]+1./fweightsDplusSystBkg[j-1]);// need to do this way since we stored separately the stat and syst weight (=1/variance)
       value+=fhDplus->GetBinContent(j)*weight;
-      errStatValue+=1./fweightsDplusStat[j-1]*weight;
-      errSystYieldValue+=1./fweightsDplusSystYield[j-1]*weight;      
-      errSystBkgValue+=1./fweightsDplusSystBkg[j-1]*weight;
+      errStatValue+=1./fweightsDplusStat[j-1]*weight*weight;
+      errSystYieldValue+=1./fweightsDplusSystYield[j-1]*weight*weight;      
+      errSystBkgValue+=1./fweightsDplusSystBkg[j-1]*weight*weight;
       sumweights+=weight;
 
       printf("Dplus the value is: %f, weight: %f \n",value, weight);
@@ -509,9 +513,9 @@ void AliHFDmesonCorrAverage::CalculateAverage(){
     }
     
     value/=sumweights;
-    errStatValue/=((Double_t)nmeson*sumweights);
-    errSystYieldValue/=((Double_t)nmeson*sumweights);
-    errSystBkgValue/=((Double_t)nmeson*sumweights);
+    errStatValue/=sumweights*sumweights;// was: ((Double_t)nmeson*sumweights);
+    errSystYieldValue/=sumweights*sumweights;// was: ((Double_t)nmeson*sumweights);
+    errSystBkgValue/=sumweights*sumweights; // was: ((Double_t)nmeson*sumweights);
     fhDaverage->SetBinContent(j,value);
     fhDaverage->SetBinError(j,TMath::Sqrt(errStatValue));
 
