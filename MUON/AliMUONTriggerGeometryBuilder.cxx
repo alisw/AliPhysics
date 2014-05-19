@@ -235,15 +235,15 @@ void AliMUONTriggerGeometryBuilder::BuildChamberPrototype(Int_t icount) const
     char volGaz[5];     // Gas streamer	    
     snprintf(volBak,5,"SB%dA",icount+1);
     snprintf(volGaz,5,"S%dG",icount+11);
-    gMC->Gsvolu(GetVolumeName("volAlu", icount),"BOX",fIdAlu1,tpar,0);         // Al
-    gMC->Gsvolu(volBak,"BOX",fIdtmed[1107],tpar,0);   // Bakelite
-    gMC->Gsvolu(volGaz,"BOX",fIdtmed[1106],tpar,0);   // Gas streamer
+    TVirtualMC::GetMC()->Gsvolu(GetVolumeName("volAlu", icount),"BOX",fIdAlu1,tpar,0);         // Al
+    TVirtualMC::GetMC()->Gsvolu(volBak,"BOX",fIdtmed[1107],tpar,0);   // Bakelite
+    TVirtualMC::GetMC()->Gsvolu(volGaz,"BOX",fIdtmed[1106],tpar,0);   // Gas streamer
     tpar[0] = -1.;
     tpar[1] = -1.;
     tpar[2] = 0.1;    
-    gMC->Gsposp(volGaz,1,volBak,0.,0.,0.,0,"ONLY",tpar,3);
+    TVirtualMC::GetMC()->Gsposp(volGaz,1,volBak,0.,0.,0.,0,"ONLY",tpar,3);
     tpar[2] = 0.3;
-    gMC->Gsposp(volBak,1,GetVolumeName("volAlu", icount),0.,0.,0.,0,"ONLY",tpar,3);
+    TVirtualMC::GetMC()->Gsposp(volBak,1,GetVolumeName("volAlu", icount),0.,0.,0.,0,"ONLY",tpar,3);
 }    
 
 //______________________________________________________________________________
@@ -263,12 +263,12 @@ void AliMUONTriggerGeometryBuilder::BuildRPCSupportsVertical(Int_t& iVolNum, Int
    tpar[0]= 0.;
    tpar[1]= 0.;
    tpar[2]= 0.;            
-   gMC->Gsvolu(volAluSupport,"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(volAirSupport,"BOX",fIdAir,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(volAluSupport,"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(volAirSupport,"BOX",fIdAir,tpar,0);
    tpar[0]=fgkSizeVSupInt[0];
    tpar[1]=fgkSizeVSupInt[1];
    tpar[2]=-1.;
-   gMC->Gsposp(volAirSupport,1,volAluSupport,0.,0.,0.,0,"ONLY",tpar,3);
+   TVirtualMC::GetMC()->Gsposp(volAirSupport,1,volAluSupport,0.,0.,0.,0,"ONLY",tpar,3);
    
    TGeoRotation rsupportv;
    rsupportv.SetAngles(0.,90.,0.);
@@ -305,12 +305,12 @@ void AliMUONTriggerGeometryBuilder::BuildRPCSupportsHorizontal(Int_t icount) con
    tpar[2]= 0.;  
    TString volAluSupportH = GetVolumeName("volAluSupportH", icount);        
    TString volAirSupportH = GetVolumeName("volAirSupportH", icount);        
-   gMC->Gsvolu(volAluSupportH,"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(volAirSupportH,"BOX",fIdAir,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(volAluSupportH,"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(volAirSupportH,"BOX",fIdAir,tpar,0);
    tpar[0]=-1.;
    tpar[1]=1.9;
    tpar[2]=2.8;
-   gMC->Gsposp(volAirSupportH,1,volAluSupportH,0.,0.,0.,0,"ONLY",tpar,3);
+   TVirtualMC::GetMC()->Gsposp(volAirSupportH,1,volAluSupportH,0.,0.,0.,0,"ONLY",tpar,3);
 }	    
 
 //______________________________________________________________________________
@@ -322,16 +322,16 @@ void AliMUONTriggerGeometryBuilder::BuildAngularSupportForChambers(Int_t icount)
    tpar[0]= 0.;
    tpar[1]= 0.;
    tpar[2]= 0.;            
-   gMC->Gsvolu(GetVolAluAngSuppName("1","V",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("1","H",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("2","V",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("2","H",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("3","V",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("3","H",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("4","V",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("4","H",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("X","V",icount),"BOX",fIdAlu1,tpar,0);
-   gMC->Gsvolu(GetVolAluAngSuppName("X","H",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("1","V",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("1","H",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("2","V",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("2","H",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("3","V",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("3","H",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("4","V",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("4","H",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("X","V",icount),"BOX",fIdAlu1,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(GetVolAluAngSuppName("X","H",icount),"BOX",fIdAlu1,tpar,0);
 }	    
 
 //______________________________________________________________________________
@@ -343,7 +343,7 @@ void AliMUONTriggerGeometryBuilder::BuildGasPipes(Int_t icount) const
    tpar[0]= 0.;
    tpar[1]= 0.;
    tpar[2]= 0.;            
-   gMC->Gsvolu(volInoxGasPipe,"TUBE",fIdInox,tpar,0);
+   TVirtualMC::GetMC()->Gsvolu(volInoxGasPipe,"TUBE",fIdInox,tpar,0);
 }	   
   
 //______________________________________________________________________________
@@ -2476,7 +2476,7 @@ void AliMUONTriggerGeometryBuilder::CreateGeometry()
           par[1] = AliMUONConstants::Rmax(5+istation);
           Char_t volName[6];
           snprintf(volName,6,"%s%d", "SC",11+icount);
-          gMC->Gsvolu(volName,"TUBE", fIdAir, par, 3);
+          TVirtualMC::GetMC()->Gsvolu(volName,"TUBE", fIdAir, par, 3);
           
 // chamber prototype
           BuildChamberPrototype(icount);

@@ -68,7 +68,8 @@ class AliCDBEntry: public TObject {
 
     const TString 	GetLastStorage() const {return fId.GetLastStorage();};
     void  		SetLastStorage(TString lastStorage) {fId.SetLastStorage(lastStorage);};
-
+    virtual Int_t Compare(const TObject* obj) const;
+    virtual Bool_t IsSortable() const;
   private:
 
     AliCDBEntry(const AliCDBEntry& other); // no copy ctor

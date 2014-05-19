@@ -85,7 +85,7 @@ AliHLTComponent::AliHLTComponent()
   fpStopwatches(new TObjArray(kSWTypeCount)),
   fMemFiles(),
   fpRunDesc(NULL),
-  fCDBSetRunNoFunc(false),
+  fCDBSetRunNoFunc(NULL),
   fChainId(),
   fChainIdCrc(0),
   fpBenchmark(NULL),

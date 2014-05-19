@@ -143,3 +143,17 @@ void AliCDBEntry::PrintId() const {
   AliInfo(Form("%s",fId.ToString().Data()));
 
 }
+
+
+Int_t AliCDBEntry::Compare(const TObject* obj) const
+{
+  //
+  // compare according y
+  AliCDBEntry * o2 = (AliCDBEntry*)obj;
+  return TString(this->GetId().GetPath()).CompareTo((o2->GetId().GetPath()));
+  
+}
+
+Bool_t AliCDBEntry::IsSortable() const {
+   return kTRUE;
+} 

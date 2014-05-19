@@ -133,7 +133,7 @@ void AliFITv1::CreateGeometry()
    
   TGeoVolumeAssembly * stlin = new TGeoVolumeAssembly("0STL");//empty segment  
  //T0 interior
-  gMC->Gsvolu("0INS","BOX",idtmed[kAir],pinstart,3);
+  TVirtualMC::GetMC()->Gsvolu("0INS","BOX",idtmed[kAir],pinstart,3);
   TGeoVolume *ins = gGeoManager->GetVolume("0INS");
  // 
   TGeoTranslation *tr [20];
@@ -154,11 +154,11 @@ void AliFITv1::CreateGeometry()
   y=0;
    
   // Entry window (glass)
-  gMC->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass
+  TVirtualMC::GetMC()->Gsvolu("0TOP","BOX",idtmed[kOpGlass],ptop,3); //glass
   TGeoVolume *top = gGeoManager->GetVolume("0TOP");
-  gMC->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
+  TVirtualMC::GetMC()->Gsvolu ("0REG", "BOX", idtmed[kOpGlassCathode], preg, 3); 
   TGeoVolume *cat = gGeoManager->GetVolume("0REG");
-  gMC->Gsvolu("0MCP","BOX",idtmed[kGlass],pmcp,3); //glass
+  TVirtualMC::GetMC()->Gsvolu("0MCP","BOX",idtmed[kGlass],pmcp,3); //glass
   TGeoVolume *mcp = gGeoManager->GetVolume("0MCP");
  
   Int_t ntops=0;
@@ -314,16 +314,16 @@ void AliFITv1::DefineOpticalProperties()
 
     }
   
-  gMC->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, rindexSiO2 );
-   // gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2, effCathode, rindexSiO2 );
-   gMC->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
-   //  gMC->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
-   //   gMC->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
+  TVirtualMC::GetMC()->SetCerenkov (idtmed[kOpGlass], kNbins, aPckov, aAbsSiO2, efficAll, rindexSiO2 );
+   // TVirtualMC::GetMC()->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2, effCathode, rindexSiO2 );
+   TVirtualMC::GetMC()->SetCerenkov (idtmed[kOpGlassCathode], kNbins, aPckov, aAbsSiO2,efficAll , rindexSiO2 );
+   //  TVirtualMC::GetMC()->SetCerenkov (idtmed[kOpAir], kNbins, aPckov,absorAir , efficAll,rindexAir );
+   //   TVirtualMC::GetMC()->SetCerenkov (idtmed[kOpAirNext], kNbins, aPckov,absorbCathodeNext , efficAll, rindexCathodeNext);
 
    //Define a boarder for radiator optical properties
-   gMC->DefineOpSurface("surfRd", kUnified /*kGlisur*/,kDielectric_metal,kPolished, 0.);
-   gMC->SetMaterialProperty("surfRd", "EFFICIENCY", kNbins, dPckov, efficMet);
-   gMC->SetMaterialProperty("surfRd", "REFLECTIVITY", kNbins, dPckov, aReflMet);
+   TVirtualMC::GetMC()->DefineOpSurface("surfRd", kUnified /*kGlisur*/,kDielectric_metal,kPolished, 0.);
+   TVirtualMC::GetMC()->SetMaterialProperty("surfRd", "EFFICIENCY", kNbins, dPckov, efficMet);
+   TVirtualMC::GetMC()->SetMaterialProperty("surfRd", "REFLECTIVITY", kNbins, dPckov, aReflMet);
 
 
 }
@@ -334,7 +334,7 @@ void AliFITv1::Init()
 // Initialises version 0 of the Forward Multiplicity Detector
 //
   AliFIT::Init();
-  fIdSens1=gMC->VolId("0REG");
+  fIdSens1=TVirtualMC::GetMC()->VolId("0REG");
 
    AliDebug(1,Form("%s: *** FIT version 1 initialized ***\n",ClassName()));
 }
@@ -354,16 +354,16 @@ void AliFITv1::StepManager()
   
   //   TClonesArray &lhits = *fHits;
   
-  if(!gMC->IsTrackAlive()) return; // particle has disappeared
+  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
   
-  id=gMC->CurrentVolID(copy);  
+  id=TVirtualMC::GetMC()->CurrentVolID(copy);  
   // Check the sensetive volume
   if(id==fIdSens1 ) { 
-    if(gMC->IsTrackEntering()) {
-      gMC->CurrentVolOffID(1,copy1);
+    if(TVirtualMC::GetMC()->IsTrackEntering()) {
+      TVirtualMC::GetMC()->CurrentVolOffID(1,copy1);
       vol[1] = copy1;
       vol[0]=copy;
-      gMC->TrackPosition(pos);
+      TVirtualMC::GetMC()->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
@@ -371,14 +371,14 @@ void AliFITv1::StepManager()
       else vol[2] = 1 ;
       //      printf(" volumes pmt %i mcp %i side %i x %f y %f z %f\n",  vol[0], vol[1],  vol[2], hits[0], hits[1], hits[2] );
       
-      Float_t etot=gMC->Etot();
+      Float_t etot=TVirtualMC::GetMC()->Etot();
       hits[3]=etot;
-      Int_t iPart= gMC->TrackPid();
-      Int_t partID=gMC->IdFromPDG(iPart);
+      Int_t iPart= TVirtualMC::GetMC()->TrackPid();
+      Int_t partID=TVirtualMC::GetMC()->IdFromPDG(iPart);
       hits[4]=partID;
-      Float_t ttime=gMC->TrackTime();
+      Float_t ttime=TVirtualMC::GetMC()->TrackTime();
       hits[5]=ttime*1e12;
-      if (gMC->TrackPid() == 50000050)   // If particles is photon then ...
+      if (TVirtualMC::GetMC()->TrackPid() == 50000050)   // If particles is photon then ...
 	{
 	  //	  if(RegisterPhotoE(vol[1]-1,hits[3])) {
 	  if(RegisterPhotoE(hits[3])) {
@@ -388,7 +388,7 @@ void AliFITv1::StepManager()
 	}
       
       //charge particle 
-      if ( gMC->TrackCharge() )
+      if ( TVirtualMC::GetMC()->TrackCharge() )
 	AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kFIT);
       
      }// trck entering		

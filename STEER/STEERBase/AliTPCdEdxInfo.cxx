@@ -1,6 +1,3 @@
-#include "AliTPCdEdxInfo.h"
-#include "TObjArray.h"
-#include "TGraphErrors.h"
 
 //##################################################################
 //
@@ -9,6 +6,12 @@
 // Origin: Marian Ivanov, Alexander Kalweit 
 //
 //##################################################################
+
+#include "AliTPCdEdxInfo.h"
+#include "TObjArray.h"
+#include "TGraphErrors.h"
+#include "AliExternalTrackParam.h"
+
 
 TObjArray * AliTPCdEdxInfo::fArraySectorCalibration=0;
 
@@ -216,7 +219,9 @@ Double_t AliTPCdEdxInfo::GetWeightedMean(Int_t qType, Int_t wType, Double_t w0, 
   return result;
 }
 
-
+//
+// Apply second order calibration  of the dEdx
+//
 
 void  AliTPCdEdxInfo::RegisterSectorCalibration(TGraphErrors* gainSector, Int_t regionID, Int_t calibID){
   //
@@ -229,3 +234,33 @@ void  AliTPCdEdxInfo::RegisterSectorCalibration(TGraphErrors* gainSector, Int_t 
   //
   fArraySectorCalibration->AddAt(gainSector, 3*calibID+regionID);
 }
+
+// Double_t AliTPCdEdxInfo::GetNormalizeddEdx(AliExternalTrackParam *param, Double_t bz,  Int_t regionID, Int_t calibID, Int_t qID){
+//   //
+//   //
+//   // 
+//   static AliTPCParamSR paramSR;
+//   static Double_t radius[3] ={0.5*(paramSR.GetInnerRadiusLow()+paramSR.GetInnerRadiusUp()),
+// 			      0.5*(paramSR.GetPadRowRadii(36,0)+paramSR.GetPadRowRadii(36,paramSR.GetNRowUp1()-1)),
+// 			      0.5*(paramSR.GetPadRowRadii(36,0)+paramSR.GetPadRowRadii(36,paramSR.GetNRowUp()-1))};
+//   Double_t phi= param->GetParameterAtRadius(radius[regionID],bz,7);
+
+//   TGraphErrors * graphSectorCorection = fArraySectorCalibration->At(regionID+3*calibID);
+//   Double_t dEdx = 0;
+//   if (qID==0) dEdx = fTPCsignalRegion[regionID];
+//   if (qID==1) dEdx = fTPCsignalRegionQmax[regionID];
+//   if (graphSectorCorection) dEdx /=graphSectorCorection->EvalAt(sector);
+//   return dEdx;
+// }
+
+
+
+Double_t   AliTPCdEdxInfo::GetdEdxInfo(AliExternalTrackParam *param, Int_t regionID, Int_t calibID, Int_t qID, Int_t valueID){
+  //
+  //
+  //
+
+  return param->GetParameter()[regionID];
+}
+
+

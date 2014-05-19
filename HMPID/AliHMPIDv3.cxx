@@ -21,7 +21,7 @@
 #include "AliHMPIDRawStream.h"  //Digits2Raw(), Raw2SDigits()
 #include "AliRawReader.h"       //Raw2SDigits()
 #include "AliTrackReference.h"
-#include <TVirtualMC.h>         //StepManager() for gMC
+#include <TVirtualMC.h>         //StepManager() for TVirtualMC::GetMC()
 #include <TPDGCode.h>           //StepHistory() 
 #include <AliStack.h>           //StepManager(),Hits2SDigits()78.6
 #include <AliLoader.h>          //Hits2SDigits()
@@ -160,81 +160,81 @@ HMPID 12  1.e-5 1.e-5 1.e-4  -1.   1.e-4 -1.   -1.    5.e-5 5.e-5 -1.  -1   -1  
     Int_t imed;
     
     imed = kSiO2;   // * Quarz Window        (>1000 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,1.e-3);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",1.e-3);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,1.e-3);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",1.e-3);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
 
     imed = kC6F14;  // * Freon Radiator      (>  500 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-4);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,5.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",5.e-4);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
     
     imed = kCH4;  // * Methane Gap         (>  100 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",5.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTELE",5.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,1.e-4);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",5.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",5.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",1.e-4);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
     
     imed = kCsI;  // * CSI    (>  50 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);
     
     imed = kAl;  // * Alluminium    (>  50 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
     
     imed = kCu;  // * Copper       (>  50 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
     
     imed = kW;  // * Tungsten     (>  50 keV delta-electrons)
-    gMC->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTELE",1.e-5);
-    gMC->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
-    gMC->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
-    gMC->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
-    gMC->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTGAM",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTELE",1.e-5);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTNEU",1.e-4);
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTMUO",1.e-4);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DCUTE" ,5.e-5);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "CUTHAD",5.e-5);    
     
-    gMC->Gstpar(idtmed[imed], "DRAY",1);    
-    gMC->Gstpar(idtmed[imed], "LOSS",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "DRAY",1);    
+    TVirtualMC::GetMC()->Gstpar(idtmed[imed], "LOSS",1);    
     
 }*/
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -244,7 +244,7 @@ void AliHMPIDv3::CreateGeometry()
 //includind the HMPID cradle
 
   AliDebug(1,"Start main.");
-  if(!gMC->IsRootGeometrySupported()) return;                
+  if(!TVirtualMC::GetMC()->IsRootGeometrySupported()) return;                
 
   TGeoVolume *hmpcradle = CreateCradle();
   TString title=GetTitle();
@@ -503,7 +503,7 @@ return hmp;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliHMPIDv3::Init()
 {
-// This method defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(gMC->CurrentVolID()==XXX) 
+// This method defines ID for sensitive volumes, i.e. such geometry volumes for which there are if(TVirtualMC::GetMC()->CurrentVolID()==XXX) 
 // statements in StepManager()
 // Arguments: none
 //   Returns: none      
@@ -554,20 +554,20 @@ void AliHMPIDv3::DefineOpticalProperties()
     dQePc [i]= pQeF->Eval(eV);
     dReflMet[i] = 0.;     // no reflection on the surface of the pc (?)                                       
   }
-  gMC->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
-  gMC->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
-  gMC->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsGap  , aQeAll , aIdxGap );    
-  gMC->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
-  gMC->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
-  gMC->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
-  gMC->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kC6F14]    , kNbins, aEckov, aAbsRad  , aQeAll , aIdxRad );    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kSiO2]     , kNbins, aEckov, aAbsWin  , aQeAll , aIdxWin );    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kCH4]      , kNbins, aEckov, aAbsGap  , aQeAll , aIdxGap );    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kCu]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kW]        , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet ); //n=0 means reflect photons       
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kCsI]      , kNbins, aEckov, aAbsMet  , aQePc  , aIdxPc  ); //n=1 means convert photons    
+  TVirtualMC::GetMC()->SetCerenkov((*fIdtmed)[kAl]       , kNbins, aEckov, aAbsMet  , aQeAll , aIdxMet );    
 
   // Define a skin surface for the photocatode to enable 'detection' in G4
   for(Int_t i=0; i<7; i++){
-  gMC->DefineOpSurface(Form("surfPc%i",i), kGlisur /*kUnified*/,kDielectric_metal,kPolished, 0.);
-  gMC->SetMaterialProperty(Form("surfPc%i",i), "EFFICIENCY", kNbins, dEckov, dQePc);
-  gMC->SetMaterialProperty(Form("surfPc%i",i), "REFLECTIVITY", kNbins, dEckov, dReflMet);
-  gMC->SetSkinSurface(Form("skinPc%i",i), Form("Hpad%i",i),Form("surfPc%i",i)); }
+  TVirtualMC::GetMC()->DefineOpSurface(Form("surfPc%i",i), kGlisur /*kUnified*/,kDielectric_metal,kPolished, 0.);
+  TVirtualMC::GetMC()->SetMaterialProperty(Form("surfPc%i",i), "EFFICIENCY", kNbins, dEckov, dQePc);
+  TVirtualMC::GetMC()->SetMaterialProperty(Form("surfPc%i",i), "REFLECTIVITY", kNbins, dEckov, dReflMet);
+  TVirtualMC::GetMC()->SetSkinSurface(Form("skinPc%i",i), Form("Hpad%i",i),Form("surfPc%i",i)); }
 
   delete pRaAF;delete pWiAF;delete pGaAF; delete pRaIF; delete pWiIF; delete pGaIF; delete pQeF;
 }
@@ -577,13 +577,13 @@ Bool_t AliHMPIDv3::IsLostByFresnel()
 // Calculate probability for the photon to be lost by Fresnel reflection.
   TLorentzVector p4;
   Double_t mom[3],localMom[3];
-  gMC->TrackMomentum(p4);   mom[0]=p4(1);   mom[1]=p4(2);   mom[2]=p4(3);
+  TVirtualMC::GetMC()->TrackMomentum(p4);   mom[0]=p4(1);   mom[1]=p4(2);   mom[2]=p4(3);
   localMom[0]=0; localMom[1]=0; localMom[2]=0;
-  gMC->Gmtod(mom,localMom,2);
+  TVirtualMC::GetMC()->Gmtod(mom,localMom,2);
   Double_t localTc    = localMom[0]*localMom[0]+localMom[2]*localMom[2];
   Double_t localTheta = TMath::ATan2(TMath::Sqrt(localTc),localMom[1]);
   Double_t cotheta = TMath::Abs(TMath::Cos(localTheta));
-  if(gMC->GetRandom()->Rndm() < Fresnel(p4.E()*1e9,cotheta,1)){
+  if(TVirtualMC::GetMC()->GetRandom()->Rndm() < Fresnel(p4.E()*1e9,cotheta,1)){
     AliDebug(1,"Photon lost");
     return kTRUE;
   }else
@@ -595,21 +595,21 @@ void AliHMPIDv3::GenFee(Float_t qtot)
 // Generate FeedBack photons for the current particle. To be invoked from StepManager().
 // eloss=0 means photon so only pulse height distribution is to be analysed.
   TLorentzVector x4;
-  gMC->TrackPosition(x4); 
-  Int_t iNphotons=gMC->GetRandom()->Poisson(0.02*qtot);  //# of feedback photons is proportional to the charge of hit
+  TVirtualMC::GetMC()->TrackPosition(x4); 
+  Int_t iNphotons=TVirtualMC::GetMC()->GetRandom()->Poisson(0.02*qtot);  //# of feedback photons is proportional to the charge of hit
   AliDebug(1,Form("N photons=%i",iNphotons));
   Int_t j;
   Float_t cthf, phif, enfp = 0, sthf, e1[3], e2[3], e3[3], vmod, uswop,dir[3], phi,pol[3], mom[4];
 //Generate photons
   for(Int_t i=0;i<iNphotons;i++){//feedbacks loop
     Double_t ranf[2];
-    gMC->GetRandom()->RndmArray(2,ranf);    //Sample direction
+    TVirtualMC::GetMC()->GetRandom()->RndmArray(2,ranf);    //Sample direction
     cthf=ranf[0]*2-1.0;
     if(cthf<0) continue;
     sthf = TMath::Sqrt((1. - cthf) * (1. + cthf));
     phif = ranf[1] * 2 * TMath::Pi();
     
-    if(Double_t randomNumber=gMC->GetRandom()->Rndm()<=0.57)
+    if(Double_t randomNumber=TVirtualMC::GetMC()->GetRandom()->Rndm()<=0.57)
       enfp = 7.5e-9;
     else if(randomNumber<=0.7)
       enfp = 6.4e-9;
@@ -618,7 +618,7 @@ void AliHMPIDv3::GenFee(Float_t qtot)
     
 
     dir[0] = sthf * TMath::Sin(phif);    dir[1] = cthf;    dir[2] = sthf * TMath::Cos(phif);
-    gMC->Gdtom(dir, mom, 2);
+    TVirtualMC::GetMC()->Gdtom(dir, mom, 2);
     mom[0]*=enfp;    mom[1]*=enfp;    mom[2]*=enfp;
     mom[3] = TMath::Sqrt(mom[0]*mom[0]+mom[1]*mom[1]+mom[2]*mom[2]);
     
@@ -645,9 +645,9 @@ void AliHMPIDv3::GenFee(Float_t qtot)
     vmod=0;  for(j=0;j<3;j++) vmod+=e1[j]*e1[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e1[j]*=vmod;    
     vmod=0;  for(j=0;j<3;j++) vmod+=e2[j]*e2[j];  vmod=TMath::Sqrt(1/vmod);  for(j=0;j<3;j++) e2[j]*=vmod;
     
-    phi = gMC->GetRandom()->Rndm()* 2 * TMath::Pi();
+    phi = TVirtualMC::GetMC()->GetRandom()->Rndm()* 2 * TMath::Pi();
     for(j=0;j<3;j++) pol[j]=e1[j]*TMath::Sin(phi)+e2[j]*TMath::Cos(phi);
-    gMC->Gdtom(pol, pol, 2);
+    TVirtualMC::GetMC()->Gdtom(pol, pol, 2);
     Int_t outputNtracksStored;    
     gAlice->GetMCApp()->PushTrack(1,                             //transport
                      gAlice->GetMCApp()->GetCurrentTrackNumber(),//parent track 
@@ -821,7 +821,7 @@ void AliHMPIDv3::StepHistory()
 // This methode is invoked from StepManager() in order to print out 
   static Int_t iStepN;
   const char *sParticle;
-  switch(gMC->TrackPid()){
+  switch(TVirtualMC::GetMC()->TrackPid()){
     case kProton:      sParticle="PROTON"    ;break;
     case kNeutron:     sParticle="neutron"   ;break;
     case kGamma:       sParticle="gamma"     ;break;
@@ -834,38 +834,38 @@ void AliHMPIDv3::StepHistory()
   }
 
   TString flag="fanny combination";
-  if(gMC->IsTrackAlive()) {
-    if(gMC->IsTrackEntering())      flag="enters to";
-    else if(gMC->IsTrackExiting())  flag="exits from";
-    else if(gMC->IsTrackInside())   flag="inside";
+  if(TVirtualMC::GetMC()->IsTrackAlive()) {
+    if(TVirtualMC::GetMC()->IsTrackEntering())      flag="enters to";
+    else if(TVirtualMC::GetMC()->IsTrackExiting())  flag="exits from";
+    else if(TVirtualMC::GetMC()->IsTrackInside())   flag="inside";
   } else {
-    if(gMC->IsTrackStop())          flag="stopped in";
+    if(TVirtualMC::GetMC()->IsTrackStop())          flag="stopped in";
   }
   
   Int_t vid=0,copy=0;
-  TString path=gMC->CurrentVolName(); path.Prepend("-");path.Prepend(gMC->CurrentVolOffName(1));//current volume and his mother are always there
-  vid=gMC->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
-  vid=gMC->CurrentVolOffID(3,copy);  if(vid) {path.Prepend("-");path.Prepend(gMC->VolName(vid));}
+  TString path=TVirtualMC::GetMC()->CurrentVolName(); path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->CurrentVolOffName(1));//current volume and his mother are always there
+  vid=TVirtualMC::GetMC()->CurrentVolOffID(2,copy);  if(vid) {path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->VolName(vid));}
+  vid=TVirtualMC::GetMC()->CurrentVolOffID(3,copy);  if(vid) {path.Prepend("-");path.Prepend(TVirtualMC::GetMC()->VolName(vid));}
  
   
-  Printf("Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,gMC->TrackPid(),flag.Data(),path.Data(),gMC->TrackMass(),gMC->TrackCharge(),gMC->Edep()*1e9,gMC->Etot());
+  Printf("Step %i: %s (%i) %s %s m=%.6f GeV q=%.1f dEdX=%.4f Etot=%.4f",iStepN,sParticle,TVirtualMC::GetMC()->TrackPid(),flag.Data(),path.Data(),TVirtualMC::GetMC()->TrackMass(),TVirtualMC::GetMC()->TrackCharge(),TVirtualMC::GetMC()->Edep()*1e9,TVirtualMC::GetMC()->Etot());
   
-  Double_t gMcTrackPos[3]; gMC->TrackPosition(gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2]);
-  Double_t  gMcTrackPosLoc[3]; gMC->Gmtod(gMcTrackPos,gMcTrackPosLoc,1);
-  Printf("gMC Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) ---> (LOC) x: %5.3f, y: %5.3f, z: %5.3f",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2],TMath::Sqrt(gMcTrackPos[0]*gMcTrackPos[0]+gMcTrackPos[1]*gMcTrackPos[1]+gMcTrackPos[2]*gMcTrackPos[2]),gMcTrackPosLoc[0],gMcTrackPosLoc[1],gMcTrackPosLoc[2]);
+  Double_t gMcTrackPos[3]; TVirtualMC::GetMC()->TrackPosition(gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2]);
+  Double_t  gMcTrackPosLoc[3]; TVirtualMC::GetMC()->Gmtod(gMcTrackPos,gMcTrackPosLoc,1);
+  Printf("TVirtualMC::GetMC() Track Position (MARS) x: %5.3lf, y: %5.3lf, z: %5.3lf (r: %5.3lf) ---> (LOC) x: %5.3f, y: %5.3f, z: %5.3f",gMcTrackPos[0],gMcTrackPos[1],gMcTrackPos[2],TMath::Sqrt(gMcTrackPos[0]*gMcTrackPos[0]+gMcTrackPos[1]*gMcTrackPos[1]+gMcTrackPos[2]*gMcTrackPos[2]),gMcTrackPosLoc[0],gMcTrackPosLoc[1],gMcTrackPosLoc[2]);
   
 
   
   Printf("Step %i: tid=%i flags alive=%i disap=%i enter=%i exit=%i inside=%i out=%i stop=%i new=%i",
                             iStepN, gAlice->GetMCApp()->GetCurrentTrackNumber(),
-                            gMC->IsTrackAlive(), gMC->IsTrackDisappeared(),gMC->IsTrackEntering(), gMC->IsTrackExiting(),
-                            gMC->IsTrackInside(),gMC->IsTrackOut(),        gMC->IsTrackStop(),     gMC->IsNewTrack());
+                            TVirtualMC::GetMC()->IsTrackAlive(), TVirtualMC::GetMC()->IsTrackDisappeared(),TVirtualMC::GetMC()->IsTrackEntering(), TVirtualMC::GetMC()->IsTrackExiting(),
+                            TVirtualMC::GetMC()->IsTrackInside(),TVirtualMC::GetMC()->IsTrackOut(),        TVirtualMC::GetMC()->IsTrackStop(),     TVirtualMC::GetMC()->IsNewTrack());
   
   Float_t a,z,den,rad,abs; a=z=den=rad=abs=-1;
-  Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
+  Int_t mid=TVirtualMC::GetMC()->CurrentMaterial(a,z,den,rad,abs);
   Printf("Step %i: mid=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f\n\n",iStepN,mid,a,z,den,rad,abs);
   
-  TArrayI proc;  gMC->StepProcesses(proc); 
+  TArrayI proc;  TVirtualMC::GetMC()->StepProcesses(proc); 
   Printf("Processes in this step:");
   for ( int i = 0 ; i < proc.GetSize(); i++)
   {
@@ -884,17 +884,17 @@ void AliHMPIDv3::StepManager()
 //  StepHistory(); return; //uncomment to print tracks history
  //  StepCount(); return;     //uncomment to count photons
   
-   TString volname = gMC->CurrentVolName();
+   TString volname = TVirtualMC::GetMC()->CurrentVolName();
 
 //Treat photons    
-    if((gMC->TrackPid()==50000050||gMC->TrackPid()==50000051)&&volname.Contains("Hpad")){ //photon (Ckov or feedback) hits on module PC (Hpad)
-    if(gMC->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
-      if(IsLostByFresnel()){ gMC->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
-      Int_t   tid=     gMC->GetStack()->GetCurrentTrackNumber();                                 //take TID
-      Int_t   pid=     gMC->TrackPid();                                                          //take PID
-      Float_t etot=    gMC->Etot();                                                              //total hpoton energy, [GeV] 
-      Double_t x[3];   gMC->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
-      Float_t hitTime= (Float_t)gMC->TrackTime();                                                //hit formation time       
+    if((TVirtualMC::GetMC()->TrackPid()==50000050||TVirtualMC::GetMC()->TrackPid()==50000051)&&volname.Contains("Hpad")){ //photon (Ckov or feedback) hits on module PC (Hpad)
+    if(TVirtualMC::GetMC()->Edep()>0){                                                                           //photon survided QE test i.e. produces electron
+      if(IsLostByFresnel()){ TVirtualMC::GetMC()->StopTrack(); return;}                                          //photon lost due to fersnel reflection on PC       
+      Int_t   tid=     TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber();                                 //take TID
+      Int_t   pid=     TVirtualMC::GetMC()->TrackPid();                                                          //take PID
+      Float_t etot=    TVirtualMC::GetMC()->Etot();                                                              //total hpoton energy, [GeV] 
+      Double_t x[3];   TVirtualMC::GetMC()->TrackPosition(x[0],x[1],x[2]);                                       //take MARS position at entrance to PC
+      Float_t hitTime= (Float_t)TVirtualMC::GetMC()->TrackTime();                                                //hit formation time       
       TString tmpname = volname; tmpname.Remove(0,4); Int_t idch = tmpname.Atoi();               //retrieve the chamber number
       Float_t xl,yl;   AliHMPIDParam::Instance()->Mars2Lors(idch,x,xl,yl);                       //take LORS position 
       new((*fHits)[fNhits++])AliHMPIDHit(idch,etot,pid,tid,xl,yl,hitTime,x);                             //HIT for photon, position at P, etot will be set to Q
@@ -907,20 +907,20 @@ void AliHMPIDv3::StepManager()
   static Float_t eloss;                                                                           //need to store mip parameters between different steps    
   static Double_t in[3];                                                                          
 
-  if(gMC->IsTrackEntering() && gMC->TrackCharge() && volname.Contains("Hpad")) //Trackref stored when entering in the pad volume
-    AddTrackReference(gMC->GetStack()->GetCurrentTrackNumber(), AliTrackReference::kHMPID);       //for acceptance calculations
+  if(TVirtualMC::GetMC()->IsTrackEntering() && TVirtualMC::GetMC()->TrackCharge() && volname.Contains("Hpad")) //Trackref stored when entering in the pad volume
+    AddTrackReference(TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber(), AliTrackReference::kHMPID);       //for acceptance calculations
    
 
-  if(gMC->TrackCharge() && volname.Contains("Hcel")){                                           //charged particle in amplification gap (Hcel)
-    if(gMC->IsTrackEntering()||gMC->IsNewTrack()) {                                               //entering or newly created
+  if(TVirtualMC::GetMC()->TrackCharge() && volname.Contains("Hcel")){                                           //charged particle in amplification gap (Hcel)
+    if(TVirtualMC::GetMC()->IsTrackEntering()||TVirtualMC::GetMC()->IsNewTrack()) {                                               //entering or newly created
       eloss=0;                                                                                    //reset Eloss collector                         
-      gMC->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
-    }else if(gMC->IsTrackExiting()||gMC->IsTrackStop()||gMC->IsTrackDisappeared()){               //exiting or disappeared
-      eloss              +=gMC->Edep();                                                           //take into account last step Eloss
-      Int_t tid=          gMC->GetStack()->GetCurrentTrackNumber();                               //take TID
-      Int_t pid=          gMC->TrackPid();                                                        //take PID
-      Double_t out[3];    gMC->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
-      Float_t hitTime= (Float_t)gMC->TrackTime();                                                         //hit formation time       
+      TVirtualMC::GetMC()->TrackPosition(in[0],in[1],in[2]);                                                      //take position at the entrance
+    }else if(TVirtualMC::GetMC()->IsTrackExiting()||TVirtualMC::GetMC()->IsTrackStop()||TVirtualMC::GetMC()->IsTrackDisappeared()){               //exiting or disappeared
+      eloss              +=TVirtualMC::GetMC()->Edep();                                                           //take into account last step Eloss
+      Int_t tid=          TVirtualMC::GetMC()->GetStack()->GetCurrentTrackNumber();                               //take TID
+      Int_t pid=          TVirtualMC::GetMC()->TrackPid();                                                        //take PID
+      Double_t out[3];    TVirtualMC::GetMC()->TrackPosition(out[0],out[1],out[2]);                               //take MARS position at exit
+      Float_t hitTime= (Float_t)TVirtualMC::GetMC()->TrackTime();                                                         //hit formation time       
       out[0]=0.5*(out[0]+in[0]);                                                                  //
       out[1]=0.5*(out[1]+in[1]);                                                                  //take hit position at the anod plane
       out[2]=0.5*(out[2]+in[2]);
@@ -931,7 +931,7 @@ void AliHMPIDv3::StepManager()
         if(fDoFeed) GenFee(eloss);                                                                  //generate feedback photons 
       }
     }else                                                                                         //just going inside
-      eloss          += gMC->Edep();                                                              //collect this step eloss 
+      eloss          += TVirtualMC::GetMC()->Edep();                                                              //collect this step eloss 
   }//MIP in GAP
  
 }//StepManager()

@@ -42,9 +42,9 @@ Compile(const char* script=0, Option_t* option="g")
   AddInclude("-I${ALICE_ROOT}/include");
   AddInclude("-I${ALICE_ROOT}/FMD");
   AddInclude("-I${ALICE_ROOT}/geant3/TGeant3");
-  AddInclude("-I${ALICE_ROOT}/../trunk");
-  AddInclude("-I${ALICE_ROOT}/../trunk/FMD");
-  AddInclude("-I${ALICE_ROOT}/../trunk/RAW");
+  AddInclude("-I${ALICE_ROOT}/../master-src");
+  AddInclude("-I${ALICE_ROOT}/../master-src/FMD");
+  AddInclude("-I${ALICE_ROOT}/../master-src/RAW");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }

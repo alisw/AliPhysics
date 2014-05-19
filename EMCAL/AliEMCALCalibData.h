@@ -47,18 +47,31 @@ class AliEMCALCalibData: public TNamed {
 
   void    SetADCchannelRef   (Float_t value) { fADCchannelRef = value ; }
 
+  static const int fgkECALModules  = 12;   // number of modules in EMCAL
+  static const int fgkDCALModules  = 10;   // number of modules in DCAL 8+2 in possible future
+  
  protected:
 
   Float_t  fADCchannelRef ;  // base value of the ADC channel set from cosmics calibration, not to be used, instead use fADCchannelOnline
 
-  Float_t  fADCchannel      [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCchannelOnline[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // width of one ADC channel in GeV ([mod][col][row]) obtained from the voltage settings online
-  Float_t  fADCchannelDecal [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // decalibrate width of one ADC channel in GeV ([mod][col][row])
-  Float_t  fADCpedestal     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ; // value of the  ADC pedestal ([mod][col][row]), not used
-  Float_t  fTimeChannelDecal[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows] ;    // time shift of one ADC channel ([mod][col][row])
-  Float_t  fTimeChannel     [AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; // time shift of one ADC channel ([mod][col][row][bunch crossing number])
+  Float_t  fADCchannel          [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCchannelOnline    [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // width of one ADC channel in GeV obtained from the voltage settings online
+  Float_t  fADCchannelDecal     [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // decalibrate width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestal         [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // value of the  ADC pedestal ([mod][col][row]), not used
+  Float_t  fTimeChannelDecal    [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // time shift of one ADC channel ([mod][col][row])
+  Float_t  fTimeChannel         [fgkECALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; // time shift of one ADC channel ([mod][col][row][bunch crossing number])
 
-  ClassDef(AliEMCALCalibData,5)    // EMCAL Calibration data
+  // Add specific arrays for DCal to avoid backward incompatibilities,
+  // dimension of DCal SM is smaller than EMCAL but assume the same to avoid complications due to partial SM
+  Float_t  fADCchannelDCAL      [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCchannelOnlineDCAL[fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // width of one ADC channel in GeV  obtained from the voltage settings online
+  Float_t  fADCchannelDecalDCAL [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // decalibrate width of one ADC channel in GeV ([mod][col][row])
+  Float_t  fADCpedestalDCAL     [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // value of the  ADC pedestal ([mod][col][row]), not used
+  Float_t  fTimeChannelDecalDCAL[fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]    ; // time shift of one ADC channel ([mod][col][row])
+  Float_t  fTimeChannelDCAL     [fgkDCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows][4] ; // time shift of one ADC channel ([mod][col][row][bunch crossing number])
+
+  
+  ClassDef(AliEMCALCalibData,6)    // EMCAL Calibration data
 };
 
 #endif

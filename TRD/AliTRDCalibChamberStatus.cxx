@@ -303,7 +303,7 @@ void AliTRDCalibChamberStatus::ProcessTrack(const AliTRDtrackV1 * trdTrack)
     Double_t rphi = 0.5;
     if(iMcm > 3) rphi = 1.5;
 	  
-    Double_t val[4] = {sm,layer,stac,rphi}; 
+    Double_t val[4] = {static_cast<Double_t>(sm),static_cast<Double_t>(layer),static_cast<Double_t>(stac),static_cast<Double_t>(rphi)}; 
     if(fHnSparseI->GetBinContent((const Int_t*)val)<2147483646) fHnSparseI->Fill(&val[0]); 
   }
   
@@ -355,7 +355,7 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
 	Double_t rphi = 0.5;
 	if(iMcm > 3) rphi = 1.5;
 
-	Double_t val[4] = {sm,layer,stac,rphi}; 
+	Double_t val[4] = {static_cast<Double_t>(sm),static_cast<Double_t>(layer),static_cast<Double_t>(stac),static_cast<Double_t>(rphi)}; 
 	fHnSparseI->Fill(&val[0]); 
 	notEmpty = kTRUE;
 	
@@ -363,7 +363,7 @@ void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t neve
 	//  Debug  //
 	if(fDebugLevel > 0) {
 	  Int_t detector = AliTRDgeometry::GetDetector(layer,stac,sm);
-	  Double_t valu[3] = {nevents_physics,detector,rphi};
+	  Double_t valu[3] = {static_cast<Double_t>(nevents_physics),static_cast<Double_t>(detector),rphi};
 	  fHnSparseEvtDet->Fill(&valu[0]); 
 	}
 	//  Debug  //
@@ -398,7 +398,7 @@ Bool_t AliTRDCalibChamberStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
 	  for (Int_t icol=0; icol<geo.GetColMax(ipl); icol++){
 	    Int_t side = 0;
 	    if(icol > 72) side = 1;
-	    Double_t val[4] = {ism,ipl,istack,side}; 
+	    Double_t val[4] = {static_cast<Double_t>(ism),static_cast<Double_t>(ipl),static_cast<Double_t>(istack),static_cast<Double_t>(side)}; 
 	    fHnSparseI->Fill(&val[0]); 
 	  }
 	}
@@ -537,14 +537,14 @@ void AliTRDCalibChamberStatus::CheckEORStatus(const AliTRDCalDCSv2 *calDCS) /*FO
 	  ((fCalChamberStatus->GetStatus(det) == 4) && (stateB==0 || stateB==1))  )
 	{
 	  //printf(" Different half chamber status in DCS and DATA!!\n");
-	  Double_t val[4] = {sm,lay,stac,1};
+	  Double_t val[4] = {static_cast<Double_t>(sm),static_cast<Double_t>(lay),static_cast<Double_t>(stac),1};
 	  fHnSparseDebug->Fill(&val[0]); 
 	  
 	  // Fill MCM status map
 	  for(Int_t ii = 0; ii < 8; ii++) { //ROB loop
 	    for(Int_t i = 0; i < 18; i++) { //MCM loop
-	      Double_t valss[6] = {sm,lay,stac,ii,i
-				   ,calDCSFEEEOR->GetMCMGlobalState(ii,i)};
+	      Double_t valss[6] = {static_cast<Double_t>(sm),static_cast<Double_t>(lay),static_cast<Double_t>(stac),static_cast<Double_t>(ii),static_cast<Double_t>(i)
+				   ,static_cast<Double_t>(calDCSFEEEOR->GetMCMGlobalState(ii,i))};
 	      fHnSparseMCM->Fill(&valss[0]);
 	      
 	    } 

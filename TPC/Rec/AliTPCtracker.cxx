@@ -302,6 +302,15 @@ Int_t AliTPCtracker::UpdateTrack(AliTPCseed * track, Int_t accept){
     //  new(larr[ihelix]) AliHelix(*track) ;    
     //}
   }
+  if (AliTPCReconstructor::StreamLevel()>5) {
+    Int_t event = (fEvent==NULL)? 0: fEvent->GetEventNumberInFile();
+    AliExternalTrackParam param(*track);
+    TTreeSRedirector &cstream = *fDebugStreamer;
+    cstream<<"Update"<<
+      "cl.="<<c<<
+      "track.="<<&param<<
+      "\n";
+  }
   track->SetNoCluster(0);
   return track->Update(c,chi2,i);
 }
@@ -347,6 +356,7 @@ Int_t AliTPCtracker::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster)
     
     if (AliTPCReconstructor::StreamLevel()>2) {
     (*fDebugStreamer)<<"ErrParam"<<
+      "iter="<<fIteration<<
       "Cl.="<<cluster<<
       "T.="<<&param<<
       "dy="<<dy<<
@@ -1435,7 +1445,7 @@ void   AliTPCtracker::Transform(AliTPCclusterMI * cluster){
     return;
   }
   transform->SetCurrentRecoParam((AliTPCRecoParam*)AliTPCReconstructor::GetRecoParam());
-  Double_t x[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+  Double_t x[3]={static_cast<Double_t>(cluster->GetRow()),static_cast<Double_t>(cluster->GetPad()),static_cast<Double_t>(cluster->GetTimeBin())};
   Int_t i[1]={cluster->GetDetector()};
   transform->Transform(x,i,0,1);  
   //  if (cluster->GetDetector()%36>17){
@@ -1596,7 +1606,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
               qMaxArray[icl0]+=ionTailMax;
 
               // Dump some info for debugging while clusters are being corrected
-              if (AliTPCReconstructor::StreamLevel()==1) {
+              if (AliTPCReconstructor::StreamLevel()>2) {
                 TTreeSRedirector &cstream = *fDebugStreamer;
                 if (gRandom->Rndm() > 0.999){
                   cstream<<"IonTail"<<
@@ -1615,7 +1625,7 @@ void  AliTPCtracker::ApplyTailCancellation(){
             cl0->SetMax(TMath::Nint(Float_t(cl0->GetMax())+qMaxArray[icl0]));
           
             // Dump some info for debugging after clusters are corrected 
-            if (AliTPCReconstructor::StreamLevel()==1) {
+            if (AliTPCReconstructor::StreamLevel()>2) {
               TTreeSRedirector &cstream = *fDebugStreamer;
               if (gRandom->Rndm() > 0.999){
               cstream<<"IonTailCorrected"<<
@@ -2983,8 +2993,9 @@ Int_t AliTPCtracker::RefitInward(AliESDEvent *event)
   PropagateForward2(fSeeds);
   RemoveUsed2(fSeeds,0.4,0.4,20);
 
-  TObjArray arraySeed(fSeeds->GetEntries());
-  for (Int_t i=0;i<fSeeds->GetEntries();i++) {
+  Int_t entriesSeed=fSeeds->GetEntries();
+  TObjArray arraySeed(entriesSeed);
+  for (Int_t i=0;i<entriesSeed;i++) {
     arraySeed.AddAt(fSeeds->At(i),i);    
   }
   SignShared(&arraySeed);
@@ -5383,7 +5394,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       kink->SetDaughter(paramd);
       kink->Update();
 
-      Float_t x[3] = { kink->GetPosition()[0],kink->GetPosition()[1],kink->GetPosition()[2]};
+      Float_t x[3] = { static_cast<Float_t>(kink->GetPosition()[0]),static_cast<Float_t>(kink->GetPosition()[1]),static_cast<Float_t>(kink->GetPosition()[2])};
       Int_t index[4];
       fkParam->Transform0to1(x,index);
       fkParam->Transform1to2(x,index);
@@ -6105,7 +6116,7 @@ void  AliTPCtracker::FindKinks(TObjArray * array, AliESDEvent *esd)
       kink->SetDaughter(paramd);
       kink->Update();
 
-      Float_t x[3] = { kink->GetPosition()[0],kink->GetPosition()[1],kink->GetPosition()[2]};
+      Float_t x[3] = { static_cast<Float_t>(kink->GetPosition()[0]),static_cast<Float_t>(kink->GetPosition()[1]),static_cast<Float_t>(kink->GetPosition()[2])};
       Int_t index[4];
       fkParam->Transform0to1(x,index);
       fkParam->Transform1to2(x,index);

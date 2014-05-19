@@ -140,53 +140,53 @@ void AliEMCAL::InitConstants()
 //     cutele = cutgam = 5.e-4;
 //   }
 
-//   gMC->Gstpar(idtmed[1600],"CUTGAM", cutgam);
-//   gMC->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
-//   gMC->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"CUTGAM", cutgam);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"CUTELE", cutele); // 1MEV -> 0.1MEV; 15-aug-05
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
 //   // --- Generate explicitly delta rays in Lead ---
-//   gMC->Gstpar(idtmed[1600], "LOSS", 3) ;
-//   gMC->Gstpar(idtmed[1600], "DRAY", 1) ;
-//   gMC->Gstpar(idtmed[1600], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1600], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "LOSS", 3) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DRAY", 1) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1600], "DCUTM", cutele) ;
 
 // // --- in aluminium parts ---
-//   gMC->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
-//   gMC->Gstpar(idtmed[1602],"CUTELE", cutele) ;
-//   gMC->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1602], "LOSS",3.) ;
-//   gMC->Gstpar(idtmed[1602], "DRAY",1.) ;
-//   gMC->Gstpar(idtmed[1602], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1602], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"CUTGAM", cutgam) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"CUTELE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "LOSS",3.) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DRAY",1.) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1602], "DCUTM", cutele) ;
 
 // // --- and finally thresholds for photons and electrons in the scintillator ---
-//   gMC->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
-//   gMC->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
-//   gMC->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
-//   gMC->Gstpar(idtmed[1601], "DRAY",1) ;
-//   gMC->Gstpar(idtmed[1601], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1601], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"CUTGAM", cutgam) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"CUTELE", cutele) ;// 1MEV -> 0.1MEV; 15-aug-05
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "LOSS",3) ; // generate delta rays 
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DRAY",1) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1601], "DCUTM", cutele) ;
 
 //   // S steel - 
-//   gMC->Gstpar(idtmed[1603],"CUTGAM", cutgam);
-//   gMC->Gstpar(idtmed[1603],"CUTELE", cutele);
-//   gMC->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
-//   gMC->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"CUTGAM", cutgam);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"CUTELE", cutele);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"BCUTE",  cutgam);  // BCUTE and BCUTM start from GUTGUM
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603],"BCUTM",  cutgam);  // BCUTE and BCUTM start from GUTGUM
 //   // --- Generate explicitly delta rays 
-//   gMC->Gstpar(idtmed[1603], "LOSS",3);
-//   gMC->Gstpar(idtmed[1603], "DRAY",1);
-//   gMC->Gstpar(idtmed[1603], "DCUTE", cutele) ;
-//   gMC->Gstpar(idtmed[1603], "DCUTM", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "LOSS",3);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DRAY",1);
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DCUTE", cutele) ;
+//   TVirtualMC::GetMC()->Gstpar(idtmed[1603], "DCUTM", cutele) ;
 
 //   AliEMCALGeometry* geom = GetGeometry();
 //   if(geom->GetILOSS()>=0) {
-//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
+//     for(int i=1600; i<=1603; i++) TVirtualMC::GetMC()->Gstpar(idtmed[i], "LOSS", geom->GetILOSS()) ; 
 //   } 
 //   if(geom->GetIHADR()>=0) {
-//     for(int i=1600; i<=1603; i++) gMC->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
+//     for(int i=1600; i<=1603; i++) TVirtualMC::GetMC()->Gstpar(idtmed[i], "HADR", geom->GetIHADR()) ; 
 //   }
 // }
 
@@ -439,9 +439,9 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   // Pass the transpor model name (Geant3, Geant4, Fluka) and title to the geometry
   TString mcname   = "";
   TString mctitle  = "";
-  if(gMC){
-    mcname  = gMC->GetName()  ;
-    mctitle = gMC->GetTitle() ;
+  if(TVirtualMC::GetMC()){
+    mcname  = TVirtualMC::GetMC()->GetName()  ;
+    mctitle = TVirtualMC::GetMC()->GetTitle() ;
   }
  
   TString geoName(GetTitle());

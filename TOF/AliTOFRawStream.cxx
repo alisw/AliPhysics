@@ -1724,9 +1724,9 @@ AliTOFRawStream::LoadRawDataBuffersV2(Int_t indexDDL, Int_t verbose)
   const AliRawDataHeader *currentCDH = fRawReader->GetDataHeader();
   const AliRawDataHeaderV3 *currentCDHV3 = fRawReader->GetDataHeaderV3();
   Int_t currentMiniEventID = currentCDH ? currentCDH->GetMiniEventID(): -1;
-  currentMiniEventID = currentCDHV3 ? currentCDHV3->GetMiniEventID(): -1;
+  currentMiniEventID = currentCDHV3 ? currentCDHV3->GetMiniEventID(): currentMiniEventID;
   Int_t currentEventID1 = currentCDH? currentCDH->GetEventID1() : -1;
-  currentEventID1 = currentCDHV3? currentCDHV3->GetEventID1() : -1;
+  currentEventID1 = currentCDHV3? currentCDHV3->GetEventID1() : currentEventID1;
 
   /* read decoder summary data */
   AliTOFDecoderSummaryData *decodersd;

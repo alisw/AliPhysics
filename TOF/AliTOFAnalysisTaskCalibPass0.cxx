@@ -789,9 +789,9 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
     tofReso[ipoint] = timeZeroSigma[ipoint];
     t0Spread[ipoint] = vertexSigma[ipoint] / 2.99792457999999984e-02;
   }
-  UInt_t run[1] = {runNb};
+  UInt_t run[1] = {static_cast<UInt_t>(runNb)};
   UInt_t runFirstPoint[1] = {0};
-  UInt_t runLastPoint[1] = {nPoints - 1};
+  UInt_t runLastPoint[1] = {static_cast<UInt_t>(nPoints - 1)};
   
   /* create run params object */
   AliTOFRunParams obj(nPoints, 1);

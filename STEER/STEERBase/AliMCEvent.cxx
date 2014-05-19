@@ -806,4 +806,56 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
 }
 
 
+
+
+
+   TString AliMCEvent::GetGenerator(Int_t index){
+   Int_t nsumpart=0;
+ 
+   AliGenCocktailEventHeader* coHeader = 
+   dynamic_cast<AliGenCocktailEventHeader*> (GenEventHeader());
+   if(!coHeader) {TString noheader="nococktailheader";
+   return noheader;}
+   TList *lh=coHeader->GetHeaders();
+   Int_t nh=lh->GetEntries();
+   for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+    TString genname=gh->GetName();
+    Int_t npart=gh->NProduced();
+    if(index>=nsumpart && index<(nsumpart+npart)) return genname;
+    nsumpart+=npart;
+    }
+    TString empty="";
+    return empty;
+ 
+}
+
+Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){
+  //method that gives the generator for a given particle with label index (or that of the corresponding primary)
+   nameGen=GetGenerator(index);
+   if(nameGen.Contains("nococktailheader") )return 0;
+   
+   while(nameGen.IsWhitespace()){
+     
+     AliMCParticle* mcpart = (AliMCParticle*) (GetTrack(index));
+   
+    if(!mcpart){
+      printf("AliMCEvent-BREAK: No valid AliMCParticle at label %i\n",index);
+      break;
+    }
+    Int_t mother = mcpart->GetMother();
+    if(mother<0){
+      printf("AliMCEvent - BREAK: Reached primary particle without valid mother\n");
+      break;
+    }
+    index=mother;
+    nameGen=GetGenerator(mother);
+   }
+   
+   return 1;
+}
+
+
+
+
 ClassImp(AliMCEvent)

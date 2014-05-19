@@ -422,7 +422,7 @@ void AliITSMultReconstructor::Reconstruct(AliESDEvent* esd, TTree* treeRP)
     vtx = 0;
   }
   if(vtx){
-    float vtxf[3] = {vtx->GetX(),vtx->GetY(),vtx->GetZ()};
+    float vtxf[3] = {static_cast<float>(vtx->GetX()),static_cast<float>(vtx->GetY()),static_cast<float>(vtx->GetZ())};
     FindTracklets(vtxf);
   }
   else {

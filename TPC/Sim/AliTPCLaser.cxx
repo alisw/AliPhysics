@@ -44,35 +44,35 @@ void AliTPCLaser::StepManager()
   // laser tracks are particles with PID fLaserPID (default PID=13) 
   // stopped in the the TPC inner containment vessel (14) 
 
-  if (gMC->TrackPid() != fLaserPID) {
+  if (TVirtualMC::GetMC()->TrackPid() != fLaserPID) {
     // in this way we can prevent delta-electrons
-    gMC->StopTrack();
+    TVirtualMC::GetMC()->StopTrack();
     return;
   }
   
   Int_t copy;
   Int_t vol[2];
-  vol[0] = gMC->CurrentVolID(copy);
+  vol[0] = TVirtualMC::GetMC()->CurrentVolID(copy);
   
-  if (gMC->TrackPid() == fLaserPID
+  if (TVirtualMC::GetMC()->TrackPid() == fLaserPID
       && vol[0] == 14) {// 14 = TIIN (inner containment vessel)
-    gMC->StopTrack();
+    TVirtualMC::GetMC()->StopTrack();
     return;
   }
   
   TLorentzVector p;
   Float_t hits[5]={0,0,0,0,0};
-  gMC->TrackPosition(p);
+  TVirtualMC::GetMC()->TrackPosition(p);
   hits[0]=p[0];
   hits[1]=p[1];
   hits[2]=p[2];
   hits[3]=fNelPerCollision;
-  hits[4]=gMC->TrackTime();
+  hits[4]=TVirtualMC::GetMC()->TrackTime();
 
   Int_t index[3];  
   vol[0]=fTPCParam->Transform0to1(hits,index);
   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol,hits);
   
-  Double_t rnd = gMC->GetRandom()->Rndm();  
-  gMC->SetMaxStep(-TMath::Log(rnd)/fCollisionsPerCm);
+  Double_t rnd = TVirtualMC::GetMC()->GetRandom()->Rndm();  
+  TVirtualMC::GetMC()->SetMaxStep(-TMath::Log(rnd)/fCollisionsPerCm);
 }

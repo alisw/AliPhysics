@@ -474,7 +474,7 @@ void AliTPCcalibV0::MakeFitTreeTrack(const TObjArray * corrArray, Double_t ptCut
     for (Int_t irow=0; irow<159; irow++){
       AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
       if (cluster &&cluster->GetX()>10){
-        Double_t x0[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+        Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
         Int_t index0[1]={cluster->GetDetector()};
         transform->Transform(x0,index0,0,1);
         cluster->SetX(x0[0]);
@@ -628,7 +628,7 @@ void AliTPCcalibV0::MakeFitTreeV0(const TObjArray * corrArray, Double_t ptCut, I
       for (Int_t irow=0; irow<159; irow++){
 	AliTPCclusterMI *cluster=seed->GetClusterPointer(irow);
 	if (cluster &&cluster->GetX()>10){
-	  Double_t x0[3]={cluster->GetRow(),cluster->GetPad(),cluster->GetTimeBin()};
+	  Double_t x0[3]={ static_cast<Double_t>(cluster->GetRow()),cluster->GetPad(),cluster->GetTimeBin()};
 	  Int_t index0[1]={cluster->GetDetector()};
 	  transform->Transform(x0,index0,0,1);
 	  cluster->SetX(x0[0]);

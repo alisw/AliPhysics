@@ -240,6 +240,7 @@ Bool_t AliCDBLocal::PrepareId(AliCDBId& id) {
   return kTRUE;
 }
 
+
 //_____________________________________________________________________________
 AliCDBId* AliCDBLocal::GetId(const AliCDBId& query) {
   // look for filename matching query (called by GetEntryId)
@@ -1025,8 +1026,6 @@ void AliCDBLocal::QueryValidCVMFSFiles(TString& cvmfsOcdbTag) {
   return;
 }
 
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                             //
 // AliCDBLocal factory  			                                               //
@@ -1089,7 +1088,6 @@ AliCDBStorage* AliCDBLocalFactory::Create(const AliCDBParam* param) {
 
   return NULL;
 }
-
 //_____________________________________________________________________________
 void AliCDBLocal::SetRetry(Int_t /* nretry */, Int_t /* initsec */) {
 

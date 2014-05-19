@@ -238,7 +238,7 @@ Int_t AliITSUComparison
 
         hpt->Fill((pt_1 - 1/ptg)/(1/ptg)*100.);
 
-        Float_t mom=1./(pt_1*TMath::Cos(lam));
+        Float_t mom=(TMath::Abs(pt_1)>1e-5) ? 1./(pt_1*TMath::Cos(lam)) : 1e+5;
         Float_t dedx=esd->GetITSsignal();
         hep->Fill(mom,dedx,1.);
 

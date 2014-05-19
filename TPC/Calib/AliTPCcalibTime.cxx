@@ -492,8 +492,8 @@ void AliTPCcalibTime::ProcessLaser(AliESDEvent *event){
   if (vdriftA[1]>1.-kMaxDeltaV) driftA = 1./vdriftA[1]-1.;
   if (vdriftC[1]>1.-kMaxDeltaV) driftC = 1./vdriftC[1]-1.;
   //
-  Double_t vecDriftLaserA[4]={fTime,(ptrelative0+ptrelative1)/2.0,driftA,event->GetRunNumber()};
-  Double_t vecDriftLaserC[4]={fTime,(ptrelative0+ptrelative1)/2.0,driftC,event->GetRunNumber()};
+  Double_t vecDriftLaserA[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,driftA,static_cast<Double_t>(event->GetRunNumber())};
+  Double_t vecDriftLaserC[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,driftC,static_cast<Double_t>(event->GetRunNumber())};
   //  Double_t vecDrift[4]      ={fTime,(ptrelative0+ptrelative1)/2.0,1./((*(fLaser->fFitACside))[1])-1,event->GetRunNumber()};
 
   for (Int_t icalib=0;icalib<3;icalib++){
@@ -678,7 +678,7 @@ void AliTPCcalibTime::ProcessCosmic(const AliESDEvent *const event){
 	  TTimeStamp tstamp(fTime);
 	  Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
 	  Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-	  Double_t vecDrift[4]={fTime,(ptrelative0+ptrelative1)/2.0,fDz/500.0,event->GetRunNumber()};
+	  Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
           THnSparse* curHist=NULL;
           TString name="";
 
@@ -907,7 +907,7 @@ void AliTPCcalibTime::ProcessBeam(const AliESDEvent *const event){
       
       
       if ( flags==0 && cumulVertexC.GetNDF()>kMinTracksVertex&&cumulVertexA.GetNDF()>kMinTracksVertex){
-	Double_t cont[2]={0,fTime};
+	Double_t cont[2]={0,static_cast<Double_t>(fTime)};
 	//
 	cont[0]= cumulVertexA.X();
 	fTPCVertex[0]->Fill(cont);
@@ -1459,7 +1459,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
     TTimeStamp tstamp(fTime);
     Double_t ptrelative0 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,0);
     Double_t ptrelative1 = AliTPCcalibDB::GetPTRelative(tstamp,fRun,1);
-    Double_t vecDrift[4]={fTime,(ptrelative0+ptrelative1)/2.0,fDz/500.0,event->GetRunNumber()};
+    Double_t vecDrift[4]={static_cast<Double_t>(fTime),(ptrelative0+ptrelative1)/2.0,fDz/500.0,static_cast<Double_t>(event->GetRunNumber())};
     //
     // fill histograms per trigger class and itegrated
     //

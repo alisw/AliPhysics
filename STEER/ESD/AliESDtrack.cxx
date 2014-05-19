@@ -581,6 +581,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   for (i=0;i<10;i++) {fTOFInfo[i]=0;}
   for (i=0;i<12;i++) {fITSModule[i]=-1;}
 
+
   // Set ITS cluster map
   fITSClusterMap=track->GetITSClusterMap();
   fITSSharedMap=0;
@@ -1865,7 +1866,6 @@ void AliESDtrack::GetIntegratedTimes(Double_t *times, Int_t nspec) const
     for (int i=AliPID::kSPECIESC; i--;) times[i]=0.0;
   //
 }
-
 //_______________________________________________________________________
 Double_t AliESDtrack::GetIntegratedLength() const{
   Int_t index = -1;
@@ -2891,7 +2891,7 @@ Double_t AliESDtrack::GetLengthInActiveZone( Int_t mode, Double_t deltaY, Double
   return 0;
 }
 
-Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) const {
+Double_t AliESDtrack::GetLengthInActiveZone(const AliExternalTrackParam  *paramT, Double_t deltaY, Double_t deltaZ, Double_t bz, Double_t exbPhi , TTreeSRedirector * pcstream) {
   //
   // Numerical code to calculate the length of the track in active region of the TPC
   // ( can be speed up if somebody wants to invest time - analysical version shoult be possible) 
@@ -3283,11 +3283,22 @@ const AliTOFHeader* AliESDtrack::GetTOFHeader() const {
   return fESDEvent->GetTOFHeader();
 }
 
-
 //___________________________________________
 void AliESDtrack::SetID(Short_t id) 
 {
   // set track ID taking care about dependencies
   if (fNtofClusters) ReplaceTOFTrackID(fID,id); 
   fID=id;
+}
+
+
+Double_t  AliESDtrack::GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t qID, Int_t valueID){
+  //
+  // Interface to get the calibrated dEdx information 
+  // For details of arguments and return values see 
+  //     AliTPCdEdxInfo::GetdEdxInfo(Int_t regionID, Int_t calibID, Int_t valueID)
+  //
+  if (!fTPCdEdxInfo) return 0;
+  if (!fIp) return 0;
+  return fTPCdEdxInfo->GetdEdxInfo(fIp, regionID, calibID, qID, valueID);
 }

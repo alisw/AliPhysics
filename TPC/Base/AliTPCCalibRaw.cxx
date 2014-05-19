@@ -250,7 +250,7 @@ Int_t AliTPCCalibRaw::Update(const Int_t isector, const Int_t iRow, const Int_t 
     ++fNOkMinus;
     if (!fPeakTimeBin) fPeakTimeBin=fLastTimeBinProc;
     if ( fNOkMinus>=fPeakDetMinus ) {
-      Double_t x[kHnBinsDV]={fPeakTimeBin,isector,(fTimeStamp-fFirstTimeStamp)/fNSecTime};
+      Double_t x[kHnBinsDV]={static_cast<Double_t>(fPeakTimeBin),static_cast<Double_t>(isector),static_cast<Double_t>((fTimeStamp-fFirstTimeStamp)/fNSecTime)};
       fHnDrift->Fill(x);
     } 
   } else {
@@ -475,9 +475,9 @@ void AliTPCCalibRaw::CreateDVhist()
   if (fHnDrift) return;
   //HnSparse bins
   //time bin, roc, time
-  Int_t    bins[kHnBinsDV] = {fLastTimeBin-fFirstTimeBin, 72, fNBinsTime};
-  Double_t xmin[kHnBinsDV] = {fFirstTimeBin,0,0};
-  Double_t xmax[kHnBinsDV] = {fLastTimeBin,72,fNBinsTime};
+  Int_t    bins[kHnBinsDV] = {static_cast<Int_t>(fLastTimeBin-fFirstTimeBin), 72, static_cast<Int_t>(fNBinsTime)};
+  Double_t xmin[kHnBinsDV] = {static_cast<Double_t>(fFirstTimeBin),0,0};
+  Double_t xmax[kHnBinsDV] = {static_cast<Double_t>(fLastTimeBin),72,static_cast<Double_t>(fNBinsTime)};
   fHnDrift=new THnSparseI("fHnDrift",Form("Drift velocity using last time bin;time bin[#times 100ns];ROC;Time bin [#times %us]",fNSecTime),kHnBinsDV, bins, xmin, xmax);
     
 }

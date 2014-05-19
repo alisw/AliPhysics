@@ -329,16 +329,18 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
   // Note: should always return 0=OK, because otherwise all tracking
   // is aborted for this event
   
-  if (!esd) {
+  if (!esd)
+  {
     AliError("NULL ESD passed");
     return 1;
   }
 	
   // step 1: collect clusters
   Int_t okLoadClusters, nClusters;
-  if (!fClusters || (fClusters && fClusters->IsEmpty())) {
+  
+  if (!fClusters || (fClusters && fClusters->IsEmpty()))
     okLoadClusters = LoadClusters(esd);
-  }
+  
   nClusters = fClusters->GetEntries();
 		
   // step 2: collect ESD tracks
@@ -346,12 +348,17 @@ Int_t AliEMCALTracker::PropagateBack(AliESDEvent* esd)
   okLoadTracks = LoadTracks(esd);
   nTracks = fTracks->GetEntries();
   
+  AliDebug(5,Form("Propagate back %d tracks ok %d, for %d clusters ok %d",
+                  nTracks,okLoadTracks,nClusters,okLoadClusters));
+  
   // step 3: for each track, find the closest cluster as matched within residual cuts
   Int_t index=-1;
-  for (Int_t it = 0; it < nTracks; it++) {
+  for (Int_t it = 0; it < nTracks; it++)
+  {
     AliESDtrack *track = (AliESDtrack*)fTracks->At(it);
     index = FindMatchedCluster(track);
-    if (index>-1) {
+    if (index>-1)
+    {
       AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(index);
       track->SetEMCALcluster(cluster->Index());
       track->SetStatus(AliESDtrack::kEMCALmatch);
@@ -379,8 +386,10 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   // Otherwise use the TPCInner point
   AliExternalTrackParam *trkParam = 0;
   
-  if (!fITSTrackSA) { 
+  if (!fITSTrackSA)
+  {
     const AliESDfriendTrack*  friendTrack = track->GetFriendTrack();
+  
     if (friendTrack && friendTrack->GetTPCOut())
       trkParam = const_cast<AliExternalTrackParam*>(friendTrack->GetTPCOut());
     else if (track->GetInnerParam())
@@ -393,12 +402,16 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   
   AliExternalTrackParam trkParamTmp(*trkParam);
   Float_t eta, phi, pt;
-  if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))  {
+  if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, fEMCalSurfaceDistance, track->GetMass(kTRUE), fStep, eta, phi, pt))
+  {
     if (fITSTrackSA) delete trkParam;
     return index;
   }
+  
   track->SetTrackPhiEtaPtOnEMCal(phi,eta,pt);
-  if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) {
+  
+  if (TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad())
+  {
     if (fITSTrackSA) delete trkParam;
     return index;
   }
@@ -407,18 +420,26 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   Double_t trkPos[3];
   trkParamTmp.GetXYZ(trkPos);
   Int_t nclusters = fClusters->GetEntries();
-  for (Int_t ic=0; ic<nclusters; ic++) {
+  for (Int_t ic=0; ic<nclusters; ic++)
+  {
     AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
-    Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
+    
+    Float_t clsPos[3] = {static_cast<Float_t>(cluster->X()),
+                         static_cast<Float_t>(cluster->Y()),
+                         static_cast<Float_t>(cluster->Z())};
+    
     Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
     //printf("\n dR=%f,wind=%f\n",dR,fClusterWindow); //MARCEL
+    
     if (dR > fClusterWindow) continue;
       
     AliExternalTrackParam trkParTmp(trkParamTmp);
 
     Float_t tmpEta, tmpPhi;
     if (!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(kTRUE), 5, tmpEta, tmpPhi)) continue;
-    if (TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta)) {
+    
+    if (TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
+    {
       maxPhi=tmpPhi;
       maxEta=tmpEta;
       index=ic;
@@ -426,6 +447,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   }
 
   if (fITSTrackSA) delete trkParam;
+  
   return index;
 }
 

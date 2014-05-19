@@ -47,7 +47,7 @@ AliTRDptrgTLMU::AliTRDptrgTLMU(AliRunLoader *rl)
   : TObject(),
   fRunLoader(rl),
   fParam(0x0),
-  fOperatingMode(kDigits),
+  fOperatingMode(AliTRDptrgParam::kDigits),
   fInputMask(0x0),
   fCMatrices(0x0),
   fMultiplicity(0x0),
@@ -64,7 +64,7 @@ AliTRDptrgTLMU::AliTRDptrgTLMU(AliRunLoader *rl)
 
 //______________________________________________________________________________
 AliTRDptrgTLMU::AliTRDptrgTLMU(AliRunLoader *rl,  AliTRDptrgParam *param,
-                               AliTRDptrgOperatingMode_t operatingMode)
+                               AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode)
   : TObject(),
   fRunLoader(rl),
   fParam(param),
@@ -98,10 +98,10 @@ Int_t* AliTRDptrgTLMU::Simulate()
 {
   // starts a simulation
 	
-  if (this->fOperatingMode == kDigits) {
+  if (this->fOperatingMode == AliTRDptrgParam::kDigits) {
     this->LoadDigits();
   }	
-  else if (this->fOperatingMode == kHits) {
+  else if (this->fOperatingMode == AliTRDptrgParam::kHits) {
     return 0x0; // TODO
   }
 

@@ -224,7 +224,7 @@ void AliMFT::CreateGeometry() {
   // Creates detailed geometry simulation (currently GEANT volumes tree)        
 
   AliInfo("Start MFT preliminary version building");
-  if(!gMC->IsRootGeometrySupported()) return;                
+  if(!TVirtualMC::GetMC()->IsRootGeometrySupported()) return;                
   TGeoVolumeAssembly *vol = CreateVol();
   AliInfo("TGeoVolumeAssembly created!");
   gGeoManager->GetVolume("ALIC")->AddNode(vol,0);
@@ -257,15 +257,15 @@ void AliMFT::StepManager() {
 
   // Full Step Manager
 
-  AliDebug(2, Form("Entering StepManager: gMC->CurrentVolName() = %s", gMC->CurrentVolName()));
+  AliDebug(2, Form("Entering StepManager: TVirtualMC::GetMC()->CurrentVolName() = %s", TVirtualMC::GetMC()->CurrentVolName()));
 
   if (!fSegmentation) AliFatal("No segmentation available");    // DO WE HAVE A SEGMENTATION???
 
   if (!(this->IsActive())) return;
-  if (!(gMC->TrackCharge())) return;
+  if (!(TVirtualMC::GetMC()->TrackCharge())) return;
 
-  TString planeNumber   = gMC->CurrentVolName();
-  TString detElemNumber = gMC->CurrentVolName();
+  TString planeNumber   = TVirtualMC::GetMC()->CurrentVolName();
+  TString detElemNumber = TVirtualMC::GetMC()->CurrentVolName();
   if (planeNumber.Contains("support")) return;
   if (planeNumber.Contains("readout")) return;
   planeNumber.Remove(0,9);
@@ -274,7 +274,7 @@ void AliMFT::StepManager() {
   detElemNumber.Remove(3);
   Int_t detElemID = fSegmentation->GetDetElemGlobalID(planeNumber.Atoi(), detElemNumber.Atoi());
 
-  if (gMC->IsTrackExiting()) {
+  if (TVirtualMC::GetMC()->IsTrackExiting()) {
     AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kMFT);
   }
 
@@ -284,13 +284,13 @@ void AliMFT::StepManager() {
   Int_t  status = 0;
   
   // Track status
-  if (gMC->IsTrackInside())      status +=  1;
-  if (gMC->IsTrackEntering())    status +=  2;
-  if (gMC->IsTrackExiting())     status +=  4;
-  if (gMC->IsTrackOut())         status +=  8;
-  if (gMC->IsTrackDisappeared()) status += 16;
-  if (gMC->IsTrackStop())        status += 32;
-  if (gMC->IsTrackAlive())       status += 64;
+  if (TVirtualMC::GetMC()->IsTrackInside())      status +=  1;
+  if (TVirtualMC::GetMC()->IsTrackEntering())    status +=  2;
+  if (TVirtualMC::GetMC()->IsTrackExiting())     status +=  4;
+  if (TVirtualMC::GetMC()->IsTrackOut())         status +=  8;
+  if (TVirtualMC::GetMC()->IsTrackDisappeared()) status += 16;
+  if (TVirtualMC::GetMC()->IsTrackStop())        status += 32;
+  if (TVirtualMC::GetMC()->IsTrackAlive())       status += 64;
 
   // ---------- Fill hit structure
 
@@ -298,21 +298,21 @@ void AliMFT::StepManager() {
   hit.SetPlane(planeNumber.Atoi());
   hit.SetTrack(gAlice->GetMCApp()->GetCurrentTrackNumber());
     
-  gMC->TrackPosition(position);
-  gMC->TrackMomentum(momentum);
+  TVirtualMC::GetMC()->TrackPosition(position);
+  TVirtualMC::GetMC()->TrackMomentum(momentum);
 
   AliDebug(1, Form("AliMFT::StepManager()->%s Hit #%06d (x=%f, y=%f, z=%f) belongs to track %02d\n", 
-		   gMC->CurrentVolName(), fNhits, position.X(), position.Y(), position.Z(), gAlice->GetMCApp()->GetCurrentTrackNumber())); 
+		   TVirtualMC::GetMC()->CurrentVolName(), fNhits, position.X(), position.Y(), position.Z(), gAlice->GetMCApp()->GetCurrentTrackNumber())); 
 
   hit.SetPosition(position);
-  hit.SetTOF(gMC->TrackTime());
+  hit.SetTOF(TVirtualMC::GetMC()->TrackTime());
   hit.SetMomentum(momentum);
   hit.SetStatus(status);
-  hit.SetEloss(gMC->Edep());
+  hit.SetEloss(TVirtualMC::GetMC()->Edep());
   //  hit.SetShunt(GetIshunt());
-//   if (gMC->IsTrackEntering()) {
+//   if (TVirtualMC::GetMC()->IsTrackEntering()) {
 //     hit.SetStartPosition(position);
-//     hit.SetStartTime(gMC->TrackTime());
+//     hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
 //     hit.SetStartStatus(status);
 //     return; // don't save entering hit.
 //   } 
@@ -322,7 +322,7 @@ void AliMFT::StepManager() {
 
   // Save old position... for next hit.
 //   hit.SetStartPosition(position);
-//   hit.SetStartTime(gMC->TrackTime());
+//   hit.SetStartTime(TVirtualMC::GetMC()->TrackTime());
 //   hit.SetStartStatus(status);
 
   return;

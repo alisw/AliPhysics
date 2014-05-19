@@ -455,7 +455,7 @@ void AliTPCCorrection::GetCorrectionIntegralDz(const Float_t x[], Short_t roc,Fl
     //  the slopes will be positive.
     // but since we chose deltaZ opposite sign the singn of the corretion should be fine
     
-    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    Float_t xyz2[3]={xyz[0],xyz[1],static_cast<Float_t>(xyz[2]+deltaZ/2.)};
     GetCorrectionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=deltaZ*dxyz[0];
     xyz[1]+=deltaZ*dxyz[1];
@@ -498,7 +498,7 @@ void AliTPCCorrection::GetDistortionIntegralDz(const Float_t x[], Short_t roc,Fl
     // and since we are moving towards the read-out plane the deltaZ for
     //   weighting the dK/dz should have the opposite sign
     deltaZ*=sign;
-    Float_t xyz2[3]={xyz[0],xyz[1],xyz[2]+deltaZ/2.};
+    Float_t xyz2[3]={xyz[0],xyz[1],static_cast<Float_t>(xyz[2]+deltaZ/2.)};
     GetDistortionDz(xyz2,roc,dxyz,delta/2.);
     xyz[0]+=-deltaZ*dxyz[0];
     xyz[1]+=-deltaZ*dxyz[1];
@@ -1764,7 +1764,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
   //
   // simulate the track
   Int_t npoints=0;
-  Float_t covPoint[6]={0,0,0, kSigmaY*kSigmaY,0,kSigmaZ*kSigmaZ};  //covariance at the local frame
+  Float_t covPoint[6]={0,0,0, static_cast<Float_t>(kSigmaY*kSigmaY),0,static_cast<Float_t>(kSigmaZ*kSigmaZ)};  //covariance at the local frame
   for (Double_t radius=kRTPC0; radius<kRTPC1; radius++){
     if (!AliTrackerBase::PropagateTrackTo(&track,radius,kMass,5,kTRUE,kMaxSnp)) return 0;
     track.GetXYZ(xyz);
@@ -1780,7 +1780,7 @@ AliExternalTrackParam * AliTPCCorrection::FitDistortedTrack(AliExternalTrackPara
     pointArray0.GetPoint(pIn0,npoints);
     pointArray1.GetPoint(pIn1,npoints);
     Double_t alpha = TMath::ATan2(xyz[1],xyz[0]);
-    Float_t distPoint[3]={xyz[0],xyz[1],xyz[2]};
+    Float_t distPoint[3]={static_cast<Float_t>(xyz[0]),static_cast<Float_t>(xyz[1]),static_cast<Float_t>(xyz[2])};
     DistortPoint(distPoint, sector);
     pIn0.SetXYZ(xyz[0], xyz[1],xyz[2]);
     pIn1.SetXYZ(distPoint[0], distPoint[1],distPoint[2]);
@@ -2435,7 +2435,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	Double_t pt=0;
 	//
 	if (1 && oldR>1) {
-	  Float_t xyz1[3]={gx,gy,gz};
+	  Float_t xyz1[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
 	  Int_t sector=(gz>0)?0:18;
 	  correction->CorrectPoint(xyz1, sector);
 	  refX=TMath::Sqrt(xyz1[0]*xyz1[0]+xyz1[1]*xyz1[1]);
@@ -2507,7 +2507,7 @@ void AliTPCCorrection::MakeLaserDistortionTreeOld(TTree* tree, TObjArray *corrAr
 	if (iter==1){
 	  for (Int_t icorr=0; icorr<ncorr; icorr++) {
 	    AliTPCCorrection *corr = (AliTPCCorrection*)corrArray->At(icorr);
-	    Float_t distPoint[3]={gx,gy,gz}; 
+	    Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)}; 
 	    Int_t sector= (gz>0)? 0:18;
 	    if (r0>80){
 	      corr->DistortPoint(distPoint, sector);
@@ -3095,7 +3095,7 @@ Double_t AliTPCCorrection::GetCorrSector(Double_t sector, Double_t r, Double_t k
   //
   //
   //
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->DistortPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3117,7 +3117,7 @@ Double_t AliTPCCorrection::GetCorrXYZ(Double_t gx, Double_t gy, Double_t gz, Int
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->CorrectPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3137,8 +3137,8 @@ Double_t AliTPCCorrection::GetCorrXYZDz(Double_t gx, Double_t gy, Double_t gz, I
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetCorrectionDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3162,8 +3162,8 @@ Double_t AliTPCCorrection::GetCorrXYZIntegrateZ(Double_t gx, Double_t gy, Double
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18; 
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetCorrectionIntegralDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3188,7 +3188,7 @@ Double_t AliTPCCorrection::GetDistXYZ(Double_t gx, Double_t gy, Double_t gz, Int
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   corr->DistortPoint(distPoint, nsector);
   Double_t r0=TMath::Sqrt(gx*gx+gy*gy);
   Double_t r1=TMath::Sqrt(distPoint[0]*distPoint[0]+distPoint[1]*distPoint[1]);
@@ -3208,8 +3208,8 @@ Double_t AliTPCCorrection::GetDistXYZDz(Double_t gx, Double_t gy, Double_t gz, I
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetDistortionDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];
@@ -3233,8 +3233,8 @@ Double_t AliTPCCorrection::GetDistXYZIntegrateZ(Double_t gx, Double_t gy, Double
   if (!corr) return 0;
   Double_t phi0= TMath::ATan2(gy,gx);
   Int_t nsector=(gz>=0) ? 0:18;
-  Float_t distPoint[3]={gx,gy,gz};
-  Float_t dxyz[3]={gx,gy,gz};
+  Float_t distPoint[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
+  Float_t dxyz[3]={static_cast<Float_t>(gx),static_cast<Float_t>(gy),static_cast<Float_t>(gz)};
   //
   corr->GetDistortionIntegralDz(distPoint, nsector,dxyz,delta);
   distPoint[0]+=dxyz[0];

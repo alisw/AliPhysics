@@ -537,7 +537,7 @@ void AliTOFtrackerMI::MatchTracksMI(Bool_t mLastStep){
 		      -1,
 		      tgamma,
 		      qualityGold,
-		      cgold->GetQuality()};
+		      static_cast<Float_t>(cgold->GetQuality())};
     //    GetLinearDistances(trackTOFin,cgold,&info[6]);
     if (inonfake>=0){
       info[6] = inonfake;

@@ -101,8 +101,8 @@ AliEMCALv0::AliEMCALv0(const char *name, const char *title,
   fGeometry = g;
   fSampleWidth = double(g->GetECPbRadThick()+g->GetECScintThick());
   if(gn.Contains("V1")) fSampleWidth += 2.*g->GetTrd1BondPaperThick();
-  AliDebug(2,Form("fGeometry %p : gMC %p : fSampleWidth %5.4f\n", 
-	 fGeometry, gMC, fSampleWidth));
+  AliDebug(2,Form("fGeometry %p : TVirtualMC::GetMC() %p : fSampleWidth %5.4f\n", 
+	 fGeometry, TVirtualMC::GetMC(), fSampleWidth));
   //Set geometry name again, in case it was changed during the initialization of the geometry.
   SetTitle(fGeometry->GetEMCGeometry()->GetName());
 
@@ -126,7 +126,7 @@ void AliEMCALv0::CreateGeometry()
   fIdTmedArr = fIdtmed->GetArray() - 1599 ;
   
   fIdRotm = 1;
-  //  gMC->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3) - see AliModule
+  //  TVirtualMC::GetMC()->Matrix(nmat, theta1, phi1, theta2, phi2, theta3, phi3) - see AliModule
   AliMatrix(fIdRotm, 90.0, 0., 90.0, 90.0, 0.0, 0.0) ; 
   
   // Create the EMCAL Mother Volume (a polygone) within which to place the Detector and named XEN1 
@@ -137,12 +137,12 @@ void AliEMCALv0::CreateGeometry()
     envelopA[0] = 30.;
     envelopA[1] = 30;
     envelopA[2] = 20;
-    gMC->Gsvolu("XEN1", "BOX", fIdTmedArr[kIdSC], envelopA, 3) ;
+    TVirtualMC::GetMC()->Gsvolu("XEN1", "BOX", fIdTmedArr[kIdSC], envelopA, 3) ;
     fEnvelop1.Set(3);
     for(int i=0; i<3; i++) fEnvelop1[i] = envelopA[i]; // 23-may-05  
     // Position the EMCAL Mother Volume (XEN1) in WSUC.
     // Look to AliEMCALWsuCosmicRaySetUp.  
-    gMC->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, + 265., fIdRotm, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("XEN1", 1, "WSUC", 0.0, 0.0, + 265., fIdRotm, "ONLY") ;
   } else { 
     envelopA[0] = geom->GetArm1PhiMin();                         // minimum phi angle
     envelopA[1] = geom->GetArm1PhiMax() - geom->GetArm1PhiMin(); // angular range in phi
@@ -156,14 +156,14 @@ void AliEMCALv0::CreateGeometry()
     envelopA[8] = envelopA[5] ;                                  // radii are the same.
     envelopA[9] = envelopA[6] ;                                  // radii are the same.
 
-    gMC->Gsvolu("XEN1", "PGON", fIdTmedArr[kIdAIR], envelopA, 10) ;   // Polygone filled with air 
+    TVirtualMC::GetMC()->Gsvolu("XEN1", "PGON", fIdTmedArr[kIdAIR], envelopA, 10) ;   // Polygone filled with air 
     fEnvelop1.Set(10, envelopA);
     if (gDebug==2) {
       printf("CreateGeometry: XEN1 = %f, %f\n", envelopA[5], envelopA[6]); 
       printf("CreateGeometry: XU0 = %f, %f\n", envelopA[5], envelopA[6]); 
     }
     // Position the EMCAL Mother Volume (XEN1) in Alice (ALIC)  
-    gMC->Gspos(geom->GetNameOfEMCALEnvelope(), 1, "ALIC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos(geom->GetNameOfEMCALEnvelope(), 1, "ALIC", 0.0, 0.0, 0.0, fIdRotm, "ONLY") ;
   }
 
   // COMPACT, TRD1
@@ -245,17 +245,17 @@ void AliEMCALv0::CreateShishKebabGeometry()
     double wallThickness = g->GetPhiModuleSize()/g->GetNPHIdiv() -  g->GetPhiTileSize();
     for(int i=0; i<3; i++) parSCM0[i] = fParEMOD[i] - wallThickness;
     parSCM0[3] = fParEMOD[3];
-    gMC->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
-    gMC->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
+    TVirtualMC::GetMC()->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
   } else {
     double wTh = g->GetLateralSteelStrip();
     parSCM0[0] = fParEMOD[0] - wTh + tanTrd1*g->GetTrd1AlFrontThick();
     parSCM0[1] = fParEMOD[1] - wTh;
     parSCM0[2] = fParEMOD[2] - wTh;
     parSCM0[3] = fParEMOD[3] - g->GetTrd1AlFrontThick()/2.;
-    gMC->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
+    TVirtualMC::GetMC()->Gsvolu("SCM0", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
     double zshift = g->GetTrd1AlFrontThick()/2.;
-    gMC->Gspos("SCM0", 1, "EMOD", 0., 0., zshift, 0, "ONLY");
+    TVirtualMC::GetMC()->Gspos("SCM0", 1, "EMOD", 0., 0., zshift, 0, "ONLY");
     // 
     CreateAlFrontPlate("EMOD","ALFP");
   }
@@ -263,7 +263,7 @@ void AliEMCALv0::CreateShishKebabGeometry()
   if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
     // Division to tile size - 1-oct-04
     AliDebug(2,Form(" Divide SCM0 on y-axis %i\n", g->GetNETAdiv()));
-    gMC->Gsdvn("SCMY","SCM0", g->GetNETAdiv(), 2); // y-axis
+    TVirtualMC::GetMC()->Gsdvn("SCMY","SCM0", g->GetNETAdiv(), 2); // y-axis
     // Trapesoid 2x2
     parTRAP[0] = parSCM0[3];    // dz
     parTRAP[1] = TMath::ATan2((parSCM0[1]-parSCM0[0])/2.,2.*parSCM0[3])*180./TMath::Pi(); // theta
@@ -281,14 +281,14 @@ void AliEMCALv0::CreateShishKebabGeometry()
     AliDebug(2,Form(" ** TRAP ** \n"));
     for(int i=0; i<11; i++) AliDebug(3, Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
     
-    gMC->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
+    TVirtualMC::GetMC()->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
     xpos = +(parSCM0[1]+parSCM0[0])/4.;
-    gMC->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
 
     // Using rotation because SCMX should be the same due to Pb tiles
     xpos = -xpos; 
     AliMatrix(fIdRotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
-    gMC->Gspos("SCMX", 2, "SCMY", xpos, 0.0, 0.0, fIdRotm, "ONLY");
+    TVirtualMC::GetMC()->Gspos("SCMX", 2, "SCMY", xpos, 0.0, 0.0, fIdRotm, "ONLY");
     // put LED to the SCM0 
     AliEMCALShishKebabTrd1Module *mod = (AliEMCALShishKebabTrd1Module*)fShishKebabModules->At(0);
     Double_t tanBetta = mod->GetTanBetta();
@@ -299,13 +299,13 @@ void AliEMCALv0::CreateShishKebabGeometry()
     if(!gn.Contains("V1")) {
       par[1] = parSCM0[2]/2;            // y 
       par[2] = g->GetECPbRadThick()/2.; // z
-      gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
+      TVirtualMC::GetMC()->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
       zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
       AliDebug(2,Form(" Pb tiles \n"));
       for(int iz=0; iz<g->GetNECLayers(); iz++){
         par[0] = (parSCM0[0] + tanBetta*fSampleWidth*iz)/2.;
         xpos   = par[0] - xCenterSCMX;
-        gMC->Gsposp("PBTI", ++nr, "SCMX", xpos, ypos, zpos, 0, "ONLY", par, 3) ;
+        TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, "SCMX", xpos, ypos, zpos, 0, "ONLY", par, 3) ;
         AliDebug(3,Form(" %i xpos %f zpos %f par[0] %f \n", iz+1, xpos, zpos, par[0]));
         zpos += fSampleWidth;
       } 
@@ -316,10 +316,10 @@ void AliEMCALv0::CreateShishKebabGeometry()
       par[1] = parSCM0[2]/2.;                 // y 
       par[2] = g->GetTrd1BondPaperThick()/2.; // z
       par[0] = parSCM0[0]/2.;                 // x 
-      gMC->Gsvolu("PAP1", "BOX", fIdTmedArr[kIdPAPER], par, 3);
+      TVirtualMC::GetMC()->Gsvolu("PAP1", "BOX", fIdTmedArr[kIdPAPER], par, 3);
       xpos = par[0] - xCenterSCMX;
       zpos = -parSCM0[3] + g->GetTrd1BondPaperThick()/2.;
-      gMC->Gspos("PAP1", 1, "SCMX", xpos, ypos, zpos, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("PAP1", 1, "SCMX", xpos, ypos, zpos, 0, "ONLY");
       for(int iz=0; iz<g->GetNECLayers()-1; iz++){
         nr = iz + 1;
         Double_t dz = g->GetECScintThick() + g->GetTrd1BondPaperThick() + fSampleWidth*iz;
@@ -327,15 +327,15 @@ void AliEMCALv0::CreateShishKebabGeometry()
         par[2] = g->GetECPbRadThick()/2. + g->GetTrd1BondPaperThick(); // z
         par[0] = (parSCM0[0] + tanBetta*dz)/2.;
         TString pa(Form("PA%2.2i",nr));
-	gMC->Gsvolu(pa.Data(), "BOX", fIdTmedArr[kIdPAPER], par, 3);
+	TVirtualMC::GetMC()->Gsvolu(pa.Data(), "BOX", fIdTmedArr[kIdPAPER], par, 3);
         xpos   = par[0] - xCenterSCMX;
         zpos   = -parSCM0[3] + dz + par[2];
-        gMC->Gspos(pa.Data(), 1, "SCMX", xpos, ypos, zpos, 0, "ONLY") ;
+        TVirtualMC::GetMC()->Gspos(pa.Data(), 1, "SCMX", xpos, ypos, zpos, 0, "ONLY") ;
 	// Pb
         TString pb(Form("PB%2.2i",nr));
         par[2] = g->GetECPbRadThick()/2.; // z
-	gMC->Gsvolu(pb.Data(), "BOX", fIdTmedArr[kIdPB], par, 3);
-        gMC->Gspos(pb.Data(), 1, pa.Data(), 0.0, 0.0, 0.0, 0, "ONLY") ;
+	TVirtualMC::GetMC()->Gsvolu(pb.Data(), "BOX", fIdTmedArr[kIdPB], par, 3);
+        TVirtualMC::GetMC()->Gspos(pb.Data(), 1, pa.Data(), 0.0, 0.0, 0.0, 0, "ONLY") ;
       } 
     }
     
@@ -387,7 +387,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
     par[1] = g->GetShellThickness()/2.;
     par[2] = g->GetEtaModuleSize()*g->GetNZ()/2. + 5; 
 
-    gMC->Gsvolu("SMOD", "BOX", fIdTmedArr[kIdAIR], par, 3);
+    TVirtualMC::GetMC()->Gsvolu("SMOD", "BOX", fIdTmedArr[kIdAIR], par, 3);
 
     AliDebug(2,Form("SMOD in WSUC : tmed %i | dx %7.2f dy %7.2f dz %7.2f (SMOD, BOX)\n", 
 		    fIdTmedArr[kIdAIR], par[0],par[1],par[2]));
@@ -398,7 +398,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
     for(int i=0; i<nphism; i++) {
       xpos = ypos = zpos = 0.0;
       fIdRotm = 0;
-      gMC->Gspos("SMOD", 1, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+      TVirtualMC::GetMC()->Gspos("SMOD", 1, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
       printf(" fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f \n", 
       fIdRotm, phi, phiRad, xpos, ypos, zpos);
       nr++;
@@ -451,7 +451,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
       } else AliError("Unkown SM Type!!");
 
       if(SMOrder == 1) {//first time, create the SM
-        gMC->Gsvolu(smName.Data(), "BOX", fIdTmedArr[kIdAIR], parC, 3);
+        TVirtualMC::GetMC()->Gsvolu(smName.Data(), "BOX", fIdTmedArr[kIdAIR], parC, 3);
         AliDebug(2,Form(" Super module with name \"%s\" was created in \"box\" with: par[0] = %f, par[1] = %f, par[2] = %f\n", smName.Data(), parC[0], parC[1], parC[2]));
       }
 
@@ -462,7 +462,7 @@ void AliEMCALv0::CreateSmod(const char* mother)
         zpos *= -1.;
       }
       AliMatrix(fIdRotm, 90.0, phi, 90.0, phiy, phiz, 0.0);
-      gMC->Gspos(smName.Data(), SMOrder, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+      TVirtualMC::GetMC()->Gspos(smName.Data(), SMOrder, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
       AliDebug(3, Form(" %s : %2i, fIdRotm %3i phi %6.1f(%5.3f) xpos %7.2f ypos %7.2f zpos %7.2f : i %i \n",            
                        smName.Data(), SMOrder, fIdRotm, phi, phiRad, xpos, ypos, zpos, smodnum));
     }
@@ -472,10 +472,10 @@ void AliEMCALv0::CreateSmod(const char* mother)
   // Steel plate
   if(g->GetSteelFrontThickness() > 0.0) { // 28-mar-05
     par[0] = g->GetSteelFrontThickness()/2.;
-    gMC->Gsvolu("STPL", "BOX", fIdTmedArr[kIdSTEEL], par, 3);
+    TVirtualMC::GetMC()->Gsvolu("STPL", "BOX", fIdTmedArr[kIdSTEEL], par, 3);
     printf("tmed %i | dx %7.2f dy %7.2f dz %7.2f (STPL) \n", fIdTmedArr[kIdSTEEL], par[0],par[1],par[2]);
     xpos = -(g->GetShellThickness() - g->GetSteelFrontThickness())/2.;
-    gMC->Gspos("STPL", 1, "SMOD", xpos, 0.0, 0.0, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gspos("STPL", 1, "SMOD", xpos, 0.0, 0.0, 0, "ONLY") ;
   }
 }
 
@@ -495,7 +495,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
     fParEMOD[1] = g->Get2Trd1Dx2()/2.;        // dx2
     fParEMOD[2] = g->GetPhiModuleSize()/2.;;  // dy
     fParEMOD[3] = g->GetLongModuleSize()/2.;  // dz
-    gMC->Gsvolu(child, "TRD1", fIdTmedArr[kIdSTEEL], fParEMOD, 4);
+    TVirtualMC::GetMC()->Gsvolu(child, "TRD1", fIdTmedArr[kIdSTEEL], fParEMOD, 4);
   }
   
   int nr=0;
@@ -510,8 +510,8 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
     if(!gn.Contains("WSUC")) { // ALICE 
       AliMatrix(fIdRotm, 90.-angle,180., 90.0,90.0, angle, 0.);
       phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-      //          printf(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n", 
-      //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+      AliDebug(4,Form(" %2i | angle | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
+                      iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule()));
       xpos = mod->GetPosXfromR() + g->GetSteelFrontThickness() - fSmodPar0;
       zpos = mod->GetPosZ() - fSmodPar2;
       
@@ -529,7 +529,7 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
         AliError("Unknown super module Type!!");
       for(int iy=0; iy<iyMax; iy++) { // flat in phi
         ypos = g->GetPhiModuleSize()*(2*iy+1 - iyMax)/2.;
-        gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+        TVirtualMC::GetMC()->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
         //
         //printf(" %2i xpos %7.2f ypos %7.2f zpos %7.2f fIdRotm %i\n", nr, xpos, ypos, zpos, fIdRotm);
         AliDebug(3,Form("%3.3i(%2.2i,%2.2i) ", nr,iy+1,iz+1));
@@ -539,18 +539,18 @@ void AliEMCALv0::CreateEmod(const char* mother, const char* child)
       if(iz == 0) AliMatrix(fIdRotm, 0.,0., 90.,0., 90.,90.); // (x')z; y'(x); z'(y)
       else        AliMatrix(fIdRotm, 90-angle,270., 90.0,0.0, angle,90.);
       phiOK = mod->GetCenterOfModule().Phi()*180./TMath::Pi(); 
-      //printf(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
-      //iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule());
+      AliDebug(4,Form(" %2i | angle -phiOK | %6.3f - %6.3f = %6.3f(eta %5.3f)\n",
+                      iz+1, angle, phiOK, angle-phiOK, mod->GetEtaOfCenterOfModule()));
       zpos = mod->GetPosZ()      - fSmodPar2;
       ypos = mod->GetPosXfromR() - fSmodPar1;
       //printf(" zpos %7.2f ypos %7.2f fIdRotm %i\n xpos ", zpos, xpos, fIdRotm);
       for(int ix=0; ix<g->GetNPhi(); ix++) 
       { // flat in phi
         xpos = g->GetPhiModuleSize()*(2*ix+1 - g->GetNPhi())/2.;
-        gMC->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
-        printf(" %7.2f ", xpos);
+        TVirtualMC::GetMC()->Gspos(child, ++nr, mother, xpos, ypos, zpos, fIdRotm, "ONLY") ;
+        //printf(" %7.2f ", xpos);
       }
-      printf("\n");
+      //printf("\n");
     }
   }
   AliDebug(2,Form(" Number of modules in Super Module(%s) %i \n", mother, nr));
@@ -568,9 +568,9 @@ void AliEMCALv0::CreateAlFrontPlate(const char* mother, const char* child)
   parALFP[1] = parALFP[0]               + tanTrd1*g->GetTrd1AlFrontThick(); // dx2
   parALFP[2] = g->GetPhiModuleSize()/2. - g->GetLateralSteelStrip();    // dy
   parALFP[3] = g->GetTrd1AlFrontThick()/2.; // dz
-  gMC->Gsvolu(child, "TRD1", fIdTmedArr[kIdAL], parALFP, 4);
+  TVirtualMC::GetMC()->Gsvolu(child, "TRD1", fIdTmedArr[kIdAL], parALFP, 4);
   zposALFP   = -fParEMOD[3] + g->GetTrd1AlFrontThick()/2.;
-  gMC->Gspos (child, 1, mother, 0.0, 0.0, zposALFP, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos (child, 1, mother, 0.0, 0.0, zposALFP, 0, "ONLY");
 }
 
 //______________________________________________________________________
@@ -588,11 +588,11 @@ void AliEMCALv0::Trd1Tower3X3(const double *parSCM0)
   gn.ToUpper(); 
  // Division to tile size 
   AliDebug(2,Form("Trd1Tower3X3() : Divide SCM0 on y-axis %i", g->GetNETAdiv()));
-  gMC->Gsdvn("SCMY","SCM0", g->GetNETAdiv(), 2); // y-axis
+  TVirtualMC::GetMC()->Gsdvn("SCMY","SCM0", g->GetNETAdiv(), 2); // y-axis
   double dx1=parSCM0[0], dx2=parSCM0[1], dy=parSCM0[2], dz=parSCM0[3];
   double ndiv=3., xpos=0.0;
   // should be defined once
-  gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
+  TVirtualMC::GetMC()->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
   for(int ix=1; ix<=3; ix++) { // 3X3
     scmx = "SCX"; // Nov 10,2006 
     // ix=1
@@ -626,8 +626,8 @@ void AliEMCALv0::Trd1Tower3X3(const double *parSCM0)
     for(int i=0; i<11; i++) AliDebug(2,Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
 
     scmx += ix;
-    gMC->Gsvolu(scmx.Data(), "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
-    gMC->Gspos(scmx.Data(), 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gsvolu(scmx.Data(), "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
+    TVirtualMC::GetMC()->Gspos(scmx.Data(), 1, "SCMY", xpos, 0.0, 0.0, 0, "ONLY") ;
 
     PbInTrap(parTRAP, scmx);
   }
@@ -657,7 +657,7 @@ void AliEMCALv0::PbInTrap(const double parTRAP[11], TString n)
     par[0] = parTRAP[4] + coef*fSampleWidth*iz;
     xpos   = par[0] - xCenterSCMX;
     if(parTRAP[1] < 0.) xpos = -xpos;
-    gMC->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
+    TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
     AliDebug(2,Form(" %i xpos %9.3f zpos %9.3f par[0] %9.3f |", iz+1, xpos, zpos, par[0]));
     zpos += fSampleWidth;
     if(iz%2>0) printf("\n");
@@ -686,14 +686,14 @@ void AliEMCALv0::Trd1Tower1X1(double *parSCM0)
   // and as consequence the same abs is scheme
   AliDebug(2,"Trd1Tower1X1() : Create SCMX(SCMY) as SCM0");
 
-  gMC->Gsvolu("SCMY", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
-  gMC->Gspos("SCMY", 1, "SCM0", 0.0, 0.0, 0.0, 0, "ONLY");
-  gMC->Gsvolu("SCMX", "TRD1", fIdTmedArr[kIdSC], parSCM0, 4);
-  gMC->Gspos("SCMX", 1, "SCMY", 0.0, 0.0, 0.0, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("SCMY", "TRD1", fIdTmedArr[kIdAIR], parSCM0, 4);
+  TVirtualMC::GetMC()->Gspos("SCMY", 1, "SCM0", 0.0, 0.0, 0.0, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("SCMX", "TRD1", fIdTmedArr[kIdSC], parSCM0, 4);
+  TVirtualMC::GetMC()->Gspos("SCMX", 1, "SCMY", 0.0, 0.0, 0.0, 0, "ONLY");
 
   // should be defined once
   double *dummy=0;
-  gMC->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
+  TVirtualMC::GetMC()->Gsvolu("PBTI", "BOX", fIdTmedArr[kIdPB], dummy, 0);
 
   PbInTrd1(parSCM0, "SCMX");
 
@@ -718,7 +718,7 @@ void AliEMCALv0::PbInTrd1(const double *parTrd1, TString n)
 
   for(int iz=0; iz<g->GetNECLayers(); iz++){
     par[0] = parTrd1[0] + coef*fSampleWidth*iz;
-    gMC->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
+    TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, n.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
     AliDebug(2,Form(" %i xpos %9.3f zpos %9.3f par[0] %9.3f |", iz+1, xpos, zpos, par[0]));
     zpos += fSampleWidth;
     if(iz%2>0) printf("\n");
@@ -740,8 +740,8 @@ void AliEMCALv0::Scm0InTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5
 		    i, parSCM0[i],emodPar[i], parSCM0[i]-emodPar[i]));
   }
   parSCM0[4] = emodPar[4];
-  gMC->Gsvolu("SCM0", "TRD2", fIdTmedArr[kIdSC], parSCM0, 5); // kIdAIR -> kIdSC
-  gMC->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gsvolu("SCM0", "TRD2", fIdTmedArr[kIdSC], parSCM0, 5); // kIdAIR -> kIdSC
+  TVirtualMC::GetMC()->Gspos("SCM0", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
   // Division 
   if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
     Division2X2InScm0(g, parSCM0);
@@ -787,14 +787,14 @@ void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t pa
 	   for(int i=0; i<11; i++) AliDebug(2,Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
 
   fIdRotm=0;
-  gMC->Gsvolu("SCMY", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11); // kIdAIR -> kIdSC
+  TVirtualMC::GetMC()->Gsvolu("SCMY", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11); // kIdAIR -> kIdSC
   ypos = +(parTRAP[3]+parTRAP[7])/2.; //
   AliDebug(2,Form(" Y shift SCMY inside SCM0 : %7.3f : opt %s\n", ypos, overLapFlagSCMY.Data())); 
-  gMC->Gspos("SCMY", 1, "SCM0", 0.0, ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()) ;
+  TVirtualMC::GetMC()->Gspos("SCMY", 1, "SCM0", 0.0, ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()) ;
   // Rotation SCMY around z-axis on 180 degree; x'=-x; y'=-y and z=z
   AliMatrix(fIdRotm, 90.0,180., 90.0, 270.0, 0.0,0.0) ;
   // We may have problem with numeration due to rotation - 4-feb-05
-  gMC->Gspos("SCMY", 2, "SCM0", 0.0, -ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()); 
+  TVirtualMC::GetMC()->Gspos("SCMY", 2, "SCM0", 0.0, -ypos, 0.0, fIdRotm,  overLapFlagSCMY.Data()); 
 
   Info("Division2X2InScm0","Divide SCMY on x-axis %i\n", g->GetNPHIdiv());
   dx1 = parSCM0[0]; 
@@ -819,13 +819,13 @@ void AliEMCALv0::Division2X2InScm0(const AliEMCALGeometry * g, const Double_t pa
   for(int i=0; i<11; i++) AliDebug(2,Form(" par[%2.2i] %9.4f\n", i, parTRAP[i]));
 
   fIdRotm=0;
-  gMC->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
+  TVirtualMC::GetMC()->Gsvolu("SCMX", "TRAP", fIdTmedArr[kIdSC], parTRAP, 11);
   xpos = (parTRAP[4]+parTRAP[8])/2.;
   AliDebug(2,Form(" X shift SCMX inside SCMX : %7.3f : opt %s\n", xpos, overLapFlagSCMX.Data())); 
-  gMC->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
+  TVirtualMC::GetMC()->Gspos("SCMX", 1, "SCMY", xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
   //  AliMatrix(fIdRotm, 90.0,270., 90.0, 0.0, 0.0,0.0); // x'=-y; y'=x; z'=z
   AliMatrix(fIdRotm, 90.0,90., 90.0, -180.0, 0.0,0.0);     // x'=y;  y'=-x; z'=z
-  gMC->Gspos("SCMX", 2, "SCMY", -xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
+  TVirtualMC::GetMC()->Gspos("SCMX", 2, "SCMY", -xpos, 0.0, 0.0, fIdRotm,  overLapFlagSCMX.Data()) ;
   // PB:
   if(n=="SCMX" && overLapFlagSCMY == "ONLY") {
     PbInTrapForTrd2(parTRAP, n);
@@ -843,14 +843,14 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
     pbShape    = "TRD2";
     //    pbtiChonly = "MANY";
   }
-  gMC->Gsvolu("PBTI", pbShape.Data(), fIdTmedArr[kIdPB], dummy, 0);
+  TVirtualMC::GetMC()->Gsvolu("PBTI", pbShape.Data(), fIdTmedArr[kIdPB], dummy, 0);
 
   int nr=0;
   Info("PbInTrapForTrd2"," Pb tiles inside %s: shape %s :pbtiChonly %s\n nrstart %i\n", 
   name.Data(), pbShape.Data(), pbtiChonly.Data(), nr);
   AliEMCALGeometry * g = GetGeometry(); 
 
-  double par[5], parPB[5], parSC[5];
+  double par[5], parPB[5];//, parSC[5];
   double xpos = 0.0, ypos = 0.0;
   double zpos = -fSampleWidth*g->GetNECLayers()/2. + g->GetECPbRadThick()/2.;
   if(name == "SCMX") { // common trapezoid - 11 parameters
@@ -864,7 +864,7 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
       par[1] = par[0];
       xpos   = ypos = par[0] - xCenterSCMX;
     //if(parTRAP[1] < 0.) xpos = -xpos;
-      gMC->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
+      TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, "ONLY", par, 3) ;
       AliDebug(2,Form(" %2.2i xpos %8.5f zpos %6.3f par[0,1] %6.3f |", iz+1, xpos, zpos, par[0]));
       if(iz%2>0) AliDebug(2,Form("\n"));
       zpos += fSampleWidth;
@@ -879,21 +879,21 @@ void AliEMCALv0::PbInTrapForTrd2(const double *parTRAP, TString name)
     double tanx = (parTRAP[1] -  parTRAP[0]) / (2.*parTRAP[4]); //  tanx =  tany now
     double tany = (parTRAP[3] -  parTRAP[2]) / (2.*parTRAP[4]), ztmp=0.;
     parPB[4] = g->GetECPbRadThick()/2.;
-    parSC[2] = g->GetECScintThick()/2.;
+    //parSC[2] = g->GetECScintThick()/2.;
     for(int iz=0; iz<g->GetNECLayers(); iz++){
       ztmp     = fSampleWidth*double(iz);
       parPB[0] = parTRAP[0] + tanx*ztmp;
       parPB[1] = parPB[0]   + tanx*g->GetECPbRadThick();
       parPB[2] = parTRAP[2] + tany*ztmp;
       parPB[3] = parPB[2]   + tany*g->GetECPbRadThick();
-      gMC->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, pbtiChonly.Data(), parPB, 5) ;
+      TVirtualMC::GetMC()->Gsposp("PBTI", ++nr, name.Data(), xpos, ypos, zpos, 0, pbtiChonly.Data(), parPB, 5) ;
       AliDebug(2,Form("\n PBTI %2i | zpos %6.3f | par = ", nr, zpos));
       /*
       for(int i=0; i<5; i++) printf(" %9.5f ", parPB[i]);
       // individual SC tile
       parSC[0] = parPB[0];
       parSC[1] = parPB[1];
-      gMC->Gsposp("SCTI", nr, name.Data(), xpos, ypos, zpos+g->GetECScintThick(), 
+      TVirtualMC::GetMC()->Gsposp("SCTI", nr, name.Data(), xpos, ypos, zpos+g->GetECScintThick(), 
       0, pbtiChonly.Data(), parSC, 3) ;
       printf("\n SCTI     zpos %6.3f | par = ", zpos+g->GetECScintThick());
       for(int i=0; i<3; i++) printf(" %9.5f ", parPB[i]);
@@ -919,8 +919,8 @@ void AliEMCALv0::PbmoInTrd2(const AliEMCALGeometry * g, const Double_t emodPar[5
 		    i, parPBMO[i],emodPar[i], parPBMO[i]-emodPar[i]));
   }
   parPBMO[4] = emodPar[4];
-  gMC->Gsvolu("PBMO", "TRD2", fIdTmedArr[kIdPB], parPBMO, 5);
-  gMC->Gspos("PBMO", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
+  TVirtualMC::GetMC()->Gsvolu("PBMO", "TRD2", fIdTmedArr[kIdPB], parPBMO, 5);
+  TVirtualMC::GetMC()->Gspos("PBMO", 1, "EMOD", 0., 0., 0., 0, "ONLY") ;
   // Division 
   if(g->GetNPHIdiv()==2 && g->GetNETAdiv()==2) {
     Division2X2InPbmo(g, parPBMO);
@@ -937,7 +937,7 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
   // Division 2X2
   Info("Division2X2InPbmo"," started : geometry %s ", g->GetName());
   //Double_t *dummy=0;
-  //  gMC->Gsvolu("SCTI", "BOX", fIdTmedArr[kIdSC], dummy, 0);
+  //  TVirtualMC::GetMC()->Gsvolu("SCTI", "BOX", fIdTmedArr[kIdSC], dummy, 0);
 
   double parSC[3];
   double xpos = 0.0, ypos = 0.0, zpos = 0.0, ztmp=0;;
@@ -959,18 +959,18 @@ void AliEMCALv0::Division2X2InPbmo(const AliEMCALGeometry * g, const Double_t pa
     parSC[1] =  parPBMO[2] + tany*ztmp;
 
     snprintf(name,buffersize,"SC%2.2i", iz+1);
-    gMC->Gsvolu(name, "BOX", fIdTmedArr[kIdSC], parSC, 3);
-    gMC->Gspos(name, 1, "PBMO", xpos, ypos, zpos, 0, "ONLY") ;
+    TVirtualMC::GetMC()->Gsvolu(name, "BOX", fIdTmedArr[kIdSC], parSC, 3);
+    TVirtualMC::GetMC()->Gspos(name, 1, "PBMO", xpos, ypos, zpos, 0, "ONLY") ;
     AliDebug(2,Form("%s | zpos %6.3f | parSC[0,1]=(%7.5f,%7.5f) -> ", 
 		    name, zpos, parSC[0], parSC[1]));
     
     snprintf(named,buffersize,"SY%2.2i", iz+1);
     printf(" %s -> ", named);
-    gMC->Gsdvn(named,name, 2, 2);
+    TVirtualMC::GetMC()->Gsdvn(named,name, 2, 2);
 
     snprintf(named2,buffersize,"SX%2.2i", iz+1);
     printf(" %s \n", named2);
-    gMC->Gsdvn(named2,named, 2, 1);
+    TVirtualMC::GetMC()->Gsdvn(named2,named, 2, 1);
 
     zpos    += fSampleWidth;
   }

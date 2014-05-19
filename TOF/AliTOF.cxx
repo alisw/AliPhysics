@@ -69,7 +69,7 @@
 class AliTOFcluster;
 
 // extern TROOT *gROOT;
-// extern TVirtualMC *gMC;
+// extern TVirtualMC *TVirtualMC::GetMC();
 
 // extern AliRun *gAlice;
 
@@ -419,7 +419,7 @@ void AliTOF::Init()
   // Initialise TOF detector after it has been built
   //
   // Set id of TOF sensitive volume
-  if (IsVersion() !=0) fIdSens=gMC->VolId("FPAD");
+  if (IsVersion() !=0) fIdSens=TVirtualMC::GetMC()->VolId("FPAD");
 
   /*
   // Save the geometry
@@ -493,7 +493,7 @@ void AliTOF::Makehits(Bool_t hits)
 //              disabled for TOFv0
 // 
    if (hits &&  (IsVersion()!=0))
-      fIdSens = gMC->VolId("FPAD");
+      fIdSens = TVirtualMC::GetMC()->VolId("FPAD");
    else
       AliInfo("Option for writing the TOF-hits branch on TreeH: disabled");
 }

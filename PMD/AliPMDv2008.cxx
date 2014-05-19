@@ -159,7 +159,7 @@ void AliPMDv2008::CreateSupermodule()
   hexd2[6] =  fgkCellRadius - fgkCellWall;
   hexd2[9] =  fgkCellRadius - fgkCellWall;
   
-  gMC->Gsvolu("ECAR", "PGON", idtmed[604], hexd2,10);
+  TVirtualMC::GetMC()->Gsvolu("ECAR", "PGON", idtmed[604], hexd2,10);
   //******************************************************//
 
   // STEP - II
@@ -173,11 +173,11 @@ void AliPMDv2008::CreateSupermodule()
   hexd1[6] =  fgkCellRadius;
   hexd1[9] =  fgkCellRadius;
 
-  gMC->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
+  TVirtualMC::GetMC()->Gsvolu("ECCU", "PGON", idtmed[614], hexd1,10);
 
   // Place  inner hex (sensitive volume) inside outer hex (copper)
   
-  gMC->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECAR", 1, "ECCU", 0., 0., 0., 0, "ONLY");
   //******************************************************//
 
   // STEP - III
@@ -192,7 +192,7 @@ void AliPMDv2008::CreateSupermodule()
   dbox1[1] = fgkNrowUM1*fgkCellRadius;
   dbox1[2] = fgkCellDepth/2.;
   
-  gMC->Gsvolu("EST1","BOX", idtmed[698], dbox1, 3);
+  TVirtualMC::GetMC()->Gsvolu("EST1","BOX", idtmed[698], dbox1, 3);
 
   // volume for second strip EST2 
 
@@ -202,7 +202,7 @@ void AliPMDv2008::CreateSupermodule()
   dbox2[0] = dbox1[0];
   dbox2[2] = dbox1[2];
 
-  gMC->Gsvolu("EST2","BOX", idtmed[698], dbox2, 3);
+  TVirtualMC::GetMC()->Gsvolu("EST2","BOX", idtmed[698], dbox2, 3);
 
   // Place hexagonal cells ECCU placed inside EST1 
   xb = 0.; 
@@ -211,7 +211,7 @@ void AliPMDv2008::CreateSupermodule()
   for (i = 1; i <= fgkNrowUM1; ++i) 
     {
       number = i;
-      gMC->Gspos("ECCU", number, "EST1", xb,yb,zb, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("ECCU", number, "EST1", xb,yb,zb, 0, "ONLY");
       yb -= (fgkCellRadius*2.);
     }
 
@@ -222,7 +222,7 @@ void AliPMDv2008::CreateSupermodule()
   for (i = 1; i <= fgkNrowUM2; ++i) 
     {
       number = i;
-      gMC->Gspos("ECCU", number, "EST2", xb,yb,zb, 0, "ONLY");
+      TVirtualMC::GetMC()->Gspos("ECCU", number, "EST2", xb,yb,zb, 0, "ONLY");
       //PH      cout << "ECCU in EST2 ==> " << number << "\t"<<xb <<  "\t"<<yb <<endl;
       yb -= (fgkCellRadius*2.);
     }
@@ -251,7 +251,7 @@ void AliPMDv2008::CreateSupermodule()
   dbox3[2] = fgkCellDepth/2.;
 
   //Create a BOX, Material AIR
-  gMC->Gsvolu("EHC1","BOX", idtmed[698], dbox3, 3);
+  TVirtualMC::GetMC()->Gsvolu("EHC1","BOX", idtmed[698], dbox3, 3);
   // Place rectangular strips EST1 inside EHC1 unit module
   xb = dbox3[0]-dbox1[0];  
   
@@ -266,7 +266,7 @@ void AliPMDv2008::CreateSupermodule()
 	  yb = fgkCellRadius/2.0;
 	}
       number = j;
-      gMC->Gspos("EST1",number, "EHC1", xb, yb , 0. , 0, "MANY");
+      TVirtualMC::GetMC()->Gspos("EST1",number, "EHC1", xb, yb , 0. , 0, "MANY");
       //The strips are being placed from top towards bottom of the module
       //This is because the first cell in a module in hardware is the top
       //left corner cell
@@ -298,7 +298,7 @@ void AliPMDv2008::CreateSupermodule()
   dbox4[2] = dbox3[2];
   
   //Create a BOX of AIR
-  gMC->Gsvolu("EHC2","BOX", idtmed[698], dbox4, 3);
+  TVirtualMC::GetMC()->Gsvolu("EHC2","BOX", idtmed[698], dbox4, 3);
 
   // Place rectangular strips EST2 inside EHC2 unit module
   xb = dbox4[0]-dbox2[0]; 
@@ -313,7 +313,7 @@ void AliPMDv2008::CreateSupermodule()
     yb = +fgkCellRadius/2.0;
   }
     number = j;
-    gMC->Gspos("EST2",number, "EHC2", xb, yb , 0. ,0, "MANY");
+    TVirtualMC::GetMC()->Gspos("EST2",number, "EHC2", xb, yb , 0. ,0, "MANY");
     xb = (dbox4[0]-dbox2[0])-j*fgkCellRadius*fgkSqroot3;
   }
   
@@ -352,7 +352,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxPcbA[2]      = fgkThPCB/2.;
   
   //Top and Bottom PCB is a BOX of Material G10
-  gMC->Gsvolu("EPCA","BOX", idtmed[607], dboxPcbA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPCA","BOX", idtmed[607], dboxPcbA, 3);
   //--------------------------------------------------------//  
   //Back Plane : EBKA
   //==================
@@ -367,7 +367,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxBPlaneA[2]   = fgkThBKP/2.;
   
   //Back PLane PCB of MAterial G10
-  gMC->Gsvolu("EBKA","BOX", idtmed[607], dboxBPlaneA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EBKA","BOX", idtmed[607], dboxBPlaneA, 3);
   //-------------------------------------------------------------//  
 
  //---------- That was all in the Z -direction of Unit Module A----//
@@ -394,11 +394,11 @@ void AliPMDv2008::CreateSupermodule()
 
   //FOR PRESHOWER
   //Air gap is a BOX of Material Air
-  gMC->Gsvolu("ECGA","BOX", idtmed[698], dboxAir3A, 3);
+  TVirtualMC::GetMC()->Gsvolu("ECGA","BOX", idtmed[698], dboxAir3A, 3);
 
   //FOR VETO
   //Air gap is a BOX of Material Air
-  gMC->Gsvolu("ECVA","BOX", idtmed[698], dboxAir3A, 3);
+  TVirtualMC::GetMC()->Gsvolu("ECVA","BOX", idtmed[698], dboxAir3A, 3);
   //-------------------------------------------------//  
 
  //-------------------------------------------------//
@@ -415,11 +415,11 @@ void AliPMDv2008::CreateSupermodule()
 
   //FOR PRESHOWER
   //G10 BOX 
-  gMC->Gsvolu("EDGA","BOX", idtmed[607], dboxGGA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EDGA","BOX", idtmed[607], dboxGGA, 3);
 
   //FOR VETO
   //G10 BOX 
-  gMC->Gsvolu("EDVA","BOX", idtmed[607], dboxGGA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EDVA","BOX", idtmed[607], dboxGGA, 3);
 
   //-------------------------------------------------//  
   //----------------------------------------------------------//
@@ -440,11 +440,11 @@ void AliPMDv2008::CreateSupermodule()
   //FOR PRESHOWER
 
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESSA","BOX", idtmed[618], dboxSS1, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESSA","BOX", idtmed[618], dboxSS1, 3);
 
   //FOR VETO
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESVA","BOX", idtmed[618], dboxSS1, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESVA","BOX", idtmed[618], dboxSS1, 3);
 
   //----------------------------------------------------------------//
 
@@ -482,12 +482,12 @@ void AliPMDv2008::CreateSupermodule()
   //FOR VETO
 //Creating the side channels 
 // SS boundary channel, followed by G10 and Air Gap  
-  gMC->Gspos("EDVA", 1, "ESVA", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ECVA", 1, "EDVA", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EDVA", 1, "ESVA", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECVA", 1, "EDVA", 0., 0., 0., 0, "ONLY");
 
 //FOR PRESHOWER
-  gMC->Gspos("EDGA", 1, "ESSA", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ECGA", 1, "EDGA", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EDGA", 1, "ESSA", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECGA", 1, "EDGA", 0., 0., 0., 0, "ONLY");
 
  // now other components, using Bedanga's code, but changing the values.
   //Positioning Bottom PCB, Honey Comb abd Top PCB in AIR
@@ -495,25 +495,25 @@ void AliPMDv2008::CreateSupermodule()
   //For veto plane
   //Positioning the Bottom 0.16 cm PCB
   Float_t zbpcb = -dboxAir3A[2] + (2.0*fgkGap) + fgkThPCB/2.;
-  gMC->Gspos("EPCA", 1, "ECVA", 0., 0., zbpcb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCA", 1, "ECVA", 0., 0., zbpcb, 0, "ONLY");
   //Positioning the Honey Comb 0.5 cm
   Float_t zhc = zbpcb + fgkThPCB/2. + fgkCellDepth/2.;
-  gMC->Gspos("EHC1", 1, "ECVA", 0., 0., zhc, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EHC1", 1, "ECVA", 0., 0., zhc, 0, "ONLY");
   //Positioning the Top PCB 0.16 cm
   Float_t ztpcb = zhc + fgkCellDepth/2 + fgkThPCB/2.;
-  gMC->Gspos("EPCA", 2, "ECVA", 0., 0., ztpcb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCA", 2, "ECVA", 0., 0., ztpcb, 0, "ONLY");
 
 
   //For Preshower plane the ordering is reversed
   //Positioning the Bottom 0.16 cm PCB
   zbpcb = -dboxAir3A[2] + fgkThPCB + fgkThPCB/2.;
-  gMC->Gspos("EPCA", 1, "ECGA", 0., 0., zbpcb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCA", 1, "ECGA", 0., 0., zbpcb, 0, "ONLY");
   //Positioning the Honey Comb 0.5 cm
   zhc = zbpcb + fgkThPCB/2. + fgkCellDepth/2.;
-  gMC->Gspos("EHC1", 1, "ECGA", 0., 0., zhc, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EHC1", 1, "ECGA", 0., 0., zhc, 0, "ONLY");
   //Positioning the Top PCB 0.16 cm
   ztpcb = zhc + fgkCellDepth/2 + fgkThPCB/2.;
-  gMC->Gspos("EPCA", 2, "ECGA", 0., 0., ztpcb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCA", 2, "ECGA", 0., 0., ztpcb, 0, "ONLY");
 
 
 
@@ -535,9 +535,9 @@ void AliPMDv2008::CreateSupermodule()
 
   //FOR PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
-  gMC->Gsvolu("EUM1","BOX", idtmed[698], dboxUM1, 3);
+  TVirtualMC::GetMC()->Gsvolu("EUM1","BOX", idtmed[698], dboxUM1, 3);
   //FOR VETO
-  gMC->Gsvolu("EUV1","BOX", idtmed[698], dboxUM1, 3);
+  TVirtualMC::GetMC()->Gsvolu("EUV1","BOX", idtmed[698], dboxUM1, 3);
 
   //----------------------------------------------------------------//
 
@@ -552,35 +552,35 @@ void AliPMDv2008::CreateSupermodule()
   dboxBaseA[2]       = fgkThBase/2.;
   
   //Base Blate is a G10 BOX
-  gMC->Gsvolu("EBPA","BOX", idtmed[607], dboxBaseA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EBPA","BOX", idtmed[607], dboxBaseA, 3);
   //----------------------------------------------------//  
 
   //FOR VETO
   //- Placing of all components of UM in AIR BOX EUM1--//
   //(1)   FIRST PUT THE BASE PLATE
   Float_t zbaseplate = -dboxUM1[2] + fgkThBase/2.;
-  gMC->Gspos("EBPA", 1, "EUV1", 0., 0., zbaseplate, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBPA", 1, "EUV1", 0., 0., zbaseplate, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
   Float_t zss = zbaseplate + fgkThBase/2. + fgkThSS/2.;
-  gMC->Gspos("ESVA", 1, "EUV1", 0., 0., zss, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESVA", 1, "EUV1", 0., 0., zss, 0, "ONLY");
   
   // (3) Positioning the Backplane PCB 0.1 cm
   Float_t zbkp = zss + fgkThSS/2. + fgkThBKP/2.;
-  gMC->Gspos("EBKA", 1, "EUV1", 0., 0., zbkp, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBKA", 1, "EUV1", 0., 0., zbkp, 0, "ONLY");
 
   //FOR PRESHOWER
   // (3) Positioning the Backplane PCB 0.1 cm
   zbkp = -dboxUM1[2] + fgkThBKP/2.;
-  gMC->Gspos("EBKA", 1, "EUM1", 0., 0., zbkp, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBKA", 1, "EUM1", 0., 0., zbkp, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
   zss = zbkp + fgkThBKP/2. + fgkThSS/2.;
-  gMC->Gspos("ESSA", 1, "EUM1", 0., 0., zss, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESSA", 1, "EUM1", 0., 0., zss, 0, "ONLY");
   
   //(1)   FIRST PUT THE BASE PLATE
   zbaseplate = zss + fgkThSS/2 + fgkThBase/2.;
-  gMC->Gspos("EBPA", 1, "EUM1", 0., 0., zbaseplate, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBPA", 1, "EUM1", 0., 0., zbaseplate, 0, "ONLY");
   //-------------------- UM Type A completed ------------------------//
 
 
@@ -600,7 +600,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxPcbB[2]      = fgkThPCB/2.;
   
   //Top and Bottom PCB is a BOX of Material G10
-  gMC->Gsvolu("EPCB","BOX", idtmed[607], dboxPcbB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPCB","BOX", idtmed[607], dboxPcbB, 3);
   //--------------------------------------------------------//  
   //Back Plane : EBKB
   //==================
@@ -615,7 +615,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxBPlaneB[2]   = fgkThBKP/2.;
   
   //Back PLane PCB of MAterial G10
-  gMC->Gsvolu("EBKB","BOX", idtmed[607], dboxBPlaneB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EBKB","BOX", idtmed[607], dboxBPlaneB, 3);
   //-------------------------------------------------------------//  
 
  //---------- That was all in the Z -direction of Unit Module B----//
@@ -640,9 +640,9 @@ void AliPMDv2008::CreateSupermodule()
 
   //PRESHOWER
   //Air gap is a BOX of Material Air
-  gMC->Gsvolu("ECGB","BOX", idtmed[698], dboxAir3B, 3);
+  TVirtualMC::GetMC()->Gsvolu("ECGB","BOX", idtmed[698], dboxAir3B, 3);
   //VETO
-  gMC->Gsvolu("ECVB","BOX", idtmed[698], dboxAir3B, 3);
+  TVirtualMC::GetMC()->Gsvolu("ECVB","BOX", idtmed[698], dboxAir3B, 3);
 
   //-------------------------------------------------//  
 
@@ -660,9 +660,9 @@ void AliPMDv2008::CreateSupermodule()
 
   //PRESHOWER
   //G10 BOX 
-  gMC->Gsvolu("EDGB","BOX", idtmed[607], dboxGGB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EDGB","BOX", idtmed[607], dboxGGB, 3);
   //VETO
-  gMC->Gsvolu("EDVB","BOX", idtmed[607], dboxGGB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EDVB","BOX", idtmed[607], dboxGGB, 3);
   //-------------------------------------------------//  
   //----------------------------------------------------------//
   //Stainless Steel Bounadry : ESSB
@@ -681,9 +681,9 @@ void AliPMDv2008::CreateSupermodule()
   
   //PRESHOWER
   //Stainless Steel boundary - Material Stainless Steel
-  gMC->Gsvolu("ESSB","BOX", idtmed[618], dboxSS2, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESSB","BOX", idtmed[618], dboxSS2, 3);
   //VETO
-  gMC->Gsvolu("ESVB","BOX", idtmed[618], dboxSS2, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESVB","BOX", idtmed[618], dboxSS2, 3);
   //----------------------------------------------------------------//
 
   //----------------------------------------------------------------//
@@ -719,11 +719,11 @@ void AliPMDv2008::CreateSupermodule()
 //PRESHOWER
 //Creating the side channels
 // SS boundary channel, followed by G10 and Air Gap  
-  gMC->Gspos("EDGB", 1, "ESSB", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ECGB", 1, "EDGB", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EDGB", 1, "ESSB", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECGB", 1, "EDGB", 0., 0., 0., 0, "ONLY");
   //VETO
-  gMC->Gspos("EDVB", 1, "ESVB", 0., 0., 0., 0, "ONLY");
-  gMC->Gspos("ECVB", 1, "EDVB", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EDVB", 1, "ESVB", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ECVB", 1, "EDVB", 0., 0., 0., 0, "ONLY");
 
  // now other components, using Bedang's code, but changing the values.
   //Positioning Bottom PCB, Honey Comb abd Top PCB in AIR
@@ -731,25 +731,25 @@ void AliPMDv2008::CreateSupermodule()
   //VETO
   //Positioning the Bottom 0.16 cm PCB
   Float_t zbpcb2 = -dboxAir3B[2] + (2.0*fgkGap) + fgkThPCB/2.;
-  gMC->Gspos("EPCB", 1, "ECVB", 0., 0., zbpcb2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCB", 1, "ECVB", 0., 0., zbpcb2, 0, "ONLY");
   //Positioning the Honey Comb 0.5 cm
   Float_t zhc2 = zbpcb2 + fgkThPCB/2. + fgkCellDepth/2.;
-  gMC->Gspos("EHC2", 1, "ECVB", 0., 0., zhc2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EHC2", 1, "ECVB", 0., 0., zhc2, 0, "ONLY");
   //Positioning the Top PCB 0.16 cm
   Float_t ztpcb2 = zhc2 + fgkCellDepth/2 + fgkThPCB/2.;
-  gMC->Gspos("EPCB", 2, "ECVB", 0., 0., ztpcb2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCB", 2, "ECVB", 0., 0., ztpcb2, 0, "ONLY");
 
   //PRESHOWER
   //For preshower plane the ordering is reversed
   //Positioning the Bottom 0.16 cm PCB
   zbpcb2 = -dboxAir3B[2] + fgkThPCB + fgkThPCB/2.;
-  gMC->Gspos("EPCB", 1, "ECGB", 0., 0., zbpcb2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCB", 1, "ECGB", 0., 0., zbpcb2, 0, "ONLY");
   //Positioning the Honey Comb 0.5 cm
   zhc2 = zbpcb2 + fgkThPCB/2. + fgkCellDepth/2.;
-  gMC->Gspos("EHC2", 1, "ECGB", 0., 0., zhc2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EHC2", 1, "ECGB", 0., 0., zhc2, 0, "ONLY");
   //Positioning the Top PCB 0.16 cm
   ztpcb2 = zhc2 + fgkCellDepth/2 + fgkThPCB/2.;
-  gMC->Gspos("EPCB", 2, "ECGB", 0., 0., ztpcb2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPCB", 2, "ECGB", 0., 0., ztpcb2, 0, "ONLY");
 
 
 
@@ -771,10 +771,10 @@ void AliPMDv2008::CreateSupermodule()
 
   //PRESHOWER
   //Create a Unit module of above dimensions Material : AIR
-  gMC->Gsvolu("EUM2","BOX", idtmed[698], dboxUM2, 3);
+  TVirtualMC::GetMC()->Gsvolu("EUM2","BOX", idtmed[698], dboxUM2, 3);
 
   //VETO
-  gMC->Gsvolu("EUV2","BOX", idtmed[698], dboxUM2, 3);
+  TVirtualMC::GetMC()->Gsvolu("EUV2","BOX", idtmed[698], dboxUM2, 3);
   //----------------------------------------------------------------//
 
   //BASE PLATE : EBPB
@@ -788,37 +788,37 @@ void AliPMDv2008::CreateSupermodule()
   dboxBaseB[2]       = fgkThBase/2.;
   
   //Base Blate is a G10 BOX
-  gMC->Gsvolu("EBPB","BOX", idtmed[607], dboxBaseB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EBPB","BOX", idtmed[607], dboxBaseB, 3);
   //----------------------------------------------------//  
 
   //VETO
   //- Placing of all components of UM in AIR BOX EUM2--//
   //(1)   FIRST PUT THE BASE PLATE
   Float_t zbaseplate2 = -dboxUM2[2] + fgkThBase/2.;
-  gMC->Gspos("EBPB", 1, "EUV2", 0., 0., zbaseplate2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBPB", 1, "EUV2", 0., 0., zbaseplate2, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
   Float_t zss2 = zbaseplate2 + fgkThBase/2. + fgkThSS/2.;
-  gMC->Gspos("ESVB", 1, "EUV2", 0., 0., zss2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESVB", 1, "EUV2", 0., 0., zss2, 0, "ONLY");
   
   // (3) Positioning the Backplane PCB 0.1 cm
   Float_t zbkp2 = zss2 + fgkThSS/2. + fgkThBKP/2.;
-  gMC->Gspos("EBKB", 1, "EUV2", 0., 0., zbkp2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBKB", 1, "EUV2", 0., 0., zbkp2, 0, "ONLY");
 
 
 
   //FOR PRESHOWER
   // (3) Positioning the Backplane PCB 0.1 cm
   zbkp2 = -dboxUM2[2] + fgkThBKP/2.;
-  gMC->Gspos("EBKB", 1, "EUM2", 0., 0., zbkp2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBKB", 1, "EUM2", 0., 0., zbkp2, 0, "ONLY");
 
   //(2)   NEXT PLACING the SS BOX 
   zss2 = zbkp2 + fgkThBKP/2. + fgkThSS/2.;
-  gMC->Gspos("ESSB", 1, "EUM2", 0., 0., zss2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESSB", 1, "EUM2", 0., 0., zss2, 0, "ONLY");
   
   //(1)   FIRST PUT THE BASE PLATE
   zbaseplate2 = zss2 + fgkThSS/2 + fgkThBase/2.;
-  gMC->Gspos("EBPB", 1, "EUM2", 0., 0., zbaseplate2, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EBPB", 1, "EUM2", 0., 0., zbaseplate2, 0, "ONLY");
   //-------------------- UM Type B completed ------------------------//
 
 
@@ -834,14 +834,14 @@ void AliPMDv2008::CreateSupermodule()
   dboxPba[1] = dboxUM1[1];
   dboxPba[2] = fgkThLead/2.;
   // Lead of UM dimension
-  gMC->Gsvolu("EPB1","BOX", idtmed[600], dboxPba, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPB1","BOX", idtmed[600], dboxPba, 3);
 
   Float_t dboxPbb[3];
   dboxPbb[0] = dboxUM2[0];
   dboxPbb[1] = dboxUM2[1];
   dboxPbb[2] = fgkThLead/2.;
   // Lead of UM dimension
-  gMC->Gsvolu("EPB2","BOX", idtmed[600], dboxPbb, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPB2","BOX", idtmed[600], dboxPbb, 3);
 
   //----------------------------------------------------------------//
 
@@ -859,10 +859,10 @@ void AliPMDv2008::CreateSupermodule()
   dboxSM1[2] = dboxUM1[2];
 
   //FOR PRESHOWER  
-  gMC->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESMA","BOX", idtmed[698], dboxSM1, 3);
   
   //FOR VETO
-  gMC->Gsvolu("EMVA","BOX", idtmed[698], dboxSM1, 3);
+  TVirtualMC::GetMC()->Gsvolu("EMVA","BOX", idtmed[698], dboxSM1, 3);
 
   //Position the 6 unit modules in EMSA
   Float_t xa1,xa2,xa3,ya1,ya2; 
@@ -873,20 +873,20 @@ void AliPMDv2008::CreateSupermodule()
   ya2 = ya1 - dboxUM1[1] - 0.1 - dboxUM1[1];
 
   //PRESHOWER
-  // gMC->Gspos("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY"); // BKN
-  gMC->Gspos("EUM1", 2, "ESMA", xa2, ya1, 0., 0, "ONLY");
-  gMC->Gspos("EUM1", 3, "ESMA", xa3, ya1, 0., 0, "ONLY");
-  gMC->Gspos("EUM1", 4, "ESMA", xa1, ya2, 0., 0, "ONLY");
-  gMC->Gspos("EUM1", 5, "ESMA", xa2, ya2, 0., 0, "ONLY");
-  gMC->Gspos("EUM1", 6, "ESMA", xa3, ya2, 0., 0, "ONLY");
+  // TVirtualMC::GetMC()->Gspos("EUM1", 1, "ESMA", xa1, ya1, 0., 0, "ONLY"); // BKN
+  TVirtualMC::GetMC()->Gspos("EUM1", 2, "ESMA", xa2, ya1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM1", 3, "ESMA", xa3, ya1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM1", 4, "ESMA", xa1, ya2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM1", 5, "ESMA", xa2, ya2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM1", 6, "ESMA", xa3, ya2, 0., 0, "ONLY");
 
   //VETO
-  gMC->Gspos("EUV1", 1, "EMVA", xa1, ya1, 0., 0, "ONLY");
-  gMC->Gspos("EUV1", 2, "EMVA", xa2, ya1, 0., 0, "ONLY");
-  gMC->Gspos("EUV1", 3, "EMVA", xa3, ya1, 0., 0, "ONLY");
-  gMC->Gspos("EUV1", 4, "EMVA", xa1, ya2, 0., 0, "ONLY");
-  gMC->Gspos("EUV1", 5, "EMVA", xa2, ya2, 0., 0, "ONLY");
-  gMC->Gspos("EUV1", 6, "EMVA", xa3, ya2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 1, "EMVA", xa1, ya1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 2, "EMVA", xa2, ya1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 3, "EMVA", xa3, ya1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 4, "EMVA", xa1, ya2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 5, "EMVA", xa2, ya2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV1", 6, "EMVA", xa3, ya2, 0., 0, "ONLY");
 
 
   // volume for SUPERMODULE ESMB 
@@ -897,9 +897,9 @@ void AliPMDv2008::CreateSupermodule()
   dboxSM2[2] = dboxUM2[2];
   
   //PRESHOWER
-  gMC->Gsvolu("ESMB","BOX", idtmed[698], dboxSM2, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESMB","BOX", idtmed[698], dboxSM2, 3);
   //VETO 
-  gMC->Gsvolu("EMVB","BOX", idtmed[698], dboxSM2, 3);
+  TVirtualMC::GetMC()->Gsvolu("EMVB","BOX", idtmed[698], dboxSM2, 3);
 
   //Position the 6 unit modules in EMSB
   Float_t xb1,xb2,yb1,yb2,yb3; 
@@ -911,20 +911,20 @@ void AliPMDv2008::CreateSupermodule()
 
 
   //PRESHOWER  
-  // gMC->Gspos("EUM2", 1, "ESMB", xb1, yb1, 0., 0, "ONLY");  // BKN
-  // gMC->Gspos("EUM2", 2, "ESMB", xb2, yb1, 0., 0, "ONLY");
-  gMC->Gspos("EUM2", 3, "ESMB", xb1, yb2, 0., 0, "ONLY");
-  gMC->Gspos("EUM2", 4, "ESMB", xb2, yb2, 0., 0, "ONLY");
-  gMC->Gspos("EUM2", 5, "ESMB", xb1, yb3, 0., 0, "ONLY");
-  gMC->Gspos("EUM2", 6, "ESMB", xb2, yb3, 0., 0, "ONLY");
+  // TVirtualMC::GetMC()->Gspos("EUM2", 1, "ESMB", xb1, yb1, 0., 0, "ONLY");  // BKN
+  // TVirtualMC::GetMC()->Gspos("EUM2", 2, "ESMB", xb2, yb1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM2", 3, "ESMB", xb1, yb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM2", 4, "ESMB", xb2, yb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM2", 5, "ESMB", xb1, yb3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUM2", 6, "ESMB", xb2, yb3, 0., 0, "ONLY");
   
   //VETO
-  gMC->Gspos("EUV2", 1, "EMVB", xb1, yb1, 0., 0, "ONLY");
-  gMC->Gspos("EUV2", 2, "EMVB", xb2, yb1, 0., 0, "ONLY");
-  gMC->Gspos("EUV2", 3, "EMVB", xb1, yb2, 0., 0, "ONLY");
-  gMC->Gspos("EUV2", 4, "EMVB", xb2, yb2, 0., 0, "ONLY");
-  gMC->Gspos("EUV2", 5, "EMVB", xb1, yb3, 0., 0, "ONLY");
-  gMC->Gspos("EUV2", 6, "EMVB", xb2, yb3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 1, "EMVB", xb1, yb1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 2, "EMVB", xb2, yb1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 3, "EMVB", xb1, yb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 4, "EMVB", xb2, yb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 5, "EMVB", xb1, yb3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EUV2", 6, "EMVB", xb2, yb3, 0., 0, "ONLY");
   
   // Make smiliar stucture for lead as for PMD plane
   //================================================
@@ -940,7 +940,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxSMPb1[1] = 2.0*dboxUM1[1] +  0.05;
   dboxSMPb1[2] = fgkThLead/2.;
   
-  gMC->Gsvolu("ESPA","BOX", idtmed[698], dboxSMPb1, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESPA","BOX", idtmed[698], dboxSMPb1, 3);
   
 
   //Position the 6 unit modules in ESMPbA
@@ -952,12 +952,12 @@ void AliPMDv2008::CreateSupermodule()
   ypa2 = ypa1 - dboxUM1[1] - 0.1 - dboxUM1[1];
 
 
-  gMC->Gspos("EPB1", 1, "ESPA", xpa1, ypa1, 0., 0, "ONLY");
-  gMC->Gspos("EPB1", 2, "ESPA", xpa2, ypa1, 0., 0, "ONLY");
-  gMC->Gspos("EPB1", 3, "ESPA", xpa3, ypa1, 0., 0, "ONLY");
-  gMC->Gspos("EPB1", 4, "ESPA", xpa1, ypa2, 0., 0, "ONLY");
-  gMC->Gspos("EPB1", 5, "ESPA", xpa2, ypa2, 0., 0, "ONLY");
-  gMC->Gspos("EPB1", 6, "ESPA", xpa3, ypa2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 1, "ESPA", xpa1, ypa1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 2, "ESPA", xpa2, ypa1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 3, "ESPA", xpa3, ypa1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 4, "ESPA", xpa1, ypa2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 5, "ESPA", xpa2, ypa2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB1", 6, "ESPA", xpa3, ypa2, 0., 0, "ONLY");
 
 
   // volume for SUPERMODULE ESMPbB 
@@ -967,7 +967,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxSMPb2[1] = 3.0*dboxUM2[1] + (2.0*0.05);
   dboxSMPb2[2] = fgkThLead/2.;
 
-  gMC->Gsvolu("ESPB","BOX", idtmed[698], dboxSMPb2, 3);
+  TVirtualMC::GetMC()->Gsvolu("ESPB","BOX", idtmed[698], dboxSMPb2, 3);
  
   //Position the 6 unit modules in ESMPbB
   Float_t xpb1,xpb2,ypb1,ypb2,ypb3; 
@@ -978,12 +978,12 @@ void AliPMDv2008::CreateSupermodule()
   ypb3 = ypb2 - dboxUM2[1] - 0.1 -  dboxUM2[1];
 
 
-  gMC->Gspos("EPB2", 1, "ESPB", xpb1, ypb1, 0., 0, "ONLY");
-  gMC->Gspos("EPB2", 2, "ESPB", xpb2, ypb1, 0., 0, "ONLY");
-  gMC->Gspos("EPB2", 3, "ESPB", xpb1, ypb2, 0., 0, "ONLY");
-  gMC->Gspos("EPB2", 4, "ESPB", xpb2, ypb2, 0., 0, "ONLY");
-  gMC->Gspos("EPB2", 5, "ESPB", xpb1, ypb3, 0., 0, "ONLY");
-  gMC->Gspos("EPB2", 6, "ESPB", xpb2, ypb3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 1, "ESPB", xpb1, ypb1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 2, "ESPB", xpb2, ypb1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 3, "ESPB", xpb1, ypb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 4, "ESPB", xpb2, ypb2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 5, "ESPB", xpb1, ypb3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPB2", 6, "ESPB", xpb2, ypb3, 0., 0, "ONLY");
 
 
   //---------------------------------------------------
@@ -1000,7 +1000,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxFEE[1] = 3.50;
   dboxFEE[2] = 1.20;
 
-  gMC->Gsvolu("EFEE","BOX", idtmed[607], dboxFEE, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFEE","BOX", idtmed[607], dboxFEE, 3);
 
   //Mother volume to accomodate FEE boards
   // It should have the dimension 
@@ -1015,7 +1015,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxFEEBPlaneA[2]   = 1.2;
   
   //Volume of same dimension as Back PLane of Material AIR
-  gMC->Gsvolu("EFBA","BOX", idtmed[698], dboxFEEBPlaneA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFBA","BOX", idtmed[698], dboxFEEBPlaneA, 3);
 
   //TYPE B
   Float_t dboxFEEBPlaneB[3];
@@ -1024,7 +1024,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxFEEBPlaneB[2]   = 1.2;
   
   //Back PLane PCB of MAterial G10
-  gMC->Gsvolu("EFBB","BOX", idtmed[698], dboxFEEBPlaneB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFBB","BOX", idtmed[698], dboxFEEBPlaneB, 3);
 
   //Placing the FEE boards in the Mother volume of AIR
 
@@ -1048,7 +1048,7 @@ void AliPMDv2008::CreateSupermodule()
       xFee = -dboxFEEBPlaneA[0] + xA; 
       for (j = 1; j <= 12; ++j) 
 	{
-	  gMC->Gspos("EFEE", number, "EFBA", xFee,yFee,zFee, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("EFEE", number, "EFBA", xFee,yFee,zFee, 0, "ONLY");
 	  xFee += xSepa;
 	  number += 1;
 	}
@@ -1062,7 +1062,7 @@ void AliPMDv2008::CreateSupermodule()
       xFee = -dboxFEEBPlaneB[0] + xA; 
       for (j = 1; j <= 24; ++j) 
 	{
-	  gMC->Gspos("EFEE", number, "EFBB", xFee,yFee,zFee, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("EFEE", number, "EFBB", xFee,yFee,zFee, 0, "ONLY");
 	  xFee += xSepa;
 	  number += 1;
 	}
@@ -1078,7 +1078,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxEFSA[2] = dboxFEEBPlaneA[2];
 
   //Type A
-  gMC->Gsvolu("EFSA","BOX", idtmed[698],dboxEFSA, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFSA","BOX", idtmed[698],dboxEFSA, 3);
 
   //Distance between the two backplanes of two UMs
   //in x-direction is 0.92 and ydirection is 0.95
@@ -1088,7 +1088,7 @@ void AliPMDv2008::CreateSupermodule()
   dboxEFSB[2] = dboxFEEBPlaneB[2];
 
   //Type A
-  gMC->Gsvolu("EFSB","BOX", idtmed[698],dboxEFSB, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFSB","BOX", idtmed[698],dboxEFSB, 3);
 
 
   Float_t xfs1,xfs2,xfs3,yfs1,yfs2,yfs3; 
@@ -1100,12 +1100,12 @@ void AliPMDv2008::CreateSupermodule()
 
 
 
-  // gMC->Gspos("EFBA", 1, "EFSA", xfs1, yfs1, 0., 0, "ONLY");  // BKN
-  gMC->Gspos("EFBA", 2, "EFSA", xfs2, yfs1, 0., 0, "ONLY");
-  gMC->Gspos("EFBA", 3, "EFSA", xfs3, yfs1, 0., 0, "ONLY");
-  gMC->Gspos("EFBA", 4, "EFSA", xfs1, yfs2, 0., 0, "ONLY");
-  gMC->Gspos("EFBA", 5, "EFSA", xfs2, yfs2, 0., 0, "ONLY");
-  gMC->Gspos("EFBA", 6, "EFSA", xfs3, yfs2, 0., 0, "ONLY");
+  // TVirtualMC::GetMC()->Gspos("EFBA", 1, "EFSA", xfs1, yfs1, 0., 0, "ONLY");  // BKN
+  TVirtualMC::GetMC()->Gspos("EFBA", 2, "EFSA", xfs2, yfs1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBA", 3, "EFSA", xfs3, yfs1, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBA", 4, "EFSA", xfs1, yfs2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBA", 5, "EFSA", xfs2, yfs2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBA", 6, "EFSA", xfs3, yfs2, 0., 0, "ONLY");
 
 
   //Type B positioning
@@ -1118,12 +1118,12 @@ void AliPMDv2008::CreateSupermodule()
 
 
 
-  // gMC->Gspos("EFBB", 1, "EFSB", xfs1, yfs1, 0., 0, "ONLY"); // BKN
-  // gMC->Gspos("EFBB", 2, "EFSB", xfs2, yfs1, 0., 0, "ONLY"); // BKN
-  gMC->Gspos("EFBB", 3, "EFSB", xfs1, yfs2, 0., 0, "ONLY");
-  gMC->Gspos("EFBB", 4, "EFSB", xfs2, yfs2, 0., 0, "ONLY");
-  gMC->Gspos("EFBB", 5, "EFSB", xfs1, yfs3, 0., 0, "ONLY");
-  gMC->Gspos("EFBB", 6, "EFSB", xfs2, yfs3, 0., 0, "ONLY");
+  // TVirtualMC::GetMC()->Gspos("EFBB", 1, "EFSB", xfs1, yfs1, 0., 0, "ONLY"); // BKN
+  // TVirtualMC::GetMC()->Gspos("EFBB", 2, "EFSB", xfs2, yfs1, 0., 0, "ONLY"); // BKN
+  TVirtualMC::GetMC()->Gspos("EFBB", 3, "EFSB", xfs1, yfs2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBB", 4, "EFSB", xfs2, yfs2, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBB", 5, "EFSB", xfs1, yfs3, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFBB", 6, "EFSB", xfs2, yfs3, 0., 0, "ONLY");
 
 
 }
@@ -1149,7 +1149,7 @@ void AliPMDv2008::CreatePMD()
   dboxFea[1] = fSMLengthay;
   dboxFea[2] = fgkThSteel/2.;
   
-  gMC->Gsvolu("EFEA","BOX", idtmed[618], dboxFea, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFEA","BOX", idtmed[618], dboxFea, 3);
 
   // --- DEFINE Iron volumes  for SM B
   
@@ -1159,7 +1159,7 @@ void AliPMDv2008::CreatePMD()
   dboxFeb[1] = fSMLengthby;
   dboxFeb[2] = fgkThSteel/2.;
   
-  gMC->Gsvolu("EFEB","BOX", idtmed[618], dboxFeb, 3);
+  TVirtualMC::GetMC()->Gsvolu("EFEB","BOX", idtmed[618], dboxFeb, 3);
 
   AliMatrix(irotdm, 90., 0.,  90.,  90., 180., 0.);
   AliMatrix(jhrot12, 90., 180., 90., 270., 0., 0.);
@@ -1175,8 +1175,8 @@ void AliPMDv2008::CreatePMD()
   gaspmd[1] = fSMLengthay;
   gaspmd[2] = fSMthick;
 
-  gMC->Gsvolu("EPM1", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsvolu("EPM2", "BOX", idtmed[698], gaspmd, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPM1", "BOX", idtmed[698], gaspmd, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPM2", "BOX", idtmed[698], gaspmd, 3);
 
   //Complete detector for Type A
   //Position Super modules type A for both CPV and PMD in EPMD  
@@ -1195,8 +1195,8 @@ void AliPMDv2008::CreatePMD()
   zfee=-gaspmd[2] + 1.2;
 
   /*
-  gMC->Gspos("EFSA", 1, "EPM1", 0., 0., zfee, 0, "ONLY");
-  gMC->Gspos("EFSA", 2, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSA", 1, "EPM1", 0., 0., zfee, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSA", 2, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
   */
 
   //VETO
@@ -1204,28 +1204,28 @@ void AliPMDv2008::CreatePMD()
   zcva = zfee + 1.2 + fDthick;
 
   /*
-  gMC->Gspos("EMVA", 1, "EPM1", 0., 0., zcva, 0, "ONLY");
-  gMC->Gspos("EMVA", 2, "EPM2", 0., 0., zcva, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EMVA", 1, "EPM1", 0., 0., zcva, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EMVA", 2, "EPM2", 0., 0., zcva, jhrot12, "ONLY");
   */
 
 
 
   //Iron support
   zfea = zcva + fDthick + fgkThSteel/2.;
-  gMC->Gspos("EFEA", 1, "EPM1", 0., 0., zfea, 0, "ONLY");
-  //gMC->Gspos("EFEA", 2, "EPM2", 0., 0., zfea, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFEA", 1, "EPM1", 0., 0., zfea, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("EFEA", 2, "EPM2", 0., 0., zfea, 0, "ONLY");
   //Lead
   zpba=zfea+fgkThSteel/2.+ fgkThLead/2.;
-  gMC->Gspos("ESPA", 1, "EPM1", 0., 0., zpba, 0, "ONLY");
-  //gMC->Gspos("ESPA", 2, "EPM2", 0., 0., zpba, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESPA", 1, "EPM1", 0., 0., zpba, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("ESPA", 2, "EPM2", 0., 0., zpba, 0, "ONLY");
   //Preshower
   zpsa = zpba + fgkThLead/2. + fDthick;
-  gMC->Gspos("ESMA", 1, "EPM1", 0., 0., zpsa, 0, "ONLY");
-  //gMC->Gspos("ESMA", 2, "EPM2", 0., 0., zpsa, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMA", 1, "EPM1", 0., 0., zpsa, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("ESMA", 2, "EPM2", 0., 0., zpsa, jhrot12, "ONLY");
   //FEE boards
   zfee=zpsa + fDthick + 1.2;
-  gMC->Gspos("EFSA", 3, "EPM1", 0., 0., zfee, 0, "ONLY");
-  //gMC->Gspos("EFSA", 4, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSA", 3, "EPM1", 0., 0., zfee, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("EFSA", 4, "EPM2", 0., 0., zfee, jhrot12, "ONLY");
 
  
   //TYPE - B
@@ -1233,8 +1233,8 @@ void AliPMDv2008::CreatePMD()
   gaspmd[1] = fSMLengthby; 
   gaspmd[2] = fSMthick; 
 
-  gMC->Gsvolu("EPM3", "BOX", idtmed[698], gaspmd, 3);
-  gMC->Gsvolu("EPM4", "BOX", idtmed[698], gaspmd, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPM3", "BOX", idtmed[698], gaspmd, 3);
+  TVirtualMC::GetMC()->Gsvolu("EPM4", "BOX", idtmed[698], gaspmd, 3);
 
   //Complete detector for Type B
   //Position Super modules type B for both CPV and PMD in EPMD  
@@ -1249,34 +1249,34 @@ void AliPMDv2008::CreatePMD()
   zfee=-gaspmd[2] + 1.2;
 
   /*
-  gMC->Gspos("EFSB", 5, "EPM3", 0., 0., zfee, 0, "ONLY");
-  gMC->Gspos("EFSB", 6, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSB", 5, "EPM3", 0., 0., zfee, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSB", 6, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
   */
 
   zcvb= zfee + 1.2 + fDthick;
 
   //VETO
   /*
-  gMC->Gspos("EMVB", 3, "EPM3", 0., 0., zcvb, 0, "ONLY");
-  gMC->Gspos("EMVB", 4, "EPM4", 0., 0., zcvb, jhrot12, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EMVB", 3, "EPM3", 0., 0., zcvb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EMVB", 4, "EPM4", 0., 0., zcvb, jhrot12, "ONLY");
   */
 
   //IRON SUPPORT
   zfeb= zcvb + fDthick +  fgkThSteel/2.;
-  //gMC->Gspos("EFEB", 3, "EPM3", 0., 0., zfeb, 0, "ONLY");
-  gMC->Gspos("EFEB", 4, "EPM4", 0., 0., zfeb, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("EFEB", 3, "EPM3", 0., 0., zfeb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFEB", 4, "EPM4", 0., 0., zfeb, 0, "ONLY");
   //LEAD
   zpbb= zfeb + fgkThSteel/2.+ fgkThLead/2.;
-  //gMC->Gspos("ESPB", 3, "EPM3", 0., 0., zpbb, 0, "ONLY");
-  gMC->Gspos("ESPB", 4, "EPM4", 0., 0., zpbb, 0, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("ESPB", 3, "EPM3", 0., 0., zpbb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESPB", 4, "EPM4", 0., 0., zpbb, 0, "ONLY");
   //PRESHOWER
   zpsb = zpbb + fgkThLead/2.+ fDthick;
-  //gMC->Gspos("ESMB", 3, "EPM3", 0., 0., zpsb, 0, "ONLY");
-  gMC->Gspos("ESMB", 4, "EPM4", 0., 0., zpsb, jhrot12, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("ESMB", 3, "EPM3", 0., 0., zpsb, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("ESMB", 4, "EPM4", 0., 0., zpsb, jhrot12, "ONLY");
   //FEE boards
   zfee=zpsb + fDthick + 1.2;
-  //gMC->Gspos("EFSB", 7, "EPM3", 0., 0., zfee, 0, "ONLY");
-  gMC->Gspos("EFSB", 8, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
+  //TVirtualMC::GetMC()->Gspos("EFSB", 7, "EPM3", 0., 0., zfee, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EFSB", 8, "EPM4", 0., 0., zfee, jhrot12, "ONLY");
 
 
   // --- Place the EPMD in ALICE 
@@ -1306,10 +1306,10 @@ void AliPMDv2008::CreatePMD()
 // (rotated   (rotated EPM1)
 //  EPM3)
 //
-  gMC->Gspos("EPM1", 1, "ALIC",  xsma,ysma,zp,  0, "ONLY");
-  gMC->Gspos("EPM2", 1, "ALIC", -xsma,-ysma,zp, 0, "ONLY");
-  gMC->Gspos("EPM3", 1, "ALIC",  xsmb,ysmb,zp,  0, "ONLY");
-  gMC->Gspos("EPM4", 1, "ALIC", -xsmb,-ysmb,zp, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPM1", 1, "ALIC",  xsma,ysma,zp,  0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPM2", 1, "ALIC", -xsma,-ysma,zp, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPM3", 1, "ALIC",  xsmb,ysmb,zp,  0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("EPM4", 1, "ALIC", -xsmb,-ysmb,zp, 0, "ONLY");
 }
 
  
@@ -1477,32 +1477,32 @@ void AliPMDv2008::StepManager()
   Float_t center[3] = {0,0,0};
   Int_t   vol[6];
   
-  if(gMC->CurrentMedium() == fMedSens && (destep = gMC->Edep())) {
+  if(TVirtualMC::GetMC()->CurrentMedium() == fMedSens && (destep = TVirtualMC::GetMC()->Edep())) {
   
-    gMC->CurrentVolID(copy);
+    TVirtualMC::GetMC()->CurrentVolID(copy);
     vol[0] = copy;
 
-    gMC->CurrentVolOffID(1,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(1,copy);
     vol[1] = copy;
 
-    gMC->CurrentVolOffID(2,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
     vol[2] = copy;
 
-    gMC->CurrentVolOffID(3,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(3,copy);
     vol[3] = copy;
 
-    gMC->CurrentVolOffID(4,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(4,copy);
     vol[4] = copy;
 
-    gMC->CurrentVolOffID(5,copy);
+    TVirtualMC::GetMC()->CurrentVolOffID(5,copy);
     vol[5] = copy;
 
 
-    gMC->Gdtom(center,hits,1);
+    TVirtualMC::GetMC()->Gdtom(center,hits,1);
     hits[3] = destep*1e9; //Number in eV
 
     // this is for pile-up events
-    hits[4] = gMC->TrackTime();
+    hits[4] = TVirtualMC::GetMC()->TrackTime();
 
     AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 

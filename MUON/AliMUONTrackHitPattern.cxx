@@ -929,7 +929,7 @@ Bool_t AliMUONTrackHitPattern::IsCloseToAccEdge(TObjArray& pads, Int_t detElemId
   AliMpArea* deArea = fkTransformer.GetDEArea(detElemId);
   Float_t dpx = ((AliMpPad*)pads.At(1))->GetDimensionX();
   Float_t dpy = ((AliMpPad*)pads.At(0))->GetDimensionY();
-  Float_t resolution[2] = { 0.75*dpx, 0.75*dpy };
+  Float_t resolution[2] = { static_cast<Float_t>(0.75*dpx), static_cast<Float_t>(0.75*dpy) };
   Float_t sign[3] = {0., 1., -1.};
   for ( Int_t ineighx=0; ineighx<3; ineighx++ ) {
     for ( Int_t ineighy=0; ineighy<3; ineighy++ ) {
@@ -960,9 +960,9 @@ Bool_t AliMUONTrackHitPattern::IsMasked(const AliMpPad& pad, Int_t detElemId, In
   TVector3 localCoor;
   PosInDetElemIdLocal(localCoor, vec11, vec21, detElemId);
   
-  Float_t padPos[2] = { pad.GetPositionX(), pad.GetPositionY()};
-  Float_t padDim[2] = { pad.GetDimensionX(), pad.GetDimensionY()};
-  Float_t inpactPos[2] = { localCoor.X(), localCoor.Y()};
+  Float_t padPos[2] = { static_cast<Float_t>(pad.GetPositionX()), static_cast<Float_t>(pad.GetPositionY())};
+  Float_t padDim[2] = { static_cast<Float_t>(pad.GetDimensionX()), static_cast<Float_t>(pad.GetDimensionY())};
+  Float_t inpactPos[2] = { static_cast<Float_t>(localCoor.X()), static_cast<Float_t>(localCoor.Y())};
   Float_t sign[2] = {-1., 1.};
   Int_t icoor = 1-cathode;
   Int_t addSlatSign[3] = {0,1,-1};

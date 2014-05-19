@@ -74,7 +74,8 @@ ClassImp(AliFMDDigit)
 
 //____________________________________________________________________
 AliFMDDigit::AliFMDDigit()
-  : fCount1(0),
+  : AliFMDBaseDigit(),
+    fCount1(0),
     fCount2(-1),
     fCount3(-1),
     fCount4(-1)

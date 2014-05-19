@@ -21,8 +21,8 @@ class AliRunLoader;
 class AliTRDptrgCBAC : public TObject {
  public:
   AliTRDptrgCBAC(AliRunLoader *rl = 0x0);
-  AliTRDptrgCBAC(AliRunLoader *rl, AliTRDptrgFEBPosition_t position,
-                 AliTRDptrgOperatingMode_t operatingMode, 
+  AliTRDptrgCBAC(AliRunLoader *rl, AliTRDptrgParam::AliTRDptrgFEBPosition_t position,
+                 AliTRDptrgParam::AliTRDptrgOperatingMode_t operatingMode, 
                  AliTRDptrgParam *param);
   ~AliTRDptrgCBAC();
   
@@ -34,8 +34,8 @@ class AliTRDptrgCBAC : public TObject {
   AliRunLoader *fRunLoader;  //!
   TObjArray fLUTArray; // Array with Look-Up-Tables
   TObjArray fFEBArray; // front end boxes connected to T0 (fFEB[0]) and VO (4x)
-  AliTRDptrgFEBPosition_t fPosition; // Control box position (A or C side)
-  AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
+  AliTRDptrgParam::AliTRDptrgFEBPosition_t fPosition; // Control box position (A or C side)
+  AliTRDptrgParam::AliTRDptrgOperatingMode_t fOperatingMode; // working on Digits or Hits?
   AliTRDptrgParam* fParam; // parameters
  private:
   AliTRDptrgCBAC& operator=(const AliTRDptrgCBAC &rhs); // not implemented

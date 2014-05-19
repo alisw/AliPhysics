@@ -140,11 +140,11 @@ void AliEMCALv1::StepManager(void){
   TParticle *part=0;
   Int_t parent=-1;
 
-  static Int_t idXPHI = gMC->VolId("XPHI");
-  if(gMC->CurrentVolID(copy) == idXPHI ) { // We are in a Scintillator Layer 
+  static Int_t idXPHI = TVirtualMC::GetMC()->VolId("XPHI");
+  if(TVirtualMC::GetMC()->CurrentVolID(copy) == idXPHI ) { // We are in a Scintillator Layer 
     Float_t depositedEnergy ; 
     
-    if( ((depositedEnergy = gMC->Edep()) > 0.)  && (gMC->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
+    if( ((depositedEnergy = TVirtualMC::GetMC()->Edep()) > 0.)  && (TVirtualMC::GetMC()->TrackTime() < fTimeCut)){// Track is inside a scintillator and deposits some energy
        if (fCurPrimary==-1) 
 	fCurPrimary=gAlice->GetMCApp()->GetPrimary(tracknumber);
 
@@ -185,20 +185,20 @@ void AliEMCALv1::StepManager(void){
 	}
 	fCurTrack=tracknumber;
       }    
-      gMC->TrackPosition(pos);
+      TVirtualMC::GetMC()->TrackPosition(pos);
       xyzte[0] = pos[0];
       xyzte[1] = pos[1];
       xyzte[2] = pos[2];
-      xyzte[3] = gMC->TrackTime() ;       
+      xyzte[3] = TVirtualMC::GetMC()->TrackTime() ;       
       
-      gMC->TrackMomentum(mom);
+      TVirtualMC::GetMC()->TrackMomentum(mom);
       pmom[0] = mom[0];
       pmom[1] = mom[1];
       pmom[2] = mom[2];
       pmom[3] = mom[3];
       
-      gMC->CurrentVolOffID(1, id[0]); // get the POLY copy number;
-      gMC->CurrentVolID(id[1]); // get the phi number inside the layer
+      TVirtualMC::GetMC()->CurrentVolOffID(1, id[0]); // get the POLY copy number;
+      TVirtualMC::GetMC()->CurrentVolID(id[1]); // get the phi number inside the layer
       
       Int_t tower = (id[0]-1) % geom->GetNZ() + 1 + (id[1] - 1) * geom->GetNZ() ;  
       Int_t layer = static_cast<Int_t>((id[0]-1)/(geom->GetNZ())) + 1 ; 
@@ -210,17 +210,17 @@ void AliEMCALv1::StepManager(void){
       Float_t lightYield =  depositedEnergy ;
       // Apply Birk's law (copied from G3BIRK)
 
-      if (gMC->TrackCharge()!=0) { // Check
+      if (TVirtualMC::GetMC()->TrackCharge()!=0) { // Check
 	  Float_t birkC1Mod = 0;
 	if (fBirkC0==1){ // Apply correction for higher charge states
-	  if (TMath::Abs(gMC->TrackCharge())>=2)
+	  if (TMath::Abs(TVirtualMC::GetMC()->TrackCharge())>=2)
 	    birkC1Mod=fBirkC1*7.2/12.6;
 	  else
 	    birkC1Mod=fBirkC1;
 	}
 	Float_t dedxcm=0.;
-	if (gMC->TrackStep()>0) 
-	  dedxcm=1000.*gMC->Edep()/gMC->TrackStep();
+	if (TVirtualMC::GetMC()->TrackStep()>0) 
+	  dedxcm=1000.*TVirtualMC::GetMC()->Edep()/TVirtualMC::GetMC()->TrackStep();
 	else
 	  dedxcm=0;
 	lightYield=lightYield/(1.+birkC1Mod*dedxcm+fBirkC2*dedxcm*dedxcm);

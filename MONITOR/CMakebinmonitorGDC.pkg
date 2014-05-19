@@ -54,9 +54,3 @@ if (DATE_ROOT)
 
 endif(DATE_ROOT)
 
-if( ALICE_TARGET MATCHES "macosx")
-
-  ALICE_Format(TEMP "-Wl,-u,_G__cpp_setupG__" "" ${ELIBS})
-  set ( PACKLDFLAGS "${LDFLAGS} ${TEMP}")
-	
-endif( ALICE_TARGET MATCHES "macosx")

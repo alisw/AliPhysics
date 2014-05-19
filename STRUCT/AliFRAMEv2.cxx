@@ -178,7 +178,7 @@ void AliFRAMEv2::CreateGeometry()
   TGeoCompositeShape* shB77 = new TGeoCompositeShape("shB77", "shB77A+shB77B:trB77A+shB77B:trB77B");
   TGeoVolume* voB77 = new TGeoVolume("B077", shB77, gGeoManager->GetMedium("FRAME_Air"));
   voB77->SetName("B077"); // just to avoid a warning
-  gMC->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("B077", 1, "ALIC", 0., 0., 0., 0, "ONLY");
 //
 // Reference plane #1 for TRD
   TGeoPgon* shBREFA = new TGeoPgon(0.0, 360., 18, 2);
@@ -188,7 +188,7 @@ void AliFRAMEv2::CreateGeometry()
   TGeoCompositeShape* shBREF1 = new TGeoCompositeShape("shBREF1", "shBREFA-(shB77B:trB77A+shB77B:trB77B)");
   TGeoVolume* voBREF = new TGeoVolume("BREF1", shBREF1, gGeoManager->GetMedium("FRAME_Air"));
   voBREF->SetVisibility(0);
-  gMC->Gspos("BREF1", 1, "B077", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BREF1", 1, "B077", 0., 0., 0., 0, "ONLY");
 //
 //  The outer Frame
 //
@@ -212,8 +212,8 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[7] =  -ppgon[4]; 
   ppgon[8] =   ppgon[5];
   ppgon[9] =   ppgon[6];
-  gMC->Gsvolu("B076", "PGON", kAir, ppgon, 10);
-  gMC->Gspos("B076", 1, "B077", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B076", "PGON", kAir, ppgon, 10);
+  TVirtualMC::GetMC()->Gspos("B076", 1, "B077", 0., 0., 0., 0, "ONLY");
 //  
 // Rings    
 //
@@ -228,19 +228,19 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[1] =  l2;
   ptrd1[2] =  8.0 / 2.;
   ptrd1[3] =  0.6 / 2.;
-  gMC->Gsvolu("BIH142", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIH142", "TRD1", kSteel, ptrd1, 4);
   ptrd1[0] =  l1;
   ptrd1[1] =  l1 + 0.6 * TMath::Tan(10.*kdeg2rad);
   ptrd1[2] =  8.0 / 2.;
   ptrd1[3] =  0.6 / 2.;
-  gMC->Gsvolu("BIH242", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIH242", "TRD1", kSteel, ptrd1, 4);
 
   // Vertical 
   ptrd1[0] =  l1 + 0.6 * TMath::Tan(10.*kdeg2rad);
   ptrd1[1] =  l2 - 0.6 * TMath::Tan(10.*kdeg2rad);
   ptrd1[2] =  0.8 / 2.;
   ptrd1[3] =  6.8 / 2.;
-  gMC->Gsvolu("BIV42", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIV42", "TRD1", kSteel, ptrd1, 4);
   // Place 
   asBI42->AddNode(gGeoManager->GetVolume("BIV42"),  1, new TGeoTranslation(0., 0., 0.));
   asBI42->AddNode(gGeoManager->GetVolume("BIH142"), 1, new TGeoTranslation(0., 0.,  3.7));
@@ -253,11 +253,11 @@ void AliFRAMEv2::CreateGeometry()
   pbox[0] = dol;
   pbox[1] = doh;
   pbox[2] = 345.;
-  gMC->Gsvolu("B033", "BOX", kSteel, pbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("B033", "BOX", kSteel, pbox, 3);
   pbox[0] = dol-ds;
   pbox[1] = doh-ds;
-  gMC->Gsvolu("B034", "BOX", kAir, pbox, 3);
-  gMC->Gspos("B034", 1, "B033", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B034", "BOX", kAir, pbox, 3);
+  TVirtualMC::GetMC()->Gspos("B034", 1, "B033", 0., 0., 0., 0, "ONLY");
 
 
   //
@@ -266,22 +266,22 @@ void AliFRAMEv2::CreateGeometry()
   pbox[0] =   3.37;
   pbox[1] =   2.0;
   pbox[2] = 375.5;
-  gMC->Gsvolu("B080", "BOX", kSteel, pbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("B080", "BOX", kSteel, pbox, 3);
   pbox[0] =   2.78;
   pbox[1] =   1.4;
   pbox[2] = 375.5;
-  gMC->Gsvolu("B081", "BOX", kAir, pbox, 3);
-  gMC->Gspos("B081", 1, "B080",  0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B081", "BOX", kAir, pbox, 3);
+  TVirtualMC::GetMC()->Gspos("B081", 1, "B080",  0., 0., 0., 0, "ONLY");
 
   // Small 2nd reference plane elemenet 
    pbox[0] =   0.05;
    pbox[1] =   2.0;
    pbox[2] = 375.5;
-   gMC->Gsvolu("BREF2", "BOX", kAir, pbox, 3);
-   gMC->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
+   TVirtualMC::GetMC()->Gsvolu("BREF2", "BOX", kAir, pbox, 3);
+   TVirtualMC::GetMC()->Gspos("BREF2", 1, "B080",  3.37 - 0.05, 0., 0., 0, "ONLY");
 
-  gMC->Gspos("B080", 1, "B077",  283.3, 0., 0., 0, "ONLY");
-  gMC->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2087], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B080", 1, "B077",  283.3, 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("B080", 2, "B077", -283.3, 0., 0., idrotm[2087], "ONLY");
 
    
 //
@@ -310,15 +310,15 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[9]  = ptrap[4];
   ptrap[10] = 0;
 
-  gMC->Gsvolu("B047", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("B047", "TRAP", kSteel, ptrap, 11);
   ptrap[3]  = doh-ds;
   ptrap[4]  = (dol-ds)/x;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("B048", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("B048", 1, "B047", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B048", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("B048", 1, "B047", 0.0, 0.0, 0., 0, "ONLY");
 
 /*
  Crosses (inner most) 
@@ -334,7 +334,7 @@ void AliFRAMEv2::CreateGeometry()
   pbox[0] = h/2;
   pbox[1] = doh;
   pbox[2] = dz/2.;
-  gMC->Gsvolu("BM49", "BOX ", kAir, pbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("BM49", "BOX ", kAir, pbox, 3);
   
   
   dq = h*h+dz*dz;
@@ -351,7 +351,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
 
-  gMC->Gsvolu("B049", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("B049", "TRAP", kSteel, ptrap, 11);
   ptrap[0]  = ptrap[0]-kEps;
   ptrap[3]  = (doh-ds);
   ptrap[4]  = (dol-ds)/x;
@@ -359,9 +359,9 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("B050", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("B050", 1, "B049", 0.0, 0.0, 0., 0, "ONLY");
-  gMC->Gspos("B049", 1, "BM49", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B050", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("B050", 1, "B049", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("B049", 1, "BM49", 0.0, 0.0, 0., 0, "ONLY");
 
 
   Float_t dd1    = d*TMath::Tan(theta*kdeg2rad);
@@ -381,7 +381,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[9] = ptrap[8];
 
 
-  gMC->Gsvolu("B051", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("B051", "TRAP", kSteel, ptrap, 11);
   Float_t ddx0 = ptrap[8];
   
   Float_t dd1s    = dd1*(1.-2.*ds/d);
@@ -400,8 +400,8 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8] = ptrap[8]-ds/2./d*(dd1+dd2);
   ptrap[9] = ptrap[8];
   
-  gMC->Gsvolu("B052", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("B052", 1, "B051", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B052", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("B052", 1, "B051", 0.0, 0.0, 0., 0, "ONLY");
 
   Float_t ddx, ddz, drx, drz, rtheta;
 
@@ -412,7 +412,7 @@ void AliFRAMEv2::CreateGeometry()
   
   drx = TMath::Cos(rtheta) * ddx +TMath::Sin(rtheta) *ddz+pbox[0];
   drz = -TMath::Sin(rtheta) * ddx +TMath::Cos(rtheta) *ddz-pbox[2];
-  gMC->Gspos("B051", 1, "BM49", 
+  TVirtualMC::GetMC()->Gspos("B051", 1, "BM49", 
 	     drx, 0.0, drz,
 	     idrotm[2001], "ONLY");
 
@@ -421,7 +421,7 @@ void AliFRAMEv2::CreateGeometry()
   
   drx =  TMath::Cos(rtheta) * ddx +  TMath::Sin(rtheta) * ddz-pbox[0];
   drz = -TMath::Sin(rtheta) * ddx +  TMath::Cos(rtheta) * ddz+pbox[2];
-  gMC->Gspos("B051", 2, "BM49", 
+  TVirtualMC::GetMC()->Gspos("B051", 2, "BM49", 
 	     drx, 0.0, drz,
 	     idrotm[2002], "ONLY");
 
@@ -442,15 +442,15 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
 
-  gMC->Gsvolu("B045", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("B045", "TRAP", kSteel, ptrap, 11);
   ptrap[3]  =  doh-ds;
   ptrap[4]  =  (dol-ds)/x;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("B046", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("B046", 1, "B045", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B046", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("B046", 1, "B045", 0.0, 0.0, 0., 0, "ONLY");
 
 //
 // Positioning of diagonal bars
@@ -467,10 +467,10 @@ void AliFRAMEv2::CreateGeometry()
   dy = rd * TMath::Cos(phi*kdeg2rad);
   
 
-  gMC->Gspos("B045", 1, "B076", -dx,  dy,  dz2, idrotm[2019], "ONLY");
-  gMC->Gspos("B045", 2, "B076", -dx,  dy, -dz2, idrotm[2003], "ONLY"); // ?
-  gMC->Gspos("B045", 3, "B076",  dx,  dy,  dz2, idrotm[2020], "ONLY");
-  gMC->Gspos("B045", 4, "B076",  dx,  dy, -dz2, idrotm[2027], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 1, "B076", -dx,  dy,  dz2, idrotm[2019], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 2, "B076", -dx,  dy, -dz2, idrotm[2003], "ONLY"); // ?
+  TVirtualMC::GetMC()->Gspos("B045", 3, "B076",  dx,  dy,  dz2, idrotm[2020], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 4, "B076",  dx,  dy, -dz2, idrotm[2027], "ONLY");
 
 
 //
@@ -481,10 +481,10 @@ void AliFRAMEv2::CreateGeometry()
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
 
-  gMC->Gspos("B045", 5, "B076", -dx,  dy,  dz2, idrotm[2021], "ONLY");
-  gMC->Gspos("B045", 6, "B076", -dx,  dy, -dz2, idrotm[2028], "ONLY");
-  gMC->Gspos("B045", 7, "B076",  dx,  dy,  dz2, idrotm[2022], "ONLY");
-  gMC->Gspos("B045", 8, "B076",  dx,  dy, -dz2, idrotm[2029], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 5, "B076", -dx,  dy,  dz2, idrotm[2021], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 6, "B076", -dx,  dy, -dz2, idrotm[2028], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 7, "B076",  dx,  dy,  dz2, idrotm[2022], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 8, "B076",  dx,  dy, -dz2, idrotm[2029], "ONLY");
 
 //
 //  phi = 80
@@ -494,23 +494,23 @@ void AliFRAMEv2::CreateGeometry()
   dx = rd * TMath::Sin(phi*kdeg2rad);
   dy = rd * TMath::Cos(phi*kdeg2rad);
 
-  gMC->Gspos("B047", 13, "B076", -dx, -dy,  dz, idrotm[2008], "ONLY");
-  gMC->Gspos("B047", 14, "B076", -dx, -dy, -dz, idrotm[2010], "ONLY");
-  gMC->Gspos("B047", 15, "B076",  dx, -dy,  dz, idrotm[2012], "ONLY");
-  gMC->Gspos("B047", 16, "B076",  dx, -dy, -dz, idrotm[2011], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 13, "B076", -dx, -dy,  dz, idrotm[2008], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 14, "B076", -dx, -dy, -dz, idrotm[2010], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 15, "B076",  dx, -dy,  dz, idrotm[2012], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B047", 16, "B076",  dx, -dy, -dz, idrotm[2011], "ONLY");
 
-  gMC->Gspos("B045",  9, "B076", -dx,  dy,  dz2, idrotm[2023], "ONLY");
-  gMC->Gspos("B045", 10, "B076", -dx,  dy, -dz2, idrotm[2031], "ONLY");
-  gMC->Gspos("B045", 11, "B076",  dx,  dy,  dz2, idrotm[2026], "ONLY");
-  gMC->Gspos("B045", 12, "B076",  dx,  dy, -dz2, idrotm[2030], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045",  9, "B076", -dx,  dy,  dz2, idrotm[2023], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 10, "B076", -dx,  dy, -dz2, idrotm[2031], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 11, "B076",  dx,  dy,  dz2, idrotm[2026], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 12, "B076",  dx,  dy, -dz2, idrotm[2030], "ONLY");
 
-  gMC->Gspos("B045", 13, "B076", -dx, -dy,  dz2, idrotm[2024], "ONLY");
-  gMC->Gspos("B045", 14, "B076", -dx, -dy, -dz2, idrotm[2032], "ONLY");
-  gMC->Gspos("B045", 15, "B076",  dx, -dy,  dz2, idrotm[2025], "ONLY");
-  gMC->Gspos("B045", 16, "B076",  dx, -dy, -dz2, idrotm[2033], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 13, "B076", -dx, -dy,  dz2, idrotm[2024], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 14, "B076", -dx, -dy, -dz2, idrotm[2032], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 15, "B076",  dx, -dy,  dz2, idrotm[2025], "ONLY");
+  TVirtualMC::GetMC()->Gspos("B045", 16, "B076",  dx, -dy, -dz2, idrotm[2033], "ONLY");
 
-  gMC->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2025], "ONLY");
-  gMC->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2024], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BM49", 7, "B076",  dx, -dy,  0., idrotm[2025], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BM49", 8, "B076", -dx, -dy,  0., idrotm[2024], "ONLY");
 
 //
 // The internal frame
@@ -537,7 +537,7 @@ void AliFRAMEv2::CreateGeometry()
       Int_t mod = i + 13;
       if (mod > 17) mod -= 18;
       snprintf(name, 16, "BSEGMO%d", mod);
-      gMC->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
+      TVirtualMC::GetMC()->Gsvolu(name, "TRD1", kAir, ptrd1, 4);
       gGeoManager->GetVolume(name)->SetVisibility(kFALSE);
 
       module[i] = name;
@@ -576,7 +576,7 @@ void AliFRAMEv2::CreateGeometry()
 
       dx =  TMath::Sin(phi1*kdeg2rad)*rout2;
       dy = -TMath::Cos(phi1*kdeg2rad)*rout2;
-      gMC->Gspos("B033", i+1, "B076", dx, dy,  0., idrotm[2052+i], "ONLY");	  
+      TVirtualMC::GetMC()->Gspos("B033", i+1, "B076", dx, dy,  0., idrotm[2052+i], "ONLY");	  
 //
   }
 // Internal Frame rings
@@ -591,15 +591,15 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[2] =  ringW/2.;
   ptrd1[3] =  ringH/2.;  
   
-  gMC->Gsvolu("B072", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("B072", "TRD1", kSteel, ptrd1, 4);
 
   ptrd1[0] =  287.5 * TMath::Sin(10. * kdeg2rad) - 2.1;
   ptrd1[1] =  292.5 * TMath::Sin(10. * kdeg2rad) - 2.1;
   ptrd1[2] =  ringW / 2. - 0.5;
   ptrd1[3] =  ringH / 2. - 0.5;  
 
-  gMC->Gsvolu("B073", "TRD1", kAir, ptrd1, 4);
-  gMC->Gspos("B073", 1, "B072", 0., 0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("B073", "TRD1", kAir, ptrd1, 4);
+  TVirtualMC::GetMC()->Gspos("B073", 1, "B072", 0., 0., 0., 0, "ONLY");
 //
 // I-Beam
 // Mother volume
@@ -609,19 +609,19 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[1] =  293.0 * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[2] =  6./2.;
   ptrd1[3] =  0.5/2.;
-  gMC->Gsvolu("BIH172", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIH172", "TRD1", kSteel, ptrd1, 4);
   ptrd1[0] =  287.0 * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[1] =  287.5 * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[2] =  6./2.;
   ptrd1[3] =  0.5/2.;
-  gMC->Gsvolu("BIH272", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIH272", "TRD1", kSteel, ptrd1, 4);
 
   // Vertical 
   ptrd1[0] =  287.5 * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[1] =  292.5 * TMath::Sin(10.* kdeg2rad) - 2.1;
   ptrd1[2] =  0.6/2.;
   ptrd1[3] =  5./2.;
-  gMC->Gsvolu("BIV72", "TRD1", kSteel, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BIV72", "TRD1", kSteel, ptrd1, 4);
   // Place 
   asBI72->AddNode(gGeoManager->GetVolume("BIV72"), 1,  new TGeoTranslation(0., 0., 0.));
   asBI72->AddNode(gGeoManager->GetVolume("BIH172"), 1, new TGeoTranslation(0., 0.,  2.75));
@@ -660,8 +660,8 @@ void AliFRAMEv2::CreateGeometry()
       for (i = 0; i < 3; i++) {
 	//	if ((i == 2) || (jmod ==0) || (jmod == 8)) { 
 	if (i == 2) { 
-	  gMC->Gspos("B072", 6*jmod+i+1, module[jmod], 0,  dymodL[i], dz, 0, "ONLY");
-	  gMC->Gspos("B072", 6*jmod+i+4, module[jmod], 0, -dymodL[i], dz, idrotm[2070], "ONLY");      
+	  TVirtualMC::GetMC()->Gspos("B072", 6*jmod+i+1, module[jmod], 0,  dymodL[i], dz, 0, "ONLY");
+	  TVirtualMC::GetMC()->Gspos("B072", 6*jmod+i+4, module[jmod], 0, -dymodL[i], dz, idrotm[2070], "ONLY");      
 	} else {
 	  TGeoVolume* vol = gGeoManager->GetVolume(module[jmod]);
 	  vol->AddNode(asBI72, 6*jmod+i+1, new TGeoTranslation(0,   dymodL[i], dz));
@@ -675,46 +675,46 @@ void AliFRAMEv2::CreateGeometry()
   dy = dymodL[0] + (dHz/2. - 4.) * TMath::Tan(10. * kdeg2rad);
   
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B063",   4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B063I",  4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B063",   4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B063I",  4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B063",   4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B063I",  4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B063",   4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B063I",  4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
   }
 
   dy = 73.6 + (dHz/2. + 4.)  * TMath::Tan(40. * kdeg2rad);
 
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B163",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B163I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B163",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B163I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B163",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B163I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B163",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B163I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
   }
 
   dy = 224.5 -  (dHz/2 + 4.) * TMath::Tan(20. * kdeg2rad);
 
     for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B263",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B263I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B263",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B263I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B263",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B263I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B263",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B263I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
   }
 
   dy = 231.4 +  (dHz/2.+ 4.) * TMath::Tan(27.1 * kdeg2rad);
 
     for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B363",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B363I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B363",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B363I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B363",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B363I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B363",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B363I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
   }
 
   dy = 340.2 -  (dHz/2.+ 4.) * TMath::Tan(18.4 * kdeg2rad);
 
     for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("B463",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
-      gMC->Gspos("B463I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B463",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
-      gMC->Gspos("B463I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B463",  4*jmod+1, module[jmod],  dx0,   dy, dz0, idrotm[2086], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B463I", 4*jmod+2, module[jmod],  dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B463",  4*jmod+3, module[jmod], -dx0,  -dy, dz0, idrotm[2087], "ONLY");
+      TVirtualMC::GetMC()->Gspos("B463I", 4*jmod+4, module[jmod], -dx0,   dy, dz0, idrotm[2086], "ONLY");
   }
  
 // longitudinal bars (TPC rails attached)
@@ -736,15 +736,15 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
   ptrap[10] = 0;
-//  gMC->Gsvolu("B059", "TRAP", kSteel, ptrap, 11);
+//  TVirtualMC::GetMC()->Gsvolu("B059", "TRAP", kSteel, ptrap, 11);
   ptrap[0]  =  2.2;
   ptrap[4]  =  2.15;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  //gMC->Gsvolu("B062", "TRAP", kAir, ptrap, 11);
-  //gMC->Gspos("B062", 1, "B059", 0.0, 0., 0., 0, "ONLY");
+  //TVirtualMC::GetMC()->Gsvolu("B062", "TRAP", kAir, ptrap, 11);
+  //TVirtualMC::GetMC()->Gspos("B062", 1, "B059", 0.0, 0., 0., 0, "ONLY");
 
 //
 // longitudinal bars (no TPC rails attached)
@@ -759,21 +759,21 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
 
-  gMC->Gsvolu("BA59", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("BA59", "TRAP", kSteel, ptrap, 11);
   ptrap[0]  = longW/4.-0.25;
   ptrap[4]  = longH/2.-0.50;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("BA62", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("BA62", 1, "BA59", 0.0, 0.0, -0.15, 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("BA62", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("BA62", 1, "BA59", 0.0, 0.0, -0.15, 0, "ONLY");
 
   dz = -iFrH/2. + longH/2.;
 
   for (jmod = 0; jmod < 18; jmod++) {
-      gMC->Gspos("BA59", 2*jmod+1, module[jmod],  49.31, 0.0, dz, idrotm[2084], "ONLY");
-      gMC->Gspos("BA59", 2*jmod+2, module[jmod], -49.31, 0.0, dz, idrotm[2083], "ONLY");
+      TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+1, module[jmod],  49.31, 0.0, dz, idrotm[2084], "ONLY");
+      TVirtualMC::GetMC()->Gspos("BA59", 2*jmod+2, module[jmod], -49.31, 0.0, dz, idrotm[2083], "ONLY");
   }
 
   
@@ -797,15 +797,15 @@ void AliFRAMEv2::CreateGeometry()
       char nameMo[16];
       snprintf(nameMo, 16, "BSEGMO%d",i);
       // M
-      gMC->Gspos("BTSH_M" , i+1 , nameMo,  0., 0., dz, 0, "ONLY"); 
+      TVirtualMC::GetMC()->Gspos("BTSH_M" , i+1 , nameMo,  0., 0., dz, 0, "ONLY"); 
       // AM, CM
       dy = dymodL[0] + dyAM / 2. + 3.;
-      gMC->Gspos("BTSH_AM", i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
-      gMC->Gspos("BTSH_AM", i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
+      TVirtualMC::GetMC()->Gspos("BTSH_AM", i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
+      TVirtualMC::GetMC()->Gspos("BTSH_AM", i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
       // A, C
       dy = dymodL[1] + dyA / 2 + 0.4;
-      gMC->Gspos("BTSH_A" , i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
-      gMC->Gspos("BTSH_A" , i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
+      TVirtualMC::GetMC()->Gspos("BTSH_A" , i+ 1, nameMo, 0.,  dy, dz, 0, "ONLY"); 
+      TVirtualMC::GetMC()->Gspos("BTSH_A" , i+19, nameMo, 0., -dy, dz, 0, "ONLY"); 
 }
   
 
@@ -823,9 +823,9 @@ void AliFRAMEv2::CreateGeometry()
     snprintf(nameCh, 16, "BTRD%d",i);
     char nameMo[16];
     snprintf(nameMo, 16, "BSEGMO%d",i);
-    gMC->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
+    TVirtualMC::GetMC()->Gsvolu(nameCh, "TRD1", kAir, ptrd1, 4);
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    gMC->Gspos(nameCh, 1, nameMo, 0., 0., -12.62, 0, "ONLY"); // CBL 28/6/2006
+    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., -12.62, 0, "ONLY"); // CBL 28/6/2006
   }
 
 // 
@@ -859,7 +859,7 @@ void AliFRAMEv2::CreateGeometry()
     TGeoVolume* btf = new TGeoVolume(nameCh, btofcs, gGeoManager->GetMedium("FRAME_Air"));
     btf->SetName(nameCh); 
     gGeoManager->GetVolume(nameCh)->SetVisibility(kFALSE);
-    gMC->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); 
+    TVirtualMC::GetMC()->Gspos(nameCh, 1, nameMo, 0., 0., 43.525, 0, "ONLY"); 
   }
 //
 //    Geometry of Rails starts here
@@ -873,31 +873,31 @@ void AliFRAMEv2::CreateGeometry()
   rbox[0] =  25.00;
   rbox[1] =  27.50;
   rbox[2] = 600.00;
-  gMC->Gsvolu("BRS1", "BOX", kAir, rbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("BRS1", "BOX", kAir, rbox, 3);
   
   rbox[0] =  25.00;
   rbox[1] =   3.75;
-  gMC->Gsvolu("BRS2", "BOX", kSteel, rbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("BRS2", "BOX", kSteel, rbox, 3);
   
   rbox[0] =   3.00;
   rbox[1] =  20.00;
-  gMC->Gsvolu("BRS3", "BOX", kSteel, rbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("BRS3", "BOX", kSteel, rbox, 3);
   
-  gMC->Gspos("BRS2", 1, "BRS1", 0., -27.5+3.75, 0., 0, "ONLY");
-  gMC->Gspos("BRS2", 2, "BRS1", 0.,  27.5-3.75, 0., 0, "ONLY");
-  gMC->Gspos("BRS3", 1, "BRS1", 0.,         0., 0., 0, "ONLY");
-  gMC->Gspos("BRS1", 1, "ALIC", -430.-3.,    -190., 0., 0, "ONLY");
-  gMC->Gspos("BRS1", 2, "ALIC",  430.+3.,    -190., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS2", 1, "BRS1", 0., -27.5+3.75, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS2", 2, "BRS1", 0.,  27.5-3.75, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS3", 1, "BRS1", 0.,         0., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS1", 1, "ALIC", -430.-3.,    -190., 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS1", 2, "ALIC",  430.+3.,    -190., 0., 0, "ONLY");
 
   rbox[0] =    3.0;
   rbox[1] =  145./4.;
   rbox[2] =   25.0;
-  gMC->Gsvolu("BRS4", "BOX", kSteel, rbox, 3);
+  TVirtualMC::GetMC()->Gsvolu("BRS4", "BOX", kSteel, rbox, 3);
 
-  gMC->Gspos("BRS4", 1, "ALIC",  430.+3.,    -190.+55./2.+rbox[1],  224., 0, "ONLY");
-  gMC->Gspos("BRS4", 2, "ALIC",  430.+3.,    -190.+55./2.+rbox[1], -224., 0, "ONLY");
-//  gMC->Gspos("BRS4", 3, "ALIC", -430.+3,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
-//  gMC->Gspos("BRS4", 4, "ALIC", -430.+3,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS4", 1, "ALIC",  430.+3.,    -190.+55./2.+rbox[1],  224., 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BRS4", 2, "ALIC",  430.+3.,    -190.+55./2.+rbox[1], -224., 0, "ONLY");
+//  TVirtualMC::GetMC()->Gspos("BRS4", 3, "ALIC", -430.+3,    -180.+55./2.+rbox[1],  224., 0, "ONLY");
+//  TVirtualMC::GetMC()->Gspos("BRS4", 4, "ALIC", -430.+3,    -180.+55./2.+rbox[1], -224., 0, "ONLY");
 
 
 
@@ -928,7 +928,7 @@ void AliFRAMEv2::CreateGeometry()
   tpar[0] = kBFMRin;
   tpar[1] = kBFMRou;
   tpar[2] = kBFMdz / 2.;
-  gMC->Gsvolu("BFMO", "TUBE", kAir, tpar, 3);  
+  TVirtualMC::GetMC()->Gsvolu("BFMO", "TUBE", kAir, tpar, 3);  
 
   // CBL ////////////////////////////////////////////////////////
   //
@@ -939,7 +939,7 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[1] = 61.1765 - 0.3;
   ptrd1[2] = kBFMdz / 2.;
   ptrd1[3] = 38.95;
-  gMC->Gsvolu("BFTRD", "TRD1", kAir, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BFTRD", "TRD1", kAir, ptrd1, 4);
   gGeoManager->GetVolume("BFTRD")->SetVisibility(kFALSE);
 
   for (i = 0; i < 18; i++) {
@@ -947,7 +947,7 @@ void AliFRAMEv2::CreateGeometry()
     Float_t phiBF  = i * 20.0;      
     dx =  TMath::Sin(phiBF*kdeg2rad)*(342.0-12.62);
     dy = -TMath::Cos(phiBF*kdeg2rad)*(342.0-12.62);      
-    gMC->Gspos("BFTRD",i,"BFMO",dx,dy,0.0,idrotm[2034+i],"ONLY");
+    TVirtualMC::GetMC()->Gspos("BFTRD",i,"BFMO",dx,dy,0.0,idrotm[2034+i],"ONLY");
 
   }
 
@@ -960,14 +960,14 @@ void AliFRAMEv2::CreateGeometry()
   tpar[1] =  tpar[0] +  kBFRdr;
   tpar[2] =  kBFRdz / 2.;
   
-  gMC->Gsvolu("BFIR", "TUBE", kSteel, tpar, 3);  
+  TVirtualMC::GetMC()->Gsvolu("BFIR", "TUBE", kSteel, tpar, 3);  
   
   tpar[0] =  tpar[0] +  kBFBdd;
   tpar[1] =  tpar[1] -  kBFBdd;
   tpar[2] =  (kBFRdz - 2. * kBFBdd) / 2.;
 
-  gMC->Gsvolu("BFII", "TUBE", kAir, tpar, 3);  
-  gMC->Gspos("BFII", 1, "BFIR", 0., 0., 0., 0, "ONLY");  
+  TVirtualMC::GetMC()->Gsvolu("BFII", "TUBE", kAir, tpar, 3);  
+  TVirtualMC::GetMC()->Gspos("BFII", 1, "BFIR", 0., 0., 0., 0, "ONLY");  
 
   //
   // Outer RING
@@ -975,21 +975,21 @@ void AliFRAMEv2::CreateGeometry()
   tpar[1] =  kBFMRou;
   tpar[2] =  kBFRdz / 2.;
   
-  gMC->Gsvolu("BFOR", "TUBE", kSteel, tpar, 3);  
+  TVirtualMC::GetMC()->Gsvolu("BFOR", "TUBE", kSteel, tpar, 3);  
   
   tpar[0] =  tpar[0] +  kBFBdd;
   tpar[1] =  tpar[1] -  kBFBdd;
   tpar[2] =  (kBFRdz - 2. * kBFBdd) / 2.;
 
-  gMC->Gsvolu("BFOO", "TUBE", kAir, tpar, 3);  
-  gMC->Gspos("BFOO", 1, "BFOR", 0., 0., 0., 0, "ONLY");  
+  TVirtualMC::GetMC()->Gsvolu("BFOO", "TUBE", kAir, tpar, 3);  
+  TVirtualMC::GetMC()->Gspos("BFOO", 1, "BFOR", 0., 0., 0., 0, "ONLY");  
 
 
   dz = kBFMdz/2. -  kBFRdz / 2.;
-  gMC->Gspos("BFIR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
-  gMC->Gspos("BFIR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
-  gMC->Gspos("BFOR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
-  gMC->Gspos("BFOR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BFIR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BFIR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BFOR", 1, "BFMO", 0., 0.,  dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BFOR", 2, "BFMO", 0., 0., -dz, 0, "ONLY");  
   
   // 
   // Longitudinal Bars
@@ -999,13 +999,13 @@ void AliFRAMEv2::CreateGeometry()
   bpar[0] =  kBFBd/2;
   bpar[1] =  bpar[0];
   bpar[2] =  kBFMdz/2.  - kBFBd;
-  gMC->Gsvolu("BFLB", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BFLB", "BOX ", kSteel, bpar, 3); 
 
   bpar[0] = bpar[0] - kBFBdd;
   bpar[1] = bpar[1] - kBFBdd;
   bpar[2] = bpar[2] - kBFBdd;
-  gMC->Gsvolu("BFLL", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BFLL", 1, "BFLB", 0., 0., 0., 0, "ONLY");  
+  TVirtualMC::GetMC()->Gsvolu("BFLL", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BFLL", 1, "BFLB", 0., 0., 0., 0, "ONLY");  
 
   for (i = 0; i < 18; i++)
   {
@@ -1018,12 +1018,12 @@ void AliFRAMEv2::CreateGeometry()
       Float_t yb = ri * TMath::Sin(phi0 * kDegrad);
       AliMatrix(idrotm[2090+i],  90.0, phi0,  90.0, phi0 + 270., 0., 0.);
       
-      gMC->Gspos("BFLB", i + 1, "BFMO", xb, yb, 0., idrotm[2090 + i], "ONLY");      
+      TVirtualMC::GetMC()->Gspos("BFLB", i + 1, "BFMO", xb, yb, 0., idrotm[2090 + i], "ONLY");      
 
       xb = ro * TMath::Cos(phi0 * kDegrad);
       yb = ro * TMath::Sin(phi0 * kDegrad);
 
-      gMC->Gspos("BFLB", i + 19, "BFMO", xb, yb, 0., idrotm[2090 +i], "ONLY");       
+      TVirtualMC::GetMC()->Gspos("BFLB", i + 19, "BFMO", xb, yb, 0., idrotm[2090 +i], "ONLY");       
  }
 
   // 
@@ -1039,13 +1039,13 @@ void AliFRAMEv2::CreateGeometry()
   bpar[0] -= delta /2.;
   
 
-  gMC->Gsvolu("BFRB", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BFRB", "BOX ", kSteel, bpar, 3); 
 
   bpar[0] = bpar[0] - kBFBdd;
   bpar[1] = bpar[1] - kBFBdd;
   bpar[2] = bpar[2] - kBFBdd;
-  gMC->Gsvolu("BFRR", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BFRR", 1, "BFRB", 0., 0., 0., 0, "ONLY");  
+  TVirtualMC::GetMC()->Gsvolu("BFRR", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BFRR", 1, "BFRB", 0., 0., 0., 0, "ONLY");  
 
   Int_t iphi[10] = {0, 1, 3, 6, 8, 9, 10, 12, 15, 17};
   
@@ -1058,12 +1058,12 @@ void AliFRAMEv2::CreateGeometry()
       Float_t xb = rb * TMath::Cos(phib * kDegrad);
       Float_t yb = rb * TMath::Sin(phib * kDegrad);
       
-      gMC->Gspos("BFRB", i + 1,  "BFMO", xb, yb,  dz, idrotm[2034 + iphi[i]], "ONLY");      
-      gMC->Gspos("BFRB", i + 11, "BFMO", xb, yb, -dz, idrotm[2034 + iphi[i]], "ONLY");      
+      TVirtualMC::GetMC()->Gspos("BFRB", i + 1,  "BFMO", xb, yb,  dz, idrotm[2034 + iphi[i]], "ONLY");      
+      TVirtualMC::GetMC()->Gspos("BFRB", i + 11, "BFMO", xb, yb, -dz, idrotm[2034 + iphi[i]], "ONLY");      
 
  }
 
-  gMC->Gspos("BFMO", i + 19, "ALIC", 0, 0, - 376. - kBFMdz/2. - 0.5 , 0, "ONLY");       
+  TVirtualMC::GetMC()->Gspos("BFMO", i + 19, "ALIC", 0, 0, - 376. - kBFMdz/2. - 0.5 , 0, "ONLY");       
 
 
 
@@ -1098,8 +1098,8 @@ void AliFRAMEv2::CreateGeometry()
   ppgon[8] =   ppgon[5];
   ppgon[9] =   ppgon[6];
 
-  gMC->Gsvolu("BBMO", "PGON", kAir, ppgon, 10);
-  gMC->Gsdvn("BBCE", "BBMO", 18, 2);
+  TVirtualMC::GetMC()->Gsvolu("BBMO", "PGON", kAir, ppgon, 10);
+  TVirtualMC::GetMC()->Gsdvn("BBCE", "BBMO", 18, 2);
 
   // CBL ////////////////////////////////////////////////////////
   //
@@ -1112,9 +1112,9 @@ void AliFRAMEv2::CreateGeometry()
   ptrd1[1] = 61.1765 - 2.5;
   ptrd1[2] = kBBMdz / 2.;
   ptrd1[3] = 38.95;
-  gMC->Gsvolu("BBTRD", "TRD1", kAir, ptrd1, 4);
+  TVirtualMC::GetMC()->Gsvolu("BBTRD", "TRD1", kAir, ptrd1, 4);
   gGeoManager->GetVolume("BBTRD")->SetVisibility(kFALSE);
-  gMC->Gspos("BBTRD", 1, "BBCE", 342.0-12.62, 0.0, 0.0, idrotm[2092], "ONLY");
+  TVirtualMC::GetMC()->Gspos("BBTRD", 1, "BBCE", 342.0-12.62, 0.0, 0.0, idrotm[2092], "ONLY");
 
   // CBL ////////////////////////////////////////////////////////
 
@@ -1122,21 +1122,21 @@ void AliFRAMEv2::CreateGeometry()
   bpar[0] =  kBBBdz/2.;
   bpar[1] =  bpar[0];
   bpar[2] =  kBBMdz/2.  - kBBBdz;
-  gMC->Gsvolu("BBLB", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BBLB", "BOX ", kSteel, bpar, 3); 
   bpar[0] -= kBBBdd;
   bpar[1] -= kBBBdd;
   bpar[2] -= kBBBdd;
-  gMC->Gsvolu("BBLL", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BBLL", 1, "BBLB", 0., 0., 0., 0, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("BBLL", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BBLL", 1, "BBLB", 0., 0., 0., 0, "ONLY"); 
 
   dx = kBBMRin + kBBBdz/2. + (bpar[1] + kBBBdd) * TMath::Sin(10. * kDegrad);
   dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
-  gMC->Gspos("BBLB", 1, "BBCE", dx, dy, 0., idrotm[2052], "ONLY"); 
+  TVirtualMC::GetMC()->Gspos("BBLB", 1, "BBCE", dx, dy, 0., idrotm[2052], "ONLY"); 
 
   dx = kBBMRou - kBBBdz/2. - (bpar[1] + kBBBdd) * TMath::Sin(10. * kDegrad);
   dy = dx * TMath::Tan(10. * kDegrad) - kBBBdz/2./TMath::Cos(10. * kDegrad);
  
-  gMC->Gspos("BBLB", 2, "BBCE", dx, dy, 0., idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBLB", 2, "BBCE", dx, dy, 0., idrotm[2052], "ONLY");  
 
   // 
   // Radial Bars
@@ -1145,21 +1145,21 @@ void AliFRAMEv2::CreateGeometry()
   bpar[1] =  kBBBdz/2;
   bpar[2] =  bpar[1];
 
-  gMC->Gsvolu("BBRB", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BBRB", "BOX ", kSteel, bpar, 3); 
   bpar[0] -= kBBBdd;
   bpar[1] -= kBBBdd;
   bpar[2] -= kBBBdd;
-  gMC->Gsvolu("BBRR", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BBRR", 1, "BBRB", 0., 0., 0., 0, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("BBRR", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BBRR", 1, "BBRB", 0., 0., 0., 0, "ONLY"); 
 
 
   dx = (kBBMRou + kBBMRin) / 2.;
   dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
   dz = kBBMdz/2. -  kBBBdz / 2.;
 
-  gMC->Gspos("BBRB", 1, "BBCE", dx, dy,   dz, idrotm[2052], "ONLY");  
-  gMC->Gspos("BBRB", 2, "BBCE", dx, dy, - dz, idrotm[2052], "ONLY");  
-  gMC->Gspos("BBRB", 3, "BBCE", dx, dy,   0., idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBRB", 1, "BBCE", dx, dy,   dz, idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBRB", 2, "BBCE", dx, dy, - dz, idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBRB", 3, "BBCE", dx, dy,   0., idrotm[2052], "ONLY");  
  
  //
  // Circular bars 
@@ -1169,31 +1169,31 @@ void AliFRAMEv2::CreateGeometry()
   bpar[1] =  kBBMRin * TMath::Sin(10. * kDegrad);
   bpar[0] =  kBBBdz/2;
   bpar[2] =  bpar[0];
-  gMC->Gsvolu("BBC1", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BBC1", "BOX ", kSteel, bpar, 3); 
   bpar[0] -= kBBBdd;
   bpar[1] -= kBBBdd;
   bpar[2] -= kBBBdd;
-  gMC->Gsvolu("BBC2", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BBC2", 1, "BBC1", 0., 0., 0., 0, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("BBC2", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BBC2", 1, "BBC1", 0., 0., 0., 0, "ONLY"); 
   dx = kBBMRin + kBBBdz/2;
   dy = 0.;
-  gMC->Gspos("BBC1", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
-  gMC->Gspos("BBC1", 2, "BBCE", dx, dy,  -dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBC1", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBC1", 2, "BBCE", dx, dy,  -dz, 0, "ONLY");  
   //
   // Outer
   bpar[1] =  (kBBMRou - kBBBdz) * TMath::Sin(10. * kDegrad);
   bpar[0] =  kBBBdz/2;
   bpar[2] =  bpar[0];
-  gMC->Gsvolu("BBC3", "BOX ", kSteel, bpar, 3); 
+  TVirtualMC::GetMC()->Gsvolu("BBC3", "BOX ", kSteel, bpar, 3); 
   bpar[0] -= kBBBdd;
   bpar[1] -= kBBBdd;
   bpar[2] -= kBBBdd;
-  gMC->Gsvolu("BBC4", "BOX ", kAir, bpar, 3); 
-  gMC->Gspos("BBC4", 1, "BBC3", 0., 0., 0., 0, "ONLY"); 
+  TVirtualMC::GetMC()->Gsvolu("BBC4", "BOX ", kAir, bpar, 3); 
+  TVirtualMC::GetMC()->Gspos("BBC4", 1, "BBC3", 0., 0., 0., 0, "ONLY"); 
   dx = kBBMRou - kBBBdz/2;
   dy = 0.;
-  gMC->Gspos("BBC3", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
-  gMC->Gspos("BBC3", 2, "BBCE", dx, dy, - dz, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos("BBC3", 1, "BBCE", dx, dy,   dz, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBC3", 2, "BBCE", dx, dy, - dz, 0, "ONLY");
   //
   // Diagonal Bars
   //
@@ -1218,18 +1218,18 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
   ptrap[10] = 0;
-  gMC->Gsvolu("BBD1", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("BBD1", "TRAP", kSteel, ptrap, 11);
   ptrap[3]  =  d/2-kBBBdd;
   ptrap[4]  = (d/2-kBBBdd)/x;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("BBD3", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("BBD3", 1, "BBD1", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("BBD3", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("BBD3", 1, "BBD1", 0.0, 0.0, 0., 0, "ONLY");
   dx = (kBBMRou + kBBMRin) / 2.;
   dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
-  gMC->Gspos("BBD1", 1, "BBCE", dx, dy,   dz/2. + kBBBdz/2., idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBD1", 1, "BBCE", dx, dy,   dz/2. + kBBBdz/2., idrotm[2052], "ONLY");  
 
 
   ptrap[0]  = dz/2.;
@@ -1243,21 +1243,21 @@ void AliFRAMEv2::CreateGeometry()
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
   ptrap[10] = 0;
-  gMC->Gsvolu("BBD2", "TRAP", kSteel, ptrap, 11);
+  TVirtualMC::GetMC()->Gsvolu("BBD2", "TRAP", kSteel, ptrap, 11);
   ptrap[3]  = d/2-kBBBdd;
   ptrap[4]  = (d/2-kBBBdd)/x;
   ptrap[5]  = ptrap[4];
   ptrap[7]  = ptrap[3];
   ptrap[8]  = ptrap[4];
   ptrap[9]  = ptrap[4];
-  gMC->Gsvolu("BBD4", "TRAP", kAir, ptrap, 11);
-  gMC->Gspos("BBD4", 1, "BBD2", 0.0, 0.0, 0., 0, "ONLY");
+  TVirtualMC::GetMC()->Gsvolu("BBD4", "TRAP", kAir, ptrap, 11);
+  TVirtualMC::GetMC()->Gspos("BBD4", 1, "BBD2", 0.0, 0.0, 0., 0, "ONLY");
   dx = (kBBMRou + kBBMRin) / 2.;
   dy = ((kBBMRou + kBBMRin)/ 2) *  TMath::Tan(10 * kDegrad) - kBBBdz / 2./ TMath::Cos(10 * kDegrad);
-  gMC->Gspos("BBD2", 1, "BBCE", dx, dy,   -dz/2. - kBBBdz/2., idrotm[2052], "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBD2", 1, "BBCE", dx, dy,   -dz/2. - kBBBdz/2., idrotm[2052], "ONLY");  
 
 
-  gMC->Gspos("BBMO", 1, "ALIC", 0., 0., + 376. + kBBMdz / 2. + 0.5, 0, "ONLY");  
+  TVirtualMC::GetMC()->Gspos("BBMO", 1, "ALIC", 0., 0., + 376. + kBBMdz / 2. + 0.5, 0, "ONLY");  
 
 
 }
@@ -1337,8 +1337,8 @@ void AliFRAMEv2::Init()
     }
 //
 // The reference volume id
-    fRefVolumeId1 = gMC->VolId("BREF1");
-    fRefVolumeId2 = gMC->VolId("BREF2");
+    fRefVolumeId1 = TVirtualMC::GetMC()->VolId("BREF1");
+    fRefVolumeId2 = TVirtualMC::GetMC()->VolId("BREF2");
 }
 
 Int_t AliFRAMEv2::IsVersion() const 
@@ -1359,15 +1359,15 @@ void AliFRAMEv2::StepManager()
   
   //
   // Only charged tracks
-  if( !(gMC->TrackCharge()) ) return; 
+  if( !(TVirtualMC::GetMC()->TrackCharge()) ) return; 
   //
   // Only tracks entering mother volume
   // 
 
-  id=gMC->CurrentVolID(copy);
+  id=TVirtualMC::GetMC()->CurrentVolID(copy);
 
   if ((id != fRefVolumeId1) && (id != fRefVolumeId2))  return;
-  if(!gMC->IsTrackEntering()) return;
+  if(!TVirtualMC::GetMC()->IsTrackEntering()) return;
   //
   // Add the reference track
   //
@@ -1403,13 +1403,13 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
     thshM[1]  =  dyP / 2.;
     thshM[2]  =  dzP / 2.;
     snprintf(mname, 16, "BTSH_%s", name);
-    gMC->Gsvolu(mname,  "BOX ", kAir, thshM,  3);
+    TVirtualMC::GetMC()->Gsvolu(mname,  "BOX ", kAir, thshM,  3);
     //
     // Aluminum sheet
     thshM[2] = 0.025;
     snprintf(cname, 16, "BTSHA_%s", name);
-    gMC->Gsvolu(cname, "BOX ", kAlu, thshM,  3);
-    gMC->Gspos(cname, 1, mname, 0., 0., -0.5, 0);
+    TVirtualMC::GetMC()->Gsvolu(cname, "BOX ", kAlu, thshM,  3);
+    TVirtualMC::GetMC()->Gspos(cname, 1, mname, 0., 0., -0.5, 0);
     //
     // Tubes
     Float_t thshT[3];
@@ -1418,20 +1418,20 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
     thshT[2] = (dyP / 2. - 8.);
     //
     snprintf(t1name, 16, "BTSHT1_%s", name);
-    gMC->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
+    TVirtualMC::GetMC()->Gsvolu(t1name,  "TUBE", kAlu, thshT,  3);
     dx = - dxP / 2. + 8. - 0.5;
-    gMC->Gspos(t1name, 1, mname,  dx, 0., 0.025, rot1);
+    TVirtualMC::GetMC()->Gspos(t1name, 1, mname,  dx, 0., 0.025, rot1);
     //
     snprintf(t2name, 16, "BTSHT2_%s", name);
     snprintf(t3name, 16, "BTSHT3_%s", name);
     snprintf(t4name, 16, "BTSHT4_%s", name);
     snprintf(t5name, 16, "BTSHT5_%s", name);
     thshT[2] = (thshM[1] - 12.);
-    gMC->Gsvolu(t2name,  "TUBE", kAlu, thshT,  3);
+    TVirtualMC::GetMC()->Gsvolu(t2name,  "TUBE", kAlu, thshT,  3);
     thshT[2] = 7.9/2.;
-    gMC->Gsvolu(t3name,  "TUBE", kAlu, thshT,  3);
+    TVirtualMC::GetMC()->Gsvolu(t3name,  "TUBE", kAlu, thshT,  3);
     thshT[2] = 23.9/2.;
-    gMC->Gsvolu(t4name,  "TUBE", kAlu, thshT,  3);
+    TVirtualMC::GetMC()->Gsvolu(t4name,  "TUBE", kAlu, thshT,  3);
 
     Int_t sig = 1;
     Int_t ipo = 1;
@@ -1442,16 +1442,16 @@ void AliFRAMEv2::MakeHeatScreen(const char* name, Float_t dyP, Int_t rot1, Int_t
 	Float_t dy1 =  - (thshM[1] - 15.5) * sig;
 	Float_t dy2 =  - (thshM[1] -  7.5) * sig;
 	
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);
+	TVirtualMC::GetMC()->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);
 	dx += 6.9;
-	gMC->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);      
+	TVirtualMC::GetMC()->Gspos(t2name, ipo++, mname, dx, dy, 0.025, rot1);      
 	
-	gMC->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.025, rot2);      
-	gMC->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.025, rot2);      
+	TVirtualMC::GetMC()->Gspos(t3name, i+1,   mname, dx - 3.45, dy1, 0.025, rot2);      
+	TVirtualMC::GetMC()->Gspos(t4name, i+1,   mname, dx - 3.45, dy2, 0.025, rot2);      
     }
     dx += 8.;
-    gMC->Gspos(t1name, 2, mname, dx, 0., 0.025, rot1);
-    gMC->Gspos(t3name, 6,   mname, dx - 3.45, -(thshM[1] - 7.5), 0.025, rot2);      
+    TVirtualMC::GetMC()->Gspos(t1name, 2, mname, dx, 0., 0.025, rot1);
+    TVirtualMC::GetMC()->Gspos(t3name, 6,   mname, dx - 3.45, -(thshM[1] - 7.5), 0.025, rot2);      
 }
 
 
@@ -1490,7 +1490,7 @@ void AliFRAMEv2::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t
     ptrap[8]  = ptrap[4];
     ptrap[9]  = ptrap[4];
     ptrap[10] = 0;
-    gMC->Gsvolu(name, "TRAP", kSteel, ptrap, 11);
+    TVirtualMC::GetMC()->Gsvolu(name, "TRAP", kSteel, ptrap, 11);
     ptrap[3]  =  (6. - 1.)/cos(theta0 * kdeg2rad)/2.;
     ptrap[4]  =  0.75;
     ptrap[5]  = ptrap[4];
@@ -1498,8 +1498,8 @@ void AliFRAMEv2::WebFrame(const char* name, Float_t dHz, Float_t theta0, Float_t
     ptrap[8]  = ptrap[4];
     ptrap[9]  = ptrap[4];
     
-    gMC->Gsvolu(nameA, "TRAP", kAir, ptrap, 11);
-    gMC->Gspos(nameA, 1, name, 0.0, -0.25, 0., 0, "ONLY");
+    TVirtualMC::GetMC()->Gsvolu(nameA, "TRAP", kAir, ptrap, 11);
+    TVirtualMC::GetMC()->Gspos(nameA, 1, name, 0.0, -0.25, 0., 0, "ONLY");
     gGeoManager->GetVolume(name)->SetVisibility(1);
 }
 

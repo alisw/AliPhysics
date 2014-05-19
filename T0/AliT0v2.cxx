@@ -95,13 +95,13 @@ void AliT0v2::CreateGeometry()
 
   AliMatrix (idrotm[901], 90., 0., 90., 90., 180., 0.);
     
-  gMC->Gsvolu ("0RST", "TUBE", idtmed[3], pstart, 3);
-  gMC->Gsvolu ("0LST", "TUBE", idtmed[3], pstart, 3);
-  gMC->Gspos ("0RST", 1, "ALIC", 0., 0., -zRight, 0, "ONLY");
-  gMC->Gspos ("0LST", 1, "ALIC", 0., 0., zLeft, idrotm[901], "ONLY");
+  TVirtualMC::GetMC()->Gsvolu ("0RST", "TUBE", idtmed[3], pstart, 3);
+  TVirtualMC::GetMC()->Gsvolu ("0LST", "TUBE", idtmed[3], pstart, 3);
+  TVirtualMC::GetMC()->Gspos ("0RST", 1, "ALIC", 0., 0., -zRight, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos ("0LST", 1, "ALIC", 0., 0., zLeft, idrotm[901], "ONLY");
 
 //  12 unit: PMT + divider
-  gMC->Gsvolu("0INS", "TUBE", idtmed[3], pinstart, 3);   
+  TVirtualMC::GetMC()->Gsvolu("0INS", "TUBE", idtmed[3], pinstart, 3);   
   z = 0;
   for (i = 0; i < 12; i++)
   {
@@ -118,28 +118,28 @@ void AliT0v2::CreateGeometry()
 		                 90. + theta, phi[1],
 		                 theta,       phi[2]);  
 
-     gMC->Gspos ("0INS", i + 1, "0RST", x, y, z, idrotm[902 + i], "ONLY");
-     gMC->Gspos ("0INS", i + 13, "0LST", x, y, z, 0, "ONLY");
+     TVirtualMC::GetMC()->Gspos ("0INS", i + 1, "0RST", x, y, z, idrotm[902 + i], "ONLY");
+     TVirtualMC::GetMC()->Gspos ("0INS", i + 13, "0LST", x, y, z, 0, "ONLY");
   }
 
-  gMC->Gsvolu ("0PMT", "TUBE", idtmed[1], ppmt, 3);     
+  TVirtualMC::GetMC()->Gsvolu ("0PMT", "TUBE", idtmed[1], ppmt, 3);     
   x = y = 0;      
   z = -pinstart[2] + ppmt[2];
-  gMC->Gspos ("0PMT", 1, "0INS", x, y, z, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos ("0PMT", 1, "0INS", x, y, z, 0, "ONLY");
     
 // PMT
   // Entry window (glass)
-  gMC->Gsvolu ("0TOP", "TUBE", idtmed[6], ptop, 3);
+  TVirtualMC::GetMC()->Gsvolu ("0TOP", "TUBE", idtmed[6], ptop, 3);
   z = -ppmt[2] + ptop[2];
-  gMC->Gspos ("0TOP", 1, "0PMT", 0, 0, z, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos ("0TOP", 1, "0PMT", 0, 0, z, 0, "ONLY");
 
-  gMC->Gsvolu ("0REG", "TUBE", idtmed[6], preg, 3);
+  TVirtualMC::GetMC()->Gsvolu ("0REG", "TUBE", idtmed[6], preg, 3);
   z = -ppmt[2] + 2 * ptop[2] + preg[2];
-  gMC->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos ("0REG", 1, "0PMT", 0, 0, z, 0, "ONLY");
 
-  gMC->Gsvolu ("0DES", "TUBE", idtmed[6], pdes, 3);
+  TVirtualMC::GetMC()->Gsvolu ("0DES", "TUBE", idtmed[6], pdes, 3);
   z = -ppmt[2] + 2 * ptop[2] + preg[2];
-  gMC->Gspos ("0DES", 1, "0PMT", 0, 0, z, 0, "ONLY");
+  TVirtualMC::GetMC()->Gspos ("0DES", 1, "0PMT", 0, 0, z, 0, "ONLY");
 }   
  
 
@@ -195,10 +195,10 @@ void AliT0v2::CreateMaterials()
    AliMixture (3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
    AliMixture (4, "PMT glass   $", aglass, zglass, dglass, -2, wglass);
    TString namate;
-   gMC->GetMaterial((*fIdmate)[3], namate, a, z, d, radl, absl, par);
+   TVirtualMC::GetMC()->GetMaterial((*fIdmate)[3], namate, a, z, d, radl, absl, par);
    acer[0] = a;
    zcer[0] = z;
-   gMC->GetMaterial((*fIdmate)[4], namate, a, z, d, radl, absl, par);
+   TVirtualMC::GetMC()->GetMaterial((*fIdmate)[4], namate, a, z, d, radl, absl, par);
    acer[1] = a;
    zcer[1] = z;
    
@@ -271,8 +271,8 @@ void AliT0v2::DefineOpticalProperties()
    
   Int_t *idtmed = fIdtmed->GetArray();
 
-   gMC->SetCerenkov (idtmed[6], NUMENTRIES, ppckov, absor_qwarz, effic_all, rindex_qwarz);
-   gMC->SetCerenkov (idtmed[1], NUMENTRIES, ppckov, absor_air, effic_all, rindex_air);
+   TVirtualMC::GetMC()->SetCerenkov (idtmed[6], NUMENTRIES, ppckov, absor_qwarz, effic_all, rindex_qwarz);
+   TVirtualMC::GetMC()->SetCerenkov (idtmed[1], NUMENTRIES, ppckov, absor_air, effic_all, rindex_air);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ void AliT0v2::DefineOpticalProperties()
 void AliT0v2::Init()
 {
   AliT0::Init();
-  fIdSens1 = gMC->VolId ("0REG");
+  fIdSens1 = TVirtualMC::GetMC()->VolId ("0REG");
   printf ("*** T0 version 2 initialized ***\n");
 }
 
@@ -304,9 +304,9 @@ void AliT0v2::StepManager()
   TLorentzVector		mom;
   
   
-  if(!gMC->IsTrackAlive()) return; // particle has disappeared
+  if(!TVirtualMC::GetMC()->IsTrackAlive()) return; // particle has disappeared
 
-//  TGeant3  *g3 = (TGeant3*) gMC;
+//  TGeant3  *g3 = (TGeant3*) TVirtualMC::GetMC();
 //  g3->Gpcxyz();
 
   TClonesArray 	&lhits = *fHits;
@@ -315,16 +315,16 @@ void AliT0v2::StepManager()
 ///////////////////////////////////////////////
 // If particles is photon then ...
 
-  if (gMC->TrackPid() == 50000050)
+  if (TVirtualMC::GetMC()->TrackPid() == 50000050)
   {
-     id = gMC->CurrentVolID(copy);
+     id = TVirtualMC::GetMC()->CurrentVolID(copy);
 
      // Check the sensetive volume
      if (id == fIdSens1) 
      {
-	if (gMC->IsTrackEntering()) 
+	if (TVirtualMC::GetMC()->IsTrackEntering()) 
 	{
-	   gMC->CurrentVolOffID(2,copy);
+	   TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
 	   if (copy < 13) 
 	     {
 	       vol[0] = RIGHT_ARRAY;
@@ -336,26 +336,26 @@ void AliT0v2::StepManager()
 	       vol[1] = copy - 12;
 	     }
 
-	   gMC->TrackPosition(pos);
-	   gMC->TrackMomentum(mom);
+	   TVirtualMC::GetMC()->TrackPosition(pos);
+	   TVirtualMC::GetMC()->TrackMomentum(mom);
 	   XYZ[0] = pos[0];
 	   XYZ[1] = pos[1];
 	   XYZ[2] = pos[2];
-	   gMC->Gmtod (XYZ, xyz, 1);
+	   TVirtualMC::GetMC()->Gmtod (XYZ, xyz, 1);
 
 	   hitPhoton[0] = sqrt (xyz[0] * xyz[0] + xyz[1] * xyz[1]);
 	   hitPhoton[1] = mom[0];
 	   hitPhoton[2] = mom[1];
 	   hitPhoton[3] = mom[2];
-	   hitPhoton[4] = 1e9 * gMC->TrackTime();
-	   hitPhoton[5] = 1e9 * gMC->Etot();
+	   hitPhoton[4] = 1e9 * TVirtualMC::GetMC()->TrackTime();
+	   hitPhoton[5] = 1e9 * TVirtualMC::GetMC()->Etot();
 	   
 	   AddHitPhoton (gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hitPhoton);
 	}
-	gMC->StopTrack();
+	TVirtualMC::GetMC()->StopTrack();
      }
      else  
-	if (id == gMC->VolId ("0DES"))  gMC->StopTrack();
+	if (id == TVirtualMC::GetMC()->VolId ("0DES"))  TVirtualMC::GetMC()->StopTrack();
   }
 
 // end photon particalary
@@ -365,16 +365,16 @@ void AliT0v2::StepManager()
 ///////////////////////////////////////////////
 // If particles is charge then ...
  
-  // Float_t charge = gMC->TrackCharge();
+  // Float_t charge = TVirtualMC::GetMC()->TrackCharge();
   //  if(TMath::Abs(charge) <= 0.) return;
-  id = gMC->CurrentVolID(copy);
+  id = TVirtualMC::GetMC()->CurrentVolID(copy);
 
   
-  //  printf("gMC->ckine->ipart %d",gMC->ckine->ipart);
+  //  printf("TVirtualMC::GetMC()->ckine->ipart %d",TVirtualMC::GetMC()->ckine->ipart);
   // Check the sensetive volume
-  if(id==gMC->VolId("0TOP") ) {
-    if(gMC->IsTrackEntering()) {
-      gMC->CurrentVolOffID(2,copy);
+  if(id==TVirtualMC::GetMC()->VolId("0TOP") ) {
+    if(TVirtualMC::GetMC()->IsTrackEntering()) {
+      TVirtualMC::GetMC()->CurrentVolOffID(2,copy);
       if (copy < 13) 
 	{
 	  vol[0] = RIGHT_ARRAY;
@@ -386,27 +386,27 @@ void AliT0v2::StepManager()
 	  vol[1] = copy - 12;
 	}
       
-      gMC->TrackPosition(pos);
+      TVirtualMC::GetMC()->TrackPosition(pos);
       hits[0] = pos[0];
       hits[1] = pos[1];
       hits[2] = pos[2];
-      Float_t etot = gMC->Etot();
+      Float_t etot = TVirtualMC::GetMC()->Etot();
       hits[4] = etot;
-      Int_t part = gMC->TrackPid();
+      Int_t part = TVirtualMC::GetMC()->TrackPid();
       hits[5] = part;
-      Float_t ttime = gMC->TrackTime();
+      Float_t ttime = TVirtualMC::GetMC()->TrackTime();
       hits[6] = ttime*1e9;
       edep = 0;
     }
-    if(gMC->IsTrackInside()) 	{
-      Float_t de = gMC->Edep(); 
+    if(TVirtualMC::GetMC()->IsTrackInside()) 	{
+      Float_t de = TVirtualMC::GetMC()->Edep(); 
       edep = edep + de;
       //       printf ("E deposition %f\n",edep);
       //    for (i=0; i<=6; i++){
       //    printf(" HITS on T0 inside %f\n",hits[i]); } 
     }
-    if(gMC->IsTrackExiting())	{
-      Float_t de = gMC->Edep(); 
+    if(TVirtualMC::GetMC()->IsTrackExiting())	{
+      Float_t de = TVirtualMC::GetMC()->Edep(); 
       edep = edep + de;
       hits[3] = edep * 1e3;
 

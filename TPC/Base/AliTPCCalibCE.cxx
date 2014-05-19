@@ -2783,7 +2783,7 @@ void AliTPCCalibCE::CalculateDV(TObjArray * const arrIdeal, TObjArray * const ar
           fdriftC.AddPoint(xxx,mdrift,1);
         }
 //         Double_t xxx2[4] = { ldrift,iGy*ldrift/(zlength*250.), 250.-mR, iltr->fVecSec->GetMatrixArray()[index]>35, iltr->GetSide()};
-        Double_t xxx2[4] = { ldrift,iGy*ldrift/(zlength*250.), 250.-mR, iltr->GetSide()};
+        Double_t xxx2[4] = { ldrift,iGy*ldrift/(zlength*250.), 250.-mR, static_cast<Double_t>(iltr->GetSide())};
         fdriftAC.AddPoint(xxx2,mdrift,1);
         
       }//end index loop

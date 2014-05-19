@@ -449,8 +449,8 @@ Int_t AliITStrackerMI::LoadClusters(TTree *cTree) {
 	  Float_t q      = 0.; // this identifies virtual clusters
 	  Float_t hit[6] = {xdead,
 			    0.,
-			    AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2(),
-			    AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2(),
+			    static_cast<Float_t>(AliITSReconstructor::GetRecoParam()->GetSigmaXDeadZoneHit2()),
+			    static_cast<Float_t>(AliITSReconstructor::GetRecoParam()->GetSigmaZDeadZoneHit2()),
 			    q,
 			    0.};
 	  Bool_t local   = kTRUE;
@@ -1447,7 +1447,7 @@ void AliITStrackerMI::FollowProlongationTree(AliITStrackMI * otrack, Int_t esdin
   // update TPC V0 information
   //
   if (otrack->GetESDtrack()->GetV0Index(0)>0){    
-    Float_t fprimvertex[3]={GetX(),GetY(),GetZ()};
+    Float_t fprimvertex[3]={static_cast<Float_t>(GetX()),static_cast<Float_t>(GetY()),static_cast<Float_t>(GetZ())};
     for (Int_t i=0;i<3;i++){
       Int_t  index = otrack->GetESDtrack()->GetV0Index(i); 
       if (index==0) break;

@@ -1433,6 +1433,12 @@ TGraphErrors * TStatToolkit::MakeGraphErrors(TTree * tree, const char * expr, co
   graph->SetMarkerStyle(mstyle); 
   graph->SetMarkerColor(mcolor);
   graph->SetLineColor(mcolor);
+  graph->SetTitle(expr);
+  TString chstring(expr);
+  TObjArray *charray = chstring.Tokenize(":");
+  graph->GetXaxis()->SetTitle(charray->At(1)->GetName());
+  graph->GetYaxis()->SetTitle(charray->At(0)->GetName());
+  delete charray;
   if (msize>0) graph->SetMarkerSize(msize);
   for(Int_t i=0;i<graph->GetN();i++) graph->GetX()[i]+=offset;
   return graph;
@@ -1523,7 +1529,13 @@ TGraph * TStatToolkit::MakeGraphSparse(TTree * tree, const char * expr, const ch
   delete [] runNumber;
   delete [] index;
   delete [] newBins;
-  //
+  // 
+  graphNew->SetTitle(expr);
+  TString chstring(expr);
+  TObjArray *charray = chstring.Tokenize(":");
+  graphNew->GetXaxis()->SetTitle(charray->At(1)->GetName());
+  graphNew->GetYaxis()->SetTitle(charray->At(0)->GetName());
+  delete charray;
   return graphNew;
 }
 
@@ -1759,7 +1771,7 @@ void  TStatToolkit::DrawStatusGraphs(TObjArray* oaMultGr)
 }
 
 
-void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts, const char* histoname, const char* histotitle, Int_t nsigma, Float_t fraction )
+TH1* TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const char* cuts, const char* histoname, const char* histotitle, Int_t nsigma, Float_t fraction )
 {
   //
   // Draw histogram from TTree with robust range
@@ -1778,14 +1790,14 @@ void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
 
    if(!tree) {
      cerr<<" Tree pointer is NULL!"<<endl;
-     return;
+     return 0;
    }
 
    // get entries
    Int_t entries = tree->Draw(drawStr.Data(), cutStr.Data(), "goff");
    if (entries == -1) {
      cerr<<"TTree draw returns -1"<<endl;
-     return;
+     return 0;
    }
 
    // get dimension
@@ -1794,7 +1806,7 @@ void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
    if(tree->GetV3()) dim = 3;
    if(dim > 2){
      cerr<<"TTree has more than 2 dimensions (not yet supported)"<<endl;
-     return;
+     return 0;
    }
 
    // draw robust
@@ -1819,5 +1831,5 @@ void TStatToolkit::DrawHistogram(TTree * tree, const char* drawCommand, const ch
      hOut->GetYaxis()->SetTitle(tree->GetHistogram()->GetYaxis()->GetTitle());
      hOut->Draw("colz");
    }
-
+   return hOut;
 }

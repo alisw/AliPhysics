@@ -253,9 +253,9 @@ void AliMUONGeometryBuilder::PlaceVolume(const TString& name, const TString& mNa
 	
   // Place the volume
   if (npar == 0)
-    gMC->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only);
+    TVirtualMC::GetMC()->Gspos(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only);
   else 
-    gMC->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only,
+    TVirtualMC::GetMC()->Gsposp(name, copyNo, mName, xyz[0], xyz[1], xyz[2] , krot, only,
                 param, npar);
 } 
 
@@ -556,7 +556,7 @@ void AliMUONGeometryBuilder::CreateGeometry()
 {
 /// Construct geometry using geometry builders.
 
-  if ( gMC->IsRootGeometrySupported() ) {
+  if ( TVirtualMC::GetMC()->IsRootGeometrySupported() ) {
        
    CreateGeometryWithTGeo();
   } 

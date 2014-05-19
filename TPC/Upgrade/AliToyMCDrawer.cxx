@@ -490,7 +490,7 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
       Double_t zp = track->GetSpacePoint(iPoint)->GetZ();
       Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
       //Double_t zDrifted = (zp/TMath::Abs(zp))*fMaxZ0  -(zp/TMath::Abs(zp))* fDriftVel*(track->GetSpacePoint(iPoint)->GetTimeBin()      -centerTime   );
-      Float_t xyzp[3] = {xp,yp,zp};
+      Float_t xyzp[3] = {static_cast<Float_t>(xp),static_cast<Float_t>(yp),static_cast<Float_t>(zp)};
       AliTrackPoint p;
       p.SetXYZ(xyzp);
       Float_t tempcov[6] = {0};
@@ -521,7 +521,7 @@ void AliToyMCDrawer::DrawTrack(const AliToyMCTrack *track,  Double_t centerTime,
       Double_t zpdist = track->GetDistortedSpacePoint(iPoint)->GetZ();
       //std::cout << zpdist << std::endl;
 	    
-      Float_t xyzpdist[3] = {xpdist,ypdist,zpdist};
+      Float_t xyzpdist[3] = {static_cast<Float_t>(xpdist),static_cast<Float_t>(ypdist),static_cast<Float_t>(zpdist)};
       AliTrackPoint pdist;
       pdist.SetXYZ(xyzpdist);
       Float_t tempcovdist[6] = {0};
@@ -673,7 +673,7 @@ void AliToyMCDrawer::DrawTrack2D(const AliToyMCTrack *track,  Double_t centerTim
       Double_t zDrifted =  zp+(zp/TMath::Abs(zp))*currentEventTimeRelToCentral * fDriftVel;
 
       //Double_t zDrifted = (zp/TMath::Abs(zp))*fMaxZ0  -(zp/TMath::Abs(zp))* fDriftVel*(track->GetSpacePoint(iPoint)->GetTimeBin()      -centerTime   );
-      Float_t xyzp[3] = {xp,yp,zp};
+      Float_t xyzp[3] = {static_cast<Float_t>(xp),static_cast<Float_t>(yp),static_cast<Float_t>(zp)};
       AliTrackPoint p;
       p.SetXYZ(xyzp);
       Float_t tempcov[6] = {0};
@@ -720,7 +720,7 @@ void AliToyMCDrawer::DrawTrack2D(const AliToyMCTrack *track,  Double_t centerTim
       
       //std::cout << zpdist << std::endl;
       
-      Float_t xyzpdist[3] = {xpdist,ypdist,zpdist};
+      Float_t xyzpdist[3] = {static_cast<Float_t>(xpdist),static_cast<Float_t>(ypdist),static_cast<Float_t>(zpdist)};
       AliTrackPoint pdist;
       pdist.SetXYZ(xyzpdist);
       Float_t tempcovdist[6] = {0};
