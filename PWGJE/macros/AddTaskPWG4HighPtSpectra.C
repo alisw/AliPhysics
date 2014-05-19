@@ -73,8 +73,10 @@ void AddTaskPWG4HighPtSpectraQA_AOD(char *prodType = "LHC11h",Bool_t isPbPb=kTRU
     filterMask2 = 256;
     bIncludeNoITS = kTRUE;
   }
-  else
-    AliFatal("Period string not of predefined type. Add it to the list in this macro.");
+  else {
+    ::Error("AddTaskPWG4HighPtSpectra","Period string not of predefined type. Add it to the list in this macro.");
+    return NULL;
+  }
 
   AliPWG4HighPtSpectra   *taskSpectraSUM   = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,10,0,0,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask ); //Sum: the hybrid tracks.
   AliPWG4HighPtSpectra   *taskSpectraRESTR = ConfigureTaskPWG4HighPtSpectra(prodType,isPbPb,10,0,5,triggerMask,bSelectHijingParticles,kTRUE,usePythiaxsec,filterMask1); //With SPD and ITS refit.
@@ -192,8 +194,10 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   const char *analysisType = "ESD";//"TPC"
 
-  if( (type=="AOD" && iAODanalysis==0) || (type=="ESD" && iAODanalysis==1) ) //check if iAODanalysis is configured correctly. TODO: this can be simplified by removing the iAODanalysis variable.
-    AliFatal(Form("Ordering to perform the analysis on wrong datatype. This is an %s!", type))
+  if( (type=="AOD" && iAODanalysis==0) || (type=="ESD" && iAODanalysis==1) ) { //check if iAODanalysis is configured correctly. TODO: this can be simplified by removing the iAODanalysis variable.
+    ::Error("AddTaskPWG4HighPtSpectra", Form("Ordering to perform the analysis on wrong datatype. This is an %s!", type));
+    return NULL;
+  }
 
   // C. Create the task, add it to manager.
   //===========================================================================

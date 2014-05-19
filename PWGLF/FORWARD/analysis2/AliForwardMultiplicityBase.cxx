@@ -21,6 +21,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliFMDEventInspector.h"
+#include "AliFMDESDFixer.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
@@ -93,6 +94,8 @@ AliForwardMultiplicityBase::Book()
   UInt_t what = AliForwardCorrectionManager::kAll;
   if (!fEnableLowFlux)
     what ^= AliForwardCorrectionManager::kDoubleHit;
+  if (!GetESDFixer().IsUseNoiseCorrection()) 
+    what ^= AliForwardCorrectionManager::kNoiseGain;
   if (!GetCorrections().IsUseVertexBias())
     what ^= AliForwardCorrectionManager::kVertexBias;
   if (!GetCorrections().IsUseAcceptance())
@@ -101,6 +104,7 @@ AliForwardMultiplicityBase::Book()
     what ^= AliForwardCorrectionManager::kMergingEfficiency;
   fNeededCorrections = what;
 
+  GetESDFixer()         .CreateOutputObjects(fList);
   GetSharingFilter()	.CreateOutputObjects(fList);
   GetDensityCalculator().CreateOutputObjects(fList);
   GetCorrections()	.CreateOutputObjects(fList);
@@ -541,6 +545,7 @@ AliForwardMultiplicityBase::Print(Option_t* option) const
   PFB("Store per-ring hists", fStorePerRing);
   PFB("Make timing histogram", fDoTiming);
   // gROOT->IncreaseDirLevel();
+  GetESDFixer()         .Print(option);        
   GetSharingFilter()    .Print(option);
   GetDensityCalculator().Print(option);
   GetCorrections()      .Print(option);

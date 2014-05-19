@@ -10,3 +10,9 @@
 #pragma link C++ class AliChaoticityMCStruct+;
 #pragma link C++ class AliChaoticityPairStruct+;
 #pragma link C++ class AliChaoticityNormPairStruct+;
+
+#pragma link C++ class AliFourPion+;
+#pragma link C++ class AliFourPionEventCollection+;
+#pragma link C++ class AliFourPionEventStruct+;
+#pragma link C++ class AliFourPionTrackStruct+;
+#pragma link C++ class AliFourPionMCStruct+;

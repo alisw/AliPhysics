@@ -10,7 +10,8 @@ ClassImp(AliJetEmbeddingTask)
 
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask() : 
-  AliJetModelBaseTask("AliJetEmbeddingTask")
+  AliJetModelBaseTask("AliJetEmbeddingTask"),
+  fMassless(kFALSE)
 {
   // Default constructor.
   SetSuffix("Embedded");
@@ -18,7 +19,8 @@ AliJetEmbeddingTask::AliJetEmbeddingTask() :
 
 //________________________________________________________________________
 AliJetEmbeddingTask::AliJetEmbeddingTask(const char *name) : 
-  AliJetModelBaseTask(name)
+  AliJetModelBaseTask(name),
+  fMassless(kFALSE)
 {
   // Standard constructor.
   SetSuffix("Embedded");
@@ -47,7 +49,9 @@ void AliJetEmbeddingTask::Run()
     if (fCopyArray) 
       CopyTracks();
     for (Int_t i = 0; i < fNTracks; ++i) {
-      AddTrack();
+      Double_t mass = 0.1396;
+      if(fMassless) mass = 0.;
+      AddTrack(-1,-999,-1,0,0,0,0,kFALSE,0,1,mass);
     }
   }
 }

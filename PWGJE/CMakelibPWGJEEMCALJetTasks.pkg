@@ -69,11 +69,14 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetTriggerQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSOH.cxx
+ EMCALJetTasks/UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
 )
 
 # Add code that needs fastjet or FJWrapper here

@@ -902,7 +902,12 @@ AliGenHijingEventHeader*  AliPWG4HighPtSpectra::GetHijingEventHeaderAOD(AliAODEv
   AliGenHijingEventHeader* hijingGenHeader = 0x0;
   if(aodEvent) {
     AliAODMCHeader* mcHeader = (AliAODMCHeader*) aodEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    hijingGenHeader = (AliGenHijingEventHeader*) mcHeader->GetCocktailHeaders()->FindObject("Hijing");
+    TList* headerList = mcHeader->GetCocktailHeaders();
+    for (Int_t i=0; i<headerList->GetEntries(); i++) {
+      hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(headerList->At(i));
+      if (hijingGenHeader)
+        break;
+    }
   }
   return hijingGenHeader;
 }

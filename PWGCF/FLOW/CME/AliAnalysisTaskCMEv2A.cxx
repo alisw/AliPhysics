@@ -1106,6 +1106,11 @@ void AliAnalysisTaskCMEv2A::UserCreateOutputObjects()
   // --- done with histograms --- //
   // ---------------------------- //
 
+
+  // ------------------------------------ //
+  // --- send data to the output list --- //
+  // ------------------------------------ // 
+  PostData(1,fOutputList);
 }
 
 
@@ -1134,24 +1139,11 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       return;
     }
 
+  const int hmax = 9; // number of harmonics including 0 for multiplicity counting
 
-  // AOD Event object from tree
-  AliAODEvent *fAOD = (AliAODEvent *)InputEvent();
-  if(!fAOD)
-    {
-      if(debug>-1) cout<<"ERROR: AOD event object not available. Discarding event..."<<endl;
-      return;
-    }
-
-
-  int runnumber = fAOD->GetRunNumber();
-  float mag = fAOD->GetMagneticField();
-
-  if(debug>0)
-    {
-      cout<<"runnumber is "<<runnumber<<endl;
-      cout<<"magnetic field is "<<mag<<endl;
-    }
+  // -----------------------------------------------------------------
+  // --- do everything for MC truth before proceeding to anything else
+  // -----------------------------------------------------------------
 
   // MC Event object from tree
   AliMCEvent *fMC = MCEvent();
@@ -1161,338 +1153,25 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       return;
     }
 
-  // get pid
-  AliPIDResponse *fPID = handler->GetPIDResponse();
-  if(!fPID && !doMC)    // use PID only if no MC 
-    {
-      if(debug>-1) cout<<"ERROR: PIDResponse object not available. Discarding event..."<<endl;
-      return;
-    }
-
-  // // Eventplane object (from AOD)
-  // AliEventplane *fEventplane = fAOD->GetEventplane();
-  // if(!fEventplane)
-  //   {
-  //     if(debug>-1) cout<<"ERROR: Eventplane object not available. Discarding event..."<<endl;
-  //     return;
-  //   }
-
-  // float psi_V0_h2 = fEventplane->GetEventplane("V0",fAOD,2);
-  // float psi_V0A_h2 = fEventplane->GetEventplane("V0A",fAOD,2);
-  // float psi_V0C_h2 = fEventplane->GetEventplane("V0C",fAOD,2);
-
-  // fHistPlaneV0h2->Fill(psi_V0_h2);
-  // fHistPlaneV0Ah2->Fill(psi_V0A_h2);
-  // fHistPlaneV0Ch2->Fill(psi_V0C_h2);
-  // fHistPlaneV0ACDCh2->Fill(psi_V0A_h2-psi_V0C_h2);
-
-
-
-  // Centrality object (from AOD)
-  AliCentrality *fCentrality = fAOD->GetCentrality();
-  if(!fCentrality)
-    {
-      if(debug>-1) cout<<"ERROR: Centrality object not available. Discarding event..."<<endl;
-      return;
-    }
-
-  float centTRK = fCentrality->GetCentralityPercentile("TRK");
-  float centV0M = fCentrality->GetCentralityPercentile("V0M");
-  float centSPD = fCentrality->GetCentralityPercentile("CL1");//outer SPD?
-  float cent = centTRK;
-  if(centhandle==2) cent = centV0M;
-  if(centhandle==3) cent = centSPD;
-
-  int icent = int(cent)/10;
-
-  int centstatus = 0;
-  if(centTRK<0.0||centV0M<0.0) centstatus = -1;
-  if(centTRK<0.0&&centV0M<0.0) centstatus = -2;
-  if(centTRK>0.0||centV0M>0.0) centstatus = 1;
-  if(centTRK>0.0&&centV0M>0.0) centstatus = 2;
-  if(centTRK==0.0&&centV0M==0.0) centstatus = 0;
-
-  if(debug>0)
-    {
-      cout<<"centTRK "<<centTRK<<endl;
-      cout<<"centV0M "<<centV0M<<endl;
-      cout<<"centSPD "<<centSPD<<endl;
-      cout<<"centrality selection is "<<centhandle<<endl;
-      cout<<"cent is "<<cent<<endl;
-    }
-  fHistCentTRK->Fill(centTRK);
-  fHistCentV0M->Fill(centV0M);
-  fHistCentDIFF->Fill(centTRK-centV0M);
-
-  //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  ULong64_t mask = handler->IsEventSelected();
-  ULong64_t amb = AliVEvent::kMB;
-  ULong64_t acn = AliVEvent::kCentral;
-  ULong64_t asc = AliVEvent::kSemiCentral;
-
-  if(debug>0) cout<<"trigger selection is "<<trigger<<endl;
-  if(debug>0) cout<<"trigger mask is "<<mask<<endl;
-
-  if(mask&amb)
-    {
-      fHistCentTRKAVEkMB->Fill(centTRK);
-      fHistCentV0MAVEkMB->Fill(centV0M);
-    }
-  if(mask&acn)
-    {
-      fHistCentTRKAVEkCentral->Fill(centTRK);
-      fHistCentV0MAVEkCentral->Fill(centV0M);
-    }
-  if(mask&asc)
-    {
-      fHistCentTRKAVEkSemiCentral->Fill(centTRK);
-      fHistCentV0MAVEkSemiCentral->Fill(centV0M);
-    }
-  if(mask&(amb|acn|asc))
-    {
-      fHistCentTRKAVEkA3->Fill(centTRK);
-      fHistCentV0MAVEkA3->Fill(centV0M);
-    }
-
-  if(mask&trigger)
-    {
-      fHistCentTRKAVEkSel->Fill(centTRK);
-      fHistCentV0MAVEkSel->Fill(centV0M);
-    }
-  else
-    {
-      if(debug>0) cout<<"wrong trigger, rejecting event"<<endl;
-      return;
-    }
-
-  if(fabs(centTRK-centV0M)>centcut)
-    {
-      if(debug>0) cout<<"centrality difference outside cut, rejecting event"<<endl;
-      return;
-    }
-
-
-
-  // AOD vertex objects
-  AliAODVertex *fVtx = fAOD->GetPrimaryVertex();
-  AliAODVertex *fVtxSPD = fAOD->GetPrimaryVertexSPD();
-  if(!fVtx)
-    {
-      if(debug>-1) cout<<"ERROR: Vertex object not available. Discarding event..."<<endl;
-      return;
-    }
-  float zvtxV0 = fVtx->GetZ();
-  float zvtxSPD = fVtxSPD->GetZ();
-  if(debug>0) cout<<"zvtxV0 is "<<zvtxV0<<endl;
-  if(debug>0) cout<<"zvtxSPD is "<<zvtxSPD<<endl;
-  if(centstatus==2)
-    {
-      fHistZVtx->Fill(zvtxV0);
-      fHistZVtxD->Fill(zvtxV0-zvtxSPD);
-    }
-  if(fabs(zvtxV0)>zvtxcut)
-    {
-      if(debug>0) cout<<"vertex outside cut, rejecting event"<<endl;
-      return;
-    }
-  float eventX = fVtx->GetX();
-  float eventY = fVtx->GetY();
-  float eventZ = fVtx->GetZ();
-
-
-
-  // // get V0 object
-  // AliAODVZERO *fV0 = fAOD->GetVZEROData();
-  // for(int i=0; i<64; i++)
-  //   {
-  //     float phiV0 = pi/4.0*(0.5+i%8);
-  //     float multV0 = fV0->GetMultiplicity(i);
-  //   }
-
-
-  int d_ntrk = fAOD->GetNumberOfTracks();
   int d_ntrkMC = 0;
   if(fMC) d_ntrkMC = fMC->GetNumberOfTracks();
 
-  if(centstatus==-2&&d_ntrk>0) centstatus = -3;
-  if(debug>0) cout<<"there are "<<d_ntrk<<" tracks in this event"<<endl;
-  if(debug>0&&fMC) cout<<"there are "<<d_ntrkMC<<" Monte Carlo tracks in this event"<<endl;
-  if(debug>0) cout<<"centrality diagnostic is "<<centstatus<<endl;
-
-  fHistCentDIAG->Fill(centstatus);
-  if(centstatus==-3)
-    {
-      fHistCtrkDIAG->Fill(d_ntrk);
-      fHistVtxRDIAG->Fill(zvtxV0);
-      fHistVtxSDIAG->Fill(zvtxSPD);
-    }
-  if(centstatus==-2)
-    {
-      fHistVtxRDIBG->Fill(zvtxV0);
-      fHistVtxSDIBG->Fill(zvtxSPD);
-    }
-
-  // --- AliAnalysisUtils for pileup cuts
-  if(dopupcut)
-    {
-      AliAnalysisUtils *fUtils = new AliAnalysisUtils();
-      if(!fUtils)
-  	{
-  	  if(debug>-1) cout<<"ERROR: cannot find AliAnalysisUtils..."<<endl;
-  	  return;
-  	}
-      fUtils->SetUseOutOfBunchPileUp(true);
-      bool pileup = fUtils->IsPileUpEvent(fAOD);
-      //bool pileup = fAOD->IsPileUpFromSPD(3,0.8,3.0,2.0,5.0); // default parameters in AliAODEvent.h
-      if(pileup)
-  	{
-  	  if(debug>0) cout<<"Rejecting event for pileup (AliAnalysisUtils)"<<endl;
-  	  return;
-  	}
-      if(fUtils) delete fUtils;
-      //
-      // ---
-      //
-      /*
-      const AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
-      if(!vtxSPD||vtxSPD->GetNContributors()<=0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event (no vtxSPD or zero contributors) "<<vtxSPD<<endl;
-	  return;
-	}
-      
-      const AliAODVertex* vtxTPC = 0;
-      int nVertices = fAOD->GetNumberOfVertices();
-      if(debug>0) cout<<"number of vertices is "<<nVertices<<endl;
-      for(int iVertices = 0; iVertices < nVertices; iVertices++)
-	{
-	  const AliAODVertex* vertex = fAOD->GetVertex(iVertices);
-	  if(debug>0) cout<<"vertex type is "<<vertex->GetType()<<endl;
-	  if(vertex->GetType()!=AliAODVertex::kMainTPC) continue;
-	  vtxTPC = vertex;
-	}
-      if(!vtxTPC||vtxTPC->GetNContributors()<=0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event (no vtxTPC or zero contributors)"<<vtxTPC<<endl;
-	  return;
-	}
-      
-      float diffZ = vtxSPD->GetZ() - vtxTPC->GetZ();
-      if(fabs(diffZ)>2.0)
-	{
-	  if(debug>0) cout<<"rejecting pileup event with vtxTPC "<<vtxTPC->GetZ()<<" vtxSPD "<<vtxSPD->GetZ()<<endl;
-	  return;
-	}
-      */
-      // 
-      // ---
-      //
-    }
-
-
-  int ntrk = 0;
-  int ntrkpos = 0;
-  int ntrkneg = 0;
-  int ntrkL = 0;
-  int ntrkposL = 0;
-  int ntrknegL = 0;
-  int ntrkR = 0;
-  int ntrkposR = 0;
-  int ntrknegR = 0;
-  int ntrkA1 = 0;
-  int ntrkposA1 = 0;
-  int ntrknegA1 = 0;
-  int ntrkA2 = 0;
-  int ntrkposA2 = 0;
-  int ntrknegA2 = 0;
   int ntrkMC = 0;
   int ntrkposMC = 0;
   int ntrknegMC = 0;
-
-  int cutntrk = 0;
-  int cutntrkpos = 0;
-  int cutntrkneg = 0;
-  int cutntrkL = 0;
-  int cutntrkposL = 0;
-  int cutntrknegL = 0;
-  int cutntrkR = 0;
-  int cutntrkposR = 0;
-  int cutntrknegR = 0;
   int cutntrkMC = 0;
   int cutntrkposMC = 0;
   int cutntrknegMC = 0;
 
-  const int hmax = 9; // number of harmonics including 0 for multiplicity counting
-  float tpcXplo[hmax], tpcYplo[hmax], tpcXpro[hmax], tpcYpro[hmax];
-  float tpcXnlo[hmax], tpcYnlo[hmax], tpcXnro[hmax], tpcYnro[hmax];
-  float tpcXpli[hmax], tpcYpli[hmax], tpcXpri[hmax], tpcYpri[hmax];
-  float tpcXnli[hmax], tpcYnli[hmax], tpcXnri[hmax], tpcYnri[hmax];
-  float tpcXpl[hmax], tpcYpl[hmax], tpcXpr[hmax], tpcYpr[hmax];
-  float tpcXnl[hmax], tpcYnl[hmax], tpcXnr[hmax], tpcYnr[hmax];
-  for(int i=0; i<hmax;i++)
+  float centMC = 99;
+  AliCentrality *fCentralityMC = fMC->GetCentrality();
+  if(!fCentralityMC)
     {
-      tpcXplo[i] = 0.0;
-      tpcYplo[i] = 0.0;
-      tpcXpro[i] = 0.0;
-      tpcYpro[i] = 0.0;
-      tpcXnlo[i] = 0.0;
-      tpcYnlo[i] = 0.0;
-      tpcXnro[i] = 0.0;
-      tpcYnro[i] = 0.0;
-      //
-      tpcXpli[i] = 0.0;
-      tpcYpli[i] = 0.0;
-      tpcXpri[i] = 0.0;
-      tpcYpri[i] = 0.0;
-      tpcXnli[i] = 0.0;
-      tpcYnli[i] = 0.0;
-      tpcXnri[i] = 0.0;
-      tpcYnri[i] = 0.0;
-      //
-      tpcXpl[i] = 0.0;
-      tpcYpl[i] = 0.0;
-      tpcXpr[i] = 0.0;
-      tpcYpr[i] = 0.0;
-      tpcXnl[i] = 0.0;
-      tpcYnl[i] = 0.0;
-      tpcXnr[i] = 0.0;
-      tpcYnr[i] = 0.0;
+      if(debug>0) cout<<"Warning: Centrality object not available. Proceeding..."<<endl;
     }
-
-  float MCtpcXplo[hmax], MCtpcYplo[hmax], MCtpcXpro[hmax], MCtpcYpro[hmax];
-  float MCtpcXnlo[hmax], MCtpcYnlo[hmax], MCtpcXnro[hmax], MCtpcYnro[hmax];
-  float MCtpcXpli[hmax], MCtpcYpli[hmax], MCtpcXpri[hmax], MCtpcYpri[hmax];
-  float MCtpcXnli[hmax], MCtpcYnli[hmax], MCtpcXnri[hmax], MCtpcYnri[hmax];
-  float MCtpcXpl[hmax], MCtpcYpl[hmax], MCtpcXpr[hmax], MCtpcYpr[hmax];
-  float MCtpcXnl[hmax], MCtpcYnl[hmax], MCtpcXnr[hmax], MCtpcYnr[hmax];
-  for(int i=0; i<hmax;i++)
+  else
     {
-      MCtpcXplo[i] = 0.0;
-      MCtpcYplo[i] = 0.0;
-      MCtpcXpro[i] = 0.0;
-      MCtpcYpro[i] = 0.0;
-      MCtpcXnlo[i] = 0.0;
-      MCtpcYnlo[i] = 0.0;
-      MCtpcXnro[i] = 0.0;
-      MCtpcYnro[i] = 0.0;
-      //
-      MCtpcXpli[i] = 0.0;
-      MCtpcYpli[i] = 0.0;
-      MCtpcXpri[i] = 0.0;
-      MCtpcYpri[i] = 0.0;
-      MCtpcXnli[i] = 0.0;
-      MCtpcYnli[i] = 0.0;
-      MCtpcXnri[i] = 0.0;
-      MCtpcYnri[i] = 0.0;
-      //
-      MCtpcXpl[i] = 0.0;
-      MCtpcYpl[i] = 0.0;
-      MCtpcXpr[i] = 0.0;
-      MCtpcYpr[i] = 0.0;
-      MCtpcXnl[i] = 0.0;
-      MCtpcYnl[i] = 0.0;
-      MCtpcXnr[i] = 0.0;
-      MCtpcYnr[i] = 0.0;
+      centMC = fCentralityMC->GetCentralityPercentile("TRKtrue");
     }
 
   // ---------------------------------- //
@@ -1500,6 +1179,43 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   // ---------------------------------- //
   if(fMC)
     {
+
+      float MCtpcXplo[hmax], MCtpcYplo[hmax], MCtpcXpro[hmax], MCtpcYpro[hmax];
+      float MCtpcXnlo[hmax], MCtpcYnlo[hmax], MCtpcXnro[hmax], MCtpcYnro[hmax];
+      float MCtpcXpli[hmax], MCtpcYpli[hmax], MCtpcXpri[hmax], MCtpcYpri[hmax];
+      float MCtpcXnli[hmax], MCtpcYnli[hmax], MCtpcXnri[hmax], MCtpcYnri[hmax];
+      float MCtpcXpl[hmax], MCtpcYpl[hmax], MCtpcXpr[hmax], MCtpcYpr[hmax];
+      float MCtpcXnl[hmax], MCtpcYnl[hmax], MCtpcXnr[hmax], MCtpcYnr[hmax];
+      for(int i=0; i<hmax;i++)
+	{
+	  MCtpcXplo[i] = 0.0;
+	  MCtpcYplo[i] = 0.0;
+	  MCtpcXpro[i] = 0.0;
+	  MCtpcYpro[i] = 0.0;
+	  MCtpcXnlo[i] = 0.0;
+	  MCtpcYnlo[i] = 0.0;
+	  MCtpcXnro[i] = 0.0;
+	  MCtpcYnro[i] = 0.0;
+	  //
+	  MCtpcXpli[i] = 0.0;
+	  MCtpcYpli[i] = 0.0;
+	  MCtpcXpri[i] = 0.0;
+	  MCtpcYpri[i] = 0.0;
+	  MCtpcXnli[i] = 0.0;
+	  MCtpcYnli[i] = 0.0;
+	  MCtpcXnri[i] = 0.0;
+	  MCtpcYnri[i] = 0.0;
+	  //
+	  MCtpcXpl[i] = 0.0;
+	  MCtpcYpl[i] = 0.0;
+	  MCtpcXpr[i] = 0.0;
+	  MCtpcYpr[i] = 0.0;
+	  MCtpcXnl[i] = 0.0;
+	  MCtpcYnl[i] = 0.0;
+	  MCtpcXnr[i] = 0.0;
+	  MCtpcYnr[i] = 0.0;
+	}
+      
       // variables for 3rd particle
       float MCpt3[d_ntrkMC];
       float MCeta3[d_ntrkMC];
@@ -1507,7 +1223,7 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       int MCcharge3[d_ntrkMC];
       // initial variables to out of range values
       // for cases when the track loop skips certain tracks
-      for(int i=0; i<d_ntrk; i++)
+      for(int i=0; i<d_ntrkMC; i++)
 	{
 	  MCpt3[i] = -99;
 	  MCeta3[i] = -99;
@@ -1713,8 +1429,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 		} // end right half of MCTPC
 	    } // end pt selection
 	  
-	  h_AT_etaMC->Fill(cent,charge);
-	  h2_AT_etaMC->Fill(cent,charge);
+	  h_AT_etaMC->Fill(centMC,charge);
+	  h2_AT_etaMC->Fill(centMC,charge);
 
 	  MCpt3[itrkMC] = pt;
 	  MCeta3[itrkMC] = eta;
@@ -1737,8 +1453,8 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	{
 	  MCqasymm = float(cutntrkposMC-cutntrknegMC)/float(cutntrkMC);
 	}
-      h_A_centMC->Fill(cent,MCqasymm);
-      h2_A_centMC->Fill(cent,MCqasymm);
+      h_A_centMC->Fill(centMC,MCqasymm);
+      h2_A_centMC->Fill(centMC,MCqasymm);
       
       
       for(int i=0; i<6; i++)
@@ -1789,18 +1505,18 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
       float MCq22gap1ev = (MCtpcXl2o*MCtpcXr2o+MCtpcYl2o*MCtpcYr2o)/(MCtpcXl0o*MCtpcXr0o);
       float MCq22gap1Pev = (MCtpcXplo[2]*MCtpcXpro[2]+MCtpcYplo[2]*MCtpcYpro[2])/(MCtpcXplo[0]*MCtpcXpro[0]);
       float MCq22gap1Nev = (MCtpcXnlo[2]*MCtpcXnro[2]+MCtpcYnlo[2]*MCtpcYnro[2])/(MCtpcXnlo[0]*MCtpcXnro[0]);
-      h_MCq22_cent->Fill(cent,MCq22ev);
-      h_MCq22_centP->Fill(cent,MCq22Pev);
-      h_MCq22_centN->Fill(cent,MCq22Nev);
-      h_MCAq22_cent->Fill(cent,MCq22ev*MCqasymm);
-      h_MCAq22_centP->Fill(cent,MCq22Pev*MCqasymm);
-      h_MCAq22_centN->Fill(cent,MCq22Nev*MCqasymm);
-      h_MCq22gap0_cent->Fill(cent,MCq22gap0ev);
-      h_MCq22gap0_centP->Fill(cent,MCq22gap0Pev);
-      h_MCq22gap0_centN->Fill(cent,MCq22gap0Nev);
-      h_MCq22gap1_cent->Fill(cent,MCq22gap1ev);
-      h_MCq22gap1_centP->Fill(cent,MCq22gap1Pev);
-      h_MCq22gap1_centN->Fill(cent,MCq22gap1Nev);
+      h_MCq22_cent->Fill(centMC,MCq22ev);
+      h_MCq22_centP->Fill(centMC,MCq22Pev);
+      h_MCq22_centN->Fill(centMC,MCq22Nev);
+      h_MCAq22_cent->Fill(centMC,MCq22ev*MCqasymm);
+      h_MCAq22_centP->Fill(centMC,MCq22Pev*MCqasymm);
+      h_MCAq22_centN->Fill(centMC,MCq22Nev*MCqasymm);
+      h_MCq22gap0_cent->Fill(centMC,MCq22gap0ev);
+      h_MCq22gap0_centP->Fill(centMC,MCq22gap0Pev);
+      h_MCq22gap0_centN->Fill(centMC,MCq22gap0Nev);
+      h_MCq22gap1_cent->Fill(centMC,MCq22gap1ev);
+      h_MCq22gap1_centP->Fill(centMC,MCq22gap1Pev);
+      h_MCq22gap1_centN->Fill(centMC,MCq22gap1Nev);
       
       
       
@@ -1949,8 +1665,10 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	  float MCdiffq42Pev = ((MCtrkXp[4]*MCtpcX[4])+(MCtrkYp[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
 	  float MCdiffq42Nev = ((MCtrkXn[4]*MCtpcX[4])+(MCtrkYn[4]*MCtpcY[4])-1)/(MCtpcX[0]-1);
 
-
-	  if(donested)
+	  bool centMCflag = false;
+	  if(centMC==99) centMCflag = true;
+	  if(centMC>centlo||centMC<centhi) centMCflag = true;
+	  if(donested&&centMCflag)
 	    {
 	      for(int i=0; i<d_ntrkMC; i++)
 		{
@@ -2016,10 +1734,321 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
 	    } // check on donested
 
 	} // end of second MC track loop 
-      
+
     } // check on existence of MC
-  
-  
+
+  // -----------------------------  
+  // --- end of MC truth only part
+  // --- now do everything else
+  // -----------------------------
+
+  // AOD Event object from tree
+  AliAODEvent *fAOD = (AliAODEvent *)InputEvent();
+  if(!fAOD)
+    {
+      if(debug>-1) cout<<"ERROR: AOD event object not available. Discarding event..."<<endl;
+      return;
+    }
+
+  int runnumber = fAOD->GetRunNumber();
+  float mag = fAOD->GetMagneticField();
+
+  if(debug>0)
+    {
+      cout<<"runnumber is "<<runnumber<<endl;
+      cout<<"magnetic field is "<<mag<<endl;
+    }
+
+  // get pid
+  AliPIDResponse *fPID = handler->GetPIDResponse();
+  if(!fPID && !doMC)    // use PID only if no MC 
+    {
+      if(debug>-1) cout<<"ERROR: PIDResponse object not available. Discarding event..."<<endl;
+      return;
+    }
+
+  // // Eventplane object (from AOD)
+  // AliEventplane *fEventplane = fAOD->GetEventplane();
+  // if(!fEventplane)
+  //   {
+  //     if(debug>-1) cout<<"ERROR: Eventplane object not available. Discarding event..."<<endl;
+  //     return;
+  //   }
+
+  // float psi_V0_h2 = fEventplane->GetEventplane("V0",fAOD,2);
+  // float psi_V0A_h2 = fEventplane->GetEventplane("V0A",fAOD,2);
+  // float psi_V0C_h2 = fEventplane->GetEventplane("V0C",fAOD,2);
+
+  // fHistPlaneV0h2->Fill(psi_V0_h2);
+  // fHistPlaneV0Ah2->Fill(psi_V0A_h2);
+  // fHistPlaneV0Ch2->Fill(psi_V0C_h2);
+  // fHistPlaneV0ACDCh2->Fill(psi_V0A_h2-psi_V0C_h2);
+
+
+
+  // Centrality object (from AOD)
+  AliCentrality *fCentrality = fAOD->GetCentrality();
+  if(!fCentrality)
+    {
+      if(debug>-1) cout<<"ERROR: Centrality object not available. Discarding event..."<<endl;
+      return;
+    }
+
+  float centTRK = fCentrality->GetCentralityPercentile("TRK");
+  float centV0M = fCentrality->GetCentralityPercentile("V0M");
+  float centSPD = fCentrality->GetCentralityPercentile("CL1");//outer SPD?
+  float cent = centTRK;
+  if(centhandle==2) cent = centV0M;
+  if(centhandle==3) cent = centSPD;
+
+  int icent = int(cent)/10;
+
+  int centstatus = 0;
+  if(centTRK<0.0||centV0M<0.0) centstatus = -1;
+  if(centTRK<0.0&&centV0M<0.0) centstatus = -2;
+  if(centTRK>0.0||centV0M>0.0) centstatus = 1;
+  if(centTRK>0.0&&centV0M>0.0) centstatus = 2;
+  if(centTRK==0.0&&centV0M==0.0) centstatus = 0;
+
+  if(debug>0)
+    {
+      cout<<"centTRK "<<centTRK<<endl;
+      cout<<"centV0M "<<centV0M<<endl;
+      cout<<"centSPD "<<centSPD<<endl;
+      cout<<"centrality selection is "<<centhandle<<endl;
+      cout<<"cent is "<<cent<<endl;
+    }
+  fHistCentTRK->Fill(centTRK);
+  fHistCentV0M->Fill(centV0M);
+  fHistCentDIFF->Fill(centTRK-centV0M);
+
+  //ULong64_t mask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  ULong64_t mask = handler->IsEventSelected();
+  ULong64_t amb = AliVEvent::kMB;
+  ULong64_t acn = AliVEvent::kCentral;
+  ULong64_t asc = AliVEvent::kSemiCentral;
+
+  if(debug>0) cout<<"trigger selection is "<<trigger<<endl;
+  if(debug>0) cout<<"trigger mask is "<<mask<<endl;
+
+  if(mask&amb)
+    {
+      fHistCentTRKAVEkMB->Fill(centTRK);
+      fHistCentV0MAVEkMB->Fill(centV0M);
+    }
+  if(mask&acn)
+    {
+      fHistCentTRKAVEkCentral->Fill(centTRK);
+      fHistCentV0MAVEkCentral->Fill(centV0M);
+    }
+  if(mask&asc)
+    {
+      fHistCentTRKAVEkSemiCentral->Fill(centTRK);
+      fHistCentV0MAVEkSemiCentral->Fill(centV0M);
+    }
+  if(mask&(amb|acn|asc))
+    {
+      fHistCentTRKAVEkA3->Fill(centTRK);
+      fHistCentV0MAVEkA3->Fill(centV0M);
+    }
+
+  if(mask&trigger)
+    {
+      fHistCentTRKAVEkSel->Fill(centTRK);
+      fHistCentV0MAVEkSel->Fill(centV0M);
+    }
+  else
+    {
+      if(debug>0) cout<<"wrong trigger, rejecting event"<<endl;
+      return;
+    }
+
+  if(fabs(centTRK-centV0M)>centcut)
+    {
+      if(debug>0) cout<<"centrality difference outside cut, rejecting event"<<endl;
+      return;
+    }
+
+
+
+  // AOD vertex objects
+  AliAODVertex *fVtx = fAOD->GetPrimaryVertex();
+  AliAODVertex *fVtxSPD = fAOD->GetPrimaryVertexSPD();
+  if(!fVtx)
+    {
+      if(debug>-1) cout<<"ERROR: Vertex object not available. Discarding event..."<<endl;
+      return;
+    }
+  float zvtxV0 = fVtx->GetZ();
+  float zvtxSPD = fVtxSPD->GetZ();
+  if(debug>0) cout<<"zvtxV0 is "<<zvtxV0<<endl;
+  if(debug>0) cout<<"zvtxSPD is "<<zvtxSPD<<endl;
+  if(centstatus==2)
+    {
+      fHistZVtx->Fill(zvtxV0);
+      fHistZVtxD->Fill(zvtxV0-zvtxSPD);
+    }
+  if(fabs(zvtxV0)>zvtxcut)
+    {
+      if(debug>0) cout<<"vertex outside cut, rejecting event"<<endl;
+      return;
+    }
+  float eventX = fVtx->GetX();
+  float eventY = fVtx->GetY();
+  float eventZ = fVtx->GetZ();
+
+
+
+  // // get V0 object
+  // AliAODVZERO *fV0 = fAOD->GetVZEROData();
+  // for(int i=0; i<64; i++)
+  //   {
+  //     float phiV0 = pi/4.0*(0.5+i%8);
+  //     float multV0 = fV0->GetMultiplicity(i);
+  //   }
+
+
+  int d_ntrk = fAOD->GetNumberOfTracks();
+
+  if(centstatus==-2&&d_ntrk>0) centstatus = -3;
+  if(debug>0) cout<<"there are "<<d_ntrk<<" tracks in this event"<<endl;
+  if(debug>0&&fMC) cout<<"there are "<<d_ntrkMC<<" Monte Carlo tracks in this event"<<endl;
+  if(debug>0) cout<<"centrality diagnostic is "<<centstatus<<endl;
+
+  fHistCentDIAG->Fill(centstatus);
+  if(centstatus==-3)
+    {
+      fHistCtrkDIAG->Fill(d_ntrk);
+      fHistVtxRDIAG->Fill(zvtxV0);
+      fHistVtxSDIAG->Fill(zvtxSPD);
+    }
+  if(centstatus==-2)
+    {
+      fHistVtxRDIBG->Fill(zvtxV0);
+      fHistVtxSDIBG->Fill(zvtxSPD);
+    }
+
+  // --- AliAnalysisUtils for pileup cuts
+  if(dopupcut)
+    {
+      AliAnalysisUtils *fUtils = new AliAnalysisUtils();
+      if(!fUtils)
+  	{
+  	  if(debug>-1) cout<<"ERROR: cannot find AliAnalysisUtils..."<<endl;
+  	  return;
+  	}
+      fUtils->SetUseOutOfBunchPileUp(true);
+      bool pileup = fUtils->IsPileUpEvent(fAOD);
+      //bool pileup = fAOD->IsPileUpFromSPD(3,0.8,3.0,2.0,5.0); // default parameters in AliAODEvent.h
+      if(pileup)
+  	{
+  	  if(debug>0) cout<<"Rejecting event for pileup (AliAnalysisUtils)"<<endl;
+  	  return;
+  	}
+      if(fUtils) delete fUtils;
+      //
+      // ---
+      //
+      /*
+      const AliAODVertex* vtxSPD = fAOD->GetPrimaryVertexSPD();
+      if(!vtxSPD||vtxSPD->GetNContributors()<=0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event (no vtxSPD or zero contributors) "<<vtxSPD<<endl;
+	  return;
+	}
+      
+      const AliAODVertex* vtxTPC = 0;
+      int nVertices = fAOD->GetNumberOfVertices();
+      if(debug>0) cout<<"number of vertices is "<<nVertices<<endl;
+      for(int iVertices = 0; iVertices < nVertices; iVertices++)
+	{
+	  const AliAODVertex* vertex = fAOD->GetVertex(iVertices);
+	  if(debug>0) cout<<"vertex type is "<<vertex->GetType()<<endl;
+	  if(vertex->GetType()!=AliAODVertex::kMainTPC) continue;
+	  vtxTPC = vertex;
+	}
+      if(!vtxTPC||vtxTPC->GetNContributors()<=0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event (no vtxTPC or zero contributors)"<<vtxTPC<<endl;
+	  return;
+	}
+      
+      float diffZ = vtxSPD->GetZ() - vtxTPC->GetZ();
+      if(fabs(diffZ)>2.0)
+	{
+	  if(debug>0) cout<<"rejecting pileup event with vtxTPC "<<vtxTPC->GetZ()<<" vtxSPD "<<vtxSPD->GetZ()<<endl;
+	  return;
+	}
+      */
+      // 
+      // ---
+      //
+    }
+
+
+  int ntrk = 0;
+  int ntrkpos = 0;
+  int ntrkneg = 0;
+  int ntrkL = 0;
+  int ntrkposL = 0;
+  int ntrknegL = 0;
+  int ntrkR = 0;
+  int ntrkposR = 0;
+  int ntrknegR = 0;
+  int ntrkA1 = 0;
+  int ntrkposA1 = 0;
+  int ntrknegA1 = 0;
+  int ntrkA2 = 0;
+  int ntrkposA2 = 0;
+  int ntrknegA2 = 0;
+
+  int cutntrk = 0;
+  int cutntrkpos = 0;
+  int cutntrkneg = 0;
+  int cutntrkL = 0;
+  int cutntrkposL = 0;
+  int cutntrknegL = 0;
+  int cutntrkR = 0;
+  int cutntrkposR = 0;
+  int cutntrknegR = 0;
+
+  float tpcXplo[hmax], tpcYplo[hmax], tpcXpro[hmax], tpcYpro[hmax];
+  float tpcXnlo[hmax], tpcYnlo[hmax], tpcXnro[hmax], tpcYnro[hmax];
+  float tpcXpli[hmax], tpcYpli[hmax], tpcXpri[hmax], tpcYpri[hmax];
+  float tpcXnli[hmax], tpcYnli[hmax], tpcXnri[hmax], tpcYnri[hmax];
+  float tpcXpl[hmax], tpcYpl[hmax], tpcXpr[hmax], tpcYpr[hmax];
+  float tpcXnl[hmax], tpcYnl[hmax], tpcXnr[hmax], tpcYnr[hmax];
+  for(int i=0; i<hmax;i++)
+    {
+      tpcXplo[i] = 0.0;
+      tpcYplo[i] = 0.0;
+      tpcXpro[i] = 0.0;
+      tpcYpro[i] = 0.0;
+      tpcXnlo[i] = 0.0;
+      tpcYnlo[i] = 0.0;
+      tpcXnro[i] = 0.0;
+      tpcYnro[i] = 0.0;
+      //
+      tpcXpli[i] = 0.0;
+      tpcYpli[i] = 0.0;
+      tpcXpri[i] = 0.0;
+      tpcYpri[i] = 0.0;
+      tpcXnli[i] = 0.0;
+      tpcYnli[i] = 0.0;
+      tpcXnri[i] = 0.0;
+      tpcYnri[i] = 0.0;
+      //
+      tpcXpl[i] = 0.0;
+      tpcYpl[i] = 0.0;
+      tpcXpr[i] = 0.0;
+      tpcYpr[i] = 0.0;
+      tpcXnl[i] = 0.0;
+      tpcYnl[i] = 0.0;
+      tpcXnr[i] = 0.0;
+      tpcYnr[i] = 0.0;
+    }
+
+
   
   // ------------------------------- //
   // --- Now looping over tracks --- //
@@ -3484,12 +3513,6 @@ void AliAnalysisTaskCMEv2A::UserExec(Option_t *)
   h_rAq22_X4_centN->Fill(cent,a2q22Nev*qasymA1);
 
   
-  
-  // ------------------------------------ //
-  // --- send data to the output list --- //
-  // ------------------------------------ //
-  
-  PostData(1,fOutputList);
   
   // ------------------------- //
   // --- end of event loop --- //

@@ -32,7 +32,8 @@
 //====================================================================
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
   : AliBaseESDTask(),
-    fEventInspector(),
+    fEventInspector(),				
+    fESDFixer(),
     fEnergyFitter(),
     fOnlyMB(false)
 {
@@ -47,6 +48,7 @@ AliFMDEnergyFitterTask::AliFMDEnergyFitterTask()
 AliFMDEnergyFitterTask::AliFMDEnergyFitterTask(const char* name)
   : AliBaseESDTask(name, "", &(AliForwardCorrectionManager::Instance())), 
     fEventInspector("event"),
+    fESDFixer("esdFizer"),
     fEnergyFitter("energy"),
     fOnlyMB(false)
 {
@@ -108,14 +110,38 @@ AliFMDEnergyFitterTask::Book()
   DGUARD(fDebug,1,"Create output objects of AliFMDEnergyFitterTask");
 
   // We don't need any corrections for this task 
-  fNeededCorrections = 0;
+  fNeededCorrections = 0; 
   fExtraCorrections  = 0;
+  if (fESDFixer.IsUseNoiseCorrection()) 
+    fNeededCorrections = AliForwardCorrectionManager::kNoiseGain;
 
+  fESDFixer    .CreateOutputObjects(fList);
   fEnergyFitter.CreateOutputObjects(fList);
 
   fList->Add(AliForwardUtil::MakeParameter("onlyMB", fOnlyMB));
   return true;
 }
+//____________________________________________________________________
+void
+AliFMDEnergyFitterTask::PreCorrections(const AliESDEvent* esd)
+{
+  if (!esd) return; 
+  
+  AliESDFMD* esdFMD = esd->GetFMDData();  
+  if (!esdFMD) return;
+
+  // TODO: We should always disable this on MC!
+  Int_t tgt = fESDFixer.FindTargetNoiseFactor(*esdFMD, false);
+  if (tgt <= 0) {
+    // If the target noise factor is 0 or less, disable the noise/gain
+    // correction.
+    fESDFixer.SetRecoNoiseFactor(4);
+    fNeededCorrections ^= AliForwardCorrectionManager::kNoiseGain;
+  }
+  else 
+    AliWarning("The noise corrector has been enabled!");
+}
+
 //____________________________________________________________________
 Bool_t
 AliFMDEnergyFitterTask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
@@ -128,6 +154,7 @@ AliFMDEnergyFitterTask::PreData(const TAxis& /*vertex*/, const TAxis& eta)
 
   fEnergyFitter.SetupForData(eta);
 
+  Print();
   return true;
 }
 
@@ -183,6 +210,10 @@ AliFMDEnergyFitterTask::Event(AliESDEvent& esd)
   
   // Get FMD data 
   AliESDFMD* esdFMD = esd.GetFMDData();
+
+  // Fix up ESD 
+  fESDFixer.Fix(*esdFMD, ip.Z());
+
   // Do the energy stuff 
   if (!fEnergyFitter.Accumulate(*esdFMD, cent, 
 				triggers & AliAODForwardMult::kEmpty)){
@@ -229,6 +260,7 @@ AliFMDEnergyFitterTask::Print(Option_t* option) const
   AliBaseESDTask::Print(option);
   gROOT->IncreaseDirLevel();
   PFB("Only MB", fOnlyMB);
+  fESDFixer    .Print(option);
   fEnergyFitter.Print(option);
   gROOT->DecreaseDirLevel();
 }

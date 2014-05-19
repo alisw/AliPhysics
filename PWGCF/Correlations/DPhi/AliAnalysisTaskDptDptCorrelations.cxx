@@ -1167,7 +1167,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       
       //*********************************************************
       TExMap *trackMap = new TExMap();//Mapping matrix----                                            
-      //1st loop track                                                                                
+      //1st loop track for Global tracks                                                                                
       for(Int_t i = 0; i < _nTracks; i++)
 	{
 	  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
@@ -1177,7 +1177,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  }
 	  Int_t gID = aodTrack->GetID();
 	  if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                       
-	}
+	  }
            
       AliAODTrack* newAodTrack;
       
@@ -1207,6 +1207,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  //dcaXY = t->DCA(); 
 	  //dcaZ  = t->ZAtDCA();  
 	  
+	  //for Global tracks
 	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
 	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
@@ -1237,6 +1238,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
 	      DCAXY    >  _dcaXYMax ) continue; 
+
+
 	  //==== QA ===========================
 	  _dcaz->Fill(DCAZ);
 	  _dcaxy->Fill(DCAXY);

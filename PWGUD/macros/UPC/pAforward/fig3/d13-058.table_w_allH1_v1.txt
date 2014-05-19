@@ -1,0 +1,105 @@
+# Elastic and proton-dissociative photoproduction of J/psi mesons at HERA
+#  [arXiv:1304.5162]
+# and
+# Elastic J/Psi Production at HERA
+#  [hep-ex/0510016]
+#
+# In this document, the cross sections as a function of W are given
+#  together with a decomposition of the error matrix.
+#
+# The table has 40 rows, corresponding to 40 cross section
+#  measurements. Each row has 28 columns, as explained in the following
+# Rows 1-22 correspond to table 4 of [arXiv:1304.5162]
+# Rows 23-40 correspond to table 3 of [hep-ex/0510016]
+#
+# Version 1, date: 20.6.2013
+#
+# Column 1-8: cross section measurement
+# column    comment
+# =====================
+#  1 (n)    row number
+#  2 (pd)   pd=0 if the reaction is elastic, pd=1 if proton dissociative
+#  3 (wmin) lower bound on photon-proton centre-of-mass energy [GeV]
+#  4 (wmax) upper bound on photon-proton centre-of-mass energy [GeV]
+#  5 (wavg) average photon-proton centre-of-mass energy [GeV]
+#  6 (PhiT) transverse polarized photon flux
+#  7 (sigm) measured cross section [nanobarn]
+#  8 (dsig) total uncertainty on the measured cross section [nanobarn]
+#
+# Column 9-27: error sources
+# column    comment
+# ===================
+#  9 (dunc) uncorrelated uncertainty [nanobarn]
+# 10 (dc1)  1st correlated uncertainty from data combination [nanobarn]
+# 11 (dc2)  2nd correlated uncertainty from data combination [nanobarn]
+# 12 (dc3)  3rd correlated uncertainty from data combination [nanobarn]
+#  ...
+# 17 (dc8)  8th correlated uncertainty from data combination [nanobarn]
+# 18 (dc9)  9th correlated uncertainty from data combination [nanobarn]
+# 19 (rnor) normalisation uncertainty from trigger, track and psi(2S) [percent]
+# 20 (rlhe) luminosity uncertainty, HE data set [percent]
+# 21 (rlle) luminosity uncertainty, LE data set [percent]
+# 22 (rlar) LAr tagging uncertainty [percent]
+# 23 (rplu) PLUG tagging uncertainty [percent]
+# 24 (rfts) FTS tagging uncertainty [percent]
+# 25 (rmod) model uncertainty [percent]
+# 26 (rq2)  Q^2 dependence uncertainty [percent]
+# 27 (rec)  empty calorimeter cut uncertainty [percent]
+# 28 (rher1) correlated error HERA-I [percent]
+#
+# Note 1: the uncertainties from col=8 to col=18 are absolute uncertainties
+#  measured in nanobarn, whereas the uncertainties from col=19 to col=28
+#  are given in percent, relative to col=7.
+#
+# Note 2: when adding all uncertainty sources corresponding col=9 up to
+#  col=28 quadratically, the result is equal to the total uncertainty
+#  given in col=8 (sanity check).
+#
+# Note 3: the uncertainties given in col=10 up to col=28 are correlated
+#  across the rows of the table, i.e. they contribute to the
+#  off-diagonals of the covariance matrix. In contrast, the
+#  uncertainties given in col=9 are uncorrelated, so they contribute only
+#  to the diagonals of the covariance matrix.
+#
+#n pd wmin  wmax  wavg PhiT   sigm dsig dunc  dc1  dc2  dc3  dc4  dc5  dc6  dc7  dc8  dc9 rnor rlhe rlle rlar rplu rfts rmod  rq2   rec rher1
+#===========================================================================================================================================
+ 1 0  40.0  46.5  43.2 0.0158 50.7  4.9  1.5  1.2  0.2  0.7  0.1  0.0  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -7.1 -0.1  1.4  0.0
+ 2 0  46.5  53.5  50.0 0.0144 59.5  5.8  1.4  1.4  0.0  0.6  0.6 -0.4  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -7.3 -0.1  1.4  0.0
+ 3 0  53.5  61.2  57.3 0.0131 61.8  6.2  1.9  1.7 -0.6 -0.1  0.6 -0.3  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -7.4 -0.1  1.4  0.0
+ 4 0  61.2  69.4  65.3 0.0120 67.6  6.2  1.7  1.6 -0.5 -0.2  0.2  0.5  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -6.6 -0.1  1.4  0.0
+ 5 0  69.4  78.4  73.9 0.0112 72.4  6.5  1.9  1.7 -0.1  0.4 -0.4  0.1  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -6.3 -0.1  1.4  0.0
+ 6 0  78.4  88.0  83.2 0.0103 79.9  7.0  2.3  1.8 -0.3  0.4 -0.4 -0.2  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -6.0 -0.1  1.4  0.0
+ 7 0  88.0  98.5  93.3 0.0096 84.4  7.0  2.1  1.9 -0.2  0.5  0.2  0.6  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -5.5 -0.1  1.4  0.0
+ 8 0  98.5 110.0 104.3 0.0089 86.7  7.4  2.7  2.3 -0.8 -0.4 -0.4 -0.5  0.0  0.0  0.0  0.0  3.2  2.7  0.0 -2.6  0.6 -0.1 -5.2 -0.1  1.4  0.0
+ 9 1  40.0  46.5  43.2 0.0158 46.0  6.0  2.0  1.0  0.0 -0.5 -0.1  0.1  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5 -3.9  0.1 -4.3  0.0
+10 1  46.5  53.5  50.0 0.0144 52.1  6.5  1.8  1.1  0.1 -0.6 -0.5  0.4  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  2.5  0.1 -4.3  0.0
+11 1  53.5  61.2  57.3 0.0131 58.7  7.4  1.7  1.2  0.6  0.1 -0.7  0.3  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  3.5  0.1 -4.3  0.0
+12 1  61.2  69.4  65.3 0.0120 58.7  7.5  1.4  1.1  1.0  0.2 -0.1 -0.7  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  4.6  0.1 -4.3  0.0
+13 1  69.4  78.4  73.9 0.0112 61.5  8.0  1.9  1.3  0.4 -0.5  0.4 -0.1  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  4.8  0.1 -4.3  0.0
+14 1  78.4  88.0  83.2 0.0103 67.7  8.7  2.0  1.3  0.5 -0.5  0.6  0.4  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  4.6  0.1 -4.3  0.0
+15 1  88.0  98.5  93.3 0.0096 69.8  9.0  2.2  1.3  0.6 -0.5 -0.1 -0.5  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  4.8  0.1 -4.3  0.0
+16 1  98.5 110.0 104.2 0.0089 68.8  9.0  2.5  1.3  0.9  0.3  0.2  0.4  0.0  0.0  0.0  0.0  3.2  2.7  0.0  9.4 -2.2  0.5  4.6  0.1 -4.3  0.0
+17 0  25.0  39.0  31.9 0.0465 39.7  4.9  2.5  0.0  0.0  0.0  0.0  0.0  0.1  0.8  1.1 -1.8  3.2  0.0  4.0 -3.4  0.8 -0.1 -6.4 -0.1  1.9  0.0
+18 0  39.0  57.0  47.9 0.0359 55.4  5.7  2.1  0.0  0.0  0.0  0.0  0.0  0.1  0.4 -1.7 -1.9  3.2  0.0  4.0 -3.4  0.8 -0.1 -5.1 -0.1  1.9  0.0
+19 0  57.0  80.0  68.4 0.0284 66.4  6.8  2.9  0.0  0.0  0.0  0.0  0.0 -2.7 -0.5  0.0 -1.5  3.2  0.0  4.0 -3.4  0.8 -0.1 -4.7 -0.1  1.9  0.0
+20 1  25.0  39.0  31.9 0.0465 42.0  8.1  3.0  0.0  0.0  0.0  0.0  0.0 -0.3 -3.1 -1.9  0.1  3.2  0.0  4.0 12.0 -2.9  0.3 -4.6  0.1 -6.4  0.0
+21 1  39.0  57.0  47.9 0.0359 55.1  9.4  2.7  0.0  0.0  0.0  0.0  0.0 -0.3 -2.4  2.7 -0.3  3.2  0.0  4.0 12.0 -2.9  0.3 -2.5  0.1 -6.4  0.0
+22 1  57.0  80.0  68.3 0.0284 62.0 10.7  3.5  0.0  0.0  0.0  0.0  0.0  3.7 -0.9  0.1 -1.0  3.2  0.0  4.0 12.0 -2.9  0.3  2.5  0.1 -6.4  0.0
+23 0  40.0  50.0  44.8 0.0000 47.5  4.7  4.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+24 0  50.0  60.0  54.8 0.0000 50.1  4.9  4.2  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+25 0  60.0  70.0  64.8 0.0000 61.7  6.0  5.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+26 0  70.0  80.0  74.8 0.0000 64.8  6.4  5.5  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+27 0  80.0  90.0  84.9 0.0000 75.0  7.2  6.2  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+28 0  90.0 100.0  94.9 0.0000 81.2  7.8  6.7  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+29 0 100.0 110.0 104.9 0.0000 85.3  8.3  7.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+30 0 110.0 130.0 119.5 0.000  94.5  8.8  7.5  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+31 0 130.0 160.0 144.1 0.000 101.5  9.7  8.3  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+32 0 135.0 155.0 144.9 0.000 101.9 12.0 10.9  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+33 0 155.0 170.0 162.5 0.000 117.8 14.1 12.8  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+34 0 170.0 185.0 177.3 0.000 130.2 14.9 13.4  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+35 0 185.0 205.0 194.8 0.000 147.7 18.6 17.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+36 0 205.0 235.0 219.6 0.000 193.2 29.6 28.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+37 0 205.0 235.0 219.6 0.000 137.4 21.3 20.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+38 0 235.0 255.0 244.8 0.000 176.6 22.1 20.3  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+39 0 255.0 280.0 267.2 0.000 178.7 22.9 21.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5
+40 0 280.0 305.0 292.3 0.000 200.4 30.8 29.1  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   5

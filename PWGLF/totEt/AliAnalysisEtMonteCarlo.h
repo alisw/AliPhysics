@@ -475,6 +475,7 @@ protected:
     TH2F *fHistFracNeutronsVsNTotalTracks;//Fraction of signal vs number of total tracks
     TH2F *fHistFracKaonsVsNTotalTracks;//Fraction of signal vs number of total tracks
     TH2F *fHistFracSecondariesVsNTotalTracks;//Fraction of signal vs number of total tracks
+    TH3F *fHistRCorrVsPtVsCent; // enter comment here
 
 
 private:

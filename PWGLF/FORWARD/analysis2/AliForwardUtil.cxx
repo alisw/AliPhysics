@@ -82,6 +82,7 @@ ULong_t AliForwardUtil::AliROOTBranch()
   str = ALIROOT_BRANCH;
   top = "master";
 #endif
+  if (str.IsNull()) return 0xFFFFFFFF;
   if (str[0] == 'v') str.Remove(0,1);
   if (str.EqualTo(top)) return ret = 0xFFFFFFFF;
 

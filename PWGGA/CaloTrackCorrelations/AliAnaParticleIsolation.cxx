@@ -1635,35 +1635,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPhiBandCluster->SetYTitle("#phi");
       outputContainer->Add(fhPhiBandCluster) ;
       
-	fhEtaPhiInConeCluster= new TH2F("hEtaPhiInConeCluster",
-                                   Form("#eta vs #phi of clusters in cone for R = %2.2f",r),
-                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiInConeCluster= new TH2F("hEtaPhiInConeCluster",
+				      Form("#eta vs #phi of clusters in cone for R = %2.2f",r),
+				      netabins,-1,1,nphibins,0,TMath::TwoPi());
       fhEtaPhiInConeCluster->SetXTitle("#eta");
       fhEtaPhiInConeCluster->SetYTitle("#phi");
       outputContainer->Add(fhEtaPhiInConeCluster) ;
 	
-	fhEtaPhiCluster= new TH2F("hEtaPhiCluster",
-                                   Form("#eta vs #phi of all clusters"),
-                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiCluster= new TH2F("hEtaPhiCluster",
+				Form("#eta vs #phi of all clusters"),
+				netabins,-1,1,nphibins,0,TMath::TwoPi());
       fhEtaPhiCluster->SetXTitle("#eta");
       fhEtaPhiCluster->SetYTitle("#phi");
       outputContainer->Add(fhEtaPhiCluster) ;
 
-  	fhEtaPhiInConeTrack= new TH2F("hEtaPhiInConeTrack",
-                                   Form("#eta vs #phi of Tracks in cone for R = %2.2f",r),
-                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
-      fhEtaPhiInConeTrack->SetXTitle("#eta");
-      fhEtaPhiInConeTrack->SetYTitle("#phi");
-      outputContainer->Add(fhEtaPhiInConeTrack) ;
-	
-	fhEtaPhiTrack= new TH2F("hEtaPhiTrack",
-                                   Form("#eta vs #phi of all Tracks"),
-                                   netabins,-1,1,nphibins,0,TMath::TwoPi());
-      fhEtaPhiTrack->SetXTitle("#eta");
-      fhEtaPhiTrack->SetYTitle("#phi");
-      outputContainer->Add(fhEtaPhiTrack) ;
-
-    fhPtCellInCone  = new TH2F("hPtCellInCone",
+      fhPtCellInCone  = new TH2F("hPtCellInCone",
                                  Form("#it{p}_{T} of cells in isolation cone for R = %2.2f",r),
                                  nptbins,ptmin,ptmax,1000,0,50);
       fhPtCellInCone->SetYTitle("p_{T in cone} (GeV/#it{c})");
@@ -1864,20 +1850,6 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhConeSumPtSubNormvsConeSumPtTotEtaCell->SetYTitle("#Sigma p_{T, sub norm} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtSubNormvsConeSumPtTotEtaCell);
 
-      fhConeSumPtVSUETracksEtaBand  = new TH2F("hConeSumPtVSUETracksEtaBand",
-                                                         Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in eta band for tracks (before normalization), R=%2.2f",r),
-                                                         nptsumbins,ptsummin,ptsummax,2*nptsumbins,ptsummin,2*ptsummax);         
-      fhConeSumPtVSUETracksEtaBand->SetXTitle("#Sigma #it{p}_{T} cone (GeV/#it{c})");
-      fhConeSumPtVSUETracksEtaBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
-      outputContainer->Add(fhConeSumPtVSUETracksEtaBand);
-
-      fhConeSumPtVSUETracksPhiBand  = new TH2F("hConeSumPtVSUETracksPhiBand",
-                                                         Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in phi band for tracks (before normalization), R=%2.2f",r),
-                                                         nptsumbins,ptsummin,ptsummax,8*nptsumbins,ptsummin,8*ptsummax);         
-      fhConeSumPtVSUETracksPhiBand->SetXTitle("#Sigma #it{p}_{T} cone (GeV/#it{c})");
-      fhConeSumPtVSUETracksPhiBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
-      outputContainer->Add(fhConeSumPtVSUETracksPhiBand);
-
       fhConeSumPtVSUEClusterEtaBand  = new TH2F("hConeSumPtVSUEClusterEtaBand",
                                                          Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in eta band for cluster (before normalization), R=%2.2f",r),
                                                          nptsumbins,ptsummin,ptsummax,2*nptsumbins,ptsummin,2*ptsummax);         
@@ -2047,6 +2019,34 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtInPerpCone->SetYTitle("p_{T in cone} (GeV/#it{c})");
       fhPtInPerpCone->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhPtInPerpCone) ;
+
+      fhEtaPhiTrack= new TH2F("hEtaPhiTrack",
+			      Form("#eta vs #phi of all Tracks"),
+			      netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiTrack->SetXTitle("#eta");
+      fhEtaPhiTrack->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiTrack) ;
+      
+      fhEtaPhiInConeTrack= new TH2F("hEtaPhiInConeTrack",
+				    Form("#eta vs #phi of Tracks in cone for R = %2.2f",r),
+				    netabins,-1,1,nphibins,0,TMath::TwoPi());
+      fhEtaPhiInConeTrack->SetXTitle("#eta");
+      fhEtaPhiInConeTrack->SetYTitle("#phi");
+      outputContainer->Add(fhEtaPhiInConeTrack) ;
+      
+      fhConeSumPtVSUETracksEtaBand  = new TH2F("hConeSumPtVSUETracksEtaBand",
+					       Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in eta band for tracks (before normalization), R=%2.2f",r),
+					       nptsumbins,ptsummin,ptsummax,2*nptsumbins,ptsummin,2*ptsummax);         
+      fhConeSumPtVSUETracksEtaBand->SetXTitle("#Sigma #it{p}_{T} cone (GeV/#it{c})");
+      fhConeSumPtVSUETracksEtaBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtVSUETracksEtaBand);
+      
+      fhConeSumPtVSUETracksPhiBand  = new TH2F("hConeSumPtVSUETracksPhiBand",
+					       Form("#Sigma #it{p}_{T} in cone versus #Sigma #it{p}_{T} in phi band for tracks (before normalization), R=%2.2f",r),
+					       nptsumbins,ptsummin,ptsummax,8*nptsumbins,ptsummin,8*ptsummax);         
+      fhConeSumPtVSUETracksPhiBand->SetXTitle("#Sigma #it{p}_{T} cone (GeV/#it{c})");
+      fhConeSumPtVSUETracksPhiBand->SetYTitle("#Sigma #it{p}_{T} UE (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtVSUETracksPhiBand); 
     }
     
     if(GetIsolationCut()->GetParticleTypeInCone()==AliIsolationCut::kNeutralAndCharged)

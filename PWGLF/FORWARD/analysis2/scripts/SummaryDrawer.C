@@ -1471,9 +1471,9 @@ protected:
     UShort_t sys=0, sNN=0;
     Int_t field=0;
     ULong_t runNo=0;
-    Int_t lowFlux=0, nPileUp=0;
-    ULong_t aliRev=0, aliBra=0;
-    Bool_t fpVtx=false, v0and=false;
+    Int_t lowFlux=0, nPileUp=0, ipMethod=0;
+    ULong_t aliRev=0, aliBra=0;    
+    Bool_t v0and=false;
     Double_t dPileUp=0.;
     Double_t y = .8;
 
@@ -1488,7 +1488,7 @@ protected:
     GetParameter(c, "field", field);
     GetParameter(c, "runNo", runNo);
     GetParameter(c, "lowFlux", lowFlux);
-    GetParameter(c, "fpVtx", fpVtx);
+    GetParameter(c, "ipMethod", ipMethod);
     GetParameter(c, "v0and", v0and);
     GetParameter(c, "nPileUp", nPileUp);
     GetParameter(c, "dPileup", dPileUp);
@@ -1500,7 +1500,15 @@ protected:
     DrawParameter(y, "L3 B field", Form("%+2dkG", field));
     DrawParameter(y, "Run #", Form("%lu", runNo));
     DrawParameter(y, "Low flux cut", Form("%d", lowFlux));
-    DrawParameter(y, "Use PWG-UD vertex", (fpVtx ? "yes" : "no"));
+    TString sIpMeth("unknown");
+    switch(ipMethod) { 
+    case 0: sIpMeth = "Normal"; break;
+    case 1: sIpMeth = "pA in 2012"; break;
+    case 2: sIpMeth = "pA in 2013"; break;
+    case 3: sIpMeth = "PWG-UD"; break;
+    case 4: sIpMeth = "Satellite"; break;
+    }
+    DrawParameter(y, "Use PWG-UD vertex", sIpMeth);
     DrawParameter(y, "Use V0AND for NSD", (v0and ? "yes" : "no"));
     DrawParameter(y, "Least # of pile-up vertex", Form("%d", nPileUp));
     DrawParameter(y, "Least distance of pile-up vertex",
@@ -1624,6 +1632,50 @@ protected:
     DrawTwoInPad(fBody, 6, nPartC, nBinC, "e3 p", kLegend);
 
     PrintCanvas("EventInspector - Monte-Carlo");  
+  }
+  //____________________________________________________________________
+  virtual void DrawESDFixer(TCollection* parent)
+  {
+    Info("DrawESDFixer", "Drawing ESD fixer");
+    TCollection* c = GetCollection(parent, "fmdESDFixer");
+    if (!c) return;
+
+    Int_t  recoFactor = 0;
+    Bool_t recalcEta = false;
+    Bool_t invalidIsEmpty = false;
+
+    fBody->cd();
+
+    Double_t save = fParName->GetTextSize();
+    fParName->SetTextSize(0.05);
+    fParVal->SetTextSize(0.05);
+
+    fBody->Divide(2,2);
+    fBody->cd(1);
+    
+    Double_t y = .8;
+    if (GetParameter(c, "recoFactor", recoFactor))
+	DrawParameter(y, "Noise factor used in reco",
+		      Form("%d (assumed)", recoFactor));
+    if (GetParameter(c, "recalcEta", recalcEta))
+	DrawParameter(y, "Recalculate #eta",
+		      Form("%s", (recalcEta ? "yes" : "no")));
+    if (GetParameter(c, "invalidIsEmpty", invalidIsEmpty))
+	DrawParameter(y, "Assume invalid strips are empty",
+		      Form("%s", (invalidIsEmpty ? "yes" : "no")));
+
+    TCollection* xd = GetCollection(c, "extraDead");
+    if (xd) 
+      DrawParameter(y, "# extra dead strips", 
+		    Form("%d", xd->GetEntries()));
+    
+    DrawInPad(fBody, 2, GetH1(c, "noiseChange"), "", kLogy);
+    DrawInPad(fBody, 3, GetH1(c, "etaChange"), "", kLogy);
+    DrawInPad(fBody, 4, GetH1(c, "deadChange"), "", kLogy);
+	
+    PrintCanvas("ESD Fixer");
+    fParName->SetTextSize(save);
+    fParVal->SetTextSize(save);
   }
   //____________________________________________________________________
   void DrawTrackDensity(TCollection* parent)

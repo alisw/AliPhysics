@@ -392,6 +392,7 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
     ,fHistFracNeutronsVsNTotalTracks(0)
     ,fHistFracKaonsVsNTotalTracks(0)
     ,fHistFracSecondariesVsNTotalTracks(0)
+    ,fHistRCorrVsPtVsCent(0)
 {
 }
 
@@ -642,6 +643,7 @@ AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
     delete fHistFracNeutronsVsNTotalTracks;
     delete fHistFracKaonsVsNTotalTracks;
     delete fHistFracSecondariesVsNTotalTracks;
+    delete fHistRCorrVsPtVsCent;
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
@@ -964,17 +966,98 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	Bool_t nottrackmatched = kTRUE;//default to no track matched
 	Float_t matchedTrackp = 0.0;
 	Float_t matchedTrackpt = 0.0;
+        fDepositedCode = part->GetPdgCode();
+	fReconstructedE = caloCluster->E();
+        Float_t pos[3];
+	//PrintFamilyTree(
+        caloCluster->GetPosition(pos);
+        TVector3 cp(pos);
+	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
 	nottrackmatched = fSelector->PassTrackMatchingCut(*caloCluster);
 	//by default ALL matched tracks are accepted, whether or not the match is good.  So we check to see if the track is good.
 	if(!nottrackmatched){//if the track is trackmatched
 	  Int_t trackMatchedIndex = caloCluster->GetTrackMatchedIndex();
 	  if(trackMatchedIndex < 0) nottrackmatched=kTRUE;
 	  AliESDtrack *track = realEvent->GetTrack(trackMatchedIndex);
-	  matchedTrackp = track->P();
-	  matchedTrackpt = track->Pt();
+	  // cout<<"track code "<<fTrackDepositedCode<<" cluster code "<<fDepositedCode<<" track label "<<trackLabel<<" cluster label "<<iPart<<endl;
+
 	  //if this is a good track, accept track will return true.  The track matched is good, so not track matched is false
-	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));//if the track is bad, this is track matched
-	  //if(!nottrackmatched) cout<<"Matched track p: "<<matchedTrackp<<" sim "<<part->P()<<endl;
+	  nottrackmatched = !(fEsdtrackCutsTPC->AcceptTrack(track));//if the track is bad, this is not track matched
+	  if(!nottrackmatched){//if the track that was matched is a good track
+	    matchedTrackp = track->P();
+	    matchedTrackpt = track->Pt();
+	    UInt_t trackLabel = (UInt_t)TMath::Abs(track->GetLabel());
+	    TParticle  *trackSimPart  = stack->Particle(trackLabel);
+	    Int_t fTrackDepositedCode = trackSimPart->GetPdgCode();
+	    //if(!nottrackmatched) cout<<"Matched track p: "<<matchedTrackp<<" sim "<<part->P()<<endl;
+	    //now we want to fill our Rcorr histos
+	    Float_t rcorr = fReconstructedE/track->P();
+	    fHistRCorrVsPtVsCent->Fill(rcorr,matchedTrackpt, fCentClass);
+	    //cout<<"rcorr "<<rcorr<<endl;
+	    Int_t n=caloCluster->GetNLabels() ;
+	    if(fReconstructedE - fsub* track->P() > 0.0){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	      //then we say the cluster was not track matched but correct the energy
+	      nottrackmatched = kTRUE;
+	      //cout<<"Reassigning energy "<<fReconstructedEt;
+	      fReconstructedE = fReconstructedE - fsub* track->P();
+	      fReconstructedEt = fReconstructedE*TMath::Sin(cp.Theta());
+	      //cout<<" to "<<fReconstructedEt<<endl;
+	      if(fDepositedCode==fTrackDepositedCode && n>1){
+		//the energy deposited was more than the momentum of the track but the cluster was assigned to the particle that created the track.  We therefore need to reassign the cluster label
+		//this is a sub-optimal way to re-assign the particle but it is rare that a particle needs to be reassigned
+		//cout<<"Particle was "<<part->GetName()<<" reassigning label from "<<fDepositedCode<<", testing ";
+		Int_t iMax=-1;
+		Double_t*  Ekin=  new  Double_t[n] ;
+		for(Int_t i=0;  i<n;  i++){
+		  TParticle*  p=  stack->Particle(caloCluster->GetLabelAt(i)) ;
+		  if(p->GetPdgCode()==fgPiPlusCode || p->GetPdgCode()==fgKPlusCode || p->GetPdgCode()==fgProtonCode || p->GetPdgCode()==fgPiMinusCode || p->GetPdgCode()==fgKMinusCode || p->GetPdgCode()==fgAntiProtonCode){ 
+		    Ekin[i]=0.3;//p->P()/3.0 ;  // estimate of MIP peak, more likely to be what was deposited if the MIP peak overlapped with another peak
+		  }
+		  else{
+		    Ekin[i]=p->Energy() ;  // what's deposited by electromagnetic particles
+		  }
+		  if(p->GetPdgCode()==fgAntiProtonCode){
+		    Ekin[i]+=1.8  ;  //due to annihilation
+		  }
+		}
+		Double_t eMax=0.;//eSubMax=0. ;
+		cout<<"n="<<n<<", ";
+		for(Int_t i=0;  i<n;  i++){
+		    Int_t label = caloCluster->GetLabelAt(i);
+		    if(label!=trackMatchedIndex){
+		      //TParticle*  p=  stack->Particle(caloCluster->GetLabelAt(i)) ;
+		      //cout<<i<<" "<<p->GetName()<<" with E="<<Ekin[i]<<",";
+		      if(Ekin[i]>eMax){
+			//      eSubMax=eMax;
+			eMax=Ekin[i];
+			iMax=i;
+		      }
+		    }
+		}
+		delete [] Ekin;
+		UInt_t correctLabel = caloCluster->GetLabelAt(iMax);
+		if(iMax>0){
+		  TParticle *newPart  =  stack->Particle(correctLabel);
+		  if(newPart){
+		    part = newPart;
+		    fDepositedCode = part->GetPdgCode();
+		    //cout<<", to "<<fDepositedCode<<" and particle is now "<<part->GetName();
+		  }
+		}
+		//cout<<endl;
+	      }
+	      // 	      if(fDepositedCode==fgProtonCode ||  fDepositedCode==fgAntiProtonCode || fDepositedCode==fgPiPlusCode || fDepositedCode==fgPiMinusCode || fDepositedCode==fgKPlusCode || fDepositedCode==fgKMinusCode){
+	      // 	for(UInt_t i = 0; i < caloCluster->GetNLabels(); i++)
+	      // 	{
+	      // 	  Int_t pIdx = caloCluster->GetLabelAt(i);
+	      // 	const UInt_t iPart = fSelector->GetLabel(caloCluster,stack);
+	      // 	//const UInt_t iPart = (UInt_t)TMath::Abs(caloCluster->GetLabel());
+	      //         TParticle *part  =  stack->Particle(iPart);
+
+
+	    }
+
+	  }
 	}
      
 	Bool_t containsGamma = kFALSE;
@@ -1028,16 +1111,13 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	}
 	fCutFlow->Fill(cf++);
         if(!fSelector->PassDistanceToBadChannelCut(*caloCluster)) continue;
-        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster,fCentClass);
+        Double_t clEt = CorrectForReconstructionEfficiency(*caloCluster,fReconstructedE,fCentClass);
 //	if(code == fgK0SCode) std::cout << "K0 energy: " << caloCluster->E() << std::endl;
-        if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
+	//if(!fSelector->PassMinEnergyCut(*caloCluster)) continue;
+	 	 if(!fSelector->PassMinEnergyCut(fReconstructedE)) continue;
 
 	
         fCutFlow->Fill(cf++);
-        Float_t pos[3];
-	//PrintFamilyTree(
-        caloCluster->GetPosition(pos);
-        TVector3 cp(pos);
 
         TParticle *primPart = stack->Particle(primIdx);
         fPrimaryCode = primPart->GetPdgCode();
@@ -1056,7 +1136,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fPrimaryAccepted = false;
         fPrimaryMatched = false;
 
-        fDepositedCode = part->GetPdgCode();
 	fDepositedE = part->Energy();
         fDepositedEt = part->Energy()*TMath::Sin(part->Theta());
         if(part->GetPDG()) fDepositedCharge = (Int_t) part->GetPDG()->Charge();
@@ -1064,8 +1143,6 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
         fDepositedVx = part->Vx();
         fDepositedVy = part->Vy();
         fDepositedVz = part->Vz();
-	fReconstructedE = caloCluster->E();
-	fReconstructedEt = caloCluster->E()*TMath::Sin(cp.Theta());
 
 	if(nottrackmatched) subtotalAllEnergy += fReconstructedEt;
 
@@ -2253,6 +2330,7 @@ void AliAnalysisEtMonteCarlo::CreateHistograms()
    fHistFracNeutronsVsNTotalTracks = new TH2F("fHistFracNeutronsVsNTotalTracks","fHistFracNeutronsVsNTotalTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMaxLow);
    fHistFracKaonsVsNTotalTracks = new TH2F("fHistFracKaonsVsNTotalTracks","fHistFracKaonsVsNTotalTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMaxLow);
    fHistFracSecondariesVsNTotalTracks = new TH2F("fHistFracSecondariesVsNTotalTracks","fHistFracSecondariesVsNTotalTracks",nBinsMatchedTracks,lowMatchedTracks,highMatchedTracks,nBinsFrac,fracMin,fracMax);
+   fHistRCorrVsPtVsCent = new TH3F("fHistRCorrVsPtVsCent","fHistRCorrVsPtVsCent",72,0,2,50,0,10,20,-0.5,19.5);
    //NClusters
 }
 
@@ -2523,6 +2601,7 @@ void AliAnalysisEtMonteCarlo::FillOutputList(TList *list)
     list->Add(fHistFracNeutronsVsNTotalTracks);
     list->Add(fHistFracKaonsVsNTotalTracks);
     list->Add(fHistFracSecondariesVsNTotalTracks);
+    list->Add(fHistRCorrVsPtVsCent);
 
 }
 

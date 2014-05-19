@@ -57,8 +57,8 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
   void   SetCrossedRowsCut(Int_t value)    { fCrossedRowsCut = value; }
   void   SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
   void   SetTrackStatus(UInt_t status)     { fTrackStatus = status; }
-  
-  void   SetEventSelectionBit( UInt_t val )        { fSelectBit = val;  }
+
+  void   SetThreeParticleMixed(Bool_t flag) { fThreeParticleMixed = flag; }
   
   void   SetCentralityMethod(const char* method) { fCentralityMethod = method; }
 
@@ -100,7 +100,8 @@ class AliAnalysisTaskTwoPlusOne : public AliAnalysisTaskSE {
     Double_t	 	fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)
     UInt_t           	fFilterBit;            // Select tracks from an specific track cut 
     UInt_t         	fTrackStatus;          // if non-0, the bits set in this variable are required for each track
-    UInt_t         	fSelectBit;            // Select events according to AliAnalysisTaskJetServices bit maps 
+    
+    Bool_t              fThreeParticleMixed;   //0 use trigger from one event and mixed particles from another; 1 use trigger particles from two different events and mixed event from a third event
 
     TString fCustomBinning;	   // supersedes default binning if set, see AliUEHist::GetBinning or AliUEHistograms::AliUEHistograms for syntax and examples
     Double_t fAlpha;            //sets the alpha parameter in the container

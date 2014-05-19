@@ -3666,12 +3666,12 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss05(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,-0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.12);
   }
 // check those values
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
-    fhBackSubtractionMax->SetBinContent(j,0.2); // check this one in particular
+    fhBackSubtractionMax->SetBinContent(j,0.12); // check this one in particular
   }
   
   // MC CORRECTIONS   -5% +10% for assoc track eff
@@ -5181,13 +5181,13 @@ void AliHFDhadronCorrSystUnc::InitStandardUncertaintiesPP2010DstarHighPtAss1(){
   // Background D MESON candidate subtraction (side-band variations, etc.)
   fhBackSubtractionMin=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMin");
   for(Int_t j=1;j<=fhBackSubtractionMin->GetNbinsX();j++){
-    fhBackSubtractionMin->SetBinContent(j,-0.05);
+    fhBackSubtractionMin->SetBinContent(j,-0.12);
   }
 
   fhBackSubtractionMax=(TH1D*)fhDeltaPhiTemplate->Clone("fhBackSubtractionMax");
   for(Int_t j=1;j<=fhBackSubtractionMax->GetNbinsX();j++){
   
-      fhBackSubtractionMax->SetBinContent(j,0.2);
+      fhBackSubtractionMax->SetBinContent(j,0.12);
   }
   
   // MC CORRECTIONS   -5% +10% for assoc track eff

@@ -755,10 +755,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       hESDEposEnegPsiPairDPhi[iCut] = new TH2F("ESD_EposEneg_PsiPair_DPhi","ESD_EposEneg_PsiPair_DPhi", 100, -1.0,1.0,100,-1.0,1.0 );
       fQAFolder[iCut]->Add(hESDEposEnegPsiPairDPhi[iCut]);
 
-      hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
+      hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",4999,0.001,5.,100,0.,10.);
       fQAFolder[iCut]->Add(hESDEposEnegInvMassPt[iCut]);
       
-      hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",5000,0.,5.,100,0.,10.);
+      hESDEposEnegLikeSignBackInvMassPt[iCut]  = new TH2F("ESD_EposEneg_LikeSignBack_InvMassPt","ESD_EposEneg_LikeSignBack_InvMassPt",4999,0.001,5.,100,0.,10.);
       fQAFolder[iCut]->Add(hESDEposEnegLikeSignBackInvMassPt[iCut]);
       
       
@@ -780,10 +780,42 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       
       AxisAfter = hESDDalitzPositronAfterTPCdEdxSignalVsP[iCut]->GetXaxis();
       AxisAfter->Set(bins,newBins);
-		    
-	           
+		     
+      
 
       delete [] newBins;
+      
+      
+      TAxis *MassAxisAfter = hESDEposEnegInvMassPt[iCut]->GetXaxis(); 
+      bins = MassAxisAfter->GetNbins();
+      
+      from = MassAxisAfter->GetXmin();
+      to   = MassAxisAfter->GetXmax();
+      Double_t *MassnewBins = new Double_t[bins+1];
+      MassnewBins[0] = from;
+      
+     // cout<<"from: "<<from<<"to: "<<to<<endl;
+      factor = TMath::Power(to/from, 1./bins);
+      
+      for(Int_t i=1; i<=bins; ++i) MassnewBins[i] = factor * MassnewBins[i-1];
+      
+      
+      MassAxisAfter->Set(bins,MassnewBins);
+      
+      
+      MassAxisAfter = hESDEposEnegLikeSignBackInvMassPt[iCut]->GetXaxis();
+      MassAxisAfter->Set(bins,MassnewBins);
+      
+      
+      delete [] MassnewBins;
+      
+      
+      
+      
+      //hESDEposEnegInvMassPt[iCut] = new TH2F("ESD_EposEneg_InvMassPt","ESD_EposEneg_InvMassPt",5000,0.,5.,100,0.,10.);
+     
+      
+      
       
       fCutFolder[iCut]->Add(fQAFolder[iCut]);
       
@@ -1004,11 +1036,32 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 				 
 				  if ( fDoMesonQA ) {
 
-				  hMCPi0EposEnegInvMassPt[iCut] = new TH2F("MC_Pi0EposEneg_InvMassPt","MC_Pi0EposEneg_InvMassPt",500,0.,0.5,100,0.,10.);
+				  hMCPi0EposEnegInvMassPt[iCut] = new TH2F("MC_Pi0EposEneg_InvMassPt","MC_Pi0EposEneg_InvMassPt",499,0.001,0.5,100,0.,10.);
 				  fMCList[iCut]->Add(hMCPi0EposEnegInvMassPt[iCut]);
 
 				  hMCEtaEposEnegInvMassPt[iCut] = new TH2F("MC_EtaEposEneg_InvMassPt","MC_EtaEposEneg_InvMassPt",800,0.,0.8,100,0.,10.);
 				  fMCList[iCut]->Add(hMCEtaEposEnegInvMassPt[iCut]);
+				  
+				  
+				  
+				  TAxis *MassMCAxisAfter = hMCPi0EposEnegInvMassPt[iCut]->GetXaxis(); 
+				  Int_t bins = MassMCAxisAfter->GetNbins();
+				  Double_t from = MassMCAxisAfter->GetXmin();
+				  Double_t to   = MassMCAxisAfter->GetXmax();
+				  Double_t *MassMCnewBins = new Double_t[bins+1];
+				  MassMCnewBins[0] = from;
+				  Double_t factor = TMath::Power(to/from, 1./bins);
+      
+				  for(Int_t i=1; i<=bins; ++i) MassMCnewBins[i] = factor * MassMCnewBins[i-1];
+            			  MassMCAxisAfter->Set(bins,MassMCnewBins);
+				  //MassMCAxisAfter = hMCEtaEposEnegInvMassPt[iCut]->GetXaxis();
+				  //MassMCAxisAfter->Set(bins,MassMCnewBins);
+      				  delete [] MassMCnewBins;
+      
+				  
+				  
+				  
+				  
 				  
 				  }
 				 
@@ -1022,7 +1075,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
 	 if ( fDoMesonQA ) {
 
 
-	 hESDEposEnegTruePi0DalitzInvMassPt[iCut] = new TH2F("ESD_EposEneg_TruePi0Dalitz_InvMassPt","ESD_EposEneg_TruePi0Dalitz_InvMassPt",500,0.,0.5,100,0.,10.);
+	 hESDEposEnegTruePi0DalitzInvMassPt[iCut] = new TH2F("ESD_EposEneg_TruePi0Dalitz_InvMassPt","ESD_EposEneg_TruePi0Dalitz_InvMassPt",499,0.001,0.5,100,0.,10.);
 	 fTrueList[iCut]->Add(hESDEposEnegTruePi0DalitzInvMassPt[iCut]);
 	 
 	 hESDEposEnegTruePrimPi0DalitzInvMass[iCut] = new TH1F("ESD_EposEneg_TruePrimPi0Dalitz_InvMass","ESD_EposEneg_TruePrimPi0Dalitz_InvMass",500,0.,0.5);
@@ -1052,6 +1105,24 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
  
 	 hESDEposEnegTrueJPsiInvMassPt[iCut] = new TH2F("ESD_EposEneg_TrueJPsi_InvMassPt","ESD_EposEneg_TrueJPsi_InvMassPt",5000,0.,5.,100,0.,10.);
 	 fTrueList[iCut]->Add(hESDEposEnegTrueJPsiInvMassPt[iCut]);
+	 
+	 
+	 
+	 TAxis *MassTrueAxisAfter = hESDEposEnegTruePi0DalitzInvMassPt[iCut]->GetXaxis(); 
+	 Int_t bins = MassTrueAxisAfter->GetNbins();
+	 Double_t from = MassTrueAxisAfter->GetXmin();
+	 Double_t to   = MassTrueAxisAfter->GetXmax();
+	 Double_t *MassMCnewBins = new Double_t[bins+1];
+	 
+	 MassMCnewBins[0] = from;
+	 Double_t factor = TMath::Power(to/from, 1./bins);
+      
+	 for(Int_t i=1; i<=bins; ++i) MassMCnewBins[i] = factor * MassMCnewBins[i-1];
+         MassTrueAxisAfter->Set(bins,MassMCnewBins);
+	 //MassTrueAxisAfter = hMCEtaEposEnegInvMassPt[iCut]->GetXaxis();
+	 //MassTrueAxisAfter->Set(bins,MassMCnewBins);
+      	
+	 delete [] MassMCnewBins;
 
 
 

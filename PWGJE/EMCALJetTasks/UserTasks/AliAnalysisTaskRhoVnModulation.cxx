@@ -1499,7 +1499,8 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(Int_t year)
         if (!track->TestFilterBit(16) || track->Chi2perNDF() < 0.1) continue;
         Double_t b[2] = {-99., -99.};
         Double_t bCov[3] = {-99., -99., -99.};
-        if (track->PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlob++;
+        AliAODTrack copy(*track);
+        if (copy.PropagateToDCA(event->GetPrimaryVertex(), event->GetMagneticField(), 100., b, bCov) && TMath::Abs(b[0]) < 0.3 && TMath::Abs(b[1]) < 0.3) multGlob++;
     }
     if(year == 2010 && multTPC > (-40.3+1.22*multGlob) && multTPC < (32.1+1.59*multGlob)) return kTRUE;
     if(year == 2011  && multTPC > (-36.73 + 1.48*multGlob) && multTPC < (62.87 + 1.78*multGlob)) return kTRUE;
