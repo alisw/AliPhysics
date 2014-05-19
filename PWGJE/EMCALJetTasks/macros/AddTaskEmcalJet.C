@@ -151,7 +151,7 @@ AliEmcalJetTask* AddTaskEmcalJet(
   const Int_t type           = 0,
   const Double_t minTrPt     = 0.15,
   const Double_t minClPt     = 0.30,
-  const Double_t ghostArea   = 0.01,
+  const Double_t ghostArea   = 0.005,
   const Int_t recombScheme   = 1,
   const char *tag            = "Jet"
 )
