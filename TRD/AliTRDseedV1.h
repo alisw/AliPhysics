@@ -153,8 +153,10 @@ public:
   Float_t*  GetProbability(Bool_t force=kFALSE);
   Float_t   GetPt() const            { return fPt; }
   inline Double_t  GetPID(Int_t is=-1) const;
-  Float_t   GetS2Y() const           { return fS2Y;}
+  Float_t   GetS2Y() const           { return fCov[0];}
   Float_t   GetS2Z() const           { return fS2Z;}
+  Double_t  GetS2DYDX(Float_t) const { return fCov[2];}
+  inline Double_t  GetS2DZDX(Float_t) const;
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTgl() const           { return fZref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
@@ -163,6 +165,7 @@ public:
   UShort_t  GetVolumeId() const;
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
+  Float_t   GetXcross() const        { return fS2Y;}
   Float_t   GetY() const             { return TMath::Abs(fY)<1.e-15?GetLocalY():fY;/*fYfit[0] - fYfit[1] * fX;*/}
   Double_t  GetYat(Double_t x) const { return fY/*fit[0]*/ - fYfit[1] * (fX0-x);}
   Float_t   GetYfit(Int_t id) const  { return fYfit[id];}
@@ -202,7 +205,7 @@ public:
   void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void      SetX0(Float_t x0)        { fX0 = x0; }
-  void      SetXYZ(TGeoHMatrix *mDet/*, Float_t zpp*/);
+  void      SetXYZ(TGeoHMatrix *mDet);
   void      SetYref(Int_t i, Float_t y) { if(i==0||i==1) fYref[i]     = y;}
   void      SetZref(Int_t i, Float_t z) { if(i==0||i==1) fZref[i]     = z;}
 //   void      SetUsabilityMap(Long_t um)  { fUsable = um; }
@@ -245,7 +248,7 @@ private:
   Float_t          fX;                      // local radial offset from anode wire where tracklet position is estimated
   Float_t          fY;                      // r-phi position of the tracklet  in TrackingCoordinates (alignment included)
   Float_t          fZ;                      // z position of the tracklet in TrackingCoordinates (alignment included)
-  Float_t          fS2Y;                    // estimated resolution in the r-phi direction 
+  Float_t          fS2Y;                    // estimated radial cross point (chmb. coord.) in case of RC tracklets 
   Float_t          fS2Z;                    // estimated resolution in the z direction 
   Float_t          fC[2];                   // Curvature for standalone [0] rieman [1] vertex constrained 
   Float_t          fChi2;                   // Global chi2  
@@ -296,6 +299,19 @@ inline Double_t AliTRDseedV1::GetPID(Int_t is) const
 }
 
 //____________________________________________________________
+Double_t AliTRDseedV1::GetS2DZDX(Float_t dzdx) const
+{
+//   Double_t p0[] = {0.03925, 0.03178},
+//            p1[] = {0.06316, 0.06669};
+  Double_t p0[] = {0.02835, 0.03925},
+           p1[] = {0.04746, 0.06316};
+  
+  Double_t s2(p0[IsRowCross()]+p1[IsRowCross()]*dzdx*dzdx);
+  s2*=s2;
+  return s2;
+}
+
+  //____________________________________________________________
 inline AliTRDcluster* AliTRDseedV1::NextCluster()
 {
 // Mimic the usage of STL iterators.
@@ -409,7 +425,6 @@ inline void AliTRDseedV1::Swap(Double_t &d1, Double_t &d2) const
 
 
 #endif
-
 
 
 
