@@ -378,6 +378,10 @@ void AliLog::ReadEnvSettings()
     fPrintRepetitions = on;
     AliDebug(3, Form("printing of message repetitions %sabled", ((on) ? "en" : "dis")));
   }
+  if (gSystem->Getenv("ALIROOT_FORCE_COREDUMP")){
+    EnableCoreDump(kTRUE);
+  }
+
 }
 
 
