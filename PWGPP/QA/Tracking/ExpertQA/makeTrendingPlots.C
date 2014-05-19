@@ -227,8 +227,3 @@ void DrawAndSave( TGraphErrors *gr, const char *name ){
   delete can;
 
 }
-
-
-
-
-

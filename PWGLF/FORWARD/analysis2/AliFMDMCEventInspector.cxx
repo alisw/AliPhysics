@@ -145,10 +145,10 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
 
   // We temporary disable the displaced vertices so we can initialize
   // the routine ourselves.
-  Bool_t saveDisplaced  = fUseDisplacedVertices;
-  fUseDisplacedVertices = false;
+  Bool_t saveDisplaced  = AllowDisplaced();
+  if (saveDisplaced) SetVertexMethod(kNormal);
   AliFMDEventInspector::SetupForData(vtxAxis);
-  fUseDisplacedVertices = saveDisplaced;
+  if (saveDisplaced) SetVertexMethod(kDisplaced);
 
   Int_t    maxPart = 450;
   Int_t    maxBin  = 225;
@@ -253,7 +253,7 @@ AliFMDMCEventInspector::SetupForData(const TAxis& vtxAxis)
   fHCentVsMcC->SetZTitle("Events");
   fList->Add(fHCentVsMcC);
 
-  if (fUseDisplacedVertices) fDisplacedVertex.SetupForData(fList, "", true);
+  if (AllowDisplaced()) fDisplacedVertex.SetupForData(fList, "", true);
 }
 
 namespace
@@ -459,7 +459,7 @@ AliFMDMCEventInspector::ProcessMC(AliMCEvent*       event,
   fHBvsPart->Fill(b, npart);
   fHBvsBin->Fill(b, nbin);
 
-  if(fUseDisplacedVertices) {
+  if(AllowDisplaced()) {
 #if 0
     // Put the vertex at fixed locations 
     Double_t zvtx  = vz;

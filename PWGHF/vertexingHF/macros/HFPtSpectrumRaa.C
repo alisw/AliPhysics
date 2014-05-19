@@ -165,24 +165,24 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   else if( ccestimator == kV0A ){
     if ( cc == kpPb020 ) {
-      Tab = 0.183; TabSyst = 0.0201;
+      Tab = 0.183; TabSyst = 0.006245;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.134; TabSyst = 0.0134;
+      Tab = 0.134; TabSyst = 0.004899;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.0918; TabSyst = 0.0073;
+      Tab = 0.092; TabSyst = 0.004796;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.0366; TabSyst = 0.00183;
+      Tab = 0.041; TabSyst = 0.008832;
     }
   }
   else if( ccestimator == kZNA ){
     if ( cc == kpPb020 ) {
-      Tab = 0.1650; TabSyst = 0.0550;
+      Tab = 0.164; TabSyst = 0.010724;
     } else if ( cc == kpPb2040 ) {
-      Tab = 0.137; TabSyst = 0.0372;
+      Tab = 0.137; TabSyst = 0.005099;
     } else if ( cc == kpPb4060 ) {
-      Tab = 0.1001; TabSyst = 0.0690;
+      Tab = 0.1011; TabSyst = 0.006;
     } else if ( cc == kpPb60100 ) {
-      Tab = 0.045; TabSyst = 0.1029;
+      Tab = 0.0459; TabSyst = 0.003162;
     }
   }
 
@@ -216,8 +216,8 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   // 
   TFile * ABf = new TFile(ABfile,"read");
   TH1D *hSigmaAB = (TH1D*)ABf->Get("histoSigmaCorr");
-  TH2D *hSigmaABRcb = (TH2D*)ABf->Get("histoSigmaCorrRcb");
-  TGraphAsymmErrors * gSigmaABSyst = (TGraphAsymmErrors*)ABf->Get("gSigmaCorr");
+  //  TH2D *hSigmaABRcb = (TH2D*)ABf->Get("histoSigmaCorrRcb");
+  //  TGraphAsymmErrors * gSigmaABSyst = (TGraphAsymmErrors*)ABf->Get("gSigmaCorr");
   TGraphAsymmErrors * gSigmaABSystFeedDown = (TGraphAsymmErrors*)ABf->Get("gSigmaCorrConservative");
   TNtuple * nSigmaAB = (TNtuple*)ABf->Get("fnSigma");
   //
@@ -266,7 +266,23 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   }
   //
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-    systematicsAB->SetCollisionType(2); 
+    systematicsAB->SetCollisionType(2);
+    if(ccestimator==kV0A) {
+      if(cc == kpPb020) systematicsAB->SetCentrality("020V0A");
+      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040V0A");
+      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060V0A");
+      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100V0A");
+    } else if (ccestimator==kZNA) {
+      if(cc == kpPb020) systematicsAB->SetCentrality("020ZNA");
+      else if(cc == kpPb2040) systematicsAB->SetCentrality("2040ZNA");
+      else if(cc == kpPb4060) systematicsAB->SetCentrality("4060ZNA");
+      else if(cc == kpPb60100) systematicsAB->SetCentrality("60100ZNA");
+    } else {
+      if(!(cc == kpPb0100)) {
+	cout <<" Error on the pPb options"<<endl;
+	return;
+      }
+    }
   }
   else { 
     cout << " Systematics not yet implemented " << endl;
@@ -352,7 +368,7 @@ void HFPtSpectrumRaa(const char *ppfile="HFPtSpectrum_D0Kpi_method2_rebinnedth_2
   //
   TH2D * hRABvsRcb = new TH2D("hRABvsRcb"," R_{AB}(c) vs Rcb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(c) ; Rcb Eloss hypothesis  ",nbins,limits,800,0.,4.);
   TH2D * hRABvsRb = new TH2D("hRABvsRb"," R_{AB}(c) vs Rb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(c) ; Rb Eloss hypothesis ",nbins,limits,800,0.,4.);
-  TH2D * hRABBeautyvsRCharm = new TH2D("hRABBeautyvsRCharm"," R_{AB}(c) vs Rb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(b) ;  R_{AB}(c) ",nbins,limits,800,0.,4.);
+  //  TH2D * hRABBeautyvsRCharm = new TH2D("hRABBeautyvsRCharm"," R_{AB}(c) vs Rb Eloss hypothesis; p_{T} [GeV/c] ;  R_{AB}(b) ;  R_{AB}(c) ",nbins,limits,800,0.,4.);
   Int_t nbinsHypo=800;//200;
   Double_t *limitsHypo = new Double_t[nbinsHypo+1];
   for(Int_t i=1; i<=nbinsHypo+1; i++) limitsHypo[i-1]= i*4./800.;

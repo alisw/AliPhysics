@@ -72,47 +72,25 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt() :
 {
   // Default constructor.
 
-  fHistRCPt = new TH1*[fNcentBins];
-  fHistRCPtExLJ = new TH1*[fNcentBins];
-  fHistRCPtExPartialLJ = new TH1*[fNcentBins];
-  fHistRCPtRand = new TH1*[fNcentBins];
-  fHistRhoVSRCPt = new TH2*[fNcentBins];
-  fHistDeltaPtRCvsEP = new TH2*[fNcentBins];
-  fHistDeltaPtRCExLJ = new TH1*[fNcentBins];
-  fHistDeltaPtRCExPartialLJ = new TH1*[fNcentBins];
-  fHistDeltaPtRCRand = new TH1*[fNcentBins];
-  fHistEmbJetsPtArea = new TH3*[fNcentBins];
-  fHistEmbJetsCorrPtArea = new TH3*[fNcentBins];
-  fHistEmbPartPtvsJetPt = new TH2*[fNcentBins];
-  fHistEmbPartPtvsJetCorrPt = new TH2*[fNcentBins];
-  fHistJetPtvsJetCorrPt = new TH2*[fNcentBins];
-  fHistDistLeadPart2JetAxis = new TH1*[fNcentBins];
-  fHistEmbBkgArea = new TH2*[fNcentBins];
-  fHistRhoVSEmbBkg = new TH2*[fNcentBins];
-  fHistDeltaPtEmbArea = new TH2*[fNcentBins];
-  fHistDeltaPtEmbvsEP = new TH2*[fNcentBins];
-
-  for (Int_t i = 0; i < fNcentBins; i++) {
-    fHistRCPt[i] = 0;
-    fHistRCPtExLJ[i] = 0;
-    fHistRCPtExPartialLJ[i] = 0;
-    fHistRCPtRand[i] = 0;
-    fHistRhoVSRCPt[i] = 0;
-    fHistDeltaPtRCvsEP[i] = 0;
-    fHistDeltaPtRCExLJ[i] = 0;
-    fHistDeltaPtRCExPartialLJ[i] = 0;
-    fHistDeltaPtRCRand[i] = 0;
-    fHistEmbJetsPtArea[i] = 0;
-    fHistEmbJetsCorrPtArea[i] = 0;
-    fHistEmbPartPtvsJetPt[i] = 0;
-    fHistEmbPartPtvsJetCorrPt[i] = 0;
-    fHistJetPtvsJetCorrPt[i] = 0;
-    fHistDistLeadPart2JetAxis[i] = 0;
-    fHistEmbBkgArea[i] = 0;
-    fHistRhoVSEmbBkg[i] = 0;
-    fHistDeltaPtEmbArea[i] = 0;
-    fHistDeltaPtEmbvsEP[i] = 0;
-  }
+  fHistRCPt = 0;
+  fHistRCPtExLJ = 0;
+  fHistRCPtExPartialLJ = 0;
+  fHistRCPtRand = 0;
+  fHistRhoVSRCPt = 0;
+  fHistDeltaPtRCvsEP = 0;
+  fHistDeltaPtRCExLJ = 0;
+  fHistDeltaPtRCExPartialLJ = 0;
+  fHistDeltaPtRCRand = 0;
+  fHistEmbJetsPtArea = 0;
+  fHistEmbJetsCorrPtArea = 0;
+  fHistEmbPartPtvsJetPt = 0;
+  fHistEmbPartPtvsJetCorrPt = 0;
+  fHistJetPtvsJetCorrPt = 0;
+  fHistDistLeadPart2JetAxis = 0;
+  fHistEmbBkgArea = 0;
+  fHistRhoVSEmbBkg = 0;
+  fHistDeltaPtEmbArea = 0;
+  fHistDeltaPtEmbvsEP = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -163,6 +141,32 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
 {
   // Standard constructor.
 
+  fHistRCPt = 0;
+  fHistRCPtExLJ = 0;
+  fHistRCPtExPartialLJ = 0;
+  fHistRCPtRand = 0;
+  fHistRhoVSRCPt = 0;
+  fHistDeltaPtRCvsEP = 0;
+  fHistDeltaPtRCExLJ = 0;
+  fHistDeltaPtRCExPartialLJ = 0;
+  fHistDeltaPtRCRand = 0;
+  fHistEmbJetsPtArea = 0;
+  fHistEmbJetsCorrPtArea = 0;
+  fHistEmbPartPtvsJetPt = 0;
+  fHistEmbPartPtvsJetCorrPt = 0;
+  fHistJetPtvsJetCorrPt = 0;
+  fHistDistLeadPart2JetAxis = 0;
+  fHistEmbBkgArea = 0;
+  fHistRhoVSEmbBkg = 0;
+  fHistDeltaPtEmbArea = 0;
+  fHistDeltaPtEmbvsEP = 0;
+
+  SetMakeGeneralHistograms(kTRUE);
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskDeltaPt::AllocateHistogramArrays()
+{
   fHistRCPt = new TH1*[fNcentBins];
   fHistRCPtExLJ = new TH1*[fNcentBins];
   fHistRCPtExPartialLJ = new TH1*[fNcentBins];
@@ -204,8 +208,6 @@ AliAnalysisTaskDeltaPt::AliAnalysisTaskDeltaPt(const char *name) :
     fHistDeltaPtEmbArea[i] = 0;
     fHistDeltaPtEmbvsEP[i] = 0;
   }
-
-  SetMakeGeneralHistograms(kTRUE);
 }
 
 //________________________________________________________________________
@@ -214,6 +216,8 @@ void AliAnalysisTaskDeltaPt::UserCreateOutputObjects()
   // Create user output.
 
   AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+  AllocateHistogramArrays();
 
   fJetsCont = GetJetContainer("Jets");
   fTracksCont = GetParticleContainer("Tracks");

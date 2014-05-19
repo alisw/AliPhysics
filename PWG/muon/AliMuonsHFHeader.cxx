@@ -291,7 +291,7 @@ void AliMuonsHFHeader::FillHistosEvnH(TList *list)
 
   const Int_t nhs    = 3;
   TString tName[nhs] = {       "Vz",       "Vt",        "VtxNcontr" };
-  Double_t dist[nhs] = { this->Vz(), this->Vt(), this->VtxContrsN() };
+  Double_t dist[nhs] = { this->Vz(), this->Vt(), static_cast<Double_t>(this->VtxContrsN()) };
   if (fgIsMC && (fSelMask & AliVEvent::kAny)) {
     for (Int_t i=nhs; i--;) ((TH1D*)list->FindObject(Form("h_%s",tName[i].Data())))->Fill(dist[i]);
   } else {
@@ -316,8 +316,8 @@ void AliMuonsHFHeader::FillHistosMuon(TList *list, AliMuonInfoStoreRD* const inf
                          infoStore->MomentumAtVtx().Pt(),
                          infoStore->MomentumAtVtx().Eta(),
                          infoStore->DCA(),
-                         infoStore->MatchTrigger(),
-                         infoStore->Charge(),
+                         static_cast<Double_t>(infoStore->MatchTrigger()),
+                         static_cast<Double_t>(infoStore->Charge()),
                          infoStore->RabsEnd() };
 
   if (fgIsMC && (fSelMask & AliVEvent::kAny)) {

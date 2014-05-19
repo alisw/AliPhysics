@@ -204,7 +204,7 @@ struct QAPlotter : public QABase
    */
   QAPlotter(Long_t prodYear, Char_t prodLetter, Bool_t useVar) 
     : QABase("", (prodYear < 2000 ? 2000 : 0) + prodYear, 
-	     Form("LHC%02d%c", prodYear % 100, prodLetter, "pass0")), 
+	     Form("LHC%02d%c", int(prodYear % 100), prodLetter), "pass0"), 
       fNAccepted(0),
       fVz(0), 
       fUseVar(useVar)

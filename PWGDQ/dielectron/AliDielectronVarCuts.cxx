@@ -28,6 +28,8 @@
 ///////////////////////////////////////////////////////////////////////////
 
 
+#include <TH1.h>
+
 #include "AliDielectronVarCuts.h"
 #include "AliDielectronMC.h"
 
@@ -51,6 +53,7 @@ AliDielectronVarCuts::AliDielectronVarCuts() :
     fCutMin[i]=0;
     fCutMax[i]=0;
     fCutExclude[i]=kFALSE;
+    fUpperCut[i]=0x0;
   }
 }
 
@@ -72,6 +75,7 @@ AliDielectronVarCuts::AliDielectronVarCuts(const char* name, const char* title) 
     fCutMin[i]=0;
     fCutMax[i]=0;
     fCutExclude[i]=kFALSE;
+    fUpperCut[i]=0x0;
   }
 }
 
@@ -96,7 +100,7 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   SetSelected(kFALSE);
 
   if (!track) return kFALSE;
-  
+
   //If MC cut, get MC truth
   if (fCutOnMCtruth){
     AliVParticle *part=static_cast<AliVParticle*>(track);
@@ -108,14 +112,25 @@ Bool_t AliDielectronVarCuts::IsSelected(TObject* track)
   Double_t values[AliDielectronVarManager::kNMaxValues];
   AliDielectronVarManager::SetFillMap(fUsedVars);
   AliDielectronVarManager::Fill(track,values);
-  
+
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
-    if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+    if ( !fUpperCut[iCut] && ((values[cut]<fCutMin[iCut]) || (values[cut]>fCutMax[iCut]))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+    else if ( fUpperCut[iCut]) {
+      // use a TH1 inherited cut object
+      Float_t x=0.,y=0.,z=0.;
+      switch (fUpperCut[iCut]->GetDimension()) {
+      case 3: z=values[fUpperCut[iCut]->GetZaxis()->GetUniqueID()];
+      case 2: y=values[fUpperCut[iCut]->GetYaxis()->GetUniqueID()];
+      case 1: x=values[fUpperCut[iCut]->GetXaxis()->GetUniqueID()];
+      }
+      Int_t bin = fUpperCut[iCut]->FindBin(x,y,z);
+      if ( ((values[cut]<fCutMin[iCut]) || (values[cut]>fUpperCut[iCut]->GetBinContent(bin)))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
+    }
     if ( fCutType==kAll && !TESTBIT(fSelectedCutsMask,iCut) ) return kFALSE; // option to (minor) speed improvement
   }
-  
+
   Bool_t isSelected=(fSelectedCutsMask==fActiveCutsMask);
   if ( fCutType==kAny ) isSelected=(fSelectedCutsMask>0);
   SetSelected(isSelected);
@@ -139,6 +154,40 @@ void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Doub
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
   fUsedVars->SetBitNumber(type,kTRUE);
+  ++fNActiveCuts;
+}
+
+//________________________________________________________________________
+void AliDielectronVarCuts::AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, TH1 * const max,  Bool_t excludeRange)
+{
+  //
+  // Set cut range and activate it
+  //
+  fCutMin[fNActiveCuts]=min;
+  fCutMax[fNActiveCuts]=0.0;
+  fCutExclude[fNActiveCuts]=excludeRange;
+  SETBIT(fActiveCutsMask,fNActiveCuts);
+  fActiveCuts[fNActiveCuts]=(UShort_t)type;
+  fUsedVars->SetBitNumber(type,kTRUE);
+  // cut dependencies
+  UInt_t var =0;
+  switch(max->GetDimension()) {
+  case 3:
+  case 2:
+    var=AliDielectronVarManager::GetValueType(max->GetZaxis()->GetName());
+    fUsedVars->SetBitNumber(var,kTRUE);
+    max->GetZaxis()->SetUniqueID(var);
+  case 1:
+    var=AliDielectronVarManager::GetValueType(max->GetYaxis()->GetName());
+    fUsedVars->SetBitNumber(var,kTRUE);
+    max->GetYaxis()->SetUniqueID(var);
+  /*case 1:*/
+    var=AliDielectronVarManager::GetValueType(max->GetXaxis()->GetName());
+    fUsedVars->SetBitNumber(var,kTRUE);
+    max->GetXaxis()->SetUniqueID(var);
+  }
+  fUpperCut[fNActiveCuts]=(TH1*)max->Clone("histCut");
+  fUpperCut[fNActiveCuts]->SetDirectory(0x0);
   ++fNActiveCuts;
 }
 

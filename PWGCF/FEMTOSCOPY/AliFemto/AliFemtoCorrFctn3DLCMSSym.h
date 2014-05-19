@@ -11,6 +11,7 @@
 #include "AliFemtoCorrFctn.h"
 #include "AliFemtoPairCut.h"
 #include "TH3F.h"
+//#include "TArrayD.h"
 
 class AliFemtoCorrFctn3DLCMSSym : public AliFemtoCorrFctn {
 public:
@@ -28,6 +29,9 @@ public:
 
   TH3F* Numerator();
   TH3F* Denominator();
+  TH3F* NumeratorW();//Weighed by qinv
+  TH3F* DenominatorW();
+
 
   void WriteOutHistos();
   virtual TList* GetOutputList();
@@ -36,7 +40,8 @@ private:
 
   TH3F* fNumerator;         // numerator
   TH3F* fDenominator;       // denominator
-
+  TH3F* fNumeratorW;         // numerator
+  TH3F* fDenominatorW;       // denominator
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctn3DLCMSSym, 1)
 #endif
@@ -44,6 +49,7 @@ private:
 
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::Numerator(){return fNumerator;}
 inline  TH3F* AliFemtoCorrFctn3DLCMSSym::Denominator(){return fDenominator;}
-
+inline  TH3F* AliFemtoCorrFctn3DLCMSSym::NumeratorW(){return fNumeratorW;}
+inline  TH3F* AliFemtoCorrFctn3DLCMSSym::DenominatorW(){return fDenominatorW;}
 #endif
 

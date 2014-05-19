@@ -1515,6 +1515,8 @@ TObjArray* AliAnalysisTaskPhiCorrelations::GetParticlesFromDetector(AliVEvent* i
 	  DphiTrklets->Fill(1000*trklets->GetDeltaPhi(itrklets)); //in mrad
 	  Float_t phi=trklets->GetPhi(itrklets);
 	  phi+=trklets->GetDeltaPhi(itrklets)*39./34.; //correction dphi*39./34. (Dphi in rad)
+	  if (phi<0) phi+=TMath::TwoPi();
+	  if (phi>TMath::TwoPi()) phi-=TMath::TwoPi();
 	  
 	  AliDPhiBasicParticle* particle = new AliDPhiBasicParticle(eta,phi, pT, 0); // pT = TMath::Abs(trklets->GetDeltaPhi(itrklets)) in mrad and charge = 0
 	  particle->SetUniqueID(fAnalyseUE->GetEventCounter()* 100000 + itrklets);

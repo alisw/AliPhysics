@@ -4196,8 +4196,8 @@ void AliFragmentationFunctionCorrections::WriteJetSpecResponse(TString strInfile
   
 
   Int_t    nBinsResponse[4]  = {nBinsRecPt,nBinsTrackPt,nBinsGenPt,nBinsTrackPt};
-  Double_t binMinResponse[4] = {loLimRecPt,loLimTrackPt,loLimGenPt,loLimTrackPt};
-  Double_t binMaxResponse[4] = {upLimRecPt,upLimTrackPt,upLimGenPt,upLimTrackPt};
+  Double_t binMinResponse[4] = { static_cast<Double_t>(loLimRecPt), static_cast<Double_t>(loLimTrackPt), static_cast<Double_t>(loLimGenPt), static_cast<Double_t>(loLimTrackPt)};
+  Double_t binMaxResponse[4] = { static_cast<Double_t>(upLimRecPt), static_cast<Double_t>(upLimTrackPt), static_cast<Double_t>(upLimGenPt), static_cast<Double_t>(upLimTrackPt)};
 
   const char* labelsResponseSinglePt[4] = {"rec jet p_{T} (GeV/c)", "rec track p_{T} (GeV/c)", "gen jet p_{T} (GeV/c)", "gen track p_{T} (GeV/c)"};
   

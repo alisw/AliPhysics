@@ -170,8 +170,8 @@ void AliAnalysisTaskRhoBase::UserCreateOutputObjects()
       fOutput->Add(fHistJetAreavsNtrack);
 
       fHistNjetvsNtrack = new TH2F("fHistNjetvsNtrack", "fHistNjetvsNtrack", 150, 0, 6000, 150, -0.5, 149.5);
-      fHistJetAreavsNtrack->GetXaxis()->SetTitle("No. of tracks");
-      fHistJetAreavsNtrack->GetYaxis()->SetTitle("Jet area");
+      fHistNjetvsNtrack->GetXaxis()->SetTitle("No. of jets");
+      fHistNjetvsNtrack->GetYaxis()->SetTitle("No. of tracks");
       fOutput->Add(fHistNjetvsNtrack);
     }
 

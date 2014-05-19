@@ -89,7 +89,7 @@ EOF
         <td colspan='$subspan' id='n${subpar}' class='name'>
           <span style='width: 4em' id='a${subpar}'>${subpre}</span> 
 EOF
-	if test $link -gt 0 && test -f $sub/index.html ; then 
+	if test $link -gt 0 && test -f $sub/index.html && $level -eq $maxCol; then 
 	    echo "        <span class='lnk' onclick='showSub(\"$sub\")'>$subtitle</span>"
 	    # echo "        <a href='$sub/index.html'>$subbase</a>"
 	else

@@ -9,6 +9,7 @@
 ///////////////////////////////////////////////////////////////////////////
 
 #include "AliFemtoCorrFctn3DLCMSSym.h"
+
 #include <cstdio>
 
 #ifdef __ROOT__ 
@@ -20,38 +21,57 @@ AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(char* title, const int& nbi
   :
   AliFemtoCorrFctn(),
   fNumerator(0),
-  fDenominator(0)
+  fDenominator(0),
+  fNumeratorW(0),
+  fDenominatorW(0)
 {
   // Basic constructor
 
   // set up numerator
   char tTitNum[101] = "Num";
   strncat(tTitNum,title, 100);
-  fNumerator = new TH3F(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins/2,0.0,QHi);
+  fNumerator = new TH3F(tTitNum,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
   // set up denominator
   char tTitDen[101] = "Den";
   strncat(tTitDen,title, 100);
-  fDenominator = new TH3F(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins/2,0.0,QHi);
+  fDenominator = new TH3F(tTitDen,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+//Weighted by qinv histos
+  // set up numerator
+  char tTitNumW[101] = "NumWqinv";
+  strncat(tTitNumW,title, 100);
+  fNumeratorW = new TH3F(tTitNumW,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
+  // set up denominator
+  char tTitDenW[101] = "DenWqinv";
+  strncat(tTitDenW,title, 100);
+  fDenominatorW = new TH3F(tTitDenW,title,nbins,-QHi,QHi,nbins,-QHi,QHi,nbins,-QHi,QHi);
 
   // to enable error bar calculation...
   fNumerator->Sumw2();
   fDenominator->Sumw2();
+  fNumeratorW->Sumw2();
+  fDenominatorW->Sumw2();
 }
 
 AliFemtoCorrFctn3DLCMSSym::AliFemtoCorrFctn3DLCMSSym(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn) :
   AliFemtoCorrFctn(aCorrFctn),
   fNumerator(0),
-  fDenominator(0)
+  fDenominator(0),
+  fNumeratorW(0),
+  fDenominatorW(0)
 {
   // Copy constructor
   fNumerator = new TH3F(*aCorrFctn.fNumerator);
   fDenominator = new TH3F(*aCorrFctn.fDenominator);
+  fNumeratorW = new TH3F(*aCorrFctn.fNumeratorW);
+  fDenominatorW = new TH3F(*aCorrFctn.fDenominatorW);
 }
 //____________________________
 AliFemtoCorrFctn3DLCMSSym::~AliFemtoCorrFctn3DLCMSSym(){
   // Destructor
   delete fNumerator;
   delete fDenominator;
+  delete fNumeratorW;
+  delete fDenominatorW;
 }
 //_________________________
 AliFemtoCorrFctn3DLCMSSym& AliFemtoCorrFctn3DLCMSSym::operator=(const AliFemtoCorrFctn3DLCMSSym& aCorrFctn)
@@ -64,7 +84,10 @@ AliFemtoCorrFctn3DLCMSSym& AliFemtoCorrFctn3DLCMSSym::operator=(const AliFemtoCo
   fNumerator = new TH3F(*aCorrFctn.fNumerator);
   if (fDenominator) delete fDenominator;
   fDenominator = new TH3F(*aCorrFctn.fDenominator);
-
+  if (fNumeratorW) delete fNumeratorW;
+  fNumeratorW = new TH3F(*aCorrFctn.fNumeratorW);
+  if (fDenominatorW) delete fDenominatorW;
+  fDenominatorW = new TH3F(*aCorrFctn.fDenominatorW);
   return *this;
 }
 
@@ -73,6 +96,8 @@ void AliFemtoCorrFctn3DLCMSSym::WriteOutHistos(){
   // Write out all histograms to file
   fNumerator->Write();
   fDenominator->Write();
+  fNumeratorW->Write();
+  fDenominatorW->Write();
 }
 //______________________________
 TList* AliFemtoCorrFctn3DLCMSSym::GetOutputList()
@@ -82,6 +107,8 @@ TList* AliFemtoCorrFctn3DLCMSSym::GetOutputList()
 
   tOutputList->Add(fNumerator); 
   tOutputList->Add(fDenominator);  
+  tOutputList->Add(fNumeratorW); 
+  tOutputList->Add(fDenominatorW);  
 
   return tOutputList;
 }
@@ -126,12 +153,13 @@ void AliFemtoCorrFctn3DLCMSSym::AddRealPair( AliFemtoPair* pair){
   double qOut = (pair->QOutCMS());
   double qSide = (pair->QSideCMS());
   double qLong = (pair->QLongCMS());
+  double qqinv = (pair->QInv());
 
-  if (qLong > 0.0)
     fNumerator->Fill(qOut,qSide,qLong);
-  else
-    fNumerator->Fill(-qOut,-qSide,-qLong);
-    
+    fNumeratorW->Fill(qOut,qSide,qLong,qqinv);
+
+
+   
 }
 //____________________________
 void AliFemtoCorrFctn3DLCMSSym::AddMixedPair( AliFemtoPair* pair){
@@ -143,11 +171,13 @@ void AliFemtoCorrFctn3DLCMSSym::AddMixedPair( AliFemtoPair* pair){
   double qOut = (pair->QOutCMS());
   double qSide = (pair->QSideCMS());
   double qLong = (pair->QLongCMS());
+  double qqqinv = (pair->QInv());
 
-  if (qLong > 0.0)
     fDenominator->Fill(qOut,qSide,qLong,1.0);
-  else
-    fDenominator->Fill(-qOut,-qSide,-qLong,1.0);
+    fDenominatorW->Fill(qOut,qSide,qLong,qqqinv);
+
+
+ 
 }
 
 

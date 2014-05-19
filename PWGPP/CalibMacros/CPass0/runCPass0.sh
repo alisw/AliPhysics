@@ -96,9 +96,8 @@ exitcode=$?
 echo "*! Exit code of recCPass0.C: $exitcode"
 
 if [ $exitcode -ne 0 ]; then
-    echo "recCPass0.C exited with code $exitcode" > validation_error.message
-    exit 10
-fi
+    exit $exitcode
+fi 
 
 mv syswatch.log syswatch_rec.log
 

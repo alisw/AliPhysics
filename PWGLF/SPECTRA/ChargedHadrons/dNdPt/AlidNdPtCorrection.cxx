@@ -1270,7 +1270,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
   }
 
   Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
-  Double_t vEventCount[3] = { isEventTriggered, isTrigAndVertex, isEventSelected };
+  Double_t vEventCount[3] = { static_cast<Double_t>(isEventTriggered), static_cast<Double_t>(isTrigAndVertex), static_cast<Double_t>(isEventSelected) };
   fEventCount->Fill(vEventCount);
 
   //
@@ -1455,11 +1455,11 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       TH1D *hp = (TH1D *)fCorrRecTrackPt1[i]->Projection(0);
       if(!hp) continue;
       meanPtMult[i] = hp->GetMean();    
-      Double_t vCorrRecTrackMeanPtMultHist1[2] = {meanPtMult[i],multRecTemp};
+      Double_t vCorrRecTrackMeanPtMultHist1[2] = {meanPtMult[i],static_cast<Double_t>(multRecTemp)};
       fCorrRecTrackMeanPtMultHist1[i]->Fill(vCorrRecTrackMeanPtMultHist1); 
       
       if( IsUseMCInfo() ) {
-        Double_t vCorrRecTrackMeanPtTrueMultHist1[2] = {meanPtMult[i],multMCTrueTracks};
+        Double_t vCorrRecTrackMeanPtTrueMultHist1[2] = {meanPtMult[i],static_cast<Double_t>(multMCTrueTracks)};
         fCorrRecTrackMeanPtTrueMultHist1[i]->Fill(vCorrRecTrackMeanPtTrueMultHist1); 
       }
 
@@ -1473,7 +1473,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
     fRecEventHist1->Fill(vRecEventHist1);
 
     // correlation track multiplicity vs MB track multiplicity
-    Double_t vRecEventMultHist1[3] = {multRec, multMBTracks};
+    Double_t vRecEventMultHist1[3] = {static_cast<Double_t>(multRec), static_cast<Double_t>(multMBTracks)};
     fRecEventMultHist1->Fill(vRecEventMultHist1);
   }
 
@@ -1512,7 +1512,7 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
       //
       // event histograms
       //
-      Double_t vMCEventMatrix[2] = {vtxMC[2],multMBTracks};
+      Double_t vMCEventMatrix[2] = {vtxMC[2],static_cast<Double_t>(multMBTracks)};
       fMCAllEventMultHist1->Fill(vMCEventMatrix);
 
       if(evtType == AliPWG0Helper::kND) {
@@ -1570,9 +1570,9 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         // sum up pt in the event
 	sumPtMC +=gpt; 
 
-        Double_t valMCAllTrackMultHist1[3] = {gpt,geta,multRecTemp};	  
-        Double_t valMCAllTrackTrueMultHist1[3] = {gpt,geta,multMCTrueTracks};	  
-        Double_t valMCAllTrackTrueMultHist2[3] = {gpt,multRecTemp,multMCTrueTracks};	  
+        Double_t valMCAllTrackMultHist1[3] = {gpt,geta,static_cast<Double_t>(multRecTemp)};	  
+        Double_t valMCAllTrackTrueMultHist1[3] = {gpt,geta,static_cast<Double_t>(multMCTrueTracks)};	  
+        Double_t valMCAllTrackTrueMultHist2[3] = {gpt,static_cast<Double_t>(multRecTemp),static_cast<Double_t>(multMCTrueTracks)};	  
 
         fMCAllPrimTrackMultHist1->Fill(valMCAllTrackMultHist1);
         fMCAllPrimTrackTrueMultHist1->Fill(valMCAllTrackTrueMultHist1);
@@ -1612,8 +1612,8 @@ void AlidNdPtCorrection::Process(AliESDEvent *esdEvent, AliMCEvent *mcEvent)
         meanPtMCTrueMult = sumPtMC/multMCTrueTracks; 
       }
 
-      Double_t valMCMeanPtMult[2] = {meanPtMCMult,multRecTemp};	  
-      Double_t valMCMeanPtTrueMult[2] = {meanPtMCTrueMult,multMCTrueTracks};	  
+      Double_t valMCMeanPtMult[2] = {static_cast<Double_t>(meanPtMCMult),static_cast<Double_t>(multRecTemp)};	  
+      Double_t valMCMeanPtTrueMult[2] = {static_cast<Double_t>(meanPtMCTrueMult),static_cast<Double_t>(multMCTrueTracks)};	  
 
       fMCAllPrimTrackMeanPtMult1->Fill(valMCMeanPtMult);
       fMCAllPrimTrackMeanPtTrueMult1->Fill(valMCMeanPtTrueMult);
@@ -1650,7 +1650,7 @@ void AlidNdPtCorrection::FillHistograms(AlidNdPtHelper::EventObject eventObj, Do
   // Fill corrected histograms
   //
 
-  Double_t vEventMatrix[2] = {zv,multMBTracks};
+  Double_t vEventMatrix[2] = {zv,static_cast<Double_t>(multMBTracks)};
   //
   // Correct for efficiency 
   //
@@ -1763,15 +1763,15 @@ void AlidNdPtCorrection::FillHistograms(AliESDtrack * const esdTrack, AliStack *
                          }; 
  
     // Fill histograms
-    Double_t valCorrRecTrackMultHist1[3] = {pt,eta,mult};	  
+    Double_t valCorrRecTrackMultHist1[3] = {pt,eta,static_cast<Double_t>(mult)};	  
     Double_t valCorrRecTrackPt1[1] = {pt};	  
     for(Int_t i=0; i<8; i++) {
       fCorrRecTrackMultHist1[i]->Fill(valCorrRecTrackMultHist1,corrF[i]);
       fCorrRecTrackPt1[i]->Fill(valCorrRecTrackPt1,corrF[i]);
 
       if( IsUseMCInfo() ) {
-        Double_t valCorrRecTrackTrueMultHist1[3] = {pt,eta,trueMult};	  
-        Double_t valCorrRecTrackTrueMultHist2[3] = {pt,mult,trueMult};	  
+        Double_t valCorrRecTrackTrueMultHist1[3] = {pt,eta,static_cast<Double_t>(trueMult)};	  
+        Double_t valCorrRecTrackTrueMultHist2[3] = {pt,static_cast<Double_t>(mult),static_cast<Double_t>(trueMult)};	  
 
         fCorrRecTrackTrueMultHist1[i]->Fill(valCorrRecTrackTrueMultHist1,corrF[i]);
         fCorrRecTrackTrueMultHist2[i]->Fill(valCorrRecTrackTrueMultHist2,corrF[i]);

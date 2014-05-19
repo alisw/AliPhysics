@@ -47,6 +47,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask()
     fMCRingSums(),
     fPrimary(0),
     fEventInspector(),
+    fESDFixer(),
     fSharingFilter(),
     fDensityCalculator(),
     fCorrections(),
@@ -68,6 +69,7 @@ AliForwardMCMultiplicityTask::AliForwardMCMultiplicityTask(const char* name)
     fMCRingSums(),
     fPrimary(0),
     fEventInspector("event"),
+    fESDFixer("esdFizer"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
     fCorrections("corrections"),
@@ -118,6 +120,9 @@ AliForwardMCMultiplicityTask::CreateBranches(AliAODHandler* ah)
 Bool_t
 AliForwardMCMultiplicityTask::Book()
 {
+  // We do this to explicitly disable the noise corrector for MC
+  GetESDFixer().SetRecoNoiseFactor(5);
+
   Bool_t ret = AliForwardMultiplicityBase::Book();
   POST(MCAOD_SLOT, &fMCAODFMD);
   POST(PRIM_SLOT,  fPrimary);
@@ -259,6 +264,9 @@ AliForwardMCMultiplicityTask::Event(AliESDEvent& esd)
 
   // Get FMD data 
   AliESDFMD*  esdFMD  = esd.GetFMDData();
+  
+  // Fix up the the ESD 
+  GetESDFixer().Fix(*esdFMD, ip.Z());
 
   // Apply the sharing filter (or hit merging or clustering if you like)
   if (isAccepted && !fSharingFilter.Filter(*esdFMD, lowFlux, fESDFMD,ip.Z())){

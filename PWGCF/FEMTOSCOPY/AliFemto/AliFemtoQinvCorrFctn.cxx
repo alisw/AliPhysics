@@ -217,10 +217,9 @@ void AliFemtoQinvCorrFctn::AddRealPair(AliFemtoPair* pair){
       //AliWarning("Could not get AODInputHandler");
     }
     else {
-      AliAODEvent *fAOD // = new AliAODEvent()
-        ;
-      magsign = fAOD->GetMagneticField();
+      AliAODEvent *fAOD; // = new AliAODEvent()
       fAOD = aodH->GetEvent();
+      magsign = fAOD->GetMagneticField();
     }
 
 

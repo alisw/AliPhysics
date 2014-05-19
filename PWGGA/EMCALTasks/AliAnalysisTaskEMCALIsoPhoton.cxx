@@ -645,6 +645,8 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
       continue;
     Short_t id;
     Double_t Emax = GetMaxCellEnergy( c, id);
+    if(fDebug)
+      printf("cluster max cell E=%1.1f",Emax);
     Float_t clsPos[3] = {0,0,0};
     c->GetPosition(clsPos);
     TVector3 clsVec(clsPos);

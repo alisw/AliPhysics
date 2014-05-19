@@ -46,6 +46,8 @@ set ( CLASS_HDRS
     AliAnalysisTaskSEmcCorr.h	
     AliAnalysisTaskSEHFCJqa.h
     AliHFDhadronCorrSystUnc.h	
+    AliHFCorrelationFDsubtraction.h	
+    AliHFDmesonCorrAverage.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )

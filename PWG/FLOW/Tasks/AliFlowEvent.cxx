@@ -785,11 +785,28 @@ void AliFlowEvent::Fill( AliFlowTrackCuts* rpCuts,
   //TAKEN TWICE
 
   ClearFast();
-
   if (!rpCuts || !poiCuts) return;
   AliFlowTrackCuts::trackParameterType sourceRP = rpCuts->GetParamType();
   AliFlowTrackCuts::trackParameterType sourcePOI = poiCuts->GetParamType();
   AliFlowTrack* pTrack=NULL;
+ 
+  // if the source for rp's or poi's is the VZERO detector, get the calibration 
+  // and set the calibration parameters
+  if (sourceRP == AliFlowTrackCuts::kVZERO) {
+      SetVZEROCalibrationForTrackCuts(rpCuts);
+      if(!rpCuts->GetApplyRecentering()) {
+          // if the user does not want to recenter, switch the flag
+          fApplyRecentering = -1;
+      }
+      // note: this flag is used in the overloaded implementation of Get2Qsub()
+      // and tells the function to use as Qsub vectors the recentered Q-vectors
+      // from the VZERO oadb file or from the event header
+  }
+  if (sourcePOI == AliFlowTrackCuts::kVZERO) {
+      // probably no-one will choose vzero tracks as poi's ...
+      SetVZEROCalibrationForTrackCuts(poiCuts); 
+  }
+  
 
   if (sourceRP==sourcePOI)
   {
@@ -1135,7 +1152,6 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts(AliFlowTrackCuts* cuts) {
     // we can use the cached calibration values, no need to re-open the 
     // aodb file
     Int_t run(cuts->GetEvent()->GetRunNumber());
-//    printf ( " > run number is %i \n", run);
     if(fCachedRun == run) {
         // the runnumber did not change, no need to open the database again
         // in case of 11h style recentering, update the q-sub vectors
@@ -1334,7 +1350,16 @@ void AliFlowEvent::SetVZEROCalibrationForTrackCuts2011(AliFlowTrackCuts* cuts)
 void AliFlowEvent::ClearFast()
 {
   //clear the event without releasing any memory
+  //note that cached run number of recentering settigns are not clear 
+  //(see AliFlowEvent::ClearCachedRun() )
   AliFlowEventSimple::ClearFast();
+}
+
+//_____________________________________________________________________________
+
+void AliFlowEvent::ClearCachedRun()
+{
+    //clear the cached run (not in clear fast as cache needs to be persistent in most cases )
+  fCachedRun=0;  
   fApplyRecentering=0;
-  fCachedRun=0;
 }

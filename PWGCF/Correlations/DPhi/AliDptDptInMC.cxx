@@ -1250,9 +1250,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
       //MC AOD Truth 
       if(fAnalysisType == "MCAOD")
         { 
-
 	  AliMCEvent* mcEvent = MCEvent();
-
 	  _nTracks = mcEvent->GetNumberOfTracks();
           _mult3    = _nTracks;
           //loop over tracks starts here                                                                                                       
@@ -1265,9 +1263,8 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   AliError(Form("AliTaskDptCorrMC::Exec(Option_t *option) No track ofr iTrack=%d", iTrack));
                   continue;
                 }
-	  
-
-	      if(!aodTrack->IsPhysicalPrimary()) continue;
+	      
+	      //if(!aodTrack->IsPhysicalPrimary()) continue;
 
 	      q      = aodTrack->Charge();
               charge = int(q);
@@ -1284,7 +1281,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      _etadis->Fill(eta);
               _phidis->Fill(phi); 
 	      // Remove neutral tracks                                                                                         
-              if(q == 0) continue;  
+	       if(q == 0) continue;  
 
 	      if(fExcludeResonancesInMC)
                 {
@@ -1294,12 +1291,14 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                     AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
                     if(motherTrack) {
                       Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-
+		      
                       if(pdgCodeOfMother == 311  ||
                          pdgCodeOfMother == -311 ||
                          pdgCodeOfMother == 310  ||
                          pdgCodeOfMother == 3122 ||
-                         pdgCodeOfMother == -3122) continue;
+                         pdgCodeOfMother == -3122 ||
+			 pdgCodeOfMother == 111 ||
+			 pdgCodeOfMother == 22 ) continue;
                     }
                   }
                 }
@@ -1484,7 +1483,6 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      bitOK  = t->TestFilterBit(_trackFilterBit);
 	      if (!bitOK) continue;
 
-
 	      q      = t->Charge();
 	      charge = int(q);
 	      phi    = t->Phi();
@@ -1515,18 +1513,39 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
 
 	      //W/Wo Secondaries
-	      if (!AODmcTrack->IsPhysicalPrimary()) continue;
+	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
 	      
-	      if (AODmcTrack)
-		{
-		  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
-		}
-	   
-	      _etadis->Fill(eta);
-	      _phidis->Fill(phi);
-	      _dcaz->Fill(dcaZ);
-	      _dcaxy->Fill(dcaXY);
-	      
+	       
+	       if(fExcludeResonancesInMC)
+		 {
+		   //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;                               
+		   Int_t gMotherIndex = AODmcTrack->GetMother();
+		   if(gMotherIndex != -1) {
+		     AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+		     if(motherTrack) {
+		       Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+		       
+		       if(pdgCodeOfMother == 311  ||
+			  pdgCodeOfMother == -311 ||
+			  pdgCodeOfMother == 310  ||
+			  pdgCodeOfMother == 3122 ||
+			  pdgCodeOfMother == -3122 ||
+			  pdgCodeOfMother == 111 ||
+			  pdgCodeOfMother == 22 ) continue;
+		     }
+		   }
+		 }
+	       
+	       if (AODmcTrack)
+		 {
+		   if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+		 }
+	       
+	       _etadis->Fill(eta);
+	       _phidis->Fill(phi);
+	       _dcaz->Fill(dcaZ);
+	       _dcaxy->Fill(dcaXY);
+	       
 	      //Particle 1                                                                                                                  
 	      if (t->Charge() > 0)
 		{

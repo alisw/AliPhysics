@@ -505,6 +505,7 @@ inline Double_t
 AliLandauGaus::SigmaShift(Int_t i, Double_t xi, Double_t sigma)
 {
   if (xi <= 0) return 0;
+  if (sigma <= 0) return 0;
   const Double_t c = SigmaShiftC();
   const Double_t p = SigmaShiftP();
   const Double_t u = sigma / xi;
