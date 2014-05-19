@@ -99,21 +99,6 @@ public:
    */
   virtual ~AliCorrectionManagerBase();
   /** 
-   * Check if the manager is initialized 
-   * 
-   * @return True if initialized
-   */
-  virtual Bool_t IsInit() const { return fIsInit; }
-  /** 
-   * Print information
-   * 
-   * @param option Options:
-   * 
-   *   - R  Recursive list each correction 
-   *   - D  Also give details for each correction
-   */
-  virtual void Print(Option_t* option="") const;
-  /** 
    * Set the prefix to use when looking for the input files 
    * 
    * @param prefix Prefix to use for all corrections 
@@ -125,6 +110,11 @@ public:
    * @param use If true, enable fall-back queries 
    */
   virtual void SetEnableFallBack(Bool_t use=true) { fFallBack = use; }
+
+  /** 
+   * @{ 
+   * @name Storing corrections 
+   */
   /** 
    * Store a correction 
    * 
@@ -161,23 +151,20 @@ public:
   virtual Bool_t Append(const TString& addition,
 			const TString& destination="") const;
   /** 
-   * Browse this object
+   * Write a new database file with tables that only has one entry for
+   * each query tuple.
    * 
-   * @param b Browser to use 
+   * @param destination Where to write the new file 
+   * 
+   * @return true on success, false otherwise 
    */
-  virtual void Browse(TBrowser* b);
+  virtual Bool_t CleanUp(const TString& destination, Bool_t verb=false) const;
+  /* @} */
+
   /** 
-   * Flag that this is a folder 
-   * 
-   * @return Always true
+   * @{ 
+   * @name Getting the corrections 
    */
-  virtual Bool_t IsFolder() const { return true; }
-  /** 
-   * Set whehter to enable debug information 
-   * 
-   * @param debug if true, do verbose queries 
-   */
-  virtual void SetDebug(Bool_t debug) { fDebug = debug; }
   /** 
    * Convinience function to enable corrections on-mass.  User class
    * should overload this to properly enable corrections based on the
@@ -215,6 +202,8 @@ public:
 			 Bool_t     mc, 
 			 Bool_t     sat,
 			 Bool_t     force=false);
+  /* @} */
+
   /** 
    * @{ 
    * @name Get axis objects. 
@@ -231,6 +220,45 @@ public:
    * @return The @f$\eta@f$ axis or null
    */
   virtual const TAxis* GetEtaAxis() const { return 0; }
+  /* @} */
+
+  /** 
+   * @{ 
+   * @name Misc
+   */
+  /** 
+   * Check if the manager is initialized 
+   * 
+   * @return True if initialized
+   */
+  virtual Bool_t IsInit() const { return fIsInit; }
+  /** 
+   * Print information
+   * 
+   * @param option Options:
+   * 
+   *   - R  Recursive list each correction 
+   *   - D  Also give details for each correction
+   */
+  virtual void Print(Option_t* option="") const;
+  /** 
+   * Browse this object
+   * 
+   * @param b Browser to use 
+   */
+  virtual void Browse(TBrowser* b);
+  /** 
+   * Flag that this is a folder 
+   * 
+   * @return Always true
+   */
+  virtual Bool_t IsFolder() const { return true; }
+  /** 
+   * Set whehter to enable debug information 
+   * 
+   * @param debug if true, do verbose queries 
+   */
+  virtual void SetDebug(Bool_t debug) { fDebug = debug; }
   /* @} */
 protected:
   /** 
@@ -373,7 +401,21 @@ protected:
      * @return Always true
      */
     Bool_t IsFolder() const { return true; }
-
+    /**
+     * Massage fields according to settings 
+     */
+    void MassageFields(ULong_t&  run,
+		       UShort_t& sys,
+		       UShort_t& sNN, 
+		       Short_t & fld, 
+		       Bool_t&   mc, 
+		       Bool_t&   sat) const;
+    Bool_t CleanIt(AliOADBForward* db, 
+		   const TString& dest, 
+		   Bool_t verb=false) const;
+    Bool_t OpenIt(AliOADBForward* db, 
+		  Bool_t vrb=false, 
+		  Bool_t fallback=false) const;
 
     mutable TClass*  fCls;      //! Class of correction objects
     const TString fClientCls; // Class name

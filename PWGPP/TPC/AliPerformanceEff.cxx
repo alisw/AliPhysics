@@ -292,7 +292,7 @@ void AliPerformanceEff::ProcessTPC(AliMCEvent* const mcEvent, AliESDEvent *const
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
-    Double_t vEffHisto[9] = {mceta, mcphi, mcpt, pid, recStatus, findable, charge, nClones, nFakes}; 
+    Double_t vEffHisto[9] = {mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
     fEffHisto->Fill(vEffHisto);
   }
   if(labelsRec) delete [] labelsRec; labelsRec = 0;
@@ -431,7 +431,7 @@ void AliPerformanceEff::ProcessTPCSec(AliMCEvent* const mcEvent, AliESDEvent *co
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
-    Double_t vEffSecHisto[12] = { mceta, mcphi, mcpt, pid, recStatus, findable, mcR, mother_phi, mother_eta, charge, nClones, nFakes }; 
+    Double_t vEffSecHisto[12] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), mcR, mother_phi, mother_eta, static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
     fEffSecHisto->Fill(vEffSecHisto);
   }
   }
@@ -555,7 +555,7 @@ void AliPerformanceEff::ProcessTPCITS(AliMCEvent* const mcEvent, AliESDEvent *co
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
     
     // Fill histograms
-    Double_t vEffHisto[9] = { mceta, mcphi, mcpt, pid, recStatus, findable, charge, nClones, nFakes}; 
+    Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes)}; 
     fEffHisto->Fill(vEffHisto);
   }
 
@@ -676,7 +676,7 @@ void AliPerformanceEff::ProcessConstrained(AliMCEvent* const mcEvent, AliESDEven
     else if (particle->GetPDG()->Charge() > 0)  charge = 1.;
 
     // Fill histograms
-    Double_t vEffHisto[9] = { mceta, mcphi, mcpt, pid, recStatus, findable, charge, nClones, nFakes }; 
+    Double_t vEffHisto[9] = { mceta, mcphi, mcpt, static_cast<Double_t>(pid), static_cast<Double_t>(recStatus), static_cast<Double_t>(findable), static_cast<Double_t>(charge), static_cast<Double_t>(nClones), static_cast<Double_t>(nFakes) }; 
     fEffHisto->Fill(vEffHisto);
   }
 

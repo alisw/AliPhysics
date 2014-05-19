@@ -277,7 +277,7 @@ void AliEbyEHigherMomentsTask::doAODEvent(){
    
   }//--------- Track Loop to select with filterbit
   
-  Double_t fContainerCh[3] = { fCentrality, positiveSum, negativeSum};
+  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), positiveSum, negativeSum};
   
   fTHnCentNplusNminusCh->Fill(fContainerCh);
 
@@ -435,8 +435,8 @@ void AliEbyEHigherMomentsTask::doMCAODEvent(){
    
   }//MC-Truth Track loop--
 
-  Double_t fContainerCh[3] = { fCentrality, positiveSumMCRec, negativeSumMCRec};//Reco. values ch. hadrons
-  Double_t fContainerChTruth[3] = { fCentrality, positiveSumMCTruth, negativeSumMCTruth};  
+  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), positiveSumMCRec, negativeSumMCRec};//Reco. values ch. hadrons
+  Double_t fContainerChTruth[3] = { static_cast<Double_t>(fCentrality), positiveSumMCTruth, negativeSumMCTruth};  
  
   fTHnCentNplusNminusCh->Fill(fContainerCh);//Fill the rec. ch. particles---
   fTHnCentNplusNminusChTruth->Fill(fContainerChTruth);//MC -Truth ch. particles

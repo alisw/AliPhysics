@@ -131,8 +131,8 @@ class AliJCORRANTask : public AliAnalysisTaskSE {
   AliAnalysisFilter * fESDFilter; //filter set of track selection BS
   TVectorT<double>  fIsRealOrMC; //flags if the input are real (0) ESDs or MonteCarlo ESDs (1)
   TString fAODName; //output delta AOD name
-  TString fActiveTriggers[kRangeTriggerTableAlice];//alice table mapping trigger bit to trigger name
-  TString fTriggerTableJCorran[kRangeTriggerTableJCorran];//JCorran trigger table TBit 0 =MinBias
+  TString fActiveTriggers[AliJConst::kRangeTriggerTableAlice];//alice table mapping trigger bit to trigger name
+  TString fTriggerTableJCorran[AliJConst::kRangeTriggerTableJCorran];//JCorran trigger table TBit 0 =MinBias
   bool fStoreEventPlaneSource;
   bool fStoreTPCTrack;
   TString fOADBPath;

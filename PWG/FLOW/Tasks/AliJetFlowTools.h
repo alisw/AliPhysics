@@ -10,6 +10,7 @@
 
 // root forward declarations
 class TF1;
+class TF2;
 class TH1D;
 class TH2D;
 class TCanvas;
@@ -87,6 +88,7 @@ class AliJetFlowTools {
             fCentralityWeights = new TArrayD(1);
             fCentralityWeights->AddAt(1., 0);
         }
+        void            SetMergeSpectrumBins(TArrayI* a)        {fMergeBinsArray        =       a;}
         void            SetCentralityBin(TArrayI* bins)         {
             fCentralityArray = bins;
         }
@@ -206,8 +208,11 @@ class AliJetFlowTools {
         TH2D*           RebinTH2D(TH2D* histo, TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
         static TH2D*    MatrixMultiplication(TH2D* a, TH2D* b, TString name = "CombinedResponse");
         static TH1D*    NormalizeTH1D(TH1D* histo, Double_t scale = 1.);
+        static TH1D*    MergeSpectrumBins(TArrayI* bins, TH1D* spectrum, TH2D* corr);
         static TGraphErrors*    GetRatio(TH1 *h1 = 0x0, TH1* h2 = 0x0, TString name = "", Bool_t appendFit = kFALSE, Int_t xmax = -1);
         static TGraphErrors*    GetV2(TH1* h1 = 0x0, TH1* h2 = 0x0, Double_t r = 0., TString name = "");
+        void     ReplaceBins(TArrayI* array, TGraphAsymmErrors* graph);
+        void     ReplaceBins(TArrayI* array, TGraphErrors* graph);
         TGraphAsymmErrors*      GetV2WithSystematicErrors(
                 TH1* h1, TH1* h2, Double_t r, TString name, 
                 TH1* relativeErrorInUp,
@@ -215,6 +220,25 @@ class AliJetFlowTools {
                 TH1* relativeErrorOutUp,
                 TH1* relativeErrorOutLow,
                 Float_t rho = 0.) const;
+        static void     GetSignificance(
+                TGraphErrors* n,                // points with stat error
+                TGraphAsymmErrors* shape,       // points with shape error
+                TGraphAsymmErrors* corr,        // points with stat error
+                Int_t low,                      // pt lower level
+                Int_t up                        // pt upper level
+        );
+        static void     MinimizeChi22d();
+        static Double_t PhenixChi22d(const Double_t *xx );
+        static Double_t ConstructFunction2d(Double_t *x, Double_t *par);
+        static TF2*     ReturnFunction2d();
+        static void     MinimizeChi2nd();
+        static Double_t PhenixChi2nd(const Double_t *xx );
+        static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
+        static void     MinimizeChi2();
+        static TF2*     ReturnFunctionnd();
+        static Double_t PhenixChi2(const Double_t *xx );
+        static Double_t ConstructFunction(Double_t *x, Double_t *par);
+        static TF1*     ReturnFunction();
         static void     WriteObject(TObject* object, TString suffix = "", Bool_t kill = kTRUE);
         static TH2D*    ConstructDPtResponseFromTH1D(TH1D* dpt, Bool_t AvoidRoundingError);
         static TH2D*    GetUnityResponse(TArrayD* binsTrue, TArrayD* binsRec, TString suffix = "");
@@ -237,29 +261,47 @@ class AliJetFlowTools {
                 return l;
             }
         }
-        static TPaveText*       AddTPaveText(TString text, Int_t r = 2) {
-            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+        static TPaveText*       AddTPaveText(
+                // this text appears under the logo
+                TString text, 
+                Int_t r = 2,
+                Double_t a = .587,
+                Double_t b = .695,
+                Double_t c = .872,
+                Double_t d = .801) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
-            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k} charged jets, |#eta_{jet}|<%.1f", r, .9-r/10.));
+            t->AddText(0., 0., Form("#it{R} = 0.%i anti-#it{k}_{T}, |#eta_{jet}|<%.1f", r, .9-r/10.));
             t->SetTextColor(kBlack);
             t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
             t->Draw("same");
             return t;
         } 
-        static TPaveText*       AddText(TString text, EColor col) {
-            TPaveText* t(new TPaveText(.35, .27, .76, .33,"NDC"));
+        static TPaveText*       AddText(
+                TString text, 
+                EColor col,
+                Double_t a = .2098,
+                Double_t b = .5601,
+                Double_t c = .613,
+                Double_t d = .6211) {
+            TPaveText* t(new TPaveText(a, b, c, d, "NDC"));
             t->SetFillColor(0);            
             t->SetBorderSize(0);
             t->AddText(0.,0.,text.Data());
             t->SetTextColor(col);
             t->SetTextFont(42);
+            t->SetTextSize(gStyle->GetTextSize()*.8);
             t->Draw("same");
             return t;
         } 
-        static TLatex*          AddLogo(Bool_t logo, Double_t xmin = .59, Double_t ymax = .81) {
-            return AddTLatex(xmin, ymax, logo ? "ALICE Preliminary" : "ALICE");
+        static TLatex*          AddLogo(Int_t logo, Double_t xmin = .59, Double_t ymax = .81) {
+            if(logo == 0) return AddTLatex(xmin, ymax, "ALICE");
+            else if (logo == 1) return AddTLatex(xmin, ymax, "ALICE Preliminary");
+            else if (logo == 2) return AddTLatex(xmin, ymax, "ALICE Simulation");
+            return 0x0;
         }
         static TLatex*          AddSystem() {
             return AddTLatex(0.55, 87, "Pb-Pb #sqrt{#it{s}}}_{NN} = 2.76 TeV");
@@ -355,7 +397,8 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         Bool_t                  fRefreshInput;          // re-read the input (called automatically if input list changes)
         TString                 fOutputFileName;        // output file name
         TFile*                  fOutputFile;            // output file
-        TArrayI*                fCentralityArray;       // array of bins that are merged
+        TArrayI*                fCentralityArray;       // array of centrality bins that are merged
+        TArrayI*                fMergeBinsArray;        // array of pt bins that are merged
         TArrayD*                fCentralityWeights;     // array of centrality weights
         TH2D*                   fDetectorResponse;      // detector response
         TH1D*                   fJetFindingEff;         // jet finding efficiency
@@ -411,6 +454,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*                   fDptOut;                // out plane dpt matrix
         TH2D*                   fFullResponseIn;        // full response matrix, in plane
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
+
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
         AliJetFlowTools& operator=(const AliJetFlowTools&);  // not implemented

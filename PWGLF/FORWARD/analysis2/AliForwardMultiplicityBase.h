@@ -19,6 +19,7 @@
 #include "AliAODForwardMult.h"
 #include "AliAODForwardEP.h"
 // class AliFMDEnergyFitter;
+class AliFMDESDFixer;
 class AliFMDSharingFilter;
 class AliFMDDensityCalculator;
 class AliFMDCorrector;
@@ -147,6 +148,12 @@ public:
    * @name Access to sub-algorithms 
    */
   /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  virtual AliFMDESDFixer& GetESDFixer() = 0;
+  /**
    * Get reference to the SharingFilter algorithm 
    * 
    * @return Reference to AliFMDSharingFilter object 
@@ -170,6 +177,12 @@ public:
    * @return Reference to AliFMDHistCollector object 
    */
   virtual AliFMDHistCollector& GetHistCollector() = 0;
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  virtual const AliFMDESDFixer& GetESDFixer() const = 0;
   /**
    * Get reference to the SharingFilter algorithm 
    * 

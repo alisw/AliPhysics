@@ -63,7 +63,7 @@ AliTwoPlusOneContainer::AliTwoPlusOneContainer(const char* name, const char* bin
     "multiplicity: 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1\n"
     "vertex: -7, -5, -3, -1, 1, 3, 5, 7\n"
     "delta_phi: -1.570796, -1.396263, -1.221730, -1.047197, -0.872664, -0.698131, -0.523598, -0.349065, -0.174532, 0.0, 0.174532, 0.349065, 0.523598, 0.698131, 0.872664, 1.047197, 1.221730, 1.396263, 1.570796, 1.745329, 1.919862, 2.094395, 2.268928, 2.443460, 2.617993, 2.792526, 2.967059, 3.141592, 3.316125, 3.490658, 3.665191, 3.839724, 4.014257, 4.188790, 4.363323, 4.537856, 4.712388\n" // this binning starts at -pi/2 and it ends at +3pi/2, it has 36 bins
-    "delta_eta: -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0\n";
+    "delta_eta: -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8\n";
 
   // combine customBinning with defaultBinningStr -> use customBinning where available and otherwise defaultBinningStr
   TString binningStr = AliUEHist::CombineBinning(defaultBinningStr, TString(binning));

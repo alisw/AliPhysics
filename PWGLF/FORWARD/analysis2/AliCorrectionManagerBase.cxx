@@ -9,6 +9,8 @@
 #include <TBrowser.h>
 #include <TParameter.h>
 #include <TFileMerger.h>
+#include <TBits.h>
+#include <TTree.h>
 
 //____________________________________________________________________
 AliCorrectionManagerBase::AliCorrectionManagerBase()
@@ -205,9 +207,30 @@ AliCorrectionManagerBase::Append(const TString& addition,
   }
   if (destination.BeginsWith("$OADB_PATH") ||
       destination.BeginsWith("$ALICE_ROOT"))
-    AliInfoF("Now commit %s to subversion", destination.Data());
+    AliInfoF("Now commit %s to git", destination.Data());
   return true;
 }
+//____________________________________________________________________
+Bool_t
+AliCorrectionManagerBase::CleanUp(const TString& destination, Bool_t verb) const
+{
+  AliOADBForward* db = fDB;
+  if (!db) db = new AliOADBForward;
+
+  for (Int_t i = 0; i < 32; i++) {
+    const Correction* c = GetCorrection(i);
+    if (!c) continue;
+
+    if (!c->fEnabled) {
+      Info("CleanUp", "Table %s not enabled", c->GetName());
+      continue;
+    }
+    Info("CleanUp", "Will clean up table %s", c->GetName());
+    c->CleanIt(db, destination, verb);
+  }
+  return true;
+}
+ 
   
 //____________________________________________________________________
 void
@@ -545,6 +568,49 @@ AliCorrectionManagerBase::Correction::operator=(const Correction& o)
 }
 
 //____________________________________________________________________
+void
+AliCorrectionManagerBase::Correction::MassageFields(ULong_t&  run,
+						    UShort_t& sys,
+						    UShort_t& sNN, 
+						    Short_t & fld, 
+						    Bool_t&   mc, 
+						    Bool_t&   sat) const
+{
+  // Massage fields according to settings 
+  if (!(fQueryFields & kRun))       run = kIgnoreValue;
+  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
+  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
+  if (!(fQueryFields & kField))     fld = AliOADBForward::kInvalidField; 
+  if (!(fQueryFields & kMC))        mc  = false;
+  if (!(fQueryFields & kSatellite)) sat = false;
+}
+
+//____________________________________________________________________
+Bool_t
+AliCorrectionManagerBase::Correction::OpenIt(AliOADBForward* db, 
+					     Bool_t vrb, 
+					     Bool_t fallback) const
+{
+  if (!db) {
+    Warning("OpenIt", "No DB passed");
+    return false;
+  }
+
+  // Check if table is open
+  if (db->FindTable(fName, true)) return true;
+
+  //  if not try to open it 
+  if (db->Open(fTitle, fName, false, vrb, fallback)) return true;
+
+  // Give warning 
+  AliWarningF("Failed to open table %s from %s", GetName(), GetTitle());
+  AliWarningF("content of %s for %s:", 
+	      gSystem->WorkingDirectory(), GetName());
+  gSystem->Exec("pwd; ls -l");
+  return false;
+}
+ 
+//____________________________________________________________________
 Bool_t
 AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db, 
 					     ULong_t         run, 
@@ -565,24 +631,10 @@ AliCorrectionManagerBase::Correction::ReadIt(AliOADBForward* db,
   fObject = 0;
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = kIgnoreValue;
-  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
-  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
-  if (!(fQueryFields & kField))     fld = AliOADBForward::kInvalidField; // kIgnoreField;
-  if (!(fQueryFields & kMC))        mc  = false;
-  if (!(fQueryFields & kSatellite)) sat = false;
+  MassageFields(run, sys, sNN, fld, mc, sat);
 
-  // Check if table is open, and if not try to open it 
-  if (!db->FindTable(fName, true)) {
-    if (!db->Open(fTitle, fName, false, vrb, fallback)) {
-      AliWarningF("Failed to open table %s from %s", GetName(), GetTitle());
-      AliWarningF("content of %s for %s:", 
-		  gSystem->WorkingDirectory(), GetName());
-      gSystem->Exec("pwd; ls -l");
-      return false;
-    }
-  }
-  
+  if (!OpenIt(db, vrb, fallback)) return false;
+
   // Query database 
   AliOADBForward::Entry* e = db->Get(fName, run, AliOADBForward::kDefault, 
 				     sys, sNN, fld, mc, sat);
@@ -642,18 +694,13 @@ AliCorrectionManagerBase::Correction::StoreIt(AliOADBForward* db,
   AliOADBForward* tdb      = (local ? new AliOADBForward : db);
   
   // Try to open the table read/write 
-  if (!tdb->Open(fileName, Form("%s/%s", GetName(), meth), true, true)) {
+  if (!tdb->Open(fileName, Form("%s/%s", GetName(), meth), true, false)) {
     AliWarningF("Failed to open table %s in %s", GetName(), fileName.Data());
     return false;
   }
 
   // Massage fields according to settings 
-  if (!(fQueryFields & kRun))       run = kIgnoreValue;
-  if (!(fQueryFields & kSys))       sys = kIgnoreValue;
-  if (!(fQueryFields & kSNN))       sNN = kIgnoreValue;
-  if (!(fQueryFields & kField))     fld = AliOADBForward::kInvalidField; // kIgnoreField;
-  if (!(fQueryFields & kMC))        mc  = false;
-  if (!(fQueryFields & kSatellite)) sat = false;
+  MassageFields(run, sys, sNN, fld, mc, sat);
   
   // Try to insert the object 
   if (!tdb->Insert(fName, obj, run, sys, sNN, fld, mc, sat)) { 
@@ -773,6 +820,126 @@ AliCorrectionManagerBase::Correction::Browse(TBrowser* b)
   b->Add(new TObjString(fLastEntry), "Entry");
   if (fObject) b->Add(fObject);
 }
+//____________________________________________________________________
+Bool_t
+AliCorrectionManagerBase::Correction::CleanIt(AliOADBForward* db,
+					      const TString& dest,
+					      Bool_t verb) const
+{
+  // Open the table for this correction 
+  if (!OpenIt(db, verb , false)) {
+    Warning("CleanIt", "Failed to open table for %s", GetName());
+    return false;
+  }
+
+  // Get our table - should be here if the above succeeded
+  AliOADBForward::Table* t = db->FindTable(fName, !verb);
+  if (!t) {
+    Warning("CleanIt", "Failed to get table for %s", GetName());
+    return false;
+  }
+
+  // Get some pointers and make a bit mask of entries to copy
+  TTree* tree = t->fTree;
+  Int_t  nEnt = tree->GetEntries();
+  TBits  copy(nEnt);
+  copy.ResetAllBits(false);
+  // TString runs;
+
+  // Loop over all entries 
+  Info("CleanIt", "Looping over %d entries in tree", nEnt);
+  for (Int_t i = 0; i < nEnt; i++) { 
+    // Read in next entry 
+    tree->GetEntry(i);
+
+    // Check if we got an object 
+    AliOADBForward::Entry* e = t->fEntry;    
+    if (!e) continue;
+    
+    // Let's see it 
+    // if (verb) e->Print();
+
+    // Now query the DB with this entry's fields 
+    ULong_t  run = e->fRunNo;
+    UShort_t sys = e->fSys;
+    UShort_t sNN = e->fSNN;
+    Short_t  fld = e->fField;
+    Bool_t   mc  = e->fMC;
+    Bool_t   sat = e->fSatellite;
+    TString  txt = e->GetTitle();
+    MassageFields(run, sys, sNN, fld, mc, sat);
+
+    
+    Int_t r = t->GetEntry(run, AliOADBForward::kDefault, 
+			  sys, sNN, fld, mc, sat);
+    if (r < 0) { 
+      Warning("CleanIt","Uh! didn't get an entry for %s (%d)",
+	      txt.Data(), i);
+      r = i;
+      // continue;
+    }
+#if 0
+    // Here, we hard-code some fixes to remove bad entries 
+    if (fld != AliOADBForward::kInvalidField) {
+      switch (sys) {
+      case 1:
+	if      (sNN ==  900 &&  fld <= 0) r = -1;
+	else if (sNN == 7000 &&  fld >= 0) r = -1;
+	else if (sNN == 2760 &&  fld >= 0) r = -1;
+	break;
+      case 2:
+	if (fld >= 0) r = -1;
+	break;
+      }
+    }
+#endif
+
+    Printf("%-10s (%3d %3d): %s %s", 
+	   (i==r ? "copied" : "ignored"), i, r, txt.Data(), GetName());
+
+    if (r != i) continue;
+
+    // If the entry found by the query and this entry is the same, 
+    // then we should keep it 
+	 copy.SetBitNumber(i,true);
+    // runs.Append(Form("%7lu", run));
+  }
+  
+  // Now loop over the entries of the tree again, this time 
+  // checking if we should copy or not. 
+  // Loop over all entries 
+  for (Int_t i = 0; i < nEnt; i++) { 
+    // If not marked for copy, continue to the next. 
+    if (!copy.TestBitNumber(i)) continue; 
+
+    // Read in next entry 
+    tree->GetEntry(i);
+
+    // Check if we got an object 
+    AliOADBForward::Entry* e = t->fEntry;    
+    if (!e) continue;
+  
+    // Let's get the entry data and store that in a new correction
+    // table
+    ULong_t  run = e->fRunNo;
+    UShort_t sys = e->fSys;
+    UShort_t sNN = e->fSNN;
+    Short_t  fld = e->fField;
+    Bool_t   mc  = e->fMC;
+    Bool_t   sat = e->fSatellite;
+    TObject* obj = e->fData;
+    TString  txt = e->GetTitle();
+    Printf("Storing %3d: %s %s", i, txt.Data(), GetName());
+    if (!StoreIt(0, obj, run, sys, sNN, fld, mc, sat, dest.Data(),
+		 AliOADBForward::Mode2String(t->fMode))) {
+      Warning("CleanIt", "Failed to write new entry to %s", dest.Data());
+      continue;
+    }
+  }
+  // Printf("Runs: %s", runs.Data());
+  return true;
+}
+
 //
 // EOF
 //

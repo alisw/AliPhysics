@@ -141,24 +141,24 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
   }
   else if( ccestimator == kV0A ){
     if ( cc == kpPb020 ) {
-      tab = 0.183; tabUnc = 0.0201;
+      tab = 0.183; tabUnc = 0.006245;
     } else if ( cc == kpPb2040 ) {
-      tab = 0.134; tabUnc = 0.0134;
+      tab = 0.134; tabUnc = 0.004899;
     } else if ( cc == kpPb4060 ) {
-      tab = 0.0918; tabUnc = 0.0073;
+      tab = 0.092; tabUnc = 0.004796;
     } else if ( cc == kpPb60100 ) {
-      tab = 0.0366; tabUnc = 0.00183;
+      tab = 0.041; tabUnc = 0.008832;
     }
   }
   else if( ccestimator == kZNA ){
     if ( cc == kpPb020 ) {
-      tab = 0.1650; tabUnc = 0.0550;
+      tab = 0.164; tabUnc = 0.010724;
     } else if ( cc == kpPb2040 ) {
-      tab = 0.137; tabUnc = 0.0372;
+      tab = 0.137; tabUnc = 0.005099;
     } else if ( cc == kpPb4060 ) {
-      tab = 0.1001; tabUnc = 0.0690;
+      tab = 0.1011; tabUnc = 0.006;
     } else if ( cc == kpPb60100 ) {
-      tab = 0.045; tabUnc = 0.1029;
+      tab = 0.0459; tabUnc = 0.003162;
     }
   }
 
@@ -416,7 +416,23 @@ void HFPtSpectrum ( const char *mcfilename="FeedDownCorrectionMC.root",
     systematics->SetIsLowEnergy(true);
   }
   else if ( cc == kpPb0100 || cc == kpPb020 || cc == kpPb2040 || cc == kpPb4060 || cc == kpPb60100 ) {
-    systematics->SetCollisionType(2); 
+    systematics->SetCollisionType(2);
+    if(ccestimator==kV0A) {
+      if(cc == kpPb020) systematics->SetCentrality("020V0A");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040V0A");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060V0A");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100V0A");
+    } else if (ccestimator==kZNA) {
+      if(cc == kpPb020) systematics->SetCentrality("020ZNA");
+      else if(cc == kpPb2040) systematics->SetCentrality("2040ZNA");
+      else if(cc == kpPb4060) systematics->SetCentrality("4060ZNA");
+      else if(cc == kpPb60100) systematics->SetCentrality("60100ZNA");
+    } else {
+      if(!(cc == kpPb0100)) {
+	cout <<" Error on the pPb options"<<endl;
+	return;
+      }
+    }
   }
   //
   else if( cc!=kpp7 )  {

@@ -16,6 +16,7 @@
 #include "AliForwardMultiplicityBase.h"
 #include "AliForwardUtil.h"
 #include "AliFMDEventInspector.h"
+#include "AliFMDESDFixer.h"
 #include "AliFMDSharingFilter.h"
 #include "AliFMDDensityCalculator.h"
 #include "AliFMDCorrector.h"
@@ -63,6 +64,14 @@ public:
    * @name Interface methods 
    */
   /** 
+   * Called on first event _before_ reading corrections.  Here, the
+   * user class can do additional checking to see if the some (more or
+   * less) corrections are needed.
+   * 
+   * @param esd Event 
+   */
+  virtual void PreCorrections(const AliESDEvent* esd);
+  /** 
    * Called before processing a single event - should not do anything
    * but clear data, etc.
    * 
@@ -90,6 +99,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   AliFMDEventInspector& GetEventInspector() { return fEventInspector; }
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  AliFMDESDFixer& GetESDFixer() { return fESDFixer; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -120,6 +135,12 @@ public:
    * @return Reference to AliFMDEventInspector object 
    */
   const AliFMDEventInspector& GetEventInspector() const { return fEventInspector; }
+  /**
+   * Get reference to the ESDFixer algorithm 
+   * 
+   * @return Reference to AliFMDESDFixer object 
+   */
+  const AliFMDESDFixer& GetESDFixer() const { return fESDFixer; }
   /**
    * Get reference to the SharingFilter algorithm 
    * 
@@ -177,6 +198,7 @@ protected:
 
   AliESDFMD               fESDFMD;            // Sharing corrected ESD object
   AliFMDEventInspector    fEventInspector;    // Algorithm
+  AliFMDESDFixer          fESDFixer;          // Algorithm
   AliFMDSharingFilter     fSharingFilter;     // Algorithm
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
   AliFMDCorrector         fCorrections;       // Algorithm

@@ -8,6 +8,7 @@ class TH3F;
 class THnSparse;
 class TClonesArray;
 class TArrayI;
+class TLorentzVector;
 class AliAnalysisManager;
 class AliJetContainer;
 
@@ -43,6 +44,8 @@ class AliAnalysisTaskEmcalJetMassBkg : public AliAnalysisTaskEmcalJet {
   void                        GetRandomCone(TLorentzVector& lvRC, Float_t &pt, Float_t &eta, Float_t &phi, AliParticleContainer* tracks, AliClusterContainer* clusters, AliEmcalJet *jet = 0) const;
   void                        GetCone(TLorentzVector& lvRC,Float_t &pt, Float_t eta, Float_t phi, AliParticleContainer* tracks, AliClusterContainer* clusters) const;
   void                        GetPerpCone(TLorentzVector& lvRC, Float_t &pt, Float_t &eta, Float_t &phi, AliParticleContainer* tracks, AliClusterContainer* clusters, AliEmcalJet *jet = 0) const;
+  TLorentzVector              GetSubtractedVector(Double_t pt, Double_t eta, Double_t phi, Double_t e);
+  TLorentzVector              GetBkgVector(Double_t eta, Double_t phi, AliJetContainer *cont);
 
   Int_t                       fContainerBase;              // jets to be tagged
 

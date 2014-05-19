@@ -20,6 +20,7 @@ Bool_t ConfigD0
    Int_t                   aodFilterBit = 5,
    Float_t         	   trackDCAcutMax = 7.0,
    Float_t         	   trackDCAcutMin = 0.0,
+   Float_t		   trackDCAZcutMax = 2.0,
    Int_t           	   NTPCcluster = 70,
    Double_t                minpt = 0.15,
    Short_t     		   maxSisters = 2,
@@ -66,7 +67,7 @@ Bool_t ConfigD0
    cutQuality->SetTPCminNClusters(NTPCcluster);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(-0.8, 0.8);
-   cutQuality->SetDCAZmax(2.0);
+   cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(1);
    cutQuality->SetITSminNClusters(0);
    cutQuality->SetITSmaxChi2(1E+20);
@@ -100,7 +101,7 @@ Bool_t ConfigD0
    cutQuality->SetTPCminNClusters(NTPCcluster);
    cutQuality->SetPtRange(minpt,1E20);
    cutQuality->SetEtaRange(-0.8, 0.8);
-   cutQuality->SetDCAZmax(2.0);
+   cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(1);
    cutQuality->SetITSminNClusters(0);
    cutQuality->SetITSmaxChi2(1E+20);

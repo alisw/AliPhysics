@@ -113,8 +113,8 @@ AliJCORRANTask::AliJCORRANTask() :
     fPHOSGeom(0x0)
 {
   //Default constructor
-  for(Int_t i=0;i<kRangeTriggerTableAlice;i++)   fActiveTriggers[i]=" ";
-  for(Int_t i=0;i<kRangeTriggerTableJCorran;i++) fTriggerTableJCorran[i]=" ";
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableAlice;i++)   fActiveTriggers[i]=" ";
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableJCorran;i++) fTriggerTableJCorran[i]=" ";
 
   fIsRealOrMC.ResizeTo(1);
   fIsRealOrMC[0]=0;
@@ -156,8 +156,8 @@ AliJCORRANTask::AliJCORRANTask(const char *name, TString inputformat):
   // Constructor
   if(fDebug > 5) cout << "---- AliJCORRANTask Constructor ----"<<endl;
 
-  for(Int_t i=0;i<kRangeTriggerTableAlice;i++)   fActiveTriggers[i]=" ";
-  for(Int_t i=0;i<kRangeTriggerTableJCorran;i++) fTriggerTableJCorran[i]=" ";
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableAlice;i++)   fActiveTriggers[i]=" ";
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableJCorran;i++) fTriggerTableJCorran[i]=" ";
 
   fIsRealOrMC.ResizeTo(1);
 
@@ -198,10 +198,10 @@ AliJCORRANTask::AliJCORRANTask(const AliJCORRANTask& ap) :
     fPHOSGeom(ap.fPHOSGeom)
 { 
   // cpy ctor
-  for(int k=0; k < kRangeTriggerTableAlice; k++)
+  for(int k=0; k < AliJConst::kRangeTriggerTableAlice; k++)
     fActiveTriggers[k] = ap.fActiveTriggers[k];
 
-  for(int j=0; j < kRangeTriggerTableJCorran; j++)
+  for(int j=0; j < AliJConst::kRangeTriggerTableJCorran; j++)
     fTriggerTableJCorran[j] = ap.fTriggerTableJCorran[j];
 
   fIsRealOrMC.ResizeTo(1);
@@ -327,11 +327,11 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
     //Polarity of magnetic field in L3 solenoid
     Short_t l3MgFieldPolarity=0; // (LHC convention: +current -> +Bz)
     //Create internal JCorran trigger mask.  Mapping between trigger and trigger bit
-    fTriggerTableJCorran[kMinBiasTriggerBitJCorran]="Minimum Bias";//minimum bias occupies first trigger bit
-    fTriggerTableJCorran[kHighMultTriggerBitJCorran]="High Multiplicity";//high multiplicity trigger => second trigger bit
+    fTriggerTableJCorran[AliJConst::kMinBiasTriggerBitJCorran]="Minimum Bias";//minimum bias occupies first trigger bit
+    fTriggerTableJCorran[AliJConst::kHighMultTriggerBitJCorran]="High Multiplicity";//high multiplicity trigger => second trigger bit
     //=========== Fill Run header object ===============
     fAliRunHeader->SetRunNumber(runId);
-    fAliRunHeader->SetActiveTriggersJCorran(fTriggerTableJCorran,kRangeTriggerTableJCorran);
+    fAliRunHeader->SetActiveTriggersJCorran(fTriggerTableJCorran,AliJConst::kRangeTriggerTableJCorran);
     SetAliceTriggerDef(fAliRunHeader);//TODO for AOD
     SetAliceFilterMapDef(fAliRunHeader);// TODO for AOD
     //FOR ESD
@@ -342,7 +342,7 @@ void AliJCORRANTask::UserExec(Option_t* /*option*/)
       if(esd->GetCurrentL3() <0) l3MgFieldPolarity = -1;
       fAliRunHeader->SetL3Field(l3MgFieldPolarity, esd->GetMagneticField());
       const AliESDRun* esdRun = esd->GetESDRun();
-      for(Int_t triggerBit=0; triggerBit<kRangeTriggerTableAlice; triggerBit++){
+      for(Int_t triggerBit=0; triggerBit<AliJConst::kRangeTriggerTableAlice; triggerBit++){
         fActiveTriggers[triggerBit] = esdRun->GetTriggerClass(triggerBit);
       }
       fAliRunHeader->SetActiveTriggersAlice(fActiveTriggers);
@@ -452,7 +452,7 @@ void AliJCORRANTask::ReadESDTracks(AliESDEvent * esd)
       ctrack->SetTPCTrack( tpcTrack->Px(),  tpcTrack->Py(),  tpcTrack->Pz());
     }
     ReadESDPID( track, ctrack );
-    ctrack->SetParticleType(kNone);
+    ctrack->SetParticleType(AliJConst::kNone);
     ctrack->SetCharge(track->Charge());
     ctrack->SetFilterMap( filterMap );
 
@@ -549,7 +549,7 @@ void AliJCORRANTask::ReadAODTracks(const AliAODEvent * aod)
     AliJTrack * ctrack = new( (*fTrackList)[fTrackList->GetEntriesFast()] ) AliJTrack;
     ctrack->SetPxPyPzE(track->Px(), track->Py(), track->Pz(), 0 );
     //TODO if( fStoreTPCTrack )
-    ctrack->SetParticleType(kNone);
+    ctrack->SetParticleType(AliJConst::kNone);
     ctrack->SetCharge(track->Charge());
     ctrack->SetStatus(track->GetStatus());//
     ctrack->SetFlags( track->GetFlags() );
@@ -621,7 +621,7 @@ void AliJCORRANTask::ReadESDCaloClusters(const AliESDEvent* esd)
     //fRecoUtils->GetMaxEnergyCell(fEMCALGeo, emCells, c1, absID1, iSM, ieta1, iphi1, shared); 
 
     AliJPhoton *pht = new( (*fPhotonList)[nPhotons++] ) AliJPhoton;
-    pht->SetParticleType(kNone);//kPhoton);
+    pht->SetParticleType(AliJConst::kNone);//kPhoton);
     pht->SetChi2(c1->Chi2());
     pht->SetPID(c1->GetPID());
     Float_t pos[3];
@@ -770,13 +770,13 @@ UInt_t AliJCORRANTask::ConvertTriggerMask(){
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & AliVEvent::kMB){
     // minimum bias TBit 0 
-    triggerMaskJC += (1<<kMinBiasTriggerBitJCorran); 
+    triggerMaskJC += (1<<AliJConst::kMinBiasTriggerBitJCorran); 
   }
 
   if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
      ->IsEventSelected() & AliVEvent::kHighMult){
     //high multiplicity trigger TBit 1 
-    triggerMaskJC += (1<<kHighMultTriggerBitJCorran);
+    triggerMaskJC += (1<<AliJConst::kHighMultTriggerBitJCorran);
   }
 
   return triggerMaskJC;

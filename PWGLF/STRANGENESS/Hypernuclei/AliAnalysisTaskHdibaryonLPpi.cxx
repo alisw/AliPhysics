@@ -1408,7 +1408,7 @@ void AliAnalysisTaskHdibaryonLPpi::UserExec(Option_t *)
 
 	      //fHistNdim = new THnSparseF("fHistNdim","THnS;InvMass, InvMassLambda, pointingAngle, armPoAlpha, armPoQt, pTL, pTH, d0p, d0n, dcaHd, dca, decayL, cosPA, centr, multi, mcinf;InvMassH", 16,binsD01,xminD01,xmaxD01);
 
-	    	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, refMultTpc, mcStatus};
+	    Double_t vec[16]={hDibaryon.M(), lInvMassLambda, pointingAngleH, alfa, qt, lPtLambda, hDibaryon.Pt(), posPionKF.GetDistanceFromVertex(primVtx), protonKF.GetDistanceFromVertex(primVtx), dca, protonKF.GetDistanceFromVertex(posPionKF), TMath::Cos(pointingAngleH), centrPerc, static_cast<Double_t>(refMultTpc), static_cast<Double_t>(mcStatus)};
 		      fHistNdim->Fill(vec);
 
 	  }

@@ -3,6 +3,7 @@
 # include "AliFMDCorrAcceptance.h"
 # include "AliFMDCorrSecondaryMap.h"
 # include "AliFMDCorrELossFit.h"
+# include "AliFMDCorrNoiseGain.h"
 # include "AliForwardUtil.h"
 # include "AliForwardCorrectionManager.h"
 # include "AliLog.h"
@@ -15,6 +16,7 @@ class TObject;
 class AliFMDCorrAcceptance;
 class AliFMDCorrSecondaryMap;
 class AliFMDCorrELossFit;
+class AliFMDCorrNoiseGain;
 #include <TString.h>
 #endif
 
@@ -28,7 +30,7 @@ public:
    */
   CorrDrawer() 
   {
-    fELossExtra = "forward_eloss.root";
+    fELossExtra = ""; // forward_eloss.root";
     fMinQuality = 8;
   }
   /** 
@@ -154,6 +156,8 @@ public:
       AppendName(name, AliForwardCorrectionManager::kAcceptance);
     if (what & AliForwardCorrectionManager::kELossFits) 
       AppendName(name, AliForwardCorrectionManager::kELossFits);
+    if (what & AliForwardCorrectionManager::kNoiseGain) 
+      AppendName(name, AliForwardCorrectionManager::kNoiseGain);
     if (what & AliForwardCorrectionManager::kVertexBias) 
       Warning("CorrDrawer","Vertex bias not implemented yet");
     if (what & AliForwardCorrectionManager::kDoubleHit) 
@@ -164,7 +168,8 @@ public:
     // Filter the ones we can handle 
     UShort_t flags = what & (AliForwardCorrectionManager::kELossFits|
 			     AliForwardCorrectionManager::kAcceptance|
-			     AliForwardCorrectionManager::kSecondaryMap);
+			     AliForwardCorrectionManager::kSecondaryMap|
+			     AliForwardCorrectionManager::kNoiseGain);
     if (!mgr.Init(runNo, sys, sNN, field, mc, sat, flags, true)) {
       Error("CorrDrawer", "Failed to initialize for flags=0x%02x"
 		"run=%lu, sys=%hu, sNN=%hu, field=%hd, mc=%d, sat=%d",
@@ -200,6 +205,8 @@ public:
       DrawIt(mgr.GetAcceptance(), details);
     if (what & AliForwardCorrectionManager::kELossFits)
       DrawIt(mgr.GetELossFit(), details, few);
+    if (what & AliForwardCorrectionManager::kNoiseGain)
+      DrawIt(mgr.GetNoiseGain(), details);
 
     // Done
     CloseCanvas();
@@ -333,6 +340,19 @@ public:
    * @param fits Energy loss fits
    * @param pdf  If true, do multiple plots. Otherwise a single summary plot
    */
+  virtual void Summarize(const AliFMDCorrNoiseGain* corr, Bool_t pdf=true) 
+  { 
+    CreateCanvas(CanvasName("noisegain.pdf"), true, pdf);
+    DrawIt(corr, pdf); 
+    if (pdf) CloseCanvas();
+  }
+  /** 
+   * Draw a single summary plot multiple plots of the energy loss
+   * fits.  A new canvas is created for this.
+   * 
+   * @param fits Energy loss fits
+   * @param pdf  If true, do multiple plots. Otherwise a single summary plot
+   */
   virtual void Summarize(const AliFMDCorrELossFit* fits, Bool_t pdf=true) 
   { 
     CreateCanvas(CanvasName("elossfits.pdf"), true, pdf);
@@ -351,10 +371,10 @@ public:
    *
    * @deprecated Use Run instead 
    */
-  static void Summarize(const TString& what   = TString(""), 
-			Bool_t         /*mc*/ = false,
-			const TString& output = TString("forward_eloss.root"), 
-			const TString& local  = TString("fmd_corrections.root"),
+  static void Summarize(const TString& what   = "", 
+			Bool_t         mc     = false,
+			const TString& output = "",
+			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
   {
     CorrDrawer* drawer = new CorrDrawer;
@@ -374,8 +394,8 @@ public:
    * @deprecated Use Run instead 
    */
   static void Summarize(UShort_t       what, 
-			Bool_t         /*mc*/ = false,
-			const TString& output = "forward_eloss.root", 
+			Bool_t         mc = false,
+			const TString& output = "",
 			const TString& local  = "fmd_corrections.root",
 			Option_t*      options= "")
   {
@@ -399,6 +419,8 @@ protected:
       what.Append("acceptance"); break;
     case AliForwardCorrectionManager::kELossFits:		  
       what.Append("elossfits"); break;
+    case AliForwardCorrectionManager::kNoiseGain:		  
+      what.Append("noisegain"); break;
     default:
       what.Append("unknown"); break;
     }
@@ -700,6 +722,46 @@ protected:
     if (DrawVtxStacks(stacks, 3.5)) {
       PrintCanvas("#LTsecondary map#GT");
     }
+  }
+  virtual void DrawIt(const AliFMDCorrNoiseGain* corr, bool details) 
+  {
+    if (!corr) {
+      Warning("CorrDrawer","No noise-gain correction available");
+      return;
+    }
+
+    if (!fCanvas) {
+      Warning("CorrDrawer", "No canvas");
+      return;
+    }
+
+    DivideForRings(false,false);
+    
+    for (UShort_t d = 1; d <= 3; d++) { 
+      UShort_t nQ = d == 1 ? 1 : 2;
+      for (UShort_t q = 0; q < nQ; q++) { 
+	Char_t   r  = q == 0 ? 'I' : 'O';
+	UShort_t nS = q == 0 ?  20 :  40;
+	UShort_t nT = q == 0 ? 512 : 256;
+	
+	TH2* h = new TH2D(Form("fmd%d%c", d, r),
+			  Form("FMD%d%c", d, r), 
+			  nT, -.5, nT-.5,  nS, -.5, nS-.5);
+	h->SetDirectory(0);
+	h->SetXTitle("Strip");
+	h->SetYTitle("Sector");
+
+	for (UShort_t s = 0; s < nS; s++) { 
+	  for (UShort_t t = 0; t < nT; t++) { 
+	    Float_t c = corr->Get(d,r,s,t);
+	    h->Fill(t,s,c);
+	  }
+	}
+	h->GetZaxis()->SetRangeUser(0,0.05);
+	DrawInRingPad(d,r,h,"COLZ");
+      }
+    }
+    PrintCanvas("Noise correction");
   }
   /** 
    * Draw the energy loss fits correction 

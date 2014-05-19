@@ -347,8 +347,8 @@ void AlidNdPtEfficiency::FillHistograms(AliESDtrack *const esdTrack, AliStack *c
   }
 
   // fill histo
-  Double_t vRecMCTrackHist[6] = { eta,phi,pt,isPrim,charge,isMatch }; 
-  Double_t vRecMCTrackHistTPCITS[7] = { eta,phi,pt,isPrim,charge,isMatch,isTPC }; 
+  Double_t vRecMCTrackHist[6] = { eta,phi,pt,static_cast<Double_t>(isPrim),static_cast<Double_t>(charge),static_cast<Double_t>(isMatch) }; 
+  Double_t vRecMCTrackHistTPCITS[7] = { eta,phi,pt,static_cast<Double_t>(isPrim),static_cast<Double_t>(charge),static_cast<Double_t>(isMatch),static_cast<Double_t>(isTPC) }; 
 
   if(isITSTPC) {
     fRecMCTrackHistITSTPC->Fill(vRecMCTrackHist);

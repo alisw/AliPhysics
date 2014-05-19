@@ -32,7 +32,8 @@ public:
     kSteps             = 0x020, 
     kResults           = 0x040, 
     kCentral           = 0x080,
-    kNormal            = 0x0FF
+    kESDFixer          = 0x100,
+    kNormal            = 0x1FF
   };
   SummaryAODDrawer() 
     : SummaryDrawer(),
@@ -90,6 +91,7 @@ public:
 
     // --- Do each sub-algorithm -------------------------------------
     if (what & kEventInspector)    DrawEventInspector(fSums);
+    if (what & kESDFixer)          DrawESDFixer(fSums);
     if (what & kSharingFilter)     DrawSharingFilter();
     if (what & kDensityCalculator) DrawDensityCalculator();
     if (what & kCorrector)         DrawCorrector();
@@ -254,6 +256,7 @@ protected:
       UShort_t det = UShort_t(name[3]-48);
       Char_t   rng = name[4];
       Color_t  col = RingColor(det, rng);
+      hist->SetDirectory(0);
       hist->SetTitle(name);
       hist->SetMarkerStyle(20);
       hist->SetMarkerColor(col);
@@ -281,15 +284,17 @@ protected:
   
     Double_t y = .95;
     Bool_t   angle=false, lowSignal=false, disabled=false;
-
+    Int_t    nFiles = 0;
     if (GetParameter(c, "angle", angle))
       DrawParameter(y, "Angle correct", (angle ? "yes" : "no")); 
     if (GetParameter(c, "lowSignal", lowSignal))
       DrawParameter(y, "Lower signal",  (lowSignal ? "yes" : "no"));
-    TParameter<int>* nFiles = 
+    TParameter<int>* pnFiles = 
       static_cast<TParameter<int>*>(GetObject(c, "nFiles"));
-    if (nFiles)
-      DrawParameter(y, "# files merged", Form("%d", nFiles->GetVal()));    
+    if (pnFiles) {
+      nFiles = pnFiles->GetVal();
+      DrawParameter(y, "# files merged", Form("%d", nFiles));    
+    }
     if (GetParameter(c, "disabled", disabled)) 
       DrawParameter(y, "Merging disabled", (disabled ? "yes" : "no"));
 
@@ -303,15 +308,15 @@ protected:
 	DrawParameter(y, "Simple method", (simple ? "yes" : "no"));
       if (GetParameter(c, "sumThree", three)) 
 	DrawParameter(y, "3-strip merging", (three ? "yes" : "no"));
-    
+      
       TCollection* lc = GetCollection(c, "lCuts");
       TCollection* hc = GetCollection(c, "hCuts");
       lm              = PrintCut(lc, y, "Low cut");
       hm              = PrintCut(hc, y, "High cut");
       hLow            = GetH2(c, "lowCuts");
       hHigh           = GetH2(c, "highCuts");
-      // if (hLow  && nFiles) hLow->Scale(1. / nFiles->GetVal());
-      // if (hHigh && nFiles) hHigh->Scale(1. / nFiles->GetVal());
+      if (hLow  && nFiles > 0) hLow->Scale(1. / nFiles);
+      if (hHigh && nFiles > 0) hHigh->Scale(1. / nFiles);
       DrawCut(fBody, 2, hLow);
       DrawCut(fBody, 3, hHigh);
     }
@@ -395,9 +400,10 @@ protected:
 	  nB->GetXaxis()->SetRangeUser(0,2); 
 	  nB->GetYaxis()->SetRangeUser(0,2); 
 	}
-	DrawInPad(fBody, 5, nB, "colz", kLogz);
+	DrawInPad(fBody, 5, nB, "colz cont3", kLogz);
 	DrawInPad(fBody, 5, GetH2(sc, "neighborsAfter"), "col same", kLogz,
 		  "Correlation of neighbors before and after merging");
+
 	DrawInPad(fBody, 6, GetH2(sc, "beforeAfter"),    "colz",   kLogz);
 	
 	PrintCanvas(Form("Sharing filter - %s", *ptr));
@@ -544,7 +550,7 @@ protected:
   
     Double_t y = .9;
     Int_t maxParticles=0, phiAcceptance=0, etaLumping=0, phiLumping=0;
-    Bool_t method=false, recalcEta=false, recalcPhi=false;
+    Bool_t method=false, recalcPhi=false;
     Double_t maxOutliers=0, outlierCut=0;
     Double_t size = fLandscape ? 0.05 : 0.03;
   
@@ -560,8 +566,6 @@ protected:
 		    Form("%2d #times %2d", phiLumping, etaLumping),  size);
     if (GetParameter(c, "method", method))
       DrawParameter(y, "Method", (method ? "Poisson" : "#DeltaE"),   size); 
-    if (GetParameter(c, "recalcEta", recalcEta))
-      DrawParameter(y, "Recalculate #eta",(recalcEta ? "yes" : "no"),size); 
     if (GetParameter(c, "recalcPhi", recalcPhi))
       DrawParameter(y, "Recalculate #phi",(recalcPhi ? "yes" : "no"),size); 
     if (GetParameter(c, "maxOutliers", maxOutliers))
@@ -599,9 +603,7 @@ protected:
     DrawInPad(p, 2, accI); 
     DrawInPad(p, 2, accO,  "same", kLegend|kNorth|kCenter); 
     DrawCut(p, 3, lCuts);
-    // DrawInPad(p, 3, lCuts, "colz");
     DrawCut(p, 4, maxW);
-    // DrawInPad(p, 4, maxW,  "colz");
   
     PrintCanvas("Density calculator");
 
@@ -627,6 +629,8 @@ protected:
       
       DrawInPad(fBody, 1, corr,    "colz",        kLogz);
       DrawInPad(fBody, 1, corrOut, "same",        kLogz);
+      ShowSliceFit(true, corr, 10, fBody, 1, kLogz, outlierCut);
+
       DrawInPad(fBody, 2, diff,    "HIST E",      kLogy);
       DrawInPad(fBody, 2, diffOut, "HIST E SAME", kLogy|kLegend|kNorth|kWest);
       DrawInPad(fBody, 3, occ,      "",           kLogy);
@@ -674,7 +678,6 @@ protected:
       }
       DrawInPad(fBody, 6, GetH2(sc, "phiAcc"), "colz",   kLogz);
     
-      ShowSliceFit(true, corr, 10, fBody, 1, kLogz, outlierCut);
 
       if (diff && diffOut) { 
 	fBody->cd(2);
@@ -1360,6 +1363,7 @@ protected:
     TH1* c1 = GetH1(central, "dNdeta_");
     TH1* f2 = GetH1(forward, "dNdeta");
     TH1* c2 = GetH1(central, "dNdeta");
+    if (!f1 || !c1 || !f2 || !c2) return; 
     f1->SetLineColor(kBlack);
     f2->SetLineColor(kBlack);
     c1->SetLineColor(kBlack);

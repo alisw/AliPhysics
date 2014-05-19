@@ -68,6 +68,10 @@ Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(const TParticle& p) const
 {
   return TMath::Sin(p.Theta())*p.Energy() > fCuts->GetReconstructedEmcalClusterEnergyCut();
 }
+Bool_t AliAnalysisEtSelectorEmcal::PassMinEnergyCut(Double_t e) const
+{
+  return e > fCuts->GetReconstructedEmcalClusterEnergyCut();
+}
 
 Bool_t AliAnalysisEtSelectorEmcal::PassDistanceToBadChannelCut(const AliESDCaloCluster& ) const
 {

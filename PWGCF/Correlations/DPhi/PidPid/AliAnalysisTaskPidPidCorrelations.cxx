@@ -2134,8 +2134,8 @@ void AliAnalysisTaskPidPidCorrelations::UserCreateOutputObjects()
   
 
   Int_t binsHistoPair[kTrackVariablesPair]   = { iBinPair[0]	, iBinPair[1]	,	iBinPair[2]	,	iBinPair[3]	,	iBinPair[4]	};
-  Double_t minHistoPair[kTrackVariablesPair] = { ptMin		, ptMin	 	,	-0.5*TMath::Pi()	,	-fDeltaEtaMax	,	zvtxMin		};
-  Double_t maxHistoPair[kTrackVariablesPair] = { ptMax		, ptMax	 	,	1.5*TMath::Pi()	,	fDeltaEtaMax	,	zvtxMax		};
+  Double_t minHistoPair[kTrackVariablesPair] = { static_cast<Double_t>(ptMin)		, static_cast<Double_t>(ptMin)	 	,	-0.5*TMath::Pi()	,	static_cast<Double_t>(-fDeltaEtaMax)	,	static_cast<Double_t>(zvtxMin)		};
+  Double_t maxHistoPair[kTrackVariablesPair] = { static_cast<Double_t>(ptMax)		, static_cast<Double_t>(ptMax)	 	,	1.5*TMath::Pi()	,	static_cast<Double_t>(fDeltaEtaMax)	,	static_cast<Double_t>(zvtxMax)		};
 
 
 /*

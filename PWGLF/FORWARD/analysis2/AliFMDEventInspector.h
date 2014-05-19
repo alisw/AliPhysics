@@ -88,6 +88,13 @@ public:
     kSatellite,
     kOffline
   };
+  enum EVtxType { 
+    kNormal, 
+    kpA2012, 
+    kpA2013, 
+    kPWGUD, 
+    kDisplaced
+  };
   /** 
    * Centrality methods 
    */
@@ -209,17 +216,27 @@ public:
    */
   void SetMaxVzErr(Double_t c=0.1) { fMaxVzErr = c; }
   /** 
+   * Set the vertex method to use 
+   * 
+   * @param t Method 
+   */
+  void SetVertexMethod(EVtxType t) { fVtxMethod = t; }
+  /** 
    * Use the first physics vtx code.   
    * 
    * @param use Use it or not 
+   * @deprecated Use SetVertexMethod 
    */
-  void SetUseFirstPhysicsVtx(Bool_t use) {fUseFirstPhysicsVertex = use; }
+  void SetUseFirstPhysicsVtx(Bool_t use) {
+    SetVertexMethod(use ? kPWGUD : kNormal); }
  /** 
    * Use the first physics vtx code.   
    * 
    * @param use Use it or not 
+   * @deprecated Use SetVertexMethod 
    */
-  void SetpA2012Vtx(Bool_t use) {fUsepA2012Vertex= use; }
+  void SetpA2012Vtx(Bool_t use) {
+    SetVertexMethod(use ? kpA2012 : kNormal); }
  /** 
    * Use the 2012 pA vtx code.   
    * 
@@ -249,12 +266,11 @@ public:
    * Enable selection of displaced vertices. 
    * 
    * @param use whether to use
+   * @deprecated Use SetVertexMethod 
    */
-  void SetUseDisplacedVertices(Bool_t use=true)
-  {
-    fUseDisplacedVertices = use;
-  }  
-  Bool_t IsUseDisplacedVertices() const { return fUseDisplacedVertices; }
+  void SetUseDisplacedVertices(Bool_t use=true) { 
+    SetVertexMethod(use ? kDisplaced : kNormal); }  
+  Bool_t IsUseDisplacedVertices() const { return AllowDisplaced(); }
   /** 
    * Set the lower centrality cut - if negative, do not use 
    *
@@ -447,6 +463,7 @@ protected:
    * @return Reference to this object
    */
   AliFMDEventInspector& operator=(const AliFMDEventInspector& o);
+  Bool_t AllowDisplaced() const { return fVtxMethod == kDisplaced; }
   /** 
    * Cache the configure trigger classes from the physis selection.  
    * 
@@ -588,7 +605,24 @@ protected:
    * @return status
    */
   virtual EVtxStatus CheckpA2012Vertex(const AliESDEvent& esd, 
-				     TVector3& ip) const;
+				       TVector3& ip) const;
+  /** 
+   * Check the vertex. That is
+   *
+   * - Check if we have an normal vertex and that it's status is OK 
+   * - Check that we have enough contributors 
+   * - Check if we have an SPD vertex
+   * - Check that we have enough contributors 
+   * - If from Z-vertexer, check the resolution
+   * - Check that the two found vertices are within 0.5cm of each other
+   * 
+   * @param esd Data 
+   * @param ip  On return, the coordinates of the IP
+   * 
+   * @return status
+   */
+  virtual EVtxStatus CheckpA2013Vertex(const AliESDEvent& esd, 
+				       TVector3& ip) const;
   /** 
    * Check the vertex for pA 2012 settings. That is
    *
@@ -598,10 +632,6 @@ protected:
    * 
    * @return true if the vertex was found and met the requirements
    */
-
-
-
-
   virtual EVtxStatus CheckVertex(const AliESDEvent& esd, TVector3& ip) const;
   /** 
    * Read centrality from event 
@@ -637,18 +667,19 @@ protected:
   Int_t    fDebug;                //  Debug level 
   TAxis*   fCentAxis;             // Centrality axis used in histograms
   TAxis    fVtxAxis;              // IP_z Axis 
-  Bool_t   fUseFirstPhysicsVertex;//Use the vtx code from p+p first physics
+  EVtxType fVtxMethod;            // Vertex method to use 
+  // Bool_t   fUseFirstPhysicsVertex;//Use the vtx code from p+p first physics
   Bool_t   fUseV0AND;             // Use the vtx code from p+p first physics
   UShort_t fMinPileupContrib;     // Min contributors to 2nd pile-up IP
   Double_t fMinPileupDistance;    // Min distance of 2nd pile-up IP
-  Bool_t   fUseDisplacedVertices; // Analyze displaced vertices?
+  // Bool_t   fUseDisplacedVertices; // Analyze displaced vertices?
   AliDisplacedVertexSelection fDisplacedVertex; //Displaced vertex selector
   TList    fCollWords;            //! Configured collision words 
   TList    fBgWords;              //! Configured background words 
   TString  fCentMethod;           // Centrality method
   Double_t fMinCent;              // min centrality
   Double_t fMaxCent;              // max centrailty
-  Bool_t   fUsepA2012Vertex;      // flag to use pA2012 Veretx selection
+  // Bool_t   fUsepA2012Vertex;      // flag to use pA2012 Veretx selection
   ULong_t  fRunNumber;            // Current run number 
   Bool_t   fMC;                   // Is this MC input
   Short_t  fProdYear;             // Production year 
@@ -657,7 +688,7 @@ protected:
   Int_t    fProdSVN;              // AliROOT revision used in production
   Bool_t   fProdMC;               // True if anchor production
 
-  ClassDef(AliFMDEventInspector,12); // Inspect the event 
+  ClassDef(AliFMDEventInspector,13); // Inspect the event 
 };
 
 #endif

@@ -334,42 +334,60 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
 
   switch (pdg) {
   case 211:
-    if (fIsSum) return "(#pi^{+} + #pi^{-})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(#pi^{+} + #pi^{-})/2";
+      return "(#pi^{+} + #pi^{-})";
+    }
     return "#pi^{+}";
     break;
   case -211:
     return "#pi^{-}";
     break;
   case 321:
-    if (fIsSum) return "(K^{+} + K^{-})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(K^{+} + K^{-})/2";
+      return "(K^{+} + K^{-})";
+    }
     return "K^{+}";
     break;
   case -321:
     return "K^{-}";
     break;
   case 2212:
-    if (fIsSum) return "(p + #bar{p})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(p + #bar{p})/2";
+      return "(p + #bar{p})";
+    }
     return "p";
     break;
   case -2212:
     return "#bar^{p}";
     break;
   case 3122:
-    if (fIsSum) return "(#Lambda + #bar{#Lambda})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(#Lambda + #bar{#Lambda})/2";
+      return "(#Lambda + #bar{#Lambda})";
+    }
     return "#Lambda";
     break;
   case -3122:
     return "#bar{#Lamnba}";
     break;
   case 3312:
-    if (fIsSum) return "(#Xi^{-} + #bar{#Xi}^{+})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(#Xi^{-} + #bar{#Xi}^{+})/2";
+      return "(#Xi^{-} + #bar{#Xi}^{+})";
+    }
     return "#Xi^{-}";
     break;
   case -3312:
     return "#bar{#Xi}^{+}";
     break;
   case 3334:
-    if (fIsSum) return "(#Omega^{-} + #bar{#Omega}^{+})";
+    if (fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(#Omega^{-} + #bar{#Omega}^{+})/2";
+      return "(#Omega^{-} + #bar{#Omega}^{+})";
+    }
     return "#Omega^{-}";
     break;
   case -3334:
@@ -382,28 +400,40 @@ const char * AliParticleYield::GetLatexName(Int_t pdg) const {
     return "#phi";
     break;
   case 313:
-    if(fIsSum) return "(K* + #bar{K*})";
+    if(fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(K* + #bar{K*})/2";
+      return "(K* + #bar{K*})";
+    }
     return "K*";
     break;
   case -313:
     return "#bar{K*}";
     break;
   case 1000010020:
-    if(fIsSum) return "(d + #bar{d})";
+    if(fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(d + #bar{d})/2";
+      return "(d + #bar{d})";
+    }
     return "d";// Deuteron
     break;
   case -1000010020:
     return "#bar{d}";// Deuteron
     break;
   case 1000020030:
-    if(fIsSum) return "(^{3}He + #bar{^{3}He})";
+    if(fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "(^{3}He + #bar{^{3}He})/2";
+      return "(^{3}He + #bar{^{3}He})";
+    }
     return "^{3}He";
     break;
   case -1000020030:
     return "#bar{^{3}He}";
     break;
   case 1010010030:
-    if(fIsSum) return "{}^{3}_{#Lambda}H + {}^{3}_{#Lambda}#bar{H}";
+    if(fIsSum) {
+      if (fMeasurementType & kTypeAveragePartAntiPart ) return "({}^{3}_{#Lambda}H + {}^{3}_{#Lambda}#bar{H})/2";
+      return "{}^{3}_{#Lambda}H + {}^{3}_{#Lambda}#bar{H}";
+    }
     return "{}^{3}_{#Lambda}H";
     break;
   case -1010010030:
@@ -615,9 +645,15 @@ Bool_t AliParticleYield::CheckTypeConsistency() const {
     isOK= kFALSE;
   } else if (!(fMeasurementType & kTypeOnlyTotError) && (!GetStatError() || !GetSystError())) {
     AliError("Stat or syst errors are null");
+    isOK = kFALSE;
   } 
   if((fMeasurementType & kTypeLinearInterpolation) && (fMeasurementType & kTypeAverageAndRefit) && (fMeasurementType & kTypeExtrPionRatio)) {
     AliError("Only one out of the \"Liner interpolation\",  \"Average and refit\", \"Extrapolated with constant ratio to pions\" bits can be set"); 
+    isOK = kFALSE;
+  }
+  if((fMeasurementType & kTypeAveragePartAntiPart) && !fIsSum) {
+    AliError("Average part antipart set, but fIsSum is 0! This type bit should only be set for sums.");
+    isOK = kFALSE;
   }
 
   return isOK;
@@ -644,11 +680,14 @@ void AliParticleYield::Print (Option_t *opt) const {
   } else {
     Printf("-------------------------------");
     CheckTypeConsistency();
+    TString sumType = "";
+    if      (fIsSum && (fMeasurementType & kTypeAveragePartAntiPart)) sumType = "(particle + antiparticle)/2";
+    else if (fIsSum && !(fMeasurementType & kTypeAveragePartAntiPart)) sumType = "particle + antiparticle";
     if(fMeasurementType & kTypeParticleRatio) {
-      Printf("%s [%s] (%d/%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fPdgCode2, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+      Printf("%s [%s] (%d/%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fPdgCode2, sumType.Data(), fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
     }
     else{ 
-      Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, fIsSum ? "particle + antiparticle" : "", fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
+      Printf("%s [%s] (%d) %s %s", fPartName.Data(), GetLatexName(), fPdgCode, sumType.Data(), fTag.Length() ? Form("[%s]", fTag.Data()) : "" );
     }
     TString measurementType = IsTypeMeasured() ? "Measured" : ""; 
     if(fMeasurementType & kTypeLinearInterpolation) measurementType += "Interpolated";
@@ -923,7 +962,10 @@ AliParticleYield * AliParticleYield::Divide (AliParticleYield * part1, AliPartic
   }
   
   if(correlatedError) {
+    std::cout << "Subtracting correlated error " << correlatedError << std::endl;
+    std::cout << "Before : " << syst << "[" << syst/value*100 <<"%]"<< std::endl;    
     syst = TMath::Sqrt(syst/value*syst/value -correlatedError*correlatedError)*value; // FIXME: this line was never tested
+    std::cout << "After  : " << syst << "[" << syst/value*100 <<"%]"<< std::endl;    
   }
 
   AliParticleYield * part = new AliParticleYield();

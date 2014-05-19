@@ -28,7 +28,8 @@ TH1 * hK0SSyst[7]   ;
 
 void AverageAndExtrapolate () {
 
-  LoadStuff(0); // True PbPb, False pPb
+  // MF COMMON LIBRARIES SHOULD NOT BE LOADED FOR THIS MACRO TO WORK
+  LoadStuff(1); // True PbPb, False pPb
 
   //  PrintYieldAndError(hSpectraCentr_sys[0][kMyProton][0], hSpectraCentr_stat[0][kMyProton][0], 0, mass[2]);
 
@@ -38,7 +39,7 @@ void AverageAndExtrapolate () {
   //  AverageAndExtrapolate("pions_pos_0020");
   //  AverageAndExtrapolate("pions_pos_0010");
   // AverageAndExtrapolate("pions_neg_0010");
-  AverageAndExtrapolate("pions_sum_0010");
+  //  AverageAndExtrapolate("pions_sum_0010");
   // AverageAndExtrapolate("kaons_pos_0010");
   // AverageAndExtrapolate("kaons_neg_0010");
   // AverageAndExtrapolate("protons_pos_0010");
@@ -51,6 +52,13 @@ void AverageAndExtrapolate () {
   // AverageAndExtrapolate("kaons_neg_6080");
   // AverageAndExtrapolate("protons_pos_6080");
   // AverageAndExtrapolate("protons_neg_6080");
+
+  //  AverageAndExtrapolate("pions_pos_2040");
+  AverageAndExtrapolate("pions_neg_2040");
+  AverageAndExtrapolate("kaons_pos_2040");
+  AverageAndExtrapolate("kaons_neg_2040");
+  AverageAndExtrapolate("protons_pos_2040");
+  AverageAndExtrapolate("protons_neg_2040");
   
 }
 
@@ -442,6 +450,122 @@ void AverageAndExtrapolate(TString what) {
     TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_6080");
 
     hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[1]);
+
+    
+  }
+
+  if(what == "pions_pos_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyPion][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyPion][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyPion][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyPion][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[0]);
+
+    
+  }
+  if(what == "pions_neg_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyPion][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyPion][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyPion][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyPion][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[0]);
+
+    
+  }
+    if(what == "kaons_pos_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyKaon][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyKaon][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyKaon][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyKaon][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[1]);
+
+    
+  }
+  if(what == "kaons_neg_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyKaon][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyKaon][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyKaon][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyKaon][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[1]);
+
+    
+  }
+
+  if(what == "protons_pos_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyProton][kMyPos]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyProton][kMyPos]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyProton][kMyPos]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyProton][kMyPos]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[2]);
+
+    
+  }
+  if(what == "protons_neg_2040"){ 
+
+    TObjArray * arrStat = new TObjArray();
+    arrStat->Add(hSpectraCentr_stat[3][kMyProton][kMyNeg]);
+    arrStat->Add(hSpectraCentr_stat[4][kMyProton][kMyNeg]);
+    
+    TObjArray * arrSyst = new TObjArray();
+    arrSyst->Add(hSpectraCentr_sys [3][kMyProton][kMyNeg]);
+    arrSyst->Add(hSpectraCentr_sys [4][kMyProton][kMyNeg]);
+    
+    Double_t weights[] = {0.5, 0.5};
+    
+    TH1 * hstat = ReweightSpectra(arrStat, weights, 0, "_2040");
+    TH1 * hsyst = ReweightSpectra(arrSyst, weights, 1, "_2040");
+
+    hyieldmean = PrintYieldAndError(hsyst, hstat, 0, mass[2]);
 
     
   }

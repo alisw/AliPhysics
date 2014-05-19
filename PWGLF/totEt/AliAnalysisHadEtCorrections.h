@@ -153,7 +153,8 @@ public:
     //Returns the factor one needs to multiply by to get the corrected et for all constant (not pt dependent) factors
     Float_t GetConstantCorrections(Bool_t totEt, Float_t ptcut, TString type) const;
     Float_t GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const;
-
+    void GetTotalEt(Float_t hadEt, Float_t hadEtErr, Bool_t isTPC, Float_t rawEmEt, Float_t rawEmEtError, Float_t scale, Float_t energyScaleError, Float_t minEt, Float_t minEtError, Float_t nonLinError, Float_t neutronCorr, Float_t neutronError, Float_t hadronCorr, Float_t hadronError, Float_t kaonCorr, Float_t kaonError, Float_t secondaryCorr, Float_t secondaryError, Float_t &totEt, Float_t &totEtError, Float_t &totEtStatError);
+    void SetSpectraCalcErrorCorrelation(Float_t val){fSpectraCalcErrorCorrelation = val;}
 
     AliAnalysisHadEtCorrections(const AliAnalysisHadEtCorrections *g) ; // cpy ctor
     //AliAnalysisHadEtCorrections & operator = (const AliAnalysisHadEtCorrections & g) ;//cpy assignment
@@ -215,7 +216,7 @@ protected:
     Int_t fDataSet;//integer to keep track of data set
     TString fProduction;//Short version name of production
     TString fProductionDescription;//Long description of production
-
+    Float_t fSpectraCalcErrorCorrelation;//Correlation between systematic errors calculated from spectra, as a fraction
 
 
 private:

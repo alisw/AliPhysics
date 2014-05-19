@@ -913,7 +913,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
      Double_t vRecEventHist1[4] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),centralityF};
      fRecEventHist1->Fill(vRecEventHist1);
 
-     Double_t vRecEventHist2[3] = {vtxESD->GetZv(),multMBTracks,centralityF};
+     Double_t vRecEventHist2[3] = {vtxESD->GetZv(),static_cast<Double_t>(multMBTracks),centralityF};
      fRecEventHist2->Fill(vRecEventHist2);
 
    } // triggered and event vertex
@@ -924,7 +924,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
      // event level corrections (zv,N_MB)
      //
      // all inelastic
-     Double_t vEventMatrix[3] = {vtxMC[2],multMBTracks,centralityF};
+     Double_t vEventMatrix[3] = {vtxMC[2],static_cast<Double_t>(multMBTracks),centralityF};
      fGenEventMatrix->Fill(vEventMatrix); 
      if(isEventTriggered) fTriggerEventMatrix->Fill(vEventMatrix);
      if(isEventOK && isEventTriggered) fRecEventMatrix->Fill(vEventMatrix);
@@ -982,7 +982,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
          Double_t vRecMCEventHist1[4] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2], centralityF};
          fRecMCEventHist1->Fill(vRecMCEventHist1);//
 
-         Double_t vRecMCEventHist2[4] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetZv()-vtxMC[2],multMBTracks, centralityF};
+         Double_t vRecMCEventHist2[4] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multMBTracks), centralityF};
          fRecMCEventHist2->Fill(vRecMCEventHist2);
 
        }//
@@ -1040,7 +1040,7 @@ void AlidNdPtAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent *cons
                  // fill control histogram
                  if(fHistogramsOn) {
                    Int_t pid = AlidNdPtHelper::ConvertPdgToPid(particle);
-                   Double_t vMCMultRecTrackHist1[4] = {particle->Pt(), particle->Eta(), pid, centralityF};
+                   Double_t vMCMultRecTrackHist1[4] = {particle->Pt(), particle->Eta(), static_cast<Double_t>(pid), centralityF};
 		   fMCMultRecTrackHist1->Fill(vMCMultRecTrackHist1);
 		 }
 	       }
@@ -1098,19 +1098,19 @@ void AlidNdPtAnalysisPbPb::FillHistograms(TObjArray *const allChargedTracks,Int_
      Int_t label = TMath::Abs(track->GetLabel());
      for(Int_t iAll=0; iAll<multAll; ++iAll) {
        if(label == labelsAll[iAll]) {
-         Double_t v1[3] = {track->Pt(), multAll, centralityF}; 
+         Double_t v1[3] = {track->Pt(), static_cast<Double_t>(multAll), centralityF}; 
          fRecTrackMultHist1[AlidNdPtHelper::kAllTracks]->Fill(v1);
        }
      }
      for(Int_t iAcc=0; iAcc<multAcc; ++iAcc) {
        if(label == labelsAcc[iAcc]) {
-         Double_t v2[3] = {track->Pt(), multAcc, centralityF}; 
+         Double_t v2[3] = {track->Pt(), static_cast<Double_t>(multAcc), centralityF}; 
          fRecTrackMultHist1[AlidNdPtHelper::kAccTracks]->Fill(v2);
        }
      }
      for(Int_t iRec=0; iRec<multRec; ++iRec) {
        if(label == labelsRec[iRec]) {
-         Double_t v3[3] = {track->Pt(), multRec, centralityF}; 
+         Double_t v3[3] = {track->Pt(), static_cast<Double_t>(multRec), centralityF}; 
          fRecTrackMultHist1[AlidNdPtHelper::kRecTracks]->Fill(v3);
        }//out
      }
@@ -1232,8 +1232,8 @@ void AlidNdPtAnalysisPbPb::FillHistograms(AliStack *const stack, Int_t label, Al
   Double_t vMCTrackHist1[4] = {gpt,geta,gphi,centralityF};
   fMCTrackHist1[trackObj]->Fill(vMCTrackHist1);
 
-  Double_t vMCPrimTrackHist1[6] = {gpt,geta,pid,mech,motherPdg,centralityF};
-  Double_t vMCPrimTrackHist2[4] = {TMath::Abs(particle->GetPdgCode()),mech,motherPdg,centralityF};
+  Double_t vMCPrimTrackHist1[6] = {gpt,geta,static_cast<Double_t>(pid),static_cast<Double_t>(mech),static_cast<Double_t>(motherPdg),centralityF};
+  Double_t vMCPrimTrackHist2[4] = {static_cast<Double_t>(TMath::Abs(particle->GetPdgCode())),static_cast<Double_t>(mech),static_cast<Double_t>(motherPdg),centralityF};
 
   //if(prim && AliPWG0Helper::IsPrimaryCharged(particle, label)) fMCPrimTrackHist1[trackObj]->Fill(vMCPrimTrackHist1);
 

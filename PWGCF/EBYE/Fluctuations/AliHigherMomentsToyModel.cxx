@@ -486,8 +486,8 @@ void AliHigherMomentsToyModel::doAODEvent(){
   
   
   
-  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};
-  Double_t fContainerPid[3] = { fCentrality, nPartile, nAntiParticle};
+  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), nPlusCharge, nMinusCharge};
+  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), nPartile, nAntiParticle};
   
   
   fTHnCentNplusNminusCh->Fill(fContainerCh);
@@ -722,8 +722,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
   
   //cout << "nCentrality "<< fCentrality <<", nParticle="<< nPartile << ", nMinusParticle=" << nAntiParticle << endl; 
   
-  Double_t fContainerCh[3] = { fCentrality, nPlusCharge, nMinusCharge};
-  Double_t fContainerPid[3] = { fCentrality, nPartile, nAntiParticle};
+  Double_t fContainerCh[3] = { static_cast<Double_t>(fCentrality), nPlusCharge, nMinusCharge};
+  Double_t fContainerPid[3] = { static_cast<Double_t>(fCentrality), nPartile, nAntiParticle};
   
   fTHnCentNplusNminusCh->Fill(fContainerCh);  
   
@@ -775,8 +775,8 @@ void AliHigherMomentsToyModel::doMCAODEvent(){
   
   }//MC-Truth Track loop--
   
-  Double_t fContainerChTruth[3] = { fCentrality, nPlusChargeTruth, nMinusChargeTruth };
-  Double_t fContainerPidTruth[3] = { fCentrality, nPartileTruth, nAntiParticleTruth };
+  Double_t fContainerChTruth[3] = { static_cast<Double_t>(fCentrality), nPlusChargeTruth, nMinusChargeTruth };
+  Double_t fContainerPidTruth[3] = { static_cast<Double_t>(fCentrality), nPartileTruth, nAntiParticleTruth };
   
   //cout << "Cent=" << fCentrality << " MC-PlusChrgT=" << nPlusChargeTruth << " MC-MinusChrgT=" << nMinusChargeTruth << endl;
   

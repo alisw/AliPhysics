@@ -344,7 +344,7 @@ void AliAnalysisTaskPIDV0base::FillV0PIDlist(AliESDEvent* event)
   if (fStoreMotherIndex)  {
     fV0motherIndex = new Int_t[numTracks];
     for (Int_t i = 0; i < numTracks; i++)
-      fV0motherIndex[i] = 0;
+      fV0motherIndex[i] = -1;
   }
   
   fNumTagsStored = numTracks;

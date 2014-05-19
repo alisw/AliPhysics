@@ -127,9 +127,11 @@ const char*
 AliOADBForward::Entry::GetTitle() const
 {
   TDatime d(fTimestamp);
-  return Form("%09ld, %4s, %4huGeV, %+2hd, %4s, %3s, %19s: %p (%s) by %s", 
+  return Form("%09ld, %4s, %4huGeV, %+4hd, %4s, %3s, %19s: %p (%s) by %s", 
 	      (fRunNo == 0xFFFFFFFF ? -1 : fRunNo), 
-	      (fSys == 1 ? "pp" : fSys == 2 ? "PbPb" : fSys == 3 ? "pPb" :"?"), 
+	      (fSys == 1 ? "pp"   : 
+	       fSys == 2 ? "PbPb" : 
+	       fSys == 3 ? "pPb"  : "?"), 
 	      fSNN, fField, (fMC ? "mc" : "real"),
 	      (fSatellite ? "sat" : "nom"), d.AsSQLString(), fData,
 	      (fData ? fData->GetName() : "?"), fAuthor.Data());
@@ -454,6 +456,57 @@ AliOADBForward::Table::Insert(TObject* o,
 }
 
 //____________________________________________________________________
+Int_t
+AliOADBForward::Table::GetEntry(ULong_t        run,
+				ERunSelectMode mode,
+				UShort_t       sys,
+				UShort_t       sNN, 
+				Short_t        fld,
+				Bool_t         mc,
+				Bool_t         sat) const
+{
+  // Query the tree for an object.  The strategy is as follows. 
+  // 
+  //  - First query with all fields 
+  //    - If this returns a single entry, return that. 
+  //    - If not, then ignore the run number (if given)
+  //      - If this returns a single entry, return that 
+  //      - If not, and fall-back is enabled, then 
+  //        - Ignore the collision energy (if given) 
+  //          - If this returns a single entry, return that.  
+  //          - If not, ignore all passed values 
+  //            - If this returns a single entry, return that.
+  //            - Otherwise, give up and return -1
+  //      - Otherwise, give up and return -1
+  //
+  // This allow us to specify default objects for a period, and for
+  // collision system, energy, and field setting.
+  //
+
+  if (fVerbose)
+    Printf("run=%lu mode=%s sys=%hu sNN=%hu fld=%hd mc=%d sat=%d (fall=%d)",
+	   run, Mode2String(mode), sys, sNN, fld, mc, sat, fFallBack);
+  Int_t entry = Query(run, mode, sys, sNN, fld, mc, sat);
+  if (entry < 0 && run > 0) 
+    entry = Query(0, mode, sys, sNN, fld, mc, sat);
+  if (entry < 0 && fFallBack && sNN > 0) {
+    if (fVerbose)
+      Printf("Fall-back enabled, will try without sNN=%d", sNN);
+    entry = Query(run, mode, sys, 0, fld, mc, sat);
+  }
+  if (entry < 0 && fFallBack) {
+    if (fVerbose)
+      Printf("Fall-back enabled, will try without any fields");
+    entry = Query(0, mode, 0, 0, kInvalidField, false, false);	
+  }
+  if (entry < 0) {
+    Warning("Get", "No valid object could be found");
+    return -1;
+  }
+  return entry;
+}
+
+//____________________________________________________________________
 AliOADBForward::Entry*
 AliOADBForward::Table::Get(ULong_t        run,
 			   ERunSelectMode mode,
@@ -480,27 +533,9 @@ AliOADBForward::Table::Get(ULong_t        run,
   // This allow us to specify default objects for a period, and for
   // collision system, energy, and field setting.
   //
-  if (fVerbose)
-    Printf("run=%lu mode=%s sys=%hu sNN=%hu fld=%hd mc=%d sat=%d (fall=%d)",
-	   run, Mode2String(mode), sys, sNN, fld, mc, sat, fFallBack);
-  Int_t entry = Query(run, mode, sys, sNN, fld, mc, sat);
-  if (entry < 0 && run > 0) 
-    entry = Query(0, mode, sys, sNN, fld, mc, sat);
-  if (entry < 0 && fFallBack && sNN > 0) {
-    if (fVerbose)
-      Printf("Fall-back enabled, will try without sNN=%d", sNN);
-    entry = Query(run, mode, sys, 0, fld, mc, sat);
-  }
-  if (entry < 0 && fFallBack) {
-    if (fVerbose)
-      Printf("Fall-back enabled, will try without any fields");
-    entry = Query(0, mode, 0, 0, kInvalidField, false, false);	
-  }
-  if (entry < 0) {
-    Warning("Get", "No valid object could be found");
-    return 0;
-  }
-  
+  Int_t entry  = GetEntry(run, mode, sys, sNN, fld, mc, sat);
+  if (entry < 0) return 0;
+
   Int_t nBytes = fTree->GetEntry(entry);
   if (nBytes <= 0) { 
     Warning("Get", "Failed to get entry # %d\n", entry);
@@ -666,15 +701,7 @@ AliOADBForward::Open(TFile*         file,
       if (!cl) continue; 
       if (!cl->InheritsFrom(TTree::Class())) continue; 
 	
-      Table* t = GetTableFromFile(file, false, key->GetName(), "DEFAULT");
-      if (!t) continue;
-
-      fTables.Add(new TObjString(key->GetName()), t);
-      t->SetVerbose(verb);
-      t->SetEnableFallBack(fallback);
-      if (verb) 
-	Printf("Found table %s. Opened with verbose=%d, fallback=%d", 
-	       key->GetName(), verb, fallback);
+      OpenTable(file, rw, key->GetName(), "DEFAULT", verb, fallback);
     }
     // file->Close();
     return true;
@@ -693,15 +720,8 @@ AliOADBForward::Open(TFile*         file,
     if (parts->GetEntries() > 1) 
       mode = static_cast<TObjString*>(parts->At(1))->String();
     mode.ToUpper();
-    Table* t = GetTableFromFile(file, rw, name, mode);
-    if (!t) continue;
 
-    t->SetVerbose(verb);
-    t->SetEnableFallBack(fallback);
-    fTables.Add(onam->Clone(), t);
-      if (verb) 
-	Printf("Has table %s. Opened with verbose=%d, fallback=%d", 
-	       name.Data(), verb, fallback);
+    OpenTable(file, rw, name, mode, verb, fallback);
 
     delete parts;
   }
@@ -951,6 +971,29 @@ AliOADBForward::GetTableFromFile(TFile*         file,
   Table* ret = new Table(t, n, String2Mode(mode));
   return ret;
 }
+
+//____________________________________________________________________
+void
+AliOADBForward::OpenTable(TFile*         file, 
+			  Bool_t         rw, 
+			  const TString& name,
+			  const TString& mode,
+			  Bool_t         verb, 
+			  Bool_t         fallback)
+{
+  if (!file) return;
+
+  Table* t = GetTableFromFile(file, rw, name, mode);
+  if (!t) return;
+
+  fTables.Add(new TObjString(name), t);
+  t->SetVerbose(verb);
+  t->SetEnableFallBack(fallback);
+  if (verb) 
+    Printf("Found table %s. Opened with verbose=%d, fallback=%d", 
+	   name.Data(), verb, fallback);
+}
+
 //____________________________________________________________________
 void
 AliOADBForward::AppendToQuery(TString& q, const TString& s, Bool_t andNotOr)

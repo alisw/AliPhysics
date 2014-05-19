@@ -63,6 +63,8 @@
 #include "AliEMCALCalibTimeDepCorrection.h" // Run dependent
 #include "AliEMCALPIDUtils.h"
 
+using std::cout;
+using std::endl;
 
 ClassImp(AliAnalysisTaskSDMGammaMC)
 

@@ -332,7 +332,7 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
   //printf("isEventOK %d, isEventTriggered %d \n",isEventOK,isEventTriggered);
 
   Bool_t isTrigAndVertex = isEventTriggered && isEventOK;
-  Double_t vEventCount[2] = { isEventTriggered, isTrigAndVertex};
+  Double_t vEventCount[2] = { static_cast<Double_t>(isEventTriggered), static_cast<Double_t>(isTrigAndVertex)};
   fEventCount->Fill(vEventCount);
 
   // check event cuts
@@ -356,11 +356,11 @@ void AlidNdPtCutAnalysisPbPb::Process(AliESDEvent *const esdEvent, AliMCEvent * 
 
     }
 
-    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),multAll};
+    Double_t vRecEventHist[5] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),vtxESD->GetZRes(),static_cast<Double_t>(multAll)};
     fRecEventHist->Fill(vRecEventHist);
 
     if(IsUseMCInfo()) {
-      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],multAll};
+      Double_t vRecMCEventHist[5] = {vtxESD->GetXv()-vtxMC[0],vtxESD->GetYv()-vtxMC[1],vtxESD->GetZv()-vtxMC[2],static_cast<Double_t>(multAll)};
       fRecMCEventHist->Fill(vRecMCEventHist);
     }
   }
@@ -534,7 +534,7 @@ void AlidNdPtCutAnalysisPbPb::FillHistograms(AliESDEvent *const esdEvent, AliESD
   
   // fill histo
   Int_t charge = esdTrack->Charge();
-  Double_t vRecMCTrackHist[17] = { nCrossedRowsTPC, chi2PerCluster, chi2PerClusterITS,ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared, b[0], b[1], eta, phi, pt, hasStrangeMother, isFromConversion, isFromMaterial, isPrim, charge, centralityF, chi2(0,0) }; 
+  Double_t vRecMCTrackHist[17] = { static_cast<Double_t>(nCrossedRowsTPC), chi2PerCluster, chi2PerClusterITS,ratioCrossedRowsOverFindableClustersTPC, fracClustersTPCShared, b[0], b[1], eta, phi, pt, static_cast<Double_t>(hasStrangeMother), static_cast<Double_t>(isFromConversion), static_cast<Double_t>(isFromMaterial), static_cast<Double_t>(isPrim), static_cast<Double_t>(charge), centralityF, chi2(0,0) }; 
   fRecMCTrackHist->Fill(vRecMCTrackHist);
 
   if(tpcInnerC) delete tpcInnerC;

@@ -2136,7 +2136,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 	  rmId[i]=9999;
 	}
       }
-      Float_t diamondxy[2]={event->GetDiamondX(),event->GetDiamondY()};
+      Float_t diamondxy[2]={static_cast<Float_t>(event->GetDiamondX()),static_cast<Float_t>(event->GetDiamondY())};
       vertexESD = vertexer->RemoveTracksFromVertex(fV1,&rmArray,rmId,diamondxy);
       delete [] rmId; rmId=NULL;
       rmArray.Delete();

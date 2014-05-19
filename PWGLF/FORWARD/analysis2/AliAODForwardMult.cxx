@@ -319,6 +319,8 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     else if (s.CompareTo("SAT")        == 0) trgMask |= kSatellite;
     else if (s.CompareTo("E")          == 0) trgMask |= kE;
     else if (s.CompareTo("NCLUSTER>0") == 0) trgMask |= kNClusterGt0;
+    else if (s.CompareTo("CENT")       == 0) trgMask |= kInel;
+    // trgMask &= ~(kInel|kInelGt0|kNSD|kV0AND|kMCNSD);
     else 
       AliWarningGeneral("MakeTriggerMask", 
 			Form("Unknown trigger %s", s.Data()));

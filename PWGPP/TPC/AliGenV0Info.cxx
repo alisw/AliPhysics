@@ -212,9 +212,9 @@ void AliGenV0Info::Update(Float_t vertex[3])
   //
   //
   // 
-  Float_t v[3] = {fMCXr[0]-vertex[0],fMCXr[1]-vertex[1],fMCXr[2]-vertex[2]};
+  Float_t v[3] = {static_cast<Float_t>(fMCXr[0]-vertex[0]),static_cast<Float_t>(fMCXr[1]-vertex[1]),static_cast<Float_t>(fMCXr[2]-vertex[2])};
   //Float_t v[3] = {fMCXr[0],fMCXr[1],fMCXr[2]};
-  Float_t p[3] = {fMCPdr[0]+fMCPm[0], fMCPdr[1]+fMCPm[1],fMCPdr[2]+fMCPm[2]};
+  Float_t p[3] = {static_cast<Float_t>(fMCPdr[0]+fMCPm[0]), static_cast<Float_t>(fMCPdr[1]+fMCPm[1]),static_cast<Float_t>(fMCPdr[2]+fMCPm[2])};
   Float_t vnorm2 = v[0]*v[0]+v[1]*v[1];
   Float_t vnorm3 = TMath::Sqrt(v[2]*v[2]+vnorm2);
   vnorm2 = TMath::Sqrt(vnorm2);

@@ -66,6 +66,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -100,6 +103,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013(kFALSE),
   fisPileUp(kFALSE),
   fMVPlp(kFALSE),
+  fMinVtxContr(0),
+  fMinPlpContribMV(0),
+  fMinPlpContribSPD(0),
   fDCAglobalTrack(kFALSE),
   fFlatCent(kFALSE)
 {
@@ -124,6 +130,9 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
+  fMinVtxContr = aReader.fMinVtxContr;
+  fMinPlpContribMV = aReader.fMinPlpContribMV;
+  fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
 
 }
@@ -170,6 +179,9 @@ AliFemtoEventReaderAOD& AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fpA2013 = aReader.fpA2013;
   fisPileUp = aReader.fisPileUp;
   fMVPlp = aReader.fMVPlp;
+  fMinVtxContr = aReader.fMinVtxContr;
+  fMinPlpContribMV = aReader.fMinPlpContribMV;
+  fMinPlpContribSPD = aReader.fMinPlpContribSPD;
   fDCAglobalTrack = aReader.fDCAglobalTrack;
   fFlatCent= aReader.fFlatCent;
 
@@ -320,15 +332,18 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
   if(fisPileUp||fpA2013)
     {
       AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+      if(fMinVtxContr)
+	anaUtil->SetMinVtxContr(fMinVtxContr);
       if(fpA2013)
 	if(anaUtil->IsVertexSelected2013pA(fEvent)==kFALSE) return; //Vertex rejection for pA analysis.
       if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
       else anaUtil->SetUseMVPlpSelection(kFALSE);
+      if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
+      if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
       if(fisPileUp)
 	if(anaUtil->IsPileUpEvent(fEvent)) return; //Pile-up rejection.
       delete anaUtil;   
     }
-
 
   // Primary Vertex position
   const AliAODVertex* aodvertex = (AliAODVertex*) fEvent->GetPrimaryVertex();

@@ -48,7 +48,7 @@ AliJRunHeader::AliJRunHeader():
     fAliceFilterMapDef()
 {                     //constructor
 
-  for(Int_t i=0;i<kRangeTriggerTableAlice;i++){
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableAlice;i++){
     fActiveTriggersAlice.Add(new TObjString("EMPTY"));
     fActiveTriggersJCorran.Add(new TObjString("EMPTY"));
   }
@@ -82,7 +82,7 @@ AliJRunHeader::AliJRunHeader(const AliJRunHeader& ap):
 
 void AliJRunHeader::SetActiveTriggersAlice(const TString *triggers){
   // fill aliroot trigger table
-  for(Int_t t=0;t<kRangeTriggerTableAlice;t++){
+  for(Int_t t=0;t<AliJConst::kRangeTriggerTableAlice;t++){
     ((TObjString*) (fActiveTriggersAlice.At(t)))->SetString(triggers[t].Data());
   }
 
@@ -103,7 +103,7 @@ void AliJRunHeader::SetActiveTriggersJCorran(const TString *triggers, Int_t rang
 Int_t AliJRunHeader::GetActiveTriggerBitAlice(TString TriggerName){
   //get trigger bit corresponding to trigger name
   Int_t tbit=-1;
-  for(Int_t t=0;t<kRangeTriggerTableAlice;t++){
+  for(Int_t t=0;t<AliJConst::kRangeTriggerTableAlice;t++){
     if(TriggerName.Contains(((TObjString*)(fActiveTriggersAlice.At(t)))->GetString())){
       tbit = t;
       break;
@@ -117,7 +117,7 @@ void AliJRunHeader::PrintOut(){
   //print object
   std::cout<<"RUN "<<fRunNumber<<std::endl;
   std::cout<<"Alice trigger table:"<<std::endl;
-  for(Int_t i=0;i<kRangeTriggerTableAlice;i++){
+  for(Int_t i=0;i<AliJConst::kRangeTriggerTableAlice;i++){
     std::cout<<i<<"   "<<GetActiveTriggerAlice(i)<<std::endl;
   }
   std::cout<<"============================="<<std::endl;
