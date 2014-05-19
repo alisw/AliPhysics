@@ -542,7 +542,7 @@ Int_t AliTRDseedV1::GetChargeGaps(Float_t sz[kNtb], Float_t pos[kNtb], Int_t isz
 Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
 {
 // Algorithm to estimate cross point in the x-z plane for pad row cross tracklets or the z coordinate of pad row without pad row cross in the local chamber coordinates.
-// Returns radial offset from anode wire in case of raw cross.
+// Returns variance of the radial offset from anode wire in case of raw cross or 0 otherwise.
 
   Int_t row[] = {-1, -1};
   Double_t zoff(0.5 * (pp->GetRow0() + pp->GetRowEnd())), sx(0.), mean(0.5*pp->GetNrows()-0.5);
@@ -623,31 +623,35 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
       }
       AliTRDCommonParam *cp = AliTRDCommonParam::Instance(); 
       Double_t freq(cp?cp->GetSamplingFrequency():10.);
-      fS2Y = ((itb+0.5)/freq - fT0 - 0.189)*fVD; // xOff
-      sx   = dtb*fVD*0.288675134594812921/freq;
+      fS2Y = ((itb-0.5)/freq - fT0 - 0.189)*fVD; // xOff
+      sx   = dtb*0.288675134594812921/freq; sx *= sx; sx += 1.56e-2; sx *= fVD*fVD;
     }    
   }
 
-  // correct for the bias in dzdx
+  // estimate dzdx
   Float_t dx(fX0-fS2Y);
-  fZfit[1] = (fZfit[0]+zoff)/dx;
-  if(!IsRowCross()) fZfit[1] *= 1.09;
-  // compute local z @ anode wire
-  //fZfit[0]+= fZfit[1]*fS2Y;
-//  printf("EstimatedCrossPoint : zoff[%f]\n", zoff);
-//  fS2Z     = 0.05+0.4*TMath::Abs(fZfit[1]); 
-  Float_t s2dzdx(0.0245-0.0014*fZfit[1]+0.0557*fZfit[1]*fZfit[1]); s2dzdx*=s2dzdx;
-  fS2Z  = fZfit[1]*fZfit[1]*sx*sx+fS2Y*fS2Y*s2dzdx; 
-  //
-  // MI modification 02.05.2014 -  add wire step + unisochronity contribution + diffusion contribution
-  // Normalization factor for fS2Z+=(factor*wirepitch/sqrt(12))^2
-  // MI question - fS2Y definetion looks strange. Is it  used somewhere at all???
-  //
-  const Double_t kWirePitch=0.125;
-  const Double_t kWirePitchFactor=12;
-  fS2Z+=kWirePitch*kWirePitch/kWirePitchFactor;
+  fZfit[1] = (fZfit[0]+zoff)/dx; 
 
-  return fS2Y;
+  // correct dzdx for the bias
+  if(!IsRowCross()) fZfit[1] *= 1.09;
+  else{
+    // correct dzdx for the bias
+    fZfit[1] *= 1.05;
+    if(fZfit[1]<0) fZfit[1] -= 0.012;
+
+    // correct x_cross/sigma(x_cross) for the bias in dzdx
+    fS2Y += 0.14*TMath::Abs(fZfit[1]);
+    sx   += 2.e-2*GetS2DZDX(fZfit[1]);
+    // correct sigma(x_cross) for the width of the crossing area
+    Double_t sxdz = TMath::Abs(fZfit[1])>0.05?(TMath::Exp(-1.58839-TMath::Abs(fZfit[1])*3.24116)):
+                                              (0.957043   -TMath::Abs(fZfit[1])*12.4597);
+    sx   += sxdz;
+    
+    // estimate z and error @ anode wire
+    fZfit[0] += fZfit[1]*fS2Y;
+    fS2Z  = fZfit[1]*fZfit[1]*sx+fS2Y*fS2Y*GetS2DZDX(fZfit[1]); 
+  }
+  return sx;
 }
 
 //____________________________________________________________________
@@ -869,7 +873,7 @@ Float_t AliTRDseedV1::GetQuality(Bool_t kZcorr) const
 }
 
 //____________________________________________________________________
-void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
+void AliTRDseedV1::GetCovAt(Double_t /*x*/, Double_t *cov) const
 {
 // Computes covariance in the y-z plane at radial point x (in tracking coordinates) 
 // and returns the results in the preallocated array cov[3] as :
@@ -916,8 +920,8 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
 //
 
 
-  Double_t xr     = fX0-x; 
-  Double_t sy2    = fCov[0] +2.*xr*fCov[1] + xr*xr*fCov[2];
+  //Double_t xr     = fX0-x; 
+  Double_t sy2    = fCov[0];// +2.*xr*fCov[1] + xr*xr*fCov[2];
   Double_t sz2    = fS2Z;
   //GetPadLength()*GetPadLength()/12.;
 
@@ -930,21 +934,15 @@ void AliTRDseedV1::GetCovAt(Double_t x, Double_t *cov) const
   }
 
   // rotate covariance matrix if no RC
-  Double_t t2 = GetTilt()*GetTilt();
   if(!IsRowCross()){
+    Double_t t2 = GetTilt()*GetTilt();
     Double_t correction = 1./(1. + t2);
     cov[0] = (sy2+t2*sz2)*correction;
     cov[1] = GetTilt()*(sz2 - sy2)*correction;
     cov[2] = (t2*sy2+sz2)*correction;
    } else {
      cov[0] = sy2; cov[1] = 0.; cov[2] = sz2;
-    //
-    // MI change (03.05.2014)  
-    // current implemenatation of the linear fit does not take into account step for padrow crossing
-    // bug to be fixed - step should be taken properly into account in the fit, rather than increase of the error estimate
-     cov[0]+=t2*GetPadLength()*GetPadLength()/24.; //this line will disappear after fix of linear FIT 
    }
-
 
   AliDebug(4, Form("C(%6.1f %+6.3f %6.1f)  RC[%c]", 1.e4*TMath::Sqrt(cov[0]), cov[1], 1.e4*TMath::Sqrt(cov[2]), IsRowCross()?'y':'n'));
 }
@@ -2170,19 +2168,33 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
     SetChmbGood(calibration->IsChamberGood(fDet));
     if(!IsChmbGood()) kScalePulls*=10.;
   }  
-
+  AliTRDCommonParam *cp = AliTRDCommonParam::Instance(); 
+  Double_t freq(cp?cp->GetSamplingFrequency():10.);
+      
   // evaluate locally z and dzdx from TRD only information
   if(EstimatedCrossPoint(pp)<0.) return kFALSE;
   
   //printf("D%03d RC[%c] dzdx[%f %f] opt[%d]\n", fDet, IsRowCross()?'y':'n', fZref[1], fZfit[1], opt);
   Double_t //xchmb = 0.5 * AliTRDgeometry::AmThick() + AliTRDgeometry::DrThick(),
            //zchmb = 0.5 * (pp->GetRow0() + pp->GetRowEnd()),
-           z0    = 0.5 * (pp->GetRow0() + pp->GetRowEnd()) + fZfit[0], z;
-  Double_t xc[kNclusters], yc[kNclusters], dz(0.), dzdx(0.), s2dz(0.), s2dzdx(0.), sy[kNclusters],
+           z0(0.5 * (pp->GetRow0() + pp->GetRowEnd()) + fZfit[0]),  
+           DZ(pp->GetRow0() - pp->GetRowEnd() - pp->GetAnodeWireOffset() + fZfit[0]),
+           z, d(-1.);
+  Double_t xc[kNclusters], yc[kNclusters], dz(0.), dzdx(0.), 
+           s2dz(0.), s2dzdx(0.), sy[kNclusters],
+           s2x((8.33e-2/freq/freq+1.56e-2)*fVD*fVD),  // error of 1tb + error of mean time (TRF)
+           t2(fPad[2]*fPad[2]),
            cs(0.);
   Int_t n(0),          // clusters used in fit 
         row[]={-1, -1},// pad row spanned by the tracklet
         col(-1);       // pad column of current cluster
+  Double_t ycorr(0.); Int_t chg(fYref[1]>0?1:-1);
+  if(IsRowCross()) ycorr = 0.013 + 0.018*chg/fPt;
+  else{
+    if(chg<0 && 1./fPt > 1.5) ycorr = 0.04 + 0.027*chg/fPt;
+    else if(chg>0)  ycorr = 0.027*chg/fPt;
+  }
+        
   AliTRDcluster *c(NULL), **jc = &fClusters[0];
   for(Int_t ic=0; ic<kNtb; ic++, ++jc) {
     if(!(c = (*jc))) continue;
@@ -2193,14 +2205,13 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
       switch(opt){ 
         case 0: // no dz correction (only for RC tracklet) and dzdx from chamber position assuming primary
           dzdx  = IsRowCross()?fZfit[1]:0.; 
-          s2dzdx= IsRowCross()?(0.0245-0.0014*dzdx+0.0557*dzdx*dzdx):(0.0379-0.0006*dzdx+0.0771*dzdx*dzdx);
-          s2dzdx*=s2dzdx;
-          dz    = IsRowCross()?(z - z0):0.;//5*dzdx*xchmb;  
-          s2dz  = IsRowCross()?(2.5e-4+1.e-2*dzdx*dzdx+1.e-2*TMath::Abs(dzdx)):0.;
+          s2dzdx= IsRowCross()?GetS2DZDX(dzdx):0.;
+          dz    = IsRowCross()?(z - z0):0.;  
+          s2dz  = IsRowCross()?fS2Z:0.;
           break;
         case 1: // dz correction only for RC tracklet and dzdx from reference
           dzdx = fZref[1];
-          dz   = IsRowCross()?(z - z0):0.;//5*dzdx*xchmb; 
+          dz   = IsRowCross()?(z - z0):0.; 
           break;
         case 2: // full z correction (z0 & dzdx from reference)
           dzdx = fZref[1];
@@ -2220,9 +2231,18 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
     xc[n] = c->GetXloc(fT0, fVD); // c->GetX();
     yc[n] = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB; //c->GetY();
     yc[n]-= fPad[2]*(dz+xc[n]*dzdx);
-//    sy[n] = c->GetSigmaY2()>0?(TMath::Min(TMath::Sqrt(c->GetSigmaY2()), 0.08)):0.08;
+    yc[n]-= ycorr;
+    if(IsRowCross()){ // estimate closest distance to anode wire
+      d = DZ-xc[n]*dzdx;
+      d -= ((Int_t)(2 * d)) / 2.0;
+      if (d > 0.25) d  = 0.5 - d;
+    }
+    // recalculate cluster error from knowledge of the track inclination in the bending plane 
+    // and eventually distance to anode wire
+    c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], d, fYref[1]);
+    s2x = c->GetSX(c->GetLocalTimeBin(), d); s2x*=s2x;
     sy[n] = c->GetSigmaY2()>0?(TMath::Min(Double_t(c->GetSigmaY2()), 6.4e-3)):6.4e-3;
-    sy[n]+= fPad[2]*fPad[2]*(s2dz+xc[n]*xc[n]*s2dzdx);
+    sy[n]+= t2*(s2dz+xc[n]*xc[n]*s2dzdx+dzdx*dzdx*s2x);
     sy[n] = TMath::Sqrt(sy[n]);
     n++;
   }
@@ -2256,12 +2276,18 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
     }
     //Use local cluster coordinates - the code should be identical with AliTRDtransform::Transform() !!!
     //A.Bercuci 27.11.13
-    xc[n]  = c->GetXloc(fT0, fVD); // c->GetX();
-    yc[n]  = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB ;
-    yc[n] -= fPad[2]*(dz+xc[n]*dzdx);
-    //sy[n]  = c->GetSigmaY2()>0?(TMath::Min(TMath::Sqrt(c->GetSigmaY2()), 0.08)):0.08;
+    xc[n] = c->GetXloc(fT0, fVD); // c->GetX();
+    yc[n] = c->GetYloc(pp->GetColPos(col) + .5*cs, fS2PRF, cs) - xc[n]*fExB ;
+    yc[n]-= fPad[2]*(dz+xc[n]*dzdx);
+    yc[n]-= ycorr;
+
+    d = DZ-xc[n]*dzdx;
+    d -= ((Int_t)(2 * d)) / 2.0;
+    if (d > 0.25) d  = 0.5 - d;
+    c->SetSigmaY2(fS2PRF, fDiffT, fExB, xc[n], d, fYref[1]);
+    s2x = c->GetSX(c->GetLocalTimeBin(), d); s2x*=s2x;
     sy[n] = c->GetSigmaY2()>0?(TMath::Min(Double_t(c->GetSigmaY2()), 6.4e-3)):6.4e-3;
-    sy[n]+= fPad[2]*fPad[2]*(s2dz+xc[n]*xc[n]*s2dzdx);
+    sy[n]+= t2*(s2dz+xc[n]*xc[n]*s2dzdx+dzdx*dzdx*s2x);
     sy[n] = TMath::Sqrt(sy[n]);
     n++;
   }
@@ -2280,25 +2306,9 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
   fYfit[1] = -par[1];
   //printf(" yfit: %f [%f] x[%e] dydx[%f]\n", fYfit[0], par[0], fX, par[1]);
   // store covariance
-
-   //
-  // MI comment modification (03.05.2014)
-  // In currently used code variance is used to estimate the tracklet error 
-  //     see AliTRDtrackerV1::AliTRDLeastSquare::Eval()
-  // 2 problems:
-  //    a.) Assumption about the intdpendent error not valid beacause of time response function 
-  //    b.) Constuction of cluster errors used in cl->GetSigmaY2() and AliTRDtrackerV1::AliTRDLeastSquare::Eval
-  //        to be parameterized
-  //    c.) For crossing pad-rows the linear fit AliTRDtrackerV1::AliTRDLeastSquare::Eval do not take into account step
-  //        Therefore y possition is biased, bias is y dependent
-  // Effective correction factor used to rescale error estimates
-  // In future additional angular dependent error should be investigated ( as in TPC and in previous versions of the TRD tracking) 
-  // 
-  const Double_t kCorrelError=1.5;
-
-  fCov[0] = kCorrelError*kScalePulls*cov[0]; // variance of y0
-  fCov[1] = kCorrelError*kScalePulls*cov[2]; // covariance of y0, dydx
-  fCov[2] = kCorrelError*kScalePulls*cov[1]; // variance of dydx
+  fCov[0] = (chg>0?5.:10.)*cov[0]; // variance of y0
+  fCov[1] = kScalePulls*cov[2]; // covariance of y0, dydx
+  fCov[2] = kScalePulls*cov[1]; // variance of dydx
   // check radial position
   Float_t xs=fX+.5*AliTRDgeometry::CamHght();
   if(xs < 0. || xs > AliTRDgeometry::CamHght()+AliTRDgeometry::CdrHght()){
@@ -2350,32 +2360,29 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
 }
 
 //___________________________________________________________________
-void AliTRDseedV1::SetXYZ(TGeoHMatrix *mDet/*, Float_t zpp*/)
+void AliTRDseedV1::SetXYZ(TGeoHMatrix *mDet)
 {
 // Apply alignment to the local position of tracklet
 // A.Bercuci @ 27.11.2013
 
-//   Int_t stk(AliTRDgeometry::GetStack(fDet));
-//   Float_t zcorr[] = {-1.37, -0.59, 0., 0.62, 1.30};
   Double_t loc[] = {AliTRDgeometry::AnodePos(), GetLocalY(), fZfit[0]}, trk[3]={0.};
   mDet->LocalToMaster(loc, trk);
   fX0 = trk[0];
   fY  = trk[1];
-  fZ  = trk[2];//-zcorr[stk];
-  fZfit[1] = fZ/(fX0-fS2Y);
-  
-  if(!IsRowCross()){fZfit[1] *= 1.09; return;}
-  // recalculate local z coordinate assuming primary track for row cross tracklets
-  Double_t zoff(fZ-fZfit[0]); // no alignment aware !
-  //printf("SetXYZ : zoff[%f] zpp[%f]\n", zoff, zpp);
-  fZfit[0] = fX0*fZfit[1] - zoff; 
-  // recalculate tracking coordinates based on the new z coordinate
-  loc[2] = fZfit[0];
-  mDet->LocalToMaster(loc, trk);
-  fX0 = trk[0];
-  fY  = trk[1];
-  fZ  = trk[2];//-zcorr[stk];
-  fZfit[1] = /*(IsRowCross()?1.05:1.09)**/fZ/(fX0-fS2Y);
+  fZ  = trk[2];
+  return;
+//   if(!IsRowCross()){/*fZfit[1] *= 1.09;*/ return;}
+//   // recalculate local z coordinate assuming primary track for row cross tracklets
+//   Double_t zoff(fZ-fZfit[0]); // no alignment aware !
+//   //printf("SetXYZ : zoff[%f] zpp[%f]\n", zoff, zpp);
+//   fZfit[0] = fX0*fZfit[1] - zoff; 
+//   // recalculate tracking coordinates based on the new z coordinate
+//   loc[2] = fZfit[0];
+//   mDet->LocalToMaster(loc, trk);
+//   fX0 = trk[0];
+//   fY  = trk[1];
+//   fZ  = trk[2];//-zcorr[stk];
+  //fZfit[1] = /*(IsRowCross()?1.05:1.09)**/fZ/(fX0-fS2Y);
 }
 
 
