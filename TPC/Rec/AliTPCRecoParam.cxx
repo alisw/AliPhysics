@@ -64,6 +64,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMaxSnpTracker(0.95),
   fMaxSnpTrack(0.999),
   fUseOuterDetectors(kFALSE),
+  fMaxChi2TPCTRD(36),     // maximal allowed chi2 between the TRD in and TPC out to be accepted for refit
   fDumpSignal(kFALSE),
   fFirstBin(0),
   fLastBin(-1),

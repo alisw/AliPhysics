@@ -4731,7 +4731,7 @@ void AliITStrackerMI::SetForceSkippingOfLayer() {
   // either we set to skip them in RecoParam
   // or they were off during data-taking
   //-----------------------------------------------------------------
-
+  return;
   const AliEventInfo *eventInfo = GetEventInfo();
   
   for(Int_t l=0; l<AliITSgeomTGeo::kNLayers; l++) {
