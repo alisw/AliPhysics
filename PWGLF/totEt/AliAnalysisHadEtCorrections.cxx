@@ -73,6 +73,7 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections() : TNamed(),
 							   ,fDataSet(2009)
 							   ,fProduction("ProductionName")
 							   ,fProductionDescription("Long production description")
+							   ,fSpectraCalcErrorCorrelation(1)
 {//default constructor
   Init();
 }
@@ -168,6 +169,7 @@ AliAnalysisHadEtCorrections::AliAnalysisHadEtCorrections(const AliAnalysisHadEtC
 											      ,fDataSet(g->fDataSet)
 											      ,fProduction(g->fProduction)
 											      ,fProductionDescription(g->fProductionDescription)
+											      ,fSpectraCalcErrorCorrelation(g->fSpectraCalcErrorCorrelation)
 {//copy constructor
   //SetName(g->GetName());
   fnotIDTPC = new TH1D(*(g->fnotIDTPC));
@@ -247,6 +249,41 @@ Float_t AliAnalysisHadEtCorrections::GetConstantCorrections(Bool_t totEt, Float_
   return correction;
 
 }
+void AliAnalysisHadEtCorrections::GetTotalEt(Float_t hadEt,Float_t hadEtErr, Bool_t isTPC, Float_t rawEmEt, Float_t rawEmEtError, Float_t scale, Float_t energyScaleError, Float_t minEt, Float_t minEtError, Float_t nonLinError, Float_t neutronCorr, Float_t neutronError, Float_t hadronCorr, Float_t hadronError, Float_t kaonCorr, Float_t kaonError, Float_t secondaryCorr, Float_t secondaryError,Float_t &totEt, Float_t &totEtError, Float_t &totEtStatError){
+  Float_t neutralFracErr = (fNeutralCorrection - fNeutralCorrectionLow)/fNeutralCorrection;
+  Float_t ptcutFracErr = (ffpTcutCorrectionTPCHigh-fpTcutCorrectionTPC)/fpTcutCorrectionTPC;
+  if(!isTPC) ptcutFracErr = (ffpTcutCorrectionITSHigh-fpTcutCorrectionITS)/fpTcutCorrectionITS;
+  Float_t pidFracErr = (fNotIDConstTPCHigh-fNotIDConstTPC)/fNotIDConstTPC;
+  if(!isTPC) pidFracErr = (fNotIDConstITSHigh-fNotIDConstITS)/fNotIDConstITS;
+  Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
+  Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
+  //Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr);
+  Float_t emEt = 0;
+  if(minEt>0){
+    emEt = scale*(rawEmEt-hadronCorr-kaonCorr-neutronCorr-secondaryCorr)/minEt;
+    totEtStatError = TMath::Sqrt(hadEtErr*hadEtErr+TMath::Power(scale*rawEmEtError/minEt,2));
+  }
+  totEt = emEt+hadEt;
+  //first add variance due to had et
+  Float_t variance = (neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+backgroundFracErr*backgroundFracErr)*hadEt*hadEt;
+  //then add variance due to em et
+  variance += (energyScaleError*energyScaleError+minEtError/minEt*minEtError/minEt+nonLinError*nonLinError)*emEt*emEt+scale/minEt*(neutronError*neutronError+hadronError*hadronError+kaonError*kaonError+secondaryError*secondaryError);
+  //add efficiency errors separately - these are basically 100% correlated between Em ET and had Et
+  variance +=efficiencyFracErr*efficiencyFracErr*totEt*totEt;
+  //correlated errors
+//   variance +=fSpectraCalcErrorCorrelation*neutralFracErr*hadEt*(pidFracErr*hadEt+backgroundFracErr*hadEt+scale*kaonError/minEt);
+//   variance +=fSpectraCalcErrorCorrelation*pidFracErr*hadEt*(backgroundFracErr*hadEt+scale*kaonError/minEt+neutralFracErr*hadEt) ;
+//   variance +=fSpectraCalcErrorCorrelation*backgroundFracErr*hadEt*(pidFracErr*hadEt+scale*kaonError/minEt+neutralFracErr*hadEt);
+//   variance +=fSpectraCalcErrorCorrelation*scale*kaonError/minEt*(pidFracErr*hadEt+backgroundFracErr*hadEt+neutralFracErr*hadEt);
+  variance +=fSpectraCalcErrorCorrelation*neutralFracErr*hadEt*(backgroundFracErr*hadEt+scale*kaonError/minEt);
+  variance +=fSpectraCalcErrorCorrelation*backgroundFracErr*hadEt*(scale*kaonError/minEt+neutralFracErr*hadEt);
+  variance +=fSpectraCalcErrorCorrelation*scale*kaonError/minEt*(backgroundFracErr*hadEt+neutralFracErr*hadEt);
+  // cout<<"Correlated error neutral "<<neutralFracErr*hadEt<<" pid "<<pidFracErr*hadEt<<" bkgd "<<backgroundFracErr*hadEt<<" kaon "<<scale*kaonError/minEt<<endl;
+  totEtError = TMath::Sqrt(variance);
+  //cout<<"totEt "<<totEt<<endl;
+
+
+}
 Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t isLowBound, Bool_t isHadronic, Bool_t isTPC) const{
   //we calculate factors for each value and then multiply them to get the overall bounds
   //neutral corrections, pt cut, pid, efficiency, background
@@ -270,7 +307,8 @@ Float_t AliAnalysisHadEtCorrections::GetSystematicErrorBound(Float_t et,Bool_t i
   Float_t pidFracErr = (fNotIDConstTPCHigh-fNotIDConstTPC)/fNotIDConstTPC;
   Float_t efficiencyFracErr = (fEfficiencyErrorHigh-fEfficiencyErrorLow)/2.0;
   Float_t backgroundFracErr = (fBackgroundErrorHigh-fBackgroundErrorLow)/2.0;
-  Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr);
+  //Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr+fSpectraCalcErrorCorrelation*(neutralFracErr*pidFracErr+neutralFracErr*backgroundFracErr+backgroundFracErr*pidFracErr));
+  Float_t fracerr = TMath::Sqrt(neutralFracErr*neutralFracErr+ptcutFracErr*ptcutFracErr+pidFracErr*pidFracErr+efficiencyFracErr*efficiencyFracErr+backgroundFracErr*backgroundFracErr+fSpectraCalcErrorCorrelation*(neutralFracErr*backgroundFracErr));
   //cout<<"fracerrs neutral "<<neutralFracErr<<" ptcut "<<ptcutFracErr<<" pid "<<pidFracErr<<" efficiency "<<efficiencyFracErr<<" bkgd "<<backgroundFracErr<<" total fracerr "<<fracerr<<endl;
   if(isLowBound){
     return et*(1.0-fracerr);
