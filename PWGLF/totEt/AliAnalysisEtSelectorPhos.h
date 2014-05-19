@@ -27,6 +27,7 @@ public:
     virtual TRefArray* GetClusters();
     virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassMinEnergyCut(const TParticle& part) const;
+    virtual Bool_t PassMinEnergyCut(Double_t e) const;
     virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t CutGeometricalAcceptance(const TParticle& part);    
