@@ -2067,6 +2067,11 @@ EOF
 
 stackTraceTree()
 (
+  # make stacktrace processing  in case of standard root crash log
+  # input is a (list of) text files with the stack trace (either gdb aoutput
+  # produced with e.g. gdb --batch --quiet -ex "bt" -ex "quit" aliroot core, or the root crash log), output is a TTree formatted table.
+# example usage:
+# benchmark.sh stackTraceTree /foo/*/rec.log
   gawk '
        BEGIN { 
                print "frame/I:method/C:line/C:cpass/I:aliroot/I";
