@@ -400,7 +400,7 @@ void AliPHOSTenderSupply::ProcessEvent()
 
       clu->SetPosition(position);                       //rec.point position in MARS
       clu->SetE(cluPHOS.E());                           //total particle energy
-      clu->SetMCEnergyFraction(ecore);                  //core particle energy
+      clu->SetCoreEnergy(ecore);                  //core particle energy
       clu->SetDispersion(cluPHOS.GetDispersion());  //cluster dispersion
       //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
       clu->SetM02(cluPHOS.GetM02()) ;               //second moment M2x
@@ -435,6 +435,8 @@ void AliPHOSTenderSupply::ProcessEvent()
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
+      Double_t eCross=EvalEcross(&cluPHOS);
+      clu->SetMCEnergyFraction(eCross) ;
     }
   }
 
@@ -809,6 +811,40 @@ Double_t  AliPHOSTenderSupply::CoreEnergy(AliVCluster * clu){
   //Apply non-linearity correction
   return coreE ;
 }
+//____________________________________________________________________________
+Double_t AliPHOSTenderSupply::EvalEcross(AliVCluster * clu){  
+  //Calculate propoerion of the cluster energy in cross around the 
+  //cell with maximal energy deposition. Can be used to reject exotic clusters 
+  
+  Double32_t * elist = clu->GetCellsAmplitudeFraction() ;  
+  Int_t mulDigit=clu->GetNCells() ;
+  // Calculates the center of gravity in the local PHOS-module coordinates
+  //Find cell with max E
+  Double_t eMax=0.;
+  Int_t iMax=0;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {
+    if(elist[iDigit]>eMax){
+      eMax=elist[iDigit] ;
+      iMax=iDigit ;
+    }
+  }
+  //Calculate e in cross
+  Double_t eCross=0 ;
+  Int_t relidMax[4] ;
+  fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(iMax), relidMax) ;
+  Int_t relid[4] ;
+  for(Int_t iDigit=0; iDigit<mulDigit; iDigit++) {    
+    fPHOSGeo->AbsToRelNumbering(clu->GetCellAbsId(iDigit), relid) ;
+    if(TMath::Abs(relid[2]-relidMax[2])+TMath::Abs(relid[3]-relidMax[3])==1)
+      eCross+= elist[iDigit] ; 
+  }
+  if(eMax>0)
+    return 1.-eCross/eMax ;
+  else
+    return 0 ;
+}
+
+
 //________________________________________________________________________
 Double_t AliPHOSTenderSupply::EvalTOF(AliVCluster * clu,AliVCaloCells * cells){ 
   //Evaluate TOF of the cluster after re-calibration
