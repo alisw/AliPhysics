@@ -32,6 +32,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "TTimeStamp.h"
 #include <cstdlib>
 #include <cstring>
@@ -386,11 +387,13 @@ bool AliHLTMUONRawDataHistoComponent::ProcessTrackerDDL(const AliHLTComponentBlo
 	fTrackerDecoder.GetHandler().ManuHist(fManuHist[ddl]);
 	fTrackerDecoder.GetHandler().SignalHist(fSignalHist[ddl]);
 	
-	if (block->fSize >= sizeof(AliRawDataHeader))
+	AliHLTCDHWrapper cdh(block->fPtr);
+	if (block->fSize >= sizeof(AliRawDataHeader) && 
+	    block->fSize >= cdh.GetHeaderSize()) // in case if cdh v3
 	{
 		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr)
-			+ sizeof(AliRawDataHeader);
-		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
+		  + cdh.GetHeaderSize();
+		UInt_t payloadSize = UInt_t(block->fSize) - cdh.GetHeaderSize();
 		return fTrackerDecoder.Decode(payload, payloadSize);
 	}
 	else
@@ -414,12 +417,14 @@ bool AliHLTMUONRawDataHistoComponent::ProcessTriggerDDL(const AliHLTComponentBlo
 	
 	fTriggerDecoder.GetHandler().ErrorHist(fErrorHist[ddl]);
 	
-	if (block->fSize >= sizeof(AliRawDataHeader))
+	AliHLTCDHWrapper cdh(block->fPtr);
+	if (block->fSize >= sizeof(AliRawDataHeader) &&
+	    block->fSize >= cdh.GetHeaderSize()) // in case if cdh v3)
 	{
-		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(block->fPtr);
-		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(header+1);
-		UInt_t payloadSize = UInt_t(block->fSize) - sizeof(AliRawDataHeader);
-		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		AliHLTUInt8_t* payload = reinterpret_cast<AliHLTUInt8_t*>(block->fPtr);
+		payload += cdh.GetHeaderSize();
+		UInt_t payloadSize = UInt_t(block->fSize) - cdh.GetHeaderSize();
+		bool scalarEvent = ((cdh.GetL1TriggerMessage() & 0x1) == 0x1);
 		return fTriggerDecoder.Decode(payload, payloadSize, scalarEvent);
 	}
 	else

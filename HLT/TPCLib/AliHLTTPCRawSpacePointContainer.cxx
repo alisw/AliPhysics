@@ -30,7 +30,6 @@
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "AliHLTDataDeflater.h"
-#include "AliRawDataHeader.h"
 #include "AliLog.h"
 #include "TMath.h"
 #include <memory>
@@ -107,7 +106,7 @@ int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDat
     return 0;
   }
   if (!pDesc->fPtr) return -ENODATA;
-  if (pDesc->fSize<=sizeof(AliHLTTPCRawClusterData)) return 0;
+  if (pDesc->fSize<sizeof(AliHLTTPCRawClusterData)) return 0;
 
   AliHLTTPCRawClusterData* rawClusters = (AliHLTTPCRawClusterData*)(pDesc->fPtr);  
 

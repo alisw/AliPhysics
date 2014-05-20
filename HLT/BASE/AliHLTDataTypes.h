@@ -70,8 +70,9 @@
  *  16       Adding data type for the meta data block to be forwarded by the
  *           TCPDumpSubscriber for the Common Data Header (CDH) and readout
  *           list information.
+ *  17       New CDH v3 (10 32bit words, 100 trigger classes, etc.)
  */
-#define ALIHLT_DATA_TYPES_VERSION 16
+#define ALIHLT_DATA_TYPES_VERSION 17
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -828,7 +829,9 @@ extern "C" {
   const int gkAliHLTBlockDAttributeCount = 8;
 
   /** field size of fCommonHeader */
-  const int gkAliHLTCommonHeaderCount = 8;
+  const int gkAliHLTCommonHeaderCountV2 = 8;
+  const int gkAliHLTCommonHeaderCountV3 = 10;
+  const int gkAliHLTCommonHeaderCount = gkAliHLTCommonHeaderCountV3;
 
   /** size of the DDL list first version */
   const int gkAliHLTDDLListSizeV0 = 30;
@@ -840,7 +843,12 @@ extern "C" {
   const int gkAliHLTDDLListSize = gkAliHLTDDLListSizeV1;
 
   /** Number of Trigger Classes of CTP in CDH */
-  const int gkNCTPTriggerClasses = 50;
+  const int gkNCTPTriggerClassesV2 = 50;
+  const int gkNCTPTriggerClassesV3 = 100;
+  const int gkNCTPTriggerClasses = gkNCTPTriggerClassesV3;
+
+  // make it also available as define for templates
+#define NCTPTRIGGERCLASSES 100
 
   /**
    * @struct AliHLTEventDDLV0
@@ -1439,6 +1447,9 @@ extern "C" {
   typedef int (*AliHLTExtFctGetOutputSize)( AliHLTComponentHandle, unsigned long*, double* );
 
 }
+
+#include <bitset>  
+typedef std::bitset<NCTPTRIGGERCLASSES> AliHLTTriggerMask_t;
 
 using namespace std;
 

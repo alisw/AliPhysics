@@ -32,6 +32,7 @@
 #include "AliHLTMUONUtils.h"
 #include "AliHLTMUONDataBlockWriter.h"
 #include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliGeomManager.h"
@@ -676,22 +677,23 @@ int AliHLTMUONTriggerReconstructorComponent::DoEvent(
 		}
 
 		AliHLTUInt32_t totalDDLSize = blocks[n].fSize;
-		if (totalDDLSize < sizeof(AliRawDataHeader))
+		AliHLTCDHWrapper header(blocks[n].fPtr);
+		if (totalDDLSize < sizeof(AliRawDataHeader) &&
+		    totalDDLSize < header.GetHeaderSize()) // if cdh v3
 		{
 			HLTError("Raw data block %d is %d bytes in size and is too short to"
-				 " possibly contain valid DDL raw data. We expect it to have"
-				 " at least %d bytes for the commond data header.",
-				n, totalDDLSize, sizeof(AliRawDataHeader)
+				 " possibly contain valid DDL raw data.",
+				n, totalDDLSize
 			);
 			continue;
 		}
-		AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(blocks[n].fPtr);
-		AliHLTUInt32_t payloadSize = totalDDLSize - sizeof(AliRawDataHeader);
-		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(header + 1);
+		AliHLTUInt32_t payloadSize = totalDDLSize - header.GetHeaderSize();
+		AliHLTUInt8_t* buffer = reinterpret_cast<AliHLTUInt8_t*>(blocks[n].fPtr);
+		buffer += header.GetHeaderSize();
 		AliHLTUInt32_t nofTrigRec = block.MaxNumberOfEntries();
 		
 		// Decode if this is a scalar event or not.
-		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		bool scalarEvent = ((header.GetL1TriggerMessage() & 0x1) == 0x1);
 		
 		// Remember: the following does NOT change the mapping!
 		// It is just to generate unique trigger record IDs.

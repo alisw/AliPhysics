@@ -33,6 +33,7 @@
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
 #include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliMUONConstants.h"
 #include "AliMUONTrackerDDLDecoder.h"
 #include "AliMUONTrackerDDLDecoderEventHandler.h"
@@ -1442,7 +1443,7 @@ namespace
 		///      where the problem was found.
 		/// \param handler  The decoder handler object.
 		
-		long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
+                long bytepos = long(location) - long(fBufferStart);
 		
 		// create data type string.
 		char dataType[kAliHLTComponentDataTypefIDsize+kAliHLTComponentDataTypefOriginSize+2];
@@ -1752,28 +1753,26 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 	
 	// Check the DDL common data header.
 	AliHLTUInt32_t totalDDLSize = block.fSize;
-	if (totalDDLSize < sizeof(AliRawDataHeader))
+	AliHLTCDHWrapper header(block.fPtr);
+	if (totalDDLSize < sizeof(AliRawDataHeader) &&
+	    totalDDLSize < header.GetHeaderSize()) // if cdh v3
 	{
 		HLTError("Problem found with data block %d, fDataType = '%s',"
 			 " fPtr = %p and fSize = %u bytes."
 			 " Assuming this is a DDL raw data block."
 			 " Problem: The size of the data block is too short to contain"
 			 " a valid common DDL data header. Size of buffer is only %d"
-			 " bytes, but expected at least %d bytes.",
+			 " bytes.",
 			blockNumber,
 			DataType2Text(block.fDataType).c_str(),
 			block.fPtr,
 			block.fSize,
-			totalDDLSize,
-			sizeof(AliRawDataHeader)
+			totalDDLSize
 		);
 		return false;
 	}
 	
-	const AliRawDataHeader* header =
-		reinterpret_cast<const AliRawDataHeader*>(block.fPtr);
-	
-	if (header->GetVersion() != 2)
+	if (header.GetVersion() < 2)
 	{
 		HLTError("Problem found with data block %d, fDataType = '%s',"
 			 " fPtr = %p and fSize = %u bytes."
@@ -1784,12 +1783,12 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 			DataType2Text(block.fDataType).c_str(),
 			block.fPtr,
 			block.fSize,
-			int( header->GetVersion() )
+			int( header.GetVersion() )
 		);
 		result = false;
 	}
 	
-	if (header->fSize != 0xFFFFFFFF and header->fSize != block.fSize)
+	if (header.GetDataSize() != 0xFFFFFFFF and header.GetDataSize() != block.fSize)
 	{
 		HLTError("Problem found with data block %d, fDataType = '%s',"
 			 " fPtr = %p and fSize = %u bytes."
@@ -1802,56 +1801,19 @@ bool AliHLTMUONDataCheckerComponent::CheckRawDataBlock(
 			block.fPtr,
 			block.fSize,
 			block.fSize,
-			header->fSize
+			header.GetDataSize()
 		);
 		result = false;
 	}
 	
-	if (header->fSize != 0xFFFFFFFF and header->fSize != block.fSize)
-	{
-		HLTError("Problem found with data block %d, fDataType = '%s',"
-			 " fPtr = %p and fSize = %u bytes."
-			 " Assuming this is a DDL raw data block."
-			 " Problem: The common DDL data header indicates an"
-			 " incorrect DDL buffer size. Expected %d bytes but"
-			 " size reported in header is %d bytes.",
-			blockNumber,
-			DataType2Text(block.fDataType).c_str(),
-			block.fPtr,
-			block.fSize,
-			block.fSize,
-			header->fSize
-		);
-		result = false;
-	}
-	
-	// Check that the bits that should be zero in the CDH are infact zero.
-	if ((header->fWord2 & 0x00C03000) != 0 or
-	    (header->fEventID2 & 0xFF000000) != 0 or
-	    (header->fStatusMiniEventID & 0xF0000000) != 0 or
-	    (header->fROILowTriggerClassHigh & 0x0FFC0000) != 0
-	   )
-	{
-		HLTError("Problem found with data block %d, fDataType = '%s',"
-			 " fPtr = %p and fSize = %u bytes."
-			 " Assuming this is a DDL raw data block."
-			 " Problem: The common DDL data header has non-zero"
-			 " bits that are reserved and must be set to zero.",
-			blockNumber,
-			DataType2Text(block.fDataType).c_str(),
-			block.fPtr,
-			block.fSize
-		);
-		result = false;
-	}
-	
-	AliHLTUInt32_t payloadSize = block.fSize - sizeof(AliRawDataHeader);
+	AliHLTUInt32_t payloadSize = block.fSize - header.GetHeaderSize();
 	const AliHLTUInt8_t* payload =
-		reinterpret_cast<const AliHLTUInt8_t*>(header + 1);
+		reinterpret_cast<const AliHLTUInt8_t*>(block.fPtr);
+	payload += header.GetHeaderSize();
 	
 	if (AliHLTMUONUtils::IsTriggerDDL(block.fSpecification))
 	{
-		bool scalarEvent = ((header->GetL1TriggerMessage() & 0x1) == 0x1);
+		bool scalarEvent = ((header.GetL1TriggerMessage() & 0x1) == 0x1);
 		AliMUONTriggerDDLDecoder<AliHLTMUONTriggerDecoderHandler> decoder;
 		decoder.ExitOnError(false);
 		decoder.TryRecover(false);

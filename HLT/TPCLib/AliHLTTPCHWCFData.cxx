@@ -25,7 +25,7 @@
 #include "AliHLTErrorGuard.h"
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliHLTTPCTransform.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "TFile.h"
 #include <memory>
 #include <ostream>
@@ -305,8 +305,9 @@ int AliHLTTPCHWCFData::Open(const char* filename)
     iResult=-ENODATA;
   }
 
-  AliHLTUInt8_t* pBuffer=reinterpret_cast<AliHLTUInt8_t*>(buffer->GetArray()+sizeof(AliRawDataHeader));
-  unsigned bufferSize=buffer->GetSize()-sizeof(AliRawDataHeader);
+  AliHLTCDHWrapper header(buffer->GetArray());
+  AliHLTUInt8_t* pBuffer=reinterpret_cast<AliHLTUInt8_t*>(buffer->GetArray()+header.GetHeaderSize());
+  unsigned bufferSize=buffer->GetSize()-header.GetHeaderSize();
   if ((iResult=Init(pBuffer, bufferSize))<0 ||
       (iResult=CheckVersion())<0) {
     Reset();

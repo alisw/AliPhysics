@@ -24,7 +24,6 @@
 #include "AliHLTOUTHomerCollection.h"
 #include "AliHLTHOMERLibManager.h"
 #include "AliHLTHOMERReader.h"
-#include "AliRawDataHeader.h"
 #include "AliHLTEsdManager.h"
 #include "AliDAQ.h"
 
@@ -139,9 +138,9 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
 {
   // open HOMER reader for buffer
   unsigned int offset=sizeof(AliHLTOUTEventHeader);
-  const AliRawDataHeader* pCDH=GetDataHeader();
+  AliHLTCDHWrapper pCDH=GetDataHeader();
   AliHLTUInt32_t id=(GetEquipmentId());
-  AliHLTUInt32_t statusFlags=pCDH->GetStatus();
+  AliHLTUInt32_t statusFlags=pCDH.GetStatus();
   AliHLTOUTEventHeader* pHLTHeader=reinterpret_cast<AliHLTOUTEventHeader*>(pSrc);
 
   // consistency check for the block size
