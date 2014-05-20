@@ -17,6 +17,7 @@ void AddTaskPIDFlowQC(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Int_t ncentrality = 6,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
+                                   Bool_t is2011 = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -56,7 +57,7 @@ TString suffixName[ncentr];
     
 for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr] = new AliFlowEventCuts(Form("eventcuts_%d",icentr));
-    //cutsEvent[icentr]->SetUsedDataset(is2011);
+    cutsEvent[icentr]->SetLHC11h(is2011);
     cutsEvent[icentr]->SetCentralityPercentileRange(centrMin[icentr],centrMax[icentr]);
     cutsEvent[icentr]->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
     //  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kVZERO);
