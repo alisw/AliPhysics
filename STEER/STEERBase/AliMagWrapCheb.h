@@ -215,7 +215,12 @@ class AliMagWrapCheb: public TNamed
   Float_t    fMaxZDip;               // Max Z of Dipole parameterization
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
   //
-  ClassDef(AliMagWrapCheb,7)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
+  mutable AliCheb3D* fCacheSol;              //! last used solenoid patch
+  mutable AliCheb3D* fCacheDip;              //! last used dipole patch
+  mutable AliCheb3D* fCacheTPCInt;           //! last used patch for TPC integral
+  mutable AliCheb3D* fCacheTPCRat;           //! last used patch for TPC normalized integral
+  //
+  ClassDef(AliMagWrapCheb,8)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //
  };
 

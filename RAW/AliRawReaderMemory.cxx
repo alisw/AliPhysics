@@ -81,33 +81,50 @@ Bool_t AliRawReaderMemory::ReadHeader()
 
     // Check if we would not read past the end of the buffer.
     if ( fPosition+fCount >= fBuffers[fCurrent].GetBufferSize() ) break;
-    
+
     fHeader = reinterpret_cast<AliRawDataHeader*>(fBuffers[fCurrent].GetBuffer()+fPosition+fCount);
+    fHeaderV3 = reinterpret_cast<AliRawDataHeaderV3*>(fBuffers[fCurrent].GetBuffer()+fPosition+fCount);
+
+    //Access to version and size is uniform for V2 and V3 
+    UChar_t version = fHeader->GetVersion();
+    UInt_t size = fHeader->fSize;
+    Int_t headerSize = 0;
+
+    if(version == 3) {
+      fHeader=NULL;
+      headerSize = sizeof(AliRawDataHeaderV3);
+    } else if(version == 2) {
+      fHeaderV3=NULL;
+      headerSize = sizeof(AliRawDataHeader);
+    } else {
+      Error("ReadHeader", "Wrong raw data header version: %d. Expected: 2 or 3.", version);
+      return kFALSE;
+    }
     
     // Check that the header is sane, that is the size does not go past the buffer.
     // Otherwise try again at the next word location.
     while (1) {
-    if ( ( (fHeader->fSize == 0) || 
-	   ((Int_t)fPosition + fCount + (Int_t)fHeader->fSize > (Int_t)fBuffers[fCurrent].GetBufferSize() ) ) 
-	 && fHeader->fSize != 0xFFFFFFFF) {
+      if ( ( (size == 0) ||
+	   ((Int_t)fPosition + fCount + (Int_t)size > (Int_t)fBuffers[fCurrent].GetBufferSize() ) )
+	  && size != 0xFFFFFFFF) {
 
-      if (fPosition + sizeof(UInt_t) <= fBuffers[fCurrent].GetBufferSize()) {
-        fPosition += sizeof(UInt_t);
-        continue;
+	if (fPosition + sizeof(UInt_t) <= fBuffers[fCurrent].GetBufferSize()) {
+	  fPosition += sizeof(UInt_t);
+	  continue;
+	} else {
+	  Error("ReadHeader", "Could not find a valid DDL header!");
+	  return kFALSE;
+	}
       } else {
-        Error("ReadHeader", "Could not find a valid DDL header!");
-        return kFALSE;
+	fPosition += fCount + headerSize;
       }
-    } else {
-      fPosition += fCount + sizeof(AliRawDataHeader);
-    }
-    break;
+      break;
     }
 
-    if (fHeader->fSize != 0xFFFFFFFF) {
-      fCount = fHeader->fSize - sizeof(AliRawDataHeader);
+    if (size != 0xFFFFFFFF) {
+      fCount = (Int_t)size - headerSize;
     } else {
-      fCount = fBuffers[fCurrent].GetBufferSize() - sizeof(AliRawDataHeader);
+      fCount = fBuffers[fCurrent].GetBufferSize() - headerSize;
     }
   } while (!(result=IsSelected()) && OpenNextBuffer());
   } while (!result && OpenNextBuffer());
@@ -174,6 +191,7 @@ Bool_t AliRawReaderMemory::Reset()
 // reset the current position in the buffer to the beginning of the curevent
 
   fHeader = NULL;
+  fHeaderV3 = NULL;
   fCount = 0;
   fPosition = 0;
   fCurrent=0;
@@ -212,6 +230,7 @@ Bool_t AliRawReaderMemory::SetMemory( UChar_t* memory, ULong_t size )
   fBuffers.push_back(AliRRMBuffer(memory, size, -1));
   fCurrent=0;
   fHeader = NULL;
+  fHeaderV3 = NULL;
   fCount = 0;
   fPosition = 0;
   return kTRUE;
