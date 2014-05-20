@@ -33,7 +33,7 @@
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "AliHLTDataDeflater.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliLog.h"
 #include "TMath.h"
 #include <memory>
@@ -111,7 +111,8 @@ int AliHLTTPCHWCFSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDa
     return 0;
   }
   if (!pDesc->fPtr) return -ENODATA;
-  if (pDesc->fSize<=sizeof(AliRawDataHeader)) return 0;
+  AliHLTCDHWrapper header(pDesc->fPtr);
+  if (pDesc->fSize<=header.GetHeaderSize()) return 0;
 
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr( pDesc->fSpecification );
   AliHLTUInt8_t part  = AliHLTTPCDefinitions::GetMinPatchNr( pDesc->fSpecification );
@@ -119,9 +120,9 @@ int AliHLTTPCHWCFSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDa
   AliHLTUInt32_t decoderIndex=AliHLTTPCSpacePointData::GetID(slice, part, 0);
 
   AliHLTUInt32_t *buffer=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
-  // skip the first 8 32-bit CDH words
-  buffer += 8;
-  UInt_t bufferSize32 = ((Int_t)pDesc->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
+  // skip the first 8 or 10 CDH words
+  buffer += header.GetHeaderSize()/sizeof(AliHLTUInt32_t);
+  UInt_t bufferSize32 = ((Int_t)pDesc->fSize - header.GetHeaderSize() )/sizeof(AliHLTUInt32_t);
 
   AliHLTTPCHWCFData* pDecoder=NULL;
   AliHLTSpacePointPropertyGrid* pGrid=NULL;

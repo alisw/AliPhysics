@@ -36,7 +36,6 @@
 #include "AliHLTTPCClusterMCData.h"
 #include "AliHLTTPCClusterTransformation.h"
 #include "AliHLTErrorGuard.h"
-#include "AliRawDataHeader.h"
 #include "AliCDBManager.h"
 #include "AliCDBPath.h"
 #include "AliCDBId.h"

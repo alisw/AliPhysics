@@ -30,7 +30,7 @@
 #include "AliHLTHOMERWriter.h"
 #include "AliHLTErrorGuard.h"
 #include "AliDAQ.h" // equipment Ids
-#include "AliRawDataHeader.h" // Common Data Header 
+#include "AliRawDataHeaderV3.h" // Common Data Header 
 #include <TDatime.h> // seed for TRandom
 #include <TRandom.h> // random int generation for DDL no
 #include <TFile.h>
@@ -492,8 +492,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   unsigned int bufferSize=0;
 
   // space for common data header
-  bufferSize+=sizeof(AliRawDataHeader);
-  assert(sizeof(AliRawDataHeader)==32);
+  bufferSize+=sizeof(AliRawDataHeaderV3);
 
   // space for HLT event header
   bufferSize+=sizeof(AliHLTOUT::AliHLTOUTEventHeader);
@@ -512,14 +511,14 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
   memset(&fBuffer[bufferSize-4], 0, 4);
 
   if (bufferSize<=fBuffer.size()) {
-    AliRawDataHeader* pCDH=reinterpret_cast<AliRawDataHeader*>(&fBuffer[0]);
-    AliHLTOUT::AliHLTOUTEventHeader* pHLTH=reinterpret_cast<AliHLTOUT::AliHLTOUTEventHeader*>(&fBuffer[sizeof(AliRawDataHeader)]);
-    *pCDH = AliRawDataHeader();  // Fill with default values.
+    AliRawDataHeaderV3* pCDH=reinterpret_cast<AliRawDataHeaderV3*>(&fBuffer[0]);
+    AliHLTOUT::AliHLTOUTEventHeader* pHLTH=reinterpret_cast<AliHLTOUT::AliHLTOUTEventHeader*>(&fBuffer[sizeof(AliRawDataHeaderV3)]);
+    *pCDH = AliRawDataHeaderV3();  // Fill with default values.
     memset(pHLTH, 0, sizeof(AliHLTOUT::AliHLTOUTEventHeader));
 
     if (pWriter) {
       // copy payload
-      pWriter->Copy(&fBuffer[sizeof(AliRawDataHeader)+sizeof(AliHLTOUT::AliHLTOUTEventHeader)], 0, 0, 0, 0);
+      pWriter->Copy(&fBuffer[sizeof(AliRawDataHeaderV3)+sizeof(AliHLTOUT::AliHLTOUTEventHeader)], 0, 0, 0, 0);
       pHLTH->fLength=pWriter->GetTotalMemorySize();
       // set status bit to indicate HLT payload
       pCDH->fStatusMiniEventID|=0x1<<(AliHLTOUT::kCDHStatusFlagsOffset+AliHLTOUT::kCDHFlagsHLTPayload);

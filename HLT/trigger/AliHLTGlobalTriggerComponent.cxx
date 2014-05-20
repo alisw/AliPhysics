@@ -32,7 +32,6 @@
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
-#include "AliRawDataHeader.h"
 #include "TUUID.h"
 #include "TROOT.h"
 #include "TSystem.h"
@@ -502,8 +501,11 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
   
   fCDH = NULL;  // have to reset this in case ExtractTriggerData fails.
-  ExtractTriggerData(*GetTriggerData(), NULL, NULL, &fCDH, NULL);
-
+  int triggerSuccess=ExtractTriggerData(*GetTriggerData(), NULL, NULL, &fCDH, NULL, true);
+  if(triggerSuccess<0){
+    HLTError("Couldn't extract CDH from trigger data: %s", strerror(-triggerSuccess));
+    return -EPROTO;
+  }
   // Copy the trigger counters in case we need to set them back to their original
   // value because the PushBack method fails with ENOSPC.
   TArrayL64 originalCounters = fTrigger->GetCounters();
@@ -657,8 +659,7 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   }
   else if (softwareTriggerIsValid)
   {
-    assert(fCDH != NULL);
-    UInt_t detectors = fCDH->GetSubDetectors();
+    UInt_t detectors = fCDH.GetSubDetectors();
     readoutMask = AliHLTReadoutList(Int_t(detectors | AliHLTReadoutList::kHLT));
   }
   readoutlist.AndEq(readoutMask);
@@ -1859,8 +1860,7 @@ bool AliHLTGlobalTriggerComponent::FillSoftwareTrigger()
 {
   // Fills the fSoftwareTrigger structure.
   
-  if (fCDH == NULL) return false;
-  UChar_t l1msg = fCDH->GetL1TriggerMessage();
+  UChar_t l1msg = fCDH.GetL1TriggerMessage();
   if ((l1msg & 0x1) == 0x0) return false;  // skip physics events.
   // From here on everything must be a software trigger.
   if (((l1msg >> 2) & 0xF) == 0xE)
@@ -1883,7 +1883,7 @@ bool AliHLTGlobalTriggerComponent::FillSoftwareTrigger()
     fSoftwareTrigger.Name("SOFTWARE");
     fSoftwareTrigger.Description("Generated internal software trigger.");
   }
-  UInt_t detectors = fCDH->GetSubDetectors();
+  UInt_t detectors = fCDH.GetSubDetectors();
   fSoftwareTrigger.ReadoutList( AliHLTReadoutList(Int_t(detectors)) );
   return true;
 }
@@ -1909,8 +1909,8 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
   // add trigger decisions for the valid CTP classes
   if (!pCTPData || !pTrigger) return 0;
 
-  AliHLTUInt64_t triggerMask=pCTPData->Mask();
-  AliHLTUInt64_t bit0=0x1;
+  AliHLTTriggerMask_t triggerMask=pCTPData->Mask();
+  AliHLTTriggerMask_t bit0(0x1);
   if (!fCTPDecisions) {
     try
     {
@@ -1934,7 +1934,7 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
     }
     for (int i=0; i<gkNCTPTriggerClasses; i++) {
       const char* name=pCTPData->Name(i);
-      if (triggerMask&(bit0<<i) && name) {
+      if ( (triggerMask&(bit0<<i)).any() && name) {
 	AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
 	assert(pDecision);
 	if (!pDecision) {
@@ -1949,7 +1949,7 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
 
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     const char* name=pCTPData->Name(i);
-    if ((triggerMask&(bit0<<i))==0 || name==NULL) continue;
+    if ((triggerMask&(bit0<<i)).none() || name==NULL) continue;
     AliHLTTriggerDecision* pDecision=dynamic_cast<AliHLTTriggerDecision*>(fCTPDecisions->At(i));
     HLTDebug("updating CTP trigger decision %d %s (%p casted %p)", i, name, fCTPDecisions->At(i), pDecision);
     if (!pDecision) return -ENOENT;
@@ -1957,10 +1957,10 @@ int AliHLTGlobalTriggerComponent::AddCTPDecisions(AliHLTGlobalTrigger* pTrigger,
     bool result=false;
     // 13 March 2010 - Optimisation:
     // Dont use the EvaluateCTPTriggerClass method, which uses slow TFormula objects.
-    AliHLTUInt64_t triggers = 0;
+    AliHLTTriggerMask_t triggers = 0;
     if (trigData) triggers = pCTPData->ActiveTriggers(*trigData);
     else triggers = pCTPData->Triggers();
-    result = (triggers&((AliHLTUInt64_t)0x1<<i)) ? true : false;
+    result = (triggers&(bit0<<i)).any() ? true : false;
     //if (trigData) result=pCTPData->EvaluateCTPTriggerClass(name, *trigData);
     //else result=pCTPData->EvaluateCTPTriggerClass(name);
     pDecision->Result(result);

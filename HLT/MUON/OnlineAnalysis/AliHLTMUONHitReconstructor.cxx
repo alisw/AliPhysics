@@ -38,14 +38,13 @@
 #include "AliHLTMUONClustersBlockStruct.h"
 #include "AliHLTMUONChannelsBlockStruct.h"
 #include "AliHLTMUONUtils.h"
-#include "AliRawDataHeader.h"
 #include <cassert>
 
 
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDetectorId = 0xA00;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLOffSet = 0;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkNofDDL = 20;
-const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLHeaderSize = 8;
+const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkDDLHeaderSize = gkAliHLTCommonHeaderCount;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkLutLine = 59648 + 1;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkMaxNofDataPerDetElem = 3000;
 const AliHLTInt32_t AliHLTMUONHitReconstructor::fgkNofDetElemInDDL[20] =   {  2,   2,   2,   2, 
@@ -1997,7 +1996,7 @@ void AliHLTMUONHitReconstructor::AliHLTMUONRawDecoder::OnError(ErrorCode code, c
 	}
 	if (fDontPrintParityErrors and code == kParityError) return;
 	
-	long bytepos = long(location) - long(fkBufferStart) + sizeof(AliRawDataHeader);
+	long bytepos = long(location) - long(fkBufferStart);
 	if (fWarnOnly or (fPrintParityErrorAsWarning and code == kParityError))
 	{
 		HLTWarning("There is a problem with decoding the raw data."

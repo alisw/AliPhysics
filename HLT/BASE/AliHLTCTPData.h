@@ -19,7 +19,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTReadoutList.h"
-
+#include <string>
 
 /**
  * @class AliHLTCTPData
@@ -72,7 +72,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   int InitCTPTriggerClasses(const char* ctpString);
 
   /// etract the active trigger mask from the trigger data
-  static AliHLTUInt64_t ActiveTriggers(const AliHLTComponentTriggerData& trigData);
+  static AliHLTTriggerMask_t ActiveTriggers(const AliHLTComponentTriggerData& trigData);
 
   /**
    * Evaluate an expression of trigger class ids with respect to the trigger mask.
@@ -82,7 +82,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   /**
    * Evaluate an expression of trigger class ids with respect to the trigger mask.
    */
-  bool EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64_t triggerMask) const;
+  bool EvaluateCTPTriggerClass(const char* expression, AliHLTTriggerMask_t triggerMask) const;
 
   /**
    * Evaluate an expression of trigger class ids with respect to the current trigger mask.
@@ -120,13 +120,13 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
 
   /**
    * Increment counter for CTP trigger classes
-   * @param triggerPattern  corresponds to the 50bit trigger mask in the CDH
+   * @param triggerPattern  corresponds to the 100bit trigger mask in the CDH
    */
-  void Increment(AliHLTUInt64_t triggerPattern);
+  void Increment(AliHLTTriggerMask_t triggerPattern);
 
   /**
    * Increment counter for a CTP trigger class
-   * @param classIdx  index of the class in the 50bit trigger mask
+   * @param classIdx  index of the class in the 100bit trigger mask
    */
   void Increment(int classIdx);
 
@@ -147,7 +147,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    * Return a readout list for the active trigger classes.
    * The list is an 'OR' of the active trugger classes.
    */
-  AliHLTReadoutList ReadoutList(AliHLTUInt64_t  triggerMask) const;
+  AliHLTReadoutList ReadoutList(AliHLTTriggerMask_t triggerMask) const;
 
   /**
    * Return a readout list for the active trigger classes.
@@ -162,17 +162,20 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
    */
   virtual void Print(Option_t* option = "") const;
 
-  AliHLTUInt64_t   Mask() const { return fMask; }
-  AliHLTUInt64_t   Triggers() const { return fTriggers; }
-  void             SetTriggers(AliHLTUInt64_t triggers) { fTriggers=triggers; }
-  void             SetTriggers(AliHLTComponentTriggerData trigData) {SetTriggers(ActiveTriggers(trigData));}
-  const TArrayL64& Counters() const { return fCounters; }
-  AliHLTUInt64_t   Counter(int index) const;
-  AliHLTUInt64_t   Counter(const char* classId) const;
-  const char*      Name(int index) const;
+  AliHLTTriggerMask_t   Mask() const { return fMask; }
+  AliHLTTriggerMask_t   Triggers() const { return fTriggers; }
+  void                  SetTriggers(AliHLTTriggerMask_t triggers) { fTriggers=triggers; }
+  void                  SetTriggers(AliHLTComponentTriggerData trigData) {SetTriggers(ActiveTriggers(trigData));}
+  const TArrayL64&      Counters() const { return fCounters; }
+  AliHLTUInt64_t        Counter(int index) const;
+  AliHLTUInt64_t        Counter(const char* classId) const;
+  const char*           Name(int index) const;
 
  protected:
  private:
+  /// Helper                                                                          
+  std::string TriggerMaskToString(AliHLTTriggerMask_t mask) const;
+
   /**
    * Add counters.
    * Base methods for operators.
@@ -193,11 +196,11 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
 
   int ReadMap() {return ReadMap(fMap);}
 
-  AliHLTUInt64_t fMask;      /// mask of initialized trigger classes
-  AliHLTUInt64_t fTriggers;  /// current trigger
-  TClonesArray   fClassIds;  /// array of trigger class ids
-  TArrayL64      fCounters;  /// trigger class counters
-  vector<unsigned> fMap;     //! index map for trigger expression evaluation
+  AliHLTTriggerMask_t fMask;      /// mask of initialized trigger classes
+  AliHLTTriggerMask_t fTriggers;  /// current trigger
+  TClonesArray        fClassIds;  /// array of trigger class ids
+  TArrayL64           fCounters;  /// trigger class counters
+  vector<unsigned>    fMap;     //! index map for trigger expression evaluation
 
   ClassDef(AliHLTCTPData, 2)
 };

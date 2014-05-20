@@ -442,7 +442,7 @@ int AliHLTTask::EndRun()
   return iResult;
 }
 
-int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt64_t trgMask,
+int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTTriggerMask_t trgMask,
 			    AliHLTUInt32_t timestamp, AliHLTUInt32_t participatingDetectors)
 {
   // see header file for function documentation
@@ -588,8 +588,11 @@ int AliHLTTask::ProcessTask(Int_t eventNo, AliHLTUInt32_t eventType, AliHLTUInt6
       }
       evtTrigData.fCommonHeader[1] = AliHLTUInt32_t(l1msg) << 14;
       evtTrigData.fCommonHeader[3] = ((l1msg & 0x1) == 0x1) ? (participatingDetectors & 0xFFFFFF) : 0x0;
-      evtTrigData.fCommonHeader[5]=trgMask&0xffffffff;
-      evtTrigData.fCommonHeader[6]=(trgMask>>32)&0x3ffff;
+      evtTrigData.fCommonHeader[5] = (trgMask & AliHLTTriggerMask_t(0xffffffff)).to_ulong();
+      evtTrigData.fCommonHeader[6] = ((trgMask>>32) & AliHLTTriggerMask_t(0x3ffff)).to_ulong();
+      evtTrigData.fCommonHeader[7] = ((trgMask>>50) & AliHLTTriggerMask_t(0xffffffff)).to_ulong();
+      evtTrigData.fCommonHeader[8] = ((trgMask>>72) & AliHLTTriggerMask_t(0x3ffff)).to_ulong();
+
       trigData.fData=&evtTrigData;
       iLastOutputDataSize=iOutputDataSize;
       AliHLTUInt32_t size=iOutputDataSize;

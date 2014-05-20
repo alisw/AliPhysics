@@ -30,7 +30,6 @@
 #include "AliHLTComponent.h"
 #include "AliHLTTemplates.h"
 #include "AliHLTDataDeflater.h"
-#include "AliRawDataHeader.h"
 #include "AliLog.h"
 #include "TMath.h"
 #include <memory>

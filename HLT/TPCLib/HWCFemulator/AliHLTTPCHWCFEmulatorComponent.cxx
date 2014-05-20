@@ -35,7 +35,7 @@
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include <cstdlib>
 #include <cerrno>
 #include <memory>
@@ -488,13 +488,14 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	nMCLabels = 0;
       }
 
+      AliHLTCDHWrapper header(iter->fPtr);
       // book memory for the output
       
       AliHLTUInt32_t maxNClusters = rawEventSize32 + 1; // N 32-bit words in input
       AliHLTUInt32_t clustersSize32 = maxNClusters*AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
       AliHLTUInt32_t nOutputMC = maxNClusters;
 
-      AliHLTUInt32_t headerSize = sizeof(AliRawDataHeader);
+      AliHLTUInt32_t headerSize = header.GetHeaderSize();
       AliHLTUInt32_t outBlockSize=headerSize+clustersSize32*sizeof(AliHLTUInt32_t);
 
       if( outBlock ) delete[] outBlock;
@@ -512,11 +513,13 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       AliHLTTPCClusterMCData *outMC = reinterpret_cast<AliHLTTPCClusterMCData *>(allocOutMC);
       
       // fill CDH header here, since the HW clusterfinder does not receive it
-      
-      AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
-      AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock);
-      *outCDHHeader = *cdhHeader;
-      outCDHHeader->fSize = 0xFFFFFFFF;
+      memcpy(outBlock, iter->fPtr, headerSize);
+      memset(outBlock,0xFF,4);
+
+      //AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(iter->fPtr);
+      //AliRawDataHeader *outCDHHeader = reinterpret_cast<AliRawDataHeader*>(outBlock);
+      //*outCDHHeader = *cdhHeader;
+      //outCDHHeader->fSize = 0xFFFFFFFF;
 
       AliHLTUInt32_t *outClusters = reinterpret_cast<AliHLTUInt32_t*> (outBlock + headerSize);
      

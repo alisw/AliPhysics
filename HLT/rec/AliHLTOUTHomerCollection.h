@@ -13,9 +13,9 @@
 /// @brief  General collection for HLTOUT data in DDL format.
 ///
 #include "AliHLTOUTHomerBuffer.h"
+#include "AliHLTCDHWrapper.h"
 
 class AliHLTHOMERReader;
-class AliRawDataHeader;
 class AliHLTEsdManager;
 
 /**
@@ -58,7 +58,7 @@ class AliHLTOUTHomerCollection : public AliHLTOUTHomerBuffer {
   /**
    * Get the header of the current data block
    */
-  virtual const AliRawDataHeader* GetDataHeader()=0;
+  virtual AliHLTCDHWrapper GetDataHeader()=0;
 
   /**
    * Select equipment for data readout.

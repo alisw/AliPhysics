@@ -77,7 +77,7 @@ int AliHLTOUTRawReader::GetDataSize()
   return 0;
 }
 
-const AliRawDataHeader* AliHLTOUTRawReader::GetDataHeader()
+AliHLTCDHWrapper AliHLTOUTRawReader::GetDataHeader()
 {
   // overloaded from AliHLTOUTHomerCollection: get data header of current DDL
   if (fpRawreader) return fpRawreader->GetDataHeader();
