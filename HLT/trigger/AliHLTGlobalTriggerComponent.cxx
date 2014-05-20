@@ -453,8 +453,8 @@ Int_t AliHLTGlobalTriggerComponent::DoDeinit()
   if (result != 0) return result;
   
   if (fDeleteCodeFile and !fCodeFileName.IsNull() && gSystem->AccessPathName(fCodeFileName)==0 && !fDebugMode) {
-    fCodeFileName.ReplaceAll(".cxx", "*");
-    TString command="rm "; command+=fCodeFileName;
+    TString command="rm -f ";
+    command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
     gSystem->Exec(command);
   }
   fCodeFileName="";
@@ -738,8 +738,8 @@ int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* 
     UnloadTriggerClass(codeFileName);
     if (not codeFileName.IsNull() and gSystem->AccessPathName(codeFileName)==0 and not fDebugMode)
     {
-      codeFileName.ReplaceAll(".cxx", "*");
-      TString command="rm "; command+=codeFileName;
+      TString command="rm -f ";
+      command+=codeFileName + " " + TString(codeFileName).ReplaceAll(".cxx", "_cxx.d");
       gSystem->Exec(command);
     }
     return -EIO;
@@ -763,8 +763,8 @@ int AliHLTGlobalTriggerComponent::Reconfigure(const char* cdbEntry, const char* 
   UnloadTriggerClass(fCodeFileName);
   if (fDeleteCodeFile and not fCodeFileName.IsNull() and gSystem->AccessPathName(fCodeFileName)==0 and not fDebugMode)
   {
-    fCodeFileName.ReplaceAll(".cxx", "*");
-    TString command="rm "; command+=fCodeFileName;
+    TString command="rm -f ";
+    command+=fCodeFileName + " " + TString(fCodeFileName).ReplaceAll(".cxx", "_cxx.d");
     gSystem->Exec(command);
   }
   fCodeFileName = codeFileName;
