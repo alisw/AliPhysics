@@ -40,7 +40,12 @@
 #include <TMath.h>
 #include <TNamed.h>
 #include <TObjArray.h>
+#include <TStopwatch.h>
 #include "AliCheb3D.h"
+
+#ifndef _MAGCHEB_CACHE_
+#define _MAGCHEB_CACHE_  // use to spead up, but then Field calls are not thread safe
+#endif
 
 class TSystem;
 class TArrayF;
@@ -215,10 +220,12 @@ class AliMagWrapCheb: public TNamed
   Float_t    fMaxZDip;               // Max Z of Dipole parameterization
   TObjArray* fParamsDip;             // Parameterization pieces for Dipole field
   //
+#ifdef _MAGCHEB_CACHE_
   mutable AliCheb3D* fCacheSol;              //! last used solenoid patch
   mutable AliCheb3D* fCacheDip;              //! last used dipole patch
   mutable AliCheb3D* fCacheTPCInt;           //! last used patch for TPC integral
   mutable AliCheb3D* fCacheTPCRat;           //! last used patch for TPC normalized integral
+#endif 
   //
   ClassDef(AliMagWrapCheb,8)         // Wrapper class for the set of Chebishev parameterizations of Alice mag.field
   //

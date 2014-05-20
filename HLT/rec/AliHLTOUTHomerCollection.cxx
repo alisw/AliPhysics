@@ -139,6 +139,10 @@ AliHLTHOMERReader* AliHLTOUTHomerCollection::OpenReader(UChar_t* pSrc, unsigned 
   // open HOMER reader for buffer
   unsigned int offset=sizeof(AliHLTOUTEventHeader);
   AliHLTCDHWrapper pCDH=GetDataHeader();
+  if(pCDH.GetHeader()==NULL){
+    HLTError("Couldn't find data header.");
+    return NULL;
+  }
   AliHLTUInt32_t id=(GetEquipmentId());
   AliHLTUInt32_t statusFlags=pCDH.GetStatus();
   AliHLTOUTEventHeader* pHLTHeader=reinterpret_cast<AliHLTOUTEventHeader*>(pSrc);
