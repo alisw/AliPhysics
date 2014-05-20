@@ -2065,6 +2065,30 @@ EOF
   return $?
 )
 
+stackTraceTree()
+(
+  # make stacktrace processing  in case of standard root crash log
+  # input is a (list of) text files with the stack trace (either gdb aoutput
+  # produced with e.g. gdb --batch --quiet -ex "bt" -ex "quit" aliroot core, or the root crash log), output is a TTree formatted table.
+# example usage:
+# benchmark.sh stackTraceTree /foo/*/rec.log
+  gawk '
+       BEGIN { 
+               print "frame/I:method/C:line/C:cpass/I:aliroot/I";
+               RS="#[0-9]*";
+               aliroot=0;
+               read=1;
+             } 
+      /There was a crash/ {read=1;}
+      /The lines below might hint at the cause of the crash/ {read=0;}
+      read==1 { 
+               if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
+               gsub("#","",RT); 
+               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot
+             }
+      ' "$@" 2>/dev/null
+)
+
 goMakeSummary()
 (
   #all the final stuff goes in here for ease of use:
@@ -2104,29 +2128,8 @@ goMakeSummary()
   echo "commonOutputPath=${commonOutputPath}"
 
   #summarize the stacktraces
-  awk '
-       BEGIN { 
-               print "frame/I:method/C:line/C:cpass/I:aliroot/I";
-               RS="#[0-9]*";
-               aliroot=0;
-             } 
-             { 
-               if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
-               gsub("#","",RT); 
-               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "0" "aliroot
-             }
-      ' 000*/cpass0/*/stacktrace* 2>/dev/null > stacktrace.tree
-  awk '
-       BEGIN {
-               RS="#[0-9]*";
-               aliroot=0;
-             } 
-             {
-               if ($3 ~ /Ali*/) aliroot=1; else aliroot=0;
-               gsub("#","",RT); 
-               if ($NF!="" && RT!="" && $3!="") print RT" "$3" "$NF" "1" "aliroot
-             }
-      ' 000*/cpass1/*/stacktrace* 2>/dev/null >> stacktrace.tree
+  stackTraceTree 000*/cpass0/*/stacktrace* > stacktrace_cpass0.tree
+  stackTraceTree 000*/cpass1/*/stacktrace* > stacktrace_cpass1.tree
 
   echo total numbers for the production:
   echo

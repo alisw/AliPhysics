@@ -1264,7 +1264,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
                   continue;
                 }
 	      
-	      if(!aodTrack->IsPhysicalPrimary()) continue;
+	      //if(!aodTrack->IsPhysicalPrimary()) continue;
 
 	      q      = aodTrack->Charge();
               charge = int(q);
@@ -1513,7 +1513,7 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
 
 	      //W/Wo Secondaries
-	      if (!AODmcTrack->IsPhysicalPrimary()) continue;
+	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
 	      
 	       
 	       if(fExcludeResonancesInMC)

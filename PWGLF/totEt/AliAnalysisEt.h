@@ -131,6 +131,7 @@ public:
     // Read in corrections
     Int_t ReadCorrections(TString filename);  // Read in corrections
     
+    void SetFsub(Float_t val){fsub=val;};//function for setting fsub for EMCal/PHOS hadronic corrections
 
 protected:
 
@@ -138,6 +139,7 @@ protected:
     
     // Return corrected cluster E_T
     Double_t CorrectForReconstructionEfficiency(const AliESDCaloCluster &cluster,Int_t cent = 0);
+    Double_t CorrectForReconstructionEfficiency(const AliESDCaloCluster &cluster, Float_t eReco,Int_t cent = 0);
     
     // Track matching (hadrdonic contamination) corrections
     AliAnalysisEtTrackMatchCorrections *fTmCorrections;
@@ -310,6 +312,9 @@ protected:
     AliAnalysisEtSelector *fSelector; // Selector class
 
     AliPIDResponse *fPIDResponse;
+
+    Float_t fsub;
+    
 
 
 private:
