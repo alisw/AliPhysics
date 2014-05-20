@@ -107,7 +107,7 @@ int AliHLTTPCRawSpacePointContainer::AddInputBlock(const AliHLTComponentBlockDat
     return 0;
   }
   if (!pDesc->fPtr) return -ENODATA;
-  if (pDesc->fSize<=sizeof(AliHLTTPCRawClusterData)) return 0;
+  if (pDesc->fSize<sizeof(AliHLTTPCRawClusterData)) return 0;
 
   AliHLTTPCRawClusterData* rawClusters = (AliHLTTPCRawClusterData*)(pDesc->fPtr);  
 
