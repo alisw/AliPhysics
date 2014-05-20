@@ -37,9 +37,11 @@ fNParamsSol(0),fNZSegSol(0),fNPSegSol(0),fNRSegSol(0),
 //
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
-  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0),
+  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
 //
-  fCacheSol(0),fCacheDip(0),fCacheTPCInt(0),fCacheTPCRat(0)
+#ifdef _MAGCHEB_CACHE_
+  ,fCacheSol(0),fCacheDip(0),fCacheTPCInt(0),fCacheTPCRat(0)
+#endif
 //
 {
   // default constructor
@@ -62,12 +64,15 @@ AliMagWrapCheb::AliMagWrapCheb(const AliMagWrapCheb& src) :
 //
   fNParamsDip(0),fNZSegDip(0),fNYSegDip(0),fNXSegDip(0),
   fSegZDip(0),fSegYDip(0),fSegXDip(0),
-  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0),
-  //
-  fCacheSol(0),fCacheDip(0),fCacheTPCInt(0),fCacheTPCRat(0)
+  fBegSegYDip(0),fNSegYDip(0),fBegSegXDip(0),fNSegXDip(0),fSegIDDip(0),fMinZDip(1.e6),fMaxZDip(-1.e6),fParamsDip(0)
+//
+#ifdef _MAGCHEB_CACHE_
+  ,fCacheSol(0),fCacheDip(0),fCacheTPCInt(0),fCacheTPCRat(0)
+#endif
 {
   // copy constructor
   CopyFrom(src);
+  //
 }
 
 //__________________________________________________________________________________________
@@ -242,10 +247,12 @@ void AliMagWrapCheb::Clear(const Option_t *)
   fMinZDip = 1e6;
   fMaxZDip = -1e6;
   //
+#ifdef _MAGCHEB_CACHE_
   fCacheSol = 0;
   fCacheDip = 0;
   fCacheTPCInt = 0;
   fCacheTPCRat = 0;
+#endif
   //
 }
 
@@ -258,25 +265,38 @@ void AliMagWrapCheb::Field(const Double_t *xyz, Double_t *b) const
   //
 #ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested
   b[0] = b[1] = b[2] = 0;
-#endif
+#endif 
   //
   if (xyz[2]>fMinZSol) {
     CartToCyl(xyz,rphiz);
-    if (fCacheSol && fCacheSol->IsInside(rphiz)) fCacheSol->Eval(rphiz,b);
-    else FieldCylSol(rphiz,b);
+    //
+#ifdef _MAGCHEB_CACHE_
+    if (fCacheSol && fCacheSol->IsInside(rphiz)) 
+      fCacheSol->Eval(rphiz,b);
+    else
+#endif //_MAGCHEB_CACHE_
+      FieldCylSol(rphiz,b);
     // convert field to cartesian system
-    CylToCartCylB(rphiz, b,b);  
+    CylToCartCylB(rphiz, b,b);
     return;
   }
   //
-  if (fCacheDip && fCacheDip->IsInside(xyz)) fCacheDip->Eval(xyz,b); // check the cache first
-  else {
-    int iddip = FindDipSegment(xyz);
-    if (iddip<0) return;
+#ifdef _MAGCHEB_CACHE_
+  if (fCacheDip && fCacheDip->IsInside(xyz)) {
+    fCacheDip->Eval(xyz,b); // check the cache first
+    return;
+  }
+#else //_MAGCHEB_CACHE_
+  AliCheb3D* fCacheDip = 0;
+#endif //_MAGCHEB_CACHE_
+  int iddip = FindDipSegment(xyz);
+  if (iddip>=0) {
     fCacheDip = GetParamDip(iddip);
+    //
 #ifndef _BRING_TO_BOUNDARY_
     if (!fCacheDip->IsInside(xyz)) return;
-#endif
+#endif //_BRING_TO_BOUNDARY_
+    //
     fCacheDip->Eval(xyz,b); 
   }
   //
@@ -290,19 +310,36 @@ Double_t AliMagWrapCheb::GetBz(const Double_t *xyz) const
   Double_t rphiz[3];
   //
   if (xyz[2]>fMinZSol) {
+    //
     CartToCyl(xyz,rphiz);
-    if (fCacheSol && fCacheSol->IsInside(rphiz)) return fCacheSol->Eval(rphiz,2); // check the cache first
+    //
+#ifdef _MAGCHEB_CACHE_
+    if (fCacheSol && fCacheSol->IsInside(rphiz)) return fCacheSol->Eval(rphiz,2);
+#endif //_MAGCHEB_CACHE_
     return FieldCylSolBz(rphiz);
   }
   //
+#ifdef _MAGCHEB_CACHE_
   if (fCacheDip && fCacheDip->IsInside(xyz)) return fCacheDip->Eval(xyz,2); // check the cache first
+  //
+#else //_MAGCHEB_CACHE_
+  AliCheb3D* fCacheDip = 0;
+#endif //_MAGCHEB_CACHE_
+  //
   int iddip = FindDipSegment(xyz);
-  if (iddip<0) return 0.;
-  fCacheDip = GetParamDip(iddip);
+  if (iddip>=0) {
+    fCacheDip = GetParamDip(iddip);
+    //
 #ifndef _BRING_TO_BOUNDARY_
-  if (!fCacheDip->IsInside(xyz)) return 0.;
-#endif
-  return fCacheDip->Eval(xyz,2);
+    if (!fCacheDip->IsInside(xyz)) return 0.;
+#endif // _BRING_TO_BOUNDARY_
+    //
+    return fCacheDip->Eval(xyz,2);
+  //
+  }
+  //
+  return 0;
+  //
 }
 
 
@@ -531,13 +568,17 @@ void AliMagWrapCheb::FieldCylSol(const Double_t *rphiz, Double_t *b) const
   // compute Solenoid field in Cylindircal coordinates
   // note: if the point is outside the volume get the field in closest parameterized point
   int id = FindSolSegment(rphiz);
-  if (id<0) return;
-  fCacheSol = GetParamSol(id);
-#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested  
-  if (!fCacheSol->IsInside(rphiz)) return;
+  if (id>=0) {
+#ifndef _MAGCHEB_CACHE_
+    AliCheb3D* fCacheSol = 0;
 #endif
-  fCacheSol->Eval(rphiz,b);
-  return;
+    fCacheSol = GetParamSol(id);
+    //
+#ifndef _BRING_TO_BOUNDARY_  // exact matching to fitted volume is requested  
+    if (!fCacheSol->IsInside(rphiz)) return;
+#endif
+    fCacheSol->Eval(rphiz,b);
+  }
   //
 }
 
@@ -548,6 +589,11 @@ Double_t AliMagWrapCheb::FieldCylSolBz(const Double_t *rphiz) const
   // note: if the point is outside the volume get the field in closest parameterized point
   int id = FindSolSegment(rphiz);
   if (id<0) return 0.;
+  //
+#ifndef _MAGCHEB_CACHE_
+  AliCheb3D* fCacheSol = 0;
+#endif
+  //
   fCacheSol = GetParamSol(id);
 #ifndef _BRING_TO_BOUNDARY_  
   return fCacheSol->IsInside(rphiz) ? fCacheSol->Eval(rphiz,2) : 0;
@@ -562,27 +608,33 @@ void AliMagWrapCheb::GetTPCIntCyl(const Double_t *rphiz, Double_t *b) const
 {
   // compute field integral in TPC region in Cylindircal coordinates
   // note: the check for the point being inside the parameterized region is done outside
+  //
+#ifdef _MAGCHEB_CACHE_
+  //  
   if (fCacheTPCInt && fCacheTPCInt->IsInside(rphiz)) {
     fCacheTPCInt->Eval(rphiz,b);
     return;
   }
+#else //_MAGCHEB_CACHE_
+  AliCheb3D* fCacheTPCInt = 0; 
+#endif //_MAGCHEB_CACHE_
+  //
   int id = FindTPCSegment(rphiz);
-  if (id<0) {
-    b[0] = b[1] = b[2] = 0;
-    return;
+  if (id>=0) {
+    //    if (id>=fNParamsTPC) {
+    //      b[0] = b[1] = b[2] = 0;
+    //      AliError(Form("Wrong TPCParam segment %d",id));
+    //      b[0] = b[1] = b[2] = 0;
+    //      return;
+    //    }
+    fCacheTPCInt = GetParamTPCInt(id);
+    if (fCacheTPCInt->IsInside(rphiz)) {
+      fCacheTPCInt->Eval(rphiz,b); 
+      return;
+    }
   }
-  if (id>=fNParamsTPC) {
-    AliError(Form("Wrong TPCParam segment %d",id));
-    b[0] = b[1] = b[2] = 0;
-    return;
-  }
-  fCacheTPCInt = GetParamTPCInt(id);
-  if (fCacheTPCInt->IsInside(rphiz)) {
-    fCacheTPCInt->Eval(rphiz,b); 
-    return;
-  }
+  //
   b[0] = b[1] = b[2] = 0;
-  return;
   //
 }
 
@@ -591,27 +643,31 @@ void AliMagWrapCheb::GetTPCRatIntCyl(const Double_t *rphiz, Double_t *b) const
 {
   // compute field integral in TPCRat region in Cylindircal coordinates
   // note: the check for the point being inside the parameterized region is done outside
+  //
+#ifdef _MAGCHEB_CACHE_
   if (fCacheTPCRat && fCacheTPCRat->IsInside(rphiz)) {
     fCacheTPCRat->Eval(rphiz,b);
     return;
   }
+#else 
+  AliCheb3D* fCacheTPCRat = 0;
+#endif //_MAGCHEB_CACHE_
+  //
   int id = FindTPCRatSegment(rphiz);
-  if (id<0) {
-    b[0] = b[1] = b[2] = 0;
-    return;
+  if (id>=0) {
+    //    if (id>=fNParamsTPCRat) {
+    //      AliError(Form("Wrong TPCRatParam segment %d",id));
+    //      b[0] = b[1] = b[2] = 0;
+    //      return;
+    //    }
+    fCacheTPCRat = GetParamTPCRatInt(id);
+    if (fCacheTPCRat->IsInside(rphiz)) {
+      fCacheTPCRat->Eval(rphiz,b); 
+      return;
+    }
   }
-  if (id>=fNParamsTPCRat) {
-    AliError(Form("Wrong TPCRatParam segment %d",id));
-    b[0] = b[1] = b[2] = 0;
-    return;
-  }
-  fCacheTPCRat = GetParamTPCRatInt(id);
-  if (fCacheTPCRat->IsInside(rphiz)) {
-    fCacheTPCRat->Eval(rphiz,b); 
-    return;
-  }
+  //
   b[0] = b[1] = b[2] = 0;
-  return;
   //
 }
 
