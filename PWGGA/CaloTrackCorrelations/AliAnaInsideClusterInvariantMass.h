@@ -179,7 +179,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNWeightForShowerShape(Int_t n)         { fSSWeightN = n ; }
   void         SetWeightForShowerShape(Int_t i, Float_t v)
-                                                         { if (i < 10) fSSWeight[i] = v ; }
+                                                         { if (i < 20) fSSWeight[i] = v ; }
 
   void         SetNumberOfNLocMaxSettings(Int_t n)       { fNLMSettingN = n ; }
   void         SetNLocMaxMinE   (Int_t i, Float_t v)     { if (i < 5) fNLMMinE   [i] = v ; }
@@ -188,7 +188,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetNECellCutForShowerShape(Int_t n)       { fSSECellCutN = n ; }
   void         SetECellCutForShowerShape(Int_t i, Float_t v)
-                                                         { if (i < 10) fSSECellCut[i] = v ; }
+                                                         { if (i < 20) fSSECellCut[i] = v ; }
 
  
   void         RecalculateClusterShowerShapeParametersWithCellCut(const AliEMCALGeometry * geom, AliVCaloCells* cells, AliVCluster * cluster,
@@ -225,10 +225,10 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       fFillArmenterosHisto;   // Fill armenteros type histo
   Bool_t       fFillThetaStarHisto;    // Fill cosThetaStar histos
   
-  Float_t      fSSWeight[10];          // List of weights to test
+  Float_t      fSSWeight[20];          // List of weights to test
   Int_t        fSSWeightN;             // Total number of weights to test
   
-  Float_t      fSSECellCut[10];        // List of cell min energy cuts to test
+  Float_t      fSSECellCut[20];        // List of cell min energy cuts to test
   Int_t        fSSECellCutN;           // Total number of cell min energy cuts to test
 
   Float_t      fNLMMinE   [5];         // List of local maxima min energy
@@ -605,8 +605,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhPi0CellEMaxFrac [3];                   //! pi0's energy vs energy fraction of main LM and cluster cell energy with NLM = 1, = 2, > 2
   TH2F       * fhPi0CellEMax2Frac [3];                  //! pi0's energy vs energy fraction of second LM and cluster cell energy with NLM = 1, = 2, > 2
   
-  TH2F       * fhM02WeightPi0[3][10] ;                  //! M02 for selected pi0 with different weight, with NLM = 1, = 2, > 2
-  TH2F       * fhM02ECellCutPi0[3][10] ;                //! M02 for selected pi0 with different cut on cell energy, with NLM = 1, = 2, > 2
+  TH2F       * fhM02WeightPi0[3][20] ;                  //! M02 for selected pi0 with different weight, with NLM = 1, = 2, > 2
+  TH2F       * fhM02ECellCutPi0[3][20] ;                //! M02 for selected pi0 with different cut on cell energy, with NLM = 1, = 2, > 2
 
   TH2F       * fhPi0EPairDiffTimeNLM1;                  //! E vs Pair of clusters time difference vs E, for selected pi0, NLM=1
   TH2F       * fhPi0EPairDiffTimeNLM2;                  //! E vs Pair of clusters time difference vs E, for selected pi0, NLM=2
@@ -782,7 +782,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & split) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & split) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,29)
+  ClassDef(AliAnaInsideClusterInvariantMass,30)
   
 } ;
 
