@@ -1079,8 +1079,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
   float vertexY  = -999;
   float vertexZ  = -999;
   //float vertexXY = -999;
-  float dcaZ     = -999;
-  float dcaXY    = -999;
+  //float dcaZ     = -999;
+  //float dcaXY    = -999;
   float centrality = -999;
   
   if(fAODEvent)
@@ -1166,9 +1166,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       //====================== 
       
       //*********************************************************
-      //TExMap *trackMap = new TExMap();//Mapping matrix----                                            
+      TExMap *trackMap = new TExMap();//Mapping matrix----                                            
       //1st loop track for Global tracks                                                                                
-      /*for(Int_t i = 0; i < _nTracks; i++)
+      for(Int_t i = 0; i < _nTracks; i++)
 	{
 	  AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
 	  if(!aodTrack) {
@@ -1177,9 +1177,9 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  }
 	  Int_t gID = aodTrack->GetID();
 	  if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                       
-	  }*/
+	  }
            
-      //AliAODTrack* newAodTrack;
+      AliAODTrack* newAodTrack;
       
       //Track Loop starts here
       for (int iTrack=0; iTrack< _nTracks; iTrack++)
@@ -1193,8 +1193,8 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
 	  if (!bitOK) continue; //128bit or 272bit
 	  	  
-	  //Int_t gID = t->GetID();
-	  //newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
+	  Int_t gID = t->GetID();
+	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
 	  
 	  q      = t->Charge();
 	  charge = int(q);
@@ -1204,20 +1204,14 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  py     = t->Py();
 	  pz     = t->Pz();
 	  eta    = t->Eta();
-	  dcaXY = t->DCA(); 
-	  dcaZ  = t->ZAtDCA();  
+	  //dcaXY = t->DCA(); 
+	  //dcaZ  = t->ZAtDCA();  
 	  
 	  //for Global tracks
-	  /*Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
+	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kElectron));
 	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kPion));
 	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kKaon));
-	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));*/
-
-	  //for TPC only tracks
-	  Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
-	  Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
-	  Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
-	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
+	  Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(newAodTrack,(AliPID::EParticleType)AliPID::kProton));
 	  
 	  //nsigma cut to reject electron 
 	  
@@ -1232,7 +1226,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  if( pt < _min_pt_1 || pt > _max_pt_1) continue;
 	  if( eta < _min_eta_1 || eta > _max_eta_1) continue;
 	  
-	  /*Double_t pos[3];
+	  Double_t pos[3];
 	  newAodTrack->GetXYZ(pos);
 
 	  Double_t DCAX = pos[0] - vertexX;
@@ -1243,16 +1237,12 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
  	  
 	  if (DCAZ     <  _dcaZMin || 
 	      DCAZ     >  _dcaZMax ||
-	      DCAXY    >  _dcaXYMax ) continue; */
+	      DCAXY    >  _dcaXYMax ) continue; 
 
-	  if (dcaZ     <  _dcaZMin || 
-	      dcaZ     >  _dcaZMax ||
-	      dcaXY    <  _dcaXYMin ||
-	      dcaXY    > _dcaXYMax ) continue; 
 
 	  //==== QA ===========================
-	  _dcaz->Fill(dcaZ);
-	  _dcaxy->Fill(dcaXY);
+	  _dcaz->Fill(DCAZ);
+	  _dcaxy->Fill(DCAXY);
 	  _etadis->Fill(eta);
 	  _phidis->Fill(phi);
 	  //===================================

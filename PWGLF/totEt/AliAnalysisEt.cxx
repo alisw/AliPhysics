@@ -161,6 +161,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fCutFlow(0)
 			       ,fSelector(0)
 			       ,fPIDResponse(0)
+			       ,fsub(1.0)
 	       
 {}
 
@@ -730,6 +731,18 @@ Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloClust
   cluster.GetPosition(pos);
   TVector3 cp(pos);
   Double_t corrEnergy = fReCorrections->CorrectedEnergy(cluster.E(), cent);
+  
+  //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
+  return TMath::Sin(cp.Theta())*corrEnergy;
+}
+
+
+Double_t AliAnalysisEt::CorrectForReconstructionEfficiency(const AliESDCaloCluster& cluster, Float_t eReco, Int_t cent)
+{
+  Float_t pos[3];
+  cluster.GetPosition(pos);
+  TVector3 cp(pos);
+  Double_t corrEnergy = fReCorrections->CorrectedEnergy(eReco, cent);
   
   //std::cout << "Original energy: " << cluster.E() << ", corrected energy: " << corrEnergy << std::endl;
   return TMath::Sin(cp.Theta())*corrEnergy;
