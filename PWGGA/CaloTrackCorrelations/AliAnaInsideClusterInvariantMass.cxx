@@ -482,7 +482,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
     fhPi0CellEMaxFrac [nlm] = 0 ;
     fhPi0CellEMax2Frac[nlm] = 0 ;
     
-    for(Int_t i = 0; i < 10; i++)
+    for(Int_t i = 0; i < 20; i++)
     {
       fhM02WeightPi0  [nlm][i] = 0;
       fhM02ECellCutPi0[nlm][i] = 0;
@@ -2833,20 +2833,26 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
     Float_t dorg  = clus->GetDispersion();
     Float_t w0org =  GetCaloUtils()->GetEMCALRecoUtils()->GetW0();
     
+    //printf("E cl %2.3f, E recal %2.3f, nlm %d, Org w0 %2.3f, org l0 %2.3f\n",clus->E(), energy,nlm, w0org,l0org);
+    
     for(Int_t iw = 0; iw < fSSWeightN; iw++)
     {
       GetCaloUtils()->GetEMCALRecoUtils()->SetW0(fSSWeight[iw]);
       //GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
-      
+      //fhM02WeightPi0[nlm][iw]->Fill(energy,clus->GetM02());
+
       Float_t l0   = 0., l1   = 0.;
       Float_t disp = 0., dEta = 0., dPhi    = 0.;
       Float_t sEta = 0., sPhi = 0., sEtaPhi = 0.;
       
       RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
-                                                         dEta, dPhi, sEta, sPhi, sEtaPhi,0);
+                                                         dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[0]);
+      //Make sure that for pp fSSECellCut[0]=0.05 and for PbPb fSSECellCut[0]=0.15
 
       
-      fhM02WeightPi0[nlm][iw]->Fill(energy,clus->GetM02());
+      fhM02WeightPi0[nlm][iw]->Fill(energy,l0);
+      
+      //printf("\t w0 %2.3f, l0 %2.3f\n",GetCaloUtils()->GetEMCALRecoUtils()->GetW0(),l0);
       
     } // w0 loop
     
@@ -2865,8 +2871,9 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
       RecalculateClusterShowerShapeParametersWithCellCut(GetEMCALGeometry(), cells, clus,l0,l1,disp,
                                                          dEta, dPhi, sEta, sPhi, sEtaPhi,fSSECellCut[iec]);
       
-      //printf("E %f, l0 org %f, l0 new %f, slope %f\n",clus->E(),l0org,l0,fSSECellCut[iec]);
       fhM02ECellCutPi0[nlm][iec]->Fill(energy,l0);
+      
+      //printf("\t min E cell %2.3f, l0 %2.3f\n",fSSECellCut[iec], l0);
       
     } // w0 loop
   
@@ -6319,13 +6326,17 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   
   fHistoECut   = 8 ;
   
-  fSSWeightN   = 5;
-  fSSWeight[0] = 4.6;  fSSWeight[1] = 4.7; fSSWeight[2] = 4.8; fSSWeight[3] = 4.9; fSSWeight[4] = 5.0;
-  fSSWeight[5] = 5.1;  fSSWeight[6] = 5.2; fSSWeight[7] = 5.3; fSSWeight[8] = 5.4; fSSWeight[9] = 5.5;
+  fSSWeightN    = 10;
+  fSSWeight [0] = 4.00;  fSSWeight [1] = 4.10; fSSWeight [2] = 4.20; fSSWeight [3] = 4.30; fSSWeight [4] = 4.35;
+  fSSWeight [5] = 4.40;  fSSWeight [6] = 4.45; fSSWeight [7] = 4.50; fSSWeight [8] = 4.55; fSSWeight [9] = 4.60;
+  fSSWeight[10] = 4.70;  fSSWeight[11] = 4.80; fSSWeight[12] = 4.90; fSSWeight[13] = 5.00; fSSWeight[14] = 5.10;
+  fSSWeight[15] = 5.20;  fSSWeight[16] = 5.50; fSSWeight[17] = 5.75; fSSWeight[18] = 6.00; fSSWeight[19] = 7.00;
   
-  fSSECellCutN   = 10;
-  fSSECellCut[0] = 0.16;  fSSECellCut[1] = 0.18; fSSECellCut[2] = 0.2; fSSECellCut[3] = 0.22; fSSECellCut[4] = 0.24;
-  fSSECellCut[5] = 0.26;  fSSECellCut[6] = 0.28; fSSECellCut[7] = 0.3; fSSECellCut[8] = 0.32; fSSECellCut[9] = 0.34;
+  fSSECellCutN    = 10;
+  fSSECellCut [0] = 0.05;  fSSECellCut [1] = 0.06;  fSSECellCut [2] = 0.07; fSSECellCut [3] = 0.08; fSSECellCut [4] = 0.09;
+  fSSECellCut [5] = 0.10;  fSSECellCut [6] = 0.11;  fSSECellCut [7] = 0.12; fSSECellCut [8] = 0.13; fSSECellCut [9] = 0.14;
+  fSSECellCut[10] = 0.15;  fSSECellCut[11] = 0.16;  fSSECellCut[12] = 0.17; fSSECellCut[13] = 0.18; fSSECellCut[14] = 0.19;
+  fSSECellCut[15] = 0.20;  fSSECellCut[16] = 0.21;  fSSECellCut[17] = 0.22; fSSECellCut[18] = 0.23; fSSECellCut[19] = 0.24;
 
   fNLMSettingN = 5;
   fNLMMinE   [0] = 0.10; fNLMMinE   [1] = 0.20; fNLMMinE   [2] = 0.35; fNLMMinE   [3] = 0.50; fNLMMinE   [4] = 1.00;
@@ -6571,7 +6582,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     {
       FillIdPi0Histograms(en, e1, e2, nc, nMax, t12diff, mass, l0, eta, phi, matched, mcindex);
       
-      if(fFillSSWeightHisto)
+      if(fFillSSWeightHisto && !matched)
         FillSSWeightHistograms(cluster, inlm, absId1, absId2);
       
       if(fFillTMHisto && fFillTMResidualHisto)
