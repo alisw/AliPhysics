@@ -1701,8 +1701,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         
         if(fCorrelVzBin)
         {
-          sz = "_vz%d"+z;
-          tz = ", v_{z} bin "+z;
+          sz = Form("_vz%d",z);
+          tz = Form(", v_{z} bin %d",z);
         }
         
         //printf("iAssoc %d, Vz %d, bin %d - sz %s, tz %s	\n",i,z,bin,sz.Data(),tz.Data());
@@ -2476,8 +2476,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         
         if(fCorrelVzBin)
         {
-          sz = "_vz%d"+z;
-          tz = ", v_{z} bin "+z;
+          sz = Form("_vz%d",z);
+          tz = Form(", v_{z} bin %d",z);
         }
         
         //printf("MIX : iAssoc %d, Vz %d, bin %d - sz %s, tz %s	\n",i,z,bin,sz.Data(),tz.Data());
