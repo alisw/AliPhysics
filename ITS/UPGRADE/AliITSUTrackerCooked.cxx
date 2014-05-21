@@ -18,9 +18,6 @@ ClassImp(AliITSUTrackerCooked)
 //************************************************
 // Constants hardcoded for the moment:
 //************************************************
-// radial positions of layers: default contructor
-const 
-Double_t klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
 // seed "windows" in z and phi: MakeSeeds
 const Double_t kzWin=0.33, kpWin=3.14/4;
 // Maximal accepted impact parameters for the seeds 
@@ -59,6 +56,8 @@ fTrackToFollow(0)
   //--------------------------------------------------------------------
   // This default constructor needs to be provided
   //--------------------------------------------------------------------
+  const Double_t 
+  klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
 
   AliITSUGeomTGeo *gm  = new AliITSUGeomTGeo(kTRUE,kTRUE);
   AliITSUClusterPix::SetGeom(gm);
@@ -657,14 +656,17 @@ void AliITSUTrackerCooked::
   // Load clusters to this layer
   //--------------------------------------------------------------------
   Int_t ncl=clusters->GetEntriesFast();
- 
-  while (ncl--) {
-     AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(ncl);
-     (seedingLayer) ? c->GoToFrameGlo() : c->GoToFrameTrk();
+  Double_t r=0.;
+  for (Int_t i=0; i<ncl; i++) {
+     AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(i);
+     c->GoToFrameGlo();
+     Double_t x=c->GetX(), y=c->GetY();
+     r += TMath::Sqrt(x*x + y*y);
+     if (!seedingLayer) c->GoToFrameTrk();
      //if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
      InsertCluster(new AliITSUClusterPix(*c));
   }
-
+  if (ncl) fR = r/ncl;
 }
 
 void AliITSUTrackerCooked::AliITSUlayer::DeleteClusters()
