@@ -1039,6 +1039,8 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
   AddTrackCuts(esdTrackCuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
 
 
   AliESDtrackCuts* esdTrackCutsV0daughters=new AliESDtrackCuts();
@@ -1055,6 +1057,8 @@ void AliRDHFCutsLctoV0::SetStandardCutsPP2010() {
   esdTrackCutsV0daughters->SetPtRange(0.,1.e10);
   esdTrackCutsV0daughters->SetAcceptKinkDaughters(kFALSE);
   AddTrackCutsV0daughters(esdTrackCutsV0daughters);
+  delete esdTrackCutsV0daughters;
+  esdTrackCutsV0daughters=NULL;
 
   const Int_t nptbins=1;
   Float_t* ptbins;
