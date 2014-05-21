@@ -260,13 +260,16 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 						    AliHLTComponentTriggerData& /*trigData*/,
 						    AliHLTUInt8_t* outputPtr, 
 						    AliHLTUInt32_t& size,
-						    AliHLTComponentBlockDataList& outputBlocks )
+						    AliHLTComponentBlockDataList& outputBlocks)
 {
   // see header file for class documentation
   int iResult=0;
+  bool benchmark = true;
 
   if (!IsDataEvent()) return iResult;
 
+
+  fBenchmark.Reset();
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
 
@@ -716,7 +719,54 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   fBenchmark.Stop(0);
   HLTWarning( fBenchmark.GetStatistics() );
-
+  
+  
+  
+  
+  if(benchmark){
+  
+	Double_t* statistics=0x0; 
+	TString* names=0x0;
+	fBenchmark.GetStatisticsData(statistics, names);
+	FillBenchmarkHistos( statistics, names);
+  
+  }
   return iResult;
 }
 
+
+void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString *names){
+
+  
+  TString outputFilename = "$HERAFOLDER/flatDev/rawToFlat/histosBenchmark";
+  TH2F* hCpuTimeVsSize;
+  TH2F* hRealTimeVsSize;
+  TList* histosList;
+  
+  
+  TFile *outFile = TFile::Open(outputFilename,"UPDATE");
+   hCpuTimeVsSize = (TH2F*)outFile->Get("cpuTimeVsSize");
+	hRealTimeVsSize = (TH2F*)outFile->Get("realTimeVsSize");
+	
+  if(!hCpuTimeVsSize || !hRealTimeVsSize){
+	cout<< "creating histograms"<<endl;
+	hCpuTimeVsSize = new TH2F("cpuTimeVsSize","cpu time vs. size", 1000,0,1000000, 1000,0,10);
+	hRealTimeVsSize = new TH2F("realTimeVsSize","real time vs. size", 1000,0,1000000, 1000,0,10);
+  }
+  
+	
+  Double_t realTimePerEvent = statistics[5];
+  Double_t cpuTimePerEvent = statistics[5];
+  Double_t sizePerEvent = statistics[1];
+  
+  hCpuTimeVsSize->Fill(sizePerEvent, cpuTimePerEvent);
+  hRealTimeVsSize->Fill(sizePerEvent, realTimePerEvent);
+
+  histosList = new TList();
+	histosList->Add(hCpuTimeVsSize);
+	histosList->Add(hRealTimeVsSize);
+	
+  histosList->SaveAs(outputFilename);
+  
+  
+}

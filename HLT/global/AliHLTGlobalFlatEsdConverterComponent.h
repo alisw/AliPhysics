@@ -61,11 +61,15 @@ class AliHLTGlobalFlatEsdConverterComponent : public AliHLTProcessor
 	       AliHLTComponentTriggerData& trigData,
 	       AliHLTUInt8_t* outputPtr, 
 	       AliHLTUInt32_t& size,
-	       AliHLTComponentBlockDataList& outputBlocks );
+	       AliHLTComponentBlockDataList& outputBlocks ,
+		Double_t *statistics,
+		TString* names);
 
   using AliHLTProcessor::DoEvent;
 
-
+  void FillBenchmarkHistos(Double_t *statistics, TString *names);
+  
+  
  private:
   /** copy constructor prohibited */
   AliHLTGlobalFlatEsdConverterComponent(const AliHLTGlobalFlatEsdConverterComponent&);
