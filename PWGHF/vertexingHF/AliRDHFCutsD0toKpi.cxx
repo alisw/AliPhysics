@@ -1328,6 +1328,142 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
 
 }
 
+//___________________________________________________________________________
+void AliRDHFCutsD0toKpi::SetStandardCutsPP2010vsMult() {
+  //
+  // Cuts for 2010 pp 7 TeV data analysis in Ntracklets bins (vs multiplicity)
+  //
+  SetName("D0toKpiCuts");
+  SetTitle("Cuts for D0 analysis in 2010-data pp 7 TeV vs multiplicity");
+
+  //
+  // Track cuts
+  //
+  AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts();
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  //default
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetEtaRange(-0.8,0.8);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny); 
+ // default is kBoth, otherwise kAny
+  esdTrackCuts->SetMinDCAToVertexXY(0.);
+  esdTrackCuts->SetPtRange(0.3,1.e10);
+
+  AddTrackCuts(esdTrackCuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+
+
+  //
+  // Cut values per pt bin
+  //
+  const Int_t nvars=11;
+  const Int_t nptbins=14;
+  Float_t* ptbins;
+  ptbins=new Float_t[nptbins+1];
+  ptbins[0]=0.;
+  ptbins[1]=0.5;
+  ptbins[2]=1.;
+  ptbins[3]=2.;
+  ptbins[4]=3.;
+  ptbins[5]=4.;
+  ptbins[6]=5.;
+  ptbins[7]=6.;
+  ptbins[8]=7.;
+  ptbins[9]=8.;
+  ptbins[10]=12.;
+  ptbins[11]=16.;
+  ptbins[12]=20.;
+  ptbins[13]=24.;
+  ptbins[14]=9999.;
+
+  SetPtBins(nptbins+1,ptbins);
+  
+  //setting cut values
+  Float_t cutsMatrixD0toKpiStand[nptbins][nvars]={{0.400,350.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,3.},/* pt<0.5*/
+                                                  {0.400,350.*1E-4,0.8,0.3,0.3,1000.*1E-4,1000.*1E-4,-5000.*1E-8,0.80,0.,3.},/* 0.5<pt<1*/
+                                                  {0.400,300.*1E-4,0.8,0.4,0.4,1000.*1E-4,1000.*1E-4,-30000.*1E-8,0.80,0.,4.},/* 1<pt<2 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-20000.*1E-8,0.85,0.,4.},/* 2<pt<3 */
+                                                  {0.400,300.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-15000.*1E-8,0.85,0.,4.},/* 3<pt<4 */
+                                                  {0.400,300.*1E-4,0.75,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.875,0.,0.},/* 4<pt<5 */
+                                                  {0.400,300.*1E-4,0.75,0.7,0.7,1000.*1E-4,1000.*1E-4,-10000.*1E-8,0.875,0.,0.},/* 5<pt<6 */
+                                                  {0.400,400.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 6<pt<7 */
+                                                  {0.400,400.*1E-4,0.8,0.7,0.7,1000.*1E-4,1000.*1E-4,-8000.*1E-8,0.85,0.,0.},/* 7<pt<8 */
+						  {0.400,0.06,0.85,0.7,0.7,1000.*1E-4,1000.*1E-4,-0.00001,0.85,0.,0.},/* 8<pt<12 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 12<pt<16 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 16<pt<20 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.},/* 20<pt<24 */
+						  {0.400,0.09,1.0,0.7,0.7,9999.,9999.,0.,0.,0.,0.}};/* pt>24 */
+  
+  
+  //CREATE TRANSPOSE MATRIX...REVERSE INDICES as required by AliRDHFCuts
+  Float_t **cutsMatrixTransposeStand=new Float_t*[nvars];
+  for(Int_t iv=0;iv<nvars;iv++)cutsMatrixTransposeStand[iv]=new Float_t[nptbins];
+  
+  for (Int_t ibin=0;ibin<nptbins;ibin++){
+    for (Int_t ivar = 0; ivar<nvars; ivar++){
+      cutsMatrixTransposeStand[ivar][ibin]=cutsMatrixD0toKpiStand[ibin][ivar];      
+    }
+  }
+  
+  SetCuts(nvars,nptbins,cutsMatrixTransposeStand);
+  for(Int_t iv=0;iv<nvars;iv++) delete [] cutsMatrixTransposeStand[iv];
+  delete [] cutsMatrixTransposeStand;
+
+  SetUseSpecialCuts(kTRUE);
+  SetMaximumPtSpecialCuts(8.);
+
+  //Do recalculate the vertex
+  SetRemoveDaughtersFromPrim(kTRUE);
+
+  //
+  // Pid settings
+  //
+  Bool_t pidflag=kTRUE;
+  SetUsePID(pidflag);
+  if(pidflag) cout<<"PID is used"<<endl;
+  else cout<<"PID is not used"<<endl;
+  //
+  AliAODPidHF* pidObj=new AliAODPidHF();
+  Int_t mode=1;
+  const Int_t nlims=2;
+  Double_t plims[nlims]={0.6,0.8}; //TPC limits in momentum [GeV/c]
+  Bool_t compat=kTRUE; //effective only for this mode
+  Bool_t asym=kTRUE;
+  Double_t sigmas[5]={2.,1.,0.,3.,0.}; //to be checked and to be modified with new implementation of setters by Rossella
+  pidObj->SetAsym(asym);// if you want to use the asymmetric bands in TPC
+  pidObj->SetMatch(mode);
+  pidObj->SetPLimit(plims,nlims);
+  pidObj->SetSigma(sigmas);
+  pidObj->SetCompat(compat);
+  pidObj->SetTPC(kTRUE);
+  pidObj->SetTOF(kTRUE);
+  pidObj->SetPCompatTOF(1.5);
+  pidObj->SetSigmaForTPCCompat(3.);
+  pidObj->SetSigmaForTOFCompat(3.);
+  pidObj->SetOldPid(kTRUE);
+  //  pidObj->SetOldPid(kFALSE);
+  SetPidHF(pidObj);
+
+  SetUseDefaultPID(kFALSE); //to use the AliAODPidHF
+
+  SetLowPt(kFALSE);
+
+  //activate pileup rejection (for pp)
+  SetOptPileup(AliRDHFCuts::kRejectPileupEvent);
+
+
+  PrintAll();
+
+  delete pidObj;
+  pidObj=NULL;
+  delete [] ptbins;
+  ptbins=NULL;
+
+  return;
+}
 
 //---------------------------------------------------------------------------
 void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
