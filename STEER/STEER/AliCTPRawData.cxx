@@ -15,10 +15,12 @@
 
 ////////////////////////////////////////////////////////////
 //This class contains the methods to create raw data                //
-//for CTP (trigger). The CTP data format is taken as                //
+//for CTP (trigger). For Run1 the CTP data format is taken as                //
 //described in the Trigger TDR - pages 134  and 135.                //
-//The updated version of raw data is in:                            //
+//The Run1 version of raw data is in:                            //
 //http://epweb2.ph.bham.ac.uk/user/krivda/alice/ctp/ctp_readout1.pdf//
+// The Run2 version of raw data is inL
+//http://alicetrigger.web.cern.ch/alicetrigger/ls1_upgrade/ctp_readout1_run2.pdf
 //////////////////////////////////////////////////////////
 
 #include <TObject.h>
@@ -276,7 +278,7 @@ void AliCTPRawData::RawDataRun2()
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
-  word |= (UInt_t)((l2classNext50 >> 44) & 0xFFF);  //6 96..85
+  word |= (UInt_t)((l2classNext50 >> 34) & 0xFFF);  //6 96..85
   AliDebug(1,Form("CTP word6 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
@@ -291,7 +293,7 @@ void AliCTPRawData::RawDataRun2()
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
   word = 0;
   word |= 0 << 15; // BlockID = 0 in case of CTP readout
-  word |= (UInt_t)(l2classNext50 & 0x7FF);   //9 61..51
+  word |= (UInt_t)((l2classNext50 & 0x3FF)<<2);   //9 60..51
   word |= (UInt_t)((l2class >> 48) & 0x3);   //9 50..49
   AliDebug(1,Form("CTP word9 = 0x%x",word));
   outfile->WriteBuffer((char*)(&word),sizeof(UInt_t));
