@@ -1232,7 +1232,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2010() {
   esdTrackCuts->SetPtRange(0.3,1.e10);
   
   AddTrackCuts(esdTrackCuts);
-
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
   
   const Int_t nptbins =14;
   const Double_t ptmax = 9999.;
@@ -1357,6 +1358,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPP2011_276TeV() {
   esdTrackCuts->SetMinDCAToVertexXYPtDep("0.0075*TMath::Max(0.,(1-TMath::Floor(TMath::Abs(pt)/2.)))");
 
   AddTrackCuts(esdTrackCuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
 
 
   const Int_t nvars=11;
@@ -1499,6 +1502,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
 
 
   AddTrackCuts(esdTrackCuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
   // SPD k FIRST for Pt<3 GeV/c
   SetSelectCandTrackSPDFirst(kTRUE, 3); 
 
@@ -1635,6 +1640,8 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010Peripherals() {
 
 
   AddTrackCuts(esdTrackCuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
   // SPD k FIRST for Pt<3 GeV/c
   SetSelectCandTrackSPDFirst(kTRUE, 3); 
 
