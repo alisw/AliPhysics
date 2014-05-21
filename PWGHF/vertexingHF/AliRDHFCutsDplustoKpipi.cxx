@@ -660,6 +660,9 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   delete [] anacutsval;
   anacutsval=NULL;
 
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+
   return;
 }
 
@@ -797,6 +800,9 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPbPb2010() {
 
   delete [] ptbins;
   ptbins=NULL;
+
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
 
   return;
 }
