@@ -31,7 +31,7 @@ const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
 // Space point resolution
 const Double_t kSigma2=0.0005*0.0005;
 // Max accepted chi2 per cluster
-const Double_t kmaxChi2PerCluster=77.;
+const Double_t kmaxChi2PerCluster=10.;
 // Tracking "road" from layer to layer
 const Double_t kRoadY=0.7;
 const Double_t kRoadZ=0.7;
@@ -515,7 +515,7 @@ RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliITSUTrackCooked *c) {
            //Warning("RefitAt","failed to estimate track !\n");
            return kFALSE;
         }
-        if (!t->Propagate(Double_t(phi), Double_t(r), GetBz())) {
+        if (!t->Propagate(phi, r, GetBz())) {
            //Warning("RefitAt","propagation failed !\n");
            return kFALSE;
         }
@@ -548,18 +548,18 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
       ResetTrackToFollow(track);
 
       fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
-      if (RefitAt(2.1, fTrackToFollow, &track)) {
+      if (!RefitAt(2.1, fTrackToFollow, &track)) continue;
+      //Cross the beam pipe
+      if (!fTrackToFollow->PropagateTo(1.8, 2.27e-3, 35.28*1.848)) continue;
 
-	 CookLabel(fTrackToFollow, 0.); //For comparison only
-         Int_t label=fTrackToFollow->GetLabel();
-         if (label>0) ngood++;
+      CookLabel(fTrackToFollow, 0.); //For comparison only
+      Int_t label=fTrackToFollow->GetLabel();
+      if (label>0) ngood++;
 
-	 esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
-	 //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
-         //UseClusters(fTrackToFollow);
-	 ntrk++;
-      }
-
+      esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
+      //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
+      //UseClusters(fTrackToFollow);
+      ntrk++;
   }
 
   Info("RefitInward","Refitted tracks: %d",ntrk);
