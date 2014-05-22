@@ -343,6 +343,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDND",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDND",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDND",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+
+    FillHisto1D("RecoRawEtFullAcceptanceTPCND",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDND",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSND",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDND",GetRawEtFullAcceptanceITSNoPID(),1.0);
+
   }
   if(eventtype == doublediff){
     FillHisto1D("RecoHadEtFullAcceptanceTPCDD",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
@@ -357,6 +363,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDDD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDDD",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDDD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCDD",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDDD",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSDD",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDDD",GetRawEtFullAcceptanceITSNoPID(),1.0);//ND
   }
   if(eventtype == singlediff){
     FillHisto1D("RecoPiKPEtFullAcceptanceTPCSD",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
@@ -371,6 +381,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDSD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDSD",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDSD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCSD",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDSD",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSSD",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDSD",GetRawEtFullAcceptanceITSNoPID(),1.0);
   }
   if(fGoodEvent){
     FillHisto1D("RecoPiKPEtFullAcceptanceTPC",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
