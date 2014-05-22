@@ -47,7 +47,6 @@ ClassImp(TrackSol)
 
 const double DetectorK::kPtMinFix = 0.050;
 const double DetectorK::kPtMaxFix = 31.5;
-const double DetectorK::kMinRadTPCTrack = 132.0;
 
 //TMatrixD *probKomb; // table for efficiency kombinatorics
 
@@ -86,13 +85,15 @@ DetectorK::DetectorK()
     fConfLevel(0.0027),      // 0.27 % -> 3 sigma confidence
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),    // Standard: pion mass 
-  fMaxRadiusSlowDet(10.),
+    fMaxRadiusSlowDet(10.),
     fAtLeastHits(-1),     // if -1, then require hit on all ITS layers
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
     fptScale(10.),
-    fdNdEtaCent(2300)
+  fdNdEtaCent(2300),
+  kDetLayer(-1),
+  fMinRadTrack(132.)
 {
   //
   // default constructor
@@ -118,7 +119,9 @@ DetectorK::DetectorK(char *name, char *title)
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
     fptScale(10.),
-    fdNdEtaCent(2200)
+    fdNdEtaCent(2200),
+  kDetLayer(-1),
+  fMinRadTrack(132.)
 {
   //
   // default constructor, that set the name and title
@@ -884,14 +887,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   }
 
   CylLayerK *last = (CylLayerK*) fLayers.At((fLayers.GetEntries()-1));
-  if (last->radius > kMinRadTPCTrack) {
+  if (last->radius > fMinRadTrack) {
     last = 0;
     for (Int_t i=0; i<fLayers.GetEntries();i++) {
       CylLayerK *l = (CylLayerK*) fLayers.At(i);
-      if (!(l->isDead) && (l->radius<kMinRadTPCTrack)) last = l;
+      if (!(l->isDead) && (l->radius<fMinRadTrack)) last = l;
     }
     if (!last) {
-      printf("No layer with radius < %f is found\n",kMinRadTPCTrack);
+      printf("No layer with radius < %f is found\n",fMinRadTrack);
       return;
     }
   }
@@ -1457,14 +1460,17 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
   Double_t pt,lambda;
   //
   CylLayerK *last = (CylLayerK*) fLayers.At((fLayers.GetEntries()-1));
-  if (last->radius > kMinRadTPCTrack) {
+  double maxR = last->radius+kTrackingMargin*2;
+  double minRad = (fMinRadTrack>0&&fMinRadTrack<maxR) ? fMinRadTrack : maxR;
+  //
+  if (last->radius > minRad) {
     last = 0;
     for (Int_t i=0; i<fLayers.GetEntries();i++) {
       CylLayerK *l = (CylLayerK*) fLayers.At(i);
-      if (!(l->isDead) && (l->radius<kMinRadTPCTrack)) last = l;
+      if (!(l->isDead) && (l->radius<minRad)) last = l;
     }
     if (!last) {
-      printf("No layer with radius < %f is found\n",kMinRadTPCTrack);
+      printf("No layer with radius < %f is found\n",minRad);
       return kFALSE;
     }
   }
@@ -1492,11 +1498,15 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
   //
   // find max layer this track can reach
   double rmx = (TMath::Abs(fBField)>1e-5) ?  pt*100./(0.3*TMath::Abs(fBField)) : 9999;
+  if (2*rmx-5. < minRad && minRad>0) {
+    printf("Track of pt=%.3f cannot be tracked to min. r=%f\n",pt,minRad);
+    return kFALSE;
+  }
   Int_t lastActiveLayer = -1;
   for (Int_t j=fLayers.GetEntries(); j--;) { 
     CylLayerK *l = (CylLayerK*) fLayers.At(j);
     //	printf("at lr %d r: %f vs %f, pt:%f\n",j,l->radius, 2*rmx-2.*kTrackingMargin, pt);
-    if (!(l->isDead) && (l->radius < 2*(rmx-5.))) {lastActiveLayer = j; last = l; break;}
+    if (!(l->isDead) && (l->radius <= 2*(rmx-5))) {lastActiveLayer = j; last = l; break;}
   }
   if (lastActiveLayer<0) {
     printf("No active layer with radius < %f is found, pt = %f\n",rmx, pt);
@@ -1547,22 +1557,23 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
     // save inward parameters at this layer: before the update!
     new( saveParInward[j] ) AliExternalTrackParam(probTr);
     //
-    if (isVertex) continue;
-    //
-    // create fake measurement with the errors assigned to the layer
-    // account for the measurement there 
-    double meas[2] = {probTr.GetY(),probTr.GetZ()};
-    double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
-    //
-    if (!probTr.Update(meas,measErr2)) {
-      printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
-	     meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
-      probTr.Print();
-      exit(1);
+    if (!isVertex && !layer->isDead) {
+      //
+      // create fake measurement with the errors assigned to the layer
+      // account for the measurement there 
+      double meas[2] = {probTr.GetY(),probTr.GetZ()};
+      double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
+      //
+      if (!probTr.Update(meas,measErr2)) {
+	printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
+	       meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
+	probTr.Print();
+	exit(1);
+      }
     }
     // correct for materials of this layer
     // note: if apart from MS we want also e.loss correction, the density*length should be provided as 2nd param
-    if (!probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
+    if (layer->radL>0 && !probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
       printf("Failed to apply material correction, X/X0=%.4f\n",layer->radL);
       probTr.Print();
       exit(1);
@@ -1604,7 +1615,7 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
     }
   }
   probTr.Rotate(0);
-  for (Int_t j=firstActiveLayer; j<=lastActiveLayer; j++) {  // Layer loop
+  for (Int_t j=0; j<=lastActiveLayer; j++) {  // Layer loop
     //
     layer = (CylLayerK*)fLayers.At(j);
     TString name(layer->GetName());
@@ -1638,18 +1649,19 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
     covCmb[1] = 0;
     // create fake measurement with the errors assigned to the layer
     // account for the measurement there
-    if (isVertex) continue;
-    double meas[2] = {probTr.GetY(),probTr.GetZ()};
-    double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
-    //
-    if (!probTr.Update(meas,measErr2)) {
-      printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
-	     meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
-      probTr.Print();
-      exit(1);
+    if (!isVertex && !layer->isDead) {
+      double meas[2] = {probTr.GetY(),probTr.GetZ()};
+      double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
+      //
+      if (!probTr.Update(meas,measErr2)) {
+	printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
+	       meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
+	probTr.Print();
+	exit(1);
+      }
     }
     // note: if apart from MS we want also e.loss correction, the density*length should be provided as 2nd param
-    if (!probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
+    if (layer->radL>0 && !probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
       printf("Failed to apply material correction, X/X0=%.4f\n",layer->radL);
       probTr.Print();
       exit(1);
@@ -1764,9 +1776,11 @@ Bool_t DetectorK::ExtrapolateToR(AliExternalTrackParam* probTr, double rTgt, dou
     }
   }
   //
+  /*
   printf("Xcurr: %.2f Xdest: %.2f %d Icurr:%d Itgt:%d Rcurr:%.2f Rdest:%.2f\n",
 	 xCurr,rTgt, dir, lrCurr, lrTgt, 
 	 ((CylLayerK*)fLayers.At(lrCurr))->radius, ((CylLayerK*)fLayers.At(lrTgt))->radius );
+  */
   //
   double bGauss = fBField*10;
   //
@@ -2489,13 +2503,75 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
   //
   // special case of R=0
   if (r<kAlmost0) {x=0; return kTRUE;}
-
+  
   const double* pars = tr->GetParameter();
   const Double_t &fy=pars[0], &sn = pars[2];
+  const double kEps = 1.e-6;
   //
-  double fx = tr->GetX();
+  double fx = tr->GetX(); 
   double crv = tr->GetC(bz);
-  if (TMath::Abs(crv)<=kAlmost0) { // this is a straight track
+  if (TMath::Abs(crv)>kAlmost0) {                                 // helix
+    // get center of the track circle
+    double tR = 1./crv;   // track radius (for the moment signed)
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fx - sn*tR;
+    double y0 = fy + cs*tR;
+    double r0 = TMath::Sqrt(x0*x0+y0*y0);
+    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
+    //
+    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
+    tR = TMath::Abs(tR);
+    double tR2r0=1.,g=0,tmp=0;
+    if (TMath::Abs(tR-r0)>kEps) {
+      tR2r0 = tR/r0;
+      g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
+      tmp = 1.+g*tR2r0;
+    }
+    else {
+      tR2r0 = 1.0;
+      g = 0.5*r*r/(r0*tR) - 1;
+      tmp = 0.5*r*r/(r0*r0);
+    }
+    double det = (1.-g)*(1.+g);
+    if (det<0) return kFALSE;         // does not reach raduis r
+    det = TMath::Sqrt(det);    
+    //
+    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
+    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
+    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
+    //
+    x = x0*tmp; 
+    double y = y0*tmp;
+    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
+      double dfx = tR2r0*TMath::Abs(y0)*det;
+      double dfy = tR2r0*x0*TMath::Sign(det,y0);
+      if (dir==0) {                    // chose the one which corresponds to smallest step 
+	double delta = (x-fx)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
+	if (delta<0) x += dfx;
+	else         x -= dfx;
+      }
+      else if (dir>0) {  // along track direction: x must be > fx
+	x -= dfx; // try the smallest step (dfx is positive)
+	double dfeps = fx-x; // handle special case of very small step
+	if (dfeps>0) { 
+	  if (dfeps<kEps) return fx;
+	  if ((x+=dfx+dfx)<fx) return kFALSE;
+	}
+      }
+      else { // backward: x must be < fx
+	x += dfx; // try the smallest step (dfx is positive)	
+	double dfeps = x-fx; // handle special case of very small step
+	if (dfeps>0) {
+	  if (dfeps<kEps) return fx;
+	  if ((x-=dfx+dfx)>fx) return kFALSE;
+	}
+      }
+    }
+    else { // special case: track touching the circle just in 1 point
+      if ( (dir>0&&x<fx) || (dir<0&&x>fx) ) return kFALSE; 
+    }
+  }
+  else { // this is a straight track
     if (TMath::Abs(sn)>=kAlmost1) { // || to Y axis
       double det = (r-fx)*(r+fx);
       if (det<0) return kFALSE;     // does not reach raduis r
@@ -2548,51 +2624,6 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
 	else return kFALSE;             // both solutions have positive t
       }
       x = fx + cs*t;
-    }
-  }
-  else {                                 // helix
-    // get center of the track circle
-    double tR = 1./crv;   // track radius (for the moment signed)
-    double cs = TMath::Sqrt((1-sn)*(1+sn));
-    double x0 = fx - sn*tR;
-    double y0 = fy + cs*tR;
-    double r0 = TMath::Sqrt(x0*x0+y0*y0);
-    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
-    //
-    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
-    tR = TMath::Abs(tR);
-    double tR2r0 = tR/r0;
-    double g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
-    double det = (1.-g)*(1.+g);
-    if (det<0) return kFALSE;         // does not reach raduis r
-    det = TMath::Sqrt(det);
-    //
-    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
-    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
-    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
-    //
-    double tmp = 1.+g*tR2r0;
-    x = x0*tmp; 
-    double y = y0*tmp;
-    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
-      double dfx = tR2r0*TMath::Abs(y0)*det;
-      double dfy = tR2r0*x0*TMath::Sign(det,y0);
-      if (dir==0) {                    // chose the one which corresponds to smallest step 
-	double delta = (x-fx)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
-	if (delta<0) x += dfx;
-	else         x -= dfx;
-      }
-      else if (dir>0) {  // along track direction: x must be > fx
-	x -= dfx; // try the smallest step (dfx is positive)
-	if (x<fx && (x+=dfx+dfx)<fx) return kFALSE;
-      }
-      else { // backward: x must be < fx
-	x += dfx; // try the smallest step (dfx is positive)
-	if (x>fx && (x-=dfx+dfx)>fx) return kFALSE;
-      }
-    }
-    else { // special case: track touching the circle just in 1 point
-      if ( (dir>0&&x<fx) || (dir<0&&x>fx) ) return kFALSE; 
     }
   }
   //
@@ -2676,6 +2707,7 @@ Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, i
   double rr = r*r;
   int iter = 0;
   const double kTiny = 1e-6;
+  //
   while(1) {
     //    if (!trc->GetXatLabR(r,xR,b,dir)) {
     if (!GetXatLabR(trc, r ,xR, b, dir)) {

@@ -2729,9 +2729,71 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
   // <0 - go backward (decreasing fX)
   //
   const Double_t &fy=fP[0], &sn = fP[2];
+  const double kEps = 1.e-6;
   //
   double crv = GetC(bz);
-  if (TMath::Abs(crv)<=kAlmost0) { // this is a straight track
+  if (TMath::Abs(crv)>kAlmost0) {                                 // helix
+    // get center of the track circle
+    double tR = 1./crv;   // track radius (for the moment signed)
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fX - sn*tR;
+    double y0 = fy + cs*tR;
+    double r0 = TMath::Sqrt(x0*x0+y0*y0);
+    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
+    //
+    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
+    tR = TMath::Abs(tR);
+    double tR2r0=1.,g=0,tmp=0;
+    if (TMath::Abs(tR-r0)>kEps) {
+      tR2r0 = tR/r0;
+      g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
+      tmp = 1.+g*tR2r0;
+    }
+    else {
+      tR2r0 = 1.0;
+      g = 0.5*r*r/(r0*tR) - 1;
+      tmp = 0.5*r*r/(r0*r0);
+    }
+    double det = (1.-g)*(1.+g);
+    if (det<0) return kFALSE;         // does not reach raduis r
+    det = TMath::Sqrt(det);    
+    //
+    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
+    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
+    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
+    //
+    x = x0*tmp; 
+    double y = y0*tmp;
+    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
+      double dfx = tR2r0*TMath::Abs(y0)*det;
+      double dfy = tR2r0*x0*TMath::Sign(det,y0);
+      if (dir==0) {                    // chose the one which corresponds to smallest step 
+	double delta = (x-fX)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
+	if (delta<0) x += dfx;
+	else         x -= dfx;
+      }
+      else if (dir>0) {  // along track direction: x must be > fX
+	x -= dfx; // try the smallest step (dfx is positive)
+	double dfeps = fX-x; // handle special case of very small step
+	if (dfeps>0) { 
+	  if (dfeps<kEps) return fX;
+	  if ((x+=dfx+dfx)<fX) return kFALSE;
+	}
+      }
+      else { // backward: x must be < fX
+	x += dfx; // try the smallest step (dfx is positive)	
+	double dfeps = x-fX; // handle special case of very small step
+	if (dfeps>0) {
+	  if (dfeps<kEps) return fX;
+	  if ((x-=dfx+dfx)>fX) return kFALSE;
+	}
+      }
+    }
+    else { // special case: track touching the circle just in 1 point
+      if ( (dir>0&&x<fX) || (dir<0&&x>fX) ) return kFALSE; 
+    }
+  }
+  else { // this is a straight track
     if (TMath::Abs(sn)>=kAlmost1) { // || to Y axis
       double det = (r-fX)*(r+fX);
       if (det<0) return kFALSE;     // does not reach raduis r
@@ -2742,7 +2804,7 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
 	if (sn>0) {if (fy>det)  return kFALSE;} // track is along Y axis and above the circle
 	else      {if (fy<-det) return kFALSE;} // track is against Y axis amd belo the circle
       }
-      else {                                    // agains track direction
+      else if(dir>0) {                                    // agains track direction
 	if (sn>0) {if (fy<-det) return kFALSE;} // track is along Y axis
         else if (fy>det)  return kFALSE;        // track is against Y axis
       }
@@ -2784,51 +2846,6 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
 	else return kFALSE;             // both solutions have positive t
       }
       x = fX + cs*t;
-    }
-  }
-  else {                                 // helix
-    // get center of the track circle
-    double tR = 1./crv;   // track radius (for the moment signed)
-    double cs = TMath::Sqrt((1-sn)*(1+sn));
-    double x0 = fX - sn*tR;
-    double y0 = fy + cs*tR;
-    double r0 = TMath::Sqrt(x0*x0+y0*y0);
-    //    printf("Xc:%+e Yc:%+e\n",x0,y0);
-    //
-    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
-    tR = TMath::Abs(tR);
-    double tR2r0 = tR/r0;
-    double g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
-    double det = (1.-g)*(1.+g);
-    if (det<0) return kFALSE;         // does not reach raduis r
-    det = TMath::Sqrt(det);
-    //
-    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
-    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
-    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
-    //
-    double tmp = 1.+g*tR2r0;
-    x = x0*tmp; 
-    double y = y0*tmp;
-    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
-      double dfx = tR2r0*TMath::Abs(y0)*det;
-      double dfy = tR2r0*x0*TMath::Sign(det,y0);
-      if (dir==0) {                    // chose the one which corresponds to smallest step 
-	double delta = (x-fX)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
-	if (delta<0) x += dfx;
-	else         x -= dfx;
-      }
-      else if (dir>0) {  // along track direction: x must be > fX
-	x -= dfx; // try the smallest step (dfx is positive)
-	if (x<fX && (x+=dfx+dfx)<fX) return kFALSE;
-      }
-      else { // backward: x must be < fX
-	x += dfx; // try the smallest step (dfx is positive)
-	if (x>fX && (x-=dfx+dfx)>fX) return kFALSE;
-      }
-    }
-    else { // special case: track touching the circle just in 1 point
-      if ( (dir>0&&x<fX) || (dir<0&&x>fX) ) return kFALSE; 
     }
   }
   //

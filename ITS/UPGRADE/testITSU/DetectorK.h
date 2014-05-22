@@ -49,7 +49,7 @@ Dec. 2010 - Translation into C++ class format
 class AliExternalTrackParam; 
 #include <TMatrixD.h>
 
-class TrackSol: public TObjArray
+class TrackSol: public TObject
 {
  public:
   enum {kInw,kOut,kCmb};
@@ -186,8 +186,12 @@ class DetectorK : public TNamed {
   Bool_t SolveTrack(TrackSol& ts);
   Bool_t CalcITSEff(TrackSol& ts, Bool_t verbose=kTRUE);
   Bool_t ExtrapolateToR(AliExternalTrackParam* probTr, double rTgt, double mass=0.14);
-  
-    //
+  //
+  void   SetMinRadTrack(double r=132) {  fMinRadTrack = r; }
+  Double_t GetMinRadTrack()  const { return fMinRadTrack;}
+
+  //
+  //
   // Helper functions
   Double_t ThetaMCS                 ( Double_t mass, Double_t RadLength, Double_t momentum ) const;
   Double_t ProbGoodHit              ( Double_t radius, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
@@ -265,9 +269,10 @@ class DetectorK : public TNamed {
   Double_t fResolutionZLay[kNptBins];                           // array of z resolution
   Double_t fEfficProlongLay[kNptBins];                           // array of z resolution
 
+  Double_t fMinRadTrack;
+
   static const Double_t kPtMinFix;
   static const Double_t kPtMaxFix;
-  static const Double_t kMinRadTPCTrack;
 
   ClassDef(DetectorK,1);
 };
