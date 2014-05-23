@@ -161,7 +161,7 @@ void runEMCalJetAnalysis(
 
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-  AddTaskJetPreparation(periodName);
+  AddTaskJetPreparation(runPeriod);
 
   // ################# Now: Add jet finders+analyzers
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
