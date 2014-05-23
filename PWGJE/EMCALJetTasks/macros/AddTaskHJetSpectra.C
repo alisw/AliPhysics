@@ -117,7 +117,7 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetNofRandomCones(1);
  
    // output container
-   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra", AliAnalysisManager::GetCommonFileName()));
+   contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
  
  
    // #### ADD ANALYSIS TASK
