@@ -22,7 +22,8 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   Bool_t              analyzeDeprecatedBackgrounds = kTRUE,
   Int_t               numberOfCentralityBins  = 20,
   const char*         externalRhoName         = "ExternalRhoTask",
-  Double_t            ktJetRadius             = 0.4
+  Double_t            ktJetRadius             = 0.4,
+  Double_t            areaPercentage          = 0.6,
 )
 {
   // #### Detect the demanded trigger with its readable name
@@ -118,7 +119,7 @@ AliAnalysisTaskChargedJetsPA* AddTaskChargedJetsPA(
   task->SetUsePileUpCut(usePileUpCut);
   task->SetUseDefaultVertexCut(useVertexCut);
   task->SetSignalJetMinPt(minJetPt);
-  task->SetSignalJetMinArea(0.6*jetRadius*jetRadius*TMath::Pi());
+  task->SetSignalJetMinArea(areaPercentage*jetRadius*jetRadius*TMath::Pi());
   task->SetDijetLeadingMinPt(dijetLeadingMinPt);
   task->SetDijetMaxAngleDeviation(dijetMaxAngleDev);
   task->SetRandConeRadius(randomConeR);
