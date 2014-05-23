@@ -93,8 +93,9 @@ goCPass0()
   fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-  doneFile="${commonOutputPath}/meta/cpass0.job${jobindex}.run${runNumber}.done"
-  [[ -n ${useProfilingCommand} ]] && doneFile="${commonOutputPath}/meta/profiling.cpass0.job${jobindex}.run${runNumber}.done"
+  doneFile="cpass0.job${jobindex}.run${runNumber}.done"
+  [[ -n ${useProfilingCommand} ]] && doneFile="profiling.cpass0.job${jobindex}.run${runNumber}.done"
+  [[ -z ${doneFileDest} ]] && doneFileDest="${commonOutputPath}/meta/"
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   
@@ -121,6 +122,7 @@ goCPass0()
   if [[ ! -d ${outputDir} ]]; then 
     touch ${doneFile} 
     echo "cannot make ${outputDir}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1  
   fi
   
@@ -132,11 +134,13 @@ goCPass0()
   if [[ ! -d ${runpath} ]]; then
     touch ${doneFile} 
     echo "cannot make runpath ${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
   if ! cd ${runpath}; then
     touch ${doneFile}
     echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -181,6 +185,7 @@ goCPass0()
   if [[ ! -f ${inputList} && -z ${pretend} ]]; then
     touch ${doneFile} 
     echo "input file ${inputList} not found, exiting..." >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -203,6 +208,7 @@ goCPass0()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
+  echo doneFileDest  ${doneFileDest}
   echo batchWorkingDirectory=$batchWorkingDirectory
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
@@ -274,6 +280,7 @@ goCPass0()
     [[ -f AliESDfriends_v1.root ]] && echo "calibfile ${outputDir}/AliESDfriends_v1.root" >> ${doneFile}
     [[ -f AliESDs.root ]] && echo "esd ${outputDir}/AliESDs.root" >> ${doneFile}
   fi
+  cp ${doneFile} ${doneFileDest}
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath} && echo "removing ${runpath}"
   return 0
@@ -308,8 +315,9 @@ goCPass1()
   fi
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-  doneFile="${commonOutputPath}/meta/cpass1.job${jobindex}.run${runNumber}.done"
-  [[ -n ${useProfilingCommand} ]] && doneFile="${commonOutputPath}/meta/profiling.cpass1.job${jobindex}.run${runNumber}.done"
+  doneFile="cpass1.job${jobindex}.run${runNumber}.done"
+  [[ -n ${useProfilingCommand} ]] && doneFile="profiling.cpass1.job${jobindex}.run${runNumber}.done"
+  [[ -z ${doneFileDest} ]] && doneFileDest="${commonOutputPath}/meta/"
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
   
@@ -327,6 +335,7 @@ goCPass1()
   if [[ ! -f ${inputList} && -z ${pretend} ]]; then
     touch ${doneFile}
     echo "input file ${inputList} not found, exiting..." >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
   if [[ "${inputList}" =~ \.root$ ]]; then
@@ -341,6 +350,7 @@ goCPass1()
   if [[ ! -d ${outputDir} ]];then
     touch ${doneFile}
     echo "cannot make ${outputDir}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
   
@@ -360,11 +370,13 @@ goCPass1()
   if [[ ! -d ${runpath} ]]; then
    touch ${doneFile}
    echo "cannot make runpath ${runpath}" >> ${doneFile}
+   cp ${doneFile} ${doneFileDest}
    return 1
  fi
   if ! cd ${runpath}; then
     touch ${doneFile}
     echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -390,6 +402,7 @@ goCPass1()
   echo targetDirectory    ${targetDirectory}
   echo commonOutputPath         ${commonOutputPath}
   echo doneFile      ${doneFile}
+  echo doneFileDest  ${doneFileDest}
   echo runpath            ${runpath}  
   echo outputDir          ${outputDir}
   echo batchWorkingDirectory ${batchWorkingDirectory}
@@ -446,6 +459,7 @@ goCPass1()
   if [[ ! $(/bin/ls -1 OCDB/*/*/*/*.root 2>/dev/null) ]]; then
     touch ${doneFile}
     echo "cpass0 produced no calibration! exiting..." >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -566,6 +580,7 @@ goCPass1()
       [[ -f FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
     fi
   fi
+  cp ${doneFile} ${doneFileDest}
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
@@ -590,7 +605,8 @@ goMergeCPass0()
   batchWorkingDirectory=${PWD}
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-  doneFile="${commonOutputPath}/meta/merge.cpass0.run${runNumber}.done"
+  doneFile="merge.cpass0.run${runNumber}.done"
+  [[ -z ${doneFileDest} ]] && doneFileDest="${commonOutputPath}/meta/"
 
   umask 0002
   ulimit -c unlimited 
@@ -606,11 +622,13 @@ goMergeCPass0()
   if [[ ! -d ${runpath} ]]; then
     touch ${doneFile}
     echo "not able to make the runpath ${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
   if ! cd ${runpath}; then 
     touch ${doneFile}
     echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -706,6 +724,7 @@ goMergeCPass0()
     [[ -f CalibObjects.root ]] && echo "calibfile ${outputDir}/CalibObjects.root" >> ${doneFile}
     [[ -f dcsTime.root ]] && echo "dcsTree ${outputDir}/dcsTime.root" >> ${doneFile}
   fi
+  cp ${doneFile} ${doneFileDest}
 
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
@@ -731,7 +750,8 @@ goMergeCPass1()
   batchWorkingDirectory=${PWD}
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-  doneFile="${commonOutputPath}/meta/merge.cpass1.run${runNumber}.done"
+  doneFile="merge.cpass1.run${runNumber}.done"
+  doneFile="${commonOutputPath}/meta/"
 
   umask 0002
   ulimit -c unlimited 
@@ -752,11 +772,13 @@ goMergeCPass1()
   if [[ ! -d ${runpath} ]]; then
     touch ${doneFile}
     echo "not able to make the runpath ${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
   if ! cd ${runpath}; then 
     touch ${doneFile}
     echo "PWD=$PWD is not the runpath=${runpath}" >> ${doneFile}
+    cp ${doneFile} ${doneFileDest}
     return 1
   fi
 
@@ -898,6 +920,8 @@ goMergeCPass1()
     fi
   fi
       
+  cp ${doneFile} ${doneFileDest}
+  
   [[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
   return 0
 )
@@ -1435,7 +1459,8 @@ goMakeFilteredTrees()
   batchWorkingDirectory=${PWD}
 
   [[ -z ${commonOutputPath} ]] && commonOutputPath=${PWD}
-  doneFile=${commonOutputPath}/meta/filtering.cpass1.run${runNumber}.done
+  doneFile=filtering.cpass1.run${runNumber}.done
+  [[ -z ${doneFileDest} ]] && doneFileDest="${commonOutputPath}/meta/"
 
   cat > filtering.log << EOF
   goMakeFilteredTrees config:
@@ -1459,6 +1484,7 @@ EOF
   #if ! cd ${runpath}; then 
   #  echo "PWD=$PWD is not the runpath=${runpath}"
   #  touch ${doneFile}
+  #  cp ${doneFile} ${doneFileDest}
   #  return 1
   #fi
   
@@ -1478,7 +1504,9 @@ EOF
   #[[ -f ${outputDir}/FilterEvents_Trees.root ]] && echo "filteredTree ${outputDir}/FilterEvents_Trees.root" >> ${doneFile}
   #cd ${commonOutputPath}
   #[[ "${runpath}" != "${outputDir}" ]] && rm -rf ${runpath}
-  
+ 
+  cp ${doneFile} ${doneFileDest}
+
   return 0
 )
 
