@@ -2775,18 +2775,18 @@ Bool_t AliExternalTrackParam::GetXatLabR(Double_t r,Double_t &x, Double_t bz, In
       else if (dir>0) {  // along track direction: x must be > fX
 	x -= dfx; // try the smallest step (dfx is positive)
 	double dfeps = fX-x; // handle special case of very small step
-	if (dfeps>0) { 
-	  if (dfeps<kEps) return fX;
-	  if ((x+=dfx+dfx)<fX) return kFALSE;
-	}
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fX*fX+fy*fy - r*r)<kEps) return fX;
+	if ((x+=dfx+dfx)<fX) return kFALSE;
       }
       else { // backward: x must be < fX
 	x += dfx; // try the smallest step (dfx is positive)	
 	double dfeps = x-fX; // handle special case of very small step
-	if (dfeps>0) {
-	  if (dfeps<kEps) return fX;
-	  if ((x-=dfx+dfx)>fX) return kFALSE;
-	}
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fX*fX+fy*fy - r*r)<kEps) return fX;
+	if ((x-=dfx+dfx)>fX) return kFALSE;
       }
     }
     else { // special case: track touching the circle just in 1 point
