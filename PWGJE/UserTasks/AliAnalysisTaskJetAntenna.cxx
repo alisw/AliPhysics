@@ -535,7 +535,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       if(phistr<-0.5*TMath::Pi()) phistr += 2*TMath::Pi();
       if(phistr>1.5*TMath::Pi()) phistr -= 2*TMath::Pi();
 
-      double jetEntries[6] = {dRR,ptbig,pt,phistr,circ,nc};
+      double jetEntries[6] = {dRR,ptbig,pt,phistr,circ,static_cast<double>(nc)};
       fhnJetTM->Fill(jetEntries);
 
     } // 2nd Track loop
