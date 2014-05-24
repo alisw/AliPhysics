@@ -23,7 +23,7 @@ http://rnc.lbl.gov/~jhthomas
 Changes by S. Rossegger -> see header file
 
 ***********************************************************/
-
+Bool_t DetectorK::verboseR=0;
 
 #define RIDICULOUS 999999 // A ridiculously large resolution (cm) to flag a dead detector
 
@@ -1209,7 +1209,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	    break;
 	  }
 	}
-	probTr.Rotate(0);
+	//probTr.Rotate(0);
    	for (Int_t j=firstActiveLayer; j<=lastActiveLayer; j++) {  // Layer loop
 	  
 	  layer = (CylLayerK*)fLayers.At(j);
@@ -1517,6 +1517,21 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
   if (!PropagateToR(&probTr,last->radius + kTrackingMargin,bGauss,1)) return kFALSE;
   //if (!probTr.PropagateTo(last->radius,bGauss)) continue;
   // reset cov.matrix
+  // 
+  // rotate to external layer frame
+  /*
+  double posL[3];
+  probTr.GetXYZ(posL);  // lab position
+  double phiL = TMath::ATan2(posL[1],posL[0]);
+  if (!probTr.Rotate(phiL)) {
+    printf("Failed to rotate to the frame (phi:%+.3f)of Extertnal layer at %.2f\n",
+	   phiL,last->radius);
+    probTr.Print();
+    exit(1);
+  }
+  */
+  if (!probTr.Rotate(probTr.Phi())) return kFALSE; // define large errors in track proper frame (snp=0)
+  //
   const double kLargeErr2Coord = 5*5;
   const double kLargeErr2Dir = 0.7*0.7;
   const double kLargeErr2PtI = 30.5*30.5;
@@ -1556,6 +1571,9 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
     }
     // save inward parameters at this layer: before the update!
     new( saveParInward[j] ) AliExternalTrackParam(probTr);
+    if (verboseR) {
+      printf("SaveInw %d (%f)  ",j,layer->radius); probTr.Print();
+    }    
     //
     if (!isVertex && !layer->isDead) {
       //
@@ -1614,7 +1632,7 @@ Bool_t DetectorK::SolveTrack(TrackSol& ts) {
       break;
     }
   }
-  probTr.Rotate(0);
+  //probTr.Rotate(0);
   for (Int_t j=0; j<=lastActiveLayer; j++) {  // Layer loop
     //
     layer = (CylLayerK*)fLayers.At(j);
@@ -1788,9 +1806,16 @@ Bool_t DetectorK::ExtrapolateToR(AliExternalTrackParam* probTr, double rTgt, dou
     CylLayerK *l = (CylLayerK*)fLayers.At(ilr);
     if (!PropagateToR(probTr,l->radius,bGauss,dir)) return kFALSE;
     if (!probTr->CorrectForMeanMaterial(l->radL, 0, mass , kTRUE)) return kFALSE;
+    if (verboseR) {
+      printf("\nGot to layer %d | ",ilr); probTr->Print();
+    }
   }
   // go to destination r
   if (!PropagateToR(probTr,rTgt,bGauss,dir)) return kFALSE;
+  if (verboseR) {
+    printf("\nGot to r= %.2f | ",rTgt); probTr->Print();
+  }
+
   //
   return kTRUE;
 }
@@ -2498,8 +2523,8 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
   //
   // The flag "dir" can be used to remove the ambiguity of which intersection to take (out of 2 possible)
   // 0  - take the intersection closest to the current track position
-  // >0 - go along the track (increasing fX)
-  // <0 - go backward (decreasing fX)
+  // >0 - go along the track (increasing R)
+  // <0 - go backward (decreasing R)
   //
   // special case of R=0
   if (r<kAlmost0) {x=0; return kTRUE;}
@@ -2551,20 +2576,28 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
 	else         x -= dfx;
       }
       else if (dir>0) {  // along track direction: x must be > fx
-	x -= dfx; // try the smallest step (dfx is positive)
+	x -= dfx; // (dfx is positive)
 	double dfeps = fx-x; // handle special case of very small step
-	if (dfeps>0) { 
-	  if (dfeps<kEps) return fx;
-	  if ((x+=dfx+dfx)<fx) return kFALSE;
-	}
+	//	if (verboseR) printf("d+: x:%+e|%+e fx: %+e d %+e\n",x,x+dfx+dfx,fx,dfeps);
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fx*fx+fy*fy - r*r)<kEps) return fx;
+	x += dfx+dfx;
+	if (x-fx>0) return kTRUE;
+	if (x-fx<-kEps) return kFALSE;
+	x = fx; // don't move
       }
       else { // backward: x must be < fx
 	x += dfx; // try the smallest step (dfx is positive)	
 	double dfeps = x-fx; // handle special case of very small step
-	if (dfeps>0) {
-	  if (dfeps<kEps) return fx;
-	  if ((x-=dfx+dfx)>fx) return kFALSE;
-	}
+	//	if (verboseR) printf("d-: x:%+e|%+e fx: %+e d %+e\n",x,x-dfx-dfx,fx,dfeps);
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fx*fx+fy*fy - r*r)<kEps) return fx;
+	x-=dfx+dfx;
+	if (x-fx<0) return kTRUE;
+	if (x-fx>kEps) return kFALSE;
+	x = fx; // don't move
       }
     }
     else { // special case: track touching the circle just in 1 point
@@ -2708,24 +2741,45 @@ Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, i
   int iter = 0;
   const double kTiny = 1e-6;
   //
+  if (verboseR) {
+    printf("Prop to %f d=%d  ",r,dir); trc->Print();
+  }
   while(1) {
     //    if (!trc->GetXatLabR(r,xR,b,dir)) {
+    //RRR rotate to local tracking frame
+    if (!trc->Rotate(trc->Phi())) {printf("Failed to rotate to local frame %f |",trc->Phi()); trc->Print(); return kFALSE;}
+
+
     if (!GetXatLabR(trc, r ,xR, b, dir)) {
       printf("Track with pt=%f cannot reach radius %f\n",trc->Pt(),r);
       trc->Print();
       return kFALSE;
     }
-    double snp = trc->GetSnpAt(xR,b);
+    double snp = trc->GetSnpAt(xR,b);    
+
     if (!trc->PropagateTo(xR, b)) {printf("Failed to propagate to X=%f for R=%f snp=%f | iter=%d\n",xR,r,snp,iter); trc->Print(); return kFALSE;}
     double rcurr2 = xR*xR + trc->GetY()*trc->GetY();
-    if (TMath::Abs(rcurr2-rr)<kTiny || rr<kTiny) return kTRUE;
-    // two radii correspond to this X...
+    if (TMath::Abs(rcurr2-rr)<kTiny || rr<kTiny) break;
+    //
+    //    printf("new it%d for r=%f (xR=%f) rcurr=%f snp:%f alp:%f\n",iter, r,xR,TMath::Sqrt(rcurr2),trc->GetSnp(),trc->GetAlpha());
+    if (++iter>8) {printf("Failed to propagate to R=%f after %d steps\n",r,iter); trc->Print(); return kFALSE;}
+    if (verboseR) {
+      printf("iter %d ",iter); trc->Print();
+    }
+  } 
+  //
+  /*
+  // rotate to "sensor" frame (along intersection radius)
+  if (r>kTiny) {
     double pos[3]; trc->GetXYZ(pos);
     double phi = TMath::ATan2(pos[1],pos[0]); //TMath::ASin( trc->GetSnp() );
     if (!trc->Rotate(phi)) {printf("Failed to rotate to %f to propagate to R=%f\n",phi,r); trc->Print(); return kFALSE;}
-    //    printf("new it%d for r=%f (xR=%f) rcurr=%f snp:%f alp:%f\n",iter, r,xR,TMath::Sqrt(rcurr2),trc->GetSnp(),trc->GetAlpha());
-    if (++iter>8) {printf("Failed to propagate to R=%f after %d steps\n",r,iter); trc->Print(); return kFALSE;}
-  } 
+  }
+  */
+  if (verboseR) {
+    printf("iter end "); trc->Print();
+  }
+
   return kTRUE;
 }
 

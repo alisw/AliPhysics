@@ -229,6 +229,7 @@ class DetectorK : public TNamed {
 
   Bool_t IsITSLayer(const TString& lname);
 
+  static Bool_t verboseR;
  protected:
  
   Int_t fNumberOfLayers;        // total number of layers in the model
