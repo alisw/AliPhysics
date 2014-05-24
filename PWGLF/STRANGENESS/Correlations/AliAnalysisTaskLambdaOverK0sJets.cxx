@@ -48,8 +48,6 @@
 
 #include "AliAnalysisTaskLambdaOverK0sJets.h"
 
-extern TROOT *gROOT;
-
 
 ClassImp(AliAnalysisTaskLambdaOverK0sJets)
 ClassImp(AliMiniParticle)
