@@ -237,9 +237,10 @@ Bool_t AliAnalysisTaskEmcalJetSample::FillHistograms()
       Float_t ptLeading = fJetsCont->GetLeadingHadronPt(jet);
       fHistJetsPtLeadHad[fCentBin]->Fill(jet->Pt(), ptLeading);
 
-      Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
-      fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
-      
+      if (fHistJetsCorrPtArea[fCentBin]) {
+	Float_t corrPt = jet->Pt() - fJetsCont->GetRhoVal() * jet->Area();
+	fHistJetsCorrPtArea[fCentBin]->Fill(corrPt, jet->Area());
+      }
       jet = fJetsCont->GetNextAcceptJet(); 
     }
     
