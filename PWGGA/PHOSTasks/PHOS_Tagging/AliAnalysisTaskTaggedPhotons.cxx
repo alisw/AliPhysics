@@ -191,7 +191,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   
   //centrality
   fOutputContainer->Add(new TH1F("hCentrality","Ccentrality",100,0.,100.));
- 
+  fOutputContainer->Add(new TH2F("hPHOSCentrality","PHOS vs centrality",100,0.,100.,100,0.,100.)); 
   fOutputContainer->Add(new TH2F("hTOF","cluster TOF",200,0.,20.,300,-3.e-6,6.e-6));
   
   
@@ -259,16 +259,26 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+
+    
+    
   }  
 
  
@@ -530,13 +540,16 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     if(clu->GetM02()<0.2) 
       continue ;          
+  
+    if(clu->GetMCEnergyFraction()>0.98) //Ecross cut, should be filled with Tender
+     continue ;    
     
     FillHistogram("hTOF",clu->E(),clu->GetTOF()) ;
     if(TMath::Abs(clu->GetTOF())>100.e-9) 
       continue ;          
     
-    if(clu->GetDistanceToBadChannel()<2.5)
-      continue ;
+//    if(clu->GetDistanceToBadChannel()<2.5)
+//      continue ;
 
     Float_t pos[3] ;
     clu->GetPosition(pos) ;
@@ -602,10 +615,11 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     p->SetLabel(i); //Cluster index    
     //PID criteria
 //    p->SetDispBit(clu->Chi2()) ;
-    p->SetDispBit(TestLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
+    p->SetDispBit(clu->Chi2()<2.5) ;
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
-    p->SetChargedBit(clu->GetEmcCpvDistance()>10.) ;      
+    p->SetChargedBit(clu->GetEmcCpvDistance()>2.5) ;      
   }
+  FillHistogram("hPHOSCentrality",fCentrality,inList+0.5) ;
   
   FillMCHistos() ;
   FillTaggingHistos() ;
@@ -1021,44 +1035,55 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(j));
       
       Double_t invMass = p1->GetPairMass(p2);   
+
+      if((p1->E()>0.1) && (p2->E()>0.1)){
+        FillPIDHistograms("hInvM_Re_Emin1",p1,p2,invMass) ;
+        if((p1->E()>0.2) && (p2->E()>0.2)){
+          FillPIDHistograms("hInvM_Re_Emin2",p1,p2,invMass) ;
+          if((p1->E()>0.3) && (p2->E()>0.3)){
+            FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass) ;
+	  }
+	}
+      }
+      
       
       if(p2->E()>0.1){
-        FillPIDHistograms("hInvM_Re_Emin1",p1,invMass) ;
+        FillPIDHistograms("hSingleInvM_Re_Emin1",p1,invMass) ;
         if(p2->E()>0.2){
-          FillPIDHistograms("hInvM_Re_Emin2",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin2",p1,invMass) ;
           if(p2->E()>0.3){
-            FillPIDHistograms("hInvM_Re_Emin3",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin3",p1,invMass) ;
 	  }
 	}
       }
 	
       if(p1->E()>0.1){
-        FillPIDHistograms("hInvM_Re_Emin1",p2,invMass) ;
+        FillPIDHistograms("hSingleInvM_Re_Emin1",p2,invMass) ;
         if(p1->E()>0.2){
-          FillPIDHistograms("hInvM_Re_Emin2",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin2",p2,invMass) ;
           if(p1->E()>0.3){
-            FillPIDHistograms("hInvM_Re_Emin3",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin3",p2,invMass) ;
 	  }
 	}
       }
       if(TestPID(3, p2)){
         if(p2->E()>0.1){
-          FillPIDHistograms("hInvM_Re_Emin1_Strict",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Strict",p1,invMass) ;
           if(p2->E()>0.2){
-            FillPIDHistograms("hInvM_Re_Emin2_Strict",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Strict",p1,invMass) ;
             if(p2->E()>0.3){
-              FillPIDHistograms("hInvM_Re_Emin3_Strict",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Strict",p1,invMass) ;
 	    }
 	  }
 	}
       }
       if(TestPID(3, p1)){
         if(p1->E()>0.1){
-          FillPIDHistograms("hInvM_Re_Emin1_Strict",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Strict",p2,invMass) ;
           if(p1->E()>0.1){
-            FillPIDHistograms("hInvM_Re_Emin2_Strict",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Strict",p2,invMass) ;
             if(p1->E()>0.3){
-              FillPIDHistograms("hInvM_Re_Emin3_Strict",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Strict",p2,invMass) ;
 	    }
 	  }
 	}
@@ -1202,43 +1227,54 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
         AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(event2->At(j)) ;
         Double_t invMass = p1->GetPairMass(p2);
 
+        if((p1->E()>0.1) && (p2->E()>0.1)){
+          FillPIDHistograms("hInvM_Mi_Emin1",p1,p2,invMass) ;
+          if((p1->E())>0.2 && (p2->E()>0.2)){
+            FillPIDHistograms("hInvM_Mi_Emin2",p1,p2,invMass) ;
+            if((p1->E())>0.3 && (p2->E()>0.3)){
+              FillPIDHistograms("hInvM_Mi_Emin3",p1,p2,invMass) ;
+  	    }
+ 	  }
+        }
+	
+	
 	if(p2->E()>0.1){
-          FillPIDHistograms("hInvM_Mi_Emin1",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Mi_Emin1",p1,invMass) ;
 	  if(p2->E()>0.2){
-            FillPIDHistograms("hInvM_Mi_Emin2",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin2",p1,invMass) ;
 	    if(p2->E()>0.3){
-              FillPIDHistograms("hInvM_Mi_Emin3",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin3",p1,invMass) ;
 	    }
 	  }
 	}
         if(TestPID(3, p2)){
   	  if(p2->E()>0.1){
-            FillPIDHistograms("hInvM_Mi_Emin1_Strict",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Strict",p1,invMass) ;
     	    if(p2->E()>0.2){
-              FillPIDHistograms("hInvM_Mi_Emin2_Strict",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Strict",p1,invMass) ;
   	      if(p2->E()>0.3){
-                FillPIDHistograms("hInvM_Mi_Emin3_Strict",p1,invMass) ;
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Strict",p1,invMass) ;
 	      }
 	    }
 	  }
 	}
 	
 	if(p1->E()>0.1){
-          FillPIDHistograms("hInvM_Mi_Emin1",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Mi_Emin1",p2,invMass) ;
   	  if(p1->E()>0.2){
-            FillPIDHistograms("hInvM_Mi_Emin2",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin2",p2,invMass) ;
 	    if(p1->E()>0.3){
-              FillPIDHistograms("hInvM_Mi_Emin3",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin3",p2,invMass) ;
 	    }
 	  }
 	}
         if(TestPID(3, p1)){
 	  if(p1->E()>0.1){
-            FillPIDHistograms("hInvM_Mi_Emin1_Strict",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Strict",p2,invMass) ;
 	    if(p1->E()>0.2){
-              FillPIDHistograms("hInvM_Mi_Emin2_Strict",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Strict",p2,invMass) ;
 	      if(p1->E()>0.3){
-                FillPIDHistograms("hInvM_Mi_Emin3_Strict",p2,invMass) ;
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Strict",p2,invMass) ;
 	      }
 	    }
 	  }
@@ -1266,11 +1302,13 @@ void AliAnalysisTaskTaggedPhotons::Terminate(Option_t *)
 Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt, Int_t /*type*/)const
 {
   //Parameterization of the pi0 peak region
-  Double_t mpi0mean =  1.33259e-01 -  2.910e-03 * TMath::Exp(-pt/3.616) ;
+//  Double_t mpi0mean =  1.33259e-01 -  2.910e-03 * TMath::Exp(-pt/3.616) ;
+  //for LHC13bcdef
+  Double_t mpi0mean =  0.13447 - 1.41259e-03 * TMath::Exp(-pt/1.30044) ;  
 //  Double_t mpi0mean = 0.136 ; //fPi0MeanP0 + fPi0MeanP1 * pt + fPi0MeanP2 * pt*pt + fPi0MeanP3 * pt*pt*pt;
 
-    Double_t mpi0sigma=TMath::Sqrt(4.17927e-03*4.17927e-03+2.81581e-03*2.81581e-03/pt+3.59218e-04*3.59218e-04*pt*pt) ;
-//  Double_t mpi0sigma= 0.005; //TMath::Sqrt(fPi0SigmaP0 * fPi0SigmaP0 / pt + fPi0SigmaP1 * fPi0SigmaP1 + fPi0SigmaP2 * fPi0SigmaP2 / pt / pt);
+//    Double_t mpi0sigma=TMath::Sqrt(4.17927e-03*4.17927e-03+2.81581e-03*2.81581e-03/pt+3.59218e-04*3.59218e-04*pt*pt) ;
+    Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
  
   return (m>mpi0mean-2*mpi0sigma && m<mpi0mean+2*mpi0sigma) ;
 }
@@ -1421,6 +1459,19 @@ void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const Al
     FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,p->Pt()) ;
   if(p->GetDispBit() && p->GetChargedBit()) 
     FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,p->Pt()) ;
+  
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliAODPWG4Particle * p1,const AliAODPWG4Particle * p2,Double_t x) const{
+
+  Double_t ptPi = (*(p1->Momentum()) + *(p2->Momentum())).Pt() ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,ptPi) ;
+  if(p1->GetDispBit() && p2->GetDispBit())
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,ptPi) ;
+  if(p1->GetChargedBit() && p2->GetChargedBit())
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,ptPi) ;
+  if(p1->GetDispBit() && p1->GetChargedBit() && p2->GetDispBit() && p2->GetChargedBit()) 
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,ptPi) ;
   
 }
 //_____________________________________________________________________________
