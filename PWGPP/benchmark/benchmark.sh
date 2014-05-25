@@ -2586,8 +2586,8 @@ aliroot()
   args=("$@")
   if [[ -n ${useProfilingCommand} ]]; then
     profilerLogFile="cpu.txt"
-    [[ "${args}" =~ rec ]] && profilerLogFile="cpu_rec.txt"
-    [[ "${args}}" =~ Calib ]] && profilerLogFile="cpu_calib.txt"
+    [[ "${args[@]}" =~ rec ]] && profilerLogFile="cpu_rec.txt"
+    [[ "${args[@]}" =~ Calib ]] && profilerLogFile="cpu_calib.txt"
     echo running "${useProfilingCommand} aliroot ${args} &> ${profilerLogFile}"
     ${useProfilingCommand} aliroot "${args[@]}" &> ${profilerLogFile}
   else
