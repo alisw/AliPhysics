@@ -66,6 +66,7 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p) const ;
   void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p ,Double_t y) const ;
+  void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p , const AliAODPWG4Particle * p2,Double_t y) const ;
 
 private:
 
