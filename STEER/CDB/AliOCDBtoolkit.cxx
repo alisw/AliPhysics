@@ -173,6 +173,10 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
   } 
     else if(fType.EqualTo("ESD",TString::kIgnoreCase)){
       file = TFile::Open(fInput.Data());
+      if (!file) {
+	printf("Input file  does not exist %s. Exiting\n",fInput.Data());
+	return;
+      }
       TList *listESD = ((TTree*)file->Get("esdTree"))->GetUserInfo();
       cdbMap = (TMap*)listESD->FindObject("cdbMap");  
       if (!cdbMap){
@@ -470,8 +474,12 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     if(!ostr) ostr = (TObjString*)cdbMap0->GetValue("default");
     cdbPath = ostr->GetString();
     if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
-    
-    cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
+    try {
+      cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
+    }catch(const exception &e){
+      cerr << "OCDB retrieval failed!" << endl;
+      cerr << "Detailes: " << e.what() << endl;
+    }  
     if (!cdbEntry) {
       printf("Object not avaliable\n");
       CDBId->Print();
