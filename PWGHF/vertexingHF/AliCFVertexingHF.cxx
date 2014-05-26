@@ -206,20 +206,26 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fMultiplicity(c.fMultiplicity),
 	fConfiguration(c.fConfiguration)
 {  
-	//
-	//copy constructor
-	//
+  //
+  //copy constructor
+  //
+  delete fmcArray;
   fmcArray = new TClonesArray(*(c.fmcArray));
+  delete fRecoCandidate;
   fRecoCandidate = new AliAODRecoDecayHF(*(c.fRecoCandidate));
+  delete fmcPartCandidate;
   fmcPartCandidate = new AliAODMCParticle(*(c.fmcPartCandidate));
-	if (fProngs > 0){
-		fLabelArray = new Int_t[fProngs];
-                fPtAccCut = new Float_t[fProngs];
-                fEtaAccCut = new Float_t[fProngs];
-		if (c.fLabelArray) memcpy(fLabelArray,c.fLabelArray,fProngs*sizeof(Int_t));
-		if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
-		if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
-	}
+  if (fProngs > 0){
+    delete [] fLabelArray;
+    delete [] fPtAccCut;
+    delete [] fEtaAccCut;
+    fLabelArray = new Int_t[fProngs];
+    fPtAccCut = new Float_t[fProngs];
+    fEtaAccCut = new Float_t[fProngs];
+    if (c.fLabelArray) memcpy(fLabelArray,c.fLabelArray,fProngs*sizeof(Int_t));
+    if (c.fPtAccCut) memcpy(fPtAccCut,c.fPtAccCut,fProngs*sizeof(Int_t));
+    if (c.fEtaAccCut) memcpy(fEtaAccCut,c.fEtaAccCut,fProngs*sizeof(Int_t));
+  }
 }
 
 //___________________________________________________________

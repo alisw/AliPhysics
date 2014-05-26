@@ -1,6 +1,9 @@
+
 class AliAnalysisDataContainer;
 class AliFlowTrackCuts;
+class AliFlowTrackSimpleCuts;
 class AliFlowEventCuts;
+class AliFlowEventSimpleCuts;
 
 
 void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
@@ -18,6 +21,8 @@ void AddTaskPIDFlowSP(Int_t triggerSelectionString=AliVEvent::kMB,
                                    Bool_t doQA=kTRUE,
                                    Bool_t isPID = kTRUE,
                                    Bool_t VZERO = kFALSE, // use vzero sp method
+                                   Bool_t is2011 = kFALSE,
+                                   Bool_t EP3sub = kFALSE,
                                    AliPID::EParticleType particleType=AliPID::kPion,
                                    AliFlowTrackCuts::PIDsource sourcePID=AliFlowTrackCuts::kTOFbayesian) {
 
@@ -28,12 +33,20 @@ Double_t excludeEtaMax = 0.;
 Double_t excludePhiMin = 0.;
 Double_t excludePhiMax = 0.;
    
-//Define the range for eta subevents (for SP method)
+//Define the range for eta subevents (for SP method) with TPC
 Double_t minA = -0.8;//
 Double_t maxA = -0.5*EtaGap;//
 Double_t minB = +0.5*EtaGap;//
 Double_t maxB = +0.8;//
 
+
+if(EP3sub) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGCF/FLOW/macros/AddTaskVZERO.C");
+    AddTaskVZERO(kFALSE,kFALSE,kTRUE,kTRUE,kTRUE,kTRUE,kTRUE,kFALSE,kFALSE);
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskVZEROEPSelection.C");
+    AddTaskVZEROEPSelection();
+
+}
     
 int centrMin[9] = {0,5,10,20,30,40,50,60,70};
 int centrMax[9] = {5,10,20,30,40,50,60,70,80};
@@ -74,9 +87,10 @@ for(int icentr=0;icentr<ncentr;icentr++){
     cutsEvent[icentr]->SetQA(doQA);
     cutsEvent[icentr]->SetCutTPCmultiplicityOutliers();
     
+    
     // RP TRACK CUTS:
-    cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
     if(!VZERO){
+        cutsRP[icentr] = new AliFlowTrackCuts(Form("RP_%d",icentr));
         //cutsRP[icentr]->SetParamType(rptype);
    //     cutsRP[icentr]->SetParamMix(rpmix);
         cutsRP[icentr]->SetPtRange(0.2,5.);
@@ -92,11 +106,38 @@ for(int icentr=0;icentr<ncentr;icentr++){
     }
     
     if(VZERO) { // use vzero sub analysis
-        cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
-      //  cutsRP[icentr]->SetV0gainEqualizationPerRing(kFALSE);
-        cutsRP[icentr]->SetApplyRecentering(kTRUE);
-        EtaGap = 0.;
-    }//vzero is not a tracking device it is just a scintillator. so pt range or DCAtoVertex are not set here.
+ //     if(!is2011)  cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
+ //     if(is2011)  cutsRP[icentr] = cutsRP[icentr]->GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
+        
+        /*
+         
+        cutsRP[icentr] = new AliFlowTrackCuts(Form("standard_vzero_RP",icentr));
+        AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kVZERO;
+        cutsRP[icentr]->SetParamType(rptype);
+        cutsRP[icentr]->SetEtaRange( -10, +10 );
+        cutsRP[icentr]->SetPhiMin( 0 );
+        cutsRP[icentr]->SetPhiMax( TMath::TwoPi() );
+        
+        if(!is2011){
+            // options for the reweighting
+            cutsRP[icentr]->SetVZEROgainEqualizationPerRing(kFALSE);
+            cutsRP[icentr]->SetApplyRecentering(kTRUE);
+            // to exclude a ring , do e.g.
+            // cuts->SetUseVZERORing(7, kFALSE);
+        }
+        if(is2011){
+            cutsRP[icentr]->SetApplyRecentering(kTRUE);
+        }
+       */
+        if(!is2011) cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010(); // select vzero tracks
+        if(is2011)  cutsRP[icentr] = AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011(); // select vzero tracks
+        
+        if(!cutsRP[icentr]) {
+            cout << " Fatal error: no RP cuts found! " << endl;
+            return 0x0;
+        }
+
+     }//vzero is not a tracking device it is just a scintillator. so pt range or DCAtoVertex are not set here.
     cutsRP[icentr]->SetQA(doQA);
 
     
@@ -129,7 +170,7 @@ for(int icentr=0;icentr<ncentr;icentr++){
     // SP_POI->SetMinChi2PerClusterTPC(0.1); //
     // SP_POI->SetMaxChi2PerClusterTPC(4.0); //
     //  SP_POI->SetRequireITSRefit(kTRUE);
-    //  SP_POI->SetRequireTPCRefit(kTRUE);
+    //  SP_POI->SetRequireTPCRefit(kTRUE);
     //  SP_POI->SetMinNClustersITS(2);
     //  SP_POI->SetMaxChi2PerClusterITS(1.e+09);
     SP_POI[icentr]->SetMaxDCAToVertexXY(3.0);
@@ -237,7 +278,11 @@ for (int icentr=0; icentr<ncentr; icentr++) {
 
     taskFE[icentr] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixName[icentr].Data()),"",doQA);
     taskFE[icentr]->SelectCollisionCandidates(triggerSelectionString);
-    taskFE[icentr]->SetSubeventEtaRange(minA, maxA, minB, maxB);
+    
+  //  if(taskFE[icentr]->SetVZEROSubEvents(EP3sub)) cout << " --> Setting up VZERO subevents method ... " << endl;
+    
+    if(!VZERO) taskFE[icentr]->SetSubeventEtaRange(minA, maxA, minB, maxB);
+    if(VZERO)  taskFE[icentr]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
     mgr->AddTask(taskFE[icentr]);
 
     // Pass cuts for RPs and POIs to the task:
@@ -248,6 +293,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
     {
         //TODO: since this is set in a static object all analyses in an analysis train
         //will be affected.
+        cout<<"cutsRP[icentr]->GetParamType()==AliFlowTrackCuts::kVZERO"<<endl;
         taskFE[icentr]->SetHistWeightvsPhiMin(0.);
         taskFE[icentr]->SetHistWeightvsPhiMax(200.);
     }
@@ -268,7 +314,6 @@ for (int icentr=0; icentr<ncentr; icentr++) {
         
 
     for(int harm=2;harm<6;harm++){
- //   for(int harm=2;harm<3;harm++){
         myNameSP[icentr][harm-2] = "SP_";
         myNameSP[icentr][harm-2] += Qvector;
         myNameSP[icentr][harm-2] += Form("_v%i_%s_%.f",harm,outputSlotName[icentr][harm-2].Data(),EtaGap*10);
@@ -281,7 +326,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
         if(!VZERO){
             tskFilter[icentr][harm-2]->SetSubeventEtaRange(etamin, -.5*EtaGap, +.5*EtaGap, etamax);
         }
-        else tskFilter[icentr][harm-2]->SetSubeventEtaRange(-10, -1, +1, 10);
+        if(VZERO) tskFilter[icentr][harm-2]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
         mgr->AddTask(tskFilter[icentr][harm-2]);
         mgr->ConnectInput( tskFilter[icentr][harm-2],0,coutputFE[icentr]);
         mgr->ConnectOutput(tskFilter[icentr][harm-2],1,flowEvent[icentr][harm-2]);
@@ -305,7 +350,7 @@ for (int icentr=0; icentr<ncentr; icentr++) {
                                          TList::Class(),AliAnalysisManager::kOutputContainer,outputSP);
         mgr->AddTask(taskSP[icentr][harm-2]);
         mgr->ConnectInput(taskSP[icentr][harm-2],0,flowEvent[icentr][harm-2]);
-    //    mgr->ConnectInput(taskSP[icentr][harm-2],0,coutputFE[icentr]);
+        mgr->ConnectInput(taskSP[icentr][harm-2],0,coutputFE[icentr]);
         mgr->ConnectOutput(taskSP[icentr][harm-2],1,coutputSP[icentr][harm-2]);
     }
 
