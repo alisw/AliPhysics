@@ -72,6 +72,7 @@ AliHLTGlobalFlatEsdConverterComponent::AliHLTGlobalFlatEsdConverterComponent()
   , fVerbosity(0)  
   , fSolenoidBz(-5.00668)
   , fBenchmark("FlatEsdConverter")
+  , fBenchmarkHistosFilename("$HERAFOLDER/flatDev/rawToFlat/histosBenchmark.root")
 {
   // see header file for class documentation
   // or
@@ -735,13 +736,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 }
 
 
-void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString *names){
+void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
 
   
-  TString outputFilename = "$HERAFOLDER/flatDev/rawToFlat/histosBenchmark";
+  TString outputFilename = fBenchmarkHistosFilename; ;
   TH2F* hCpuTimeVsSize;
   TH2F* hRealTimeVsSize;
-  TList* histosList;
+ 
   
   
   TFile *outFile = TFile::Open(outputFilename,"UPDATE");
@@ -749,9 +750,8 @@ void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statis
 	hRealTimeVsSize = (TH2F*)outFile->Get("realTimeVsSize");
 	
   if(!hCpuTimeVsSize || !hRealTimeVsSize){
-	cout<< "creating histograms"<<endl;
-	hCpuTimeVsSize = new TH2F("cpuTimeVsSize","cpu time vs. size", 1000,0,1000000, 1000,0,10);
-	hRealTimeVsSize = new TH2F("realTimeVsSize","real time vs. size", 1000,0,1000000, 1000,0,10);
+	HLTWarning( "Benchmark Histograms not available!" );
+	return;
   }
   
 	
@@ -762,11 +762,10 @@ void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statis
   hCpuTimeVsSize->Fill(sizePerEvent, cpuTimePerEvent);
   hRealTimeVsSize->Fill(sizePerEvent, realTimePerEvent);
 
-  histosList = new TList();
-	histosList->Add(hCpuTimeVsSize);
-	histosList->Add(hRealTimeVsSize);
+   TList histosList;
+	histosList.Add(hCpuTimeVsSize);
+	histosList.Add(hRealTimeVsSize);
 	
-  histosList->SaveAs(outputFilename);
-  
+  histosList.SaveAs(outputFilename);
   
 }
