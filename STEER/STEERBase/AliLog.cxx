@@ -425,8 +425,10 @@ void AliLog::EnableCoreDump(Bool_t enabled)
   fgCoreEnabled = enabled;
   gSystem->ResetSignal(kSigFloatingException,enabled);
   gSystem->ResetSignal(kSigSegmentationViolation,enabled);
-
-
+  if (enabled) printf("Core dump enabled\n");
+  else { 
+    printf("Core dump disabled\n");
+  }
 }
 
 
