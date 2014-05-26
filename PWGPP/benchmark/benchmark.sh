@@ -2588,7 +2588,7 @@ aliroot()
     profilerLogFile="cpu.txt"
     [[ "${args[@]}" =~ rec ]] && profilerLogFile="cpu_rec.txt"
     [[ "${args[@]}" =~ Calib ]] && profilerLogFile="cpu_calib.txt"
-    echo running "${useProfilingCommand} aliroot ${args} &> ${profilerLogFile}"
+    echo running "${useProfilingCommand} aliroot ${args[@]} &> ${profilerLogFile}"
     ${useProfilingCommand} aliroot "${args[@]}" &> ${profilerLogFile}
   else
     #to prevent an infinite recursion use "command aliroot" to disable
