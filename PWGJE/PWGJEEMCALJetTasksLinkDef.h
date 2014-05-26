@@ -69,5 +69,6 @@
 #pragma link C++ class AliAnalysisTaskFullpAJets+;
 #pragma link C++ class AliAnalysisTaskFullppJet;
 #pragma link C++ class AliAnalysisTaskHJetDphi+;
+#pragma link C++ class AliAnalysisTaskHJetSpectra+;
 #endif
 #endif

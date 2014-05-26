@@ -95,6 +95,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton() :
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
   fMCIsoDirPhotonPtEtaPhi(0),
+  fMCDirPhotonPtEtIso(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),
@@ -188,6 +189,7 @@ AliAnalysisTaskEMCALIsoPhoton::AliAnalysisTaskEMCALIsoPhoton(const char *name) :
   fTrMultDist(0),
   fMCDirPhotonPtEtaPhi(0),
   fMCIsoDirPhotonPtEtaPhi(0),
+  fMCDirPhotonPtEtIso(0),
   fDecayPhotonPtMC(0),
   fCellAbsIdVsAmpl(0),       
   fNClusHighClusE(0),   
@@ -272,6 +274,11 @@ void AliAnalysisTaskEMCALIsoPhoton::UserCreateOutputObjects()
   fMCIsoDirPhotonPtEtaPhi = new TH3F("hMCIsoDirPhotonPtEtaPhi","photon (gq->#gammaq, isolated@MC) p_{T}, #eta, #phi;GeV/c;#eta;#phi",100,-0.5,99.5,154,-0.77,0.77,130,1.38,3.20);
   fMCIsoDirPhotonPtEtaPhi->Sumw2();
   fOutputList->Add(fMCIsoDirPhotonPtEtaPhi);
+
+  fMCDirPhotonPtEtIso = new TH2F("hMCDirPhotonPtEtIso",Form("photon (gq->#gammaq @MC) p_{T}, E_{T}^{ISO} (R=%1.1f);GeV/c;E_{T}^{ISO} GeV/c",fIsoConeR),100,-0.5,99.5,20,-0.25,9.75);
+  fMCDirPhotonPtEtIso->Sumw2();
+  fOutputList->Add(fMCDirPhotonPtEtIso);
+
 
   fDecayPhotonPtMC = new TH1F("hDecayPhotonPtMC","decay photon p_{T};GeV/c;dN/dp_{T} (c GeV^{-1})",fNBinsPt, fPtBinLowEdge,fPtBinHighEdge);
   fDecayPhotonPtMC->Sumw2();
@@ -955,11 +962,15 @@ void AliAnalysisTaskEMCALIsoPhoton ::FillMcHists()
     if(!mcmom)
       continue;
     Int_t pdgMom = mcmom->GetPdgCode();
+    Double_t mcphi = mcp->Phi();
+    Double_t mceta = mcp->Eta();
     if((imom==6 || imom==7) && pdgMom==22) {
       fMCDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       Float_t ptsum = GetMcPtSumInCone(mcp->Eta(), mcp->Phi(), fIsoConeR);
       if(ptsum<2)
 	fMCIsoDirPhotonPtEtaPhi->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
+      if(mcphi<(3.14-fIsoConeR) && mcphi>(1.4+fIsoConeR) && TMath::Abs(mceta)<(0.7-fIsoConeR))
+	fMCDirPhotonPtEtIso->Fill(mcp->Pt(),ptsum);
       if(fNClusForDirPho==0)
 	fMCDirPhotonPtEtaPhiNoClus->Fill(mcp->Pt(),mcp->Eta(),mcp->Phi());
       if(fDebug){

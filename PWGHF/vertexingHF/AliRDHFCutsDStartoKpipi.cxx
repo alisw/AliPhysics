@@ -625,6 +625,10 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010() {
 
   AddTrackCuts(esdTrackCuts);
   AddTrackCutsSoftPi(esdSoftPicuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+  delete esdSoftPicuts;
+  esdSoftPicuts=NULL;
 
   const Int_t nptbins =13;
   const Double_t ptmax = 9999.;
@@ -736,6 +740,10 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2010(){
 
   AddTrackCuts(esdTrackCuts);
   AddTrackCutsSoftPi(esdSoftPicuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+  delete esdSoftPicuts;
+  esdSoftPicuts=NULL;
 
   const Int_t nptbins =13;
   const Double_t ptmax = 9999.;
@@ -878,6 +886,10 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPbPb2011DStar(TH1F *hfl){
 
   AddTrackCuts(esdTrackCuts);
   AddTrackCutsSoftPi(esdSoftPicuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+  delete esdSoftPicuts;
+  esdSoftPicuts=NULL;
 
   const Int_t nptbins =14;
   const Double_t ptmax = 36.;
@@ -1010,6 +1022,10 @@ void  AliRDHFCutsDStartoKpipi::SetStandardCutsPP2010DStarMult(Bool_t rec){
 
   AddTrackCuts(esdTrackCuts);
   AddTrackCutsSoftPi(esdSoftPicuts);
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
+  delete esdSoftPicuts;
+  esdSoftPicuts=NULL;
 
   const Int_t nptbins =14;
   const Double_t ptmax = 9999.;

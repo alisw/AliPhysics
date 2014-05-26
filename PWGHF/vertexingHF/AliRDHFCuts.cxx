@@ -274,6 +274,7 @@ AliRDHFCuts::~AliRDHFCuts() {
   //  
   // Default Destructor
   //
+  if(fTrackCuts) { delete fTrackCuts; fTrackCuts=0; }
   if(fPtBinLimits) {delete [] fPtBinLimits; fPtBinLimits=0;}
   if(fVarNames) {delete [] fVarNames; fVarNames=0;}
   if(fVarsForOpt) {delete [] fVarsForOpt; fVarsForOpt=0;}
