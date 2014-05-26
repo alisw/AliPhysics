@@ -2375,8 +2375,8 @@ done
   goPrintValues dcsTree cpass1.dcsTree.list ${commonOutputPath}/meta/merge.cpass1.run*.done &>/dev/null
  
   #merge trending
-  rm -f ${commonOutputPath}/trending_merged.root
-  goMerge trending.list ${commonOutputPath}/trending.root ${configFile} "${extraOpts[@]}" &> mergeTrending.log
+  rm -f trending.root
+  goMerge trending.list trending.root ${configFile} "${extraOpts[@]}" &> mergeTrending.log
 
   goMakeSummaryTree ${commonOutputPath} 0
   goMakeSummaryTree ${commonOutputPath} 1
@@ -2391,6 +2391,8 @@ done
 
   # Copy log to destination (delete all on failure to signal error)
   cp "$logTmp" "$logDest" || rm -f "$logTmp" "$logDest"
+  
+  #copy output files
   cp -r QAplots ${commonOutputPath}
   cp *.list ${commonOutputPath}
   cp *.root ${commonOutputPath}
@@ -2576,7 +2578,7 @@ parseConfig()
   [[ -z ${alirootEnv} ]] && echo "alirootEnv not defined!" && return 1
 
   #export the aliroot function if defined to override normal behaviour
-  [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot
+  [[ $(type -t aliroot) =~ "function" ]] && export -f aliroot && echo "exporting aliroot() function..."
 
   return 0
 }
