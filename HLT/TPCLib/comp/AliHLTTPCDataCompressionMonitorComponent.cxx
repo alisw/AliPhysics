@@ -34,7 +34,7 @@
 #include "AliHLTTPCHWCFSpacePointContainer.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTComponentBenchmark.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliTPCclusterMI.h"
 #include "AliTPCROC.h"
 #include "TH1I.h"
@@ -165,13 +165,14 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
        pDesc!=NULL; pDesc=GetNextInputBlock()) {
     fFlags|=kHaveHWClusters;
     // FIXME: the decoding can now be handled via the data container
-    if (pDesc->fSize<=sizeof(AliRawDataHeader)) continue;
+    AliHLTCDHWrapper header(pDesc->fPtr);
+    if (pDesc->fSize<=header.GetHeaderSize()) continue;
     if (fpHWClusterDecoder) {
       hwclustersDataSize+=pDesc->fSize;
       AliHLTUInt8_t* pData=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
-      pData+=sizeof(AliRawDataHeader);
-      if (fpHWClusterDecoder->Init(pData, pDesc->fSize-sizeof(AliRawDataHeader))<0 ||
-	  (fpHWClusterDecoder->CheckVersion()<0 && (int)(pDesc->fSize-sizeof(AliRawDataHeader))>fpHWClusterDecoder->GetRCUTrailerSize())) {
+      pData+=header.GetHeaderSize();
+      if (fpHWClusterDecoder->Init(pData, pDesc->fSize-header.GetHeaderSize())<0 ||
+	  (fpHWClusterDecoder->CheckVersion()<0 && (int)(pDesc->fSize-header.GetHeaderSize())>fpHWClusterDecoder->GetRCUTrailerSize())) {
 	HLTError("data block of type %s corrupted: can not decode format",
 		 AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
       } else {
@@ -180,7 +181,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	  // first word of the RCU trailer contains the payload size in 32bit words
 	  const AliHLTUInt32_t*  pRCUTrailer=reinterpret_cast<const AliHLTUInt32_t*>(fpHWClusterDecoder->GetRCUTrailer());
 	  AliHLTUInt32_t payloadSize=(*pRCUTrailer)&0x00ffffff;
-	  rawEventSizeFromRCUtrailer+=sizeof(AliRawDataHeader)
+	  rawEventSizeFromRCUtrailer+=header.GetHeaderSize()
 	    + payloadSize*sizeof(AliHLTUInt32_t)
 	    + fpHWClusterDecoder->GetRCUTrailerSize();
 	}

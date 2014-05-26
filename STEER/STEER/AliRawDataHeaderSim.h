@@ -20,7 +20,9 @@ public:
       if(!runloader->GetTrigger()) runloader->LoadTrigger();
       if (AliCentralTrigger *aCTP = runloader->GetTrigger()) {
 	ULong64_t mask = aCTP->GetClassMask();
+	ULong64_t masknext = aCTP->GetClassMaskNext50();
 	SetTriggerClass(mask);
+	SetTriggerClassNext50(masknext);
       }
       else
 	Warning("SetTriggerClass","No trigger can be loaded! Putting empty trigger class into the raw data header !");

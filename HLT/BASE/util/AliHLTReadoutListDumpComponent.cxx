@@ -190,8 +190,8 @@ int AliHLTReadoutListDumpComponent::FillReadoutListVsCTP(TH2I* histo, const AliH
   if (list->BufferSize()!=sizeof(AliHLTEventDDL)) return -EBADF;
   if (list->Buffer()->fCount!=(unsigned)gkAliHLTDDLListSize) return -EBADF;
 
-  AliHLTUInt64_t triggerMask=AliHLTCTPData::ActiveTriggers(*trigData);
-  AliHLTUInt64_t bit0=0x1;
+  AliHLTTriggerMask_t triggerMask=AliHLTCTPData::ActiveTriggers(*trigData);
+  AliHLTTriggerMask_t bit0=0x1;
   for (int word=0; word<gkAliHLTDDLListSize; word++) {
     for (unsigned bit=0; bit<sizeof(AliHLTUInt32_t)*8; bit++) {
       if (list->Buffer()->fList[word]&0x1<<bit) {

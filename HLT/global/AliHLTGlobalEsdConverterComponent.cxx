@@ -313,12 +313,19 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
 
   const AliHLTCTPData* pCTPData=CTPData();
   if (pCTPData) {
-    AliHLTUInt64_t mask=pCTPData->ActiveTriggers(trigData);
+    AliHLTTriggerMask_t mask=pCTPData->ActiveTriggers(trigData);
     for (int index=0; index<gkNCTPTriggerClasses; index++) {
-      if ((mask&((AliHLTUInt64_t)0x1<<index)) == 0) continue;
+      if ((mask&(AliHLTTriggerMask_t(0x1)<<index)) == 0) continue;
       pESD->SetTriggerClass(pCTPData->Name(index), index);
     }
-    pESD->SetTriggerMask(mask);
+    //first 50 triggers
+    AliHLTTriggerMask_t mask50;
+    mask50.set(); // set all bits
+    mask50 >>= 50; // shift 50 right
+    pESD->SetTriggerMask((mask&mask50).to_ulong());
+    /* next 50, to be implemented 
+    pESD->SetTriggerMaskNext50((mask>>50).to_ulong());
+    */
   }
 
   TTree* pTree = NULL;

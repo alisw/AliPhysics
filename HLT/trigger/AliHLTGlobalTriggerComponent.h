@@ -14,10 +14,10 @@
 #include "AliHLTTrigger.h"
 #include "AliHLTTriggerDecision.h"
 #include "TClonesArray.h"
+#include "AliHLTCDHWrapper.h"
 
 class AliHLTTriggerMenu;
 class AliHLTGlobalTrigger;
-class AliRawDataHeader;
 
 /**
  * \class AliHLTGlobalTriggerComponent
@@ -336,7 +336,7 @@ class AliHLTGlobalTriggerComponent : public AliHLTTrigger
   UInt_t fUniqueID; //! Unique ID for the decision output objects.
   AliHLTTriggerDecision fSoftwareTrigger; //! Software or calibration trigger decision object to be added to trigger logic.
   AliHLTUInt64_t fTotalEventCounter; //! Counts the total number of events handled.
-  const AliRawDataHeader* fCDH; //! The extracted CDH from the trigger data passed by the framework.
+  AliHLTCDHWrapper fCDH; //! The extracted CDH from the trigger data passed by the framework.
 
   static const char* fgkTriggerMenuCDBPath; //! The path string to read the trigger menu from the CDB.
   

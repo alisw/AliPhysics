@@ -24,7 +24,7 @@
 #include <vector>
 #include <ostream>
 
-struct AliRawDataHeader;
+struct AliRawDataHeaderV3;
 class TArrayS;
 class TArrayC;
 class TRandom;
@@ -103,7 +103,7 @@ class AliHLTAltroGenerator : AliHLTLogging {
    * @param size        size of the header in byte
    * @return neg. error code if failed
    */
-  int SetCDH(AliRawDataHeader* pCDH, int size);
+  int SetCDH(AliRawDataHeaderV3* pCDH, int size);
 
   /**
    * Set the RCU trailer.
@@ -259,7 +259,7 @@ class AliHLTAltroGenerator : AliHLTLogging {
   int fNof10BitWords; //! transient
 
   /// the Common Data Header
-  AliRawDataHeader* fpCDH; //!transient
+  AliRawDataHeaderV3* fpCDH; //!transient
 
   /// size of the Common Data Header in byte
   int fCDHSize; //! transient

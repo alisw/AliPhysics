@@ -29,6 +29,7 @@
 #include "AliHLTOUTHandlerEquId.h"
 #include "AliHLTSystem.h"
 #include "AliHLTPluginBase.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliLog.h"
 #include "AliDAQ.h"            // RAW, for detector names and equipment ids
 #include "TObjString.h"
@@ -163,7 +164,7 @@ Int_t    AliRawReaderHLT::GetEquipmentSize() const
   // fDataSize has been set to the full size of the block if it is from HLTOUT
   // if the data block is from the parent rawreader it is only the pointer
   // to the payload and the size of the CDH must be added
-  if (fEquipmentId>=0) return fDataSize + (fbHaveHLTData?0:sizeof(AliRawDataHeader));
+  if (fEquipmentId>=0) return fDataSize + (fbHaveHLTData?0:GetEquipmentHeaderSize());
   return fpParentReader->GetEquipmentSize();
 }
 
@@ -192,8 +193,15 @@ Bool_t   AliRawReaderHLT::ReadHeader()
   while ((fbHaveHLTData=(fbHaveHLTData && ReadNextHLTData()))) {
     // all internal data variables set
     assert(fpData!=NULL);
-    fHeader=reinterpret_cast<AliRawDataHeader*>(const_cast<AliHLTUInt8_t*>(fpData));
-    fOffset=sizeof(AliRawDataHeader);
+    AliHLTCDHWrapper cdh((void*)fpData);
+    if(cdh.GetVersion()==2){
+      fHeader=reinterpret_cast<AliRawDataHeader*>(const_cast<AliHLTUInt8_t*>(fpData));
+      fHeaderV3=NULL;
+    } else {
+      fHeader=NULL;
+      fHeaderV3=reinterpret_cast<AliRawDataHeaderV3*>(const_cast<AliHLTUInt8_t*>(fpData));
+    }
+    fOffset=cdh.GetHeaderSize();
     fPosition=fOffset;
     if ((result=IsSelected())) break;
   }
@@ -208,9 +216,11 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 
     if (!(result=fpParentReader->ReadHeader())) {
       fHeader=NULL;
+      fHeaderV3=NULL;
       break;
     }
     fHeader=const_cast<AliRawDataHeader*>(fpParentReader->GetDataHeader());
+    fHeaderV3=const_cast<AliRawDataHeaderV3*>(fpParentReader->GetDataHeaderV3());
     fDataSize=fpParentReader->GetDataSize();
     fPosition=0;
     fpData=NULL;
@@ -241,9 +251,10 @@ Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data, Bool_t readHeader)
     if (fbHaveHLTData && fpHLTOUT!=NULL) {
       // all internal data variables set
       result=kTRUE;
-      data=const_cast<AliHLTUInt8_t*>(fpData+sizeof(AliRawDataHeader));
+      AliHLTCDHWrapper cdh((void*) fpData);
+      data=const_cast<AliHLTUInt8_t*>(fpData+cdh.GetHeaderSize());
       // fpData includes the CDH, set offset behind CDH
-      fOffset=sizeof(AliRawDataHeader);
+      fOffset=cdh.GetHeaderSize();
     } else {
       // no data in the HLT stream, read real data
       //AliInfo(Form("read from parent reader: min=%d max=%d", fSelectMinEquipmentId, fSelectMaxEquipmentId));
