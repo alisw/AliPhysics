@@ -28,19 +28,19 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
                                     
 //______________________________________________________________________________
 void runEMCalJetAnalysis(
-         const char*    dataType            = "ESD",                       // set the analysis type, AOD, ESD or sESD
-         Bool_t         useGrid             = kFALSE,                      // local or grid
+         Bool_t         useGrid             = kTRUE,                      // local or grid
          const char*    gridMode            = "test",                      // set the grid run mode (can be "full", "test", "offline", "submit" or "terminate")
-         const char*    pattern             = "*ESDs/pass2/*ESDs.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
-         const char*    gridDir             = "/alice/data/2012/LHC12g",   // dir on alien, where the files live (used on grid)
-         const char*    runNumbers          = "188359 188362",             // considered run numbers (used on grid)
+         const char*    dataType            = "AOD",                       // set the analysis type, AOD, ESD or sESD
+         const char*    pattern             = "*ESDs/pass2/AOD145/*AOD.root",    // file pattern (here one can specify subdirs like passX etc.) (used on grid)
+         const char*    gridDir             = "/alice/data/2011/LHC11h_2",   // dir on alien, where the files live (used on grid)
+         const char*    runNumbers          = "167903 167915",             // considered run numbers (used on grid)
          UInt_t         numLocalFiles       = 50,                          // number of files analyzed locally  
-         const char*    runPeriod           = "LHC12g",                    // set the run period (used on grid)
+         const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
          const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the task on the grid
          UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
          Bool_t         useTender           = kFALSE,                      // trigger, if tender task should be used
          Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
-
+	 Bool_t         doBkg               = kTRUE,
          // Here you have to specify additional code files you want to use but that are not in aliroot
          const char*    addCXXs             = "",
          const char*    addHs               = "",
@@ -159,17 +159,36 @@ void runEMCalJetAnalysis(
     }
   }
 
+  // Names of the different objects passed around; these are the default names; added here mostly for documentation purposes
+  // rhoName is only set if the background subtraction is switched on (doBkg)
+  TString tracksName = "PicoTracks";
+  TString clustersName = "CaloClusters";
+  TString clustersCorrName = "CaloClustersCorr";
+  TString rhoName = "";
+
   // ################# Now: Call jet preparation macro (picotracks, hadronic corrected caloclusters, ...) 
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskJetPreparation.C");
-  AddTaskJetPreparation(runPeriod);
+  AddTaskJetPreparation(runPeriod, tracksName, "MCParticlesSelected", clustersName, clustersCorrName);
 
   // ################# Now: Add jet finders+analyzers
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C");
-  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet("PicoTracks", "CaloClustersCorr", kANTIKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
+  AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName, clustersCorrName, kANTIKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
 
+  if (doBkg) {
+    rhoName = "Rho";
+    AliEmcalJetTask* jetFinderTask = AddTaskEmcalJet(tracksName, clustersCorrName, kKT, 0.2, kCHARGEDJETS, 0.150, 0.300);
+
+    TString kTpcKtJetsName(Form("Jet_KTChargedR020_%s_pT0150_%s_ET0300_pt_scheme",tracksName.Data(),clustersCorrName.Data())); 
+    gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskRho.C");
+    rhotask = (AliAnalysisTaskRho*) AddTaskRho(kTpcKtJetsName, tracksName, clustersCorrName, rhoName, 0.2, "TPC", 0.01, 0, 0, 2, kTRUE);
+    //rhotask__->SetScaleFunction(sfunc);
+    //rhotask->SelectCollisionCandidates(kPhysSel);
+    rhotask->SetHistoBins(100,0,250);
+  }
   // Here you can put in your AddTaskMacro for your task
   gROOT->LoadMacro("$ALICE_ROOT/PWGJE/EMCALJetTasks/macros/AddTaskEmcalJetSample.C");
-  AliAnalysisTaskEmcalJetSample* anaTask = AddTaskEmcalJetSample("PicoTracks", "CaloClustersCorr", jetFinderTask->GetName(), "",4);
+  AliAnalysisTaskEmcalJetSample* anaTask = 0;
+  AddTaskEmcalJetSample(tracksName, clustersCorrName, jetFinderTask->GetName(), rhoName, 4);
 
   // Set the physics selection for all given tasks
   TObjArray *toptasks = mgr->GetTasks();
@@ -336,8 +355,8 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
      
   // Here you can set the (Ali)ROOT version you want to use
   plugin->SetAPIVersion("V1.1x");
-  plugin->SetROOTVersion("v5-34-02-1");
-  plugin->SetAliROOTVersion("v5-04-21-AN-1");
+  plugin->SetROOTVersion("v5-34-08-6");
+  plugin->SetAliROOTVersion("vAN-20140525");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory
