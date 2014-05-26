@@ -265,7 +265,7 @@ TList  * AliOCDBtoolkit::ConvertListStringToCDBId(const TList *cdbList0){
       if (isString){
 	TObjString* sid0 = dynamic_cast<TObjString*> (cdbList0->At(ientry0));
 	Bool_t status =  ParseInfoFromOcdbString(sid0->String(), tmp0);
-	if (!status) continue;
+	if (!status) continue; 
 	array0->AddLast(new AliCDBId(tmp0));
       }
     }
@@ -398,11 +398,12 @@ void AliOCDBtoolkit::LoadOCDBFromESD(const char *fname){
   TList *listESD = ((TTree*)fesd->Get("esdTree"))->GetUserInfo();
   TMap *cdbMapESD= (TMap*)listESD->FindObject("cdbMap");  
   TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
+  AliOCDBtoolkit::SetStorage(cdbMapESD); 
   AliOCDBtoolkit::LoadOCDBFromMap(cdbMapESD, cdbListESD0);
 }
 
 
-void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
+void AliOCDBtoolkit::MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
   //
   //
   // Print difference between the 2 ocdb maps
@@ -411,6 +412,7 @@ void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, co
   // Output:
   //   To be decided.
   //
+  AliOCDBtoolkit::SetStorage(cdbMap0);
   Int_t entriesList0=cdbList0->GetEntries();
   Int_t entriesList1=cdbList1->GetEntries();
   //
@@ -453,7 +455,7 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
   // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root $SIZE_AliCDBEntry_Object $HASH_AliCDBEntry_Object
   
   AliCDBManager * man = AliCDBManager::Instance();
-  
+  AliOCDBtoolkit::SetStorage(cdbMap0);  
   TList * cdbList = (TList*) cdbList0;   // sorted array
   cdbList->Sort();
 

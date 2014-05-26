@@ -80,6 +80,7 @@ class AliCDBId: public TObject {
     void Print(Option_t* option="") const;
     virtual Int_t Compare(const TObject* obj) const;
     virtual Bool_t IsSortable() const;
+    virtual const char  *GetName() const { return fPath.GetPath().Data(); }
   private:
 
     AliCDBPath fPath;		// path	
