@@ -158,7 +158,8 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
   if (!tpc) tpc=&param;
-  Bool_t isOK=kTRUE;// RS recoParam->GetUseOuterDetectors();
+  //Bool_t isOK=kTRUE;// RS recoParam->GetUseOuterDetectors();
+  Bool_t isOK=recoParam->GetUseOuterDetectors();
   if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
   if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
@@ -170,11 +171,17 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
     isOK=kTRUE;
     reject=1;
   }
+  param.Rotate(tpc->GetAlpha());
   isOK=AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),t.GetMass(),2.,kFALSE);
   if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
   if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
   if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
   if (param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+  Double_t chi2= param.GetPredictedChi2(tpc);
+  if (chi2>recoParam->GetMaxChi2TPCTRD()){
+    isOK=kFALSE;
+  }
+
   if (!isOK){
     param=*tpc;
     isOK=kTRUE;

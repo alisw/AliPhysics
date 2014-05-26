@@ -33,7 +33,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Bool_t   GetUseOuterDetectors() const { return fUseOuterDetectors;}
   void     SetUseOuterDetectors(Bool_t flag)  { fUseOuterDetectors=flag;}
   void     SetMaxChi2TPCTRD(Double_t maxChi2){fMaxChi2TPCTRD=maxChi2;}
-  Double_t GetMaxChi2TPCTRD(){return fMaxChi2TPCTRD;}
+  Double_t GetMaxChi2TPCTRD() const {return fMaxChi2TPCTRD;}
   Double_t GetCutSharedClusters(Int_t index)const { return fCutSharedClusters[index];}
   void  SetCutSharedClusters(Int_t index, Float_t value){ fCutSharedClusters[index]=value;}
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
