@@ -89,8 +89,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   if (!fHelperPID)  AliFatal("HelperPID should be set in the steering macro");
   
   // binning common to all the THn
-  const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.};
-  const Int_t nptBins=26;
+  const Double_t ptBins[] = {0.20,0.30,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.2,1.4,1.6,1.8,2.0,2.4,2.8,3.2,3.6,4.0,5.0,6.0,7.0,8.0,9.0,10.,12.,15.,20.,25.,30.,35.,40.,50.,75.,100.};
+  const Int_t nptBins=34;
   
   //dimensions of THnSparse for tracks
   const Int_t nvartrk=7;
