@@ -167,7 +167,7 @@ void AliTRDReconstructor::Init(){
   if(IsDebugStreaming()){
     for(Int_t task = 0; task < AliTRDrecoParam::kTRDreconstructionTasks; task++){
       TDirectory *savedir = gDirectory;
-      fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]));
+      fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]),"recreate");
       savedir->cd();
       SETFLG(fSteerParam, kOwner);
     }
