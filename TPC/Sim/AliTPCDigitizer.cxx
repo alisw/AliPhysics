@@ -63,7 +63,7 @@ using std::endl;
 ClassImp(AliTPCDigitizer)
 
 //___________________________________________
-  AliTPCDigitizer::AliTPCDigitizer() :AliDigitizer(),fDebug(0)
+  AliTPCDigitizer::AliTPCDigitizer() :AliDigitizer(),fDebug(0), fDebugStreamer(0)
 {
   //
 // Default ctor - don't use it
@@ -73,18 +73,21 @@ ClassImp(AliTPCDigitizer)
 
 //___________________________________________
 AliTPCDigitizer::AliTPCDigitizer(AliDigitizationInput* digInput) 
-  :AliDigitizer(digInput),fDebug(0)
+  :AliDigitizer(digInput),fDebug(0), fDebugStreamer(0)
 {
   //
 // ctor which should be used
 //  
   AliDebug(2,"(AliDigitizationInput* digInput) was processed");
+  if (AliTPCReconstructor::StreamLevel()>0)  fDebugStreamer = new TTreeSRedirector("TPCDigitDebug.root");
+
 }
 
 //------------------------------------------------------------------------
 AliTPCDigitizer::~AliTPCDigitizer()
 {
 // Destructor
+  if (fDebugStreamer) delete fDebugStreamer;
 }
 
 
@@ -590,7 +593,7 @@ void AliTPCDigitizer::DigitizeSave(Option_t* option)
 
 
 //------------------------------------------------------------------------
-void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option, TTreeSredirector *pcstream) 
+void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option) 
 {
   // Modified version of the digitization function
   // Modification: adding the ion tail and crosstalk:
