@@ -130,6 +130,7 @@ protected:
 
     TH1F *fHistRawSignalReco;
     TH1F *fHistEffCorrSignalReco;
+    TH3F *fHistRecoRCorrVsPtVsCent; // enter comment here
 
 private:
 

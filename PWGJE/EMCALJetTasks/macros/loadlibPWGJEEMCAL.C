@@ -1,4 +1,4 @@
-void loadlibPWGJE()
+void loadlibPWGJEEMCAL()
 {
   // this macro should load PWGJE with all dependencies from ROOT
   // (it should not require to be run with AliRoot)
@@ -25,9 +25,16 @@ void loadlibPWGJE()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
+  gSystem->Load("libCDB");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libCORRFW");
+  gSystem->Load("libPWGTools");
+  gSystem->Load("libPWGEMCAL");
+
   gSystem->Load("libCGAL");
   gSystem->Load("libfastjet");
+  gSystem->Load("libSISConePlugin");
+  gSystem->Load("libCDFConesPlugin");
 
-  gSystem->Load("libPWGJE");
-  gSystem->Load("libPWGJEStrangenessInJets");
+  gSystem->Load("libPWGJEEMCALJetTasks");
 }

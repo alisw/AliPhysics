@@ -106,6 +106,11 @@ Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(const TParticle& part) const
     return TMath::Sin(part.Theta())*part.Energy() > fCuts->GetReconstructedPhosClusterEnergyCut();
 }
 
+Bool_t AliAnalysisEtSelectorPhos::PassMinEnergyCut(Double_t e) const
+{
+  return e > fCuts->GetReconstructedEmcalClusterEnergyCut();
+}
+
 
 Bool_t AliAnalysisEtSelectorPhos::PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const
 { // cut distance to bad channel

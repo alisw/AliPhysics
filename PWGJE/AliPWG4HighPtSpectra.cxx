@@ -433,12 +433,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputRec[2] = track->Eta();
       containerInputRec[3] = track->GetTPCNcls();
 
-      if(track->Charge()>0.) {
-        fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
-      }
-      if(track->Charge()<0.) {
-        fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
-      }
+      if(track->Charge()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
+      if(track->Charge()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 
       if(fArrayMCAOD) {
         Int_t label = TMath::Abs(track->GetLabel());
@@ -462,24 +458,16 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
 	//Container with primaries
 	if(particle->IsPhysicalPrimary()) {
-	  if(particle->Charge()>0.) {
-	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-          }
-	  if(particle->Charge()<0.) {
-	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-          }
+	  if(particle->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepReconstructedMC,particle)) fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  if(particle->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepReconstructedMC,particle)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	  //Fill pT resolution plots for primaries
 	  //fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //This has not been implemented in AOD analysis, since they are also produced by the AddTaskPWG4HighPtTrackQA.C macro
 	}
 
 	//Container with secondaries
 	if (!particle->IsPhysicalPrimary() ) {
-	  if(particle->Charge()>0.) {
-	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
-	  }
-	  if(particle->Charge()<0.) {
-	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
-	  }
+	  if(particle->Charge()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
+	  if(particle->Charge()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepSecondaries);
 	  //Fill pT resolution plots for primaries
 	  //fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2())); //This has not been implemented in AOD analysis, since they are also produced by the AddTaskPWG4HighPtTrackQA.C macro
 	}
@@ -489,6 +477,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     //Fill MC containers if particles are findable
     if(fArrayMCAOD) {
       int noPart = fArrayMCAOD->GetEntriesFast();
+
       for(int iPart = 1; iPart<noPart; iPart++) {
 	AliAODMCParticle *mcPart = (AliAODMCParticle*) fArrayMCAOD->At(iPart);
         if(!mcPart) continue;
@@ -513,12 +502,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  containerInputMC[3] = 159.;
 	  
 	  if(mcPart->IsPhysicalPrimary()) {
-	    if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
-              fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-            }
-	    if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) {
-              fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
-            }
+	    if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
+	    if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
 	  }
         }
       }
@@ -666,24 +651,16 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
 	//Container with primaries
 	if(fStack->IsPhysicalPrimary(label)) {
-	  if(particle->GetPDG()->Charge()>0.) {
-	    fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-	  }
-	  if(particle->GetPDG()->Charge()<0.) {
-	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
-	  }
+	  if(particle->GetPDG()->Charge()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
+	  if(particle->GetPDG()->Charge()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	  //Fill pT resolution plots for primaries
 	  fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 	}
 
 	//Container with secondaries
 	if (!fStack->IsPhysicalPrimary(label) ) {
-	  if(particle->GetPDG()->Charge()>0.) {
-	    fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
-	  }
-	  if(particle->GetPDG()->Charge()<0.) {
-	    fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
-	  }
+	  if(particle->GetPDG()->Charge()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
+	  if(particle->GetPDG()->Charge()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
 	  //Fill pT resolution plots for primaries
 	  fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 	}

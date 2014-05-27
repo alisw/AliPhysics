@@ -870,7 +870,8 @@ void AliRDHFCutsDstoKKpi::SetStandardCutsPP2010() {
   esdTrackCuts->SetPtRange(0.3,1.e10);
   
   AddTrackCuts(esdTrackCuts);
-  
+  delete esdTrackCuts;
+  esdTrackCuts=NULL;
  
    
   const Int_t nptbins=4;

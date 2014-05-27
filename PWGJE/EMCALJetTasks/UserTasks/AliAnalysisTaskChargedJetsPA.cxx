@@ -81,11 +81,14 @@ void AliAnalysisTaskChargedJetsPA::Init()
   if (fAnalyzeJets)
   {
     // ######## Jet spectra
-    AddHistogram1D<TH1D>("hRawJetPt", "Raw jets p_{T} distribution (before cuts)", "", 500, 0., 250., "p_{T} (GeV/c)", "dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPt", "Jets p_{T} distribution", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
+    TH2* tmpHisto2D = AddHistogram2D<TH2D>("hJetPtCutStages", "Jets p_{T} distribution", "", 500, -50., 200., 4, 0, 4, "p_{T} (GeV/c)","Cut stage","dN^{Jets}/dp_{T}");
+    tmpHisto2D->GetYaxis()->SetBinLabel(1, "Before cuts");
+    tmpHisto2D->GetYaxis()->SetBinLabel(2, "After eta");
+    tmpHisto2D->GetYaxis()->SetBinLabel(3, "After p_{T}");
+    tmpHisto2D->GetYaxis()->SetBinLabel(4, "After area");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS", "Jets p_{T} distribution, KT background (Improved CMS) subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Phi1", "Jets p_{T} distribution, KT background (Improved CMS) subtracted (1st part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
-    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedKTImprovedCMS_Phi2", "Jets p_{T} distribution, KT background (Improved CMS) subtracted (2nd part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi1", "Jets p_{T} distribution, external background (Improved CMS) subtracted (1st part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
+    AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal_Phi2", "Jets p_{T} distribution, external background (Improved CMS) subtracted (2nd part of azimuth)", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
 
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedPP", "Jets p_{T} distribution, pp background subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");
     AddHistogram2D<TH2D>("hJetPtBgrdSubtractedExternal", "Jets p_{T} distribution, external bgrd. subtracted", "", 500, -50., 200., fNumberOfCentralityBins, 0, 100, "p_{T} (GeV/c)","Centrality","dN^{Jets}/dp_{T}");    
@@ -275,7 +278,7 @@ void AliAnalysisTaskChargedJetsPA::Init()
     {
       // ######## Jet QA
       AddHistogram1D<TH1D>("hRawJetArea", "Jets area distribution w/o area cut", "", 200, 0., 2., "Area","dN^{Jets}/dA");
-      AddHistogram2D<TH2D>("hJetArea", "Jets area distribution", "COLZ", 200, 0., 2., 150, 0.,150., "Area","Jet p_{T}","dN^{Jets}/dA");
+      AddHistogram2D<TH2D>("hJetArea", "Jets area distribution", "COLZ", 200, 0., 2.,  500, -50., 200, "Area","Jet p_{T}","dN^{Jets}/dA");
       AddHistogram2D<TH2D>("hRawJetPhiEta", "Raw Jets angular distribution w/o #eta cut", "LEGO2", 360, 0., 2*TMath::Pi(),100, -1.0, 1.0, "#phi","#eta","dN^{Jets}/(d#phi d#eta)");
       AddHistogram2D<TH2D>("hJetEta", "Jets #eta distribution", "COLZ", 180, fMinEta, fMaxEta, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Jets}/d#eta");
       AddHistogram2D<TH2D>("hJetEta2GeVTracks", "Jets #eta distribution, track p_{T} > 2 GeV", "COLZ", 180, fMinEta, fMaxEta, fNumberOfCentralityBins, 0., 100., "#eta", "Centrality", "dN^{Jets}/d#eta");
@@ -1601,29 +1604,40 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
       if (!tmpJet)
         continue;
 
-      FillHistogram("hRawJetPt", tmpJet->Pt());
-      if (tmpJet->Pt() >= 5.0)
-      {
       // ### RAW JET ANALYSIS
-        if (tmpJet->Area() >= fMinJetArea)
-          FillHistogram("hRawJetPhiEta", tmpJet->Phi(), tmpJet->Eta());
-        if ((tmpJet->Eta() >= fMinJetEta) && (tmpJet->Eta() < fMaxJetEta))
-          FillHistogram("hRawJetArea", tmpJet->Area());
+      if (tmpJet->Area() >= fMinJetArea)
+        FillHistogram("hRawJetPhiEta", tmpJet->Phi(), tmpJet->Eta());
+      if ((tmpJet->Eta() >= fMinJetEta) && (tmpJet->Eta() < fMaxJetEta))
+        FillHistogram("hRawJetArea", tmpJet->Area());
+
+      // Jet pt for different area cut
+      FillHistogram("hJetPtCutStages", tmpJet->Pt(), 0.5);
+      if ((tmpJet->Eta() >= fMinJetEta) && (tmpJet->Eta() < fMaxJetEta))
+      {
+        FillHistogram("hJetPtCutStages", tmpJet->Pt(), 1.5);
+        if (tmpJet->Pt() >= fMinJetPt)
+        {
+          FillHistogram("hJetPtCutStages", tmpJet->Pt(), 2.5);
+          if (tmpJet->Area() >= fMinJetArea)
+          {
+            FillHistogram("hJetPtCutStages", tmpJet->Pt(), 3.5);
+          }
+        }
       }
+
 
       if(IsSignalJetInAcceptance(tmpJet))
       {
       // ### SIGNAL JET ANALYSIS
         // Jet spectra
-        FillHistogram("hJetPt", tmpJet->Pt(), centralityPercentile);
         FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
-        if(tmpJet->Phi() >= TMath::Pi())
-          FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Phi2", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
-        else          
-          FillHistogram("hJetPtBgrdSubtractedKTImprovedCMS_Phi1", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS), centralityPercentile);
-
         FillHistogram("hJetPtBgrdSubtractedPP", GetCorrectedJetPt(tmpJet, backgroundPP), centralityPercentile);
         FillHistogram("hJetPtBgrdSubtractedExternal", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal), centralityPercentile);
+        if(tmpJet->Phi() >= TMath::Pi())
+          FillHistogram("hJetPtBgrdSubtractedExternal_Phi2", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal), centralityPercentile);
+        else          
+          FillHistogram("hJetPtBgrdSubtractedExternal_Phi1", GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal), centralityPercentile);
+
         FillHistogram("hJetPtSubtractedRhoKTImprovedCMS", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMS));
         FillHistogram("hJetPtSubtractedRhoExternal", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundKTImprovedCMSExternal));
         FillHistogram("hJetPtSubtractedRhoPP", tmpJet->Pt(), centralityPercentile, tmpJet->Pt() - GetCorrectedJetPt(tmpJet, backgroundPP));
@@ -1885,12 +1899,12 @@ void AliAnalysisTaskChargedJetsPA::Calculate(AliVEvent* event)
     if (fFirstLeadingJet)
     {
       FillHistogram("hLeadingJetPt", fFirstLeadingJet->Pt());
-      FillHistogram("hCorrectedLeadingJetPt", GetCorrectedJetPt(fFirstLeadingJet,backgroundKTImprovedCMS));
+      FillHistogram("hCorrectedLeadingJetPt", GetCorrectedJetPt(fFirstLeadingJet,backgroundKTImprovedCMSExternal));
     }
     if (fSecondLeadingJet)
     {
       FillHistogram("hSecondLeadingJetPt", fSecondLeadingJet->Pt());
-      FillHistogram("hCorrectedSecondLeadingJetPt", GetCorrectedJetPt(fSecondLeadingJet,backgroundKTImprovedCMS));
+      FillHistogram("hCorrectedSecondLeadingJetPt", GetCorrectedJetPt(fSecondLeadingJet,backgroundKTImprovedCMSExternal));
     }
   } //endif AnalyzeJets
 

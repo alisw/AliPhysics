@@ -53,7 +53,8 @@ set ( SRCS
     UserTasks/AliAnalysisTaskIDFFTCF.cxx
     UserTasks/AliIDFFUtils.cxx
     UserTasks/AliAnalysisTaskPPJetSpectra.cxx
-    )
+    UserTasks/AliAnalysisTaskJetAntenna.cxx
+  )
 
 # Add code that needs fastjet or FJWrapper here 
 if (FASTJET_FOUND)
