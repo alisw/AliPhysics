@@ -56,6 +56,7 @@
 #include "AliTPCCalPad.h"
 #include "AliTPCCalROC.h"
 #include "TTreeStream.h"
+#include "AliTPCReconstructor.h"
 
 using std::cout;
 using std::cerr;

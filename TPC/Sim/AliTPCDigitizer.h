@@ -6,7 +6,7 @@
 /* $Id$ */
 
 #include "AliDigitizer.h"
-class TTreeSredirector;
+class TTreeSRedirector;
 
 class AliDigitizationInput;
 
@@ -28,6 +28,8 @@ class AliTPCDigitizer : public AliDigitizer {
     Int_t fDebug;                         //
     TTreeSRedirector *fDebugStreamer;     //!debug streamer
  private:
+    AliTPCDigitizer& operator=(const AliTPCDigitizer&);
+    AliTPCDigitizer(const AliTPCDigitizer&);
     ClassDef(AliTPCDigitizer,2)  // MUON merging/digitization
 };    
 #endif
