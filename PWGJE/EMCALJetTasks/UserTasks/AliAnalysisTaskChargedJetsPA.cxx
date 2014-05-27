@@ -607,24 +607,37 @@ inline Bool_t AliAnalysisTaskChargedJetsPA::IsBackgroundJetInAcceptance(AliEmcal
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskChargedJetsPA::IsSignalJetInAcceptance(AliEmcalJet *jet)
-{   
+inline Bool_t AliAnalysisTaskChargedJetsPA::IsSignalJetInAcceptance(AliEmcalJet *jet, Bool_t usePtCut)
+{
+  Bool_t acceptedWithPtCut = kFALSE;
+  Bool_t acceptedWithoutPtCut = kFALSE;
+
   FillHistogram("hJetAcceptance", 0.5);
   if (jet != 0)
     if ((jet->Eta() >= fMinJetEta) && (jet->Eta() < fMaxJetEta))
     {
       FillHistogram("hJetAcceptance", 1.5);
-      if (jet->Pt() >= fMinJetPt)
+      if (jet->Pt() >= fMinJetPt) // jet fulfills pt cut
       {
         FillHistogram("hJetAcceptance", 2.5);
         if (jet->Area() >= fMinJetArea)
         {
           FillHistogram("hJetAcceptance", 3.5);
-          return kTRUE;
+          acceptedWithPtCut = kTRUE;
         }
       }
+      else if(!usePtCut) // jet does not fulfill pt cut
+      {
+        if (jet->Area() >= fMinJetArea)
+          acceptedWithoutPtCut = kTRUE;
+      }
     }
-  return kFALSE;
+
+  if(usePtCut)
+    return (acceptedWithPtCut);
+  else
+    return (acceptedWithPtCut || acceptedWithoutPtCut);
+
 }
 
 //________________________________________________________________________
@@ -750,7 +763,7 @@ void AliAnalysisTaskChargedJetsPA::GetSignalJets()
       AliError(Form("%s: Could not receive jet %d", GetName(), i));
       continue;
     }
-    if (!IsSignalJetInAcceptance(jet))
+    if (!IsSignalJetInAcceptance(jet, kTRUE))
       continue;
 
     for (Int_t j = 0; j <= tmpJets.GetEntries(); j++)
