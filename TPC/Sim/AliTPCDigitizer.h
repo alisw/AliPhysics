@@ -6,6 +6,7 @@
 /* $Id$ */
 
 #include "AliDigitizer.h"
+class TTreeSredirector;
 
 class AliDigitizationInput;
 
@@ -23,7 +24,9 @@ class AliTPCDigitizer : public AliDigitizer {
  private: 
     void DigitizeFast(Option_t* option=0); //digitize - using row pointers
     void DigitizeSave(Option_t* option=0); // digitize using controlled arrays   
-    Int_t fDebug;
+    void DigitizeWithTailAndCrossTalk(Option_t* option=0); 
+    Int_t fDebug;                         //
+    TTreeSRedirector *fDebugStreamer;     //!debug streamer
  private:
     ClassDef(AliTPCDigitizer,2)  // MUON merging/digitization
 };    
