@@ -64,6 +64,8 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
                                  const char * tag);
 TGraphErrors * PlotGSIYields(const char * fileName, Int_t color=kBlack, Int_t lineStyle = kSolid,
                              const char * tag ="", Bool_t isPbPb = 1);
+TGraphErrors*  PlotFlorenceYields(const char * filename, Int_t color, Int_t lineStyle,
+                                  const char * tag) ;
 
 void AddLineToThermalLegend(TObject * obj, TString line, const char * optFirst = "L");
 
@@ -72,11 +74,15 @@ void SaveCanvas(const char * name) ;
 
 // Ratios to be draw. Remember to change the labels in DrawFrame if you change this
 const Int_t nratio = 10;
-//  Int_t denum[nratio]    = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGPi       , kPDGDeuteron , kPDGPi          , kPDGK   , -kPDGK};
-
 Int_t num  [nratio]            = {kPDGK  , kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron , kPDGHE3      , kPDGHyperTriton , kPDGPhi , kPDGKStar};
 Int_t denum[nratio]            = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGProton   , kPDGDeuteron , kPDGPi          , kPDGK   , kPDGK};
 Int_t isSum[nratio]            = {1      , 1          ,  1         ,   1     , 1         , 1            , 0            , 1               , 1       , 1      };
+
+// const Int_t nratio = 10;
+// Int_t num  [nratio]            = {kPDGK  , kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron , kPDGHE3      , kPDGHyperTriton , kPDGPhi , kPDGKStar};
+// Int_t denum[nratio]            = {kPDGPi , kPDGPi     , kPDGKS0    ,  kPDGPi , kPDGPi    , kPDGProton   , kPDGDeuteron , kPDGPi          , kPDGK   , kPDGK};
+// Int_t isSum[nratio]            = {1      , 1          ,  1         ,   1     , 1         , 1            , 0            , 1               , 1       , 1      };
+
 const char * ratiosLabels[]          = {"#frac{K^{+}+K^{-}}{#pi^{+}+#pi^{-}}", 
                                         "#frac{p+#bar{p}}{#pi^{+}+#pi^{-}}", 
                                         "#frac{2#Lambda}{K_{S}^{0}}", 
@@ -87,7 +93,8 @@ const char * ratiosLabels[]          = {"#frac{K^{+}+K^{-}}{#pi^{+}+#pi^{-}}",
                                         "#frac{{}^{3}_{#Lambda}H+{}^{3}_{#Lambda}#bar{H} }{#pi^{+}+#pi^{-}}",
                                         "#frac{#phi}{K^{+}+K^{-}}",
                                         "#frac{K*+#bar{K}*}{K^{+}+K^{-}}",};
-static const Double_t scale[]  = {1      , 3          ,  0.5       ,  30     ,  250      , 50           , 100          , 4e5             , 2       , 1      };
+//static const Double_t scale[]  = {1      , 3          ,  0.5       ,  30     ,  250      , 50           , 100          , 4e5             , 2       , 1      };
+static const Double_t scale[]  = {1      , 3          ,  0.5       ,  80     ,  1000      , 50           , 100          , 4e5             , 2       , 1      };
 //static const Double_t scale[]  = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,};
 const Int_t npart = 12;
 Int_t particleYields  [npart] = {kPDGPi ,kPDGK   ,kPDGKS0, kPDGKStar, kPDGPhi, kPDGProton , kPDGLambda , kPDGXi  , kPDGOmega , kPDGDeuteron, kPDGHyperTriton, kPDGHE3    };
@@ -133,7 +140,7 @@ TPad    *myPadLabel  =0;
 TLegend * legThermal = 0;
 #endif
 
-Bool_t saveCanvas = 0; // if true, the canvas is saved and copied to the analysis note folder
+Bool_t saveCanvas = 1; // if true, the canvas is saved and copied to the analysis note folder
 
 TClonesArray * PlotRatiosForQM14() {
 #if !(!defined (__CINT__) || (defined(__MAKECINT__)))
@@ -168,7 +175,8 @@ TClonesArray * PlotRatiosForQM14() {
 
   SetStyle();
 
-  //  DrawRatio("allpp");  
+  DrawRatio("allpp");  
+  //  DrawRatio("allppWithRHIC");  
   //  DrawRatio("PbPbWithPP7TeV");
   //DrawRatio("allsyst");
   //DrawRatio("PbPb6080andpPb0005");
@@ -178,29 +186,31 @@ TClonesArray * PlotRatiosForQM14() {
 
 
   // Yields and FITS
-  maxy=2000;
+  //  maxy=2000;
 
-  //DrawRatio("fit_ReferenceFit_PbPb0010", 1);
+  // DrawRatio("fit_ReferenceFit_PbPb0010", 1);
   //  DrawRatio("fit_ReferenceFit_GSIONLY_PbPb0010", 1);
   //  DrawRatio("fit_ReferenceFit_GSITHERMUS_PbPb0010",1);
-  //DrawRatio("fitSHARE_NoPionsNoProtons_PbPb0010",1);
+  // DrawRatio("fitSHARE_NoPionsNoProtons_PbPb0010",1);
   //  DrawRatio("fitGSI_NoPionsNoProtons_PbPb0010", 1);
-  //DrawRatio("fitShare_All_PbPb0010", 1);
+  // DrawRatio("fitShare_All_PbPb0010", 1);
 
   //  DrawRatio("fitShareWithWithoutNuclei_PbPb0010", 1);
   // maxy=200;
   // DrawRatio("fitGSI_PbPb6080", 1);
-    // maxy=150;
-    // DrawRatio("fitGSI_PbPb2040", 1);
-  maxy = 60;
+  //   maxy=150;
+  //   DrawRatio("fitGSI_PbPb2040", 1);
+  //  maxy = 60;
   // DrawRatio("fitThermus_GammaSFree_pPb0005");
-  DrawRatio("fitShare_pPb0005");
-   // maxy=20;
-   // DrawRatio("fitThermus_GammaSFree_pPb2040");
-  //   maxy=9;
-  //   DrawRatio("fitThermus_GammaSFree_pPb6080");
-   // maxy=9;
-   // DrawRatio("fitGSI_pp");
+  //  DrawRatio("fitShare_pPb0005");
+  //  DrawRatio("fitShare_pPb0005_NoOmega", 1);
+  //  maxy=20;
+  //  DrawRatio("fitThermus_GammaSFree_pPb2040");
+  //  maxy=9;
+  //  DrawRatio("fitThermus_GammaSFree_pPb6080");
+  //  maxy=9;
+  //    DrawRatio("fitGSI_pp");
+  //  DrawRatio("fitFlorence_pp");
 
   //  NewLegendQM();
   return arrPbPb;
@@ -873,6 +883,20 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
     SaveCanvas("Ratios_pponly");
   }
+  else if (what == "allppWithRHIC"){
+    DrawRatio("frame");    
+    DrawRatio("pp900", 0, 0.05);
+    DrawRatio("pp276", 0, 0.20);
+    DrawRatio("pp7", 0, 0.35);
+    DrawRatio("ppPHENIX", 0, -0.35);
+    DrawRatio("ppSTAR", 0, -0.15);
+
+    array =0;
+    
+    NewLegendQM(0.588353, 0.636857, 0.910643, 0.948352);
+
+    SaveCanvas("Ratios_pponly_withRHIC");
+  }
   else if (what == "PbPbWithPP7TeV"){
     
     DrawRatio("frame");
@@ -1314,7 +1338,38 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
     array =0;
 
-  } else if( what == "fitShare_pPb2040") {
+  } else if( what == "fitShare_pPb0005_NoOmega") {
+
+
+    DrawRatio("frame",1);  
+    DrawRatio("pPb0005",1, 0.00001);  
+    legThermal->SetNColumns(6);
+    AddLineToThermalLegend(legThermal, "Model,T (MeV), V (fm^{3}), #gamma_{s}, #gamma_{q}, #chi^{2}/NDF", "0");    
+    particlesToExcludeFromChi2="[313][1000010020][1000020030][1010010030]"; // do not consider K* and nuclei 
+ 
+    shiftRatioDataModel = -0.3;
+    PlotThermusYields("NEW_fit_gamma_q_s_fixed_pPb_0005_without_nuclei.txt"                 , kBlack    , kSolid      , "SHARE 3                 , 158 #pm 3  , 121 #pm 18  , 1 (fix)       , 1 (fix), 24.3/6");
+    shiftRatioDataModel = -.1;                                                                                                                                                                       
+    PlotThermusYields("NEW_fit_gamma_q_s_fixed_pPb_0005_without_nuclei_excluding_Omega.txt" , kBlue+1   , kDashDotted , "SHARE 3 (No #Omega)     , 163 #pm 4  ,  99 #pm 17  , 1 (fix)       , 1 (fix), 15.6/5");
+    shiftRatioDataModel = 0.1;                                                                                                                                                                       
+    PlotThermusYields("NEW_fit_gamma_q_fixed_pPb_0005_without_nuclei_excluding_Omega.txt"   , kOrange+2 , kDashed     , "SHARE 3 (No #Omega)     , 163 #pm 3  , 100 #pm 16  , 0.96 #pm 0.04 , 1 (fix), 14.7/4");
+    shiftRatioDataModel = 0.3;                                                                                                                                                                       
+    PlotThermusYields("NEW_fit_gamma_q_s_fixed_pPb_0005_with_nuclei_excluding_Omega.txt"    , kCyan+2   , kDotted     , "SHARE 3 (No #Omega + d) , 160 #pm 3  , 114 #pm 17  , 1 (fix)       , 1 (fix), 18.6/6");
+
+    NewLegendQM(0.650602, 0.694971, 0.909639, 0.865951, 1);
+    DrawExtrapNotInFitpPb0005() ;
+    DrawMarkerNucleiNoFit();
+    legThermal->SetX1(0.124498 ); 
+    legThermal->SetY1(0.0715488); 
+    legThermal->SetX2(0.672691 ); 
+    legThermal->SetY2(0.384575 ); 
+
+    SaveCanvas("Fit_pPb0005_SHARE_NoOmega");
+
+
+    array =0;
+
+  }  else if( what == "fitShare_pPb2040") {
     std::cout << "MISSING DATA" << std::endl;
     array =0;
   } else if( what == "fitShare_pPb6080") {
@@ -1359,6 +1414,23 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
     leg->Draw();
 
     SaveCanvas("Fit_pp7000_GSI");
+    //DrawExtrapNotInFitpPb0005(0);
+    array =0;
+  }else if( what == "fitFlorence_pp") {
+    DrawRatio("frame",1);
+    DrawRatio("pp7",1, 0.00001);
+    legThermal->SetNColumns(1);
+    AddLineToThermalLegend(legThermal, "Model", "0");
+    shiftRatioDataModel = -0.1;
+    particlesToExcludeFromChi2 = "[1000020030][1010010030][1000010020]";
+    PlotFlorenceYields("pp7000_Florence.txt", kBlack, kSolid, "Becattini et al.");
+    shiftRatioDataModel = 0.1;
+    particlesToExcludeFromChi2 = "[313][1000020030][1010010030]";
+    PlotGSIYields    ("data+therm_fit2_s7000gs.dat", kRed+1, kDashed, "GSI GC",0);
+    myPadHisto->cd();
+    NewLegendQM(0.725904, 0.761431, 0.874498, 0.841323, 1);
+
+    SaveCanvas("Fit_pp7000_Florence");
     //DrawExtrapNotInFitpPb0005(0);
     array =0;
   } else if( what == "fitGSI_fullCanonical") {
@@ -1407,7 +1479,7 @@ void DrawRatio(TString what, Bool_t isYield, Double_t shift) {
 
 void DrawFrame(Bool_t isYield) {
 
-  myCan = new TCanvas("myCan","ThermalFits",50,10,1000,isYield ? 820 : 650);
+  myCan = new TCanvas("myCan","ThermalFits",50,10,1000,isYield ? 950 : 650);
   myCan->Draw();
   myCan->cd();
   // Set the Pads
@@ -1420,14 +1492,14 @@ void DrawFrame(Bool_t isYield) {
   myPadSetUp(myPadHisto);
   myPadHisto->Draw();
 
-  myPadStdDev = new TPad("myPadStdDev","myPadStdDev",0.0,0.0,1.0,0.2,0);
+  myPadStdDev = new TPad("myPadStdDev","myPadStdDev",0.0,0.035,1.0,0.215,0);
   myPadSetUp(myPadStdDev);
   if(isYield)  myPadStdDev->Draw();
   myPadStdDev->SetGridx();
   myPadStdDev->SetGridy();
 
   // This pad is for the ratios data/model
-  myPadRatio = new TPad("myPadRatio","myPadRatio",0.0,0.2,1.0,0.4,0);
+  myPadRatio = new TPad("myPadRatio","myPadRatio",0.0,0.22,1.0,0.4,0);
   myPadSetUp(myPadRatio);
   if(isYield)  myPadRatio->Draw();
   myPadRatio->SetGridx();
@@ -1661,6 +1733,74 @@ TGraphErrors*  PlotThermusYields(const char * filename, Int_t color, Int_t lineS
   return gThermus;
 }
 
+TGraphErrors*  PlotFlorenceYields(const char * filename, Int_t color, Int_t lineStyle,
+                                 const char * tag) {
+
+  Int_t lw = lineStyle == kSolid ? 2 : 3; // Set line width
+
+
+  std::map<Int_t,Double_t> mapYields;
+  std::map<Int_t,Double_t> mapStdDev;
+
+  Int_t pdg;
+  Double_t yield, yieldbar, stddev;
+  ifstream thermusFile(filename);
+  TString line;
+  std::cout << "---"<<tag<<"---" << std::endl;
+
+  //  std::istream is(thermusFile);
+  // Read the std dev and the ratio in 2 maps, then plot them in a graph.
+  while(line.ReadLine(thermusFile, kTRUE)) {
+    if(line.BeginsWith("#")) continue;
+    TObjArray * tokens = line.Tokenize(" \t");
+    if(tokens->GetEntries() != 4) continue;// not a line with data
+    //    thermusFile >> pdg >> yield >> stddev;
+    pdg      = ((TObjString*)tokens->At(0))->String().Atof();
+    yield    = ((TObjString*)tokens->At(2))->String().Atof();
+    yieldbar = ((TObjString*)tokens->At(3))->String().Atof(); // Antiparticle yield
+    if(pdg == 0) {
+      // not a line with data
+      delete tokens;
+      continue ;
+    }
+    if( thermusFile.eof() ) break;
+    std::cout << "PDG " << pdg << " " << yield << " " << yieldbar << std::endl;
+    
+    mapYields[TMath::Abs(pdg)] += yieldbar ? ((yield+yieldbar)/2) : yield; // If the antiparticle exists, use the average
+
+    delete tokens;
+  }
+
+  // Now plot
+  TGraphErrors * gFlorence = new TGraphErrors;
+  for(Int_t ipart = 0; ipart < npart; ipart++){
+    gFlorence->SetPoint(ipart, ipart+1.5, mapYields[particleYields[ipart]]);
+    gFlorence->SetPointError(ipart, 0.3, 0);
+  }
+
+  myPadHisto->cd();
+  gFlorence->Draw("PZ");
+  gFlorence->SetLineWidth(lw);
+
+  gFlorence->SetLineColor(color);
+  gFlorence->SetLineStyle(lineStyle);
+  gFlorence->SetTitle("NoLegend");
+
+
+
+  TGraphErrors* gStdDev2 = 0;
+  TGraphErrors* gRatio   = 0;
+  std::cout << "CHI2: " 
+	    <<  GetGraphRatioAndStdDev(gFlorence, gRatio, gStdDev2)
+	    << std::endl;
+  myPadRatio->cd(); 
+  gRatio->Draw("PZ");
+  myPadStdDev->cd();
+  gStdDev2->Draw("PZ");
+  myPadHisto->cd();
+  AddLineToThermalLegend(gFlorence, tag, "l");
+  return gFlorence;
+}
 
 
 TGraphErrors*  PlotGSIYields(const char * filename, Int_t color, Int_t lineStyle,
