@@ -347,6 +347,14 @@ int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTUInt64_t trgMask,
 		      AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
 		      AliHLTUInt32_t participatingDetectors)
 {
+  return Run(iNofEvents, bStop, AliHLTTriggerMask_t(trgMask), 
+	     timestamp, eventtype, participatingDetectors);
+}
+
+int AliHLTSystem::Run(Int_t iNofEvents, int bStop, AliHLTTriggerMask_t trgMask,
+		      AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+		      AliHLTUInt32_t participatingDetectors)
+{
   // see header file for class documentation
   int iResult=0;
   int iCount=0;
@@ -585,7 +593,7 @@ int AliHLTSystem::StartTasks()
   return iResult;
 }
 
-int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
+int AliHLTSystem::ProcessTasks(Int_t eventNo, AliHLTTriggerMask_t trgMask,
 	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
 	  AliHLTUInt32_t participatingDetectors)
 {
@@ -819,7 +827,7 @@ int AliHLTSystem::Reconstruct(int nofEvents, AliRunLoader* runLoader,
 	}
       } else {
       if ((iResult=AliHLTOfflineInterface::SetParamsToComponents(runLoader, rawReader))>=0) {
-	AliHLTUInt64_t trgMask=0x1;
+	AliHLTTriggerMask_t trgMask=0x1;
 	AliHLTUInt32_t timestamp=kMaxUInt;
 	AliHLTUInt32_t eventtype=0;
 	if (runLoader==NULL) {

@@ -25,7 +25,6 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTComponent.h"
-#include "AliRawDataHeader.h"
 
 #include <vector>
 #include <algorithm>

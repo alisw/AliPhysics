@@ -2,6 +2,7 @@
 #define DETECTORK_H
 
 #include <TNamed.h>
+#include <TClonesArray.h>
 #include <TList.h>
 #include <TGraph.h>
 #include <Riostream.h>
@@ -48,6 +49,64 @@ Dec. 2010 - Translation into C++ class format
 class AliExternalTrackParam; 
 #include <TMatrixD.h>
 
+class TrackSol: public TObject
+{
+ public:
+  enum {kInw,kOut,kCmb};
+  //
+ TrackSol(int nL, double pt, double eta, int q, double m=0.140) 
+   : fPt(nL>0 ? pt : -1), fEta(eta), fMass(m), fCharge(q),  
+    fTrackInw("AliExternalTrackParam",nL),
+    fTrackOutB("AliExternalTrackParam",nL),
+    fTrackOutA("AliExternalTrackParam",nL),
+    fTrackCmb("AliExternalTrackParam",nL)
+    {
+      for (int i=3;i--;) fProb[i][0] = fProb[i][1] = 0;
+    }
+  //
+  void Clear(Option_t*) {
+    fTrackInw.Clear();
+    fTrackOutB.Clear();
+    fTrackOutA.Clear();
+    fTrackCmb.Clear();
+    fPt = -1;
+    for (int i=3;i--;) fProb[i][0] = fProb[i][1] = 0;
+  }
+  //
+  Double_t        fPt;
+  Double_t        fEta;
+  Double_t        fMass;
+  Int_t           fCharge;
+  Double_t        fProb[3][2]; // corr/fake prob for inw,out and cmb tracking
+  TClonesArray fTrackInw;
+  TClonesArray fTrackOutB; // outward before update
+  TClonesArray fTrackOutA; // outward after update
+  TClonesArray fTrackCmb;
+  //
+  ClassDef(TrackSol,1)
+};
+
+
+class CylLayerK : public TNamed {
+public:
+
+  CylLayerK(char *name) : TNamed(name,name) {}
+  
+  Float_t GetRadius()   const {return radius;}
+  Float_t GetRadL()     const {return radL;}
+  Float_t GetPhiRes()   const {return phiRes;}
+  Float_t GetZRes()     const {return zRes;}
+  Float_t GetLayerEff() const {return eff;}
+
+  //  void Print() {printf("  r=%3.1lf X0=%1.6lf sigPhi=%1.4lf sigZ=%1.4lf\n",radius,radL,phiRes,zRes); }
+  Float_t radius; Float_t radL; Float_t phiRes; Float_t zRes;   
+  Float_t eff;
+  Bool_t isDead;
+
+ ClassDef(CylLayerK,1);
+};
+
+
 class DetectorK : public TNamed {
 
  public:
@@ -59,14 +118,16 @@ class DetectorK : public TNamed {
   enum {kNptBins = 50}; // less then 400 !!
  
   void AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRes=999999, Float_t zRes=999999, Float_t eff=0.95);
-
   void KillLayer(char *name);
   void SetRadius(char *name, Float_t radius);
   void SetRadiationLength(char *name, Float_t radL);
   void SetResolution(char *name, Float_t phiRes=999999, Float_t zRes=999999);
   void SetLayerEfficiency(char *name, Float_t eff=0.95);
   void RemoveLayer(char *name);
-
+  CylLayerK* FindLayer(char* name) const;
+  CylLayerK* FindLayer(double r, int mode) const;
+  Int_t      FindLayerID(double r, int mode) const;
+  //
   Float_t GetRadius(char *name);
   Float_t GetRadiationLength(char *name);
   Float_t GetResolution(char *name, Int_t axis=0);
@@ -110,18 +171,27 @@ class DetectorK : public TNamed {
   void SetptScale(Double_t ptScale ) {fptScale = ptScale; }
   Int_t GetptScale() const { return fptScale; }
 
-
+  
 
   void SetdNdEtaCent(Int_t dNdEtaCent ) {fdNdEtaCent = dNdEtaCent; }
   Float_t GetdNdEtaCent() const { return fdNdEtaCent; }
   
   
-  
+  Float_t GetNumberOfLayers()          const {return fNumberOfLayers; }
   Float_t GetNumberOfActiveLayers() const {return fNumberOfActiveLayers; }
   Float_t GetNumberOfActiveITSLayers() const {return fNumberOfActiveITSLayers; }
 
   void SolveViaBilloir(Int_t flagD0=1,Int_t print=1, Bool_t allPt=1, Double_t meanPt =0.095, char* detLayer=((char*)""));
+  //
+  Bool_t SolveTrack(TrackSol& ts);
+  Bool_t CalcITSEff(TrackSol& ts, Bool_t verbose=kTRUE);
+  Bool_t ExtrapolateToR(AliExternalTrackParam* probTr, double rTgt, double mass=0.14);
+  //
+  void   SetMinRadTrack(double r=132) {  fMinRadTrack = r; }
+  Double_t GetMinRadTrack()  const { return fMinRadTrack;}
 
+  //
+  //
   // Helper functions
   Double_t ThetaMCS                 ( Double_t mass, Double_t RadLength, Double_t momentum ) const;
   Double_t ProbGoodHit              ( Double_t radius, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
@@ -155,10 +225,11 @@ class DetectorK : public TNamed {
   // method to extend AliExternalTrackParam functionality
   static Bool_t GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir=0);
   static Bool_t PropagateToR(AliExternalTrackParam* trc, double r, double b, int dir=0);
-  Double_t* PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay);
+  Double_t* PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay, double* prob=0);
 
   Bool_t IsITSLayer(const TString& lname);
 
+  static Bool_t verboseR;
  protected:
  
   Int_t fNumberOfLayers;        // total number of layers in the model
@@ -199,9 +270,10 @@ class DetectorK : public TNamed {
   Double_t fResolutionZLay[kNptBins];                           // array of z resolution
   Double_t fEfficProlongLay[kNptBins];                           // array of z resolution
 
+  Double_t fMinRadTrack;
+
   static const Double_t kPtMinFix;
   static const Double_t kPtMaxFix;
-  static const Double_t kMinRadTPCTrack;
 
   ClassDef(DetectorK,1);
 };

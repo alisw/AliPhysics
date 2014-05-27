@@ -27,7 +27,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliHLTTPCHWCFData.h"
@@ -254,11 +254,12 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
     long maxPoints = ((long)maxOutSize-size-sizeof(AliHLTTPCClusterData))/sizeof(AliHLTTPCSpacePointData);
 
     AliHLTUInt32_t *buffer;     
-    buffer = (AliHLTUInt32_t*)iter->fPtr;  
+    buffer = (AliHLTUInt32_t*)iter->fPtr;
+    AliHLTCDHWrapper cdh(iter->fPtr);
      
      // skip the first 8 32-bit CDH words
-     buffer += 8;
-     UInt_t bufferSize32 = ((Int_t)iter->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
+    buffer += cdh.GetHeaderSize()/sizeof(AliHLTUInt32_t);
+    UInt_t bufferSize32 = ((Int_t)iter->fSize - cdh.GetHeaderSize() )/sizeof(AliHLTUInt32_t);
 
      if (fpDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))>=0 && fpDecoder->CheckVersion()>=0) {
        for (AliHLTTPCHWCFData::iterator cl=fpDecoder->begin(); cl!=fpDecoder->end(); ++cl) {

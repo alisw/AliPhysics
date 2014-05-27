@@ -33,7 +33,7 @@
 #include "AliGRPObject.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include <cstdlib>
 #include <cerrno>
 #include "TString.h"
@@ -357,12 +357,14 @@ int AliHLTTPCHWCFConsistencyControlComponent::DoEvent( const AliHLTComponentEven
 
     int slice1 = AliHLTTPCDefinitions::GetMinSliceNr( *iter1 );
     int patch1 = AliHLTTPCDefinitions::GetMinPatchNr( *iter1 );
+
+    AliHLTCDHWrapper cdh1(iter1->fPtr);
    
     bool header1OK = 1;
     if( iter1->fSize>0 ){
       header1OK = ( iter1->fSize % sizeof(AliHLTUInt32_t) == 0 ) 
-	&& ( iter1->fSize >= sizeof(AliRawDataHeader) ) 
-	&& (iter1->fPtr != NULL );      
+	&& (iter1->fPtr != NULL )
+	&& ( iter1->fSize >= cdh1.GetHeaderSize() ) ;
     }
     
     int  nMatchedBlocks=0;
@@ -391,12 +393,14 @@ int AliHLTTPCHWCFConsistencyControlComponent::DoEvent( const AliHLTComponentEven
       checkedBlocks[ndx2] = 1;
 
       nMatchedBlocks++;
+      
+      AliHLTCDHWrapper cdh2(iter1->fPtr);
 
       bool header2OK = 1;
       if( iter2->fSize>0 ){
 	header2OK = ( iter2->fSize % sizeof(AliHLTUInt32_t) == 0 ) 
-	  && ( iter2->fSize >= sizeof(AliRawDataHeader) ) 
-	  && (iter2->fPtr != NULL );
+	  && (iter2->fPtr != NULL )
+	  && ( iter2->fSize >= cdh2.GetHeaderSize() ) ;
       }
  
       fHistHeaderAll->Fill(2);
@@ -404,7 +408,7 @@ int AliHLTTPCHWCFConsistencyControlComponent::DoEvent( const AliHLTComponentEven
       if( sameHLTHd ) fHistHeaderGood->Fill(2);
       if( !header1OK || !header2OK ) continue;
       
-      int nWordsHeader =  sizeof(AliRawDataHeader)/sizeof(AliHLTUInt32_t);
+      int nWordsHeader =  cdh2.GetHeaderSize()/sizeof(AliHLTUInt32_t);
       int nWords1 = iter1->fSize/sizeof(AliHLTUInt32_t);
       int nWords2 = iter2->fSize/sizeof(AliHLTUInt32_t);
       const AliHLTUInt32_t *p1 = (const AliHLTUInt32_t *) iter1->fPtr;

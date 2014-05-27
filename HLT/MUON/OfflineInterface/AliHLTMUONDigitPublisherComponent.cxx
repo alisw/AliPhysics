@@ -33,7 +33,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTSystem.h"
 #include "AliHLTDefinitions.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliMUONTrackerDDLDecoderEventHandler.h"
 #include "AliMUONConstants.h"
 #include "AliMUONMCDataInterface.h"
@@ -119,7 +119,7 @@ void AliHLTMUONDigitPublisherComponent::GetOutputDataSize(
 	/// Returns an estimate of the expected output data size.
 	
 	// estimated as max number of channels * raw data word size + max headers size.
-	constBase = sizeof(AliRawDataHeader) + 65536*sizeof(UInt_t)
+	constBase = sizeof(AliRawDataHeaderV3) + 65536*sizeof(UInt_t)
 		+ sizeof(AliMUONBlockHeaderStruct)*2 + sizeof(AliMUONDSPHeaderStruct)*10
 		+ sizeof(AliMUONBusPatchHeaderStruct) * 50;
 	inputMultiplier = 0;
@@ -907,17 +907,17 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
   blockHeader.SetDataKey(blockHeader.GetDefaultDataKey());
   dspHeader.SetDataKey(dspHeader.GetDefaultDataKey());
   
-  if (outBufferSize < sizeof(AliRawDataHeader))
+  if (outBufferSize < sizeof(AliRawDataHeaderV3))
   {
   	HLTError("The output buffer size is too small to write output."
   		" It is only %d bytes, but we need at least %d bytes.",
-  		outBufferSize, sizeof(AliRawDataHeader)
+  		outBufferSize, sizeof(AliRawDataHeaderV3)
   	);
   	return -ENOBUFS;
   }
-  AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(outBuffer);
+  AliRawDataHeaderV3* header = reinterpret_cast<AliRawDataHeaderV3*>(outBuffer);
   // Fill header with default values.
-  *header = AliRawDataHeader();
+  *header = AliRawDataHeaderV3();
   AliRunLoader* runloader = AliRunLoader::Instance();
   if (runloader != NULL)
   {
@@ -926,11 +926,13 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
       AliCentralTrigger *aCTP = runloader->GetTrigger();
       ULong64_t mask = aCTP->GetClassMask();
       header->SetTriggerClass(mask);
+      mask = aCTP->GetClassMaskNext50();
+      header->SetTriggerClassNext50(mask);
     }
   }
   
   Int_t* buffer = reinterpret_cast<Int_t*>(header+1);
-  Int_t endOfBuffer = (outBufferSize - sizeof(AliRawDataHeader)) / sizeof(Int_t);
+  Int_t endOfBuffer = (outBufferSize - sizeof(AliRawDataHeaderV3)) / sizeof(Int_t);
   
   // buffer size (max'ed out)
   // (((43 manus max per bus patch *64 channels + 4 bus patch words) * 5 bus patch 
@@ -955,7 +957,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
       HLTError("The output buffer size is too small to write output."
                " It is only %d bytes, but we need at least %d bytes.",
                outBufferSize,
-               sizeof(AliRawDataHeader) + (index+length)*sizeof(UInt_t)
+               sizeof(AliRawDataHeaderV3) + (index+length)*sizeof(UInt_t)
       );
       return -ENOBUFS;
     }
@@ -974,7 +976,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
         HLTError("The output buffer size is too small to write output."
                  " It is only %d bytes, but we need at least %d bytes.",
                  outBufferSize,
-                 sizeof(AliRawDataHeader) + (index+dspHeaderLength)*sizeof(UInt_t)
+                 sizeof(AliRawDataHeaderV3) + (index+dspHeaderLength)*sizeof(UInt_t)
         );
         return -ENOBUFS;
       }
@@ -1004,7 +1006,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
           HLTError("The output buffer size is too small to write output."
                    " It is only %d bytes, but we need at least %d bytes.",
                    outBufferSize,
-                   sizeof(AliRawDataHeader) + (index+busHeaderLength)*sizeof(UInt_t)
+                   sizeof(AliRawDataHeaderV3) + (index+busHeaderLength)*sizeof(UInt_t)
           );
           return -ENOBUFS;
         }
@@ -1022,7 +1024,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
             HLTError("The output buffer size is too small to write output."
                      " It is only %d bytes, but we need at least %d bytes.",
                      outBufferSize,
-                     sizeof(AliRawDataHeader) + (index+busLength)*sizeof(UInt_t)
+                     sizeof(AliRawDataHeaderV3) + (index+busLength)*sizeof(UInt_t)
             );
             return -ENOBUFS;
           }
@@ -1046,7 +1048,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
         HLTError("The output buffer size is too small to write output."
                  " It is only %d bytes, but we need at least %d bytes.",
                  outBufferSize,
-                 sizeof(AliRawDataHeader) + (index+1)*sizeof(UInt_t)
+                 sizeof(AliRawDataHeaderV3) + (index+1)*sizeof(UInt_t)
         );
         return -ENOBUFS;
       }
@@ -1083,7 +1085,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
     HLTError("The output buffer size is too small to write output."
              " It is only %d bytes, but we need at least %d bytes.",
              outBufferSize,
-             sizeof(AliRawDataHeader) + (index+2)*sizeof(UInt_t)
+             sizeof(AliRawDataHeaderV3) + (index+2)*sizeof(UInt_t)
     );
     return -ENOBUFS;
   }
@@ -1094,7 +1096,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTrackerDDL(
   buffer[index++] = blockHeader.GetDdlDataKey();
   totalDDLLength  += 2;
   
-  header->fSize = (totalDDLLength) * sizeof(Int_t) + sizeof(AliRawDataHeader);
+  header->fSize = (totalDDLLength) * sizeof(Int_t) + sizeof(AliRawDataHeaderV3);
   outBufferSize = header->fSize;
   
   return 0;
@@ -1114,17 +1116,17 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
   AliMpDDLStore* ddlStore = AliMpDDLStore::Instance();
   assert(ddlStore != NULL);
   
-  if (outBufferSize < sizeof(AliRawDataHeader))
+  if (outBufferSize < sizeof(AliRawDataHeaderV3))
   {
   	HLTError("The output buffer size is too small to write output."
   		" It is only %d bytes, but we need at least %d bytes.",
-  		outBufferSize, sizeof(AliRawDataHeader)
+  		outBufferSize, sizeof(AliRawDataHeaderV3)
   	);
   	return -ENOBUFS;
   }
-  AliRawDataHeader* header = reinterpret_cast<AliRawDataHeader*>(outBuffer);
+  AliRawDataHeaderV3* header = reinterpret_cast<AliRawDataHeaderV3*>(outBuffer);
   // Fill header with default values.
-  *header = AliRawDataHeader();
+  *header = AliRawDataHeaderV3();
   AliRunLoader* runloader = AliRunLoader::Instance();
   if (runloader != NULL)
   {
@@ -1189,22 +1191,22 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
   }
   if(scalarEvent)
   {
-    if (outBufferSize < sizeof(AliRawDataHeader) + kScalerBufferSize)
+    if (outBufferSize < sizeof(AliRawDataHeaderV3) + kScalerBufferSize)
     {
       HLTError("The output buffer size is too small to write output."
                " It is only %d bytes, but we need at least %d bytes.",
-               outBufferSize, sizeof(AliRawDataHeader) + kScalerBufferSize
+               outBufferSize, sizeof(AliRawDataHeaderV3) + kScalerBufferSize
       );
       return -ENOBUFS;
     }
   }
   else
   {
-    if (outBufferSize < sizeof(AliRawDataHeader) + kBufferSize)
+    if (outBufferSize < sizeof(AliRawDataHeaderV3) + kBufferSize)
     {
       HLTError("The output buffer size is too small to write output."
                " It is only %d bytes, but we need at least %d bytes.",
-               outBufferSize, sizeof(AliRawDataHeader) + kBufferSize
+               outBufferSize, sizeof(AliRawDataHeaderV3) + kBufferSize
       );
       return -ENOBUFS;
     }
@@ -1392,7 +1394,7 @@ int AliHLTMUONDigitPublisherComponent::WriteTriggerDDL(
       
     } // Regional card
 
-  header->fSize = index * sizeof(Int_t) + sizeof(AliRawDataHeader);
+  header->fSize = index * sizeof(Int_t) + sizeof(AliRawDataHeaderV3);
   outBufferSize = header->fSize;
 
   return 0;

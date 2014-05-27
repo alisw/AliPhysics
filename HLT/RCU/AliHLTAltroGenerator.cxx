@@ -29,7 +29,7 @@
 #include "TArrayC.h"
 #include "TRandom.h"
 #include "TDatime.h"
-#include "AliRawDataHeader.h"
+#include "AliRawDataHeaderV3.h"
 #include "AliHLTAltroEncoder.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
@@ -249,13 +249,13 @@ int AliHLTAltroGenerator::GetData(AliHLTUInt8_t* pBuffer, int size)
   return dataPos;
 }
 
-int AliHLTAltroGenerator::SetCDH(AliRawDataHeader* pCDH, int size)
+int AliHLTAltroGenerator::SetCDH(AliRawDataHeaderV3* pCDH, int size)
 {
   // see header file for class documentation
   int iResult=0;
   if (pCDH && size>0) {
     if (fpCDH) delete[] fpCDH;
-    fpCDH=new AliRawDataHeader;
+    fpCDH=new AliRawDataHeaderV3;
     if (fpCDH) {
       memcpy(fpCDH, pCDH, size);
       fCDHSize=size;

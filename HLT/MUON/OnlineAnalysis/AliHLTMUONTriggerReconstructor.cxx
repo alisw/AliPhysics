@@ -47,7 +47,6 @@
 #include "AliHLTMUONConstants.h"
 #include "AliHLTMUONCalculations.h"
 #include "AliMUONConstants.h"
-#include "AliRawDataHeader.h"
 #include <vector>
 #include <cassert>
 
@@ -1126,7 +1125,7 @@ void AliHLTMUONTriggerReconstructor::AliDecoderHandler::OnError(
 {
 	/// Logs an error message if there was a decoding problem with the DDL payload.
 	
-	long bytepos = long(location) - long(fBufferStart) + sizeof(AliRawDataHeader);
+        long bytepos = long(location) - long(fBufferStart);
 	if (code == kWrongEventType)
 	{
 		fHadWrongEventTypeError = true;

@@ -217,14 +217,20 @@ int AliHLTMiscImplementation::InitMagneticField() const
   return -ENOENT;
 }
 
-AliHLTUInt64_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader) const
+AliHLTTriggerMask_t AliHLTMiscImplementation::GetTriggerMask(AliRawReader* rawReader) const
 {
   // see header file for function documentation
   if (!rawReader) return 0;
-  AliHLTUInt64_t trgMask=0;
+  AliHLTTriggerMask_t trgMask=0;
   if (rawReader) {
     const UInt_t* pattern=rawReader->GetTriggerPattern();
-    trgMask=pattern[1]&0xfffffff; // 28 upper bits of the 50 bit mask
+    if(rawReader->GetVersion()==3){
+      trgMask=pattern[3];
+      trgMask<<=32;
+      trgMask|=pattern[2];
+      trgMask<<=32;
+    }
+    trgMask|=pattern[1];
     trgMask<<=32;
     trgMask|=pattern[0]; // 32 lower bits of the mask
   }

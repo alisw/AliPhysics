@@ -31,7 +31,7 @@
 #include "AliHLTMessage.h"
 #include "AliHLTCTPData.h"
 #include "AliHLTErrorGuard.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "TString.h"
 #include "TMath.h"
 #include "TObjArray.h"
@@ -1899,10 +1899,10 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
 	{
 	  // We can actually get the event type from the CDH if it is valid.
 	  // Otherwise just use the specification of the input block.
-	  const AliRawDataHeader* cdh;
+	  AliHLTCDHWrapper cdh;
 	  if (ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL) == 0)
 	  {
-	    fEventType = ExtractEventTypeFromCDH(cdh);
+	    fEventType = ExtractEventTypeFromCDH(&cdh);
 	  }
 	}
 
@@ -2671,7 +2671,7 @@ int AliHLTComponent::ExtractTriggerData(
     const AliHLTComponentTriggerData& trigData,
     const AliHLTUInt8_t (**attributes)[gkAliHLTBlockDAttributeCount],
     AliHLTUInt64_t* status,
-    const AliRawDataHeader** cdh,
+    AliHLTCDHWrapper* const cdh,
     AliHLTReadoutList* readoutlist,
     bool printErrors
   )
@@ -2716,15 +2716,15 @@ int AliHLTComponent::ExtractTriggerData(
   AliHLTEventTriggerData* evtData = reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
   assert(evtData != NULL);
   
-  // Check that the CDH has 8 words.
-  if (cdh != NULL and evtData->fCommonHeaderWordCnt != 8)
+  // Check that the CDH has the right number of words.
+  if (cdh != NULL and evtData->fCommonHeaderWordCnt != gkAliHLTCommonHeaderCount)
   {
     if (printErrors)
     {
       AliHLTLogging log;
       log.LoggingVarargs(kHLTLogError, Class_Name(), FUNCTIONNAME(), __FILE__, __LINE__,
           "Common Data Header (CDH) has wrong number of data words: %d but expected %d",
-          evtData->fCommonHeaderWordCnt, sizeof(AliRawDataHeader)/sizeof(AliHLTUInt32_t)
+          evtData->fCommonHeaderWordCnt, gkAliHLTCommonHeaderCount
         );
     }
     return -EBADMSG;
@@ -2757,8 +2757,7 @@ int AliHLTComponent::ExtractTriggerData(
   }
   if (cdh != NULL)
   {
-    const AliRawDataHeader* cdhptr = reinterpret_cast<const AliRawDataHeader*>(&evtData->fCommonHeader[0]);
-    *cdh = cdhptr;
+    *cdh = &(evtData->fCommonHeader[0]);
   }
   if (readoutlist != NULL)
   {
@@ -2767,10 +2766,9 @@ int AliHLTComponent::ExtractTriggerData(
   return 0;
 }
 
-AliHLTUInt32_t AliHLTComponent::ExtractEventTypeFromCDH(const AliRawDataHeader* cdh)
+AliHLTUInt32_t AliHLTComponent::ExtractEventTypeFromCDH(const AliHLTCDHWrapper* const cdh)
 {
   // see header file for function documentation
-  
   UChar_t l1msg = cdh->GetL1TriggerMessage();
   if ((l1msg & 0x1) == 0x0) return gkAliEventTypeData;
   // The L2SwC bit must be one if we got here, i.e. l1msg & 0x1 == 0x1.

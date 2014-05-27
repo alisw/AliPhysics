@@ -31,7 +31,7 @@
 #include "AliHLTTPCDigitReaderUnpacked.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCDefinitions.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliTPCcalibDB.h"
 #include "AliTPCCalPad.h"
@@ -340,15 +340,14 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
       // already raw format -> only set the pointers and estimate the size
 
       // read CDH header, estimate size of the data 
-      
-      AliHLTUInt64_t headerSize = sizeof(AliRawDataHeader);                  
+      AliHLTCDHWrapper cdhHeader(block->fPtr);
+
+      AliHLTUInt64_t headerSize = cdhHeader.GetHeaderSize();
  
-      AliRawDataHeader *cdhHeader = reinterpret_cast<AliRawDataHeader*>(block->fPtr);
-      
       AliHLTUInt64_t blockSize = block->fSize; // size of the raw data in bytes      
 
-      if( cdhHeader->fSize!=0xFFFFFFFF ){ // use size information from the header
-	blockSize = cdhHeader->fSize;
+      if( cdhHeader.GetDataSize()!=0xFFFFFFFF ){ // use size information from the header
+	blockSize = cdhHeader.GetDataSize();
 	if( blockSize > block->fSize ){
 	  HLTWarning("%s Could not find a valid DDL header!",str);
 	  return 0;
@@ -556,9 +555,11 @@ int AliHLTTPCHWCFSupport::CheckRawData( const AliHLTUInt32_t *buffer,
   // The procedure checks consistency of the data
   //
 
-  const unsigned int headerSize32 = 8;
 
   if (!buffer) return 0;
+
+  AliHLTCDHWrapper cdh((void*)buffer);
+  const unsigned int headerSize32 = cdh.GetHeaderSize()/4;
 
   const char *str=Form("slice %d patch %d:", slice, patch);
   

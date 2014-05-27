@@ -83,11 +83,11 @@ class TObjArray;
 class TMap;
 class TStopwatch;
 class TUUID;
-struct AliRawDataHeader;
 class AliHLTComponent;
 class AliHLTMemoryFile;
 class AliHLTCTPData;
 class AliHLTReadoutList;
+class AliHLTCDHWrapper;
 
 using std::vector;
 
@@ -756,7 +756,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @note If any of the output parameters are set to NULL then the field is not set.
    *   For example, the following line will only fill the CDH pointer.
    *   \code
-   *     AliRawDataHeader* cdh;
+   *     AliHLTCDHWrapper cdh;
    *     ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL);
    *   \endcode
    * @return zero on success or one of the following error codes on failure.
@@ -773,7 +773,7 @@ class AliHLTComponent : public AliHLTLogging {
       const AliHLTComponentTriggerData& trigData,
       const AliHLTUInt8_t (**attributes)[gkAliHLTBlockDAttributeCount],
       AliHLTUInt64_t* status,
-      const AliRawDataHeader** cdh,
+      AliHLTCDHWrapper* const cdh,
       AliHLTReadoutList* readoutlist,
       bool printErrors = false
     );
@@ -799,7 +799,7 @@ class AliHLTComponent : public AliHLTLogging {
    * @param [in] cdh  The Common Data Header to extract the event type from.
    * @return the event type code from the CDH.
    */
-  static AliHLTUInt32_t ExtractEventTypeFromCDH(const AliRawDataHeader* cdh);
+  static AliHLTUInt32_t ExtractEventTypeFromCDH(const AliHLTCDHWrapper* const cdh);
   
   /**
    * Stopwatch type for benchmarking.
