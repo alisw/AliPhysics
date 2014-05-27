@@ -481,6 +481,8 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     }catch(const exception &e){
       cerr << "OCDB retrieval failed!" << endl;
       cerr << "Detailes: " << e.what() << endl;
+      hash=0;
+      size=-1;
     }  
     if (!cdbEntry) {
       printf("Object not avaliable\n");
