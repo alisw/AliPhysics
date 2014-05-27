@@ -302,8 +302,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
     if (!fSkipEmpty && processedIds.size()!=size_t(fMaxEquId-fMinEquId+1)) {
       // add further empty data blocks
       AliHLTCDHWrapper header;
+      AliRawDataHeader headerV2;
+      AliRawDataHeaderV3 headerV3;
       if(pRawReader->GetVersion()==2){
-	AliRawDataHeader headerV2;
 	headerV2.fSize=sizeof(AliRawDataHeader);
 	const UInt_t* triggermask=pRawReader->GetTriggerPattern();
 	if (triggermask) {
@@ -312,7 +313,6 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	}
 	header=&headerV2;
       } else if (pRawReader->GetVersion()==3){
-	AliRawDataHeaderV3 headerV3;
         headerV3.fSize=sizeof(AliRawDataHeaderV3);
         const UInt_t* triggermask=pRawReader->GetTriggerPattern();
         if (triggermask) {
