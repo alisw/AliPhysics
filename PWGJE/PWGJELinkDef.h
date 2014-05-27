@@ -44,6 +44,7 @@
 #pragma link C++ class AliAnalysisTaskIDFFTCF::AliFragFuncQAJetHistos+;
 #pragma link C++ class AliIDFFUtils+;
 #pragma link C++ class AliAnalysisTaskPPJetSpectra+;
+#pragma link C++ class AliAnalysisTaskJetAntenna+;
 
 #ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskCheckSingleTrackJetRejection+;
