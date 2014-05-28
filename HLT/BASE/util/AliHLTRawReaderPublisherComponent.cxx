@@ -245,6 +245,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
       AliDebug(0, Form("get event from RawReader %p equipment id range [%d,%d]", pRawReader, fMinEquId, fMaxEquId));
     }
     list<int> processedIds;
+    UChar_t headerVersion=0;
     while (pRawReader->ReadHeader() && (iResult>=0 || iResult==-ENOSPC)) {
       const AliRawDataHeader* pHeaderV2=pRawReader->GetDataHeader();
       const AliRawDataHeaderV3* pHeaderV3=pRawReader->GetDataHeaderV3();
@@ -257,6 +258,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	HLTError("can not get data header from RawReader, skipping data block ...");
 	continue;
       }
+      // store header version for empty blocks later on
+      // any found header will suffice
+      headerVersion=pHeader.GetVersion();
       unsigned int headerSize=pHeader.GetHeaderSize();
       unsigned int readSize=pRawReader->GetDataSize()+headerSize;
       int id=pRawReader->GetEquipmentId();
@@ -302,8 +306,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
     if (!fSkipEmpty && processedIds.size()!=size_t(fMaxEquId-fMinEquId+1)) {
       // add further empty data blocks
       AliHLTCDHWrapper header;
-      if(pRawReader->GetVersion()==2){
-	AliRawDataHeader headerV2;
+      AliRawDataHeader headerV2;
+      AliRawDataHeaderV3 headerV3;
+      if(headerVersion==2){
 	headerV2.fSize=sizeof(AliRawDataHeader);
 	const UInt_t* triggermask=pRawReader->GetTriggerPattern();
 	if (triggermask) {
@@ -311,8 +316,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	  headerV2.fROILowTriggerClassHigh=triggermask[1];
 	}
 	header=&headerV2;
-      } else if (pRawReader->GetVersion()==3){
-	AliRawDataHeaderV3 headerV3;
+      } else { //assuming V3 even if no header at all was found above
         headerV3.fSize=sizeof(AliRawDataHeaderV3);
         const UInt_t* triggermask=pRawReader->GetTriggerPattern();
         if (triggermask) {

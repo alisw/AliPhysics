@@ -323,9 +323,8 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
     mask50.set(); // set all bits
     mask50 >>= 50; // shift 50 right
     pESD->SetTriggerMask((mask&mask50).to_ulong());
-    /* next 50, to be implemented 
+    //next 50
     pESD->SetTriggerMaskNext50((mask>>50).to_ulong());
-    */
   }
 
   TTree* pTree = NULL;
