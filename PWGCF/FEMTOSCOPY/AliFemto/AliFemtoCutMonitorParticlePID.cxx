@@ -58,6 +58,8 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   snprintf(name, 200, "TPCTOFNSigma%s", aName);
   fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
 
+  snprintf(name, 200, "TPCvsTOFNSigma%s", aName);
+  fTPCvsTOFNSigma = new TH2D(name,"TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
 }
 
 AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMonitorParticlePID &aCut):
@@ -168,9 +170,9 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() ) );
     if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() ) );
 
-    if (fTOFParticle == 0) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi());
-    if (fTOFParticle == 1) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK());
-    if (fTOFParticle == 2) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP());
+    if (fTOFParticle == 0) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi());
+    if (fTOFParticle == 1) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK());
+    if (fTOFParticle == 2) fTPCvsTOFNSigma->Fill(aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP());
 
 
 }
