@@ -89,6 +89,7 @@ if (FASTJET_FOUND)
    EMCALJetTasks/UserTasks/AliAnalysisTaskFullpAJets.cxx
    EMCALJetTasks/UserTasks/AliAnalysisTaskFullppJet.cxx
    EMCALJetTasks/UserTasks/AliAnalysisTaskHJetDphi.cxx
+   EMCALJetTasks/UserTasks/AliAnalysisTaskHJetSpectra.cxx
   )
   set ( CINTFLAGS ${CINTFLAGS} ${FASTJET_DEFINITIONS})
 endif(FASTJET_FOUND)

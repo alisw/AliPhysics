@@ -697,6 +697,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPP2010() {
  esdTrackCuts->SetEtaRange(-0.8,0.8);
  esdTrackCuts->SetPtRange(0.3,1.e10);
  AddTrackCuts(esdTrackCuts);
+ delete esdTrackCuts;
+ esdTrackCuts=NULL;
 
  const Int_t nptbins=8;
  const Int_t nvars=13;
@@ -816,6 +818,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  esdTrackCuts->SetMaxDCAToVertexZ(1.);
  esdTrackCuts->SetPtRange(0.49,1.e10);
  AddTrackCuts(esdTrackCuts);
+ delete esdTrackCuts;
+ esdTrackCuts=NULL;
 
  const Int_t nptbins=8;
  const Int_t nvars=13;
@@ -1299,6 +1303,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPPb2013() {
  esdTrackCuts->SetEtaRange(-0.8,0.8);
  esdTrackCuts->SetPtRange(0.3,1.e10);
  AddTrackCuts(esdTrackCuts);
+ delete esdTrackCuts;
+ esdTrackCuts=NULL;
  
  const Int_t nvars=13;
  const Int_t nptbins=9;

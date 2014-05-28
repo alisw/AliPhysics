@@ -71,6 +71,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
 					    Double_t lowx, 
 					    Double_t highx)     { fNBinsPt = n; fPtBinLowEdge = lowx; fPtBinHighEdge = highx; }
 
+
  protected:
   TObjArray             *fESDClusters;           //!pointer to EMCal clusters
   TObjArray             *fAODClusters;           //!pointer to EMCal clusters
@@ -129,6 +130,7 @@ class AliAnalysisTaskEMCALIsoPhoton : public AliAnalysisTaskSE {
   TH1F        *fTrMultDist;                //!track multiplicity distribution
   TH3F        *fMCDirPhotonPtEtaPhi;       //!direct produced photon pt, eta, phi
   TH3F        *fMCIsoDirPhotonPtEtaPhi;    //!direct produced photon pt, eta, phi, isolated @ mc level
+  TH2F        *fMCDirPhotonPtEtIso;        //!direct produced photon pt and isolation pt @ mc level
   TH1F        *fDecayPhotonPtMC;           //!decay photon pt
   TH2F        *fCellAbsIdVsAmpl;           //!cell abs id vs cell amplitude (energy)
   TH2F        *fNClusHighClusE;            //!total number of clusters vs. highest clus energy in the event

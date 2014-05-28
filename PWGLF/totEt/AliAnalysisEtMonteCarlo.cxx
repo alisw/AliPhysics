@@ -909,6 +909,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
     Float_t subtotalSimulatedGammaEnergyAboveThreshold = 0.0;//signal of signal clusters passing cuts vs centrality
     Float_t subtotalReconstructedGammaEnergy = 0.0;//signal of signal clusters passing cuts vs centrality
     Float_t subtotalReconstructedSignalEnergy = 0.0;//signal of signal clusters passing cuts vs centrality
+    // cout<<"fsub "<<fsub<<endl;
 
     // loop the clusters
     for (int iCluster = 0; iCluster < nCluster; iCluster++ )
@@ -995,7 +996,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    fHistRCorrVsPtVsCent->Fill(rcorr,matchedTrackpt, fCentClass);
 	    //cout<<"rcorr "<<rcorr<<endl;
 	    Int_t n=caloCluster->GetNLabels() ;
-	    if(fReconstructedE - fsub* track->P() > 0.0){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	    //if(fReconstructedE - fsub* track->P() > 0.0){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	    if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 	      //then we say the cluster was not track matched but correct the energy
 	      nottrackmatched = kTRUE;
 	      //cout<<"Reassigning energy "<<fReconstructedEt;
