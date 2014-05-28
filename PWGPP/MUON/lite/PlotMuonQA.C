@@ -42,11 +42,14 @@
 #include "TLegend.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TFileMerger.h"
 // ALIROOT includes
 #include "AliCounterCollection.h"
 #endif
 
+Int_t GetRunNumber(TString);
 TString GetRunList(const char *runList, TObjArray *runs);
+Bool_t MergeOutputs(const char*,const char*);
 Bool_t GetTriggerLists(const char *triggerList, TString listFromContainer, TObjArray *triggersB=0, TObjArray *triggersShortName=0);
 void SetCanvas(TCanvas *canvas, Int_t logy=1);
 TH1* ProcessHisto( AliCounterCollection* counter, TString variable, TString selection, TString hName="", TString xName="", TString yName="", Int_t color=1);
@@ -142,9 +145,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   cout<<"//        Get global counter        //"<<endl;
   cout<<"//---------------------------------- //"<<endl;
   
-  TFile *globalFile = TFile::Open(Form("%s/%s", baseDir,QAFileName));
+  TString mergedFilename = Form("%s/%s", baseDir,QAFileName);
+  if (runList) MergeOutputs(runList, mergedFilename);
+
+  TFile *globalFile = TFile::Open(mergedFilename.Data());
   if (!globalFile || ! globalFile->IsOpen()) {
-    Error("PlotQA", "failed to open file: %s/%s", baseDir, QAFileName);
+    Error("PlotQA", "failed to open file: %s", mergedFilename.Data());
     return;
   }
   globalFile->Cd("MUON_QA");
@@ -740,20 +746,10 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   for ( Int_t irun=0; irun<runs->GetEntriesFast(); irun++ ) {
     
     TString run = ((TObjString*)runs->UncheckedAt(irun))->GetString();
-    //remove the chain of 0 in front of the run for local storage
-    Int_t nZero = 0;
-    for (Int_t ic = 0; ic < run.Sizeof()-1; ic++) {
-      TString srun = (TString) run(ic);
-      if ( !srun.CompareTo("0") ) nZero++;
-      else ic = run.Sizeof();
-    }
-    TString run2 = run;
-    run2.Remove(0,nZero);
 
     // get the file (or list of files) to be analyzed
     TString command;
     TGridResult *res = 0;
-    TObjString *objs = 0;	
     
     //cout<<irun<<" "<<run<<endl;
 
@@ -768,62 +764,38 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     else{
       res = new TGridResult();	
       
-      if(runList){
-	objs = new TObjString(Form("%s/%s/%s", alienBaseDir.Data(), run2.Data(), QAFileName));
-	res->Add(objs);
+      command = Form("find %s/*%s -name %s | xargs", alienBaseDir.Data(), run.Data(), QAFileName);
+      TString foundFiles = gSystem->GetFromPipe(command.Data());
+      TObjArray* arr = foundFiles.Tokenize(" ");
+      for ( Int_t iarr=0; iarr<arr->GetEntries(); iarr++ ) {
+        res->Add(new TObjString(arr->At(iarr)->GetName()));
       }
-      else {
-	//loop over the directory to find the root files
-	void *dir = gSystem->OpenDirectory(alienBaseDir.Data());
-	TString sDirFilename;
-	Int_t iEntry=0,	iFile=0;
-	while(kTRUE){
-	  iEntry++;
-	  const	char* dirFilename = gSystem->GetDirEntry(dir);
-	  if(!dirFilename) break;
-	  sDirFilename = dirFilename;
-	  if(!sDirFilename.IsDigit()) continue;
-	  iFile++;
-	  objs = new TObjString(Form("%s/%s/%s", alienBaseDir.Data(), sDirFilename.Data(), QAFileName));
-	  res->Add(objs);
-	}
-      }
+      delete arr;
     }
     
     // Loop over 'find' results and get next LFN
     TIter nextmap(res);
-    TMap *map = 0;
+    TObjString *objs = 0;
+
+    TObject* currObj = 0x0;
     
     //some checks
-    Int_t iLoop=0, iLoopMax=1000;
-    while (kTRUE){
+    while ( ( currObj=nextmap() ) ){
       
       // get the current file url
       if(isAlienFile){
-	map=(TMap*)nextmap();
-	if(!map) break;
-	objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
+        objs = static_cast<TObjString*>(static_cast<TMap*>(currObj)->GetValue("turl"));
       }
       else{
-	objs=(TObjString*)nextmap();
-	if(!objs) break;
-      } 
-      //in case of infinite loop
-      iLoop++;
-      if(iLoop>iLoopMax) break;
+        objs=static_cast<TObjString*>(currObj);
+      }
       
-      if (!objs || !objs->GetString().Length()) {
+      if (objs->GetString().IsNull()) {
 	Error("PlotMuonQA","turl/obj not found for the run %s... SKIPPING", run.Data());
 	continue;
       }
       
-      run = objs->GetString();
-      run.ReplaceAll(Form("/%s",QAFileName), "");
-      run.ReplaceAll(alienBaseDir, "");
-      run.Remove(TString::kLeading, '/');
-      run.Remove(TString::kLeading, '0');
-      
-      if ( ! selectRuns.Contains(run.Data()) ) continue;      
+      if ( ! selectRuns.Contains(Form("%i",run.Atoi())) ) continue;
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
@@ -2236,6 +2208,34 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
   return kTRUE;
 }
 
+Int_t GetRunNumber(TString filePath)
+{
+  /// Get run number from file path
+  TObjArray* array = filePath.Tokenize("/");
+  array->SetOwner();
+  TString auxString = "";
+  Int_t runNum = -1;
+  for ( Int_t ientry=0; ientry<array->GetEntries(); ientry++ ) {
+    auxString = array->At(ientry)->GetName();
+    if ( auxString.IsDigit() && auxString.Length()>=6 && auxString.Length()<=9 ) {
+      runNum = auxString.Atoi();
+      break;
+    }
+  }
+  delete array;
+
+  if ( runNum < 0 ) {
+    array = auxString.Tokenize("_");
+    array->SetOwner();
+    auxString = array->Last()->GetName();
+    auxString.ReplaceAll(".root","");
+    if ( auxString.IsDigit() ) runNum = auxString.Atoi();
+    delete array;
+  }
+
+  return runNum;
+}
+
 TString GetRunList(const char *runList, TObjArray *runs){
 
   // list of runs to be analyzed
@@ -2249,16 +2249,17 @@ TString GetRunList(const char *runList, TObjArray *runs){
       return selectRuns;
     }
     
-    TString currRun;
+    TString currLine;
     while (!inFile.eof()) {
-      currRun.ReadLine(inFile, kTRUE);
-      if (currRun.IsNull()) continue;
-      if (!currRun.IsDigit()) {
-	Error("PlotMuonQA","invalid run number: %s", currRun.Data());
-	return selectRuns;
+      currLine.ReadLine(inFile);
+      if ( currLine.IsNull() ) continue;
+      Int_t currRun = GetRunNumber(currLine);
+      if (currRun<0) {
+        Warning("PlotMuonQA","invalid run number: %s", currLine.Data());
+        continue;
       }
-      if(runs) runs->AddLast(new TObjString(Form("%09d", currRun.Atoi())));
-      selectRuns += Form("%s,",currRun.Data());
+      if(runs) runs->AddLast(new TObjString(Form("%d", currRun)));
+      selectRuns += Form("%i,",currRun);
     }
     selectRuns.Remove(TString::kTrailing, ',');
     inFile.close();
@@ -2272,4 +2273,28 @@ TString GetRunList(const char *runList, TObjArray *runs){
   printf("selected runs from runlist %s: %s\n",runList, selectRuns.Data());
 	
   return selectRuns;
+}
+
+Bool_t MergeOutputs(const char* inputList,const char* outFilename)
+{
+  ifstream inFile(inputList);
+  if ( ! inFile.is_open()) {
+    printf("Error: cannot find inputList %s\n", inputList);
+    return kFALSE;
+  }
+  TString currLine = "";
+  TFileMerger fileMerger;
+  Int_t mergeType = ( TFileMerger::kRegular | TFileMerger::kAll | TFileMerger::kOnlyListed );
+  fileMerger.AddObjectNames("MUON_QA");
+  while ( ! inFile.eof() ) {
+    currLine.ReadLine(inFile);
+    if ( ! currLine.EndsWith(".root") ) continue;
+    fileMerger.AddFile(currLine.Data());
+  }
+  inFile.close();
+  if ( fileMerger.GetMergeList()->GetEntries() == 0 ) return kFALSE;
+  fileMerger.OutputFile(outFilename,kTRUE,1); // needed when merging single files for specific directories
+  fileMerger.PartialMerge(mergeType);
+
+  return kTRUE;
 }

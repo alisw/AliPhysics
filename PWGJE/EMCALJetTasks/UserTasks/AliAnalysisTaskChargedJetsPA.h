@@ -96,7 +96,7 @@ class AliAnalysisTaskChargedJetsPA : public AliAnalysisTaskSE {
 
   Bool_t      IsEventInAcceptance(AliVEvent* event);
   Bool_t      IsBackgroundJetInAcceptance(AliEmcalJet* jet);
-  Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet);
+  Bool_t      IsSignalJetInAcceptance(AliEmcalJet* jet, Bool_t usePtCut = kFALSE);
   Bool_t      IsDijet(AliEmcalJet* jet1, AliEmcalJet* jet2);
   
   // ######### HELPER FUNCTIONS
