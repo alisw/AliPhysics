@@ -161,6 +161,8 @@ updateQA()
       if [[ "$qaFile" =~ .*.zip$ ]]; then
         if unzip -l ${qaFile} | egrep "QAresults.root" &>/dev/null; then
           qaFile="${qaFile}#QAresults.root"
+        elif unzip -l ${qaFile} | egrep "QAresults_barrel.root" &>/dev/null; then
+          qaFile="${qaFile}#QAresults_barrel.root"
         else
           qaFile=""
         fi
