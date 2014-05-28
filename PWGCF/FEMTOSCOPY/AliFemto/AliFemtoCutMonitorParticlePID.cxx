@@ -15,16 +15,18 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
   fTPCdEdx(0),
   fTOFParticle(0),
   fTOFTime(0x0),
-    fTOFNSigma(0),
-    fTPCNSigma(0),
-    fTPCTOFNSigma(0)
+  fTOFNSigma(0),
+  fTPCNSigma(0),
+  fTPCTOFNSigma(0),
+  fTPCvsTOFNSigma(0)
 {
   // Default constructor
-    fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
-    fTOFTime = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
-    fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-    fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-    fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+  fTPCdEdx =  new TH2D("TPCdEdx", "TPC dEdx vs. momentum", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fTOFTime = new TH2D("TOFTime", "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFNSigma = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCNSigma = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fTPCTOFNSigma = new TH2D("TPCTOFNSigma","TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+  fTPCvsTOFNSigma = new TH2D("TPCvsTOFNSigma","TPC vs TOF Nsigma",100, -5.0, 5.0, 100, -5.0, 5.0);
 
 }
 
@@ -33,27 +35,28 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   fTPCdEdx(0),
   fTOFParticle(aTOFParticle),
   fTOFTime(0x0),
-    fTOFNSigma(0),
-    fTPCNSigma(0),
-    fTPCTOFNSigma(0)
+  fTOFNSigma(0),
+  fTPCNSigma(0),
+  fTPCTOFNSigma(0),
+  fTPCvsTOFNSigma(0)
 {
   // Normal constructor
   char name[200];
   snprintf(name, 200, "TPCdEdx%s", aName);
-    // fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
-    fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
+  // fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 100, 0.0, 6.0, 250, 0.0, 500.0);
+  fTPCdEdx = new TH2D(name, "TPC dEdx vs. momentum", 200, 0.1, 4.0, 250, 0.0, 500.0);
 
   snprintf(name, 200, "TOFTime%s", aName);
-    fTOFTime = new TH2D(name, "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
+  fTOFTime = new TH2D(name, "TOF Time vs. momentum", 100, 0.1, 5.0, 400, -4000.0, 4000.0);
 
-    snprintf(name, 200, "TOFNSigma%s", aName);
-    fTOFNSigma = new TH2D(name,"TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  snprintf(name, 200, "TOFNSigma%s", aName);
+  fTOFNSigma = new TH2D(name,"TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
 
-    snprintf(name, 200, "TPCNSigma%s", aName);
-    fTPCNSigma = new TH2D(name,"TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  snprintf(name, 200, "TPCNSigma%s", aName);
+  fTPCNSigma = new TH2D(name,"TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
 
-    snprintf(name, 200, "TPCTOFNSigma%s", aName);
-    fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
+  snprintf(name, 200, "TPCTOFNSigma%s", aName);
+  fTPCTOFNSigma = new TH2D(name,"TPC & TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, 0.0, 10.0);
 
 }
 
@@ -62,9 +65,10 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   fTPCdEdx(0),
   fTOFParticle(0),
   fTOFTime(0x0),
-    fTOFNSigma(0),
-    fTPCNSigma(0),
-    fTPCTOFNSigma(0)
+  fTOFNSigma(0),
+  fTPCNSigma(0),
+  fTPCTOFNSigma(0),
+  fTPCvsTOFNSigma(0)
 
 {
   // copy constructor
@@ -74,14 +78,14 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const AliFemtoCutMo
   if (fTOFTime) delete fTOFTime;
   fTOFTime = new TH2D(*aCut.fTOFTime);
 
-    if (fTOFNSigma) delete fTOFNSigma;
-    fTOFNSigma= new TH2D(*aCut.fTOFNSigma);
+  if (fTOFNSigma) delete fTOFNSigma;
+  fTOFNSigma= new TH2D(*aCut.fTOFNSigma);
 
-    if (fTPCNSigma) delete fTPCNSigma;
-    fTPCNSigma= new TH2D(*aCut.fTPCNSigma);
+  if (fTPCNSigma) delete fTPCNSigma;
+  fTPCNSigma= new TH2D(*aCut.fTPCNSigma);
 
-    if (fTPCTOFNSigma) delete fTPCTOFNSigma;
-    fTPCTOFNSigma= new TH2D(*aCut.fTPCTOFNSigma);
+  if (fTPCTOFNSigma) delete fTPCTOFNSigma;
+  fTPCTOFNSigma= new TH2D(*aCut.fTPCTOFNSigma);
 }
 
 AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
@@ -89,9 +93,10 @@ AliFemtoCutMonitorParticlePID::~AliFemtoCutMonitorParticlePID()
   // Destructor
   delete fTPCdEdx;
   delete fTOFTime;
-    delete fTOFNSigma;
-    delete fTPCNSigma;
-    delete fTPCTOFNSigma;
+  delete fTOFNSigma;
+  delete fTPCNSigma;
+  delete fTPCTOFNSigma;
+  delete fTPCvsTOFNSigma;
 
 }
 
@@ -107,14 +112,17 @@ AliFemtoCutMonitorParticlePID& AliFemtoCutMonitorParticlePID::operator=(const Al
   if (fTOFTime) delete fTOFTime;
   fTOFTime = new TH2D(*aCut.fTOFTime);
 
-    if(fTOFNSigma) delete fTOFNSigma;
-    fTOFNSigma = new TH2D(*aCut.fTOFNSigma);
+  if(fTOFNSigma) delete fTOFNSigma;
+  fTOFNSigma = new TH2D(*aCut.fTOFNSigma);
 
-    if(fTPCNSigma) delete fTPCNSigma;
-    fTPCNSigma = new TH2D(*aCut.fTPCNSigma);
+  if(fTPCNSigma) delete fTPCNSigma;
+  fTPCNSigma = new TH2D(*aCut.fTPCNSigma);
 
-    if(fTPCTOFNSigma) delete fTPCTOFNSigma;
-    fTPCTOFNSigma = new TH2D(*aCut.fTPCTOFNSigma);
+  if(fTPCTOFNSigma) delete fTPCTOFNSigma;
+  fTPCTOFNSigma = new TH2D(*aCut.fTPCTOFNSigma);
+
+  if(fTPCvsTOFNSigma) delete fTPCvsTOFNSigma;
+  fTPCvsTOFNSigma = new TH2D(*aCut.fTPCvsTOFNSigma);
 
   return *this;
 }
@@ -160,6 +168,11 @@ void AliFemtoCutMonitorParticlePID::Fill(const AliFemtoTrack* aTrack)
     if (fTOFParticle == 1) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK() ) );
     if (fTOFParticle == 2) fTPCTOFNSigma->Fill(tMom, TMath::Hypot( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP() ) );
 
+    if (fTOFParticle == 0) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCPi(), aTrack->NSigmaTOFPi());
+    if (fTOFParticle == 1) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCK(), aTrack->NSigmaTOFK());
+    if (fTOFParticle == 2) fTPCvsTOFNSigma->Fill( aTrack->NSigmaTPCP(), aTrack->NSigmaTOFP());
+
+
 }
 
 void AliFemtoCutMonitorParticlePID::Write()
@@ -167,10 +180,10 @@ void AliFemtoCutMonitorParticlePID::Write()
   // Write out the relevant histograms
   fTPCdEdx->Write();
   fTOFTime->Write();
-    fTOFNSigma->Write();
-    fTPCNSigma->Write();
-    fTPCTOFNSigma->Write();
-
+  fTOFNSigma->Write();
+  fTPCNSigma->Write();
+  fTPCTOFNSigma->Write();
+  fTPCvsTOFNSigma->Write();
 }
 
 TList *AliFemtoCutMonitorParticlePID::GetOutputList()
@@ -178,9 +191,10 @@ TList *AliFemtoCutMonitorParticlePID::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fTPCdEdx);
   tOutputList->Add(fTOFTime);
-    tOutputList->Add(fTOFNSigma);
-    tOutputList->Add(fTPCNSigma);
-    tOutputList->Add(fTPCTOFNSigma);
+  tOutputList->Add(fTOFNSigma);
+  tOutputList->Add(fTPCNSigma);
+  tOutputList->Add(fTPCTOFNSigma);
+  tOutputList->Add(fTPCvsTOFNSigma);
 
   return tOutputList;
 }
