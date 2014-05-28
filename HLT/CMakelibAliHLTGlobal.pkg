@@ -57,6 +57,7 @@ set ( CLASS_HDRS
     physics/AliHLTCaloHistoCellEnergy.h
     physics/AliHLTMultiplicityCorrelations.h
     physics/AliHLTMultiplicityCorrelationsComponent.h
+    physics/AliHLTAnaManagerComponent.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )

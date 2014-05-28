@@ -44,6 +44,7 @@
 #include "AliHLTMultiplicityCorrelationsComponent.h"
 #include "AliHLTPrimaryVertexFinderComponent.h"
 #include "AliHLTV0FinderComponent.h"
+#include "AliHLTAnaManagerComponent.h"
 
 // header file for preprocessor plugin
 #include "AliHLTGlobalPreprocessor.h"
@@ -90,6 +91,7 @@ int AliHLTGlobalAgent::RegisterComponents(AliHLTComponentHandler* pHandler) cons
   pHandler->AddComponent(new AliHLTV0FinderComponent);
   pHandler->AddComponent(new AliHLTGlobalHistoCollector );
   pHandler->AddComponent(new AliHLTGlobalDCSPublisherComponent );
+  pHandler->AddComponent(new AliHLTAnaManagerComponent);
   return 0;
 }
 
