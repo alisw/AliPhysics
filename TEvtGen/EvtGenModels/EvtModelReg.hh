@@ -23,6 +23,8 @@
 
 #include <list>
 
+class EvtDecayBase ;
+
 class EvtModelReg{
 
 public:

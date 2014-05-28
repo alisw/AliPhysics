@@ -27,6 +27,7 @@
 class EvtSemiLeptonicFF{
 
 public:
+  virtual ~EvtSemiLeptonicFF( ) { } ;
 
   virtual void getscalarff( EvtId parent, EvtId daught,
 			    double t, double mass, double *fpf,
@@ -44,8 +45,19 @@ public:
                            double *f1v, 
                            double *f1a, 
                            double *f2v, 
-			   double *f2a) = 0 ;
+			   double *f2a) = 0;
 
+  virtual void getdiracff( EvtId parent, EvtId daught,
+			   double q2, double mass, 
+			   double *f1, double *f2, double *f3,
+			   double *g1, double *g2, double *g3 ) = 0;
+
+  virtual void getraritaff( EvtId parent, EvtId daught,
+			    double q2, double mass, 
+			    double *f1, double *f2, 
+			    double *f3, double *f4,
+			    double *g1, double *g2, 
+			    double *g3, double *g4 ) = 0;
 
 };
 

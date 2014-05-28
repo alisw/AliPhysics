@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtBreitWignerPdf.hh,v 1.5 2003/06/20 17:20:00 dvoretsk Exp $
+ *    File: $Id: EvtBreitWignerPdf.hh,v 1.2 2009-03-16 16:43:40 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech

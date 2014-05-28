@@ -7,7 +7,7 @@ class EvtMTrivialLS : public EvtMLineShape {
 
     public:
 
-        EvtMTrivialLS( const EvtId& id, const vector<string>& args ) {};
+        EvtMTrivialLS( const EvtId& /*id*/, const vector<string>& /*args*/ ) {};
         ~EvtMTrivialLS() {};
 
         EvtComplex shape( const vector<EvtVector4R>& product ) const; 

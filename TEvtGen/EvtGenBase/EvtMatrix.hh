@@ -1,7 +1,7 @@
 /*****************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtMatrix.hh,v 1.5 2008/11/27 16:27:24 jordix Exp $
+ *    File: $Id: EvtMatrix.hh,v 1.1 2009-03-16 16:50:49 robbep Exp $
  *
  * Description:
  *   Class to make simple computations with matrices: assignment, product,
@@ -17,7 +17,6 @@
 
 #include <vector>
 #include <sstream>
-
 
 
 template <class T> class EvtMatrix
@@ -110,7 +109,7 @@ template <class T> T EvtMatrix< T >::det()
   for ( int col = 0; col < _range; col++ )
     {
       EvtMatrix< T >* minor = min( 0, col );
-      sum += pow( -1., col ) * _mat[ 0 ][ col ] * minor->det();
+      sum += std::pow( -1., col ) * _mat[ 0 ][ col ] * minor->det();
       delete minor;
     }
 
@@ -158,8 +157,8 @@ template <class T> EvtMatrix< T >* EvtMatrix< T >::inverse()
     for ( int col = 0; col < _range; col++ )
       {
 	EvtMatrix< T >* minor = min( row, col );
-	inv->_mat[col][row] = pow( -1., row + col ) * minor->det() / determinant;
-        delete minor;
+	inv->_mat[col][row] = std::pow( -1., row + col ) * minor->det() / determinant;
+	delete minor;
       }
 
   return inv;

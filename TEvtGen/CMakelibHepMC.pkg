@@ -1,0 +1,95 @@
+#--------------------------------------------------------------------------------#
+# Package File for EvtGen                                                        #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  HepMC/CompareGenEvent.cc
+HepMC/filterEvent.cc
+HepMC/Flow.cc
+HepMC/GenCrossSection.cc
+HepMC/GenEvent.cc
+HepMC/GenEventStreamIO.cc
+HepMC/GenParticle.cc
+HepMC/GenRanges.cc
+HepMC/GenVertex.cc
+HepMC/HeavyIon.cc
+HepMC/HEPEVT_Wrapper.cc
+HepMC/HerwigWrapper.cc
+HepMC/IO_AsciiParticles.cc
+HepMC/IO_GenEvent.cc
+HepMC/IO_HEPEVT.cc
+HepMC/IO_HERWIG.cc
+HepMC/PdfInfo.cc
+HepMC/Polarization.cc
+HepMC/SearchVector.cc
+HepMC/StreamHelpers.cc
+HepMC/StreamInfo.cc
+HepMC/WeightContainer.cc
+HepMC/Units.cc
+)
+
+
+
+set ( HDRS HepMC/CompareGenEvent.h
+HepMC/enable_if.h
+HepMC/Flow.h
+HepMC/GenCrossSection.h
+HepMC/GenEvent.h
+HepMC/GenParticle.h
+HepMC/GenRanges.h
+HepMC/GenVertex.h
+HepMC/HeavyIon.h
+HepMC/HEPEVT_Wrapper.h
+HepMC/HepMCDefs.h
+HepMC/HerwigWrapper.h
+HepMC/IO_AsciiParticles.h
+HepMC/IO_BaseClass.h
+HepMC/IO_Exception.h
+HepMC/IO_GenEvent.h
+HepMC/IO_HEPEVT.h
+HepMC/IO_HERWIG.h
+HepMC/is_arithmetic.h
+HepMC/IteratorRange.h
+HepMC/PdfInfo.h
+HepMC/Polarization.h
+HepMC/PythiaWrapper6_4.h
+HepMC/PythiaWrapper6_4_WIN32.h
+HepMC/PythiaWrapper.h
+HepMC/SearchVector.h
+HepMC/SimpleVector.h
+HepMC/SimpleVector.icc
+HepMC/StreamHelpers.h
+HepMC/StreamInfo.h
+HepMC/TempParticleMap.h
+HepMC/Units.h
+HepMC/Version.h
+HepMC/WeightContainer.h
+)
+
+set ( EINCLUDE TEvtGen TEvtGen/HepMC) 
+
+
+
+

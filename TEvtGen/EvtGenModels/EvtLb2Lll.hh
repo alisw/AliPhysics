@@ -20,7 +20,7 @@
 #include "EvtGenBase/EvtDecayAmp.hh"
 #include "EvtGenBase/EvtTensor4C.hh"
 #include "EvtGenBase/EvtDiracSpinor.hh"
-#include "EvtGenModels/EvtWilsonCoeficients.hh"
+#include "EvtGenModels/EvtWilsonCoefficients.hh"
 
 class EvtLb2Lll:public EvtDecayAmp {
 
@@ -53,7 +53,7 @@ private:
   std::string m_FFtype;
   std::string m_effectContribution;
   
-  EvtWilsonCoeficients m_WC;
+  EvtWilsonCoefficients m_WC;
 
 };
 

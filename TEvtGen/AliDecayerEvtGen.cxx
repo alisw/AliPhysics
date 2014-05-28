@@ -27,17 +27,21 @@
 
 #include "EvtGenBase/EvtStdHep.hh"
 #include "EvtGenBase/EvtRandomEngine.hh"
+#include "EvtGenBase/EvtStdlibRandomEngine.hh" 
 #include "EvtGen/EvtGen.hh"
 #include "EvtGenBase/EvtParticle.hh"
 #include "EvtGenBase/EvtPDL.hh"
 #include "EvtGenBase/EvtParticleFactory.hh"
 #include "AliDecayerEvtGen.h"
+#include "EvtGenExternal/EvtExternalGenList.hh"
+#include "EvtGenBase/EvtAbsRadCorr.hh"
 #include "AliLog.h"
 
 ClassImp(AliDecayerEvtGen)
 //____________________________________________________________
 AliDecayerEvtGen::AliDecayerEvtGen():
   fRandomEngine(0x0),
+  fRadCorrEngine(0x0),
   fGenerator(0x0),
   fEvtstdhep(0x0),
   fDecayTablePath(0x0),
@@ -68,6 +72,8 @@ AliDecayerEvtGen::~AliDecayerEvtGen()
   // Destructor
   if(fRandomEngine) {delete fRandomEngine;}
   fRandomEngine = 0;
+  if(fRadCorrEngine) {delete fRadCorrEngine;}
+  fRadCorrEngine = 0;
   if(fGenerator) {delete fGenerator;}
   fGenerator = 0;
   if(fEvtstdhep) {delete fEvtstdhep;}
@@ -89,8 +95,14 @@ void AliDecayerEvtGen::Init()
   AliWarning(" AliDecayerEvtGen already initialized!!!!\n");
   return;
   }
-  fRandomEngine=new EvtNUMRandomEngine();
-  fGenerator=new EvtGen(fDecayTablePath,fParticleTablePath,fRandomEngine);
+  fRandomEngine = new EvtStdlibRandomEngine();
+  std::list<EvtDecayBase*> extraModels;
+
+  EvtExternalGenList genList;
+  fRadCorrEngine = genList.getPhotosModel();
+  extraModels = genList.getListOfModels();
+  
+  fGenerator=new EvtGen(fDecayTablePath,fParticleTablePath,fRandomEngine,fRadCorrEngine,&extraModels);
   }
 //____________________________________________________________
 void AliDecayerEvtGen::Decay(Int_t ipart, TLorentzVector *p)
@@ -106,7 +118,7 @@ void AliDecayerEvtGen::Decay(Int_t ipart, TLorentzVector *p)
   fGenerator->generateDecay(froot_part);
   fEvtstdhep->init();
   froot_part->makeStdHep(*fEvtstdhep);
-  //froot_part->printTree(); //to print the decay chain 
+  froot_part->printTree(); //to print the decay chain 
   froot_part->deleteTree();
   }
 
@@ -194,7 +206,7 @@ void AliDecayerEvtGen::ForceDecay()
   Decay_t decay = fDecay;
   switch(decay)
     {
-     case kAll: 
+     case kAll: // particles decayed "naturally" according to $ALICE_ROOT/TEvtGen/EvtGen/DECAY.DEC
      break;
      case kBJpsiDiElectron:
      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSITOELE.DEC"));
@@ -231,7 +243,7 @@ void AliDecayerEvtGen::ForceDecay()
      case kHadronicDWithout4Bodies:
      case kPhiKK:
      case kOmega:
-     case kLambda:	 
+     case kLambda:
      case kNoDecay:
      case kNoDecayHeavy:
      case kNeutralPion:

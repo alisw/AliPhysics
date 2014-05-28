@@ -51,6 +51,8 @@ public:
 		     const EvtComplex& hp, const EvtComplex& h0,
 		     const EvtComplex& hm);
 
+  std::string getParamName(int i);
+  std::string getParamDefault(int i);
 };
 
 #endif

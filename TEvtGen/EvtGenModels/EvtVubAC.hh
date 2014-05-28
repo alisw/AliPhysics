@@ -11,8 +11,6 @@
 #include <vector>
 
 class EvtParticle;
-class RandGeneral;
-class EvtVubdGamma;
 
 class EvtVubAC:public  EvtDecayIncoherent  {
 

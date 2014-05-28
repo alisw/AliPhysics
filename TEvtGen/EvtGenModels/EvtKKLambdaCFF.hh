@@ -43,6 +43,12 @@ public:
 		   double t, double mass, double *f1v,
 		   double *f1a, double *f2v, double *f2a );
 
+  void getdiracff(EvtId, EvtId, double, double, double*, double*,
+                  double*, double*, double*, double*);
+
+  void getraritaff(EvtId, EvtId, double, double, double*, double*, 
+		   double*, double*, double*, double*, double*, double*);
+
 private:
    int _nargs;
    double _args[2];

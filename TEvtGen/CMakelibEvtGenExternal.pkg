@@ -1,0 +1,63 @@
+#--------------------------------------------------------------------------------#
+# Package File for EvtGen                                                        #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS  
+EvtGenExternal/EvtExternalGenFactory.cpp
+EvtGenExternal/EvtExternalGenList.cpp
+EvtGenExternal/EvtPHOTOS.cpp
+EvtGenExternal/EvtPhotosEngine.cpp
+EvtGenExternal/EvtPythia6CommandConverter.cpp
+EvtGenExternal/EvtPythia.cpp
+EvtGenExternal/EvtPythiaEngine.cpp
+EvtGenExternal/EvtTauola.cpp
+EvtGenExternal/EvtTauolaEngine.cpp
+)
+
+
+set ( HDRS 
+EvtGenExternal/EvtExternalGenFactory.hh
+EvtGenExternal/EvtExternalGenList.hh
+EvtGenExternal/EvtPhotosEngine.hh
+EvtGenExternal/EvtPHOTOS.hh
+EvtGenExternal/EvtPythia6CommandConverter.hh
+EvtGenExternal/EvtPythiaEngine.hh
+EvtGenExternal/EvtPythia.hh
+EvtGenExternal/EvtPythiaRandom.hh
+EvtGenExternal/EvtTauolaEngine.hh
+EvtGenExternal/EvtTauola.hh
+)
+
+set (EVTGEN_PYTHIA "ON")
+set (EVTGEN_PHOTOS "ON")
+set (EVTGEN_TAUOLA "ON")
+
+set ( CXXFLAGS "${CXXFLAGS} -D EVTGEN_PYTHIA -D EVTGEN_PHOTOS -D EVTGEN_TAUOLA")
+
+
+set ( EINCLUDE TEvtGen EVGEN TEvtGen/Photos TEvtGen/Tauola TEvtGen/HepMC/ PYTHIA8)
+
+

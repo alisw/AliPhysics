@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtDecayMode.hh,v 1.10 2009/02/15 18:15:59 ryd Exp $
+//      $Id: EvtDecayMode.hh,v 1.2 2009-03-16 16:44:33 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly

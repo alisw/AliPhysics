@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtCyclic3.hh,v 1.12 2009/02/15 18:09:01 ryd Exp $
+ *    File: $Id: EvtCyclic3.hh,v 1.2 2009-03-16 16:42:46 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech
@@ -72,7 +72,7 @@ namespace EvtCyclic3 {
   char* append(const char* str, EvtCyclic3::Index i);
   char* append(const char* str, EvtCyclic3::Pair i);
 
-}
+};
 
 //where should these go?
 //ostream& operator<<(ostream&, EvtCyclic3::Index);

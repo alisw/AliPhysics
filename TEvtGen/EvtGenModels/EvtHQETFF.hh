@@ -43,6 +43,11 @@ public:
   void getbaryonff(EvtId, EvtId, double, double, double*, 
 		   double*, double*, double*);
 
+  void getdiracff(EvtId, EvtId, double, double, double*, double*,
+                  double*, double*, double*, double*);
+
+  void getraritaff(EvtId, EvtId, double, double, double*, double*, 
+		   double*, double*, double*, double*, double*, double*);
 
 private:
   double r1;

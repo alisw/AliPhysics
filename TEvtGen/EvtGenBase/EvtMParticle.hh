@@ -12,7 +12,7 @@ class EvtMParticle : public EvtMNode {
         EvtSpinAmp amplitude( const vector<EvtVector4R>& product ) const;
         int getnchild() const { return 0; }
         
-        EvtComplex line( const vector<EvtVector4R>& product ) const
+  EvtComplex line( const vector<EvtVector4R>& /*product*/ ) const
         { return EvtComplex(1.0, 0.0); }
 
         EvtMNode * duplicate() const;

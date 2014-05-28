@@ -61,15 +61,15 @@ private:
 
   // user never needs to call this -> private
   // baryonic form factors f(p), g(p), at p=0
-  double f0(double f_qm, int n=1); // calculate f(0) with f(q_max)
-  double g0(double f_qm, int n=1); // calculate g(0) with g(q_max)
+  double f0(const double f_qm, int n=1) const ; // calculate f(0) with f(q_max)
+  double g0(const double f_qm, int n=1) const ; // calculate g(0) with g(q_max)
   
   // shorthand for constants a and b in the formula
-  double constA();
-  double constB();
+  double constA() const;
+  double constB() const;
 
   // initialize phasespace and calculate the amplitude for one (i=0,1) state of the photon
-  EvtComplex calcAmplitude(const EvtParticle* p, unsigned int polState);
+  EvtComplex calcAmpliude(const EvtParticle* p, const unsigned int polState);
   
 };
 

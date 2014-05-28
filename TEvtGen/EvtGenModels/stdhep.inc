@@ -15,7 +15,7 @@ C  PHEP(5,I)   = px,py,pz,E,m of particle
 C  VHEP(4,I)   = x,y,z,L of production vertex
 
       INTEGER  nmxhep         ! maximum number of particles
-      PARAMETER ( nmxhep=4000)
+      PARAMETER ( nmxhep=10000)
       REAL*8  phep,  vhep ! to be real*4 or *8  depending on host
       INTEGER nevhep,nhep,isthep,idhep,jmohep,
      $        jdahep
@@ -28,8 +28,6 @@ C  VHEP(4,I)   = x,y,z,L of production vertex
      $      jdahep(2,nmxhep), ! childreen particles
      $      phep(5,nmxhep),   ! four-momentum, mass [GeV]
      $      vhep(4,nmxhep)    ! vertex [mm]
-
-
 
 c$$$      INTEGER NMXHEP,NEVHEP,NHEP,ISTHEP,IDHEP,JMOHEP,JDAHEP
 c$$$      REAL    PHEP,VHEP

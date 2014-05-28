@@ -31,7 +31,7 @@ class EvtPhotonParticle: public EvtParticle {
 
 public:
 
-  EvtPhotonParticle(){}
+  EvtPhotonParticle();
   virtual ~EvtPhotonParticle();
 
   void init(EvtId part_n,double e,double px,double py,double pz);

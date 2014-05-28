@@ -1,0 +1,44 @@
+#--------------------------------------------------------------------------------#
+# Package File for EvtGen                                                        #
+# Author : Johny Jose (johny.jose@cern.ch)                                       #
+# Variables Defined :                                                            #
+#                                                                                #
+# SRCS - C++ source files                                                        #
+# HDRS - C++ header files                                                        #
+# DHDR - ROOT Dictionary Linkdef header file                                     #
+# CSRCS - C source files                                                         #
+# CHDRS - C header files                                                         #
+# EINCLUDE - Include directories                                                 #
+# EDEFINE - Compiler definitions                                                 #
+# ELIBS - Extra libraries to link                                                #
+# ELIBSDIR - Extra library directories                                           #
+# PACKFFLAGS - Fortran compiler flags for package                                #
+# PACKCXXFLAGS - C++ compiler flags for package                                  #
+# PACKCFLAGS - C compiler flags for package                                      #
+# PACKSOFLAGS - Shared library linking flags                                     #
+# PACKLDFLAGS - Module linker flags                                              #
+# PACKBLIBS - Libraries to link (Executables only)                               #
+# EXPORT - Header files to be exported                                           #
+# CINTHDRS - Dictionary header files                                             #
+# CINTAUTOLINK - Set automatic dictionary generation                             #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
+#--------------------------------------------------------------------------------#
+
+set ( SRCS Tauola/DecayList.cxx Tauola/Log.cxx Tauola/Plots.cxx Tauola/Tauola.cxx Tauola/TauolaEvent.cxx Tauola/TauolaHEPEVTEvent.cxx Tauola/TauolaHEPEVTParticle.cxx Tauola/TauolaHepMCEvent.cxx Tauola/TauolaHepMCParticle.cxx Tauola/TauolaParticle.cxx Tauola/TauolaParticlePair.cxx Tauola/f_Decay.cxx Tauola/f_FilHep.cxx Tauola/f_Init.cxx)
+
+set ( HDRS Tauola/DecayList.h Tauola/f_Variables.h Tauola/Log.h Tauola/Plots.h Tauola/TauolaEvent.h Tauola/Tauola.h Tauola/TauolaHEPEVTEvent.h Tauola/TauolaHEPEVTParticle.h Tauola/TauolaHepMCEvent.h Tauola/TauolaHepMCParticle.h Tauola/TauolaParticle.h Tauola/TauolaParticlePair.h Tauola/f_Decay.h Tauola/f_FilHep.h Tauola/f_Init.h)
+
+set ( FFLAGS "-O2 -fPIC -fno-automatic -fno-backslash -ffixed-line-length-132")
+
+
+set ( FSRCS Tauola/tauola-fortran/curr_cleo.f Tauola/tauola-fortran/f3pi.f Tauola/tauola-fortran/formf.f Tauola/tauola-fortran/pkorb.f Tauola/tauola-fortran/tauola.f Tauola/tauola-fortran/new-currents/other-currents/frho_pi_belle.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_3pi/f3pi_rcht.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_3pi/funct_3pi.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/FA1RCHL.f  Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/ffwid3pi.f 
+Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/funct_rpt.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/gaus_integr.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/gfact.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/initA1Tab.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/initA1TabKKpi.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/value_parameter.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/wid_a1_fit.f Tauola/tauola-fortran/new-currents/RChL-currents/rcht_common/wid_a1_fitKKpi.f Tauola/tauola_extras.f)
+
+
+
+set ( EINCLUDE TEvtGen/Tauola TEvtGen/Tauola/tauola-fortran TEvtGen/HepMC  TEvtGen/Photos) 
+
+
+
+

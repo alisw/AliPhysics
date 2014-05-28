@@ -23,7 +23,9 @@
 #ifndef EVTSIMPLERANDOMENGINE_HH
 #define EVTSIMPLERANDOMENGINE_HH
 
-class EvtSimpleRandomEngine{
+#include "EvtGenBase/EvtRandomEngine.hh"
+
+class EvtSimpleRandomEngine : public EvtRandomEngine {
 
 public:
 

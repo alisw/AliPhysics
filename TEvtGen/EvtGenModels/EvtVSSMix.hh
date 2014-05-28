@@ -39,6 +39,7 @@ public:
   void init();
   void initProbMax();
 
+  std::string getParamName(int i);
 };
 
 #endif
