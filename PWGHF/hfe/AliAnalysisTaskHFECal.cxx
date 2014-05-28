@@ -227,6 +227,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fMatchMC_0(0)
   ,fMatchMC_1(0)
   ,fpair(0)
+  ,fFakeRejection0(0)
+  ,fFakeRejection1(0)
+  ,fFakeRejection2(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -386,6 +389,9 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fMatchMC_0(0)
   ,fMatchMC_1(0)
   ,fpair(0)
+  ,fFakeRejection0(0)
+  ,fFakeRejection1(0)
+  ,fFakeRejection2(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -943,6 +949,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
           if(fFlagPhotonicTPC)fMatchV0_1->Fill(pt);   
           if(mcele>2.1)fMatchMC_1->Fill(pt,mcWeight);   
          }
+      }
+
+     // check fake rejection
+    if(mcOrgPi0 || mcOrgEta)
+      {
+       int TrStat = 0;
+       if(track->GetLabel()>0)TrStat = 1;
+       fFakeRejection0->Fill(TrStat,pt,mcWeight); 
+       if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
+       if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID 
       }
 
     //+++++++  E/p cut ++++++++++++++++   
@@ -1562,6 +1578,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
 
   fpair = new TH2D("fpair","pair of associate",100,0,20,21,-10.5,10.5);
   fOutputList->Add(fpair);
+
+  fFakeRejection0 = new TH2D("fFakeRejection0","TPC PID",2,-0.5,1.5,100,0,20);
+  fOutputList->Add(fFakeRejection0);
+
+  fFakeRejection1 = new TH2D("fFakeRejection1","TPC PID + Tr match",2,-0.5,1.5,100,0,20);
+  fOutputList->Add(fFakeRejection1);
+
+  fFakeRejection2 = new TH2D("fFakeRejection2","TPC PID + Tr match + E/p",2,-0.5,1.5,100,0,20);
+  fOutputList->Add(fFakeRejection2);
 
   PostData(1,fOutputList);
 }
