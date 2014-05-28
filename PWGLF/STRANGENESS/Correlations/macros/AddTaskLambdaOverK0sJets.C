@@ -4,7 +4,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
 							    Float_t  maxCen    = 40.,
 							    Bool_t   sepInjec  = kTRUE,
 							    Bool_t   isMC      = kFALSE,
-							    Bool_t   doQA      = kTRUE){
+							    Bool_t   doQA      = kTRUE,
+							    Bool_t   useEtaCut = kFALSE){
 
 
 
@@ -18,8 +19,8 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  nSigmaPID   = 3.0;
   Float_t  dcaDaug     = 1.0;
   Float_t  dca2PrmVtx  = 0.095;  // tighter cut
-  Float_t  nclsDaug    = 50;     // looser cut
-
+  Float_t  nclsDaug    = 70;     
+  Float_t  minPtDaughter = 0.;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -39,11 +40,13 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   task->SetTriggerEta(etaMaxTrig);
   task->SetCheckIDTrig(checkIDTrig);
   // V0 candidates
+  task->SetEtaCut(useEtaCut);
   task->SetMaxY(rapMaxV0);
   task->SetMaxDCADaughter(dcaDaug); // Added to perform systematics
   task->SetDCAToPrimVtx(dca2PrmVtx); // Added to perform systematics
   task->SetNSigmaPID(nSigmaPID);
   task->SetNClsTPC(nclsDaug);  // Added to perform systematics
+  task->SetMinPtDaughter(minPtDaughter);  
   // PID
   task->SetSeparateInjectedPart(sepInjec);
   // MC
