@@ -38,7 +38,7 @@ public:
 
    Double_t RelativePhi(Double_t angle1,Double_t angle2);     
    Int_t   GetPhiBin(Double_t phi);
-   
+   Int_t      GetPtHardBin(Double_t ptHard);
   
    virtual AliVEvent::EOfflineTriggerTypes GetOfflineTrgMask() const { return fOfflineTrgMask; }
    virtual void     GetBranchNames(TString &branch1, TString &branch2) const { branch1 = fJetBranchName[0]; branch2 = fJetBranchName[1]; }
@@ -105,6 +105,7 @@ private:
    Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
+  
    // jets to compare
    TString fJetBranchName[2]; //  name of jet branches to compare
    TList *fListJets[2];       //! jet lists
