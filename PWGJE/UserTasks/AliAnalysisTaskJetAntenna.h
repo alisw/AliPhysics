@@ -79,6 +79,7 @@ public:
       
    virtual void     SetNRPBins(Int_t bins){fNRPBins=bins;}
    virtual void     SetSemigoodCorrect(Int_t yesno){fSemigoodCorrect=yesno;}
+   virtual void     SetDoMatching(Bool_t b=kFALSE){fDoMatching=b;}
    virtual void     SetHolePos(Float_t poshole) { fHolePos = poshole; }
    virtual void     SetHoleWidth(Float_t holewidth) { fHoleWidth = holewidth; }
    virtual void     SetTrackTypeRec(Int_t i){fTrackTypeRec = i;}
@@ -100,6 +101,7 @@ private:
     AliAODEvent *fAODOut;    //! AOD event 
     AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
    Int_t   GetListOfTracks(TList *list);
+   Int_t   GetListOfTracksExtra(TList* list);
    Int_t   SelectTrigger(TList *list,Double_t minT,Double_t maxT,Int_t &number);
    Int_t   GetHardestTrackBackToJet(AliAODJet *jet);
    Int_t   GetListOfTracksCloseToJet(TList *list,AliAODJet *jet);
@@ -126,10 +128,11 @@ private:
    Int_t   fNInputTracksMax;  // upper bound of nb. of input tracks
    Int_t   fRequireITSRefit;
    Int_t   fApplySharedClusterCut; // flag to apply shared cluster cut (needed for some AODs where this cut was not applied in the filtering)
-     Int_t   fTrackTypeRec;
+   Int_t   fTrackTypeRec;
    Float_t   fRPAngle;
    Int_t   fNRPBins;
    Int_t   fSemigoodCorrect;
+   Bool_t fDoMatching;
    Float_t fHolePos;
    Float_t fHoleWidth; 
    Float_t fCutTM;             //lower pt cut for particles entering the TM axis calculation 
