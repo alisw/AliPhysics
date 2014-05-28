@@ -48,6 +48,8 @@ class EvtDecayBase{
   virtual std::string commandName();
   virtual void command(std::string cmd);
 
+  virtual std::string getParamName(int i);
+  virtual std::string getParamDefault(int i);
 
   double getProbMax( double prob );
   double resetProbMax( double prob );

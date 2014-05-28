@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtPto3P.hh,v 1.7 2006/10/02 01:07:49 lange Exp $
+//      $Id: EvtPto3P.hh,v 1.2 2009-03-16 16:31:05 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly

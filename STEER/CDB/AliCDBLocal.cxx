@@ -609,19 +609,35 @@ void AliCDBLocal::GetEntriesForLevel1(const char* level0, const char* level1,
         TRegexp re("^Run[0-9]+_[0-9]+_");
         if(!fileName.Contains(re))
           continue;
-        //extract first- and last-run. This allows to avoid quering for a calibration path
-        // if we did not find a filename with interesting run-range.
-        TString firstRunStr = fileName(3,fileName.First('_')-3);
-        TString lastRunStr  = fileName(fileName.First('_')+1,fileName.Length()-fileName.First('_')-2);
+        // Extract first- and last-run and version and subversion.
+        // This allows to avoid quering for a calibration path if we did not find a filename with
+        // run-range including the one specified in the query and
+        // with version, subversion matching the query
+        TString fn = fileName( 3, fileName.Length()-3 );
+        TString firstRunStr = fn( 0, fn.First('_') );
+        fn.Remove( 0, firstRunStr.Length()+1 );
+        TString lastRunStr = fn( 0, fn.First('_') );
+        fn.Remove( 0, lastRunStr.Length()+1 );
+        TString versionStr = fn( 1, fn.First('_')-1 );
+        fn.Remove( 0, versionStr.Length()+2 );
+        TString subvStr = fn(1, fn.First('.')-1);
         Int_t firstRun = firstRunStr.Atoi();
         Int_t lastRun  = lastRunStr.Atoi();
         AliCDBRunRange rr(firstRun,lastRun);
+        Int_t version = versionStr.Atoi();
+        Int_t subVersion = subvStr.Atoi();
 
         AliCDBEntry* anEntry = 0;
-        if (rr.Comprises(queryId.GetAliCDBRunRange()))
+        Bool_t versionOK = kTRUE, subVersionOK = kTRUE;
+        if ( queryId.HasVersion() && version!=queryId.GetVersion())
+          versionOK = kFALSE;
+        if ( queryId.HasSubVersion() && subVersion!=queryId.GetSubVersion())
+          subVersionOK = kFALSE;
+        if (rr.Comprises(queryId.GetAliCDBRunRange()) && versionOK && subVersionOK )
+        {
           anEntry = GetEntry(entryId);
-        if (anEntry)
           result->Add(anEntry);
+        }
       }
     }
   }

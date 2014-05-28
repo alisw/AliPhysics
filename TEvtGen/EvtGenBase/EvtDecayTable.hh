@@ -29,36 +29,59 @@
 
 class EvtId;
 
-
-typedef EvtDecayBase* EvtDecayBasePtr;
-
 class EvtDecayTable{
 
 public:
 
-  static int getNMode(int ipar);
+  static EvtDecayTable* getInstance();
 
-  static EvtDecayBase* getDecay(int ipar, int imode);
+  int getNMode(int ipar);
 
-  static void readDecayFile(const std::string dec_name, bool verbose=true);
+  EvtDecayBase* getDecay(int ipar, int imode);
 
-  static int findChannel(EvtId parent,std::string model,int ndaug, 
-			 EvtId *daugs,
-			 int narg, std::string *args);
+  void readDecayFile(const std::string dec_name, bool verbose=true);
+  void readXMLDecayFile(const std::string dec_name, bool verbose=true);
+
+  bool stringToBoolean(std::string valStr);
+  void checkParticle(std::string particle);
+
+  int findChannel(EvtId parent,std::string model,int ndaug, 
+		  EvtId *daugs,
+		  int narg, std::string *args);
   
-  static int inChannelList(EvtId parent, int ndaug, EvtId *daugs);
+  int inChannelList(EvtId parent, int ndaug, EvtId *daugs);
 
-  static EvtDecayBase *getDecayFunc(EvtParticle *p);
+  EvtDecayBase *getDecayFunc(EvtParticle *p);
 
-  static void printSummary();
+  void printSummary();
 
-  static void checkConj();
+  void checkConj();
 
-  static const std::vector<EvtParticleDecayList> & decaytable() {return _decaytable;};
+  std::vector<EvtParticleDecayList> getDecayTable() {return _decaytable;};
+
+  EvtDecayBase* findDecayModel(int aliasInt, int modeInt);
+  EvtDecayBase* findDecayModel(EvtId id, int modeInt);
+
+  bool hasPythia(int aliasInt);
+  bool hasPythia(EvtId id);
+
+  int getNModes(int aliasInt);
+  int getNModes(EvtId id);
+
+  std::vector<std::string> splitString(std::string& theString, 
+				       std::string& splitter);
+
+protected:  
+
+  EvtDecayTable();
+  ~EvtDecayTable();
 
 private:
 
-  static std::vector<EvtParticleDecayList> _decaytable;
+  std::vector<EvtParticleDecayList> _decaytable;
+
+  EvtDecayTable(const EvtDecayTable&) {};
+  //EvtDecayTable& operator=(const EvtDecayTable&) {};
 
 };
 

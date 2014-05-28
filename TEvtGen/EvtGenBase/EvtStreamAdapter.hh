@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtStreamAdapter.hh,v 1.1 2003/03/03 05:38:22 dvoretsk Exp $
+ *    File: $Id: EvtStreamAdapter.hh,v 1.2 2009-03-16 16:40:16 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech

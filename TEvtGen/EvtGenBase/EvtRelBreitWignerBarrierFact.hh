@@ -43,11 +43,13 @@ public:
   // ie B->rho K rho->pipi, othDaugId = K
    double getRandMass(EvtId *parId, int nDaug, EvtId *dauId, EvtId *othDaugId, double maxMass, double *dauMasses);
 
-  virtual void reSetBlatt(double blatt) { _blatt = blatt; }
+  virtual void reSetBlatt(double blatt) { _blattDecay = blatt; }
+  virtual void reSetBlattBirth(double blatt) { _blattBirth = blatt; }
 
 protected:
 
-  double _blatt;
+  double _blattDecay;
+  double _blattBirth;
   bool _errorCond;
 
 }; 

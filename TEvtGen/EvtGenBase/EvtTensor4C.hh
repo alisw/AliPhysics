@@ -29,12 +29,16 @@ class EvtVector4C;
 class EvtVector4R;
 class EvtVector3R;
 
-EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4C& c2);
-EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4R& c2);
-EvtTensor4C directProd(const EvtVector4R& c1,const EvtVector4R& c2);
-EvtTensor4C dual(const EvtTensor4C& t2);
+namespace EvtGenFunctions {
+  EvtTensor4C directProd(const EvtVector4R& c1,const EvtVector4R& c2);
+  EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4C& c2); 
+  EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4R& c2);
+};
 
 class EvtTensor4C {
+  friend EvtTensor4C EvtGenFunctions::directProd(const EvtVector4R& c1,const EvtVector4R& c2);
+  friend EvtTensor4C EvtGenFunctions::directProd(const EvtVector4C& c1,const EvtVector4C& c2); 
+  friend EvtTensor4C EvtGenFunctions::directProd(const EvtVector4C& c1,const EvtVector4R& c2);
 
   friend EvtTensor4C rotateEuler(const EvtTensor4C& e,
 				 double alpha,double beta,double gamma);
@@ -42,9 +46,6 @@ class EvtTensor4C {
 			     const EvtVector4R p4);
   friend EvtTensor4C boostTo(const EvtTensor4C& e,
 			     const EvtVector3R boost); 
-  friend EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4C& c2); 
-  friend EvtTensor4C directProd(const EvtVector4C& c1,const EvtVector4R& c2); 
-  friend EvtTensor4C directProd(const EvtVector4R& c1,const EvtVector4R& c2); 
   friend EvtTensor4C dual(const EvtTensor4C& t2); 
   friend EvtTensor4C conj(const EvtTensor4C& t2);
   friend EvtTensor4C cont22(const EvtTensor4C& t1,const EvtTensor4C& t2);

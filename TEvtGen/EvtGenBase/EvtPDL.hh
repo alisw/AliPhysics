@@ -73,12 +73,12 @@ public:
   static void reSetMassMin(EvtId i, double mass);
   static void reSetMassMax(EvtId i,double mass);
   static void reSetBlatt(EvtId i,double blatt);
+  static void reSetBlattBirth(EvtId i,double blatt);
   static void includeBirthFactor(EvtId i,bool yesno);
   static void includeDecayFactor(EvtId i,bool yesno);
   static void changeLS(EvtId i, std::string &newLS );
   static void setPWForDecay(EvtId i, int spin, EvtId d1, EvtId d2);
   static void setPWForBirthL(EvtId i, int spin, EvtId par, EvtId othD);
-  static void fixLSForSP8(EvtId i) { partlist()[i.getId()].fixLSForSP8();}
 private:
 
   void setUpConstsPdt();

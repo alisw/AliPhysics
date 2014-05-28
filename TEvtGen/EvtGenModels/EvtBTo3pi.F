@@ -89,7 +89,7 @@ c      End
       Real*8  t3pions,ttag,t,Weight,Weight_max
       Real*8  AB0,AB0bar,Ainter,xd
       Real*8  m_rhop_2,m_rhom_2
-      Real*4  Evtranf,Tag
+      Real*8  Evtranf,Tag
       Real*8  Kin_moy,Kin_moy2,Kin,Lambda
       
       alphaCP      = 0.4
@@ -127,11 +127,11 @@ c what follows is just to show how the ouput of EVT3pions
 C should be used at the time dependant level.     
 c Decay time of the B->-3 pions
  1    Continue
-      t3pions=-Alog(Evtranf())
+      t3pions=-Dlog(Evtranf())
       If(t3pions.gt.10.) Go to 1
 c Decay time of the tagging B
  2    Continue
-      ttag   =-Alog(Evtranf())                
+      ttag   =-Dlog(Evtranf())                
       If(ttag   .gt.10.) Go to 2
 c time-difference between the 3pi decay and the tagging decay     
       t=t3pions-ttag      
@@ -459,7 +459,7 @@ c	----------------------------------------------------------
 c 	--- Used Functions 
 c	----------------------------------------------------------
 
-	real evtranf
+	real*8 evtranf
 
 c	----------------------------------------------------------
 c 	--- Variables in Argument
@@ -604,7 +604,7 @@ c	----------------------------------------------------------
       	Do i=1,3
       	P2(i)=-p1(i)-p3(i)
       	End do
-
+12345   continue
 	END
 	
 	
@@ -940,7 +940,7 @@ c --- commons
 	
 c --- Used Functions 
 
-	Real evtranf	
+	Real*8 evtranf	
 
 c --- Variables in Argument
 
@@ -1053,7 +1053,7 @@ c------------------------------------------------------------------
       	Real*8 c1,c2,c3,s1,s2,s3
       	Real*8 MatRot(3,3)
         save MatRot
-      	Real evtranf
+      	Real*8 evtranf
       	Integer new,i,j
       
       	If(new.ne.0) Then

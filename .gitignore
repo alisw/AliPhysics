@@ -42,6 +42,7 @@ G__*.h
 /lib
 /include
 /tmp
+/build
 
 # /test/
 /test/*/*.root

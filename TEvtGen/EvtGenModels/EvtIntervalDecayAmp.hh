@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtIntervalDecayAmp.hh,v 1.12 2009/02/15 18:21:51 ryd Exp $
+//      $Id: EvtIntervalDecayAmp.hh,v 1.4 2009-03-16 16:39:16 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly
@@ -109,10 +109,8 @@ public:
   {
     // Set things up in most general way
     
-    //static EvtId B0=EvtPDL::getId("B0");
-    //static EvtId B0B=EvtPDL::getId("anti-B0");
-    EvtId B0=EvtPDL::getId("B0");
-    EvtId B0B=EvtPDL::getId("anti-B0");
+    static EvtId B0=EvtPDL::getId("B0");
+    static EvtId B0B=EvtPDL::getId("anti-B0");
     double t;
     EvtId other_b;  
     EvtComplex ampl(0.,0.);
@@ -130,7 +128,7 @@ public:
       EvtComplex A    = _fact->getAmp()->evaluate(_x);
       EvtComplex Abar = _fact->getAmpConj()->evaluate(_x);
 
-      EvtCPUtil::OtherB(p,t,other_b);
+      EvtCPUtil::getInstance()->OtherB(p,t,other_b);
 
       double dm = _fact->dm();
       double mixAmpli = _fact->mixAmpli();

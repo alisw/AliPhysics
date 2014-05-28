@@ -39,6 +39,8 @@ public:
   void initProbMax();
   void decay(EvtParticle *p); 
 
+  std::string getParamName(int i);
+  std::string getParamDefault(int i);
 };
 
 #endif

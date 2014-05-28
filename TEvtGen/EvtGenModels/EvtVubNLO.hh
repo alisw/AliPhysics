@@ -115,7 +115,7 @@ private:
   double lambda_bar(double omega0);
   inline double lambda2(){return 0.12;}
   double mu_pi2(double omega0);
-  inline double lambda(double mu=0){ return _mB-_mb;}
+  inline double lambda(double){ return _mB-_mb;}
 
   // specail for gaussian SF
   static double cGaus(double b){return pow(Gamma(1+b/2.)/Gamma((1+b)/2.),2);}
@@ -134,7 +134,7 @@ private:
   // Sudakov
 
   inline double S0(double a, double r){return -gamma0()/4/a/pow(beta0(),2)*(1/r-1+log(r));}
-  inline double S1(double a, double r){return gamma0()/4./pow(beta0(),2)*(
+  inline double S1(double /*a*/, double r){return gamma0()/4./pow(beta0(),2)*(
 								  pow(log(r),2)*beta1()/2./beta0()+(gamma1()/gamma0()-beta1()/beta0())*(1.-r+log(r))
 								  );}
   inline double S2(double a, double r){return gamma0()*a/4./pow(beta0(),2)*(

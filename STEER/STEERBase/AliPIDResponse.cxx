@@ -663,7 +663,7 @@ void AliPIDResponse::SetRecoInfo()
 
   Bool_t hasProdInfo=(fCurrentFile.BeginsWith("LHC"));
   
-  TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)/.*");
+  TPRegexp reg(".*(LHC1[1-3][a-z]+[0-9]+[a-z_]*)[/_].*");
   if (hasProdInfo) reg=TPRegexp("LHC1[1-2][a-z]+[0-9]+[a-z_]*");
   TPRegexp reg12a17("LHC1[2-4][a-z]");
 
