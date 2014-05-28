@@ -251,7 +251,7 @@ if (!fESDEvent) {
     if (fESDEvent){
       ((AliAnalysisHadEtMonteCarlo*)fMCAnalysis)->AnalyseEvent((AliVEvent*)mcEvent,(AliVEvent*)fESDEvent);
 
-    if( fRecAnalysis->DataSet()==20100 || AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND){//either non-diffractive or Pb+Pb
+    if( fRecAnalysis->DataSet()==20100 || AliPWG0Helper::GetEventProcessType(mcEvent->Header()) == AliPWG0Helper::kND || fRecAnalysis->DataSet()==2013){//either non-diffractive or Pb+Pb or p+Pb
       if(fMCAnalysis->Full()){
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceTPC( fRecAnalysis->GetCorrectedTotEtFullAcceptanceTPC() );
 	fMCAnalysis->FillSimTotEtMinusRecoTotEtFullAcceptanceITS( fRecAnalysis->GetCorrectedTotEtFullAcceptanceITS() );

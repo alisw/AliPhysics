@@ -312,7 +312,6 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	fTotAllRawEtEffCorr +=GetCorrectionModification(*cluster,0,0,cent)* CorrectForReconstructionEfficiency(*cluster,cent);
 
 	fClusterEnergyCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
-
         Bool_t matched = kTRUE;//default to no track matched
 	Int_t trackMatchedIndex = cluster->GetTrackMatchedIndex();//find the index of the matched track
 	matched = !(fSelector->PassTrackMatchingCut(*cluster));//PassTrackMatchingCut is false if there is a matched track
@@ -325,7 +324,8 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	    if(matched){//if it is still matched see if the track p was less than the energy
 	      Float_t rcorr = TMath::Sin(cp.Theta())*GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE;
 	      fHistRecoRCorrVsPtVsCent->Fill(rcorr,track->Pt(), fCentClass);
-	      if(fReconstructedE - fsub* track->P() > 0.0){
+	      if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+		// 	      if(fReconstructedE - fsub* track->P() > 0.0){
 		fReconstructedE = fReconstructedE - fsub* track->P();
 		matched = kFALSE;
 	      }

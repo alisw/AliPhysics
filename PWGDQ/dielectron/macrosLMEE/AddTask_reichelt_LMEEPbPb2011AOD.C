@@ -1,5 +1,5 @@
 AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEoutput.root", 
- Bool_t runAll=kFALSE, Bool_t setMC=kFALSE, Bool_t getFromAlien=kFALSE, 
+ Bool_t flag1=kFALSE, Bool_t flag2=kFALSE, Bool_t getFromAlien=kFALSE, 
  Int_t triggerNames=(AliVEvent::kMB+AliVEvent::kCentral+AliVEvent::kSemiCentral), Int_t collCands=AliVEvent::kAny) 
 {
   Bool_t bESDANA=kFALSE; //Autodetect via InputHandler
@@ -19,9 +19,9 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   
   
   //Load updated macros from private ALIEN path
-  if (getFromAlien &&
-      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011.C .")) &&
-      (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
+  if (getFromAlien //&&
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/Config_reichelt_LMEEPbPb2011.C ."))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/preichel/PWGDQ/dielectron/macrosLMEE/LMEECutLib_reichelt.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
@@ -43,9 +43,7 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
   
   
   //Do we have an MC handler?
-  Bool_t hasMC=setMC;
-  if (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0)
-    hasMC=kTRUE;
+  Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
   
   //load dielectron configuration files
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(configLMEECutLib.Data()))
@@ -69,7 +67,7 @@ AliAnalysisTask *AddTask_reichelt_LMEEPbPb2011AOD(Char_t* outputFileName="LMEEou
     AliDielectron *diel_low = Config_reichelt_LMEEPbPb2011(i,hasMC,bESDANA);
     if(!diel_low)continue;
     task->AddDielectron(diel_low);
-    printf("add: %s\n",diel_low->GetName());
+    printf("successfully added AliDielectron: %s\n",diel_low->GetName());
   }//loop
   
   mgr->AddTask(task);
