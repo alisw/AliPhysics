@@ -127,7 +127,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         SetMinBadChannelDistance(Float_t cut)     { fMinBadDist  = cut ; }
 
-  void         SetWCorrectionParameter(Float_t p = 0.07) { fWSimu       = p   ; }
+  void         SetWCorrectionParameter(Int_t i, Float_t p = 0.07) { if( i<2 ) fWSimu[i] = p; }
   
   void         SwitchOnFillAngleHistograms()             { fFillAngleHisto      = kTRUE  ; }
   void         SwitchOffFillAngleHistograms()            { fFillAngleHisto      = kFALSE ; }
@@ -235,8 +235,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   Float_t      fNLMMinDiff[5];         // List of local maxima min difference cell energy
   Int_t        fNLMSettingN;           // Total number of NLM settings to test
   
-  Float_t      fWSimu;                 // Slope of the linear correction factor for the shower
-                                       // shape weight in simulation, about 0.07
+  Float_t      fWSimu[2];              // Constant and slope of the linear correction factor for the shower
+                                       // shape weight in simulation, about 1-0.07*w
   
   //Histograms
   

@@ -226,20 +226,33 @@ void AliAnalysisTaskJetAntenna::UserCreateOutputObjects()
   fOutputList->Add(fh1JetEntries);
   fh2Circularity=new TH2F("Circcularity","",10,0,1,150,0,150);
   fOutputList->Add(fh2Circularity);
-  Int_t nbinsJet[6]={15,30,9,36,10,20};
-  Double_t binlowJet[6]= {0, 0, 0,-0.5*TMath::Pi(),0,0};
-  Double_t binupJet[6]= {1.5, 150,150,1.5*TMath::Pi(),1,200};
-  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; dr;pt_jet;pt_track;phi;",6,nbinsJet,binlowJet,binupJet);
-  Double_t xPt3[10];
+  Int_t nbinsJet[8]={10,9,7,9,36,10,2,10};
+  Double_t binlowJet[8]= {0,0, 0, 0,-0.5*TMath::Pi(),0,0,-0.5};
+  Double_t binupJet[8]= {100,0.9, 150,150,1.5*TMath::Pi(),1,200,9.5};
+  fhnJetTM = new THnSparseF("fhnJetTM", "fhnJetTM; cent;dr;pt_jet;pt_track;phi;circ;nc;pthard",8,nbinsJet,binlowJet,binupJet);
+  Double_t *xPt3=new Double_t[10];
   xPt3[0] = 0.;
   for(Int_t i = 1;i<=9;i++){
     if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.4; // 1 - 5
     else if(xPt3[i-1]<11)xPt3[i] = xPt3[i-1] + 3; // 5 - 12
     else xPt3[i] = xPt3[i-1] + 150.; // 18
   }
-  fhnJetTM->SetBinEdges(2,xPt3);
-  fOutputList->Add(fhnJetTM);
+  fhnJetTM->SetBinEdges(3,xPt3);
 
+  Double_t *xPt2=new Double_t[10];
+  xPt2[0] = 0.;
+  xPt2[1]=20;
+  xPt2[2]=40;
+  xPt2[3]=60;
+  xPt2[4]=80;
+  xPt2[5]=100;
+  xPt2[6]=120;
+  xPt2[7]=150; 
+  
+  fhnJetTM->SetBinEdges(2,xPt2);
+  fOutputList->Add(fhnJetTM);
+   delete [] xPt3;
+   delete [] xPt2;
   // =========== Switch on Sumw2 for all histos ===========
   for (Int_t i=0; i<fOutputList->GetEntries(); ++i) {
     TH1 *h1 = dynamic_cast<TH1*>(fOutputList->At(i));
@@ -363,7 +376,12 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
   fHistEvtSelection->Fill(0);
   // accepted events
   // -- end event selection --
-
+  // pt hard
+  Double_t pthard=0;
+  Double_t pthardbin=0;
+  if(fDoMatching){
+  pthard = AliAnalysisTaskFastEmbedding::GetPtHard();
+  pthardbin = GetPtHardBin(pthard);}
   // get background
   AliAODJetEventBackground* externalBackground = 0;
   if(fAODOut&&!externalBackground&&fBackgroundBranch.Length()){
@@ -588,7 +606,7 @@ void AliAnalysisTaskJetAntenna::UserExec(Option_t *)
       if(phistr<-0.5*TMath::Pi()) phistr += 2*TMath::Pi();
       if(phistr>1.5*TMath::Pi()) phistr -= 2*TMath::Pi();
 
-      double jetEntries[6] = {dRR,ptbig,pt,phistr,circ,static_cast<double>(nc)};
+      double jetEntries[8] = {centValue,dRR,ptbig,pt,phistr,circ,static_cast<double>(nc),pthardbin};
       fhnJetTM->Fill(jetEntries);
 
     } // 2nd Track loop
@@ -699,4 +717,17 @@ Int_t AliAnalysisTaskJetAntenna::GetPhiBin(Double_t phi)
     phibin=Int_t(fNRPBins*phiwrtrp/(0.5*TMath::Pi()));
     if(phibin<0||phibin>=fNRPBins){AliError("Phi Bin not defined");}
     return phibin;
+}
+
+Int_t AliAnalysisTaskJetAntenna::GetPtHardBin(Double_t ptHard){
+
+   const Int_t nBins = 10;
+  Double_t binLimits[nBins] = { 5., 11., 21., 36., 57., 84., 117., 156., 200., 249. }; // lower limits
+   
+  Int_t bin = -1;
+  while(bin<nBins-1 && binLimits[bin+1]<ptHard){
+    bin++;
+  }
+   
+  return bin;
 }

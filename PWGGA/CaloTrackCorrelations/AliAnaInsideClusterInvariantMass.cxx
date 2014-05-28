@@ -62,7 +62,7 @@ AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() :
   fFillIdEtaHisto(0),                        fFillHighMultHisto(0),
   fFillArmenterosHisto(0),                   fFillThetaStarHisto(0),
   fSSWeightN(0),                             fSSECellCutN(0),
-  fNLMSettingN(0),                           fWSimu(0),
+  fNLMSettingN(0),                           fWSimu(),
   fhMassAsyCutNLocMax1(0),                   fhMassAsyCutNLocMax2(0),                   fhMassAsyCutNLocMaxN(0),
   fhM02AsyCutNLocMax1(0),                    fhM02AsyCutNLocMax2(0),                    fhM02AsyCutNLocMaxN(0),
   fhMassM02CutNLocMax1(0),                   fhMassM02CutNLocMax2(0),                   fhMassM02CutNLocMaxN(0),
@@ -2771,19 +2771,14 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   else                        cells = GetPHOSCells();
   
   // First recalculate energy in case non linearity was applied
-  Float_t  energy = 0;
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++)
+  Float_t energy =  GetCaloUtils()->RecalibrateClusterEnergy(clus, cells);// recalculate cluster energy, avoid non lin correction.
+  
+  Float_t simuTotWeight = 0;
+  if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
   {
-    
-    Int_t id       = clus->GetCellsAbsId()[ipos];
-    
-    //Recalibrate cell energy if needed
-    Float_t amp = cells->GetCellAmplitude(id);
-    GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
-    
-    energy    += amp;
-      
-  } // energy loop
+    simuTotWeight =  GetCaloUtils()->RecalibrateClusterEnergyWeightCell(clus, cells,energy);
+    simuTotWeight/= energy;
+  }
   
   if(energy <=0 )
   {
@@ -2800,6 +2795,12 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
   if(amp1 < amp2)        Info("FillSSWeightHistograms","Bad local maxima E ordering : id1 E %f, id2 E %f\n ",amp1,amp2);
   if(amp1==0 || amp2==0) Info("FillSSWeightHistograms","Null E local maxima : id1 E %f, id2 E %f\n "        ,amp1,amp2);
   
+  if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+  {
+    amp1*=GetCaloUtils()->GetMCECellClusFracCorrection(amp1,energy)/simuTotWeight;
+    amp2*=GetCaloUtils()->GetMCECellClusFracCorrection(amp2,energy)/simuTotWeight;
+  }
+  
   if(amp1>0)fhPi0CellEMaxEMax2Frac   [nlm]->Fill(energy,amp2/amp1);
   fhPi0CellEMaxClusterFrac [nlm]->Fill(energy,amp1/energy);
   fhPi0CellEMax2ClusterFrac[nlm]->Fill(energy,amp2/energy);
@@ -2812,6 +2813,12 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
     //Recalibrate cell energy if needed
     Float_t amp = cells->GetCellAmplitude(id);
     GetCaloUtils()->RecalibrateCellAmplitude(amp,fCalorimeter, id);
+    if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+    {
+      //printf("eCell a) %f",amp);
+      amp*=GetCaloUtils()->GetMCECellClusFracCorrection(amp,energy)/simuTotWeight;
+      //printf(", b)%f\n",amp);
+    }
     
     if(amp > 0)fhPi0CellE       [nlm]->Fill(energy,amp);
     fhPi0CellEFrac   [nlm]->Fill(energy,amp/energy);
@@ -2824,7 +2831,7 @@ void AliAnaInsideClusterInvariantMass::FillSSWeightHistograms(AliVCluster *clus,
     }
 
   }
-  
+
   //Recalculate shower shape for different W0
   if(fCalorimeter=="EMCAL")
   {
@@ -6342,6 +6349,9 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fNLMMinE   [0] = 0.10; fNLMMinE   [1] = 0.20; fNLMMinE   [2] = 0.35; fNLMMinE   [3] = 0.50; fNLMMinE   [4] = 1.00;
   fNLMMinDiff[0] = 0.03; fNLMMinDiff[1] = 0.05; fNLMMinDiff[2] = 0.10; fNLMMinDiff[3] = 0.15; fNLMMinDiff[4] = 0.20;
   
+  fWSimu[0] = 1; // Default, do not correct, change to 1.05-1.1
+  fWSimu[1] = 0; // Default, do not correct, change to 0.07
+
 }
 
 
@@ -6668,36 +6678,16 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
   Double_t etaMean = 0.;
   Double_t phiMean = 0.;
     
-  //Loop on cells, calculate the cluster energy, in case a cut on cell energy is added
-  // and to check if the cluster is between 2 SM in eta
-  Int_t   iSM0   = -1;
-  Bool_t  shared = kFALSE;
-  Float_t energy = 0;
+  Bool_t  shared = GetCaloUtils()-> IsClusterSharedByTwoSuperModules(geom,cluster);
 
-  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+  Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(cluster, cells);
+  
+  Float_t simuTotWeight = 0;
+  if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
   {
-    //Get from the absid the supermodule, tower and eta/phi numbers
-    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
-    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
-    
-    //Check if there are cells of different SM
-    if     (iDigit == 0   ) iSM0 = iSupMod;
-    else if(iSupMod!= iSM0) shared = kTRUE;
-    
-    //Get the cell energy, if recalibration is on, apply factors
-    fraction  = cluster->GetCellAmplitudeFraction(iDigit);
-    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
-    
-    if(GetCaloUtils()->GetEMCALRecoUtils()->IsRecalibrationOn())
-    {
-      recalFactor = GetCaloUtils()->GetEMCALRecoUtils()->GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-    }
-    
-    eCell  = cells->GetCellAmplitude(cluster->GetCellAbsId(iDigit))*fraction*recalFactor;
-    
-    if(eCell > eCellMin) energy += eCell;
-    
-  }//cell loop
+    simuTotWeight =  GetCaloUtils()->RecalibrateClusterEnergyWeightCell(cluster, cells,energy);
+    simuTotWeight/= energy;
+  }
   
   //Loop on cells, get weighted parameters
   for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
@@ -6723,10 +6713,13 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     
     if(energy > 0 && eCell > eCellMin)
     {
+      if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+        eCell*=GetCaloUtils()->GetMCECellClusFracCorrection(eCell,energy)/simuTotWeight;
+      
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
 
       //correct weight, ONLY in simulation
-      w *= (1 - fWSimu * w );
+      w *= (fWSimu[0] - fWSimu[1] * w );
 
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
@@ -6779,10 +6772,13 @@ void AliAnaInsideClusterInvariantMass::RecalculateClusterShowerShapeParametersWi
     
     if(energy > 0 && eCell > eCellMin)
     {
+      if(GetCaloUtils()->IsMCECellClusFracCorrectionOn())
+        eCell*=GetCaloUtils()->GetMCECellClusFracCorrection(eCell,energy)/simuTotWeight;
+      
       w  = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(eCell,energy);
       
       //correct weight, ONLY in simulation
-      w *= (1 - fWSimu * w );
+      w *= (fWSimu[0] - fWSimu[1] * w );
 
       etai=(Double_t)ieta;
       phii=(Double_t)iphi;
