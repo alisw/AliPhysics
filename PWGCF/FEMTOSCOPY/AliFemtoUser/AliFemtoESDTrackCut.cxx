@@ -937,29 +937,41 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
 //old
 bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK)
 {
+  if (fNsigmaTPCTOF) {
+    if (mom > 0.5) {
+      //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
+      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < fNsigma)
+	return true;
+    }
+    else {
+      if (TMath::Abs(nsigmaTPCK) < fNsigma)
+	return true;
+    }
+  }
+  else {
 
-  if(mom<0.4)
-    {
-      if(nsigmaTOFK<-999.)
-	{
-	  if(TMath::Abs(nsigmaTPCK)<2.0) return true;
-	}
-      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
-    }
-  else if(mom>=0.4 && mom<=0.6)
-    {
-      if(nsigmaTOFK<-999.)
-	{
-	  if(TMath::Abs(nsigmaTPCK)<2.0) return true;
-	}
-      else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
-    }
-  else if(nsigmaTOFK<-999.)
-    {
-      return false;
-    }
-  else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
-
+    if(mom<0.4)
+      {
+	if(nsigmaTOFK<-999.)
+	  {
+	    if(TMath::Abs(nsigmaTPCK)<2.0) return true;
+	  }
+	else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+      }
+    else if(mom>=0.4 && mom<=0.6)
+      {
+	if(nsigmaTOFK<-999.)
+	  {
+	    if(TMath::Abs(nsigmaTPCK)<2.0) return true;
+	  }
+	else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+      }
+    else if(nsigmaTOFK<-999.)
+      {
+	return false;
+      }
+    else if(TMath::Abs(nsigmaTOFK)<3.0 && TMath::Abs(nsigmaTPCK)<3.0) return true;
+  }
   return false;
 }
 
@@ -967,24 +979,36 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
 
 bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
-  if(mom<0.65)
-    {
-      if(nsigmaTOFPi<-999.)
-	{
-	  if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	  else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
-	  else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
-	  else return false;
-	}
-      else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+  if (fNsigmaTPCTOF) {
+    if (mom > 0.5) {
+      //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
+      if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < fNsigma)
+	return true;
     }
-  else if(nsigmaTOFPi<-999.)
-    {
-      return false;
+    else {
+      if (TMath::Abs(nsigmaTPCPi) < fNsigma)
+	return true;
     }
-  else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
-  else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
-
+  }
+  else {
+    if(mom<0.65)
+      {
+	if(nsigmaTOFPi<-999.)
+	  {
+	    if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	    else if(mom<0.5 && mom>=0.35 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+	    else if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0) return true;
+	    else return false;
+	  }
+	else if(TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<3.0) return true;
+      }
+    else if(nsigmaTOFPi<-999.)
+      {
+	return false;
+      }
+    else if(mom<1.5 && TMath::Abs(nsigmaTOFPi)<3.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+    else if(mom>=1.5 && TMath::Abs(nsigmaTOFPi)<2.0 && TMath::Abs(nsigmaTPCPi)<5.0) return true;
+  }
   return false;
 }
 
@@ -993,7 +1017,7 @@ bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsig
 {
 
   if (fNsigmaTPCTOF) {
-    if (mom > 0.8) {
+    if (mom > 0.5) {
 //        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP )/TMath::Sqrt(2) < 3.0)
         if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < fNsigma)
             return true;
