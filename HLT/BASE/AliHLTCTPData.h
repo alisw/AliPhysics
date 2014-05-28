@@ -202,7 +202,7 @@ class AliHLTCTPData: public TNamed, public AliHLTLogging
   TArrayL64           fCounters;  /// trigger class counters
   vector<unsigned>    fMap;     //! index map for trigger expression evaluation
 
-  ClassDef(AliHLTCTPData, 2)
+  ClassDef(AliHLTCTPData, 3)
 };
 
 #endif

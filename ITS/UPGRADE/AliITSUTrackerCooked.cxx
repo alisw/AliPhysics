@@ -18,11 +18,9 @@ ClassImp(AliITSUTrackerCooked)
 //************************************************
 // Constants hardcoded for the moment:
 //************************************************
-// radial positions of layers: default contructor
-const 
-Double_t klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
 // seed "windows" in z and phi: MakeSeeds
-const Double_t kzWin=0.33, kpWin=3.14/4;
+const Double_t kzWin=0.33;
+const Double_t kminPt=0.05;
 // Maximal accepted impact parameters for the seeds 
 const Double_t kmaxDCAxy=3.;
 const Double_t kmaxDCAz= 3.;
@@ -31,7 +29,7 @@ const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
 // Space point resolution
 const Double_t kSigma2=0.0005*0.0005;
 // Max accepted chi2 per cluster
-const Double_t kmaxChi2PerCluster=77.;
+const Double_t kmaxChi2PerCluster=10.;
 // Tracking "road" from layer to layer
 const Double_t kRoadY=0.7;
 const Double_t kRoadZ=0.7;
@@ -59,6 +57,8 @@ fTrackToFollow(0)
   //--------------------------------------------------------------------
   // This default constructor needs to be provided
   //--------------------------------------------------------------------
+  const Double_t 
+  klRadius[7]={2.34, 3.15, 3.93, 19.61, 24.55, 34.39, 39.34}; //tdr6
 
   AliITSUGeomTGeo *gm  = new AliITSUGeomTGeo(kTRUE,kTRUE);
   AliITSUClusterPix::SetGeom(gm);
@@ -113,26 +113,25 @@ f1(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t x3, Double_t y3)
     Double_t b=0.5*((x2-x1)*(y3*y3-y2*y2+x3*x3-x2*x2)-
                     (x3-x2)*(y2*y2-y1*y1+x2*x2-x1*x1));
     
-    Double_t xr=TMath::Abs(d/(d*x1-a)), yr=d/(d*y1-b);
+    Double_t xr=TMath::Abs(d/(d*x1-a)), yr=TMath::Abs(d/(d*y1-b));
     
-    return -xr*yr/sqrt(xr*xr+yr*yr);
+    Double_t crv=xr*yr/sqrt(xr*xr+yr*yr);
+    if (d>0) crv=-crv;
+
+    return crv;
 }
 
 static Double_t 
 f2(Double_t x1, Double_t y1, Double_t x2, Double_t y2, Double_t x3, Double_t y3)
 {
     //-----------------------------------------------------------------
-    // Initial approximation of the track curvature times center of curvature
+    // Initial approximation of the x-coordinate of the center of curvature 
     //-----------------------------------------------------------------
-    Double_t d=(x2-x1)*(y3-y2)-(x3-x2)*(y2-y1);
-    Double_t a=0.5*((y3-y2)*(y2*y2-y1*y1+x2*x2-x1*x1)-
-                    (y2-y1)*(y3*y3-y2*y2+x3*x3-x2*x2));
-    Double_t b=0.5*((x2-x1)*(y3*y3-y2*y2+x3*x3-x2*x2)-
-                    (x3-x2)*(y2*y2-y1*y1+x2*x2-x1*x1));
-    
-    Double_t xr=TMath::Abs(d/(d*x1-a)), yr=d/(d*y1-b);
-    
-    return -a/(d*y1-b)*xr/sqrt(xr*xr+yr*yr);
+
+  Double_t k1=(y2-y1)/(x2-x1), k2=(y3-y2)/(x3-x2);
+  Double_t x0=0.5*(k1*k2*(y1-y3) + k2*(x1+x2) - k1*(x2+x3))/(k2-k1);
+
+  return x0;
 }
 
 static Double_t 
@@ -167,11 +166,11 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     par[0]=y3;
     par[1]=z3;
     Double_t crv=f1(x1, y1, x2, y2, x3, y3); //curvature
-    Double_t cx0=f2(x1, y1, x2, y2, x3, y3); //curvature*x0
+    Double_t x0 =f2(x1, y1, x2, y2, x3, y3); //x-coordinate of the center
     Double_t tgl12=f3(x1, y1, x2, y2, z1, z2);
     Double_t tgl23=f3(x2, y2, x3, y3, z2, z3);
 
-    Double_t sf=x*crv - cx0;
+    Double_t sf=crv*(x-x0);
     if (TMath::Abs(sf) >= kAlmost1) return kFALSE;
     par[2]=sf;
 
@@ -212,7 +211,7 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
    if (fSeeds) {fSeeds->Delete(); delete fSeeds;}
    fSeeds=new TObjArray(77777);
 
-   Double_t zv=GetZ();
+   const Double_t zv=GetZ();
 
    AliITSUlayer &layer1=fgLayers[kSeedingLayer1];
    AliITSUlayer &layer2=fgLayers[kSeedingLayer2];
@@ -220,6 +219,9 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
    Double_t r1=layer1.GetR();
    Double_t r2=layer2.GetR();
    Double_t r3=layer3.GetR();
+
+   const Double_t maxC  = TMath::Abs(GetBz()*kB2C/kminPt);
+   const Double_t kpWin = TMath::ASin(0.5*maxC*r1) - TMath::ASin(0.5*maxC*r2);
 
    Int_t nClusters1=layer1.GetNumberOfClusters();
    Int_t nClusters2=layer2.GetNumberOfClusters();
@@ -247,8 +249,9 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
          if (TMath::Abs(phi2-phi1) > kpWin) continue;  //check in Phi
  
          Double_t zr3=z1 + (r3-r1)/(r2-r1)*(z2-z1);
-         Double_t d13=r1-r3, d32=r3-r2, d=r1-r2;
-         Double_t phir3=d32/d*phi1 + d13/d*phi2;  // FIXME
+         Double_t crv=f1(xyz1[0], xyz1[1], xyz2[0], xyz2[1], GetX(), GetY());
+         Double_t phir3 = phi1 + 0.5*crv*(r3 - r1); 
+
          Int_t start3=layer3.FindClusterIndex(zr3-kzWin/2);
          for (Int_t n3=start3; n3<nClusters3; n3++) {
              AliCluster *c3=layer3.GetCluster(n3);
@@ -256,8 +259,8 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
              //if (c3->GetLabel(0)!=lab) continue;
              //
              Double_t z3=c3->GetZ();
-         
              if (z3 > (zr3+kzWin/2)) break;  //check in Z
+
              Float_t xyz3[3]; c3->GetGlobalXYZ(xyz3);
              Double_t phi3=TMath::ATan2(xyz3[1],xyz3[0]);
              if (TMath::Abs(phir3-phi3) > kpWin/100) continue;  //check in Phi
@@ -515,7 +518,7 @@ RefitAt(Double_t xx, AliITSUTrackCooked *t, const AliITSUTrackCooked *c) {
            //Warning("RefitAt","failed to estimate track !\n");
            return kFALSE;
         }
-        if (!t->Propagate(Double_t(phi), Double_t(r), GetBz())) {
+        if (!t->Propagate(phi, r, GetBz())) {
            //Warning("RefitAt","propagation failed !\n");
            return kFALSE;
         }
@@ -548,18 +551,18 @@ Int_t AliITSUTrackerCooked::RefitInward(AliESDEvent *event) {
       ResetTrackToFollow(track);
 
       fTrackToFollow->ResetCovariance(10.); fTrackToFollow->ResetClusters();
-      if (RefitAt(2.1, fTrackToFollow, &track)) {
+      if (!RefitAt(2.1, fTrackToFollow, &track)) continue;
+      //Cross the beam pipe
+      if (!fTrackToFollow->PropagateTo(1.8, 2.27e-3, 35.28*1.848)) continue;
 
-	 CookLabel(fTrackToFollow, 0.); //For comparison only
-         Int_t label=fTrackToFollow->GetLabel();
-         if (label>0) ngood++;
+      CookLabel(fTrackToFollow, 0.); //For comparison only
+      Int_t label=fTrackToFollow->GetLabel();
+      if (label>0) ngood++;
 
-	 esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
-	 //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
-         //UseClusters(fTrackToFollow);
-	 ntrk++;
-      }
-
+      esdTrack->UpdateTrackParams(fTrackToFollow,AliESDtrack::kITSrefit);
+      //esdTrack->RelateToVertex(event->GetVertex(),GetBz(),33.);
+      //UseClusters(fTrackToFollow);
+      ntrk++;
   }
 
   Info("RefitInward","Refitted tracks: %d",ntrk);
@@ -657,14 +660,17 @@ void AliITSUTrackerCooked::
   // Load clusters to this layer
   //--------------------------------------------------------------------
   Int_t ncl=clusters->GetEntriesFast();
- 
-  while (ncl--) {
-     AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(ncl);
-     (seedingLayer) ? c->GoToFrameGlo() : c->GoToFrameTrk();
+  Double_t r=0.;
+  for (Int_t i=0; i<ncl; i++) {
+     AliITSUClusterPix *c=(AliITSUClusterPix*)clusters->UncheckedAt(i);
+     c->GoToFrameGlo();
+     Double_t x=c->GetX(), y=c->GetY();
+     r += TMath::Sqrt(x*x + y*y);
+     if (!seedingLayer) c->GoToFrameTrk();
      //if (!c->Misalign()) AliWarning("Can't misalign this cluster !");
      InsertCluster(new AliITSUClusterPix(*c));
   }
-
+  if (ncl) fR = r/ncl;
 }
 
 void AliITSUTrackerCooked::AliITSUlayer::DeleteClusters()

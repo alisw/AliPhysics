@@ -67,6 +67,7 @@ void testTrackerCooked() {
         esdTree->Fill();
         esd->Reset();
         delete vtx;
+        delete cTree;
     }
     timer.Stop(); timer.Print();
  
