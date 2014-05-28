@@ -2102,7 +2102,14 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
   Float_t maxEtPiKP = 50.0;
-  if(fDataSet==20100) maxEt=4000.0;
+  if(fDataSet==20100){
+    maxEt=4000.0;
+    maxEtPiKP = 2500;
+  }
+  if(fDataSet==2013){
+    maxEt=100.0;
+    maxEtPiKP = 100.0;
+  }
   Int_t nbinsEt = 100;
   char histoname[200];
   char histotitle[200];

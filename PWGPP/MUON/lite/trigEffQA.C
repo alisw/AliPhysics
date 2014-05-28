@@ -889,7 +889,7 @@ void ScalerTrending ( TObjArray runNumArray, TString mergedFileName, TString def
 }
 
 //_____________________________________________________________________________
-void trigEffQA(TString fileListName, TString outFilename = "", TString defaultStorage = "raw://", Bool_t doScalers = kFALSE)
+void trigEffQA(TString fileListName, TString outFilename = "", TString defaultStorage = "raw://", Bool_t doScalers = kFALSE, TString trackerQAmergedOut="QAresults_merged.root")
 {
   /// Main function
   ifstream inFile(fileListName.Data());
@@ -899,8 +899,8 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   TString currString = "";
   if (inFile.is_open()) {
     while (! inFile.eof() ) {
-      currString.ReadLine(inFile,kTRUE); // Read line
-      if ( currString.IsNull() || ! currString.Contains(".root") ||
+      currString.ReadLine(inFile); // Read line
+      if ( ! currString.Contains(".root") ||
           currString.BeginsWith("#") ) continue;
       fileNameArray.AddLast(new TObjString(currString.Data()));
       Int_t runNum = GetRunNumber(currString);
@@ -923,7 +923,14 @@ void trigEffQA(TString fileListName, TString outFilename = "", TString defaultSt
   TList outCanList, outList;
   TrigEffTrending(runNumArray, *finalFileNameArray, outCanList, outList);
   if ( ! defaultStorage.IsNull() ) MaskTrending(runNumArray, defaultStorage, outCanList, outList);
-  if ( ! defaultStorage.IsNull() && doScalers ) ScalerTrending(runNumArray, "QAresults_Merged.root", defaultStorage, outCanList, outList);
+  if ( ! defaultStorage.IsNull() && doScalers ) {
+    if ( gSystem->AccessPathName(trackerQAmergedOut.Data()) ) {
+      printf("Warning: cannot perform scaler trending:\n merged QA from tracker\n  %s\n  does not exist\n",trackerQAmergedOut.Data());
+    }
+    else {
+      ScalerTrending(runNumArray, trackerQAmergedOut, defaultStorage, outCanList, outList);
+    }
+  }
   
   if ( outFilename.IsNull() ) return;
   

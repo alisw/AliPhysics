@@ -1,0 +1,313 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+// ROOT includes
+#include "TFile.h"
+#include "TGrid.h"
+#include "TString.h"
+#include "TObjArray.h"
+#include "TObjString.h"
+#include "TSystem.h"
+#include "TROOT.h"
+#include "TKey.h"
+#include "TTree.h"
+#include "TParameter.h"
+
+// Aliroot includes
+#include "AliAnalysisManager.h"
+#include "AliAnalysisAlien.h"
+#include "AliESDInputHandler.h"
+
+#define COMPILEMACRO
+
+#endif
+
+
+//_____________________________________________________________________________
+void LoadLibs()
+{
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libProof");
+
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libOADB.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWGmuon.so");
+  gSystem->Load("libPWGPPMUONlite.so");
+}
+
+
+//_____________________________________________________________________________
+AliAnalysisAlien* CreateAlienHandler()
+{
+  AliAnalysisAlien *plugin = new AliAnalysisAlien();
+
+  // Set the run mode
+  plugin->SetRunMode("terminate");
+
+  // Declare all libraries
+  plugin->SetAdditionalLibs("libCORRFW.so libPWGHFbase.so libPWGmuon.so libPWGPPMUONlite.so");
+
+  plugin->SetAdditionalRootLibs("libXMLParser.so libGui.so libProofPlayer.so");
+
+  plugin->AddIncludePath("-I.");
+  plugin->AddIncludePath("-I$ALICE_ROOT/PWGPP/MUON/lite");
+
+  return plugin;
+}
+
+enum {
+  trackQA = 1 << 0,
+  trigQA  = 1 << 1
+};
+
+//_____________________________________________________________________________
+void terminateQA ( TString outfilename = "QAresults.root", UInt_t force = 0, UInt_t mask = (trackQA|trigQA) )
+{
+  //
+  // Load common libraries
+  //
+
+  LoadLibs();
+
+  AliAnalysisAlien* alienHandler = CreateAlienHandler();
+
+  AliAnalysisManager* mgr = new AliAnalysisManager("testAnalysis");
+  mgr->SetCommonFileName(outfilename.Data());
+  mgr->SetGridHandler(alienHandler);
+
+  // Needed to the manager (but not used in terminate mode)
+  AliESDInputHandler* esdH = new AliESDInputHandler();
+  esdH->SetReadFriends(kFALSE);
+  mgr->SetInputEventHandler(esdH);
+
+  TString trigOutName = "trigChEff_ANY_Apt_allTrig.root";
+  if ( ( force & trigQA ) == 0 ) {
+    if ( gSystem->AccessPathName(trigOutName) == 0 ) {
+      printf("Terminate already done for trigger. Skip\n");
+      mask &= ~trigQA;
+    }
+  }
+  if ( ( force & trackQA ) == 0 ) {
+    TFile* file = TFile::Open(outfilename.Data());
+    TKey* key = file->FindKeyAny("general2");
+    if ( key ) {
+      printf("Terminate already done for tracker. Skip\n");
+      mask &= ~trackQA;
+    }
+    delete file;
+  }
+
+#ifndef COMPILEMACRO
+
+  if ( mask & trigQA ) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
+    AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency(kFALSE);
+    trigChEffTask->SetTerminateOptions("PhysSelPass","ANY","-5_105",Form("FORCEBATCH %s?PhysSelPass?ANY?-5_105?NoSelMatchAptFromTrg",trigOutName));
+  }
+  if ( mask & trackQA ) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskMuonQA.C");
+    AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
+  }
+
+#endif
+
+//  // Check if terminate was already performed
+//  if  ( ! force ) {
+//    TObject* paramContainer = mgr->GetParamOutputs()->At(0);
+//    if ( paramContainer ) {
+//      TFile* file = TFile::Open(outfilename);
+//      if ( file->FindObjectAny(paramContainer->GetName() ) ) {
+//        printf("\nTerminate was already executed!\n");
+//        printf("Nothing to be done\n");
+//        file->Close();
+//        return;
+//      }
+//      file->Close();
+//    }
+//  }
+
+
+  if ( ! mgr->InitAnalysis()) {
+    printf("Fatal: Cannot initialize analysis\n");
+    return;
+  }
+  mgr->PrintStatus();
+  mgr->StartAnalysis("grid terminate");
+}
+
+
+//_____________________________________________________________________________
+TString GetFullPath ( TString filename )
+{
+  if ( filename.BeginsWith("alien://") ) return filename;
+  TString dirName = gSystem->DirName(filename);
+  TString baseName = gSystem->BaseName(filename);
+  TString currDir = gSystem->pwd();
+  gSystem->cd(dirName);
+  TString fullDir = gSystem->pwd();
+  gSystem->cd(currDir);
+  TString fullPath = fullDir.Data();
+  if ( ! fullDir.EndsWith("/") ) fullPath.Append("/");
+  fullPath += baseName;
+  return fullPath;
+}
+
+
+//_____________________________________________________________________________
+void CopyDir(TDirectory *source) {
+  //copy all objects and subdirs of directory source as a subdir of the current directory
+  TDirectory *savdir = gDirectory;
+  TDirectory *adir = savdir->mkdir(source->GetName());
+  adir->cd();
+  //loop on all entries of this directory
+  TKey *key;
+  TIter nextkey(source->GetListOfKeys());
+  while ((key = (TKey*)nextkey())) {
+    const char *classname = key->GetClassName();
+    TClass *cl = gROOT->GetClass(classname);
+    if (!cl) continue;
+    if (cl->InheritsFrom(TDirectory::Class())) {
+      source->cd(key->GetName());
+      TDirectory *subdir = gDirectory;
+      adir->cd();
+      CopyDir(subdir);
+      adir->cd();
+    } else if (cl->InheritsFrom(TTree::Class())) {
+      TTree *T = (TTree*)source->Get(key->GetName());
+      adir->cd();
+      TTree *newT = T->CloneTree(-1,"fast");
+      newT->Write();
+    } else {
+      source->cd();
+      TObject *obj = key->ReadObj();
+      adir->cd();
+      obj->Write(obj->GetName(),TObject::kSingleKey);
+      delete obj;
+    }
+  }
+  adir->SaveSelf(kTRUE);
+  savdir->cd();
+}
+
+
+//_____________________________________________________________________________
+Bool_t GetQAInfo ( const char* qaFileName, TString dirNames = "MUON_QA MTR_ChamberEffMap MUON.TrigEfficiencyMap MUON.TriggerEfficiencyMap" )
+{
+  LoadLibs();
+
+  TString outFilename = gSystem->BaseName(qaFileName);
+  TString inFullPath = GetFullPath(qaFileName);
+  TString outFullPath = GetFullPath(outFilename);
+  if ( inFullPath == outFullPath ) {
+    printf("Warning: input and output are same file!\n");
+    return kFALSE;
+  }
+
+  if ( inFullPath.BeginsWith("alien") && ! gGrid ) TGrid::Connect("alien://");
+
+  TObjArray* dirList = dirNames.Tokenize(" ");
+  TFile* outFile = TFile::Open(outFilename,"RECREATE");
+  TFile* inFile = TFile::Open(qaFileName);
+  for ( Int_t idir=0; idir<dirList->GetEntries(); idir++ ) {
+    inFile->cd();
+    TObject* obj = inFile->Get(dirList->At(idir)->GetName());
+    if ( ! obj ) continue;
+    outFile->cd();
+    CopyDir(static_cast<TDirectory*>(obj));
+  }
+  delete outFile;
+  delete inFile;
+  delete dirList;
+
+  return kTRUE;
+}
+
+
+//_____________________________________________________________________________
+Bool_t AddTreeVariable ( TList& parList, const char* varName, char varType, Float_t val )
+{
+  if ( varType == 'D' ) varType = 'F';
+  TString parName = Form("%s/%c",varName,varType);
+  if ( varType == 'F' ) {
+    parList.Add(new TParameter<float>(parName,val));
+  }
+  else if ( varType == 'I' ) {
+    parList.Add(new TParameter<int>(parName,(Int_t)val));
+  }
+  else {
+    printf("Error: variable type %c not accepted", varType);
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+
+//_____________________________________________________________________________
+void FillTree ( TTree* tree, TList &parList )
+{
+  Int_t nVars = parList.GetEntries();
+  TArrayI varInt(nVars);
+  TArrayF varFloat(nVars);
+  for ( Int_t ivar=0; ivar<nVars; ivar++ ) {
+    TObject* obj = parList.At(ivar);
+    TString varName = obj->GetName();
+    TString branchName = varName;
+    branchName.Remove(varName.Length()-2);
+    if ( varName.EndsWith("F") ) {
+      varFloat[ivar] = ((TParameter<float>*)obj)->GetVal();
+      tree->Branch(branchName.Data(),&varFloat[ivar],varName.Data());
+    }
+    else if ( varName.EndsWith("I") ) {
+      varInt[ivar] = (Int_t)((TParameter<int>*)obj)->GetVal();
+      tree->Branch(branchName.Data(),&varInt[ivar],varName.Data());
+    }
+  }
+  tree->Fill();
+}
+
+
+//_____________________________________________________________________________
+void AddTrigVars ( TString filename, TList &parList )
+{
+  TString trigOutName = "trigChEff_ANY_Apt_allTrig.root";
+  if ( gSystem->AccessPathName(trigOutName.Data()) ) trigOutName = filename;
+  TFile* file = TFile::Open(filename.Data());
+  TList* inList = (TList*)file->FindObjectAny("triggerChamberEff");
+  TString hChNames[] = {"bendPlaneCountChamber","nonBendPlaneCountChamber","allTracksCountChamber"};
+  Int_t nHistos = sizeof(hChNames)/sizeof(hChNames[0]);
+  for ( Int_t ihisto=0; ihisto<nHistos; ihisto++ ) {
+    TH1* histo = (TH1*)inList->FindObject(hChNames[ihisto].Data());
+    if ( ! histo ) continue;
+    for ( Int_t ibin=1; ibin<=4; ibin++ ) {
+      AddTreeVariable(parList, Form("%s%i",hChNames[ihisto].Data(),ibin),'F',histo->GetBinContent(ibin));
+    }
+  }
+  delete file;
+}
+
+//_____________________________________________________________________________
+void MakeTrend ( const char* qaFile, Int_t runNumber, UInt_t force = trigQA, UInt_t mask = (trackQA|trigQA) )
+{
+  Bool_t isOk = GetQAInfo(qaFile);
+  if ( ! isOk ) return;
+
+  terminateQA(gSystem->BaseName(qaFile),force,mask);
+
+  TString inFilename = gSystem->BaseName(qaFile);
+  TList parList;
+  parList.SetOwner();
+  AddTreeVariable(parList, "run", 'I', runNumber);
+
+  // function for trigger
+  AddTrigVars(inFilename.Data(),parList);
+
+  TFile* outFile = TFile::Open("trending.root","RECREATE");
+  TTree* tree = new TTree("trending","trending");
+
+  FillTree(tree, parList);
+  tree->Write();
+  delete outFile;
+}
