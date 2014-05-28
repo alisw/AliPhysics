@@ -26,7 +26,7 @@ struct AliHLTTrackMCData {
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   AliHLTTrackMCLabel fLabels[1];
 #else
-  AliHLTTrackMCLabel fLabels[];
+  AliHLTTrackMCLabel fLabels[0];
 #endif
 };
 

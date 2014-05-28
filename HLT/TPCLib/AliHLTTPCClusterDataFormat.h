@@ -18,10 +18,10 @@
 struct AliHLTTPCClusterData
     {
 	AliHLTUInt32_t fSpacePointCnt;
-#if !defined(__SUNPRO_CC) && !defined(__clang__)
-	AliHLTTPCSpacePointData fSpacePoints[];
-#else
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
 	AliHLTTPCSpacePointData fSpacePoints[1];
+#else
+	AliHLTTPCSpacePointData fSpacePoints[0];
 #endif
     };
 
