@@ -633,19 +633,16 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
   fZfit[1] = (fZfit[0]+zoff)/dx; 
 
   // correct dzdx for the bias
-  if(!IsRowCross()) fZfit[1] *= 1.09;
-  else{
-    // correct dzdx for the bias
-    fZfit[1] *= 1.05;
-    if(fZfit[1]<0) fZfit[1] -= 0.012;
-
+  UnbiasDZDX(IsRowCross());
+  if(IsRowCross()){
     // correct x_cross/sigma(x_cross) for the bias in dzdx
-    fS2Y += 0.14*TMath::Abs(fZfit[1]);
-    sx   += 2.e-2*GetS2DZDX(fZfit[1]);
+    const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
+    if(recoParam){ 
+      fS2Y += recoParam->GetCorrDZDXxcross()*TMath::Abs(fZfit[1]);
+      sx   += recoParam->GetCorrDZDXxcross()*recoParam->GetCorrDZDXxcross()*GetS2DZDX(fZfit[1]);
+    }
     // correct sigma(x_cross) for the width of the crossing area
-    Double_t sxdz = TMath::Abs(fZfit[1])>0.05?(TMath::Exp(-1.58839-TMath::Abs(fZfit[1])*3.24116)):
-                                              (0.957043   -TMath::Abs(fZfit[1])*12.4597);
-    sx   += sxdz;
+    sx   += GetS2XcrossDZDX(TMath::Abs(fZfit[1]));
     
     // estimate z and error @ anode wire
     fZfit[0] += fZfit[1]*fS2Y;
@@ -653,6 +650,36 @@ Double_t AliTRDseedV1::EstimatedCrossPoint(AliTRDpadPlane *pp)
   }
   return sx;
 }
+
+//____________________________________________________________________
+void AliTRDseedV1::UnbiasDZDX(Bool_t rc)
+{
+  // correct dzdx for the bias in z according to MC
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
+  if(!recoParam) return;
+  fZfit[1] *= recoParam->GetCorrDZDX(rc);
+  if(rc) fZfit[1] += recoParam->GetCorrDZDXbiasRC(fZfit[1]<0);
+}
+
+//____________________________________________________________________
+Double_t AliTRDseedV1::UnbiasY(Bool_t rc, Bool_t sgn, Int_t chg)
+{
+// correct y coordinate for tail cancellation. This should be fixed by considering TC as a function of q/pt. 
+//  rc : TRUE if tracklet crosses rows
+// sgn : TRUE if track has same sign with magnetic field
+// chg : -1 for negative particles, +1 for the rest
+  
+  const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam();
+  if(!recoParam) return 0.;
+  Double_t par[2]={0.};
+  if(rc) recoParam->GetYcorrTailCancel(2, par);
+  else{
+    if(sgn && 1./fPt > 1.5)  recoParam->GetYcorrTailCancel(1, par);
+    else if(!sgn)  recoParam->GetYcorrTailCancel(0, par);
+  }
+  return par[0]+par[1]*chg/fPt;
+}
+
 
 //____________________________________________________________________
 Float_t AliTRDseedV1::GetQperTB(Int_t tb) const
@@ -2134,7 +2161,7 @@ Bool_t AliTRDseedV1::Fit(UChar_t opt)
 
 
 //____________________________________________________________________
-Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
+Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t opt)
 {
 //
 // Linear fit of the clusters attached to the tracklet
@@ -2188,12 +2215,8 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
   Int_t n(0),          // clusters used in fit 
         row[]={-1, -1},// pad row spanned by the tracklet
         col(-1);       // pad column of current cluster
-  Double_t ycorr(0.); Int_t chg(fYref[1]>0?1:-1);
-  if(IsRowCross()) ycorr = 0.013 + 0.018*chg/fPt;
-  else{
-    if(chg<0 && 1./fPt > 1.5) ycorr = 0.04 + 0.027*chg/fPt;
-    else if(chg>0)  ycorr = 0.027*chg/fPt;
-  }
+  Double_t ycorr(UnbiasY(IsRowCross(), sgn, chg)),
+           kS2Ycorr(recoParam->GetS2Ycorr(sgn));
         
   AliTRDcluster *c(NULL), **jc = &fClusters[0];
   for(Int_t ic=0; ic<kNtb; ic++, ++jc) {
@@ -2306,7 +2329,7 @@ Bool_t AliTRDseedV1::FitRobust(AliTRDpadPlane *pp, Int_t opt)
   fYfit[1] = -par[1];
   //printf(" yfit: %f [%f] x[%e] dydx[%f]\n", fYfit[0], par[0], fX, par[1]);
   // store covariance
-  fCov[0] = (chg>0?5.:10.)*cov[0]; // variance of y0
+  fCov[0] = kS2Ycorr*cov[0]; // variance of y0
   fCov[1] = kScalePulls*cov[2]; // covariance of y0, dydx
   fCov[2] = kScalePulls*cov[1]; // variance of dydx
   // check radial position

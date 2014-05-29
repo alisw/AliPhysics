@@ -63,6 +63,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   ,fNumberOfConfigs(3)
   ,fFlags(0)
   ,fRawStreamVersion("DEFAULT")
+  ,fdzdxXcrossFactor(0.)
   ,fMinMaxCutSigma(4.)
   ,fMinLeftRightCutSigma(8.)
   ,fClusMaxThresh(4.5)
@@ -100,6 +101,7 @@ AliTRDrecoParam::AliTRDrecoParam()
   SetImproveTracklets();
   SetLUT();
   SetTailCancelation();
+  SetTrackletParams();
 }
 
 //______________________________________________________________
@@ -133,6 +135,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fNumberOfConfigs(ref.fNumberOfConfigs)
   ,fFlags(ref.fFlags)
   ,fRawStreamVersion(ref.fRawStreamVersion)
+  ,fdzdxXcrossFactor(ref.fdzdxXcrossFactor)
   ,fMinMaxCutSigma(ref.fMinMaxCutSigma)
   ,fMinLeftRightCutSigma(ref.fMinLeftRightCutSigma)
   ,fClusMaxThresh(ref.fClusMaxThresh)
@@ -149,6 +152,12 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   memcpy(fTCParams, ref.fTCParams, 8*sizeof(Double_t));
   memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
   memcpy(fStreamLevel, ref.fStreamLevel, kTRDreconstructionTasks * sizeof(Int_t));
+
+  // tracklet params
+  memcpy(fdzdxCorrFactor, ref.fdzdxCorrFactor, 2*sizeof(Double_t));
+  memcpy(fdzdxCorrRCbias, ref.fdzdxCorrRCbias, 2*sizeof(Double_t));
+  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 6*sizeof(Double_t));
+  memcpy(fS2Ycorr, ref.fS2Ycorr, 2*sizeof(Double_t));
 }
 
 //______________________________________________________________
@@ -188,6 +197,7 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   fNumberOfConfigs      = ref.fNumberOfConfigs;
   fFlags                = ref.fFlags;
   fRawStreamVersion     = ref.fRawStreamVersion;
+  fdzdxXcrossFactor     = ref.fdzdxXcrossFactor;
   fMinMaxCutSigma       = ref.fMinMaxCutSigma;
   fMinLeftRightCutSigma = ref.fMinLeftRightCutSigma;
   fClusMaxThresh        = ref.fClusMaxThresh;
@@ -201,6 +211,12 @@ AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
   memcpy(fTCParams, ref.fTCParams, 8*sizeof(Double_t));
   memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
   memcpy(fStreamLevel, ref.fStreamLevel, kTRDreconstructionTasks * sizeof(Int_t));
+
+  // tracklet params
+  memcpy(fdzdxCorrFactor, ref.fdzdxCorrFactor, 2*sizeof(Double_t));
+  memcpy(fdzdxCorrRCbias, ref.fdzdxCorrRCbias, 2*sizeof(Double_t));
+  memcpy(fYcorrTailCancel, ref.fdzdxCorrRCbias, 6*sizeof(Double_t));
+  memcpy(fS2Ycorr, ref.fS2Ycorr, 2*sizeof(Double_t));
   return *this;
 }
 
@@ -322,3 +338,42 @@ void AliTRDrecoParam::SetPIDLQslices(Int_t s)
   }
 }
 
+//___________________________________________________
+void  AliTRDrecoParam::SetTrackletParams(Double_t *par)
+{
+  // Load tracklet reconstruction parameters. If none are set use defaults
+  if(par){
+    // correct dzdx for the bias in z
+    fdzdxCorrFactor[0] = par[0];  // !RC 
+    fdzdxCorrFactor[1] = par[1];  // RC
+    // correct dzdx in RC tracklets for the bias in cluster attachment
+    fdzdxCorrRCbias[0] = par[2];   // dz/dx > 0  
+    fdzdxCorrRCbias[1] = par[3];   // dz/dx < 0
+    /// correct x_cross for the bias in dzdx
+    fdzdxXcrossFactor  = par[4];
+    // y linear q/pt correction due to wrong tail cancellation. 
+    fYcorrTailCancel[0][0] = par[5]; fYcorrTailCancel[0][1] = par[6];  // opposite sign !RC
+    fYcorrTailCancel[1][0] = par[7]; fYcorrTailCancel[1][1] = par[8];  // same sign !RC
+    fYcorrTailCancel[2][0] = par[9]; fYcorrTailCancel[2][1] = par[10]; // RC
+    // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. 
+    fS2Ycorr[0] = par[11];  // opposite sign, 
+    fS2Ycorr[1] = par[12];  // same sign
+    
+  } else {
+    // correct dzdx for the bias in z
+    fdzdxCorrFactor[0] = 1.09;  // !RC 
+    fdzdxCorrFactor[1] = 1.05;  // RC
+    // correct dzdx in RC tracklets for the bias in cluster attachment
+    fdzdxCorrRCbias[0] = 0.;     // dz/dx > 0  
+    fdzdxCorrRCbias[1] = -0.012; // dz/dx < 0
+    /// correct x_cross for the bias in dzdx
+    fdzdxXcrossFactor  = 0.14;
+    // y linear q/pt correction due to wrong tail cancellation. 
+    fYcorrTailCancel[0][0] = 0.;   fYcorrTailCancel[0][1] = 0.027;  // opposite sign !RC
+    fYcorrTailCancel[1][0] = 0.04; fYcorrTailCancel[1][1] = 0.027;  // same sign !RC
+    fYcorrTailCancel[2][0] = 0.013;fYcorrTailCancel[2][1] = 0.018;  // RC
+    // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. 
+    fS2Ycorr[0] = 5.;  // opposite sign, 
+    fS2Ycorr[1] = 10;  // same sign
+  }
+}

@@ -875,6 +875,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       continue;
     }
 
+    Float_t prod(t.GetBz()*t.Charge());
     ptrTracklet  = tracklets[ily];
     if(!ptrTracklet){ // BUILD TRACKLET
       AliDebug(3, Form("Building tracklet det[%d]", det));
@@ -920,7 +921,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
       // Select attachment base on track to B field sign not only track charge which is buggy
       // mark kFALSE same sign tracks and kTRUE opposite sign tracks
       // A.Bercuci 3.11.2011
-      Float_t prod(t.GetBz()*t.Charge());
       if(!ptrTracklet->AttachClusters(chamber, kTRUE, prod<0.?kTRUE:kFALSE, fEventInFile)){
         t.SetErrStat(AliTRDtrackV1::kNoAttach, ily);
         if(debugLevel>3){
@@ -956,7 +956,7 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
     // tilt correction options
     // 0 : no correction
     // 2 : pseudo tilt correction
-    if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk))){
+    if(!ptrTracklet->FitRobust(fGeom->GetPadPlane(ily, stk), prod>0., t.Charge())){
       t.SetErrStat(AliTRDtrackV1::kNoFit, ily);
       AliDebug(4, "Failed Tracklet Fit");
       continue;
@@ -1051,8 +1051,27 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
 		<< "param0.="		<< &param0
 		<< "param1.="		<< &param1
 		<< "\n";
+     }
+     
+     // update Kalman with the TRD measurement
+     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
+       //       if(chi2>10){ // RS
+       //    if(chi2>1e+10){ // TODO
+      t.SetErrStat(AliTRDtrackV1::kChi2, ily);
+      if(debugLevel > 2){
+        UChar_t status(t.GetStatusTRD());
+        AliTRDseedV1  trackletCp(*ptrTracklet);
+        AliTRDtrackV1 trackCp(t);
+        trackCp.SetOwner();
+        (*cstreamer) << "FollowBackProlongation3"
+            << "status="      << status
+            << "tracklet.="   << &trackletCp
+            << "track.="      << &trackCp
+            << "\n";
+      }
+      AliDebug(4, Form("Failed Chi2[%f]", chi2));
+      continue; 
     }
-
     // mark track as entering the FIDUCIAL volume of TRD
     if(kStoreIn){
       t.SetTrackIn();
