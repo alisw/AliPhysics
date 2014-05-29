@@ -275,8 +275,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   trkQualityCut->SetAODTestFilterBit(customFilterBit); 
   //apply all other cuts "by hand"
   trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
-  trkQualityCut->SetMinNCrossedRowsTPC(70);
-  trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.8);
+  trkQualityCut->SetMinNCrossedRowsTPC(70, kTRUE);
+  trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.8, kTRUE);
   trkQualityCut->SetMaxChi2TPCConstrainedGlobal(36);//used for ESD only - for AOD does not correspond to any cut
   trkQualityCut->SetTPCmaxChi2(4.0); //already in filter bit 0
   trkQualityCut->SetRejectKinkDaughters(kTRUE); //already in filter bit 0
@@ -303,19 +303,19 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
   }
   
   if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows60){
-    trkQualityCut->SetMinNCrossedRowsTPC(60);
+    trkQualityCut->SetMinNCrossedRowsTPC(60, kTRUE);
   }
   
   if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCrossedRows80){
-    trkQualityCut->SetMinNCrossedRowsTPC(80);
+    trkQualityCut->SetMinNCrossedRowsTPC(80, kTRUE);
   }
   
   if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls075){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75);
+    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.75, kTRUE);
   }
   
   if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdRowsToCls085){
-    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85);
+    trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.85, kTRUE);
   }
   
   if (customQualityCutsID==AliRsnCutSetDaughterParticle::kStdCls70){
