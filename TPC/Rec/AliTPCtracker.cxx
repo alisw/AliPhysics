@@ -7938,7 +7938,6 @@ Bool_t AliTPCtracker::IsFindable(AliTPCseed & track){
 
 void AliTPCtracker::AddCovariance(AliTPCseed * seed){
   //
-  return;
   // Adding systematic error estimate to the covariance matrix
   //                !!!! the systematic error for element 4 is in 1/GeV 
   // 03.03.2012     MI changed in respect to the previous versions
