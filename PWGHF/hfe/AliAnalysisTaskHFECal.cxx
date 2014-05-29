@@ -603,7 +603,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       {
        Int_t label = TMath::Abs(track->GetLabel());
        //mcLabel = track->GetLabel();
-       mcLabel = fabs(track->GetLabel()); // check for conv. issue
+       mcLabel = abs(track->GetLabel()); // check for conv. issue
        
        if(mcLabel>-1)
        {

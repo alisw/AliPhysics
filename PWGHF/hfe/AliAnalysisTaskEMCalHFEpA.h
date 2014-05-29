@@ -39,6 +39,28 @@ class TObjArray;
 	//Lucile
 class AliCaloTrackAODReader;
 class AliCaloTrackReader;
+	//exotic
+class AliEMCALRecoUtils;
+class AliAODReader;
+class AliCalorimeterUtils;
+
+	// --- ROOT system ---
+#include <TObject.h> 
+#include <TString.h>
+#include <TObjArray.h>
+class TArrayF;  
+#include <TH2I.h>
+#include <TGeoMatrix.h>
+
+	//--- ANALYSIS system ---
+class AliVEvent;
+class AliVTrack;
+class AliAODPWG4Particle;
+class AliAODCaloCluster;
+class AliVCaloCells;
+class AliPHOSGeoUtils;
+class AliEMCALGeometry;
+#include "AliEMCALRecoUtils.h"
 
 
 	//______________________________________________________________________
@@ -96,6 +118,12 @@ public:
 	
 		//Getters
 	AliHFEpid *GetPID() const {return fPID;};
+		//bad channel
+		//AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo; }
+		//AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils; }
+	/*AliCalorimeterUtils * GetCaloUtils()                                { if(!fCaloUtils) fCaloUtils = new AliCalorimeterUtils(); 
+		return fCaloUtils      ; }*/
+
 		//______________________________________________________________________
 	
 		//______________________________________________________________________
@@ -113,6 +141,9 @@ private:
 	void DiHadronCorrelation(AliVTrack *track, Int_t trackIndex);
 		//Find Mothers (Finde HFE and NonHFE from MC information)
 	Bool_t FindMother(Int_t mcIndex);
+	Bool_t ContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells);
+	TArrayI GetTriggerPatches(Bool_t IsEventEMCALL0, Bool_t IsEventEMCALL1);
+	Double_t CalculateWeight(Int_t pdg_particle, Double_t x);
 	
 		//Flags for specifics analysis
 	Bool_t 				fCorrelationFlag;
@@ -166,6 +197,7 @@ private:
 	
 		//Histograms
 	TH1F				*fNevent;
+	TH1F				*fNevent2;
 	TH1F				*fPtElec_Inc;
 	
 	TH1F				*fPtPrim;
@@ -204,15 +236,11 @@ private:
 	TH2F				*fTOF01;
 	TH2F				*fTOF02;
 	TH2F				*fTOF03;
-
 	TH1F				*fpid;		
-	
 	TH2F				**fEoverP_pt;
 	TH2F				**fEoverP_tpc;
-	
 	TH1F				**fTPC_pt;
 	TH2F				**fTPC_p;
-	
 	TH1F				**fTPCnsigma_pt;
 	TH2F				**fTPCnsigma_p;
 	TH2F				*fTPCnsigma_pt_2D;
@@ -221,38 +249,46 @@ private:
 	TH2F				*fShowerShapeM20_EoverP;
 	TH2F				*fShowerShape_ha;
 	TH2F				*fShowerShape_ele;
-	
 	TH2F				*fTPCnsigma_eta;
 	TH2F				*fTPCnsigma_phi;
-	
-	
 	TH1F				**fECluster;
 	TH1F				*fECluster_pure;
+	TH1F				*fECluster_not_exotic;
+	TH1F				*fECluster_not_exotic1;
+	TH1F				*fECluster_not_exotic2;
+	TH1F				*fECluster_exotic;
+	TH1F				*fNCluster_pure;
+	TH1F				*fNCluster_pure_aod;
+	TH2F				*fNCluster_ECluster;
+	TH2F				*fNcells_energy;
+	TH2F				*fNcells_energy_elec_selected;
+	TH2F				*fNcells_energy_not_exotic;
 	TH2F				**fEtaPhi;
 	TH2F				*fEtaPhi_num;
 	TH2F				*fEtaPhi_den;
-	
+	TH2F				*fEtaPhi_data;
 	TH2F				*fpt_reco_pt_MC_num;
 	TH2F				*fpt_reco_pt_MC_den;
-	
 	TH1F				**fVtxZ;
-	
 	TH1F				*fVtxZ_new1;
 	TH1F				*fVtxZ_new2;
 	TH1F				*fVtxZ_new3;
 	TH1F				*fVtxZ_new4;
 	
+	TH1F		        *fzRes1;
+	TH1F		    	*fzRes2;
+	TH1F		    	*fSPD_track_vtx1;
+	TH1F			    *fSPD_track_vtx2;
+	
 	TH1F				**fEtad;
 	TH1F				**fNTracks;
-	
+	TH1F				*fTrack_Multi;
 	TH2F				**fNTracks_pt;
 	TH2F				**fNTracks_eta;
 	TH2F				**fNTracks_phi;
-	
 	TH1F				**fNClusters;
 	TH2F				**fTPCNcls_EoverP;
 	TH2F				**fTPCNcls_pid;
-	
 	TH1F				**fEta;
 	TH1F				**fPhi;
 	TH1F				**fR;
@@ -268,57 +304,45 @@ private:
 	TH2F				**fM20_EoverP;
 	TH2F				**fTPCnsigma_eta_electrons;
 	TH2F				**fTPCnsigma_eta_hadrons;
-	
 	TH2F				*fEoverP_pt_pions;
-	
 	TH2F				*ftpc_p_EoverPcut;
 	TH2F				*fnsigma_p_EoverPcut;
-	
 	TH2F				*fEoverP_pt_pions2;
 	TH2F				*fNcells_pt;
 	TH2F				*fEoverP_pt_hadrons;
-	
 		//Electron-Hadron Correlation Histograms
 	TH2F				**fCEtaPhi_Inc;
-	
 	TH2F				**fCEtaPhi_ULS;
 	TH2F				**fCEtaPhi_LS;
 	TH2F				**fCEtaPhi_ULS_NoP;
 	TH2F				**fCEtaPhi_LS_NoP;
-	
 	TH2F				**fCEtaPhi_ULS_Weight;
 	TH2F				**fCEtaPhi_LS_Weight;
 	TH2F				**fCEtaPhi_ULS_NoP_Weight;
 	TH2F				**fCEtaPhi_LS_NoP_Weight;
-	
 	TH1F				*fInvMass;
 	TH1F				*fInvMassBack;
 	TH1F				*fDCA;
 	TH1F				*fDCABack;
 	TH1F				*fOpAngle;
 	TH1F				*fOpAngleBack;
-	
 	TH1F				*fInvMass2;
 	TH1F				*fInvMassBack2;
 	TH1F				*fDCA2;
 	TH1F				*fDCABack2;
 	TH1F				*fOpAngle2;
 	TH1F				*fOpAngleBack2;
-	
 	Double_t			fMassCut;
 	Double_t			fEtaCutMin;
 	Double_t			fEtaCutMax;
-	
 	Double_t			fdPhiCut;
 	Double_t			fdEtaCut;
-	
 	Double_t			fEoverPCutMin;
 	Double_t			fEoverPCutMax;
 	Double_t			fM20CutMin;
 	Double_t			fM20CutMax;
 	Double_t			fM02CutMin;
 	Double_t			fM02CutMax;
-	
 	Double_t			fAngleCut;
 	Double_t			fChi2Cut;
 	Double_t			fDCAcut;
@@ -326,31 +350,24 @@ private:
 	Bool_t				fAngleCutFlag;
 	Bool_t				fChi2CutFlag;
 	Bool_t				fDCAcutFlag;
-	
 	//Correlation Function
 	Double_t			fAssHadronPtMin;
 	Double_t			fAssHadronPtMax;
-	
-		//Non-HFE reconstruction efficiency
+	//Non-HFE reconstruction efficiency
 	TH1F				*fPtBackgroundBeforeReco;
 	TH1F				*fPtBackgroundBeforeReco2;
 	TH1F				*fPtBackgroundBeforeReco_weight;
 	TH1F				*fPtBackgroundBeforeReco2_weight;
-	
 	TH2F				*fpT_m_electron;
 	TH2F				*fpT_gm_electron;
-	
 	TH1F				*fPtBackgroundAfterReco;
-	
 	Double_t			fPtMinAsso;
 	Int_t			fTpcNclsAsso;
-	
 		//Tracking Efficiency
 	TH1F				*fPtMCparticleAll;
 	TH1F				*fPtMCparticleAll_nonPrimary;
 	TH1F				*fPtMCparticleAlle_nonPrimary;
 	TH1F				*fPtMCparticleAlle_Primary;
-
 	TH1F				*fPtMCparticleReco;
 	TH1F				*fPtMCparticleReco_nonPrimary;
 	TH1F				*fPtMCparticleAllHfe1;
@@ -366,6 +383,8 @@ private:
 	TH1F				*fPtMCeta;
 	TH1F				*fPtMCpi02;
 	TH1F				*fPtMCeta2;
+	TH1F				*fPtMCpi03;
+	TH1F				*fPtMCeta3;
 	
 	TH1F				*fPtMC_EMCal_All;
 	TH1F				*fPtMC_EMCal_Selected;
@@ -430,6 +449,14 @@ private:
 		//Di-hadron correlation
 	TH2F				**fCEtaPhi_Inc_DiHadron;
 	TH1F				*fPtTrigger_Inc;
+	
+		//AliEMCALRecoUtils		*fEMCALRecoUtils;   // EMCAL Reco Utils //exotic
+												//AliEMCALGeometry *fEMCALGeo ;             //! EMCAL geometry pointer
+												//AliCalorimeterUtils *fCaloUtils;
+	
+	Int_t            fBitEGA;                    // Trigger bit on VCaloTrigger for EGA
+
+	 
 		//______________________________________________________________________
 	
 	AliAnalysisTaskEMCalHFEpA(const AliAnalysisTaskEMCalHFEpA&); 			// not implemented
