@@ -954,11 +954,16 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      // check fake rejection
     if(mcOrgPi0 || mcOrgEta)
       {
+       double phiacc0 = 80.0/180.0*acos(-1);
+       double phiacc1 = 180.0/180.0*acos(-1);
        int TrStat = 0;
-       if(track->GetLabel()>0)TrStat = 1;
-       fFakeRejection0->Fill(TrStat,pt,mcWeight); 
-       if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
-       if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID 
+       if(phi>phiacc0 && phi<phiacc1)
+         {
+          if(track->GetLabel()>0)TrStat = 1;
+          fFakeRejection0->Fill(TrStat,pt,mcWeight); 
+          if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
+          if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID
+        } 
       }
 
     //+++++++  E/p cut ++++++++++++++++   
@@ -1580,12 +1585,15 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fpair);
 
   fFakeRejection0 = new TH2D("fFakeRejection0","TPC PID",2,-0.5,1.5,100,0,20);
+  fFakeRejection0->Sumw2();
   fOutputList->Add(fFakeRejection0);
 
   fFakeRejection1 = new TH2D("fFakeRejection1","TPC PID + Tr match",2,-0.5,1.5,100,0,20);
+  fFakeRejection1->Sumw2();
   fOutputList->Add(fFakeRejection1);
 
   fFakeRejection2 = new TH2D("fFakeRejection2","TPC PID + Tr match + E/p",2,-0.5,1.5,100,0,20);
+  fFakeRejection2->Sumw2();
   fOutputList->Add(fFakeRejection2);
 
   PostData(1,fOutputList);
