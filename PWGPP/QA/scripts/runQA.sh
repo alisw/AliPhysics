@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ ${BASH_VERSINFO} -lt 4 ]; then
+  echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
+  exit 1
+fi
+
 main()
 {
   if [[ -z $1 ]]; then
@@ -10,7 +15,7 @@ main()
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
   fi
- 
+
   if ! parseConfig "$@"; then
     ${0}
     return 1
