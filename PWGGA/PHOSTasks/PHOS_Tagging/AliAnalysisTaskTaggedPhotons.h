@@ -18,7 +18,7 @@ class AliAODEvent ;
 class THashList ; 
 class TH2I ;
 class AliPHOSGeometry;
-class AliAODPWG4Particle;
+class AliCaloPhoton;
 class AliAODMCParticle ;
 class AliVCluster ;
 class AliTriggerAnalysis ;
@@ -45,7 +45,7 @@ protected:
   void    FillMCHistos() ;
   void    FillTaggingHistos() ;
   Int_t   GetFiducialArea(const Float_t * pos)const ; //what kind of fiducial area hit the photon
-  Bool_t  IsSamePi0(const AliAODPWG4Particle *p1, const AliAODPWG4Particle *p2) const; //Check MC genealogy
+  Bool_t  IsSamePi0(const AliCaloPhoton *p1, const AliCaloPhoton *p2) const; //Check MC genealogy
   Bool_t  IsGoodChannel(Int_t mod, Int_t ix, Int_t iz) ;
   Bool_t  IsInPi0Band(Double_t m, Double_t pt)const; //Check if invariant mass is within pi0 peak
   Bool_t  TestDisp(Double_t l0, Double_t l1, Double_t e)const  ;
@@ -54,15 +54,15 @@ protected:
   void    InitGeometry() ;  //read reotation matrixes from AOD/AOD
   Int_t   EvalIsolation(TLorentzVector * ph) ;
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
-  Bool_t  TestPID(Int_t iPID, AliAODPWG4Particle* part) ;
+  Bool_t  TestPID(Int_t iPID, AliCaloPhoton* part) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
   Int_t   FindPrimary(AliVCluster*, Bool_t&);
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
-  void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p) const ;
-  void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p ,Double_t y) const ;
-  void FillPIDHistograms(const char * name, const AliAODPWG4Particle * p , const AliAODPWG4Particle * p2,Double_t y) const ;
+  void FillPIDHistograms(const char * name, const AliCaloPhoton * p) const ;
+  void FillPIDHistograms(const char * name, const AliCaloPhoton * p ,Double_t y) const ;
+  void FillPIDHistograms(const char * name, const AliCaloPhoton * p , const AliCaloPhoton * p2,Double_t y) const ;
 
 private:
 
