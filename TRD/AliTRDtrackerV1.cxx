@@ -1016,47 +1016,6 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
      
      // update Kalman with the TRD measurement
      if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
-       //       if(chi2>10){ // RS
-       //    if(chi2>1e+10){ // TODO
-      t.SetErrStat(AliTRDtrackV1::kChi2, ily);
-      if(debugLevel > 2){
-        UChar_t status(t.GetStatusTRD());
-        AliTRDseedV1  trackletCp(*ptrTracklet);
-        AliTRDtrackV1 trackCp(t);
-        trackCp.SetOwner();
-        (*cstreamer) << "FollowBackProlongation3"
-            << "status="      << status
-            << "tracklet.="   << &trackletCp
-            << "track.="      << &trackCp
-            << "\n";
-      }
-      AliDebug(4, Form("Failed Chi2[%f]", chi2));
-      continue; 
-    }
-     if(fkReconstructor->IsDebugStreaming()){
-      Int_t eventNumber = AliTRDtrackerDebug::GetEventNumber();
-      //      TTreeSRedirector &cstreamer = *fkReconstructor->GetDebugStream(AliTRDrecoParam::kTracker);
-      AliExternalTrackParam param0(t);
-      AliExternalTrackParam param1(t);
-      param1.Update(p, cov);
-      TVectorD vcov(3,cov);
-      TVectorD vpar(3,p);
-      (*cstreamer) << "FollowBackProlongationInfo"
-		<< "EventNumber="	<< eventNumber
-		<< "chi2="<<chi2
-		<< "iplane="<<ily
-		<< "vcov.="<<&vcov
-	        << "vpar.="<<&vpar
-		<< "tracklet.="      << ptrTracklet
-		<< "param0.="		<< &param0
-		<< "param1.="		<< &param1
-		<< "\n";
-     }
-     
-     // update Kalman with the TRD measurement
-     if (chi2> fkRecoParam->GetChi2Cut()){ // MI parameterizad chi2 cut 03.05.2014
-       //       if(chi2>10){ // RS
-       //    if(chi2>1e+10){ // TODO
       t.SetErrStat(AliTRDtrackV1::kChi2, ily);
       if(debugLevel > 2){
         UChar_t status(t.GetStatusTRD());
