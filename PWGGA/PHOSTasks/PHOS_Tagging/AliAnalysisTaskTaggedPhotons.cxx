@@ -74,7 +74,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fPhimin(0.),
   fCentrality(0.),
   fCentBin(0), 
-  fIsMB(0)
+  fIsMB(0),
+  fIsMC(0)
 {
   //Deafult constructor
   //no memory allocations
@@ -101,7 +102,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fPhimin(320.),
   fCentrality(0.),
   fCentBin(0),
-  fIsMB(0)
+  fIsMB(0),
+  fIsMC(0)
 {
   // Constructor.
 
@@ -134,7 +136,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fPhimin(320.),
   fCentrality(0.),
   fCentBin(0),
-  fIsMB(0)
+  fIsMB(0),
+  fIsMC(0)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -306,9 +309,7 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   snprintf(partName[2],10,"eta") ;
   snprintf(partName[3],10,"omega"); 
   
-  if(AliAnalysisManager::GetAnalysisManager()){
-    AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if(mctruth){
+  if(fIsMC){
       
       fOutputContainer->Add(new TH1F("hMCConversionRadius","Clusters without label",600,0.,600.)) ;
       fOutputContainer->Add(new TH2F("hMCRecPi0Vtx","Secondary pi0s",100,0.,10.,600,0.,600.)) ;
@@ -435,8 +436,16 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisPartner_cent%d",cen),"Spectrum of missed partners",nPt,0.,ptMax)) ;
   fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisPartnerEtaPhi_cent%d",cen),"Spectrum of missed partners",100,-0.2,0.2,100,4.5,5.6)) ;
     }
-    }
-  }//If MC handler exists...
+  }
+
+  //If we work with MC, need to set Sumw2 - we will use weights
+  if(fIsMC){
+      for(Int_t i=0; i<fOutputContainer->GetSize();i++){
+        ((TH1*)fOutputContainer->At(i))->Sumw2() ; 
+      }
+  }
+    
+  
   
   for(Int_t i=0;i<1;i++)
     for(Int_t j=0;j<5;j++)
@@ -472,13 +481,14 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     return;
   }
   FillHistogram("hSelEvents",1) ;
-  
-  //read geometry if not read yet
-  if(fPHOSgeom==0)
-    InitGeometry() ;
-  
+
   //MC stack init
   fStack = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
+  
+  //read geometry if not read yet
+  if(fPHOSgeom==0){
+    InitGeometry() ;
+  }
   
   if(!fUtils) 
     fUtils = new AliAnalysisUtils();
@@ -649,7 +659,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     p->SetFiducialArea(fidArea) ;
 
-    if(fStack){    
+    if(fIsMC){    
        //This is primary entered PHOS
        FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
        Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
@@ -671,11 +681,13 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
        else{
          p->SetPrimary(-1); //Primary index    
          p->SetPrimaryAtVertex(-1) ;
+	 p->SetWeight(1.) ;
        }
     }
     else{  
       p->SetPrimary(-1); //Primary index    
       p->SetPrimaryAtVertex(-1) ;
+      p->SetWeight(1.) ;
     }
     //PID criteria
     p->SetDispBit(clu->Chi2()<2.5) ;
@@ -703,7 +715,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
    
   //MC info about this particle
-  if(!fStack)
+  if(!fIsMC)
     return ;
   const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
   const Double_t phiMin=260.*TMath::Pi()/180. ;
@@ -781,7 +793,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
     AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
     Int_t label=p->GetPrimary() ;
     if(label<0){ //No label!
-      FillHistogram("hMCRecNoLabel",p->Pt());
+      FillHistogram("hMCRecNoLabel",p->Pt(),p->GetWeight());
       continue ;
     }     
 
@@ -900,7 +912,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      //Partner reconstructed, but did not pass cuts
                 FillPIDHistograms("hMCDecWRecPartn",p) ;	
     	        Double_t invMass=(*p+ *pp).M() ;
-	        FillHistogram("hMCmass",invMass,p->Pt()) ;
+	        FillHistogram("hMCmass",invMass,p->Pt(),p->GetWeight()) ;
 	        if(IsInPi0Band(invMass,p->Pt())){
 	          FillPIDHistograms("hMCDecWithFoundPartn",p) ;
 	        }
@@ -1042,7 +1054,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
-      if(IsSamePi0(p1,p2)){
+      if(IsSameParent(p1,p2)==111){
         FillPIDHistograms("hMC_InvM_Re",p1,invMass) ;
         FillPIDHistograms("hMC_InvM_Re",p2,invMass) ;
         if(TestPID(3, p2)){
@@ -1089,13 +1101,13 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       
       if(tag1 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
         if(p1->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p1->Pt());
+          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p1->Pt(),p1->GetWeight());
         }  
         p1->SetTagged(kTRUE) ;
       }
       if(tag2 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
         if(p2->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p2->Pt());
+          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p2->Pt(),p2->GetWeight());
         }  
         p2->SetTagged(kTRUE) ;
       }      
@@ -1263,27 +1275,24 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt)const
   return (m>mpi0mean-2*mpi0sigma && m<mpi0mean+2*mpi0sigma) ;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(const AliCaloPhoton *p1, const AliCaloPhoton *p2)const{
+Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2)const{
   //Looks through parents and finds if there was commont pi0 among ancestors
 
-  if(!fStack)
-    return kFALSE ; //can not say anything
+  if(!fIsMC)
+    return 0 ; //can not say anything
 
   Int_t prim1 = p1->GetPrimary();
   while(prim1!=-1){ 
     Int_t prim2 = p2->GetPrimary();
     while(prim2!=-1){ 
       if(prim1==prim2){
-        if(((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode()==111)
-          return kTRUE ;
-        else
-          return kFALSE ;
+	return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
       }
       prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
     }
     prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
   }
-  return kFALSE ;
+  return 0 ;
 }
 //______________________________________________________________________________
 Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t * position)const{
@@ -1414,38 +1423,41 @@ void AliAnalysisTaskTaggedPhotons::FillHistogram(const char * key,Double_t x,Dou
 //_____________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p) const{
 
-  FillHistogram(Form("%s_All_cent%d",name,fCentBin),p->Pt()) ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
   if(p->IsDispOK())
-    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),p->Pt()) ;
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
   if(p->IsCPVOK())
-    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),p->Pt()) ;
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
   if(p->IsDispOK() && p->IsCPVOK()) 
-    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),p->Pt()) ;
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
   
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p,Double_t x) const{
 
-  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,p->Pt()) ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
   if(p->IsDispOK())
-    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,p->Pt()) ;
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
   if(p->IsCPVOK())
-    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,p->Pt()) ;
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
   if(p->IsDispOK() && p->IsCPVOK()) 
-    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,p->Pt()) ;
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
   
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p1,const AliCaloPhoton * p2,Double_t x) const{
 
   Double_t ptPi = (*p1 + *p2).Pt() ;
-  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,ptPi) ;
+  Double_t w=p1->GetWeight()*p2->GetWeight() ;
+  if(IsSameParent(p1,p2)>0)
+    w=p1->GetWeight() ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,ptPi,w) ;
   if(p1->IsDispOK() && p2->IsDispOK())
-    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,ptPi) ;
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,ptPi,w) ;
   if(p1->IsCPVOK() && p2->IsCPVOK())
-    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,ptPi) ;
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,ptPi,w) ;
   if(p1->IsDispOK() && p1->IsCPVOK() && p2->IsDispOK() && p2->IsCPVOK()) 
-    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,ptPi) ;
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,ptPi,w) ;
   
 }
 //_____________________________________________________________________________
@@ -1542,8 +1554,59 @@ Bool_t AliAnalysisTaskTaggedPhotons::TestPID(Int_t iPID, AliCaloPhoton* part){
     
 }
 //_________________________________________________________________________________
-Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * /*particle*/){
-  return 1;
+Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * particle){
+  if(!fIsMC)  //This is real data
+     return 1;
+  //Classify parent at vertex
+  //Introduce for eta and pi0 weights   
+
+  Double_t r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+  Int_t mother = particle->GetMother() ;
+  while(mother>-1){
+    if(r2<1.)
+      break ;
+    particle = (AliAODMCParticle*) fStack->At(mother);
+    mother = particle->GetMother() ;
+    r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+  }
+  
+  //Particle within 1 cm from the virtex
+  Int_t pdg = particle->GetPdgCode() ;
+  Double_t x = particle->Pt() ;
+  mother = particle->GetMother() ;
+  while(TMath::Abs(pdg)<100){//gamma, electrons, muons 
+    if(mother>-1){
+      AliAODMCParticle * tmpP=(AliAODMCParticle*)fStack->At(mother) ;
+      pdg=tmpP->GetPdgCode() ;
+      x = tmpP->Pt() ;
+      mother = tmpP->GetMother() ;
+    }
+    else{ //direct photon/electron....
+      return 1.; 
+    }
+  } 
+  if(pdg == 111){
+  //Pi0
+     if(x<1) return 1. ;
+     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+       (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+  }
+  return 1. ;
+}
+//_________________________________________________________________________________
+void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
+ 
+  for(Int_t i=0; i<6; i++){ //Array range
+    if(ar->GetSize()>i) fWeightParamPi0[i]=ar->At(i) ;
+    else fWeightParamPi0[i]=0.;
+  }
+  //normalize to obtain smooth transition at 1 GeV
+  Double_t x=1. ;
+  fWeightParamPi0[0]=1./(TMath::Power(x,fWeightParamPi0[1])*
+       (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x)) ;
+  
   
 }
 //___________________________________________________________________________
