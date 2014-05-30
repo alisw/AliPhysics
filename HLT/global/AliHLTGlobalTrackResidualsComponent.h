@@ -51,7 +51,7 @@
 
 #include "AliHLTProcessor.h"
 
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 class AliHLTGlobalBarrelTrack;
 
 class AliHLTGlobalTrackResidualsComponent : public AliHLTProcessor {
