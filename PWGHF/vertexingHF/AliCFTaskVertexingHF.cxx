@@ -1401,7 +1401,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC13d3 MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
@@ -1411,7 +1411,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
@@ -1431,7 +1431,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC12a12(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC12a12bis(){
-  // weight function from the ratio of the LHC12a12 MC
+  // weight function from the ratio of the LHC12a12bis MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,50.);
@@ -1441,7 +1441,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC12a12bis(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC13e2fix(){
-  // weight function from the ratio of the LHC12a12 MC
+  // weight function from the ratio of the LHC13e2fix MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,50.);
@@ -1451,7 +1451,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC13e2fix(){
 
 //________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
@@ -1461,7 +1461,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC10f6a(){
 
 //________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,40.);
