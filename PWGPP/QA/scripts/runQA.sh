@@ -184,7 +184,8 @@ updateQA()
           aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
         fi
         if [[ -f trending.root ]]; then
-          arrOfTouchedProductions[${tmpProductionDir}]=1
+          #cache the touched production + an example file to guarantee consistent run data parsing
+          arrOfTouchedProductions[${tmpProductionDir}]="${qaFile%\#*}"
         else
           echo "trending.root not created"
         fi
@@ -226,7 +227,7 @@ updateQA()
       for dir in ${tmpProductionDir}/000*; do
         echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
-        if ! guessRunData "${dir}/dummyName"; then
+        if ! guessRunData "${arrOfTouchedProductions[${tmpProductionDir}]}"; then
           echo "could not guess run data from ${dir}"
           continue
         fi
