@@ -10,12 +10,12 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliEventServerPreferencesWindow+;
-#pragma link C++ class  AliQAHistNavigator+;
-#pragma link C++ class  AliQAHistViewer+;
-#pragma link C++ class  AliQADirList+;
-#pragma link C++ class  AliQADirListItem+;
-#pragma link C++ class  AliOnlineRecoTrigger+;
-#pragma link C++ class  TerminateSignalHandler+;
+#pragma link C++ class AliQAHistNavigator+;
+#pragma link C++ class AliQAHistViewer+;
+#pragma link C++ class AliQADirList+;
+#pragma link C++ class AliQADirListItem+;
+#pragma link C++ class AliOnlineRecoTrigger+;
+#pragma link C++ class TerminateSignalHandler+;
 
 #pragma link C++ class AliDimIntNotifier+;
 #pragma link C++ class AliChildProcTerminator+;

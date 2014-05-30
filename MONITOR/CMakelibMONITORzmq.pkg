@@ -26,10 +26,13 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS   
-    AliEventServerWindow.cxx
+set ( SRCS
+    AliNetMessage.cxx
+    AliSocket.cxx
+    AliThreadedSocket.cxx
     AliRecoServerThread.cxx
     AliRecoServer.cxx
+    AliEventServerWindow.cxx
     )
 
 string ( REPLACE ".cxx" ".h" CINTHDRS "${SRCS}" )
@@ -38,7 +41,7 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  MONITORzmqLinkDef.h)
 
-set ( EINCLUDE  STEER/STEERBase )#"${ZEROMQ_INCLUDE_DIR}")
+set ( EINCLUDE STEER/STEERBase ) # ${ZEROMQ_INCLUDE_DIR})
 
 set(DIMDIR $ENV{DIMDIR})
 set(ODIR $ENV{ODIR})
@@ -55,7 +58,7 @@ if(DIMDIR)
   set ( CXXFLAGS  "-DALI_DIM ${CXXFLAGS}")
 endif(DIMDIR)
 
-set ( ELIBS ${ELIBS} ${ZEROMQ_LIBRARY} )
+set (ELIBS ${ELIBS} ${ZEROMQ_LIBRARIES} )
 
 # this must be set in a better way
 set ( ELIBSDIR ${ELIBSDIR}  /usr/lib64)
