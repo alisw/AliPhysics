@@ -52,7 +52,7 @@ struct AliHLTTracksData {
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   AliHLTExternalTrackParam fTracklets[1]; // array of tracklets
 #else
-  AliHLTExternalTrackParam fTracklets[]; // array of tracklets
+  AliHLTExternalTrackParam fTracklets[0]; // array of tracklets
 #endif
 };
 
