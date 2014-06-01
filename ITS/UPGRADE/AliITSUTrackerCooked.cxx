@@ -28,8 +28,9 @@ const Double_t kmaxDCAz= 3.;
 const Int_t kSeedingLayer1=6, kSeedingLayer2=4, kSeedingLayer3=5;
 // Space point resolution
 const Double_t kSigma2=0.0005*0.0005;
-// Max accepted chi2 per cluster
-const Double_t kmaxChi2PerCluster=10.;
+// Max accepted chi2
+const Double_t kmaxChi2PerCluster=20.;
+const Double_t kmaxChi2PerTrack=30.;
 // Tracking "road" from layer to layer
 const Double_t kRoadY=0.7;
 const Double_t kRoadZ=0.7;
@@ -179,12 +180,27 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     par[4]=(TMath::Abs(bz) < kAlmost0Field) ? kAlmost0 : crv/(bz*kB2C);
 
     Double_t cov[15];
+    /*
     for (Int_t i=0; i<15; i++) cov[i]=0.;
     cov[0] =kSigma2*10;
     cov[2] =kSigma2*10;
     cov[5] =0.007*0.007*10;   //FIXME all these lines
     cov[9] =0.007*0.007*10;
     cov[14]=0.1*0.1*10;
+    */
+    const Double_t dlt=0.0005;
+    Double_t
+    fy=1./(fgLayers[kSeedingLayer3].GetR() - fgLayers[kSeedingLayer2].GetR());
+    Double_t tz=fy;
+    Double_t cy=(f1(x1, y1, x2, y2+dlt, x3, y3) - crv)/dlt/bz/kB2C;
+    cy*=20; //FIXME: MS contribution to the cov[14]
+    Double_t s2=kSigma2;
+
+    cov[0]=s2;
+    cov[1]=0.;     cov[2]=s2;
+    cov[3]=s2*fy;  cov[4]=0.;    cov[5]=s2*fy*fy;
+    cov[6]=0.;     cov[7]=s2*tz; cov[8]=0.;        cov[9]=s2*tz*tz;
+    cov[10]=s2*cy; cov[11]=0.;   cov[12]=s2*fy*cy; cov[13]=0.; cov[14]=s2*cy*cy;
 
     AliITSUTrackCooked *seed=new AliITSUTrackCooked();
     seed->Set(Double_t(x), Double_t(a), par, cov);
@@ -193,6 +209,14 @@ AddCookedSeed(const Float_t r1[3], Int_t l1, Int_t i1,
     seed->GetDZ(GetX(),GetY(),GetZ(),GetBz(),dz);
     if (TMath::Abs(dz[0]) > kmaxDCAxy) {delete seed; return kFALSE;} 
     if (TMath::Abs(dz[1]) > kmaxDCAz ) {delete seed; return kFALSE;} 
+
+    Double_t xx0 = 0.008; // Rough layer thickness
+    Double_t radl= 9.36;  // Radiation length of Si [cm]
+    Double_t rho = 2.33;  // Density of Si [g/cm^3] 
+    Double_t mass= 0.139;// Pion
+    if (!seed->CorrectForMeanMaterial(xx0, xx0*radl*rho, mass, kTRUE)) {
+       delete seed; return kFALSE;
+    }
 
     seed->SetClusterIndex(l1,i1);
     seed->SetClusterIndex(l2,i2);
@@ -242,12 +266,12 @@ Int_t AliITSUTrackerCooked::MakeSeeds() {
          //if (c2->GetLabel(0)!=lab) continue;
 	 //
          Double_t z2=c2->GetZ();
-         
          if (z2 > (zr2+kzWin)) break;  //check in Z
+
          Float_t xyz2[3]; c2->GetGlobalXYZ(xyz2);
          Double_t phi2=TMath::ATan2(xyz2[1],xyz2[0]);
          if (TMath::Abs(phi2-phi1) > kpWin) continue;  //check in Phi
- 
+
          Double_t zr3=z1 + (r3-r1)/(r2-r1)*(z2-z1);
          Double_t crv=f1(xyz1[0], xyz1[1], xyz2[0], xyz2[1], GetX(), GetY());
          Double_t phir3 = phi1 + 0.5*crv*(r3 - r1); 
@@ -369,10 +393,9 @@ void AliITSUTrackerCooked::FollowProlongation() {
   //deal with the best track
   Int_t ncl=fTrackToFollow->GetNumberOfClusters();
   Int_t nclb=fBestTrack->GetNumberOfClusters();
-  if (ncl)
   if (ncl >= nclb) {
      Double_t chi2=fTrackToFollow->GetChi2();
-     if (chi2/ncl < kmaxChi2PerCluster) {        
+     if (chi2 < kmaxChi2PerTrack) {        
         if (ncl > nclb || chi2 < fBestTrack->GetChi2()) {
 	   ResetBestTrack();
         }
