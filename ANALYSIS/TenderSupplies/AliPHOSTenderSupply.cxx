@@ -463,6 +463,7 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
   if(magF<0)magSign = -1.0;
   
   if (!TGeoGlobalMagField::Instance()->GetField()) {
+    AliError("Margnetic filed was not initialized, use default") ;
     AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
     TGeoGlobalMagField::Instance()->SetField(field);
   }
