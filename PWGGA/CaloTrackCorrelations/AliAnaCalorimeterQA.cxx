@@ -64,7 +64,8 @@ fStudyWeight(kFALSE),
 fNModules(12),                         fNRCU(2),
 fNMaxCols(48),                         fNMaxRows(24),  
 fTimeCutMin(-10000),                   fTimeCutMax(10000),
-fCellAmpMin(0),                        fEMCALCellAmpMin(0),                    fPHOSCellAmpMin(0),
+fCellAmpMin(0),                        fEMCALCellAmpMin(0),
+fPHOSCellAmpMin(0),                    fMinInvMassECut(0),
 
 // Exotic
 fExoNECrossCuts(0),                    fExoECrossCuts(),
@@ -1046,7 +1047,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // in cluster and remove low energy clusters
     if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1 && 
        GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 && 
-       clus->GetM02() < 0.5 && clus->E() > 0.5)
+       clus->GetM02() < 0.5 && clus->E() > fMinInvMassECut)
       InvariantMassHistograms(iclus, mom, nModule, caloClusters,cells);
     
   }//cluster loop
@@ -1651,6 +1652,9 @@ TObjString * AliAnaCalorimeterQA::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"PHOS Cell Amplitude > %2.2f GeV, EMCAL Cell Amplitude > %2.2f GeV  \n",fPHOSCellAmpMin, fEMCALCellAmpMin) ;
   parList+=onePar ;
+  snprintf(onePar,buffersize,"Inv. Mass E1, E2 > %2.2f GeV \n",fMinInvMassECut) ;
+  parList+=onePar ;
+
   //Get parameters set in base class.
   //parList += GetBaseParametersList() ;
   
@@ -3151,7 +3155,7 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
     // in cluster and remove low energy clusters
     if( clus2->GetNCells() <= 1 || !IsGoodCluster(absIdMax,cells) || 
        GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 || 
-       clus2->GetM02() > 0.5 || clus2->E() < 0.5 ) continue;
+       clus2->GetM02() > 0.5 || clus2->E() < fMinInvMassECut ) continue;
     
     //Get cluster kinematics
     clus2->GetMomentum(mom2,v);
@@ -3203,11 +3207,14 @@ void AliAnaCalorimeterQA::InitParameters()
   fCalorimeter     = "EMCAL"; //or PHOS
   fNModules        = 22; // set maximum to maximum number of EMCAL modules
   fNRCU            = 2;  // set maximum number of RCU in EMCAL per SM
+  
   fTimeCutMin      = -9999999;
   fTimeCutMax      =  9999999;
-  fEMCALCellAmpMin = 0.2;
-  fPHOSCellAmpMin  = 0.2;
-  fCellAmpMin      = 0.2;
+  
+  fEMCALCellAmpMin = 0.2; // 200 MeV
+  fPHOSCellAmpMin  = 0.2; // 200 MeV
+  fCellAmpMin      = 0.2; // 200 MeV
+  fMinInvMassECut  = 0.5; // 500 MeV
   
   // Exotic studies
   fExoNECrossCuts  = 10 ;
@@ -3264,6 +3271,7 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("EMCAL Min Amplitude   : %2.1f GeV/c\n", fEMCALCellAmpMin) ;
   printf("PHOS Min Amplitude    : %2.1f GeV/c\n", fPHOSCellAmpMin) ;
+  printf("Inv. Mass min. E clus : %2.1f GeV/c\n", fMinInvMassECut) ;
   
 } 
 
@@ -3293,11 +3301,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   else
     AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Wrong calorimeter name <%s>, END\n", fCalorimeter.Data()));
   
-  if(!caloClusters || !cells || caloClusters->GetEntriesFast() == 0)
+  if( !caloClusters || !cells )
   {
     AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available\n"));
     return; // trick coverity
   }
+  
+  if(caloClusters->GetEntriesFast() == 0) return ;
   
   //printf("QA: N cells %d, N clusters %d \n",cells->GetNumberOfCells(),caloClusters->GetEntriesFast());
   
