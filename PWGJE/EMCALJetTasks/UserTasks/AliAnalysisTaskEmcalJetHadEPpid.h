@@ -67,13 +67,13 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
   void                    SetVariableBinning(Bool_t v)          { doVariableBinning = v; } // do variable binning switch
   void		              SetvarbinTHnSparse(Bool_t vb)         { dovarbinTHnSparse = vb; } // variable THnSparse bin switch
+  void					  SetallpidAXIS(Bool_t allAXIS)			{ allpidAXIS = allAXIS; } // fill all PID sparse axis's
   void					  SetmakeQAhistos(Bool_t QAhist)        { makeQAhistos = QAhist; } // make QA histos  
   void					  SetmakeBIAShistos(Bool_t BIAShist)    { makeBIAShistos = BIAShist; } // make bias histos
   void			          SetmakeextraCORRhistos(Bool_t Xhist)  { makeextraCORRhistos = Xhist; } // make extra correlations histos
   void					  SetoldJEThadhistos(Bool_t oldJH)      { makeoldJEThadhistos = oldJH; } // make older JH histos for comparison
 
   // set data, detectors type, and PID and PID w bias switches
-  void		              SetDataType(Bool_t data)		        { useAOD = data; }    // data type switch
   void					  SetcutType(TString cut)				{ fcutType = cut; }    // EMCAL / TPC acceptance cut
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
@@ -150,9 +150,7 @@ protected:
   Bool_t		 makeBIAShistos;
   Bool_t		 makeextraCORRhistos; 
   Bool_t		 makeoldJEThadhistos;
-
-  // data type switch
-  Bool_t	     useAOD;
+  Bool_t		 allpidAXIS;
 
   // Cut type (EMCAL/TPC acceptance)
   TString        fcutType;
