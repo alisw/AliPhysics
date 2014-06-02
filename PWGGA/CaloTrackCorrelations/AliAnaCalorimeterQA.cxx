@@ -53,8 +53,8 @@ AliAnaCaloTrackCorrBaseClass(),        fCalorimeter(""),
 
 //Switches
 fFillAllCellTimeHisto(kTRUE),
-fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kTRUE), 
-fFillAllTH12(kFALSE),                  fFillAllTH3(kTRUE), 
+fFillAllPosHisto(kFALSE),              fFillAllPosHisto2(kTRUE),
+fFillAllTH3(kFALSE),
 fFillAllTMHisto(kTRUE),                fFillAllPi0Histo(kTRUE),                 
 fCorrelate(kTRUE),                     fStudyBadClusters(kFALSE),               
 fStudyClustersAsymmetry(kFALSE),       fStudyExotic(kFALSE),
@@ -209,16 +209,15 @@ fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               f
   
   // MC
   
-  for(Int_t i = 0; i < 6; i++){
-    
+  for(Int_t i = 0; i < 6; i++)
+  {
     fhRecoMCE[i][0]         = 0; fhRecoMCE[i][1]        = 0;  
     fhRecoMCPhi[i][0]       = 0; fhRecoMCPhi[i][1]      = 0;  
     fhRecoMCEta[i][0]       = 0; fhRecoMCEta[i][1]      = 0;  
     fhRecoMCDeltaE[i][0]    = 0; fhRecoMCDeltaE[i][1]   = 0;  
     fhRecoMCRatioE[i][0]    = 0; fhRecoMCRatioE[i][1]   = 0;  
     fhRecoMCDeltaPhi[i][0]  = 0; fhRecoMCDeltaPhi[i][1] = 0;  
-    fhRecoMCDeltaEta[i][0]  = 0; fhRecoMCDeltaEta[i][1] = 0;  
-    
+    fhRecoMCDeltaEta[i][0]  = 0; fhRecoMCDeltaEta[i][1] = 0;
   }
   
   //Initialize parameters
@@ -228,7 +227,7 @@ fhTrackMatchedDEtaPos(0),              fhTrackMatchedDPhiPos(0),               f
 //______________________________________________________________________________________________________________________
 void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells, 
                                                Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
-                                               Double_t tmax,  Double_t timeAverages[2] )
+                                               Double_t tmax)
 {
   //Bad cluster histograms
   
@@ -246,15 +245,16 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   
   //Clusters in event time differencem bad minus good
   
-  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ ){
-    
+  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
+  {
     AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(iclus2);
     
     if(clus->GetID()==clus2->GetID()) continue;
     
     Float_t maxCellFraction2 = 0.;
     Int_t absIdMax2 = GetCaloUtils()->GetMaxEnergyCell(cells, clus2,maxCellFraction2);
-    if(IsGoodCluster(absIdMax2,cells)){
+    if(IsGoodCluster(absIdMax2,cells))
+    {
       Double_t tof2   = clus2->GetTOF()*1.e9;      
       fhBadClusterPairDiffTimeE  ->Fill(clus->E(), (tof-tof2));
     }
@@ -264,6 +264,10 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   // Max cell compared to other cells in cluster
   if(fFillAllCellTimeHisto) 
   {
+    // Get some time averages
+    Double_t timeAverages[2] = {0.,0.};
+    CalculateAverageTime(clus, cells, timeAverages);
+
     fhBadClusterMaxCellDiffAverageTime      ->Fill(clus->E(),tmax-timeAverages[0]);
     fhBadClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
   }           
@@ -318,7 +322,6 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
       ampMax   = amp;
 //      absIdMax = id;
     }
-    
   } // energy loop       
   
   // Calculate average time of cells in cluster and weighted average
@@ -329,6 +332,7 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
   Int_t    id     =-1;
   Double_t w      = 0;
   Int_t    ncells = clus->GetNCells();
+  
   for (Int_t ipos = 0; ipos < ncells; ipos++) 
   {
     id   = clus ->GetCellsAbsId()[ipos];
@@ -380,9 +384,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Float_t  recalF = 1.;  
   Int_t    bc     = GetReader()->GetInputEvent()->GetBunchCrossNumber();
   
-  for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++) {      
+  for (Int_t iCell = 0; iCell < cells->GetNumberOfCells(); iCell++)
+  {
     if(GetDebug() > 2)  
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - Cell : amp %f, absId %d \n", cells->GetAmplitude(iCell), cells->GetCellNumber(iCell));
+   
     Int_t nModule = GetModuleNumberCellIndexes(cells->GetCellNumber(iCell),fCalorimeter, icol, irow, iRCU);
     if(GetDebug() > 2) 
       printf("\t module %d, column %d, row %d \n", nModule,icol,irow);
@@ -390,7 +396,8 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     if(nModule < fNModules) 
     {	
       //Check if the cell is a bad channel
-      if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
+      if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn())
+      {
         if(fCalorimeter=="EMCAL")
         {
           if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
@@ -431,11 +438,11 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       fhAmpMod   ->Fill(amp,nModule);
       
       if ((fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ||
-          (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin )   ) 
+          (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin )   )
       {
         
         //E cross for exotic cells
-        if(amp > 0.01) fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
+        if(amp > 0.05) fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
 
         nCellsInModule[nModule]++ ;
 
@@ -513,22 +520,21 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       }//fill cell position histograms
       
       if     (fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ncells ++ ;
-      else if(fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin)  ncells ++ ;
+      else if(fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin ) ncells ++ ;
       //else  
       //  printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - no %s CELLS passed the analysis cut\n",fCalorimeter.Data());    
     }//nmodules
   }//cell loop
   
-  if(ncells > 0 )fhNCells->Fill(ncells) ; //fill the cells after the cut 
+  if( ncells > 0 )fhNCells->Fill(ncells) ; //fill the cells after the cut
   
   //Number of cells per module
-  for(Int_t imod = 0; imod < fNModules; imod++ ) {
-    
+  for(Int_t imod = 0; imod < fNModules; imod++ )
+  {
     if(GetDebug() > 1) 
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s cells %d\n", imod, fCalorimeter.Data(), nCellsInModule[imod]); 
     
     fhNCellsMod->Fill(nCellsInModule[imod],imod) ;
-    
   }
   
   delete [] nCellsInModule;
@@ -540,7 +546,6 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
 {
   // Fill histograms releated to cell position
   
-  
   Int_t nCaloCellsPerCluster = clus->GetNCells();
   UShort_t * indexList = clus->GetCellsAbsId();
   Float_t pos[3];
@@ -548,8 +553,8 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
   Float_t clEnergy = clus->E();
   
   //Loop on cluster cells
-  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-    
+  for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++)
+  {
     //	printf("Index %d\n",ipos);
     Int_t absId  = indexList[ipos]; 
     
@@ -575,7 +580,8 @@ void AliAnaCalorimeterQA::CellInClusterPositionHistograms(AliVCluster* clus)
       fhDeltaCellClusterRE     ->Fill(r-rcell, clEnergy)  ; 			
       
     }//EMCAL and its matrices are available
-    else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet()){
+    else if(fCalorimeter=="PHOS" && GetCaloUtils()->IsPHOSGeoMatrixSet())
+    {
       TVector3 xyz;
       Int_t relId[4], module;
       Float_t xCell, zCell;
@@ -610,7 +616,7 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
   // Study the shape of the cluster in cell units terms
   
   //No use to study clusters with less than 4 cells
-  if(clus->GetNCells() <=3 ) return;
+  if( clus->GetNCells() <= 3 ) return;
   
   Int_t dIeta = 0;
   Int_t dIphi = 0;
@@ -627,10 +633,12 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
     
     if(dIphi < TMath::Abs(iphi-iphiMax)) dIphi = TMath::Abs(iphi-iphiMax);
     
-    if(smMax==sm){
+    if(smMax==sm)
+    {
       if(dIeta < TMath::Abs(ieta-ietaMax)) dIeta = TMath::Abs(ieta-ietaMax);
     }
-    else {
+    else
+    {
       Int_t ietaShift    = ieta;
       Int_t ietaMaxShift = ietaMax;
       if (ieta > ietaMax)  ietaMaxShift+=48;
@@ -666,7 +674,8 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
     // Origin of  clusters
     Int_t  nLabel = clus->GetNLabels();
     Int_t* labels = clus->GetLabels();
-    if(IsDataMC()){
+    if(IsDataMC())
+    {
       Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabel, GetReader());
       if(   GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
          !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)    && 
@@ -702,7 +711,7 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, Int_t ab
 //__________________________________________________________________________________________________________________
 void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells,
                                             Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
-                                            Double_t tmax,  Double_t timeAverages[2])
+                                            Double_t tmax)
 {
   //Fill CaloCluster related histograms
   
@@ -719,13 +728,13 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   if(fStudyClustersAsymmetry) ClusterAsymmetryHistograms(clus,absIdMax,kTRUE);
   
   //Clusters in event time difference
-  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ ){
-    
+  for(Int_t iclus2 = 0; iclus2 < caloClusters->GetEntriesFast(); iclus2++ )
+  {
     AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
     
-    if(clus->GetID()==clus2->GetID()) continue;
+    if( clus->GetID() == clus2->GetID() ) continue;
     
-    if(clus->GetM02() > 0.01 && clus2->GetM02() > 0.01) 
+    if( clus->GetM02() > 0.01 && clus2->GetM02() > 0.01 )
     {
       Double_t tof2   = clus2->GetTOF()*1.e9;          
       fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-tof2);
@@ -735,12 +744,16 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   Int_t    nModule = GetModuleNumber(clus);
   Int_t    nCaloCellsPerCluster = clus->GetNCells();
   
-  if(nCaloCellsPerCluster > 1){
-    
+  if(nCaloCellsPerCluster > 1)
+  {
     // check time of cells respect to max energy cell
     
     if(fFillAllCellTimeHisto) 
     {
+      // Get some time averages
+      Double_t timeAverages[2] = {0.,0.};
+      CalculateAverageTime(clus, cells, timeAverages);
+
       fhClusterMaxCellDiffAverageTime      ->Fill(clus->E(),tmax-timeAverages[0]);
       fhClusterMaxCellDiffWeightedTime     ->Fill(clus->E(),tmax-timeAverages[1]);
     }
@@ -748,7 +761,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) 
     {
       Int_t absId  = clus->GetCellsAbsId()[ipos];             
-      if(absId == absIdMax || cells->GetCellAmplitude(absIdMax) < 0.01) continue;
+      if( absId == absIdMax || cells->GetCellAmplitude(absIdMax) < 0.01 ) continue;
       
       Float_t frac = cells->GetCellAmplitude(absId)/cells->GetCellAmplitude(absIdMax);            
       fhClusterMaxCellCloseCellRatio->Fill(clus->E(),frac);
@@ -767,7 +780,6 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     }// fill cell-cluster histogram loop
     
   }//check time and energy of cells respect to max energy cell if cluster of more than 1 cell
-  
   
   // Get vertex for photon momentum calculation and event selection
   Double_t v[3] = {0,0,0}; //vertex ;
@@ -788,11 +800,10 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   
   fhE     ->Fill(e);	
   if(nModule >=0 && nModule < fNModules) fhEMod->Fill(e,nModule);
-  if(fFillAllTH12){
-    fhPt     ->Fill(pt);
-    fhPhi    ->Fill(phi);
-    fhEta    ->Fill(eta);
-  }
+  
+  fhPt     ->Fill(pt);
+  fhPhi    ->Fill(phi);
+  fhEta    ->Fill(eta);
   
   if(fFillAllTH3)
     fhEtaPhiE->Fill(eta,phi,e);
@@ -801,8 +812,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
   fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster);
 
   //Position
-  if(fFillAllPosHisto2){
-    
+  if(fFillAllPosHisto2)
+  {
     Float_t pos[3] ;     
     clus->GetPosition(pos);
     
@@ -820,7 +831,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus, const TObjArray *
     fhRNCells->Fill(rxyz  ,nCaloCellsPerCluster);
   }
   
-  if(nModule >=0 && nModule < fNModules) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
+  if( nModule >= 0 && nModule < fNModules ) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
   
 }
 
@@ -850,8 +861,8 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
   
   // Loop over CaloClusters
-  for(Int_t iclus = 0; iclus < nCaloClusters; iclus++){
-    
+  for(Int_t iclus = 0; iclus < nCaloClusters; iclus++)
+  {
     if(GetDebug() > 0) 
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
              iclus+1,nCaloClusters,GetReader()->GetDataType());
@@ -864,7 +875,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     
     //Cut on time of clusters
     Double_t tof = clus->GetTOF()*1.e9;
-    if(tof < fTimeCutMin || tof > fTimeCutMax)
+    if( tof < fTimeCutMin || tof > fTimeCutMax )
     { 
       if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cluster with TOF %f\n",tof);
       continue;
@@ -891,17 +902,12 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // Cluster mathed with track?
     matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
     
-    // Get some time averages
-    Double_t averTime[4] = {0.,0.,0.,0.};
-    CalculateAverageTime(clus, cells, averTime);
-    
     //Get time of max cell
     Double_t tmax  = cells->GetCellTime(absIdMax);
     GetCaloUtils()->RecalibrateCellTime(tmax, fCalorimeter, absIdMax,GetReader()->GetInputEvent()->GetBunchCrossNumber());
     tmax*=1.e9;
     
     // Fill histograms related to single cluster 
-    
     
     // Fill some histograms before applying the exotic cell / bad map cut
     fhNCellsPerClusterNoCut  ->Fill(clus->E(), nCaloCellsPerCluster);
@@ -923,12 +929,12 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     if(!goodCluster) 
     {
       BadClusterHistograms(clus, caloClusters, cells, absIdMax, 
-                           maxCellFraction, eCrossFrac, tmax, averTime); 
+                           maxCellFraction, eCrossFrac, tmax);
       continue;
     }
     
     ClusterHistograms(clus, caloClusters, cells, absIdMax, 
-                      maxCellFraction, eCrossFrac, tmax, averTime);	
+                      maxCellFraction, eCrossFrac, tmax);
     
     nCaloClustersAccepted++;
     nModule = GetModuleNumber(clus);
@@ -959,7 +965,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters,
     // in cluster and remove low energy clusters
     if(fFillAllPi0Histo && nCaloClusters > 1 && nCaloCellsPerCluster > 1 && 
        GetCaloUtils()->GetNumberOfLocalMaxima(clus,cells) == 1 && 
-       clus->GetM02() < 0.5 && clus->E() > 0.3) 
+       clus->GetM02() < 0.5 && clus->E() > 0.5)
       InvariantMassHistograms(iclus, mom, nModule, caloClusters,cells);
     
   }//cluster loop
@@ -1014,11 +1020,11 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     return kFALSE;
   }
   
-  Int_t pdg0  =-1;Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
-  Float_t vxMC= 0; Float_t vyMC = 0;	
-  Float_t eMC = 0; //Float_t ptMC= 0;
-  Float_t phiMC =0; Float_t etaMC = 0;
-  Int_t charge = 0;	
+  Int_t pdg0    =-1; Int_t status = -1; Int_t iMother = -1; Int_t iParent = -1;
+  Float_t vxMC  = 0; Float_t vyMC  = 0;
+  Float_t eMC   = 0; //Float_t ptMC= 0;
+  Float_t phiMC = 0; Float_t etaMC = 0;
+  Int_t charge  = 0;
   
   //Check the origin.
   Int_t tag = GetMCAnalysisUtils()->CheckOrigin(labels,nLabels, GetReader());
@@ -1145,7 +1151,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     vyMC    = aodprimary->Yv();
     iParent = aodprimary->GetMother();
     
-    if(GetDebug() > 1 ) 
+    if( GetDebug() > 1 )
     {
       printf("AliAnaCalorimeterQA::ClusterHistograms() - Cluster most contributing mother: \n");
       printf("\t Mother label %d, pdg %d, Primary? %d, Physical Primary? %d, parent %d \n",
@@ -1153,9 +1159,9 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     }
     
     //Get final particle, no conversion products
-    if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion))
+    if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion) )
     {
-      if(GetDebug() > 1 ) 
+      if( GetDebug() > 1 )
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted cluster!. Find before conversion: \n");
       //Get the parent
       aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iParent);
@@ -1171,30 +1177,29 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
 
         // If gone too back and non stable, assign the decay photon/electron
         // there are other possible decays, ignore them for the moment
-        if(pdg==111 || pdg==221)
+        if( pdg == 111 || pdg == 221 )
         {
           aodprimary = (AliAODMCParticle*)(GetReader()->GetAODMCParticles())->At(iMotherOrg);
           break;
         }        
         
-        if(iParent < 0 ) 
+        if( iParent < 0 )
         {
           iParent = iMother;
           break;
         }
         
-        if(GetDebug() > 1 )
+        if( GetDebug() > 1 )
           printf("\t pdg %d, index %d, Primary? %d, Physical Primary? %d \n",
                  pdg, iMother, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());	
       }	
       
-      if(GetDebug() > 1 ) 
+      if( GetDebug() > 1 )
       {
         printf("AliAnaCalorimeterQA::ClusterHistograms() - Converted Cluster mother before conversion: \n");
         printf("\t Mother label %d, pdg %d, parent %d, Primary? %d, Physical Primary? %d \n",
                iMother, pdg, iParent, aodprimary->IsPrimary(), aodprimary->IsPhysicalPrimary());
       }
-      
     }
     
     //Overlapped pi0 (or eta, there will be very few), get the meson
@@ -1202,6 +1207,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
        GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta))
     {
       if(GetDebug() > 1 ) printf("AliAnaCalorimeterQA::ClusterHistograms() - Overlapped Meson decay!, Find it: PDG %d, mom %d \n",pdg, iMother);
+  
       while(pdg != 111 && pdg != 221)
       {
         iMother    = iParent;
@@ -1210,9 +1216,9 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
         iParent    = aodprimary->GetMother();
         pdg        = TMath::Abs(aodprimary->GetPdgCode());
 
-        if(iParent < 0 ) break;
+        if( iParent < 0 ) break;
         
-        if(GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
+        if( GetDebug() > 1 ) printf("\t pdg %d, index %d\n",pdg, iMother);
         
         if(iMother==-1) 
         {
@@ -1237,7 +1243,7 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
   
   //Float_t vz = primary->Vz();
   Float_t rVMC = TMath::Sqrt(vxMC*vxMC + vyMC*vyMC);
-  if((pdg == 22 || TMath::Abs(pdg)==11) && status!=1) 
+  if( ( pdg == 22 || TMath::Abs(pdg) == 11 ) && status != 1 )
   {
     fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
     fhEMR      ->Fill(e,rVMC);
@@ -1318,8 +1324,8 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(TLorentzVector mom, Bool_t match
     fhHaR        ->Fill(e,rVMC);
   }
   
-  if(primary || aodprimary) return kTRUE ;
-  else                      return kFALSE;
+  if( primary || aodprimary ) return kTRUE ;
+  else                        return kFALSE;
   
 }
 
@@ -1334,14 +1340,11 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
   Float_t eta = mom.Eta();
   Float_t phi = mom.Phi();
   if(phi < 0) phi +=TMath::TwoPi();
-  
-  if(fFillAllTH12)
-  {
-    fhECharged      ->Fill(e);	
-    fhPtCharged     ->Fill(pt);
-    fhPhiCharged    ->Fill(phi);
-    fhEtaCharged    ->Fill(eta);
-  }
+
+  fhECharged   ->Fill(e);
+  fhPtCharged  ->Fill(pt);
+  fhPhiCharged ->Fill(phi);
+  fhEtaCharged ->Fill(eta);
     
   //Study the track and matched cluster if track exists.
     
@@ -1370,7 +1373,6 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
     
     if(track && positive)
     {
-      
       fhTrackMatchedDEtaPos->Fill(e,deta);
       fhTrackMatchedDPhiPos->Fill(e,dphi);
       if(e > 0.5) fhTrackMatchedDEtaDPhiPos->Fill(deta,dphi);
@@ -1427,7 +1429,7 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
     }
   }//DataMC
   
-  if(dR < 0.02 && eOverP > 0.6 && eOverP< 1.2
+  if(dR < 0.02 && eOverP > 0.6 && eOverP < 1.2
      && clus->GetNCells() > 1 && nITS > 3 && nTPC > 20) 
   {
     fh2EledEdx->Fill(tmom,dedx);
@@ -1700,20 +1702,18 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhE->SetXTitle("E (GeV)");
   outputContainer->Add(fhE);
   
-  if(fFillAllTH12)
-  {
-    fhPt  = new TH1F ("hPt","p_{T} reconstructed clusters", nptbins,ptmin,ptmax); 
-    fhPt->SetXTitle("p_{T} (GeV/c)");
-    outputContainer->Add(fhPt);
-    
-    fhPhi  = new TH1F ("hPhi","#phi reconstructed clusters ",nphibins,phimin,phimax); 
-    fhPhi->SetXTitle("#phi (rad)");
-    outputContainer->Add(fhPhi);
-    
-    fhEta  = new TH1F ("hEta","#eta reconstructed clusters ",netabins,etamin,etamax); 
-    fhEta->SetXTitle("#eta ");
-    outputContainer->Add(fhEta);
-  }
+  fhPt  = new TH1F ("hPt","p_{T} reconstructed clusters", nptbins,ptmin,ptmax);
+  fhPt->SetXTitle("p_{T} (GeV/c)");
+  outputContainer->Add(fhPt);
+  
+  fhPhi  = new TH1F ("hPhi","#phi reconstructed clusters ",nphibins,phimin,phimax);
+  fhPhi->SetXTitle("#phi (rad)");
+  outputContainer->Add(fhPhi);
+  
+  fhEta  = new TH1F ("hEta","#eta reconstructed clusters ",netabins,etamin,etamax);
+  fhEta->SetXTitle("#eta ");
+  outputContainer->Add(fhEta);
+  
   
   if(fFillAllTH3)
   {
@@ -2178,25 +2178,24 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhTrackMatchedDPhiPos) ;
     outputContainer->Add(fhTrackMatchedDEtaDPhiPos) ;
     
-    if(fFillAllTH12)
+    fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax);
+    fhECharged->SetXTitle("E (GeV)");
+    outputContainer->Add(fhECharged);
+    
+    fhPtCharged  = new TH1F ("hPtCharged","p_{T} reconstructed clusters, matched with track", nptbins,ptmin,ptmax);
+    fhPtCharged->SetXTitle("p_{T} (GeV/c)");
+    outputContainer->Add(fhPtCharged);
+    
+    fhPhiCharged  = new TH1F ("hPhiCharged","#phi reconstructed clusters, matched with track",nphibins,phimin,phimax);
+    fhPhiCharged->SetXTitle("#phi (rad)");
+    outputContainer->Add(fhPhiCharged);
+    
+    fhEtaCharged  = new TH1F ("hEtaCharged","#eta reconstructed clusters, matched with track",netabins,etamin,etamax);
+    fhEtaCharged->SetXTitle("#eta ");
+    outputContainer->Add(fhEtaCharged);
+    
+    if(fFillAllTH3)
     {
-      fhECharged  = new TH1F ("hECharged","E reconstructed clusters, matched with track", nptbins,ptmin,ptmax);
-      fhECharged->SetXTitle("E (GeV)");
-      outputContainer->Add(fhECharged);
-      
-      fhPtCharged  = new TH1F ("hPtCharged","p_{T} reconstructed clusters, matched with track", nptbins,ptmin,ptmax); 
-      fhPtCharged->SetXTitle("p_{T} (GeV/c)");
-      outputContainer->Add(fhPtCharged);
-      
-      fhPhiCharged  = new TH1F ("hPhiCharged","#phi reconstructed clusters, matched with track",nphibins,phimin,phimax); 
-      fhPhiCharged->SetXTitle("#phi (rad)");
-      outputContainer->Add(fhPhiCharged);
-      
-      fhEtaCharged  = new TH1F ("hEtaCharged","#eta reconstructed clusters, matched with track",netabins,etamin,etamax); 
-      fhEtaCharged->SetXTitle("#eta ");
-      outputContainer->Add(fhEtaCharged);
-    }
-    if(fFillAllTH3){
       fhEtaPhiECharged  = new TH3F ("hEtaPhiECharged","#eta vs #phi, reconstructed clusters, matched with track",
                                     netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
       fhEtaPhiECharged->SetXTitle("#eta ");
@@ -2940,28 +2939,28 @@ Float_t AliAnaCalorimeterQA::GetECross(Int_t absID, AliVCaloCells* cells, Float_
     Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
     Double_t tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
     
-    if(absID1 >0 )
+    if(absID1 > 0 )
     {
       ecell1 = cells->GetCellAmplitude(absID1);
       GetCaloUtils()->RecalibrateCellAmplitude(ecell1, fCalorimeter, absID1);
       tcell1 = cells->GetCellTime(absID1);
       GetCaloUtils()->RecalibrateCellTime     (tcell1, fCalorimeter, absID1,GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
-    if(absID2 >0 )
+    if(absID2 > 0 )
     {
       ecell2 = cells->GetCellAmplitude(absID2);
       GetCaloUtils()->RecalibrateCellAmplitude(ecell2, fCalorimeter, absID2);
       tcell2 = cells->GetCellTime(absID2);
       GetCaloUtils()->RecalibrateCellTime     (tcell2, fCalorimeter, absID2, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
-    if(absID3 >0 )
+    if(absID3 > 0 )
     {
       ecell3 = cells->GetCellAmplitude(absID3);
       GetCaloUtils()->RecalibrateCellAmplitude(ecell3, fCalorimeter, absID3);
       tcell3 = cells->GetCellTime(absID3);
       GetCaloUtils()->RecalibrateCellTime     (tcell3, fCalorimeter, absID3, GetReader()->GetInputEvent()->GetBunchCrossNumber());    
     }
-    if(absID4 >0 )
+    if(absID4 > 0 )
     {
       ecell4 = cells->GetCellAmplitude(absID4);
       GetCaloUtils()->RecalibrateCellAmplitude(ecell4, fCalorimeter, absID4);
@@ -3026,13 +3025,13 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
     AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
 
     Float_t maxCellFraction = 0.;
-    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2,maxCellFraction);
+    Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cells, clus2, maxCellFraction);
     
     // Try to rediuce background with a mild shower shape cut and no more than 1 maxima 
     // in cluster and remove low energy clusters
     if( clus2->GetNCells() <= 1 || !IsGoodCluster(absIdMax,cells) || 
        GetCaloUtils()->GetNumberOfLocalMaxima(clus2,cells) > 1 || 
-       clus2->GetM02() > 0.5 || clus2->E() < 0.3) continue;
+       clus2->GetM02() > 0.5 || clus2->E() < 0.5 ) continue;
     
     //Get cluster kinematics
     clus2->GetMomentum(mom2,v);
@@ -3051,7 +3050,7 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(Int_t iclus,   TLorentzVector 
     fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
 
     //Single module
-    if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+    if(nModule == nModule2 && nModule >= 0 && nModule < fNModules)
       fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
     
     
@@ -3170,7 +3169,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   if(fCalorimeter == "PHOS") cells =  GetPHOSCells();
   else			                 cells =  GetEMCALCells();
   
-  if(!caloClusters || !cells) {
+  if(!caloClusters || !cells)
+  {
     AliFatal(Form("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - No CaloClusters or CaloCells available\n"));
     return; // trick coverity
   }
@@ -3198,8 +3198,8 @@ void AliAnaCalorimeterQA::MCHistograms()
   
   TLorentzVector mom  ;
   
-  if(GetReader()->ReadStack()){
-    
+  if(GetReader()->ReadStack())
+  {
     if(!GetMCStack()) 
       AliFatal("Stack not available, is the MC handler called?\n");
     
@@ -3212,9 +3212,9 @@ void AliAnaCalorimeterQA::MCHistograms()
       primary->Momentum(mom);
       MCHistograms(mom,TMath::Abs(primary->GetPdgCode()));
     } //primary loop
-  }
-  else if(GetReader()->ReadAODMCParticles()){
-    
+  } // ESD
+  else if(GetReader()->ReadAODMCParticles())
+  {
     if(!GetReader()->GetAODMCParticles())
       AliFatal("AODMCParticles not available!");
     
@@ -3228,8 +3228,7 @@ void AliAnaCalorimeterQA::MCHistograms()
       mom.SetPxPyPzE(aodprimary->Px(),aodprimary->Py(),aodprimary->Pz(),aodprimary->E());
       MCHistograms(mom,TMath::Abs(aodprimary->GetPdgCode()));
     } //primary loop
-    
-  }
+  } // AOD
 }
 
 //_______________________________________________________________________________
@@ -3369,18 +3368,19 @@ void AliAnaCalorimeterQA::WeightHistograms(AliVCluster *clus, AliVCaloCells* cel
     Float_t l1org = clus->GetM20();
     Float_t dorg  = clus->GetDispersion();
     
-    for(Int_t iw = 0; iw < 14; iw++){
+    for(Int_t iw = 0; iw < 14; iw++)
+    {
       GetCaloUtils()->GetEMCALRecoUtils()->SetW0(1+iw*0.5); 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
       
       fhLambda0ForW0[iw]->Fill(energy,clus->GetM02());
       //fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
       
-      if(IsDataMC()){  
-        
+      if(IsDataMC())
+      {
         Int_t tag = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(),clus->GetNLabels(), GetReader());
         
-        if(   GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton) && 
+        if( GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)   &&
            !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)      && 
            !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)      &&
            !GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCConversion)        ){

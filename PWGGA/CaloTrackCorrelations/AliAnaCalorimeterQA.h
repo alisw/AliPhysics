@@ -46,8 +46,7 @@ public:
   // Main methods
   
   void         BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters,  AliVCaloCells * cells,
-                                    Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac,
-                                    Double_t tmax,     Double_t timeAverages[2]);
+                                    Int_t absIdMax,    Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
     
   void         CalculateAverageTime(AliVCluster *clus, AliVCaloCells *cells, Double_t timeAverages[2]);
   
@@ -58,8 +57,7 @@ public:
   void         ClusterAsymmetryHistograms(AliVCluster* clus, Int_t absIdMax, const Bool_t goodCluster );
   
   void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                 Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac,
-                                 Double_t tmax, Double_t timeAverages[2]);
+                                 Int_t absIdMax, Double_t maxCellFraction, Float_t eCrossFrac, Double_t tmax);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
@@ -115,9 +113,6 @@ public:
   void SwitchOnFillAllPositionHistogram2()      { fFillAllPosHisto2 = kTRUE  ; }
   void SwitchOffFillAllPositionHistogram2()     { fFillAllPosHisto2 = kFALSE ; }
   
-  void SwitchOnFillAllTH12Histogram()           { fFillAllTH12      = kTRUE  ; }
-  void SwitchOffFillAllTH12Histogram()          { fFillAllTH12      = kFALSE ; }
-  
   void SwitchOnFillAllTH3Histogram()            { fFillAllTH3       = kTRUE  ; }
   void SwitchOffFillAllTH3Histogram()           { fFillAllTH3       = kFALSE ; }
   
@@ -156,7 +151,6 @@ public:
   Bool_t   fFillAllCellTimeHisto;             // Fill all cell time histo
   Bool_t   fFillAllPosHisto;                  // Fill all the position related histograms 
   Bool_t   fFillAllPosHisto2;                 // Fill all the position related histograms 2
-  Bool_t   fFillAllTH12 ;                     // Fill simple histograms which information is already in TH3 histograms
   Bool_t   fFillAllTH3 ;                      // Fill TH3 histograms
   Bool_t   fFillAllTMHisto ;                  // Fill track matching histograms
   Bool_t   fFillAllPi0Histo ;                 // Fill invariant mass histograms
@@ -426,7 +420,7 @@ public:
   AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
   AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,27)
+  ClassDef(AliAnaCalorimeterQA,28)
 } ;
 
 
