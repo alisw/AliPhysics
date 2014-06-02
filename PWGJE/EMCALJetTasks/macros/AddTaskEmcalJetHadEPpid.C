@@ -17,7 +17,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    Bool_t	PID               = 0, //kFALSE,
    Bool_t   PIDtrackBIAS      = 0, //kFALSE,
    Bool_t   varbinTHnSparse   = 0, //kFALSE,
-   Bool_t   isAOD             = 0, //kFALSE,
+   Bool_t   allpidAXIS		  = 0, //kFALSE,
    Bool_t   QAhistos		  = 0, //kFALSE,
    Bool_t   BIAShistos        = 0, //kFALSE,
    Bool_t   extraCORRhistos   = 0, //kFALSE,
@@ -48,7 +48,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
     ::Error("AddTaskEmcalJetHadEPpid", "This task requires an input event handler");
     return NULL;
   }
-  
+
   //-------------------------------------------------------
   // Init the task and do settings
   //-------------------------------------------------------
@@ -70,7 +70,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetdoPID(PID);
   correlationtask->SetdoPIDtrackBIAS(PIDtrackBIAS);
   correlationtask->SetvarbinTHnSparse(varbinTHnSparse);
-  correlationtask->SetDataType(isAOD);
+  correlationtask->SetallpidAXIS(allpidAXIS);
   correlationtask->SetmakeQAhistos(QAhistos);
   correlationtask->SetmakeBIAShistos(BIAShistos);  
   correlationtask->SetmakeextraCORRhistos(extraCORRhistos);

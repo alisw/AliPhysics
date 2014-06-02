@@ -77,7 +77,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
   doComments(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
@@ -177,7 +177,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   fDoEventMixing(0), fMixingTracks(50000),
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
-  useAOD(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
+  allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
   doComments(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
@@ -592,13 +592,13 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
   } // end of do-eventmixing
 
   // variable binned pt
-  Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
+  //Double_t xlowjetPT[] = {-50,-45,-40,-35,-30,-25,-20,-18,-16,-14,-12,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,12,14,16,18,20,25,30,35,40,45,50,60,70,80,90,100,120,140,160,180,200,250,300,350,400};
   Double_t xlowtrPT[] = {0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95,1,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.25,2.50,2.75,3.0,3.25,3.5,3.75,4.0,4.25,4.50,4.75,5.0,5.5,6.0,6.5,7.0,7.5,8.0,8.5,9.0,9.5,10.0,11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,20.0,22.0,24.0,26.0,28.0,30.0,35.0,40.0,45.0,50.0,60.0,70.0,80.0,90.0,100.0};
 
   // number of bins you tell histogram should be (# in array - 1) because the last bin
   // is the right-most edge of the histogram 
   // i.e. this is for PT and there are 57 numbers (bins) thus we have 56 bins in our histo
-  Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
+  //Int_t nbinsjetPT = sizeof(xlowjetPT)/sizeof(Double_t) - 1;
   Int_t nbinstrPT = sizeof(xlowtrPT)/sizeof(Double_t) - 1;
 
   // set up PID sparse
@@ -625,14 +625,20 @@ void AliAnalysisTaskEmcalJetHadEPpid::UserCreateOutputObjects()
     SetfHistPIDcounterLabels(fHistPID);
     fOutput->Add(fHistPID);
 
-    bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
+    if(allpidAXIS) {
+      bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
               1<<10 | 1<<11 | 1<<12 | 1<<13 | 1<<14 | 1<<15 | 1<<16 | 1<<17 | 1<<18 | 1<<19 |
-              1<<20 | 1<<21 | 1<<22;
-    fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+              1<<20;
+      fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+    } else {
+	  bitcode = 1<<0 | 1<<1 | 1<<2 | 1<<3 | 1<<4 | 1<<5 | 1<<6 | 1<<7 | 1<<8 | 1<<9 |
+              1<<10 | 1<<11 | 1<<12 | 1<<13;
+      fhnPID = NewTHnSparseDPID("fhnPID", bitcode);
+	}
 
     if(dovarbinTHnSparse){
-     fhnPID->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
-     fhnPID->GetAxis(2)->Set(nbinstrPT, xlowtrPT);
+     //fhnPID->GetAxis(1)->Set(nbinsjetPT, xlowjetPT);
+     fhnPID->GetAxis(1)->Set(nbinstrPT, xlowtrPT);
     }
 
     fOutput->Add(fhnPID);
@@ -691,6 +697,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
   }
 
   // what kind of event do we have: AOD or ESD?
+  Bool_t useAOD; 
+  if (dynamic_cast<AliAODEvent*>(InputEvent())) useAOD = kTRUE;
+  else useAOD = kFALSE;
+
   // if we have ESD event, set up ESD object
   if(!useAOD){
     fESD = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -853,7 +863,7 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      if (ijet==ijethi) leadjet=1;
 
      // check on leading hadron pt
-     leadhadronPT = GetLeadingHadronPt(jet);
+     if (ijet==ijethi) leadhadronPT = GetLeadingHadronPt(jet);
 
      // initialize and calculate various parameters: pt, eta, phi, rho, etc...
      Double_t jetphi = jet->Phi();      // phi of jet
@@ -862,10 +872,10 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
      Double_t jeteta = jet->Eta();     // ETA of jet
      Double_t jetPt = -500; 
      Double_t jetPtGlobal = -500; 
-     Double_t jetPtLocal = -500;            // initialize corr jet pt
+     //Double_t jetPtLocal = -500;            // initialize corr jet pt
      jetPt = jet->Pt();
      jetPtGlobal = jet->Pt()-jet->Area()*fRhoVal;  // corrected pT of jet from rho value
-     jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
+     //jetPtLocal = jet->Pt()-jet->Area()*fLocalRhoVal; // corrected pT of jet using Rho modulated for V2 and V3
      Double_t dEP = -500;                    // initialize angle between jet and event plane
      dEP = RelativeEPJET(jetphi,fEPV0); // angle betweeen jet and event plane
 
@@ -915,7 +925,8 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
     }
 
     // cut on HIGHEST jet pt in event (15 GeV default)
-    if (highestjetpt>fJetPtcut) {
+    //if (highestjetpt>fJetPtcut) {
+    if (jet->Pt() > fJetPtcut) {
 
       // does our max track or cluster pass the bias?
       if ((jet->MaxTrackPt()>fTrkBias) || (jet->MaxClusterPt()>fClusBias)){
@@ -999,7 +1010,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         }
 
         // some variables for PID
-   	    Double_t eta = -999; 
         Double_t pt = -999; 
         Double_t dEdx = -999;
         Double_t ITSsig = -999;
@@ -1014,7 +1024,6 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
         if(doPID){
           // get parameters of track
           charge = track->Charge();    // charge of track
-          eta    = track->Eta();       // ETA of track
           pt     = track->Pt();        // pT of track
 
           // extra attempt 
@@ -1166,13 +1175,24 @@ Bool_t AliAnalysisTaskEmcalJetHadEPpid::Run()
  	      fHistPID->Fill(nPID);
 
           // PID sparse getting filled 
-          Double_t pid_Entries[23] = {fCent,jetPtLocal,pt,charge,eta,deta,dphijh,leadjet,zVtx,dEP,jetPt,
-                                      nSigmaPion_TPC, nSigmaProton_TPC, nSigmaKaon_TPC,  //nSig in TPC
-                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  //nSig in ITS
-                                      nSigmaPion_TOF, nSigmaProton_TOF, nSigmaKaon_TOF,  //nSig in TOF
-				      				  nPIDtpc, nPIDits, nPIDtof                          //PID label for each detector
+          if (allpidAXIS) { // FILL ALL axis
+			Double_t pid_EntriesALL[21] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  				      				  nPIDtpc, nPIDits, nPIDtof,       // PID label for each detector
+ 									  nSigmaProton_TPC, nSigmaKaon_TPC,  // nSig in TPC
+                                      nSigmaPion_ITS, nSigmaProton_ITS, nSigmaKaon_ITS,  // nSig in ITS
+                                      nSigmaProton_TOF, nSigmaKaon_TOF,  // nSig in TOF
+                                      }; //array for PID sparse     
+		    fhnPID->Fill(pid_EntriesALL);
+		  } else {
+            // PID sparse getting filled 
+            Double_t pid_Entries[14] = {fCent,pt,charge,deta,dphijh,leadjet,zVtx,dEP,jetPt,
+                                      nSigmaPion_TPC, nSigmaPion_TOF, // pion nSig values in TPC/TOF
+  				      				  nPIDtpc, nPIDits, nPIDtof       // PID label for each detector
                                       }; //array for PID sparse                           
-          fhnPID->Fill(pid_Entries);   // fill Sparse histo of PID tracks 
+            fhnPID->Fill(pid_Entries);   // fill Sparse histo of PID tracks 
+		  } // minimal pid sparse filling
+
        	} // end of doPID check
 
   	    // get track pt bin
@@ -1678,157 +1698,143 @@ void AliAnalysisTaskEmcalJetHadEPpid::GetDimParamsPID(Int_t iEntry, TString &lab
       break;
 
    case 1:
-      label = "Corrected Jet p_{T}";
-      nbins = 216; 
-      xmin = -50.;
-      xmax = 166.;
-      break;
-
-   case 2:
       label = "Track p_{T}";
       nbins = 750; 
       xmin = 0.;
       xmax = 75.; 
       break;
 
-   case 3:
+   case 2:
       label = "Charge of Track";
       nbins = 3;
       xmin = -1.5;
       xmax = 1.5;
       break;
 
-   case 4:
-      label = "Track Eta";
-      nbins = 48;
-      xmin = -1.2;
-      xmax = 1.2;
-      break;
-
-   case 5:
+   case 3:
       label = "Relative Eta of Track and Jet";
       nbins = 48;
       xmin = -1.6;
       xmax = 1.6;
       break;
 
-   case 6:
+   case 4:
       label = "Relative Phi of Track and Jet";
       nbins = 72;
       xmin = -0.5*pi;
       xmax = 1.5*pi;
       break;
 
-   case 7:
+   case 5:
       label = "leading jet";
       nbins = 3;
       xmin = -.5;
       xmax = 2.5;
       break;
 
-   case 8:
+   case 6:
       label = "Z-vertex";
       nbins = 10;
       xmin = -10.;
       xmax = 10.;
       break;
 
-   case 9: 
+   case 7: 
       label = "Relative angle: Jet and Reaction Plane";
       nbins = 48;
       xmin = 0.;
       xmax = 0.5*pi;
       break;
 
-   case 10: 
-      label = "Jet Pt";
+   case 8: 
+      label = "Jet p_{T}";
       nbins = 216; 
       xmin = 0.;
       xmax = 216.;
       break;
 
-   case 11:
+   case 9:
       label = "N-Sigma of pions in TPC";
       nbins = 200;
       xmin = -10.0;
       xmax = 10.0; 
       break;
 
-   case 12:
-      label = "N-Sigma of protons in TPC";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 13:
-      label = "N-Sigma of kaons in TPC";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 14:
-      label = "N-Sigma of pions in ITS";
-      nbins = 200;
-      xmin = -10.0;
-      xmax = 10.0; 
-      break;
-
-   case 15:
-      label = "N-Sigma of protons in ITS";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 16:
-      label = "N-Sigma of kaons in ITS";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 17:
+   case 10:
       label = "N-Sigma of pions in TOF";
       nbins = 200;
       xmin = -10.;
       xmax = 10.; 
       break;
 
-   case 18:
-      label = "N-Sigma of protons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 19:
-      label = "N-Sigma of kaons in TOF";
-      nbins = 200;
-      xmin = -10.;
-      xmax = 10.;
-      break;
-
-   case 20:
+   case 11:
       label = "TPC PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
       break;
 
-   case 21:
+   case 12:
       label = "ITS PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
       break;
 
-   case 22:
+   case 13:
       label = "TOF PID determination";
       nbins = 5;
       xmin = 0.;
       xmax = 5.;
+      break;
+
+   case 14:
+      label = "N-Sigma of protons in TPC";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 15:
+      label = "N-Sigma of kaons in TPC";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 16:
+      label = "N-Sigma of pions in ITS";
+      nbins = 200;
+      xmin = -10.0;
+      xmax = 10.0; 
+      break;
+
+   case 17:
+      label = "N-Sigma of protons in ITS";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 18:
+      label = "N-Sigma of kaons in ITS";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 19:
+      label = "N-Sigma of protons in TOF";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
+      break;
+
+   case 20:
+      label = "N-Sigma of kaons in TOF";
+      nbins = 200;
+      xmin = -10.;
+      xmax = 10.;
       break;
 
    } // end of switch
