@@ -165,7 +165,7 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   if(alimult) ntrklets = alimult->GetNumberOfTracklets();
   
   const char* beamType = esdE->GetBeamType();
-  Printf("beam type = %s", beamType);
+  // Printf("beam type = %s", beamType);
 
   Bool_t kLowFlux = kTRUE, kHighFlux = kFALSE;
   // TString pp= "p-p";
@@ -175,7 +175,7 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   if (beamType == AA){ 
     kHighFlux = kTRUE;
     kLowFlux = kFALSE;
-    Printf ("high flux setting");
+    // Printf ("high flux setting");
     }
   
   AliCDBManager* man = AliCDBManager::Instance();
@@ -183,15 +183,15 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   Int_t runNb = esdE->GetRunNumber();
   if (runNb > 0) {
     man->SetRun(runNb);
-    Printf("runNb = %d", runNb);
+    // Printf("runNb = %d", runNb);
   }
   
   AliCDBEntry *entry = (AliCDBEntry*)man->Get("GRP/Calib/RecoParam/");
-  Printf("entry = %p", entry);
+  // Printf("entry = %p", entry);
   TObjArray *arrayRecoParam=0x0;
   if (entry) {
     arrayRecoParam = (TObjArray*)entry->GetObject();
-    Printf("arrayRecoParam = %p", arrayRecoParam);
+    // Printf("arrayRecoParam = %p", arrayRecoParam);
   }
   else { 
     Printf("CDBEntry not found");
@@ -217,7 +217,7 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
 
   //track vertex recomputed from the vertexer
   AliESDVertex *trkv = vertexer->FindPrimaryVertex(esdE);
-  Printf ("trkv = %p", trkv); 
+  
   //const AliESDVertex *trkv = esdE->GetPrimaryVertexTracks();
   
   //SPD vertex taken from the ESD 
