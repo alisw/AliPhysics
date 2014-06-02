@@ -169,6 +169,7 @@ public:
   //Cuts
   Double_t fTimeCutMin  ;                     // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                     // Remove clusters/cells with time larger than this value, in ns
+  Float_t  fCellAmpMin;                       // amplitude Threshold on calorimeter cells, set at execution time
   Float_t  fEMCALCellAmpMin;                  // amplitude Threshold on emcal cells
   Float_t  fPHOSCellAmpMin ;                  // amplitude Threshold on phos cells
   
@@ -274,6 +275,7 @@ public:
 	
   //Calo Cells
   TH1F *   fhNCells;                          //! Number of towers/crystals with signal
+  TH1F *   fhNCellsCutAmpMin;                 //! Number of towers/crystals with signal, with min amplitude
   TH1F *   fhAmplitude;                       //! Amplitude measured in towers/crystals
   TH2F *   fhAmpId;                           //! Amplitude measured in towers/crystals vs id of tower.	
   TH3F *   fhEtaPhiAmp;                       //! eta vs phi vs amplitude, cells
@@ -346,6 +348,11 @@ public:
   TH2F *   fhLambda0ForW0MC[14][5];            //! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
   //TH2F * fhLambda1ForW0MC[7][5];              //! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
   
+  TH2F *   fhECellTotalRatio;                 //! e cell / e total vs e total
+  TH2F *   fhECellTotalLogRatio;              //! log (e cell / e total)  vs e total
+  TH2F **  fhECellTotalRatioMod;              //! e cell / e total vs e total, per SM
+  TH2F **  fhECellTotalLogRatioMod;           //! log (e cell / e total)  vs e total, per SM
+
   // Exotic studies
   
   TH2F *   fhExoNCell  [10][5] ;               //! Number of cells per cluster for different cuts
