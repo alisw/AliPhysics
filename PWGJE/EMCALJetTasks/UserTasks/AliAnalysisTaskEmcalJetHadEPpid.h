@@ -190,11 +190,11 @@ protected:
   AliESDEvent       *fESD;          // ESD object
   AliAODEvent	    *fAOD;		  // AOD object
 
-  TH2F                  *fHistTPCdEdX;
-  TH2F	                *fHistITSsignal;
-//  TH2F		    *fHistTOFsignal;
+  TH2F                  *fHistTPCdEdX;//!
+  TH2F	                *fHistITSsignal;//!
+//  TH2F		    *fHistTOFsignal;//!
 
-  TH2F                  *fHistRhovsCent; //!
+  TH2F                  *fHistRhovsCent;//!
   TH2F                  *fHistNjetvsCent;//! number of jets versus Centrality
   TH2F                  *fHistJetPtvsTrackPt[6];//!
   TH2F                  *fHistRawJetPtvsTrackPt[6];//!
@@ -206,66 +206,66 @@ protected:
   TH1F					*fHistJetPtcorrGlRho[6];//!
   TH2F                  *fHistJetPtvsdEP[6];//!
   TH2F                  *fHistJetPtvsdEPBias[6];//!
-  TH2F                  *fHistRhovsdEP[6]; //!
+  TH2F                  *fHistRhovsdEP[6];//!
   TH3F                  *fHistJetEtaPhiPt[6];//!
   TH3F                  *fHistJetEtaPhiPtBias[6];//!
   TH2F                  *fHistJetPtArea[6];//!
   TH2F                  *fHistJetPtAreaBias[6];//!
-  TH2F                  *fHistJetPtNcon[6]; //!
-  TH2F                  *fHistJetPtNconBias[6]; //!
-  TH2F                  *fHistJetPtNconCh[6]; //!
-  TH2F                  *fHistJetPtNconBiasCh[6]; //!
-  TH2F                  *fHistJetPtNconEm[6]; //!
-  TH2F                  *fHistJetPtNconBiasEm[6]; //!
-  TH1F		            *fHistJetHaddPhiINcent[6];
-  TH1F			        *fHistJetHaddPhiOUTcent[6];
-  TH1F			        *fHistJetHaddPhiMIDcent[6];
+  TH2F                  *fHistJetPtNcon[6];//!
+  TH2F                  *fHistJetPtNconBias[6];//!
+  TH2F                  *fHistJetPtNconCh[6];//!
+  TH2F                  *fHistJetPtNconBiasCh[6];//!
+  TH2F                  *fHistJetPtNconEm[6];//!
+  TH2F                  *fHistJetPtNconBiasEm[6];//!
+  TH1F		            *fHistJetHaddPhiINcent[6];//!
+  TH1F			        *fHistJetHaddPhiOUTcent[6];//!
+  TH1F			        *fHistJetHaddPhiMIDcent[6];//!
 
-  TH1                   *fHistCentrality;
-  TH1                   *fHistZvtx;
-  TH1                   *fHistMult;
-  TH1		        	*fHistJetPhi;
-  TH1		            *fHistTrackPhi;
-  TH1		            *fHistJetHaddPhiIN;
-  TH1			        *fHistJetHaddPhiOUT;
-  TH1			        *fHistJetHaddPhiMID;
-  TH1					*fHistJetHaddPhiBias;
-  TH1					*fHistJetHaddPhiINBias;
-  TH1					*fHistJetHaddPhiOUTBias;
-  TH1					*fHistJetHaddPhiMIDBias;
+  TH1                   *fHistCentrality;//!
+  TH1                   *fHistZvtx;//!
+  TH1                   *fHistMult;//!
+  TH1		        	*fHistJetPhi;//!
+  TH1		            *fHistTrackPhi;//!
+  TH1		            *fHistJetHaddPhiIN;//!
+  TH1			        *fHistJetHaddPhiOUT;//!
+  TH1			        *fHistJetHaddPhiMID;//!
+  TH1					*fHistJetHaddPhiBias;//!
+  TH1					*fHistJetHaddPhiINBias;//!
+  TH1					*fHistJetHaddPhiOUTBias;//!
+  TH1					*fHistJetHaddPhiMIDBias;//!
 
-  TH1                   *fHistMEdPHI; // phi distrubtion of mixed events
-  TH1					*fHistTrackPtallcent;
+  TH1                   *fHistMEdPHI;//! // phi distrubtion of mixed events
+  TH1					*fHistTrackPtallcent;//!
 
-  TH2                   *fHistJetEtaPhi;  
-  TH2                   *fHistTrackEtaPhi[4][7];
-  TH1		        	*fHistJetHadbindPhi[9]; 
-  TH1					*fHistJetHadbindPhiIN[9]; 
-  TH1					*fHistJetHadbindPhiMID[9]; 
-  TH1		       		*fHistJetHadbindPhiOUT[9]; 
-  TH2                   *fHistJetHEtaPhi;
+  TH2                   *fHistJetEtaPhi;//!  
+  TH2                   *fHistTrackEtaPhi[4][7];//!
+  TH1		        	*fHistJetHadbindPhi[9];//! 
+  TH1					*fHistJetHadbindPhiIN[9];//! 
+  TH1					*fHistJetHadbindPhiMID[9];//! 
+  TH1		       		*fHistJetHadbindPhiOUT[9];//! 
+  TH2                   *fHistJetHEtaPhi;//!
 
-  TH1                   *fHistJetPt[6];
-  TH1                   *fHistJetPtBias[6];
-  TH1                   *fHistJetPtTT[6];
-  TH2                   *fHistAreavsRawPt[6];
-  TH2                   *fHistJetH[6][5][3];
-  TH2                   *fHistJetHBias[6][5][3];
-  TH2                   *fHistJetHTT[6][5][3];
-  TH1F					*fHistJetHdPHI[11];
-  TH2F					*fHistJetHdETAdPHI[11];
-  TH2F                  *fHistSEphieta; // single events phi-eta distributions
-  TH2F                  *fHistMEphieta; // mixed events phi-eta distributions
-  TH1F					*fHistJetHaddPHI;
+  TH1                   *fHistJetPt[6];//!
+  TH1                   *fHistJetPtBias[6];//!
+  TH1                   *fHistJetPtTT[6];//!
+  TH2                   *fHistAreavsRawPt[6];//!
+  TH2                   *fHistJetH[6][5][3];//!
+  TH2                   *fHistJetHBias[6][5][3];//!
+  TH2                   *fHistJetHTT[6][5][3];//!
+  TH1F					*fHistJetHdPHI[11];//!
+  TH2F					*fHistJetHdETAdPHI[11];//!
+  TH2F                  *fHistSEphieta;//! // single events phi-eta distributions
+  TH2F                  *fHistMEphieta;//! // mixed events phi-eta distributions
+  TH1F					*fHistJetHaddPHI;//!
 
   // PID status histo's
-  TH1					*fHistPID;
+  TH1					*fHistPID;//!
 
   // THn Sparse's
-  THnSparse             *fhnPID;          // PID sparse
-  THnSparse             *fhnMixedEvents;  // mixed events matrix
-  THnSparse             *fhnJH;           // jet hadron events matrix
-  THnSparse				*fhnCorr;		  // sparse to get # jet triggers
+  THnSparse             *fhnPID;//!          // PID sparse
+  THnSparse             *fhnMixedEvents;//!  // mixed events matrix
+  THnSparse             *fhnJH;//!           // jet hadron events matrix
+  THnSparse				*fhnCorr;//!		  // sparse to get # jet triggers
 
   // container objects
   AliJetContainer            *fJetsCont;                   //!Jets
