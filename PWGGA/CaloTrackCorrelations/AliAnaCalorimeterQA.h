@@ -93,7 +93,10 @@ public:
   
   Float_t      GetPHOSCellAmpMin()       const  { return fPHOSCellAmpMin     ; }
   void         SetPHOSCellAmpMin (Float_t amp)  { fPHOSCellAmpMin  = amp     ; }
-    
+  
+  Float_t      GetInvMassMinECut()       const  { return fMinInvMassECut     ; }
+  void         SetInvMassMinECut(Float_t cut)   { fMinInvMassECut = cut      ; }
+
   TString      GetCalorimeter()          const  { return fCalorimeter        ; }
   void         SetCalorimeter(TString calo)     { fCalorimeter = calo        ; }
   
@@ -172,6 +175,8 @@ public:
   Float_t  fCellAmpMin;                       // amplitude Threshold on calorimeter cells, set at execution time
   Float_t  fEMCALCellAmpMin;                  // amplitude Threshold on emcal cells
   Float_t  fPHOSCellAmpMin ;                  // amplitude Threshold on phos cells
+  
+  Float_t  fMinInvMassECut;                   // Minimum energy cut value for clusters entering the invariant mass calculation
   
   // Exotic studies
   Float_t  fExoNECrossCuts   ;                // Number of ecross cuts
