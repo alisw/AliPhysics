@@ -34,6 +34,8 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   void     SetUseOuterDetectors(Bool_t flag)  { fUseOuterDetectors=flag;}
   void     SetMaxChi2TPCTRD(Double_t maxChi2){fMaxChi2TPCTRD=maxChi2;}
   Double_t GetMaxChi2TPCTRD() const {return fMaxChi2TPCTRD;}
+  void     SetMaxChi2TPCITS(Double_t maxChi2){fMaxChi2TPCITS=maxChi2;}
+  Double_t GetMaxChi2TPCITS() const {return fMaxChi2TPCITS;}
   Double_t GetCutSharedClusters(Int_t index)const { return fCutSharedClusters[index];}
   void  SetCutSharedClusters(Int_t index, Float_t value){ fCutSharedClusters[index]=value;}
   Int_t GetClusterMaxRange(Int_t index)const { return fClusterMaxRange[index];}
@@ -156,6 +158,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   Double_t fMaxSnpTrack;     // max sin of local angle  - for track 
   Bool_t   fUseOuterDetectors; // switch - to use the outer detectors
   Double_t fMaxChi2TPCTRD;     // maximal allowed chi2 between the TRD in and TPC out to be accepted for refit
+  Double_t fMaxChi2TPCITS;     // maximal allowed chi2 between the ITS in and TPC out to be accepted for backpropagation
   //
   //
   Double_t fCutSharedClusters[2]; // cut value - maximal amount  of shared clusters  
@@ -227,7 +230,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 18)
+  ClassDef(AliTPCRecoParam, 19)
 };
 
 
