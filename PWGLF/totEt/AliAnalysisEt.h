@@ -147,11 +147,11 @@ protected:
     // Reconstruction efficiency corrections
     AliAnalysisEtRecEffCorrection *fReCorrections;
     
-    TTree *fEventSummaryTree; // Contains event level information
+    TTree *fEventSummaryTree; //! Contains event level information
 
-    TTree *fAcceptedTree; // Tree for information about accepted particles
+    TTree *fAcceptedTree; //! Tree for information about accepted particles
     
-    TTree *fDepositTree; // optional TTree for energy deposit measurements
+    TTree *fDepositTree; //! optional TTree for energy deposit measurements
     
     Double_t fTotEt;/** Total Et in the event (without acceptance cuts) */
 
@@ -283,14 +283,14 @@ protected:
     // Declare the histograms
 
     /** The EM Et spectrum measured */
-    TH1F *fHistEt; //Et spectrum
+    TH1F *fHistEt; //!Et spectrum
 
     /** Multiplicity of neutral particles in the events */
-    TH1F *fHistNeutralMult; //Multiplicity
+    TH1F *fHistNeutralMult; //!Multiplicity
 
     // Acceptance plots 
-    TH2F *fHistPhivsPtPos; //phi vs pT plot for positive tracks
-    TH2F *fHistPhivsPtNeg; //phi vs pT plot for negative tracks
+    TH2F *fHistPhivsPtPos; //!phi vs pT plot for positive tracks
+    TH2F *fHistPhivsPtNeg; //!phi vs pT plot for negative tracks
 
     /* Auxiliary Histogram variables */
     static Float_t fgEtaAxis[17];//bins for eta axis of histograms
@@ -303,15 +303,15 @@ protected:
     static Int_t fgNumOfRBins;//number of R bins
 
     /** Centrality object */
-    AliCentrality *fCentrality; //Centrality object
+    AliCentrality *fCentrality; //!Centrality object
 
     Bool_t fMakeSparse;//Boolean for whether or not to make sparse histograms
 
-    TH1I *fCutFlow; // Cut flow
+    TH1I *fCutFlow; //! Cut flow
     
-    AliAnalysisEtSelector *fSelector; // Selector class
+    AliAnalysisEtSelector *fSelector; //! Selector class
 
-    AliPIDResponse *fPIDResponse;
+    AliPIDResponse *fPIDResponse;//!
 
     Float_t fsub;
     
