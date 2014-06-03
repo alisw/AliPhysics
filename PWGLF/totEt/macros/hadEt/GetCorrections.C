@@ -106,8 +106,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionEMCAL->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.013));
-     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.013));
+     hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.014));
+     hadCorrectionEMCAL->SetNeutralCorrectionHighBound(neutralCorr*(1.0+0.014));
    }
    else{
      hadCorrectionEMCAL->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049));
@@ -124,7 +124,6 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
      hadCorrectionEMCAL->SetNotHadronicCorrectionLowBound(hadronicCorr*(1.0-0.023));
      hadCorrectionEMCAL->SetNotHadronicCorrectionHighBound(hadronicCorr*(1.0+0.023));
    }
-
    float ptcutITS = CorrPtCut(0.1,prodname,shortprodname,ispp,forSim);
    hadCorrectionEMCAL->SetpTCutCorrectionITS(ptcutITS);
    float ptcutTPC = CorrPtCut(0.15,prodname,shortprodname,ispp,forSim);
@@ -332,8 +331,8 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
    hadCorrectionPHOS->SetNeutralCorrection(neutralCorr);
    //Using error from data, see analysis note for details
    if(ispp){
-     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.013));
-     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.013));
+     hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-.014));
+     hadCorrectionPHOS->SetNeutralCorrectionHighBound(neutralCorr*(1.0+.014));
    }
    else{
      hadCorrectionPHOS->SetNeutralCorrectionLowBound(neutralCorr*(1.0-0.049));
@@ -526,14 +525,14 @@ void GetCorrections(char *prodname = "Enter Production Name", char *shortprodnam
 Float_t CorrNeutral(float ptcut, char *prodname, char *shortprodname, bool ispp, bool forSim, bool TPC, bool hadronic, float etacut, int dataset){
   if(!forSim){//for data we have evaluated the neutral correction from ALICE data
     if(hadronic){//for tot et from had et
-      return 0.581;
+      return 1/0.5665;//0.5665 0.0145 <-- Correct - what should be applied
     }
     else{//for had et only
       if(dataset==2009){
 	return 1.0/0.7571;
       }
       else{
-	return 1.0/0.755;
+	return 1.0/0.751;
       }
     }
   }
@@ -823,7 +822,6 @@ TH1D *GetHistoCorrPtCut(float ptcut, char *name, bool ispp, bool forSim, int myc
   int nbins = allhad->GetXaxis()->GetNbins();
   //cout<<"Projecting from "<<allhad->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<allhad->GetXaxis()->GetBinLowEdge(highbin+1)<<endl;
   //cout<<"Projecting from "<<allhad->GetXaxis()->GetBinLowEdge(lowbin)<<" to "<<allhad->GetXaxis()->GetBinLowEdge(nbins)<<endl;
-
   //allhad->Sumw2();
   TH1D *numerator;
   TH1D *denominator;
@@ -831,12 +829,12 @@ TH1D *GetHistoCorrPtCut(float ptcut, char *name, bool ispp, bool forSim, int myc
   case -1:
     numerator = ptlow->ProjectionY("nameLow",lowbin,highbin);
     denominator = allhad->ProjectionY("denominatorLow",highbin,nbins);
-    denominator->Add(ptlow);
+    denominator->Add(numerator);
     break;
   case 1:
     numerator = pthigh->ProjectionY("nameHigh",lowbin,highbin);
     denominator = allhad->ProjectionY("denominatorHigh",highbin,nbins);
-    denominator->Add(pthigh);
+    denominator->Add(numerator);
     break;
   default:
     numerator = allhad->ProjectionY("name",lowbin,highbin);
