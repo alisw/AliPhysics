@@ -111,7 +111,7 @@ ClassImp(AliMuonAccEffSubmitter)
 
 //______________________________________________________________________________
 AliMuonAccEffSubmitter::AliMuonAccEffSubmitter(const char* generator, Bool_t localOnly,
-                                               int pythia8version)
+                                               const char* generatorVersion)
 : AliMuonGridSubmitter(AliMuonGridSubmitter::kAccEff,localOnly),
 fRatio(-1.0),
 fFixedNofEvents(10000),
@@ -126,12 +126,16 @@ fUseAODMerging(kFALSE)
 {
   // ctor
   //
-  // if generator contains "pythia8" and pythia8version is given then
-  // the pythia8version must represent the integer part XXX of the
+  // if generator contains "pythia8" and generatorVersion is given then
+  // the pythiaversion must represent the integer part XXX of the
   // include directory $ALICE_ROOT/PYTHI8/pythiaXXX/include where the file
   // Analysis.h is to be found.
+  //
+  // if generator contains "pythia6" then generatorVersion should be the
+  // X.YY part of libpythia6.X.YY.so
+  //
   
-  AddIncludePath("-I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PWG/muon -I$ALICE_ROOT/PWG/muondep -I$ALICE_ROOT/MUON -I$ALICE_ROOT/include -I$ALICE_ROOT/EVGEN");
+  AddIncludePath("-I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PWG/muon -I$ALICE_ROOT/PWG/muondep -I$ALICE_ROOT/MUON -I$ALICE_ROOT/include -I$ALICE_ROOT/EVGEN -I$ALICE_ROOT/FASTSIM");
   
   TString ocdbPath("raw://");
   
@@ -179,6 +183,7 @@ fUseAODMerging(kFALSE)
   SetVar("VAR_GENPARAMCUSTOMSINGLE_Y_P3","0.0130173");
 
   SetVar("VAR_PYTHIA8_CMS_ENERGY","8000");
+  SetVar("VAR_PYTHIA6_CMS_ENERGY","8000");
   
   SetVar("VAR_PURELY_LOCAL",Form("%d",localOnly));
   
@@ -192,6 +197,14 @@ fUseAODMerging(kFALSE)
 
   gSystem->Load("libEVGEN");
 
+  SetVar("VAR_TRIGGER_CONFIGURATION","");
+  
+  SetVar("VAR_PYTHIA8_INCLUDES","");
+  SetVar("VAR_PYTHIA8_SETENV","");
+
+  SetVar("VAR_PYTHIA6_INCLUDES","");
+  SetVar("VAR_PYTHIA6_SETENV","");
+  
   if ( TString(generator).Contains("pythia8",TString::kIgnoreCase) )
   {
     fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia8 (and ITS+MUON...)
@@ -201,20 +214,20 @@ fUseAODMerging(kFALSE)
     
     SetVar("VAR_USE_ITS_RECO","1");
 
-    if (gSystem->AccessPathName(gSystem->ExpandPathName(Form("$ALICE_ROOT/PYTHIA8/pythia%d",pythia8version))))
+    if (gSystem->AccessPathName(gSystem->ExpandPathName(Form("$ALICE_ROOT/PYTHIA8/pythia%s",generatorVersion))))
     {
-      AliError(Form("Directory -I$ALICE_ROOT/PYTHIA8/pythia%d/include not found",pythia8version));
+      AliError(Form("Directory -I$ALICE_ROOT/PYTHIA8/pythia%s/include not found",generatorVersion));
       Invalidate();
       return;
     }
-    AddIncludePath(Form("-I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%d/include",pythia8version));
+    AddIncludePath(Form("-I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%s/include",generatorVersion));
 //    SetVar("VAR_PYTHIA8_VERSION",Form("\"%d\"",pythia8version));
     
-    SetVar("VAR_PYTHIA8_INCLUDES",Form("gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%d/include\");\n",pythia8version));
+    SetVar("VAR_PYTHIA8_INCLUDES",Form("gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/PYTHIA8 -I$ALICE_ROOT/PYTHIA8/pythia%s/include\");\n",generatorVersion));
   
     TString p8env;
     
-    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%d/xmldoc\"));\n",pythia8version);
+    p8env += Form("  gSystem->Setenv(\"PYTHIA8DATA\", gSystem->ExpandPathName(\"$ALICE_ROOT/PYTHIA8/pythia%s/xmldoc\"));\n",generatorVersion);
     
     p8env += "  gSystem->Setenv(\"LHAPDF\",gSystem->ExpandPathName(\"$ALICE_ROOT/LHAPDF\"));\n";
     
@@ -225,17 +238,42 @@ fUseAODMerging(kFALSE)
     gSystem->Load("libFASTSIM");
     gSystem->Load("liblhapdf");      // Parton density functions
     gSystem->Load("libEGPythia6");   // TGenerator interface
-    gSystem->Load("libpythia6");     // Pythia 6.2
+//    gSystem->Load("libpythia6");     // Pythia 6.2
     gSystem->Load("libAliPythia6");  // ALICE specific implementations
-    gSystem->Load("libpythia8.so");
-    gSystem->Load("libAliPythia8.so");
-  }
-  else
-  {
-    SetVar("VAR_PYTHIA8_INCLUDES","");
-    SetVar("VAR_PYTHIA8_SETENV","");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
+    
+    SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"\"");
+    
+    SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
   }
   
+  if ( TString(generator).Contains("pythia6",TString::kIgnoreCase) )
+  {
+    fMaxEventsPerChunk =  500; // 5000 is not reasonable with Pythia6 (and ITS+MUON...)
+
+    fCompactMode = 2; // keep AOD as for the time being the filtering driven from AODtrain.C cannot
+    // add SPD tracklets to muon AODs.
+
+    gSystem->Load("libFASTSIM");
+    gSystem->Load("liblhapdf");      // Parton density functions
+    gSystem->Load("libEGPythia6");   // TGenerator interface
+    gSystem->Load(Form("libpythia6.%s",generatorVersion));
+    gSystem->Load("libAliPythia6");
+    
+    SetVar("VAR_PYTHIA6_INCLUDES","gSystem->AddIncludePath(\"-I$ALICE_ROOT/PYTHIA6 -I$ALICE_ROOT/STEER/STEER -I$ALICE_ROOT/STEER/STEERBase -I$ALICE_ROOT/LHAPDF -I$ALICE_ROOT/FASTSIM\");");
+    
+    TString p6env;
+    
+    p6env += Form("gSystem->Load(\"libpythia6.%s\");",generatorVersion);
+    
+    SetVar("VAR_PYTHIA6_SETENV",p6env.Data());
+    
+    SetVar("VAR_USE_ITS_RECO","1");
+    
+    SetVar("VAR_TRIGGER_CONFIGURATION","p-p");
+  }
+
   SetGenerator(generator);
   
   if (localOnly)
@@ -325,7 +363,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateMergeJDL(const char* name) const
   
   OutputToJDL(*os,"Validationcommand",Form("%s/validation_merge.sh",RemoteDir().Data()));
   
-  OutputToJDL(*os,"TTL","7200");
+  OutputToJDL(*os,"TTL","14400");
   
   OutputToJDL(*os,"OutputArchive",
     "log_archive.zip:stderr,stdout@disk=1",
@@ -416,7 +454,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   else if ( CompactMode() == 1 )
   {
     // keep only muon AODs and QA
-    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,aod.log,checkaod.log,checkesd.log,rec.log,sim.log@disk=1",
+    OutputToJDL(*os,"OutputArchive",  "log_archive.zip:stderr,stdout,*.log@disk=1",
            "root_archive.zip:galice*.root,AliAOD.Muons.root,Merged.QA.Data.root@disk=2");
   }
   else if ( CompactMode() == 2 )
@@ -446,7 +484,7 @@ Bool_t AliMuonAccEffSubmitter::GenerateRunJDL(const char* name) const
   }
   else
   {
-    OutputToJDL(*os,"TTL","7200");
+    OutputToJDL(*os,"TTL","14400");
   }
   
   return kTRUE;
@@ -543,7 +581,7 @@ Bool_t AliMuonAccEffSubmitter::Merge(Int_t stage, Bool_t dryRun)
   if (runs.empty())
   {
     AliError("No run to work with");
-    return kFALSE;
+    return 0;
   }
 
   TString currRun;
@@ -888,8 +926,14 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
   
   const std::vector<int>& runs = RunList();
 
+  if ( runs.empty() )
+  {
+    AliError("No run to work with");
+    return 0;
+  }
+  
   std::cout << "Generating script to execute : ./simrun.sh" << std::endl;
-
+  
   std::ofstream out("simrun.sh");
   
   out << "#!/bin/bash" << std::endl;
@@ -897,13 +941,121 @@ Int_t AliMuonAccEffSubmitter::LocalTest()
   out << "root.exe -b -q simrun.C --run "<< runs[0] <<" --event " << fFixedNofEvents << std::endl;
  
   gSystem->Exec("chmod +x simrun.sh");
+
+  std::cout << "Cleaning up left-over files from previous simulation/reconstructions" << std::endl;
   
+  gSystem->Exec("rm -rf TrackRefs.root *.SDigits*.root Kinematics.root *.Hits.root geometry.root gphysi.dat Run*.tag.root HLT*.root *.ps *.Digits.root *.RecPoints.root galice.root *QA*.root Trigger.root *.log AliESD* AliAOD* *.d *.so *.stat");
+
   std::cout << "Executing the script : ./simrun.sh" << std::endl;
+
 
   gSystem->Exec("./simrun.sh");
   
   return 1;
 }
+
+namespace  {
+
+  void OutputRunList(const char* filename, const std::vector<int>& runlist)
+  {
+    /// output a runlist to ASCII file
+    
+    std::ofstream out(filename);
+
+    for ( std::vector<int>::size_type j = 0; j < runlist.size(); ++j )
+    {
+      out << runlist[j] << std::endl;
+    }
+  }
+}
+
+//______________________________________________________________________________
+Int_t AliMuonAccEffSubmitter::SplitRunList(const char* inputList, int maxJobs)
+{
+  /// In order to be able to submit, split a given runlist into chunks that will
+  /// fit within maxJobs (1500 for a typical user)
+
+  std::vector<int> runs;
+  
+  AliAnalysisTriggerScalers tmp(inputList);
+  runs = tmp.GetRunList();
+  
+  AliAnalysisTriggerScalers* ts(0x0);
+  std::vector<int> currentRunList;
+  
+  int nJobs(0);
+  int nTotalJobs(0);
+  int nEvts(0);
+  int nFiles(0);
+  
+  for (std::vector<int>::size_type i=0; i < runs.size(); ++i)
+  {
+    Int_t runNumber = runs[i];
+  
+    Int_t nEvtRun(fFixedNofEvents);
+    
+    if ( fRatio > 0 )
+    {
+      if (!ts)
+      {
+        AliInfo(Form("Creating AliAnalysisTriggerScalers from OCDB=%s",OCDBPath().Data()));
+        ts = new AliAnalysisTriggerScalers(runs,OCDBPath().Data());
+      }
+      
+      AliAnalysisTriggerScalerItem* trigger = ts->GetTriggerScaler(runNumber, "L2A", ReferenceTrigger().Data());
+      
+      if (!trigger)
+      {
+        AliError(Form("Could not get trigger %s for run %09d",ReferenceTrigger().Data(),runNumber));
+        continue;
+      }
+      nEvtRun = TMath::Nint(fRatio * trigger->Value());
+    }
+    
+    Int_t nChunk = 1;
+    
+    while (nEvtRun/nChunk+0.5 > MaxEventsPerChunk())
+    {
+      ++nChunk;
+    }
+    
+    Int_t nEvtChunk = TMath::Nint(nEvtRun/nChunk + 0.5);
+    
+    nJobs += nChunk;
+    
+    nTotalJobs += nChunk;
+    
+    nEvts += nChunk*nEvtChunk;
+
+    if ( nJobs > maxJobs )
+    {
+      ++nFiles;
+      
+      OutputRunList(Form("%s.%d",inputList,nFiles),currentRunList);
+      nJobs = 0;
+      currentRunList.clear();
+    }
+    
+    
+    currentRunList.push_back(runNumber);
+    
+  }
+  
+  if ( !currentRunList.empty() )
+  {
+    ++nFiles;
+    OutputRunList(Form("%s.%d",inputList,nFiles),currentRunList);
+
+  }
+  
+  delete ts;
+  
+  std::cout << Form("input run list was split into %d files. Total number of jobs %d. Total number of events %d",
+                    nFiles,nTotalJobs,nEvts) << std::endl;
+  
+  return nFiles;
+}
+
 
 //______________________________________________________________________________
 Int_t AliMuonAccEffSubmitter::Submit(Bool_t dryRun)
