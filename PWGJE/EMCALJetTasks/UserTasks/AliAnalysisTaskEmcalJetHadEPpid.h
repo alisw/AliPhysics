@@ -81,6 +81,9 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
 
+  // define I/O
+  void					  SetIOon(Bool_t IO)					{ doIOon = IO; } // set on IO in constructor (temp)
+
   // getters
   TString		  GetLocalRhoName() const		{return fLocalRhoName; }
 
@@ -162,6 +165,9 @@ protected:
   // do comment switch
   Bool_t		 doComments;
 
+  // do I/O on switch
+  Bool_t		 doIOon;
+
   // local rho value
   Double_t		 fLocalRhoVal;
 
@@ -178,8 +184,8 @@ protected:
   Bool_t		 isPItof, isKtof, isPtof;
 
   // event pool
-  TObjArray*		    CloneAndReduceTrackList(TObjArray* tracks);
-  AliEventPoolManager   *fPoolMgr;  // event pool Manager object
+  TObjArray		    *CloneAndReduceTrackList(TObjArray* tracks);
+  AliEventPoolManager   *fPoolMgr;//!  // event pool Manager object
 
   // PID
   AliPIDResponse	*fPIDResponse;   // PID response object
@@ -187,8 +193,8 @@ protected:
 
  private:
   // needed for PID, track objects
-  AliESDEvent       *fESD;          // ESD object
-  AliAODEvent	    *fAOD;		  // AOD object
+  AliESDEvent       *fESD;//!         // ESD object
+  AliAODEvent	    *fAOD;//!		  // AOD object
 
   TH2F                  *fHistTPCdEdX;//!
   TH2F	                *fHistITSsignal;//!

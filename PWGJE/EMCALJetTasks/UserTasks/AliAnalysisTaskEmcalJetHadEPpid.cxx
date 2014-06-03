@@ -78,7 +78,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0),
+  doComments(0), doIOon(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -163,8 +163,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid() :
   SetMakeGeneralHistograms(kTRUE);
   
   // define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  if(doIOon > 0 ) DefineInput(0, TChain::Class());
+  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -178,7 +178,7 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   doPlotGlobalRho(0), doVariableBinning(0), dovarbinTHnSparse(0), 
   makeQAhistos(0), makeBIAShistos(0), makeextraCORRhistos(0), makeoldJEThadhistos(0),
   allpidAXIS(0), fcutType("EMCAL"), doPID(0), doPIDtrackBIAS(0),
-  doComments(0),
+  doComments(0), doIOon(0),
   fLocalRhoVal(0),
   fTracksName(""), fJetsName(""),
   event(0),
@@ -263,8 +263,8 @@ AliAnalysisTaskEmcalJetHadEPpid::AliAnalysisTaskEmcalJetHadEPpid(const char *nam
   SetMakeGeneralHistograms(kTRUE);
 
   // define input and output slots here
-  DefineInput(0, TChain::Class());
-  DefineOutput(1, TList::Class());
+  if(doIOon > 0 ) DefineInput(0, TChain::Class());
+  if(doIOon > 0 ) DefineOutput(1, TList::Class());
 }
 
 //_______________________________________________________________________
