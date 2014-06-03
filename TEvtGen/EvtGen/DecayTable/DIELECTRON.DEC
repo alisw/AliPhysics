@@ -1,0 +1,47 @@
+###
+Decay rho0
+##to be checked
+1.000    e+     e-    PHOTOS        VLL;
+Enddecay
+
+Decay phi
+### from DECAY.DEC
+1.000   e+     e-    PHOTOS        VLL;
+Enddecay
+
+Decay eta
+### to be checked
+1.000    e+     e-        PHSP; 
+Enddecay
+
+Decay omega
+### to be checked
+1.000    e+     e-    PHOTOS        VLL;
+Enddecay
+
+Decay J/psi
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+Decay psi(2S)
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+Decay Upsilon
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+Decay Upsilon(2S)
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+Decay Upsilon(3S)
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+End
