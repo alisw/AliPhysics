@@ -28,6 +28,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
    const Int_t MixingTracks   = 50000,
    TString cutType			  = "EMCAL",
    Bool_t   Comments		  = 0,
+   Bool_t   IO				  = 0,
    Int_t esdcuts			  = 10001006
 )
 {  
@@ -81,6 +82,7 @@ AliAnalysisTaskEmcalJetHadEPpid* AddTaskEmcalJetHadEPpid(
   correlationtask->SetMixingTracks(MixingTracks);
   correlationtask->SetcutType(cutType);
   correlationtask->SetdoComments(Comments);
+  correlationtask->SetIOon(IO);
 
   // =================== set up containers ================================================
   // Cluster Container
