@@ -139,10 +139,10 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
 
    TH1I               *fHistEvtSelection;     //!  event statistics
    TH2F               *fh2Ntriggers;  //! trigger counter
-   THnSparseF         *fHJetSpec;//!  TT associated spectrum of jets
-   THnSparseF         *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
-   THnSparseF         *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
-   THnSparseF         *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
+   THnSparse          *fHJetSpec;//!  TT associated spectrum of jets
+   THnSparse          *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
+   THnSparse          *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
+   THnSparse          *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
 
    TH2F    *fhRhoCellMedian; //! X=rho from cell median Y=centrality
    TH2F    *fhRhoCone; //! X=rho from perp cone, Y=centrality
