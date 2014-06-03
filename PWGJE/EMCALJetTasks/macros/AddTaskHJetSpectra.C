@@ -115,7 +115,9 @@ AliAnalysisTaskHJetSpectra* AddTaskHJetSpectra(
    task->SetMinPtOfJetsToBeRemovedInBg(15.0); 
    //task->SetMC(isMC);
    task->SetNofRandomCones(1);
- 
+
+   if(isMC) task->SetAnalyzePythia(1);
+
    // output container
    contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
  
