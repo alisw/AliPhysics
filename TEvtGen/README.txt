@@ -7,7 +7,7 @@
    http://svnweb.cern.ch/guest/evtgen/tags/R01-03-00
 //------------------------------------------------------------------------------//
 
-[23/05/2014] 
+[28/05/2014] 
  1)This module contains: 
 
    - EvtGen original code organized in four directories:
@@ -44,11 +44,15 @@
    in the directory TEvtGen/EvtGen/DecayTable and are used to generate "forced" decay modes.
    All parameters, models and BR used in these tables are not modified with respect 
    to the official EvtGen release. 
+   The following decay tables are tested: BTOD.DEC, BTOELE.DEC, BTOJPSI.DEC, BTOJPSITOELE.DEC,  
+   BTOJPSITOMU.DEC.
 
  4)Polarization is still to be implemented in the interface classes.
 
  5)Below an example of the usage of EvtGen in AliRoot to decay beauty particles. 
    The following lines should be added in the Config.C:
+ // set the xmldoc path using PYTHIA8DATA enviroement var
+  gSystem->Setenv("PYTHIA8DATA", gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8175/xmldoc"));
 
  //----- load libraries
   gSystem->Load("libHepMC.so");
