@@ -668,7 +668,30 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
   else aod = fAODOut;
   if(!aod)return 0;
  
-      TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
+    for(int it = 0;it < aod->GetNumberOfTracks();++it){
+    AliAODTrack *tr = aod->GetTrack(it);
+    Bool_t bGood = false;
+    if(fFilterType == 0)bGood = true;
+    else if(fFilterType == 1)bGood = tr->IsHybridTPCConstrainedGlobal();
+    else if(fFilterType == 2)bGood = tr->IsHybridGlobalConstrainedGlobal();
+    if((fFilterMask>0)&&!(tr->TestFilterBit(fFilterMask)))continue;
+    if(fRequireITSRefit==1){if((tr->GetStatus()&AliESDtrack::kITSrefit)==0)continue;}
+    if(bGood==false) continue;
+    if (fApplySharedClusterCut) {
+      Double_t frac = Double_t(tr->GetTPCnclsS()) /Double_t(tr->GetTPCncls());
+      if (frac > 0.4) continue;
+    }
+    if(TMath::Abs(tr->Eta())>0.9)continue;
+    if(tr->Pt()<0.15)continue;
+    list->Add(tr);
+    iCount++;
+    } 
+
+
+
+
+
+     TClonesArray *aodExtraTracks = dynamic_cast<TClonesArray*>(aod->FindListObject("aodExtraTracks"));
       if(!aodExtraTracks)return iCount;
       for(int it =0; it<aodExtraTracks->GetEntries(); it++) {
 	AliVParticle *track = dynamic_cast<AliVParticle*> ((*aodExtraTracks)[it]);
@@ -692,7 +715,7 @@ Int_t  AliAnalysisTaskJetAntenna::GetListOfTracksExtra(TList *list){
 	if(fDebug) printf("pt extra track %.2f \n", trackAOD->Pt());
 	list->Add(trackAOD);
 	iCount++;
-        }
+      }
     
      return iCount;
 }

@@ -965,6 +965,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
    
 	
 	Bool_t nottrackmatched = kTRUE;//default to no track matched
+	Bool_t countasmatched = kFALSE;
 	Float_t matchedTrackp = 0.0;
 	Float_t matchedTrackpt = 0.0;
         fDepositedCode = part->GetPdgCode();
@@ -997,10 +998,14 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	    //cout<<"rcorr "<<rcorr<<endl;
 	    Int_t n=caloCluster->GetNLabels() ;
 	    //if(fReconstructedE - fsub* track->P() > 0.0){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
+	    //cout<<"was matched"<<endl;
 	    if(fSelector->PassMinEnergyCut( (fReconstructedE - fsub* track->P())*TMath::Sin(cp.Theta()) )){//if more energy was deposited than the momentum of the track  and more than one particle led to the cluster
 	      //then we say the cluster was not track matched but correct the energy
 	      nottrackmatched = kTRUE;
-	      //cout<<"Reassigning energy "<<fReconstructedEt;
+	      //but we don't want to double count the matched tracks...
+	      countasmatched = kTRUE;
+	      //cout<<" fsub "<<fsub;
+	      //cout<<" Reassigning energy "<<fReconstructedEt;
 	      fReconstructedE = fReconstructedE - fsub* track->P();
 	      fReconstructedEt = fReconstructedE*TMath::Sin(cp.Theta());
 	      //cout<<" to "<<fReconstructedEt<<endl;
@@ -1023,7 +1028,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 		  }
 		}
 		Double_t eMax=0.;//eSubMax=0. ;
-		cout<<"n="<<n<<", ";
+		//cout<<"n="<<n<<", ";
 		for(Int_t i=0;  i<n;  i++){
 		    Int_t label = caloCluster->GetLabelAt(i);
 		    if(label!=trackMatchedIndex){
@@ -1238,7 +1243,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	  else{
 	  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%BEGIN NEUTRAL SECONDARIES%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	    if(nottrackmatched){//secondaries not removed
+	    if(nottrackmatched  && !countasmatched){//secondaries not removed
 // 	      cout<<"Neutral Secondary ";
 // 	      PrintFamilyTreeShort(iPart, stack);
 
@@ -1313,7 +1318,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      etAntiProtonDeposited += clEt;
 	      etAntiProtonDepositedNoEffCorr += fReconstructedEt;
 	    }
-	    if(nottrackmatched){//not removed but should be
+	    if(nottrackmatched && !countasmatched){//not removed but should be
 	      subtotalHadronEnergy += fReconstructedEt;
 	      etHadronCrossCheckTrue += clEt;
 	      etPiKPDepositedNotTrackMatched += clEt;
@@ -1364,6 +1369,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	      }
 	    }
 	    else{//removed and should have been
+	      //if(countasmatched) cout<<" I was counted as matched even though some of my energy might have been saved."<<endl;
 	      //cout<<" t.m. primary"<<endl;
 	      Int_t trackindex =  fSelector->GetLabel(caloCluster,stack);// (caloCluster->GetLabelsArray())->At(0);
 	      fHistChargedTrackDepositsAcceptedVsPt->Fill(part->Pt(), fCentClass,fReconstructedEt);

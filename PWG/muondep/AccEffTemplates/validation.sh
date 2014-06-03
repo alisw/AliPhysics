@@ -62,6 +62,9 @@ if [ "$sv" = "" ]
                                     echo "* #  The AOD was not successfully checked   *"  >>stdout;
                                 else
                                     echo "* ----------------   Job Validated  ------------------*" >> stdout;
+                                    echo "Removing log files which will not be needed then" >> stdout;
+                                    rm -f *.log
+                                    touch ok.log
                                     error="0";
 				fi
                             fi
