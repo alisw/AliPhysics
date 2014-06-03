@@ -8,64 +8,46 @@
 //     Author: Andrei Gheata, CERN
 //-------------------------------------------------------------------------
 
-#ifndef ALIESDINPUTHANDLER_H
-#include "AliESDInputHandler.h"
+#ifndef ALIVEVENTHANDLER_H
+#include "AliVEventHandler.h"
 #endif
 
-class AliReconstruction;
+class TObjArray;
+class AliVEvent;
 
-class AliHLTTestInputHandler : public AliESDInputHandler {
+class AliHLTTestInputHandler : public AliVEventHandler {
 
  public:
     AliHLTTestInputHandler() {}
     AliHLTTestInputHandler(const char* name, const char* title);
     virtual ~AliHLTTestInputHandler() {}
-    virtual Bool_t       Notify() { return AliESDInputHandler::Notify(); };
-    virtual Bool_t       Notify(const char *) {return kTRUE;}
-    virtual Bool_t       Init(Option_t* opt) {return AliESDInputHandler::Init(opt);}
-    virtual Bool_t       Init(TTree* tree, Option_t* opt="LOCAL");
-    virtual Bool_t       BeginEvent(Long64_t entry);
-    virtual Bool_t       FinishEvent() {return kTRUE;}
-//    void                 CheckSelectionMask();
-//    AliESDEvent         *GetEvent()        const {return fEvent;}
-//    Option_t            *GetAnalysisType() const {return fAnalysisType;}
-//    Option_t            *GetDataType() const;
-    // Tag cut summary analysis
-//    Int_t                GetNEventAcceptedInFile();
-//    Int_t                GetNEventRejectedInFile();
-//    Bool_t               GetCutSummaryForChain(Int_t *aTotal, Int_t *aAccepted, Int_t *aRejected);
-//    Int_t                GetNFilesEmpty();
-    // HLT  analysis
-//    AliESDEvent         *GetHLTEvent()     const {return fHLTEvent;}
-//    TTree               *GetHLTTree()      const {return fHLTTree;}    
-//    void                 SetReadHLT()            {fUseHLT = kTRUE;}
-    // Friends&Co
-//    AliESDfriend        *GetESDfriend()    const {return fFriend;}
-//    void                 SetReadFriends(Bool_t flag)   {fReadFriends = flag;}
-//    void                 SetFriendFileName(const char *fname)  {fFriendFileName = fname;}
-    // Tag analysis
-//    void                 SetReadTags()           {fUseTags = kTRUE;}
-//    AliRunTag           *GetRunTag() const       {return fRunTag;}
-//    const AliEventTag   *GetEventTag() const     {return fEventTag;}
-    // Get the statistics object (currently TH2). Option can be BIN0.
-//    virtual TObject     *GetStatistics(Option_t *option="") const;
+    virtual Bool_t Notify() { return kFALSE; }
+    virtual Bool_t Notify(const char *) {return kTRUE;}
+    virtual Bool_t Init(Option_t* /*opt*/) {return kTRUE;}
+    virtual Bool_t Init(TTree* /*tree*/, Option_t* /*opt*/);
+    virtual Bool_t BeginEvent(Long64_t entry);
+    virtual Bool_t FinishEvent() {return kTRUE;}
+    virtual void  SetOutputFileName(const char* /*fname*/) {};
+    virtual const char* GetOutputFileName() const {return NULL;}
+    // Input
+    virtual void SetInputTree(TTree* /*tree*/) {};
+    // Steering 
+    virtual Bool_t GetEntry() {return kTRUE;}
+    virtual Bool_t Terminate() {return kTRUE;}
+    virtual Bool_t TerminateIO() {return kTRUE;}
 
-    //PID response
-//    virtual AliPIDResponse* GetPIDResponse() {return (AliPIDResponse*)fESDpid;}
-//    virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
-//    AliESDpid           *GetESDpid()       const {return fESDpid;}
-//    void                 SetESDpid(AliESDpid* pid)     {fESDpid = pid;}
+    // Especially needed for HLT
+    Bool_t InitTaskInputData(AliVEvent* /*esdEvent*/, TObjArray* /*arrTasks*/);
+
+    AliVEvent* GetEvent() const {return fEvent;}
+    void  SetEvent(AliVEvent *event) {fEvent = event;}
       
-// private:
-    AliHLTTestInputHandler(const AliESDInputHandler& handler);             
-    AliHLTTestInputHandler& operator=(const AliESDInputHandler& handler);  
-    // Private setters used by AliReconstruction
-    friend class AliReconstruction;
-    void                 SetEvent(AliESDEvent *event)          {fEvent = event;}
-    void                 SetESDfriend(AliESDfriend *esdfriend) {fFriend = esdfriend;}
-    void                 SetHLTEvent(AliESDEvent *hltevent)    {fHLTEvent = hltevent;}
-    void                 SetHLTTree(TTree *hlttree)            {fHLTTree = hlttree;}
+ private:
+    AliHLTTestInputHandler(const AliVEventHandler& handler);             
+    AliHLTTestInputHandler& operator=(const AliVEventHandler& handler);  
     
+    AliVEvent *fEvent;    //! Pointer to the event
+
     ClassDef(AliHLTTestInputHandler, 1);
 };
 

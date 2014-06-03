@@ -20,7 +20,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   virtual void   CreateOutputObjects();
   virtual void   Exec(Option_t *option);
   virtual void   Terminate(Option_t *);
-  
+
  private:
   AliESDEvent *fESD;    //ESD object
   TH1F        *fHistPt; //Pt spectrum

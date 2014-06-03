@@ -9,7 +9,7 @@
 
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
-#include "AliESDInputHandler.h"
+#include "AliVEventHandler.h"
 
 #include "AliAnalysisTaskPt.h"
 
@@ -37,7 +37,7 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
   // Connect ESD or AOD here
   // Called once
 
-  printf("AliAnalysisTaskPt::ConnectInputData\n");
+  printf("----> AliAnalysisTaskPt::ConnectInputData\n");
   TTree* tree = dynamic_cast<TTree*> (GetInputData(0));
   if (!tree) {
     Printf("ERROR: Could not read chain from input slot 0");
@@ -49,13 +49,21 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
     tree->SetBranchStatus("fTracks.*", kTRUE);
     */
 
-    AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    AliVEventHandler *esdH = AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
 
     if (!esdH) {
       Printf("ERROR: Could not get ESDInputHandler");
-    } else
-      fESD = esdH->GetEvent();
+    } else {
+      Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
+      fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+    }
+    if (!fESD) {
+      Printf("ERROR, the dynamic cast did not work");
+    }
   }
+
+  Printf("fESD = %p", fESD);
+  printf("<---- AliAnalysisTaskPt::ConnectInputData\n");
 }
 
 //________________________________________________________________________
@@ -80,12 +88,6 @@ void AliAnalysisTaskPt::Exec(Option_t *)
   // Main loop
   // Called for each event
 
-   AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
-   if (!esdH) {
-     Printf("ERROR: Could not get ESDInputHandler");
-   } else
-     fESD = esdH->GetEvent();
   if (!fESD) {
     Printf("ERROR: fESD not available");
     return;
@@ -104,8 +106,6 @@ void AliAnalysisTaskPt::Exec(Option_t *)
     fHistPt->Fill(track->Pt());
   } //track loop 
 
-  TObjArray* tmp = fCuts->GetAcceptedTracks(fESD);
-  Printf("Event %d has %d accepted tracks", fEv, tmp->GetEntries());
   // Post output data.
   PostData(0, fHistPt);
   fEv++;
@@ -117,7 +117,7 @@ void AliAnalysisTaskPt::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
 
-  Printf("Terminate called");
+  Printf("Terminate called: fESD = %p", fESD);
 
   fHistPt = dynamic_cast<TH1F*> (GetOutputData(0));
   if (!fHistPt) {

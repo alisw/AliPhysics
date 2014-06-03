@@ -24,7 +24,6 @@
 class TH1F;
 class TList;
 
-class AliESDEvent;
 class AliESDVZERO;
 class AliESDtrackCuts;
 class AliHLTCTPData;
@@ -171,7 +170,7 @@ public:
   // AliHLTComponent interface functions
 
   /** interface function, see @ref AliHLTComponent for description */
-  Int_t DoInit( Int_t argc, const Char_t** argv );
+  Int_t DoInit( Int_t /*argc*/, const Char_t** /*argv*/ );
 
   /** interface function, see @ref AliHLTComponent for description */
   Int_t DoDeinit();

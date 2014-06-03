@@ -27,6 +27,7 @@
 #include "TH1F.h"
 #include "TList.h"
 #include "AliESDtrackCuts.h"
+#include "AliESDEvent.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTAnaManagerComponent.h"
@@ -53,7 +54,7 @@ AliHLTAnaManagerComponent::AliHLTAnaManagerComponent() :
   AliHLTProcessor(),
   fUID(0),
   fAnalysisManager(NULL),
-  fInputHandler(NULL) {
+  fInputHandler(NULL){
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
   //
@@ -133,12 +134,13 @@ AliHLTComponent* AliHLTAnaManagerComponent::Spawn() {
  */
 
 // #################################################################################
-Int_t AliHLTAnaManagerComponent::DoInit( Int_t argc, const Char_t** argv ) {
+Int_t AliHLTAnaManagerComponent::DoInit( Int_t /*argc*/, const Char_t** /*argv*/ ) {
   // see header file for class documentation
   printf("AliHLTAnaManagerComponent::DoInit\n");
 
   Int_t iResult=0;
 
+  Printf("----> AliHLTAnaManagerComponent::DoInit"); 
   fAnalysisManager = new AliAnalysisManager;
   fInputHandler    = new AliHLTTestInputHandler;
   fAnalysisManager->SetInputEventHandler(fInputHandler);
@@ -152,13 +154,20 @@ Int_t AliHLTAnaManagerComponent::DoInit( Int_t argc, const Char_t** argv ) {
       AliAnalysisManager::kOutputContainer, "Pt.ESD.root");
 
   //           connect containers
-  fAnalysisManager->ConnectInput  (task,  0, cinput );
+  Printf("---> Connecting input...");
+  fAnalysisManager->ConnectInput  (task,  0, cinput ); 
+  Printf("---> ...connected.");
   Printf("---> Connecting output...");
   fAnalysisManager->ConnectOutput (task,  0, coutput1);
   Printf("---> ...connected.");
 
+  Printf("----> Calling InitAnalysis");
   fAnalysisManager->InitAnalysis();
+  Printf("----> Done.");
+  Printf("----> Calling StartAnalysis");
   fAnalysisManager->StartAnalysis("local", (TTree*)new TTree);
+  //fAnalysisManager->StartAnalysis("local", (TTree*)NULL);
+  Printf("----> Done.");
 
   return iResult;
 }
@@ -207,10 +216,10 @@ Int_t AliHLTAnaManagerComponent::DoEvent(const AliHLTComponentEventData& evtData
     }
     esdEvent->GetStdContent();
   }
-  printf("ESDEvent: %p\n",esdEvent);
+  printf("----> ESDEvent %p has %d tracks: \n", esdEvent, esdEvent->GetNumberOfTracks());
 
-  fInputHandler->SetEvent(esdEvent);
-  fInputHandler->BeginEvent(0);
+  fAnalysisManager->InitInpuData(esdEvent);
+  //  fInputHandler->BeginEvent(0);
   fAnalysisManager->ExecAnalysis();
   fInputHandler->FinishEvent();
 

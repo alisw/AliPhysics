@@ -199,6 +199,8 @@ public:
 
   virtual Int_t     GetNumberOfESDTracks()  const { return 0; }
 
+  virtual void ConnectTracks() {}
+
   ClassDef(AliVEvent,2)  // base class for AliEvent data
 };
 #endif 

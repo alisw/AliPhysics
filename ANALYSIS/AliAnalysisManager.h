@@ -36,7 +36,7 @@ class AliVEventHandler;
 class AliVEventPool;
 class AliAnalysisGrid;
 class AliAnalysisStatistics;
-
+class AliVEvent;
 
 class AliAnalysisManager : public TNamed {
 
@@ -229,6 +229,7 @@ enum EAliAnalysisFlags {
    void                 Lock();
    void                 UnLock();
    void                 Changed();
+   void                 InitInpuData(AliVEvent* esdEvent);
 protected:
    void                 CreateReadCache();
    void                 ImportWrappers(TList *source);
@@ -290,6 +291,6 @@ private:
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static TString          fgMacroNames;         //! Loaded macro names
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,20)  // Analysis manager class
+   ClassDef(AliAnalysisManager, 21)  // Analysis manager class
 };   
 #endif
