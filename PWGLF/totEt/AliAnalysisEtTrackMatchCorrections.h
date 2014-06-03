@@ -102,15 +102,15 @@ public:
 private:
 
     // ChargedContr
-    TF1 *fChargedContr;
+    TF1 *fChargedContr;//!
     // NeutralContr
-    TF1 *fNeutralContr;
+    TF1 *fNeutralContr;//!
     // GammaContr
-    TF1 *fGammaContr;	
+    TF1 *fGammaContr;	//!
     // SecondaryContr
-    TF1 *fSecondaryContr;
+    TF1 *fSecondaryContr;//!
 
-    TH2F *fRecoEff;//Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
+    TH2F *fRecoEff;//!Reconstruction efficiency, x axis = pT, y axis = multiplicity, z = efficiency
     
     // Mean deposited energy from charged particles
     Double_t fMeanCharged;
