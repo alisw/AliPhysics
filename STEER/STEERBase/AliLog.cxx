@@ -1235,10 +1235,15 @@ void AliLog::MakeCoreDump(const char *fout){
 }
 
 
-void AliLog::TestException(){
+void AliLog::TestException(Int_t level){
   //
   // Dummy function to throw exception
   //
-  throw std::runtime_error("Test exception");
-
+  printf("AliLog::TestException(%d)\n",level);
+  if (level>0){
+    level--;
+    TestException(level);
+  }else{
+    throw std::runtime_error("Test exception");
+  }
 }
