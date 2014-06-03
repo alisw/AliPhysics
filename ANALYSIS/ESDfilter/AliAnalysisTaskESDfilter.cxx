@@ -2143,8 +2143,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 
   AliCodeTimerAuto("",0);
 
-  if (fRefitVertexTracks) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
-							    fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
+  if (fRefitVertexTracks>=0) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
+							       fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
   
   fOldESDformat = ( esd->GetAliESDOld() != 0x0 );
  

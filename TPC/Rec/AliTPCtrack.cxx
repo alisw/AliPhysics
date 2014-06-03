@@ -157,29 +157,36 @@ AliTPCtrack::AliTPCtrack(const AliESDtrack& t, TTreeSRedirector *pcstream) :
   const AliExternalTrackParam  *tpcout=(t.GetFriendTrack())? ((AliESDfriendTrack*)(t.GetFriendTrack()))->GetTPCOut():0;
   const AliExternalTrackParam  *tpcin = t.GetInnerParam();
   const AliExternalTrackParam  *tpc=(tpcout)?tpcout:tpcin;
+  Bool_t isBackProp = tpcout==0; // is this backpropagation?
   if (!tpc) tpc=&param;
-  //Bool_t isOK=kTRUE;// RS recoParam->GetUseOuterDetectors();
-  Bool_t isOK=recoParam->GetUseOuterDetectors();
-  if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
-  if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
-  if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
-  if (param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
-  param.Rotate(tpc->GetAlpha());
+
+  Bool_t isOK = (recoParam->GetUseOuterDetectors() && t.IsOn(AliESDtrack::kTRDrefit)) || isBackProp;
+  if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
+      param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
+      param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
+      param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+  //
+  if (isOK) isOK &= param.Rotate(tpc->GetAlpha()); // using external seed
   Double_t oldX=param.GetX(),  oldY=param.GetY(),  oldZ=param.GetZ();
   if (!isOK ){
     param=*tpc;
     isOK=kTRUE;
     reject=1;
   }
-  param.Rotate(tpc->GetAlpha());
-  isOK=AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),t.GetMass(),2.,kFALSE);
-  if (param.GetCovariance()[0]>kmaxC[0]*kmaxC[0]) isOK=kFALSE;
-  if (param.GetCovariance()[2]>kmaxC[1]*kmaxC[1]) isOK=kFALSE;
-  if (param.GetCovariance()[5]>kmaxC[2]*kmaxC[2]) isOK=kFALSE;
-  if (param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
-  Double_t chi2= param.GetPredictedChi2(tpc);
-  if (chi2>recoParam->GetMaxChi2TPCTRD()){
-    isOK=kFALSE;
+  else { // using external seed
+    //  param.Rotate(tpc->GetAlpha()); // not needed
+    if (!AliTracker::PropagateTrackToBxByBz(&param,tpc->GetX(),t.GetMass(),2.,kFALSE) ||
+	param.GetCovariance()[0]>kmaxC[0]*kmaxC[0] ||
+	param.GetCovariance()[2]>kmaxC[1]*kmaxC[1] ||
+	param.GetCovariance()[5]>kmaxC[2]*kmaxC[2] ||
+	param.GetCovariance()[9]>kmaxC[3]*kmaxC[3]) isOK=kFALSE;
+  }
+  if (isOK) {
+    Double_t chi2= param.GetPredictedChi2(tpc);
+    if (isBackProp) {
+      if (chi2>recoParam->GetMaxChi2TPCITS()) isOK=kFALSE; // protection against outliers in the ITS
+    }
+    else if (chi2>recoParam->GetMaxChi2TPCTRD()) isOK=kFALSE; // protection against outliers in the TRD
   }
 
   if (!isOK){
