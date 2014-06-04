@@ -127,7 +127,8 @@ class AliCDBManager: public TObject {
     Bool_t InitFromSnapshot(const char* snapshotFileName, Bool_t overwrite=kTRUE);
     Bool_t SetSnapshotMode(const char* snapshotFileName="OCDB.root");
     void UnsetSnapshotMode() {fSnapshotMode=kFALSE;}
-    void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys);
+    void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys) const;
+    void DumpToLightSnapshotFile(const char* lightSnapshotFileName) const;
 
     Int_t GetStartRunLHCPeriod();
     Int_t GetEndRunLHCPeriod();
