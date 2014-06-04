@@ -911,13 +911,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		
     Bool_t signAssociation = cfVtxHF->SetRecoCandidateParam((AliAODRecoDecayHF*)charmCandidate);
     if (!signAssociation){
-      charmCandidate = 0x0;
+      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
       continue;
     }
 
     Int_t isPartOrAntipart = cfVtxHF->CheckReflexion(fSign);
     if (isPartOrAntipart == 0){
       AliDebug(2, Form("The candidate pdg code doesn't match the requirement set in the task (fSign = %d)",fSign));
+      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
       continue;
     }
 
@@ -939,8 +940,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
       }
 
-      if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue;
-			
+      if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+	continue;
+      }		
       //Reco Step
       Bool_t recoStep = cfVtxHF->RecoStep();
       Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
@@ -955,8 +958,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       }else if(fDecayChannel==33){
 	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
       }
-      if(!isBitSelected) continue;
-
+      if(!isBitSelected){
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+	continue;
+      }
 
 
       if (recoStep && recoContFilled && vtxCheck){
@@ -1036,26 +1041,31 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	      }
 	      else {
 		AliDebug(3, "Analysis Cuts step not passed \n");
+		if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 		continue;
 	      }
 	    }
 	    else {
 	      AliDebug(3, "PID selection not passed \n");
+	      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	      continue;
 	    }
 	  }
 	  else{
 	    AliDebug(3, "Number of ITS cluster step not passed\n");
+	    if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	    continue;
 	  }
 	}
 	else{
 	  AliDebug(3, "Reco acceptance step not passed\n");
+	  if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	  continue;
 	}
       }
       else {
 	AliDebug(3, "Reco step not passed\n");
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	continue;
       }
     }
