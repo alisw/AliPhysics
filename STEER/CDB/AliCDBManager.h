@@ -70,7 +70,7 @@ class AliCDBManager: public TObject {
 
     void UnsetDrain(){fDrainStorage = 0x0;}
 
-    AliCDBEntry* Get(const AliCDBId& query, Bool_t forceCaching=kFALSE, Bool_t doCatch=kFALSE);
+    AliCDBEntry* Get(const AliCDBId& query, Bool_t forceCaching=kFALSE);
     AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber=-1,
         Int_t version = -1, Int_t subVersion = -1);
     AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
