@@ -301,7 +301,7 @@ Bool_t AliSingleTrackEffCuts::IsMCParticleGenerated(TObject* obj)
   if(fIsPdgCode && TMath::Abs( particle->PdgCode() )!= fPdgCode) isSelected = kFALSE;
 
   // Charge selection
-  if(fIsCharged && !(particle->Charge()!=0)) isSelected = kFALSE;
+  if(fIsCharged && (particle->Charge()==0)) isSelected = kFALSE;
 
   // Selection of Physical Primary particles
   if(!fisAOD) { // check on ESDs
@@ -588,7 +588,7 @@ Bool_t AliSingleTrackEffCuts::CheckTOFPIDStatus(AliAODTrack *track) const{
   if ((track->GetStatus()&AliESDtrack::kTOFout)==0)   return kFALSE;
   if ((track->GetStatus()&AliESDtrack::kTIME)==0)     return kFALSE;
   if ((track->GetStatus()&AliESDtrack::kTOFpid)==0)   return kFALSE;
-  if (!(track->GetStatus()&AliESDtrack::kTOFmismatch)==0) return kFALSE;
+  if ((track->GetStatus()&AliESDtrack::kTOFmismatch)!=0) return kFALSE;
   return kTRUE;
 }
 
