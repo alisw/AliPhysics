@@ -320,6 +320,7 @@ AliCDBManager::AliCDBManager():
   fLock(kFALSE),
   fSnapshotMode(kFALSE),
   fSnapshotFile(0),
+  fOCDBUploadMode(kFALSE),
   fRaw(kFALSE),
   fCvmfsOcdb(""),
   fStartRunLHCPeriod(-1),
@@ -575,6 +576,20 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 
   AliDebug(2, "Draining into drain storage...");
   return fDrainStorage->Put(entry);
+}
+
+//____________________________________________________________________________
+Bool_t AliCDBManager::SetOCDBUploadMode() {
+// Set the framework in official upload mode. This tells the framework to upload
+// objects to cvmfs after they have been uploaded to AliEn OCDBs.
+// It return false if the executable to upload to cvmfs is not found.
+
+  TString cvmfsUploadExecutable("$HOME/bin/ocdb-cvmfs");
+  gSystem->ExpandPathName(cvmfsUploadExecutable);
+  if ( gSystem->AccessPathName(cvmfsUploadExecutable) )
+    return kFALSE;
+  fOCDBUploadMode = kTRUE;
+  return kTRUE;
 }
 
 //____________________________________________________________________________
