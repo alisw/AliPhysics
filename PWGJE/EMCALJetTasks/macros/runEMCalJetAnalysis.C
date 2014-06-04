@@ -38,7 +38,7 @@ void runEMCalJetAnalysis(
          const char*    runPeriod           = "LHC11h",                    // set the run period (used on grid)
          const char*    uniqueName          = "EMCalJF_LEGOTrainTest",     // sets base string for the name of the task on the grid
          UInt_t         pSel                = AliVEvent::kAny,             // used event selection for every task except for the analysis tasks
-         Bool_t         useTender           = kFALSE,                      // trigger, if tender task should be used
+         Bool_t         useTender           = kTRUE,                       // trigger, if tender, track and cluster selection should be used (always)
          Bool_t         isMC                = kFALSE,                      // trigger, if MC handler should be used
 	 Bool_t         doBkg               = kTRUE,
          // Here you have to specify additional code files you want to use but that are not in aliroot
@@ -104,7 +104,7 @@ void runEMCalJetAnalysis(
   {
     cout << "Data type not recognized! You have to specify ESD, AOD, or sESD!\n";
   }
-  
+
   if(!useGrid)
     cout << "Using " << localFiles.Data() << " as input file list.\n";
 
@@ -147,22 +147,16 @@ void runEMCalJetAnalysis(
   setupTask->SetGeoPath("$ALICE_ROOT/OADB/EMCAL");
   
   // Tender Supplies
-  if (useTender)
-  {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEMCALTender.C");
-    AliAnalysisTaskSE *tender = AddTaskEMCALTender(runPeriod, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE,
-                                                   AliEMCALRecoUtils::kBeamTestCorrected,kTRUE,0.1,0.05,AliEMCALRecParam::kClusterizerv2,
-						   kFALSE,kFALSE,-1,1e6,1e6);
-    if (usedData != "AOD" && !useGrid) {
-      AliTender *alitender = dynamic_cast<AliTender*>(tender);
-      alitender->SetDefaultCDBStorage("local://$ALICE_ROOT/OCDB"); 
-    }
+  if (useTender) {
+    gROOT->LoadMacro("$ALICE_ROOT/PWG/EMCAL/macros/AddTaskEmcalPreparation.C");
+    //adjust pass when running locally. On grid give empty string, will be picked up automatically from path to ESD/AOD file
+    AliAnalysisTaskSE *clusm = AddTaskEmcalPreparation(runPeriod,"pass1"); 
   }
 
   // Names of the different objects passed around; these are the default names; added here mostly for documentation purposes
   // rhoName is only set if the background subtraction is switched on (doBkg)
   TString tracksName = "PicoTracks";
-  TString clustersName = "CaloClusters";
+  TString clustersName = "EmcCaloClusters";
   TString clustersCorrName = "CaloClustersCorr";
   TString rhoName = "";
 
