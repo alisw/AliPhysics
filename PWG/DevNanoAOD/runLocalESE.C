@@ -69,7 +69,7 @@ AliESEEvtCut * EvtCuts(Int_t mc) {
 
 //______________________________________________________________________________
 void runLocalESE(
-		 const int iMCtruth = 2, 
+		 const int iMCtruth = 0, 
 		 const char * addTaskString = ".x AddTaskNanoAODFilter.C(%d,1)" // 
 		 )
 {
@@ -118,9 +118,13 @@ void runLocalESE(
   // start analysis
   // Always read the same file:
   TChain * chain = new TChain("aodTree");
-  chain->Add("./AliAOD.root");
+  
+  chain->Add("~//Work/ALICE/ANALYSIS/current/nAOD/input/LHC10h/AOD86/0356/AliAOD.root");
+  chain->Add("~//Work/ALICE/ANALYSIS/current/nAOD/input/LHC10h/AOD86/0407/AliAOD.root");
+  chain->Add("~//Work/ALICE/ANALYSIS/current/nAOD/input/LHC10h/AOD86/0398/AliAOD.root");
 
   Printf("Starting Analysis....");
+  chain->Print();
   mgr->StartAnalysis("local", chain,123456789);
 
 }
