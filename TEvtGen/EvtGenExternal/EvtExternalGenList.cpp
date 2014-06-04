@@ -39,8 +39,7 @@ EvtExternalGenList::EvtExternalGenList(bool convertPythiaCodes, std::string pyth
     // If we have no string defined, check the value of the
     // PYTHIA8DATA environment variable which should be set to the 
     // xmldoc Pythia directory
-    //char* pythiaDataDir = getenv("PYTHIA8DATA");
-    char *pythiaDataDir = gSystem->ExpandPathName("$ALICE_ROOT/PYTHIA8/pythia8175/xmldoc");
+    char* pythiaDataDir = getenv("PYTHIA8DATA");
     if (pythiaDataDir != 0) {pythiaXmlDir = pythiaDataDir;}
   }
 

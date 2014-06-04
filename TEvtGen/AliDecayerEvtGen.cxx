@@ -207,31 +207,53 @@ void AliDecayerEvtGen::ForceDecay()
   switch(decay)
     {
      case kAll: // particles decayed "naturally" according to $ALICE_ROOT/TEvtGen/EvtGen/DECAY.DEC
-     break;
+      break;
      case kBJpsiDiElectron:
-     SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSITOELE.DEC"));
-     break;
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSITOELE.DEC"));
+      break;
      case kBJpsi:
-     SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSI.DEC"));
-     break;
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSI.DEC"));
+      break;
      case kBJpsiDiMuon:
-     SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSITOMU.DEC"));
-     break;
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOJPSITOMU.DEC"));
+      break;
      case kBSemiElectronic:
-     SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOELE.DEC"));
-     break;
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOELE.DEC"));
+      break;
      case kHadronicD:
       SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOD.DEC"));
       break;
-     case kHardMuons:
+      case kChiToJpsiGammaToElectronElectron:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/CHICTOJPSITOELE.DEC"));
+      break;
      case kChiToJpsiGammaToMuonMuon:
-     case kChiToJpsiGammaToElectronElectron:
-     case kBSemiMuonic:
-     case kSemiMuonic:
-     case kDiMuon:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/CHICTOJPSITOMUON.DEC"));
+      break;
      case kSemiElectronic:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BANDCTOELE.DEC"));
+      break;
+     case kBSemiMuonic:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOMU.DEC"));
+      break;
+     case kSemiMuonic:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BANDCTOMU.DEC"));
+      break;
      case kDiElectron:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/DIELECTRON.DEC"));
+      break;
+     case kDiMuon:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/DIMUON.DEC"));
+      break;
      case kBPsiPrimeDiMuon:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOPSIPRIMETODIMUON.DEC"));
+      break;
+     case kBPsiPrimeDiElectron:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/BTOPSIPRIMETODIELECTRON.DEC"));
+      break;
+     case kJpsiDiMuon:
+      SetDecayTablePath(gSystem->ExpandPathName("$ALICE_ROOT/TEvtGen/EvtGen/DecayTable/JPSIDIMUON.DEC"));
+      break;
+     case kHardMuons:
      case kPiToMu:
      case kKaToMu:
      case kAllMuonic:
@@ -247,13 +269,11 @@ void AliDecayerEvtGen::ForceDecay()
      case kNoDecay:
      case kNoDecayHeavy:
      case kNeutralPion:
-     case kBPsiPrimeDiElectron:
      case kBeautyUpgrade:
      case kBJpsiUndecayed: 
      case kDiElectronEM:
      case kElectronEM:
      case kGammaEM:
-     case kJpsiDiMuon:
      case kNoDecayBeauty:
      case kPsiPrimeJpsiDiElectron:
       AliWarning(Form("Warning: case %d not implemented for this class!",(int)decay));
