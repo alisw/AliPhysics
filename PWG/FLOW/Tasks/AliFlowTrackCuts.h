@@ -84,7 +84,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                    kTPCdedx,      // asymmetric cuts of TPC dedx signal
                    kTOFbetaSimple, //simple TOF only cut
                    kTPCbayesian, //bayesian cutTPC
-		               kTPCNuclei    // added by Natasha for Nuclei
+		   kTPCNuclei,   // added by Natasha for Nuclei
+                   kTPCTOFNsigma // simple cut on combined tpc tof nsigma
                    };
 
   //setters (interface to AliESDtrackCuts)
@@ -312,6 +313,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   // part added by F. Noferini
   Bool_t PassesTOFbayesianCut(const AliESDtrack* track); 
   Bool_t PassesNucleiSelection(const AliESDtrack* track);   // added by Natasha
+  Bool_t PassesTPCTOFNsigmaCut(const AliAODTrack* track); 
+  Bool_t PassesTPCTOFNsigmaCut(const AliESDtrack* track);
   Bool_t TPCTOFagree(const AliVTrack *track);
   // end part added by F. Noferini
 
