@@ -102,7 +102,7 @@ void ana(Int_t mode=mLocal)
     TString outputFile = AliAnalysisManager::GetCommonFileName(); 
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     
-    if(kInputData=="AOD" && !kMC)
+    if(kInputData=="ESD" && !kMC)
     {
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
       AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
