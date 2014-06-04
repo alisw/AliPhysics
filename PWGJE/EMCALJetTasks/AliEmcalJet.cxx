@@ -1,4 +1,3 @@
-// $Id$
 //
 // Emcal jet class.
 //
@@ -266,6 +265,50 @@ void AliEmcalJet::SortConstituents()
 
   std::sort(fClusterIDs.GetArray(), fClusterIDs.GetArray() + fClusterIDs.GetSize());
   std::sort(fTrackIDs.GetArray(), fTrackIDs.GetArray() + fTrackIDs.GetSize());
+}
+
+//__________________________________________________________________________________________________
+Double_t AliEmcalJet::DeltaR (const AliVParticle* part) const
+{ // Helper function to calculate the distance between two jets or a jet and a particle
+    Double_t dPhi = this->Phi() - part->Phi();
+    Double_t dEta = this->Eta() - part->Eta();
+    dPhi = TVector2::Phi_mpi_pi ( dPhi );
+
+    return TMath::Sqrt ( dPhi * dPhi + dEta * dEta );
+}
+
+
+//__________________________________________________________________________________________________
+std::vector<int> AliEmcalJet::SortConstituentsPt( TClonesArray *tracks ) const
+{   //___________________________________________
+    // Sorting by p_T (decreasing) jet constituents
+    //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    typedef std::pair<Double_t, Int_t> ptidx_pair;
+
+    // Create vector for Pt sorting
+    std::vector<ptidx_pair> pair_list ;
+
+    for ( Int_t i_entry = 0; i_entry < GetNumberOfTracks(); i_entry++ )
+        {
+        AliVParticle *track = TrackAt(i_entry, tracks);
+        if (!track)
+            {
+            AliError(Form("Unable to find jet track %d in collection %s (pos in collection %d, max %d)", i_entry, tracks->GetName(), TrackAt(i_entry), tracks->GetEntriesFast()));
+            continue;
+            }
+
+        pair_list.push_back( std::make_pair ( track->Pt(), i_entry ) );
+        }
+
+    std::stable_sort( pair_list.begin() , pair_list.end() , sort_descend() );
+
+    // return an vector of indexes of constituents (sorted descending by pt)
+    std::vector <int> index_sorted_list;
+
+    for ( std::vector< std::pair<Double_t,Int_t> >::iterator it = pair_list.begin(); it != pair_list.end(); ++it)
+        { index_sorted_list.push_back( (*it).second ); } // populating the return object with indexes of sorted tracks
+
+    return index_sorted_list;
 }
 
 //__________________________________________________________________________________________________
