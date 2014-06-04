@@ -74,7 +74,7 @@ fRunList()
     }
   }
   
-  SetPackages("VO_ALICE@AliRoot::v5-04-Rev-18","VO_ALICE@ROOT::v5-34-08-5","VO_ALICE@GEANT3::v1-15a-1");
+  SetPackages("VO_ALICE@AliRoot::v5-04-Rev-20");
   
   TString basedir = gSystem->ExpandPathName("$ALICE_ROOT/PWG/muondep");
   
@@ -363,6 +363,8 @@ Bool_t AliMuonGridSubmitter::CopyTemplateFilesToLocal()
       TString stemplate(Form("%s/%s",TemplateDir().Data(),file->String().Data()));
       TString slocal(Form("%s/%s",LocalDir().Data(),file->String().Data()));
       
+      AliDebug(1,Form("Copying %s to %s",stemplate.Data(),slocal.Data()));
+      
       Int_t c =  gSystem->CopyFile(stemplate.Data(),slocal.Data(),ShouldOverwriteFiles());
       if ( c )
       {
@@ -613,6 +615,8 @@ void AliMuonGridSubmitter::OutputToJDL(std::ostream& out, const char* key,
     
     while ( ( v = static_cast<TObjString*>(next())) )
     {
+      if ( v->String().Length() == 0 ) continue;
+      
       --n;
       out << "\t\"" << v->String().Data() << "\"";
       if  ( n ) out << ",";
@@ -779,6 +783,8 @@ Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
 {
   /// Replace the variables (i.e. things starting by VAR_) found in file
   
+  AliDebug(1,file);
+  
   std::ifstream in(file);
   char line[1024];
   TObjArray lines;
@@ -796,15 +802,29 @@ Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
       ++nvars;
       TObjString* key;
       next.Reset();
+      
+      int n(0);
+      
       while ( ( key = static_cast<TObjString*>(next())) )
       {
+        AliDebug(1,Form("Does %s contains %s ?",sline.Data(),key->String().Data()));
+        
         if ( sline.Contains(key->String()) )
         {
           ++nreplaced;
+          ++n;
           TObjString* value = static_cast<TObjString*>(fVars->GetValue(key->String()));
+          AliDebug(1,Form("Replacing %s by %s in %s",key->String().Data(),value->String().Data(),sline.Data()));
           sline.ReplaceAll(key->String(),value->String());
+          AliDebug(1,"Done");
           break;
         }
+      }
+      
+      if (n==0)
+      {
+        AliError(Form("Could not find a replacement for variable %s",sline.Data()));
+        break;
       }
     }
 
@@ -830,6 +850,8 @@ Bool_t AliMuonGridSubmitter::ReplaceVars(const char* file) const
     out.close();
   }
   
+  AliDebug(1,Form("replaced %d vars",nvars));
+  
   return kTRUE;
 }
 
@@ -847,8 +869,9 @@ void AliMuonGridSubmitter::SetPackages(const char* aliroot,
                                          const char* api)
 {
   /// Set the packages to be used by the jobs
-  /// Must be a valid combination, see http://alimonitor.cern.ch/packages/
-  ///
+  /// If root and geant3 are given (default is to let alien get the correct
+  /// values for the requested aliroot version), then they must
+  /// correspond to a valid combination, see http://alimonitor.cern.ch/packages/
   
   SetMapKeyValue("AliRoot",aliroot);
   SetMapKeyValue("Root",root);
@@ -945,6 +968,11 @@ TString AliMuonGridSubmitter::GetVar(const char* key) const
 Bool_t AliMuonGridSubmitter::SetVar(const char* varname, const char* value)
 {
   /// Set a variable
+  ///
+  /// Pay attention to how string variables should be given here : you have
+  /// to espace the quotation marks :
+  ///
+  /// SetVar("VAR_PYTHIA8_SETUP_STRINGS","\"SoftQCD:doubleDiffractive=off\"");
   
   TString s(varname);
   s.ToUpper();

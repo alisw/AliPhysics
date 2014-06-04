@@ -1545,7 +1545,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev,AliVEvent* ev2)
 	  }
 	  //===================================END NEUTRONS==================================================
 	}
-        fPrimaryTree->Fill();
+        if(fCuts->GetHistMakeTree()) fPrimaryTree->Fill();
     } // end of loop over clusters     
 
 

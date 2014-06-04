@@ -29,7 +29,7 @@ public:
     virtual void   UserExec(Option_t *option);
     virtual void   Terminate(Option_t *);
     void IsSim(){fIsSim = kTRUE;}
-    AliPIDResponse *fPIDResponse;
+    AliPIDResponse *fPIDResponse;//!
 
 private:
 

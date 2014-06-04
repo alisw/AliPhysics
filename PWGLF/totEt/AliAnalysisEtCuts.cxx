@@ -69,7 +69,7 @@ AliAnalysisEtCuts::AliAnalysisEtCuts() :
   ,fMonteCarloSingleChargedParticle(3)
   ,fMonteCarloNeutralParticle(0)
 
-  ,fHistMakeTree(kTRUE)
+  ,fHistMakeTree(kFALSE)
   ,fHistMakeTreeDeposit(kFALSE)
   ,fHistNbinsMult(2000)
   ,fHistMinMult(-0.5)
