@@ -347,7 +347,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     high[i0] = Int_t(fTime0vertex[i0]) + corridor;
     time2zero[i0] = 99999;
     pedestal[i0]=Int_t (GetRecoParam()->GetLow(100+i0) );
-    printf(" pmt %i low %i high %i pedestal %i\n",i0,  low[i0], high[i0], pedestal[i0]);
   }
   
   for (Int_t i0=0; i0<110; i0++)
@@ -355,8 +354,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
- 
+  
   Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
   Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
 
@@ -386,8 +384,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	for (Int_t iHit=0; iHit<5; iHit++) 
 	  {
 	    allData[i][iHit] = myrawreader.GetData(i,iHit);
-	    if(allData[i][iHit]>0) printf(" alldata %i pmt hit %i  allData[i][iHit] %i\n", 
-	    i, iHit, allData[i][iHit]);
 	  }
 	}
 	
