@@ -15,7 +15,7 @@ class AliMuonAccEffSubmitter : public AliMuonGridSubmitter
 public:
   AliMuonAccEffSubmitter(const char* generator="GenParamCustom",
                          Bool_t localOnly=kFALSE,
-                         int pythia8version=8175);
+                         const char* generatorVersion="8125");
 
   virtual Bool_t Generate(const char* jdlname) const;
   virtual Bool_t Run(const char* mode);
@@ -67,6 +67,8 @@ public:
   
   TString SnapshotDir() const { return GetMapValue("OCDBsnapshot"); }
 
+  Int_t SplitRunList(const char* inputList, int maxJobs=1500);
+  
 private:
   
   Bool_t GenerateRunJDL(const char* name) const;

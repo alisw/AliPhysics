@@ -106,7 +106,7 @@ protected:
     Float_t Et(TParticle *part, float mass = -1000);
     Float_t Et(Float_t p, Float_t theta, Int_t pid, Short_t charge) const;
 
-    TList *fhistoList;//list of histograms saved out to file
+    TList *fhistoList;//->list of histograms saved out to file
     //static Float_t fgEtaAxis[47];//bins for eta axis of histograms
     static Float_t fgEtaAxis[17];//bins for eta axis of histograms
     static Int_t fgnumOfEtaBins;//number of eta bins

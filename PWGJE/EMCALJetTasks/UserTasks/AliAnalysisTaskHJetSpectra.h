@@ -68,7 +68,8 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
 
 
   Double_t    GetConePt(Double_t eta, Double_t phi, Double_t radius); 
-//FK//  Double_t    GetPtHard();
+  Double_t    GetPtHard();
+  Double_t    GetPythiaPrimaryVertex();
 //FK//  Double_t    GetPythiaTrials();
 
   void        GetPerpendicularCone(Double_t vecPhi, Double_t vecTheta, Double_t& conePt);
@@ -138,10 +139,10 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
 
    TH1I               *fHistEvtSelection;     //!  event statistics
    TH2F               *fh2Ntriggers;  //! trigger counter
-   THnSparse         *fHJetSpec;//!  TT associated spectrum of jets
-   THnSparse         *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
-   THnSparse         *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
-   THnSparse         *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
+   THnSparse          *fHJetSpec;//!  TT associated spectrum of jets
+   THnSparse          *fHJetSpecSubUeMedian;//! TT associated spectrum of jets, jetPT corredted for UE cell median
+   THnSparse          *fHJetSpecSubUeCone;//! TT associated spectrum of jets, jetPT corredted for UE perp cone
+   THnSparse          *fHJetSpecSubUeCMS; //! TT associated spectrum of jets, jetPT corredted for UE CMS
 
    TH2F    *fhRhoCellMedian; //! X=rho from cell median Y=centrality
    TH2F    *fhRhoCone; //! X=rho from perp cone, Y=centrality
@@ -197,7 +198,7 @@ class AliAnalysisTaskHJetSpectra : public AliAnalysisTaskSE {
   AliAnalysisTaskHJetSpectra(const AliAnalysisTaskHJetSpectra&);
   AliAnalysisTaskHJetSpectra& operator=(const AliAnalysisTaskHJetSpectra&);
 
-  ClassDef(AliAnalysisTaskHJetSpectra, 1); // Charged jet analysis for pA
+  ClassDef(AliAnalysisTaskHJetSpectra, 2); // Charged jet analysis for pA
 
 };
 #endif
