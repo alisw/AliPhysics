@@ -211,7 +211,8 @@ class AliAnalysisTaskHFECal : public AliAnalysisTaskSE {
  TH2D                   *fIncRecoMaxE;
  TH2D                   *fPhoRecoMaxE;
  TH2D                   *fSamRecoMaxE; 
- TH2D                   *fPhoVertexReco_HFE;
+ TH2D                   *fPhoVertexReco_TPC;
+ TH2D                   *fPhoVertexReco_TPC_Invmass;
  TH2D                   *fPhoVertexReco_EMCal;
  TH2D                   *fPhoVertexReco_Invmass;
  TH2D                   *fPhoVertexReco_step0;
