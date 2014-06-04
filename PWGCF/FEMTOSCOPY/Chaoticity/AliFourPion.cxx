@@ -34,8 +34,8 @@
 
 #define PI 3.1415927
 #define G_Coeff 0.006399 // 2*pi*alpha*M_pion
-#define kappa3 0.1 // kappa3 Edgeworth coefficient (non-Gaussian features of C2)
-#define kappa4 0.5 // kappa4 Edgeworth coefficient (non-Gaussian features of C2)
+#define kappa3 0.15 // kappa3 Edgeworth coefficient (non-Gaussian features of C2)
+#define kappa4 0.32 // kappa4 Edgeworth coefficient (non-Gaussian features of C2)
 
 
 // Author: Dhevan Gangadharan
@@ -1913,8 +1913,8 @@ void AliFourPion::UserExec(Option_t *)
 	  kT12 = sqrt(pow(pVect1[1]+pVect2[1],2) + pow(pVect1[2]+pVect2[2],2))/2.;
 	  SetFillBins2(ch1, ch2, bin1, bin2);
 	  
-	  if(qinv12 < fQLowerCut) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
-	  if(ch1 == ch2 && !fGeneratorOnly){
+	  if(qinv12 < fQLowerCut && !fMCcase) continue;// remove unwanted low-q pairs (also a type of track splitting/merging cut)
+	  if(ch1 == ch2 && !fGeneratorOnly && !fMCcase){
 	    if(!AcceptPair((fEvt+en1)->fTracks[i], (fEvt+en2)->fTracks[j])) {
 	      if(en1==0 && en2==0) ((TH1F*)fOutputList->FindObject("fRejectedPairs"))->Fill(qinv12);
 	      continue;
@@ -1974,7 +1974,7 @@ void AliFourPion::UserExec(Option_t *)
 	    if((kTbin>=fKbinsT) || (kYbin>=fKbinsY)) {cout<<"problem!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl; continue;}
 	    if(fGenerateSignal && en2==0) {
 	      Int_t chGroup2[2]={ch1,ch2};
-	      Float_t WInput = MCWeight(chGroup2, fRMax, 0.7, qinv12, kT12);
+	      Float_t WInput = MCWeight(chGroup2, fRMax, 0.65, qinv12, kT12);
 	      KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong), WInput);
 	    }else KT[kTbin].KY[kYbin].MB[fMbin].EDB[0].TwoPT[en2].fTerms2ThreeD->Fill(fabs(qout), fabs(qside), fabs(qlong));
 	  }
@@ -2261,8 +2261,8 @@ void AliFourPion::UserExec(Option_t *)
 		    else rForQW=2;
 		    
 		    
-		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinv->Fill(qinv12MC, MCWeight(chGroup2, rForQW, 0.7, qinv12MC, 0.));// was 4,5
-		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(chGroup2, rForQW, 0.7, qinv12MC, 0.));// was 4,5
+		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinv->Fill(qinv12MC, MCWeight(chGroup2, rForQW, 0.65, qinv12MC, 0.));// was 4,5
+		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fMCqinvQW->Fill(qinv12MC, qinv12MC*MCWeight(chGroup2, rForQW, 0.65, qinv12MC, 0.));// was 4,5
 		    // pion purity
 		    Charge1[bin1].Charge2[bin2].MB[fMbin].EDB[0].TwoPT[1].fPIDpurityDen->Fill(kT12, qinv12);
 		    Int_t SCNumber = 1;
@@ -2343,7 +2343,7 @@ void AliFourPion::UserExec(Option_t *)
 		    // momentum resolution
 		    for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 		      Float_t Rvalue = 5+Riter;
-		      Float_t WInput = MCWeight(chGroup2, Rvalue, 0.7, qinv12MC, 0.);
+		      Float_t WInput = MCWeight(chGroup2, Rvalue, 0.65, qinv12MC, 0.);
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fIdeal->Fill(Rvalue, qinv12MC, WInput);
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[1].fIdeal->Fill(Rvalue, qinv12MC);
 		      Charge1[bin1].Charge2[bin2].MB[0].EDB[kTindex].TwoPT[0].fSmeared->Fill(Rvalue, qinv12, WInput);
@@ -2495,6 +2495,11 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotal = sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
 		      /////////////////////////////////////////////////////
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(3, q3, weightTotal);
+		      //
+		      // Full Weight reconstruction
+		      weightTotal *= 2.0;
+		      weightTotal += weight12CC[2] + weight13CC[2] + weight23CC[2];
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(4, q3, weightTotal);
 		    }// 2nd r3 den check
 		    
 		   
@@ -2598,7 +2603,7 @@ void AliFourPion::UserExec(Option_t *)
 		    for(Int_t term=1; term<=5; term++){
 		      for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			Float_t Rvalue = 5+Riter;
-			Float_t WInput = MCWeight3(term, Rvalue, 0.7, chGroup3, QinvMCGroup3, kTGroup3);
+			Float_t WInput = MCWeight3(term, Rvalue, 0.65, chGroup3, QinvMCGroup3, kTGroup3);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fIdeal->Fill(Rvalue, q3MC, WInput);
 			Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[0].EDB[KT3index].ThreePT[term-1].fSmeared->Fill(Rvalue, q3, WInput);
 		      }
@@ -2751,6 +2756,15 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotal /= 3.;
 		      /////////////////////////////////////////////////////
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
+		      // Full Weight reconstruction
+		      weightTotal *= 6.0;
+		      weightTotal += weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2];
+		      weightTotal += 2*sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
+		      weightTotal += 2*sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]);
+		      weightTotal += 2*sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]);
+		      weightTotal += 2*sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]);
+		      weightTotal += weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2];
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, weightTotal);
 		    }
 		  }
 		  /////////////////////////////////////////////////////////////
@@ -2857,7 +2871,7 @@ void AliFourPion::UserExec(Option_t *)
 		      for(Int_t term=1; term<=13; term++){
 			for(Int_t Riter=0; Riter<fRVALUES; Riter++){
 			  Float_t Rvalue = 5+Riter;
-			  Float_t WInput = MCWeight4(term, Rvalue, 0.7, chGroup4, QinvMCGroup4, kTGroup4);
+			  Float_t WInput = MCWeight4(term, Rvalue, 0.65, chGroup4, QinvMCGroup4, kTGroup4);
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fIdeal->Fill(Rvalue, q4MC, WInput);
 			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[0].EDB[KT4index].FourPT[term-1].fSmeared->Fill(Rvalue, q4, WInput);
 			}
@@ -2963,7 +2977,7 @@ Bool_t AliFourPion::AcceptPair(AliFourPionTrackStruct first, AliFourPionTrackStr
 
 }
 //________________________________________________________________________
-Float_t AliFourPion::GamovFactor(Int_t chargeBin1, Int_t chargeBin2, Float_t qinv)
+Float_t AliFourPion::Gamov(Int_t chargeBin1, Int_t chargeBin2, Float_t qinv)
 {
   Float_t arg = G_Coeff/qinv;
   
@@ -3489,8 +3503,12 @@ Float_t AliFourPion::MCWeight4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4], 
 	return C3;
       }else if(term==6 || term==11){
 	return ((1-fcSq) + fcSq*(1 + pow(EA1,2))*Kpair1);// any SC pair will do
-      }else if(term !=12 && term !=13){
+      }else if(term!=12 && term !=13){
 	return ((1-fcSq) + fcSq*Kpair3);// any MC pair will do
+      }else if(term==12){
+	Float_t C22 = (1-fcSq) + fcSq*(1 + pow(EA1,2))*Kpair1;
+	C22 *= (1-fcSq) + fcSq*(1 + pow(EA2,2))*Kpair2;
+	return C22;
       }else return 1.0;
     }
   }
@@ -3613,6 +3631,10 @@ Float_t AliFourPion::MCWeightFSI4(Int_t term, Float_t R, Float_t fcSq, Int_t c[4
 	return ((1-fcSq) + fcSq*Kpair1);// any SC pair will do
       }else if(term !=12 && term !=13){
 	return ((1-fcSq) + fcSq*Kpair3);// any MC pair will do
+      }else if(term==12){
+	Float_t C22 = (1-fcSq) + fcSq*Kpair1;
+	C22 *= (1-fcSq) + fcSq*Kpair2;
+	return C22;
       }else return 1.0;
     }
   }
@@ -3700,7 +3722,17 @@ Float_t AliFourPion::FSICorrelation(Int_t charge1, Int_t charge2, Float_t qinv){
   Int_t qbinL = fFSIss[fFSIindex]->GetXaxis()->FindBin(qinv-fFSIss[fFSIindex]->GetXaxis()->GetBinWidth(1)/2.);
   Int_t qbinH = qbinL+1;
   if(qbinL <= 0) return 1.0;
-  if(qbinH > fFSIss[fFSIindex]->GetNbinsX()) return 1.0;
+  if(qbinH > fFSIss[fFSIindex]->GetNbinsX()) {
+    if(charge1!=charge2) {
+      Float_t ScaleFac = (fFSIos[fFSIindex]->GetBinContent(fFSIos[fFSIindex]->GetNbinsX()-1) - 1);
+      ScaleFac /= (Gamov(charge1, charge2, fFSIos[fFSIindex]->GetXaxis()->GetBinCenter(fFSIos[fFSIindex]->GetNbinsX()-1)) - 1);
+      return ( (Gamov(charge1, charge2, qinv)-1)*ScaleFac + 1); 
+    }else{
+      Float_t ScaleFac = (fFSIss[fFSIindex]->GetBinContent(fFSIss[fFSIindex]->GetNbinsX()-1) - 1);
+      ScaleFac /= (Gamov(charge1, charge2, fFSIss[fFSIindex]->GetXaxis()->GetBinCenter(fFSIss[fFSIindex]->GetNbinsX()-1)) - 1);
+      return ( (Gamov(charge1, charge2, qinv)-1)*ScaleFac + 1);
+    }
+  }
   
   Float_t slope=0;
   if(charge1==charge2){

@@ -56,7 +56,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 3,
+    kDENtypes = 4,
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
@@ -98,7 +98,7 @@ class AliFourPion : public AliAnalysisTaskSE {
 
   void ParInit();
   Bool_t AcceptPair(AliFourPionTrackStruct, AliFourPionTrackStruct);
-  Float_t GamovFactor(Int_t, Int_t, Float_t);
+  Float_t Gamov(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
   Float_t GetQinv(Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
