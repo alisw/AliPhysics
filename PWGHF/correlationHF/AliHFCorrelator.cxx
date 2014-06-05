@@ -252,7 +252,7 @@ Bool_t AliHFCorrelator::Initialize(){
 	
 	// initialize the pool for event mixing
 	if(!fUseCentrality){ // pp, pA
-	//multiplicity = fAODEvent->GetNTracks();
+	//multiplicity = fAODEvent->GetNumberOfTracks();
         //MultipOrCent = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
         fMultCentr = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAODEvent,-1.,1.);
 	//	MultipOrCent = multiplicity; // convert from Int_t to Double_t
@@ -398,7 +398,7 @@ Double_t AliHFCorrelator::SetCorrectPhiRange(Double_t phi){
 TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
 
   Double_t weight=1.;
-  Int_t nTracks = inputEvent->GetNTracks();
+  Int_t nTracks = inputEvent->GetNumberOfTracks();
   AliAODVertex * vtx = inputEvent->GetPrimaryVertex();
   Double_t pos[3],cov[6];
   vtx->GetXYZ(pos);

@@ -488,7 +488,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   }
 
   // TEMPORARY FIX FOR GetEvent
-  Int_t nTracks=((AliAODEvent*)event)->GetNTracks();
+  Int_t nTracks=((AliAODEvent*)event)->GetNumberOfTracks();
   for(Int_t itr=0; itr<nTracks; itr++){
     AliAODTrack* tr=(AliAODTrack*)((AliAODEvent*)event)->GetTrack(itr);
     tr->SetAODEvent((AliAODEvent*)event);

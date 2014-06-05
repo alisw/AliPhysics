@@ -107,7 +107,7 @@ void AliAnalysisTaskPWG2AODUpdate::UserExec(Option_t */*option*/)
   vtx->GetXYZ(pos); // position
     
   // Tracks (primary and orphan)
-  Int_t nTracks = fAOD->GetNTracks();
+  Int_t nTracks = fAOD->GetNumberOfTracks();
 
   printf("NUMBER OF AOD TRACKS %5d\n", nTracks);
   

@@ -588,7 +588,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
         if(fAODEvent){
             if(fSelOption==0){
                 Bool_t useEvent = false;
-                Int_t nTracks = fAODEvent->GetNTracks();
+                Int_t nTracks = fAODEvent->GetNumberOfTracks();
                 for(Int_t itrack=0; itrack<nTracks; itrack++) {
                     AliAODTrack * track = fAODEvent->GetTrack(itrack);
                     if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){

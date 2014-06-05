@@ -1067,7 +1067,7 @@ void  AliAnalysisTask3PCorrelations::UserExec(Option_t */*option*/)
     }
   // cout << "AliAnalysisTask3PCorrelations::UserExec(Option_t *option) - 8" << endl;
   
-  _nTracks  = fAODEvent->GetNTracks();
+  _nTracks  = fAODEvent->GetNumberOfTracks();
   _mult0    = 0;
   _mult1    = 0;
   _mult2    = 0;

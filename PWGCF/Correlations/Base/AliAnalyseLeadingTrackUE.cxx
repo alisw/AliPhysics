@@ -546,7 +546,7 @@ Int_t  AliAnalyseLeadingTrackUE::NParticles(TObject* obj)
         nTracks = array->GetEntriesFast();
   }else if (obj->InheritsFrom("AliAODEvent")){  // RECO AOD tracks
   	AliAODEvent *aodEvent = static_cast<AliAODEvent*>(obj);
-        nTracks = aodEvent->GetNTracks();
+        nTracks = aodEvent->GetNumberOfTracks();
   }else if (obj->InheritsFrom("AliESDEvent")){  // RECO ESD tracks
   	AliESDEvent *esdEvent = static_cast<AliESDEvent*>(obj);
         nTracks = esdEvent->GetNumberOfTracks();

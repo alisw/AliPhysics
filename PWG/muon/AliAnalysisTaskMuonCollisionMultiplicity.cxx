@@ -269,7 +269,7 @@ Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventESD()
 void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 {
   // Fill histos for AOD events
-  Int_t nTracks = fAOD->GetNTracks();
+  Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t nDimuons = fAOD->GetNDimuons();
   
   // Fill histos

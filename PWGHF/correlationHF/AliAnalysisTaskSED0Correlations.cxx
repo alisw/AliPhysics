@@ -607,7 +607,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
   if (fIsRejectSDDClusters) { 
     Bool_t skipEvent = kFALSE;
     Int_t ntracks = 0;
-    if (aod) ntracks = aod->GetNTracks();
+    if (aod) ntracks = aod->GetNumberOfTracks();
     for(Int_t itrack=0; itrack<ntracks; itrack++) { // loop on tacks
       //    ... get the track
       AliAODTrack * track = aod->GetTrack(itrack);
@@ -668,7 +668,7 @@ void AliAnalysisTaskSED0Correlations::UserExec(Option_t */*option*/)
       }
     }
 
-    for(Int_t itrack=0; itrack<aod->GetNTracks(); itrack++) { // loop on tacks
+    for(Int_t itrack=0; itrack<aod->GetNumberOfTracks(); itrack++) { // loop on tacks
       AliAODTrack * track = aod->GetTrack(itrack);
       //rejection of tracks
       if(track->GetID() < 0) continue; //discard negative ID tracks
