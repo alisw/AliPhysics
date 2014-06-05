@@ -32,7 +32,7 @@ AliForwardMultiplicityDistribution::AliForwardMultiplicityDistribution()
  
 //_____________________________________________________________________
 AliForwardMultiplicityDistribution::AliForwardMultiplicityDistribution(const char* name) 
-  : AliBaseAODTask(name),
+  : AliBaseAODTask(name, "AliForwardMultiplicityDistribution"),
     fBins(),       // eta bin list
     fNBins(-1)    // multiplicity axis' runs from 0 to fNbins
 {
