@@ -176,7 +176,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Int_t GetPmdDetPlane()const {return fPmdDet; }
   Float_t GetPmdAdc()const {return fPmdAdc;}
   Float_t GetPmdNcell() const {return fPmdNcell; }
-  Float_t GetBeta(const AliVTrack* t);
+  Float_t GetBeta(const AliVTrack* t, Bool_t QAmode = kFALSE);
   Float_t Getdedx(const AliESDtrack* t) const;
   Float_t GetBayesianProb() const {return fProbBayes;};
   AliFlowBayesianPID* GetBayesianResponse() const {return  fBayesianResponse;}

@@ -54,7 +54,7 @@ protected:
   Bool_t  TestTOF(Double_t /*t*/,Double_t /*en*/)const{return kTRUE;} 
   Bool_t  TestCharged(Double_t dr,Double_t en)const ;
   void    InitGeometry() ;  //read reotation matrixes from AOD/AOD
-  Int_t   EvalIsolation(TLorentzVector * ph) ;
+  Int_t   EvalIsolation(TLorentzVector * ph,Bool_t isPhoton) ;
   Bool_t  TestLambda(Double_t pt,Double_t l1,Double_t l2) ;
   Bool_t  TestPID(Int_t iPID, AliCaloPhoton* part) ;
   Double_t PrimaryParticleWeight(AliAODMCParticle * particle) ;
@@ -73,7 +73,7 @@ private:
   TClonesArray *fStack ;             //!Pointer to MC stack
   TClonesArray * fTrackEvent ;   //!List of tracks in the event
   TClonesArray * fPHOSEvent ;    //!List of tracks in the event
-  TList   * fPHOSEvents[1][5] ; //!Previous events for mixing
+  TList   * fPHOSEvents[10][5] ; //!Previous events for mixing
   TList   * fCurrentMixedList;   //! list of previous evetns for given centrality
   AliTriggerAnalysis * fTriggerAnalysis ; //!
   AliAnalysisUtils * fUtils ;
