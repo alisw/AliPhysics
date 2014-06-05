@@ -315,7 +315,7 @@ analyse_run()
 {
     local source=$1 ; shift 
     local store=$1 ; shift 
-    local r=$1 ; shift 
+    local r=`echo $1 | sed 's/^0*//'` ; shift 
     local rr=`printf %09d $r`
     local o=${store}/${rr}/input.root
     mkdir -p ${store}/${rr}
