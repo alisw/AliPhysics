@@ -825,6 +825,16 @@ AliAODVertex* AliAODEvent::GetPrimaryVertexSPD() const{
   return 0;
 }
 //______________________________________________________________________________
+AliAODVertex* AliAODEvent::GetPrimaryVertexTPC() const{
+  // Get SPD primary vertex
+  Int_t nVertices=GetNumberOfVertices();
+  for(Int_t iVert=0; iVert<nVertices; iVert++){
+    AliAODVertex *v=GetVertex(iVert);
+    if(v->GetType()==AliAODVertex::kMainTPC) return v;
+  }
+  return 0;
+}
+//______________________________________________________________________________
 AliAODVertex* AliAODEvent::GetPileupVertexSPD(Int_t iV) const{
   // Get pile-up vertex iV
   Int_t nVertices=GetNumberOfVertices();

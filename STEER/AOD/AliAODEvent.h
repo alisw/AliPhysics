@@ -159,6 +159,8 @@ class AliAODEvent : public AliVEvent {
   // primary vertex
   virtual AliAODVertex *GetPrimaryVertex() const { return GetVertex(0); }
   virtual AliAODVertex *GetPrimaryVertexSPD() const;
+  virtual AliAODVertex *GetVertex() const { return GetPrimaryVertexSPD(); }
+  virtual AliAODVertex *GetPrimaryVertexTPC() const;
 
   // -- Pileup vertices 
   Int_t         GetNumberOfPileupVerticesTracks()   const;
