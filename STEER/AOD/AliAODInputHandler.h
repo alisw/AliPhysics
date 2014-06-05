@@ -13,6 +13,7 @@
 #include "AliInputEventHandler.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
+#include "AliAODMCHeader.h"
 class TList;
 class AliMCEvent;
 class TH2F;

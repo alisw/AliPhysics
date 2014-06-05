@@ -74,14 +74,15 @@ public:
    *  @return     always kTRUE;
    */
   Bool_t IsSortable() const  { return kTRUE; }
-
+  
 
   // coordinate system conversions
   Bool_t   Local2GlobalMomentum(Double_t p[3], Double_t alpha) const;
   Bool_t   Local2GlobalPosition(Double_t r[3], Double_t alpha) const;
   Bool_t   Global2LocalMomentum(Double_t p[3], Short_t charge, Double_t &alpha) const;
   Bool_t   Global2LocalPosition(Double_t r[3], Double_t alpha) const;
-
+  //Navigation
+  virtual Int_t GetMother()   const {return -1;}
   
 
   ClassDef(AliVParticle, 3)  // base class for particles
