@@ -1402,16 +1402,25 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
 {
   //get standard VZERO cuts
+  //DISCLAIMER: LHC10h VZERO calibration consists (by default) of two steps
+  //1) re-weigting of signal
+  //2) re-centering of q-vectors
+  //step 2 is available only for n==2 and n==3, for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
-  cuts->SetParamType(kVZERO);
+  cuts->SetParamType(AliFlowTrackCuts::kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   // options for the reweighting
   cuts->SetVZEROgainEqualizationPerRing(kFALSE);
   cuts->SetApplyRecentering(kTRUE);
-  // to exclude a ring , do e.g.
+  // to exclude a ring , do e.g. 
   // cuts->SetUseVZERORing(7, kFALSE);
+  // excluding a ring will break the re-centering as re-centering relies on a 
+  // database file which tuned to receiving info from all rings
   return cuts;
 }
 //-----------------------------------------------------------------------
@@ -1423,6 +1432,10 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   //if recentering is enableded, the sub-q vectors
   //will be taken from the event header, so make sure to run 
   //the VZERO event plane selection task before this task !
+  //DISCLAIMER: recentering is only available for n==2
+  //for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
   //recentering replaces the already evaluated q-vectors, so 
   //when chosen, additional settings (e.g. excluding rings) 
   //have no effect. recentering is true by default
@@ -1436,6 +1449,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2011");
   cuts->SetParamType(kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
