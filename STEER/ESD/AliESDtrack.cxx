@@ -3138,6 +3138,9 @@ Double_t AliESDtrack::GetTOFsignalDx() const
   Int_t index = -1;
   if(fNtofClusters>0 && GetESDEvent()){
     TClonesArray *tofclArray = GetESDEvent()->GetESDTOFClusters();
+    if (!tofclArray) return 0; 
+    // MI change 05.06. TOF experts to be contacted
+    // program crash With 0 pointer. Is it possible to get 0s?
     tofcl = (AliESDTOFCluster *) tofclArray->At(fTOFcluster[0]);
     for(Int_t i=0;i < tofcl->GetNMatchableTracks();i++){
       if(tofcl->GetTrackIndex(i) == GetID()) index = i;
