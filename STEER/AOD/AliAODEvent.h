@@ -141,8 +141,7 @@ class AliAODEvent : public AliVEvent {
   // -- Tracks
   TClonesArray *GetTracks()              const { return fTracks; }
   void          ConnectTracks();
-  Int_t         GetNTracks()             const { return fTracks? fTracks->GetEntriesFast() : 0; }
-  Int_t         GetNumberOfTracks()      const { return GetNTracks(); }
+  Int_t         GetNumberOfTracks()      const { return fTracks? fTracks->GetEntriesFast() : 0; }
   AliAODTrack  *GetTrack(Int_t nTrack)   const { return fTracks ? (AliAODTrack*)fTracks->UncheckedAt(nTrack):0; }
   Int_t         AddTrack(const AliAODTrack* trk);
   Int_t         GetMuonTracks(TRefArray *muonTracks) const;

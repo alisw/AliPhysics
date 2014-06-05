@@ -392,7 +392,7 @@ void AliAODHandler::StoreMCParticles(){
   TClonesArray* tracks = fAODEvent->GetTracks();
   Int_t tofLabel[3];
   if(tracks){
-    for(int it = 0; it < fAODEvent->GetNTracks();++it){
+    for(int it = 0; it < fAODEvent->GetNumberOfTracks();++it){
       AliAODTrack *track = fAODEvent->GetTrack(it);
       
       Int_t sign = 1;

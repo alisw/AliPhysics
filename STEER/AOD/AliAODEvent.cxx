@@ -618,7 +618,7 @@ Int_t AliAODEvent::GetMuonTracks(TRefArray *muonTracks) const
   muonTracks->Clear();
 
   AliAODTrack *track = 0;
-  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
     track = GetTrack(iTrack);
     if (track->IsMuonTrack()) {
       muonTracks->Add(track);
@@ -634,7 +634,7 @@ Int_t AliAODEvent::GetNumberOfMuonTracks() const
 {
   // get number of muon tracks
   Int_t nMuonTracks=0;
-  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
     if ((GetTrack(iTrack))->IsMuonTrack()) {
        nMuonTracks++;
     }
@@ -651,7 +651,7 @@ Int_t AliAODEvent::GetMuonGlobalTracks(TRefArray *muonGlobalTracks) const       
   muonGlobalTracks->Clear();
 
   AliAODTrack *track = 0;
-  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
     track = GetTrack(iTrack);
     if (track->IsMuonGlobalTrack()) {
       muonGlobalTracks->Add(track);
@@ -667,7 +667,7 @@ Int_t AliAODEvent::GetNumberOfMuonGlobalTracks() const                          
 {
   // get number of muon global tracks
   Int_t nMuonGlobalTracks=0;
-  for (Int_t iTrack = 0; iTrack < GetNTracks(); iTrack++) {
+  for (Int_t iTrack = 0; iTrack < GetNumberOfTracks(); iTrack++) {
     if ((GetTrack(iTrack))->IsMuonGlobalTrack()) {
        nMuonGlobalTracks++;
     }
