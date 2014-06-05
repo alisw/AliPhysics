@@ -1224,34 +1224,34 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::FillLc2pK0Sspectrum(AliAODRecoCascadeHF
   Double_t probTPCTOF[AliPID::kSPECIES]={-1.};
 	
   UInt_t detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
-  Printf("detUsed (TPCTOF case) = %d", detUsed);
+  AliDebug(2, Form("detUsed (TPCTOF case) = %d", detUsed));
   Double_t probProton = -1.;
   Double_t probPion = -1.;
   Double_t probKaon = -1.;
   if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask() ) {
-    Printf("We have found the detector mask for TOF + TPC: probProton will be set to %f", probTPCTOF[AliPID::kProton]);
+    AliDebug(2, Form("We have found the detector mask for TOF + TPC: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
     probProton = probTPCTOF[AliPID::kProton];
     probPion = probTPCTOF[AliPID::kPion];
     probKaon = probTPCTOF[AliPID::kKaon];
   }
   else { // if you don't have both TOF and TPC, try only TPC
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
-    Printf("We did not find the detector mask for TOF + TPC, let's see only TPC");
+    AliDebug(2, "We did not find the detector mask for TOF + TPC, let's see only TPC");
     detUsed = fPIDCombined->ComputeProbabilities(bachelor, fPIDResponse, probTPCTOF);
-    Printf("detUsed (TPC case) = %d", detUsed);
+    AliDebug(2,Form(" detUsed (TPC case) = %d", detUsed));
     if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {
       probProton = probTPCTOF[AliPID::kProton];
       probPion = probTPCTOF[AliPID::kPion];
       probKaon = probTPCTOF[AliPID::kKaon];
-      Printf("TPC only worked: probProton will be set to %f", probTPCTOF[AliPID::kProton]);
+      AliDebug(2, Form("TPC only worked: probProton will be set to %f", probTPCTOF[AliPID::kProton]));
     }
     else {
-      Printf("Only TPC did not work...");
+      AliDebug(2, "Only TPC did not work...");
     }
     // resetting mask to ask for both TPC+TOF
     fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
   }
-  Printf("probProton = %f", probProton);
+  AliDebug(2, Form("probProton = %f", probProton));
 
   // now we get the TPC and TOF single PID probabilities (only for Proton, or the tree will explode :) )
   Double_t probProtonTPC = -1.;
