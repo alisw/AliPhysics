@@ -315,8 +315,10 @@ Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_
 
   Double_t pimass = 0.13956995;
  
+  if(mass>pimass){
   corr = vwidth*(vmass/mass)*exp(1.5*log((mass*mass/4.0-pimass*pimass)
          /(vmass*vmass/4.0-pimass*pimass)));
+  }
 
   epsilon = (emass/mass)*(emass/mass);
        
