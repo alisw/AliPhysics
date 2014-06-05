@@ -537,6 +537,10 @@ guessRunData()
   if [[ ${dataType} =~ sim ]]; then 
     anchorYear=$(for x in $mcProductionMap ; do [[ "${x}" =~ ${originalPeriod} ]] && echo ${x} && break; done)
     anchorYear=${anchorYear#*=}
+    if [[ -z "${anchorYear}" ]]; then
+      echo WARNING: anchorYear not available for this production: ${originalPeriod}, cannot set the OCDB."
+      return 1
+    fi
     ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
   else
     ocdbStorage=$(setYear ${year} ${ocdbStorage})
