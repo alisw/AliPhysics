@@ -1320,7 +1320,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
   Int_t runNumber = aod->GetRunNumber();
   TString trigClass=aod->GetFiredTriggerClasses();
-  Int_t nAODtracks=aod->GetNTracks();
+  Int_t nAODtracks=aod->GetNumberOfTracks();
   Int_t nSelTracksTPCOnly=0;
   Int_t nSelTracksTPCITS=0;
   Int_t nSelTracksTPCITS1SPD=0;
@@ -1835,7 +1835,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t ntracks=0;
   Int_t isGoodTrack=0, isFakeTrack=0, isSelTrack=0;
 
-  if(aod) ntracks=aod->GetNTracks();
+  if(aod) ntracks=aod->GetNumberOfTracks();
 
   if(fOnOff[0] || fOnOff[1]){
     //loop on tracks in the event

@@ -235,7 +235,7 @@ Int_t AliAnalysisMuonUtility::GetNTracks ( const AliVEvent* event )
   //
   /// Return the number of tracks in event
   //
-  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetNTracks() : static_cast<const AliESDEvent*>(event)->GetNumberOfMuonTracks();
+  return ( IsAODEvent(event) ) ? static_cast<const AliAODEvent*>(event)->GetNumberOfTracks() : static_cast<const AliESDEvent*>(event)->GetNumberOfMuonTracks();
 }
 
 //________________________________________________________________________

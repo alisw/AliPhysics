@@ -423,7 +423,7 @@ TObjArray* AliAnalysisTaskDiMuonCorrelations::GetAcceptedTracksMuonArm(AliAODEve
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kFALSE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
   

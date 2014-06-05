@@ -129,8 +129,8 @@ void AliAnalysisTaskCreateMixedDimuons::UserExec(Option_t *) {
       Int_t nTracksEv[2]  = {0};
       Int_t nFWMuonsEv[2] = {0};
       
-      nTracksEv[0] = fInputAOD[iEv]->GetNTracks();
-      nTracksEv[1] = fInputAOD[jEv]->GetNTracks();
+      nTracksEv[0] = fInputAOD[iEv]->GetNumberOfTracks();
+      nTracksEv[1] = fInputAOD[jEv]->GetNumberOfTracks();
       
       for (Int_t i=0; i<nTracksEv[0]; i++) if(fInputAOD[iEv]->GetTrack(i)->IsMuonTrack()) nFWMuonsEv[0]++;
       for (Int_t i=0; i<nTracksEv[1]; i++) if(fInputAOD[jEv]->GetTrack(i)->IsMuonTrack()) nFWMuonsEv[1]++;

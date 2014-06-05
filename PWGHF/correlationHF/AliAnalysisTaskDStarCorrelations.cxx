@@ -1449,7 +1449,7 @@ void AliAnalysisTaskDStarCorrelations::EventMixingChecks(AliAODEvent* AOD){
 	
 	// get the pool for event mixing
 	if(fSystem != AA){ // pp
-		multiplicity = AOD->GetNTracks();
+		multiplicity = AOD->GetNumberOfTracks();
 		MultipOrCent = multiplicity; // convert from Int_t to Double_t
 	}
 	if(fSystem == AA){ // PbPb

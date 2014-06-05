@@ -456,7 +456,7 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksCentralBarrel
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kTRUE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
 
@@ -480,7 +480,7 @@ TObjArray* AliAnalysisTaskMuonHadronCorrelations::GetAcceptedTracksMuonArm(AliAO
   TObjArray *tracks = new TObjArray;
   tracks->SetOwner(kFALSE);
 
-  Int_t nTracks = aodEvent->GetNTracks();
+  Int_t nTracks = aodEvent->GetNumberOfTracks();
 
   AliAODTrack *track = 0;
   

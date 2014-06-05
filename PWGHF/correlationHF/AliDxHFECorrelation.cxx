@@ -593,7 +593,7 @@ void AliDxHFECorrelation::EventMixingChecks(const AliVEvent* pEvent){
 	
   // get the pool for event mixing
   if(!fSystem){ // pp
-    multiplicity = AOD->GetNTracks();
+    multiplicity = AOD->GetNumberOfTracks();
     MultipOrCent = multiplicity; // convert from Int_t to Double_t
   }
   if(fSystem){ // PbPb		

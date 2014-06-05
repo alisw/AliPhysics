@@ -396,7 +396,7 @@ void AliAnalysisTaskSEHFCJqa::UserExec(Option_t */*option*/){
   SetupPIDresponse();// this sets the pid reponse to fPPIDRespons; could also get from the cut object (AliAODPidHF::GetPidResponse)
 
   // Looping over aod tracks
-  for(Int_t j=0;j<aod->GetNTracks();j++){
+  for(Int_t j=0;j<aod->GetNumberOfTracks();j++){
 
     AliAODTrack *aodtrack=aod->GetTrack(j);
     // CHECK FILTER MAPS
