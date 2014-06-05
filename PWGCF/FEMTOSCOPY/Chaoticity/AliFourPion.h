@@ -56,7 +56,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 4,
+    kDENtypes = 5,
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
@@ -149,6 +149,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fPionPionK3; //!
     //
     TH2D *fTwoPartNorm; //!
+    TH2D *fTwoPartNormErr; //!
   };
   struct St7 {
     TH3D *fTerms2OSL; //!
@@ -186,6 +187,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH3D *fPionPionK4; //!
     //
     TH2D *fTwoPartNorm; //!
+    TH2D *fTwoPartNormErr; //!
   };
   struct St_EDB {
     struct St5 TwoPT[2];
