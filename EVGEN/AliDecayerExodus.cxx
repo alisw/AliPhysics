@@ -29,6 +29,22 @@
 
 ClassImp(AliDecayerExodus)
 
+//---------------------------------------------------------------------------------------------------
+//                                 
+// Generate electron-pair mass distributions for Dalitz decays according
+// to the Kroll-Wada parametrization: N. Kroll, W. Wada: Phys. Rev 98(1955)1355
+// and generate electron-pair mass distributions for resonances according
+// to the Gounaris-Sakurai parametrization: G.J. Gounaris, J.J. Sakurai: Phys.Rev.Lett. 21(1968)244 
+//
+// For the electromagnetic form factor the parameterization from
+// Lepton-G is used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301
+//
+// Ralf Averbeck (R.Averbeck@gsi.de) 
+// Irem Erdemir  (irem.erdemir@cern.ch)
+//
+//---------------------------------------------------------------------------------------------------
+
+
 AliDecayerExodus::AliDecayerExodus():
     AliDecayer(),
     fEPMassPion(0),
@@ -276,7 +292,7 @@ void AliDecayerExodus::Init()
      weight_rho     = (Float_t)GounarisSakurai(mass_bin,vmass_rho,vwidth_rho,emass);
      weight_omega   = (Float_t)GounarisSakurai(mass_bin,vmass_omega,vwidth_omega,emass);
      weight_phi     = (Float_t)GounarisSakurai(mass_bin,vmass_phi,vwidth_phi,emass); 
-     weight_jpsi    = (Float_t)GounarisSakurai(mass_bin,vmass_jpsi,vwidth_jpsi,emass);
+     weight_jpsi    = (Float_t)Lorentz(mass_bin,vmass_jpsi,vwidth_jpsi);
 
      // Fill histograms of electron pair masses from resonance decays
      fEPMassRho  ->AddBinContent(ibin,weight_rho);
@@ -290,6 +306,7 @@ void AliDecayerExodus::Init()
 Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass)
 {
 // Invariant mass distributions of electron pairs from resonance decays
+// of rho, omega and phi
 // using Gounaris-Sakurai function
 
   Double_t corr = 0.;
@@ -297,10 +314,10 @@ Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_
   Double_t weight = 0.;
 
   Double_t pimass = 0.13956995;
+ 
+  corr = vwidth*(vmass/mass)*exp(1.5*log((mass*mass/4.0-pimass*pimass)
+         /(vmass*vmass/4.0-pimass*pimass)));
 
-  corr = vwidth*(vmass/mass)
-         * exp(1.5*log((mass*mass/4.0-pimass*pimass)
-          /(vmass*vmass/4.0-pimass*pimass)));
   epsilon = (emass/mass)*(emass/mass);
        
   if ( 1.0-4.0*epsilon>=0.0 )
@@ -312,6 +329,20 @@ Double_t AliDecayerExodus::GounarisSakurai(Float_t mass, Double_t vmass, Double_
   return weight;  
 }
 
+
+Double_t AliDecayerExodus::Lorentz(Float_t mass, Double_t vmass, Double_t vwidth)
+{
+// Invariant mass distributions of electron pairs from resonance decay
+// of jpsi (and it can also be used for other particles except rho, omega and phi) 
+// using Lorentz function
+
+  Double_t weight;
+  
+  weight = (vwidth*vwidth/4.0)/(vwidth*vwidth/4.0+(vmass-mass)*(vmass-mass));
+
+  return weight;
+
+}
 
 void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
 {
@@ -910,7 +941,15 @@ void AliDecayerExodus::Decay(Int_t idpart, TLorentzVector* pparent)
         mp_jpsi = pparent->M();
         }
      else{
-     mp_jpsi = 3.096;
+      /*Double_t x_jpsi=pparent->Px(); 
+      Double_t y_jpsi=pparent->Py(); 
+      Double_t z_jpsi=pparent->Pz();
+      Double_t t_jpsi=pparent->E();
+      Double_t p_jpsi=x_jpsi*x_jpsi+y_jpsi*y_jpsi+z_jpsi*z_jpsi;
+      Double_t Q2_jpsi= abs((t_jpsi*t_jpsi)-(p_jpsi*p_jpsi));
+      mp_jpsi = sqrt(Q2_jpsi);*/
+       
+      mp_jpsi = 3.096;
 
      }
     
