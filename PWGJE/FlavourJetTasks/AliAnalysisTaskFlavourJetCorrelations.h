@@ -86,16 +86,16 @@ public:
    
    //Bool_t   FillMCDJetInfo(AliPicoTrack *jetTrk,AliEmcalJet* jet, TClonesArray *mcArray,Double_t ptjet);
    void FillHistogramsRecoJetCorr(AliVParticle* candidate, AliEmcalJet *jet, AliAODEvent* aodEvent);
-   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, AliAODEvent* aodEvent);
+   void FillHistogramsD0JetCorr(AliAODRecoDecayHF* candidate, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc, AliAODEvent* aodEvent);
    
-   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj);
-   void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t phiD, Double_t z,Double_t ptD,Double_t ptjet);
+   void FillHistogramsDstarJetCorr(AliAODRecoCascadeHF* dstar, Double_t dPhi, Double_t phiD, Double_t z, Double_t ptD, Double_t ptj, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
+   void FillHistogramsMCGenDJetCorr(Double_t dPhi, Double_t phiD, Double_t z,Double_t ptD,Double_t ptjet, Bool_t bDInEMCalAcc, Bool_t bJetInEMCalAcc);
    void SideBandBackground(AliAODRecoCascadeHF *candDstar, AliEmcalJet *jet);
    void MCBackground(AliAODRecoDecayHF *candbg);
    void FillMassHistograms(Double_t mass,Double_t ptD);
    void FlagFlavour(AliEmcalJet* jet);
    Int_t IsDzeroSideBand(AliAODRecoCascadeHF *candDstar);
-   
+   Bool_t InEMCalAcceptance(AliVParticle *vpart);
 private:
    
    AliAnalysisTaskFlavourJetCorrelations(const AliAnalysisTaskFlavourJetCorrelations &source);
