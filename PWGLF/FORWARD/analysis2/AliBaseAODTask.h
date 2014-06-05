@@ -22,12 +22,22 @@ public:
    * Constructor 
    * 
    * @param name Name of task 
+   * @param title Class name used in configuration script 
    */
-  AliBaseAODTask(const char* name);
+  AliBaseAODTask(const char* name,
+		 const char* title);
   /** 
    * Destructor
    */
   virtual ~AliBaseAODTask() {} 
+  /** 
+   * Configure this task via a macro 
+   * 
+   * @param macro Macro to configure va 
+   * 
+   * @return true on success, false otherwise
+   */
+  virtual Bool_t Configure(const char* macro="dNdetaConfig.C");
   /** 
    * @{ 
    * @name Set parameters 
@@ -252,12 +262,12 @@ protected:
   Double_t fMinIpZ;        // Least z--coordiante of interaction point
   Double_t fMaxIpZ;        // Largest z--coordiante of interaction point
   TAxis    fCentAxis;      // Centrality axis 
-  TH1*     fTriggers;      // Histogram of triggers
-  TH1*     fEventStatus;   // Histogram of event selection 
-  TH1*     fVertex;        // Vertex distribution of all events 
-  TH1*     fCent;          // Centrality distribution of all events
-  TH1*     fAccVertex;     // Vertex distribution of accepted events 
-  TH1*     fAccCent;       // Centrality distribution of accepted events
+  TH1I*    fTriggers;      // Histogram of triggers
+  TH1I*    fEventStatus;   // Histogram of event selection 
+  TH1D*    fVertex;        // Vertex distribution of all events 
+  TH1D*    fCent;          // Centrality distribution of all events
+  TH1D*    fAccVertex;     // Vertex distribution of accepted events 
+  TH1D*    fAccCent;       // Centrality distribution of accepted events
   Bool_t   fFirstEvent;    // Information stored or not 
   Bool_t   fCloneList;     // Wether to clone sum list for results
   TList*   fSums;          // Output list of sums

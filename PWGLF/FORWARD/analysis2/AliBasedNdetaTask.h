@@ -160,6 +160,27 @@ public:
     */
   void SetSatelliteVertices(Bool_t satVtx) { fSatelliteVertices = satVtx; }
   /** 
+   * Set which centrality estimator to use - if not set, use the one
+   * from the Forward AOD object.  Note, the string is diagnosed, and
+   * if found not to be valid, then a the program terminates via a
+   * Fatal.
+   *
+   * @param method String definining centrality method (case insensitive)
+   * Typical values are 
+   * - V0M (e.g., PbPb)
+   * - V0A 
+   * - V0C 
+   * - FMD 
+   * - ZNA (e.g., pPb) 
+   * - ZNC (e.g., Pbp)
+   * - ZPA 
+   * - ZPC 
+   * - ZEMvsZDC
+   *
+   * @return true if @a method is valid estimator 
+   */
+  Bool_t SetCentralityMethod(const TString& method);
+  /** 
    * Get a string representing the normalization scheme 
    * 
    * @param scheme Normalization scheme bits 
@@ -911,7 +932,8 @@ protected:
   Bool_t          fSatelliteVertices; // satellite vertex flag
   TH2D*           fEmpiricalCorrection; // Empirical correction 
   TH2D* 	  fMeanVsC;         //mean signal per event vs cent
-  ClassDef(AliBasedNdetaTask,14); // Determine charged particle density
+  TString         fCentMethod;    // Centrality estimator 
+  ClassDef(AliBasedNdetaTask,15); // Determine charged particle density
 };
 
 #endif
