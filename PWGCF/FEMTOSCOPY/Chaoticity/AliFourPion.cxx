@@ -1199,6 +1199,11 @@ void AliFourPion::UserCreateOutputObjects()
 		  nameTwoPartNorm->Append("_TwoPartNorm");
 		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
 		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNorm);
+		  //
+		  TString *nameTwoPartNormErr=new TString(namePC3->Data());
+		  nameTwoPartNormErr->Append("_TwoPartNormErr");
+		  Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ3,0,fQupperBoundQ3);
+		  fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].MB[mb].EDB[edB].ThreePT[term].fTwoPartNormErr);
 		}// term=4
 		
 	      }// term_3
@@ -1248,6 +1253,11 @@ void AliFourPion::UserCreateOutputObjects()
 		    nameTwoPartNorm->Append("_TwoPartNorm");
 		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm = new TH2D(nameTwoPartNorm->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
 		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNorm);
+		    //
+		    TString *nameTwoPartNormErr=new TString(namePC4->Data());
+		    nameTwoPartNormErr->Append("_TwoPartNormErr");
+		    Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr = new TH2D(nameTwoPartNormErr->Data(),"", kDENtypes,0.5,kDENtypes+0.5, fQbinsQ4,0,fQupperBoundQ4);
+		    fOutputList->Add(Charge1[c1].Charge2[c2].Charge3[c3].Charge4[c4].MB[mb].EDB[edB].FourPT[term].fTwoPartNormErr);
 		  }
 		  
 		  if(fMCcase==kTRUE){
@@ -1851,7 +1861,8 @@ void AliFourPion::UserExec(Option_t *)
   Float_t weight23CC[3]={0};
   Float_t weight24CC[3]={0};
   Float_t weight34CC[3]={0};
-  Float_t weightTotal=0;//, weightTotalErr=0;
+  Float_t weight12CC_e=0, weight13CC_e=0, weight14CC_e=0, weight23CC_e=0, weight24CC_e=0, weight34CC_e=0;
+  Float_t weightTotal=0, weightTotalErr=0;
   Float_t qinv12MC=0, qinv13MC=0, qinv14MC=0, qinv23MC=0, qinv24MC=0, qinv34MC=0; 
   Float_t parentQinv12=0, parentQinv13=0, parentQinv14=0, parentQinv23=0, parentQinv24=0, parentQinv34=0;
   Float_t parentQ3=0;
@@ -2500,6 +2511,16 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotal *= 2.0;
 		      weightTotal += weight12CC[2] + weight13CC[2] + weight23CC[2];
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(4, q3, weightTotal);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(5, q3, 1);
+		      //
+		      weight12CC_e = weight12Err*MomResCorr12 / FSICorr12 / ffcSq * MuonCorr12;
+		      weight13CC_e = weight13Err*MomResCorr13 / FSICorr13 / ffcSq * MuonCorr13;
+		      weight23CC_e = weight23Err*MomResCorr23 / FSICorr23 / ffcSq * MuonCorr23;
+		      if(weight12CC[2]*weight13CC[2]*weight23CC[2] > 0){
+			weightTotalErr = pow(2 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
+		      }
+		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight23CC_e,2);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNormErr->Fill(4, q3, weightTotalErr);
 		    }// 2nd r3 den check
 		    
 		   
@@ -2758,13 +2779,28 @@ void AliFourPion::UserExec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
 		      // Full Weight reconstruction
 		      weightTotal *= 6.0;
-		      weightTotal += weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2];
 		      weightTotal += 2*sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
 		      weightTotal += 2*sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]);
 		      weightTotal += 2*sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]);
 		      weightTotal += 2*sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]);
 		      weightTotal += weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2];
+		      weightTotal += weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2];
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, weightTotal);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(5, q4, 1);
+		      // stat errors
+		      weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
+		      weight24CC_e = weight24Err*MomResCorr24 / FSICorr24 / ffcSq * MuonCorr24;
+		      weight34CC_e = weight34Err*MomResCorr34 / FSICorr34 / ffcSq * MuonCorr34;
+		      if(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2] > 0){
+			weightTotalErr = pow( 6 * 2 * weight12CC_e*weight13CC[2]*weight24CC[2]*weight34CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]),2);
+		      }
+		      if(weight12CC[2]*weight13CC[2]*weight23CC[2] > 0){
+			weightTotalErr += pow( 8 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
+		      }
+		      weightTotalErr += 2*(pow(weight12CC_e*weight34CC[2],2) + pow(weight13CC_e*weight24CC[2],2) + pow(weight14CC_e*weight23CC[2],2));
+		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight14CC_e,2) + pow(weight23CC_e,2) + pow(weight24CC_e,2) + pow(weight34CC_e,2);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNormErr->Fill(4, q4, weightTotalErr);
+		      
 		    }
 		  }
 		  /////////////////////////////////////////////////////////////
@@ -3121,24 +3157,7 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   }
   //
 
-  
-  //Float_t min = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
-  Float_t minErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
-  /*
-  Float_t deltaW=0;
-  // kt
-  deltaW += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - min)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
-  // Qo 
-  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1) - min)*(qOut-fQmean[fQoIndexL])/fQstepWeights;
-  // Qs
-  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1) - min)*(qSide-fQmean[fQsIndexL])/fQstepWeights;
-  // Ql
-  deltaW += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - min)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
-  //
-  wgt = min + deltaW;
-  */
-  
- 
+   
   //
   // w interpolation (kt)
   Float_t c000 = fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*(1-wd) + fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexL+1, fQlIndexL+1)*wd;
@@ -3162,19 +3181,12 @@ void AliFourPion::GetWeight(Float_t track1[], Float_t track2[], Float_t& wgt, Fl
   
   ////
   
-  // Denominator errors negligible compared to numerator so do not waste cpu time below.  
-  //Float_t deltaWErr=0;
-  // Kt
-  /*
-  deltaWErr += (fNormWeight[fKtIndexH][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexH+1) - minErr)*(kt-fKmeanT[fKtIndexL])/((fKstepT[fKtIndexL]+fKstepT[fKtIndexH])/2.);
-  // Qo 
-  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexL+1, fQsIndexH+1, fQlIndexH+1) - minErr)*(qOut-fQmean[fQoIndexL])/fQstepWeights;
-  // Qs
-  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexL+1, fQlIndexH+1) - minErr)*(qSide-fQmean[fQsIndexL])/fQstepWeights;
-  // Ql
-  deltaWErr += (fNormWeight[fKtIndexL][fMbin]->GetBinContent(fQoIndexH+1, fQsIndexH+1, fQlIndexL+1) - minErr)*(qLong-fQmean[fQlIndexL])/fQstepWeights;
-  */
-  wgtErr = minErr;
+  // simplified stat error 
+  Float_t avgErr = fNormWeight[fKtIndexL][fMbin]->GetBinError(fQoIndexH+1,fQsIndexH+1,fQlIndexH+1);
+  avgErr += fNormWeight[fKtIndexH][fMbin]->GetBinError(fQoIndexL+1,fQsIndexL+1,fQlIndexL+1);
+  avgErr /= 2.;
+  //
+  wgtErr = avgErr;
   
  
 }
