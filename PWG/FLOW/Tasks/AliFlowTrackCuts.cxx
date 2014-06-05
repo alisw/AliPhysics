@@ -1186,6 +1186,8 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (fQA) {
     // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
+    QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
+    if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
     QAbefore( 1)->Fill(momTPC,dedx);
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
     QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
@@ -2650,7 +2652,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 }
 
 //-----------------------------------------------------------------------
-Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
+Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track, Bool_t QAmode)
 {
   //get beta
   Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
@@ -2661,6 +2663,7 @@ Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
   Float_t l = integratedTimes[0]*c;  
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
+  if(QAmode && timeTOF <= 0) return -999;   // avoid division by zero when filling 'before' qa histograms
   return l/timeTOF/c;
 }
 //-----------------------------------------------------------------------
@@ -3246,7 +3249,7 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
 {  
-//check is track passes bayesian combined TOF+TPC pid cut
+  //check is track passes bayesian combined TOF+TPC pid cut
   Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFout) &&
                      (track->GetStatus() & AliESDtrack::kTIME) &&
                      (track->GetTOFsignal() > 12000) &&
@@ -3256,7 +3259,6 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
        return kFALSE;
 
   Bool_t statusMatchingHard = TPCTOFagree(track);
-//ciao
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
 
