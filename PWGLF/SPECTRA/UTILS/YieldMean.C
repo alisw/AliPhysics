@@ -1,3 +1,16 @@
+#if !defined (__CINT__) || (defined(__MAKECINT__))
+#include <iostream>
+#include "TH1.h"
+#include "TVirtualFitter.h"
+#include "TMath.h"
+#include "TFile.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TROOT.h"
+#include "TRandom.h"
+
+#endif
+using namespace std;
 /* definition of the fields in the histogram returned */
 enum EValue_t {
   kYield = 1,
@@ -9,6 +22,22 @@ enum EValue_t {
   kMeanSysHi,
   kMeanSysLo
 };
+
+
+void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo=kFALSE);
+TH1* YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth = 0.01);
+TH1 * YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth = 0.1);
+TH1 * YieldMean_ReturnRandom(TH1 *hin);
+TH1 * YieldMean_ReturnCoherentRandom(TH1 *hin);
+TH1 *YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign = 1.);
+TH1 *YieldMean_ReturnExtremeHardHisto(TH1 *hin);
+TH1 *YieldMean_ReturnExtremeSoftHisto(TH1 *hin);
+TH1 * YieldMean_ReturnExtremeLowHisto(TH1 *hin);
+
+TH1 * YieldMean_ReturnExtremeHighHisto(TH1 *hin);
+
+
+
 
 TH1 *
 YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max = 10., Double_t loprecision = 0.01, Double_t hiprecision = 0.1, Option_t *opt = "0q",TString logfilename="log.root")
@@ -31,8 +60,17 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
   /*
    *   measure the central value 
    */
-  
-  do Int_t fitres = htot->Fit(f, opt);
+  Int_t fitres;
+  Int_t trials = 0;
+  trials = 0;
+  do {
+    fitres = htot->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   TFile* filewithfits=TFile::Open(logfilename.Data(),"UPDATE");
   htot->Write();
@@ -60,7 +98,15 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
    */
 
   /* fit with stat error */
-  do Int_t fitres = hstat->Fit(f, opt);
+  trials = 0;
+  do {
+    fitres = hstat->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hstat, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hstat, f, max, hiprecision);
@@ -81,7 +127,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
     delete hrnd;
     delete hrndlo;
     delete hrndhi;
-  }
+   }
   /* random generation with integration (fine) */
   TH1 *hIntegral = new TH1F("hIntegral", "", 100, 
                             hIntegral_tmp->GetMean() - 10. * hIntegral_tmp->GetRMS(),
@@ -134,7 +180,15 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
    */
 
   TH1 *hhigh = YieldMean_ReturnExtremeHighHisto(hsys);
-  do Int_t fitres = hhigh->Fit(f, opt);
+  trials = 0;
+  do {
+    fitres = hhigh->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hhigh, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hhigh, f, max, hiprecision);
@@ -151,7 +205,15 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
    */
 
   TH1 *hhard = YieldMean_ReturnExtremeHardHisto(hsys);
-  do Int_t fitres = hhard->Fit(f, opt);
+  trials = 0;
+  do {
+    fitres = hhard->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hhard, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hhard, f, max, hiprecision);
@@ -168,7 +230,15 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
    */
 
   TH1 *hlow = YieldMean_ReturnExtremeLowHisto(hsys);
-  do Int_t fitres = hlow->Fit(f, opt);
+  trials = 0;
+  do {
+    fitres = hlow->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hlow, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hlow, f, max, hiprecision);
@@ -185,7 +255,15 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
    */
 
   TH1 *hsoft = YieldMean_ReturnExtremeSoftHisto(hsys);
-  do Int_t fitres = hsoft->Fit(f, opt);
+  trials = 0;
+  do {
+    fitres = hsoft->Fit(f, opt);
+    Printf("Trial: %d", trials++);
+    if(trials > 10) {
+      Printf("FIT DOES NOT CONVERGE IN LINE %d",__LINE__);
+      break;
+    }
+  }
   while (fitres != 0);
   hlo = YieldMean_LowExtrapolationHisto(hsoft, f, min, loprecision);
   hhi = YieldMean_HighExtrapolationHisto(hsoft, f, max, hiprecision);
@@ -201,7 +279,7 @@ YieldMean(TH1 *hstat, TH1 *hsys, TF1 *f = NULL, Double_t min = 0., Double_t max 
 }
 
 TH1 *
-YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth = 0.01)
+YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth)
 {
   /* find lowest edge in histo */
   Int_t binlo;
@@ -231,7 +309,7 @@ YieldMean_LowExtrapolationHisto(TH1 *h, TF1 *f, Double_t min, Double_t binwidth 
 }
 
 TH1 *
-YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth = 0.1)
+YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth)
 {
   /* find highest edge in histo */
   Int_t binhi;
@@ -243,7 +321,9 @@ YieldMean_HighExtrapolationHisto(TH1 *h, TF1 *f, Double_t max, Double_t binwidth
       break;
     }
   }
-  
+  if(max<hi) {
+    Printf("Warning! You should probably set a higher max value (Max = %f, hi = %f)", max, hi);
+  }
   Int_t nbins = (max - hi) / binwidth;
   TH1 *hhi = new TH1F("hhi", "", nbins, hi, max);
   
@@ -332,7 +412,7 @@ YieldMean_ReturnExtremeHardHisto(TH1 *hin)
 }
 
 TH1 *
-YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign = 1.)
+YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign)
 {
   Double_t ptlow, pthigh;
   for (Int_t ibin = 0; ibin < hin->GetNbinsX(); ibin++) {
@@ -379,13 +459,13 @@ YieldMean_ReturnExtremeHisto(TH1 *hin, Float_t sign = 1.)
   return hmax;
 }
 
-YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo=kFALSE)
+void YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Double_t &mean,Bool_t printinfo)
 {
   
   /*
    * compute integrals
    */
-
+  
   Double_t cont, err, width, cent;
   Double_t I = 0., IX = 0., Ierr = 0., IXerr = 0., Ilerr = 0., IXlerr = 0.;
   Double_t M = 0., Merr = 0., Mlerr = 0., C;
@@ -401,6 +481,7 @@ YieldMean_IntegralMean(TH1 *hdata, TH1 *hlo, TH1 *hhi, Double_t &integral, Doubl
     I += cont;
     IX += cont * cent;
   }
+  
   dataonly=I;	
   /* integrate low */
   for (Int_t ibin = 0; ibin < hlo->GetNbinsX(); ibin++) {

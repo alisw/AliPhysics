@@ -335,7 +335,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
           return;
       }
       if (fCollidingSystem == "PbPb") lPrimaryTrackMultiplicity = fESDtrackCuts->CountAcceptedTracks(lESDevent);
-      if (fCollidingSystem == "PbPb") centrality = lESDevent->GetCentrality();
+      if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") centrality = lESDevent->GetCentrality();
       
   } else if (fAnalysisType == "AOD") {
       lAODevent = dynamic_cast<AliAODEvent*>( InputEvent() );
@@ -351,7 +351,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
                if (track->TestFilterBit(AliAODTrack::kTrkGlobalNoDCA)) lPrimaryTrackMultiplicity++; 
           }
       }
-      if (fCollidingSystem == "PbPb") centrality = lAODevent->GetCentrality();
+      if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") centrality = lAODevent->GetCentrality();
   } else {
     Printf("Analysis type (ESD or AOD) not specified \n");
     return;
@@ -361,7 +361,7 @@ void AliAnalysisTaskQAMultistrange::UserExec(Option_t *) {
   // Centrality selection for PbPb collisions
   //-----------------------------------------
   Float_t lcentrality = 0.;
-  if (fCollidingSystem == "PbPb") { 
+  if (fCollidingSystem == "PbPb" || fCollidingSystem == "pPb") { 
        if (fkUseCleaning) lcentrality = centrality->GetCentralityPercentile(fCentrEstimator.Data());
        else {
            lcentrality = centrality->GetCentralityPercentileUnchecked(fCentrEstimator.Data());

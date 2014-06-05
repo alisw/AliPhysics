@@ -231,7 +231,11 @@ class AliJetFlowTools {
         static Double_t PhenixChi22d(const Double_t *xx );
         static Double_t ConstructFunction2d(Double_t *x, Double_t *par);
         static TF2*     ReturnFunction2d();
+        static void     MinimizeChi2nd();
+        static Double_t PhenixChi2nd(const Double_t *xx );
+        static Double_t ConstructFunctionnd(Double_t *x, Double_t *par);
         static void     MinimizeChi2();
+        static TF2*     ReturnFunctionnd();
         static Double_t PhenixChi2(const Double_t *xx );
         static Double_t ConstructFunction(Double_t *x, Double_t *par);
         static TF1*     ReturnFunction();
@@ -450,6 +454,7 @@ TLatex* tex = new TLatex(xmin, ymax, string.Data());
         TH2D*                   fDptOut;                // out plane dpt matrix
         TH2D*                   fFullResponseIn;        // full response matrix, in plane
         TH2D*                   fFullResponseOut;       // full response matrix, out of plane
+
         // copy and assignment 
         AliJetFlowTools(const AliJetFlowTools&);             // not implemented
         AliJetFlowTools& operator=(const AliJetFlowTools&);  // not implemented

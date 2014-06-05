@@ -15,11 +15,11 @@ AliAnalysisTaskLambdaOverK0sJets *AddTaskLambdaOverK0sJets( TString  name      =
   Float_t  etaMaxTrig  = 0.7;
   Float_t  checkIDTrig = kTRUE;
   Float_t  rapMaxV0    = 0.7;
-  Bool_t   usePID      = kTRUE;
+  Bool_t   usePID      = kFALSE;
   Float_t  nSigmaPID   = 3.0;
   Float_t  dcaDaug     = 1.0;
   Float_t  dca2PrmVtx  = 0.095;  // tighter cut
-  Float_t  nclsDaug    = 0;     // looser cut
+  Float_t  nclsDaug    = 70;     
   Float_t  minPtDaughter = 0.;
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

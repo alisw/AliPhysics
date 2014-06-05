@@ -11,8 +11,12 @@ class AliJetEmbeddingTask : public AliJetModelBaseTask {
   AliJetEmbeddingTask(const char *name); 
   virtual ~AliJetEmbeddingTask();
 
+  void           SetMasslessParticles(Bool_t b) { fMassless = b ; }
+
  protected:
   void           Run();
+
+  Bool_t         fMassless;               //make particles massless
 
  private:
   AliJetEmbeddingTask(const AliJetEmbeddingTask&);            // not implemented

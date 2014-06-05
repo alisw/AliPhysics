@@ -25,6 +25,7 @@ AliJetContainer::AliJetContainer():
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fRhoMassName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -50,6 +51,7 @@ AliJetContainer::AliJetContainer():
   fClusterContainer(0),
   fRho(0),
   fLocalRho(0),
+  fRhoMass(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -65,6 +67,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fJetRadius(0),
   fRhoName(),
   fLocalRhoName(),
+  fRhoMassName(),
   fFlavourSelection(0),
   fPtBiasJetTrack(0),
   fPtBiasJetClus(0),
@@ -90,6 +93,7 @@ AliJetContainer::AliJetContainer(const char *name):
   fClusterContainer(0),
   fRho(0),
   fLocalRho(0),
+  fRhoMass(0),
   fGeom(0),
   fRunNumber(0)
 {
@@ -152,6 +156,21 @@ void AliJetContainer::LoadLocalRho(AliVEvent *event)
     }
   }
 }
+
+//________________________________________________________________________
+void AliJetContainer::LoadRhoMass(AliVEvent *event)
+{
+  // Load rho
+
+  if (!fRhoMassName.IsNull() && !fRhoMass) {
+    fRhoMass = dynamic_cast<AliRhoParameter*>(event->FindListObject(fRhoMassName));
+    if (!fRhoMass) {
+      AliError(Form("%s: Could not retrieve rho_mass %s!", GetName(), fRhoMassName.Data()));
+      return;
+    }
+  }
+}
+
 
 //________________________________________________________________________
 AliEmcalJet* AliJetContainer::GetLeadingJet(const char* opt)

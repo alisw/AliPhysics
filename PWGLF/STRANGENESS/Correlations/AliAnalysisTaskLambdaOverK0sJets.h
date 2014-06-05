@@ -27,6 +27,7 @@ class AliAODv0;
 class TH1F;
 class TH2F;
 class TH3F;
+class THnSparse;
 class TList;
 class TString;
 
@@ -216,22 +217,22 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH1F*   fK0sAssocPt;                         //! K0s Assoc: pt
   TH3F*   fK0sAssocPtArm;                      //! K0s Assoc: pt vs rapidity vs centrality (arm. pod. cut)
   TH3F*   fK0sAssocPtRap;                      //! K0s Assoc: pt vs rapidity vs centrality
+  TH3F*   fK0sAssocPtRapEmbeded;                      //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
   TH3F*   fK0sAssocPtPhiEta[kNCent];           //! K0s Assoc: pt vs pseudo-rapidity
 
-  TH3F*   fK0sAssocPtMassArm[kNCent];          //! K0s Assoc: mass vs pt vs centrality
-  TH3F*   fK0sAssocMassPtVtx[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position
-  TH3F*   fK0sAssocMassPtDCADaug[kNCent];      //! K0s Assoc: mass vs pt vs dca between daughters
-  TH3F*   fK0sAssocMassPtCPA[kNCent];          //! K0s Assoc: mass vs pt vs cpa
-  TH3F*   fK0sAssocMassPtDCAPV[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx
-  TH3F*   fK0sAssocMassPtDaugNClsTPC[kNCent];  //! K0s Assoc: mass vs pt vs num. of tpc clusters
+  THnSparse*  fK0sAssocPtMassArm[kNCent];          //! K0s Assoc: mass vs pt vs centrality
+  THnSparse*  fK0sAssocMassPtVtx[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position
+  THnSparse*  fK0sAssocMassPtDCADaug[kNCent];      //! K0s Assoc: mass vs pt vs dca between daughters
+  THnSparse*  fK0sAssocMassPtCPA[kNCent];          //! K0s Assoc: mass vs pt vs cpa
+  THnSparse*  fK0sAssocMassPtDCAPV[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx
+  THnSparse*  fK0sAssocMassPtDaugNClsTPC[kNCent];  //! K0s Assoc: mass vs pt vs num. of tpc clusters
 
-  TH3F*   fK0sAssocPtRapEmbeded;                      //! K0s Assoc: pt vs rapidity vs centrality  (embeded particles)
-  TH3F*   fK0sAssocPtMassArmEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs rapidity  (embeded particles)
-  TH3F*   fK0sAssocMassPtVtxEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position  (embeded particles)
-  TH3F*   fK0sAssocMassPtDCADaugEmbeded[kNCent];      //! K0s Assoc: mass vs pt vs dca between daughters  (embeded particles)
-  TH3F*   fK0sAssocMassPtCPAEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs cpa  (embeded particles)
-  TH3F*   fK0sAssocMassPtDCAPVEmbeded[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
-  TH3F*   fK0sAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! K0s Assoc: mass vs pt vs num. o ftpc clusters (embeded particles)
+  THnSparse*  fK0sAssocPtMassArmEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs rapidity  (embeded particles)
+  THnSparse*  fK0sAssocMassPtVtxEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs Z vertex position  (embeded particles)
+  THnSparse*  fK0sAssocMassPtDCADaugEmbeded[kNCent];      //! K0s Assoc: mass vs pt vs dca between daughters  (embeded particles)
+  THnSparse*  fK0sAssocMassPtCPAEmbeded[kNCent];          //! K0s Assoc: mass vs pt vs cpa  (embeded particles)
+  THnSparse*  fK0sAssocMassPtDCAPVEmbeded[kNCent];        //! K0s Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
+  THnSparse*  fK0sAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! K0s Assoc: mass vs pt vs num. o ftpc clusters (embeded particles)
 
   TH3F*   fK0sMCResEta;                  //! K0s Assoc: eta resolution
   TH3F*   fK0sMCResPhi;                  //! K0s Assoc: phi resolution
@@ -252,25 +253,24 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fLambdaAssocFromXi;            //! Lambda Assoc: coming from Xi
   TH3F*   fLambdaAssocPtPhiEta[kNCent];  //! Lambda Assoc: pt vs pseudo-rapidity
 
-  TH3F*   fLambdaAssocMassPtRap[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass
-  TH3F*   fLambdaAssocMassPtRap2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass (wo Cross contamination)
-  TH3F*   fLambdaAssocMassPtVtx[kNCent];          //! Lambda Assoc: mass vs pt vs Z vertex position
-  TH3F*   fLambdaAssocMassPtDCADaug[kNCent];      //! Lambda Assoc: mass vs pt vs dca btween daughters
-  TH3F*   fLambdaAssocMassPtCPA[kNCent];          //! Lambda Assoc: mass vs pt vs cpa
-  TH3F*   fLambdaAssocMassPtDCAPV[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx
-  TH3F*   fLambdaAssocMassPtDaugNClsTPC[kNCent];  //! Lambda Assoc: mass vs pt vs num.of tpc clusters
+  THnSparse*  fLambdaAssocMassPtRap[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass
+  THnSparse*  fLambdaAssocMassPtRap2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass (wo Cross contamination)
+  THnSparse*  fLambdaAssocMassPtVtx[kNCent];          //! Lambda Assoc: mass vs pt vs Z vertex position
+  THnSparse*  fLambdaAssocMassPtDCADaug[kNCent];      //! Lambda Assoc: mass vs pt vs dca btween daughters
+  THnSparse*  fLambdaAssocMassPtCPA[kNCent];          //! Lambda Assoc: mass vs pt vs cpa
+  THnSparse*  fLambdaAssocMassPtDCAPV[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx
+  THnSparse*  fLambdaAssocMassPtDaugNClsTPC[kNCent];  //! Lambda Assoc: mass vs pt vs num.of tpc clusters
 
-  TH3F*   fLambdaAssocMassPtRapEmbeded[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass (embeded)
-  TH3F*   fLambdaAssocMassPtRapEmbeded2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass  (wo Cross contamination) (embeded)
-  TH3F*   fLambdaAssocMassPtVtxEmbeded[kNCent];          //! Lambda Assoc: mass vs pt vs Z vertex position  (embeded particles)
-  TH3F*   fLambdaAssocMassPtDCADaugEmbeded[kNCent];      //! Lambda Assoc: mass vs pt vs dca between daughters  (embeded particles)
-  TH3F*   fLambdaAssocMassPtCPAEmbeded[kNCent];          //! Lambda Assoc: mass vs pt vs cpa  (embeded particles)
-  TH3F*   fLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx  (embeded particles)
-  TH3F*   fLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! Lambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtRapEmbeded[kNCent];          //! Lambda Assoc: pt vs rapidity vs mass (embeded)
+  THnSparse*  fLambdaAssocMassPtRapEmbeded2[kNCent];         //! Lambda Assoc: pt vs rapidity vs mass  (wo Cross contamination) (embeded)
+  THnSparse*  fLambdaAssocMassPtVtxEmbeded[kNCent];          //! Lambda Assoc: mass vs pt vs Z vertex position  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtDCADaugEmbeded[kNCent];      //! Lambda Assoc: mass vs pt vs dca between daughters  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtCPAEmbeded[kNCent];          //! Lambda Assoc: mass vs pt vs cpa  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! Lambda Assoc: mass vs pt vs dca to prim vtx  (embeded particles)
+  THnSparse*  fLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! Lambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
 
   TH3F*   fLambdaMCResEta;               //! Lambda Assoc: eta resolution
   TH3F*   fLambdaMCResPhi;               //! Lambda Assoc: phi resolution
-
 
   //           AntiLambda            //
   TH1F*   fAntiLambdaMCPt;                  //! AntiLambda MC: pt
@@ -287,21 +287,21 @@ class AliAnalysisTaskLambdaOverK0sJets : public AliAnalysisTaskSE {
   TH2F*   fAntiLambdaAssocFromXi;             //! AntiLambda Assoc: coming from Xi
   TH3F*   fAntiLambdaAssocPtPhiEta[kNCent];   //! AntiLambda Assoc: pt vs pseudo-rapidity
 
-  TH3F*   fAntiLambdaAssocMassPtRap[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity
-  TH3F*   fAntiLambdaAssocMassPtRap2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination)
-  TH3F*   fAntiLambdaAssocMassPtVtx[kNCent];          //! AntiLambda Assoc: mass vs pt vs Z vtx position
-  TH3F*   fAntiLambdaAssocMassPtDCADaug[kNCent];      //! AntiLambda Assoc: mass vs pt vs Dca between daughters
-  TH3F*   fAntiLambdaAssocMassPtCPA[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa
-  TH3F*   fAntiLambdaAssocMassPtDCAPV[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx
-  TH3F*   fAntiLambdaAssocMassPtDaugNClsTPC[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters
+  THnSparse*  fAntiLambdaAssocMassPtRap[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity
+  THnSparse*  fAntiLambdaAssocMassPtRap2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination)
+  THnSparse*  fAntiLambdaAssocMassPtVtx[kNCent];          //! AntiLambda Assoc: mass vs pt vs Z vtx position
+  THnSparse*  fAntiLambdaAssocMassPtDCADaug[kNCent];      //! AntiLambda Assoc: mass vs pt vs Dca between daughters
+  THnSparse*  fAntiLambdaAssocMassPtCPA[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa
+  THnSparse*  fAntiLambdaAssocMassPtDCAPV[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx
+  THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPC[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters
 
-  TH3F*   fAntiLambdaAssocMassPtRapEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity  (embeded)
-  TH3F*   fAntiLambdaAssocMassPtRapEmbeded2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination) (embeded)
-  TH3F*   fAntiLambdaAssocMassPtVtxEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs Z vtx. position  (embeded particles)
-  TH3F*   fAntiLambdaAssocMassPtDCADaugEmbeded[kNCent];      //! AntiLambda Assoc: mass vs pt vs dca between daughters  (embeded particles)
-  TH3F*   fAntiLambdaAssocMassPtCPAEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa  (embeded particles)
-  TH3F*   fAntiLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
-  TH3F*   fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtRapEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs rapidity  (embeded)
+  THnSparse*  fAntiLambdaAssocMassPtRapEmbeded2[kNCent];         //! AntiLambda Assoc: mass vs pt vs rapidity  (wo Cross contamination) (embeded)
+  THnSparse*  fAntiLambdaAssocMassPtVtxEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs Z vtx. position  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtDCADaugEmbeded[kNCent];      //! AntiLambda Assoc: mass vs pt vs dca between daughters  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtCPAEmbeded[kNCent];          //! AntiLambda Assoc: mass vs pt vs cpa  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtDCAPVEmbeded[kNCent];        //! AntiLambda Assoc: mass vs pt vs dca to prim. vtx  (embeded particles)
+  THnSparse*  fAntiLambdaAssocMassPtDaugNClsTPCEmbeded[kNCent];  //! AntiLambda Assoc: mass vs pt vs num. of tpc clusters  (embeded particles)
 
   TH3F*   fAntiLambdaMCResEta;             //! AntiLambda Assoc: eta resolution
   TH3F*   fAntiLambdaMCResPhi;             //! AntiLambda Assoc: phi resolution

@@ -48,6 +48,7 @@ class AliRDHFCutsD0toKpi : public AliRDHFCuts
   Int_t CombineSelectionLevels(Int_t selectionvalTrack,Int_t selectionvalCand,Int_t selectionvalPID)const;
   virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   virtual void SetStandardCutsPP2010();
+  virtual void SetStandardCutsPP2010vsMult();
   virtual void SetStandardCutsPP2011_276TeV();
   virtual void SetStandardCutsPbPb2010();
   virtual void SetStandardCutsPbPb2011();

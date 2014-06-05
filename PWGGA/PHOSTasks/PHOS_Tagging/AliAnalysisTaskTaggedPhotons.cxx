@@ -41,7 +41,8 @@
 #include "AliAODEvent.h" 
 #include "AliAODEvent.h" 
 #include "AliVCluster.h" 
-#include "AliAODPWG4Particle.h"
+#include "AliCaloPhoton.h"
+#include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "TGeoManager.h"
@@ -51,7 +52,8 @@
 #include "AliPHOSGeometry.h"
 #include "AliTriggerAnalysis.h"
 #include "AliEMCALGeometry.h"
-
+#include "AliAnalysisUtils.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliAnalysisTaskTaggedPhotons)
 
@@ -65,20 +67,23 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons() :
   fPHOSEvent(0x0),
   fCurrentMixedList(0x0),
   fTriggerAnalysis(0x0),
+  fUtils(0x0),
   fZmax(0.),
   fZmin(0.),
   fPhimax(0.),
   fPhimin(0.),
   fCentrality(0.),
-  fCentBin(0) 
+  fCentBin(0), 
+  fIsMB(0),
+  fIsMC(0)
 {
   //Deafult constructor
   //no memory allocations
   for(Int_t i=0;i<10;i++)
     for(Int_t j=0;j<2;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
-  for(Int_t mod=0; mod<6; mod++)
-    fPHOSBadMap[mod]=0x0 ;
+  for(Int_t i=0;i<6;i++)
+    fPHOSBadMap[i]=0x0;
 }
 //______________________________________________________________________________
 AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) : 
@@ -90,12 +95,15 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   fPHOSEvent(0x0),
   fCurrentMixedList(0x0),
   fTriggerAnalysis(new AliTriggerAnalysis),
+  fUtils(0x0),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
   fCentrality(0.),
-  fCentBin(0)
+  fCentBin(0),
+  fIsMB(0),
+  fIsMC(0)
 {
   // Constructor.
 
@@ -105,10 +113,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const char *name) :
   for(Int_t i=0;i<1;i++)
     for(Int_t j=0;j<5;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
-  // Create AOD track cut
-
-  for(Int_t mod=0; mod<6; mod++)
-    fPHOSBadMap[mod]=0x0 ;
+  for(Int_t i=0;i<6;i++)
+    fPHOSBadMap[i]=0x0;
   
   
 }
@@ -123,12 +129,15 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   fPHOSEvent(0x0),
   fCurrentMixedList(0x0),
   fTriggerAnalysis(new AliTriggerAnalysis),  
+  fUtils(0x0),
   fZmax(-60.),
   fZmin(60.),
   fPhimax(250.),
   fPhimin(320.),
   fCentrality(0.),
-  fCentBin(0)
+  fCentBin(0),
+  fIsMB(0),
+  fIsMC(0)
 {
   // cpy ctor
   fZmax=ap.fZmax ;
@@ -138,8 +147,8 @@ AliAnalysisTaskTaggedPhotons::AliAnalysisTaskTaggedPhotons(const AliAnalysisTask
   for(Int_t i=0;i<1;i++)
     for(Int_t j=0;j<5;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
-  for(Int_t mod=0; mod<6; mod++)
-    fPHOSBadMap[mod]=0x0 ;
+  for(Int_t i=0;i<6;i++)
+    fPHOSBadMap[i]=0x0;
 
 }
 
@@ -188,12 +197,13 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH1F("hNvertexTracks","N of primary tracks from the primary vertex",150,0.,150.));
   fOutputContainer->Add(new TH1F("hZvertex","Z vertex",200,-50.,+50.));
   fOutputContainer->Add(new TH2F("hTrackMult","Charged track multiplicity",100,0.,100.,250,0.,500.));
+  fOutputContainer->Add(new TH2F("hTrackEtaPhi","Charged track eta vs phi distribution",200,-2.,2.,200,0.,TMath::TwoPi()));
+  fOutputContainer->Add(new TH2F("hTrackEtaPt","Charged track eta vs pt distribution",200,-2.,2.,200,0.,50.));
   
   //centrality
   fOutputContainer->Add(new TH1F("hCentrality","Ccentrality",100,0.,100.));
- 
+  fOutputContainer->Add(new TH2F("hPHOSCentrality","PHOS vs centrality",100,0.,100.,100,0.,100.)); 
   fOutputContainer->Add(new TH2F("hTOF","cluster TOF",200,0.,20.,300,-3.e-6,6.e-6));
-  
   
   fOutputContainer->Add(new TH2F("hCluNXZM1","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluNXZM2","Clu (X,Z), M2"   ,64,0.5,64.5, 56,0.5,56.5));
@@ -209,6 +219,10 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCluArea3M2","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hCluArea3M3","Clu (X,Z), M1"   ,64,0.5,64.5, 56,0.5,56.5));
   
+  fOutputContainer->Add(new TH2F("hTofM1","TOF in mod1",200,-1.e-6,1.e-6,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM2","TOF in mod2",200,-1.e-6,1.e-6,200,0.,20.)) ;
+  fOutputContainer->Add(new TH2F("hTofM3","TOF in mod3",200,-1.e-6,1.e-6,200,0.,20.)) ;
+
   char cPID[4][5] ;
   snprintf(cPID[0],5,"All") ;
   snprintf(cPID[1],5,"Disp");
@@ -235,17 +249,15 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH1F(Form("hPhot_Area2_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH1F(Form("hPhot_Area3_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles",nPt,0.,ptMax)) ;
 
-    fOutputContainer->Add(new TH1F(Form("hPhot_nStrictTagged_Area1_%s_cent%d",cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
-
     for(Int_t itag=0; itag<18; itag++){
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area1_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area2_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
     }    
     for(Int_t kind=1; kind<33; kind*=2){
+      fOutputContainer->Add(new TH1F(Form("hPi_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
-      fOutputContainer->Add(new TH1F(Form("hPhot_nStrictTagged_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;    
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
     }
   }
@@ -259,34 +271,59 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Re_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin1_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin2_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hSingleInvM_Mi_Emin3_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+
+    
+    
   }  
 
  
   fOutputContainer->Add(new TH2F(Form("QA_Cone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
   fOutputContainer->Add(new TH2F(Form("QA_Cone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
   fOutputContainer->Add(new TH2F(Form("QA_Cone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_PCone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0Cone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone1_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone2_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
+  fOutputContainer->Add(new TH2F(Form("QA_Pi0PCone3_Tracks_cent%d",cen),"Two-photon inv. mass vs first photon pt",50,0.,50.,200,0.,100.)) ;
   }//centrality
   
   //MC  
-  char partName[4][10] ;
+  char partName[15][10] ;
   snprintf(partName[0],10,"gamma") ;
   snprintf(partName[1],10,"pi0");
   snprintf(partName[2],10,"eta") ;
   snprintf(partName[3],10,"omega"); 
+  snprintf(partName[4],10,"K0s"); 
+  snprintf(partName[5],10,"Kpm"); 
+  snprintf(partName[6],10,"pipm"); 
+  snprintf(partName[7],10,"n"); 
+  snprintf(partName[8],10,"nbar"); 
+  snprintf(partName[9],10,"p"); 
+  snprintf(partName[10],10,"pbar"); 
   
-  if(AliAnalysisManager::GetAnalysisManager()){
-    AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if(mctruth){
+  
+  if(fIsMC){
       
       fOutputContainer->Add(new TH1F("hMCConversionRadius","Clusters without label",600,0.,600.)) ;
       fOutputContainer->Add(new TH2F("hMCRecPi0Vtx","Secondary pi0s",100,0.,10.,600,0.,600.)) ;
@@ -297,67 +334,148 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(new TH2F("hMCRecK0lVtx","Secondary K0l",100,0.,10.,600,0.,600.)) ;
       fOutputContainer->Add(new TH2F("hMCGammaPi0MisConvR","Converted photons",400,0.,40.,600,0.,600.)) ;
  
-  for(Int_t cen=0; cen<nCenBin; cen++){
-  for(Int_t ipart=0; ipart<4; ipart++){  
+  for(Int_t ipart=0; ipart<11; ipart++){  
+    fOutputContainer->Add(new TH2F(Form("hMC%s_ptrap",partName[ipart]),"Spectrum of primary photons",100,0.,10.,100,-2.,2.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMC%s_ptphi",partName[ipart]),"Spectrum of primary photons",100,0.,10.,100,0.,TMath::TwoPi())) ;
     fOutputContainer->Add(new TH2F(Form("hMC_%s_vertex",partName[ipart]),"vertex",nPt,0.,ptMax,150,0.,600.)) ;
-    fOutputContainer->Add(new TH1F(Form("hMC_all_%s",partName[ipart]),"Spectum (full rapifity)",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMC_unitEta_%s",partName[ipart]),"Spectum, |y|<0.15",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMC_rap_%s",partName[ipart]),"Rapidity",100,-5.,5.)) ;
-    fOutputContainer->Add(new TH1F(Form("hMC_phi_%s",partName[ipart]),"Azimuthal angle",100,0.,TMath::TwoPi())) ;
+    for(Int_t cen=0; cen<nCenBin; cen++){
+       fOutputContainer->Add(new TH1F(Form("hMC_all_%s_cent%d",partName[ipart],cen),"Spectum (full rapifity)",nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMC_unitEta_%s_cent%d",partName[ipart],cen),"Spectum, |y|<0.15",nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMC_rap_%s_cent%d",partName[ipart],cen),"Rapidity",100,-5.,5.)) ;
+       fOutputContainer->Add(new TH1F(Form("hMC_phi_%s_cent%d",partName[ipart],cen),"Azimuthal angle",100,0.,TMath::TwoPi())) ;
+    }
   }
-
+  for(Int_t cen=0; cen<nCenBin; cen++){
   
-  fOutputContainer->Add(new TH2F(Form("LabelsNPrim_cent%d",cen),"vertex",nPt,0.,ptMax,20,0.,20.)) ;
-  fOutputContainer->Add(new TH1F(Form("LabelsGamma_cent%d",cen),"vertex",nPt,0.,ptMax)) ;
-  fOutputContainer->Add(new TH2F(Form("LabelsGammaE_cent%d",cen),"vertex",nPt,0.,ptMax,100,0.,2.)) ;
-   
-  fOutputContainer->Add(new TH1F(Form("hMCRecNoLabel_cent%d",cen),"Clusters without label",nPt,0.,ptMax)) ;
-  fOutputContainer->Add(new TH1F(Form("hMCConversionRadius_cent%d",cen),"Clusters without label",600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecPi0Vtx_cent%d",cen),"Secondary pi0s",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecEtaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecOmegaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecEtaprVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecK0sVtx_cent%d",cen),"Secondary K0s",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCRecK0lVtx_cent%d",cen),"Secondary K0l",100,0.,10.,600,0.,600.)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisConvR_cent%d",cen),"Converted photons",400,0.,40.,600,0.,600.)) ;
-  
-  
-  fOutputContainer->Add(new TH2F(Form("hMCGammaPi0PrimMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-  fOutputContainer->Add(new TH2F(Form("hMCGammaPi0RecMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
- 
-  for(Int_t iPID=0; iPID<4; iPID++){    
-    fOutputContainer->Add(new TH1F(Form("hMCRecNoPrim_%s_cent%d",cPID[iPID],cen),"Reconstructed particles withour primary",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGamma_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecPhotConv_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: e+-",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecEta_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecEtapr_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta prime",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(p)",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(n)",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pipm",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: n",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: p",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K+-",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0s",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecUnknownCh_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecUnknownNeu_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
-
-    //Decay photons
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaDir_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, no primary",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaEta_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from eta",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from omega",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaOther_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from other",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("LabelsNPrim_cent%d",cen),"vertex",nPt,0.,ptMax,20,0.,20.)) ;
+    fOutputContainer->Add(new TH1F(Form("LabelsGamma_cent%d",cen),"vertex",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("LabelsGammaE_cent%d",cen),"vertex",nPt,0.,ptMax,100,0.,2.)) ;
     
-    //Pi0 decay photons
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0Dalitz_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0NoStack_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi02Gamma_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0Rec_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecSoft_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecCells_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+    
+       //Sort registered particles spectra according MC information
+       for(Int_t iPID=0; iPID<4; iPID++){
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhoton_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecE_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecCharg_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecNeutral_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecNoPRim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecUnknown_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. electrons", nPt,0.,ptMax )) ;
+
+	 //Decay photons	 
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotPi0_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotEta_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotOmega_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotOther_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCRecPhotNoPrim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax )) ;
+       
+   
+    
+         //MC tagging: reasons of partner loss etc.
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnStack_%s_cent%d",cPID[iPID],cen),"Decay photons with partner not in Stack", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWithFoundPartn_%s_cent%d",cPID[iPID],cen),"Decay photon with found partner", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWithWrongMass_%s_cent%d",cPID[iPID],cen),"Decay photon with wrong mass", nPt,0.,ptMax )) ;       
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAccept_%s_cent%d",cPID[iPID],cen),"Decay photon with parttner not in PHOS acc", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA1_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due geometry Fid. area. 1", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA2_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due geometry Fid. area. 2", nPt,0.,ptMax)) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA3_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due geometry Fid. area. 3", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnConv_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due to conversion", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnEmin_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due to low energy", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnOther_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due unknown reason", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAll_%s_cent%d",cPID[iPID],cen),"Decay photons with partner missed due to any reason", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnNPhot_%s_cent%d",cPID[iPID],cen),"pi0 decay photon with non-photon partner", nPt,0.,ptMax )) ;
+
+       
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEmin_%s_cent%d",cPID[iPID],cen),"Decay photons with rec. partner but failed Emin cut", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutNcell_%s_cent%d",cPID[iPID],cen),"Decay photons with rec. partner but failed Ncell cut", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEcross_%s_cent%d",cPID[iPID],cen),"Decay photons with rec. partner but failed Ecross cut", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutM02_%s_cent%d",cPID[iPID],cen),"Decay photons with rec. partner but failed M02 cut", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnDefCuts_%s_cent%d",cPID[iPID],cen),"Decay photons with rec. partner but failed default cuts", nPt,0.,ptMax )) ;
+         fOutputContainer->Add(new TH1F(Form("hMCDecWRecPartn_%s_cent%d",cPID[iPID],cen),"Decay photons with rec partner", nPt,0.,ptMax )) ;
+
+	 fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+         fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+       }    
+       fOutputContainer->Add(new TH2F(Form("hMCmass_cent%d",cen),"Mass with reconstructed decay partner",nM,0.,mMax,nPt,0.,ptMax )) ;			
+    }
+    
+/*   
+    fOutputContainer->Add(new TH1F(Form("hMCRecNoLabel_cent%d",cen),"Clusters without label",nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH1F(Form("hMCConversionRadius_cent%d",cen),"Clusters without label",600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecPi0Vtx_cent%d",cen),"Secondary pi0s",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecEtaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecOmegaVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecEtaprVtx_cent%d",cen),"Secondary etas",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecK0sVtx_cent%d",cen),"Secondary K0s",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCRecK0lVtx_cent%d",cen),"Secondary K0l",100,0.,10.,600,0.,600.)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisConvR_cent%d",cen),"Converted photons",400,0.,40.,600,0.,600.)) ;
+  
+  
+    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0PrimMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+    fOutputContainer->Add(new TH2F(Form("hMCGammaPi0RecMgg_cent%d",cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
+ 
+    for(Int_t iPID=0; iPID<4; iPID++){    
+      fOutputContainer->Add(new TH1F(Form("hMCRecNoPrim_%s_cent%d",cPID[iPID],cen),"Reconstructed particles withour primary",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGamma_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecPhotConv_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: e+-",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecEta_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: Gamma",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecEtapr_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: eta prime",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecPbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(p)",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecNbar_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: bar(n)",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecPipm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: pipm",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecN_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: n",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecP_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: p",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecKpm_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K+-",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecK0s_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0s",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecK0l_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecUnknownCh_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecUnknownNeu_%s_cent%d",cPID[iPID],cen),"Reconstructed particles with primary: K0l",nPt,0.,ptMax)) ;
+
+      //Decay photons
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaDir_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, no primary",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaEta_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from eta",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaOmega_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from omega",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaOther_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from other",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecPhotNoPrim_%s_cent%d",cPID[iPID],cen),"Spectrum of rec. photons", nPt,0.,ptMax)) ;
+    
+      //Pi0 decay photons
+      
+      //MC tagging: reasons of partner loss etc.
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnStack_cent%d",cen),"Decay photons with partner not in Stack", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWithFoundPartn_cent%d",cen),"Decay photon with found partner", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWithWrongMass_cent%d",cen),"Decay photon with wrong mass", nPt,0.,ptMax)) ;       
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAccept_cent%d",cen),"Decay photon with parttner not in PHOS acc", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA1_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 1", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA2_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 2", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAcceptFA3_cent%d",cen),"Decay photons with partner missed due geometry Fid. area. 3", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnConv_cent%d",cen),"Decay photons with partner missed due to conversion", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnEmin_cent%d",cen),"Decay photons with partner missed due to low energy", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnOther_cent%d",cen),"Decay photons with partner missed due unknown reason", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnAll_cent%d",cen),"Decay photons with partner missed due to any reason", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnNPhot_cent%d",cen),"pi0 decay photon with non-photon partner", nPt,0.,ptMax)) ;
+
+       
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEmin_cent%d",cen),"Decay photons with rec. partner but failed Emin cut", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutNcell_cent%d",cen),"Decay photons with rec. partner but failed Ncell cut", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutEcross_cent%d",cen),"Decay photons with rec. partner but failed Ecross cut", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnCutM02_cent%d",cen),"Decay photons with rec. partner but failed M02 cut", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWMisPartnDefCuts_cent%d",cen),"Decay photons with rec. partner but failed default cuts", nPt,0.,ptMax)) ;
+       fOutputContainer->Add(new TH1F(Form("hMCDecWRecPartn_cent%d",cen),"Decay photons with rec partner", nPt,0.,ptMax)) ;
+       
+       fOutputContainer->Add(new TH2F(Form("hMCmass_cent%d",cen),"Mass with reconstructed decay partner",nM,0.,mMax,nPt,0.,ptMax)) ;			
+      
+      
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0Dalitz_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCRecGammaPi0NoStack_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCGammaPi02Gamma_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0Rec_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecSoft_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
+      fOutputContainer->Add(new TH1F(Form("hMCGammaPi0RecCells_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
 
     fOutputContainer->Add(new TH1F(Form("hMCGammaPi0Tagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
     fOutputContainer->Add(new TH1F(Form("hMCGammaPi0FakeTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
@@ -377,17 +495,24 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
     //all clusters fake tagged
     fOutputContainer->Add(new TH1F(Form("hMCAllFakeTagged_%s_cent%d",cPID[iPID],cen),"Reconstructed gammas, from pi0",nPt,0.,ptMax)) ;
 
-    fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
-    fOutputContainer->Add(new TH2F(Form("hMC_InvM_Re_Strict_%s_cent%d",cPID[iPID],cen),"Two-photon inv. mass vs first photon pt",nM,0.,mMax,nPt,0.,ptMax)) ;
    
   }
   fOutputContainer->Add(new TH1F(Form("hMCGammaPi0MisPartner_cent%d",cen),"Spectrum of missed partners",nPt,0.,ptMax)) ;
   fOutputContainer->Add(new TH2F(Form("hMCGammaPi0MisPartnerEtaPhi_cent%d",cen),"Spectrum of missed partners",100,-0.2,0.2,100,4.5,5.6)) ;
     }
-    }
-  }//If MC handler exists...
+*/    
+  }
+
+  //If we work with MC, need to set Sumw2 - we will use weights
+  if(fIsMC){
+      for(Int_t i=0; i<fOutputContainer->GetSize();i++){
+        ((TH1*)fOutputContainer->At(i))->Sumw2() ; 
+      }
+  }
+    
   
-  for(Int_t i=0;i<1;i++)
+  
+  for(Int_t i=0;i<10;i++)
     for(Int_t j=0;j<5;j++)
       fPHOSEvents[i][j]=0x0 ;    //Container for PHOS photons
   
@@ -404,10 +529,14 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //Select photons
   //Fill QA histograms
   //Fill Tagging histogsms
+
+  
+  const Double_t kEcrossCut=0.98 ;
+  const Double_t kTOFMaxCut= 100.e-9 ;  
+  const Double_t kTOFMinCut=-100.e-9 ;  
   
   // Event selection flags
-
-  FillHistogram("hSelEvents",1) ;
+  //  FillHistogram("hSelEvents",0) ;
     
   AliVEvent* event = (AliVEvent*)InputEvent();
   if(!event){
@@ -415,31 +544,30 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     PostData(1, fOutputContainer);
     return;
   }
-  FillHistogram("hSelEvents",2) ;
+  FillHistogram("hSelEvents",1) ;
+
+  //MC stack init
+  fStack = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
   
   //read geometry if not read yet
-  if(fPHOSgeom==0)
+  if(fPHOSgeom==0){
     InitGeometry() ;
-  
-  //MC stack init
-  fStack=0x0 ;
-  if(AliAnalysisManager::GetAnalysisManager()){
-    AliMCEventHandler* mctruth = (AliMCEventHandler*)((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
-    if(mctruth)
-      fStack = mctruth->MCEvent()->Stack();
   }
   
+  if(!fUtils) 
+    fUtils = new AliAnalysisUtils();
+
+  Bool_t isMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7)  ; 
+  Bool_t isPHI7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kPHI7);
+   
+  if((fIsMB && !isMB) || (!fIsMB && !isPHI7)){
+    PostData(1, fOutputContainer);
+    return;    
+  }
+  FillHistogram("hSelEvents",2) ;
   
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
-
-/*  
-  if(event->GetPrimaryVertexTracks()->GetNContributors()>0)
-    eventVtxExist    = kTRUE;
-  else 
-    if(event->GetPrimaryVertexSPD()->GetNContributors()>0)
-      eventVtxExist    = kTRUE;
-*/
 
   Double_t vtx5[3];
   vtx5[0] = event->GetPrimaryVertex()->GetX();
@@ -454,15 +582,28 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   }
     
   FillHistogram("hSelEvents",3) ;
+  //Vtx class z-bin
+  Int_t zvtx = TMath::Min(9,Int_t((vtx5[2]+10.)/2.)) ; 
+
   
   
 //  if (event->IsPileupFromSPD()){
 //    PostData(1, fOutputContainer);
 //    return ;
 //  }
-
+  
+  if(!fUtils->IsVertexSelected2013pA(event)){
+    PostData(1, fOutputContainer);
+    return ;
+  }
   FillHistogram("hSelEvents",4) ;
-
+  
+  if(fUtils->IsPileUpEvent(event)){
+    PostData(1, fOutputContainer);
+    return ;
+  }
+  FillHistogram("hSelEvents",5) ;
+  
   //centrality
   AliCentrality *centrality = event->GetCentrality();
   if( centrality )
@@ -479,25 +620,27 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   }
   fCentBin = (Int_t)(fCentrality/20.) ; 
 
-  FillHistogram("hSelEvents",5) ;
+  FillHistogram("hSelEvents",6) ;
   
   
-  //Vtx class z-bin
-  Int_t zvtx = 0 ; 
-
   //Calculate charged multiplicity
   Int_t trackMult = 0;
   if(fTrackEvent)
     fTrackEvent->Clear() ;
   else
-    fTrackEvent = new TClonesArray("AliAODPWG4Particle",event->GetNumberOfTracks()) ;
+    fTrackEvent = new TClonesArray("AliCaloPhoton",event->GetNumberOfTracks()) ;
+
   for (Int_t i=0;i<event->GetNumberOfTracks();++i) {
-    AliVParticle *track = event->GetTrack(i) ;
+    AliAODTrack *track = (AliAODTrack*)event->GetTrack(i) ;
+    if(!track->IsHybridGlobalConstrainedGlobal())
+      continue ;
     if(TMath::Abs(track->Eta())< 0.9){
       if(trackMult>=fTrackEvent->GetSize())
 	fTrackEvent->Expand(2*trackMult) ;
-      new ((*fTrackEvent)[trackMult]) AliAODPWG4Particle(track->Px(),track->Py(),track->Pz(),track->P());
+      new ((*fTrackEvent)[trackMult]) AliCaloPhoton(track->Px(),track->Py(),track->Pz(),track->P());
       trackMult++;
+     FillHistogram("hTrackEtaPhi",track->Eta(),track->Phi()) ;
+     FillHistogram("hTrackEtaPt",track->Eta(),track->Pt()) ;
     }
   }
   FillHistogram("hTrackMult",fCentrality,trackMult+0.5) ;
@@ -511,7 +654,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
   //---------Select photons-------------------
   Int_t multClust = event->GetNumberOfCaloClusters();
   if(!fPHOSEvent)
-    fPHOSEvent   = new TClonesArray("AliAODPWG4Particle",multClust);
+    fPHOSEvent   = new TClonesArray("AliCaloPhoton",multClust);
   else
     fPHOSEvent->Clear() ;
   Int_t inList = 0; //counter of caloClusters
@@ -530,20 +673,15 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     if(clu->GetM02()<0.2) 
       continue ;          
-    
-    FillHistogram("hTOF",clu->E(),clu->GetTOF()) ;
-    if(TMath::Abs(clu->GetTOF())>100.e-9) 
-      continue ;          
-    
-    if(clu->GetDistanceToBadChannel()<2.5)
-      continue ;
+  
+    if(clu->GetMCEnergyFraction()>kEcrossCut) //Ecross cut, should be filled with Tender
+     continue ;    
 
     Float_t pos[3] ;
     clu->GetPosition(pos) ;
     Int_t fidArea=GetFiducialArea(pos) ;
-    if(fidArea==0) //Bad cell
-      continue; 
-
+//    if(fidArea==0) //Bad cell
+//      continue; 
     
     TVector3 global1(pos) ;
     Int_t relId[4] ;
@@ -551,6 +689,15 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     Int_t mod  = relId[0] ;
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
+    
+    FillHistogram("hTOF",clu->E(),clu->GetTOF()) ;
+    FillHistogram(Form("hTofM%d",mod),clu->GetTOF(),clu->E()) ;
+    if(clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut)
+      continue ;          
+    
+//    if(clu->GetDistanceToBadChannel()<2.5)
+//      continue ;
+
     
     FillHistogram(Form("hCluNXZM%d",mod),cellX,cellZ,1.);
     FillHistogram(Form("hCluEXZM%d",mod),cellX,cellZ,clu->E());
@@ -563,49 +710,56 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     
     TLorentzVector momentum ;
     clu->GetMomentum(momentum, vtx5);
-    AliAODPWG4Particle *p = new ((*fPHOSEvent)[inList]) AliAODPWG4Particle(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
+    AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
     inList++;
 
-    Int_t isolation = EvalIsolation(&momentum) ;
-    p->SetBtag(isolation) ;
+    Int_t isolation = EvalIsolation(&momentum,kTRUE) ;
+    p->SetIsolationTag(isolation) ;
     
     p->SetDistToBad((Int_t)(1.+clu->GetDistanceToBadChannel()/2.2));
     
-    p->SetTag(0); //Strict PID pi0 partner not found
+    p->SetTagInfo(0); //Strict PID pi0 partner not found
     p->SetTagged(kFALSE);   //Reconstructed pairs found
-    Bool_t sure = 0;
+    
     p->SetFiducialArea(fidArea) ;
 
-    if(fStack){    
-     //This is primary entered PHOS
-     Int_t primLabel=FindPrimary(clu,sure) ;
-     //Look what particle left vertex
-     if(primLabel>-1){
-       TParticle * prim = fStack->Particle(primLabel) ;
-       Int_t iparent=primLabel;
-       TParticle * parent = prim;
-       while((parent->R() > rcut) && (iparent>-1)){
-         iparent=parent->GetFirstMother();
-         parent=fStack->Particle(iparent);
-      }
-       p->SetCaloLabel(primLabel,iparent); //This and partner cluster
-     }
-     else{
-       p->SetCaloLabel(-1,-1); //This and partner cluster
-     }
-       
+    if(fIsMC){    
+       //This is primary entered PHOS
+       FillHistogram(Form("LabelsNPrim_cent%d",fCentBin),clu->E(),float(clu->GetNLabels())) ;
+       Int_t primLabel=clu->GetLabelAt(0) ; //FindPrimary(clu,sure) ;
+       //Look what particle left vertex
+       if(primLabel>-1){
+         AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(primLabel) ;
+         Int_t iparent=primLabel;
+         AliAODMCParticle * parent = prim;
+         Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
+         while((r2 > rcut*rcut) && (iparent>-1)){
+           iparent=parent->GetMother();
+           parent=(AliAODMCParticle*)fStack->At(iparent);
+           r2=parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() ;
+         }
+         p->SetPrimary(primLabel) ;
+         p->SetPrimaryAtVertex(iparent) ;
+	 p->SetWeight(PrimaryParticleWeight(parent)) ;
+       }
+       else{
+         p->SetPrimary(-1); //Primary index    
+         p->SetPrimaryAtVertex(-1) ;
+	 p->SetWeight(1.) ;
+       }
     }
     else{  
-     //This is primary at vertex(R<1cm)
-     p->SetCaloLabel(-1,-1); //This and partner cluster
+      p->SetPrimary(-1); //Primary index    
+      p->SetPrimaryAtVertex(-1) ;
+      p->SetWeight(1.) ;
     }
-    p->SetLabel(i); //Cluster index    
     //PID criteria
-//    p->SetDispBit(clu->Chi2()) ;
-    p->SetDispBit(TestLambda(clu->E(),clu->GetM20(),clu->GetM02())) ;
+    p->SetDispBit(clu->Chi2()<2.5) ;
     p->SetTOFBit(TestTOF(clu->GetTOF(),clu->E())) ;
-    p->SetChargedBit(clu->GetEmcCpvDistance()>10.) ;      
+    p->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;      
   }
+  FillHistogram("hPHOSCentrality",fCentrality,inList+0.5) ;
+  
   
   FillMCHistos() ;
   FillTaggingHistos() ;
@@ -626,52 +780,83 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
 void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
    
   //MC info about this particle
-  if(!fStack)
+  if(!fIsMC)
     return ;
-  
   const Double_t rcut=1. ; //cut on vertex to consider particle as "primary" 
-  AliAODEvent* event = (AliAODEvent*)InputEvent();
+  const Double_t phiMin=260.*TMath::Pi()/180. ;
+  const Double_t phiMax=320.*TMath::Pi()/180. ;
   
-  //Fill spectra of primary particles
-  char partName[10] ;
-  for(Int_t i=0;i<fStack->GetNtrack();i++){
-    TParticle* particle =  fStack->Particle(i);
-    //Primary particle
-    Double_t r=particle->R() ;
-
-    switch(particle->GetPdgCode()){
-      case 111:  snprintf(partName,10,"pi0") ; 
-                 break ;
-      case 221:  snprintf(partName,10,"eta") ;
-                 break ;
-      case 223:  snprintf(partName,10,"omega") ;
-                 break ;
-      case 22:   snprintf(partName,10,"gamma") ;
-                 break ;
-      default:   continue ;
-    }
-    
-    Double_t pt = particle->Pt() ;
-    //Distribution over vertex
-    FillHistogram(Form("hMC_%s_vertex",partName),pt,r) ;
-
-    if(r >rcut)
+  Int_t nPrim = fStack->GetEntriesFast() ;
+  //Fill Primary particl yields
+  
+  for(Int_t i=0;i<nPrim;i++){
+    AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(i) ;
+    Double_t r2=prim->Xv()*prim->Xv()+prim->Yv()*prim->Yv() ;
+    if(r2>rcut*rcut)
       continue ;
-   
-    //Total number of pi0 with creation radius <1 cm
-    Double_t w = PrimaryParticleWeight(particle) ;  
-    FillHistogram(Form("hMC_all_%s",partName),pt,w) ;
-    if(TMath::Abs(particle->Y())<0.15){
-      FillHistogram(Form("hMC_unitEta_%s",partName),pt,w) ;
-    }
 
-    FillHistogram(Form("hMC_rap_%s",partName),particle->Y(),w) ;
-    
-    Double_t phi=particle->Phi() ;
+    Int_t pdg=prim->GetPdgCode() ;    
+    char partName[30] ;
+    if(pdg == 111)
+      snprintf(partName,30,"pi0") ;
+    else
+      if(pdg == 221)
+        snprintf(partName,30,"eta") ;
+      else
+        if(pdg == 22)
+           snprintf(partName,30,"gamma") ;
+	else
+          if(pdg == 310)
+             snprintf(partName,30,"K0s") ;
+	  else
+            if(abs(pdg) == 321)
+              snprintf(partName,30,"Kpm") ;
+  	    else
+              if(abs(pdg) == 211)
+                snprintf(partName,30,"pipm") ;
+	      else  
+                if(abs(pdg) == 2212)
+                  snprintf(partName,30,"p") ;
+ 	        else  
+                  if(abs(pdg) ==-2212)
+                    snprintf(partName,30,"pbar") ;
+   	          else  
+                    if(abs(pdg) == 2112)
+                      snprintf(partName,30,"n") ;
+ 	            else  
+                      if(abs(pdg) ==-2112)
+                        snprintf(partName,30,"nbar") ;
+ 	              else  
+                        continue ;      	      
+
+    //Primary particle
+    Double_t phi=prim->Phi() ;
     while(phi<0.)phi+=TMath::TwoPi() ;
     while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-    FillHistogram(Form("hMC_phi_%s",partName),phi,w) ;
+    Double_t pt=prim->Pt() ;
+
+    //Total number of pi0 with creation radius <1 cm
+    Double_t w = PrimaryParticleWeight(prim) ;  
+    FillHistogram(Form("hMC_all_%s_cent%d",partName,fCentBin),pt,w) ;
+    if(TMath::Abs(prim->Y())<0.13){
+      FillHistogram(Form("hMC_phi_%s_cent%d",partName,fCentBin),phi,w) ;
+      if(phi>phiMin && phi<phiMax)
+        FillHistogram(Form("hMC_unitEta_%s_cent%d",partName,fCentBin),pt,w) ;
+    }
+
+    FillHistogram(Form("hMC_rap_%s_cent%d",partName,fCentBin),prim->Y(),w) ;
+    //Some additional QA
+    if(pdg == 111){
+       FillHistogram("hMCpi0_ptrap",pt,prim->Y(),w) ;   
+       FillHistogram("hMCpi0_ptphi",pt,phi,w) ;   
+    }
+    if(pdg == 22){
+       FillHistogram("hMCgamma_ptrap",pt,prim->Y(),w) ;   
+       FillHistogram("hMCgamma_ptphi",pt,phi,w) ;   
+    }
+    
   }
+  
  
   
   //Clussify reconstructed clusters
@@ -681,332 +866,203 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
   
   const Int_t n=fPHOSEvent->GetEntriesFast() ;
   for(Int_t i=0;i<n;i++){
-    AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(i));
-    Int_t iprim=p->GetCaloLabel(0) ; //Particle entered PHOS
-    if(iprim<0){ //No label!
-      FillHistogram("hMCRecNoLabel",p->Pt());
+    AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
+    Int_t label=p->GetPrimary() ;
+    if(label<0){ //No label!
+      FillHistogram("hMCRecNoLabel",p->Pt(),p->GetWeight());
       continue ;
     }     
-    
-    TParticle * prim = fStack->Particle(iprim) ;
-      
-    //Look what particle left vertex
-    Int_t iparent=p->GetCaloLabel(1); //Particle left vertex
-    TParticle * parent =fStack->Particle(iparent); 
 
-    Int_t grandpaPDG=-1 ;
-    if(parent){
-      grandpaPDG=parent->GetPdgCode() ;
-    }
-    switch(grandpaPDG){
-    case -1: //no primary
-	  FillPIDHistograms("hMCRecNoPrim",p);
-	  break ;	  
-    case 22:  
-	  FillPIDHistograms("hMCRecGamma",p);
+    
+    AliAODMCParticle * prim = (AliAODMCParticle*)fStack->At(p->GetPrimary()) ;
+    //Look what particle left virtex
+    Int_t iparent=p->GetPrimary();
+    AliAODMCParticle * parent = prim;
+    while(parent->Xv()*parent->Xv()+parent->Yv()*parent->Yv() > rcut*rcut){
+	iparent=parent->GetMother();
+	if(iparent<0)
 	  break ;
-    case  11:
-    case -11: //electron/positron conversion
-	  FillPIDHistograms("hMCRecPhotConv",p);  //Reconstructed with photon from conversion primary
-	  FillHistogram("hMCConversionRadius",prim->R());
+	parent = (AliAODMCParticle*)fStack->At(iparent) ;	
+      }
+      Int_t parentPDG=parent->GetPdgCode() ;     
+      switch(parentPDG){
+	case 22: //electron/positron conversion
+	  FillPIDHistograms("hMCRecPhoton",p);  //Reconstructed with photon from conversion primary
 	  break ;
-    case 111: //Pi0 decay           //Primary decay photon (as in MC)
- 	  FillPIDHistograms("hMCRecPi0",p);
-          //Strange, vertex of pi0?
- 	  FillHistogram("hMCRecPi0Vtx",p->Pt(),parent->R());
+	case  11:
+	case -11: //electron/positron conversion
+	  FillPIDHistograms("hMCRecE",p);  //Reconstructed with photon from conversion primary
 	  break ;
-    case 221: //eta decay
-	  FillPIDHistograms("hMCRecEta",p);
-          //Strange, vertex of eta?
- 	  FillHistogram("hMCRecEtaVtx",p->Pt(),parent->R());
-	  break ;  
-    case 223: //omega meson decay
-	  FillPIDHistograms("hMCRecOmega",p);
-          //Strange, vertex of omega?
- 	  FillHistogram("hMCRecOmegaVtx",p->Pt(),parent->R());
-	  break ;
-    case 331: //eta' decay
-	  FillPIDHistograms("hMCRecEtapr",p);
-          //Strange, vertex of eta'?
- 	  FillHistogram("hMCRecEtaprVtx",p->Pt(),parent->R());
-	  break ;	  
-    case -2212:
+	case -2212:
 	  FillPIDHistograms("hMCRecPbar",p);  //Reconstructed with photon from antibaryon annihilation
 	  break ;	  
-    case -2112: //antineutron & antiproton 
+	case -2112: //antineutron & antiproton conversion
 	  FillPIDHistograms("hMCRecNbar",p);  //Reconstructed with photon from antibaryon annihilation
 	  break ;	  
-    case  211:
-    case -211:
-	  FillPIDHistograms("hMCRecPipm",p);  //Reconstructed with photon from antibaryon annihilation
-	  break ;	  
-    case 2112:
-	  FillPIDHistograms("hMCRecN",p);  //Reconstructed with photon from antibaryon annihilation
-	  break ;	        
-    case 2212:
-	  FillPIDHistograms("hMCRecP",p);  //Reconstructed with photon from antibaryon annihilation
-	  break ;	        
-    case  321:
-    case -321:
-	  FillPIDHistograms("hMCRecKpm",p);  //Reconstructed with photon from conversion primary
+	case  211:
+	case -211:
+	case 2212:
+	case  321:
+	case -321:
+	  FillPIDHistograms("hMCRecCharg",p);  //Reconstructed with photon from conversion primary
 	  break ;
-    case 130:
-	  FillHistogram("hMCRecK0sVtx",p->Pt(),prim->R());
+	case 310:
 	  FillPIDHistograms("hMCRecK0s",p);  //Reconstructed with photon from conversion primary
 	  break ;
-    case 310: 	  
-	  FillHistogram("hMCRecK0lVtx",p->Pt(),prim->R());
-	  FillPIDHistograms("hMCRecK0l",p);  //Reconstructed with photon from conversion primary
+	case 2112: //antineutron & antiproton conversion
+	case 130:
+	  FillPIDHistograms("hMCRecNeutral",p);  //Reconstructed with photon from antibaryon annihilation
 	  break ;
-    default:  
-          if(parent->GetPDG()->Charge()!=0)
-            FillPIDHistograms("hMCRecUnknownCh",p);
-	  else
-            FillPIDHistograms("hMCRecUnknownNeu",p);
-	  printf("Unknown PDG code: %d \n",grandpaPDG) ;
-    }  
-//Put here filling histograms vs PID...    
+	case -1: //direct photon or no primary
+	  FillPIDHistograms("hMCRecNoPRim",p);
+	  break ;	  
+	default:  
+	  printf("Unknown PDG: %d \n",parentPDG) ;
+	  FillPIDHistograms("hMCRecUnknown",p);
+	  break ;
+      }  
     
-        
-    //Now classify decay photons
-    if(grandpaPDG==22){
-      //Separate gammas from pi0s, eta, omega, eta', e+-, other, no primary
-      Int_t igrandpa = -1 ;
-      if(parent)
-        igrandpa=parent->GetFirstMother();
-      Int_t decayPDG=-1 ; 
-      TParticle * decay=0x0 ;
-      if(igrandpa>-1){
-	decay=fStack->Particle(igrandpa) ;
-	decayPDG=decay->GetPdgCode() ;
-      }
-      switch(decayPDG){
-	case -1 :// Direct gamma?
-            FillPIDHistograms("hMCRecGammaDir",p);
-	    break ;
-	case 111 :// pi0 decays
-            FillPIDHistograms("hMCRecGammaPi0",p);
-	    break ;
-	case 221 :// eta decays
-            FillPIDHistograms("hMCRecGammaEta",p);
-	    break ;
-	case 223 :// omega decays
-            FillPIDHistograms("hMCRecGammaOmega",p);
-	    break ;
+    
+      //Now classify decay photon
+      if(parentPDG==22){
+	Int_t iGrandParent=parent->GetMother();
+	if(iGrandParent<0 || iGrandParent>=fStack->GetEntriesFast()){
+	  FillPIDHistograms("hMCRecPhotNoPrim",p);
+          continue ;	  
+	}
+	AliAODMCParticle * grandParent = (AliAODMCParticle*)fStack->At(iGrandParent) ;	
+        Int_t grandParentPDG=grandParent->GetPdgCode() ;     
+        switch(grandParentPDG){
+	case 111: //pi0
+	  FillPIDHistograms("hMCRecPhotPi0",p);
+	  break ;  		
+	case 221: //eta decay
+	  FillPIDHistograms("hMCRecPhotEta",p);
+	  break ;  
+	case 223: //omega meson decay
+	  FillPIDHistograms("hMCRecPhotOmega",p);
+	  break ;
 	default:
-            FillPIDHistograms("hMCRecGammaOther",p);
-      }	    
-
-
-      //Classify photons from pi0 decay
-      if(decayPDG==111){
-	//Dalitz decay
-	if(decay->GetNDaughters()>2){
-          FillPIDHistograms("hMCRecGammaPi0Dalitz",p);
-	  continue ;
+	  FillPIDHistograms("hMCRecPhotOther",p);
 	}
-	Int_t ipartner = decay->GetFirstDaughter(); 
-	if(ipartner==iparent){ //look other
-          ipartner = decay->GetLastDaughter(); 
-	}
-	//No partner in Stack
-	if(ipartner==-1){
-          FillPIDHistograms("hMCRecGammaPi0NoStack",p) ;
-	}
-        else{
-	  //	  
-          FillPIDHistograms("hMCGammaPi02Gamma",p) ;
-	  TParticle * partner = fStack->Particle(ipartner);
-	  //Check if partner is registered and made correct mass
-	  Double_t mPrim=(parent->Energy()+partner->Energy())*(parent->Energy()+partner->Energy())-
-	                 (parent->Px()+partner->Px())*(parent->Px()+partner->Px()) -
-	                 (parent->Py()+partner->Py())*(parent->Py()+partner->Py()) -
-	                 (parent->Pz()+partner->Pz())*(parent->Pz()+partner->Pz()) ;
-          if(mPrim>0.)mPrim=TMath::Sqrt(mPrim) ;
-	  FillHistogram(Form("hMCGammaPi0PrimMgg_cent%d",fCentBin),mPrim,p->Pt()) ;	  
-	  
-	  //find corresponding PWG4particle
-	  Bool_t isPartnerRec=kFALSE ;
-	  Bool_t isTagged=kFALSE ;
-          for(Int_t j=0;j<n;j++){
-	    if(j==i) 
-	      continue ;
-            AliAODPWG4Particle *p2 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(j));
-	    Double_t invMass = p->GetPairMass(p2);      
-            if(p2->GetCaloLabel(1)==ipartner){ //partner
-              isPartnerRec=kTRUE ;
-  	      FillHistogram("hMCGammaPi0RecMgg",invMass,p->Pt()) ;
-              FillPIDHistograms("hMCGammaPi0Rec",p) ;
-	  
-	      //estimate proportion passed PI0 cut
-              if(IsInPi0Band(invMass,p->Pt(),2)){ //Check type!!!!!!!!!!!!!!
-                FillPIDHistograms("hMCGammaPi0TrueTagged",p) ;		  
-                if(isTagged)
-                  FillPIDHistograms("hMCGammaPi0MultyTagged",p) ;		  
-		isTagged=kTRUE ;
-	      }
+	//--------consider pi0 decays--------------------
+	if(grandParentPDG==111){
+	  //First find which daughter is our cluster
+          //iparent - index of curent photon	  
+	  Int_t ipartner=grandParent->GetDaughter(0) ;
+	  if(ipartner==iparent){//look for other
+  	    if(grandParent->GetNDaughters()>1){
+	      ipartner=grandParent->GetDaughter(1);  
 	    }
 	    else{
-	      if(IsInPi0Band(invMass,p->Pt(),2)){//Check type!!!!!!!!!!!!!!
-                FillPIDHistograms("hMCGammaPi0FakeTagged",p) ;
-                if(isTagged)
-                  FillPIDHistograms("hMCGammaPi0MultyTagged",p) ;		  
-		isTagged=kTRUE ;		
-	      }
+	      ipartner=-1 ;
 	    }
 	  }
-          if(isTagged)          
-            FillPIDHistograms("hMCGammaPi0Tagged",p) ;
+	
+ 	  //There is no partner in stack
+	  if(ipartner==-1){
+            FillPIDHistograms("hMCDecWMisPartnStack",p) ;
+	  }
+          else{
+	    AliAODMCParticle * partner = (AliAODMCParticle *)fStack->At(ipartner);
+	    //Check if partner is registered and made correct mass
+	    //If not - trace the reason
+	    AliCaloPhoton *pp = 0x0 ;
 	  
-	  //If no PWG4particle trace the reason
-	  if(!isPartnerRec){
-             //conversion
-	      if(partner->GetPdgCode()==22){ 
+	    for(Int_t ii=0;ii<n;ii++){
+	      if(i==ii) continue; 
+	      AliCaloPhoton * tmp = static_cast<AliCaloPhoton*>(fPHOSEvent->At(ii));
+	      Int_t ipartnPrim = tmp->GetPrimary() ;
+	      while(ipartnPrim>-1){
+                if(ipartnPrim==ipartner)
+		  break ;
+	        ipartnPrim = ((AliAODMCParticle *)fStack->At(ipartnPrim))->GetMother();
+	      }
+	      if(ipartnPrim==ipartner){
+	        pp=tmp ;
+	        break ;
+	      }
+	    }
+
+	    if(pp){
+	      //Partner reconstructed, but did not pass cuts
+                FillPIDHistograms("hMCDecWRecPartn",p) ;	
+    	        Double_t invMass=(*p+ *pp).M() ;
+	        FillHistogram("hMCmass",invMass,p->Pt(),p->GetWeight()) ;
+	        if(IsInPi0Band(invMass,p->Pt())){
+	          FillPIDHistograms("hMCDecWithFoundPartn",p) ;
+	        }
+	        else{
+	          FillPIDHistograms("hMCDecWithWrongMass",p) ;
+	        }
+	    }
+	    else{//Partner not reconstructed
+	      if(partner->GetPdgCode()==22){
 		Bool_t isPartnerLost=kFALSE; //If partner is lost for some reason
 		
-	        //did not hit PHOS	
-		Int_t modulenum ;
+		//Check if partner miss PHOS
+  	        Int_t modulenum ;
 		Double_t ztmp=0.,xtmp=0. ;
-		Bool_t impact=fPHOSgeom->ImpactOnEmc(partner,modulenum,ztmp,xtmp) ;
-		//Check Bad Map
-		Int_t fidArea=0 ;                  
-		TVector3 partnerGlobaPos ;
-		if(impact){
-                  fPHOSgeom->Local2Global(modulenum,xtmp, ztmp,partnerGlobaPos) ;
-                  Float_t pos[3] ;
-		  partnerGlobaPos.GetXYZ(pos);
-                  fidArea=GetFiducialArea(pos) ;
-                }
-
-		if(!impact || (fidArea==0) ){ //this photon cannot hit PHOS		  
-		  FillPIDHistograms("hMCGammaPi0MisGeo",p);
+		Double_t vtx[3]={partner->Xv(),partner->Yv(),partner->Zv()} ;
+		Bool_t impact=fPHOSgeom->ImpactOnEmc(vtx,partner->Theta(),partner->Phi(),modulenum,ztmp,xtmp) ;
+		
+		if(impact){//still check bad map
+                  Int_t relId[4] ;
+                  fPHOSgeom->RelPosToRelId(modulenum,xtmp,ztmp,relId) ;
+                  if ( !IsGoodChannel(modulenum,relId[2],relId[3]) ) {
+                     impact=kFALSE ;		    
+		  }  
+		}
+ 
+		if(!impact){ //this photon cannot hit PHOS		  
+		  FillPIDHistograms("hMCDecWMisPartnAccept",p) ;  //Spectrum of tagged with missed partner
 		  Int_t iFidArea = p->GetFiducialArea(); 
 		  if(iFidArea>0){
-		    FillPIDHistograms("hMCGammaPi0MisGeoFA1",p) ;  //Spectrum of tagged with missed partner
+		    FillPIDHistograms("hMCDecWMisPartnAcceptFA1",p) ;  //Spectrum of tagged with missed partner
 		    if(iFidArea>1){
-		      FillPIDHistograms("hMCGammaPi0MisGeoFA2",p) ;  //Spectrum of tagged with missed partner
+		      FillPIDHistograms("hMCDecWMisPartnAcceptFA2",p) ;  //Spectrum of tagged with missed partner
 		      if(iFidArea>2){
-			FillPIDHistograms("hMCGammaPi0MisGeoFA3",p) ;  //Spectrum of tagged with missed partner
+			FillPIDHistograms("hMCDecWMisPartnAcceptFA3",p) ;  //Spectrum of tagged with missed partner
 		      }
 		    }
 		  }
 		  isPartnerLost=kTRUE;
 		}
-
-		//this photon is converted before it is registered
-		if(!isPartnerLost){
-		  if(partner->GetNDaughters()>0 && 
-		     fStack->Particle(partner->GetFirstDaughter())->R()<450.){  
-		    FillPIDHistograms("hMCGammaPi0MisConv",p);
-		    FillHistogram("hMCGammaPi0MisConvR",p->Pt(),fStack->Particle(partner->GetFirstDaughter())->R()) ;  //Spectrum of tagged with missed partner
-		    isPartnerLost=kTRUE;
-		  }
-		}
 		
-        	// too soft	
+                if(!isPartnerLost){
+		  //this photon is converted before it is registered
+		  if(partner->GetNDaughters()>0){
+		    AliAODMCParticle* tmpP=(AliAODMCParticle*)fStack->At(partner->GetDaughter(0));
+		    if(tmpP->Xv()*tmpP->Xv()+tmpP->Yv()*tmpP->Yv()<450.*450.){  
+		      FillPIDHistograms("hMCDecWMisPartnConv",p) ;  //Spectrum of tagged with missed partner
+		      isPartnerLost=kTRUE;
+		    }
+		  }
+ 		}
 		if(!isPartnerLost && 
-		   partner->Energy()<0.3){ //energy is not enough to be registered by PHOS
-		  FillPIDHistograms("hMCGammaPi0MisEmin",p);  
+		   partner->E()<0.3){ //energy is not enough to be registered by PHOS
+		  FillPIDHistograms("hMCDecWMisPartnEmin",p) ;  //Spectrum of tagged with missed partner
 		  isPartnerLost=kTRUE;
 		}
-		//Other reason
-		if(!isPartnerLost){
-		  FillHistogram("hMCGammaPi0MisPartner",partner->Pt());
-		  FillHistogram("hMCGammaPi0MisPartnerEtaPhi",partner->Eta(),partner->Phi());	
-		  //May be overlap?
-		  Bool_t fakePrimary=kFALSE ;
-                  Int_t multClust = event->GetNumberOfCaloClusters();
-                  for (Int_t iclu=0; iclu<multClust; iclu++) {
-                    AliAODCaloCluster * clu = event->GetCaloCluster(iclu);
-                    Float_t pos[3] ;
-                    clu->GetPosition(pos) ;
-                    TVector3 global1(pos) ;
-		    Double_t d=(partnerGlobaPos-global1).Mag();
-		    if( d<4 ){//same cluster
-                      //check is partner is in list?
-                      Int_t nlab=clu->GetNLabels() ;
-                      for(Int_t ilab=0;  ilab<nlab;  ilab++){
-		        Int_t labelA = clu->GetLabelAt(ilab) ;
-		        while(labelA>-1){
-			  if(labelA==ipartner){
-			    if(clu->E()>0.3)
-         	              FillPIDHistograms("hMCGammaPi0RecSoft",p);
-			    else
-			      if(clu->GetNCells()<3)
-         	                FillPIDHistograms("hMCGammaPi0RecCells",p);
-			      else
-       	                        FillPIDHistograms("hMCGammaPi0MisFoundPrim",p);
-			    break ; 
-			  }
-                          labelA=fStack->Particle(labelA)->GetFirstMother() ;
-		        }
-		      }                      
-                      fakePrimary=kTRUE ;
-                      break ;
-		    }
-		  }//end of loop over clusters
-                  //No cluster in this region
-                  if(fakePrimary)
-		    FillPIDHistograms("hMCGammaPi0MisFakePrim",p);
-		  else
-		    FillPIDHistograms("hMCGammaPi0MisOther",p);
-		  
+		if(!isPartnerLost){ //Reason not found!!!!!                  		  
+		  FillPIDHistograms("hMCDecWMisPartnOther",p);
+		}
+		else{//Sum of all missed partners
+		  FillPIDHistograms("hMCDecWMisPartnAll",p);
 		}
 	      }//Partner - photon
 	      else{//partner not photon
-		FillPIDHistograms("hMCGammaPi0MisNPhot",p);                
+		FillPIDHistograms("hMCDecWMisPartnNPhot",p);                
 	      }
-	    }
-	  }
-	}
-      }
-    } //PHOS clusters 
-   
-   
-   //Fill histograms with all clusters fake tagging
-   for(Int_t i=0;i<n-1;i++){
-     AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(i));
-
-     Int_t ipartner=-999 ; // this will be partner if this cluster from pi0 decay
-     //Look what particle left vertex
-     Int_t iparent=p->GetCaloLabel(1); //Particle left vertex
-     TParticle * parent =fStack->Particle(iparent); 
-     if(parent){	
-       Int_t grandpaPDG=parent->GetPdgCode() ;
-       if(grandpaPDG==22){
-         Int_t igrandpa =parent->GetFirstMother();
-         if(igrandpa>-1){
-           TParticle * decay=fStack->Particle(igrandpa) ;
-	   Int_t decayPDG=decay->GetPdgCode() ;
-           if(decayPDG==111){
-	     //Dalitz decay
-	     if(decay->GetNDaughters()==2){     
-	       ipartner = decay->GetFirstDaughter(); 
-	       if(ipartner==iparent){ //look other
-                 ipartner = decay->GetLastDaughter(); 
-	       }
-	       if(ipartner==-1) //no partner
-                 ipartner=-999 ;
-   	     }
-	   }
-	 }
-       }
-     }
-     for(Int_t j=i+1;j<n;j++){
-       AliAODPWG4Particle *p2 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(j));
-       if(p2->GetCaloLabel(1)!=ipartner){ //partner
-         Double_t invMass = p->GetPairMass(p2);      
-	 if(IsInPi0Band(invMass,p->Pt(),2)){
-             FillPIDHistograms("hMCAllFakeTagged",p) ;
-	 }
-	 if(IsInPi0Band(invMass,p2->Pt(),2)){
-             FillPIDHistograms("hMCAllFakeTagged",p2) ;
-         }
-       }
-     }
-   } 
+	      
+	    }//Partner not reconstructed
+	  }//Partner in stack
+	}//photon from pi0 decay
+      }//photon
+    } //PHOS clusters    
    
 }
+    
 //________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
   //Fill all necessary histograms
@@ -1016,54 +1072,79 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
   //Invariant Mass analysis
   const Int_t n=fPHOSEvent->GetEntriesFast() ;
   for(Int_t i=0;i<n-1;i++){
-    AliAODPWG4Particle *p1 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(i));
+    AliCaloPhoton *p1 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
     for(Int_t j = i+1 ; j < n ; j++) {
-      AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(j));
+      AliCaloPhoton * p2 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(j));
       
-      Double_t invMass = p1->GetPairMass(p2);   
+      Double_t invMass = (*p1 + *p2).M();   
+
+      if((p1->E()>0.1) && (p2->E()>0.1)){
+        FillPIDHistograms("hInvM_Re_Emin1",p1,p2,invMass,kTRUE) ;
+        if((p1->E()>0.2) && (p2->E()>0.2)){
+          FillPIDHistograms("hInvM_Re_Emin2",p1,p2,invMass,kTRUE) ;
+          if((p1->E()>0.3) && (p2->E()>0.3)){
+            FillPIDHistograms("hInvM_Re_Emin3",p1,p2,invMass,kTRUE) ;
+     
+	    //Fill izolated pi0s
+  	    Double_t nsigma1 = IsInPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
+  	    Double_t nsigma2 = IsInPi0Band(invMass,p2->Pt()) ; //in band with n sigmas
+	    if(nsigma1<2 || nsigma2<2){ //2 sigma band
+	      TLorentzVector pi0=*p1+*p2 ;
+              Int_t isolation=EvalIsolation(&pi0,0) ;
+ 	      for(Int_t kind=1; kind<33; kind*=2){
+                 if((isolation&kind)){
+                   FillHistogram(Form("hPi_Isolation%d",kind),pi0.Pt()) ;
+	         }
+              }
+	    }
+	    
+	  }
+	}
+      }
+      
       
       if(p2->E()>0.1){
-        FillPIDHistograms("hInvM_Re_Emin1",p1,invMass) ;
+        FillPIDHistograms("hSingleInvM_Re_Emin1",p1,invMass) ;
         if(p2->E()>0.2){
-          FillPIDHistograms("hInvM_Re_Emin2",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin2",p1,invMass) ;
           if(p2->E()>0.3){
-            FillPIDHistograms("hInvM_Re_Emin3",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin3",p1,invMass) ;
 	  }
 	}
       }
 	
       if(p1->E()>0.1){
-        FillPIDHistograms("hInvM_Re_Emin1",p2,invMass) ;
+        FillPIDHistograms("hSingleInvM_Re_Emin1",p2,invMass) ;
         if(p1->E()>0.2){
-          FillPIDHistograms("hInvM_Re_Emin2",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin2",p2,invMass) ;
           if(p1->E()>0.3){
-            FillPIDHistograms("hInvM_Re_Emin3",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin3",p2,invMass) ;
 	  }
 	}
       }
       if(TestPID(3, p2)){
         if(p2->E()>0.1){
-          FillPIDHistograms("hInvM_Re_Emin1_Strict",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Strict",p1,invMass) ;
           if(p2->E()>0.2){
-            FillPIDHistograms("hInvM_Re_Emin2_Strict",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Strict",p1,invMass) ;
             if(p2->E()>0.3){
-              FillPIDHistograms("hInvM_Re_Emin3_Strict",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Strict",p1,invMass) ;
 	    }
 	  }
 	}
       }
       if(TestPID(3, p1)){
         if(p1->E()>0.1){
-          FillPIDHistograms("hInvM_Re_Emin1_Strict",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Re_Emin1_Strict",p2,invMass) ;
           if(p1->E()>0.1){
-            FillPIDHistograms("hInvM_Re_Emin2_Strict",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Re_Emin2_Strict",p2,invMass) ;
             if(p1->E()>0.3){
-              FillPIDHistograms("hInvM_Re_Emin3_Strict",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Re_Emin3_Strict",p2,invMass) ;
 	    }
 	  }
 	}
       }
-      if(IsSamePi0(p1,p2)){
+      if(IsSameParent(p1,p2)==111){
         FillPIDHistograms("hMC_InvM_Re",p1,invMass) ;
         FillPIDHistograms("hMC_InvM_Re",p2,invMass) ;
         if(TestPID(3, p2)){
@@ -1081,7 +1162,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p2->E()>0.1*(eminType+1)){
 	  //Set corresponding bit
-	  Double_t nsigma = IsInPi0Band(invMass,p1->Pt(),eminType) ; //in band with n sigmas
+	  Double_t nsigma = IsInPi0Band(invMass,p1->Pt()) ; //in band with n sigmas
 	  for(Int_t isigma=0; isigma<3; isigma++){
   	    if(nsigma<1+isigma){
    	      tag1|= (1 << (3*eminType+isigma)) ;
@@ -1091,12 +1172,12 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
-      p1->SetTag(tag1) ;
+      p1->SetTagInfo(tag1) ;
       Int_t tag2=0 ;
       for(Int_t eminType=0; eminType<3; eminType++){
         if(p1->E()>0.1*(eminType+1)){
 	  //Set corresponding bit
-	  Double_t nsigma = IsInPi0Band(invMass,p2->Pt(),eminType) ; //in band with n sigmas
+	  Double_t nsigma = IsInPi0Band(invMass,p2->Pt()) ; //in band with n sigmas
 	  for(Int_t isigma=0; isigma<3; isigma++){
   	    if(nsigma<1+isigma){
    	      tag2|= (1 << (3*eminType+isigma)) ;
@@ -1106,17 +1187,17 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
 	  }
 	}
       }
-      p2->SetTag(tag2) ;
+      p2->SetTagInfo(tag2) ;
       
       if(tag1 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
         if(p1->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p1->Pt());
+          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p1->Pt(),p1->GetWeight());
         }  
         p1->SetTagged(kTRUE) ;
       }
       if(tag2 & (1<<7)){ //2 sigma, Emin=0.3: default tagging
         if(p2->IsTagged()){//Multiple tagging
-          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p2->Pt());
+          FillHistogram(Form("hTaggedMult_cent%d",fCentBin),p2->Pt(),p2->GetWeight());
         }  
         p2->SetTagged(kTRUE) ;
       }      
@@ -1127,9 +1208,9 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
   
   //Single particle histgams
   for(Int_t i=0;i<n;i++){
-    AliAODPWG4Particle *p = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(i));
+    AliCaloPhoton *p = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
 
-    Int_t isolation = p->GetBtag();
+    Int_t isolation = p->GetIsolationTag();
 
     //Inclusive spectra
     FillPIDHistograms("hPhot",p) ;
@@ -1161,15 +1242,10 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       //3 Emin cuts
       //Default Emin, 1,2,3 sigmas
       //strict and loose PID cut on partner
-      Int_t tag=p->GetTag() ;
+      Int_t tag=p->GetTagInfo() ;
       for(Int_t ibit=0; ibit<18; ibit++){
         if((tag & (1<<ibit))==0){ 
           FillPIDHistograms(Form("hPhot_nTagged%d_Area1",ibit),p) ;
-//        for(Int_t kind=1; kind<33; kind*=2){
-//          if((isolation&kind)){
-//            FillPIDHistograms(Form("hPhot_nStrictTagged_Isolation%d_Area1",kind),p) ;
-//          }
-//	  }
 	}
       }
 
@@ -1195,50 +1271,61 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
    //Fill Mixed InvMass distributions:
   TIter nextEv(fCurrentMixedList) ;
   for(Int_t i=0;i<n;i++){
-    AliAODPWG4Particle *p1 = static_cast<AliAODPWG4Particle*>(fPHOSEvent->At(i));
+    AliCaloPhoton *p1 = static_cast<AliCaloPhoton*>(fPHOSEvent->At(i));
     while(TClonesArray * event2 = static_cast<TClonesArray*>(nextEv())){
       Int_t nPhotons2 = event2->GetEntriesFast() ;
       for(Int_t j=0; j < nPhotons2 ; j++){
-        AliAODPWG4Particle * p2 = static_cast<AliAODPWG4Particle*>(event2->At(j)) ;
-        Double_t invMass = p1->GetPairMass(p2);
+        AliCaloPhoton * p2 = static_cast<AliCaloPhoton*>(event2->At(j)) ;
+        Double_t invMass = (*p1 + *p2).M();
 
+        if((p1->E()>0.1) && (p2->E()>0.1)){
+          FillPIDHistograms("hInvM_Mi_Emin1",p1,p2,invMass,kFALSE) ;
+          if((p1->E())>0.2 && (p2->E()>0.2)){
+            FillPIDHistograms("hInvM_Mi_Emin2",p1,p2,invMass,kFALSE) ;
+            if((p1->E())>0.3 && (p2->E()>0.3)){
+              FillPIDHistograms("hInvM_Mi_Emin3",p1,p2,invMass,kFALSE) ;
+  	    }
+ 	  }
+        }
+	
+	
 	if(p2->E()>0.1){
-          FillPIDHistograms("hInvM_Mi_Emin1",p1,invMass) ;
+          FillPIDHistograms("hSingleInvM_Mi_Emin1",p1,invMass) ;
 	  if(p2->E()>0.2){
-            FillPIDHistograms("hInvM_Mi_Emin2",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin2",p1,invMass) ;
 	    if(p2->E()>0.3){
-              FillPIDHistograms("hInvM_Mi_Emin3",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin3",p1,invMass) ;
 	    }
 	  }
 	}
         if(TestPID(3, p2)){
   	  if(p2->E()>0.1){
-            FillPIDHistograms("hInvM_Mi_Emin1_Strict",p1,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Strict",p1,invMass) ;
     	    if(p2->E()>0.2){
-              FillPIDHistograms("hInvM_Mi_Emin2_Strict",p1,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Strict",p1,invMass) ;
   	      if(p2->E()>0.3){
-                FillPIDHistograms("hInvM_Mi_Emin3_Strict",p1,invMass) ;
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Strict",p1,invMass) ;
 	      }
 	    }
 	  }
 	}
 	
 	if(p1->E()>0.1){
-          FillPIDHistograms("hInvM_Mi_Emin1",p2,invMass) ;
+          FillPIDHistograms("hSingleInvM_Mi_Emin1",p2,invMass) ;
   	  if(p1->E()>0.2){
-            FillPIDHistograms("hInvM_Mi_Emin2",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin2",p2,invMass) ;
 	    if(p1->E()>0.3){
-              FillPIDHistograms("hInvM_Mi_Emin3",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin3",p2,invMass) ;
 	    }
 	  }
 	}
         if(TestPID(3, p1)){
 	  if(p1->E()>0.1){
-            FillPIDHistograms("hInvM_Mi_Emin1_Strict",p2,invMass) ;
+            FillPIDHistograms("hSingleInvM_Mi_Emin1_Strict",p2,invMass) ;
 	    if(p1->E()>0.2){
-              FillPIDHistograms("hInvM_Mi_Emin2_Strict",p2,invMass) ;
+              FillPIDHistograms("hSingleInvM_Mi_Emin2_Strict",p2,invMass) ;
 	      if(p1->E()>0.3){
-                FillPIDHistograms("hInvM_Mi_Emin3_Strict",p2,invMass) ;
+                FillPIDHistograms("hSingleInvM_Mi_Emin3_Strict",p2,invMass) ;
 	      }
 	    }
 	  }
@@ -1246,7 +1333,6 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
       }
     }
   } 
- 
   
 }
 
@@ -1263,39 +1349,36 @@ void AliAnalysisTaskTaggedPhotons::Terminate(Option_t *)
   if (fDebug > 1) Printf("Terminate()");
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt, Int_t /*type*/)const
+Bool_t AliAnalysisTaskTaggedPhotons::IsInPi0Band(Double_t m, Double_t pt)const
 {
   //Parameterization of the pi0 peak region
-  Double_t mpi0mean =  1.33259e-01 -  2.910e-03 * TMath::Exp(-pt/3.616) ;
-//  Double_t mpi0mean = 0.136 ; //fPi0MeanP0 + fPi0MeanP1 * pt + fPi0MeanP2 * pt*pt + fPi0MeanP3 * pt*pt*pt;
+  //for LHC13bcdef
+  Double_t mpi0mean =  0.13447 - 1.41259e-03 * TMath::Exp(-pt/1.30044) ;  
 
-    Double_t mpi0sigma=TMath::Sqrt(4.17927e-03*4.17927e-03+2.81581e-03*2.81581e-03/pt+3.59218e-04*3.59218e-04*pt*pt) ;
-//  Double_t mpi0sigma= 0.005; //TMath::Sqrt(fPi0SigmaP0 * fPi0SigmaP0 / pt + fPi0SigmaP1 * fPi0SigmaP1 + fPi0SigmaP2 * fPi0SigmaP2 / pt / pt);
+  Double_t mpi0sigma=TMath::Sqrt(5.22245e-03*5.22245e-03 +2.86851e-03*2.86851e-03/pt) + 9.09932e-05*pt ;
  
   return (m>mpi0mean-2*mpi0sigma && m<mpi0mean+2*mpi0sigma) ;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::IsSamePi0(const AliAODPWG4Particle *p1, const AliAODPWG4Particle *p2)const{
+Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const AliCaloPhoton *p2)const{
   //Looks through parents and finds if there was commont pi0 among ancestors
 
-  if(!fStack)
-    return kFALSE ; //can not say anything
+  if(!fIsMC)
+    return 0 ; //can not say anything
 
-  Int_t prim1 = p1->GetCaloLabel(0);
+  Int_t prim1 = p1->GetPrimary();
   while(prim1!=-1){ 
-    Int_t prim2 = p2->GetCaloLabel(0);
-    while(prim2!=-1){ 
+    Int_t prim2 = p2->GetPrimary();
+  
+    while(prim2!=-1){       
       if(prim1==prim2){
-        if(fStack->Particle(prim1)->GetPdgCode()==111)
-          return kTRUE ;
-        else
-          return kFALSE ;
+	return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
       }
-      prim2=fStack->Particle(prim2)->GetFirstMother() ;
+      prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
     }
-    prim1=fStack->Particle(prim1)->GetFirstMother() ;
+    prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
   }
-  return kFALSE ;
+  return 0 ;
 }
 //______________________________________________________________________________
 Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t * position)const{
@@ -1304,12 +1387,9 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t * position)con
   TVector3 global1(position) ;
   Int_t relId[4] ;
   fPHOSgeom->GlobalPos2RelId(global1,relId) ;
-  Int_t mod  = relId[0] ;
+//  Int_t mod  = relId[0] ;
   Int_t cellX = relId[2];
   Int_t cellZ = relId[3] ;
-
-  if(fPHOSBadMap[mod] && fPHOSBadMap[mod]->GetBinContent(cellX,cellZ)>0)
-    return 0 ;
 
   //New we are in good channel, 
   //calculate distance to the closest group of bad channels
@@ -1321,15 +1401,11 @@ Int_t AliAnalysisTaskTaggedPhotons::GetFiducialArea(const Float_t * position)con
   if( cellX<=cut1 ||  cellX>=65-cut1 || cellZ<=cut1 || cellZ>=57-cut1)
     return 1;
 //  //and from large dead area
-//  if(fPHOSBadMap[mod]->Integral(cellX-cut1,cellX+cut1,cellZ-cut1,cellZ+cut1)>0.2*cut1*cut1)
-//    return 1 ;
 //Full configuration
 //    if((mod==3 && cellX<=cut2) || (mod==1 && cellX>=65-cut2) || cellZ<=cut2 || cellZ>=57-cut2)
 //1+3 configuration
   if( cellX<=cut2 || cellX>=65-cut2 || cellZ<=cut2 || cellZ>=57-cut2)
     return 2;
-//  if(fPHOSBadMap[mod]->Integral(cellX-cut2,cellX+cut2,cellZ-cut2,cellZ+cut2)>0.8*cut2*cut2)
-//    return 2 ;
   //Very good channel
   return 3 ;
 
@@ -1339,9 +1415,40 @@ void  AliAnalysisTaskTaggedPhotons::InitGeometry(){
   //Rotation matrixes are set with Tender
   
   if(fPHOSgeom) return ;
-  else
-    fPHOSgeom = AliPHOSGeometry::GetInstance() ;
   
+  
+  fPHOSgeom = AliPHOSGeometry::GetInstance() ;
+ 
+  if(!fPHOSgeom){ //Geometry not yet constructed with Tender
+    fPHOSgeom = AliPHOSGeometry::GetInstance("IHEP","");
+
+    AliOADBContainer geomContainer("phosGeo");
+    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(170000,"PHOSRotationMatrixes");
+    for(Int_t mod=0; mod<5; mod++) {
+      if(!matrixes->At(mod)) continue;
+      fPHOSgeom->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;   
+    }
+  }
+    
+  //Read BadMap for MC simulations
+  Int_t runNumber=196208 ; //LHC13bcdef
+  AliOADBContainer badmapContainer(Form("phosBadMap"));
+  badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+  TObjArray *maps = (TObjArray*)badmapContainer.GetObject(runNumber,"phosBadMap");
+  if(!maps){
+      AliError("TaggedPhotons: Can not read Bad map\n") ;    
+  }
+  else{
+    AliInfo(Form("TaggedPhotons: Setting PHOS bad map with name %s \n",maps->GetName())) ;
+    for(Int_t mod=0; mod<5;mod++){
+      if(fPHOSBadMap[mod]) 
+        delete fPHOSBadMap[mod] ;
+      TH2I * h = (TH2I*)maps->At(mod) ;      
+      if(h)
+        fPHOSBadMap[mod]=new TH2I(*h) ;
+    }
+  }    
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskTaggedPhotons::FillHistogram(const char * key,Double_t x)const{
@@ -1400,27 +1507,46 @@ void AliAnalysisTaskTaggedPhotons::FillHistogram(const char * key,Double_t x,Dou
   }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliAODPWG4Particle * p) const{
+void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p) const{
 
-  FillHistogram(Form("%s_All_cent%d",name,fCentBin),p->Pt()) ;
-  if(p->GetDispBit())
-    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),p->Pt()) ;
-  if(p->GetChargedBit())
-    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),p->Pt()) ;
-  if(p->GetDispBit() && p->GetChargedBit()) 
-    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),p->Pt()) ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
+  if(p->IsDispOK())
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
+  if(p->IsCPVOK())
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
+  if(p->IsDispOK() && p->IsCPVOK()) 
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),p->Pt(),p->GetWeight()) ;
   
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliAODPWG4Particle * p,Double_t x) const{
+void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p,Double_t x) const{
 
-  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,p->Pt()) ;
-  if(p->GetDispBit())
-    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,p->Pt()) ;
-  if(p->GetChargedBit())
-    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,p->Pt()) ;
-  if(p->GetDispBit() && p->GetChargedBit()) 
-    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,p->Pt()) ;
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
+  if(p->IsDispOK())
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
+  if(p->IsCPVOK())
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
+  if(p->IsDispOK() && p->IsCPVOK()) 
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,p->Pt(),p->GetWeight()) ;
+  
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p1,const AliCaloPhoton * p2,Double_t x, Bool_t isRe) const{
+
+  Double_t ptPi = (*p1 + *p2).Pt() ;
+  Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+//  if(isRe){
+//    Int_t pdg=IsSameParent(p1,p2) ;
+//    if(pdg!=0)
+//      w=p1->GetWeight() ;
+//  }
+  FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,ptPi,w) ;
+  if(p1->IsDispOK() && p2->IsDispOK())
+    FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,ptPi,w) ;
+  if(p1->IsCPVOK() && p2->IsCPVOK())
+    FillHistogram(Form("%s_CPV_cent%d",name,fCentBin),x,ptPi,w) ;
+  if(p1->IsDispOK() && p1->IsCPVOK() && p2->IsDispOK() && p2->IsCPVOK()) 
+    FillHistogram(Form("%s_Both_cent%d",name,fCentBin),x,ptPi,w) ;
   
 }
 //_____________________________________________________________________________
@@ -1438,7 +1564,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::TestLambda(Double_t pt,Double_t l1,Double_t
   
 }
 //_________________________________________________________________________________
-Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph){
+Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph, Bool_t isPhoton){
 
    // Check if this particle is isolated. 
    //We use several cone radii and epsilons.
@@ -1457,20 +1583,39 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph){
    Double_t eCone1 = 0;
    Double_t eCone2 = 0;
    Double_t eCone3 = 0;
+   //Cross-check, energy in cone perpr to photon
+   Double_t eP1Cone1 = 0;
+   Double_t eP1Cone2 = 0;
+   Double_t eP1Cone3 = 0;
+   Double_t eP2Cone1 = 0;
+   Double_t eP2Cone2 = 0;
+   Double_t eP2Cone3 = 0;
+   
 
    Double_t  phiTrig = ph->Phi();
    Double_t  etaTrig = ph->Eta();
 
    Int_t n=fTrackEvent->GetEntriesFast() ;
    for(Int_t itr=0; itr<n; itr++){
-     AliAODPWG4Particle * track = (AliAODPWG4Particle*)fTrackEvent->At(itr) ;
+     AliCaloPhoton * track = (AliCaloPhoton*)fTrackEvent->At(itr) ;
          
      Double_t deleta = etaTrig - track->Eta() ;
      Double_t delphi = phiTrig - track->Phi() ;      
      while(delphi<-TMath::Pi()) delphi+=TMath::TwoPi() ;
      while(delphi>TMath::Pi()) delphi-=TMath::TwoPi() ;
    
+     //Perp cones
+     Double_t delphiP1 = phiTrig +TMath::PiOver2()- track->Phi() ;      
+     while(delphiP1<-TMath::Pi()) delphiP1+=TMath::TwoPi() ;
+     while(delphiP1>TMath::Pi()) delphiP1-=TMath::TwoPi() ;
+     Double_t delphiP2 = phiTrig -TMath::PiOver2()- track->Phi() ;      
+     while(delphiP2<-TMath::Pi()) delphiP2+=TMath::TwoPi() ;
+     while(delphiP2>TMath::Pi()) delphiP2-=TMath::TwoPi() ;
+     
+     
      Double_t dr    = TMath::Sqrt(deleta * deleta + delphi * delphi);
+     Double_t drP1    = TMath::Sqrt(deleta * deleta + delphiP1 * delphiP1);
+     Double_t drP2    = TMath::Sqrt(deleta * deleta + delphiP2 * delphiP2);
 
      if(dr<coneR3){
        eCone3+=track->Pt() ;
@@ -1481,14 +1626,53 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph){
 	 }
 	}
       }	
+       
+    if(drP1<coneR3){
+       eP1Cone3+=track->Pt() ;
+       if(drP1<coneR2){
+	 eP1Cone2+=track->Pt() ;
+         if(drP1<coneR1){
+	   eP1Cone1+=track->Pt() ;
+	 }
+       }
+    }	
+       
+    if(drP2<coneR3){
+       eP2Cone3+=track->Pt() ;
+       if(drP2<coneR2){
+	 eP2Cone2+=track->Pt() ;
+         if(drP2<coneR1){
+	   eP2Cone1+=track->Pt() ;
+	 }
+	}
+      }	
     }   
          
     //Fill QA histgams
     Double_t ptTrig=ph->Pt() ;
+    if(isPhoton){
     FillHistogram(Form("QA_Cone1_Tracks_cent%d",fCentBin),ptTrig,eCone1) ;
     FillHistogram(Form("QA_Cone2_Tracks_cent%d",fCentBin),ptTrig,eCone2) ;
     FillHistogram(Form("QA_Cone3_Tracks_cent%d",fCentBin),ptTrig,eCone3) ;
-    
+    FillHistogram(Form("QA_PCone1_Tracks_cent%d",fCentBin),ptTrig,eP1Cone1) ;
+    FillHistogram(Form("QA_PCone2_Tracks_cent%d",fCentBin),ptTrig,eP1Cone2) ;
+    FillHistogram(Form("QA_PCone3_Tracks_cent%d",fCentBin),ptTrig,eP1Cone3) ;
+    FillHistogram(Form("QA_PCone1_Tracks_cent%d",fCentBin),ptTrig,eP2Cone1) ;
+    FillHistogram(Form("QA_PCone2_Tracks_cent%d",fCentBin),ptTrig,eP2Cone2) ;
+    FillHistogram(Form("QA_PCone3_Tracks_cent%d",fCentBin),ptTrig,eP2Cone3) ;
+    }
+    else{
+    FillHistogram(Form("QA_Pi0Cone1_Tracks_cent%d",fCentBin),ptTrig,eCone1) ;
+    FillHistogram(Form("QA_Pi0Cone2_Tracks_cent%d",fCentBin),ptTrig,eCone2) ;
+    FillHistogram(Form("QA_Pi0Cone3_Tracks_cent%d",fCentBin),ptTrig,eCone3) ;
+    FillHistogram(Form("QA_Pi0PCone1_Tracks_cent%d",fCentBin),ptTrig,eP1Cone1) ;
+    FillHistogram(Form("QA_Pi0PCone2_Tracks_cent%d",fCentBin),ptTrig,eP1Cone2) ;
+    FillHistogram(Form("QA_Pi0PCone3_Tracks_cent%d",fCentBin),ptTrig,eP1Cone3) ;
+    FillHistogram(Form("QA_Pi0PCone1_Tracks_cent%d",fCentBin),ptTrig,eP2Cone1) ;
+    FillHistogram(Form("QA_Pi0PCone2_Tracks_cent%d",fCentBin),ptTrig,eP2Cone2) ;
+    FillHistogram(Form("QA_Pi0PCone3_Tracks_cent%d",fCentBin),ptTrig,eP2Cone3) ;
+      
+    }
     
     //Fill Bits
     Int_t iCone1E1 = (epsilon1*ptTrig > eCone1) ;
@@ -1505,20 +1689,78 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph){
     return isolation ;		    
 }
 //_________________________________________________________________________________
-Bool_t AliAnalysisTaskTaggedPhotons::TestPID(Int_t iPID, AliAODPWG4Particle* part){
+Bool_t AliAnalysisTaskTaggedPhotons::TestPID(Int_t iPID, AliCaloPhoton* part){
 //   //Checks PID of particle
   
   if(!part) return kFALSE ;
   if(iPID==0) return kTRUE ;
-  if(iPID==1) return part->GetDispBit() ;
-  if(iPID==2) return part->GetChargedBit() ;
-  if(iPID==3) return part->GetDispBit() && part->GetChargedBit() ;
+  if(iPID==1) return part->IsDispOK() ;
+  if(iPID==2) return part->IsCPVOK() ;
+  if(iPID==3) return part->IsDispOK() && part->IsCPVOK() ;
   return kFALSE ;
     
 }
 //_________________________________________________________________________________
-Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(TParticle * /*particle*/){
-  return 1;
+Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * particle){
+  if(!fIsMC)  //This is real data
+     return 1;
+  //Classify parent at vertex
+  //Introduce for eta and pi0 weights   
+     
+  Double_t r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+  Int_t mother = particle->GetMother() ;
+  while(mother>-1){
+    if(r2<1.)
+      break ;
+    particle = (AliAODMCParticle*) fStack->At(mother);
+    mother = particle->GetMother() ;
+    r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
+  }
+  
+  //Particle within 1 cm from the virtex
+  Int_t pdg = particle->GetPdgCode() ;
+  Double_t x = particle->Pt() ;
+  mother = particle->GetMother() ;
+  while(TMath::Abs(pdg)<100){//gamma, electrons, muons 
+    if(mother>-1){
+      AliAODMCParticle * tmpP=(AliAODMCParticle*)fStack->At(mother) ;
+      pdg=tmpP->GetPdgCode() ;
+      x = tmpP->Pt() ;
+      mother = tmpP->GetMother() ;
+    }
+    else{ //direct photon/electron....
+      return 1.; 
+    }
+  } 
+  if(pdg == 111){
+  //Pi0
+     if(x<1) return 1. ;
+     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+       (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+  }
+  if(pdg == 221){
+  //Eta - same weight
+     if(x<1) return 1. ;
+     else return fWeightParamPi0[0]*TMath::Power(x,fWeightParamPi0[1])*
+       (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x) ;
+  }
+  return 1. ;
+}
+//_________________________________________________________________________________
+void AliAnalysisTaskTaggedPhotons::SetPi0WeightParameters(TArrayD * ar){
+ 
+  for(Int_t i=0; i<6; i++){ //Array range
+    if(ar->GetSize()>i) fWeightParamPi0[i]=ar->At(i) ;
+    else fWeightParamPi0[i]=0.;
+  }
+  //normalize to obtain smooth transition at 1 GeV
+  Double_t x=1. ;
+  fWeightParamPi0[0]=1./(TMath::Power(x,fWeightParamPi0[1])*
+       (1.+fWeightParamPi0[2]*x+fWeightParamPi0[3]*x*x)/
+       (1.+fWeightParamPi0[4]*x+fWeightParamPi0[5]*x*x)) ;
+  
   
 }
 //___________________________________________________________________________
@@ -1536,12 +1778,12 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   Bool_t hasGamma=kFALSE ;
   Double_t eMax=0. ;
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    AliAODMCParticle*  p=  (AliAODMCParticle*)fStack->At(clu->GetLabelAt(i)) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22){
       hasGamma=kTRUE ;
-      if(p->Energy()>eMax){
-	eMax=p->Energy();
+      if(p->E()>eMax){
+	eMax=p->E();
       }
     }
   }
@@ -1551,10 +1793,10 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
   }  
   
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    AliAODMCParticle*  p= (AliAODMCParticle*) fStack->At(clu->GetLabelAt(i)) ;
     Int_t pdg = p->GetPdgCode() ;
     if(pdg==22  ||  pdg==11 || pdg == -11){
-      if(p->Energy()>emFraction*clu->E()){
+      if(p->E()>emFraction*clu->E()){
 	sure=kTRUE ;
 	return clu->GetLabelAt(i);
       }
@@ -1563,7 +1805,7 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
 
   Double_t*  Ekin=  new  Double_t[n] ;
   for(Int_t i=0;  i<n;  i++){
-    TParticle*  p=  fStack->Particle(clu->GetLabelAt(i)) ;
+    AliAODMCParticle*  p=(AliAODMCParticle*) fStack->At(clu->GetLabelAt(i)) ;
     Ekin[i]=p->P() ;  // estimate of kinetic energy
     if(p->GetPdgCode()==-2212  ||  p->GetPdgCode()==-2112){
       Ekin[i]+=1.8  ;  //due to annihilation
@@ -1585,6 +1827,22 @@ Int_t AliAnalysisTaskTaggedPhotons::FindPrimary(AliVCluster*clu,  Bool_t&sure){
     sure=kTRUE;
   delete[]  Ekin;
   return  clu->GetLabelAt(iMax) ;
+}
+//___________________________________________________________________________
+Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
+{
+  //Check if this channel belogs to the good ones
+  
+  if(mod>4 || mod<1){
+    return kTRUE ;
+  }
+  if(!fPHOSBadMap[mod]){
+     return kTRUE ;
+  }
+  if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
+    return kFALSE ;
+  else
+    return kTRUE ;
 }
 
 

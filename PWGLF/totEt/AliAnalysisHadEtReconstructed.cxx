@@ -115,11 +115,18 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
   }
   fCentBin= -1;
   fGoodEvent = kTRUE;//for p+p collisions if we made it this far we have a good event
-  if(fDataSet==20100){//If this is Pb+Pb
+  if(fDataSet==20100){//If this is Pb+Pb or pPb
     AliCentrality *centrality = realEvent->GetCentrality();
     if(fNCentBins<21) fCentBin= centrality->GetCentralityClass10(fCentralityMethod);
     else{ fCentBin= centrality->GetCentralityClass5(fCentralityMethod);}
-    if(fCentBin ==-1) fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+    if(fCentBin ==-1){
+      if(fDataSet==2013){
+	fCentBin = 19;//For pPb we don't want to throw these events out but there is no CB 19
+      }
+      else{
+	fGoodEvent = kFALSE;//but for Pb+Pb events we don't want to count events where we did not find a centrality
+      }
+    }
   }
   //for PID
   AliESDpid *pID = new AliESDpid();
@@ -343,6 +350,12 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDND",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDND",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDND",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+
+    FillHisto1D("RecoRawEtFullAcceptanceTPCND",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDND",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSND",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDND",GetRawEtFullAcceptanceITSNoPID(),1.0);
+
   }
   if(eventtype == doublediff){
     FillHisto1D("RecoHadEtFullAcceptanceTPCDD",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
@@ -357,6 +370,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDDD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDDD",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDDD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCDD",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDDD",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSDD",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDDD",GetRawEtFullAcceptanceITSNoPID(),1.0);//ND
   }
   if(eventtype == singlediff){
     FillHisto1D("RecoPiKPEtFullAcceptanceTPCSD",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
@@ -371,6 +388,10 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype
     FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDSD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoPiKPEtFullAcceptanceITSNoPIDSD",GetCorrectedPiKPEtFullAcceptanceITSNoPID(),1.0);
     FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDSD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCSD",GetRawEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceTPCNoPIDSD",GetRawEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSSD",GetRawEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoRawEtFullAcceptanceITSNoPIDSD",GetRawEtFullAcceptanceITSNoPID(),1.0);
   }
   if(fGoodEvent){
     FillHisto1D("RecoPiKPEtFullAcceptanceTPC",GetCorrectedPiKPEtFullAcceptanceTPC(),1.0);
@@ -691,8 +712,15 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
-  Float_t maxEtPiKP = 50.0;
-  if(fDataSet==20100) maxEt=4000.0;
+  Float_t maxEtPiKP = 100.0;
+  if(fDataSet==20100){
+    maxEt=4000.0;
+    maxEtPiKP = 2500;
+  }
+  if(fDataSet==2013){
+    maxEt=100.0;
+    maxEtPiKP = 100.0;
+  }
   Int_t nbinsEt = 200;
   char histoname[200];
   char histotitle[200];
@@ -784,7 +812,7 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEtPiKP,maxEtPiKP);//et
 
 	  }
-	  if(fDataSet==20100 && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
+	  if((fDataSet==20100) && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
 	    Int_t width = 5;
 	    if(fNCentBins<21) width = 10;
 	    for(Int_t i=0;i<fNCentBins;i++){

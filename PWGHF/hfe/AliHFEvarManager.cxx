@@ -140,9 +140,9 @@ void AliHFEvarManager::Copy(TObject &o) const{
   target.fContentMC = new Double_t[sizeof(fContentMC)/sizeof(Double_t)];
   target.fWeightFactor = fWeightFactor;
   target.fSignalTrack = fSignalTrack;
-	target.fWeighting = fWeighting;
+  target.fWeighting = fWeighting;
   target.fSignal = fSignal;
-	target.fWeightFactors = fWeightFactors;
+  target.fWeightFactors = fWeightFactors;
   target.fWeightFactorsFunction = fWeightFactorsFunction; 
   target.SetOwner(kFALSE);
 }
@@ -320,14 +320,17 @@ Double_t AliHFEvarManager::GetValue(AliVParticle *track, UInt_t code, Float_t ce
     }
     case kSource:{
       if(fSignal){
-	if(fSignal->IsCharmElectron(track)) value = 0;
-	else if(fSignal->IsBeautyElectron(track)) value = 1;
-	else if(fSignal->IsGammaElectron(track)) value = 2;
+        value = static_cast<Int_t>(fSignal->GetSignalSource(track));
+        /*
+	      if(fSignal->IsCharmElectron(track)) value = 0;
+	      else if(fSignal->IsBeautyElectron(track)) value = 1;
+	      else if(fSignal->IsGammaElectron(track)) value = 2;
         else if(fSignal->IsNonHFElectron(track)) value = 3;
         else if(fSignal->IsJpsiElectron(track)) value = 4;
         else if(fSignal->IsB2JpsiElectron(track)) value = 5;
         else if(fSignal->IsKe3Electron(track)) value = 6;
-	else value = 7;
+	      else value = 7;
+        */
       }
       AliDebug(2, Form("source: %f", value));
       break;
@@ -544,10 +547,6 @@ AliHFEvarManager::AliHFEvariable::~AliHFEvariable(){
 
 //_______________________________________________
 Double_t* AliHFEvarManager::AliHFEvariable::GetBinning() { 
-  //
-  // Get the binning
-  //
-
   if(fUserDefinedBinning) return fBinning.GetArray(); 
 
   // No User defined Binning - create one and store in fBinning

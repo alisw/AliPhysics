@@ -1649,7 +1649,7 @@ void AliAnalysisTaskFullppJet::AnalyzeJets(AliFJWrapper *jetFinder, const Int_t 
 	{
 	  Double_t fill1[3] = {jetPt,radiusCut[ibin]-0.005,eFraction[ibin]/jetE};
 	  fJetEnergyFraction[type][r]->Fill(fill1);
-	  Double_t fill2[3] = {jetPt,radiusCut[ibin]-0.005,nPart[ibin]};
+	  Double_t fill2[3] = {jetPt,radiusCut[ibin]-0.005,static_cast<Double_t>(nPart[ibin])};
 	  fJetNPartFraction[type][r]->Fill(fill2);
 	}
 

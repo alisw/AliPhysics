@@ -19,7 +19,7 @@
 	//      Task for Heavy-flavour electron analysis in pPb collisions    //
 	//      (+ Electron-Hadron Jetlike Azimuthal Correlation)             //
 	//																	  //
-	//		version: March 23, 2014.								      //
+	//		version: May 30, 2014.								      //
 	//                                                                    //
 	//	    Authors 							                          //
 	//		Elienos Pereira de Oliveira Filho (epereira@cern.ch)	      //
@@ -92,6 +92,28 @@
 	//include to use reader as Lucile does
 #include "AliCaloTrackAODReader.h"
 #include "AliCaloTrackReader.h"
+#include "AliEMCALRecoUtils.h" //to remove exotics
+#include "AliAODHeader.h"
+#include "AliEMCALGeometry.h"
+
+
+
+	// --- ANALYSIS system ---
+#include "AliCalorimeterUtils.h"
+#include "AliESDEvent.h"
+#include "AliMCEvent.h"
+#include "AliStack.h"
+#include "AliAODPWG4Particle.h"
+#include "AliVCluster.h"
+#include "AliVCaloCells.h"
+#include "AliMixedEvent.h"
+#include "AliAODCaloCluster.h"
+#include "AliOADBContainer.h"
+#include "AliAnalysisManager.h"
+
+	// --- Detector ---
+#include "AliEMCALGeometry.h"
+#include "AliPHOSGeoUtils.h"
 
 	//______________________________________________________________________
 
@@ -104,6 +126,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fCorrelationFlag(0)
 ,fIsMC(0)
 ,fUseEMCal(kFALSE)
+
 ,fUseTrigger(kFALSE)
 ,fUseShowerShapeCut(kFALSE)
 ,fFillBackground(kFALSE)
@@ -136,8 +159,9 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fZvtx(0)
 ,fEstimator(0)
 ,fClus(0)
-	//,fClusESD(0)
+//,fClusESD(0)
 ,fNevent(0)
+,fNevent2(0)
 ,fPtElec_Inc(0)
 ,fPtPrim(0)
 ,fPtSec(0)
@@ -181,9 +205,21 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+,fECluster_not_exotic(0)
+,fECluster_not_exotic1(0)
+,fECluster_not_exotic2(0)
+,fECluster_exotic(0)
+,fNCluster_pure(0)
+,fNCluster_pure_aod(0)
+,fNCluster_ECluster(0)
+,fNcells_energy(0)
+,fNcells_energy_elec_selected(0)
+,fNcells_energy_not_exotic(0)
+
 ,fEtaPhi(0)
 ,fEtaPhi_num(0)
 ,fEtaPhi_den(0)
+,fEtaPhi_data(0)
 ,fpt_reco_pt_MC_num(0)
 ,fpt_reco_pt_MC_den(0)
 ,fVtxZ(0)
@@ -193,8 +229,15 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fVtxZ_new3(0)
 ,fVtxZ_new4(0)
 
+,fzRes1(0)
+,fzRes2(0)
+,fSPD_track_vtx1(0)
+,fSPD_track_vtx2(0)
+
+
 ,fEtad(0)
 ,fNTracks(0)
+,fTrack_Multi(0)
 ,fNTracks_pt(0)
 ,fNTracks_eta(0)
 ,fNTracks_phi(0)
@@ -290,6 +333,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fPtMCeta(0)
 ,fPtMCpi02(0)
 ,fPtMCeta2(0)
+,fPtMCpi03(0)
+,fPtMCeta3(0)
 ,fPtMC_EMCal_All(0)
 ,fPtMC_EMCal_Selected(0)
 ,fPtMC_TPC_All(0)
@@ -335,10 +380,21 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA(const char *name)
 ,fEventMixingFlag(0)
 ,fCEtaPhi_Inc_DiHadron(0)
 ,fPtTrigger_Inc(0)
+	//,fEMCALRecoUtils(new AliEMCALRecoUtils)
+	//,fEMCALGeo(0x0)
+	//,fCaloUtils(0x0)
+
+,fBitEGA(0)
+//,fEMCALRecoUtils(0)//exotic
+
 {
 		//Named constructor 
 		// Define input and output slots here
 		// Input slot #0 works with a TChain
+	
+		//exotic
+		//fEMCALRecoUtils  = new AliEMCALRecoUtils();
+	
 	DefineInput(0, TChain::Class());
 		// Output slot #0 id reserved by the base class for AOD
 		// Output slot #1 writes into a TH1 container
@@ -386,6 +442,7 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fClus(0)
 	//,fClusESD(0)
 ,fNevent(0)
+,fNevent2(0)
 ,fPtElec_Inc(0)
 ,fPtPrim(0)
 ,fPtSec(0)
@@ -429,9 +486,20 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fTPCnsigma_phi(0)
 ,fECluster(0)
 ,fECluster_pure(0)
+,fECluster_not_exotic(0)
+,fECluster_not_exotic1(0)
+,fECluster_not_exotic2(0)
+,fECluster_exotic(0)
+,fNCluster_pure(0)
+,fNCluster_pure_aod(0)
+,fNCluster_ECluster(0)
+,fNcells_energy(0)
+,fNcells_energy_elec_selected(0)
+,fNcells_energy_not_exotic(0)
 ,fEtaPhi(0)
 ,fEtaPhi_num(0)
 ,fEtaPhi_den(0)
+,fEtaPhi_data(0)
 ,fpt_reco_pt_MC_num(0)
 ,fpt_reco_pt_MC_den(0)
 ,fVtxZ(0)
@@ -441,8 +509,16 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fVtxZ_new3(0)
 ,fVtxZ_new4(0)
 
+,fzRes1(0)
+,fzRes2(0)
+,fSPD_track_vtx1(0)
+,fSPD_track_vtx2(0)
+
+
+
 ,fEtad(0)
 ,fNTracks(0)
+,fTrack_Multi(0)
 ,fNTracks_pt(0)
 ,fNTracks_eta(0)
 ,fNTracks_phi(0)
@@ -538,6 +614,8 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fPtMCeta(0)
 ,fPtMCpi02(0)
 ,fPtMCeta2(0)
+,fPtMCpi03(0)
+,fPtMCeta3(0)
 ,fPtMC_EMCal_All(0)
 ,fPtMC_EMCal_Selected(0)
 ,fPtMC_TPC_All(0)
@@ -583,10 +661,19 @@ AliAnalysisTaskEMCalHFEpA::AliAnalysisTaskEMCalHFEpA()
 ,fEventMixingFlag(0)
 ,fCEtaPhi_Inc_DiHadron(0)
 ,fPtTrigger_Inc(0)
+	//,fEMCALRecoUtils(new AliEMCALRecoUtils)
+	//,fEMCALGeo(0x0)
+	//,fCaloUtils(0x0)
+,fBitEGA(0)
+	//,fEMCALRecoUtils(0)//exotic
 {
 		// Constructor
 		// Define input and output slots here
 		// Input slot #0 works with a TChain
+	
+		//exotic
+		// fEMCALRecoUtils  = new AliEMCALRecoUtils();
+	
 	DefineInput(0, TChain::Class());
 		// Output slot #0 id reserved by the base class for AOD
 		// Output slot #1 writes into a TH1 container
@@ -605,6 +692,7 @@ AliAnalysisTaskEMCalHFEpA::~AliAnalysisTaskEMCalHFEpA()
 	delete fPIDqa;
 	//Lucile
 	//delete reader; 
+	//if(fEMCALRecoUtils)   delete fEMCALRecoUtils ;
 }
 
 	//______________________________________________________________________
@@ -659,9 +747,11 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 		//Store the number of events
 		//Define the histo
-	fNevent = new TH1F("fNevent","Number of Events",15,0,15);
+	fNevent = new TH1F("fNevent","Number of Events",30,0,30);
+	fNevent2 = new TH1F("fNevent2","Number of Events 2",30,0,30);
 		//And then, add to the output list
 	fOutputList->Add(fNevent);
+	fOutputList->Add(fNevent2);
 	
 	fpid = new TH1F("fpid","PID flag",5,0,5);
 	fOutputList->Add(fpid);
@@ -705,6 +795,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fShowerShapeCut = new TH2F("fShowerShapeCut","Shower Shape;M02;M20",500,0,1.8,500,0,1.8);
 	fEtaPhi_num=new TH2F("fEtaPhi_num","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
 	fEtaPhi_den=new TH2F("fEtaPhi_den","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
+	fEtaPhi_data=new TH2F("fEtaPhi_data","#eta x #phi track;#phi;#eta",200,0.,5,50,-1.,1.);
 		
 	fpt_reco_pt_MC_num=new TH2F("fpt_reco_pt_MC_num","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
 	fpt_reco_pt_MC_den=new TH2F("fpt_reco_pt_MC_den","pt reco x pt MC;pt reco; pt MC",300,0.,30,300,0.,30);
@@ -714,6 +805,21 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fCharge_p = new TH1F("fCharge_p","Inclusive Positrons (Positive Charge); p_{t} (GeV/c); Count",200,0,30);
 	
 	fECluster_pure= new TH1F("fECluster_pure", ";ECluster pure",2000,0,100);
+	fECluster_not_exotic= new TH1F("fECluster_not_exotic", ";ECluster not exotic - function ",2000,0,100);
+	
+	fECluster_not_exotic1= new TH1F("fECluster_not_exotic1", ";ECluster not exotic Ncells > E/3+1",2000,0,100);
+
+	fECluster_not_exotic2= new TH1F("fECluster_not_exotic2", ";ECluster not exotic 2",2000,0,100);
+	fECluster_exotic= new TH1F("fECluster_exotic", ";ECluster exotic",2000,0,100);
+	
+	//not associated with tracks
+	fNCluster_pure= new TH1F("fNCluster_pure", ";Number of clusters - pure",2000,-1,1999);
+	fNCluster_pure_aod= new TH1F("fNCluster_pure_aod", ";Number of clusters - pure -aod",2000,-1,1999);
+	fNCluster_ECluster= new TH2F("fNCluster_ECluster", ";Number of clusters vs. Energy of Cluster",2000,-1,1999, 4000, -1, 1999);
+	
+	fNcells_energy= new TH2F("fNcells_energy", "all clusters;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
+	fNcells_energy_elec_selected= new TH2F("fNcells_energy_elec_selected", "clusters for electrons on TPC;Number of cells;Energy of Cluster",100,0,100, 2000, 0, 100);
+	fNcells_energy_not_exotic= new TH2F("fNcells_energy_not_exotic", "not exotic cluster;Number of cells;Energy of Cluster ",100,0,100, 2000, 0, 100);
 	
 	if(fUseEMCal){
 		
@@ -739,6 +845,7 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	
 	fOutputList->Add(fEtaPhi_num);
 	fOutputList->Add(fEtaPhi_den);
+	fOutputList->Add(fEtaPhi_data);
 	
 	fOutputList->Add(fpt_reco_pt_MC_num);
 	fOutputList->Add(fpt_reco_pt_MC_den);
@@ -778,6 +885,19 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fCharge_p);
 	
 	fOutputList->Add(fECluster_pure);
+	fOutputList->Add(fECluster_not_exotic);
+	fOutputList->Add(fECluster_not_exotic1);
+	fOutputList->Add(fECluster_not_exotic2);
+	fOutputList->Add(fECluster_exotic);
+	
+	fOutputList->Add(fNCluster_pure);
+	fOutputList->Add(fNCluster_pure_aod);
+
+	fOutputList->Add(fNCluster_ECluster);
+	fOutputList->Add(fNcells_energy);
+	fOutputList->Add(fNcells_energy_elec_selected);
+	fOutputList->Add(fNcells_energy_not_exotic);
+
 	
 	if(fUseEMCal){
 		
@@ -800,11 +920,17 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		
 	}
 	
-	fVtxZ_new1= new  TH1F("fVtxZ_new1","fVtxZ_new1",1000, -50,50);
-	fVtxZ_new2= new  TH1F("fVtxZ_new2","fVtxZ_new2",1000, -50,50);
-	fVtxZ_new3= new  TH1F("fVtxZ_new3","fVtxZ_new3",1000, -50,50);
-	fVtxZ_new4= new  TH1F("fVtxZ_new4","fVtxZ_new4",1000, -50,50);
+	fVtxZ_new1= new  TH1F("fVtxZ_new1","fVtxZ_new1",4000, -50,50);
+	fVtxZ_new2= new  TH1F("fVtxZ_new2","fVtxZ_new2",4000, -50,50);
+	fVtxZ_new3= new  TH1F("fVtxZ_new3","fVtxZ_new3",4000, -50,50);
+	fVtxZ_new4= new  TH1F("fVtxZ_new4","fVtxZ_new4",4000, -50,50);
 	
+	fzRes1= new  TH1F("fzRes1","fzRes1",4000, 0,1);
+	fzRes2= new  TH1F("fzRes2","fzRes2",4000, 0,1);
+	fSPD_track_vtx1= new  TH1F("fSPD_track_vtx1","fSPD_track_vtx1",4000, -5,5);
+	fSPD_track_vtx2= new  TH1F("fSPD_track_vtx2","fSPD_track_vtx2",4000, -5,5);
+	
+		
 		//General Histograms
 	
 		//Steps
@@ -874,6 +1000,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fNClusters[i]);
 		fOutputList->Add(fTPCNcls_EoverP[i]);
 	}
+	
+	fTrack_Multi= new  TH1F("fTrack_Multi","fTrack_Multi",1000, 0,1000);
 	
 	for(Int_t i = 0; i < 4; i++)
 	{
@@ -1100,6 +1228,10 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fVtxZ_new3);
 	fOutputList->Add(fVtxZ_new4);
 	
+	fOutputList->Add(fzRes1);
+	fOutputList->Add(fzRes2);
+	fOutputList->Add(fSPD_track_vtx1);
+	fOutputList->Add(fSPD_track_vtx2);
 	
 
 	
@@ -1140,6 +1272,9 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fPtMCeta = new TH1F("fPtMCeta",";p_{T} (GeV/c);Count",200,0,30);
 		fPtMCpi02 = new TH1F("fPtMCpi02",";p_{t} (GeV/c);Count",200,0,30);
 		fPtMCeta2 = new TH1F("fPtMCeta2",";p_{T} (GeV/c);Count",200,0,30);
+		fPtMCpi03 = new TH1F("fPtMCpi03",";p_{t} (GeV/c);Count",200,0,30);
+		fPtMCeta3 = new TH1F("fPtMCeta3",";p_{T} (GeV/c);Count",200,0,30);
+		
 		fPtMC_EMCal_All= new TH1F("fPtMC_EMCal_All",";p_{t} (GeV/c);Count",200,0,40);
 		fPtMC_EMCal_Selected= new TH1F("fPtMC_EMCal_Selected",";p_{t} (GeV/c);Count",200,0,40);
 		fPtMC_TPC_All= new TH1F("fPtMC_TPC_All",";p_{T} (GeV/c);Count",200,0,40);
@@ -1187,6 +1322,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 		fOutputList->Add(fPtMCeta);
 		fOutputList->Add(fPtMCpi02);
 		fOutputList->Add(fPtMCeta2);
+		fOutputList->Add(fPtMCpi03);
+		fOutputList->Add(fPtMCeta3);
 		fOutputList->Add(fPtMC_EMCal_All);
 		fOutputList->Add(fPtMC_EMCal_Selected);
 		fOutputList->Add(fPtMC_TPC_All);
@@ -1205,8 +1342,8 @@ void AliAnalysisTaskEMCalHFEpA::UserCreateOutputObjects()
 	fOutputList->Add(fCentralityHist);
 	fOutputList->Add(fCentralityHistPass);
 	
-		//______________________________________________________________________
-		//Mixed event analysis
+	//______________________________________________________________________
+	//Mixed event analysis
 	if(fEventMixingFlag)
 	{
 		fPoolNevents = new TH1F("fPoolNevents","Event Mixing Statistics; Number of events; Count",1000,0,1000);
@@ -1294,16 +1431,21 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	Int_t fNumberOfVertices = 0; 
 	Int_t fNumberOfMotherkink = 0;
 	
-		//______________________________________________________________________
-		//Vertex Selection
+		
+	//total event before event selection
+	fNevent->Fill(1);
+	
+	//______________________________________________________________________
+	//Vertex Selection
 	if(fIsAOD)
 	{
-			
 		const AliAODVertex* trkVtx = fAOD->GetPrimaryVertex();
 		if(!trkVtx || trkVtx->GetNContributors()<=0) return;
 		TString vtxTtl = trkVtx->GetTitle();
 		if(!vtxTtl.Contains("VertexerTracks")) return;
-		Float_t zvtx = trkVtx->GetZ();
+			//Float_t zvtx = trkVtx->GetZ();
+		Float_t zvtx = -100;
+		zvtx=trkVtx->GetZ();
 		fZvtx = zvtx;
 		
 		fVtxZ_new1->Fill(fZvtx);
@@ -1314,13 +1456,24 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		Double_t cov[6]={0};
 		spdVtx->GetCovarianceMatrix(cov);
 		Double_t zRes = TMath::Sqrt(cov[5]);
-		if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
-		if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
-		if(TMath::Abs(zvtx) > 10) return;
 		
+		fzRes1->Fill(zRes);
+		if(vtxTyp.Contains("vertexer:Z") && (zRes>0.25)) return;
+		fzRes2->Fill(zRes);
+		
+		fSPD_track_vtx1->Fill(spdVtx->GetZ() - trkVtx->GetZ());
+		if(TMath::Abs(spdVtx->GetZ() - trkVtx->GetZ())>0.5) return;
+		fSPD_track_vtx2->Fill(spdVtx->GetZ() - trkVtx->GetZ());
+		
+		
+		if(TMath::Abs(zvtx) > 10) return;
 		fVtxZ_new2->Fill(fZvtx);
 		
-			//Look for kink mother for AOD
+		if(fabs(zvtx>10.0))return; 
+		fVtxZ_new3->Fill(fZvtx);
+		
+		
+		//Look for kink mother for AOD
 		
 		fNumberOfVertices = 0; 
 		fNumberOfMotherkink = 0;
@@ -1356,7 +1509,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(!trkVtx || trkVtx->GetNContributors()<=0) return;
 		TString vtxTtl = trkVtx->GetTitle();
 		if(!vtxTtl.Contains("VertexerTracks")) return;
-		Float_t zvtx = trkVtx->GetZ();
+		Float_t zvtx = -100;
+		zvtx=trkVtx->GetZ();
+		
 		
 		const AliESDVertex* spdVtx = fESD->GetPrimaryVertexSPD();
 		if(spdVtx->GetNContributors()<=0) return;
@@ -1369,23 +1524,99 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		if(TMath::Abs(zvtx) > 10) return;
 	}
 	
-		//______________________________________________________________________
+	//______________________________________________________________________
+	//after vertex selection
+	fNevent->Fill(10);
+	
+	//______________________________________________________________________
+	//EMCal Trigger Selection (Threshold selection)
+	
+	TString firedTrigger;
+	TString TriggerEG1("EG1"); //takes trigger with name with EG1, ex: CEMC7EG1-B-NOPF-CENTNOTRD  
+	TString TriggerEG2("EG2");
+	//Jan 17, 2014
+	//TString TriggerEJE("EJE");
+	
+	if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
+	else if(fESD) firedTrigger = fESD->GetFiredTriggerClasses();
+	
+		//Bool_t IsEventEMCALL0=kTRUE;
+	Bool_t IsEventEMCALL1=kFALSE;
+	
+	if(firedTrigger.Contains(TriggerEG1)){ 
+		fNevent->Fill(2);
+		IsEventEMCALL1=kTRUE;
+	}
+	if(firedTrigger.Contains(TriggerEG2)){
+		fNevent->Fill(3);
+		IsEventEMCALL1=kTRUE;
+	}
+	
+	//if the flag is for a given threshold and it was not fired, return.
+	
+	if(fEMCEG1){
+		if(!firedTrigger.Contains(TriggerEG1))return;
+		if(firedTrigger.Contains(TriggerEG2)){
+			fNevent->Fill(4);
+			
+		}
+
+	}
+	
+	
+	if(fEMCEG2){
+		if(!firedTrigger.Contains(TriggerEG2))return;
+		if(firedTrigger.Contains(TriggerEG1)){
+			fNevent->Fill(5);
+		}
+		
+	}
+
+	
+		
+	//______________________________________________________________________
+	//Testing if there is an overlap EGA and EJE
+	//none
+	/*
+	if(!(firedTrigger.Contains(TriggerEG1) && firedTrigger.Contains(TriggerEG2) ) && !firedTrigger.Contains(TriggerEJE))
+	{ 
+		fNevent->Fill(6);
+	}
+		//only GA
+	if((firedTrigger.Contains(TriggerEG1) || firedTrigger.Contains(TriggerEG2)) && !firedTrigger.Contains(TriggerEJE))
+	{ 
+		fNevent->Fill(7);
+	}
+		//only JE
+	if(!(firedTrigger.Contains(TriggerEG1) && firedTrigger.Contains(TriggerEG2)) && firedTrigger.Contains(TriggerEJE))
+	{ 
+		fNevent->Fill(8);
+	}
+		//both
+	if((firedTrigger.Contains(TriggerEG1) || firedTrigger.Contains(TriggerEG2)) && firedTrigger.Contains(TriggerEJE))
+	{ 
+		fNevent->Fill(9);
+	}
+	*/
+	
 	
 	
 		
-		//Only events with at least 2 tracks are accepted
+	//Only events with at least 2 tracks are accepted
 	Int_t fNOtrks =  fVevent->GetNumberOfTracks();
-	
-	//if(fIsAOD) Int_t fNOtrks =  fAOD->GetNumberOfTracks();
-	//if(!fIsAOD) Int_t fNOtrks =  fESD->GetNumberOfTracks();
-	
-		//commented to test
 	if(fNOtrks<2) return;
-
 	
+	fNevent->Fill(11);
+	
+	if(fIsAOD){
+		Int_t fNOtrks2 =  fAOD->GetNumberOfTracks();
+		if(fNOtrks2<2) return;
+	}
+	fNevent->Fill(12);	
+	
+	//______________________________________________________________________
 	//new track loop to select events
-	
-	fNevent->Fill(13);
+	//track pt cut (at least 2)
 	/*
 	if(fUseTrigger){
 		if(fIsAOD){
@@ -1393,50 +1624,115 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
 			{
 				AliVParticle* Vtrack = fVevent->GetTrack(iTracks);
-				if (!Vtrack) 
-				{
-					printf("ERROR: Could not receive track %d\n", iTracks);
-					continue;
-				}
-		
+				if (!Vtrack) continue;
+				
 				AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack);
-					//AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
-				AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
+					//AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
 				if((track->Pt())<0.2 || (track->Pt())>1000.0) continue;
-			   	//if it is not a hybrid track, continue
-				if(!atrack->TestFilterBit(768)) continue;
-				else fTrackMulti=fTrackMulti+1;
+			   	else fTrackMulti=fTrackMulti+1;
 		
 			}
 				//Only take event if track multiplicity is bigger than 2.
 			if(fTrackMulti<2) return;
 		}
 	}
-	 */
+	fNevent->Fill(13);	
+	//______________________________________________________________________
+	//Using more cuts than I have beeing using
+	//eta cut and primary (at least 2)
+	if(fUseTrigger){
+		if(fIsAOD){
+			double fTrackMulti2=0;
+			for(Int_t i = 0; i < fVevent->GetNumberOfTracks(); i++) 
+			{
+				AliVParticle* Vtrack2 = fVevent->GetTrack(i);
+				if (!Vtrack2) continue;
+				
+				
+				AliVTrack *track_new = dynamic_cast<AliVTrack*>(Vtrack2);
+				AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(Vtrack2);
+				
+				
+				if(aodtrack)
+				{
+					
+					
+				    if(TMath::Abs(track_new->Eta())> 0.9) continue;
+					if (aodtrack->GetType()!= AliAODTrack::kPrimary) continue ;
+				    else fTrackMulti2=fTrackMulti2+1;
+				}
+			}
+				//Only take event if track multiplicity is bigger than 2.
+			if(fTrackMulti2<2) return;
+
+			
+		}
+	}
+	fNevent->Fill(14);	
+//______________________________________________________________________
+//Using more cuts than I have beeing using
+//hybrid (at least2)
+	if(fUseTrigger){
+		if(fIsAOD){
+			double fTrackMulti3=0;
+			for(Int_t i = 0; i < fVevent->GetNumberOfTracks(); i++) 
+			{
+				AliVParticle* Vtrack3 = fVevent->GetTrack(i);
+				if (!Vtrack3) continue;
+								
+					//AliVTrack *track_new = dynamic_cast<AliVTrack*>(Vtrack3);
+				AliAODTrack *aodtrack = dynamic_cast<AliAODTrack*>(Vtrack3);
+				
+				
+				if(aodtrack)
+				{
+					
+					if (!aodtrack->IsHybridGlobalConstrainedGlobal()) continue ;
+						//another option if I don't want to use hybrid
+						//if ( aodtrack->TestFilterBit(128)==kFALSE) continue ;
+				    else fTrackMulti3=fTrackMulti3+1;
+				}
+			}
+			//Only take event if track multiplicity is bigger than 2.
+			if(fTrackMulti3<2) return;
+
+		}
+	}
+	fNevent->Fill(15);	
+//______________________________________________________________________
 	
-	fVtxZ_new3->Fill(fZvtx);
 	
-	fNevent->Fill(14);
+	if(fUseTrigger){
+		if(fIsAOD){
+			double fTrackMulti4=0;
+			for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
+			{
+				AliVParticle* Vtrack4 = fVevent->GetTrack(iTracks);
+				if (!Vtrack4) continue;
+				
+				
+					//AliVTrack *track = dynamic_cast<AliVTrack*>(Vtrack4);
+				AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack4);
+				
+				if(!atrack->TestFilterBit(768)) continue;
+				if(!atrack->IsHybridGlobalConstrainedGlobal()) continue ;
+				
+				
+				else fTrackMulti4=fTrackMulti4+1;
+				
+			}
+			//Only take event if track multiplicity is bigger than 2.
+			if(fTrackMulti4<2) return;
+			fTrack_Multi->Fill(fTrackMulti4);
+		}
+	}
+	fNevent->Fill(16);	
+//______________________________________________________________________
+	*/
 	
-		
-	//trying to use same as Lucile
-	/*if(fIsAOD) {
-			//reader = new AliCaloTrackAODReader();
-		reader->SwitchOnCTS();
-		reader->SetCTSPtMin(0.2);
-		reader->SetCTSPtMax(1000);	
-		reader->SwitchOffRecalculateVertexBC();
-		reader->SwitchOffVertexBCEventSelection();
-		reader->SwitchOffUseTrackTimeCut();	
-		reader->SwitchOffUseTrackDCACut();	
-		reader->SwitchOnAODHybridTrackSelection();
-		reader->SwitchOnRejectNoTrackEvents();
-	}*/
-	
-	
-		//______________________________________________________________________
-		//Centrality Selection
+//______________________________________________________________________
+//Centrality Selection
 	if(fHasCentralitySelection)
 	{
 		Float_t centrality = -1;
@@ -1461,9 +1757,12 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		fCentralityHistPass->Fill(centrality);
 	}
-		//______________________________________________________________________
+	//______________________________________________________________________
 	
-		//______________________________________________________________________
+	
+	fNevent->Fill(17);
+	
+	//______________________________________________________________________
 	
 	if(fIsMC)
 	{
@@ -1492,6 +1791,31 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 								
 				Int_t pdg = fMCparticle->GetPdgCode();
 				
+				//====================================================================
+				//trying take pions spectra 27/May/2014
+				//IsPrimary only take events from pythia
+				//IsPhysicalPrimariee: (all prompt particles, including strong decay products plus weak decay product from heavy-flavor).
+				//eta cut same as MinJung
+				
+				if(fMCparticle->Eta()>=-0.8 && fMCparticle->Eta()<=0.8)
+				{
+					if(fMCparticle->IsPrimary()){
+					
+						if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCparticle->Pt());
+						if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCparticle->Pt());
+						//eta cut same as MinJung
+					}
+						
+					if(fMCparticle->IsPhysicalPrimary()){
+						if(TMath::Abs(pdg)==111) fPtMCpi02->Fill(fMCparticle->Pt());
+						if(TMath::Abs(pdg)==221) fPtMCeta2->Fill(fMCparticle->Pt());
+						
+					}
+								
+					if(TMath::Abs(pdg)==111) fPtMCpi03->Fill(fMCparticle->Pt());
+					if(TMath::Abs(pdg)==221) fPtMCeta3->Fill(fMCparticle->Pt());
+				}
+				//====================================================================
 							
 				double proX = fMCparticle->Xv();
 				double proY = fMCparticle->Yv();
@@ -1513,7 +1837,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 						}
 					}
 					
-					if (TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()) fPtMCparticleAlle_Primary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons primary
+					if (TMath::Abs(pdg) == 11 && fMCparticle->IsPhysicalPrimary()){ 
+						fPtMCparticleAlle_Primary->Fill(fMCparticle->Pt()); //denominator for total efficiency for all electrons primary
+					} 
 					
 					if( TMath::Abs(pdg) == 211 || TMath::Abs(pdg) == 2212 || TMath::Abs(pdg) == 321 || TMath::Abs(pdg) == 11 || TMath::Abs(pdg) == 13 ) 
 					{
@@ -1535,28 +1861,41 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 									
 								
 								} //denominator for total efficiency and tracking
-								if(fIsHFE2) fPtMCparticleAllHfe2->Fill(fMCparticle->Pt());
+								if(fIsHFE2){
+									fPtMCparticleAllHfe2->Fill(fMCparticle->Pt());
+								}
 							}
 						}
 					}
 				}//eta cut
 				
-				//only primary pions 
-				if(fMCparticle->IsPhysicalPrimary()){
-					if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCparticle->Pt());
-					if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCparticle->Pt());
+				
+								
+			}//loop tracks
+			
+			
+			
+			//second loop over track, but only the primaries ones
+			//only primary pions --> how to take the primaries ones in AOD?
+			/*
+			for(Int_t iMC = 0; iMC < fMCarray->GetNPrimary(); iMC++){
+				fMCparticle = (AliAODMCParticle*) fMCarray->At(iMC);
+				pdg = fMCparticle->GetPdgCode();
+
+				if(TMath::Abs(pdg)==111) fPtMCpi0->Fill(fMCparticle->Pt());
+				if(TMath::Abs(pdg)==221) fPtMCeta->Fill(fMCparticle->Pt());
+				
+				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax)
+				{
 					
-					if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax)
-					{
-						
-						if(TMath::Abs(pdg)==111) fPtMCpi02->Fill(fMCparticle->Pt());
-						if(TMath::Abs(pdg)==221) fPtMCeta2->Fill(fMCparticle->Pt());
-						
-					}
+					if(TMath::Abs(pdg)==111) fPtMCpi02->Fill(fMCparticle->Pt());
+					if(TMath::Abs(pdg)==221) fPtMCeta2->Fill(fMCparticle->Pt());
 					
 				}
-				
-			}//loop tracks
+			}
+			 */
+			
+			
 		}//AOD
 		else
 		{
@@ -1573,6 +1912,40 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 			}
 			
 			fMCstack = fMCevent->Stack();
+			
+			//pion and eta spectrum
+			//MinJung code
+			
+			//----------------------------------------------------------------------------------------------------
+			AliVParticle *mctrack2 = NULL;
+			AliMCParticle *mctrack0 = NULL;
+			
+			
+			for(Int_t imc = 0; imc <fMCEvent->GetNumberOfPrimaries(); imc++){
+				if(!(mctrack2 = fMCEvent->GetTrack(imc))) continue;
+				TParticle* mcpart0 = fMCEvent->Stack()->Particle(imc);
+				if(!mcpart0) continue;
+				mctrack0 = dynamic_cast<AliMCParticle *>(mctrack2);
+				if(!mctrack0) continue;
+				
+				if(TMath::Abs(AliHFEtools::GetRapidity(mcpart0))<0.8){ 
+				
+					if(TMath::Abs(mctrack0->PdgCode()) == 111) // pi0
+					{
+						fPtMCpi0->Fill(mctrack0->Pt());
+					}
+				
+					if(TMath::Abs(mctrack0->PdgCode()) == 221) // eta
+					{
+						fPtMCeta->Fill(mctrack0->Pt());
+					}
+					
+				}
+				
+			}
+			// end of MinJung
+			//----------------------------------------------------------------------------------------------------
+			
 			
 	        for(Int_t iMC = 0; iMC < fMCstack->GetNtrack(); iMC++)
 	        {
@@ -1623,7 +1996,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 									fPtMCparticleAllHfe1->Fill(fMCtrack->Pt());//denominator for total efficiency and tracking
 									fEtaPhi_den->Fill(fMCtrack->Phi(),fMCtrack->Eta());
 								}
-								if(fIsHFE2) fPtMCparticleAllHfe2->Fill(fMCtrack->Pt());
+								if(fIsHFE2){ 
+									fPtMCparticleAllHfe2->Fill(fMCtrack->Pt());
+								}
 							}
 						}//Is Physical primary
 					}	
@@ -1632,91 +2007,143 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		}//ESD
 	}//Is MC
 	
-	//______________________________________________________________________
-	//EMCal Trigger Selection (Threshold selection)
-	TString firedTrigger;
-	TString TriggerEG1("CEMC7EG1"); //takes trigger with name with EG1, ex: CEMC7EG1-B-NOPF-CENTNOTRD  
-	TString TriggerEG2("CEMC7EG2");
-	//Jan 17, 2014
-	TString TriggerEJE("EJE");
-		
-	if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
-	else if(fESD) firedTrigger = fESD->GetFiredTriggerClasses();
+//______________________________________________________________________
+//threshold selection was here
+//______________________________________________________________________
+//all events selected
 	
 	fNevent->Fill(0);
-	if(firedTrigger.Contains(TriggerEG1)) fNevent->Fill(1);
-	if(firedTrigger.Contains(TriggerEG2)) fNevent->Fill(2);
 	
-	// Jan 06, 2014: I changed the counters: Only fill with 3 or 4 if we want the trigger threshold selected.
-	//EG1
+	
+//______________________________________________________________________
+//events in the threshold
+	
 	if(firedTrigger.Contains(TriggerEG1))
 	{ 
-		if(fEMCEG1) fNevent->Fill(3);
+		if(fEMCEG1){
+			fNevent->Fill(18);
+		    if(!firedTrigger.Contains(TriggerEG2)) fNevent->Fill(19);
+				//if(firedTrigger.Contains(TriggerEG2)) return;
+		}
 	}
-	else 
-	{
-		if(fEMCEG1) return;
-	}
+	
 	
 	//EG2
 	if(firedTrigger.Contains(TriggerEG2))
 	{ 
-		if(fEMCEG2) fNevent->Fill(4);
-	}
-	else
-	{ 
-		if(fEMCEG2) return;
-	}
-	
-	//______________________________________________________________________
-	//Testing if there is an overlap EGA and EJE
-	//none
-	if(!(firedTrigger.Contains(TriggerEG1) && firedTrigger.Contains(TriggerEG2) ) && !firedTrigger.Contains(TriggerEJE))
-	{ 
-		fNevent->Fill(6);
-	}
-	//only GA
-	if((firedTrigger.Contains(TriggerEG1) || firedTrigger.Contains(TriggerEG2)) && !firedTrigger.Contains(TriggerEJE))
-	{ 
-		fNevent->Fill(7);
-	}
-	//only JE
-	if(!(firedTrigger.Contains(TriggerEG1) && firedTrigger.Contains(TriggerEG2)) && firedTrigger.Contains(TriggerEJE))
-	{ 
-		fNevent->Fill(8);
-	}
-	//both
-	if((firedTrigger.Contains(TriggerEG1) || firedTrigger.Contains(TriggerEG2)) && firedTrigger.Contains(TriggerEJE))
-	{ 
-		fNevent->Fill(9);
-	}
-	
-		
-	//New cluster information 
-	//after trigger threshold selection
-	Int_t ClsNo2 = fVevent->GetNumberOfCaloClusters(); 
-	
-	if(ClsNo2<=0){
-		fNevent->Fill(11); //events with no cluster
-		return;
-	} 
-	for (Int_t i=0; i< ClsNo2; i++ ){
-		
-		fClus = fVevent->GetCaloCluster(i);
-		if(fClus->IsEMCAL())
-		{
-			//pure cluster information
-			fECluster_pure->Fill(fClus->E());
+		if(fEMCEG2){
+			fNevent->Fill(20);
+			if(!firedTrigger.Contains(TriggerEG1)) fNevent->Fill(21);
+				//if(firedTrigger.Contains(TriggerEG1)) return;
 		}
 	}
 	
-	fNevent->Fill(12); //events with cluster
 	
+	
+	//New cluster information 
+	//after trigger threshold selection
+	Int_t ClsNo2 = -999;
+	ClsNo2 = fVevent->GetNumberOfCaloClusters(); 
+	fNCluster_pure->Fill(ClsNo2);
+	
+	
+	
+	if(ClsNo2<=0){
+		fNevent->Fill(22); //events with no cluster
+		return;
+	} 
+	
+	//in order to include time cut
+	//fEMCALCells = fAOD->GetEMCALCells();
+	//Double_t tof = clus->GetTOF();
+	//clus->GetNCells()
+	//if ( clus->E() < minE ) continue ;
+	
+		
+	
+	if(fUseTrigger && fIsAOD){
+		
+	  //AliAODHeader * aodh = fAOD->GetHeader();
+	  //Int_t bc= aodh->GetBunchCrossNumber();
+
+		
+		Int_t ClsNo_aod = -999;
+		ClsNo_aod = fAOD->GetNumberOfCaloClusters(); 
+		fNCluster_pure_aod->Fill(ClsNo_aod);
+			//Bool_t exotic=kTRUE;
+		
+		for (Int_t i=0; i< ClsNo_aod; i++ ){
+		
+			//fClus = fVevent->GetCaloCluster(i);
+			//to be compatible with Shingo
+		    AliVCluster *clust = 0x0;
+			clust = (AliVCluster*) fAOD->GetCaloCluster(i);
+		
+			if(clust && clust->IsEMCAL())
+			{
+				//pure cluster information
+				fECluster_pure->Fill(clust->E());
+				
+				fNcells_energy->Fill(clust->GetNCells(),clust->E());
+				fNCluster_ECluster->Fill(ClsNo_aod,clust->E());
+				
+				if(clust->E()>1000) fNevent->Fill(23);
+				
+				//exotic
+				/*
+				exotic   = fEMCALRecoUtils->IsExoticCluster(clust, (AliVCaloCells*)fAOD->GetEMCALCells(), bc);
+				if(exotic == kFALSE){ 
+					fECluster_not_exotic->Fill(clust->E());
+					fNcells_energy_not_exotic->Fill(clust->GetNCells(),clust->E());
+				}
+				*/
+				
+				//approximation to remove exotics
+				if(clust->GetNCells()<5 && clust->E()>15.0){
+					fECluster_exotic->Fill(clust->E());
+				}
+				//Marcel cut
+				else if((clust->GetNCells())> ((clust->E())/3+1)){
+					fECluster_not_exotic1->Fill(clust->E());
+				}
+				else{
+					fECluster_not_exotic2->Fill(clust->E());
+				}
+				
+			
+			}
+			/*
+			//______________________________________________________________________
+			//Trying to remove events with bad cells and find patches
+			//First, I will try to count them
+			//______________________________________________________________________
+
+			if(clust && clust->IsEMCAL())
+			{
+				Bool_t badchannel = ContainsBadChannel("EMCAL", clust->GetCellsAbsId(),clust->GetNCells() );
+				printf("Contém bad channel? %d ", badchannel);
+				if(badchannel)fNevent2->Fill(0); 
+				
+				//trying to find patches
+				TArrayI patches_found=GetTriggerPatches(IsEventEMCALL0, IsEventEMCALL1);
+				printf("N patches %d, first %d, last %d\n",patches_found.GetSize(),  patches_found.At(0), patches_found.At(patches_found.GetSize()-1));
+
+			}
+			
+			//end of bad cells
+			//______________________________________________________________________
+*/
+			
+		}
+	}
+	
+	
+	fNevent->Fill(24); //events with cluster
+		
 	
 	fVtxZ_new4->Fill(fZvtx);
 	
-	//__________________________________________________________________
-	
+
 	Int_t ClsNo = -999;
 	if(!fIsAOD) ClsNo = fESD->GetNumberOfCaloClusters(); 
 	else ClsNo = fAOD->GetNumberOfCaloClusters(); 
@@ -1738,9 +2165,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		AliESDtrack *etrack = dynamic_cast<AliESDtrack*>(Vtrack);
 		AliAODTrack *atrack = dynamic_cast<AliAODTrack*>(Vtrack);
 		
-		//aod test -- Francesco suggestion
-		AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
-		
+				
 		Double_t fTPCnSigma = -999;
 		Double_t fTOFnSigma = -999;
 		Double_t fTPCnSigma_pion = -999;
@@ -1900,6 +2325,9 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(fIsAOD){	
 				//AOD test -- Fancesco suggestion
+				//aod test -- Francesco suggestion
+			AliAODTrack *aod_track=fAOD->GetTrack(iTracks);
+
 			Int_t type=aod_track->GetType();
 			if(type==AliAODTrack::kPrimary) fPtPrim->Fill(aod_track->Pt());
 			if(type==AliAODTrack::kSecondary) fPtSec->Fill(aod_track->Pt());
@@ -1920,11 +2348,15 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 		
 		if(fIsMC  && track->GetLabel()>=0)
 		{
-			if(fIsAOD){
+			if(fIsAOD)
+			{
 				fMCparticle = (AliAODMCParticle*) fMCarray->At(track->GetLabel());
 			
 											
-				if(fMCparticle->IsPhysicalPrimary()) fPtIsPhysicaPrimary->Fill(fPt);
+				if(fMCparticle->IsPhysicalPrimary())
+				{
+					fPtIsPhysicaPrimary->Fill(fPt);
+				}
 			
 				Int_t pdg = fMCparticle->GetPdgCode();
 				if(fMCparticle->Eta()>=fEtaCutMin && fMCparticle->Eta()<=fEtaCutMax && fMCparticle->Charge()!=0)
@@ -1942,13 +2374,16 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							Bool_t MotherFound = FindMother(track->GetLabel());
 							if(MotherFound)
 							{
-								if(fIsHFE1){
+								if(fIsHFE1)
+								{
 									fPtMCparticleRecoHfe1->Fill(fMCparticle->Pt());//numerator tracking
 									//unfolding
 									fpt_reco_pt_MC_den->Fill(track->Pt(),fMCparticle->Pt());
 
 								}
-								if(fIsHFE2) fPtMCparticleRecoHfe2->Fill(fMCparticle->Pt());
+								if(fIsHFE2){ 
+									fPtMCparticleRecoHfe2->Fill(fMCparticle->Pt());
+								}
 							}
 						}
 					}
@@ -2449,8 +2884,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					
 					
 					//----------------------------------------------------------------------------------------
-					
-					// EtaCut electrons histogram
+					//
+					//EtaCut electrons histogram
 					//Shower Shape Cut
 					if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
 						
@@ -2458,6 +2893,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(M02 >= fM02CutMin && M02<=fM02CutMax && M20>=fM20CutMin && M20<=fM20CutMax){
 								fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 								fShowerShapeCut->Fill(M02,M20);
+									//in order to check if there are exotic cluster in this selected cluster (27 may 2014)
+								fNcells_energy_elec_selected->Fill(ncells,Energy);
 								
 							}
 							
@@ -2465,6 +2902,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 						if(!fUseShowerShapeCut){
 							fEoverP_pt[2]->Fill(fPt,(fClus->E() / fP));
 							fShowerShapeCut->Fill(M02,M20);
+							fNcells_energy_elec_selected->Fill(ncells,Energy);
+
 							
 						}
 						if(fUseEMCal) fShowerShape_ele->Fill(M02,M20);
@@ -2575,12 +3014,19 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 					if((fClus->E() / fP) >= fEoverPCutMin && (fClus->E() / fP) <= fEoverPCutMax)
 					{	
 						
-					    fECluster[2]->Fill(Energy);
-						fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
+						
+							fECluster[2]->Fill(Energy);
+							fTPCNcls_pid[3]->Fill(TPCNcls, TPCNcls_pid);
+						
 						
 						if(fUseEMCal)
 						{
-							fPtElec_Inc->Fill(fPt);
+							if(track->Eta()>=fEtaCutMin && track->Eta()<=fEtaCutMax ){
+								fPtElec_Inc->Fill(fPt);
+								//eta phi distribution for data
+								fEtaPhi_data->Fill(track->Phi(),track->Eta());
+							}
+							
 							//Eta cut for background
 							if(fFillBackground){
 								fEtad[2]->Fill(track->Eta());
@@ -2697,23 +3143,33 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							if(track->Charge()>0)  fCharge_p->Fill(fPt);
 							
 							fMCtrack = fMCstack->Particle(track->GetLabel());
-							if(fMCtrack->GetFirstMother()>0) fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
+							if(fMCtrack->GetFirstMother()>0)
+							{ 
+								fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
+							}
 							TParticle *particle=fMCstack->Particle(track->GetLabel());
 
 							Int_t pdg = fMCtrack->GetPdgCode();
 							
 							
-							if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax){
-								if( TMath::Abs(pdg) == 11 && fMCtrack->GetFirstMother()>0 ){
+							if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax)
+							{
+								if( TMath::Abs(pdg) == 11 && fMCtrack->GetFirstMother()>0 )
+								{
 									Int_t mpdg = fMCtrackMother->GetPdgCode();
-									if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111){
+									if(TMath::Abs(mpdg) == 221 || TMath::Abs(mpdg) == 22 || TMath::Abs(mpdg) == 111)
+									{
 										Double_t proR=particle->R();
-										if(proR<7){
+										if(proR<7)
+										{
 										  fPtMCelectronAfterAll_nonPrimary->Fill(fMCtrack->Pt()); //numerator for the total efficiency, non Primary track
 										}
 									}
 								}
-								if( TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(track->GetLabel())) fPtMCelectronAfterAll_Primary->Fill(fMCtrack->Pt());
+								if( TMath::Abs(pdg) == 11 && fMCstack->IsPhysicalPrimary(track->GetLabel()))
+								{ 
+									fPtMCelectronAfterAll_Primary->Fill(fMCtrack->Pt());
+								}
 							}
 							
 							if(fMCstack->IsPhysicalPrimary(track->GetLabel()))
@@ -2722,9 +3178,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 							    
 								if(MotherFound)
 								{
-									if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax){
-										
-										
+									if(fMCtrack->Eta()>=fEtaCutMin && fMCtrack->Eta()<=fEtaCutMax)
+									{
 										if(!fUseShowerShapeCut){
 											if(fIsHFE1){
 												fPtMCelectronAfterAll->Fill(fMCtrack->Pt()); //numerator for the total efficiency ESD
@@ -2759,7 +3214,7 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 											fMCtrackMother = fMCstack->Particle(fMCtrack->GetFirstMother());
 											if( TMath::Abs(pdg) == 11 && fMCtrackMother->GetPdgCode()!=22 ){
 											
-												if(fIsHFE1)fPtMC_EMCal_Selected->Fill(fMCtrack->Pt());	
+												if(fIsHFE1){fPtMC_EMCal_Selected->Fill(fMCtrack->Pt());}
 											}
 										}
 									}
@@ -2856,7 +3311,7 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 {
 	///_________________________________________________________________
 	///MC analysis
-	Bool_t IsMCefix=kFALSE; //to make correction on efix, use kTRUE (do not change the efficiency, so I will keep the correction only for d3)
+	//Bool_t IsMCefix=kFALSE; //to make correction on efix, use kTRUE (do not change the efficiency, so I will keep the correction only for d3)
 		
 		if(fIsMC)
 		{
@@ -2888,118 +3343,20 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						Double_t mPt=fMCparticleMother->Pt();
 						Double_t mweight=1;
 						
-							//________________________________________________________________
-							//correction for efix based on data - parametrization from MinJung
-						if(IsMCefix){
+							
+						//________________________________________________________________
+						//correction for d3 based on data //from Jan
+						
 							if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 								Double_t x=mPt;
-								if(0.100000 <= x < 0.112797 ) mweight=1.030419;
-								if(0.112797 <= x < 0.127231 ) mweight=1.044554;
-								if(0.127231 <= x < 0.143512 ) mweight=1.062733;
-								if(0.143512 <= x < 0.161877 ) mweight=1.085332;
-								if(0.161877 <= x < 0.182592 ) mweight=1.115248;
-								if(0.182592 <= x < 0.205957 ) mweight=1.153990;
-								if(0.205957 <= x < 0.232313 ) mweight=1.201346;
-								if(0.232313 <= x < 0.262041 ) mweight=1.257332;
-								if(0.262041 <= x < 0.295573 ) mweight=1.315488;
-								if(0.295573 <= x < 0.333397 ) mweight=1.369138;
-								if(0.333397 <= x < 0.376060 ) mweight=1.407632;
-								if(0.376060 <= x < 0.424183 ) mweight=1.422232;
-								if(0.424183 <= x < 0.478465 ) mweight=1.406922;
-								if(0.478465 <= x < 0.539692 ) mweight=1.360082;
-								if(0.539692 <= x < 0.608754 ) mweight=1.284405;
-								if(0.608754 <= x < 0.686654 ) mweight=1.182017;
-								if(0.686654 <= x < 0.774523 ) mweight=1.062002;
-								if(0.774523 <= x < 0.873636 ) mweight=0.935533;
-								if(0.873636 <= x < 0.985432 ) mweight=0.816081;
-								if(0.985432 <= x < 1.111534 ) mweight=0.717527;
-								if(1.111534 <= x < 1.253773 ) mweight=0.647465;
-								if(1.253773 <= x < 1.414214 ) mweight=0.607212;
-								if(1.414214 <= x < 1.595185 ) mweight=0.589750;
-								if(1.595185 <= x < 1.799315 ) mweight=0.587406;
-								if(1.799315 <= x < 2.029567 ) mweight=0.592858;
-								if(2.029567 <= x < 2.289283 ) mweight=0.601059;
-								if(2.289283 <= x < 2.582235 ) mweight=0.608003;
-								if(2.582235 <= x < 2.912674 ) mweight=0.611705;
-								if(2.912674 <= x < 3.285398 ) mweight=0.610086;
-								if(3.285398 <= x < 3.705818 ) mweight=0.605015;
-								if(3.705818 <= x < 4.180038 ) mweight=0.596299;
-								if(4.180038 <= x < 4.714942 ) mweight=0.590727;
-								if(4.714942 <= x < 5.318296 ) mweight=0.585358;
-								if(5.318296 <= x < 5.998859 ) mweight=0.585257;
-								if(5.998859 <= x < 6.766511 ) mweight=0.580812;
-								if(6.766511 <= x < 7.632396 ) mweight=0.576207;
-								if(7.632396 <= x < 8.609086 ) mweight=0.575912;
-								if(8.609086 <= x < 9.710759 ) mweight=0.558718;
-								if(9.710759 <= x < 10.953409 ) mweight=0.555625;
-								if(10.953409 <= x < 12.355077 ) mweight=0.558886;
-								if(12.355077 <= x < 13.936111 ) mweight=0.545318;
-								if(13.936111 <= x < 15.719464 ) mweight=0.517607;
-								if(15.719464 <= x < 17.731026 ) mweight=0.512366;
-								if(17.731026 <= x < 20.000000 ) mweight=0.497034;
 								
-								
+								mweight=CalculateWeight(111, x);
+																
 							}
-							
-							
-						}//end of IsMCefix
 						
-							//________________________________________________________________
-							//correction for d3 based on data //from Jan
-						if(!IsMCefix){
-							if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
-								Double_t x=mPt;
-								if(0.100000 <= x < 0.112797 ) mweight=1.262120;
-								if(0.112797 <= x < 0.127231 ) mweight=1.277765;
-								if(0.127231 <= x < 0.143512 ) mweight=1.295605;
-								if(0.143512 <= x < 0.161877 ) mweight=1.318155;
-								if(0.161877 <= x < 0.182592 ) mweight=1.348693;
-								if(0.182592 <= x < 0.205957 ) mweight=1.388636;
-								if(0.205957 <= x < 0.232313 ) mweight=1.439122;
-								if(0.232313 <= x < 0.262041 ) mweight=1.497452;
-								if(0.262041 <= x < 0.295573 ) mweight=1.559409;
-								if(0.295573 <= x < 0.333397 ) mweight=1.615169;
-								if(0.333397 <= x < 0.376060 ) mweight=1.654954;
-								if(0.376060 <= x < 0.424183 ) mweight=1.668753;
-								if(0.424183 <= x < 0.478465 ) mweight=1.652225;
-								if(0.478465 <= x < 0.539692 ) mweight=1.603119;
-								if(0.539692 <= x < 0.608754 ) mweight=1.526049;
-								if(0.608754 <= x < 0.686654 ) mweight=1.426724;
-								if(0.686654 <= x < 0.774523 ) mweight=1.312684;
-								if(0.774523 <= x < 0.873636 ) mweight=1.195395;
-								if(0.873636 <= x < 0.985432 ) mweight=1.086264;
-								if(0.985432 <= x < 1.111534 ) mweight=0.993666;
-								if(1.111534 <= x < 1.253773 ) mweight=0.922587;
-								if(1.253773 <= x < 1.414214 ) mweight=0.875739;
-								if(1.414214 <= x < 1.595185 ) mweight=0.852181;
-								if(1.595185 <= x < 1.799315 ) mweight=0.847828;
-								if(1.799315 <= x < 2.029567 ) mweight=0.863875;
-								if(2.029567 <= x < 2.289283 ) mweight=0.899112;
-								if(2.289283 <= x < 2.582235 ) mweight=0.955194;
-								if(2.582235 <= x < 2.912674 ) mweight=1.033824;
-								if(2.912674 <= x < 3.285398 ) mweight=1.133714;
-								if(3.285398 <= x < 3.705818 ) mweight=1.259471;
-								if(3.705818 <= x < 4.180038 ) mweight=1.406883;
-								if(4.180038 <= x < 4.714942 ) mweight=1.578923;
-								if(4.714942 <= x < 5.318296 ) mweight=1.778513;
-								if(5.318296 <= x < 5.998859 ) mweight=2.001171;
-								if(5.998859 <= x < 6.766511 ) mweight=2.223161;
-								if(6.766511 <= x < 7.632396 ) mweight=2.449445;
-								if(7.632396 <= x < 8.609086 ) mweight=2.661734;
-								if(8.609086 <= x < 9.710759 ) mweight=2.851935;
-								if(9.710759 <= x < 10.953409 ) mweight=2.974319;
-								if(10.953409 <= x < 12.355077 ) mweight=3.106314;
-								if(12.355077 <= x < 13.936111 ) mweight=3.126815;
-								if(13.936111 <= x < 15.719464 ) mweight=3.150053;
-								if(15.719464 <= x < 17.731026 ) mweight=3.218509;
-								if(17.731026 <= x < 20.000000 ) mweight=3.252141;
-								
-								
-							}
-						}
-							//________________________________________________________________
+						//________________________________________________________________
 						
-							//Histo pT mother versus pT electron
+						//Histo pT mother versus pT electron
 						fpT_m_electron->Fill(mPt, track->Pt());
 						
 						if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./mweight);
@@ -3010,120 +3367,18 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						Double_t gmPt=fMCparticleGMother->Pt();
 						Double_t gmweight=1;
 						
-							//________________________________________________________________
-							//correction for efix based on data - parametrization from MinJung
-						if(IsMCefix){
+						//________________________________________________________________
+						//correction for d3 based on data
+						
 							if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
 								Double_t x=gmPt;
-								if(0.100000 <= x < 0.112797 ) gmweight=1.030419;
-								if(0.112797 <= x < 0.127231 ) gmweight=1.044554;
-								if(0.127231 <= x < 0.143512 ) gmweight=1.062733;
-								if(0.143512 <= x < 0.161877 ) gmweight=1.085332;
-								if(0.161877 <= x < 0.182592 ) gmweight=1.115248;
-								if(0.182592 <= x < 0.205957 ) gmweight=1.153990;
-								if(0.205957 <= x < 0.232313 ) gmweight=1.201346;
-								if(0.232313 <= x < 0.262041 ) gmweight=1.257332;
-								if(0.262041 <= x < 0.295573 ) gmweight=1.315488;
-								if(0.295573 <= x < 0.333397 ) gmweight=1.369138;
-								if(0.333397 <= x < 0.376060 ) gmweight=1.407632;
-								if(0.376060 <= x < 0.424183 ) gmweight=1.422232;
-								if(0.424183 <= x < 0.478465 ) gmweight=1.406922;
-								if(0.478465 <= x < 0.539692 ) gmweight=1.360082;
-								if(0.539692 <= x < 0.608754 ) gmweight=1.284405;
-								if(0.608754 <= x < 0.686654 ) gmweight=1.182017;
-								if(0.686654 <= x < 0.774523 ) gmweight=1.062002;
-								if(0.774523 <= x < 0.873636 ) gmweight=0.935533;
-								if(0.873636 <= x < 0.985432 ) gmweight=0.816081;
-								if(0.985432 <= x < 1.111534 ) gmweight=0.717527;
-								if(1.111534 <= x < 1.253773 ) gmweight=0.647465;
-								if(1.253773 <= x < 1.414214 ) gmweight=0.607212;
-								if(1.414214 <= x < 1.595185 ) gmweight=0.589750;
-								if(1.595185 <= x < 1.799315 ) gmweight=0.587406;
-								if(1.799315 <= x < 2.029567 ) gmweight=0.592858;
-								if(2.029567 <= x < 2.289283 ) gmweight=0.601059;
-								if(2.289283 <= x < 2.582235 ) gmweight=0.608003;
-								if(2.582235 <= x < 2.912674 ) gmweight=0.611705;
-								if(2.912674 <= x < 3.285398 ) gmweight=0.610086;
-								if(3.285398 <= x < 3.705818 ) gmweight=0.605015;
-								if(3.705818 <= x < 4.180038 ) gmweight=0.596299;
-								if(4.180038 <= x < 4.714942 ) gmweight=0.590727;
-								if(4.714942 <= x < 5.318296 ) gmweight=0.585358;
-								if(5.318296 <= x < 5.998859 ) gmweight=0.585257;
-								if(5.998859 <= x < 6.766511 ) gmweight=0.580812;
-								if(6.766511 <= x < 7.632396 ) gmweight=0.576207;
-								if(7.632396 <= x < 8.609086 ) gmweight=0.575912;
-								if(8.609086 <= x < 9.710759 ) gmweight=0.558718;
-								if(9.710759 <= x < 10.953409 ) gmweight=0.555625;
-								if(10.953409 <= x < 12.355077 ) gmweight=0.558886;
-								if(12.355077 <= x < 13.936111 ) gmweight=0.545318;
-								if(13.936111 <= x < 15.719464 ) gmweight=0.517607;
-								if(15.719464 <= x < 17.731026 ) gmweight=0.512366;
-								if(17.731026 <= x < 20.000000 ) gmweight=0.497034;
-								
-								
-								
+								gmweight=CalculateWeight(111, x);
 							}
-							
-							
-						}//end of IsMCefix
-						
-							//________________________________________________________________
-							//correction for d3 based on data
-						if(!IsMCefix){
-							if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
-								Double_t x=gmPt;
-								if(0.100000 <= x < 0.112797 ) gmweight=1.262120;
-								if(0.112797 <= x < 0.127231 ) gmweight=1.277765;
-								if(0.127231 <= x < 0.143512 ) gmweight=1.295605;
-								if(0.143512 <= x < 0.161877 ) gmweight=1.318155;
-								if(0.161877 <= x < 0.182592 ) gmweight=1.348693;
-								if(0.182592 <= x < 0.205957 ) gmweight=1.388636;
-								if(0.205957 <= x < 0.232313 ) gmweight=1.439122;
-								if(0.232313 <= x < 0.262041 ) gmweight=1.497452;
-								if(0.262041 <= x < 0.295573 ) gmweight=1.559409;
-								if(0.295573 <= x < 0.333397 ) gmweight=1.615169;
-								if(0.333397 <= x < 0.376060 ) gmweight=1.654954;
-								if(0.376060 <= x < 0.424183 ) gmweight=1.668753;
-								if(0.424183 <= x < 0.478465 ) gmweight=1.652225;
-								if(0.478465 <= x < 0.539692 ) gmweight=1.603119;
-								if(0.539692 <= x < 0.608754 ) gmweight=1.526049;
-								if(0.608754 <= x < 0.686654 ) gmweight=1.426724;
-								if(0.686654 <= x < 0.774523 ) gmweight=1.312684;
-								if(0.774523 <= x < 0.873636 ) gmweight=1.195395;
-								if(0.873636 <= x < 0.985432 ) gmweight=1.086264;
-								if(0.985432 <= x < 1.111534 ) gmweight=0.993666;
-								if(1.111534 <= x < 1.253773 ) gmweight=0.922587;
-								if(1.253773 <= x < 1.414214 ) gmweight=0.875739;
-								if(1.414214 <= x < 1.595185 ) gmweight=0.852181;
-								if(1.595185 <= x < 1.799315 ) gmweight=0.847828;
-								if(1.799315 <= x < 2.029567 ) gmweight=0.863875;
-								if(2.029567 <= x < 2.289283 ) gmweight=0.899112;
-								if(2.289283 <= x < 2.582235 ) gmweight=0.955194;
-								if(2.582235 <= x < 2.912674 ) gmweight=1.033824;
-								if(2.912674 <= x < 3.285398 ) gmweight=1.133714;
-								if(3.285398 <= x < 3.705818 ) gmweight=1.259471;
-								if(3.705818 <= x < 4.180038 ) gmweight=1.406883;
-								if(4.180038 <= x < 4.714942 ) gmweight=1.578923;
-								if(4.714942 <= x < 5.318296 ) gmweight=1.778513;
-								if(5.318296 <= x < 5.998859 ) gmweight=2.001171;
-								if(5.998859 <= x < 6.766511 ) gmweight=2.223161;
-								if(6.766511 <= x < 7.632396 ) gmweight=2.449445;
-								if(7.632396 <= x < 8.609086 ) gmweight=2.661734;
-								if(8.609086 <= x < 9.710759 ) gmweight=2.851935;
-								if(9.710759 <= x < 10.953409 ) gmweight=2.974319;
-								if(10.953409 <= x < 12.355077 ) gmweight=3.106314;
-								if(12.355077 <= x < 13.936111 ) gmweight=3.126815;
-								if(13.936111 <= x < 15.719464 ) gmweight=3.150053;
-								if(15.719464 <= x < 17.731026 ) gmweight=3.218509;
-								if(17.731026 <= x < 20.000000 ) gmweight=3.252141;
-								
-							}
-						}
-						
-							//________________________________________________________________
 						
 						
-							//Histo pT gmother versus pT electron 
+						//________________________________________________________________
+						//Histo pT gmother versus pT electron 
+						
 						fpT_gm_electron->Fill(gmPt, track->Pt());
 						
 						if(!IsTPConly)fPtBackgroundBeforeReco_weight->Fill(track->Pt(), 1./gmweight);
@@ -3153,24 +3408,24 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 			}
 		}//IsMC
 		
-			///_________________________________________________________________
+		///_________________________________________________________________
 		
-			//________________________________________________
-			//Associated particle cut
+		//________________________________________________
+		//Associated particle cut
 		fPartnerCuts->SetAcceptKinkDaughters(kFALSE);
 		fPartnerCuts->SetRequireITSRefit(kTRUE);
 		fPartnerCuts->SetRequireTPCRefit(kTRUE);
 		fPartnerCuts->SetEtaRange(-0.9,0.9);
 		fPartnerCuts->SetMaxChi2PerClusterTPC(4.0);
 		fPartnerCuts->SetMinNClustersTPC(80);
-		fPartnerCuts->SetPtRange(0.3,1e10);
-			//fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
-			//fPartnerCuts->SetMaxDCAToVertexXY(1);
-			//fPartnerCuts->SetMaxDCAToVertexZ(3);
-			//_________________________________________________
+		fPartnerCuts->SetPtRange(0,1e10);
+		//fPartnerCuts->SetRequireSigmaToVertex(kTRUE);
+		//fPartnerCuts->SetMaxDCAToVertexXY(1);
+		//fPartnerCuts->SetMaxDCAToVertexZ(3);
+		//_________________________________________________
 		
-			///#################################################################
-			//Non-HFE reconstruction
+		///#################################################################
+		//Non-HFE reconstruction
 		fNonHFE = new AliSelectNonHFE();
 		fNonHFE->SetAODanalysis(fIsAOD);
 		if(fMassCutFlag) fNonHFE->SetInvariantMassCut(fMassCut);
@@ -3232,118 +3487,19 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						
 						if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221){
 							Double_t mPt=fMCparticleMother->Pt();
-							Double_t mweight1=1;
-							Double_t mweight2=1;
+								Double_t mweight1=1;
+								Double_t mweight2=1;
 								//Double_t weight=1;
 							
-								//----------------------------------------------------------------------------
-							if(IsMCefix){
-								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
-									Double_t x=mPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.030419;
-									if(0.112797 <= x < 0.127231 ) weight=1.044554;
-									if(0.127231 <= x < 0.143512 ) weight=1.062733;
-									if(0.143512 <= x < 0.161877 ) weight=1.085332;
-									if(0.161877 <= x < 0.182592 ) weight=1.115248;
-									if(0.182592 <= x < 0.205957 ) weight=1.153990;
-									if(0.205957 <= x < 0.232313 ) weight=1.201346;
-									if(0.232313 <= x < 0.262041 ) weight=1.257332;
-									if(0.262041 <= x < 0.295573 ) weight=1.315488;
-									if(0.295573 <= x < 0.333397 ) weight=1.369138;
-									if(0.333397 <= x < 0.376060 ) weight=1.407632;
-									if(0.376060 <= x < 0.424183 ) weight=1.422232;
-									if(0.424183 <= x < 0.478465 ) weight=1.406922;
-									if(0.478465 <= x < 0.539692 ) weight=1.360082;
-									if(0.539692 <= x < 0.608754 ) weight=1.284405;
-									if(0.608754 <= x < 0.686654 ) weight=1.182017;
-									if(0.686654 <= x < 0.774523 ) weight=1.062002;
-									if(0.774523 <= x < 0.873636 ) weight=0.935533;
-									if(0.873636 <= x < 0.985432 ) weight=0.816081;
-									if(0.985432 <= x < 1.111534 ) weight=0.717527;
-									if(1.111534 <= x < 1.253773 ) weight=0.647465;
-									if(1.253773 <= x < 1.414214 ) weight=0.607212;
-									if(1.414214 <= x < 1.595185 ) weight=0.589750;
-									if(1.595185 <= x < 1.799315 ) weight=0.587406;
-									if(1.799315 <= x < 2.029567 ) weight=0.592858;
-									if(2.029567 <= x < 2.289283 ) weight=0.601059;
-									if(2.289283 <= x < 2.582235 ) weight=0.608003;
-									if(2.582235 <= x < 2.912674 ) weight=0.611705;
-									if(2.912674 <= x < 3.285398 ) weight=0.610086;
-									if(3.285398 <= x < 3.705818 ) weight=0.605015;
-									if(3.705818 <= x < 4.180038 ) weight=0.596299;
-									if(4.180038 <= x < 4.714942 ) weight=0.590727;
-									if(4.714942 <= x < 5.318296 ) weight=0.585358;
-									if(5.318296 <= x < 5.998859 ) weight=0.585257;
-									if(5.998859 <= x < 6.766511 ) weight=0.580812;
-									if(6.766511 <= x < 7.632396 ) weight=0.576207;
-									if(7.632396 <= x < 8.609086 ) weight=0.575912;
-									if(8.609086 <= x < 9.710759 ) weight=0.558718;
-									if(9.710759 <= x < 10.953409 ) weight=0.555625;
-									if(10.953409 <= x < 12.355077 ) weight=0.558886;
-									if(12.355077 <= x < 13.936111 ) weight=0.545318;
-									if(13.936111 <= x < 15.719464 ) weight=0.517607;
-									if(15.719464 <= x < 17.731026 ) weight=0.512366;
-									if(17.731026 <= x < 20.000000 ) weight=0.497034;
-									
-									
-								}
 								
-								
-							}//end of IsMCefix
 							 //----------------------------------------------------------------------------
 							 //correction based on data only for pi0
-							if(!IsMCefix){
 								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 									Double_t x=mPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.262120;
-									if(0.112797 <= x < 0.127231 ) weight=1.277765;
-									if(0.127231 <= x < 0.143512 ) weight=1.295605;
-									if(0.143512 <= x < 0.161877 ) weight=1.318155;
-									if(0.161877 <= x < 0.182592 ) weight=1.348693;
-									if(0.182592 <= x < 0.205957 ) weight=1.388636;
-									if(0.205957 <= x < 0.232313 ) weight=1.439122;
-									if(0.232313 <= x < 0.262041 ) weight=1.497452;
-									if(0.262041 <= x < 0.295573 ) weight=1.559409;
-									if(0.295573 <= x < 0.333397 ) weight=1.615169;
-									if(0.333397 <= x < 0.376060 ) weight=1.654954;
-									if(0.376060 <= x < 0.424183 ) weight=1.668753;
-									if(0.424183 <= x < 0.478465 ) weight=1.652225;
-									if(0.478465 <= x < 0.539692 ) weight=1.603119;
-									if(0.539692 <= x < 0.608754 ) weight=1.526049;
-									if(0.608754 <= x < 0.686654 ) weight=1.426724;
-									if(0.686654 <= x < 0.774523 ) weight=1.312684;
-									if(0.774523 <= x < 0.873636 ) weight=1.195395;
-									if(0.873636 <= x < 0.985432 ) weight=1.086264;
-									if(0.985432 <= x < 1.111534 ) weight=0.993666;
-									if(1.111534 <= x < 1.253773 ) weight=0.922587;
-									if(1.253773 <= x < 1.414214 ) weight=0.875739;
-									if(1.414214 <= x < 1.595185 ) weight=0.852181;
-									if(1.595185 <= x < 1.799315 ) weight=0.847828;
-									if(1.799315 <= x < 2.029567 ) weight=0.863875;
-									if(2.029567 <= x < 2.289283 ) weight=0.899112;
-									if(2.289283 <= x < 2.582235 ) weight=0.955194;
-									if(2.582235 <= x < 2.912674 ) weight=1.033824;
-									if(2.912674 <= x < 3.285398 ) weight=1.133714;
-									if(3.285398 <= x < 3.705818 ) weight=1.259471;
-									if(3.705818 <= x < 4.180038 ) weight=1.406883;
-									if(4.180038 <= x < 4.714942 ) weight=1.578923;
-									if(4.714942 <= x < 5.318296 ) weight=1.778513;
-									if(5.318296 <= x < 5.998859 ) weight=2.001171;
-									if(5.998859 <= x < 6.766511 ) weight=2.223161;
-									if(6.766511 <= x < 7.632396 ) weight=2.449445;
-									if(7.632396 <= x < 8.609086 ) weight=2.661734;
-									if(8.609086 <= x < 9.710759 ) weight=2.851935;
-									if(9.710759 <= x < 10.953409 ) weight=2.974319;
-									if(10.953409 <= x < 12.355077 ) weight=3.106314;
-									if(12.355077 <= x < 13.936111 ) weight=3.126815;
-									if(13.936111 <= x < 15.719464 ) weight=3.150053;
-									if(15.719464 <= x < 17.731026 ) weight=3.218509;
-									if(17.731026 <= x < 20.000000 ) weight=3.252141;
-									
-									
+									weight=CalculateWeight(111, x);
 								}
 								
-							}
+							
 								//----------------------------------------------------------------------------
 							
 								//check this
@@ -3356,118 +3512,21 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						}
 						else if(fMCparticleMother->GetMother()>0 && (TMath::Abs(fMCparticleGMother->GetPdgCode())==111 || TMath::Abs(fMCparticleGMother->GetPdgCode())==221 )){
 							Double_t gmPt=fMCparticleGMother->Pt();
-							Double_t gmweight1=1;
-							Double_t gmweight2=1;
+								Double_t gmweight1=1;
+								Double_t gmweight2=1;
 								//Double_t weight=1;
 							
-								//----------------------------------------------------------------------------
-							if(IsMCefix){
-								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
-									Double_t x=gmPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.030419;
-									if(0.112797 <= x < 0.127231 ) weight=1.044554;
-									if(0.127231 <= x < 0.143512 ) weight=1.062733;
-									if(0.143512 <= x < 0.161877 ) weight=1.085332;
-									if(0.161877 <= x < 0.182592 ) weight=1.115248;
-									if(0.182592 <= x < 0.205957 ) weight=1.153990;
-									if(0.205957 <= x < 0.232313 ) weight=1.201346;
-									if(0.232313 <= x < 0.262041 ) weight=1.257332;
-									if(0.262041 <= x < 0.295573 ) weight=1.315488;
-									if(0.295573 <= x < 0.333397 ) weight=1.369138;
-									if(0.333397 <= x < 0.376060 ) weight=1.407632;
-									if(0.376060 <= x < 0.424183 ) weight=1.422232;
-									if(0.424183 <= x < 0.478465 ) weight=1.406922;
-									if(0.478465 <= x < 0.539692 ) weight=1.360082;
-									if(0.539692 <= x < 0.608754 ) weight=1.284405;
-									if(0.608754 <= x < 0.686654 ) weight=1.182017;
-									if(0.686654 <= x < 0.774523 ) weight=1.062002;
-									if(0.774523 <= x < 0.873636 ) weight=0.935533;
-									if(0.873636 <= x < 0.985432 ) weight=0.816081;
-									if(0.985432 <= x < 1.111534 ) weight=0.717527;
-									if(1.111534 <= x < 1.253773 ) weight=0.647465;
-									if(1.253773 <= x < 1.414214 ) weight=0.607212;
-									if(1.414214 <= x < 1.595185 ) weight=0.589750;
-									if(1.595185 <= x < 1.799315 ) weight=0.587406;
-									if(1.799315 <= x < 2.029567 ) weight=0.592858;
-									if(2.029567 <= x < 2.289283 ) weight=0.601059;
-									if(2.289283 <= x < 2.582235 ) weight=0.608003;
-									if(2.582235 <= x < 2.912674 ) weight=0.611705;
-									if(2.912674 <= x < 3.285398 ) weight=0.610086;
-									if(3.285398 <= x < 3.705818 ) weight=0.605015;
-									if(3.705818 <= x < 4.180038 ) weight=0.596299;
-									if(4.180038 <= x < 4.714942 ) weight=0.590727;
-									if(4.714942 <= x < 5.318296 ) weight=0.585358;
-									if(5.318296 <= x < 5.998859 ) weight=0.585257;
-									if(5.998859 <= x < 6.766511 ) weight=0.580812;
-									if(6.766511 <= x < 7.632396 ) weight=0.576207;
-									if(7.632396 <= x < 8.609086 ) weight=0.575912;
-									if(8.609086 <= x < 9.710759 ) weight=0.558718;
-									if(9.710759 <= x < 10.953409 ) weight=0.555625;
-									if(10.953409 <= x < 12.355077 ) weight=0.558886;
-									if(12.355077 <= x < 13.936111 ) weight=0.545318;
-									if(13.936111 <= x < 15.719464 ) weight=0.517607;
-									if(15.719464 <= x < 17.731026 ) weight=0.512366;
-									if(17.731026 <= x < 20.000000 ) weight=0.497034;
-									
-									
-								}
-								
-								
-							}//end of IsMCefix
-							 //----------------------------------------------------------------------------
+							//----------------------------------------------------------------------------
 							
-								//correction based on data only for pi0
-							if(!IsMCefix){
+							//----------------------------------------------------------------------------
+							
+							//correction based on data only for pi0
+							
 								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
 									Double_t x=gmPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.262120;
-									if(0.112797 <= x < 0.127231 ) weight=1.277765;
-									if(0.127231 <= x < 0.143512 ) weight=1.295605;
-									if(0.143512 <= x < 0.161877 ) weight=1.318155;
-									if(0.161877 <= x < 0.182592 ) weight=1.348693;
-									if(0.182592 <= x < 0.205957 ) weight=1.388636;
-									if(0.205957 <= x < 0.232313 ) weight=1.439122;
-									if(0.232313 <= x < 0.262041 ) weight=1.497452;
-									if(0.262041 <= x < 0.295573 ) weight=1.559409;
-									if(0.295573 <= x < 0.333397 ) weight=1.615169;
-									if(0.333397 <= x < 0.376060 ) weight=1.654954;
-									if(0.376060 <= x < 0.424183 ) weight=1.668753;
-									if(0.424183 <= x < 0.478465 ) weight=1.652225;
-									if(0.478465 <= x < 0.539692 ) weight=1.603119;
-									if(0.539692 <= x < 0.608754 ) weight=1.526049;
-									if(0.608754 <= x < 0.686654 ) weight=1.426724;
-									if(0.686654 <= x < 0.774523 ) weight=1.312684;
-									if(0.774523 <= x < 0.873636 ) weight=1.195395;
-									if(0.873636 <= x < 0.985432 ) weight=1.086264;
-									if(0.985432 <= x < 1.111534 ) weight=0.993666;
-									if(1.111534 <= x < 1.253773 ) weight=0.922587;
-									if(1.253773 <= x < 1.414214 ) weight=0.875739;
-									if(1.414214 <= x < 1.595185 ) weight=0.852181;
-									if(1.595185 <= x < 1.799315 ) weight=0.847828;
-									if(1.799315 <= x < 2.029567 ) weight=0.863875;
-									if(2.029567 <= x < 2.289283 ) weight=0.899112;
-									if(2.289283 <= x < 2.582235 ) weight=0.955194;
-									if(2.582235 <= x < 2.912674 ) weight=1.033824;
-									if(2.912674 <= x < 3.285398 ) weight=1.133714;
-									if(3.285398 <= x < 3.705818 ) weight=1.259471;
-									if(3.705818 <= x < 4.180038 ) weight=1.406883;
-									if(4.180038 <= x < 4.714942 ) weight=1.578923;
-									if(4.714942 <= x < 5.318296 ) weight=1.778513;
-									if(5.318296 <= x < 5.998859 ) weight=2.001171;
-									if(5.998859 <= x < 6.766511 ) weight=2.223161;
-									if(6.766511 <= x < 7.632396 ) weight=2.449445;
-									if(7.632396 <= x < 8.609086 ) weight=2.661734;
-									if(8.609086 <= x < 9.710759 ) weight=2.851935;
-									if(9.710759 <= x < 10.953409 ) weight=2.974319;
-									if(10.953409 <= x < 12.355077 ) weight=3.106314;
-									if(12.355077 <= x < 13.936111 ) weight=3.126815;
-									if(13.936111 <= x < 15.719464 ) weight=3.150053;
-									if(15.719464 <= x < 17.731026 ) weight=3.218509;
-									if(17.731026 <= x < 20.000000 ) weight=3.252141;
-									
-									
+									weight=CalculateWeight(111, x);
 								}
-							}
+							
 							
 							
 							
@@ -3492,125 +3551,25 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 						if(fNonHFE->IsULS()) fPtElec_ULS2->Fill(fPtE,fNonHFE->GetNULS());
 						if(fNonHFE->IsLS()) fPtElec_LS2->Fill(fPtE,fNonHFE->GetNLS());
 						
-						
-						
-						
 							//new 08 October	//weighted histograms 
 						if(TMath::Abs(fMCparticleMother->GetPdgCode())==111 || TMath::Abs(fMCparticleMother->GetPdgCode())==221){
 							Double_t mPt=fMCparticleMother->Pt();
 							
-							Double_t mweight1=1;
-							Double_t mweight2=1;
+								Double_t mweight1=1;
+								Double_t mweight2=1;
 								//Double_t weight=1;
 							
-								//----------------------------------------------------------------------------
-							if(IsMCefix){
-								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
-									Double_t x=mPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.030419;
-									if(0.112797 <= x < 0.127231 ) weight=1.044554;
-									if(0.127231 <= x < 0.143512 ) weight=1.062733;
-									if(0.143512 <= x < 0.161877 ) weight=1.085332;
-									if(0.161877 <= x < 0.182592 ) weight=1.115248;
-									if(0.182592 <= x < 0.205957 ) weight=1.153990;
-									if(0.205957 <= x < 0.232313 ) weight=1.201346;
-									if(0.232313 <= x < 0.262041 ) weight=1.257332;
-									if(0.262041 <= x < 0.295573 ) weight=1.315488;
-									if(0.295573 <= x < 0.333397 ) weight=1.369138;
-									if(0.333397 <= x < 0.376060 ) weight=1.407632;
-									if(0.376060 <= x < 0.424183 ) weight=1.422232;
-									if(0.424183 <= x < 0.478465 ) weight=1.406922;
-									if(0.478465 <= x < 0.539692 ) weight=1.360082;
-									if(0.539692 <= x < 0.608754 ) weight=1.284405;
-									if(0.608754 <= x < 0.686654 ) weight=1.182017;
-									if(0.686654 <= x < 0.774523 ) weight=1.062002;
-									if(0.774523 <= x < 0.873636 ) weight=0.935533;
-									if(0.873636 <= x < 0.985432 ) weight=0.816081;
-									if(0.985432 <= x < 1.111534 ) weight=0.717527;
-									if(1.111534 <= x < 1.253773 ) weight=0.647465;
-									if(1.253773 <= x < 1.414214 ) weight=0.607212;
-									if(1.414214 <= x < 1.595185 ) weight=0.589750;
-									if(1.595185 <= x < 1.799315 ) weight=0.587406;
-									if(1.799315 <= x < 2.029567 ) weight=0.592858;
-									if(2.029567 <= x < 2.289283 ) weight=0.601059;
-									if(2.289283 <= x < 2.582235 ) weight=0.608003;
-									if(2.582235 <= x < 2.912674 ) weight=0.611705;
-									if(2.912674 <= x < 3.285398 ) weight=0.610086;
-									if(3.285398 <= x < 3.705818 ) weight=0.605015;
-									if(3.705818 <= x < 4.180038 ) weight=0.596299;
-									if(4.180038 <= x < 4.714942 ) weight=0.590727;
-									if(4.714942 <= x < 5.318296 ) weight=0.585358;
-									if(5.318296 <= x < 5.998859 ) weight=0.585257;
-									if(5.998859 <= x < 6.766511 ) weight=0.580812;
-									if(6.766511 <= x < 7.632396 ) weight=0.576207;
-									if(7.632396 <= x < 8.609086 ) weight=0.575912;
-									if(8.609086 <= x < 9.710759 ) weight=0.558718;
-									if(9.710759 <= x < 10.953409 ) weight=0.555625;
-									if(10.953409 <= x < 12.355077 ) weight=0.558886;
-									if(12.355077 <= x < 13.936111 ) weight=0.545318;
-									if(13.936111 <= x < 15.719464 ) weight=0.517607;
-									if(15.719464 <= x < 17.731026 ) weight=0.512366;
-									if(17.731026 <= x < 20.000000 ) weight=0.497034;
-									
-									
-								}
 								
-								
-							}//end of IsMCefix
 							 //----------------------------------------------------------------------------
 							
-								//correction based on data only for pi0 for d3
-							if(!IsMCefix){
+							//correction based on data only for pi0 for d3
+							
 								if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 									Double_t x=mPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.262120;
-									if(0.112797 <= x < 0.127231 ) weight=1.277765;
-									if(0.127231 <= x < 0.143512 ) weight=1.295605;
-									if(0.143512 <= x < 0.161877 ) weight=1.318155;
-									if(0.161877 <= x < 0.182592 ) weight=1.348693;
-									if(0.182592 <= x < 0.205957 ) weight=1.388636;
-									if(0.205957 <= x < 0.232313 ) weight=1.439122;
-									if(0.232313 <= x < 0.262041 ) weight=1.497452;
-									if(0.262041 <= x < 0.295573 ) weight=1.559409;
-									if(0.295573 <= x < 0.333397 ) weight=1.615169;
-									if(0.333397 <= x < 0.376060 ) weight=1.654954;
-									if(0.376060 <= x < 0.424183 ) weight=1.668753;
-									if(0.424183 <= x < 0.478465 ) weight=1.652225;
-									if(0.478465 <= x < 0.539692 ) weight=1.603119;
-									if(0.539692 <= x < 0.608754 ) weight=1.526049;
-									if(0.608754 <= x < 0.686654 ) weight=1.426724;
-									if(0.686654 <= x < 0.774523 ) weight=1.312684;
-									if(0.774523 <= x < 0.873636 ) weight=1.195395;
-									if(0.873636 <= x < 0.985432 ) weight=1.086264;
-									if(0.985432 <= x < 1.111534 ) weight=0.993666;
-									if(1.111534 <= x < 1.253773 ) weight=0.922587;
-									if(1.253773 <= x < 1.414214 ) weight=0.875739;
-									if(1.414214 <= x < 1.595185 ) weight=0.852181;
-									if(1.595185 <= x < 1.799315 ) weight=0.847828;
-									if(1.799315 <= x < 2.029567 ) weight=0.863875;
-									if(2.029567 <= x < 2.289283 ) weight=0.899112;
-									if(2.289283 <= x < 2.582235 ) weight=0.955194;
-									if(2.582235 <= x < 2.912674 ) weight=1.033824;
-									if(2.912674 <= x < 3.285398 ) weight=1.133714;
-									if(3.285398 <= x < 3.705818 ) weight=1.259471;
-									if(3.705818 <= x < 4.180038 ) weight=1.406883;
-									if(4.180038 <= x < 4.714942 ) weight=1.578923;
-									if(4.714942 <= x < 5.318296 ) weight=1.778513;
-									if(5.318296 <= x < 5.998859 ) weight=2.001171;
-									if(5.998859 <= x < 6.766511 ) weight=2.223161;
-									if(6.766511 <= x < 7.632396 ) weight=2.449445;
-									if(7.632396 <= x < 8.609086 ) weight=2.661734;
-									if(8.609086 <= x < 9.710759 ) weight=2.851935;
-									if(9.710759 <= x < 10.953409 ) weight=2.974319;
-									if(10.953409 <= x < 12.355077 ) weight=3.106314;
-									if(12.355077 <= x < 13.936111 ) weight=3.126815;
-									if(13.936111 <= x < 15.719464 ) weight=3.150053;
-									if(15.719464 <= x < 17.731026 ) weight=3.218509;
-									if(17.731026 <= x < 20.000000 ) weight=3.252141;
-									
-									
+									weight=CalculateWeight(111, x);
+																											
 								}
-							}
+							
 							
 								//check this
 							if(fNonHFE->IsULS()) mweight1=(fNonHFE->GetNULS())/weight;
@@ -3627,113 +3586,16 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								//Double_t weight=1;
 							
 							
-								//----------------------------------------------------------------------------
-							if(IsMCefix){
-								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
-									Double_t x=gmPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.030419;
-									if(0.112797 <= x < 0.127231 ) weight=1.044554;
-									if(0.127231 <= x < 0.143512 ) weight=1.062733;
-									if(0.143512 <= x < 0.161877 ) weight=1.085332;
-									if(0.161877 <= x < 0.182592 ) weight=1.115248;
-									if(0.182592 <= x < 0.205957 ) weight=1.153990;
-									if(0.205957 <= x < 0.232313 ) weight=1.201346;
-									if(0.232313 <= x < 0.262041 ) weight=1.257332;
-									if(0.262041 <= x < 0.295573 ) weight=1.315488;
-									if(0.295573 <= x < 0.333397 ) weight=1.369138;
-									if(0.333397 <= x < 0.376060 ) weight=1.407632;
-									if(0.376060 <= x < 0.424183 ) weight=1.422232;
-									if(0.424183 <= x < 0.478465 ) weight=1.406922;
-									if(0.478465 <= x < 0.539692 ) weight=1.360082;
-									if(0.539692 <= x < 0.608754 ) weight=1.284405;
-									if(0.608754 <= x < 0.686654 ) weight=1.182017;
-									if(0.686654 <= x < 0.774523 ) weight=1.062002;
-									if(0.774523 <= x < 0.873636 ) weight=0.935533;
-									if(0.873636 <= x < 0.985432 ) weight=0.816081;
-									if(0.985432 <= x < 1.111534 ) weight=0.717527;
-									if(1.111534 <= x < 1.253773 ) weight=0.647465;
-									if(1.253773 <= x < 1.414214 ) weight=0.607212;
-									if(1.414214 <= x < 1.595185 ) weight=0.589750;
-									if(1.595185 <= x < 1.799315 ) weight=0.587406;
-									if(1.799315 <= x < 2.029567 ) weight=0.592858;
-									if(2.029567 <= x < 2.289283 ) weight=0.601059;
-									if(2.289283 <= x < 2.582235 ) weight=0.608003;
-									if(2.582235 <= x < 2.912674 ) weight=0.611705;
-									if(2.912674 <= x < 3.285398 ) weight=0.610086;
-									if(3.285398 <= x < 3.705818 ) weight=0.605015;
-									if(3.705818 <= x < 4.180038 ) weight=0.596299;
-									if(4.180038 <= x < 4.714942 ) weight=0.590727;
-									if(4.714942 <= x < 5.318296 ) weight=0.585358;
-									if(5.318296 <= x < 5.998859 ) weight=0.585257;
-									if(5.998859 <= x < 6.766511 ) weight=0.580812;
-									if(6.766511 <= x < 7.632396 ) weight=0.576207;
-									if(7.632396 <= x < 8.609086 ) weight=0.575912;
-									if(8.609086 <= x < 9.710759 ) weight=0.558718;
-									if(9.710759 <= x < 10.953409 ) weight=0.555625;
-									if(10.953409 <= x < 12.355077 ) weight=0.558886;
-									if(12.355077 <= x < 13.936111 ) weight=0.545318;
-									if(13.936111 <= x < 15.719464 ) weight=0.517607;
-									if(15.719464 <= x < 17.731026 ) weight=0.512366;
-									if(17.731026 <= x < 20.000000 ) weight=0.497034;
-									
-									
-								}
-								
-								
-							}//end of IsMCefix
-							 //----------------------------------------------------------------------------
+							//----------------------------------------------------------------------------
 							 //correction based on data only for pi0
-							if(!IsMCefix){
+							
 								if(TMath::Abs(fMCparticleGMother->GetPdgCode())==111){
 									Double_t x=gmPt;
-									if(0.100000 <= x < 0.112797 ) weight=1.262120;
-									if(0.112797 <= x < 0.127231 ) weight=1.277765;
-									if(0.127231 <= x < 0.143512 ) weight=1.295605;
-									if(0.143512 <= x < 0.161877 ) weight=1.318155;
-									if(0.161877 <= x < 0.182592 ) weight=1.348693;
-									if(0.182592 <= x < 0.205957 ) weight=1.388636;
-									if(0.205957 <= x < 0.232313 ) weight=1.439122;
-									if(0.232313 <= x < 0.262041 ) weight=1.497452;
-									if(0.262041 <= x < 0.295573 ) weight=1.559409;
-									if(0.295573 <= x < 0.333397 ) weight=1.615169;
-									if(0.333397 <= x < 0.376060 ) weight=1.654954;
-									if(0.376060 <= x < 0.424183 ) weight=1.668753;
-									if(0.424183 <= x < 0.478465 ) weight=1.652225;
-									if(0.478465 <= x < 0.539692 ) weight=1.603119;
-									if(0.539692 <= x < 0.608754 ) weight=1.526049;
-									if(0.608754 <= x < 0.686654 ) weight=1.426724;
-									if(0.686654 <= x < 0.774523 ) weight=1.312684;
-									if(0.774523 <= x < 0.873636 ) weight=1.195395;
-									if(0.873636 <= x < 0.985432 ) weight=1.086264;
-									if(0.985432 <= x < 1.111534 ) weight=0.993666;
-									if(1.111534 <= x < 1.253773 ) weight=0.922587;
-									if(1.253773 <= x < 1.414214 ) weight=0.875739;
-									if(1.414214 <= x < 1.595185 ) weight=0.852181;
-									if(1.595185 <= x < 1.799315 ) weight=0.847828;
-									if(1.799315 <= x < 2.029567 ) weight=0.863875;
-									if(2.029567 <= x < 2.289283 ) weight=0.899112;
-									if(2.289283 <= x < 2.582235 ) weight=0.955194;
-									if(2.582235 <= x < 2.912674 ) weight=1.033824;
-									if(2.912674 <= x < 3.285398 ) weight=1.133714;
-									if(3.285398 <= x < 3.705818 ) weight=1.259471;
-									if(3.705818 <= x < 4.180038 ) weight=1.406883;
-									if(4.180038 <= x < 4.714942 ) weight=1.578923;
-									if(4.714942 <= x < 5.318296 ) weight=1.778513;
-									if(5.318296 <= x < 5.998859 ) weight=2.001171;
-									if(5.998859 <= x < 6.766511 ) weight=2.223161;
-									if(6.766511 <= x < 7.632396 ) weight=2.449445;
-									if(7.632396 <= x < 8.609086 ) weight=2.661734;
-									if(8.609086 <= x < 9.710759 ) weight=2.851935;
-									if(9.710759 <= x < 10.953409 ) weight=2.974319;
-									if(10.953409 <= x < 12.355077 ) weight=3.106314;
-									if(12.355077 <= x < 13.936111 ) weight=3.126815;
-									if(13.936111 <= x < 15.719464 ) weight=3.150053;
-									if(15.719464 <= x < 17.731026 ) weight=3.218509;
-									if(17.731026 <= x < 20.000000 ) weight=3.252141;
 									
+									weight=CalculateWeight(111, x);
 									
 								}
-							}
+							
 							//----------------------------------------------------------------------------
 							
 							
@@ -3751,8 +3613,12 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 							if(fNonHFE->IsLS()) fPtElec_LS2_weight->Fill(fPtE,fNonHFE->GetNLS());				
 						}
 						
-							//ULS with no weight from ULS-LS original
-							// we have to know if track2 comes from same mother!!!
+							
+						//----------------------------------------------------------------------------
+						//to check other way to calculate efficiency
+						//ULS with no weight from ULS-LS original
+						//we have to know if track2 comes from same mother!!!
+						//----------------------------------------------------------------------------
 						if(fNonHFE->IsULS()){
 							
 							for(Int_t iTracks = 0; iTracks < fVevent->GetNumberOfTracks(); iTracks++) 
@@ -3773,228 +3639,44 @@ void AliAnalysisTaskEMCalHFEpA::Background(AliVTrack *track, Int_t trackIndex, A
 								{
 									if(fUlsPartner[i]==iTracks){
 											//only fill if it has same mother
-										
-										if(fMCparticle2->GetMother()==fMCparticle->GetMother()) fPtElec_ULS_MC->Fill(fPtE);
+											//with weight to take into account the number of partners
+										if(fMCparticle2->GetMother()==fMCparticle->GetMother()) fPtElec_ULS_MC->Fill(fPtE, fNonHFE->GetNULS());
 										
 										//-----------------------------------------------------------------------------------------------------------
 										//weight for mother
-										Double_t weight2=1;
+										//Double_t weight2=1;
 										Double_t mPt=fMCparticleMother->Pt();
 										
 																				
 										if(TMath::Abs(fMCparticleMother->GetPdgCode())==111){
 											Double_t x=mPt;
-											
-											if(!IsMCefix){
-												if(0.100000 <= x < 0.112797 ) weight=1.262120;
-												if(0.112797 <= x < 0.127231 ) weight=1.277765;
-												if(0.127231 <= x < 0.143512 ) weight=1.295605;
-												if(0.143512 <= x < 0.161877 ) weight=1.318155;
-												if(0.161877 <= x < 0.182592 ) weight=1.348693;
-												if(0.182592 <= x < 0.205957 ) weight=1.388636;
-												if(0.205957 <= x < 0.232313 ) weight=1.439122;
-												if(0.232313 <= x < 0.262041 ) weight=1.497452;
-												if(0.262041 <= x < 0.295573 ) weight=1.559409;
-												if(0.295573 <= x < 0.333397 ) weight=1.615169;
-												if(0.333397 <= x < 0.376060 ) weight=1.654954;
-												if(0.376060 <= x < 0.424183 ) weight=1.668753;
-												if(0.424183 <= x < 0.478465 ) weight=1.652225;
-												if(0.478465 <= x < 0.539692 ) weight=1.603119;
-												if(0.539692 <= x < 0.608754 ) weight=1.526049;
-												if(0.608754 <= x < 0.686654 ) weight=1.426724;
-												if(0.686654 <= x < 0.774523 ) weight=1.312684;
-												if(0.774523 <= x < 0.873636 ) weight=1.195395;
-												if(0.873636 <= x < 0.985432 ) weight=1.086264;
-												if(0.985432 <= x < 1.111534 ) weight=0.993666;
-												if(1.111534 <= x < 1.253773 ) weight=0.922587;
-												if(1.253773 <= x < 1.414214 ) weight=0.875739;
-												if(1.414214 <= x < 1.595185 ) weight=0.852181;
-												if(1.595185 <= x < 1.799315 ) weight=0.847828;
-												if(1.799315 <= x < 2.029567 ) weight=0.863875;
-												if(2.029567 <= x < 2.289283 ) weight=0.899112;
-												if(2.289283 <= x < 2.582235 ) weight=0.955194;
-												if(2.582235 <= x < 2.912674 ) weight=1.033824;
-												if(2.912674 <= x < 3.285398 ) weight=1.133714;
-												if(3.285398 <= x < 3.705818 ) weight=1.259471;
-												if(3.705818 <= x < 4.180038 ) weight=1.406883;
-												if(4.180038 <= x < 4.714942 ) weight=1.578923;
-												if(4.714942 <= x < 5.318296 ) weight=1.778513;
-												if(5.318296 <= x < 5.998859 ) weight=2.001171;
-												if(5.998859 <= x < 6.766511 ) weight=2.223161;
-												if(6.766511 <= x < 7.632396 ) weight=2.449445;
-												if(7.632396 <= x < 8.609086 ) weight=2.661734;
-												if(8.609086 <= x < 9.710759 ) weight=2.851935;
-												if(9.710759 <= x < 10.953409 ) weight=2.974319;
-												if(10.953409 <= x < 12.355077 ) weight=3.106314;
-												if(12.355077 <= x < 13.936111 ) weight=3.126815;
-												if(13.936111 <= x < 15.719464 ) weight=3.150053;
-												if(15.719464 <= x < 17.731026 ) weight=3.218509;
-												if(17.731026 <= x < 20.000000 ) weight=3.252141;
-												
-											}
-											if(IsMCefix){
-												
-												if(0.100000 <= x < 0.112797 ) weight2=1.030419;
-												if(0.112797 <= x < 0.127231 ) weight2=1.044554;
-												if(0.127231 <= x < 0.143512 ) weight2=1.062733;
-												if(0.143512 <= x < 0.161877 ) weight2=1.085332;
-												if(0.161877 <= x < 0.182592 ) weight2=1.115248;
-												if(0.182592 <= x < 0.205957 ) weight2=1.153990;
-												if(0.205957 <= x < 0.232313 ) weight2=1.201346;
-												if(0.232313 <= x < 0.262041 ) weight2=1.257332;
-												if(0.262041 <= x < 0.295573 ) weight2=1.315488;
-												if(0.295573 <= x < 0.333397 ) weight2=1.369138;
-												if(0.333397 <= x < 0.376060 ) weight2=1.407632;
-												if(0.376060 <= x < 0.424183 ) weight2=1.422232;
-												if(0.424183 <= x < 0.478465 ) weight2=1.406922;
-												if(0.478465 <= x < 0.539692 ) weight2=1.360082;
-												if(0.539692 <= x < 0.608754 ) weight2=1.284405;
-												if(0.608754 <= x < 0.686654 ) weight2=1.182017;
-												if(0.686654 <= x < 0.774523 ) weight2=1.062002;
-												if(0.774523 <= x < 0.873636 ) weight2=0.935533;
-												if(0.873636 <= x < 0.985432 ) weight2=0.816081;
-												if(0.985432 <= x < 1.111534 ) weight2=0.717527;
-												if(1.111534 <= x < 1.253773 ) weight2=0.647465;
-												if(1.253773 <= x < 1.414214 ) weight2=0.607212;
-												if(1.414214 <= x < 1.595185 ) weight2=0.589750;
-												if(1.595185 <= x < 1.799315 ) weight2=0.587406;
-												if(1.799315 <= x < 2.029567 ) weight2=0.592858;
-												if(2.029567 <= x < 2.289283 ) weight2=0.601059;
-												if(2.289283 <= x < 2.582235 ) weight2=0.608003;
-												if(2.582235 <= x < 2.912674 ) weight2=0.611705;
-												if(2.912674 <= x < 3.285398 ) weight2=0.610086;
-												if(3.285398 <= x < 3.705818 ) weight2=0.605015;
-												if(3.705818 <= x < 4.180038 ) weight2=0.596299;
-												if(4.180038 <= x < 4.714942 ) weight2=0.590727;
-												if(4.714942 <= x < 5.318296 ) weight2=0.585358;
-												if(5.318296 <= x < 5.998859 ) weight2=0.585257;
-												if(5.998859 <= x < 6.766511 ) weight2=0.580812;
-												if(6.766511 <= x < 7.632396 ) weight2=0.576207;
-												if(7.632396 <= x < 8.609086 ) weight2=0.575912;
-												if(8.609086 <= x < 9.710759 ) weight2=0.558718;
-												if(9.710759 <= x < 10.953409 ) weight2=0.555625;
-												if(10.953409 <= x < 12.355077 ) weight2=0.558886;
-												if(12.355077 <= x < 13.936111 ) weight2=0.545318;
-												if(13.936111 <= x < 15.719464 ) weight2=0.517607;
-												if(15.719464 <= x < 17.731026 ) weight2=0.512366;
-												if(17.731026 <= x < 20.000000 ) weight2=0.497034;
-												
-												
-											}
+											weight=CalculateWeight(111, x);
+																																	
 											
 										}
-											//weight for grandmother
+										
+										//weight for grandmother
 										Double_t gmPt=fMCparticleGMother->Pt();
 										if(TMath::Abs((fMCparticleMother->GetMother()>0) && ((fMCparticleGMother->GetPdgCode())==111))){
 											Double_t x=gmPt;
-											
-											if(!IsMCefix){
-												if(0.100000 <= x < 0.112797 ) weight=1.262120;
-												if(0.112797 <= x < 0.127231 ) weight=1.277765;
-												if(0.127231 <= x < 0.143512 ) weight=1.295605;
-												if(0.143512 <= x < 0.161877 ) weight=1.318155;
-												if(0.161877 <= x < 0.182592 ) weight=1.348693;
-												if(0.182592 <= x < 0.205957 ) weight=1.388636;
-												if(0.205957 <= x < 0.232313 ) weight=1.439122;
-												if(0.232313 <= x < 0.262041 ) weight=1.497452;
-												if(0.262041 <= x < 0.295573 ) weight=1.559409;
-												if(0.295573 <= x < 0.333397 ) weight=1.615169;
-												if(0.333397 <= x < 0.376060 ) weight=1.654954;
-												if(0.376060 <= x < 0.424183 ) weight=1.668753;
-												if(0.424183 <= x < 0.478465 ) weight=1.652225;
-												if(0.478465 <= x < 0.539692 ) weight=1.603119;
-												if(0.539692 <= x < 0.608754 ) weight=1.526049;
-												if(0.608754 <= x < 0.686654 ) weight=1.426724;
-												if(0.686654 <= x < 0.774523 ) weight=1.312684;
-												if(0.774523 <= x < 0.873636 ) weight=1.195395;
-												if(0.873636 <= x < 0.985432 ) weight=1.086264;
-												if(0.985432 <= x < 1.111534 ) weight=0.993666;
-												if(1.111534 <= x < 1.253773 ) weight=0.922587;
-												if(1.253773 <= x < 1.414214 ) weight=0.875739;
-												if(1.414214 <= x < 1.595185 ) weight=0.852181;
-												if(1.595185 <= x < 1.799315 ) weight=0.847828;
-												if(1.799315 <= x < 2.029567 ) weight=0.863875;
-												if(2.029567 <= x < 2.289283 ) weight=0.899112;
-												if(2.289283 <= x < 2.582235 ) weight=0.955194;
-												if(2.582235 <= x < 2.912674 ) weight=1.033824;
-												if(2.912674 <= x < 3.285398 ) weight=1.133714;
-												if(3.285398 <= x < 3.705818 ) weight=1.259471;
-												if(3.705818 <= x < 4.180038 ) weight=1.406883;
-												if(4.180038 <= x < 4.714942 ) weight=1.578923;
-												if(4.714942 <= x < 5.318296 ) weight=1.778513;
-												if(5.318296 <= x < 5.998859 ) weight=2.001171;
-												if(5.998859 <= x < 6.766511 ) weight=2.223161;
-												if(6.766511 <= x < 7.632396 ) weight=2.449445;
-												if(7.632396 <= x < 8.609086 ) weight=2.661734;
-												if(8.609086 <= x < 9.710759 ) weight=2.851935;
-												if(9.710759 <= x < 10.953409 ) weight=2.974319;
-												if(10.953409 <= x < 12.355077 ) weight=3.106314;
-												if(12.355077 <= x < 13.936111 ) weight=3.126815;
-												if(13.936111 <= x < 15.719464 ) weight=3.150053;
-												if(15.719464 <= x < 17.731026 ) weight=3.218509;
-												if(17.731026 <= x < 20.000000 ) weight=3.252141;
-												
-											}
-											if(IsMCefix){
-												
-												if(0.100000 <= x < 0.112797 ) weight2=1.030419;
-												if(0.112797 <= x < 0.127231 ) weight2=1.044554;
-												if(0.127231 <= x < 0.143512 ) weight2=1.062733;
-												if(0.143512 <= x < 0.161877 ) weight2=1.085332;
-												if(0.161877 <= x < 0.182592 ) weight2=1.115248;
-												if(0.182592 <= x < 0.205957 ) weight2=1.153990;
-												if(0.205957 <= x < 0.232313 ) weight2=1.201346;
-												if(0.232313 <= x < 0.262041 ) weight2=1.257332;
-												if(0.262041 <= x < 0.295573 ) weight2=1.315488;
-												if(0.295573 <= x < 0.333397 ) weight2=1.369138;
-												if(0.333397 <= x < 0.376060 ) weight2=1.407632;
-												if(0.376060 <= x < 0.424183 ) weight2=1.422232;
-												if(0.424183 <= x < 0.478465 ) weight2=1.406922;
-												if(0.478465 <= x < 0.539692 ) weight2=1.360082;
-												if(0.539692 <= x < 0.608754 ) weight2=1.284405;
-												if(0.608754 <= x < 0.686654 ) weight2=1.182017;
-												if(0.686654 <= x < 0.774523 ) weight2=1.062002;
-												if(0.774523 <= x < 0.873636 ) weight2=0.935533;
-												if(0.873636 <= x < 0.985432 ) weight2=0.816081;
-												if(0.985432 <= x < 1.111534 ) weight2=0.717527;
-												if(1.111534 <= x < 1.253773 ) weight2=0.647465;
-												if(1.253773 <= x < 1.414214 ) weight2=0.607212;
-												if(1.414214 <= x < 1.595185 ) weight2=0.589750;
-												if(1.595185 <= x < 1.799315 ) weight2=0.587406;
-												if(1.799315 <= x < 2.029567 ) weight2=0.592858;
-												if(2.029567 <= x < 2.289283 ) weight2=0.601059;
-												if(2.289283 <= x < 2.582235 ) weight2=0.608003;
-												if(2.582235 <= x < 2.912674 ) weight2=0.611705;
-												if(2.912674 <= x < 3.285398 ) weight2=0.610086;
-												if(3.285398 <= x < 3.705818 ) weight2=0.605015;
-												if(3.705818 <= x < 4.180038 ) weight2=0.596299;
-												if(4.180038 <= x < 4.714942 ) weight2=0.590727;
-												if(4.714942 <= x < 5.318296 ) weight2=0.585358;
-												if(5.318296 <= x < 5.998859 ) weight2=0.585257;
-												if(5.998859 <= x < 6.766511 ) weight2=0.580812;
-												if(6.766511 <= x < 7.632396 ) weight2=0.576207;
-												if(7.632396 <= x < 8.609086 ) weight2=0.575912;
-												if(8.609086 <= x < 9.710759 ) weight2=0.558718;
-												if(9.710759 <= x < 10.953409 ) weight2=0.555625;
-												if(10.953409 <= x < 12.355077 ) weight2=0.558886;
-												if(12.355077 <= x < 13.936111 ) weight2=0.545318;
-												if(13.936111 <= x < 15.719464 ) weight2=0.517607;
-												if(15.719464 <= x < 17.731026 ) weight2=0.512366;
-												if(17.731026 <= x < 20.000000 ) weight2=0.497034;
-												
-											}
+											weight=CalculateWeight(111, x);
+																											
 										}
 										
-										if(fMCparticle2->GetMother()==fMCparticle->GetMother()) fPtElec_ULS_MC_weight->Fill(fPtE, 1./weight2);
 										
-											//-----------------------------------------------------------------------------------------------------------
-											//end of weight
+										if(fMCparticle2->GetMother()==fMCparticle->GetMother()) fPtElec_ULS_MC_weight->Fill(fPtE, (fNonHFE->GetNULS())*1./weight);
+										
+										//-----------------------------------------------------------------------------------------------------------
+										//end of weight
 										
 									}//partner found same as track
 								}//loop in all partner
 								
 							}//track
 						}//is ULS
+						//----------------------------------------------------------------------------
+						//end of part to check other way to calculate efficiency
+						//----------------------------------------------------------------------------
 						
 					}//IsTPConly
 					
@@ -4681,3 +4363,169 @@ Bool_t AliAnalysisTaskEMCalHFEpA::FindMother(Int_t mcIndex)
 		}
 	}
 }
+/*
+Bool_t AliAnalysisTaskEMCalHFEpA::ContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells)
+{
+		// Check that in the cluster cells, there is no bad channel of those stored 
+		// in fEMCALBadChannelMap 
+		// adapted from AliCalorimeterUtils
+	
+		//if (!fRemoveBadChannels) return kFALSE;
+		//printf("fEMCALBadChannelMap %p, fPHOSBadChannelMap %p \n",fEMCALBadChannelMap,fPHOSBadChannelMap);
+	if( !fEMCALRecoUtils->GetEMCALChannelStatusMap(0)) return kFALSE;
+		
+		//Int_t icol = -1;
+		//Int_t irow = -1;
+		//Int_t imod = -1;
+	for(Int_t iCell = 0; iCell<nCells; iCell++){
+		
+			//Get the column and row
+		if(calorimeter == "EMCAL"){
+			return fEMCALRecoUtils->ClusterContainsBadChannel((AliEMCALGeometry*)fEMCALGeo,cellList,nCells);
+		}
+		else return kFALSE;
+		
+	}// cell cluster loop
+	
+	return kFALSE;
+	
+}
+*/
+/*
+
+//________________________________________________________________________________
+TArrayI AliAnalysisTaskEMCalHFEpA::GetTriggerPatches(Bool_t IsEventEMCALL0, Bool_t IsEventEMCALL1)
+{
+	// Select the patches that triggered
+	// Depend on L0 or L1
+	
+	// some variables
+	//Int_t  trigtimes[30], globCol, globRow,ntimes, i;
+	Int_t   globCol, globRow;
+
+	Int_t  absId  = -1; //[100];
+	Int_t  nPatch = 0;
+	
+	TArrayI patches(0);
+	
+		// get object pointer
+	AliVCaloTrigger *caloTrigger = InputEvent()->GetCaloTrigger( "EMCAL" );
+	
+		// class is not empty
+	if( caloTrigger->GetEntries() > 0 )
+	{
+			// must reset before usage, or the class will fail
+		caloTrigger->Reset();
+		
+			// go throuth the trigger channels
+		while( caloTrigger->Next() )
+		{
+				// get position in global 2x2 tower coordinates
+			caloTrigger->GetPosition( globCol, globRow );
+			
+			//L0
+			if(IsEventEMCALL0)
+			{
+			    //not implemented
+			}
+				
+					
+			else if(IsEventEMCALL1) // L1
+			{
+					Int_t bit = 0;
+					caloTrigger->GetTriggerBits(bit);
+					
+					Bool_t isEGA = ((bit >> fBitEGA) & 0x1);
+					//Bool_t isEJE = ((bit >> fBitEJE) & 0x1) && IsEventEMCALL1Jet  () ;
+					
+					if(!isEGA) continue;
+					
+					Int_t patchsize = -1;
+					if(isEGA) patchsize =  2;
+					//else if (isEJE) patchsize = 16;
+					
+					// add 2x2 (EGA) or 16x16 (EJE) patches
+					for(Int_t irow=0; irow < patchsize; irow++)
+					{
+						for(Int_t icol=0; icol < patchsize; icol++)
+						{
+							GetCaloUtils()->GetEMCALGeometry()->GetAbsFastORIndexFromPositionInEMCAL(globCol+icol,globRow+irow, absId);
+							//printf("pass the time cut globCol %d, globRow %d absId %d\n",globCol,globRow, absIDTrig[nTrig]);
+							patches.Set(nPatch+1); // Set size of this array to nPatch+1 ints.
+							patches.AddAt(absId,nPatch++); //Add Int_t absId at position nPatch++
+						}
+					}
+					
+			} // L1
+			
+		} // trigger iterator
+	} // go thorough triggers
+	
+	printf("N patches %d, test %d,first %d, last %d\n",patches.GetSize(), nPatch, patches.At(0), patches.At(patches.GetSize()-1));
+	
+	return patches;
+}
+ */
+Double_t AliAnalysisTaskEMCalHFEpA::CalculateWeight(Int_t pdg_particle, Double_t x)
+{
+		//weight for d3 based on MinJung parametrization //sent by Jan
+	    Double_t weight=1;
+		if(pdg_particle==111){
+			if(x>= 0.100000 &&  x < 0.112797 ) weight=1.262120;
+			if(x>= 0.112797 &&  x < 0.127231 ) weight=1.277765;
+			if(x>= 0.127231 &&  x < 0.143512 ) weight=1.295605;
+			if(x>= 0.143512 &&  x < 0.161877 ) weight=1.318155;
+			if(x>= 0.161877 &&  x < 0.182592 ) weight=1.348693;
+			if(x>= 0.182592 &&  x < 0.205957 ) weight=1.388636;
+			if(x>= 0.205957 &&  x < 0.232313 ) weight=1.439122;
+			if(x>= 0.232313 &&  x < 0.262041 ) weight=1.497452;
+			if(x>= 0.262041 &&  x < 0.295573 ) weight=1.559409;
+			if(x>= 0.295573 &&  x < 0.333397 ) weight=1.615169;
+			if(x>= 0.333397 &&  x < 0.376060 ) weight=1.654954;
+			if(x>= 0.376060 &&  x < 0.424183 ) weight=1.668753;
+			if(x>= 0.424183 &&  x < 0.478465 ) weight=1.652225;
+			if(x>= 0.478465 &&  x < 0.539692 ) weight=1.603119;
+			if(x>= 0.539692 &&  x < 0.608754 ) weight=1.526049;
+			if(x>= 0.608754 &&  x < 0.686654 ) weight=1.426724;
+			if(x>= 0.686654 &&  x < 0.774523 ) weight=1.312684;
+			if(x>= 0.774523 &&  x < 0.873636 ) weight=1.195395;
+			if(x>= 0.873636 &&  x < 0.985432 ) weight=1.086264;
+			if(x>= 0.985432 &&  x < 1.111534 ) weight=0.993666;
+			if(x>= 1.111534 &&  x < 1.253773 ) weight=0.922587;
+			if(x>= 1.253773 &&  x < 1.414214 ) weight=0.875739;
+			if(x>= 1.414214 &&  x < 1.595185 ) weight=0.852181;
+			if(x>= 1.595185 &&  x < 1.799315 ) weight=0.847828;
+			if(x>= 1.799315 &&  x < 2.029567 ) weight=0.863875;
+			if(x>= 2.029567 &&  x < 2.289283 ) weight=0.899112;
+			if(x>= 2.289283 &&  x < 2.582235 ) weight=0.955194;
+			if(x>= 2.582235 &&  x < 2.912674 ) weight=1.033824;
+			if(x>= 2.912674 &&  x < 3.285398 ) weight=1.133714;
+			if(x>= 3.285398 &&  x < 3.705818 ) weight=1.259471;
+			if(x>= 3.705818 &&  x < 4.180038 ) weight=1.406883;
+			if(x>= 4.180038 &&  x < 4.714942 ) weight=1.578923;
+			if(x>= 4.714942 &&  x < 5.318296 ) weight=1.778513;
+			if(x>= 5.318296 &&  x < 5.998859 ) weight=2.001171;
+			if(x>= 5.998859 &&  x < 6.766511 ) weight=2.223161;
+			if(x>= 6.766511 &&  x < 7.632396 ) weight=2.449445;
+			if(x>= 7.632396 &&  x < 8.609086 ) weight=2.661734;
+			if(x>= 8.609086 &&  x < 9.710759 ) weight=2.851935;
+			if(x>= 9.710759 &&  x < 10.953409 ) weight=2.974319;
+			if(x>= 10.953409 &&  x < 12.355077 ) weight=3.106314;
+			if(x>= 12.355077 &&  x < 13.936111 ) weight=3.126815;
+			if(x>= 13.936111 &&  x < 15.719464 ) weight=3.150053;
+			if(x>= 15.719464 &&  x < 17.731026 ) weight=3.218509;
+			if(x>= 17.731026 &&  x < 20.000000 ) weight=3.252141;			
+			
+		}
+	    else if(pdg_particle==221){
+		   weight=1;
+		}
+	    else weight=1;
+	
+	    return weight;
+	
+}
+
+	
+
+

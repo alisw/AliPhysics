@@ -90,6 +90,7 @@ AliHFEspectrum::AliHFEspectrum(const char *name):
   fStepAfterCutsV0(-1),
   fStepGuessedUnfolding(-1),
   fNumberOfIterations(5),
+  fNRandomIter(0),
   fChargeChoosen(kAllCharge),
   fNCentralityBinAtTheEnd(0),
   fTestCentralityLow(-1),
@@ -460,6 +461,19 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     dataGridAfterFirstSteps = dataspectrumaftersubstraction;
   }
 
+  printf("cloning spectrum\n");
+  AliCFDataGrid *rawsave(NULL);
+  if(dataspectrumaftersubstraction){
+     rawsave = (AliCFDataGrid *)dataspectrumaftersubstraction->Clone("rawdata");
+  } else {
+    AliCFContainer *dataContainer = GetContainer(kDataContainer);
+    if(!dataContainer){
+      AliError("Data Container not available");
+    }
+    rawsave = new AliCFDataGrid("rawsave", "raw spectrum after subtraction",*dataContainer, fStepData);
+  }
+  printf("cloned: %p\n", rawsave);
+
   ////////////////////////////////////////////////
   // Correct for TPC efficiency from V0
   ///////////////////////////////////////////////
@@ -721,6 +735,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       correctedspectrum->Write();
       alltogetherCorrection->SetName("AlltogetherCorrectedNotNormalizedSpectrum");
       alltogetherCorrection->Write();
+      rawsave->Write();
       for(Int_t binc = 0; binc < fNCentralityBinAtTheEnd; binc++){
 	      unfoldingspectrac[binc].Write();
 	      unfoldingspectracn[binc].Write();
@@ -2098,6 +2113,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
   AliCFUnfolding unfolding("unfolding","",fNbDimensions,fCorrelation,efficiencyD->GetGrid(),dataGrid->GetGrid(),guessedTHnSparse);
   if(fUnSetCorrelatedErrors) unfolding.UnsetCorrelatedErrors();
   unfolding.SetMaxNumberOfIterations(fNumberOfIterations);
+  if(fNRandomIter > 0) unfolding.SetNRandomIterations(fNRandomIter);
   if(fSetSmoothing) unfolding.UseSmoothing();
   unfolding.Unfold();
 
@@ -2400,7 +2416,7 @@ TGraphErrors *AliHFEspectrum::NormalizeTH1(TH1 *input,Int_t i) const {
     for(Int_t ibin = input->GetXaxis()->GetFirst(); ibin <= input->GetXaxis()->GetLast(); ibin++){
       point = ibin - input->GetXaxis()->GetFirst();
       p = input->GetXaxis()->GetBinCenter(ibin);
-      //dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
+      dp = input->GetXaxis()->GetBinWidth(ibin)/2.;
       n = input->GetBinContent(ibin);
       dN = input->GetBinError(ibin);
       // New point

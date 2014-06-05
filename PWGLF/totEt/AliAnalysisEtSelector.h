@@ -50,6 +50,8 @@ public:
     
     // Return true if cluster has energy > cut
     virtual Bool_t PassMinEnergyCut(const TParticle &/*part*/) const { return true; }
+
+    virtual Bool_t PassMinEnergyCut(Double_t e) const;
     
     // Cut on distance to bad channel
     virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster &/*cluster*/) const { return true; }
@@ -61,13 +63,13 @@ public:
     virtual Bool_t IsNeutralMcParticle(Int_t pIdx, AliStack& s, const TParticlePDG& pdg) const;
     
     // Is it an EM E_T particle
-    virtual Bool_t IsEmEtParticle(Int_t pdgCode) const;
+    virtual Bool_t IsEmEtParticle(const Int_t pdgCode) const;
     
     // Does the particle come from an EM E_T primary ?
-    virtual Bool_t PrimaryIsEmEtParticle(Int_t pIdx, AliStack &stack) const;
+    virtual Bool_t PrimaryIsEmEtParticle(const Int_t pIdx, AliStack &stack) const;
 
     // Get the index of primary particle for the particle
-    Int_t GetPrimary(Int_t partIdx, AliStack &stack) const;
+    Int_t GetPrimary(const Int_t partIdx, AliStack &stack) const;
     
     // Cut on geometrical acceptance 
     virtual Bool_t CutGeometricalAcceptance(const TParticle &/*part*/) { return true; }
@@ -94,18 +96,18 @@ public:
     
 protected:
   
-    const AliVEvent *fEvent; // Pointer to current event
+    const AliVEvent *fEvent; //! Pointer to current event
 
-    TRefArray *fClusterArray; // Array of clusters
+    TRefArray *fClusterArray; //! Array of clusters
 
-    AliAnalysisEtCuts *fCuts; // Pointer to the cuts object; DS: also in base class?
+    AliAnalysisEtCuts *fCuts; //! Pointer to the cuts object; DS: also in base class?
     
     Bool_t SuspiciousDecayInChain(const UInt_t suspectMotherPdg, const UInt_t suspectDaughterPdg, const TParticle& part, AliStack& stack) const;
     
     Int_t fRunNumber;
 
     Bool_t fInitialized; // matrix initialized
-    
+
 private:
 
     //AliAnalysisEtSelector(); // Prohibited

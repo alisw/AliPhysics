@@ -14,11 +14,9 @@ AliAnalysisTaskSEDvsMultiplicity *AddTaskDvsMultiplicity(Int_t system=0,
 							 Bool_t isPPbData=kFALSE)
 {
   //
-  // Test macro for the AliAnalysisTaskSE for D+ candidates
-  //Invariant mass histogram and    
-  // association with MC truth (using MC info in AOD)
-  //  R. Bala, bala@to.infn.it
-  // Get the pointer to the existing analysis manager via the static access method. 
+  // Macro for the AliAnalysisTaskSE for D candidates vs Multiplicity
+  // Invariant mass histogram in pt and multiplicity bins in a 3D histogram
+  //   different estimators implemented
   //============================================================================== 
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

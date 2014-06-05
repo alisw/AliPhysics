@@ -231,10 +231,10 @@ void AliAnalysisTaskHJetDphi::UserCreateOutputObjects()
   const Double_t hiBinJetqa[dimJetqa]  = {upJetPtBin,    360, 0.6, 1.2, 500, 10, 11};
 
   // h-jet analysis
-  const Int_t dimTT = 3;
-  const Int_t nBinsTT[dimTT]     = {nTrkPtBins,  10,  11};
-  const Double_t lowBinTT[dimTT] = {lowTrkPtBin, 0,   0};
-  const Double_t hiBinTT[dimTT]  = {upTrkPtBin,  100, 11}; 
+  const Int_t dimTT = 4;
+  const Int_t nBinsTT[dimTT]     = {nTrkPtBins,  10,  11, 10};
+  const Double_t lowBinTT[dimTT] = {lowTrkPtBin, 0,   0,   0};
+  const Double_t hiBinTT[dimTT]  = {upTrkPtBin,  100, 11,  10}; 
   
   const Int_t dimCor = 8;
   const Int_t nBinsCor[dimCor]     = {nTrkPtBins, nJetPtBins,  140,     6,   10, 40,    11, 10};
@@ -645,8 +645,8 @@ void AliAnalysisTaskHJetDphi::UserExec(Option_t *)
       RunSingleInclHJetCorr(trigPt, trigPhi, trigEta, fJetArray, fRhoValue, fhTTPt[fTriggerType][0], fHJetPhiCorr[fTriggerType][0]);
       if(fRunBkgFlow)
 	{
-	  RunSingleInclHJetCorr(trigPt, trigPhi, trigEta, fJetArray, fRhoValue+1, 0x0, fHJetPhiCorrUp[fTriggerType]);
-	  RunSingleInclHJetCorr(trigPt, trigPhi, trigEta, fJetArray, fRhoValue-1, 0x0, fHJetPhiCorrDown[fTriggerType]);
+	  RunSingleInclHJetCorr(trigPt, trigPhi, trigEta, fJetArray, fRhoValue+1.8, 0x0, fHJetPhiCorrUp[fTriggerType]);
+	  RunSingleInclHJetCorr(trigPt, trigPhi, trigEta, fJetArray, fRhoValue-1.8, 0x0, fHJetPhiCorrDown[fTriggerType]);
 	}
 
       if(fIsEmbedding)
@@ -772,7 +772,7 @@ void AliAnalysisTaskHJetDphi::RunSingleInclHJetCorr(Double_t trigPt, Double_t tr
 
   if(hTT)
     {
-      Double_t fillTT[] = {trigPt, fCentrality, (Double_t)fPtHardBin};
+      Double_t fillTT[] = {trigPt, fCentrality, (Double_t)fPtHardBin,static_cast<Double_t>(Entry()%10)};
       hTT->Fill(fillTT);
     }
 
@@ -804,7 +804,7 @@ void AliAnalysisTaskHJetDphi::RunSingleInclHJetCorr(Double_t trigPt, Double_t tr
       Double_t jetPtCorr = jetPt-rho*jetArea;
       if(jetPtCorr>fJetPtMin)
 	{
-	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin,Entry()%10};
+	  Double_t fill[] = {trigPt,jetPtCorr,dPhi,jetArea,fCentrality,trigEta-jetEta, (Double_t)fPtHardBin,static_cast<Double_t>(Entry()%10)};
 	  hn->Fill(fill);
 	}
     }
