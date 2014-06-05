@@ -72,7 +72,8 @@ ClassImp(AliCalorimeterUtils)
     fOADBForEMCAL(kFALSE),            fOADBForPHOS(kFALSE),
     fOADBFilePathEMCAL(""),           fOADBFilePathPHOS(""),
     fImportGeometryFromFile(0),       fImportGeometryFilePath(""),
-    fNSuperModulesUsed(0)
+    fNSuperModulesUsed(0),
+    fMCECellClusFracCorrOn(0),        fMCECellClusFracCorrParam()
 {
   //Ctor
   
@@ -529,6 +530,34 @@ Bool_t AliCalorimeterUtils::AreNeighbours(TString calo, Int_t absId1, Int_t absI
   return areNeighbours;
   
 }
+//_____________________________________________________________________________________
+Bool_t AliCalorimeterUtils::IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
+                                                             AliVCluster* cluster)
+{
+  //Method that checks if any of the cells in the cluster belongs to a different SM
+  
+  Int_t    iSupMod = -1;
+  Int_t    iSM0    = -1;
+  Int_t    iTower  = -1;
+  Int_t    iIphi   = -1;
+  Int_t    iIeta   = -1;
+  Int_t    iphi    = -1;
+  Int_t    ieta    = -1;
+  
+  for(Int_t iDigit=0; iDigit < cluster->GetNCells(); iDigit++)
+  {
+    //Get from the absid the supermodule, tower and eta/phi numbers
+    geom->GetCellIndex(cluster->GetCellAbsId(iDigit),iSupMod,iTower,iIphi,iIeta);
+    geom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
+    
+    //Check if there are cells of different SM
+    if     (iDigit == 0   ) iSM0 = iSupMod;
+    else if(iSupMod!= iSM0) return kTRUE;
+  }
+  
+  return kFALSE;
+  
+}
 
 
 //_____________________________________________________________________________________
@@ -841,6 +870,29 @@ AliVTrack * AliCalorimeterUtils::GetMatchedTrack(AliVCluster* cluster,
   return track ;
   
 }
+//______________________________________________________________________________________________
+Float_t AliCalorimeterUtils::GetMCECellClusFracCorrection(Float_t eCell, Float_t eCluster) const
+{
+  // Correction factor for cell energy in cluster to temptatively match Data and MC
+  if( eCluster <= 0 || eCluster < eCell )
+  {
+    printf("AliCalorimeterUtils::GetMCECellClusFracCorrection() - Bad values eCell=%f, eCluster %f\n",eCell,eCluster);
+    return 1;
+  }
+  
+  Float_t frac       = eCell / eCluster;
+  
+  Float_t correction = fMCECellClusFracCorrParam[0] +
+                       TMath::Exp( frac*fMCECellClusFracCorrParam[2]+fMCECellClusFracCorrParam[1] ) +
+                       fMCECellClusFracCorrParam[3]/TMath::Sqrt(frac);
+  
+//  printf("AliCalorimeterUtils::GetMCECellClusFracCorrection(eCell=%f, eCluster %f, frac %f) = %f\n",eCell, eCluster, frac, correction);
+//  printf("\t %2.2f + TMath::Exp( %2.3f*%2.2f + %2.2f ) + %2.2f/TMath::Sqrt(%2.3f)) = %f\n",
+//         fMCECellClusFracCorrParam[0],frac,fMCECellClusFracCorrParam[2],fMCECellClusFracCorrParam[1],fMCECellClusFracCorrParam[3], frac, correction);
+
+  return correction;
+}
+
 
 //_____________________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent * inputEvent) const
@@ -1033,6 +1085,15 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   Int_t absId2 = -1 ;
   const Int_t nCells = cluster->GetNCells();
   
+  Float_t eCluster =  RecalibrateClusterEnergy(cluster, cells);// recalculate cluster energy, avoid non lin correction.
+
+  Float_t simuTotWeight = 0;
+  if(fMCECellClusFracCorrOn)
+  {
+    simuTotWeight =  RecalibrateClusterEnergyWeightCell(cluster, cells,eCluster);// same but apply a weight
+    simuTotWeight/= eCluster;
+  }
+  
   TString calorimeter = "EMCAL";
   if(!cluster->IsEMCAL()) calorimeter = "PHOS";
   
@@ -1044,7 +1105,11 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit]  ; 
     Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-    RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
+    RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);
+    
+    if(fMCECellClusFracCorrOn)
+      en*=GetMCECellClusFracCorrection(en,eCluster)/simuTotWeight;
+    
     if( en > emax )
     {
       emax  = en ;
@@ -1064,6 +1129,9 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
       Float_t en1 = cells->GetCellAmplitude(absId1);
       RecalibrateCellAmplitude(en1,calorimeter,absId1);  
       
+      if(fMCECellClusFracCorrOn)
+        en1*=GetMCECellClusFracCorrection(en1,eCluster)/simuTotWeight;
+      
       //printf("%d : absIDi %d, E %f\n",iDigit, absId1,en1);
       
       for(iDigitN = 0; iDigitN < nCells; iDigitN++) 
@@ -1077,6 +1145,9 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
         Float_t en2 = cells->GetCellAmplitude(absId2);
         RecalibrateCellAmplitude(en2,calorimeter,absId2);
         
+        if(fMCECellClusFracCorrOn)
+          en2*=GetMCECellClusFracCorrection(en2,eCluster)/simuTotWeight;
+
         //printf("\t %d : absIDj %d, E %f\n",iDigitN, absId2,en2);
         
         if ( AreNeighbours(calorimeter, absId1, absId2) ) 
@@ -1115,10 +1186,17 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
     if(absIdList[iDigit]>=0 )
     {
       absIdList[iDigitN] = absIdList[iDigit] ;
+      
       Float_t en = cells->GetCellAmplitude(absIdList[iDigit]);
-      RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);  
+      RecalibrateCellAmplitude(en,calorimeter,absIdList[iDigit]);
+      
+      if(fMCECellClusFracCorrOn)
+        en*=GetMCECellClusFracCorrection(en,eCluster)/simuTotWeight;
+      
       if(en < fLocMaxCutE) continue; // Maxima only with seed energy at least
+      
       maxEList[iDigitN] = en ;
+      
       //printf("Local max %d, id %d, en %f\n", iDigit,absIdList[iDigitN],en);
       iDigitN++ ; 
     }
@@ -1136,8 +1214,8 @@ Int_t AliCalorimeterUtils::GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCalo
   
   if(fDebug > 0) 
   {    
-    printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - In cluster E %2.2f, M02 %2.2f, M20 %2.2f, N maxima %d \n", 
-           cluster->E(),cluster->GetM02(),cluster->GetM20(), iDigitN);
+    printf("AliCalorimeterUtils::GetNumberOfLocalMaxima() - In cluster E %2.2f (wth non lin. %2.2f), M02 %2.2f, M20 %2.2f, N maxima %d \n",
+           cluster->E(),eCluster, cluster->GetM02(),cluster->GetM20(), iDigitN);
   
     if(fDebug > 1) for(Int_t imax = 0; imax < iDigitN; imax++) 
     {
@@ -1221,6 +1299,11 @@ void AliCalorimeterUtils::InitParameters()
   fImportGeometryFilePath = "";
  
   fNSuperModulesUsed = 22;
+  
+  fMCECellClusFracCorrParam[0] = 0.78;
+  fMCECellClusFracCorrParam[1] =-1.8;
+  fMCECellClusFracCorrParam[2] =-6.3;
+  fMCECellClusFracCorrParam[3] = 0.014;
   
 }
 
@@ -1467,6 +1550,62 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
   
 	return energy;
 }
+
+//__________________________________________________________________________
+Float_t AliCalorimeterUtils::RecalibrateClusterEnergyWeightCell(AliVCluster * cluster,
+                                                                AliVCaloCells * cells, Float_t energyOrg)
+{
+	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
+  // Also consider reweighting of cells energy
+  
+  //Initialize some used variables
+	Float_t frac  = 0., energy = 0.;
+  
+	if(cells)
+  {
+    //Get the cluster number of cells and list of absId, check what kind of cluster do we have.
+    
+    UShort_t * index    = cluster->GetCellsAbsId() ;
+    Double_t * fraction = cluster->GetCellsAmplitudeFraction() ;
+    
+    Int_t ncells     = cluster->GetNCells();
+    
+    TString calo     = "EMCAL";
+    if(cluster->IsPHOS())
+      calo = "PHOS";
+    
+    //Loop on the cells, get the cell amplitude and recalibration factor, multiply and and to the new energy
+    for(Int_t icell = 0; icell < ncells; icell++){
+      
+      Int_t absId = index[icell];
+      
+      frac =  fraction[icell];
+      if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
+      
+      Float_t amp = cells->GetCellAmplitude(absId);
+      RecalibrateCellAmplitude(amp,calo, absId);
+      
+      amp*=GetMCECellClusFracCorrection(amp,energyOrg);
+      
+      if(fDebug>2)
+        printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, cell fraction %f, cell energy %f\n",
+               calo.Data(),frac,cells->GetCellAmplitude(absId));
+      
+      energy += amp*frac;
+    }
+    
+    if(fDebug>1)
+      printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - Energy before %f, after %f\n",cluster->E(),energy);
+    
+	}// cells available
+  else
+  {
+    Fatal("RecalibrateClusterEnergy()","Cells pointer does not exist!");
+  }
+  
+	return energy;
+}
+
 
 //__________________________________________________________________________________________
 void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu)

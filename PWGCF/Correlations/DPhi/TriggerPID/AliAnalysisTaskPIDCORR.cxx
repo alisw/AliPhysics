@@ -427,7 +427,7 @@ Double_t nclus = track->GetTPCClusterInfo(2,1);
 if(nclus<80) return 0;
 
 //select primary:
-if(!track->GetType()==AliAODTrack :: kPrimary) return 0;
+if(track->GetType() != AliAODTrack::kPrimary) return 0;
 
 return 1;
 }

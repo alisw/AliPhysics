@@ -2101,7 +2101,7 @@ void AliAnalysisHadEtMonteCarlo::CreateHistograms(){
   Float_t minEt = 0.0;
   Float_t maxEt = 100.0;
   Float_t minEtPiKP = 0.0;
-  Float_t maxEtPiKP = 50.0;
+  Float_t maxEtPiKP = 100.0;
   if(fDataSet==20100){
     maxEt=4000.0;
     maxEtPiKP = 2500;

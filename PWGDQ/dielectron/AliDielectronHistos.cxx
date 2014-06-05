@@ -378,7 +378,8 @@ void AliDielectronHistos::UserProfile(const char* histClass,const char *name, co
     UInt_t valType[20] = {0};
     valType[0]=valTypeX;     valType[1]=valTypeY;     valType[2]=valTypeZ;     valType[3]=valTypeP;
     StoreVariables(hist, valType);
-    hist->SetUniqueID(valTypeW); // store weighting variable
+    // (this is overwrites the profile varaiable, no weighting at the moment for TProfile3D)
+    //    hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
     for(Int_t i=0; i<4; i++)   fUsedVars->SetBitNumber(valType[i],kTRUE);
