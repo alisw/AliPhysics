@@ -286,10 +286,6 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
   
-	TStopwatch timer;
-  timer.Start();
-  
-  
   
 
   size_t maxOutputSize = size;
