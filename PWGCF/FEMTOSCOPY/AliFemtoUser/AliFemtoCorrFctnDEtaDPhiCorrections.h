@@ -20,7 +20,7 @@
 class AliFemtoCorrFctnDEtaDPhiCorrections : public AliFemtoCorrFctn {
 public:
   enum CorrectionType {kNone=0, kPt=1, kEta=2};
-  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3};
+  enum ParticleType {kNoCorrection=0, kPion=1, kKaon=2, kProton=3, kAll=4};
   typedef enum CorrectionType ReadCorrectionType;
 
   AliFemtoCorrFctnDEtaDPhiCorrections(char* title, const int& aPhiBins, const int& aEtaBins);
@@ -39,6 +39,7 @@ public:
   void SetDoCorrectionsHist(CorrectionType doCorr);
   double CalculateCorrectionWeight(double pT1, double pT2);
   void LoadCorrectionTabFromFile(const char *pTtab, const char *corrTab);
+  void SetCorrectionTab(ParticleType partType);
   
   void WriteHistos();
   virtual TList* GetOutputList();
@@ -81,6 +82,10 @@ private:
 
   double fphiL;
   double fphiT;
+
+
+
+
 
 
 #ifdef __ROOT__
