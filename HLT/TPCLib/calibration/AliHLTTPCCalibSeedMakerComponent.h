@@ -17,7 +17,7 @@
 #include "AliHLTProcessor.h"
 
 //forward declarations
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 class AliTPCParam;
 //class TClonesArray;
 class TObjArray;

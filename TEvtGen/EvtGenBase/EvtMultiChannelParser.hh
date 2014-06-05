@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtMultiChannelParser.hh,v 1.7 2009/02/19 03:22:30 ryd Exp $
+//      $Id: EvtMultiChannelParser.hh,v 1.2 2009-03-16 16:41:09 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly

@@ -9,7 +9,6 @@
 #ifndef __AliRecoServer_H__
 #define __AliRecoServer_H__
 
-#include <zmq.hpp>
 #include <TObjString.h>
 #include <TQObject.h>
 #include <RQ_OBJECT.h>
@@ -18,6 +17,11 @@ class TEnv;
 class AliCDBManager;
 class AliReconstruction;
 class AliRecoServerThread;
+
+namespace zmq
+{
+	class context_t;
+}
 
 class AliRecoServer : public TQObject
 {

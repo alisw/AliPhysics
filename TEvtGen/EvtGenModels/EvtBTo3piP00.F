@@ -90,7 +90,7 @@ c      End
       Real*8  Weight,Weight_max
       Real*8  ABp,ABm
       Real*8  m_rho12,m_rho13
-      Real*4  Evtranf,Tag
+      Real*8  Evtranf,Tag
       
       alpha      = 0.4
       N_gener    = 0
@@ -365,7 +365,7 @@ c	----------------------------------------------------------
 c 	--- Used Functions 
 c	----------------------------------------------------------
 
-	real evtranf
+	real*8 evtranf
 
 c	----------------------------------------------------------
 c 	--- Variables in Argument
@@ -511,7 +511,7 @@ c-----------------------------------------------------------------------
 
                                                                                                  
       	Real*8 m12, m13, W12, W13, Wtot
-      	Real*4 evt_gmas
+      	Real*8 evt_gmas
       	Complex*16 MatBp,MatBm
         Real*8  Real_Bp,Imag_Bp,Real_Bm,Imag_Bm                                                     
       	Real*8     p1(5),p2(5),p3(5)

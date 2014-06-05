@@ -1,0 +1,117 @@
+
+INTRODUCTION:
+------------
+
+The  RChL-currents directory should be placed as subdirectory of
+TAUOLA/tauola/new-currents directory.
+
+It contains files which need to be compiled 
+and loaded with TAUOLA  to replace its native hadronic currents with 
+the new ones. 
+
+Technical details on modification for native tauola code are given
+at the end of this README
+
+Directory RChL-currents/tabler/a1 includes program used for 
+calculation of numerical table(s) (tables are encapsulated in FORTRAN code
+file initA1Tab.f) used by the formfactors. 
+
+Directory RChL-currents/tabler/k0pi_scalar contains the table 
+(tables are encapsulated in FORTRAN code
+file initKpiScalTab.f) that is the scalar form factor used in the Kpi current. 
+initKpiScalTab.f is based on absF0KPi.dat sent by M. Jamin.
+
+Directory RChL-currents/cross-check include programs for the tests and 
+the results of TAUOLA run with the RChL version for the channels, at present
+for 2 and some 3 scalar modes, that means with JAK= 4,5,7,14,15,16,22
+
+Directory RChL-currents/backup is temporary
+
+Physics documentation is given in sub-directory  RChL-currents/paper. 
+In particular detailed description of the currents is given in 
+the paper, section ...
+
+
+Content of all mentioned above sub-directories  is not loaded
+(thus is not needed) for creation of TAUOLA library 
+(to be created by makefile in TAUOLA/tauola directory). 
+
+
+
+LIST OF FILES:
+-------------
+
+The files listed below are stored in RChL-currents directory.
+On top of each file brief info is given. It includes main physics 
+reference paper, our documentation chapter no and
+input/output parameters.
+
+1. f3pi_rcht.f
+current for the 3pi (both \pi+\pi-\pi- and \pi0\pi0\pi-) channels
+
+2. fkkpi.f
+current for the channels K+K-pi- and K0 \bar K0 pi- 
+
+3. fkk0pi0.f
+current for the channel K0 K- pi0 
+
+
+4. wid_a1_fit.f
+Calculates the value \Gamma(a1->3 scalars) at the fixed Q2 interpolating
+the value from the table initA1Tab.f. 
+It is needed by f3pi_rcht.f  fkkpi.f fkk0pi0.f 
+
+5. initA1Tab.f is a table used by  wid_a1_fit.f
+   initA1Tab.f is a copy of the table /tabler/a1/wida1_qq_tot_2e5.out
+
+6. frho_pi.f
+current for pi- pi0 channel
+
+7. fkpipl.f
+current for both K0 pi- and K0 pi0 channels. 
+
+8. initKpiScalTab.f
+is a table with the scalar Kpi form factor. It is called in fkpipl.f
+if the dipswitch FFKPISCAL is  fixed to be FFKPISCAL = 1 
+
+9. ff_scal_kpi.f
+Calculates the value of the Kpi scalar form factor for FFKPISCAL = 1 
+in value_parameter.f (M. Jamin parametrization)
+ at the fixed Q2 interpolating the value from the table initKpiScalTab.f.
+
+10. fkpisc_pass.f
+an adopted private code of E. Passermar for teh scalar Kpi form factor, 
+it runs when  FFKPISCAL = 2
+
+11. fk0k.f
+current for K-K0 channel
+
+12. funct_rpt.f
+Functions used  in calculation  of form factors, that is  in f3pi_rcht.f,
+fkkpi.f, fkk0pi0.f, frho_pi.f, fkpipl.f, fk0k.f
+
+13. value_parameter.f 
+fixes the value of dipswitches as well as the values of the model parameters
+(masses and width of the resonances, constant of decays etc.). 
+Numerical values of latest depend on the mode.
+#####
+Note:  dipswitches may affect choices for non-RChL currents as well
+##### 
+
+14. parameter.inc : declaration  masses of resonances and other parameters 
+used in all above currents.
+
+15. funct_declar.inc : declaration of the functions determined in funct_rpt.f
+
+
+MODIFICATION FOR TAUOLA/tauola
+------------------------------
+
+To load the currents update only the following files of native tauola 
+need to be updated:
+tauola/makefile tauola/f3pi.f tauola/formf.f tauola/tauola.f .
+
+At present  svn diff methods should be used for details. For users
+help from the authors is necessary.
+ 
+Once project reach maturity extracts from these diffs will be copied here.

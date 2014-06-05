@@ -56,6 +56,8 @@ private:
   EvtComplex _A_fbar;
   EvtComplex _Abar_fbar;
 
+  std::string getParamName(int i);
+  std::string getParamDefault(int i);
 };
 
 #endif

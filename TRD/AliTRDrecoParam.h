@@ -56,14 +56,15 @@ public:
   Double_t GetChi2Z() const                 { return fkChi2Z;    }
   Double_t GetChi2YSlope() const            { return fkChi2YSlope; }
   Double_t GetChi2ZSlope() const            { return fkChi2ZSlope; }
+	Double_t GetChi2Cut() const              { return fChi2Cut; }
 	Double_t GetChi2YCut() const              { return fkChi2YCut; }
   Double_t GetPhiSlope() const              { return fkPhiSlope;   }
   Float_t  GetNClusters() const;
   Double_t GetNMeanClusters() const         { return fkNMeanClusters; }
   Double_t GetNSigmaClusters() const        { return fkNSigmaClusters; }
   Double_t GetFindableClusters() const      { return fkFindable; }
-  inline Int_t    GetPIDLQslices() const;
-  inline AliTRDPIDResponse::ETRDPIDMethod GetPIDmethod() const;
+  Int_t    GetPIDLQslices() const;
+  AliTRDPIDResponse::ETRDPIDMethod GetPIDmethod() const;
   Double_t GetMaxTheta() const              { return fkMaxTheta; }
   Double_t GetMaxPhi() const                { return fkMaxPhi;   }
   Double_t GetPlaneQualityThreshold() const { return fkPlaneQualityThreshold; }
@@ -76,9 +77,9 @@ public:
   Double_t GetRoad2z() const                { return fkRoad2z;   }
   Double_t GetRoadzMultiplicator() const    { return fkRoadzMultiplicator; }
   Double_t GetTrackLikelihood() const       { return fkTrackLikelihood;       }
-  inline void GetSysCovMatrix(Double_t *sys) const;  
-  inline void GetTCParams(Double_t *par) const;
-  inline Int_t GetStreamLevel(ETRDReconstructionTask task) const;
+  void GetSysCovMatrix(Double_t *sys) const;  
+  void GetTCParams(Double_t *par) const;
+  Int_t GetStreamLevel(ETRDReconstructionTask task) const;
   const TString *GetRawStreamVersion() const{ return &fRawStreamVersion; };
   Double_t GetMinMaxCutSigma() const        { return fMinMaxCutSigma;     };
   Double_t GetMinLeftRightCutSigma() const  { return fMinLeftRightCutSigma;  };
@@ -89,6 +90,13 @@ public:
   Int_t    GetNumberOfPostsamples() const   { return fNumberOfPostsamples;}
   Int_t    GetNumberOfSeedConfigs() const   { return fNumberOfConfigs;}
   Int_t    GetRecEveryNTB() const           { return fRecEveryNTB; }
+  // Tracklet parameters
+  Double_t GetCorrDZDXbiasRC(Bool_t dzdx) const { return fdzdxCorrRCbias[dzdx];}
+  Double_t GetCorrDZDX(Bool_t rc) const     { return fdzdxCorrFactor[rc];}
+  Double_t GetCorrDZDXxcross() const        { return fdzdxXcrossFactor;}
+  void GetYcorrTailCancel(Int_t it, Double_t par[2]) const;
+  Double_t GetS2Ycorr(Bool_t sgn) const     { return fS2Ycorr[sgn];}
+
   Bool_t   IsArgon() const                  { return TESTBIT(fFlags, kDriftGas); }
   Bool_t   IsCheckTimeConsistency() const   { return kCheckTimeConsistency;}
   Bool_t   IsOverPtThreshold(Double_t pt) const {return Bool_t(pt>fkPtThreshold);}
@@ -116,7 +124,7 @@ public:
   void     SetLUT(Bool_t b=kTRUE)                             {if(b) SETBIT(fFlags, kLUT); else CLRBIT(fFlags, kLUT);}
   void     SetGAUS(Bool_t b=kTRUE)                            {if(b) SETBIT(fFlags, kGAUS); else CLRBIT(fFlags, kGAUS);}
   void     SetPIDNeuralNetwork(Bool_t b=kTRUE)                {if(b) SETBIT(fFlags, kSteerPID); else CLRBIT(fFlags, kSteerPID);}
-  inline void  SetPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method);
+  void  SetPIDmethod(AliTRDPIDResponse::ETRDPIDMethod method);
   void     SetPIDLQslices(Int_t s);
   void     SetTailCancelation(Bool_t b=kTRUE)                 {if(b) SETBIT(fFlags, kTailCancelation); else CLRBIT(fFlags, kTailCancelation);}
   void     SetXenon(Bool_t b = kTRUE)                         {if(b) CLRBIT(fFlags, kDriftGas); else SETBIT(fFlags, kDriftGas);}
@@ -128,6 +136,7 @@ public:
   void     SetChi2Z(Double_t chi2)                            {fkChi2Z = chi2;}
   void     SetChi2YSlope(Double_t chi2YSlope)                 {fkChi2YSlope = chi2YSlope;}
   void     SetChi2ZSlope(Double_t chi2ZSlope)                 {fkChi2ZSlope = chi2ZSlope;}
+	void	   SetChi2Cut(Double_t chi2Cut)                      {fChi2Cut = chi2Cut; }
 	void	   SetChi2YCut(Double_t chi2Cut)                      {fkChi2YCut = chi2Cut; }
   void     SetPhiSlope(Double_t phiSlope)                     {fkPhiSlope = phiSlope;}
   void     SetNMeanClusters(Double_t meanNclusters)           {fkNMeanClusters = meanNclusters;}
@@ -138,12 +147,13 @@ public:
   void     SetMinLeftRightCutSigma(Float_t minLeftRightCutSigma) { fMinLeftRightCutSigma   = minLeftRightCutSigma; };
   void     SetClusMaxThresh(Float_t thresh)                   { fClusMaxThresh   = thresh; };
   void     SetClusSigThresh(Float_t thresh)                   { fClusSigThresh   = thresh; };
-  inline void SetPIDThreshold(Double_t *pid);
+  void     SetPIDThreshold(Double_t *pid);
   void     SetPtThreshold(Double_t pt) {fkPtThreshold = pt;}
   void     SetNexponential(Int_t nexp)                        { fTCnexp          = nexp;   };
-  inline void SetTCParams(Double_t *par);
-  inline void SetStreamLevel(ETRDReconstructionTask task, Int_t level);
-  inline void SetSysCovMatrix(Double_t *sys);
+  void     SetTCParams(Double_t *par);
+  void     SetTrackletParams(Double_t *par=NULL);
+  void     SetStreamLevel(ETRDReconstructionTask task, Int_t level);
+  void     SetSysCovMatrix(Double_t *sys);
   void     SetNumberOfPresamples(Int_t n)                     { fNumberOfPresamples = n;}
   void     SetNumberOfPostsamples(Int_t n)                    { fNumberOfPostsamples = n;}
   void     SetRecEveryTwoTB()                                 { fRecEveryNTB = 2; fkNMeanClusters = 10; }
@@ -170,6 +180,7 @@ private:
   Double_t  fkChi2Y;                 // Max chi2 on the y direction for seeding clusters Rieman fit
   Double_t  fkChi2YSlope;            // Slope of the chi2-distribution in y-direction
   Double_t  fkChi2ZSlope;            // Slope of the chi2-distribution in z-direction
+  Double_t  fChi2Cut;		     // Cut on the Chi2 track/tracklet 0 used to diecide if the kalman track should be updated
   Double_t  fkChi2YCut;							 // Cut on the Chi2 in y-direction in the likelihood filter
   Double_t  fkPhiSlope;              // Slope of the distribution of the deviation between track angle and tracklet angle
   Double_t  fkNMeanClusters;         // Mean number of clusters per tracklet
@@ -189,6 +200,13 @@ private:
   // Raw Reader Params
   TString   fRawStreamVersion;       // Raw Reader version
 
+  // Tracklet parameters
+  Double_t  fdzdxCorrFactor[2];      // correction of dzdx estimation due to z bias; [0] for !RC, [1] for RC
+  Double_t  fdzdxCorrRCbias[2];      // correction of dzdx estimation bias for RC; [0] for dz/dx>0, [1] for dz/dx<0
+  Double_t  fdzdxXcrossFactor;       // bias in dzdx of estimated xcross [RC]
+  Double_t  fYcorrTailCancel[3][2];  // y linear q/pt correction due to wrong tail cancellation. [0] opposite sign !RC, [1] same sign !RC, [2] RC
+  Double_t  fS2Ycorr[2];             // inflation factor of error parameterization in r-phi due to wrong estimation of residuals. [0] opposite sign, [1] same sign
+  
   // Clusterization parameter
   Double_t  fMinMaxCutSigma;         // Threshold sigma noise pad middle
   Double_t  fMinLeftRightCutSigma;   // Threshold sigma noise sum pad
@@ -202,7 +220,7 @@ private:
   Int_t     fNumberOfPresamples;     // number of presamples 
   Int_t     fNumberOfPostsamples;     // number of postsamples 
 
-  ClassDef(AliTRDrecoParam, 12)       // Reconstruction parameters for TRD detector
+  ClassDef(AliTRDrecoParam, 13)       // Reconstruction parameters for TRD detector
 
 };
 
@@ -252,6 +270,14 @@ inline void AliTRDrecoParam::SetTCParams(Double_t *par)
 {
   if(!par) return;
   memcpy(fTCParams, par, 8*sizeof(Double_t));
+}
+
+
+//___________________________________________________
+inline void AliTRDrecoParam::GetYcorrTailCancel(Int_t it, Double_t par[2]) const
+{
+  if(it<0||it>2) return;
+  par[0] = fYcorrTailCancel[it][0]; par[1] = fYcorrTailCancel[it][1]; 
 }
 
 //___________________________________________________

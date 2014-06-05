@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtDalitzCoord.hh,v 1.3 2004/08/06 06:08:24 bartoldu Exp $
+ *    File: $Id: EvtDalitzCoord.hh,v 1.2 2009-03-16 16:43:40 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech

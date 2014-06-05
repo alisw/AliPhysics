@@ -3,7 +3,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 * See cxx source for full Copyright notice                               */
 
-/* $Id$ */
+/* $Id: AliTRDseedV1.h 60233 2013-01-10 09:04:08Z abercuci $ */
 
 ////////////////////////////////////////////////////////////////////////////
 //                                                                        //
@@ -37,7 +37,7 @@
 
 class TTreeSRedirector;
 class TLinearFitter;
-
+class TGeoHMatrix;
 class AliRieman;
 
 class AliTRDReconstructor;
@@ -90,8 +90,9 @@ public:
   void      CookdEdx(Int_t nslices);
   void      CookLabels();
   Bool_t    CookPID();
-  Bool_t    Fit(UChar_t opt=0);
-  Bool_t    FitRobust(Bool_t ChgPlus=kTRUE);
+  Bool_t    Fit(UChar_t opt=0); // OBSOLETE
+  Bool_t    FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t opt=0);
+  Double_t  EstimatedCrossPoint(AliTRDpadPlane *pp);
   Bool_t    Init(const AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
@@ -133,9 +134,10 @@ public:
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? NULL: fClusters[i];}
-  Bool_t    GetEstimatedCrossPoint(Float_t &x, Float_t &z) const;
   Int_t     GetIndexes(Int_t i) const{ return i<0 || i>=kNclusters ? -1 : fIndexes[i];}
   Int_t     GetLabels(Int_t i) const { return fLabels[i];}  
+  Float_t   GetLocalZ() const        { return fZfit[0] - fZfit[1] * fX;}
+  Float_t   GetLocalY() const        { return fYfit[0] - fYfit[1] * fX;}
   Float_t   GetMomentum(Float_t *err = NULL) const;
   Int_t     GetN() const             { return (Int_t)fN&kMask;}
   Int_t     GetN2() const            { return GetN();}
@@ -151,8 +153,11 @@ public:
   Float_t*  GetProbability(Bool_t force=kFALSE);
   Float_t   GetPt() const            { return fPt; }
   inline Double_t  GetPID(Int_t is=-1) const;
-  Float_t   GetS2Y() const           { return fS2Y;}
+  Float_t   GetS2Y() const           { return fCov[0];}
   Float_t   GetS2Z() const           { return fS2Z;}
+  Double_t  GetS2DYDX(Float_t) const { return fCov[2];}
+  inline Double_t  GetS2DZDX(Float_t) const;
+  inline Double_t  GetS2XcrossDZDX(Double_t absdzdx) const;
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTgl() const           { return fZref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
@@ -161,14 +166,17 @@ public:
   UShort_t  GetVolumeId() const;
   Float_t   GetX0() const            { return fX0;}
   Float_t   GetX() const             { return fX0 - fX;}
-  Float_t   GetY() const             { return fYfit[0] - fYfit[1] * fX;}
-  Double_t  GetYat(Double_t x) const { return fYfit[0] - fYfit[1] * (fX0-x);}
+  Float_t   GetXcross() const        { return fS2Y;}
+  Float_t   GetY() const             { return TMath::Abs(fY)<1.e-15?GetLocalY():fY;/*fYfit[0] - fYfit[1] * fX;*/}
+  Double_t  GetYat(Double_t x) const { return fY/*fit[0]*/ - fYfit[1] * (fX0-x);}
   Float_t   GetYfit(Int_t id) const  { return fYfit[id];}
   Float_t   GetYref(Int_t id) const  { return fYref[id];}
-  Float_t   GetZ() const             { return fZfit[0] - fZfit[1] * fX;}
-  Double_t  GetZat(Double_t x) const { return fZfit[0] - fZfit[1] * (fX0-x);}
+  Float_t   GetYref() const          { return fYref[0] - fYref[1] *fX;}
+  Float_t   GetZ() const             { return TMath::Abs(fZ)<1.e-15?GetLocalZ():fZ;/*fZfit[0] - fZfit[1] * fX;*/}
+  Double_t  GetZat(Double_t x) const { return fZ/*fit[0]*/ - fZfit[1] * (fX0-x);}
   Float_t   GetZfit(Int_t id) const  { return fZfit[id];}
   Float_t   GetZref(Int_t id) const  { return fZref[id];}
+  Float_t   GetZref() const          { return fZref[0] - fZref[1] *fX;}
   Int_t     GetYbin() const          { return Int_t(GetY()/0.016);}
   Int_t     GetZbin() const          { return Int_t(GetZ()/fPad[0]);}
 
@@ -198,15 +206,18 @@ public:
   void      SetDX(Float_t inDX)      { fdX = inDX;}
   void      SetReconstructor(const AliTRDReconstructor *rec) {fkReconstructor = rec;}
   void      SetX0(Float_t x0)        { fX0 = x0; }
-  void      SetYref(Int_t i, Float_t y) { fYref[i]     = y;}
-  void      SetZref(Int_t i, Float_t z) { fZref[i]     = z;}
+  void      SetXYZ(TGeoHMatrix *mDet);
+  void      SetYref(Int_t i, Float_t y) { if(i==0||i==1) fYref[i]     = y;}
+  void      SetZref(Int_t i, Float_t z) { if(i==0||i==1) fZref[i]     = z;}
 //   void      SetUsabilityMap(Long_t um)  { fUsable = um; }
   void      Update(const AliTRDtrackV1* trk);
   void      UpdateUsed();
   void      UseClusters();
 
 protected:
-  void        Copy(TObject &ref) const;
+  void      Copy(TObject &ref) const;
+  void      UnbiasDZDX(Bool_t rc);
+  Double_t  UnbiasY(Bool_t rc, Bool_t sgn, Int_t chg);
 
 private:
   inline void SetN(Int_t n);
@@ -232,15 +243,15 @@ private:
   Float_t          fPad[4];                 // local pad definition : length/width/tilt/anode wire offset 
   Float_t          fYref[2];                //  Reference y, dydx
   Float_t          fZref[2];                //  Reference z, dz/dx
-  Float_t          fYfit[2];                //  Fit y, dy/dx
-  Float_t          fZfit[2];                //  Fit z
+  Float_t          fYfit[2];                //  Fit :: chamber local y, dy/dx
+  Float_t          fZfit[2];                //  Fit :: chamber local z, dz/dx
   Float_t          fPt;                     //  Pt estimate @ tracklet [GeV/c]
   Float_t          fdX;                     // length of time bin
-  Float_t          fX0;                     // anode wire position
-  Float_t          fX;                      // radial position of the tracklet
-  Float_t          fY;                      // r-phi position of the tracklet
-  Float_t          fZ;                      // z position of the tracklet
-  Float_t          fS2Y;                    // estimated resolution in the r-phi direction 
+  Float_t          fX0;                     // anode wire position in TrackingCoordinates (alignment included)
+  Float_t          fX;                      // local radial offset from anode wire where tracklet position is estimated
+  Float_t          fY;                      // r-phi position of the tracklet  in TrackingCoordinates (alignment included)
+  Float_t          fZ;                      // z position of the tracklet in TrackingCoordinates (alignment included)
+  Float_t          fS2Y;                    // estimated radial cross point (chmb. coord.) in case of RC tracklets 
   Float_t          fS2Z;                    // estimated resolution in the z direction 
   Float_t          fC[2];                   // Curvature for standalone [0] rieman [1] vertex constrained 
   Float_t          fChi2;                   // Global chi2  
@@ -250,7 +261,7 @@ private:
   Double_t         fRefCov[7];              // covariance matrix of the track in the yz plane + the rest of the diagonal elements
   Double_t         fCov[3];                 // covariance matrix of the tracklet in the xy plane
 
-  ClassDef(AliTRDseedV1, 12)                 // The offline TRD tracklet 
+  ClassDef(AliTRDseedV1, 13)                 // The offline TRD tracklet 
 };
 
 //____________________________________________________________
@@ -291,6 +302,27 @@ inline Double_t AliTRDseedV1::GetPID(Int_t is) const
 }
 
 //____________________________________________________________
+Double_t AliTRDseedV1::GetS2XcrossDZDX(Double_t absdzdx) const
+{
+  // correct sigma(x_cross) for the width of the crossing area
+  if(absdzdx>0.05) return TMath::Exp(-1.58839-absdzdx*3.24116);
+  else return 0.957043-absdzdx*12.4597;
+}
+
+//____________________________________________________________
+Double_t AliTRDseedV1::GetS2DZDX(Float_t dzdx) const
+{
+//   Double_t p0[] = {0.03925, 0.03178},
+//            p1[] = {0.06316, 0.06669};
+  Double_t p0[] = {0.02835, 0.03925},
+           p1[] = {0.04746, 0.06316};
+  
+  Double_t s2(p0[IsRowCross()]+p1[IsRowCross()]*dzdx*dzdx);
+  s2*=s2;
+  return s2;
+}
+
+  //____________________________________________________________
 inline AliTRDcluster* AliTRDseedV1::NextCluster()
 {
 // Mimic the usage of STL iterators.

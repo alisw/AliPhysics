@@ -22,7 +22,7 @@
 #define EVTID_HH
 
 #include <iostream>
-//class ostream;
+#include <string>
 
 class EvtId {
 
@@ -37,6 +37,8 @@ public:
 
   int operator==(const EvtId& id) const { return _id==id._id; }
   int operator!=(const EvtId& id) const { return _id!=id._id; }
+  int operator<(const EvtId& id) const { return _id<id._id; }
+
   int isConjugate(const EvtId & id) const;
 
   int getId() const { return _id;}
@@ -44,6 +46,8 @@ public:
   int getAlias() const { return _alias;}
 
   int isAlias() const { return _id!=_alias;}
+
+  std::string getName() const;
 
 private:
 
@@ -58,4 +62,3 @@ private:
 }; 
 
 #endif
-

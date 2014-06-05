@@ -317,6 +317,9 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	}
 	header=&headerV2;
       } else { //assuming V3 even if no header at all was found above
+	if(! headerVersion){
+	  AliWarning("No data header found! Creating dummy header for empty blocks assuming CDH v3.");
+	}
         headerV3.fSize=sizeof(AliRawDataHeaderV3);
         const UInt_t* triggermask=pRawReader->GetTriggerPattern();
         if (triggermask) {

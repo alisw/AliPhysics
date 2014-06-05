@@ -49,6 +49,8 @@ public:
   static void SVPHel(EvtParticle *parent,EvtAmp& amp,EvtId n_v1,EvtId n_v2,
 	      const EvtComplex& hp,const EvtComplex& hm);
 
+  std::string getParamName(int i);
+  std::string getParamDefault(int i);
 };
 
 #endif

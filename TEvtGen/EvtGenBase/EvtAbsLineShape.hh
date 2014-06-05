@@ -51,7 +51,8 @@ public:
   void reSetWidth(double width) { _width=width;}
   void reSetMassMin(double mass) { _massMin=mass;}
   void reSetMassMax(double mass) { _massMax=mass;}
-  virtual void reSetBlatt(double blatt) {};
+  virtual void reSetBlatt(double /*blatt*/) {};
+  virtual void reSetBlattBirth(double /*blatt*/) {};
   void includeBirthFactor(bool yesno) { _includeBirthFact = yesno; }
   void includeDecayFactor(bool yesno) { _includeDecayFact = yesno; }
   void setPWForDecay( int spin, EvtId d1, EvtId d2) { 
@@ -68,7 +69,6 @@ public:
   virtual double getRandMass(EvtId *parId, int nDaug, EvtId *dauId, EvtId *othDaugId,double maxMass, double *dauMasses);
   virtual double getMassProb(double mass, double massPar, int nDaug, double *massDau);
 
-  void fixForSP8() { _applyFixForSP8=true;}
 protected:
 
   bool _includeDecayFact;
@@ -91,8 +91,6 @@ protected:
   std::vector<int> _userSetBirthPW;
 
   EvtSpinType::spintype _spin;
-  
-  bool _applyFixForSP8;
 }; 
 
 #endif

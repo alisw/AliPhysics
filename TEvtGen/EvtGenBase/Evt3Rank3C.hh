@@ -40,9 +40,6 @@ Evt3Rank3C directProd(const EvtVector3C& c1,const EvtVector3C& c2,
 		      const EvtVector3C& c3); 
 Evt3Rank3C conj(const Evt3Rank3C& t2);
 
-Evt3Rank3C directProd(const EvtVector3C& c1,const EvtVector3C& c2,
-                              const EvtVector3C& c3);
-
 
 class Evt3Rank3C {
 

@@ -1,13 +1,16 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *  Author: Denis Dujmic, ddujmic@slac.stanford.edu
+ *  Authors: Denis Dujmic, ddujmic@slac.stanford.edu
+ *           Andrew Wagner, apwagner@slac.stanford.edu
  *
  * Copyright (C) 2005 SLAC
  *******************************************************************************/
 
 #ifndef EVT_LASS_AMP_HH
 #define EVT_LASS_AMP_HH
+
+#include <string>
 
 #include "EvtGenBase/EvtCyclic3.hh"
 #include "EvtGenBase/EvtDalitzPoint.hh"
@@ -16,8 +19,6 @@
 
 class EvtComplex;
 
-
-
 class EvtLASSAmp : public EvtAmplitude<EvtDalitzPoint> {
   
 public:
@@ -25,7 +26,7 @@ public:
   EvtLASSAmp( EvtDalitzPlot *dp, 
 	      EvtCyclic3::Pair pair,
 	      double m0, double g0,
-	      double a, double r, double cutoff );
+	      double a, double r, double cutoff, std::string subtype = "LASS" );
 
   EvtLASSAmp(const EvtLASSAmp& other);
 
@@ -48,6 +49,7 @@ private:
   double _r;
   double _a;
   double _cutoff;
+  std::string _subtype;
 
 };
 

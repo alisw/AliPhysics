@@ -30,6 +30,7 @@ class EvtComplex;
 class EvtbTosllAmp{
 
  public:
+  virtual ~EvtbTosllAmp() { } ;
 
   //Daughters are initialized and have been added to the parent.
   //No need to carry around the daughters seperately!

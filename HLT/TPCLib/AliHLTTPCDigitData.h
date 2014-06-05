@@ -70,10 +70,10 @@ typedef struct AliHLTTPCRandomDigitData AliHLTTPCRandomDigitData;
  */
 struct AliHLTTPCUnpackedRawData
 {
-#ifndef __SUNPRO_CC
-  AliHLTTPCDigitRowData fDigits[];
-#else
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   AliHLTTPCDigitRowData fDigits[1];
+#else
+  AliHLTTPCDigitRowData fDigits[0];
 #endif
 };
 

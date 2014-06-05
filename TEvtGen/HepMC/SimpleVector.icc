@@ -1,0 +1,148 @@
+//////////////////////////////////////////////////////////////////////////
+// SimpleVector.icc
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// garren@fnal.gov, July 2006
+//
+//
+//////////////////////////////////////////////////////////////////////////
+
+#include <cmath>
+#include <algorithm>	// for swap
+
+namespace HepMC {
+
+//////////////////////////////////////////////////////////////////////////
+//  FourVector inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void FourVector::swap( FourVector & other ) {
+    std::swap( m_x, other.m_x );
+    std::swap( m_y, other.m_y );
+    std::swap( m_z, other.m_z );
+    std::swap( m_t, other.m_t );
+}
+
+inline FourVector & FourVector::operator=(const FourVector & v) {
+  m_x = v.x();
+  m_y = v.y();
+  m_z = v.z();
+  m_t = v.t();
+  return *this;
+}
+
+inline void FourVector::set(double xin, double yin, double zin, double  tin) {
+  m_x = xin;
+  m_y = yin;
+  m_z = zin;
+  m_t = tin;
+}
+
+inline double FourVector::m2() const {
+  return m_t*m_t - (m_x*m_x + m_y*m_y + m_z*m_z);
+}
+
+inline double FourVector::m() const {
+  double mm = m2();
+  return mm < 0.0 ? -std::sqrt(-mm) : std::sqrt(mm);
+}
+
+inline double FourVector::perp2() const { return m_x*m_x + m_y*m_y; }
+
+inline double FourVector::perp() const { return std::sqrt(perp2()); }
+
+inline double FourVector::theta() const	 {
+  return m_x == 0.0 && m_y == 0.0 && m_z == 0.0 ? 0.0 : std::atan2(perp(),m_z);
+}
+
+inline double FourVector::phi() const {
+  return m_x == 0.0 && m_y == 0.0 ? 0.0 : std::atan2(m_y,m_x);
+}
+
+inline double  FourVector::rho() const { 
+return std::sqrt( m_x*m_x + m_y*m_y + m_z*m_z );
+}
+
+inline bool FourVector::operator == (const FourVector & v) const {
+  return (v.x()==x() && v.y()==y() && v.z()==z() && v.t()==t()) ? true : false;
+}
+
+inline bool FourVector::operator != (const FourVector & v) const {
+  return (v.x()!=x() || v.y()!=y() || v.z()!=z() || v.t()!=t()) ? true : false;
+}
+
+inline double FourVector::pseudoRapidity() const {
+  double m1 = std::sqrt( m_x*m_x + m_y*m_y + m_z*m_z );
+  if ( m1==  0   ) return  0.0;   
+  if ( m1==  z() ) return  1.0E72;
+  if ( m1== -z() ) return -1.0E72;
+  return 0.5*log( (m1+z())/(m1-z()) );
+}
+
+inline double FourVector::eta()    const { return pseudoRapidity();}
+
+
+//////////////////////////////////////////////////////////////////////////
+//  ThreeVector inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline void ThreeVector::swap( ThreeVector & other ) {
+    std::swap( m_x, other.m_x );
+    std::swap( m_y, other.m_y );
+    std::swap( m_z, other.m_z );
+}
+
+inline double ThreeVector::theta() const	 {
+  return m_x == 0.0 && m_y == 0.0 && m_z == 0.0 ? 0.0 : std::atan2(perp(),m_z);
+}
+
+inline double ThreeVector::phi() const {
+  return m_x == 0.0 && m_y == 0.0 ? 0.0 : std::atan2(m_y,m_x);
+}
+
+inline double ThreeVector::r()    const { 
+return std::sqrt( m_x*m_x + m_y*m_y + m_z*m_z );
+}
+
+inline void ThreeVector::set(double xin, double yin, double zin) {
+  m_x = xin;
+  m_y = yin;
+  m_z = zin;
+}
+
+inline void ThreeVector::setPhi(double ph) { 
+  double xy   = perp();
+  setX(xy*std::cos(ph));
+  setY(xy*std::sin(ph));
+}
+
+inline void ThreeVector::setTheta(double th) { 
+  double ma   = r();
+  double ph   = phi();
+  setX(ma*std::sin(th)*std::cos(ph));
+  setY(ma*std::sin(th)*std::sin(ph));
+  setZ(ma*std::cos(th));
+}
+
+inline double ThreeVector::perp2() const { return m_x*m_x + m_y*m_y; }
+
+inline double ThreeVector::perp() const { return std::sqrt(perp2()); }
+
+inline ThreeVector & ThreeVector::operator = (const ThreeVector & p) {
+  m_x = p.x();
+  m_y = p.y();
+  m_z = p.z();
+  return *this;
+}
+
+
+inline bool ThreeVector::operator == (const ThreeVector& v) const {
+  return (v.x()==x() && v.y()==y() && v.z()==z()) ? true : false;
+}
+
+inline bool ThreeVector::operator != (const ThreeVector& v) const {
+  return (v.x()!=x() || v.y()!=y() || v.z()!=z()) ? true : false;
+}
+
+} // HepMC

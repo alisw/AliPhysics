@@ -55,6 +55,7 @@ ClassImp(AliLog)
 AliLog* AliLog::fgInstance = NULL;
 
 Bool_t AliLog::fgDebugEnabled = kTRUE;
+Bool_t AliLog::fgCoreEnabled = kFALSE;
 
 /**
  * get root logger singleton instance
@@ -377,6 +378,10 @@ void AliLog::ReadEnvSettings()
     fPrintRepetitions = on;
     AliDebug(3, Form("printing of message repetitions %sabled", ((on) ? "en" : "dis")));
   }
+  if (gSystem->Getenv("ALIROOT_FORCE_COREDUMP")){
+    EnableCoreDump(kTRUE);
+  }
+
 }
 
 
@@ -412,6 +417,21 @@ void AliLog::EnableDebug(Bool_t enabled)
 
   fgDebugEnabled = enabled;
 }
+
+void AliLog::EnableCoreDump(Bool_t enabled)
+{
+// enable or disable debug output
+
+  fgCoreEnabled = enabled;
+  gSystem->ResetSignal(kSigFloatingException,enabled);
+  gSystem->ResetSignal(kSigSegmentationViolation,enabled);
+  if (enabled) printf("Core dump enabled\n");
+  else { 
+    printf("Core dump disabled\n");
+  }
+}
+
+
 
 //_____________________________________________________________________________
 void AliLog::SetGlobalLogLevel(EType_t type)
@@ -919,12 +939,16 @@ void AliLog::Message(UInt_t level, const char* message,
     delete fgInstance;
     if (gSystem) {
       gSystem->StackTrace();
+      if (fgCoreEnabled) MakeCoreDump("core.AliRoot");
       gSystem->Abort();
     } else {
+      if (fgCoreEnabled) MakeCoreDump("core.AliRoot");
       ::abort();
     }
   }
 }
+
+
 
 //_____________________________________________________________________________
 void AliLog::Debug(UInt_t level, const char* message, 
@@ -1172,4 +1196,30 @@ void  AliLog::PrintString(Int_t type, FILE* stream, const char* format, ...)
     }
   }
   va_end(ap);
+}
+
+
+void AliLog::MakeCoreDump(const char *fout){
+  //
+  // Functionality to make a program snapshot 
+  //   gcore - Generate a core file for a running process 
+  //   gcore dmake a current snapshot, program can continue further
+  //   We assum that gcore is installed
+  //   for details see:  man gcore
+  //
+  // Example use - make default core file for current process:  AliLog::MakeCoreDump(0)
+  //
+  //
+  // Automatic core dump creation in case of the AliFatal can be specified using
+  // static void  EnableCoreDump(Bool_t enabled);
+  // Core dump is created in addition to the stack trace ()  
+  // marian.ivanov@cern.ch
+  //
+  if (!gSystem) return;
+  printf("AliLog::MakeCoreDump\n");
+  if (fout){
+    gSystem->Exec(Form("gcore -o %s  %d",fout, gSystem->GetPid()));
+  }else{
+    gSystem->Exec(Form("gcore   %d", gSystem->GetPid()));
+  }
 }

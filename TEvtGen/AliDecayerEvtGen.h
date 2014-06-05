@@ -9,11 +9,11 @@
 //  Contact: Giuseppe.Bruno@ba.infn.it  &  Fiorella.Fionda@ba.infn.it    //
 ///////////////////////////////////////////////////////////////////////////
 
-
 #include "AliDecayer.h"
 
 class EvtGen;
-class EvtRandomEngine;
+class EvtStdlibRandomEngine;
+class EvtAbsRadCorr;
 class EvtStdHep;
 class TLorentzVector;
 class TClonesArray;
@@ -42,7 +42,8 @@ class AliDecayerEvtGen : public AliDecayer
       {decayer.Copy(*this);return(*this);}
 
   protected:
-  EvtRandomEngine *fRandomEngine;  //!pointer to EvtRandomEngine to generate random number   
+  EvtStdlibRandomEngine *fRandomEngine;  //!pointer to EvtRandomEngine to generate random number   
+  EvtAbsRadCorr *fRadCorrEngine;   //!pointer to EvtGenCorrEngine
   EvtGen *fGenerator;              //!pointer to EvtGen class interface 
   EvtStdHep *fEvtstdhep;           //!pointer to EvtGen common block
   Char_t *fDecayTablePath;         //!pointer to decay table path
