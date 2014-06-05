@@ -149,7 +149,6 @@ Bool_t AliHFEpidTRD::InitializePID(Int_t run){
   else return kTRUE;
 
 
-
 }
 
 //______________________________________________________
@@ -190,10 +189,8 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   //
   //
 
-   if(fTRDOldPIDMethod) return IsSelected1D(track, pidqa);
-   else return IsSelectedTRDPID(track, pidqa);
-
-
+    if(fTRDOldPIDMethod) return IsSelected1D(track, pidqa);
+    else return IsSelectedTRDPID(track, pidqa);
 }
 
 //______________________________________________________
@@ -274,18 +271,15 @@ Int_t AliHFEpidTRD::IsSelectedTRDPID(const AliHFEpidObject *track, AliHFEpidQAma
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis: AliHFEpidObject::kAODanalysis;
   Double_t p = GetP(track->GetRecTrack(), anatype);
   if(p < fMinP){ 
-    AliDebug(2, Form("Track momentum %f below %f", p, fMinP));
+    AliDebug(2, Form("Track momentum below %f", fMinP));
     return 0;
   }
-  AliDebug(2, Form("Track momentum %f above %f", p, fMinP));
- 
+
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kBeforePID); 
-  AliDebug(1,"PID qa done for step before\n");
-  Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
-
-
+  
   if(fCutNTracklets > 0){
     AliDebug(1, Form("Number of tracklets cut applied: %d\n", fCutNTracklets));
+    Int_t ntracklets = track->GetRecTrack() ? track->GetRecTrack()->GetTRDntrackletsPID() : 0;
     if(TestBit(kExactTrackletCut)){
       AliDebug(1, Form("Exact cut applied: %d tracklets found\n", ntracklets));
       if(ntracklets != fCutNTracklets) return 0;
@@ -300,19 +294,18 @@ Int_t AliHFEpidTRD::IsSelectedTRDPID(const AliHFEpidObject *track, AliHFEpidQAma
   Float_t fCentralityLimitsdefault[12]= {0.,5.,10., 20., 30., 40., 50., 60.,70.,80., 90., 100.};
   Float_t centrality=-1;
   if(centralitybin>=0) centrality=fCentralityLimitsdefault[centralitybin]+1;
-  AliDebug(2, Form("Just before cutting Electron effi: %f %i %i %f\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality));
 
   AliTRDPIDResponse::ETRDPIDMethod fTRDPIDMethod = AliTRDPIDResponse::kLQ1D;
   if(fTRD2DPID) fTRDPIDMethod = AliTRDPIDResponse::kLQ2D;
 
-  // if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,fTRDPIDMethod)){
+//  printf("TRD PID Method in use: %i \n",fTRDPIDMethod);
+  //  if(fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),fElectronEfficiency,centrality,fTRDPIDMethod)){
   Int_t ntrackletsPID=0;
   Bool_t iselectron=kFALSE;
   iselectron=fkPIDResponse->IdentifiedAsElectronTRD(track->GetRecTrack(),ntrackletsPID,fElectronEfficiency,centrality,fTRDPIDMethod);
   if((ntrackletsPID==fCutNTracklets) && iselectron){
       AliDebug(2, Form("Electron effi: %f %i %i %f %i\n", fElectronEfficiency,track->GetCentrality(),centralitybin,centrality,fTRDPIDMethod));
       if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kAfterPID); 
-      AliDebug(1,"PID qa done for step after\n");
       return 11;
   } else return 211;
 
@@ -383,17 +376,13 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVTrack *track, AliHFEpidOb
   //
   // Get TRD likelihoods for ESD respectively AOD tracks
   //
-  AliDebug(1, "Starting getting TRD likelihood\n");
   Double_t pidProbs[AliPID::kSPECIES]; memset(pidProbs, 0, sizeof(Double_t) * AliPID::kSPECIES);
   if(anaType == AliHFEpidObject::kESDanalysis){
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
     if(esdtrack) esdtrack->GetTRDpid(pidProbs);
   } else {
-      if(fTRD2DPID) fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs,AliTRDPIDResponse::kLQ2D); 
+      if(fTRD2DPID) fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs,AliTRDPIDResponse::kLQ2D);
       else fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs,AliTRDPIDResponse::kLQ1D);
-  }
-  for(Int_t k=0; k < AliPID::kSPECIES; k++) {
-    AliDebug(2, Form("proba: %f for %d\n", pidProbs[k],k));
   }
   if(!IsRenormalizeElPi()) return pidProbs[AliPID::kElectron];
   Double_t probsNew[AliPID::kSPECIES];

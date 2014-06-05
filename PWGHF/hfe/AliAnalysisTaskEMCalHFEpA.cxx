@@ -2063,8 +2063,8 @@ void AliAnalysisTaskEMCalHFEpA::UserExec(Option_t *)
 	
 	if(fUseTrigger && fIsAOD){
 		
-		AliAODHeader * aodh = fAOD->GetHeader();
-			//Int_t bc= aodh->GetBunchCrossNumber();
+	  //AliAODHeader * aodh = fAOD->GetHeader();
+	  //Int_t bc= aodh->GetBunchCrossNumber();
 
 		
 		Int_t ClsNo_aod = -999;
