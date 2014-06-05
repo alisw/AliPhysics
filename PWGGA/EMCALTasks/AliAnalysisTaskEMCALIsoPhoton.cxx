@@ -709,8 +709,16 @@ void AliAnalysisTaskEMCALIsoPhoton::FillClusHists()
     outputValues[4] = alliso/*cecore*/-allisoue - trcore;
     outputValues[5] = ceiso;
     outputValues[6] = alliso - trcore;
-    outputValues[7] = c->GetTrackDx();
-    outputValues[8] = c->GetTrackDz();
+    if(fDebug)
+      printf("track-cluster dphi=%1.3f, deta=%1.3f\n",c->GetTrackDx(),c->GetTrackDz());
+    if(TMath::Abs(c->GetTrackDx())<0.1)
+      outputValues[7] = c->GetTrackDx();
+    else
+      outputValues[7] = 0.099*c->GetTrackDx()/TMath::Abs(c->GetTrackDx());
+    if(TMath::Abs(c->GetTrackDz())<0.05)
+      outputValues[8] = c->GetTrackDz();
+    else
+      outputValues[8] = 0.049*c->GetTrackDz()/TMath::Abs(c->GetTrackDz());
     outputValues[9] = clsVec.Eta();
     outputValues[10] = clsVec.Phi();
     if(fESDCells)

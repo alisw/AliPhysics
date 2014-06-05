@@ -13,6 +13,7 @@
 #include <TH2F.h>
 #include <TH1D.h>
 #include <TH1I.h>
+#include <TArrayF.h>
 #include <THnSparse.h>
 #include <TCanvas.h>
 #include <TList.h>
@@ -46,6 +47,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliRhoParameter.h"
 #include "TVector3.h"
+#include "AliVVertex.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -152,38 +154,57 @@ inline Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi
 
 
 //________________________________________________________________________
-/*inline Double_t AliAnalysisTaskHJetSpectra::GetPtHard()
-{
-  #ifdef DEBUGMODE
-    AliInfo("Starting GetPtHard.");
-  #endif
-  AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
-  if (MCEvent()) 
-    if (!pythiaHeader)
-    {
-      // Check if AOD
-      AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+inline Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
 
-      if (aodMCH)
-      {
-        for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++)
-        {
-          pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
-          if (pythiaHeader) break;
-        }
+   AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+   if(MCEvent()){ 
+      if(!pythiaHeader){
+         // Check if AOD
+         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+         if(aodMCH){
+            for(UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++){
+               pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+               if(pythiaHeader) break;
+            }
+         }
       }
-    }
-
-  #ifdef DEBUGMODE
-    AliInfo("Ending GetPtHard.");
-  #endif
-  if (pythiaHeader)
-    return pythiaHeader->GetPtHard();
-
-  AliWarning(Form("In task %s: GetPtHard() failed!", GetName()));
-  return -1.0;
+   }
+   if(pythiaHeader){
+      return pythiaHeader->GetPtHard();
+   }
+   AliWarning(Form("In task %s: GetPtHard() failed!", GetName()));
+   return -1.0;
 }
-*/
+
+//________________________________________________________________________
+inline Double_t AliAnalysisTaskHJetSpectra::GetPythiaPrimaryVertex(){
+
+   AliGenPythiaEventHeader* pythiaHeader = NULL; 
+   if(MCEvent()){ 
+      pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
+      if(!pythiaHeader){
+         // Check if AOD
+         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+         if(aodMCH){
+            for(UInt_t i = 0; i<aodMCH->GetNCocktailHeaders(); i++){
+               pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
+               if(pythiaHeader) break;
+            }
+         }
+      }
+   }
+   if(pythiaHeader){
+      TArrayF pyVtx(3);
+      pythiaHeader->PrimaryVertex(pyVtx);
+      return (Double_t) (pyVtx[2]);
+   }
+   AliWarning(Form("In task %s: Pythia Vertex failed!", GetName()));
+   return 9999.0;
+}
+
+
 
 //________________________________________________________________________
 /*inline Double_t AliAnalysisTaskHJetSpectra::GetPythiaTrials()
@@ -241,6 +262,24 @@ inline Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
 
 
    if(!event) return kFALSE;
+
+   //___________________________________________________
+
+   if(fAnalyzePythia){ //PURE MC
+      if(!MCEvent()) return kFALSE;
+
+       //BEFORE VERTEX CUT
+      Double_t vtxMC = GetPythiaPrimaryVertex();
+      fhVertexZ->Fill(vtxMC);
+
+      if(TMath::Abs(vtxMC) > 10.0){
+         fHistEvtSelection->Fill(3); //count events rejected by vertex cut 
+         return kFALSE;
+      }
+      fhVertexZAccept->Fill(vtxMC);
+
+      return kTRUE;
+   }
    //___________________________________________________
    //TEST PILE UP
    if(fUsePileUpCut){
@@ -443,6 +482,10 @@ void  AliAnalysisTaskHJetSpectra::GetDeltaPt(Double_t rho1, Double_t &dpt1, Doub
 void AliAnalysisTaskHJetSpectra::Calculate(AliVEvent* event){
    //Analyze the event and Fill histograms
 
+   if(fAnalyzePythia){
+      fh1PtHard->Fill(GetPtHard());
+   }
+
    //_________________________________________________________________
    //  FILL EVENT STATISTICS
    fHistEvtSelection->Fill(1); //Count input event
@@ -521,6 +564,10 @@ void AliAnalysisTaskHJetSpectra::Calculate(AliVEvent* event){
    rhoCone           = EstimateBgCone();
    rhoCMS            = GetExternalRho();
 
+   fhRhoCellMedianIncl->Fill((Float_t) rhoFromCellMedian,(Float_t) centralityPercentile);
+   fhRhoConeIncl->Fill(      (Float_t) rhoCone,          (Float_t) centralityPercentile); 
+   fhRhoCMSIncl->Fill(       (Float_t) rhoCMS,           (Float_t) centralityPercentile); 
+ 
    Double_t deltaptCellMedian, deltaptCone, deltaptCMS;        
    for(Int_t irc=0; irc<fNofRandomCones; irc++){ //generate 4 random cones per event
       GetDeltaPt(rhoFromCellMedian, deltaptCellMedian,rhoCone, deltaptCone, rhoCMS, deltaptCMS);
@@ -528,12 +575,7 @@ void AliAnalysisTaskHJetSpectra::Calculate(AliVEvent* event){
       fhDeltaPtMedianIncl->Fill(deltaptCellMedian, (Double_t) centralityPercentile); 
       fhDeltaPtConeIncl->Fill( deltaptCone,        (Double_t) centralityPercentile); 
       fhDeltaPtCMSIncl->Fill( deltaptCMS,          (Double_t) centralityPercentile); 
-   
-      fhRhoCellMedianIncl->Fill((Float_t) rhoFromCellMedian,(Float_t) centralityPercentile);
-      fhRhoConeIncl->Fill(      (Float_t) rhoCone,          (Float_t) centralityPercentile); 
-      fhRhoCMSIncl->Fill(       (Float_t) rhoCMS,           (Float_t) centralityPercentile); 
-   
-   
+  
       if(ntriggers>0 || bContainesHighPtTrack){
          //fill delta pt histograms
          fhDeltaPtMedian->Fill( deltaptCellMedian, (Double_t) centralityPercentile); 
@@ -712,6 +754,11 @@ AliAnalysisTaskHJetSpectra::~AliAnalysisTaskHJetSpectra(){
       delete fOutputList;
    }
    delete fRandom;
+   delete fTrackArrayName;
+   delete fJetArrayName;
+   delete fBackgroundJetArrayName;
+   delete fHelperClass;
+ 
 } 
 
 //________________________________________________________________________

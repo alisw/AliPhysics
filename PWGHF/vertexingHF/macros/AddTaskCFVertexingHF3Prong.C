@@ -95,9 +95,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3Prong(TString suffixName="", const ch
 	  TFile *fileMult = TFile::Open(multFile.Data());
 	  if(isPPbData) hMult = (TH1F*)fileMult->Get("hNtrUnCorrEvWithCandWeight");
 	  else {
-	    TDirectoryFile *dir1 = (TDirectoryFile*)fileMult->Get("PWG3_D2H_DMult_DplusLoose");
-	    TList* list1=(TList*)dir1->Get("coutputDplusLoose");
-	    hMult=(TH1F*)list1->FindObject("hGenPrimaryParticlesInelGt0");
+	    hMult=(TH1F*)fileMult->Get("hGenPrimaryParticlesInelGt0");
 	  }
 	}
 	

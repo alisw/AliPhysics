@@ -4,9 +4,10 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
                         Int_t   triggerIndex    = 0, 
                         Int_t   configIndex     = 0, 
                         Int_t   centralityIndex = 0, 
-                        Bool_t  isAOD                   = kFALSE,
-                        Bool_t isEMCal                  = kFALSE,
-                        char * period                   = "b",
+                        Bool_t  isAOD           = kFALSE,
+                        Bool_t isEMCal          = kFALSE,
+						Bool_t isTrigger 		= kFALSE,
+                        char * period           = "b",
                         Int_t EMCalThreshould   = 0
                 )
 {
@@ -26,7 +27,7 @@ AliAnalysisTaskEMCalHFEpA *AddTaskEMCalHFEpA(
         //Config Task
         //gROOT->LoadMacro("ConfigEMCalHFEpA.C");
         gROOT->LoadMacro("$ALICE_ROOT/PWGHF/hfe/macros/configs/pPb/ConfigEMCalHFEpA.C");
-        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal, EMCalThreshould);
+        AliAnalysisTaskEMCalHFEpA *task = ConfigEMCalHFEpA(isMC,triggerIndex,configIndex,centralityIndex,isAOD,isEMCal,isTrigger, EMCalThreshould);
         
         //_______________________
         //Trigger

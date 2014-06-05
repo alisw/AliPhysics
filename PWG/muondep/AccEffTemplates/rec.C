@@ -10,7 +10,7 @@ void rec()
 
   if ( VAR_USE_ITS_RECO )
   {
-    reco.SetRunReconstruction("MUON ITS");
+    reco.SetRunReconstruction("VZERO T0 MUON ITS FMD");
   }
   else
   {

@@ -1178,7 +1178,13 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (dedx < fMinimalTPCdedx) pass=kFALSE;
   Double_t time[9];
   track->GetIntegratedTimes(time);
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
+    {
+      if (!PassesAODpidCut(track)) pass=kFALSE;
+    }
+
   if (fQA) {
+    // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
     QAbefore( 1)->Fill(momTPC,dedx);
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
@@ -1198,11 +1204,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
   }
 
-  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
-    {
-      if (!PassesAODpidCut(track)) pass=kFALSE;
-    }
-  
+
   return pass;
 }
 
@@ -1435,7 +1437,8 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
-  return cuts;
+  cuts->SetVZEROgainEqualizationPerRing(kFALSE);
+ return cuts;
 }
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
@@ -2581,7 +2584,10 @@ Bool_t AliFlowTrackCuts::PassesESDpidCut(const AliESDtrack* track )
       if (!PassesNucleiSelection(track)) pass=kFALSE;
       break;
       //end part added by Natasha
-
+      
+    case kTPCTOFNsigma:
+      if (!PassesTPCTOFNsigmaCut(track)) pass = kFALSE;
+      break;
     default:
       printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
       pass=kFALSE;
@@ -3434,6 +3440,27 @@ Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
   return select;
 }
 // end part added by Natasha
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliAODTrack* track) 
+{
+    // do a simple combined cut on the n sigma from tpc and tof
+    // with information of the pid response object (needs pid response task)
+    // stub, not implemented yet
+    if(!track) return kFALSE;
+    return kFALSE;
+
+}
+//-----------------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
+{
+    // do a simple combined cut on the n sigma from tpc and tof
+    // with information of the pid response object (needs pid response task)
+    // stub, not implemented yet
+    if(!track) return kFALSE;
+    return kFALSE;
+
+}
+
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
  //set priors for the bayesian pid selection
@@ -4570,6 +4597,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
       return "TOFbetaSimple";
     case kTPCNuclei:
       return "TPCnuclei";
+    case kTPCTOFNsigma:
+      return "TPCTOFNsigma";
     default:
       return "NOPID";
   }

@@ -67,7 +67,7 @@ public:
 
   Bool_t CopyTemplateFilesToLocal();
 
-  void SetPackages(const char* aliroot, const char* root, const char* geant3,
+  void SetPackages(const char* aliroot, const char* root="", const char* geant3="",
                    const char* api="VO_ALICE@APISCONFIG::V1.1x");
   
   Bool_t ShouldOverwriteFiles() const { return fShouldOverwriteFiles; }

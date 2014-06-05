@@ -1003,16 +1003,11 @@ void  AliDptDptInMC::createHistograms()
 
   name = "Eta";     _etadis   = createHisto1F(name,name, 200, -1.0, 1.0, "#eta","counts");
   name = "Phi";     _phidis   = createHisto1F(name,name, 360, 0.0, 6.4, "#phi","counts");
-  name = "DCAz";    _dcaz     = createHisto1F(name,name, 500, -5.0, 5.0, "dcaZ","counts");
-  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 500, -5.0, 5.0, "dcaXY","counts");
-  
-  /*name = "dedxVsP_1"; _dedxVsP_1  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");                          
-  name = "dedxVsP_2"; _dedxVsP_2  = createHisto2D(name,name,1000,-10.,10.,1000,0.,1000.,"p (GeV/c)", "dedx", "counts");     
-  name = "corrDedxVsP_1"; _corrDedxVsP_1 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts");  
-  name = "corrDedxVsP_2"; _corrDedxVsP_2 = createHisto2D(name,name,1000,-10.,10.,1000,0.,500,"p (GeV/c)", "dedx", "counts"); 
-  */
-  name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
-  name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
+  name = "DCAz";    _dcaz     = createHisto1F(name,name, 340, -3.3, 3.3, "dcaZ","counts");
+  name = "DCAxy";   _dcaxy    = createHisto1F(name,name, 100, -0.1, 2.5, "dcaXY","counts");
+
+  //name = "Nclus1";   _Ncluster1    = createHisto1F(name,name, 200, 0, 200, "Ncluster1","counts");
+  //name = "Nclus2";   _Ncluster2    = createHisto1F(name,name, 200, 0, 200, "Ncluster2","counts");
   
   if (_singlesOnly)
     {
@@ -1470,19 +1465,34 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	    AliError("ERROR: Could not retrieve MC event");
 	  }
 
+	  TExMap *trackMap = new TExMap();//Mapping matrix---- 
+	  //1st loop track for Global tracks                                                                                                    
+	  for(Int_t i = 0; i < fAODEvent->GetNumberOfTracks(); i++)
+	    {
+	      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
+	      if(!aodTrack) {
+		AliError(Form("ERROR: Could not retrieve AODtrack %d",i));
+		continue;
+	      }
+	      Int_t gID = aodTrack->GetID();
+	      if (aodTrack->TestFilterBit(1)) trackMap->Add(gID, i);//Global tracks                                                             
+	    }
+	  
+	  AliAODTrack* newAodTrack;
+	  
 	  for (int iTrack=0; iTrack< fAODEvent->GetNumberOfTracks(); iTrack++)
 	    {
-
+	      
 	      AliAODTrack *t = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(iTrack));
-
+	      
 	      if(!t) {
 		AliError(Form("ERROR: Could not retrieve AODtrack %d",iTrack));
 		continue;
 	      }
-
+	      
 	      bitOK  = t->TestFilterBit(_trackFilterBit);
 	      if (!bitOK) continue;
-
+	      
 	      q      = t->Charge();
 	      charge = int(q);
 	      phi    = t->Phi();
@@ -1491,65 +1501,85 @@ void  AliDptDptInMC::UserExec(Option_t */*option*/)
 	      py     = t->Py();
 	      pz     = t->Pz();
 	      eta    = t->Eta();
+	      //Float_t dcaXY = t->DCA();  
+	      //Float_t dcaZ  = t->ZAtDCA(); 
 	      
-	      Double_t nsigmaelectron = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
-	      Double_t nsigmapion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
-	      Double_t nsigmakaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
-	      Double_t nsigmaproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
+	      // get the electron nsigma                                                                                                
+	      Double_t nSigma = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kElectron));
+	      Double_t nSigmaPions   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kPion));
+              Double_t nSigmaKaons   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kKaon));
+              Double_t nSigmaProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(t,(AliPID::EParticleType)AliPID::kProton));
 	      
-	      if(nsigmaelectron  < fNSigmaCut &&
-		 nsigmapion      > fNSigmaCut &&
-		 nsigmakaon      > fNSigmaCut &&
-		 nsigmaproton    > fNSigmaCut ) continue;
-
-	      Float_t dcaXY = t->DCA();     
-	      Float_t dcaZ  = t->ZAtDCA();  
+	      //Make the decision based on the n-sigma of electrons exclusively 
+              if(nSigma < fNSigmaCut
+                 && nSigmaPions   > fNSigmaCut
+                 && nSigmaKaons   > fNSigmaCut
+                 && nSigmaProtons > fNSigmaCut ) continue;
 	      
-	      // Kinematics cuts 
-	      if( pt < 0.2 || pt > 2.0)  continue;
-	      if( eta < -0.8 || eta > 0.8)  continue;
+	      Int_t gID = t->GetID();
+	      newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
 	      
-	      Int_t label = TMath::Abs(t->GetLabel());
-	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
-
+	      // Kinematics cuts                                                                                 
+	      if( pt < 0.2 || pt > 2.0)      continue;
+	      if( eta < _min_eta_1 || eta > _max_eta_1)  continue;
+	      
+	      Double_t pos[3];
+	      newAodTrack->GetXYZ(pos);
+	      
+	      Double_t DCAX = pos[0] - vertexX;
+	      Double_t DCAY = pos[1] - vertexY;
+	      Double_t DCAZ = pos[2] - vertexZ;
+	      
+	      Double_t DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+	      
+	      if (DCAZ     <  _dcaZMin ||
+		  DCAZ     >  _dcaZMax ||
+		  DCAXY    >  _dcaXYMax ) continue;
+	      	      
+	      //==== QA ===========================                                          
+	      _dcaz->Fill(DCAZ);                                                           
+	      _dcaxy->Fill(DCAXY);                                                         
+	      _etadis->Fill(eta);                                                          
+	      _phidis->Fill(phi); 
+	      //===================================   
+	      
 	      //W/Wo Secondaries
 	      //if (!AODmcTrack->IsPhysicalPrimary()) continue;
 	      
-	       
-	       if(fExcludeResonancesInMC)
-		 {
-		   //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;                               
-		   Int_t gMotherIndex = AODmcTrack->GetMother();
-		   if(gMotherIndex != -1) {
-		     AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
-		     if(motherTrack) {
-		       Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
-		       
-		       if(pdgCodeOfMother == 311  ||
-			  pdgCodeOfMother == -311 ||
-			  pdgCodeOfMother == 310  ||
-			  pdgCodeOfMother == 3122 ||
-			  pdgCodeOfMother == -3122 ||
-			  pdgCodeOfMother == 111 ||
-			  pdgCodeOfMother == 22 ) continue;
-		     }
-		   }
-		 }
-	       
-	       if (AODmcTrack)
-		 {
-		   if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
-		 }
-	       
-	       _etadis->Fill(eta);
-	       _phidis->Fill(phi);
-	       _dcaz->Fill(dcaZ);
-	       _dcaxy->Fill(dcaXY);
-	       
+	      //cout<<"***************Prabhat on Weak Decay Particles ************"<<endl;
+	      if(fExcludeResonancesInMC)
+		{
+		  Int_t label = TMath::Abs(t->GetLabel());
+		  AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+		  
+		  Int_t gMotherIndex = AODmcTrack->GetMother();
+		  if(gMotherIndex != -1) {
+		    AliAODMCParticle* motherTrack = dynamic_cast<AliAODMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+		    if(motherTrack) {
+		      Int_t pdgCodeOfMother = motherTrack->GetPdgCode();
+		      
+		      if(pdgCodeOfMother == 311  ||
+			 pdgCodeOfMother == -311 ||
+			 pdgCodeOfMother == 310  ||
+			 pdgCodeOfMother == 3122 ||
+			 pdgCodeOfMother == -3122 ||
+			 pdgCodeOfMother == 111 ||
+			 pdgCodeOfMother == 22 ) continue;
+		    }
+		  }
+		}
+	      
+	      Int_t label = TMath::Abs(t->GetLabel());
+	      AliAODMCParticle *AODmcTrack = (AliAODMCParticle*) fArrayMC->At(label);
+	      if (AODmcTrack)
+		{
+		  if(TMath::Abs(AODmcTrack->GetPdgCode()) == 11) continue;
+		}
+	      
 	      //Particle 1                                                                                                                  
 	      if (t->Charge() > 0)
 		{
-
+		  
 		  iPhi   = int( phi/_width_phi_1);
 
 		  if (iPhi<0 || iPhi>=_nBins_phi_1 )

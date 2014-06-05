@@ -911,13 +911,14 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		
     Bool_t signAssociation = cfVtxHF->SetRecoCandidateParam((AliAODRecoDecayHF*)charmCandidate);
     if (!signAssociation){
-      charmCandidate = 0x0;
+      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
       continue;
     }
 
     Int_t isPartOrAntipart = cfVtxHF->CheckReflexion(fSign);
     if (isPartOrAntipart == 0){
       AliDebug(2, Form("The candidate pdg code doesn't match the requirement set in the task (fSign = %d)",fSign));
+      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
       continue;
     }
 
@@ -939,8 +940,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
       }
 
-      if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue;
-			
+      if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])){
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+	continue;
+      }		
       //Reco Step
       Bool_t recoStep = cfVtxHF->RecoStep();
       Bool_t vtxCheck = fCuts->IsEventSelected(aodEvent);
@@ -955,8 +958,10 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
       }else if(fDecayChannel==33){
 	if(fUseSelectionBit && !charmCandidate->HasSelectionBit(AliRDHFCuts::kDsCuts)) isBitSelected = kFALSE;
       }
-      if(!isBitSelected) continue;
-
+      if(!isBitSelected){
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
+	continue;
+      }
 
 
       if (recoStep && recoContFilled && vtxCheck){
@@ -1036,26 +1041,31 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	      }
 	      else {
 		AliDebug(3, "Analysis Cuts step not passed \n");
+		if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 		continue;
 	      }
 	    }
 	    else {
 	      AliDebug(3, "PID selection not passed \n");
+	      if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	      continue;
 	    }
 	  }
 	  else{
 	    AliDebug(3, "Number of ITS cluster step not passed\n");
+	    if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	    continue;
 	  }
 	}
 	else{
 	  AliDebug(3, "Reco acceptance step not passed\n");
+	  if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	  continue;
 	}
       }
       else {
 	AliDebug(3, "Reco step not passed\n");
+	if(unsetvtx) charmCandidate->UnsetOwnPrimaryVtx();
 	continue;
       }
     }
@@ -1401,7 +1411,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC13d3 MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,30.);
@@ -1411,7 +1421,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC13d3(){
 
 //_________________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
@@ -1419,9 +1429,39 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC10f6a(){
   fUseWeight=kTRUE;
 }
 
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC12a12(){
+  // weight function from the ratio of the LHC12a12 MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,50.);
+  fFuncWeight->SetParameters(1.31497e+01,3.30503e+00,3.45594e+00,2.5,2.28642e-02,1.42372e+00,2.32892e-04,5.21986e-02,-2.14236e-01,3.86200e+00);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC12a12bis(){
+  // weight function from the ratio of the LHC12a12bis MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,50.);
+  fFuncWeight->SetParameters(6.54519e+00,2.74007e+00,2.48325e+00,2.5,1.61113e-01,-5.32546e-01,-3.75916e-04,2.38189e-01,-2.17561e-01,2.35975e+00);
+  fUseWeight=kTRUE;
+}
+
+//_________________________________________________________________________
+void AliCFTaskVertexingHF::SetPtWeightsFromFONLL7overLHC13e2fix(){
+  // weight function from the ratio of the LHC13e2fix MC
+  // and FONLL calculations for pp data
+  if(fFuncWeight) delete fFuncWeight;
+  fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,50.);
+  fFuncWeight->SetParameters(1.85862e+01,2.48171e+00,3.39356e+00,2.5,1.70426e-02,2.28453e+00,-4.57749e-02,5.84585e-02,-3.19719e-01,4.16789e+00);
+  fUseWeight=kTRUE;
+}
+
 //________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x)",0.15,40.);
@@ -1431,7 +1471,7 @@ void AliCFTaskVertexingHF::SetPtWeightsFromFONLL5overLHC10f6a(){
 
 //________________________________________________________________
 void AliCFTaskVertexingHF::SetPtWeightsFromFONLL276overLHC10f6a(){
-  // weight function from the ratio of the LHC12a17b MC
+  // weight function from the ratio of the LHC10f6a MC
   // and FONLL calculations for pp data
   if(fFuncWeight) delete fFuncWeight;
   fFuncWeight=new TF1("funcWeight","([0]*x)/TMath::Power([2],(1+TMath::Power([3],x/[1])))+[4]*TMath::Exp([5]+[6]*x)+[7]*TMath::Exp([8]*x+[9])",0.15,40.);

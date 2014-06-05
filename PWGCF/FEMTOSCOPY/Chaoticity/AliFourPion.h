@@ -56,7 +56,7 @@ class AliFourPion : public AliAnalysisTaskSE {
     kQbinsWeights = 40,
     kNDampValues = 16,
     kRmin = 5,// EW min radii 5 fm
-    kDENtypes = 3,
+    kDENtypes = 4,
   };
 
   static const Int_t fKbinsT   = 4;// Set fKstep as well !!!!
@@ -73,6 +73,7 @@ class AliFourPion : public AliAnalysisTaskSE {
   void SetWeightArrays(Bool_t legoCase=kTRUE, TH3F *histos[AliFourPion::fKbinsT][AliFourPion::fCentBins]=0x0);
   void SetMomResCorrections(Bool_t legoCase=kTRUE, TH2D *temp2D=0x0);
   void SetFSICorrelations(Bool_t legoCase=kTRUE, TH1D *tempss[12]=0x0, TH1D *tempos[12]=0x0);
+  void SetMuonCorrections(Bool_t legoCase=kTRUE, TH2D *tempMuon=0x0);
   //
   void SetMCdecision(Bool_t mc) {fMCcase = mc;}
   void SetTabulatePairs(Bool_t tabulate) {fTabulatePairs = tabulate;}
@@ -97,7 +98,7 @@ class AliFourPion : public AliAnalysisTaskSE {
 
   void ParInit();
   Bool_t AcceptPair(AliFourPionTrackStruct, AliFourPionTrackStruct);
-  Float_t GamovFactor(Int_t, Int_t, Float_t);
+  Float_t Gamov(Int_t, Int_t, Float_t);
   void Shuffle(Int_t*, Int_t, Int_t);
   Float_t GetQinv(Float_t[], Float_t[]);
   void GetQosl(Float_t[], Float_t[], Float_t&, Float_t&, Float_t&);
@@ -142,10 +143,11 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
     //
-    TH2D *fMuonSmeared; //!
-    TH2D *fMuonIdeal; //!
-    TH2D *fMuonPionK3; //!
-    TH2D *fPionPionK3; //!
+    TH3D *fMuonSmeared; //!
+    TH3D *fMuonIdeal; //!
+    TH3D *fMuonPionK3; //!
+    TH3D *fPionPionK3; //!
+    //
     TH2D *fTwoPartNorm; //!
   };
   struct St7 {
@@ -178,10 +180,11 @@ class AliFourPion : public AliAnalysisTaskSE {
     TH2D *fIdeal; //!
     TH2D *fSmeared; //!
     //
-    TH2D *fMuonSmeared; //!
-    TH2D *fMuonIdeal; //!
-    TH2D *fMuonPionK4; //!
-    TH2D *fPionPionK4; //!
+    TH3D *fMuonSmeared; //!
+    TH3D *fMuonIdeal; //!
+    TH3D *fMuonPionK4; //!
+    TH3D *fPionPionK4; //!
+    //
     TH2D *fTwoPartNorm; //!
   };
   struct St_EDB {
@@ -332,10 +335,11 @@ class AliFourPion : public AliAnalysisTaskSE {
 
  public:
   TH2D *fMomResC2;
+  TH2D *fWeightmuonCorrection;
   TH1D *fFSIss[12];
   TH1D *fFSIos[12];
   TH3F *fNormWeight[fKbinsT][fCentBins];
-  
+ 
 
   ClassDef(AliFourPion, 1); 
 };
