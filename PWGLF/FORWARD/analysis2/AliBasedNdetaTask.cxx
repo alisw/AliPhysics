@@ -31,7 +31,8 @@ AliBasedNdetaTask::AliBasedNdetaTask()
     fFinalMCCorrFile(""),
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
-    fMeanVsC(0)
+  fMeanVsC(0),
+  fCentMethod("VOM")
 {
   // 
   // Constructor
@@ -41,7 +42,7 @@ AliBasedNdetaTask::AliBasedNdetaTask()
 
 //____________________________________________________________________
 AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
-  : AliBaseAODTask(Form("%sdNdeta", name)), 
+  : AliBaseAODTask(Form("%sdNdeta", name),"AliBasedNdetaTask"), 
     fRebin(5),		// Rebinning factor 
     fCutEdges(false), 
     fSymmetrice(true),
@@ -55,7 +56,8 @@ AliBasedNdetaTask::AliBasedNdetaTask(const char* name)
     fFinalMCCorrFile(""),
     fSatelliteVertices(0),
     fEmpiricalCorrection(0),
-    fMeanVsC(0)	
+    fMeanVsC(0),	
+    fCentMethod("VOM")
 {
   // 
   // Constructor
@@ -231,6 +233,83 @@ AliBasedNdetaTask::SetShapeCorrection(const TH2F* c)
   fShapeCorr = static_cast<TH2F*>(c->Clone());
   fShapeCorr->SetDirectory(0);
 }
+//____________________________________________________________________
+Bool_t
+AliBasedNdetaTask::SetCentralityMethod(const TString& method)
+{
+  TString meth(method);
+  meth.ToUpper();
+
+  // Info("", "Setting centrality estimator to %s", method.Data());
+  // Here, we make sure that the string is well formed, and 
+  // that the requested method exists.  If not, we bark. 
+  if (meth.EqualTo("NONE") || meth.EqualTo("NO") || meth.EqualTo("FALSE")) return false;
+  if      (meth.IsNull()               ||  // Default
+	   meth.EqualTo("TRUE")        ||  // If --cent is given w/o arg
+	   meth.EqualTo("DEFAULT")     ||  // Stored in Mult AOD object 
+	   meth.EqualTo("AOD"))            // Stored in Mult AOD object 
+    meth = "";
+  else if (meth.EqualTo("V0M")         ||  // VZERO multiplicity  
+	   meth.EqualTo("V0A")         ||  // VZERO A-side 
+	   meth.EqualTo("V0A0")        ||  // VZERO A-side 
+	   meth.EqualTo("V0A123")      ||  // VZERO A-side 
+	   meth.EqualTo("V0C")         ||  // VZERO C-side 
+	   meth.EqualTo("FMD")         ||  // FMD 
+	   meth.EqualTo("TRK")         ||  // Tracks
+	   meth.EqualTo("TKL")         ||  // Tracklets 
+	   meth.EqualTo("CL0")         ||  // Clusters - layer 0 
+	   meth.EqualTo("CL1")         ||  // Clusters - layer 1
+	   meth.EqualTo("CND")         ||  // ? 
+	   meth.EqualTo("ZNA")         ||  // ZDC corr A-side 
+	   meth.EqualTo("ZNC")         ||  // ZDC corr C-side 
+	   meth.EqualTo("ZPA")         ||  // ZDC protons A-side 
+	   meth.EqualTo("ZPC")         ||  // ZDC protons C-side 
+	   meth.EqualTo("NPA"))      // ?
+    ; // No-op
+  else if (meth.EqualTo("V0MEQ")       ||  // ? 
+	   meth.EqualTo("V0AEQ")       ||  // ? 
+	   meth.EqualTo("V0CEQ"))          // 
+    meth.ReplaceAll("EQ", "eq");
+  else if (meth.EqualTo("V0MVSFMD")    ||  // VZERO vs FMD multiplicity 
+	   meth.EqualTo("TKLVSV0M")    ||  // Tracklets vs VZERO multiplicty
+	   meth.EqualTo("ZEMVSZDC"))       // ZDC neutrons vs proton veto
+    meth.ReplaceAll("VS", "vs");
+  else if (meth.EqualTo("V0MTRUE")     ||  // VZERO multiplicity  
+	   meth.EqualTo("V0ATRUE")     ||  // VZERO A-side 
+	   meth.EqualTo("V0CTRUE")     ||  // VZERO C-side 
+	   meth.EqualTo("FMDTRUE")     ||  // FMD 
+	   meth.EqualTo("TRKTRUE")     ||  // Tracks
+	   meth.EqualTo("TKLTRUE")     ||  // Tracklets 
+	   meth.EqualTo("CL0TRUE")     ||  // Clusters - layer 0 
+	   meth.EqualTo("CL1TRUE")     ||  // Clusters - layer 1
+	   meth.EqualTo("CNDTRUE")     ||  // ? 
+	   meth.EqualTo("ZNATRUE")     ||  // ZDC corr A-side 
+	   meth.EqualTo("ZNCTRUE")     ||  // ZDC corr C-side 
+	   meth.EqualTo("ZPATRUE")     ||  // ZDC protons A-side 
+	   meth.EqualTo("ZPCTRUE"))       // ZDC protons C-side 
+    meth.ReplaceAll("TRUE", "true");
+  else if (meth.EqualTo("V0MEQTRUE")   ||  // VZERO multiplicity  
+	   meth.EqualTo("V0AEQTRUE")   ||  // VZERO A-side 
+	   meth.EqualTo("V0CEQTRUE"))      // VZERO C-side 
+    meth.ReplaceAll("EQTRUE", "Eqtrue");
+  else { 
+    AliErrorF("Unknown centrality estimator: %s", meth.Data());
+    return false;
+  }
+
+  if (fName.Contains("Forward", TString::kIgnoreCase) && 
+      meth.Contains("FMD")) 
+    AliWarningF("Centrality estimator %s used by %s - beware of auto-corr",
+		meth.Data(), fName.Data());  
+  else if (fName.Contains("Central", TString::kIgnoreCase) && 
+	   (meth.Contains("CL0") || meth.Contains("TKL")))
+    AliWarningF("Centrality estimator %s used by %s - beware of auto-corr",
+		meth.Data(), fName.Data());
+
+  fCentMethod = meth;
+  return true;
+}
+
 //________________________________________________________________________
 void 
 AliBasedNdetaTask::InitializeCentBins()
@@ -261,6 +340,7 @@ AliBasedNdetaTask::Book()
   fSums->Add(AliForwardUtil::MakeParameter("empirical", 
 					   fEmpiricalCorrection != 0));
   fSums->Add(AliForwardUtil::MakeParameter("scheme", fNormalizationScheme));
+  fSums->Add(new TNamed("centEstimator", fCentMethod.Data()));
 
   // Make our centrality bins 
   InitializeCentBins();
@@ -326,19 +406,29 @@ AliBasedNdetaTask::Event(AliAODEvent& aod)
   // Loop over centrality bins 
   CentralityBin* allBin = 
     static_cast<CentralityBin*>(fListOfCentralities->At(0));
-  if (allBin->ProcessEvent(forward, fTriggerMask, isZero, 
-			   fMinIpZ, fMaxIpZ, data, dataMC)) taken = true;
+  if (allBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, fMaxIpZ, 
+			   data, dataMC)) taken = true;
   
   // Find this centrality bin 
   if (HasCentrality()) {
     Double_t       cent    = forward->GetCentrality();
+    if (!fCentMethod.IsNull()) { 
+      AliAODHeader* hdr = aod.GetHeader();
+      if (hdr) { 
+	AliCentrality* cP = hdr->GetCentralityP();
+	if (cP) { 
+	  cent = cP->GetCentralityPercentile(fCentMethod);
+	}
+      }
+    }
     Int_t          icent   = fCentAxis.FindBin(cent);
     CentralityBin* thisBin = 0;
     if (icent >= 1 && icent <= fCentAxis.GetNbins()) 
       thisBin = static_cast<CentralityBin*>(fListOfCentralities->At(icent));
     if (thisBin)
       if (thisBin->ProcessEvent(forward, fTriggerMask, isZero, fMinIpZ, 
-				fMaxIpZ, data, dataMC)) taken = true;
+				fMaxIpZ, data, dataMC)) 
+	taken = true;
   }
   
   return taken;
@@ -836,6 +926,7 @@ AliBasedNdetaTask::Print(Option_t* option) const
   PFV("Trigger efficiency",	 fTriggerEff);
   PFV("Bin-0 Trigger efficiency", fTriggerEff0);
   PFV("Shape correction",	 (fShapeCorr?fShapeCorr->GetName():"none"));;
+  PFV("Centrality estimator",    fCentMethod);
   gROOT->DecreaseDirLevel();  
 }
 

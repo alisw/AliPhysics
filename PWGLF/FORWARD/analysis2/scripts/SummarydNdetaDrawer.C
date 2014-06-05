@@ -516,6 +516,7 @@ protected:
     TH1* dndeta      = GetH1(c, Form("dndeta%s",base.Data()));
     TH2* d2ndetadphi = GetH2(c, Form("d2Ndetadphi%s", base.Data()));
     if (!trig || !norm || !dndeta || !d2ndetadphi) return;
+    if (norm->GetEntries() <= 0) return;
 
     norm->SetFillColor(kGreen+1);
     norm->SetFillStyle(3001);
