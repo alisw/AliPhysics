@@ -22,10 +22,10 @@
 #include "Riostream.h"
 #endif   
 
-void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends = kTRUE, Bool_t useHLTtree = kFALSE) {
+void FlatESDConverter(const char* filename="AliESDs.root", const char* filenameFriends="AliESDfriends.root",const char* filenameOut="out.dat", Bool_t useESDFriends = kTRUE, Bool_t useHLTtree = kFALSE) {
   // -- Convert AliESDEvent to AliFlatESDEvent
 
-  ofstream outFile("outFlatESD.dat", std::ifstream::binary | std::ifstream::out);
+  ofstream outFile(Form("%s",filenameOut), std::ifstream::binary | std::ifstream::out);
   //ofstream outFile("outFlatESD.dat");
 
   TFile *file    = new TFile(Form("%s", filename));
@@ -40,7 +40,7 @@ void FlatESDConverter(const char* filename="AliESDs.root", Bool_t useESDFriends 
   // -- Connect ESD friend
   AliESDfriend *esdFriend = NULL; 
   if (useESDFriends && !esdTree->FindBranch("ESDfriend.")) {
-    esdTree->AddFriend("esdFriendTree", "AliESDfriends.root");
+    esdTree->AddFriend("esdFriendTree", Form("%s", filenameFriends));
     esdTree->SetBranchStatus("ESDfriend.", 1);
 
     esdFriend = dynamic_cast<AliESDfriend*>((const_cast<AliESDEvent*>(esd))->FindListObject("AliESDfriend"));

@@ -22,7 +22,7 @@
 #include "Riostream.h"
 #endif   
 
-void ReadFlatESD(const char* filename="outFlatESD.root") {
+void ReadFlatESD(const char* filename="outFlatESD.dat") {
 
   ifstream is(filename, std::ifstream::binary | std::ifstream::in);
   if (is){
@@ -60,7 +60,7 @@ void ReadFlatESD(const char* filename="outFlatESD.root") {
     delete[] buffer;
   }
   else {
-    cout << "File could not be read" << endl;
+    cout << "File "<<filename<<" could not be read" << endl;
   }
   return;
 }
