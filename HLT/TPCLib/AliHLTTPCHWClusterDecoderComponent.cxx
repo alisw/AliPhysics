@@ -29,7 +29,7 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliHLTTPCRawCluster.h"
 #include "AliHLTTPCHWCFEmulator.h"
 #include "AliHLTTPCHWCFData.h"
@@ -289,11 +289,12 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
       outputRaw->fVersion = 0;
       outputRaw->fCount = 0;
       
-      AliHLTUInt32_t *buffer = (AliHLTUInt32_t*)iter->fPtr;  
+      AliHLTUInt32_t *buffer = (AliHLTUInt32_t*)iter->fPtr;
+      AliHLTCDHWrapper header(buffer);
      
       // skip the first 8 32-bit CDH words
-      buffer += 8;
-      UInt_t bufferSize32 = ((Int_t)iter->fSize - sizeof(AliRawDataHeader) )/sizeof(AliHLTUInt32_t);
+      buffer += header.GetHeaderSize()/sizeof(AliHLTUInt32_t);
+      UInt_t bufferSize32 = ((Int_t)iter->fSize - header.GetHeaderSize() )/sizeof(AliHLTUInt32_t);
       
       if (fpDecoder->Init(reinterpret_cast<AliHLTUInt8_t*>(buffer), bufferSize32*sizeof(AliHLTUInt32_t))>=0 && fpDecoder->CheckVersion()>=0) {
 	
@@ -314,20 +315,18 @@ int AliHLTTPCHWClusterDecoderComponent::DoEvent(const AliHLTComponentEventData& 
 	  c.SetQMax(cl.GetQMax());	  
 	  outputRaw->fCount++;
 	}	
-	
-	// fill into HLT output data
-	AliHLTComponentBlockData bdRawClusters;
-	FillBlockData( bdRawClusters );
-	bdRawClusters.fOffset = size;	
-	bdRawClusters.fSize = sizeof(AliHLTTPCRawClusterData)+outputRaw->fCount*sizeof(AliHLTTPCRawCluster);
-	bdRawClusters.fSpecification = iter->fSpecification;
-	bdRawClusters.fDataType = AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC;
-	outputBlocks.push_back( bdRawClusters );
-	fBenchmark.AddOutput(bdRawClusters.fSize);
-	size   += bdRawClusters.fSize;
-	outputPtr += bdRawClusters.fSize;
-      }    
-      continue; // HW clusters data block
+      }
+      // fill into HLT output data
+      AliHLTComponentBlockData bdRawClusters;
+      FillBlockData( bdRawClusters );
+      bdRawClusters.fOffset = size;	
+      bdRawClusters.fSize = sizeof(AliHLTTPCRawClusterData)+outputRaw->fCount*sizeof(AliHLTTPCRawCluster);
+      bdRawClusters.fSpecification = iter->fSpecification;
+      bdRawClusters.fDataType = AliHLTTPCDefinitions::fgkRawClustersDataType | kAliHLTDataOriginTPC;
+      outputBlocks.push_back( bdRawClusters );
+      fBenchmark.AddOutput(bdRawClusters.fSize);
+      size   += bdRawClusters.fSize;
+      outputPtr += bdRawClusters.fSize;
     }
 
   } // end of loop over data blocks  

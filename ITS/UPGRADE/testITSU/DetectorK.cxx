@@ -23,7 +23,7 @@ http://rnc.lbl.gov/~jhthomas
 Changes by S. Rossegger -> see header file
 
 ***********************************************************/
-
+Bool_t DetectorK::verboseR=0;
 
 #define RIDICULOUS 999999 // A ridiculously large resolution (cm) to flag a dead detector
 
@@ -43,32 +43,12 @@ Changes by S. Rossegger -> see header file
 #define KaonMass                 0.498  // Mass of the Kaon
 #define D0Mass                   1.865  // Mass of the D0
 
-const double DetectorK::kPtMinFix = 0.150;
+ClassImp(TrackSol)
+
+const double DetectorK::kPtMinFix = 0.050;
 const double DetectorK::kPtMaxFix = 31.5;
-const double DetectorK::kMinRadTPCTrack = 132.0;
 
 //TMatrixD *probKomb; // table for efficiency kombinatorics
-
-
-class CylLayerK : public TNamed {
-public:
-
-  CylLayerK(char *name) : TNamed(name,name) {}
-  
-  Float_t GetRadius()   const {return radius;}
-  Float_t GetRadL()     const {return radL;}
-  Float_t GetPhiRes()   const {return phiRes;}
-  Float_t GetZRes()     const {return zRes;}
-  Float_t GetLayerEff() const {return eff;}
-
-  //  void Print() {printf("  r=%3.1lf X0=%1.6lf sigPhi=%1.4lf sigZ=%1.4lf\n",radius,radL,phiRes,zRes); }
-  Float_t radius; Float_t radL; Float_t phiRes; Float_t zRes;   
-  Float_t eff;
-  Bool_t isDead;
-
- ClassDef(CylLayerK,1);
-};
-
 
 class ForwardLayer : public TNamed {
 public:
@@ -105,13 +85,15 @@ DetectorK::DetectorK()
     fConfLevel(0.0027),      // 0.27 % -> 3 sigma confidence
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),    // Standard: pion mass 
-  fMaxRadiusSlowDet(10.),
+    fMaxRadiusSlowDet(10.),
     fAtLeastHits(-1),     // if -1, then require hit on all ITS layers
     fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
     fptScale(10.),
-    fdNdEtaCent(2300)
+  fdNdEtaCent(2300),
+  kDetLayer(-1),
+  fMinRadTrack(132.)
 {
   //
   // default constructor
@@ -137,7 +119,9 @@ DetectorK::DetectorK(char *name, char *title)
     fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
     fMaxSeedRadius(50000),
     fptScale(10.),
-    fdNdEtaCent(2200)
+    fdNdEtaCent(2200),
+  kDetLayer(-1),
+  fMinRadTrack(132.)
 {
   //
   // default constructor, that set the name and title
@@ -384,6 +368,67 @@ void DetectorK::RemoveLayer(char *name) {
       
     }
   }
+}
+
+
+CylLayerK* DetectorK::FindLayer(char *name) const
+{
+  //
+  // find layer by name
+  //
+  return (CylLayerK*) fLayers.FindObject(name);
+}
+
+CylLayerK* DetectorK::FindLayer(double r, int mode) const
+{
+  //
+  // find layer close to radius r
+  // mode = 0: closest
+  // mode > 0: closest above
+  // mode < 0: closest below
+  //
+  double drMin=-9999;
+  int lrID = -1;
+  int nLr = fLayers.GetEntries();
+  for (Int_t i=fLayers.GetEntries(); i--;) {
+    CylLayerK* tmp = (CylLayerK*)fLayers.At(i);
+    double dr = tmp->radius - r;
+    if (TMath::Abs(dr)<TMath::Abs(drMin)) {
+      drMin = dr;
+      lrID = i;
+    }
+  }
+  if (lrID<0) return 0;  
+  if (mode>0 && drMin<0) return ++lrID<nLr ? (CylLayerK*)fLayers.At(lrID) : 0;
+  if (mode<0 && drMin>0) return --lrID>0   ? (CylLayerK*)fLayers.At(lrID) : 0;
+  return (CylLayerK*)fLayers.At(lrID);
+  //
+}
+
+Int_t DetectorK::FindLayerID(double r, int mode) const
+{
+  //
+  // find layer ID close to radius r
+  // mode = 0: closest
+  // mode > 0: closest above
+  // mode < 0: closest below
+  //
+  double drMin=-9999;
+  int lrID = -1;
+  int nLr = fLayers.GetEntries();
+  for (Int_t i=fLayers.GetEntries(); i--;) {
+    CylLayerK* tmp = (CylLayerK*)fLayers.At(i);
+    double dr = tmp->radius - r;
+    if (TMath::Abs(dr)<TMath::Abs(drMin)) {
+      drMin = dr;
+      lrID = i;
+    }
+  }
+  if (lrID<0) return 0;  
+  if (mode>0 && drMin<0) return ++lrID<nLr ? lrID : -1;
+  if (mode<0 && drMin>0) return --lrID>0   ? lrID : -1;
+  return lrID;
+  //
 }
 
 
@@ -795,7 +840,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
   // Calculate track parameters using Billoirs method of matrices
 
-  Double_t pt,tgl, pz, lambda, deltaPoverP  ;
+  Double_t pt,tgl, lambda, deltaPoverP  ;
   Double_t charge ;
   Double_t mass[3] ;
   Int_t printOnce = 1 ;
@@ -842,14 +887,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   }
 
   CylLayerK *last = (CylLayerK*) fLayers.At((fLayers.GetEntries()-1));
-  if (last->radius > kMinRadTPCTrack) {
+  if (last->radius > fMinRadTrack) {
     last = 0;
     for (Int_t i=0; i<fLayers.GetEntries();i++) {
       CylLayerK *l = (CylLayerK*) fLayers.At(i);
-      if (!(l->isDead) && (l->radius<kMinRadTPCTrack)) last = l;
+      if (!(l->isDead) && (l->radius<fMinRadTrack)) last = l;
     }
     if (!last) {
-      printf("No layer with radius < %f is found\n",kMinRadTPCTrack);
+      printf("No layer with radius < %f is found\n",fMinRadTrack);
       return;
     }
   }
@@ -885,7 +930,6 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       pt  =  fTransMomenta[i];                  // GeV/c
       tgl =  TMath::Tan(lambda);                // dip
       charge   = -1;                            // Assume an electron 
-      pz  =  pt * TMath::Tan(lambda)         ;  // GeV/
       enum {kY,kZ,kSnp,kTgl,kPtI};              // track parameter aliases
       enum {kY2,kYZ,kZ2,kYSnp,kZSnp,kSnp2,kYTgl,kZTgl,kSnpTgl,kTgl2,kYPtI,kZPtI,kSnpPtI,kTglPtI,kPtI2}; // cov.matrix aliases
       //
@@ -895,7 +939,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       trPars[kY] = 0;                         // start from Y = 0
       trPars[kZ] = 0;                         //            Z = 0 
       trPars[kSnp] = 0;                       //            track along X axis at the vertex
-      trPars[kTgl] = TMath::Tan(lambda);      //            dip
+      trPars[kTgl] = tgl;      //            dip
       trPars[kPtI] = charge/pt;               //            q/pt      
       //
       // put tiny errors to propagate to the outer radius
@@ -1165,7 +1209,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	    break;
 	  }
 	}
-	probTr.Rotate(0);
+	//probTr.Rotate(0);
    	for (Int_t j=firstActiveLayer; j<=lastActiveLayer; j++) {  // Layer loop
 	  
 	  layer = (CylLayerK*)fLayers.At(j);
@@ -1386,6 +1430,394 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
   
  
+}
+
+Bool_t DetectorK::SolveTrack(TrackSol& ts) {
+  //
+  // Solves the current geometry for single track of given kinematics
+  //
+  double ptTr = ts.fPt;
+  double etaTr = ts.fEta;
+  double mass = ts.fMass;
+  double charge = ts.fCharge;
+  
+  if (ptTr<0) { 
+    printf("Input track is not initialized");
+    return kFALSE;
+  }
+  
+  const float kTrackingMargin = 0.1;
+
+  static AliExternalTrackParam probTr;   // track to propagate
+  probTr.SetUseLogTermMS(kTRUE);
+  //
+  TClonesArray &saveParInward    = ts.fTrackInw;
+  TClonesArray &saveParOutwardB  = ts.fTrackOutB;
+  TClonesArray &saveParOutwardA  = ts.fTrackOutA;
+  TClonesArray &saveParComb      = ts.fTrackCmb;
+
+  // Calculate track parameters using Billoirs method of matrices
+  Double_t pt,lambda;
+  //
+  CylLayerK *last = (CylLayerK*) fLayers.At((fLayers.GetEntries()-1));
+  double maxR = last->radius+kTrackingMargin*2;
+  double minRad = (fMinRadTrack>0&&fMinRadTrack<maxR) ? fMinRadTrack : maxR;
+  //
+  if (last->radius > minRad) {
+    last = 0;
+    for (Int_t i=0; i<fLayers.GetEntries();i++) {
+      CylLayerK *l = (CylLayerK*) fLayers.At(i);
+      if (/*!(l->isDead) && */(l->radius<minRad)) last = l;
+    }
+    if (!last) {
+      printf("No layer with radius < %f is found\n",minRad);
+      return kFALSE;
+    }
+  }
+  //  
+  lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-etaTr));
+  //  
+  // Assume track started at (0,0,0) and shoots out on the X axis, and B field is on the Z axis
+  // These are the EndPoint values for y, z, a, b, and d
+  double bGauss = fBField*10;               // field in kgauss
+  pt  =  ptTr;
+  enum {kY,kZ,kSnp,kTgl,kPtI};              // track parameter aliases
+  enum {kY2,kYZ,kZ2,kYSnp,kZSnp,kSnp2,kYTgl,kZTgl,kSnpTgl,kTgl2,kYPtI,kZPtI,kSnpPtI,kTglPtI,kPtI2}; // cov.matrix aliases
+  //
+  probTr.Reset();
+  double *trPars = (double*)probTr.GetParameter();
+  double *trCov  = (double*)probTr.GetCovariance();
+  trPars[kY] = 0;                         // start from Y = 0
+  trPars[kZ] = 0;                         //            Z = 0 
+  trPars[kSnp] = 0;                       //            track along X axis at the vertex
+  trPars[kTgl] = TMath::Tan(lambda);      //            dip
+  trPars[kPtI] = charge/pt;               //            q/pt      
+  //
+  // put tiny errors to propagate to the outer radius
+  trCov[kY2] = trCov[kZ2] = trCov[kSnp2] = trCov[kTgl2] = trCov[kPtI2] = 1e-9;
+  //
+  // find max layer this track can reach
+  double rmx = (TMath::Abs(fBField)>1e-5) ?  pt*100./(0.3*TMath::Abs(fBField)) : 9999;
+  if (2*rmx-5. < minRad && minRad>0) {
+    printf("Track of pt=%.3f cannot be tracked to min. r=%f\n",pt,minRad);
+    return kFALSE;
+  }
+  Int_t lastActiveLayer = -1;
+  for (Int_t j=fLayers.GetEntries(); j--;) { 
+    CylLayerK *l = (CylLayerK*) fLayers.At(j);
+    //	printf("at lr %d r: %f vs %f, pt:%f\n",j,l->radius, 2*rmx-2.*kTrackingMargin, pt);
+    if (/*!(l->isDead) && */(l->radius <= 2*(rmx-5))) {lastActiveLayer = j; last = l; break;}
+  }
+  if (lastActiveLayer<0) {
+    printf("No active layer with radius < %f is found, pt = %f\n",rmx, pt);
+    return kFALSE;
+  }
+  //      printf("PT=%f 2Rpt=%f Rlr=%f\n",pt,2*rmx,last->radius);
+  //
+  if (!PropagateToR(&probTr,last->radius + kTrackingMargin,bGauss,1)) return kFALSE;
+  //if (!probTr.PropagateTo(last->radius,bGauss)) continue;
+  // reset cov.matrix
+  // 
+  // rotate to external layer frame
+  /*
+  double posL[3];
+  probTr.GetXYZ(posL);  // lab position
+  double phiL = TMath::ATan2(posL[1],posL[0]);
+  if (!probTr.Rotate(phiL)) {
+    printf("Failed to rotate to the frame (phi:%+.3f)of Extertnal layer at %.2f\n",
+	   phiL,last->radius);
+    probTr.Print();
+    exit(1);
+  }
+  */
+  if (!probTr.Rotate(probTr.Phi())) return kFALSE; // define large errors in track proper frame (snp=0)
+  //
+  const double kLargeErr2Coord = 5*5;
+  const double kLargeErr2Dir = 0.7*0.7;
+  const double kLargeErr2PtI = 30.5*30.5;
+  for (int ic=15;ic--;) trCov[ic] = 0.;
+  trCov[kY2]   = trCov[kZ2]   = kLargeErr2Coord; 
+  trCov[kSnp2] = trCov[kTgl2] = kLargeErr2Dir;
+  trCov[kPtI2] = kLargeErr2PtI*trPars[kPtI]*trPars[kPtI];
+  probTr.CheckCovariance();
+  //
+  // Back-propagate the covariance matrix along the track.   
+  CylLayerK *layer = 0;
+  //
+  for (Int_t j=lastActiveLayer+1; j--;) {  // Layer loop
+    
+    layer = (CylLayerK*)fLayers.At(j);
+    
+    if (layer->radius>fMaxSeedRadius) continue; // no seeding beyond this radius 
+    
+    TString name(layer->GetName());
+    Bool_t isVertex = name.Contains("vertex");
+    //
+    if (!PropagateToR(&probTr,layer->radius,bGauss,-1)) exit(1);
+    //	if (!probTr.PropagateTo(last->radius,bGauss)) exit(1);	//
+    // rotate to frame with X axis normal to the surface
+    if (!isVertex) {
+      double pos[3];
+      probTr.GetXYZ(pos);  // lab position
+      double phi = TMath::ATan2(pos[1],pos[0]);
+      if ( TMath::Abs(TMath::Abs(phi)-TMath::Pi()/2)<1e-3) phi = 0;//TMath::Sign(TMath::Pi()/2 - 1e-3,phi);
+      if (!probTr.Rotate(phi)) {
+	printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f (pt=%+.3f)\n",
+	       phi,layer->radius,pos[0],pos[1],pos[2],pt);
+	
+	probTr.Print();
+	exit(1);
+      }
+    }
+    // save inward parameters at this layer: before the update!
+    new( saveParInward[j] ) AliExternalTrackParam(probTr);
+    if (verboseR) {
+      printf("SaveInw %d (%f)  ",j,layer->radius); probTr.Print();
+    }    
+    //
+    if (!isVertex && !layer->isDead) {
+      //
+      // create fake measurement with the errors assigned to the layer
+      // account for the measurement there 
+      double meas[2] = {probTr.GetY(),probTr.GetZ()};
+      double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
+      //
+      if (!probTr.Update(meas,measErr2)) {
+	printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
+	       meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
+	probTr.Print();
+	exit(1);
+      }
+    }
+    // correct for materials of this layer
+    // note: if apart from MS we want also e.loss correction, the density*length should be provided as 2nd param
+    if (layer->radL>0 && !probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
+      printf("Failed to apply material correction, X/X0=%.4f\n",layer->radL);
+      probTr.Print();
+      exit(1);
+    }
+  }
+  //  
+  // BACKWORD TRACKING +++++++++++++++++
+  // number of layers is quite low ... efficiency calculation was probably nonsense 
+  // Tracking outward (backword) to get reliable efficiencies from "smoothed estimates"
+  
+  // For below, see paper, NIM A262 (1987) p.444, eqs.12.
+  // Equivalently, one can simply combine the forward and backward estimates. Assuming
+  // pf,Cf and pb,Cb as extrapolated position estimates and errors from fwd and bwd passes one can
+  // use a weighted estimate Cw = (Cf^-1 + Cb^-1)^-1,  pw = Cw (pf Cf^-1 + pb Cb^-1).
+  // Surely, for the most extreme point, where one error matrices is infinite, this does not change anything.
+  
+  Bool_t doLikeAliRoot = 0; // don't do the "combined info" but do like in Aliroot
+  
+  
+  // RESET Covariance Matrix ( to 10 x the estimate -> as it is done in AliExternalTrackParam)
+  //	mIstar.UnitMatrix(); // start with unity
+  if (doLikeAliRoot) {
+    probTr.ResetCovariance(100);
+  } else {
+    // cannot do complete reset, set to very large errors
+    for (int ic=15;ic--;) trCov[ic] = 0.;
+    trCov[kY2]   = trCov[kZ2]   = kLargeErr2Coord; 
+    trCov[kSnp2] = trCov[kTgl2] = kLargeErr2Dir;
+    trCov[kPtI2] = kLargeErr2PtI*trPars[kPtI]*trPars[kPtI];
+    probTr.CheckCovariance();
+  }    
+  // find first "active layer" - start tracking at the first active layer      
+  Int_t firstActiveLayer = 0;
+  for (Int_t j=0; j<=lastActiveLayer; j++) { 
+    layer = (CylLayerK*)fLayers.At(j);
+    if (!(layer->isDead)) { // is alive
+      firstActiveLayer = j;
+      break;
+    }
+  }
+  //probTr.Rotate(0);
+  for (Int_t j=0; j<=lastActiveLayer; j++) {  // Layer loop
+    //
+    layer = (CylLayerK*)fLayers.At(j);
+    TString name(layer->GetName());
+    Bool_t isVertex = name.Contains("vertex");
+    if (!PropagateToR(&probTr, layer->radius,bGauss,1)) exit(1);
+    //
+    if (!isVertex) {
+      // rotate to frame with X axis normal to the surface
+      double pos[3];
+      probTr.GetXYZ(pos);  // lab position
+      double phi = TMath::ATan2(pos[1],pos[0]);
+      if ( TMath::Abs(TMath::Abs(phi)-TMath::Pi()/2)<1e-3) phi = 0;//TMath::Sign(TMath::Pi()/2 - 1e-3,phi);
+      if (!probTr.Rotate(phi)) {
+	printf("Failed to rotate to the frame (phi:%+.3f)of layer at %.2f at XYZ: %+.3f %+.3f %+.3f (pt=%+.3f)\n",
+	       phi,layer->radius,pos[0],pos[1],pos[2],pt);	      
+	probTr.Print();
+	exit(1);
+      }
+    }
+    //
+    // save outward parameters at this layer: before the update
+    new( saveParOutwardB[j] ) AliExternalTrackParam(probTr);
+    //
+    // combined in-out prediction
+    new( saveParComb[j]  ) AliExternalTrackParam(*(AliExternalTrackParam*)saveParInward[j]);
+    double *covInw = (double*) ((AliExternalTrackParam*)saveParInward[j])->GetCovariance();
+    double *covOut = (double*) probTr.GetCovariance();
+    double *covCmb = (double*) ((AliExternalTrackParam*)saveParComb[j])->GetCovariance();
+    covCmb[0] = covInw[0]*covOut[0]/(covInw[0]+covOut[0]);
+    covCmb[2] = covInw[2]*covOut[2]/(covInw[2]+covOut[2]);
+    covCmb[1] = 0;
+    // create fake measurement with the errors assigned to the layer
+    // account for the measurement there
+    if (!isVertex && !layer->isDead) {
+      double meas[2] = {probTr.GetY(),probTr.GetZ()};
+      double measErr2[3] = {layer->phiRes*layer->phiRes,0,layer->zRes*layer->zRes};
+      //
+      if (!probTr.Update(meas,measErr2)) {
+	printf("Failed to update the track by measurement {%.3f,%3f} err {%.3e %.3e %.3e}\n",
+	       meas[0],meas[1], measErr2[0],measErr2[1],measErr2[2]);
+	probTr.Print();
+	exit(1);
+      }
+    }
+    // note: if apart from MS we want also e.loss correction, the density*length should be provided as 2nd param
+    if (layer->radL>0 && !probTr.CorrectForMeanMaterial(layer->radL, 0, mass , kTRUE)) {
+      printf("Failed to apply material correction, X/X0=%.4f\n",layer->radL);
+      probTr.Print();
+      exit(1);
+    }
+    // save outward parameters at this layer: after the update
+    new( saveParOutwardA[j] ) AliExternalTrackParam(probTr);
+    //
+  }
+  //
+  probTr.SetUseLogTermMS(kFALSE); // Reset of MS term usage to avoid problems since its static
+  //  
+  return kTRUE;
+}
+
+Bool_t DetectorK::CalcITSEff(TrackSol& ts, Bool_t verbose)
+{
+  // Prepare Probability Kombinations
+  Int_t nLayer = fNumberOfActiveITSLayers;
+  Int_t base = 3; // null, fake, correct
+  Int_t komb = (Int_t) TMath::Power(base,nLayer);
+  TMatrixD probLayInw(base,fNumberOfActiveITSLayers);
+  TMatrixD probLayOut(base,fNumberOfActiveITSLayers);
+  TMatrixD probLayCmb(base,fNumberOfActiveITSLayers);
+  TMatrixD probKomb(komb,nLayer);
+  for (Int_t num=0; num<komb; num++) {
+    for (Int_t l=nLayer; l--;) {
+      Int_t pow = ((Int_t)TMath::Power(base,l+1));
+      probKomb(num,nLayer-1-l)=(num%pow)/((Int_t)TMath::Power(base,l));
+    }
+  }
+  int nITSAct=0, ilr=0;
+  if (verbose) printf("Lr:  \t rad   x/x0   h.dens | Inw sY sZ  ->  Pr.Corr | Out sY sZ  ->  Pr.Corr | Cmb sY sZ  ->  Pr.Corr |\n");
+
+  while (nITSAct<nLayer) {
+    CylLayerK *l = (CylLayerK*) fLayers.At(ilr);
+    TString name(l->GetName());
+    if (l->isDead || !IsITSLayer(name) ) {ilr++; continue;}
+    //
+    AliExternalTrackParam* trInw = (AliExternalTrackParam*)ts.fTrackInw[ilr];
+    AliExternalTrackParam* trOut = (AliExternalTrackParam*)ts.fTrackOutB[ilr];
+    AliExternalTrackParam* trCmb = (AliExternalTrackParam*)ts.fTrackCmb[ilr];
+    //
+    double sigYInw = TMath::Sqrt(trInw->GetSigmaY2()+l->phiRes*l->phiRes);
+    double sigZInw = TMath::Sqrt(trInw->GetSigmaZ2()+l->zRes*l->zRes);
+    probLayInw(2,nITSAct) = ProbGoodChiSqPlusConfHit(l->radius,l->eff, sigYInw, sigZInw);// corr hit prob 						     
+    probLayInw(0,nITSAct) = ProbNullChiSqPlusConfHit(l->radius,l->eff, sigYInw, sigZInw); // no hit prob 
+    probLayInw(1,nITSAct) = 1.-probLayInw(2,nITSAct)-probLayInw(0,nITSAct);
+    //
+    double sigYOut = TMath::Sqrt(trOut->GetSigmaY2()+l->phiRes*l->phiRes);
+    double sigZOut = TMath::Sqrt(trOut->GetSigmaZ2()+l->zRes*l->zRes);
+    probLayOut(2,nITSAct) = ProbGoodChiSqPlusConfHit(l->radius,l->eff, sigYOut, sigZOut);// corr hit prob 
+    probLayOut(0,nITSAct) = ProbNullChiSqPlusConfHit(l->radius,l->eff, sigYOut, sigZOut);// no hit prob 
+    probLayOut(1,nITSAct) = 1.-probLayOut(2,nITSAct)-probLayOut(0,nITSAct);
+    //
+    double sigYCmb = TMath::Sqrt(trCmb->GetSigmaY2()+l->phiRes*l->phiRes);
+    double sigZCmb = TMath::Sqrt(trCmb->GetSigmaZ2()+l->zRes*l->zRes);
+    probLayCmb(2,nITSAct) = ProbGoodChiSqPlusConfHit(l->radius,l->eff, sigYCmb, sigZCmb); // corr hit prob 
+    probLayCmb(0,nITSAct) = ProbNullChiSqPlusConfHit(l->radius,l->eff, sigYCmb, sigZCmb); // no hit prob 
+    probLayCmb(1,nITSAct) = 1.-probLayCmb(2,nITSAct)-probLayCmb(0,nITSAct);
+    //
+    if (verbose) {
+      const double kCnv=1e4;
+      printf("%s:\t%5.1f %.4f %7.0f | %6.0f %6.0f -> %.3f | %6.0f %6.0f -> %.3f | %6.0f %6.0f -> %.3f\n",
+	     l->GetName(),l->radius,l->radL,HitDensity(l->radius),
+	     sigYInw*kCnv,sigZInw*kCnv,probLayInw(2,nITSAct),
+	     sigYOut*kCnv,sigZOut*kCnv,probLayOut(2,nITSAct),
+	     sigYCmb*kCnv,sigZCmb*kCnv,probLayCmb(2,nITSAct));
+    }
+    nITSAct++;
+    ilr++;
+    //
+  }
+  PrepareEffFakeKombinations(&probKomb,&probLayInw,(double*)ts.fProb[TrackSol::kInw]);
+  PrepareEffFakeKombinations(&probKomb,&probLayOut,(double*)ts.fProb[TrackSol::kOut]);
+  PrepareEffFakeKombinations(&probKomb,&probLayCmb,(double*)ts.fProb[TrackSol::kCmb]);
+  if (verbose) {
+    printf("Corr/Fake probs:             |    %.4f/%.4f       |     %.4f/%.4f      |     %.4f/%.4f\n",
+	   ts.fProb[TrackSol::kInw][0],ts.fProb[TrackSol::kInw][1],
+	   ts.fProb[TrackSol::kOut][0],ts.fProb[TrackSol::kOut][1],
+	   ts.fProb[TrackSol::kCmb][0],ts.fProb[TrackSol::kCmb][1]);
+  }
+  //
+  return kTRUE;
+}
+
+//_____________________________________________________________________
+Bool_t DetectorK::ExtrapolateToR(AliExternalTrackParam* probTr, double rTgt, double mass)
+{
+  // propagate the track to given radius R without updates (final extrapolation in the tracking frame of cyl. at R)
+  double xCurr = probTr->GetX();
+  double rCurr = TMath::Sqrt(xCurr*xCurr + probTr->GetY()*probTr->GetY());
+  //
+  if (TMath::Abs(rCurr-rTgt)<1e-6) return kTRUE;
+  //
+  int dir = rCurr>rTgt ? -1 : 1; // inward or outward?
+  // 
+  // detemine current layer
+  int lrCurr=-1,lrTgt=-1;
+  //
+  if (dir<0) { // inward
+    for (int ilr=fNumberOfLayers;ilr--;) {
+      CylLayerK *l = (CylLayerK*)fLayers.At(ilr);
+      if (lrCurr<0 && l->radius<=rCurr) lrCurr = ilr;
+      if (l->radius>=rTgt)  lrTgt  = ilr;
+    }
+  }
+  else {
+    for (int ilr=0;ilr<fNumberOfLayers;ilr++) {
+      CylLayerK *l = (CylLayerK*)fLayers.At(ilr);
+      if (lrCurr<0 && l->radius>=rCurr) lrCurr = ilr;
+      if (l->radius<rTgt)  lrTgt  = ilr;
+    }
+  }
+  //
+  /*
+  printf("Xcurr: %.2f Xdest: %.2f %d Icurr:%d Itgt:%d Rcurr:%.2f Rdest:%.2f\n",
+	 xCurr,rTgt, dir, lrCurr, lrTgt, 
+	 ((CylLayerK*)fLayers.At(lrCurr))->radius, ((CylLayerK*)fLayers.At(lrTgt))->radius );
+  */
+  //
+  double bGauss = fBField*10;
+  //
+  for (int ilr=lrCurr;ilr!=lrTgt;ilr+=dir) {
+    CylLayerK *l = (CylLayerK*)fLayers.At(ilr);
+    if (!PropagateToR(probTr,l->radius,bGauss,dir)) return kFALSE;
+    if (!probTr->CorrectForMeanMaterial(l->radL, 0, mass , kTRUE)) return kFALSE;
+    if (verboseR) {
+      printf("\nGot to layer %d | ",ilr); probTr->Print();
+    }
+  }
+  // go to destination r
+  if (!PropagateToR(probTr,rTgt,bGauss,dir)) return kFALSE;
+  if (verboseR) {
+    printf("\nGot to r= %.2f | ",rTgt); probTr->Print();
+  }
+
+  //
+  return kTRUE;
 }
 
 
@@ -2091,18 +2523,88 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
   //
   // The flag "dir" can be used to remove the ambiguity of which intersection to take (out of 2 possible)
   // 0  - take the intersection closest to the current track position
-  // >0 - go along the track (increasing fX)
-  // <0 - go backward (decreasing fX)
+  // >0 - go along the track (increasing R)
+  // <0 - go backward (decreasing R)
   //
   // special case of R=0
   if (r<kAlmost0) {x=0; return kTRUE;}
-
+  
   const double* pars = tr->GetParameter();
   const Double_t &fy=pars[0], &sn = pars[2];
+  const double kEps = 1.e-6;
   //
-  double fx = tr->GetX();
+  double fx = tr->GetX(); 
   double crv = tr->GetC(bz);
-  if (TMath::Abs(crv)<=kAlmost0) { // this is a straight track
+  if (TMath::Abs(crv)>kAlmost0) {                                 // helix
+    // get center of the track circle
+    double tR = 1./crv;   // track radius (for the moment signed)
+    double cs = TMath::Sqrt((1-sn)*(1+sn));
+    double x0 = fx - sn*tR;
+    double y0 = fy + cs*tR;
+    double r0 = TMath::Sqrt(x0*x0+y0*y0);
+    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
+    //
+    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
+    tR = TMath::Abs(tR);
+    double tR2r0=1.,g=0,tmp=0;
+    if (TMath::Abs(tR-r0)>kEps) {
+      tR2r0 = tR/r0;
+      g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
+      tmp = 1.+g*tR2r0;
+    }
+    else {
+      tR2r0 = 1.0;
+      g = 0.5*r*r/(r0*tR) - 1;
+      tmp = 0.5*r*r/(r0*r0);
+    }
+    double det = (1.-g)*(1.+g);
+    if (det<0) return kFALSE;         // does not reach raduis r
+    det = TMath::Sqrt(det);    
+    //
+    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
+    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
+    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
+    //
+    x = x0*tmp; 
+    double y = y0*tmp;
+    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
+      double dfx = tR2r0*TMath::Abs(y0)*det;
+      double dfy = tR2r0*x0*TMath::Sign(det,y0);
+      if (dir==0) {                    // chose the one which corresponds to smallest step 
+	double delta = (x-fx)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
+	if (delta<0) x += dfx;
+	else         x -= dfx;
+      }
+      else if (dir>0) {  // along track direction: x must be > fx
+	x -= dfx; // (dfx is positive)
+	double dfeps = fx-x; // handle special case of very small step
+	//	if (verboseR) printf("d+: x:%+e|%+e fx: %+e d %+e\n",x,x+dfx+dfx,fx,dfeps);
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fx*fx+fy*fy - r*r)<kEps) return fx;
+	x += dfx+dfx;
+	if (x-fx>0) return kTRUE;
+	if (x-fx<-kEps) return kFALSE;
+	x = fx; // don't move
+      }
+      else { // backward: x must be < fx
+	x += dfx; // try the smallest step (dfx is positive)	
+	double dfeps = x-fx; // handle special case of very small step
+	//	if (verboseR) printf("d-: x:%+e|%+e fx: %+e d %+e\n",x,x-dfx-dfx,fx,dfeps);
+	if (dfeps<-kEps) return kTRUE;
+	if (TMath::Abs(dfeps)<kEps &&  // are we already in right r?
+	    TMath::Abs(fx*fx+fy*fy - r*r)<kEps) return fx;
+	x-=dfx+dfx;
+	if (x-fx<0) return kTRUE;
+	if (x-fx>kEps) return kFALSE;
+	x = fx; // don't move
+      }
+    }
+    else { // special case: track touching the circle just in 1 point
+      if ( (dir>0&&x<fx) || (dir<0&&x>fx) ) return kFALSE; 
+    }
+  }
+  else { // this is a straight track
     if (TMath::Abs(sn)>=kAlmost1) { // || to Y axis
       double det = (r-fx)*(r+fx);
       if (det<0) return kFALSE;     // does not reach raduis r
@@ -2157,58 +2659,13 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
       x = fx + cs*t;
     }
   }
-  else {                                 // helix
-    // get center of the track circle
-    double tR = 1./crv;   // track radius (for the moment signed)
-    double cs = TMath::Sqrt((1-sn)*(1+sn));
-    double x0 = fx - sn*tR;
-    double y0 = fy + cs*tR;
-    double r0 = TMath::Sqrt(x0*x0+y0*y0);
-    //    printf("Xc:%+e Yc:%+e tR:%e r0:%e\n",x0,y0,tR,r0);
-    //
-    if (r0<=kAlmost0) return kFALSE;            // the track is concentric to circle
-    tR = TMath::Abs(tR);
-    double tR2r0 = tR/r0;
-    double g = 0.5*(r*r/(r0*tR) - tR2r0 - 1./tR2r0);
-    double det = (1.-g)*(1.+g);
-    if (det<0) return kFALSE;         // does not reach raduis r
-    det = TMath::Sqrt(det);
-    //
-    // the intersection happens in 2 points: {x0+tR*C,y0+tR*S} 
-    // with C=f*c0+-|s0|*det and S=f*s0-+c0 sign(s0)*det
-    // where s0 and c0 make direction for the circle center (=x0/r0 and y0/r0)
-    //
-    double tmp = 1.+g*tR2r0;
-    x = x0*tmp; 
-    double y = y0*tmp;
-    if (TMath::Abs(y0)>kAlmost0) { // when y0==0 the x,y is unique
-      double dfx = tR2r0*TMath::Abs(y0)*det;
-      double dfy = tR2r0*x0*TMath::Sign(det,y0);
-      if (dir==0) {                    // chose the one which corresponds to smallest step 
-	double delta = (x-fx)*dfx-(y-fy)*dfy; // the choice of + in C will lead to smaller step if delta<0
-	if (delta<0) x += dfx;
-	else         x -= dfx;
-      }
-      else if (dir>0) {  // along track direction: x must be > fx
-	x -= dfx; // try the smallest step (dfx is positive)
-	if (x<fx && (x+=dfx+dfx)<fx) return kFALSE;
-      }
-      else { // backward: x must be < fx
-	x += dfx; // try the smallest step (dfx is positive)
-	if (x>fx && (x-=dfx+dfx)>fx) return kFALSE;
-      }
-    }
-    else { // special case: track touching the circle just in 1 point
-      if ( (dir>0&&x<fx) || (dir<0&&x>fx) ) return kFALSE; 
-    }
-  }
   //
   return kTRUE;
 }
 
 
 
-Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay) {
+Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay, double *probs) {
 
   if (!probLay) {  
     printf("Error: Layer tracking efficiencies not set \n");
@@ -2268,7 +2725,7 @@ Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *pr
     }
 
   }
-  Double_t *probs = new Double_t[2];
+  if (!probs) probs = new Double_t[2];
   probs[0] = probEff; probs[1] = probFake;
   return probs;
 
@@ -2283,24 +2740,46 @@ Bool_t DetectorK::PropagateToR(AliExternalTrackParam* trc, double r, double b, i
   double rr = r*r;
   int iter = 0;
   const double kTiny = 1e-6;
+  //
+  if (verboseR) {
+    printf("Prop to %f d=%d  ",r,dir); trc->Print();
+  }
   while(1) {
     //    if (!trc->GetXatLabR(r,xR,b,dir)) {
+    //RRR rotate to local tracking frame
+    if (!trc->Rotate(trc->Phi())) {printf("Failed to rotate to local frame %f |",trc->Phi()); trc->Print(); return kFALSE;}
+
+
     if (!GetXatLabR(trc, r ,xR, b, dir)) {
       printf("Track with pt=%f cannot reach radius %f\n",trc->Pt(),r);
       trc->Print();
       return kFALSE;
     }
-    double snp = trc->GetSnpAt(xR,b);
+    double snp = trc->GetSnpAt(xR,b);    
+
     if (!trc->PropagateTo(xR, b)) {printf("Failed to propagate to X=%f for R=%f snp=%f | iter=%d\n",xR,r,snp,iter); trc->Print(); return kFALSE;}
     double rcurr2 = xR*xR + trc->GetY()*trc->GetY();
-    if (TMath::Abs(rcurr2-rr)<kTiny || rr<kTiny) return kTRUE;
-    // two radii correspond to this X...
+    if (TMath::Abs(rcurr2-rr)<kTiny || rr<kTiny) break;
+    //
+    //    printf("new it%d for r=%f (xR=%f) rcurr=%f snp:%f alp:%f\n",iter, r,xR,TMath::Sqrt(rcurr2),trc->GetSnp(),trc->GetAlpha());
+    if (++iter>8) {printf("Failed to propagate to R=%f after %d steps\n",r,iter); trc->Print(); return kFALSE;}
+    if (verboseR) {
+      printf("iter %d ",iter); trc->Print();
+    }
+  } 
+  //
+  /*
+  // rotate to "sensor" frame (along intersection radius)
+  if (r>kTiny) {
     double pos[3]; trc->GetXYZ(pos);
     double phi = TMath::ATan2(pos[1],pos[0]); //TMath::ASin( trc->GetSnp() );
     if (!trc->Rotate(phi)) {printf("Failed to rotate to %f to propagate to R=%f\n",phi,r); trc->Print(); return kFALSE;}
-    //    printf("new it%d for r=%f (xR=%f) rcurr=%f snp:%f alp:%f\n",iter, r,xR,TMath::Sqrt(rcurr2),trc->GetSnp(),trc->GetAlpha());
-    if (++iter>8) {printf("Failed to propagate to R=%f after %d steps\n",r,iter); trc->Print(); return kFALSE;}
-  } 
+  }
+  */
+  if (verboseR) {
+    printf("iter end "); trc->Print();
+  }
+
   return kTRUE;
 }
 

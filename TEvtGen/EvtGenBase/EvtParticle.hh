@@ -28,6 +28,7 @@
 #include "EvtGenBase/EvtId.hh"
 #include "EvtGenBase/EvtSpinType.hh"
 #include <string>
+#include <vector>
 
 class EvtDiracSpinor;
 class EvtVector4C;
@@ -158,6 +159,13 @@ public:
   void makeDaughters(unsigned int ndaug,EvtId *id);
 
   /**
+  * Creates the daughters in the list of ids and 
+  * adds them to the parent. Note that momentum
+  * is left uninitialized, this is _only_ creation.
+  */ 
+  void makeDaughters(unsigned int ndaug, std::vector<EvtId> idVector);
+
+  /**
   * Similar to the routine above except that here 
   * momentum is generated according to phase space 
   * daughters are filled with this momentum.
@@ -235,6 +243,12 @@ public:
   * Returns Id of particle.
   */
   EvtId getId() const;
+
+  /**
+  * Returns the PDG id of the particle
+  */
+  
+  int getPDGId() const;
 
   /** 
   * Returns particle type.
@@ -370,7 +384,7 @@ public:
   //lange - April 29, 2002
   void setId(EvtId id) { _id=id;}
   void initDecay(bool useMinMass=false);
-  void generateMassTree();
+  bool generateMassTree();
 
   double compMassProb();
 
@@ -396,7 +410,9 @@ public:
   double* decayProb() {return _decayProb;}
   void setDecayProb( double p);
 
-  
+  // Return the name of the particle (from the EvtId number)
+  std::string getName();
+   
 protected:
 
   void setp( double e, double px, double py, double pz) { 

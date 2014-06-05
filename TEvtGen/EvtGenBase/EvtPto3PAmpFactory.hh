@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtPto3PAmpFactory.hh,v 1.10 2006/01/31 18:08:46 ddujmic Exp $
+//      $Id: EvtPto3PAmpFactory.hh,v 1.2 2009-03-16 16:42:03 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly

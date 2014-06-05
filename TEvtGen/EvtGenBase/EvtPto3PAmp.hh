@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtPto3PAmp.hh,v 1.14 2008/03/04 20:02:16 apwagner Exp $
+ *    File: $Id: EvtPto3PAmp.hh,v 1.2 2009-03-16 16:41:09 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech
@@ -30,7 +30,7 @@ public:
   // Numerator type
   enum NumType {NBW=0, RBW_ZEMACH=1, RBW_KUEHN=2, RBW_CLEO=3, FLATTE, GAUSS, DOUBLE_GAUSS,
 		NONRES, NONRES_LIN, NONRES_EXP, NONRES_EXP_ADD, NONRES_CCS, NONRES_LAURA, 
-		LASS, GS};
+		LASS, LASS_ELASTIC, LASS_RESONANT, GS};
 
 
   EvtPto3PAmp(EvtDalitzPlot dp, EvtCyclic3::Pair pairAng, EvtCyclic3::Pair pairRes,  

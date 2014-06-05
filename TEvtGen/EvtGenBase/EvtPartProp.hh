@@ -86,12 +86,12 @@ public:
   void reSetMassMin(double mass);
   void reSetMassMax(double mass);
   void reSetBlatt(double blatt);
+  void reSetBlattBirth(double blatt);
   void includeBirthFactor(bool yesno);
   void includeDecayFactor(bool yesno);
   void newLineShape(std::string type);
   void setPWForDecay( int spin, EvtId d1, EvtId d2);
   void setPWForBirthL( int spin, EvtId par, EvtId othD);
-  void fixLSForSP8() {_lineShape->fixForSP8();}
 
 private:
 

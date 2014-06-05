@@ -9,8 +9,11 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliEventServerWindow+;
+#pragma link C++ class AliNetMessage+;
+#pragma link C++ class AliSocket+;
+#pragma link C++ class AliThreadedSocket+;
 #pragma link C++ class AliRecoServerThread+;
+#pragma link C++ class AliEventServerWindow+;
 #pragma link C++ class AliRecoServer+;
 
 #endif

@@ -36,6 +36,12 @@
 
   Example usage:
   AliOCDBtoolkit::MakeDiffExampleUseCase();
+  or from the AliOCDBtoolkit.sh in propmpt
+  ocdbMakeTable AliESDs.root ESD OCDBrec.list
+  ocdbMakeTable galice.root MC OCDBsim.list
+
+  
+   
 
 
 
@@ -70,6 +76,11 @@
 
 */
 
+/*
+  To check:
+  1.) Verify hash value uasge as and MD5 sum - 
+
+ */
 
 using namespace std;
 
@@ -106,7 +117,7 @@ void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   //    - AliESDs.root
   //
   AliCDBManager * man = AliCDBManager::Instance();
-  LoadOCDBFromLog("rec.log",0);
+  AliOCDBtoolkit::LoadOCDBFromLog("rec.log",0);
   const TMap *cdbMapLog= man->GetStorageMap();        // this is map of 
   const TList *cdbListLog=man->GetRetrievedIds();     // this is list of AliCDBId
   //  TList *cdbListLog0=man->GetRetrievedIds();     // this is list of AliCDBId
@@ -114,13 +125,13 @@ void AliOCDBtoolkit::MakeDiffExampleUseCase(){
   TFile *fmc = TFile::Open("galice.root");
   TMap *cdbMapMC= (TMap*)fmc->Get("cdbMap");          // 
   TList *cdbListMC0= (TList*)fmc->Get("cdbList");     // this is list of TObjStrings
-  TList *cdbListMC = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
+  TList *cdbListMC = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
   //
   TFile *fesd = TFile::Open("AliESDs.root");
   TList *listESD = ((TTree*)fesd->Get("esdTree"))->GetUserInfo();
   TMap *cdbMapESD= (TMap*)listESD->FindObject("cdbMap");  
   TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
-  TList *cdbListESD = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
+  TList *cdbListESD = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
   //
   //
   //
@@ -142,26 +153,41 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
   //
   //
   TFile *file;
-  const TMap *cdbMap;
-  const TList *cdbList;
+  const TMap *cdbMap=0;
+  const TList *cdbList=0;
   //
   //
-  
+  AliCDBManager * man = AliCDBManager::Instance();
+
   if(fType.EqualTo("MC",TString::kIgnoreCase)){
         file = TFile::Open(fInput.Data());
-        cdbMap = (TMap*)file->Get("cdbMap");          // 
+        cdbMap = (TMap*)file->Get("cdbMap");
+	if (!cdbMap){
+	  printf("cdbMap does not exist in input file\t%s. Exiting\n",fInput.Data());
+	  return;
+	}
+	// 
+	man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
         TList *cdbListMC0 = (TList*)file->Get("cdbList");     // this is list of TObjStrings
-        cdbList = ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
+        cdbList = AliOCDBtoolkit::ConvertListStringToCDBId(cdbListMC0);        // convert to the TObjArray of AliCDBids
   } 
     else if(fType.EqualTo("ESD",TString::kIgnoreCase)){
       file = TFile::Open(fInput.Data());
+      if (!file) {
+	printf("Input file  does not exist %s. Exiting\n",fInput.Data());
+	return;
+      }
       TList *listESD = ((TTree*)file->Get("esdTree"))->GetUserInfo();
       cdbMap = (TMap*)listESD->FindObject("cdbMap");  
+      if (!cdbMap){
+	printf("cdbMap does not exist in input file\t%s. Exiting\n",fInput.Data());
+	return;
+      }
+      man->SetDefaultStorage(((TPair*)cdbMap->FindObject("default"))->Value()->GetName());
       TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
       cdbList = ConvertListStringToCDBId(cdbListESD0);              // convert to the TObjArray  of AliCDBids
     }
     else if(fType.EqualTo("log",TString::kIgnoreCase)){
-        AliCDBManager * man = AliCDBManager::Instance();
         LoadOCDBFromLog(fInput.Data(),0);
         cdbMap = man->GetStorageMap();        // this is map of 
         cdbList =man->GetRetrievedIds();     // this is list of AliCDBId
@@ -176,7 +202,7 @@ void AliOCDBtoolkit::DumpOCDBAsTxt(const TString fInput, const TString fType, co
 
 
 Bool_t AliOCDBtoolkit::ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion){
-  //
+  // Functionalit
   // Parse OCDB id string and provide basic ocdb information
   //
   //  a.) parse ocdbPath
@@ -239,7 +265,7 @@ TList  * AliOCDBtoolkit::ConvertListStringToCDBId(const TList *cdbList0){
       if (isString){
 	TObjString* sid0 = dynamic_cast<TObjString*> (cdbList0->At(ientry0));
 	Bool_t status =  ParseInfoFromOcdbString(sid0->String(), tmp0);
-	if (!status) continue;
+	if (!status) continue; 
 	array0->AddLast(new AliCDBId(tmp0));
       }
     }
@@ -327,25 +353,66 @@ void AliOCDBtoolkit::LoadOCDBFromLog(const char *logName, Int_t verbose){
   }
 }
 
-
-void AliOCDBtoolkit::LoadOCDBFromMap(const TMap */*cdbMap*/, const TList */*cdbList*/){
+void  AliOCDBtoolkit::SetStorage(const TMap *cdbMap){
+  //
+  // Set storages as speified in the map - TO CHECK.. Should go to the AliCDBmanager if not alreadyhhere
+  //   
+  AliCDBManager * man = AliCDBManager::Instance();  
+  TIter iter(cdbMap->GetTable());
+  TPair* aPair=0;
+  while ((aPair = (TPair*) iter.Next())) {
+    //    aPair->Value();
+    //aPair->Print();
+    if (TString(aPair->GetName())=="default") man->SetDefaultStorage(aPair->Value()->GetName());
+    else
+      man->SetSpecificStorage(aPair->GetName(), aPair->Value()->GetName());
+  }  
+}
+ 
+void AliOCDBtoolkit::LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList){
   //
   // Initilaize OCDB
   // Load OCDB setting as specified in maps
-  // Or Do we have already implementation in AliCDBanager?
+  // Or Do we have already implementation in AliCDBanager?  TO CHECK.. Should go to the AliCDBmanager if not alreadyhhere
+  AliCDBManager * man = AliCDBManager::Instance();  
+  AliOCDBtoolkit::SetStorage(cdbMap);  
+  TIter iter(cdbList);
+  TObjString *ocdbString=0;
+  while (( ocdbString= (TObjString*) iter.Next())) {
+    AliCDBId* cdbId = AliCDBId::MakeFromString(ocdbString->String());
+    try {
+      //      AliCDBEntry * cdbEntry = (AliCDBEntry*) man->Get(*cdbId,kTRUE);
+      man->Get(*cdbId,kTRUE);
+    } catch(const exception &e){
+      cerr << "OCDB retrieval failed!" << endl;
+      cerr << "Detailes: " << e.what() << endl;
+    }   
+  }    
+}
+
+void AliOCDBtoolkit::LoadOCDBFromESD(const char *fname){
+  //
+  // Load OCDB setup from the ESD file
+  // 
+  TFile * fesd = TFile::Open(fname);
+  TList *listESD = ((TTree*)fesd->Get("esdTree"))->GetUserInfo();
+  TMap *cdbMapESD= (TMap*)listESD->FindObject("cdbMap");  
+  TList *cdbListESD0= (TList*)listESD->FindObject("cdbList"); // this is list of TObjStrings
+  AliOCDBtoolkit::SetStorage(cdbMapESD); 
+  AliOCDBtoolkit::LoadOCDBFromMap(cdbMapESD, cdbListESD0);
 }
 
 
-
-void AliOCDBtoolkit::MakeDiff(const TMap */*cdbMap0*/, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
+void AliOCDBtoolkit::MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap */*cdbMap1*/, const TList *cdbList1, Int_t /*verbose*/){
   //
   //
   // Print difference between the 2 ocdb maps
   // Input:
   //   maps and list charactireizing OCDB setup  
   // Output:
-  //   To be decided, currently it is the teinal output
+  //   To be decided.
   //
+  AliOCDBtoolkit::SetStorage(cdbMap0);
   Int_t entriesList0=cdbList0->GetEntries();
   Int_t entriesList1=cdbList1->GetEntries();
   //
@@ -388,16 +455,16 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
   // TPC/Calib/RecoParam /hera/alice/jwagner/software/aliroot/AliRoot_TPCdev/OCDB/ TPC/Calib/RecoParam/Run0_999999999_v0_s0.root $SIZE_AliCDBEntry_Object $HASH_AliCDBEntry_Object
   
   AliCDBManager * man = AliCDBManager::Instance();
-  
+  AliOCDBtoolkit::SetStorage(cdbMap0);  
   TList * cdbList = (TList*) cdbList0;   // sorted array
   cdbList->Sort();
 
   TIter next(cdbList);
-  AliCDBId *CDBId;
-  TString cdbName;
-  TString cdbPath;
+  AliCDBId *CDBId=0;
+  TString cdbName="";
+  TString cdbPath="";
   TObjString *ostr;
-  AliCDBEntry *cdbEntry;
+  AliCDBEntry *cdbEntry=0;
   UInt_t hash;
   TMessage * file;
   Int_t size; 
@@ -409,8 +476,19 @@ void AliOCDBtoolkit::DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const 
     if(!ostr) ostr = (TObjString*)cdbMap0->GetValue("default");
     cdbPath = ostr->GetString();
     if(cdbPath.Contains("local://"))cdbPath=cdbPath(8,cdbPath.Length()).Data();
-    
-    cdbEntry = (AliCDBEntry*) man->Get(*CDBId);
+    try {
+      cdbEntry = (AliCDBEntry*) man->Get(*CDBId,kTRUE);
+    }catch(const exception &e){
+      cerr << "OCDB retrieval failed!" << endl;
+      cerr << "Detailes: " << e.what() << endl;
+      hash=0;
+      size=-1;
+    }  
+    if (!cdbEntry) {
+      printf("Object not avaliable\n");
+      CDBId->Print();
+      continue;
+    }
     TObject *obj = cdbEntry->GetObject();
     file = new TMessage(TBuffer::kWrite);
     file->WriteObject(obj);
@@ -670,8 +748,8 @@ void DumpTObjectArray(){
 Bool_t AliOCDBtoolkit::AddoptOCDBEntry( const char *finput, const char *output,  Int_t ustartRun, Int_t uendRun){
   //
   // Addopt OCDB entry - keeping all of the CDBentry quantities
-  // finput = "/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual/TPC/Calib/ClusterParam/Run127712_130850_v4_s0.root"
-  
+  // // Example usage: 
+  //  AliOCDBtoolkit::AddoptOCDBEntry("/cvmfs/alice.gsi.de/alice/simulation/2008/v4-15-Release/Residual/TPC/Calib/ClusterParam/Run127712_130850_v4_s0.root",0,0,AliCDBRunRange::Infinity())
   TFile * fin = TFile::Open(finput);
   if (!fin) return kFALSE;
   AliCDBEntry * entry = (AliCDBEntry*) fin->Get("AliCDBEntry");
@@ -698,4 +776,15 @@ Bool_t AliOCDBtoolkit::AddoptOCDBEntry( const char *finput, const char *output, 
   id1=new AliCDBId(idIn.GetPath(), ustartRun, uendRun);
   pocdbStorage->Put(entry->GetObject(), (*id1), metaData);
   return kTRUE;
+}
+
+
+void AliOCDBtoolkit::MakeSnapshotFromTxt(const TString fInput, const TString outfile, Bool_t singleKeys){
+  //
+  // Make snasphot form the txt file
+  //
+  AliCDBManager * man = AliCDBManager::Instance();
+  LoadOCDBFromList(fInput.Data());
+  man->DumpToSnapshotFile(outfile.Data(), singleKeys);
+
 }

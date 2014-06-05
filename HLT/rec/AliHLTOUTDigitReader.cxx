@@ -22,7 +22,7 @@
 ///
 
 #include "AliHLTOUTDigitReader.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include "AliDAQ.h"
 #include "TTree.h"
 #include "TFile.h"
@@ -78,9 +78,11 @@ Bool_t AliHLTOUTDigitReader::ReadNextData(UChar_t*& data)
   while (++fCurrentLink<fNofDDLs) {
     if (fMinDDL>-1 && fMinDDL>fpEquipments[fCurrentLink]) continue;
     if (fMaxDDL>-1 && fMaxDDL<fpEquipments[fCurrentLink]) continue;
-    if (fppDigitArrays[fCurrentLink]->GetSize()>(int)sizeof(AliRawDataHeader)) {
+    AliHLTCDHWrapper cdh((void*)fppDigitArrays[fCurrentLink]->GetArray());
+    UInt_t headerSize=cdh.GetHeaderSize();
+    if (fppDigitArrays[fCurrentLink]->GetSize()>(int)headerSize) {
       data=reinterpret_cast<UChar_t*>(fppDigitArrays[fCurrentLink]->GetArray());
-      data+=sizeof(AliRawDataHeader);
+      data+=headerSize;
       return kTRUE;
     }
   }
@@ -98,16 +100,17 @@ int AliHLTOUTDigitReader::GetDataSize()
 {
   // overloaded from AliHLTOUTHomerCollection: get size of current DDL
   if (fCurrentLink>=0 && fCurrentLink<fNofDDLs && fppDigitArrays) {
-    return fppDigitArrays[fCurrentLink]->GetSize()-sizeof(AliRawDataHeader);
+    AliHLTCDHWrapper cdh((void*)fppDigitArrays[fCurrentLink]->GetArray());
+    return fppDigitArrays[fCurrentLink]->GetSize()-cdh.GetHeaderSize();
   }
   return 0;
 }
 
-const AliRawDataHeader* AliHLTOUTDigitReader::GetDataHeader()
+AliHLTCDHWrapper AliHLTOUTDigitReader::GetDataHeader()
 {
   // overloaded from AliHLTOUTHomerCollection: get data header of current DDL
   if (fCurrentLink>=0 && fCurrentLink<fNofDDLs && fppDigitArrays) {
-    return reinterpret_cast<AliRawDataHeader*>(fppDigitArrays[fCurrentLink]->GetArray());
+    return AliHLTCDHWrapper(fppDigitArrays[fCurrentLink]->GetArray());
   }
   return NULL;
 }

@@ -56,8 +56,9 @@ class EvtDiracSpinor {
 				  const EvtDiracSpinor& u2); 
   friend EvtDiracSpinor operator*(const EvtComplex& c,
 				  const EvtDiracSpinor& d);
-  friend EvtComplex operator*(const EvtDiracSpinor& d, const EvtDiracSpinor& dp);
 
+  friend EvtComplex operator*(const EvtDiracSpinor& d ,
+                              const EvtDiracSpinor& dp ) ;
  
   friend std::ostream& operator<<(std::ostream& s, const EvtDiracSpinor& c);  
 

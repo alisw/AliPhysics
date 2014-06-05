@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------
 // File and Version Information: 
-//      $Id: EvtMassAmp.hh,v 1.11 2006/01/25 19:55:43 lange Exp $
+//      $Id: EvtMassAmp.hh,v 1.2 2009-03-16 16:42:03 robbep Exp $
 // 
 // Environment:
 //      This software is part of the EvtGen package developed jointly

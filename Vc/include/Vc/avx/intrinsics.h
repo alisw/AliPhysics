@@ -210,9 +210,9 @@ namespace AVX
     static Vc_INTRINSIC m256i Vc_CONST _mm256_setmin_epi32() { return _mm256_castps_si256(_mm256_broadcast_ss(reinterpret_cast<const float *>(&c_general::signMaskFloat[1]))); }
 
 #ifdef VC_REQUIRES_MACRO_FOR_IMMEDIATE_ARGUMENT
-#define _mm_extract_epu8 _mm_extract_epi8
-#define _mm_extract_epu16 _mm_extract_epi16
-#define _mm_extract_epu32 _mm_extract_epi32
+#define _mm_extract_epu8 (x, i) (static_cast<unsigned char> (_mm_extract_epi8 ((x), (i))))
+#define _mm_extract_epu16(x, i) (static_cast<unsigned short>(_mm_extract_epi16((x), (i))))
+#define _mm_extract_epu32(x, i) (static_cast<unsigned int>  (_mm_extract_epi32((x), (i))))
 #else
     static Vc_INTRINSIC unsigned char Vc_CONST _mm_extract_epu8(param128i x, const int i) { return _mm_extract_epi8(x, i); }
     static Vc_INTRINSIC unsigned short Vc_CONST _mm_extract_epu16(param128i x, const int i) { return _mm_extract_epi16(x, i); }
@@ -289,6 +289,16 @@ namespace AVX
     AVX_TO_SSE_2(cmpgt_epi16)
     AVX_TO_SSE_2(cmpgt_epi32)
 
+    // This code is AVX only (without AVX2). We never asked for AVX2 intrinsics. So go away... :)
+#if defined _mm256_srli_si256
+#undef _mm256_srli_si256
+#endif
+#if defined _mm256_slli_si256
+#undef _mm256_slli_si256
+#endif
+#if defined _mm256_blend_epi16
+#undef _mm256_blend_epi16
+#endif
     static Vc_INTRINSIC m256i Vc_CONST _mm256_srli_si256(param256i a0, const int i) {
         const m128i vLo = _mm256_castsi256_si128(a0);
         const m128i vHi = _mm256_extractf128_si256(a0, 1);

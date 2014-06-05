@@ -1279,12 +1279,22 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   multV0AEq=0.;
   multV0CEq=0.;
   if (esd) { // only for ESD?
-    for(Int_t iCh = 4; iCh < 7; ++iCh) {
+    for(Int_t iCh = 32; iCh < 64; ++iCh) {
       Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
       multV0AEq += mult;
     }
-    for(Int_t iCh = 0; iCh < 3; ++iCh) {
+    for(Int_t iCh = 0; iCh < 32; ++iCh) {
       Double_t mult = esd->GetVZEROEqMultiplicity(iCh);
+      multV0CEq += mult;
+    }
+  }
+  else {
+    for(Int_t iCh = 32; iCh < 64; ++iCh) {
+      Double_t mult = aod->GetVZEROEqMultiplicity(iCh);
+      multV0AEq += mult;
+    }
+    for(Int_t iCh = 0; iCh < 32; ++iCh) {
+      Double_t mult = aod->GetVZEROEqMultiplicity(iCh);
       multV0CEq += mult;
     }
   }

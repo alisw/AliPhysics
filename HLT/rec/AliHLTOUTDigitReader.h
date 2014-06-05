@@ -38,7 +38,7 @@ class AliHLTOUTDigitReader : public AliHLTOUTHomerCollection {
   Bool_t ReadNextData(UChar_t*& data);
   int Reset();
   int GetDataSize();
-  const AliRawDataHeader* GetDataHeader();
+  AliHLTCDHWrapper GetDataHeader();
   void SelectEquipment(int equipmentType, int minEquipmentId = -1, int maxEquipmentId = -1);
   int GetEquipmentId();
 

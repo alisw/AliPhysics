@@ -39,7 +39,7 @@
 #include "TString.h"
 #include <sys/time.h>
 #include "AliHLTAltroEncoder.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 
 using namespace std;
 
@@ -263,7 +263,8 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
       continue;
     }
 
-    if (iter->fSize<=sizeof(AliRawDataHeader)) {
+    AliHLTCDHWrapper header(iter->fPtr);
+    if (iter->fSize<=header.GetHeaderSize()) {
       // forward empty DDLs
       outputBlocks.push_back(*iter);
       continue;
@@ -318,7 +319,7 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
       }
     }
 
-    if( iter->fSize > sizeof(AliRawDataHeader )){
+    if( iter->fSize > header.GetHeaderSize()){
   
       AliHLTAltroEncoder *altroEncoder = new AliHLTAltroEncoder;
       altroEncoder->SetUse32BitFormat(kTRUE);
@@ -332,7 +333,7 @@ int AliHLTTPCHWCFDataReverterComponent::DoEvent( const AliHLTComponentEventData&
       altroEncoder->SetBuffer(outputPtr,capacity); //tests if one overwrite the buffer is done in the encoder
 
       // set CDH from the beginning of buffer
-      altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
+      altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,header.GetHeaderSize());
 
       UChar_t *RCUTrailer=NULL;
       Int_t RCUTrailerSize=fDigitReader->GetRCUTrailerSize();

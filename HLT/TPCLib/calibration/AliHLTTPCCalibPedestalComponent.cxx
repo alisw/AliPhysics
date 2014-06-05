@@ -31,7 +31,6 @@
 
 #include "AliHLTTPCCalibPedestalComponent.h"
 
-#include "AliRawDataHeader.h"
 #include "AliRawReaderMemory.h"
 #include "AliTPCRawStream.h"
 

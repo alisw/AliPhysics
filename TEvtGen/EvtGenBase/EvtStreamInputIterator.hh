@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Project: BaBar detector at the SLAC PEP-II B-factory
  * Package: EvtGenBase
- *    File: $Id: EvtStreamInputIterator.hh,v 1.1 2003/03/03 05:38:22 dvoretsk Exp $
+ *    File: $Id: EvtStreamInputIterator.hh,v 1.2 2009-03-16 16:41:09 robbep Exp $
  *  Author: Alexei Dvoretskii, dvoretsk@slac.stanford.edu, 2001-2002
  *
  * Copyright (C) 2002 Caltech
@@ -14,7 +14,10 @@
 #define EVT_STREAM_INPUT_ITERATOR_HH
 
 #include "EvtGenBase/EvtStreamAdapter.hh"
+
 #include <iterator>
+#include <cstddef>
+
 using std::input_iterator_tag;
 
 template <class Point>
@@ -23,6 +26,7 @@ public:
 
   typedef input_iterator_tag iterator_category;
   typedef Point              value_type;
+  typedef ptrdiff_t          difference_type;
   typedef const Point*       pointer;
   typedef const Point&       reference;
 

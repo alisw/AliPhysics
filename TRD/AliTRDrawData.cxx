@@ -491,20 +491,18 @@ Int_t AliTRDrawData::ProduceHcData(AliTRDarrayADC *digits, Int_t side, Int_t det
 	      }
 	    }
 	  }
-	  
-	  // in case of tracklet writing copy temp data to final buffer
-	  if (trackletOn) {
-	    if (nw + *tempnw < maxSize) {
-	      memcpy(&buf[nw], tempBuffer, *tempnw * sizeof(UInt_t));
-	      nw += *tempnw;
-	    }
-	    else {
-	      AliError("Buffer overflow detected");
-	    }
-	  }
 	}
+	  
+	// in case of tracklet writing copy temp data to final buffer
+	if (trackletOn) {
+	  if (nw + *tempnw < maxSize) {
+	    memcpy(&buf[nw], tempBuffer, *tempnw * sizeof(UInt_t));
+	    nw += *tempnw;
+	  }
+	  else {
+	    AliError("Buffer overflow detected");
+	  }
 
-        if (trackletOn) {
 	  delete [] tempBuffer;
 	  delete tempof;
           delete tempnw;

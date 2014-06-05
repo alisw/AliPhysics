@@ -29,7 +29,11 @@
 class EvtGammaMatrix;
 class EvtVector4C;
 
-EvtGammaMatrix slash(const EvtVector4C& p);
+namespace EvtGenFunctions {
+  // slash or Feynman slash a 4-vector
+  EvtGammaMatrix slash( const EvtVector4C& p ) ;
+  EvtGammaMatrix slash( const EvtVector4R& p ) ;
+};
 
 class EvtGammaMatrix {
 
@@ -37,14 +41,11 @@ class EvtGammaMatrix {
     friend EvtGammaMatrix operator*(const EvtGammaMatrix& g, const EvtComplex& c);
     friend EvtGammaMatrix operator/(const EvtGammaMatrix& g, const double d);
     friend EvtDiracSpinor operator*(const EvtGammaMatrix& g,const EvtDiracSpinor& d);
-    //friend EvtComplex operator*(const EvtDiracSpinor& d,const EvtDiracSpinor& dp);
     friend EvtGammaMatrix operator+(const EvtGammaMatrix& g1,const EvtGammaMatrix& g2);
     friend EvtGammaMatrix operator-(const EvtGammaMatrix& g1,const EvtGammaMatrix& g2);
     friend EvtGammaMatrix operator*(const EvtGammaMatrix& g1,const EvtGammaMatrix& g2);
     friend std::ostream& operator<<(std::ostream& s, const EvtGammaMatrix& v);
     friend EvtDiracSpinor EvtDiracSpinor::adjoint() const;
-    // slash or Feynman slash a 4-vector
-    friend EvtGammaMatrix slash(const EvtVector4C& p);
 
     
 public:
@@ -96,7 +97,7 @@ inline EvtGammaMatrix operator*(const EvtGammaMatrix& g1,const EvtGammaMatrix& g
   return EvtGammaMatrix(g1)*=g2;
 }
 
-inline EvtGammaMatrix operator/(const EvtGammaMatrix& g, double d)
+inline EvtGammaMatrix operator/(const EvtGammaMatrix& g, const double d)
 {
     return g * EvtComplex(1/d,0);
 }

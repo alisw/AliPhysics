@@ -187,6 +187,7 @@ public:
 
   // Delegated methods for fHeader
   void      SetTriggerMask(ULong64_t n) {if(fHeader) fHeader->SetTriggerMask(n);}
+  void      SetTriggerMaskNext50(ULong64_t n) {if(fHeader) fHeader->SetTriggerMaskNext50(n);}
   void      SetOrbitNumber(UInt_t n) {if(fHeader) fHeader->SetOrbitNumber(n);}
   void      SetTimeStamp(UInt_t timeStamp){if(fHeader) fHeader->SetTimeStamp(timeStamp);}
   void      SetEventType(UInt_t eventType){if(fHeader) fHeader->SetEventType(eventType);}
@@ -197,8 +198,11 @@ public:
   void      SetTriggerCluster(UChar_t n) {if(fHeader) fHeader->SetTriggerCluster(n);}
   
   ULong64_t GetTriggerMask() const {return fHeader?fHeader->GetTriggerMask():0;}
-  TString   GetFiredTriggerClasses() const {return (fESDRun&&fHeader)?fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask()):"";}
-  Bool_t    IsTriggerClassFired(const char *name) const {return (fESDRun&&fHeader)?fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name):kFALSE;}
+  ULong64_t GetTriggerMaskNext50() const {return fHeader?fHeader->GetTriggerMaskNext50():0;}
+  //TString   GetFiredTriggerClasses() const {return (fESDRun&&fHeader)?fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask()):"";}
+  TString   GetFiredTriggerClasses() const {return (fESDRun&&fHeader)?fESDRun->GetFiredTriggerClasses(fHeader->GetTriggerMask(),fHeader->GetTriggerMaskNext50()):"";}
+  //Bool_t    IsTriggerClassFired(const char *name) const {return (fESDRun&&fHeader)?fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),name):kFALSE;}
+  Bool_t    IsTriggerClassFired(const char *name) const {return (fESDRun&&fHeader)?fESDRun->IsTriggerClassFired(fHeader->GetTriggerMask(),fHeader->GetTriggerMaskNext50(),name):kFALSE;}
   Bool_t    IsEventSelected(const char *trigExpr) const;
   TObject*  GetHLTTriggerDecision() const;
   TString   GetHLTTriggerDescription() const;

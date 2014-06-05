@@ -219,6 +219,10 @@ class AliHLTSystem : public AliHLTLogging {
 	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
 	  AliHLTUInt32_t participatingDetectors = 0);
 
+  int Run(Int_t iNofEvents, int bStop, AliHLTTriggerMask_t trgMask,
+	  AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
+	  AliHLTUInt32_t participatingDetectors = 0);
+
   /**
    * Run the tasklist
    * Somehow the 64bit variable/default value did not work out on mac.
@@ -281,7 +285,7 @@ class AliHLTSystem : public AliHLTLogging {
    * The @ref AliHLTTask::ProcessTask method is called for each task.
    * @return neg error code if failed
    */
-  int ProcessTasks(Int_t eventNo, AliHLTUInt64_t trgMask,
+  int ProcessTasks(Int_t eventNo, AliHLTTriggerMask_t trgMask,
 		   AliHLTUInt32_t timestamp, AliHLTUInt32_t eventtype,
 		   AliHLTUInt32_t participatingDetectors = 0);
 

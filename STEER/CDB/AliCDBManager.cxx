@@ -18,7 +18,6 @@
 //   e-mail: Alberto.Colla@cern.ch
 //-------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <fstream>
 
 #include "AliCDBManager.h"
@@ -104,10 +103,12 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
 }
 
 //_____________________________________________________________________________
-void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys){
+void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys) const {
 //
-// dump the entries map and the ids list to
-// the output file
+// If singleKeys is true, dump the entries map and the ids list to the snapshot file
+// (provided mostly for historical reasons, the file is then read with InitFromSnapshot),
+// otherwise write to file each AliCDBEntry separately (the is the preferred way, the file
+// is then read with SetSnapshotMode).
 
   // open the file
   TFile *f = TFile::Open(snapshotFileName,"RECREATE");
@@ -120,16 +121,11 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
 
   f->cd();
-
   if(singleKeys){
     f->WriteObject(&fEntryCache,"CDBentriesMap");
     f->WriteObject(fIds,"CDBidsList");
   }else{
     // We write the entries one by one named by their calibration path
-    /*
-       fEntryCache.Write("CDBentriesMap");
-       fIds->Write("CDBidsList");
-       */
     TIter iter(fEntryCache.GetTable());
     TPair* pair = 0;
     while((pair = dynamic_cast<TPair*> (iter.Next()))){
@@ -144,8 +140,28 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   }
   f->Close();
   delete f;
+}
 
-  exit(0);
+//_____________________________________________________________________________
+void  AliCDBManager::DumpToLightSnapshotFile(const char* lightSnapshotFileName) const {
+// The light snapshot does not contain the CDB objects (AliCDBEntries) but
+// only the information identifying them, that is the map of storages and
+// the list of AliCDBIds, as in the UserInfo of AliESDs.root
+
+  // open the file
+  TFile *f = TFile::Open(lightSnapshotFileName,"RECREATE");
+  if (!f || f->IsZombie()){
+    AliError(Form("Cannot open file %s",lightSnapshotFileName));
+    return;
+  }
+
+  AliInfo(Form("Dumping map of storages with %d entries!\n", fStorageMap->GetEntries()));
+  AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
+  f->WriteObject(fStorageMap,"cdbStoragesMap");
+  f->WriteObject(fIds,"CDBidsList");
+
+  f->Close();
+  delete f;
 }
 
 //_____________________________________________________________________________
@@ -1015,9 +1031,7 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
     fIds->Add(entry->GetId().Clone());
   }
 
-
   return entry;
-
 }
 
 //_____________________________________________________________________________

@@ -29,7 +29,7 @@
 #include "AliAltroRawStreamV3.h"
 #include "AliHLTAltroEncoder.h"
 #include "AliRawReaderMemory.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
 #include <memory>
 
 using namespace std;
@@ -217,8 +217,8 @@ int AliHLTAltroTimebinAverageComponent::DoEvent( const AliHLTComponentEventData&
     }
 
     altroEncoder->SetBuffer(outputPtr+offset,capacity-offset);
-    AliRawDataHeader cdh;
-    altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,sizeof(AliRawDataHeader));
+    AliHLTCDHWrapper cdh(iter->fPtr);
+    altroEncoder->SetCDH((AliHLTUInt8_t*)iter->fPtr,cdh.GetHeaderSize());
 
     altroEncoder->SetRCUTrailer(RCUTrailer, RCUTrailerSize);
 

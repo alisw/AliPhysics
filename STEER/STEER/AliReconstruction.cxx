@@ -203,6 +203,7 @@
 #include "AliLHCData.h"
 #include "ARVersion.h"
 #include <RVersion.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/resource.h>
 ClassImp(AliReconstruction)
@@ -1695,9 +1696,7 @@ void AliReconstruction::Begin(TTree *)
   if(toCDBSnapshot)
   {
       AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data(),kFALSE);
-      AliCDBManager::Instance()->UnloadFromCache("*/Align/*");
-      if(cdbCache->Contains("GRP/Calib/CosmicTriggers"))
-	  AliCDBManager::Instance()->UnloadFromCache("GRP/Calib/CosmicTriggers");
+      exit(0);
   }
 
   if (fInput && gProof) {

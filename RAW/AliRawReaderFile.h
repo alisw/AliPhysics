@@ -81,7 +81,7 @@ class AliRawReaderFile: public AliRawReader {
     UInt_t           fType;        // event type (no idea from where to get it - put physics_event)
     UInt_t           fRunNb;       // run number (no idea from where to get it - put 0)
     UInt_t           fId[2];       // id field (read from the first CDH found, period is not filled)
-    UInt_t           fTriggerPattern[2]; // the trigger class pattern (read from the first CDH found)
+    UInt_t           fTriggerPattern[4]; // the trigger class pattern (read from the first CDH found)
     UInt_t           fDetectorPattern;   // the detector pattern (no idea from where to read it)
     UInt_t           fTimestamp;   // event timestamp (read from the DDL file creation time)
 

@@ -89,10 +89,10 @@ struct AliHLTTRDClustersArray {
   AliHLTTRDClustersArray(Int_t det):fDetector(det),fCount(0){}
   Short_t  fDetector;
   UShort_t fCount;
-#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC) || defined(__clang__)
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   cluster_type fCluster[1];
 #else
-  cluster_type fCluster[];
+  cluster_type fCluster[0];
 #endif
 };
 

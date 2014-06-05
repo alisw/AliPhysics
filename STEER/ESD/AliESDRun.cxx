@@ -304,6 +304,7 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
   // list of trigger classes that
   // have been fired. Uses the trigger
   // class mask as an argument.
+  // Works both for first50 and next50 classes
   TString trclasses;
   for(Int_t i = 0; i < kNTriggerClasses; i++) {
     if (mask & (1ull << i)) {
@@ -319,6 +320,18 @@ TString AliESDRun::GetFiredTriggerClasses(ULong64_t mask) const
   return trclasses;
 }
 
+//______________________________________________________________________________
+TString AliESDRun::GetFiredTriggerClasses(ULong64_t masklow,ULong64_t maskhigh) const
+{
+ // Contruct and returns list of trigger classes for 100 classes
+ TString trclasseslow;
+ trclasseslow  = GetFiredTriggerClasses(masklow);
+ TString trclasseshigh;
+ trclasseshigh  = GetFiredTriggerClasses(maskhigh);
+ TString trclasses;
+ trclasses = trclasseslow+trclasseshigh;
+ return trclasses;
+}
 //______________________________________________________________________________
 Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
 {
@@ -337,7 +350,11 @@ Bool_t AliESDRun::IsTriggerClassFired(ULong64_t mask, const char *name) const
   else
     return kFALSE;
 }
-
+//______________________________________________________________________________
+Bool_t AliESDRun::IsTriggerClassFired(ULong64_t masklow, ULong64_t maskhigh,const char *name) const
+{
+ return (IsTriggerClassFired(masklow,name) || IsTriggerClassFired(maskhigh,name));
+}
 //_____________________________________________________________________________
 Bool_t AliESDRun::InitMagneticField() const
 {

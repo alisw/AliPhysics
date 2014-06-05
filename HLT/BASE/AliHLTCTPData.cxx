@@ -27,7 +27,9 @@
 #include "TObjString.h"
 #include "TFormula.h"
 #include "AliHLTComponent.h"
-#include "AliRawDataHeader.h"
+#include "AliHLTCDHWrapper.h"
+#include <limits>
+#include <sstream>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTCTPData)
@@ -191,7 +193,7 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
 	  if (index<gkNCTPTriggerClasses) {
 	    AliHLTReadoutList* pCTPClass=dynamic_cast<AliHLTReadoutList*>(fClassIds.At(index));
 	    if (pCTPClass) {
-	      fMask|=(AliHLTUInt64_t)0x1 << index;
+	      fMask.set(index);
 	      pCTPClass->SetTitle("CTP Class");
 	      pCTPClass->SetName((((TObjString*)entryParams->At(kName))->GetString()).Data());
 	      TObjArray* detectors=(((TObjString*)entryParams->At(kDetectors))->GetString()).Tokenize("-");
@@ -209,7 +211,7 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
 	    } else {
 	    }
 	  } else {
-	    // the trigger bitfield is fixed to 50 bits (gkNCTPTriggerClasses)
+	    // the trigger bitfield is fixed to 100 bits (gkNCTPTriggerClasses)
 	    HLTError("invalid trigger class entry %s, index width of trigger bitfield exceeded (%d)", entry.Data(), gkNCTPTriggerClasses);
 	  }
 	} else {
@@ -227,39 +229,43 @@ int AliHLTCTPData::InitCTPTriggerClasses(const char* ctpString)
   return 0;
 }
 
-AliHLTUInt64_t AliHLTCTPData::ActiveTriggers(const AliHLTComponentTriggerData& trigData)
+AliHLTTriggerMask_t AliHLTCTPData::ActiveTriggers(const AliHLTComponentTriggerData& trigData)
 {
   // extract active triggers from the trigger data
+  AliHLTCDHWrapper cdh;
+  if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL) != 0) return 0x0;
+  if ((cdh.GetL1TriggerMessage() & 0x1) == 0x1) return 0x0;  // invalid for software triggers.
 
-  const AliRawDataHeader* cdh = NULL;
-  if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL) != 0) return (AliHLTUInt64_t)0;
-  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return 0x0;  // invalid for software triggers.
-  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
-  AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
-  return triggerMask;
+  AliHLTTriggerMask_t triggerLow(cdh.GetTriggerClasses()); //low bits
+  AliHLTTriggerMask_t triggerHigh(cdh.GetTriggerClassesNext50()); // high bits
+
+  return triggerLow | (triggerHigh << 50);
 }
 
 bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, const AliHLTComponentTriggerData& trigData) const
 {
   // see header file for function documentation
   
-  const AliRawDataHeader* cdh = NULL;
+  AliHLTCDHWrapper cdh;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return false;
-  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return false;  // invalid for software triggers.
-  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
-  AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
+  if ((cdh.GetL1TriggerMessage() & 0x1) == 0x1) return false;  // invalid for software triggers.
+
+  AliHLTTriggerMask_t triggerMask(cdh.GetTriggerClasses());
+  AliHLTTriggerMask_t triggerHigh(cdh.GetTriggerClassesNext50());
+  triggerMask |= (triggerHigh << 50);
 
   if (fMask!=0 && (triggerMask & fMask)==0) {
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
-    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
+    HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s", 
+	       TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str() );
+    for (int i=0; i<gkAliHLTCommonHeaderCount; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
     return false;
   }
 
   return EvaluateCTPTriggerClass(expression, triggerMask);
 }
 
-bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64_t triggerMask) const
+bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTTriggerMask_t triggerMask) const
 {
   // see header file for function documentation
 
@@ -286,7 +292,7 @@ bool AliHLTCTPData::EvaluateCTPTriggerClass(const char* expression, AliHLTUInt64
 	TString replace; replace.Form("[%d]", (int)par.size());
 	//HLTDebug("replacing %s with %s in \"%s\"", className.Data(), replace.Data(), condition.Data());
 	condition.ReplaceAll(className, replace);
-	if (triggerMask&((AliHLTUInt64_t)0x1<<(*pMap)[index])) par.push_back(1.0);
+	if ( triggerMask.test((*pMap)[index]) ) par.push_back(1.0);
 	else par.push_back(0.0);
       }
     }
@@ -320,7 +326,7 @@ int AliHLTCTPData::CheckTrigger(const char* name) const
   // check status of a trigger class
   int index=Index(name);
   if (index<0) return index;
-  return (fTriggers&(0x1<<index))>0?1:0;
+  return ( fTriggers.test(index) ? 1 : 0 );
 }
 
 void AliHLTCTPData::Increment(const char* classIds)
@@ -337,12 +343,12 @@ void AliHLTCTPData::Increment(const char* classIds)
   }
 }
 
-void AliHLTCTPData::Increment(AliHLTUInt64_t triggerPattern)
+void AliHLTCTPData::Increment(AliHLTTriggerMask_t triggerPattern)
 {
   // see header file for function documentation
-  AliHLTUInt64_t pattern=triggerPattern&fMask;
+  AliHLTTriggerMask_t pattern=triggerPattern&fMask;
   for (int i=0; i<fCounters.GetSize(); i++) {
-    if ((pattern&((AliHLTUInt64_t)0x1<<i))==0) continue;
+    if (!pattern.test(i)) continue;
     fCounters[i]++;    
   }
 }
@@ -351,7 +357,7 @@ void AliHLTCTPData::Increment(int classIdx)
 {
   // see header file for function documentation
   if (classIdx<fCounters.GetSize() &&
-      (fMask&((AliHLTUInt64_t)0x1<<classIdx))) {
+      fMask.test(classIdx)) {
     fCounters[classIdx]++;    
   }
   
@@ -360,17 +366,21 @@ void AliHLTCTPData::Increment(int classIdx)
 int AliHLTCTPData::Increment(AliHLTComponentTriggerData& trigData)
 {
   // see header file for function documentation
-  const AliRawDataHeader* cdh = NULL;
+  AliHLTCDHWrapper cdh;
   int result = AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true);
   if (result != 0) return result;
-  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return 0;  // invalid for software triggers.
-  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
-  AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
+  if ((cdh.GetL1TriggerMessage() & 0x1) == 0x1) return 0;  // invalid for software triggers.
 
-  if (fMask!=0 && (triggerMask & fMask)==0) {
+  AliHLTTriggerMask_t triggerMask(cdh.GetTriggerClasses());
+  AliHLTTriggerMask_t triggerHigh(cdh.GetTriggerClassesNext50());
+  triggerMask |= (triggerHigh << 50);
+
+  if (fMask.any() && (triggerMask & fMask).none()) {
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
-    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
+    HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s", 
+	       TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str());
+    for (int i=0; i<gkAliHLTCommonHeaderCount; i++) 
+      HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
   Increment(triggerMask);
   return 0;
@@ -426,31 +436,35 @@ AliHLTReadoutList AliHLTCTPData::ReadoutList(const AliHLTComponentTriggerData& t
 {
   // see header file for function documentation
 
-  const AliRawDataHeader* cdh = NULL;
+  AliHLTCDHWrapper cdh;
   if (AliHLTComponent::ExtractTriggerData(trigData, NULL, NULL, &cdh, NULL, true) != 0) return AliHLTReadoutList();
   // Check if we are dealing with a software trigger. If so then we need to return
   // a readout list with everything set because the CTP trigger bits are invalid.
   // Thus we assume that everything should be read out.
-  if ((cdh->GetL1TriggerMessage() & 0x1) == 0x1) return ~ AliHLTReadoutList();
-  // trigger mask is 50 bit wide and is stored in word 5 and 6 of the CDH
-  AliHLTUInt64_t triggerMask = cdh->GetTriggerClasses();
+  if ((cdh.GetL1TriggerMessage() & 0x1) == 0x1) return ~ AliHLTReadoutList();
 
-  if (fMask!=0 && (triggerMask & fMask)==0) {
+  AliHLTTriggerMask_t triggerMask(cdh.GetTriggerClasses());
+  AliHLTTriggerMask_t triggerHigh(cdh.GetTriggerClassesNext50());
+  triggerMask |= (triggerHigh << 50);
+
+  if (fMask.any() && (triggerMask & fMask).none()) {
     AliHLTEventTriggerData* evtData=reinterpret_cast<AliHLTEventTriggerData*>(trigData.fData);
-    HLTWarning("invalid trigger mask 0x%llx, unknown CTP trigger, initialized 0x%llx", triggerMask, fMask);
-    for (int i=0; i<8; i++) HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
+    HLTWarning("invalid trigger mask %s, unknown CTP trigger, initialized %s",
+               TriggerMaskToString(triggerMask).c_str(), TriggerMaskToString(fMask).c_str());
+    for (int i=0; i<gkAliHLTCommonHeaderCount; i++)
+      HLTWarning("\t CDH[%d]=0x%lx", i, evtData->fCommonHeader[i]);
   }
 
   return ReadoutList(triggerMask);
 }
 
-AliHLTReadoutList AliHLTCTPData::ReadoutList(AliHLTUInt64_t  triggerMask) const
+AliHLTReadoutList AliHLTCTPData::ReadoutList(AliHLTTriggerMask_t  triggerMask) const
 {
   // take an 'OR' of all active trigger classes 
   AliHLTReadoutList list;
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     if (i>fClassIds.GetLast()) break;
-    if ((triggerMask&((AliHLTUInt64_t)0x1<<i))==0) continue;
+    if (! triggerMask.test(i)) continue;
     AliHLTReadoutList* tcrl=(AliHLTReadoutList*)fClassIds.At(i);
     list.OrEq(*tcrl);
   }
@@ -468,9 +482,27 @@ void AliHLTCTPData::Print(Option_t* /*option*/) const
   for (int i=0; i<gkNCTPTriggerClasses; i++) {
     if (i>=Counters().GetSize()) break;
     if (i>fClassIds.GetLast()) break;
-    if ((fMask&((AliHLTUInt64_t)0x1<<i))==0) continue;
+    if (! fMask.test(i)) continue;
     count++;
     cout << "\t" << i << "\t" << Name(i) << "\t" << Counter(i) << endl;
   }
   if (count==0) cout << "\t(none)" << endl;
 }
+
+
+std::string AliHLTCTPData::TriggerMaskToString(AliHLTTriggerMask_t mask) const
+{
+  AliHLTTriggerMask_t max(std::numeric_limits<unsigned long>::max());
+  int digits = std::numeric_limits<unsigned long>::digits;
+  int numberOfWords = (mask.size() + digits - 1)/digits;
+  std::stringstream stream;
+  stream << "0x";
+  stream << std::hex << std::right;
+  for(int i=numberOfWords-1; i>=0; --i){
+    stream.width(digits/4);
+    stream.fill('0');
+    stream << ((mask >> (digits*i)) & max).to_ulong() << " ";
+  }
+  return stream.str();
+}
+

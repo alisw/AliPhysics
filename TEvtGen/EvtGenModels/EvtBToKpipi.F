@@ -85,7 +85,7 @@ C      End
       Real*8  Weight,Weight_max
       Real*8  m_Kstarp,m_Kstar0,m_rhom
       Real*8  Wrong
-      Real*4  Evtranf,Tag
+      Real*8  Evtranf,Tag
       
       alphaCP      = 1.35
       betaCP       = 0.362
@@ -367,7 +367,7 @@ c	----------------------------------------------------------
 c 	--- Used Functions 
 c	----------------------------------------------------------
 
-	real evtranf
+	real*8 evtranf
 
 c	----------------------------------------------------------
 c 	--- Variables in Argument
@@ -527,7 +527,7 @@ c-----------------------------------------------------------------------
 
                                                                                                  
       	Real*8 m12, m13, m23, W12, W13, W23, Wtot
-      	Real*4 evt_gmas
+      	Real*8 evt_gmas
       	Complex*16 MatB0,MatB0bar,BW12,BW13,BW23
         Real*8  Real_B0,Imag_B0,Real_B0bar,Imag_B0Bar                                                     
       	Real*8     p1(5),p2(5),p3(5)

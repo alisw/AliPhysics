@@ -72,7 +72,7 @@ class AliHLTMisc : public TObject {
 
   /// extract the triggermask from the rawreader
   /// NOTE: not to be used in the online system
-  virtual AliHLTUInt64_t GetTriggerMask(AliRawReader* rawReader) const;
+  virtual AliHLTTriggerMask_t GetTriggerMask(AliRawReader* rawReader) const;
 
   /// extract the timestamp from the rawreader
   /// NOTE: not to be used in the online system, use AliHLTComponent::GetTimeStamp()

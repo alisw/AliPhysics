@@ -24,8 +24,6 @@
 #ifndef EVTRANDOMENGINE_HH
 #define EVTRANDOMENGINE_HH
 
-#include <TRandom.h>
-
 class EvtRandomEngine{
 
 public:
@@ -37,33 +35,6 @@ public:
 private:
 
 };
-
-//define class for generating random numbers (I put this in place of the commented part)
-class EvtNUMRandomEngine:public EvtRandomEngine{
-public:
-  double random(){return  gRandom->Rndm();}
-};
-
-
-//old lines: those are in the macro testEvtGen.cc    
-/*
-//define class for generating random numbers
-class EvtCLHEPRandomEngine:public EvtRandomEngine{
-public:
-  double random();
-};
-
-#ifdef NOCLHEPNAMESPACE
-namespace CLHEP {
-typedef HepJamesRandom HepJamesRandom ;
-}
-#endif
-
-double EvtCLHEPRandomEngine::random(){
-  static CLHEP::HepJamesRandom randengine;
-  return randengine.flat();
-}
-*/
 
 #endif
 

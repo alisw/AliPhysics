@@ -62,7 +62,9 @@ public:
   const char* GetTriggerClass(Int_t index) const;
   TString     GetActiveTriggerClasses() const;
   TString     GetFiredTriggerClasses(ULong64_t mask) const;
+  TString     GetFiredTriggerClasses(ULong64_t mask,ULong64_t mask2) const;
   Bool_t      IsTriggerClassFired(ULong64_t mask, const char *name) const;
+  Bool_t      IsTriggerClassFired(ULong64_t mask, ULong64_t mask2,const char *name) const;
   Float_t     GetCurrentL3()               const {return fCurrentL3;}
   Float_t     GetCurrentDip()              const {return fCurrentDip;}
   Float_t     GetBeamEnergy()              const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
@@ -89,7 +91,7 @@ public:
 	return ((i >= 0) && (i < kNEMCALMatrix)) ? fEMCALMatrix[i] : NULL;
   }
 	
-  enum {kNTriggerClasses = 50};
+  enum {kNTriggerClasses = 100};
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 22};
   enum {kT0spreadSize = 4};

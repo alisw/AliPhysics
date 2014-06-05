@@ -71,7 +71,7 @@ public:
   Bool_t              IsHLT() const              { return fSteerParam&kHLT;}
   Bool_t              IsSeeding() const          { return fSteerParam&kSeeding;}
   Bool_t              IsProcessingTracklets() const { return fSteerParam&kProcTracklets;}
-  Bool_t              IsDebugStreaming() const   { return fSteerParam&kDebug;}
+  Bool_t              IsDebugStreaming() const   { return (fSteerParam&kDebug || AliTRDReconstructor::GetStreamLevel()>0);}
   Bool_t              UseClusterRadialCorrection() const { return fSteerParam&kClRadialCorr;}
 
   static void         Options(UInt_t steer=0);
@@ -82,11 +82,14 @@ public:
  static void         SetTracklets(TClonesArray *tracklets) { fgTracklets = tracklets;}
  static void         SetTracks(TClonesArray *tracks) { fgTracks = tracks;}
   void	              SetOption(Option_t *opt);
+  static Int_t GetStreamLevel()               { return fgStreamLevel;}
+  static void  SetStreamLevel(Int_t level) { fgStreamLevel = level;}
 
 private:
   AliTRDReconstructor(const AliTRDReconstructor &r); //Not implemented
   AliTRDReconstructor& operator = (const AliTRDReconstructor&); //Not implemented
   void                ResetContainers() const;
+  static Int_t               fgStreamLevel; // flag for streaming      - for TRD reconstruction
 
   static Char_t const *fgSteerNames[kNsteer];//! steering names
   static Char_t const *fgSteerFlags[kNsteer];//! steering flags

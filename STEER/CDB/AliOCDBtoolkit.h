@@ -12,28 +12,31 @@ class TMemStatManager;
 using std::fstream;
 
 class AliOCDBtoolkit : public TObject {
-public:
-  //AliOCDBtoolkit();
-  //static AliOCDBtoolkit * Instance();
-  
+public:  
   static void MakeDiffExampleUseCase();    // example usage
   static void DumpOCDBAsTxt(const TString fInput,const TString fType, const TString outfile);
+  static void MakeSnapshotFromTxt(const TString fInput,const TString outfile, Bool_t singleKeys); 
   //
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, TString &ocdbPath, Int_t &run0, Int_t &run1, Int_t &version, Int_t &subVersion);   
   static Bool_t   ParseInfoFromOcdbString(TString ocdbString, AliCDBId &cdbId);
+  static TList  * ConvertListStringToCDBId(const TList */*cdbList0*/);   
   //
-  static TList  * ConvertListStringToCDBId(const TList *cdbList0); 
-  
-  static void LoadOCDBFromLog(const char *logName, Int_t verbose);
+  // Load OCDB entries 
+  //
+  static void SetStorage(const TMap *cdbMap0);   
   static void LoadOCDBFromMap(const TMap *cdbMap, const TList *cdbList);
-  static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
-  static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const TString outfile);
+  static void LoadOCDBFromLog(const char *logName, Int_t verbose);
+  static void LoadOCDBFromESD(const char *fname="AliESDs.root");
+  static void LoadOCDBFromList(const char */*ocdbList*/){;} // to be implemented  
+
   //
-  // dump object functionality
+  // Dump object functionality
   //  
+  static void DumpOCDB(const TMap *cdbMap0, const TList *cdbList0, const TString outfile);
   static void DumpObjectRecursive(TObject *obj);
   static void DumpObjectRecursive(TObject *obj, TString prefix, Int_t &counterRec);
   static void DumpOCDBFile(const char *finput , const char *foutput, Bool_t dumpMetaData, Bool_t xml);
+  static void MakeDiff(const TMap *cdbMap0, const TList *cdbList0, const TMap *cdbMap1, const TList *cdbList1, Int_t verbose);
   //
   // addopt OCDB entry
   //

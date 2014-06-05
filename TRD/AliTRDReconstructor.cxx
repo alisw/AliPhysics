@@ -52,6 +52,9 @@
 
 ClassImp(AliTRDReconstructor)
 
+Int_t    AliTRDReconstructor::fgStreamLevel     = 1;        // stream (debug) level
+
+
 AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
 AliTRDonlineTrackMatching AliTRDReconstructor::fgOnlineTrackMatcher;
 TClonesArray *AliTRDReconstructor::fgClusters = NULL;
@@ -139,7 +142,7 @@ AliTRDReconstructor::~AliTRDReconstructor()
     delete fgTracks;
     fgTracks = NULL;
   }
-  if(fSteerParam&kOwner){
+  if((fSteerParam&kOwner)||  AliTRDReconstructor::GetStreamLevel()>0){
     for(Int_t itask = 0; itask < AliTRDrecoParam::kTRDreconstructionTasks; itask++)
       if(fDebugStream[itask]) delete fDebugStream[itask];
   }
@@ -164,7 +167,7 @@ void AliTRDReconstructor::Init(){
   if(IsDebugStreaming()){
     for(Int_t task = 0; task < AliTRDrecoParam::kTRDreconstructionTasks; task++){
       TDirectory *savedir = gDirectory;
-      fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]));
+      fDebugStream[task] = new TTreeSRedirector(Form("TRD.Debug%s.root", fgTaskNames[task]),"recreate");
       savedir->cd();
       SETFLG(fSteerParam, kOwner);
     }

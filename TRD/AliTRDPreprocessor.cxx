@@ -142,6 +142,7 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
   if ((runType=="PHYSICS") || (runType=="STANDALONE") || (runType=="DAQ")){
     // DCS
     if(ProcessDCS(dcsAliasMap)) return 1;
+    /*
     if(runType=="PHYSICS"){
       // HLT if On
       //TString runPar = GetRunParameter("HLTStatus");
@@ -156,9 +157,8 @@ UInt_t AliTRDPreprocessor::Process(TMap* dcsAliasMap)
 	ExtractDriftVelocityDAQ(); // for testing!
       }
     }
-    //if((runType=="PHYSICS") || (runType=="STANDALONE")) {
-      //      if(ExtractHalfChamberStatusDAQ()) return 1;
-    //}
+    */
+   
   }
   
   return 0;  
