@@ -27,6 +27,7 @@ ocdbMakeTable(){
         echo "Usage: $0 \$inputFile \$flag \$outputFile"
         return 1
     fi
+    export ALIROOT_FORCE_COREDUMP=1
     local inFile=${1}
     local inFlag=${2}
     local outFile=${3}
@@ -61,6 +62,7 @@ dumpObject(){
 #    $3 type of the dump (XML or MI recursive dump )
 #  Output:
 #    $4 output file name   
+    export ALIROOT_FORCE_COREDUMP=1
     if [ $# -lt 4 ] ; then
         echo "Usage: $0 \$inputFile \$object_name \$dump_type [XML/MI] \$outfile"
         return 1
@@ -107,6 +109,7 @@ diffObject(){
 #    $4 type of the dump (xml or MI recursive dump )
 #  Output:
 #    $5 output diff file name   
+    export ALIROOT_FORCE_COREDUMP=1
     if [ $# -lt 5 ] ; then
         echo "Usage: $0 \$inputFile1 \$inputFile2 \$object_name \$dump_type [XML/MI] \$outfile"
         return 1
@@ -145,7 +148,7 @@ dumpOCDBDiffTable(){
 #   $2  - list 2
 # Output:
 #   difference is stdout
-
+    export ALIROOT_FORCE_COREDUMP=1
     list1=$1
     list2=$2
     shift 2

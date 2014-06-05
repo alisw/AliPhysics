@@ -54,20 +54,30 @@ void Config()
 #if defined(__CINT__)
   gSystem->Load("liblhapdf");      // Parton density functions
   gSystem->Load("libEGPythia6");   // TGenerator interface
-  gSystem->Load("libpythia6");     // Pythia 6.2
+  gSystem->Load("libpythia6");     // Pythia 6.2 (for decayer)
   gSystem->Load("libAliPythia6");  // ALICE specific implementations
   gSystem->Load("libgeant321");
-  
+
   if ( TString("VAR_GENERATOR").Contains("pythia8",TString::kIgnoreCase) )
   {
     std::cout << "Setting up Pythia8 required libraries and env. variables" << std::endl;
-    gSystem->Load("libpythia8.so");
-    gSystem->Load("libAliPythia8.so");
+    gSystem->Load("libpythia8");
+    gSystem->Load("libAliPythia8");
     VAR_PYTHIA8_INCLUDES
     VAR_PYTHIA8_SETENV
   }
+  
+  if ( TString("VAR_GENERATOR").Contains("pythia6",TString::kIgnoreCase) )
+  {
+    std::cout << "Setting up Pythia6 required env. variables" << std::endl;
+    VAR_PYTHIA6_INCLUDES
+    VAR_PYTHIA6_SETENV
+  }
+  
+
 #endif
 
+  
   new TGeant3TGeo("C++ Interface to Geant3");
 
   //=======================================================================
@@ -86,8 +96,14 @@ void Config()
       return;
     }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(20000);
+  rl->SetNumberOfEventsPerFile(5000);
   gAlice->SetRunLoader(rl);
+  
+  if ( TString("VAR_TRIGGER_CONFIGURATION").Length() > 0 )
+  {
+    AliSimulation::Instance()->SetTriggerConfig("VAR_TRIGGER_CONFIGURATION");
+    cout<<"Trigger configuration is set to VAR_TRIGGER_CONFIGURATION" << std::endl;
+  }
   
   //
   //=======================================================================
@@ -158,9 +174,21 @@ void Config()
   std::cout << "VAR_GENERATOR settings " << std::endl;
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
   gSystem->AddIncludePath("-I$ALICE_ROOT/EVGEN");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/STEER/STEER");
   gROOT->LoadMacro("VAR_GENERATOR.C+");
   AliGenerator* gener = VAR_GENERATOR();
   
+  TString slibs = gSystem->GetLibraries();
+  TObjArray* olibs = slibs.Tokenize(" ");
+  TObjString* s;
+  TIter next(olibs);
+  std::cout << "List of libraries=" << std::endl;
+  while ( ( s = static_cast<TObjString*>(next())) )
+  {
+    std::cout << s->String().Data() << std::endl;
+  }
+  
+
   gener->SetOrigin(0., 0., 0.); // Taken from OCDB
 
   Float_t sigmax = 0.0025;

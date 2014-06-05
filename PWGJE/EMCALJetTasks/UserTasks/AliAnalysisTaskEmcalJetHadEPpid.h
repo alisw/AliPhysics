@@ -67,19 +67,22 @@ class AliAnalysisTaskEmcalJetHadEPpid : public AliAnalysisTaskEmcalJet {
   void                    SetPlotGlobalRho(Bool_t g)            { doPlotGlobalRho = g; } // plot global rho switch
   void                    SetVariableBinning(Bool_t v)          { doVariableBinning = v; } // do variable binning switch
   void		              SetvarbinTHnSparse(Bool_t vb)         { dovarbinTHnSparse = vb; } // variable THnSparse bin switch
+  void					  SetallpidAXIS(Bool_t allAXIS)			{ allpidAXIS = allAXIS; } // fill all PID sparse axis's
   void					  SetmakeQAhistos(Bool_t QAhist)        { makeQAhistos = QAhist; } // make QA histos  
   void					  SetmakeBIAShistos(Bool_t BIAShist)    { makeBIAShistos = BIAShist; } // make bias histos
   void			          SetmakeextraCORRhistos(Bool_t Xhist)  { makeextraCORRhistos = Xhist; } // make extra correlations histos
   void					  SetoldJEThadhistos(Bool_t oldJH)      { makeoldJEThadhistos = oldJH; } // make older JH histos for comparison
 
   // set data, detectors type, and PID and PID w bias switches
-  void		              SetDataType(Bool_t data)		        { useAOD = data; }    // data type switch
   void					  SetcutType(TString cut)				{ fcutType = cut; }    // EMCAL / TPC acceptance cut
   void                    SetdoPID(Bool_t p)                    { doPID = p; }   // do PID switch
   void 					  SetdoPIDtrackBIAS(Bool_t PIDbias)     { doPIDtrackBIAS = PIDbias; } // do PID track bias switch
 
   // give comments setter
   void					  SetdoComments(Bool_t comm)			{ doComments = comm; } // give comment switch
+
+  // define I/O
+  void					  SetIOon(Bool_t IO)					{ doIOon = IO; } // set on IO in constructor (temp)
 
   // getters
   TString		  GetLocalRhoName() const		{return fLocalRhoName; }
@@ -150,9 +153,7 @@ protected:
   Bool_t		 makeBIAShistos;
   Bool_t		 makeextraCORRhistos; 
   Bool_t		 makeoldJEThadhistos;
-
-  // data type switch
-  Bool_t	     useAOD;
+  Bool_t		 allpidAXIS;
 
   // Cut type (EMCAL/TPC acceptance)
   TString        fcutType;
@@ -163,6 +164,9 @@ protected:
 
   // do comment switch
   Bool_t		 doComments;
+
+  // do I/O on switch
+  Bool_t		 doIOon;
 
   // local rho value
   Double_t		 fLocalRhoVal;
@@ -180,8 +184,8 @@ protected:
   Bool_t		 isPItof, isKtof, isPtof;
 
   // event pool
-  TObjArray*		    CloneAndReduceTrackList(TObjArray* tracks);
-  AliEventPoolManager   *fPoolMgr;  // event pool Manager object
+  TObjArray		    *CloneAndReduceTrackList(TObjArray* tracks);
+  AliEventPoolManager   *fPoolMgr;//!  // event pool Manager object
 
   // PID
   AliPIDResponse	*fPIDResponse;   // PID response object
@@ -189,14 +193,14 @@ protected:
 
  private:
   // needed for PID, track objects
-  AliESDEvent       *fESD;          // ESD object
-  AliAODEvent	    *fAOD;		  // AOD object
+  AliESDEvent       *fESD;//!         // ESD object
+  AliAODEvent	    *fAOD;//!		  // AOD object
 
-  TH2F                  *fHistTPCdEdX;
-  TH2F	                *fHistITSsignal;
-//  TH2F		    *fHistTOFsignal;
+  TH2F                  *fHistTPCdEdX;//!
+  TH2F	                *fHistITSsignal;//!
+//  TH2F		    *fHistTOFsignal;//!
 
-  TH2F                  *fHistRhovsCent; //!
+  TH2F                  *fHistRhovsCent;//!
   TH2F                  *fHistNjetvsCent;//! number of jets versus Centrality
   TH2F                  *fHistJetPtvsTrackPt[6];//!
   TH2F                  *fHistRawJetPtvsTrackPt[6];//!
@@ -208,66 +212,66 @@ protected:
   TH1F					*fHistJetPtcorrGlRho[6];//!
   TH2F                  *fHistJetPtvsdEP[6];//!
   TH2F                  *fHistJetPtvsdEPBias[6];//!
-  TH2F                  *fHistRhovsdEP[6]; //!
+  TH2F                  *fHistRhovsdEP[6];//!
   TH3F                  *fHistJetEtaPhiPt[6];//!
   TH3F                  *fHistJetEtaPhiPtBias[6];//!
   TH2F                  *fHistJetPtArea[6];//!
   TH2F                  *fHistJetPtAreaBias[6];//!
-  TH2F                  *fHistJetPtNcon[6]; //!
-  TH2F                  *fHistJetPtNconBias[6]; //!
-  TH2F                  *fHistJetPtNconCh[6]; //!
-  TH2F                  *fHistJetPtNconBiasCh[6]; //!
-  TH2F                  *fHistJetPtNconEm[6]; //!
-  TH2F                  *fHistJetPtNconBiasEm[6]; //!
-  TH1F		            *fHistJetHaddPhiINcent[6];
-  TH1F			        *fHistJetHaddPhiOUTcent[6];
-  TH1F			        *fHistJetHaddPhiMIDcent[6];
+  TH2F                  *fHistJetPtNcon[6];//!
+  TH2F                  *fHistJetPtNconBias[6];//!
+  TH2F                  *fHistJetPtNconCh[6];//!
+  TH2F                  *fHistJetPtNconBiasCh[6];//!
+  TH2F                  *fHistJetPtNconEm[6];//!
+  TH2F                  *fHistJetPtNconBiasEm[6];//!
+  TH1F		            *fHistJetHaddPhiINcent[6];//!
+  TH1F			        *fHistJetHaddPhiOUTcent[6];//!
+  TH1F			        *fHistJetHaddPhiMIDcent[6];//!
 
-  TH1                   *fHistCentrality;
-  TH1                   *fHistZvtx;
-  TH1                   *fHistMult;
-  TH1		        	*fHistJetPhi;
-  TH1		            *fHistTrackPhi;
-  TH1		            *fHistJetHaddPhiIN;
-  TH1			        *fHistJetHaddPhiOUT;
-  TH1			        *fHistJetHaddPhiMID;
-  TH1					*fHistJetHaddPhiBias;
-  TH1					*fHistJetHaddPhiINBias;
-  TH1					*fHistJetHaddPhiOUTBias;
-  TH1					*fHistJetHaddPhiMIDBias;
+  TH1                   *fHistCentrality;//!
+  TH1                   *fHistZvtx;//!
+  TH1                   *fHistMult;//!
+  TH1		        	*fHistJetPhi;//!
+  TH1		            *fHistTrackPhi;//!
+  TH1		            *fHistJetHaddPhiIN;//!
+  TH1			        *fHistJetHaddPhiOUT;//!
+  TH1			        *fHistJetHaddPhiMID;//!
+  TH1					*fHistJetHaddPhiBias;//!
+  TH1					*fHistJetHaddPhiINBias;//!
+  TH1					*fHistJetHaddPhiOUTBias;//!
+  TH1					*fHistJetHaddPhiMIDBias;//!
 
-  TH1                   *fHistMEdPHI; // phi distrubtion of mixed events
-  TH1					*fHistTrackPtallcent;
+  TH1                   *fHistMEdPHI;//! // phi distrubtion of mixed events
+  TH1					*fHistTrackPtallcent;//!
 
-  TH2                   *fHistJetEtaPhi;  
-  TH2                   *fHistTrackEtaPhi[4][7];
-  TH1		        	*fHistJetHadbindPhi[9]; 
-  TH1					*fHistJetHadbindPhiIN[9]; 
-  TH1					*fHistJetHadbindPhiMID[9]; 
-  TH1		       		*fHistJetHadbindPhiOUT[9]; 
-  TH2                   *fHistJetHEtaPhi;
+  TH2                   *fHistJetEtaPhi;//!  
+  TH2                   *fHistTrackEtaPhi[4][7];//!
+  TH1		        	*fHistJetHadbindPhi[9];//! 
+  TH1					*fHistJetHadbindPhiIN[9];//! 
+  TH1					*fHistJetHadbindPhiMID[9];//! 
+  TH1		       		*fHistJetHadbindPhiOUT[9];//! 
+  TH2                   *fHistJetHEtaPhi;//!
 
-  TH1                   *fHistJetPt[6];
-  TH1                   *fHistJetPtBias[6];
-  TH1                   *fHistJetPtTT[6];
-  TH2                   *fHistAreavsRawPt[6];
-  TH2                   *fHistJetH[6][5][3];
-  TH2                   *fHistJetHBias[6][5][3];
-  TH2                   *fHistJetHTT[6][5][3];
-  TH1F					*fHistJetHdPHI[11];
-  TH2F					*fHistJetHdETAdPHI[11];
-  TH2F                  *fHistSEphieta; // single events phi-eta distributions
-  TH2F                  *fHistMEphieta; // mixed events phi-eta distributions
-  TH1F					*fHistJetHaddPHI;
+  TH1                   *fHistJetPt[6];//!
+  TH1                   *fHistJetPtBias[6];//!
+  TH1                   *fHistJetPtTT[6];//!
+  TH2                   *fHistAreavsRawPt[6];//!
+  TH2                   *fHistJetH[6][5][3];//!
+  TH2                   *fHistJetHBias[6][5][3];//!
+  TH2                   *fHistJetHTT[6][5][3];//!
+  TH1F					*fHistJetHdPHI[11];//!
+  TH2F					*fHistJetHdETAdPHI[11];//!
+  TH2F                  *fHistSEphieta;//! // single events phi-eta distributions
+  TH2F                  *fHistMEphieta;//! // mixed events phi-eta distributions
+  TH1F					*fHistJetHaddPHI;//!
 
   // PID status histo's
-  TH1					*fHistPID;
+  TH1					*fHistPID;//!
 
   // THn Sparse's
-  THnSparse             *fhnPID;          // PID sparse
-  THnSparse             *fhnMixedEvents;  // mixed events matrix
-  THnSparse             *fhnJH;           // jet hadron events matrix
-  THnSparse				*fhnCorr;		  // sparse to get # jet triggers
+  THnSparse             *fhnPID;//!          // PID sparse
+  THnSparse             *fhnMixedEvents;//!  // mixed events matrix
+  THnSparse             *fhnJH;//!           // jet hadron events matrix
+  THnSparse				*fhnCorr;//!		  // sparse to get # jet triggers
 
   // container objects
   AliJetContainer            *fJetsCont;                   //!Jets

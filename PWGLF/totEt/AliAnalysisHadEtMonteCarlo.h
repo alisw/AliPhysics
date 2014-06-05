@@ -167,8 +167,8 @@ public:
     //Float_t fSimPiKPEtSmeared[4];//simulated Et for pi,k,p smeared for each event by different momentum resolutions
     static Float_t fgSmearWidths[4];//array with widths for smearing with different momentum resultions
     static Int_t fgNumSmearWidths;//number of entries in the array above
-    TRandom *fPtSmearer;//a TRandom used for investigating momentum smearing
-    AliAnalysisHadEtReconstructed *fHadEtReco;//corresponding class for data reconstruction.  Used to access corrections directly used here.
+    TRandom *fPtSmearer;//!a TRandom used for investigating momentum smearing
+    AliAnalysisHadEtReconstructed *fHadEtReco;//!corresponding class for data reconstruction.  Used to access corrections directly used here.
 
     ClassDef(AliAnalysisHadEtMonteCarlo, 1);
 };

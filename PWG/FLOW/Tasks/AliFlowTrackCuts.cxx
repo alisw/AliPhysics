@@ -600,13 +600,13 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (trkletAOD) return PassesCuts(trkletAOD,id);                    // XZhang 20120615
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
-  AliVEvent* vvzero = dynamic_cast<AliVEvent*>(obj); // should be removed; left for protection only
+  AliVVZERO* vvzero = dynamic_cast<AliVVZERO*>(obj);    // downcast to base class
   if (vvzero) return PassesVZEROcuts(id);
   AliESDkink* kink = dynamic_cast<AliESDkink*>(obj);
   if (kink) return PassesCuts(kink);
   //AliESDv0* v0 = dynamic_cast<AliESDv0*>(obj);
   //if (v0) return PassesCuts(v0);
-  
+ 
   return kFALSE;  //default when passed wrong type of object
 }
 
@@ -1178,8 +1178,16 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
   if (dedx < fMinimalTPCdedx) pass=kFALSE;
   Double_t time[9];
   track->GetIntegratedTimes(time);
+  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
+    {
+      if (!PassesAODpidCut(track)) pass=kFALSE;
+    }
+
   if (fQA) {
+    // changed 04062014 used to be filled before possible PID cut
     Double_t momTPC = track->GetTPCmomentum();
+    QAbefore( 0)->Fill(momTPC,GetBeta(track, kTRUE));
+    if(pass) QAafter( 0)->Fill(momTPC, GetBeta(track, kTRUE));
     QAbefore( 1)->Fill(momTPC,dedx);
     QAbefore( 5)->Fill(track->Pt(),track->DCA());
     QAbefore( 6)->Fill(track->Pt(),track->ZAtDCA());
@@ -1198,11 +1206,7 @@ Bool_t AliFlowTrackCuts::PassesAODcuts(const AliAODTrack* track, Bool_t passedFi
     if (pass) QAafter( 12)->Fill(track->P(),(track->GetTOFsignal()-time[AliPID::kProton]));
   }
 
-  if (fCutPID && (fParticleID!=AliPID::kUnknown)) //if kUnknown don't cut on PID
-    {
-      if (!PassesAODpidCut(track)) pass=kFALSE;
-    }
-  
+
   return pass;
 }
 
@@ -1398,16 +1402,25 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2010()
 {
   //get standard VZERO cuts
+  //DISCLAIMER: LHC10h VZERO calibration consists (by default) of two steps
+  //1) re-weigting of signal
+  //2) re-centering of q-vectors
+  //step 2 is available only for n==2 and n==3, for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2010");
-  cuts->SetParamType(kVZERO);
+  cuts->SetParamType(AliFlowTrackCuts::kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   // options for the reweighting
   cuts->SetVZEROgainEqualizationPerRing(kFALSE);
   cuts->SetApplyRecentering(kTRUE);
-  // to exclude a ring , do e.g.
+  // to exclude a ring , do e.g. 
   // cuts->SetUseVZERORing(7, kFALSE);
+  // excluding a ring will break the re-centering as re-centering relies on a 
+  // database file which tuned to receiving info from all rings
   return cuts;
 }
 //-----------------------------------------------------------------------
@@ -1419,6 +1432,10 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   //if recentering is enableded, the sub-q vectors
   //will be taken from the event header, so make sure to run 
   //the VZERO event plane selection task before this task !
+  //DISCLAIMER: recentering is only available for n==2
+  //for the higher harmonics the user
+  //is repsonsible for making sure the q-sub distributions are (sufficiently) flat
+  //or a sensible NUA procedure is applied !
   //recentering replaces the already evaluated q-vectors, so 
   //when chosen, additional settings (e.g. excluding rings) 
   //have no effect. recentering is true by default
@@ -1432,10 +1449,12 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts("standard vzero flow cuts 2011");
   cuts->SetParamType(kVZERO);
   cuts->SetEtaRange( -10, +10 );
+  cuts->SetEtaGap(-1., 1.);
   cuts->SetPhiMin( 0 );
   cuts->SetPhiMax( TMath::TwoPi() );
   cuts->SetApplyRecentering(kTRUE);
-  return cuts;
+  cuts->SetVZEROgainEqualizationPerRing(kFALSE);
+ return cuts;
 }
 //-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardGlobalTrackCuts2010()
@@ -2581,7 +2600,10 @@ Bool_t AliFlowTrackCuts::PassesESDpidCut(const AliESDtrack* track )
       if (!PassesNucleiSelection(track)) pass=kFALSE;
       break;
       //end part added by Natasha
-
+      
+    case kTPCTOFNsigma:
+      if (!PassesTPCTOFNsigmaCut(track)) pass = kFALSE;
+      break;
     default:
       printf("AliFlowTrackCuts::PassesCuts() this should never be called!\n");
       pass=kFALSE;
@@ -2644,7 +2666,7 @@ Bool_t AliFlowTrackCuts::PassesTOFbetaSimpleCut(const AliESDtrack* track )
 }
 
 //-----------------------------------------------------------------------
-Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
+Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track, Bool_t QAmode)
 {
   //get beta
   Double_t integratedTimes[9] = {-1.0,-1.0,-1.0,-1.0,-1.0, -1.0, -1.0, -1.0, -1.0};
@@ -2655,6 +2677,7 @@ Float_t AliFlowTrackCuts::GetBeta(const AliVTrack* track)
   Float_t l = integratedTimes[0]*c;  
   Float_t trackT0 = fESDpid.GetTOFResponse().GetStartTime(p);
   Float_t timeTOF = track->GetTOFsignal()- trackT0; 
+  if(QAmode && timeTOF <= 0) return -999;   // avoid division by zero when filling 'before' qa histograms
   return l/timeTOF/c;
 }
 //-----------------------------------------------------------------------
@@ -3240,7 +3263,7 @@ Bool_t AliFlowTrackCuts::PassesTPCbayesianCut(const AliESDtrack* track)
 //-----------------------------------------------------------------------
 Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
 {  
-//check is track passes bayesian combined TOF+TPC pid cut
+  //check is track passes bayesian combined TOF+TPC pid cut
   Bool_t goodtrack = (track->GetStatus() & AliESDtrack::kTOFout) &&
                      (track->GetStatus() & AliESDtrack::kTIME) &&
                      (track->GetTOFsignal() > 12000) &&
@@ -3250,7 +3273,6 @@ Bool_t AliFlowTrackCuts::PassesTOFbayesianCut(const AliAODTrack* track)
        return kFALSE;
 
   Bool_t statusMatchingHard = TPCTOFagree(track);
-//ciao
   if (fRequireStrictTOFTPCagreement && (!statusMatchingHard))
        return kFALSE;
 
@@ -3434,6 +3456,27 @@ Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
   return select;
 }
 // end part added by Natasha
+//-----------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliAODTrack* track) 
+{
+    // do a simple combined cut on the n sigma from tpc and tof
+    // with information of the pid response object (needs pid response task)
+    // stub, not implemented yet
+    if(!track) return kFALSE;
+    return kFALSE;
+
+}
+//-----------------------------------------------------------------------------
+Bool_t AliFlowTrackCuts::PassesTPCTOFNsigmaCut(const AliESDtrack* track)
+{
+    // do a simple combined cut on the n sigma from tpc and tof
+    // with information of the pid response object (needs pid response task)
+    // stub, not implemented yet
+    if(!track) return kFALSE;
+    return kFALSE;
+
+}
+
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
  //set priors for the bayesian pid selection
@@ -4570,6 +4613,8 @@ const char* AliFlowTrackCuts::PIDsourceName(PIDsource s)
       return "TOFbetaSimple";
     case kTPCNuclei:
       return "TPCnuclei";
+    case kTPCTOFNsigma:
+      return "TPCTOFNsigma";
     default:
       return "NOPID";
   }

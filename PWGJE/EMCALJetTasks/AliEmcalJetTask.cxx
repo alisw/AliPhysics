@@ -1,4 +1,3 @@
-// $Id$
 //
 // Emcal jet finder task.
 //

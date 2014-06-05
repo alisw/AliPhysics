@@ -13,6 +13,7 @@ Int_t configIndex=0,
 Int_t centralityIndex=0, 
 Bool_t isAOD = kFALSE,
 Bool_t isEMCal = kFALSE,
+Bool_t isTrigger = kFALSE,
 Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 )
 
@@ -56,7 +57,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	//Additional Cuts
 	hfecuts->SetPtRange(2, 1e6);								                    //Transversal momentum range in GeV/c
-	//hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
+	//DCA cut included in the analysis 12 March 2014
+	hfecuts->SetMaxImpactParam(1,2); 							                    //DCA to vertex
 	
 	//Event Selection
 	hfecuts->SetVertexRange(10.);													//
@@ -82,8 +84,11 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	if(EMCalThreshould==1 && triggerIndex==2) task->SetEMCalTriggerEG2();
 	
 	if(isEMCal) task->SetUseEMCal();
+		//Bool_t isTrigger = kFALSE;
+	if(isTrigger) task->SetUseTrigger();
 	
 	
+		
 	if(configIndex==100){
 		task->SetUseShowerShapeCut(kTRUE);
 		//task->SetM02Cut(0.0,0.3);
@@ -120,18 +125,15 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	 
 	
 	//eta cuts
-	if(configIndex==37) task->SetEtaCut(-0.6,0);
-	else if (configIndex==38) task->SetEtaCut(0,0.6);
-	else if (configIndex==39) task->SetEtaCut(-0.5,0.5);
-	else if (configIndex==40) task->SetEtaCut(-0.6,-0.2);
-	else if (configIndex==41) task->SetEtaCut(-0.5,-0.1);
-	else if (configIndex==42) task->SetEtaCut(-0.4,0);
-	else if (configIndex==43) task->SetEtaCut(-0.3,0.1);
-	else if (configIndex==44) task->SetEtaCut(-0.2,0.2);
-	else if (configIndex==45) task->SetEtaCut(-0.1,0.3);
-	else if (configIndex==46) task->SetEtaCut(0,0.4);
-	else if (configIndex==47) task->SetEtaCut(-0.4,0.4);
-	else if (configIndex==48) task->SetEtaCut(-0.3,0.3);
+	if(configIndex==40) task->SetEtaCut(-0.6,0);
+	else if (configIndex==41) task->SetEtaCut(-0.5,0.1);
+	else if (configIndex==42) task->SetEtaCut(0,0.6);
+	else if (configIndex==43) task->SetEtaCut(-0.1,0.5);
+	else if (configIndex==44) task->SetEtaCut(-0.5,0.5);
+	else if (configIndex==45) task->SetEtaCut(-0.4,0.4);
+	else if (configIndex==46) task->SetEtaCut(-0.3,0.3);
+		//else if (configIndex==47) task->SetEtaCut(-0.4,0.4);
+		//else if (configIndex==48) task->SetEtaCut(-0.3,0.3);
 	else task->SetEtaCut(-0.6,0.6);
 	
 	//track matching cuts
@@ -191,8 +193,8 @@ Int_t EMCalThreshould = 0 //0 == EG1, 1 == EG2
 	
 	if(configIndex==70) params[0] = -1.5;
 	else if (configIndex==71) params[0] = -0.5;
-	else if (configIndex==72) params[0] = -1.25;
-	else if (configIndex==73) params[0] = -0.75;
+	else if (configIndex==72) params[0] = 0;
+	else if (configIndex==73) params[0] = 0.25;
 	else if (configIndex==74) params[0] = -1.75;
 	else params[0] = -1;
 	

@@ -1,8 +1,8 @@
-AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1)
+AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_ANTIKT02_B2_Filter00768_Cut00150_Skip00", TString cutVar = "noCutVar", Int_t eventClass = 1, Int_t K0type = AliAnalysisTaskJetChem::kOffl, Int_t Latype = AliAnalysisTaskJetChem::kOffl, Int_t ALatype = AliAnalysisTaskJetChem::kOffl, Bool_t IsArmenterosSelected = kTRUE, Bool_t IsJetPtBiasSelected = kTRUE, Double_t jetradius = 0.2, Double_t V0EtaCut = 0.7, Double_t jetEtaCut = 0.5, Bool_t IsMC = kFALSE, Double_t DeltaVtxZCut = 0.1, Int_t filtermask = 768, Int_t fdebug = -1)
 {
   // Creates a JetChem task,
   // configures it and adds it to the analysis manager.
-  
+  //for cut variations, set TString cutVar either to "noCutVar", "CPAMin", "CPAMax", "DCADMin", "DCADMax", "LifetMin" or "LifetMax"
    
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -57,7 +57,6 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
   
   task->SetTrackCuts(0.15, -0.9, 0.9, 0., 2*TMath::Pi());// (pt Cut, daughtertrack rap's, phi min max cuts)
   task->SetJetCuts(5., (-1)*jetEtaCut, jetEtaCut, 0., 2*TMath::Pi());//(jet pt Cut, jet acceptance, phi min max cuts)
-
   task->SetCuttrackPosEta(0.8);
   task->SetCuttrackNegEta(0.8);
   task->SetCutV0Eta(V0EtaCut); //pseudorapidity cut, dont use 0.5, because too many tracks would fall out of the acceptance; recommended cut for jet analysis of strange particles: 0.75
@@ -140,7 +139,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
    if(ALatype ==  AliAnalysisTaskJetChem::kOfflPrim)  strALatype = "OfflPrim";
    
    if((IsArmenterosSelected == 0) && (IsJetPtBiasSelected == 0)){
-       TString listName1(Form("PWG4_JetChem_%s_%s_cl%d",branchRecJets.Data(),strK0type.Data(),eventClass));
+       TString listName1(Form("PWG4_JetChem_%s_%s_cl%d_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
        AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName1, 
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
@@ -149,7 +148,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
      }
 
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 0)){
-       TString listName2(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros",branchRecJets.Data(),strK0type.Data(),eventClass));
+     TString listName2(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
        AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName2, 
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
@@ -159,7 +158,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
       
    
    if((IsArmenterosSelected == 0) && (IsJetPtBiasSelected == 1)) {
-       TString listName3(Form("PWG4_JetChem_%s_%s_cl%d_JetPtbias",branchRecJets.Data(),strK0type.Data(),eventClass));
+     TString listName3(Form("PWG4_JetChem_%s_%s_cl%d_JetPtbias_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
        AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName3, 
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,
@@ -167,7 +166,7 @@ AliAnalysisTaskJetChem *AddTaskJetChem(const char* recJetsBranch = "clustersAOD_
      }
    
    if((IsArmenterosSelected == 1) && (IsJetPtBiasSelected == 1)) {
-       TString listName4(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_JetPtBias",branchRecJets.Data(),strK0type.Data(),eventClass));
+       TString listName4(Form("PWG4_JetChem_%s_%s_cl%d_Armenteros_JetPtBias_%s",branchRecJets.Data(),strK0type.Data(),eventClass,cutVar.Data()));
        AliAnalysisDataContainer *coutput_JetChem = mgr->CreateContainer(listName4, 
 									TList::Class(),
 									AliAnalysisManager::kOutputContainer,

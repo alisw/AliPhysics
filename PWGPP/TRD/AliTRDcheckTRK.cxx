@@ -212,7 +212,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
     return kFALSE;
   }
   if(ref->Pt()<1.e-3) return kFALSE;
-
+  Float_t prod(t.GetBz()*t.Charge());
 
   // Initialize TRD track to the reference
   AliTRDtrackV1 tt;
@@ -239,7 +239,12 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
       }
     }
     if(HasTrkltRefit()){
-      if(!tr->FitRobust(tt.Charge()>0.)) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
+      //      if(!tr->FitRobust(tt.Charge()>0.)) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
+      if(!tr->FitRobust(AliTRDgeometry::GetPadPlane(det), prod>0., tt.Charge())) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
+      else {
+	TGeoHMatrix *matrix = AliTRDgeometry::GetClusterMatrix(det);
+	if (matrix) tr->SetXYZ(matrix);
+      }
     }
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->GetX0(), fgKalmanStep)) continue;
     if(!tt.GetTrackIn()) tt.SetTrackIn();

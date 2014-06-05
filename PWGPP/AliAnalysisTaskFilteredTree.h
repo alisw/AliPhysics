@@ -63,6 +63,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   void ProcessMCEff(AliESDEvent *const esdEvent=0, AliMCEvent *const mcEvent=0, AliESDfriend *const esdFriend=0);
   void ProcessCosmics(AliESDEvent *const esdEvent=0, AliESDfriend* esdFriend=0); 
 
+  void ProcessITSTPCmatchOut(AliESDEvent *const esdEvent=0,  AliESDfriend *const esdFriend=0);
+
   void SetEventCuts(AliFilteredTreeEventCuts* const cuts)              { fFilteredTreeEventCuts = cuts; }
   void SetAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts)    { fFilteredTreeAcceptanceCuts = cuts; }
   void SetRecAcceptanceCuts(AliFilteredTreeAcceptanceCuts* const cuts) { fFilteredTreeRecAcceptanceCuts = cuts; }
@@ -98,7 +100,11 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   
   void   SetProcessCosmics(Bool_t flag) { fProcessCosmics = flag; }
   Bool_t GetProcessCosmics() { return fProcessCosmics; }
+  //
+  void   SetProcessProcessITSTPCmatchOut(Bool_t flag) { fProcessITSTPCmatchOut = flag; }
+  Bool_t GetProcessProcessITSTPCmatchOut() { return fProcessITSTPCmatchOut; }
 
+  
   void SetProcessAll(Bool_t proc) { fProcessAll = proc; }
   static Int_t GetMCTrueTrackMult(AliMCEvent *const mcEvent, AliFilteredTreeEventCuts *const evtCuts, AliFilteredTreeAcceptanceCuts *const accCuts);
 
@@ -136,7 +142,8 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   Double_t fProcessAll; // Calculate all track properties including MC
   
   Bool_t fProcessCosmics; // look for cosmic pairs from random trigger
-  
+  Bool_t fProcessITSTPCmatchOut;  // swittch to process ITS/TPC standalone tracks
+
   TTree* fHighPtTree;       //! list send on output slot 0
   TTree* fV0Tree;           //! list send on output slot 0
   TTree* fdEdxTree;         //! list send on output slot 0

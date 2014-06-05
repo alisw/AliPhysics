@@ -650,6 +650,7 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   // only take tracks of events, which are triggered
   if(nTriggerFired == 0) { return; } 
   
+  
   //   if( !bIsEventSelected || nTriggerFired>1 ) return;
   
   //   fEventStatistics->Fill("events with only coll. cand.", 1);
@@ -686,6 +687,13 @@ void AlidNdPtAnalysisPbPbAOD::UserExec(Option_t *option)
   Double_t dCentrality = aCentrality->GetCentralityPercentile("V0M");
   
   if( dCentrality < 0 ) return;
+  
+  // protection for bias on pt spectra if all triggers selected
+//   if( (bIsEventSelectedCentral) /*&& (!bIsEventSelectedSemi) && (!bIsEventSelectedMB)*/ && (dCentrality > 10) ) return;
+//   if( /*(!bIsEventSelectedCentral) &&*/ (bIsEventSelectedSemi) /*&& (!bIsEventSelectedMB)*/ && (dCentrality < 20) && (dCentrality > 50)) return;
+    if( (bIsEventSelectedCentral)  && (dCentrality > 10) ) return;
+    if( (bIsEventSelectedSemi) && ((dCentrality < 20) || (dCentrality > 50))) return;
+  
   fEventStatistics->Fill("after centrality selection",1);
   
   // get event plane Angle from AODHeader, default is Q

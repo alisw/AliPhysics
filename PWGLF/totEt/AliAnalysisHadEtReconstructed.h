@@ -49,7 +49,7 @@ public:
     Float_t GetCorrectedTotEtEMCALAcceptanceITS() const {return fCorrTotEtEMCALAcceptanceITS*(fCorrectedHadEtEMCALAcceptanceTPC+fCorrectedHadEtEMCALAcceptanceITS);}
     Float_t GetCorrectedTotEtPHOSAcceptanceTPC() const {return fCorrTotEtPHOSAcceptanceTPC*fCorrectedHadEtPHOSAcceptanceTPC;}
     Float_t GetCorrectedTotEtPHOSAcceptanceITS() const {return fCorrTotEtPHOSAcceptanceTPC*(fCorrectedHadEtPHOSAcceptanceTPC+fCorrectedHadEtPHOSAcceptanceITS);}
-    Float_t GetRawEtFullAcceptanceTPC() const {return fRawEtFullAcceptanceTPC;}
+    Float_t GetRawEtFullAcceptanceTPC() const {return fRawEtFullAcceptanceTPC;}//completely raw, no efficiency correction
     Float_t GetRawEtFullAcceptanceITS() const {return fRawEtFullAcceptanceITS+fRawEtFullAcceptanceTPC;}
     Float_t GetRawEtEMCALAcceptanceTPC() const {return fRawEtEMCALAcceptanceTPC;}
     Float_t GetRawEtEMCALAcceptanceITS() const {return fRawEtEMCALAcceptanceITS+fRawEtEMCALAcceptanceTPC;}
@@ -91,7 +91,7 @@ public:
 protected:
 
     Bool_t CheckGoodVertex(AliVParticle *track);
-    AliAnalysisHadEtCorrections *fCorrections;//corrections needed for hadronic et
+    AliAnalysisHadEtCorrections *fCorrections;//!corrections needed for hadronic et
 
     TString       fConfigFile;        // the name of the ConfigFile
     //virtual bool TrackHitsCalorimeter(AliVParticle *track, Double_t magField) = 0;

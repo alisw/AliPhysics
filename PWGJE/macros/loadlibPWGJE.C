@@ -25,9 +25,9 @@ void loadlibPWGJE()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
 
-  gSystem->Load("libCGAL.so");
-  gSystem->Load("libfastjet.so");
+  gSystem->Load("libCGAL");
+  gSystem->Load("libfastjet");
 
-  gSystem->Load("libPWGJE.so");
-  gSystem->Load("libPWGJEStrangenessInJets.so");
+  gSystem->Load("libPWGJE");
+  gSystem->Load("libPWGJEStrangenessInJets");
 }

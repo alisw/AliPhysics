@@ -48,7 +48,7 @@ AliAnalysisTaskTwoPlusOne::AliAnalysisTaskTwoPlusOne(const char *name)
   fFoundFractionCut(-1),
   fFilterBit(0xFF),
   fTrackStatus(0),
-  fSelectBit(AliVEvent::kMB|AliVEvent::kUserDefined),
+  fThreeParticleMixed(0),
   fCustomBinning(),
   fAlpha(0.2)
 {
@@ -76,7 +76,6 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fAnalyseUE->SetTrackStatus(fTrackStatus);
   fAnalyseUE->SetDebug(fDebug); 
   fAnalyseUE->DefineESDCuts(fFilterBit);
-  fAnalyseUE->SetEventSelection(fSelectBit);
 
   fListOfHistos = new TList();
   fListOfHistos->SetOwner(kTRUE); 
@@ -87,6 +86,7 @@ void AliAnalysisTaskTwoPlusOne::UserCreateOutputObjects()
   fListOfHistos->Add(fHistos);
 
   fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
+  fListOfHistos->Add(new TH2F("mixedDist", ";centrality;tracks;events", 101, 0, 101, 200, 0, fMixingTracks * 1.5));
 
   PostData(1,fListOfHistos);
 
@@ -195,6 +195,7 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
   if (!pool)
     AliFatal(Form("No pool found for centrality = %f, zVtx = %f", centrality, zVtx));
   if (pool->IsReady()){    
+    ((TH2F*) fListOfHistos->FindObject("mixedDist"))->Fill(centrality, pool->NTracksInPool());
     Int_t nMix = pool->GetCurrentNEvents();
 
     ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
@@ -203,8 +204,27 @@ void AliAnalysisTaskTwoPlusOne::UserExec(Option_t *)
     for (Int_t jMix=0; jMix<nMix; jMix++){
       TObjArray* bgTracks = pool->GetEvent(jMix);
       
-      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix);
+      //standard mixed event
+      if(!fThreeParticleMixed)
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracksClone, bgTracks, bgTracks, 1.0 / nMix);
+
+      //mixed combinatorics
+      fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedCombNS, tracksClone, bgTracks, tracksClone, bgTracks, 1.0 / nMix);
     }
+    
+    
+    // use 3 particle mixed event
+    if(fThreeParticleMixed && nMix>1){
+      TObjArray* tracks_t2 = pool->GetEvent(0);
+      for (Int_t jMix=1; jMix<nMix; jMix++){
+
+	TObjArray* bgTracks = pool->GetEvent(jMix);
+
+	fHistos->FillCorrelations(centrality, zVtx, AliTwoPlusOneContainer::kMixedNS, tracksClone, tracks_t2, bgTracks, bgTracks, 1.0 / (nMix-1));
+      }
+    }
+    
+    
   }
 
   // ownership is with the pool now
@@ -256,7 +276,7 @@ void  AliAnalysisTaskTwoPlusOne::AddSettingsTree()
   settingsTree->Branch("fCrossedRowsCut", &fCrossedRowsCut,"CrossedRowsCut/I");
   settingsTree->Branch("fFoundFractionCut", &fFoundFractionCut,"FoundFractionCut/D");
   settingsTree->Branch("fTrackStatus", &fTrackStatus,"TrackStatus/I");
-  settingsTree->Branch("fSelectBit", &fSelectBit,"EventSelectionBit/I");
+  settingsTree->Branch("fThreeParticleMixed", &fThreeParticleMixed,"fThreeParticleMixed/I");
   settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   
   settingsTree->Fill();

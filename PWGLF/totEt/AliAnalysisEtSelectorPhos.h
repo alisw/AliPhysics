@@ -27,6 +27,7 @@ public:
     virtual TRefArray* GetClusters();
     virtual Bool_t PassMinEnergyCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassMinEnergyCut(const TParticle& part) const;
+    virtual Bool_t PassMinEnergyCut(Double_t e) const;
     virtual Bool_t PassDistanceToBadChannelCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t PassTrackMatchingCut(const AliESDCaloCluster& cluster) const;
     virtual Bool_t CutGeometricalAcceptance(const TParticle& part);    
@@ -45,11 +46,11 @@ private:
     int LoadGeometry(); // load geometry
     int LoadBadMaps(); // load bad maps
     
-    AliPHOSGeometry *fGeoUtils; // geo utils
+    AliPHOSGeometry *fGeoUtils; //! geo utils
     
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
+    TH2I *fBadMapM2; //! Bad map
+    TH2I *fBadMapM3; //! Bad map
+    TH2I *fBadMapM4; //! Bad map
 
     Bool_t fMatrixInitialized; // matrix initialized
     
