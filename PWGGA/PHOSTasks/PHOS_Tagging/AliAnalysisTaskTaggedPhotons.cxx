@@ -1367,16 +1367,10 @@ Int_t AliAnalysisTaskTaggedPhotons::IsSameParent(const AliCaloPhoton *p1, const 
     return 0 ; //can not say anything
 
   Int_t prim1 = p1->GetPrimary();
-printf("IsSameParent: Start() prim1=%d \n",prim1) ;
-((AliAODMCParticle*)fStack->At(prim1))->Print() ;
   while(prim1!=-1){ 
     Int_t prim2 = p2->GetPrimary();
-  printf("   prim1=%d, prim2=%d \n",prim1,prim2) ;
-((AliAODMCParticle*)fStack->At(prim1))->Print() ;
   
     while(prim2!=-1){       
-printf("               prim2=%d\n",prim2) ;      
-((AliAODMCParticle*)fStack->At(prim2))->Print() ;      
       if(prim1==prim2){
 	return ((AliAODMCParticle*)fStack->At(prim1))->GetPdgCode() ;
       }
@@ -1540,13 +1534,12 @@ void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const Al
 void AliAnalysisTaskTaggedPhotons::FillPIDHistograms(const char * name, const AliCaloPhoton * p1,const AliCaloPhoton * p2,Double_t x, Bool_t isRe) const{
 
   Double_t ptPi = (*p1 + *p2).Pt() ;
-  Double_t w=p1->GetWeight()*p2->GetWeight() ;
-  if(isRe){
-    Int_t pdg=IsSameParent(p1,p2) ;
-printf("======> PDG=%d, p1=%p, p2=%p \n",pdg,p1,p2) ;
-    if(pdg!=0)
-      w=p1->GetWeight() ;
-  }
+  Double_t w=TMath::Sqrt(p1->GetWeight()*p2->GetWeight()) ;
+//  if(isRe){
+//    Int_t pdg=IsSameParent(p1,p2) ;
+//    if(pdg!=0)
+//      w=p1->GetWeight() ;
+//  }
   FillHistogram(Form("%s_All_cent%d",name,fCentBin),x,ptPi,w) ;
   if(p1->IsDispOK() && p2->IsDispOK())
     FillHistogram(Form("%s_Disp_cent%d",name,fCentBin),x,ptPi,w) ;
@@ -1713,7 +1706,7 @@ Double_t AliAnalysisTaskTaggedPhotons::PrimaryParticleWeight(AliAODMCParticle * 
      return 1;
   //Classify parent at vertex
   //Introduce for eta and pi0 weights   
-
+     
   Double_t r2=particle->Xv()*particle->Xv()+particle->Yv()*particle->Yv() ;
   Int_t mother = particle->GetMother() ;
   while(mother>-1){
