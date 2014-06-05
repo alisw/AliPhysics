@@ -126,20 +126,17 @@ void AliHLTComponentBenchmark::GetStatisticsData( Double_t* statistics, TString*
 {
   // !
   if( fNEvents<=0 ) return ;
-  float ratio = 1;
-  if( fTotalInput >0 ) ratio = fTotalOutput / fTotalInput;
 
   statistics[0] = fNEvents;
   statistics[1] = fTotalInput/fNEvents/1024;
   statistics[2] = fTotalOutput/fNEvents/1024;
-  statistics[3] = ratio;
   
   if( fNTimers<=0 ) return ;
   
   for( int i=0; i<fNTimers; i++ ){
 	names[i] = fNames[i];
-    statistics[4+i] = fTotalRealTime[i]/fNEvents*1.e3;
-	statistics[5+i] = fTotalCPUTime[i]/fNEvents*1.e3;    
+    statistics[3+i] = fTotalRealTime[i]/fNEvents*1.e3;
+	statistics[4+i] = fTotalCPUTime[i]/fNEvents*1.e3;    
   }
   return ;
 }

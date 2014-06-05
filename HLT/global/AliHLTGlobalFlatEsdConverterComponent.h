@@ -99,6 +99,8 @@ protected:
   Double_t fSolenoidBz; //! transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
   TString fBenchmarkHistosFilename;
+  Int_t fInitialTime;
+  
   
   ClassDef(AliHLTGlobalFlatEsdConverterComponent, 0)
 };

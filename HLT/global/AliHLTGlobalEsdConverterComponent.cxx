@@ -45,6 +45,8 @@
 #include "TTree.h"
 #include "TList.h"
 #include "TClonesArray.h"
+#include "TTimeStamp.h"
+#include "THnSparse.h"
 #include "AliHLTESDCaloClusterMaker.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
@@ -63,12 +65,23 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fESD(NULL)
   , fSolenoidBz(-5.00668)
   , fBenchmark("EsdConverter")
+  , fBenchmarkHistosFilename("$PWD/histosBenchmark.root")
+  , fInitialTime(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  
+    TFile *f = TFile::Open(fBenchmarkHistosFilename,"READ");
+  if(f!=0x0){
+	TNamed *t = (TNamed*)f->Get("time");
+	if(t!=0x0){
+	  fInitialTime = atoi(t->GetTitle());
+	}
+  }
+  
 }
 
 AliHLTGlobalEsdConverterComponent::~AliHLTGlobalEsdConverterComponent()
@@ -296,6 +309,7 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
 {
   // see header file for class documentation
   int iResult=0;
+  bool benchmark = true;
   if (!fESD) return -ENODEV;
 
   if (!IsDataEvent()) return iResult;
@@ -357,6 +371,36 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
 
   fBenchmark.Stop(0);
   HLTWarning( fBenchmark.GetStatistics() );
+  
+    
+  
+  
+  
+  
+    if(benchmark){
+	
+	TTimeStamp ts;
+	Double_t time = (Double_t) ts.GetSec() - fInitialTime;
+	Int_t nV0s = pESD->GetNumberOfV0s();
+	Int_t nTracks = pESD->GetNumberOfTracks();
+	
+	
+	Double_t statistics[10]; 
+	TString names[10];
+	fBenchmark.GetStatisticsData(statistics, names);
+	  statistics[5] = nTracks;
+	  statistics[6] = time;
+	  statistics[7] = nV0s;
+	  
+	  FillBenchmarkHistos( statistics, names);
+  printf("\nTIME:  %.9f \n\n",time);
+	  fBenchmark.Reset();
+  
+  }
+  
+  
+  
+  
 
   return iResult;
 }
@@ -632,6 +676,7 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
   // update with  vertices and vertex-fitted tracks
   // output of PrimaryVertexer and V0Finder components
+  
   TObject* pBase = (TObject*)GetFirstInputObject(kAliHLTDataTypeKFVertex | kAliHLTDataOriginOut);
   if (pBase) {
     AliKFVertex* kfVertex = dynamic_cast<AliKFVertex *>(pBase);
@@ -861,7 +906,35 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
   if (iAddedDataBlocks>0 && pTree) {
     pTree->Fill();
   }
+
+  
+  
   
   if (iResult>=0) iResult=iAddedDataBlocks;
   return iResult;
+}
+
+
+
+
+void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
+
+
+//  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
+    
+  TFile *f = TFile::Open(fBenchmarkHistosFilename,"UPDATE");
+  THnSparseD *s = (THnSparseD*)f->Get("benchmarkInformation");
+  TNamed *t = (TNamed*)f->Get("time");
+	
+  if(!s){
+	HLTWarning( "Benchmark Histograms not available!" );
+	return;
+  }
+  s->Fill(statistics);
+
+  TList histosList;
+  histosList.Add(s);
+  histosList.Add(t);
+  histosList.SaveAs(fBenchmarkHistosFilename);
+  
 }

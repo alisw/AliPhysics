@@ -73,6 +73,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    */
   int ProcessBlocks(TTree* pTree, AliESDEvent* pESD);
 
+  void FillBenchmarkHistos(Double_t *statistics, TString *names);
  private:
   /** copy constructor prohibited */
   AliHLTGlobalEsdConverterComponent(const AliHLTGlobalEsdConverterComponent&);
@@ -107,6 +108,8 @@ protected:
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
+  TString fBenchmarkHistosFilename;
+  Int_t fInitialTime;
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };

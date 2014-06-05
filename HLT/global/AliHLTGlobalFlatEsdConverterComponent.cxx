@@ -50,6 +50,8 @@
 #include "TTree.h"
 #include "TList.h"
 #include "TClonesArray.h"
+#include "TTimeStamp.h"
+#include "THnSparse.h"
 //#include "AliHLTESDCaloClusterMaker.h"
 //#include "AliHLTCaloClusterDataStruct.h"
 //#include "AliHLTCaloClusterReader.h"
@@ -72,13 +74,25 @@ AliHLTGlobalFlatEsdConverterComponent::AliHLTGlobalFlatEsdConverterComponent()
   , fVerbosity(0)  
   , fSolenoidBz(-5.00668)
   , fBenchmark("FlatEsdConverter")
-  , fBenchmarkHistosFilename("$HERAFOLDER/flatDev/rawToFlat/histosBenchmark.root")
+  , fBenchmarkHistosFilename("$PWD/histosBenchmark.root")
+  , fInitialTime(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+  
+  
+  
+  
+  TFile *f = TFile::Open(fBenchmarkHistosFilename,"READ");
+  if(f!=0x0){
+	TNamed *t = (TNamed*)f->Get("time");
+	if(t!=0x0){
+	  fInitialTime = atoi(t->GetTitle());
+	}
+  }
 }
 
 AliHLTGlobalFlatEsdConverterComponent::~AliHLTGlobalFlatEsdConverterComponent()
@@ -269,10 +283,14 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   if (!IsDataEvent()) return iResult;
 
-
-  fBenchmark.Reset();
   fBenchmark.StartNewEvent();
   fBenchmark.Start(0);
+  
+	TStopwatch timer;
+  timer.Start();
+  
+  
+  
 
   size_t maxOutputSize = size;
   size = 0;
@@ -461,7 +479,7 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
     const AliESDVertex *primaryVertexSPD = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginITS ) );
     const AliESDVertex *primaryVertexTracks = dynamic_cast<const AliESDVertex*>( GetFirstInputObject( kAliHLTDataTypeESDVertex|kAliHLTDataOriginOut ) );
     
-    cout<<endl<<" Primary vertex Tracks: "<<primaryVertexTracks<<", SPD: "<< primaryVertexSPD <<endl<<endl;
+  //  cout<<endl<<" Primary vertex Tracks: "<<primaryVertexTracks<<", SPD: "<< primaryVertexSPD <<endl<<endl;
 
     flatEsd->FillPrimaryVertices( primaryVertexSPD, primaryVertexTracks );
     
@@ -611,8 +629,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
   // Fill v0's
   
-  {    
     int nV0s =0;
+  {    
     const AliHLTComponentBlockData* pP = GetFirstInputBlock(kAliHLTDataTypeGlobalVertexer|kAliHLTDataOriginOut);
     if (pP && pP->fSize && pP->fPtr) {
       const AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData *data = reinterpret_cast<AliHLTGlobalVertexerComponent::AliHLTGlobalVertexerData*>(pP->fPtr);
@@ -625,9 +643,8 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 	flatEsd->StoreLastV0();
       }
     } else {
-      HLTWarning("xxx No V0 data block");
+      HLTWarning(" No V0 data block");
     }
-    cout<<"\nxxxx Found "<<nV0s<<" V0's\n"<<endl;
   }
   
   // Get ITS SPD vertex
@@ -723,13 +740,25 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   
   
   
-  
   if(benchmark){
+	
+	TTimeStamp ts;
+	Double_t time = (Double_t) ts.GetSec() - fInitialTime;
   
-	Double_t* statistics=0x0; 
-	TString* names=0x0;
+	
+	
+	Double_t statistics[10]; 
+	TString names[10];
 	fBenchmark.GetStatisticsData(statistics, names);
-	FillBenchmarkHistos( statistics, names);
+	  statistics[5] = tracksTPC.size();
+	  statistics[6] = time;
+	  statistics[7] = nV0s;
+	  
+	  FillBenchmarkHistos( statistics, names);
+  printf("\nTIME:  %.1f \n\n",time);
+ // printf("\nreal time:  %.9f \n\n",statistics[4]);
+ // printf("\ncpu time:  %.9f \n\n",statistics[3]);
+	  fBenchmark.Reset();
   
   }
   return iResult;
@@ -738,34 +767,22 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
 void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
 
-  
-  TString outputFilename = fBenchmarkHistosFilename; ;
-  TH2F* hCpuTimeVsSize;
-  TH2F* hRealTimeVsSize;
- 
-  
-  
-  TFile *outFile = TFile::Open(outputFilename,"UPDATE");
-   hCpuTimeVsSize = (TH2F*)outFile->Get("cpuTimeVsSize");
-	hRealTimeVsSize = (TH2F*)outFile->Get("realTimeVsSize");
+
+//  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
+    
+  TFile *f = TFile::Open(fBenchmarkHistosFilename,"UPDATE");
+  THnSparseD *s = (THnSparseD*)f->Get("benchmarkInformation");
+  TNamed *t = (TNamed*)f->Get("time");
 	
-  if(!hCpuTimeVsSize || !hRealTimeVsSize){
+  if(!s){
 	HLTWarning( "Benchmark Histograms not available!" );
 	return;
   }
-  
-	
-  Double_t realTimePerEvent = statistics[5];
-  Double_t cpuTimePerEvent = statistics[5];
-  Double_t sizePerEvent = statistics[1];
-  
-  hCpuTimeVsSize->Fill(sizePerEvent, cpuTimePerEvent);
-  hRealTimeVsSize->Fill(sizePerEvent, realTimePerEvent);
+  s->Fill(statistics);
 
-   TList histosList;
-	histosList.Add(hCpuTimeVsSize);
-	histosList.Add(hRealTimeVsSize);
-	
-  histosList.SaveAs(outputFilename);
+  TList histosList;
+  histosList.Add(s);
+  histosList.Add(t);
+  histosList.SaveAs(fBenchmarkHistosFilename);
   
 }
