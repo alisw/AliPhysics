@@ -66,7 +66,11 @@ AliAnalysisTaskSpectraAllChAOD::AliAnalysisTaskSpectraAllChAOD(const char *name)
   fnQvecBins(100),
   fnNchBins(200),
   fIsQvecCalibMode(0),
-  fQvecUpperLim(100)
+  fQvecUpperLim(100),
+  fIsAOD160(1),
+  fnDCABins(60),
+  fDCAmin(-3),
+  fDCAmax(3)
 {
   // Default constructor
   DefineInput(0, TChain::Class());
@@ -93,11 +97,11 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   const Int_t nptBins=34;
   
   //dimensions of THnSparse for tracks
-  const Int_t nvartrk=7;
-  //                                             pt          cent          Q vec     IDrec      IDgen       isph         y
-  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,        3,         2,        2};
-  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,      -0.5,      -0.5,    -0.5};
-  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100., fQvecUpperLim,      3.5,      2.5,       1.5,     0.5};    
+  const Int_t nvartrk=9;
+  //                                             pt          cent          Q vec     IDrec      IDgen       isph         y    DCA           issec
+  Int_t    binsHistRealTrk[nvartrk] = {      nptBins, fnCentBins,     fnQvecBins,        4,        3,         2,        2,     fnDCABins,      2};
+  Double_t xminHistRealTrk[nvartrk] = {         0.,          0.,              0.,       -.5,      -0.5,      -0.5,    -0.5,    fDCAmin,      0.5};
+  Double_t xmaxHistRealTrk[nvartrk] = {       10.,       100.,     fQvecUpperLim,       3.5,      2.5,       1.5,     0.5,      fDCAmax,     2.5};    
   THnSparseF* NSparseHistTrk = new THnSparseF("NSparseHistTrk","NSparseHistTrk",nvartrk,binsHistRealTrk,xminHistRealTrk,xmaxHistRealTrk);
   NSparseHistTrk->GetAxis(0)->SetTitle("#it{p}_{T,rec}");
   NSparseHistTrk->GetAxis(0)->SetName("pT_rec");
@@ -114,6 +118,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserCreateOutputObjects()
   NSparseHistTrk->GetAxis(5)->SetName("isph");
   NSparseHistTrk->GetAxis(6)->SetTitle("y");
   NSparseHistTrk->GetAxis(6)->SetName("y");
+  NSparseHistTrk->GetAxis(7)->SetTitle("dca");
+  NSparseHistTrk->GetAxis(7)->SetName("dca");
+  NSparseHistTrk->GetAxis(8)->SetTitle("issec");
+  NSparseHistTrk->GetAxis(8)->SetName("issec");
   fOutput->Add(NSparseHistTrk);
   
   //dimensions of THnSparse for stack
@@ -228,6 +236,9 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   
   //main loop on tracks
   
+  //Get Vertex for DCA
+  AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
+  
   Int_t Nch = 0.;
   
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
@@ -239,7 +250,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       Double_t y= track->Y(fHelperPID->GetMass((AliHelperParticleSpecies_t)IDrec));
       Int_t IDgen=kSpUndefined;//set if MC
       Int_t isph=-999;
-      //Int_t iswd=-999;
+//       Int_t iswd=-999;
+      Int_t issec=-999;
       
       if (arrayMC) {
 	AliAODMCParticle *partMC = (AliAODMCParticle*) arrayMC->At(TMath::Abs(track->GetLabel()));
@@ -250,7 +262,27 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
 	IDgen=fHelperPID->GetParticleSpecies(partMC);
 	isph=partMC->IsPhysicalPrimary();
 	//iswd=partMC->IsSecondaryFromWeakDecay();//FIXME not working on old productions - removed Apr 8th 2014
+	
+	if(fIsAOD160){// enabled for new ADO160 only
+	  if(partMC->IsSecondaryFromWeakDecay()) issec=1.;
+	  if(partMC->IsSecondaryFromMaterial()) issec=2.;
+
+	}
       }
+      
+      /*** DCA ***/
+      
+      //AliAODTrack::DCA(): for newest AOD fTrack->DCA() always gives -999. This should fix.
+      //FIXME should update EventCuts?
+      //FIXME add track->GetXYZ(p) method
+      Double_t d[2], cov[2];
+      Double_t dcaxy = -999.;
+      AliExternalTrackParam etp; etp.CopyFromVTrack(static_cast<AliAODTrack*>(track));
+      if(etp.PropagateToDCA(vertex, fAOD->GetMagneticField(),999,d,cov)) {
+//         printf("DCAr: %f DCAz: %f  Cov: rr%f rz:%f zz:%f",d[0],d[1],cov[0],cov[1],cov[2]);
+        dcaxy = d[0];
+      }
+      
       
     //pt     cent    Q vec     IDrec     IDgen       isph      y
       Double_t varTrk[7];
@@ -261,6 +293,8 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       varTrk[4]=(Double_t)IDgen;
       varTrk[5]=(Double_t)isph;
       varTrk[6]=y;
+      varTrk[7]=dcaxy;
+      varTrk[8]=issec;
       ((THnSparseF*)fOutput->FindObject("NSparseHistTrk"))->Fill(varTrk);//track loop
       
       //for nsigma PID fill double counting of ID

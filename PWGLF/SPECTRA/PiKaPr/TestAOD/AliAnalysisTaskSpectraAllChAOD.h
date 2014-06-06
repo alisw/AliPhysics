@@ -38,7 +38,11 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
     fnQvecBins(40),
     fnNchBins(200),
     fIsQvecCalibMode(0),
-    fQvecUpperLim(100)
+    fQvecUpperLim(100),
+    fIsAOD160(1),
+    fnDCABins(60),
+    fDCAmin(-3),
+    fDCAmax(3)
       {}
   AliAnalysisTaskSpectraAllChAOD(const char *name);
   virtual ~AliAnalysisTaskSpectraAllChAOD() {
@@ -78,6 +82,11 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetQvecCalibMode(Bool_t mode)                  { fIsQvecCalibMode = mode; }
   void SetQvecUpperLimit(Double_t val)                { fQvecUpperLim = val; }
   
+  void SetIsAOD160(Bool_t aod)                        { fIsAOD160 = aod; }
+  void SetnDCABin(Int_t val)                          { fnDCABins = val; } 
+  void SetDCAmin(Double_t val)                        { fDCAmin = val; }
+  void SetDCAmax(Double_t val)                        { fDCAmax = val; }
+  
  private:
   
   AliAODEvent                   * fAOD;                         //! AOD object
@@ -95,10 +104,14 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   Int_t                            fnNchBins;                 // number of bins for the Nch axis
   Bool_t                           fIsQvecCalibMode;          //calib mode for Qvector percentile
   Double_t                         fQvecUpperLim;             //Upper limit for Qvector
+  Bool_t                           fIsAOD160;              // enable DCA for AOD160
+  Int_t                            fnDCABins;              // number of bins for DCA axis
+  Double_t                         fDCAmin;                // min DCA value
+  Double_t                         fDCAmax;                // max DCA value
   AliAnalysisTaskSpectraAllChAOD(const AliAnalysisTaskSpectraAllChAOD&);
   AliAnalysisTaskSpectraAllChAOD& operator=(const AliAnalysisTaskSpectraAllChAOD&);
   
-  ClassDef(AliAnalysisTaskSpectraAllChAOD, 7);
+  ClassDef(AliAnalysisTaskSpectraAllChAOD, 8);
 };
 
 #endif
