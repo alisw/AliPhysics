@@ -309,9 +309,9 @@ protected:
 
     TH1I *fCutFlow; //! Cut flow
     
-    AliAnalysisEtSelector *fSelector; //! Selector class
+    AliAnalysisEtSelector *fSelector; // Selector class
 
-    AliPIDResponse *fPIDResponse;//!
+    AliPIDResponse *fPIDResponse;//
 
     Float_t fsub;
     
