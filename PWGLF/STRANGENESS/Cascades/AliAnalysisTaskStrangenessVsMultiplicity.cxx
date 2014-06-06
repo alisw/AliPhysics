@@ -388,10 +388,10 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserCreateOutputObjects()
   //Info from AliCentrality (not necessarily 'centrality' per se) 
   fTreeEvent->Branch("fCentrality_V0A",&fCentrality_V0A,"fCentrality_V0A/F");
   fTreeEvent->Branch("fCentrality_V0C",&fCentrality_V0C,"fCentrality_V0C/F");
-  fTreeEvent->Branch("fCentrality_V0M",&fCentrality_V0A,"fCentrality_V0M/F");
+  fTreeEvent->Branch("fCentrality_V0M",&fCentrality_V0M,"fCentrality_V0M/F");
   fTreeEvent->Branch("fCentrality_V0AEq",&fCentrality_V0AEq,"fCentrality_V0AEq/F");
   fTreeEvent->Branch("fCentrality_V0CEq",&fCentrality_V0CEq,"fCentrality_V0CEq/F");
-  fTreeEvent->Branch("fCentrality_V0MEq",&fCentrality_V0AEq,"fCentrality_V0MEq/F");
+  fTreeEvent->Branch("fCentrality_V0MEq",&fCentrality_V0MEq,"fCentrality_V0MEq/F");
   
   //Official GetReferenceMultiplicity
   fTreeEvent->Branch("fRefMultEta5",&fRefMultEta5,"fRefMultEta5/I");
