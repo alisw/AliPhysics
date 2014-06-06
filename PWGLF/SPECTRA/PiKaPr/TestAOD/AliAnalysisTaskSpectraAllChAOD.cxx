@@ -236,9 +236,6 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   
   //main loop on tracks
   
-  //Get Vertex for DCA
-  AliAODVertex * vertex = fAOD->GetPrimaryVertex();//FIXME vertex is recreated
-  
   Int_t Nch = 0.;
   
   for (Int_t iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++) {
@@ -271,18 +268,10 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       }
       
       /*** DCA ***/
-      
-      //AliAODTrack::DCA(): for newest AOD fTrack->DCA() always gives -999. This should fix.
-      //FIXME should update EventCuts?
-      //FIXME add track->GetXYZ(p) method
-      Double_t d[2], cov[2];
       Double_t dcaxy = -999.;
-      AliExternalTrackParam etp; etp.CopyFromVTrack(static_cast<AliAODTrack*>(track));
-      if(etp.PropagateToDCA(vertex, fAOD->GetMagneticField(),999,d,cov)) {
-//         printf("DCAr: %f DCAz: %f  Cov: rr%f rz:%f zz:%f",d[0],d[1],cov[0],cov[1],cov[2]);
-        dcaxy = d[0];
-      }
       
+      Double_t p[2]; 
+      if(GetDCA(track,p)){ dcaxy=p[0]; }
       
     //pt     cent    Q vec     IDrec     IDgen       isph      y
       Double_t varTrk[7];
@@ -330,6 +319,28 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
   PostData(2, fEventCuts);
   PostData(3, fTrackCuts);
   PostData(4, fHelperPID);
+}
+
+//_________________________________________________________________
+Bool_t  AliAnalysisTaskSpectraAllChAOD::GetDCA(const AliAODTrack* trk, Double_t * p){
+  
+  //AliAODTrack::DCA(): for newest AOD fTrack->DCA() always gives -999. This should fix.
+  //FIXME should update EventCuts?
+  //FIXME add track->GetXYZ(p) method
+  
+  double xyz[3],cov[3];
+  
+  if (!trk->GetXYZ(xyz)) { // dca is not stored
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(trk);
+    AliVEvent* ev = (AliVEvent*)trk->GetEvent();
+    if (!ev) {/*printf("Event is not connected to the track\n");*/ return kFALSE;}
+    if (!etp.PropagateToDCA(ev->GetPrimaryVertex(), ev->GetMagneticField(),999,xyz,cov)) return kFALSE; // failed, track is too far from vertex
+  }
+  p[0] = xyz[0];
+  p[1] = xyz[1];
+  return kTRUE;
+
 }
 
 //_________________________________________________________________
