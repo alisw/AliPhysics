@@ -37,6 +37,7 @@ class AliFlowBayesianPID;
 class AliESDkink;
 class AliESDv0;
 class AliESDVZERO;
+class AliPIDResponse;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -293,6 +294,9 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   }
   Bool_t GetUseVZERORing(Int_t i) const {return fUseVZERORing[i];}
 
+  void SetNumberOfSigmas(Float_t val) {fNsigmaCut2 = val*val;};
+  Float_t GetNumberOfSigmas() const {return TMath::Sqrt(fNsigmaCut2);};
+
  protected:
   //AliFlowTrack* MakeFlowTrackSPDtracklet() const;
   //AliFlowTrack* MakeFlowTrackPMDtrack() const;
@@ -421,7 +425,10 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fUseVZERORing[8];      // kTRUE means the ring is included
   static const Int_t fgkNumberOfVZEROtracks=64; //number of VZERO channels
 
-  ClassDef(AliFlowTrackCuts,13)
+  AliPIDResponse *fPIDResponse;            //! Pid reponse to manage Nsigma cuts
+  Float_t fNsigmaCut2;                     // Number of sigma^2 (cut value) for TPC+TOF nsigma cut
+
+  ClassDef(AliFlowTrackCuts,14)
 };
 
 #endif
