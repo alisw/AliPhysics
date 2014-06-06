@@ -274,7 +274,7 @@ void AliAnalysisTaskSpectraAllChAOD::UserExec(Option_t *)
       if(GetDCA(track,p)){ dcaxy=p[0]; }
       
     //pt     cent    Q vec     IDrec     IDgen       isph      y
-      Double_t varTrk[7];
+      Double_t varTrk[9];
       varTrk[0]=track->Pt();
       varTrk[1]=Cent;
       varTrk[2]=Qvec;
