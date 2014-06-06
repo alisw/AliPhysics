@@ -22,6 +22,7 @@ class THF1;
 class THF2;
 class TProfile;
 class AliLocalRhoParameter;
+class AliClusterContainer;
 
 class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     public:
@@ -33,6 +34,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         enum runModeType        { kLocal, kGrid };                      // run mode type
         enum dataType           { kESD, kAOD, kESDMC, kAODMC };         // data type
         enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
+        enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
                                 AliAnalysisTaskRhoVnModulation();
                                 AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
@@ -112,6 +114,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetQCnRecoveryType(qcRecovery type)             {fQCRecovery = type; }
         void                    SetModulationFitOptions(TString opt)            {fFitModulationOptions = opt; }
         void                    SetReferenceDetector(detectorType type)         {fDetectorType = type; }
+        void                    SetAnalysisType(analysisType type)              {fAnalysisType = type; }
         void                    SetCollisionType(collisionType type)            {fCollisionType = type; }
         void                    SetUsePtWeight(Bool_t w)                        {
             fUsePtWeight = w; 
@@ -191,6 +194,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         // event and track selection, also used by AliAnalyisTaskJetFlow
         /* inline */    Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0); }
+        /* inline */    Bool_t PassesCuts(AliVCluster* clus) const { return AcceptCluster(clus, 0); }
         /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet) {
             Float_t minPhi(GetJetContainer()->GetJetPhiMin()), maxPhi(GetJetContainer()->GetJetPhiMax());
             return (jet && jet->Pt() > 1 && jet->Eta() < .9-GetJetRadius() && jet->Eta() > -.9+GetJetRadius() && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
@@ -202,7 +206,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         void                    FillTrackHistograms() const;
         void                    FillClusterHistograms() const;
-        void                    FillCorrectedClusterHistograms() const;
         void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
         void                    FillRhoHistograms();
         void                    FillDeltaPtHistograms(Double_t psi2, Double_t psi3) const; 
@@ -238,8 +241,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fUserSuppliedV3;        // histo with integrated v3
         TH1F*                   fUserSuppliedR2;        // correct the extracted v2 with this r
         TH1F*                   fUserSuppliedR3;        // correct the extracted v3 with this r
-        AliParticleContainer*   fTracksCont;            //!tracks
-        AliJetContainer*        fJetsCont;              //!jets
+        AliParticleContainer*   fTracksCont;            //! tracks
+        AliClusterContainer*    fClusterCont;           //! cluster container
+        AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet
         // members
         Bool_t                  fUseScaledRho;          // use scaled rho
@@ -251,6 +255,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Bool_t                  fUsePtWeight;           // use dptdphi instead of dndphi
         Bool_t                  fUsePtWeightErrorPropagation;   // recalculate the bin errors in case of pt weighting 
         detectorType            fDetectorType;          // type of detector used for modulation fit
+        analysisType            fAnalysisType;          // analysis type (full or charged jets)
         TString                 fFitModulationOptions;  // fit options for modulation fit
         runModeType             fRunModeType;           // run mode type 
         dataType                fDataType;              // datatype 
@@ -330,13 +335,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPicoCat2[10];       //! pico tracks wo spd hit w refit, constrained
         TH2F*                   fHistPicoCat3[10];       //! pico tracks wo spd hit wo refit, constrained
         // qa histograms for accepted emcal clusters
-        /* TH1F*                   fHistClusterPt[10];      //! pt uncorrected emcal clusters */
-        /* TH1F*                   fHistClusterPhi[10];     //! phi uncorrected emcal clusters */
-        /* TH1F*                   fHistClusterEta[10];     //! eta uncorrected emcal clusters */
-        // qa histograms for accepted emcal clusters aftehadronic correction
-        /* TH1F*                   fHistClusterCorrPt[10];  //! pt corrected emcal clusters */
-        /* TH1F*                   fHistClusterCorrPhi[10]; //! phi corrected emcal clusters */
-        /* TH1F*                   fHistClusterCorrEta[10]; //! eta corrected emcal clusters */
+        TH1F*                   fHistClusterPt[10];      //! pt emcal clusters
+        TH2F*                   fHistClusterEtaPhi[10];  //! eta phi emcal clusters
+        TH2F*                   fHistClusterEtaPhiWeighted[10]; //! eta phi emcal clusters, pt weighted
         // qa event planes
         TProfile*               fHistPsiControl;         //! event plane control histogram
         TProfile*               fHistPsiSpread;          //! event plane spread histogram
@@ -370,11 +371,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
         TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
         TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
-        /* TH2F*                   fHistRCPhiEtaRand[10];          //! random cone eta and phi, randomized */
-        /* TH2F*                   fHistRhoVsRCPtRand[10];         //! rho * A vs rcpt, randomized */
-        /* TH1F*                   fHistRCPtRand[10];              //! rcpt, randomized */ 
-        /* TH2F*                   fHistDeltaPtDeltaPhi2Rand[10];  //! dpt vs dphi, randomized */
-        /* TH2F*                   fHistDeltaPtDeltaPhi3Rand[10];  //! dpt vs dphi, randomized */
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
@@ -390,7 +386,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
         AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 26);
+        ClassDef(AliAnalysisTaskRhoVnModulation, 27);
 };
 
 #endif
