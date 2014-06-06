@@ -80,6 +80,11 @@ set ( DHDR  EveBase/EveBaseLinkDef.h)
 
 set ( EINCLUDE  RAW ITS TPC TPC/Base TPC/Sim EVE/EveBase STEER/STEER STEER/AOD STEER/CDB STEER/ESD STEER/STEERBase)
 
+if(ZEROMQ_FOUND)
+	set ( ELIBS ${ELIBS} MONITOR MONITORzmq ${ZEROMQ_LIBRARY} )
+	set ( CXXFLAGS  "-DZMQ ${CXXFLAGS}") 
+endif(ZEROMQ_FOUND)
+
 set ( EXPORT 
   EveBase/AliEveUtil.h
   EveBase/AliEveFileDialog.h
