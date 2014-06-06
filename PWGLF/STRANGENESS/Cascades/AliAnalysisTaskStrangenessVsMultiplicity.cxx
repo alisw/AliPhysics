@@ -99,6 +99,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ),
   fkRunVertexers    ( kTRUE  ), 
+  fkSkipEventSelection( kFALSE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A   (0),   
   fAmplitude_V0C   (0),   
@@ -210,6 +211,7 @@ AliAnalysisTaskStrangenessVsMultiplicity::AliAnalysisTaskStrangenessVsMultiplici
   fkSaveV0Tree      ( kFALSE ),
   fkSaveCascadeTree ( kTRUE  ), 
   fkRunVertexers    ( kTRUE  ),
+  fkSkipEventSelection( kFALSE ),
   //---> Variables for fTreeEvent
   fAmplitude_V0A (0),   
   fAmplitude_V0C (0), 
@@ -593,7 +595,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   Bool_t isSelected = 0;
   isSelected = (maskIsSelected & AliVEvent::kMB) == AliVEvent::kMB;
   
-  //Standard Min-Bias Selection
+  //Standard Min-Bias Selection - always do this! 
   if ( ! isSelected ) {
     PostData(1, fListHist);
     PostData(2, fTreeEvent);
@@ -618,7 +620,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   lPrimaryBestESDVtx->GetXYZ( lBestPrimaryVtxPos );
 
   //Only accept if Tracking or SPD vertex is fine 
-  if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() ){
+  if (!lPrimarySPDVtx->GetStatus() && !lPrimaryTrackingESDVtx->GetStatus() && !fkSkipEventSelection ){
     AliWarning("Pb / No SPD prim. vertex nor prim. Tracking vertex ... return !");
     PostData(1, fListHist); 
     PostData(2, fTreeEvent);
@@ -631,7 +633,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   fHistEventCounter -> Fill(2.5); 
 
   //Always do Primary Vertex Selection 
-  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0) {
+  if(TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0 && !fkSkipEventSelection ) {
     AliWarning("Pb / | Z position of Best Prim Vtx | > 10.0 cm ... return !");
     PostData(1, fListHist); 
     PostData(2, fTreeEvent);
@@ -647,7 +649,7 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   // Check if this isn't pileup
   //------------------------------------------------
 
-  if(lESDevent->IsPileupFromSPDInMultBins() ){
+  if(lESDevent->IsPileupFromSPDInMultBins() && !fkSkipEventSelection ){
     // minContributors=3, minZdist=0.8, nSigmaZdist=3., nSigmaDiamXY=2., nSigmaDiamZ=5.  
     //-> see http://alisoft.cern.ch/viewvc/trunk/STEER/AliESDEvent.h?root=AliRoot&r1=41914&r2=42199&pathrev=42199
     AliWarning("Pb / Event tagged as pile-up by SPD... return !"); 
@@ -692,12 +694,12 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   fAmplitude_V0A = multV0ACorr; 
   fAmplitude_V0C = multV0CCorr; 
 
-  // Equalized signals // From AliCentralitySelectionTask
-  for(Int_t iCh = 4; iCh < 7; ++iCh) {
+  // Equalized signals // From AliCentralitySelectionTask // Updated
+  for(Int_t iCh = 32; iCh < 64; ++iCh) {
     Double_t mult = lESDevent->GetVZEROEqMultiplicity(iCh);
     multV0AEq += mult;
   }
-  for(Int_t iCh = 0; iCh < 3; ++iCh) {
+  for(Int_t iCh = 0; iCh < 32; ++iCh) {
     Double_t mult = lESDevent->GetVZEROEqMultiplicity(iCh);
     multV0CEq += mult;
   }
@@ -726,6 +728,15 @@ void AliAnalysisTaskStrangenessVsMultiplicity::UserExec(Option_t *)
   //Event-level fill 
   fTreeEvent->Fill() ;
   
+  //STOP HERE if skipping event selections (no point in doing the rest...) 
+  if( fkSkipEventSelection ){
+    PostData(1, fListHist); 
+    PostData(2, fTreeEvent);
+    PostData(3, fTreeV0);
+    PostData(4, fTreeCascade);
+    return; 
+  }
+
 //------------------------------------------------
 
 //------------------------------------------------
