@@ -86,7 +86,8 @@ class AliAnalysisTaskSpectraAllChAOD : public AliAnalysisTaskSE
   void SetnDCABin(Int_t val)                          { fnDCABins = val; } 
   void SetDCAmin(Double_t val)                        { fDCAmin = val; }
   void SetDCAmax(Double_t val)                        { fDCAmax = val; }
-  
+  Bool_t GetDCA(const AliAODTrack* trk, Double_t * p);
+
  private:
   
   AliAODEvent                   * fAOD;                         //! AOD object
