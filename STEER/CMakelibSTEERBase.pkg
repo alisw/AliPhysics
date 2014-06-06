@@ -1,6 +1,11 @@
 # -*- mode: CMake -*-
 
 set ( SRCS  
+    STEERBase/AliVVevent.cxx
+    STEERBase/AliVVtrack.cxx
+    STEERBase/AliVVvertex.cxx
+    STEERBase/AliVVv0.cxx
+    STEERBase/AliVVkink.cxx
     STEERBase/AliVParticle.cxx 
     STEERBase/AliVTrack.cxx 
     STEERBase/AliEventplane.cxx 

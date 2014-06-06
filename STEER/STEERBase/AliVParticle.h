@@ -12,6 +12,7 @@
 
 #include <Rtypes.h>
 #include <TObject.h>
+#include "AliVVtrack.h"
 
 #include <float.h>
 
@@ -21,7 +22,7 @@ const Double_t kAlmost0=Double_t(FLT_MIN);
 const Double_t kB2C=-0.299792458e-3;
 const Double_t kAlmost0Field=1.e-13;
 
-class AliVParticle: public TObject {
+class AliVParticle: public TObject, public AliVVtrack {
 
 public:
   AliVParticle() { }

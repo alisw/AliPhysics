@@ -15,10 +15,11 @@
 #include <TObject.h>
 #include "AliExternalTrackParam.h"
 #include <TPDGCode.h>
+#include "AliVVkink.h"
 
 class AliESDtrack;
 
-class AliESDkink : public TObject {
+class AliESDkink : public TObject, public AliVVkink {
 public:
   AliESDkink();             //constructor
   AliESDkink(const AliESDkink &source);             //constructor

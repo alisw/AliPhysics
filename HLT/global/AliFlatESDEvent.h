@@ -12,13 +12,16 @@
 #include "Rtypes.h"
 #include "AliFlatESDTrack.h"
 #include "AliFlatESDV0.h"
+#include "AliVVevent.h"
+#include "AliFlatESDVertex.h"
 
 class AliESDEvent;
-struct AliFlatESDVertex;
 class AliESDVertex;
 class AliESDV0;
+class TString;
+class AliVVv0;
 
-class AliFlatESDEvent {
+class AliFlatESDEvent: public AliVVevent {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
@@ -55,19 +58,36 @@ class AliFlatESDEvent {
   // --------------------------------------------------------------------------------
   // -- Getter methods
 
-  AliFlatESDVertex* GetPrimaryVertexSPD(){
-    return (fPrimaryVertexMask & 0x1) ? reinterpret_cast<AliFlatESDVertex*>(fContent) : NULL;
+  const AliFlatESDVertex* GetPrimaryVertexSPD() const {
+    return (fPrimaryVertexMask & 0x1) ? reinterpret_cast<const AliFlatESDVertex*>(fContent) : NULL;
   } 
 
-  AliFlatESDVertex* GetPrimaryVertexTracks() { 
-    return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<AliFlatESDVertex*>(fContent + CountBits(fPrimaryVertexMask, 0x1)) : NULL;
+  const AliFlatESDVertex* GetPrimaryVertexTracks() const { 
+    return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + CountBits(fPrimaryVertexMask, 0x1)) : NULL;
   } 
 
   Int_t GetNumberOfV0s() {return fNV0s;}
 
-  Int_t GetNumberOfTracks() {return fNTracks;}
+  Int_t GetNumberOfTracks() const {return fNTracks;}
   
   AliFlatESDTrack *GetTracks() {return reinterpret_cast<AliFlatESDTrack*>(fContent + fTracksPointer);}
+
+  const AliVVvertex* GetPrimaryVertex() const {return NULL;}
+  const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
+  AliFlatESDTrack* GetTrack(Int_t /*i*/) {return NULL;}
+  AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
+  AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}
+  Int_t GetNumberOfKinks() const {return 0;}
+  Int_t GetEventNumberInFile() const {return -1;}
+  const AliMultiplicity* GetMultiplicity() const {return NULL;} //by default SPDmult
+  Int_t GetRunNumber() const {return -1;}
+  TString GetFiredTriggerClasses() const {TString string; return string;}
+  TObject* FindListObject(const char* /*name*/) const {return NULL;}
+  ULong64_t GetTriggerMask() const {return 0;}
+  Double_t GetMagneticField() const {return 0;}
+  UInt_t GetTimeStamp() const { return 0;}
+  UInt_t GetEventSpecie() const { return 0;}
+
   
   // --------------------------------------------------------------------------------
   // -- Size methods
@@ -81,7 +101,7 @@ class AliFlatESDEvent {
   void FillPrimaryVertex(const AliESDVertex *v, Byte_t flag);
   Int_t FillNextTrack( const AliESDtrack* esdTrack,  AliESDfriendTrack* friendTrack);
   Int_t FillNextV0( const AliESDV0 *v0);
-  UInt_t CountBits(Byte_t field, UInt_t mask);
+  UInt_t CountBits(Byte_t field, UInt_t mask) const;
 
   // --------------------------------------------------------------------------------
   // -- Fixed size member objects

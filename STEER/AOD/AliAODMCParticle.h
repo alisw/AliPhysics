@@ -86,9 +86,9 @@ class AliAODMCParticle: public AliVParticle {
       fFlag &= 0xffff;   // reset the upper bins keep the lower bins
       fFlag |= (((UInt_t)status)<<16); // bit shift by 16
     }
-    UInt_t GetStatus() const {
+    ULong_t GetStatus() const {
       // bit shift by 16
-      return fFlag>>16;
+      return ULong_t(fFlag>>16);
     }
 
     // Bitwise operations

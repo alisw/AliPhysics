@@ -25,13 +25,14 @@
 #include "TRefArray.h"
 #include "AliTOFHeader.h"
 #include "AliVTrdTrack.h"
+#include "AliVVevent.h"
 class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
 class AliVZDC;
 class AliVMFT;   // AU
 
-class AliVEvent : public TObject {
+class AliVEvent : public TObject, public AliVVevent {
 
 public:
   enum EOfflineTriggerTypes { 

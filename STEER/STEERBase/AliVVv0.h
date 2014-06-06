@@ -1,5 +1,5 @@
-#ifndef ALIFLATESDV0_H
-#define ALIFLATESDV0_H
+#ifndef ALIVVV0_H
+#define ALIVVV0_H
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               *
@@ -9,15 +9,11 @@
  * >> Flat structure representing a ESD vertex <<
  */
 
-#include "Rtypes.h"
-#include "AliVVv0.h"
+#include "AliVVtrack.h"
 
-struct AliFlatESDV0: public AliVVv0
+class AliVVv0: public AliVVtrack
 {
-  Int_t fNegTrackID;
-  Int_t fPosTrackID;
-};
 
-typedef struct AliFlatESDV0 AliFlatESDV0;
+};
 
 #endif

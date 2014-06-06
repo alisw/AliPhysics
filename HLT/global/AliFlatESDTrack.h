@@ -20,12 +20,13 @@ Op - Track parameters estimated at the point of maximal radial coordinate reache
 
 #include "AliFlatTPCCluster.h"
 #include "AliFlatExternalTrackParam.h"
+#include "AliVVtrack.h"
 
 class AliESDtrack;
 class AliESDfriendTrack;
 class AliExternalTrackParam;
 
-class AliFlatESDTrack {
+class AliFlatESDTrack: public AliVVtrack {
  public:
   // --------------------------------------------------------------------------------
   // -- Constructor / Destructors
@@ -44,7 +45,7 @@ class AliFlatESDTrack {
 			       const AliExternalTrackParam* outerITSParam
 			     );
 
-  AliFlatTPCCluster *GetNextTPCClusterPointer(){ return &GetTPCCluster(fNTPCClusters); }
+  AliFlatTPCCluster *GetNextTPCClusterPointer(){ return GetTPCCluster(fNTPCClusters); }
 
   void StoreLastTPCCluster(){  
      ++fNTPCClusters;
@@ -91,8 +92,9 @@ class AliFlatESDTrack {
     return reinterpret_cast< AliFlatTPCCluster*>(fContent + sizeof(AliFlatExternalTrackParam)*CountBits(fTrackParamMask));
   } 
   
-  AliFlatTPCCluster &GetTPCCluster(Int_t ind) {
-    return GetTPCClusters()[ind];
+  AliFlatTPCCluster *GetTPCCluster(Int_t ind) {
+    AliFlatTPCCluster& cluster = GetTPCClusters()[ind];
+    return &cluster;
   } 
 
   Int_t GetNumberOfITSClusters() {

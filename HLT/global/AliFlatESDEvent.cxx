@@ -231,7 +231,7 @@ Int_t AliFlatESDEvent::Fill(const AliESDEvent *esd, const Bool_t useESDFriends, 
   return 0;
 }
 
-UInt_t AliFlatESDEvent::CountBits(Byte_t field, UInt_t mask) {
+UInt_t AliFlatESDEvent::CountBits(Byte_t field, UInt_t mask) const {
   // Count bits in field
   UInt_t count = 0; 
   UInt_t reg = 0x0; 

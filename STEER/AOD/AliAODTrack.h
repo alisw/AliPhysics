@@ -17,6 +17,7 @@
 #include "AliAODVertex.h"
 #include "AliAODRedCov.h"
 #include "AliAODPid.h"
+#include "AliExternalTrackParam.h"
  
 
 class AliVVertex;
@@ -276,6 +277,9 @@ class AliAODTrack : public AliVTrack {
   void    SetTPCFitMap(const TBits amap) {fTPCFitMap = amap;}
   void    SetTPCPointsF(UShort_t  findable){fTPCnclsF = findable;}
   void    SetTPCNCrossedRows(UInt_t n)     {fTPCNCrossedRows = n;}
+  
+  virtual const    AliExternalTrackParam * GetInnerParam() const { return NULL; }
+  virtual const    AliExternalTrackParam * GetOuterParam() const { return NULL; }
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
   UShort_t GetTPCNCrossedRows()  const { return fTPCNCrossedRows;}

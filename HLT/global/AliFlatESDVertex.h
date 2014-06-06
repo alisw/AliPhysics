@@ -10,11 +10,12 @@
  */
 
 #include "Rtypes.h"
+#include "AliVVvertex.h"
 #include "AliESDVertex.h"
 
-struct AliFlatESDVertex
+class AliFlatESDVertex: public AliVVvertex
 {
-
+  public:
   Double32_t fPosition[3];    // vertex position
   Double32_t fCov[6];  // vertex covariance matrix
   Int_t    fNContributors;  // # of tracklets/tracks used for the estimate   
@@ -92,19 +93,5 @@ struct AliFlatESDVertex
 
  
 };
-
-void AliFlatESDVertex::Set(const AliESDVertex &v )
-{
-  fPosition[0] = v.GetX();
-  fPosition[1] = v.GetY();
-  fPosition[2] = v.GetZ();
-  Double_t c[6]; 
-  v.GetCovarianceMatrix( c ); 
-  for( int i=0; i<6; i++) fCov[i] = c[i];
-  fNContributors = v.GetNContributors();
-  fChi2 = v.GetChi2();
-}
-
-typedef struct AliFlatESDVertex AliFlatESDVertex;
 
 #endif

@@ -9,8 +9,9 @@
 //-------------------------------------------------------------------------
 
 #include <TNamed.h>
+#include "AliVVvertex.h"
 
-class AliVVertex: public TNamed {
+class AliVVertex: public TNamed, public AliVVvertex {
 
 public:
   AliVVertex() : TNamed() { }

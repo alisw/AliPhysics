@@ -89,6 +89,7 @@ void AliTPCAnalysisTaskcalib::Exec(Option_t *) {
     return;
   }
   fESDfriend=static_cast<AliESDfriend*>(fESD->FindListObject("AliESDfriend"));
+  //fESDfriend=fESD->FindFriend();
   Int_t n=fESD->GetNumberOfTracks();
   Process(fESD);
   if (!fESDfriend) {
