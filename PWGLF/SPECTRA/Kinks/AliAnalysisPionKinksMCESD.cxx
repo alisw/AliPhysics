@@ -1,3 +1,23 @@
+/**************************************************************************
+ * Authors: Eftychios Cheiladakis, for his Master Thesis                  *
+ * at the  Physics Department of Athens University                        *
+ * under the supervision of  Prof. Martha Spyropoulou-Stassinaki          *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
+//-----------------------------------------------------------------
+//                 AliAnalysisPionKinksESDMC class
+//       Example of an analysis task for kink topology study
+//      pions from kink topology are 'identified' in this code
+//-----------------------------------------------------------------
+
 #include "TCanvas.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
@@ -1107,7 +1127,8 @@ void AliAnalysisPionKinksMCESD::UserExec(Option_t *) {
 				Double_t MCKinkAnglePlus2 = fuMCKinkAngle(mcEvent, iMC, MCdaughterPlus, kTRUE); //kink angle in degrees
 				Double_t MCMaxKinkAngPimuPlus=fMaxKinkAngPimu->Eval(MCP,0.,0.,0.); //maximum decay angle in lab for pion decaying to muon
 				
-				if  (MCKinkAnglePlus2>(MCMaxKinkAngPimuPlus*1.1)) continue;
+				// if  (MCKinkAnglePlus2>(MCMaxKinkAngPimuPlus*1.1)) continue;
+				if  (MCKinkAnglePlus2>(MCMaxKinkAngPimuPlus)) continue;
 			
 				hMCQtPlus->Fill(MCQtPlus); 
 				hMCKinkAnglePlus->Fill(MCKinkAnglePlus2);
