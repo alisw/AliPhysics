@@ -202,7 +202,7 @@ public:
 
   virtual void ConnectTracks() {}
 
-  ClassDef(AliVEvent,2)  // base class for AliEvent data
+  ClassDef(AliVEvent, 3)  // base class for AliEvent data
 };
 #endif 
 

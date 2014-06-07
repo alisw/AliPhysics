@@ -88,7 +88,7 @@ public:
   Char_t           fStatus[12];       //status of kink - first 4 mother (ITS,TPC,TRD,TOF)  other daughter
 
 
-  ClassDef(AliESDkink,4)      // ESD V0 vertex
+  ClassDef(AliESDkink, 5)      // ESD V0 vertex
 };
 
 #endif

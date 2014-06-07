@@ -84,5 +84,8 @@ class AliVVtrack {
   //AliTPCtrack
   virtual void GetNFoundable(Int_t /*n*/) {} 
   virtual Double_t GetdEdx()  const {return 0.;}
+
+  //  ClassDef(AliVVtrack, 1)   
+
 };
 #endif

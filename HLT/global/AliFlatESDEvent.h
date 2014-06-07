@@ -66,7 +66,7 @@ class AliFlatESDEvent: public AliVVevent {
     return (fPrimaryVertexMask & 0x2) ? reinterpret_cast<const AliFlatESDVertex*>(fContent + CountBits(fPrimaryVertexMask, 0x1)) : NULL;
   } 
 
-  Int_t GetNumberOfV0s() {return fNV0s;}
+  Int_t GetNumberOfV0s() const {return fNV0s;}
 
   Int_t GetNumberOfTracks() const {return fNTracks;}
   
@@ -74,7 +74,7 @@ class AliFlatESDEvent: public AliVVevent {
 
   const AliVVvertex* GetPrimaryVertex() const {return NULL;}
   const AliVVvertex* GetPrimaryVertexTPC() const {return NULL;}
-  AliFlatESDTrack* GetTrack(Int_t /*i*/) {return NULL;}
+  AliFlatESDTrack* GetTrack(Int_t /*i*/) const {return NULL;}
   AliVVkink* GetKink(Int_t /*i*/) const {return NULL;}
   AliFlatESDV0* GetV0(Int_t /*i*/) const {return NULL;}
   Int_t GetNumberOfKinks() const {return 0;}

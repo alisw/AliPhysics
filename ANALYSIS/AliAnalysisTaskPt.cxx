@@ -8,6 +8,8 @@
 #include "AliAnalysisManager.h"
 
 #include "AliESDEvent.h"
+#include "AliVVevent.h"
+#include "AliVVtrack.h"
 #include "AliESDtrackCuts.h"
 #include "AliVEventHandler.h"
 
@@ -55,7 +57,8 @@ void AliAnalysisTaskPt::ConnectInputData(Option_t *)
       Printf("ERROR: Could not get ESDInputHandler");
     } else {
       Printf("----> AliAnalysisTaskPt::ConnectInputData Getting the event from handler %p", esdH);
-      fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+      //fESD = dynamic_cast<AliESDEvent*>(esdH->GetEvent());
+      fESD = esdH->GetEvent();
     }
     if (!fESD) {
       Printf("ERROR, the dynamic cast did not work");
@@ -97,7 +100,7 @@ void AliAnalysisTaskPt::Exec(Option_t *)
 
   // Track loop to fill a pT spectrum
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++) {
-    AliESDtrack* track = fESD->GetTrack(iTracks);
+    AliVVtrack* track = fESD->GetTrack(iTracks);
     if (!track) {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;

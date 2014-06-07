@@ -13,6 +13,8 @@
 class AliVVvertex
 {
   public:
+  AliVVvertex() {} 
+  virtual ~AliVVvertex() {}
   virtual Double_t GetX() const { return 0; }
   virtual Double_t GetY() const { return 0; }
   virtual Double_t GetZ() const { return 0; }
@@ -23,9 +25,12 @@ class AliVVvertex
   virtual Int_t    GetNDF() const = 0;
   virtual void     PrintIndices() const = 0;
   virtual void     Print(Option_t* option = "") const = 0;
-  virtual Int_t    GetBC() const;
-  virtual void Clear(Option_t* /*option*/) {}
+  virtual Int_t    GetBC() const = 0;
+  virtual void Clear(Option_t* /*option*/) = 0;
   virtual Int_t    GetNContributors() const { return 0; }
+
+  //  ClassDef(AliVVvertex, 1)   
+
 };
 
 #endif

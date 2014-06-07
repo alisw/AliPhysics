@@ -6,6 +6,7 @@
 
 class TH1F;
 class AliESDEvent;
+class AliVVevent;
 class AliESDtrackCuts;
 
 #include "AliAnalysisTask.h"
@@ -22,7 +23,7 @@ class AliAnalysisTaskPt : public AliAnalysisTask {
   virtual void   Terminate(Option_t *);
 
  private:
-  AliESDEvent *fESD;    //ESD object
+  AliVVevent *fESD;    //ESD object
   TH1F        *fHistPt; //Pt spectrum
   AliESDtrackCuts* fCuts;
   Int_t fEv;
