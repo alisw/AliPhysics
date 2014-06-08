@@ -101,9 +101,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
+  fHistXsectionAfterSel(0),
   fHistTrials(0),
-  fHistXsection(0),
   fHistEvents(0),
+  fHistXsection(0),
   fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
@@ -180,9 +181,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fOutput(0),
   fHistTrialsAfterSel(0),
   fHistEventsAfterSel(0),
+  fHistXsectionAfterSel(0),
   fHistTrials(0),
-  fHistXsection(0),
   fHistEvents(0),
+  fHistXsection(0),
   fHistPtHard(0),
   fHistCentrality(0),
   fHistZVertex(0),
@@ -278,21 +280,26 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistEventsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistEventsAfterSel->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEventsAfterSel);
+
+    fHistXsectionAfterSel = new TProfile("fHistXsectionAfterSel", "fHistXsectionAfterSel", 11, 0, 11);
+    fHistXsectionAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsectionAfterSel);
     
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", 11, 0, 11);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
     fOutput->Add(fHistTrials);
 
-    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
-    fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
-    fHistXsection->GetYaxis()->SetTitle("xsection");
-    fOutput->Add(fHistXsection);
-
     fHistEvents = new TH1F("fHistEvents", "fHistEvents", 11, 0, 11);
     fHistEvents->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistEvents->GetYaxis()->SetTitle("total events");
     fOutput->Add(fHistEvents);
+
+    fHistXsection = new TProfile("fHistXsection", "fHistXsection", 11, 0, 11);
+    fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistXsection->GetYaxis()->SetTitle("xsection");
+    fOutput->Add(fHistXsection);
 
     const Int_t ptHardLo[11] = { 0, 5,11,21,36,57, 84,117,152,191,234};
     const Int_t ptHardHi[11] = { 5,11,21,36,57,84,117,152,191,234,1000000};
@@ -350,16 +357,10 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
   if (fIsPythia) {
-    fHistEventsAfterSel->SetBinContent(fPtHardBin + 1, fHistEventsAfterSel->GetBinContent(fPtHardBin + 1) + 1);
-    fHistTrialsAfterSel->SetBinContent(fPtHardBin + 1, fHistTrialsAfterSel->GetBinContent(fPtHardBin + 1) + fNTrials);
+    fHistEventsAfterSel->Fill(fPtHardBin, 1);
+    fHistTrialsAfterSel->Fill(fPtHardBin, fNTrials);
+    fHistXsectionAfterSel->Fill(fPtHardBin, fXsection);
     fHistPtHard->Fill(fPtHard);
-    if(fPythiaHeader) {
-      fXsection = fPythiaHeader->GetXsection();
-      if(fXsection>0.) {
-	fHistXsection->Fill(fPtHardBin, fXsection);
-	fHistTrials->Fill(fPtHardBin, fPythiaHeader->Trials());
-      }
-    }
   }
 
   fHistCentrality->Fill(fCent);
@@ -534,8 +535,9 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
     return kFALSE;
   }
 
-  Float_t trials   = 0;
-  Int_t   pthard   = 0;
+  Float_t xsection    = 0;
+  Float_t trials      = 0;
+  Int_t   pthardbin   = 0;
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
@@ -544,19 +546,18 @@ Bool_t AliAnalysisTaskEmcal::UserNotify()
   }
 
   TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain)
-    tree = chain->GetTree();
+  if (chain) tree = chain->GetTree();
 
   Int_t nevents = tree->GetEntriesFast();
 
-  PythiaInfoFromFile(curfile->GetName(), fXsection, trials, pthard);
+  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
 
   // TODO: Workaround
-  if ((pthard < 0) || (pthard > 10))
-    pthard = 0;
-  fHistTrials->Fill(pthard, trials);
-  fHistXsection->Fill(pthard, fXsection);
-  fHistEvents->Fill(pthard, nevents);
+  if ((pthardbin < 0) || (pthardbin > 10)) pthardbin = 0;
+
+  fHistTrials->Fill(pthardbin, trials);
+  fHistXsection->Fill(pthardbin, xsection);
+  fHistEvents->Fill(pthardbin, nevents);
 
   return kTRUE;
 }
@@ -996,7 +997,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
 	if (fPtHard >= ptHardLo[fPtHardBin] && fPtHard < ptHardHi[fPtHardBin])
 	  break;
       }
-    
+
+      fXsection = fPythiaHeader->GetXsection();
       fNTrials = fPythiaHeader->Trials();
     }
   }
