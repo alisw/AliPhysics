@@ -501,7 +501,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
 		hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
-		if (((AliConversionCuts*)fCutArray->At(iCut))->IsSpecialTrigger() == 4 ){
+		if (((AliConversionCuts*)fCutArray->At(iCut))->IsSpecialTrigger() > 3 ){
 			TString TriggerNames = "Not Trigger: ";
 			TriggerNames = TriggerNames+ ( (AliConversionCuts*)fCutArray->At(iCut))->GetSpecialTriggerName();
 			hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
