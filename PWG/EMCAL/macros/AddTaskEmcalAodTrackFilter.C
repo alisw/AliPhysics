@@ -26,7 +26,7 @@ AliEmcalAodTrackFilterTask* AddTaskEmcalAodTrackFilter(
 
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   if (inputDataType != "AOD")) {
-    ::Error("AddTaskAodTrackFilter", "This task works only on AOD analysis");
+    ::Info("AddTaskEmcalAodTpcTrack", "This task is only needed for AOD analysis. No task added.");
     return NULL;
   }
   
