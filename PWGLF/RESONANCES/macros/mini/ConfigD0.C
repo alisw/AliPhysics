@@ -1,4 +1,4 @@
-//
+/
 // *** Configuration script for phi->KK analysis with 2010 runs ***
 // 
 // A configuration script for RSN package needs to define the followings:
@@ -31,6 +31,11 @@ Bool_t ConfigD0
    Bool_t      		   checkFeedDown = kTRUE,
    Bool_t      		   checkQuark = kTRUE,
    UShort_t    		   originDselection = 0,
+   Float_t                 mineta = -0.8,
+   Float_t                 maxeta = 0.8,
+   Float_t		   min_inv_mass = 0.6,
+   Float_t		   max_inv_mass = 2.2,
+   Int_t                   bins = 320,
    const char      	  *suffix,
    AliRsnCutSet           *cutsPairY,
    AliRsnCutSet           *cutsPair
@@ -66,7 +71,7 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormulaMin(formulaMin); 
    cutQuality->SetTPCminNClusters(NTPCcluster);
    cutQuality->SetPtRange(minpt,1E20);
-   cutQuality->SetEtaRange(-0.8, 0.8);
+   cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(1);
    cutQuality->SetITSminNClusters(0);
@@ -100,7 +105,7 @@ Bool_t ConfigD0
    else cutQuality->SetDCARPtFormulaMin(formulaMin);
    cutQuality->SetTPCminNClusters(NTPCcluster);
    cutQuality->SetPtRange(minpt,1E20);
-   cutQuality->SetEtaRange(-0.8, 0.8);
+   cutQuality->SetEtaRange(mineta, maxeta);
    cutQuality->SetDCAZmax(trackDCAZcutMax);
    cutQuality->SetSPDminNClusters(1);
    cutQuality->SetITSminNClusters(0);
@@ -173,7 +178,7 @@ Bool_t ConfigD0
 
       // axis X: invmass (or resolution)
       //if (useIM[i]) 
-         out->AddAxis(imID, 320, 0.6, 2.2);
+         out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
       //else
       //   out->AddAxis(resID, 200, -0.02, 0.02);
       // axis Y: transverse momentum
@@ -235,7 +240,7 @@ Bool_t ConfigD0
    out->SetRejectCandidateIfNotFromQuark(checkQuark);
    out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -261,7 +266,7 @@ Bool_t ConfigD0
    out->SetRejectCandidateIfNotFromQuark(checkQuark);
    out->SetDselection(originDselection);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
    //out->AddAxis(dcapID, 100, -0.001, 0.001);
@@ -342,7 +347,7 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 
@@ -359,7 +364,7 @@ Bool_t ConfigD0
    // pair cuts
    out->SetPairCuts(cutsPairY);
    // binnings
-   out->AddAxis(imID, 320, 0.6, 2.2);
+   out->AddAxis(imID, bins, min_inv_mass, max_inv_mass);
    out->AddAxis(ptID, 200, 0.0, 20.0);
    //out->AddAxis(yID, 100, -1, 1);
 

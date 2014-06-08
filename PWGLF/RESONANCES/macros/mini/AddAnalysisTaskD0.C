@@ -44,6 +44,11 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    Int_t       nmix = 5,
    Double_t    minYlab =  -0.5,
    Double_t    maxYlab =  0.5,
+   Float_t     mineta = -0.8,
+   Float_t     maxeta = 0.8,
+   Float_t     min_inv_mass = 0.6,
+   Float_t     max_inv_mass = 2.2,
+   Int_t       bins = 320,
    Double_t    dcaProduct = -1E-4,
    Float_t     maxDiffVzMix = 1.0,
    Float_t     maxDiffMultMix = 10.0,
@@ -196,7 +201,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
        Printf("========================== MC analysis - PID cuts used");
    } else 
      Printf("========================== DATA analysis - PID cuts used");
-   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, "", cutsPairY, cutsPair)) return 0x0;
+   if (!ConfigD0(task, isPP, isMC, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, aodFilterBit, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, NTPCcluster, minpt, maxSisters, checkP,  minDCAcutFixed, maxDCAcutFixed, ptdepPIDcut, checkFeedDown, checkQuark, originDselection, mineta, maxeta, min_inv_mass, max_inv_mass, bins, "", cutsPairY, cutsPair)) return 0x0;
    
    //
    // -- CONTAINERS --------------------------------------------------------------------------------
