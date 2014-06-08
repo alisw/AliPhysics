@@ -48,6 +48,7 @@ typedef struct {
   Float_t phi;
   Float_t xyz[3];
   Float_t dX;
+  Float_t dY;
   Float_t dZ;  
   Bool_t split;  
   Bool_t prim;
@@ -135,6 +136,7 @@ void compClusHits(int nev=-1)
   trOut->Branch("phi"  , &cSum.phi  ,"phi/F");  
   trOut->Branch("xyz",   cSum.xyz,  "xyz[3]/F");  
   trOut->Branch("dX"  , &cSum.dX   ,"dX/F");
+  trOut->Branch("dY"  , &cSum.dY   ,"dY/F");
   trOut->Branch("dZ"  , &cSum.dZ   ,"dZ/F");  
   trOut->Branch("split",&cSum.split,"split/O");
   trOut->Branch("prim", &cSum.prim, "prim/O");
@@ -286,6 +288,7 @@ void compClusHits(int nev=-1)
 	  cSum.q    = cl->GetQ();
 	  cSum.split = cl->TestBit(kSplit);
 	  cSum.dX = (txyzH[0]-xyzClTr[0])*1e4;
+	  cSum.dY = (txyzH[1]-xyzClTr[1])*1e4;
 	  cSum.dZ = (txyzH[2]-xyzClTr[2])*1e4;
 	  int label = cl->GetLabel(0);
 	  TParticle* part = 0;
