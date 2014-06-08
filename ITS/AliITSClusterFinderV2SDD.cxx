@@ -112,8 +112,8 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(TClonesArray *digits) {
      d=(AliITSdigitSDD*)digits->UncheckedAt(i);
      Int_t ian=d->GetCoord1();
      Int_t itb=d->GetCoord2();
-     Int_t iSide=0;
-     if (ian >= fNAnodes) iSide=1;    
+     //Int_t iSide=0;
+     //if (ian >= fNAnodes) iSide=1;    
      Float_t gain=cal->GetChannelGain(ian)/fDetTypeRec->GetAverageGainSDD();
      Float_t charge=d->GetSignal(); // returns expanded signal 
                                     // (10 bit, low threshold already added)

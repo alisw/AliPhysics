@@ -43,7 +43,7 @@ class AliITSDetTypeRec : public TObject {
     virtual AliITSgeom* GetITSgeom() const { return fITSgeom; }
     virtual void SetITSgeom(AliITSgeom* const geom) { fITSgeom = geom; }
     virtual void SetDefaults();
-    virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE);
+    virtual void SetDefaultClusterFindersV2(Bool_t rawdata=kFALSE,Bool_t fastSDD=kFALSE);
     virtual void MakeBranch(TTree *tree,Option_t *opt);
     virtual void SetTreeAddressD(TTree* const treeD);
 
