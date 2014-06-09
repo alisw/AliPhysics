@@ -531,6 +531,7 @@ checkMD5sum()
 {
   local file="${1}"
   local md5=""
+  [[ ! -f ${file} ]] && return 1
   if which md5sum &>/dev/null; then
     local tmp=($(md5sum ${file}))
     md5=${tmp[0]}
