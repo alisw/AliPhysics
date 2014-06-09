@@ -9,6 +9,11 @@
 #
 #  origin: Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 #
+if [ ${BASH_VERSINFO} -lt 4 ]; then
+  echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
+  exit 1
+fi
+
 main()
 {
   if [[ $# -lt 1 ]]; then
@@ -183,8 +188,7 @@ main()
       [[ "$md5local" =~ "." ]] && md5local=""
 
       if [[ $forceLocalMD5recalculation -eq 1 || -z $md5local ]]; then
-        tmparrayMD5=($(md5sum ${destination}))
-        md5recalculated=${tmparrayMD5[0]}
+        md5recalculated=$(checkMD5sum ${destination})
         [[ "$md5local" != "$md5recalculated" ]] && echo "WARNING: local copy change ${destination}"
         md5local=${md5recalculated}
       fi
@@ -234,7 +238,8 @@ main()
     downloadOK=0
     #verify the downloaded md5 if available, validate otherwise...
     if [[ -n $md5alien ]]; then
-      if (echo "$md5alien  $tmpdestination"|md5sum -c --status -); then
+      md5recalculated=$(checkMD5sum ${tmpdestination})
+      if [[ ${md5alien} == ${md5recalculated} ]]; then
         echo "OK md5 after download"
         downloadOK=1
       else
@@ -328,7 +333,7 @@ exitScript()
 alien_find()
 {
   # like a regular alien_find command
-  # output is a list with md5sums and ctimes
+  # output is a list with md5 sums and ctimes
   executable="$ALIEN_ROOT/api/bin/gbbox find"
   [[ ! -x ${executable% *} ]] && echo "### error, no $executable..." && return 1
   [[ -z $logOutputPath ]] && logOutputPath="./"
@@ -520,6 +525,20 @@ parseConfig()
     echo "${var} = ${value}"
     export ${var}="${value}"
   done
+}
+
+checkMD5sum()
+{
+  local file="${1}"
+  local md5=""
+  if which md5sum &>/dev/null; then
+    local tmp=($(md5sum ${file}))
+    md5=${tmp[0]}
+  elif which md5 &>/dev/null; then
+    local tmp=($(md5 ${file}))
+    md5=${tmp[3]}
+  fi
+  echo ${md5}
 }
 
 main "$@"
