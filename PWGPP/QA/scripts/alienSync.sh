@@ -31,7 +31,7 @@ main()
   [[ -z ${alienSyncFilesGroupOwnership} ]] && alienSyncFilesGroupOwnership=$(id -gn)
 
   # do some accounting
-  [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && sg ${alienSyncFilesGroupOwnership} "mkdir -p $logOutputPath"
+  [[ ! -d $logOutputPath ]] && echo "logOutputPath not available, creating..." && mkdir -p $logOutputPath && chgrp ${alienSyncFilesGroupOwnership} ${logOutputPath}
   [[ ! -d $logOutputPath ]] && echo "could not create log dir, exiting..." && exit 1
   dateString=$(date +%Y-%m-%d-%H-%M)
   logFile=$logOutputPath/alienSync-$dateString.log
@@ -209,7 +209,7 @@ main()
     
     [[ -f $tmpdestination ]] && echo "WARNING: stale $tmpdestination, removing" && rm $tmpdestination
     
-    sg ${alienSyncFilesGroupOwnership} "mkdir -p ${destinationdir}"
+    mkdir -p ${destinationdir} && chgrp ${alienSyncFilesGroupOwnership} ${destinationdir}
     [[ ! -d $destinationdir ]] && echo cannot access $destinationdir && continue
 
     #check token
@@ -463,11 +463,21 @@ copyFromAlien()
   src="alien://${src}"
   dst=$2
   if [[ "$copyMethod" == "tfilecp" ]]; then
-    echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
-    timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+    if which timeout &>/dev/null; then
+      echo timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+      timeout $copyTimeout root -b -q "$copyScript(\"$src\",\"$dst\")"
+    else
+      echo root -b -q "$copyScript(\"$src\",\"$dst\")"
+      root -b -q "$copyScript(\"$src\",\"$dst\")"
+    fi
   else
-    echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
-    timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    if which timeout &>/dev/null; then
+      echo timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      timeout $copyTimeout $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    else
+      echo $ALIEN_ROOT/api/bin/alien_cp $src $dst
+      $ALIEN_ROOT/api/bin/alien_cp $src $dst
+    fi
   fi
 }
 
