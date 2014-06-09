@@ -190,6 +190,7 @@ fV0Reader(NULL),
    hNGoodESDTracks(NULL),
    hNGoodESDTracksVsNGoodGammas(NULL),
    hNGoodESDTracksVsNGoodVGammas(NULL),
+   hNV0Tracks(NULL),
    hEtaShift(NULL),
    fRandom(0),
    fUnsmearedPx(NULL),
@@ -346,6 +347,7 @@ AliAnalysisTaskGammaConvDalitzV1::AliAnalysisTaskGammaConvDalitzV1( const char* 
    hNGoodESDTracks(NULL),
    hNGoodESDTracksVsNGoodGammas(NULL),
    hNGoodESDTracksVsNGoodVGammas(NULL),
+   hNV0Tracks(NULL),
    hEtaShift(NULL),
    fRandom(0),
    fUnsmearedPx(NULL),
@@ -509,6 +511,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
    //fQAFolder                       = new TList*[fnCuts];
    hNEvents                        = new TH1I*[fnCuts];
    hNGoodESDTracks                 = new TH1I*[fnCuts];
+   hNV0Tracks			   = new TH1I*[fnCuts];
    hEtaShift                       = new TProfile*[fnCuts];
    hESDConvGammaPt                 = new TH1F*[fnCuts];
    hESDConvGammaEta 		   = new TH1F*[fnCuts];
@@ -604,6 +607,13 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
       if(fIsHeavyIon) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",3000,0,3000);
       else hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",200,0,200);
       fESDList[iCut]->Add(hNGoodESDTracks[iCut]);
+      
+      
+      if(fIsHeavyIon == 1) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",30000,0,30000);
+      else if(fIsHeavyIon == 2) hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",2500,0,2500);
+      else hNV0Tracks[iCut] = new TH1I("V0 Multiplicity","V0 Multiplicity",1500,0,1500);
+      fESDList[iCut]->Add(hNV0Tracks[iCut]);
+      
 
       hEtaShift[iCut] = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
       fESDList[iCut]->Add(hEtaShift[iCut]);
@@ -669,8 +679,7 @@ void AliAnalysisTaskGammaConvDalitzV1::UserCreateOutputObjects()
      
       hNGoodESDTracksVsNGoodVGammas[iCut] = new TH2F("hNGoodESDTracksVsNVGoodVGammas","hNGoodESDTracksVsNGoodVGammas",200,-0.5,199.5,100,-0.5,99.5);
       fQAFolder[iCut]->Add(hNGoodESDTracksVsNGoodVGammas[iCut]);
-     
-       
+             
       hESDConvGammaZR[iCut]= new TH2F("ESD_ConvGamma_ConversionPoint_ZR","ESD_ConvGamma_ConversionPoint_ZR",1200,-150,150,480,0,120);
       fQAFolder[iCut]->Add(hESDConvGammaZR[iCut]);
      
@@ -1330,6 +1339,10 @@ void AliAnalysisTaskGammaConvDalitzV1::UserExec(Option_t *)
       hNEvents[iCut]->Fill(eventQuality);
 
       hNGoodESDTracks[iCut]->Fill(fNumberOfESDTracks);
+      
+      if(((AliConversionCuts*)fCutGammaArray->At(iCut))->IsHeavyIon() == 2) hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
+      else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
+
 
       if(fMCEvent){ // Process MC Particle
          

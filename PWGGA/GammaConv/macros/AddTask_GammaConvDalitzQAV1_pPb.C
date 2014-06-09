@@ -40,12 +40,8 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    gSystem->Load("libSTEERBase.so");
    gSystem->Load("libTENDER.so");
    gSystem->Load("libTENDERSupplies.so");
-
+   
   
- 
-
-
-
   
    
    
@@ -202,6 +198,7 @@ void AddTask_GammaConvDalitzQAV1_pPb(  Int_t trainConfig = 1,
    
 if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 	
+									     
 	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262371"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011
 	
 }  else if( trainConfig == 2 ) {  // No eta shift |Y| < 0.8
@@ -335,7 +332,16 @@ if( trainConfig == 1 ) {  // No eta shift |Y| < 0.8
 } else if ( trainConfig  == 34  ) {
   
 	ConvCutarray[0] = "8000011007093603007200000000"; ElecCutarray[0] = "9047540083310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth + Photon R > 35 cm + No weights 
-} 
+	
+} else if ( trainConfig  == 35 ) {						
+									     
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540083300262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kBoth  + NoPsiPair + No weights
+	
+} else if ( trainConfig  == 36 ) {
+  
+	ConvCutarray[0] = "8000011002093603007200000000"; ElecCutarray[0] = "9047540023310262370"; MesonCutarray[0] = "01031035009000"; //standard cut Pi0 pPb 00-100  //Tracks 2011 + kAny no Weights
+}
+
 
 
 
