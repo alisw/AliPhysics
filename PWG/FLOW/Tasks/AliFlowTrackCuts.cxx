@@ -1406,6 +1406,15 @@ Int_t AliFlowTrackCuts::Count(AliVEvent* event)
 }
 
 //-----------------------------------------------------------------------
+AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit)
+{
+  // object which in its default form only cuts on filterbit (for AOD analysis)
+  AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i", (int)bit));
+  cuts->SetMinimalTPCdedx(-999999999);
+  cuts->SetAODfilterBit(bit);
+  return cuts;
+}  
+//-----------------------------------------------------------------------
 AliFlowTrackCuts* AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts()
 {
   //returns the lhc10h vzero track cuts, this function
