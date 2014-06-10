@@ -44,6 +44,9 @@
 
 ClassImp(AliAnalysisTaskDptDptQA)
 
+using std::cout;
+using std::endl;
+
 AliAnalysisTaskDptDptQA::AliAnalysisTaskDptDptQA()
 : AliAnalysisTaskSE(),
 fAODEvent(0), 

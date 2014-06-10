@@ -35,6 +35,9 @@
 ClassImp(AliAnalysisTaskParticleEfficiency)
 //ClassImp(AliAnalysisTaskParticleEfficiency)
 
+using std::cout;
+using std::endl;
+
 //_______________________________________________________
 
 AliAnalysisTaskParticleEfficiency::AliAnalysisTaskParticleEfficiency(const Char_t *partName) :

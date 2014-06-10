@@ -55,6 +55,9 @@ class AliCascadeVertexer;
 #include "AliCentrality.h"
 
 ClassImp(AliAnalysisTaskNucleiv2)
+
+using std::cout;
+using std::endl;
     
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2() 

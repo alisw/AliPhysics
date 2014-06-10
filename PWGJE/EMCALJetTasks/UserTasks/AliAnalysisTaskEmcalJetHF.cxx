@@ -55,6 +55,9 @@
 
 ClassImp(AliAnalysisTaskEmcalJetHF)
 
+using std::cout;
+using std::endl;
+
 //________________________________________________________________________
 AliAnalysisTaskEmcalJetHF::AliAnalysisTaskEmcalJetHF() : 
   AliAnalysisTaskEmcalJet("heavyF",kFALSE), 
