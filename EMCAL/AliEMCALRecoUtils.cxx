@@ -377,6 +377,7 @@ Bool_t AliEMCALRecoUtils::CheckCellFiducialRegion(const AliEMCALGeometry* geom,
   if (iSM < 0 || iphi < 0 || ieta < 0 ) {
     AliFatal(Form("Negative value for super module: %d, or cell ieta: %d, or cell iphi: %d, check EMCAL geometry name\n",
                   iSM,ieta,iphi));
+    return kFALSE; // trick coverity
   }
   
   //Check rows/phi
