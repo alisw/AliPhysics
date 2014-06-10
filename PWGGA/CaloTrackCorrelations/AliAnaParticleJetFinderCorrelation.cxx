@@ -983,7 +983,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
         photonRhoArrayIndex++;
       }
       if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
-      delete photonRhoArr;
+      delete [] photonRhoArr;
     }
   }//end of if background calculation for gamma
   fGamRho = medianPhotonRho;
@@ -1369,7 +1369,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
       photonRhoArrayIndex++;
     }
     if(photonRhoArrayIndex>0) medianPhotonRho=TMath::Median(photonRhoArrayIndex,photonRhoArr);
-    delete photonRhoArr;
+    delete [] photonRhoArr;
     fhPhotonNgammaMoreAverageToNgamma->Fill((Double_t)counterGamma / (Double_t)ntrig);
     fhPhotonNgammaMoreAverageMinus1ToNgamma->Fill((Double_t)counterGammaMinus1 / (Double_t)ntrig);
   }
