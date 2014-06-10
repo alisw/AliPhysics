@@ -1861,8 +1861,8 @@ void AliFourPion::UserExec(Option_t *)
   Float_t weight23CC[3]={0};
   Float_t weight24CC[3]={0};
   Float_t weight34CC[3]={0};
-  Float_t weight12CC_e=0, weight13CC_e=0, weight14CC_e=0, weight23CC_e=0, weight24CC_e=0, weight34CC_e=0;
-  Float_t weightTotal=0, weightTotalErr=0;
+  //Float_t weight12CC_e=0, weight13CC_e=0, weight14CC_e=0, weight23CC_e=0, weight24CC_e=0, weight34CC_e=0;
+  Float_t weightTotal=0;//, weightTotalErr=0;
   Float_t qinv12MC=0, qinv13MC=0, qinv14MC=0, qinv23MC=0, qinv24MC=0, qinv34MC=0; 
   Float_t parentQinv12=0, parentQinv13=0, parentQinv14=0, parentQinv23=0, parentQinv24=0, parentQinv34=0;
   Float_t parentQ3=0;
@@ -1870,6 +1870,7 @@ void AliFourPion::UserExec(Option_t *)
   Bool_t pionParent1=kFALSE, pionParent2=kFALSE, pionParent3=kFALSE, pionParent4=kFALSE;
   Bool_t FilledMCpair12=kFALSE, FilledMCtriplet123=kFALSE;
   Bool_t GoodTripletWeights=kFALSE;
+  Float_t T12=0, T13=0, T14=0, T23=0, T24=0, T34=0;
   //
   AliAODMCParticle *mcParticle1=0x0;
   AliAODMCParticle *mcParticle2=0x0;
@@ -2508,19 +2509,33 @@ void AliFourPion::UserExec(Option_t *)
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(3, q3, weightTotal);
 		      //
 		      // Full Weight reconstruction
-		      weightTotal *= 2.0;
-		      weightTotal += weight12CC[2] + weight13CC[2] + weight23CC[2];
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(4, q3, weightTotal);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(5, q3, 1);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(4, q3, 1);
+		      for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
+			for(Int_t GIndex=0; GIndex<20; GIndex++){
+			  Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+			  Float_t G = 0.02*GIndex;
+			  if(RcohIndex==0){
+			    T12 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight12CC[2])) / (2*pow(1-G,2));
+			    T13 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight13CC[2])) / (2*pow(1-G,2));
+			    T23 = (-2*G*(1-G) + sqrt(pow(2*G*(1-G),2) + 4*pow(1-G,2)*weight23CC[2])) / (2*pow(1-G,2));
+			    weightTotal = 2*G*(1-G)*(T12 + T13 + T23) + pow(1-G,2)*(T12*T12 + T13*T13 + T23*T23);
+			    weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23) + 2*pow(1-G,3)*T12*T13*T23;
+			  }else{
+			    weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight23CC[2]);
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3)) * sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
+			  }
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNorm->Fill(FillBin, q3, weightTotal);
+			}
+		      }
 		      //
-		      weight12CC_e = weight12Err*MomResCorr12 / FSICorr12 / ffcSq * MuonCorr12;
+		      /*weight12CC_e = weight12Err*MomResCorr12 / FSICorr12 / ffcSq * MuonCorr12;
 		      weight13CC_e = weight13Err*MomResCorr13 / FSICorr13 / ffcSq * MuonCorr13;
 		      weight23CC_e = weight23Err*MomResCorr23 / FSICorr23 / ffcSq * MuonCorr23;
 		      if(weight12CC[2]*weight13CC[2]*weight23CC[2] > 0){
 			weightTotalErr = pow(2 * sqrt(3) * weight12CC_e*weight13CC[2]*weight23CC[2] / sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]),2);
 		      }
 		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight23CC_e,2);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNormErr->Fill(4, q3, weightTotalErr);
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].MB[fMbin].EDB[KT3index].ThreePT[4].fTwoPartNormErr->Fill(4, q3, weightTotalErr);*/
 		    }// 2nd r3 den check
 		    
 		   
@@ -2775,20 +2790,49 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotal += sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]);
 		      weightTotal += sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]);
 		      weightTotal /= 3.;
-		      /////////////////////////////////////////////////////
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(3, q4, weightTotal);
+		      /////////////////////////////////////////////////////
+		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, 1);
 		      // Full Weight reconstruction
-		      weightTotal *= 6.0;
-		      weightTotal += 2*sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]);
-		      weightTotal += 2*sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]);
-		      weightTotal += 2*sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]);
-		      weightTotal += 2*sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]);
-		      weightTotal += weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2];
-		      weightTotal += weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2];
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(4, q4, weightTotal);
-		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(5, q4, 1);
+		      for(Int_t RcohIndex=0; RcohIndex<2; RcohIndex++){// Rcoh=0, then Rcoh=Rch
+			for(Int_t GIndex=0; GIndex<20; GIndex++){
+			  Int_t FillBin = 5 + RcohIndex*20 + GIndex;
+			  Float_t G = 0.02*GIndex;
+			  if(RcohIndex==0){// Rcoh=0
+			    Float_t a = pow(1-G,2);
+			    Float_t b = 2*G*(1-G);
+			    T12 = (-b + sqrt(pow(b,2) + 4*a*weight12CC[2])) / (2*a);
+			    T13 = (-b + sqrt(pow(b,2) + 4*a*weight13CC[2])) / (2*a);
+			    T14 = (-b + sqrt(pow(b,2) + 4*a*weight14CC[2])) / (2*a);
+			    T23 = (-b + sqrt(pow(b,2) + 4*a*weight23CC[2])) / (2*a);
+			    T24 = (-b + sqrt(pow(b,2) + 4*a*weight24CC[2])) / (2*a);
+			    T34 = (-b + sqrt(pow(b,2) + 4*a*weight34CC[2])) / (2*a);
+			    weightTotal = 2*G*(1-G)*(T12 + T13 + T14 + T23 + T24 + T34) + pow(1-G,2)*(T12*T12 + T13*T13 + T14*T14 + T23*T23 + T24*T24 + T34*T34);// 2-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T34*T34 + T12*T12*T34 + T13*T24*T24 + T13*T13*T24 + T14*T23*T23 + T14*T14*T23);// 2-pair
+			    weightTotal += pow(1-G,4)*(pow(T12,2)*pow(T34,2) + pow(T13,2)*pow(T24,2) + pow(T14,2)*pow(T23,2));// 2-pair fully chaotic
+			    weightTotal += 2*G*pow(1-G,2)*(T12*T13 + T12*T23 + T13*T23  + T12*T14 + T12*T24 + T14*T24);// 3-pion
+			    weightTotal += 2*G*pow(1-G,2)*(T13*T14 + T13*T34 + T14*T34  + T23*T24 + T23*T34 + T24*T34);// 3-pion
+			    weightTotal += 2*pow(1-G,3)*(T12*T13*T23 + T12*T14*T24 + T13*T14*T34 + T23*T24*T34);// 3-pion fully chaotic
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T14*T34 + T12*T14*T23 + T12*T23*T34 + T14*T23*T34);// 4-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T12*T13*T34 + T12*T34*T24 + T12*T24*T13 + T13*T24*T34);// 4-pion
+			    weightTotal += 2*G*pow(1-G,3)*(T14*T13*T23 + T14*T13*T24 + T13*T23*T24 + T14*T24*T23);// 4-pion
+			    weightTotal += 2*pow(1-G,4)*(T12*T13*T24*T34 + T12*T14*T23*T34 + T13*T14*T23*T24);// 4-pion fully chaotic
+			  }else{// Rcoh=Rch
+			    weightTotal = (1-G*G)*(weight12CC[2] + weight13CC[2] + weight14CC[2] + weight23CC[2] + weight24CC[2] + weight34CC[2]);// 2-pion
+			    weightTotal += (4*G*pow(1-G,3)+pow(1-G,4))*(weight12CC[2]*weight34CC[2] + weight13CC[2]*weight24CC[2] + weight14CC[2]*weight23CC[2]);// 2-pair
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight13CC[2]*weight23CC[2]));// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight12CC[2]*weight14CC[2]*weight24CC[2]));// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight13CC[2]*weight14CC[2]*weight34CC[2]));// 3-pion
+			    weightTotal += (6*G*pow(1-G,2) + 2*pow(1-G,3))*(sqrt(weight23CC[2]*weight24CC[2]*weight34CC[2]));// 3-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2]));// 4-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight12CC[2]*weight14CC[2]*weight23CC[2]*weight34CC[2]));// 4-pion
+			    weightTotal += (8*G*pow(1-G,3) + 2*pow(1-G,4))*(sqrt(weight13CC[2]*weight14CC[2]*weight23CC[2]*weight24CC[2]));// 4-pion
+			  }
+			  Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNorm->Fill(FillBin, q4, weightTotal);
+			}
+		      }
 		      // stat errors
-		      weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
+		      /*weight14CC_e = weight14Err*MomResCorr14 / FSICorr14 / ffcSq * MuonCorr14;
 		      weight24CC_e = weight24Err*MomResCorr24 / FSICorr24 / ffcSq * MuonCorr24;
 		      weight34CC_e = weight34Err*MomResCorr34 / FSICorr34 / ffcSq * MuonCorr34;
 		      if(weight12CC[2]*weight13CC[2]*weight24CC[2]*weight34CC[2] > 0){
@@ -2800,7 +2844,7 @@ void AliFourPion::UserExec(Option_t *)
 		      weightTotalErr += 2*(pow(weight12CC_e*weight34CC[2],2) + pow(weight13CC_e*weight24CC[2],2) + pow(weight14CC_e*weight23CC[2],2));
 		      weightTotalErr += pow(weight12CC_e,2) + pow(weight13CC_e,2) + pow(weight14CC_e,2) + pow(weight23CC_e,2) + pow(weight24CC_e,2) + pow(weight34CC_e,2);
 		      Charge1[bin1].Charge2[bin2].Charge3[bin3].Charge4[bin4].MB[fMbin].EDB[KT4index].FourPT[12].fTwoPartNormErr->Fill(4, q4, weightTotalErr);
-		      
+		      */
 		    }
 		  }
 		  /////////////////////////////////////////////////////////////
