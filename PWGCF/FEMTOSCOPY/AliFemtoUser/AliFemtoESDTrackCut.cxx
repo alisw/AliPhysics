@@ -352,6 +352,12 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       return false;
     }
 
+  //****N Sigma Method -- electron rejection****
+  if(fElectronRejection) 
+    if(!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP())) 
+      return false;
+
+
   if (fMostProbable) {
 
     int imost=0;
@@ -361,11 +367,6 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     tMost[3] = track->PidProbKaon()*PidFractionKaon(track->P().Mag());
     tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     float ipidmax = 0.0;
-
-    //****N Sigma Method -- electron rejection****
-    if(fElectronRejection) 
-      if(!IsElectron(track->NSigmaTPCE(),track->NSigmaTPCPi(),track->NSigmaTPCK(), track->NSigmaTPCP())) 
-	return false;
 
     //****N Sigma Method****
 	if(fPIDMethod==0){
