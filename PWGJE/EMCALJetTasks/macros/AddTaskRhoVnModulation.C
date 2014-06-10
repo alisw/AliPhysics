@@ -73,18 +73,23 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
       partCont->SetName("Tracks");
       partCont->SetParticlePtCut(trackptcut);
   }
+  TString tmp(nclusters);
+  AliClusterContainer* clusterCont = 0x0;
+  if(!tmp.IsNull()) {
+      clusterCont = jetTask->AddClusterContainer(nclusters);
+      jetTask->SetAnalysisType(AliAnalysisTaskRhoVnModulation::kFull);
+  }
   AliJetContainer* jetCont = jetTask->AddJetContainer(njets, type, jetradius);
   if(jetCont) {
       jetCont->SetName("Jets");
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
-      jetCont->ConnectParticleContainer(partCont);
+      if(partCont)      jetCont->ConnectParticleContainer(partCont);
+      if(clusterCont)   {
+          jetCont->SetEMCALGeometry();
+          jetCont->ConnectClusterContainer(clusterCont);
+      }
   }
-  TString tmp(nclusters);
-  if(!tmp.IsNull()) {
-      AliClusterContainer* clusterCont = jetTask->AddClusterContainer(nclusters);
-      jetTask->SetAnalysisType(AliAnalysisTaskRhoVnModulation::kFull);
-   }
 
   // task specific setters
   jetTask->SetFillQAHistograms(fillQA);
