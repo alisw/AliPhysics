@@ -269,7 +269,9 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 
 
   float tEnergy = ::sqrt(track->P().Mag2()+fMass*fMass);
-  float tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
+  float tRapidity = 0;
+  if(tEnergy-track->P().z()!=0 && (tEnergy+track->P().z())/(tEnergy-track->P().z())>0)
+    tRapidity = 0.5*::log((tEnergy+track->P().z())/(tEnergy-track->P().z()));
   float tPt = ::sqrt((track->P().x())*(track->P().x())+(track->P().y())*(track->P().y()));
   float tEta = track->P().PseudoRapidity();
 
@@ -376,23 +378,41 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
 	  else if (fMostProbable == 3) {
 
 
-          if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	    if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
 
 	      imost = 3;
 	    }
 
 	  }
-    else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
-      if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
-           // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
-        )
+	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
+	    if ( IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) // && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCPi())) && (TMath::Abs(track->NSigmaTPCP()) < TMath::Abs(track->NSigmaTPCK())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFPi())) && (TMath::Abs(track->NSigmaTOFP()) < TMath::Abs(track->NSigmaTOFK()))
+		 // && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())
+		 )
 	      imost = 4;
 	  }
-    else if (fMostProbable == 5) { // no-protons
-      if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	  else if (fMostProbable == 5) { // no-protons
+	    if ( !IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
 	      imost = 5;
 	  }
+	  else if (fMostProbable == 6) { //pions OR kaons OR protons
+	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	      imost = 6;
+	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+	      imost = 6;
+	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	      imost = 6;
+	  }
+	  else if (fMostProbable == 7) { // pions OR kaons OR protons OR electrons
+	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	      imost = 7;
+	    else if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK()))
+	      imost = 7;
+	    else if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) )
+	      imost = 7;
+	    else if (TMath::Abs(track->NSigmaTPCE())<3)
+	      imost = 7;
 
+	  }
 	}
 
 
