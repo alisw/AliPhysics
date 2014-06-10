@@ -219,7 +219,7 @@ Int_t AliEMCALTracker::LoadClusters(TTree *cTree)
   clusters->Delete();
   delete clusters;
 
-  AliInfo(Form("Collected %d RecPoints from Tree", fClusters->GetEntries()));
+  AliDebug(1,Form("Collected %d RecPoints from Tree", fClusters->GetEntries()));
   
   return 0;
 }
@@ -245,7 +245,7 @@ Int_t AliEMCALTracker::LoadClusters(AliESDEvent *esd)
     fClusters->AddLast(matchCluster);
   }
   
-  AliInfo(Form("Collected %d clusters from ESD", fClusters->GetEntries()));
+  AliDebug(1,Form("Collected %d clusters from ESD", fClusters->GetEntries()));
   return 0;
 }
 //
