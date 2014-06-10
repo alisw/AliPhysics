@@ -563,8 +563,12 @@ run2year()
   #defined in the config file
   #one line per year, format: year runMin runMax
   local run=$1
+  [[ -z ${run} ]] && return 1
+  local year=""
+  local runMin=""
+  local runMax=""
   while read year runMin runMax; do
-    [[ -z ${run} || -z ${runMin} || -z ${runMax} ]] && continue
+    [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
     [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
   done < <(echo "${runMap}")
   return 0
