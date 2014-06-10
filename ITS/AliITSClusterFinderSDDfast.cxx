@@ -181,7 +181,7 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
 
     const Int_t rresto=fNZbins-1;
     Int_t cid=0;
-    for(vector<int>::size_type i=0;i<binssize;i+=4){
+    for(std::vector<int>::size_type i=0;i<binssize;i+=4){
       if(!bins[i+2])
 	bins[i+2]=++cid;
       Int_t me=bins[i];
@@ -190,7 +190,7 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
         Int_t idxs[1]={me+fNZbins};
         for(Int_t k=0;k<1;++k)
 	  if(map[idxs[k]/32]&(1<<(idxs[k]%32)))
-	    for(vector<int>::size_type j=i+4;j<binssize;j+=4)
+	    for(std::vector<int>::size_type j=i+4;j<binssize;j+=4)
 	      if(bins[j]==idxs[k]){
 		bins[j+2]=bins[i+2];
 		break;
@@ -200,14 +200,14 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
         Int_t idxs[2]={me+1,me+fNZbins};
         for(int k=0;k<2;++k)
 	  if(map[idxs[k]/32]&(1<<(idxs[k]%32)))
-	    for(vector<int>::size_type j=i+4;j<binssize;j+=4)
+	    for(std::vector<int>::size_type j=i+4;j<binssize;j+=4)
 	      if(bins[j]==idxs[k]){
 		bins[j+2]=bins[i+2];
 		break;
 	      }
       }
     }
-    for(vector<int>::size_type i=0;i<binssize;i+=4){
+    for(std::vector<int>::size_type i=0;i<binssize;i+=4){
       Int_t me=bins[i];
       Int_t resto=me%fNZbins;
       if(resto==fNZbins-1){
@@ -215,11 +215,11 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
         Int_t myid=bins[i+2];
         for(Int_t l=0;l<1;++l){
           if(map[idxs[l]/32]&(1<<(idxs[l]%32)))
-	    for(vector<int>::size_type j=i+4;j<binssize;j+=4){
+	    for(std::vector<int>::size_type j=i+4;j<binssize;j+=4){
 	      if(bins[j]==idxs[l]){
 		Int_t hisid=bins[j+2];
 		if(myid!=hisid){
-		  for(vector<int>::size_type k=2;k<binssize;k+=4)
+		  for(std::vector<int>::size_type k=2;k<binssize;k+=4)
 		    if(bins[k]==hisid)
 		      bins[k]=myid;
 		}
@@ -233,11 +233,11 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
         Int_t myid=bins[i+2];
         for(Int_t l=0;l<2;++l){
           if(map[idxs[l]/32]&(1<<(idxs[l]%32)))
-	    for(vector<int>::size_type j=i+4;j<binssize;j+=4){
+	    for(std::vector<int>::size_type j=i+4;j<binssize;j+=4){
 	      if(bins[j]==idxs[l]){
 		Int_t hisid=bins[j+2];
 		if(myid!=hisid){
-		  for(vector<int>::size_type k=2;k<binssize;k+=4)
+		  for(std::vector<int>::size_type k=2;k<binssize;k+=4)
 		    if(bins[k]==hisid)
 		      bins[k]=myid;
 		}
@@ -258,7 +258,7 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(std::vector<int>& bins0, std::v
       for(Int_t j=0;j<10;++j)
 	kplab[i][j]=-2;
 
-    for(vector<int>::size_type i=0;i<binssize;i+=4){
+    for(std::vector<int>::size_type i=0;i<binssize;i+=4){
       Int_t q=bins[i+1];
       Int_t me=bins[i+2]-1;
       Int_t z=bins[i]%fNZbins;
@@ -470,8 +470,8 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
         if(vectModId[iMod]>=0){
           fModule = vectModId[iMod];
           TClonesArray* clusters=rpc->UncheckedGetClusters(fModule);
-          vector<int> bins0;
-          vector<int> bins1;
+	  std::vector<int> bins0;
+	  std::vector<int> bins1;
           bins0=fDDLBins[iMod*2];
           bins1=fDDLBins[iMod*2+1];
 	  Int_t map0[kMapDim];
@@ -492,7 +492,7 @@ void AliITSClusterFinderSDDfast::FindClustersSDD(AliITSRawStream* input){
         }
         for (Int_t s=0; s<2; s++){
           Int_t indexHyb=iMod*2+s;
-	  for(vector<int>::size_type i=0;i<fDDLBins[indexHyb].size();++i)
+	  for(std::vector<int>::size_type i=0;i<fDDLBins[indexHyb].size();++i)
 	    fDDLBins[indexHyb].erase(fDDLBins[indexHyb].begin(),fDDLBins[indexHyb].end());
 	  for(Int_t j=0;j<kMapDim;++j)
 	    mapsDDL[indexHyb][j]=0;
