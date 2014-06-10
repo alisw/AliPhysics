@@ -48,6 +48,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   AliFlowTrackCuts& operator=(const AliFlowTrackCuts& someCuts);
   virtual ~AliFlowTrackCuts();
 
+  static AliFlowTrackCuts* GetAODTrackCutsForFilterBit(UInt_t bit = 1);
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts();
   static AliFlowTrackCuts* GetStandardTPCStandaloneTrackCuts2010();
   static AliFlowTrackCuts* GetStandardGlobalTrackCuts2010();
