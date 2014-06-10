@@ -535,10 +535,9 @@ guessRunData()
   
   #modify the OCDB: set the year
   if [[ ${dataType} =~ sim ]]; then 
-    anchorYear=$(for x in $mcProductionMap ; do [[ "${x}" =~ ${originalPeriod} ]] && echo ${x} && break; done)
-    anchorYear=${anchorYear#*=}
+    anchorYear=$(run2year $runNumber)
     if [[ -z "${anchorYear}" ]]; then
-      echo WARNING: anchorYear not available for this production: ${originalPeriod}, cannot set the OCDB."
+      echo "WARNING: anchorYear not available for this production: ${originalPeriod}, runNumber: ${runNumber}. Cannot set the OCDB."
       return 1
     fi
     ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
@@ -555,6 +554,20 @@ guessRunData()
     #ALL OK
     return 0
   fi
+}
+
+run2year()
+{
+  #for a given run print the year.
+  #the run-year table is ${runMap} (a string)
+  #defined in the config file
+  #one line per year, format: year runMin runMax
+  local run=$1
+  while read year runMin runMax; do
+    [[ -z ${run} || -z ${runMin} || -z ${runMax} ]] && continue
+    [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
+  done < <(echo "${runMap}")
+  return 0
 }
 
 substituteDetectorName()
