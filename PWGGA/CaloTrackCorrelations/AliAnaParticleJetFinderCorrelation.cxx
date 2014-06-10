@@ -797,6 +797,11 @@ Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * partic
   
   for(Int_t ijet = 0; ijet < njets ; ijet++){
     jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+    if(!jet)
+    {
+      AliInfo("Jet not in container");
+      continue;
+    }
     fhCuts2->Fill(2.,1.);
     jetPt=jet->Pt();
     if(fBackgroundJetFromReader ){
@@ -1105,7 +1110,8 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     aodRecJets = GetNonStandardJets();
     if(aodRecJets==0x0){
       if(GetDebug() > 3) event->Print();
-      abort();
+      AliFatal("Jets container not found");
+      return; // trick coverity
     }
     nJets=aodRecJets->GetEntries();
   }
@@ -1113,7 +1119,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     //    printf("Why number of jets = 0? Check what type of collision it is. If PbPb -problem.\n");
     GetReader()->FillInputNonStandardJets();
     aodRecJets = GetNonStandardJets();
-    nJets=aodRecJets->GetEntries();
+    if(aodRecJets) nJets=aodRecJets->GetEntries();
     //    printf("nJets = %d\n",nJets);
     return;
   }
@@ -1215,7 +1221,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
-      fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),jettmp->Phi()-aodtrack->Phi());
+      if(aodtrack) fhJetDeltaEtaDeltaPhiAllTracks->Fill(jettmp->Eta()-aodtrack->Eta(),jettmp->Phi()-aodtrack->Phi());
     }
     
     
