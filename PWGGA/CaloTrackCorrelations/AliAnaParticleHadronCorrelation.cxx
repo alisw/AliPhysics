@@ -595,7 +595,7 @@ void AliAnaParticleHadronCorrelation::FillChargedUnderlyingEventHistograms(Float
   if(uexE > 0) fhPtHbpXEUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
   
   fhZTUeCharged->Fill(ptTrig,uezT);
-  if(uexE > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
+  if(uezT > 0) fhPtHbpZTUeCharged->Fill(ptTrig,TMath::Log(1/uezT));
   
   // Pile up studies
   
