@@ -8,7 +8,7 @@
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
 #include <AliVEvent.h>
-#include <AliVTrack.h>
+#include <AliVParticle.h>
 #include <AliVCluster.h>
 #include <TClonesArray.h>
 #include <TMath.h>
@@ -23,6 +23,7 @@ class THF2;
 class TProfile;
 class AliLocalRhoParameter;
 class AliClusterContainer;
+class AliVTrack;
 
 class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
     public:
@@ -192,7 +193,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection, also used by AliAnalyisTaskJetFlow
-        /* inline */    Bool_t PassesCuts(AliVTrack* track) const { return AcceptTrack(track, 0); }
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const { return AcceptTrack(track, 0); }
         /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0); }
         /* inline */    Bool_t PassesCuts(AliVCluster* clus) const { return AcceptCluster(clus, 0); }
         /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet) {

@@ -44,6 +44,7 @@
 #include <AliAnalysisManager.h>
 #include <AliCentrality.h>
 #include <AliVVertex.h>
+#include <AliVTrack.h>
 #include <AliESDEvent.h>
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
@@ -196,6 +197,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::InitializeAnalysis()
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     if(fRandomConeRadius <= 0) fRandomConeRadius = GetJetContainer()->GetJetRadius();
     if(fMaxCones <= 0) fMaxCones = TMath::Nint(1.8*TMath::TwoPi()/(TMath::Pi()*fRandomConeRadius*fRandomConeRadius));
+    // manually 'override' the default acceptance cuts of the emcal framework (use with caution) 
     if(fLocalJetMinEta > -10 && fLocalJetMaxEta > -10) GetJetContainer()->SetJetEtaLimits(fLocalJetMinEta, fLocalJetMaxEta);
     if(fLocalJetMinPhi > -10 && fLocalJetMaxPhi > -10) GetJetContainer()->SetJetPhiLimits(fLocalJetMinPhi, fLocalJetMaxPhi);
     if(fMinDisanceRCtoLJ==0) fMinDisanceRCtoLJ = .5*GetJetRadius();
@@ -276,7 +278,8 @@ TH2F* AliAnalysisTaskRhoVnModulation::BookTH2F(const char* name, const char* x, 
 //_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
 {
-    // create output objects
+    // create output objects. also initializes some default values in case they aren't 
+    // loaded via the AddTask macro
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     fOutputList = new TList();
     fOutputList->SetOwner(kTRUE);
@@ -296,7 +299,7 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
     fHistCentrality =           BookTH1F("fHistCentrality", "centrality", 102, -2, 100);
     fHistVertexz =              BookTH1F("fHistVertexz", "vertex z (cm)", 100, -12, 12);
 
-    // pico track kinematics
+    // pico track and emcal cluster kinematics
     for(Int_t i(0); i < fCentralityClasses->GetSize()-1; i++) { 
         fHistPicoTrackPt[i] =          BookTH1F("fHistPicoTrackPt", "p_{t} [GeV/c]", 100, 0, 100, i);
         fHistPicoTrackMult[i] =        BookTH1F("fHistPicoTrackMult", "multiplicity", 100, 0, 5000, i);
@@ -304,12 +307,12 @@ void AliAnalysisTaskRhoVnModulation::UserCreateOutputObjects()
             fHistPicoCat1[i] =             BookTH2F("fHistPicoCat1", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
             fHistPicoCat2[i] =             BookTH2F("fHistPicoCat2", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
             fHistPicoCat3[i] =             BookTH2F("fHistPicoCat3", "#eta", "#phi", 50, -1, 1, 50, 0, TMath::TwoPi(), i);
+            if(fAnalysisType == AliAnalysisTaskRhoVnModulation::kFull) {
+                fHistClusterPt[i] =            BookTH1F("fHistClusterPt", "p_{t} [GeV/c]", 100, 0, 100, i);
+                fHistClusterEtaPhi[i] =        BookTH2F("fHistClusterEtaPhi", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
+                fHistClusterEtaPhiWeighted[i] =    BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
+            }
         }
-        // emcal kinematics
-        fHistClusterPt[i] =            BookTH1F("fHistClusterPt", "p_{t} [GeV/c]", 100, 0, 100, i);
-        fHistClusterEtaPhi[i] =        BookTH2F("fHistClusterEtaPhi", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-        fHistClusterEtaPhiWeighted[i] =    BookTH2F("fHistClusterEtaPhiWeighted", "#eta", "#phi", 100, -1., 1., 100, 0, TMath::TwoPi(), i);
-
     }
 
     if(fFillQAHistograms) {
@@ -685,14 +688,13 @@ void AliAnalysisTaskRhoVnModulation::CalculateEventPlaneTPC(Double_t* tpc)
    fNAcceptedTracks = 0;                // reset the track counter
    Double_t qx2(0), qy2(0);     // for psi2
    Double_t qx3(0), qy3(0);     // for psi3
-   if(fTracks) {
+   if(fTracksCont) {
        Float_t excludeInEta = -999;
        if(fExcludeLeadingJetsFromFit > 0 ) {    // remove the leading jet from ep estimate
            if(fLeadingJet) excludeInEta = fLeadingJet->Eta();
        }
-       Int_t iTracks(fTracks->GetEntriesFast());
-       for(Int_t iTPC(0); iTPC < iTracks; iTPC++) {
-           AliVTrack* track = static_cast<AliVTrack*>(fTracks->At(iTPC));
+       for(Int_t iTPC(0); iTPC < fTracksCont->GetNEntries(); iTPC++) {
+           AliVParticle* track = fTracksCont->GetParticle(iTPC);
            if(!PassesCuts(track) || track->Pt() < fSoftTrackMinPt || track->Pt() > fSoftTrackMaxPt) continue;
            if(fExcludeLeadingJetsFromFit > 0 &&( (TMath::Abs(track->Eta() - excludeInEta) < GetJetContainer()->GetJetRadius()*fExcludeLeadingJetsFromFit ) || (TMath::Abs(track->Eta()) - GetJetContainer()->GetJetRadius() - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
            fNAcceptedTracks++;
@@ -1398,9 +1400,18 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
         fRunNumber = InputEvent()->GetRunNumber();        // set the current run number
         if(fDebug > 0) printf("__FUNC__ %s > NEW RUNNUMBER DETECTED \n ", __func__);
         // reset the cuts. should be a pointless operation except for the case where the run number changes
-        // from semi-good back to good on one node, which is not a likely scenario
+        // from semi-good back to good on one node, which is not a likely scenario (unless trains will
+        // run as one masterjob)
         AliAnalysisTaskEmcal::SetTrackPhiLimits(-10., 10.);
-        AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
+        switch (fAnalysisType) {
+            case kCharged: {
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(-10., 10.);   
+            } break;
+            case kFull: {
+                AliAnalysisTaskEmcalJet::SetJetPhiLimits(1.405 + GetJetRadius(), 3.135 - GetJetRadius());
+            } break;
+            default: break;
+        }
         if(fCachedRho) {                // if there's a cached rho, it's the default, so switch back
             if(fDebug > 0) printf("__FUNC__ %s > replacing rho with cached rho \n ", __func__);
             fRho = fCachedRho;          // reset rho back to cached value. again, should be pointless
@@ -1410,7 +1421,14 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
             if(fExpectedSemiGoodRuns->At(i) == fRunNumber) { // run is semi-good
                if(fDebug > 0) printf("__FUNC__ %s > semi-good tpc run detected, adjusting acceptance \n ", __func__);
                 flaggedAsSemiGood = kTRUE;
-                AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
+                switch (fAnalysisType) {
+                    // for full jets the jet acceptance does not have to be changed as emcal does not
+                    // cover the tpc low voltage readout strips
+                    case kCharged: {
+                        AliAnalysisTaskEmcalJet::SetJetPhiLimits(fSemiGoodJetMinPhi, fSemiGoodJetMaxPhi);       // just an acceptance cut, jets are obtained from full azimuth, so no edge effects
+                    } break;
+                    default: break;
+                }
                 AliAnalysisTaskEmcal::SetTrackPhiLimits(fSemiGoodTrackMinPhi, fSemiGoodTrackMaxPhi);    // only affects vn extraction, NOT jet finding
                 // for semi-good runs, also try to get the 'small rho' estimate, if it is available
                 AliRhoParameter* tempRho(dynamic_cast<AliRhoParameter*>(InputEvent()->FindListObject(fNameSmallRho.Data())));
@@ -1464,7 +1482,7 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(AliVEvent* event)
     // see if input containers are filled
     if(fTracks->GetEntries() < 1) return kFALSE;
     if(fRho->GetVal() <= 0 ) return kFALSE;
-    if(fAnalysisType == AliAnalysisTaskRhoVnModulation::kCharged && !fClusterCont) return kFALSE;
+    if(fAnalysisType == AliAnalysisTaskRhoVnModulation::kFull && !fClusterCont) return kFALSE;
     return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1496,7 +1514,7 @@ void AliAnalysisTaskRhoVnModulation::FillHistogramsAfterSubtraction(Double_t psi
     // fill histograms 
     if(fDebug > 0) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
     FillTrackHistograms();
-    FillClusterHistograms();
+    if(fAnalysisType == AliAnalysisTaskRhoVnModulation::kFull) FillClusterHistograms();
     FillJetHistograms(psi2, psi3); 
     if(fFillQAHistograms) FillEventPlaneHistograms(vzero, vzeroComb, tpc);
     FillRhoHistograms();
