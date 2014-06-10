@@ -1491,14 +1491,6 @@ Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(Int_t year)
     return kFALSE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskRhoVnModulation::PassesCuts(const AliVCluster* cluster) const
-{
-    // cluster cuts
-    if(fDebug > 1) printf("__FILE__ = %s \n __LINE __ %i , __FUNC__ %s \n ", __FILE__, __LINE__, __func__);
-    if(!cluster) return kFALSE;
-    return kTRUE;
-}
-//_____________________________________________________________________________
 void AliAnalysisTaskRhoVnModulation::FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc)
 {
     // fill histograms 
