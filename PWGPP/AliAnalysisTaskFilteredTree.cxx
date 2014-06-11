@@ -15,7 +15,6 @@
 
 #include "iostream"
 #include "TSystem.h"
-
 #include <TPDGCode.h>
 #include <TDatabasePDG.h>
 
@@ -91,6 +90,7 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fCentralityEstimator(0)
   , fLowPtTrackDownscaligF(0)
   , fLowPtV0DownscaligF(0)
+  , fFriendDownscaling(-3.)   
   , fProcessAll(kFALSE)
   , fProcessCosmics(kFALSE)
   , fProcessITSTPCmatchOut(kFALSE)  // swittch to process ITS/TPC standalone tracks
@@ -502,6 +502,7 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       //Bool_t newFriendTrack1=kFALSE;
       //if (!friendTrack1) {friendTrack1=new AliESDfriendTrack(); newFriendTrack1=kTRUE;}
       if (!friendTrack1) {friendTrack1=fDummyFriendTrack;}
+      
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
@@ -1409,7 +1410,26 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 
         //assign the dummy objects if needed
         if (!track) {track=fDummyTrack;}
-        if (!friendTrack) {friendTrack=fDummyFriendTrack;}
+	AliESDfriendTrack *friendTrackStore=friendTrack;    // store friend track for later processing
+	if (fFriendDownscaling>=1){  // downscaling number of friend tracks
+	  friendTrackStore = (gRandom->Rndm()<1./fFriendDownscaling)? friendTrack:0;
+	}
+	if (fFriendDownscaling<=0){
+	  if (((*fTreeSRedirector)<<"highPt").GetTree()){
+	    TTree * tree = ((*fTreeSRedirector)<<"highPt").GetTree();
+	    if (tree){
+	      Double_t sizeAll=tree->GetZipBytes();
+	      TBranch * br= tree->GetBranch("friendTrack.fPoints");
+	      Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
+	      br= tree->GetBranch("friendTrack.fcalibContainers");
+	      if (br) sizeFriend+=br->GetZipBytes();
+	      if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) friendTrackStore=0;
+	    }
+	  }
+	}
+
+
+	//        if (!friendTrackStore && fFriendDownscaling<=1) {friendTrack=fDummyFriendTrack;}
         if (!vtxESD) {vtxESD=&dummyvtxESD;}
         if (mcEvent)
         {
@@ -1474,7 +1494,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           //{
           //  printf("no friend track\n");
           //}
-
+	  
 
           (*fTreeSRedirector)<<"highPt"<<
             "gid="<<gid<<
@@ -1501,7 +1521,8 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
             "ntracksITS="<<ntracksITS<<               // total number of the ITS tracks which were refitted
             //
             "esdTrack.="<<track<<                  // esdTrack as used in the physical analysis
-            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
+	    //            "friendTrack.="<<friendTrack<<      // esdFriendTrack associated to the esdTrack
+            "friendTrack.="<<friendTrackStore<<      // esdFriendTrack associated to the esdTrack
             "extTPCInnerC.="<<tpcInnerC<<          // ??? 
             "extInnerParamC.="<<trackInnerC<<      // ???
             "extInnerParam.="<<trackInnerC2<<      // ???
@@ -2921,25 +2942,41 @@ void AliAnalysisTaskFilteredTree::ProcessITSTPCmatchOut(AliESDEvent *const esdEv
   }
 }
 
-//void AliAnalysisTaskFilteredTree::ProcessTrackMatch(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend){
+void AliAnalysisTaskFilteredTree::ProcessTrackMatch(AliESDEvent *const /*esdEvent*/, AliESDfriend *const /*esdFriend*/){
 /*
+    Use TPC standalone, ITS standalone and combined tracks to categorize/resp. recover track information.
 
-Track categories:
-TPC+ITS
-TPC only 
-ITS only
+    Track categories:
+       -TPC+ITS
+       -TPC only 
+       -ITS only
+    Topology categories:
+       -Nice isolated tracks with full information 
+       -Overlapped tracks - Refit and sign them
+       -Multiple found (check overlap factor) - Merge and sign
+       -Charge particle (kink) decays - Change of direction - Sign them) 
+    Info:
+       -Array  of indexes of closest tracks in each individual category
+       -Chi2  distance to the closest tracks at reference radius of TPCin
+       -Overlap factors  - fraction of shared clusters or missing  region
+       -Chi2 distance at DCA
+    Information matrix:   
+       -matrix closest tracks from each categories
+       -characterization - chi2, index,chi2,  overlap ratio
+    
+    Decissions:
+       0.) Kink decay or catastophic multiple scaterring 
+           (combining all track categories)
+              - small chi2 at the DCA
+              - significantly large deflection angle
+              - Combinatorial algorithm - to decrease CPU time restriction of investigation to tracks with small DCA at  refernce radius
 
-Options:
--OK
--Multiple found (check overlap factor)
--Kink decays - change of direction
+       1.) if (TPConly && !(TPC+ITS) && ITSonly match ) {
+             if (!kink) TPCOnly.addoptITS
+             if (kink) TPConly sign
+           }
 
-To make          - matrix closest tracks from each categories
-Characterization - chi2, index, overlap ratio
-
-New features:
-1.) if (TPConly && !(TPC+ITS) && ITSonly match ) TPCOnly.addoptITS
-2.) if (ITSonly && !(TPC+ITS)) (TPC+ITS).createConbined
-3.) Overlap tracks - doUnfold
+       2.) Overlap tracks - Refit with doUnfold
 
 */
+}
