@@ -1023,7 +1023,7 @@ void AliAnalysisTaskSELc2V0bachelorTMVA::MakeAnalysisForLc2prK0S(TClonesArray *a
 
     AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(lcK0spr->Getv0PositiveTrack());
     AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(lcK0spr->Getv0NegativeTrack());
-    if (!v0Neg || !v0Neg) {
+    if (!v0Neg || !v0Pos) {
       AliDebug(2,Form("V0 by cascade %d has no V0positive of V0negative object",iLctopK0s));
       continue;
     }
@@ -1717,11 +1717,13 @@ Int_t AliAnalysisTaskSELc2V0bachelorTMVA::CallKFVertexing(AliAODRecoCascadeHF *c
     if (!tmpdaughv02 && labelsv0daugh[1] > 0){
       AliDebug(2, "Could not access MC info for second daughter of V0, continuing");
     }
-    Double_t xPionMC = tmpdaughv01->Xv(); //Production vertex of Pion --> Where K0S decays
-    Double_t yPionMC = tmpdaughv01->Yv();
-    Double_t zPionMC = tmpdaughv01->Zv();
-    //Printf("Got MC vtx for Pion");
-    Printf("Vertices: MC:  x = %f, y = %f, z = %f", xPionMC, yPionMC, zPionMC);
+    if(tmpdaughv01){
+      Double_t xPionMC = tmpdaughv01->Xv(); //Production vertex of Pion --> Where K0S decays
+      Double_t yPionMC = tmpdaughv01->Yv();
+      Double_t zPionMC = tmpdaughv01->Zv();
+      //Printf("Got MC vtx for Pion");
+      Printf("Vertices: MC:  x = %f, y = %f, z = %f", xPionMC, yPionMC, zPionMC);
+    }
   }
   else {
     Printf("Not a true V0");
