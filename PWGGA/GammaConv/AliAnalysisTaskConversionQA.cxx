@@ -769,7 +769,6 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 	UInt_t kind = 9;
 	TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCStack);
 	TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCStack);
-	TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
 	Int_t motherLabelPhoton; 
 	Int_t pdgCodePos = 0; 
 	Int_t pdgCodeNeg = 0; 
@@ -780,9 +779,9 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 		kind = 9;
 		//		return kFALSE; // One particle does not exist
    
-  } else if( posDaughter->GetMother(0) != negDaughter->GetMother(0)  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) {
-		//		kind = 1;
-	  return 1;
+	} else if( posDaughter->GetMother(0) != negDaughter->GetMother(0)  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) {
+		kind = 1;
+		// 	  	return 1;
 		pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
 		pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
 		if(pdgCodePos==11 && pdgCodeNeg==11) return 10; //Electron Combinatorial
@@ -794,10 +793,10 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
 		if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) return 13; //Pion, Electron Combinatorics
 		if(pdgCodePos==321 || pdgCodeNeg==321) return 14; //Kaon combinatorics
 	}else{		
- 
+		TParticle *Photon = TruePhotonCandidate->GetMCParticle(fMCStack);
 		pdgCodePos=posDaughter->GetPdgCode();
 		pdgCodeNeg=negDaughter->GetPdgCode();
-	  motherLabelPhoton= Photon->GetMother(0);
+		motherLabelPhoton= Photon->GetMother(0);
 		if ( TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCStack)->GetPdgCode(); 
 
 		if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) return 2; // true from hadronic decays
@@ -823,50 +822,50 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonAOD(AliAODConversionPhoton *True
 
  	UInt_t kind = 9;
 	TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-	AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
-	AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
-	AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
-	Int_t pdgCodePos = 0; 
-	Int_t pdgCodeNeg = 0; 
-	Int_t pdgCode = 0; 
-	if(posDaughter == NULL || negDaughter == NULL) {
-		kind = 9;
-   } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
-		kind = 1;
-		pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-		pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
-		if(pdgCodePos==11 && pdgCodeNeg==11)	kind = 10; //Electron Combinatorial
-		if(pdgCodePos==11 && pdgCodeNeg==11 && 
-			(posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1))kind = 15; //direct Electron Combinatorial
-				
-		if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
-		if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
-		if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
-		if(pdgCodePos==321 || pdgCodeNeg==321) kind = 14; //Kaon combinatorics
-	}else{		
- 
-		pdgCodePos=posDaughter->GetPdgCode();
-		pdgCodeNeg=negDaughter->GetPdgCode();
+	if (AODMCTrackArray!=NULL && TruePhotonCandidate!=NULL){
+		AliAODMCParticle *posDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive());
+		AliAODMCParticle *negDaughter = (AliAODMCParticle*) AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative());
+		Int_t pdgCodePos = 0; 
+		Int_t pdgCodeNeg = 0; 
+		Int_t pdgCode = 0; 
+		if(posDaughter == NULL || negDaughter == NULL) {
+			kind = 9;
+		} else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
+			kind = 1;
+			pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
+			pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+			if(pdgCodePos==11 && pdgCodeNeg==11)	kind = 10; //Electron Combinatorial
+			if(pdgCodePos==11 && pdgCodeNeg==11 && 
+				(posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1))kind = 15; //direct Electron Combinatorial
+					
+			if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
+			if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
+			if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
+			if(pdgCodePos==321 || pdgCodeNeg==321) kind = 14; //Kaon combinatorics
+		}else{		
+			AliAODMCParticle *Photon = (AliAODMCParticle*) AODMCTrackArray->At(posDaughter->GetMother());
+			pdgCodePos=posDaughter->GetPdgCode();
+			pdgCodeNeg=negDaughter->GetPdgCode();
 
-		if ( Photon->GetPdgCode()) 
-			pdgCode = Photon->GetPdgCode(); 
-		if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) kind = 2; // true from hadronic decays
-		else if ( !(pdgCodeNeg==pdgCodePos)){
-			if(pdgCode == 111) kind = 3; // pi0 Dalitz
-			else if (pdgCode == 221) kind = 4; // eta Dalitz
-			else if (!(negDaughter->GetMCProcessCode() != 5 || posDaughter->GetMCProcessCode() !=5)){
-				if(pdgCode == 22 && Photon->IsPrimary()){
-					kind = 0; // primary photons
-				} else if (pdgCode == 22){
-					kind = 5; //secondary photons
+			if ( Photon->GetPdgCode()) 
+				pdgCode = Photon->GetPdgCode(); 
+			if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) kind = 2; // true from hadronic decays
+			else if ( !(pdgCodeNeg==pdgCodePos)){
+				if(pdgCode == 111) kind = 3; // pi0 Dalitz
+				else if (pdgCode == 221) kind = 4; // eta Dalitz
+				else if (!(negDaughter->GetMCProcessCode() != 5 || posDaughter->GetMCProcessCode() !=5)){
+					if(pdgCode == 22 && Photon->IsPrimary()){
+						kind = 0; // primary photons
+					} else if (pdgCode == 22){
+						kind = 5; //secondary photons
+					}
 				}
 			}
 		}
-	}
 
+		return kind;
+	}	
 	return kind;
-
-
 }
 
 //________________________________________________________________________

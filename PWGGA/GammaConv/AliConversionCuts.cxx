@@ -1745,9 +1745,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingPi0.Data() << endl;
      TH1D *hReweightMCHistPi0temp = (TH1D*)f->Get(fNameHistoReweightingPi0.Data());
      hReweightMCHistPi0 = new TH1D(*hReweightMCHistPi0temp);
-     hReweightMCHistPi0->SetDirectory(0);
      if (hReweightMCHistPi0) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingPi0.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingPi0.Data() ,fPathTrFReweighting.Data()));
+	 hReweightMCHistPi0->SetDirectory(0);
   }
   if (fNameFitDataPi0.CompareTo("") != 0 && fDoReweightHistoMCPi0 ){
 	  cout << "I have to find: " <<  fNameFitDataPi0.Data() << endl;
@@ -1761,9 +1761,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingEta.Data() << endl;
      TH1D *hReweightMCHistEtatemp = (TH1D*)f->Get(fNameHistoReweightingEta.Data());
      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
-     hReweightMCHistEta->SetDirectory(0);
      if (hReweightMCHistEta) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingEta.Data(),fPathTrFReweighting.Data() ));
+	 hReweightMCHistEta->SetDirectory(0);
   }
 
   if (fNameFitDataEta.CompareTo("") != 0 && fDoReweightHistoMCEta){
@@ -1778,9 +1778,9 @@ void AliConversionCuts::LoadReweightingHistosMCFromFile() {
 	 cout << "I have to find: " <<  fNameHistoReweightingK0s.Data() << endl;
      TH1D *hReweightMCHistK0stemp = (TH1D*)f->Get(fNameHistoReweightingK0s.Data());
      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
-     hReweightMCHistK0s->SetDirectory(0);
      if (hReweightMCHistK0s) AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
      else AliWarning(Form("%s not found in %s", fNameHistoReweightingK0s.Data(),fPathTrFReweighting.Data() ));
+	 hReweightMCHistK0s->SetDirectory(0);
   }
 
   if (fNameFitDataK0s.CompareTo("") != 0 && fDoReweightHistoMCK0s){
@@ -2109,6 +2109,11 @@ void AliConversionCuts::PrintCutsWithValues() {
          printf("\t only events triggered by %s %s\n", fSpecialTriggerName.Data(), fSpecialSubTriggerName.Data());
       }
    }
+   printf("MC event cuts: \n");
+   if (fRejectExtraSignals == 0) printf("\t no rejection was applied \n");
+	else if (fRejectExtraSignals == 1) printf("\t only MB header will be inspected \n");
+	else if (fRejectExtraSignals > 1) printf("\t special header have been selected \n");
+	
    printf("Electron cuts: \n");
    if (fEtaCutMin > -0.1) printf("\t %3.2f < eta_{e} < %3.2f\n", fEtaCutMin, fEtaCut );
      else printf("\t eta_{e} < %3.2f\n", fEtaCut );
@@ -3592,8 +3597,7 @@ Bool_t AliConversionCuts::IsCentralitySelected(AliVEvent *event, AliVEvent *fMCE
          {  13,  11}, // 85
          {   0,   0}  // 90
       };
-
-   Int_t column = -1;
+   Int_t column = 0;
    if(event->IsA()==AliESDEvent::Class()) column = 0;
    if(event->IsA()==AliAODEvent::Class()) column = 1;
 
@@ -4055,7 +4059,7 @@ void AliConversionCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLi
 	if(MCEvent->IsA()==AliMCEvent::Class()){
 		cHeader = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(MCEvent)->GenEventHeader());
 		if(cHeader) headerFound = kTRUE;
-		fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
+		if(dynamic_cast<AliMCEvent*>(MCEvent))fMCStack = dynamic_cast<AliStack*>(dynamic_cast<AliMCEvent*>(MCEvent)->Stack());
 	}
 	if(MCEvent->IsA()==AliAODEvent::Class()){ // MCEvent is a AODEvent in case of AOD
 		cHeaderAOD = dynamic_cast<AliAODMCHeader*>(MCEvent->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -4276,19 +4280,21 @@ Int_t AliConversionCuts::IsParticleFromBGEvent(Int_t index, AliStack *MCStack, A
 	}
 	else if(InputEvent->IsA()==AliAODEvent::Class()){
 		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-		AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-		if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
-		if(!aodMCParticle->IsPrimary()){
-			if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
-			return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
-		}
-		index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
-		for(Int_t i = 0;i<fnHeaders;i++){
-			if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
-				accepted = 1;
-				if(i == 0) accepted = 2; // MB Header
+		if (AODMCTrackArray){
+			AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+			if(!aodMCParticle) return 1; // Photon Without a Mother ? --> Accepted
+			if(!aodMCParticle->IsPrimary()){
+				if( aodMCParticle->GetMother() < 0) return 1;// Secondary Particle without Mother??
+				return IsParticleFromBGEvent(aodMCParticle->GetMother(),MCStack,InputEvent);
 			}
-		}
+			index = abs(static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index))->GetLabel());
+			for(Int_t i = 0;i<fnHeaders;i++){
+				if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
+					accepted = 1;
+					if(i == 0) accepted = 2; // MB Header
+				}
+			}
+		}	
 	}
 
 	return accepted;
@@ -4330,176 +4336,180 @@ Int_t AliConversionCuts::IsEventAcceptedByConversionCut(AliConversionCuts *Reade
 
 //_________________________________________________________________________
 Float_t AliConversionCuts::GetWeightForMeson(TString period, Int_t index, AliStack *MCStack, AliVEvent *InputEvent){
-   if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
-   period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
+	if (!(period.CompareTo("LHC12f1a") == 0 || period.CompareTo("LHC12f1b") == 0  || period.CompareTo("LHC12i3") == 0 || period.CompareTo("LHC11a10a") == 0 || period.CompareTo("LHC11a10b") == 0 || period.CompareTo("LHC11a10b_bis") == 0 || period.CompareTo("LHC11a10a_bis") == 0 || period.CompareTo("LHC11a10b_plus") == 0 || period.Contains("LHC13d2")|| period.Contains("LHC14a1") || 
+	period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix") || period.CompareTo("LHC14b2") == 0 )) return 1.;
 
-   Int_t kCaseGen = 0;
-   for (Int_t i = 0; i < fnHeaders; i++){
-      if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
-         if (fGeneratorNames[i].CompareTo("Pythia") == 0){
-            kCaseGen = 1;
-         } else if (fGeneratorNames[i].CompareTo("DPMJET") == 0){
-            kCaseGen = 2;
-         } else if (fGeneratorNames[i].CompareTo("HIJING") == 0 ||
-                    fGeneratorNames[i].CompareTo("Hijing") == 0 ||
-                    fGeneratorNames[i].Contains("hijing")){
-            kCaseGen = 3;
-         } else if (fGeneratorNames[i].CompareTo("BOX") == 0){
-             kCaseGen = 4;
-         } else if (fGeneratorNames[i].CompareTo("PARAM") == 0){
-            kCaseGen = 5;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound") == 0){
-            kCaseGen = 6;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Pythia") == 0){
-            kCaseGen = 1;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Phojet") == 0){
-            kCaseGen = 2;
-         } else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
-            kCaseGen = 3;
-         }
-         if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix")  || period.Contains("LHC14a1") || period.CompareTo("LHC14b2") == 0 ){
-            kCaseGen = 3;
-         }
-      }
-   }
-   if (kCaseGen == 0) return 1;
+	Int_t kCaseGen = 0;
+	for (Int_t i = 0; i < fnHeaders; i++){
+		if (index >= fNotRejectedStart[i] && index < fNotRejectedEnd[i]+1){
+			if (fGeneratorNames[i].CompareTo("Pythia") == 0){
+				kCaseGen = 1;
+			} else if (fGeneratorNames[i].CompareTo("DPMJET") == 0){
+				kCaseGen = 2;
+			} else if (fGeneratorNames[i].CompareTo("HIJING") == 0 ||
+						fGeneratorNames[i].CompareTo("Hijing") == 0 ||
+						fGeneratorNames[i].Contains("hijing")){
+				kCaseGen = 3;
+			} else if (fGeneratorNames[i].CompareTo("BOX") == 0){
+				kCaseGen = 4;
+			} else if (fGeneratorNames[i].CompareTo("PARAM") == 0){
+				kCaseGen = 5;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound") == 0){
+				kCaseGen = 6;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Pythia") == 0){
+				kCaseGen = 1;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Phojet") == 0){
+				kCaseGen = 2;
+			} else if (fGeneratorNames[i].CompareTo("NoCocktailGeneratorFound_Hijing") == 0){
+				kCaseGen = 3;
+			}
+			if (period.Contains("LHC13d2") || period.CompareTo("LHC13e7") == 0 || period.Contains("LHC13b2_efix")  || period.Contains("LHC14a1") || period.CompareTo("LHC14b2") == 0 ){
+				kCaseGen = 3;
+			}
+		}
+	}
+	if (kCaseGen == 0) return 1;
 
 
-   Double_t mesonPt = 0;
-   Double_t mesonMass = 0;
-   Int_t PDGCode = 0;
-   if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-      mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
-      mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
-      PDGCode = ((TParticle*)MCStack->Particle(index))->GetPdgCode();
-   }
-   else if(InputEvent->IsA()==AliAODEvent::Class()){
-      TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
-      mesonPt = aodMCParticle->Pt();
-      mesonMass = aodMCParticle->GetCalcMass();
-      PDGCode = aodMCParticle->GetPdgCode();
-   }
+	Double_t mesonPt = 0;
+	Double_t mesonMass = 0;
+	Int_t PDGCode = 0;
+	if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
+		mesonPt = ((TParticle*)MCStack->Particle(index))->Pt();
+		mesonMass = ((TParticle*)MCStack->Particle(index))->GetCalcMass();
+		PDGCode = ((TParticle*)MCStack->Particle(index))->GetPdgCode();
+	}
+	else if(InputEvent->IsA()==AliAODEvent::Class()){
+		TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(InputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+		if (AODMCTrackArray){
+			AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(index));
+			mesonPt = aodMCParticle->Pt();
+			mesonMass = aodMCParticle->GetCalcMass();
+			PDGCode = aodMCParticle->GetPdgCode();
+		} else {
+			return 1;
+		}	
+	}
 
-   Float_t functionResultMC = 1.;
-   if (kCaseGen == 1){ // Pythia 6
-      Float_t dNdyMC = 2.1462;
-      Float_t nMC = 7.06055;
-      Float_t tMC = 0.12533;
-      if ( PDGCode ==  111){
-         dNdyMC = 2.1462;
-         nMC = 7.06055;
-         tMC = 0.12533;
-      } else if ( PDGCode ==  221){
-         dNdyMC = 0.2357;
-         nMC = 5.9105;
-         tMC = 0.1525;
-      }
-      functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
-   } else if (kCaseGen == 2){ // Phojet
-      Float_t dNdyMC = 2.35978;
-      Float_t nMC = 6.81795;
-      Float_t tMC = 0.11492;
-      if ( PDGCode ==  111){
-         dNdyMC = 2.35978;
-         nMC = 6.81795;
-         tMC = 0.11492;
-      } else if ( PDGCode ==  221){
-         dNdyMC = 0.3690;
-         nMC = 5.55809;
-         tMC = 0.13387;
-      }
-      functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
-   } else if (kCaseGen == 4){ // BOX generators pp
-//       functionResultMC = 1./sqrt(1.-mesonMass*mesonMass/((mesonMass*mesonMass+mesonPt*mesonPt)*cosh(mesonY)*cosh(mesonY)));
-      Float_t a = 0.23437;
-      Float_t b = 5.6661;
-      Float_t c = -1430.5863;
-      Float_t d = -0.6966624;
-      Float_t e = 252.3742;
-      if ( PDGCode ==  111){
-         a = 0.23437;
-         b = 5.6661;
-         c = -1430.5863;
-         d = -0.6966624;
-         e = 252.3742;
-      } else if ( PDGCode ==  221){
-         a = 0.10399;
-         b = 4.35311;
-         c = -12.17723;
-         d = -0.01172;
-         e =1.85140;
-      }
-      functionResultMC = a*TMath::Power(mesonPt,-1.*(b+c/(TMath::Power(mesonPt,d)+e)))*1./mesonPt *1./1.6 *1./(2.* TMath::Pi());
-//       cout << functionResultMC << endl;
-   } else if (kCaseGen == 3 ){ // HIJING
-      if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0){
-         functionResultMC = hReweightMCHistPi0->Interpolate(mesonPt);
-      }
-      if ( PDGCode ==  221 && fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0){
-         functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
-      }
-      if ( PDGCode ==  310 && fDoReweightHistoMCK0s && hReweightMCHistK0s!= 0x0){
-         functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
-      }
-   }
+	Float_t functionResultMC = 1.;
+	if (kCaseGen == 1){ // Pythia 6
+		Float_t dNdyMC = 2.1462;
+		Float_t nMC = 7.06055;
+		Float_t tMC = 0.12533;
+		if ( PDGCode ==  111){
+			dNdyMC = 2.1462;
+			nMC = 7.06055;
+			tMC = 0.12533;
+		} else if ( PDGCode ==  221){
+			dNdyMC = 0.2357;
+			nMC = 5.9105;
+			tMC = 0.1525;
+		}
+		functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
+	} else if (kCaseGen == 2){ // Phojet
+		Float_t dNdyMC = 2.35978;
+		Float_t nMC = 6.81795;
+		Float_t tMC = 0.11492;
+		if ( PDGCode ==  111){
+			dNdyMC = 2.35978;
+			nMC = 6.81795;
+			tMC = 0.11492;
+		} else if ( PDGCode ==  221){
+			dNdyMC = 0.3690;
+			nMC = 5.55809;
+			tMC = 0.13387;
+		}
+		functionResultMC = dNdyMC / ( 2 * TMath::Pi())*(nMC-1.)*(nMC-2.) / (nMC*tMC*(nMC*tMC+mesonMass*(nMC-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nMC*tMC), -nMC);
+	} else if (kCaseGen == 4){ // BOX generators pp
+	//       functionResultMC = 1./sqrt(1.-mesonMass*mesonMass/((mesonMass*mesonMass+mesonPt*mesonPt)*cosh(mesonY)*cosh(mesonY)));
+		Float_t a = 0.23437;
+		Float_t b = 5.6661;
+		Float_t c = -1430.5863;
+		Float_t d = -0.6966624;
+		Float_t e = 252.3742;
+		if ( PDGCode ==  111){
+			a = 0.23437;
+			b = 5.6661;
+			c = -1430.5863;
+			d = -0.6966624;
+			e = 252.3742;
+		} else if ( PDGCode ==  221){
+			a = 0.10399;
+			b = 4.35311;
+			c = -12.17723;
+			d = -0.01172;
+			e =1.85140;
+		}
+		functionResultMC = a*TMath::Power(mesonPt,-1.*(b+c/(TMath::Power(mesonPt,d)+e)))*1./mesonPt *1./1.6 *1./(2.* TMath::Pi());
+	//       cout << functionResultMC << endl;
+	} else if (kCaseGen == 3 ){ // HIJING
+		if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0){
+			functionResultMC = hReweightMCHistPi0->Interpolate(mesonPt);
+		}
+		if ( PDGCode ==  221 && fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0){
+			functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
+		}
+		if ( PDGCode ==  310 && fDoReweightHistoMCK0s && hReweightMCHistK0s!= 0x0){
+			functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
+		}
+	}
 
-   Float_t functionResultData = 1;
-   if (kCaseGen == 1 || kCaseGen == 2 || kCaseGen == 4 ){
-      Float_t dNdyData = 2.2328;
-      Float_t nData = 7.1473;
-      Float_t tData = 0.1346;
-      if ( PDGCode ==  111){
-         dNdyData = 2.2328;
-         nData = 7.1473;
-         tData = 0.1346;
-      } else if ( PDGCode ==  221){
-         dNdyData = 0.38992; //be careful this fit is not optimal, eta in data still has problems
-         nData = 5.72778;
-         tData = 0.13835;
-      }
-      functionResultData = dNdyData / ( 2 * TMath::Pi())*(nData-1.)*(nData-2.) / (nData*tData*(nData*tData+mesonMass*(nData-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nData*tData), -nData);
-//       cout << functionResultData << endl;
-   } else {
-      if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && fFitDataPi0!= 0x0){
-         functionResultData = fFitDataPi0->Eval(mesonPt);
-      }
-      if ( PDGCode ==  221 && fDoReweightHistoMCEta && fFitDataEta!= 0x0){
-         functionResultData = fFitDataEta->Eval(mesonPt);
-      }
-      if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
-         functionResultData = fFitDataK0s->Eval(mesonPt);
-      }
+	Float_t functionResultData = 1;
+	if (kCaseGen == 1 || kCaseGen == 2 || kCaseGen == 4 ){
+		Float_t dNdyData = 2.2328;
+		Float_t nData = 7.1473;
+		Float_t tData = 0.1346;
+		if ( PDGCode ==  111){
+			dNdyData = 2.2328;
+			nData = 7.1473;
+			tData = 0.1346;
+		} else if ( PDGCode ==  221){
+			dNdyData = 0.38992; //be careful this fit is not optimal, eta in data still has problems
+			nData = 5.72778;
+			tData = 0.13835;
+		}
+		functionResultData = dNdyData / ( 2 * TMath::Pi())*(nData-1.)*(nData-2.) / (nData*tData*(nData*tData+mesonMass*(nData-2.)))  * TMath::Power(1.+(TMath::Sqrt(mesonPt*mesonPt+mesonMass*mesonMass)-mesonMass)/(nData*tData), -nData);
+	//       cout << functionResultData << endl;
+	} else {
+		if ( PDGCode ==  111 && fDoReweightHistoMCPi0 && fFitDataPi0!= 0x0){
+			functionResultData = fFitDataPi0->Eval(mesonPt);
+		}
+		if ( PDGCode ==  221 && fDoReweightHistoMCEta && fFitDataEta!= 0x0){
+			functionResultData = fFitDataEta->Eval(mesonPt);
+		}
+		if ( PDGCode ==  310 && fDoReweightHistoMCK0s && fFitDataK0s!= 0x0){
+			functionResultData = fFitDataK0s->Eval(mesonPt);
+		}
 
-   }
+	}
 
-   Double_t weight = 1;
-   if (PDGCode ==  111 || PDGCode ==  221){
-      if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
-         weight = functionResultData/functionResultMC;
-         if ( kCaseGen == 3){
-            if (PDGCode ==  111){ 
-               if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
-                  weight = 1.;
-               }
-            } 
-            if (PDGCode ==  221){ 
-               if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
-                  weight = 1.;
-               }
-            }
-         }
-         if (!isfinite(functionResultData)) weight = 1.;
-         if (!isfinite(weight)) weight = 1.;
-      }
-   } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
-        weight = functionResultMC;
-   }
+	Double_t weight = 1;
+	if (PDGCode ==  111 || PDGCode ==  221){
+		if (functionResultData != 0. && functionResultMC != 0. && isfinite(functionResultData) && isfinite(functionResultMC)){
+			weight = functionResultData/functionResultMC;
+			if ( kCaseGen == 3){
+				if (PDGCode ==  111){ 
+				if (!(fDoReweightHistoMCPi0 && hReweightMCHistPi0!= 0x0 && PDGCode ==  111)){
+					weight = 1.;
+				}
+				} 
+				if (PDGCode ==  221){ 
+				if (!(fDoReweightHistoMCEta && hReweightMCHistEta!= 0x0 && PDGCode ==  221)){
+					weight = 1.;
+				}
+				}
+			}
+			if (!isfinite(functionResultData)) weight = 1.;
+			if (!isfinite(weight)) weight = 1.;
+		}
+	} else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
+			weight = functionResultMC;
+	}
 
-//    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
-//        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
-//    }
-   return weight;
+	//    if (fModCentralityClass == 0 && fCentralityMin == 4 && fCentralityMax == 6 && PDGCode ==  111){
+	//        cout << period.Data() << "\t" << kCaseGen << "\t" <<fModCentralityClass<< "\t" <<fCentralityMin<< "\t" <<fCentralityMax << "\t" << mesonPt << "\t" <<mesonMass<< "\t"<<functionResultData << "\t"<< functionResultMC << "\t" << weight <<endl;
+	//    }
+	return weight;
 }
 ///________________________________________________________________________
 AliConversionCuts* AliConversionCuts::GetStandardCuts2010PbPb(){
