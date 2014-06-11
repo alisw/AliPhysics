@@ -845,6 +845,33 @@ Bool_t AliMCEvent::IsFromBGEvent(Int_t index)
     TString empty="";
     return empty;}
 
+void AliMCEvent::AssignGeneratorIndex() {
+  //
+  // Assign the generator index to each particle
+  //
+  TList* list;
+  Int_t nt = GetCocktailList(list);
+  if (nt == 0) {
+  } else {
+    Int_t nh = list->GetEntries();
+    Int_t nsumpart = 0;
+    for(Int_t i = 0; i < nh; i++){
+      AliGenEventHeader* gh = (AliGenEventHeader*)list->At(i);
+      Int_t npart = gh->NProduced();
+      for (Int_t j = nsumpart; j < npart; j++) {
+	AliVParticle* part = GetTrack(j);
+	part->SetGeneratorIndex(i);
+	Int_t dmin = part->GetFirstDaughter();
+	Int_t dmax = part->GetLastDaughter();
+	for (Int_t k = dmin; k <= dmax; k++) {
+	  AliVParticle* dpart = GetTrack(k);
+	  dpart->SetGeneratorIndex(i);
+	}
+      } 
+      nsumpart += npart;
+    }
+  }
+}
 
 
    Bool_t  AliMCEvent::GetCocktailGenerator(Int_t index,TString &nameGen){

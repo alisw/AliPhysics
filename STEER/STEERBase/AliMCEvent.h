@@ -141,6 +141,7 @@ public:
      virtual void SetExternalHeader(AliVHeader* aodmcHeader)
        {fAODMCHeader=aodmcHeader;}  
   virtual AliGenEventHeader *FindHeader(Int_t ipart);
+  virtual void AssignGeneratorIndex();    
     //Following needed only for mixed event
   virtual Int_t        EventIndex(Int_t)       const {return 0;}
   virtual Int_t        EventIndexForCaloCluster(Int_t) const {return 0;}
@@ -151,7 +152,7 @@ public:
 
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
-    
+
 
 private:
     virtual void      ReorderAndExpandTreeTR();
@@ -179,7 +180,6 @@ private:
     static   Int_t        fgkBgLabelOffset;  // Standard branch name    
     mutable  AliVVertex*  fVertex;           // MC Vertex
     Int_t             fNBG;              //! Background particles in current event
-    
     ClassDef(AliMCEvent, 2)              // AliVEvent realisation for MC data
 };
 
