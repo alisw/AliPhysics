@@ -451,7 +451,7 @@ void AliAnalysisTaskSELc2V0bachelor::MakeAnalysisForLc2prK0S(TClonesArray *array
 
     AliAODTrack * v0Pos = dynamic_cast<AliAODTrack*>(lcK0Spr->Getv0PositiveTrack());
     AliAODTrack * v0Neg = dynamic_cast<AliAODTrack*>(lcK0Spr->Getv0NegativeTrack());
-    if (!v0Neg || !v0Neg) {
+    if (!v0Neg || !v0Pos) {
       AliDebug(2,Form("V0 by cascade %d has no V0positive of V0negative object",iLctopK0S)); // it will be done in AliRDHFCutsLctoV0::IsSelected
       continue;
     }
@@ -2602,6 +2602,7 @@ Int_t AliAnalysisTaskSELc2V0bachelor::SearchForCommonMother(TClonesArray *mcArra
   }
 
   delete [] labelMother;
+  if(pdgDg) delete [] pdgDg;
 
   return pdgToBeReturned;
 
