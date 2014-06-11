@@ -329,6 +329,14 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhAnglePairMCPi0;            //! pair opening angle, origin is same pi0
   TH2F         * fhAnglePairMCEta;            //! pair opening angle, origin is same eta
   
+  TH2F         * fhMCPi0PtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
+  TH2F         * fhMCEtaPtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
+  TH2F         * fhMCPi0ProdVertex;          //! Spectrum of selected pi0 vs production vertex
+  TH2F         * fhMCEtaProdVertex;          //! Spectrum of selected eta vs production vertex
+  TH2F         * fhMCPi0ProdVertexInner;     //! Spectrum of selected pi0 vs production vertex, below 50 cm
+  TH2F         * fhMCEtaProdVertexInner;     //! Spectrum of selected eta vs production vertex, below 50 cm
+
+  
   // Weight studies
   
   TH2F         * fhECellClusterRatio;      //! e cell / e cluster vs e cluster for selected photons
@@ -399,7 +407,7 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPi0EbE(              const AliAnaPi0EbE & pi0ebe) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,37)
+  ClassDef(AliAnaPi0EbE,38)
 } ;
 
 

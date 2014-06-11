@@ -105,6 +105,10 @@ fhMCEtaDecayPt(0),                  fhMCEtaDecayPtFraction(0),
 fhMCOtherDecayPt(0),
 fhMassPairMCPi0(0),                 fhMassPairMCEta(0),
 fhAnglePairMCPi0(0),                fhAnglePairMCEta(0),
+fhMCPi0PtOrigin(0x0),               fhMCEtaPtOrigin(0x0),
+fhMCPi0ProdVertex(0),               fhMCEtaProdVertex(0),
+fhMCPi0ProdVertexInner(0),          fhMCEtaProdVertexInner(0),
+
 // Weight studies
 fhECellClusterRatio(0),             fhECellClusterLogRatio(0),
 fhEMaxCellClusterRatio(0),          fhEMaxCellClusterLogRatio(0),
@@ -1571,6 +1575,54 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(IsDataMC())
   {
+    // Origin
+    
+    fhMCPi0PtOrigin     = new TH2F("hMCPi0PtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,11,0,11) ;
+    fhMCPi0PtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCPi0PtOrigin->SetYTitle("Origin");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(5 ,"#rho");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(6 ,"#omega");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(7 ,"K");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(8 ,"Other");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(9 ,"#eta");
+    fhMCPi0PtOrigin->GetYaxis()->SetBinLabel(10 ,"#eta prime");
+    outputContainer->Add(fhMCPi0PtOrigin) ;
+    
+    fhMCEtaPtOrigin     = new TH2F("hMCEtaPtOrigin","Reconstructed pair from generated #pi^{0} #it{p}_{T} vs origin",nptbins,ptmin,ptmax,7,0,7) ;
+    fhMCEtaPtOrigin->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCEtaPtOrigin->SetYTitle("Origin");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(1 ,"Status 21");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(2 ,"Quark");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(3 ,"qq Resonances");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(4 ,"Resonances");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(5 ,"Other");
+    fhMCEtaPtOrigin->GetYaxis()->SetBinLabel(6 ,"#eta prime");
+    outputContainer->Add(fhMCEtaPtOrigin) ;
+    
+    fhMCPi0ProdVertex = new TH2F("hMCPi0ProdVertex","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+    fhMCPi0ProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCPi0ProdVertex->SetYTitle("#it{R} (cm)");
+    outputContainer->Add(fhMCPi0ProdVertex) ;
+    
+    fhMCPi0ProdVertexInner = new TH2F("hMCPi0ProdVertexInner","Selected reco pair from generated #pi^{0} #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
+    fhMCPi0ProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCPi0ProdVertexInner->SetYTitle("#it{R} (cm)");
+    outputContainer->Add(fhMCPi0ProdVertexInner) ;
+    
+    fhMCEtaProdVertex = new TH2F("hMCEtaProdVertex","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,2000,0,500) ;
+    fhMCEtaProdVertex->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCEtaProdVertex->SetYTitle("#it{R} (cm)");
+    outputContainer->Add(fhMCEtaProdVertex) ;
+    
+    fhMCEtaProdVertexInner = new TH2F("hMCEtaProdVertexInner","Selected reco pair from generated #eta #it{p}_{T} vs production vertex",nptbins,ptmin,ptmax,500,0,50) ;
+    fhMCEtaProdVertexInner->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+    fhMCEtaProdVertexInner->SetYTitle("#it{R} (cm)");
+    outputContainer->Add(fhMCEtaProdVertexInner) ;
+    
     if(GetReader()->GetDataType() != AliCaloTrackReader::kMC && fAnaType==kSSCalo)
     {
       fhMCPi0PtGenRecoFraction = new TH2F("hMCPi0PtGenRecoFraction","Number of clusters from #pi^{0} (2 #gamma) identified as #pi^{0} (#eta), pT versus E primary #pi^{0} / E reco",
@@ -3383,7 +3435,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
   
   for(Int_t iaod = 0; iaod < naod ; iaod++)
   {
-    
     AliAODPWG4Particle* pi0 =  (AliAODPWG4Particle*) (GetOutputAODBranch()->At(iaod));
     Int_t pdg = pi0->GetIdentifiedParticleType();
 	  
@@ -3409,6 +3460,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     if(IsDataMC())
     {
       Int_t tag     = pi0->GetTag();
+      Int_t label   = pi0->GetLabel();
       Int_t mcIndex = GetMCIndex(tag);
       
       fhMCE    [mcIndex] ->Fill(ener);
@@ -3421,7 +3473,6 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
       if((mcIndex==kmcPhoton || mcIndex==kmcPi0 || mcIndex==kmcEta) && fAnaType==kSSCalo)
       {
         Float_t efracMC   = 0;
-        Int_t   label     = pi0->GetLabel();
         Int_t   momlabel  = -1;
         Bool_t  ok        = kFALSE;
         
@@ -3473,6 +3524,71 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
         
       }
       
+      if( mcIndex==kmcPi0 || mcIndex==kmcEta )
+      {
+        Float_t prodR     = -1;
+        Int_t   momindex  = -1;
+        Int_t   mompdg    = -1;
+        Int_t   momstatus = -1;
+
+        if(GetReader()->ReadStack())
+        {
+          TParticle* ancestor = GetMCStack()->Particle(label);
+          momindex  = ancestor->GetFirstMother();
+          if(momindex < 0) return;
+          TParticle* mother = GetMCStack()->Particle(momindex);
+          mompdg    = TMath::Abs(mother->GetPdgCode());
+          momstatus = mother->GetStatusCode();
+          prodR = mother->R();
+        }
+        else
+        {
+          TClonesArray * mcparticles = GetReader()->GetAODMCParticles();
+          AliAODMCParticle* ancestor = (AliAODMCParticle *) mcparticles->At(label);
+          momindex  = ancestor->GetMother();
+          if(momindex < 0) return;
+          AliAODMCParticle* mother = (AliAODMCParticle *) mcparticles->At(momindex);
+          mompdg    = TMath::Abs(mother->GetPdgCode());
+          momstatus = mother->GetStatus();
+          prodR = TMath::Sqrt(mother->Xv()*mother->Xv()+mother->Yv()*mother->Yv());
+        }
+        
+        if( mcIndex==kmcPi0 )
+        {
+          fhMCPi0ProdVertex->Fill(pt,prodR);
+          if(prodR < 50)fhMCPi0ProdVertexInner->Fill(pt,prodR);
+          
+          if     (momstatus  == 21) fhMCPi0PtOrigin->Fill(pt,0.5);//parton
+          else if(mompdg     < 22 ) fhMCPi0PtOrigin->Fill(pt,1.5);//quark
+          else if(mompdg     > 2100  && mompdg   < 2210) fhMCPi0PtOrigin->Fill(pt,2.5);// resonances
+          else if(mompdg    == 221) fhMCPi0PtOrigin->Fill(pt,8.5);//eta
+          else if(mompdg    == 331) fhMCPi0PtOrigin->Fill(pt,9.5);//eta prime
+          else if(mompdg    == 213) fhMCPi0PtOrigin->Fill(pt,4.5);//rho
+          else if(mompdg    == 223) fhMCPi0PtOrigin->Fill(pt,5.5);//omega
+          else if(mompdg    >= 310   && mompdg    <= 323) fhMCPi0PtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+          else if(mompdg    == 130) fhMCPi0PtOrigin->Fill(pt,6.5);//k0L
+          else if(momstatus == 11 || momstatus  == 12 ) fhMCPi0PtOrigin->Fill(pt,3.5);//resonances
+          else                      fhMCPi0PtOrigin->Fill(pt,7.5);//other?
+        }
+        else if (mcIndex==kmcEta )
+        {
+          fhMCEtaProdVertex->Fill(pt,prodR);
+          if(prodR < 50)fhMCEtaProdVertexInner->Fill(pt,prodR);
+          
+          if     (momstatus  == 21) fhMCEtaPtOrigin->Fill(pt,0.5);//parton
+          else if(mompdg     < 22 ) fhMCEtaPtOrigin->Fill(pt,1.5);//quark
+          else if(mompdg     > 2100  && mompdg   < 2210) fhMCEtaPtOrigin->Fill(pt,2.5);// resonances
+          else if(mompdg    == 221) fhMCEtaPtOrigin->Fill(pt,8.5);//eta
+          else if(mompdg    == 331) fhMCEtaPtOrigin->Fill(pt,9.5);//eta prime
+          else if(mompdg    == 213) fhMCEtaPtOrigin->Fill(pt,4.5);//rho
+          else if(mompdg    == 223) fhMCEtaPtOrigin->Fill(pt,5.5);//omega
+          else if(mompdg    >= 310   && mompdg    <= 323) fhMCEtaPtOrigin->Fill(pt,6.5);//k0S, k+-,k*
+          else if(mompdg    == 130) fhMCEtaPtOrigin->Fill(pt,6.5);//k0L
+          else if(momstatus == 11 || momstatus  == 12 ) fhMCEtaPtOrigin->Fill(pt,3.5);//resonances
+          else                      fhMCEtaPtOrigin->Fill(pt,7.5);//other?
+        }
+      }
+
     }//Histograms with MC
     
   }// aod loop
