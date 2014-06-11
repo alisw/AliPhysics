@@ -102,7 +102,7 @@ using std::setprecision;
 ClassImp(AliSysInfo)
 
 AliSysInfo* AliSysInfo::fInstance=0;
-Bool_t AliSysInfo::fgVerbose = kFALSE;
+Bool_t AliSysInfo::fgVerbose = kTRUE;
 
 AliSysInfo::AliSysInfo():
     TObject(),
