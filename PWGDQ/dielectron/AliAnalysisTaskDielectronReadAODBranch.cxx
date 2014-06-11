@@ -265,8 +265,8 @@ void AliAnalysisTaskDielectronReadAODBranch::UserExec(Option_t */*option*/)
 			Double_t lxy = ((vtxSec[0]-vtxPrim[0])*(pairObj->Px()) + (vtxSec[1]-vtxPrim[1])*(pairObj->Py()))/pairObj->Pt();
 			Double_t psProperDecayLength = lxy*(TDatabasePDG::Instance()->GetParticle(443)->Mass())/pairObj->Pt();
 
-			AliAODTrack *trk = (AliAODTrack*)pairObj->GetFirstDaughter();
-			AliAODTrack *trk1 = (AliAODTrack*)pairObj->GetSecondDaughter();
+			AliAODTrack *trk = (AliAODTrack*)pairObj->GetFirstDaughterP();
+			AliAODTrack *trk1 = (AliAODTrack*)pairObj->GetSecondDaughterP();
 			if(!trk || !trk1) {printf("ERROR: daughter tracks not available\n"); continue;}
 
 			//check in case of MC analysis if candidate is a true J/psi->ee

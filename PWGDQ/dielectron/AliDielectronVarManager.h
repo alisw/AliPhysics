@@ -1567,10 +1567,10 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
     values[AliDielectronVarManager::kPseudoProperTimeResolution] = -1e10;
     // values[AliDielectronVarManager::kPseudoProperTimePull] = -1e10;
     if(samemother && fgEvent) {
-      if(pair->GetFirstDaughter()->GetLabel() > 0) {
+      if(pair->GetFirstDaughterP()->GetLabel() > 0) {
         const AliVParticle *motherMC = 0x0;
-        if(fgEvent->IsA() == AliESDEvent::Class())  motherMC = (AliMCParticle*)mc->GetMCTrackMother((AliESDtrack*)pair->GetFirstDaughter());
-        else if(fgEvent->IsA() == AliAODEvent::Class())  motherMC = (AliAODMCParticle*)mc->GetMCTrackMother((AliAODTrack*)pair->GetFirstDaughter());
+        if(fgEvent->IsA() == AliESDEvent::Class())  motherMC = (AliMCParticle*)mc->GetMCTrackMother((AliESDtrack*)pair->GetFirstDaughterP());
+        else if(fgEvent->IsA() == AliAODEvent::Class())  motherMC = (AliAODMCParticle*)mc->GetMCTrackMother((AliAODTrack*)pair->GetFirstDaughterP());
         Double_t vtxX, vtxY, vtxZ;
 	if(motherMC && mc->GetPrimaryVertex(vtxX,vtxY,vtxZ)) {
 	  Int_t motherLbl = motherMC->GetLabel();
@@ -1589,8 +1589,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 	if (fgTRDpidEff[0][0]){
 	  Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues];
 	  Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues];
-	  AliVParticle* leg1 = pair->GetFirstDaughter();
-	  AliVParticle* leg2 = pair->GetSecondDaughter();
+	  AliVParticle* leg1 = pair->GetFirstDaughterP();
+	  AliVParticle* leg2 = pair->GetSecondDaughterP();
 	  if (leg1 && leg2){
 		Fill(leg1, valuesLeg1);
 		Fill(leg2, valuesLeg2);
@@ -1601,8 +1601,8 @@ inline void AliDielectronVarManager::FillVarDielectronPair(const AliDielectronPa
 
   }//if (mc->HasMC())
 
-  AliVParticle* leg1 = pair->GetFirstDaughter();
-  AliVParticle* leg2 = pair->GetSecondDaughter();
+  AliVParticle* leg1 = pair->GetFirstDaughterP();
+  AliVParticle* leg2 = pair->GetSecondDaughterP();
   if (leg1)
     values[AliDielectronVarManager::kMomAsymDau1] = (values[AliDielectronVarManager::kP] != 0)? leg1->P()  / values[AliDielectronVarManager::kP]: 0;
   else 
