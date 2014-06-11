@@ -72,8 +72,8 @@ Bool_t AliDielectronPairLegCuts::IsSelected(TObject* track)
   if (!pair) return kFALSE;
 
   //get both legs
-  AliVParticle *leg1=pair->GetFirstDaughter();
-  AliVParticle *leg2=pair->GetSecondDaughter();
+  AliVParticle *leg1=pair->GetFirstDaughterP();
+  AliVParticle *leg2=pair->GetSecondDaughterP();
 
   //mask used to require that all cuts are fulfilled
   UInt_t selectedMaskLeg1=(1<<fFilterLeg1.GetCuts()->GetEntries())-1;

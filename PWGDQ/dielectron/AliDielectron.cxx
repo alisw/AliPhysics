@@ -661,8 +661,8 @@ void AliDielectron::FillHistograms(const AliVEvent *ev, Bool_t pairInfoOnly)
 
       //fill leg information, don't fill the information twice
       if (legClass){
-        AliVParticle *d1=pair->GetFirstDaughter();
-        AliVParticle *d2=pair->GetSecondDaughter();
+        AliVParticle *d1=pair->GetFirstDaughterP();
+        AliVParticle *d2=pair->GetSecondDaughterP();
         if (!arrLegs.FindObject(d1)){
           AliDielectronVarManager::Fill(d1, values);
           fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
@@ -713,11 +713,11 @@ void AliDielectron::FillHistogramsPair(AliDielectronPair *pair,Bool_t fromPreFil
   }
 
   if (legClass){
-    AliVParticle *d1=pair->GetFirstDaughter();
+    AliVParticle *d1=pair->GetFirstDaughterP();
     AliDielectronVarManager::Fill(d1, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
     
-    AliVParticle *d2=pair->GetSecondDaughter();
+    AliVParticle *d2=pair->GetSecondDaughterP();
     AliDielectronVarManager::Fill(d2, values);
     fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
   }
@@ -1419,9 +1419,9 @@ void AliDielectron::FillMCHistograms(const AliVEvent *ev) {
 	  }
 	  //fill leg information, both + and - in the same histo
 	  if (legClass){
-	    AliDielectronVarManager::Fill(pair->GetFirstDaughter(),values);
+	    AliDielectronVarManager::Fill(pair->GetFirstDaughterP(),values);
 	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
-	    AliDielectronVarManager::Fill(pair->GetSecondDaughter(),values);
+	    AliDielectronVarManager::Fill(pair->GetSecondDaughterP(),values);
 	    fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
 	  }
 	} //is signal
@@ -1633,8 +1633,8 @@ void AliDielectron::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
       //fill leg information, don't fill the information twice
       if (legClass){
-        AliVParticle *d1=pair->GetFirstDaughter();
-        AliVParticle *d2=pair->GetSecondDaughter();
+        AliVParticle *d1=pair->GetFirstDaughterP();
+        AliVParticle *d2=pair->GetSecondDaughterP();
         if (!arrLegs.FindObject(d1)){
           AliDielectronVarManager::Fill(d1, values);
           fHistos->FillClass(className2, AliDielectronVarManager::kNMaxValues, values);
