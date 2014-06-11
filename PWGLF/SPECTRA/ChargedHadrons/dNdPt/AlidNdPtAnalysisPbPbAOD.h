@@ -7,7 +7,7 @@
 // via AODs 
 // 
 // Author: P. Luettig, 15.05.2013
-// last modified: 08.10.2013
+// last modified: 10.06.2014
 //------------------------------------------------------------------------------
 
 
@@ -25,6 +25,7 @@ class iostream;
 #include "THn.h"
 #include "TClonesArray.h"
 #include "TString.h"
+#include "TProfile.h"
 
 #include "TParticlePDG.h"
 #include "TDatabasePDG.h"
@@ -213,7 +214,16 @@ class AlidNdPtAnalysisPbPbAOD : public AliAnalysisTaskSE {
     TH1F		*fEventplaneDist; // event plane distribution in phi
     TH1F		*fMCEventplaneDist; // MC event plane distribution in phi
     TH2F		*fCorrelEventplaneMCDATA; // correlation between data and MC eventplane
-    // global variables
+
+	// cross check for event plane resolution
+	TH2F		*fEPDistCent; // event plane distribution vs centrality
+	TH2F		*fPhiCent;	// particle phi distribution vs centrality
+	TProfile	*fPcosEPCent; // < cos 2 psi_ep > vs centrality
+	TProfile	*fPsinEPCent; // < sin 2 psi_ep > vs centrality
+	TProfile	*fPcosPhiCent; // < cos 2 phi > vs centrality
+	TProfile	*fPsinPhiCent; // < sin 2 phi > vs centrality
+
+	// global variables
     Bool_t fIsMonteCarlo;
 	
 	TString fEPselector;
