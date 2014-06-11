@@ -107,6 +107,8 @@ Bool_t AliTPCDigitizer::Init()
 void AliTPCDigitizer::Digitize(Option_t* option)
 {
   DigitizeFast(option);  
+  //DigitizeWithTailAndCrossTalk(option);
+  
 }
 //------------------------------------------------------------------------
 void AliTPCDigitizer::DigitizeFast(Option_t* option)
@@ -761,9 +763,14 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
   // Cache the ion tail objects form OCDB
   //      
  
+  TObjArray *ionTailArr = (TObjArray*)AliTPCcalibDB::Instance()->GetIonTailArray();
+  if (!ionTailArr) {AliFatal("TPC - Missing IonTail OCDB object");}
+  TObject *rocFactorIROC  = ionTailArr->FindObject("factorIROC");
+  TObject *rocFactorOROC  = ionTailArr->FindObject("factorOROC");
+  Float_t factorIROC      = (atof(rocFactorIROC->GetTitle()));
+  Float_t factorOROC      = (atof(rocFactorOROC->GetTitle()));
   TObjArray timeResFunc(nROCs); 
   for (Int_t isec = 0;isec<nROCs;isec++){        //loop overs sectors
-    
     // Array of TGraphErrors for a given sector
     TGraphErrors ** graphRes   = new TGraphErrors *[20];
     Float_t * indexAmpGraphs   = new Float_t[20];
@@ -772,18 +779,12 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       graphRes[icache]       = NULL;
       indexAmpGraphs[icache] = 0;
     }
-    /////////////////////////////  --> position fo sie loop
     if (!AliTPCcalibDB::Instance()->GetTailcancelationGraphs(isec,graphRes,indexAmpGraphs)) continue;
-
-    // fill all TGraphErrors of trfs of a given sector to a TObjArray
+    // fill all TGraphErrors of trfs (time response function) of a given sector to a TObjArray
     TObjArray *timeResArr = new TObjArray(20);  timeResArr -> SetOwner(kTRUE); 
     for (Int_t ires = 0;ires<20;ires++) timeResArr->AddAt(graphRes[ires],ires);
-
-    // Fill all trfs into a single TObjArray 
-    timeResFunc.AddAt(timeResArr,isec);
-
+    timeResFunc.AddAt(timeResArr,isec); // Fill all trfs into a single TObjArray 
     delete timeResArr;
-
   }
 
   //
@@ -814,8 +815,8 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       continue;
     }
     // Calculate number of pads in a anode wire segment for normalization
-    Int_t anodeSegmentID  = param->GetWireSegment(sector,padRow);
-    Int_t nPadsPerSegment = param->GetNPadsPerSegment(anodeSegmentID);
+    Int_t anodeSegmentID    = param->GetWireSegment(sector,padRow);
+    Float_t nPadsPerSegment = (Float_t)(param->GetNPadsPerSegment(anodeSegmentID));
     // structure with mean signal per pad to be filled for each timebin in first loop (11 anodeWireSegment and 1100 timebin)
     TMatrixD &crossTalkSignal =  *((TMatrixD*)crossTalkSignalArray.At(sector));
     AliTPCCalROC * gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
@@ -840,17 +841,16 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     }   
     if (!digitize) continue;
     digrow->Allocate(nTimeBins,nPads);
-    Float_t q=0;
-    Int_t label[1000]; //stack for 300 events 
+    Float_t q    = 0;
     Int_t labptr = 0;
     Int_t nElems = nTimeBins*nPads; // element is a unit of a given row's pad-timebin space        
     for (Int_t i=0;i<nInputs; i++)
       if (active[i]) { 
         pdig[i] = digarr[i]->GetDigits();
-      }    
-    // loop over elements i.e pad-timebin space of a row
-    // padNumber=elem/nTimeBins
-    // timeBin=elem%nTimeBins 
+      }
+    //    
+    // loop over elements i.e pad-timebin space of a row, "padNumber=elem/nTimeBins", "timeBin=elem%nTimeBins"
+    // 
     for (Int_t elem=0;elem<nElems; elem++) {    
       q=0;
       labptr=0;
@@ -861,14 +861,18 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       }
       Int_t padNumber = elem/nTimeBins;
       Int_t timeBin   = elem%nTimeBins;      
-      q/=16.;  //conversion factor
+      q/=16.;                                              //conversion factor
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       q*= gain;
       
-      crossTalkSignal[anodeSegmentID][timeBin]+= q;        // Qtot per segment for a given timebin
-      qTotSectorOld -> GetMatrixArray()[sector] += q;      // Qtot for each sector
-      qTotTPC += q;                                        // Qtot for whole TPC       
+      crossTalkSignal[anodeSegmentID][timeBin]+= q/nPadsPerSegment;        // Qtot per segment for a given timebin
+      qTotSectorOld -> GetMatrixArray()[sector] += q;                      // Qtot for each sector
+      qTotTPC += q;                                                        // Qtot for whole TPC       
     } // end of q loop
+
+    cout << " sector = " << sector << " row = " << padRow << " SegmentID = " << anodeSegmentID ;
+    cout << " nPadsPerSegment = " <<  nPadsPerSegment << " QtotSector = " << qTotSectorOld -> GetMatrixArray()[sector] <<  endl;
+
   } // end of global row loop
 
 
@@ -881,19 +885,17 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       cerr<<"AliTPC warning: invalid segment ID ! "<<globalRowID<<endl;
       continue;
     }
-    
-    AliTPCCalROC * gainROC = gainTPC->GetCalROC(sector);  // pad gains per given sector
+    Int_t anodeSegmentID    = param->GetWireSegment(sector,padRow);
+    const Float_t ampfactor = (sector<36)?factorIROC:factorOROC;      // factor for the iontail which is ROC type dependent
+    AliTPCCalROC * gainROC  = gainTPC->GetCalROC(sector);  // pad gains per given sector
     AliTPCCalROC * noiseROC = noiseTPC->GetCalROC(sector);  // noise per given sector
     digrow->SetID(globalRowID);
-    
     Int_t nTimeBins = 0;
     Int_t nPads = 0;
-    
     Bool_t digitize = kFALSE;
-    for (Int_t i=0;i<nInputs; i++) { 
+    for (Int_t i=0;i<nInputs; i++) {   //here we can have more than one input  - merging of separate events, signal1+signal2+background
       rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
-      
       if (gime->TreeS()->GetEntryWithIndex(globalRowID,globalRowID) >= 0) {
         digarr[i]->ExpandBuffer();
         digarr[i]->ExpandTrackBuffer();
@@ -911,28 +913,24 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
     digrow->Allocate(nTimeBins,nPads);
     digrow->AllocateTrack(3);
     
-    Float_t q=0;
+    Float_t q    = 0.;
+    Float_t qX   = 0.;
+    Float_t qIon = 0.;
+    Float_t qold = 0.;
     Int_t label[1000]; //stack for 300 events 
     Int_t labptr = 0;
-    
     Int_t nElems = nTimeBins*nPads; // element is a unit of a given row's pad-timebin space    
-    
     for (Int_t i=0;i<nInputs; i++)
       if (active[i]) { 
         pdig[i] = digarr[i]->GetDigits();
         ptr[i]  = digarr[i]->GetTracks();
       }
-    
     Short_t *pdig1= digrow->GetDigits();
     Int_t   *ptr1= digrow->GetTracks() ;
-    
-    
     // loop over elements i.e pad-timebin space of a row
     for (Int_t elem=0;elem<nElems; elem++) 
-    {    
-      // padNumber=elem/nTimeBins
-      // timeBin=elem%nTimeBins 
-      q=0;
+    {     
+      q=0; 
       labptr=0;
       // looop over digits 
       for (Int_t i=0;i<nInputs; i++) if (active[i]) 
@@ -953,28 +951,27 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
         pdig[i]++;
         ptr[i]++;
       }
-      Int_t padNumber=elem/nTimeBins;
+      Int_t padNumber = elem/nTimeBins;
+      Int_t timeBin   = elem%nTimeBins;
 
-      q/=16.;  //conversion factor
+      q/=16.;                                              //conversion factor
       Float_t gain = gainROC->GetValue(padRow,padNumber);  // get gain for given - pad-row pad
       //if (gain<0.5){
       //printf("problem\n");
       //}
       q*= gain;
-      // Crosstalk correction:
-      //	Double_t qCrossTalk=crossTalkSignal(wireSegment,timeBin); // signal matrix from per sector array
-      //
-      //
+      qold = q;
+      // Crosstalk correction 
+      qX = (*(TMatrixD*)crossTalkSignalArray.At(sector))[anodeSegmentID][timeBin];
+      
       // Ion tail correction:
-      //   padNumber=elem/nTimeBins
-      //   timeBin=elem%nTimeBins 
       //   elem=padNumber*nTimeBins+timeBin;
       //    lowerElem=elem-nIonTailBins;    
       //    if (lowerElem<0) lowerElem=0;
       //    if (lowerElem in previospad) lowerElem = padNumber*nTimeBins;
       // 
       // for (Int_t celem=elem-1; celem>lowerElem; celem--){
-      //  Int_t deltaT=elem-celem
+      //  Int_t deltaT=elem-celem;
       //
       // }
       //
@@ -983,35 +980,33 @@ void AliTPCDigitizer::DigitizeWithTailAndCrossTalk(Option_t* option)
       Float_t noise  = pTPC->GetNoise();
       q+=noise*noisePad;	
       q=TMath::Nint(q);  // round to the nearest integer
-      /*
-         fill infor to check consistency of the data 
-
-         if (AliTPCReconstructor::StreamLevel()==1) {
-         TTreeSRedirector &cstream = *fDebugStreamer;
-        // if (gRandom->Rndm() > 0.999){
-         cstream<<"ionTailXtalk"<<
-         "sec="       << cl0              <<   
-         "row="       << qTotArray[icl0]  <<
-         "pad="       << qMaxArray[icl0]  <<
-         "tb="        << nclALL           <<
-         "qsec.="     << nclSector        <<
-         "qtpc="      << ncl              <<
-         "qold="      << nclPad           <<
-         "qnew="      << row              <<
-         "mult="      << sec              <<
-         "\n";
-         // }
-         }// dump the results to the debug streamer if in debug mode
-
-
-      */
-      if (q > zerosup)
-      { 
+      
+      
+      // fill info for degugging
+      if (AliTPCReconstructor::StreamLevel()==1) {
+        TTreeSRedirector &cstream = *fDebugStreamer;
+        cstream <<"ionTailXtalk"<<
+	  "sec="       << sector              <<   //
+	  "row="       << globalRowID         <<
+	  "pad="       << padNumber           <<
+	  "tb="        << timeBin             <<	  
+	  // "qsecOld.="  << qTotSectorOld       <<   // vector of total charge in sector => number total charge in given sector
+	  //"qsecNew.="  << qTotSectorNew       <<    // 
+	  "qtpc="      << qTotTPC             <<      // acumulated charge without crosstalk and ion tail in full TPC
+	  "qold="      << qold                <<      // charge in given pad-row,pad,time-bin
+	  "qX="        << qX                  <<      // crosstal contribtion at given position
+	  "qIon="      << qIon                <<      // ion tail cotribution from past signal
+	  "q="         << q                   <<      // q=qold-qX-qIon - to check sign of the effects
+	  // "mult="      << sec                 <<
+	  "\n";
+      }// dump the results to the debug streamer if in debug mode
+      
+      if (q > zerosup){ 
         if(q >= param->GetADCSat()) q = (Short_t)(param->GetADCSat() - 1);
         //digrow->SetDigitFast((Short_t)q,rows,col);  
         *pdig1 =Short_t(q);
         for (Int_t tr=0;tr<3;tr++)
-        {
+	  {
           if (tr<labptr) 
             ptr1[tr*nElems] = label[tr];
         }
