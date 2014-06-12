@@ -54,6 +54,7 @@
 #include "AliESDVZERO.h"
 #include "AliHLTGlobalVertexerComponent.h"
 #include "AliHLTVertexFinderBase.h"
+#include "AliSysInfo.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTGlobalEsdConverterComponent)
@@ -65,22 +66,13 @@ AliHLTGlobalEsdConverterComponent::AliHLTGlobalEsdConverterComponent()
   , fESD(NULL)
   , fSolenoidBz(-5.00668)
   , fBenchmark("EsdConverter")
-  , fBenchmarkHistosFilename("$PWD/histosBenchmark.root")
-  , fInitialTime(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  
-    TFile *f = TFile::Open(fBenchmarkHistosFilename,"READ");
-  if(f!=0x0){
-	TNamed *t = (TNamed*)f->Get("time");
-	if(t!=0x0){
-	  fInitialTime = atoi(t->GetTitle());
-	}
-  }
+
   
 }
 
@@ -304,12 +296,17 @@ int AliHLTGlobalEsdConverterComponent::DoDeinit()
   return 0;
 }
 
-int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /*evtData*/, 
+int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& evtData, 
 					       AliHLTComponentTriggerData& trigData)
 {
   // see header file for class documentation
   int iResult=0;
+
+
+AliSysInfo::AddStamp("DoEvent.Start", evtData.fStructSize);
+
   bool benchmark = true;
+
   if (!fESD) return -ENODEV;
 
   if (!IsDataEvent()) return iResult;
@@ -379,29 +376,24 @@ int AliHLTGlobalEsdConverterComponent::DoEvent(const AliHLTComponentEventData& /
   
     if(benchmark){
 	
-	TTimeStamp ts;
-	Double_t time = (Double_t) ts.GetSec() - fInitialTime;
-	Int_t nV0s = pESD->GetNumberOfV0s();
-	Int_t nTracks = pESD->GetNumberOfTracks();
+		Int_t nV0s = pESD->GetNumberOfV0s();
+		Int_t nTracks = pESD->GetNumberOfTracks();
 	
 	
 	Double_t statistics[10]; 
 	TString names[10];
 	fBenchmark.GetStatisticsData(statistics, names);
-	  statistics[5] = nTracks;
-	  statistics[6] = time;
-	  statistics[7] = nV0s;
+	//  statistics[5] = nTracks;
+	//  statistics[6] = time;
+	//  statistics[7] = nV0s;
 	  
-	  FillBenchmarkHistos( statistics, names);
-  printf("\nTIME:  %.9f \n\n",time);
+	//  FillBenchmarkHistos( statistics, names);
 	  fBenchmark.Reset();
   
+	AliSysInfo::AddStamp("DoEvent.Stop", (int)(1000*statistics[1]), (int)(1000*statistics[2]) );
   }
   
   
-  
-  
-
   return iResult;
 }
 
@@ -918,7 +910,8 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 
 void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
-
+return;
+/*
 
 //  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
     
@@ -936,5 +929,5 @@ void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics
   histosList.Add(s);
   histosList.Add(t);
   histosList.SaveAs(fBenchmarkHistosFilename);
-  
+ */ 
 }

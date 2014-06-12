@@ -50,8 +50,6 @@
 #include "TTree.h"
 #include "TList.h"
 #include "TClonesArray.h"
-#include "TTimeStamp.h"
-#include "THnSparse.h"
 //#include "AliHLTESDCaloClusterMaker.h"
 //#include "AliHLTCaloClusterDataStruct.h"
 //#include "AliHLTCaloClusterReader.h"
@@ -74,25 +72,13 @@ AliHLTGlobalFlatEsdConverterComponent::AliHLTGlobalFlatEsdConverterComponent()
   , fVerbosity(0)  
   , fSolenoidBz(-5.00668)
   , fBenchmark("FlatEsdConverter")
-  , fBenchmarkHistosFilename("$PWD/histosBenchmark.root")
-  , fInitialTime(0)
 {
   // see header file for class documentation
   // or
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-  
-  
-  
-  
-  TFile *f = TFile::Open(fBenchmarkHistosFilename,"READ");
-  if(f!=0x0){
-	TNamed *t = (TNamed*)f->Get("time");
-	if(t!=0x0){
-	  fInitialTime = atoi(t->GetTitle());
-	}
-  }
+
 }
 
 AliHLTGlobalFlatEsdConverterComponent::~AliHLTGlobalFlatEsdConverterComponent()
@@ -738,22 +724,13 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
   
   if(benchmark){
 	
-	TTimeStamp ts;
-	Double_t time = (Double_t) ts.GetSec() - fInitialTime;
-  
-	
-	
 	Double_t statistics[10]; 
 	TString names[10];
 	fBenchmark.GetStatisticsData(statistics, names);
-	  statistics[5] = tracksTPC.size();
-	  statistics[6] = time;
-	  statistics[7] = nV0s;
+	//  statistics[5] = tracksTPC.size();
+	//  statistics[7] = nV0s;
 	  
-	  FillBenchmarkHistos( statistics, names);
-  printf("\nTIME:  %.1f \n\n",time);
- // printf("\nreal time:  %.9f \n\n",statistics[4]);
- // printf("\ncpu time:  %.9f \n\n",statistics[3]);
+	//  FillBenchmarkHistos( statistics, names);
 	  fBenchmark.Reset();
   
   }
@@ -763,9 +740,9 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 
 void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
 
-
+return;
 //  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
-    
+    /*
   TFile *f = TFile::Open(fBenchmarkHistosFilename,"UPDATE");
   THnSparseD *s = (THnSparseD*)f->Get("benchmarkInformation");
   TNamed *t = (TNamed*)f->Get("time");
@@ -780,5 +757,5 @@ void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statis
   histosList.Add(s);
   histosList.Add(t);
   histosList.SaveAs(fBenchmarkHistosFilename);
-  
+ */ 
 }

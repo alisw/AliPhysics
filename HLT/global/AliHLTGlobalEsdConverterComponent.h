@@ -1,5 +1,6 @@
 //-*- Mode: C++ -*-
 // $Id$
+
 #ifndef ALIHLTGLOBALESDCONVERTERCOMPONENT_H
 #define ALIHLTGLOBALESDCONVERTERCOMPONENT_H
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -108,8 +109,6 @@ protected:
   /// solenoid b field
   Double_t fSolenoidBz; //! transient
   AliHLTComponentBenchmark fBenchmark; // benchmark
-  TString fBenchmarkHistosFilename;
-  Int_t fInitialTime;
 
   ClassDef(AliHLTGlobalEsdConverterComponent, 0)
 };
