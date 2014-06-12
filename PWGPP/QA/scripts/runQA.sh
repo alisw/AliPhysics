@@ -546,7 +546,7 @@ guessRunData()
   fi
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber}} ]]
+  if [[ -z ${runNumber} ]]
   then
     #error condition
     return 1
