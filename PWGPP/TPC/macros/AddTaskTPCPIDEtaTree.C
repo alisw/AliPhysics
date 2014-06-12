@@ -1,5 +1,7 @@
 AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
-                                      Bool_t setDoAdditionalQA = kFALSE, Bool_t useTPCCutMIGeo = kTRUE, Bool_t usePhiCut = kFALSE){
+                                      Bool_t setDoAdditionalQA = kFALSE,
+                                      Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
+                                      Bool_t usePhiCut = kFALSE){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -56,10 +58,11 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
   trackFilter->AddCuts(esdTrackCutsL);
   task->SetTrackFilter(trackFilter);
   task->SetUsePhiCut(usePhiCut);
-  task->SetUseTPCCutMIGeo(useTPCCutMIGeo);
+  task->SetTPCcutType(tpcCutType);
   
   printf("UsePhiCut: %d\n", task->GetUsePhiCut());
   printf("UseTPCCutMIGeo: %d\n", task->GetUseTPCCutMIGeo());
+  printf("UseTPCnclCut: %d\n", task->GetUseTPCnclCut());
   
   
   task->SetDoAdditionalQA(setDoAdditionalQA);
