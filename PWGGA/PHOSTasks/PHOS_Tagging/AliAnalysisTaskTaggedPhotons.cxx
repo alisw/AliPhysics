@@ -255,13 +255,15 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged%d_Area3_%s_cent%d",itag,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
     }    
     for(Int_t kind=1; kind<33; kind*=2){
-      fOutputContainer->Add(new TH1F(Form("hPi_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
       fOutputContainer->Add(new TH1F(Form("hPhot_nTagged_Isolation%d_Area1_%s_cent%d",kind,cPID[iPID],cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
     }
   }
-    
+  for(Int_t kind=1; kind<33; kind*=2){
+    fOutputContainer->Add(new TH1F(Form("hPi_Isolation%d_cent%d",kind,cen),"Spectrum of all reconstructed particles, no PID",nPt,0.,ptMax)) ;
+  }
+
   
   fOutputContainer->Add(new TH1F(Form("hTaggedMult_cent%d",cen),"Spectrum of multiply tagged photons",nPt,0.,ptMax)) ;
 
@@ -690,10 +692,10 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     Int_t mod  = relId[0] ;
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
-    
+
     FillHistogram("hTOF",clu->E(),clu->GetTOF()) ;
     FillHistogram(Form("hTofM%d",mod),clu->GetTOF(),clu->E()) ;
-    if(clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut)
+    if((!fIsMC) && (clu->GetTOF() < kTOFMinCut || clu->GetTOF() > kTOFMaxCut))
       continue ;          
     
 //    if(clu->GetDistanceToBadChannel()<2.5)
@@ -713,7 +715,7 @@ void AliAnalysisTaskTaggedPhotons::UserExec(Option_t *)
     clu->GetMomentum(momentum, vtx5);
     AliCaloPhoton *p = new ((*fPHOSEvent)[inList]) AliCaloPhoton(momentum.Px(),momentum.Py(),momentum.Pz(),clu->E() );
     inList++;
-
+    
     Int_t isolation = EvalIsolation(&momentum,kTRUE) ;
     p->SetIsolationTag(isolation) ;
     
@@ -961,7 +963,6 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      ipartner=-1 ;
 	    }
 	  }
-	
  	  //There is no partner in stack
 	  if(ipartner==-1){
             FillPIDHistograms("hMCDecWMisPartnStack",p) ;
@@ -977,8 +978,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      AliCaloPhoton * tmp = static_cast<AliCaloPhoton*>(fPHOSEvent->At(ii));
 	      Int_t ipartnPrim = tmp->GetPrimary() ;
 	      while(ipartnPrim>-1){
-                if(ipartnPrim==ipartner)
+                if(ipartnPrim==ipartner){
 		  break ;
+		}
 	        ipartnPrim = ((AliAODMCParticle *)fStack->At(ipartnPrim))->GetMother();
 	      }
 	      if(ipartnPrim==ipartner){
@@ -1001,8 +1003,9 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 		for(Int_t iAODLabel=0; (iAODLabel<nCluPrimaries) && (!pp); iAODLabel++){
 		  Int_t ipartnPrim = clu->GetLabelAt(iAODLabel) ;
 	          while(ipartnPrim>-1){
-                    if(ipartnPrim==ipartner)
+                    if(ipartnPrim==ipartner){
 		      break ;
+		    }
 	            ipartnPrim = ((AliAODMCParticle *)fStack->At(ipartnPrim))->GetMother();
 	          }
 	          if(ipartnPrim==ipartner){
@@ -1017,7 +1020,7 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
 	      //Partner reconstructed, but did not pass cuts
                 FillPIDHistograms("hMCDecWRecPartn",p) ;	
     	        Double_t invMass=(*p+ *pp).M() ;
-	        FillHistogram("hMCmass",invMass,p->Pt(),p->GetWeight()) ;
+	        FillHistogram(Form("hMCmass_cent%d",fCentBin),invMass,p->Pt(),p->GetWeight()) ;
 		Double_t nSigma=InPi0Band(invMass,p->Pt()) ;
 		// analog to Tag
                 for(Int_t eminType=0; eminType<3; eminType++){
@@ -1089,6 +1092,8 @@ void AliAnalysisTaskTaggedPhotons::FillMCHistos(){
                     AliVCluster * clu = event->GetCaloCluster(iclu);
                     if(!clu->IsPHOS())
                       continue ; 
+		    if(clu->E()==p->E()) //same cluster as current
+		      continue ;
 	      	    Int_t nCluPrimaries = clu->GetNLabels() ;
 		    for(Int_t iAODLabel=0; (iAODLabel<nCluPrimaries) && (!isPartnerLost); iAODLabel++){
 		      Int_t ipartnPrim = clu->GetLabelAt(iAODLabel) ;
@@ -1153,7 +1158,7 @@ void AliAnalysisTaskTaggedPhotons::FillTaggingHistos(){
               Int_t isolation=EvalIsolation(&pi0,0) ;
  	      for(Int_t kind=1; kind<33; kind*=2){
                  if((isolation&kind)){
-                   FillHistogram(Form("hPi_Isolation%d",kind),pi0.Pt()) ;
+                   FillHistogram(Form("hPi_Isolation%d_cent%d",kind,fCentBin),pi0.Pt()) ;
 	         }
               }
 	    }
@@ -1895,7 +1900,7 @@ Bool_t AliAnalysisTaskTaggedPhotons::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz
   //Check if this channel belogs to the good ones
   
   if(mod>4 || mod<1){
-    return kTRUE ;
+    return kFALSE ;
   }
   if(!fPHOSBadMap[mod]){
      return kTRUE ;
