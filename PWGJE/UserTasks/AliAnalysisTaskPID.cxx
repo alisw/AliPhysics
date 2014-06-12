@@ -144,6 +144,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID()
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
@@ -278,6 +279,7 @@ AliAnalysisTaskPID::AliAnalysisTaskPID(const char *name)
   , fh1Xsec(0x0)
   , fh1Trials(0x0)
   , fContainerEff(0x0)
+  , fQASharedCls(0x0)
   , fDeDxCheck(0x0)
   , fOutputContainer(0x0)
   , fQAContainer(0x0)
@@ -923,6 +925,18 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
       SetUpPtResHist(fPtResolution[i], pTbinsRes, binsJetPt, binsCent);
       fQAContainer->Add(fPtResolution[i]);
     }
+    
+    
+    // Besides the pT resolution, also perform check on shared clusters
+    const Int_t nBinsQASharedCls = kQASharedClsNumAxes;
+    Int_t qaSharedClsBins[kQASharedClsNumAxes]    = { nJetPtBins, nPtBinsRes, 160, 160 };
+    Double_t qaSharedClsXmin[kQASharedClsNumAxes] = { binsJetPt[0], pTbinsRes[0], 0, -1 };
+    Double_t qaSharedClsXmax[kQASharedClsNumAxes] = { binsJetPt[nJetPtBins], pTbinsRes[nPtBinsRes], 160, 159 };
+    
+    fQASharedCls = new THnSparseD("fQASharedCls", "QA shared clusters", nBinsQASharedCls, qaSharedClsBins, qaSharedClsXmin, qaSharedClsXmax);
+    
+    SetupSharedClsHist(fQASharedCls, pTbinsRes, binsJetPt);
+    fQAContainer->Add(fQASharedCls);
   }
   
   
@@ -2732,6 +2746,28 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
       printf("File: %s, Line: %d: ProcessTrack -> Generate Responses for dEdx check done\n", (char*)__FILE__, __LINE__);
   }
   
+  if (fDoPtResolution) {
+    // Check shared clusters, which is done together with the pT resolution
+    Double_t qaEntry[kQASharedClskQASharedClsNumAxes];
+    qaEntry[kQASharedClsJetPt] = jetPt;
+    qaEntry[kQASharedClsPt] = pT;
+    qaEntry[kDeDxCheckP] = pTPC;
+    qaEntry[kQASharedClsNumSharedCls] = track->GetTPCSharedMap().NumSharedClusters();
+    
+    Int_t iRowInd = -1;
+    // iRowInd == -1 for "all rows w/o multiple counting"
+    qaEntry[kQASharedClsPadRow] = iRowInd;
+    fQASharedCls->Fill(qaEntry);
+
+    // Fill hist for every pad row with shared cluster
+    for (iRowInd = 0; iRowInd < 159; iRowInd++) {
+      if (track->GetTPCSharedMap().TestBitNumber(iRowInd)) {
+        qaEntry[kQASharedClsPadRow] = iRowInd;
+        fQASharedCls->Fill(vecHistQA);
+      }
+    }
+  }
+  
   if (!fDoPID)
     return kTRUE;
   
@@ -3522,6 +3558,24 @@ void AliAnalysisTaskPID::SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Doubl
   hist->GetAxis(kPtResCharge)->SetTitle("Charge (e_{0})");
   hist->GetAxis(kPtResCentrality)->SetTitle(Form("Centrality Percentile (%s)", fCentralityEstimator.Data()));
 }
+
+
+//________________________________________________________________________
+void AliAnalysisTaskPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const
+{
+  // Sets bin limits for axes which are not standard binned and the axes titles.
+  
+  hist->SetBinEdges(kQASharedClsPt, binsJetPt);
+  hist->SetBinEdges(kQASharedClsJetPt, binsPt);
+  
+  // Set axes titles
+  hist->GetAxis(kQASharedClsJetPt)->SetTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
+  hist->GetAxis(kQASharedClsPt)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  hist->GetAxis(kQASharedClsNumSharedCls)->SetTitle("#it{N}_{shared}^{cls}");
+  hist->GetAxis(kQASharedClsPadRow)->SetTitle("Pad row");
+  
+}
+
 
 //________________________________________________________________________
 void AliAnalysisTaskPID::SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const

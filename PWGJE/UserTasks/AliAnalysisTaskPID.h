@@ -62,6 +62,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
+  enum qaSharedClsAxes { kQASharedClsJetPt = 0, kQASharedClsPt = 1, kQASharedClsNumSharedCls = 2, kQASharedClsPadRow = 3,
+                         kQASharedClskQASharedClsNumAxes = 4 };
+  
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
   
@@ -260,6 +263,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   virtual void SetUpGenYieldHist(THnSparse* hist, Double_t* binsPt, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpHist(THnSparse* hist, Double_t* binsPt, Double_t* binsDeltaPrime, Double_t* binsCent, Double_t* binsJetPt) const;
   virtual void SetUpPtResHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt, Double_t* binsCent) const;
+  virtual void SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, Double_t* binsJetPt) const;
   virtual void SetUpDeDxCheckHist(THnSparse* hist, const Double_t* binsPt, const Double_t* binsJetPt, const Double_t* binsEtaAbs) const;
   virtual void SetUpPIDcombined();
   
@@ -396,6 +400,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliCFContainer* fContainerEff; //! Container for efficiency determination
   
   THnSparseD* fPtResolution[AliPID::kSPECIES]; //! Pt Resolution for the individual species
+  THnSparseD* fQASharedCls; //! QA for shared clusters
   
   THnSparseD* fDeDxCheck; //! dEdx check
   
@@ -406,7 +411,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   AliAnalysisTaskPID(const AliAnalysisTaskPID&); // not implemented
   AliAnalysisTaskPID& operator=(const AliAnalysisTaskPID&); // not implemented
   
-  ClassDef(AliAnalysisTaskPID, 19);
+  ClassDef(AliAnalysisTaskPID, 20);
 };
 
 
