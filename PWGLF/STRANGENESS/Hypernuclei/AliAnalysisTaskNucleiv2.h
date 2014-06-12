@@ -23,7 +23,7 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
  public:
   //  AliAnalysisTaskNucleiv2(const char *datatype);
   AliAnalysisTaskNucleiv2();
-  AliAnalysisTaskNucleiv2(const char *name,const char *datatype);
+  AliAnalysisTaskNucleiv2(const char *name,const char *datatype,Bool_t filltree);
   virtual ~AliAnalysisTaskNucleiv2() {}
   
   virtual void  UserCreateOutputObjects();
@@ -33,6 +33,7 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
   void SetCollidingSystems(Short_t collidingSystems = 0)     {fCollidingSystems = collidingSystems;}
   void SetAnalysisType    (const char* analysisType = "ESD") {fAnalysisType = analysisType;}
   void SetDataType    (const char* dataType = "REAL") {fDataType = dataType;}
+  void SetFillTree    (Bool_t ifFill = kFALSE) {fFillNtuple = ifFill;}
   //  void SetDataType    (const char* dataTypeS = datatype) {fDataType = dataTypeS;}
   // void SetDataType    (const char* dataType) {fDataType = dataType;}
  
@@ -47,6 +48,7 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
   
   Short_t fCollidingSystems;	      //! 0 = pp collisions or 1 = AA collisions
   TString fDataType;		      //! "REAL" or "SIM" data type	
+  Bool_t  fFillNtuple;		      //! fill or not the tree	
  
   TList	*fListHistCascade;	           //! List of Cascade histograms
   TH1F  *fHistEventMultiplicity;           //! event multiplicity
@@ -63,7 +65,65 @@ class AliAnalysisTaskNucleiv2 : public AliAnalysisTaskSE {
   TH2F *hRPangleTPCvsCentrality;           //RESOLUTION Histrograms
   TH2F *hPlaneResoTPCvsCentrality;
   TH2F *hRPangleVZEROvsCentrality;
+  TH2F *hRPangleVZEROAvsCentrality;
+  TH2F *hRPangleVZEROCvsCentrality;
   TH2F *hPlaneResoVZEROvsCentrality;
+  TH2F *hPlaneResoVZEROAvsCentrality;
+  TH2F *hPlaneResoVZEROCvsCentrality;
+  TH2F *hCosPhivsPt;                         
+  TH2F *hSinPhivsPt;                         
+  TH2F *hPhivsPt;                         
+  TH2F *hAntiCosPhivsPt;                     
+  TH2F *hAntiSinPhivsPt;                     
+  TH2F *hAntiPhivsPt;                     
+  TH2F *hCosDeltaPhivsPt075;                      
+  TH2F *hSinDeltaPhivsPt075;                      
+  TH2F *hDeltaPhivsPt075;                      
+  TH2F *hCosDeltaPhiVZEROvsPt075;                 	      
+  TH2F *hSinDeltaPhiVZEROvsPt075;                 	      
+  TH2F *hDeltaPhiVZEROvsPt075;                 
+  TH2F *hCosDeltaPhivsPt1530;                     
+  TH2F *hSinDeltaPhivsPt1530;                     
+  TH2F *hDeltaPhivsPt1530;                     
+  TH2F *hCosDeltaPhiVZEROvsPt1530;                
+  TH2F *hSinDeltaPhiVZEROvsPt1530;                
+  TH2F *hDeltaPhiVZEROvsPt1530;                
+  TH2F *hCosDeltaPhivsPt3050;                     
+  TH2F *hSinDeltaPhivsPt3050;                     
+  TH2F *hDeltaPhivsPt3050;                     
+  TH2F *hCosDeltaPhiVZEROvsPt3050;                
+  TH2F *hSinDeltaPhiVZEROvsPt3050;                
+  TH2F *hDeltaPhiVZEROvsPt3050;                
+  TH2F *hCosDeltaPhivsPt1550;                     
+  TH2F *hSinDeltaPhivsPt1550;                     
+  TH2F *hDeltaPhivsPt1550;                     
+  TH2F *hCosDeltaPhiVZEROvsPt1550;                
+  TH2F *hSinDeltaPhiVZEROvsPt1550;                
+  TH2F *hDeltaPhiVZEROvsPt1550;                
+  TH2F *hAntiCosDeltaPhivsPt075;                  
+  TH2F *hAntiSinDeltaPhivsPt075;                  
+  TH2F *hAntiDeltaPhivsPt075;                  
+  TH2F *hAntiCosDeltaPhiVZEROvsPt075;             
+  TH2F *hAntiSinDeltaPhiVZEROvsPt075;             
+  TH2F *hAntiDeltaPhiVZEROvsPt075;             
+  TH2F *hAntiCosDeltaPhivsPt1530;                 
+  TH2F *hAntiSinDeltaPhivsPt1530;                 
+  TH2F *hAntiDeltaPhivsPt1530;                 
+  TH2F *hAntiCosDeltaPhiVZEROvsPt1530;            
+  TH2F *hAntiSinDeltaPhiVZEROvsPt1530;            
+  TH2F *hAntiDeltaPhiVZEROvsPt1530;            
+  TH2F *hAntiCosDeltaPhivsPt3050;                 
+  TH2F *hAntiSinDeltaPhivsPt3050;                 
+  TH2F *hAntiDeltaPhivsPt3050;                 
+  TH2F *hAntiCosDeltaPhiVZEROvsPt3050;            
+  TH2F *hAntiSinDeltaPhiVZEROvsPt3050;            
+  TH2F *hAntiDeltaPhiVZEROvsPt3050;            
+  TH2F *hAntiCosDeltaPhivsPt1550;                 
+  TH2F *hAntiSinDeltaPhivsPt1550;                 
+  TH2F *hAntiDeltaPhivsPt1550;                 
+  TH2F *hAntiCosDeltaPhiVZEROvsPt1550;            
+  TH2F *hAntiSinDeltaPhiVZEROvsPt1550;            
+  TH2F *hAntiDeltaPhiVZEROvsPt1550;     
 
   AliESDtrackCuts * fESDtrackCuts; 
   AliPIDResponse *fPIDResponse;   //! pointer to PID response

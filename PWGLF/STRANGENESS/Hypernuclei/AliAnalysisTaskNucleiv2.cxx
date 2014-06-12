@@ -55,9 +55,6 @@ class AliCascadeVertexer;
 #include "AliCentrality.h"
 
 ClassImp(AliAnalysisTaskNucleiv2)
-
-using std::cout;
-using std::endl;
     
 //________________________________________________________________________
 AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2() 
@@ -65,6 +62,7 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
   fAnalysisType("ESD"), 
   fCollidingSystems(0), 
   fDataType("REAL"),
+  fFillNtuple(kFALSE),
   fListHistCascade(0), 
   fHistEventMultiplicity(0), 
   fHistTrackMultiplicity(0),
@@ -76,10 +74,68 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
   fhPtDeu(0),
   fhTOF(0),
   fhMassTOF(0),
-  hRPangleTPCvsCentrality(0),
+  hRPangleTPCvsCentrality(0),           //RESOLUTION Histrograms
   hPlaneResoTPCvsCentrality(0),
   hRPangleVZEROvsCentrality(0),
+  hRPangleVZEROAvsCentrality(0),
+  hRPangleVZEROCvsCentrality(0),
   hPlaneResoVZEROvsCentrality(0),
+  hPlaneResoVZEROAvsCentrality(0),
+  hPlaneResoVZEROCvsCentrality(0),
+  hCosPhivsPt(0),                         
+  hSinPhivsPt(0),                         
+  hPhivsPt(0),                         
+  hAntiCosPhivsPt(0),                     
+  hAntiSinPhivsPt(0),                     
+  hAntiPhivsPt(0),                     
+  hCosDeltaPhivsPt075(0),                      
+  hSinDeltaPhivsPt075(0),                      
+  hDeltaPhivsPt075(0),                      
+  hCosDeltaPhiVZEROvsPt075(0),                 	      
+  hSinDeltaPhiVZEROvsPt075(0),                 	      
+  hDeltaPhiVZEROvsPt075(0),                 
+  hCosDeltaPhivsPt1530(0),                     
+  hSinDeltaPhivsPt1530(0),                     
+  hDeltaPhivsPt1530(0),                     
+  hCosDeltaPhiVZEROvsPt1530(0),                
+  hSinDeltaPhiVZEROvsPt1530(0),                
+  hDeltaPhiVZEROvsPt1530(0),                
+  hCosDeltaPhivsPt3050(0),                     
+  hSinDeltaPhivsPt3050(0),                     
+  hDeltaPhivsPt3050(0),                     
+  hCosDeltaPhiVZEROvsPt3050(0),                
+  hSinDeltaPhiVZEROvsPt3050(0),                
+  hDeltaPhiVZEROvsPt3050(0),                
+  hCosDeltaPhivsPt1550(0),                     
+  hSinDeltaPhivsPt1550(0),                     
+  hDeltaPhivsPt1550(0),                     
+  hCosDeltaPhiVZEROvsPt1550(0),                
+  hSinDeltaPhiVZEROvsPt1550(0),                
+  hDeltaPhiVZEROvsPt1550(0),                
+  hAntiCosDeltaPhivsPt075(0),                  
+  hAntiSinDeltaPhivsPt075(0),                  
+  hAntiDeltaPhivsPt075(0),                  
+  hAntiCosDeltaPhiVZEROvsPt075(0),             
+  hAntiSinDeltaPhiVZEROvsPt075(0),             
+  hAntiDeltaPhiVZEROvsPt075(0),             
+  hAntiCosDeltaPhivsPt1530(0),                 
+  hAntiSinDeltaPhivsPt1530(0),                 
+  hAntiDeltaPhivsPt1530(0),                 
+  hAntiCosDeltaPhiVZEROvsPt1530(0),            
+  hAntiSinDeltaPhiVZEROvsPt1530(0),            
+  hAntiDeltaPhiVZEROvsPt1530(0),            
+  hAntiCosDeltaPhivsPt3050(0),                 
+  hAntiSinDeltaPhivsPt3050(0),                 
+  hAntiDeltaPhivsPt3050(0),                 
+  hAntiCosDeltaPhiVZEROvsPt3050(0),            
+  hAntiSinDeltaPhiVZEROvsPt3050(0),            
+  hAntiDeltaPhiVZEROvsPt3050(0),            
+  hAntiCosDeltaPhivsPt1550(0),                 
+  hAntiSinDeltaPhivsPt1550(0),                 
+  hAntiDeltaPhivsPt1550(0),                 
+  hAntiCosDeltaPhiVZEROvsPt1550(0),            
+  hAntiSinDeltaPhiVZEROvsPt1550(0),            
+  hAntiDeltaPhiVZEROvsPt1550(0),     
   fESDtrackCuts(0),
   fPIDResponse(0),
   fNtuple1(0),
@@ -111,11 +167,12 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2()
 }
 
 //________________________________________________________________________
-AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name,const char *datatype) 
+AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name,const char *datatype,Bool_t filltree) 
   : AliAnalysisTaskSE(name), 
     fAnalysisType("ESD"), 
     fCollidingSystems(0), 
     fDataType(datatype),
+    fFillNtuple(filltree),
     fListHistCascade(0), 
     fHistEventMultiplicity(0), 
     fHistTrackMultiplicity(0),
@@ -127,10 +184,68 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name,const char *da
     fhPtDeu(0),
     fhTOF(0),
     fhMassTOF(0),
-    hRPangleTPCvsCentrality(0),
+    hRPangleTPCvsCentrality(0),           //RESOLUTION Histrograms
     hPlaneResoTPCvsCentrality(0),
     hRPangleVZEROvsCentrality(0),
+    hRPangleVZEROAvsCentrality(0),
+    hRPangleVZEROCvsCentrality(0),
     hPlaneResoVZEROvsCentrality(0),
+    hPlaneResoVZEROAvsCentrality(0),
+    hPlaneResoVZEROCvsCentrality(0),
+    hCosPhivsPt(0),                         
+    hSinPhivsPt(0),                         
+    hPhivsPt(0),                         
+    hAntiCosPhivsPt(0),                     
+    hAntiSinPhivsPt(0),                     
+    hAntiPhivsPt(0),                     
+    hCosDeltaPhivsPt075(0),                      
+    hSinDeltaPhivsPt075(0),                      
+    hDeltaPhivsPt075(0),                      
+    hCosDeltaPhiVZEROvsPt075(0),                 	      
+    hSinDeltaPhiVZEROvsPt075(0),                 	      
+    hDeltaPhiVZEROvsPt075(0),                 
+    hCosDeltaPhivsPt1530(0),                     
+    hSinDeltaPhivsPt1530(0),                     
+    hDeltaPhivsPt1530(0),                     
+    hCosDeltaPhiVZEROvsPt1530(0),                
+    hSinDeltaPhiVZEROvsPt1530(0),                
+    hDeltaPhiVZEROvsPt1530(0),                
+    hCosDeltaPhivsPt3050(0),                     
+    hSinDeltaPhivsPt3050(0),                     
+    hDeltaPhivsPt3050(0),                     
+    hCosDeltaPhiVZEROvsPt3050(0),                
+    hSinDeltaPhiVZEROvsPt3050(0),                
+    hDeltaPhiVZEROvsPt3050(0),                
+    hCosDeltaPhivsPt1550(0),                     
+    hSinDeltaPhivsPt1550(0),                     
+    hDeltaPhivsPt1550(0),                     
+    hCosDeltaPhiVZEROvsPt1550(0),                
+    hSinDeltaPhiVZEROvsPt1550(0),                
+    hDeltaPhiVZEROvsPt1550(0),                
+    hAntiCosDeltaPhivsPt075(0),                  
+    hAntiSinDeltaPhivsPt075(0),                  
+    hAntiDeltaPhivsPt075(0),                  
+    hAntiCosDeltaPhiVZEROvsPt075(0),             
+    hAntiSinDeltaPhiVZEROvsPt075(0),             
+    hAntiDeltaPhiVZEROvsPt075(0),             
+    hAntiCosDeltaPhivsPt1530(0),                 
+    hAntiSinDeltaPhivsPt1530(0),                 
+    hAntiDeltaPhivsPt1530(0),                 
+    hAntiCosDeltaPhiVZEROvsPt1530(0),            
+    hAntiSinDeltaPhiVZEROvsPt1530(0),            
+    hAntiDeltaPhiVZEROvsPt1530(0),            
+    hAntiCosDeltaPhivsPt3050(0),                 
+    hAntiSinDeltaPhivsPt3050(0),                 
+    hAntiDeltaPhivsPt3050(0),                 
+    hAntiCosDeltaPhiVZEROvsPt3050(0),            
+    hAntiSinDeltaPhiVZEROvsPt3050(0),            
+    hAntiDeltaPhiVZEROvsPt3050(0),            
+    hAntiCosDeltaPhivsPt1550(0),                 
+    hAntiSinDeltaPhivsPt1550(0),                 
+    hAntiDeltaPhivsPt1550(0),                 
+    hAntiCosDeltaPhiVZEROvsPt1550(0),            
+    hAntiSinDeltaPhiVZEROvsPt1550(0),            
+    hAntiDeltaPhiVZEROvsPt1550(0),     
     fESDtrackCuts(0),
     fPIDResponse(0),
     fNtuple1(0),
@@ -167,6 +282,8 @@ AliAnalysisTaskNucleiv2::AliAnalysisTaskNucleiv2(const char *name,const char *da
   fESDtrackCuts = new AliESDtrackCuts("AliESDtrackCuts","AliESDtrackCuts");
   //
   Initialize();
+  SetDataType(datatype);
+  SetFillTree(filltree);
 
   DefineInput(0, TChain::Class());
   
@@ -181,12 +298,13 @@ void AliAnalysisTaskNucleiv2::Initialize()
   //
   // updating parameters in case of changes
   //
-  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE);
+  fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE,kTRUE);
   fESDtrackCuts->SetMaxDCAToVertexXY(3);
   fESDtrackCuts->SetMaxDCAToVertexZ(2);
   fESDtrackCuts->SetEtaRange(-0.8,0.8);
   //
   //
+ 
   //  Printf("Initizialize\n");
  
 }
@@ -294,12 +412,161 @@ void AliAnalysisTaskNucleiv2::UserCreateOutputObjects()
     hRPangleVZEROvsCentrality   = new TH2F("hRPangleVZEROvsCentrality"  ,"hRPangleVZEROvsCentrality"  ,100,0,TMath::Pi(),210,-0.5,105.5);
     fListHistCascade->Add(hRPangleVZEROvsCentrality);
   }
+  
+  if(!hRPangleVZEROAvsCentrality){
+    hRPangleVZEROAvsCentrality   = new TH2F("hRPangleVZEROAvsCentrality"  ,"hRPangleVZEROAvsCentrality"  ,100,0,TMath::Pi(),210,-0.5,105.5);
+    fListHistCascade->Add(hRPangleVZEROAvsCentrality);
+  }
+
+  if(!hRPangleVZEROCvsCentrality){
+    hRPangleVZEROCvsCentrality   = new TH2F("hRPangleVZEROCvsCentrality"  ,"hRPangleVZEROCvsCentrality"  ,100,0,TMath::Pi(),210,-0.5,105.5);
+    fListHistCascade->Add(hRPangleVZEROCvsCentrality);
+  }
+
   if(!hPlaneResoVZEROvsCentrality){
     hPlaneResoVZEROvsCentrality = new TH2F("hPlaneResoVZEROvsCentrality","hPlaneResoVZEROvsCentrality",500,-1,1,210,-0.5,105.5);
     fListHistCascade->Add(hPlaneResoVZEROvsCentrality);
   }
 
+  if(!hPlaneResoVZEROAvsCentrality){
+    hPlaneResoVZEROAvsCentrality = new TH2F("hPlaneResoVZEROAvsCentrality","hPlaneResoVZEROAvsCentrality",500,-1,1,210,-0.5,105.5);
+    fListHistCascade->Add(hPlaneResoVZEROAvsCentrality);
+  }
 
+  if(!hPlaneResoVZEROCvsCentrality){
+    hPlaneResoVZEROCvsCentrality = new TH2F("hPlaneResoVZEROCvsCentrality","hPlaneResoVZEROCvsCentrality",500,-1,1,210,-0.5,105.5);
+    fListHistCascade->Add(hPlaneResoVZEROCvsCentrality);
+  }
+ 
+  hCosPhivsPt      = new TH2F("hCosPhivsPt","hCosPhivsPt",200,-1,1,60,0,3.0);	     
+  hSinPhivsPt      = new TH2F("hSinPhivsPt","hSinPhivsPt",100, 0,1,60,0,3.0);	     
+  hPhivsPt         = new TH2F("hPhivsPt","hPhivsPt"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hAntiCosPhivsPt      = new TH2F("hAntiCosPhivsPt","hAntiCosPhivsPt",200,-1,1,60,0,3.0);	     
+  hAntiSinPhivsPt      = new TH2F("hAntiSinPhivsPt","hAntiSinPhivsPt",100, 0,1,60,0,3.0);	     
+  hAntiPhivsPt         = new TH2F("hAntiPhivsPt","hAntiPhivsPt"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+
+  hCosDeltaPhivsPt075 = new TH2F("hCosDeltaPhivsPt075","hCosDeltaPhivsPt075",200,-1,1,60,0,3.0);
+  hSinDeltaPhivsPt075 = new TH2F("hSinDeltaPhivsPt075","hSinDeltaPhivsPt075",100, 0,1,60,0,3.0);
+  hDeltaPhivsPt075    = new TH2F("hDeltaPhivsPt075","hDeltaPhivsPt075"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hCosDeltaPhiVZEROvsPt075 = new TH2F("hCosDeltaPhiVZEROvsPt075","hCosDeltaPhiVZEROvsPt075",200,-1,1,60,0,3.0);	      
+  hSinDeltaPhiVZEROvsPt075 = new TH2F("hSinDeltaPhiVZEROvsPt075","hSinDeltaPhiVZEROvsPt075",100, 0,1,60,0,3.0);	      
+  hDeltaPhiVZEROvsPt075    = new TH2F("hDeltaPhiVZEROvsPt075","hDeltaPhiVZEROvsPt075"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hCosDeltaPhivsPt1530 = new TH2F("hCosDeltaPhivsPt1530","hCosDeltaPhivsPt1530",200,-1,1,60,0,3.0);
+  hSinDeltaPhivsPt1530 = new TH2F("hSinDeltaPhivsPt1530","hSinDeltaPhivsPt1530",100, 0,1,60,0,3.0);
+  hDeltaPhivsPt1530    = new TH2F("hDeltaPhivsPt1530","hDeltaPhivsPt1530"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hCosDeltaPhiVZEROvsPt1530 = new TH2F("hCosDeltaPhiVZEROvsPt1530","hCosDeltaPhiVZEROvsPt1530",200,-1,1,60,0,3.0);	      
+  hSinDeltaPhiVZEROvsPt1530 = new TH2F("hSinDeltaPhiVZEROvsPt1530","hSinDeltaPhiVZEROvsPt1530",100, 0,1,60,0,3.0);	      
+  hDeltaPhiVZEROvsPt1530    = new TH2F("hDeltaPhiVZEROvsPt1530","hDeltaPhiVZEROvsPt1530"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hCosDeltaPhivsPt3050 = new TH2F("hCosDeltaPhivsPt3050","hCosDeltaPhivsPt3050",200,-1,1,60,0,3.0);
+  hSinDeltaPhivsPt3050 = new TH2F("hSinDeltaPhivsPt3050","hSinDeltaPhivsPt3050",100, 0,1,60,0,3.0);
+  hDeltaPhivsPt3050    = new TH2F("hDeltaPhivsPt3050","hDeltaPhivsPt3050"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hCosDeltaPhiVZEROvsPt3050 = new TH2F("hCosDeltaPhiVZEROvsPt3050","hCosDeltaPhiVZEROvsPt3050",200,-1,1,60,0,3.0);	      
+  hSinDeltaPhiVZEROvsPt3050 = new TH2F("hSinDeltaPhiVZEROvsPt3050","hSinDeltaPhiVZEROvsPt3050",100, 0,1,60,0,3.0);	      
+  hDeltaPhiVZEROvsPt3050    = new TH2F("hDeltaPhiVZEROvsPt3050","hDeltaPhiVZEROvsPt3050"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hCosDeltaPhivsPt1550 = new TH2F("hCosDeltaPhivsPt1550","hCosDeltaPhivsPt1550",200,-1,1,60,0,3.0);
+  hSinDeltaPhivsPt1550 = new TH2F("hSinDeltaPhivsPt1550","hSinDeltaPhivsPt1550",100, 0,1,60,0,3.0);
+  hDeltaPhivsPt1550    = new TH2F("hDeltaPhivsPt1550","hDeltaPhivsPt1550"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hCosDeltaPhiVZEROvsPt1550 = new TH2F("hCosDeltaPhiVZEROvsPt1550","hCosDeltaPhiVZEROvsPt1550",200,-1,1,60,0,3.0);	      
+  hSinDeltaPhiVZEROvsPt1550 = new TH2F("hSinDeltaPhiVZEROvsPt1550","hSinDeltaPhiVZEROvsPt1550",100, 0,1,60,0,3.0);	      
+  hDeltaPhiVZEROvsPt1550    = new TH2F("hDeltaPhiVZEROvsPt1550","hDeltaPhiVZEROvsPt1550"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  
+  hAntiCosDeltaPhivsPt075 = new TH2F("hAntiCosDeltaPhivsPt075","hAntiCosDeltaPhivsPt075",200,-1,1,60,0,3.0);
+  hAntiSinDeltaPhivsPt075 = new TH2F("hAntiSinDeltaPhivsPt075","hAntiSinDeltaPhivsPt075",100, 0,1,60,0,3.0);
+  hAntiDeltaPhivsPt075    = new TH2F("hAntiDeltaPhivsPt075","hAntiDeltaPhivsPt075"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hAntiCosDeltaPhiVZEROvsPt075 = new TH2F("hAntiCosDeltaPhiVZEROvsPt075","hAntiCosDeltaPhiVZEROvsPt075",200,-1,1,60,0,3.0);	      
+  hAntiSinDeltaPhiVZEROvsPt075 = new TH2F("hAntiSinDeltaPhiVZEROvsPt075","hAntiSinDeltaPhiVZEROvsPt075",100, 0,1,60,0,3.0);	      
+  hAntiDeltaPhiVZEROvsPt075    = new TH2F("hAntiDeltaPhiVZEROvsPt075","hAntiDeltaPhiVZEROvsPt075"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hAntiCosDeltaPhivsPt1530 = new TH2F("hAntiCosDeltaPhivsPt1530","hAntiCosDeltaPhivsPt1530",200,-1,1,60,0,3.0);
+  hAntiSinDeltaPhivsPt1530 = new TH2F("hAntiSinDeltaPhivsPt1530","hAntiSinDeltaPhivsPt1530",100, 0,1,60,0,3.0);
+  hAntiDeltaPhivsPt1530    = new TH2F("hAntiDeltaPhivsPt1530","hAntiDeltaPhivsPt1530"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hAntiCosDeltaPhiVZEROvsPt1530 = new TH2F("hAntiCosDeltaPhiVZEROvsPt1530","hAntiCosDeltaPhiVZEROvsPt1530",200,-1,1,60,0,3.0);	      
+  hAntiSinDeltaPhiVZEROvsPt1530 = new TH2F("hAntiSinDeltaPhiVZEROvsPt1530","hAntiSinDeltaPhiVZEROvsPt1530",100, 0,1,60,0,3.0);	      
+  hAntiDeltaPhiVZEROvsPt1530    = new TH2F("hAntiDeltaPhiVZEROvsPt1530","hAntiDeltaPhiVZEROvsPt1530"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hAntiCosDeltaPhivsPt3050 = new TH2F("hAntiCosDeltaPhivsPt3050","hAntiCosDeltaPhivsPt3050",200,-1,1,60,0,3.0);
+  hAntiSinDeltaPhivsPt3050 = new TH2F("hAntiSinDeltaPhivsPt3050","hAntiSinDeltaPhivsPt3050",100, 0,1,60,0,3.0);
+  hAntiDeltaPhivsPt3050    = new TH2F("hAntiDeltaPhivsPt3050","hAntiDeltaPhivsPt3050"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hAntiCosDeltaPhiVZEROvsPt3050 = new TH2F("hAntiCosDeltaPhiVZEROvsPt3050","hAntiCosDeltaPhiVZEROvsPt3050",200,-1,1,60,0,3.0);	      
+  hAntiSinDeltaPhiVZEROvsPt3050 = new TH2F("hAntiSinDeltaPhiVZEROvsPt3050","hAntiSinDeltaPhiVZEROvsPt3050",100, 0,1,60,0,3.0);	      
+  hAntiDeltaPhiVZEROvsPt3050    = new TH2F("hAntiDeltaPhiVZEROvsPt3050","hAntiDeltaPhiVZEROvsPt3050"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  hAntiCosDeltaPhivsPt1550 = new TH2F("hAntiCosDeltaPhivsPt1550","hAntiCosDeltaPhivsPt1550",200,-1,1,60,0,3.0);
+  hAntiSinDeltaPhivsPt1550 = new TH2F("hAntiSinDeltaPhivsPt1550","hAntiSinDeltaPhivsPt1550",100, 0,1,60,0,3.0);
+  hAntiDeltaPhivsPt1550    = new TH2F("hAntiDeltaPhivsPt1550","hAntiDeltaPhivsPt1550"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+  
+  hAntiCosDeltaPhiVZEROvsPt1550 = new TH2F("hAntiCosDeltaPhiVZEROvsPt1550","hAntiCosDeltaPhiVZEROvsPt1550",200,-1,1,60,0,3.0);	      
+  hAntiSinDeltaPhiVZEROvsPt1550 = new TH2F("hAntiSinDeltaPhiVZEROvsPt1550","hAntiSinDeltaPhiVZEROvsPt1550",100, 0,1,60,0,3.0);	      
+  hAntiDeltaPhiVZEROvsPt1550    = new TH2F("hAntiDeltaPhiVZEROvsPt1550","hAntiDeltaPhiVZEROvsPt1550"      ,36, 0,2*TMath::Pi(),60,0,3.0);
+
+  //--------------
+  fListHistCascade->Add(hCosPhivsPt);                         
+  fListHistCascade->Add(hSinPhivsPt);                         
+  fListHistCascade->Add(hPhivsPt);                         
+  fListHistCascade->Add(hAntiCosPhivsPt);                     
+  fListHistCascade->Add(hAntiSinPhivsPt);                     
+  fListHistCascade->Add(hAntiPhivsPt);                     
+  fListHistCascade->Add(hCosDeltaPhivsPt075);                      
+  fListHistCascade->Add(hSinDeltaPhivsPt075);                      
+  fListHistCascade->Add(hDeltaPhivsPt075);                      
+  fListHistCascade->Add(hCosDeltaPhiVZEROvsPt075);                 	      
+  fListHistCascade->Add(hSinDeltaPhiVZEROvsPt075);                 	      
+  fListHistCascade->Add(hDeltaPhiVZEROvsPt075);                 
+  fListHistCascade->Add(hCosDeltaPhivsPt1530);                     
+  fListHistCascade->Add(hSinDeltaPhivsPt1530);                     
+  fListHistCascade->Add(hDeltaPhivsPt1530);                     
+  fListHistCascade->Add(hCosDeltaPhiVZEROvsPt1530);                
+  fListHistCascade->Add(hSinDeltaPhiVZEROvsPt1530);                
+  fListHistCascade->Add(hDeltaPhiVZEROvsPt1530);                
+  fListHistCascade->Add(hCosDeltaPhivsPt3050);                     
+  fListHistCascade->Add(hSinDeltaPhivsPt3050);                     
+  fListHistCascade->Add(hDeltaPhivsPt3050);                     
+  fListHistCascade->Add(hCosDeltaPhiVZEROvsPt3050);                
+  fListHistCascade->Add(hSinDeltaPhiVZEROvsPt3050);                
+  fListHistCascade->Add(hDeltaPhiVZEROvsPt3050);                
+  fListHistCascade->Add(hCosDeltaPhivsPt1550);                     
+  fListHistCascade->Add(hSinDeltaPhivsPt1550);                     
+  fListHistCascade->Add(hDeltaPhivsPt1550);                     
+  fListHistCascade->Add(hCosDeltaPhiVZEROvsPt1550);                
+  fListHistCascade->Add(hSinDeltaPhiVZEROvsPt1550);                
+  fListHistCascade->Add(hDeltaPhiVZEROvsPt1550);                
+  fListHistCascade->Add(hAntiCosDeltaPhivsPt075);                  
+  fListHistCascade->Add(hAntiSinDeltaPhivsPt075);                  
+  fListHistCascade->Add(hAntiDeltaPhivsPt075);                  
+  fListHistCascade->Add(hAntiCosDeltaPhiVZEROvsPt075);             
+  fListHistCascade->Add(hAntiSinDeltaPhiVZEROvsPt075);             
+  fListHistCascade->Add(hAntiDeltaPhiVZEROvsPt075);             
+  fListHistCascade->Add(hAntiCosDeltaPhivsPt1530);                 
+  fListHistCascade->Add(hAntiSinDeltaPhivsPt1530);                 
+  fListHistCascade->Add(hAntiDeltaPhivsPt1530);                 
+  fListHistCascade->Add(hAntiCosDeltaPhiVZEROvsPt1530);            
+  fListHistCascade->Add(hAntiSinDeltaPhiVZEROvsPt1530);            
+  fListHistCascade->Add(hAntiDeltaPhiVZEROvsPt1530);            
+  fListHistCascade->Add(hAntiCosDeltaPhivsPt3050);                 
+  fListHistCascade->Add(hAntiSinDeltaPhivsPt3050);                 
+  fListHistCascade->Add(hAntiDeltaPhivsPt3050);                 
+  fListHistCascade->Add(hAntiCosDeltaPhiVZEROvsPt3050);            
+  fListHistCascade->Add(hAntiSinDeltaPhiVZEROvsPt3050);            
+  fListHistCascade->Add(hAntiDeltaPhiVZEROvsPt3050);            
+  fListHistCascade->Add(hAntiCosDeltaPhivsPt1550);                 
+  fListHistCascade->Add(hAntiSinDeltaPhivsPt1550);                 
+  fListHistCascade->Add(hAntiDeltaPhivsPt1550);                 
+  fListHistCascade->Add(hAntiCosDeltaPhiVZEROvsPt1550);            
+  fListHistCascade->Add(hAntiSinDeltaPhiVZEROvsPt1550);            
+  fListHistCascade->Add(hAntiDeltaPhiVZEROvsPt1550);            
 
   if(! fNtuple1 ) {
 
@@ -607,7 +874,12 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     rpangleeventBVZERO=GetPhi0Pi(pl->GetEventplane("V0A",lESDevent,2));
     rpangleeventCVZERO=GetPhi0Pi(pl->GetEventplane("V0C",lESDevent,2));
 
-    deltaPsiVZERO =rpangleeventATPC-rpangleeventBVZERO;
+    hRPangleVZEROAvsCentrality->Fill(rpangleeventBVZERO,percentile);
+    hRPangleVZEROCvsCentrality->Fill(rpangleeventCVZERO,percentile);
+    
+    //V0M
+
+    deltaPsiVZERO =rpangleeventATPC-rpangleVZERO;
 
     if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
       if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
@@ -617,6 +889,34 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     planeresoVZERO = TMath::Cos(2.*deltaPsiVZERO);
 
     hPlaneResoVZEROvsCentrality->Fill(planeresoVZERO,percentile);
+
+    //V0A
+
+    deltaPsiVZERO =rpangleeventATPC-rpangleeventBVZERO;
+
+    if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
+      if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
+      else deltaPsiVZERO +=TMath::Pi();
+    } // difference of subevents reaction plane angle cannot be bigger than phi/2
+  
+    planeresoVZERO = TMath::Cos(2.*deltaPsiVZERO);
+
+    hPlaneResoVZEROAvsCentrality->Fill(planeresoVZERO,percentile);
+    
+    //V0C
+
+    deltaPsiVZERO =rpangleeventATPC-rpangleeventBVZERO;
+
+    if(TMath::Abs(deltaPsiVZERO)>TMath::Pi()/2.){
+      if(deltaPsiVZERO>0.) deltaPsiVZERO-=TMath::Pi();
+      else deltaPsiVZERO +=TMath::Pi();
+    } // difference of subevents reaction plane angle cannot be bigger than phi/2
+  
+    planeresoVZERO = TMath::Cos(2.*deltaPsiVZERO);
+
+    hPlaneResoVZEROCvsCentrality->Fill(planeresoVZERO,percentile);
+  
+    //rpangleeventBVZERO
 
     if(TMath::Abs(rpangleTPC-rpangleVZERO)>10)return;
   
@@ -630,6 +930,7 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
   Int_t isTOF=0;
   Int_t isoutTPC=0;
   //  cout<<"TRack number MC "<<TrackNumber<<endl;
+
   for (Int_t j=0; j<TrackNumber; j++) { //loop on tracks
     
     AliESDtrack *esdtrack=lESDevent->GetTrack(j);
@@ -702,6 +1003,8 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
     tVertexCoord[0] = xPrimaryVertex;
     tVertexCoord[1] = yPrimaryVertex;
     tVertexCoord[2] = zPrimaryVertex;
+
+    if(TMath::Abs(zPrimaryVertex)>10)continue;
 
     // bbtheo = fPIDResponse->NumberOfSigmas((AliPIDResponse::EDetector)0,esdtrack,(AliPID::EParticleType) 7);
 
@@ -778,19 +1081,220 @@ void AliAnalysisTaskNucleiv2::UserExec(Option_t *)
 
     if(fDataType == "REAL"){
       if(pinTPC < 3. && TMath::Abs(pullTPC) < 3){
-	fNtuple1->Fill();
+	if(fFillNtuple == kTRUE)
+	  fNtuple1->Fill();
 	fhBBDeu->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
       }
       
       if(pinTPC < 10. && TMath::Abs(pullTPChel3) < 3){
-	fNtuple1->Fill();
+	if(fFillNtuple == kTRUE)
+	  fNtuple1->Fill();
 	fhBBDeu->Fill(pinTPC*esdtrack->GetSign(),TPCSignal);
       }
       
-      if(TMath::Abs(pullTPC)<3){
+      if(TMath::Abs(pullTPC)<2){
 	
 	fhPtDeu->Fill(esdtrack->Pt(),pT);
 	
+	Float_t deltaphiTPC=2*GetPhi0Pi(tPhi-trpangleTPC);
+	Float_t deltaphiV0 =2*GetPhi0Pi(tPhi-trpangleVZERO[0]);
+	
+	
+	if(tTPCMomentum < 1.0){
+	  
+	  if(tCharge > 0){
+	    
+	    hCosPhivsPt           ->Fill(TMath::Cos(tPhi),tPtCorr);
+	    hSinPhivsPt           ->Fill(TMath::Sin(tPhi),tPtCorr);
+	    hPhivsPt              ->Fill(tPhi,tPtCorr);
+	    
+	    if(tCentrality>0 && tCentrality<7.5){
+	      hCosDeltaPhivsPt075        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt075        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt075           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt075   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt075   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt075      ->Fill(deltaphiV0,tPtCorr);       
+	      
+	    }
+	    
+	    if(tCentrality>15 && tCentrality<30){
+	      hCosDeltaPhivsPt1530        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt1530        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt1530           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt1530   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt1530   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt1530      ->Fill(deltaphiV0,tPtCorr);         
+	    }
+	
+	    if(tCentrality>30 && tCentrality<50){
+	      hCosDeltaPhivsPt3050        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt3050        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt3050           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt3050   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt3050   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt3050      ->Fill(deltaphiV0,tPtCorr);             
+	    }
+	    
+	    if(tCentrality>15 && tCentrality<50){
+	      hCosDeltaPhivsPt1550        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt1550        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt1550           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt1550   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt1550   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt1550      ->Fill(deltaphiV0,tPtCorr); 
+	    }
+	  }
+	  
+	  if(tCharge < 0){
+	    
+	    hAntiCosPhivsPt           ->Fill(TMath::Cos(tPhi),tPtCorr);
+	    hAntiSinPhivsPt           ->Fill(TMath::Sin(tPhi),tPtCorr);
+	    hAntiPhivsPt              ->Fill(tPhi,tPtCorr);
+	    if(tCentrality>0 && tCentrality<7.5){
+	      hAntiCosDeltaPhivsPt075        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt075        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt075           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt075   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt075   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt075      ->Fill(deltaphiV0,tPtCorr); 
+	    }
+
+	    if(tCentrality>15 && tCentrality<30){
+	      hAntiCosDeltaPhivsPt1530        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt1530        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt1530           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt1530   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt1530   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt1530      ->Fill(deltaphiV0,tPtCorr);         
+	    }
+	  
+	    if(tCentrality>30 && tCentrality<50){
+	      hAntiCosDeltaPhivsPt3050        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt3050        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt3050           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt3050   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt3050   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt3050      ->Fill(deltaphiV0,tPtCorr);                
+	    }
+	  
+	    if(tCentrality>15 && tCentrality<50){
+	      hAntiCosDeltaPhivsPt1550        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt1550        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt1550           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt1550   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt1550   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt1550      ->Fill(deltaphiV0,tPtCorr);                
+	    }
+	  
+	  }
+	  
+	}
+
+	if(tTPCMomentum > 1.0 && tTPCMomentum < 3.0){
+	  if(tPIDTOF[5]>2 || tPIDTOF[5]< -2)continue;
+	
+	  if(tCharge > 0){
+	    
+	    hCosPhivsPt           ->Fill(TMath::Cos(tPhi),tPtCorr);
+	    hSinPhivsPt           ->Fill(TMath::Sin(tPhi),tPtCorr);
+	    hPhivsPt              ->Fill(tPhi,tPtCorr);
+	    
+	    
+	    if(tCentrality>0 && tCentrality<7.5){
+	      hCosDeltaPhivsPt075        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt075        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt075           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt075   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt075   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt075      ->Fill(deltaphiV0,tPtCorr);                
+	      
+	    }
+	    
+	    if(tCentrality>15 && tCentrality<30){
+	      hCosDeltaPhivsPt1530        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt1530        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt1530           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt1530   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt1530   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt1530      ->Fill(deltaphiV0,tPtCorr);          
+	    }
+	
+	    if(tCentrality>30 && tCentrality<50){
+	      hCosDeltaPhivsPt3050        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt3050        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt3050           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt3050   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt3050   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt3050      ->Fill(deltaphiV0,tPtCorr);      
+	    
+	    }
+	  
+	    if(tCentrality>15 && tCentrality<50){
+	      hCosDeltaPhivsPt1550        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hSinDeltaPhivsPt1550        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hDeltaPhivsPt1550           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hCosDeltaPhiVZEROvsPt1550   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hSinDeltaPhiVZEROvsPt1550   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hDeltaPhiVZEROvsPt1550      ->Fill(deltaphiV0,tPtCorr);       
+	    }
+	  }
+	
+	  if(tCharge < 0){
+	  
+	    hAntiCosPhivsPt           ->Fill(TMath::Cos(tPhi),tPtCorr);
+	    hAntiSinPhivsPt           ->Fill(TMath::Sin(tPhi),tPtCorr);
+	    hAntiPhivsPt              ->Fill(tPhi,tPtCorr);
+
+	    if(tCentrality>0 && tCentrality<7.5){
+	      hAntiCosDeltaPhivsPt075        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt075        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt075           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt075   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt075   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt075      ->Fill(deltaphiV0,tPtCorr);                
+
+	  
+	    }
+
+	    if(tCentrality>15 && tCentrality<30){
+	      hAntiCosDeltaPhivsPt1530        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt1530        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt1530           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt1530   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt1530   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt1530      ->Fill(deltaphiV0,tPtCorr);  
+	    
+	      
+	    }
+	
+	    if(tCentrality>30 && tCentrality<50){
+	      hAntiCosDeltaPhivsPt3050        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt3050        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt3050           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt3050   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt3050   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt3050      ->Fill(deltaphiV0,tPtCorr);   
+	    
+             
+	    }
+	  
+	    if(tCentrality>15 && tCentrality<50){
+	      hAntiCosDeltaPhivsPt1550        ->Fill(TMath::Cos(deltaphiTPC),tPtCorr);   
+	      hAntiSinDeltaPhivsPt1550        ->Fill(TMath::Sin(deltaphiTPC),tPtCorr);   
+	      hAntiDeltaPhivsPt1550           ->Fill(deltaphiTPC,tPtCorr);	       
+	      hAntiCosDeltaPhiVZEROvsPt1550   ->Fill(TMath::Cos(deltaphiV0),tPtCorr);    
+	      hAntiSinDeltaPhiVZEROvsPt1550   ->Fill(TMath::Sin(deltaphiV0),tPtCorr);    
+	      hAntiDeltaPhiVZEROvsPt1550      ->Fill(deltaphiV0,tPtCorr);    
+	    
+            
+	    }
+
+	  }
+	
+	}
+
+
 	if(tTOFtrack[1] > 0){
 	  Double_t beta = tTOFtrack[2]/(tTOFtrack[1] * 2.99792457999999984e-02);
 	  Float_t gamma = 1/TMath::Sqrt(1 - beta*beta);

@@ -17,7 +17,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
   {
     printf("AddTaskPi0IMGammaCorrQA - CAREFUL : Triggered events not checked in simulation!! \n");
     TString ssuffix = suffix;
-    if(!ssuffix.Contains("default")) return;
+    if(!ssuffix.Contains("default")) return 0x0;
   }
 
   // Get the pointer to the existing analysis manager via the static access method.
@@ -53,7 +53,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskPi0IMGammaCorrQA(const TString  calo
 
   // General frame setting and configuration
   maker->SetReader   ( ConfigureReader   (inputDataType,minCen,maxCen,simulation,debugLevel) );
-  maker->SetCaloUtils( ConfigureCaloUtils(simulation,debugLevel) );
+  maker->SetCaloUtils( ConfigureCaloUtils(calorimeter,simulation,debugLevel) );
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
@@ -235,8 +235,8 @@ AliCaloTrackReader * ConfigureReader(TString inputDataType,
   
 }
 
-//__________________________________________________________________________
-AliCalorimeterUtils* ConfigureCaloUtils(Bool_t simulation, Int_t debugLevel)
+//_______________________________________________________________________________________________
+AliCalorimeterUtils* ConfigureCaloUtils(TString calorimeter, Bool_t simulation, Int_t debugLevel)
 {
   
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
@@ -276,7 +276,7 @@ AliCalorimeterUtils* ConfigureCaloUtils(Bool_t simulation, Int_t debugLevel)
 
   cu->SwitchOnCorrectClusterLinearity();
 
-  if(kCalorimeter=="PHOS")
+  if(calorimeter=="PHOS")
     cu->SetNumberOfSuperModulesUsed(3);
   else
     cu->SetNumberOfSuperModulesUsed(10);

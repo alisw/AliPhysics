@@ -8,6 +8,16 @@ AliAnalysisTaskParticleEfficiency *AddTaskQAPartEff(const char* outfilename="Ana
     return NULL;
   }  
 
+  //==============================================================================
+  if (!mgr->GetInputEventHandler()) {
+    ::Error("AddTaskFemto", "This task requires an input event handler");
+    return NULL;
+  }  
+  TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
+  cout << "Found " <<type << " event handler" << endl;
+
+
+
   // Create the task and configure it.
   //===========================================================================
   AliAnalysisTaskParticleEfficiency* ana = new  AliAnalysisTaskParticleEfficiency("MyTask");
