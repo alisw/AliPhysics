@@ -82,7 +82,7 @@ class AliVVtrack {
   virtual UChar_t GetTRDclusters(Int_t* /*idx*/) const {return 0;}
   
   //AliTPCtrack
-  virtual void GetNFoundable(Int_t /*n*/) {} 
+  virtual Int_t GetNFoundable() const {return 0;} 
   virtual Double_t GetdEdx()  const {return 0.;}
 
   //  ClassDef(AliVVtrack, 1)   

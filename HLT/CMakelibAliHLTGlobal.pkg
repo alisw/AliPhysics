@@ -46,6 +46,7 @@ set ( CLASS_HDRS
     AliHLTPrimaryVertexFinderComponent.h
     AliHLTV0FinderComponent.h
     AliFlatESDEvent.h
+    AliFlatESDVertex.h
     AliFlatESDTrack.h
     AliFlatESDV0.h
     physics/AliHLTV0HistoComponent.h
