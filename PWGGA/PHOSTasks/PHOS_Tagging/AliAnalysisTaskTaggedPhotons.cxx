@@ -230,8 +230,8 @@ void AliAnalysisTaskTaggedPhotons::UserCreateOutputObjects()
   snprintf(cPID[3],5,"Both"); 
   
  
-  const Int_t nPt=400 ;
-  const Double_t ptMax=40. ;
+  const Int_t nPt=500 ;
+  const Double_t ptMax=50. ;
   const Int_t nM=400 ;
   const Double_t mMax=1. ;
 
@@ -1634,8 +1634,9 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph, Bool_t is
    const Double_t coneR2=0.4 ;
    const Double_t coneR3=0.5 ;
 
-   const Double_t epsilon1=0.1 ;
-   const Double_t epsilon2=0.05 ;
+   const Double_t cutEcone1=3. ;
+   const Double_t cutEcone2=4.5 ;
+   const Double_t cutEcone3=6.5 ;
 
    if(!ph) return 0 ;
 
@@ -1735,13 +1736,13 @@ Int_t AliAnalysisTaskTaggedPhotons::EvalIsolation(TLorentzVector * ph, Bool_t is
     }
     
     //Fill Bits
-    Int_t iCone1E1 = (epsilon1*ptTrig > eCone1) ;
-    Int_t iCone2E1 = (epsilon1*ptTrig > eCone2) ;
-    Int_t iCone3E1 = (epsilon1*ptTrig > eCone3) ;
+    Int_t iCone1E1 = (cutEcone1 > eCone1) ;
+    Int_t iCone2E1 = (cutEcone2 > eCone2) ;
+    Int_t iCone3E1 = (cutEcone3 > eCone3) ;
     
-    Int_t iCone1E2 = (epsilon2*ptTrig > eCone1) ;
-    Int_t iCone2E2 = (epsilon2*ptTrig > eCone2) ;
-    Int_t iCone3E2 = (epsilon2*ptTrig > eCone3) ;
+    Int_t iCone1E2 = (1.5*cutEcone1 > eCone1) ;
+    Int_t iCone2E2 = (1.5*cutEcone2 > eCone2) ;
+    Int_t iCone3E2 = (1.5*cutEcone3 > eCone3) ;
     
     
     Int_t isolation=   iCone1E1+  2*iCone2E1   +4*iCone3E1+
