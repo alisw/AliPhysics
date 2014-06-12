@@ -169,7 +169,6 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   AliAnalysisTaskFilteredTree(const AliAnalysisTaskFilteredTree&); // not implemented
   AliAnalysisTaskFilteredTree& operator=(const AliAnalysisTaskFilteredTree&); // not implemented
   
-  AliESDfriendTrack* fDummyFriendTrack; //! needed for proper init of the output tree
   AliESDtrack* fDummyTrack; //! dummy track for tree init
 
   ClassDef(AliAnalysisTaskFilteredTree, 1); // example of analysis

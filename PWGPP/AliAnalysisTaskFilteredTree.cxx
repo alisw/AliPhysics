@@ -109,7 +109,6 @@ ClassImp(AliAnalysisTaskFilteredTree)
   , fPtResCentPtTPC(0)
   , fPtResCentPtTPCc(0)
   , fPtResCentPtTPCITS(0)
-  , fDummyFriendTrack(0)
   , fDummyTrack(0)
 {
   // Constructor
@@ -177,14 +176,7 @@ void AliAnalysisTaskFilteredTree::UserCreateOutputObjects()
   fMCEffTree = ((*fTreeSRedirector)<<"MCEffTree").GetTree();
   fCosmicPairsTree = ((*fTreeSRedirector)<<"CosmicPairs").GetTree();
 
-  if (!fDummyFriendTrack)
-  {
-    fDummyFriendTrack=new AliESDfriendTrack();
-    fDummyFriendTrack->SetTrackPointArray(new AliTrackPointArray(164));
-    printf("just made a new dummy friend track!");
-  }
-  if (!fDummyTrack)
-  {
+  if (!fDummyTrack)  {
     fDummyTrack=new AliESDtrack();
   }
 
@@ -416,9 +408,6 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
     //    const AliExternalTrackParam * trackIn0 = track0->GetInnerParam();
     AliESDfriendTrack* friendTrack0=NULL;
     if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack0 = esdFriend->GetTrack(itrack0);} //this guy can be NULL
-    //Bool_t newFriendTrack0=kFALSE;
-    //if (!friendTrack0) {friendTrack0=new AliESDfriendTrack(); newFriendTrack0=kTRUE;}
-    if (!friendTrack0) {friendTrack0=fDummyFriendTrack;}
 
     for (Int_t itrack1=itrack0+1;itrack1<ntracks;itrack1++) {
       AliESDtrack *track1 = event->GetTrack(itrack1);
@@ -445,10 +434,10 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
       if (TMath::Abs(TMath::Abs(track0->GetAlpha()-track1->GetAlpha())-TMath::Pi())>kMaxDelta[2]) isPair=kFALSE;
       //delta with correct sign
       /*
-         TCut cut0="abs(t1.fP[0]+t0.fP[0])<2"
-         TCut cut3="abs(t1.fP[3]+t0.fP[3])<0.02"
-         TCut cut4="abs(t1.fP[4]+t0.fP[4])<0.2"
-         */
+	TCut cut0="abs(t1.fP[0]+t0.fP[0])<2"
+	TCut cut3="abs(t1.fP[3]+t0.fP[3])<0.02"
+	TCut cut4="abs(t1.fP[4]+t0.fP[4])<0.2"
+      */
       if  (TMath::Abs(par0[0]+par1[0])>kMaxDelta[0]) isPair=kFALSE; //delta y   opposite sign
       if  (TMath::Abs(par0[3]+par1[3])>kMaxDelta[3]) isPair=kFALSE; //delta tgl opposite sign
       if  (TMath::Abs(AliTracker::GetBz())>1 && TMath::Abs(par0[4]+par1[4])>kMaxDelta[4]) isPair=kFALSE; //delta 1/pt opposite sign
@@ -499,10 +488,32 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
 
       AliESDfriendTrack* friendTrack1=NULL;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack1 = esdFriend->GetTrack(itrack1);} //this guy can be NULL
-      //Bool_t newFriendTrack1=kFALSE;
-      //if (!friendTrack1) {friendTrack1=new AliESDfriendTrack(); newFriendTrack1=kTRUE;}
-      if (!friendTrack1) {friendTrack1=fDummyFriendTrack;}
-      
+      //
+      AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
+      AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
+      if (fFriendDownscaling>=1){  // downscaling number of friend tracks
+	if (gRandom->Rndm()>1./fFriendDownscaling){
+	  friendTrackStore0 = 0;
+	  friendTrackStore1 = 0;
+	}
+      }
+      if (fFriendDownscaling<=0){
+	if (((*fTreeSRedirector)<<"CosmicPairs").GetTree()){
+	  TTree * tree = ((*fTreeSRedirector)<<"CosmicPairs").GetTree();
+	  if (tree){
+	    Double_t sizeAll=tree->GetZipBytes();
+	    TBranch * br= tree->GetBranch("friendTrack0.fPoints");
+	    Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
+	    br= tree->GetBranch("friendTrack0.fCalibContainer");
+	    if (br) sizeFriend+=br->GetZipBytes();
+	    if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) {
+	      friendTrackStore0=0;
+	      friendTrackStore1=0;
+	    }
+	  }
+	}
+      }
+
 
       if(!fFillTree) return;
       if(!fTreeSRedirector) return;
@@ -522,12 +533,10 @@ void AliAnalysisTaskFilteredTree::ProcessCosmics(AliESDEvent *const event, AliES
         "vertTPC.="<<vertexTPC<<         //primary vertex -TPC
         "t0.="<<track0<<              //track0
         "t1.="<<track1<<              //track1
-        "friendTrack0.="<<friendTrack0<<
-        "friendTrack1.="<<friendTrack1<<
+        "friendTrack0.="<<friendTrackStore0<<
+        "friendTrack1.="<<friendTrackStore1<<
         "\n";      
-      //if (newFriendTrack1) {delete friendTrack1; friendTrack1=NULL;}
     }
-    //if (newFriendTrack0) {delete friendTrack0; friendTrack0=NULL;}
   }
 }
 
@@ -776,13 +785,12 @@ void AliAnalysisTaskFilteredTree::Process(AliESDEvent *const esdEvent, AliMCEven
 void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliMCEvent * const /*mcEvent*/, AliESDfriend *const esdFriend)
 {
   //
-  // Process laser events
+  // Process laser events -> dump tracks and clusters  to the special tree
   //
   if(!esdEvent) {
     AliDebug(AliLog::kError, "esdEvent not available");
     return;
   }
-
   // get file name
   TTree *chain = (TChain*)GetInputData(0);
   if(!chain) { 
@@ -803,8 +811,7 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
     Int_t evtTimeStamp = esdEvent->GetTimeStamp();
     Int_t evtNumberInFile = esdEvent->GetEventNumberInFile();
     Float_t bz = esdEvent->GetMagneticField();
-    TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();
-    
+    TObjString triggerClass = esdEvent->GetFiredTriggerClasses().Data();    
     // Global event id calculation using orbitID, bunchCrossingID and periodID
     ULong64_t orbitID      = (ULong64_t)esdEvent->GetOrbitNumber();
     ULong64_t bunchCrossID = (ULong64_t)esdEvent->GetBunchCrossNumber();
@@ -820,22 +827,19 @@ void AliAnalysisTaskFilteredTree::ProcessLaser(AliESDEvent *const esdEvent, AliM
       
       AliESDfriendTrack* friendTrack=NULL;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL
-      //Bool_t newFriendTrack=kFALSE;
-      //if (!friendTrack) {friendTrack=new AliESDfriendTrack(); newFriendTrack=kTRUE;}
-      if (!friendTrack) {friendTrack=fDummyFriendTrack;}
       
       (*fTreeSRedirector)<<"Laser"<<
-        "gid="<<gid<<
-        "fileName.="<<&fileName<<
+        "gid="<<gid<<                          // global identifier of event
+        "fileName.="<<&fileName<<              //
         "runNumber="<<runNumber<<
         "evtTimeStamp="<<evtTimeStamp<<
         "evtNumberInFile="<<evtNumberInFile<<
-        "triggerClass="<<&triggerClass<<      //  trigger
-        "Bz="<<bz<<
-        "multTPCtracks="<<countLaserTracks<<
-        "friendTrack.="<<friendTrack<<
+        "triggerClass="<<&triggerClass<<        //  trigger
+        "Bz="<<bz<<                             //  magnetic field
+        "multTPCtracks="<<countLaserTracks<<    //  multiplicity of tracks
+	"track=."<<track<<                      //  track parameters
+        "friendTrack.="<<friendTrack<<          //  friend track information
         "\n";
-      //if (newFriendTrack) {delete friendTrack; friendTrack=NULL;}
     }
   }
 }
@@ -1421,7 +1425,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
 	      Double_t sizeAll=tree->GetZipBytes();
 	      TBranch * br= tree->GetBranch("friendTrack.fPoints");
 	      Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
-	      br= tree->GetBranch("friendTrack.fcalibContainers");
+	      br= tree->GetBranch("friendTrack.fCalibContainer");
 	      if (br) sizeFriend+=br->GetZipBytes();
 	      if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) friendTrackStore=0;
 	    }
@@ -1581,7 +1585,7 @@ void AliAnalysisTaskFilteredTree::ProcessAll(AliESDEvent *const esdEvent, AliMCE
           AliInfo("writing tree highPt");
           (*fTreeSRedirector)<<"highPt"<<"\n";
         }
-        AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrack=fDummyFriendTrack)?0:1);
+        AliSysInfo::AddStamp("filteringTask",iTrack,numberOfTracks,numberOfFriendTracks,(friendTrackStore)?0:1);
 
         delete tpcInnerC;
         delete trackInnerC;
@@ -2024,20 +2028,38 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
       if (!track1) continue;
       AliESDfriendTrack* friendTrack0=NULL;
       AliESDfriendTrack* friendTrack1=NULL;
-      if (esdFriend) 
-      {
-        if (!esdFriend->TestSkipBit())
-        {
+      if (esdFriend)       {
+        if (!esdFriend->TestSkipBit()){
           friendTrack0 = esdFriend->GetTrack(v0->GetIndex(0)); //this guy can be NULL
           friendTrack1 = esdFriend->GetTrack(v0->GetIndex(1)); //this guy can be NULL
         }
       }
-      //Bool_t newFriendTrack0=kFALSE;
-      //Bool_t newFriendTrack1=kFALSE;
-      //if (!friendTrack0) {friendTrack0=new AliESDfriendTrack(); newFriendTrack0=kTRUE;}
-      //if (!friendTrack1) {friendTrack1=new AliESDfriendTrack(); newFriendTrack1=kTRUE;}
-      if (!friendTrack0) {friendTrack0=fDummyFriendTrack;}
-      if (!friendTrack1) {friendTrack1=fDummyFriendTrack;}
+      //
+      AliESDfriendTrack *friendTrackStore0=friendTrack0;    // store friend track0 for later processing
+      AliESDfriendTrack *friendTrackStore1=friendTrack1;    // store friend track1 for later processing
+      if (fFriendDownscaling>=1){  // downscaling number of friend tracks
+	if (gRandom->Rndm()>1./fFriendDownscaling){
+	  friendTrackStore0 = 0;
+	  friendTrackStore1 = 0;
+	}
+      }
+      if (fFriendDownscaling<=0){
+	if (((*fTreeSRedirector)<<"V0s").GetTree()){
+	  TTree * tree = ((*fTreeSRedirector)<<"V0s").GetTree();
+	  if (tree){
+	    Double_t sizeAll=tree->GetZipBytes();
+	    TBranch * br= tree->GetBranch("friendTrack0.fPoints");
+	    Double_t sizeFriend=(br!=NULL)?br->GetZipBytes():0;
+	    br= tree->GetBranch("friendTrack0.fCalibContainer");
+	    if (br) sizeFriend+=br->GetZipBytes();
+	    if (sizeFriend*TMath::Abs(fFriendDownscaling)>sizeAll) {
+	      friendTrackStore0=0;
+	      friendTrackStore1=0;
+	    }
+	  }
+	}
+      }
+
       if (track0->GetSign()<0) {
         track1 = esdEvent->GetTrack(v0->GetIndex(0));
         track0 = esdEvent->GetTrack(v0->GetIndex(1));
@@ -2067,12 +2089,10 @@ void AliAnalysisTaskFilteredTree::ProcessV0(AliESDEvent *const esdEvent, AliMCEv
         "kf.="<<&kfparticle<<
         "track0.="<<track0<<
         "track1.="<<track1<<
-        "friendTrack0.="<<friendTrack0<<
-        "friendTrack1.="<<friendTrack1<<
+        "friendTrack0.="<<friendTrackStore0<<
+        "friendTrack1.="<<friendTrackStore1<<
         "centralityF="<<centralityF<<
         "\n";
-      //if (newFriendTrack0) {delete friendTrack0;}
-      //if (newFriendTrack1) {delete friendTrack1;}
     }
   }
 }
@@ -2179,9 +2199,6 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
       if(!track) continue;
       AliESDfriendTrack* friendTrack=NULL;
       if (esdFriend) {if (!esdFriend->TestSkipBit()) friendTrack = esdFriend->GetTrack(iTrack);} //this guy can be NULL
-      //Bool_t newFriendTrack=kFALSE;
-      //if (!friendTrack) {friendTrack=new AliESDfriendTrack(); newFriendTrack=kTRUE;}
-      if (!friendTrack) {friendTrack=fDummyFriendTrack;}
       if(track->Charge()==0) continue;
       if(!esdTrackCuts->AcceptTrack(track)) continue;
       if(!accCuts->AcceptTrack(track)) continue;
@@ -2204,7 +2221,6 @@ void AliAnalysisTaskFilteredTree::ProcessdEdx(AliESDEvent *const esdEvent, AliMC
         "esdTrack.="<<track<<
         "friendTrack.="<<friendTrack<<
         "\n";
-      //if (newFriendTrack) delete friendTrack;
     }
   }
 }
