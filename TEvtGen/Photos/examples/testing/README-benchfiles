@@ -1,0 +1,833 @@
+LATER IN THE FILE WE COLLECT REFERENCES FOR PHYSIC CONEXTS
+LET US START TECHNICAL ASPECTS OF TEST ROOT FILES:
+
+Htautau/mc-tester.benchmark.Htautau.root
+----------------------------------------
+
+PROCESS:
+  collision:	e+e-@500GeV
+  generator:	pythia, HiggsSM:ffbar2H, using "25:m0=120"
+            	tauola, decay mode: 4 (tau => pi pi nu_tau)
+     events:	10M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	1.e-6
+
+MCTESTER:
+   particle:	25 (higgs)
+ mass power:	1
+ mass scale:	on
+ histograms:	60 bins; [0 , 1.1]
+
+   analysis:	RhoRhoPHOTOSUserTreeAnalysis.C
+     E_test:	-
+
+--------------------------------------------------------------------------------
+
+ScalNLO/mc-tester.root-1000M-LO-EXP
+----------------------------------------
+
+PROCESS:
+  collision:	pp@14TeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 7 (K-STAR mode)
+     events:	1000M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	1.e-6
+ max weight:	3.0
+
+MCTESTER:
+   particle:	310 (K-STAR)
+ mass power:	1
+ mass scale:	on
+ histograms:	60 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/0.49 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ScalNLO/mc-tester.root-1000M-NLO-EXP
+----------------------------------------
+
+PROCESS:
+  collision:	pp@14TeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 7 (K-STAR mode)
+     events:	1000M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	1.e-6
+ max weight:	3.0
+        NLO:	yes
+
+MCTESTER:
+   particle:	310 (K-STAR)
+ mass power:	1
+ mass scale:	on
+ histograms:	60 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/0.49 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ScalNLO/mc-tester.root-1000M-LO-1-phot
+----------------------------------------
+
+PROCESS:
+  collision:	pp@14TeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 7 (K-STAR mode)
+     events:	1000M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.01/91.187
+ max weight:	2.0
+
+MCTESTER:
+   particle:	310 (K-STAR)
+ mass power:	1
+ mass scale:	on
+ histograms:	60 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/0.49 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ScalNLO/mc-tester.root-1000M-NLO-1-phot
+----------------------------------------
+
+PROCESS:
+  collision:	pp@14TeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 7 (K-STAR mode)
+     events:	1000M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.01/91.187
+ max weight:	2.0
+        NLO:	yes
+
+MCTESTER:
+   particle:	310 (K-STAR)
+ mass power:	1
+ mass scale:	on
+ histograms:	60 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/0.49 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ttbar/mc-tester.root-ttbar-10M
+------------------------------
+
+PROCESS:
+  collision:	pp@14TeV
+  generator:	pythia, Top:ffbar2ttbar(s:gmZ) + Top:gg2ttbar
+     events:	10M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	0.001/200
+ max weight:	3.0
+
+MCTESTER:
+   particle:	100 (special/artificial particle)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.001, max 2 photons
+
+
+--------------------------------------------------------------------------------
+
+Wenu/mc-tester.root-Wenu-photos-100M-sym-10MeV
+----------------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403, symmetric photons
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/80.403 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Wmunu/mc-tester.root-Wmunu-photos-100M-sym-10MeV
+----------------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403, symmetric photons
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/80.403 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Wmumu/mc-tester.root-Wmunu-photos-F77-100M-1-phot-5MeV
+--------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.005
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	off
+ histograms:	120 bins; [0 , 100.0]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.005 , max 2 photons
+
+SOURCE:
+     http://cern.ch/~wasm/public/prod1-photos-mc-tester.root
+--------------------------------------------------------------------------------
+
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-1-phot
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-1-phot-NLO
+--------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.005
+        NLO:	yes
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01 , max 2 photons
+
+--------------------------------------------------------------------------------
+
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-nosym-10MeV-1-phot-NLO
+--------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.01/80.403
+        NLO:	yes
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.01/80.403 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+WmunuNLO/mc-tester.root-Wmunu-photos-F77-100M-1-phot-5MeV-NLO
+--------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=80.403
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.005
+
+MCTESTER:
+   particle:	24 (W+)
+ mass power:	1
+ mass scale:	off
+ histograms:	120 bins; [0 , 100.0]
+
+   analysis:	UserTreeAnalysis
+     E_test:	0.005 , max 2 photons
+
+--------------------------------------------------------------------------------
+
+WmunuNLO/mc-tester.root-Wmunu-photos-100M-sym-10MeV         - COPIED FROM Wmunu
+
+--------------------------------------------------------------------------------
+
+Zee/mc-tester.root-Zee-kkmc-sym-1GeV
+------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	KKMC, CMSene=91.187, symmetric photons
+     events:	6.5M (6442925)
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	F77 code equivalent to ZeeAnalysis used
+     E_test:	1./91.187 (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zee/mc-tester.root-Zee-photos-100M-sym-10MeV
+--------------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=91.187, symmetric photons
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	F77 code equivalent to ZeeAnalysis used
+     E_test:	0.01/91.187 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zee/mc-tester.root-Zee-photos-10M-nosym-10MeV
+--------------------------------------------
+
+PROCESS:
+  collision:	-
+  generator:	custom BORN, CMSene=91.187
+     events:	10M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	F77 code equivalent to ZeeAnalysis used
+     E_test:	0.01/91.187 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zmumu/mc-tester.root-Zmumu-CEEX1-100M-nosym-1GeV
+------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.177GeV
+  generator:	KKMC-CEEX1
+     events:	100M
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.177 (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zmumu/mc-tester.root-Zmumu-CEEX2-100M-nosym-1GeV
+------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.177GeV
+  generator:	KKMC-CEEX2
+     events:	100M
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.177 (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zmumu/mc-tester.root-Zmumu-kkmc-F77-100M-sym-1GeV
+-------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.177GeV
+  generator:	KKMC, symmetric photons
+     events:	10M
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	F77 code equivalent to UserTreeAnalysis used
+     E_test:	1./91.177 (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zmumu/mc-tester.root-Zmumu-photos-F77-100M-sym-10MeV
+----------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.187
+  generator:	BORN, symmetric photons
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	F77 code equivalent to ZeeAnalysis used
+     E_test:	0.01/91.187 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Zmumu/mc-tester.root-Zmumu-photos-F77-1-phot-EXP-1GeV
+----------------------------------------------------
+
+PROCESS:
+  collision:    e+e-@91.187
+  generator:    KK+PHOTOS
+     events:    100M
+
+PHOTOS:
+      first:    yes
+     second:    no
+        exp:    no
+     cutoff:    1./91.187
+
+MCTESTER:
+   particle:    23 (Z0)
+ mass power:    1
+ mass scale:    off
+ histograms:    1200 bins; [0 , 120]
+
+   analysis:    F77 code equivalent to UserTreeAnalysis used
+     E_test:    1./91.177 (1GeV), max 2 photons
+
+SOURCE:
+     http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/Results/Data/91GeV/PHOTOS-EXP-1PHOTON/ET-1.0/
+     NOTE: source file has been converted to new format.
+           Ordering of particles in decay modes has changed.
+--------------------------------------------------------------------------------
+
+
+ZmumuNLO/mc-tester.root-Zmumu-CEEX1-100M-nosym-1GeV         - COPIED FROM Zmumu
+ZmumuNLO/mc-tester.root-Zmumu-CEEX2-100M-nosym-1GeV         - COPIED FROM Zmumu
+ZmumuNLO/mc-tester.root-Zmumu-kkmc-F77-10M-sym-1GeV         - COPIED FROM Zmumu
+ZmumuNLO/mc-tester.root-Zmumu-photos-F77-100M-sym-10MeV     - COPIED FROM Zmumu
+
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-LO-100M
+----------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.187
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+ max weight:	3.0
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.187; (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-NLO-100M
+----------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.187
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+     events:	100M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	10e-7 (default)
+ max weight:	3.0
+        NLO:	yes
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.187; (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-1-phot-LO-100M
+----------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.187
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.001
+ max weight:	2.0
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.187; (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-1-phot-NLO-100M
+----------------------------------------------------
+
+PROCESS:
+  collision:	e+e-@91.187
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+     events:	100M
+
+PHOTOS:
+      first:	yes
+     second:	no
+        exp:	no
+     cutoff:	0.001
+ max weight:	2.0
+        NLO:	yes
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	1
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	UserTreeAnalysis
+     E_test:	1./91.187; (1GeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-koralz-100M-1-phot-1GeV-NLO
+----------------------------------------------------
+
+PROCESS:
+  collision:    e+e-@91.187
+  generator:    KORALZ
+     events:    100M
+
+PHOTOS:
+      first:    yes
+     second:    no
+        exp:    no
+     cutoff:    1./91.187
+
+MCTESTER:
+   particle:    23 (Z0)
+ mass power:    1
+ mass scale:    off
+ histograms:    120 bins; [0 , 100]
+
+SOURCE:
+     http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/AtNLO/Data/O1/mc-tester.root-koralz-O-alpha
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-koralz-100M-1-photon-1GeV-NLO
+----------------------------------------------------
+
+PROCESS:
+  collision:    e+e-@91.187
+  generator:    KK+PHOTOS
+     events:    100M
+
+PHOTOS:
+      first:    yes
+     second:    no
+        exp:    no
+     cutoff:    1./91.187
+
+MCTESTER:
+   particle:    23 (Z0)
+ mass power:    1
+ mass scale:    off
+ histograms:    120 bins; [0 , 100]
+
+SOURCE:
+     http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/AtNLO/Data/O1/mc-tester.root-PHOTOS-NLO-O-alpha
+--------------------------------------------------------------------------------
+
+ZmumuNLO/mc-tester.root-Zmumu-kkmc-100M-1GeV-nosym-NLO
+----------------------------------------------------
+
+PROCESS:
+  collision:    e+e-@91.187
+  generator:    KKMC, photons are ordered
+     events:    100M
+
+PHOTOS:
+      first:    no
+     second:    no
+        exp:    yes
+     cutoff:    10e-7 (default)
+
+MCTESTER:
+   particle:    23 (Z0)
+ mass power:    1
+ mass scale:    off
+ histograms:    1200 bins; [0 , 120]
+
+   analysis:    F77 code equivalent to UserTreeAnalysis used
+     E_test:    1./91.187 (1GeV), max 2 photons
+
+SOURCE:
+     http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/AtNLO/Data/EXP-2PHOTON/mc-tester-kkmc3-2.root
+     NOTE: source file has been converted to new format.
+           Ordering of particles in decay modes has changed.
+--------------------------------------------------------------------------------
+
+Ztautau/mc-tester.root-pispectr-RCall
+-------------------------------------
+
+PROCESS:
+  collision:	ee@91.17GeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 3 (tau => pi nu_tau)
+     events:	10M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	0.01/200
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	2
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	ZtautauAnalysis.C
+     E_test:	0.01/91.187 (10MeV), max 2 photons
+
+--------------------------------------------------------------------------------
+
+Ztautau/mc-tester.root-pispectr-RCno
+------------------------------------
+
+PROCESS:
+  collision:	ee@91.17GeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 3 (tau => pi nu_tau)
+     events:	10M
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	2
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	-
+     E_test:	-
+
+--------------------------------------------------------------------------------
+
+Ztautau/mc-tester.root-pispectr-RCtau
+-------------------------------------
+
+PROCESS:
+  collision:	ee@91.17GeV
+  generator:	pythia, WeakSingleBoson:ffbar2gmZ
+            	tauola, decay mode: 3 (tau => pi nu_tau)
+     events:	10M
+
+PHOTOS:
+      first:	no
+     second:	no
+        exp:	yes
+     cutoff:	0.01/200
+                radiative corrections in tau decays only
+
+MCTESTER:
+   particle:	23 (Z0)
+ mass power:	2
+ mass scale:	on
+ histograms:	120 bins; [0 , 1.1]
+
+   analysis:	ZtautauAnalysis.C
+     E_test:	0.01/91.187 (10MeV), max 2 photons
+
+#######################################################################
+PHYSICS ASPECTS OF TESTS.
+In the most documented cases  mentioned root files  are directly
+originating from software environments of listed below publications 
+or their web pages. In other 
+cases publications are less directly connected to the collected tests. 
+Sometimes it is just the question of changed input parameter or Born level 
+generatiors. Typycally in old days we had monohromatic Z or W decay samples. 
+Now it is usually combined with lineshape spread of LHC generators 
+(limited or not to M_Z+/-3 GeV).
+
+In some cases old papers are mentioned, but tests are just reproducing 
+the most significant aspects of that works only. No old benchmar distributions
+were available in an appropriate form.
+
+Let us now review the list of tests from directory PHOTOS/examples/testing
+
+#1# Zee, Zmumu, ZmumuNLO:
+Main paper: P. Golonka, Z. Was Next to Leading Logarithms and the PHOTOS Monte Carlo.
+Eur.Phys.J. C50 (2007) 53-62 e-Print: hep-ph/0604232
+http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/
+
+ROOT FILES cr4eated by other programs than PHOTOS:
+mc-tester.root-Zmumu-CEEX1-100M-nosym-1GeV
+mc-tester.root-Zmumu-CEEX2-100M-nosym-1GeV
+mc-tester.root-Zee-kkmc-sym-1GeV
+powinien byc jeszcze jeden dla 1-photon-a
+
+ROOT FILES created by PHOTOS but in F77 env:
+mc-tester.root-Zee-photos-100M-sym-10MeV
+mc-tester.root-Zee-photos-10M-nosym-10MeV
+
+
+#2# Wenu, WmunuNLO, Wmunu
+G. Nanava et al. Eur.Phys.J. C70 (2010) 673-688 arXiv:0906.4052 [hep-ph]
+http://mc-tester.web.cern.ch/MC-TESTER/PHOTOS-MCTESTER/
+
+
+#3# ScalNLO
+G. Nanava, Z. Was, Scalar QED, NLO and PHOTOS Monte Carlo.
+Eur.Phys.J. C51 (2007) 569-583 hep-ph/0607019
+
+
+#4# Htautau
+A. Andonov Comparison of SANC with KORALZ and PHOTOS.
+Acta Phys.Polon. B34 (2003) 2665-2672,: hep-ph/0212209
+
+#5# Ztautau
+F. Sanchez, Z. Was Phys.Lett. B351 (1995) 562-568 
+P.H. Eberhard et al. The Tau Polarization Measurement At Lep. CERN-EP-89-129
+transverse spin effects
+
+Tests with CEEX1 and CEEX2 for full tau decay spin possible 
+if request from experiments will arise.
+
+F. Boillot, Z. Was UNCERTAINTIES IN tau POLARIZATION MEASUREMENT AT SLC/LEP 
+AND QED/ELECTROWEAK RADIATIVE CORRECTIONS. Z.Phys. C43 (1989) 109
+longitudinal spin effects.
+
+#6# ttbar
+
+E. Richter-Was Hard Bremsstrahlung photons in the t anti-t 
+production and decay: A background for the intermediate Higgs search.
+Z.Phys. C61 (1994) 323-340
+
+
