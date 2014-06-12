@@ -133,10 +133,9 @@ goCPass0()
     return 1  
   fi
   
-  #runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass0.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_cpass0_${runNumber}_${jobindex}
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
     touch ${doneFileTmp} 
@@ -373,10 +372,9 @@ goCPass1()
     return 1
   fi
   
-  #runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t cpass1.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_cpass1_${runNumber}_${jobindex}
 
   #MC
   if [[ "${infile}" =~ galice\.root ]]; then
@@ -641,10 +639,9 @@ goMergeCPass0()
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
-  #runpath=${PWD}/rundir_cpass0_Merge_${runNumber}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass0.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_mergeCPass0_${runNumber}
 
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
@@ -808,10 +805,9 @@ goMergeCPass1()
 
   [[ -f ${alirootSource} && -z ${ALICE_ROOT} ]] && source ${alirootSource}
 
-  #runpath=${PWD}/rundir_cpass1_Merge_${runNumber}
   runpath=${outputDir}
-  #[[ ${reconstructInTemporaryDir} -eq 1 && -n ${TMPDIR} ]] && runpath=${TMPDIR}
   [[ ${reconstructInTemporaryDir} -eq 1 ]] && runpath=$(mktemp -d -t mergeCPass1.XXXXXX)
+  [[ ${reconstructInTemporaryDir} -eq 2 ]] && runpath=${PWD}/rundir_mergeCPass1_${runNumber}
 
   mkdir -p ${runpath}
   if [[ ! -d ${runpath} ]]; then
