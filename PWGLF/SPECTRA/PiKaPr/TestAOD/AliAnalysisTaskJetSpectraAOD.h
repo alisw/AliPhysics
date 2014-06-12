@@ -7,6 +7,7 @@ class AliAODEvent;
 class AliSpectraAODTrackCuts;
 class AliSpectraAODEventCuts;
 class AliHelperPID;
+class AliAODJet;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -26,17 +27,24 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
      fJetBranchName(""),
      fListJets(0),
      fBackgroundBranch(""),
+     fOfflineTrgMask(AliVEvent::kMB),
      fFilterMask(0),
      fJetPtMin(0),
      fJetEtaMin(0x0),
      fJetEtaMax(0x0),
+     fLeadPtMin(0x0),
      fnCentBins(20),
      fnQvecBins(20),
+     fnptLeadBins(4),
      fIsQvecCalibMode(0),
      fQvecUpperLim(100),
      fIsQvecCut(0),
      fQvecMin(0),
-     fQvecMax(100)
+     fQvecMax(100),
+     fHistEvtSelection(0x0),
+     fDebug(0),
+     fMinNcontributors(0),
+     fRejectPileup(0)
        {}
   AliAnalysisTaskJetSpectraAOD(const char *name);
   virtual ~AliAnalysisTaskJetSpectraAOD();
@@ -52,8 +60,10 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   void SetEventCuts(AliSpectraAODEventCuts * vc)   {   fEventCuts = vc; }
   void SetnCentBins(Int_t val)                     {   fnCentBins = val; }
   void SetnQvecBins(Int_t val)                     {   fnQvecBins = val; }
+  void SetnPtLeadBins(Int_t val)                   {   fnptLeadBins = val; }
   void SetQvecCalibMode(Bool_t mode)               {   fIsQvecCalibMode = mode; }
   void SetQvecUpperLimit(Double_t val)             {   fQvecUpperLim = val; }
+  void SetDebugMode (Bool_t val) { fDebug = val; }
   
   //jet getter
   void     GetBranchNames(TString &branch) const { branch = fJetBranchName; }
@@ -64,6 +74,7 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   //jet setter
   void     SetBranchNames(const TString &branch);
   void     SetRecBackgroundBranch(const TString &bckbranch);
+  void     SetOfflineTrgMask(AliVEvent::EOfflineTriggerTypes mask) { fOfflineTrgMask = mask; } 
   void     SetFilterMask(UInt_t i){fFilterMask = i;}
   void     SetJetPtMin(Float_t pt) { fJetPtMin = pt; }
   void     SetEtaJet(Float_t etamin,Float_t etamax)   { fJetEtaMin = etamin; fJetEtaMax = etamax; }
@@ -74,6 +85,12 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   void SetQvecCut(Bool_t qcut) { fIsQvecCut = qcut; }
   void SetQvecCutLimits(Float_t qmin,Float_t qmax)   { fQvecMin = qmin; fQvecMax = qmax; }
   
+  AliVParticle *LeadingTrackFromJetRefs(AliAODJet* jet);
+  void SetleadingTrackPtMin(Double_t val) { fLeadPtMin = val;}
+  
+  
+  void    SetMinNcontributors(Int_t val)  {fMinNcontributors = val;}
+  void    SetPileupRejection(Bool_t val)  {fRejectPileup = val;}
 
   void   UserCreateOutputObjects();
   void   UserExec(Option_t *option);
@@ -95,25 +112,34 @@ class AliAnalysisTaskJetSpectraAOD : public AliAnalysisTaskSE
   TString                       fJetBranchName;   //  name of jet branches to compare
   TList                       * fListJets;        //! jet lists
   TString                       fBackgroundBranch;
+  
+  AliVEvent::EOfflineTriggerTypes fOfflineTrgMask; // mask of offline trigs 
    
   UInt_t  fFilterMask;       // filter bit for slecected tracks
   Float_t fJetPtMin;         // minimum jet pT
   Float_t fJetEtaMin;        // lower bound on eta for found jets
   Float_t fJetEtaMax;        // upper bound on eta for found jets
+  Float_t fLeadPtMin;        // leading track pt min.
   
   Int_t                            fnCentBins;            // number of bins for the centrality axis
   Int_t                            fnQvecBins;            // number of bins for the q vector axis
+  Int_t                            fnptLeadBins;          // number of bins for the pt of leading particle axis
   Bool_t                           fIsQvecCalibMode;      // calib mode for Qvector percentile
   Double_t                         fQvecUpperLim;         // Upper limit for Qvector
   
   Bool_t                           fIsQvecCut;            // Q-vec cut switch
   Double_t                         fQvecMin;              // lower bound for Qvec
   Double_t                         fQvecMax;              // upper bound for Qvec
+ 
+  TH1I  *fHistEvtSelection;                  //! event selection statistic 
+  Bool_t fDebug;
+  Int_t   fMinNcontributors;
+  Bool_t  fRejectPileup;
   
   AliAnalysisTaskJetSpectraAOD(const AliAnalysisTaskJetSpectraAOD&);
   AliAnalysisTaskJetSpectraAOD& operator=(const AliAnalysisTaskJetSpectraAOD&);
   
-  ClassDef(AliAnalysisTaskJetSpectraAOD, 1);
+  ClassDef(AliAnalysisTaskJetSpectraAOD, 2);
 };
 
 #endif
