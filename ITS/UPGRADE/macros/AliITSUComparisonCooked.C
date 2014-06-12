@@ -440,6 +440,12 @@ Int_t GoodTracksCooked(const Char_t *dir) {
      AliGenEventHeader *h=rl->GetHeader()->GenEventHeader();
      TArrayF vtx(3);
      h->PrimaryVertex(vtx);
+
+     Bool_t skip=kFALSE;
+     if (TMath::Abs(vtx[2]) > 10.) {
+        cout<<"Skipping an event with Zv="<<vtx[2]<<endl;
+        skip=kTRUE;
+     }
  
      //******** Fill the "good" masks
      Int_t *good=new Int_t[np]; for (k=0; k<np; k++) good[k]=0;
@@ -507,6 +513,8 @@ Int_t GoodTracksCooked(const Char_t *dir) {
      Int_t nt=0;
      for (k=0; k<np; k++) {
         if (good[k] != 0x7F) continue;
+
+        if (skip) continue; //No good primary vertex for this event
 
         TParticle *p = (TParticle*)stack->Particle(k);
         if (p == 0x0) {
