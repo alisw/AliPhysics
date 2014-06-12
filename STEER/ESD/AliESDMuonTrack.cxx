@@ -586,7 +586,7 @@ Int_t AliESDMuonTrack::GetMatchTrigger() const
 //_____________________________________________________________________________
 Bool_t AliESDMuonTrack::MatchTriggerDigits(Bool_t fromTrack) const
 {
-  // return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
+  /// return kTRUE if the track matches a digit on both planes of at least 2 trigger chambers
   
   UShort_t pattern = ( fromTrack ) ? fHitsPatternInTrigChTrk : fHitsPatternInTrigCh;
   Int_t nMatchedChambers = 0;
@@ -595,6 +595,16 @@ Bool_t AliESDMuonTrack::MatchTriggerDigits(Bool_t fromTrack) const
 	IsChamberHit(pattern, 1, ich)) nMatchedChambers++;
   
   return (nMatchedChambers >= 2);
+}
+
+//_____________________________________________________________________________
+Int_t AliESDMuonTrack::GetMuonTrigDevSign() const
+{
+  /// Sign of the deviation provided by trigger
+  Int_t deviation = LoDev();
+  if ( deviation > 15 ) return 1;
+  else if ( deviation < 15 ) return -1;
+  else return 0;
 }
 
 //_____________________________________________________________________________
@@ -665,4 +675,24 @@ Int_t AliESDMuonTrack::GetCrossedBoard(UInt_t pattern)
 {
   /// Getting crossed board
   return ( pattern >> 15 ) & 0xFF;
+}
+
+
+//_____________________________________________________________________________
+void AliESDMuonTrack::AddMuonTrigDevSignInfo ( UInt_t &pattern ) const
+{
+  /// Add trigger deviation sign info to pattern
+  /// The info is stored in the 2 most significant digit:
+  /// info<<30
+  /// The information is:
+  /// 0x0 => no information present
+  /// 0x1 => negative deviation
+  /// 0x2 => undetermined sign
+  /// 0x3 => positive deviation
+
+  // First clean bits
+  pattern &= 0x3FFFFFFF;
+  // Then add info
+  UInt_t info = ((UInt_t)(GetMuonTrigDevSign()+2)&0x3)<<30;
+  pattern |= info;
 }
