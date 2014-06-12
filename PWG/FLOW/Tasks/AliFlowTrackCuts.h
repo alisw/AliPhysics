@@ -68,7 +68,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
                             kV0,    //neutral reconstructed v0 particle
                             kVZERO, //forward VZERO detector
                             kMUON,  // XZhang 20120604
-                            kKink
+                            kKink,
+                            kAODFilterBit
                           };
   enum trackParameterMix  { kPure, 
                             kTrackWithMCkine, 

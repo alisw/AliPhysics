@@ -76,6 +76,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMinMCLabel(0),
   fMCLabelShift(0),
   fNcentBins(4),
+  fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -156,6 +157,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMinMCLabel(0),
   fMCLabelShift(0),
   fNcentBins(4),
+  fNeedEmcalGeom(kTRUE),
   fGeom(0),
   fTracks(0),
   fCaloClusters(0),
@@ -572,16 +574,24 @@ void AliAnalysisTaskEmcal::ExecOnce()
     return;
   }
 
-  fGeom = AliEMCALGeometry::GetInstance();
-  if (!fGeom) {
-    AliError(Form("%s: Can not create geometry", GetName()));
-    return;
+  if (fNeedEmcalGeom) {
+    fGeom = AliEMCALGeometry::GetInstance();
+    if (!fGeom) {
+      AliError(Form("%s: Can not create geometry", GetName()));
+      return;
+    }
   }
 
+  
   if (fEventPlaneVsEmcal >= 0) {
-    Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();
-    fMinEventPlane = ep - TMath::Pi() / 4;
-    fMaxEventPlane = ep + TMath::Pi() / 4;
+    if (fGeom) {
+      Double_t ep = (fGeom->GetArm1PhiMax() + fGeom->GetArm1PhiMin()) / 2 * TMath::DegToRad() + fEventPlaneVsEmcal - TMath::Pi();
+      fMinEventPlane = ep - TMath::Pi() / 4;
+      fMaxEventPlane = ep + TMath::Pi() / 4;
+    }
+    else {
+      AliWarning("Could not set event plane limits because EMCal geometry was not loaded!");
+    }
   }
 
   //Load all requested track branches - each container knows name already

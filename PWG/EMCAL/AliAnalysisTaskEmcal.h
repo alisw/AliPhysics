@@ -71,7 +71,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }  
+  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; } 
+  void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
@@ -142,6 +143,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
+  Bool_t                      fNeedEmcalGeom;              // whether or not the task need the emcal geometry
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
