@@ -1157,7 +1157,7 @@ void AliAnalysisTaskPID::UserExec(Option_t *)
     // Only process tracks inside the desired eta window    
     if (!IsInAcceptedEtaRange(TMath::Abs(track->Eta()))) continue;
    
-    if (fDoPID || fDoDeDxCheck) 
+    if (fDoPID || fDoDeDxCheck || fDoPtResolution) 
       ProcessTrack(track, pdg, centralityPercentile, -1); // No jet information in this case -> Set jet pT to -1
     
     if (fDoPtResolution) {
@@ -2237,7 +2237,7 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   if(fDebug > 1)
     printf("File: %s, Line: %d: ProcessTrack\n", (char*)__FILE__, __LINE__);
   
-  if (!fDoPID && !fDoDeDxCheck)
+  if (!fDoPID && !fDoDeDxCheck && !fDoPtResolution)
     return kFALSE;
   
   if(fDebug > 2)
@@ -3565,8 +3565,8 @@ void AliAnalysisTaskPID::SetUpSharedClsHist(THnSparse* hist, Double_t* binsPt, D
 {
   // Sets bin limits for axes which are not standard binned and the axes titles.
   
-  hist->SetBinEdges(kQASharedClsPt, binsJetPt);
-  hist->SetBinEdges(kQASharedClsJetPt, binsPt);
+  hist->SetBinEdges(kQASharedClsJetPt, binsJetPt);
+  hist->SetBinEdges(kQASharedClsPt, binsPt);
   
   // Set axes titles
   hist->GetAxis(kQASharedClsJetPt)->SetTitle("#it{p}_{T}^{jet} (GeV/#it{c})");
