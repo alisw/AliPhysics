@@ -36,106 +36,106 @@ ClassImp(AliAnalysisTaskResolution)
 
 //________________________________________________________________________
 AliAnalysisTaskResolution::AliAnalysisTaskResolution() : AliAnalysisTaskSE(),
-   fV0Reader(NULL),
-   fConversionGammas(NULL),
-   fConversionCuts(NULL),
-   fTreeEvent(NULL),
-   fTreeResolution(NULL),
-   fPrimVtxZ(0.),
-   fNContrVtx(0),
-   fNESDtracksEta09(0),
-   fNESDtracksEta0914(0),
-   fNESDtracksEta14(0),
-   fGammaRecCoords(5),
-   fGammaMCCoords(5),
-   fChi2ndf(0),
-   fIsHeavyIon(kFALSE),
-   fOutputList(NULL),
-   fEventList(NULL),
-   fResolutionList(NULL),
-   fESDEvent(NULL),
-   fMCEvent(NULL)
+	fV0Reader(NULL),
+	fConversionGammas(NULL),
+	fConversionCuts(NULL),
+	fTreeEvent(NULL),
+	fTreeResolution(NULL),
+	fPrimVtxZ(0.),
+	fNContrVtx(0),
+	fNESDtracksEta09(0),
+	fNESDtracksEta0914(0),
+	fNESDtracksEta14(0),
+	fGammaRecCoords(5),
+	fGammaMCCoords(5),
+	fChi2ndf(0),
+	fIsHeavyIon(0),
+	fIsMC(kFALSE),
+	fOutputList(NULL),
+	fEventList(NULL),
+	fResolutionList(NULL),
+	fESDEvent(NULL),
+	fMCEvent(NULL)
 {
 
    
 }
 
-
 //________________________________________________________________________
 AliAnalysisTaskResolution::AliAnalysisTaskResolution(const char *name) : AliAnalysisTaskSE(name),
-   fV0Reader(NULL),
-   fConversionGammas(NULL),
-   fConversionCuts(NULL),
-   fTreeEvent(NULL),
-   fTreeResolution(NULL),
-   fPrimVtxZ(0.),
-   fNContrVtx(0),
-   fNESDtracksEta09(0),
-   fNESDtracksEta0914(0),
-   fNESDtracksEta14(0),
-   fGammaRecCoords(5),
-   fGammaMCCoords(5),
-   fChi2ndf(0),
-   fIsHeavyIon(kFALSE),
-   fOutputList(NULL),
-   fEventList(NULL),
-   fResolutionList(NULL),
-   fESDEvent(NULL),
-   fMCEvent(NULL)
+	fV0Reader(NULL),
+	fConversionGammas(NULL),
+	fConversionCuts(NULL),
+	fTreeEvent(NULL),
+	fTreeResolution(NULL),
+	fPrimVtxZ(0.),
+	fNContrVtx(0),
+	fNESDtracksEta09(0),
+	fNESDtracksEta0914(0),
+	fNESDtracksEta14(0),
+	fGammaRecCoords(5),
+	fGammaMCCoords(5),
+	fChi2ndf(0),
+	fIsHeavyIon(0),
+	fIsMC(kFALSE),
+	fOutputList(NULL),
+	fEventList(NULL),
+	fResolutionList(NULL),
+	fESDEvent(NULL),
+	fMCEvent(NULL)
 {
-   // Default constructor
+	// Default constructor
 
-   DefineInput(0, TChain::Class());
-   DefineOutput(1, TList::Class());
+	DefineInput(0, TChain::Class());
+	DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskResolution::~AliAnalysisTaskResolution()
 {
-   // default deconstructor
+	// default deconstructor
    
 }
 //________________________________________________________________________
 void AliAnalysisTaskResolution::UserCreateOutputObjects()
 {
-   // Create User Output Objects
+	// Create User Output Objects
 
-   if(fOutputList != NULL){
-      delete fOutputList;
-      fOutputList = NULL;
-   }
-   if(fOutputList == NULL){
-      fOutputList = new TList();
-      fOutputList->SetOwner(kTRUE);
-   }
-   
-   fEventList = new TList();
-   fEventList->SetName("EventList");
-   fEventList->SetOwner(kTRUE);
-   fOutputList->Add(fEventList);
-   
-   fTreeEvent = new TTree("Event","Event");   
-   fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
-   fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
-   fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
-   fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
-   fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
-   fEventList->Add(fTreeEvent);
-   
-   fResolutionList = new TList();
-   fResolutionList->SetName("ResolutionList");
-   fResolutionList->SetOwner(kTRUE);
-   fOutputList->Add(fResolutionList);
-                        
-   fTreeResolution = new TTree("Resolution","Resolution");   
-   fTreeResolution->Branch("RecCoords",&fGammaRecCoords);
-   fTreeResolution->Branch("MCCoords",&fGammaMCCoords);
-   fTreeResolution->Branch("chi2ndf",&fChi2ndf,"fChi2ndf/F");
-   fResolutionList->Add(fTreeResolution);
-   // V0 Reader Cuts
-   TString cutnumber = fConversionCuts->GetCutNumber();
-
-   PostData(1, fOutputList);
+	if(fOutputList != NULL){
+		delete fOutputList;
+		fOutputList = NULL;
+	}
+	if(fOutputList == NULL){
+		fOutputList = new TList();
+		fOutputList->SetOwner(kTRUE);
+	}
+	
+	fEventList = new TList();
+	fEventList->SetName("EventList");
+	fEventList->SetOwner(kTRUE);
+	fOutputList->Add(fEventList);
+	
+	fTreeEvent = new TTree("Event","Event");   
+	fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
+	fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
+	fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
+	fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
+	fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
+	fEventList->Add(fTreeEvent);
+	
+	if (fIsMC){		
+		fResolutionList = new TList();
+		fResolutionList->SetName("ResolutionList");
+		fResolutionList->SetOwner(kTRUE);
+		fOutputList->Add(fResolutionList);
+								
+		fTreeResolution = new TTree("Resolution","Resolution");   
+		fTreeResolution->Branch("RecCoords",&fGammaRecCoords);
+		fTreeResolution->Branch("MCCoords",&fGammaMCCoords);
+		fTreeResolution->Branch("chi2ndf",&fChi2ndf,"fChi2ndf/F");
+		fResolutionList->Add(fTreeResolution);
+	}
+	PostData(1, fOutputList);
 }
 
 //________________________________________________________________________
@@ -153,7 +153,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 		fMCEvent = MCEvent();
 	}
  
-	if(fMCEvent){
+	if(MCEvent()){
 		// Process MC Particle
 		if(fConversionCuts->GetSignalRejection() != 0){
 // 		if(fESDEvent->IsA()==AliESDEvent::Class()){
@@ -170,7 +170,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 	}
 
    
-	if(fIsHeavyIon && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
+	if(fIsHeavyIon > 0 && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
 	fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 	fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
@@ -190,7 +190,7 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 	}
 	fPrimVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
 	
-	if (fIsHeavyIon){
+	if (fIsHeavyIon == 2){
 		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
 	}	
 
@@ -209,17 +209,17 @@ void AliAnalysisTaskResolution::UserExec(Option_t *){
 void AliAnalysisTaskResolution::ProcessPhotons(){
 
 	// Fill Histograms for QA and MC
-   for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
-      AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
-      if (gamma ==NULL) continue;
-      if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
-      fGammaRecCoords(0) = gamma->GetPhotonPt();
-      fGammaRecCoords(1) = gamma->GetPhotonPhi();
-      fGammaRecCoords(2) = gamma->GetPhotonEta();
-      fGammaRecCoords(3) = gamma->GetConversionRadius();
-      fGammaRecCoords(4) = gamma->GetConversionZ();
-      fChi2ndf = gamma->GetChi2perNDF();
-		if(fMCEvent){
+	for(Int_t firstGammaIndex=0;firstGammaIndex<fConversionGammas->GetEntriesFast();firstGammaIndex++){
+		AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fConversionGammas->At(firstGammaIndex));
+		if (gamma ==NULL) continue;
+		if(!fConversionCuts->PhotonIsSelected(gamma,fESDEvent)) continue;
+		fGammaRecCoords(0) = gamma->GetPhotonPt();
+		fGammaRecCoords(1) = gamma->GetPhotonPhi();
+		fGammaRecCoords(2) = gamma->GetPhotonEta();
+		fGammaRecCoords(3) = gamma->GetConversionRadius();
+		fGammaRecCoords(4) = gamma->GetConversionZ();
+		fChi2ndf = gamma->GetChi2perNDF();
+		if(MCEvent()){
 // 			cout << "generating MC stack"<< endl;
 			AliStack *fMCStack = fMCEvent->Stack();
 			if (!fMCStack) continue;
@@ -258,20 +258,20 @@ void AliAnalysisTaskResolution::ProcessPhotons(){
 						continue;
 					else if (!(negDaughter->GetUniqueID() != 5 || posDaughter->GetUniqueID() !=5)){
 						if(pdgCode == 22){
-                     fGammaMCCoords(0) = truePhotonCanditate->Pt();
-                     fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCStack)->Phi();
-                     fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCStack)->Eta();
-                     fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCStack)->R();
-                     fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCStack)->Vz();
-                     
-                     if (fTreeResolution){
-                        fTreeResolution->Fill();
+							fGammaMCCoords(0) = truePhotonCanditate->Pt();
+							fGammaMCCoords(1) = gamma->GetNegativeMCDaughter(fMCStack)->Phi();
+							fGammaMCCoords(2) = gamma->GetNegativeMCDaughter(fMCStack)->Eta();
+							fGammaMCCoords(3) = gamma->GetNegativeMCDaughter(fMCStack)->R();
+							fGammaMCCoords(4) = gamma->GetNegativeMCDaughter(fMCStack)->Vz();
+							
+							if (fTreeResolution){
+								fTreeResolution->Fill();
 							}
 						}		
 					} else continue; //garbage
 				} else continue; //garbage
 			}
-      }
+		}
 	}
 }
 
@@ -282,7 +282,7 @@ Int_t AliAnalysisTaskResolution::CountTracks09(){
 	// Using standard function for setting Cuts
 		
 		AliStack *fMCStack = NULL;
-		if (fMCEvent){
+		if (MCEvent()){
 			fMCStack= fMCEvent->Stack();
 			if (!fMCStack) return 0;
 		}	
@@ -330,7 +330,7 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 		// Using standard function for setting Cuts
 		
 		AliStack *fMCStack = NULL;
-		if (fMCEvent){
+		if (MCEvent()){
 			fMCStack= fMCEvent->Stack();
 			if (!fMCStack) return 0;
 		}	
@@ -387,10 +387,5 @@ Int_t AliAnalysisTaskResolution::CountTracks0914(){
 //________________________________________________________________________
 void AliAnalysisTaskResolution::Terminate(Option_t *)
 {
-//    if (fStreamMaterial){
-//       fStreamMaterial->GetFile()->Write();
-//    }
-//    if (fStreamResolution){
-//       fStreamResolution->GetFile()->Write();
-//    }
+	
 }
