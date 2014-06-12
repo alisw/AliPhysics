@@ -935,7 +935,7 @@ void AliAnalysisTaskPID::UserCreateOutputObjects()
     
     fQASharedCls = new THnSparseD("fQASharedCls", "QA shared clusters", nBinsQASharedCls, qaSharedClsBins, qaSharedClsXmin, qaSharedClsXmax);
     
-    SetupSharedClsHist(fQASharedCls, pTbinsRes, binsJetPt);
+    SetUpSharedClsHist(fQASharedCls, pTbinsRes, binsJetPt);
     fQAContainer->Add(fQASharedCls);
   }
   
@@ -2748,11 +2748,11 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
   
   if (fDoPtResolution) {
     // Check shared clusters, which is done together with the pT resolution
-    Double_t qaEntry[kQASharedClskQASharedClsNumAxes];
+    Double_t qaEntry[kQASharedClsNumAxes];
     qaEntry[kQASharedClsJetPt] = jetPt;
     qaEntry[kQASharedClsPt] = pT;
     qaEntry[kDeDxCheckP] = pTPC;
-    qaEntry[kQASharedClsNumSharedCls] = track->GetTPCSharedMap().NumSharedClusters();
+    qaEntry[kQASharedClsNumSharedCls] = track->GetTPCSharedMapPtr()->CountBits();
     
     Int_t iRowInd = -1;
     // iRowInd == -1 for "all rows w/o multiple counting"
@@ -2761,9 +2761,9 @@ Bool_t AliAnalysisTaskPID::ProcessTrack(const AliVTrack* track, Int_t particlePD
 
     // Fill hist for every pad row with shared cluster
     for (iRowInd = 0; iRowInd < 159; iRowInd++) {
-      if (track->GetTPCSharedMap().TestBitNumber(iRowInd)) {
+      if (track->GetTPCSharedMapPtr()->TestBitNumber(iRowInd)) {
         qaEntry[kQASharedClsPadRow] = iRowInd;
-        fQASharedCls->Fill(vecHistQA);
+        fQASharedCls->Fill(qaEntry);
       }
     }
   }

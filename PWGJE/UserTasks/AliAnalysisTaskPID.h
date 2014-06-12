@@ -63,7 +63,7 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   enum ptResolutionAxes { kPtResJetPt = 0, kPtResGenPt = 1, kPtResRecPt = 2, kPtResCharge = 3, kPtResCentrality = 4, kPtResNumAxes = 5 };
   
   enum qaSharedClsAxes { kQASharedClsJetPt = 0, kQASharedClsPt = 1, kQASharedClsNumSharedCls = 2, kQASharedClsPadRow = 3,
-                         kQASharedClskQASharedClsNumAxes = 4 };
+                         kQASharedClsNumAxes = 4 };
   
   enum dEdxCheckAxes { kDeDxCheckPID = 0, kDeDxCheckP = 1, kDeDxCheckJetPt = 2, kDeDxCheckEtaAbs = 3 , kDeDxCheckDeDx = 4,
                        kDeDxCheckNumAxes = 5 };
@@ -271,9 +271,9 @@ class AliAnalysisTaskPID : public AliAnalysisTaskPIDV0base {
   static const Double_t fgkEpsilon; // Double_t threshold above zero
   static const Int_t fgkMaxNumGenEntries; // Maximum number of generated detector responses per track and delta(Prime) and associated species
 
- private:
   static const Double_t fgkOneOverSqrt2; // = 1. / TMath::Sqrt2();
   
+ private:
   Int_t fRun; // Current run number
   AliPIDCombined* fPIDcombined; //! PID combined object
   
