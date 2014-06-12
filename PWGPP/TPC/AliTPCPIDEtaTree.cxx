@@ -41,7 +41,7 @@ ClassImp(AliTPCPIDEtaTree)
 
 //________________________________________________________________________
 AliTPCPIDEtaTree::AliTPCPIDEtaTree()
-  : AliAnalysisTaskPIDV0base()
+  : AliTPCPIDBase()
   , fStoreMultiplicity(kFALSE)
   , fStoreNumOfSubthresholdclusters(kFALSE)
   , fStoreNumClustersInActiveVolume(kFALSE)
@@ -73,7 +73,7 @@ AliTPCPIDEtaTree::AliTPCPIDEtaTree()
 
 //________________________________________________________________________
 AliTPCPIDEtaTree::AliTPCPIDEtaTree(const char *name)
-  : AliAnalysisTaskPIDV0base(name)
+  : AliTPCPIDBase(name)
   , fStoreMultiplicity(kFALSE)
   , fStoreNumOfSubthresholdclusters(kFALSE)
   , fStoreNumClustersInActiveVolume(kFALSE)
@@ -129,7 +129,7 @@ void AliTPCPIDEtaTree::UserCreateOutputObjects()
   // Create histograms
   // Called once
   
-  AliAnalysisTaskPIDV0base::UserCreateOutputObjects();
+  AliTPCPIDBase::UserCreateOutputObjects();
   
   if (fDoAdditionalQA) {
     OpenFile(3);

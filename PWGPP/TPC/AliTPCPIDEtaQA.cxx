@@ -39,7 +39,7 @@ ClassImp(AliTPCPIDEtaQA)
 
 //________________________________________________________________________
 AliTPCPIDEtaQA::AliTPCPIDEtaQA()
-  : AliAnalysisTaskPIDV0base()
+  : AliTPCPIDBase()
   , fPtThresholdForPhiCut(2.0)
   , fPhiCutSecondBranchLow(0x0)
   , fPhiCutSecondBranchHigh(0x0)
@@ -66,7 +66,7 @@ AliTPCPIDEtaQA::AliTPCPIDEtaQA()
 
 //________________________________________________________________________
 AliTPCPIDEtaQA::AliTPCPIDEtaQA(const char *name)
-  : AliAnalysisTaskPIDV0base(name)
+  : AliTPCPIDBase(name)
   , fPtThresholdForPhiCut(2.0)
   , fPhiCutSecondBranchLow(0x0)
   , fPhiCutSecondBranchHigh(0x0)
@@ -120,7 +120,7 @@ void AliTPCPIDEtaQA::UserCreateOutputObjects()
   // Create histograms
   // Called once
 
-  AliAnalysisTaskPIDV0base::UserCreateOutputObjects();
+  AliTPCPIDBase::UserCreateOutputObjects();
 
   OpenFile(1);
   

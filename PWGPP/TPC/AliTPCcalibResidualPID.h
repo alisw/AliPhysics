@@ -58,6 +58,7 @@ class TObjArray;
 class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
  public:
   enum FitType { kAleph = 0, kLund = 1, kSaturatedLund = 2, kAlephWithAdditionalParam = 3 };
+  enum kParticle { kElectron = 0, kPion, kKaon, kProton };
   AliTPCcalibResidualPID();
   AliTPCcalibResidualPID(const char *name);
   virtual ~AliTPCcalibResidualPID();
@@ -140,18 +141,17 @@ class AliTPCcalibResidualPID : public AliAnalysisTaskSE {
   static Double_t fgCutNcr;  // Cut variable for TPCCutMIGeo concerning num crossed rows
   static Double_t fgCutNcl;  // Cut variable for TPCCutMIGeo concerning num clusters
   
-  private:
   static Double_t Lund(Double_t* xx, Double_t* par);
   static Double_t SaturatedLund(Double_t* xx, Double_t* par);
   
   void  BinLogAxis(const THnSparseF *h, Int_t axisNumber);
-  enum {kElectron=0, kPion, kKaon, kProton} kParticle ;
 
   static void FitSlicesY(TH2 *hist, Double_t heightFractionForRange, Int_t cutThreshold, TString fitOption, TObjArray *arr);
 
   void FillV0PIDlist(AliESDEvent* esdEvent = 0x0);
   void ClearV0PIDlist();
-
+  
+  private:
   //
   //
   AliESDEvent *fESD;                   //! ESD object

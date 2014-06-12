@@ -33,9 +33,10 @@ class AliTPCPIDEtaQA : public AliTPCPIDBase {
   Double_t GetPtThresholdForPhiCut() const { return fPtThresholdForPhiCut; };     
   virtual void  SetPtThresholdForPhiCut(Double_t threshold) { fPtThresholdForPhiCut = threshold; };
   
- private:
+ protected:
   virtual void   SetUpHist(THnSparse* hist, Double_t* binsPt) const;
-
+  
+ private:
   Double_t fPtThresholdForPhiCut; // Only apply phi cut on tracks with pT larger equal this threshold
   
   TF1* fPhiCutSecondBranchLow; // phi prime cut, low, second branch (very low pT)
