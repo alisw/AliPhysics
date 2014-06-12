@@ -1167,7 +1167,7 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
       
       //*********************************************************
       TExMap *trackMap = new TExMap();//Mapping matrix----                                            
-      TRandom *ran = new TRandom(); //random eff. correction
+      //TRandom *ran = new TRandom(); //random eff. correction
 
       //1st loop track for Global tracks                                                                                
       for(Int_t i = 0; i < _nTracks; i++)
@@ -1195,15 +1195,16 @@ void  AliAnalysisTaskDptDptCorrelations::UserExec(Option_t */*option*/)
 	  bitOK  = t->TestFilterBit(_trackFilterBit);
 	  if (!bitOK) continue; //128bit or 272bit
 
-	  //------- Eff. test----------
-	 // Double_t yy = (1-0.7)/1.8;
-         // Double_t zz = (pt-0.2);
-          //Double_t effValue = 0.7+yy*zz;
-	  Double_t effValue = 0.7;
+	  /* //------- Eff. test----------
+	  Double_t yy = (1-0.7)/1.8;
+          Double_t zz = (pt-0.2);
+          //Double_t effValue = 0.7+yy*zz;  //Slope
+	  Double_t effValue = 0.7;          //Flat
           Double_t R = ran->Uniform(0,1);
 
           if(R > effValue) continue;
 	  //---------------------------
+	  */
 
 	  Int_t gID = t->GetID();
 	  newAodTrack = gID >= 0 ?t : fAODEvent->GetTrack(trackMap->GetValue(-1-gID));
