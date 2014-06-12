@@ -15,7 +15,7 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
    const Double_t trptcut     = 2.0,
    const Double_t trketa      = 0.9,
    const Int_t    trkQAcut     = 10041006,
-         Bool_t   isESD        = 1,
+   const Bool_t   isESD        = 1,
    const char *tag	      = ""
 )
 {
@@ -60,7 +60,8 @@ AliAnalysisTaskEmcalJetHF* AddTaskEmcalJetHF(
   spectratask->SetJetPt(hiPTjet); 
   spectratask->SetTrackPtCut(trptcut);
   spectratask->SetTrackEta(trketa);
- // spectratask->SetTrackCut(trkQAcut);
+  spectratask->SetTrackQACut(trkQAcut);
+  //spectratask->SetDataType(isESD);
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

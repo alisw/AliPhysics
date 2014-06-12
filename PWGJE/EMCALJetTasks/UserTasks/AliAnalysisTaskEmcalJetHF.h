@@ -59,12 +59,18 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   //PID Sparse
   virtual THnSparse*      NewTHnSparseDHF(const char* name, UInt_t entries);
   virtual void            GetDimParamsHF(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+  
+  //JetQA Sparse
+  virtual THnSparse*      NewTHnSparseDJetQA(const char* name, UInt_t entries);
+  virtual void            GetDimParamsJetQA(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
+
 
   // setters
   void SetJetPt(Double_t jpt)           { fJetHIpt = jpt; }  // jet threshold pt cut
   void SetTrackPtCut(Double_t trpt)     { fTrackPtCut = trpt; } // track pt threshold to do PID on  
   virtual void            SetTrackEta(Double_t e)                 { fTrackEta   = e; }  //eta range of the associated tracks   
-
+  virtual void            SetTrackQACut(Double_t trkQAcut)            { fTrkQAcut = trkQAcut;}
+  
   // event no.   
   Int_t event;          // event number (processed)
   Int_t fillHist;
@@ -84,7 +90,8 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   Double_t              fJetHIpt;                    // high jet pt 
   Double_t              fTrackPtCut;                 // track pt cut to do PID on
   Double_t              fTrackEta;  
-
+  Double_t              fTrkQAcut;                    //trkQA cut
+  
   // PID                                                                                                                                    
   AliPIDResponse        *fPIDResponse;   // PID response object                                                                             
   AliTPCPIDResponse     *fTPCResponse;   // TPC pid response object
@@ -130,9 +137,13 @@ class AliAnalysisTaskEmcalJetHF : public AliAnalysisTaskEmcalJet {
   //HF_PID Sparse
   THnSparse             *fhnPIDHF;//!          // PID sparse
   //QA Sparse
-  THnSparse             *fhnQA;//!             //  QA sparse
-  
+  //QA Sparse
+  THnSparse             *fhnQA;             //  QA sparse
+  THnSparse             *fhnJetQA;          //Jet QA Sparse
+  THnSparse             *fhnClusQA;         // cluster QA sparse
+  THnSparse             *fhnTrackQA;        // track QA sparse
   //Declare it private to avoid compilation warning
+  
   AliAnalysisTaskEmcalJetHF(const AliAnalysisTaskEmcalJetHF & g) ; // cpy ctor
   AliAnalysisTaskEmcalJetHF& operator=(const AliAnalysisTaskEmcalJetHF&); // not implemented
   
