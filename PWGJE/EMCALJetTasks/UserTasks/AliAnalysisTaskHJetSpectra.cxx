@@ -149,7 +149,7 @@ fRConesR(0.1),fRConesRSquared(fRConesR*fRConesR), fnRCones(16)
 }
   
 //________________________________________________________________________
-inline void  AliAnalysisTaskHJetSpectra::SetAnalyzeMC(Int_t val){
+void  AliAnalysisTaskHJetSpectra::SetAnalyzeMC(Int_t val){
    if(val==1){
       fAnalyzePythia = kTRUE;
       fAnalyzeHijing = kFALSE;
@@ -166,7 +166,7 @@ inline void  AliAnalysisTaskHJetSpectra::SetAnalyzeMC(Int_t val){
    return;
 }
 //________________________________________________________________________
-inline Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Double_t radius){
+Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi, Double_t radius){
    //sum up pt inside a cone
    Double_t tmpConePt = 0.0;
    Double_t dphi      = 0.0;
@@ -189,7 +189,7 @@ inline Double_t AliAnalysisTaskHJetSpectra::GetConePt(Double_t eta, Double_t phi
 
 
 //________________________________________________________________________
-inline Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
+Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
    //get pt hard from pythia
    AliGenPythiaEventHeader* pythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
    if(MCEvent()){ 
@@ -219,7 +219,7 @@ inline Double_t AliAnalysisTaskHJetSpectra::GetPtHard(){
    return -1.0;
 }
 //________________________________________________________________________
-inline Double_t AliAnalysisTaskHJetSpectra::GetImpactParameter(){
+Double_t AliAnalysisTaskHJetSpectra::GetImpactParameter(){
    //get impact parameter from hijing
    AliGenHijingEventHeader* hijingHeader = dynamic_cast<AliGenHijingEventHeader*>(MCEvent()->GenEventHeader());
    if(MCEvent()){ 
@@ -242,7 +242,7 @@ inline Double_t AliAnalysisTaskHJetSpectra::GetImpactParameter(){
    return -1.0;
 }
 //________________________________________________________________________
-inline Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
+Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
    //get generator level primary vertex
    AliGenEventHeader* mcHeader = NULL; 
    AliAODMCHeader* aodMCH = NULL;
@@ -290,7 +290,7 @@ inline Double_t AliAnalysisTaskHJetSpectra::GetSimPrimaryVertex(){
 
 
 //________________________________________________________________________
-/*inline Double_t AliAnalysisTaskHJetSpectra::GetPythiaTrials()
+/*Double_t AliAnalysisTaskHJetSpectra::GetPythiaTrials()
 {
   #ifdef DEBUGMODE
     AliInfo("Starting GetPythiaTrials.");
@@ -340,7 +340,7 @@ Double_t AliAnalysisTaskHJetSpectra::GetExternalRho(){
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
+Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
    //EVENT SELECTION
 
 
@@ -394,7 +394,7 @@ inline Bool_t AliAnalysisTaskHJetSpectra::IsEventInAcceptance(AliVEvent* event){
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track){
+Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* track){
    // Check if the track pt and eta range 
    if(track != 0){
       if(fIsKinematics){
@@ -412,7 +412,7 @@ inline Bool_t AliAnalysisTaskHJetSpectra::IsTrackInAcceptance(AliVParticle* trac
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskHJetSpectra::IsBackgroundJetInAcceptance(AliEmcalJet *jet){   
+Bool_t AliAnalysisTaskHJetSpectra::IsBackgroundJetInAcceptance(AliEmcalJet *jet){   
    //find jets to be removed from bg calculation 
    if(jet != 0){
       if(TMath::Abs(jet->Eta()) <= fBackgroundJetEtaWindow){
@@ -425,7 +425,7 @@ inline Bool_t AliAnalysisTaskHJetSpectra::IsBackgroundJetInAcceptance(AliEmcalJe
 }
 
 //________________________________________________________________________
-inline Bool_t AliAnalysisTaskHJetSpectra::IsSignalJetInAcceptance(AliEmcalJet *jet){   
+Bool_t AliAnalysisTaskHJetSpectra::IsSignalJetInAcceptance(AliEmcalJet *jet){   
    //select jets in acceptance 
    if(jet == 0) return kFALSE;
    if(TMath::Abs(jet->Eta()) <= fSignalJetEtaWindow){
