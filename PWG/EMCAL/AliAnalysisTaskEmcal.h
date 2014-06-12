@@ -185,6 +185,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 8) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 9) // EMCAL base analysis task
 };
 #endif
