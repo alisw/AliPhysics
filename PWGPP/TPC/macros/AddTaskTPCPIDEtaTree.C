@@ -107,7 +107,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
 
   //dumm output container
   AliAnalysisDataContainer *coutput0 =
-      mgr->CreateContainer("TPCPIDEtaTree",
+      mgr->CreateContainer("TPCPIDEtaTree_tree",
                            TTree::Class(),
                            AliAnalysisManager::kExchangeContainer,
                            "TPCPIDEtaTree_default");
@@ -117,7 +117,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
       mgr->CreateContainer("TPCPIDEtaTree", TTree::Class(),
                            AliAnalysisManager::kOutputContainer,"TPCPIDEtaTree.root");
   AliAnalysisDataContainer *coutput2 = 
-      mgr->CreateContainer("TPCPIDEtaTree", TTree::Class(),
+      mgr->CreateContainer("TPCPIDEtaTreePions", TTree::Class(),
                            AliAnalysisManager::kOutputContainer,"TPCPIDEtaTreePions.root");
   AliAnalysisDataContainer *coutput3 = 
       mgr->CreateContainer("TPCPIDEtaTreeAdditionalQA", TObjArray::Class(),
