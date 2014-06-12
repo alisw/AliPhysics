@@ -291,7 +291,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects() {
   if (!fConfigParams)
     SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine("ConfigFemtoAnalysis()"));
   else
-      SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(%s)", fConfigParams.Data())));
+      SetFemtoManager((AliFemtoManager *) gInterpreter->ProcessLine(Form("ConfigFemtoAnalysis(\"%s\")", fConfigParams.Data())));
 
   TList *tOL;
   fOutputList = fManager->Analysis(0)->GetOutputList();

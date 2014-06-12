@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef ALIANALYSISTASKRHOVNMODULATION_H
-#define ALIANALYSISTASKRHOVNMODULATION_H
+#ifndef AliAnalysisTaskJetV2_H
+#define AliAnalysisTaskJetV2_H
 
 #include <AliAnalysisTaskEmcalJet.h>
 #include <AliEmcalJet.h>
@@ -25,7 +25,7 @@ class AliLocalRhoParameter;
 class AliClusterContainer;
 class AliVTrack;
 
-class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskJetV2 : public AliAnalysisTaskEmcalJet {
     public:
          // enumerators
         enum fitModulationType  { kNoFit, kV2, kV3, kCombined, kFourierSeries, kIntegratedFlow, kQC2, kQC4 }; // fit type
@@ -37,9 +37,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         enum detectorType       { kTPC, kVZEROA, kVZEROC, kVZEROComb};  // detector that was used
         enum analysisType       { kCharged, kFull };                    // analysis type
         // constructors, destructor
-                                AliAnalysisTaskRhoVnModulation();
-                                AliAnalysisTaskRhoVnModulation(const char *name, runModeType type);
-        virtual                 ~AliAnalysisTaskRhoVnModulation();
+                                AliAnalysisTaskJetV2();
+                                AliAnalysisTaskJetV2(const char *name, runModeType type);
+        virtual                 ~AliAnalysisTaskJetV2();
         // setting up the task and technical aspects
         void                    ExecOnce();
         Bool_t                  InitializeAnalysis();
@@ -86,26 +86,19 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetDebugMode(Int_t d)                           {fDebug = d;}
         void                    SetRunToyMC(Bool_t t)                           {fRunToyMC = t; }
         void                    SetAttachToEvent(Bool_t b)                      {fAttachToEvent = b;}
-        void                    SetSemiCentralInclusive(Bool_t b)               {fSemiCentralInclusive = b;}
         void                    SetFillHistograms(Bool_t b)                     {fFillHistograms = b;}
         void                    SetFillQAHistograms(Bool_t qa)                  {fFillQAHistograms = qa;}
         void                    SetReduceBinsXYByFactor(Float_t x, Float_t y)   {fReduceBinsXByFactor = x;
                                                                                  fReduceBinsYByFactor = y;}
         void                    SetNoEventWeightsForQC(Bool_t e)                {fNoEventWeightsForQC = e;}
         void                    SetCentralityClasses(TArrayD* c)                {fCentralityClasses = c;}
-        void                    SetPtBinsHybrids(TArrayD* p)                    {fPtBinsHybrids = p;}
-        void                    SetPtBinsJets(TArrayD* p)                       {fPtBinsJets = p;}
         void                    SetExpectedRuns(TArrayI* r)                     {fExpectedRuns = r;}
         void                    SetExpectedSemiGoodRuns(TArrayI* r)             {fExpectedSemiGoodRuns = r;}
         void                    SetIntegratedFlow(TH1F* i, TH1F* j)             {fUserSuppliedV2 = i;
                                                                                  fUserSuppliedV3 = j; }
         void                    SetOnTheFlyResCorrection(TH1F* r2, TH1F* r3)    {fUserSuppliedR2 = r2;
                                                                                  fUserSuppliedR3 = r3; }
-        void                    SetNameJetClones(const char* name)              {fNameJetClones = name; }
-        void                    SetNamePicoTrackClones(const char* name)        {fNamePicoTrackClones = name; }
-        void                    SetNameRho(const char* name)                    {fNameRho = name; }
         void                    SetNameRhoSmall(TString name)                   {fNameSmallRho = name; }
-        void                    SetUseScaledRho(Bool_t s)                       {fUseScaledRho = s; }
         void                    SetRandomSeed(TRandom3* r)                      {if (fRandom) delete fRandom; fRandom = r; }
         void                    SetModulationFit(TF1* fit);
         void                    SetUseControlFit(Bool_t c);
@@ -124,11 +117,7 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         void                    SetRunModeType(runModeType type)                {fRunModeType = type; }
         void                    SetAbsVertexZ(Float_t v)                        {fAbsVertexZ = v; }
         void                    SetMinDistanceRctoLJ(Float_t m)                 {fMinDisanceRCtoLJ = m; }
-        void                    SetRandomConeRadius(Float_t r)                  {fRandomConeRadius = r; }
         void                    SetMaxNoRandomCones(Int_t m)                    {fMaxCones = m; }
-        void                    SetMinLeadingHadronPt(Double_t m)               {fMinLeadingHadronPt = m; }
-        void                    SetSetPtSub(Bool_t s)                           {fSubtractJetPt = s;}
-        void                    SetForceAbsVnHarmonics(Bool_t f)                {fAbsVnHarmonics = f; }
         void                    SetExcludeLeadingJetsFromFit(Float_t n)         {fExcludeLeadingJetsFromFit = n; }
         void                    SetRebinSwapHistoOnTheFly(Bool_t r)             {fRebinSwapHistoOnTheFly = r; }
         void                    SetSaveThisPercentageOfFits(Float_t p)          {fPercentageOfFits = p; }
@@ -139,8 +128,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TString                 GetTracksName() const                           {return GetParticleContainer()->GetArrayName(); }
         TString                 GetLocalRhoName() const                         {return fLocalRhoName; }
         TArrayD*                GetCentralityClasses() const                    {return fCentralityClasses;}
-        TArrayD*                GetPtBinsHybrids() const                        {return fPtBinsHybrids; }
-        TArrayD*                GetPtBinsJets() const                           {return fPtBinsJets; }
         TProfile*               GetResolutionParameters(Int_t h, Int_t c) const {return (h==2) ? fProfV2Resolution[c] : fProfV3Resolution[c];}
         TList*                  GetOutputList() const                           {return fOutputList;}
         AliLocalRhoParameter*   GetLocalRhoParameter() const                    {return fLocalRho;}
@@ -162,22 +149,25 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
             }
             return leadingJet;
         }
-        void                    ExecMe()                                        {ExecOnce();}
-        AliAnalysisTaskRhoVnModulation* ReturnMe()                              {return this;}
+        void                    ExecMe()                                {ExecOnce();}
+        AliAnalysisTaskJetV2* ReturnMe()                                {return this;}
         // local cuts
-        void                    SetLocalJetMinMaxEta(Float_t min, Float_t max)  {fLocalJetMinEta = min; fLocalJetMaxEta = max;}
-        void                    SetLocalJetMinMaxEta(Float_t R)                 {fLocalJetMinEta = - 0.9 + R; fLocalJetMaxEta = 0.9 - R; }
-        void                    SetLocalJetMinMaxPhi(Float_t min, Float_t max)  {fLocalJetMinPhi = min; fLocalJetMaxEta = max;}
-        void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)  {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
-        void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b) {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
+        void                    SetSoftTrackMinMaxPt(Float_t min, Float_t max)          {fSoftTrackMinPt = min; fSoftTrackMaxPt = max;}
+        void                    SetSemiGoodJetMinMaxPhi(Double_t a, Double_t b)         {fSemiGoodJetMinPhi = a; fSemiGoodJetMaxPhi = b;}
         void                    SetSemiGoodTrackMinMaxPhi(Double_t a, Double_t b)       {fSemiGoodTrackMinPhi = a; fSemiGoodTrackMaxPhi = b;}
         // numerical evaluations
         void                    CalculateEventPlaneVZERO(Double_t vzero[2][2]) const;
         void                    CalculateEventPlaneTPC(Double_t* tpc);
         void                    CalculateEventPlaneCombinedVZERO(Double_t* comb) const;
         void                    CalculateEventPlaneResolution(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
-        Double_t                CalculateEventPlaneChi(Double_t resEP) const;
-        void                    CalculateRandomCone(Float_t &pt, Float_t &eta, Float_t &phi, AliEmcalJet* jet = 0x0) const;
+        void                    CalculateRandomCone(
+                Float_t &pt, 
+                Float_t &eta, 
+                Float_t &phi, 
+                AliParticleContainer* tracksCont,
+                AliClusterContainer* clusterCont = 0x0,
+                AliEmcalJet* jet = 0x0
+                ) const;
         Double_t                CalculateQC2(Int_t harm);
         Double_t                CalculateQC4(Int_t harm);
         // helper calculations for the q-cumulant analysis, also used by AliAnalyisTaskJetFlow
@@ -193,24 +183,25 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         // analysis details
         Bool_t                  CorrectRho(Double_t psi2, Double_t psi3);
         // event and track selection, also used by AliAnalyisTaskJetFlow
-        /* inline */    Bool_t PassesCuts(AliVParticle* track) const { return AcceptTrack(track, 0); }
-        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet) { return AcceptJet(jet, 0); }
-        /* inline */    Bool_t PassesCuts(AliVCluster* clus) const { return AcceptCluster(clus, 0); }
-        /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet) {
+        /* inline */    Bool_t PassesCuts(AliVParticle* track) const    { return AcceptTrack(track, 0); }
+        /* inline */    Bool_t PassesCuts(AliEmcalJet* jet)             { return AcceptJet(jet, 0); }
+        /* inline */    Bool_t PassesCuts(AliVCluster* clus) const      { return AcceptCluster(clus, 0); }
+        /* inline */    Bool_t PassesSimpleCuts(AliEmcalJet* jet)       {
             Float_t minPhi(GetJetContainer()->GetJetPhiMin()), maxPhi(GetJetContainer()->GetJetPhiMax());
-            return (jet && jet->Pt() > 1 && jet->Eta() < .9-GetJetRadius() && jet->Eta() > -.9+GetJetRadius() && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
+            Float_t minEta(GetJetContainer()->GetJetEtaMin()), maxEta(GetJetContainer()->GetJetEtaMax());
+            return (jet && jet->Pt() > 1. && jet->Eta() > minEta && jet->Eta() < maxEta && jet->Phi() > minPhi && jet->Phi() < maxPhi && jet->Area() > .557*GetJetRadius()*GetJetRadius()*TMath::Pi());
         }
         Bool_t                  PassesCuts(AliVEvent* event);
         Bool_t                  PassesCuts(Int_t year);
         Bool_t                  PassesCuts(const AliVCluster* track) const;
         // filling histograms
-        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t psi3, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
+        void                    FillHistogramsAfterSubtraction(Double_t psi2, Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc);
         void                    FillTrackHistograms() const;
         void                    FillClusterHistograms() const;
         void                    FillEventPlaneHistograms(Double_t vzero[2][2], Double_t* vzeroComb, Double_t* tpc) const;
         void                    FillRhoHistograms();
-        void                    FillDeltaPtHistograms(Double_t psi2, Double_t psi3) const; 
-        void                    FillJetHistograms(Double_t psi2, Double_t psi3);
+        void                    FillDeltaPtHistograms(Double_t psi2) const; 
+        void                    FillJetHistograms(Double_t psi2);
         void                    FillQAHistograms(AliVTrack* vtrack) const;
         void                    FillQAHistograms(AliVEvent* vevent);
         void                    FillAnalysisSummaryHistogram() const;
@@ -227,15 +218,12 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         Bool_t                  fRunToyMC;              // run toy mc for fit routine
         Bool_t                  fLocalInit;             //! is the analysis initialized?
         Bool_t                  fAttachToEvent;         // attach local rho to the event
-        Bool_t                  fSemiCentralInclusive;  // semi central inclusive event selection
         Bool_t                  fFillHistograms;        // fill histograms
         Bool_t                  fFillQAHistograms;      // fill qa histograms
         Float_t                 fReduceBinsXByFactor;   // reduce the bins on x-axis of histo's by this much
         Float_t                 fReduceBinsYByFactor;   // reduce the bins on y-axis of histo's by this much
         Bool_t                  fNoEventWeightsForQC;   // don't store event weights for qc analysis
         TArrayD*                fCentralityClasses;     //-> centrality classes (maximum 10)
-        TArrayD*                fPtBinsHybrids;         //-> pt bins for hybrid track vn anaysis
-        TArrayD*                fPtBinsJets;            //-> pt bins for jet vn analysis
         TArrayI*                fExpectedRuns;          //-> array of expected run numbers, used for QA
         TArrayI*                fExpectedSemiGoodRuns;  //-> array of expected semi-good runs, used for cuts and QA
         TH1F*                   fUserSuppliedV2;        // histo with integrated v2
@@ -247,7 +235,6 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         AliJetContainer*        fJetsCont;              //! jets
         AliEmcalJet*            fLeadingJet;            //! leading jet
         // members
-        Bool_t                  fUseScaledRho;          // use scaled rho
         Int_t                   fNAcceptedTracks;       //! number of accepted tracks
         Int_t                   fNAcceptedTracksQCn;    //! accepted tracks for QCn
         fitModulationType       fFitModulationType;     // fit modulation type
@@ -269,16 +256,9 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TF1*                    fFitControl;            //-> control fit
         Float_t                 fMinPvalue;             // minimum value of p
         Float_t                 fMaxPvalue;             // maximum value of p
-        const char*             fNameJetClones;         //! collection of tclones array with jets
-        const char*             fNamePicoTrackClones;   //! collection of tclones with pico tracks
-        const char*             fNameRho;               //! name of rho
         TString                 fNameSmallRho;          // name of small rho
         AliRhoParameter*        fCachedRho;             //! temp cache for rho pointer
         // additional jet cuts (most are inherited)
-        Float_t                 fLocalJetMinEta;        // local eta cut for jets
-        Float_t                 fLocalJetMaxEta;        // local eta cut for jets
-        Float_t                 fLocalJetMinPhi;        // local phi cut for jets
-        Float_t                 fLocalJetMaxPhi;        // local phi cut for jets
         Float_t                 fSoftTrackMinPt;        // min pt for soft tracks
         Float_t                 fSoftTrackMaxPt;        // max pt for soft tracks
         Double_t                fSemiGoodJetMinPhi;     // min phi for semi good tpc runs
@@ -307,16 +287,12 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH1F*                   fHistUndeterminedRunQA; //! undetermined run QA
         // general settings
         Float_t                 fMinDisanceRCtoLJ;      // min distance between rc and leading jet
-        Float_t                 fRandomConeRadius;      // radius of random cone
         Int_t                   fMaxCones;              // max number of random cones
-        Bool_t                  fAbsVnHarmonics;        // force postive local rho
         Float_t                 fExcludeLeadingJetsFromFit;    // exclude n leading jets from fit
         Bool_t                  fRebinSwapHistoOnTheFly;       // rebin swap histo on the fly
         Float_t                 fPercentageOfFits;      // save this percentage of fits
-        Bool_t                  fUseV0EventPlaneFromHeader;             // use the vzero event plane from the header
+        Bool_t                  fUseV0EventPlaneFromHeader;    // use the vzero event plane from the header
         Int_t                   fExplicitOutlierCut;    // cut on correlation of tpc and global multiplicity
-        Double_t                fMinLeadingHadronPt;    // minimum pt for leading hadron
-        Bool_t                  fSubtractJetPt;         // save subtracted jet pt by calling SetPtSub
         // transient object pointers
         TList*                  fOutputList;            //! output list
         TList*                  fOutputListGood;        //! output list for local analysis
@@ -330,22 +306,22 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TProfile*               fProfV3Cumulant;        //! v3 cumulant
         TProfile*               fProfV3Resolution[10];  //! resolution parameters for v3
         // qa histograms for accepted pico tracks
-        TH1F*                   fHistPicoTrackPt[10];    //! pt of all charged tracks
-        TH1F*                   fHistPicoTrackMult[10];  //! multiplicity of accepted pico tracks
-        TH2F*                   fHistPicoCat1[10];       //! pico tracks spd hit and refit
-        TH2F*                   fHistPicoCat2[10];       //! pico tracks wo spd hit w refit, constrained
-        TH2F*                   fHistPicoCat3[10];       //! pico tracks wo spd hit wo refit, constrained
+        TH1F*                   fHistPicoTrackPt[10];   //! pt of all charged tracks
+        TH1F*                   fHistPicoTrackMult[10]; //! multiplicity of accepted pico tracks
+        TH2F*                   fHistPicoCat1[10];      //! pico tracks spd hit and refit
+        TH2F*                   fHistPicoCat2[10];      //! pico tracks wo spd hit w refit, constrained
+        TH2F*                   fHistPicoCat3[10];      //! pico tracks wo spd hit wo refit, constrained
         // qa histograms for accepted emcal clusters
-        TH1F*                   fHistClusterPt[10];      //! pt emcal clusters
-        TH2F*                   fHistClusterEtaPhi[10];  //! eta phi emcal clusters
+        TH1F*                   fHistClusterPt[10];     //! pt emcal clusters
+        TH2F*                   fHistClusterEtaPhi[10]; //! eta phi emcal clusters
         TH2F*                   fHistClusterEtaPhiWeighted[10]; //! eta phi emcal clusters, pt weighted
         // qa event planes
-        TProfile*               fHistPsiControl;         //! event plane control histogram
-        TProfile*               fHistPsiSpread;          //! event plane spread histogram
-        TH1F*                   fHistPsiVZEROA;          //! psi 2 from vzero a
-        TH1F*                   fHistPsiVZEROC;          //! psi 2 from vzero c
-        TH1F*                   fHistPsiVZERO;           //! psi 2 from combined vzero
-        TH1F*                   fHistPsiTPC;             //! psi 2 from tpc
+        TProfile*               fHistPsiControl;        //! event plane control histogram
+        TProfile*               fHistPsiSpread;         //! event plane spread histogram
+        TH1F*                   fHistPsiVZEROA;         //! psi 2 from vzero a
+        TH1F*                   fHistPsiVZEROC;         //! psi 2 from vzero c
+        TH1F*                   fHistPsiVZERO;          //! psi 2 from combined vzero
+        TH1F*                   fHistPsiTPC;            //! psi 2 from tpc
         TH2F*                   fHistPsiVZEROAV0M;      //! psi 2 from vzero a
         TH2F*                   fHistPsiVZEROCV0M;      //! psi 2 from vzero c
         TH2F*                   fHistPsiVZEROVV0M;      //! psi 2 from combined vzero
@@ -355,23 +331,23 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistPsiVZEROTRK;       //! psi 2 from combined vzero
         TH2F*                   fHistPsiTPCTRK;         //! psi 2 from tpc
         // background
-        TH1F*                   fHistRhoPackage[10];     //! rho as estimated by emcal jet package
-        TH1F*                   fHistRho[10];            //! background
-        TH2F*                   fHistRhoVsMult;          //! rho versus multiplicity
-        TH2F*                   fHistRhoVsCent;          //! rho veruss centrality
-        TH2F*                   fHistRhoAVsMult;         //! rho * A vs multiplicity for all jets
-        TH2F*                   fHistRhoAVsCent;         //! rho * A vs centrality for all jets
+        TH1F*                   fHistRhoPackage[10];    //! rho as estimated by emcal jet package
+        TH1F*                   fHistRho[10];           //! background
+        TH2F*                   fHistRhoVsMult;         //! rho versus multiplicity
+        TH2F*                   fHistRhoVsCent;         //! rho veruss centrality
+        TH2F*                   fHistRhoAVsMult;        //! rho * A vs multiplicity for all jets
+        TH2F*                   fHistRhoAVsCent;        //! rho * A vs centrality for all jets
         // delta pt distributions
         TH2F*                   fHistRCPhiEta[10];              //! random cone eta and phi
         TH2F*                   fHistRhoVsRCPt[10];             //! rho * A vs rcpt
         TH1F*                   fHistRCPt[10];                  //! rcpt
         TH2F*                   fHistDeltaPtDeltaPhi2[10];      //! dpt vs dphi (psi2 - phi)
-        TH2F*                   fHistDeltaPtDeltaPhi3[10];      //! dpt vs dphi (psi3 - phi)
+        TH2F*                   fHistDeltaPtDeltaPhi2Rho0[10];  //! dpt vs dphi, rho_0
         TH2F*                   fHistRCPhiEtaExLJ[10];          //! random cone eta and phi, excl leading jet
         TH2F*                   fHistRhoVsRCPtExLJ[10];         //! rho * A vs rcpt, excl leading jet
         TH1F*                   fHistRCPtExLJ[10];              //! rcpt, excl leading jet
         TH2F*                   fHistDeltaPtDeltaPhi2ExLJ[10];  //! dpt vs dphi, excl leading jet
-        TH2F*                   fHistDeltaPtDeltaPhi3ExLJ[10];  //! dpt vs dphi, excl leading jet
+        TH2F*                   fHistDeltaPtDeltaPhi2ExLJRho0[10];      //! dpt vs dphi, excl leading jet, rho_0
         // jet histograms (after kinematic cuts)
         TH1F*                   fHistJetPtRaw[10];              //! jet pt - no background subtraction
         TH1F*                   fHistJetPt[10];                 //! pt of found jets (background subtracted)
@@ -379,15 +355,15 @@ class AliAnalysisTaskRhoVnModulation : public AliAnalysisTaskEmcalJet {
         TH2F*                   fHistJetPtArea[10];             //! jet pt versus area
         TH2F*                   fHistJetPtEta[10];              //! jet pt versus eta (temp control)
         TH2F*                   fHistJetPtConstituents[10];     //! jet pt versus number of constituents
-        TH2F*                   fHistJetEtaRho[10];             //! jet eta versus jet rho
+        TH2F*                   fHistJetEtaRho[10];             //! jet eta versus rho
         // in plane, out of plane jet spectra
-        TH2F*                   fHistJetPsi2Pt[10];             //! psi tpc versus pt
-        TH2F*                   fHistJetPsi3Pt[10];             //! psi vzeroc versus pt
+        TH2F*                   fHistJetPsi2Pt[10];             //! event plane dependence of jet pt
+        TH2F*                   fHistJetPsi2PtRho0[10];         //! event plane dependence of jet pt vs rho_0
 
-        AliAnalysisTaskRhoVnModulation(const AliAnalysisTaskRhoVnModulation&);                  // not implemented
-        AliAnalysisTaskRhoVnModulation& operator=(const AliAnalysisTaskRhoVnModulation&);       // not implemented
+        AliAnalysisTaskJetV2(const AliAnalysisTaskJetV2&);                  // not implemented
+        AliAnalysisTaskJetV2& operator=(const AliAnalysisTaskJetV2&);       // not implemented
 
-        ClassDef(AliAnalysisTaskRhoVnModulation, 27);
+        ClassDef(AliAnalysisTaskJetV2, 1);
 };
 
 #endif

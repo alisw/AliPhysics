@@ -127,6 +127,7 @@ protected:
   virtual Int_t          GetpTtrackBin(Double_t pt) const;   // track pt bins
   virtual Int_t          GetzVertexBin(Double_t zVtx) const; // zVertex bin
   void                   SetfHistPIDcounterLabels(TH1* fHistPID) const;  // PID counter
+  void	   			     SetfHistQAcounterLabels(TH1* h) const; // QA counter
 
   // parameters of detector to cut on for event
   Double_t               fPhimin;                  // phi min
@@ -195,6 +196,8 @@ protected:
   // needed for PID, track objects
   AliESDEvent       *fESD;//!         // ESD object
   AliAODEvent	    *fAOD;//!		  // AOD object
+
+  TH1F				    *fHistEventQA;//!
 
   TH2F                  *fHistTPCdEdX;//!
   TH2F	                *fHistITSsignal;//!

@@ -79,7 +79,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    } 
 
    // create the task and configure 
-   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%s", (isPP? "pp" : ispPb? "pPB": "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, dcaProduct, minpt, eventType.Data());
+   TString taskName = Form("D0%s%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%d_%s", (isPP? "pp" : ispPb? "pPB": "PbPb"), (isMC ? "MC" : "Data"), cutV, NTPCcluster, nsigmaTPCPi, nsigmaTPCKa, nsigmaTOFPi, nsigmaTOFKa, trackDCAcutMax, trackDCAcutMin, trackDCAZcutMax, dcaProduct, minpt, originDselection, eventType.Data());
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
    if (!isMC && !isPP){
      Printf(Form("========== SETTING USE CENTRALITY PATCH AOD049 : %s", (aodN==49)? "yes" : "no"));
@@ -209,7 +209,7 @@ AliRsnMiniAnalysisTask * AddAnalysisTaskD0
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    Printf("AddAnalysisTaskD0 - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%s",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,trackDCAZcutMax,dcaProduct,minpt,eventType.Data()), 
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("%s_%.1f_%d_%.1f_%.1f_%.1f_%.1f_%.1f_%.4f_%.1f_%.5f_%.2f_%d_%s",outNameSuffix.Data(),cutV,NTPCcluster,nsigmaTPCPi,nsigmaTPCKa,nsigmaTOFPi,nsigmaTOFKa,trackDCAcutMax,trackDCAcutMin,trackDCAZcutMax,dcaProduct,minpt,originDselection,eventType.Data()), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);

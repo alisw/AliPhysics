@@ -384,7 +384,7 @@ void AddMonitorOutput_PionEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionEta
    AliRsnValueDaughter *axisPionEta = new AliRsnValueDaughter("pion_eta", AliRsnValueDaughter::kEta);
-   axisPionEta->SetBins(-1.0,1.0,0.001);
+   axisPionEta->SetBins(-1.0,1.0,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionEta = new AliRsnListOutput("Pion_Eta", AliRsnListOutput::kHistoDefault);
@@ -401,7 +401,7 @@ void AddMonitorOutput_PionY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // PionY
    AliRsnValueDaughter *axisPionY = new AliRsnValueDaughter("pion_y", AliRsnValueDaughter::kY);
-   axisPionY->SetBins(-1.0,1.0,0.001);
+   axisPionY->SetBins(-1.0,1.0,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionY = new AliRsnListOutput("Pion_Y", AliRsnListOutput::kHistoDefault);
@@ -418,7 +418,7 @@ void AddMonitorOutput_PionMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // PionMinPt
    AliRsnValueDaughter *axisPionMinPt = new AliRsnValueDaughter("pion_minpt", AliRsnValueDaughter::kPt);
-   axisPionMinPt->SetBins(0.0,1,0.001);
+   axisPionMinPt->SetBins(0.0,1,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionMinPt = new AliRsnListOutput("Pion_MinPt", AliRsnListOutput::kHistoDefault);
@@ -435,7 +435,7 @@ void AddMonitorOutput_PionDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // PionDCA
    AliRsnValueDaughter *axisPionDCA = new AliRsnValueDaughter("pion_dca", AliRsnValueDaughter::kDCAXY);
-   axisPionDCA->SetBins(-1.0,1,0.001);
+   axisPionDCA->SetBins(-1.0,1,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionDCA = new AliRsnListOutput("Pion_DCA", AliRsnListOutput::kHistoDefault);
@@ -452,7 +452,7 @@ void AddMonitorOutput_PionTPC_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Pion PID Cut
    AliRsnValueDaughter *axisPionTPCPIDCut = new AliRsnValueDaughter("pionTPCPID", AliRsnValueDaughter::kTPCnsigmaPi);
-   axisPionTPCPIDCut->SetBins(0.0,5,0.01);
+   axisPionTPCPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionTPCPIDCut = new AliRsnListOutput("Pion_TPC_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -469,7 +469,7 @@ void AddMonitorOutput_PionTOF_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Pion PID Cut
    AliRsnValueDaughter *axisPionTOFPIDCut = new AliRsnValueDaughter("pionTOFPID", AliRsnValueDaughter::kTOFnsigmaPi);
-   axisPionTOFPIDCut->SetBins(0.0,5,0.01);
+   axisPionTOFPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorPionTOFPIDCut = new AliRsnListOutput("Pion_TOF_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -503,7 +503,7 @@ void AddMonitorOutput_KaonEta(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonEta
    AliRsnValueDaughter *axisKaonEta = new AliRsnValueDaughter("kaon_eta", AliRsnValueDaughter::kEta);
-   axisKaonEta->SetBins(-1.0,1.0,0.001);
+   axisKaonEta->SetBins(-1.0,1.0,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonEta = new AliRsnListOutput("Kaon_Eta", AliRsnListOutput::kHistoDefault);
@@ -520,7 +520,7 @@ void AddMonitorOutput_KaonY(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter *
 
    // KaonY
    AliRsnValueDaughter *axisKaonY = new AliRsnValueDaughter("kaon_y", AliRsnValueDaughter::kY);
-   axisKaonY->SetBins(-1.0,1.0,0.001);
+   axisKaonY->SetBins(-1.0,1.0,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonY = new AliRsnListOutput("Kaon_Y", AliRsnListOutput::kHistoDefault);
@@ -537,7 +537,7 @@ void AddMonitorOutput_KaonMinPt(TObjArray *mon=0,TString opt="",AliRsnLoopDaught
 
    // KaonMinPt
    AliRsnValueDaughter *axisKaonMinPt = new AliRsnValueDaughter("kaon_minpt", AliRsnValueDaughter::kPt);
-   axisKaonMinPt->SetBins(0.0,1,0.001);
+   axisKaonMinPt->SetBins(0.0,1,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonMinPt = new AliRsnListOutput("Kaon_MinPt", AliRsnListOutput::kHistoDefault);
@@ -554,7 +554,7 @@ void AddMonitorOutput_KaonDCA(TObjArray *mon=0,TString opt="",AliRsnLoopDaughter
 
    // KaonDCA
    AliRsnValueDaughter *axisKaonDCA = new AliRsnValueDaughter("kaon_dca", AliRsnValueDaughter::kDCAXY);
-   axisKaonDCA->SetBins(-1.0,1,0.001);
+   axisKaonDCA->SetBins(-1.0,1,0.01);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonDCA = new AliRsnListOutput("Kaon_DCA", AliRsnListOutput::kHistoDefault);
@@ -571,7 +571,7 @@ void AddMonitorOutput_KaonTPC_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Kaon TPC PID Cut
    AliRsnValueDaughter *axisKaonTPCPIDCut = new AliRsnValueDaughter("kaonTPCPID", AliRsnValueDaughter::kTPCnsigmaK);
-   axisKaonTPCPIDCut->SetBins(0.0,5,0.01);
+   axisKaonTPCPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonTPCPIDCut = new AliRsnListOutput("Kaon_TPC_PID_Cut", AliRsnListOutput::kHistoDefault);
@@ -588,7 +588,7 @@ void AddMonitorOutput_KaonTOF_PIDCut(TObjArray *mon=0,TString opt="",AliRsnLoopD
 
    // Kaon TOF PID Cut
    AliRsnValueDaughter *axisKaonTOFPIDCut = new AliRsnValueDaughter("kaonTOFPID", AliRsnValueDaughter::kTOFnsigmaK);
-   axisKaonTOFPIDCut->SetBins(0.0,5,0.01);
+   axisKaonTOFPIDCut->SetBins(0.0,5,0.1);
 
    // output: 2D histogram
    AliRsnListOutput *outMonitorKaonTOFPIDCut = new AliRsnListOutput("Kaon_TOF_PID_Cut", AliRsnListOutput::kHistoDefault);

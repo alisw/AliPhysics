@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskNucleiv2(TString name="name",TString eventtype="REAL"){
+AliAnalysisTask *AddTaskNucleiv2(TString name="name",TString eventtype="REAL", Bool_t saveTree = kFALSE){
 
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -9,7 +9,7 @@ AliAnalysisTask *AddTaskNucleiv2(TString name="name",TString eventtype="REAL"){
   
   //========= Add task to the ANALYSIS manager =====
 
-  AliAnalysisTaskNucleiv2 *task = new   AliAnalysisTaskNucleiv2(name,eventtype);
+  AliAnalysisTaskNucleiv2 *task = new   AliAnalysisTaskNucleiv2(name,eventtype,saveTree);
   task->SetDataType(eventtype);
   mgr->AddTask(task);
   

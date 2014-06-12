@@ -7,7 +7,7 @@
  *
  */
 
-AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
+AliAnalysisTaskJetV2* AddTaskJetV2(
   const char *ntracks            = "Tracks",
   const char *nclusters          = "",
   const char *njets              = "Jets",
@@ -17,11 +17,11 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   Double_t   jetareacut         = 0.557,
   const char* type              = "TPC",
   Int_t      leadhadtype        = 0,
-  const char *taskname           = "AliAnalysisTaskRhoVnModulation",
-  UInt_t     runMode            = AliAnalysisTaskRhoVnModulation::kGrid,
+  const char *taskname           = "AliAnalysisTaskJetV2",
+  UInt_t     runMode            = AliAnalysisTaskJetV2::kGrid,
   Bool_t     fillQA             = kTRUE,
   TString    fitOpts            = "WLQI",
-  UInt_t     fitType            = AliAnalysisTaskRhoVnModulation::kFourierSeries,
+  UInt_t     fitType            = AliAnalysisTaskJetV2::kFourierSeries,
   TArrayD    *centralities      = 0x0,
   TRandom3   *randomizer        = 0x0,
   Double_t   trackptcut         = .15
@@ -65,7 +65,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
     name += "_USER";
 
   // create instance of the object
-  AliAnalysisTaskRhoVnModulation* jetTask = new AliAnalysisTaskRhoVnModulation(name, runMode);
+  AliAnalysisTaskJetV2* jetTask = new AliAnalysisTaskJetV2(name, runMode);
   
   // create and connect data containers
   AliParticleContainer* partCont = jetTask->AddParticleContainer(ntracks);
@@ -77,7 +77,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   AliClusterContainer* clusterCont = 0x0;
   if(!tmp.IsNull()) {
       clusterCont = jetTask->AddClusterContainer(nclusters);
-      jetTask->SetAnalysisType(AliAnalysisTaskRhoVnModulation::kFull);
+      jetTask->SetAnalysisType(AliAnalysisTaskJetV2::kFull);
   }
   AliJetContainer* jetCont = jetTask->AddJetContainer(njets, type, jetradius);
   if(jetCont) {
@@ -85,10 +85,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
       jetCont->SetPercAreaCut(jetareacut);
       jetCont->SetRhoName(nrho);
       if(partCont)      jetCont->ConnectParticleContainer(partCont);
-      if(clusterCont)   {
-          jetCont->SetEMCALGeometry();
-          jetCont->ConnectClusterContainer(clusterCont);
-      }
+      if(clusterCont)   jetCont->ConnectClusterContainer(clusterCont);
   }
 
   // task specific setters
@@ -97,7 +94,6 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   jetTask->SetModulationFitType(fitType);
   jetTask->SetModulationFitOptions(fitOpts);
   jetTask->SetModulationFitMinMaxP(.01, 1);
-  jetTask->SetRandomConeRadius(jetradius);
   // if centralities haven't been specified use defaults
   if(!centralities) {
      Double_t c[] = {0., 10., 30., 50., 70., 90.};
@@ -130,7 +126,7 @@ AliAnalysisTaskRhoVnModulation* AddTaskRhoVnModulation(
   mgr->ConnectOutput (jetTask, 1, coutput1 );
 
   switch (runMode) {
-      case AliAnalysisTaskRhoVnModulation::kLocal : {
+      case AliAnalysisTaskJetV2::kLocal : {
           gStyle->SetOptFit(1);
           AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("good_fits_%s", name.Data()), 
 							    TList::Class(),AliAnalysisManager::kOutputContainer,

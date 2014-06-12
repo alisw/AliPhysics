@@ -53,7 +53,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalTriggerInfoQA+;
 #pragma link C++ class AliAnalysisTaskHJetEmbed+;
 #pragma link C++ class AliAnalysisTaskJetMatching+;
-#pragma link C++ class AliAnalysisTaskRhoVnModulation+;
+#pragma link C++ class AliAnalysisTaskJetV2+;
 #pragma link C++ class AliAnalysisTaskRhoMass+;
 #pragma link C++ class AliAnalysisTaskRhoMassBase+;
 #pragma link C++ class AliAnalysisTaskSAJF+;
