@@ -1412,6 +1412,7 @@ AliFlowTrackCuts* AliFlowTrackCuts::GetAODTrackCutsForFilterBit(UInt_t bit)
   AliFlowTrackCuts* cuts = new AliFlowTrackCuts(Form("AOD fitlerbit %i", (int)bit));
   cuts->SetMinimalTPCdedx(-999999999);
   cuts->SetAODfilterBit(bit);
+  cuts->SetParamType(AliFlowTrackCuts::kAODFilterBit);
   return cuts;
 }  
 //-----------------------------------------------------------------------
