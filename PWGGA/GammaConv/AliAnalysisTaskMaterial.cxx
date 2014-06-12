@@ -64,7 +64,7 @@ AliAnalysisTaskMaterial::AliAnalysisTaskMaterial() : AliAnalysisTaskSE(),
    fRecCords(5),
    fDaughterProp(4),
    fKind(0),      
-   fIsHeavyIon(kFALSE),
+   fIsHeavyIon(0),
    fIsMC(kFALSE),
    fESDEvent(NULL),
    fMCEvent(NULL)
@@ -105,98 +105,95 @@ AliAnalysisTaskMaterial::AliAnalysisTaskMaterial(const char *name) : AliAnalysis
    fRecCords(5),
    fDaughterProp(4),
    fKind(0),      
-   fIsHeavyIon(kFALSE),
+   fIsHeavyIon(0),
    fIsMC(kFALSE),
    fESDEvent(NULL),
    fMCEvent(NULL)
 {
-   // Default constructor
+	// Default constructor
 
-   
-   DefineInput(0, TChain::Class());
-   DefineOutput(1, TList::Class());
+	
+	DefineInput(0, TChain::Class());
+	DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
 AliAnalysisTaskMaterial::~AliAnalysisTaskMaterial()
 {
-   // default deconstructor
+	// default deconstructor
 }
 //________________________________________________________________________
 void AliAnalysisTaskMaterial::UserCreateOutputObjects()
 {
-   // Create User Output Objects
+	// Create User Output Objects
 
-   if(fOutputList != NULL){
-      delete fOutputList;
-      fOutputList = NULL;
-   }
-   if(fOutputList == NULL){
-      fOutputList = new TList();
-      fOutputList->SetOwner(kTRUE);
-   }
-   
-   fEventList = new TList();
-   fEventList->SetName("EventList");
-   fEventList->SetOwner(kTRUE);
-   fOutputList->Add(fEventList);
-   
-   fTreeEvent = new TTree("Event","Event");   
-   fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
-   fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
-   fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
-   fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
-   fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
-   fEventList->Add(fTreeEvent);
-   
-   fRecGammaList= new TList();
-   fRecGammaList->SetName("RecGammaList");
-   fRecGammaList->SetOwner(kTRUE);
-   fOutputList->Add(fRecGammaList);
-   
-   
-   fTreeMaterialRec = new TTree("ConvPointRec","ConvPointRec");   
-   fTreeMaterialRec->Branch("recCords",&fRecCords);
-   fTreeMaterialRec->Branch("daughterProp",&fDaughterProp);
-   fTreeMaterialRec->Branch("pt",&fGammaPt,"fGammaPt/F");
-   fTreeMaterialRec->Branch("theta",&fGammaTheta,"fGammaTheta/F");
-   fTreeMaterialRec->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
-   if (fIsMC) {
-      fTreeMaterialRec->Branch("kind",&fKind,"fKind/b");
-   }   
-   fRecGammaList->Add(fTreeMaterialRec);
-   
-   if (fIsMC) {
-      fAllMCGammaList = new TList();
-      fAllMCGammaList->SetName("AllMCGammaList");
-      fAllMCGammaList->SetOwner(kTRUE);
-      fOutputList->Add(fAllMCGammaList);
-      
-      fTreeMaterialAllGamma = new TTree("AllGamma","AllGamma");   
-      fTreeMaterialAllGamma->Branch("pt",&fGammaMCPt,"fGammaMCPt/F");
-      fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/F");
-      fAllMCGammaList->Add(fTreeMaterialAllGamma);
-      
-      fAllMCConvGammaList = new TList();
-      fAllMCConvGammaList->SetName("AllMCGammaConvList");
-      fAllMCConvGammaList->SetOwner(kTRUE);
-      fOutputList->Add(fAllMCConvGammaList);
+	if(fOutputList != NULL){
+		delete fOutputList;
+		fOutputList = NULL;
+	}
+	if(fOutputList == NULL){
+		fOutputList = new TList();
+		fOutputList->SetOwner(kTRUE);
+	}
+	
+	fEventList = new TList();
+	fEventList->SetName("EventList");
+	fEventList->SetOwner(kTRUE);
+	fOutputList->Add(fEventList);
+	
+	fTreeEvent = new TTree("Event","Event");   
+	fTreeEvent->Branch("primVtxZ",&fPrimVtxZ,"fPrimVtxZ/F");
+	fTreeEvent->Branch("nContrVtx",&fNContrVtx,"fNContrVtx/I");
+	fTreeEvent->Branch("nGoodTracksEta09",&fNESDtracksEta09,"fNESDtracksEta09/I");
+	fTreeEvent->Branch("nGoodTracksEta0914",&fNESDtracksEta0914,"fNESDtracksEta0914/I");
+	fTreeEvent->Branch("nGoodTracksEta14",&fNESDtracksEta14,"fNESDtracksEta14/I");
+	fEventList->Add(fTreeEvent);
+	
+	fRecGammaList= new TList();
+	fRecGammaList->SetName("RecGammaList");
+	fRecGammaList->SetOwner(kTRUE);
+	fOutputList->Add(fRecGammaList);
+		
+	fTreeMaterialRec = new TTree("ConvPointRec","ConvPointRec");   
+	fTreeMaterialRec->Branch("recCords",&fRecCords);
+	fTreeMaterialRec->Branch("daughterProp",&fDaughterProp);
+	fTreeMaterialRec->Branch("pt",&fGammaPt,"fGammaPt/F");
+	fTreeMaterialRec->Branch("theta",&fGammaTheta,"fGammaTheta/F");
+	fTreeMaterialRec->Branch("chi2ndf",&fGammaChi2NDF,"fGammaChi2NDF/F");
+	if (fIsMC) {
+		fTreeMaterialRec->Branch("kind",&fKind,"fKind/b");
+	}   
+	fRecGammaList->Add(fTreeMaterialRec);
+	
+	if (fIsMC) {
+		fAllMCGammaList = new TList();
+		fAllMCGammaList->SetName("AllMCGammaList");
+		fAllMCGammaList->SetOwner(kTRUE);
+		fOutputList->Add(fAllMCGammaList);
+		
+		fTreeMaterialAllGamma = new TTree("AllGamma","AllGamma");   
+		fTreeMaterialAllGamma->Branch("pt",&fGammaMCPt,"fGammaMCPt/F");
+		fTreeMaterialAllGamma->Branch("theta",&fGammaMCTheta,"fGammaMCTheta/F");
+		fAllMCGammaList->Add(fTreeMaterialAllGamma);
+		
+		fAllMCConvGammaList = new TList();
+		fAllMCConvGammaList->SetName("AllMCGammaConvList");
+		fAllMCConvGammaList->SetOwner(kTRUE);
+		fOutputList->Add(fAllMCConvGammaList);
 
-//       fMCConvCords = new Float_t[5];
-//       fMCConvDaughterProp = new Float_t[4];
+	//       fMCConvCords = new Float_t[5];
+	//       fMCConvDaughterProp = new Float_t[4];
 
-      
-      fTreeMaterialConvGamma = new TTree("ConvGammaMC","ConvGammaMC");   
-      fTreeMaterialConvGamma->Branch("Cords",&fMCConvCords);
-      fTreeMaterialConvGamma->Branch("daughterProp",&fMCConvDaughterProp);
-      fTreeMaterialConvGamma->Branch("Pt",&fGammaMCConvPt,"fGammaMCConvPt/F");
-      fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
-      fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
-   }
-   
-   // V0 Reader Cuts
-   TString cutnumber = fConversionCuts->GetCutNumber();
-   PostData(1, fOutputList);
+		
+		fTreeMaterialConvGamma = new TTree("ConvGammaMC","ConvGammaMC");   
+		fTreeMaterialConvGamma->Branch("Cords",&fMCConvCords);
+		fTreeMaterialConvGamma->Branch("daughterProp",&fMCConvDaughterProp);
+		fTreeMaterialConvGamma->Branch("Pt",&fGammaMCConvPt,"fGammaMCConvPt/F");
+		fTreeMaterialConvGamma->Branch("Theta",&fGammaMCConvTheta,"fGammaMCConvTheta/F");   
+		fAllMCConvGammaList->Add(fTreeMaterialConvGamma);
+	}
+	
+	PostData(1, fOutputList);
    
 }
 
@@ -231,7 +228,7 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 		}
 	}
    
-	if(fIsHeavyIon && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
+	if(fIsHeavyIon > 0 && !fConversionCuts->IsCentralitySelected(fESDEvent)) return;
 	fNESDtracksEta09 = CountTracks09(); // Estimate Event Multiplicity
 	fNESDtracksEta0914 = CountTracks0914(); // Estimate Event Multiplicity
 	fNESDtracksEta14 = fNESDtracksEta09 + fNESDtracksEta0914;
@@ -251,7 +248,7 @@ void AliAnalysisTaskMaterial::UserExec(Option_t *){
 	}
 	fPrimVtxZ = fESDEvent->GetPrimaryVertex()->GetZ();
 	
-	if (fIsHeavyIon){
+	if (fIsHeavyIon == 2){
 		if (!(fNESDtracksEta09 > 20 && fNESDtracksEta09 < 80)) return;
 	}	
 	
