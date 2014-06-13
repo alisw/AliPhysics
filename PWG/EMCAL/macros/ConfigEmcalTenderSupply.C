@@ -33,7 +33,7 @@ AliEMCALTenderSupply* ConfigEmcalTenderSupply(
   if (reclusterize) {
     params->SetClusterizerFlag(clusterizer);
     if (clusterizer == AliEMCALRecParam::kClusterizerNxN)
-      params->SetNxM(3,3);
+      params->SetNxM(1,1); // -> (1,1) means 3x3!
   }
   params->SetTimeMin(timeMin);
   params->SetTimeMax(timeMax);

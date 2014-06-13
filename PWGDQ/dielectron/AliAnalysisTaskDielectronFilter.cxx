@@ -287,8 +287,8 @@ void AliAnalysisTaskDielectronFilter::UserExec(Option_t *)
       if(!obj) continue;
       for(int j=0;j<obj->GetEntriesFast();j++){
         AliDielectronPair *pairObj = (AliDielectronPair*)obj->UncheckedAt(j);
-        Int_t id1 = ((AliVTrack*)pairObj->GetFirstDaughter())->GetID();
-        Int_t id2 = ((AliVTrack*)pairObj->GetSecondDaughter())->GetID();
+        Int_t id1 = ((AliVTrack*)pairObj->GetFirstDaughterP())->GetID();
+        Int_t id2 = ((AliVTrack*)pairObj->GetSecondDaughterP())->GetID();
         
         for(Int_t it=0;it<aod->GetNumberOfTracks();it++){
           if(aod->GetTrack(it)->GetID() == id1) pairObj->SetRefFirstDaughter(aod->GetTrack(it)); 

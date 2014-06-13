@@ -379,14 +379,14 @@ AliPWG4HighPtSpectra* ConfigureTaskPWG4HighPtSpectra(char *prodType = "LHC10e14"
   // mcAccCuts->SetMinNHitITS(mintrackrefsITS);
   //mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
 
-  TObjArray* recList = new TObjArray(0);
+  TObjArray* recMCList = new TObjArray(0);
   TObjArray* secList = new TObjArray(0) ;
 
   printf("CREATE MC KINE CUTS\n");
-  TObjArray* recMCList = new TObjArray(0);
+  TObjArray* recList = new TObjArray(0);
   TObjArray* mcList = new TObjArray(0) ;
   mcList->AddLast(mcKineCuts);
-  recMCList->AddLast(mcKineCuts);
+  recList->AddLast(mcKineCuts);
   //mcList->AddLast(mcAccCuts);
 
   //CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK

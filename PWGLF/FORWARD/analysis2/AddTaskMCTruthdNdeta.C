@@ -27,15 +27,15 @@
  * @ingroup pwglf_forward_dndeta
  */
 AliAnalysisTask*
-AddTaskMCTruthdNdeta(const char* trig      = "INEL", 
+AddTaskMCTruthdNdeta(const char* config    = "dNdetaConfig.C",
+		     const char* trig      = "INEL", 
 		     Double_t    vzMin     = -10, 
 		     Double_t    vzMax     = +10, 
-		     Bool_t      useCent   = false,
+		     const char* cent      = "",
 		     const char* scheme    = 0,
-		     Bool_t      cutEdges  = false,
 		     Double_t    trigEff   = 1, 
 		     Double_t    trigEff0  = 1,
-		     Bool_t      corrEmpty = false)
+		     Bool_t      satOnly   = false)
 {
   // --- Load libraries ----------------------------------------------
   gROOT->LoadClass("AliAODForwardMult", "libPWGLFforward2");
@@ -52,12 +52,6 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // Set the trigger efficiency 
   task->SetTriggerEff(trigEff); // 0.997535);
   task->SetTriggerEff0(trigEff0);
-  // Whether to cut edges when re-binning 
-  task->SetCutEdges(cutEdges);
-  // Whether to correct for empty bins when projecting 
-  task->SetCorrEmpty(corrEmpty);
-  // Whether to use TH2::ProjectionX 
-  task->SetUseROOTProjectX(false);
   // Bit mask of 
   // 
   //    kNone           Normalise to accepted events 
@@ -83,9 +77,18 @@ AddTaskMCTruthdNdeta(const char* trig      = "INEL",
   // inclusive to b exclusive.  An upper bound of 100 is treated
   // especially, and the upper bound is inclusive in that case .
   if (useCent) {
-    Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
-    task->SetCentralityAxis(11, bins);
+    if (task->SetCentralityMethod(cent)) {
+      Short_t bins[] = { 0, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+      task->SetCentralityAxis(11, bins);
+    }
   }
+  // Set satellite vertex flag
+  task->SetSatelliteVertices(satOnly);
+
+  // Set-up task using a script 
+  task->Configure(config);
+  
+  // Connect to manager 
   task->Connect(0,0);
 
   return task;

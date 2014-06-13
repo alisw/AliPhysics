@@ -47,6 +47,9 @@ class AliCalorimeterUtils : public TObject {
   
   Bool_t        AreNeighbours(TString calo, Int_t absId1, Int_t absId2) const ;
 
+  Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
+                                                 AliVCluster* cluster);
+  
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
@@ -68,6 +71,14 @@ class AliCalorimeterUtils : public TObject {
   void          SwitchOnClusterPlot()                      { fPlotCluster = kTRUE         ; }
   void          SwitchOffClusterPlot()                     { fPlotCluster = kFALSE        ; }
 
+  Float_t       GetMCECellClusFracCorrection(Float_t eCell, Float_t eCluster) const ;
+  void          SetMCECellClusFracCorrectionParamters(Int_t i, Float_t param) { if(i<4) fMCECellClusFracCorrParam[i] = param; }
+  
+  Bool_t        IsMCECellClusFracCorrectionOn()   const    { return fMCECellClusFracCorrOn   ; }
+  void          SwitchOnMCECellClusFracCorrection()        { fMCECellClusFracCorrOn = kTRUE  ; }
+  void          SwitchOffMCECellClusFracCorrection()       { fMCECellClusFracCorrOn = kFALSE ; }
+
+  
   //Calorimeters Geometry Methods
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
   TString       EMCALGeometryName()                  const { return fEMCALGeoName         ; }  
@@ -197,6 +208,7 @@ class AliCalorimeterUtils : public TObject {
   void          RecalibrateCellTime     (Double_t & time, TString calo, Int_t absId, Int_t bunchCrossNumber) const ;
   void          RecalibrateCellAmplitude(Float_t  & amp,  TString calo, Int_t absId) const ;
   Float_t       RecalibrateClusterEnergy(AliVCluster* cluster, AliVCaloCells * cells);
+  Float_t       RecalibrateClusterEnergyWeightCell(AliVCluster* cluster, AliVCaloCells * cells, Float_t energyOrg);
 
   // Run dependent energy calibrations (EMCAL)
   
@@ -331,11 +343,13 @@ class AliCalorimeterUtils : public TObject {
   Int_t              fNSuperModulesUsed;     // Number of supermodules to be used in analysis, can be different than the real geo,
                                              // to be used at initialization of histograms
 
+  Bool_t             fMCECellClusFracCorrOn;  // Correct or not the weight of cells in cluster
+  Float_t            fMCECellClusFracCorrParam[4]; // Parameters for the function correcting the weight of the cells in the cluster
   
   AliCalorimeterUtils(              const AliCalorimeterUtils & cu) ; // cpy ctor
   AliCalorimeterUtils & operator = (const AliCalorimeterUtils & cu) ; // cpy assignment
   
-  ClassDef(AliCalorimeterUtils,16)
+  ClassDef(AliCalorimeterUtils,17)
 } ;
 
 

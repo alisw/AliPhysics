@@ -1115,8 +1115,8 @@ Bool_t AliDielectronMC::IsMCTruth(const AliDielectronPair* pair, const AliDielec
   //
  
   // legs (daughters)
-  const AliVParticle * mcD1 = pair->GetFirstDaughter();
-  const AliVParticle * mcD2 = pair->GetSecondDaughter();
+  const AliVParticle * mcD1 = pair->GetFirstDaughterP();
+  const AliVParticle * mcD2 = pair->GetSecondDaughterP();
   Int_t labelD1 = (mcD1 ? TMath::Abs(mcD1->GetLabel()) : -1);
   Int_t labelD2 = (mcD2 ? TMath::Abs(mcD2->GetLabel()) : -1);
   Int_t d1Pdg = GetPdgFromLabel(labelD1);
@@ -1254,8 +1254,8 @@ Bool_t AliDielectronMC::HaveSameMother(const AliDielectronPair * pair) const
   // Check whether two particles have the same mother
   //
 
-  const AliVParticle * daughter1 = pair->GetFirstDaughter();
-  const AliVParticle * daughter2 = pair->GetSecondDaughter();
+  const AliVParticle * daughter1 = pair->GetFirstDaughterP();
+  const AliVParticle * daughter2 = pair->GetSecondDaughterP();
   if (!daughter1 || !daughter2) return 0;
 
   AliVParticle *mcDaughter1=GetMCTrackFromMCEvent(daughter1->GetLabel());
@@ -1285,7 +1285,7 @@ Int_t AliDielectronMC::IsJpsiPrimary(const AliDielectronPair * pair)
  //         "1" for secondary jpsi (from beauty)
  //         "2" for background  
  if(!HaveSameMother(pair)) return 2;
- AliVParticle *mcDaughter1=GetMCTrackFromMCEvent((pair->GetFirstDaughter())->GetLabel());
+ AliVParticle *mcDaughter1=GetMCTrackFromMCEvent((pair->GetFirstDaughterP())->GetLabel());
  Int_t labelMother=-1;
 
   if (mcDaughter1->IsA()==AliMCParticle::Class()){

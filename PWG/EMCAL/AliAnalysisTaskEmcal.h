@@ -71,7 +71,8 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   void                        SetMinMCLabel(Int_t s)                                { fMinMCLabel        = s                              ; }
   void                        SetMinNTrack(Int_t min)                               { fMinNTrack         = min                            ; }
   void                        SetMinPtTrackInEmcal(Double_t min)                    { fMinPtTrackInEmcal = min                            ; }
-  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; }  
+  void                        SetNCentBins(Int_t n)                                 { fNcentBins         = n                              ; } 
+  void                        SetNeedEmcalGeom(Bool_t n)                            { fNeedEmcalGeom     = n                              ; }
   void                        SetOffTrigger(UInt_t t)                               { fOffTrigger        = t                              ; }
   void                        SetTrackEtaLimits(Double_t min, Double_t max, Int_t c=0);
   void                        SetTrackPhiLimits(Double_t min, Double_t max, Int_t c=0);
@@ -142,6 +143,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Int_t                       fMinMCLabel;                 // minimum MC label value for the tracks/clusters being considered MC particles
   Int_t                       fMCLabelShift;               // if MC label > fMCLabelShift, MC label -= fMCLabelShift
   Int_t                       fNcentBins;                  // how many centrality bins
+  Bool_t                      fNeedEmcalGeom;              // whether or not the task need the emcal geometry
   AliEMCALGeometry           *fGeom;                       //!emcal geometry
   TClonesArray               *fTracks;                     //!tracks
   TClonesArray               *fCaloClusters;               //!clusters
@@ -165,12 +167,14 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   TObjArray                   fClusterCollArray;           // cluster collection array
   AliEmcalTriggerPatchInfo   *fMainTriggerPatch;           // main trigger patch, will be cached after calling GetMainTriggerPatch() first time
   TriggerType                 fTriggerType;                // trigger type J1 or J2
+
   TList                      *fOutput;                     //!output list
   TH1                        *fHistTrialsAfterSel;         //!total number of trials per pt hard bin after selection
   TH1                        *fHistEventsAfterSel;         //!total number of events per pt hard bin after selection
+  TProfile                   *fHistXsectionAfterSel;       //!x section from pythia header
   TH1                        *fHistTrials;                 //!trials from pyxsec.root
-  TProfile                   *fHistXsection;               //!x section from pyxsec.root
   TH1                        *fHistEvents;                 //!total number of events per pt hard bin
+  TProfile                   *fHistXsection;               //!x section from pyxsec.root
   TH1                        *fHistPtHard;                 //!pt hard distribution
   TH1                        *fHistCentrality;             //!event centrality distribution
   TH1                        *fHistZVertex;                //!z vertex position
@@ -181,6 +185,6 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   AliAnalysisTaskEmcal(const AliAnalysisTaskEmcal&);            // not implemented
   AliAnalysisTaskEmcal &operator=(const AliAnalysisTaskEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskEmcal, 8) // EMCAL base analysis task
+  ClassDef(AliAnalysisTaskEmcal, 9) // EMCAL base analysis task
 };
 #endif

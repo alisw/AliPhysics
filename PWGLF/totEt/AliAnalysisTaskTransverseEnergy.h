@@ -41,20 +41,20 @@ protected:
     AliCentrality* GetCentralityObject();
     
     /** The ESD event */
-    AliESDEvent *fESDEvent; //The ESD event
+    AliESDEvent *fESDEvent; //!The ESD event
   
     TString       fMCConfigFile;        // the name of the ConfigFile
     TString       fRecoConfigFile;        // the name of the ConfigFile
 
-    TH2F *fHistEtRecvsEtMC; // Rec vs MC histo 
-    TH2F *fHistEtRecOverEtMC; // Rec over MC histo 
-    TH2F *fHistDiffEtRecEtMCOverEtMC; // Rec - MC over MC histo 
+    TH2F *fHistEtRecvsEtMC; //! Rec vs MC histo 
+    TH2F *fHistEtRecOverEtMC; //! Rec over MC histo 
+    TH2F *fHistDiffEtRecEtMCOverEtMC; //! Rec - MC over MC histo 
 
-    AliESDtrackCuts* fEsdtrackCutsITSTPC; // track cuts ITS&TPC
-    AliESDtrackCuts* fEsdtrackCutsTPC; // track cuts TPC
-    AliESDtrackCuts* fEsdtrackCutsITS; // track cuts ITS
+    AliESDtrackCuts* fEsdtrackCutsITSTPC; //! track cuts ITS&TPC
+    AliESDtrackCuts* fEsdtrackCutsTPC; //! track cuts TPC
+    AliESDtrackCuts* fEsdtrackCutsITS; //! track cuts ITS
 
-    TList *fOutputList; //output list
+    TList *fOutputList; //->output list
     
     TString fPhysSelTaskName; // If we need to access the physics selection task
     TString fCentSelTaskName; // If we need to access the centrality selection task

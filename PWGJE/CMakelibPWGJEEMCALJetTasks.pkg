@@ -59,6 +59,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHMEC.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHF.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetMassResponse.cxx
@@ -70,7 +71,7 @@ set ( SRCS
  EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalTriggerInfoQA.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskHJetEmbed.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskJetMatching.cxx
- EMCALJetTasks/UserTasks/AliAnalysisTaskRhoVnModulation.cxx
+ EMCALJetTasks/UserTasks/AliAnalysisTaskJetV2.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMass.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskRhoMassBase.cxx
  EMCALJetTasks/UserTasks/AliAnalysisTaskSAJF.cxx
@@ -96,8 +97,6 @@ endif(FASTJET_FOUND)
 
 set ( DHDR  PWGJEEMCALJetTasksLinkDef.h)
 
-string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
-
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 if(FASTJET_FOUND)
@@ -108,3 +107,4 @@ else()
   set ( EINCLUDE PWGJE/EMCALJetTasks PWG/EMCAL EMCAL OADB STEER/ESD STEER/STEERBase ANALYSIS)
 endif(FASTJET_FOUND)
 
+SET ( EXPORT ${HDRS} )

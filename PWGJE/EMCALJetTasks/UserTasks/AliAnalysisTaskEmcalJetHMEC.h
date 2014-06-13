@@ -3,17 +3,19 @@
 
 // $Id$
 
+class TClonesArray;
 class TList;
 class TH1;
 class TH2;
 class THnSparse;
 class AliEmcalJet;
 class AliESDEvent;
+class AliAODEvent;
 class AliEventPoolManager;
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisTaskEmcalJet.h"
 
-class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
+class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskEmcalJet {
  public:
   AliAnalysisTaskEmcalJetHMEC();
   AliAnalysisTaskEmcalJetHMEC(const char *name);
@@ -21,9 +23,9 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   
   virtual void            UserCreateOutputObjects();
   virtual Double_t        RelativePhi(Double_t mphi, Double_t vphi);
-  virtual void            UserExec(Option_t *option);
+//  virtual void            UserExec(Option_t *option);
   virtual void            Terminate(Option_t *);
-  virtual Int_t           AcceptJet(AliEmcalJet *jet);
+  virtual Int_t           AcceptthisJet(AliEmcalJet *jet);
   virtual THnSparse*      NewTHnSparseF(const char* name, UInt_t entries);
   virtual void            GetDimParams(Int_t iEntry,TString &label, Int_t &nbins, Double_t &xmin, Double_t &xmax);
 
@@ -42,16 +44,15 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   virtual void            SetMixingTracks(Int_t tracks)            { fMixingTracks = tracks; }
 
 
-
-
-
  protected:
+  void					 ExecOnce();
+  Bool_t			     Run();
   virtual Int_t          GetCentBin(Double_t cent) const;
   virtual Int_t          GetEtaBin(Double_t eta) const;
   virtual Int_t          GetpTjetBin(Double_t pt) const;
 
-  TString                fTracksName;              //name of tracks collection
-  TString                fJetsName;                //name of Jet collection
+  TString                fTracksName;              // name of tracks collection
+  TString                fJetsName;                // name of Jet collection
   Double_t               fPhimin;                  // phi min of jet
   Double_t               fPhimax;                  // phi max of jet
   Double_t               fEtamin;                  // eta min of jet
@@ -61,12 +62,12 @@ class AliAnalysisTaskEmcalJetHMEC : public AliAnalysisTaskSE {
   Double_t               fClusBias;
   Double_t               fTrkEta;                  // eta min/max of tracks
   Int_t                  fDoEventMixing;           // flag to do evt mixing
-  Int_t  		 fMixingTracks;		   // size of track buffer for event mixing
+  Int_t  		         fMixingTracks;		       // size of track buffer for event mixing
   TObjArray*             CloneAndReduceTrackList(TObjArray* tracks);
 
   AliESDEvent           *fESD;    //! ESD object
+  AliAODEvent			*fAOD;    //! AOD object
   AliEventPoolManager   *fPoolMgr; //!
-  TList                 *fOutputList; //! Output list
   TH1                   *fHistTrackPt; //! Pt spectrum
   TH1                   *fHistCentrality;//!
   TH2                   *fHistJetEtaPhi;//!

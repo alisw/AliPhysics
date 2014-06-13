@@ -29,8 +29,8 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFast(
   recparam->SetTimeMax(timeMax);
   recparam->SetTimeCut(timeCut);
 
-  if (clusterizer == AliEMCALRecParam::kClusterizerNxN) //MV: copied from tender. please check
-    recparam->SetNxM(3,3);
+  if (clusterizer == AliEMCALRecParam::kClusterizerNxN)
+    recparam->SetNxM(1,1); // -> (1,1) means 3x3!
 
   AliEMCALRecoUtils *recoUtils = new AliEMCALRecoUtils();
   recoUtils->SetNonLinearityFunction(0);

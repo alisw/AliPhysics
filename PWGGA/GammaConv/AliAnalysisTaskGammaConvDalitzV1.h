@@ -220,6 +220,7 @@ class AliAnalysisTaskGammaConvDalitzV1: public AliAnalysisTaskSE
     TH1I **hNGoodESDTracks;
     TH2F **hNGoodESDTracksVsNGoodGammas;
     TH2F **hNGoodESDTracksVsNGoodVGammas;
+    TH1I **hNV0Tracks;
     TProfile **hEtaShift;
         
     TRandom3 fRandom;

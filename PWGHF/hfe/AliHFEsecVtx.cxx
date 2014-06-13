@@ -1708,7 +1708,7 @@ void AliHFEsecVtx::FillHistos(Int_t step, const AliESDtrack *track){
     if(!(mctrack = dynamic_cast<AliMCParticle *>(fMCEvent->GetTrack(TMath::Abs(track->GetLabel()))))) return;
     mcpart = mctrack->Particle();
 
-    Int_t esource=fMCQA->GetElecSource(mcpart);
+    Int_t esource=fMCQA->GetElecSource(mcpart,kTRUE);
     if(esource==1) {
       //if(!(dynamic_cast<TH1F *>(fSecVtxList->At(step+1)))) return;
       (static_cast<TH1F *>(fSecVtxList->At(step+1)))->Fill(mcpart->Pt()); //charm
