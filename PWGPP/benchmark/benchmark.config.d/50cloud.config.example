@@ -6,6 +6,12 @@
 # Cloud configuration for the ALICE Release Validation.
 #
 
+# Override benchmark.config: make makeflow more verbose
+makeflowOptions="-T condor -d all"
+
+# Override benchmark.config: use temporary dir instead of output dir in some cases
+reconstructInTemporaryDir=1
+
 # EC2 credentials (must export)
 export EC2_ACCESS_KEY='your_ec2_access_key'
 export EC2_SECRET_KEY='your_ec2_secret_key'
