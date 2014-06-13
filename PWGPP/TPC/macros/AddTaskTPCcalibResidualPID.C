@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTaskTPCcalibResidualPID(Bool_t producePIDqa = kTRUE, Bool_t useTPCCutMIGeo = kTRUE,
+AliAnalysisTask *AddTaskTPCcalibResidualPID(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+                                            Bool_t producePIDqa = kTRUE, Bool_t useTPCCutMIGeo = kTRUE,
                                             Bool_t correctdEdxEtaDependence = kFALSE, 
                                             Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                             Bool_t useMCinfo = kTRUE){
@@ -8,12 +9,6 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(Bool_t producePIDqa = kTRUE, Bool_t 
     Error("AddTask_statsQA_TPCresPID", "No analysis manager found.");
     return 0;
   }
-
-  TString trainConfig=gSystem->Getenv("CONFIG_FILE");
-
-  TString list=gSystem->Getenv("LIST");
-  Bool_t isLHC11h = list.Contains("LHC11h");
-
 
   //========= Add task to the ANALYSIS manager =====
   AliTPCcalibResidualPID *task=new AliTPCcalibResidualPID("TPCresPID");
@@ -25,16 +20,14 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(Bool_t producePIDqa = kTRUE, Bool_t 
   AliESDtrackCuts* esdTrackCuts = 0x0;
   AliESDtrackCuts* esdTrackCutsV0 = 0x0;
   
-  //TODO LHC12 + check if cuts are correct in this way!
-  TString listOfFiles = gSystem->Getenv("LIST");
-  if (listOfFiles.Contains("LHC11") || listOfFiles.Contains("LHC12") || listOfFiles.Contains("LHC13")) {
+  if (period.Contains("LHC11") || period.Contains("LHC12") || period.Contains("LHC13")) {
     esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     esdTrackCutsV0 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE);
     task->SetESDtrackCuts(esdTrackCuts);
     //task->SetESDtrackCutsV0(esdTrackCutsV0);
     printf("Using standard ITS-TPC track cuts 2011.\n");
   }
-  else if (listOfFiles.Contains("LHC10")) {
+  else if (period.Contains("LHC10")) {
     esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
     esdTrackCutsV0 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE);
     task->SetESDtrackCuts(esdTrackCuts);
@@ -50,14 +43,12 @@ AliAnalysisTask *AddTaskTPCcalibResidualPID(Bool_t producePIDqa = kTRUE, Bool_t 
     printf("WARNING: Cuts not configured for this period!!! Using standard ITS-TPC track cuts 2011\n");
   }
   
-  // Test whether we have pPb or Pbp
-  if (listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) {
-    task->SetIsPbpOrpPb(kTRUE);
-    printf("pPb/Pbp detected -> Adapting vertex cuts!\n");
+  task->SetIsPbpOrpPb(isPbpOrpPb);
+  if (task->GetIsPbpOrpPb()) {
+    printf("Collision type pPb/Pbp set -> Adapting vertex cuts!\n");
   }
   else  {
-    task->SetIsPbpOrpPb(kFALSE);
-    printf("Collision type different from pPb/Pbp detected -> Using standard vertex cuts!\n");
+    printf("Collision type different from pPb/Pbp -> Using standard vertex cuts!\n");
   }
 
   task->SetZvtxCutEvent(10.0);

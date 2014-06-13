@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
+AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+                                      Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                       Bool_t setDoAdditionalQA = kFALSE,
                                       Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
                                       Bool_t usePhiCut = kFALSE){
@@ -20,12 +21,11 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
   AliESDtrackCuts* esdTrackCutsL = 0x0;
   
   printf("\nSettings:\n");
-  TString listOfFiles = gSystem->Getenv("LIST");
-  if (listOfFiles.Contains("LHC11") || listOfFiles.Contains("LHC12") || listOfFiles.Contains("LHC13")) {
+  if (period.Contains("LHC11") || period.Contains("LHC12") || period.Contains("LHC13")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     printf("Using standard ITS-TPC track cuts 2011.\n");
   }
-  else if (listOfFiles.Contains("LHC10")) {
+  else if (period.Contains("LHC10")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
     printf("Using standard ITS-TPC track cuts 2010.\n");
   }
@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
     printf("WARNING: Cuts not configured for this period!!! Using standard ITS-TPC track cuts 2011\n");
   }
   
-  if (listOfFiles.Contains("PbPb") || listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) {
+  if (period.Contains("PbPb") || period.Contains("pPb") || period.Contains("Pbp")) {
     task->SetStoreMultiplicity(kTRUE);
     printf("PbPb, pPb or Pbp detected -> Storing multiplicity in tree!\n");
   }
@@ -44,14 +44,12 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(Bool_t correctdEdxEtaDependence = kFALSE, 
   }
   
   
-  // Test whether we have pPb or Pbp
-  if (listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) {
-    task->SetIsPbpOrpPb(kTRUE);
-    printf("pPb/Pbp detected -> Adapting vertex cuts!\n");
+  task->SetIsPbpOrpPb(isPbpOrpPb);
+  if (task->GetIsPbpOrpPb()) {
+    printf("Collision type pPb/Pbp set -> Adapting vertex cuts!\n");
   }
   else  {
-    task->SetIsPbpOrpPb(kFALSE);
-    printf("Collision type different from pPb/Pbp detected -> Using standard vertex cuts!\n");
+    printf("Collision type different from pPb/Pbp -> Using standard vertex cuts!\n");
   }
   
   
