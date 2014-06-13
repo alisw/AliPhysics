@@ -31,7 +31,7 @@ AliAnalysisTaskParticleEfficiency *AddTaskQAPartEff(const char* outfilename="Ana
   
 
   mgr->ConnectInput  (ana, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput (ana, 1, coutput1 );
+  mgr->ConnectOutput (ana, 0, coutput1 );
  
   return ana;
 
