@@ -644,6 +644,18 @@ void AliESDMuonTrack::SetFiredChamber(UInt_t& pattern, Int_t cathode, Int_t cham
 void AliESDMuonTrack::AddEffInfo(UInt_t& pattern, Int_t slatOrInfo, Int_t board, EAliTriggerChPatternFlag effType)
 {
   /// Add efficiency flag and crossed RPC or info on rejected track
+  if ( slatOrInfo > 0x1F ) {
+    AliErrorClass(Form("slatOrInfo is 0x%x should be at most 0x1f",slatOrInfo));
+    return;
+  }
+  if ( board > 242 ) {
+    AliErrorClass(Form("board is %i should be at most 242",board));
+    return;
+  }
+  if  ( effType > 0x3 ) {
+    AliErrorClass(Form("effType is 0x%x should be at most 0x3",effType));
+    return;
+  }
   pattern |= effType << 8;
   pattern |= slatOrInfo << 10;
   pattern |= board << 15;
@@ -660,7 +672,7 @@ Bool_t AliESDMuonTrack::IsChamberHit(UInt_t pattern, Int_t cathode, Int_t chambe
 Int_t AliESDMuonTrack::GetEffFlag(UInt_t pattern)
 {
   /// Get Efficiency flag
-  return (pattern >> 8) & 0x03;
+  return (pattern >> 8) & 0x3;
 }
 
 //_____________________________________________________________________________
