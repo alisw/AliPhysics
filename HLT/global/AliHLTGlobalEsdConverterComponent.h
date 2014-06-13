@@ -74,7 +74,7 @@ class AliHLTGlobalEsdConverterComponent : public AliHLTProcessor
    */
   int ProcessBlocks(TTree* pTree, AliESDEvent* pESD);
 
-  void FillBenchmarkHistos(Double_t *statistics, TString *names);
+ // void FillBenchmarkHistos(Double_t *statistics, TString *names);
  private:
   /** copy constructor prohibited */
   AliHLTGlobalEsdConverterComponent(const AliHLTGlobalEsdConverterComponent&);

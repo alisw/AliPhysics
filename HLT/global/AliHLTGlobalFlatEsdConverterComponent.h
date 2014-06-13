@@ -65,8 +65,6 @@ class AliHLTGlobalFlatEsdConverterComponent : public AliHLTProcessor
 
   using AliHLTProcessor::DoEvent;
 
-  void FillBenchmarkHistos(Double_t *statistics, TString *names);
-  
   
  private:
   /** copy constructor prohibited */

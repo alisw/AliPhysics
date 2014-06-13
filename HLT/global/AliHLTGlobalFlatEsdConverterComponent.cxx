@@ -738,24 +738,3 @@ int AliHLTGlobalFlatEsdConverterComponent::DoEvent( const AliHLTComponentEventDa
 }
 
 
-void AliHLTGlobalFlatEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
-
-return;
-//  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
-    /*
-  TFile *f = TFile::Open(fBenchmarkHistosFilename,"UPDATE");
-  THnSparseD *s = (THnSparseD*)f->Get("benchmarkInformation");
-  TNamed *t = (TNamed*)f->Get("time");
-	
-  if(!s){
-	HLTWarning( "Benchmark Histograms not available!" );
-	return;
-  }
-  s->Fill(statistics);
-
-  TList histosList;
-  histosList.Add(s);
-  histosList.Add(t);
-  histosList.SaveAs(fBenchmarkHistosFilename);
- */ 
-}

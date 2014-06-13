@@ -908,10 +908,9 @@ int AliHLTGlobalEsdConverterComponent::ProcessBlocks(TTree* pTree, AliESDEvent* 
 
 
 
-
-void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString */*names*/){
-return;
 /*
+void AliHLTGlobalEsdConverterComponent::FillBenchmarkHistos(Double_t *statistics, TString *names){
+return;
 
 //  cout<<"Now writing benchmarks to " <<  fBenchmarkHistosFilename <<endl<<endl;
     
@@ -929,5 +928,5 @@ return;
   histosList.Add(s);
   histosList.Add(t);
   histosList.SaveAs(fBenchmarkHistosFilename);
- */ 
 }
+*/
