@@ -1,4 +1,5 @@
-AliAnalysisTask *AddTaskTPCPIDEtaQA(Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
+AliAnalysisTask *AddTaskTPCPIDEtaQA(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+                                    Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
                                     Bool_t usePhiCut = kFALSE,
                                     Double_t ptThresholdForPhiCut = 0.0){
   //get the current analysis manager
@@ -19,12 +20,11 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIG
   AliESDtrackCuts* esdTrackCutsL = 0x0;
   
   printf("\nSettings:\n");
-  TString listOfFiles = gSystem->Getenv("LIST");
-  if (listOfFiles.Contains("LHC11") || listOfFiles.Contains("LHC12") || listOfFiles.Contains("LHC13")) {
+  if (period.Contains("LHC11") || period.Contains("LHC12") || period.Contains("LHC13")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     printf("Using standard ITS-TPC track cuts 2011\n");
   }
-  else if (listOfFiles.Contains("LHC10")) {
+  else if (period.Contains("LHC10")) {
     esdTrackCutsL = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
     printf("Using standard ITS-TPC track cuts 2010\n");
   }
@@ -41,14 +41,12 @@ AliAnalysisTask *AddTaskTPCPIDEtaQA(Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIG
   esdTrackCutsL->SetMaxChi2TPCConstrainedGlobal(36);
 */  
 
-  // Test whether we have pPb or Pbp
-  if (listOfFiles.Contains("pPb") || listOfFiles.Contains("Pbp")) {
-    task->SetIsPbpOrpPb(kTRUE);
-    printf("pPb/Pbp detected -> Adapting vertex cuts!\n");
+  task->SetIsPbpOrpPb(isPbpOrpPb);
+  if (task->GetIsPbpOrpPb()) {
+    printf("Collision type pPb/Pbp set -> Adapting vertex cuts!\n");
   }
   else  {
-    task->SetIsPbpOrpPb(kFALSE);
-    printf("Collision type different from pPb/Pbp detected -> Using standard vertex cuts!\n");
+    printf("Collision type different from pPb/Pbp -> Using standard vertex cuts!\n");
   }
   
   trackFilter->AddCuts(esdTrackCutsL);
