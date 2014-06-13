@@ -69,8 +69,7 @@ AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResp
   fHistoList->SetOwner(kTRUE);
 
   DefineInput(0, TChain::Class());
-  DefineOutput(0, TTree::Class()); 
-  DefineOutput(1, TList::Class());
+  DefineOutput(0, TList::Class());
 }
 
 //_______________________________________________________
@@ -242,7 +241,7 @@ void AliAnalysisTaskParticleEfficiency::UserCreateOutputObjects()
 
   // ************************
 
-  PostData(1, fHistoList);
+  PostData(0, fHistoList);
 }
 
 
@@ -926,7 +925,7 @@ void AliAnalysisTaskParticleEfficiency::UserExec(Option_t *)
       }
     
   }
-  PostData(1, fHistoList);
+  PostData(0, fHistoList);
 }
 //-----------------------------------------------------------------
 
