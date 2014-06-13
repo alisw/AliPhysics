@@ -66,6 +66,9 @@ main()
   rm -f $redoneFilesList
   touch $redoneFilesList
   updatedFilesList="${logOutputPath}/updatedFiles.list"
+  failedDownloadList="${logOutputPath}/failedDownload.list"
+  touch ${failedDownloadList}
+
 
   # check the config
   [[ -z $alienFindCommand ]] && echo "alienFindCommand not defined, exiting..." && exitScript 1
@@ -274,10 +277,16 @@ main()
         echo ${destination} >> $localFileList
       fi
       [[ -n ${postCommand} ]] && ( cd ${destinationdir}; eval "${postCommand}" )
+      if grep -q ${alienFile} ${failedDownloadList}; then
+        echo "removing ${alienFile} from ${failedDownloadList}"
+        grep -v ${alienFile} ${failedDownloadList} >tmpUpdatedFailed
+        mv tmpUpdatedFailed ${failedDownloadList}
+      fi
     else
       echo "download not validated, NOT moving to ${destination}..."
       echo "removing $tmpdestination"
       rm -f $tmpdestination
+      echo ${alienFile} >> ${failedDownloadList}
       continue
     fi
 
@@ -298,7 +307,6 @@ main()
   fi
  
   cat ${newFilesList} ${redoneFilesList} > ${updatedFilesList}
-  eval "${executeEnd}"
   
   echo alienFindCommand:
   echo "  $alienFindCommand"
@@ -314,8 +322,23 @@ main()
   echo "redone files:"
   echo
   cat $redoneFilesList
+  echo
+  echo
+  
+  #output the list of failed files to stdout, so the cronjob can mail it
+  echo '###############################'
+  echo "failed to download from alien:"
+  echo
+  local tmpfailed=$(mktemp)
+  [[ "$(cat ${failedDownloadList} | wc -l)" -gt 0 ]] && sort ${failedDownloadList} | uniq -c | awk 'BEGIN{print "#tries\t file" }{print $1 "\t " $2}' | tee ${tmpfailed}
+  
+  [[ -n ${MAILTO} ]] && echo $logFile | mail -s "alienSync ${alienFindCommand} done" ${MAILTO}
 
-  [[ -n $MAILTO ]] && echo $logFile | mail -s "alienSync $alienFindCommand done" $MAILTO
+  echo
+  echo
+  echo '###############################'
+  echo "eval ${executeEnd}"
+  eval "${executeEnd}"
 
   exitScript 0
 }
