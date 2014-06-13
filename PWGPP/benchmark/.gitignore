@@ -1,0 +1,2 @@
+# override the *.d exclusion
+!/benchmark.config.d
