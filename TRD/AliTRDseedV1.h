@@ -91,7 +91,7 @@ public:
   void      CookLabels();
   Bool_t    CookPID();
   Bool_t    Fit(UChar_t opt=0); // OBSOLETE
-  Bool_t    FitRobust(AliTRDpadPlane *pp, Int_t opt=0);
+  Bool_t    FitRobust(AliTRDpadPlane *pp, Bool_t sgn, Int_t chg, Int_t opt=0);
   Double_t  EstimatedCrossPoint(AliTRDpadPlane *pp);
   Bool_t    Init(const AliTRDtrackV1 *track);
   void      Init(const AliRieman *fit);
@@ -157,6 +157,7 @@ public:
   Float_t   GetS2Z() const           { return fS2Z;}
   Double_t  GetS2DYDX(Float_t) const { return fCov[2];}
   inline Double_t  GetS2DZDX(Float_t) const;
+  inline Double_t  GetS2XcrossDZDX(Double_t absdzdx) const;
   Float_t   GetSigmaY() const        { return fS2Y > 0. ? TMath::Sqrt(fS2Y) : 0.2;}
   Float_t   GetSnp() const           { return fYref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
   Float_t   GetTgl() const           { return fZref[1]/TMath::Sqrt(1+fYref[1]*fYref[1]);}
@@ -215,6 +216,8 @@ public:
 
 protected:
   void      Copy(TObject &ref) const;
+  void      UnbiasDZDX(Bool_t rc);
+  Double_t  UnbiasY(Bool_t rc, Bool_t sgn, Int_t chg);
 
 private:
   inline void SetN(Int_t n);
@@ -296,6 +299,14 @@ inline Double_t AliTRDseedV1::GetPID(Int_t is) const
   if(is<0) return fProb[AliPID::kElectron];
   if(is<AliPID::kSPECIES) return fProb[is];
   return 0.;
+}
+
+//____________________________________________________________
+Double_t AliTRDseedV1::GetS2XcrossDZDX(Double_t absdzdx) const
+{
+  // correct sigma(x_cross) for the width of the crossing area
+  if(absdzdx>0.05) return TMath::Exp(-1.58839-absdzdx*3.24116);
+  else return 0.957043-absdzdx*12.4597;
 }
 
 //____________________________________________________________

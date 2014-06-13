@@ -1,0 +1,121 @@
+###
+Decay B0
+###
+0.000310000 psi(2S) K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000310000 psi(2S) K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+#
+0.000610000 psi(2S) K*0                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.0004     psi(2S)  K+  pi-          PHSP;
+0.0002     psi(2S)  K0  pi0          PHSP;
+0.0002     psi(2S)  K0  pi-  pi+     PHSP;
+0.0001     psi(2S)  K0  pi0  pi0     PHSP;
+0.0001     psi(2S)  K+  pi-  pi0     PHSP;
+0.0004     psi(2S)  K_10              PHSP;
+###
+0.000620000 psi(2S) K0                                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay anti-B0
+###
+0.000310000 psi(2S) K_S0                                    SVS; #[Reconstructed PDG2011]
+0.000310000 psi(2S) K_L0                                    SVS; #[Reconstructed PDG2011]
+#
+0.000610000 psi(2S) anti-K*0                                SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.0004     psi(2S)  K-  pi+          PHSP;
+0.0002     psi(2S)  anti-K0   pi0          PHSP;
+0.0002     psi(2S)  anti-K0   pi+  pi-     PHSP;
+0.0001     psi(2S)  anti-K0   pi0  pi0     PHSP;
+0.0001     psi(2S)  K-  pi+  pi0     PHSP;
+0.0004     psi(2S)  anti-K_10              PHSP;
+###
+0.000620000 psi(2S) anti-K0                                 PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay B+
+###
+0.000646000 psi(2S) K+                                      SVS; #[Reconstructed PDG2011]
+0.000620000 psi(2S) K*+                                     SVV_HELAMP PKHplus PKphHplus PKHzero PKphHzero PKHminus PKphHminus; #[Reconstructed PDG2011]
+0.0004   psi(2S) K0  pi+                   PHSP;
+0.0002   psi(2S) K+  pi0                   PHSP;
+0.001900000 psi(2S) K+      pi-     pi+                     PHSP; #[Reconstructed PDG2011]
+0.0001   psi(2S) K+  pi0  pi0              PHSP;
+0.0001   psi(2S) K0  pi+  pi0              PHSP;
+0.0004   psi(2S)  K_1+                     PHSP;
+###
+0.000025800 psi(2S) pi+                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay B-
+###
+0.000646000 psi(2S) K-                                      SVS; #[Reconstructed PDG2011]
+0.000620000 psi(2S) K*-                                     SVV_HELAMP PKHminus PKphHminus PKHzero PKphHzero PKHplus PKphHplus; #[Reconstructed PDG2011]
+0.0004   psi(2S) anti-K0   pi-                   PHSP;
+0.0002   psi(2S) K-  pi0                   PHSP;
+0.001900000 psi(2S) K-      pi+     pi-                     PHSP; #[Reconstructed PDG2011]
+0.0001   psi(2S) K-  pi0  pi0              PHSP;
+0.0001   psi(2S) anti-K0   pi-  pi0              PHSP;
+0.0004     psi(2S)  K_1-              PHSP;
+###
+0.000025800 psi(2S) pi-                                     PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay B_s0
+###                                       psi' = 0.34%  CLNS 94/1315
+0.000465    psi(2S)     eta'                               SVS;
+0.000235    psi(2S)     eta                                SVS;
+0.000680000 psi(2S) phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.0003      psi(2S)     K-          K+                     PHSP;
+0.0003      psi(2S)     anti-K0     K0                     PHSP;
+0.0003      psi(2S)     K0          K-         pi+         PHSP;
+0.0003      psi(2S)     anti-K0     K0         pi0         PHSP;
+0.0003      psi(2S)     K-          K+         pi0         PHSP;
+0.00034   psi(2S) phi      pi+  pi-  PHSP;
+0.00034   psi(2S) phi      pi0  pi0  PHSP;
+0.0002    psi(2S) eta      pi+  pi-  PHSP;
+0.0002    psi(2S) eta      pi0  pi0  PHSP;
+0.0004    psi(2S) eta'     pi+  pi-  PHSP;
+0.0004    psi(2S) eta'     pi0  pi0  PHSP;
+0.0002    psi(2S) pi+      pi-       PHSP;
+0.0002    psi(2S) pi0      pi0       PHSP;
+####
+Enddecay
+
+Decay anti-B_s0
+###
+0.000465  psi(2S) eta'               SVS;
+0.000235  psi(2S) eta                SVS;
+0.000680000 psi(2S) phi                                     SVV_HELAMP  1.0 0.0 1.0 0.0 1.0 0.0; #[Reconstructed PDG2011]
+0.0003    psi(2S) K-       K+        PHSP;
+0.0003    psi(2S) anti-K0  K0        PHSP;
+0.0003    psi(2S) anti-K0  K+    pi- PHSP;
+0.0003    psi(2S) anti-K0  K0    pi0 PHSP;
+0.0003    psi(2S) K-       K+    pi0 PHSP;
+0.00034   psi(2S) phi      pi+  pi-  PHSP;
+0.00034   psi(2S) phi      pi0  pi0  PHSP;
+0.0002    psi(2S) eta      pi+  pi-  PHSP;
+0.0002    psi(2S) eta      pi0  pi0  PHSP;
+0.0004    psi(2S) eta'     pi+  pi-  PHSP;
+0.0004    psi(2S) eta'     pi0  pi0  PHSP;
+0.0002    psi(2S) pi+      pi-       PHSP;
+0.0002    psi(2S) pi0      pi0       PHSP;
+###
+Enddecay
+
+Decay Lambda_b0
+###
+0.00038    Lambda0         psi(2S)                      PHSP;
+Enddecay
+
+Decay anti-Lambda_b0
+###
+0.00038    anti-Lambda0    psi(2S)                      PHSP;
+Enddecay
+
+
+Decay psi(2S)
+### from DECAY.DEC
+1.000 e+   e-                PHOTOS VLL;
+Enddecay
+
+End

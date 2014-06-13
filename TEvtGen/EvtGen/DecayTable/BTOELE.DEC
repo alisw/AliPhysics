@@ -162,7 +162,7 @@ Decay Lambda_b0
 0.050000000 Lambda_c+ e-      anti-nu_e                     PHSP; #[Reconstructed PDG2011]
 0.006300000 Lambda_c(2593)+ e-      anti-nu_e               PHSP; #[Reconstructed PDG2011]
 0.011000000 Lambda_c(2625)+ e-      anti-nu_e               PHSP; #[Reconstructed PDG2011]
-
+0.056000000 Lambda_c+ pi+     pi-     e-      anti-nu_e     PHSP;  #[New mode added] #[Reconstructed PDG2011]
 Enddecay
 
 Decay anti-Lambda_b0
@@ -170,7 +170,7 @@ Decay anti-Lambda_b0
 0.050000000 anti-Lambda_c- e+      nu_e                     PHSP; #[Reconstructed PDG2011]
 0.006300000 anti-Lambda_c(2593)- e+      nu_e               PHSP; #[Reconstructed PDG2011]
 0.011000000 anti-Lambda_c(2625)- e+      nu_e               PHSP; #[Reconstructed PDG2011]
-
+0.056000000 anti-Lambda_c- pi-     pi+     e+      nu_e     PHSP;  #[New mode added] #[Reconstructed PDG2011]
 Enddecay
 
 Decay Xi_b-

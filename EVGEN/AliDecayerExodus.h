@@ -7,17 +7,19 @@
 /* $Id$ */
 
 //---------------------------------------------------------------------------------------------------
-////
-//// Generate electron-pair mass distributions for Dalitz decays according
-//// to the Kroll-Wada parametrization: N. Kroll, W. Wada: Phys. Rev 98(1955)1355
-//// and
-//// Generate electron-pair mass distributions for resonances according
-//// to the Gounaris-Sakurai parametrization: G.J. Gounaris, J.J. Sakurai: Phys.Rev.Lett. 21(1968)244 
-////
-//// For the electromagnetic form factor the parameterization from
-//// Lepton-G is used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301
-////
-////-------------------------------------------------------------------------------------------------
+//                                 
+// Generate electron-pair mass distributions for Dalitz decays according
+// to the Kroll-Wada parametrization: N. Kroll, W. Wada: Phys. Rev 98(1955)1355
+// and generate electron-pair mass distributions for resonances according
+// to the Gounaris-Sakurai parametrization: G.J. Gounaris, J.J. Sakurai: Phys.Rev.Lett. 21(1968)244 
+//
+// For the electromagnetic form factor the parameterization from
+// Lepton-G is used: L.G. Landsberg et al.: Phys. Rep. 128(1985)301
+//
+// Ralf Averbeck (R.Averbeck@gsi.de) 
+// Irem Erdemir  (irem.erdemir@cern.ch)
+//
+//---------------------------------------------------------------------------------------------------
 
 
 
@@ -91,6 +93,7 @@ class AliDecayerExodus : public AliDecayer
 
  private:
     Double_t GounarisSakurai(Float_t mass, Double_t vmass, Double_t vwidth, Double_t emass);
+    Double_t Lorentz(Float_t mass, Double_t vmass, Double_t vwidth); 
     virtual void    Rot(Double_t pin[3], Double_t pout[3],
                         Double_t costheta, Double_t sintheta,
                         Double_t cosphi, Double_t sinphi) const;

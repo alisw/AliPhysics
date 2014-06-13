@@ -53,6 +53,7 @@ class AliCDBGrid: public AliCDBStorage {
   Bool_t PrepareId(AliCDBId& id);
   AliCDBId* GetId(const TObjArray& validFileIds, const AliCDBId& query);
   AliCDBEntry* GetEntryFromFile(TString& filename, AliCDBId* dataId);
+  Bool_t PutInCvmfs(TString &fullFilename, TFile *cdbFile) const;
 
   // TODO  use AliEnTag classes!
   Bool_t AddTag(TString& foldername, const char* tagname);

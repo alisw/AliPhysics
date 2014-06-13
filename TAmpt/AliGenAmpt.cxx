@@ -232,7 +232,6 @@ void AliGenAmpt::Init()
     EvaluateCrossSections();
 
   fAmpt->SetReactionPlaneAngle(0.0);
-  fRotating=kFALSE;
 }
 
 void AliGenAmpt::Generate()

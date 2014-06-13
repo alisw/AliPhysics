@@ -1,5 +1,5 @@
 #include "TauolaHepMCParticle.h"
-#include "Log.h"
+#include "TauolaLog.h"
 
 namespace Tauolapp
 {

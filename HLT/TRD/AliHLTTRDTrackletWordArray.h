@@ -16,7 +16,7 @@ struct AliHLTTRDTrackletWordArray {
 #if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
   UInt_t fTracklets[1];
 #else
-  UInt_t fTracklets[];
+  UInt_t fTracklets[0];
 #endif
 };
 

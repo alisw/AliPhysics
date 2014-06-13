@@ -1,6 +1,6 @@
 #include "Tauola.h"
 #include "TauolaParticlePair.h"
-#include "Log.h"
+#include "TauolaLog.h"
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>

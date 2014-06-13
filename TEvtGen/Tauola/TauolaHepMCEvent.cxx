@@ -1,5 +1,5 @@
 #include "TauolaHepMCEvent.h"
-#include "Log.h"
+#include "TauolaLog.h"
 
 using namespace std;
 

@@ -26,6 +26,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
     gSystem->Load("libANALYSIScalib.so");
+    gSystem->Load("libESDfilter.so");
     gSystem->Load("libEventMixing.so");
     gSystem->Load("libTENDER.so");
     gSystem->Load("libTENDERSupplies.so");

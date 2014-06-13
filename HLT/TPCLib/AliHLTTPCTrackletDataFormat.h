@@ -17,10 +17,10 @@
 struct AliHLTTPCTrackletData
     {
 	AliHLTUInt32_t fTrackletCnt;
-#ifndef __SUNPRO_CC
-	AliHLTTPCTrackSegmentData fTracklets[];
-#else
+#if defined(__HP_aCC) || defined(__DECCXX) || defined(__SUNPRO_CC)
 	AliHLTTPCTrackSegmentData fTracklets[1];
+#else
+	AliHLTTPCTrackSegmentData fTracklets[0];
 #endif
 	//AliHLTTPCSpacePointData fSpacePoints[];
     };

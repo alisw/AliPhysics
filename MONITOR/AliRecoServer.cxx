@@ -17,6 +17,8 @@
 #include <AliReconstruction.h>
 #include <AliTPCRecoParam.h>
 
+#include <zmq.hpp>
+
 #include "AliEventServerUtil.h"
 #include "AliRecoServer.h"
 #include "AliRecoServerThread.h"
@@ -32,7 +34,11 @@ AliRecoServer::AliRecoServer()
   fSettings(0),
   fRecoTh(0)
 {
-	fContext = new zmq::context_t(1);
+#if (ZMQ_VERSION_MAJOR>=3)
+		fContext = new zmq::context_t;
+#else
+		fContext = new zmq::context_t(1);
+#endif /* (ZMQ_VERSION_MAJOR>=3) */
 }
 
 AliRecoServer::~AliRecoServer()

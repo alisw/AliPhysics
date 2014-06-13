@@ -1617,8 +1617,9 @@ void AliAnalysisTaskESDfilter::ConvertTracklets(const AliESDEvent& esd)
   AliAODTracklets &SPDTracklets = *(AODEvent()->GetTracklets());
   const AliMultiplicity *mult = esd.GetMultiplicity();
   if (mult) {
-    if (mult->GetNumberOfTracklets()>0) {
+    if (mult->GetNumberOfTracklets()>0) {      
       SPDTracklets.CreateContainer(mult->GetNumberOfTracklets());
+      SPDTracklets.SetScaleDThetaBySin2T(mult->GetScaleDThetaBySin2T());
       for (Int_t n=0; n<mult->GetNumberOfTracklets(); n++) {
         if(fMChandler){
           fMChandler->SelectParticle(mult->GetLabel(n, 0));
@@ -2143,8 +2144,8 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
 
   AliCodeTimerAuto("",0);
 
-  if (fRefitVertexTracks) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
-							    fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
+  if (fRefitVertexTracks>=0) AliESDUtils::RefitESDVertexTracks(esd,fRefitVertexTracks,
+							       fRefitVertexTracksNCuts ? fRefitVertexTracksCuts:0);
   
   fOldESDformat = ( esd->GetAliESDOld() != 0x0 );
  

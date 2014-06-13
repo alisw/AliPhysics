@@ -354,7 +354,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
       // Check that the decay chain ends at a primary particle
       AliMCParticle* mother = mcpart;
       Int_t imo = mcpart->GetMother();
-      while((imo >= nprim) && (mother->GetUniqueID() == kPDecay)) {
+      while((imo >= nprim) && (mother->Particle()->GetUniqueID() == kPDecay)) {
 	mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo =  mother->GetMother();
       }
@@ -371,7 +371,7 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	// Check if the gamma comes from the decay chain of a primary particle
 	AliMCParticle* mother =  (AliMCParticle*) mcE->GetTrack(imo);
 	imo = mother->GetMother();
-	while((imo >= nprim) && (mother->GetUniqueID() == kPDecay)) {
+	while((imo >= nprim) && (mother->Particle()->GetUniqueID() == kPDecay)) {
 	  mother =   (AliMCParticle*) mcE->GetTrack(imo);
 	  imo =  mother->GetMother();
 	}

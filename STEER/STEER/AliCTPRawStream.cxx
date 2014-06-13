@@ -146,30 +146,30 @@ Bool_t AliCTPRawStream::GetPayloadRun2(UChar_t *data)
 
   fClassMaskNext50 =  ((ULong64_t)data[16] & 0xf) << 46;   // 100..97
 
-  fClassMaskNext50 |= (ULong64_t)data[20] << 38;           // 96..89
-  fClassMaskNext50 |= ((ULong64_t)data[21] & 0xF) << 34;   // 88..85
+  fClassMaskNext50 |= ((ULong64_t)data[21] & 0xF) << 42;   // 96..93
+  fClassMaskNext50 |= (ULong64_t)data[20] << 34;           // 92..85
 
-  fClassMaskNext50 |= (ULong64_t)data[24] << 26;           //84..77
-  fClassMaskNext50 |= ((ULong64_t)data[25] & 0xF) << 22;   //76..73
+  fClassMaskNext50 |= ((ULong64_t)data[25] & 0xF) << 30;   //84..81
+  fClassMaskNext50 |= (ULong64_t)data[24] << 22;           //80..73
 
-  fClassMaskNext50 |= (ULong64_t)data[28] << 14;           //72..65   
-  fClassMaskNext50 |= ((ULong64_t)data[29] & 0xF) << 10;   //64..61
+  fClassMaskNext50 |= ((ULong64_t)data[29] & 0xF) << 18;   //72..69
+  fClassMaskNext50 |= (ULong64_t)data[28] << 10;           //68..61   
 
-  fClassMaskNext50 |= (ULong64_t)data[32] << 2;            //60..53
-  fClassMaskNext50 |= ((ULong64_t)data[33] & 0xc) >> 2;    //52..51
-  fClassMask       = ((ULong64_t)data[33] & 0x3) << 48;    //50..49
+  fClassMaskNext50 |= ((ULong64_t)data[33] & 0xf ) << 6;   //60..57
+  fClassMaskNext50 |= ((ULong64_t)data[32] & 0xfc )>> 2;   //56..51
+  fClassMask        = ((ULong64_t)data[32] & 0x3 ) << 48;  //50..49
 
-  fClassMask |= (ULong64_t)data[36]  << 40;                //48..41
-  fClassMask |= ((ULong64_t)data[37] & 0xf) << 36;         //40..37
+  fClassMask |= ((ULong64_t)data[37] & 0xf) << 44;         //48..45
+  fClassMask |= (ULong64_t)data[36]  << 36;                //44..37
 
-  fClassMask |= (ULong64_t)data[40]  << 28;                //36..29
-  fClassMask |= ((ULong64_t)data[41] & 0xf) << 24;         //28..25
+  fClassMask |= ((ULong64_t)data[41] & 0xf) << 32;         //36..33
+  fClassMask |= (ULong64_t)data[40]  << 24;                //32..25
 
-  fClassMask |= (ULong64_t)data[44]  << 16;                //24..17
-  fClassMask |= ((ULong64_t)data[45] & 0xf) << 12;         //16..13
+  fClassMask |= ((ULong64_t)data[45] & 0xf) << 20;         //24..21
+  fClassMask |= (ULong64_t)data[44]  << 12;                //20..13
 
-  fClassMask |= (ULong64_t)data[48]  << 4;                //12..5
-  fClassMask |= ((ULong64_t)data[49] & 0xf) << 0;         //4..1
+  fClassMask |= ((ULong64_t)data[49] & 0xf) << 8;         //12..9
+  fClassMask |= (ULong64_t)data[48]  << 0;                //8..1
 
   if (fRawReader->GetDataSize() == 52) {
     AliDebug(1,"No trigger input and interaction records found");
