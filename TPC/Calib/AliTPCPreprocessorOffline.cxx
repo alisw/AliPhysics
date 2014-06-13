@@ -1198,6 +1198,11 @@ Bool_t AliTPCPreprocessorOffline::AnalyzeGainDipAngle(Int_t padRegion)  {
   TH1D * corrMax = (TH1D*)arrMax.At(1)->Clone();
   histQtot->FitSlicesY(0,0,-1,0,"QNR",&arrTot);
   TH1D * corrTot = (TH1D*)arrTot.At(1)->Clone();
+  AliInfo(Form("hisQtot.GetEntries()=%d",histQtot->GetEntries()));
+  AliInfo(Form("hisQmax.GetEntries()=%d",histQmax->GetEntries()));
+  if (histQmax->GetMean(2)<=0 || histQtot->GetMean(2)) {
+    return kFALSE;
+  }
   corrMax->Scale(1./histQmax->GetMean(2));
   corrTot->Scale(1./histQtot->GetMean(2));
   //
