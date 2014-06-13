@@ -35,6 +35,7 @@
 #pragma link C++ class AliFemtoModelCorrFctnDirectYlm;
 #pragma link C++ class AliFemtoCorrFctnTPCNcls;
 #pragma link C++ class AliFemtoCorrFctnDEtaDPhi;
+#pragma link C++ class AliFemtoCorrFctnDEtaDPhiCorrections;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDG;
 #pragma link C++ class AliFemtoCutMonitorParticlePtPDGV0;
 #pragma link C++ class AliFemtoCutMonitorParticleEtCorr;
@@ -51,3 +52,5 @@
 #pragma link C++ class AliFemtoAnalysisAzimuthalPbPb;
 #pragma link C++ class AliFemtoPairCutRadialDistanceLM;
 #pragma link C++ class AliFemtoPicoEventRP;
+#pragma link C++ class AliFemtoCorrFctnPairFractions;
+#pragma link C++ class AliAnalysisTaskParticleEfficiency+;

@@ -44,41 +44,36 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA() :
   fDoV0QA(0),
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
-  fMaxCellsInCluster(30),
+  fMaxCellsInCluster(50),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
-  fHistEventQA(0)
+  fHistEventQA(0),
+  fHistTrNegativeLabels(0),
+  fHistTrZeroLabels(0),
+  fHistTrPhiEtaPt(0),
+  fHistTrPhiEtaZeroLab(0),
+  fHistTrPtZeroLab(0),
+  fHistTrEmcPhiEta(0),
+  fHistTrEmcPt(0),
+  fHistTrPhiEtaNonProp(0),
+  fHistTrPtNonProp(0),
+  fHistDeltaEtaPt(0),
+  fHistDeltaPhiPt(0),
+  fHistDeltaPtvsPt(0),
+  fHistClusPhiEtaEnergy(0),
+  fHistClusDeltaPhiEPEnergy(0),
+  fHistNCellsEnergy(0),
+  fHistFcrossEnergy(0),
+  fHistClusTimeEnergy(0),
+  fHistClusMCEnergyFraction(0),
+  fHistCellsAbsIdEnergy(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0)
 {
   // Default constructor.
-
-  fHistTrNegativeLabels = 0;
-  fHistTrZeroLabels = 0;
-  fHistTrPhiEtaZeroLab = 0;
-  fHistTrPtZeroLab = 0;
-  fHistTrEmcPhiEta = 0;
-  fHistTrEmcPt = 0;
-  fHistTrPhiEtaNonProp = 0;
-  fHistTrPtNonProp = 0;
-  fHistDeltaEtaPt = 0;
-  fHistDeltaPhiPt = 0;
-  fHistDeltaPtvsPt = 0;
-
-  fHistClusPhiEtaEnergy = 0;
-  fHistClusDeltaPhiEPEnergy = 0;
-  fHistNCellsEnergy = 0;
-  fHistFcrossEnergy = 0;
-  fHistClusTimeEnergy = 0;
-  fHistClusMCEnergyFraction = 0;
-
-  fHistCellsAbsIdEnergy = 0;
-
-  fHistJetsPhiEta = 0;
-  fHistJetsPtArea = 0;
-
-  fHistTrPhiEtaPt = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -94,41 +89,36 @@ AliAnalysisTaskSAQA::AliAnalysisTaskSAQA(const char *name) :
   fDoV0QA(0),
   fDoEPQA(0),
   fDoLeadingObjectPosition(0),
-  fMaxCellsInCluster(30),
+  fMaxCellsInCluster(50),
   fCent2(0),
   fCent3(0),
   fVZERO(0),
   fV0ATotMult(0),
   fV0CTotMult(0),
-  fHistEventQA(0)
+  fHistEventQA(0),
+  fHistTrNegativeLabels(0),
+  fHistTrZeroLabels(0),
+  fHistTrPhiEtaPt(0),
+  fHistTrPhiEtaZeroLab(0),
+  fHistTrPtZeroLab(0),
+  fHistTrEmcPhiEta(0),
+  fHistTrEmcPt(0),
+  fHistTrPhiEtaNonProp(0),
+  fHistTrPtNonProp(0),
+  fHistDeltaEtaPt(0),
+  fHistDeltaPhiPt(0),
+  fHistDeltaPtvsPt(0),
+  fHistClusPhiEtaEnergy(0),
+  fHistClusDeltaPhiEPEnergy(0),
+  fHistNCellsEnergy(0),
+  fHistFcrossEnergy(0),
+  fHistClusTimeEnergy(0),
+  fHistClusMCEnergyFraction(0),
+  fHistCellsAbsIdEnergy(0),
+  fHistJetsPhiEta(0),
+  fHistJetsPtArea(0)
 {
   // Standard 
-
-  fHistTrNegativeLabels = 0;
-  fHistTrZeroLabels = 0;
-  fHistTrPhiEtaZeroLab = 0;
-  fHistTrPtZeroLab = 0;
-  fHistTrEmcPhiEta = 0;
-  fHistTrEmcPt = 0;
-  fHistTrPhiEtaNonProp = 0;
-  fHistTrPtNonProp = 0;
-  fHistDeltaEtaPt = 0;
-  fHistDeltaPhiPt = 0;
-  fHistDeltaPtvsPt = 0;
-
-  fHistClusPhiEtaEnergy = 0;
-  fHistClusDeltaPhiEPEnergy = 0;
-  fHistNCellsEnergy = 0;
-  fHistFcrossEnergy = 0;
-  fHistClusTimeEnergy = 0;
-  fHistClusMCEnergyFraction = 0;
-
-  fHistCellsAbsIdEnergy = 0;
-
-  fHistJetsPhiEta = 0;
-  fHistJetsPtArea = 0;
-
-  fHistTrPhiEtaPt = 0;
 
   SetMakeGeneralHistograms(kTRUE);
 }

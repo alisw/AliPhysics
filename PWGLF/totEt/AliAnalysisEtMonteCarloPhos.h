@@ -26,11 +26,11 @@ protected:
 
  private:
    
-    TH2I *fBadMapM2; // Bad map
-    TH2I *fBadMapM3; // Bad map
-    TH2I *fBadMapM4; // Bad map
+    TH2I *fBadMapM2; //! Bad map
+    TH2I *fBadMapM3; //! Bad map
+    TH2I *fBadMapM4; //! Bad map
 
-    AliPHOSGeoUtils *fGeoUtils; // Geo utils
+    AliPHOSGeoUtils *fGeoUtils;// // Geo utils
     
     // Prohibited
     AliAnalysisEtMonteCarloPhos & operator = (const AliAnalysisEtMonteCarloPhos&) ;//cpy assignment

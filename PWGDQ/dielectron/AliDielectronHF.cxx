@@ -442,9 +442,9 @@ void AliDielectronHF::Fill(Int_t pairIndex, const AliDielectronPair *particle)
 
   // get leg variables (TODO: do not fill for the moment since leg cuts are not opened)
   Double_t valuesLeg1[AliDielectronVarManager::kNMaxValues]={0};
-  if(fVarCutType->CountBits())  AliDielectronVarManager::Fill(particle->GetFirstDaughter(),valuesLeg1);
+  if(fVarCutType->CountBits())  AliDielectronVarManager::Fill(particle->GetFirstDaughterP(),valuesLeg1);
   Double_t valuesLeg2[AliDielectronVarManager::kNMaxValues]={0};
-  if(fVarCutType->CountBits())  AliDielectronVarManager::Fill(particle->GetSecondDaughter(),valuesLeg2);
+  if(fVarCutType->CountBits())  AliDielectronVarManager::Fill(particle->GetSecondDaughterP(),valuesLeg2);
 
   // fill
 

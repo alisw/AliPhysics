@@ -156,8 +156,8 @@ public:
   void SetRefFirstDaughter(AliVParticle * const track)  {fRefD1 = track;}
   void SetRefSecondDaughter(AliVParticle * const track) {fRefD2 = track;}
   
-  AliVParticle* GetFirstDaughter()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
-  AliVParticle* GetSecondDaughter()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
+  AliVParticle* GetFirstDaughterP()   const { return dynamic_cast<AliVParticle*>(fRefD1.GetObject()); }
+  AliVParticle* GetSecondDaughterP()  const { return dynamic_cast<AliVParticle*>(fRefD2.GetObject()); }
 
   void SetKFUsage(Bool_t KFUsage) {fKFUsage = KFUsage;}
   Bool_t GetKFUsage() const {return fKFUsage;}

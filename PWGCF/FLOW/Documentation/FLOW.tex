@@ -1,4 +1,4 @@
-\documentclass[a5paper]{book}
+\documentclass[a4paper]{book}
 \usepackage[nottoc,numbib]{tocbibind}
 \usepackage[english]{babel}
 \usepackage[pdftex]{graphics} %enable pdfgraphics support necessary for pdflatex
@@ -252,11 +252,11 @@ cutsPOI->SetPtMax(2.0);	\end{lstlisting}
 Now we have all the ingredients to our first flow analysis	
 	
 	\begin{lstlisting}
+// make an event with mult particles 
+AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);
+// modify the tracks adding the flow value v2
+event->AddV2(diffv2);
 for(Int_t i=0; i<nEvts; i++) { 
-      // make an event with mult particles 
-      AliFlowEventSimple* event = new AliFlowEventSimple(mult,AliFlowEventSimple::kGenerate);
-      // modify the tracks adding the flow value v2
-      event->AddV2(diffv2);
       // select the particles for the reference flow
       event->TagRP(cutsRP);
       // select the particles for differential flow
@@ -264,6 +264,10 @@ for(Int_t i=0; i<nEvts; i++) {
       // do flow analysis with various methods:
       mcep->Make(event);
       qc->Make(event);
+      // reset the event so we can re-use the allocated memory
+      event->ClearFast();
+      // fill the event with a fresh set of tracks
+      event->Generate(mult);
 } \end{lstlisting}
 	\item To fill the histograms which contain the final results we have to call Finish for each method:
 	\begin{lstlisting}
@@ -405,18 +409,294 @@ for example are stored in ntuples.
 \section{A simple flow analysis in ALICE using Tasks}
 The macro \texttt{Documentation/examples/runFlowTaskExample.C} \index{runFlowTaskExample.C}is an example how to setup a flow analysis using the full \texttt{ALICE} Analysis Framework.
 
-\chapter{The Flow Event}
-\label{flowevent}
-Here we describe the flowevent, flowtracks, general cuts and cuts for RPs POIs.
-OntheFly, AfterBurner. Filling with ESD, AOD, Ntuples, etc.  
 
 \chapter{The Program}
-\label{The Program}
+The basic idea behind the flow package is that from whatever input you have, a \emph{flow event} is constructed, which is then passed to one or more flow analysis methods (e.g. the scalar product method or Q-cumulant method). The flow event is a collection of \emph{flow tracks}, which are simple objects carrying only the kinematic information that is necessary to do flow analysis. By setting up the flow package in this way, the flow analysis methods can analyze input from various sources, be it ALICE data, Monte Carlo events, STAR data, etc, etc, as long as the flow event is properly filled. This might all sound a bit abstract at this point; this chapter however will explain all details and relevant classes in detail. For those who are impatient and prefer seeing the flow package in action, section \ref{sec:example} gives a step-by-step example of doing a $\pi^{\pm}$ $v_2$ analysis in the \texttt{AliROOT} analysis framework. 
+
+\section{Overview}
+\begin{figure}
 \begin{center}
-	\includegraphics[width=1.\textwidth]{figs/flowChart.png}
+\includegraphics[width=.75\textwidth]{figs/flowChart.png}
+\caption{Schematic presentation of the organization of the flow package. Input, which can come from any kind of source, is converted to a generic \texttt{AliFlowEventSimple} object, which in turn is passed to the analysis methods.}
+\label{fig:flowchart}
 \end{center}
-Here we describe the program.
-%-----------------------------------------------------------------------
+\end{figure}
+Figure \ref{fig:flowchart} gives a simple schematic representation of the flow package. Input events (in the case of the figure this is either ESDs or AODs) pass a set of event cuts (the common cuts) and are then converted to a flow event (stored as an \texttt{AliFlowEventSimple} object). This flow event holds a collection of flow tracks (\texttt{AliFlowTrackSimple} objects) which are passed to flow analysis methods. The only steps of this flow chart which depend on \texttt{AliROOT} libraries are the ones handling \textt{ALICE} data types (the ESDs or AODs). The rest of the analysis chain (the \texttt{AliFlowEventSimle} and the analysis methods) have no specific \texttt{AliROOT} dependence and are just simple \texttt{c++} objects. Therefore, the flow package is split into two libraries
+\begin{description}
+\item [libPWGflowBase] The base library, which has no specific \texttt{AliROOT} dependencies. This library holds objects such as the \texttt{AliFlowEventSimple} and \texttt{AliFlowTrackSimple}, and analysis methods classes. The analysis methods classes follow the naming scheme: \texttt{AliFlowAnalysisWith$\ast$} where $\ast$ denotes a specific analysis method. All classes which end up in the \text{libPWGflowBase.so} shared object can be found in \texttt{\$ALICE\_ROOT/PWG/FLOW/Base};
+\item [libPWGflowTasks] The tasks library, which has specific \texttt{AliROOT} dependencies. Contrary to what the name suggests, this library does not just hold tasks, but actually comprises all classes of the flow package which need to include \texttt{AliROOT} specific classes. This ranges from classes to read the AOD or ESD input data (important examples are the \texttt{AliFlowEvent} and \texttt{AliFlowTrackCuts}, which will be discussed later on in this chapter) and the \texttt{AliAnalysisTask$\ast$} classes, which are analysis tasks, derived from \texttt{AliAnalysisTaskSE} which can be used in the \texttt{AliROOT} analysis framework and are actually just interface classes to the underlying flow analysis methods of libPWGflowBase. The \text{libPWGflowTasks.so} shared object can be found in \texttt{\$ALICE\_ROOT/PWG/FLOW/Tasks};
+\end{description}
+
+
+\section{Flow Event}
+Every flow analysis in the flow package starts with the flow event. As mentioned earlier, the flow event is a simple container class which holds a collection of flow tracks, which are in turn fed to the flow analysis methods. 
+\subsection{Input data}
+Before passing the flow event to the flow analysis methods, it needs to be filled with a set of flow tracks. In general, a distinction is made between \emph{reference particles} (or \emph{RP's}), which are particles that are used to build the \textbf{Q} vector(s), and \emph{particles of interest} (or \emph{POI's}), which are the particles of which you'll calculate the differential flow. The flow event and the flow analysis methods are designed to keep track of which flow tracks are POI's, RP's (or even both at the same time), which is important to avoid auto-correlation effects which can distort the $v_n$ measurement. The user of the flow package however is responsible for properly setting up the analysis! 
+
+The flow event can be filled with input from many sources. In the second chapter of this manual, a simple method has been shown where the flow event (the \texttt{AliFlowEventSimple} object) fills itself by generating a set of Monte Carlo tracks by sampling kinematic variables from supplied p.d.f.'s. Using this method is a very effective tool for testing and developing new flow analysis methods (if you generate events with a certain $v_2(p_t)$ and then retrieve the same $v_2(p_t)$ from your flow analysis method, you can use that as a tool to proof the validation of your analysis method) but if you want to do a data analysis, a somewhat more advanced - but not difficult - approach is necessary. 
+
+Filling a flow event from data can be performed either `by-hand' (which is covered in section \ref{sec:exotic} on more exotic analyses), but the most commonly used method of filling a flow event in the \texttt{AliROOT} analysis framework is using the dedicated task \texttt{AliAnalysisTaskFlowEvent}. 
+
+
+
+or by using the class \texttt{AliFlowEvent}. \texttt{AliFlowEvent} is a derived class. Its  base class, \texttt{AliFlowEventSimple} 
+
+
+\section{Track cuts and the track cuts object}
+\subsection{ESD tracks as data source}
+\subsection{AOD tracks as data source}
+\subsection{Additional options}
+\subsubsection{Identified particles}
+\subsubsection{VZERO}
+
+Calibration specifics - different for 10h and 11h!
+\begin{description}
+\item [LHC10h]
+\begin{itemize}
+\item Re-weighting of vzero signal per tile
+\item Re-centering of q-vectors
+\item Needs aodb 
+\end{itemize}
+\item [LHC11h]
+\begin{itemize}
+\item Dedicated VZERO-EP task
+\item Q-vectors are read from event header
+\item Needs dedicated task
+\end{itemize}
+\end{description}
+Calibration procedure is selected by AliFlowEvent depending on runnumber
+\begin{itemize}
+\item User is responsible for enabling VZERO-EP task in case of 11h data!
+\end{itemize}
+See comments at AliFlowTrackCuts::GetStandardVZEROOnlyTrackCuts2011()
+\begin{description}
+\item [What is re-weighting ?]
+\begin{itemize}
+\item Take a TProfile with average multiplicity per cell (for each run)
+\item Fit a constant line per disc (or ring) $x = a$ (see next slide for example)
+\item The track weight for each VZERO cell is now calculated in a second iteration as
+\end{itemize}
+\begin{equation}
+\mbox{track weight} = \frac{\mbox{cell multiplicity} * a}{\mbox{average multiplicity in a cell}} \nonumber
+\end{equation}
+\item [What is re-centering ?]
+\begin{itemize}
+\item Store the $Q$-vectors (component-wise) of a run in a TProfile
+\item The corrected $Q$-vectors can now be obtained by doing
+\begin{equation}
+Q_n \longrightarrow \frac{Q_n - \langle Q_n \rangle }{\sigma_{Q_n}} \nonumber
+\end{equation}
+where brackets denote the one-run average, and $\sigma_{Q_n}$ the standard deviation of $Q_n$ in the sample
+\end{itemize}
+\end{description}
+
+Several options for VZERO signal calibration in 10h system
+\begin{itemize}
+\item Per ring re-weighting (instead of full-disc reweighting) \\
+\alert{AliFlowTrackCuts::SetV0gainEqualizationPerRing(bool)}
+\end{itemize}
+\begin{center}
+\includegraphics[width=.4\textwidth]{figs/eg_disc.pdf}
+\includegraphics[width=.4\textwidth]{figs/eg_ring.pdf}
+\end{center}
+\begin{itemize}
+\item Toggle on or off the additional q-vector recentering \\
+AliFlowTrackCuts::SetApplyRecentering(bool)
+\item Toggle: disable or enable offending rings from the entire computation (will break re-centering) \\
+AliFlowTrackCuts::SetUseVZERORing(int, bool)
+\end{itemize}
+In 11h, none of these options are available, \alert{everything is done in the VZERO-EP task}!
+
+
+\section{The flow package in the ALICE analysis framework}
+\subsection{AliAnalysisTaskSE}
+\subsection{Analysis methods}
+
+\begin{itemize}
+\item AliFlowAnalysisWithCumulants.h             
+\item AliFlowAnalysisWithMixedHarmonics.h
+\item AliFlowAnalysisWithFittingQDistribution.h \item  AliFlowAnalysisWithMultiparticleCorrelations.h
+\item AliFlowAnalysisWithLeeYangZeros.h          
+\item AliFlowAnalysisWithNestedLoops.h
+\item AliFlowAnalysisWithLYZEventPlane.h         
+\item AliFlowAnalysisWithQCumulants.h
+\item AliFlowAnalysisWithMCEventPlane.h          
+\item AliFlowAnalysisWithScalarProduct.h
+\end{itemize}
+
+
+\subsection{Example: $\pi^{\pm}$ $v_2$}\label{sec:example}
+As an example of how to do a flow analysis using the flow package within the \texttt{AliROOT} analysis framework, this section will guide you through the process of measuring $\pi^{\pm}$ $v_2$ step-by-step. Generally, doing an analysis in the \texttt{AliROOT} is a two-file process, where one runs a run.C script in \texttt{AliROOT}, which sets up the analysis framework and takes care of the interface to the analysis \texttt{GRID}, and calls an \texttt{AddTask$\ast$.C} macro which in turn creates and configures instances of the relevant analysis tasks. In this example, the distinction will not be so clear, but mentioned in the text. In practice of course, you would copy these steps into macros and launch the macros from the \texttt{AliROOT} command line when doing analysis. We will not run this test on \texttt{GRID}, but assume that you have some \texttt{AliAOD.root} files available on your local system. Note that this example is a guideline, there are many ways leading to Rome, and many ways of setting up an analysis. 
+
+\begin{description}
+\item [Preparing the session] First, we need to prepare the framework and root session (these steps would go into your run.C macro). Launch \texttt{AliROOT} and load the necessary libraries
+\begin{lstlisting}
+  // load libraries
+  gSystem->Load("libCore.so");        
+  gSystem->Load("libGeom.so");
+  gSystem->Load("libVMC.so");
+  gSystem->Load("libPhysics.so");
+  gSystem->Load("libTree.so");
+  gSystem->Load("libSTEERBase.so");
+  gSystem->Load("libESD.so");
+  gSystem->Load("libAOD.so");
+  gSystem->Load("libANALYSIS.so");
+  gSystem->Load("libANALYSISalice.so");
+  gSystem->Load("libEventMixing.so");
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWGTools.so");
+  gSystem->Load("libPWGCFebye.so");
+  gSystem->Load("libPWGflowBase.so");
+  gSystem->Load("libPWGflowTasks.so"); \end{lstlisting}
+Create an analysis manager and create a \texttt{TChain} which we will point to the data you have stored locally on your machine
+\begin{lstlisting}
+  // create the analysis manager
+  AliAnalysisManager* mgr = new AliAnalysisManager("MyManager");
+  // create a tchain which will point to an aod tree
+  TChain* chain = new TChain("aodTree");
+  // add a few files to the chain
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0003/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0003/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0004/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0005/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0006/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0007/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0008/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0009/AliAOD.root");
+  chain->Add("/home/rbertens/Documents/CERN/ALICE_DATA/data/2010/LHC10h/000139510/ESDs/pass2/AOD086/0010/AliAOD.root");
+  // create an input handler
+  AliVEventHandler* inputH = new AliAODInputHandler();
+  // and connect it to the manager
+  mgr->SetInputEventHandler(inputH);\end{lstlisting}
+Great, at this point we have created an analysis manager, which will read events from a chain of AliAOD.root files. 
+  
+The next step will be adding specific analyses to the analysis manager. This is usually done by calling an \texttt{AddTask$\ast$.C} macro, which creates instances of analysis tasks, connects input (events from the analysis manager) to these tasks, and then connects output from the task back to the analysis manager (which will take care of writing the analysis to a common output file). These next steps show what would be in your \texttt{AddTask$\ast$.C} macro.
+  
+The heart of our flow analysis will be the flow event. To fill a flow event from the input AOD events, we will use the \texttt{AliAnalysisTaskFlowEvent} class. The AOD input events have to be supplied by the analysis manager, so first things first, retrieve the manager to which you will connect your flow analysis tasks:
+
+\begin{lstlisting}
+  // the manager is static, so get the existing manager via the static method
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+      printf("No analysis manager to connect to!\n");
+      return NULL;
+  }
+        
+  // just to see if all went well, check if the input event handler has been connected
+  if (!mgr->GetInputEventHandler()) {
+      printf("This task requires an input event handler!\n");
+      return NULL;
+    }\end{lstlisting}
+    
+The manager and input data are present, so we can create the flow event task and do some basic configuration
+\begin{lstlisting}
+  // create instance of the class
+  AliAnalysisTaskFlowEvent* taskFE = new AliAnalysisTaskFlowEvent("FlowEventTask");
+  // enable QA plots (will give you more insight into what you're doing)
+  taskFE->SetQAOn(kTRUE);
+  // set the trigger selection
+  taskFE->SelectCollisionCandidates(AliVEvent::kMB);
+\end{lstlisting}
+Note that in the last step you have set the trigger configuration. Always make sure that you run on a trigger that makes sense for your analysis. A general remark is that the non-uniform acceptance correction methods that are implemented in the flow package, assume a flat \textbf{Q} vector distribution. Specific triggers (e.g. EMCal triggers) result in a \textbf{Q} vector bias which should \emph{not} be corrected as they invalidate that assumption\footnote{The actual event selection based on triggers is done in the \texttt{AliAnalysisTaskSE} class (to be specific, the trigger is checked in \texttt{AliAnalysisTaskSE::Exec()}) from which the \texttt{AliAnalysisTaskFlowEvent} is derived. The full set of available triggers can be found in the virtual event header \texttt{AliVEvent.h}. }.
+
+In addition to the trigger selection, one might want to do some more event selection. The flow package has a common event selection class, which we will add to your flow event
+
+\begin{lstlisting}
+  // define the event cuts object
+  AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("EventCuts");
+  // configure some event cuts, starting with centrality
+  cutsEvent->SetCentralityPercentileRange(20., 30.);
+  // method used for centrality determination
+  cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
+  // vertex-z cut
+  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  // enable the qa plots
+  cutsEvent->SetQA(doQA);
+  // explicit multiplicity outlier cut
+  cutsEvent->SetCutTPCmultiplicityOutliersAOD(kTRUE);
+  cutsEvent->SetLHC10h(kTRUE);
+  
+  
+  // and, last but not least, pass these cuts to your flow event task
+  taskFE->SetCutsEvent(cutsEvent);\end{lstlisting}
+
+Now that the flow event task has been created and some basic configuration has been done, it's time to specify the POI and RP selection. This is done by defining sets of track selection criteria for both POI's and RP's: tracks in an event that pass the track selection criteria are used as POI or RP. The track selection is defined in \texttt{AliFlowTrackCuts} objects which are passed to the \texttt{AliAnalysisTaskFlowEvent} task which does the actual selection based on the passed criteria. So, let's create some track selection objects!
+
+Starting with the RP's, for which we'll just use a uniform selection of charged tracks,
+\begin{lstlisting}
+  //create the track cuts object using a static function of AliFlowTrackCuts
+  AliFlowTrackCuts* cutsRP = AliFlowTrackCuts::GetAODTrackCutsForFilterBit(1);
+  // specify the pt range
+  cutsRP->SetPtRange(0.2, 5.);
+  // specify eta range
+  cutsRP->SetEtaRange(-0.8, 0.8);
+  // specify track type
+  cutsRP->SetParamType(kAOD);\end{lstlisting}
+  
+The particles of which we want to measure the differential $v_2$ are the charted pions. The \texttt{AliFlowTrackCuts} will do the particle identification. 
+  
+\begin{lstlisting}
+  //create the track cuts object using a static function of AliFlowTrackCuts
+  AliFlowTrackCuts* cutsPOI = AliFlowTrackCuts::GetAODTrackCutsForFilterBit(1);
+  
+  // specify the track type
+  cutsPOI->SetParamType(kAOD);\end{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\end{description}
 
 \chapter{Methods}
 \label{Methods}
@@ -432,12 +712,194 @@ The flow package aims at providing the user with most of the known flow analysis
 The structure of this  chapter is as follows: of each of the available methods a short description is given in the \texttt{theory} subsection (for more detailed information, see the papers listed above) followed by details which are specific to the implementation in the subsection \texttt{implementation}. Caveats, possible issues, etc, are listed in the \texttt{caveats} subsections. 
 %-----------------------------------------------------------------------
 
-\section{The Monte-Carlo Truth}
-\label{MC}
-Here we describe the implementation of the monte-carlo truth.
-%-----------------------------------------------------------------------
+\section{AliFlowAnalysisWithCumulants}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
 
-\section{Scalar Product Method}
+\end{lstlisting}
+
+\section{AliFlowAnalysisWithMixedHarmonics}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+\section{AliFlowAnalysisWithFittingQDistribution}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\section{AliFlowAnalysisWithMultiparticleCorrelations}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\section{AliFlowAnalysisWithLeeYangZeros}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\section{AliFlowAnalysisWithNestedLoops}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\section{AliFlowAnalysisWithLYZEventPlane}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+\section{AliFlowAnalysisWithQCumulants}
+
+	\label{qvc}
+	\subsection{Theory}
+	The Q-cumulant (QC) method\footnote{The overview given in this section is inspired by \cite{bilandzic-2011-83}, for further reading the reader is referred there. A full derivation of results that are relevant in this study is given in appendix \ref{qcapp}.} uses multi-particle correlations to estimate $v_n$ estimates for RP's and POI's, but does not limit itself to two-particle correlations. Although higher-order Q-cumulant calculations are available, this section will discuss the method using two- and four-particle correlations. 
+		
+	%\paragraph{Multiparticle correlations and anisotropic flow}
+	Multi-particle correlations in the QC method are expressed in terms of cumulants, which are the the expectation values of correlation terms in joint probability density functions. Consider the following: if two observables $f$ for particles $x_i$ and $x_j$ are correlated, the joint probability $f(x_i, x_j)$ is the sum of the factorization of the constituent probabilities and a covariance term:
+	\begin{equation}
+		f(x_i, x_j) = f(x_i)f(x_j) + f_c (x_i, x_j)
+	\end{equation}
+	When taking as an observable azimuthal dependence,
+	\begin{align}
+		x_i \equiv e^{i n \phi_i}, \hspace{.5in} x_j \equiv e^{i n \phi_j} 
+	\end{align}
+	the two-particle cumulant is expressed as the covariance of the expectation value:
+	\begin{equation}
+		E_C(e^{i n[\phi_i - \phi_j]}) = E(e^{[i n(\phi_i - \phi_j]}) - E(e^{in[\phi_i]})E(e^{in[- \phi_j]}).
+	\end{equation}
+	Symmetry arguments (along the lines of those given in appendix \ref{sec:harmonic_derivation}) dictate that the product of separate expectation values is equals zero, from which a familiar expression for the two-particle correlation is obtained:
+	\begin{align}
+		E_C(e^{i n[\phi_i - \phi_j]}) & = E(e^{in[\phi_i]})E(e^{in[- \phi_j]})                                   \\
+		                              & = \left< e^{in[\phi_i]}\right> \left< e^{in[- \phi_j]} \right> \nonumber \\
+		                              & = \left< e^{in[\phi_i - \phi_j]} \right> \nonumber                       \\
+		                              & = \left< 2 \right>, \nonumber                                            
+	\end{align}
+	the all-event average of which is denoted by
+	\begin{equation}\label{twocul}
+		c_n\{2\} = \left< \left< 2 \right> \right>
+	\end{equation}
+	where $c_n\{2\}$ is called the two-particle cumulant. For the four-particle case, one proceeds likewise:
+	\begin{align}
+		E_c(e^{in[\phi_i + \phi_j - \phi_k -\phi_l]}) & = E(e^{in[\phi_i + \phi_j - \phi_k -\phi_l]})                     \\
+		                                              & - E(e^{in[\phi_i - \phi_k]})E(e^{in[\phi_j - \phi_l]})\nonumber   \\
+		                                              & - E(e^{in[\phi_i - \phi_l]})E(e^{in[\phi_j - \phi_k]}). \nonumber 
+	\end{align}
+	The four-particle cumulant can be expressed in terms of two- and four-particle correlations as well,
+	\begin{equation}\label{fourcul}
+		c_n\{4\} = \left< \left< 4 \right> \right> - 2 \left< \left< 2 \right> \right>^2.
+	\end{equation}
+	From \ref{twocul} and \ref{fourcul} it follows that $v_n$ harmonics are related to cumulants following
+	\begin{align}\label{refFlowFromCumulants2nd}
+		v_n\{2\} & = \sqrt{c_n\{2\}}                \\
+		v_n\{4\} & = \sqrt[4]{-c_n\{4\}} \nonumber. 
+	\end{align}
+	where $v_n\{2\}$, $v_n\{4\}$ denote flow estimates obtained from two- and four-particle correlations.
+		
+	In a fashion similar to that explained in the previous subsection, the Q-cumulant method uses reference flow to obtain a statistically stable estimate of the differential flow of POI's. Differential POI flow, for the two- and four-particle case, can be expressed as
+	\begin{align}
+		d_n\{2\} & = \left< \left< 2^{\prime} \right> \right>                                                                                            \\
+		d_n\{4\} & = \left< \left< 4^{\prime} \right> \right> - 2\cdotp \left< \left< 2^{\prime} \right> \right>\left< \left< 2 \right> \right>\nonumber 
+	\end{align}
+	where $d_n\{2\}, d_n\{4\}$ denotes the two-, four-particle differential flow and the $^{\prime}$ is used as an indicator for differential (p$_t$ dependent) results. Disentangling from this the reference flow contributions, one is left with the final expression for the estimate of differential $v_n$ for POI's:
+	\begin{align}
+		v_n^{\prime}\{2\} & = \frac{d_n\{2\}}{\sqrt{c_n\{2\}}}               \\
+		v_n^{\prime}\{4\} & = - \frac{d_n\{4\}}{(-c_n\{2\})^{3/4}}.\nonumber 
+	\end{align}
+		
+	\subsection{Implementation}
+A how-to of the QC method in the flow-package is written by the author of the analysis software and is available on the FLOW-PAG twiki page (\href{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}{https://twiki.cern.ch/twiki/bin/view/ALICE/FlowPackageHowto}). This section is copied from the twiki page.
+
+ To get the first feeling how the FLOW package and QC output are organized, perhaps you can just trivially execute one 'on-the-fly' example 
+
+ Essentially, you have to do two things: 
+	\begin{lstlisting}
+cp $ALICE_ROOT/PWGCF/FLOW/macros/runFlowAnalysisOnTheFly.C
+aliroot runFlowAnalysisOnTheFly.C \end{lstlisting}
+
+ In the analysis on-the-fly particles are sampled from hardwired Fourier-like p.d.f, so input vn harmonics are completely under control. Please have a look at the steering macro runFlowAnalysisOnTheFly.C and corresponding class AliFlowEventSimpleMakerOnTheFly.cxx in the FLOW package, which are easily written (no fancy C++ features in my code!), and well documented. 
+
+ If you have landed successfully, you will get an output AnalysisResults.root, where the results from each method are structured in directories. 
+
+ To make a size of the file lighter (which matters a lot during merging!), you may want not to use all the methods. You can make your selection of the methods via:
+ 	\begin{lstlisting}
+Bool_t MCEP = kTRUE; // Monte Carlo Event Plane
+Bool_t SP = kTRUE; // Scalar Product (a.k.a 'flow analysis with eta gaps')
+Bool_t GFC = kTRUE; // Generating Function Cumulants
+Bool_t QC = kTRUE; // Q-cumulants
+Bool_t FQD = kTRUE; // Fitted q-distribution
+Bool_t LYZ1SUM = kTRUE; // Lee-Yang Zero (sum generating function), first pass over the data
+Bool_t LYZ1PROD = kTRUE; // Lee-Yang Zero (product generating function), first pass over the data
+Bool_t LYZ2SUM = kFALSE; // Lee-Yang Zero (sum generating function), second pass over the data
+Bool_t LYZ2PROD = kFALSE; // Lee-Yang Zero (product generating function), second pass over the data
+Bool_t LYZEP = kFALSE; // Lee-Yang Zero Event Plane
+Bool_t MH = kFALSE; // Mixed Harmonics (used for strong parity violation studies) 
+Bool_t NL = kFALSE; // Nested Loops (neeed for debugging, only for developers) 	\end{lstlisting}
+ Next important remark, if you want to browse through AnalysisResults.root, make sure that in AliROOT prompt you have loaded the FLOW library:
+ 	\begin{lstlisting}
+root [0] gSystem->Load("libPWGflowBase"); 	\end{lstlisting}
+ In the AnalysisResults.root, the QC output is stored in "outputQCanalysis". Just browse there, browse in "cobjQC", and you will see the directory structure.
+ "Integrated Flow" => contains all results needed for reference flow. Browse in, and explore the directory (in fact, TList) "Results". The names of the histos should be self-explanatory;
+ "Differential Flow" => browse further into "Results", and you will find a bunch of things that you can explore. For instance, in the directory "Differential Q-cumulants (POI,p$_{T}$)" you will find histos holding differential QC\{2\} vs pt, QC\{4\} vs p$_{T}$, etc. On the other hand, the flow estimates themselves, namely differential vn\{2\} vs pt, vn\{4\} vs pt you can fetch from TList "Differential Flow (POI,p$_{T}$)"
+ I hope that the names for all other things you might need are self-explanatory. 
+ You configure QC method in the steering macro via setters:
+ 	\begin{lstlisting}
+qc->SetHarmonic(2);
+qc->SetCalculateDiffFlow(kTRUE);
+qc->SetCalculate2DDiffFlow(kFALSE); // vs (pt,eta)
+qc->SetApplyCorrectionForNUA(kFALSE);
+qc->SetFillMultipleControlHistograms(kFALSE); 
+qc->SetMultiplicityWeight("combinations"); // default (other supported options are "unit" and "multiplicity")
+qc->SetCalculateCumulantsVsM(kFALSE);
+qc->SetCalculateAllCorrelationsVsM(kFALSE); // calculate all correlations in mixed harmonics "vs M"
+qc->SetnBinsMult(10000);
+qc->SetMinMult(0);
+qc->SetMaxMult(10000); 
+qc->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
+qc->SetCalculateDiffFlowVsEta(kTRUE); // if you set kFALSE only differential flow vs pt is calculated
+qc->SetCalculateMixedHarmonics(kFALSE); // calculate all multi-partice mixed-harmonics correlators	\end{lstlisting}
+ You can make QC output lighter by setting 
+ 	\begin{lstlisting}
+qc->SetBookOnlyBasicCCH(kTRUE);	\end{lstlisting} 
+(to book only basic control histograms, and disabling lot of 2D beasts), and 
+	\begin{lstlisting}
+qc->SetCalculateDiffFlowVsEta(kFALSE); 	\end{lstlisting}
+(if not interested in differential flow vs eta => this will make the final output smaller) 
+ In the "cobjQC" you might also consider "AliFlowCommonHistQC" to be useful thing, which contains a lot of trivial but still important control histograms (eg multiplicity distribution of RPs, POIs, etc). 
+ I think this is the best and fastest way for you to get familiar with the FLOW package => once you send the QC code over the real data, you get the output organized in the very same way. I will send you shortly an example set of macros which get be used for the analysis on Grid over the real data. 
+ Differential QC\{2\} and QC\{4\} implementation is generic. You can tag as RP and POI whatever you want, and it will give you results automatically decoupled from any autocorrelation effects. For this reason, it is important that if you have certain particles which is classified both as RP and POI, to be explicitly tagged also as RPs and POI once you are building the "flow event". 
+ The basic feature in the FLOW package is that from whichever input you start, we have to build the same intermediate step called "flow event", with which than we feed all methods (SP, QC, etc) in the very same way. 
+ To see what "flow event" does, and what does it need as an input, you may want to consult task AliAnalysisTaskFlowEvent.cxx and classes needed there-in. 
+
+
+
+\section{AliFlowAnalysisWithMCEventPlane}
+\subsection{Theory}
+\subsection{Implementation}
+\begin{lstlisting}
+
+\end{lstlisting}
+
+
+
+\section{AliFlowAnalysisWithScalarProduct}
 \label{SP}
 \subsection{Theory}
 \subsubsection{The scalar product method}
@@ -507,8 +969,6 @@ This principle can be generalized straightforwardly to allow for a selection of 
 \end{align}
 where cyclic permutation of $a, b, c$ (in analogy to the switching of indices in \ref{3evsp} gives the estimates of $v_n^b$ and $v_n^c$.\textcolor{red}{[insert some discussion here: is this result actually true, and some light on va, vb, (vc)]}
 
-\subsection{Implementation}
-
 \subsubsection{Extension to Event Plane method}
 As explained earlier, the event plane analysis results in this study are actually obtained by normalizing the Q-vectors in the scalar product by their length $\vert Q_n \vert$. Consider the following:
 \begin{equation}\label{phase}
@@ -525,92 +985,73 @@ For normalized Q-vectors, the denominator of \ref{sp} reads (using \ref{phase}):
 	\sqrt{\left< \frac{Q_a}{\vert Q_a\vert} \cdotp \frac{Q_b^*}{\vert Q_b^* \vert \right>}} = \sqrt{\left< e^{in[\Psi_{Q_{n_a}} - \Psi_{Q_{n_b}}}\right>} = \sqrt{\left< \cos(n[\Psi_{Q_{n_a}} - \Psi_{Q_{n_b}}]\right>)}
 	\end{equation}
 	from which the event plane resolution can be calculated using \ref{emeancos} or \ref{halfeventresolution}.
+
+\subsection{Implementation}
+\begin{lstlisting}
+   void SetHarmonic(Int_t iHarmonic)          { fHarmonic = iHarmonic; }
+   void SetApplyCorrectionForNUA(Bool_t iVal) { fApplyCorrectionForNUA = iVal?1:0; }
+   void SetNormalizationType(Int_t iVal)      { fNormalizationType = iVal; }
+   void SetDebug(Bool_t bVal)                 { fDebug = bVal; }
+   void SetBookOnlyBasicCCH(Bool_t bVal)           { fMinimalBook = bVal; }
+   void SetTotalQvector(Int_t iVal)           { fTotalQvector = iVal; }
+   void SetUsePhiWeights(Bool_t bVal)        { fUsePhiWeights = bVal; }
+   void SetWeightsList(TList* const aWeightsList)  { fWeightsList = (TList*)aWeightsList->Clone(); }\end{lstlisting}
+
+		\subsubsection{VZERO scalar product}
 		
+The VZEROA and VZEROC detectors have different $\eta$ coverage w.r.t the TPC, so to evaluate $v_2$ from VZERO-SP, do
+\begin{equation}
+v_n = \sqrt{\frac{\langle u_i \cdotp Q_A \rangle }{\sqrt{\langle Q_A \cdotp Q_B \rangle}} \cdotp \frac{\langle u_j \cdotp Q_B \rangle }{\sqrt{\langle Q_A \cdotp Q_B \rangle}}}
+\nonumber
+\end{equation}
+\begin{itemize}
+\item $Q_A$ and $Q_B$ are the VZEROC and VZEROA RP's
+\end{itemize}
+There has been some disscussion ...
+\begin{itemize}
+\item Take $u$ = full TPC = $u_j$ = $u_i$, or do $u_j$ = $\eta < 0$, $u_i$ = $\eta > 0$ ?
+\end{itemize}
+We should have a common approach to ensure uniform analyses and physics message!
+Majority vote has yielded the following:
+\begin{itemize}
+\item $u$ = full TPC = $u_j$ = $u_i$
+\end{itemize}
+\begin{equation}
+v_n = \sqrt{\frac{\langle u \cdotp Q_A \rangle }{\sqrt{\langle Q_A \cdotp Q_B \rangle}} \cdotp \frac{\langle u \cdotp Q_B \rangle }{\sqrt{\langle Q_A \cdotp Q_B \rangle}}}
+\nonumber
+\end{equation}
+This means we should think about the \alert{correlation} between terms in this equation!
 	\subsubsection{Caveats}
 		
-	%-----------------------------------------------------------------------
 		
-	\section{Generating Function Cumulant Method}
-	\label{GFC}
-	Here we describe the generating function cumulant method and how it is implemented.
-	%-----------------------------------------------------------------------
-		
-	\section{Q-vector Cumulant Method}
-	\label{qvc}
-	\subsection{Theory}
-	The Q-cumulant (QC) method\footnote{The overview given in this section is inspired by \cite{bilandzic-2011-83}, for further reading the reader is referred there. A full derivation of results that are relevant in this study is given in appendix \ref{qcapp}.} uses multi-particle correlations to estimate $v_n$ estimates for RP's and POI's, but does not limit itself to two-particle correlations. Although higher-order Q-cumulant calculations are available, this section will discuss the method using two- and four-particle correlations. 
-		
-	%\paragraph{Multiparticle correlations and anisotropic flow}
-	Multi-particle correlations in the QC method are expressed in terms of cumulants, which are the the expectation values of correlation terms in joint probability density functions. Consider the following: if two observables $f$ for particles $x_i$ and $x_j$ are correlated, the joint probability $f(x_i, x_j)$ is the sum of the factorization of the constituent probabilities and a covariance term:
-	\begin{equation}
-		f(x_i, x_j) = f(x_i)f(x_j) + f_c (x_i, x_j)
-	\end{equation}
-	When taking as an observable azimuthal dependence,
-	\begin{align}
-		x_i \equiv e^{i n \phi_i}, \hspace{.5in} x_j \equiv e^{i n \phi_j} 
-	\end{align}
-	the two-particle cumulant is expressed as the covariance of the expectation value:
-	\begin{equation}
-		E_C(e^{i n[\phi_i - \phi_j]}) = E(e^{[i n(\phi_i - \phi_j]}) - E(e^{in[\phi_i]})E(e^{in[- \phi_j]}).
-	\end{equation}
-	Symmetry arguments (along the lines of those given in appendix \ref{sec:harmonic_derivation}) dictate that the product of separate expectation values is equals zero, from which a familiar expression for the two-particle correlation is obtained:
-	\begin{align}
-		E_C(e^{i n[\phi_i - \phi_j]}) & = E(e^{in[\phi_i]})E(e^{in[- \phi_j]})                                   \\
-		                              & = \left< e^{in[\phi_i]}\right> \left< e^{in[- \phi_j]} \right> \nonumber \\
-		                              & = \left< e^{in[\phi_i - \phi_j]} \right> \nonumber                       \\
-		                              & = \left< 2 \right>, \nonumber                                            
-	\end{align}
-	the all-event average of which is denoted by
-	\begin{equation}\label{twocul}
-		c_n\{2\} = \left< \left< 2 \right> \right>
-	\end{equation}
-	where $c_n\{2\}$ is called the two-particle cumulant. For the four-particle case, one proceeds likewise:
-	\begin{align}
-		E_c(e^{in[\phi_i + \phi_j - \phi_k -\phi_l]}) & = E(e^{in[\phi_i + \phi_j - \phi_k -\phi_l]})                     \\
-		                                              & - E(e^{in[\phi_i - \phi_k]})E(e^{in[\phi_j - \phi_l]})\nonumber   \\
-		                                              & - E(e^{in[\phi_i - \phi_l]})E(e^{in[\phi_j - \phi_k]}). \nonumber 
-	\end{align}
-	The four-particle cumulant can be expressed in terms of two- and four-particle correlations as well,
-	\begin{equation}\label{fourcul}
-		c_n\{4\} = \left< \left< 4 \right> \right> - 2 \left< \left< 2 \right> \right>^2.
-	\end{equation}
-	From \ref{twocul} and \ref{fourcul} it follows that $v_n$ harmonics are related to cumulants following
-	\begin{align}\label{refFlowFromCumulants2nd}
-		v_n\{2\} & = \sqrt{c_n\{2\}}                \\
-		v_n\{4\} & = \sqrt[4]{-c_n\{4\}} \nonumber. 
-	\end{align}
-	where $v_n\{2\}$, $v_n\{4\}$ denote flow estimates obtained from two- and four-particle correlations.
-		
-	In a fashion similar to that explained in the previous subsection, the Q-cumulant method uses reference flow to obtain a statistically stable estimate of the differential flow of POI's. Differential POI flow, for the two- and four-particle case, can be expressed as
-	\begin{align}
-		d_n\{2\} & = \left< \left< 2^{\prime} \right> \right>                                                                                            \\
-		d_n\{4\} & = \left< \left< 4^{\prime} \right> \right> - 2\cdotp \left< \left< 2^{\prime} \right> \right>\left< \left< 2 \right> \right>\nonumber 
-	\end{align}
-	where $d_n\{2\}, d_n\{4\}$ denotes the two-, four-particle differential flow and the $^{\prime}$ is used as an indicator for differential (p$_t$ dependent) results. Disentangling from this the reference flow contributions, one is left with the final expression for the estimate of differential $v_n$ for POI's:
-	\begin{align}
-		v_n^{\prime}\{2\} & = \frac{d_n\{2\}}{\sqrt{c_n\{2\}}}               \\
-		v_n^{\prime}\{4\} & = - \frac{d_n\{4\}}{(-c_n\{2\})^{3/4}}.\nonumber 
-	\end{align}
-		
-	\subsection{Implementation}
-		
-	Here we describe the Q-vector cumulant method and how it is implemented.
-	%-----------------------------------------------------------------------
-		
-	\section{Lee-Yang Zero Method}
-	\label{LYZ}
-	Here we describe the Lee-Yang Zero method and how it is implemented.
-	%-----------------------------------------------------------------------
-		
-	\section{Lee-Yang Zero Method}
-	\label{LYZ}
-	Here we describe the Lee-Yang Zero method and how it is implemented.
-	%-----------------------------------------------------------------------
-		
-	\section{Fitting the Q-vector Distribution}
-	\label{qfit}
-	Here we describe how the fitting of the Q-vector distribution is implemented.
-	%-----------------------------------------------------------------------
+\chapter{More exotic uses}\ref{sec:exotic}
+\section{Flow analysis of resonances}	
+
+
+Reconstructing decayed particles
+%\item Invariant mass reconstruction, e.g.
+\begin{equation}
+\boxed{ \mbox{\Lambda} \longrightarrow \pi + \mbox{p} } \nonumber
+\end{equation}
+\begin{itemize}
+\item Take all the $\pi + \mbox{p}$ pairs in an event and plot their invariant mass
+\item Extract the signal yield \alert{$N^S$} and total yield \alert{$N^T$} from this distribution
+\item Measure $v_2$ of all $\pi + \mbox{p}$ pairs
+\end{itemize}
+Under the assumption that signal and background flow are additive, we can disentangle the two
+\begin{align}
+v_2^{T}(m_{inv})  = & \alert{v_2^{S}} \frac{N^{S} }{N^{S} + N^{B}}(m_{inv}) \nonumber \\ 
+& + v_2^{B}(m_{inv}) \frac{ N^{B}}{N^{S} + N^{B}}(m_{inv})\nonumber 
+\end{align}
+\column{.5\textwidth}
+\includegraphics[width=.9\textwidth]{figs/2012-Jul-25-oneOFtwo_16_18.pdf}\\
+\includegraphics[width=.9\textwidth]{figs/2012-Jul-25-twoOFtwo_16_18.pdf}
+\end{columns}
+\end{frame}
+	
+\section{Flow analysis in the LEGO framework: re-tagging your POI and RP selections}
+\subsection{The problem at hand}
+\subsection{Re-tagging POI and RP selections}
 		
 	\chapter{Summary}
 	\label{Summary}
@@ -687,9 +1128,9 @@ For normalized Q-vectors, the denominator of \ref{sp} reads (using \ref{phase}):
 	\end{thebibliography}
 		
 	%-----------------------------------------------------------------------
-	\chapter*{Appendix I}
-	\label{appendix1}
-	Here we put short pieces of code.
+%	\chapter*{Appendix I}
+%	\label{appendix1}
+%	Here we put short pieces of code.
 	%-----------------------------------------------------------------------
 	\printindex
 \end{document}

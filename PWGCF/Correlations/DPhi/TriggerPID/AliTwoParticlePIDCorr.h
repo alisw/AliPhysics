@@ -13,6 +13,7 @@ class TList;
 //class AliESDtrackCuts;
 class TSeqCollection;
 class AliPIDResponse;
+class AliPIDCombined;  
 class AliAODEvent;
 class AliAODTrack;
 class AliAODVertex;
@@ -53,8 +54,9 @@ namespace AliPIDNameSpace {
     NSigmaTPC = 0,
     NSigmaTOF,
     NSigmaTPCTOF,  // squared sum
-    NSigmaPIDType=NSigmaTPCTOF
+    Bayes    
   };
+  const Int_t NSigmaPIDType=NSigmaTPCTOF;//number of Nsigma PID types
     
   enum AliDetectorType
   {
@@ -111,6 +113,7 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
     void SetMaxNofMixingTracks(Int_t MaxNofMixingTracks) {fMaxNofMixingTracks=MaxNofMixingTracks;}               //Check it every time
   void SetCentralityEstimator(TString CentralityMethod) { fCentralityMethod = CentralityMethod;}
   void SetSampleType(TString SampleType) {fSampleType=SampleType;}
+  void SetRequestEventPlane(Bool_t RequestEventPlane){fRequestEventPlane=RequestEventPlane;}
   void SetAnalysisType(TString AnalysisType){fAnalysisType=AnalysisType;}
   void SetFilterBit(Int_t FilterBit) {fFilterBit=FilterBit;}
   void SetTrackStatus(UInt_t status) { fTrackStatus = status; }
@@ -136,19 +139,14 @@ class AliTwoParticlePIDCorr : public AliAnalysisTaskSE {
 
  void SetFIllPIDQAHistos(Bool_t FIllPIDQAHistos){fFIllPIDQAHistos=FIllPIDQAHistos;}
   void SetRejectPileUp(Bool_t rejectPileUp) {frejectPileUp=rejectPileUp;}
+  void SetCheckFirstEventInChunk(Bool_t CheckFirstEventInChunk) {fCheckFirstEventInChunk=CheckFirstEventInChunk;}
+
   void SetKinematicCuts(Float_t minPt, Float_t maxPt,Float_t mineta,Float_t maxeta)
   {
     fminPt=minPt;
     fmaxPt=maxPt;
     fmineta=mineta;
     fmaxeta=maxeta;
-  }
-  void SetAsymmetricnSigmaCut( Float_t minprotonsigmacut,Float_t maxprotonsigmacut,Float_t minpionsigmacut,Float_t maxpionsigmacut)
-  {
-    fminprotonsigmacut=minprotonsigmacut;
-    fmaxprotonsigmacut=maxprotonsigmacut;
-    fminpionsigmacut=minpionsigmacut;
-    fmaxpionsigmacut=maxpionsigmacut;
   }
   void SetDcaCut(Bool_t dcacut,Double_t dcacutvalue)
   {
@@ -226,6 +224,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
 
     TString    fCentralityMethod;     // Method to determine centrality
     TString    fSampleType;     // pp,p-Pb,Pb-Pb
+    Bool_t fRequestEventPlane; //only for PbPb
     Int_t    fnTracksVertex;        // QA tracks pointing to principal vertex
     AliAODVertex* trkVtx;//!
     Float_t zvtx;
@@ -233,6 +232,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
      UInt_t         fTrackStatus;       // if non-0, the bits set in this variable are required for each track
     Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
     Int_t fVertextype;
+    Int_t skipParticlesAbove;
     Double_t fzvtxcut;
     Bool_t ffilltrigassoUNID;
     Bool_t ffilltrigUNIDassoID;
@@ -245,6 +245,7 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fWeightPerEvent;
     Bool_t fTriggerSpeciesSelection;
     Bool_t fAssociatedSpeciesSelection;
+    Bool_t fRandomizeReactionPlane;
     Int_t fTriggerSpecies;
     Int_t fAssociatedSpecies;
     TString fCustomBinning;//for setting customized binning
@@ -254,14 +255,11 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Bool_t fcontainPIDasso;
     Int_t SetChargeAxis;
      Bool_t frejectPileUp;
+     Bool_t fCheckFirstEventInChunk;
     Float_t fminPt;
     Float_t fmaxPt;
     Float_t fmineta;
     Float_t fmaxeta;
-    Float_t fminprotonsigmacut;
-    Float_t fmaxprotonsigmacut;
-    Float_t fminpionsigmacut;
-    Float_t fmaxpionsigmacut;
     Bool_t fselectprimaryTruth;
     Bool_t fonlyprimarydatareco;
     Bool_t fdcacut;
@@ -275,6 +273,8 @@ fPtTOFPIDmax=PtTOFPIDmax;
     Double_t fmaxPtComboeff;
     Double_t fminPtAsso;
     Double_t fmaxPtAsso;
+    Double_t fmincentmult;
+    Double_t fmaxcentmult;
     TH1F *fhistcentrality;//!
     TH1F *fEventCounter; //!
     TH2F *fEtaSpectrasso;//!
@@ -300,7 +300,27 @@ fPtTOFPIDmax=PtTOFPIDmax;
     TH2F *fEventnomeson;//!
     TH2F *fhistJetTrigestimate;//!
 
-    TH2D* fCentralityCorrelation;  //! centrality vs multiplicity
+    TH2D* fCentralityCorrelation;  //! centrality vs Tracks multiplicity
+ //VZERO calibration
+  TH1F *fHistVZEROAGainEqualizationMap;//VZERO calibration map
+  TH1F *fHistVZEROCGainEqualizationMap;//VZERO calibration map
+  TH2F *fHistVZEROChannelGainEqualizationMap; //VZERO calibration map
+  TH1* fCentralityWeights;		     // for centrality flattening
+
+    TH2F *fHistCentStats; //!centrality stats
+    TH2F *fHistRefmult;//!
+    TH2F *fHistEQVZEROvsTPCmultiplicity;//!
+    TH2F *fHistEQVZEROAvsTPCmultiplicity;//!
+    TH2F *fHistEQVZEROCvsTPCmultiplicity;//!
+    TH2F *fHistVZEROCvsEQVZEROCmultiplicity;//!
+    TH2F *fHistVZEROAvsEQVZEROAmultiplicity;//!
+    TH2F *fHistVZEROCvsVZEROAmultiplicity;//!
+    TH2F *fHistEQVZEROCvsEQVZEROAmultiplicity;//!
+    TH2F *fHistVZEROSignal;//!
+    TH2F *fHistEventPlaneReco;//!
+    TH2F *fHistEventPlaneTruth;//!
+    TH2D *fHistPsiMinusPhi;//! psi - phi QA histogram
+
     TH2F* fControlConvResoncances; //! control histograms for cuts on conversions and resonances
 
     TH2F *fHistoTPCdEdx;//!
@@ -333,17 +353,17 @@ fPtTOFPIDmax=PtTOFPIDmax;
     AliTHn* fTrackHistEfficiency[6]; //! container for tracking efficiency and contamination (all particles filled including leading one): axes: eta, pT, particle species:::::::::0 pion, 1 kaon,2 proton,3 mesons,4 kaons+protons,5 all
 
     
-    TH1F *fHistQA[16]; //!
+    TH1F *fHistQA[16]; //!                  gReactionPlane
      
    
     THnSparse *effcorection[6];//!
     // THnF *effmap[6];  
 
-    Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield);
+    Int_t ClassifyTrack(AliAODTrack* track,AliAODVertex* vertex,Float_t magfield,Bool_t fill);
   Double_t* GetBinning(const char* configuration, const char* tag, Int_t& nBins);
 
 
-  void Fillcorrelation(TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
+  void Fillcorrelation(Double_t gReactionPlane,TObjArray *trackstrig,TObjArray *tracksasso,Double_t cent,Float_t vtx,Float_t weight,Bool_t firstTime,Float_t bSign,Bool_t fPtOrder,Bool_t twoTrackEfficiencyCut,Bool_t mixcase,TString fillup);//mixcase=kTRUE in case of mixing; 
  Float_t GetTrackbyTrackeffvalue(AliAODTrack* track,Double_t cent,Float_t evzvtx, Int_t parpid);
 
 //Mixing functions
@@ -370,6 +390,27 @@ fPtTOFPIDmax=PtTOFPIDmax;
    Float_t twoTrackEfficiencyCutValue;
   //Pid objects
   AliPIDResponse *fPID; //! PID
+  AliPIDCombined   *fPIDCombined;     //! PIDCombined
+
+  //set PID Combined
+  void SetPIDCombined(AliPIDCombined *obj){fPIDCombined=obj;}
+  AliPIDCombined *GetPIDCombined(){return fPIDCombined;}
+  //set cut on beyesian probability
+  void SetBayesCut(Double_t cut){fBayesCut=cut;}
+  void SetdiffPIDcutvalues(Bool_t diffPIDcutvalues,Double_t PIDCutval1, Double_t PIDCutval2, Double_t PIDCutval3,Double_t PIDCutval4){
+    fdiffPIDcutvalues=diffPIDcutvalues;
+    fPIDCutval1=PIDCutval1;
+    fPIDCutval2=PIDCutval2;
+    fPIDCutval3=PIDCutval3;
+    fPIDCutval4=PIDCutval4;
+  }
+ void  SetRandomizeReactionPlane(Bool_t RandomizeReactionPlane){fRandomizeReactionPlane=RandomizeReactionPlane;}
+  Double_t GetBayesCut(){return fBayesCut;}
+  Int_t GetIDBayes(AliAODTrack *trk, Bool_t FIllQAHistos);//calculate the PID according to bayesian PID
+  UInt_t CalcPIDCombined(AliAODTrack *track,Int_t detMask, Double_t* prob) const;
+  Bool_t* GetAllCompatibleIdentitiesNSigma(AliAODTrack * trk, Bool_t FIllQAHistos);//All the identities are true
+
+
   Int_t eventno;
   Float_t fPtTOFPIDmin; //lower pt bound for the TOCTOF combined circular pid
   Float_t fPtTOFPIDmax; //uper pt bound for the TOCTOF combined circular pid
@@ -377,6 +418,13 @@ fPtTOFPIDmax=PtTOFPIDmax;
   PIDType fPIDType; // PID type  Double_t fNSigmaPID; // number of sigma for PID cut
   Bool_t fFIllPIDQAHistos; //Switch for filling the nSigma histos
   Double_t fNSigmaPID; // number of sigma for PID cut
+  Double_t fBayesCut; // Cut on Bayesian probability
+ Bool_t fdiffPIDcutvalues;
+ Double_t fPIDCutval1;
+ Double_t fPIDCutval2;
+ Double_t fPIDCutval3;
+ Double_t fPIDCutval4;
+
   Float_t fHighPtKaonNSigmaPID;// number of sigma for PID cut for Kaons above fHighPtKaonSigma(-1 default, no cut applied)
   Float_t fHighPtKaonSigma;//lower pt bound for the fHighPtKaonNSigmaPID to be set >0(i.e. to make it applicable)
   Bool_t fUseExclusiveNSigma;//if true returns the identity only if no double counting(i.e not in the overlap area)
@@ -414,7 +462,27 @@ fPtTOFPIDmax=PtTOFPIDmax;
 Float_t GetInvMassSquaredCheap(Float_t pt1, Float_t eta1, Float_t phi1, Float_t pt2, Float_t eta2, Float_t phi2, Float_t m0_1, Float_t m0_2);
   Float_t GetDPhiStar(Float_t phi1, Float_t pt1, Float_t charge1, Float_t phi2, Float_t pt2, Float_t charge2, Float_t radius, Float_t bSign);
   TObjArray* CloneAndReduceTrackList(TObjArray* tracks);
-	   
+
+
+  void ShiftTracks(TObjArray* tracks, Double_t angle);
+  Bool_t AcceptEventCentralityWeight(Double_t centrality);
+
+  //get event plane
+  Double_t GetEventPlane(AliAODEvent *event,Bool_t truth);
+  Double_t GetAcceptedEventMultiplicity(AliAODEvent *aod,Bool_t truth);//returns centrality after event(mainly vertex) selection IsEventAccepted  GetAcceptedEventMultiplicity
+  
+  //get vzero equalization
+  Double_t GetEqualizationFactor(Int_t run, const char* side);
+  Double_t GetChannelEqualizationFactor(Int_t run,Int_t channel);
+  void SetVZEROCalibrationFile(const char* filename,const char* lhcPeriod);
+  void SetCentralityWeights(TH1* hist) { fCentralityWeights = hist; }
+
+  Double_t GetRefMultiOrCentrality(AliAODEvent *event, Bool_t truth);
+  Double_t GetReferenceMultiplicityVZEROFromAOD(AliAODEvent *event);//mainly important for pp 7 TeV
+
+
+
+
     
     AliTwoParticlePIDCorr(const AliTwoParticlePIDCorr&); // not implemented
     AliTwoParticlePIDCorr& operator=(const AliTwoParticlePIDCorr&); // not implemented
@@ -435,6 +503,7 @@ public:
     virtual Short_t Charge()      const { return fcharge; }
     Float_t geteffcorrectionval() const {return feffcorrectionval;}
     virtual Bool_t IsEqual(const TObject* obj) const { return (obj->GetUniqueID() == GetUniqueID()); }
+    virtual void SetPhi(Double_t phiv) { fPhi = phiv; }
 
 
 private:

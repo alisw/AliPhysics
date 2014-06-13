@@ -64,6 +64,7 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 	,fClusterPositionAllEnergy(0)
 	,fClusterEnergy(0)
 	,fClusterEnergyCent(0)
+	,fClusterEnergyModifiedTrackMatchesCent(0)
 	,fClusterEnergyCentMatched(0)
 	,fClusterEnergyCentNotMatched(0)
 	,fClusterEt(0)
@@ -134,6 +135,7 @@ AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
     delete fClusterPositionAllEnergy;
     delete fClusterEnergy;
     delete fClusterEnergyCent;
+    delete fClusterEnergyModifiedTrackMatchesCent;
     delete fClusterEnergyCentMatched;
     delete fClusterEnergyCentNotMatched;
     delete fClusterEt;
@@ -328,6 +330,7 @@ Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
 		// 	      if(fReconstructedE - fsub* track->P() > 0.0){
 		fReconstructedE = fReconstructedE - fsub* track->P();
 		matched = kFALSE;
+		fClusterEnergyModifiedTrackMatchesCent->Fill(GetCorrectionModification(*cluster,0,0,cent)*fReconstructedE,cent);
 	      }
 	    }
 	  }
@@ -652,6 +655,7 @@ void AliAnalysisEtReconstructed::FillOutputList(TList* list)
     list->Add(fClusterPositionAllEnergy);
     list->Add(fClusterEnergy);
     list->Add(fClusterEnergyCent);
+    list->Add(fClusterEnergyModifiedTrackMatchesCent);
     list->Add(fClusterEnergyCentMatched);
     list->Add(fClusterEnergyCentNotMatched);
     list->Add(fClusterEt);
@@ -780,6 +784,12 @@ void AliAnalysisEtReconstructed::CreateHistograms()
     fClusterEnergyCent->SetXTitle("Energy of cluster");
     fClusterEnergyCent->SetYTitle("Centrality Bin");
     fClusterEnergyCent->SetZTitle("Number of clusters");
+
+    histname = "fClusterEnergyModifiedTrackMatchesCent" + fHistogramNameSuffix;
+    fClusterEnergyModifiedTrackMatchesCent = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);
+    fClusterEnergyModifiedTrackMatchesCent->SetXTitle("Energy of cluster");
+    fClusterEnergyModifiedTrackMatchesCent->SetYTitle("Centrality Bin");
+    fClusterEnergyModifiedTrackMatchesCent->SetZTitle("Number of clusters");
 
     histname = "fClusterEnergyCentMatched" + fHistogramNameSuffix;
     fClusterEnergyCentMatched = new TH2F(histname.Data(), histname.Data(), 100, 0, 5,20,-0.5,19.5);

@@ -5,12 +5,11 @@
 #include "TString.h"
 #include "AliLog.h"
 
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-
 class AliAODEvent;
 class AliESDEvent;
 class AliInputEventHandler;
+//class AliMCEvent;
+//class AliMCEventHandler;
 class TH1;
 class TH2;
 class TH2;
@@ -24,8 +23,6 @@ class TH2D;
 class TH2D;
 class TH3D;
 class TProfile;
-
-
 
 class AliAnalysisTaskDptDptQA : public AliAnalysisTaskSE
 {
@@ -83,9 +80,6 @@ public:
   void fillHistoWithArray(TH1 * h, float * array, int size);
   void fillHistoWithArray(TH2 * h, float * array, int size1, int size2);
   void fillHistoWithArray(TH3 * h, float * array, int size1, int size2, int size3);
-
-
-
   
   virtual     void    SetDebugLevel( int v )              { _debugLevel   = v; }
   virtual     void    SetSinglesOnly(int v)               { _singlesOnly  = v; } 
@@ -117,10 +111,7 @@ public:
   virtual     void    SetDcaZMin(double v)            { _dcaZMin           = v; } 
   virtual     void    SetDcaZMax(double v)            { _dcaZMax           = v; } 
   virtual     void    SetDcaXYMin(double v)           { _dcaXYMin          = v; } 
-  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; }
-  virtual     void    SetTPCNclus(int v)              { _tpcnclus          = v; }
-  virtual     void    SetChi2PerNDF(double v)         { _chi2ndf           = v; }
- 
+  virtual     void    SetDcaXYMax(double v)           { _dcaXYMax          = v; } 
   virtual     void    SetDedxMin(double v)            { _dedxMin           = v; } 
   virtual     void    SetDedxMax(double v)            { _dedxMax           = v; } 
   virtual     void    SetNClusterMin(int v)           { _nClusterMin       = v; } 
@@ -128,7 +119,6 @@ public:
   virtual     void    SetWeigth_1(TH3F * v)           { _weight_1          = v; }
   virtual     void    SetWeigth_2(TH3F * v)           { _weight_2          = v; }
   
-  void SetNSigmaCut(Double_t nsigma){ fNSigmaCut = nsigma;}
   
 protected:      
   
@@ -137,8 +127,6 @@ protected:
   AliESDEvent*             fESDEvent;             //! ESD Event 
   AliInputEventHandler*    fInputHandler;    //! Generic InputEventHandler 
   
-  AliPIDResponse*          fPIDResponse;
-
   // Histogram settings
   //TList*              _inputHistoList;
   TList*              _outputHistoList;
@@ -172,16 +160,7 @@ protected:
   double   _dedxMax;
   int      _nClusterMin; 
   int      _trackFilterBit;
-  Double_t fNSigmaCut;  
-
-  int _tpcnclus;
-  double _chi2ndf;
-
-  //double _min_eta_1;
-  //double _max_eta_1;
-  //double _min_eta_2;
-  //double _max_eta_2;
-
+  
  
   // event and track wise variables
   
@@ -192,7 +171,6 @@ protected:
   double _mult2;
   double _mult3;
   double _mult4;
-  double _mult4a;
   double _mult5;
   double _mult6;
   
@@ -310,16 +288,10 @@ protected:
   TH1D * _m5;
   TH1D * _m6;
   TH1D * _vertexZ;
-
-  TH1F * _Ncluster1;
-  TH1F * _Ncluster2;
   TH1F * _etadis;
   TH1F * _phidis;
   TH1F * _dcaz;
-  TH1F * _dcaxy;
-  TH1F * _spectra;
-  
-
+  TH1F * _dcaxy;  
 
   // PARTICLE 1 (satisfies filter 1)
   // Primary filled quantities
@@ -331,8 +303,8 @@ protected:
   TProfile *  _s1pt_1_vsM;
   TProfile *  _n1Nw_1_vsM; // w/o weight
   TProfile *  _s1ptNw_1_vsM;
-  TH2D      *  _dedxVsP_1;
-  TH2D      *  _corrDedxVsP_1;
+  TH2F      *  _dedxVsP_1;
+  TH2F      *  _corrDedxVsP_1;
   TH2F      *  _betaVsP_1;
   
   // PARTICLE 2 (satisfies filter 2)
@@ -345,8 +317,8 @@ protected:
   TProfile *  _s1pt_2_vsM;
   TProfile *  _n1Nw_2_vsM; // w/o weight
   TProfile *  _s1ptNw_2_vsM;
-  TH2D      *  _dedxVsP_2;
-  TH2D      *  _corrDedxVsP_2;
+  TH2F      *  _dedxVsP_2;
+  TH2F      *  _corrDedxVsP_2;
   TH2F      *  _betaVsP_2;
   
   // Pairs 1 & 2  
@@ -365,8 +337,9 @@ protected:
   TProfile * _s2PtNNw_12_vsM;       
   TProfile * _s2NPtNw_12_vsM; 
   
-  TH2F      * _invMass;
-    
+  TH1F      * _invMass;
+  TH1F      * _invMassElec;
+  
   TString n1Name;
   TString n1NwName;
   TString n2Name;

@@ -15,6 +15,8 @@
 #include "AliInputEventHandler.h"
 #include "TFile.h"
 #include "AliEventplane.h"
+#include "AliESDVertex.h"
+#include "AliAODVertex.h"
 
 ClassImp(AliCopyHeaderTask)
 #if 0 
@@ -62,7 +64,7 @@ AliCopyHeaderTask::UserExec(Option_t*)
   aodHeader->SetEventType(esd->GetEventType());
   aodHeader->SetEventNumberESDFile(esd->GetHeader()->GetEventNumberInFile());
   if(esd->GetCentrality())
-    aodHeader->SetCentrality(new AliCentrality(*(esd->GetCentrality())));
+    aodHeader->SetCentrality(esd->GetCentrality());
   else
     aodHeader->SetCentrality(0);
 
@@ -81,6 +83,12 @@ AliCopyHeaderTask::UserExec(Option_t*)
   aodHeader->SetZDCP2Energy(esd->GetZDCP2Energy());
   aodHeader->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
 
+  AliESDHeader* esdHeader = esd->GetHeader();
+  if (esdHeader) { 
+    aodHeader->SetIRInt2InteractionMap(esdHeader->GetIRInt2InteractionMap());
+    aodHeader->SetIRInt1InteractionMap(esdHeader->GetIRInt1InteractionMap());
+  }
+  
   TTree* tree = fInputHandler->GetTree();
   if (tree) {
     TFile* file = tree->GetCurrentFile();
@@ -90,6 +98,43 @@ AliCopyHeaderTask::UserExec(Option_t*)
   AliEventplane* ep = esd->GetEventplane();
   if (ep) aodHeader->SetEventplane(ep);
 
+  // Copy primary vertices
+  CopyVertex(*aod, esd->GetPrimaryVertex(),    AliAODVertex::kPrimary);
+  CopyVertex(*aod, esd->GetPrimaryVertexSPD(), AliAODVertex::kMainSPD);
+  CopyVertex(*aod, esd->GetPrimaryVertexTPC(), AliAODVertex::kMainTPC);
+  
+  // Loop over pile-ups 
+  for (Int_t i = 0; i < esd->GetNumberOfPileupVerticesSPD(); i++) 
+    CopyVertex(*aod, esd->GetPileupVertexSPD(i), AliAODVertex::kPileupSPD);
+  for (Int_t i = 0; i < esd->GetNumberOfPileupVerticesTracks(); i++) 
+    CopyVertex(*aod, esd->GetPileupVertexTracks(i),AliAODVertex::kPileupTracks);
+    
+}
+
+void
+AliCopyHeaderTask::CopyVertex(AliAODEvent&        aod, 
+			      const AliESDVertex* vtx, 
+			      Int_t               type) 
+{
+  if (!vtx) return;
+
+  TClonesArray* arr = aod.GetVertices();
+  if (!arr) return;
+
+  Int_t    n     = arr->GetEntriesFast(); 
+  Double_t pos[] = { 0., 0., 0. };
+  Double_t cov[] = { 0., 0., 0., 0., 0., 0. }; 
+  Double_t chi2  = vtx->GetChi2toNDF();
+  vtx->GetXYZ(pos);
+  vtx->GetCovMatrix(cov);
+  
+  AliAODVertex* out = new((*arr)[n]) AliAODVertex(pos, cov, chi2, 0, -1, type);
+  out->SetName(vtx->GetName());
+  out->SetTitle(vtx->GetTitle());
+  out->SetBC(vtx->GetBC());
+  TString tit(out->GetTitle());
+  if (!tit.Contains("VertexerTracks")) 
+    out->SetNContributors(vtx->GetNContributors());
 }
 
 void
