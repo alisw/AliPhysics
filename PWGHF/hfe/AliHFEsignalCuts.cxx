@@ -489,7 +489,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
     const AliMCParticle *esdmc = dynamic_cast<const AliMCParticle *>(mctrack);
     if(esdmc){
       mcpart = esdmc->Particle();
-      eSource=fMCQA->GetElecSource(mcpart);
+      eSource=fMCQA->GetElecSource(mcpart,kTRUE);
       // considering secondary pions
       if(type == AliESDtrack::Class()){
        if(eSource>=AliHFEmcQA::kGammaPi0 && eSource<=AliHFEmcQA::kGammaRho0) {  // conversion electron, be careful with the enum odering
@@ -510,7 +510,7 @@ Int_t AliHFEsignalCuts::GetElecSource(const AliVParticle * const track) const {
       }
     }
   } else {
-    eSource=fMCQA->GetElecSource(mctrack);
+    eSource=fMCQA->GetElecSource(mctrack,kTRUE);
   }
   return eSource;
 }	

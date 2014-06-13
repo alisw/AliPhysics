@@ -1,4 +1,9 @@
 #!/bin/bash
+if [ ${BASH_VERSINFO} -lt 4 ]; then
+  echo "bash version >= 4 needed, you have ${BASH_VERSION}, exiting..."
+  exit 1
+fi
+
 main()
 {
   if [[ -z $1 ]]; then
@@ -10,7 +15,7 @@ main()
     echo "  ${0##*/} configFile=runQA.config inputList=file.list outputDirectory=%det"
     return 1
   fi
- 
+
   if ! parseConfig "$@"; then
     ${0}
     return 1
@@ -161,6 +166,8 @@ updateQA()
       if [[ "$qaFile" =~ .*.zip$ ]]; then
         if unzip -l ${qaFile} | egrep "QAresults.root" &>/dev/null; then
           qaFile="${qaFile}#QAresults.root"
+        elif unzip -l ${qaFile} | egrep "QAresults_barrel.root" &>/dev/null; then
+          qaFile="${qaFile}#QAresults_barrel.root"
         else
           qaFile=""
         fi
@@ -182,7 +189,8 @@ updateQA()
           aliroot -b -q -l "$ALICE_ROOT/PWGPP/macros/simpleTrending.C(\"${qaFile}\",${runNumber},\"${detector}\",\"trending.root\",\"trending\",\"recreate\")" 2>&1 | tee -a runLevelQA.log
         fi
         if [[ -f trending.root ]]; then
-          arrOfTouchedProductions[${tmpProductionDir}]=1
+          #cache the touched production + an example file to guarantee consistent run data parsing
+          arrOfTouchedProductions[${tmpProductionDir}]="${qaFile%\#*}"
         else
           echo "trending.root not created"
         fi
@@ -224,7 +232,7 @@ updateQA()
       for dir in ${tmpProductionDir}/000*; do
         echo 
         oldRunDir=${outputDir}/${dir#${tmpPrefix}}
-        if ! guessRunData "${dir}/dummyName"; then
+        if ! guessRunData "${arrOfTouchedProductions[${tmpProductionDir}]}"; then
           echo "could not guess run data from ${dir}"
           continue
         fi
@@ -527,15 +535,18 @@ guessRunData()
   
   #modify the OCDB: set the year
   if [[ ${dataType} =~ sim ]]; then 
-    anchorYear=$(for x in $mcProductionMap ; do [[ "${x}" =~ ${originalPeriod} ]] && echo ${x} && break; done)
-    anchorYear=${anchorYear#*=}
+    anchorYear=$(run2year $runNumber)
+    if [[ -z "${anchorYear}" ]]; then
+      echo "WARNING: anchorYear not available for this production: ${originalPeriod}, runNumber: ${runNumber}. Cannot set the OCDB."
+      return 1
+    fi
     ocdbStorage=$(setYear ${anchorYear} ${ocdbStorage})
   else
     ocdbStorage=$(setYear ${year} ${ocdbStorage})
   fi
 
   #if [[ -z ${dataType} || -z ${year} || -z ${period} || -z ${runNumber}} || -z ${pass} ]];
-  if [[ -z ${runNumber}} ]]
+  if [[ -z ${runNumber} ]]
   then
     #error condition
     return 1
@@ -543,6 +554,24 @@ guessRunData()
     #ALL OK
     return 0
   fi
+}
+
+run2year()
+{
+  #for a given run print the year.
+  #the run-year table is ${runMap} (a string)
+  #defined in the config file
+  #one line per year, format: year runMin runMax
+  local run=$1
+  [[ -z ${run} ]] && return 1
+  local year=""
+  local runMin=""
+  local runMax=""
+  while read year runMin runMax; do
+    [[ -z ${year} || -z ${runMin} || -z ${runMax} ]] && continue
+    [[ ${run} -ge ${runMin} && ${run} -le ${runMax} ]] && echo ${year} && break
+  done < <(echo "${runMap}")
+  return 0
 }
 
 substituteDetectorName()

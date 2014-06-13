@@ -52,7 +52,9 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   void SetFillVarHists(Bool_t setter) {fFillVarHists=setter;return;}
   void SetMultiplicityHists(Bool_t setter) {fMultiplicityHists=setter;return;}
   void SetPriorsHists(Bool_t setter) {fPriorsHists=setter;return;}
-  
+  void SetUseFilterBitCut(Bool_t setter)   { fLcCut = setter;	 return; }  
+  void SetUseFilterBitPID(Bool_t setter)   { fLcPIDCut = setter; return; }
+
   Float_t GetUpperMassLimit() const {return fUpmasslimit;}
   Float_t GetLowerMassLimit() const {return fLowmasslimit;}
   Int_t GetNBinsPt() const {return fNPtBins;}
@@ -129,6 +131,41 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F *fMassHistDkTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHist3Pr[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHist3PrTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH2F *fhEta3Prong;    //!hist. for 3-prong Eta
+  TH2F *fhEta3ProngAcc; //!hist. for 3-prong Eta fiducial acc
+  TH2F *fhEta3ProngProd; //!hist. for 3-prong Eta fiducial  Prod Cuts
+  TH2F *fhEta3ProngAn; //!hist. for 3-prong Eta fiducial An Cuts
+  TH2F *fhRap3Prong;    //!hist. for 3-prong y 
+  TH2F *fhRap3ProngAcc; //!hist. for 3-prong Eta fiducial acc
+  TH2F *fhRap3ProngProd; //!hist. for 3-prong Eta fiducial Prod cuts
+  TH2F *fhRap3ProngAn; //!hist. for 3-prong Eta fiducial An cuts
+  TH1F *fhSelectBit; //! hist for Filter Bit 	
+  TH2F *fhProtonPtProngLcPt; //!hist for var_LcPt
+  TH2F *fhBProtonPtProngLcPt;//!hist for var_LcPt
+  TH2F *fhProtond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhBProtond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhKaonPtProngLcPt;//!hist for var_LcPt
+  TH2F *fhBKaonPtProngLcPt;//!hist for var_LcPt
+  TH2F *fhKaond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhBKaond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhPionPtProngLcPt;//!hist for var_LcPt
+  TH2F *fhBPionPtProngLcPt;//!hist for var_LcPt
+  TH2F *fhPiond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhBPiond0ProngLcPt;//!hist for var_LcPt
+  TH2F *fhDist12PrimLcPt;//!hist for var_LcPt
+  TH2F *fhBDist12PrimLcPt;//!hist for var_LcPt
+  TH2F *fhSigmaVertLcPt;//!hist for var_LcPt
+  TH2F *fhBSigmaVertLcPt;//!hist for var_LcPt
+  TH2F *fhdcasLcPt;//!hist for var_LcPt
+  TH2F *fhBdcasLcPt;//!hist for var_LcPt
+  TH2F *fhCosPointingAngleLcPt;//!hist for var_LcPt
+  TH2F *fhBCosPointingAngleLcPt;//!hist for var_LcPt
+  TH2F *fhDecayLengthLcPt;//!hist for var_LcPt
+  TH2F *fhBDecayLengthLcPt;//!hist for var_LcPt
+  TH2F *fhSum2LcPt;//!hist for var_LcPt
+  TH2F *fhBSum2LcPt;//!hist for var_LcPt
+  TH2F *fhPtMaxLcPt;//!hist for var_LcPt
+  TH2F *fhBPtMaxLcPt;//!hist for var_LcPt
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
@@ -149,6 +186,8 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fFillVarHists;  // flag for creation and fill of histograms with vars
   Bool_t fMultiplicityHists;  // flag for activation of multiplcity histos
   Bool_t fPriorsHists;  // flag for histos with priors
+  Bool_t fLcCut;  // flag for Lc filter bit cut
+  Bool_t fLcPIDCut;  // flag for Lc filter bit PID
   TH1F *fNentries;      // histo with number of entries
   TList *fOutputMC;     // output1
   TList *fAPriori;      // output2
@@ -157,7 +196,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   AliPIDResponse *fPIDResponse;     //! PID response object
   AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 7
 
-  ClassDef(AliAnalysisTaskSELambdac,6); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdac,7); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif

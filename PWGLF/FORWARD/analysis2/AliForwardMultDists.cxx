@@ -172,7 +172,7 @@ AliForwardMultDists::AliForwardMultDists()
 
 //____________________________________________________________________
 AliForwardMultDists::AliForwardMultDists(const char* name)
-  : AliBaseAODTask(name),
+  : AliBaseAODTask(name,"AliForwardMultDists"),
     fBins(), 
     fSymmetric(0),
     fNegative(0), 

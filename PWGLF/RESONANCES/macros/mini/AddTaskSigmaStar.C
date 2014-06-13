@@ -50,8 +50,8 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
  Int_t       pairCutSetID = 0,
  Int_t       mixingConfigID = 0,
  Int_t       aodFilterBit = 5,
- Int_t       piPIDCut = 3.0,
- Int_t       pPIDCut = 3.0,
+ Float_t       piPIDCut = 3.0,
+ Float_t       pPIDCut = 3.0,
  Float_t     trackDCAcut = 7.0,
  Float_t     massTol = 0.01,
  Float_t     lambdaDCA = 0.3,
@@ -168,7 +168,7 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    else if(collSyst==kPPb) collSystName="pPb";
    else collSystName="PbPb";
 
-   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.2f_%.1f_%.2f_%.1f", 
+   TString taskName = Form("SigmaStar%s%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f", 
 			   collSystName.Data(), (isMC ? "MC" : "Data"),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA);
 
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
@@ -298,10 +298,14 @@ AliRsnMiniAnalysisTask *AddTaskSigmaStar
    //  outputFileName += ":Rsn";
    Printf("AddTaskSigmaStar - Set OutputFileName : \n %s\n", outputFileName.Data() );
    
-   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.2f_%.2f_%.1f_%.2f_%.1f",outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pPIDCut,trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA), 
+   
+   AliAnalysisDataContainer *output = mgr->CreateContainer(Form("RsnOut_%s_%.1f_%d_%.1f_%.1f_%.2f_%.4f_%.2f_%.2f_%.1f",
+								outNameSuffix.Data(),cutV,NTPCcluster,piPIDCut,pPIDCut,
+								trackDCAcut,massTol,lambdaDCA,lambdaCosPoinAn,lambdaDaughDCA), 
 							   TList::Class(), 
 							   AliAnalysisManager::kOutputContainer, 
 							   outputFileName);
+   
    mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(task, 1, output);
    
