@@ -165,12 +165,11 @@ class AliAnalysisTaskFilteredTree : public AliAnalysisTaskSE {
   TH3D* fPtResCentPtTPC;    //! sigma(pt)/pt vs Cent vs Pt for prim. TPC tracks
   TH3D* fPtResCentPtTPCc;   //! sigma(pt)/pt vs Cent vs Pt for prim. TPC contrained to vertex tracks
   TH3D* fPtResCentPtTPCITS; //! sigma(pt)/pt vs Cent vs Pt for prim. TPC+ITS tracks
+  TObjString fCurrentFileName; // cached value of current file name
+  AliESDtrack* fDummyTrack; //! dummy track for tree init
 
   AliAnalysisTaskFilteredTree(const AliAnalysisTaskFilteredTree&); // not implemented
   AliAnalysisTaskFilteredTree& operator=(const AliAnalysisTaskFilteredTree&); // not implemented
-  
-  AliESDtrack* fDummyTrack; //! dummy track for tree init
-
   ClassDef(AliAnalysisTaskFilteredTree, 1); // example of analysis
 };
 
