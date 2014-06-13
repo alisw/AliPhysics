@@ -1024,6 +1024,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillAOD()
     //Double_t ptCorrect=0.;
     for(Int_t ijet = 0; ijet < nJets ; ijet++){
       jet = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+      if(!jet) continue;
       if(TMath::Abs(jet->Eta()) > (0.9 - fJetConeSize) ) continue;
       if(jet->EffectiveAreaCharged()<fJetAreaFraction*TMath::Pi()*fJetConeSize*fJetConeSize) continue;
       if(jet->Pt()<fJetMinPt) continue;
@@ -1167,6 +1168,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
     Double_t sumTrackPt=0;
     for(itrack = 0; itrack < nCTSTracks ; itrack++){
       aodtrack = dynamic_cast <AliAODTrack*>(GetCTSTracks()->At(itrack));
+      if(!aodtrack) continue;
       fhTrackPhiVsEta->Fill(aodtrack->Phi(),aodtrack->Eta());
       sumTrackPt+=aodtrack->Pt();
     }
@@ -1192,6 +1194,7 @@ void  AliAnaParticleJetFinderCorrelation::MakeAnalysisFillHistograms()
   Int_t itrk=0;
   for(Int_t ijet = 0; ijet < nJets ; ijet++){
     jettmp = dynamic_cast<AliAODJet*>(aodRecJets->At(ijet));
+    if(!jettmp) continue;
     fhJetPtBefore->Fill(jettmp->Pt());
     jetPttmp  = jettmp->Pt() - rhoEvent * jettmp->EffectiveAreaCharged();//<<---changed here
     
