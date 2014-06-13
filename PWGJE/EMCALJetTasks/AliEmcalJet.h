@@ -1,12 +1,14 @@
 #ifndef AliEmcalJet_H
 #define AliEmcalJet_H
 
-// $Id$
-
+#include <vector>
+#include <algorithm>
+#include <utility>
 #include <TArrayS.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
 #include <TClonesArray.h>
+#include <TVector2.h>
 
 #include "AliVParticle.h"
 #include "AliVCluster.h"
@@ -94,6 +96,7 @@ class AliEmcalJet : public AliVParticle
   void              AddTrackAt(Int_t track, Int_t idx) { fTrackIDs.AddAt(track, idx);      }
   void              Clear(Option_t */*option*/="")     { fClusterIDs.Set(0); fTrackIDs.Set(0); fClosestJets[0] = 0; fClosestJets[1] = 0; 
                                                          fClosestJetsDist[0] = 0; fClosestJetsDist[1] = 0; fMatched = 0; fPtSub = 0; }
+  Double_t          DeltaR(const AliVParticle* part) const;
   void              SetArea(Double_t a)                { fArea    = a;                     }
   void              SetAreaEta(Double_t a)             { fAreaEta = a;                     }
   void              SetAreaPhi(Double_t a)             { fAreaPhi = a;                     }
@@ -109,6 +112,7 @@ class AliEmcalJet : public AliVParticle
   void              SetNumberOfNeutrals(Int_t n)       { fNn = n;                          }
   void              SetMCPt(Double_t p)                { fMCPt = p;                        }
   void              SortConstituents();
+  std::vector<int>  SortConstituentsPt(TClonesArray *tracks) const;
   void              SetNEmc(Int_t n)                   { fNEmc           = n;              }
   void              SetPtEmc(Double_t pt)              { fPtEmc          = pt;             }
   void              SetPtSub(Double_t ps)              { fPtSub          = ps;             } 
@@ -169,6 +173,13 @@ class AliEmcalJet : public AliVParticle
   Double_t          fPtVectSub;           //!          background vector subtracted pt (not stored set from outside) 
   UInt_t            fTriggers;            //!          triggers that the jet might have fired (AliVEvent::EOfflineTriggerTypes)
 
-  ClassDef(AliEmcalJet,12) // Emcal jet class in cylindrical coordinates
+  private:
+    struct sort_descend
+        { // sort in decreasing order
+          // first value of the pair is Pt and the second is entry index
+        bool operator () (const std::pair<Double_t, Int_t>& p1, const std::pair<Double_t, Int_t>& p2)  { return p1.first > p2.first ; }
+        };
+
+  ClassDef(AliEmcalJet,13) // Emcal jet class in cylindrical coordinates
 };
 #endif

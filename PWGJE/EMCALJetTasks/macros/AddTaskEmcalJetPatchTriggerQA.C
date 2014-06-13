@@ -42,8 +42,8 @@ AliAnalysisTaskEmcalJetPatchTriggerQA* AddTaskEmcalJetPatchTriggerQA(
   spectratask->SetAnaType(type);
   spectratask->SetRhoName(nRhosChEm);
   spectratask->SetLocalRhoName(lrho);
-  spectratask->SetJetPhiLimits(minPhi,maxPhi);
-  spectratask->SetJetEtaLimits(minEta,maxEta);
+  spectratask->SetJetPhi(minPhi,maxPhi);
+  spectratask->SetJetEta(minEta,maxEta);
   spectratask->SetJetAreaCut(minArea);
   spectratask->SetTracksName(nTracks);
 

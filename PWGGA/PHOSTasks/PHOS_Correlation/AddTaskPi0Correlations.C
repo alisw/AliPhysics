@@ -1,12 +1,12 @@
 AliPHOSCorrelations* AddTaskPi0Correlations (   	const char* name = "Pi0Corr",
-							const char* options = "11h",
-							UInt_t offlineTriggerMask = AliVEvent::kCentral,
-							AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
-							Double_t sigmaWidth = 3.,
-							Int_t downCentLimit = 0,
-							Int_t upCentLimit = 90 )
+						const char* options = "11h",
+						UInt_t offlineTriggerMask = AliVEvent::kCentral,
+						AliPHOSCorrelations::TriggerSelection internalTriggerSelection = AliPHOSCorrelations::kNoSelection,
+						Double_t sigmaWidth = 3.,
+						Int_t downCentLimit = 0,
+						Int_t upCentLimit = 90 )
 {
-	//Author: Ponomarenko Daniil 
+	//Author: Ponomarenko Daniil (Daniil.Ponomarenko@cern.ch)
 	/* $Id$ */
 
 	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

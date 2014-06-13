@@ -9,6 +9,7 @@
 #include <AliESDEvent.h>
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TInterpreter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -144,6 +145,10 @@ AliBaseESDTask::Configure(const char* macro)
 
   AliInfoF("Loading configuration of '%s' from %s",  ClassName(), config);
   gROOT->Macro(Form("%s((%s*)%p)", config, GetTitle(), this));
+
+  Info("Configure", "Unloading configuration script");
+  gInterpreter->UnloadFile(config);
+
   delete config;
  
  return true;

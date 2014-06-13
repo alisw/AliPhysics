@@ -102,47 +102,66 @@ void ana(Int_t mode=mLocal)
     TString outputFile = AliAnalysisManager::GetCommonFileName(); 
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
     
-    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
-    
-    //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
-    //AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kTRUE);
+    if(kInputData=="ESD" && !kMC)
+    {
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+    }
     
     //Counting events tasks
-    AliAnalysisTaskCounter * counterMB = new AliAnalysisTaskCounter("CounterMB");
-    counterMB->SelectCollisionCandidates(AliVEvent::kMB);
-    
-    AliAnalysisDataContainer *coutputMB = 
+    if(!kMC)
+    {
+      AliAnalysisTaskCounter * counterMB = new AliAnalysisTaskCounter("CounterMB");
+      counterMB->SelectCollisionCandidates(AliVEvent::kMB);
+      
+      AliAnalysisDataContainer *coutputMB =
       mgr->CreateContainer("counterMB", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
-    mgr->AddTask(counterMB);
-    mgr->ConnectInput  (counterMB,  0, cinput1);
-    mgr->ConnectOutput (counterMB, 1, coutputMB);
-    
-    AliAnalysisTaskCounter * counterEMC = new AliAnalysisTaskCounter("CounterEMC");
-    counterEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
-    
-    AliAnalysisDataContainer *coutputEMC = 
+      mgr->AddTask(counterMB);
+      mgr->ConnectInput  (counterMB, 0, cinput1  );
+      mgr->ConnectOutput (counterMB, 1, coutputMB);
+      
+      AliAnalysisTaskCounter * counterEMC = new AliAnalysisTaskCounter("CounterEMC");
+      counterEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+      
+      AliAnalysisDataContainer *coutputEMC =
       mgr->CreateContainer("counterEMC", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
-    mgr->AddTask(counterEMC);
-    mgr->ConnectInput  (counterEMC,  0, cinput1);
-    mgr->ConnectOutput (counterEMC, 1, coutputEMC);
-    
-    AliAnalysisTaskCounter * counterINT = new AliAnalysisTaskCounter("CounterINT");
-    counterINT->SelectCollisionCandidates(AliVEvent::kINT7);
-    
-    AliAnalysisDataContainer *coutputINT = 
+      mgr->AddTask(counterEMC);
+      mgr->ConnectInput  (counterEMC, 0, cinput1   );
+      mgr->ConnectOutput (counterEMC, 1, coutputEMC);
+      
+      AliAnalysisTaskCounter * counterINT = new AliAnalysisTaskCounter("CounterINT");
+      counterINT->SelectCollisionCandidates(AliVEvent::kINT7);
+      
+      AliAnalysisDataContainer *coutputINT =
       mgr->CreateContainer("counterINT7", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
-    mgr->AddTask(counterINT);
-    mgr->ConnectInput  (counterINT,  0, cinput1);
-    mgr->ConnectOutput (counterINT, 1, coutputINT);
+      mgr->AddTask(counterINT);
+      mgr->ConnectInput  (counterINT, 0, cinput1   );
+      mgr->ConnectOutput (counterINT, 1, coutputINT);
+    }
+    else
+    {
+      AliAnalysisDataContainer *coutput =
+      mgr->CreateContainer("counter", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
+      mgr->AddTask(counter);
+      mgr->ConnectInput  (counter, 0, cinput1);
+      mgr->ConnectOutput (counter, 1, coutput);
+    }
     
+    // QA task
     
     gROOT->LoadMacro("$ALICE_ROOT/PWGGA/CaloTrackCorrelations/macros/QA/AddTaskCalorimeterQA.C");
-    AliAnalysisTaskCaloTrackCorrelation *taskQAEMC = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kEMC7");
-    taskQAEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
-    AliAnalysisTaskCaloTrackCorrelation *taskQAINT = AddTaskCalorimeterQA(kInputData,2011,kFALSE,kMC,"","kINT7");
-    taskQAINT->SelectCollisionCandidates(AliVEvent::kINT7);
-
+    if(!kMC)
+    {
+      AliAnalysisTaskCaloTrackCorrelation *taskQAEMC = AddTaskCalorimeterQA("EMC",kMC,"",2012);
+      taskQAEMC->SelectCollisionCandidates(AliVEvent::kEMC7);
+      AliAnalysisTaskCaloTrackCorrelation *taskQAINT = AddTaskCalorimeterQA("default",kMC,"",2012);
+      taskQAINT->SelectCollisionCandidates(AliVEvent::kINT7);
+    }
+    else
+    {
+      AliAnalysisTaskCaloTrackCorrelation *taskQA = AddTaskCalorimeterQA("default",kMC,"",2012);
+    }
+    
     //-----------------------
     // Run the analysis
     //-----------------------    
@@ -186,14 +205,26 @@ void  LoadLibraries(const anaModes mode) {
     //--------------------------------------------------------
  
     gSystem->Load("libSTEERBase.so");
+    gSystem->Load("libProof.so");
+    gSystem->Load("libOADB");
     gSystem->Load("libESD.so");
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libESDfilter.so");
+
     gSystem->Load("libPHOSUtils");
     gSystem->Load("libEMCALUtils");
-    gSystem->Load("libPWG4PartCorrBase.so");
-    gSystem->Load("libPWG4PartCorrDep.so");
+    
+    gSystem->Load("libTENDER.so");
+    gSystem->Load("libTENDERSupplies.so");
+    
+    gSystem->Load("libCORRFW");
+    gSystem->Load("libPWGTools");
+    
+    gSystem->Load("libPWGCaloTrackCorrBase");
+    gSystem->Load("libPWGGACaloTrackCorrelations");
+
  
     //--------------------------------------------------------
     //If you want to use root and par files from aliroot
@@ -206,9 +237,10 @@ void  LoadLibraries(const anaModes mode) {
 //     //If your analysis needs PHOS geometry uncomment following lines
 //     SetupPar("PHOSUtils");
 //     SetupPar("EMCALUtils");
-//     //Create Geometry
-//     SetupPar("PWG4PartCorrBase");
-//     SetupPar("PWG4PartCorrDep");
+//
+//     SetupPar("PWGCaloTrackCorrBase");
+//     SetupPar("PWGGACaloTrackCorrelations");
+
 
   }
 

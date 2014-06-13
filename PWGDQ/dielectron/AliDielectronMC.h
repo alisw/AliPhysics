@@ -135,7 +135,7 @@ private:
 //
 inline Bool_t AliDielectronMC::IsMotherPdg(const AliDielectronPair* pair, Int_t pdgMother)
 {
-  return IsMotherPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
+  return IsMotherPdg(pair->GetFirstDaughterP(),pair->GetSecondDaughterP(),pdgMother);
 }
 //___________________________________________________________
 inline Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const AliVParticle *particle2, Int_t pdgMother){
@@ -143,7 +143,7 @@ inline Bool_t AliDielectronMC::IsMotherPdg(const AliVParticle *particle1, const 
 }
 //___________________________________________________________
 inline Int_t AliDielectronMC::GetLabelMotherWithPdg(const AliDielectronPair* pair, Int_t pdgMother){
-  return GetLabelMotherWithPdg(pair->GetFirstDaughter(),pair->GetSecondDaughter(),pdgMother);
+  return GetLabelMotherWithPdg(pair->GetFirstDaughterP(),pair->GetSecondDaughterP(),pdgMother);
 }
 
 #endif

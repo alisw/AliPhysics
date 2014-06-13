@@ -217,7 +217,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0) 
-  ,fPhoVertexReco_HFE(0)
+  ,fPhoVertexReco_TPC(0)
+  ,fPhoVertexReco_TPC_Invmass(0)
   ,fPhoVertexReco_EMCal(0)
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
@@ -230,6 +231,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal(const char *name)
   ,fFakeRejection0(0)
   ,fFakeRejection1(0)
   ,fFakeRejection2(0)
+  ,EopFake(0)
+  ,EopTrue(0)
+  ,MatchFake(0)
+  ,MatchTrue(0)
   //,fnSigEtaCorr(NULL)
 {
   //Named constructor
@@ -379,7 +384,8 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fIncRecoMaxE(0)
   ,fPhoRecoMaxE(0)
   ,fSamRecoMaxE(0)
-  ,fPhoVertexReco_HFE(0)
+  ,fPhoVertexReco_TPC(0)
+  ,fPhoVertexReco_TPC_Invmass(0)
   ,fPhoVertexReco_EMCal(0)
   ,fPhoVertexReco_Invmass(0)
   ,fPhoVertexReco_step0(0)
@@ -392,6 +398,10 @@ AliAnalysisTaskHFECal::AliAnalysisTaskHFECal()
   ,fFakeRejection0(0)
   ,fFakeRejection1(0)
   ,fFakeRejection2(0)
+  ,EopFake(0)
+  ,EopTrue(0)
+  ,MatchFake(0)
+  ,MatchTrue(0)
   //,fnSigEtaCorr(NULL)
 {
 	//Default constructor
@@ -603,7 +613,7 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
       {
        Int_t label = TMath::Abs(track->GetLabel());
        //mcLabel = track->GetLabel();
-       mcLabel = fabs(track->GetLabel()); // check for conv. issue
+       mcLabel = abs(track->GetLabel()); // check for conv. issue
        
        if(mcLabel>-1)
        {
@@ -868,7 +878,6 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
     if(nITS<2.5)continue;
     if(nTPCcl<100)continue;
  
-    if(mcPho)fPhoVertexReco_HFE->Fill(track->Pt(),conv_proR,mcWeight); // check MC vertex
   
     CheckNclust->Fill(nTPCcl); 
     CheckNits->Fill(nITS); 
@@ -927,6 +936,8 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
            fIncpTMCpho_pi0e_TPC->Fill(phoval,mcWeight);    
            if(fFlagPhotonicTPC) fPhoElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
            if(fFlagConvinatTPC) fSameElecPtMC_pi0e_TPC->Fill(phoval,mcWeight);
+           fPhoVertexReco_TPC->Fill(track->Pt(),conv_proR,mcWeight); // check MC vertex
+           if(fFlagPhotonicTPC)fPhoVertexReco_TPC_Invmass->Fill(track->Pt(),conv_proR,mcWeight); // check MC vertex
           }
         if(mcOrgEta)
           {
@@ -954,11 +965,28 @@ void AliAnalysisTaskHFECal::UserExec(Option_t*)
      // check fake rejection
     if(mcOrgPi0 || mcOrgEta)
       {
+       double phiacc0 = 80.0/180.0*acos(-1);
+       double phiacc1 = 180.0/180.0*acos(-1);
        int TrStat = 0;
-       if(track->GetLabel()>0)TrStat = 1;
-       fFakeRejection0->Fill(TrStat,pt,mcWeight); 
-       if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
-       if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID 
+       if(phi>phiacc0 && phi<phiacc1)
+         {
+          if(track->GetLabel()>0)TrStat = 1;
+          fFakeRejection0->Fill(TrStat,pt,mcWeight); 
+          if(eop>-1.0)fFakeRejection1->Fill(TrStat,pt,mcWeight); // have match
+          if(eop>0.9 && eop<1.3)fFakeRejection2->Fill(TrStat,pt,mcWeight); // have PID
+
+          if(TrStat==0)
+            {
+             EopFake->Fill(pt,eop);
+             MatchFake->Fill(pt,rmatch);
+            }  
+          else
+            {
+             EopTrue->Fill(pt,eop);
+             MatchTrue->Fill(pt,rmatch);
+            }  
+
+        } 
       }
 
     //+++++++  E/p cut ++++++++++++++++   
@@ -1544,9 +1572,13 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fSamRecoMaxE = new TH2D("fSamRecoMaxE","Same",10,0,100,100,0,500);
   fOutputList->Add(fSamRecoMaxE);
 
-  fPhoVertexReco_HFE = new TH2D("fPhoVertexReco_HFE","photon production Vertex mass selection",40,0,20,250,0,50);
-  fPhoVertexReco_HFE->Sumw2();
-  fOutputList->Add(fPhoVertexReco_HFE);
+  fPhoVertexReco_TPC = new TH2D("fPhoVertexReco_TPC","photon production Vertex mass selection TPC",40,0,20,250,0,50);
+  fPhoVertexReco_TPC->Sumw2();
+  fOutputList->Add(fPhoVertexReco_TPC);
+
+  fPhoVertexReco_TPC_Invmass = new TH2D("fPhoVertexReco_TPC_Invmass","photon production Vertex mass selection TPC Invmass",40,0,20,250,0,50);
+  fPhoVertexReco_TPC_Invmass->Sumw2();
+  fOutputList->Add(fPhoVertexReco_TPC_Invmass);
 
   fPhoVertexReco_EMCal = new TH2D("fPhoVertexReco_EMCal","photon production Vertex mass selection",40,0,20,250,0,50);
   fPhoVertexReco_EMCal->Sumw2();
@@ -1580,13 +1612,32 @@ void AliAnalysisTaskHFECal::UserCreateOutputObjects()
   fOutputList->Add(fpair);
 
   fFakeRejection0 = new TH2D("fFakeRejection0","TPC PID",2,-0.5,1.5,100,0,20);
+  fFakeRejection0->Sumw2();
   fOutputList->Add(fFakeRejection0);
 
   fFakeRejection1 = new TH2D("fFakeRejection1","TPC PID + Tr match",2,-0.5,1.5,100,0,20);
+  fFakeRejection1->Sumw2();
   fOutputList->Add(fFakeRejection1);
 
   fFakeRejection2 = new TH2D("fFakeRejection2","TPC PID + Tr match + E/p",2,-0.5,1.5,100,0,20);
+  fFakeRejection2->Sumw2();
   fOutputList->Add(fFakeRejection2);
+
+  EopFake = new TH2D("EopFake","negative track Eop",200,0,20,200,0,2);
+  EopFake->Sumw2();
+  fOutputList->Add(EopFake);
+ 
+  EopTrue = new TH2D("EopTrue","true track Eop",200,0,20,200,0,2);
+  EopTrue->Sumw2();
+  fOutputList->Add(EopTrue);
+
+  MatchFake = new TH2D("MatchFake","negative track Match",200,0,20,100,0,0.05);
+  MatchFake->Sumw2();
+  fOutputList->Add(MatchFake);
+ 
+  MatchTrue = new TH2D("MatchTrue","true track Match",200,0,20,100,0,05);
+  MatchTrue->Sumw2();
+  fOutputList->Add(MatchTrue);
 
   PostData(1,fOutputList);
 }

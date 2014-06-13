@@ -208,10 +208,13 @@ public:
 	void SetPtWeightsFromDataPbPb276overLHC12a17a();
 	void SetPtWeightsFromFONLL276overLHC12a17b();
 	void SetPtWeightsFromFONLL276andBAMPSoverLHC12a17b();
-	void SetPtWeightsFromFONLL5overLHC13d3();
-	void SetPtWeightsFromFONLL7overLHC10f6a();
-	void SetPtWeightsFromFONLL5overLHC10f6a();
 	void SetPtWeightsFromFONLL276overLHC10f6a();
+	void SetPtWeightsFromFONLL7overLHC10f6a();
+	void SetPtWeightsFromFONLL7overLHC12a12();
+	void SetPtWeightsFromFONLL7overLHC12a12bis();
+	void SetPtWeightsFromFONLL7overLHC13e2fix();
+	void SetPtWeightsFromFONLL5overLHC10f6a();
+	void SetPtWeightsFromFONLL5overLHC13d3();
 
         void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
         UInt_t GetResonantDecay() const {return fResonantDecay;}

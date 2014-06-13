@@ -1,8 +1,6 @@
 #ifndef ALIEMCALJETTASK_H
 #define ALIEMCALJETTASK_H
 
-// $Id$
-
 class TClonesArray;
 class AliVEvent;
 
@@ -82,6 +80,33 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   UInt_t                 GetJetType()                     { return fJetType; }
   Bool_t                 GetLegacyMode()                  { return fLegacyMode; }
 
+  const char*            GetJetsName()                    { return fJetsName.Data(); }
+  Double_t               GetRadius()                      { return fRadius; }
+  const char*            GetTracksName()                  { return fTracksName.Data(); }
+  const char*            GetClusName()                    { return fCaloName.Data(); }
+  UInt_t                 GetMarkConstituents()            { return fMarkConst; }
+  Double_t               GetMinJetArea()                  { return fMinJetArea; }
+  Double_t               GetMinJetClusPt()                { return fMinJetClusPt; }
+  Double_t               GetMinJetPt()                    { return fMinJetPt; }
+  Double_t               GetMinJetTrackPt()               { return fMinJetTrackPt; }
+  Double_t               GetTrackEfficiency()             { return fTrackEfficiency; }
+  Double_t               GetGhostArea()                   { return fGhostArea; }
+  Int_t                  GetMinMCLabel()                  { return fMinMCLabel; }
+  Int_t                  GetRecombScheme()                { return fRecombScheme; }
+  Double_t               GetEtaMin()                      { return fEtaMin; }
+  Double_t               GetEtaMax()                      { return fEtaMax; }
+  Double_t               GetPhiMin()                      { return fPhiMin; }
+  Double_t               GetPhiMax()                      { return fPhiMax; }
+  Double_t               GetJetEtaMin()                   { return fJetEtaMin; }
+  Double_t               GetJetEtaMax()                   { return fJetEtaMax; }
+  Double_t               GetJetPhiMin()                   { return fJetPhiMin; }
+  Double_t               GetJetPhiMax()                   { return fJetPhiMax; }
+
+  AliVEvent*             GetEvent()                       { return fEvent;}
+  TClonesArray*          GetClusters()                    { return fClus;}
+  TClonesArray*          GetTracks()                      { return fTracks;}
+  TClonesArray*          GetJets()                        { return fJets;}
+
  protected:
   void                   FindJets();
   Bool_t                 DoInit();
@@ -126,6 +151,6 @@ class AliEmcalJetTask : public AliAnalysisTaskSE {
   AliEmcalJetTask(const AliEmcalJetTask&);            // not implemented
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
-  ClassDef(AliEmcalJetTask, 10) // Jet producing task
+  ClassDef(AliEmcalJetTask, 11) // Jet producing task
 };
 #endif

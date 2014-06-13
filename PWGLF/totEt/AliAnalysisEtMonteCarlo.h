@@ -115,94 +115,94 @@ protected:
 
     Int_t fClusterMult;
 
-    TH3F *fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
-    TH3F *fHistDecayVertexRemovedCharged; // Decay vertex for non-removed charged particles
-    TH3F *fHistDecayVertexNonRemovedNeutral; // Decay vertex for non-removed charged particles
-    TH3F *fHistDecayVertexRemovedNeutral; // Decay vertex for non-removed charged particles
+    TH3F *fHistDecayVertexNonRemovedCharged; //! Decay vertex for non-removed charged particles
+    TH3F *fHistDecayVertexRemovedCharged; //! Decay vertex for non-removed charged particles
+    TH3F *fHistDecayVertexNonRemovedNeutral; //! Decay vertex for non-removed charged particles
+    TH3F *fHistDecayVertexRemovedNeutral; //! Decay vertex for non-removed charged particles
 
-    TH2F *fHistRemovedOrNot; // If charged/neutral particles were removed or not
+    TH2F *fHistRemovedOrNot; //! If charged/neutral particles were removed or not
 
-    TH2F *fHistEtNonRemovedProtons; // enter comment here
-    TH2F *fHistEtNonRemovedAntiProtons; // enter comment here
-    TH2F *fHistEtNonRemovedPiPlus; // enter comment here
-    TH2F *fHistEtNonRemovedPiMinus; // enter comment here
-    TH2F *fHistEtNonRemovedKaonPlus; // enter comment here
-    TH2F *fHistEtNonRemovedKaonMinus; // enter comment here
-    TH2F *fHistEtNonRemovedK0s; // enter comment here
-    TH2F *fHistEtNonRemovedK0L; // enter comment here
-    TH2F *fHistEtNonRemovedLambdas; // enter comment here
-    TH2F *fHistEtNonRemovedElectrons; // enter comment here
-    TH2F *fHistEtNonRemovedPositrons; // enter comment here
-    TH2F *fHistEtNonRemovedMuPlus; // enter comment here
-    TH2F *fHistEtNonRemovedMuMinus; // enter comment here
-    TH2F *fHistEtNonRemovedNeutrons; // enter comment here
-    TH2F *fHistEtNonRemovedAntiNeutrons; // enter comment here
-    TH2F *fHistEtNonRemovedGammas; // enter comment here
-    TH2F *fHistEtNonRemovedGammasFromPi0; // enter comment here
+    TH2F *fHistEtNonRemovedProtons; //! enter comment here
+    TH2F *fHistEtNonRemovedAntiProtons; //! enter comment here
+    TH2F *fHistEtNonRemovedPiPlus; //! enter comment here
+    TH2F *fHistEtNonRemovedPiMinus; //! enter comment here
+    TH2F *fHistEtNonRemovedKaonPlus; //! enter comment here
+    TH2F *fHistEtNonRemovedKaonMinus; //! enter comment here
+    TH2F *fHistEtNonRemovedK0s; //! enter comment here
+    TH2F *fHistEtNonRemovedK0L; //! enter comment here
+    TH2F *fHistEtNonRemovedLambdas; //! enter comment here
+    TH2F *fHistEtNonRemovedElectrons; //! enter comment here
+    TH2F *fHistEtNonRemovedPositrons; //! enter comment here
+    TH2F *fHistEtNonRemovedMuPlus; //! enter comment here
+    TH2F *fHistEtNonRemovedMuMinus; //! enter comment here
+    TH2F *fHistEtNonRemovedNeutrons; //! enter comment here
+    TH2F *fHistEtNonRemovedAntiNeutrons; //! enter comment here
+    TH2F *fHistEtNonRemovedGammas; //! enter comment here
+    TH2F *fHistEtNonRemovedGammasFromPi0; //! enter comment here
 
-    TH2F *fHistEtRemovedGammas; // enter comment here
-    TH2F *fHistEtRemovedNeutrons; // enter comment here
-    TH2F *fHistEtRemovedAntiNeutrons; // enter comment here
+    TH2F *fHistEtRemovedGammas; //! enter comment here
+    TH2F *fHistEtRemovedNeutrons; //! enter comment here
+    TH2F *fHistEtRemovedAntiNeutrons; //! enter comment here
 
-    TH2F *fHistEtRemovedCharged; // enter comment here
-    TH2F *fHistEtRemovedNeutrals; // enter comment here
+    TH2F *fHistEtRemovedCharged; //! enter comment here
+    TH2F *fHistEtRemovedNeutrals; //! enter comment here
 
-    TH2F *fHistEtNonRemovedCharged; // enter comment here
-    TH2F *fHistEtNonRemovedNeutrals; // enter comment here
+    TH2F *fHistEtNonRemovedCharged; //! enter comment here
+    TH2F *fHistEtNonRemovedNeutrals; //! enter comment here
 
-    TH2F *fHistMultNonRemovedProtons; // enter comment here
-    TH2F *fHistMultNonRemovedAntiProtons; // enter comment here
-    TH2F *fHistMultNonRemovedPiPlus; // enter comment here
-    TH2F *fHistMultNonRemovedPiMinus; // enter comment here
-    TH2F *fHistMultNonRemovedKaonPlus; // enter comment here
-    TH2F *fHistMultNonRemovedKaonMinus; // enter comment here
-    TH2F *fHistMultNonRemovedK0s; // enter comment here
-    TH2F *fHistMultNonRemovedK0L; // enter comment here
-    TH2F *fHistMultNonRemovedLambdas; // enter comment here
-    TH2F *fHistMultNonRemovedElectrons; // enter comment here
-    TH2F *fHistMultNonRemovedPositrons; // enter comment here
-    TH2F *fHistMultNonRemovedMuPlus; // enter comment here
-    TH2F *fHistMultNonRemovedMuMinus; // enter comment here
-    TH2F *fHistMultNonRemovedNeutrons; // enter comment here
-    TH2F *fHistMultNonRemovedAntiNeutrons; // enter comment here
-    TH2F *fHistMultNonRemovedGammas; // enter comment here
+    TH2F *fHistMultNonRemovedProtons; //! enter comment here
+    TH2F *fHistMultNonRemovedAntiProtons; //! enter comment here
+    TH2F *fHistMultNonRemovedPiPlus; //! enter comment here
+    TH2F *fHistMultNonRemovedPiMinus; //! enter comment here
+    TH2F *fHistMultNonRemovedKaonPlus; //! enter comment here
+    TH2F *fHistMultNonRemovedKaonMinus; //! enter comment here
+    TH2F *fHistMultNonRemovedK0s; //! enter comment here
+    TH2F *fHistMultNonRemovedK0L; //! enter comment here
+    TH2F *fHistMultNonRemovedLambdas; //! enter comment here
+    TH2F *fHistMultNonRemovedElectrons; //! enter comment here
+    TH2F *fHistMultNonRemovedPositrons; //! enter comment here
+    TH2F *fHistMultNonRemovedMuPlus; //! enter comment here
+    TH2F *fHistMultNonRemovedMuMinus; //! enter comment here
+    TH2F *fHistMultNonRemovedNeutrons; //! enter comment here
+    TH2F *fHistMultNonRemovedAntiNeutrons; //! enter comment here
+    TH2F *fHistMultNonRemovedGammas; //! enter comment here
 
-    TH2F *fHistMultRemovedGammas; // enter comment here
-    TH2F *fHistMultRemovedNeutrons; // enter comment here
-    TH2F *fHistMultRemovedAntiNeutrons; // enter comment here
+    TH2F *fHistMultRemovedGammas; //! enter comment here
+    TH2F *fHistMultRemovedNeutrons; //! enter comment here
+    TH2F *fHistMultRemovedAntiNeutrons; //! enter comment here
 
-    TH2F *fHistMultRemovedCharged; // enter comment here
-    TH2F *fHistMultRemovedNeutrals; // enter comment here
+    TH2F *fHistMultRemovedCharged; //! enter comment here
+    TH2F *fHistMultRemovedNeutrals; //! enter comment here
 
-    TH2F *fHistMultNonRemovedCharged; // enter comment here
-    TH2F *fHistMultNonRemovedNeutrals; // enter comment here
+    TH2F *fHistMultNonRemovedCharged; //! enter comment here
+    TH2F *fHistMultNonRemovedNeutrals; //! enter comment here
 
-    TH2F *fHistTrackMultvsNonRemovedCharged; // enter comment here
-    TH2F *fHistTrackMultvsNonRemovedNeutral; // enter comment here
-    TH2F *fHistTrackMultvsRemovedGamma; // enter comment here
+    TH2F *fHistTrackMultvsNonRemovedCharged; //! enter comment here
+    TH2F *fHistTrackMultvsNonRemovedNeutral; //! enter comment here
+    TH2F *fHistTrackMultvsRemovedGamma; //! enter comment here
 
-    TH2F *fHistClusterMultvsNonRemovedCharged; // enter comment here
-    TH2F *fHistClusterMultvsNonRemovedNeutral; // enter comment here
-    TH2F *fHistClusterMultvsRemovedGamma; // enter comment here
+    TH2F *fHistClusterMultvsNonRemovedCharged; //! enter comment here
+    TH2F *fHistClusterMultvsNonRemovedNeutral; //! enter comment here
+    TH2F *fHistClusterMultvsRemovedGamma; //! enter comment here
 
-    TH2F *fHistMultvsNonRemovedChargedE; // enter comment here
-    TH2F *fHistMultvsNonRemovedNeutralE; // enter comment here
-    TH2F *fHistMultvsRemovedGammaE; // enter comment here
+    TH2F *fHistMultvsNonRemovedChargedE; //! enter comment here
+    TH2F *fHistMultvsNonRemovedNeutralE; //! enter comment here
+    TH2F *fHistMultvsRemovedGammaE; //! enter comment here
 
     Bool_t fCalcForKaonCorrection;//turns on and off creation of kaon correction histograms
-    TH3F *fHistK0EDepositsVsPtInAcceptance; // enter comment here
-    TH3F *fHistK0EGammaVsPtInAcceptance; // enter comment here
-    TH3F *fHistK0EDepositsVsPtOutOfAcceptance; // enter comment here
-    TH3F *fHistK0EGammaVsPtOutOfAcceptance; // enter comment here
-    TH1F *fHistSimKaonsInAcceptance;// enter comment here
-    TH1F *fHistSimK0SInAcceptance;// enter comment here
-    TH1F *fHistSimKPlusInAcceptance;// enter comment here
-    TH1F *fHistSimKMinusInAcceptance;// enter comment here
-    TH1F *fHistSimK0LInAcceptance;// enter comment here
-    TH1F *fHistSimKaonsOutOfAcceptance;// enter comment here
-    TH1F *fHistSimKaonsInAcceptanceWithDepositsPrimaries;// enter comment here
-    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries;// enter comment here
-    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries;// enter comment here
+    TH3F *fHistK0EDepositsVsPtInAcceptance; //! enter comment here
+    TH3F *fHistK0EGammaVsPtInAcceptance; //! enter comment here
+    TH3F *fHistK0EDepositsVsPtOutOfAcceptance; //! enter comment here
+    TH3F *fHistK0EGammaVsPtOutOfAcceptance; //! enter comment here
+    TH1F *fHistSimKaonsInAcceptance;//! enter comment here
+    TH1F *fHistSimK0SInAcceptance;//! enter comment here
+    TH1F *fHistSimKPlusInAcceptance;//! enter comment here
+    TH1F *fHistSimKMinusInAcceptance;//! enter comment here
+    TH1F *fHistSimK0LInAcceptance;//! enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptance;//! enter comment here
+    TH1F *fHistSimKaonsInAcceptanceWithDepositsPrimaries;//! enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsSecondaries;//! enter comment here
+    TH1F *fHistSimKaonsOutOfAcceptanceWithDepositsPrimaries;//! enter comment here
 
     Float_t fEtNonRemovedProtons; // enter comment here
     Float_t fEtNonRemovedAntiProtons; // enter comment here
@@ -280,18 +280,18 @@ protected:
     Int_t fTrackMultInAcc; // enter comment here
 
 
-    TH2F *fHistDxDzNonRemovedCharged; // enter comment here
-    TH2F *fHistDxDzRemovedCharged; // enter comment here
-    TH2F *fHistDxDzNonRemovedNeutral; // enter comment here
-    TH2F *fHistDxDzRemovedNeutral; // enter comment here
+    TH2F *fHistDxDzNonRemovedCharged; //! enter comment here
+    TH2F *fHistDxDzRemovedCharged; //! enter comment here
+    TH2F *fHistDxDzNonRemovedNeutral; //! enter comment here
+    TH2F *fHistDxDzRemovedNeutral; //! enter comment here
 
-    TH1F *fHistPiPlusMult; // enter comment here
-    TH1F *fHistPiMinusMult; // enter comment here
-    TH1F *fHistPiZeroMult; // enter comment here
+    TH1F *fHistPiPlusMult; //! enter comment here
+    TH1F *fHistPiMinusMult; //! enter comment here
+    TH1F *fHistPiZeroMult; //! enter comment here
 
-    TH1F *fHistPiPlusMultAcc; // enter comment here
-    TH1F *fHistPiMinusMultAcc; // enter comment here
-    TH1F *fHistPiZeroMultAcc; // enter comment here
+    TH1F *fHistPiPlusMultAcc; //! enter comment here
+    TH1F *fHistPiMinusMultAcc; //! enter comment here
+    TH1F *fHistPiZeroMultAcc; //! enter comment here
 
    // Int_t fPiPlusMult; // enter comment here
    // Int_t fPiMinusMult; // enter comment here
@@ -322,160 +322,160 @@ protected:
     Double_t fTotNeutralEtAfterMinEnergyCut; // enter comment here
     
     Bool_t fCalcTrackMatchVsMult;
-    TH1F *fHistGammasFound;
-    TH1F *fHistGammasGenerated;
-    TH2F *fHistGammasFoundCent;
-    TH2F *fHistGammasFoundOutOfAccCent;
-    TH2F *fHistGammasFoundAltCent;
-    TH2F *fHistGammasFoundOutOfAccAltCent;
-    TH2F *fHistGammasGeneratedCent;
-    TH2F *fHistGammasFoundRecoEnergyCent;
-    TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;
-    TH1F *fHistChargedTracksCut;
-    TH1F *fHistChargedTracksAccepted;
-    TH1F *fHistGammasCut;
-    TH1F *fHistGammasAccepted;
-    TH2F *fHistChargedTrackDepositsAcceptedVsPt;
-    TH2F *fHistChargedTrackDepositsAllVsPt;
-    TH2F *fHistChargedTrackDepositsAcceptedVsPtEffCorr;
-    TH2F *fHistChargedTrackDepositsAllVsPtEffCorr;
-    TH2F *fHistChargedTracksCutMult;
-    TH2F *fHistChargedTracksAcceptedMult;
-    TH2F *fHistChargedTracksAcceptedLowPtCentEffCorr;
-    TH2F *fHistChargedTracksAcceptedLowPtCent;
-    TH2F *fHistChargedTracksAcceptedLowPtCent500MeV;
-    TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;
-    TH2F *fHistChargedTracksAcceptedLowPtCentAntiProtons;
-    TH2F *fHistGammasCutMult;
-    TH2F *fHistGammasAcceptedMult;
-    TH1F *fHistBadTrackMatches;
-    TH2F *fHistMatchedTracksEvspTBkgd;
-    TH2F *fHistMatchedTracksEvspTSignal;
-    TH2F *fHistMatchedTracksEvspTBkgdPeripheral;
-    TH2F *fHistMatchedTracksEvspTSignalPeripheral;
-    TH3F *fHistMatchedTracksEvspTBkgdvsCent;
-    TH3F *fHistMatchedTracksEvspTSignalvsCent;
-    TH3F *fHistMatchedTracksEvspTBkgdvsCentEffCorr;
-    TH3F *fHistMatchedTracksEvspTSignalvsCentEffCorr;
-    TH1F *fHistChargedTracksCutPeripheral;
-    TH1F *fHistChargedTracksAcceptedPeripheral;
-    TH1F *fHistGammasCutPeripheral;
-    TH1F *fHistGammasAcceptedPeripheral;
-    TH2F *fHistBadTrackMatchesdPhidEta;
-    TH2F *fHistGoodTrackMatchesdPhidEta;
-    TH1F *fHistHadronDepositsAll;
-    TH1F *fHistHadronDepositsReco;
-    TH2F *fHistHadronDepositsAllCent;
-    TH2F *fHistHadronDepositsAllCent500MeV;
-    TH2F *fHistHadronDepositsRecoCent;
-    TH2F *fHistHadronDepositsAllvsECent;
-    TH2F *fHistHadronDepositsRecovsECent;
-    TH2F *fHistHadronsAllCent;
-    TH3F *fHistMultChVsSignalVsMult;
-    TH2F *fHistNeutralRemovedSecondaryEtVsCent;
-    TH2F *fHistChargedRemovedSecondaryEtVsCent;
-    TH2F *fHistNeutralNotRemovedSecondaryEtVsCent;
-    TH2F *fHistChargedNotRemovedSecondaryEtVsCent;
-    TH2F *fHistNeutralRemovedSecondaryNumVsNCluster;
-    TH2F *fHistChargedRemovedSecondaryNumVsNCluster;
-    TH2F *fHistNeutralNotRemovedSecondaryNumVsNCluster;
-    TH2F *fHistChargedNotRemovedSecondaryNumVsNCluster;
-    TH2F *fHistNeutralRemovedSecondaryNumVsCent;
-    TH2F *fHistChargedRemovedSecondaryNumVsCent;
-    TH2F *fHistNeutralNotRemovedSecondaryNumVsCent;
-    TH2F *fHistChargedNotRemovedSecondaryNumVsCent;
-    TH2F *fHistNeutronsEtVsCent;
-    TH2F *fHistNeutronsNumVsCent;
-    TH2F *fHistNotNeutronsNumVsCent;
-    TH2F *fHistPiKPDepositedVsNch;
-    TH2F *fHistPiKPNotTrackMatchedDepositedVsNch;
+    TH1F *fHistGammasFound;//!
+    TH1F *fHistGammasGenerated;//!
+    TH2F *fHistGammasFoundCent;//!
+    TH2F *fHistGammasFoundOutOfAccCent;//!
+    TH2F *fHistGammasFoundAltCent;//!
+    TH2F *fHistGammasFoundOutOfAccAltCent;//!
+    TH2F *fHistGammasGeneratedCent;//!
+    TH2F *fHistGammasFoundRecoEnergyCent;//!
+    TH2F *fHistGammasFoundOutOfAccRecoEnergyCent;//!
+    TH1F *fHistChargedTracksCut;//!
+    TH1F *fHistChargedTracksAccepted;//!
+    TH1F *fHistGammasCut;//!
+    TH1F *fHistGammasAccepted;//!
+    TH2F *fHistChargedTrackDepositsAcceptedVsPt;//!
+    TH2F *fHistChargedTrackDepositsAllVsPt;//!
+    TH2F *fHistChargedTrackDepositsAcceptedVsPtEffCorr;//!
+    TH2F *fHistChargedTrackDepositsAllVsPtEffCorr;//!
+    TH2F *fHistChargedTracksCutMult;//!
+    TH2F *fHistChargedTracksAcceptedMult;//!
+    TH2F *fHistChargedTracksAcceptedLowPtCentEffCorr;//!
+    TH2F *fHistChargedTracksAcceptedLowPtCent;//!
+    TH2F *fHistChargedTracksAcceptedLowPtCent500MeV;//!
+    TH2F *fHistChargedTracksAcceptedLowPtCentNoAntiProtons;//!
+    TH2F *fHistChargedTracksAcceptedLowPtCentAntiProtons;//!
+    TH2F *fHistGammasCutMult;//!
+    TH2F *fHistGammasAcceptedMult;//!
+    TH1F *fHistBadTrackMatches;//!
+    TH2F *fHistMatchedTracksEvspTBkgd;//!
+    TH2F *fHistMatchedTracksEvspTSignal;//!
+    TH2F *fHistMatchedTracksEvspTBkgdPeripheral;//!
+    TH2F *fHistMatchedTracksEvspTSignalPeripheral;//!
+    TH3F *fHistMatchedTracksEvspTBkgdvsCent;//!
+    TH3F *fHistMatchedTracksEvspTSignalvsCent;//!
+    TH3F *fHistMatchedTracksEvspTBkgdvsCentEffCorr;//!
+    TH3F *fHistMatchedTracksEvspTSignalvsCentEffCorr;//!
+    TH1F *fHistChargedTracksCutPeripheral;//!
+    TH1F *fHistChargedTracksAcceptedPeripheral;//!
+    TH1F *fHistGammasCutPeripheral;//!
+    TH1F *fHistGammasAcceptedPeripheral;//!
+    TH2F *fHistBadTrackMatchesdPhidEta;//!
+    TH2F *fHistGoodTrackMatchesdPhidEta;//!
+    TH1F *fHistHadronDepositsAll;//!
+    TH1F *fHistHadronDepositsReco;//!
+    TH2F *fHistHadronDepositsAllCent;//!
+    TH2F *fHistHadronDepositsAllCent500MeV;//!
+    TH2F *fHistHadronDepositsRecoCent;//!
+    TH2F *fHistHadronDepositsAllvsECent;//!
+    TH2F *fHistHadronDepositsRecovsECent;//!
+    TH2F *fHistHadronsAllCent;//!
+    TH3F *fHistMultChVsSignalVsMult;//!
+    TH2F *fHistNeutralRemovedSecondaryEtVsCent;//!
+    TH2F *fHistChargedRemovedSecondaryEtVsCent;//!
+    TH2F *fHistNeutralNotRemovedSecondaryEtVsCent;//!
+    TH2F *fHistChargedNotRemovedSecondaryEtVsCent;//!
+    TH2F *fHistNeutralRemovedSecondaryNumVsNCluster;//!
+    TH2F *fHistChargedRemovedSecondaryNumVsNCluster;//!
+    TH2F *fHistNeutralNotRemovedSecondaryNumVsNCluster;//!
+    TH2F *fHistChargedNotRemovedSecondaryNumVsNCluster;//!
+    TH2F *fHistNeutralRemovedSecondaryNumVsCent;//!
+    TH2F *fHistChargedRemovedSecondaryNumVsCent;//!
+    TH2F *fHistNeutralNotRemovedSecondaryNumVsCent;//!
+    TH2F *fHistChargedNotRemovedSecondaryNumVsCent;//!
+    TH2F *fHistNeutronsEtVsCent;//!
+    TH2F *fHistNeutronsNumVsCent;//!
+    TH2F *fHistNotNeutronsNumVsCent;//!
+    TH2F *fHistPiKPDepositedVsNch;//!
+    TH2F *fHistPiKPNotTrackMatchedDepositedVsNch;//!
 
-    TH2F *fHistNeutronsDepositedVsNch;
-    TH2F *fHistAntiNeutronsDepositedVsNch;
-    TH2F *fHistProtonsDepositedVsNch;
-    TH2F *fHistAntiProtonsDepositedVsNch;
-    TH2F *fHistProtonsNotTrackMatchedDepositedVsNch;
-    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNch;//
-    TH2F *fHistNeutronsDepositedVsNcl;
-    TH2F *fHistAntiNeutronsDepositedVsNcl;
-    TH2F *fHistProtonsDepositedVsNcl;
-    TH2F *fHistAntiProtonsDepositedVsNcl;
-    TH2F *fHistProtonsNotTrackMatchedDepositedVsNcl;
-    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNcl;
-    TH2F *fHistSecondariesVsNch;
-    TH2F *fHistSecondariesVsNcl;
-    TH2F *fHistSecondariesEffCorrVsNch;
-    TH2F *fHistSecondariesEffCorrVsNcl;
-    TH2F *fHistSecondariesOutOfAccEffCorrVsNch;
-    TH2F *fHistSecondariesDetectorCoverEffCorrVsNch;
+    TH2F *fHistNeutronsDepositedVsNch;//!
+    TH2F *fHistAntiNeutronsDepositedVsNch;//!
+    TH2F *fHistProtonsDepositedVsNch;//!
+    TH2F *fHistAntiProtonsDepositedVsNch;//!
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNch;//!
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNch;//!//
+    TH2F *fHistNeutronsDepositedVsNcl;//!
+    TH2F *fHistAntiNeutronsDepositedVsNcl;//!
+    TH2F *fHistProtonsDepositedVsNcl;//!
+    TH2F *fHistAntiProtonsDepositedVsNcl;//!
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNcl;//!
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNcl;//!
+    TH2F *fHistSecondariesVsNch;//!
+    TH2F *fHistSecondariesVsNcl;//!
+    TH2F *fHistSecondariesEffCorrVsNch;//!
+    TH2F *fHistSecondariesEffCorrVsNcl;//!
+    TH2F *fHistSecondariesOutOfAccEffCorrVsNch;//!
+    TH2F *fHistSecondariesDetectorCoverEffCorrVsNch;//!
 
 
-    TH2F *fHistNeutronsDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistAntiNeutronsDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistProtonsDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistAntiProtonsDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//filled
-    TH2F *fHistNeutronsDepositedVsNclNoEffCorr;//filled
-    TH2F *fHistAntiNeutronsDepositedVsNclNoEffCorr;//filled
-    TH2F *fHistProtonsDepositedVsNclNoEffCorr;//filled
-    TH2F *fHistAntiProtonsDepositedVsNclNoEffCorr;//filled
-    TH2F *fHistProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//filled
-    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//filled
+    TH2F *fHistNeutronsDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistAntiNeutronsDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistProtonsDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistAntiProtonsDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNchNoEffCorr;//!//filled
+    TH2F *fHistNeutronsDepositedVsNclNoEffCorr;//!//filled
+    TH2F *fHistAntiNeutronsDepositedVsNclNoEffCorr;//!//filled
+    TH2F *fHistProtonsDepositedVsNclNoEffCorr;//!//filled
+    TH2F *fHistAntiProtonsDepositedVsNclNoEffCorr;//!//filled
+    TH2F *fHistProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//!//filled
+    TH2F *fHistAntiProtonsNotTrackMatchedDepositedVsNclNoEffCorr;//!//filled
 
-    TH3F *fHistCentVsNchVsNcl;
-    TH3F *fHistSecondaryPositionInDetector;
-    //TH2F *fHistSecondaryPositionInDetector2D;
-    TH2F *fClusterPositionWeird;
-    //TH3F *fHistSecondaryPositionInDetectorMultiple;
-    TH1F *fSecondaryClusterEnergy; // Distribution of cluster energies
+    TH3F *fHistCentVsNchVsNcl;//!
+    TH3F *fHistSecondaryPositionInDetector;//!
+    //TH2F *fHistSecondaryPositionInDetector2D;//!
+    TH2F *fClusterPositionWeird;//!
+    //TH3F *fHistSecondaryPositionInDetectorMultiple;//!
+    TH1F *fSecondaryClusterEnergy;//! // Distribution of cluster energies
 
-    TH2F *fHistGammaCrossCheck;
-    TH2F *fHistGammaCrossCheckAlt;//includes gammas that did not hit as gammas
-    TH2F *fHistGammaEnergyCrossCheck;
-    TH2F *fHistGammaEnergyCrossCheckAlt;//includes gammas that did not hit as gammas
-    TH2F *fHistNeutronCrossCheck;
-    TH2F *fHistSecondaryCrossCheck;
-    TH2F *fHistHadronCrossCheck;
-    TH2F *fHistKaonCrossCheck;
+    TH2F *fHistGammaCrossCheck;//!
+    TH2F *fHistGammaCrossCheckAlt;//!//includes gammas that did not hit as gammas
+    TH2F *fHistGammaEnergyCrossCheck;//!
+    TH2F *fHistGammaEnergyCrossCheckAlt;//!//includes gammas that did not hit as gammas
+    TH2F *fHistNeutronCrossCheck;//!
+    TH2F *fHistSecondaryCrossCheck;//!
+    TH2F *fHistHadronCrossCheck;//!
+    TH2F *fHistKaonCrossCheck;//!
 
-    TH1F *fHistAllEnergy;//energy of all clusters passing cuts vs centrality
-    TH1F *fHistSignalEnergy;//signal of signal clusters passing cuts vs centrality
-    TH1F *fHistNeutronEnergy;//signal of neutron clusters passing cuts vs centrality
-    TH1F *fHistKaonEnergy;//signal of kaon clusters passing cuts vs centrality
-    TH1F *fHistHadronEnergy;//signal of hadron clusters passing cuts vs centrality
-    TH1F *fHistSecondaryEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSecondaryChargedEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSecondaryNeutronEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSecondaryGammaEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSecondaryElectronEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSecondaryOtherEnergy;//signal of secondary clusters passing cuts vs centrality
-    TH1F *fHistSimulatedGammaEnergy;//signal of signal clusters passing cuts vs centrality
-    TH1F *fHistReconstructedGammaEnergy;//signal of signal clusters passing cuts vs centrality
-    TH1F *fHistSimulatedGammaEnergyAboveThreshold;//signal of signal clusters passing cuts vs centrality
-    TH1F *fHistReconstructedSignalEnergy;//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistAllEnergy;//!//energy of all clusters passing cuts vs centrality
+    TH1F *fHistSignalEnergy;//!//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistNeutronEnergy;//!//signal of neutron clusters passing cuts vs centrality
+    TH1F *fHistKaonEnergy;//!//signal of kaon clusters passing cuts vs centrality
+    TH1F *fHistHadronEnergy;//!//signal of hadron clusters passing cuts vs centrality
+    TH1F *fHistSecondaryEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryChargedEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryNeutronEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryGammaEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryElectronEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSecondaryOtherEnergy;//!//signal of secondary clusters passing cuts vs centrality
+    TH1F *fHistSimulatedGammaEnergy;//!//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistReconstructedGammaEnergy;//!//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistSimulatedGammaEnergyAboveThreshold;//!//signal of signal clusters passing cuts vs centrality
+    TH1F *fHistReconstructedSignalEnergy;//!//signal of signal clusters passing cuts vs centrality
 
-    TH2F *fHistFracSignalVsNClusters;//Fraction of signal vs number of clusters
-    TH2F *fHistFracHadronsVsNClusters;//Fraction of hadrons vs number of clusters
-    TH2F *fHistFracNeutronsVsNClusters;//Fraction of signal vs number of clusters
-    TH2F *fHistFracKaonsVsNClusters;//Fraction of signal vs number of clusters
-    TH2F *fHistFracSecondariesVsNClusters;//Fraction of signal vs number of clusters
-    TH2F *fHistFracSignalVsNMultiplicity;//Fraction of signal vs charged track multiplicity
-    TH2F *fHistFracHadronsVsNMultiplicity;//Fraction of hadrons vs charged track multiplicity
-    TH2F *fHistFracNeutronsVsNMultiplicity;//Fraction of signal vs charged track multiplicity
-    TH2F *fHistFracKaonsVsNMultiplicity;//Fraction of signal vs charged track multiplicity
-    TH2F *fHistFracSecondariesVsNMultiplicity;//Fraction of signal vs charged track multiplicity
-    TH2F *fHistFracSignalVsNMatchedTracks;//Fraction of signal vs number of matched tracks
-    TH2F *fHistFracHadronsVsNMatchedTracks;//Fraction of hadrons vs number of matched tracks
-    TH2F *fHistFracNeutronsVsNMatchedTracks;//Fraction of signal vs number of matched tracks
-    TH2F *fHistFracKaonsVsNMatchedTracks;//Fraction of signal vs number of matched tracks
-    TH2F *fHistFracSecondariesVsNMatchedTracks;//Fraction of signal vs number of matched tracks
-    TH2F *fHistFracSignalVsNTotalTracks;//Fraction of signal vs number of total tracks
-    TH2F *fHistFracHadronsVsNTotalTracks;//Fraction of hadrons vs number of total tracks
-    TH2F *fHistFracNeutronsVsNTotalTracks;//Fraction of signal vs number of total tracks
-    TH2F *fHistFracKaonsVsNTotalTracks;//Fraction of signal vs number of total tracks
-    TH2F *fHistFracSecondariesVsNTotalTracks;//Fraction of signal vs number of total tracks
-    TH3F *fHistRCorrVsPtVsCent; // enter comment here
+    TH2F *fHistFracSignalVsNClusters;//!//Fraction of signal vs number of clusters
+    TH2F *fHistFracHadronsVsNClusters;//!//Fraction of hadrons vs number of clusters
+    TH2F *fHistFracNeutronsVsNClusters;//!//Fraction of signal vs number of clusters
+    TH2F *fHistFracKaonsVsNClusters;//!//Fraction of signal vs number of clusters
+    TH2F *fHistFracSecondariesVsNClusters;//!//Fraction of signal vs number of clusters
+    TH2F *fHistFracSignalVsNMultiplicity;//!//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracHadronsVsNMultiplicity;//!//Fraction of hadrons vs charged track multiplicity
+    TH2F *fHistFracNeutronsVsNMultiplicity;//!//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracKaonsVsNMultiplicity;//!//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracSecondariesVsNMultiplicity;//!//Fraction of signal vs charged track multiplicity
+    TH2F *fHistFracSignalVsNMatchedTracks;//!//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracHadronsVsNMatchedTracks;//!//Fraction of hadrons vs number of matched tracks
+    TH2F *fHistFracNeutronsVsNMatchedTracks;//!//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracKaonsVsNMatchedTracks;//!//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracSecondariesVsNMatchedTracks;//!//Fraction of signal vs number of matched tracks
+    TH2F *fHistFracSignalVsNTotalTracks;//!//Fraction of signal vs number of total tracks
+    TH2F *fHistFracHadronsVsNTotalTracks;//!//Fraction of hadrons vs number of total tracks
+    TH2F *fHistFracNeutronsVsNTotalTracks;//!//Fraction of signal vs number of total tracks
+    TH2F *fHistFracKaonsVsNTotalTracks;//!//Fraction of signal vs number of total tracks
+    TH2F *fHistFracSecondariesVsNTotalTracks;//!//Fraction of signal vs number of total tracks
+    TH3F *fHistRCorrVsPtVsCent;//! // enter comment here
 
 
 private:

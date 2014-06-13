@@ -371,7 +371,7 @@ inline Double_t AliAnalysisTaskChargedJetsPA::GetCorrectedConePt(Double_t eta, D
       if(IsTrackInCone(tmpTrack, eta, phi, radius))
         tmpConePt = tmpConePt + tmpTrack->Pt();
   }
-  Double_t realConeArea = (2.0*(fMaxEta-fMinEta)) * TMath::TwoPi() * MCGetOverlapCircleRectancle(eta, phi, radius, fMinEta, fMaxEta, 0., TMath::TwoPi());
+  Double_t realConeArea = (1.0*(fMaxEta-fMinEta)) * TMath::TwoPi() * MCGetOverlapCircleRectancle(eta, phi, radius, fMinEta, fMaxEta, 0., TMath::TwoPi());
   tmpConePt -= background * realConeArea; // subtract background
 
   return tmpConePt;
@@ -1269,7 +1269,7 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
 
   // Calculate the correct area where the tracks were taking from
 
-  Double_t tmpFullTPCArea = (2.0*(fMaxEta-fMinEta)) * TMath::TwoPi();
+  Double_t tmpFullTPCArea = (1.0*(fMaxEta-fMinEta)) * TMath::TwoPi();
   Double_t tmpAreaCone02     = tmpFullTPCArea;
   Double_t tmpAreaCone04     = tmpFullTPCArea;
   Double_t tmpAreaCone06     = tmpFullTPCArea;
@@ -1361,7 +1361,7 @@ void AliAnalysisTaskChargedJetsPA::GetTRBackgroundDensity(Int_t numberExcludeLea
 
   if (trackCountAccepted > 0)
   {
-    Double_t tmpArea = 2.0*(fMaxEta-fMinEta)*TMath::TwoPi()  - 2*(tmpRadius*tmpRadius * TMath::Pi()); //TPC area - excluding jet area
+    Double_t tmpArea = 1.0*(fMaxEta-fMinEta)*TMath::TwoPi()  - 2*(tmpRadius*tmpRadius * TMath::Pi()); //TPC area - excluding jet area
     rhoMean = summedTracksPt/tmpArea;
     area = tmpArea;
   }
