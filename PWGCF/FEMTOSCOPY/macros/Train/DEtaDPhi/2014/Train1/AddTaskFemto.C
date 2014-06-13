@@ -43,7 +43,7 @@ AliAnalysisTaskFemto *AddTaskFemto(const char *configMacroName="ConfigFemtoAnaly
   }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,Form("\"%s\"",configMacroParameters));
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
