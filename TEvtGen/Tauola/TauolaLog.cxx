@@ -1,5 +1,5 @@
 #include <fstream>
-#include "Log.h"
+#include "TauolaLog.h"
 using std::streambuf;
 using std::stringstream;
 using std::ostream;

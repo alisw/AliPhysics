@@ -1,5 +1,5 @@
-#include "f_Init.h"
-#include "Log.h"
+#include "f_InitTauola.h"
+#include "TauolaLog.h"
 #include <iostream>
 using std::endl;
 
