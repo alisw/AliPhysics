@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = kFALSE,
+AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = kFALSE, Bool_t storeMultiplicity = kTRUE,
                                       Bool_t correctdEdxEtaDependence = kFALSE, Bool_t correctdEdxMultiplicityDependence = kFALSE,
                                       Bool_t setDoAdditionalQA = kFALSE,
                                       Int_t tpcCutType = AliTPCPIDBase::kTPCCutMIGeo /*AliTPCPIDBase::kTPCnclCut*/,
@@ -34,13 +34,12 @@ AliAnalysisTask *AddTaskTPCPIDEtaTree(TString period = "", Bool_t isPbpOrpPb = k
     printf("WARNING: Cuts not configured for this period!!! Using standard ITS-TPC track cuts 2011\n");
   }
   
-  if (period.Contains("PbPb") || period.Contains("pPb") || period.Contains("Pbp")) {
-    task->SetStoreMultiplicity(kTRUE);
-    printf("PbPb, pPb or Pbp detected -> Storing multiplicity in tree!\n");
+  task->SetStoreMultiplicity(storeMultiplicity);
+  if (task->GetStoreMultiplicity()) {
+    printf("Storing multiplicity in tree!\n");
   }
   else  {
-    task->SetStoreMultiplicity(kFALSE);
-    printf("pp detected -> NOT storing multiplicity in tree!\n");
+    printf("NOT storing multiplicity in tree!\n");
   }
   
   
