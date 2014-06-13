@@ -49,6 +49,7 @@ class AliVVevent {
   virtual Double_t GetMagneticField() const {return 0;}
   virtual UInt_t GetTimeStamp() const { return 0;}
   virtual UInt_t GetEventSpecie() const { return 0;}
+  virtual ULong64_t GetSize() {return 0;};
   //virtual AliVVeventFriend* FindFriend() const { return NULL; }
 
   //  ClassDef(AliVVevent,1)  // base class for AliEvent data
