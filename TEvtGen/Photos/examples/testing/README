@@ -1,0 +1,50 @@
+---------------------------------------------------------------------------
+This directory contains a number of MC-TESTER based tests which can be 
+performed to validate the currently installed version of PHOTOS and its 
+interface against benchmark results encoded in root files.
+---------------------------------------------------------------------------
+
+These tests use code located in "photos_test.c" and "photot_tauola_test.c".
+These files contain hardcoded options for all of the tests and are not
+designed to be manipulated by user. Appropriate options are set by makefiles.
+For users willing to investigate all options, examples provided in 
+"PHOTOS/examples" may represent better starting point.
+
+To run, type "make" in directory testing. You can run a single test by 
+"make" in the corresponding subdirectory. After the test is completed,
+ MC-TESTER booklets can be found in the subdirectories of each test.
+The number of generated events can be set in the "test.inc" file.
+
+Note that examples:
+- Htautau
+- Ztautau
+
+use "photos_tauola_test.c"; it requires that path to Tauola C++ Interface
+is defined during configuration.
+
+---------------------------------------------------------------------------
+The list of modes and options used for generation is located in the
+"test.inc" file. It is used by make. 
+
+In some cases further changes to Makefile or SETUP.C files (located 
+in  subdirectory of particular test) are needed.
+Full list of such changes resides in:     README-comparison-options
+---------------------------------------------------------------------------
+
+------------------
+    DEBUGGING
+------------------
+An additional directory is stored in our repository on kasztan.ifj.edu.pl,
+for those with privileges it can be obtained with:
+
+svn export file:///home/theory/svnroot/camtoph/PHOTOS/branches/debug
+
+It contains number of tests; in particular unusual events stored in HepMC
+data files. Thanks to James Monk, Andy Buckley, Sebastian Piec and others
+for some of those files. In the past, we have used those events to localize
+bugs in previous versions of Photos++ event interface
+(or to understand necesity for new extensions of 
+its event record algorithm). From now on we use those events 
+for validation  of new changes. The files are large and that is why
+we do no not include them in the distribution tar-ball. 
+

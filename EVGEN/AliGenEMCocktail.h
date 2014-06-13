@@ -23,8 +23,8 @@ class AliGenEMCocktail : public AliGenCocktail
 public:
 
     AliGenEMCocktail();
-  enum GeneratorCode { kPizero=0, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi, kDirectRealGamma, kDirectVirtGamma, kGENs };
-  enum SelectPartice { kGenPizero=0x001, kGenEta=0x002, kGenRho=0x004, kGenOmega=0x008, kGenEtaprime=0x010, kGenPhi=0x020, kGenJpsi=0x040, kGenDirectRealGamma=0x100, kGenDirectVirtGamma=0x200, kGenHadrons=0x7f, kGenGammas=0x300 };
+  enum GeneratorIndex_t { kPizero=0, kEta, kRho, kOmega, kEtaprime, kPhi, kJpsi, kDirectRealGamma, kDirectVirtGamma, kGENs };
+  enum ParticeGenerator_t { kGenPizero=0x001, kGenEta=0x002, kGenRho=0x004, kGenOmega=0x008, kGenEtaprime=0x010, kGenPhi=0x020, kGenJpsi=0x040, kGenDirectRealGamma=0x100, kGenDirectVirtGamma=0x200, kGenHadrons=0x7f, kGenGammas=0x300 };
 
     virtual ~AliGenEMCocktail();    
     virtual void Init();
@@ -36,11 +36,12 @@ public:
     void    SetDecayMode(Decay_t decay){ fDecayMode = decay;}
     void    SetWeightingMode(Weighting_t weight){ fWeightingMode = weight;}
   void    SetNPart(Int_t npart){ fNPart = npart; }
-  void    SetPtParam(Int_t PtSelect){ fPtSelect = PtSelect; }
-  void    SetCentrality(Int_t cent){ fCentrality = cent; }
+  void    SetPtParam(AliGenEMlib::PtParamSet_t PtSelect){ fPtSelect = PtSelect; }
+  void    SetCentrality(AliGenEMlib::Centrality_t cent){ fCentrality = cent; }
   void    SetV2Systematic(Int_t v2sys){ fV2Systematic = v2sys; }
   void    SetForceGammaConversion(Bool_t force=kTRUE){ fForceConv=force; }
-  void    SelectMotherParticles(Int_t part){ fSelectedParticles=part; }
+  void    SetHeaviestHadron(ParticeGenerator_t part);
+  void    SelectMotherParticles(ParticeGenerator_t part){ fSelectedParticles=part; }
     
 private:
     AliGenEMCocktail(const AliGenEMCocktail &cocktail); 
@@ -55,8 +56,8 @@ private:
     Int_t    fNPart;             // multiplicity of each source per event
     Double_t fYieldArray[kGENs]; // array of dN/dy for each source
 
-  Int_t fPtSelect; // selected pT parameterization
-  Int_t fCentrality; // selected centrality
+  AliGenEMlib::PtParamSet_t fPtSelect; // selected pT parameterization
+  AliGenEMlib::Centrality_t fCentrality; // selected centrality
   Int_t fV2Systematic; //selected systematic error for v2 parameters
 
   Bool_t fForceConv; //select whether you want to force all gammas to convert imidediately

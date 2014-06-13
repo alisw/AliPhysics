@@ -1,4 +1,4 @@
-// $Id: AliEveEventManager.h 59763 2012-11-27 12:42:41Z hristov $
+// $Id: AliEveEventManager.h 64557 2013-10-16 20:03:08Z hristov $
 // Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007
 
 /**************************************************************************
@@ -18,11 +18,18 @@
 
 #include <AliESDEvent.h>
 
-//#include <zmq.hpp>
 
+#ifdef ZMQ
+#include <zmq.hpp>
+#else
+namespace zmq{
+	class context_t;
+}
+#endif
 
 class AliEveMacroExecutor;
 class AliEveEventSelector; 
+class AliSocket;
 
 class AliRunLoader;
 class AliESDEvent;
@@ -102,8 +109,7 @@ public:
     TString       GetEventInfoVertical()   const;
     const AliEventInfo*	GetEventInfo();
 
-		static bool ConnectToServer(); // connect to the events server
-		//static zmq::socket_t* AssertSubscriber();
+		static bool ConnectToServer(const char* host, int port); // connect to the events server
 
     static Int_t  CurrentEventId();
 
@@ -122,6 +128,8 @@ public:
     static AliMagF*      AssertMagField();
     static TGeoManager*  AssertGeometry();
     static AliRecoParam* AssertRecoParams();
+    
+    static AliSocket* AssertSubscriber();
 
     static AliEveEventManager* AddDependentManager(const TString& name, const TString& path);
     static AliEveEventManager* GetDependentManager(const TString& name);
@@ -154,7 +162,7 @@ public:
     void          NewEventLoaded();      // *SIGNAL*
 
     AliEveMacroExecutor* GetExecutor() const { return fExecutor; }
-
+	    void InitOCDB(int runNo=-1);
 protected:
     Int_t         fEventId;		// Id of current event.
 
@@ -215,13 +223,14 @@ protected:
     static AliRecoParam* fgRecoParam;
     static Bool_t        fgUniformField;  // Track with uniform field.
 
-		//static zmq::context_t* fgSubContext;
-		//static zmq::socket_t* fgSubSock;
+		static zmq::context_t* fgSubContext;
+		static AliSocket* fgSubSock;
 private:
     AliEveEventManager(const AliEveEventManager&);            // Not implemented
     AliEveEventManager& operator=(const AliEveEventManager&); // Not implemented
 
     void InitInternals();
+
     void StartAutoLoadTimer();
     void StopAutoLoadTimer();
 

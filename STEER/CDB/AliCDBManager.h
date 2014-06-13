@@ -63,14 +63,15 @@ class AliCDBManager: public TObject {
     void SetDrain(const char* dbString);
     void SetDrain(const AliCDBParam* param);
     void SetDrain(AliCDBStorage *storage);
-
+    void UnsetDrain(){fDrainStorage = 0x0;}
     Bool_t IsDrainSet() const {return fDrainStorage != 0;}
-
     Bool_t Drain(AliCDBEntry* entry);
 
-    void UnsetDrain(){fDrainStorage = 0x0;}
+    Bool_t SetOCDBUploadMode();
+    void UnsetOCDBUploadMode() { fOCDBUploadMode=kFALSE; }
+    Bool_t IsOCDBUploadMode() const { return fOCDBUploadMode; }
 
-    AliCDBEntry* Get(const AliCDBId& query, Bool_t forceCaching=kFALSE, Bool_t doCatch=kFALSE);
+    AliCDBEntry* Get(const AliCDBId& query, Bool_t forceCaching=kFALSE);
     AliCDBEntry* Get(const AliCDBPath& path, Int_t runNumber=-1,
         Int_t version = -1, Int_t subVersion = -1);
     AliCDBEntry* Get(const AliCDBPath& path, const AliCDBRunRange& runRange,
@@ -127,7 +128,8 @@ class AliCDBManager: public TObject {
     Bool_t InitFromSnapshot(const char* snapshotFileName, Bool_t overwrite=kTRUE);
     Bool_t SetSnapshotMode(const char* snapshotFileName="OCDB.root");
     void UnsetSnapshotMode() {fSnapshotMode=kFALSE;}
-    void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys);
+    void DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys) const;
+    void DumpToLightSnapshotFile(const char* lightSnapshotFileName) const;
 
     Int_t GetStartRunLHCPeriod();
     Int_t GetEndRunLHCPeriod();
@@ -195,6 +197,7 @@ class AliCDBManager: public TObject {
 
     Bool_t fSnapshotMode;           //! flag saying if we are in snapshot mode
     TFile *fSnapshotFile;
+    Bool_t fOCDBUploadMode;         //! flag for uploads to Official CDBs (upload to cvmfs must follow upload to AliEn)
 
     Bool_t fRaw;   // flag to say whether we are in the raw case
     TString fCvmfsOcdb;       // set from $OCDB_PATH, points to a cvmfs AliRoot package

@@ -30,6 +30,7 @@ set ( SRCS
     AliITSDetTypeRec.cxx 
     AliITSClusterFinder.cxx 
     AliITSClusterFinderV2SDD.cxx 
+    AliITSClusterFinderSDDfast.cxx 
     AliITSClusterFinderV2SPD.cxx 
     AliITSClusterFinderV2SSD.cxx 
     AliITSClusterParam.cxx 

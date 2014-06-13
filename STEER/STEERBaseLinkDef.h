@@ -137,6 +137,7 @@
 #pragma link C++ class  AliVTOFHit+;
 #pragma link C++ class  AliVTOFMatch+;
 #pragma link C++ class AliVTOFcluster+;
+#pragma link C++ class AliVMultiplicity+;
 
 #endif
 

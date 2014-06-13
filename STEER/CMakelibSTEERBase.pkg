@@ -96,6 +96,7 @@ set ( SRCS
     STEERBase/AliVTOFHit.cxx
     STEERBase/AliVTOFMatch.cxx
     STEERBase/AliVTOFcluster.cxx
+    STEERBase/AliVMultiplicity.cxx
   )
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")

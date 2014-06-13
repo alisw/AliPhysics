@@ -25,9 +25,9 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS Tauola/DecayList.cxx Tauola/Log.cxx Tauola/Plots.cxx Tauola/Tauola.cxx Tauola/TauolaEvent.cxx Tauola/TauolaHEPEVTEvent.cxx Tauola/TauolaHEPEVTParticle.cxx Tauola/TauolaHepMCEvent.cxx Tauola/TauolaHepMCParticle.cxx Tauola/TauolaParticle.cxx Tauola/TauolaParticlePair.cxx Tauola/f_Decay.cxx Tauola/f_FilHep.cxx Tauola/f_Init.cxx)
+set ( SRCS Tauola/DecayList.cxx Tauola/TauolaLog.cxx Tauola/Plots.cxx Tauola/Tauola.cxx Tauola/TauolaEvent.cxx Tauola/TauolaHEPEVTEvent.cxx Tauola/TauolaHEPEVTParticle.cxx Tauola/TauolaHepMCEvent.cxx Tauola/TauolaHepMCParticle.cxx Tauola/TauolaParticle.cxx Tauola/TauolaParticlePair.cxx Tauola/f_Decay.cxx Tauola/f_FilHep.cxx Tauola/f_InitTauola.cxx)
 
-set ( HDRS Tauola/DecayList.h Tauola/f_Variables.h Tauola/Log.h Tauola/Plots.h Tauola/TauolaEvent.h Tauola/Tauola.h Tauola/TauolaHEPEVTEvent.h Tauola/TauolaHEPEVTParticle.h Tauola/TauolaHepMCEvent.h Tauola/TauolaHepMCParticle.h Tauola/TauolaParticle.h Tauola/TauolaParticlePair.h Tauola/f_Decay.h Tauola/f_FilHep.h Tauola/f_Init.h)
+set ( HDRS Tauola/DecayList.h Tauola/f_Variables.h Tauola/TauolaLog.h Tauola/Plots.h Tauola/TauolaEvent.h Tauola/Tauola.h Tauola/TauolaHEPEVTEvent.h Tauola/TauolaHEPEVTParticle.h Tauola/TauolaHepMCEvent.h Tauola/TauolaHepMCParticle.h Tauola/TauolaParticle.h Tauola/TauolaParticlePair.h Tauola/f_Decay.h Tauola/f_FilHep.h Tauola/f_InitTauola.h)
 
 set ( FFLAGS "-O2 -fPIC -fno-automatic -fno-backslash -ffixed-line-length-132")
 

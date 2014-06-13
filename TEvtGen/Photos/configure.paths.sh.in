@@ -1,0 +1,15 @@
+#!/bin/sh
+
+export PHOTOSLOCATION=@with_photos@
+export HEPMCLOCATION=@with_hepmc@
+export TAUOLALOCATION=@with_tauola@
+export PYTHIALOCATION=@with_pythia8@
+export MCTESTERLOCATION=@with_mc_tester@
+export PYTHIA8DATA=@pythia8data@
+
+ROOTLIB=`root-config --libdir`
+
+# Examples have these paths hardcoded during compilation
+# Nonetheless, this is line might be useful for any other programs
+# that user might want to compile
+export LD_LIBRARY_PATH=${PHOTOSLOCATION}/lib:${PREFIX}/lib:${HEPMCLOCATION}/lib:${TAUOLALOCATION}/lib:${PYTHIALOCATION}/lib/archive:${MCTESTERLOCATION}/lib:${ROOTLIB}:${LD_LIBRARY_PATH}

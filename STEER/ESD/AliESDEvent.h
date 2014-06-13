@@ -31,6 +31,7 @@
 #include "AliESDZDC.h"
 #include "AliESDACORDE.h"
 #include "AliESDAD.h"
+#include "AliMultiplicity.h"
 
 // AliESDtrack has to be included so that the compiler 
 // knows its inheritance tree (= that it is a AliVParticle).
@@ -56,7 +57,6 @@ class AliESDPmdTrack;
 class AliESDFMD;
 class AliESDkink;
 class AliESDv0;
-class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
 class AliESDTrdTrigger;
@@ -316,7 +316,7 @@ public:
 
   void SetMultiplicity(const AliMultiplicity *mul);
 
-  const AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
+  AliMultiplicity *GetMultiplicity() const {return fSPDMult;}
   void   EstimateMultiplicity(Int_t &tracklets,Int_t &trITSTPC,Int_t &trITSSApure,
 			      Double_t eta=1.,Bool_t useDCAFlag=kTRUE,Bool_t useV0Flag=kTRUE) const;
 

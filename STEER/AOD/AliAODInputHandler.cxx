@@ -32,6 +32,7 @@
 #include "AliVCuts.h"
 #include "AliMCEvent.h"
 #include "AliAODpidUtil.h"
+#include "AliAODMCHeader.h"
 
 ClassImp(AliAODInputHandler)
 
@@ -136,6 +137,10 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
        if (!fMCEvent) fMCEvent = new AliMCEvent();
        fMCEvent->SetParticleArray(mcParticles);
     }
+
+    AliAODMCHeader* mcHeader = (AliAODMCHeader*) fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if(mcHeader) {
+      fMCEvent->SetExternalHeader(mcHeader);}
     // When merging, get current event number from GetReadEntry(), 
     // entry gives the events in the current file
     if (fTreeToMerge) fTreeToMerge->GetEntry(GetReadEntry() + fMergeOffset);

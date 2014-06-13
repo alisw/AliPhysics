@@ -1,0 +1,325 @@
+####
+Decay D+
+0.055300000 anti-K*0 e+      nu_e                           PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.088300000 anti-K0 e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.002773020 anti-K_10 e+      nu_e                          PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.002927076 anti-K_2*0 e+      nu_e                         PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.004050000 pi0     e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001330000 eta     e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000385142 eta'    e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.002200000 rho0    e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001600000 omega   e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.041000000 K-      pi+     e+      nu_e                    PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.001078397 anti-K0 pi0     e+      nu_e                    PHOTOS   PHSP; #[Reconstructed PDG2011]
+####
+Enddecay
+
+Decay D-
+0.055300000 K*0     e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.088300000 K0      e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.002773020 K_10    e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.002927076 K_2*0   e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.004050000 pi0     e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.001330000 eta     e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.000385142 eta'    e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.002200000 rho0    e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.001600000 omega   e-      anti-nu_e                       PHOTOS    ISGW2; #[Reconstructed PDG2011]
+0.041000000 K+      pi-     e-      anti-nu_e               PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.001078397 K0      pi0     e-      anti-nu_e               PHOTOS   PHSP; #[Reconstructed PDG2011]
+#####
+Enddecay
+
+Decay D0
+# updated according to suggestions by P. Roudeau,
+# using PDG2004 measurements and imposing the equality
+# of sl partial widths for D+ and D0.
+# Include additional decay anti-K0 pi- e+ nu_e , K- pi0 e+ nu_e.
+#
+0.021700000 K*-     e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.035500000 K-      e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000760000 K_1-    e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001374504 K_2*-   e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.002890000 pi-     e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001900000 rho-    e+      nu_e                            PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.027000000 anti-K0 pi-     e+      nu_e                    PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.016000000 K-      pi0     e+      nu_e                    PHOTOS   PHSP; #[Reconstructed PDG2011]
+###
+Enddecay
+
+#
+#
+Decay anti-D0
+0.021700000 K*+     e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.035500000 K+      e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000760000 K_1+    e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001380270 K_2*+   e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.002890000 pi+     e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.001900000 rho+    e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.027000000 K0      pi+     e-      anti-nu_e               PHOTOS   PHSP; #[Reconstructed PDG2011]
+0.016000000 K+      pi0     e-      anti-nu_e               PHOTOS   PHSP; #[Reconstructed PDG2011]
+Enddecay
+
+Decay D_s+
+0.024900000 phi     e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.026700000 eta     e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.009900000 eta'    e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002058115 anti-K0 e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000762265 anti-K*0 e+      nu_e                           PHOTOS  ISGW2; #[Reconstructed PDG2011]
+# Doubly Cabibbo suppressed
+0.003700000 K0      e+      nu_e                            PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.001800000 K*0     e+      nu_e                            PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+#
+# Updated to PDG 2008
+Decay D_s-
+0.024900000 phi     e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.026700000 eta     e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.009900000 eta'    e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.002058115 K0      e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000762265 K*0     e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+# Doubly Cabibbo suppressed
+0.003700000 anti-K0 e-      anti-nu_e                       PHSP;  #[New mode added] #[Reconstructed PDG2011]
+0.001800000 anti-K*0 e-      anti-nu_e                      PHSP;  #[New mode added] #[Reconstructed PDG2011]
+Enddecay
+
+Decay Lambda_c+
+###
+0.021000000 e+      nu_e    Lambda0                         PYTHIA         42; #[Reconstructed PDG2011]
+0.00500         e+      nu_e    Sigma0  PYTHIA         42;
+0.00500         e+      nu_e    Sigma*0         PYTHIA         42;
+0.00300         e+      nu_e    n0      PYTHIA         42;
+0.00200         e+      nu_e    Delta0  PYTHIA         42;
+0.00600         e+      nu_e    p+      pi-     PYTHIA         42;
+0.00600         e+      nu_e    n0      pi0     PYTHIA         42;
+###
+Enddecay
+
+CDecay anti-Lambda_c-
+
+
+Decay Xi_c0
+0.020        e+       nu_e           Xi-         PYTHIA 42;
+0.005        e+       nu_e           Xi*-         PYTHIA 42;
+Enddecay
+
+CDecay anti-Xi_c0
+
+Decay Xi_c+
+0.028        e+       nu_e           Xi0         PYTHIA 42;
+0.007        e+       nu_e           Xi*0         PYTHIA 42;
+Enddecay
+
+CDecay Xi_c-
+
+Decay Omega_c0
+1.0   e+     nu_e         Omega-         PYTHIA 42;
+Enddecay
+
+CDecay anti-Omega_c0
+
+#####
+Decay B0
+# Updated to PDG 2008
+#                   b -> c semileptonic
+#
+0.050100000 D*-     e+      nu_e                            PHOTOS HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.021700000 D-      e+      nu_e                            PHOTOS ISGW2; #[Reconstructed PDG2011]
+0.0054   D_1-   e+   nu_e           PHOTOS ISGW2;
+0.0020   D_0*-   e+   nu_e           PHOTOS ISGW2;
+0.0050   D'_1-   e+   nu_e           PHOTOS ISGW2;
+0.0022   D_2*-   e+   nu_e           PHOTOS ISGW2;
+0.0003   D*-  pi0   e+   nu_e       PHOTOS GOITY_ROBERTS;
+0.004900000 anti-D*0 pi-     e+      nu_e                   PHOTOS GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0010   D-   pi0   e+   nu_e       PHOTOS GOITY_ROBERTS;
+###
+#
+#                    b -> u l nu
+#
+0.000134000 pi-     e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000247000 rho-    e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+##0.000000   D(2S)- e+   nu_e        PHOTOS  ISGW2;
+##0.000000   D*(2S)- e+   nu_e       PHOTOS  ISGW2;
+0.001892   Xu-  e+  nu_e             VUB 4.8 1.29 0.22 20 0.30 0.55 1.20 0.61 1.26 0.85 1.34 1.08 1.41 1.21 1.48 1.30 1.55 1.30 1.61 1.33 1.67 1.36 1.73 1.39 1.79 1.33 1.84 1.42 1.90 1.39 1.95 1.39 2.00 1.37 2.50 1.30  3.00 0.74 3.50 0.99 4.00 1.09 4.50 1.00;
+#
+0.000000160 K0      e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001030 K*0     e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000050 Xsd  e+    e-    PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+###
+Enddecay
+
+
+Decay anti-B0
+# Updated to PDG 2008
+#                   b -> c semileptonic
+#
+0.050100000 D*+     e-      anti-nu_e                       PHOTOS  HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.021700000 D+      e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.0054   D_1+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0020   D_0*+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0050   D'_1+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0022   D_2*+   e-   anti-nu_e          PHOTOS  ISGW2;
+0.0003   D*+  pi0   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+0.004900000 D*0     pi+     e-      anti-nu_e               PHOTOS  GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0010   D+   pi0   e-   anti-nu_e      PHOTOS  GOITY_ROBERTS;
+####
+0.000134000 pi+     e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000247000 rho+    e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000000   D(2S)+ e-   anti-nu_e        PHOTOS   ISGW2;
+0.000000   D*(2S)+ e-   anti-nu_e       PHOTOS   ISGW2;
+0.001892   Xu+  e-  anti-nu_e         PHOTOS    VUB 4.8 1.29 0.22 20 0.30 0.55 1.20 0.61 1.26 0.85 1.34 1.08 1.41 1.21 1.48 1.30 1.55 1.30 1.61 1.33 1.67 1.36 1.73 1.39 1.79 1.33 1.84 1.42 1.90 1.39 1.95 1.39 2.00 1.37 2.50 1.30 3.00 0.74 3.50 0.99 4.00 1.09 4.50 1.00;
+#
+0.000000160 anti-K0 e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001030 anti-K*0 e+      e-                             PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000050 anti-Xsd  e+    e-    PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+Enddecay
+
+Decay B-
+# Updated to PDG 2008
+#                  b -> c semileptonic
+#
+0.056800000 D*0     e-      anti-nu_e                       PHOTOS  HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.022300000 D0      e-      anti-nu_e                       PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.0040   D_10   e-   anti-nu_e         PHOTOS  ISGW2;
+0.0024   D_0*0   e-   anti-nu_e         PHOTOS  ISGW2;
+0.0007   D'_10   e-   anti-nu_e         PHOTOS  ISGW2;
+0.0018   D_2*0   e-   anti-nu_e         PHOTOS  ISGW2;
+0.006100000 D*+     pi-     e-      anti-nu_e               PHOTOS  GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0003   D*0  pi0   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+0.0000   D+   pi-   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS; #### covered by other decays
+0.0010   D0   pi0   e-   anti-nu_e     PHOTOS  GOITY_ROBERTS;
+#####
+0.000077000 pi0     e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000037000 eta     e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000128000 rho0    e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000115000 omega   e-      anti-nu_e                       PHOTOS   ISGW2; #[Reconstructed PDG2011]
+0.000270   eta'   e-   anti-nu_e        PHOTOS   ISGW2;
+0.000000   D(2S)0 e-   anti-nu_e        PHOTOS   ISGW2;
+0.000000   D*(2S)0 e-   anti-nu_e       PHOTOS   ISGW2;
+0.001948   Xu0   e-  anti-nu_e         VUB 4.8 1.29 0.22 20 0.30 0.54 1.20 0.95 1.26 0.78 1.34 0.98 1.41 0.91 1.48 1.23 1.55 1.36 1.61 1.39 1.67 1.38 1.73 1.43 1.79 1.41 1.84 1.42 1.90 1.45 1.95 1.40 2.00 1.42 2.50 1.31 3.00 1.36 3.50 1.15 4.00 1.01 4.50 1.51;
+#
+0.000000550 K-      e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001550 K*-     e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000050 anti-Xsu  e+    e-    PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+Enddecay
+
+
+Decay B+
+# Updated to PDG 2008
+#                  b -> c semileptonic
+#
+0.056800000 anti-D*0 e+      nu_e                           PHOTOS  HQET 0.77 1.33 0.92; #[Reconstructed PDG2011]
+0.022300000 anti-D0 e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.0040   anti-D_10   e+   nu_e        PHOTOS  ISGW2;
+0.0024   anti-D_0*0   e+   nu_e        PHOTOS  ISGW2;
+0.0007   anti-D'_10   e+   nu_e        PHOTOS  ISGW2;
+0.0018   anti-D_2*0   e+   nu_e        PHOTOS  ISGW2;
+0.006100000 D*-     pi+     e+      nu_e                    PHOTOS  GOITY_ROBERTS; #[Reconstructed PDG2011]
+0.0003   anti-D*0  pi0   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+0.0000   D-   pi+   e+   nu_e    PHOTOS  GOITY_ROBERTS; ## covered by other decays
+0.0010   anti-D0  pi0   e+   nu_e    PHOTOS  GOITY_ROBERTS;
+####
+0.000077000 pi0     e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000037000 eta     e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000128000 rho0    e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000115000 omega   e+      nu_e                            PHOTOS  ISGW2; #[Reconstructed PDG2011]
+0.000270   eta'   e+   nu_e        PHOTOS  ISGW2;
+0.000000   anti-D(2S)0 e+   nu_e   PHOTOS  ISGW2;
+0.000000   anti-D*(2S)0 e+   nu_e  PHOTOS  ISGW2;
+0.001948   Xu0   e+  nu_e         VUB 4.8 1.29 0.22 20 0.30 0.54 1.20 0.95 1.26 0.78 1.34 0.98 1.41 0.91 1.48 1.23 1.55 1.36 1.61 1.39 1.67 1.38 1.73 1.43 1.79 1.41 1.84 1.42 1.90 1.45 1.95 1.40 2.00 1.42 2.50 1.31 3.00 1.36 3.50 1.15 4.00 1.01 4.50 1.51;
+#
+0.000000550 K+      e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.000001550 K*+     e+      e-                              PHOTOS BTOSLLBALL; #[Reconstructed PDG2011]
+0.0000050 Xsu  e+    e-    PHOTOS BTOXSLL 4.8 0.2 0.0 0.41;
+
+Enddecay
+
+
+Decay B_s0
+0.0210   D_s-     e+     nu_e         PHOTOS  ISGW2;
+0.0490   D_s*-    e+     nu_e         PHOTOS  ISGW2;
+0.0040   D_s1-    e+     nu_e         PHOTOS  ISGW2;
+0.0040   D_s0*-   e+     nu_e         PHOTOS  ISGW2;
+0.0070   D'_s1-   e+     nu_e         PHOTOS  ISGW2;
+0.0070   D_s2*-   e+     nu_e         PHOTOS  ISGW2;
+###
+# fkw 5/10/00 the b->ulnu decays are loosely modelled according to B0 in EvtGen
+0.000200    K-          e+         nu_e         PHOTOS   ISGW2;
+0.000300    K*-         e+         nu_e         PHOTOS   ISGW2;
+0.000300    K_1-        e+         nu_e         PHOTOS   ISGW2;
+0.000200    K'_1-       e+         nu_e         PHOTOS   ISGW2;
+# PR LHCb 04/08/2004 : add Bs -> phi mu mu, phi e e
+0.0000023   phi    e+     e-                   BTOSLLALI;
+
+Enddecay
+
+
+Decay anti-B_s0
+#                                        b --> c  (l nu)
+#                                        Sum = 24.5%
+0.0210   D_s+     e-     anti-nu_e    PHOTOS  ISGW2;
+0.0490   D_s*+    e-     anti-nu_e    PHOTOS  ISGW2;
+0.0040   D_s1+    e-     anti-nu_e    PHOTOS  ISGW2;
+0.0040   D_s0*+   e-     anti-nu_e    PHOTOS  ISGW2;
+0.0070   D'_s1+   e-     anti-nu_e    PHOTOS  ISGW2;
+0.0070   D_s2*+   e-     anti-nu_e    PHOTOS  ISGW2;
+####
+# fkw 5/10/00 the b->ulnu decays are loosely modelled according to B0 in EvtGen
+0.000200    K+          e-         anti-nu_e         PHOTOS   ISGW2;
+0.000300    K*+         e-         anti-nu_e         PHOTOS   ISGW2;
+0.000300    K_1+        e-         anti-nu_e         PHOTOS   ISGW2;
+0.000200    K'_1+       e-         anti-nu_e         PHOTOS   ISGW2;
+###
+# PR LHCb 04/08/2004 : add Bs -> phi mu mu, phi e e
+0.0000023   phi    e-     e+                   BTOSLLALI;
+
+Enddecay
+
+Decay Lambda_b0
+#                  SemiLeptonic Decays (inclusive BR = 7.7 +/- 1.8%)
+0.050000000 Lambda_c+ e-      anti-nu_e                     PHSP; #[Reconstructed PDG2011]
+0.006300000 Lambda_c(2593)+ e-      anti-nu_e               PHSP; #[Reconstructed PDG2011]
+0.011000000 Lambda_c(2625)+ e-      anti-nu_e               PHSP; #[Reconstructed PDG2011]
+
+Enddecay
+
+Decay anti-Lambda_b0
+#                  SemiLeptonic Decays (inclusive BR = 7.7 +/- 1.8%)
+0.050000000 anti-Lambda_c- e+      nu_e                     PHSP; #[Reconstructed PDG2011]
+0.006300000 anti-Lambda_c(2593)- e+      nu_e               PHSP; #[Reconstructed PDG2011]
+0.011000000 anti-Lambda_c(2625)- e+      nu_e               PHSP; #[Reconstructed PDG2011]
+
+Enddecay
+
+Decay Xi_b-
+  0.05460    Xi_c0      e-    anti-nu_e                   PHSP;
+Enddecay
+
+
+Decay anti-Xi_b+
+  0.05460    anti-Xi_c0      e+    nu_e                   PHSP;
+Enddecay
+
+Decay Xi_b0
+  0.05460    Xi_c+      e-    anti-nu_e                   PHSP;
+Enddecay
+
+Decay anti-Xi_b0
+  0.05460    anti-Xi_c-      e+    nu_e                   PHSP;
+Enddecay
+
+Decay Omega_b-
+  0.05460    Omega_c0      e-    anti-nu_e                PHSP;
+Enddecay
+
+Decay anti-Omega_b+
+  0.05460    anti-Omega_c0      e+    nu_e                PHSP;
+Enddecay
+
+End
+
+
+
+
+

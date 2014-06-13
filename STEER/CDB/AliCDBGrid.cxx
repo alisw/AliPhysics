@@ -727,7 +727,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
   // build filename from entry's id
   TString filename;
   if (!IdToFilename(id, filename)) {
-    AliError("Bad ID encountered! Subnormal error!");
+    AliError("Bad ID encountered, cannot make a file name out of it!");
     return kFALSE;
   }
 
@@ -754,25 +754,26 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
   }
 
   // open file
-  TFile *file=0;
+  TFile *file = 0;
+  TFile *reopenedFile = 0;
   AliDebug(2, Form("fNretry = %d, fInitRetrySeconds = %d",fNretry,fInitRetrySeconds));
   TString targetSE("");
 
   Bool_t result = kFALSE;
   Bool_t reOpenResult = kFALSE;
   Int_t reOpenAttempts=0;
-  while( !reOpenResult && reOpenAttempts<2){ //loop to check the file after closing it, to catch the unlikely but possible case when the file
+  while( !reOpenResult && reOpenAttempts<2 ) { //loop to check the file after closing it, to catch the unlikely but possible case when the file
     // is cleaned up by alien just before closing as a consequence of a network disconnection while writing
 
-    while( !file && remainingSEs>0){
+    while( !file && remainingSEs>0 ) {
       if(nSEs!=0){
         TObjString *target = (TObjString*) arraySEs->At(nSEs-remainingSEs);
         targetSE=target->String();
         if ( !(targetSE.BeginsWith("ALICE::") && targetSE.CountChar(':')==4) ) {
-          AliError(Form("\"%s\" is an invalid storage element identifier.",targetSE.Data()));
+          AliError( Form("\"%s\" is an invalid storage element identifier.",targetSE.Data()) );
           continue;
         }
-        if(fullFilename.Contains('?')) fullFilename.Remove(fullFilename.Last('?'));
+        if ( fullFilename.Contains('?')) fullFilename.Remove(fullFilename.Last('?') );
         fullFilename += Form("?se=%s",targetSE.Data());
       }
       Int_t remainingAttempts=fNretry;
@@ -783,7 +784,9 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
         remainingAttempts--;
         file = TFile::Open(fullFilename,"CREATE");
         if(!file || !file->IsWritable()){
-          if(file) file->Close(); delete file; file=0; // file is not writable
+          if(file) { // file is not writable
+            file->Close(); delete file; file=0;
+          }
           TString message(TString::Format("Attempt %d failed.",fNretry-remainingAttempts));
           if(remainingAttempts>0) {
             message += " Sleeping for "; message += nsleep; message += " seconds";
@@ -811,14 +814,13 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
     // write object (key name: "AliCDBEntry")
     result = (file->WriteTObject(entry, "AliCDBEntry") != 0);
-    if (!result) AliError(Form("Can't write entry to file <%s>!", filename.Data()));
     file->Close();
-
-    if(result)
-    {
+    if (!result) {
+      AliError(Form("Can't write entry to file <%s>!", filename.Data()));
+    } else {
       AliDebug(2, Form("Reopening file %s for checking its correctness",fullFilename.Data()));
-      TFile* ffile = TFile::Open(fullFilename.Data(),"READ");
-      if(!ffile){
+      reopenedFile = TFile::Open(fullFilename.Data(),"READ");
+      if(!reopenedFile){
         reOpenResult = kFALSE;
         AliInfo(Form("The file %s was closed successfully but cannot be reopened. Trying now to regenerate it (regeneration attempt number %d)",
               fullFilename.Data(),++reOpenAttempts));
@@ -829,9 +831,11 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
         remainingSEs++;
       }else{
         reOpenResult = kTRUE;
-        ffile->Close();
+        if ( ! AliCDBManager::Instance()->IsOCDBUploadMode() ) {
+          reopenedFile->Close();
+          delete reopenedFile; reopenedFile=0;
+        }
       }
-      delete ffile; ffile=0;
     }
   }
 
@@ -849,7 +853,7 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
 
     TagFileMetaData(filename, entry->GetMetaData());
   }else{
-    AliError("The file could not be opend or the object could not be written");
+    AliError("The file could not be opened or the object could not be written.");
     if(!gGrid->Rm(filename.Data()))
       AliError("Can't delete file!");
     return kFALSE;
@@ -875,6 +879,65 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry, const char* mirrors) {
     gGrid->Command(mirrorCmd.Data());
   }
   arraySEs->Delete(); arraySEs=0;
+
+  if ( AliCDBManager::Instance()->IsOCDBUploadMode() ) { // if uploading to OCDBs, add to cvmfs too
+    if ( !filename.BeginsWith("/alice/data") && !filename.BeginsWith("/alice/simulation/2008/v4-15-Release") ) {
+      AliError ( Form ( "Cannot upload to CVMFS OCDBs a non official CDB object: \"%s\"!", filename.Data() ) );
+    } else {
+      if ( !PutInCvmfs( filename, reopenedFile) )
+        AliError( Form( "Could not upload AliEn file \"%s\" to CVMFS OCDB!", filename.Data() ) );
+    }
+    reopenedFile->Close();
+    delete reopenedFile; reopenedFile=0;
+  }
+
+  return kTRUE;
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBGrid::PutInCvmfs(TString &filename, TFile *cdbFile) const {
+  // Add the CDB object to cvmfs OCDB
+
+  TString cvmfsFilename(filename);
+  if (cvmfsFilename.EndsWith("/")) cvmfsFilename.Remove(cvmfsFilename.Length()-1,1);	
+  TString basename = ( cvmfsFilename(cvmfsFilename.Last('/')+1, cvmfsFilename.Length()) );  // Run0_99999999_v2_s0.root
+  TString cvmfsDirname = cvmfsFilename.Remove ( cvmfsFilename.Last('/')+1, cvmfsFilename.Length() );  // /alice/data/2011/OCDB/GRP/GRP/Data
+
+  TRegexp re_RawFolder("^/alice/data/20[0-9]+/OCDB");
+  TRegexp re_MCFolder("^/alice/simulation/2008/v4-15-Release");
+  TString rawFolder = cvmfsDirname(re_RawFolder);
+  TString mcFolder = cvmfsDirname(re_MCFolder);
+  if ( !rawFolder.IsNull() ) {
+    cvmfsDirname.Replace(0, 6, "/cvmfs/alice-ocdb.cern.ch/calibration");
+  } else if ( !mcFolder.IsNull() ){
+    cvmfsDirname.Replace(0,36,"/cvmfs/alice-ocdb.cern.ch/calibration/MC");
+  } else {
+    AliError(Form("OCDB folder set for an invalid OCDB storage:\n   %s", cvmfsDirname.Data()));
+    return kFALSE;
+  }
+  // now cvmfsDirname is "/cvmfs/alice-ocdb.cern.ch/calibration/data/2011/OCDB/GRP/GRP/Data"
+  AliDebug(3, Form("Publishing \"%s\" in \"%s\"", basename.Data(), cvmfsDirname.Data()));
+
+  // Tar the file with the right prefix path
+  cdbFile->Cp( basename.Data() );
+  TString tarFileName("cdbObjectToAdd.tar.gz");
+  // tarCommand should be e.g.: tar --transform 's,^,/cvmfs/alice-ocdb.cern.ch/calibration/data/2010/OCDB,S' -cvzf objecttoadd.tar.gz basename
+  Int_t result = gSystem->Exec ( Form( "tar --transform 's,^,%s,S' -cvzf %s %s", cvmfsDirname.Data(), tarFileName.Data(), basename.Data() ) );
+  if ( result != 0 ) {
+    AliError ( Form ( "Could not create the tarball for the object \"%s\"", filename.Data() ) );
+    return kFALSE;
+  }
+
+  // Copy the file to cvmfs
+  result = gSystem->Exec( Form( "ocdb-cvmfs %s", tarFileName.Data() ) );
+  if ( result != 0 ) {
+    AliError ( Form ( "Could not execute \"ocdb-cvmfs %s\"", filename.Data() ) );
+    return kFALSE;
+  }
+
+  // Remove the local file and the tar-file
+  gSystem->Exec( Form( "rm %s", basename.Data() ) );
+  gSystem->Exec( Form( "rm %s", tarFileName.Data() ) );
 
   return kTRUE;
 }

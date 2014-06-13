@@ -18,7 +18,6 @@
 //   e-mail: Alberto.Colla@cern.ch
 //-------------------------------------------------------------------------
 
-#include <stdlib.h>
 #include <fstream>
 
 #include "AliCDBManager.h"
@@ -39,13 +38,6 @@
 #include "TMessage.h"
 #include "TObject.h"
 #include "TRegexp.h"
- // STD
-using namespace std;
-#include <iostream>
-#include <algorithm>
-#include <sstream>
-#include <stdexcept>
-#include <functional>
 
 ClassImp(AliCDBParam)
 
@@ -111,10 +103,12 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
 }
 
 //_____________________________________________________________________________
-void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys){
+void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t singleKeys) const {
 //
-// dump the entries map and the ids list to
-// the output file
+// If singleKeys is true, dump the entries map and the ids list to the snapshot file
+// (provided mostly for historical reasons, the file is then read with InitFromSnapshot),
+// otherwise write to file each AliCDBEntry separately (the is the preferred way, the file
+// is then read with SetSnapshotMode).
 
   // open the file
   TFile *f = TFile::Open(snapshotFileName,"RECREATE");
@@ -127,15 +121,11 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
 
   f->cd();
-  f->WriteObject(&fEntryCache,"CDBentriesMap");
-  f->WriteObject(fIds,"CDBidsList");
-
-  if(!singleKeys){
+  if(singleKeys){
+    f->WriteObject(&fEntryCache,"CDBentriesMap");
+    f->WriteObject(fIds,"CDBidsList");
+  }else{
     // We write the entries one by one named by their calibration path
-    /*
-       fEntryCache.Write("CDBentriesMap");
-       fIds->Write("CDBidsList");
-       */
     TIter iter(fEntryCache.GetTable());
     TPair* pair = 0;
     while((pair = dynamic_cast<TPair*> (iter.Next()))){
@@ -150,8 +140,28 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName, Bool_t sin
   }
   f->Close();
   delete f;
+}
 
-  //exit(0);
+//_____________________________________________________________________________
+void  AliCDBManager::DumpToLightSnapshotFile(const char* lightSnapshotFileName) const {
+// The light snapshot does not contain the CDB objects (AliCDBEntries) but
+// only the information identifying them, that is the map of storages and
+// the list of AliCDBIds, as in the UserInfo of AliESDs.root
+
+  // open the file
+  TFile *f = TFile::Open(lightSnapshotFileName,"RECREATE");
+  if (!f || f->IsZombie()){
+    AliError(Form("Cannot open file %s",lightSnapshotFileName));
+    return;
+  }
+
+  AliInfo(Form("Dumping map of storages with %d entries!\n", fStorageMap->GetEntries()));
+  AliInfo(Form("Dumping entriesList with %d entries!\n", fIds->GetEntries()));
+  f->WriteObject(fStorageMap,"cdbStoragesMap");
+  f->WriteObject(fIds,"CDBidsList");
+
+  f->Close();
+  delete f;
 }
 
 //_____________________________________________________________________________
@@ -310,6 +320,7 @@ AliCDBManager::AliCDBManager():
   fLock(kFALSE),
   fSnapshotMode(kFALSE),
   fSnapshotFile(0),
+  fOCDBUploadMode(kFALSE),
   fRaw(kFALSE),
   fCvmfsOcdb(""),
   fStartRunLHCPeriod(-1),
@@ -565,6 +576,20 @@ Bool_t AliCDBManager::Drain(AliCDBEntry *entry) {
 
   AliDebug(2, "Draining into drain storage...");
   return fDrainStorage->Put(entry);
+}
+
+//____________________________________________________________________________
+Bool_t AliCDBManager::SetOCDBUploadMode() {
+// Set the framework in official upload mode. This tells the framework to upload
+// objects to cvmfs after they have been uploaded to AliEn OCDBs.
+// It return false if the executable to upload to cvmfs is not found.
+
+  TString cvmfsUploadExecutable("$HOME/bin/ocdb-cvmfs");
+  gSystem->ExpandPathName(cvmfsUploadExecutable);
+  if ( gSystem->AccessPathName(cvmfsUploadExecutable) )
+    return kFALSE;
+  fOCDBUploadMode = kTRUE;
+  return kTRUE;
 }
 
 //____________________________________________________________________________
@@ -941,14 +966,11 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBPath& path,
 }
 
 //_____________________________________________________________________________
-AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching, Bool_t doCatch) {
+AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching) {
 // get an AliCDBEntry object from the database
 
   // check if query's path and runRange are valid
   // query is invalid also if version is not specified and subversion is!
-  try {
-     
-  
   if (!query.IsValid()) {
     AliError(Form("Invalid query: %s", query.ToString().Data()));
     return NULL;
@@ -1023,16 +1045,8 @@ AliCDBEntry* AliCDBManager::Get(const AliCDBId& query, Bool_t forceCaching, Bool
   if(entry && !fIds->Contains(&entry->GetId())){
     fIds->Add(entry->GetId().Clone());
   }
+
   return entry;
-  }catch(const exception &e){
-    cerr << "OCDB retrieval failed!" << endl;
-    cerr << "Detailes: " << e.what() << endl;
-    if (!doCatch) {
-      throw std::runtime_error(e.what());
-    }
-    return 0;
-  }
-  return 0;
 }
 
 //_____________________________________________________________________________

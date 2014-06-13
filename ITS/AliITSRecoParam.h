@@ -92,7 +92,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
 
   void     SetClusterFinder(Int_t cf=0) { fClusterFinder=cf; }
   void     SetClusterFinderV2() { SetClusterFinder(0); }
-  void     SetClusterFinderOrig() { SetClusterFinder(1); }
+  void     SetClusterFinderSDDfast() { SetClusterFinder(1); }
   Int_t    GetClusterFinder() const { return fClusterFinder; }
   void     SetPID(Int_t pid=0) {fPID=pid;}
   void     SetDefaultPID() {SetPID(0);}
