@@ -76,8 +76,9 @@ AliFemtoCorrFctnPairFractions::AliFemtoCorrFctnPairFractions(const AliFemtoCorrF
 //____________________________
 AliFemtoCorrFctnPairFractions::~AliFemtoCorrFctnPairFractions(){
   // destructor
-  delete fPairFractions;
-  delete fPairFractions;
+  if(fPairFractions)
+    delete fPairFractions;
+  
 }
 //_________________________
 AliFemtoCorrFctnPairFractions& AliFemtoCorrFctnPairFractions::operator=(const AliFemtoCorrFctnPairFractions& aCorrFctn)
