@@ -1762,7 +1762,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,
             
       if (fAODTPCOnlyTracks) { // Match with TPC only tracks, default from May 2013, before filter bit 32
         //printf("Match with TPC only tracks, accept? %d, test bit 128 <%d> \n", aodTrack->IsTPCOnly(), aodTrack->TestFilterMask(128));
-        if (!aodTrack->IsTPCOnly()) continue ;
+        if (!aodTrack->IsTPCConstrained()) continue ;
       } else if (fAODHybridTracks) { // Match with hybrid tracks
         //printf("Match with Hybrid tracks, accept? %d \n", aodTrack->IsHybridGlobalConstrainedGlobal());
         if (!aodTrack->IsHybridGlobalConstrainedGlobal()) continue ;
