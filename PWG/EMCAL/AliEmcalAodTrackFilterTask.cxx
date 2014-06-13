@@ -163,7 +163,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
     else if (!newt->IsExtrapolatedToEMCAL()) {
       if (fAttemptProp)
 	propthistrack = kTRUE;
-      else if (fAttemptPropMatch && !newt->IsEMCAL())
+      else if (fAttemptPropMatch && newt->IsEMCAL())
 	propthistrack = kTRUE;
     }
     if (propthistrack)
