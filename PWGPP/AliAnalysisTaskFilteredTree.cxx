@@ -308,6 +308,7 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
   //if set, use the environment variables to set the downscaling factors
   //AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF
   //AliAnalysisTaskFilteredTree_fLowPtV0DownscaligF
+  //AliAnalysisTaskFilteredTree_fFriendDownscaling
   TString env;
   env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fLowPtTrackDownscaligF");
   if (!env.IsNull())
@@ -321,6 +322,14 @@ void AliAnalysisTaskFilteredTree::UserExec(Option_t *)
     fLowPtV0DownscaligF=env.Atof();
     AliInfo(Form("fLowPtV0DownscaligF=%f",fLowPtTrackDownscaligF));
   }
+
+  env = gSystem->Getenv("AliAnalysisTaskFilteredTree_fFriendDownscaling");
+  if (!env.IsNull())
+  {
+    fFriendDownscaling=env.Atof();
+    AliInfo(Form(" fFriendDownscaling=%f",fFriendDownscaling));
+  }
+
 
   //
   if(fProcessAll) { 
