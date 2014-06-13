@@ -93,9 +93,8 @@ class AliFlatESDTrack: public AliVVtrack {
   } 
   
   AliFlatTPCCluster *GetTPCCluster(Int_t ind) {
-    AliFlatTPCCluster& cluster = GetTPCClusters()[ind];
-    return &cluster;
-  } 
+    return GetTPCClusters() + ind*sizeof(AliFlatTPCCluster);
+  }
 
   Int_t GetNumberOfITSClusters() {
     return fNITSClusters;
